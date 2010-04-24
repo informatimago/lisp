@@ -1,0 +1,712 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!-- -*- coding:mule-utf-8-unix -*- -->
+<!-- -*- coding:mule-utf-8-unix -*- -->
+<html>
+<head>
+<title>Summary</title>
+<meta HTTP-EQUIV="Content-Type" content="text/html;charset=UTF-8"></head>
+<body>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/package.lisp">COM.INFORMATIMAGO.COMMON-LISP.PACKAGE</a></b></tt>
+<pre>Exports a DEFINE-PACKAGE macro and LOAD-PACKAGE function
+(amongst others) that map packages names (styled as:
+COM.INFORMATIMAGO.COMMON-LISP.PACKAGE to logical pathnames in
+the &quot;PACKAGES&quot; virtual host:
+&quot;PACKAGES:COM;INFORMATIMAGO;COMMON-LISP;PACKAGE.LISP&quot;
+The object files are mapped to:
+&quot;PACKAGES:COM;INFORMATIMAGO;COMMON-LISP;~
+OBJ-${IMPL_TYPE}-${IMPL_VERS}-${MACH_TYPE} ;PACKAGE.${OBJECT-TYPE}&quot;
+
+Improvements over DEFPACKAGE include:
+
+- allow to specify packages refered to (used) while not
+importing (&quot;inheriting&quot;) any of it symbols; (:USE package)
+- allow to do it while renaming (nicknaming) the package;
+(:USE package :AS nickname)
+- allow to specify that all symbols exported by a given package
+are to be imported. (:FROM package :IMPORT :ALL)
+The first and second points help declare package dependencies without
+using the deprecated REQUIRE, PROVIDE and *MODULES*.  This is done
+by implementing a systematic way to load packages (from a PACKAGE:
+logical host with logical pathname translations).
+This allows MAKE-DEPENDS to build automatically the dependency graph, 
+and LOAD-PACKAGE to load automatically the dependencies without
+the need to write an ASDF or DEFSYSTEM file.
+The last point, along with the (:FROM package :IMPORT symbol...) form
+correct the naming of the :USE clause of DEFPACKAGE.
+Other more obscure clauses of DEFPACKAGE (:SHADOW,
+:SHADOWING-IMPORT-FROM, :INTERN) have no equivalent
+to provide a more controled package management.
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/source-form.lisp">COM.INFORMATIMAGO.COMMON-LISP.SOURCE-FORM</a></b></tt>
+<pre>This package exports functions to parse and manipulate
+Common Lisp sources as lisp forms (such as in macros).
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/reader.lisp">COM.INFORMATIMAGO.COMMON-LISP.READER</a></b></tt>
+<pre>
+Implements the Common Lisp Reader.
+
+We implement a Common Lisp Reader to be able to read lisp sources.
+First, we implement a complete standard compliant lisp reader,
+with additionnal hooks (token parser).
+A READTABLE-PARSE-TOKEN function takes a TOKEN as argument, and
+must return two values:
+- A boolean indicating whether the it could parse the token,
+- a parsed lisp object it could, or an error message (string) if not.
+See also the TOKEN functions, CONSTITUENT-TRAIT, SYNTAX-TABLE and
+CHARACTER-DESCRIPTION...
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/source-text.lisp">COM.INFORMATIMAGO.COMMON-LISP.SOURCE-TEXT</a></b></tt>
+<pre>
+This package exports functions to read and manipulate
+Common Lisp sources.  Most of the text source properties
+are kept (file position, line number, comments, feature
+tests, etc), while no package is created and no symbol is
+interned (TODO: but perhaps keywords?)
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/utility.lisp">COM.INFORMATIMAGO.COMMON-LISP.UTILITY</a></b></tt>
+<pre>This package exports some utility &amp; syntactic sugar functions &amp; macros.
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/ascii.lisp">COM.INFORMATIMAGO.COMMON-LISP.ASCII</a></b></tt>
+<pre>
+Some ASCII code utilities.
+Examples:
+(bytes= buffer #.(ascii-bytes &quot;HELO &quot;) :end1 (min 5 (length buffer)))
+(bytes= buffer #&quot;HELO &quot;                :end1 (min 5 (length buffer)))
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/ecma048.lisp">COM.INFORMATIMAGO.COMMON-LISP.ECMA048</a></b></tt>
+<pre>
+This package loads the ECMA-048 standard text and from
+this specifications can generate functions returning
+the control sequences defined in the standard.
+The user must call for example:
+(generate-all-functions :verbose *compile-verbose*
+:compile t
+:export  t
+:8-bit   t
+:print   nil
+:result-type '(vector (unsigned-byte 8))))
+to get the code function defined in the current package (*package*).
+Note: ECMA-048 should be identical to ISO-6429.
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/list.lisp">COM.INFORMATIMAGO.COMMON-LISP.LIST</a></b></tt>
+<pre>This module exports some list utility functions.
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/dll.lisp">COM.INFORMATIMAGO.COMMON-LISP.DLL</a></b></tt>
+<pre>
+A doubly-linked list.
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/queue.lisp">COM.INFORMATIMAGO.COMMON-LISP.QUEUE</a></b></tt>
+<pre>This module exports a queue type. This is a structure optimized for
+FIFO operations, keeping a pointer to the head and the tail of a list.
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/array.lisp">COM.INFORMATIMAGO.COMMON-LISP.ARRAY</a></b></tt>
+<pre>
+This package exports some array utility functions.
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/string.lisp">COM.INFORMATIMAGO.COMMON-LISP.STRING</a></b></tt>
+<pre>This package exports some string utility functions.
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/stream.lisp">COM.INFORMATIMAGO.COMMON-LISP.STREAM</a></b></tt>
+<pre>
+This package exports some stream utility functions.
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/file.lisp">COM.INFORMATIMAGO.COMMON-LISP.FILE</a></b></tt>
+<pre>
+This package exports some file utility functions.
+
+binary-file-contents, sexp-file-contents, text-file-contents, and
+string-list-text-file-contents are accessors.
+They can be used with setf to store data into the file.
+(push 'hi (sexp-file-contents file :if-does-not-exist '()))
+(incf (sexp-file-contents version-file :if-does-not-exist 0))
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/peek-stream.lisp">COM.INFORMATIMAGO.COMMON-LISP.PEEK-STREAM</a></b></tt>
+<pre>
+This package exports a class named PEEK-STREAM that encapsulates
+a stream and a buffer in such a way that reading, peeking or
+unreading characters can be done in any number and in any order.
+
+We don't use gray stream to keep it pure Common-Lisp.
+The I/O methods are GETCHAR, UNGETCHAR and NEXTCHAR to avoid
+name clashes with un-generic READ-CHAR, UNREAD-CHAR and PEEK-CHAR.
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/scanner.lisp">COM.INFORMATIMAGO.COMMON-LISP.SCANNER</a></b></tt>
+<pre>
+An abstract scanner class.
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/parser.lisp">COM.INFORMATIMAGO.COMMON-LISP.PARSER</a></b></tt>
+<pre>
+An abstract parser class.
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/llrbtree.lisp">COM.INFORMATIMAGO.COMMON-LISP.LLRBTREE</a></b></tt>
+<pre>
+Implementation of Left Leaning Red Black Trees.
+Robert Sedgewick's algorithms.
+http://www.cs.princeton.edu/~rs
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/bset.lisp">COM.INFORMATIMAGO.COMMON-LISP.BSET</a></b></tt>
+<pre>
+Set of (integer 0 *) implemented with array of bitsets.
+(Inspired by Modula-2 cocktail-9309/reuse/src/Set.md)
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/brelation.lisp">COM.INFORMATIMAGO.COMMON-LISP.BRELATION</a></b></tt>
+<pre>
+This package implements a relation abstract data type
+based on an array of bset.
+It can represent only relations between two positive
+and bounded integers.
+(Inspired by Modula-2 cocktail-9309/reuse/src/Relations.md).
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/graph.lisp">COM.INFORMATIMAGO.COMMON-LISP.GRAPH</a></b></tt>
+<pre>
+Graph class.
+This is a CLOS based implementation of graphs.
+It comes from an emacs/eieio implementation used to analyze
+CVS versioning graph.
+Subclasses exist to generate dot files, and Diagram! files.
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/graph-dot.lisp">COM.INFORMATIMAGO.COMMON-LISP.GRAPH-DOT</a></b></tt>
+<pre>
+Generate dot files from graphs (graph-class).
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/graph-diagram.lisp">COM.INFORMATIMAGO.COMMON-LISP.GRAPH-DIAGRAM</a></b></tt>
+<pre>
+Generate dot files from graphs (graph-class). <em>incomplete</em>
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/combination.lisp">COM.INFORMATIMAGO.COMMON-LISP.COMBINATION</a></b></tt>
+<pre>
+This package exports three classes to generate lazily combinations,
+and arrangement with and without repeatition (permutations).
+(Sorry about the comments that are untranslated from C++ to Lisp).
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/pmatch.lisp">COM.INFORMATIMAGO.COMMON-LISP.PMATCH</a></b></tt>
+<pre>
+Sexp Pattern Matcher.
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/picture.lisp">COM.INFORMATIMAGO.COMMON-LISP.PICTURE</a></b></tt>
+<pre>ASCII-ART primitives.
+A  picture is an array of characters.
+There are primitives to draw points, lines, rectangles, 
+circles and ellipses, and strings.
+The coordinate system is the direct one: 
+- x increases toward the right,
+- y increases toward the top. Bottom left is (0,0).
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/memory.lisp">COM.INFORMATIMAGO.COMMON-LISP.MEMORY</a></b></tt>
+<pre>
+This packages exports a memory abstract class 
+and a concrete subclass implemented as a lisp array of unsigned bytes.
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/heap.lisp">COM.INFORMATIMAGO.COMMON-LISP.HEAP</a></b></tt>
+<pre>
+This package implements a heap for &quot;common&quot; data
+in shared memory segments.
+There is a garbage collector, and lisp data types.
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/activity.lisp">COM.INFORMATIMAGO.COMMON-LISP.ACTIVITY</a></b></tt>
+<pre>This package implements a kind of co-routine monitor.
+An activity is a closure that is called at specified times (T+k*P).
+It should return before processing can go on.  This package is
+implemented in pure Common Lisp and allows to schedule independent
+&quot;tasks&quot; portably, as long as you can split each task in small chunks,
+timewise.
+See the comment at the end of this file for a example of use.
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/message-queue.lisp">COM.INFORMATIMAGO.COMMON-LISP.MESSAGE-QUEUE</a></b></tt>
+<pre>
+Abstract interface to a message queue.
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/float-binio.lisp">COM.INFORMATIMAGO.COMMON-LISP.FLOAT-BINIO</a></b></tt>
+<pre>
+This package encodes and decodes arrays of float into arrays
+of signed-byte 32 in order to do binary I/O.
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/data-encoding.lisp">COM.INFORMATIMAGO.COMMON-LISP.DATA-ENCODING</a></b></tt>
+<pre>
+This package exports functions to encode and decode data 
+in a byte vector buffer.
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/cons-to-ascii.lisp">COM.INFORMATIMAGO.COMMON-LISP.CONS-TO-ASCII</a></b></tt>
+<pre>
+This packages draws ASCIi art cons cell diagrams.
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/tree-to-ascii.lisp">COM.INFORMATIMAGO.COMMON-LISP.TREE-TO-ASCII</a></b></tt>
+<pre>This modules draws a tree onto an ASCII-ART picture (pict.lisp)
+The tree drawn is a list whose car is the node displayed, and
+whose cdr is the list of children.
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/tree-to-diagram.lisp">COM.INFORMATIMAGO.COMMON-LISP.TREE-TO-DIAGRAM</a></b></tt>
+<pre>This module generates a Diagram text file drawing a tree.
+The tree drawn is a list whose car is the node displayed, and
+whose cdr is the list of children.
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/rfc2822.lisp">COM.INFORMATIMAGO.COMMON-LISP.RFC2822</a></b></tt>
+<pre>
+RFC0822/RFC2822 support funtions.
+
+RFC822      STANDARD FOR THE FORMAT OF ARPA INTERNET TEXT MESSAGES
+RFC2822     Internet Message Format
+
+RFC822 in fixnum words:
+
+In transmission, message lines are separated by CRLF.
+Header lines are separated from body lines by an empty line (CRLFCRLF).
+Header lines may be cut by replacing any space or tab by CRLF, (space or tab).
+Field name consists of any ASCII printable character but space and colon,
+followed by a colon.
+Field body begins immediately after the colon. (Customary space included).
+NOTE: rfc2822 forbid spaces between field name and colon,
+but it IS possible in rfc822 to insert spaces here.
+(For example, see Annex A of RFC822).
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/rfc3548.lisp">COM.INFORMATIMAGO.COMMON-LISP.RFC3548</a></b></tt>
+<pre>
+This packages exports functions to encode an decode text blocks
+according to the encoding described in:
+RFC3548: The Base16, Base32, and Base64 Data Encodings
+
+BASE64-ENCODE     (READ-BYTE WRITE-CHAR)
+BASE64-DECODE     (READ-CHAR WRITE-BYTE &amp;KEY (IGNORE-INVALID-INPUT NIL))
+FILEBASE64-ENCODE (READ-BYTE WRITE-CHAR)
+FILEBASE64-DECODE (READ-CHAR WRITE-BYTE &amp;KEY (IGNORE-INVALID-INPUT NIL))
+BASE32-ENCODE     (READ-BYTE WRITE-CHAR)
+BASE32-DECODE     (READ-CHAR WRITE-BYTE &amp;KEY (IGNORE-INVALID-INPUT NIL))
+BASE16-ENCODE     (READ-BYTE WRITE-CHAR)
+BASE16-DECODE     (READ-CHAR WRITE-BYTE &amp;KEY (IGNORE-INVALID-INPUT NIL))
+
+READ-BYTE:  A FUNCTION TAKING NO ARGUMENT AND RETURNING A 
+BYTE (INTEGER 0 255) OR NIL FOR EOF.  IT MAY BE
+CALLED SEVERAL TIMES AFTER EOF AND SHOULD KEEP
+RETURNING NIL.
+
+WRITE-BYTE: A FUNCTION TAKING ONE BYTE (INTEGER 0 255) ARGUMENT
+USED TO COLLECT DECODED BYTES.
+
+READ-CHAR:  A FUNCTION TAKING NO ARGUMENT AND RETURNING A
+CHARACTER OR NIL FOR EOF.  IT MAY BE CALLED
+SEVERAL TIMES AFTER EOF AND SHOULD KEEP RETURNING 
+NIL.  ONLY CHARACTERS WHOSE CODE IS BETWEEN 0 AND 
+255 SHOULD BE RETURNED.
+
+WRITE-CHAR: A FUNCTION TAKING ONE CHARACTER ARGUMENT, USED TO
+COLLECT ENCODED BYTES.
+
+IGNORE-INVALID-INPUT:
+WHEN TRUE, ANY INVALID CHARACTER OR PADDING IS IGNORED
+AND PROCESSING CONTINUES AS IF IT DID NOT OCCUR.
+WHEN NIL, SUCH AN OCCURENCE WOULD RAISE AN ERROR.
+
+
+BASE64-ENCODE-BYTES     (BYTES   &amp;KEY LINE-WIDTH (NEW-LINE +NEW-LINE+))
+BASE64-DECODE-BYTES     (ENCODED &amp;KEY IGNORE-CRLF IGNORE-INVALID-INPUT)
+FILEBASE64-ENCODE-BYTES (BYTES   &amp;KEY LINE-WIDTH (NEW-LINE +NEW-LINE+))
+FILEBASE64-DECODE-BYTES (ENCODED &amp;KEY IGNORE-CRLF IGNORE-INVALID-INPUT)
+BASE32-ENCODE-BYTES     (BYTES   &amp;KEY LINE-WIDTH (NEW-LINE +NEW-LINE+))
+BASE32-DECODE-BYTES     (ENCODED &amp;KEY IGNORE-CRLF IGNORE-INVALID-INPUT)
+BASE16-ENCODE-BYTES     (BYTES   &amp;KEY LINE-WIDTH (NEW-LINE +NEW-LINE+))
+BASE16-DECODE-BYTES     (ENCODED &amp;KEY IGNORE-CRLF IGNORE-INVALID-INPUT)
+
+BYTES:      A VECTOR OF (UNSIGNED-BYTE 8).
+ENCODED:    A STRING.
+LINE-WIDTH: NIL OR AN INTEGER INDICATING THE LINE WIDTH.
+THE STRING NEW-LINE WILL BE INSERTED AFTER THAT 
+MANY CHARACTERS HAVE BEEN WRITTEN ON A GIVEN LINE.
+NEW-LINE:   A STRING CONTAIING THE NEW-LINE CHARACTER OR CHARACTERS.
+THE DEFAULT +NEW-LINE+ IS (FORMAT NIL &quot;~%&quot;).
+IGNORE-CRLF:
+When true, ASCII characters LF and CR are not passed to 
+the decoding function. When NIL, they're passed, and
+if invalid input is not ignored, an error would be raised.
+IGNORE-INVALID-INPUT:
+Passed to the decoding function. See above.
+
+The encoding functions take a vector of bytes 
+and return an encoded string.
+
+The decoding functions take an encoded string 
+and return a vector of bytes.
+
+To encode a string, characters must be converted to bytes, and 
+to decode a string, bytes must be converted to characters. 
+This must be done accordingly to the characeter set encoding.
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/iso639a.lisp">COM.INFORMATIMAGO.COMMON-LISP.ISO639A</a></b></tt>
+<pre>
+This package exports functions and data to process
+iso639a language codes.
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/iso3166.lisp">COM.INFORMATIMAGO.COMMON-LISP.ISO3166</a></b></tt>
+<pre>
+This package exports functions and data to process
+iso3166 country codes.
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/iso4217.lisp">COM.INFORMATIMAGO.COMMON-LISP.ISO4217</a></b></tt>
+<pre>
+This package exports functions and data to process
+iso4217 currency codes.
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/character-sets.lisp">COM.INFORMATIMAGO.COMMON-LISP.CHARACTER-SETS</a></b></tt>
+<pre>
+This package exports functions to manage character-sets,
+character encodings, coding systems and external format.
+It's all the same, but each everybody likes to have his own terms...
+
+The base character set repertoire will be the IANA one, published at:
+http://www.iana.org/assignments/character-sets
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/html-iso8879-1.lisp">COM.INFORMATIMAGO.COMMON-LISP.HTML-ISO8879-1</a></b></tt>
+<pre>
+ISO 8879:1986 SGML entities (HTML 3.2).
+(Related to, but distinct from: ISO 8859-1).
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/html.lisp">COM.INFORMATIMAGO.COMMON-LISP.HTML</a></b></tt>
+<pre>Generating HTML pages.
+See also:
+<a href=http://www.cliki.net/HTML-from-sexpr>cliki HTML from sexpr</a>
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/hquery.lisp">COM.INFORMATIMAGO.COMMON-LISP.HQUERY</a></b></tt>
+<pre>
+This packages exports utility routines for web applications.
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/database.lisp">COM.INFORMATIMAGO.COMMON-LISP.DATABASE</a></b></tt>
+<pre>
+A Lisp Database access layer.
+This package defines a generic API to access databases.
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/parse-html.lisp">COM.INFORMATIMAGO.COMMON-LISP.PARSE-HTML</a></b></tt>
+<pre>
+A Simple HTML parser.
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/cache.lisp">COM.INFORMATIMAGO.COMMON-LISP.CACHE</a></b></tt>
+<pre>
+A generic disk-based cache.
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/aliases.lisp">COM.INFORMATIMAGO.COMMON-LISP.ALIASES</a></b></tt>
+<pre>
+This package exports a function to read sendmail aliases files.
+
+(setf db (load-aliases [file]))
+(save-aliases db [file])
+(db-records db) --> list-of-records
+(make-alias name address-list) --> record
+(make-comment text) --> record
+(find-record-if db predicate) --> record
+(alias-record   db name) --> record
+(comment-record-containing db substring) --> record
+(insert-record  db record [:before record] [:after record])
+(delete-record  db record)
+(list-all-aliases db) --> (&quot;name1&quot; &quot;name2&quot; ...)
+(alias-addresses db name) --> list
+(setf (alias-addresses db name) list)
+(insert-alias db name type value [:before record] [:after record])
+(delete-alias db name)
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/passwd.lisp">COM.INFORMATIMAGO.COMMON-LISP.PASSWD</a></b></tt>
+<pre>
+This package exports a function to read unix passwd files.
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/group.lisp">COM.INFORMATIMAGO.COMMON-LISP.GROUP</a></b></tt>
+<pre>
+This package exports a function to read unix group files.
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/primes.lisp">COM.INFORMATIMAGO.COMMON-LISP.PRIMES</a></b></tt>
+<pre>
+Compute primes and factorize numbers.
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/tea.lisp">COM.INFORMATIMAGO.COMMON-LISP.TEA</a></b></tt>
+<pre>
+Implementation of the TEA
+<a href=http://www.simonshepherd.supanet.com/tea.htm>Tiny Encryption Algorith</a>
+
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/raiden.lisp">COM.INFORMATIMAGO.COMMON-LISP.RAIDEN</a></b></tt>
+<pre>
+Implements the Raiden block cipher.
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/make-depends.lisp">COM.INFORMATIMAGO.COMMON-LISP.MAKE-DEPENDS</a></b></tt>
+<pre>This script generates dependencies for lisp sources, based on 
+(require) sexps, a load-path, a set of logical pathname translations
+and ad-hoc processing.
+
+Object files can be either elisp compiled (.elc) or clisp compiled
+(.fas), cmucl compiled (.x86f), or sbcl compiled (.fasl).
+and source files can be either elisp (.el) or clisp or cmucl (.lisp,
+.lsp, .cl), and elisp sources may (require) common-lisp files
+(.lisp, .lsp, .cl extensions for sources, but .elc compiled form).
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/cxx.lisp">COM.INFORMATIMAGO.COMMON-LISP.CXX</a></b></tt>
+<pre>
+Parsing C++ sources.
+This is a restricted parser, used just to analyze
+the call graph of C++ functions and methods.
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/csv.lisp">COM.INFORMATIMAGO.COMMON-LISP.CSV</a></b></tt>
+<pre>
+This package reads and writes CSV files.
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/iban.lisp">COM.INFORMATIMAGO.COMMON-LISP.IBAN</a></b></tt>
+<pre>
+This class is an Internationnal Bank Account Number, 
+according to European standard.
+<a href=http://www.ecbs.org/iban/iban.htm>IBAN Format</a>
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/rib.lisp">COM.INFORMATIMAGO.COMMON-LISP.RIB</a></b></tt>
+<pre>
+This class is a French &quot;Relev
+three codes and a control key value: (banque, branch-code, account-
+number, check-digits).
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/invoice.lisp">COM.INFORMATIMAGO.COMMON-LISP.INVOICE</a></b></tt>
+<pre>This package exports classes and functions used for accounting:
+invoices, customers/providers, movements, taxes...
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/browser.lisp">COM.INFORMATIMAGO.COMMON-LISP.BROWSER</a></b></tt>
+<pre>
+This package exports a function to browse the directory hierarchy
+and load lisp files, and a few interactive commands:
+CD, PWD, PUSHD, POPD, MKDIR,
+LS, CAT, MORE, CP, MV, MAKE, GREP.
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/ed.lisp">COM.INFORMATIMAGO.COMMON-LISP.ED</a></b></tt>
+<pre>ed(1) in COMMON-LISP.
+Real men do it with magnets.  ed is for girly men.
+This is a clone of the unix ed(1) editor written in pure Common-Lisp.
+Since Common-Lisp does not define any process management functions,
+all !command forms are taken as Lisp forms instead of sh(1) commands.
+These forms are executed within a (LAMBDA (*INPUT*) command) with
+the *INPUT* argument bound to a mutable list of inmutable input strings,
+one per line.  The result of the returning form in command must be
+a list of string, the list of resulting lines to be inserted into the
+buffer or to be printed on the terminal.
+For the rest, the aim is to be 100% user-interface compatible with ed(1).
+<a href=http://www.gnu.org/fun/jokes/ed.msg.html>Ed, man! !man ed</a>
+Can you imagine that some Common-Lisp implementations DON'T provide
+any editor (in conformity with the Common-Lisp specifications)?
+Not complete (waiting for a REGEXP package). But otherwise
+functional enough. 
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/common-lisp/interactive.lisp">COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE</a></b></tt>
+<pre>
+This package defines various interactive commands.
+It also re-exports some functions from BROWSER and PACKAGE.
+
+</pre></li></body></html>

@@ -1,0 +1,82 @@
+<script> 
+var logDomain  = 'www.telepolis.com'; 
+var logChannel = 'miweb'; 
+var logPath      = window.location.href; 
+var i=logPath.indexOf("http://"); 
+if (i>=0) logPath = logPath.substr(i+7); 
+var logPage     = ""; 
+</script> 
+<script src="http://www.eresmas.com/js/logs.js"></script> 
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta name="keywords" content="Calculo del NIF a partir del DNI para España">
+<title>C&aacute;lculo del NIF</title>
+<script type="text/javascript" src="http://club.telepolis.com/jagar1/scripts/calculos.js"></script>
+<SCRIPT TYPE="text/javascript" SRC="http://club.telepolis.com/jagar1/scripts/Correo.js"></script>
+<style type="text/css">
+<!-- 
+body {
+	background-color: #FFFFCC;
+	color: black;
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	margin: 20px
+}
+h1 {
+	text-align: center;
+	color: #0000FF;
+} 
+-->
+</style>
+</head>
+
+<body onLoad="document.Calculo.DNI.focus();">
+<NOSCRIPT>No funcionaran los botones.</NOSCRIPT>
+<h1>C&aacute;lculo del NIF</h1>
+<hr>
+<p>Mediante esta p&aacute;gina puedes calcular el NIF (N&uacute;mero de Identificaci&oacute;n Fiscal) a partir del DNI (v&aacute;lido solo para Espa&ntilde;a).<br>
+Con esta p&aacute;gina solo he pretendido practicar un poco con JavaScript, en donde estoy dando mis
+primeros pasos (tu navegador debe tener habilitado el javascript para que funcione). Los c&aacute;lculos realizados, as&iacute; como tu identidad NO van a quedar almacenados en ning&uacute;n lugar, ni van a ser empleados con ning&uacute;n fin, por lo que puedes utilizarlo libremente.<br>
+Si detectas alg&uacute;n error, o tienes alguna sugerencia, te agradecer&iacute;a que me lo comunicaras con el fin de subsanarlo.<br></p>
+<FORM NAME="Calculo" id="Calculo" action="Cnif.htm">
+<center><h2><b>DNI : </b>
+<INPUT TYPE="text" name="DNI" VALUE="00000000" maxlength="8" SIZE="8" onFocus="select()" onBlur="Calcula_NIF(this.form.DNI.value)"> - 
+<INPUT TYPE="text" name="letra" VALUE=" " SIZE="1" maxlength="1" readonly></h2><br>
+<INPUT TYPE="button" VALUE="Calcular" NAME="Calcular" onClick="Calcula_NIF(this.form.DNI.value)">
+</center></FORM>
+<hr>
+
+<p>El procedimiento empleado para el c&aacute;lculo consiste en hallar el m&oacute;dulo (o resto) de dividir el DNI por 23, es decir, dividir el DNI entre 23, eliminar los decimales y el n&uacute;mero resultante multiplicarlo por 23, para finalmente calcular la diferencia entre el DNI y este n&uacute;mero. el n&uacute;mero resultante (comprendido entre 0 y 22) tiene una letra asignada (la secuencia no es correlativa). <b>&iexcl;Bastante sencillo! o &iquest;No?</b></p>
+<p>Ante las muchas consultas que recibo sobre la secuencia, creo que lo mejor es ponerla aqu&iacute; (de 0 a 22):</p>
+<center><b>T R W A G M Y F P D X B N J Z S Q V H L C K E</b></center>
+<P>En el <A HREF="http://club.telepolis.com/jagar1/msdlw.htm">Area de Descarga</A> podeis encontrar un programilla para Windows que calcula el NIF.</P>
+<hr>
+<table align="center" cellpadding="20">
+<tr><td>
+<SCRIPT TYPE="text/javascript">
+<!--
+Correo_Grafico("Imagenes/Correo.gif");
+-->
+</SCRIPT></td>
+<td><i>Correo electr&oacute;nico:
+<SCRIPT TYPE="text/javascript">
+<!--
+Correo();
+-->
+</SCRIPT>
+</i><br>Actualizado 27-Noviembre-2004</td>
+<td><iframe align="center" src="http://club.telepolis.com/jagar1/Botonera.htm" frameborder="0" width=170 height=50 scrolling="no"></iframe></td>
+</tr>
+<tr><td>
+<!-- INICIO GeoPromos.com - 468x60 -- jagar.webcindario.com/index.htm -->
+<iframe src="http://delivery.geopromos.com/show/?247481.49378@1138" frameborder="no" border="0" MARGINWIDTH="0" MARGINHEIGHT="0" SCROLLING="no" width="468" height="60">
+<a href=http://www.geopromos.com/escaparate/noiframehref.asp?247481.49378 target=_blank ><img src=http://www.geopromos.com/escaparate/noiframeimg.asp?1 width=468 height=60 border=0></a>
+<br><a href=http://www.geopromos.com>Programas de afiliados gestionados por Geopromos.com: ganar dinero con pago por click (CPC), sms, dialers...</a>
+</iframe>
+<!-- FIN GeoPromos.com - 468x60 -- jagar.webcindario.com/index.htm -->
+</td></tr>
+</table>
+<HR>
+</body></html>

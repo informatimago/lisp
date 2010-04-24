@@ -1,0 +1,59 @@
+-*- Text -*-
+
+Interactive user-updatable web pages a la wiki (http://www.c2.com/cgi/wiki)
+
+See the live CLikis at 
+ http://www.cliki.net/
+ http://sbcl-internals.cliki.net/
+ http://cliki.tunes.org/
+ ... etc
+
+* Building it
+
+CLiki depends on SBCL, and on a large number of modules, all of which
+are available from your nearest CCLAN node 
+(see http://ww.telent.net/cclan/)
+
+If you're building on a machine with reasonable access to the
+internet (HTTP, possibly through a proxy), by far the simplest way to
+download and install everything is with asdf-install
+
+* (require 'asdf-install)
+* (asdf-install:install 'cliki)
+
+
+* Using it
+
+You need to create a cliki-instance object and install cliki-handler
+somewhere in your URL hierarchy.  See example.lisp for, as the name
+suggests, an example.
+
+data-directory is where the data files will be created, so must be
+writable by the user who is running the CL instance.
+
+If you would like to run multiple CLikis on the same listener, you can
+do that with multiple cliki-instances.  If you want them to have
+different look and feel, you can create a subclass of cliki-instance
+and specialize various methods.  See cliki-net.lisp for the layout
+used by www.cliki.net
+
+
+* For help
+
+Araneida and CLiki users are encouraged to subscribe to the lispweb
+mailing list: configuration problems and questions are welcome there.
+
+ http://www.red-bean.com/lispweb/
+
+
+Paid support and custom development is also available if you're
+considering using this software in a commercial setting.  For details
+see
+
+ http://web.metacircles.com/Support
+
+
+* ObPayPal
+
+This is Free Software yadda yadda yadda speech != beer yadda yadda
+http://ww.telent.net/donate.html blah blah blah

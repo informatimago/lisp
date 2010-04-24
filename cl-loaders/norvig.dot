@@ -1,0 +1,78 @@
+digraph NORVIG
+{
+// attributes of graph:
+// page=8,11.4;     // page size (NeXTprinter:A4).
+// size=30,8;      // graph size (please edit to fit).
+// rotate=90;     // graph orientation (please edit to fit).
+// ratio=fill;   // fill the size (or compress, auto, aspect/ratio).
+nodesep=0.3;
+ranksep=0.3;
+center=1;
+// common attributes of NODES:
+node [height=0.2 width=0.5 shape=box fontsize=8 fontname=Times];
+ELEMENTCLASS810 [ style=filled color=black fillcolor=LightYellow label="gps1" ];
+ELEMENTCLASS809 [ style=filled color=black fillcolor=LightYellow label="gps" ];
+ELEMENTCLASS808 [ style=filled color=black fillcolor=LightYellow label="interp1" ];
+ELEMENTCLASS807 [ style=filled color=black fillcolor=LightYellow label="compile1" ];
+ELEMENTCLASS806 [ style=filled color=black fillcolor=LightYellow label="compile2" ];
+ELEMENTCLASS805 [ style=filled color=black fillcolor=LightYellow label="compile3" ];
+ELEMENTCLASS804 [ style=filled color=black fillcolor=LightYellow label="patmatch" ];
+ELEMENTCLASS803 [ style=filled color=black fillcolor=LightYellow label="macsyma" ];
+ELEMENTCLASS802 [ style=filled color=black fillcolor=LightYellow label="eliza-pm" ];
+ELEMENTCLASS801 [ style=filled color=black fillcolor=LightYellow label="cmacsyma" ];
+ELEMENTCLASS800 [ style=filled color=black fillcolor=LightYellow label="interp2" ];
+ELEMENTCLASS799 [ style=filled color=black fillcolor=LightYellow label="interp3" ];
+ELEMENTCLASS798 [ style=filled color=black fillcolor=LightYellow label="prolog" ];
+ELEMENTCLASS797 [ style=filled color=black fillcolor=LightYellow label="prologc" ];
+ELEMENTCLASS796 [ style=filled color=black fillcolor=LightYellow label="prologcp" ];
+ELEMENTCLASS795 [ style=filled color=black fillcolor=LightYellow label="student" ];
+ELEMENTCLASS794 [ style=filled color=black fillcolor=LightYellow label="macsymar" ];
+ELEMENTCLASS793 [ style=filled color=black fillcolor=LightYellow label="krep2" ];
+ELEMENTCLASS792 [ style=filled color=black fillcolor=LightYellow label="krep" ];
+ELEMENTCLASS791 [ style=filled color=black fillcolor=LightYellow label="prologc1" ];
+ELEMENTCLASS790 [ style=filled color=black fillcolor=LightYellow label="prologc2" ];
+ELEMENTCLASS789 [ style=filled color=black fillcolor=LightYellow label="krep1" ];
+ELEMENTCLASS788 [ style=filled color=black fillcolor=LightYellow label="unifgram" ];
+ELEMENTCLASS787 [ style=filled color=black fillcolor=LightYellow label="eliza" ];
+ELEMENTCLASS786 [ style=filled color=black fillcolor=LightYellow label="unify" ];
+ELEMENTCLASS785 [ style=filled color=black fillcolor=LightYellow label="prolog1" ];
+ELEMENTCLASS784 [ style=filled color=black fillcolor=LightYellow label="othello" ];
+ELEMENTCLASS783 [ style=filled color=black fillcolor=LightYellow label="othello2" ];
+ELEMENTCLASS782 [ style=filled color=black fillcolor=LightYellow label="search" ];
+ELEMENTCLASS781 [ style=filled color=black fillcolor=LightYellow label="gps-srch" ];
+ELEMENTCLASS780 [ style=filled color=black fillcolor=LightYellow label="eliza1" ];
+ELEMENTCLASS779 [ style=filled color=black fillcolor=LightYellow label="lexicon" ];
+ELEMENTCLASS772 [ style=filled color=black fillcolor=LightYellow label="grammar" ];
+// common attributes of edges:
+edge [style=solid];
+ELEMENTCLASS809 -> ELEMENTCLASS810 ;
+ELEMENTCLASS807 -> ELEMENTCLASS808 ;
+ELEMENTCLASS806 -> ELEMENTCLASS808 ;
+ELEMENTCLASS805 -> ELEMENTCLASS808 ;
+ELEMENTCLASS803 -> ELEMENTCLASS804 ;
+ELEMENTCLASS801 -> ELEMENTCLASS802 ;
+ELEMENTCLASS801 -> ELEMENTCLASS804 ;
+ELEMENTCLASS800 -> ELEMENTCLASS808 ;
+ELEMENTCLASS799 -> ELEMENTCLASS808 ;
+ELEMENTCLASS797 -> ELEMENTCLASS798 ;
+ELEMENTCLASS796 -> ELEMENTCLASS797 ;
+ELEMENTCLASS795 -> ELEMENTCLASS804 ;
+ELEMENTCLASS794 -> ELEMENTCLASS803 ;
+ELEMENTCLASS792 -> ELEMENTCLASS793 ;
+ELEMENTCLASS791 -> ELEMENTCLASS798 ;
+ELEMENTCLASS790 -> ELEMENTCLASS798 ;
+ELEMENTCLASS789 -> ELEMENTCLASS798 ;
+ELEMENTCLASS793 -> ELEMENTCLASS789 ;
+ELEMENTCLASS788 -> ELEMENTCLASS796 ;
+ELEMENTCLASS802 -> ELEMENTCLASS787 ;
+ELEMENTCLASS802 -> ELEMENTCLASS804 ;
+ELEMENTCLASS785 -> ELEMENTCLASS786 ;
+ELEMENTCLASS786 -> ELEMENTCLASS804 ;
+ELEMENTCLASS783 -> ELEMENTCLASS784 ;
+ELEMENTCLASS781 -> ELEMENTCLASS782 ;
+ELEMENTCLASS781 -> ELEMENTCLASS809 ;
+ELEMENTCLASS798 -> ELEMENTCLASS786 ;
+ELEMENTCLASS787 -> ELEMENTCLASS780 ;
+ELEMENTCLASS772 -> ELEMENTCLASS779 ;
+ELEMENTCLASS772 -> ELEMENTCLASS788 ;
+}

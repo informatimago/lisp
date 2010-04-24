@@ -1,0 +1,241 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">
+<html>
+<head>
+
+    <title>Common-Lisp-Posix</title>
+
+    <meta http-equiv="Content-Type"
+          content="text/html; charset=iso-8859-1">
+
+    <meta name="author"
+         content="Pascal J. Bourguignon">
+
+    <meta http-equiv="Reply-to" 
+          name="Reply-to"
+          content="pjb@informatimago.com">
+
+    <meta http-equiv="Description"  
+          name="description" 
+          content="Common-Lisp-Posix API specification">
+
+
+</head>
+
+<h1 align="center">Common-Lisp-Posix</h1>
+
+<p>The Common-Lisp-Posix project has two purposes:
+
+<ul>
+
+<li>The main purpose is to define a Common-Lisp SUSv3/POSIX API.
+
+<li>The secondary purpose is to write a couple of reference
+implementations for <a href="http://sbcl.sourceforge.net/">sbcl</a> 
+and <a href="http://clisp.sourceforge.net/">clisp</a>.
+
+</ul>
+
+
+<p>The programming language will be Common-Lisp.
+<p>The target OSes will be all SuSv3/POSIX compliant OSes.
+<p>One reference implementation may use the UFFI package.
+
+<hr>
+
+<ol>
+<li><a href="generalities.html">Generalities</a>
+
+</ol>
+
+<hr>
+<a href="http://www.unix.org/version3/overview.html"> 
+The Single UNIX Specification Version 3
+</a>
+consists of:
+<ul>
+<li> <a href="http://www.opengroup.org/onlinepubs/007904975/index.html">
+ The Open Group Base Specifications, Issue 6. 
+ </a>, which contains the following Technical Standards:
+<ul>
+<li>Base Definitions, Issue 6 (XBD)
+<li>Shell and Utilities, Issue 6 (XCU)
+<li>System Interfaces, Issue 6 (XSH)
+<li>Rationale (Informative)
+</ul>
+
+<li>and the X/Open Curses, Issue 4, Version 2 specification.
+</ul>
+
+
+
+
+<p>The  <a href="http://www.opengroup.org/onlinepubs/007904975/frontmatter/preface.html"> Preface </a> of the The Open Group Base Specifications, Issue 6 lists the following principle that guided the development of that standard:
+
+<ul>
+
+<li><em>Application-Oriented</em>
+
+     <blockquote> The basic goal was to promote portability of application
+    programs across UNIX system environments by developing a clear,
+    consistent, and unambiguous standard for the interface
+    specification of a portable operating system based on the UNIX
+    system documentation. This standard codifies the common, existing
+    definition of the UNIX system. 
+     </blockquote>
+     
+     <p>We keep this principle verbatim for this Common-Lisp API.
+
+<li><em>Interface, Not Implementation</em>
+
+     <blockquote> This standard defines an interface, not an
+    implementation. No distinction is made between library functions
+    and system calls; both are referred to as functions. No details of
+    the implementation of any function are given (although historical
+    practice is sometimes indicated in the RATIONALE
+    section). Symbolic names are given for constants (such as signals
+    and error numbers) rather than numbers. 
+    </blockquote>
+
+     <p>We keep this principle verbatim for this Common-Lisp API.
+
+<li><em> Source, Not Object, Portability</em>
+
+     <blockquote> This standard has been written so that a program written
+    and translated for execution on one conforming implementation may
+    also be translated for execution on another conforming
+    implementation. This standard does not guarantee that executable
+    (object or binary) code will execute under a different conforming
+    implementation than that for which it was translated, even if the
+    underlying hardware is identical. 
+    </blockquote>
+
+     <p>We keep this principle verbatim for this Common-Lisp API.
+
+
+<li> The C Language
+
+     <blockquote> The system interfaces and header definitions are written
+    in terms of the standard C language as specified in the ISO C
+    standard.
+     </blockquote>
+
+   <p> Of course, this principle is replaced by:
+
+<li><em>The Common-Lisp Language</em>
+
+     <p>The system interfaces and header definitions are written
+    in terms of the standard Common-Lisp language as specified in the 
+    <a href="http://www.lisp.org/HyperSpec/FrontMatter/index.html">
+    ANSI Common Lisp standard.</a>
+     </blockquote>
+
+
+<li><em> No Superuser, No System Administration</em>
+
+      <blockquote>There was no intention to specify all aspects of an
+    operating system. System administration facilities and functions
+    are excluded from this standard, and functions usable only by the
+    superuser have not been included. Still, an implementation of the
+    standard interface may also implement features not in this
+    standard. This standard is also not concerned with hardware
+    constraints or system maintenance. 
+     </blockquote>
+
+     <p>We keep this principle verbatim for this Common-Lisp API.
+
+<li><em> Minimal Interface, Minimally Defined</em>
+
+      <blockquote>In keeping with the historical design principles of the
+    UNIX system, the mandatory core facilities of this standard have
+    been kept as minimal as possible. Additional capabilities have
+    been added as optional extensions. 
+    </blockquote>
+
+     <p>We keep this principle verbatim for this Common-Lisp API.
+
+<li><em> Broadly Implementable</em>
+
+    <blockquote>  The developers of this standard endeavored to make all
+         specified functions implementable across a wide range of
+         existing and potential systems, including:
+
+      <ol>
+
+        <li> All of the current major systems that are ultimately
+        derived from the original UNIX system code (Version 7 or later)
+
+        <li> Compatible systems that are not derived from the original
+        UNIX system code
+
+         <li>Emulations hosted on entirely different operating systems
+
+         <li> Networked systems
+
+         <li>Distributed systems
+
+          <li>Systems running on a broad range of hardware
+
+       </ol>
+
+      No direct references to this goal appear in this standard, but
+    some results of it are mentioned in the Rationale (Informative)
+    volume. 
+       </blockquote>
+
+     <p>We keep this principle verbatim for this Common-Lisp API.
+
+
+<li> Minimal Changes to Historical Implementations
+
+   <p>There is no known POSIX API for Common-Lisp, 
+      no Historical Implementations.
+
+   <p>However, beyond lispifying the C POSIX API, we endeavour to specify
+     minimal change with respect to the C POSIX API: given some simple rules,
+     a programmer knowing the C POSIX API should be able to program easily 
+     with the Common-Lisp POSIX API.
+    
+<li>  Minimal Changes to Existing Application Code
+
+   <p>There  is no known  Common-Lisp application  using a  POSIX API,
+   safe perhaps  for a  few applications using  API such as  the LINUX
+   package in CLISP or the UNIX package in SBCL...
+
+</ul>
+
+   
+
+
+
+<h2>References</h2>
+
+<ul>
+<li><a href=""> <!-- http://cl-posix.sourceforge.net/"> -->
+    Common-Lisp POSIX on SourceForge</a> (not yet).
+
+
+<li><a href="http://www.cliki.net/Common-Lisp-POSIX"> 
+    Common-Lisp POSIX on Cliki</a>
+
+<li><a href="http://www.unix.org/version3/">
+    The Single UNIX Specification, Version 3 </a>
+
+<li><a href="http://www.opengroup.org/onlinepubs/007904975/index.html">
+     The Open Group Base Specifications, Issue 6. </a>
+
+<li><a href="http://www.lisp.org/HyperSpec/FrontMatter/index.html">
+     ANSI Common-Lisp (HyperSpec)</a>
+
+<li><a href="http://clisp.sourceforge.net/">CLISP</a>
+<li><a href="http://sbcl.sourceforge.net/">SBCL</a>
+
+</ul>
+
+<hr>
+<small>
+
+
+</body>
+</html>
+
+<!-- index.html                       == 2003-06-14 08:17:06 == pascal   -->

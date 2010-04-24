@@ -1,0 +1,319 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">
+<html>
+<head>
+
+    <title>Generalities about the Common-Lisp-POSIX API</title>
+
+    <meta http-equiv="Content-Type"
+          content="text/html; charset=iso-8859-1">
+
+    <meta name="author"
+         content="Pascal J. Bourguignon">
+
+    <meta http-equiv="Reply-to" 
+          name="Reply-to"
+          content="pjb@informatimago.com">
+
+    <meta http-equiv="Description"  
+          name="description" 
+          content="Generalities about the Common-Lisp-POSIX API">
+
+	<meta name="keywords"
+          content="Common-Lisp,POSIX">
+
+</head>
+<body>
+<h1 align=center>Generalities about the Common-Lisp-POSIX API</h1>
+
+<p>Note: This page gather some remarks made by people on news:comp.lang.lisp
+
+<ol>
+<li><a href="dirent.html">dirent</a>
+</ol>
+
+<h2>Principles</h2>
+
+<p>We're not merging Common-Lisp and POSIX! 
+
+<p>We  want  to  have  access  to POSIX  primitives  from  Common-Lisp
+applications as easily  as from a C application.   The POSIX API being
+the Operating System Interface for the applications.
+
+<p>In  particular,  we won't  convert  between  PATHNAMES and  strings
+containing  unix  paths,  and  we  won't  convert  between  unix  file
+descriptors and  Common-Lisp streams. (There may already  exist such a
+conversion  function  in   the  Common-Lisp  implementation  extension
+packages).
+
+
+
+
+<h2>Packages</h2>
+
+<h3>The main API</h3>
+
+
+<p>This API is defined by the Single UNIX Specification version 3.
+
+<p>It  is  recommended  that  the various  implementations  reside  in
+packages named like:
+
+  <pre>
+     COM.INFORMATIMAGO.COMMON-LISP.SUSV3
+     NET.SOURCEFORGE.CLISP.SUSV3
+     COM.SMART-LISP-CORP.SUSV3
+  </pre>
+
+<p>The  user can  then choose  one  implementation or  the other,  and
+re-nickname it to the reserved package name <code>SUSV3</code>.
+
+<p>Note: The package name <code>POSIX</code> is already taken in various
+implementations. Moreover, it's not descriptive enough.
+
+<p>Alternative: 
+<ul>
+<li>Perhaps it should be named: <code>SUS3</code>.
+</ul>
+
+
+<h3>Extensions</h3>
+
+<p>SUSv3 defines various optional or extension API.
+(See <a href="http://www.opengroup.org/onlinepubs/007904975/help/codes.html">codes</a>).
+
+<p>These extensions will be defined in additional packages nicknamed:
+
+<pre>
+    Nickname:       Example of package name:
+    -------------   -------------------------------
+    SUSV3-ADV       COM.INFORMATIMAGO.COMMON-LISP.SUSV3.ADV
+    SUSV3-AIO       COM.INFORMATIMAGO.COMMON-LISP.SUSV3.AIO
+    SUSV3-BAR       COM.INFORMATIMAGO.COMMON-LISP.SUSV3.BAR
+    SUSV3-CPT       etc...
+    SUSV3-CS
+    SUSV3-FSC
+    SUSV3-IP6
+    SUSV3-MC1 (See: abreviation of a combination of options)
+    SUSV3-MC2 (See: abreviation of a combination of options)
+    SUSV3-MC3 (See: abreviation of a combination of options)
+    SUSV3-MF
+    SUSV3-MF-SHM (A combination)
+    SUSV3-ML
+    SUSV3-MR
+    SUSV3-MON
+    SUSV3-MPR
+    SUSV3-MSG
+    SUSV3-MX
+    SUSV3-PIO
+    SUSV3-PS
+    SUSV3-RS
+    SUSV3-RTS
+    SUSV3-REM
+    SUSV3-SHM
+    SUSV3-SIO
+    SUSV3-SPI
+    SUSV3-SPN
+    SUSV3-SS
+    SUSV3-TCT
+    SUSV3-TEF
+    SUSV3-THR
+    SUSV3-TMO
+    SUSV3-TMR
+    SUSV3-TPI
+    SUSV3-TPP
+    SUSV3-TPS
+    SUSV3-TRC
+    SUSV3-TRI
+    SUSV3-TRL
+    SUSV3-TSA
+    SUSV3-TSF
+    SUSV3-TSH
+    SUSV3-TSP
+    SUSV3-TSS
+    SUSV3-TYM
+    SUSV3-XSI
+    SUSV3-XSR
+</pre>
+
+<p>Some code may not be relevant to a Common-Lisp API.
+
+
+<p>Alternatives:
+<ul>
+<li> Use the *FEATURES* system. 
+    <p>I don't like this option, leading to the use of #+ and #-. 
+</ul>
+
+<p>Note: When  defining lisp structures,  we put all the  fields, even
+the optional ones that will be  used only when the optional feature is
+available.  
+<!--
+The reason  is because  a given  lisp application  may be
+compiled or run on different SUSv3 systems with different sets of options.
+-->
+
+<p>[***SEE***: We need a mean to determine if a given extension is available.
+<p>Should each package export an AVAILABLE-P predicate? ]
+
+
+
+<h2>The Symbols</h2>
+
+<p>A symbol name is derived from the C binding's name, by:
+<ol>
+<li> uppercasing, then 
+<li> replacing underscore (#\_) characters with the hyphen (#\-)
+<li> where the fields of a C structure all have a common prefix 
+    (for example, "st_"), we omit it.
+<li> constant names get prefix and suffix '+'s.
+</ol>
+<p>No other changes to "Lispify" symbol names are made, so <code>creat()</code>
+becomes <code>CREAT</code>, not <code>CREATE</code>.
+
+<h2>Parameters</h2>
+
+<p>Lisp constants, types, and  structures are defined corresponding to
+the constants, types and structures in the C API.
+
+<p>The API is defined in terms of Common-Lisp.
+
+<ol>
+
+<li> length arguments are omitted or optional where the sensible value
+is obvious.  For example:
+<pre>
+(read fd buffer &optional (length (length buffer))) => bytes-read
+</pre>
+
+<li> where C simulates "out" parameters using pointers (for instance,
+in pipe() or socketpair()) we shall use multiple return values
+instead, primary return value always first, then the others in left to
+right order.
+<p>[***SEE***: This doesn't apply to data transfer functions that fill buffers.]
+
+</ol>
+
+<p>Note:  We  won't  allow  passing  pathnames  as  unix  path  string
+parameters.   Common-Lisp pathnames are  messy, no  two implementation
+can agree on their exact semantic, so it would defeat portability.
+
+
+
+<h2>Return values</h2>
+
+<p>The return value is usually the same as for the C binding, except in
+error cases: where the C function is defined as returning some
+sentinel value and setting "errno" on error, we instead signal a
+condition of type SYSCALL-ERROR.  The actual error value ("errno") is
+stored in this condition and can be accessed with SYSCALL-ERRNO.
+[***SEE***: some interface to strerror, to get the user-readable translation
+of the error number]
+
+<p>We do not automatically translate the returned value into "Lispy"
+objects - for example, POSIX:OPEN returns a small integer, not a
+stream.
+
+<p>Rationale: This is an interface to POSIX, not a high-level interface
+that uses POSIX, and many people using it will actually want to mess
+with the file descriptors directly.  People needing Lispy interfaces
+can implement them atop this - or indeed, use the existing COMMON-LISP
+package, which already has many high-level constructs built on top of
+the operating system.
+
+
+
+<h2>Issues</h2>
+
+<ul>
+
+    <li>Constants may be replaced by keywords (for example: error codes).
+
+    <li>What to do with variable-length functions
+        like execvp()? Do they take a list, or vector or either? 
+        Don't forget that execlp etc. IMHO have no place in a foreign language
+        binding. These are just C wrappers to execv(), execve() and execv().
+
+    <li>there are functions whose semantics are to initialize a C object,
+        like sigemptyset(). You probably want to keep it that way, rather
+        than turn sigemptyset() into a constructor that returns a a brand
+        new, empty signal set. Or it could have both behaviors: the set
+        could be returned as a second value, which is identical to the
+        optional argument if it is present, or a new object if the
+        argument is missing.
+
+    <li>(Seems to be more a FFI issue):
+    <p>Similarly, interfacing to [f]printf() is superfluous. vfprintf() is
+    mandatory when coming from a foreign language.  Which is *not* to say
+    that there should be no POSIX:PRINTF.  I'm all in favour of it! But it
+    is more likely to expand to a call to vprintf(), especially in some
+    implementations which create calls at run-time, instead of
+    generating compile-time native-code.
+    <pre>
+    (defun posix:fprintf (fp format &rest args)
+      (posix:vfprintf fp format (coerce args 'vector)))
+    </pre>
+    <p>A compiler-macro optimization might handle the case when posix:printf
+    is called literally, i.e. with a known number of arguments, on those
+    systems which generate native-code.
+    <p>I have yet to see non-wrapper FFI definitions for variable-arg functions.
+
+    <p>
+    Which leads to another question: how to deal with [vsnf]printf and its
+    sisters' arguments which are all polymorphic??
+    <ol>
+    <li><pre>
+            (typecase
+             ((unsigned-int 32) ...
+              (signed-int   32) ...
+              single-float      ...
+              string            ...
+              (array fixnum)
+              (array ...
+              ...
+              FFI-pointer
+        </pre>
+        <li> ?
+    </ol>
+
+    <li>
+    There are a few cases where C parameters are "optional out",
+    e.g. sigaction().  C programmers can elect to pass in either a NULL or
+    a data pointer. I'm not sure whether this is covered by your rule.
+    <p>
+    sigaction() is more like [newact] [oldact] whereas &optional always
+    implies [newact [oldact]], i.e. you cannot leave out the first.
+    The performance penalty of choosing to always create and return a
+    sigact structure vs. the C programmer's freedom to choose is debatable.
+
+
+    <li>
+    Also, reading into Lisp string buffers may be very
+    problematic. E.g. CLISP internally uses 16 or 32 bit characters
+    because it supports UNICODE, whereas most western day-to-day use
+    involves one byte ASCII or ISO-8859-1.
+    Do you plan to support reading into existing Lisp strings as part of
+    your API? Or would you just return new strings (using which encoding?)?
+    <p>
+    Note: SUSv3 has provision of locales and multibytes characters!
+
+    <li>
+
+
+</ul>
+
+
+<h2>References</h2>
+<ul>
+
+<li>
+<a href="http://www.franz.com/support/documentation/6.2/doc/os-interface.htm">
+Franz Lisp -- OS Interface</a> 
+<br>(Would be a nice base to implement a SUSV3 package on Franz Lisp!).
+
+
+
+</ul>
+
+</body>
+</html>
+<!-- generalities.html                == 2003-06-14 09:35:24 == pascal   -->

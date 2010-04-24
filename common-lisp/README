@@ -1,0 +1,8 @@
+You'll need to add: 
+(load ".../common-lisp/package") 
+(push (function package:PACKAGE-SYSTEM-DEFINITION)
+       ASDF:*SYSTEM-DEFINITION-SEARCH-FUNCTIONS*)
+(asdf:oos 'asdf:load-op :com.informatimago.common-lisp)
+
+may be more. See ~/.common.lisp
+

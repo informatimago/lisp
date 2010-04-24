@@ -1,0 +1,131 @@
+========================================================================
+The packages in this directory are PURE Common-Lisp packages.
+They should compile and run in all Common-Lisp compliant implementation.
+[inside brackets: status and issues].
+
+
+Miscellaneous:
+--------------
+
+    init            Environment used by the Makefile to compile these packages.
+                    Note: if your implementation needs to be brought to 
+                          compliance to Common-Lisp, this is the place where 
+                          to put the needed forms.
+
+Utility Packages:
+-----------------
+                    
+    package         Exports a DEFINE-PACKAGE macro that encapsulates DEFPACKAGE.
+                    [functional]
+                    [nicknames handling is not local to a package, leading
+                     to potential nicknames collision when using :USE/:AS].
+
+    utility         Miscellaneous utility functions and macro.
+
+    list            List utility functions.
+
+    string          String utility functions.
+
+
+Abstract Data Types:
+--------------------    
+
+    avl             Adelson-Velskii & Landis Balanced Trees.
+                    [not-debugged]
+
+    bset            Set of small positive integer (bitmap based).
+                    [not-debugged]
+
+    brelation       Binary Relation of small positive integer (bset based).
+                    [not-debugged]
+
+    dictionary      A Dictionary class.
+                    [bad old implemented, list based]
+
+    graf            A Directed Graph class
+                    [old, scheme based implementation using lists]
+
+    graph           A Graph class (using lists). 
+                    Directed/Unidirected.
+                    Weighted/Not Weighted edges.
+                    [functional (used in cvs version graph)]
+
+    graph-dot       Methods to generate a graph in dot(1) format.
+                    [functional (used in cvs version graph)]
+    
+    graph-diagram   Methods to generate a graph in Diagram! 2 format.
+                    [Not complete]
+    
+    queue           A queue data structure (LIFO, FIFO).
+                    [functional]
+
+
+    
+    
+Other Packages:
+---------------
+
+    activity        A scheduler to call functions periodically.
+                    [functional]
+
+    picture         ASCII-ART primitives.
+                    [functional]
+
+    tree-to-ascii   Draws a cons-based tree as an ASCII-ART picture.
+                    [functional]
+    
+    tree-to-diagram Draws a cons-based tree as a Diagram! picture.
+                    [unknown status]
+
+    regexp          Regular Expressions
+                    [uncomplete; a new version is in the works in regexp/]
+
+    float-binio     Encodes and decodes vectors of float into vectors
+                    of signed-byte 32 to do binary I/O.
+                    [functional]
+
+
+HTML & Web:
+-----------
+
+    html            Generation of HTML.
+                    [functional]
+
+    html401         The HTML 4.01 DTD expressed in Lisp.
+                    [functional]
+
+    html-iso8879-1  The HTML 3.2 ISO8859-1 entities.
+                    [functional; we should check HTML 4.01 entities!]
+
+    htrans          A transaction manager for web applications.
+                    [functional; limited to simple CGI; 
+                     we need a mod_lisp based version]
+
+    iso3166         ISO3166 country codes.
+                    [functional; beware that the definition of 
+                     country codes it time depend...]
+
+    iso639a         ISO639a language codes.
+                    [functional]
+
+    database        A database access layer.
+                    [uncomplete]
+
+    aliases         Reading and parsing a unix aliases file.
+                    [functional]
+
+    primes          Eratostene crible, and naive factorization.
+                    [functional]
+
+
+Applications:
+-------------
+
+    ed              An ed(1) lookalike (& an implementation of COMMON-LISP:ED).
+                    [uncomplete; not debugged]
+
+    make-depends    Parse lisp source for DEFINE-PACKAGE and builds Makefile
+                    dependencies.
+                    [functional; (used to compile these packages)].
+
+========================================================================

@@ -1,0 +1,35 @@
+Here is a way to "mirror" the cliki page used by asdf-install.
+
+Darcs repository: http://darcs.informatimago.com/darcs/public/lisp/
+
+File: http://darcs.informatimago.com/darcs/public/lisp/clmisc/asdf-system-tarball-location.lisp
+
+It add some functions to asdf-system to keep a local copy of the assoc
+between the system names and the tarball urls, and use it instead of
+accessing cliki to install an asdf system.
+
+
+(asdf:oos 'asdf:load-op :asdf-system)
+(load "PACKAGE:COM;INFORMATIMAGO;COMMON-LISP;PACKAGE.LISP")
+(push (function package:package-system-definition)
+            asdf:*system-definition-search-functions*)
+(asdf:oos 'asdf:load-op :com.informatimago.clmisc)
+
+(asdf-install:asc-update-cliki-tarball-locations :verbose t)
+;; Updates the local cache with the tarball locations on cliki.
+;; This doesn't modify the personnal associations.
+
+(asc-list-systems)
+;; gives a list of known asdf-installable system names.
+
+(lsasc)
+;; Prints the same list, with the URL of the tarballs
+;; (and the last response code obtained when finding the URL
+;; when it's not 200),
+;; and whether the asdf system is installed and/or loaded.
+
+(asc-system-tarball-location "split-sequence")
+;; Returns the tarball URL (string).
+
+(setf (asc-system-tarball-location system-name) tarball-url)
+;; Sets a personnal tarball URL.  It may hide a cliki URL.

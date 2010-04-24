@@ -1,0 +1,138 @@
+;;; -*- mode:lisp -*-
+;;; This file is processed by batch-cl-indent
+
+;;-------------
+;; EMACS
+;;-------------
+
+
+;; emacs:
+(2     comment-with-narrowing)
+
+
+;;-------------
+;; PJB-EMACS
+;;-------------
+(1     when-debugging)
+(2     pjb-defclass)
+
+
+;;-------------
+;; COMMON-LISP
+;;-------------
+
+(defun lambda macrolet)
+(((&whole 4 &rest (&whole 1 &lambda &body)) &body)
+ flet labels)
+(((&whole 6 1 1 1 1 1 1) (&whole 4 1 1 1 1 1 1) &body)
+ destructuring-bind)
+(0     progn)
+;; (put 'progn 'lisp-indent-function 0), say, causes progn to be indented
+;; like defun if the first form is placed on the next line, otherwise
+;; it is indented like any other form (i.e. forms line up under first).
+(1     block case catch ccase concatenate
+       do-all-symbols do-external-symbols do-symbols
+       dolist dotimes ecase eval-when
+       format
+       handler-case
+       if let let*
+       logical-pathname-translations make-instance
+       print-unreadable-object
+       typecase ctypecase etypecase
+       prog1 rename-package run-program struct unless
+       unwind-protect when  while with-accessors
+       with-compilation-unit with-condition-restarts
+       with-gensyms with-hash-table-iterator with-input-from-string
+       with-open-file with-open-stream with-output-to-string
+       with-package-iterator with-simple-restart
+       with-standard-io-syntax with-temp-file without-package-lock)
+(2     condition-case destructuring-bind do do* multiple-value-bind
+       multiple-value-setq prog2 with-slots  set-dispatch-macro-character
+       cl:defmacro)
+
+;;-------------
+;; CLISP
+;;-------------
+(1     ffi:with-foreign-strings ffi:with-foreign-object
+       ffi:def-c-type ffi:def-c-struct
+       ffi:def-c-call-out ffi:def-c-call-int
+       ffi:with-c-var
+       ext:run-program ext:without-package-lock
+       ext:letf
+       screen:with-window)
+
+;;-------------
+;; ALEGRO
+;;-------------
+
+;; Franz Allegro net.html.generator
+(1    net.html.generator:html-stream html-stream)
+
+;; Franz AllegroCache
+(1    db.ac:doclass db.ac:doclass*)
+
+(1     if* db.ac:doclass db.ac:doclass* doclass doclass*
+       )
+(defun top-level:alias tpl:alias)
+
+
+;;-------------
+;; Libraries
+;;-------------
+
+;; parenscript
+(1     doeach)
+
+;; CFFI
+(1     defbinding)
+
+
+;;-------------
+;; PJB-COMMON-LISP
+;;-------------
+
+(1     define-package package:define-package
+       def-entity defenum
+       checking-user-password
+       pmatch:match-case
+       ld:def-entity
+       )
+
+;; com.informatiamgo.common-lisp.data-encoding
+(1     def-encrecord)
+(2     def-enctype)
+
+;; com.informatiamgo.common-lisp.heap
+(0     with-gc-lock)
+(1     defenum  define-common-structure when-debug cvm-dolist cvm-do-symbols)
+(2     cvm-define-structure)
+
+;; com.informatiamgo.common-lisp.source
+(1     unless-eof one-or-more zero-or-more)
+
+;; com.informatimago.common-lisp.regexp-posix
+(1 with-renv with-rstate invariant)
+(2 if^2)
+(3 with-rens)
+
+;; com.informatimago.common-lisp.reader
+(1       unless-eof one-or-more zero-or-more)
+
+;; com.informatimago.common-lisp.heap
+(0       with-gc-lock)
+(1       defenum define-common-structure with-generation when-debug
+         cvm-dolist cvm-do-symbols)
+(2       cvm-define-structure)
+
+
+;; com.informatimago.common-lisp.utility
+(1       once scase)
+
+
+
+;; com.informatimago.clmisc.resource-utilization
+(1  reporting-sru)
+
+
+;; cv.lisp
+(((&whole 4 1 1 1 1 1 1 1 ) &body) document section)

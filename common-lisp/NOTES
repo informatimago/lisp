@@ -1,0 +1,73 @@
+-*- coding:utf-8 -*-
+
+TODO:
+
+Rename SOURCE package SOURCE-FORM.
+Make a SOURCE-TEXT package.
+
+
+- text sources
+  uses:
+   - common lisp reader
+     uses:
+      - form sources
+
+Implement SOURCE-TEXT:
+ - write classes for source objects (symbols, packages, feature tests, etc).
+ - write reader macros.
+ - write (port from emacs lisp) the "source" walker  WALK-FORMS (walk-sexp), etc.
+
+
+
+(with-input-from-string (in "
+         :directory '(:relative :wild-inferiors)
+        #-cmu *load-pathname*
+        #+(and cmu unix)
+        (let ((dir (pathname-directory *load-pathname*)))
+          (if (and dir (eq :absolute (first dir)))
+              *load-pathname*
+              (merge-pathnames
+               *load-pathname*
+               (nth-value 1 (UNIX:UNIX-CURRENT-DIRECTORY)) nil)))
+        #+(and cmu (not unix)) (error \"Cannot compile here.\")
+abcd
+")
+  (let ((start (file-position in)))
+    (loop
+       :with result = '()
+       :while (peek-char t in nil nil t)
+       :do (let* ((form  (print (read in nil nil t))))
+             (push (list form) result))
+       :finally (return (nreverse result)))
+    (file-position in start))
+  (loop
+     :with result = '()
+     :while  (peek-char t in nil nil t)
+     :do (let* ((start (file-position in))
+                (form  (read in nil in t))
+                (end   (file-position in)))
+           (when (eq form in) (loop-finish))
+           (file-position in start)
+           (push (list form
+                       (let ((text (make-string (- end start))))
+                         (read-sequence text in)
+                         text)
+                       start end)
+                 result))
+     :do (print result)
+     :finally (return (nreverse result)))
+  (read in nil nil))
+
+
+(setf (text-file-contents "/tmp/data"
+                          :external-format (ext:make-encoding
+                                            :charset charset:utf-8
+                                            :line-terminator :dos))
+"  ; Hello éтави ламбда λαμβδα World!
+howdy doo")
+
+(with-open-file (in "/tmp/data")
+  (list (peek-char t in)
+          (read-char in)
+          (SOURCE-READER-MACRO-LINE-COMMENT in #\;)))
+

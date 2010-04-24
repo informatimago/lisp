@@ -1,0 +1,15 @@
+
+
+common-lisp Pure COMMON-LISP packages: should be compilable/executable in
+            any Common-Lisp implementation.
+
+clext       Common Lisp Extensions.
+
+clmisc      Miscellaneous Common Lisp packages.
+
+clisp       clisp specific packages.
+
+sbcl        sbcl specific packages.
+
+susv3       POSIX API.
+

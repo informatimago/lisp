@@ -1,0 +1,1208 @@
+From: nospam@unix.net (Andrew Josey)
+Subject: Single UNIX Specification Frequently Asked Questions
+Newsgroups: comp.std.unix,comp.unix.programmer,comp.unix.questions
+Date: Tue, 25 Nov 2003 09:15:20 GMT
+Organization: Kithrup Enterprises, Ltd.
+
+Submitted-by: nospam@unix.net (Andrew Josey)
+
+
+Single UNIX Specification Frequently Asked Questions
+
+Last Updated : Nov 5 2003: freq.ques,v 1.3
+
+This is the Frequently Asked Questions file for the Single UNIX
+Specification. Its maintainer is Andrew Josey (ajosey at The Open Group). 
+Suggestions and contributions are always welcome.
+
+This document can be found on the world wide web at
+http://www.opengroup.org/austin/papers/single_unix_faq.html.
+
+UNIX(R) is a registered trademark of The Open Group in the USA and other
+countries.
+
+The Open Group holds the definition of what a UNIX system is and its
+associated trademark in trust for the industry. The official web site
+for more information is http://www.unix.org.
+
+This article includes answers to the following.
+
+Q0. What is the Single UNIX Specification?
+Q1. What is The Open Group Base Working Group ?
+Q2. What is the Austin Group?
+Q3. What is the latest version of the Single UNIX Specification?
+Q4. Where can I read/download the Single UNIX Specification Version 3
+    from? Is there a book?
+Q5. Where can I read/download earlier versions of the Single UNIX
+    Specification from?
+Q6. How do I become a participant in the Working Groups?
+Q7. What is covered in the Base Definitions Technical Standard (XBD)?
+Q8. What is covered in the System Interfaces Technical Standard (XSH)?
+Q9. What is covered in the Shell and Utilities Technical Standard (XCU)?
+Q10. What is covered in the Rationale Technical Standard (XRAT)
+Q11. What is covered in the X/Open Curses Specification (XCURSES)?
+Q12. How many APIs are there? Is there a list of APIs?
+Q13. What Options are there in the Version 3 Specification?
+Q14. What are the required directories and devices?
+Q15. What regular expressions are supported?
+Q16. How should I compile a conforming program?
+Q17. What is the Relationship to the ISO C Standard?
+Q18. What happened to the Networking Services Specification (XNS)?
+Q19. What System Interfaces are included by Category?
+Q20. What is the history of the development of the Single UNIX
+     Specification?
+Q21. How does the Single UNIX Specification compare to the Linux
+     Standard Base?
+Q22. What are the core technical changes in the latest version of the
+     Single UNIX Specification?
+Q23. Does an operating system have to be derived from AT&T/SCO code to
+     meet the Single UNIX Specification?
+Q24. What about UNIX Certification?
+Q25. Where can I get a UNIX License Plate from?
+Q26. How do I add a question to this FAQ?
+
+------------------------------------------------------------------------
+
+*Q0. What is the Single UNIX Specification?*
+
+The Single UNIX Specification is a set of open, consensus specifications
+that define the requirements for a conformant UNIX system. The
+standardized programming environment provides a broad-based functional
+set of interfaces to support the porting of existing UNIX applications
+and the development of new applications. The environment also supports a
+rich set of tools for application development.
+
+The Single UNIX Specification came into being when in 1994 Novell (who
+had acquired the UNIX systems business of AT&T/USL) decided to get out
+of that business. Rather than sell the business as a single entity,
+Novell transferred the rights to the UNIX trademark and the
+specification (that subsequently became the Single UNIX Specification)
+to The Open Group (at the time X/Open Company). Simultaneously, it sold
+the source code and the product implementation (UNIXWARE) to SCO. The
+Open Group also owns the trademark UNIXWARE, transferred to them from
+SCO more recently.
+
+*Q1. What is The Open Group Base Working Group ?*
+
+The Open Group's Base Working Group is the group that has and continues
+to develop the technical specifications that make up the Single UNIX
+Specification. More information can be found at
+http://www.opengroup.org/platform/ . The Base Working Group is one of
+the three parties involved in the Austin Group that maintain the Base
+Specifications of the Single UNIX Specification Version 3, which are
+also IEEE Std 1003.1 (POSIX) and ISO/IEC 9945.
+
+*Q2. What is the Austin Group?*
+
+The Austin Common Standards Revision Group (CSRG) is a joint technical
+working group established to develop and maintain the core volumes of
+the Single UNIX Specification, which are also the POSIX 1003.1 standard
+and ISO/IEC 9945. Anyone wishing to participate in the Austin Group can
+do so. There are no fees for participation or membership. You may
+participate as an observer or as a contributor. You do not have to
+attend face-to-face meetings to participate, electronic participation is
+most welcome.
+
+See http://www.opengroup.org/austin/ for more information.
+
+See http://www.opengroup.org/austin/faq.html for the Austin Group FAQ.
+
+*Q3. What is the latest version of the Single UNIX Specification?*
+
+The latest version is the Single UNIX Specification Version 3. The 2003
+edition of the Single UNIX Specification was published on March 31st
+2003, and updates the 2001 edition of the specification to include
+Technical Corrigendum 1 (TC1). It consists of The Open Group Base
+Specifications Issue 6 and the X/Open Curses, Issue 4, Version 2
+specification.
+
+The Single UNIX Specification uses The Open Group Base Specifications,
+Issue 6 documentation as its core. The documentation is structured as
+follows:
+
+    * Base Definitions, Issue 6 (XBD)
+    * Shell and Utilities, Issue 6 (XCU)
+    * System Interfaces, Issue 6 (XSH)
+    * Rationale (Informative)
+
+New for this version of the Single UNIX Specification is the
+incorporation of IEEE Std 1003.1 (POSIX) and ISO/IEC 9945 into the
+document set; The Open Group Base Specifications, Issue 6, ISO/IEC
+9945:2003 and IEEE Std 1003.1, 2003 Edition are technically identical.
+The base document for the joint revision of the documents was The Open
+Group's Base volumes of its Single UNIX Specification, Version 2. These
+were selected since they were a superset of the existing POSIX.1 and
+POSIX.2 specifications and had some organizational aspects that would
+benefit the audience for the new revision.
+
+Detailed information on the Single UNIX Specification, including
+accessing the version 3 specification in html is available at
+http://www.unix.org/version3/
+
+*Q4. Where can I read/download the Single UNIX Specification Version 3
+from? Is there a book?*
+
+The html version of the latest version (which incorporates technical
+corrigendum 1) is available to read and download from:
+URL:http://www.unix.org/version3/, you need to register for a copy.
+
+A summary of the changes in Technical Corrigendum 1 is available from:
+URL:http://www.opengroup.org/austin/docs/austin_155.txt.
+
+The pdf text of just the Technical Corrigendum 1 (changes to the 2001
+edition) is available from: URL:
+http://www.opengroup.org/pubs/catalog/u057.htm .
+
+The complete specification in pdf format is available to members of The
+Open Group from The Open Group publications catalog. If you wish to
+signup up your organization to become a member of The Open Group and are
+an active participant in the Austin Group you can sign up for no fee at
+http://www.opengroup.org/austin/ogmembers/  (note
+this is for companies and organizations only). If you want to join as an
+individual, or are working on standardization activities and need a copy
+to assist you in your work, please contact Andrew Josey directly, he can
+then add you as an individual affiliate member.
+
+Ongoing draft specifications for future technical corrigenda are
+available online from the Austin Group web site at
+http://www.opengroup.org/austin/ . You need to be a member of the Austin
+Group. Information on how to join the group is on the web site.
+
+URL:http://www.opengroup.org/austin/. (Austin Group Home Page)
+
+Periodically The Open Group does hardcopy runs on the complete 4000 page
+request.Check the Open Group publications catalog for availability
+(http://www.opengroup.org/publications/). The Open Group also produces a
+number of Guide Books, including The Single UNIX Specification Version
+3, The Authorized Guide (http://www.unix.org/version3/theguide.html),
+and the UNIX Internationalization Guide
+(http://www.opengroup.org/publications/catalog/g032.htm).
+
+*Q5. Where can I read/download earlier version of the Single UNIX
+Specification from?*
+
+The specifications that make up the original Single UNIX Specification
+(1994) and the Single UNIX Specification Version 2 (1997), and other
+related specifications can be download in pdf, and html where available,
+from The Open Group publications catalog at
+http://www.opengroup.org/publications/catalog/un.htm.
+
+*Q6. How do I become a participant in the Working Groups?*
+
+To participate in the Austin Group just join the open mailing list. See
+http://www.opengroup.org/austin/lists.html for more information.
+
+URL:http://www.opengroup.org/austin/lists.html. (How to Join the Austin
+Group)
+
+If you want to join the Base Working Group please contact Andrew Josey
+for further information.
+
+*Q7. What is covered in the Base Definitions Technical Standard (XBD)?*
+
+The XBD document is part of the Base Specifications, Issue 6. XBD
+provides common definitions for the Base Specifications of the Single
+UNIX Specification; therefore readers should be familiar with it before
+using the other parts of the Single UNIX Specification. The presence of
+this document reduces duplication in the other related parts of the
+Single UNIX Specification and ensures consistent use of terminology.
+
+This document is structured as follows:
+
+    * Chapter 1 is an introduction which includes the scope of the Base
+      Specifications, and the scope of the changes made in this
+      revision. Normative references, terminology, and portability codes
+      used throughout the Base Specifications are included in this chapter.
+
+    * Chapter 2 defines the conformance requirements, both for
+      implementation and application conformance. For implementation
+      conformance, this includes documentation requirements, conformance
+      definitions for the core POSIX subset, conformance definitions for
+      systems conforming to the Single UNIX Specification (denoted as
+      the XSI extension), and option groups (previously known as feature
+      groups).
+
+    * Chapter 3 contains the general terms and definitions that apply
+      throughout the Base Specifications.
+
+    * Chapter 4 describes general concepts that apply throughout the
+      Base Specifications.
+
+    * Chapter 5 describes the notation used to specify file input and
+      output formats in XBD and XCU.
+
+    * Chapter 6 describes the portable character set and the process of
+      character set definition.
+
+    * Chapter 7 describes the syntax for defining internationalization
+      locales as well as the POSIX locale provided on all systems.
+
+    * Chapter 8 describes the use of environment variables for
+      internationalization and other purposes.
+
+    * Chapter 9 describes the syntax of pattern matching using regular
+      expressions employed by many utilities and matched by the
+      regcomp() and regexec() functions. Both Basic Regular
+      Expressions (BREs) and Extended Regular Expressions (EREs) are
+      described in this chapter.
+
+    * Chapter 10 describes files and devices found on all systems and
+      their semantics. For example, the device /dev/null is an
+      infinite data source and data sink.
+
+    * Chapter 11 describes the asynchronous terminal interface for many
+      of the functions in XSH and the stty utility in XCU.
+
+    * Chapter 12 describes the policies for command line argument
+      construction and parsing. It contains the utility argument syntax
+      used throughout XCU, and also utility syntax guidelines for naming
+      of utilities and the specification of their arguments and
+      option-arguments and operands.
+
+    * Chapter 13 defines the contents of headers which declare
+      constants, macros, and data structures that are needed by programs
+      using the services provided by the system interfaces defined in
+      XSH. These are in the form of reference pages and are organized
+      alphabetically.
+
+*Q8. What is covered in the System Interfaces Technical Standard (XSH)*
+
+The XSH document is part of the Base Specifications, Issue 6. XSH
+describes a set of system interfaces offered to application programs by
+systems conformant to this part of the Single UNIX Specification.
+Readers are expected to be experienced C language programmers, and to be
+familiar with the XBD document.
+
+This document is structured as follows:
+
+    * Chapter 1 explains the status of this document and its
+      relationship to other formal standards. The scope, conformance,
+      and definitions sections are pointers to the XBD document; the
+      sections are here to meet ISO/IEC rules regarding required
+      sections. The terminology and portability codes are identical to
+      the section in XBD and repeated here for ease of reference.
+
+    * Chapter 2 contains important concepts, terms, and caveats relating
+      to the rest of this document. This includes information on the
+      compilation environment, the name space, definitions of error
+      numbers, signal concepts, standard I/O streams, STREAMS, XSI IPC,
+      realtime, threads, sockets, tracing, and data types.
+
+    * Chapter 3 defines the functional interfaces to systems conformant
+      to this part of the Single UNIX Specification. These are in the
+      form of reference pages and are organized alphabetically.
+
+*Q9. What is covered in the Shell and Utilities Technical Standard (XCU)?*
+
+The XCU^1 <#tag_foot_1> document is part of the Base Specifications,
+Issue 6. XCU describes the shell and utilities that are available to
+application programs on systems conformant to this part of the Single
+UNIX Specification. Readers are expected to be familiar with the XBD
+document.
+
+This document is structured as follows:
+
+    * Chapter 1 explains the status of this document and its
+      relationship to other formal standards, including the ISO C
+      standard and also the XSH document. It also describes the utility
+      limits, grammar conventions, defaults used by the utility
+      descriptions, considerations for utilities in support of large
+      files, and the list of required built-in utilities. The scope,
+      conformance, and definitions sections are pointers to the XBD
+      document; the sections are here to meet ISO/IEC rules regarding
+      required sections. The terminology and portability codes are
+      identical to the section in XBD and repeated here for ease of
+      reference.
+
+    * Chapter 2 describes the command language-that is, the shell
+      command language interpreter-used in systems conformant to the
+      Single UNIX Specification.
+
+    * Chapter 3 describes a set of services and utilities that are
+      implemented on systems supporting the Batch Environment option.
+
+    * Chapter 4 consists of reference pages for all utilities available
+      on systems conforming to the Single UNIX Specification. These are
+      in the form of reference pages and are organized alphabetically.
+
+        Footnote
+1.
+    The acronym ``XCU'' derives from the previous version of the
+    specification which was called ``Commands and Utilities''.
+
+*Q10. What is covered in the Rationale Technical Standard (XRAT)*
+
+The XRAT document is part of the Base Specifications, Issue 6. The XRAT
+document has been published to assist in the process of review and
+understanding of the main text. It contains historical information
+concerning the contents of the Base Specifications, Issue 6 and why
+features were included or discarded by the standard developers. It also
+contains notes of interest to application programmers on recommended
+programming practices, emphasizing the consequences of some aspects that
+may not be immediately apparent.
+
+This document is organized in parallel to the normative documents of the
+Base Specification, with a separate part (Parts A, B, and C) for each of
+the three normative documents. In addition, two additional parts are
+included: Part D, Portability Considerations and Part E Subprofiling
+Considerations. The Portability Considerations chapter includes a report
+on the perceived user requirements for the Base Specification and how
+the facilities provided satisfy those requirements, together with
+guidance to writers of profiles on how to use the configurable options,
+limits, and optional behavior. The Subprofiling Considerations chapter
+satisfies the requirement that the document address subprofiling. This
+contains an example set of subprofiling options.
+
+*Q11. What is covered in the X/Open Curses Specification (XCURSES)?*
+
+XCURSES is not part of the Base Specifications, Issue 6. XCURSES
+describes a set of interfaces providing a terminal-independent method of
+updating character screens that are available to application programs on
+systems conformant to this part of the Single UNIX Specification. This
+document should be read in conjunction with The Open Group Corrigendum U056.
+
+This document is structured as follows:
+
+    * Chapter 1 introduces Curses, gives an overview of enhancements
+      that have been made to this version, and lists specific interfaces
+      marked TO BE WITHDRAWN. This chapter also defines the requirements
+      for conformance to this document and shows the generic format
+      followed by interface definitions in Chapter 4.
+
+    * Chapter 2 describes the relationship between Curses and the C
+      language, the compilation environment, and the X/Open System
+      Interface (XSI) operating system requirements. It also defines the
+      effect of the interface on the name space for identifiers and
+      introduces the major data types that the interfaces use.
+
+    * Chapter 3 gives an overview of Curses. It discusses the use of
+      some of the key data types and gives general rules for important
+      common concepts such as characters, renditions, and window
+      properties. It contains general rules for the common Curses
+      operations and operating modes. This information is implicitly
+      referenced by the interface definitions in Chapter 4. The chapter
+      explains the system of naming the Curses functions and presents a
+      table of function families. Finally, the chapter contains notes
+      regarding use of macros and restrictions on block-mode terminals.
+
+    * Chapter 4 defines the Curses functional interfaces.
+
+    * Chapter 5 defines the contents of headers which declare constants,
+      macros, and data structures that are needed by programs using the
+      services provided by Chapter 4.
+
+    * Chapter 6 discusses the /terminfo/ database which Curses uses to
+      describe terminals. The chapter specifies the source format of a
+      /terminfo/ entry using a formal grammar, an informal discussion,
+      and an example. Boolean, numeric, and string capabilities are
+      presented in tabular form.
+
+    * Appendix A discusses the use of these capabilities by the writer
+      of a terminfo entry to describe the characteristics of the
+      terminal in use.
+
+    * The chapters are followed by a glossary, which contains normative
+      definitions of terms used in the document.
+
+*Q12. How many APIs are there? Is there a list of APIs?*
+
+There are 1742 APIs, broken down as follows: XSH 1123, XCU 160, XBD 84
+and XCURSES 375.
+
+A list of APIs is available at
+http://www.unix-systems.org/version3/apis.html.
+
+*Q13. What Options are there in the Version 3 Specification?*
+
+The Version 3 Specification includes a set of profiling options,
+allowing larger profiles of the options of the Base standard. In earlier
+versions of the Single UNIX Specification these were formerly known as
+Feature Groups. The Option Groups within the Single UNIX Specification
+are defined within XBD, Section 2.1.5.2, XSI Option Groups.
+
+The Single UNIX Specification Version 3 contains the following Option
+Groups:
+
+    * Encryption, covering the functions crypt(), encrypt( ), and setkey.()
+    * Realtime, covering the functions from the IEEE Std 1003.1b-1993
+      Realtime extension.
+    * Realtime Threads, covering the functions from the IEEE Std
+      1003.1c-1995 Threads extension that are related to realtime
+      functionality.
+    * Advanced Realtime, covering some of the non-threads-related
+      functions from IEEE Std 1003.1d-1999 and IEEE Std 1003.1j-2000.
+    * Advanced Realtime Threads, covering some of the threads-related
+      functions from IEEE Std 1003.1d-1999 and IEEE Std 1003.1j-2000.
+    * Tracing, covering the functionality from IEEE Std 1003.1q-2000.
+    * XSI STREAMS, covering the functionality and interfaces related to
+      STREAMS, a uniform mechanism for implementing networking services
+      and other character-based I/O as described in XSH, Section 2.6,
+      STREAMS. This was mandatory in previous versions of the Single
+      UNIX Specification, but is now optional in this version.
+    * Legacy, covering the functionality and interfaces which were
+      mandatory in previous versions of the Single UNIX Specification,
+      but are optional in this version.
+
+*Q14. What are the required directories and devices?*
+
+The Single UNIX Specification describes an applications portability
+environment, and as such defines a certain minimal set of directories
+and devices that applications regularly use.
+
+The following directories are defined:
+
+    * / The root directory of the file system.
+    * /dev Contains the devices /dev/console, /dev/null, and
+      /dev/tty.
+    * /tmp A directory where applications can create temporary files.
+
+The directory structure does not cross into such system management
+issues as where user accounts are organized or software packages are
+installed. Refer to XBD, Section 10.1, Directory Structure and Files for
+more information. XBD, Chapter 10, Directory Structure and Devices also
+defines the mapping of control character sequences to real character
+values, and describes the actions an implementation must take when it
+cannot support certain terminal behavior.
+
+*Q15. What regular expressions are supported?*
+
+Both Basic Regular Expressions (BREs) and Extended Regular Expressions
+(EREs) are supported and are described in XBD, Chapter 9, Regular
+Expressions and all of the utilities and interfaces that use regular
+expressions refer back to this definition.
+
+Basic regular expressions: csplit, ctags, ed, ex, expr, grep, more, nl,
+pax, pg, sed, vi
+
+Extended regular expressions: awk, egrep, grep -E, lex
+
+The functions regcomp() and regexec() in XSH, Chapter 3, System
+Interfaces implement regular expressions as defined in the Single UNIX
+Specification.
+
+*Q16. How should I compile a conforming program?*
+
+XCU defines c99 as the interface to the C compilation environment. The
+c99 interface is new to this version of the specification and an
+interface to the standard C compiler. The c89 and cc utilities are no
+longer defined in this version of the Single UNIX Specification although
+implementations may additionally support them for backwards-compatibility.
+
+There are a number of tasks that must be done to effectively make the
+interface environment available to a program. A number of C-language
+macros, referred to as feature test macros, must be defined before any
+headers are included. These macros might more accurately be referred to
+as header configuration macros, as they control what symbols and
+prototypes will be exposed by the headers. The macro _XOPEN_SOURCE must
+be defined to a value of 600 to make available the functionality of the
+Single UNIX Specification, Version 3. With respect to POSIX
+functionality covered by the Single UNIX Specification, this is
+equivalent to defining the POSIX macro {_POSIX_C_SOURCE} to be 200112L.
+
+Use of the {_XOPEN_SOURCE} macro should not be confused with the other
+feature test macros associated with Feature Groups and functionality,
+such as {_XOPEN_UNIX}. These feature test macros are the
+implementation's way of announcing functionality to the application.
+
+*Q17. What is the Relationship to the ISO C Standard?*
+
+The most recent revision to the ISO C standard occurred in 1999. The ISO
+C standard is itself independent of any operating system in so much as
+it may be implemented in many environments including hosted environments.
+
+The Single UNIX Specification has a long history of building on the ISO
+C standard and deferring to it where applicable. Whereas revisions of
+POSIX.1 prior to the Austin Group specification built upon the ISO C
+standard by reference only, and also allowed support for traditional C
+as an alternative. The Single UNIX Specification in contrast, has always
+included manual pages for the ISO C interfaces.
+
+The Version 3 Specification takes the latter approach. The standard
+developers believed it essential for a programmer to have a single
+complete reference place. They also recognized that deference to the
+formal standard had to be addressed for the duplicate interface
+definitions which occur in both the ISO C standard and their document.
+
+It was agreed that where an interface has a version in the ISO C
+standard, the DESCRIPTION section should describe the relationship to
+the ISO C standard and markings added as appropriate within the manual
+page to show where the ISO C standard has been extended.
+
+A block of text was added to the start of each affected reference page
+stating whether the page is aligned with the ISO C standard or extended.
+Each page was parsed for additions beyond the ISO C standard and these
+extensions are marked as CX extensions (for C Extensions).
+
+*Q18. What happened to the Networking Services Specification (XNS)?*
+
+Unlike previous versions of the Single UNIX Specification, for Version 3
+the Networking Services have now been integrated into the Base
+Specifications. This includes sockets and IP address resolution
+interfaces. The X/Open Transport Interface (XTI) is no longer a
+requirement in Version 3 of the Single UNIX Specification. As with other
+functions in XSH, the application developer needs to define
+{_XOPEN_SOURCE} to be 600 prior to the inclusion of any Single UNIX
+Specification headers. The c99 compiler utilities recognize the
+additional -l operand for the xnet library.
+
+*Q19. What System Interfaces are included by Category?*
+
+The system interfaces in the Version 3 specification categorized by
+functional grouping are as follows:
+
+Jump Interfaces
+
+    longjmp(), setjmp()
+
+Maths Library Interfaces
+
+    acos(), acosf(), acosh(), acoshf(), acoshl(), acosl(),
+    asin(), asinf(), asinh(), asinhf(), asinhl(), asinl(),
+    atan(), atan2(), atan2f(), atan2l(), atanf(), atanh(),
+    atanhf(), atanhl(), atanl(), cabs(), cabsf(), cabsl(),
+    cacos(), cacosf(), cacosh(), cacoshf(), cacoshl(),
+    cacosl(), carg(), cargf(), cargl(), casin(), casinf(),
+    casinh(), casinhf(), casinhl(), casinl(), catan(),
+    catanf(), catanh(), catanhf(), catanhl(), catanl(),
+    cbrt(), cbrtf(), cbrtl(), ccos(), ccosf(), ccosh(),
+    ccoshf(), ccoshl(), ccosl(), ceil(), ceilf(), ceill(),
+    cexp(), cexpf(), cexpl(), cimag(), cimagf(), cimagl(),
+    clog(), clogf(), clogl(), conj(), conjf(), conjl(),
+    copysign(), copysignf(), copysignl(), cos(), cosf(),
+    cosh(), coshf(), coshl(), cosl(), cpow(), cpowf(),
+    cpowl(), cproj(), cprojf(), cprojl(), creal(), crealf(),
+    creall(), csin(), csinf(), csinh(), csinhf(), csinhl(),
+    csinl(), csqrt(), csqrtf(), csqrtl(), ctan(), ctanf(),
+    ctanh(), ctanhf(), ctanhl(), ctanl(), erf(), erfc(),
+    erfcf(), erfcl(), erff(), erfl(), exp(), exp2(),
+    exp2f(), exp2l(), expf(), expl(), expm1(), expm1f(),
+    expm1l(), fabs(), fabsf(), fabsl(), fdim(), fdimf(),
+    fdiml(), floor(), floorf(), floorl(), fma(), fmaf(),
+    fmal(), fmax(), fmaxf(), fmaxl(), fmin(), fminf(),
+    fminl(), fmod(), fmodf(), fmodl(), fpclassify(),
+    frexp(), frexpf(), frexpl(), hypot(), hypotf(),
+    hypotl(), ilogb(), ilogbf(), ilogbl(), isfinite(),
+    isgreater(), isgreaterequal(), isinf(), isless(),
+    islessequal(), islessgreater(), isnan(), isnormal(),
+    isunordered(), ldexp(), ldexpf(), ldexpl(), lgamma(),
+    lgammaf(), lgammal(), llrint(), llrintf(), llrintl(),
+    llround(), llroundf(), llroundl(), log(), log10(),
+    log10f(), log10l(), log1p(), log1pf(), log1pl(), log2(),
+    log2f(), log2l(), logb(), logbf(), logbl(), logf(),
+    logl(), lrint(), lrintf(), lrintl(), lround(),
+    lroundf(), lroundl(), modf(), modff(), modfl(), nan(),
+    nanf(), nanl(), nearbyint(), nearbyintf(), nearbyintl(),
+    nextafter(), nextafterf(), nextafterl(), nexttoward(),
+    nexttowardf(), nexttowardl(), pow(), powf(), powl(),
+    remainder(), remainderf(), remainderl(), remquo(),
+    remquof(), remquol(), rint(), rintf(), rintl(), round(),
+    roundf(), roundl(), scalbln(), scalblnf(), scalblnl(),
+    scalbn(), scalbnf(), scalbnl(), signbit(), sin(),
+    sinf(), sinh(), sinhf(), sinhl(), sinl(), sqrt(),
+    sqrtf(), sqrtl(), tan(), tanf(), tanh(), tanhf(),
+    tanhl(), tanl(), tgamma(), tgammaf(), tgammal(),
+    trunc(), truncf(), truncl()
+
+General ISO C Library Interfaces
+
+    abs(), asctime(), atof(), atoi(), atol(), atoll(),
+    bsearch(), calloc(), ctime(), difftime(), div(),
+    feclearexcept(), fegetenv(), fegetexceptflag(),
+    fegetround(), feholdexcept(), feraiseexcept(), fesetenv(),
+    fesetexceptflag(), fesetround(), fetestexcept(),
+    feupdateenv(), free(), gmtime(), imaxabs(), imaxdiv(),
+    isalnum(), isalpha(), isblank(), iscntrl(), isdigit(),
+    isgraph(), islower(), isprint(), ispunct(), isspace(),
+    isupper(), isxdigit(), labs(), ldiv(), llabs(), lldiv(),
+    localeconv(), localtime(), malloc(), memchr(), memcmp(),
+    memcpy(), memmove(), memset(), mktime(), qsort(),
+    rand(), realloc(), setlocale(), snprintf(), sprintf(),
+    srand(), sscanf(), strcat(), strchr(), strcmp(),
+    strcoll(), strcpy(), strcspn(), strerror(), strftime(),
+    strlen(), strncat(), strncmp(), strncpy(), strpbrk(),
+    strrchr(), strspn(), strstr(), strtod(), strtof(),
+    strtoimax(), strtok(), strtol(), strtold(), strtoll(),
+    strtoul(), strtoull(), strtoumax(), strxfrm(), time(),
+    tolower(), toupper(), tzname, tzset(), va_arg(),
+    va_copy(), va_end(), va_start(), vsnprintf(), vsprintf(),
+    vsscanf()
+
+Thread-Safe General ISO C Library Interfaces
+
+    asctime_r(), ctime_r(), gmtime_r(), localtime_r(),
+    rand_r(), strerror_r(), strtok_r()
+
+Wide-Character ISO C Library Interfaces
+
+    btowc(), iswalnum(), iswalpha(), iswblank(), iswcntrl(),
+    iswctype(), iswdigit(), iswgraph(), iswlower(),
+    iswprint(), iswpunct(), iswspace(), iswupper(),
+    iswxdigit(), mblen(), mbrlen(), mbrtowc(), mbsinit(),
+    mbsrtowcs(), mbstowcs(), mbtowc(), swprintf(), swscanf(),
+    towctrans(), towlower(), towupper(), vswprintf(),
+    vswscanf(), wcrtomb(), wcscat(), wcschr(), wcscmp(),
+    wcscoll(), wcscpy(), wcscspn(), wcsftime(), wcslen(),
+    wcsncat(), wcsncmp(), wcsncpy(), wcspbrk(), wcsrchr(),
+    wcsrtombs(), wcsspn(), wcsstr(), wcstod(), wcstof(),
+    wcstoimax(), wcstok(), wcstol(), wcstold(), wcstoll(),
+    wcstombs(), wcstoul(), wcstoull(), wcstoumax(), wcsxfrm(),
+    wctob(), wctomb(), wctrans(), wctype(), wmemchr(),
+    wmemcmp(), wmemcpy(), wmemmove(), wmemset()
+
+General C Library Extension Interfaces
+
+    fnmatch(), getopt(), optarg, opterr, optind, optopt
+
+Device Input and Output Interfaces
+
+    FD_CLR(), FD_ISSET(), FD_SET(), FD_ZERO(), clearerr(),
+    close(), fclose(), fdopen(), feof(), ferror(), fflush(),
+    fgetc(), fgets(), fileno(), fopen(), fprintf(), fputc(),
+    fputs(), fread(), freopen(), fscanf(), fwrite(), getc(),
+    getchar(), gets(), open(), perror(), printf(),
+    pselect(), putc(), putchar(), puts(), read(), scanf(),
+    select(), setbuf(), setvbuf(), stderr, stdin, stdout,
+    ungetc(), vfprintf(), vfscanf(), vprintf(), vscanf(),
+    write()
+
+General Terminal Interfaces
+
+    cfgetispeed(), cfgetospeed(), cfsetispeed(), cfsetospeed(),
+    ctermid(), isatty(), tcdrain(), tcflow(), tcflush(),
+    tcgetattr(), tcsendbreak(), tcsetattr(), ttyname()
+
+Thread-Safe General Terminal Interfaces
+
+    ttyname_r()
+
+File Descriptor Management Interfaces
+
+    dup(), dup2(), fcntl(), fgetpos(), fseek(), fseeko(),
+    fsetpos(), ftell(), ftello(), ftruncate(), lseek(),
+    rewind()
+
+FIFO Interfaces
+
+    mkfifo()
+
+File Attributes Interfaces
+
+    chmod(), chown(), fchmod(), fchown(), umask()
+
+Thread-Safe Stdio Locking Interfaces
+
+    flockfile(), ftrylockfile(), funlockfile(), getc_unlocked(),
+    getchar_unlocked(), putc_unlocked(), putchar_unlocked()
+
+File System Interfaces
+
+    access(), chdir(), closedir(), creat(), fpathconf(),
+    fstat(), getcwd(), link(), mkdir(), opendir(),
+    pathconf(), readdir(), remove(), rename(), rewinddir(),
+    rmdir(), stat(), tmpfile(), tmpnam(), unlink(), utime()
+
+File System Extensions Interfaces
+
+    glob(), globfree()
+
+Thread-Safe File System Interfaces
+
+    readdir_r()
+
+Job Control Interfaces
+
+    setpgid(), tcgetpgrp(), tcsetpgrp()
+
+Multiple Processes Interfaces
+
+    _Exit(), _exit(), assert(), atexit(), clock(), execl(),
+    execle(), execlp(), execv(), execve(), execvp(), exit(),
+    fork(), getpgrp(), getpid(), getppid(), setsid(),
+    sleep(), times(), wait(), waitpid()
+
+Networking Interfaces
+
+    accept(), bind(), connect(), endhostent(), endnetent(),
+    endprotoent(), endservent(), freeaddrinfo(), gai_strerror(),
+    getaddrinfo(), gethostbyaddr(), gethostbyname(),
+    gethostent(), gethostname(), getnameinfo(), getnetbyaddr(),
+    getnetbyname(), getnetent(), getpeername(),
+    getprotobyname(), getprotobynumber(), getprotoent(),
+    getservbyname(), getservbyport(), getservent(),
+    getsockname(), getsockopt(), h_errno, htonl(), htons(),
+    if_freenameindex(), if_indextoname(), if_nameindex(),
+    if_nametoindex(), inet_addr(), inet_ntoa(), inet_ntop(),
+    inet_pton(), listen(), ntohl(), ntohs(), recv(),
+    recvfrom(), recvmsg(), send(), sendmsg(), sendto(),
+    sethostent(), setnetent(), setprotoent(), setservent(),
+    setsockopt(), shutdown(), socket(), sockatmark(),
+    socketpair()
+
+Pipe Interfaces
+
+    pipe()
+
+Regular Expressions Interfaces
+
+    regcomp(), regerror(), regexec(), regfree()
+
+Shell and Utilities Interfaces
+
+    pclose(), popen(), system(), wordexp(), wordfree()
+
+Signal Interfaces
+
+    abort(), alarm(), kill(), pause(), raise(), sigaction(),
+    sigaddset(), sigdelset(), sigemptyset(), sigfillset(),
+    sigismember(), signal(), sigpending(), sigprocmask(),
+    sigsuspend(), sigwait()
+
+Signal Jump Functions Interfaces
+
+    siglongjmp(), sigsetjmp()
+
+Single Process Interfaces
+
+    confstr(), environ, errno, getenv(), setenv(),
+    sysconf(), uname(), unsetenv()
+
+Symbolic Links Interfaces
+
+    lstat(), readlink(), symlink()
+
+System Database Interfaces
+
+    getgrgid(), getgrnam(), getpwnam(), getpwuid()
+
+Thread-Safe System Database Interfaces
+
+    getgrgid_r(), getgrnam_r(), getpwnam_r(), getpwuid_r()
+
+Threads Interfaces
+
+    pthread_addr_setstacksize(), pthread_atfork(),
+    pthread_attr_destroy(), pthread_attr_getdetachstate(),
+    pthread_attr_getstackaddr(), pthread_attr_getstacksize(),
+    pthread_attr_init(), pthread_attr_setdetachstate(),
+    pthread_attr_setschedparam(), pthread_attr_setstackaddr(),
+    pthread_barrierattr_destroy(), pthread_barrierattr_getpshared(),
+    pthread_barrierattr_init(), pthread_barrierattr_setpshared(),
+    pthread_barrier_destroy(), pthread_barrier_init(),
+    pthread_barrier_wait(), pthread_cancel(),
+    pthread_cleanup_pop(), pthread_cleanup_push(),
+    pthread_cond_broadcast(), pthread_cond_destroy(),
+    pthread_cond_init(), pthread_cond_signal(),
+    pthread_cond_timedwait(), pthread_cond_wait(),
+    pthread_condattr_destroy(), pthread_condattr_getpshared(),
+    pthread_condattr_init(), pthread_condattr_setpshared(),
+    pthread_create(), pthread_detach(), pthread_equal(),
+    pthread_exit(), pthread_getschedparam(),
+    pthread_getspecific(), pthread_join(), pthread_key_create(),
+    pthread_key_delete(), pthread_kill(), pthread_mutex_destroy(),
+    pthread_mutex_init(), pthread_mutex_lock(),
+    pthread_mutex_timedlock(), pthread_mutex_trylock(),
+    pthread_mutex_unlock(), pthread_mutexattr_destroy(),
+    pthread_mutexattr_getpshared(), pthread_mutexattr_init(),
+    pthread_mutexattr_setpshared(), pthread_once(),
+    pthread_rwlockattr_destroy(), pthread_rwlockattr_getpshared(),
+    pthread_rwlockattr_init(), pthread_rwlockattr_setpshared(),
+    pthread_rwlock_destroy(), pthread_rwlock_init(),
+    pthread_rwlock_rdlock(), pthread_rwlock_timedrdlock(),
+    pthread_rwlock_timedwrlock(), pthread_rwlock_tryrdlock(),
+    pthread_rwlock_trywrlock(), pthread_rwlock_unlock(),
+    pthread_rwlock_wrlock(), pthread_self(),
+    pthread_setcancelstate(), pthread_setcanceltype(),
+    pthread_setspecific(), pthread_sigmask(),
+    pthread_spin_destroy(), pthread_spin_init(),
+    pthread_spin_lock(), pthread_spin_trylock(),
+    pthread_spin_unlock(), pthread_testcancel()
+
+Realtime Threads Interfaces
+
+    pthread_attr_getinheritsched(), pthread_attr_getschedpolicy(),
+    pthread_attr_getscope(), pthread_attr_setinheritsched(),
+    pthread_attr_setschedpolicy(), pthread_attr_setscope(),
+    pthread_getschedparam(), pthread_mutex_getprioceiling(),
+    pthread_mutex_setprioceiling(),
+    pthread_mutexattr_getprioceiling(),
+    pthread_mutexattr_getprotocol(),
+    pthread_mutexattr_setprioceiling(),
+    pthread_mutexattr_setprotocol(), pthread_setschedparam()
+
+Realtime Interfaces
+
+    aio_cancel(), aio_error(), aio_fsync(), aio_read(),
+    aio_return(), aio_suspend(), aio_write(), clock_getres(),
+    clock_gettime(), clock_settime(), fdatasync(), lio_listio(),
+    mlock(), mlockall(), mq_close(), mq_getattr(),
+    mq_notify(), mq_open(), mq_receive(), mq_send(),
+    mq_setattr(), mq_timedreceive(), mq_timedsend(),
+    mq_unlink(), munlock(), munlockall(), nanosleep(),
+    sched_get_priority_max(), sched_get_priority_min(),
+    sched_getparam(), sched_getscheduler(),
+    sched_rr_get_interval(), sched_setparam(),
+    sched_setscheduler(), sched_yield(), sem_close(),
+    sem_destroy(), sem_getvalue(), sem_init(), sem_open(),
+    sem_post(), sem_timedwait(), sem_trywait(), sem_unlink(),
+    sem_wait(), shm_open(), shm_unlink(), sigqueue(),
+    sigtimedwait(), sigwaitinfo(), timer_create(),
+    timer_delete(), timer_getoverrun(), timer_gettime(),
+    timer_settime()
+
+Tracing Interfaces
+
+    posix_trace_attr_destroy(), posix_trace_attr_getclockres(),
+    posix_trace_attr_getcreatetime(),
+    posix_trace_attr_getgenversion(),
+    posix_trace_attr_getinherited(),
+    posix_trace_attr_getlogfullpolicy(),
+    posix_trace_attr_getlogsize(),
+    posix_trace_attr_getmaxdatasize(),
+    posix_trace_attr_getmaxsystemeventsize(),
+    posix_trace_attr_getmaxusereventsize(),
+    posix_trace_attr_getname(),
+    posix_trace_attr_getstreamfullpolicy(),
+    posix_trace_attr_getstreamsize(), posix_trace_attr_init(),
+    posix_trace_attr_setinherited(),
+    posix_trace_attr_setlogfullpolicy(),
+    posix_trace_attr_setlogsize(),
+    posix_trace_attr_setmaxdatasize(), posix_trace_attr_setname(),
+    posix_trace_attr_setstreamfullpolicy(),
+    posix_trace_attr_setstreamsize(), posix_trace_clear(),
+    posix_trace_close(), posix_trace_create(),
+    posix_trace_create_withlog(), posix_trace_event(),
+    posix_trace_eventid_equal(), posix_trace_eventid_get_name(),
+    posix_trace_eventid_open(), posix_trace_eventset_add(),
+    posix_trace_eventset_del(), posix_trace_eventset_empty(),
+    posix_trace_eventset_fill(), posix_trace_eventset_ismember(),
+    posix_trace_eventtypelist_getnext_id(),
+    posix_trace_eventtypelist_rewind(), posix_trace_flush(),
+    posix_trace_get_attr(), posix_trace_get_filter(),
+    posix_trace_getnext_event(), posix_trace_get_status(),
+    posix_trace_open(), posix_trace_rewind(),
+    posix_trace_set_filter(), posix_trace_shutdown(),
+    posix_trace_start(), posix_trace_stop(),
+    posix_trace_timedgetnext_event(),
+    posix_trace_trid_eventid_open(), posix_trace_trygetnext_event()
+
+Advisory Interfaces Interfaces
+
+    posix_fadvise(), posix_fallocate(), posix_madvise()
+
+Typed Memory Interfaces Interfaces
+
+    posix_mem_offset(), posix_typed_mem_get_info(),
+    posix_typed_mem_open()
+
+User and Group Interfaces
+
+    getegid(), geteuid(), getgid(), getgroups(), getlogin(),
+    getuid(), setegid(), seteuid(), setgid(), setuid()
+
+Thread-Safe User and Group Interfaces
+
+    getlogin_r()
+
+Wide Character Device Input and Output Interfaces
+
+    fgetwc(), fgetws(), fputwc(), fputws(), fwide(),
+    fwprintf(), fwscanf(), getwc(), getwchar(), putwc(),
+    putwchar(), ungetwc(), vfwprintf(), vfwscanf(),
+    vwprintf(), vwscanf(), wprintf(), wscanf()
+
+XSI General C Library Interfaces
+
+    _tolower(), _toupper(), a64l(), daylight(), drand48(),
+    erand48(), ffs(), getcontext(), getdate(), getsubopt(),
+    hcreate(), hdestroy(), hsearch(), iconv(), iconv_close(),
+    iconv_open(), initstate(), insque(), isascii(), jrand48(),
+    l64a(), lcong48(), lfind(), lrand48(), lsearch(),
+    makecontext(), memccpy(), mrand48(), nrand48(), random(),
+    remque(), seed48(), setcontext(), setstate(), signgam,
+    srand48(), srandom(), strcasecmp(), strdup(), strfmon(),
+    strncasecmp(), strptime(), swab(), swapcontext(),
+    tdelete(), tfind(), timezone(), toascii(), tsearch(),
+    twalk()
+
+XSI Encryption Interfaces
+
+    crypt(), encrypt(), setkey()
+
+XSI Database Management Interfaces
+
+    dbm_clearerr(), dbm_close(), dbm_delete(), dbm_error(),
+    dbm_fetch(), dbm_firstkey(), dbm_nextkey(), dbm_open(),
+    dbm_store()
+
+XSI Device Input and Output Interfaces
+
+    fmtmsg(), poll(), pread(), pwrite(), readv(), writev()
+
+XSI General Terminal Interfaces
+
+    grantpt(), posix_openpt(), ptsname(), unlockpt()
+
+XSI Dynamic Linking Interfaces
+
+    dlclose(), dlerror(), dlopen(), dlsym()
+
+XSI File Descriptor Management Interfaces
+
+    truncate()
+
+XSI File System Interfaces
+
+    basename(), dirname(), fchdir(), fstatvfs(), ftw(),
+    lchown(), lockf(), mknod(), mkstemp(), nftw(),
+    realpath(), seekdir(), statvfs(), sync(), telldir(),
+    tempnam()
+
+XSI Internationalization Interfaces
+
+    catclose(), catgets(), catopen(), nl_langinfo()
+
+XSI Interprocess Communication Interfaces
+
+    ftok(), msgctl(), msgget(), msgrcv(), msgsnd(),
+    semctl(), semget(), semop(), shmat(), shmctl(), shmdt(),
+    shmget()
+
+XSI Job Control Interfaces
+
+    tcgetsid()
+
+XSI Jump Functions Interfaces
+
+    _longjmp(), _setjmp()
+
+XSI Maths Library Interfaces
+
+    j0(), j1(), jn(), scalb(), y0(), y1(), yn()
+
+XSI Multiple Process Interfaces
+
+    getpgid(), getpriority(), getrlimit(), getrusage(),
+    getsid(), nice(), setpgrp(), setpriority(), setrlimit(),
+    ulimit(), usleep(), vfork(), waitid()
+
+XSI Signal Interfaces
+
+    bsd_signal(), killpg(), sigaltstack(), sighold(),
+    sigignore(), siginterrupt(), sigpause(), sigrelse(),
+    sigset(), ualarm()
+
+XSI Single Process Interfaces
+
+    gethostid(), gettimeofday(), putenv()
+
+XSI System Database Interfaces
+
+    endpwent(), getpwent(), setpwent()
+
+XSI System Logging Interfaces
+
+    closelog(), openlog(), setlogmask(), syslog()
+
+XSI Thread Mutex Extensions Interfaces
+
+    pthread_mutexattr_gettype(), pthread_mutexattr_settype()
+
+XSI Threads Extensions Interfaces
+
+    pthread_attr_getguardsize(), pthread_attr_setguardsize(),
+    pthread_getconcurrency(), pthread_setconcurrency()
+
+XSI Timers Interfaces
+
+    getitimer(), setitimer()
+
+XSI User and Group Interfaces
+
+    endgrent(), endutxent(), getgrent(), getutxent(),
+    getutxid(), getutxline(), pututxline(), setgrent(),
+    setregid(), setreuid(), setutxent()
+
+XSI Wide-Character Library Interfaces
+
+    wcswidth(), wcwidth()
+
+XSI Legacy Interfaces
+
+    bcmp(), bcopy(), bzero(), ecvt(), fcvt(), ftime(),
+    gcvt(), getwd(), index(), mktemp(), rindex(), utimes(),
+    wcswcs() 
+
+*Q20. What is the history of the development of the Single UNIX
+Specification?*
+
+The Open Group has been the custodian of the specification for the UNIX
+system and the trademark since 1994. This is a source level API
+specification which has traditionally built upon the formal IEEE POSIX
+standards. It is vendor neutral and not tied to any particular
+implementation.
+
+The project that led to the creation of the Single UNIX Specification
+started when several vendors (Sun Microsystems, IBM, Hewlett-Packard,
+Novell/USL, and OSF) joined together to provide a single unified
+specification of the UNIX system services. By implementing a single
+common definition of the UNIX system services, third-party independent
+software vendors (ISVs) would be able to more easily deliver strategic
+applications on all of these vendors' platforms at once.
+
+A two-pronged approach was used to develop the Single UNIX
+Specification. First, a set of formal industry specifications was chosen
+to form the overall base for the work. This would provide stability,
+vendor neutrality, and lay a well charted course for future application
+development, taking advantage of the careful work that has gone into
+developing these specifications. It would also preserve the portability
+of existing applications already developed to these core models.
+
+The XPG4 Base (1992) was chosen as the stable functional base from which
+to start. XPG4 Base supports the POSIX.1 system interface and the ISO C
+standards at its core. It also provided a rich set of 174 commands and
+utilities.
+
+To this base was added the traditional UNIX System V Interface
+Definition, (SVID) Edition 3, Level 1 calls, and the OSF Application
+Environment Specification Full Use interface definitions. This
+represented the stable central core of the latter two specifications.
+
+The second part of the approach was to incorporate interfaces that were
+acknowledged common practice but had not yet been incorporated into any
+formal specification or standard. The intent was to ensure existing
+applications running on UNIX systems would port with relative ease to a
+platform supporting the Single UNIX Specification. A survey of real
+world applications was used to determine what additional interfaces
+would be required in the specification.
+
+Fifty successful application packages were chosen to be analyzed using
+the following criteria:
+
+- Ranked in International Data Corp's. 1992, 'Survey of Leading UNIX
+Applications',
+
+- The application's domain of applicability was checked to ensure that
+no single application type (for example, databases) was overly represented,
+
+- The application had to be available for analysis either as source
+code, or as a shared or dynamic linked library.
+
+>From the group of fifty, the top ten were selected carefully, ensuring
+that no more than two representative application packages in a
+particular problem space were chosen. The ten chosen applications were:
+
+AutoCAD; Cadence; FrameMaker; Informix; Island Write/Paint; Lotus 1-2-3;
+SAS (4GL); Sybase; Teamwork; WordPerfect
+
+APIs used by the applications that were not part of the base
+specifications were analyzed:
+
+- If an API was used by any of the top ten applications, it was
+considered for inclusion.
+
+- If an API was not used by one of the top ten, but was used by any
+three of the remaining 40 applications, it was considered for inclusion.
+
+- While the investigation of these 50 applications was representative of
+large complex applications, it still was not considered as a broad
+enough survey, so an additional 3500 modules were scanned. If an API was
+used at least seven times in modules that came from at least two
+platforms (to screen out vendor specific libraries), then the interface
+was considered for inclusion.
+
+When the survey was complete, there were 130 interfaces that did not
+already appear in the base specification. These interfaces were
+predominantly BSD interfaces that had never been covered in XPG4 Base,
+the SVID, or the AES, but did represent common practice in UNIX system
+applications developed originally on BSD-derived platforms. Such things
+as sockets and the 4.3BSD memory management calls were commonly used in
+many applications.
+
+The goal was to ensure that APIs in common use were included, even if
+they were not in the formal specifications that made up the base. Making
+the Single UNIX Specification a superset of existing base specifications
+ensured any existing applications should work unmodified.
+
+The Single UNIX Specification has evolved through several iterations;
+Version 2 in 1997 incorporated updates to the formal standards, as well
+as industry driven additions such as large file handling, dynamic
+linking, datasize neutrality and extended threads functionality. Version
+3 in 2001 merges with the IEEE POSIX standard.
+
+A list of the interfaces in Version 3 of the Single UNIX Specification
+together with comparative information on the presence of the interface
+in other specifications is available at http://www.unix.org/v3-apis.html
+
+*Q21. How does the Single UNIX Specification compare to the Linux
+Standard Base?*
+
+The Single UNIX Specification specifies application programming
+interfaces (APIs) at the source level, and is about application source
+code portability. Its neither a code implementation nor an operating
+system, but a stable definition of a programming interface that those
+systems supporting the specification guarantee to provide to the
+application programmer. Efforts such as the Linux Standard Base, and
+similarly the iBCS2 for x86 implementations of System V, are primarily about
+binary portability and define a specific binary implementation of an
+interface to operating system services.
+
+The LSB draws on the Single UNIX Specification for many of its
+interfaces although does not formally defer to it preferring to document
+any differences where they exist, such as where certain aspects of Linux
+cannot currently conform to the industry standards, one particular
+example being the area of threads. Some interfaces are not included in
+the LSB, since they are outside the remit of a binary runtime
+environment, typically these are development interfaces or user level tools.
+
+*Q22. What are the core technical changes in the latest version of the
+Single UNIX Specification?*
+
+The main changes are as follows: alignment with ISO/IEC 9899:1999 (ISO
+C), integration of the Networking Services volume (apart from XTI),
+support for IPv6, integration of recent POSIX realtime amendments (
+1003.1d, 1003.1j, 1003.1q), amendments to the core POSIX functionality
+from the 1003.2b and 1003.1a amendments, application of technical
+corrigendum from The Open Group and IEEE interpretations, revision of
+options , removal of obsolescent and legacy interfaces.
+
+*Q23. Does an operating system have to be derived from AT&T/SCO code to
+meet the Single UNIX Specification?*
+
+No. As the owner of the UNIX trademark, The Open Group has separated the
+UNIX trademark from any actual code stream itself, thus allowing
+multiple implementations. Since the introduction of the Single UNIX
+Specification, there has been a single, open, consensus specification
+that defines the requirements for a conformant UNIX system.
+
+*Q24. What about UNIX Certification?*
+
+There is a mark, or brand, that is used to identify those products that
+have been certified as conforming to the Single UNIX Specification,
+initially UNIX 93, followed subsequently by UNIX 95, UNIX 98 and now
+UNIX 03. Information on the UNIX certification program which operates
+under The Open Group's Open Brand, can be found at
+http://www.opengroup.org/certification/idx/unix.html
+
+The UNIX 03 Certification Guide is available at
+http://www.opengroup.org/openbrand/docs/UNIX03_Certification_Guide.html.
+
+The Practical Guide to the Open Brand is available at
+http://www.opengroup.org/openbrand/Certification_Guide/
+
+The register of Certified Products is available at
+http://www.opengroup.org/openbrand/register/
+
+*Q25. Where can I get a UNIX License Plate from?*
+
+The classic "Live Free or Die" license plates can be ordered from The
+Open Group's publications catalog at:
+http://www.opengroup.org/publications/catalog/n900.htm.
+
+*Q26. How do I add a question to this FAQ?*
+
+Send the question (preferably with a proposed answer) to Andrew Josey.
+
+
+----
+Andrew Josey
+#include <std/disclaimer.h>

@@ -1,0 +1,421 @@
+============
+HTML IN LISP
+============
+
+The various Lisp Markup Languages are designed more from a static
+point of view than a dynamic (generation) point of view.  The main
+consequence is that there are still two modes, HTML data and Lisp
+code, and that some shift operator is needed to go from HTML to Lisp
+or from Lisp to HTML (eg. net.html.generator:html & :princ).  Another
+difficulty is that the notation is optimized for static attributes.
+
+Usually, tags are macros, because they have bodies that must execute
+between the generation of the open balise and the close balise.
+
+In most cases, the HTML is generated on the run, which means that when
+an error occurs, invalid HTML is issued if no buffering is explicitely
+done.
+
+The main problem with all these schemes is that the attributes must be
+symbols or keywords and not expressions to be evaluated, so we cannot
+pass a variable list of attributes.
+
+Another problem with these schemes where a root macro walks its body
+to transform the keyword HTML tags into lisp is that it needs to be
+used again and again in each lexical scope in function or macro.
+
+
+Functions have the downside that we cannot pass more than
+CALL-ARGUMENTS-LIMIT arguments. So while it would be nice to use
+functions for tags, it is not prudent to use &REST to do so.
+In anycase care should be taken to avoid O(n²) space as in Le Sursis.
+
+
+
+
+----------------
+FUNCTIONAL LAYER
+----------------
+
+
+The main objective of this Lisp Markup is to generate dynamic HTML:
+usually we don't have long spans of HTML markup, but on the contrary,
+we call a bunch of Lisp functions each generating a few tags or higher
+level constructs.
+
+The functions could either return an object representing the tag, or
+modify the state of an object representing the document.
+
+Returning an object representing the tag will allow us to write:
+
+      (<:tag* '() (f (<:tag-1*) (<:tag-2*)))
+  
+and have f select either TAG-1 or TAG-2 to use in the list returned
+for TAG.  This is more expressive so our functions will return tag
+objects and be thus more functional.
+
+
+    (<:tag* &optional plist-of-attributes list-of-body-html) --> tag object
+
+    (<:tag*
+       (list :attrib value ...)
+       (list (<:tag* ...) "pcdata" ...))    
+
+    The attribute value strings are processed and any character
+    invalid for the corresponding attribute is escaped (in general
+    CDATA).
+
+    The strings in the list-of-body-html are processed and any
+    character invalid in PCDATA is escaped.
+
+
+In general, attributes names are string designators.  When given a
+symbol or keyword, the symbol-name is used.  Qualified XML attributes
+may be written as string designator containing a colon: 
+
+  (<:html* (list "xmlns" "http://www.w3.org/1999/xhtml"
+                 :xml\:lang "en"
+                 lang "en")
+      ...)
+
+When given as string, case is not changed.  When given as a symbol or
+keyword, if the name is all uppercase, then it's downcased, otherwise
+it's preserved.
+
+
+Each function can check the attributes and attribute values, as well
+as its contents, and signal an error condition, depending on the DTD
+selected.
+
+
+
+
+
+XHTML rules
+
+  - Elements must be correctly terminated: <p></p>
+  - Empty elements must be terminated too: <img />
+  - All attribute values must be quoted:   <td rowspan="3"></td>
+  - Boolean attributes cannot be minimized: <dl compact="compact"></dl>
+  - Tags and attributes must be written in low case.
+  - Predefined attribute values must be written in low case: <input type="text" />
+  - Hex entities must be written in low case: &x99;
+  - name attributes -> id attributes ???
+  - use both lang and xml:lang attributes.
+  
+
+
+HTML-STRING (string)                                            Function
+
+  Returns a tag-object that would generate the contents 
+  of the STRING as HTML.
+
+  Example:
+  
+    (HTML-STRING "<P>Some paragraph</P>") --> #<element>
+
+
+
+WRITE-HTML (tag-object &optional (stream *html-output*)         Function
+
+   Writes the HTML encoded in the tag-object to the output STREAM.
+
+
+
+(write-html 
+   (<:html* '()
+       (list
+         (<:head* '()
+            (list (<:title '() '("Some title"))))
+         (<:body* (list :style (js:css-inline* :background-color color) "red")
+             (list (<:h1 '() '("Title"))
+                   (<:p  '() '("Some paragraph text" "and some more")))))))
+
+
+         
+------------
+MARKUP LAYER
+------------
+
+Another layer will consist of macros which will accept a more lax
+syntax for attributes, and build the list of body-html from a body of
+lisp code.
+ 
+(<:tag plist-of-attributes &body body)
+
+plist-of-attributes ::= () | - | (:attrib value-expr ...) | lisp-expression .
+
+  If all keys are keywords, 
+      then (list ,@plist-of-attributes)
+      else plist-of-attributes
+  
+  (:att (some 'value) (if test :a1 :a2) "value")           ; invalid
+  (list :att (some 'value) (if test :a1 :a2) "value")      ; valid
+
+
+
+(defmacro tag (attributes &body body)
+  `(let ((results))
+      (push (tag* ,(if (and (evenp (length attributes))
+                         (loop :for (k v) :on attributes
+                               :always (keywordp k)))
+                    `(list ,@attributes)
+                    attributes)
+                (let ((*html-tags* '()))
+                   (setf results (multiple-value-list (progn ,@body)))
+                   (nreverse *html-tags*))) *html-tags*)
+      (apply (function values) results)))
+  
+
+(table (attributes-for-table)
+       (loop for r in rows
+          do (tr (loop for c in r do (td c)))))
+;; we don't want to use collect here because we want to be able to
+;; call TR inside functions called here.
+
+
+Expands to:
+
+
+(table (attributes-for-table)
+       (loop for r in rows
+          do (tr () (loop for c in r do (td () (pcdata c)))))
+
+(push (<:table* '()
+        (let ((*html-tags* '()))
+            (loop for r in rows
+                  do (push (<:tr '()
+                              (let ((*html-tags* '()))
+                                (loop for c in r 
+                                      do (push (<:td '()
+                                                 (let ((*html-tags* '()))
+                                                   (push (pcdata c))
+                                                   (nreverse *html-tags*)))
+                                               *html-tags*))
+                                (nreverse *html-tags*))) *html-tags*))
+           (nreverse *html-tags*))) *html-tags*)
+
+
+(with-html-output (stream)
+  (doctype :loose
+    (html ()
+       (head ()
+          (title () (pcdata "title")))
+       (body ()
+          (p () (pcdata "para") (pcdata var))))))
+
+
+(with-html-output (stream)
+  (doctype :loose
+    (html -
+       (head -
+          (title - (pcdata "title")))
+       (body -
+          (p - (pcdata "para") (pcdata var))))))
+
+
+
+
+
+
+WITH-HTML-OUTPUT ((&optional stream &key kind encoding) &body body)        Macro
+ 
+   Execute body (collecting *HTML-TAGS*), and finally writes to the STREAM
+   the HTML collected.
+
+   KIND indicates which kind of is used: :HTML, :XHTML or :XML.
+   (tags may be generated differently in HTML 4.01 than in XHTML 1.0 or XML).
+
+   ENCODING indicates which character encoding is used to write the
+   document.  CDATA and PCDATA may be escaped differently depending on
+   the encoding.
+
+
+(defmacro with-html-output ((stream) &body body)
+   `(let ((*html-tags* '()))
+      (multiple-value-prog1 (progn ,@body)
+         (dolist (tag (nreverse *html-tags*))
+            (write-html tag stream)))))
+
+
+
+Both functions and macros accumulate the generated html bits into the
+lists of ELEMENT objects, and don't concatenate any string internally,
+until the tree is written to the output stream with WRITE-HTML.  This
+means that structure sharing of parts of a document doesn't use any
+memory (but a few references).
+      
+ 
+========================================================================
+EXAMPLES:
+
+
+With macros, issuing static html; the pcdata must be tagged with the
+PCDATA macro:
+
+    (with-html-output ()
+      (doctype :loose
+               (html -
+                     (head -
+                           (title - (pcdata "title")))
+                     (body (:color "#123456" "background-color" "red")
+                           (p - (pcdata "para") (pcdata "var")))))
+      (values))
+
+prints:
+
+
+    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+    <html>
+    <head>
+    <title>title </title></head>
+    <body color="#123456" background-color="red">
+    <p>para var </p></body></html>
+
+
+
+
+With functions the lists of attributes and body elements can be built
+dynamically.  The strings are automatically converted to pcdata:
+ 
+    (progn
+      (write-html (doctype* :loose))
+      (write-html
+       (html* '()
+              (list 
+               (head* '()
+                      (list (title* '() (list (pcdata* "title")))))
+               (body* (list :color "#123456" "background-color" "red")
+                      (list (p* '() (list "para" (pcdata "variable"))))))))
+      (values))
+
+prints:
+
+
+    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+    <html>
+    <head>
+    <title>title </title></head>
+    <body color="#123456" background-color="red">
+    <p>para variable </p></body></html>
+
+
+
+
+
+
+========================================================================
+========================================================================
+========================================================================
+
+------------------------------------------------------------------------
+
+YACLML:
+
+  HTML tags are macros (Leaf tags (without bodies) can be functions:
+  deftag vs. deftag-macro.)
+  
+  (<:tag :attrib value :atrib value ...
+      body ...)
+
+  Output to *yaclml-stream*; with-yaclml-stream, with-yaclml-output-to-string
+
+
+
+NET.HTML.GENERATOR: (HTMLGEN, ALLEGROSERVE).
+
+  HTML tags are keywords, in the context of the NET.HTML.GENERATOR:HTML macro:
+
+  (html
+   (:tag body...)
+   ((:tag :attrib value ...) body ....))
+
+  :newline -> inserts a new line in the generated html.
+  :princ :princ-safely etc -> to have a run-time value inserted in the html.
+
+  Output to *html-stream*; html-stream 
+
+  Attribute names are not evaluated, attribute values are evaluated.
+
+
+CL-WHO:
+
+  Similar to NET.HTML.GENERATOR
+
+   (WITH-HTML-OUTPUT
+      (htm (:tag :attrib value ... body (str pc-data) body ...)))
+
+
+HTOUT:
+
+  Similar to NET.HTML.GENERATOR
+
+
+LML:
+
+  HTML tags are keywords.
+  There is a reader macro to insert the PCDATA.
+
+    (p [,(a :href "http://lml.b9.com" "LML") is a Common Lisp package 
+       for generating HTML and XHTML documents. LML is authored by 
+       ,(a :href "mailto:kevin@rosenberg.net" "Kevin Rosenberg"). 
+       The home page for LML is
+       ,(a :href "http://lml.b9.com/" "http://lml.b9.com/").])
+
+  Output to *html-output*.
+
+
+XHTML:
+
+    #+example-of-use                                                              ;;
+    (defun redirect-example (ofile title url)                                     ;;
+      (with-xhtml (ostream ofile)                                                 ;;
+          (head (title title)                                                     ;;
+                (meta :http-equiv "Refresh"                                       ;;
+                      :content (format nil "0; URL=~a" url)))                     ;;
+          (redirect-example-body ostream title url)))                             ;;
+                                                                                  ;;
+    #+example-of-use                                                              ;;
+    (defun redirect-example-body (ostream title url)                              ;;
+      (let ((format-string "This page should automatically redirect you to ~a. ~
+                            If it does not, please click on "))                   ;;
+        (with-xhtml (ostream)                                                     ;;
+          (body (h1 title)                                                        ;;
+                (p (format-to-xhtml ostream format-string                         ;;
+                                    title)                                        ;;
+                   (a :href url "this")                                           ;;
+                   " link.")))))                                                  ;;
+
+
+XML-EMITER:
+
+  There are macros to emit any tag:
+
+    (with-xml-output (*standard-output*)
+      (with-tag ("person" '(("age" "19")))
+        (with-simple-tag ("firstName")
+          (xml-out "Peter"))
+        (simple-tag "lastName" "Scott")
+        (emit-simple-tags :age 17
+                  :school "Iowa State Univeristy"
+                  "mixedCaseTag" "Check out the mixed case!"
+                  "notShown" nil)))
+
+   
+
+Le Sursis:
+
+    (format t (http-response
+               (html
+                (head
+                 (title "Thank You!"))
+                (body
+                 (h1 "Thank You!")
+                 (img '(("src" . "le-sursis.png")
+                        ("alt" . "The Le Sursis banner")))
+                 "Thank you for your response."))))
+
+  Tags are functions that return a string containing the generated HTML.
+  (O(n²) in space).
+
+    

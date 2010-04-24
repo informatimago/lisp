@@ -1,0 +1,103 @@
+-*- Text -*-
+
+See http://www.cliki.net/TODO%20List for features
+
+Look at the source for XXX ("fix me eventually") and TODO ("fix me soon")
+comments for things to do in support of those features.  You can use
+the supplied Perl script to do this for you: "perl make-TODO.pl *.lisp"
+
+view-recent-changes has calls to cliki:dayname that prolly ought to
+use net.telent.date
+
+We need to be able to edit a page's aliases, which involves UI design
+of some kind.  Another box on the edit page?
+
+Now we have some versioning support, but more features necessary
+ - show diffs to/from other versions: needs UI thought
+ - support "keep only n versions"
+
+Tighten up username cookies: send the user a cookie which has their
+name /and/ some opaque data that we can compare to.  Save whole thing
+in Recent Changes, so they can't fake someone else's username to
+overwrite their change.
+
+handle the cliki-page-save-rejected signals somewhere, in a way that
+will make the text show up in the browser window, not the error log.
+
+Can we make *(Delete this page) do more to make a page look deleted?
+Hard to say what exactly, though: if it's not got any links and stuff
+it should be mostly inaccessible other than from Recent Changes.
+Could lose it from admin/all-pages, I suppose
+
+refuse to accept edits when the body is entirely empty (seems to be a
+problem sometimes possibly with buggy browsers or mod_proxy)
+
+html entity escaping when editing in a textarea
+
+when a page is created, links to it from other pages probbaly aren't
+noted because the Last-modified on the other pages doesn't change -
+hence mod_proxy will serve the old version.  bypassing the proxy will
+cause the change to be noted
+
+when a page is created, it doesn't know about the existing pages that
+link to it.  the index protocol thing will manage outgoing links ok,
+but there's nothing to scan the rest of the repository for incoming
+links.  (Is this also a problem at page load?  if a->b and a is loaded
+before b exists, do we lose the backlink?)
+
+
+
+* CLiki
+** topic synonyms, UI for
+
+these would be really good for using cliki as backend half of a
+brainstorming tool, where having to stop and think about what a page
+should be called inhibits the creative flow, and we'd rather just give
+it some arbitrary unique name and let people assign user-visible
+titles later.  Need UI for titles ...
+
+If titles can be changed, and if titles are exposed in URLs (I think
+they should be), we have that whole urls-should-persist issue to deal
+with.  Might just punt on this by telling people to be careful, though.
+
+** read-only/authenticated version
+  - some of this is done for entomotomy already
+  - add some kind of acl to each page, inheriting sensibly from, um,
+     some other page (what other page?)
+  - access rights are :view, :edit, :comment  (append-only)
+
+so, authentication and authorization handlers on the edit-handler.
+But we don't bother authenticating if the page access perms say that 
+anybody may edit
+
+groups:
+- anonymous user
+- any named user
+- a user
+- recursively, a list of groups
+
+somewhere we need to store the edit permissions per-page.
+persistently, yes.  I guess we could put them in the .titles files.
+we also need to store the user group data 
+
+somehow we need a policy for edit perms on new pages
+
+ideally also we need a UI for changing it.
+
+** Can we use cliki as a photo manager?
+
+- "photo" pages: one picture and some text
+- "collection" pages: text and many half-sized photos being links to 
+  the relevant photo pages
+- some convenience for page naming when uploading a whole collection
+- convenient internal anchor syntax for collection pages (then it
+  could be used as a diary): should also accept a human-readable title
+  so that collections can have associated rdf files
+
+** what about TODO lists
+
+requirements: 
+represent "w depends on z"
+generate list of stuff in which each item is represented
+this would be useful stuff for entomotomy too, actually.
+

@@ -1,0 +1,285 @@
+
+If  the  underlying  system  is  not  POSIX, or  as  a  lacking  POSIX
+implementation, then  a Common-Lisp-POSIX implementation  must provide
+for the missing features and  must present to the client application a
+conformant Common-Lisp-POSIX environment.
+
+When   there   is   an   underlying   POSIX   conformant   system,   a
+Common-Lisp-POSIX implementation  may rely heavily on  it to implement
+the Common-Lisp-POSIX features.
+
+Notably, a Common-Lisp-POSIX may implement the XSI options over a mere
+BASE SUSv3 conformant system.
+
+
+
+- Do we need to split the API in several "header" files?
+
+    Pro: Could load into a system only the slice of the API that is used.
+
+    Con: It may not matter a lot, in regard to the size of Common-Lisp,
+         and the size of the applications.
+
+    Con: There are quite a number of header dependencies anyway.
+
+ 
+  We already have a kind of splicing, with the various packages corresponding
+  to the options.
+
+
+- conversion of strings (encodings) between lisp and C (locale).
+
+- environment from lisp (extern char** environ;).
+
+- How to convert names of macro constants beginning with '_'?
+  They're "reserved" (in the C context).  
+  Can we find another prefix?
+  Would there be any name clash if we ignored the leading '_'?
+  The only symbols starting with POSIX_ on linux are:
+
+        POSIX_FADV_DONTNEED
+        POSIX_FADV_NOREUSE
+        POSIX_FADV_NORMAL
+        POSIX_FADV_RANDOM
+        POSIX_FADV_SEQUENTIAL
+        POSIX_FADV_WILLNEED
+        POSIX_MADV_DONTNEED
+        POSIX_MADV_NORMAL
+        POSIX_MADV_RANDOM
+        POSIX_MADV_SEQUENTIAL
+        POSIX_MADV_WILLNEED
+        POSIX_MISTAKE
+        POSIX_SPAWN_RESETIDS
+        POSIX_SPAWN_SETPGROUP
+        POSIX_SPAWN_SETSCHEDPARAM
+        POSIX_SPAWN_SETSCHEDULER
+        POSIX_SPAWN_SETSIGDEF
+        POSIX_SPAWN_SETSIGMASK
+        POSIX_TERMIOS
+
+   There are 100 symbols starting with _POSIX_
+        
+        
+        
+------------------- ---- ----------------- -------- --------------------------
+  Header            Opt  Action            Ct+Ty+Fn Remarks
+------------------- ---- ----------------- -------- --------------------------
+* aio.h             AIO  ToBeSpecified     8+1+8
+                          
+                         I/O: C buffer (malloc'ed) or Common-Lisp buffer?
+                              (passed as void*).
+                         Note: The structure could perhaps just be lisp 
+                               arguments?
+------------------- ---- ----------------- -------- --------------------------
+* arpa/inet.h       -    ToBeSpecified     0+0+8    A few converting functions.
+------------------- ---- ----------------- -------- --------------------------
+* assert.h          CX   Ignored.                   COMMON-LISP:ASSERT
+------------------- ---- ----------------- -------- --------------------------
+* complex.h         CX   Ignored.                   COMMON-LISP:COMPLEX
+------------------- ---- ----------------- -------- --------------------------
+* cpio.h            XSI  ToBeSpecified     21+0+0   Only constants.
+------------------- ---- ----------------- -------- --------------------------
+* ctype.h           CX   Perhaps.                   COMMON-LISP:CHAR
+
+                         There seem to be more character classification
+                         functions in ctype than in COMMON-LISP.
+------------------- ---- ----------------- -------- --------------------------
+* dirent.h          -    Specified
+------------------- ---- ----------------- -------- --------------------------
+* dlfcn.h           XSI  ToBeSpecified     4+0+4
+------------------- ---- ----------------- -------- --------------------------
+* errno.h                ToBeSpecified     26+0+0   COMMON-LISP:CONDITION
+
+                         We only keep the constants.
+                         Note: We cannot use keywords, because errno may take
+                         values not listed among the defined constants.
+------------------- ---- ----------------- -------- --------------------------
+* fcntl.h                ToBeSpecified     37+1+5
+------------------- ---- ----------------- -------- --------------------------
+* fenv.h            CX   ?                 11+2+11
+                                           
+                         Floating point environment control.
+                         Is this needed in Common-Lisp?
+                         (Implementation may overide or go around
+                         this low-level stuff).
+------------------- ---- ----------------- -------- --------------------------
+* float.h           CX
+                         Floating point parameters. 
+                         Most probably, we won't need this,
+                         but let's check that we have all the
+                         parameters in Common-Lisp.
+------------------- ---- ----------------- -------- --------------------------
+* fmtmsg.h               ToBeSpecified     25+0+1
+------------------- ---- ----------------- -------- --------------------------
+* fnmatch.h              ToBeSpecified     5+0+1
+
+                         The functionality of MATCH-PATHNAME-P 
+                         but for unix paths!
+------------------- ---- ----------------- -------- --------------------------
+* ftw.h             XSI  ToBeSpecified     11+1+2   Directory Tree Walking
+------------------- ---- ----------------- -------- --------------------------
+* glob.h                 ToBeSpecified     11+1+2   
+------------------- ---- ----------------- -------- --------------------------
+* grp.h                  ToBeSpecified     0+1+7
+------------------- ---- ----------------- -------- --------------------------
+* iconv.h                ToBeSpecified     0+1+3    Charset Conversion !CLISP
+------------------- ---- ----------------- -------- --------------------------
+* inttypes.h        CX   Probably Not      *+*+6
+
+                         Defines known size integers (8bit, 16bit, 32bit),
+                         and corresponding macros to be used in printf or
+                         scanf. Perhaps needed along with printf and scanf?
+------------------- ---- ----------------- -------- --------------------------
+* iso646.h          CX   Definitely NOT!   (Alternative spelling for C ops :-)
+------------------- ---- ----------------- -------- --------------------------
+* langinfo.h             ToBeSpecified     55+0+1
+------------------- ---- ----------------- -------- --------------------------
+* libgen.h          XSI  ToBeSpecified     0+0+2    basename,dirname
+------------------- ---- ----------------- -------- --------------------------
+* limits.h               ToBeSpecified     *+0+0
+
+                         There are functions to determine the limits
+                         at run-time.  fpathconf(), pathconf(), and sysconf()
+                         Nice to implement the API in Common-Lisp!
+
+------------------- ---- ----------------- -------- --------------------------
+* locale.h               ToBeSpecified     7+1+2
+------------------- ---- ----------------- -------- --------------------------
+* math.h                 Probably Not      *+2+*    COMMON-LISP:NUMBER
+                         Let's check if we miss any function.
+------------------- ---- ----------------- -------- --------------------------
+* monetary.h             ToBeSpecified     0+0+1
+------------------- ---- ----------------- -------- --------------------------
+* mqueue.h          MSG  ToBeSpecified     0+2+10
+------------------- ---- ----------------- -------- --------------------------
+* ndbm.h                 ToBeSpecified     2+2+9
+------------------- ---- ----------------- -------- --------------------------
+* net/if.h               ToBeSpecified     1+1+4
+
+                         if_freenameindex does not need to be implemented,
+                         just use it after converting to list data the
+                         result of a call to if_nameindex.
+------------------- ---- ----------------- -------- --------------------------
+* netdb.h                ToBeSpecified     25+5+24
+------------------- ---- ----------------- -------- --------------------------
+* netinet/in.h           ToBeSpecified     30+10+0
+------------------- ---- ----------------- -------- --------------------------
+* netinet/tcp.h          ToBeSpecified     1+0+0
+------------------- ---- ----------------- -------- --------------------------
+* nl_types.h             ToBeSpecified     2+2+3
+------------------- ---- ----------------- -------- --------------------------
+* poll.h            XSI  ToBeSpecified     10+2+1
+------------------- ---- ----------------- -------- --------------------------
+* pthread.h         THR  ToBeSpecified     25+13+101
+------------------- ---- ----------------- -------- --------------------------
+* pwd.h                  ToBeSpecified     0+1+7
+------------------- ---- ----------------- -------- --------------------------
+* regex.h                ToBeSpecified     20+2+4
+------------------- ---- ----------------- -------- --------------------------
+* sched.h           PS   ToBeSpecified     4+2+8
+------------------- ---- ----------------- -------- --------------------------
+* search.h          XSI  ToBeSpecified     0+3+11
+------------------- ---- ----------------- -------- --------------------------
+* semaphore.h       SEM  ToBeSpecified     0+1+10
+------------------- ---- ----------------- -------- --------------------------
+* setjmp.h               Ignored.                   COMMON-LISP:CATCH/THROW
+------------------- ---- ----------------- -------- --------------------------
+* signal.h               ToBeSpecified     228+6+27
+------------------- ---- ----------------- -------- --------------------------
+* spawn.h           SPN  ToBeSpecified     6+2+21
+------------------- ---- ----------------- -------- --------------------------
+* stdarg.h               Ignored.    
+------------------- ---- ----------------- -------- --------------------------
+* stdbool.h              Ignored.                   COMMON-LISP:T/NIL
+------------------- ---- ----------------- -------- --------------------------
+* stddef.h               ToBeSpecified     0+3+0
+------------------- ---- ----------------- -------- --------------------------
+* stdint.h               Ignored.                   COMMON-LISP:INTEGER
+------------------- ---- ----------------- -------- --------------------------
+* stdio.h                ToBeSpecified     11+4+60
+------------------- ---- ----------------- -------- --------------------------
+* stdlib.h               ToBeSpecified     12+5+68
+------------------- ---- ----------------- -------- --------------------------
+* string.h               ToBeSpecified     0+0+26
+------------------- ---- ----------------- -------- --------------------------
+* strings.h         XSI  ToBeSpecified     0+0+8
+------------------- ---- ----------------- -------- --------------------------
+* stropts.h              ToBeSpecified     60+11+8
+------------------- ---- ----------------- -------- --------------------------
+* sys/ipc.h         XSI  ToBeSpecified     8+1+1
+------------------- ---- ----------------- -------- --------------------------
+* sys/mman.h             ToBeSpecified     20+2+14
+------------------- ---- ----------------- -------- --------------------------
+* sys/msg.h         XSI  ToBeSpecified     1+3+4
+------------------- ---- ----------------- -------- --------------------------
+* sys/resource.h    XSI  ToBeSpecified     15+3+5
+------------------- ---- ----------------- -------- --------------------------
+* sys/select.h           ToBeSpecified     1+1+6
+------------------- ---- ----------------- -------- --------------------------
+* sys/sem.h         XSI  ToBeSpecified     8+3+3
+------------------- ---- ----------------- -------- --------------------------
+* sys/shm.h         XSI  ToBeSpecified     3+2+4
+------------------- ---- ----------------- -------- --------------------------
+* sys/socket.h      
+------------------- ---- ----------------- -------- --------------------------
+* sys/stat.h  
+------------------- ---- ----------------- -------- --------------------------
+* sys/statvfs.h  
+------------------- ---- ----------------- -------- --------------------------
+* sys/time.h  
+------------------- ---- ----------------- -------- --------------------------
+* sys/timeb.h  
+------------------- ---- ----------------- -------- --------------------------
+* sys/times.h  
+------------------- ---- ----------------- -------- --------------------------
+* sys/types.h  
+------------------- ---- ----------------- -------- --------------------------
+* sys/uio.h  
+------------------- ---- ----------------- -------- --------------------------
+* sys/un.h  
+------------------- ---- ----------------- -------- --------------------------
+* sys/utsname.h  
+------------------- ---- ----------------- -------- --------------------------
+* sys/wait.h  
+------------------- ---- ----------------- -------- --------------------------
+* syslog.h  
+------------------- ---- ----------------- -------- --------------------------
+* tar.h  
+------------------- ---- ----------------- -------- --------------------------
+* termios.h  
+------------------- ---- ----------------- -------- --------------------------
+* tgmath.h  
+------------------- ---- ----------------- -------- --------------------------
+* time.h  
+------------------- ---- ----------------- -------- --------------------------
+* trace.h  
+------------------- ---- ----------------- -------- --------------------------
+* ucontext.h  
+------------------- ---- ----------------- -------- --------------------------
+* ulimit.h  
+------------------- ---- ----------------- -------- --------------------------
+* unistd.h  
+------------------- ---- ----------------- -------- --------------------------
+* utime.h  
+------------------- ---- ----------------- -------- --------------------------
+* utmpx.h  
+------------------- ---- ----------------- -------- --------------------------
+* wchar.h  
+------------------- ---- ----------------- -------- --------------------------
+* wctype.h  
+------------------- ---- ----------------- -------- --------------------------
+* wordexp.h  
+------------------- ---- ----------------- -------- --------------------------
+
+
+
+
+
+
+Dependencies:
+-------------
+
+    Macro assert: Macro NDEBUG
+    fcntl.h: unistd.h sys/stat.h
+    
+    printf scanf: inttypes

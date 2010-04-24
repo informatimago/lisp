@@ -1,0 +1,41 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!-- -*- coding:iso-safe-unix -*- -->
+<!-- -*- coding:iso-safe-unix -*- -->
+<html>
+<head>
+<title>Summary</title>
+<meta HTTP-EQUIV="Content-Type" content="text/html;charset=US-ASCII"></head>
+<body>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/clmisc/resource-utilization.lisp">COM.INFORMATIMAGO.CLMISC.RESOURCE-UTILIZATION</a></b></tt>
+<pre>
+Display resource utilisation summary.
+
+This package exports a macro that gather resource utilization statistics
+and report them.
+
+Usage:
+
+(reporting-sru (:job-origin (remote-client) :stream (remote-stream))
+(do-something-lengthy))
+
+(reporting-sru (:job-origin (remote-client) :stream (remote-stream)
+:report-to (lambda (cpu-time sys-time device-i/o paging-i/o
+job-origin &amp;key (stream t))
+(SUMMARY-RESOURCE-UTILIZATION
+cpu-time sys-time device-i/o paging-i/o
+job-origin :stream stream)))
+(do-something-lengthy))
+Example:
+(reporting-sru (:job-origin &quot;REPL&quot;)
+(asdf-load :com.informatimago.clext))
+prints:
+Summary of resource utilization
+-------------------------------
+CPU time:       0.300 sec                Device I/O:      175
+Overhead CPU:   0.012 sec                Paging I/O:        1
+CPU model:   AMD Athlon(tm) Processor 6.4.2 1200.303 MHz (2402.66 bogomips)
+Job origin:  REPL
+</pre></li></body></html>

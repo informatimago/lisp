@@ -1,0 +1,70 @@
+boa-lambda-list
+ordinary-lambda-list::= (var* 
+                [&optional {var | (var [init-form [supplied-p-parameter]])}*] 
+                [&rest var] 
+                [&key {var | ({var | (keyword-name var)} [init-form [supplied-p-parameter]])}* [&allow-other-keys]] 
+                [&aux {var | (var [init-form])}*]) 
+
+
+generic-lambda-list::= (var* 
+                [&optional {var | (var)}*] 
+                [&rest var] 
+                [&key {var | ({var | (keyword-name var)})}* [&allow-other-keys]]) 
+
+specialized-lambda-list::= ({var | (var [specializer])}* 
+                [&optional {var | (var [init-form [supplied-p-parameter]])}*] 
+                [&rest var] 
+                [&key {var | ({var | (keyword-name var)} [init-form [supplied-p-parameter]])}* [&allow-other-keys]] 
+                [&aux {var | (var [init-form])}*]) 
+
+
+
+reqvars::= var* 
+
+optvars::= [&optional {var | (var [init-form [supplied-p-parameter]])}*] 
+
+restvar::= [{&rest | &body} var] 
+
+keyvars::= [&key {var | ({var | (keyword-name var)} [init-form [supplied-p-parameter]])}* 
+            [&allow-other-keys]] 
+
+auxvars::= [&aux {var | (var [init-form])}*] 
+
+envvar::= [&environment var] 
+
+wholevar::= [&whole var] 
+
+macro-lambda-list::= (wholevar envvar  reqvars envvar  optvars envvar 
+                restvar envvar  keyvars envvar  auxvars envvar) | 
+               (wholevar envvar  reqvars envvar  optvars envvar .  var) 
+
+pattern::= destructuring-lambda-list 
+
+
+destructuring-lambda-list::= (wholevar reqvars optvars restvar keyvars auxvars)
+                           | (wholevar reqvars optvars . var) 
+
+setf-lambda-list::= (var* 
+                [&optional {var | (var [init-form [supplied-p-parameter]])}*] 
+                [&rest var] 
+                [&key {var | ({var | (keyword-name var)} [init-form [supplied-p-parameter]])}* [&allow-other-keys]] 
+                [&environment var] 
+
+
+type-lambda-list ::= macro-lambda-list
+
+modify-macro-lambda-list::= (var* 
+                [&optional {var | (var [init-form [supplied-p-parameter]])}*] 
+                [&rest var] 
+
+
+method-combination-lambda-list::= (wholevar var* 
+                wholevar
+                [&optional {var | (var [init-form [supplied-p-parameter]])}*] 
+                wholevar
+                [&rest var] 
+                wholevar
+                [&key {var | ({var | (keyword-name var)} [init-form [supplied-p-parameter]])}* [&allow-other-keys]] 
+                wholevar
+                [&aux {var | (var [init-form])}*]
+                wholevar) 

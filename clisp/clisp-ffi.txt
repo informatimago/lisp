@@ -1,0 +1,844 @@
+========================================================================
+
+30.3.  Extensions-2.3. The Foreign Function Call Facility
+
+Platform dependent: many UNIX, Win32 platforms only.
+
+30.3.1. Overview
+30.3.2. (Foreign) C types
+30.3.3. The choice of the C flavor.
+30.3.4. Foreign variables
+30.3.5. Operations on foreign places
+30.3.6. Foreign functions
+30.3.7. Argument and result passing conventions
+30.3.8. Parameter Mode
+30.3.9. Examples
+
+
+A foreign function description is written as a Lisp file, and when
+compiled it produces a #P".c" file which is then compiled by the C
+compiler and may be linked together with lisp.a.
+
+All symbols relating to the foreign function interface are exported
+from the package "FFI".. To use them, (USE-PACKAGE "FFI").
+
+Special "FFI". forms may appear anywhere in the Lisp file.
+
+
+30.3.1.  Overview
+
+These are the special "FFI". forms. We have taken a pragmatic
+approach: the only foreign languages we support for now are C and ANSI
+C.  special "FFI". forms; name is any Lisp SYMBOL; c-name is a STRING.
+
+
+(FFI:DEF-C-TYPE name c-type)
+
+    This form makes name a shortcut for c-type. Note that c-type may
+    already refer to name. Forward declarations of types are not
+    possible, however.
+
+
+(FFI:DEF-C-VAR name {option}*)
+
+    This form defines a FFI:FOREIGN-VARIABLE. name is the Lisp name,
+    a regular Lisp SYMBOL.
+
+
+    Options for FFI:DEF-C-VAR
+
+
+    (:NAME c-name)
+
+        specifies the name as seen from C, as a string. If not
+        specified, it is derived from the print name of the Lisp
+        name.
+
+    
+    (:TYPE c-type)
+
+        specifies the variable's foreign type.
+
+    
+    (:READ-ONLY BOOLEAN)
+
+        If this option is specified and non-NIL, it will be
+        impossible to change the variable's value from within Lisp
+        (using SETQ or similar).
+
+    
+    (:ALLOC ALLOCATION)
+
+        This option can be either :NONE or :MALLOC-FREE and defaults
+        to :NONE. If it is :MALLOC-FREE, any values of type
+        FFI:C-STRING, FFI:C-PTR, FFI:C-PTR-NULL, FFI:C-ARRAY-PTR
+        within the foreign value are assumed to be pointers to
+        malloc-allocated storage, and when SETQ replaces an old
+        value by a new one, the old storage is freed using free and
+        the new storage allocated using malloc. If it is :NONE, SETQ
+        assumes that the pointers point to good storage (not NULL!)
+        and overwrites the old values by the new ones. This is
+        dangerous (just think of overwriting a string with a longer
+        one or storing some data in a NULL pointer...) and
+        deprecated.
+
+    
+    (:LIBRARY STRING)
+
+        Specifies the (optional) dynamic library which contains the
+        variable.
+
+
+(FFI:DEF-CALL-OUT name {option}*)
+
+    This form defines a named call-out function (a foreign function
+    called from Lisp: control flow temporarily leaves Lisp).
+
+    Options for FFI:DEF-CALL-OUT
+
+    (:NAME c-name)
+
+        Any Lisp function call to #'name is redirected to call the C
+        function c-name.
+
+
+    (:ARGUMENTS {(argument c-type [PARAM-MODE [ALLOCATION]])}*)
+    (:RETURN-TYPE c-type [ALLOCATION])
+
+        Argument list and return value, see Section  30.3.7,
+        "Argument and result passing conventions". and Section
+         30.3.8, "Parameter Mode"..
+
+
+    (:LANGUAGE language)
+
+        See Section  30.3.3, "The choice of the C flavor."..
+
+
+    (:BUILT-IN BOOLEAN)
+
+        When the function is a C built-in, the full prototype will
+        be output (unless suppressed by FFI:*OUTPUT-C-FUNCTIONS*).
+
+
+    (:LIBRARY STRING)
+
+        Specifies the (optional) dynamic library which contains the
+        variable.
+
+
+
+(FFI:DEF-CALL-IN name {option}*)
+
+    This form defines a named call-in function (i.e., a Lisp function
+    called from the foreign language: control flow temporary enters
+    Lisp)
+
+    Options for FFI:DEF-CALL-IN
+
+
+    (:NAME c-name)
+
+        Any C function call to the C function c-name is redirected
+        to call the Common Lisp function #'name.
+
+
+    (:ARGUMENTS {(argument c-type [PARAM-MODE [ALLOCATION]])}*)
+    (:RETURN-TYPE c-type [ALLOCATION])
+
+        Argument list and return value, see Section  30.3.7,
+        "Argument and result passing conventions". and Section
+         30.3.8, "Parameter Mode"..
+
+
+    (:LANGUAGE language)
+
+        See Section  30.3.3, "The choice of the C flavor."..
+
+
+
+(FFI:DEF-C-CALL-OUT name {option}*)
+
+    This is equivalent to FFI:DEF-CALL-OUT with :LANGUAGE :STDC. deprecated.
+
+
+
+(FFI:DEF-C-CALL-IN name {option}*)
+
+    This is equivalent to FFI:DEF-CALL-IN with :LANGUAGE
+    :STDC. deprecated.
+
+
+
+(FFI:DEF-C-STRUCT name (symbol c-type)*)
+
+    This form defines name to be both a STRUCTURE-CLASS and a foreign
+    C type with the given slots. name is a SYMBOL (structure name) or
+    a LIST whose FIRST element is the structure name and the REST is
+    options. Two options are supported at this time:
+
+    Options for FFI:DEF-C-STRUCT
+
+    :TYPEDEF
+
+        means that the name of this structure is a C type defined
+        with typedef elsewhere.
+
+    :EXTERNAL
+
+        means that this structure is defined in a #P".c" file that
+        you include with, e.g., (FFI:C-LINES "#include
+        <filename.h>").
+
+    These options determine how the struct is written to the #P".c".
+
+
+
+(FFI:DEF-C-ENUM name {symbol | (symbol [value])}*)
+
+    This form defines symbols as constants, similarly to the C
+    declaration enum { symbol [= value], ... };
+
+    You can use (FFI:ENUM-FROM-VALUE name value) and
+    (FFI:ENUM-TO-VALUE name symbol) to convert between the numeric
+    and symbolic representations (of course, the latter function
+    boils down to SYMBOL-VALUE plus a check that the symbol is indeed
+    a constant defined in the FFI:DEF-C-ENUM name).
+
+
+
+(FFI:C-LINES format-string {argument}*)
+
+    This form outputs the string (FORMAT NIL format-string
+    {argument}*) to the C output file. This is a rarely needed
+    low-level facility.
+
+
+
+(FFI:ELEMENT c-place index1 ... indexn)
+
+    Array element: If c-place is of foreign type (FFI:C-ARRAY c-type
+    (dim1 ... dimn)) and 0 â%ooeôôÌ index1 < dim1, ..., 0 â%ooeôôÌ
+    indexn < dimn, this will be the place corresponding to (AREF
+    c-place index1 ... indexn) or c-place[index1]...[indexn]. It is a
+    place of type c-type. If c-place is of foreign type
+    (FFI:C-ARRAY-MAX c-type dim) and 0 â%ooeôôÌ index < dim, this will
+    be the place corresponding to (AREF c-place index) or
+    c-place[index]. It is a place of type c-type.
+
+
+
+(FFI:DEREF c-place)
+
+    Dereference pointer: If c-place is of foreign type (FFI:C-PTR
+    c-type) or (FFI:C-PTR-NULL c-type), this will be the place the
+    pointer points to. It is a place of type c-type. For
+    (FFI:C-PTR-NULL c-type), the c-place may not be NULL.
+
+
+
+(FFI:SLOT c-place slot-name)
+
+    Struct or union component: If c-place is of foreign type
+    (FFI:C-STRUCT class ... (slot-name c-type) ...) or of type
+    (FFI:C-UNION ... (slot-name c-type) ...), this will be of type
+    c-type.
+
+
+
+(FFI:CAST c-place c-type)
+
+    Type change: A place denoting the same memory locations as the
+    original c-place, but of type c-type.
+
+
+
+(FFI:OFFSET c-place offset c-type)
+
+    Type change and displacement: return a place denoting a memory
+    locations displaced from the original c-place by an offset
+    counted in bytes, with type c-type. This can be used to resize an
+    array, e.g. of c-type (FFI:C-ARRAY uint16 n) via (FFI:OFFSET
+    c-place 0 '(FFI:C-ARRAY uint16 k)).
+
+
+
+(FFI:C-VAR-ADDRESS c-place)
+
+    Return the address of c-place as a Lisp object of type
+    FFI:FOREIGN-ADDRESS. This is useful as an argument to foreign functions
+    expecting a parameter of C type FFI:C-POINTER.
+
+
+
+(FFI:C-VAR-OBJECT c-place)
+
+    Return the FFI:FOREIGN-VARIABLE object underlying the
+    c-place. This is also an acceptable argument type to a
+    FFI:C-POINTER declaration.
+
+
+
+(FFI:TYPEOF c-place)
+
+    returns the c-type corresponding to the c-place.
+
+
+
+(FFI:SIZEOF c-type)
+(FFI:SIZEOF c-place)
+
+    The first form returns the size and alignment of the C type
+    c-type, measured in bytes.
+
+    The second form returns the size and alignment of the C type of
+    c-place, measured in bytes.
+
+
+
+(FFI:BITSIZEOF c-type)
+(FFI:BITSIZEOF c-place)
+
+    The first form returns the size and alignment of the C type
+    c-type, measured in bits.
+
+    The second form returns the size and alignment of the C type of
+    c-place, measured in bits.
+
+
+
+(FFI:FOREIGN-ADDRESS-NULL foreign-entity)
+
+    This predicate returns T if the foreign-entity refers to the NULL
+    address (and thus foreign-entity should probably not be passed to
+    most foreign functions).
+
+
+
+(FFI:FOREIGN-ADDRESS-UNSIGNED foreign-entity)
+(FFI:UNSIGNED-FOREIGN-ADDRESS number)
+
+    FFI:FOREIGN-ADDRESS-UNSIGNED returns the INTEGER address embodied
+    in the Lisp object of type FFI:FOREIGN-ADDRESS,
+    FFI:FOREIGN-POINTER, FFI:FOREIGN-VARIABLE or FFI:FOREIGN-FUNCTION.
+
+    FFI:UNSIGNED-FOREIGN-ADDRESS returns a FFI:FOREIGN-ADDRESS object
+    pointing to the given INTEGER address.
+
+
+
+(FFI:FOREIGN-ADDRESS foreign-entity)
+
+    FFI:FOREIGN-ADDRESS is both a type name and a
+    selector/constructor function. It is the Lisp object type
+    corresponding to a FFI:C-POINTER external type declaration,
+    e.g. a call-out function with (:RETURN-TYPE FFI:C-POINTER) yields
+    a Lisp object of type FFI:FOREIGN-ADDRESS.
+
+    The function extracts the object of type FFI:FOREIGN-ADDRESS
+    living within any FFI:FOREIGN-VARIABLE or FFI:FOREIGN-FUNCTION
+    object. If the foreign-entity already is a FFI:FOREIGN-ADDRESS,
+    it returns it. If it is a FFI:FOREIGN-POINTER (e.g. a base
+    foreign library address), it encapsulates it into a
+    FFI:FOREIGN-ADDRESS object, as suitable for use with a
+    FFI:C-POINTER external type declaration. It does not construct
+    addresses out of NUMBERs, FFI:UNSIGNED-FOREIGN-ADDRESS must be
+    used for that purpose.
+
+
+
+(FFI:VALIDP foreign-entity)
+(SETF (FFI:VALIDP foreign-entity) value)
+
+    This predicate returns NIL if the foreign-entity (e.g. the Lisp
+    equivalent of a FFI:C-POINTER) refers to a pointer which is
+    invalid because it comes from a previous Lisp session. It returns
+    T if foreign-entity can be used within the current Lisp process
+    (thus it returns T for all non-foreign arguments).
+
+    You can invalidate a foreign object using (SETF FFI:VALIDP). You
+    cannot resurrect a zombie, nor can you kill a non-foreign object.
+
+
+
+(FFI:FOREIGN-POINTER foreign-entity)
+(SETF (FFI:FOREIGN-POINTER foreign-entity) foreign-pointer)
+
+    FFI:FOREIGN-POINTER returns the FFI:FOREIGN-POINTER associated
+    with the Lisp object of type FFI:FOREIGN-ADDRESS,
+    FFI:FOREIGN-POINTER, FFI:FOREIGN-VARIABLE or
+    FFI:FOREIGN-FUNCTION. (SETF FFI:FOREIGN-POINTER) changes the
+    FFI:FOREIGN-POINTER associated with the Lisp object of type
+    FFI:FOREIGN-ADDRESS, FFI:FOREIGN-VARIABLE or FFI:FOREIGN-FUNCTION
+    to that of the other entity. When foreign-pointer is :COPY, a
+    fresh FFI:FOREIGN-POINTER is allocated. foreign-entity still
+    points to the same object. This is particularly useful with (SETF
+    FFI:VALIDP).
+
+
+
+(FFI:WITH-FOREIGN-OBJECT (variable c-type [initarg]) body)
+(FFI:WITH-C-VAR (variable c-type [initarg]) body)
+
+    These forms allocate space on the C execution stack, bind
+    respectively a FFI:FOREIGN-VARIABLE object or a local SYMBOL-MACRO
+    to variable and execute body.
+
+    When initarg is not supplied, they allocate space only for
+    (FFI:SIZEOF c-type) bytes. This space is filled with zeroes. E.g.,
+    using a c-type of FFI:C-STRING or even (FFI:C-PTR (FFI:C-ARRAY
+    uint8 32)) (!) both allocate place for a single pointer,
+    initialized to NULL.
+
+    When initarg is supplied, they allocate space for an arbitrarily
+    complex set of structures rooted in c-type. Therefore,
+    FFI:C-ARRAY-MAX, #() and "" are your friends for creating a
+    pointer to the empty arrays:
+
+     (with-c-var (v '(c-ptr (c-array-max uint8 32)) #())
+        (setf  (element (deref v) 0) 127) v)
+
+    c-type is evaluated, making creation of variable sized buffers
+    easy:
+
+     (with-c-var (fv `(c-array uint8 ,(length my-vector)) my-vector)
+       (print fv))
+
+
+
+
+(FFI:WITH-FOREIGN-STRING (foreign-address char-count byte-count string
+                          &KEY encoding null-terminated-p start end) &BODY body)
+
+    This forms converts a Lisp string according to the encoding,
+    allocating space on the C execution stack. encoding can be any
+    EXT:ENCODING, e.g. CHARSET:UTF-16 or CHARSET:UTF-8, circumventing
+    the usual 1:1 limit imposed on CUSTOM:*FOREIGN-ENCODING*.
+
+    body is then executed with the three variables foreign-address,
+    char-count and byte-count respectively bound to an untyped
+    FFI:FOREIGN-ADDRESS (as known from the FFI:C-POINTER foreign type
+    specification) pointing to the stack location, the number of
+    CHARACTERs of the Lisp string that were considered and the number
+    of (UNSIGNED-BYTE 8) bytes that were allocated for it on the C
+    stack.
+
+    When null-terminated-p is true, which is the default, a variable
+    number of zero bytes is appended, depending on the encoding,
+    e.g. 2 for CHARSET:UTF-8, and accounted for in byte-count, and
+    char-count is incremented by one.
+
+    The FFI:FOREIGN-ADDRESS object bound to foreign-address is
+    invalidated upon the exit from the form.
+
+    A stupid example (a quite costly interface to mblen):
+
+     (with-foreign-string (fv elems bytes string                           
+
+                      :encoding charset:jis... :null-terminated-p nil 
+
+                      :end 5)                                         
+      (declare (ignore fv elems))                                          
+      (format t "This string would take ~D bytes." bytes))                 
+
+                                                                  
+
+(FFI:PARSE-C-TYPE c-type)
+(FFI:DEPARSE-C-TYPE c-type-internal)
+
+    Convert between the external (LIST) and internal (VECTOR) C type
+    representations (used by DESCRIBE).
+
+
+
+(FFI:ALLOCATE-SHALLOW c-type &KEY :COUNT :READ-ONLY)
+(FFI:ALLOCATE-DEEP c-type contents &KEY :COUNT :READ-ONLY)
+(FFI:FOREIGN-FREE foreign-entity &KEY :FULL)
+(FFI:FOREIGN-ALLOCATE c-type-internal &KEY :INITIAL-CONTENTS :COUNT :READ-ONLY)
+
+    Macro FFI:ALLOCATE-SHALLOW allocates (FFI:SIZEOF c-type) bytes on
+    the C heap and zeroes them out (like calloc). When :COUNT is
+    supplied, c-type is substituted with (FFI:C-ARRAY c-type count),
+    except when c-type is CHARACTER, in which case (FFI:C-ARRAY-MAX
+    CHARACTER count) is used instead. When :READ-ONLY is supplied, the
+    Lisp side is prevented from modifying the memory contents. This
+    can be used as an indication that some foreign side is going to
+    fill this memory (e.g. via read).
+
+    Returns a FFI:FOREIGN-VARIABLE object of the actual c-type, whose
+    address part points to the newly allocated memory.
+
+    FFI:ALLOCATE-DEEP will call C malloc as many times as necessary to
+    build a structure on the C heap of the given c-type, initialized
+    from the given contents.
+
+    E.g., (FFI:ALLOCATE-DEEP 'FFI:C-STRING "ABCDE") performs 2
+    allocations: one for a C pointer to a string, another for the
+    contents of that string. This would be useful in conjunction with
+    a char** C type declaration. (FFI:ALLOCATE-SHALLOW 'FFI:C-STRING)
+    allocates room for a single pointer (probably 4 bytes).
+
+    (FFI:ALLOCATE-DEEP 'CHARACTER "ABCDEF" :count 10) allocates and
+    initializes room for the type (FFI:C-ARRAY-MAX CHARACTER 10),
+    corresponding to char* or, more specifically, char[10] in C.
+
+    Function FFI:FOREIGN-FREE deallocates memory at the address held
+    by the given foreign-entity. If :FULL is supplied and the argument
+    is of type FFI:FOREIGN-VARIABLE, recursively frees the whole
+    complex stucture pointed to by this variable.
+
+    If given a FFI:FOREIGN-FUNCTION object that corresponds to a CLISP
+    callback, deallocates it. Callbacks are automatically created each
+    time you pass a Lisp function via the "FFI"..
+
+    Use (SETF FFI:VALIDP) to disable further references to this
+    address from Lisp. This is currently not done automatically. If
+    the given pointer is already invalid, FFI:FOREIGN-FREE (currently)
+    signals an ERROR. This may change to make it easier to integrate
+    with EXT:FINALIZE.
+
+    Function FFI:FOREIGN-ALLOCATE is a lower-level interface as it
+    requires an internal C type descriptor as returned by
+    FFI:PARSE-C-TYPE.
+
+
+
+(FFI:WITH-C-PLACE (variable foreign-entity) body)
+
+    Create a place out of the given FFI:FOREIGN-VARIABLE object so
+    operations on places (e.g. FFI:CAST, FFI:DEREF, FFI:SLOT etc.) can
+    be used within body. FFI:WITH-C-VAR appears as a composition of
+    FFI:WITH-FOREIGN-OBJECT and FFI:WITH-C-PLACE.
+
+    Such a place can be used to access memory referenced by a
+    foreign-entity object:
+
+     (setq foo (allocate-deep '(c-array uint8 3) rgb)) 
+     (with-c-place (place foo) (element place 0))      
+
+
+
+
+FFI:*OUTPUT-C-FUNCTIONS*
+FFI:*OUTPUT-C-VARIABLES*
+
+    CLISP will write the extern declarations for foreign functions
+    (defined with FFI:DEF-CALL-OUT) and foreign variables (defined
+    with FFI:DEF-C-VAR) into the output #P".c" (when the Lisp file is
+    compiled with COMPILE-FILE) unless these variables are NIL. They
+    are NIL by default, so the extern declarations are not written;
+    you are encouraged to use FFI:C-LINES to include the appropriate C
+    headers. Set these variables to non-NIL if the headers are not
+    available or not usable.
+
+
+
+
+30.3.2.  (Foreign) C types
+
+Foreign C types are used in the "FFI".. They are not regular Common
+Lisp types or CLOS classes.
+
+A c-type is either a predefined C type or the name of a type defined
+by FFI:DEF-C-TYPE. 
+
+the predefined C types (c-type) 
+   simple-c-type
+      the simple C types
+
+
+
+============ ================== ============== =============== ================
+Lisp name    Lisp equivalent    C equivalent   ILU equivalent  Comment
+============ ================== ============== =============== ================
+NIL          NIL                void                           as a result 
+                                                               type only
+BOOLEAN      BOOLEAN            int            BOOLEAN
+CHARACTER    CHARACTER          char           SHORT CHARACTER
+char         INTEGER            signed char
+uchar        INTEGER            unsigned char
+short        INTEGER            short
+ushort       INTEGER            unsigned short
+int          INTEGER            int
+uint         INTEGER            unsigned int
+long         INTEGER            long
+ulong        INTEGER            unsigned long
+uint8        (UNSIGNED-BYTE 8)  uint8          BYTE
+sint8        (SIGNED-BYTE 8)    sint8
+uint16       (UNSIGNED-BYTE 16) uint16         SHORT CARDINAL
+sint16       (SIGNED-BYTE 16)   int16          SHORT INTEGER
+uint32       (UNSIGNED-BYTE 32) uint32         CARDINAL
+sint32       (SIGNED-BYTE 32)   sint32         INTEGER
+uint64       (UNSIGNED-BYTE 64) uint64         LONG CARDINAL   does not work 
+                                                               on all platforms
+sint64       (SIGNED-BYTE 64)   sint64         LONG INTEGER    does not work
+                                                               on all platforms
+SINGLE-FLOAT SINGLE-FLOAT       float
+DOUBLE-FLOAT DOUBLE-FLOAT       double
+============ ================== ============== =============== ================
+  
+
+  
+FFI:C-POINTER
+
+    This type corresponds to what C calls void*, an opaque
+    pointer. When used as an argument, NIL is accepted as a
+    FFI:C-POINTER and treated as NULL; when a function wants to return
+    a NULL FFI:C-POINTER, it actually returns NIL.
+
+
+FFI:C-STRING
+
+    This type corresponds to what C calls char*, a zero-terminated
+    string. Its Lisp equivalent is a string, without the trailing zero
+    character.
+
+
+(FFI:C-STRUCT class (ident1 c-type1) ... (identn c-typen))
+
+    This type is equivalent to what C calls struct { c-type1 ident1;
+    ...; c-typen identn; }. Its Lisp equivalent is: if class is
+    VECTOR, a SIMPLE-VECTOR; if class is LIST, a proper list; if class
+    is a symbol naming a structure or CLOS class, an instance of this
+    class, with slots of names ident1, ..., identn.
+    class may also be a CONS of a SYMBOL (as above) and a LIST of
+    FFI:DEF-C-STRUCT options.
+
+
+(FFI:C-UNION (ident1 c-type1) ... (identn c-typen))
+
+    This type is equivalent to what C calls union { c-type1 ident1;
+    ...; c-typen identn; }. Conversion to and from Lisp assumes that a
+    value is to be viewed as being of c-type1.
+
+
+(FFI:C-ARRAY c-type dim1)
+(FFI:C-ARRAY c-type (dim1 ... dimn))
+
+    This type is equivalent to what C calls c-type [dim1]
+    ... [dimn]. Note that when an array is passed as an argument to a
+    function in C, it is actually passed as a pointer; you therefore
+    have to write (FFI:C-PTR (FFI:C-ARRAY ...))  for this argument's
+    type.
+
+
+(FFI:C-ARRAY-MAX c-type maxdimension)
+
+    This type is equivalent to what C calls c-type [maxdimension], an
+    array containing up to maxdimension elements. The array is
+    zero-terminated if it contains less than maxdimension
+    elements. Conversion from Lisp of an array with more than
+    maxdimension elements silently ignores the superfluous elements.
+
+
+(FFI:C-FUNCTION (:ARGUMENTS {(argument a-c-type [PARAM-MODE [ALLOCATION]])}*)
+                (:RETURN-TYPE r-c-type [ALLOCATION]) (:LANGUAGE language))
+
+    This type designates a C function that can be called according to
+    the given prototype (r-c-type (*) (a-c-type1, ...)). Conversion
+    between C functions and Lisp functions is transparent, and
+    NULL/NIL is recognized and accepted.
+
+
+(FFI:C-PTR c-type)
+
+    This type is equivalent to what C calls c-type *: a pointer to a
+    single item of the given c-type.
+
+
+(FFI:C-PTR-NULL c-type)
+
+    This type is also equivalent to what C calls c-type *: a pointer
+    to a single item of the given c-type, with the exception that C
+    NULL corresponds to Lisp NIL.
+
+
+
+(FFI:C-ARRAY-PTR c-type)
+
+    This type is equivalent to what C calls c-type (*)[]: a pointer to
+    a zero-terminated array of items of the given c-type.
+    CUSTOM:*FOREIGN-ENCODING* governs conversion for any c-type
+    involving FFI:C-STRING or CHARACTER (but not char).
+
+
+
+30.3.3.  The choice of the C flavor.
+
+FFI:C-FUNCTION, FFI:DEF-CALL-IN, FFI:DEF-CALL-OUT take :LANGUAGE
+argument. The language is either :C (denotes K&R C) or :STDC (denotes
+ANSI C) or :STDC-STDCALL (denotes ANSI C with the stdcall calling
+convention). It specifies whether the C function (caller or callee)
+has been compiled by a K&R C compiler or by an ANSI C compiler, and
+possibly the calling convention.
+
+The default language is set using the macro
+FFI:DEFAULT-FOREIGN-LANGUAGE. If this macro has not been called in the
+current compilation unit (usually a file), a warning is issued and
+:STDC is used for the rest of the unit.
+
+
+
+30.3.4.  Foreign variables
+
+Foreign variables are variables whose storage is allocated in the
+foreign language module. They can nevertheless be evaluated and
+modified through SETQ, just as normal variables can, except that the
+range of allowed values is limited according to the variable's foreign
+type. Note that for a foreign variable x the form (EQL x x) is not
+necessarily true, since every time x is evaluated its foreign value is
+converted to a fresh Lisp value. Foreign variables are defined using
+FFI:DEF-C-VAR.
+
+
+
+30.3.5.  Operations on foreign places
+
+A FFI:FOREIGN-VARIABLE name defined by FFI:DEF-C-VAR, FFI:WITH-C-VAR
+or FFI:WITH-C-PLACE defines a place, i.e., a form which can also be
+used as argument to SETF. (An "lvalue" in C terminology.) The
+following operations are available on foreign places: FFI:ELEMENT,
+FFI:DEREF, FFI:SLOT, FFI:CAST, FFI:OFFSET, FFI:C-VAR-ADDRESS,
+FFI:C-VAR-OBJECT, FFI:TYPEOF, FFI:SIZEOF, FFI:BITSIZEOF.
+
+
+
+30.3.6.  Foreign functions
+
+Foreign functions are functions which are defined in the foreign
+language. There are named foreign functions (imported via FFI:DEF-CALL-OUT or
+created via FFI:DEF-CALL-IN) and anonymous foreign functions; they arise
+through conversion of function pointers.
+
+A "call-out" function is a foreign function called from Lisp: control flow
+temporarily leaves Lisp. A "call-in" function is a Lisp function called from
+the foreign language: control flow temporary enters Lisp.
+
+The following forms define foreign functions: FFI:DEF-CALL-IN,
+FFI:DEF-CALL-OUT, FFI:DEF-C-CALL-IN, FFI:DEF-C-CALL-OUT.
+
+
+
+30.3.7.  Argument and result passing conventions
+
+When passed to and from functions, allocation of arguments and results is
+handled as follows:
+
+Values of SIMPLE-C-TYPE, FFI:C-POINTER are passed on the stack, with dynamic
+extent. The ALLOCATION is effectively ignored.
+
+Values of type FFI:C-STRING, FFI:C-PTR, FFI:C-PTR-NULL, FFI:C-ARRAY-PTR need
+storage. The ALLOCATION specifies the allocation policy:
+
+:NONE         no storage is allocated.
+:ALLOCA       allocation of storage on the stack, which has dynamic extent.
+:MALLOC-FREE  storage will be allocated via malloc and freed via free.
+
+If no ALLOCATION is specified, the default ALLOCATION is :NONE for most types,
+but :ALLOCA for FFI:C-STRING and FFI:C-PTR and FFI:C-PTR-NULL and
+FFI:C-ARRAY-PTR and for :OUT arguments. [Subject to change!] The :MALLOC-FREE
+policy provides the ability to pass arbitrarily nested structs containing
+pointers pointing to structs ... within a single conversion.
+
+
+For call-out functions:
+
+    For arguments passed from Lisp to C:
+
+        If ALLOCATION is :MALLOC-FREE:
+
+             Lisp allocates the storage using malloc and never
+             deallocates it. The C function is supposed to call free
+             when done with it.
+
+
+        If ALLOCATION is :ALLOCA:
+
+             Lisp allocates the storage on the stack, with dynamic
+             extent. It is freed when the C function returns.
+
+
+        If ALLOCATION is :NONE:
+
+             Lisp assumes that the pointer already points to a valid
+             area of the proper size and puts the result value
+             there. This is dangerous! and deprecated.
+
+    For results passed from C to Lisp:
+
+        If ALLOCATION is :MALLOC-FREE:
+
+             Lisp calls free on it when done.
+
+
+        If ALLOCATION is :NONE:
+
+             Lisp does nothing.
+
+
+For call-in functions:
+
+    For arguments passed from C to Lisp:
+
+        If ALLOCATION is :MALLOC-FREE:
+
+             Lisp calls free on it when done.
+
+
+        If ALLOCATION is :ALLOCA or :NONE:
+
+             Lisp does nothing.
+
+    For results passed from Lisp to C:
+
+        If ALLOCATION is :MALLOC-FREE:
+
+             Lisp allocates the storage using malloc and never
+             deallocates it. The C function is supposed to call free
+             when done with it.
+
+
+        If ALLOCATION is :NONE:
+
+             Lisp assumes that the pointer already points to a valid
+             area of the proper size and puts the result value
+             there. This is dangerous! and deprecated.
+
+
+    Warning: Passing FFI:C-STRUCT, FFI:C-UNION, FFI:C-ARRAY,
+    FFI:C-ARRAY-MAX values as arguments (not via pointers) is only
+    possible to the extent the C compiler supports it. Most C
+    compilers do it right, but some C compilers (such as gcc on hppa
+    and Win32) have problems with this. The recommended workaround is
+    to pass pointers; this is fully supported. See also this
+    <clisp-list@sf.net> message.
+
+
+
+
+30.3.8.  Parameter Mode
+
+A function parameter's PARAM-MODE may be
+
+:IN (means: read-only):
+
+     The caller passes information to the callee.
+
+:OUT (means: write-only):
+
+     The callee passes information back to the caller on return. When
+     viewed as a Lisp function, there is no Lisp argument corresponding to
+     this, instead it means an additional return value.
+
+:IN-OUT (means: read-write):
+
+     Information is passed from the caller to the callee and then back to
+     the caller. When viewed as a Lisp function, the :OUT value is returned as
+     an additional multiple value.
+
+The default is :IN.
+
+[Currently, only :IN is fully implemented. :OUT works only with ALLOCATION =
+:ALLOCA.]
+
+========================================================================

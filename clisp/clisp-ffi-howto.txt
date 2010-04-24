@@ -1,0 +1,691 @@
+From: Hoehle, Joerg-Cyril <Joerg-Cyril.Hoehle <at> t-systems.com>
+Subject: FFI howto: variable length arrays (long)
+Newsgroups: gmane.lisp.clisp.general
+Date: Wed, 05 Mar 2003 16:04:26 +0100
+
+Dear reader,
+
+[Sam: this text will hopefully answer questions regarding FOREIGN-VALUE et al.]
+
+the text below assumes some familiarity with the CLISP FFI declarations
+and reading of prior FFI cookbook texts of mine (i.e. sent on 12th
+of February 2002 to this list).
+
+How to deal with variable length (unknown at compile time) arrays with
+the CLISP FFI?
+
+The aforementioned cookbook part already contains an example for
+gethostname. It was relatively easy, since the maximal array length
+(MAXHOSTNAMELEN: 256) is a system-wide constant.
+
+There's a well-known variable length case everybody knows about:
+C-STRING.  You may not have recognized that C-ARRAY-PTR is a
+generalization of C-STRING to any other type: (C-ARRAY-PTR CHARACTER)
+is equivalent to C-STRING - except for efficiency. Yet that is still
+not enough to handle typical needs.
+
+I'll use zlib's compress function as an example throughout this
+document. Its declaration is:
+int compress (Bytef *dest, uLongf *destLen,
+              const Bytef *source, uLong sourceLen);
+
+However that does not tell enough for a FFI definition. The
+documentation defines: "sourceLen is the byte length of the source
+buffer. Upon entry, destLen is the total size of the destination
+buffer, which must be at least 0.1% larger than sourceLen plus 12
+bytes. Upon exit, destLen is the actual size of the compressed
+buffer."
+
+Now this is all we need to know about compress. Here is what I dream of:
+(def-lib-call-out zlib-compress [eventually library]
+  (:name "compress")
+  (:arguments (dest (ffi:c-ptr (ffi:c-array ffi:uint8 is_len(destlen)))
+                    :out :guard (zerop return))
+              (destlen ffi:ulong :in-out)
+              (source (ffi:c-ptr (ffi:c-array ffi:uint8 is_len(sourcelen))))
+              (sourcelen ffi:ulong))
+  (:return-type ffi:int))
+Well, the CLISP FFI does not support this kind of declaration. We need
+to do it by hand. We will need a Lisp wrapper around the foreign function.
+
+I'll distinguish input from output (or :in-out) cases and start with
+:in parameter declarations.
+
+Part 1: input parameters (:IN)
+
+source is a typical :in parameter. It's a variable length array, and
+its length is passed as an extra argument.
+
+If, in our application, we're going to compress strings only, then the
+above declaration could be changed to (c-ptr (c-array character
+is_len(sourcelen))) -- at least in what I dream of.
+
+But in such cases, I'd rather just use C-STRING. The difference is a
+terminating NUL (0) character that the FFI will supply
+automatically. The callee (zlib) will not even see it, since it is not
+allowed to read more than sourcelen characters.
+
+The equivalent declaration for bytes instead of a string is:
+ (C-ARRAY-PTR UINT8)
+
+(def-lib-call-out zlib-compress [eventually library]
+  (:name "compress")
+  (:arguments (dest ... :out #|:guard (zerop return)|#)
+              (destlen ulong :in-out)
+              (source (c-array-ptr uint8))
+              (sourcelen ulong))
+  (:return-type ffi:int))
+(defun my-compress (sourcebytes)
+  "Accepts an array of bytes and returns a vector of its compressed contents."
+  (let ((sourcelen (length sourcebytes)))
+    (multiple-value-bind (status actual)
+        (zlib-compress <destlen> bytes sourcelen)
+      ...)))
+
+Several people have inquired whether CLISP would stop at a 0 byte
+occurring within sourcebytes. The answer is no. From the Lisp point of
+view, a whole array is passed trough the interface. Contents don't
+matter, therefore the length is not limited by an eventual
+(POSITION 0 sourcebytes).
+
+Summary: Do waste a terminating 0 byte (or int, or NULL pointer) by
+using C-STRING or (C-ARRAY-PTR x) when applicable.  This has much less
+overhead and easier to read than the variable length support that we
+cannot circumvent for output parameters. However, C-STRING or
+C-ARRAY-PTR are not useable in call cases. We then have to use a
+technique as developed below for the :OUT (or :in-out) case.
+
+Part 2: output parameters (:OUT or :IN-OUT)
+
+compress' dest is a typical output parameter.
+
+One solution path would be to construct a FFI definition at run-time,
+when we know the actual source and dest buffer length. We would need
+to weight the time needed to build, parse and compile such a
+definition vs. the gain from being able to use an exact array type
+declaration comprising the size.
+
+(defun my-compress (source)
+  (let* ((sourcelen (length source))
+         (destlen (+ 12 (ceiling (* sourcelen 1.05)))))
+    (funcall
+     (foreign-address-function		; not yet in CLISP
+      #'zlib-compress
+      `(c-function ...
+           (dest (C-ARRAY CHARACTER ,destlen) :out)
+           (destlen (C-PTR ulong) :in-out)
+           (source (C-ARRAY CHARACTER ,sourcelen))
+           (sourcelen ulong)))
+     destlen source sourcelen)))
+
+This is one way to go, which in the case of compress is not enough,
+because only part of the dest buffer is filled in, as returned in
+<destlen> on output. We could use SUBSEQ on the result of the call to
+zlib-compress, but that would be some waste of storage.
+
+Instead, let us allocate the destination buffer on the stack, using
+FFI:WITH-FOREIGN-OBJECT. This is faster and makes more sense than
+using malloc() (via FFI:SIMPLE-CALLOC or FFI:DEEP-MALLOC) and
+UNWIND-PROTECT. We must then pass a C-POINTER (a FOREIGN-ADDRESS
+object) to this buffer to the foreign function.
+
+(def-lib-call-out zlib-compress [eventually library]
+  (:name "compress")
+  (:arguments (dest C-POINTER :IN #|:guard (zerop return)|#)
+              (destlen ulong :in-out)
+              (source (c-array-ptr uint8))
+              (sourcelen ulong))
+  (:return-type ffi:int))
+
+Note how the former :OUT declaration for dest now turns into an :IN
+declaration. That's why C doesn't know about :in or :out, as opposed
+to other languages. All it sees is pointers.
+
+(defun my-compress (sourcebytes)
+  "Accepts an array of bytes and returns a vector of its compressed contents."
+  (let* ((sourcelen (length source))
+         (destlen (+ 12 (ceiling (* sourcelen 1.05)))))
+    (WITH-FOREIGN-OBJECT (dest 'uint8 :count destlen)
+      (multiple-value-bind (status actual)
+          (zlib-compress (FOREIGN-ADDRESS dest) destlen sourcebytes sourcelen)
+        (if (zerop status)
+          ...)))))
+
+Actually, I haven't yet implemented the :COUNT extension to
+WITH-FOREIGN-OBJECT (so far it's only available with SIMPLE-CALLOC and
+DEEP-MALLOC). Let's use an equivalent (but less efficient) form
+instead:
+
+    (WITH-FOREIGN-OBJECT (dest `(c-array uint8 ,destlen))
+
+Note how I passed (FOREIGN-ADDRESS dest) instead of `dest' to the
+foreign function. The reason is that WITH-FOREIGN-OBJECT creates an
+object of type FOREIGN-VARIABLE, which one can understand as
+encapsulating a FOREIGN-ADDRESS object together with a foreign type.
+
+I'm thinking about submitting a patch to src/foreign.d which would
+made this call superfluous: a C-POINTER declaration would be satisfied
+by either untyped FOREIGN-ADDRESS (as by now) or typed
+FOREIGN-VARIABLE objects.
+
+What did we achieve so far? We managed to pass to the foreign function
+a buffer exactly as large as needed, along with its size. The foreign
+function will fill part of it, and we need to extract the results.
+
+The dest buffer is only filled when the function was successful:
+
+  (if (zerop status)
+    (subseq (FOREIGN-VALUE dest) 0 actual)
+    (error ...))
+
+The code above dereferences the whole buffer, then takes out the part
+that was actually filled in, allocating and copying another
+sequence. We shall do without it.
+
+The CLISP FFI contains macros to operate on what is called foreign
+places. In the future, it will export their lower-level functional
+counterparts which operate on FOREIGN-VARIABLE objects, as obtained by
+e.g. with-foreign-object.  These functions shall have a trailing * in
+their name, e.g. ELEMENT* instead of ELEMENT, etc. (It's undecided
+whether I should rename FOREIGN-VALUE to FOREIGN-VALUE* for coherence,
+or only rename in case of name duplication -- please tell me).
+
+Remember the foreign type of dest: (C-ARRAY UINT8 <destlen>)
+What we want is a shorter array. Let's use CAST*, like any C programmer.
+
+  (foreign-value (CAST* dest `(C-ARRAY UINT8 ,actual))) ; broken
+
+Using CAST* here does not work, though, because CLISP insists on
+keeping the size of the foreign structure constant when casting. So we
+are going to use OFFSET* instead, which lets us conceptually overlay an
+address or memory range with another structure.
+
+  (if (zerop status)
+    (foreign-value (FFI:OFFSET* dest 0 `(C-ARRAY UINT8 ,actual)))
+to be compared with the original form:
+  (subseq (FOREIGN-VALUE dest) 0 actual)
+
+Joining all steps, the complete example becomes:
+
+(defun my-compress (sourcebytes)
+  "Accepts an array of bytes and returns a vector of its compressed contents."
+  (let* ((sourcelen (length source))
+         (destlen (+ 12 (ceiling (* sourcelen 1.05)))))
+    (WITH-FOREIGN-OBJECT (dest 'uint8 :count destlen)
+      (multiple-value-bind (status actual)
+          (zlib-compress (FOREIGN-ADDRESS dest) destlen sourcebytes sourcelen)
+	(if (zerop status)
+	  (FOREIGN-VALUE (OFFSET* dest 0 `(C-ARRAY UINT8 ,actual)))
+	  (error "zlib::compress error code ~D" status))))))
+
+However, as of CLISP-2.30, these names with the trailing star are not
+yet exported from the package FFI. They're named FFI::%CAST instead,
+which is not engaging. Instead of using these, I'll show how to write
+equivalent code using what CLISP calls foreign places.
+
+A foreign place is a concept similar to that of a generalized variable.
+Instead of using with-foreign-object, we shall write WITH-C-VAR. The
+code looks almost the same.
+
+  (WITH-C-VAR (dest `(c-array uint8 ,destlen))
+    (multiple-value-bind (status destbytes actual)
+	(zlib-compress (C-VAR-ADDRESS dest) destlen sourcebytes sourcelen)
+      (if (zerop status)
+	(subseq dest 0 actual)
+	(error "zlib::compress error code ~D" status))))
+
+`Dest' now denotes a foreign place. From a technical point of this
+means no more than there is a SYMBOL-MACROLET which wraps its uses
+into a FOREIGN-VALUE form. Therefore, evaluating (reading) `dest'
+dereferences the foreign memory's contents. Setting it (using SETQ or
+SETF) writes to foreign memory. The address of this foreign places can
+be obtained with C-VAR-ADDRESS -- FOREIGN-ADDRESS would not work.
+
+So one saves typing FOREIGN-VALUE. What else is there about it? On the
+positive side, it combines nicely with Lisp. Foreign structures can be
+used smoothly. And it works with old CLISPs (OFFSET has been there
+since day one of the CLISP FFI). Please compare the resulting code
+with the above.
+
+(defun my-compress (sourcebytes)
+  "Accepts an array of bytes and returns a vector of its compressed contents."
+  (let* ((sourcelen (length source))
+         (destlen (+ 12 (ceiling (* sourcelen 1.05)))))
+    (WITH-C-VAR (dest 'uint8 :count destlen)
+      (multiple-value-bind (status actual)
+          (zlib-compress (C-VAR-ADDRESS dest) destlen sourcebytes sourcelen)
+	(if (zerop status)
+	  (OFFSET dest 0 `(c-array uint8 ,actual))
+	  (error "zlib::compress error code ~D" status))))))
+
+On the negative side, I find the automated dereferencing dangerous,
+since the programmer must be careful about each of its appearances:
+usually only within other FFI forms like SLOT, ELEMENT, CAST,
+OFFSET. In particular, it should not be passed to another function:
+this passes the dereferenced value, not a reference to foreign memory!
+
+As an example, consider returning from a function the buffer and its size:
+  (values dest (length dest))	;BROKEN
+This code reads the foreign buffer twice and builds two Lisp vectors
+out of it!. One should have used instead:
+  (values dest (SIZEOF dest))
+or
+  (let ((dest dest))
+    (values dest (length dest)))
+
+Let ((dest dest)) is a little bit obfuscated: the Lisp variable
+could (or should) have been renamed instead, giving:
+(let ((dest-as-Lisp-vector dest))
+  (values dest-as-Lisp-vector (length dest-as-Lisp-vector)))
+
+Furthermore, using FOREIGN-VARIABLE objects instead of foreign places
+feels closer to programming with references or proxies (or objects?)
+as when using Java, Python or C++ etc.
+
+Last but not least: an object of type FOREIGN-VARIABLE can be stored
+anywhere and passed to a function, like every other object. Foreign
+places cannot. It's natural for the functions SIMPLE-CALLOC and
+DEEP-MALLOC to return such objects.
+
+I've been considering adding a WITH-FOREIGN-PLACE macro: it would
+define a foreign place out of a foreign-variable (or foreign address)
+object. This would be useful in those portions of code which access
+slots of the foreign structure.
+  (WITH-FOREIGN-PLACE (place (gethash key table (DEEP-MALLOC ...)))
+    (element place 0))
+
+WITH-C-VAR now appears as a combination of it and of WITH-FOREIGN-OBJECT:
+  (with-foreign-object (-var- type [initform])
+    (WITH-FOREIGN-PLACE (place -var-)
+      ...body))
+
+(defmacro WITH-FOREIGN-PLACE ((place foreign-variable) &body body)
+  (let ((fv (gensym (symbol-name place))))
+    `(let ((,fv ,foreign-variable))
+       (symbol-macrolet ((,place (FOREIGN-VALUE ,fv))) , <at> body))))
+
+	  Lifting the 1:1 encoding restriction on strings
+
+Western people tend to forget about it, but
+custom:*DEFAULT-FOREIGN-ENCODING* comes into play every time C-STRING
+or CHARACTER declarations are involved. How to deal with e.g. UTF-8,
+UTF-16, Japaneese or Corean encodings?
+
+One trivial - yet successful - solution path would be to use a
+composition of known elements:
+(defun compress-string-to-bytes (string encoding &key (start 0) (end nil))
+  (my-compress
+   (ext:convert-string-to-bytes string encoding :start start :end end)))
+
+We shall investigate another solution. It involves
+WITH-FOREIGN-STRING. This form is specialized in allocating strings on
+the execution stack and accepts encoding, start and end arguments.
+WITH-FOREIGN-STRING yields a FOREIGN-ADDRESS object (not a foreign
+variable as with-foreign-object) that we shall pass as the source to
+the foreign function. We thus need another FFI declaration:
+
+(def-lib-call-out zlib-compress [eventually library]
+  (:name "compress")
+  (:arguments (dest C-POINTER :in #|:guard (zerop return)|#)
+              (destlen ulong :in-out)
+              (source C-POINTER)
+              (sourcelen ulong))
+  (:return-type ffi:int)
+  (:language :stdc))
+
+The WITH-FOREIGN-STRING macro takes a program body and binds three
+variables to a FOREIGN-ADDRESS object pointing to the converted
+string, its original length in elements (modulo the NULL-TERMINATED-P
+key) and its length in bytes.
+
+I designed it not to use a FOREIGN-VARIABLE object because:
+ 1. most uses would be to pass its address to a foreign function anyway,
+ 2. more importantly, its unclear what the proper foreign type should
+    be. One may think that for fixed-with encodings like e.g. UTF-16,
+    it should result in (C-ARRAY UINT16 <element-count>) but that
+    would imply that the programmer might not be in control of the
+    type since the actual encoding may be defined by the
+    user. Therefore, only (C-ARRAY UINT8 <sourcelen>) seems to make
+    sense. But wouldn't (C-ARRAY-MAX UINT8 <sourcelen>) not be more
+    appropriate?
+
+So I decided to stick with an untyped address. Should you have a need
+to access individual characters, then you can "cast" it to a foreign
+variable object of the type that you need using
+FOREIGN-ADDRESS-VARIABLE (not yet in CLISP).
+ (FOREIGN-ADDRESS-VARIABLE dest `(c-array uint8 ,sourcelen))
+I'm thinking about using the already existing CAST macro or CAST*
+function for this purpose.
+Then you can use typical accessors on it:
+ (ELEMENT* (foreign-address-variable dest `(c-array uint 8 ,sourcelen)) 0)
+would extract the first byte (if length allows).
+
+Nevertheless, the code below invokes FOREIGN-ADDRESS on dest, just so
+to feel safe should I eve change my mind. Given a FOREIGN-ADDRESS
+object, it's in effect an identity function.
+
+(defun compress-string-to-bytes (string encoding &key (start 0) (end nil))
+  "Return a vector of compressed bytes from STRING, according to ENCODING"
+  (WITH-FOREIGN-STRING (source element-count sourcelen
+			string
+			:null-terminated-p nil
+			:encoding encoding
+			:start start :end end)
+    (declare (ignore element-count))
+    (let ((destlen (+ 12 (ceiling (* sourcelen 1.05)))))
+      (with-c-var (dest 'uint8 :count destlen)
+        (multiple-value-bind (status actual)
+            (zlib-compress (c-var-address dest) destlen
+			   (FOREIGN-ADDRESS source) sourcelen)
+	  (if (zerop status)
+	    (offset dest 0 `(c-array uint8 ,actual))
+	    (error "zlib::compress error code ~D" status)))))))
+
+	  Efficiency considerations
+
+I did not perform actual measurements, yet with the current API, it is
+quite probable that using SUBSEQ is faster than using CAST or OFFSET
+etc. The reason is that in the latter case, a lot is happening at
+run-time in CLISP:
+ 1. create a (c-array uint8 <actual> list using backquote
+ 2. transform it into the internal type representation
+ 3. construct a FOREIGN-VARIABLE with this type
+ 4. dereference memory using FOREIGN-VALUE
+
+It therefore becomes questionable whether the advantage of
+dereferencing only <actual> bytes instead of the whole <destlen>
+number of bytes and not creating an extra vector is worth our effort!
+It appears that what stands in our way towards performance is the
+extra level of abstraction introduced by the CLISP FFI. What we see is
+some kind of interpretation overhead. I'm not speaking about a
+byte-code interpreter, but about an interpreter specialized on
+manipulating foreign variable descriptions and interpreting forms like
+OFFSET, ELEMENT, SLOT etc.
+
+With a Lisp-to-native code compiler like CMUCL, clever compiler
+optimizations and a good FFI API, this run-time overhead could be
+avoided. W.r.t. to the API, a small problem here is the use of
+backquote, which means that the compiler would have to figure out that
+the backquoted list only serves to build an external type description
+for a variable length array. It should be easier to express and
+understand this, for both the programmer and the compiler: that's why
+I introduced the :count keyword to the memory allocating
+functions. It's easier to optimize
+      (DEEP-MALLOC 'uint8 :count (foo x))
+than  (DEEP-MALLOC `(c-array uint8 ,(foo x)))
+
+By contrast, the Amiga-CLISP AFFI has no such interpretation
+level. The API that it provides is the equivalent of machine level:
+the work that in all cases must be done is memory transfer, the rest
+is overhead. Therefore, the AFFI only contains 4 functions.  A lot can
+be implemented on top of these. There is one function for foreign
+function call and three for memory transfer: MEM-READ, MEM-WRITE and
+MEM-WRITE-VECTOR.
+
+Using AFFI, we would have written:
+(let ((result (MAKE-ARRAY actual :element-type '(unsigned-byte 8))))
+  (MEM-READ (foreign-address dest) result))
+It would have been really fast, with the least possible overhead, but
+the programmer would have to write the code in an imperative style,
+which to the compiler theory purist (like me) appears like applying
+partial evaluation or compiler optimization techniques by hand, which
+s/he considers a shame.
+
+Yet working with the AFFI does not let one feel stranger than working
+with C, or with any of the other Lisp's FFIs. It's working with a lot
+of low-level stuff like buffer allocation, correct buffer size
+etc. which declarative style (like CLISP's DEF-CALL-OUT) tends to avoid.
+
+Yet when DEF-CALL-OUT is not enough and a wrapper is needed, using
+CLISP's DEREF, WITH-FOREIGN-OBJECT etc. does not feel like programming
+at a highler level than using other FFIs.  Compared to these, the
+overhead of all the intermediate FOREIGN-VARIABLE objects and steps is
+too high IMHO.  IMHO, an API which produces code which will be order
+of magnitudes slower than its C counterpart will rightly be the target
+of criticisms.
+
+		Declarative style wins
+
+Remember what I said I dream of?
+
+(def-lib-call-out zlib-compress [eventually library]
+  (:name "compress")
+  (:arguments (dest (ffi:c-ptr (ffi:c-array ffi:uint8 is_len(destlen)))
+                    :out :guard (zerop return))
+              (destlen ffi:ulong :in-out)
+              (source (ffi:c-ptr (ffi:c-array ffi:uint8 is_len(sourcelen))))
+              (sourcelen ffi:ulong))
+  (:return-type ffi:int))
+
+Isn't that much simpler than all this cumbersome and error-prone
+low-level handling with buffers, memory, arrays, their sizes, etc.?
+
+CLISP's declarative DEF-CALL-OUT already manages to provide a FFI
+definition for many many foreign functions. I believe something like
+the above is likely to provide 80% of the remaining needs.
+
+Feel free to investigate defining such a form. If you do, consider
+making it powerful enough to handle Postgres' string quoting function:
+http://cert.uni-stuttgart.de/doc/postgresql/escape/
+
+size_t PQescapeString (char *to, const char *from, size_t length);
+
+"The from points to the first character of the string which is to be
+escaped, and the length parameter counts the number of characters in
+this string (a terminating NUL character is neither necessary nor
+counted).  to shall point to a buffer which is able to hold at least
+one more character than twice the value of length, otherwise the
+behavior is undefined.  A call to PQescapeString writes an escaped
+version of the from string to the to buffer, replacing special
+characters so that they cannot cause any harm, and adding a
+terminating NUL character. PQescapeString returns the number of
+characters written to to, not including the terminating NUL character.
+Behavior is undefined when the to and from strings overlap."
+
+One may argue that its parameter usage is badly designed, if not
+braindead.
+
+The difficulty I see here in finding a way to declaratively express
+the required interface is that the size of the to buffer and the
+number of useful bytes come from to different places (1+ (* length 2))
+vs. the return value, as opposed to compress' destlen :in-out
+parameter.
+
+Writing wrappers by hand on a case by case basis maybe error-prone,
+but it is straightforward. It doesn't require much brain.
+
+		Summary
+
+o By all means, use C-STRING or (C-ARRAY-PTR type) whereever possible.
+o Foreign places provide a somewhat elegant, at least compact, however
+  inefficient way of working on foreign structures.
+o The required DEF-CALL-OUT parameter declarations depend on the
+  wrapper. There's no "one declaration for all uses" as in C.
+o A worthwhile approach instead of writing ad hoc code which every
+  time loooks similar (with-foreign-object etc.) would be to provide
+  a DEF-VARLEN-CALL-OUT macro which would encapsulate all this
+  with-foreign-object, foreign-value, subseq etc. code.
+
+(def-lib-call-out zlib-compress [eventually library]
+  (:name "compress")
+  (:arguments (dest C-POINTER :in #|:guard (zerop return)|#)
+              (destlen ulong :in-out)
+              (source (c-array-ptr uint8))
+              (sourcelen ulong))
+  (:return-type ffi:int)
+  (:language :stdc))
+
+(defun my-compress (sourcebytes)
+  "Accepts an array of bytes and returns a vector of its compressed contents."
+  (let* ((sourcelen (length source))
+         (destlen (+ 12 (ceiling (* sourcelen 1.05)))))
+    (WITH-C-VAR (dest uint8 :count destlen))
+      (multiple-value-bind (status actual)
+          (zlib-compress (C-VAR-ADDRESS dest) destlen sourcebytes sourcelen)
+	(if (zerop status)
+	  (OFFSET dest 0 `(C-ARRAY UINT8 ,actual))
+	  (error "zlib::compress error code ~D" status))))))
+
+Things not (yet) in CLISP:
+o DEF-CALL-VAR-OUT macro for variable length arrays
+o :count extension to WITH-FOREIGN-OBJECT and WITH-C-VAR
+o rename OFFSET* SLOT* ELEMENT* etc. instead of %OFFSET %SLOT
+o exporting FOREIGN-VALUE and OFFSET* etc. from FFI
+o export and document FFI:PARSE-C-TYPE and its converse
+o FOREIGN-ADDRESS-FUNCTION (so far only part of my dynload patch)
+o dynamic library call out (dynload patch to be completed)
+o FOREIGN-ADDRESS-VARIABLE (if not reusing CAST)
+o possibly make CALL-OUT code accept FOREIGN-VARIABLE objects where
+  type C-POINTER is expected (so far only FOREIGN-ADDRESS)
+o WITH-FOREIGN-PLACE macro
+o compile-time or load-time inlining of constant PARSE-C-TYPE use as
+  in (deep-malloc 'uint8 :size (foo x)) or with-foreign-object ...
+o ...
+
+I appreciate comments,
+	Jörg Höhle.
+
+-------------------------------------------------------
+This SF.net email is sponsored by: Etnus, makers of TotalView, The debugger 
+for complex code. Debugging C/C++ programs can leave you feeling lost and 
+disoriented. TotalView can help you find your way. Available on major UNIX 
+and Linux platforms. Try it free. www.etnus.com
+
+
+
+Gmane   	
+From: Hoehle, Joerg-Cyril <Joerg-Cyril.Hoehle <at> t-systems.com>
+Subject: FFI: variable size values (was FFI crash: what am I missing?!)
+Newsgroups: gmane.lisp.clisp.general
+Date: Tue, 05 Aug 2003 10:50:27 +0200
+
+Hi,
+
+Sam wrote:
+>> >what is the correct idiom for the C "unknown type array"?
+>> >E.g., suppose
+>> >        int* foo();
+>> >will return the array of integers of size N, where N is the return
+>> >value of another function
+>> >        int foo_size();
+>> >how do I express foo() and foo_size() in CLISP FFI?
+
+>> >Suppose
+>> >        int foo (int *size, int**arr);
+>> >returns status and puts the length of the array into `size' and the
+>> >pointer of the array into `arr'.
+>> >what is the correct CLISP FFI idiom?
+See answers below
+
+>what if, as in the first example, the size is returned by a _different_
+>function?!
+That's why I said "the latter case" fits my (unwritten) macro. The former does not fit the one declaration
+per function" model, since the "transaction" (I name is so) is distributed across two calls.
+
+>> Explicit management using WITH-FOREIGN-OBJECT and friends is
+>> involved.
+
+>any cast requires equal memory size.
+I wrote in the past on the OFFSET solution.
+It looks like you have forgot about my article "FFI howto: variable length arrays (long)" from 5th of March 2003.
+http://sourceforge.net/mailarchive/forum.php?thread_id=1784502&forum_id=6767
+http://sourceforge.net/mailarchive/forum.php?thread_id=1788500&forum_id=6767
+
+>is a C wrapper the only solution?
+Not at all. Sometimes I recommend C wrappers to create an interface that better suits Lisp, but it is not
+strictly necessary. You can use the FFI to call any function and retrieve its results, writing Lisp code
+(be it less efficient because of run-time parsing (FFI:parse-c-type) and conversions (ffi:cast)).
+But see my below comment on the regexp case.
+
+>> A longer answer may follow tomorrow, I need to go home now.
+>biting my nails off :-)
+I hope you can still type in the following:
+
+			The first foo
+You didn't say whether foo_size() has to be called before or after foo(). I'll call it afterwards, for
+similarity with the regexp module, where the number of the group positions can be read off a slot of the structure.
+
+BTW, the current CLISP regexp module arbitrarily limits the return to 10 group positions
+("num-matches"), because it does not consider the re_nsub slot out off the regex_t structure.
+
+This is a case where I'd recommend a little C wrapper code to make interfacing easier. I very much prefer this
+over duplicating the regex_t structure in Lisp via (FFI:C-STRUCT <many slots>). I don't want to have to
+maintain this by hand, whereas the C wrapper would always stay in sync with the C regex.h header by mere recompilation.
+
+(def-call-out %foo1 (:name "foo")
+  (:return-type c-pointer) (:language :stdc))
+(defun foo1 ()
+  (let ((ptr (%foo1)))
+    (when ptr ;; c-pointer type will return NIL for NULL in the near future
+      (with-c-var (array 'c-pointer ptr)
+        (cast array `(c-ptr (c-array sint ,(foo-size))))))))
+
+			The second foo
+I take it that foo2 allocates the buffer it returns via arr . Who must free it?
+Also you don't say whether it's :in-out or :out, so I take :out only.
+However it's common for the buffer to be supplied by the caller, with a maximum size provided by the size
+argument as an :in-out parameter.
+The C declaration you supply doesn't tell the difference, and the below code covers the other case.
+
+Here's what the macro call might like
+(def-call-var-out foo2 (:name "foo")
+  (:arguments (size (c-ptr uint) :out)
+              (arr (c-ptr (c-ptr (c-array sint size))) :out [:malloc-free]))
+  (:guard (zerop return))
+  (:return-type int) (:language :stdc))
+
+BTW, I recommend using unsigned types even though C people usually just use "int" (new-wave C people say
+"size_t"). E.g. size obviously should be unsigned.
+
+Here's what you do without the charming macro:
+(def-call-out %foo2 (:name "foo")
+  (:arguments (size (c-ptr uint) :out)
+              (arr (c-ptr c-pointer) :out))
+  (:return-type int) (:language :stdc))
+
+(defun foo2 ()
+  (multiple-value-bind (status size array-ptr)
+      (%foo2)
+    (if (zerop status)
+      (with-c-var (arr 'c-pointer array-ptr)
+        (cast arr `(c-ptr (c-array sint ,size))))
+      ;; the macro would return (values status [size array])
+      (error "Call failed with status ~D" status))))
+
+This costs a PARSE-C-TYPE for every call for both foo1 and foo2.
+
+My MEM-READ proposal could avoid that in some cases, depending on the type (so far only built-in-arrays of
+CLISP, i.e. uint8/16/32, but not sint8/16/32 are supported).
+(defun foo2 ()
+  (multiple-value-bind (status size array-ptr)
+      (%foo2)
+    (if (zerop status)
+        (let ((vec (make-array size :element-type '(unsigned-byte 32))))
+          (mem-read array-ptr vec))
+      (error "Call failed with status ~D" status))))
+(defun foo1 ()
+  (let ((ptr (%foo1)))
+    (when ptr ;; c-pointer type will return NIL for NULL in the near future
+      (let ((vec (make-array (foo-size) :element-type '(unsigned-byte 32))))
+        (mem-read ptr vec)))))
+
+My FOREIGN-VARIABLE constructor (design not yet finished) would allow to avoid WITH-C-VAR, but would
+still require PARSE-C-TYPE at run-time, allowing code similar to:
+(defun foo1 ()
+  (let ((ptr (%foo1)))
+    (when ptr ;; c-pointer type will return NIL for NULL in the near future
+      (foreign-value
+       (foreign-address-variable ptr `(C-ARRAY SINT ,(foo-size)))))))
+or maybe I'll require an explicit call
+       (foreign-address-variable ptr
+        (parse-c-type `(C-ARRAY SINT ,(foo-size))))
+It's a constructor after all, not a macro-level keep-typing-short sort of thing.
+
+Regards,
+	Jorg Hohle.
+
+-------------------------------------------------------
+This SF.Net email sponsored by: Free pre-built ASP.NET sites including
+Data Reports, E-commerce, Portals, and Forums are available now.
+Download today and enter to win an XBOX or Visual Studio .NET.
+http://aspnet.click-url.com/go/psa00100003ave/direct;at.aspnet_072303_01/01

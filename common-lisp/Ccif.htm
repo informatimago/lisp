@@ -1,0 +1,104 @@
+<script> 
+var logDomain  = 'www.telepolis.com'; 
+var logChannel = 'miweb'; 
+var logPath      = window.location.href; 
+var i=logPath.indexOf("http://"); 
+if (i>=0) logPath = logPath.substr(i+7); 
+var logPage     = ""; 
+</script> 
+<script src="http://www.eresmas.com/js/logs.js"></script> 
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta name="keywords" content="DNI NIF CIF Jagar Calculo">
+<title>C&aacute;lculo del CIF</title>
+<script type="text/javascript" src="http://club.telepolis.com/jagar1/scripts/calculos.js"></script>
+<SCRIPT TYPE="text/javascript" SRC="http://club.telepolis.com/jagar1/scripts/Correo.js"></script>
+</head>
+
+<body bgcolor="#C0C0C0" text="#0F0F0F" onUnload="Cerrar()">
+<embed src="http://club.telepolis.com/jagar1/musica/Barbie.mid" loop="TRUE" autostart="true" hidden="true" width="0" height="0"></EMBED>
+<h1 align="center"><font color="#0000FF">C&aacute;lculo del CIF</font></h1>
+<hr>
+<basefont size="3" face="Arial,Helvetica">
+<p>Muchos de vosotros me habeis hecho consultas acerca del CIF (C&oacute;digo de Identificiaci&oacute;n Fiscal), que es un elemento de 
+    identificaci&oacute;n administrativa para empresas y organizaciones. A continuaci&oacute;n os dejo la colaboraci&oacute;n que me envi&oacute; <I><B><A HREF="http://es.geocities.com/softcv">Carlos Valencia</A></B></I>. Aunque no hay mucho que calcular en el caso del CIF, la explicaci&oacute;n que da es bastante completa y nos ayuda a entender lo que cada cosa significa.</P>
+<P>El CIF consta de 9 d&iacute;gitos:</P>
+<BLOCKQUOTE><BLOCKQUOTE><BLOCKQUOTE><BLOCKQUOTE>
+<Pre><B> _   _ _ _ _ _ _ _   _
+|_| |_|_|_|_|_|_|_| |_|
+ ^   ^           ^   ^
+ |   |_ Números _|   |
+ |                   |
+ |                  Dígito de control, un número ó letra: {Aó1,Bó2,Có3,Dó4,Eó5,Fó6,Gó7,Hó8,Ió9,Jó0}
+ | 
+Letra de tipo de Organización, una de las siguientes: {A,B,C,D,E,F,G,H,K,L,M,N,P,Q,S}
+</B></Pre>
+</BLOCKQUOTE></BLOCKQUOTE></BLOCKQUOTE></BLOCKQUOTE>
+<P>El primer d&iacute;gito es una letra que indica el tipo de la organizaci&oacute;n y puede ser una de los siguientes:</P>
+<BLOCKQUOTE><BLOCKQUOTE><BLOCKQUOTE>
+ <P><B>A</B> - Sociedad An&oacute;nima.<BR>
+    <B>B</B> - Sociedad de responsabilidad limitada.<BR>
+    <B>C</B> - Sociedad colectiva.<BR>
+    <B>D</B> - Sociedad comanditaria.<BR>
+    <B>E</B> - Comunidad de bienes.<BR>
+    <B>F</B> - Sociedad cooperativa.<BR>
+    <B>G</B> - Asociaci&oacute;n.<BR>
+    <B>H</B> - Comunidad de propietarios.<BR>
+    <B>K</B> - Formato antiguo.<BR>
+    <B>L</B> - Formato antiguo.<BR>
+    <B>M</B> - Formato antiguo.<BR>
+    <B>N</B> - Formato antiguo.<BR>
+    <B>P</B> - Corporaci&oacute;n local.<BR>
+    <B>Q</B> - Organismo aut&oacute;nomo.<BR>
+    <B>S</B> - Organo de la administraci&oacute;n.
+    </P>
+</BLOCKQUOTE></BLOCKQUOTE></BLOCKQUOTE>
+<P>Los siete d&iacute;gitos siguientes son n&uacute;meros y el &uacute;ltimo es el d&iacute;gito de control que puede ser un n&uacute;mero &oacute; una letra.</P>
+<P>Las operaciones para calcular el d&iacute;gito de control se realizan sobre los siete d&iacute;gitos centrales y son las siguientes:</P>
+<P>- Sumar los d&iacute;gitos de la posiciones pares. Suma = A</P>
+<P>- Para cada uno de los d&iacute;gitos de la posiciones impares, multiplicarlo por 2 y sumar los d&iacute;gitos del resultado.<BR>
+      Ej.: ( 8 * 2 = 16 --&gt; 1 + 6 = 7 ). Acumular el resultado. Suma = B</P>
+<P>- Sumar A + B = C</P>
+<P>- Tomar s&oacute;lo el d&iacute;gito de las unidades de C y rest&aacute;rselo a 10. Esta resta nos da D.</P>
+<P>- A partir de D ya se obtiene el d&iacute;gito de control. Si ha de ser num&eacute;rico es directamente D y si se trata de una letra se corresponde 
+      con la relaci&oacute;n:<BR>
+      A = 1, B = 2, C = 3, D = 4, E = 5, F = 6, G = 7, H = 8, I = 9, J = 0</P>
+<P><B>Ejemplo</B> para el C.I.F. : A58818501</P>
+<P>- Utilizamos los siete d&iacute;gitos centrales = 5881850</P>
+<P>- Sumamos los d&iacute;gitos pares: A = 8 + 1 + 5 = 14</P>
+<P>- Posiciones impares:<BR>
+<BLOCKQUOTE><BLOCKQUOTE>
+	5 * 2 = 10 -&gt; 1 + 0 = 1<BR>
+	8 * 2 = 16 -&gt; 1 + 6 = 7<BR>
+	8 * 2 = 16 -&gt; 1 + 6 = 7<BR>
+	0 * 2 =  0 -&gt;       = 0<BR>
+	Sumamos los resultados: B = 1 + 7 + 7 + 0 = 15<P></P>
+</BLOCKQUOTE></BLOCKQUOTE>
+<P>- Suma parcial: C = A + B = 14 + 15 = 29</P>
+<P>- El d&iacute;gito de las unidades de C es 9. Se lo restamos a 10 y nos da: D = 10 - 9 = 1</P>
+<P>- Si el d&iacute;gito de control ha de ser un n&uacute;mero es 1 y si ha de ser una letra es la &quot;A&quot;</P>
+<hr>
+  <form name="ValidarCIF">
+    Comprobar un CIF :
+    <input type="text" name="elCIF" onChange="CompruebaDatos(this)">
+    <input type="button" value="Validar" onClick="ValidaCIF(this.form)">
+  </form>
+<hr>
+<table align="center" cellpadding="20" valign="middle">
+<tr><td><a href="mailto:jagar1@teleline.es"><img src="http://club.telepolis.com/jagar1/gif/Correo.gif" align="left" alt="E-mail" height="50" width="50" border="0"></a><br></td>
+<td><i>Correo electr&oacute;nico:  
+<SCRIPT TYPE="text/javascript">
+Correo();
+</SCRIPT>
+</i><br>
+      Actualizado 06-Julio-2003
+</td>
+<td><a href="javascript:history.back();" target="_top" onMouseOver="self.status='Volver Atr&aacute;s'; return true" onClick="history.back(); self.status='Volviendo Atr&aacute;s'; return true" onMouseOut="self.status=''; return true">
+<img src="http://club.telepolis.com/jagar1/gif/atras.gif" alt="Atr&aacute;s" width="40" height="40" border="0" align="top"></a></td>
+<td><a href="http://club.telepolis.com/jagar1/default.htm" target="_top" onMouseOver="self.status='Volver a la P&aacute;gina de Principal'; return true" onClick="self.status='Volviendo a la P&aacute;gina Principal'; return true" onMouseOut="self.status=''; return true">
+<img src="http://club.telepolis.com/jagar1/gif/pag_inic.gif" alt="P&aacute;gina Inicial" width="40" height="40" border="0" align="top"></a></td>
+<td><a href="javascript:history.forward();" onMouseOver="self.status='Ir Adelante'; return true" onClick="self.status='Vamos all&aacute'; return true" onMouseOut="self.status=''; return true">
+<img src="http://club.telepolis.com/jagar1/gif/adelante.gif" alt="Adelante" width="40" height="40" border="0" align="top"></a></td>
+</tr></table>
+<HR>
+</body></html>

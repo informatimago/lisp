@@ -1,0 +1,282 @@
+BABYL OPTIONS: -*- rmail -*-
+Version: 5
+Labels:
+Note:   This is the header of an rmail file.
+Note:   If you are seeing it in rmail,
+Note:    it means the file has no messages in it.
+
+0, unseen,,
+*** EOOH ***
+Path: news.easynet.es!numbering.news.easynet.net!spool1.uk.news.easynet.net!spool.uk.news.easynet.net!easynet-quince!easynet.net!diablo.theplanet.net!news.maxwell.syr.edu!elnk-pas-nf1!newsfeed.earthlink.net!stamper.news.pas.earthlink.net!newsread1.news.pas.earthlink.net.POSTED!65807237!not-for-mail
+Newsgroups: comp.editors,comp.os.linux.misc
+From: Alan Connor <zzzzzz@xxx.yyy>
+Subject: Ed(1) Tutorial
+Reply-To: xxxx@yyy.zzz
+User-Agent: slrn/0.9.7.3 (Linux)
+Lines: 256
+Message-ID: <gyeVb.18592$uM2.6411@newsread1.news.pas.earthlink.net>
+Date: Sat, 07 Feb 2004 23:30:20 GMT
+NNTP-Posting-Host: 63.187.193.13
+X-Complaints-To: abuse@earthlink.net
+X-Trace: newsread1.news.pas.earthlink.net 1076196620 63.187.193.13 (Sat, 07 Feb 2004 15:30:20 PST)
+NNTP-Posting-Date: Sat, 07 Feb 2004 15:30:20 PST
+Organization: EarthLink Inc. -- http://www.EarthLink.net
+Xref: news.easynet.es comp.editors:14069 comp.os.linux.misc:83684
+
+
+
+A lot more people would use Ed if they knew how it worked.
+
+------------------------------------------------------
+(that ^ should be the top line in the file)
+
+
+These are the original Ed tutorials by Brian W. Kernighan, originally
+published in 1978.
+
+This material was copyrighted in 1979 by Bell Telephone Laboratories,
+Incorporated. Currently, the copyright is held jointly by Lucent Technologies
+Inc. and AT&T Corporation. All rights reserved.
+
+I use GNU Ed (version 0.2) and have included notes about its
+behavior and usage, as well as other comments, in [......].
+
+These should be relevant to other more recent versions of Ed, too.
+
+The only other occurrences of [.....] will be found in references to
+the 'character classes' [a-z] etc.
+
+GNU and other more recent Eds have a lot of commands that aren't covered
+here, but if you go through the tutorial you will have no problem under-
+standing the Man/Info pages.
+
+Some pointers on using ed in scripts, or feeding ed commands from scripts 
+and the commandline, are found between the the first and second tutorials.
+
+Otherwise, these documents are very close to the original.
+
+The numbers in front of the headings in the Table of Contents 
+are the line numbers where the section begins.
+
+Enter the number and you are there. 
+Then enter ".,+35p" and that line and the next 35 will be displayed.
+
+[Enter the number followed by a "z" and it and the page below it will be
+ displayed. Add "zn" and the line numbers will be included.]
+
+A word to the wise: When learning Ed, and you have just entered a command
+that you are not sure of? Then hit "u" to undo it and re-read the section
+with something like -20zn and try again.
+
+
+----------------------------------------------------
+
+Table of Contents  [added]
+
+119  A Tutorial Introduction to the UNIX Text Editor
+147  Introduction
+199  Creating Text -- the Append command ``a''
+277  Error Messages -- ``?''
+290  Writing text out as a file -- the Write command
+328  Leaving ed -- the Quit command ``q''
+341  Exercise 1:
+361  Reading text from a file -- the Edit command ``e''
+389  The read command ``r''
+417  Exercise 2:
+450  The ``z'' command -- display the next N lines [ added ]
+458  Printing the contents of the buffer -- the Print command ``p''
+525  Exercise 3:
+537  The current line -- ``Dot'' or ``.''
+644  Deleting lines: the ``d'' command
+672  Exercise 4:
+702  Modifying text: the Substitute command ``s''
+798  Exercise 5:
+828  Context searching -- ``/ . . . /''
+954  Exercise 6:
+1009 Change and Insert -- ``c'' and ``i''
+1058 Exercise 7:
+1093 Moving text around: the ``m'' command
+1133 The global commands ``g'' and ``v''
+1172 Special Characters
+1328 Summary of Commands and Line Numbers
+
+1422 Scripting and the Commandline With Ed  [added]
+
+1474 Advanced Editing on UNIX
+1508 1. INTRODUCTION
+1540 2. SPECIAL CHARACTERS
+1554 The List command `l'
+1596 The Substitute Command `s'
+1645 The Undo Command `u'
+1655 The Metacharacter `.'
+1853 The Dollar Sign `$'
+1915 The Circumflex `^'
+1949 The Star `*'
+2087 The Brackets `[ ]'
+2153 The Ampersand `&'
+2212 Substituting Newlines
+2255 Joining Lines
+2283 Rearranging a Line with \( ... \)
+2335 3. LINE ADDRESSING IN THE EDITOR
+2371 Address Arithmetic
+2436 Repeated Searches
+2484 Default Line Numbers and the Value of Dot
+2665 Interrupting the Editor
+2688 4. GLOBAL COMMANDS
+2779 Multi­line Global Commands
+2826 5. CUT AND PASTE WITH UNIX COMMANDS
+2846 Changing the Name of a File
+2870 Making a Copy of a File
+2911 Removing a File
+2989 Adding Something to the End of a File
+3020 6. CUT AND PASTE WITH THE EDITOR
+3027 Filenames
+3080 Inserting One File into Another
+3107 Writing out Part of a File
+3159 Moving Lines Around
+3240 Marks
+3273 Copying Lines
+3306 The Temporary Escape `!'
+3328 7. SUPPORTING TOOLS
+3339 Grep
+3397 Editing Scripts
+3431 Sed
+3472 References
+
+=======================================================================
+
+A Tutorial Introduction to the UNIX Text Editor
+
+Brian W. Kernighan
+Bell Laboratories
+Murray Hill, New Jersey 07974
+
+ABSTRACT
+
+Almost all text input on the UNIX operating
+system is done with the text­editor ed.
+
+This memorandum is a tutorial guide to 
+help beginners get started with text editing.
+Although it does not cover everything, 
+it does discuss enough for most users' day­
+to­day needs. This includes printing, 
+appending, changing, deleting, moving and
+inserting entire lines of text; reading
+and writing files; context searching and line
+addressing; the substitute command; the
+global commands; and the use of special char­
+acters for advanced editing.
+
+September 21, 1978
+
+UNIX is a Trademark of Bell Laboratories.
+
+Introduction
+
+Ed is a ``text editor'', that is, an interactive pro­
+gram for creating and modifying ``text'', using direc­
+tions provided by a user at a terminal. The text is
+often a document like this one, or a program or
+perhaps data for a program.
+
+This introduction is meant to simplify learning ed.
+The recommended way to learn ed is to read this
+document, simultaneously using ed to follow the
+examples, then to read the description in section I of
+the UNIX Programmer's Manual, all the while experi­
+menting with ed. (Solicitation of advice from experi­
+enced users is also useful.)
+
+Do the exercises! They cover material not com­
+pletely discussed in the actual text. An appendix
+summarizes the commands.
+
+
+Disclaimer
+
+This is an introduction and a tutorial. For this
+reason, no attempt is made to cover more than a part
+of the facilities that ed offers (although this fraction
+includes the most useful and frequently used parts).
+When you have mastered the Tutorial, try Advanced
+Editing on UNIX. Also, there is not enough space to
+explain basic UNIX procedures. We will assume that
+you know how to log on to UNIX, and that you have
+at least a vague understanding of what a file is. For
+more on that, read UNIX for Beginners.
+
+You must also know what character to type as the
+end­of­line on your particular terminal. This charac­
+ter is the RETURN key on most terminals.
+
+Throughout, we will refer to this character, whatever
+it is, as RETURN.
+
+Getting Started
+
+We'll assume that you have logged in to your
+system and it has just printed the prompt character,
+usually either a $ or a %. The easiest way to get ed
+is to type
+
+ed (followed by a return)
+
+You are now ready to go -- ed is waiting for you to
+tell it what to do.
+
+Creating Text -- the Append command ``a''
+
+As your first problem, suppose you want to create
+some text starting from scratch. Perhaps you are typ­
+ing the very first draft of a paper; clearly it will have
+to start somewhere, and undergo modifications later.
+This section will show how to get some text in, just
+to get started. Later we'll talk about how to change
+it.
+
+When ed is first started, it is rather like working
+with a blank piece of paper -- there is no text or
+information present. This must be supplied by the
+person using ed; it is usually done by typing in the
+text, or by reading it into ed from a file. We will
+start by typing in some text, and return shortly to how
+to read files.
+
+First a bit of terminology. In ed jargon, the text
+being worked on is said to be ``kept in a buffer.''
+Think of the buffer as a work space, if you like, or
+simply as the information that you are going to be
+editing. In effect the buffer is like the piece of paper,
+on which we will write things, then change some of
+them, and finally file the whole thing away for
+another day.
+
+The user tells ed what to do to his text by typing
+instructions called ``commands.'' Most commands
+consist of a single letter, which must be typed in
+lower case. Each command is typed on a separate
+line. (Sometimes the command is preceded by infor­
+mation about what line or lines of text are to be
+affected -- we will discuss these shortly.) Ed makes
+no response to most commands -- there is no prompt­
+ing or typing of messages like ``ready''. (This
+silence is preferred by experienced users, but some­
+times a hangup for beginners.)
+
+The first command is append, written as the letter
+
+a
+
+all by itself. It means ``append (or add) text lines to
+the buffer, as I type them in.'' Appending is rather
+like writing fresh material on a piece of paper.
+So to enter lines of text into the buffer, just type
+an a followed by a RETURN, followed by the lines of
+text you want, like this:
+
+a
+Now is the time
+for all good men
+to come to the aid of their party.
+

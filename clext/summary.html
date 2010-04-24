@@ -1,0 +1,28 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!-- -*- coding:iso-safe-unix -*- -->
+<!-- -*- coding:iso-safe-unix -*- -->
+<html>
+<head>
+<title>Summary</title>
+<meta HTTP-EQUIV="Content-Type" content="text/html;charset=US-ASCII"></head>
+<body>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/clext/closer-weak.lisp">COM.INFORMATIMAGO.CLEXT.CLOSER-WEAK</a></b></tt>
+<pre>
+Closer to Weak objects.
+Implements the specification: http://clisp.cons.org/impnotes/weak.html
+for Common Lisp implementations that have weak-pointers.
+WEAK-OR-RELATION is a primitive that cannot be implemented propertly
+without implementation support.
+Currently work on:
+clisp      full support
+cmucl      partial support (missing WEAK-OR-RELATION)
+sbcl       partial support (missing WEAK-OR-RELATION)
+Read-time Features:
+:WEAK-TEST    When testing, call the garbage collector
+to break weak pointers sooner.
+:DEBUG-WEAK   When compiling on clisp, use this implementation
+instead of the native one.
+</pre></li></body></html>

@@ -1,0 +1,636 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">
+<html>
+<head>
+
+    <title>Free Software by Pascal Bourguignon</title>
+
+    <meta http-equiv="Content-Type"
+          content="text/html; charset=iso-8859-1">
+
+    <meta name="author"
+         content="Pascal J. Bourguignon">
+
+    <meta http-equiv="Reply-to" 
+          name="Reply-to"
+          content="pjb@informatimago.com">
+
+    <meta http-equiv="Description"  
+          name="description" 
+          content="Common-Lisp-POSIX API - dirent">
+
+	<meta name="keywords"
+          content="Common-Lisp,POSIX,SUSv3,dirent">
+
+</head>
+<body>
+<h1 align=center>Common-Lisp-POSIX API - SUSv3 - dirent</h1>
+
+
+<p><a href="susv3.lisp">Fetch  an implementation</a>
+  of the  dirent API  for CLISP  (using the LINUX package).
+
+
+<h2>Common-Lisp Specific Definitions</h2>
+
+<h3>Type SUSV3:BOUND-STRING</h3>
+
+<p>[***SEE***: Find a better name!]
+
+<pre>
+
+(DEFTYPE BOUND-STRING (MIN MAX)
+  "A TYPE REPRESENTING STRINGS OF MINIMUM SIZE MIN AND MAXIMUM SIZE MAX."
+  (IF (= (EVAL MIN) (EVAL MAX))
+    `(STRING ,(EVAL MIN))
+    `STRING) ;; TODO: (OR (STRING MIN) (STRING (1+ MIN)) ... (STRING MAX))
+  );;BOUND-STRING
+</pre>
+
+
+<h3>Condition SYSV3:SYSCALL-ERROR</h3>
+
+<pre>
+(DEFINE-CONDITION SYSCALL-ERROR ()
+  (
+   (ERRNO :INITARG :ERRNO
+          :ACCESSOR SYSCALL-ERRNO
+          :TYPE (SIGNED-BYTE 32))
+   ));;SYSCALL-ERROR
+</pre>
+
+  
+<h2>SUSv3 Definitions</h2>
+
+<h3>
+<a href="http://www.opengroup.org/onlinepubs/007904975/basedefs/sys/types.h.html">
+sys/types.h</a></h3>
+
+
+
+
+
+
+
+
+<h4>Type SUSV3:BLKCNT-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3:BLKCNT-T ()
+     "Used for file block counts."
+     ;; implementation dependent
+    );;SUSV3:BLKCNT-T
+
+   (ASSERT (SUBTYPEP 'SUSV3:BLKCNT-T 'INTEGER)</pre>
+
+<h4>Type SUSV3:BLKSIZE-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3:BLKSIZE-T ()
+     "Used for block sizes."
+     ;; implementation dependent
+    );;SUSV3:BLKSIZE-T
+
+   (ASSERT (SUBTYPEP 'SUSV3:BLKSIZE-T 'INTEGER)</pre>
+
+<h4>Type SUSV3-XSI:CLOCK-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3-XSI:CLOCK-T ()
+     "Used for system times in clock ticks or CLOCKS_PER_SEC; see <time.h> ."
+     ;; implementation dependent
+    );;SUSV3-XSI:CLOCK-T
+
+   (ASSERT (SUBTYPEP 'SUSV3-XSI:CLOCK-T '(OR INTEGER FLOAT))</pre>
+
+<h4>Type SUSV3-TMR:CLOCKID-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3-TMR:CLOCKID-T ()
+     "Used for clock ID type in the clock and timer functions."
+     ;; implementation dependent
+    );;SUSV3-TMR:CLOCKID-T
+
+</pre>
+
+<h4>Type SUSV3:DEV-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3:DEV-T ()
+     "Used for device IDs."
+     ;; implementation dependent
+    );;SUSV3:DEV-T
+
+</pre>
+
+<h4>Type SUSV3-XSI:FSBLKCNT-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3-XSI:FSBLKCNT-T ()
+     "Used for file system block counts."
+     ;; implementation dependent
+    );;SUSV3-XSI:FSBLKCNT-T
+
+   (ASSERT (SUBTYPEP 'SUSV3-XSI:FSBLKCNT-T '(INTEGER 0))</pre>
+
+<h4>Type SUSV3-XSI:FSFILCNT-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3-XSI:FSFILCNT-T ()
+     "Used for file system file counts."
+     ;; implementation dependent
+    );;SUSV3-XSI:FSFILCNT-T
+
+   (ASSERT (SUBTYPEP 'SUSV3-XSI:FSFILCNT-T '(INTEGER 0))</pre>
+
+<h4>Type SUSV3:GID-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3:GID-T ()
+     "Used for group IDs."
+     ;; implementation dependent
+    );;SUSV3:GID-T
+
+   (ASSERT (SUBTYPEP 'SUSV3:GID-T 'INTEGER)</pre>
+
+<h4>Type SUSV3-XSI:ID-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3-XSI:ID-T ()
+     "Used as a general identifier; can be used to contain at least a pid_t, uid_t, or gid_t."
+     ;; implementation dependent
+    );;SUSV3-XSI:ID-T
+
+   (ASSERT (AND (SUBTYPEP 'SUSV3-XSI:ID-T 'INTEGER)
+                (SUBTYPEP 'SUSV3-XSI:ID-T 'SUSV3:PID-T)
+                (SUBTYPEP 'SUSV3-XSI:ID-T 'SUSV3:UID-T)
+                (SUBTYPEP 'SUSV3-XSI:ID-T 'SUSV3:GID-T)))
+)
+</pre>
+
+<h4>Type SUSV3:INO-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3:INO-T ()
+     "Used for file serial numbers."
+     ;; implementation dependent
+    );;SUSV3:INO-T
+
+   (ASSERT (SUBTYPEP 'SUSV3:INO-T '(INTEGER 0))</pre>
+
+<h4>Type SUSV3-XSI:KEY-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3-XSI:KEY-T ()
+     "Used for XSI interprocess communication."
+     ;; implementation dependent
+    );;SUSV3-XSI:KEY-T
+
+</pre>
+
+<h4>Type SUSV3:MODE-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3:MODE-T ()
+     "Used for some file attributes."
+     ;; implementation dependent
+    );;SUSV3:MODE-T
+
+   (ASSERT (SUBTYPEP 'SUSV3:MODE-T 'INTEGER)</pre>
+
+<h4>Type SUSV3:NLINK-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3:NLINK-T ()
+     "Used for link counts."
+     ;; implementation dependent
+    );;SUSV3:NLINK-T
+
+   (ASSERT (SUBTYPEP 'SUSV3:NLINK-T 'INTEGER)</pre>
+
+<h4>Type SUSV3:OFF-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3:OFF-T ()
+     "Used for file sizes."
+     ;; implementation dependent
+    );;SUSV3:OFF-T
+
+   (ASSERT (SUBTYPEP 'SUSV3:OFF-T 'INTEGER)</pre>
+
+<h4>Type SUSV3:PID-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3:PID-T ()
+     "Used for process IDs and process group IDs."
+     ;; implementation dependent
+    );;SUSV3:PID-T
+
+   (ASSERT (SUBTYPEP 'SUSV3:PID-T 'INTEGER)</pre>
+
+<h4>Type SUSV3-THR:PTHREAD-ATTR-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3-THR:PTHREAD-ATTR-T ()
+     "Used to identify a thread attribute object."
+     ;; implementation dependent
+    );;SUSV3-THR:PTHREAD-ATTR-T
+
+</pre>
+
+<h4>Type SUSV3-BAR:PTHREAD-BARRIER-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3-BAR:PTHREAD-BARRIER-T ()
+     "Used to identify a barrier."
+     ;; implementation dependent
+    );;SUSV3-BAR:PTHREAD-BARRIER-T
+
+</pre>
+
+<h4>Type SUSV3-BAR:PTHREAD-BARRIERATTR-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3-BAR:PTHREAD-BARRIERATTR-T ()
+     "Used to define a barrier attributes object."
+     ;; implementation dependent
+    );;SUSV3-BAR:PTHREAD-BARRIERATTR-T
+
+</pre>
+
+<h4>Type SUSV3-THR:PTHREAD-COND-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3-THR:PTHREAD-COND-T ()
+     "Used for condition variables."
+     ;; implementation dependent
+    );;SUSV3-THR:PTHREAD-COND-T
+
+</pre>
+
+<h4>Type SUSV3-THR:PTHREAD-CONDATTR-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3-THR:PTHREAD-CONDATTR-T ()
+     "Used to identify a condition attribute object."
+     ;; implementation dependent
+    );;SUSV3-THR:PTHREAD-CONDATTR-T
+
+</pre>
+
+<h4>Type SUSV3-THR:PTHREAD-KEY-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3-THR:PTHREAD-KEY-T ()
+     "Used for thread-specific data keys."
+     ;; implementation dependent
+    );;SUSV3-THR:PTHREAD-KEY-T
+
+</pre>
+
+<h4>Type SUSV3-THR:PTHREAD-MUTEX-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3-THR:PTHREAD-MUTEX-T ()
+     "Used for mutexes."
+     ;; implementation dependent
+    );;SUSV3-THR:PTHREAD-MUTEX-T
+
+</pre>
+
+<h4>Type SUSV3-THR:PTHREAD-MUTEXATTR-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3-THR:PTHREAD-MUTEXATTR-T ()
+     "Used to identify a mutex attribute object."
+     ;; implementation dependent
+    );;SUSV3-THR:PTHREAD-MUTEXATTR-T
+
+</pre>
+
+<h4>Type SUSV3-THR:PTHREAD-ONCE-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3-THR:PTHREAD-ONCE-T ()
+     "Used for dynamic package initialization."
+     ;; implementation dependent
+    );;SUSV3-THR:PTHREAD-ONCE-T
+
+</pre>
+
+<h4>Type SUSV3-THR:PTHREAD-RWLOCK-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3-THR:PTHREAD-RWLOCK-T ()
+     "Used for read-write locks."
+     ;; implementation dependent
+    );;SUSV3-THR:PTHREAD-RWLOCK-T
+
+</pre>
+
+<h4>Type SUSV3-THR:PTHREAD-RWLOCKATTR-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3-THR:PTHREAD-RWLOCKATTR-T ()
+     "Used for read-write lock attributes."
+     ;; implementation dependent
+    );;SUSV3-THR:PTHREAD-RWLOCKATTR-T
+
+</pre>
+
+<h4>Type SUSV3-SPI:PTHREAD-SPINLOCK-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3-SPI:PTHREAD-SPINLOCK-T ()
+     "Used to identify a spin lock."
+     ;; implementation dependent
+    );;SUSV3-SPI:PTHREAD-SPINLOCK-T
+
+</pre>
+
+<h4>Type SUSV3-THR:PTHREAD-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3-THR:PTHREAD-T ()
+     "Used to identify a thread."
+     ;; implementation dependent
+    );;SUSV3-THR:PTHREAD-T
+
+</pre>
+
+<h4>Type SUSV3:SIZE-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3:SIZE-T ()
+     "Used for sizes of objects."
+     ;; implementation dependent
+    );;SUSV3:SIZE-T
+
+   (ASSERT (SUBTYPEP 'SUSV3:SIZE-T '(INTEGER 0))</pre>
+
+<h4>Type SUSV3:SSIZE-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3:SSIZE-T ()
+     "Used for a count of bytes or an error indication."
+     ;; implementation dependent
+    );;SUSV3:SSIZE-T
+
+   (ASSERT (AND (SUBTYPEP 'SUSV3:SSIZE-T 'INTEGER)
+                (SUBTYPEP (INTEGER -1 SUSV3:SSIZE-MAX) SUSV3:SSIZE-T)))
+)
+</pre>
+
+<h4>Type SUSV3-XSI:SUSECONDS-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3-XSI:SUSECONDS-T ()
+     "Used for time in microseconds."
+     ;; implementation dependent
+    );;SUSV3-XSI:SUSECONDS-T
+
+</pre>
+
+<h4>Type SUSV3:TIME-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3:TIME-T ()
+     "Used for time in seconds."
+     ;; implementation dependent
+    );;SUSV3:TIME-T
+
+   (ASSERT (SUBTYPEP 'SUSV3:TIME-T '(OR INTEGER FLOAT))</pre>
+
+<h4>Type SUSV3-TMR:TIMER-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3-TMR:TIMER-T ()
+     "Used for timer ID returned by timer_create()."
+     ;; implementation dependent
+    );;SUSV3-TMR:TIMER-T
+
+</pre>
+
+<h4>Type SUSV3-TRC:TRACE-ATTR-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3-TRC:TRACE-ATTR-T ()
+     "Used to identify a trace stream attributes object."
+     ;; implementation dependent
+    );;SUSV3-TRC:TRACE-ATTR-T
+
+</pre>
+
+<h4>Type SUSV3-TRC:TRACE-EVENT-ID-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3-TRC:TRACE-EVENT-ID-T ()
+     "Used to identify a trace event type."
+     ;; implementation dependent
+    );;SUSV3-TRC:TRACE-EVENT-ID-T
+
+</pre>
+
+<h4>Type SUSV3-TRC-TEF:TRACE-EVENT-SET-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3-TRC-TEF:TRACE-EVENT-SET-T ()
+     "Used to identify a trace event type set."
+     ;; implementation dependent
+    );;SUSV3-TRC-TEF:TRACE-EVENT-SET-T
+
+</pre>
+
+<h4>Type SUSV3-TRC:TRACE-ID-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3-TRC:TRACE-ID-T ()
+     "Used to identify a trace stream."
+     ;; implementation dependent
+    );;SUSV3-TRC:TRACE-ID-T
+
+</pre>
+
+<h4>Type SUSV3:UID-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3:UID-T ()
+     "Used for user IDs."
+     ;; implementation dependent
+    );;SUSV3:UID-T
+
+   (ASSERT (SUBTYPEP 'SUSV3:UID-T 'INTEGER)</pre>
+
+<h4>Type SUSV3-XSI:USECONDS-T</h4>
+
+<pre>
+   (DEFTYPE SUSV3-XSI:USECONDS-T ()
+     "Used for time in microseconds."
+     ;; implementation dependent
+    );;SUSV3-XSI:USECONDS-T
+
+</pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h3>
+<a href="http://www.opengroup.org/onlinepubs/007904975/basedefs/limits.h.html">
+limits.h</a></h3>
+
+
+
+<h4>Constant SUSV3:+NAME-MAX+</h4>
+
+<pre>
+   (DEFCONSTANT SUSV3:+NAME-MAX+
+     "Maximum number of bytes in a filename (not including terminating null)."
+     ;; implementation dependent.
+    )
+
+   (ASSERT (<= SUSV3:+POSIX-NAME-MAX+ SUSV3:+NAME-MAX+))
+   ;; [XSI]:
+   (ASSERT (<= SUSV3:+XOPEN-NAME-MAX+ SUSV3:+NAME-MAX+))
+
+</pre>
+
+
+
+
+<h3>
+<a href="http://www.opengroup.org/onlinepubs/007904975/basedefs/dirent.h.html">
+dirent.h</a></h3>
+
+
+
+<!--
+(generate-type '(DIR
+        ()
+        "A type representing a directory stream.\n    Note: this is NOT a Common-Lisp stream."))
+
+-->
+
+<h4>Type SUSV3:DIR</h4>
+
+<pre>
+   (DEFTYPE SUSV3:DIR ()
+     "A type representing a directory stream.
+      Note: this is NOT a Common-Lisp stream."
+     ;; opaque
+    );;SUSV3:DIR
+</pre>
+
+
+
+<h4>Type SUSV3:DIRENT</h4>
+
+<pre>
+   (DEFSTRUCT SUSV3:DIRENT 
+     (INO  0  :TYPE SUSV3:INO-T) ;; [XSI] File serial number
+     (NAME "" :TYPE (SUSV3:BOUND-STRING 0 SUSV3:+NAME-MAX+)) ;; Name of entry
+    );;SUSV3:DIRENT
+</pre>
+
+
+
+<h4>Function SUSV3:OPENDIR</h4>
+
+<pre>
+   (DECLAIM (FTYPE (FUNCTION (STRING) (OR NULL DIR)) SUSV3:OPENDIR))
+   (DEFUN SUSV3:OPENDIR (PATH)
+     ;; implementation dependent
+     )
+</pre>
+
+
+
+
+<h4>Function SUSV3:READDIR</h4>
+
+<pre>
+   (DECLAIM (FTYPE (FUNCTION (DIR) (OR NULL DIRENT)) SUSV3:READDIR))
+   (DEFUN READDIR (DIR-STREAM)
+     ;; implementation dependent
+     )
+</pre>
+
+
+
+
+
+<h4>Function SUSV3:REWINDDIR</h4>
+
+<pre>
+   (DECLAIM (FTYPE (FUNCTION (DIR) NIL) SUSV3:REWINDDIR))
+   (DEFUN REWINDDIR (DIR-STREAM)
+     ;; implementation dependent
+     (VALUES)
+     )
+</pre>
+
+
+
+
+
+<h4>Function SUSV3:CLOSEDIR</h4>
+
+<pre>
+   (DECLAIM (FTYPE (FUNCTION (DIR) NIL) SUSV3:CLOSEDIR))
+   (DEFUN CLOSEDIR (DIR-STREAM)
+     ;; implementation dependent
+     (VALUES)
+     )
+</pre>
+
+
+
+
+
+
+<h4>Function SYSV3-TSF:READDIR-R</h4>
+
+<p>[***SEE***: Must we implement this function? Or is it C-specific API?
+<!--   ;; readdir_r ;; TSF ;; not implemented, do we need it?  -->
+
+
+
+
+
+
+<h4>Function SYSV3-XSI:SEEKDIR</h4>
+
+<pre>
+   (DECLAIM (FTYPE (FUNCTION (DIR INTEGER) NIL) SYSV3-XSI:SEEKDIR))
+   (DEFUN SEEKDIR (DIR-STREAM POSITION)
+     ;; implementation dependent
+     (VALUES)
+     )
+</pre>
+
+
+
+
+
+<h4>Function SYSV3-XSI:TELLDIR</h4>
+
+<pre>
+   (DECLAIM (FTYPE (FUNCTION (DIR) INTEGER) SYSV3-XSI:TELLDIR))
+   (DEFUN TELLDIR (DIR-STREAM)
+     ;; implementation dependent
+     )
+</pre>
+
+
+
+</body>
+</html>
+
+<!-- dirent.html                      == 2003-06-14 09:59:59 == pascal   -->

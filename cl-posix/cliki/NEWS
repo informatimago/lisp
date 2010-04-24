@@ -1,0 +1,186 @@
+								-*- Text -*-
+
+New in CLiki 0.4.4 (not released)
+
+* Introduce anti-spamming device: all but one version of a page is now
+  served with NOFOLLOW robots tag.  That version is the newest version
+  which has lasted more than 24 hours (without|before) being edited
+
+* Bugfixes for new stuff in 0.4.3
+
+* RSS feed now includes a pubDate element, to make aggregators
+  (primarily Planet Lisp, it must be admitted) happier
+
+* Export CHECK-PAGE-SAVE-ALLOWED (GF) and the condition 
+  CLIKI-PAGE-SAVE-REJECTED, making it easier for cliki-based apps
+  to do things like username checking
+
+New in CLiki 0.4.3
+
+* Versioning!  At the expense of making the file names correspond even
+  less closely with the page title, we now produce a version per edit.
+
+* While indexing we collect the first sentence of each page, and
+  make it accessible as (CLIKI-FIRST-SENTENCE page)
+
+* Legacy searches now print this out.
+
+* Beginning of the long slow process to separate generic cliki engine
+  stuff from www.cliki.net stuff: new cliki-net class that you
+  probably don't want to use unless you're me  
+
+* Indexing tweaks mean startup on big clikis may be a bit faster.  
+
+* Bug fixes: RSS generation, topic searches.
+
+* *(Uncategorized) marker added to default text for new pages.
+
+New in CLiki 0.4.2
+
+* Now depends on xmls package for rss generation (stop complaining at
+  the back there: it's small, it's asdf-installable if you ignore the
+  lack of GPG key, and it decruftifies the code noticeably)
+
+* Tweaked the feature that allows users to collapse multiple edits to
+  the same page such that they only show on Recent Changes once.  Now
+  it only works if the two edits happened within ten minutes of each
+  other.
+
+* Update README to include web address for lispweb list
+
+* 'Create new page' link to site root, and other links in the default
+  HTML stuff fixed (pointed out by Erik Enge, patch from Ivan Toshkov,
+  thanks both)
+
+* example.lisp package name changed to something less clashable
+
+New in CLiki 0.4.1
+
+* Fixed up a couple of links in the default page header/footer to
+  not point to the site root if the handler is installed elsewhere.
+
+* Update README file to correspond to Araneida 0.81, and add
+  example.lisp demonstrating a simple CLiki installation.
+
+* Change CLIKI-INSTANCE class graph.  Now we have CLIKI-VIEW as a parent
+  of CLIKI-INSTANCE.  The approximate division is that CLIKI-VIEW deals
+  with the visual aspects and CLIKI-INSTANCE deals with updating and
+  saving data.
+
+* CLIKI-SKIN is a new CLIKI-VIEW subclass demonstrating a way to make
+  a second look and feel for an existing cliki.
+
+* New CLIKI-PAGE-SURROUND method replaces CLIKI-PAGE-HEADER and
+  CLIKI-PAGE-FOOTER.  WITH-PAGE-SURROUND macro allows any response
+  handler to reasonably conveniently use the standard surround for
+  some cliki it's associated with.
+
+* New class AUTHED-CLIKI does cookie-based authentication for clikis that 
+  you don't want just anyone to edit.  Badly, though.  Feel free to send
+  patches.
+
+* At last, proper escaping of page pathnames.  Page titles may now contain
+  interesting characters like #\#, #\., #\+ etc.
+
+  If you have any pages stored in files with even mildly interesting 
+  names, they will change: what was "Foo Bar" is now "Foo=20Bar", for
+  example.  The old names are still read, and updated to new names on
+  SAVE-PAGE (i.e. after edits).
+
+* #\Space and #\_ are treated as equivalent in page names, just as #\A
+  and #\a are.
+
+* SAVE-PAGE is now a GF specialkised on CLIKI-VIEW.  Might be usable
+  for e.g. database-backed clikis.
+
+* Bug fix: admin/recent-changes.dat is created if not found.
+
+* Some HTML cleanup.
+
+New in CLiki 0.4.0
+
+* Visual makeover.  Thanks to Miles Egan for doing the hard work, and
+  apologies to him for my subsequent attempts to wreck it again.
+
+* ?download request redirects now merge against cclan
+
+* Very slight documentation update
+
+* New :package tag is actually pretty similar to :download but explicitly
+  for ASDF systems
+
+* Some bug fixes: 
+  - pages no longer show themselves in 'related pages' lists
+  - RDF file has working link for Recent Changes page
+  - empty pages can be edited again
+
+New in CLiki 0.3.9
+
+* Wholesale changes to take advantage of the new handler model in
+  Araneida 0.69+ (i.e. you need that too)
+
+* Potentially backward-incompatible change: now redirects requests
+  for the foo.html url to the foo page.  This has been threatened 
+  for years
+
+* Default search result page gets a summary of matched text for each
+  matching document
+
+* CLIKI-DEFAULT-PAGE-NAME method lets you have a start page called something
+  other than `index'
+
+* ADD-TO-INDEX-FOR-PAGE methods can now also add their arguments to the 
+  TF index, so that text in :(foo ...) constructs can be picked up in
+  full-text searching 
+
+* recent changes is now always displayed in GMT
+
+* Javascript link in default page header method to create new page
+
+* Removed (in hindsight, silly) >(foo) download syntax
+
+* Targets for 0.4: perhaps some documentation.  Lift the user auth from 
+  Entomotomy and include it here.  Bug fixes (please report bugs)
+
+
+New in CLiki 0.3.3
+
+* RDF RSS (0.92, insofar as it exists) export for Recent Changes
+
+* Major changes to internal workings of search and indexes such that the
+  index collection is now extensible: index.lisp should be reasonably clear.
+  CLiki 0.4 will happen when some work has been done on the search side of it
+  and some documentation written
+
+* CLiki syntax (_(foo), *(bar) etc) parsing radically changed to help with
+  index chages as above.  
+
+* The latter two should have produced little or no user-visible changes to
+  existing cliki pages
+
+New in CLiki 0.3.2
+
+* New syntax for marking the >(download) URL of a package
+
+* Uses new Araneida cookie accessors (so yes, you need a new Araneida as well)
+
+* Default CLHS URL changed to lisp.org, as they still have the old Hyperspec
+  page names.  This is a stopgap measure, really
+
+New in CLiki 0.3.1
+
+* Nothing much.  Now builds using asdf
+
+New in CLiki 0.3
+
+* Hyperspec lookups (thanks to Eric Marsden for the code)
+
+* A full-text search engine (thanks to Neil W. Van Dyke for
+  introducing me to tfidf and pointing me at articles)
+
+* Multiple CLiki instances can co-exist in the same Lisp instance
+
+* Recent Changes view is now paged for speed of downloading
+
+* Can optionally use a cookie to remember the editors' names
+
