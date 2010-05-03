@@ -95,24 +95,25 @@
 
 
 (defun cpu-info ()
-  (with-open-file (info "/proc/cpuinfo" :if-does-not-exist nil)
-    (and info
-         (loop
-            :for line = (read-line info nil nil)
-            :for colon = (and line (position #\: line))
-            :for var = (and colon (string-trim " 	" (subseq line 0 colon)))
-            :for val = (and colon (string-trim " 	" (subseq line (1+ colon))))
-            :while line
-            :when var
-            :collect (cons (intern
-                            (string-upcase
-                             (substitute-if #\- (lambda (ch) (position ch "_ ")) var))
-                            "KEYWORD") val)))))
+  (cond
+   ((with-open-file (info "/proc/cpuinfo" :if-does-not-exist nil)
+      (and info
+           (loop
+              :for line = (read-line info nil nil)
+              :for colon = (and line (position #\: line))
+              :for var = (and colon (string-trim " 	" (subseq line 0 colon)))
+              :for val = (and colon (string-trim " 	" (subseq line (1+ colon))))
+              :while line
+              :when var
+              :collect (cons (intern
+                              (string-upcase
+                               (substitute-if #\- (lambda (ch) (position ch "_ ")) var))
+                              "KEYWORD") val)))))))
 
 
 (defun cpu-short-description ()
   (let ((info (cpu-info)))
-    (flet ((gac (x) (cdr (assoc x info))))
+    (flet ((gac (x) (or (cdr (assoc x info)) "")))
       (format nil "~A ~A.~A.~A ~A MHz (~A bogomips)" (gac :model-name)
               (gac :cpu-family) (gac :model) (gac :stepping)
               (gac :cpu-mhz) (gac :bogomips)))))
@@ -322,8 +323,8 @@ RETURN: The status of the specified process.
          (setf ,vend-run  (GET-INTERNAL-RUN-TIME)
                ,vstat-after (process-status)
                ,vdeio-after (device-i/o))
-         (flet ((before (x) (cdr (assoc x ,vstat-before)))
-                (after  (x) (cdr (assoc x ,vstat-after))))
+         (flet ((before (x) (or (cdr (assoc x ,vstat-before)) 0))
+                (after  (x) (or (cdr (assoc x ,vstat-after))  0)))
            (let* ((page-io (+ (- (after :majflt) (before :majflt))
                               #|(- (after :minflt) (before :minflt))|#))
                   (devi-io (max 0 (- ,vdeio-after ,vdeio-before page-io))))
