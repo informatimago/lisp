@@ -492,20 +492,31 @@ BUG:   Line termination should be determined once for the whole file.
   ;; field  ::= | data .
   ;; data   ::= text | "\"" quoted-text "\"" .
   (let ((fields '()))
-    (when (eq :coma (parser-token self))
-      (push nil fields)
-      (advance self))
-    (while (member (parser-token self) '(:quoted-text :coma :text))
-      (push (if (eq :coma (parser-token self)) nil (parser-value self))
-            fields)
-      (advance self)
-      (cond
-        ((eq :coma (parser-token self))
-         (advance self))
-        ((member (parser-token self) '(:quoted-text :text))
-         (report-error self "Missing a coma between two fields ~S and ~S."
-                       (car fields) (parser-value self)))))
-    (nreverse fields)))
+    (loop
+       :initially (case (parser-token self)
+                    ((:coma)
+                     (push nil fields))
+                    ((:quoted-text :text)
+                     (push (parser-value self) fields)
+                     (advance self))
+                    (otherwise
+                     (report-error self "A record should start with a field or a coma, not ~S ~S."
+                                   (parser-token self) (parser-value self))))
+       :while (eq  (parser-token self) :coma)
+       :do (advance self)
+       :do (case (parser-token self)
+             ((:coma)
+              (push nil fields))
+             ((:quoted-text :text)
+              (push (parser-value self) fields)
+              (advance self))
+             (otherwise
+              (return-from csv-parse-record (nreverse fields))))
+       :finally (if (member (parser-token self) '(:quoted-text :text))
+                    (report-error self "Missing a coma between two fields ~S and ~S."
+                                  (car fields) (parser-value self))))))
+
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
