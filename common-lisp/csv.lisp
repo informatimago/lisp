@@ -11,6 +11,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2010-05-20 <PJB> Corrected csv-parse-record.
 ;;;;    2005-09-01 <PJB> Made use of iso6429.
 ;;;;    2004-09-06 <PJB> Created.
 ;;;;BUGS
