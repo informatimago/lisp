@@ -130,24 +130,24 @@ V:    (vector (unsigned-byte 32) 2), the clear text
 W:    (vector (unsigned-byte 32) 2), the result encrypted text
 K:    (vector (unsigned-byte 32) 4), the key
 "
-  (declare (type (vector (unsigned-byte 32) 2) v)
-           (type (vector (unsigned-byte 32) 2) w)
-           (type (vector (unsigned-byte 32) 4) k))
+  #-ecl (declare (type (vector (unsigned-byte 32) 2) v)
+                 (type (vector (unsigned-byte 32) 2) w)
+                 (type (vector (unsigned-byte 32) 4) k))
   (flet ((32bit (x) (logand #xffffffff x)))
-    (declare (inline 32bit))
+    #-ecl (declare (inline 32bit))
     (loop
        :with b0  :of-type (unsigned-byte 32) = (aref v 0)
        :with b1  :of-type (unsigned-byte 32) = (aref v 1)
        :with k   :of-type (vector (unsigned-byte 32) 4) = (copy-seq k)
        :with sks :of-type (vector (unsigned-byte 32) 32)
        = (make-array 32 :element-type '(unsigned-byte 32) :initial-element 0)
-       :for i fixnum :from 0 :below 16
-       :do (setf (aref sks i)
-                 (setf (aref k (mod i 4))
-                       (32bit (+ (aref k 0) (aref k 1)
-                                 (logxor (+ (aref k 2) (aref k 3))
-                                         (32bit (ash (aref k 0)
-                                                     (mod (aref k 2) 32))))))))
+       :for i #-ecl fixnum :from 0 :below 16
+       :for newval #-ecl (unsigned-byte 32) = (32bit (+ (aref k 0) (aref k 1)
+                                                  (logxor (+ (aref k 2) (aref k 3))
+                                                          (32bit (ash (aref k 0)
+                                                                      (mod (aref k 2) 32))))))
+       :do (setf (aref k (mod i 4)) newval
+                 (aref sks i)       newval)
        :finally
        (loop
           :for i  :of-type fixnum :from 15 :downto 0

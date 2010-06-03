@@ -234,6 +234,7 @@ If PACKAGE is NIL, the rotate *PACKAGE* and the top of the package stack."
 
 
 (DEFMETHOD DOCUMENTATION ((PACKAGE T) (DOC-TYPE (EQL 'EXPORTS)))
+  (declare (ignore doc-type))
   (FORMAT T "~:{----------------------------------------~%~A~2%~A~2%~}"
           (MAPCAR (LAMBDA (SYM) (LIST SYM (DOCUMENTATION SYM 'FUNCTION)))
                   (DELETE-IF (LAMBDA (SYM) (NULL (DOCUMENTATION SYM 'FUNCTION)))

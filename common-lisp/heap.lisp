@@ -602,9 +602,9 @@ but some types are used only for array cells (ie. unboxed values)."
               (cvm-svset generation fp +cvm-nil+)
               finally (cvm-set-fill-pointer generation ,sp)))))))
 
-
-(defmacro with-generation (bindings &body body)
-  (gen-with-generation bindings body))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defmacro with-generation (bindings &body body)
+    (gen-with-generation bindings body)))
 
 
 (defun gc-push-root (sym) 
@@ -2787,8 +2787,4 @@ VALUE:          The lisp value to be copied into the common heap and
 ||#
 
 
-;;;; heap.lisp                        --                     --          ;;;;
-
-
-
-
+;;;; THE END ;;;;
