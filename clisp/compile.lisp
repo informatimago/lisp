@@ -96,7 +96,8 @@
  :VERSION "1.0.0"
  :predefined-packages '("COMMON-LISP" "FFI" "EXT" "LINUX" "REGEXP" "SOCKET"
                         "GRAY" "SYS" "CLOS")
- :depends-on '(:com.informatimago.common-lisp))
+ :depends-on '(:com.informatimago.common-lisp)
+ :vanillap t)
 
 
 (COM.INFORMATIMAGO.COMMON-LISP.MAKE-DEPENDS:generate-summary

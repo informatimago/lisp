@@ -345,16 +345,16 @@ URL:        http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html
 
 
 (ffi:def-call-out msgsnd (:name "msgsnd")
-  (:arguments (msqid ffi:int) (msgbuf pointer) (msgsz linux:|size_t|)
+  (:arguments (msqid ffi:int) (msgbuf pointer) (msgsz ffi:size_t)
               (msgflg ffi:int))
   (:return-type ffi:int)
   (:library #.+libc+) (:language :stdc))
 
 
 (ffi:def-call-out msgrcv (:name "msgrcv")
-  (:arguments (msqid ffi:int) (msgbuf pointer) (msgsz linux:|size_t|)
+  (:arguments (msqid ffi:int) (msgbuf pointer) (msgsz ffi:size_t)
               (msgtyp ffi:long) (msgflg ffi:int))
-  (:return-type linux:|ssize_t|)
+  (:return-type ffi:ssize_t)
   (:library #.+libc+) (:language :stdc))
 
 
@@ -396,7 +396,7 @@ URL:        http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html
 (ffi:def-c-struct shmid_ds
   ;; Data structure describing a set of semaphores.
   (shm_perm    ipc_perm)   ; structure describing operation permission
-  (shm_segsz   linux:|size_t|)          ;  size of segment in bytes 
+  (shm_segsz   ffi:size_t)          ;  size of segment in bytes 
   (shm_atime   linux:|time_t|)          ;  time of last shmat() 
   (__unused1   ffi:ulong)               ; 
   (shm_dtime   linux:|time_t|)          ;  time of last shmdt() 
@@ -433,7 +433,7 @@ URL:        http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html
  
 (ffi:def-call-out shmget (:name "shmget")
   ;; Get shared memory segment.
-  (:arguments (key linux:|key_t|) (size linux:|size_t|) (shmflg ffi:int))
+  (:arguments (key linux:|key_t|) (size ffi:size_t) (shmflg ffi:int))
   (:return-type ffi:int)
   (:library #.+libc+) (:language :stdc))
 
@@ -554,7 +554,7 @@ URL:        http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html
 
 (ffi:def-call-out semop (:name "semop")
   ;; Operate on semaphore. 
-  (:arguments (semid ffi:int) (sops pointer) (nsops linux:|size_t|))
+  (:arguments (semid ffi:int) (sops pointer) (nsops ffi:size_t))
   (:return-type ffi:int)
   (:library #.+libc+) (:language :stdc))
 

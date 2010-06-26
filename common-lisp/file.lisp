@@ -17,7 +17,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2009-07-27 <PJB> Renamed TEXT-FILE-TO-STRING-LIST to STRING-LIST-TEXT-FILE-CONTENT,
+;;;;    2009-07-27 <PJB> Renamed TEXT-FILE-TO-STRING-LIST to STRING-LIST-TEXT-FILE-CONTENTS,
 ;;;;                     Added missing setf functions.
 ;;;;    2007-07-07 <PJB> Made use of new CONTENTS-FROM-STREAM function.
 ;;;;    2006-08-05 <PJB> Added SAFE-TEXT-FILE-TO-STRING-LIST.

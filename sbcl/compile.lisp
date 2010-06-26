@@ -126,7 +126,8 @@ RETURN:  The version as a string \"major.minor.compilation\"
    :licence "GPL"
    :predefined-packages '("COMMON-LISP" "SB-EXT" "SB-ALIEN" "SB-C" "SB-SYS")
    :depends-on '(:com.informatimago.common-lisp)
-   :IMPLICIT-DEPENDENCIES '()))
+   :IMPLICIT-DEPENDENCIES '()
+   :vanillap t))
 
 
 

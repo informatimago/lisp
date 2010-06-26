@@ -49,4 +49,81 @@ Encapsulates clisp socket-status.
 <pre>
 Implements a ident protocol client.
 
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/clisp/raw-memory.lisp">COM.INFORMATIMAGO.CLISP.RAW-MEMORY</a></b></tt>
+<pre>
+Peek and Poke.
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/clisp/susv3.lisp">COM.INFORMATIMAGO.CLISP.SUSV3</a></b></tt>
+<pre>
+An implementation of SUSv3 for clisp.
+The Open Group Base Specifications Issue 6
+IEEE Std 1003.1, 2003 Edition
+http://www.opengroup.org/onlinepubs/007904975/index.html
+Rules: 
+- The various scalar types are all mapped to INTEGER.
+[There is a multitude of scalar type declaration in 
+the C POSIX API (pid_t, gid_t, mode_t, etc) because
+C has modulo integers. Lisp have true integers, so 
+they're not useful.]
+http://www.opengroup.org/onlinepubs/009695399/xrat/xsh_chap02.html#tag_03_02_12
+- symbol are upcased, underlines replaced with dash,
+structure field prefixes are removed. 
+Constant names are NOT decorated by any '+'.
+- pointers: addresses are returned as integers.
+[It's easiest to keep addresses as integers instead of
+fighting with the various FFI notions of a pointer.]
+- errors are reported as result/errno.
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/clisp/susv3-mc3.lisp">COM.INFORMATIMAGO.CLISP.SUSV3-MC3</a></b></tt>
+<pre>
+An implementation of SUSV3-MC3 for clisp.
+Implemented:
+mmap/munmap
+
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/clisp/susv3-xsi.lisp">COM.INFORMATIMAGO.CLISP.SUSV3-XSI</a></b></tt>
+<pre>
+This packages exports SUSV3 XSI functions.
+This is the CLISP specific implementation of the SUSV3 XSI API.
+The Open Group Base Specifications Issue 6
+IEEE Std 1003.1, 2003 Edition
+http://www.opengroup.org/onlinepubs/007904975/index.html
+Implemented:
+ftw
+msgget/msgctl/msgsnd/msgrcv
+shmget/shmctl/shmat/shmdt
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/clisp/script.lisp">COM.INFORMATIMAGO.CLISP.SCRIPT</a></b></tt>
+<pre>This module exports some functions usefull when writting clisp scripts.
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/clisp/shell.lisp">COM.INFORMATIMAGO.CLISP.SHELL</a></b></tt>
+<pre>This package export shell primitives (fork, pipe, redirections, exec).
+</pre></li>
+<li>
+<tt>
+<b>
+<a href="http://darcs.informatimago.com/darcs/public/lisp/clisp/xterm.lisp">COM.INFORMATIMAGO.CLISP.XTERM</a></b></tt>
+<pre>
+This package exports functions to open xterm streams.
+
 </pre></li></body></html>

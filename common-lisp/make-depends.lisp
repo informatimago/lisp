@@ -601,7 +601,7 @@ DO:         Declares a package.
                  `((eval-when (:compile-toplevel :load-toplevel :execute)
                       ,@(mapcar
                          (lambda (rename) `(package:add-nickname
-                                       ,(car rename) ,(cdr rename)))
+                                            ,(car rename) ,(cdr rename)))
                          renames))))
          (defpackage ,name ,@defpack-args)
          (in-package ,name)))))
@@ -1321,12 +1321,12 @@ LOAD:-PATHS     A list of directory paths where the sources are searched in.
                         :implicit-dependencies implicit-dependencies
                         :load-paths load-paths)))
       `(asdf:defsystem ,name
-         :description ,description
-         :version     ,version
-         :author      ,authors
-         :licence     ,licence
-         :depends-on  ,depends-on
-         :components  ,components) )))
+           :description ,description
+           :version     ,version
+           :author      ,authors
+           :licence     ,licence
+           :depends-on  ,depends-on
+           :components  ,components) )))
 
 
 (defun generate-asd (system-name sources source-type
@@ -1335,7 +1335,12 @@ LOAD:-PATHS     A list of directory paths where the sources are searched in.
                      (predefined-packages '("COMMON-LISP"))
                      (implicit-dependencies '())
                      (depends-on '())
-                     (load-paths (list (make-pathname :directory '(:relative)))))
+                     (load-paths (list (make-pathname :directory '(:relative))))
+                     (vanillap nil))
+  "
+VANILLAP:  if true, then generate a simple, vanilla system.
+           Otherwise, decorate it with PJB output-files.
+"
   (let ((*package* (find-package :com.informatimago.common-lisp.make-depends)))
     (with-open-file (out (make-pathname :directory '(:relative)
                                         :name "system"
@@ -1352,68 +1357,71 @@ LOAD:-PATHS     A list of directory paths where the sources are searched in.
       (mapc
        (lambda (sexp) (print sexp out) (terpri out))
        ;; Out to the asd file:
-       `((defpackage "COM.INFORMATIMAGO.ASDF" (:use "COMMON-LISP"))
-         (in-package "COM.INFORMATIMAGO.ASDF")
-         ;; ASDF imposes the file type classes to be
-         ;; in the same package as the defsystem.
-         (unless (handler-case (find-class 'pjb-cl-source-file) (t () nil))
-           (defclass pjb-cl-source-file (asdf::cl-source-file) ())
-           (flet ((output-files (c)
-                    (flet ((implementation-id ()
-                             (flet ((first-word (text)
-                                      (let ((pos (position (character " ")
-                                                           text)))
-                                        (remove (character ".")
-                                                (if pos
-                                                    (subseq text 0 pos)
-                                                    text)))))
-                               (format
-                                nil "~A-~A-~A"
-                                (cond 
-                                 ((string-equal
-                                   "International Allegro CL Enterprise Edition"
-                                   (lisp-implementation-type))
-                                  "ACL")
-                                 (t (first-word (lisp-implementation-type))))
-                                (first-word (lisp-implementation-version))
-                                (first-word (machine-type))))))
-                      (let* ((object (compile-file-pathname
-                                      (asdf::component-pathname c)))
-                             (path (merge-pathnames
-                                    (make-pathname
-                                     :directory
-                                     (list :relative
-                                           (format nil "OBJ-~:@(~A~)"
-                                                   (implementation-id)))
-                                     :name (pathname-name object)
-                                     :type (pathname-type object))
-                                    object)))
-                        (ensure-directories-exist path)
-                        (list path)))))
-             (defmethod asdf::output-files ((operation asdf::compile-op)
-                                            (c pjb-cl-source-file))
-               (output-files c))
-             (defmethod asdf::output-files ((operation asdf::load-op)
-                                            (c pjb-cl-source-file))
-               (output-files c))))
-         ,(gen-defsystem-form
-           system-name
-           (mapcar
-            (lambda (source) (make-pathname :name (string-downcase (string source))
-                                            :type source-type))
-            sources)
-           :description (or description
-                            (format nil
-                              "This ASDF system gathers all the ~A packages."
-                              (string-upcase system-name)))
-           :version version
-           :author author
-           :licence (or licence license)
-           :component-class :pjb-cl-source-file
-           :predefined-packages predefined-packages
-           :implicit-dependencies implicit-dependencies
-           :depends-on depends-on
-           :load-paths load-paths))))))
+       (append
+        (unless vanillap
+          `((defpackage "COM.INFORMATIMAGO.ASDF" (:use "COMMON-LISP"))
+            (in-package "COM.INFORMATIMAGO.ASDF")
+            ;; ASDF imposes the file type classes to be
+            ;; in the same package as the defsystem.
+            (unless (handler-case (find-class 'pjb-cl-source-file) (t () nil))
+              (defclass pjb-cl-source-file (asdf::cl-source-file) ())
+              (flet ((output-files (c)
+                       (flet ((implementation-id ()
+                                (flet ((first-word (text)
+                                         (let ((pos (position (character " ")
+                                                              text)))
+                                           (remove (character ".")
+                                                   (if pos
+                                                       (subseq text 0 pos)
+                                                       text)))))
+                                  (format
+                                   nil "~A-~A-~A"
+                                   (cond 
+                                     ((string-equal
+                                       "International Allegro CL Enterprise Edition"
+                                       (lisp-implementation-type))
+                                      "ACL")
+                                     (t (first-word (lisp-implementation-type))))
+                                   (first-word (lisp-implementation-version))
+                                   (first-word (machine-type))))))
+                         (let* ((object (compile-file-pathname
+                                         (asdf::component-pathname c)))
+                                (path (merge-pathnames
+                                       (make-pathname
+                                        :directory
+                                        (list :relative
+                                              (format nil "OBJ-~:@(~A~)"
+                                                      (implementation-id)))
+                                        :name (pathname-name object)
+                                        :type (pathname-type object))
+                                       object)))
+                           (ensure-directories-exist path)
+                           (list path)))))
+                (defmethod asdf::output-files ((operation asdf::compile-op)
+                                               (c pjb-cl-source-file))
+                  (output-files c))
+                (defmethod asdf::output-files ((operation asdf::load-op)
+                                               (c pjb-cl-source-file))
+                  (output-files c))))))
+        
+        `(,(gen-defsystem-form
+            system-name
+            (mapcar
+             (lambda (source) (make-pathname :name (string-downcase (string source))
+                                             :type source-type))
+             sources)
+            :description (or description
+                             (format nil
+                                     "This ASDF system gathers all the ~A packages."
+                                     (string-upcase system-name)))
+            :version version
+            :author author
+            :licence (or licence license)
+            :component-class (if vanillap :cl-source-file :pjb-cl-source-file)
+            :predefined-packages predefined-packages
+            :implicit-dependencies implicit-dependencies
+            :depends-on depends-on
+            :load-paths load-paths)))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

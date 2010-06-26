@@ -75,7 +75,6 @@
                                      :element-type element-type
                                      :external-format external-format))
                  (read-line s)))
-         (clos::*warn-if-gf-already-called* nil)
          tty-name xio)
     (with-open-stream 
         (status (ext:run-program "bash"
@@ -106,10 +105,9 @@
         (delete-file pipe)
         (close (two-way-stream-input-stream xio))
         (close (two-way-stream-output-stream xio))
-        (let ((clos::*warn-if-gf-already-called* nil))
-          (remove-method (function close) 
-                         (find-method (function close)
-                                      '(:after) `((eql ,xio))))))
+        (remove-method (function close) 
+                       (find-method (function close)
+                                    '(:after) `((eql ,xio)))))
       xio)))
 
 

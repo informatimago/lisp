@@ -100,8 +100,9 @@
 
 (ffi:def-c-type pointer ffi:ulong)
 
+
 (ffi:def-call-out mmap  (:name "mmap")
-  (:arguments (start pointer) (size linux:|size_t|)
+  (:arguments (start pointer) (size ffi:size_t)
               (prot ffi:int) (flags ffi:int)
               (fd ffi:int) (offset linux:|off_t|))
   (:return-type pointer)
@@ -109,7 +110,7 @@
 
 
 (ffi:def-call-out munmap  (:name "munmap")
-  (:arguments  (start pointer) (size linux:|size_t|))
+  (:arguments  (start pointer) (size ffi:size_t))
   (:return-type pointer)
   (:library #.+libc+) (:language :stdc))
 

@@ -515,7 +515,8 @@ BUG:   Line termination should be determined once for the whole file.
               (return-from csv-parse-record (nreverse fields))))
        :finally (if (member (parser-token self) '(:quoted-text :text))
                     (report-error self "Missing a coma between two fields ~S and ~S."
-                                  (car fields) (parser-value self))))))
+                                  (car fields) (parser-value self))
+                    (return-from csv-parse-record (nreverse fields))))))
 
 
 

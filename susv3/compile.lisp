@@ -85,7 +85,8 @@
  :com.informatimago.susv3 *sources* *source-type*
  :VERSION "1.0.0"
  :predefined-packages '("COMMON-LISP" "FFI" "EXT" "LINUX" "REGEXP" "GRAY" "SYS")
- :depends-on '(:com.informatimago.common-lisp :com.informatimago.clisp))
+ :depends-on '(:com.informatimago.common-lisp :com.informatimago.clisp)
+ :vanillap t)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

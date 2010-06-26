@@ -131,7 +131,7 @@ RETURN:  The version as a string \"major.minor.compilation\"
    :licence "GPL"
    :depends-on '()
    :IMPLICIT-DEPENDENCIES '()
-   ))
+   :vanillap t))
 
 
 

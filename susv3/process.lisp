@@ -51,7 +51,6 @@
   (COM.INFORMATIMAGO.COMMON-LISP.PACKAGE:ADD-NICKNAME
      "COM.INFORMATIMAGO.CLISP.RAW-MEMORY"  "RAW-MEMORY"))
 (defpackage "COM.INFORMATIMAGO.SUSV3.PROCESS"
-  (:NICKNAMES "PROCESS" "MP")
   (:DOCUMENTATION "Implement a multiprocessing API for clisp.")
   (:USE "COMMON-LISP" 
         "COM.INFORMATIMAGO.COMMON-LISP.UTILITY"
@@ -110,7 +109,7 @@
     This function returns the priority of process. It defaults to 0
     and may be set to any fixnum with setf.
     Returns the priority of process, which must be an instance of
-    mp:process. Priority may be any real number. It defaults to 0. It
+    PROCESS. Priority may be any real number. It defaults to 0. It
     may be reset with setf and this function.
     "
     ;; 
@@ -427,7 +426,7 @@
     next executes. When function returns, the original computation of
     process continues. If process is waiting when interrupted, it runs
     the interrupt function and then continues waiting. If process is
-    not active, mp:process-interrupt makes it active for the interrupt
+    not active, PROCESS-INTERRUPT makes it active for the interrupt
     function, then makes it inactive again. If additional interrupts
     are posted to a process when one is already posted, they are all
     run, but in undetermined order.
@@ -601,7 +600,7 @@
     complete without any other process running, or any asynchronous
     interrupt being dispatched, unless the process does something to
     block or otherwise explicitly yield to the scheduler (e.g. with
-    mp:process-allow-schedule).
+    PROCESS-ALLOW-SCHEDULE).
     without-interrupts is implemented very efficiently and so may be
     executed frequently. It is generally bad style to wrap a
     without-interrupts around a body of code that takes a significant
@@ -662,8 +661,8 @@
     replaces the process' whostate for the duration of the wait.)
     This function returns nil.
     See the discussion under the headings Section 4.3 Waiting for
-    input from a stream and Section 4.3.1 mp:process-wait vs
-    mp:wait-for-input-available.
+    input from a stream and Section 4.3.1 PROCESS-WAIT vs
+    WAIT-FOR-INPUT-AVAILABLE.
     "
   ;; IMPLEMENTATION:
   ;; The waiting process will wait (select, socket-status) or will read 

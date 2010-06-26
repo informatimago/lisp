@@ -226,7 +226,8 @@ RETURN:  The version as a string \"major.minor.compilation\"
   (com.informatimago.common-lisp.make-depends:generate-asd
    :com.informatimago.common-lisp *sources* *source-type*
    :version (version++)
-   :implicit-dependencies '("package")))
+   :implicit-dependencies '("package")
+   :vanillap t))
 
 
 

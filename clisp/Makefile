@@ -116,9 +116,9 @@ inhibited-openmcl:
 install:
 	-mkdir -p $(PACKAGES)/$(PACKAGE_PATH)
 	install -m 644 *.lisp *.asd        $(PACKAGES)/$(PACKAGE_PATH)/
+	install -m 644 libraw-memory.so    $(PACKAGES)/$(PACKAGE_PATH)/
 #	-publish OBJ-*
 #	-umask 022 ; cp -r OBJ-*           $(PACKAGES)/$(PACKAGE_PATH)/
-#	install -m 644 libraw-memory.so    $(PACKAGES)/$(PACKAGE_PATH)/
 
 clean:
 	-rm -rf obj-* OBJ-* *.lib *.fas *.fasl *.x86f
