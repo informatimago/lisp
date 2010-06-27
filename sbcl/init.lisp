@@ -101,6 +101,10 @@
  (LIST "**;*.*.*"          (get-directory :share-lisp "packages/**/*.*")))
 
 
+
+;; Note: We may also be loaded by non-SBCL, eg. to generate system.asd or summary.html.
+
+#+sbcl
 (defun logical-pathname-namestring (logical-pathname)
   (format nil "~A:~{~A;~}~:[~;~:*~A~:[~;.~:*~A~:[~;.~:*~A~]~]~]"
           (SB-IMPL::LOGICAL-HOST-NAME (pathname-host logical-pathname))
@@ -123,7 +127,7 @@
               "*"
               (pathname-version logical-pathname))))
 
-
+#+sbcl
 (defun post-process-logical-pathname-translations (host)
   (flet ((pstring (x)
            (typecase x
@@ -146,6 +150,7 @@
                 (function >)
                 :key (lambda (x) (length (pstring (first x))))))))
 
+#+sbcl
 (post-process-logical-pathname-translations "PACKAGES") 
 
 
