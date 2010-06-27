@@ -11,13 +11,14 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2010-06-27 <PJB> Removed string constant +TAB+.
 ;;;;    2003-10-21 <PJB> Added du.
 ;;;;    2002-01-09 <PJB> Moved in df from tar-backup.
 ;;;;    2002-10-?? <PJB> Creation.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    GPL
-;;;;    Copyright Pascal J. Bourguignon 2002 - 2003
+;;;;    Copyright Pascal J. Bourguignon 2002 - 2010
 ;;;;
 ;;;;    This file is part of PJB Clisp Utilities.
 ;;;;
@@ -99,8 +100,6 @@ RETURN:  A list of volinfo structures.
      :OUTPUT :STREAM))))
 
 
-(DEFCONSTANT +TAB+ (FORMAT NIL "~C" (CODE-CHAR 9)))
-
 (DEFUN DU (&OPTIONAL (PATH (EXT:CD)))
   "
 RETURN:  The Disk Usage of the given PATH (or the current directory).
@@ -110,10 +109,10 @@ RETURN:  The Disk Usage of the given PATH (or the current directory).
   (VALUES
    (READ-FROM-STRING
     (CAAR
-     (MAPCAR (LAMBDA (LINE) (SPLIT-STRING LINE +TAB+))
+     (MAPCAR (LAMBDA (LINE) (SPLIT-STRING LINE #.(string (CODE-CHAR 9))))
              (com.informatimago.common-lisp.stream:STREAM-TO-STRING-LIST
               (EXT:RUN-PROGRAM "du"
                 :ARGUMENTS (LIST "-s" PATH) :OUTPUT :STREAM)))))))
 
 
-;;;; disk.lisp                        --                     --          ;;;;
+;;;; THE END ;;;;

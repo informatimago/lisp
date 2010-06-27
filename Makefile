@@ -49,9 +49,14 @@ TARGET  := $(shell uname)
 PREFIX  := /usr/local
 MAKEDIR := $(HOME)/src/public/common/makedir
 
-MODULES = common-lisp clext clisp sbcl susv3 clmisc
+MODULES =     common-lisp clext clmisc   sbcl   clisp susv3
 
-all:install-clisp lisp-clean
+
+LINE    = ";;;;;;====================================================================\n"
+
+
+
+all: install clean lisp
 
 #include $(MAKEDIR)/project
 
@@ -113,44 +118,52 @@ etags tags:
 
 
 CLEAN=clean-install clean
-C=clisp
-S=sbcl
-U=cmucl
 A=allegro
-ALL=$(C) $(S)
+C=clisp
+U=cmucl
+E=ecl
+S=sbcl
+O=openmcl
+ALL:=$(C) $(S)
 
 
 MM=$(MAKE) $(MFLAGS)
 clean:
-	$(MM) -C common-lisp $(CLEAN)
-	$(MM) -C clext       $(CLEAN)
-	$(MM) -C clmisc      $(CLEAN)
-	$(MM) -C sbcl        $(CLEAN)
-	$(MM) -C clisp       $(CLEAN)
-	$(MM) -C susv3       $(CLEAN)
+	@for module in $(MODULES) ; do \
+		printf $(LINE) ;\
+		printf ";;;;;; CLEANING $$module\n" ;\
+		$(MM) -C $$module $(CLEAN) ;\
+	 done
+	@printf $(LINE)
 
 lisp-clean:
-	$(MM) -C common-lisp $(CLEAN) $(ALL) install
-	$(MM) -C clext       $(CLEAN) $(ALL) install
-	$(MM) -C clmisc      $(CLEAN) $(ALL) install
-	$(MM) -C sbcl        $(CLEAN) $(S)   install
-	$(MM) -C clisp       $(CLEAN) $(C)   install
-	$(MM) -C susv3       $(CLEAN) $(C)   install
+	@for module in $(MODULES) ; do \
+		printf $(LINE) ;\
+		printf ";;;;;; CLEANING, COMPILING and INSTALLING $$module\n" ;\
+		$(MM) -C $$module $(CLEAN) all install ;\
+	 done
+	@printf $(LINE)
 
 lisp:
-	$(MM) -C common-lisp          $(ALL) install
-	$(MM) -C clext                $(ALL) install
-	$(MM) -C clmisc               $(ALL) install
-	$(MM) -C sbcl                 $(S)   install
-	$(MM) -C clisp                $(C)   install
-	$(MM) -C susv3                $(C)   install
+	@for module in $(MODULES) ; do \
+		printf $(LINE) ;\
+		printf ";;;;;; COMPILING and INSTALLING $$module\n" ;\
+		$(MM) -C $$module all install ;\
+	 done
+	@printf $(LINE)
 
 install:
-	$(MM) -C common-lisp                 install
-	$(MM) -C clext                       install
-	$(MM) -C clmisc                      install
-	$(MM) -C sbcl                        install
-	$(MM) -C clisp                       install
-	$(MM) -C susv3                       install
+	@for module in $(MODULES) ; do \
+		printf $(LINE) ;\
+		printf ";;;;;; INSTALLING $$module\n" ;\
+		$(MM) -C $$module all install ;\
+	 done
+	@printf $(LINE)
 
-#### Makefile                         --                     --          ####
+
+subprojects modules:
+	@echo $(MODULES) 
+
+
+#### THE END ####
+
