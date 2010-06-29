@@ -12,12 +12,13 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2010-06-29 <PJB> Added :short option to LSPACK.
 ;;;;    2006-08-28 <PJB> Extracted from ~/.common.lisp
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    GPL
 ;;;;    
-;;;;    Copyright Pascal Bourguignon 2006 - 2006
+;;;;    Copyright Pascal Bourguignon 2006 - 2010
 ;;;;    
 ;;;;    This program is free software; you can redistribute it and/or
 ;;;;    modify it under the terms of the GNU General Public License
@@ -278,53 +279,83 @@ If PACKAGE is NIL, the rotate *PACKAGE* and the top of the package stack."
                   TITLE PLIST)))))
 
 (DEFUN LSPACK (&rest arguments)
-  "(LSPACK [package [:EXPORTS|:EXPORT]]...)
-List all the package, or only the packages matching NAME (regexp on clisp)
-dumping all the exported symbols when EXPORTS is true."
-  (flet ((list-package (name exports)
-           (LET* ((PACKLIST
-                   (SORT (cond
-                           ((null name)  (COPY-LIST (LIST-ALL-PACKAGES)))
-                           ((stringp name)
-                            ;; remove-if-not may return the argument!
-                            (delete-if-not
-                             (lambda (pack)
-                               (some (lambda (pname)
-                                       (string-match-p name pname))
-                                     (cons (package-name pack)
-                                           (package-nicknames pack))))
-                             (COPY-LIST (LIST-ALL-PACKAGES))))
-                           (t (list (find-package name))))
-                         (FUNCTION STRING<) :KEY (FUNCTION PACKAGE-NAME)))
-                  #+(or)(NAME-WIDTH
-                         (LOOP FOR P IN PACKLIST
-                            MAXIMIZE (LENGTH (PACKAGE-NAME P))))
-                  (NUMB-WIDTH
-                   (LOOP FOR P IN PACKLIST
-                      MAXIMIZE (TRUNCATE
-                                (1+ (LOG
-                                     (MAX (LENGTH (LIST-EXTERNAL-SYMBOLS P))
-                                          (LENGTH (LIST-ALL-SYMBOLS P)) 3)
-                                     10))))))
-             (DOLIST (PACKAGE PACKLIST)
-               (FORMAT T "~%~A~%   ~14A ~VD exported, ~VD total.~%"
-                       (PACKAGE-NAME PACKAGE)
-                       "Symbols:"
-                       NUMB-WIDTH (LENGTH (LIST-EXTERNAL-SYMBOLS PACKAGE))
-                       NUMB-WIDTH (LENGTH (LIST-ALL-SYMBOLS PACKAGE)))
-               (flow-list "Nicknames:" (PACKAGE-NICKNAMES PACKAGE))
-               (flow-list "Uses:"      (PACKAGE-USE-LIST PACKAGE))
-               (flow-list "Used by:"   (PACKAGE-USED-BY-LIST PACKAGE))
-               (WHEN EXPORTS
-                 (flow-list "Exported:" (LIST-EXTERNAL-SYMBOLS PACKAGE))))
-             (VALUES))))
-    (unless arguments
-      (setf arguments '("")))
-    (loop
-       :while arguments
-       :do (list-package (pop arguments)
-                         (when (member (first arguments) '(:exports :export t))
-                           (progn (pop arguments) t))))))
+  "(LSPACK [package [:SHOW-EXPORTS|:EXPORTS|:EXPORT|:T] [:HIDE-USED-BY|:SHORT|:S]]...)
+List all the packages, or only the packages matching PACKAGE (a regexp on clisp)
+dumping all the exported symbols when :SHOW-EXPORTS is specified,
+and not dumping the used-by list when :HIDE-USED-BY is specified.
+The keywords are tested with STRING-EQUAL."
+  (let ((options '((:show-exports :exports :export :t)
+                   (:hide-used-by :short           :s))))
+    (flet ((list-package (name options)
+             (LET* ((show-exports (not (not (member :show-exports options))))
+                    (show-used-by (not (member :hide-used-by options)))
+                    (PACKLIST
+                     (SORT (cond
+                             ((null name)  (COPY-LIST (LIST-ALL-PACKAGES)))
+                             ((stringp name)
+                              ;; remove-if-not may return the argument!
+                              (delete-if-not
+                               (lambda (pack)
+                                 (some (lambda (pname)
+                                         (string-match-p name pname))
+                                       (cons (package-name pack)
+                                             (package-nicknames pack))))
+                               (COPY-LIST (LIST-ALL-PACKAGES))))
+                             (t (list (find-package name))))
+                           (FUNCTION STRING<) :KEY (FUNCTION PACKAGE-NAME)))
+                    #+(or)(NAME-WIDTH
+                           (LOOP FOR P IN PACKLIST
+                              MAXIMIZE (LENGTH (PACKAGE-NAME P))))
+                    (NUMB-WIDTH
+                     (LOOP
+                        :FOR P :IN PACKLIST
+                        :MAXIMIZE (TRUNCATE
+                                   (1+ (LOG
+                                        (MAX (LENGTH (LIST-EXTERNAL-SYMBOLS P))
+                                             (LENGTH (LIST-ALL-SYMBOLS P)) 3)
+                                        10))))))
+               (print `(,name show-exports ,show-exports show-used-by ,show-used-by))
+               (DOLIST (PACKAGE PACKLIST)
+                 (FORMAT T "~%~A~%   ~14A ~VD exported, ~VD total.~%"
+                         (PACKAGE-NAME PACKAGE)
+                         "Symbols:"
+                         NUMB-WIDTH (LENGTH (LIST-EXTERNAL-SYMBOLS PACKAGE))
+                         NUMB-WIDTH (LENGTH (LIST-ALL-SYMBOLS PACKAGE)))
+                 (flow-list "Nicknames:" (PACKAGE-NICKNAMES PACKAGE))
+                 (flow-list "Uses:"      (PACKAGE-USE-LIST PACKAGE))
+                 (when show-used-by
+                   (flow-list "Used by:"   (PACKAGE-USED-BY-LIST PACKAGE)))
+                 (WHEN show-exports 
+                   (flow-list "Exported:" (LIST-EXTERNAL-SYMBOLS PACKAGE))))
+               (VALUES)))
+           (eat-options (arguments)
+             "
+RETURN: a list of options present at the beginning of the arguments list;
+        the rest of the argument lists.
+        THe options are canonicalized (the first keyword given in the
+        OPTIONS lists below is included in the result list).
+"
+             (loop
+                :with result = '()
+                :for arg = (first arguments)
+                :do (loop
+                       :named find-option
+                       :for option :in options
+                       :when (member arg option :test (function string-equal))
+                       :do (progn (pushnew (first option) result)
+                                  (pop arguments)
+                                  (return-from find-option))
+                       :finally (return-from eat-options (values result arguments))))))
+      (when (or (null arguments)
+                (find (first arguments) options
+                      :test (lambda (k o) (member k o :test (function string-equal)))))
+        (push "" arguments))
+      (loop
+         :while arguments
+         :do (let ((name (pop arguments)))
+               (multiple-value-bind (options rest-arguments) (eat-options arguments)
+                 (setf arguments rest-arguments)
+                 (list-package name options)))))))
 
 
 (defun lschar (&key (start 0) (end #x11000) name)
