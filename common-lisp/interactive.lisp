@@ -314,7 +314,7 @@ The keywords are tested with STRING-EQUAL."
                                         (MAX (LENGTH (LIST-EXTERNAL-SYMBOLS P))
                                              (LENGTH (LIST-ALL-SYMBOLS P)) 3)
                                         10))))))
-               (print `(,name show-exports ,show-exports show-used-by ,show-used-by))
+               ;; (print `(,name show-exports ,show-exports show-used-by ,show-used-by))
                (DOLIST (PACKAGE PACKLIST)
                  (FORMAT T "~%~A~%   ~14A ~VD exported, ~VD total.~%"
                          (PACKAGE-NAME PACKAGE)
@@ -463,8 +463,11 @@ DO:         Create FILE if it doesn't exist, and
               (COND
                 ((MEMBER LINE '("YES" "Y" "JA" "J" "SI" "S" "OUI" "O" "T")
                          :TEST (FUNCTION STRING=))
-                 (CLOSE (OPEN ITEM :DIRECTION :OUTPUT))
-                 (RETURN-FROM EDIT (DOEDIT  (TRUENAME ITEM))))
+                 (let ((file (TRUENAME ITEM)))
+                  (CLOSE (OPEN file
+                               :DIRECTION :OUTPUT
+                               :if-does-not-exist :create))
+                  (RETURN-FROM EDIT (DOEDIT file))))
                 ((MEMBER LINE '("NO" "N" "NON" "NEIN" "NIL")
                          :TEST (FUNCTION STRING=))
                  (FORMAT *ERROR-OUTPUT* "EDIT OF ~S CANCELED." ITEM)
