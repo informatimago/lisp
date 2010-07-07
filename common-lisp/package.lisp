@@ -168,6 +168,8 @@ This is a system definition search function for ASDF.
 It will map a system such as :com.informatimago.common-lisp
 to the package path: PACKAGE:COM;INFORMATIMAGO;COMMON-LISP;SYSTEM.ASD
 "
+  ;; (print `(package-system-definition ,system))
+  ;; (values-list (print (multiple-value-list)))
   (let ((name (typecase system
                 (symbol (string-downcase (symbol-name system)))
                 (string system)

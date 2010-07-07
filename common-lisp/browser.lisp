@@ -189,7 +189,8 @@ Client code can rebind it to another universal date or set it to (now).")
   (multiple-value-bind (exists-p dirpath) (check-directories-exist path)
     (if exists-p
         (progn
-          (SETF *WORKING-DIRECTORY* PATH)
+          ;; (print (list path dirpath (truename dirpath)))
+          (SETF *WORKING-DIRECTORY* (truename dirpath))
           (DOLIST (HOOK *CHANGE-DIRECTORY-HOOK*)
             (LET ((*WORKING-DIRECTORY* *WORKING-DIRECTORY*))
               (FUNCALL HOOK *WORKING-DIRECTORY*))))
