@@ -63,7 +63,7 @@
            "HASHED-SET-CLASS" "FIND-ELEMENTS-WITH-PROPERTY" "ELEMENT-LIST"
            "SELECT-ELEMENTS" "MAP-ELEMENTS" "PERFORM-WITH-ELEMENTS" "REMOVE-ELEMENT"
            "ADD-ELEMENTS" "CARDINAL" "SET-CLASS" "DELETE-PROPERTY" "GET-PROPERTY"
-           "SET-PROPERTY" "PROPERTY-NAMES" "INITIALIZE-INSTANCE" "ELEMENT-CLASS")
+           "SET-PROPERTY" "PROPERTY-NAMES" "ELEMENT-CLASS")
   (:IMPORT-FROM "COM.INFORMATIMAGO.COMMON-LISP.UTILITY" "WHILE")
   (:DOCUMENTATION
    "This package exports classes for elements, sets and graphs.
@@ -731,8 +731,13 @@ Default is UNDIRECTED-EDGE-CLASS."))
 DO:     Initalize the instance nodes and edges.
 "
   (DECLARE (IGNORE INITARGS))
-  (SETF (NODES SELF) (MAKE-INSTANCE 'SET-CLASS))
-  (SETF (EDGES SELF) (MAKE-INSTANCE 'SET-CLASS))
+  (unless (slot-boundp self 'nodes)
+    (SETF (NODES SELF) (MAKE-INSTANCE 'SET-CLASS)))
+  (if (slot-boundp self 'edges)
+      (progn
+        ;; todo: we should check that all edges are between two nodes of the graph.
+        )
+      (SETF (EDGES SELF) (MAKE-INSTANCE 'SET-CLASS)))
   SELF)
 
 
