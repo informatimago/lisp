@@ -173,16 +173,19 @@ Client code can rebind it to another universal date or set it to (now).")
 (DEFUN WORKING-DIRECTORY () *WORKING-DIRECTORY*)
 
 (defun check-directories-exist (path)
-  (let ((non-existent
-         (find-if-not
-          (lambda (dir) (directory (merge-pathnames (make-pathname :directory dir)
-                                               *default-pathname-defaults* nil)))
-          (nreverse
-           (loop :for dir :on (reverse (pathname-directory path))
-              :collect (reverse dir))))))
+  "Return: whether all the directories in PATH exist;
+           the path to the first directory that doesn't exist."
+  (let* ((non-existent
+          (find-if-not
+           (lambda (dir)
+             (directory (make-pathname :directory dir :defaults path)))
+           (nreverse
+            (loop
+               :for dir :on (reverse (pathname-directory path))
+               :collect (reverse dir))))))
     (values (not non-existent)
-            (merge-pathnames (make-pathname :directory non-existent)
-                             *default-pathname-defaults* nil))))
+            (merge-pathnames (make-pathname :directory non-existent :defaults path)
+                             path nil))))
 
 
 (DEFUN CHANGE-WORKING-DIRECTORY (PATH)
