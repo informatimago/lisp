@@ -87,6 +87,9 @@
     reader                          ; used by SOURCE-TEXT
 	source-text
 
+    version
+    script
+    
 	utility
     ascii                               ; = iso646-006 (US)
     ecma048                             ; = iso6429
