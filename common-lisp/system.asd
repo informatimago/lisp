@@ -2,13 +2,15 @@
 
 (ASDF:DEFSYSTEM :COM.INFORMATIMAGO.COMMON-LISP :DESCRIPTION
  "This ASDF system gathers all the COM.INFORMATIMAGO.COMMON-LISP packages."
- :VERSION "1.1.367" :AUTHOR
+ :VERSION "1.1.369" :AUTHOR
  "<PJB> Pascal J. Bourguignon <pjb@informatimago.com> and <PJB> Pascal Bourguignon <pjb@informatimago.com>"
  :LICENCE "GPL" :DEPENDS-ON NIL :COMPONENTS
  ((:CL-SOURCE-FILE "package")
   (:CL-SOURCE-FILE "source-form" :DEPENDS-ON ("package"))
   (:CL-SOURCE-FILE "reader" :DEPENDS-ON ("package" "source-form"))
   (:CL-SOURCE-FILE "source-text" :DEPENDS-ON ("package" "reader"))
+  (:CL-SOURCE-FILE "version" :DEPENDS-ON ("package"))
+  (:CL-SOURCE-FILE "script" :DEPENDS-ON ("package"))
   (:CL-SOURCE-FILE "utility" :DEPENDS-ON ("package" "source-form"))
   (:CL-SOURCE-FILE "ascii" :DEPENDS-ON ("package"))
   (:CL-SOURCE-FILE "ecma048" :DEPENDS-ON ("package" "utility"))
