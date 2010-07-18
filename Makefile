@@ -124,7 +124,7 @@ U=cmucl
 E=ecl
 S=sbcl
 O=openmcl
-ALL:=$(C) $(S)
+ALL:=$(C) $(E) $(S) 
 
 
 MM=$(MAKE) $(MFLAGS)

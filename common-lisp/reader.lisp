@@ -25,8 +25,12 @@
 ;;;;    2009-08-26 <PJB> Corrected bugs reading "||", "( ;comment )" and "#C(123 456)".
 ;;;;    2007-03-04 <PJB> Extracted from source.lisp
 ;;;;BUGS
+;;;;
 ;;;;    When we've reached the end of the stream, if we (read stream nil)
 ;;;;    it goes on an infinite loop.
+;;;;
+;;;;    (READ-FROM-STRING "#1=(a b . #1#)") gives an error.
+;;;;
 ;;;;LEGAL
 ;;;;    GPL
 ;;;;    
