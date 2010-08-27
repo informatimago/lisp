@@ -544,6 +544,32 @@ RETURN: The contents of the file at PATH as a LIST of STRING lines.
                                            ((:error)  (write-line (subseq line remainder) stderr)))))))))))
     (values status out err)))
 
+;; (defun clisp-shell (command)
+;;   (let ((status (ext:launch "/bin/bash"
+;;                             :element-type 'character
+;;                             :arguments (list "-c" command)
+;;                             :input nil
+;;                             :output xxx
+;;                             :error xxx
+;;                             :wait t
+;;                             ))))
+;;   (let ((command (format nil "( ( ( ~A ) | while read line ; do echo \":output $line\" 1>&3 ; done ) |& while read line ; do echo \":error $line\" 1>&3 ; done && echo :status 0 || echo :status $? ) 3>&1" command))
+;;         (out)
+;;         (err)
+;;         (status))
+;;     (setf out (with-output-to-string (stdout)
+;;                 (setf err (with-output-to-string (stderr)
+;;                             (with-open-stream (cmd (ext:run-shell-command command :output :stream))
+;;                               (loop
+;;                                  :for line = (read-line cmd nil nil)
+;;                                  :while line
+;;                                  :do (multiple-value-bind (kind remainder) (read-from-string line)
+;;                                        (ecase kind
+;;                                          ((:status) (setf status (read-from-string line :start remainder)))
+;;                                          ((:output) (write-line (subseq line remainder) stdout))
+;;                                          ((:error)  (write-line (subseq line remainder) stderr))))))))))
+;;     (values status out err)))
+
 
 #+(or ecl gcl)
 (defun system-shell (command system-function output-file error-file status-file)
