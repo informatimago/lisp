@@ -103,7 +103,7 @@
                            ;; "http://darcs.informatimago.com~
                            ;;  /darcs/public/lisp/~(~A/~A~).lisp"
                            ;; "com/informatimago/~(~A/~A~).lisp"
-                           "~*~A.lisp"
+                           "~(~*~A~).lisp"
                            (car (last (pathname-directory pp)))
                            (pathname-name pp)))
  #-clisp :comment-start #-clisp ";;;;")

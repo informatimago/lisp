@@ -2,7 +2,7 @@
 
 (ASDF:DEFSYSTEM :COM.INFORMATIMAGO.COMMON-LISP :DESCRIPTION
  "This ASDF system gathers all the COM.INFORMATIMAGO.COMMON-LISP packages."
- :VERSION "1.1.384" :AUTHOR
+ :VERSION "1.1.385" :AUTHOR
  "<PJB> Pascal J. Bourguignon <pjb@informatimago.com> and <PJB> Pascal Bourguignon <pjb@informatimago.com>"
  :LICENCE "GPL" :DEPENDS-ON NIL :COMPONENTS
  ((:CL-SOURCE-FILE "package")
