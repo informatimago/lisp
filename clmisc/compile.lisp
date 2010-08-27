@@ -145,11 +145,12 @@ RETURN:  The version as a string \"major.minor.compilation\"
    :VERBOSE T
    :SOURCE-TYPE *SOURCE-TYPE*
    :SUMMARY-PATH "summary.html"
-   :REPOSITORY-URL  (lambda (pp)
-                   (format nil "http://darcs.informatimago.com~
-                                /darcs/public/lisp/~(~A/~A~).lisp"
-                           (car (last (pathname-directory pp)))
-                           (pathname-name pp)))))
+   :REPOSITORY-URL (lambda (pp)
+                     (format nil ;; "http://darcs.informatimago.com~
+                             ;;  /darcs/public/lisp/~(~A/~A~).lisp"
+                             "com/informatimago/~(~A/~A~).lisp"
+                             (car (last (pathname-directory pp)))
+                             (pathname-name pp)))))
 
 
 

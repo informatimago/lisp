@@ -105,8 +105,9 @@
  :source-type  *source-type*
  :summary-path "summary.html"
  :repository-url (lambda (pp)
-                   (format nil "http://darcs.informatimago.com~
-                                /darcs/public/lisp/~(~A/~A~).lisp"
+                   (format nil ;; "http://darcs.informatimago.com~
+                           ;;  /darcs/public/lisp/~(~A/~A~).lisp"
+                           "com/informatimago/~(~A/~A~).lisp"
                            (car (last (pathname-directory pp)))
                            (pathname-name pp)))
  #-clisp :comment-start #-clisp ";;;;")
