@@ -165,7 +165,7 @@ subprojects modules:
 	@echo $(MODULES) 
 
 systems:
-	mcp \*/system.asd \#1/com.informatimago.\#1.asd
+	mcp  \*/system.asd \#1/com.informatimago.\#1.asd
 
 #### THE END ####
 

@@ -54,7 +54,7 @@
            "PLIST-PUT" "HASHED-INTERSECTION" "HASHED-REMOVE-DUPLICATES"
            "ENSURE-LIST" "PROPER-LIST-P"
            "ENSURE-CIRCULAR" "MAKE-CIRCULAR-LIST" "CIRCULAR-LENGTH"
-           "TREE-DIFFERENCE" "REPLACE-TREE")
+           "TREE-DIFFERENCE" "REPLACE-TREE" "MAPTREE")
   (:DOCUMENTATION
    "This package exports list processing functions.
     
