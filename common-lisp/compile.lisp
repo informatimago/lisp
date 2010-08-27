@@ -246,9 +246,11 @@ RETURN:  The version as a string \"major.minor.compilation\"
    :summary-path "summary.html"
    :character-set "UTF-8"
    :repository-url (lambda (pp)
-                     (format nil ;; "http://darcs.informatimago.com~
+                     (format nil
+                             ;; "http://darcs.informatimago.com~
                              ;;  /darcs/public/lisp/~(~A/~A~).lisp"
-                             "com/informatimago/~(~A/~A~).lisp"
+                             ;; "com/informatimago/~(~A/~A~).lisp"
+                             "~*~A.lisp"
                              (car (last (pathname-directory pp)))
                              (pathname-name pp)))))
 
