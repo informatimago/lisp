@@ -57,7 +57,7 @@
            "EX-IOERR" "EX-TEMPFAIL" "EX-PROTOCOL" "EX-NOPERM"
            "EX-CONFIG" "EX--MAX"
            ;;
-           "SHELL" "UNAME" "PARSE-OPTIONS"
+           "*SHELL-OUTPUT*" "*SHELL-ERROR*" "SHELL" "UNAME" "PARSE-OPTIONS"
            ))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.SCRIPT")
 
@@ -533,14 +533,15 @@ RETURN: The contents of the file at PATH as a LIST of STRING lines.
     (setf out (with-output-to-string (stdout)
                 (setf err (with-output-to-string (stderr)
                             (with-open-stream (cmd (ext:run-shell-command command :output :stream))
-                              (loop
-                                 :for line = (read-line cmd nil nil)
-                                 :while line
-                                 :do (multiple-value-bind (kind remainder) (read-from-string line)
-                                       (ecase kind
-                                         ((:status) (setf status (read-from-string line :start remainder)))
-                                         ((:output) (write-line (subseq line remainder) stdout))
-                                         ((:error)  (write-line (subseq line remainder) stderr))))))))))
+                              (with-standard-io-syntax 
+                                (loop
+                                   :for line = (read-line cmd nil nil)
+                                   :while line
+                                   :do (multiple-value-bind (kind remainder) (read-from-string line)
+                                         (ecase kind
+                                           ((:status) (setf status (read-from-string line :start remainder)))
+                                           ((:output) (write-line (subseq line remainder) stdout))
+                                           ((:error)  (write-line (subseq line remainder) stderr)))))))))))
     (values status out err)))
 
 
