@@ -2,5 +2,5 @@
 
 (ASDF:DEFSYSTEM :COM.INFORMATIMAGO.CLEXT :DESCRIPTION
  "This ASDF system gathers all the COM.INFORMATIMAGO.CLEXT packages." :VERSION
- "1.0.212" :AUTHOR "<PJB> Pascal Bourguignon <pjb@informatimago.com>" :LICENCE
+ "1.0.215" :AUTHOR "<PJB> Pascal Bourguignon <pjb@informatimago.com>" :LICENCE
  "GPL" :DEPENDS-ON NIL :COMPONENTS ((:CL-SOURCE-FILE "closer-weak"))) 

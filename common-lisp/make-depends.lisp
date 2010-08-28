@@ -773,7 +773,8 @@ RETURN:           A SOURCE-FILE instance filled with the data from the source
                                  (invoke-debugger err)
                                  (return-from :source-file nil))))
                     (scan-source-file filepath
-                                      :load t :verbose *load-verbose*
+                                      :load (string/= "el" (pathname-type filepath))
+                                      :verbose *load-verbose*
                                       :keep-spaces t)))))
            (when source-file
              (setf (gethash (namestring (truename filepath))
@@ -1219,8 +1220,19 @@ IDF:            If NIL, write the dependencies on the standard output,
                        (source-file     (get-source-file path))
                        (header          (source-file-header source-file))
                        (package (or (header-slot header :package)
-                                    (first (source-file-packages-defined
-                                            source-file)))))
+                                    (first (source-file-packages-defined source-file))
+                                    ;; for files without a package (eg emacs files)
+                                    ;; we make a pseudo-package named as the file.
+                                    (make-instance 'source-package
+                                        :name (pathname-name path)
+                                        :nicknames '()
+                                        :documentation nil
+                                        :use '()
+                                        :shadow '()
+                                        :shadowing-import-from '()
+                                        :import-from '()
+                                        :export '()
+                                        :intern '()))))
                   (when verbose
                     (format *trace-output* ";; Processing ~S~%" source)
                     (format *trace-output* ";;   PATH    = ~S~%" path)
