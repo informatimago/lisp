@@ -848,13 +848,20 @@ NOTE:    Not a lisp closure!
 EXAMPLE: (compute-closure (lambda (x) (list (mod (* x 2) 5))) '(1)) --> (2 4 3 1)
 NOTE:    This version avoids calling FUN twice with the same argument.
 "
-  (loop
-     :for follows = (delete-duplicates (mapcan fun set))
-     :then (delete-duplicates (append (mapcan fun newbies) follows))
-     :for newbies = (set-difference follows set)
-     :while newbies
-     :do (setf set (append newbies set))
-     :finally (return set)))
+  (flet ((join (lists)
+           (loop
+             :with result = '()
+             :for list :in lists
+             :do (loop :for item :in list :do (push item result))
+             :finally (print (return result)))))
+    (loop
+      :for follows = (delete-duplicates (join (mapcar fun set)))
+      :then (delete-duplicates (join (cons follows (mapcar fun newbies))))
+      :for newbies = (set-difference follows set)
+      :while newbies
+      :do (print (list 'newbies newbies))
+      :do (setf set (append newbies set))
+      :finally (return set))))
 
 
 ;; (array->list array) --> (coerce array 'list)

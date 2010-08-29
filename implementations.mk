@@ -40,7 +40,7 @@ WISH          := wish
 
 
 # COMPILERS      = abcl allegro clisp cmucl ecl openmcl sbcl 
-COMPILERS      = allegro clisp cmucl openmcl sbcl
+COMPILERS      = allegro clisp cmucl ecl openmcl sbcl
 
 ABCL		  := abcl
 ALLEGRO       := alisp
