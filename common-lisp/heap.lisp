@@ -2398,8 +2398,8 @@ DO:     Initialize the heap in *gc-memory*.
 
 
 (defgeneric cfi-copy-to-common (value)
-  (:method ((value (eql nil)))     +cvm-nil+)
-  (:method ((value (eql t)))       +cvm-t+)
+  (:method ((value (eql nil)))     (declare (ignorable value)) +cvm-nil+)
+  (:method ((value (eql t)))       (declare (ignorable value)) +cvm-t+)
   (:method ((value character))     (cvm-form-character value))
   (:method ((value integer))       (cvm-form-fixnum    value)) ; no bignum yet
   (:method ((value float)) 
@@ -2407,8 +2407,8 @@ DO:     Initialize the heap in *gc-memory*.
       ((typep value 'short-float)  (cvm-form-single-float     value))
       ((typep value 'single-float) (cvm-form-single-float     value))
       (t (error "double-float and long-float unsupported yet."))))
-  (:method ((value ratio))         (error "No ratio yet."))
-  (:method ((value complex))       (error "No complex yet."))
+  (:method ((value ratio))         (declare (ignorable value)) (error "No ratio yet."))
+  (:method ((value complex))       (declare (ignorable value)) (error "No complex yet."))
   ;; 1- allocate the current node and store it to the ld hash before
   ;; 2- allocating the sub-nodes.
   (:method ((value cons))
@@ -2441,6 +2441,7 @@ DO:     Initialize the heap in *gc-memory*.
     (or (ld-get value)
         (ld-put value (cvm-make-string :contents value))))
   (:method ((value vector))
+    (declare (ignorable value)) 
     ;; TODO: since we make a copy, the fill-pointers are not synchronized!
     ;; TODO: avoid circles
     #||
@@ -2448,12 +2449,14 @@ DO:     Initialize the heap in *gc-memory*.
     (ld-put value (cvm-make-vector <<<value>>> (length value))))
     ||#(error "not implemented yet"))
   (:method ((value array))
+    (declare (ignorable value)) 
     ;; TODO: avoid circles
     #||
     (or (ld-get value)
     (ld-put value (cvm-make-array value)))
     ||#(error "not implemented yet"))
   (:method ((value structure-object))
+    (declare (ignorable value))
     ;; TODO: avoid circles
     (error "Cannot handle structures yet."))
   (:method ((value package))
@@ -2647,7 +2650,12 @@ RETURN:  An interned lisp symbol whose plist, value and function are updated
 
 
 (defvar *defined-common-variables* '())
-#+sbcl (defvar *common-variables* nil)
+
+;; Let's define a common list of common variables:
+(define-symbol-macro *common-variables* (get-common '*common-variables*))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf (documentation 'common-variables* 'variable)
+        "List of symbols naming common variables."))
 
 
 (defun common-initialize (memory)
@@ -2668,10 +2676,6 @@ NOTE:           The shared memory block and the semaphore set may
                 create them if needed.
 "
   (gc-initialize memory)
-  ;; Let's define a common list of common variables:
-  (define-symbol-macro *common-variables* (get-common '*common-variables*))
-  (setf (documentation 'common-variables* 'variable)
-        "List of symbols naming common variables.")
   (set-common '*common-variables* '(*common-variables*))
   (pushnew '*common-variables* *defined-common-variables*))
 

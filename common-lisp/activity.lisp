@@ -303,17 +303,33 @@ RETURN: The universal-time (in seconds), offset by the
 (defgeneric precision (timebase)
   (:documentation "Return the number of seconds (or fraction of a second)
 that is the minimum non-zero difference between two calls to GET-TIME.")
-  (:method ((timebase t)) (error "Invalid TIMEBASE: ~S" timebase))
-  (:method ((timebase (eql :universal-time))) 1.0d0)
-  (:method ((timebase (eql :real-time)))      *internal-time-unit*)
-  (:method ((timebase (eql :run-time)))       *internal-time-unit*))
+  (:method ((timebase t))
+    (declare (ignorable timebase))
+    (error "Invalid TIMEBASE: ~S" timebase))
+  (:method ((timebase (eql :universal-time)))
+    (declare (ignorable timebase))
+    1.0d0)
+  (:method ((timebase (eql :real-time)))
+    (declare (ignorable timebase))
+    *internal-time-unit*)
+  (:method ((timebase (eql :run-time)))
+    (declare (ignorable timebase))
+    *internal-time-unit*))
 
 (defgeneric get-time (timebase)
   (:documentation "Return current number of seconds since epoch.")
-  (:method ((timebase t)) (error "Invalid TIMEBASE: ~S" timebase))
-  (:method ((timebase (eql :universal-time))) (get-universal-time))
-  (:method ((timebase (eql :real-time)))      (get-real-time))
-  (:method ((timebase (eql :run-time)))       (get-run-time)))
+  (:method ((timebase t))
+    (declare (ignorable timebase))
+    (error "Invalid TIMEBASE: ~S" timebase))
+  (:method ((timebase (eql :universal-time)))
+    (declare (ignorable timebase))
+    (get-universal-time))
+  (:method ((timebase (eql :real-time)))
+    (declare (ignorable timebase))
+    (get-real-time))
+  (:method ((timebase (eql :run-time)))
+    (declare (ignorable timebase))
+    (get-run-time)))
 
 (defgeneric wait-delay (timebase delay)
   (:documentation "Sleep for DELAY seconds.
@@ -323,7 +339,9 @@ The default is to use CL:SLEEP.
 A 'persistent' scheduler could, when DELAY is big, save the image,
 setup the system to be launched again after the DELAY is elapsed
 and restart the scheduling then.")
-  (:method ((timebase t) delay) (when (plusp delay) (sleep delay))))
+  (:method ((timebase t) delay)
+    (declare (ignorable timebase))
+    (when (plusp delay) (sleep delay))))
 
 
 
@@ -408,6 +426,7 @@ the schedule, the idle-scheduler needs to yield the hand to it's
 time-scheduler.")
 
 (defmethod ACTIVITY-SCHEDULED-TIME :after ((activity activity))
+  (declare (ignore activity))
   (setf *rescheduled* t))
 
 

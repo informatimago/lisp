@@ -388,19 +388,17 @@ RETURN: a list of sublists of list (the conses from list are reused),
          (SUBLIST LIST)
          (CURRENT LIST)
          (NEXT    (CDR CURRENT)))
-    (LOOP WHILE NEXT DO
+    (LOOP :WHILE NEXT :DO
          (IF (FUNCALL INDICATOR (CAR CURRENT) (CAR NEXT))
              (PROGN ;; split
                (SETF (CDR CURRENT) NIL)
                (PUSH SUBLIST RESULT)
                (SETQ CURRENT NEXT)
                (SETQ NEXT (CDR CURRENT))
-               (SETQ SUBLIST CURRENT)
-               )
+               (SETQ SUBLIST CURRENT))
              (PROGN ;; keep
                (SETQ CURRENT NEXT)
-               (SETQ NEXT (CDR CURRENT))
-               )))
+               (SETQ NEXT (CDR CURRENT)))))
     (PUSH SUBLIST RESULT)
     (NREVERSE RESULT)))
 

@@ -111,22 +111,15 @@ NOTE:       Current implementation only accepts as separators
         (CHUNKS  '())
         (POSITION 0)
         (NEXTPOS  0)
-        (STRLEN   (LENGTH STRING))
-        )
-
-    (LOOP WHILE (< POSITION STRLEN)
-       DO
-       (LOOP WHILE (AND (< NEXTPOS STRLEN)
-                        (CHAR/= SEP (AREF STRING NEXTPOS)))
-          DO (SETQ NEXTPOS (1+ NEXTPOS))
-          ) ;;loop
-       (PUSH (SUBSEQ STRING POSITION NEXTPOS) CHUNKS)
-       (SETQ POSITION (1+ NEXTPOS))
-       (SETQ NEXTPOS  POSITION)
-       ) ;;loop
-    (NREVERSE CHUNKS)
-    ) ;;let
-  )   ;;PJB-RE-SPLIT-STRING
+        (STRLEN   (LENGTH STRING)))
+    (LOOP :WHILE (< POSITION STRLEN)
+          :DO (LOOP :WHILE (AND (< NEXTPOS STRLEN)
+                                (CHAR/= SEP (AREF STRING NEXTPOS)))
+                    :DO (SETQ NEXTPOS (1+ NEXTPOS)))
+              (PUSH (SUBSEQ STRING POSITION NEXTPOS) CHUNKS)
+              (SETQ POSITION (1+ NEXTPOS))
+              (SETQ NEXTPOS  POSITION))
+    (NREVERSE CHUNKS)))
 
 
 
@@ -142,24 +135,21 @@ NOTE:       Current implementation only accepts as separators
     (SETF (AREF SC 0) STRING)
     (SETF (AREF SC 1) 0)
     (SETF (AREF SC 2) (LENGTH STRING))
-    SC)
-  ) ;;MAKE-SC
+    SC))
 
 
 (DEFUN SC-STRING (SC)
   "
 RETURN:  The string being scanned.
 "
-  (AREF SC 0)
-  ) ;;SC-STRING
+  (AREF SC 0))
 
 
 (DEFUN SC-POSITION (SC)
   "
 RETURN:  The current position.
 "
-  (AREF SC 1)
-  ) ;;SC-POSITION
+  (AREF SC 1))
 
 
 (DEFUN SC-CURR-CHAR (SC)
@@ -168,8 +158,7 @@ RETURN:  The current character, or nil if EOS.
 "
   (IF (< (AREF SC 1) (AREF SC 2))
       (CHAR (AREF SC 0) (AREF SC 1))
-      NIL)
-  ) ;;SC-CURR-CHAR
+      NIL))
 
 
 (DEFUN SC-NEXT-CHAR (SC)
@@ -178,8 +167,7 @@ RETURN:  The next character, or nil if EOS.
 "
   (IF (< (1+ (AREF SC 1)) (AREF SC 2))
       (CHAR (AREF SC 0) (1+ (AREF SC 1)))
-      NIL)
-  ) ;;SC-NEXT-CHAR
+      NIL))
 
 
 (DEFUN SC-ADVANCE (SC)
@@ -190,8 +178,7 @@ RETURN:  The character at position 1+p.
 "
   (IF (< (AREF SC 1) (AREF SC 2))
       (SETF (AREF SC 1) (1+ (AREF SC 1))))
-  (SC-CURR-CHAR SC)
-  ) ;;SC-ADVANCE
+  (SC-CURR-CHAR SC))
 
 
 (DEFUN SC-SCAN-TO-CHAR (SC CHAR)
@@ -211,11 +198,10 @@ POST:    (and (<=  p (sc-position sc))
   (LET ((S (AREF SC 0))
         (P (AREF SC 1))
         (L (AREF SC 2)))
-    (LOOP WHILE (AND (< P L) (CHAR/= CHAR (CHAR S P)))
-       DO (SETQ P (1+ P)))
+    (LOOP :WHILE (AND (< P L) (CHAR/= CHAR (CHAR S P)))
+          :DO (SETQ P (1+ P)))
     (PROG1 (SUBSEQ S (AREF SC 1) P)
-      (SETF (AREF SC 1) P)))
-  ) ;;SC-SCAN-TO-CHAR
+      (SETF (AREF SC 1) P))))
           
 
 
@@ -347,9 +333,9 @@ simple ::= '['     character-set ']' .
 ;;;                         (setq min nil))
 ;;;                     (push (character '\-) set))
 ;;;                 (setq min curr-char)
-            
+       
 
-     
+       
 ;;;                 ))))
        )
 
@@ -450,8 +436,7 @@ simple ::= '['     character-set ']' .
        (SETQ TREE CURR-CHAR)
        (SC-ADVANCE SC)))
 
-    TREE) ;;let
-  )       ;;PJB-RE-PARSE-SIMPLE
+    TREE))
 
 
 (DEFUN PJB-RE-PARSE-ELEMENT (SC)
@@ -510,8 +495,7 @@ element ::= simple '\{' number ',' [ number ] '\}' .
        (SETQ TREE '(:ERROR "\{...\} not implemented yet.")))
 
       (T                 (SETQ TREE SIMPLE)))
-    TREE) ;;let
-  )       ;;PJB-RE-PARSE-ELEMENT
+    TREE))
 
 
 (DEFUN PJB-RE-COLLAPSE-STRINGS (TREE)
@@ -521,27 +505,25 @@ RETURNS: A new list where all sequences of characters are collapsed
 NOTE:    Does not works recursively because recursive sequences are built
          bottom-up.
 "
-  (LOOP WITH RESULT = NIL
-     WITH STRING = NIL
-     FOR ITEM IN TREE
-     DO
-     (IF (CHARACTERP ITEM)
-         (PUSH ITEM STRING)
-         (PROGN
-           (WHEN STRING
-             (IF (= 1 (LENGTH STRING))
-                 (PUSH (CAR STRING) RESULT)
-                 (PUSH (implode-string (NREVERSE STRING)) RESULT))
-             (SETQ STRING NIL))
-           (PUSH ITEM RESULT)))
-     FINALLY
-     (WHEN STRING
-       (IF (= 1 (LENGTH STRING))
-           (PUSH (CAR STRING) RESULT)
-           (PUSH (implode-string (NREVERSE STRING)) RESULT))
-       (SETQ STRING NIL))
-     (RETURN (NREVERSE RESULT)))
-  ) ;;PJB-RE-COLLAPSE-STRINGS
+  (LOOP
+    :WITH RESULT = NIL
+    :WITH STRING = NIL
+    :FOR ITEM :IN TREE
+    :DO (IF (CHARACTERP ITEM)
+            (PUSH ITEM STRING)
+            (PROGN
+              (WHEN STRING
+                (IF (= 1 (LENGTH STRING))
+                    (PUSH (CAR STRING) RESULT)
+                    (PUSH (implode-string (NREVERSE STRING)) RESULT))
+                (SETQ STRING NIL))
+              (PUSH ITEM RESULT)))
+    :FINALLY (WHEN STRING
+               (IF (= 1 (LENGTH STRING))
+                   (PUSH (CAR STRING) RESULT)
+                   (PUSH (implode-string (NREVERSE STRING)) RESULT))
+               (SETQ STRING NIL))
+             (RETURN (NREVERSE RESULT))))
 
 
 (DEFUN PJB-RE-PARSE-SEQUENCE (SC)
@@ -554,13 +536,12 @@ sequence ::= element .             element
 sequence ::= .                     nil
 "
   (LET ((TREE NIL))
-    (LOOP WHILE (AND (SC-CURR-CHAR SC)
-                     (NOT (AND (EQ (CHARACTER '\\) (SC-CURR-CHAR SC))
-                               (OR (EQ (SC-NEXT-CHAR SC) (CHARACTER '\|))
-                                   (EQ (SC-NEXT-CHAR SC) (CHARACTER ")") )))))
-       DO
-       (PUSH (PJB-RE-PARSE-ELEMENT SC) TREE)
-       ) ;;loop
+    (LOOP
+      :WHILE (AND (SC-CURR-CHAR SC)
+                  (NOT (AND (EQ (CHARACTER '\\) (SC-CURR-CHAR SC))
+                            (OR (EQ (SC-NEXT-CHAR SC) (CHARACTER '\|))
+                                (EQ (SC-NEXT-CHAR SC) (CHARACTER ")") )))))
+      :DO (PUSH (PJB-RE-PARSE-ELEMENT SC) TREE))
     (CONS :SEQUENCE (PJB-RE-COLLAPSE-STRINGS (NREVERSE TREE)))
 ;;;     (if (<= (length tree) 1)
 ;;;         (car tree)
@@ -569,8 +550,7 @@ sequence ::= .                     nil
 ;;;         (if (<= (length tree) 1)
 ;;;             (car tree)
 ;;;           tree)))
-    ) ;;let
-  )   ;;PJB-RE-PARSE-SEQUENCE
+    ))
 
 
 (DEFUN PJB-RE-PARSE-REGEXP (SC)
@@ -584,18 +564,14 @@ regexp ::= sequence .               sequence
 "
   (LET (TREE)
     (SETQ TREE (LIST (PJB-RE-PARSE-SEQUENCE SC)))
-    (LOOP WHILE (AND (EQ (CHARACTER '\\) (SC-CURR-CHAR SC))
-                     (EQ (CHARACTER '\|) (SC-NEXT-CHAR SC)))
-       DO
-       (SC-ADVANCE SC)
-       (SC-ADVANCE SC)
-       (PUSH (PJB-RE-PARSE-SEQUENCE SC) TREE)
-       ) ;;loop
+    (LOOP :WHILE (AND (EQ (CHARACTER '\\) (SC-CURR-CHAR SC))
+                      (EQ (CHARACTER '\|) (SC-NEXT-CHAR SC)))
+          :DO (SC-ADVANCE SC)
+              (SC-ADVANCE SC)
+              (PUSH (PJB-RE-PARSE-SEQUENCE SC) TREE))
     (IF (= 1 (LENGTH TREE))
         (CAR TREE)
-        (CONS :ALTERNATIVE (NREVERSE TREE)))
-    ) ;;let
-  )   ;;PJB-RE-PARSE-REGEXP
+        (CONS :ALTERNATIVE (NREVERSE TREE)))))
 
 
 (DEFUN PJB-RE-PARSE-WHOLE-REGEXP (SC)
@@ -609,8 +585,7 @@ regexp ::= sequence .               sequence
                                    (IF (SC-NEXT-CHAR SC)
                                        (SC-NEXT-CHAR SC)  ""))
                     TREE)))
-    TREE)
-  ) ;;PJB-RE-PARSE-WHOLE-REGEXP
+    TREE))
 
 
 
@@ -729,13 +704,12 @@ regexp ::= sequence .               sequence
      (SETF (PJB-RE-SLOT-BEGIN NODE) POSITION)
      (SETF (PJB-RE-SLOT-TRY NODE) NIL)
      (SETF (PJB-RE-SLOT-END NODE) NIL)
-     (values))) ;;PJB-RE-INIT
+     (values)))
   
 
 (DEFMACRO PJB-RE-MATCH (NODE)
   `(LET ((NODE ,NODE))
-     (FUNCALL (PJB-RE-SLOT-MATCH NODE) NODE))
-  ) ;;PJB-RE-MATCH
+     (FUNCALL (PJB-RE-SLOT-MATCH NODE) NODE)))
 
 
 
@@ -758,8 +732,7 @@ RETURNS: nil when no match,
                 (SETQ P (1+ P))
                 (SETF (PJB-RE-SLOT-END NODE) P)
                 P)
-              NIL))))
-  ) ;;PJB-RE-CHARACTER-MATCH
+              NIL)))))
 
 
 
@@ -782,8 +755,7 @@ RETURNS: nil when no match,
                        (STRING= M S :START2 P :END2 E))
             (SETQ E NIL))
           (SETF (PJB-RE-SLOT-END NODE) E)
-          E)))
-  ) ;;PJB-RE-STRING-MATCH
+          E))))
 
 
 
@@ -799,8 +771,7 @@ RETURNS: nil when no match,
       (PROGN
         (SETF (PJB-RE-SLOT-TRY NODE) T)
         T ;; yes! we match.
-        ))
-  ) ;;PJB-RE-NULL-MATCH
+        )))
 
 
 (DEFUN PJB-RE-ALTERNATIVE-MATCH (NODE)
@@ -813,17 +784,13 @@ RETURNS: nil when no match,
         (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE))
         (FOUND NIL) )
     (WHEN (NULL N) (SETQ N 0))
-    (LOOP WHILE (AND (< N (LENGTH CHILDREN))
-                     (NOT FOUND))
-       DO
-       (PJB-RE-INIT (AREF CHILDREN N) P)
-       (SETQ FOUND (PJB-RE-MATCH (AREF CHILDREN N)))
-       FINALLY
-       (SETF (PJB-RE-SLOT-END NODE) FOUND)
-       (SETF (PJB-RE-SLOT-TRY NODE) (1+ N))
-       FINALLY (RETURN FOUND)) ;;loop
-    )                          ;;let
-  )                            ;;PJB-RE-ALTERNATIVE-MATCH
+    (LOOP :WHILE (AND (< N (LENGTH CHILDREN))
+                      (NOT FOUND))
+          :DO (PJB-RE-INIT (AREF CHILDREN N) P)
+              (SETQ FOUND (PJB-RE-MATCH (AREF CHILDREN N)))
+          :FINALLY (SETF (PJB-RE-SLOT-END NODE) FOUND)
+                   (SETF (PJB-RE-SLOT-TRY NODE) (1+ N))
+          :FINALLY (RETURN FOUND))))
 
 
 (DEFUN PJB-RE-ANY-CATEGORY-MATCH (NODE)
@@ -835,9 +802,7 @@ RETURNS: nil when no match,
         (N         (PJB-RE-SLOT-TRY   NODE))
         (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))
-    )
-  ) ;;PJB-RE-ANY-CATEGORY-MATCH
+    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
 
 
 (DEFUN PJB-RE-ANY-CHARACTER-MATCH (NODE)
@@ -860,8 +825,7 @@ NUL.
               (PROGN
                 (SETQ P (1+ P))
                 (SETF (PJB-RE-SLOT-END NODE) P))
-              (SETF  (PJB-RE-SLOT-END NODE) NIL)))))
-  ) ;;PJB-RE-ANY-CHARACTER-MATCH
+              (SETF  (PJB-RE-SLOT-END NODE) NIL))))))
 
 
 (DEFUN PJB-RE-ANY-NOT-CATEGORY-MATCH (NODE)
@@ -873,9 +837,7 @@ RETURNS: nil when no match,
         (N         (PJB-RE-SLOT-TRY   NODE))
         (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))
-    )
-  ) ;;PJB-RE-ANY-NOT-CATEGORY-MATCH
+    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
 
 
 (DEFUN PJB-RE-ANY-NOT-SYNTAX-CLASS-MATCH (NODE)
@@ -887,9 +849,7 @@ RETURNS: nil when no match,
         (N         (PJB-RE-SLOT-TRY   NODE))
         (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))
-    )
-  ) ;;PJB-RE-ANY-NOT-SYNTAX-CLASS-MATCH
+    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
 
 
 (DEFUN PJB-RE-ANY-NOT-WORD-CHARACTER-MATCH (NODE)
@@ -901,9 +861,7 @@ RETURNS: nil when no match,
         (N         (PJB-RE-SLOT-TRY   NODE))
         (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))
-    )
-  ) ;;PJB-RE-ANY-NOT-WORD-CHARACTER-MATCH
+    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
 
 
 (DEFUN PJB-RE-ANY-SYNTAX-CLASS-MATCH (NODE)
@@ -915,9 +873,7 @@ RETURNS: nil when no match,
         (N         (PJB-RE-SLOT-TRY   NODE))
         (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))
-    )
-  ) ;;PJB-RE-ANY-SYNTAX-CLASS-MATCH
+    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
 
 
 (DEFUN PJB-RE-ANY-WORD-CHARACTER-MATCH (NODE)
@@ -929,9 +885,7 @@ RETURNS: nil when no match,
         (N         (PJB-RE-SLOT-TRY   NODE))
         (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))
-    )
-  ) ;;PJB-RE-ANY-WORD-CHARACTER-MATCH
+    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
 
 
 (DEFUN PJB-RE-CHAR-SET-MATCH (NODE)
@@ -943,9 +897,7 @@ RETURNS: nil when no match,
         (N         (PJB-RE-SLOT-TRY   NODE))
         (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
     (declare (ignore p n children))    
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))
-    )
-  ) ;;PJB-RE-CHAR-SET-MATCH
+    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
 
 
 (DEFUN PJB-RE-EMPTY-AT-BEGINNING-OF-LINE-MATCH (NODE)
@@ -957,9 +909,7 @@ RETURNS: nil when no match,
         (N         (PJB-RE-SLOT-TRY   NODE))
         (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))
-    )
-  ) ;;PJB-RE-EMPTY-AT-BEGINNING-OF-LINE-MATCH
+    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
 
 
 (DEFUN PJB-RE-EMPTY-AT-BEGINNING-OF-STRING-MATCH (NODE)
@@ -978,8 +928,7 @@ RETURNS: nil when no match,
               (PROGN
                 (SETF (PJB-RE-SLOT-END NODE) P)
                 P)
-              NIL))))
-  ) ;;PJB-RE-EMPTY-AT-BEGINNING-OF-STRING-MATCH
+              NIL)))))
 
 
 (DEFUN PJB-RE-EMPTY-AT-BEGINNING-OF-WORD-MATCH (NODE)
@@ -991,9 +940,7 @@ RETURNS: nil when no match,
         (N         (PJB-RE-SLOT-TRY   NODE))
         (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))
-    )
-  ) ;;PJB-RE-EMPTY-AT-BEGINNING-OF-WORD-MATCH
+    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
 
 
 (DEFUN PJB-RE-EMPTY-AT-END-OF-LINE-MATCH (NODE)
@@ -1005,9 +952,7 @@ RETURNS: nil when no match,
         (N         (PJB-RE-SLOT-TRY   NODE))
         (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))
-    )
-  ) ;;PJB-RE-EMPTY-AT-END-OF-LINE-MATCH
+    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
 
 
 (DEFUN PJB-RE-EMPTY-AT-END-OF-STRING-MATCH (NODE)
@@ -1026,8 +971,7 @@ RETURNS: nil when no match,
               (PROGN
                 (SETF (PJB-RE-SLOT-END NODE) P)
                 P)
-              NIL))))
-  ) ;;PJB-RE-EMPTY-AT-END-OF-STRING-MATCH
+              NIL)))))
 
 
 (DEFUN PJB-RE-EMPTY-AT-END-OF-WORD-MATCH (NODE)
@@ -1039,9 +983,7 @@ RETURNS: nil when no match,
         (N         (PJB-RE-SLOT-TRY   NODE))
         (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))
-    )
-  ) ;;PJB-RE-EMPTY-AT-END-OF-WORD-MATCH
+    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
 
 
 (DEFUN PJB-RE-EMPTY-AT-LIMIT-OF-WORD-MATCH (NODE)
@@ -1053,9 +995,7 @@ RETURNS: nil when no match,
         (N         (PJB-RE-SLOT-TRY   NODE))
         (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))
-    )
-  ) ;;PJB-RE-EMPTY-AT-LIMIT-OF-WORD-MATCH
+    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
 
 
 (DEFUN PJB-RE-EMPTY-AT-POINT-MATCH (NODE)
@@ -1067,9 +1007,7 @@ RETURNS: nil when no match,
         (N         (PJB-RE-SLOT-TRY   NODE))
         (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))
-    )
-  ) ;;PJB-RE-EMPTY-AT-POINT-MATCH
+    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
 
 
 (DEFUN PJB-RE-EMPTY-NOT-AT-LIMIT-OF-WORD-MATCH (NODE)
@@ -1081,9 +1019,7 @@ RETURNS: nil when no match,
         (N         (PJB-RE-SLOT-TRY   NODE))
         (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))
-    )
-  ) ;;PJB-RE-EMPTY-NOT-AT-LIMIT-OF-WORD-MATCH
+    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
 
 
 (DEFUN PJB-RE-ERROR-MATCH (NODE)
@@ -1095,9 +1031,7 @@ RETURNS: nil when no match,
         (N         (PJB-RE-SLOT-TRY   NODE))
         (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))
-    )
-  ) ;;PJB-RE-ERROR-MATCH
+    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
 
 
 (DEFUN PJB-RE-GROUP-MATCH (NODE)
@@ -1117,8 +1051,7 @@ RETURNS: nil when no match,
           (SETQ P (PJB-RE-MATCH CHILD))
           (WHEN P
             (SETF (PJB-RE-SLOT-END NODE) P))
-          P)))
-  ) ;;PJB-RE-GROUP-MATCH
+          P))))
 
 
 (DEFUN PJB-RE-INVERSE-CHAR-SET-MATCH (NODE)
@@ -1130,9 +1063,7 @@ RETURNS: nil when no match,
         (N         (PJB-RE-SLOT-TRY   NODE))
         (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))
-    )
-  ) ;;PJB-RE-INVERSE-CHAR-SET-MATCH
+    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
 
 
 (DEFUN PJB-RE-NON-GREEDY-ONE-OR-MORE-MATCH (NODE)
@@ -1158,8 +1089,7 @@ RETURNS: nil when no match,
        (SETF (PJB-RE-SLOT-TRY NODE) (IF P :MORE :OVER))
        P)
       (T
-       NIL)))
-  ) ;;PJB-RE-NON-GREEDY-ONE-OR-MORE-MATCH
+       NIL))))
 
 
 (DEFUN PJB-RE-NON-GREEDY-OPTIONAL-MATCH (NODE)
@@ -1182,8 +1112,7 @@ RETURNS: nil when no match,
       (T ;; too late we don't match anything.
        (SETQ P NIL)
        (SETF (PJB-RE-SLOT-END NODE) P) ))
-    P)
-  ) ;;PJB-RE-NON-GREEDY-OPTIONAL-MATCH
+    P))
 
 
 (DEFUN PJB-RE-NON-GREEDY-ZERO-OR-MORE-MATCH (NODE)
@@ -1215,10 +1144,8 @@ RETURNS: nil when no match,
              (SETF (PJB-RE-SLOT-TRY NODE) N))
            (PROGN
              (SETF (PJB-RE-SLOT-END NODE) NIL)
-             (SETF (PJB-RE-SLOT-TRY NODE) T)))
-       )) ;;cond
-    N)    ;;let
-  )       ;;PJB-RE-NON-GREEDY-ZERO-OR-MORE-MATCH
+             (SETF (PJB-RE-SLOT-TRY NODE) T)))))
+    N))
 
 
 (DEFUN PJB-RE-OPTIONAL-MATCH (NODE)
@@ -1241,8 +1168,7 @@ RETURNS: nil when no match,
       (T ;; too late we don't match anything.
        (SETQ P NIL)
        (SETF (PJB-RE-SLOT-END NODE) P) ))
-    P)
-  ) ;;PJB-RE-OPTIONAL-MATCH
+    P))
 
 
 (DEFUN PJB-RE-ONE-OR-MORE-MATCH (NODE)
@@ -1254,9 +1180,7 @@ RETURNS: nil when no match,
         (N         (PJB-RE-SLOT-TRY   NODE))
         (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))
-    )
-  ) ;;PJB-RE-ONE-OR-MORE-MATCH
+    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
 
 
 (DEFUN PJB-RE-REFERENCE-MATCH (NODE)
@@ -1268,9 +1192,7 @@ RETURNS: nil when no match,
         (N         (PJB-RE-SLOT-TRY   NODE))
         (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))
-    )
-  ) ;;PJB-RE-REFERENCE-MATCH
+    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
 
 
 (DEFUN PJB-RE-REPEAT-BETWEEN-MATCH (NODE)
@@ -1282,9 +1204,7 @@ RETURNS: nil when no match,
         (N         (PJB-RE-SLOT-TRY   NODE))
         (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))
-    )
-  ) ;;PJB-RE-REPEAT-BETWEEN-MATCH
+    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
 
 
 (DEFUN PJB-RE-REPEAT-EXACT-MATCH (NODE)
@@ -1296,9 +1216,7 @@ RETURNS: nil when no match,
         (N         (PJB-RE-SLOT-TRY   NODE))
         (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))
-    )
-  ) ;;PJB-RE-REPEAT-EXACT-MATCH
+    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
 
 
 (DEFUN PJB-RE-SEQUENCE-MATCH (NODE)
@@ -1314,23 +1232,19 @@ RETURNS: nil when no match,
         (SETQ N 0)
         (PJB-RE-INIT (AREF CHILDREN N) P))
       (SETQ P (PJB-RE-MATCH (AREF CHILDREN N)))
-      (LOOP WHILE (OR (AND P (< (1+ N) (LENGTH CHILDREN)))
-                      (AND (NOT P) (<= 0 (1- N))))
-         DO
-         (IF P
-             (PROGN
-               (SETQ N (1+ N))
-               (PJB-RE-INIT (AREF CHILDREN N) P))
-             (SETQ N (1- N)))
-         (SETQ P (PJB-RE-MATCH (AREF CHILDREN N)))
-         ) ;;loop
+      (LOOP :WHILE (OR (AND P (< (1+ N) (LENGTH CHILDREN)))
+                       (AND (NOT P) (<= 0 (1- N))))
+            :DO (IF P
+                    (PROGN
+                      (SETQ N (1+ N))
+                      (PJB-RE-INIT (AREF CHILDREN N) P))
+                    (SETQ N (1- N)))
+                (SETQ P (PJB-RE-MATCH (AREF CHILDREN N))))
       ;; p       ==> (= (1+ n) (length children)) ==> 0 <= n < (length children)
       ;; (not p) ==>    (= -1 (1- n)) ==>  n=0    ==> 0 <= n < (length children)
       (SETF (PJB-RE-SLOT-TRY NODE) N)
-      (SETF (PJB-RE-SLOT-END NODE) P)
-      ) ;;when
-    P)  ;;let
-  )     ;;PJB-RE-SEQUENCE-MATCH
+      (SETF (PJB-RE-SLOT-END NODE) P))
+    P))
 
 
 (DEFUN PJB-RE-SHY-GROUP-MATCH (NODE)
@@ -1342,9 +1256,7 @@ RETURNS: nil when no match,
         (N         (PJB-RE-SLOT-TRY   NODE))
         (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))
-    )
-  ) ;;PJB-RE-SHY-GROUP-MATCH
+    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
 
 
 (DEFUN PJB-RE-ZERO-OR-MORE-MATCH (NODE)
@@ -1361,13 +1273,12 @@ RETURNS: nil when no match,
     ;;       of recursive state for all the child subtree...
     (COND
       ((NULL N) ;; first time: match all we can.
-       (SETQ N (LOOP WITH P = (PJB-RE-SLOT-BEGIN   NODE)
-                  FOR N = 0 THEN (1+ N)
-                  WHILE (AND P (< P (LENGTH S)))
-                  DO
-                  (PJB-RE-INIT CHILD P)
-                  (SETQ P (PJB-RE-MATCH CHILD))
-                  FINALLY (RETURN N)))
+       (SETQ N (LOOP :WITH P = (PJB-RE-SLOT-BEGIN   NODE)
+                     :FOR N = 0 :THEN (1+ N)
+                     :WHILE (AND P (< P (LENGTH S)))
+                     :DO (PJB-RE-INIT CHILD P)
+                         (SETQ P (PJB-RE-MATCH CHILD))
+                     :FINALLY (RETURN N)))
        ;; oops we did one too many.
        ;; let's redo it till the limit
        (SETF (PJB-RE-SLOT-TRY NODE) N)
@@ -1375,15 +1286,12 @@ RETURNS: nil when no match,
       ((< N 0) ;; we tried everything.
        (SETF (PJB-RE-SLOT-END NODE) NIL))
       (T ;; match n-1 times.
-       (LOOP FOR I FROM 1 BELOW N
-          DO
-          (PJB-RE-INIT CHILD P)
-          (SETQ P (PJB-RE-MATCH CHILD)))
+       (LOOP :FOR I :FROM 1 :BELOW N
+             :DO (PJB-RE-INIT CHILD P)
+                 (SETQ P (PJB-RE-MATCH CHILD)))
        (SETF (PJB-RE-SLOT-END NODE) P)
        (SETF (PJB-RE-SLOT-TRY NODE) (1- N))
-       P)
-      )) ;;let
-  )      ;;PJB-RE-ZERO-OR-MORE-MATCH
+       P))))
 
 
 
@@ -1407,8 +1315,7 @@ URL:        http://www.informatimago.com/local/lisp/HyperSpec/Body/02_cd.htm
       (INTERN (STRING-DOWNCASE (FORMAT NIL "pjb-re-~s-~s"
                                        (SUBSEQ (SYMBOL-NAME KEY) 1) EXT)))
       (INTERN (STRING-UPCASE (FORMAT NIL "pjb-re-~a-~a" (SYMBOL-NAME KEY) EXT))
-              (FIND-PACKAGE "PJB-REGEXP")))
-  ) ;;PJB-RE-MAKE-PJB-RE-SYMBOL
+              (FIND-PACKAGE "PJB-REGEXP"))))
 
 
 (DEFUN PJB-RE-DECORATE-TREE (TREE STRING)
@@ -1455,8 +1362,7 @@ RETURN:  A decorated tree that can be used for the matching the string.
        (SETF (AREF OBJ 7) (WHEN CHILDREN
                             (MAKE-ARRAY (LIST (LENGTH CHILDREN))
                                         :INITIAL-CONTENTS CHILDREN)))
-       OBJ)))
-  ) ;;PJB-RE-DECORATE-TREE
+       OBJ))))
 
 
 (DEFUN PJB-RE-COLLECT-GROUPS (DEC-TREE &OPTIONAL GROUPS)
@@ -1465,16 +1371,13 @@ RETURN:  A decorated tree that can be used for the matching the string.
       (SETQ GROUPS (CONS :GROUPS NIL)))
     (IF (EQ :GROUP (PJB-RE-SLOT-NODE DEC-TREE))
         (PUSH DEC-TREE (CDR GROUPS)))
-    (LOOP WITH CHILDREN = (PJB-RE-SLOT-CHILDREN DEC-TREE)
-       FOR I FROM 0 BELOW (LENGTH CHILDREN)
-       FOR CHILD = (AREF CHILDREN I)
-       DO (PJB-RE-COLLECT-GROUPS CHILD GROUPS)
-       ) ;;loop
-    
+    (LOOP :WITH CHILDREN = (PJB-RE-SLOT-CHILDREN DEC-TREE)
+          :FOR I :FROM 0 :BELOW (LENGTH CHILDREN)
+          :FOR CHILD = (AREF CHILDREN I)
+          :DO (PJB-RE-COLLECT-GROUPS CHILD GROUPS))
     (IF MAKE-GROUPS-FLAG
         (NREVERSE (CDR GROUPS))
-        NIL)
-    )) ;;PJB-RE-COLLECT-GROUPS
+        NIL)))
 
 
 
@@ -1482,8 +1385,7 @@ RETURN:  A decorated tree that can be used for the matching the string.
   "This structure stores a (start,end) couple specifying the range matched
 by a group (or the whole regexp)."
   (START NIL :TYPE (OR NULL INTEGER))
-  (END   NIL :TYPE (OR NULL INTEGER))
-  ) ;;MATCH
+  (END   NIL :TYPE (OR NULL INTEGER)))
 
 
 (DEFUN MATCH-STRING (STRING MATCH)
@@ -1491,14 +1393,12 @@ by a group (or the whole regexp)."
 start and end indices. The result is shared with STRING.
 If you want a freshly consed string, use copy-string
 or (coerce (match-string ...) 'simple-string)."
-  (SUBSEQ STRING (MATCH-START MATCH) (MATCH-END MATCH))
-  ) ;;MATCH-STRING
+  (SUBSEQ STRING (MATCH-START MATCH) (MATCH-END MATCH)))
 
 
 (DEFUN REGEXP-QUOTE (STRING)
   (declare (ignore string))
-  (ERROR "Not Implemented Yet: REGEXP-QUOTE~%" )
-  ) ;;REGEXP-QUOTE
+  (ERROR "Not Implemented Yet: REGEXP-QUOTE~%" ))
  
 
 (DEFUN MATCH (REGEXP STRING &OPTIONAL START END)
@@ -1534,6 +1434,6 @@ RETURN:  index of start of first match for REGEXP in STRING, nor nil.
                              (IF (AND S E)
                                  (MAKE-MATCH :START S :END E)
                                  (MAKE-MATCH :START NIL :END NIL))))
-                         GROUPS)))) ;;MATCH
+                         GROUPS))))
 
-;;;; regexp-emacs.lisp                --                     --          ;;;;
+;;;; THE END ;;;;

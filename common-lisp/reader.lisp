@@ -483,10 +483,11 @@ URL: http://www.lispworks.com/documentation/HyperSpec/Body/t_rdtabl.htm
 
 
 (defgeneric process-case-function (mode)
-  (:method ((mode (eql :preserve))) (function identity))
-  (:method ((mode (eql :downcase))) (function char-downcase))
-  (:method ((mode (eql :upcase)))   (function char-upcase))
+  (:method ((mode (eql :preserve))) (declare (ignorable mode)) (function identity))
+  (:method ((mode (eql :downcase))) (declare (ignorable mode)) (function char-downcase))
+  (:method ((mode (eql :upcase)))   (declare (ignorable mode)) (function char-upcase))
   (:method ((mode (eql :invert)))
+    (declare (ignorable mode)) 
     (lambda (ch)
       (cond ((upper-case-p ch) (char-downcase ch))
             ((lower-case-p ch) (char-upcase   ch))

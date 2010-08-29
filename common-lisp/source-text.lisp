@@ -1051,8 +1051,8 @@ RETURN: A new readtable where all the reader macros are set to
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defgeneric source-atom-p (self)
-  (:method ((self source-object))  t)
-  (:method ((self source-list))    nil))
+  (:method ((self source-object))  (declare (ignorable self)) t)
+  (:method ((self source-list))    (declare (ignorable self)) nil))
 
 
 (defgeneric map-subforms (fun self)

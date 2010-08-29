@@ -191,6 +191,7 @@ movement (weak, I know).")
 
 
 (DEFMETHOD CURRENCY ((SELF number))
+  (declare (ignorable self))
   nil)
 
 
@@ -1646,6 +1647,7 @@ while a movement with a negative amount is a debit.")) ;;MOVEMENT
   "
 DOES:    Checks that the values for the fields are within limits.
 "
+  (declare (ignorable self))
   (WHEN *MAX-MOVEMENT-AMOUNT*
     (WHEN AMOUNT-TTC
       (WHEN (< *MAX-MOVEMENT-AMOUNT* (ABS AMOUNT-TTC))

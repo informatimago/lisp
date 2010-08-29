@@ -152,8 +152,8 @@ set signal handler, or to acquire locks, and then release them.
   self)
                                  
 
-(defmethod memory-prolog ((self memory-vector-64)))
-(defmethod memory-epilog ((self memory-vector-64)))
+(defmethod memory-prolog ((self memory-vector-64)) (declare (ignorable self)) (values))
+(defmethod memory-epilog ((self memory-vector-64)) (declare (ignorable self)) (values))
 
 
 (defmethod peek-uint8  ((self memory-vector-64) address)

@@ -113,7 +113,7 @@ RETURN:  An optimized form for compiled code.
 NOTE:    Unfortunately clisp does to take into account compiler-macros
          even when compiling...
 "
-  (DECLARE (IGNORE FORM))
+  (DECLARE (IGNORABLE FORM))
   (WITH-GENSYMS (SEQ)
     `(LET ((,SEQ ,CHAR-SEQ))
        (TYPECASE ,SEQ
@@ -165,23 +165,24 @@ RETURN:  A list of substrings of string.
 NOTE:   current implementation only accepts as separators
         a string containing literal characters.
 "
-  (UNLESS (SIMPLE-STRING-P STRING)     (SETQ STRING     (COPY-SEQ STRING)))
-  (UNLESS (SIMPLE-STRING-P SEPARATORS) (SETQ SEPARATORS (COPY-SEQ SEPARATORS)))
-  (LET ((CHUNKS  '())
+  (LET ((string     (if (SIMPLE-STRING-P STRING)
+                        string
+                        (COPY-SEQ STRING)))
+        (SEPARATORS (if (SIMPLE-STRING-P SEPARATORS)
+                        SEPARATORS
+                        (COPY-SEQ SEPARATORS)))
+        (CHUNKS  '())
         (POSITION 0)
         (NEXTPOS  0)
         (STRLEN   (LENGTH STRING)) )
     (DECLARE (TYPE SIMPLE-STRING STRING SEPARATORS))
-    (LOOP WHILE (< POSITION STRLEN)
-       DO
-       (LOOP WHILE (AND (< NEXTPOS STRLEN)
-                        (NOT (POSITION (CHAR STRING NEXTPOS) SEPARATORS)))
-          DO (SETQ NEXTPOS (1+ NEXTPOS))
-          )
-       (PUSH (SUBSEQ STRING POSITION NEXTPOS) CHUNKS)
-       (SETQ POSITION (1+ NEXTPOS))
-       (SETQ NEXTPOS  POSITION)
-       )
+    (LOOP :WHILE (< POSITION STRLEN)
+          :DO (LOOP :WHILE (AND (< NEXTPOS STRLEN)
+                                (NOT (POSITION (CHAR STRING NEXTPOS) SEPARATORS)))
+                    :DO (SETQ NEXTPOS (1+ NEXTPOS)))
+              (PUSH (SUBSEQ STRING POSITION NEXTPOS) CHUNKS)
+              (SETQ POSITION (1+ NEXTPOS))
+              (SETQ NEXTPOS  POSITION))
     (NREVERSE CHUNKS)))
 
 
@@ -226,13 +227,16 @@ RETURN:  a cons with two substrings of string such as:
          (string= (concat (car res) \"=\" (cdr res)) string)
          and (length (car res)) is minimum.
 "
-  (UNLESS (SIMPLE-STRING-P STRING) (SETQ STRING (COPY-SEQ STRING)))
-  (LET ((POSITION 0)
+  
+  (LET ((string (if (SIMPLE-STRING-P STRING)
+                    string
+                    (COPY-SEQ STRING)))
+        (POSITION 0)
         (STRLEN   (LENGTH STRING)) )
     (DECLARE (TYPE SIMPLE-STRING STRING))
-    (LOOP WHILE (AND (< POSITION STRLEN)
+    (LOOP :WHILE (AND (< POSITION STRLEN)
                      (CHAR/= (CHARACTER "=") (AREF STRING POSITION)))
-       DO (SETQ POSITION (1+ POSITION)))
+          :DO (SETQ POSITION (1+ POSITION)))
     (IF (< POSITION STRLEN)
         (CONS (SUBSEQ STRING 0 POSITION) (SUBSEQ STRING (1+ POSITION) STRLEN))
         NIL)))

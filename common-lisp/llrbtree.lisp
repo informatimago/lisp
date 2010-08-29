@@ -324,6 +324,7 @@ established macros, provided all of those macros have distinct NAMEs.
   ;; (declare (ignore start end from-end))
   (let ((iter (gensym)))
     `(let ((,iter (make-iterator ,tree ,@args)))
+       (declare (ignorable ,iter))
        (macrolet ((,name () (list 'funcall ',iter)))
          (locally ,@body)))))
 
@@ -799,6 +800,7 @@ RETURN: true if there was such an entry, or false otherwise.
        #(#x1b #x5b #x30 #x6d)))
 
 (defmethod dump ((self null) &optional (indentation "") (bar " "))
+  (declare (ignorable self))
   (format t "~A~A~A+---- NIL~A~%" indentation bar *black* *normal*))
 
 (defmethod dump ((self node) &optional (indentation "") (bar " "))

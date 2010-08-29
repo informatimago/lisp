@@ -1586,10 +1586,11 @@ regexp matched, ie. rnode."
 Beginning of string anchor.
 "
   (WITH-RENS ENV NODE STATE
-             (TRY-ONCE
-              (IF (= 0 POSITION)
-                  (PROGN (SETF END POSITION) T)
-                  NIL))))
+    (declare (ignorable node))
+    (TRY-ONCE
+      (IF (= 0 POSITION)
+          (PROGN (SETF END POSITION) T)
+          NIL))))
 
 
 (DEFUN RMATCH-E-ANCHOR (NODE STATE ENV)
@@ -1597,10 +1598,11 @@ Beginning of string anchor.
 End of string anchor.
 "
   (WITH-RENS ENV NODE STATE
-             (TRY-ONCE
-              (IF (= LENGTH POSITION)
-                  (PROGN (SETF END POSITION) T)
-                  NIL))))
+    (declare (ignorable node))
+    (TRY-ONCE
+      (IF (= LENGTH POSITION)
+          (PROGN (SETF END POSITION) T)
+          NIL))))
 
 
 (DEFUN RMATCH-L-ANCHOR (NODE STATE ENV)
@@ -1608,13 +1610,14 @@ End of string anchor.
 Beginning of line anchor.
 "
   (WITH-RENS ENV NODE STATE
-             (TRY-ONCE
-              (IF (OR (AND BOL (= 0 POSITION))
-                      (AND NEWLINE
-                           (< 1 POSITION)
-                           (FUNCALL NEWLINEPF (AREF SEQUENCE (1- POSITION)))))
-                  (PROGN (SETF END POSITION) T)
-                  NIL))))
+    (declare (ignorable node))
+    (TRY-ONCE
+      (IF (OR (AND BOL (= 0 POSITION))
+              (AND NEWLINE
+                   (< 1 POSITION)
+                   (FUNCALL NEWLINEPF (AREF SEQUENCE (1- POSITION)))))
+          (PROGN (SETF END POSITION) T)
+          NIL))))
 
 
 (DEFUN RMATCH-R-ANCHOR (NODE STATE ENV)
@@ -1622,76 +1625,79 @@ Beginning of line anchor.
 End of line anchor.
 "
   (WITH-RENS ENV NODE STATE
-             (TRY-ONCE
-              (IF (OR (AND EOL (= LENGTH POSITION))
-                      (AND NEWLINE
-                           (< (1+ POSITION) (LENGTH SEQUENCE))
-                           (FUNCALL NEWLINEPF (AREF SEQUENCE (1+ POSITION)))))
-                  (PROGN (SETF END POSITION) T)
-                  NIL))))
+    (declare (ignorable node))
+    (TRY-ONCE
+      (IF (OR (AND EOL (= LENGTH POSITION))
+              (AND NEWLINE
+                   (< (1+ POSITION) (LENGTH SEQUENCE))
+                   (FUNCALL NEWLINEPF (AREF SEQUENCE (1+ POSITION)))))
+          (PROGN (SETF END POSITION) T)
+          NIL))))
 
 
 (DEFUN RMATCH-ANY (NODE STATE ENV)
   (WITH-RENS ENV NODE STATE
-             (TRY-ONCE
-              (IF (OR (<= LENGTH POSITION)
-                      (AND NEWLINE ;; don't match newline
-                           (FUNCALL NEWLINEPF (AREF SEQUENCE POSITION))))
-                  NIL
-                  (PROGN
-                    (INCF POSITION)
-                    (SETF END POSITION)
-                    T)))))
+    (declare (ignorable node))
+    (TRY-ONCE
+      (IF (OR (<= LENGTH POSITION)
+              (AND NEWLINE ;; don't match newline
+                   (FUNCALL NEWLINEPF (AREF SEQUENCE POSITION))))
+          NIL
+          (PROGN
+            (INCF POSITION)
+            (SETF END POSITION)
+            T)))))
 
 
 (DEFUN RMATCH-ITEM (NODE STATE ENV)
   (WITH-RENS ENV NODE STATE
-             (TRY-ONCE
-              (IF (AND (< POSITION LENGTH)
-                       (FUNCALL EQUALF TOKEN (AREF SEQUENCE POSITION)))
-                  (PROGN
-                    (INCF POSITION)
-                    (SETF END POSITION)
-                    T)
-                  NIL))))
+    (declare (ignorable node))
+    (TRY-ONCE
+      (IF (AND (< POSITION LENGTH)
+               (FUNCALL EQUALF TOKEN (AREF SEQUENCE POSITION)))
+          (PROGN
+            (INCF POSITION)
+            (SETF END POSITION)
+            T)
+          NIL))))
 
 
 (DEFUN RMATCH-SEQUENCE (NODE STATE ENV)
   (WITH-RENS ENV NODE STATE
-             (IF CHILDREN
-                 (INVARIANT (OR (NULL TRY)
-                                (AND (INTEGERP TRY)
-                                     (OR (= 0 TRY) (= TRY (1- (LENGTH CHILDREN))))))
-                            (LET (P N)
-                              ;; try = ( n state[n-1] state[n-1] ... state[0] )
-                              ;; n is the number of children matched in sequence so far.
-                              ;; follows the states of the n children in reverse order (stack).
-                              ;; We exit with either 0 or (1- (length children)).
-                              ;;
-                              ;; The 'position' pointer advances and tracks back, walking the
-                              ;; tree of matching child position until we find one (or more,
-                              ;; in following tries) matching sequence.
-                              (TRY (INITIALLY  (SETF N 0)
-                                               (PUSH (MAKE-RSTATE :START POSITION) TRY))
-                                   (THEN       (SETF N (POP TRY))))
-                              (SETF P (RNODE-MATCH (AREF CHILDREN N) (TOP TRY) ENV))
-                              (WHILE (OR (AND P (< (1+ N) (LENGTH CHILDREN)))
-                                         (AND (NOT P) (<= 0 (1- N))))
-                                (IF P
-                                    (PROGN
-                                      (INCF N)
-                                      (PUSH (MAKE-RSTATE :START POSITION) TRY))
-                                    (PROGN ;; backtrack
-                                      (DECF N)
-                                      (POP TRY)
-                                      (SETF POSITION (RSTATE-START (TOP TRY)))))
-                                (SETF P (RNODE-MATCH (AREF CHILDREN N) (TOP TRY) ENV)))
-                              (PUSH N TRY)
-                              (SETF END POSITION)
-                              P))
-                 (TRY-ONCE ;; no child -- empty sequence -- match once.
-                  (SETF END POSITION)
-                  T))))
+    (IF CHILDREN
+        (INVARIANT (OR (NULL TRY)
+                       (AND (INTEGERP TRY)
+                            (OR (= 0 TRY) (= TRY (1- (LENGTH CHILDREN))))))
+          (LET (P N)
+            ;; try = ( n state[n-1] state[n-1] ... state[0] )
+            ;; n is the number of children matched in sequence so far.
+            ;; follows the states of the n children in reverse order (stack).
+            ;; We exit with either 0 or (1- (length children)).
+            ;;
+            ;; The 'position' pointer advances and tracks back, walking the
+            ;; tree of matching child position until we find one (or more,
+            ;; in following tries) matching sequence.
+            (TRY (INITIALLY  (SETF N 0)
+                             (PUSH (MAKE-RSTATE :START POSITION) TRY))
+                 (THEN       (SETF N (POP TRY))))
+            (SETF P (RNODE-MATCH (AREF CHILDREN N) (TOP TRY) ENV))
+            (WHILE (OR (AND P (< (1+ N) (LENGTH CHILDREN)))
+                       (AND (NOT P) (<= 0 (1- N))))
+              (IF P
+                  (PROGN
+                    (INCF N)
+                    (PUSH (MAKE-RSTATE :START POSITION) TRY))
+                  (PROGN ;; backtrack
+                    (DECF N)
+                    (POP TRY)
+                    (SETF POSITION (RSTATE-START (TOP TRY)))))
+              (SETF P (RNODE-MATCH (AREF CHILDREN N) (TOP TRY) ENV)))
+            (PUSH N TRY)
+            (SETF END POSITION)
+            P))
+        (TRY-ONCE ;; no child -- empty sequence -- match once.
+          (SETF END POSITION)
+          T))))
 
 
 ;; shy

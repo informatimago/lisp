@@ -179,9 +179,14 @@
   self) ;;print-object
 
 
-(defmethod to-lisp-type    ((self unsigned-integer-enctype))  '(integer 0))
-(defmethod default-value   ((self unsigned-integer-enctype))  0)
-(defmethod size-of-enctype ((self unsigned-integer-enctype))  (size self))
+(defmethod to-lisp-type    ((self unsigned-integer-enctype))
+  (declare (ignorable self))
+  '(integer 0))
+(defmethod default-value   ((self unsigned-integer-enctype))
+  (declare (ignorable self))
+  0)
+(defmethod size-of-enctype ((self unsigned-integer-enctype))
+  (size self))
 
 
 (defmethod get-value ((self unsigned-integer-enctype) buffer offset)
@@ -226,9 +231,14 @@
   self) ;;print-object
 
 
-(defmethod to-lisp-type    ((self two-complement-integer-enctype))  'integer)
-(defmethod default-value   ((self two-complement-integer-enctype))  0)
-(defmethod size-of-enctype ((self two-complement-integer-enctype))  (size self))
+(defmethod to-lisp-type    ((self two-complement-integer-enctype))
+  (declare (ignorable self))
+  'integer)
+(defmethod default-value   ((self two-complement-integer-enctype))
+  (declare (ignorable self))
+  0)
+(defmethod size-of-enctype ((self two-complement-integer-enctype))
+  (size self))
 
 
 
@@ -261,9 +271,14 @@
   self) ;;print-object
 
 
-(defmethod to-lisp-type    ((self one-complement-integer-enctype))  'integer)
-(defmethod default-value   ((self one-complement-integer-enctype))  0)
-(defmethod size-of-enctype ((self one-complement-integer-enctype))  (size self))
+(defmethod to-lisp-type    ((self one-complement-integer-enctype))
+  (declare (ignorable self))
+  'integer)
+(defmethod default-value   ((self one-complement-integer-enctype))
+  (declare (ignorable self))
+  0)
+(defmethod size-of-enctype ((self one-complement-integer-enctype))
+  (size self))
 
 
 (defmethod get-value ((self one-complement-integer-enctype) buffer offset)
@@ -303,9 +318,14 @@
   self) ;;print-object
 
 
-(defmethod to-lisp-type    ((self binary-coded-decimal-integer-enctype)) 'integer)
-(defmethod default-value   ((self binary-coded-decimal-integer-enctype)) 0)
-(defmethod size-of-enctype ((self binary-coded-decimal-integer-enctype)) (size self))
+(defmethod to-lisp-type    ((self binary-coded-decimal-integer-enctype))
+  (declare (ignorable self))
+  'integer)
+(defmethod default-value   ((self binary-coded-decimal-integer-enctype))
+  (declare (ignorable self))
+  0)
+(defmethod size-of-enctype ((self binary-coded-decimal-integer-enctype))
+  (size self))
 
 (defmethod number-of-digit ((self binary-coded-decimal-integer-enctype))
   (1- (* 2 (size-of-enctype self))))
@@ -599,9 +619,14 @@ DO:      This function encodes a string containing only COMMON-LISP
   (:documentation "")) ;;string-enctype
 
 
-(defmethod to-lisp-type    ((self string-enctype))  'string)
-(defmethod default-value   ((self string-enctype))  "")
-(defmethod size-of-enctype ((self string-enctype))  (allocated-size self))
+(defmethod to-lisp-type    ((self string-enctype))
+  (declare (ignorable self))
+  'string)
+(defmethod default-value   ((self string-enctype))
+  (declare (ignorable self))
+  "")
+(defmethod size-of-enctype ((self string-enctype))
+  (allocated-size self))
 
 
 ;; ............................................................

@@ -237,11 +237,12 @@
       (FLET ((FINISH-CODE ()
                (WHEN CURRENT (PUSH CURRENT *CODES*))
                (SETF CURRENT (MAKE-CODE))))
-        (LOOP FOR LINE = (READ-LINE IN NIL NIL)
-           WHILE (AND LINE (STRING/= "BEGIN" (STRING-TRIM " " LINE))))
-        (LOOP FOR LINE = (READ-LINE IN NIL NIL)
-           WHILE LINE
-           DO (COND
+        (LOOP :FOR LINE = (READ-LINE IN NIL NIL)
+              :WHILE (AND LINE (STRING/= "BEGIN" (STRING-TRIM " " LINE))))
+        (LOOP
+           :FOR LINE = (READ-LINE IN NIL NIL)
+           :WHILE LINE
+           :DO (COND
                 ((STRING= "FINE" (STRING-TRIM " " LINE))
                  (FINISH-CODE)
                  (LOOP-FINISH))
@@ -2229,17 +2230,17 @@ BUGS:           Perhaps we should generate functions that take 8-BIT and
 
 (defun description-of-code-named (name)
   (loop
-     with text = (code-description (find name
+    :with text = (code-description (find name
                                          *codes*
                                          :key (function code-name)
                                          :test (function string=)))
-     for start-line = 0 then (1+ end)
-     for start = (position-if (lambda (ch) (or (not (char= ch #\space))
+    :for start-line = 0 :then (1+ end)
+    :for start = (position-if (lambda (ch) (or (not (char= ch #\space))
                                                (char= ch #\newline)))
-                              text :start start-line)
-     for end   = (and start (position #\newline text :start start))
-     collect (subseq text start end)
-     while end))
+                          text :start start-line)
+    :for end   = (and start (position #\newline text :start start))
+    :collect (subseq text start end)
+    :while end))
 
 
 (defun print-documentation (&key (stream *standard-output*)
