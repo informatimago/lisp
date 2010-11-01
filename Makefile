@@ -49,7 +49,7 @@ TARGET  := $(shell uname)
 PREFIX  := /usr/local
 MAKEDIR := $(HOME)/src/public/common/makedir
 
-MODULES =     common-lisp clext clmisc   sbcl   clisp susv3
+MODULES = common-lisp clext clmisc sbcl clisp susv3
 
 
 LINE    = ";;;;;;====================================================================\n"

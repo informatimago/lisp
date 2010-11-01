@@ -165,6 +165,7 @@ help::
 install::
 	-mkdir -p $(PACKAGES)/$(PACKAGE_PATH)
 	install -m 644 *.lisp *.asd        $(PACKAGES)/$(PACKAGE_PATH)/
+
 #	 -publish OBJ-*
 #	 -umask 022 ; cp -r OBJ-*           $(PACKAGES)/$(PACKAGE_PATH)/
 

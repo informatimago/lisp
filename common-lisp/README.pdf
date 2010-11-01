@@ -1,0 +1,1412 @@
+%PDF-1.3
+%“Œ‹ž ReportLab Generated PDF document http://www.reportlab.com
+% 'BasicFonts': class PDFDictionary 
+1 0 obj
+% The standard fonts dictionary
+<< /F1 2 0 R
+ /F2 3 0 R
+ /F3 4 0 R
+ /F4 5 0 R
+ /F5 6 0 R >>
+endobj
+% 'F1': class PDFType1Font 
+2 0 obj
+% Font Helvetica
+<< /BaseFont /Helvetica
+ /Encoding /WinAnsiEncoding
+ /Name /F1
+ /Subtype /Type1
+ /Type /Font >>
+endobj
+% 'F2': class PDFType1Font 
+3 0 obj
+% Font Helvetica-BoldOblique
+<< /BaseFont /Helvetica-BoldOblique
+ /Encoding /WinAnsiEncoding
+ /Name /F2
+ /Subtype /Type1
+ /Type /Font >>
+endobj
+% 'F3': class PDFType1Font 
+4 0 obj
+% Font Helvetica-Bold
+<< /BaseFont /Helvetica-Bold
+ /Encoding /WinAnsiEncoding
+ /Name /F3
+ /Subtype /Type1
+ /Type /Font >>
+endobj
+% 'F4': class PDFType1Font 
+5 0 obj
+% Font Helvetica-Oblique
+<< /BaseFont /Helvetica-Oblique
+ /Encoding /WinAnsiEncoding
+ /Name /F4
+ /Subtype /Type1
+ /Type /Font >>
+endobj
+% 'F5': class PDFType1Font 
+6 0 obj
+% Font Courier
+<< /BaseFont /Courier
+ /Encoding /WinAnsiEncoding
+ /Name /F5
+ /Subtype /Type1
+ /Type /Font >>
+endobj
+% 'Page1': class PDFPage 
+7 0 obj
+% Page dictionary
+<< /Contents 22 0 R
+ /MediaBox [ 0
+ 0
+ 595.2756
+ 841.8898 ]
+ /Parent 21 0 R
+ /Resources << /Font 1 0 R
+ /ProcSet [ /PDF
+ /Text
+ /ImageB
+ /ImageC
+ /ImageI ] >>
+ /Rotate 0
+ /Trans <<  >>
+ /Type /Page >>
+endobj
+% 'Page2': class PDFPage 
+8 0 obj
+% Page dictionary
+<< /Contents 23 0 R
+ /MediaBox [ 0
+ 0
+ 595.2756
+ 841.8898 ]
+ /Parent 21 0 R
+ /Resources << /Font 1 0 R
+ /ProcSet [ /PDF
+ /Text
+ /ImageB
+ /ImageC
+ /ImageI ] >>
+ /Rotate 0
+ /Trans <<  >>
+ /Type /Page >>
+endobj
+% 'Page3': class PDFPage 
+9 0 obj
+% Page dictionary
+<< /Contents 24 0 R
+ /MediaBox [ 0
+ 0
+ 595.2756
+ 841.8898 ]
+ /Parent 21 0 R
+ /Resources << /Font 1 0 R
+ /ProcSet [ /PDF
+ /Text
+ /ImageB
+ /ImageC
+ /ImageI ] >>
+ /Rotate 0
+ /Trans <<  >>
+ /Type /Page >>
+endobj
+% 'FormXob.750cdd4588c96dc0077d82a17d60e9a6': class PDFImageXObject 
+10 0 obj
+<< /BitsPerComponent 8
+ /ColorSpace /DeviceRGB
+ /Filter [ /ASCII85Decode
+ /FlateDecode ]
+ /Height 769
+ /Length 15464
+ /Subtype /Image
+ /Type /XObject
+ /Width 415 >>
+stream
+Gb"0WMj!*MZ@u`#s&7L<E8l!,o#P(!jIX0e7E'p3,8j=`)S:<=3sP`c!+8mS%[`Y"94e]:mU,Ma=T2I24RLIRjk0a%ZbM/"[iK)l=O-mY-JWd74^^;I9:0\QEV=qEln@<`b;9$D]D\-@g]2p(,s46D;CQ7.AdC=\OBTMNlhu<o`P66YPAU,E2:Z_a\9TO$R@38(]S"Ut6C[1MQ)>:5^k]-N_F<WFNZOE\N3:2Ib;0R'OCi+A\C8c+f]IT2DpgJ?'5kTU;7K%r@Q*#S2AP2ZME]fnM&/=BC@fBLbBq?H06E@r_r[+U34eOpFXj2]*0To[VjM0%1Qr`(1kLDUnmYjqJ)MO/#5h(F%:SXNCG9m?l6<2cbJUI6b]n])b!9B!j[kB=-en]_YV(n4N"3=FB4g,h!VY2R_Q0!#rL'oQHba[qQS@C,j6QfifjDULgQ&TF/8'G='5l]+Z,c23bGBZ)B*pHD@`ds;5S6m%^qn)N!2j96#N/uX*.WYRE<$J<_uVh7&I76%6l^`0&TId\7`5<e(_I#2?pkubK+W)'%S"A;3#E54i*\qmJ:eGR!"P<P3'n.k!PF4u;[;5+:VuCG!C-nN)h90<J&=`Rj_ET9BtFt$"FGF\rJSSkqnb8]-P#i:\3[*>]04's8V/)ri<C<r<*n6E@DIc^"\B0l_LAI\(jNAoZ.,uip.L+V^mk:[V2"0SIV36,<%&0fV(231'oMeJm8r?3[k>NHd;t"7;8Ya)G:M$KH$g3Ad*#ukr'?^!@0>ILhW`G]K\L$o5JOoN/<;I$%=3&LGakYsE:\6^?@7$2Bm+B=H8"@GHTeo6Id6>hCIu$s?4B:A&8oS3PtLt*(Jq(8WE5k&)SO5/)GVltRq55=)L'Rnd@t8BMaY&Vi<DTJ<'GF>Xml(;e/uN+*7MPMY9n"/K]l.[gl?2EV8=_YVdXg<^&j">'VSLMr_UKWU]^"6%J8WQ]`.g9+*d%:$H(?q$3M3")h+V=mG/n-4(KtrK9`&'5!i[CM/^A9<2R>J/ALil#5%7`/2_6srDK=Cn4U=B2u&Tm@pfH:V*\2;/Gh$>?<0kb>opilQCOBS#7P$&KH!TF1>+id)N0#4S*F!S:D2g#Ta]3cdD<=qkihADqfVDT:;Uj77lM^Ja708eh$lf/3KF,))S0@9S%>L'1"s6sXt$Gu7_4__re/6e@0p4>;61mU#WHikrAZ.?P2!\i_&sH<#?,%s1tfAlW'K%K0cLl>DJ2PbKU<Dt#WG_X?rE@0$b-SC_k2YbB#Xo?!pWTB1?N40jrY=?\QS98f4+;JJRtn#/1ng$UB5#%a'>a`bbGk0;hSHE.a0nFYuF@NA+MG<-oIo7_S:FX_1WC0I1*\Bi@$Q8g^a3o5$2Ta1#XN9X^KE^2ofs.MlB/X_Q@fSXLL9XC)!(=0LpkeA'rQ<4JN2@en&);\d=a:kY84G;o?kbm\XBHTk>Y+K"ntgaec0FdDg37&oP`tL7pQ@>(e"*1X-<1cdVB5$+Cj-_pG_*DW/%K$TB`u1`p`cmn6f3j"S/C>#HjHSQkAXC:JaLo!-]Lq?CGITk#Y.Ss]#DCu_q^k/b#?Qrkc=.M^25ahC!'8'2_iKSbE2D;k3Bi6<)`bHO'?'cIJGA4a;E7m/$W=GA%SV9l_.gtlN_*HA1!^A.:$8iMO[]-lV_NlBWeo*LDaFn2W,lqd@aG.cbpQqqBl-_V+aa!>lIA0QqB'D0O.VRdRU&fT7k<j.<hWdA/$Tg>5_ODh!MNQ@hbMR5kn'A`n6Lb.+\WQ'<q_V6f#aJ)5jODenhJ]OQVWjUn,e)#le6l&5>U,q2!p.!7IA1Y!/jP,&U*O7)V/dSr.Qo\bT,e[1?gPF,pO1L%($L+U#5.Li>Qo)ld=a^m"F"h=LU.DjGSPj>k"XX[6.V+WuHlL\*,>l%6;'CRrGoMb-JrDQE:=7j;,Dn0\aJ)"U.a>GrSN.#8"rS.2)On3%Qn-7:<6/RkT[EFL#pp!7,8KcCs6';Ps-^XAd1L8E0i=%cWK=I(c&lqX0h[V]W=ZqKU?0Xe--5G;a78-NeE`6.X2,K9?tp8cDS^-3a].NA+B'"q6b#-7Dk/RHOI<,1<4IAV%?40Y`*Y*B9"=8Hq16=bGmJumM5GKi7:-KW&tU%Z2D*^SDW\(W*G_#^#coU"3S`K'YNY,n9=*im@:QY&k#fB4ek-b0=K@PMc;";&)Vq)UZYoTac*;P0_otAXXZTL4PM14L;pIK"`'ctRE8(XS"+e;ZOEXVZIgA!nQkfr9/tAuZc)L;O6;R;aY]O<2_$Vn3DA2/fc!)4N">YVk@5-J+Y9Uod!cnEoc13P'DP&NjNO\>?D;M8"Qk0O>/t'bC<6%H:3SUG"Rr3)]?,0#[Ns\5M[9pA=_,Zj3#Uk`Lh=HVF/&H*f5^@J!CDmMg,"r.C/='UgD;d>If(^"nTQD?P4?DbjDf"9pQj3mFO7%>U>P9XPY($Z<!<UDRK_BeW:ZnnZ@M0ekR>fTM[s[S/7Hm-.Gmr6/L#\ArN#@.rnsH(2htU_3@g4'K4Q[dA7_!j@OKh'JWQque(Hf_!_abL(0iQ&;b\l:+41-TU%0F[^ZAL<mpgfh6o@T0oH-AdgolBH8TlK\P=K#`D?$cg[*B993O!RC_S.]_5CBk=Yb%%,OiT>%V'8l(/JFZg#c!-)6LCCjX(PNl_>I=ioN$;Jja(*5ad5A?Pe2PQ'*&@/0.?DO+5OI'HFSa/nDBBZ))1&oZa4]G6qJG*#G07DN`eu$ogL9'L`SKn?WkkFH0'.)#\2j4s-/<rT2-<i1V*#$m?oFIVE.FtnMc(LZ`sq"iRQ#.(h9^?>N"d!b=pq<KHX=!R5=`T2J#O/CAYX3cf.?`W8f(-:<$B-(m1W*#7`k%m60DNdEk"-c9p*>1Q[@HGP$t*=7cbeKS$rFADS<p\?EE7oFR2P&2K+q`qFcR"3d[,^l-<#UH?h/,J[IQuf=#tZlaBj+@>q.nf.,-`_nlkP(Km`XG.r%p%$kiGgb;4)fW.>lD:mnk,N7e5]9eLpCRr.2(\@#o*`n&bA+M$.IXl+==*^/?[g@tNE"ea)3],QnrXFV:kW-jns3>RFHZWr1?%nXQ[ni?F7\"Mj<d3Q;c5n"[D-%mA-)loa(q!sZ.SedNTW,pc.$)(H79oP<GD=l;0#0+=ll2aI`3k9QOgk,8EM40uA>o>"<cQ]f:)t-sTgC*i29C!1[o758WT-;u<6-%b[W$oSgQ@+T7o[Pd'CtO^h^P(af]\"rRB/R/WkW_XIRfkU?-&t+q&8jah^SIaDa`fI$<a2Oi[R-[Sp-q?)\0G@YN@cASSs29@Dfne<6/6cq*qk72B6g/Kig$Bo;4X[.7tC3.`;TNDl&I3#R3;gg:(,]iDdOak2;8[)$n6U8F5QPGpD*`3@_t3dPY8*[G*F(E6LR$#SgfFd7l(gg?k7hI`<cic7u/EP)c$@e0i`AcIkJ=,)[YMWRp9lE5T(3&t;@Gg[7$!J0A;Wit_-TU3c2&`ql%%]4AtMrPrUFMu6rVIWkajSn.d/&mC#Cft[!]h><6>lk]ue7_".qmlr/'?R1tnRk)]Ar=t:KGFAE@`H([1KQ(_a]H%l-X1JAtlk]uek1'2RIkn.<VEt+Q*7J_$,_VZQ'Q1s=mC$rZ1!LJ&,)=qMe`Xnu)@@EOYEQY'pq@uic'@@Zo(4O%Ial(pa#%!7M3&RH@.CPjF!Q.THi/?^:9*O.U6"F(/IAn"ZbsXsFVeHA(?M+A%f([>%CG>*.husT$PI?@D;&i#[RH>"i>-$)p!-8qI<i?5*hQ,k/M/4&TWpqJUs^L!`C_-W++%k;E!o)f'"0_3DUE(TnLY*`6b":TQQd"SA##Z&;m!TG7H([D%D6Q0@Ec2R@2!P8Ctp"JgN=?+lr#3a><!dpI++Uq9+?8bf3p589:ZW3iInRShF]G4b'"fF'"\k"^>\eRH/I<CouV<fXOsS_=CS&*ISS:=:+@08a8:$rW:&,j,>fh0X9pmfo!M]BNX\G)6A%=eaj0$#)K*/d_F@hM6Ia+fh7%>TT1k0GA&g5#`*1[4&q)"mWc6^hT3.+7=f>E9Bf9n_ZZZY7?2BDcW0?>SjBItSh0(6%?2BDcW"TPbj]hF1Z3RieL+PHCjTme,)XiB-qD$qu`BoDZ0r8Fh=8fO2d7'A-ha85HSQI[#hp2#Nc$g13"Ee0MFhV,oDQCC"%G7lFCCtG]`k)I;-l'o0jdY&^GY&b@*pfP!N2sHSFdk>KW@:dtPUI:,._^9l5291_!ILJ=m-C-Zb-0VNqDeS+(.4-\fg>GXS(uk:L7%?FXJ&TO;KT6;5FE.%3"2XhQX9KrFh"RA!qp$1L(RGXj]f^UDOPV_ZIpb\FAfM/<XftEZDIPsLN(-s:+DNYA,3D'1Lc+3CL#.D\Zs!)+P`W6;Q8FbDGImhM`,KXK\PcE?k8%k3I"Q63Sj'a.GPC`<t'4R[G2X;RX>cD(QMTJ%r;,pAVX:/D;jW!q,[@"S*%X8XRuga*EFa.L7;,s`08&TFVh9A_l>!tDU5f]i;6(?dM!;-_NJkZ\pRGJpc`.:ge;hpp)R0c6HDP./:?^\e2nM\Gk;]>i>-8q\D^!A<JrWf]Wc,Z2[_]+=7tH1MB;MPfVsu(aq`s,="SRRQHD8ec;";+)/cGJP$\i*g8PWF4b8%UK\Q)Mbb[#?hMn.pe7D^8S*RY2M`tJ2]NW9Nk7rqf+#X(2js4#EhQl*PTh(,a"1pOr=pVTDiV#9@,ZTeF"1pOr=pR&gpp\tOm;7U4l7QH`7Z+W-Zf*flo;9a:cgasj$[#pP&(nsc"_0RJAkmS>\>?oPZVW"bqLFPF=YPn:?JhVS7J(i5nb_RX%LXi[!?7_?QC&G-6F_`i_h2:HNTd(mnd]%\K\Jh7,#4P9d=ZVZNC$&_$>-ir&Jr-jo&HbEa`KrFPR'44U0rqIODj*oCeHis]+Jp/6G]$E3SuZc9ML5qWjg!.#WHP=I72mPgaH-dU1S51PAc*n%S"^12'UqPS%!(;kYo>-)kgXj)t=NJDY#23SqB?u.;Hl:^A6@Zag=]"MQgqb.;EH2U[p(lJ8iD4W0rWebdZs$NGuf'W0t=-g:X7GRHb`P7[9\^iO59hS%%b9DJR.L.RaN`Ak*m5/c%I'/qb2;6Hs>HbBfNL@tYf07a:;#IE@h1g[ET;iAU;pDufl&gg.sJ97?3)CcMu*M@,Tmm[cY&=84lf?WFNSLFP^rb2r[Eo1f3p9"8:SVj>T6K+[-\3SbP_[qY;b@ru'h7f44TO6*#%e)#=";lT('M$Dd4Vj8`#41/lW$oce("7OL(E)"1Y]/[37mL2&+,N#5b\+'6I)_=(\Cb?7-\r1>fR4\fT$1EJ`&8pZbS*RG,93lLW\/ehK)!^&%\N/GM_jr+/E/&uq-P^Mp_CKTbNPh[Q.H*od`f?Yd\srR[`lOt^2f.I2b/pL&=*@$m.!gSCb%1ZL:,]H;k0fa.nF<#f)uUO3d_V3D$+FT:7DmBn6VZ,`%l`+QH1MN#O3QfCE,apgL"gr-QO:4chCmSjH+:DbHq8rqQt_3mbW<7S;Shp[U:W)IC%NWe1`5*ZeqRCU^3S]29_mD%E'p2&.n<,F,<sX(J*V%mGB"U]E4[CN>ku(A&8l.4-\a[oGR1ct67VQN46!qA\A>&KMhc6Z-_ro\]M'R*@+3fJ@m&P49R^KcH(Rb\/m.2mil#MC(XKFEq/]Hirr)I,*,b?q#:H3ieli]+7;jQ/gF(miG;=P]5`anZ@WKDP^),a_m8,pBb`''Oc'rp)>e#d'/8d__))Nr)oP]lgA3)R&-r..BIa"5lEM_V0h6;/8Q?3WC;*W''b;\lEi<HV:*rC]S>@Y1ROae='i^=1>B,BSP:3kN:#:>*CgGUm_IQ"JihnlSQ]]4Yam%AfNZmnYaE-q',#WJ,;rG64c^3Pd[Kj2TuiAQAD^:NK!l/jSo?tO$O!@>+\q>!Li@2G0TmeZ&biJ(i=56k;RDkG)=#CXLlf;3F69'?[(o<!-+p,T'3[oXXO)'sBfC&+(kA=>Zd<sO7,9'@tBnuXP"B'p]@)'sBr$2O8tgjj?Z^Be^H\/hPAa=&uc,JoGG7(^XC.,9AI0R7@!(Wg"`+l$JOj]1qklp%EIqkWUV6b$Q3Q^?(PiT?U#9bVChG,L[n-+^V!MN/3+2_<j\JbK*#`X]I_!H<_H"l\UtnkIuR\]![[L<^ELk^Y.o,i%1BHt2=DZ`'UF_Tasnm\4Z90<332&mZ&dWGqa(R@bkh4/oqhnJ[c%2qL.KKQ*t5-8gW4-mTsl4th0l_Ed]fYoIYap84b5H=rZkggC>?,_qku'+:G02K/<,XY/L/#G7BLma[j9Hr*6H4#]1u/:ZjV*d'o+6r/ZZ>%>(mSHul*8?"TF7$b'%T3t0u9=VO4%?`'n>f4jkY#dk&KqsR#^-?f']M#sNDD6l5Ed*;./$FNRk3`*[iJ-GB,Y,A0#LVaSX#LLV&8pq4E-"0#Dbn76SmXXZ;VBdh8PON6%l[RW.Uh@D2r/_XT\]P-G2[K@(mjE;eUrl1lBp2uo<`M)Ag[hs4G;IG[Kng'hnk\m_QEGEm"KC?R,s,Sh7SG;>JeYIS=hOPm<Als>P++nBZ++b?\I/[Cdsr#91$/!WhC<#$?SeJh8A0K<.085E,uJ\9^U%(`^tm=?a]g-4p&AmN#i[>(![QN97@\o9rT`S`_lHJC\BT<S"6fo-m:"U/.+c/rP5903u+BRhRVUGhA*m@Km+]qoLq]DVAk1-9$-&c.\#".HacdV9%_`a>7th5N9$J6&+=++9]*=smc8>NGAaCN<>\-O]^fBg?HVS?oH<,Da?mgZ3m]V:Rehn9Uk7S>5-YasH8XDG83--Yl:?fF73p[R<(+Zt4t%@t*gcSJm2.RAO:n&^:qG3.k*tM8]hEL#)q#!NGSWbRl/p5&DFc#-&6e`U2>a90-e!rlldJq&8%9^R8]9jPD\_6N[d>PKKNm)#U"`Ob?e4e-E._%j+U;+4WMc.H\+1Jd?ELa+PQqVSehG3(PGrqV5LA;9aoc5^APC7k0l;5jGH'?0;&-<2/nVP5UWo3/_@>,FPVbZbcLQ@(KH#rK?Xa.DGGAeK\9RX`B#AIR-\67eQ5Dp>d=cl\N[o#l[i#"B?=F%C]:i.NjI7CLE/4-57aSO[1h6+=NGucuH7^k'Y/6jBMI*MDgcG-6=K([$Mln;U91nsSBacq<((N,KJd=DsmPCW^2uU;&eg;XQ=XWDm)h]0gR@,r9>u\"Q#VVn_\&Pl]Cg%Q/WN<^NX`YMkB(Ml^$TQ9!+r@QQL=OmeYh@9jjqQ`9^$8j_WF"<UBi*jR_K3'TG49#DDjjQGO\X^c\?EmaGpd3:l'Q_uZ9CpsI^#4,=M*ktLM$o,ZLnn49#h(R)5D/AnkG^/]d<m/3$ue4p)RjQ-^FGXrpX?RVQMspmuhW^f86c/ECsjnm?kV.$k=&=r@=8-[JpMHQ^)?-V%8a6J`XPi7/Nj?2/>Rs/lm[1pZfH)rXB(K]*$I[&8i>"EjuQ1=6fh'83US]T[,H4/kR]%\"U]J$%s(+?1q"ciAS9J36^H&Rkl6(Juh#s.O%a]?CH9%Sta`6iPo'Jdt^M;(q/Lpit!\?abF$2jF09']Z4g*c&lp]KHQE[8pRDc\O&+?-7[)njLlHiIYXDTS_Id^XGD%?3pA$&-/T\L\=lMl\-[.f/_h?Aese#DP[V)Qg1eJ^:Y!bXIJg9V1<DF=g`6.@Pr^tsQ(\-ZZ25'NE0"gdASYCTU.ad/I-[VU\1RNM'(.K\)HYH(q:7tca!,Ada-Y$p`-aLsRj6g&+l$JGjD^=_g`J[Wnng5#%<ftQ\S47`$lpu52\+dN3u38r9mdsEA'!`c+@8(WDtil"gYe^%0)"UUmoAgrfUd%LWoOB3G@SpsLVCrcSj]T3a.L+K9>11Lk>dmohFl]-_@>'17:NIp)Kboc'ntC(LpBn??%Ht4eg@14q:8X3c:pj00`'j/KRG!%#.$d;kD6WSKOBYn`0BbU0[mm;*l[9$]*u"MV;.`r]T&"&7Xhk^fL#>*,MrXg?.N)HjmbdLi?TFB/p\*rcgh#e"]jq%FPc7f@WQaH)dl'\b,*_YFVL8;?aJka7C_;+eH'f0^1GbE3ZCM#Xg2nHJT4;_rMh`<*GNPc#d8<q49M?if9)/2B<8_nEOCijol^R919aToMVE7/2%HEni7Z47Bq>?X>1VVFI>?:"lKYr8B]&kgZHMY(J[o.Zfo-3R%Br3`D\g3,MbIdj2eun(G,JPd$c6c$"<cJ",LhWh?F]C7l5Pq(QXKs9=;#MP#@5R>H0QjS#1tXjgf=rpL)`p(hLHoXb=W7'ELfSQS/6(r;">NdC$;DWccocs&%Y$7s,SXl^Ac^fruGqEeMG':F1\1Vp8o*tP$LnNJ%!d:F_8:YAjX!V0=?*i[$8rPrPO5+6PkD[MC-p(M<$l2_sPOEdkj^g9=U\CL#Jn)/Ocb?^2rnSB=Vg3SN;c)jCh_o:=ihXLltig?K"p$;">gQ2P)p[``II`*%@)rplJpPrGZP2XN&eQ]c,l'X!64&2[m)Jgt&?gIX^@e,MZQ"Ig7FQQuGD_WO;P'=9!Ue*c\IROh>a6='hJ%]b#(pP0NqaRJ^%roHC,/ptufmd:RF#=^IdoM($(ph!4GXFirl,iJ&sW__'Z2H&k`.[qM#.[<bIEVli\0.A)sN%N0V=qLr/K@/"V]MZ9:&SZ6<F)fA>)HBH,4<FB1%p3mQiQHRKhODLMSiFeA!`?r6s]==5i6C3(>,U;"!"so``gb8`eQGT6\XaTtt)^Zfb6JfjoXgO3QHhuo*_@=0iDBH`a\p:"B8iFr&bn4jWB6(N8/D'6'ZJ"WmHGteSg\)mVP?p69kTsD-'<E8LIggMBLgJQ)\]Buk[W,ZY&IWa)ne#u6(<r]4%1"m4?r[66E+FB07_*@\gi/jQA^#I_Fe9Z8e`:]8eJVb[U%QW=Oc>_MjTW=UKH!\:\$0!^)M@1MbI3DBL@[6f2lf;Ugaq]n8\!_S'm7g5cknf:qC?p;#WLO.;sgXl^!X/c[r$2>)_MmXHPV4iKXiSD38k(SYllOMS#bgkS)_fRHI4%S.S,sf7GYFigf@Z(<V@u!W6'*YqF6,Wi,n:L7I`*^*_P<BCeV@t.Wol_oBKF8nBuM+gi0AJ'n4[g=ZFie2^R6uU$dV_r-DL-[%YTbhT`p.7[Nam$YT9;lJA(N_^4F]oBn-M8E[$8&>%kja27%j(<^K<]9G,%gZi<BKq$idNW:,9eSBP,)=1RM:P<\FlHrc$9dl'd/=FTdDlW0J_OeD?G:%Ilg,ff)rft<\rL^i^XZUguP`i2CQ<m!U'U$_pfWi@IiRSj)X6+TB]%^e%\+D7u,2i_DiAOENA[pQ:DG2r3gt[XjJN4"F-0/@PVo-Yh`\hp>'5m5bY,^@e-R%9(aQD-P/%;e<_RY==A;$EU-`*5DkdKkA7E<UhH:`hF?]daJ^)q`(e;s?'fdsh8rV'=+UZHGf%JDZ:F0puVFo(:DhLkF^&Coi8#SSO'FPa(TOY@<`B&Q&#.<;;f$Fai!?*XmN,[9O@d7h/\<hUmo_`Lkm.2:oN.W_1`qK\G#hCa1Gn#]MSg-+5eCsqQjZSp6Ci5.oH0/;EV&X))n*D_b`hQ+tH(.C/fR]Tl\V:;?9mi,!cTiU&?>Ir%8I$)aUg^^,B\aS=F=13Jd.MF&\13Ka=g!i[BNhsdJ)1'Q9I%ASV:FtMZh]2q51?"TBWdU=Ma[Wc`Mf;$:*J9&b6T`-o?1^i+A[m!r#WKC.DJ1sbg"c<<DP(lhYDDMp'5VO+E;M.n_Tdc%O](h>P]0"4F,/;pI&u`lSA!Xg_<:>U\D\RKf5`)_^GO_Nljr<?r;d\.Ya8IZCkNb16A<`BBTe:jc$R7.a76,"d8hQ_97Pp?9ug6^p^tNjB<Q:?hD)esMSG(CF/Vkm_@6dU$EB)W[)R'ScpPU_-a:0PelbPPYT)F$mO%Eh`+@2]T;$:O5CGb@s"An0Ug2E>$)udi]f0bfE!&M(grHcn+P_L8DGIa1UXm2B-JU5d=[8N*Ye!?B9ce$5[Z,5.qRRj0jq"\BgZDt5G4s_m7a%s09paLqDE!<>pX5op%p5$!:tr+X<?855[T'c5g&PdumMpE'81a+<dJJ[soH$NW!9dmqHs>I:U::-?=7gUO%@Fq[^00YtBsJ'(jukCUe\Fb8n)')rUa"U,;[>=@-ElP!<Y'EJGV*^$_kQk`=\nPK>I58Em9_%8h",HFB#gsnKLsXXR)&ChU*tNJfqf+dlAbm`K\N%^eb>eIgD6[;q]^\4"sMdir2I:E'd%-ggGZnXUChBfrj7>_7=.&M>[i<jZoBVlZ<I^RXnl@g-CZ78YgfZ2Q:a0SXmTNFI38t`H[8J_%uNCPUnee'?a9Q_EKOf^gq6Y?11%/h0Nd9@n$@ZOiB*nh0#(]LE2u1A480%Jn%7=>#Jq*uYJKEPMnYFfi:,]9l,O`48siAjF]($e^/V*ulJ:R6'>8Yf]r9*o0=[`Xo@h^-&J-6Ap+R%U9C1J@F2<S&j*dB6m=!+jACp]Lpb\7qRW&pp=W21]$^T>n'-rt7deDf)*QX.%[9A9<ghXAq4e.aonYQpGeK@O/+d]huM`+,&DDp:U[mPWul2i?%@)>RqSH9_+QG@j,6m"p+1)OoZj,K'Oe`M]7N$(g)<.j\>E$M+/Dn-[6=0&tGY;oCmo_aDIbM*%@U&M\(9W6^tl<Z\]b<MGBOe#2A`:.d=eb90_%36H)DPkEhq*uNEFd"A3>POS)6[+4<SNkeSd3[K,Vr8DOE'm-KgRUS"]r:oqlDh]QHiUMm]%F]S>GtcC/UK-SP0JE)lARol_l`?$J^?4)lJ^#0Y@[8=[7mcCWV;P$j7e2;pBB^&/gZn5Gd@Z7gkLX>6Jl<H*=6(!gorZ\#9k_KIV\!m$QDLCE%N(1(*_aSC;24?D4;)S<!<as-(E?EG*I`NpGgkJfF`U8gX5+8KNB;OE&/\U\R*An%6*5OiO6Z\fBV=ta)%j*CX0i`7'HO,_C^.cELtAQ+%\p5EKcAT[cg$G#iW2piO0<n2Fkf5Xq!DZ3;7h&_JLm5E2/Cf2Q-?K!o^QjiFW*&2b;h/<GpR.K@+Z(dNo/)2`li*^:I*PC>0L5[qGl\D'm-E)Bu>B&]pmY[rC(k\1JkZgY]^>HMY>OI_;S3>8K\4Ma>IN$Fa^/kgT#%`mH)11@F"9#e05X\-aHm9YYEP%h`c\<.nI*nHcTiLcD4sZQre^0&3t%F0t;h_?YbK3(09QguMFf>P.0X0fO(^3L?>-e-B!jD%ImD1iu(F.n<qjgl,(l;O8JCBJ2d/Y6jesZ#+h0Hp8q4-6q=>F`YLG)1-P]7^uSj\F&^mLmpD2_JO(AgDQT$X1L1+j=t9(-2K+MAd@:<Os;2heY"D#D(bP:KQjq?Y)H\Y\Q078('i(Zg<.OOBs^0NnG1q[Ka.WXf^V`Q$[pU=2;n`jB-An59Qa5NDV5]\:VFf>H4&U1R0o$_B"M$oL2[5116O"#q@M0oDQ.6$)_fO"PVWrS.EYscRtV*BiF[/h^j2NeKJshA(@CbQVE+C-I7,qV"2L$'"l0s!k1[7\dGom!?qluPS$O:)7GgmP\:m`?dfE,X#+Z<.RPm(g]:*IMDVGFU?l*k1D&R2m0\N0P_rHChE.E@Hc'<Z!Fg^1oH47TdX`nP&7G[AED@N-?0[T506JkC^Sn]5S\*0l^:)%ZI<1rUtCT]/?KQ%Tb&8m"IW>muBem.08D=:C[a1W^N)mE@d@s1>CrMg]gY\d<ngDNopC`sa2@C%9Ym&Mbl>/IE<I0"#WU.en%-cMOTqEX<O2o#hFa#$HUaB8=>2^19;KZ:"3!&PUh/9Rq3*F<;FZ:2Y_g>LI`[4/^9qH?&;m>[Ur)t$\ud"E(MQb4R3V[(PM63!hYLO\%(Pf\D]g^n8(p8bXr\]U6E2^8U;<@0(q[L\#I_N#5Mk&Oh=\KKZW3e08EgE8r<2*"uD^$e9>,8JL`^-oIK6+E2[81cnp@]D651_-r<gepr:R<&`A2qR<'.]Wf:Yu+U"C)jX/0&^Eq@H#c`VR?jb_(c%kdm!8;\B4-q:[bq"$Rs!\H\$Q-<F.s$\*!H70QVOV\oZA>?,eL(+ahCIs*f:]NEG9kMl*+BqtC3S70oguR&F@tL7_0u_TfB\E-pd#qa>kBXWHoPLp`:M1I/HeXXMt&:C4Laa>?]5H)M+[<#]`%AGTOD["%7n$H/C2mo3gN'n%qJ2uNp-QTgklJ%2gjOD.SJ-_tY7-APg/^-Q7L\8d#!O_KCZdmCS3DLT+#6;'%IZMDV.C>^*@T6BQEZ6k@]k=l8o/ES<qh#(j&/UQ(G.5u7\-/n!/J=q7!2DdnLO*p'=X&&5QP]0hTRP!QaG"10b:6Vqbl.E0sHA]!E:GmA&2rs1TnUN#1e+DeH;I-ed#73?1KV26JTM>=WI#484Q$nR(K4qb$Y6&XiT\CtCp?Ja`PG]r.7]?TF)g]n"S0eYG=Z^u9eT6p2D<quH]]7u"Nh+,A1^i91pq'qqhsjo6D(9_kc2%A_Rc+@p^5EP?6F0s84Y0G0=hfE2c<6MTfpT=kF/TL+c&%)mWY'./fU4[6i?iBq#WKt<B9DU^gNM^rjr>k[D&)$,\M@""c6>,GgTPI2ZGH)L4!<=9Xpc#LZUdg@G3m,YhdH8=9qF^`rhS6nk-443J6luQH=+g?:L3f]cKW(CF6h3X4,05kEY\2C3M)Zoblh2U[oAjd\9C>^EM/,l=?anXHlARk2YL0\lGW),/K6ImW=W6ZO/!AkRD>M;W!jcb%<fgNe6@?n,LP"u[Z@#Oh=GG+4-9/THV,WHE!+tX72fHRWGmbJgZ[mc(M3h*e,F,*cW_m[Mo)T0!lrQZ5'^&N1u[$66QdYU4)YMs]tbitZYd,\\$//AhGUZoh2+Ru:7-N`i?gC>:>eLL@AI`%9`$PEhPj1q2cr7R]8)m2!,,nUOmZ6+G33Z6*%I/sQ$aqO)XH8^d'L&LpF:)Co4B9'jDA,2:F"XKR[lmY=*`Pg\"RkFZu%&C@#CLD\lX13RC@0W=Hkh*^J3AHmUHWc-*&Dg_!7mkl9<5-QI2&3KACka!%C?fdiNCLSHOI@UVffN$35^CISLRq'5dg:kd>8Kr&+S+)&:maI[^>Q\;I4.g]/0mnb5V\T1K>J!6b&k[^j=p$Gt[I&8hKfW='T\%=i#BOtHR!eFE8u!";fr<SRDhU/qX[!-;*eS)^sa!3@**CbG[?)rV!/W5`5EfX<ehRfHj#p/E3j!1;4*;:N3KBnPVf'*pMsmCFR4,MW9dn[rtS>"+'W\@$Mb^n(>AR]G8Q7?8+"!:'39[J)O/)Xs./R.%Rch*ff$GmH?:]#Wkre^rhgqTCcFSgaCc+k[,[@(ml'9p^=J'1KD3)^4"$ZdeQ6P]-`e,M\NiU^9!A\Ki+J!TBoDU?ZTbMa\NB##%:lBr6^4Uqh.OiV%ZrNeM"rkgc9?qmb6CI[W;A]F3[&gdqd&0SR0[@@F#jjV(6mVF@\M3\``U9ZZW`2e<c$g(8/;.[k;adja#u[<YD6S2/loET^V7fL$,U2k^]>#-:]@DI/9HD7gEQ2;9G4PX-RM>MV.;1eNJ;o.:BOm&R*YKo$VZ<:jniL_.</__$1>q:5NaaWYWg:J54Ek"pC._@;lbE"ci\Z!$jb4tm!o,2?)Fdf.XZE!$k"geuVL-/>LR$_S*j(7c+e"I4Gp7^rJ?4L`JYM150j0BoYK!.>UD:IVcNFUeCdQ%iMjFU0o+9D$rH3I[Ft^^SK>EFF4m98"77,tc(1E!'KTa(.iV9"4nhXRlUo,MW:cTH\POJ")N\#QTL982e<o^fkk&(&:N1^p8j$g>41m]h5d8R%l^q>j_]+l8'mJ#%4gXA?5UENGntR<(jMWI[^>QUrHqdMU/)Gi<E\q0$-Sm!O/=^f&##@)cW=2!#9)m)rV!/JmP_U^03r-OpsZ0cV*/2<\trS!$e)AFI\P2S%976bjfNKn,9rs5:tYg%1"o.NnqT)#eF>`P%d1k!QG^hiIhb[^]=_ME'ij(E"e66R#c4XAts\,jp3o]'#Mn_%6fsWB1Ra2pYW1DO$lF_Eo4XYe6FBu^4[GUXB\g(]Rq`'=5L"*`nmcD2tA#f*fLIcANH[A&8m"IRW.j".[jZ"7SAcUl>R]RF)0I;.8L1&9p]flS`P9u/.+?39tQ1MIbQ3&>P5T1kUr,;?7;Xn:f!%_UC6*7qDblIoFfJ@\1(2Y0MQ^P[*_Zl]]c+^fX;B0J16/@lh$U0E!&cWgkrOWKH%-'_QEbmWVdBZ,q]_;0&&9S\,l:cB;li!A';Hm#(T!s6A]X`Y`$qKlZ+!G(ol2rc1-K,!&I7A>'qY#YQ_lQ^j.sf>K,+m@"aCg,2<1N2^7%G3s>UYfX:f?c\VT/"5sGlXliL9M06!'^efZHc1-K,J9@lUbn4gnXD1<ba(J9M-4N[-9`kCZXteTLi<I)bp/lZK7rH]K('(!a1YE$m!#,!^[J/3T)?<$tkG@2r2/h47m/S^3bbac%pG'+c!O.]!i]dSpUrT-1HXFF^!J'Pg&%A7;p)7G<!T=5&AlZ>UI9^V/+Q3N0BQCUWbI%!D2;pHe-NIa^&oKKqa0lGee+2t_7ZWRK"7@Fig\44ZTBKeRLn/K`VAA+p*(bs]kY(A$9-)\<ga7+I^gs;#(>YZ%$obV3^u[%hDV58J)h@$"^2jt%E3o/,S+=5u2rIZ(O-@8+VT"?TZ:Hn3<&]ROgG[ttkCm-f[Z,5.:.;[PmLOgo%L]b?]HZ$ZK0=;#),B(T!3fMg[Z,5.?si0\ODk<+"d0>1GtPu3E!'KT`G[742ZWQ6C]MaZO]6uQ!;d$\!9YNY!1]r>V?f*\Q<!tb\Hk+oAs$m0cI;@a_'e"<f[Q(#Nc5).'$1@94H7JF#WDb'[)^nt3aK<"!0'N-!/Gi+H<mZO3WN!YDlgXUg$<AQ%!jH:]%;AO*A7]6TP*9!jer-FroD"5+#;dZ*7%fu%?358Z2rQ2'lHBKm5&(c%CgtsE18Of_@=#+WGn=\=HX-'"Q9RC8?$S*rWXqFe2n:[krkU[DBp0?'k-;!8L3c(I#?N^IS@6P(dsckdG8!+IItJA25c-IaTgOtFQ\tEH=bgnhJV7*#rgclfkjj`]<ZAlpVb_[cAc?:DBito-NB%J+1?%%Ka9U;7liih82fC$KH#FdSK2Sn)fVqCD`Ll:1qN+A"b;:t2?;n`f`3"KE!(&#Oq#3P`r12b!#?d3!1\gT")o;FO9.BSaTgZc,TD:*n:;:hGt9gnk98LYS;1VWE#t/O^j1_n!9YNY!$$`SU&YZZoY3j*!:pe<!&U91Xe%ENeidXE/\gYeoLGt`d+^)+<mMP3D/9o(X/?<?:'`cY7j?^g*/SV:E$QU^dXM_DbFE,?n=Y/?\ML:a$G]D7GnM1uKN/k>d5LGAb<AJ1.H(K(N[EQ<HS@JJ;L:;r\-^8H\,e!X'Q1eN:a)pW;rfii)h<,&-UCOC,8Y4WmGCf-Q[0Ib%7#j<QH@2Yi<Gq\i<J42KH#Fd&T.T/7(<7W;X.>L#-FIH!!$X.5F:lKoD~>endstream
+
+endobj
+% 'Page4': class PDFPage 
+11 0 obj
+% Page dictionary
+<< /Contents 25 0 R
+ /MediaBox [ 0
+ 0
+ 595.2756
+ 841.8898 ]
+ /Parent 21 0 R
+ /Resources << /Font 1 0 R
+ /ProcSet [ /PDF
+ /Text
+ /ImageB
+ /ImageC
+ /ImageI ]
+ /XObject << /FormXob.750cdd4588c96dc0077d82a17d60e9a6 10 0 R >> >>
+ /Rotate 0
+ /Trans <<  >>
+ /Type /Page >>
+endobj
+% 'R12': class PDFCatalog 
+12 0 obj
+% Document Root
+<< /Outlines 14 0 R
+ /PageLabels 26 0 R
+ /PageMode /UseNone
+ /Pages 21 0 R
+ /Type /Catalog >>
+endobj
+% 'R13': class PDFInfo 
+13 0 obj
+<< /Author ()
+ /CreationDate (D:20101101051906-01'00')
+ /Keywords ()
+ /Producer (ReportLab http://www.reportlab.com)
+ /Subject (\(unspecified\))
+ /Title () >>
+endobj
+% 'R14': class PDFOutlines 
+14 0 obj
+<< /Count 8
+ /First 15 0 R
+ /Last 20 0 R
+ /Type /Outlines >>
+endobj
+% 'Outline.0': class OutlineEntryObject 
+15 0 obj
+<< /Count 4
+ /Dest [ 7 0 R
+ /XYZ
+ 62.69291
+ 765.0236
+ 0 ]
+ /First 16 0 R
+ /Last 19 0 R
+ /Next 20 0 R
+ /Parent 14 0 R
+ /Title (com.informatimago.common-lisp version 1.2) >>
+endobj
+% 'Outline.7.0': class OutlineEntryObject 
+16 0 obj
+<< /Count 2
+ /Dest [ 7 0 R
+ /XYZ
+ 62.69291
+ 558.0236
+ 0 ]
+ /First 17 0 R
+ /Last 18 0 R
+ /Next 19 0 R
+ /Parent 15 0 R
+ /Title (Compilation) >>
+endobj
+% 'Outline.8.0': class OutlineEntryObject 
+17 0 obj
+<< /Dest [ 7 0 R
+ /XYZ
+ 62.69291
+ 480.0236
+ 0 ]
+ /Next 18 0 R
+ /Parent 16 0 R
+ /Title (Compilation with the compile-with-asdf.lisp script) >>
+endobj
+% 'Outline.8.1': class OutlineEntryObject 
+18 0 obj
+<< /Dest [ 7 0 R
+ /XYZ
+ 62.69291
+ 208.3661
+ 0 ]
+ /Parent 16 0 R
+ /Prev 17 0 R
+ /Title (Compilation directly with ASDF) >>
+endobj
+% 'Outline.7.1': class OutlineEntryObject 
+19 0 obj
+<< /Dest [ 7 0 R
+ /XYZ
+ 62.69291
+ 133.3661
+ 0 ]
+ /Parent 15 0 R
+ /Prev 16 0 R
+ /Title (Description of the sublibraries) >>
+endobj
+% 'Outline.1': class OutlineEntryObject 
+20 0 obj
+<< /Dest [ 11 0 R
+ /XYZ
+ 62.69291
+ 765.0236
+ 0 ]
+ /Parent 14 0 R
+ /Prev 15 0 R
+ /Title (Dependencies of the sub-libraries) >>
+endobj
+% 'R21': class PDFPages 
+21 0 obj
+% page tree
+<< /Count 4
+ /Kids [ 7 0 R
+ 8 0 R
+ 9 0 R
+ 11 0 R ]
+ /Type /Pages >>
+endobj
+% 'R22': class PDFStream 
+22 0 obj
+% page stream
+<< /Length 5933 >>
+stream
+1 0 0 1 0 0 cm BT /F1 12 Tf 14.4 TL ET
+q
+1 0 0 1 62.69291 744.0236 cm
+q
+BT 1 0 0 1 0 8.435 Tm 21 TL /F2 17.5 Tf 0 0 0 rg (com.informatimago.common-lisp ) Tj /F3 17.5 Tf (version 1.2) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 726.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (The packages provided by this library should be PURE conformant Common Lisp packages.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 660.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 52.82 Tm /F1 10 Tf 12 TL .498651 Tw (They should compile and run in all Common Lisp compliant implementations, and should have make use) Tj T* 0 Tw .658443 Tw (of no external package \(eg. compatibility library\) and no other \(implementation dependant\) package than) Tj T* 0 Tw 1.280751 Tw (COMMON-LISP. They should not use #+/#- to activate or disable implementation specific code. [There) Tj T* 0 Tw 1.230814 Tw (remains some packages using #+/#- with implementations specific variants, we're working on removing) Tj T* 0 Tw (these forms].) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 630.0236 cm
+q
+BT 1 0 0 1 0 16.82 Tm 3.259979 Tw 12 TL /F1 10 Tf 0 0 0 rg (This new version of the ) Tj /F4 10 Tf (com.informatimago.common-lisp ) Tj /F1 10 Tf (library has been restructured into various) Tj T* 0 Tw (sub-libraries, each with its own ASD file.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 600.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 16.82 Tm /F1 10 Tf 12 TL .094269 Tw (This should help managing the dependencies between the individual sub-libraries, and promote the use of) Tj T* 0 Tw (the most interesting of them.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 570.0236 cm
+q
+BT 1 0 0 1 0 16.82 Tm 4.621953 Tw 12 TL /F4 10 Tf 0 0 0 rg (com.informatimago.common-lisp.lisp-sexp ) Tj /F1 10 Tf (and ) Tj /F4 10 Tf (com.informatimago.common-lisp.cesarum ) Tj /F1 10 Tf (are the two) Tj T* 0 Tw (base sublibraries, almost all of the others use them.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 540.0236 cm
+q
+BT 1 0 0 1 0 7.23 Tm 18 TL /F3 15 Tf 0 0 0 rg (Compilation) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 510.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 16.82 Tm /F1 10 Tf 12 TL 1.552339 Tw (Starting with version 1.2 of this library, ASDF systems are provided to allow for an easy and modular) Tj T* 0 Tw (compilation.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 492.0236 cm
+q
+BT 1 0 0 1 0 4.82 Tm 12 TL /F4 10 Tf 0 0 0 rg (compile.lisp ) Tj /F1 10 Tf (should not be used anymore \(until upgraded\). ) Tj /F4 10 Tf (make-depends.lisp ) Tj /F1 10 Tf (needs an upgrade too.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 465.0236 cm
+q
+BT 1 0 0 1 0 6.025 Tm 15 TL /F2 12.5 Tf 0 0 0 rg (Compilation with the compile-with-asdf.lisp script) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 435.0236 cm
+q
+BT 1 0 0 1 0 16.82 Tm .10311 Tw 12 TL /F1 10 Tf 0 0 0 rg (On implementations that don't provide \(yet\) ASDF, you need to indicate what asdf.lisp file must be loaded,) Tj T* 0 Tw (by setting the ) Tj /F4 10 Tf (cl-user::*asdf-source* ) Tj /F1 10 Tf (variable.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 405.0236 cm
+q
+BT 1 0 0 1 0 16.82 Tm 5.055318 Tw 12 TL /F1 10 Tf 0 0 0 rg (The path to the asdf-binary-locations directory \(where the .asd file lies\) must be set to the) Tj T* 0 Tw /F4 10 Tf (cl-user::*asdf-binary-locations-directory* ) Tj /F1 10 Tf (variable.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 387.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (Then the compile-with-asdf.lisp script can be loaded:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 282.3661 cm
+q
+q
+.797505 0 0 .797505 0 0 cm
+q
+1 0 0 1 6.6 8.275813 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.960784 .960784 .862745 rg
+n -6 -6 588 120 re B*
+Q
+q
+0 0 0 rg
+BT 1 0 0 1 0 101.71 Tm /F5 10 Tf 12 TL (\(in-package :cl-user\)) Tj T*  T* (\(defvar *asdf-source*) Tj T* (  #P"/data/lisp/packages/net/common-lisp/projects/asdf/asdf/asdf.lisp"\)) Tj T*  T* (\(defvar *asdf-binary-locations-directory*) Tj T* (  #P"/data/lisp/packages/net/common-lisp/projects/asdf-binary-locations/asdf-binary-locations/"\)) Tj T*  T* (\(load "compile-with-asdf.lisp"\)) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 250.3661 cm
+q
+BT 1 0 0 1 0 16.82 Tm 1.209269 Tw 12 TL /F1 10 Tf 0 0 0 rg (It will add to ) Tj /F4 10 Tf (asdf:*central-registry* ) Tj /F1 10 Tf (the current directory and its subdirectories containing .asd files, and) Tj T* 0 Tw (asdf:load-op the ) Tj /F4 10 Tf (:com.informatimago.common-lisp ) Tj /F1 10 Tf (system, which depends on all the sublibrary systems.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 220.3661 cm
+q
+BT 1 0 0 1 0 16.82 Tm 2.314651 Tw 12 TL /F1 10 Tf 0 0 0 rg (If the variables are set correctly in ) Tj /F4 10 Tf (compile-with-asdf.lisp) Tj /F1 10 Tf (, then the ) Tj /F4 10 Tf (compile.sh ) Tj /F1 10 Tf (script can be used to) Tj T* 0 Tw (compile it with ccl, clisp, ecl and sbcl, which are the four implementations tested so far.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 193.3661 cm
+q
+BT 1 0 0 1 0 6.025 Tm 15 TL /F2 12.5 Tf 0 0 0 rg (Compilation directly with ASDF) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 163.3661 cm
+q
+BT 1 0 0 1 0 16.82 Tm .509431 Tw 12 TL /F1 10 Tf 0 0 0 rg (You can compile directly with ASDF, either by setting up symbolic links of the .asd files to a site-systems) Tj T* 0 Tw (directory, or adding the directories where these .asd files lie to the ) Tj /F4 10 Tf (asdf:*central-registry*.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 145.3661 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (It is advised to used asdf-binary-locations or ASDF-2 to have the objects placed in a good location.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 115.3661 cm
+q
+BT 1 0 0 1 0 7.23 Tm 18 TL /F3 15 Tf 0 0 0 rg (Description of the sublibraries) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 85.36605 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 16.82 Tm /F1 10 Tf 12 TL .242339 Tw (Here is a short description of each sublibrary. See inside for details about the packages provided. The file) Tj T* 0 Tw (system-graph.ps gives the dependencies between these sublibraries.) Tj T* ET
+Q
+Q
+ 
+endstream
+
+endobj
+% 'R23': class PDFStream 
+23 0 obj
+% page stream
+<< /Length 6969 >>
+stream
+1 0 0 1 0 0 cm BT /F1 12 Tf 14.4 TL ET
+q
+1 0 0 1 62.69291 753.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (lisp-sexp/) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 747.0236 cm
+Q
+q
+1 0 0 1 62.69291 717.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 18 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (com.informatimago.common-lisp.lisp-sexp.source-form) Tj T* ET
+Q
+Q
+q
+1 0 0 1 20 0 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (Functions to parse and manipulate Common Lisp sources as lisp forms \(such as in macros\).) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 717.0236 cm
+Q
+q
+1 0 0 1 62.69291 699.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (lisp-reader/) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 693.0236 cm
+Q
+q
+1 0 0 1 62.69291 663.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 18 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (com.informatimago.common-lisp.lisp-reader.reader) Tj T* ET
+Q
+Q
+q
+1 0 0 1 20 0 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (A Common Lisp reader, with some extensions \(hooks to parse tokens\).) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 663.0236 cm
+Q
+q
+1 0 0 1 62.69291 645.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (lisp-text/) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 639.0236 cm
+Q
+q
+1 0 0 1 62.69291 585.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 42 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (com.informatimago.common-lisp.lisp-text.source-text) Tj T* ET
+Q
+Q
+q
+1 0 0 1 20 0 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 28.82 Tm /F1 10 Tf 12 TL 2.200697 Tw (This package exports functions to read and manipulate Common Lisp sources. Most of the text) Tj T* 0 Tw .177126 Tw (source properties are kept \(file position, line number, comments, feature tests, etc\), while no package) Tj T* 0 Tw (is created and no symbol is interned.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 585.0236 cm
+Q
+q
+1 0 0 1 62.69291 567.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (lisp/) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 561.0236 cm
+Q
+q
+1 0 0 1 62.69291 501.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 48 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (com.informatimago.common-lisp.lisp.generic-cl) Tj T* ET
+Q
+Q
+q
+1 0 0 1 20 30 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (This system provides various lisp packages or implementations.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 20 0 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 16.82 Tm /F1 10 Tf 12 TL 1.090751 Tw (generic-cl provides a package with the same symbols as COMMON-LISP, but whose functions are) Tj T* 0 Tw (replaced by equivalent generic functions.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 501.0236 cm
+Q
+q
+1 0 0 1 62.69291 483.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (cesarum/) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 477.0236 cm
+Q
+q
+1 0 0 1 62.69291 411.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 54 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (com.informatimago.common-lisp.cesarum.utility et al.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 20 0 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 40.82 Tm /F1 10 Tf 12 TL 2.20284 Tw (This sytem provies various utilities and extensions to Common Lisp. There are set of packages) Tj T* 0 Tw 1.550814 Tw (corresponding to Common Lisp chapters \(package, list, string, array, etc\), extending the Common) Tj T* 0 Tw 1.921412 Tw (Lisp types with useful functions. And there are additionnal abstract data types or data structures) Tj T* 0 Tw (\(dictionary, graph, left-leaning red-black trees\).) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 411.0236 cm
+Q
+q
+1 0 0 1 62.69291 393.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (file/) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 387.0236 cm
+Q
+q
+1 0 0 1 62.69291 357.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 18 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (com.informatimago.common-lisp.file.file) Tj T* ET
+Q
+Q
+q
+1 0 0 1 20 0 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (Various utility to deal with files and streams.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 357.0236 cm
+Q
+q
+1 0 0 1 62.69291 339.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (arithmetic/) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 333.0236 cm
+Q
+q
+1 0 0 1 62.69291 291.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 30 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (com.informatimago.common-lisp.aritmethic.primes) Tj T* ET
+Q
+Q
+q
+1 0 0 1 20 0 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 16.82 Tm /F1 10 Tf 12 TL 1.051412 Tw (Various arithmetic utilities. For now, we have a package to compute primes \(Eratostene sieve\) and) Tj T* 0 Tw (factorize integers.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 291.0236 cm
+Q
+q
+1 0 0 1 62.69291 273.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (data-encoding/) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 267.0236 cm
+Q
+q
+1 0 0 1 62.69291 237.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 18 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (com.informatimago.common-lisp.data-encoding.data-encoding) Tj T* ET
+Q
+Q
+q
+1 0 0 1 20 0 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (A serializer/deserializer for lisp data.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 237.0236 cm
+Q
+q
+1 0 0 1 62.69291 219.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (heap/) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 213.0236 cm
+Q
+q
+1 0 0 1 62.69291 189.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 16.82 Tm /F1 10 Tf 12 TL 1.064198 Tw (A garbage collector for a heap of lisp data. \(The purpose is to be used to share lisp data amongst) Tj T* 0 Tw (different processes using shared memory\).) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 189.0236 cm
+Q
+q
+1 0 0 1 62.69291 171.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (csv/) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 165.0236 cm
+Q
+q
+1 0 0 1 62.69291 135.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 18 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (com.informatimago.common-lisp.csv.csv) Tj T* ET
+Q
+Q
+q
+1 0 0 1 20 0 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (The CSV file format.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 135.0236 cm
+Q
+q
+1 0 0 1 62.69291 117.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (bank/) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 111.0236 cm
+Q
+q
+1 0 0 1 62.69291 99.02362 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (com.informatimago.common-lisp.bank.iban) Tj T* ET
+Q
+Q
+q
+Q
+Q
+ 
+endstream
+
+endobj
+% 'R24': class PDFStream 
+24 0 obj
+% page stream
+<< /Length 7866 >>
+stream
+1 0 0 1 0 0 cm BT /F1 12 Tf 14.4 TL ET
+q
+1 0 0 1 62.69291 741.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 16.82 Tm /F1 10 Tf 12 TL 1.089984 Tw (A package to deal with IBAN \(Internationnal Bank Account Numbers\) and another to deal with RIB) Tj T* 0 Tw (\(Relev\351 d'Identit\351 Bancaire\) which are the French account numbers.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 741.0236 cm
+Q
+q
+1 0 0 1 62.69291 723.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (picture/) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 717.0236 cm
+Q
+q
+1 0 0 1 62.69291 705.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (A ASCII-art picture package, with packages to draw lisp lists and trees.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 705.0236 cm
+Q
+q
+1 0 0 1 62.69291 687.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (rfc2822/) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 681.0236 cm
+Q
+q
+1 0 0 1 62.69291 669.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (Utilities to deal with RFC-2822 message formats.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 669.0236 cm
+Q
+q
+1 0 0 1 62.69291 651.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (rfc3548/) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 645.0236 cm
+Q
+q
+1 0 0 1 62.69291 603.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 18 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 16.82 Tm /F1 10 Tf 12 TL 3.350751 Tw (This packages exports functions to encode an decode text blocks according to the encoding) Tj T* 0 Tw (described in:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 20 12 cm
+Q
+q
+1 0 0 1 20 0 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (RFC3548: The Base16, Base32, and Base64 Data Encodings) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 0 cm
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 603.0236 cm
+Q
+q
+1 0 0 1 62.69291 585.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (unix/) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 579.0236 cm
+Q
+q
+1 0 0 1 62.69291 567.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (Packages to read unix administration files /etc/group /etc/passwd and /etc/aliases.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 567.0236 cm
+Q
+q
+1 0 0 1 62.69291 549.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (html-base/) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 543.0236 cm
+Q
+q
+1 0 0 1 62.69291 531.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (Some common HTML packages.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 531.0236 cm
+Q
+q
+1 0 0 1 62.69291 513.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (html-generator/) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 507.0236 cm
+Q
+q
+1 0 0 1 62.69291 495.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (An HTML generator.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 495.0236 cm
+Q
+q
+1 0 0 1 62.69291 477.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (html-parser/) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 471.0236 cm
+Q
+q
+1 0 0 1 62.69291 459.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (An HTML parser.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 459.0236 cm
+Q
+q
+1 0 0 1 62.69291 441.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (http/) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 435.0236 cm
+Q
+q
+1 0 0 1 62.69291 423.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (Some utilities for HTTP processing.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 423.0236 cm
+Q
+q
+1 0 0 1 62.69291 405.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (diagram/) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 399.0236 cm
+Q
+q
+1 0 0 1 62.69291 387.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (Some packages generating Diagram! 2.0 files \(ancestor to OmniGrafle\).) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 387.0236 cm
+Q
+q
+1 0 0 1 62.69291 369.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (graphviz/) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 363.0236 cm
+Q
+q
+1 0 0 1 62.69291 351.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (Generates GraphViz .dot files from com.informatimago.common-lisp.cesarum.graph objects.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 351.0236 cm
+Q
+q
+1 0 0 1 62.69291 333.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (interactive/) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 327.0236 cm
+Q
+q
+1 0 0 1 62.69291 315.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (Interactive commands \(to be used at the REPL\).) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 315.0236 cm
+Q
+q
+1 0 0 1 62.69291 297.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (invoice/) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 291.0236 cm
+Q
+q
+1 0 0 1 62.69291 267.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 16.82 Tm /F1 10 Tf 12 TL 1.799318 Tw (Process and generate invoices. \(I don't use it anymore. There's a Devise datatype with a reader) Tj T* 0 Tw (macro that should be extracted to be reused\).) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 267.0236 cm
+Q
+q
+1 0 0 1 62.69291 249.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (regexp/) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 243.0236 cm
+Q
+q
+1 0 0 1 62.69291 231.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (An implementation of POSIX regexps and of EMACS regexps \(both incomplete\).) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 231.0236 cm
+Q
+q
+1 0 0 1 62.69291 213.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (ed/) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 207.0236 cm
+Q
+q
+1 0 0 1 62.69291 183.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 16.82 Tm /F1 10 Tf 12 TL .69284 Tw (An implementation of ed\(1\) \(lacks only regular expressions, to be provided eventually by the regexp) Tj T* 0 Tw (sublibrary\).) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 183.0236 cm
+Q
+q
+1 0 0 1 62.69291 165.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (cxx/) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 159.0236 cm
+Q
+q
+1 0 0 1 62.69291 147.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (Partial C++ parser and call graph builder.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 147.0236 cm
+Q
+q
+1 0 0 1 62.69291 129.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (make-depends/) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 123.0236 cm
+Q
+q
+1 0 0 1 62.69291 111.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (Script to generate the dependencies \(asd files\) from the sources, and to generate summary.html files.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 111.0236 cm
+Q
+ 
+endstream
+
+endobj
+% 'R25': class PDFStream 
+25 0 obj
+% page stream
+<< /Length 549 >>
+stream
+1 0 0 1 0 0 cm BT /F1 12 Tf 14.4 TL ET
+q
+1 0 0 1 62.69291 744.0236 cm
+q
+BT 1 0 0 1 0 8.435 Tm 21 TL /F3 17.5 Tf 0 0 0 rg (Dependencies of the sub-libraries) Tj T* ET
+Q
+Q
+q
+1 0 0 1 56.69291 529.4636 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 191.1449 21 cm
+q
+99.6 0 0 184.56 0 0 cm
+/FormXob.750cdd4588c96dc0077d82a17d60e9a6 Do
+Q
+Q
+q
+1 0 0 1 6 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F4 10 Tf 12 TL 67.38988 0 Td (A dependency diagram of the com.informatimago.common-lisp sub-libraries) Tj T* -67.38988 0 Td ET
+Q
+Q
+q
+Q
+Q
+ 
+endstream
+
+endobj
+% 'R26': class PDFPageLabels 
+26 0 obj
+% Document Root
+<< /Nums [ 0
+ 27 0 R
+ 1
+ 28 0 R
+ 2
+ 29 0 R
+ 3
+ 30 0 R ] >>
+endobj
+% 'R27': class PDFPageLabel 
+27 0 obj
+% None
+<< /S /D
+ /St 1 >>
+endobj
+% 'R28': class PDFPageLabel 
+28 0 obj
+% None
+<< /S /D
+ /St 2 >>
+endobj
+% 'R29': class PDFPageLabel 
+29 0 obj
+% None
+<< /S /D
+ /St 3 >>
+endobj
+% 'R30': class PDFPageLabel 
+30 0 obj
+% None
+<< /S /D
+ /St 4 >>
+endobj
+xref
+0 31
+0000000000 65535 f
+0000000113 00000 n
+0000000257 00000 n
+0000000422 00000 n
+0000000611 00000 n
+0000000786 00000 n
+0000000967 00000 n
+0000001126 00000 n
+0000001405 00000 n
+0000001684 00000 n
+0000002006 00000 n
+0000017710 00000 n
+0000018057 00000 n
+0000018216 00000 n
+0000018428 00000 n
+0000018553 00000 n
+0000018798 00000 n
+0000019013 00000 n
+0000019225 00000 n
+0000019417 00000 n
+0000019608 00000 n
+0000019786 00000 n
+0000019918 00000 n
+0000025952 00000 n
+0000033022 00000 n
+0000040989 00000 n
+0000041642 00000 n
+0000041774 00000 n
+0000041851 00000 n
+0000041928 00000 n
+0000042005 00000 n
+trailer
+<< /ID 
+ % ReportLab generated PDF document -- digest (http://www.reportlab.com) 
+ [(\351\265\020\274\033p\304+,\241\005g^jI_) (\351\265\020\274\033p\304+,\241\005g^jI_)] 
+
+ /Info 13 0 R
+ /Root 12 0 R
+ /Size 31 >>
+startxref
+42052
+%%EOF

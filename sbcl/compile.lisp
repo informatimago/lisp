@@ -58,7 +58,8 @@
 
 (load "init.lisp")
 ;; package.lisp is loaded by init.lisp.
-(LOAD "PACKAGES:NET;SOURCEFORGE;CCLAN;ASDF;ASDF.LISP")
+#+(or allegro ccl ecl) (load (compile-file #P"PACKAGES:net;sourceforge;cclan;asdf;asdf.lisp"))
+#-(or allegro ccl ecl) (load (compile-file #P"PACKAGES:NET;SOURCEFORGE;CCLAN;ASDF;ASDF.LISP"))
 (push (function package:PACKAGE-SYSTEM-DEFINITION)
       ASDF:*SYSTEM-DEFINITION-SEARCH-FUNCTIONS*)
 (asdf:operate 'asdf:load-op :com.informatimago.common-lisp)

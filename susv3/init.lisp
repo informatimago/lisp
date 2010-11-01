@@ -87,9 +87,15 @@
 ;; the current directory, and on COM.INFORMATIMAGO.COMMON-LISP
 ;; packages from the repository.
 
-(SETF (LOGICAL-PATHNAME-TRANSLATIONS "PACKAGES")
-      (list (LIST "PACKAGES:**;*.*.*"
-                  (get-directory :share-lisp "packages/**/*.*.*"))))
+(SETF (logical-pathname-translations "PACKAGES") nil
+      (LOGICAL-PATHNAME-TRANSLATIONS "PACKAGES")
+      (list
+       (LIST "PACKAGES:**;*"
+             (get-directory :share-lisp "packages/**/*"))
+       (LIST "PACKAGES:**;*.*"
+             (get-directory :share-lisp "packages/**/*.*"))
+       (LIST "PACKAGES:**;*.*.*"
+             (get-directory :share-lisp "packages/**/*.*.*"))))
 
 (HANDLER-CASE (LOAD "PACKAGES:COM;INFORMATIMAGO;COMMON-LISP;PACKAGE")
   (T ()       (LOAD "PACKAGES:COM;INFORMATIMAGO;COMMON-LISP;PACKAGE.LISP")))

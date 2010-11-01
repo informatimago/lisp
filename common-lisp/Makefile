@@ -43,15 +43,36 @@ PACKAGE_PATH=com/informatimago/common-lisp
 
 include ../implementations.mk
 
-all:: $(COMPILERS)
+COMPILES = '(load "compile-with-asdf.lisp")'
+all:: $(COMPILERS) documents
+
+
+install::
+	-mkdir -p $(PACKAGES)/$(PACKAGE_PATH)
+	tar --exclude \*~  -cf - . | tar -C $(PACKAGES)/$(PACKAGE_PATH)/ -xvf -
+
 
 
 help::
 	@echo "make iana-character-sets.data # downloads the IANA character sets data file."
-
-
 iana-character-sets.data:
 	wget http://www.iana.org/assignments/character-sets -O $@
 
+
+
+
+system-graph.ps:system-graph.dot
+	dot -Tps  -o system-graph.ps system-graph.dot
+system-graph.eps:system-graph.ps 
+	ps2epsi system-graph.ps system-graph.eps
+	lc -u system-graph.eps
+
+README.pdf:README system-graph.eps
+	rst2pdf < README > README.pdf
+
+documents: README.pdf
+
+compile:
+	./compile.sh
 
 #### THE END ####

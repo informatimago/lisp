@@ -72,7 +72,8 @@
          :name (string file) :type "LISP" :version nil :case :common
          :defaults (or *load-pathname* *default-pathname-defaults*))))
 
-(load "PACKAGES:NET;SOURCEFORGE;CCLAN;ASDF;ASDF.LISP")
+#+(or allegro ccl ecl) (load (compile-file #P"PACKAGES:net;sourceforge;cclan;asdf;asdf.lisp"))
+#-(or allegro ccl ecl) (load (compile-file #P"PACKAGES:NET;SOURCEFORGE;CCLAN;ASDF;ASDF.LISP"))
 (logger "COMPILE.LISP LOADED DEPENDENCIES")
 
 (push (function package:package-system-definition)
@@ -144,8 +145,8 @@
     
     character-sets ; (previously IATA-CHARACTER-SETS) with implementation specific stuff..
 
-    html-iso8879-1 
-	html
+    html-entities
+    html
     hquery
 	htrans
 	database 
