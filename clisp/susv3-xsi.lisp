@@ -55,14 +55,16 @@
 ;;;;    Boston, MA 02111-1307 USA
 ;;;;****************************************************************************
 
-(DEFINE-PACKAGE "COM.INFORMATIMAGO.CLISP.SUSV3-XSI"
+(in-package "COMMON-LISP-USER")
+
+(DECLAIM (DECLARATION ALSO-USE-PACKAGES))
+(declaim (ALSO-USE-PACKAGES "FFI" "LINUX"))
+
+(defPACKAGE "COM.INFORMATIMAGO.CLISP.SUSV3-XSI"
   (:DOCUMENTATION "This packages exports SUSV3 XSI functions.
     This is the CLISP specific implementation of the SUSV3 XSI API.")
-  (:FROM "COMMON-LISP" :IMPORT :ALL)
-  (:USE  "FFI")
-  (:USE  "LINUX")
-  (:use  "COM.INFORMATIMAGO.CLISP.SUSV3" :as "SUSV3")
-  (:from "COM.INFORMATIMAGO.CLISP.SUSV3" :import :all)
+  (:use "COMMON-LISP"
+        "COM.INFORMATIMAGO.CLISP.SUSV3")
   (:EXPORT 
    ;; FTW
    "+FTW-F+" "+FTW-D+" "+FTW-DNR+" "+FTW-DP+" "+FTW-NS+" "+FTW-SL+"
@@ -103,6 +105,7 @@
    "SEMINFO-SEMMNU" "SEMINFO-SEMMSL" "SEMINFO-SEMOPM" "SEMINFO-SEMUME"
    "SEMINFO-SEMUSZ" "SEMINFO-SEMVMX" "SEMINFO-SEMAEM"
    "SEMBUF-SEM_NUM" "SEMBUF-SEM_OP" "SEMBUF-SEM_FLG" ))
+(in-package "COM.INFORMATIMAGO.CLISP.SUSV3-XSI")
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -151,9 +154,9 @@ follows links but does not walk down any path that crosses itself.")
 
 
 (DEFTYPE FTW-FILTER  ()
-  '(FUNCTION (SIMPLE-STRING SUSV3:STAT INTEGER)     INTEGER))
+  '(FUNCTION (SIMPLE-STRING STAT INTEGER)     INTEGER))
 (DEFTYPE NFTW-FILTER ()
-  '(FUNCTION (SIMPLE-STRING SUSV3:STAT INTEGER FTW) INTEGER))
+  '(FUNCTION (SIMPLE-STRING STAT INTEGER FTW) INTEGER))
 
 
 (declaim
@@ -183,41 +186,41 @@ follows links but does not walk down any path that crosses itself.")
   "
 URL:        http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html
 "
-  (DECLARE (TYPE (INTEGER 1 #|SUSV3:+OPEN-MAX+|#) NDIRS))
+  (DECLARE (TYPE (INTEGER 1 #|+OPEN-MAX+|#) NDIRS))
   (declare (ignore ndirs))
   ;; We'll have always only one DIR-STREAM open: we keep the list of
   ;; subdirectories in memory and process them after having read the directory.
-  (LET ((DIR-STREAM (SUSV3:OPENDIR PATH)))
+  (LET ((DIR-STREAM (OPENDIR PATH)))
     (UNWIND-PROTECT
-         (DO* ((ENTRY (SUSV3:READDIR DIR-STREAM) (SUSV3:READDIR DIR-STREAM))
+         (DO* ((ENTRY (READDIR DIR-STREAM) (READDIR DIR-STREAM))
                (DIRECTORIES '())
                SUBPATH STAT FLAG
                (RESULT 0))
               ((OR (NULL ENTRY) (/= 0 RESULT)) DIRECTORIES)
-           (UNLESS (OR (STRING= (SUSV3:DIRENT-NAME ENTRY) "..")
-                       (STRING= (SUSV3:DIRENT-NAME ENTRY) "."))
+           (UNLESS (OR (STRING= (DIRENT-NAME ENTRY) "..")
+                       (STRING= (DIRENT-NAME ENTRY) "."))
              (SETQ SUBPATH (CONCATENATE 'STRING PATH "/"
-                                        (SUSV3:DIRENT-NAME ENTRY)))
-             (HANDLER-CASE (SETQ STAT (SUSV3:LSTAT SUBPATH))
+                                        (DIRENT-NAME ENTRY)))
+             (HANDLER-CASE (SETQ STAT (LSTAT SUBPATH))
                (T () (SETQ STAT NIL)))
              (COND
                ((NULL STAT)
                 (SETQ FLAG +FTW-NS+))
-               ((SUSV3:S-ISREG (SUSV3:STAT-MODE STAT))
+               ((S-ISREG (STAT-MODE STAT))
                 (SETQ FLAG +FTW-F+))
-               ((SUSV3:S-ISDIR (SUSV3:STAT-MODE STAT))
+               ((S-ISDIR (STAT-MODE STAT))
                 (PUSH SUBPATH DIRECTORIES)
                 (SETQ FLAG +FTW-F+))
-               ((SUSV3:S-ISLNK (SUSV3:STAT-MODE STAT))
-                (HANDLER-CASE (SETQ STAT (SUSV3:STAT SUBPATH)
+               ((S-ISLNK (STAT-MODE STAT))
+                (HANDLER-CASE (SETQ STAT (STAT SUBPATH)
                                     FLAG +FTW-SL+)))
                (T () (SETQ STAT NIL
                            FLAG +FTW-SLN+)))
              (SETQ RESULT
                    (HANDLER-CASE
-                       (funcall FILTER (SUSV3:DIRENT-NAME ENTRY) STAT FLAG)
+                       (funcall FILTER (DIRENT-NAME ENTRY) STAT FLAG)
                      (T () -1)))))
-      (SUSV3:CLOSEDIR DIR-STREAM))))
+      (CLOSEDIR DIR-STREAM))))
 
     
 (DEFCONSTANT +FTW-F+   0 "File.")
@@ -559,8 +562,4 @@ URL:        http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html
   (:library #.+libc+) (:language :stdc))
 
 
-;; Local Variables:
-;; eval: (cl-indent 'ffi:def-c-struct 1)
-;; End:
-
-;;;; susv3-xsi.lisp                   --                     --          ;;;;
+;;;; THE END ;;;;

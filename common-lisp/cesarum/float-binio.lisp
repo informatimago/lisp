@@ -39,7 +39,7 @@
 ;;;;****************************************************************************
 
 (IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.FILE.FLOAT-BINIO"
+(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FLOAT-BINIO"
   (:USE "COMMON-LISP")
   (:DOCUMENTATION
    "This package encodes and decodes arrays of float into arrays
@@ -51,7 +51,7 @@
     See the source file for details.")
   (:EXPORT "BIOFA-DECODE" "BIOFA-ENCODE" "BIOFA-SETREF" "BIOFA-REF"
            "BIOFA-COUNT"))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.FILE.FLOAT-BINIO")
+(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FLOAT-BINIO")
 
 
 

@@ -1,9 +1,10 @@
 #******************************************************************************
-#FILE:				$(COMMON)/Makefile
+#FILE:				Makefile
 #LANGUAGE:			make
 #SYSTEM:			UNIX
 #USER-INTERFACE:	None
 #DESCRIPTION
+#
 #	This Makefile tells how to compile the lisp libraries.
 #
 #	Input variables are:
@@ -45,18 +46,17 @@
 #   59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #******************************************************************************
 
-TARGET  := $(shell uname)
-PREFIX  := /usr/local
-MAKEDIR := $(HOME)/src/public/common/makedir
+PREFIX=/usr/local
 
-MODULES = common-lisp clext clmisc sbcl clisp susv3
+PACKAGES:=$(shell get-directory SHARE_LISP)/packages
+PACKAGE_PATH=com/informatimago/common-lisp
 
 
 LINE    = ";;;;;;====================================================================\n"
 
 
 
-all: install clean lisp
+all::
 
 #include $(MAKEDIR)/project
 
@@ -153,12 +153,14 @@ lisp:
 	@printf $(LINE)
 
 install:
-	@for module in $(MODULES) ; do \
-		printf $(LINE) ;\
-		printf ";;;;;; INSTALLING $$module\n" ;\
-		$(MM) -C $$module all install ;\
-	 done
+	-@mkdir -p $(PACKAGES)/$(PACKAGE_PATH)
+	@tar --exclude \*~ -cf - . | tar -C $(PACKAGES)/$(PACKAGE_PATH)/ -xvf -
 	@printf $(LINE)
+#	@for module in $(MODULES) ; do \
+#		printf $(LINE) ;\
+#		printf ";;;;;; INSTALLING $$module\n" ;\
+#		$(MM) -C $$module all install ;\
+#	 done
 
 
 subprojects modules:

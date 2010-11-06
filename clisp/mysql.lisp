@@ -35,19 +35,17 @@
 ;;;;    Boston, MA 02111-1307 USA
 ;;;;**************************************************************************
 
-(DEFINE-PACKAGE "COM.INFORMATIMAGO.CLISP.MYSQL"
-  (:NICKNAMES "MYSQL")
+(defPACKAGE "COM.INFORMATIMAGO.CLISP.MYSQL"
   (:DOCUMENTATION
    "This package exports mysql functions.
 
     Copyright Pascal J. Bourguignon 2006 - 2006
     This package is provided under the GNU General Public License.
     See the source file for details.")
-  (:FROM "COMMON-LISP" :IMPORT :ALL)
-  ;;   (:USE "COM.INFORMATIMAGO.COMMON-LISP.STREAM")
-  ;;   (:FROM "COM.INFORMATIMAGO.COMMON-LISP.STRING"  :IMPORT :ALL)
-  (:FROM "COM.INFORMATIMAGO.COMMON-LISP.UTILITY" :IMPORT :ALL)
+  (:use "COMMON-LISP"
+         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
   (:EXPORT ))
+(in-package "COM.INFORMATIMAGO.CLISP.MYSQL")
 
 
 (defconstant +library+ 
@@ -319,6 +317,9 @@
   (:library #.+library+))
 
 
+
+#|
+
 void make-password-from-salt(char *to, unsigned long *hash-res) ;
 char *scramble(char *to,const char *message,const char *password,
                     my-bool old-ver)    ;
@@ -572,4 +573,9 @@ unsigned int	STDCALL mysql-thread-safe(void)                   ;
 
   
 #define mysql-reload(mysql) mysql-refresh((mysql),REFRESH-GRANT)
+
+
+|#
+
+;;;; THE END ;;;;
 

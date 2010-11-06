@@ -92,7 +92,7 @@
 
 (defparameter *source-type* "lisp")
 
-(com.informatimago.common-lisp.make-depends:generate-asd
+(com.informatimago.common-lisp.make-depends.make-depends:generate-asd
  :com.informatimago.clisp *sources* *source-type*
  :VERSION "1.0.0"
  :predefined-packages '("COMMON-LISP" "FFI" "EXT" "LINUX" "REGEXP" "SOCKET"
@@ -101,7 +101,7 @@
  :vanillap t)
 
 
-(COM.INFORMATIMAGO.COMMON-LISP.MAKE-DEPENDS:generate-summary
+(COM.INFORMATIMAGO.COMMON-LISP.MAKE-DEPENDS.MAKE-DEPENDS:generate-summary
  *sources*
  :source-type  *source-type*
  :summary-path "summary.html"

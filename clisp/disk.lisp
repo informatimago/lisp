@@ -38,21 +38,21 @@
 ;;;;    Boston, MA 02111-1307 USA
 ;;;;****************************************************************************
 
-(DEFINE-PACKAGE "COM.INFORMATIMAGO.CLISP.DISK"
-  (:NICKNAMES "PJB-DISK")
+(defPACKAGE "COM.INFORMATIMAGO.CLISP.DISK"
   (:DOCUMENTATION
    "This package exports disk management functions.
 
     Copyright Pascal J. Bourguignon 2002 - 2003
     This package is provided under the GNU General Public License.
     See the source file for details.")
-  (:FROM "COMMON-LISP" :IMPORT :ALL)
-  (:USE "COM.INFORMATIMAGO.COMMON-LISP.STREAM")
-  (:FROM "COM.INFORMATIMAGO.COMMON-LISP.STRING"  :IMPORT :ALL)
-  (:FROM "COM.INFORMATIMAGO.COMMON-LISP.UTILITY" :IMPORT :ALL)
+  (:use "COMMON-LISP"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
   (:EXPORT "VOLINFO" "VOLINFO-PATH" "VOLINFO-FS-TYPE"  "VOLINFO-SIZE"
            "VOLINFO-USED" "VOLINFO-AVAILABLE" "VOLINFO-MOUNT-POINT"
-           "DF" "DU" )) ;;COM.INFORMATIMAGO.CLISP.DISK
+           "DF" "DU" ))
+(in-package  "COM.INFORMATIMAGO.CLISP.DISK")
 
 
 (DEFUN OLD-DF ()
@@ -62,7 +62,7 @@ RETURN:  A list of sublists each containing:
 "
   (MAPCAR
    (LAMBDA (LINE) (SPLIT-STRING LINE " "))
-   (com.informatimago.common-lisp.stream:STREAM-TO-STRING-LIST
+   (STREAM-TO-STRING-LIST
     (EXT:RUN-SHELL-COMMAND
      "/bin/df -T|postodax|/bin/awk '/Available/{next;}{print $1,$2,$3,$4,$5,$7;}'"
      :OUTPUT :STREAM))))
@@ -92,11 +92,11 @@ RETURN:  A list of volinfo structures.
                      :USED (* 1024 (READ-FROM-STRING (NTH 3 DATA)))
                      :AVAILABLE (* 1024 (READ-FROM-STRING (NTH 4 DATA)))
                      :MOUNT-POINT (NTH 5 DATA))))
-   (com.informatimago.common-lisp.stream:STREAM-TO-STRING-LIST
+   (STREAM-TO-STRING-LIST
     (EXT:RUN-SHELL-COMMAND
      (FORMAT
-         NIL "df -k -T ~A|postodax|/bin/awk '/Available/{next;}{print $1,$2,$3,$4,$5,$7;}'"
-         PATH)
+      NIL "df -k -T ~A|postodax|/bin/awk '/Available/{next;}{print $1,$2,$3,$4,$5,$7;}'"
+      PATH)
      :OUTPUT :STREAM))))
 
 
@@ -110,9 +110,9 @@ RETURN:  The Disk Usage of the given PATH (or the current directory).
    (READ-FROM-STRING
     (CAAR
      (MAPCAR (LAMBDA (LINE) (SPLIT-STRING LINE #.(string (CODE-CHAR 9))))
-             (com.informatimago.common-lisp.stream:STREAM-TO-STRING-LIST
+             (STREAM-TO-STRING-LIST
               (EXT:RUN-PROGRAM "du"
-                :ARGUMENTS (LIST "-s" PATH) :OUTPUT :STREAM)))))))
+                               :ARGUMENTS (LIST "-s" PATH) :OUTPUT :STREAM)))))))
 
 
 ;;;; THE END ;;;;

@@ -41,14 +41,13 @@
     :version "1.2.0"
     :licence "GPL"
     :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Automn 2010")
-                 ((#:albert #:output-dir)          . "../documentation/com.informatimago.common-lisp.csv/")
+                 (#:date                           . "Autumn 2010")
+                 ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.csv/")
                  ((#:albert #:formats)             . ("docbook"))
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
-    :depends-on (:com.informatimago.common-lisp.cesarum
-                 :com.informatimago.common-lisp.file)
+    :depends-on (:com.informatimago.common-lisp.cesarum)
     :components ((:file "csv" :depends-on ())))
 
 ;;;; THE END ;;;;

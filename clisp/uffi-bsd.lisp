@@ -66,7 +66,7 @@
 ;;;;    THE POSSIBILITY OF SUCH DAMAGE.
 ;;;;****************************************************************************
 
-
+(in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.CLISP.UFFI"
   (:nicknames "UFFI")
   (:documentation "

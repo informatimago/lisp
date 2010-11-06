@@ -16,6 +16,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon
 ;;;;MODIFICATIONS
+;;;;    2010-11-01 <PJB> Removed DEFINE-PACKAGE.
 ;;;;    2003-05-08 <PJB> Introduced DEFINE-PACKAGE.
 ;;;;    2003-04-25 <PJB> Created.
 ;;;;BUGS
@@ -38,16 +39,13 @@
 ;;;;    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 ;;;;*****************************************************************************
 
+(in-package "COMMON-LISP-USER")
 
-(DEFINE-PACKAGE "COM.INFORMATIMAGO.SBCL.READLINE"
-  (:NICKNAMES "READLINE")
+(defpackage "COM.INFORMATIMAGO.SBCL.READLINE"
   (:DOCUMENTATION
    "This package is a foreign interface to the GNU readline
 and GNU history libraries.")
-  (:FROM "COMMON-LISP"   :IMPORT :ALL)
-  (:FROM "SB-ALIEN"      :IMPORT :ALL)
-  (:FROM "SB-C"          :IMPORT :ALL)
-  (:FROM "SB-SYS"        :IMPORT :ALL)
+  (:use "COMMON-LISP" "SB-ALIEN" "SB-C" "SB-SYS")
   (:EXPORT
    ;; functions
    "C-NULL" "INITIALIZE"
@@ -190,8 +188,8 @@ and GNU history libraries.")
    "RL-CLEANUP-AFTER-SIGNAL" "RL-RESET-AFTER-SIGNAL" "RL-FREE-LINE-STATE"
    "RL-MAYBE-UNSAVE-LINE" "RL-MAYBE-REPLACE-LINE" "RL-COMPLETE-INTERNAL"
    "RL-DISPLAY-MATCH-LIST" "RL-COMPLETION-MATCHES"
-   "RL-USERNAME-COMPLETION-FUNCTION" "RL-FILENAME-COMPLETION-FUNCTION"
-   )) ;;COM.INFORMATIMAGO.SBCL.READLINE
+   "RL-USERNAME-COMPLETION-FUNCTION" "RL-FILENAME-COMPLETION-FUNCTION"))
+(in-package "COM.INFORMATIMAGO.SBCL.READLINE")
 
 
 

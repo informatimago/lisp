@@ -42,8 +42,8 @@ to work with lisp forms and sexp, eg. in macros."
     :version "1.2.0"
     :licence "GPL"
     :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Automn 2010")
-                 ((#:albert #:output-dir)          . "../documentation/com.informatimago.common-lisp.lisp-sexp/")
+                 (#:date                           . "Autumn 2010")
+                 ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.lisp-sexp/")
                  ((#:albert #:formats)             . ("docbook"))
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")

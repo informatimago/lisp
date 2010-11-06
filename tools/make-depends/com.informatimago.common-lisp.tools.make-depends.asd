@@ -1,6 +1,6 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               com.informatimago.common-lisp.make-depends.asd
+;;;;FILE:               com.informatimago.common-lisp.tools.make-depends.asd
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
@@ -34,21 +34,20 @@
 ;;;;    Boston, MA 02111-1307 USA
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.common-lisp.make-depends
-    :name "com.informatimago.common-lisp.make-depends"
+(asdf:defsystem :com.informatimago.common-lisp.tools.make-depends
+    :name "com.informatimago.common-lisp.tools.make-depends"
     :description  "This ASDF system gathers various Common Lisp library packages."
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
     :version "1.2.0"
     :licence "GPL"
     :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Automn 2010")
-                 ((#:albert #:output-dir)          . "../documentation/com.informatimago.common-lisp.make-depends/")
+                 (#:date                           . "Autumn 2010")
+                 ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.make-depends/")
                  ((#:albert #:formats)             . ("docbook"))
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
     :depends-on (:com.informatimago.common-lisp.cesarum
-                 :com.informatimago.common-lisp.file
                  :com.informatimago.common-lisp.html-generator)
     :components ((:file "make-depends" :depends-on ())))
 

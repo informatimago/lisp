@@ -10,12 +10,13 @@ DESCRIPTION
 AUTHORS
     <PJB> Pascal Bourguignon <pjb@informatimago.com>
 MODIFICATIONS
+    2010-11-04 <PJB> Beautified.  Made use of uint*_t types from <stdint.h>.
     2004-12-05 <PJB> Created.
 BUGS
 LEGAL
     GPL
     
-    Copyright Pascal Bourguignon 2004 - 2004
+    Copyright Pascal Bourguignon 2004 - 2010
     
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -33,21 +34,16 @@ LEGAL
     Boston, MA 02111-1307 USA
 *****************************************************************************/
     
-#include <stdio.h>
-    unsigned char      peek8 (unsigned char*      address){return(*address);}
-    unsigned short     peek16(unsigned short*     address){return(*address);}
-    unsigned long      peek32(unsigned long*      address){return(*address);}
-    unsigned long long peek64(unsigned long long* address){
-        /* printf("peek64(%ulld)=%ulld\n",address,*address);*/
-        return(*address);}
-    void poke8(unsigned char* address,unsigned char value){
-        (*address)=value;}
-    void poke16(unsigned short* address,unsigned short value){
-        (*address)=value;}
-    void poke32(unsigned long* address,unsigned long value){
-        (*address)=value;}
-    void poke64(unsigned long long* address,unsigned long long value){
-        /* printf("poke64(%ulld,%ulld)\n",address,value); */
-        (*address)=value;}
+#include <stdint.h>
 
-/*** raw-memory-lib.c                 --                     --          ***/
+uint8_t  peek8 (const uint8_t * address){ return(*address); }
+uint16_t peek16(const uint16_t* address){ return(*address); }
+uint32_t peek32(const uint32_t* address){ return(*address); }
+uint64_t peek64(const uint64_t* address){ return(*address); }
+
+void     poke8 (uint8_t * address,uint8_t  value){ (*address)=value; }
+void     poke16(uint16_t* address,uint16_t value){ (*address)=value; }
+void     poke32(uint32_t* address,uint32_t value){ (*address)=value; }
+void     poke64(uint64_t* address,uint64_t value){ (*address)=value; }
+
+/**** THE END ****/

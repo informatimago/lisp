@@ -37,11 +37,12 @@
 ;;;;    Boston, MA 02111-1307 USA
 ;;;;****************************************************************************
 
-(DEFINE-PACKAGE "COM.INFORMATIMAGO.CLISP.SYSLOG"
-  (:NICKNAMES "SYSLOG")
-  (:DOCUMENTATION "This module exports FFI to unix syslog functions.")
-  (:FROM "COMMON-LISP" :IMPORT :ALL)
-  ;;  (:FROM "FFI"         :IMPORT :ALL)
+(in-package "COMMON-LISP-USER")
+
+(defpackage "COM.INFORMATIMAGO.CLISP.SYSLOG"
+  (:DOCUMENTATION "This module exports unix syslog functions.
+Since FFI is not always available with clisp, we rather use logger(1).")
+  (:use "COMMON-LISP")
   (:EXPORT
    "OPENLOG" "SYSLOG" "CLOSELOG"
 
@@ -57,8 +58,8 @@
    "+LOG-LPR+" "+LOG-NEWS+" "+LOG-UUCP+" "+LOG-CRON+" 
    "+LOG-AUTHPRIV+" "+LOG-FTP+"
    "+LOG-LOCAL0+" "+LOG-LOCAL1+" "+LOG-LOCAL2+" "+LOG-LOCAL3+" "+LOG-LOCAL4+"
-   "+LOG-LOCAL5+" "+LOG-LOCAL6+" "+LOG-LOCAL7+"
-   )) ;;COM.INFORMATIMAGO.CLISP.SYSLOG
+   "+LOG-LOCAL5+" "+LOG-LOCAL6+" "+LOG-LOCAL7+"))
+(in-package "COM.INFORMATIMAGO.CLISP.SYSLOG")
 
 
 ;; options
@@ -139,7 +140,7 @@ RETURN: A logger for the (facility priority) couple.
                      :input :stream
                      :output nil))
       (setf (aref *loggers* (+ facility priority)) logger))
-    logger)) ;;get-logger
+    logger))
 
 
 
@@ -180,7 +181,7 @@ RETURN: A logger for the (facility priority) couple.
         *LOG-NDELAY* (/= 0 (LOGAND OPTION +LOG-NDELAY+))
         *LOG-NOWAIT* (/= 0 (LOGAND OPTION +LOG-NOWAIT+))
         *LOG-PERROR* (/= 0 (LOGAND OPTION +LOG-PERROR+)))
-  (VALUES)) ;;OPENLOG
+  (VALUES))
 
 
 (DEFUN old-SYSLOG (PRIORITY FCTRL &REST ARGUMENTS)
@@ -191,11 +192,11 @@ RETURN: A logger for the (facility priority) couple.
                               "-t" *IDENT*
                               "--" (APPLY (FUNCTION FORMAT) NIL FCTRL ARGUMENTS)))
     :INPUT NIL :OUTPUT NIL :WAIT NIL)
-  (VALUES)) ;;old-SYSLOG
+  (VALUES))
 
 
-(defun newlinep (ch) (or (eql #\newline ch) (eql #\return ch)))
-
+(defun newlinep (ch)
+  (member ch '(#\Newline #\Return #\Newline)))
 
 (DEFUN SYSLOG (PRIORITY FCTRL &REST ARGUMENTS)
   (let ((logger (get-logger *facility* priority)))
@@ -204,13 +205,13 @@ RETURN: A logger for the (facility priority) couple.
       (unless (newlinep (aref lines (1- (length lines))))
         (terpri logger))
       (finish-output logger)))
-  (values)) ;;SYSLOG
+  (values))
 
 
 (DEFUN CLOSELOG ()
   (setf *loggers*
         (map 'array (lambda (logger) (when logger (close logger)) nil) *loggers*))
-  (VALUES)) ;;CLOSELOG
+  (VALUES))
 
 
-;;;; syslog.lisp                      --                     --          ;;;;
+;;;; THE END ;;;;

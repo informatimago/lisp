@@ -128,7 +128,7 @@
        (make-translations "PACKAGES" '("COM" "INFORMATIMAGO" "CLMISC")
                           *project-directory*)
        ;; clext packages dont depend on com.informatimago.common-lisp (yet)
-       ;; but compile.lisp uses com.informatimago.common-lisp.make-depends
+       ;; but compile.lisp uses com.informatimago.common-lisp.make-depends.make-depends
        (make-translations "PACKAGES" '()
                           (get-directory :share-lisp "packages/"))))
 

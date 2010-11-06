@@ -12,8 +12,8 @@
 ;;;;    For example:
 ;;;;
 ;;;;        (in-package "COMMON-LISP-USER")
-;;;;        (declaim (declaration also-use-packages)
-;;;;                 (also-use-packages "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ISO3166"))
+;;;;        (declaim (declaration also-use-packages))
+;;;;        (declaim (also-use-packages "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ISO3166"))
 ;;;;        (defpackage "COM.INFORMATIMAGO.EXAMPLE"
 ;;;;          (:use "COMMON-LISP" "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
 ;;;;          (:export "EXAMPLE"))
@@ -21,7 +21,9 @@
 ;;;;        ... (com.informatimago.common-lisp.cesarum.iso3166:get-country 4)
 ;;;;
 ;;;;    This declaration is used by make-depends to build the ASD files,
-;;;;    and generate other stuff.
+;;;;    and generate other stuff.  It's better to split declaims, IIRC some
+;;;;    implementation like it better like this.
+;;;;
 ;;;;
 ;;;;    Obsolete:
 ;;;;
@@ -106,7 +108,6 @@
 
 (IN-PACKAGE "COMMON-LISP-USER")
 (DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PACKAGE"
-  (:NICKNAMES "PACKAGE")
   (:DOCUMENTATION
    "This package exports a macro used to declare a package.
 

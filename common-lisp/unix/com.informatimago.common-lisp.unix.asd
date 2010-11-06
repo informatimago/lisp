@@ -41,14 +41,13 @@
     :version "1.2.0"
     :licence "GPL"
     :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Automn 2010")
-                 ((#:albert #:output-dir)          . "../documentation/com.informatimago.common-lisp.unix/")
+                 (#:date                           . "Autumn 2010")
+                 ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.unix/")
                  ((#:albert #:formats)             . ("docbook"))
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
-    :depends-on (:com.informatimago.common-lisp.cesarum
-                 :com.informatimago.common-lisp.file)
+    :depends-on (:com.informatimago.common-lisp.cesarum)
     :components ((:file "aliases" :depends-on ())
                  (:file "group"   :depends-on ())
                  (:file "passwd"  :depends-on ())))

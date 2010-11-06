@@ -35,14 +35,12 @@
 ;;;;    Boston, MA 02111-1307 USA
 ;;;;*****************************************************************************
 
-;; (UNUSE-PACKAGE "EXT") ;; actually, unexport its symbols.
-(DEFINE-PACKAGE "COM.INFORMATIMAGO.CLISP.SCRIPT"
+(defPACKAGE "COM.INFORMATIMAGO.CLISP.SCRIPT"
   (:DOCUMENTATION
    "This package exports script functions.")
-  (:FROM COMMON-LISP :IMPORT :ALL)
-  (:USE  EXT) ;; ALSO uses EXT, but does not import its symbols...
-  (:USE  SYS)
-  (:FROM COM.INFORMATIMAGO.CLISP.STRING :IMPORT :ALL)
+  (:use "COMMON-LISP"
+        "EXT" "SYS"
+        "COM.INFORMATIMAGO.CLISP.STRING")
   (:EXPORT  "INITIALIZE"
             "PERROR" "PMESSAGE" "PQUERY"
             "*INITIAL-WORKING-DIRECTORY*" "IS-RUNNING"
@@ -53,9 +51,8 @@
             "EX-DATAERR" "EX-NOINPUT" "EX-NOUSER" "EX-NOHOST"
             "EX-UNAVAILABLE" "EX-SOFTWARE" "EX-OSERR" "EX-OSFILE"
             "EX-CANTCREAT" "EX-IOERR" "EX-TEMPFAIL" "EX-PROTOCOL"
-            "EX-NOPERM" "EX-CONFIG" "EX--MAX" )
-  ) ;;COM.INFORMATIMAGO.CLISP.SCRIPT
-;; (IN-PACKAGE "COM.INFORMATIMAGO.CLISP.SCRIPT")
+            "EX-NOPERM" "EX-CONFIG" "EX--MAX" ))
+(in-package "COM.INFORMATIMAGO.CLISP.SCRIPT")
 
 ;; egrep '([d]efun' pjb-script.lisp | sed -e 's/(defun/;;/' | sort
 
@@ -66,7 +63,7 @@
   "
 The path to the initial working directory.
 BUG: This is the value of (EXT:CD) when INITIALIZE is called.
-") ;;*INITIAL-WORKING-DIRECTORY*
+")
 
 
 (DEFPARAMETER *PATH*     NIL
@@ -74,20 +71,20 @@ BUG: This is the value of (EXT:CD) when INITIALIZE is called.
 The *path* of the script.  Possibly this is not the absolute *path*, but only a
 relative *path* from the INITIAL-WORKING-DIRECTORY.
 BUG: This is the value of *LOAD-PATHNAME* when INITIALIZE is called.
-") ;;*PATH*
+")
 
 
 (DEFPARAMETER *NAME*     NIL
   "
 The name of the script.
 BUG: It's derived from the value of *LOAD-PATHNAME* when INITIALIZE is called.
-") ;;*NAME*
+")
 
 
 (DEFPARAMETER *ARGUMENTS* EXT:*ARGS*
   "
 The list of strings containing the arguments passed to the script.
-") ;;*ARGUMENTS*
+")
 
 
 (DEFPARAMETER *TESTING*   NIL
@@ -96,7 +93,7 @@ Whether we're only testing the script.
 In this package, this will make END-WITH-STATUS THROW :EXIT instead of exiting.
 NOTE:   This variable can be set by the client script (for example,
         from a --test option).
-") ;;*TESTING*
+")
 
 
 (DEFUN INITIALIZE ()
@@ -108,8 +105,7 @@ DO:     Initialize this package.
   (SETQ *INITIAL-WORKING-DIRECTORY* (EXT:CD)
         *PATH* *LOAD-PATHNAME*
         *NAME* (FILE-NAMESTRING *LOAD-PATHNAME*)
-        *ARGUMENTS* (COPY-SEQ EXT:*ARGS*))
-  ) ;;INITIALIZE
+        *ARGUMENTS* (COPY-SEQ EXT:*ARGS*)))
   
 
 
@@ -121,8 +117,7 @@ DO:     Writes a message on the error output in the name of the script.
 "
   (FORMAT *ERROR-OUTPUT* "~&~A: " *NAME*)
   (APPLY (FUNCTION FORMAT) *ERROR-OUTPUT* FORMAT-STRING ARGS)
-  (FINISH-OUTPUT *ERROR-OUTPUT*)
-  ) ;;PERROR
+  (FINISH-OUTPUT *ERROR-OUTPUT*))
 
 
 (DEFUN PMESSAGE (FORMAT-STRING &REST ARGS)
@@ -131,8 +126,7 @@ DO:     Writes a message on the standard output in the name of the script.
 "
   (FORMAT *STANDARD-OUTPUT* "~&~A: " *NAME*)
   (APPLY (FUNCTION FORMAT) *STANDARD-OUTPUT* FORMAT-STRING ARGS)
-  (FINISH-OUTPUT *STANDARD-OUTPUT*)
-  ) ;;PMESSAGE
+  (FINISH-OUTPUT *STANDARD-OUTPUT*))
 
 
 (DEFUN PQUERY (FORMAT-STRING &REST ARGS)
@@ -144,8 +138,7 @@ RETURN: A string containing the response line.
   (FORMAT *QUERY-IO* "~&~A: " *NAME*)
   (APPLY (FUNCTION FORMAT) *QUERY-IO* FORMAT-STRING ARGS)
   (FINISH-OUTPUT *QUERY-IO*)
-  (READ-LINE *QUERY-IO*)
-  ) ;;PQUERY
+  (READ-LINE *QUERY-IO*))
 
 
 
@@ -158,13 +151,11 @@ RETURN: A string containing the response line.
   "
 RETURN:  Whether we're running as a script. (Otherwise, we're just loading).
 "
-  (EQ (GET-DISPATCH-MACRO-CHARACTER #\# #\!) #'SYS::UNIX-EXECUTABLE-READER)
-  ) ;;IS-RUNNING
-
+  (EQ (GET-DISPATCH-MACRO-CHARACTER #\# #\!) #'SYS::UNIX-EXECUTABLE-READER))
 
 
 (DEFUN PID ()
-  (LINUX:|getpid|)) ;;PID
+  (LINUX:|getpid|))
 
 
 
@@ -185,15 +176,14 @@ RETURN:  A string containing the quoted argument.
                 (AND (CHAR<= (CHARACTER "a") CH) (CHAR<= CH (CHARACTER "z")))
                 (AND (CHAR<= (CHARACTER "0") CH) (CHAR<= CH (CHARACTER "9"))))
       (PUSH (CHARACTER "\\") RESULT))
-    (PUSH CH RESULT))
-  ) ;;SHELL-QUOTE-ARGUMENT
+    (PUSH CH RESULT)))
 
 
 (DEFUN SHELL   (COMMAND)
   "
 SEE ALSO:    EXECUTE.
 "
-  (EXT:SHELL COMMAND)) ;;SHELL
+  (EXT:SHELL COMMAND))
 
 
 
@@ -205,7 +195,7 @@ SEE ALSO:   SHELL
 "
   (EXT:RUN-PROGRAM (CAR COMMAND)
     :ARGUMENTS (CDR COMMAND)
-    :INPUT :TERMINAL :OUTPUT :TERMINAL)) ;;EXECUTE
+    :INPUT :TERMINAL :OUTPUT :TERMINAL))
 
 
 
@@ -224,8 +214,7 @@ last-modified time as the old one.  (This works on only some systems.)
 A prefix arg makes KEEP-TIME non-nil.
 "
   (declare (ignore OK-IF-ALREADY-EXISTS KEEP-TIME))
-  (EXECUTE "cp" (SHELL-QUOTE-ARGUMENT FILE)  (SHELL-QUOTE-ARGUMENT NEWNAME))
-  ) ;;COPY-FILE
+  (EXECUTE "cp" (SHELL-QUOTE-ARGUMENT FILE)  (SHELL-QUOTE-ARGUMENT NEWNAME)))
 
 
 (DEFUN MAKE-SYMBOLIC-LINK (FILENAME LINKNAME &optional OK-IF-ALREADY-EXISTS)
@@ -238,8 +227,7 @@ unless optional third argument OK-IF-ALREADY-EXISTS is non-nil.
 A number as third arg means request confirmation if LINKNAME already exists.
 "
   (declare (ignore OK-IF-ALREADY-EXISTS))
-  (/= 0 (LINUX:|symlink| FILENAME LINKNAME))
-  ) ;;MAKE-SYMBOLIC-LINK
+  (/= 0 (LINUX:|symlink| FILENAME LINKNAME)))
 
 
 (DEFUN MAKE-DIRECTORY (*PATH* &OPTIONAL (PARENTS NIL))
@@ -253,8 +241,7 @@ to create parents directories if they don't exist.
       (LINUX:|mkdir| *PATH*  511 #| #o777 |# ))
   (EXT:PROBE-DIRECTORY (IF (CHAR= (CHAR *PATH* (1- (LENGTH *PATH*)))
                                   (CHARACTER "/"))
-                           *PATH* (CONCATENATE 'STRING *PATH* "/")))
-  ) ;;MAKE-DIRECTORY
+                           *PATH* (CONCATENATE 'STRING *PATH* "/"))))
 
 
 
@@ -270,73 +257,73 @@ to create parents directories if they don't exist.
 (DEFCONSTANT EX-USAGE         64  "command line usage error
     The command was used incorrectly, e.g., with
     the wrong number of arguments, a bad flag, a bad
-    syntax in a parameter, or whatever.") ;;EX-USAGE
+    syntax in a parameter, or whatever.")
 
 (DEFCONSTANT EX-DATAERR       65  "data format error
     The input data was incorrect in some way.
     This should only be used for user's data & not
-    system files.") ;;EX-DATAERR
+    system files.")
 
 (DEFCONSTANT EX-NOINPUT       66  "cannot open input
     An input file (not a system file) did not
     exist or was not readable.  This could also include
     errors like \"No message\" to a mailer (if it cared
-    to catch it).") ;;EX-NOINPUT
+    to catch it).")
 
 (DEFCONSTANT EX-NOUSER        67  "addressee unknown
     The user specified did not exist.  This might
     be used for mail addresses or remote logins.
-    ") ;;EX-NOUSER
+    ")
 
 (DEFCONSTANT EX-NOHOST        68  "host name unknown
     The host specified did not exist.  This is used
-    in mail addresses or network requests.") ;;EX-NOHOST
+    in mail addresses or network requests.")
 
 (DEFCONSTANT EX-UNAVAILABLE   69  "service unavailable
     A service is unavailable.  This can occur
     if a support program or file does not exist.  This
     can also be used as a catchall message when something
     you wanted to do doesn't work, but you don't know
-    why.") ;;EX-UNAVAILABLE
+    why.")
 
 (DEFCONSTANT EX-SOFTWARE      70  "internal software error
     An internal software error has been detected.
     This should be limited to non-operating system related
-    errors as possible.") ;;EX-SOFTWARE
+    errors as possible.")
 
 (DEFCONSTANT EX-OSERR         71  "system error (e.g., can't fork)
     An operating system error has been detected.
     This is intended to be used for such things as \"cannot
     fork\", \"cannot create pipe\", or the like.  It includes
     things like getuid returning a user that does not
-    exist in the passwd file.") ;;EX-OSERR
+    exist in the passwd file.")
 
 (DEFCONSTANT EX-OSFILE        72  "critical OS file missing
     Some system file (e.g., /etc/passwd, /etc/utmp,
     etc.) does not exist, cannot be opened, or has some
-    sort of error (e.g., syntax error).") ;;EX-OSFILE
+    sort of error (e.g., syntax error).")
 
 (DEFCONSTANT EX-CANTCREAT     73  "can't create (user) output file
-    A (user specified) output file cannot be created.") ;;EX-CANTCREAT
+    A (user specified) output file cannot be created.")
 
 (DEFCONSTANT EX-IOERR         74  "input/output error
-     An error occurred while doing I/O on some file.") ;;EX-IOERR
+     An error occurred while doing I/O on some file.")
 
 (DEFCONSTANT EX-TEMPFAIL      75  "temp failure; user is invited to retry
     temporary failure, indicating something that
     is not really an error.  In sendmail, this means
     that a mailer (e.g.) could not create a connection,
-    and the request should be reattempted later.") ;;EX-TEMPFAIL
+    and the request should be reattempted later.")
 
 (DEFCONSTANT EX-PROTOCOL      76  "remote error in protocol
     the remote system returned something that
-    was \"not possible\" during a protocol exchange.") ;;EX-PROTOCOL
+    was \"not possible\" during a protocol exchange.")
 
 (DEFCONSTANT EX-NOPERM        77  "permission denied
     You did not have sufficient permission to
     perform the operation.  This is not intended for
     file system problems, which should use NOINPUT or
-    CANTCREAT, but rather for higher level permissions.") ;;EX-NOPERM
+    CANTCREAT, but rather for higher level permissions.")
 
 (DEFCONSTANT EX-CONFIG        78  "configuration error")
 
@@ -353,11 +340,7 @@ DO:      Exit the script.
   (WHEN (IS-RUNNING)
     (IF *TESTING*
         (THROW :EXIT STATUS)
-        (EXT:EXIT STATUS))
-    ;; else, when loading, we don't exit, could we?
-    )
-  ) ;;EXIT
+        (EXT:EXIT STATUS))))
+;; when loading, we don't exit, could we?
 
-
-
-;;;; script.lisp                      --                     --          ;;;;
+;;;; THE END ;;;;

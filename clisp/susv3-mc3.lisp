@@ -39,8 +39,10 @@
 
 
 (cl:in-package "COMMON-LISP-USER")
-(DECLAIM (DECLARATION ALSO-USE-PACKAGES)
-         (ALSO-USE-PACKAGES "FFI" "LINUX"))
+
+(DECLAIM (DECLARATION ALSO-USE-PACKAGES))
+(declaim (ALSO-USE-PACKAGES "FFI" "LINUX"))
+
 (defpackage "COM.INFORMATIMAGO.CLISP.SUSV3-MC3"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.CLISP.SUSV3")
@@ -114,4 +116,4 @@
   (:return-type pointer)
   (:library #.+libc+) (:language :stdc))
 
-;;;; susv3-mc3.lisp                   --                     --          ;;;;
+;;;; THE END ;;;;

@@ -348,7 +348,4 @@ RETURN: The status of the specified process.
 ||#
 
 
-
-;; Local Variables:
-;; eval: (cl-indent 'reporting-sru 1)
-;; End:
+;;;; THE END ;;;;

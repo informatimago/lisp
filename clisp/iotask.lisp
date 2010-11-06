@@ -13,6 +13,8 @@
 ;;;;MODIFICATIONS
 ;;;;    2005-08-31 <PJB> Created.
 ;;;;BUGS
+;;;;TODO merge with pollio?
+;;;;
 ;;;;LEGAL
 ;;;;    GPL
 ;;;;    
@@ -34,8 +36,7 @@
 ;;;;    Boston, MA 02111-1307 USA
 ;;;;****************************************************************************
 
-(DEFINE-PACKAGE "COM.INFORMATIMAGO.CLISP.IOTASK"
-  (:NICKNAMES "IOTASK")
+(defPACKAGE "COM.INFORMATIMAGO.CLISP.IOTASK"
   (:DOCUMENTATION
    "This package exports a sheduler encapsulating clisp SOCKET:SOCKET-STATUS
     which itself encapsulate select(2)/poll(2).
@@ -43,15 +44,16 @@
     Copyright Pascal Bourguignon 2005 - 2005
     This package is provided under the GNU General Public License.
     See the source file for details.")
-  (:FROM "COMMON-LISP"                           :IMPORT :ALL)
-  (:USE  "COM.INFORMATIMAGO.COMMON-LISP.ECMA048")
-  (:FROM "COM.INFORMATIMAGO.COMMON-LISP.UTILITY" :IMPORT :ALL)
-  (:FROM "COM.INFORMATIMAGO.COMMON-LISP.STRING"  :IMPORT :ALL)
-  (:FROM "COM.INFORMATIMAGO.COMMON-LISP.LIST"    :IMPORT :ALL)
+  (:use "COMMON-LISP"
+         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ECMA048"
+         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
+         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
+         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
   (:EXPORT
    "IOTASK" "IOTASK-ENQUEUE" "IOTASK-ENQUEUE-STREAM" "IOTASK-DEQUEUE"
    "IOTASK-POLL" "IOTASK-SCHEDULE"
    "MAKE-BUFFERED-DISCIPLINE" "MAKE-KEYBOARD-DISCIPLINE"))
+(in-package  "COM.INFORMATIMAGO.CLISP.IOTASK")
 
 
 (defclass iotask ()
@@ -180,17 +182,18 @@
                (ch  (system::input-character-char ich)))
           (cond 
             ((null ch))
-            ((= (char-code ch) ecma048:CR)
+            ((= (char-code ch) COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ecma048:CR)
              (terpri)
              (finish-output)
              (funcall process-input 
                       task (subseq buffer 0 (fill-pointer buffer)))
              (setf (fill-pointer buffer) 0))
-            ((or (= (char-code ch) ecma048:BS) (= (char-code ch) ecma048::DEL))
+            ((or (= (char-code ch) COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ecma048:BS)
+                 (= (char-code ch) COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ecma048::DEL))
              (when (< 0 (fill-pointer buffer))
-               (princ (code-char ecma048:BS))
+               (princ (code-char COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ecma048:BS))
                (princ " ")
-               (princ (code-char ecma048:BS))
+               (princ (code-char COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ecma048:BS))
                (finish-output)
                (decf (fill-pointer buffer))))
             (t
@@ -199,4 +202,4 @@
              (vector-push ch buffer))))))))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; THE END ;;;;

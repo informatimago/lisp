@@ -34,7 +34,7 @@
 ;;;;    Boston, MA 02111-1307 USA
 ;;;;****************************************************************************
 
-(cl:in-package "COMMON-LISP-USER")
+(in-package "COMMON-LISP-USER")
 (DECLAIM (DECLARATION ALSO-USE-PACKAGES)
          (ALSO-USE-PACKAGES "FFI"))
 (DEFPACKAGE "COM.INFORMATIMAGO.SUSV3.TOOLS"
@@ -43,7 +43,7 @@
   (:USE "COMMON-LISP")
   (:EXPORT 
    "DEFINE-FFI-COPIERS"))
-
+(in-package  "COM.INFORMATIMAGO.SUSV3.TOOLS")
 
 (defmacro define-ffi-copiers (&rest arguments)
   "
@@ -135,5 +135,4 @@ NOTE:   It's advised to keep the l->f and f->l format for TO-NAME and FROM-NAME,
                         simple-slots))
               ,dst))))))
 
-
-;;;; tools.lisp                       --                     --          ;;;;
+;;;; THE END ;;;;

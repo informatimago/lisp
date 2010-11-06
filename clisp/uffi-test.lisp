@@ -143,6 +143,4 @@ uffi                 ffi-arg                      ffi-ret
   (:library "/home/pascal/src/common/clisp/uffi-test.so"))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;; uffi-test.lisp                   --                     --          ;;;;
+;;;; THE END ;;;;

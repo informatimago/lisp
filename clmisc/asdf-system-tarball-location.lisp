@@ -5,6 +5,10 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     Common Lisp REPL
 ;;;;DESCRIPTION
+;;;;
+;;;;
+;;;;    This is mostly rendered obsolete by libcl and quicklisp.
+;;;;
 ;;;;    
 ;;;;    This file extends the ASDF-SYSTEM with a cache for tarball locations.
 ;;;;
@@ -43,7 +47,7 @@
 ;;;;    2006-10-14 <PJB> Created.
 ;;;;BUGS
 ;;;;
-;;;;    There's a dependency on the COM.INFORMATIMAGO.COMMON-LISP.PARSE-HTML
+;;;;    There's a dependency on the COM.INFORMATIMAGO.COMMON-LISP.HTML-GENERATOR.HTML-PARSER.PARSE-HTML
 ;;;;    package from the COM.INFORMATIMAGO.COMMON-LISP asdf system which is
 ;;;;    not asdf-installable (yet).
 ;;;;    http://darcs.informatimago.com/darcs/public/lisp/
@@ -73,7 +77,7 @@
 
 (unless (find-package :asdf-install)
   (asdf:oos 'asdf:load-op :asdf-install))
-(unless (find-package :com.informatimago.common-lisp.parse-html)
+(unless (find-package :com.informatimago.common-lisp.html-generator.html-parser.parse-html)
   (asdf:oos 'asdf:load-op :com.informatimago.common-lisp))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -179,7 +183,7 @@ RETURN:  A version for the system designated by SYSTEM-DESIGNATOR.
 ;;;
 
 (in-package :asdf-install)
-(use-package :com.informatimago.common-lisp.parse-html)
+(use-package :com.informatimago.common-lisp.html-generator.html-parser.parse-html)
 (export '(*asdf-system-list-url* *asdf-system-list-id*
           *asdf-system-cache-file* *asdf-system-cache-directory*
           *connect-timeout* *read-header-timeout*

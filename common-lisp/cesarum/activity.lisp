@@ -359,10 +359,10 @@ and restart the scheduling then.")
   (and (string/= "dumb" (ext:getenv "TERM"))
        (intersection
         (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST:ENSURE-LIST
-         (COM.INFORMATIMAGO.COMMON-LISP.FILE.STREAM:bare-stream
+         (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM:bare-stream
           *terminal-io*))
         (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST:ENSURE-LIST
-         (COM.INFORMATIMAGO.COMMON-LISP.FILE.STREAM:bare-stream
+         (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM:bare-stream
           *standard-output*)))))
 
 (defun formatalot (control-string &rest arguments)

@@ -50,44 +50,42 @@
 ;;;;****************************************************************************
 
 
-(DEFINE-PACKAGE COM.INFORMATIMAGO.CLISP.SUSV3
-  ;; (:NICKNAMES SUSV3)
+(defPACKAGE "COM.INFORMATIMAGO.CLISP.SUSV3"
   (:DOCUMENTATION "This packages exports SUSV3 functions.
     This is the CLISP specific implementation of the SUSV3 API.")
-  (:FROM COMMON-LISP :IMPORT :ALL)
-  (:USE LINUX)
-  (:USE EXT)
+  (:use "COMMON-LISP"
+        "EXT" "LINUX")
   (:EXPORT
    
    ;; NOT IN SUSV3 API (Lisp/C support stuff):
-   BOUND-STRING ;; type (BOUND-STRING min max)
-   SUSV3-ERROR ;; (SIGNAL 'SUSV3-ERROR errno)
+   "BOUND-STRING" ;; type (BOUND-STRING min max)
+   "SUSV3-ERROR" ;; (SIGNAL 'SUSV3-ERROR errno)
 
    ;; 
-   GETENV
+   "GETENV"
 
    ;; sys/types.h
-   INO-T
-
+   "INO-T"
+   
 
    ;; sys/stat.h
 
    
    ;; limits.h
-   +NAME-MAX+
+   "+NAME-MAX+"
 
    ;; dirent.h
-   DIR DIRENT
-   OPENDIR READDIR REWINDDIR CLOSEDIR
+   "DIR" "DIRENT"
+   "OPENDIR" "READDIR" "REWINDDIR" "CLOSEDIR"
    ;; readdir_r ;; TSF ;; not implemented, do we need it? 
-   SEEKDIR TELLDIR ;; XSI
+   "SEEKDIR" "TELLDIR" ;; XSI
 
 
 
    
    ;; NOT IN SUSV3 API (TEST FUNCTIONS):
-   DIRENT-TEST
-   ))
+   "DIRENT-TEST"))
+(in-package  "COM.INFORMATIMAGO.CLISP.SUSV3")
 
 
 
@@ -577,5 +575,4 @@ PRIVATE
 
 
 
-
-;;;; susv3.lisp                       -- 2003-06-14 09:59:29 -- pascal   ;;;;
+;;;; THE END ;;;;

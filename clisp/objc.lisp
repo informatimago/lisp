@@ -35,11 +35,10 @@
 ;;;;    Boston, MA 02111-1307 USA
 ;;;;****************************************************************************
 
-(DEFINE-PACKAGE "COM.INFORMATIMAGO.CLISP.OBJC"
-  (:NICKNAMES "OBJC")
+(defPACKAGE "COM.INFORMATIMAGO.CLISP.OBJC"
   (:DOCUMENTATION
    "This module exports a reader macro for Objective-C messaging.")
-  (:FROM "COMMON-LISP" :IMPORT :ALL)
+  (:use "COMMON-LISP")
   (:EXPORT
    ))
 
@@ -222,4 +221,4 @@
 
 
 
-;;;; objc.lisp                        -- 2003-08-30 04:09:06 -- pascal   ;;;;
+;;;; THE END ;;;;

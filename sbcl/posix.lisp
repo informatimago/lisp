@@ -38,14 +38,16 @@
 ;;;;****************************************************************************
 
 (IN-PACKAGE "COMMON-LISP-USER")
+
 (DECLAIM (DECLARATION ALSO-USE-PACKAGES)
          (ALSO-USE-PACKAGES "SB-EXT"))
+
 (defpackage "COM.INFORMATIMAGO.SBCL.POSIX"
-  #+sbcl (:NICKNAMES "POSIX")
   (:DOCUMENTATION "This packages exports POSIX functions.
     This is the CLISP specific implementation of the POSIX API.")
   (:USE "COMMON-LISP")
   (:EXPORT "GETENV"))
+(in-package "COM.INFORMATIMAGO.SBCL.POSIX")
 
 
 (DEFUN GETENV (NAME)
@@ -54,7 +56,6 @@ URL:        http://www.opengroup.org/onlinepubs/007904975/functions/getenv.html
 RETURN:     NIL or the value of the environment variable named NAME.
 "
   (DECLARE (STRING NAME))
-  #+sbcl (SB-EXT:POSIX-GETENV NAME)
-  #-sbcl (error "~S not implemented yet." 'getenv))
+  (SB-EXT:POSIX-GETENV NAME))
 
 ;;;; THE END ;;;;

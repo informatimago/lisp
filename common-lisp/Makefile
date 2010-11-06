@@ -34,24 +34,9 @@
 #    Software Foundation, Inc., 59 Temple Place, Suite 330,
 #    Boston, MA 02111-1307 USA
 #*****************************************************************************
-SHELL=/bin/bash
-TARGET  := $(shell uname)
-PREFIX  := /usr/local
-MODULE=common-lisp
-PACKAGES:=$(shell get-directory SHARE_LISP)/packages
-PACKAGE_PATH=com/informatimago/common-lisp
+PREFIX=/usr/local
 
-include ../implementations.mk
-
-COMPILES = '(load "compile-with-asdf.lisp")'
-all:: $(COMPILERS) documents
-
-
-install::
-	-mkdir -p $(PACKAGES)/$(PACKAGE_PATH)
-	tar --exclude \*~  -cf - . | tar -C $(PACKAGES)/$(PACKAGE_PATH)/ -xvf -
-
-
+all:: documents
 
 help::
 	@echo "make iana-character-sets.data # downloads the IANA character sets data file."
@@ -70,9 +55,11 @@ system-graph.eps:system-graph.ps
 README.pdf:README system-graph.eps
 	rst2pdf < README > README.pdf
 
-documents: README.pdf
+documents:: README.pdf
 
-compile:
+compile::
 	./compile.sh
+
+install::
 
 #### THE END ####

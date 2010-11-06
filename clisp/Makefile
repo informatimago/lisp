@@ -5,7 +5,7 @@
 #USER-INTERFACE:     none
 #DESCRIPTION
 #    
-#    This makefile compiles clisp specific packages.
+#    This makefile compiles additionnal code for the clisp specific packages.
 #    
 #AUTHORS
 #    <PJB> Pascal Bourguignon
@@ -34,28 +34,24 @@
 #    Software Foundation, Inc., 59 Temple Place, Suite 330,
 #    Boston, MA 02111-1307 USA
 #*****************************************************************************
-SHELL=/bin/bash
-TARGET  := $(shell uname)
-PREFIX  := /usr/local
-MODULE=clisp
-PACKAGES:=$(shell get-directory SHARE_LISP)/packages
-PACKAGE_PATH=com/informatimago/clisp
+PREFIX = /usr/local
 
-include ../implementations.mk
+all:: libraw-memory.so
 
-all:: libraw-memory.so clisp
-
+# Libraries are loaded at run-time, so they must be installed 
+# in some public place, or distributed along with the applications.
+# There would be no point to keeping them in asdf-binary-location places.
 
 raw-memory-lib.o:raw-memory-lib.c
 	$(CC) -shared -fPIC -g -O3 -c -o $@ $<
+
 libraw-memory.so:raw-memory-lib.o
 	if [ $(shell uname) = Darwin ] ;\
 	then $(LD) -dynamic                -o $@ $< ;\
 	else $(LD) -shared -fPIC -g        -o $@ $< ;\
 	fi
 
-
 install::
-	install -m 644 libraw-memory.so    $(PACKAGES)/$(PACKAGE_PATH)/
+	install -m 644 libraw-memory.so  $(PREFIX)/lib
 
 #### THE END ####

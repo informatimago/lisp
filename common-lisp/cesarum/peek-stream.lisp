@@ -43,7 +43,7 @@
 ;;;;****************************************************************************
 
 (IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.FILE.PEEK-STREAM"
+(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PEEK-STREAM"
   (:USE "COMMON-LISP")
   (:EXPORT "NEXTCHAR" "UNGETCHAR" "GETCHAR" "PEEK-STREAM")
   (:DOCUMENTATION
@@ -63,7 +63,7 @@
     as published by the Free Software Foundation; either version
     2 of the License, or (at your option) any later version.
     "))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.FILE.PEEK-STREAM")
+(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PEEK-STREAM")
 
 
 (DEFGENERIC EXTEND-BUFFER (SELF))

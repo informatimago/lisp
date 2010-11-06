@@ -47,23 +47,25 @@
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
-(declaim (declaration also-use-packages)
-         (also-use-packages "COM.INFORMATIMAGO.COMMON-LISP.HTML-GENERATOR.HTML"))
+(declaim (declaration also-use-packages))
+(declaim (also-use-packages "COM.INFORMATIMAGO.COMMON-LISP.HTML-GENERATOR.HTML"))
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (com.informatimago.common-lisp.cesarum.package:add-nickname
    "COM.INFORMATIMAGO.COMMON-LISP.HTML-GENERATOR.HTML" "HTML"))
-(defpackage "COM.INFORMATIMAGO.COMMON-LISP.MAKE-DEPENDS.MAKE-DEPENDS"
+
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.TOOLS.MAKE-DEPENDS.MAKE-DEPENDS"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CHARACTER-SETS"
-        "COM.INFORMATIMAGO.COMMON-LISP.FILE.FILE")
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE")
   (:export
    "GENERATE-SUMMARY" "MAKE-COMPONENTS" "MAKE-ASD-SEXP" "GENERATE-ASD"
    "GET-CLOSED-DEPENDENCIES" "GET-DEPENDENCIES" "GET-PACKAGE" "GET-DEPENDS"
    "MAKE-DEPENDS")
-  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.FILE.FILE"
+  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE"
                 "SAFE-TEXT-FILE-TO-STRING-LIST")
   (:documentation
    "This script generates dependencies for lisp sources, based on 
@@ -73,7 +75,7 @@
     Copyright Pascal J. Bourguignon 2003 - 2005
     This package is provided under the GNU General Public Licence.
     See the source file for details."))
-(in-package "COM.INFORMATIMAGO.COMMON-LISP.MAKE-DEPENDS.MAKE-DEPENDS")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.TOOLS.MAKE-DEPENDS.MAKE-DEPENDS")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -592,11 +594,11 @@ DO:         Declares a package.
              (remove-if (function package::built-in-p) dependencies)
              used-packages :test (function string=))))
       `(progn
-         (in-package "COMMON-LISP-USER")
+         ;; (in-package "COMMON-LISP-USER") ; this is useless here.
          ,@(when also-use-packages
-                 `((declaim (declaration common-lisp-user::also-use-packages)
-                             (common-lisp-user::also-use-packages
-                              ,@also-use-packages))))
+                 `((declaim (declaration common-lisp-user::also-use-packages))
+                   (declaim (common-lisp-user::also-use-packages
+                             ,@also-use-packages))))
          ,@(when renames
                  `((eval-when (:compile-toplevel :load-toplevel :execute)
                       ,@(mapcar
@@ -1035,7 +1037,7 @@ VERBOSE:        Prints information on *TRACE-OUTPUT*.
           (pdebug "~&#    processing ~S~%" pack-name)
           (when verbose
             (format *trace-output* "~&#    processing ~S~%" pack-name))
-          ;; "COM.INFORMATIMAGO.COMMON-LISP.MAKE-DEPENDS.MAKE-DEPENDS"
+          ;; "COM.INFORMATIMAGO.COMMON-LISP.TOOLS.MAKE-DEPENDS.MAKE-DEPENDS"
           ;; --> PACKAGE::PACKAGE-PATHNAME
           ;; "DICTIONARY"
           ;; "PJB-STRING"
@@ -1353,7 +1355,7 @@ LOAD:-PATHS     A list of directory paths where the sources are searched in.
 VANILLAP:  if true, then generate a simple, vanilla system.
            Otherwise, decorate it with PJB output-files.
 "
-  (let ((*package* (find-package :com.informatimago.common-lisp.make-depends.make-depends)))
+  (let ((*package* (find-package :com.informatimago.common-lisp.tools.make-depends.make-depends)))
     (with-open-file (out (make-pathname :directory '(:relative)
                                         :name "system"
                                         ;;(string-downcase system-name)
@@ -1464,5 +1466,5 @@ VANILLAP:  if true, then generate a simple, vanilla system.
   (make-asd "COM.INFORMATIMAGO.COMMON-LISP" (directory "*.ilsp"))
   )
 
+;;;; THE END ;;;;
 
-;;;; make-depends.lisp                --                     --          ;;;;

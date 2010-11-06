@@ -35,7 +35,7 @@
 ;;;;    Boston, MA 02111-1307 USA
 ;;;;****************************************************************************
 
-(DEFINE-PACKAGE "COM.INFORMATIMAGO.CLISP.BINIO"
+(defPACKAGE "COM.INFORMATIMAGO.CLISP.BINIO"
   ;;(:NICKNAMES "BINIO")
   (:DOCUMENTATION "
    This package exports clisp specific, binary I/O functions, including:
@@ -45,22 +45,22 @@
     Copyright Pascal J. Bourguignon 2005 - 2005
     This package is provided under the GNU General Public License.
     See the source file for details.")
-  (:FROM "COMMON-LISP"                           :IMPORT :ALL)
-  (:USE  "EXT" "SOCKET")
-  (:FROM "COM.INFORMATIMAGO.COMMON-LISP.UTILITY" :IMPORT :ALL)
-  (:FROM "COM.INFORMATIMAGO.COMMON-LISP.STRING"  :IMPORT :ALL)
-  (:USE  "COM.INFORMATIMAGO.COMMON-LISP.ECMA048")
+  (:use "COMMON-LISP"
+        "EXT" "SOCKET"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ECMA048")
+  (:SHADOW
+   "READ-BYTE"  "WRITE-BYTE" "PEEK-CHAR" "READ-CHAR" "READ-CHAR-NO-HANG"
+   "TERPRI" "UNREAD-CHAR" "WRITE-CHAR" "READ-LINE" "WRITE-STRING"
+   "READ-SEQUENCE" "WRITE-SEQUENCE" "LISTEN"  "Y-OR-N-P" "YES-OR-NO-P"
+   "FORMAT")
   (:EXPORT
    "READ-BYTE"  "WRITE-BYTE" "PEEK-CHAR" "READ-CHAR" "READ-CHAR-NO-HANG"
    "TERPRI" "UNREAD-CHAR" "WRITE-CHAR" "READ-LINE" "WRITE-STRING"
    "READ-SEQUENCE" "WRITE-SEQUENCE" "LISTEN"  "Y-OR-N-P" "YES-OR-NO-P"
    "FORMAT"))
-
-(SHADOW
- "READ-BYTE"  "WRITE-BYTE" "PEEK-CHAR" "READ-CHAR" "READ-CHAR-NO-HANG"
- "TERPRI" "UNREAD-CHAR" "WRITE-CHAR" "READ-LINE" "WRITE-STRING"
- "READ-SEQUENCE" "WRITE-SEQUENCE" "LISTEN"  "Y-OR-N-P" "YES-OR-NO-P"
- "FORMAT"))
+(in-package  "COM.INFORMATIMAGO.CLISP.BINIO")
 
 
 
@@ -83,9 +83,9 @@
 (defun eoln-bytes (stream)
 (ecase (EXT:ENCODING-LINE-TERMINATOR
         (stream-external-format stream))
-  (:unix #.(vector ecma048:lf))
-  (:mac  #.(vector ecma048:cr))
-  (:dos  #.(vector ecma048:cr ecma048:lf))))
+  (:unix #.(vector lf))
+  (:mac  #.(vector cr))
+  (:dos  #.(vector cr lf))))
 
 ;;----------------------------------------------------------------------
 ;;
@@ -141,7 +141,7 @@
 
 
 ;;----------------------------------------------------------------------
-                                        ; Text I/O: we convert to bytes when it's a binary stream.
+;; Text I/O: we convert to bytes when it's a binary stream.
 
 (defvar *peek-bytes* '()
 "A list of weak mapping streams to peek bytes")
@@ -645,3 +645,5 @@ line # 3 :   13 bytes: field2<LF>field3
 T
 [299]>
 ||#
+
+;;;; THE END ;;;;

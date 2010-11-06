@@ -34,14 +34,14 @@
 ;;;;    Boston, MA 02111-1307 USA
 ;;;;****************************************************************************
 
-(cl:in-package "COMMON-LISP-USER")
-(DECLAIM (DECLARATION ALSO-USE-PACKAGES)
-         (ALSO-USE-PACKAGES "SOCKET" "REGEXP" "COM.INFORMATIMAGO.CLISP.IOTASK"))
+(in-package "COMMON-LISP-USER")
+(DECLAIM (DECLARATION ALSO-USE-PACKAGES))
+(declaim (ALSO-USE-PACKAGES "SOCKET" "REGEXP" "COM.INFORMATIMAGO.CLISP.IOTASK"))
 (defpackage "COM.INFORMATIMAGO.CLISP.RFC1413"
   (:NICKNAMES "COM.INFORMATIMAGO.CLISP.IDENT" "IDENT-CLIENT" "RFC1413")
   (:DOCUMENTATION "Implements a ident protocol client.")
   (:use "COMMON-LISP"
-        "COM.INFORMATIMAGO.COMMON-LISP.CHARACTER-SETS")
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CHARACTER-SETS")
   (:EXPORT "CHARSET-MAP" "GET-PORT-FOR-SERVICE" "BINARY-STREAM-LISTEN"
            "IDENT-PARSE-RESPONSE" "IDENT-FORMAT-REQUEST"
            "BATCH-REQUEST-IDENTS" "REQUEST-IDENT"
@@ -438,3 +438,4 @@ DO:     Connects to the remote host and schedules a iotask to process the
    (list (list remote-port local-port))
    (lambda (results) (funcall continuation (first results)))))
 
+;;;; THE END ;;;;

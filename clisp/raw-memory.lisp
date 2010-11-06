@@ -57,12 +57,10 @@
 ;; (in-package "COMMON-LISP-USER")
 
 
-(DEFINE-PACKAGE "COM.INFORMATIMAGO.CLISP.RAW-MEMORY"
-  (:NICKNAMES "RAW-MEMORY")
+(defPACKAGE "COM.INFORMATIMAGO.CLISP.RAW-MEMORY"
   (:DOCUMENTATION "Peek and Poke.")
-  (:FROM "COMMON-LISP" :IMPORT :ALL)
-  (:use  "FFI")
-  (:use  "LINUX")
+  (:use "COMMON-LISP"
+        "FFI"  "LINUX")
   (:EXPORT 
    "PEEK" "POKE" "DUMP"
    "WITH-SIGSEG-HANDLER"
@@ -71,8 +69,8 @@
    "PEEK-UINT8"  "PEEK-SINT8"  "POKE-UINT8"  "POKE-SINT8"
    "PEEK-UINT16" "PEEK-SINT16" "POKE-UINT16" "POKE-SINT16"
    "PEEK-UINT32" "PEEK-SINT32" "POKE-UINT32" "POKE-SINT32"
-   "PEEK-UINT64" "PEEK-SINT64" "POKE-UINT64" "POKE-SINT64"
-   )) ;;COM.INFORMATIMAGO.CLISP.RAW-MEMORY
+   "PEEK-UINT64" "PEEK-SINT64" "POKE-UINT64" "POKE-SINT64"))
+(in-package  "COM.INFORMATIMAGO.CLISP.RAW-MEMORY")
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -294,8 +292,4 @@
                   (funcall peek address))))))
 
 
-;; Local Variables:
-;; eval: (cl-indent 'with-signal-handler 2)
-;; End:
-
-;;;; raw-memory.lisp                  --                     --          ;;;;
+;;;; THE END ;;;;

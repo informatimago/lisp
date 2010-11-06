@@ -37,12 +37,12 @@
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
-(declaim (declaration also-use-packages)
-         (also-use-packages "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ECMA048"))
+(declaim (declaration also-use-packages))
+(declaim (also-use-packages "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ECMA048"))
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CSV.CSV"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
-        "COM.INFORMATIMAGO.COMMON-LISP.FILE.PEEK-STREAM")
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PEEK-STREAM")
   (:export "LOAD-RECORDS" "WRITE-RECORD")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "UNTIL" "WHILE")
   (:documentation

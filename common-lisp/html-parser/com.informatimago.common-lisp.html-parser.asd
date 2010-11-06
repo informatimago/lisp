@@ -41,14 +41,13 @@
     :version "1.2.0"
     :licence "GPL"
     :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Automn 2010")
-                 ((#:albert #:output-dir)          . "../documentation/com.informatimago.common-lisp.html-parser/")
+                 (#:date                           . "Autumn 2010")
+                 ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.html-parser/")
                  ((#:albert #:formats)             . ("docbook"))
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
     :depends-on (:com.informatimago.common-lisp.cesarum
-                 :com.informatimago.common-lisp.file
                  :com.informatimago.common-lisp.html-base)
     :components ((:file "parse-html" :depends-on ())))
 

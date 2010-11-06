@@ -38,16 +38,16 @@
 ;;;;    Boston, MA 02111-1307 USA
 ;;;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CXX.CXX"
-  (:USE "COMMON-LISP"
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.CXX.CXX"
+  (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.GRAPH" )
-  (:EXPORT "BUILD-METHOD-CALL-GRAF" "PARSE" "C++PROGRAM")
-  (:DOCUMENTATION
+  (:export "BUILD-METHOD-CALL-GRAF" "PARSE" "C++PROGRAM")
+  (:documentation
    "Parsing C++ sources.
 This is a restricted parser, used just to analyze
 the call graph of C++ functions and methods."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CXX.CXX")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.CXX.CXX")
 
 
 
@@ -70,126 +70,126 @@ the call graph of C++ functions and methods."))
 ;; statement     ::= { token } 
 
 
-(DEFGENERIC SET-FILE (SELF F))
-(DEFGENERIC READ-A-CHAR (SELF))
-(DEFGENERIC DUMP (SELF))
-(DEFGENERIC DO-QUOTES (SELF FLAG))
-(DEFGENERIC SET-SOURCE (SELF INPUT))
-(DEFGENERIC PUSH-ON-FILTER (SELF F))
-(DEFGENERIC READ-A-TOKEN (SELF))
-(DEFGENERIC PARSE-STATEMENT-LIST (SELF FILTER))
-(DEFGENERIC C++CLASS-NAME (SELF))
-(DEFGENERIC NAME (SELF))
-(DEFGENERIC RES-TYPE (SELF))
-(DEFGENERIC ARGUMENTS (SELF))
-(DEFGENERIC CALLED-METHODS (SELF))
-(DEFGENERIC PARSE (SELF FILE-NAME-LIST))
-(DEFGENERIC ADD-C++METHOD (SELF METHOD))
-(DEFGENERIC UNIFY-METHODS-BY-NAME (SELF))
-(DEFGENERIC BUILD-METHOD-CALL-GRAF (SELF))
-(DEFGENERIC PRINT-C++METHOD-NAMES (SELF))
+(defgeneric set-file (self f))
+(defgeneric read-a-char (self))
+(defgeneric dump (self))
+(defgeneric do-quotes (self flag))
+(defgeneric set-source (self input))
+(defgeneric push-on-filter (self f))
+(defgeneric read-a-token (self))
+(defgeneric parse-statement-list (self filter))
+(defgeneric c++class-name (self))
+(defgeneric name (self))
+(defgeneric res-type (self))
+(defgeneric arguments (self))
+(defgeneric called-methods (self))
+(defgeneric parse (self file-name-list))
+(defgeneric add-c++method (self method))
+(defgeneric unify-methods-by-name (self))
+(defgeneric build-method-call-graf (self))
+(defgeneric print-c++method-names (self))
 
 ;;----------------------------------------------------------------------
 
-(DEFCLASS CHAR-FILTER ()
-  ((PREVIOUS :ACCESSOR PREVIOUS :INITFORM NIL)))
+(defclass char-filter ()
+  ((previous :accessor previous :initform nil)))
 
-(DEFMETHOD PUSH-ON-FILTER ((SELF CHAR-FILTER) F)
-  (SETF (PREVIOUS SELF) F))
+(defmethod push-on-filter ((self char-filter) f)
+  (setf (previous self) f))
 
-(DEFMETHOD READ-A-CHAR ((SELF CHAR-FILTER))
-  (IF (NULL (PREVIOUS SELF))
-      'EOF
-      (READ-A-CHAR (PREVIOUS SELF))))
+(defmethod read-a-char ((self char-filter))
+  (if (null (previous self))
+      'eof
+      (read-a-char (previous self))))
 
-(DEFMETHOD DUMP ((SELF CHAR-FILTER))
-  (LET ((C (READ-A-CHAR SELF)))
-    (LOOP WHILE (NOT (EQUAL 'EOF C)) DO
-         (WRITE-CHAR C)
-         (SETQ C (READ-A-CHAR SELF)))))
-
-;;----------------------------------------------------------------------
-
-(DEFCLASS FILE-FILTER (CHAR-FILTER)
-  ((FILE  :ACCESSOR FILE :INITFORM NIL)))
-
-(DEFMETHOD SET-FILE ((SELF FILE-FILTER) F)
-  (SETF (FILE SELF) F))
-
-(DEFMETHOD READ-A-CHAR ((SELF FILE-FILTER))
-  (IF (NULL (FILE SELF))
-      'EOF
-      (READ-CHAR (FILE SELF) NIL 'EOF)))
+(defmethod dump ((self char-filter))
+  (let ((c (read-a-char self)))
+    (loop while (not (equal 'eof c)) do
+         (write-char c)
+         (setq c (read-a-char self)))))
 
 ;;----------------------------------------------------------------------
 
-(DEFCLASS LOOK-AHEAD-CHAR-FILTER (CHAR-FILTER)
-  ((NEXT-CHAR :ACCESSOR NEXT-CHAR :INITFORM NIL)))
+(defclass file-filter (char-filter)
+  ((file  :accessor file :initform nil)))
 
-(DEFMETHOD PUSH-ON-FILTER :BEFORE ((SELF LOOK-AHEAD-CHAR-FILTER) F)
-  (DECLARE (IGNORE F))
-  (SETF (NEXT-CHAR SELF) NIL))
+(defmethod set-file ((self file-filter) f)
+  (setf (file self) f))
 
-(DEFMETHOD READ-A-CHAR ((SELF LOOK-AHEAD-CHAR-FILTER))
-  (IF (NULL (PREVIOUS SELF))
-      'EOF
-      (LET ((RES NIL))
-        (IF (NULL (NEXT-CHAR SELF))
-            (SETF (NEXT-CHAR SELF) (READ-A-CHAR (PREVIOUS SELF))))
-        (SETQ RES (NEXT-CHAR SELF))
-        (SETF (NEXT-CHAR SELF) (READ-A-CHAR (PREVIOUS SELF)))
-        RES)))
+(defmethod read-a-char ((self file-filter))
+  (if (null (file self))
+      'eof
+      (read-char (file self) nil 'eof)))
 
 ;;----------------------------------------------------------------------
 
-(DEFCLASS TOKEN-FILTER ()
-  ((PREVIOUS :ACCESSOR PREVIOUS :INITFORM NIL)))
+(defclass look-ahead-char-filter (char-filter)
+  ((next-char :accessor next-char :initform nil)))
 
-(DEFMETHOD DO-QUOTES ((SELF TOKEN-FILTER) FLAG)
-  (IF (NULL (PREVIOUS SELF))
-      NIL
-      (DO-QUOTES (PREVIOUS SELF) FLAG)))
+(defmethod push-on-filter :before ((self look-ahead-char-filter) f)
+  (declare (ignore f))
+  (setf (next-char self) nil))
 
-(DEFMETHOD PUSH-ON-FILTER ((SELF TOKEN-FILTER) (F TOKEN-FILTER))
-  (SETF (PREVIOUS SELF) F))
-
-(DEFMETHOD READ-A-TOKEN ((SELF TOKEN-FILTER))
-  (IF (NULL (PREVIOUS SELF))
-      'EOF
-      (READ-A-TOKEN (PREVIOUS SELF))))
-
-(DEFMETHOD DUMP ((SELF TOKEN-FILTER))
-  (LET ((C (READ-A-TOKEN SELF)))
-    (LOOP WHILE (NOT (EQUAL 'EOF C)) DO
-         (PRINT C)
-         (SETQ C (READ-A-TOKEN SELF)))))
+(defmethod read-a-char ((self look-ahead-char-filter))
+  (if (null (previous self))
+      'eof
+      (let ((res nil))
+        (if (null (next-char self))
+            (setf (next-char self) (read-a-char (previous self))))
+        (setq res (next-char self))
+        (setf (next-char self) (read-a-char (previous self)))
+        res)))
 
 ;;----------------------------------------------------------------------
 
-(DEFUN CHAR-KIND (C)
-  (COND
-    ((EQUAL C 'EOF)                                            'EOF)
-    ((OR (CHAR= C (CODE-CHAR 9))  (CHAR= C (CHARACTER " ")))   'SPACE)
-    ((OR (CHAR= C (CODE-CHAR 10)) (CHAR= C (CODE-CHAR 13)))    'NEW-LINE)
-    ((OR (CHAR= (CHARACTER "_") C)
-         (CHAR= (CHARACTER "~") C)
-         (alpha-char-p c))                                         'LETTER)
-    ((digit-char-p c)                                          'DIGIT)
-    ((OR (CHAR= (CHARACTER "'") C) (CHAR= (CHARACTER "\"") C)) 'QUOTE)
-    (T                                                         'SPECIAL)))
+(defclass token-filter ()
+  ((previous :accessor previous :initform nil)))
 
-(DEFUN TOKEN-MEMBER (TOK LISTE)
-  (COND
-    ((NULL LISTE) NIL)
-    ((EQUAL TOK (CAR LISTE)) T)
-    (T (TOKEN-MEMBER TOK (CDR LISTE)))))
+(defmethod do-quotes ((self token-filter) flag)
+  (if (null (previous self))
+      nil
+      (do-quotes (previous self) flag)))
 
-(DEFUN TOKEN-KIND (TOK)
-  (LET* ((C (CHAR TOK 0)) (KIND (CHAR-KIND C)))
-    (COND
-      ((EQUAL KIND 'LETTER)
-       (IF (TOKEN-MEMBER
-            TOK 
+(defmethod push-on-filter ((self token-filter) (f token-filter))
+  (setf (previous self) f))
+
+(defmethod read-a-token ((self token-filter))
+  (if (null (previous self))
+      'eof
+      (read-a-token (previous self))))
+
+(defmethod dump ((self token-filter))
+  (let ((c (read-a-token self)))
+    (loop while (not (equal 'eof c)) do
+         (print c)
+         (setq c (read-a-token self)))))
+
+;;----------------------------------------------------------------------
+
+(defun char-kind (c)
+  (cond
+    ((equal c 'eof)                                            'eof)
+    ((or (char= c (code-char 9))  (char= c (character " ")))   'space)
+    ((or (char= c (code-char 10)) (char= c (code-char 13)))    'new-line)
+    ((or (char= (character "_") c)
+         (char= (character "~") c)
+         (alpha-char-p c))                                     'letter)
+    ((digit-char-p c)                                          'digit)
+    ((or (char= (character "'") c) (char= (character "\"") c)) 'quote)
+    (t                                                         'special)))
+
+(defun token-member (tok liste)
+  (cond
+    ((null liste) nil)
+    ((equal tok (car liste)) t)
+    (t (token-member tok (cdr liste)))))
+
+(defun token-kind (tok)
+  (let* ((c (char tok 0)) (kind (char-kind c)))
+    (cond
+      ((equal kind 'letter)
+       (if (token-member
+            tok 
             '("sizeof" "delete" "this" "friend" "typedef"
               "auto" "register" "static" "extern" "inline" 
               "virtual" "const" "volatile" "char" "short" "int" 
@@ -200,446 +200,445 @@ the call graph of C++ functions and methods."))
               "if" "else" "switch" "while" "do" "for" "break" 
               "continue" "return" "goto" "template" "try" "catch"
               "throw"))
-           'KEYWORD
-           'IDENTIFIER))
-      ((EQUAL KIND 'DIGIT)
-       'NUMBER)
-      ((EQUAL KIND 'QUOTE)
-       'STRING)
-      ((EQUAL KIND 'NEW-LINE)
-       'NEW-LINE)
-      (T
-       'SPECIAL))))
+           'keyword
+           'identifier))
+      ((equal kind 'digit)
+       'number)
+      ((equal kind 'quote)
+       'string)
+      ((equal kind 'new-line)
+       'new-line)
+      (t
+       'special))))
 
 ;;----------------------------------------------------------------------
 
-(DEFCLASS C++TOKEN-FILTER (TOKEN-FILTER)
-  ((SOURCE   :ACCESSOR SOURCE   :INITFORM NIL)
-   (DOQUOTES :ACCESSOR DOQUOTES :INITFORM T)
-   (DOTRACE  :ACCESSOR DOTRACE  :INITFORM NIL)))
+(defclass c++token-filter (token-filter)
+  ((source   :accessor source   :initform nil)
+   (doquotes :accessor doquotes :initform t)
+   (dotrace  :accessor dotrace  :initform nil)))
 
-(DEFMETHOD DO-QUOTES ((SELF C++TOKEN-FILTER) FLAG)
-  (LET ((OLD (DOQUOTES SELF)))
-    (SETF (DOQUOTES SELF) FLAG)
-    OLD))
+(defmethod do-quotes ((self c++token-filter) flag)
+  (let ((old (doquotes self)))
+    (setf (doquotes self) flag)
+    old))
 
-(DEFMETHOD SET-SOURCE ((SELF C++TOKEN-FILTER) (INPUT LOOK-AHEAD-CHAR-FILTER))
-  (SETF (SOURCE SELF) INPUT))
+(defmethod set-source ((self c++token-filter) (input look-ahead-char-filter))
+  (setf (source self) input))
 
-(DEFMETHOD READ-A-TOKEN ((SELF C++TOKEN-FILTER))
+(defmethod read-a-token ((self c++token-filter))
   ;; * '::' ( ) { } ;; '->'  "<char>*" CR '/*' '*/' '//'
-  (LET ((R
-         (LET ((S NIL) (C (READ-A-CHAR (SOURCE SELF))))
-           ;; skip spaces;; note we don't skip new-lines here.
-           (LOOP WHILE (EQUAL (CHAR-KIND C) 'SPACE) DO
-                (SETQ C (READ-A-CHAR (SOURCE SELF))))
-           (IF (EQUAL 'EOF C)
-               'EOF
-               (LET ((KIND (CHAR-KIND C)))
-                 (SETQ S (CONS C S))
-                 (COND
-                   ((EQUAL KIND 'LETTER)
-                    (SETQ C (NEXT-CHAR (SOURCE SELF)))
-                    (SETQ KIND (CHAR-KIND C))
-                    (LOOP WHILE (OR (EQUAL KIND 'LETTER) 
-                                    (EQUAL KIND 'DIGIT)) DO
-                         (SETQ C (READ-A-CHAR (SOURCE SELF)))
-                         (SETQ S (CONS C S))
-                         (SETQ C (NEXT-CHAR (SOURCE SELF)))
-                         (SETQ KIND (CHAR-KIND C))))
-                   ((EQUAL KIND 'DIGIT)
-                    (SETQ C (NEXT-CHAR (SOURCE SELF)))
-                    (SETQ KIND (CHAR-KIND C))
-                    (LOOP WHILE (OR (EQUAL KIND 'DIGIT)
-                                    (EQUAL C (CHARACTER ".")) 
-                                    (AND (CHAR<= (CHARACTER "a") C)
-                                         (CHAR<= C (CHARACTER "g")))
-                                    (AND (CHAR<= (CHARACTER "A") C)
-                                         (CHAR<= C (CHARACTER "G")))
-                                    (EQUAL C (CHARACTER "x"))
-                                    (EQUAL C (CHARACTER "X"))
-                                    ) DO
-                         (SETQ C (READ-A-CHAR (SOURCE SELF)))
-                         (SETQ S (CONS C S))
-                         (SETQ C (NEXT-CHAR (SOURCE SELF)))
-                         (SETQ KIND (CHAR-KIND C))))
-                   ((AND (DOQUOTES SELF) (EQUAL KIND 'QUOTE))
-                    (LET ((TERM C))
-                      (SETQ C (READ-A-CHAR (SOURCE SELF)))
-                      (LOOP WHILE (NOT (OR (EQUAL 'EOF C)
-                                           (EQUAL (CHAR-KIND C) 'NEW-LINE)
-                                           (EQUAL TERM C))) DO
-                           (SETQ S (CONS C S))
-                           (IF (CHAR= (CHARACTER "\\") C)
-                               (progn
-                                 (SETQ C (READ-A-CHAR 
-                                          (SOURCE SELF)))
-                                 (SETQ S (CONS C S))))
-                           (SETQ C (READ-A-CHAR (SOURCE SELF))))
-                      (IF (EQUAL TERM C)
-                          (SETQ S (CONS C S)))))
-                   ((EQUAL KIND 'NEW-LINE)
-                    (SETQ C (NEXT-CHAR (SOURCE SELF)))
-                    (LOOP WHILE (EQUAL (CHAR-KIND C) 'NEW-LINE) DO
-                         (SETQ C (READ-A-CHAR (SOURCE SELF)))
-                         (SETQ S (CONS C S))
-                         (SETQ C (NEXT-CHAR (SOURCE SELF)))))
-                   ((CHAR= (CHARACTER "-") C)
-                    (IF (CHAR= (CHARACTER ">")
-                               (NEXT-CHAR (SOURCE SELF)))
-                        (progn
-                          (SETQ C (READ-A-CHAR (SOURCE SELF)))
-                          (SETQ S (CONS C S)))))
-                   ((CHAR= (CHARACTER "/") C)
-                    (IF (OR (CHAR= (CHARACTER "/")
-                                   (NEXT-CHAR (SOURCE SELF)))
-                            (CHAR= (CHARACTER "*")
-                                   (NEXT-CHAR (SOURCE SELF))))
-                        (progn
-                          (SETQ C (READ-A-CHAR (SOURCE SELF)))
-                          (SETQ S (CONS C S)))))
-                   ((CHAR= (CHARACTER "*") C)
-                    (IF (CHAR= (CHARACTER "/")
-                               (NEXT-CHAR (SOURCE SELF)))
-                        (progn
-                          (SETQ C (READ-A-CHAR (SOURCE SELF)))
-                          (SETQ S (CONS C S)))))
-                   ((CHAR= (CHARACTER ":") C)
-                    (IF (CHAR= (CHARACTER ":")
-                               (NEXT-CHAR (SOURCE SELF)))
-                        (progn
-                          (SETQ C (READ-A-CHAR (SOURCE SELF)))
-                          (SETQ S (CONS C S))))))
-                 (concatenate 'string (REVERSE S)))))))
-    (IF (DOTRACE SELF)
-        (FORMAT T "~a " R))
-    R))
+  (let ((r (let ((s nil) (c (read-a-char (source self))))
+             ;; skip spaces;; note we don't skip new-lines here.
+             (loop while (equal (char-kind c) 'space) do
+                  (setq c (read-a-char (source self))))
+             (if (equal 'eof c)
+                 'eof
+                 (let ((kind (char-kind c)))
+                   (setq s (cons c s))
+                   (cond
+                     ((equal kind 'letter)
+                      (setq c (next-char (source self)))
+                      (setq kind (char-kind c))
+                      (loop while (or (equal kind 'letter) 
+                                      (equal kind 'digit)) do
+                           (setq c (read-a-char (source self)))
+                           (setq s (cons c s))
+                           (setq c (next-char (source self)))
+                           (setq kind (char-kind c))))
+                     ((equal kind 'digit)
+                      (setq c (next-char (source self)))
+                      (setq kind (char-kind c))
+                      (loop while (or (equal kind 'digit)
+                                      (equal c (character ".")) 
+                                      (and (char<= (character "a") c)
+                                           (char<= c (character "g")))
+                                      (and (char<= (character "A") c)
+                                           (char<= c (character "G")))
+                                      (equal c (character "x"))
+                                      (equal c (character "X"))
+                                      ) do
+                           (setq c (read-a-char (source self)))
+                           (setq s (cons c s))
+                           (setq c (next-char (source self)))
+                           (setq kind (char-kind c))))
+                     ((and (doquotes self) (equal kind 'quote))
+                      (let ((term c))
+                        (setq c (read-a-char (source self)))
+                        (loop while (not (or (equal 'eof c)
+                                             (equal (char-kind c) 'new-line)
+                                             (equal term c))) do
+                             (setq s (cons c s))
+                             (if (char= (character "\\") c)
+                                 (progn
+                                   (setq c (read-a-char 
+                                            (source self)))
+                                   (setq s (cons c s))))
+                             (setq c (read-a-char (source self))))
+                        (if (equal term c)
+                            (setq s (cons c s)))))
+                     ((equal kind 'new-line)
+                      (setq c (next-char (source self)))
+                      (loop while (equal (char-kind c) 'new-line) do
+                           (setq c (read-a-char (source self)))
+                           (setq s (cons c s))
+                           (setq c (next-char (source self)))))
+                     ((char= (character "-") c)
+                      (if (char= (character ">")
+                                 (next-char (source self)))
+                          (progn
+                            (setq c (read-a-char (source self)))
+                            (setq s (cons c s)))))
+                     ((char= (character "/") c)
+                      (if (or (char= (character "/")
+                                     (next-char (source self)))
+                              (char= (character "*")
+                                     (next-char (source self))))
+                          (progn
+                            (setq c (read-a-char (source self)))
+                            (setq s (cons c s)))))
+                     ((char= (character "*") c)
+                      (if (char= (character "/")
+                                 (next-char (source self)))
+                          (progn
+                            (setq c (read-a-char (source self)))
+                            (setq s (cons c s)))))
+                     ((char= (character ":") c)
+                      (if (char= (character ":")
+                                 (next-char (source self)))
+                          (progn
+                            (setq c (read-a-char (source self)))
+                            (setq s (cons c s))))))
+                   (concatenate 'string (reverse s)))))))
+    (if (dotrace self)
+        (format t "~a " r))
+    r))
 
 ;;----------------------------------------------------------------------
 
-(DEFCLASS C++NONLTOKEN-FILTER (C++TOKEN-FILTER)
+(defclass c++nonltoken-filter (c++token-filter)
   ())
 
-(DEFMETHOD READ-A-TOKEN ((SELF C++NONLTOKEN-FILTER))
-  (LET ((TOK (READ-A-TOKEN (PREVIOUS SELF))))
-    (COND
-      ((EQUAL TOK 'EOF)                     'EOF)
-      ((EQUAL (TOKEN-KIND TOK) 'NEW-LINE)   (READ-A-TOKEN SELF))
-      (T                                    TOK))))
+(defmethod read-a-token ((self c++nonltoken-filter))
+  (let ((tok (read-a-token (previous self))))
+    (cond
+      ((equal tok 'eof)                     'eof)
+      ((equal (token-kind tok) 'new-line)   (read-a-token self))
+      (t                                    tok))))
 
 ;;----------------------------------------------------------------------
 
-(DEFCLASS LOOK-AHEAD-TOKEN-FILTER (TOKEN-FILTER)
-  ((DOTRACE    :ACCESSOR DOTRACE    :INITFORM NIL)
-   (NEXT-TOKEN :ACCESSOR NEXT-TOKEN :INITFORM NIL)))
+(defclass look-ahead-token-filter (token-filter)
+  ((dotrace    :accessor dotrace    :initform nil)
+   (next-token :accessor next-token :initform nil)))
 
-(DEFMETHOD PUSH-ON-FILTER :BEFORE ((SELF LOOK-AHEAD-TOKEN-FILTER) (F TOKEN-FILTER))
-  (DECLARE (IGNORE F))
-  (SETF (NEXT-TOKEN SELF) NIL))
+(defmethod push-on-filter :before ((self look-ahead-token-filter) (f token-filter))
+  (declare (ignore f))
+  (setf (next-token self) nil))
 
-(DEFMETHOD READ-A-TOKEN ((SELF LOOK-AHEAD-TOKEN-FILTER))
-  (IF (NULL (PREVIOUS SELF))
-      'EOF
-      (LET ((RES NIL))
-        (IF (NULL (NEXT-TOKEN SELF))
-            (SETF (NEXT-TOKEN SELF) (READ-A-TOKEN (PREVIOUS SELF))))
-        (SETQ RES (NEXT-TOKEN SELF))
-        (SETF (NEXT-TOKEN SELF) (READ-A-TOKEN (PREVIOUS SELF)))
-        (IF (DOTRACE SELF)
-            (FORMAT T "~a " RES))
-        RES)))
-
-;;----------------------------------------------------------------------
-
-(DEFUN SKIP-COMMENT (SELF START-STRING STOP-LAMBDA)
-  (IF (NULL (PREVIOUS SELF))
-      'EOF
-      (LET ((CUR-TOKEN (READ-A-TOKEN (PREVIOUS SELF))))
-        (LOOP WHILE (EQUAL CUR-TOKEN START-STRING) DO
-             (LET ((SAVED (DO-QUOTES SELF NIL)))
-               (SETQ CUR-TOKEN (READ-A-TOKEN (PREVIOUS SELF)))
-               (LOOP WHILE (NOT (OR (EQUAL CUR-TOKEN 'EOF)
-                                    (APPLY STOP-LAMBDA (LIST CUR-TOKEN))))
-                  DO (SETQ CUR-TOKEN (READ-A-TOKEN (PREVIOUS SELF))))
-               (DO-QUOTES SELF SAVED)
-               (unless (EQUAL CUR-TOKEN 'EOF)
-                 (SETQ CUR-TOKEN (READ-A-TOKEN (PREVIOUS SELF))))))
-        CUR-TOKEN)))
+(defmethod read-a-token ((self look-ahead-token-filter))
+  (if (null (previous self))
+      'eof
+      (let ((res nil))
+        (if (null (next-token self))
+            (setf (next-token self) (read-a-token (previous self))))
+        (setq res (next-token self))
+        (setf (next-token self) (read-a-token (previous self)))
+        (if (dotrace self)
+            (format t "~a " res))
+        res)))
 
 ;;----------------------------------------------------------------------
 
-(DEFCLASS CPREPROCESSOR-FILTER (TOKEN-FILTER)
+(defun skip-comment (self start-string stop-lambda)
+  (if (null (previous self))
+      'eof
+      (let ((cur-token (read-a-token (previous self))))
+        (loop while (equal cur-token start-string) do
+             (let ((saved (do-quotes self nil)))
+               (setq cur-token (read-a-token (previous self)))
+               (loop while (not (or (equal cur-token 'eof)
+                                    (apply stop-lambda (list cur-token))))
+                  do (setq cur-token (read-a-token (previous self))))
+               (do-quotes self saved)
+               (unless (equal cur-token 'eof)
+                 (setq cur-token (read-a-token (previous self))))))
+        cur-token)))
+
+;;----------------------------------------------------------------------
+
+(defclass cpreprocessor-filter (token-filter)
   ())
 
-(DEFMETHOD READ-A-TOKEN ((SELF CPREPROCESSOR-FILTER))
-  (SKIP-COMMENT SELF "#" (LAMBDA (X) (EQUAL (TOKEN-KIND X) 'NEW-LINE))))
+(defmethod read-a-token ((self cpreprocessor-filter))
+  (skip-comment self "#" (lambda (x) (equal (token-kind x) 'new-line))))
 
 ;;----------------------------------------------------------------------
 
-(DEFCLASS CCOMMENT-FILTER (TOKEN-FILTER) ())
+(defclass ccomment-filter (token-filter) ())
 
-(DEFMETHOD READ-A-TOKEN ((SELF CCOMMENT-FILTER))
-  (SKIP-COMMENT SELF "/*" (LAMBDA (X) (EQUAL X "*/"))))
-
-;;----------------------------------------------------------------------
-
-(DEFCLASS C++COMMENT-FILTER (TOKEN-FILTER) ())
-
-(DEFMETHOD READ-A-TOKEN ((SELF C++COMMENT-FILTER))
-  (SKIP-COMMENT SELF "//" (LAMBDA (X) (EQUAL (TOKEN-KIND X) 'NEW-LINE))))
+(defmethod read-a-token ((self ccomment-filter))
+  (skip-comment self "/*" (lambda (x) (equal x "*/"))))
 
 ;;----------------------------------------------------------------------
 
-(DEFCLASS C++HEADER ()
-  ((RES-TYPE         :ACCESSOR RES-TYPE         :INITFORM NIL)
-   (C++CLASS-NAME    :ACCESSOR C++CLASS-NAME    :INITFORM NIL)
-   (C++METHOD-NAME   :ACCESSOR C++METHOD-NAME   :INITFORM NIL)
-   (ARGUMENTS        :ACCESSOR ARGUMENTS        :INITFORM NIL)
-   (HEADER-KIND      :ACCESSOR HEADER-KIND      :INITFORM NIL)
-   (BAD-TOKEN-LIST   :ACCESSOR BAD-TOKEN-LIST   :INITFORM NIL)))
+(defclass c++comment-filter (token-filter) ())
 
-(DEFUN RANGE (S FROM END) (SUBSEQ S FROM END))
+(defmethod read-a-token ((self c++comment-filter))
+  (skip-comment self "//" (lambda (x) (equal (token-kind x) 'new-line))))
 
-(DEFMETHOD PARSE ((SELF C++HEADER) (FILTER TOKEN-FILTER))
-  (LET ((L NIL) (TOK (READ-A-TOKEN FILTER)) (I 0))
-    (LOOP WHILE (NOT (OR 
-                      (EQUAL TOK 'EOF)
-                      (EQUAL TOK ")")
-                      (EQUAL TOK ";;"))) DO
-         (SETQ L (CONS TOK L))
-         (SETQ TOK (READ-A-TOKEN FILTER)))
-    (when (NOT (EQUAL TOK 'EOF))
-      (SETQ L (CONS TOK L)))
-    (SETQ L (REVERSE L))
-    (SETQ I (SEARCH "::" L))
-    (IF (NULL I)
+;;----------------------------------------------------------------------
+
+(defclass c++header ()
+  ((res-type         :accessor res-type         :initform nil)
+   (c++class-name    :accessor c++class-name    :initform nil)
+   (c++method-name   :accessor c++method-name   :initform nil)
+   (arguments        :accessor arguments        :initform nil)
+   (header-kind      :accessor header-kind      :initform nil)
+   (bad-token-list   :accessor bad-token-list   :initform nil)))
+
+(defun range (s from end) (subseq s from end))
+
+(defmethod parse ((self c++header) (filter token-filter))
+  (let ((l nil) (tok (read-a-token filter)) (i 0))
+    (loop while (not (or 
+                      (equal tok 'eof)
+                      (equal tok ")")
+                      (equal tok ";;"))) do
+         (setq l (cons tok l))
+         (setq tok (read-a-token filter)))
+    (when (not (equal tok 'eof))
+      (setq l (cons tok l)))
+    (setq l (reverse l))
+    (setq i (search "::" l))
+    (if (null i)
         (progn
-          (SETF (HEADER-KIND SELF) 'FUNCTION)
-          (SETQ I (SEARCH "(" L))
-          (IF (OR (NULL I) (= 0 I))
+          (setf (header-kind self) 'function)
+          (setq i (search "(" l))
+          (if (or (null i) (= 0 i))
               (progn
-                (SETF (BAD-TOKEN-LIST SELF) L)
-                NIL)
+                (setf (bad-token-list self) l)
+                nil)
               (progn
-                (SETF (C++CLASS-NAME SELF)  NIL)
-                (SETF (RES-TYPE SELF)       (RANGE L 0 (- I 2)))
-                (SETF (C++METHOD-NAME SELF) (CAR (RANGE L (1- I) (1- I))))
-                (SETF (ARGUMENTS SELF)  (RANGE L I NIL))
-                T)))
+                (setf (c++class-name self)  nil)
+                (setf (res-type self)       (range l 0 (- i 2)))
+                (setf (c++method-name self) (car (range l (1- i) (1- i))))
+                (setf (arguments self)  (range l i nil))
+                t)))
         (progn
-          (SETF (HEADER-KIND SELF) 'METHOD)
-          (SETF (C++CLASS-NAME SELF) (CAR (RANGE L (1- I) (1- I))))
-          (SETF (RES-TYPE SELF)      (RANGE L 0 (- I 2)))
-          (IF (EQUAL (NTH (1+ I) L) "~") 
+          (setf (header-kind self) 'method)
+          (setf (c++class-name self) (car (range l (1- i) (1- i))))
+          (setf (res-type self)      (range l 0 (- i 2)))
+          (if (equal (nth (1+ i) l) "~") 
               (progn
-                (SETF (C++METHOD-NAME SELF) (CAR (RANGE L (1+ I) (+ I 2))))
-                (SETF (ARGUMENTS SELF)  (RANGE L (+ I 3) NIL)))
+                (setf (c++method-name self) (car (range l (1+ i) (+ i 2))))
+                (setf (arguments self)  (range l (+ i 3) nil)))
               (progn
-                (SETF (C++METHOD-NAME SELF) (CAR (RANGE L (1+ I) (1+ I))))
-                (SETF (ARGUMENTS SELF)  (RANGE L (+ I 2) NIL))))
-          T))))
+                (setf (c++method-name self) (car (range l (1+ i) (1+ i))))
+                (setf (arguments self)  (range l (+ i 2) nil))))
+          t))))
 
 ;;----------------------------------------------------------------------
 ;; body          ::= '{' { statement | body } '}' .
 ;; statement     ::= { token } 
 
-(DEFCLASS C++BODY ()
-  ((INITIALIZER :ACCESSOR INITIALIZER :INITFORM NIL)
-   (STATEMENTS  :ACCESSOR STATEMENTS  :INITFORM NIL)))
+(defclass c++body ()
+  ((initializer :accessor initializer :initform nil)
+   (statements  :accessor statements  :initform nil)))
 
-(DEFMETHOD PARSE ((SELF C++BODY) (FILTER TOKEN-FILTER))
-  (LET ((TOK (READ-A-TOKEN FILTER)) (I NIL))
-    (IF (EQUAL TOK ":")
-        (LOOP WHILE (NOT (TOKEN-MEMBER TOK '("{" "}" 'EOF))) DO
-             (SETQ I (CONS TOK I))
-             (SETQ TOK (READ-A-TOKEN FILTER))))
-    (SETF (INITIALIZER SELF) (REVERSE I))
-    (IF (EQUAL TOK "{")
-        (BLOCK NIL
-          (SETF (STATEMENTS SELF) (PARSE-STATEMENT-LIST SELF FILTER))
-          T)
-        NIL)))
+(defmethod parse ((self c++body) (filter token-filter))
+  (let ((tok (read-a-token filter)) (i nil))
+    (if (equal tok ":")
+        (loop while (not (token-member tok '("{" "}" 'eof))) do
+             (setq i (cons tok i))
+             (setq tok (read-a-token filter))))
+    (setf (initializer self) (reverse i))
+    (if (equal tok "{")
+        (block nil
+          (setf (statements self) (parse-statement-list self filter))
+          t)
+        nil)))
 
-(DEFMETHOD PARSE-STATEMENT-LIST ((SELF C++BODY) (FILTER TOKEN-FILTER))
-  (LET ((TOK (READ-A-TOKEN FILTER)) (S NIL))
-    (LOOP WHILE (NOT (OR (EQUAL 'EOF TOK) (EQUAL TOK "}"))) DO
-         (IF (EQUAL TOK "{")
-             (SETQ S (CONS (PARSE-STATEMENT-LIST SELF FILTER) S))
-             (SETQ S (CONS TOK S)))
-         (SETQ TOK (READ-A-TOKEN FILTER)))
-    (IF (EQUAL TOK "}")
-        (REVERSE S)
-        NIL)))
+(defmethod parse-statement-list ((self c++body) (filter token-filter))
+  (let ((tok (read-a-token filter)) (s nil))
+    (loop while (not (or (equal 'eof tok) (equal tok "}"))) do
+         (if (equal tok "{")
+             (setq s (cons (parse-statement-list self filter) s))
+             (setq s (cons tok s)))
+         (setq tok (read-a-token filter)))
+    (if (equal tok "}")
+        (reverse s)
+        nil)))
 
-(DEFUN SEARCH-METHOD-CALLS (STATEMENTS)
-  (COND
-    ((OR (NULL STATEMENTS) (NULL (CDR STATEMENTS))) NIL)
-    ((LISTP (CAR STATEMENTS)) 
-     (APPEND (SEARCH-METHOD-CALLS (CAR STATEMENTS))
-             (SEARCH-METHOD-CALLS (CDR STATEMENTS))))
-    ((EQUAL "(" (CADR STATEMENTS))
-     (IF (EQUAL 'IDENTIFIER (TOKEN-KIND (CAR STATEMENTS)))
-         (CONS (CAR STATEMENTS) (SEARCH-METHOD-CALLS (CDR STATEMENTS)))
-         (SEARCH-METHOD-CALLS (CDR STATEMENTS))))
-    (T (SEARCH-METHOD-CALLS (CDR STATEMENTS)))))
+(defun search-method-calls (statements)
+  (cond
+    ((or (null statements) (null (cdr statements))) nil)
+    ((listp (car statements)) 
+     (append (search-method-calls (car statements))
+             (search-method-calls (cdr statements))))
+    ((equal "(" (cadr statements))
+     (if (equal 'identifier (token-kind (car statements)))
+         (cons (car statements) (search-method-calls (cdr statements)))
+         (search-method-calls (cdr statements))))
+    (t (search-method-calls (cdr statements)))))
 
 
-(DEFMETHOD CALLED-METHODS ((SELF C++BODY))
-  (SEARCH-METHOD-CALLS (STATEMENTS SELF)))
+(defmethod called-methods ((self c++body))
+  (search-method-calls (statements self)))
 
 ;;----------------------------------------------------------------------
 ;; Some methods are merely functions, that is methods without a class.
 ;; In that case: (null (c++class-name method))
 
-(DEFCLASS C++METHOD ()
-  ((HEADER  :ACCESSOR HEADER :INITFORM NIL)
-   (BODY    :ACCESSOR BODY   :INITFORM NIL)))
+(defclass c++method ()
+  ((header  :accessor header :initform nil)
+   (body    :accessor body   :initform nil)))
 
-(DEFMETHOD PARSE ((SELF C++METHOD) (FILTER TOKEN-FILTER))
-  (SETF (HEADER SELF) (MAKE-INSTANCE 'C++HEADER))
-  (SETF (BODY SELF)   (MAKE-INSTANCE 'C++BODY))
-  (AND (PARSE (HEADER SELF) FILTER) (PARSE (BODY SELF) FILTER)))
+(defmethod parse ((self c++method) (filter token-filter))
+  (setf (header self) (make-instance 'c++header))
+  (setf (body self)   (make-instance 'c++body))
+  (and (parse (header self) filter) (parse (body self) filter)))
 ;;SEE: We should have a TokenFilter class to test here for a "{" token.
 
-(DEFMETHOD C++CLASS-NAME ((SELF C++METHOD))
-  (C++CLASS-NAME (HEADER SELF)))
+(defmethod c++class-name ((self c++method))
+  (c++class-name (header self)))
 
-(DEFMETHOD NAME ((SELF C++METHOD))
-  (C++METHOD-NAME (HEADER SELF)))
+(defmethod name ((self c++method))
+  (c++method-name (header self)))
 
-(DEFMETHOD RES-TYPE ((SELF C++METHOD))
-  (RES-TYPE (HEADER SELF)))
+(defmethod res-type ((self c++method))
+  (res-type (header self)))
 
-(DEFMETHOD ARGUMENTS ((SELF C++METHOD))
-  (ARGUMENTS (HEADER SELF)))
+(defmethod arguments ((self c++method))
+  (arguments (header self)))
 
-(DEFMETHOD CALLED-METHODS ((SELF C++METHOD))
-  (CALLED-METHODS (BODY SELF)))
-
-;;----------------------------------------------------------------------
-(DEFCLASS C++CLASS ()
-  ((METHODS :ACCESSOR METHODS :INITFORM NIL)))
-
-(DEFMETHOD PARSE ((SELF C++CLASS) (FILTER TOKEN-FILTER))
-  (LET ((M (MAKE-INSTANCE 'C++METHOD)))
-    (when (PARSE M FILTER)
-      (ADD-C++METHOD SELF M)
-      (PARSE SELF FILTER))))
-
-(DEFMETHOD ADD-C++METHOD ((SELF C++CLASS) METHOD)
-  (push METHOD (METHODS SELF)))
+(defmethod called-methods ((self c++method))
+  (called-methods (body self)))
 
 ;;----------------------------------------------------------------------
+(defclass c++class ()
+  ((methods :accessor methods :initform nil)))
 
-(DEFCLASS C++PROGRAM ()
-  ((METHODS  :ACCESSOR METHODS  :INITFORM NIL)
-   (DOTRACE  :ACCESSOR DOTRACE  :INITFORM NIL)))
+(defmethod parse ((self c++class) (filter token-filter))
+  (let ((m (make-instance 'c++method)))
+    (when (parse m filter)
+      (add-c++method self m)
+      (parse self filter))))
 
-(DEFMETHOD PARSE ((SELF C++PROGRAM) FILE-NAME-LIST)
-  (COND
-    ((STRINGP FILE-NAME-LIST)  (PARSE SELF (LIST FILE-NAME-LIST)))
-    ((NULL FILE-NAME-LIST)     T)
-    (T (LET (
-             (SOURCE            (MAKE-INSTANCE 'FILE-FILTER))
-             (LASOURCE          (MAKE-INSTANCE 'LOOK-AHEAD-CHAR-FILTER))
-             (TOKENS            (MAKE-INSTANCE 'C++TOKEN-FILTER))
-             (SKIP-CCOMMENTS    (MAKE-INSTANCE 'CCOMMENT-FILTER))
-             (SKIP-C++COMMENTS  (MAKE-INSTANCE 'C++COMMENT-FILTER))
-             (PREPROCESS        (MAKE-INSTANCE 'CPREPROCESSOR-FILTER))
-             (NONLTOKENS        (MAKE-INSTANCE 'C++NONLTOKEN-FILTER))
-             (ANALYSIS          (MAKE-INSTANCE 'LOOK-AHEAD-TOKEN-FILTER)))
-
-         (SET-FILE       SOURCE           (OPEN (CAR FILE-NAME-LIST)))
-         (PUSH-ON-FILTER LASOURCE         SOURCE)
-         (SET-SOURCE     TOKENS           LASOURCE)
-         (PUSH-ON-FILTER SKIP-CCOMMENTS   TOKENS)
-         (PUSH-ON-FILTER SKIP-C++COMMENTS SKIP-CCOMMENTS)
-         (PUSH-ON-FILTER PREPROCESS       SKIP-C++COMMENTS)
-         (PUSH-ON-FILTER NONLTOKENS       PREPROCESS)
-         (PUSH-ON-FILTER ANALYSIS         NONLTOKENS)
-         (SETF (DOTRACE ANALYSIS) (DOTRACE SELF))
-         (LOOP until (EQUAL 'EOF (NEXT-TOKEN ANALYSIS)) DO
-              (LET ((METHOD (MAKE-INSTANCE 'C++METHOD)))
-                (IF (PARSE METHOD ANALYSIS)
-                    (PROGN
-                      (IF (DOTRACE SELF)
-                          (FORMAT T "~%--------------------------~%"))
-                      (ADD-C++METHOD SELF METHOD)
-                      (FORMAT T "Added method ~a::~a~%"
-                              (C++CLASS-NAME METHOD) (NAME METHOD))
-                      (when (DOTRACE SELF)
-                        (FORMAT T "~%--------------------------~%")))
-                    (PROGN
-                      (when (DOTRACE SELF)
-                        (FORMAT T "~%--------------------------~%"))
-                      (FORMAT T "Could not parse a method. ")
-                      (FORMAT T "Bad tokens:~a~%" 
-                              (BAD-TOKEN-LIST (HEADER METHOD)))
-                      (when (DOTRACE SELF)
-                        (FORMAT T "~%--------------------------~%")))))))
-       (PARSE SELF (CDR FILE-NAME-LIST)))))
-
-(DEFMETHOD ADD-C++METHOD ((SELF C++PROGRAM) METHOD)
-  (push METHOD (METHODS SELF)))
-
-(DEFUN SEARCH-UNIF-METH-NAMED (NAME UMLIST)
-  (COND
-    ((NULL UMLIST) NIL)
-    ((EQUAL NAME (NAME (CAAR UMLIST))) UMLIST)
-    (T (SEARCH-UNIF-METH-NAMED NAME (CDR UMLIST)))))
-
-(DEFMETHOD UNIFY-METHODS-BY-NAME ((SELF C++PROGRAM))
-  (LET ((UMLIST NIL) (UM NIL))
-    (DO ((METH (METHODS SELF) (CDR METH)))
-        ((NULL METH) UMLIST)
-      (SETQ UM (SEARCH-UNIF-METH-NAMED (NAME (CAR METH)) UMLIST))
-      (if (NULL UM)
-          (SETQ UMLIST (CONS (LIST (CAR METH)) UMLIST))
-          (RPLACA UM (CONS (CAR METH) (CAR UM)))))))
-
-(DEFMETHOD BUILD-METHOD-CALL-GRAF ((SELF C++PROGRAM))
-  (LET ( (UNIF-METH-LIST (UNIFY-METHODS-BY-NAME SELF))
-        (G (MAKE-INSTANCE 'GRAF)))
-    (ADD-NODES G UNIF-METH-LIST)
-    (DO ((UNIFMETH UNIF-METH-LIST (CDR UNIFMETH)))
-        ((NULL UNIFMETH) G)
-      (DO ((METH (CAR UNIFMETH) (CDR METH)))
-          ((NULL METH) NIL)
-        (DO ((NAME (CALLED-METHODS (CAR METH)) (CDR NAME)))
-            ((NULL NAME) NIL)
-          (ADD-EDGE
-           G (LIST (CAR UNIFMETH)
-                   (CAR (SEARCH-UNIF-METH-NAMED (CAR NAME)
-                                                UNIF-METH-LIST)))))))))
-
-(DEFMETHOD PRINT-C++METHOD-NAMES ((SELF C++PROGRAM))
-  (DO ((METH (METHODS SELF) (CDR METH)))
-      ((NULL METH) NIL)
-    (FORMAT T "~a::~a~%" (C++CLASS-NAME (CAR METH)) (NAME (CAR METH)))))
+(defmethod add-c++method ((self c++class) method)
+  (push method (methods self)))
 
 ;;----------------------------------------------------------------------
 
-(DEFUN BUILD-C++METHOD-NAME-LIST (MLIST)
-  (IF (NULL MLIST)
-      NIL
-      (CONS
-       (CONCATENATE 'STRING (C++CLASS-NAME (CAR MLIST)) "::" (NAME (CAR MLIST)))
-       (BUILD-C++METHOD-NAME-LIST (CDR MLIST)))))
+(defclass c++program ()
+  ((methods  :accessor methods  :initform nil)
+   (dotrace  :accessor dotrace  :initform nil)))
 
-(DEFUN BUILD-UNIF-METH-NAME-LIST (UMLIST)
-  (IF (NULL UMLIST)
-      NIL
-      (CONS (BUILD-C++METHOD-NAME-LIST (CAR UMLIST))
-            (BUILD-UNIF-METH-NAME-LIST (CDR UMLIST)))))
+(defmethod parse ((self c++program) file-name-list)
+  (cond
+    ((stringp file-name-list)  (parse self (list file-name-list)))
+    ((null file-name-list)     t)
+    (t (let (
+             (source            (make-instance 'file-filter))
+             (lasource          (make-instance 'look-ahead-char-filter))
+             (tokens            (make-instance 'c++token-filter))
+             (skip-ccomments    (make-instance 'ccomment-filter))
+             (skip-c++comments  (make-instance 'c++comment-filter))
+             (preprocess        (make-instance 'cpreprocessor-filter))
+             (nonltokens        (make-instance 'c++nonltoken-filter))
+             (analysis          (make-instance 'look-ahead-token-filter)))
 
-(DEFUN NAME-METHODS (L)
-  (COND
-    ((NULL L) NIL)
-    ((LISTP L) (CONS (NAME-METHODS (CAR L)) (NAME-METHODS (CDR L))))
-    (T (CONCATENATE 'STRING (C++CLASS-NAME L) "::" (NAME L)))))
+         (set-file       source           (open (car file-name-list)))
+         (push-on-filter lasource         source)
+         (set-source     tokens           lasource)
+         (push-on-filter skip-ccomments   tokens)
+         (push-on-filter skip-c++comments skip-ccomments)
+         (push-on-filter preprocess       skip-c++comments)
+         (push-on-filter nonltokens       preprocess)
+         (push-on-filter analysis         nonltokens)
+         (setf (dotrace analysis) (dotrace self))
+         (loop until (equal 'eof (next-token analysis)) do
+              (let ((method (make-instance 'c++method)))
+                (if (parse method analysis)
+                    (progn
+                      (if (dotrace self)
+                          (format t "~%--------------------------~%"))
+                      (add-c++method self method)
+                      (format t "Added method ~a::~a~%"
+                              (c++class-name method) (name method))
+                      (when (dotrace self)
+                        (format t "~%--------------------------~%")))
+                    (progn
+                      (when (dotrace self)
+                        (format t "~%--------------------------~%"))
+                      (format t "Could not parse a method. ")
+                      (format t "Bad tokens:~a~%" 
+                              (bad-token-list (header method)))
+                      (when (dotrace self)
+                        (format t "~%--------------------------~%")))))))
+       (parse self (cdr file-name-list)))))
 
-(DEFUN NODE-NAMED (G N)
-  (CAR (SEARCH-UNIF-METH-NAMED N (NODES G))))
+(defmethod add-c++method ((self c++program) method)
+  (push method (methods self)))
+
+(defun search-unif-meth-named (name umlist)
+  (cond
+    ((null umlist) nil)
+    ((equal name (name (caar umlist))) umlist)
+    (t (search-unif-meth-named name (cdr umlist)))))
+
+(defmethod unify-methods-by-name ((self c++program))
+  (let ((umlist nil) (um nil))
+    (do ((meth (methods self) (cdr meth)))
+        ((null meth) umlist)
+      (setq um (search-unif-meth-named (name (car meth)) umlist))
+      (if (null um)
+          (setq umlist (cons (list (car meth)) umlist))
+          (rplaca um (cons (car meth) (car um)))))))
+
+(defmethod build-method-call-graf ((self c++program))
+  (let ( (unif-meth-list (unify-methods-by-name self))
+        (g (make-instance 'graf)))
+    (add-nodes g unif-meth-list)
+    (do ((unifmeth unif-meth-list (cdr unifmeth)))
+        ((null unifmeth) g)
+      (do ((meth (car unifmeth) (cdr meth)))
+          ((null meth) nil)
+        (do ((name (called-methods (car meth)) (cdr name)))
+            ((null name) nil)
+          (add-edge
+           g (list (car unifmeth)
+                   (car (search-unif-meth-named (car name)
+                                                unif-meth-list)))))))))
+
+(defmethod print-c++method-names ((self c++program))
+  (do ((meth (methods self) (cdr meth)))
+      ((null meth) nil)
+    (format t "~a::~a~%" (c++class-name (car meth)) (name (car meth)))))
+
+;;----------------------------------------------------------------------
+
+(defun build-c++method-name-list (mlist)
+  (if (null mlist)
+      nil
+      (cons
+       (concatenate 'string (c++class-name (car mlist)) "::" (name (car mlist)))
+       (build-c++method-name-list (cdr mlist)))))
+
+(defun build-unif-meth-name-list (umlist)
+  (if (null umlist)
+      nil
+      (cons (build-c++method-name-list (car umlist))
+            (build-unif-meth-name-list (cdr umlist)))))
+
+(defun name-methods (l)
+  (cond
+    ((null l) nil)
+    ((listp l) (cons (name-methods (car l)) (name-methods (cdr l))))
+    (t (concatenate 'string (c++class-name l) "::" (name l)))))
+
+(defun node-named (g n)
+  (car (search-unif-meth-named n (nodes g))))
 
 ;;----------------------------------------------------------------------
 

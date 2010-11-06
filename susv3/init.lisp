@@ -10,7 +10,7 @@
 ;;;;
 ;;;;    This files remove some specificities from the lisp environment
 ;;;;    (to make it more Common-Lisp),
-;;;;    loads the package COM.INFORMATIMAGO.COMMON-LISP.PACKAGE,
+;;;;    loads the package COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PACKAGE,
 ;;;;    and add logical pathname translations to help find the other packages.
 ;;;;
 ;;;;AUTHORS

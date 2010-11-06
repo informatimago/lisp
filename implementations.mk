@@ -39,25 +39,29 @@ EGREP         := egrep
 WISH          := wish
 
 
-# COMPILERS      = abcl allegro clisp cmucl ecl openmcl sbcl 
-COMPILERS      = allegro clisp cmucl ecl openmcl sbcl
+COMPILERS      = abcl allegro ccl clisp cmucl ecl openmcl sbcl
 
 ABCL		  := abcl
 ALLEGRO       := alisp
+CCL	          := ccl
 CLISP         := clisp
 ECL           := ecl
 SBCL          := sbcl
 CMUCL         := cmucl
 OPENMCL       := openmcl
 
+ABCL_FLAGS    := 
 ALLEGRO_FLAGS := 
+CCL_FLAGS     := 
 CLISP_FLAGS   := -ansi -q -norc -Kfull -E iso-8859-1 -Efile UTF-8 -Eterminal UTF-8  -on-error debug
 CMUCL_FLAGS   := -noinit -nositeinit 
 ECL_FLAGS     := -norc 
 OPENMCL_FLAGS := 
 SBCL_FLAGS    := --noinform --sysinit /dev/null --userinit /dev/null 
 
+
 LC_CTYPE       = en_US.UTF-8
+
 
 DECLAIMS       = '(DECLAIM (OPTIMIZE (SAFETY 3) (DEBUG 3) (SPEED 0) (SPACE 0)))'
 COMPILES       = '(load "compile.lisp")'
@@ -83,8 +87,9 @@ show-compilers:
 	 done
 	@printf "\n"
 
+
 allegro:
-	@printf $(LINE)
+	@printf "\n\n\n\n"$(LINE)
 	@if  type -p $(ALLEGRO) >/dev/null 2>&1 ; then \
 		echo ";;;; Compiling with Allegro Common Lisp" ;\
 	 	( LC_CTYPE=$(LC_CTYPE) $(ALLEGRO) $(ALLEGRO_FLAGS) \
@@ -94,11 +99,22 @@ allegro:
 		) ;\
 	fi
 
+abcl:
+	@printf "\n\n\n\n"$(LINE)
+	@if  type -p $(ABCL) >/dev/null 2>&1 ; then \
+		echo ";;;; Compiling with Armed Bear Common Lisp" ;\
+	 	( LC_CTYPE=$(LC_CTYPE) $(ABCL) $(ABCL_FLAGS) \
+		--eval $(DECLAIMS) \
+		--eval $(COMPILES) \
+		--eval '(EXTENSIONS:QUIT)' \
+		) ;\
+	fi
+
 
 clisp:
-	@printf $(LINE)
+	@printf "\n\n\n\n"$(LINE)
 	@if  type -p $(CLISP)  >/dev/null 2>&1 ; then \
-		echo ";;;; Compiling with Common Lisp" ;\
+		echo ";;;; Compiling with clisp Common Lisp" ;\
 		( LC_CTYPE=$(LC_CTYPE) $(CLISP) $(CLISP_FLAGS) \
 		-x $(DECLAIMS) \
 		-x $(COMPILES) \
@@ -107,7 +123,7 @@ clisp:
 	fi
 
 cmucl:
-	@printf $(LINE)
+	@printf "\n\n\n\n"$(LINE)
 	@if type -p $(CMUCL)  >/dev/null 2>&1 ; then \
 		echo ";;;; Compiling with Carmegie-Mellon University Common Lisp" ;\
 		( LC_CTYPE=$(LC_CTYPE) $(CMUCL) $(CMUCL_FLAGS) \
@@ -119,7 +135,7 @@ cmucl:
 	fi
 
 ecl:
-	@printf $(LINE)
+	@printf "\n\n\n\n"$(LINE)
 	@if type -p $(ECL)  >/dev/null 2>&1 ; then \
 		echo ";;;; Compiling with Embeddable Common Lisp" ;\
 		( LC_CTYPE=$(LC_CTYPE) $(ECL) $(ECL_FLAGS) \
@@ -129,8 +145,19 @@ ecl:
 		) ;\
 	fi
 
+ccl:
+	@printf "\n\n\n\n"$(LINE)
+	@if type -p $(CCL)  >/dev/null 2>&1 ; then \
+		echo ";;;; Compiling with Clozure Common Lisp" ;\
+		( LC_CTYPE=$(LC_CTYPE) $(CCL) $(CCL_FLAGS)  \
+		-eval $(DECLAIMS) \
+		-eval $(COMPILES) \
+		-eval '(ccl:quit)' \
+		) ;\
+	fi
+
 openmcl:
-	@printf $(LINE)
+	@printf "\n\n\n\n"$(LINE)
 	@if type -p $(OPENMCL)  >/dev/null 2>&1 ; then \
 		echo ";;;; Compiling with Open Macintosh Common Lisp" ;\
 		( LC_CTYPE=$(LC_CTYPE) $(OPENMCL) $(OPENMCL_FLAGS)  \
@@ -141,7 +168,7 @@ openmcl:
 	fi
 
 sbcl:
-	@printf $(LINE)
+	@printf "\n\n\n\n"$(LINE)
 	@if  type -p $(SBCL)  >/dev/null 2>&1 ; then \
 		echo ";;;; Compiling with Steel-Banks Common Lisp" ;\
 		( LC_CTYPE=$(LC_CTYPE) $(SBCL) $(SBCL_FLAGS) \

@@ -53,7 +53,7 @@
 ;;;;    Boston, MA 02111-1307 USA
 ;;;;****************************************************************************
 
-
+(in-package "COMMON-LISP-USER")
 (DEFPACKAGE "COM.INFORMATIMAGO.CLISP.UFFI"
   (:NICKNAMES "UFFI")
   (:DOCUMENTATION "
@@ -144,6 +144,7 @@ LEGAL:  Copyright Pascal J. Bourguignon 2003 - 2004
 
    )) ;;COM.INFORMATIMAGO.CLISP.UFFI
 (IN-PACKAGE "COM.INFORMATIMAGO.CLISP.UFFI")
+
 (provide :uffi) ;; Some client code use REQUIRE! Can you imagine that?
 
 
@@ -1287,8 +1288,5 @@ IMPLEMENTATION:     You'd better leave it up to the system to find the library!
                 (return-from find-foreign-library path))))))
       nil))) ;;FIND-FOREIGN-LIBRARY
 
-;; Local Variables:
-;; eval: (cl-indent 'ffi:with-c-place 1)
-;; End:
 
-;;;; uffi.lisp                        --                     --          ;;;;
+;;;; THE END ;;;;

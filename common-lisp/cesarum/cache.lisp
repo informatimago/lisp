@@ -35,7 +35,7 @@
 ;;;;****************************************************************************
 
 (IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.FILE.CACHE"
+(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CACHE"
   (:USE "COMMON-LISP")
   (:EXPORT "CACHE-EXPIRE-ALL" "CACHE-EXPIRE" "CACHE-EXPIRATION" "CACHE-GET"
            "SYNCHRONIZE-CACHE" "MAKE-CACHE" "CACHE-PRODUCER" "CACHE-VALUE-FILE-TYPE"
@@ -50,7 +50,7 @@
     modify it under the terms of the GNU General Public License
     as published by the Free Software Foundation; either version
     2 of the License, or (at your option) any later version."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.FILE.CACHE")
+(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CACHE")
 
 
 

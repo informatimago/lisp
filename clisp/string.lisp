@@ -36,16 +36,17 @@
 ;;;;*****************************************************************************
 
 
-(DEFINE-PACKAGE "COM.INFORMATIMAGO.CLISP.STRING"
+(defPACKAGE "COM.INFORMATIMAGO.CLISP.STRING"
   (:DOCUMENTATION "This module exports string functions.")
-  (:FROM "COMMON-LISP" :IMPORT :ALL)
-  (:FROM "REGEXP"      :IMPORT :ALL)
-  (:FROM "COM.INFORMATIMAGO.COMMON-LISP.LIST"   :IMPORT :ALL)
-  (:FROM "COM.INFORMATIMAGO.COMMON-LISP.STRING" :IMPORT UNSPLIT-STRING)
+  (:use "COMMON-LISP"
+        "REGEXP"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
   (:EXPORT "SPLIT-STRING" "UNSPLIT-STRING"
            "STRING-MATCH" "STRING-TO-NUMBER"
            "CAPITALIZATION" "REPLACE-REGEXP-IN-STRING"
            "SUBSTRING"))
+(in-package "COM.INFORMATIMAGO.CLISP.STRING")
 
 
 
@@ -56,7 +57,7 @@
   (FORMAT NIL "[ ~C~C~C~C~C]\\+"
           (CODE-CHAR 9) (CODE-CHAR 10) (CODE-CHAR 11) (CODE-CHAR 12)
           (CODE-CHAR 13))
-  "The default separators for split-string (HT, LF, VT, FF, CR, SP)") ;;SPLIT-STRING-DEFAULT-SEPARATORS
+  "The default separators for split-string (HT, LF, VT, FF, CR, SP)")
 
 
 (DEFUN SPLIT-STRING (STRING &OPTIONAL SEPARATORS)
@@ -71,9 +72,7 @@ NOTE:   This implementation uses he REGEXP package.
         (SETQ RESULT (NBUTLAST RESULT)))
     RESULT))
 
-;; But we inherit UNSPLIT-STRING from COM.INFORMATIMAGO.COMMON-LISP.STRING.
-;;
-
+;; But we inherit UNSPLIT-STRING from COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING.
 
 
 (DEFUN STRING-MATCH (REGEXP STRING &KEY (START 0) (END NIL)
@@ -86,15 +85,14 @@ NOTE:   This implementation uses he REGEXP package.
                 :START START :END END
                 :IGNORE-CASE (NOT CASE-SENSITIVE)
                 :EXTENDED EXTENDED
-                :NEWLINE NEWLINE :NOSUB NOSUB)
-  ) ;;STRING-MATCH
+                :NEWLINE NEWLINE :NOSUB NOSUB))
 
 
 
 (DEFVAR *CASE-FOLD-SEARCH* NIL
   "Whether searches and matches should ignore case.
 Used by: REPLACE-REGEXP-IN-STRING.
-") ;;*CASE-FOLD-SEARCH*
+")
 
 
 
@@ -175,7 +173,7 @@ Used by: REPLACE-REGEXP-IN-STRING.
                  ( (0 0) ;; impossible state
                   (0 1)
                   (0 2)
-                  (0 3) ))))) ;;+CAPITALIZATION-TRANSITIONS+
+                  (0 3) )))))
 
 
 
@@ -206,8 +204,7 @@ RETURN:  :LOWER :UPPER :CAPITALIZED or :WHATEVER
           ((AREF RESULT ALL-UPCASE) :UPPER)
           ((AREF RESULT ALL-LOCASE) :LOWER)
           ((AREF RESULT ALL-CAPITA) :CAPITALIZED)
-          (T                        :WHATEVER))
-    )) ;;CAPITALIZATION
+          (T                        :WHATEVER))))
 
 
 
@@ -230,8 +227,7 @@ Namely, it seems to  touch only the first character of each word.
           (SETF (CHAR RESULT I) (CHAR-UPCASE CH))
           (SETQ SP NIL))
         (WHEN (NOT (ALPHANUMERICP CH))
-          (SETQ SP T))))
-  ) ;;EMACS-BUGGED-STRING-CAPITALIZE
+          (SETQ SP T)))))
 
 
 
@@ -377,8 +373,7 @@ since only regular expressions have distinguished subexpressions.
           (SETQ POS (REGEXP:MATCH-END (NTH SUBEXP MATCHES)))
           (SETQ DONE (<= (LENGTH STRING) START)) )
         (PROGN
-          (SETQ DONE T) ))
-    )) ;;REPLACE-REGEXP-IN-STRING
+          (SETQ DONE T) ))))
 
 
 
@@ -399,7 +394,7 @@ since only regular expressions have distinguished subexpressions.
           (string= (car test-case) res))
       (format t "Ok  ~50W --> ~W~%" (cdr test-case) res)
       (format t "Unexpected result for ~W~%    expected ~W~%    got      ~W~%"
-              (cdr test-case) (car test-case) res))) ;;rris-result
+              (cdr test-case) (car test-case) res)))
 
 
 
@@ -459,7 +454,7 @@ Test cases for REPLACE-REGEXP-IN-STRING
         (if (eq :error res)
             (unless (eq res (car test-case)) (setq all-ok nil))
             (unless (string= (car test-case) res) (setq all-ok nil)))
-        (rris-result  test-case res))))) ;;rris-test
+        (rris-result  test-case res)))))
 
 
 
@@ -483,7 +478,6 @@ RETURN:     A number.
                    (LET ((*READ-BASE* BASE)) (READ STREAM)))))
     (UNLESS (NUMBERP RESULT)
       (ERROR "Expected a number, not ~S." RESULT))
-    RESULT)
-  ) ;;STRING-TO-NUMBER
+    RESULT))
 
-;;;; string.lisp                      --                     --          ;;;;
+;;;; THE END ;;;;

@@ -54,8 +54,9 @@
 
 ;;; (push :debug-weak *features*) in clisp to have it on clisp for debugging...
 
+(in-package "COMMON-LISP-USER")
+
 (defpackage "COM.INFORMATIMAGO.CLEXT.CLOSER-WEAK"
-  (:nicknames "CLOSER-WEAK" "C2WEAK")
   (:documentation "
    Closer to Weak objects.
    Implements the specification: http://clisp.cons.org/impnotes/weak.html
@@ -1088,5 +1089,5 @@ It has no effect when some key has already been garbage-collected.")
           other-keys)))
 
   
-;;;---------------------------------------------------------------------
+;;;; THE END ;;;;
 

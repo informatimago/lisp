@@ -34,23 +34,27 @@
 ;;;;    Boston, MA 02111-1307 USA
 ;;;;****************************************************************************
 
-(DEFINE-PACKAGE "COM.INFORMATIMAGO.CLISP.XTERM"
+(in-package "COMMON-LISP-USER")
+
+(declaim (declaration ALSO-USE-PACKAGES))
+(declaim (ALSO-USE-PACKAGES  "COM.INFORMATIMAGO.CLISP.SUSV3"))
+
+(defpackage "COM.INFORMATIMAGO.CLISP.XTERM"
   (:DOCUMENTATION "
     This package exports functions to open xterm streams.
 
     Copyright Pascal J. Bourguignon 2005 - 2005
     This package is provided under the GNU General Public License.
     See the source file for details.")
-  (:FROM "COMMON-LISP"                           :IMPORT :ALL)
-  (:USE "EXT")
-  (:USE "CLOS")
-  (:FROM "COM.INFORMATIMAGO.COMMON-LISP.UTILITY" :IMPORT :ALL)
-  (:FROM "COM.INFORMATIMAGO.COMMON-LISP.STRING"  :IMPORT :ALL)
-  (:FROM "COM.INFORMATIMAGO.COMMON-LISP.LIST"    :IMPORT :ALL)
-  (:use  "COM.INFORMATIMAGO.CLISP.SUSV3"         :AS "SUSV3")
+  (:use "COMMON-LISP"
+        "EXT" "CLOS"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
   (:EXPORT
    "*XTERM-FONT*" "MAKE-XTERM-IO-STREAM" "SERVER-REPL" 
-   "XTERM-LISTENER" "FORK-XTERM-LISTENER")) ;;COM.INFORMATIMAGO.CLISP.XTERM
+   "XTERM-LISTENER" "FORK-XTERM-LISTENER"))
+(in-package "COM.INFORMATIMAGO.CLISP.XTERM")
 
 
 
@@ -173,9 +177,9 @@
 
 
 (defun fork-xterm-listener (&key (display ":0.0"))
-  (when (zerop (susv3:fork))
+  (when (zerop (COM.INFORMATIMAGO.CLISP.SUSV3:fork))
     (xterm-listener :display display)
     (ext:exit 0)))
 
 
-;;;; xterm.lisp                       --                     --          ;;;;
+;;;; THE END ;;;;

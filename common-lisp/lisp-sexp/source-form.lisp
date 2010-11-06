@@ -37,11 +37,11 @@
 ;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
 ;;;;    Boston, MA 02111-1307 USA
 ;;;;**************************************************************************
+(in-package "COMMON-LISP-USER")
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM"
-  (:USE "COMMON-LISP")
-  (:EXPORT
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM"
+  (:use "COMMON-LISP")
+  (:export
    ;; Parameter Classes:
    "PARAMETER" "ENVIRONMENT-PARAMETER" "WHOLE-PARAMETER"
    "REST-PARAMETER" "BODY-PARAMETER"
@@ -99,14 +99,14 @@
            "WITH-STANDARD-IO-SYNTAX"
            "*READ-BASE*" "*READ-DEFAULT-FLOAT-FORMAT*" "*READ-EVAL*"
            "*READ-SUPPRESS*" "*READTABLE*")
-  (:DOCUMENTATION "
+  (:documentation "
     This package exports functions to parse and manipulate
     Common Lisp sources as lisp forms (such as in macros).
 
     Copyright Pascal J. Bourguignon 2003 - 2007
     This package is provided under the GNU General Public License.
     See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM")
 
 
 ;;;----------------------------------------
@@ -127,27 +127,27 @@
 
 ;;;--------------------
 
-(DEFGENERIC parameter-name-p (self))
-(DEFGENERIC parse-parameter (self form))
-(DEFGENERIC parse-parameter-name (self form))
-(DEFGENERIC ensure-parameter-keyword (self))
-(DEFGENERIC lambda-list-mandatory-parameter-count (self))
-(DEFGENERIC lambda-list-optional-parameter-count (self))
-(DEFGENERIC parse-optvars (self current slot lambda-list-keyword class))
-(DEFGENERIC auxvars (self current))
-(DEFGENERIC optvars (self current))
-(DEFGENERIC goptvars (self current))
-(DEFGENERIC parse-keyvars (self current class))
-(DEFGENERIC keyvars (self current))
-(DEFGENERIC gkeyvars (self current))
-(DEFGENERIC parse-reqvars (self current class))
-(DEFGENERIC reqvars (self current))
-(DEFGENERIC sreqvars (self current))
-(DEFGENERIC preqvars (self current))
-(DEFGENERIC parse-original-lambda-list (self))
-(DEFGENERIC make-help (self))
-(DEFGENERIC make-argument-list (self))
-(DEFGENERIC make-lambda-list (self))
+(defgeneric parameter-name-p (self))
+(defgeneric parse-parameter (self form))
+(defgeneric parse-parameter-name (self form))
+(defgeneric ensure-parameter-keyword (self))
+(defgeneric lambda-list-mandatory-parameter-count (self))
+(defgeneric lambda-list-optional-parameter-count (self))
+(defgeneric parse-optvars (self current slot lambda-list-keyword class))
+(defgeneric auxvars (self current))
+(defgeneric optvars (self current))
+(defgeneric goptvars (self current))
+(defgeneric parse-keyvars (self current class))
+(defgeneric keyvars (self current))
+(defgeneric gkeyvars (self current))
+(defgeneric parse-reqvars (self current class))
+(defgeneric reqvars (self current))
+(defgeneric sreqvars (self current))
+(defgeneric preqvars (self current))
+(defgeneric parse-original-lambda-list (self))
+(defgeneric make-help (self))
+(defgeneric make-argument-list (self))
+(defgeneric make-lambda-list (self))
 
 ;;;--------------------
 
@@ -350,7 +350,7 @@
 (defmethod ensure-parameter-keyword ((self parameter-with-keyword))
   (if (parameter-keyword-p self)
       (parameter-keyword self)
-      (INTERN (STRING (parameter-name self)) "KEYWORD")))
+      (intern (string (parameter-name self)) "KEYWORD")))
 
 ;;;--------------------
 
@@ -567,48 +567,48 @@ some constraints may be different from one lambda-list to the other."))
 (defclass method-combination-lambda-list (lambda-list orakaw-ll)   ())
 
 (defgeneric lambda-list-kind (lambda-list)
-  (:METHOD ((SELF ORDINARY-LAMBDA-LIST))           (declare (ignorable self)) :ORDINARY)
-  (:METHOD ((SELF BOA-LAMBDA-LIST))                (declare (ignorable self)) :BOA)
-  (:METHOD ((SELF SPECIALIZED-LAMBDA-LIST))        (declare (ignorable self)) :SPECIALIZED)
-  (:METHOD ((SELF MODIFY-MACRO-LAMBDA-LIST))       (declare (ignorable self)) :MODIFY-MACRO)
-  (:METHOD ((SELF GENERIC-LAMBDA-LIST))            (declare (ignorable self)) :GENERIC)
-  (:METHOD ((SELF MACRO-LAMBDA-LIST))              (declare (ignorable self)) :MACRO)
-  (:METHOD ((SELF TYPE-LAMBDA-LIST))               (declare (ignorable self)) :TYPE)
-  (:METHOD ((SELF DESTRUCTURING-LAMBDA-LIST))      (declare (ignorable self)) :DESTRUCTURING)
-  (:METHOD ((SELF SETF-LAMBDA-LIST))               (declare (ignorable self)) :SETF)
-  (:METHOD ((SELF METHOD-COMBINATION-LAMBDA-LIST)) (declare (ignorable self)) :METHOD-COMBINATION))
+  (:method ((self ordinary-lambda-list))           (declare (ignorable self)) :ordinary)
+  (:method ((self boa-lambda-list))                (declare (ignorable self)) :boa)
+  (:method ((self specialized-lambda-list))        (declare (ignorable self)) :specialized)
+  (:method ((self modify-macro-lambda-list))       (declare (ignorable self)) :modify-macro)
+  (:method ((self generic-lambda-list))            (declare (ignorable self)) :generic)
+  (:method ((self macro-lambda-list))              (declare (ignorable self)) :macro)
+  (:method ((self type-lambda-list))               (declare (ignorable self)) :type)
+  (:method ((self destructuring-lambda-list))      (declare (ignorable self)) :destructuring)
+  (:method ((self setf-lambda-list))               (declare (ignorable self)) :setf)
+  (:method ((self method-combination-lambda-list)) (declare (ignorable self)) :method-combination))
 
 (defgeneric lambda-list-allowed-keywords (lambda-list)
-  (:METHOD ((SELF ORDINARY-LAMBDA-LIST))
+  (:method ((self ordinary-lambda-list))
     (declare (ignorable self)) 
-    '(&OPTIONAL &REST &ALLOW-OTHER-KEYS &KEY &AUX))
-  (:METHOD ((SELF BOA-LAMBDA-LIST))
+    '(&optional &rest &allow-other-keys &key &aux))
+  (:method ((self boa-lambda-list))
     (declare (ignorable self)) 
-    '(&OPTIONAL &REST &ALLOW-OTHER-KEYS &KEY &AUX))
-  (:METHOD ((SELF SPECIALIZED-LAMBDA-LIST))
+    '(&optional &rest &allow-other-keys &key &aux))
+  (:method ((self specialized-lambda-list))
     (declare (ignorable self)) 
-    '(&OPTIONAL &REST &ALLOW-OTHER-KEYS &KEY &AUX))
-  (:METHOD ((SELF MODIFY-MACRO-LAMBDA-LIST)) 
+    '(&optional &rest &allow-other-keys &key &aux))
+  (:method ((self modify-macro-lambda-list)) 
     (declare (ignorable self))
-    '(&OPTIONAL &REST))
-  (:METHOD ((SELF GENERIC-LAMBDA-LIST))
+    '(&optional &rest))
+  (:method ((self generic-lambda-list))
     (declare (ignorable self)) 
-    '(&OPTIONAL &REST &ALLOW-OTHER-KEYS &KEY))
-  (:METHOD ((SELF MACRO-LAMBDA-LIST))
+    '(&optional &rest &allow-other-keys &key))
+  (:method ((self macro-lambda-list))
     (declare (ignorable self)) 
-    '(&OPTIONAL &REST &ALLOW-OTHER-KEYS &KEY &AUX &WHOLE &BODY &ENVIRONMENT))
-  (:METHOD ((SELF TYPE-LAMBDA-LIST))
+    '(&optional &rest &allow-other-keys &key &aux &whole &body &environment))
+  (:method ((self type-lambda-list))
     (declare (ignorable self)) 
-    '(&OPTIONAL &REST &ALLOW-OTHER-KEYS &KEY &AUX &WHOLE &BODY &ENVIRONMENT))
-  (:METHOD ((SELF DESTRUCTURING-LAMBDA-LIST))
+    '(&optional &rest &allow-other-keys &key &aux &whole &body &environment))
+  (:method ((self destructuring-lambda-list))
     (declare (ignorable self)) 
-    '(&OPTIONAL &REST &ALLOW-OTHER-KEYS &KEY &AUX &WHOLE &BODY))
-  (:METHOD ((SELF SETF-LAMBDA-LIST))
+    '(&optional &rest &allow-other-keys &key &aux &whole &body))
+  (:method ((self setf-lambda-list))
     (declare (ignorable self)) 
-    '(&OPTIONAL &REST &ALLOW-OTHER-KEYS &KEY &ENVIRONMENT))
-  (:METHOD ((SELF METHOD-COMBINATION-LAMBDA-LIST))
+    '(&optional &rest &allow-other-keys &key &environment))
+  (:method ((self method-combination-lambda-list))
     (declare (ignorable self)) 
-    '(&OPTIONAL &REST &ALLOW-OTHER-KEYS &KEY &AUX &WHOLE)))
+    '(&optional &rest &allow-other-keys &key &aux &whole)))
 
 
 

@@ -46,9 +46,9 @@
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
-(declaim (declaration also-use-packages)
-         (also-use-packages "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ASCII"))
-(defpackage "COM.INFORMATIMAGO.COMMON-LISP.FILE.FILE"
+(declaim (declaration also-use-packages))
+(declaim (also-use-packages "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ASCII"))
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE"
   (:documentation
    "This package exports file utility functions.
 
@@ -62,15 +62,15 @@
     This package is provided under the GNU General Public License.
     See the source file for details.")
   (:use "COMMON-LISP"
-        "COM.INFORMATIMAGO.COMMON-LISP.FILE.STREAM")
-  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.FILE.STREAM"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM")
+  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM"
                 "CONTENTS-FROM-STREAM"
                 "STREAM-TO-STRING-LIST" "COPY-STREAM" "COPY-OVER")
   (:export "REMOVE-FIRST-LINES" "BINARY-FILE-CONTENTS"
            "SAFE-TEXT-FILE-TO-STRING-LIST"
            "STRING-LIST-TEXT-FILE-CONTENTS"
            "TEXT-FILE-CONTENTS" "SEXP-FILE-CONTENTS" "COPY-FILE"))
-(in-package "COM.INFORMATIMAGO.COMMON-LISP.FILE.FILE")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE")
 
 
 (defun copy-file (src dst &key (if-exists :error) (external-format :default)

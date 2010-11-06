@@ -37,13 +37,11 @@
 ;;;;    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 ;;;;****************************************************************************
 
-(DEFINE-PACKAGE "COM.INFORMATIMAGO.CLISP.SHELL"
-  (:NICKNAMES "PJB-SHELL")
+(defPACKAGE "COM.INFORMATIMAGO.CLISP.SHELL"
   (:DOCUMENTATION
    "This package export shell primitives (fork, pipe, redirections, exec).")
-  (:FROM "COMMON-LISP" :IMPORT :ALL)
-  (:USE "LINUX")
-  (:USE "FFI")
+  (:use "COMMON-LISP"
+        "LINUX" "FFI")
   (:EXPORT
    ;; variables:
    "*TEMPORARY-PATHNAME*" ;; pathname of the temporary directory.
@@ -52,6 +50,7 @@
    "FORK"  "WAIT"  
    ;; low-level:
    "PIPE-AND-EXEC-FUN"))
+(in-package  "COM.INFORMATIMAGO.CLISP.SHELL")
 
 
 
@@ -824,7 +823,6 @@ RETURN:  pid;status
   (DECLARE (IGNORE PF-LIST)) (ERROR "NOT IMPLEMENTED YET"))
 
 
-;;;; shell.lisp                       --                     --          ;;;;
-
+;;;; THE END ;;;;
 
 

@@ -68,9 +68,11 @@
 ;;;;    Boston, MA 02111-1307 USA
 ;;;;****************************************************************************
 
-(cl:in-package "COMMON-LISP-USER")
-(DECLAIM (DECLARATION ALSO-USE-PACKAGES)
-         (ALSO-USE-PACKAGES "EXT" "FFI" "LINUX"))
+(in-package "COMMON-LISP-USER")
+
+(DECLAIM (DECLARATION ALSO-USE-PACKAGES))
+(declaim (ALSO-USE-PACKAGES "EXT" "FFI" "LINUX"))
+
 (defpackage "COM.INFORMATIMAGO.CLISP.SUSV3"
   (:DOCUMENTATION "
     This packages exports SUSV3 functions.

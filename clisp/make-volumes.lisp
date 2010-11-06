@@ -36,16 +36,17 @@
 ;;;;    Boston, MA 02111-1307 USA
 ;;;;****************************************************************************
 
-(DEFINE-PACKAGE "COM.INFORMATIMAGO.CLISP.MAKE-VOLUMES"
+(defPACKAGE "COM.INFORMATIMAGO.CLISP.MAKE-VOLUMES"
   (:DOCUMENTATION
    "This package exports a function to tally a directory tree and make if it
     'volumes' of a given maximum size.")
-  (:FROM "COMMON-LISP" :IMPORT :ALL)
-  (:FROM "COM.INFORMATIMAGO.COMMON-LISP.LIST"    :IMPORT "NSPLIT-LIST" "AGET")
-  (:FROM "COM.INFORMATIMAGO.COMMON-LISP.UTILITY" :IMPORT "WHILE")
-  (:FROM "COM.INFORMATIMAGO.COMMON-LISP.STRING"  :IMPORT "SPLIT-STRING")
-  (:USE  "COM.INFORMATIMAGO.CLISP.SUSV3" :AS "SUSV3")
+  (:use "COMMON-LISP"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
+        "COM.INFORMATIMAGO.CLISP.SUSV3")
   (:EXPORT  "MAIN" "MAKE-VOLUMES"))
+(in-package  "COM.INFORMATIMAGO.CLISP.MAKE-VOLUMES")
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -201,4 +202,4 @@ RETURN:         THE BASENAME, THAT IS, THE LAST COMPONENT OF THE PATH.
 (MAKE-VOLUMES "/tmp/")
 ||#
 
-;;;; make-volumes.lisp                --                     --          ;;;;
+;;;; THE END ;;;;

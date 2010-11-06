@@ -34,7 +34,7 @@
 ;;;;    Boston, MA 02111-1307 USA
 ;;;;****************************************************************************
 
-(defpackage  "COM.INFORMATIMAGO.CLISP.FIFO-STREAM"
+(defpackage "COM.INFORMATIMAGO.CLISP.FIFO-STREAM"
   (:use "COMMON-LISP" "GRAY")
   (:export "FIFO-STREAM")
   (:DOCUMENTATION
@@ -312,4 +312,4 @@ THE DEFAULT METHOD OUTPUTS AN APPROPRIATE AMOUNT OF SPACE CHARACTERS ; this is s
 
 |||#
 
-;;;; fifo-stream.lisp                 --                     --          ;;;;
+;;;; THE END ;;;;

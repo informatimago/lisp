@@ -63,8 +63,8 @@
       ASDF:*SYSTEM-DEFINITION-SEARCH-FUNCTIONS*)
 
 (asdf:oos 'asdf:load-op :com.informatimago.common-lisp)
-(unless (fboundp 'com.informatimago.common-lisp.html:title)
-  (error "~S is not fbound" 'com.informatimago.common-lisp.html:title))
+(unless (fboundp 'com.informatimago.common-lisp.html-generator.html:title)
+  (error "~S is not fbound" 'com.informatimago.common-lisp.html-generator.html:title))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -126,7 +126,7 @@ RETURN:  The version as a string \"major.minor.compilation\"
 (logger "GENERATING THE ASDF SYSTEM FILE")
 
 (handler-bind ((warning #'muffle-warning))
-  (COM.INFORMATIMAGO.COMMON-LISP.MAKE-DEPENDS:GENERATE-ASD
+  (COM.INFORMATIMAGO.COMMON-LISP.MAKE-DEPENDS.MAKE-DEPENDS:GENERATE-ASD
    :com.informatimago.clext *SOURCES* *SOURCE-TYPE*
    :VERSION (VERSION++)
    :licence "GPL"
@@ -141,7 +141,7 @@ RETURN:  The version as a string \"major.minor.compilation\"
 ;;;
 (logger "GENERATING THE SUMMARY.HTML")
 (handler-bind ((warning #'muffle-warning))
-  (COM.INFORMATIMAGO.COMMON-LISP.MAKE-DEPENDS:GENERATE-SUMMARY
+  (COM.INFORMATIMAGO.COMMON-LISP.MAKE-DEPENDS.MAKE-DEPENDS:GENERATE-SUMMARY
    *SOURCES*
    :VERBOSE T
    :SOURCE-TYPE *SOURCE-TYPE*

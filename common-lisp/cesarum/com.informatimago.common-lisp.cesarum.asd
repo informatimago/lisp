@@ -41,8 +41,8 @@
     :version "1.2.0"
     :licence "GPL"
     :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Automn 2010")
-                 ((#:albert #:output-dir)          . "../documentation/com.informatimago.common-lisp.cesarum/")
+                 (#:date                           . "Autumn 2010")
+                 ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.cesarum/")
                  ((#:albert #:formats)             . ("docbook"))
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
@@ -61,7 +61,7 @@
                  (:file "brelation"       :depends-on ("utility" "bset"))
                  (:file "dictionary"      :depends-on ())
                  (:file "dll"             :depends-on ())
-                 (:file "graph"           :depends-on ())
+                 (:file "graph"           :depends-on ("utility" "list"))
                  (:file "llrbtree"        :depends-on ())
                  (:file "queue"           :depends-on ("utility"))
                  (:file "message-queue"   :depends-on ("queue"))
@@ -85,6 +85,12 @@
                  (:file "date"            :depends-on ())
                  (:file "version"         :depends-on ())
 
+                 ;; Files:
+                 (:file "stream"          :depends-on ("string"))
+                 (:file "file"            :depends-on ("stream" "ascii"))
+                 (:file "peek-stream"     :depends-on ())
+                 (:file "cache"           :depends-on ())
+                 (:file "float-binio"     :depends-on ())
                  ))
 
 

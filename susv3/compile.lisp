@@ -82,7 +82,7 @@
 
 (logger "GENERATING THE ASDF SYSTEM FILE")
 
-(com.informatimago.common-lisp.make-depends:generate-asd
+(com.informatimago.common-lisp.make-depends.make-depends:generate-asd
  :com.informatimago.susv3 *sources* *source-type*
  :VERSION "1.0.0"
  :predefined-packages '("COMMON-LISP" "FFI" "EXT" "LINUX" "REGEXP" "GRAY" "SYS")
@@ -95,7 +95,7 @@
 ;;;
 
 (logger "GENERATING THE SUMMARY.HTML")
-(COM.INFORMATIMAGO.COMMON-LISP.MAKE-DEPENDS:generate-summary
+(COM.INFORMATIMAGO.COMMON-LISP.MAKE-DEPENDS.MAKE-DEPENDS:generate-summary
  *sources*
  :source-type  *source-type*
  :summary-path "summary.html"
