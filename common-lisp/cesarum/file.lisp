@@ -95,7 +95,7 @@ DO:     Copy the contents of the file at path SRC to the file at path DST.
 (defun sexp-file-contents (path &key (if-does-not-exist :error)
                            (external-format :default))
   "
-RETURN: The contents of the file at PATH as a single SEXP.
+RETURN: The first SEXP of the file at PATH,
         or what is specified by IF-DOES-NOT-EXIST if it doesn't exist.
 "
   (with-open-file (in path :direction :input
