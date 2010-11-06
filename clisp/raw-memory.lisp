@@ -35,33 +35,15 @@
 ;;;;****************************************************************************
 
 
-;; (in-package "COMMON-LISP-USER")
-;; (eval-when (:compile-toplevel :load-toplevel :execute)
-;;   (unless (find-package "LINUX")
-;;     (warn "Package LINUX is not available.  Signal handling is disabled.")
-;;     (defpackage "LINUX"
-;;       (:use "COMMON-LISP")
-;;       (:export "set-signal-handler" "sigaddset" "sigemptyset"
-;;        "sigprocmask-set-n-save" "SIG_UNBLOCK" "SIGSEGV"))
-;;     (in-package "LINUX")
-;;     (defmacro null-op (name)
-;;       `(defmacro ,name (&rest args) (declare (ignore args)) nil))
-;;     (eval-when (:compile-toplevel :load-toplevel :execute)
-;;       (null-op |set-signal-handler|)
-;;       (null-op |sigaddset|)
-;;       (null-op |sigemptyset|)
-;;       (null-op |sigprocmask-set-n-save|)
-;;       (defparameter |SIG_UNBLOCK| 0)
-;;       (defparameter |SIGSEGV|     0))))
-;; 
-;; (in-package "COMMON-LISP-USER")
-
-
-(defPACKAGE "COM.INFORMATIMAGO.CLISP.RAW-MEMORY"
+(in-package "COMMON-LISP-USER")
+(declaim (declaration also-use-packages))
+(declaim (also-use-packages "LINUX"))
+(defpackage "COM.INFORMATIMAGO.CLISP.RAW-MEMORY"
   (:DOCUMENTATION "Peek and Poke.")
-  (:use "COMMON-LISP"
-        "FFI"  "LINUX")
-  (:EXPORT 
+  (:use "COMMON-LISP" "FFI")
+  (:shadowing-import-from "FFI" "SIN")
+  (:EXPORT
+   "*LIBRARY*"
    "PEEK" "POKE" "DUMP"
    "WITH-SIGSEG-HANDLER"
    ;; The following are low-level function, not protected by signal handler.
@@ -73,13 +55,8 @@
 (in-package  "COM.INFORMATIMAGO.CLISP.RAW-MEMORY")
 
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defparameter +library+
-    (loop for path in '("libraw-memory.so"
-                        "packages:com;informatimago;clisp;libraw-memory.so")
-       until (probe-file path)
-       finally (return (namestring (truename path))))))
-
+(defvar *library* "libraw-memory.so"
+  "The pathname to the raw-memory library file.") 
 
 (defun install-signal-handler (signum handler)
   (let ((oldhan (linux:|set-signal-handler| signum handler))
@@ -144,12 +121,12 @@
                    (:name ,c-peek-name)
                  (:arguments (address ffi:ulong))
                  (:return-type ,l-type)
-                 (:library  #.+library+) (:language :stdc)) code)
+                 (:library  *library*) (:language :stdc)) code)
         (push `(ffi:def-call-out ,l-poke-name
                    (:name ,c-poke-name)
                  (:arguments (address ffi:ulong) (value ,l-type))
                  (:return-type nil)
-                 (:library  #.+library+) (:language :stdc)) code))
+                 (:library  *library*) (:language :stdc)) code))
      finally (return `(progn ,@ code))))
 
 
@@ -291,5 +268,28 @@
                   margin address (* 2 incr)
                   (funcall peek address))))))
 
+
+
+
+;; (in-package "COMMON-LISP-USER")
+;; (eval-when (:compile-toplevel :load-toplevel :execute)
+;;   (unless (find-package "LINUX")
+;;     (warn "Package LINUX is not available.  Signal handling is disabled.")
+;;     (defpackage "LINUX"
+;;       (:use "COMMON-LISP")
+;;       (:export "set-signal-handler" "sigaddset" "sigemptyset"
+;;        "sigprocmask-set-n-save" "SIG_UNBLOCK" "SIGSEGV"))
+;;     (in-package "LINUX")
+;;     (defmacro null-op (name)
+;;       `(defmacro ,name (&rest args) (declare (ignore args)) nil))
+;;     (eval-when (:compile-toplevel :load-toplevel :execute)
+;;       (null-op |set-signal-handler|)
+;;       (null-op |sigaddset|)
+;;       (null-op |sigemptyset|)
+;;       (null-op |sigprocmask-set-n-save|)
+;;       (defparameter |SIG_UNBLOCK| 0)
+;;       (defparameter |SIGSEGV|     0))))
+;; 
+;; (in-package "COMMON-LISP-USER")
 
 ;;;; THE END ;;;;

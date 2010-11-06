@@ -34,79 +34,8 @@
 ;;;;    Boston, MA 02111-1307 USA
 ;;;;**************************************************************************
 
-(in-package :cl-user)
-
-(defvar *asdf-source*
-  #P"/data/lisp/packages/net/common-lisp/projects/asdf/asdf/asdf.lisp")
-
-(defvar *asdf-binary-locations-directory*
-  #P"/data/lisp/packages/net/common-lisp/projects/asdf-binary-locations/asdf-binary-locations/")
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; ASDF
-;;;
-
-(unless (find-package :asdf)
-  (handler-case (require :asdf)
-    (error ()   (load (compile-file *asdf-source*)))))
-
-(defun push-asdf-repository (path)
-  (pushnew path asdf:*central-registry* :test #'equal))
-
-(defun asdf-load (&rest systems)
-  (mapcar (lambda (system) (asdf:operate 'asdf:load-op system))
-          systems))
-
-(defun asdf-delete-system (&rest systems)
-  (mapc (lambda (system) (remhash (string-downcase system) asdf::*defined-systems*))
-        systems)
-  (values))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; ASDF-BINARY-LOCATIONS
-;;;
-
-(defun hostname ()
-  (let ((outpath (format nil "/tmp/hostname-~8,'0X.txt" (random #x100000000))))
-    (asdf:run-shell-command
-     "( hostname --fqdn 2>/dev/null || hostname --long 2>/dev/null || hostname ) > ~A"
-     outpath)
-    (prog1 (with-open-file (hostname outpath)
-             (read-line hostname))
-      (delete-file outpath))))
-
-(let ((sym (find-symbol "ENABLE-ASDF-BINARY-LOCATIONS-COMPATIBILITY" "ASDF")))
-  (when (and sym (fboundp sym))
-    (push :HAS-ASDF-ENABLE-ASDF-BINARY-LOCATIONS-COMPATIBILITY *features*)))
-
-#+HAS-ASDF-ENABLE-ASDF-BINARY-LOCATIONS-COMPATIBILITY
-(progn
-  (format *trace-output* "enable-asdf-binary-locations-compatibility ~%")
-  (asdf:enable-asdf-binary-locations-compatibility
-   :centralize-lisp-binaries     t
-   :default-toplevel-directory   (merge-pathnames (format nil ".cache/common-lisp/~A/" (hostname))
-                                                  (user-homedir-pathname) nil)
-   :include-per-user-information nil
-   :map-all-source-files t
-   :source-to-target-mappings    nil))
-
-#-HAS-ASDF-ENABLE-ASDF-BINARY-LOCATIONS-COMPATIBILITY
-(progn
- (push-asdf-repository *asdf-binary-locations-directory*)
- (asdf-load :asdf-binary-locations))
-
-#-HAS-ASDF-ENABLE-ASDF-BINARY-LOCATIONS-COMPATIBILITY
-(progn
-  (format *trace-output* "enable-asdf-binary-locations-compatibility ~%")
-  (setf asdf:*centralize-lisp-binaries*     t
-        asdf:*include-per-user-information* nil
-        asdf:*default-toplevel-directory*
-        (merge-pathnames (format nil ".cache/common-lisp/~A/" (hostname))
-                         (user-homedir-pathname) nil)
-        asdf:*source-to-target-mappings* '()))
+(load (merge-pathname (make-pathname :name "INIT-ASDF" :type "LISP" :case :common)
+                      *load-pathname*))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
