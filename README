@@ -1,16 +1,65 @@
+.. comment: -*- mode:rst; coding:utf-8 -*-
 
 
-common-lisp Pure COMMON-LISP packages: should be compilable/executable in
-            any Common-Lisp implementation.
+Informatimago Public Common Lisp Libraries
+==========================================
 
-clext       Common Lisp Extensions.
 
-clmisc      Miscellaneous Common Lisp packages.
+common-lisp/
 
-clisp       clisp specific packages.
+    The sublibrary systems provided by this library should contain
+    only pure conformant Common Lisp packages.
 
-sbcl        sbcl specific packages.
+    They should compile and run in all Common Lisp compliant
+    implementations, and should have make use of no external package
+    (eg. compatibility library) and no other (implementation
+    dependant) package than COMMON-LISP.  They should not use #+/#- to
+    activate or disable implementation specific code. [There remains
+    some packages using #+/#- with implementations specific variants,
+    we're working on removing these forms].
 
-susv3       POSIX API.
 
+clext/
+
+    Common Lisp Extensions.
+
+    This directory contains Common-Lisp packages that are
+    mostly portable, but that use some extensions,
+    packages out of the Common-Lisp specifications, like
+    GRAY or other portability libraries.
+
+
+clmisc/
+
+    Miscellaneous Common Lisp packages.
+
+
+clisp/
+
+    clisp specific packages.
+
+
+sbcl/
+
+    sbcl specific packages.
+
+
+susv3/
+
+    POSIX API.
+
+
+tools/
+
+    Various tools to help developing and compiling these packages.
+
+
+
+
+.. comment:
+
+          -------------------------------------------------
+                           ---------------
+                                  -
+                                  .
 

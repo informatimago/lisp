@@ -54,7 +54,7 @@
   (com.informatimago.common-lisp.cesarum.package:add-nickname
    "COM.INFORMATIMAGO.COMMON-LISP.HTML-GENERATOR.HTML" "HTML"))
 
-(defpackage "COM.INFORMATIMAGO.COMMON-LISP.TOOLS.MAKE-DEPENDS.MAKE-DEPENDS"
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.TOOLS.MAKE-DEPENDS"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
@@ -75,7 +75,7 @@
     Copyright Pascal J. Bourguignon 2003 - 2005
     This package is provided under the GNU General Public Licence.
     See the source file for details."))
-(in-package "COM.INFORMATIMAGO.COMMON-LISP.TOOLS.MAKE-DEPENDS.MAKE-DEPENDS")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.TOOLS.MAKE-DEPENDS")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

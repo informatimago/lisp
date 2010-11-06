@@ -1,0 +1,16 @@
+.. comment: -*- mode:rst; coding:utf-8 -*-
+
+com.informatimago.susv3 Common Lisp POSIX API
+=============================================
+
+This library defines a POSIX SUSv3 API for Common Lisp.
+(Lisp Wrappers).
+
+
+.. comment:
+
+          -------------------------------------------------
+                           ---------------
+                                  -
+                                  .
+

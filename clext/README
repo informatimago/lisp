@@ -1,3 +1,18 @@
+.. comment: -*- mode:rst; coding:utf-8 -*-
+
+com.informatimago.clext Common Lisp Extensions Library
+======================================================
+
 This directory contains Common-Lisp packages that are mostly portable,
 but that use some extensions, packages out of the Common-Lisp
-specifications, like GRAY.
+specifications, like GRAY or other portability libraries.
+
+
+
+.. comment:
+
+          -------------------------------------------------
+                           ---------------
+                                  -
+                                  .
+
