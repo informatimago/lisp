@@ -1378,11 +1378,11 @@ with-lock-held (place &optional state) &body body
                   (values rlen (copy-from-c-buffer buffer rlen sequence start))))
                ((= 0 rlen)
                 (return-from :reader (values rlen sequence)))
-               (t (case (linux:|errno|)
+               (t (case linux:|errno|
                     ((linux:|EAGAIN| linux:|EINTR|))
                     ((linux:|EPIPE|) (return-from :reader nil)) ; EOF
                     (otherwise
-                     (error "unix read: ~A" (linux:|strerror| (linux:|errno|)))
+                     (error "unix read: ~A" (linux:|strerror| linux:|errno|))
                      ))))))))) ;;unix-read-sequence
 
 
@@ -1424,7 +1424,7 @@ with-lock-held (place &optional state) &body body
                        (buffered t))
   (multiple-value-bind (res fds) (linux:|pipe|)
     (unless (= 0 res)
-      (error "unix pipe: ~A" (linux:|strerror| (linux:|errno|))))
+      (error "unix pipe: ~A" (linux:|strerror| linux:|errno|)))
     (let ((inp (ext:make-buffered-input-stream
                 (lambda ()
                   (aref fds 0)
@@ -1465,7 +1465,7 @@ with-lock-held (place &optional state) &body body
                                      (buffered t))
   (multiple-value-bind (res fds) (linux:|pipe|)
     (unless (= 0 res)
-      (error "unix pipe: ~A" (linux:|strerror| (linux:|errno|))))
+      (error "unix pipe: ~A" (linux:|strerror| linux:|errno|)))
     (let ((inp (ext:make-stream (aref fds 0)
                                 :direction :input
                                 :element-type element-type
@@ -1534,6 +1534,18 @@ RETURN: The parent process.
 
 
 ||#
+
+(defun make-xterm-io-stream (&key display)
+  (declare (ignore display))
+  (error "~S: Implemented in com.informatimago.clisp" 'make-xterm-io-stream))
+
+(defun register-worker (pid)
+  (declare (ignore pid))
+  (error "~S: not implemented yet." 'register-worker))
+
+(defun parse-one-command (pid)
+  (declare (ignore pid))
+  (error "~S: not implemented yet." 'parse-one-command))
 
 
 (defun server-main (&key display)

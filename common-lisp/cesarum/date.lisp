@@ -860,6 +860,7 @@ RETURN: Whether YEAR is a gregorian leap year.
      (list year month day hour minute seconde)))
 
 (defmethod units-of-list-of-numbers  ((self gregorian-calendar-date))
+  (declare (ignorable self))
   (list :year :month :day :hour :minute :seconde))
 
 
@@ -936,7 +937,7 @@ RETURN: Whether YEAR is a gregorian leap year.
 
 
 (defmethod date-before ((self gregorian-calendar-date) (duration duration))
-  (date-after self (duration- duration)))
+  (date-after self (duration- (duration :seconde 0) duration)))
 
 
 

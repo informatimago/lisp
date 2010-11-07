@@ -113,16 +113,53 @@
 ;;; Compiling com.informatimago.common-lisp
 ;;;
 
+
 (setf asdf:*central-registry*
       (append (remove-duplicates
                (mapcar (lambda (path)
                          (make-pathname :name nil :type nil :version nil :defaults path))
-                       (directory "**/*.asd"))
+                       #-abcl
+                       (directory "**/*.asd")
+                       #+abcl
+                       '(#P"/home/pjb/src/git/public/lisp/tools/com.informatimago.common-lisp.tools.make-depends.asd"
+                         #P"/home/pjb/src/git/public/lisp/common-lisp/diagram/com.informatimago.common-lisp.diagram.asd"
+                         #P"/home/pjb/src/git/public/lisp/common-lisp/html-base/com.informatimago.common-lisp.html-base.asd"
+                         #P"/home/pjb/src/git/public/lisp/common-lisp/invoice/com.informatimago.common-lisp.invoice.asd"
+                         #P"/home/pjb/src/git/public/lisp/common-lisp/arithmetic/com.informatimago.common-lisp.arithmetic.asd"
+                         #P"/home/pjb/src/git/public/lisp/common-lisp/picture/com.informatimago.common-lisp.picture.asd"
+                         #P"/home/pjb/src/git/public/lisp/common-lisp/lisp-text/com.informatimago.common-lisp.lisp-text.asd"
+                         #P"/home/pjb/src/git/public/lisp/common-lisp/rfc3548/com.informatimago.common-lisp.rfc3548.asd"
+                         #P"/home/pjb/src/git/public/lisp/common-lisp/lisp-sexp/com.informatimago.common-lisp.lisp-sexp.asd"
+                         #P"/home/pjb/src/git/public/lisp/common-lisp/unix/com.informatimago.common-lisp.unix.asd"
+                         #P"/home/pjb/src/git/public/lisp/common-lisp/parser/com.informatimago.common-lisp.parser.asd"
+                         #P"/home/pjb/src/git/public/lisp/common-lisp/csv/com.informatimago.common-lisp.csv.asd"
+                         #P"/home/pjb/src/git/public/lisp/common-lisp/bank/com.informatimago.common-lisp.bank.asd"
+                         #P"/home/pjb/src/git/public/lisp/common-lisp/http/com.informatimago.common-lisp.http.asd"
+                         #P"/home/pjb/src/git/public/lisp/common-lisp/lisp-reader/com.informatimago.common-lisp.lisp-reader.asd"
+                         #P"/home/pjb/src/git/public/lisp/common-lisp/lisp/com.informatimago.common-lisp.lisp.asd"
+                         #P"/home/pjb/src/git/public/lisp/common-lisp/graphviz/com.informatimago.common-lisp.graphviz.asd"
+                         #P"/home/pjb/src/git/public/lisp/common-lisp/html-parser/com.informatimago.common-lisp.html-parser.asd"
+                         #P"/home/pjb/src/git/public/lisp/common-lisp/ed/com.informatimago.common-lisp.ed.asd"
+                         #P"/home/pjb/src/git/public/lisp/common-lisp/rfc2822/com.informatimago.common-lisp.rfc2822.asd"
+                         #P"/home/pjb/src/git/public/lisp/common-lisp/html-generator/com.informatimago.common-lisp.html-generator.asd"
+                         #P"/home/pjb/src/git/public/lisp/common-lisp/cxx/com.informatimago.common-lisp.cxx.asd"
+                         #P"/home/pjb/src/git/public/lisp/common-lisp/interactive/com.informatimago.common-lisp.interactive.asd"
+                         #P"/home/pjb/src/git/public/lisp/common-lisp/data-encoding/com.informatimago.common-lisp.data-encoding.asd"
+                         #P"/home/pjb/src/git/public/lisp/common-lisp/cesarum/com.informatimago.common-lisp.cesarum.asd"
+                         #P"/home/pjb/src/git/public/lisp/common-lisp/regexp/com.informatimago.common-lisp.regexp.asd"
+                         #P"/home/pjb/src/git/public/lisp/common-lisp/heap/com.informatimago.common-lisp.heap.asd"
+                         #P"/home/pjb/src/git/public/lisp/common-lisp/com.informatimago.common-lisp.asd"
+                         #P"/home/pjb/src/git/public/lisp/sbcl/com.informatimago.sbcl.asd"
+                         #P"/home/pjb/src/git/public/lisp/susv3/com.informatimago.susv3.asd"
+                         #P"/home/pjb/src/git/public/lisp/clisp/com.informatimago.clisp.asd"
+                         #P"/home/pjb/src/git/public/lisp/clext/com.informatimago.clext.asd"
+                         #P"/home/pjb/src/git/public/lisp/clmisc/com.informatimago.clmisc.asd"
+                         #P"/home/pjb/src/git/public/lisp/cl-posix/cliki/cliki.asd"
+                         #P"/home/pjb/src/git/public/lisp/cl-posix/cliki/clposixcliki.asd"))
                :test (function equalp))
               asdf:*central-registry*))
 
 (asdf-load  :com.informatimago.common-lisp)
-
 
 ;;;; THE END ;;;;
 

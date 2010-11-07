@@ -9,19 +9,13 @@
 #
 #	Input variables are:
 #
-#       $(MAKEDIR)      where the makefiles are located.
+#       $(PREFIX)       where the non-lisp stuff will be installed
+#                       such as in $(PREFIX)/bin/, $(PREFIX)/lib/.
 #
-#       $(PREFIX)       where the libraries are installed.
+#   
 #                       It will be created a subdirectory in this
-#                       $(PREFIX) for each library compiled by
-#                       this makefile.
-#
-#	Output:
-#
-#		$(PREFIX)/bin/$(PROGRAM)               the executables.
-#		$(PREFIX)/lib/$(MODULE)/interfaces/    the interface of the module,
-#		$(PREFIX)/lib/$(MODULE)/documentation/ the documentation of the module,
-#		$(PREFIX)/lib/$(MODULE)/libraries/     the libraries of the module.
+#                       $(PREFIX) named after the library:
+#                       
 #
 #AUTHORS
 #	<PJB> Pascal J. Bourguignon
@@ -45,129 +39,81 @@
 #   If not, write to the Free Software Foundation,
 #   59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #******************************************************************************
+all::
+
+include implementations.mk
+
+
+help::
+	@for c in $(COMPILERS) ; do printf $(HELP_FMT) "$$c" "Compile with $$c." ; done
+	@printf $(HELP_FMT) 'all' 'Compile with all the available compilers.'
+# Let's compile with all the available compilers ( $(GCL) not yet ).
+# all:: $(ABCL) $(ALLEGRO) $(CCL) $(CLISP) $(ECL) $(SBCL) $(CMUCL) $(OPENMCL)
+all:: $(ALLEGRO) $(CLISP) $(ECL) $(SBCL) $(CMUCL) $(OPENMCL)
+# $(ABCL) chokes on unicode!
+# $(CCL) doesn't run from Makefile (it runs well from the shell!).
+
+
 
 PREFIX=/usr/local
-
 PACKAGES:=$(shell get-directory SHARE_LISP)/packages
 PACKAGE_PATH=com/informatimago/common-lisp
 
 
-LINE    = ";;;;;;====================================================================\n"
+show-variables::
+	@printf $(VAR_FMT) 'Where non-lisp stuff will be installed:'  PREFIX         $(PREFIX)
+	@printf $(VAR_FMT) 'Where lisp packages are installed.'       PACKAGES       $(PACKAGES)
+	@printf $(VAR_FMT) 'Subpath for this library.'                PACKAGE_PATH   $(PACKAGE_PATH)
 
 
-
-all::
-
-#include $(MAKEDIR)/project
+MM=$(MAKE) $(MFLAGS) PREFIX=$(PREFIX)
 
 help::
-	@echo ""
-	@echo "Some targets:"
-	@echo "    make lisp          # make and install all the subprojects"
-	@echo "    make lisp-clean    # clean, make and install all the subprojects"
-	@echo "    make install-clisp # make and install the clisp subprojects"
-	@echo "    make tags          # make the TAGS"
-	@echo ""
-
-vars variables:
-	@echo "Input variables are:"
-	@echo "    TARGET   ($(TARGET))"
-	@echo "    MAKEDIR  ($(MAKEDIR))"
-	@echo "    PREFIX   ($(PREFIX))"
-	@echo ""
-	@echo "They can be changed passing them as make argument:"
-	@echo "    make TARGET=new-target MAKEDIR=/make/dir PREFIX=/usr/local install"
-
-
-install-clisp:
-	make PREFIX=$(PREFIX) \
-		 COMMON=`pwd`  \
-		 MAKEDIR=`pwd`/makedir \
-		-C common-lisp clisp install
-	make PREFIX=$(PREFIX) \
-		 COMMON=`pwd`  \
-		 MAKEDIR=`pwd`/makedir \
-		-C clisp clisp install
-	make PREFIX=$(PREFIX) \
-		 COMMON=`pwd`  \
-		 MAKEDIR=`pwd`/makedir \
-		-C susv3 clisp install
-
-m1:
-	make PREFIX=$(HOME)/install \
-		 COMMON=`pwd`  \
-		 MAKEDIR=`pwd`/makedir \
-		cvsclean depend install
-m1i:
-	make PREFIX=$(HOME)/install \
-		 COMMON=`pwd`  \
-		 MAKEDIR=`pwd`/makedir \
-		install
-m2:
-	make PREFIX=/local \
-		 COMMON=`pwd` \
-		 MAKEDIR=`pwd`/makedir \
-		cvsclean depend install
-
-
-etags tags:
-	find $$(pwd) \( -name \*.lisp \
-					-o -name \*.[hc] \
-					-o -name \*.hh -o -name \*.cc \
-				\) -print | etags -
-
-
-CLEAN=clean-install clean
-A=allegro
-C=clisp
-U=cmucl
-E=ecl
-S=sbcl
-O=openmcl
-ALL:=$(C) $(E) $(S) 
-
-
-MM=$(MAKE) $(MFLAGS)
-clean:
+	@printf $(HELP_FMT) 'clean' 'Clean in each submodule directory.'
+clean::
 	@for module in $(MODULES) ; do \
 		printf $(LINE) ;\
 		printf ";;;;;; CLEANING $$module\n" ;\
-		$(MM) -C $$module $(CLEAN) ;\
+		$(MM) MODULE_PATH=$(PACKAGES)/$(PACKAGE_PATH)/$$module -C $$module $(CLEAN) ;\
 	 done
 	@printf $(LINE)
 
-lisp-clean:
+help::
+	@printf $(HELP_FMT) 'install' 'Install each submodule directory specific stuff,'
+	@printf $(HELP_FMT_2) 'then copy the whole library to '"$(PACKAGES)/$(PACKAGE_PATH)"
+install::
 	@for module in $(MODULES) ; do \
 		printf $(LINE) ;\
 		printf ";;;;;; CLEANING, COMPILING and INSTALLING $$module\n" ;\
-		$(MM) -C $$module $(CLEAN) all install ;\
+		$(MM) MODULE_PATH=$(PACKAGES)/$(PACKAGE_PATH)/$$module  -C $$module install ;\
 	 done
 	@printf $(LINE)
-
-lisp:
-	@for module in $(MODULES) ; do \
-		printf $(LINE) ;\
-		printf ";;;;;; COMPILING and INSTALLING $$module\n" ;\
-		$(MM) -C $$module all install ;\
-	 done
+	@printf 'Installing the whole sources to %s\n' "$(PACKAGES)/$(PACKAGE_PATH)"
+	-@mkdir -p "$(PACKAGES)/$(PACKAGE_PATH)"
+	@tar --exclude \*~ -cf - . | tar -C "$(PACKAGES)/$(PACKAGE_PATH)/" -xvf -
 	@printf $(LINE)
 
-install:
-	-@mkdir -p $(PACKAGES)/$(PACKAGE_PATH)
-	@tar --exclude \*~ -cf - . | tar -C $(PACKAGES)/$(PACKAGE_PATH)/ -xvf -
-	@printf $(LINE)
-#	@for module in $(MODULES) ; do \
-#		printf $(LINE) ;\
-#		printf ";;;;;; INSTALLING $$module\n" ;\
-#		$(MM) -C $$module all install ;\
-#	 done
+
+help::
+	@printf $(HELP_FMT)  'make systems'   'Analyses the sources and generates the ASDF systems.'
+	@printf $(HELP_FMT)  'make summaries' 'Analyses the sources and generates the summary.html files.'
+systems system system.asd summaries summary summary.html:
+	@echo not implemented yet
+	@false
 
 
-subprojects modules:
-	@echo $(MODULES) 
 
-systems:
-	mcp  \*/system.asd \#1/com.informatimago.\#1.asd
+help::
+	@printf $(HELP_FMT)  'tags' 'Generate the TAGS file, for emacs.'
+etags tags TAGS::
+	find $$(pwd) \( \
+		   -name '[^#.]*.lisp' -o -name '[^#.]*.lsp'  -o -name '[^#.]*.cl' \
+		-o -name '[^#.]*.h'    -o -name '[^#.]*.c'    -o -name '[^#.]*.m'  \
+		-o -name '[^#.]*.hh'   -o -name '[^#.]*.cc'   -o -name '[^#.]*.mm' \
+		\) -print \
+	| tee -a /dev/stderr -a /dev/stdout \
+	| etags -
+	@printf ';; Done.\n'
 
 #### THE END ####
 

@@ -34,19 +34,20 @@
 ;;;;    the Free  Software Foundation, Inc.,  59 Temple Place,  Suite 330,
 ;;;;    Boston, MA 02111-1307 USA
 ;;;;*****************************************************************************
-
-(defPACKAGE "COM.INFORMATIMAGO.CLISP.SCRIPT"
+(in-package "COMMON-LISP-USER")
+(declaim (declaration also-use-packages))
+(declaim (also-use-packages "SYS" "EXT"))
+(defpackage "COM.INFORMATIMAGO.CLISP.SCRIPT"
   (:DOCUMENTATION
    "This package exports script functions.")
   (:use "COMMON-LISP"
-        "EXT" "SYS"
         "COM.INFORMATIMAGO.CLISP.STRING")
   (:EXPORT  "INITIALIZE"
             "PERROR" "PMESSAGE" "PQUERY"
             "*INITIAL-WORKING-DIRECTORY*" "IS-RUNNING"
             "*PATH*" "*NAME*" "*ARGUMENTS*" "*TESTING*" "PID"
             "SHELL" "SHELL-QUOTE-ARGUMENT" "EXECUTE"
-            "MAKE-DIRECTORY" "MAKE-SYMBOLIC-LINK" "COPY-FILE" ";;" "MISPLACED!"
+            "MAKE-DIRECTORY" "MAKE-SYMBOLIC-LINK" "COPY-FILE"
             "EXIT" "EX-OK" "EX--BASE" "EX-USAGE"
             "EX-DATAERR" "EX-NOINPUT" "EX-NOUSER" "EX-NOHOST"
             "EX-UNAVAILABLE" "EX-SOFTWARE" "EX-OSERR" "EX-OSFILE"

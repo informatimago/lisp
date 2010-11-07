@@ -35,10 +35,8 @@
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
-
 (declaim (declaration ALSO-USE-PACKAGES))
-(declaim (ALSO-USE-PACKAGES  "COM.INFORMATIMAGO.CLISP.SUSV3"))
-
+(declaim (ALSO-USE-PACKAGES "EXT" "COM.INFORMATIMAGO.CLISP.SUSV3"))
 (defpackage "COM.INFORMATIMAGO.CLISP.XTERM"
   (:DOCUMENTATION "
     This package exports functions to open xterm streams.
@@ -46,11 +44,12 @@
     Copyright Pascal J. Bourguignon 2005 - 2005
     This package is provided under the GNU General Public License.
     See the source file for details.")
-  (:use "COMMON-LISP"
-        "EXT" "CLOS"
+  (:use "COMMON-LISP" "CLOS"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
+  (:shadowing-import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "WITH-GENSYMS")
+  (:shadowing-import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST" "PROPER-LIST-P")
   (:EXPORT
    "*XTERM-FONT*" "MAKE-XTERM-IO-STREAM" "SERVER-REPL" 
    "XTERM-LISTENER" "FORK-XTERM-LISTENER"))

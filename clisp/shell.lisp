@@ -36,12 +36,13 @@
 ;;;;    If not, write to the Free Software Foundation,
 ;;;;    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 ;;;;****************************************************************************
-
+(in-package "COMMON-LISP-USER")
+(declaim (declaration also-use-packages))
+(declaim (also-use-packages "FFI"  "LINUX"))
 (defPACKAGE "COM.INFORMATIMAGO.CLISP.SHELL"
   (:DOCUMENTATION
    "This package export shell primitives (fork, pipe, redirections, exec).")
-  (:use "COMMON-LISP"
-        "LINUX" "FFI")
+  (:use "COMMON-LISP")
   (:EXPORT
    ;; variables:
    "*TEMPORARY-PATHNAME*" ;; pathname of the temporary directory.
@@ -523,7 +524,7 @@ EDGE-LIST:      specifies the pipe and input or output as:
                 except the forms in (:tag begin form...)
                 wich are evaluated in the forked child process, and the
                 data-expr in (data data-expr) which is evaluated in
-                the result of this macro (in pjb-shell:pipe-and-exec-fun).
+                the result of this macro (in pipe-and-exec-fun).
 "
   ;; 0. input-data must be evaluated and written to temporary files.
   ;; 1. create all the pipes
@@ -573,8 +574,8 @@ EDGE-LIST:      specifies the pipe and input or output as:
                              ;; lisp form
                              (SETQ STATUS (EVAL (CONS 'PROGN (CDDR PROCESS))))
                              ;; program process
-                             (EVAL (CONS 'PJB-SHELL:EXECL (CONS (NTH 1 PROCESS)
-                                                                (CDR PROCESS))))
+                             (EVAL (CONS 'EXECL (CONS (NTH 1 PROCESS)
+                                                      (CDR PROCESS))))
                              ))
                     ;; no clean up
                     )

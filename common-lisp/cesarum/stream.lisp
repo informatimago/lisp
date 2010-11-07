@@ -41,46 +41,46 @@
 ;;;;    Boston, MA 02111-1307 USA
 ;;;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM"
-  (:USE "COMMON-LISP" "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
-  (:EXPORT "BVSTREAM-READ-BYTE" "BVSTREAM-WRITE-BYTE" "BVSTREAM-POSITION"
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM"
+  (:use "COMMON-LISP" "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
+  (:export "BVSTREAM-READ-BYTE" "BVSTREAM-WRITE-BYTE" "BVSTREAM-POSITION"
            "WITH-INPUT-FROM-BYTE-VECTOR" "WITH-OUTPUT-TO-BYTE-VECTOR"
            "CONTENTS-FROM-STREAM"
            "COPY-OVER" "COPY-STREAM" "STREAM-TO-STRING-LIST"
            "BARE-STREAM")
-  (:IMPORT-FROM "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING" "SPLIT-STRING")
-  (:DOCUMENTATION
+  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING" "SPLIT-STRING")
+  (:documentation
    "This package exports utility functions about streams.
 
     Copyright Pascal J. Bourguignon 2003 - 2007
     This package is provided under the GNU General Public License.
     See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM")
 
 
   
 
-(DEFUN STREAM-TO-STRING-LIST (STREAM)
+(defun stream-to-string-list (stream)
   "
 RETURN:  the list of lines collected from stream.
 "
   (typecase stream
-    (STREAM    (LOOP
-                  :for LINE = (READ-LINE STREAM NIL NIL)
-                  :WHILE LINE :COLLECT LINE))
-    (string    (SPLIT-STRING STREAM (FORMAT NIL "~C" #\newline)))
-    (otherwise NIL)))
+    (stream    (loop
+                  :for line = (read-line stream nil nil)
+                  :while line :collect line))
+    (string    (split-string stream (format nil "~C" #\newline)))
+    (otherwise nil)))
 
 
-(DEFUN COPY-STREAM (FROM TO)
+(defun copy-stream (from to)
   "Copy into TO from FROM until end of the input file.  Do not
 translate or otherwise maul anything.
 AUTHORS: Daniel Barlow, Xarch"
-  (LET ((BUF (MAKE-ARRAY 4096 :ELEMENT-TYPE (STREAM-ELEMENT-TYPE FROM))))
-    (DO ((POS (READ-SEQUENCE BUF FROM) (READ-SEQUENCE BUF FROM)))
-        ((= 0 POS) NIL)
-      (WRITE-SEQUENCE BUF TO :END POS))))
+  (let ((buf (make-array 4096 :element-type (stream-element-type from))))
+    (do ((pos (read-sequence buf from) (read-sequence buf from)))
+        ((= 0 pos) nil)
+      (write-sequence buf to :end pos))))
 
 
 
@@ -95,11 +95,11 @@ MAX-EXTEND: NIL ==> double the buffer size, or double the buffer size until
 RETURN:     A vector containing the elements read from the STREAM.
 "
   (let* ((busize (or length (ignore-errors (file-length stream)) min-size))
-         (eltype (stream-ELEMENT-TYPE stream))
-         (initel (if (subtypep eltype 'integer) 0 #\Space))
-         (buffer (make-ARRAY busize 
-                             :ELEMENT-TYPE eltype
-                             :INITIAL-ELEMENT initel
+         (eltype (stream-element-type stream))
+         (initel (if (subtypep eltype 'integer) 0 #\space))
+         (buffer (make-array busize 
+                             :element-type eltype
+                             :initial-element initel
                              :adjustable t :fill-pointer t))
          (start 0))
     (loop
@@ -118,27 +118,27 @@ RETURN:     A vector containing the elements read from the STREAM.
   
 
 
-(DEFUN COPY-OVER (STREAM FROM-POS TO-POS &key (element-type 'character))
+(defun copy-over (stream from-pos to-pos &key (element-type 'character))
   "
 DO:         Copies elements from the FROM-POS to the end of the STREAM
             to the TO-POS.
 POST:       (file-position stream) == (+ to-pos (- eof-pos from-ops))
 NOTE:       The file is not truncated.
 "
-  (ASSERT (< TO-POS FROM-POS))
-  (DO ((BUFFER (MAKE-ARRAY '(1048576) :ELEMENT-TYPE element-type))
-       (EOF NIL)
-       (LENGTH))
-      (EOF)
-    (FILE-POSITION STREAM FROM-POS)
-    (SETF LENGTH (READ-SEQUENCE BUFFER STREAM))
-    (SETF FROM-POS (FILE-POSITION STREAM))
-    (IF (= LENGTH 0)
-        (SETF EOF T)
-        (PROGN
-          (FILE-POSITION STREAM TO-POS)
-          (WRITE-SEQUENCE BUFFER STREAM :START 0 :END LENGTH)
-          (SETF TO-POS (FILE-POSITION STREAM))))))
+  (assert (< to-pos from-pos))
+  (do ((buffer (make-array '(1048576) :element-type element-type))
+       (eof nil)
+       (length))
+      (eof)
+    (file-position stream from-pos)
+    (setf length (read-sequence buffer stream))
+    (setf from-pos (file-position stream))
+    (if (= length 0)
+        (setf eof t)
+        (progn
+          (file-position stream to-pos)
+          (write-sequence buffer stream :start 0 :end length)
+          (setf to-pos (file-position stream))))))
   
 
 
@@ -175,87 +175,87 @@ RETURN: A stream or a list of streams that are not compound streams
 
 ;;----------------------------------------------------------------------
 
-(DEFGENERIC BVSTREAM-POSITION (SELF POSITION))
-(DEFGENERIC BVSTREAM-WRITE-BYTE (SELF BYTE))
-(DEFGENERIC BVSTREAM-READ-BYTE (SELF))
+(defgeneric bvstream-position (self position))
+(defgeneric bvstream-write-byte (self byte))
+(defgeneric bvstream-read-byte (self))
 
 
-(DEFCLASS BVSTREAM-OUT ()
-  ((BYTES :READER GET-BYTES
-          :WRITER SET-BYTES
-          :ACCESSOR BYTE-VECTOR
-          :INITFORM (MAKE-ARRAY '(1024)
-                                :ELEMENT-TYPE '(UNSIGNED-BYTE 8)
-                                :ADJUSTABLE T
-                                :FILL-POINTER 0)
-          :INITARG :BYTES)))
+(defclass bvstream-out ()
+  ((bytes :reader get-bytes
+          :writer set-bytes
+          :accessor byte-vector
+          :initform (make-array '(1024)
+                                :element-type '(unsigned-byte 8)
+                                :adjustable t
+                                :fill-pointer 0)
+          :initarg :bytes)))
 
 
 
-(DEFMETHOD BVSTREAM-POSITION ((SELF BVSTREAM-OUT) POSITION)
-  (IF POSITION
-      (SETF (FILL-POINTER (BYTE-VECTOR SELF))
-            (MIN (ARRAY-DIMENSION (BYTE-VECTOR SELF) 0) (MAX 0 POSITION)))
-      (FILL-POINTER (BYTE-VECTOR SELF))))
+(defmethod bvstream-position ((self bvstream-out) position)
+  (if position
+      (setf (fill-pointer (byte-vector self))
+            (min (array-dimension (byte-vector self) 0) (max 0 position)))
+      (fill-pointer (byte-vector self))))
 
 
-(DEFMETHOD BVSTREAM-WRITE-BYTE ((SELF BVSTREAM-OUT) (BYTE INTEGER))
-  (VECTOR-PUSH-EXTEND (LDB (BYTE 8 0) BYTE) 
-                      (BYTE-VECTOR SELF)
-                      (ARRAY-DIMENSION (BYTE-VECTOR SELF) 0)))
+(defmethod bvstream-write-byte ((self bvstream-out) (byte integer))
+  (vector-push-extend (ldb (byte 8 0) byte) 
+                      (byte-vector self)
+                      (array-dimension (byte-vector self) 0)))
 
 
-(DEFMACRO WITH-OUTPUT-TO-BYTE-VECTOR ((VAR &OPTIONAL BYTE-VECTOR-FORM 
-                                           &KEY ELEMENT-TYPE) &BODY BODY)
+(defmacro with-output-to-byte-vector ((var &optional byte-vector-form 
+                                           &key element-type) &body body)
   (declare (ignore element-type)) ;; TODO: Remove this parameter!
-  `(LET ((,VAR (MAKE-INSTANCE 'BVSTREAM-OUT
-                 ,@(WHEN BYTE-VECTOR-FORM `(:BYTES ,BYTE-VECTOR-FORM)))))
-     (LET ((,VAR ,VAR)) ,@BODY)
-     (GET-BYTES ,VAR)))
+  `(let ((,var (make-instance 'bvstream-out
+                 ,@(when byte-vector-form `(:bytes ,byte-vector-form)))))
+     (let ((,var ,var)) ,@body)
+     (get-bytes ,var)))
 
 
-(DEFCLASS BVSTREAM-IN ()
-  ((BYTES :READER GET-BYTES :WRITER SET-BYTES
-          :ACCESSOR BYTE-VECTOR
-          :INITARG :BYTES)
-   (POSITION :READER GET-POSITION
-             :ACCESSOR BIS-POSITION 
-             :INITARG :POSITION :INITFORM 0)
-   (END :INITARG :END :INITFORM NIL)))
+(defclass bvstream-in ()
+  ((bytes :reader get-bytes :writer set-bytes
+          :accessor byte-vector
+          :initarg :bytes)
+   (position :reader get-position
+             :accessor bis-position 
+             :initarg :position :initform 0)
+   (end :initarg :end :initform nil)))
 
 
 
-(DEFMETHOD INITIALIZE-INSTANCE ((SELF BVSTREAM-IN) &REST ARGS)
-  (DECLARE (IGNORE ARGS))
-  (CALL-NEXT-METHOD)
-  (LET ((LEN (LENGTH (BYTE-VECTOR SELF))))
-    (SETF (SLOT-VALUE SELF 'END) (IF (SLOT-VALUE SELF 'END)
-                                     (MIN (SLOT-VALUE SELF 'END) LEN) LEN)
-          (BIS-POSITION SELF) (MAX 0 (MIN (BIS-POSITION SELF) LEN))))
-  SELF)
+(defmethod initialize-instance ((self bvstream-in) &rest args)
+  (declare (ignore args))
+  (call-next-method)
+  (let ((len (length (byte-vector self))))
+    (setf (slot-value self 'end) (if (slot-value self 'end)
+                                     (min (slot-value self 'end) len) len)
+          (bis-position self) (max 0 (min (bis-position self) len))))
+  self)
                                                 
 
-(DEFMETHOD BVSTREAM-POSITION ((SELF BVSTREAM-IN) POSITION)
-  (IF POSITION
-      (SETF (BIS-POSITION SELF) (MIN (BIS-POSITION SELF) (MAX 0 POSITION)))
-      (BIS-POSITION SELF)))
+(defmethod bvstream-position ((self bvstream-in) position)
+  (if position
+      (setf (bis-position self) (min (bis-position self) (max 0 position)))
+      (bis-position self)))
 
 
-(DEFMETHOD BVSTREAM-READ-BYTE ((SELF BVSTREAM-IN))
-  (IF (< (BIS-POSITION SELF) (SLOT-VALUE SELF 'END))
-      (PROG1 (AREF (GET-BYTES SELF) (BIS-POSITION SELF))
-        (INCF (BIS-POSITION SELF)))
-      :EOF))
+(defmethod bvstream-read-byte ((self bvstream-in))
+  (if (< (bis-position self) (slot-value self 'end))
+      (prog1 (aref (get-bytes self) (bis-position self))
+        (incf (bis-position self)))
+      :eof))
 
 
-(DEFMACRO WITH-INPUT-FROM-BYTE-VECTOR ((VAR BYTE-VECTOR &KEY INDEX START END)
-                                       &BODY BODY)
-  `(LET ((,VAR (MAKE-INSTANCE 'BVSTREAM-IN :BYTES ,BYTE-VECTOR
-                              ,@(WHEN START `((:POSITION ,START)))
-                              ,@(WHEN END   `((:END ,END))))))
-     (LET ((,VAR ,VAR)) ,@BODY)
-     ,(WHEN INDEX `(SETF ,INDEX (GET-POSITION ,VAR)))
-     (GET-POSITION ,VAR)))
+(defmacro with-input-from-byte-vector ((var byte-vector &key index start end)
+                                       &body body)
+  `(let ((,var (make-instance 'bvstream-in :bytes ,byte-vector
+                              ,@(when start `((:position ,start)))
+                              ,@(when end   `((:end ,end))))))
+     (let ((,var ,var)) ,@body)
+     ,(when index `(setf ,index (get-position ,var)))
+     (get-position ,var)))
 
 
 ;;;; stream.lisp                      --                     --          ;;;;

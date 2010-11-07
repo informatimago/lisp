@@ -54,9 +54,9 @@
    "PEEK-UINT64" "PEEK-SINT64" "POKE-UINT64" "POKE-SINT64"))
 (in-package  "COM.INFORMATIMAGO.CLISP.RAW-MEMORY")
 
-
-(defvar *library* "libraw-memory.so"
-  "The pathname to the raw-memory library file.") 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+ (defvar *library* "/usr/local/lib/libraw-memory.so"
+   "The namestring of the pathname to the raw-memory library file.")) 
 
 (defun install-signal-handler (signum handler)
   (let ((oldhan (linux:|set-signal-handler| signum handler))
@@ -136,14 +136,14 @@
 
 
 (defun peek-uint64 (address)
-  (dpb (raw-memory:peek-uint32 (+ 4 address))
+  (dpb (peek-uint32 (+ 4 address))
        (byte 32 32)
-       (raw-memory:peek-uint32 address)))
+       (peek-uint32 address)))
 
 (defun peek-sint64 (address)
-  (dpb (raw-memory:peek-uint32 (+ 4 address))
+  (dpb (peek-uint32 (+ 4 address))
        (byte 32 32)
-       (raw-memory:peek-uint32 address)))
+       (peek-uint32 address)))
 
 (defun poke-uint64 (address object)
   (poke-uint32      address  (ldb (byte 32  0) object))

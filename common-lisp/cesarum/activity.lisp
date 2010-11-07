@@ -614,82 +614,82 @@ UNTIL:  Time until which activities must be run.
 *DEBUG*:    Print debugging information.
 "
   (let ((*rescheduled* nil))
-    (with-slots (idle-activities scheduled-activities time-base) self
-      (macrolet
-          ((run-step (debug)
-             `(with-debug ,debug
-                (LET* ((activity       (CAR (scheduler-activities self)))
-                       (scheduled-TIME (ACTIVITY-scheduled-TIME activity))
-                       (CURRENT-TIME   (get-time (scheduler-time-base self))))
-                  (debug-format "Now is ~D, current activity is ~S~%"
-                                CURRENT-TIME (activity-name activity))
-                  (if (< CURRENT-TIME scheduled-time)
-                      (progn
-                        (debug-format "Running idle scheduler for ~A seconds.~%"
-                                      (- scheduled-time CURRENT-TIME))
-                        (run (time-scheduler-idle-scheduler self)
-                             :until scheduled-time))
-                      (multiple-value-bind (runp next-scheduled-time)
-                          (schedule current-time
-                                    scheduled-time
-                                    (activity-period activity)
-                                    (activity-dropable-p activity)
-                                    (activity-exact-p activity)
-                                    (zerop (activity-period activity))
-                                    (precision (scheduler-time-base self)))
-                        (setf (activity-scheduled-time activity) next-scheduled-time)
-                        (when runp
-                          (setf (scheduler-activities self)
-                                (cdr (scheduler-activities self)))
-                          (debug-format "Will run periodic activity ~S.~%"
-                                        (activity-name activity))
-                          (let ((*CURRENT-ACTIVITY* activity))
-                            (catch 'activity-yield
-                              (FUNCALL (ACTIVITY-CLOSURE activity))))
-                          (debug-format "Did  run periodic activity ~S.~%"
-                                        (activity-name activity))
-                          (when (activity-scheduler activity)
-                            (schedule-activity (activity-scheduler activity) activity))
-                          (debug-format "Queue after rescheduling:~%")
-                          ,(when debug
-                                 `(PRINT-scheduler-ACTIVITIES self *TRACE-OUTPUT*)))))))))
-        (if ONE-STEP
-            (if *debug*
-                (run-step t)
-                (run-step nil))
-            (cond
-              ((null until)
-               (if *debug*
-                   (LOOP
-                      :while (or (scheduler-activities self)
-                                 (scheduler-activities
-                                  (time-scheduler-idle-scheduler self)))
-                      :do (run-step t))
-                   (LOOP
-                      :while (or (scheduler-activities self)
-                                 (scheduler-activities
-                                  (time-scheduler-idle-scheduler self)))
-                      :do (run-step nil))))
-              ((< (get-time (scheduler-time-base self)) until)
-               (if *debug*
-                   (LOOP
-                      :while (and (< (get-time (scheduler-time-base self))
-                                     until)
-                                  (or (scheduler-activities self)
-                                      (scheduler-activities
-                                       (time-scheduler-idle-scheduler self))))
-                      :do (run-step t))
-                   (LOOP
-                      :while (and (< (get-time (scheduler-time-base self))
-                                     until)
-                                  (or (scheduler-activities self)
-                                      (scheduler-activities
-                                       (time-scheduler-idle-scheduler self))))
-                      :do (run-step nil))))
-              (t
-               (when *debug*
-                 (with-debug t
-                   (debug-format "No more time to run activities.~%"))))))))))
+    ;; with-slots (idle-activities scheduled-activities time-base) self
+    (macrolet
+        ((run-step (debug)
+           `(with-debug ,debug
+              (LET* ((activity       (CAR (scheduler-activities self)))
+                     (scheduled-TIME (ACTIVITY-scheduled-TIME activity))
+                     (CURRENT-TIME   (get-time (scheduler-time-base self))))
+                (debug-format "Now is ~D, current activity is ~S~%"
+                              CURRENT-TIME (activity-name activity))
+                (if (< CURRENT-TIME scheduled-time)
+                    (progn
+                      (debug-format "Running idle scheduler for ~A seconds.~%"
+                                    (- scheduled-time CURRENT-TIME))
+                      (run (time-scheduler-idle-scheduler self)
+                           :until scheduled-time))
+                    (multiple-value-bind (runp next-scheduled-time)
+                        (schedule current-time
+                                  scheduled-time
+                                  (activity-period activity)
+                                  (activity-dropable-p activity)
+                                  (activity-exact-p activity)
+                                  (zerop (activity-period activity))
+                                  (precision (scheduler-time-base self)))
+                      (setf (activity-scheduled-time activity) next-scheduled-time)
+                      (when runp
+                        (setf (scheduler-activities self)
+                              (cdr (scheduler-activities self)))
+                        (debug-format "Will run periodic activity ~S.~%"
+                                      (activity-name activity))
+                        (let ((*CURRENT-ACTIVITY* activity))
+                          (catch 'activity-yield
+                            (FUNCALL (ACTIVITY-CLOSURE activity))))
+                        (debug-format "Did  run periodic activity ~S.~%"
+                                      (activity-name activity))
+                        (when (activity-scheduler activity)
+                          (schedule-activity (activity-scheduler activity) activity))
+                        (debug-format "Queue after rescheduling:~%")
+                        ,(when debug
+                               `(PRINT-scheduler-ACTIVITIES self *TRACE-OUTPUT*)))))))))
+      (if ONE-STEP
+          (if *debug*
+              (run-step t)
+              (run-step nil))
+          (cond
+            ((null until)
+             (if *debug*
+                 (LOOP
+                    :while (or (scheduler-activities self)
+                               (scheduler-activities
+                                (time-scheduler-idle-scheduler self)))
+                    :do (run-step t))
+                 (LOOP
+                    :while (or (scheduler-activities self)
+                               (scheduler-activities
+                                (time-scheduler-idle-scheduler self)))
+                    :do (run-step nil))))
+            ((< (get-time (scheduler-time-base self)) until)
+             (if *debug*
+                 (LOOP
+                    :while (and (< (get-time (scheduler-time-base self))
+                                   until)
+                                (or (scheduler-activities self)
+                                    (scheduler-activities
+                                     (time-scheduler-idle-scheduler self))))
+                    :do (run-step t))
+                 (LOOP
+                    :while (and (< (get-time (scheduler-time-base self))
+                                   until)
+                                (or (scheduler-activities self)
+                                    (scheduler-activities
+                                     (time-scheduler-idle-scheduler self))))
+                    :do (run-step nil))))
+            (t
+             (when *debug*
+               (with-debug t
+                 (debug-format "No more time to run activities.~%")))))))))
 
 
 
@@ -716,7 +716,7 @@ UNTIL:  Time until which activities must be run.
     (format nil "~~~DD" width)))
 
 (defmethod PRINT-scheduler-ACTIVITIES ((scheduler time-scheduler)
-                                        &OPTIONAL (STREAM *STANDARD-OUTPUT*))
+                                       &OPTIONAL (STREAM *STANDARD-OUTPUT*))
   (LET ((NOW (get-time (scheduler-time-base scheduler)))
         (line-cs
          (let ((precision      (precision (scheduler-time-base scheduler)))

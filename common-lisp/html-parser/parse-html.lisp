@@ -1506,12 +1506,13 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
            (eql (next-char) (get-char-and-keep)) --> true or false!
            Same with eat-char."
            (nextchar (html-scanner-source scanner)))
-         (has-char ()
-           "Whether value is not empty."
-           (plusp (fill-pointer value)))
-         (last-char ()
-           "Return the last character in value."
-           (aref value (1- (fill-pointer value)))))
+         ;; (has-char ()
+         ;;   "Whether value is not empty."
+         ;;   (plusp (fill-pointer value)))
+         ;; (last-char ()
+         ;;   "Return the last character in value."
+         ;;   (aref value (1- (fill-pointer value))))
+         )
       (declare (inline get-char-and-keep eat-char unget-char next-char))
       (case (html-scanner-state scanner)
         ((:normal)

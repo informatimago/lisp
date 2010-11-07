@@ -37,20 +37,20 @@
 ;;;;    Boston, MA 02111-1307 USA
 ;;;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PMATCH"
-  (:USE "COMMON-LISP" "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
-  (:EXPORT "MATCH-CASE" "COLLECT-VARIABLES" ":" "?/" "?*" "?+" "??" "?N" "?X"
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PMATCH"
+  (:use "COMMON-LISP" "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
+  (:export "MATCH-CASE" "COLLECT-VARIABLES" ":" "?/" "?*" "?+" "??" "?N" "?X"
            "?C" "?V" "?AX" "?AC" "?AV" "MATCH-DICT-MAP" "MATCH-STATE-DICT"
            "MATCH-STATE-FAILED-P" "MATCH")
-  (:IMPORT-FROM "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "WITH-GENSYMS")
-  (:DOCUMENTATION
+  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "WITH-GENSYMS")
+  (:documentation
    "Sexp Pattern Matcher
 
     Copyright Pascal J. Bourguignon 2003 - 2004
     This package is provided under the GNU General Public License.
     See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PMATCH")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PMATCH")
 
 
 
@@ -58,78 +58,78 @@
 (defun make-match-state (&key dict) dict)
 (defun match-state-dict (ms) ms)
 
-(DEFUN MATCH-STATE-FAIL     (MS raison)
+(defun match-state-fail     (ms raison)
   "PRIVATE"
-  (make-match-state :dict  (list* :failed raison (MATCH-STATE-DICT MS))))
+  (make-match-state :dict  (list* :failed raison (match-state-dict ms))))
 
 
-(DEFUN MATCH-STATE-FAILED-P (MS)
+(defun match-state-failed-p (ms)
   "
 RETURN: Whether the match failed.
 "
-  (EQ :FAILED (CAR (MATCH-STATE-DICT MS))) )
+  (eq :failed (car (match-state-dict ms))) )
 
 
-(DEFUN MATCH-STATE-RETRY    (MS)
+(defun match-state-retry    (ms)
   "PRIVATE" 
-  (if (MATCH-STATE-FAILED-P MS)
-      (make-match-state :dict (cdr (MATCH-STATE-DICT MS)))
+  (if (match-state-failed-p ms)
+      (make-match-state :dict (cdr (match-state-dict ms)))
       ms))
 
 
-(DEFUN MATCH-DICT-MAP (MS FUNCTION)
+(defun match-dict-map (ms function)
   "
 DO:     Calls FUNCTION (lambda (symbol value) ...) with all successive bindings,
         (unless matching state is failed).
 RETURN: The list of results of the FUNCTION.
 "
-  (UNLESS (MATCH-STATE-FAILED-P MS)
-    (MAPCAR (LAMBDA (BINDING) (FUNCALL FUNCTION (FIRST BINDING) (SECOND BINDING)))
-            (MATCH-STATE-DICT MS))))
+  (unless (match-state-failed-p ms)
+    (mapcar (lambda (binding) (funcall function (first binding) (second binding)))
+            (match-state-dict ms))))
 
 
-(DEFUN MATCH-DICT-ADD-BINDING (MS PAT EXP)
+(defun match-dict-add-binding (ms pat exp)
   "PRIVATE" 
-  (LET* ((VAR (SECOND (CAR PAT)))
-         (VAL (CAR EXP))
-         (ASS (ASSOC VAR (MATCH-STATE-DICT MS))))
+  (let* ((var (second (car pat)))
+         (val (car exp))
+         (ass (assoc var (match-state-dict ms))))
     (cond
-      ((null ASS)                       ; a new binding:
-       (make-match-state :dict (cons (CONS VAR VAL) (MATCH-STATE-DICT MS))))
-      ((EQUALP (CDR ASS) VAL)           ; already there, same
+      ((null ass)                       ; a new binding:
+       (make-match-state :dict (cons (cons var val) (match-state-dict ms))))
+      ((equalp (cdr ass) val)           ; already there, same
        ms)
       (t                                ; already there, different
        (match-state-fail ms `(:mismatching-binding ,ass ,val))))))
 
 
-(DEFMACRO DEFPATTERN (NAME PATTERN)
-  (IF (SYMBOLP PATTERN)
-      `(DEFUN ,NAME (PAT) ;; (?ac ...)
+(defmacro defpattern (name pattern)
+  (if (symbolp pattern)
+      `(defun ,name (pat) ;; (?ac ...)
          "PRIVATE"
-         (AND (LISTP PAT) (SYMBOLP (CAR PAT))
-              (STRING= ',PATTERN (CAR PAT))))
-      `(DEFUN ,NAME (PAT) ;; ((?n ...)...)
+         (and (listp pat) (symbolp (car pat))
+              (string= ',pattern (car pat))))
+      `(defun ,name (pat) ;; ((?n ...)...)
          "PRIVATE" 
-         (AND (LISTP PAT) (LISTP (CAR PAT)) (SYMBOLP (CAAR PAT))
-              (STRING= ',(CAR PATTERN) (CAAR PAT))))))
+         (and (listp pat) (listp (car pat)) (symbolp (caar pat))
+              (string= ',(car pattern) (caar pat))))))
 
 
-(DEFPATTERN PAT-ANONYMOUS-VARIABLE-P   ?AV)
-(DEFPATTERN PAT-ANONYMOUS-CONSTANT-P   ?AC)
-(DEFPATTERN PAT-ANONYMOUS-EXPRESSION-P ?AX)
-(DEFPATTERN PAT-NAMED-P                (?N))
-(DEFPATTERN PAT-VARIABLE-P             (?V))
-(DEFPATTERN PAT-CONSTANT-P             (?C))
-(DEFPATTERN PAT-EXPRESSION-P           (?X))
-(DEFPATTERN PAT-OPTIONAL-P             (??))
-(DEFPATTERN PAT-REPEAT-P               (?+))
-(DEFPATTERN PAT-OPTIONAL-REPEAT-P      (?*))
-(DEFPATTERN PAT-ALTERNATIVE-P          (?/))
-(DEFPATTERN PAT-SQUELETON-EVAL-P       |:|)
+(defpattern pat-anonymous-variable-p   ?av)
+(defpattern pat-anonymous-constant-p   ?ac)
+(defpattern pat-anonymous-expression-p ?ax)
+(defpattern pat-named-p                (?n))
+(defpattern pat-variable-p             (?v))
+(defpattern pat-constant-p             (?c))
+(defpattern pat-expression-p           (?x))
+(defpattern pat-optional-p             (??))
+(defpattern pat-repeat-p               (?+))
+(defpattern pat-optional-repeat-p      (?*))
+(defpattern pat-alternative-p          (?/))
+(defpattern pat-squeleton-eval-p       |:|)
 
 
-(DEFUN EXP-VARIABLE-P (EXP) "PRIVATE" (AND (CONSP EXP)  (SYMBOLP   (CAR EXP))))
-(DEFUN EXP-CONSTANT-P (EXP) "PRIVATE" (AND (CONSP EXP)  (CONSTANTP (CAR EXP))))
+(defun exp-variable-p (exp) "PRIVATE" (and (consp exp)  (symbolp   (car exp))))
+(defun exp-constant-p (exp) "PRIVATE" (and (consp exp)  (constantp (car exp))))
 
 
 ;; (?n n ?v) == (?v n)
@@ -167,18 +167,18 @@ RETURN: The list of results of the FUNCTION.
   "
 RETURN: a list of possible follows from shortest to longuest.
 "
-  (DO ((REST  EXP (CDR REST)) ;; what should match after
-       (LIST  '())            ;; what we match (reversed),
+  (do ((rest  exp (cdr rest)) ;; what should match after
+       (list  '())            ;; what we match (reversed),
        ;;             we reverse only in the final result [F].
-       (FRAME '()))
-      ((NULL REST)
-       (PUSH (LIST LIST REST) FRAME)
-       FRAME)
-    (PUSH (LIST LIST REST) FRAME)
-    (PUSH (CAR REST) LIST)))
+       (frame '()))
+      ((null rest)
+       (push (list list rest) frame)
+       frame)
+    (push (list list rest) frame)
+    (push (car rest) list)))
 
 
-(DEFUN MATCH (PAT EXP &OPTIONAL (MS (MAKE-MATCH-STATE)))
+(defun match (pat exp &optional (ms (make-match-state)))
   "
 DO:        A pattern matcher accepting the following syntax:
              ?av        expects a symbol (variable).
@@ -200,127 +200,127 @@ SEE ALSO:  match-state-failed-p to check if the matching failed.
   ;; The pattern and the expression may be atoms or lists,
   ;; but usually we process (car pat) and (car exp), to be able
   ;; to match several items (?+ and ?*).
-  (COND
-    ((MATCH-STATE-FAILED-P MS) MS)
-    ((ATOM PAT)
-     (IF (EQUAL PAT EXP)
-         MS
-         (MATCH-STATE-FAIL MS `(:different ,pat ,exp))))
-    ((PAT-ANONYMOUS-CONSTANT-P PAT)
-     (IF (EXP-CONSTANT-P EXP)
-         (MATCH (CDR PAT) (CDR EXP) MS)
-         (MATCH-STATE-FAIL MS `(:not-constant ,exp))))
-    ((PAT-ANONYMOUS-VARIABLE-P PAT)
-     (IF (EXP-VARIABLE-P EXP)
-         (MATCH (CDR PAT) (CDR EXP) MS)
-         (MATCH-STATE-FAIL MS `(:not-variable ,exp))))
-    ((PAT-ANONYMOUS-EXPRESSION-P PAT)
-     (IF (NULL EXP)
-         (MATCH-STATE-FAIL MS `(:missing-expression))
-         (MATCH (CDR PAT) (CDR EXP) MS)))
-    ((PAT-CONSTANT-P PAT)
-     (IF (EXP-CONSTANT-P EXP)
-         (MATCH (CDR PAT) (CDR EXP) (MATCH-DICT-ADD-BINDING MS pat EXP))
-         (MATCH-STATE-FAIL MS `(:not-constant ,exp))))
-    ((PAT-VARIABLE-P PAT)
-     (IF (EXP-VARIABLE-P EXP)
-         (MATCH (CDR PAT) (CDR EXP) (MATCH-DICT-ADD-BINDING MS pat EXP))
-         (MATCH-STATE-FAIL MS `(:not-variable ,exp))))
-    ((PAT-EXPRESSION-P PAT)
-     (IF (NULL EXP)
-         (MATCH-STATE-FAIL MS `(:missing-expression))
-         (MATCH (CDR PAT) (CDR EXP) (MATCH-DICT-ADD-BINDING MS pat EXP)) ))
-    ((PAT-NAMED-P PAT)
+  (cond
+    ((match-state-failed-p ms) ms)
+    ((atom pat)
+     (if (equal pat exp)
+         ms
+         (match-state-fail ms `(:different ,pat ,exp))))
+    ((pat-anonymous-constant-p pat)
+     (if (exp-constant-p exp)
+         (match (cdr pat) (cdr exp) ms)
+         (match-state-fail ms `(:not-constant ,exp))))
+    ((pat-anonymous-variable-p pat)
+     (if (exp-variable-p exp)
+         (match (cdr pat) (cdr exp) ms)
+         (match-state-fail ms `(:not-variable ,exp))))
+    ((pat-anonymous-expression-p pat)
+     (if (null exp)
+         (match-state-fail ms `(:missing-expression))
+         (match (cdr pat) (cdr exp) ms)))
+    ((pat-constant-p pat)
+     (if (exp-constant-p exp)
+         (match (cdr pat) (cdr exp) (match-dict-add-binding ms pat exp))
+         (match-state-fail ms `(:not-constant ,exp))))
+    ((pat-variable-p pat)
+     (if (exp-variable-p exp)
+         (match (cdr pat) (cdr exp) (match-dict-add-binding ms pat exp))
+         (match-state-fail ms `(:not-variable ,exp))))
+    ((pat-expression-p pat)
+     (if (null exp)
+         (match-state-fail ms `(:missing-expression))
+         (match (cdr pat) (cdr exp) (match-dict-add-binding ms pat exp)) ))
+    ((pat-named-p pat)
      (loop
         for (list rest) in (generate-all-follows exp)
-        for soe = (MATCH (CDR PAT) REST MS)
-        for nms = (if (MATCH-STATE-FAILED-P soe)
+        for soe = (match (cdr pat) rest ms)
+        for nms = (if (match-state-failed-p soe)
                       soe
                       (let* ((list (reverse list))
                              (nms (match (cddar pat) list soe)))
-                        (if (MATCH-STATE-FAILED-P nms)
+                        (if (match-state-failed-p nms)
                             nms
                             (match-dict-add-binding nms pat (list list)))))
-        while (MATCH-STATE-FAILED-P nms)
+        while (match-state-failed-p nms)
         finally (return nms)))
-    ((AND (PAT-REPEAT-P PAT) (NULL EXP))
-     (MATCH-STATE-FAIL MS `(:missing-repeat ,pat)))
-    ((OR (PAT-REPEAT-P PAT) (PAT-OPTIONAL-REPEAT-P PAT) (PAT-OPTIONAL-P PAT))
+    ((and (pat-repeat-p pat) (null exp))
+     (match-state-fail ms `(:missing-repeat ,pat)))
+    ((or (pat-repeat-p pat) (pat-optional-repeat-p pat) (pat-optional-p pat))
      (loop
         for (list rest) in (generate-all-follows exp)
-        for soe = (MATCH (CDR PAT) REST MS)
-        for nms = (if (MATCH-STATE-FAILED-P soe)
+        for soe = (match (cdr pat) rest ms)
+        for nms = (if (match-state-failed-p soe)
                       soe
                       (cond
-                        ((PAT-REPEAT-P PAT)
+                        ((pat-repeat-p pat)
                          ;; at least one (...2... already matches)
                          ;; ((?+ ...1...) ...2...)
                          ;; --> (...1... (?* ...1...) ...2...)
                          (match (append (cdar pat) (list (cons '?* (cdar pat))))
                                 (reverse list) soe))
-                        ((PAT-OPTIONAL-REPEAT-P PAT)
+                        ((pat-optional-repeat-p pat)
                          ;; zero or more (...2... already matches)
                          ;; ((?* ...1...) ...2...)
                          ;; --> (...1... (?* ...1...) ...2...)
                          ;; --> (...2...)
                          (let ((nms (match (append (cdar pat) (list (car pat)))
                                            (reverse list) soe)))
-                           (if (MATCH-STATE-FAILED-P nms)
+                           (if (match-state-failed-p nms)
                                (match nil list soe)
                                nms)))
-                        ((PAT-OPTIONAL-P PAT)
+                        ((pat-optional-p pat)
                          ;; zero or one (...2... already matches)
                          ;; ((?? ...1...) ...2...)
                          ;; --> (...1... ...2...)
                          ;; --> (...2...)
-                         (let ((nms (match  (cdar pat) (REVERSE LIST) soe)))
-                           (if (MATCH-STATE-FAILED-P nms)
+                         (let ((nms (match  (cdar pat) (reverse list) soe)))
+                           (if (match-state-failed-p nms)
                                (match  nil list soe)
                                nms)))))
-        while (MATCH-STATE-FAILED-P nms)
+        while (match-state-failed-p nms)
         finally (return nms)))
-    ((ATOM EXP)
-     (MATCH-STATE-FAIL MS `(:unexpected-atom ,exp)))
-    (T ;; both cars are sublists.
-     (MATCH (CDR PAT) (CDR EXP) (MATCH (CAR PAT) (CAR EXP) MS)))))
+    ((atom exp)
+     (match-state-fail ms `(:unexpected-atom ,exp)))
+    (t ;; both cars are sublists.
+     (match (cdr pat) (cdr exp) (match (car pat) (car exp) ms)))))
 
 
-(DEFUN EVALUATE (INSTANCE)
+(defun evaluate (instance)
   "PRIVATE"
-  (COND
-    ((ATOM INSTANCE)               INSTANCE)
-    ((AND (ATOM (CAR INSTANCE)) (STRING= :|| (CAR INSTANCE)))
-     (EVAL (EVALUATE (SECOND INSTANCE))))
-    (T (MAPCAR (FUNCTION EVALUATE) INSTANCE))))
+  (cond
+    ((atom instance)               instance)
+    ((and (atom (car instance)) (string= :|| (car instance)))
+     (eval (evaluate (second instance))))
+    (t (mapcar (function evaluate) instance))))
 
 
-(DEFUN DICT-VALUE (DICT NAME)
+(defun dict-value (dict name)
   "PRIVATE"
-  (SECOND (ASSOC NAME DICT :TEST (FUNCTION STRING=))))
+  (second (assoc name dict :test (function string=))))
 
 
-(DEFUN DICT-BOUNDP (DICT NAME)
+(defun dict-boundp (dict name)
   "PRIVATE"
-  (AND (OR (SYMBOLP NAME) (STRINGP NAME))
-       (ASSOC NAME DICT :TEST (FUNCTION STRING=))))
+  (and (or (symbolp name) (stringp name))
+       (assoc name dict :test (function string=))))
   
 
-(DEFUN SUBST-BINDINGS (EXPR DICT)
+(defun subst-bindings (expr dict)
   "PRIVATE"
-  (COND
-    ((ATOM EXPR) (LIST EXPR))
-    ((AND (ATOM (FIRST EXPR)) (STRING= :||  (FIRST EXPR)))
-     (IF (AND (ATOM (SECOND EXPR))
-              (DICT-BOUNDP DICT (SECOND EXPR)))
-         (LIST (DICT-VALUE DICT (SECOND EXPR)))
-         (LIST (MAPCAN (LAMBDA (SUBEXPR) (SUBST-BINDINGS SUBEXPR DICT)) EXPR))))
-    ((AND (ATOM (FIRST EXPR)) (STRING= :|@| (FIRST EXPR)))
-     (COPY-SEQ (DICT-VALUE DICT (SECOND EXPR))))
-    (T (LIST (MAPCAN (LAMBDA (SUBEXPR) (SUBST-BINDINGS SUBEXPR DICT))
-                     EXPR)))))
+  (cond
+    ((atom expr) (list expr))
+    ((and (atom (first expr)) (string= :||  (first expr)))
+     (if (and (atom (second expr))
+              (dict-boundp dict (second expr)))
+         (list (dict-value dict (second expr)))
+         (list (mapcan (lambda (subexpr) (subst-bindings subexpr dict)) expr))))
+    ((and (atom (first expr)) (string= :|@| (first expr)))
+     (copy-seq (dict-value dict (second expr))))
+    (t (list (mapcan (lambda (subexpr) (subst-bindings subexpr dict))
+                     expr)))))
 
 
-(DEFUN INSTANCIATE (MS SKELETON)
+(defun instanciate (ms skeleton)
   "PRIVATE
 PRE:   (not (match-state-failed-p ms))
 DO:    Instanciate the skeleton, substituting all occurence of (: var)
@@ -329,11 +329,11 @@ DO:    Instanciate the skeleton, substituting all occurence of (: var)
        Then all remaining (: form) are evaluated (with eval) from the
        deepest first.
 "
-  (ASSERT (NOT (MATCH-STATE-FAILED-P MS)))
-  (EVALUATE (FIRST (SUBST-BINDINGS SKELETON (MATCH-STATE-DICT MS)))))
+  (assert (not (match-state-failed-p ms)))
+  (evaluate (first (subst-bindings skeleton (match-state-dict ms)))))
 
 
-(DEFUN COLLECT-VARIABLES (PAT)
+(defun collect-variables (pat)
   "
 PAT:       A symbolic expression with the following syntax:
              (?v v)  expects a symbol (variable).
@@ -345,18 +345,18 @@ PAT:       A symbolic expression with the following syntax:
 RETURN:    A list of the symbol used in the various (?. sym) items, 
            in no particular order, but with duplicates deleted.
 "
-  (DELETE-DUPLICATES
-   (COND
-     ((ATOM PAT)
-      NIL)
-     ((AND (ATOM (CAR PAT))
-           (MEMBER (CAR PAT) '(?V ?C ?X ?+ ?*) :TEST (FUNCTION STRING=)))
-      (LIST (CADR PAT)))
-     (T
-      (NCONC (COLLECT-VARIABLES (CAR PAT)) (COLLECT-VARIABLES (CDR PAT)))))))
+  (delete-duplicates
+   (cond
+     ((atom pat)
+      nil)
+     ((and (atom (car pat))
+           (member (car pat) '(?v ?c ?x ?+ ?*) :test (function string=)))
+      (list (cadr pat)))
+     (t
+      (nconc (collect-variables (car pat)) (collect-variables (cdr pat)))))))
 
 
-(DEFMACRO MATCH-CASE (SEXP &REST CLAUSES)
+(defmacro match-case (sexp &rest clauses)
   "
 SEXP:    A symbolic expression, evaluated.
 CLAUSES: A list of (pattern &body body)
@@ -372,21 +372,21 @@ EXAMPLE: (match-case expr
             ((substract (?x a) from (?x a)) 0)
             (otherwise                      :error))
 "
-  (WITH-GENSYMS (EX MS DC)
-    `(LET ((,EX ,SEXP) (,MS) (,DC))
-       (COND
-         ,@(MAPCAR
-            (LAMBDA (CLAUSE)
-              (LET ((PAT (CAR CLAUSE)) (BODY (CDR CLAUSE)))
-                (IF (AND (SYMBOLP PAT) (STRING-EQUAL "OTHERWISE" PAT))
-                    `(T ,@BODY)
-                    `((PROGN (SETF ,MS (MATCH ',PAT ,EX))
-                             (NOT (MATCH-STATE-FAILED-P ,MS)))
-                      (SETF ,DC (MATCH-STATE-DICT ,MS))
-                      (LET ( ,@(MAPCAR
-                                (LAMBDA (NAME) `(,NAME (CDR (ASSOC ',NAME ,DC)))) 
-                                (COLLECT-VARIABLES PAT)) )
-                        ,@BODY))))) CLAUSES)))))
+  (with-gensyms (ex ms dc)
+    `(let ((,ex ,sexp) (,ms) (,dc))
+       (cond
+         ,@(mapcar
+            (lambda (clause)
+              (let ((pat (car clause)) (body (cdr clause)))
+                (if (and (symbolp pat) (string-equal "OTHERWISE" pat))
+                    `(t ,@body)
+                    `((progn (setf ,ms (match ',pat ,ex))
+                             (not (match-state-failed-p ,ms)))
+                      (setf ,dc (match-state-dict ,ms))
+                      (let ( ,@(mapcar
+                                (lambda (name) `(,name (cdr (assoc ',name ,dc)))) 
+                                (collect-variables pat)) )
+                        ,@body))))) clauses)))))
 
 
-;;;; pmatch.lisp                      --                     --          ;;;;
+;;;; THE END ;;;;

@@ -163,15 +163,18 @@
 ;;;---------------------------------------------------------------------
 ;;; Weak pointers
 
+
 #+cmu
 (defun weak-pointer-p (object)
   "Returns true if the object is of type WEAK-POINTER."
   (typep object 'EXTENSIONS:WEAK-POINTER))
 
+
 #+sbcl
 (defun weak-pointer-p (object)
   "Returns true if the object is of type WEAK-POINTER."
   (typep object 'SB-EXT:WEAK-POINTER))
+
 
 #+(and clisp debug-weak)
 (defun weak-pointer-p (object)
@@ -179,10 +182,35 @@
   (EXT:WEAK-POINTER-P object))
 
 
-#-(or clisp sbcl cmu)
+
+
+#+allegro
+(defstruct (weak-pointer
+             (:constructor %make-weak-pointer))
+  (%pointer (excl:weak-vector 1)))
+
+#+allegro
+(defun make-weak-pointer (object)
+  (let ((wp (%make-weak-pointer)))
+    (setf (aref (weak-pointer-%pointer wp) 0) object)))
+
+#+allegro
+(defun weak-pointer-p (object)
+  "Returns true if the object is of type WEAK-POINTER."
+  (typep object 'weak-pointer))
+
+#+allegro
+(defun weak-pointer-value (wp)
+  (values (aref (weak-pointer-%pointer wp) 0)
+          (aref (weak-pointer-%pointer wp) 0)))
+
+
+
+#-(or allegro clisp sbcl cmu)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (error "~A: Please implement WEAK-POINTER and WEAK-OR-RELATION for ~A"
          'closer-weak (lisp-implementation-type)))
+
 
 ;;;---------------------------------------------------------------------
 ;;; Weak lists
