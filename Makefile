@@ -56,14 +56,17 @@ all:: $(ALLEGRO) $(CLISP) $(ECL) $(SBCL) $(CMUCL) $(OPENMCL)
 
 
 PREFIX=/usr/local
-PACKAGES:=$(shell get-directory SHARE_LISP)/packages
+PACKAGES:=$(shell get-directory SHARE_LISP | sed -e 's-/$$--')/packages
 PACKAGE_PATH=com/informatimago/common-lisp
+MODULES= common-lisp clext clmisc  sbcl  clisp  susv3
+
 
 
 show-variables::
-	@printf $(VAR_FMT) 'Where non-lisp stuff will be installed:'  PREFIX         $(PREFIX)
-	@printf $(VAR_FMT) 'Where lisp packages are installed.'       PACKAGES       $(PACKAGES)
-	@printf $(VAR_FMT) 'Subpath for this library.'                PACKAGE_PATH   $(PACKAGE_PATH)
+	@printf $(VAR_FMT) 'Where non-lisp stuff will be installed:'  PREFIX         "$(PREFIX)"
+	@printf $(VAR_FMT) 'Where lisp packages are installed.'       PACKAGES       "$(PACKAGES)"
+	@printf $(VAR_FMT) 'Subpath for this library.'                PACKAGE_PATH   "$(PACKAGE_PATH)"
+	@printf $(VAR_FMT) 'List of sub-modules of this project.'     MODULES        "$(MODULES)"
 
 
 MM=$(MAKE) $(MFLAGS) PREFIX=$(PREFIX)
@@ -84,12 +87,13 @@ help::
 install::
 	@for module in $(MODULES) ; do \
 		printf $(LINE) ;\
-		printf ";;;;;; CLEANING, COMPILING and INSTALLING $$module\n" ;\
+		printf ";;;;;; INSTALLING STUFF SPECIFIC TO $$module \n" ;\
 		$(MM) MODULE_PATH=$(PACKAGES)/$(PACKAGE_PATH)/$$module  -C $$module install ;\
 	 done
 	@printf $(LINE)
 	@printf 'Installing the whole sources to %s\n' "$(PACKAGES)/$(PACKAGE_PATH)"
 	-@mkdir -p "$(PACKAGES)/$(PACKAGE_PATH)"
+	-@rm -rf   "$(PACKAGES)/$(PACKAGE_PATH)/"*
 	@tar --exclude \*~ -cf - . | tar -C "$(PACKAGES)/$(PACKAGE_PATH)/" -xvf -
 	@printf $(LINE)
 

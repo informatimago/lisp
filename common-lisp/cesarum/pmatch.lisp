@@ -128,8 +128,16 @@ RETURN: The list of results of the FUNCTION.
 (defpattern pat-squeleton-eval-p       |:|)
 
 
-(defun exp-variable-p (exp) "PRIVATE" (and (consp exp)  (symbolp   (car exp))))
-(defun exp-constant-p (exp) "PRIVATE" (and (consp exp)  (constantp (car exp))))
+(defun exp-variable-p (exp)
+  "PRIVATE"
+  (and (consp exp)
+       (symbolp   (car exp))))
+
+(defun exp-constant-p (exp)
+  "PRIVATE"
+  (and (consp exp)
+       (atom (car exp))
+       (not (symbolp (car exp)))))
 
 
 ;; (?n n ?v) == (?v n)
@@ -182,10 +190,10 @@ RETURN: a list of possible follows from shortest to longuest.
   "
 DO:        A pattern matcher accepting the following syntax:
              ?av        expects a symbol (variable).
-             ?ac        expects a constant (constantp).
+             ?ac        expects a constant (non symbol atom).
              ?ax        expects anything (one item).
              (?v n)     expects a symbol (variable)     and bind it.
-             (?c n)     expects a constant (constantp)  and bind it.
+             (?c n)     expects a constant (non symbol atom)  and bind it.
              (?x n)     expects anything (one item)     and bind it.
              (?n n ...) expects anything (several item) and bind them.
              (?+ ...)   expects anything (one or more times).  AOB
@@ -337,7 +345,7 @@ DO:    Instanciate the skeleton, substituting all occurence of (: var)
   "
 PAT:       A symbolic expression with the following syntax:
              (?v v)  expects a symbol (variable).
-             (?c c)  expects a constant (constantp).
+             (?c c)  expects a constant (non symbol atom).
              (?x x)  expects anything (one item).
              (?+ l)  expects anything (one or more items).
              (?* l)  expects anything (zero or more items).

@@ -38,10 +38,10 @@
 ;;;;    Boston, MA 02111-1307 USA
 ;;;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FLOAT-BINIO"
-  (:USE "COMMON-LISP")
-  (:DOCUMENTATION
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FLOAT-BINIO"
+  (:use "COMMON-LISP")
+  (:documentation
    "This package encodes and decodes arrays of float into arrays
     of signed-byte 32 in order to do binary I/O.
     BUGS: Handling of SHORT-FLOAT and LONG-FLOAT is not complete.
@@ -49,235 +49,221 @@
     Copyright Pascal J. Bourguignon 2003 - 2003
     This package is provided under the GNU General Public License.
     See the source file for details.")
-  (:EXPORT "BIOFA-DECODE" "BIOFA-ENCODE" "BIOFA-SETREF" "BIOFA-REF"
+  (:export "BIOFA-DECODE" "BIOFA-ENCODE" "BIOFA-SETREF" "BIOFA-REF"
            "BIOFA-COUNT"))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FLOAT-BINIO")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FLOAT-BINIO")
 
 
 
 
-;;; (DEFPARAMETER SEQ (MAKE-ARRAY '(1000)
-;;;                               :ELEMENT-TYPE '(SIGNED-BYTE 32)
-;;;                               :INITIAL-ELEMENT 123456789));;SEQ
+;;; (defparameter seq (make-array '(1000)
+;;;                               :element-type '(signed-byte 32)
+;;;                               :initial-element 123456789));;seq
 
-;;; (TIME
-;;;   (WITH-OPEN-FILE (OUT "/tmp/file.dat"
-;;;                        :DIRECTION :OUTPUT
-;;;                        :IF-EXISTS :SUPERSEDE :IF-DOES-NOT-EXIST :CREATE
-;;;                        :ELEMENT-TYPE '(SIGNED-BYTE 32))
-;;;     (DOTIMES (I 1000)
-;;;       (WRITE-SEQUENCE SEQ OUT))))
+;;; (time
+;;;   (with-open-file (out "/tmp/file.dat"
+;;;                        :direction :output
+;;;                        :if-exists :supersede :if-does-not-exist :create
+;;;                        :element-type '(signed-byte 32))
+;;;     (dotimes (i 1000)
+;;;       (write-sequence seq out))))
 
 
-;;; (TIME
-;;;   (WITH-OPEN-FILE (IN  "/tmp/file.dat"
-;;;                        :DIRECTION :INPUT
-;;;                        :IF-DOES-NOT-EXIST :CREATE
-;;;                        :ELEMENT-TYPE '(SIGNED-BYTE 32))
-;;;     (DOTIMES (I 1000)
-;;;       (READ-SEQUENCE SEQ IN))))
+;;; (time
+;;;   (with-open-file (in  "/tmp/file.dat"
+;;;                        :direction :input
+;;;                        :if-does-not-exist :create
+;;;                        :element-type '(signed-byte 32))
+;;;     (dotimes (i 1000)
+;;;       (read-sequence seq in))))
 
 
 ;; integer-decode-float
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (DEFCONSTANT  +HEADER-SIZE+ 2 "NUMBER OF HEADER ELEMENTS IN A BIOFA ARRAY")
-  );;eval-when
+  (defconstant  +header-size+ 2 "NUMBER OF HEADER ELEMENTS IN A BIOFA ARRAY"))
 
-(DEFUN BIOFA-FLOAT-SIZE (BIOFA-ARRAY)
+(defun biofa-float-size (biofa-array)
   "
 PRIVATE
 RETURN: THE NUMBER OF (SIGNED-BYTE 32) NEEDED TO STORE THE MANTISSA
         OF THE FLOATS STORED IN BIOFA-ARRAY.
 "
-  (DECLARE (TYPE (ARRAY (SIGNED-BYTE 32)) BIOFA-ARRAY))
-  (AREF BIOFA-ARRAY 0)
-  ) ;;BIOFA-FLOAT-SIZE
+  (declare (type (array (signed-byte 32)) biofa-array))
+  (aref biofa-array 0))
 
 
 
-(DEFUN BIOFA-SET-FLOAT-SIZE (BIOFA-ARRAY FLOAT-SIZE)
+(defun biofa-set-float-size (biofa-array float-size)
   "
 PRIVATE
 POST: (= (BIOFA-FLOAT-SIZE BIOFA-ARRAY) FLOAT-SIZE)
 "
-  (DECLARE (TYPE (ARRAY (SIGNED-BYTE 32)) BIOFA-ARRAY))
-  (SETF (AREF BIOFA-ARRAY 0) FLOAT-SIZE)
-  ) ;;BIOFA-SET-FLOAT-SIZE
+  (declare (type (array (signed-byte 32)) biofa-array))
+  (setf (aref biofa-array 0) float-size))
 
 
 
-(DEFUN BIOFA-RADIX (BIOFA-ARRAY)
+(defun biofa-radix (biofa-array)
   "
 PRIVATE
 RETURN: The radix used to decode/encode that BIOFA-ARRAY.
 "
-  (DECLARE (TYPE (ARRAY (SIGNED-BYTE 32)) BIOFA-ARRAY))
-  (AREF BIOFA-ARRAY 1)
-  ) ;;BIOFA-RADIX
+  (declare (type (array (signed-byte 32)) biofa-array))
+  (aref biofa-array 1))
 
 
 
-(DEFUN BIOFA-SET-RADIX (BIOFA-ARRAY RADIX)
+(defun biofa-set-radix (biofa-array radix)
   "
 PRIVATE
 RETURN: The radix used to decode/encode that BIOFA-ARRAY.
 "
-  (DECLARE (TYPE (ARRAY (SIGNED-BYTE 32)) BIOFA-ARRAY))
-  (SETF (AREF BIOFA-ARRAY 1) RADIX)
-  ) ;;BIOFA-SET-RADIX
+  (declare (type (array (signed-byte 32)) biofa-array))
+  (setf (aref biofa-array 1) radix))
 
 
 
-(DEFUN FLOAT-SIZE (FVALUE)
+(defun float-size (fvalue)
   "
 PRIVATE
 RETURN: THE NUMBER OF (SIGNED-BYTE 32) NEEDED TO STORE THE MANTISSA OF FVALUE.
 "
-  (VALUES (TRUNCATE (+ 31 (FLOAT-PRECISION FVALUE)) 32))
-  ) ;;FLOAT-SIZE
+  (values (truncate (+ 31 (float-precision fvalue)) 32)))
 
 
 
-(DEFUN BIOFA-COUNT (BIOFA-ARRAY)
+(defun biofa-count (biofa-array)
   "
 RETURN: The number of floats encoded into the biofa-array.
 "
-  (DECLARE (TYPE (ARRAY (SIGNED-BYTE 32)) BIOFA-ARRAY))
-  (/ (- (LENGTH BIOFA-ARRAY)  +HEADER-SIZE+)
-     (1+ (BIOFA-FLOAT-SIZE BIOFA-ARRAY)))
-  ) ;;BIOFA-COUNT
+  (declare (type (array (signed-byte 32)) biofa-array))
+  (/ (- (length biofa-array)  +header-size+)
+     (1+ (biofa-float-size biofa-array))))
 
 
 
-(defvar +FLOAT-TYPES+ '((1 . SINGLE-FLOAT) (2 . DOUBLE-FLOAT))
+(defvar +float-types+ '((1 . single-float) (2 . double-float))
   ;; SHORT-FLOAT SINGLE-FLOAT DOUBLE-FLOAT LONG-FLOAT
   "AN A-LIST MAPPING FLOAT-SIZE TO FLOAT TYPE.") ;;+FLOAT-TYPES+
 
 
 
-(DEFMACRO BIOFA-FETCH (BIOFA-ARRAY RADIX FLOAT-SIZE TYPE BASE)
+(defmacro biofa-fetch (biofa-array radix float-size type base)
   "
 PRIVATE
 "
-  `(LET* ((EXPS (PROG1 (AREF ,BIOFA-ARRAY ,BASE) (INCF ,BASE)))
-          (NEGA (ODDP EXPS))
-          (EXPO (TRUNCATE (- EXPS (IF NEGA 1 0)) 2))
-          (MANT (CASE ,FLOAT-SIZE
-                  (1 (PROG1 (AREF ,BIOFA-ARRAY ,BASE) (INCF ,BASE)))
-                  (2 (LET ((L (PROG1 (AREF ,BIOFA-ARRAY ,BASE) (INCF ,BASE)))
-                           (H (PROG1 (AREF ,BIOFA-ARRAY ,BASE) (INCF ,BASE))))
-                       (DPB H (BYTE 32 32) L) ))
-                  (OTHERWISE
-                   (DO ((I 0 (1+ I))
-                        (B 0 (+ B 32))
-                        (M)
-                        (R 0))
-                       ((< I FS) R)
-                     (SETQ M (AREF ,BIOFA-ARRAY ,BASE))
-                     (INCF ,BASE)
-                     (DPB M (BYTE 32 B) R)))))
-          (FVALUE (* (COERCE MANT ,TYPE) (EXPT (COERCE ,RADIX ,TYPE) EXPO))))
-     (IF NEGA (- FVALUE) FVALUE))
-  ) ;;BIOFA-FETCH
+  `(let* ((exps (prog1 (aref ,biofa-array ,base) (incf ,base)))
+          (nega (oddp exps))
+          (expo (truncate (- exps (if nega 1 0)) 2))
+          (mant (case ,float-size
+                  (1 (prog1 (aref ,biofa-array ,base) (incf ,base)))
+                  (2 (let ((l (prog1 (aref ,biofa-array ,base) (incf ,base)))
+                           (h (prog1 (aref ,biofa-array ,base) (incf ,base))))
+                       (dpb h (byte 32 32) l) ))
+                  (otherwise
+                   (do ((i 0 (1+ i))
+                        (b 0 (+ b 32))
+                        (m)
+                        (r 0))
+                       ((< i fs) r)
+                     (setq m (aref ,biofa-array ,base))
+                     (incf ,base)
+                     (dpb m (byte 32 b) r)))))
+          (fvalue (* (coerce mant ,type) (expt (coerce ,radix ,type) expo))))
+     (if nega (- fvalue) fvalue)))
 
 
 
-(DEFMACRO BIOFA-STASH (BIOFA-ARRAY FLOAT-SIZE BASE FVALUE)
+(defmacro biofa-stash (biofa-array float-size base fvalue)
   "
 PRIVATE
 "
-  `(MULTIPLE-VALUE-BIND (MANT EXPO SIGN) (INTEGER-DECODE-FLOAT ,FVALUE)
-     (SETQ EXPO (+ (* 2 EXPO) (IF (< SIGN 0) 1 0)))
-     (SETF (AREF ,BIOFA-ARRAY ,BASE) EXPO)
-     (INCF ,BASE)
-     (CASE ,FLOAT-SIZE
-       (1 (SETF (AREF ,BIOFA-ARRAY ,BASE) MANT)
-          (INCF ,BASE))
-       (2 (SETF (AREF ,BIOFA-ARRAY ,BASE) (LDB (BYTE 32  0) MANT))
-          (INCF ,BASE)
-          (SETF (AREF ,BIOFA-ARRAY ,BASE) (LDB (BYTE 32 32) MANT))
-          (INCF ,BASE))
-       (OTHERWISE
-        (DO ((I 0 (1+ I))
-             (B 0 (+ B 32)))
-            ((< I ,FLOAT-SIZE))
-          (SETF (AREF ,BIOFA-ARRAY ,BASE) (LDB (BYTE 32 B) MANT))
-          (INCF ,BASE)))))
-  ) ;;BIOFA-STASH
+  `(multiple-value-bind (mant expo sign) (integer-decode-float ,fvalue)
+     (setq expo (+ (* 2 expo) (if (< sign 0) 1 0)))
+     (setf (aref ,biofa-array ,base) expo)
+     (incf ,base)
+     (case ,float-size
+       (1 (setf (aref ,biofa-array ,base) mant)
+          (incf ,base))
+       (2 (setf (aref ,biofa-array ,base) (ldb (byte 32  0) mant))
+          (incf ,base)
+          (setf (aref ,biofa-array ,base) (ldb (byte 32 32) mant))
+          (incf ,base))
+       (otherwise
+        (do ((i 0 (1+ i))
+             (b 0 (+ b 32)))
+            ((< i ,float-size))
+          (setf (aref ,biofa-array ,base) (ldb (byte 32 b) mant))
+          (incf ,base))))))
 
 
 
-(DEFUN BIOFA-REF (BIOFA-ARRAY INDEX)
+(defun biofa-ref (biofa-array index)
   "
 RETURN: The float at INDEX.
 "
-  (DECLARE (TYPE (ARRAY (SIGNED-BYTE 32)) BIOFA-ARRAY)
-           (TYPE INTEGER INDEX))
-  (ASSERT (AND (<= 0 INDEX) (< INDEX (BIOFA-COUNT BIOFA-ARRAY))))
-  (LET* ((RADIX (BIOFA-RADIX BIOFA-ARRAY))
-         (FS    (BIOFA-FLOAT-SIZE BIOFA-ARRAY))
-         (TYPE  (OR (CDR (ASSOC FS +FLOAT-TYPES+)) 'LONG-FLOAT))
-         (BASE  (+ +HEADER-SIZE+ (* (1+ FS) INDEX))) )
-    (BIOFA-FETCH BIOFA-ARRAY RADIX FS TYPE BASE))
-  ) ;;BIOFA-REF
+  (declare (type (array (signed-byte 32)) biofa-array)
+           (type integer index))
+  (assert (and (<= 0 index) (< index (biofa-count biofa-array))))
+  (let* ((radix (biofa-radix biofa-array))
+         (fs    (biofa-float-size biofa-array))
+         (type  (or (cdr (assoc fs +float-types+)) 'long-float))
+         (base  (+ +header-size+ (* (1+ fs) index))) )
+    (biofa-fetch biofa-array radix fs type base)))
 
 
 
-(DEFUN BIOFA-SETREF (BIOFA-ARRAY INDEX FVALUE)
+(defun biofa-setref (biofa-array index fvalue)
   "
 POST:  (= (biofa-ref biofa-array index) fvalue)
 "
-  (DECLARE (TYPE (ARRAY (SIGNED-BYTE 32)) BIOFA-ARRAY)
-           (TYPE INTEGER INDEX)
-           (TYPE FLOAT   FVALUE))
-  (ASSERT (AND (<= 0 INDEX) (< INDEX (BIOFA-COUNT BIOFA-ARRAY))))
-  (LET* ((FS   (BIOFA-FLOAT-SIZE BIOFA-ARRAY))
-         (BASE (+ +HEADER-SIZE+ (* (1+ FS) INDEX))))
-    (BIOFA-STASH BIOFA-ARRAY FS BASE FVALUE))
-  ) ;;BIOFA-SETREF
+  (declare (type (array (signed-byte 32)) biofa-array)
+           (type integer index)
+           (type float   fvalue))
+  (assert (and (<= 0 index) (< index (biofa-count biofa-array))))
+  (let* ((fs   (biofa-float-size biofa-array))
+         (base (+ +header-size+ (* (1+ fs) index))))
+    (biofa-stash biofa-array fs base fvalue)))
 
-  
- 
-(DEFUN BIOFA-ENCODE (FLOAT-ARRAY)
+
+
+(defun biofa-encode (float-array)
   "
 RETURN:  An array of (SIGNED-BYTE 32) or of containing
          the data from FLOAT-ARRAY.
 "
-  (DECLARE (TYPE (ARRAY FLOAT) FLOAT-ARRAY))
-  (LET* ((FS (APPLY (FUNCTION MAX)
-                    (MAP 'LIST (FUNCTION FLOAT-SIZE) FLOAT-ARRAY)))
-         (SIZE (+ +HEADER-SIZE+ (* (1+ FS) (LENGTH FLOAT-ARRAY))))
-         (BIOFA  (MAKE-ARRAY (LIST SIZE) :ELEMENT-TYPE '(SIGNED-BYTE 32)))
-         (BASE +HEADER-SIZE+))
-    (DOTIMES (I (LENGTH FLOAT-ARRAY))
-      (LET ((FVALUE (AREF FLOAT-ARRAY I)))
-        (BIOFA-STASH BIOFA FS BASE FVALUE)))
-    (BIOFA-SET-RADIX      BIOFA (FLOAT-RADIX (AREF FLOAT-ARRAY 0)))
-    (BIOFA-SET-FLOAT-SIZE BIOFA FS)
-    BIOFA)
-  ) ;;BIOFA-ENCODE
+  (declare (type (array float) float-array))
+  (let* ((fs (apply (function max)
+                    (map 'list (function float-size) float-array)))
+         (size (+ +header-size+ (* (1+ fs) (length float-array))))
+         (biofa  (make-array (list size) :element-type '(signed-byte 32)))
+         (base +header-size+))
+    (dotimes (i (length float-array))
+      (let ((fvalue (aref float-array i)))
+        (biofa-stash biofa fs base fvalue)))
+    (biofa-set-radix      biofa (float-radix (aref float-array 0)))
+    (biofa-set-float-size biofa fs)
+    biofa))
 
 
 
-(DEFUN BIOFA-DECODE (BIOFA-ARRAY)
+(defun biofa-decode (biofa-array)
   "
 RETURN: AN ARRAY OF FLOAT (DEPENDING ON BIOFA-FLOAT-SIZE AND +FLOAT-TYPE+)
         CONTAINING THE SAME VALUE AS ENCODED INTO BIOFA-ARRAY.
 "
-  (DECLARE (TYPE (ARRAY (SIGNED-BYTE 32)) BIOFA-ARRAY))
-  (LET* ((RADIX (BIOFA-RADIX BIOFA-ARRAY))
-         (FS    (BIOFA-FLOAT-SIZE BIOFA-ARRAY))
-         (TYPE  (OR (CDR (ASSOC FS +FLOAT-TYPES+)) 'LONG-FLOAT))
-         (BASE  +HEADER-SIZE+)                      
-         (FLOAT-ARRAY (MAKE-ARRAY (LIST (BIOFA-COUNT BIOFA-ARRAY))
-                                  :ELEMENT-TYPE TYPE)))
-    (DOTIMES (I (LENGTH FLOAT-ARRAY))
-      (SETF (AREF FLOAT-ARRAY I) (BIOFA-FETCH BIOFA-ARRAY RADIX FS TYPE BASE))
-      )
-    FLOAT-ARRAY)
-  ) ;;BIOFA-DECODE
+  (declare (type (array (signed-byte 32)) biofa-array))
+  (let* ((radix (biofa-radix biofa-array))
+         (fs    (biofa-float-size biofa-array))
+         (type  (or (cdr (assoc fs +float-types+)) 'long-float))
+         (base  +header-size+)                      
+         (float-array (make-array (list (biofa-count biofa-array))
+                                  :element-type type)))
+    (dotimes (i (length float-array))
+      (setf (aref float-array i) (biofa-fetch biofa-array radix fs type base)))
+    float-array))
 
 
 
@@ -285,43 +271,40 @@ RETURN: AN ARRAY OF FLOAT (DEPENDING ON BIOFA-FLOAT-SIZE AND +FLOAT-TYPE+)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; TESTS
 
-(DEFPARAMETER LSTEST
+(defparameter lstest
   '( 0.0 1.0 -1.0 2.0 -2.0 3.141592 -3.141592
-    1.0E1 -1.0E1 2.0E1 -2.0E1 3.141592E1 -3.141592E1
-    1.0E-1 -1.0E-1 2.0E-1 -2.0E-1 3.141592E-1 -3.141592E-1
-    1.0E20 -1.0E20 2.0E20 -2.0E20 3.141592E20 -3.141592E20
-    1.0E-20 -1.0E-20 2.0E-20 -2.0E-20 3.141592E-20 -3.141592E-20
-    )) ;;LSTEST
-(DEFPARAMETER FSTEST (MAKE-ARRAY (LIST (LENGTH LSTEST))
-                                 :INITIAL-CONTENTS LSTEST))
-(DEFPARAMETER LDTEST
+    1.0e1 -1.0e1 2.0e1 -2.0e1 3.141592e1 -3.141592e1
+    1.0e-1 -1.0e-1 2.0e-1 -2.0e-1 3.141592e-1 -3.141592e-1
+    1.0e20 -1.0e20 2.0e20 -2.0e20 3.141592e20 -3.141592e20
+    1.0e-20 -1.0e-20 2.0e-20 -2.0e-20 3.141592e-20 -3.141592e-20))
+(defparameter fstest (make-array (list (length lstest))
+                                 :initial-contents lstest))
+(defparameter ldtest
   '( 0.0d0 1.0d0 -1.0d0 2.0d0 -2.0d0
     3.1415926535897932385d0 -3.1415926535897932385d0
-    1.0D1 -1.0D1 2.0D1 -2.0D1
-    3.1415926535897932385D1 -3.1415926535897932385D1
-    1.0D-1 -1.0D-1 2.0D-1 -2.0D-1
-    3.1415926535897932385D-1 -3.1415926535897932385D-1
-    1.0D20 -1.0D20 2.0D20 -2.0D20
-    3.1415926535897932385D20 -3.1415926535897932385D20
-    1.0D-20 -1.0D-20 2.0D-20 -2.0D-20
-    3.1415926535897932385D-20 -3.1415926535897932385D-20
-    )) ;;LDTEST
-(DEFPARAMETER FDTEST (MAKE-ARRAY (LIST (LENGTH LDTEST))
-                                 :INITIAL-CONTENTS LDTEST))
+    1.0d1 -1.0d1 2.0d1 -2.0d1
+    3.1415926535897932385d1 -3.1415926535897932385d1
+    1.0d-1 -1.0d-1 2.0d-1 -2.0d-1
+    3.1415926535897932385d-1 -3.1415926535897932385d-1
+    1.0d20 -1.0d20 2.0d20 -2.0d20
+    3.1415926535897932385d20 -3.1415926535897932385d20
+    1.0d-20 -1.0d-20 2.0d-20 -2.0d-20
+    3.1415926535897932385d-20 -3.1415926535897932385d-20))
+(defparameter fdtest (make-array (list (length ldtest))
+                                 :initial-contents ldtest))
 (defvar estest)
 (defvar dstest)
 (defvar edtest)
 (defvar ddtest)
 
 (defun test ()
-  (SETQ ESTEST (BIOFA-ENCODE FSTEST))
-  (SETQ DSTEST (BIOFA-DECODE ESTEST))
-  (FORMAT T "~&SINGLE: ~A~%" (EQUALP DSTEST FSTEST))
-  (SETQ EDTEST (BIOFA-ENCODE FDTEST))
-  (SETQ DDTEST (BIOFA-DECODE EDTEST))
-  (FORMAT T "~&DOUBLE: ~A~%" (EQUALP DDTEST FDTEST))
-  (assert (and (EQUALP DSTEST FSTEST)  (EQUALP DDTEST FDTEST)))
-  ) ;;test
+  (setq estest (biofa-encode fstest))
+  (setq dstest (biofa-decode estest))
+  (format t "~&SINGLE: ~A~%" (equalp dstest fstest))
+  (setq edtest (biofa-encode fdtest))
+  (setq ddtest (biofa-decode edtest))
+  (format t "~&DOUBLE: ~A~%" (equalp ddtest fdtest))
+  (assert (and (equalp dstest fstest)  (equalp ddtest fdtest))))
 
 
 
