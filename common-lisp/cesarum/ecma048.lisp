@@ -284,7 +284,7 @@
         (SETF (CODE-DEFAULT C)
               (CDR (ASSOC
                     DEFA
-                    '( ("Ps1 = 0; Ps2 =0"       . ((PS1 . 0) (PS2 . 0)))
+                    '(("Ps1 = 0; Ps2 =0"       . ((PS1 . 0) (PS2 . 0)))
                       ("Pn1 = 100; Pn2 = 100"  . ((PN1 . 100) (PN2 . 100)))
                       ("Pn1 = 1; Pn2 = 1"      . ((PN1 . 1) (PN2 . 1)))
                       ("Ps1 = 0; Ps2 = 0"      . ((PS1 . 0) (PS2 . 0)))
@@ -299,7 +299,7 @@
         (SETF (CODE-NOTATION C)
               (CDR (ASSOC
                     NOTA
-                    '( ("(Fs)"      . (FS)) 
+                    '(("(Fs)"      . (FS)) 
                       ("(Ps...)"   . (PS...)) 
                       ("(Ps1;Ps2)" . (PS1 PS2)) 
                       ("(Ps)"      . (PS)) 
@@ -1338,8 +1338,8 @@
       "SCO is used to establish the amount of rotation of the
     graphic characters following in the data stream. The established value
     remains in effect until the next occurrence of SCO in the data
-    stream. The parameter values are 0 0° 1 45° 2 90° 3 135° 4 180° 5 225°
-    6 270° 7 315° Rotation is positive, i.e. counter-clockwise and applies
+    stream. The parameter values are 0 0? 1 45? 2 90? 3 135? 4 180? 5 225?
+    6 270? 7 315? Rotation is positive, i.e. counter-clockwise and applies
     to the normal presentation of the graphic characters along the
     character path. The centre of rotation of the affected graphic
     characters is not defined by this Standard."
@@ -2159,7 +2159,9 @@ BUGS:           Perhaps we should generate functions that take 8-BIT and
                        (if (eq result-type 'string)
                            `(princ ,sequence stream)
                            `(write-sequence ,sequence stream))
-                       sequence))))))))
+                       sequence))
+                ;; ABCL is buggy and has a cl:defun that returns a function!
+                ',name))))))
 
 
 (DEFUN GENERATE-all-functions (&KEY (COMPILE NIL)

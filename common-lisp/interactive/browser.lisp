@@ -162,8 +162,7 @@ Client code can rebind it to another universal date or set it to (now).")
 (DEFVAR *CHANGE-DIRECTORY-HOOK*
   (list (lambda (working-directory)
           (setf *default-pathname-defaults*
-                (merge-pathnames working-directory
-                                 *default-pathname-defaults* nil))))
+                (merge-pathnames working-directory *default-pathname-defaults* nil))))
   "A list of unary functions called with the path of 
    the new current working directory.")
 
@@ -178,7 +177,7 @@ Client code can rebind it to another universal date or set it to (now).")
   (let* ((non-existent
           (find-if-not
            (lambda (dir)
-             (directory (make-pathname :directory dir :defaults path)))
+             (ignore-errors (directory (make-pathname :directory dir :defaults path))))
            (nreverse
             (loop
                :for dir :on (reverse (pathname-directory path))
@@ -579,4 +578,4 @@ SEE;        POPD, CD.
         (CONS (CD TOP)  *DIRECTORY-STACK*))))
 
 
-;;;; browser.lisp                     --                     --          ;;;;
+;;;; THE END ;;;;

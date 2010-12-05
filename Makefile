@@ -57,7 +57,7 @@ all:: $(ALLEGRO) $(CLISP) $(ECL) $(SBCL) $(CMUCL) $(OPENMCL)
 
 PREFIX=/usr/local
 PACKAGES:=$(shell get-directory SHARE_LISP | sed -e 's-/$$--')/packages
-PACKAGE_PATH=com/informatimago/common-lisp
+PACKAGE_PATH=com/informatimago
 MODULES= common-lisp clext clmisc  sbcl  clisp  susv3
 
 
