@@ -11,6 +11,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2010-12-09 <PJB> Added bencode.
 ;;;;    2010-10-31 <PJB> Created this .asd file.
 ;;;;BUGS
 ;;;;LEGAL
@@ -50,7 +51,7 @@
     :depends-on (:com.informatimago.common-lisp.cesarum)
     :components ((:file "data-encoding" :depends-on ())
                  ;; (:file "data-encoding-test" :depends-on ())
-                 ))
+                 (:file "bencode" :depends-on ())))
 
 
 ;;;; THE END ;;;;
