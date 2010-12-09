@@ -31,6 +31,8 @@
 #    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #******************************************************************************
 # SHELL=/bin/bash -x
+TOP:=$(dir $(lastword $(MAKEFILE_LIST)))
+SRCROOT=$(shell cd $(TOP) ; pwd)
 
 all::
 help::
@@ -49,7 +51,7 @@ show-variables::
 
 
 LC_CTYPE       = en_US.UTF-8
-DECLAIMS       = '(DECLAIM (OPTIMIZE (SAFETY 3) (DEBUG 3) (SPEED 0) (SPACE 0)))'
+DECLAIMS       = '(declaim (optimize (safety 3) (debug 3) (speed 0) (space 0)))'
 COMPILES       = '(load "compile.lisp")'
 # COMPILES       = '(load "'$$(pwd)/'compile.lisp")'
 
@@ -65,17 +67,19 @@ AWK           := awk
 EGREP         := egrep
 WISH          := wish
 
-COMPILERS      = abcl alisp ccl clisp cmucl ecl openmcl sbcl
 
 ABCL		  := abcl
 ALLEGRO       := alisp
 CCL	          := ccl
 CLISP         := clisp
-CMUCL         := cmucl
+CMUCL         := lisp
 ECL           := ecl
 GCL		      := gcl
 OPENMCL       := openmcl
 SBCL          := sbcl
+
+COMPILERS      = $(ABCL) $(ALISP) $(CCL) $(CLISP) $(CMUCL) $(ECL) $(OPENMCL) $(SBCL) 
+
 
 ABCL_FLAGS    := 
 ALLEGRO_FLAGS :=       -q
@@ -85,17 +89,17 @@ CMUCL_FLAGS   :=               -noinit -nositeinit -eval '(setf extensions:*gc-v
 ECL_FLAGS     :=               -norc 
 GCL_FLAGS     :=               -norc
 OPENMCL_FLAGS := 
-SBCL_FLAGS    := --noinform --sysinit /dev/null --userinit /dev/null --eval '(DECLAIM (OPTIMIZE (SB-EXT::INHIBIT-WARNINGS 3)))' 
+SBCL_FLAGS    := --noinform --sysinit /dev/null --userinit /dev/null --eval '(declaim (optimize (sb-ext::inhibit-warnings 3)))' 
 
-ABCL_EXIT     :=   --eval '(EXTENSIONS:QUIT)'   
-ALLEGRO_EXIT  :=       -e '(EXCL::EXIT-LISP 0)'
-CLISP_EXIT    :=       -x '(EXT:QUIT 0)'
-CMUCL_EXIT    :=    -eval '(EXTENSIONS:quit)'
+ABCL_EXIT     :=   --eval '(extensions:quit)'   
+ALLEGRO_EXIT  :=       -e '(excl::exit-lisp 0)'
+CLISP_EXIT    :=       -x '(ext:quit 0)'
+CMUCL_EXIT    :=    -eval '(extensions:quit)'
 ECL_EXIT      :=    -eval '(system:quit)'
 GCL_EXIT      :=    -eval '(error "How do we quit from gcl?")'
 CCL_EXIT      :=   --eval '(ccl:quit)'
 OPENMCL_EXIT  :=   --eval '(ccl:quit)'
-SBCL_EXIT     :=    -eval '(SB-EXT:QUIT)'
+SBCL_EXIT     :=   --eval '(sb-ext:quit)'
 
 
 ABCL_COMMAND    = LC_CTYPE=$(LC_CTYPE) $(ABCL)    $(ABCL_FLAGS)    --eval $(DECLAIMS) --eval $(COMPILES) $(ABCL_EXIT)   
@@ -134,7 +138,7 @@ show-compilers:
 			printf '%s '  $$compiler ;\
 		fi ;\
 	 done
-	@printf '\n;;;; Will compile with:  '
+	@printf '\n;;;; Would compile with:  '
 	@for compiler in $(COMPILERS) ; do \
 		if  type -p $$compiler >/dev/null 2>&1 ; then \
 			printf  '%s '  $$compiler ;\
@@ -142,42 +146,42 @@ show-compilers:
 	 done
 	@printf '\n'
 
-abcl:
+compile-with-$(ABCL):
 	@printf '\n\n\n\n'$(LINE)
 	@if  type -p $(ABCL) >/dev/null 2>&1 ; then \
 		echo ';;;; Compiling with Armed Bear Common Lisp' ;\
 		$(ABCL_COMMAND) ;\
 	fi
 
-alisp:
+compile-with-$(ALLEGRO):
 	@printf '\n\n\n\n'$(LINE)
 	@if  type -p $(ALLEGRO) >/dev/null 2>&1 ; then \
 		echo ';;;; Compiling with Allegro Common Lisp' ;\
 		$(ALLEGRO_COMMAND) ;\
 	fi
 
-clisp:
+compile-with-$(CLISP):
 	@printf '\n\n\n\n'$(LINE)
 	@if  type -p $(CLISP)  >/dev/null 2>&1 ; then \
 		echo ';;;; Compiling with clisp Common Lisp' ;\
-		$(CLISP_COMMAND) 2>&1 | $(AWK) -f ../post-clisp.awk ;\
+		$(CLISP_COMMAND) 2>&1 | $(AWK) -f $(SRCROOT)/post-clisp.awk ;\
 	fi
 
-cmucl:
+compile-with-$(CMUCL):
 	@printf '\n\n\n\n'$(LINE)
 	@if type -p $(CMUCL)  >/dev/null 2>&1 ; then \
 		echo ';;;; Compiling with Carmegie-Mellon University Common Lisp' ;\
 		$(CMUCL_COMMAND) 2>&1 | $(AWK) '/^; Converted /{next;} /^; Byte Compiling /{next;} /^; Compiling Creation Form/{next;} /^; Converted /{next;} {print;}' ;\
 	fi
 
-ecl:
+compile-with-$(ECL):
 	@printf '\n\n\n\n'$(LINE)
 	@if type -p $(ECL)  >/dev/null 2>&1 ; then \
 		echo ';;;; Compiling with Embeddable Common Lisp' ;\
 		$(ECL_COMMAND) ;\
 	fi
 
-gcl:
+compile-with-$(GCL):
 	@printf '\n\n\n\n'$(LINE)
 	@printf 'gcl is not implemented yet.'
 	@false
@@ -186,21 +190,21 @@ gcl:
 		$(GCL_COMMAND) ;\
 	fi
 
-ccl:
+compile-with-$(CCL):
 	@printf '\n\n\n\n'$(LINE)
 	@if type -p $(CCL)  >/dev/null 2>&1 ; then \
 		echo ';;;; Compiling with Clozure Common Lisp' ;\
 		"$(CCL_COMMAND)" ;\
 	fi
 
-openmcl:
+compile-with-$(OPENMCL):
 	@printf '\n\n\n\n'$(LINE)
 	@if type -p $(OPENMCL)  >/dev/null 2>&1 ; then \
 		echo ';;;; Compiling with Open Macintosh Common Lisp' ;\
 		$(OPENMCL_COMMAND) ;\
 	fi
 
-sbcl:
+compile-with-$(SBCL):
 	@printf '\n\n\n\n'$(LINE)
 	@if  type -p $(SBCL)  >/dev/null 2>&1 ; then \
 		echo ';;;; Compiling with Steel-Banks Common Lisp' ;\

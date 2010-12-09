@@ -34,6 +34,7 @@
 ;;;;    Boston, MA 02111-1307 USA
 ;;;;****************************************************************************
 
+(eval-when (:compile-toplevel :load-toplevel :execute) (require "linux"))
 
 (in-package "COMMON-LISP-USER")
 (declaim (declaration also-use-packages))

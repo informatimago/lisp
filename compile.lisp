@@ -59,12 +59,23 @@
               asdf:*central-registry*))
 
 
-          (asdf-load  :com.informatimago.common-lisp)
-#-ccl     (asdf-load  :com.informatimago.clext)
-          (asdf-load  :com.informatimago.clmisc)
-#+sbcl    (asdf-load  :com.informatimago.sbcl)
-#+clisp   (asdf-load  :com.informatimago.clisp)
-#+clisp   (asdf-load  :com.informatimago.susv3)
+#-abcl
+(asdf-load  :com.informatimago.common-lisp)
+
+#-abcl
+(asdf-load  :com.informatimago.clmisc)
+
+#-(or abcl ccl cmu ecl sbcl)
+(asdf-load  :com.informatimago.clext)
+
+;; #+sbcl
+;; (asdf-load  :com.informatimago.sbcl)
+
+#+clisp
+(asdf-load  :com.informatimago.clisp)
+
+#+clisp
+(asdf-load  :com.informatimago.susv3)
 
 
 ;;;; THE END ;;;;

@@ -45,13 +45,14 @@ include implementations.mk
 
 
 help::
-	@for c in $(COMPILERS) ; do printf $(HELP_FMT) "$$c" "Compile with $$c." ; done
+	@for c in $(COMPILERS) ; do printf $(HELP_FMT) "compile-with-$$c" "Compile with $$c." ; done
 	@printf $(HELP_FMT) 'all' 'Compile with all the available compilers.'
 # Let's compile with all the available compilers ( $(GCL) not yet ).
 # all:: $(ABCL) $(ALLEGRO) $(CCL) $(CLISP) $(ECL) $(SBCL) $(CMUCL) $(OPENMCL)
-all:: $(ALLEGRO) $(CLISP) $(ECL) $(SBCL) $(CMUCL) $(OPENMCL)
-# $(ABCL) chokes on unicode!
-# $(CCL) doesn't run from Makefile (it runs well from the shell!).
+all::  compile-with-$(CLISP) compile-with-$(ECL) compile-with-$(SBCL) compile-with-$(CMUCL) compile-with-$(OPENMCL) compile-with-$(CCL)
+# compile-with-$(ALLEGRO) fails on posix-regexp out of memory...
+# compile-with-$(ABCL) chokes on unicode!
+# compile-with-$(CCL) doesn't run from Makefile (it runs well from the shell!).
 
 
 

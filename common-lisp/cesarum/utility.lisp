@@ -82,8 +82,8 @@
    ;; 17 - SEQUENCES
    "NSUBSEQ"
    ;; 18 - HASH-TABLES
-   "HASH-TABLE-KEYS" "COPY-HASH-TABLE"
-   "HASHTABLE" "PRINT-HASHTABLE"
+   "HASH-TABLE-KEYS" "HASH-TABLE-ENTRIES" "COPY-HASH-TABLE"
+   "HASHTABLE" "PRINT-HASHTABLE" 
    ;;
    "DICHOTOMY"
    "TRACING" "TRACING-LET" "TRACING-LET*" "TRACING-LABELS")
@@ -1053,11 +1053,15 @@ RETURN:  When the SEQUENCE is a vector, the SEQUENCE itself, or a dispaced
 ;; 18 - HASH-TABLES
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun HASH-TABLE-KEYS (hash)
+(defun hash-table-keys (hash)
   (let ((result '()))
     (maphash (lambda (k v) (declare (ignore v)) (push k result)) hash)
     result))
 
+(defun hash-table-entries (hash)
+  (let ((result '()))
+    (maphash (lambda (k v) (push (cons k v) result)) hash)
+    result))
 
 (defun copy-hash-table (table)
   "

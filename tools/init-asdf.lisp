@@ -88,10 +88,13 @@
   (asdf:enable-asdf-binary-locations-compatibility
    :centralize-lisp-binaries     t
    :default-toplevel-directory   (merge-pathnames (format nil ".cache/common-lisp/~A/" (hostname))
-                                                  (user-homedir-pathname) nil)
+                                                  (truename (user-homedir-pathname)) nil)
    :include-per-user-information nil
    :map-all-source-files t
    :source-to-target-mappings    nil))
+
+;; We need (truename (user-homedir-pathname)) because in cmucl (user-homedir-pathname)
+;; is a search path, and that cannot be merged...
 
 #-HAS-ASDF-ENABLE-ASDF-BINARY-LOCATIONS-COMPATIBILITY
 (progn
@@ -105,7 +108,7 @@
         asdf:*include-per-user-information* nil
         asdf:*default-toplevel-directory*
         (merge-pathnames (format nil ".cache/common-lisp/~A/" (hostname))
-                         (user-homedir-pathname) nil)
+                         (truename (user-homedir-pathname)) nil)
         asdf:*source-to-target-mappings* '()))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
