@@ -49,7 +49,7 @@ help::
 	@printf $(HELP_FMT) 'all' 'Compile with all the available compilers.'
 # Let's compile with all the available compilers ( $(GCL) not yet ).
 # all:: $(ABCL) $(ALLEGRO) $(CCL) $(CLISP) $(ECL) $(SBCL) $(CMUCL) $(OPENMCL)
-all::  compile-with-$(CLISP) compile-with-$(ECL) compile-with-$(SBCL) compile-with-$(CMUCL) compile-with-$(OPENMCL) compile-with-$(CCL)
+all::  compile-with-$(CLISP) compile-with-$(ECL) compile-with-$(SBCL) compile-with-$(CMUCL) compile-with-$(OPENMCL) 
 # compile-with-$(ALLEGRO) fails on posix-regexp out of memory...
 # compile-with-$(ABCL) chokes on unicode!
 # compile-with-$(CCL) doesn't run from Makefile (it runs well from the shell!).

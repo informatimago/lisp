@@ -82,7 +82,8 @@
    ;; 17 - SEQUENCES
    "NSUBSEQ"
    ;; 18 - HASH-TABLES
-   "HASH-TABLE-KEYS" "HASH-TABLE-ENTRIES" "COPY-HASH-TABLE"
+   "HASH-TABLE-KEYS" "HASH-TABLE-ENTRIES" "HASH-TABLE-PATH"
+   "COPY-HASH-TABLE"
    "HASHTABLE" "PRINT-HASHTABLE" 
    ;;
    "DICHOTOMY"
@@ -1054,14 +1055,23 @@ RETURN:  When the SEQUENCE is a vector, the SEQUENCE itself, or a dispaced
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun hash-table-keys (hash)
+  "Returns a list of the keys in the hash-table."
   (let ((result '()))
     (maphash (lambda (k v) (declare (ignore v)) (push k result)) hash)
     result))
 
 (defun hash-table-entries (hash)
+  "Returns an a-list of the entries (key . val) in the hash-table."
   (let ((result '()))
     (maphash (lambda (k v) (push (cons k v) result)) hash)
     result))
+
+(defun hash-table-path (htable &rest keys)
+  "Given a hash-table that may contain other hash-table, walks down
+the path of KEYS, returning the ultimate value"
+  (if (null keys)
+      htable
+      (apply (function hash-table-path) (gethash (first keys) htable) (rest keys))))
 
 (defun copy-hash-table (table)
   "
@@ -1087,6 +1097,9 @@ RETURN: If TABLE is NIL, then NIL,
                   (rehash-size nil rehash-size-p)
                   (rehash-threshold nil rehash-threshold-p)
                   elements)
+  "Creates a new hash-table, filled with the given ELEMENTS.
+ELEMENTS must be a list of lists of two items, the key and the value.
+Note: we use the name HASHTABLE to avoid name collision."
   (let ((table (apply (function make-hash-table)
                 :test test
                 (append (when sizep
@@ -1100,6 +1113,7 @@ RETURN: If TABLE is NIL, then NIL,
 
 
 (defun print-hashtable (table &optional (stream *standard-output*))
+  "Prints readably the hash-table, using #. and the HASHTABLE function."
   (format stream "#.(HASHTABLE :TEST (FUNCTION ~S)  :SIZE ~D ~%~
                 ~&             :REHASH-SIZE ~A :REHASH-THRESHOLD ~A~%~
                 ~&   :ELEMENTS '("
@@ -1124,8 +1138,6 @@ RETURN: If TABLE is NIL, then NIL,
   ;;                         assignments))
   ;;            table))
   table)
-
-
 
 
 
