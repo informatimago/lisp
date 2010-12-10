@@ -160,7 +160,7 @@ Encoding BEncoded strings or streams
 
 "))
 
-(in-package "COM.INFORMATIMAGO.COMMON-LISP.BITTORRENT.BENCODE")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.DATA-ENCODING.BENCODE")
 
 
 
@@ -365,6 +365,9 @@ They'll be read or peeked again before further reading of the stream.")))
 ;;; Serializer
 ;;;
 
+(defgeneric encode-object (value stream))
+
+
 (defmethod encode-object ((value integer) stream)
   (stream-write-string (format nil "i~Ae" value) stream)
   value)
@@ -419,8 +422,7 @@ They'll be read or peeked again before further reading of the stream.")))
   value)
 
 (defun encode-octets (octets binary-stream)
-  (encode-cardinal (length octets) binary-stream)
-  (encode-char #\:  binary-stream)
+  (stream-write-string (format nil "~A:" (length octets)) binary-stream)
   (write-sequence octets binary-stream))
 
 
