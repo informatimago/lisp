@@ -483,8 +483,16 @@ RETURN: A list of sublists grouping character set aliases, ie. charset encodings
 
 (defparameter *lisp-encodings*
   #+clisp (group-charset-aliases)
-  #+sbcl   (mapcar (lambda (x) (mapcar (function string-upcase) (first x)))
-                   SB-IMPL::*EXTERNAL-FORMATS*)
+  #+sbcl  (etypecase SB-IMPL::*EXTERNAL-FORMATS*
+            (hash-table (let ((result '()))
+                          (maphash (lambda (name encoding) (pushnew encoding result))
+                                   SB-IMPL::*EXTERNAL-FORMATS*)
+                          (mapcar (lambda (encoding)
+                                    (mapcar (function string-upcase)
+                                            (slot-value encoding 'SB-IMPL::names)))
+                                  result)))
+            (list (mapcar (lambda (x) (mapcar (function string-upcase) (first x)))
+                          SB-IMPL::*EXTERNAL-FORMATS*)))
   #+cmu   '(("ISO-8859-1"))          ; :iso-latin-1-unix ;  what else?
   #+ccl   (mapcar (lambda (x) (mapcar (function string-upcase) x))
                   '((:ISO-8859-1 :ISO_8859-1 :LATIN1 :L1 :IBM819 :CP819 :CSISOLATIN1)
