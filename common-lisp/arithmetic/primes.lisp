@@ -55,7 +55,7 @@
 
 (DEFUN COMPUTE-PRIMES-TO (N)
   "
-DO:     Compute an Eratostene cribble to find all prime numbers up to N.
+DO:     Compute an Eratostene sieve to find all prime numbers up to N.
 RETURN: An array of prime numbers.
 "
   (cond
@@ -107,7 +107,7 @@ PRIMES:   a VECTOR of prime factors sorted in increasing order.
 RETURN:   a SEXP of the form: (* uncomensurate-factor
                                  [ prime | (EXPT prime exponent) ]... [ -1 ] )
 "
-  (setf primes (or primes (compute-primes-to (truncate (1+ (isqrt n))))))
+  (setf primes (or primes (compute-primes-to (1+ (isqrt n)))))
   (LET ((FACTORS '())
         (PRIME-IDX 0) )
     (UNLESS (INTEGERP N)
