@@ -11,6 +11,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2011-04-03 <PJB> Added LIST-LENGTHS.
 ;;;;    2008-06-24 <PJB> Added ENSURE-CIRCULAR, MAKE-CIRCULAR-LIST, CIRCULAR-LENGTH.
 ;;;;    2007-01-05 <PJB> Added REPLACE-TREE (should move to a new package later).
 ;;;;    2005-09-02 <PJB> Moved EQUIVALENCE-CLASSES in from ECMA048.
@@ -25,7 +26,7 @@
 ;;;;LEGAL
 ;;;;    GPL
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2002 - 2008
+;;;;    Copyright Pascal J. Bourguignon 2002 - 2011
 ;;;;
 ;;;;    This script is free software; you can redistribute it and/or
 ;;;;    modify it under the terms of the GNU  General Public
@@ -52,13 +53,13 @@
            "NSPLIT-LIST-ON-INDICATOR" "NSPLIT-LIST" "DEEPEST-REC" "DEEPEST" "DEPTH"
            "FLATTEN" "LIST-TRIM" "TRANSPOSE" "AGET" "MEMQ" "PLIST-REMOVE" "PLIST-GET"
            "PLIST-PUT" "HASHED-INTERSECTION" "HASHED-REMOVE-DUPLICATES"
-           "ENSURE-LIST" "PROPER-LIST-P"
+           "ENSURE-LIST" "PROPER-LIST-P" "LIST-LENGTHS"
            "ENSURE-CIRCULAR" "MAKE-CIRCULAR-LIST" "CIRCULAR-LENGTH"
            "TREE-DIFFERENCE" "REPLACE-TREE" "MAPTREE")
   (:DOCUMENTATION
    "This package exports list processing functions.
     
-    Copyright Pascal J. Bourguignon 2003 - 2008
+    Copyright Pascal J. Bourguignon 2003 - 2011
     This package is provided under the GNU General Public License.
     See the source file for details."))
 (IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
@@ -84,6 +85,100 @@ NOTE:   terminates with any kind of list, dotted, circular, etc.
                    ((eq current slow)    nil)
                    (t                    (proper (cddr current) (cdr slow))))))
     (and (listp object) (proper object (cons nil object)))))
+
+
+(defun dotted-list-length (dotted-list)
+  "
+DOTTED-LIST must be a dotted list or a proper list.
+RETURN:  the number of cons cells in the list.
+"
+  (loop
+     :for length :from 0
+     :for current = dotted-list :then (cdr current)
+     :until (atom current)
+     :finally (return length)))
+
+
+(defun circular-list-lengths (circular-list)
+  "
+CIRCULAR-LIST must be a circular list.
+RETURN:  the length of the stem; the length of the circle.
+"
+  (let ((cells (make-hash-table)))
+    (loop
+       :for index :from 0
+       :for cell = circular-list :then (cdr cell)
+       :for previous = (gethash cell cells)
+       :do (if previous
+               (return-from circular-list-lengths
+                 (values previous (- index previous)))
+               (setf (gethash cell cells) index)))))
+
+
+(defun list-lengths (list)
+  "
+LIST is any kind of list: proper-list, circular-list or dotted-list.
+RETURN: for a proper list, the length of the list and 0;
+        for a circular list, the length of the stem, and the length of the circle;
+        for a dotted list, the number of cons cells, and nil;
+        for an atom, 0, and nil.
+"
+  (labels ((proper (current slow)
+             ;; (print (list 'proper current slow))
+             (cond ((null current)       (values (list-length        list) 0))
+                   ((atom current)       (values (dotted-list-length list) nil))
+                   ((null (cdr current)) (values (list-length        list) 0))
+                   ((atom (cdr current)) (values (dotted-list-length list) nil))
+                   ((eq current slow)    (circular-list-lengths list))
+                   (t                    (proper (cddr current) (cdr slow))))))
+    (typecase list
+      (cons  (proper list (cons nil list)))
+      (null  (values 0 0))
+      (t     (values 0 nil)))))
+
+
+(defun test/list-lengths ()
+  (dolist (test
+            '( ;; proper lists
+              (()  0 0)
+              ((a)  1 0)
+              ((a b)  2 0)
+              ((a b c)  3 0)
+              ((a b c d)  4 0)
+              ((a b c d e)  5 0)
+              ;; dotted lists
+              (a  0 nil)
+              ((a . b)  1 nil)
+              ((a b . c) 2 nil)
+              ((a b c . d) 3 nil)
+              ((a b c d . e) 4 nil)
+              ((a b c d e . f) 5 nil)
+              ;; circular lists
+              (#1=(a . #1#) 0 1)
+              (#2=(a b . #2#) 0 2)
+              (#3=(a b c . #3#) 0 3)
+              (#4=(a b c d . #4#) 0 4)
+              (#5=(a b c d e . #5#) 0 5)
+              ((a . #6=(b . #6#)) 1 1)
+              ((a . #7=(b c . #7#)) 1 2)
+              ((a . #8=(b c d . #8#)) 1 3)
+              ((a . #9=(b c d e . #9#)) 1 4)
+              ((a b . #10=(c . #10#)) 2 1)
+              ((a b . #11=(c d . #11#)) 2 2)
+              ((a b . #12=(c d e . #12#)) 2 3)
+              ((a b c . #13=(d . #13#)) 3 1)
+              ((a b c . #14=(d e . #14#)) 3 2)
+              ((a b c d . #15=(e . #15#)) 4 1)
+              ((a b c d e . #16=(#16#)) 6 0) ; a proper list! :-)
+              )
+           :success)
+    (destructuring-bind (list . expected) test
+      (let ((result  (multiple-value-list (list-lengths list)))
+            (*print-circle* t))
+        (assert (equal expected result)
+                (result)
+                "(list-lengths '~S)~%  returned ~S~%  expected ~S~%"
+                list result expected)))))
 
 
 (defun ensure-circular (list)
@@ -118,7 +213,7 @@ RETURN: the total length ; the length of the stem ; the length of the circle.
                  ;; found loop
                  (return (values i index (- i index)))
                  (setf (gethash current indexes) i)))
-       :finally (return (values i)))))
+       :finally (return (values i i 0)))))
 
 
 
