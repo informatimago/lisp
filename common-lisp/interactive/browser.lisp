@@ -177,7 +177,11 @@ Client code can rebind it to another universal date or set it to (now).")
   (let* ((non-existent
           (find-if-not
            (lambda (dir)
-             (ignore-errors (directory (make-pathname :directory dir :defaults path))))
+             ;; We cannot directory to check whether a directory
+             ;; exists.  So we try a file pattern, and if not found
+             ;; but no error is signaled, assume the directory exists.
+             (ignore-errors (or (directory (make-pathname :directory dir :name "RARE" :type "RARE" :defaults path))
+                                t)))
            (nreverse
             (loop
                :for dir :on (reverse (pathname-directory path))
