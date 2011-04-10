@@ -758,30 +758,29 @@ but some types are used only for array cells (ie. unboxed values)."
 
 (defmacro gen-ieee-encoding (name type exponent-bits mantissa-bits)
   ;; Thanks to ivan4th (~ivan_iv@nat-msk-01.ti.ru) for correcting an off-by-1
-  (wsiosbp
-   `(progn
-      (defun ,(intern (format nil "~A-TO-IEEE-754" name))  (float)
-        (multiple-value-bind (mantissa exponent sign) 
-            (integer-decode-float float)
-          (dpb (if (minusp sign) 1 0)
-               (byte 1 ,(1- (+ exponent-bits mantissa-bits)))
-               (dpb (+ ,(+ (- (expt 2 (1- exponent-bits)) 2) mantissa-bits)
-                       exponent)
-                    (byte ,exponent-bits ,(1- mantissa-bits))
-                    (ldb (byte ,(1- mantissa-bits) 0) mantissa)))))
-      (defun ,(intern (format nil "IEEE-754-TO-~A" name))  (ieee)
-        (let ((aval (scale-float
-                     (coerce
-                      (dpb 1 (byte 1 ,(1- mantissa-bits))
-                           (ldb (byte ,(1- mantissa-bits) 0) ieee))
-                      ,type)
-                     (- (ldb (byte ,exponent-bits ,(1- mantissa-bits))
-                             ieee) 
-                        ,(1- (expt 2 (1- exponent-bits)))
-                        ,(1- mantissa-bits)))))
-          (if (zerop (ldb (byte 1 ,(1- (+ exponent-bits mantissa-bits))) ieee))
-              aval
-              (- aval)))))))
+  `(progn
+     (defun ,(intern (format nil "~A-TO-IEEE-754" name) (symbol-package name))  (float)
+       (multiple-value-bind (mantissa exponent sign) 
+           (integer-decode-float float)
+         (dpb (if (minusp sign) 1 0)
+              (byte 1 ,(1- (+ exponent-bits mantissa-bits)))
+              (dpb (+ ,(+ (- (expt 2 (1- exponent-bits)) 2) mantissa-bits)
+                      exponent)
+                   (byte ,exponent-bits ,(1- mantissa-bits))
+                   (ldb (byte ,(1- mantissa-bits) 0) mantissa)))))
+     (defun ,(intern (format nil "IEEE-754-TO-~A" name) (symbol-package name))  (ieee)
+       (let ((aval (scale-float
+                    (coerce
+                     (dpb 1 (byte 1 ,(1- mantissa-bits))
+                          (ldb (byte ,(1- mantissa-bits) 0) ieee))
+                     ,type)
+                    (- (ldb (byte ,exponent-bits ,(1- mantissa-bits))
+                            ieee) 
+                       ,(1- (expt 2 (1- exponent-bits)))
+                       ,(1- mantissa-bits)))))
+         (if (zerop (ldb (byte 1 ,(1- (+ exponent-bits mantissa-bits))) ieee))
+             aval
+             (- aval))))))
 
 
 (gen-ieee-encoding float-32 'single-float  8 24)
