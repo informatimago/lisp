@@ -22,6 +22,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2011-04-29 <PJB> Added potential-number-p.
 ;;;;    2009-08-26 <PJB> Corrected bugs reading "||", "( ;comment )" and "#C(123 456)".
 ;;;;    2007-03-04 <PJB> Extracted from source.lisp
 ;;;;BUGS
@@ -34,7 +35,7 @@
 ;;;;LEGAL
 ;;;;    GPL
 ;;;;    
-;;;;    Copyright Pascal Bourguignon 2006 - 2009
+;;;;    Copyright Pascal Bourguignon 2006 - 2011
 ;;;;    
 ;;;;    This program is free software; you can redistribute it and/or
 ;;;;    modify it under the terms of the GNU General Public License
@@ -85,11 +86,13 @@
            "SET-INDIRECT-DISPATCH-MACRO-CHARACTER" 
            "SET-INDIRECT-MACRO-CHARACTER"
            "LIST-ALL-MACRO-CHARACTERS"
-           "SIMPLE-READER-ERROR" "SIMPLE-END-OF-FILE")
+           "SIMPLE-READER-ERROR" "SIMPLE-END-OF-FILE"
+           ;; Utilities:
+           "POTENTIAL-NUMBER-P")
   (:DOCUMENTATION
    "This package implements a standard Common Lisp reader.
 
-    Copyright Pascal J. Bourguignon 2006 - 2007
+    Copyright Pascal J. Bourguignon 2006 - 2011
     This package is provided under the GNU General Public License.
     See the source file for details."))
 (IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.READER")
@@ -2370,6 +2373,96 @@ RETURN: A list of all the macro and dispatch-macro characters in the readtable.
               s-here (package-name *package*)))))
 
 (check-symbols)
+
+
+
+(defun potential-number-p (token
+                           &optional
+                           (*READ-BASE* *READ-BASE*)
+                           (ratio-markers "/"))
+  "
+TOKEN:         A string containing the token to be tested.
+*READ-BASE*:   The current radix.
+RATIO-MARKER:  / in the standard readtable, but it could be something else...
+RETURN:        Whether the TOKEN is a potential number.
+"
+  ;; sign                 "+-"
+  ;; ratio-markers        "/"     (by default)
+  ;; decimal-points       "."
+  ;; extension-characters "^_"
+  ;; number-markers                letters alone
+  
+  (and (plusp (length token))
+
+       ;; Letters may be considered to be digits, depending on the
+       ;; current input base, but only in tokens containing no decimal
+       ;; points.
+       (let ((*read-base* (if (find #\. token) 10. *read-base*)))
+         
+         (and
+
+          ;; 4. The token does not end with a sign
+          (let ((last-ch (aref token (1- (length token)))))
+            (not (find last-ch "+-")))
+
+          ;; 3. The token begins with a digit, sign, decimal point or extension character.
+          (let ((first-ch (aref token 0)))
+            (or (digit-char-p first-ch *read-base*)
+                (find first-ch "+-.^_")))
+
+          ;; 2. The token contains at least one digit.
+          (find-if (lambda (ch) (digit-char-p ch *read-base*)) token)
+          
+          ;; 1. The token consists entirely of digits, signs, ratio
+          ;;    markers, decimal points, extension characters, and
+          ;;    number markers.
+          (loop
+             :for prevch = #\0 :then ch
+             :for ch :across token
+             :always (or (digit-char-p ch *read-base*)
+                         (find ch "+-.^_")
+                         (find ch ratio-markers)
+                         (and (alpha-char-p ch)
+                              (not (alpha-char-p prevch)))))))))
+
+
+(defun test/potential-number-p ()
+  (assert (every (function potential-number-p)
+                 '("1b5000"
+                   "777777q"
+                   "1.7J"
+                   "-3/4+6.7J"
+                   "12/25/83"
+                   "27^19"
+                   "3^4/5"
+                   "6//7"
+                   "3.1.2.6"
+                   "^-43^"     
+                   "3.141_592_653_589_793_238_4"
+                   "-3.7+2.6i-6.17j+19.6k"
+                   "+.e2")))
+  (assert (notany (function potential-number-p)
+                 '("/"
+                   "/5"
+                   "+"
+                   "1+"
+                   "1-"   
+                   "foo+"
+                   "ab.cd"
+                   "_"
+                   "^"
+                   "^/-")))
+  (let ((pns '("bad-face"
+               "25-dec-83"
+               "a/b"
+               "fad_cafe"
+               "f^" )))
+    (let ((*read-base* 16.))
+      (assert (every (function potential-number-p) pns)))
+    (let ((*read-base* 10.))
+      (assert (notany (function potential-number-p) pns))))
+  :success)
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; The End
