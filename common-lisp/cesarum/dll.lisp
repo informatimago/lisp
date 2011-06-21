@@ -1,39 +1,40 @@
 ;;;; -*- coding:utf-8 -*-
-;;****************************************************************************
-;;FILE:               dll.lisp
-;;LANGUAGE:           Common-Lisp
-;;SYSTEM:             Common-Lisp
-;;USER-INTERFACE:     NONE
-;;DESCRIPTION
-;;    
-;;    A doubly-linked list.
-;;    
-;;AUTHORS
-;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
-;;MODIFICATIONS
-;;    2005-04-28 <PJB> Clean-up.
-;;    2004-03-01 <PJB> Created.
-;;BUGS
-;;LEGAL
-;;    GPL
-;;    
-;;    Copyright Pascal J. Bourguignon 2004 - 2005
-;;    
-;;    This program is free software; you can redistribute it and/or
-;;    modify it under the terms of the GNU General Public License
-;;    as published by the Free Software Foundation; either version
-;;    2 of the License, or (at your option) any later version.
-;;    
-;;    This program is distributed in the hope that it will be
-;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;    PURPOSE.  See the GNU General Public License for more details.
-;;    
-;;    You should have received a copy of the GNU General Public
-;;    License along with this program; if not, write to the Free
-;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;    Boston, MA 02111-1307 USA
-;;****************************************************************************
+;;;;****************************************************************************
+;;;;FILE:               dll.lisp
+;;;;LANGUAGE:           Common-Lisp
+;;;;SYSTEM:             Common-Lisp
+;;;;USER-INTERFACE:     NONE
+;;;;DESCRIPTION
+;;;;    
+;;;;    A doubly-linked list.
+;;;;    
+;;;;AUTHORS
+;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
+;;;;MODIFICATIONS
+;;;;    2011-06-22 <PJB> Corrected a bug in DLL.
+;;;;    2005-04-28 <PJB> Clean-up.
+;;;;    2004-03-01 <PJB> Created.
+;;;;BUGS
+;;;;LEGAL
+;;;;    GPL
+;;;;    
+;;;;    Copyright Pascal J. Bourguignon 2004 - 2011
+;;;;    
+;;;;    This program is free software; you can redistribute it and/or
+;;;;    modify it under the terms of the GNU General Public License
+;;;;    as published by the Free Software Foundation; either version
+;;;;    2 of the License, or (at your option) any later version.
+;;;;    
+;;;;    This program is distributed in the hope that it will be
+;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
+;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    
+;;;;    You should have received a copy of the GNU General Public
+;;;;    License along with this program; if not, write to the Free
+;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
+;;;;    Boston, MA 02111-1307 USA
+;;;;****************************************************************************
 
 (IN-PACKAGE "COMMON-LISP-USER")
 (DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DLL"
@@ -71,10 +72,12 @@
 
 
 (defun dll (&rest list)
-  (let ((dlist (make-dll))
-        (current nil))
-    (map nil (lambda (item) (setf current (dll-append dlist current item))) list)
-    dlist))
+  (loop
+     :with dlist = (make-dll)
+     :for element :in list
+     :for last-node = (dll-insert dlist nil element)
+     :then (dll-insert dlist last-node element)
+     :finally (return dlist)))
 
 (defun dll-first-node (dlist) (%dll-first dlist))
 (defun dll-last-node  (dlist) (%dll-last dlist))
@@ -143,28 +146,30 @@
 
 
 (defun dll-append (&rest dlls)
-  (apply (function dll-nconc) (mapcar (function dll-copy) dlls)))
-
-
-(defun dll-nconc (&rest dlls)
   "
-PRE:   No dll appears twice in dlls.
-DO:    Extract the nodes from all but the first dll,
-       and append them to that first dll.
+DO:     Appends the elements in all the DLLS into a single dll.
+        The DLLs are not modified.
+RETURN: A new dll with all the elements in DLLS.
 "
   (if (null dlls)
       (make-dll)
-      (do ((result  (do ((dll (pop dlls) (pop dlls)))
-                        ((%dll-first dll) dll)))
-           (dlls dlls (cdr dlls))
-           (dll))
-          ((null dlls) result)
-        (setf dll (car dlls))
+      (apply (function dll-nconc) (mapcar (function dll-copy) dlls))))
+
+
+(defun dll-nconc (first-dll &rest DLLS)
+  "
+PRE:   No dll appears twice in (CONS FIRST-DLL DLLS).
+DO:    Extract the nodes from all but the FIRST-DLL,
+       and append them all to that FIRST-DLL.
+"
+  (if (null dlls)
+      first-dll
+      (dolist (dll (rest dlls) first-dll)
         (let ((first (%dll-first dll)))
           (unless (null first)
-            (setf (dll-node-previous first) (%dll-last result)
-                  (dll-node-next (%dll-last result)) first
-                  (%dll-last result) (%dll-last dll)
+            (setf (dll-node-previous first) (%dll-last first-dll)
+                  (dll-node-next (%dll-last first-dll)) first
+                  (%dll-last first-dll) (%dll-last dll)
                   (%dll-first dll) nil
                   (%dll-last dll) nil))))))
 
@@ -199,7 +204,7 @@ RETURN:  A new list containing the items of the dll.
 
 (defun dll-insert (dlist node item)
   "
-DO:     Insert a new node after node, or before first position when (null node).
+DO:     Insert a new node after NODE, or before first position when (NULL NODE).
 RETURN: The new node.
 "
   (let ((new-node nil))
@@ -247,4 +252,5 @@ RETURN: The new node.
 (defun dll-delete-nth (index dlist)
   (dll-extract-node dlist (dll-node-nth index dlist)))
 
-;;;; dll.lisp                         --                     --          ;;;;
+
+;;;; THE END ;;;;
