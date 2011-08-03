@@ -11,6 +11,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2011-08-03 <PJB> Added POSITIONS and VECTOR-DELETE.
 ;;;;    2006-10-20 <PJB> Added nudge-displaced-vector.
 ;;;;                     Moved in displaced-vector from
 ;;;;                     com.informatimago.common-lisp.cesarum.string
@@ -19,7 +20,7 @@
 ;;;;LEGAL
 ;;;;    GPL
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2005 - 2005
+;;;;    Copyright Pascal J. Bourguignon 2005 - 2011
 ;;;;    
 ;;;;    This program is free software; you can redistribute it and/or
 ;;;;    modify it under the terms of the GNU General Public License
@@ -41,8 +42,11 @@
 (IN-PACKAGE "COMMON-LISP-USER")
 (DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ARRAY"
   (:USE "COMMON-LISP")
-  (:EXPORT "NUDGE-DISPLACED-VECTOR" "DISPLACED-VECTOR" "ARRAY-TO-LIST"
-           "COPY-ARRAY")
+  (:EXPORT
+   "POSITIONS" ; should go to a sequence package...
+   "VECTOR-DELETE"
+   "NUDGE-DISPLACED-VECTOR" "DISPLACED-VECTOR"
+   "ARRAY-TO-LIST" "COPY-ARRAY")
   (:DOCUMENTATION
    "Array functions.
     
@@ -51,6 +55,62 @@
     See the source file for details."))
 (IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ARRAY")
 
+
+
+(defun positions (item vector &key (from-end nil) (test 'eql) (test-not nil) (start 0) (end nil) (count nil) (key 'identity))
+  (let ((args (list :key key
+                    (if test-not :test-not :test)
+                    (if test-not  test-not  test))))
+    (if from-end
+        (loop
+           :with result = '()
+           :for cur-end = end :then p
+           :for p = (apply (function position) item vector
+                              :from-end t
+                              :start start :end cur-end
+                              args)
+           :while (and p (or (null count) (<= 0 (decf count))))
+           :do (push p result) 
+           :finally (return result))
+        (loop
+           :for cur-start = start :then (1+ p)
+           :for p = (apply (function position) item vector
+                           :start cur-start :end end
+                           args)
+           :while (and p (or (null count) (<= 0 (decf count))))
+           :collect p))))
+
+
+(defun vector-delete (item vector &rest keys &key (from-end nil) (test 'eql) (test-not nil) (start 0) (end nil) (count nil) (key 'identity))
+  (declare (ignorable from-end test test-not start end count key))
+  (if (array-has-fill-pointer-p vector)
+      (let ((positions (apply (function positions) item vector keys)))
+        (if (print positions)
+            (loop
+               :with dst-start = (pop positions)
+               :for  src-start = (1+ dst-start) :then (1+ src-end)
+               :for  src-end   = (pop positions)
+               :for  src-end2  = (or src-end (length vector))
+               :do (print (list :dst-start dst-start
+                                :src-start src-start
+                                :src-end src-end
+                                :src-end2 src-end2))
+               :do (when (< src-start src-end2)
+                     (print `(replace vector vector
+                                      :start1 ,dst-start
+                                      :start2 ,src-start :end2 ,src-end2))
+                     (replace vector vector
+                              :start1 dst-start
+                              :start2 src-start :end2 src-end2)
+                     (incf dst-start (- src-end2 src-start))
+                     (setf src-start (1+ src-end2)))
+               :while src-end
+               :finally (progn
+                          (setf (fill-pointer vector) dst-start)
+                          (return vector)))
+            vector))
+      ;; No fill pointer, fall back to CL:DELETE:
+      (apply (function delete) item vector keys)))
 
 
 
