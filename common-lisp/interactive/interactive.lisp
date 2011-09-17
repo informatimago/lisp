@@ -361,13 +361,18 @@ RETURN: a list of options present at the beginning of the arguments list;
 (defun lschar (&key (start 0) (end #x11000) name)
   "Prints all the characters of codes betwen start and end, with their names."
   (if name
-      (loop :for code :from start :below end
-         :when (string-match-p name (char-name (code-char code)))
+      (loop
+         :for code :from start :below end
+         :when (and (code-char code) ; ccl returns nil on some codes...
+                    (string-match-p name (char-name (code-char code))))
          :collect #1=(progn (format t "#x~5,'0X  ~:*~6D  ~C  ~S~%"
                                     code (code-char code)
                                     (char-name (code-char code)))
                             (code-char code)))
-      (loop :for code :from start :below end :collect #1#)))
+      (loop
+         :for code :from start :below end
+         :when (code-char code) ; ccl returns nil on some codes...
+         :collect #1#)))
 
 
 
