@@ -7,7 +7,7 @@
 ;;;;DESCRIPTION
 ;;;;    
 ;;;;    Implementation of the TEA
-;;;;    <a href=http://www.simonshepherd.supanet.com/tea.htm>Tiny Encryption Algorith</a>
+;;;;    <a href=http://web.archive.org/web/20070929150931/http://www.simonshepherd.supanet.com/tea.htm>Tiny Encryption Algorith</a>
 ;;;;    
 ;;;;    
 ;;;;AUTHORS
