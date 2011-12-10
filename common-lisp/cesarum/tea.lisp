@@ -45,7 +45,7 @@
   (:EXPORT "TEA-DECIPHER" "TEA-ENCIPHER")
   (:DOCUMENTATION
    "This package imlements the TEA, Tiny Encryption Algorithm.
-    http://www.simonshepherd.supanet.com/tea.htm
+    http://web.archive.org/web/20070929150931/http://www.simonshepherd.supanet.com/tea.htm
 
     Copyright Pascal J. Bourguignon 2006 - 2006
     This package is provided under the GNU General Public License.
