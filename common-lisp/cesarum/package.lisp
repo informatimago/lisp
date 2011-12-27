@@ -68,6 +68,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2011-12-27 <PJB> Added double-RENAME-PACKAGE to ADD-NICKNAME.
 ;;;;    2005-03-17 <PJB> Added LIST-ALL-SYMBOLS LIST-EXTERNAL-SYMBOLS
 ;;;;                     COPY-PACKAGE
 ;;;;    2005-01-13 <PJB> Renamed *VERBOSE* to *PACKAGE-VERBOSE*.
@@ -560,42 +561,51 @@ RETURN:  The package designated by PACKAGE.
        :finally (return name))))
 
 
-(DEFUN ADD-NICKNAME (PACKAGE NICKNAME &key STEAL FORCE)
+(defun add-nickname (package nickname &key steal force)
   "
 DO:         Add the NICKNAME to the PACKAGE.
 STEAL:      If another package has already this nickname, then steal it.
 FORCE:      If another package has this nickname as package name, then steal it.
 RETURN:     The package designated by PACKAGE.
 "
-  ;; !!! The consequences are undefined if new-name or any new-nickname conflicts with any existing package names.
-  (VERBOSE "~&# ADDING TO PACKAGE ~S~%
-            ~&#      THE NICKNAME ~S~%" PACKAGE NICKNAME)
-  (LET* ((PACK     (FIND-PACKAGE PACKAGE))
+  ;; !!! The consequences are undefined if new-name or any new-nickname
+  ;; !!! conflicts with any existing package names.  Therefore we use a temp name.
+  (verbose "~&# ADDING TO PACKAGE ~S~%
+            ~&#      THE NICKNAME ~S~%" package nickname)
+  (let* ((pack     (find-package package))
          (package  (if pack
                        (package-name pack)
                        (error "~S: There is no package named \"~A\"."
                               'add-nickname package)))
-         (nickpack (find-package nickname)))
-    (cond
-      ((eq nickpack pack)  (VERBOSE "~&#    ALREADY GOT IT~%"))
-      ((null nickpack)
-       (RENAME-PACKAGE PACK (PACKAGE-NAME PACK)
-                       (cons NICKNAME (copy-seq (PACKAGE-NICKNAMES PACK))))
-       (WHEN (built-in-p PACKAGE)
-         (PUSHNEW NICKNAME *BUILT-IN-PACKAGES* :TEST (FUNCTION STRING=))))
-      ((and force (string= nickname (package-name nickpack)))
-       (let ((nicks (or (package-nicknames nickpack)
-                        (list (gen-old-name nickname)))))
-         (rename-package nickpack (first nicks) (rest nicks))
-         (add-nickname package nickname)))
-      ((and (or steal force) (string/= nickname (package-name nickpack)))
-       (remove-nickname nickpack nickname)
-       (add-nickname package nickname))
-      (force
-       (error "~S is already a nickname of the package ~S" nickname nickpack))
-      (t
-       (error "~S is the name of an existing package." nickname)))
-    pack))
+         (nickpack (find-package nickname))
+         (cnt      0))
+    (flet ((temp-name ()
+             (loop
+                :for name = (format nil "TEMP-~A-~A" package (incf cnt))
+                :while (find-package name)
+                :finally (return name))))
+      (cond
+        ((eq nickpack pack)  (verbose "~&#    ALREADY GOT IT~%"))
+        ((null nickpack)
+         (let ((temp  (temp-name))
+               (nicks (cons nickname (copy-seq (package-nicknames pack)))))
+          (rename-package pack temp    nicks)
+          (rename-package pack package nicks))
+         (when (built-in-p package)
+           (pushnew nickname *built-in-packages* :test (function string=))))
+        ((and force (string= nickname (package-name nickpack)))
+         (let ((nicks (or (package-nicknames nickpack)
+                          (list (gen-old-name nickname)))))
+           (rename-package nickpack (first nicks) (rest nicks))
+           (add-nickname package nickname)))
+        ((and (or steal force) (string/= nickname (package-name nickpack)))
+         (remove-nickname nickpack nickname)
+         (add-nickname package nickname))
+        (force
+         (error "~S is already a nickname of the package ~S" nickname nickpack))
+        (t
+         (error "~S is the name of an existing package." nickname)))
+      pack)))
 
 
 (DEFUN INSERT-SHARP (STRING)
