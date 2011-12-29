@@ -87,6 +87,8 @@
            "SET-INDIRECT-MACRO-CHARACTER"
            "LIST-ALL-MACRO-CHARACTERS"
            "SIMPLE-READER-ERROR" "SIMPLE-END-OF-FILE"
+           "MISSING-PACKAGE-ERROR" "SYMBOL-IN-MISSING-PACKAGE-ERROR"
+           "INTERN-HERE" "RETURN-UNINTERNED"
            ;; Utilities:
            "POTENTIAL-NUMBER-P")
   (:DOCUMENTATION
@@ -99,9 +101,14 @@
 
 
 
-(define-condition simple-reader-error (simple-error reader-error) ())
-(define-condition simple-end-of-file  (simple-error end-of-file)  ())
+(define-condition simple-reader-error   (simple-error reader-error) ())
+(define-condition simple-end-of-file    (simple-error end-of-file)  ())
 
+(define-condition missing-package-error (reader-error)
+  ((package-name :initarg :package-name)))
+
+(define-condition symbol-in-missing-package-error (missing-package-error)
+  ((symbol-name :initarg :symbol-name)))
 
 (defun serror (condition stream control-string &rest arguments)
   (error condition
@@ -401,6 +408,14 @@ exponent markers when printing floating-point numbers.
 URL: http://www.lispworks.com/documentation/HyperSpec/Body/v_rd_def.htm
 ")
 
+;; extensions
+(defvar *input-stream* nil
+  "
+Bound to the input stream, during token parsing.
+
+Consequences are undefined, if any destructive operations are
+attempted on this stream.
+")
 
 (declaim (ftype (function (t) t) parse-token))
 
@@ -947,7 +962,17 @@ package-name  ::= {alphabetic}+ "
                         (accept 'symbol sym)
                         (reject t "There is no external symbol named ~S in ~
                                the package named ~S" sname pname))))
-              (reject t "There is no package with name ~S" pname)))
+              (accept 'symbol
+                      (restart-case (error 'symbol-in-missing-package-error
+                                           :stream *input-stream* :package-name pname :symbol-name sname)
+                        (intern-here (&rest rest)
+                          :report "Intern the symbol in the current package, instead"
+                          (declare (ignore rest))
+                          (intern sname))
+                        (return-uninterned (&rest rest)
+                          :report "Return an uninterned symbol, instead"
+                          (declare (ignore rest))
+                          (make-symbol sname))))))
         ;; no colon in token, let's just intern the symbol in the current package :
         (accept 'symbol (intern (token-text token) *package*)))))
 
@@ -1029,7 +1054,8 @@ RETURN:         tokenp == t    ; an unparsed (alldots) token.  Or
                (not (all-dots-p token))) ; We got a token, let's parse it.
            (values nil (list
                         (multiple-value-bind (okp object)
-                            (funcall (readtable-parse-token *readtable*) token)
+                            (let ((*input-stream* input-stream))
+                              (funcall (readtable-parse-token *readtable*) token))
                           (if okp
                               object
                               (serror 'simple-reader-error input-stream
