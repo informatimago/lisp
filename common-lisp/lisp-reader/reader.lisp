@@ -88,6 +88,7 @@
            "LIST-ALL-MACRO-CHARACTERS"
            "SIMPLE-READER-ERROR" "SIMPLE-END-OF-FILE"
            "MISSING-PACKAGE-ERROR" "SYMBOL-IN-MISSING-PACKAGE-ERROR"
+           "MISSING-SYMBOL-ERROR" "SYMBOL-MISSING-IN-PACKAGE-ERROR"
            "INTERN-HERE" "RETURN-UNINTERNED"
            ;; Utilities:
            "POTENTIAL-NUMBER-P")
@@ -109,6 +110,12 @@
 
 (define-condition symbol-in-missing-package-error (missing-package-error)
   ((symbol-name :initarg :symbol-name)))
+
+(define-condition missing-symbol-error (reader-error)
+  ((symbol-name :initarg :symbol-name)))
+
+(define-condition symbol-missing-in-package-error (missing-symbol-error)
+  ((package-name :initarg :package-name)))
 
 (defun serror (condition stream control-string &rest arguments)
   (error condition
@@ -960,8 +967,13 @@ package-name  ::= {alphabetic}+ "
                   (multiple-value-bind (sym where) (find-symbol sname pname)
                     (if (eq where :external) 
                         (accept 'symbol sym)
-                        (reject t "There is no external symbol named ~S in ~
-                               the package named ~S" sname pname))))
+                        (accept 'symbol
+                                (restart-case (error 'symbol-missing-in-package-error
+                                                     :stream *input-stream* :package-name pname :symbol-name sname)
+                                  (make-symbol (&rest rest)
+                                    :report "Make the missing symbol in the specified package"
+                                    (declare (ignore rest))
+                                    (intern sname pname)))))))
               (accept 'symbol
                       (restart-case (error 'symbol-in-missing-package-error
                                            :stream *input-stream* :package-name pname :symbol-name sname)
