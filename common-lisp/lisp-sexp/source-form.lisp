@@ -402,6 +402,7 @@
 
 
 (defgeneric parameter-specifier (parameter)
+  (:doucmentation "Return a parameter specifier sexp, which can be used to build a lambda list.")
   (:method ((self parameter))
     (parameter-name self))
   (:method ((self specialized-parameter))
@@ -609,7 +610,6 @@ some constraints may be different from one lambda-list to the other."))
   (:method ((self method-combination-lambda-list))
     (declare (ignorable self)) 
     '(&optional &rest &allow-other-keys &key &aux &whole)))
-
 
 
 (defmethod lambda-list-mandatory-parameter-count ((self or-ll))
@@ -846,6 +846,11 @@ DO:      Parse a lambda-list of the specified kind.
 KIND:    (MEMBER :ORDINARY :BOA :SPECIALIZED :MODIFY-MACRO :GENERIC
                  :MACRO :TYPE :DESTRUCTURING :SETF :METHOD-COMBINATION)
 RETURN:  A lambda-list instance.
+
+NOTE:    In the case of :macro, :destructuring lambda lists, some
+         parameter lists may further contain destructuring-lambda-list
+         instances instead of lambda-list-parameter instances.
+
 "
   (parse-original-lambda-list
    (make-instance
@@ -1057,6 +1062,15 @@ RETURN:     A newly rebuilt lambda-list s-expr.
    (when (lambda-list-auxiliary-parameters self)
      (cons '&aux (mapcar (function parameter-specifier)
                          (lambda-list-auxiliary-parameters self))))))
+
+
+(defmethod parameter-specifier ((parameter destructuring-lambda-list))
+  "
+NOTE:   DESTRUCTURING-LAMBDA-LIST instances may appear in parameter lists.
+        Therefore we need to build the parameter-specifier sexp for them.
+"
+  (make-lambda-list parameter))
+
 
 
 
