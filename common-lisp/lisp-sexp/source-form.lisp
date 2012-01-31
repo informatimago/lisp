@@ -100,12 +100,13 @@
            "*READ-BASE*" "*READ-DEFAULT-FLOAT-FORMAT*" "*READ-EVAL*"
            "*READ-SUPPRESS*" "*READTABLE*")
   (:documentation "
-    This package exports functions to parse and manipulate
-    Common Lisp sources as lisp forms (such as in macros).
+This package exports functions to parse and manipulate
+Common Lisp sources as lisp forms (such as in macros).
 
-    Copyright Pascal J. Bourguignon 2003 - 2007
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
+Copyright Pascal J. Bourguignon 2003 - 2007
+This package is provided under the GNU General Public License.
+See the source file for details.
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM")
 
 
@@ -402,7 +403,7 @@
 
 
 (defgeneric parameter-specifier (parameter)
-  (:doucmentation "Return a parameter specifier sexp, which can be used to build a lambda list.")
+  (:documentation "Return a parameter specifier sexp, which can be used to build a lambda list.")
   (:method ((self parameter))
     (parameter-name self))
   (:method ((self specialized-parameter))
