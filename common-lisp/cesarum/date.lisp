@@ -39,6 +39,15 @@
 ;;;;    Boston, MA 02111-1307 USA
 ;;;;**************************************************************************
 
+;; http://en.wikipedia.org/wiki/Julian_day#Calculation
+;; - find inverse of (julian-day-number/gregorian d m y) --> j
+;; - check the origin of julian-day
+;;     (com.informatimago.common-lisp.gregorian-calendar:date-from-day-number (- 733314 2454374)) 
+;;     24 ;
+;;     11 ;
+;;     -4713
+;; - check the historical names of the day (day starting from noon?,
+;;   hebrew days starting from eve).
 
 ;;; See also: http://emr.cs.uiuc.edu/~reingold/calendars.shtml
 
