@@ -57,6 +57,10 @@ tools/
 
 
 .. comment:
+    To push to gitorious:
+        git push gitorious master
+
+
 
           -------------------------------------------------
                            ---------------
