@@ -74,7 +74,7 @@
    ;; 12 - NUMBERS
    "SIGN"
    ;; 14 - CONSES
-   "MAXIMIZE" "COMPUTE-CLOSURE"
+   "MAXIMIZE" "COMPUTE-CLOSURE" "TOPOLOGICAL-SORT"
    ;; 15 - ARRAYS
    "VECTOR-INIT" "UNDISPLACE-ARRAY" "DICHOTOMY-SEARCH"
    ;; 16 - STRINGS
@@ -868,6 +868,39 @@ NOTE:    This version avoids calling FUN twice with the same argument.
 ;; (array->list array) --> (coerce array 'list)
 ;; (DEFUN ARRAY->LIST (A) (MAP 'LIST (FUNCTION IDENTITY) A));;ARRAY->LIST
 
+
+(defun topological-sort (nodes lessp)
+  "
+RETURN: A list of NODES sorted topologically according to 
+        the partial order function LESSP.
+        If there are cycles (discounting reflexivity), 
+        then the list returned won't contain all the NODES.
+"
+  (loop
+     :with sorted = '()
+     :with incoming = (map 'vector (lambda (to)
+                                     (loop
+                                        :for from :in nodes
+                                        :when (and (not (eq from to))
+                                                   (funcall lessp from to))
+                                        :sum 1))
+                           nodes)
+     :with q = (loop
+                  :for node :in nodes
+                  :for inco :across incoming
+                  :when (zerop inco)
+                  :collect node) 
+     :while q
+     :do (let ((n (pop q)))
+           (push n sorted)
+           (loop
+              :for m :in nodes
+              :for i :from 0
+              :do (when (and (and (not (eq n m))
+                                  (funcall lessp n m))
+                             (zerop (decf (aref incoming i))))
+                    (push m q))))
+     :finally (return (nreverse sorted))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
