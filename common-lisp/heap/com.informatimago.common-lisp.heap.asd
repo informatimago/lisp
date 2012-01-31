@@ -36,7 +36,10 @@
 
 (asdf:defsystem :com.informatimago.common-lisp.heap
     :name "com.informatimago.common-lisp.heap"
-    :description  "This ASDF system gathers various Common Lisp library packages."
+    :description  "
+This package implements a heap for 'common' data in shared memory
+segments.  There is a garbage collector, and lisp data types.
+"
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
     :version "1.2.0"
     :licence "GPL"

@@ -36,7 +36,7 @@
 
 (asdf:defsystem :com.informatimago.common-lisp.html-parser
     :name "com.informatimago.common-lisp.html-parser"
-    :description  "This ASDF system gathers various Common Lisp library packages."
+    :description  "HTML parser."
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
     :version "1.2.0"
     :licence "GPL"

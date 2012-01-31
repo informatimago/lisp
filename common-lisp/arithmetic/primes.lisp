@@ -47,9 +47,9 @@
   (:DOCUMENTATION
    "Compute primes and factorize numbers.
 
-    Copyright Pascal J. Bourguignon 2003 - 2003
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
+Copyright Pascal J. Bourguignon 2003 - 2003
+This package is provided under the GNU General Public License.
+See the source file for details."))
 (IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.ARITHMETIC.PRIMES")
 
 

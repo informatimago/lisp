@@ -35,7 +35,7 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.sbcl
-    :description "This ASDF system gathers all the COM.INFORMATIMAGO.SBCL packages."
+    :description "This library contains SBCL-dependant packages."
 
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
     :version "1.2.0"

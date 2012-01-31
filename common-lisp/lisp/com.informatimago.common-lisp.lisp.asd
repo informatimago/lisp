@@ -36,7 +36,7 @@
 
 (asdf:defsystem :com.informatimago.common-lisp.lisp
     :name "com.informatimago.common-lisp.lisp"
-    :description  "This ASDF system gathers various Common Lisp library packages."
+    :description  "This package exports generic functions that forward to the COMMON-LISP package when there's no specialization."
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
     :version "1.2.0"
     :licence "GPL"

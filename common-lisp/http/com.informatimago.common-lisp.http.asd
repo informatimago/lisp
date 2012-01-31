@@ -36,7 +36,7 @@
 
 (asdf:defsystem :com.informatimago.common-lisp.http
     :name "com.informatimago.common-lisp.http"
-    :description  "This ASDF system gathers various Common Lisp library packages."
+    :description  "Utility routines for web applications."
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
     :version "1.2.0"
     :licence "GPL"

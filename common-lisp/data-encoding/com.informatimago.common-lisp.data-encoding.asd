@@ -36,7 +36,7 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.common-lisp.data-encoding
-    :name "com.informatimago.common-lisp.data-encoding"
+    :name "This library contains packages to encode and decode data in various ways."
     :description  "This ASDF system gathers various Common Lisp library packages."
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
     :version "1.2.0"

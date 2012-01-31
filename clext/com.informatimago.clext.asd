@@ -36,8 +36,11 @@
 
 
 (asdf:defsystem :com.informatimago.clext
-    :description "This ASDF system gathers all the COM.INFORMATIMAGO.CLEXT packages."
-
+    :description "
+Closer to Weak objects.
+Implements the specification: http://clisp.cons.org/impnotes/weak.html
+for Common Lisp implementations that have only weak-pointers.
+"
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
     :version "1.2.0"
     :licence "GPL"

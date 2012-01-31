@@ -36,8 +36,7 @@
 
 
 (asdf:defsystem :com.informatimago.susv3
-    :description "This ASDF system gathers all the COM.INFORMATIMAGO.SUSV3 packages."
-
+    :description "This library defines a POSIX SUSv3 API for Common Lisp (and Lisp Wrappers)."
     :version "1.2.0"
     :author "<PJB> Pascal Bourguignon <pjb@informatimago.com>"
     :licence "GPL"

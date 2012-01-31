@@ -36,7 +36,7 @@
 
 (asdf:defsystem :com.informatimago.common-lisp.invoice
     :name "com.informatimago.common-lisp.invoice"
-    :description  "This ASDF system gathers various Common Lisp library packages."
+    :description  "Accounting, invoices, customers, providers."
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
     :version "1.2.0"
     :licence "GPL"

@@ -36,7 +36,7 @@
 
 (asdf:defsystem :com.informatimago.common-lisp.cesarum
     :name "com.informatimago.common-lisp.cesarum"
-    :description  "This ASDF system gathers various Common Lisp library packages."
+    :description  "This library implements various general data types, algorithms and standards."
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
     :version "1.2.0"
     :licence "GPL"

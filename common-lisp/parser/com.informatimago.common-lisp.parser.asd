@@ -36,7 +36,7 @@
 
 (asdf:defsystem :com.informatimago.common-lisp.parser
     :name "com.informatimago.common-lisp.parser"
-    :description  "This ASDF system gathers various Common Lisp library packages."
+    :description  "Abstract scanner and parser classes."
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
     :version "1.2.0"
     :licence "GPL"

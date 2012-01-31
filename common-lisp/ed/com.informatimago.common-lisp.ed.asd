@@ -36,7 +36,7 @@
 
 (asdf:defsystem :com.informatimago.common-lisp.ed
     :name "com.informatimago.common-lisp.ed"
-    :description  "This ASDF system gathers various Common Lisp library packages."
+    :description  "Implementation of the COMMON-LISP ED function, following the user manual of ed(1)."
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
     :version "1.2.0"
     :licence "GPL"

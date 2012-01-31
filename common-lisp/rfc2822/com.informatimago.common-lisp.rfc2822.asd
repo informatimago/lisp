@@ -36,7 +36,7 @@
 
 (asdf:defsystem :com.informatimago.common-lisp.rfc2822
     :name "com.informatimago.common-lisp.rfc2822"
-    :description  "This ASDF system gathers various Common Lisp library packages."
+    :description  "RFC0822/RFC2822 support funtions."
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
     :version "1.2.0"
     :licence "GPL"

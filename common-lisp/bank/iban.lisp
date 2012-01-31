@@ -51,7 +51,14 @@
   (:EXPORT "GET-AND-CHECK-ALPHANUM" "COMPUTE-IBAN-KEY" "CHECK-IBAN-KEY"
            "GET-IBAN" "GET-KEY" "GET-COUNTRY-CODE" "SET-IBAN" "GET-IBAN" "GET-KEY"
            "GET-COUNTRY-CODE" "CHECK-COUNTRY" "BASIC-FORM" "IBAN" "IBAN-ERROR")
-  (:DOCUMENTATION ""))
+  (:DOCUMENTATION "
+This class is an Internationnal Bank Account Number, 
+according to European standard.
+IBAN Format: http://www.ecbs.org/iban/iban.htm 
+
+Copyright Pascal J. Bourguignon 1994 - 2004
+This package is provided under the GNU General Public License.
+See the source file for details."))
 (IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.BANK.IBAN")
 
 

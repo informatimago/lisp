@@ -36,7 +36,11 @@
 
 (asdf:defsystem :com.informatimago.common-lisp.diagram
     :name "com.informatimago.common-lisp.diagram"
-    :description  "This ASDF system gathers various Common Lisp library packages."
+    :description  "
+This package generates a Diagram text file drawing a tree.
+The tree drawn is a list whose car is the node displayed, and
+whose cdr is the list of children.
+"
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
     :version "1.2.0"
     :licence "GPL"

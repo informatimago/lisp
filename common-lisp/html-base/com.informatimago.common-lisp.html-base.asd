@@ -36,7 +36,7 @@
 
 (asdf:defsystem :com.informatimago.common-lisp.html-base
     :name "com.informatimago.common-lisp.html-base"
-    :description  "This ASDF system gathers various Common Lisp library packages."
+    :description  "Lisp description of the HTML 4.01 standard and entities."
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
     :version "1.2.0"
     :licence "GPL"

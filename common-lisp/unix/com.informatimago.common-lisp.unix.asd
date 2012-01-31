@@ -36,7 +36,7 @@
 
 (asdf:defsystem :com.informatimago.common-lisp.unix
     :name "com.informatimago.common-lisp.unix"
-    :description  "This ASDF system gathers packages to deal with UNIX configuration file."
+    :description  "This library implements access to a few unix administrative files (passwd, group, etc)."
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
     :version "1.2.0"
     :licence "GPL"

@@ -35,7 +35,7 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.clisp
-    :description "This ASDF system gathers all the COM.INFORMATIMAGO.CLISP packages."
+    :description "This library contains clisp-dependant packages, mostly POSIX API."
 
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
     :version "1.2.0"

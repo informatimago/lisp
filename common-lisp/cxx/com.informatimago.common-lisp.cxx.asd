@@ -36,7 +36,7 @@
 
 (asdf:defsystem :com.informatimago.common-lisp.cxx
     :name "com.informatimago.common-lisp.cxx"
-    :description  "This ASDF system gathers various Common Lisp library packages."
+    :description  "Restricted C++ parser, used just to analyze the call graph of C++ functions and methods."
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
     :version "1.2.0"
     :licence "GPL"

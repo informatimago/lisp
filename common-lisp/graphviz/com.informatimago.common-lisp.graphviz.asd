@@ -36,7 +36,7 @@
 
 (asdf:defsystem :com.informatimago.common-lisp.graphviz
     :name "com.informatimago.common-lisp.graphviz"
-    :description  "This ASDF system gathers various Common Lisp library packages."
+    :description  "This package exports methods on the GRAPH class to generate dot(1) files."
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
     :version "1.2.0"
     :licence "GPL"

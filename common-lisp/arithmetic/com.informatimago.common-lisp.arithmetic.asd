@@ -36,7 +36,7 @@
 
 (asdf:defsystem :com.informatimago.common-lisp.arithmetic
     :name "com.informatimago.common-lisp.arithmetic"
-    :description  "This ASDF system gathers various Common Lisp library packages."
+    :description  "Arithmetic tools, primes, factorization."
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
     :version "1.2.0"
     :licence "GPL"

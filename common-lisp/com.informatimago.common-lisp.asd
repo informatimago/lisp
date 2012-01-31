@@ -36,8 +36,7 @@
 
 
 (asdf:defsystem :com.informatimago.common-lisp
-    :description  "This ASDF system gathers various Common Lisp library packages."
-
+    :description  "Various Common Lisp libraries."
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
     :version "1.2.0"
     :licence "GPL"

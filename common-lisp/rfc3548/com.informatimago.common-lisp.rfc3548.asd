@@ -36,7 +36,7 @@
 
 (asdf:defsystem :com.informatimago.common-lisp.rfc3548
     :name "com.informatimago.common-lisp.rfc3548"
-    :description  "This ASDF system gathers various Common Lisp library packages."
+    :description  "This library implements the RFC3548 encodings: Base16, Base32, and Base64."
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
     :version "1.2.0"
     :licence "GPL"

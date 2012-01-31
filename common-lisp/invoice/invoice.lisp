@@ -50,7 +50,14 @@
            "INVOICE-LINE" "FISCAL-PERSON" "BANK-REFERENCE" "PJB-OBJECT" "*JOURNAL*"
            "*INVOICE-SET*" "*CURRENCY-READTABLE*")
   (:SHADOW "ABS" "ZEROP" "ROUND" "/=" "=" ">=" ">" "<=" "<" "/" "*" "-" "+")
-  (:DOCUMENTATION ""))
+  (:DOCUMENTATION "
+This package exports classes and functions used for accounting:
+invoices, customers/providers, movements, taxes...
+
+Copyright Pascal J. Bourguignon 1990 - 2004
+This package is provided under the GNU General Public License.
+See the source file for details."))
+"))
 (IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.INVOICE.INVOICE")
 
 

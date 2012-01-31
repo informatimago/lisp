@@ -36,8 +36,7 @@
 
 (asdf:defsystem :com.informatimago.common-lisp.lisp-sexp
     :name "com.informatimago.common-lisp.lisp-sexp"
-    :description  "This ASDF system gathers Common Lisp library packages
-to work with lisp forms and sexp, eg. in macros."
+    :description  "This library implements packages tto work with lisp forms and sexp, eg. in macros."
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
     :version "1.2.0"
     :licence "GPL"

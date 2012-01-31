@@ -36,7 +36,11 @@
 
 (asdf:defsystem :com.informatimago.common-lisp.tools.make-depends
     :name "com.informatimago.common-lisp.tools.make-depends"
-    :description  "This ASDF system gathers various Common Lisp library packages."
+    :description  "
+This program generates dependencies for lisp sources, based on
+\(require) sexps, a load-path, a set of logical pathname translations
+and ad-hoc processing.
+"
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
     :version "1.2.0"
     :licence "GPL"

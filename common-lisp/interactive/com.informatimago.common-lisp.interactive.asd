@@ -36,7 +36,7 @@
 
 (asdf:defsystem :com.informatimago.common-lisp.interactive
     :name "com.informatimago.common-lisp.interactive"
-    :description  "This ASDF system gathers various Common Lisp library packages."
+    :description  "This library implements various interactive commands intended to be used at the REPL."
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
     :version "1.2.0"
     :licence "GPL"

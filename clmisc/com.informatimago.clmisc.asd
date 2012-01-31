@@ -35,7 +35,7 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.clmisc
-    :description "This ASDF system gathers all the COM.INFORMATIMAGO.CLMISC packages."
+    :description "This library contains various CL packages."
 
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
     :version "1.2.0"

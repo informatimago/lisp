@@ -36,7 +36,7 @@
 
 (asdf:defsystem :com.informatimago.common-lisp.csv
     :name "com.informatimago.common-lisp.csv"
-    :description  "This ASDF system gathers various Common Lisp library packages."
+    :description  "This library implements the CSV file format."
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
     :version "1.2.0"
     :licence "GPL"

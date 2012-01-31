@@ -36,7 +36,7 @@
 
 (asdf:defsystem :com.informatimago.common-lisp.picture
     :name "com.informatimago.common-lisp.picture"
-    :description  "This ASDF system gathers various Common Lisp library packages."
+    :description  "ASCII-ART drawing."
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
     :version "1.2.0"
     :licence "GPL"

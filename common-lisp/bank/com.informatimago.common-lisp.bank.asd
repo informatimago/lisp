@@ -36,7 +36,7 @@
 
 (asdf:defsystem :com.informatimago.common-lisp.bank
     :name "com.informatimago.common-lisp.bank"
-    :description  "This ASDF system gathers various Common Lisp library packages."
+    :description  "Various bank data formats (IBAN, RIB)."
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
     :version "1.2.0"
     :licence "GPL"
