@@ -78,6 +78,7 @@
                  (:file "pmatch"          :depends-on ("utility"))
                  (:file "combination"     :depends-on ())
                  (:file "raiden"          :depends-on ())
+                 (:file "dfa"             :depends-on ())
                  (:file "tea"             :depends-on ())
 
                  ;; Specific stuff:

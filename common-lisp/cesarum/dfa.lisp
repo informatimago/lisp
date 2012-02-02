@@ -335,7 +335,7 @@ generic functions on the DFA class.
 
          ;; TODO: add a INITIALIZE-INSTANCE method to let the user initialize the DFA with MAKE-INSTANCE.
          
-         (defun ,(intern (format nil "MAKE-~A" name) (or (symbol-package name) *package*))
+         (defun ,(intern (format nil "MAKE-~A" name) (or (symbol-package name) *package*)) ()
              "Constructor for a DFA."
              ,(append
                ;; make-dfa takes as mandatory parameters all the slots that have a :initarg
