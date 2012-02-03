@@ -11,6 +11,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2012-02-03 <PJB> Added match-case*.
 ;;;;    2003-12-17 <PJB> Created.
 ;;;;BUGS
 ;;;;    pattern matcher and instantiation won't work with arrays/matrices,
@@ -19,7 +20,7 @@
 ;;;;LEGAL
 ;;;;    GPL
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2003 - 2004
+;;;;    Copyright Pascal J. Bourguignon 2003 - 2012
 ;;;;    
 ;;;;    This program is free software; you can redistribute it and/or
 ;;;;    modify it under the terms of the GNU General Public License
@@ -40,8 +41,9 @@
 (in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PMATCH"
   (:use "COMMON-LISP" "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
-  (:export "MATCH-CASE" "COLLECT-VARIABLES" ":" "?/" "?*" "?+" "??" "?N" "?X"
-           "?C" "?V" "?AX" "?AC" "?AV" "MATCH-DICT-MAP" "MATCH-STATE-DICT"
+  (:export "MATCH-CASE" "MATCH-CASE*" "COLLECT-VARIABLES"
+           ":" "?/" "?*" "?+" "??" "?N" "?X" "?C" "?V" "?AX" "?AC" "?AV"
+           "MATCH-DICT-MAP" "MATCH-STATE-DICT"
            "MATCH-STATE-FAILED-P" "MATCH")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "WITH-GENSYMS")
   (:documentation
@@ -362,6 +364,34 @@ RETURN:    A list of the symbol used in the various (?. sym) items,
       (list (cadr pat)))
      (t
       (nconc (collect-variables (car pat)) (collect-variables (cdr pat)))))))
+
+
+(defun match-case* (sexp clauses)
+  "
+SEXP:    A symbolic expression, evaluated.
+CLAUSES: A list of (pattern func) or (otherwise ofunc)
+         The functions FUNC is called with one BINDING argument.
+         The function OFUNC is called with no argument.
+DO:      Call the function of the clause whose pattern matches the SEXP,
+         or whose pattern is a symbol string-equal to OTHERWISE.
+RETURN:  The result of the called function, and the pattern that matched.
+EXAMPLE: (match-case* expr
+            `(((add       (?x a) to   (?x b)) 
+                ,(lambda (bindings) `(+ ,(aget bindings 'a) ,(aget bindings 'b)))
+               ((multiply  (?x a) with (?x b))
+                ,(lambda (bindings) `(* ,(aget bindings 'a) ,(aget bindings 'b))))
+               ((substract (?x a) from (?x a)) 
+                ,(constantly 0))
+               (otherwise
+                ,(lambda () (error \"No matching pattern\"))))))
+"
+  (loop
+     :for (pattern func) :in clauses
+     :do (if (and (symbolp pattern) (string-equal "OTHERWISE" pattern))
+             (return (values (funcall func) pattern))
+             (let ((bindings (match pattern sexp)))
+               (unless (match-state-failed-p bindings)
+                 (return (values (funcall func bindings) pattern)))))))
 
 
 (defmacro match-case (sexp &rest clauses)
