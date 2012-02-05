@@ -46,7 +46,8 @@
            "ADD32"
            "MULTIPLY32"
            "DIVIDE32"
-           "REMAINDER32")
+           "REMAINDER32"
+           "EVEN-PARITY" "ODD-PARITY")
   (:documentation "
 This module implements routines to compute modulo-2 polynomials 
 in P127[N/2]. (Ensemble de polynomes de degre inferieur ou egal a 127 
@@ -76,11 +77,12 @@ modulo 2 dans N)).
 
 (defun poly-from-bytes (bytes)
   "
-BYTES:   A vector of 16 octets, in big endian order.
+BYTES:   A vector of at least 16 octets, in big endian order.
+         Only the 16 first octets are used.
 RETURN:  The poly stored in the bytes.
 "
-  (check-type bytes (vector * 16))
-  (loop :for byte :across bytes :do (check-type byte (unsigned-byte 8)))
+  (check-type bytes vector)
+  (loop :for i :below 16 :do (check-type (aref bytes i) (unsigned-byte 8)))
   (let ((poly (make-array 4 :element-type '(unsigned-byte 32) :initial-element 0))
         (j -1))
     (dotimes (i 4 poly)
@@ -185,6 +187,10 @@ RETURN:  A string containing a human readable representation of the polynom POLY
                                   ))
   "A vector with all legal odd-parity bytes, in 7-bit order.")
 
+(defun even-parity (byte) (aref *even-parity* (logand byte #x7f)))
+(defun odd-parity  (byte) (aref *odd-parity*  (logand byte #x7f)))
+(declaim (inline even-parity odd-parity))
+
 
 (defun remove-bit7 (poly)
   "
@@ -195,14 +201,13 @@ RETURN:  POLY
   (check-type poly poly)
   (let (bit0 bit1 bit2 bit3)
     (setf bit0 (aref poly 0)
-          (aref poly 0) (ash (aref poly 0) -1)
+          (aref poly 0) (logand (ash (aref poly 0) -1) #xffffffff)
           bit1 (aref poly 1)
-          (aref poly 1) (logior (ash bit1 -1) (ash (logand bit0 1) 31))
+          (aref poly 1) (logand (logior (ash bit1 -1) (ash (logand bit0 1) 31)) #xffffffff)
           bit2 (aref poly 2)
-          (aref poly 2) (logior (ash bit2 -1) (ash (logand bit1 1) 31))
+          (aref poly 2) (logand (logior (ash bit2 -1) (ash (logand bit1 1) 31)) #xffffffff)
           bit3 (aref poly 3)
-          (aref poly 3) (logior (logand (logior (ash bit3 -1) (logand (ash bit2 31)))
-                                        #xffffff80)
+          (aref poly 3) (logior (logand (logior (ash bit3 -1) (ash bit2 31)) #xffffff80)
                                 (logand bit3 #x7f)))
     poly))
 
@@ -216,13 +221,13 @@ RETURN:  POLY
   (check-type poly poly)
   (let (bit1 bit2 bit3)
     (setf bit3 (aref poly 3)
-          (aref poly 3) (logior (logand (ash bit3 1) #xffffff00)
-                                (aref *even-parity* (logand bit3 #x7f)))
+          (aref poly 3) (logand (logior (logand (ash bit3 1) #xffffff00)
+                                        (even-parity bit3))  #xffffffff)
           bit2 (aref poly 2)
-          (aref poly 2) (logior (ash bit2 1)          (ash bit3 -31))
+          (aref poly 2) (logand (logior (ash bit2 1)          (ash bit3 -31)) #xffffffff)
           bit1 (aref poly 1)
-          (aref poly 1) (logior (ash bit1 1)          (ash bit2 -31))
-          (aref poly 0) (logior (ash (aref poly 0) 1) (ash bit1 -31)))
+          (aref poly 1) (logand (logior (ash bit1 1)          (ash bit2 -31)) #xffffffff)
+          (aref poly 0) (logand (logior (ash (aref poly 0) 1) (ash bit1 -31)) #xffffffff))
     poly))
 
 
@@ -264,10 +269,10 @@ RETURN:  The modified POLY.
                    p2 (logxor p2 tt2)
                    p3 (logxor p3 tt3))
              (setf gg (ash gg -1)
-                   tt0 (logior (ash tt0 1) (ash tt1 -31))
-                   tt1 (logior (ash tt1 1) (ash tt2 -31))
-                   tt2 (logior (ash tt2 1) (ash tt3 -31))
-                   tt3 (ash tt3 1))))
+                   tt0 (logand (logior (ash tt0 1) (ash tt1 -31)) #xffffffff)
+                   tt1 (logand (logior (ash tt1 1) (ash tt2 -31)) #xffffffff)
+                   tt2 (logand (logior (ash tt2 1) (ash tt3 -31)) #xffffffff)
+                   tt3 (logand (ash tt3 1) #xffffffff))))
     (setf (aref poly 0) p0
           (aref poly 1) p1
           (aref poly 2) p2
@@ -275,9 +280,7 @@ RETURN:  The modified POLY.
     poly))
 
 
-
-(defun %division (poly gg)
-  
+(defun %division (poly gg)  
   (check-type poly poly)
   (check-type gg (unsigned-byte 32))
   (check-type gg (integer 1))
@@ -291,8 +294,8 @@ RETURN:  The modified POLY.
         (p3 0)
         (n 0)
         (hh1 #x80000000))
-    (loop :while (zerop(logand hh1 gg)) :do (ash hh1 -1) (incf n))
-    (setf gg (ash gg n))
+    (loop :while (zerop (logand hh1 gg)) :do (setf hh1 (ash hh1 -1)) (incf n))
+    (setf gg (logand (ash gg n) #xffffffff))
     (let ((gg0 gg)
           (gg1 0)
           (hh0 #x80000000))
@@ -301,8 +304,8 @@ RETURN:  The modified POLY.
            (setf tt0 (logxor tt0 gg0)
                  tt1 (logxor tt1 gg1)
                  p0  (logxor p0  hh0)))
-         (setf gg1 (logior (ash gg1 -1) (ash gg0 31))
-               gg0 (ash gg1 -1)
+         (setf gg1 (logand (logior (ash gg1 -1) (ash gg0 31)) #xffffffff)
+               gg0 (ash gg0 -1)
                hh0 (ash hh0 -1))))
     (let ((gg0 gg)
           (gg1 0)
@@ -312,8 +315,8 @@ RETURN:  The modified POLY.
            (setf tt1 (logxor tt1 gg0)
                  tt2 (logxor tt2 gg1)
                  p1  (logxor p1  hh0)))
-         (setf gg1 (logior (ash gg1 -1) (ash gg0 31))
-               gg0 (ash gg1 -1)
+         (setf gg1 (logand (logior (ash gg1 -1) (ash gg0 31)) #xffffffff)
+               gg0 (ash gg0 -1)
                hh0 (ash hh0 -1))))
     (let ((gg0 gg)
           (gg1 0)
@@ -323,20 +326,18 @@ RETURN:  The modified POLY.
            (setf tt2 (logxor tt2 gg0)
                  tt3 (logxor tt3 gg1)
                  p2  (logxor p2  hh0)))
-         (setf gg1 (logior (ash gg1 -1) (ash gg0 31))
-               gg0 (ash gg1 -1)
+         (setf gg1 (logand (logior (ash gg1 -1) (ash gg0 31)) #xffffffff)
+               gg0 (ash gg0 -1)
                hh0 (ash hh0 -1))))
     (let ((gg0 gg)
           (hh0 #x80000000))
-      (loop :while (plusp gg0) :do
-         (when (plusp (logand hh0 tt2))
+      (loop :while (<= hh1 hh0) :do
+         (when (plusp (logand hh0 tt3))
            (setf tt3 (logxor tt3 gg0)
                  p3  (logxor p3  hh0)))
-         (setf gg0 (ash gg1 -1)
+         (setf gg0 (ash gg0 -1)
                hh0 (ash hh0 -1))))
-    ;; Renormalize the quotient
-    (incf n)
-    (values tt3 n p0 p1 p2 p3)))
+    (values tt3 (1+ n) p0 p1 p2 p3)))
 
 
 (defun divide32 (poly gg)
@@ -347,11 +348,12 @@ DO:      Divides the polynom POLY by GG.
 RETURN:  POLY; the remainder (unsigned-byte 32)..
 "
   (multiple-value-bind (tt3 n p0 p1 p2 p3) (%division poly gg)
-    (setf (aref poly 3) (logior (ash p3 (- n 32)) (ash p2 n))
-          (aref poly 2) (logior (ash p2 (- n 32)) (ash p1 n))
-          (aref poly 1) (logior (ash p1 (- n 32)) (ash p0 n))
-          (aref poly 0) (ash p0 (- n 32))))
-  (values poly tt3))
+    ;; Renormalize the quotient
+    (setf (aref poly 3) (logand (logior (ash p3 (- n 32)) (ash p2 n)) #xffffffff)
+          (aref poly 2) (logand (logior (ash p2 (- n 32)) (ash p1 n)) #xffffffff)
+          (aref poly 1) (logand (logior (ash p1 (- n 32)) (ash p0 n)) #xffffffff)
+          (aref poly 0) (logand (ash p0 (- n 32)) #xffffffff))
+    (values poly tt3)))
 
 
 (defun remainder32 (poly gg)
