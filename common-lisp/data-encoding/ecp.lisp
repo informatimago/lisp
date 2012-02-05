@@ -391,7 +391,7 @@ RETURN:     index of first byte not processed from BUFFER; (ecp-block ecp) -- wh
                      (< i end))
          :do (let ((byte (logand (aref buffer i) #x7f)))
                (incf i)
-               (if (or (= byte dle) (= byte nul) (= byte syn))
+               (if (or (= byte dle) (= byte nul) (= byte syn) (= byte nak))
                    (if (< (ecp-count ecp) (- +ecp-block-size+ 4))
                        (progn (generate dle) (generate nul))
                        (generate nul))
