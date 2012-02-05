@@ -11,13 +11,14 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2012-02-05 <PJB> Added ecp.
 ;;;;    2010-12-09 <PJB> Added bencode.
 ;;;;    2010-10-31 <PJB> Created this .asd file.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    GPL
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2010 - 2010
+;;;;    Copyright Pascal J. Bourguignon 2010 - 2012
 ;;;;    
 ;;;;    This program is free software; you can redistribute it and/or
 ;;;;    modify it under the terms of the GNU General Public License
@@ -39,7 +40,7 @@
     :name "This library contains packages to encode and decode data in various ways."
     :description  "This ASDF system gathers various Common Lisp library packages."
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
-    :version "1.2.0"
+    :version "1.2.1"
     :licence "GPL"
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Autumn 2010")
@@ -48,10 +49,12 @@
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
-    :depends-on (:com.informatimago.common-lisp.cesarum)
+    :depends-on (:com.informatimago.common-lisp.cesarum
+                 :com.informatimago.common-lisp.arithmetic)
     :components ((:file "data-encoding" :depends-on ())
                  ;; (:file "data-encoding-test" :depends-on ())
-                 (:file "bencode" :depends-on ())))
+                 (:file "bencode" :depends-on ())
+                 (:file "ecp"     :depends-on ())))
 
 
 ;;;; THE END ;;;;

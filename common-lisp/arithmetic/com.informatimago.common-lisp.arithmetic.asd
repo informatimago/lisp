@@ -11,12 +11,13 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2012-02-05 <PJB> Added p127n2.
 ;;;;    2010-10-31 <PJB> Created this .asd file.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    GPL
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2010 - 2010
+;;;;    Copyright Pascal J. Bourguignon 2010 - 2012
 ;;;;    
 ;;;;    This program is free software; you can redistribute it and/or
 ;;;;    modify it under the terms of the GNU General Public License
@@ -38,7 +39,7 @@
     :name "com.informatimago.common-lisp.arithmetic"
     :description  "Arithmetic tools, primes, factorization."
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
-    :version "1.2.0"
+    :version "1.2.1"
     :licence "GPL"
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Autumn 2010")
@@ -48,6 +49,7 @@
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
     :depends-on (:com.informatimago.common-lisp.cesarum)
-    :components ((:file "primes" :depends-on ())))
+    :components ((:file "primes" :depends-on ())
+                 (:file "p127n2" :depends-on ())))
 
 ;;;; THE END ;;;;
