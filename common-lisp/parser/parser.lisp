@@ -34,60 +34,60 @@
 ;;;;    Boston, MA 02111-1307 USA
 ;;;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.PARSER.PARSER"
-  (:USE "COMMON-LISP"
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.PARSER.PARSER"
+  (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
         "COM.INFORMATIMAGO.COMMON-LISP.PARSER.SCANNER")
-  (:EXPORT "REPORT-ERROR" "ADVANCE" "PARSER-NEXT-VALUE" "PARSER-NEXT-TOKEN"
+  (:export "REPORT-ERROR" "ADVANCE" "PARSER-NEXT-VALUE" "PARSER-NEXT-TOKEN"
            "PARSER-VALUE" "PARSER-TOKEN" "PARSER-SCANNER" "PARSER")
-  (:DOCUMENTATION ""))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.PARSER.PARSER")
+  (:documentation ""))
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.PARSER.PARSER")
 
 
 
 
-(DEFCLASS PARSER ()
-  ((SCANNER     :ACCESSOR PARSER-SCANNER     :INITFORM NIL :INITARG :SCANNER)
-   (TOKEN       :ACCESSOR PARSER-TOKEN       :INITFORM NIL
+(defclass parser ()
+  ((scanner     :accessor parser-scanner     :initform nil :initarg :scanner)
+   (token       :accessor parser-token       :initform nil
                 :documentation "current token")
-   (VALUE       :ACCESSOR PARSER-VALUE       :INITFORM NIL
+   (value       :accessor parser-value       :initform nil
                 :documentation "text of the current token")
-   (NEXT-TOKEN  :ACCESSOR PARSER-NEXT-TOKEN  :INITFORM NIL
+   (next-token  :accessor parser-next-token  :initform nil
                 :documentation "next token")
-   (NEXT-VALUE  :ACCESSOR PARSER-NEXT-VALUE  :INITFORM NIL
+   (next-value  :accessor parser-next-value  :initform nil
                 :documentation "text of the next token"))
-  (:DOCUMENTATION "A parser."))
+  (:documentation "A parser."))
 
 
-(DEFGENERIC ADVANCE (PARSER))
-(DEFGENERIC REPORT-ERROR (PARSER MESSAGE &REST ARGUMENTS))
+(defgeneric advance (parser))
+(defgeneric report-error (parser message &rest arguments))
 
 
-(DEFMETHOD PRINT-OBJECT ((SELF PARSER) OUT)
+(defmethod print-object ((self parser) out)
   (print-unreadable-object (self out :type t :identity t)
-    (FORMAT OUT " :scanner ~S :token (~S ~S) :next (~S ~S)"
-            (PARSER-SCANNER SELF)
-            (PARSER-TOKEN SELF)      (PARSER-VALUE SELF)
-            (PARSER-NEXT-TOKEN SELF) (PARSER-NEXT-VALUE SELF)))
-  SELF)
+    (format out " :scanner ~S :token (~S ~S) :next (~S ~S)"
+            (parser-scanner self)
+            (parser-token self)      (parser-value self)
+            (parser-next-token self) (parser-next-value self)))
+  self)
 
           
-(DEFMETHOD ADVANCE ((PARSER PARSER))
-  (MULTIPLE-VALUE-BIND (TOK VAL) (GET-TOKEN (PARSER-SCANNER PARSER))
-    (SETF (PARSER-TOKEN PARSER)      (PARSER-NEXT-TOKEN PARSER)
-          (PARSER-VALUE PARSER)      (PARSER-NEXT-VALUE PARSER) 
-          (PARSER-NEXT-TOKEN PARSER) TOK
-          (PARSER-NEXT-VALUE PARSER) VAL))
-  PARSER)
+(defmethod advance ((parser parser))
+  (multiple-value-bind (tok val) (get-token (parser-scanner parser))
+    (setf (parser-token parser)      (parser-next-token parser)
+          (parser-value parser)      (parser-next-value parser) 
+          (parser-next-token parser) tok
+          (parser-next-value parser) val))
+  parser)
 
 
-(DEFMETHOD REPORT-ERROR ((PARSER PARSER) MESSAGE &REST ARGUMENTS)
-  (ERROR "~A; (~S ~S) (~S ~S)" (APPLY (FUNCTION FORMAT) NIL MESSAGE ARGUMENTS)
-         (PARSER-TOKEN PARSER)
-         (PARSER-VALUE PARSER)
-         (PARSER-NEXT-TOKEN PARSER)
-         (PARSER-NEXT-VALUE PARSER)))
+(defmethod report-error ((parser parser) message &rest arguments)
+  (error "~A; (~S ~S) (~S ~S)" (apply (function format) nil message arguments)
+         (parser-token parser)
+         (parser-value parser)
+         (parser-next-token parser)
+         (parser-next-value parser)))
 
 
-;;;; parser.lisp                      --                     --          ;;;;
+;;;; THE END ;;;;

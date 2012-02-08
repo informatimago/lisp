@@ -17,6 +17,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2012-02-07 <PJB> Corrected mod-incf and mod-decf.
 ;;;;    2004-09-06 <PJB> Extracted from parse-html.
 ;;;;BUGS
 ;;;;    Does not implement other I/O than these three character input methods.
@@ -24,7 +25,7 @@
 ;;;;LEGAL
 ;;;;    GPL
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2004 - 2004
+;;;;    Copyright Pascal J. Bourguignon 2004 - 2012
 ;;;;    
 ;;;;    This program is free software; you can redistribute it and/or
 ;;;;    modify it under the terms of the GNU General Public License
@@ -42,11 +43,11 @@
 ;;;;    Boston, MA 02111-1307 USA
 ;;;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PEEK-STREAM"
-  (:USE "COMMON-LISP")
-  (:EXPORT "NEXTCHAR" "UNGETCHAR" "GETCHAR" "PEEK-STREAM")
-  (:DOCUMENTATION
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PEEK-STREAM"
+  (:use "COMMON-LISP")
+  (:export "PEEK-STREAM" "NEXTCHAR" "UNGETCHAR" "GETCHAR" "READLINE")
+  (:documentation
    "
     This package exports a class named PEEK-STREAM that encapsulates
     a stream and a buffer in such a way that reading, peeking or
@@ -63,25 +64,25 @@
     as published by the Free Software Foundation; either version
     2 of the License, or (at your option) any later version.
     "))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PEEK-STREAM")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PEEK-STREAM")
 
 
-(DEFGENERIC EXTEND-BUFFER (SELF))
-(DEFGENERIC GETCHAR (SELF))
-(DEFGENERIC UNGETCHAR (SELF CH))
-(DEFGENERIC NEXTCHAR (SELF))
+(defgeneric extend-buffer (self))
+(defgeneric getchar (self))
+(defgeneric ungetchar (self ch))
+(defgeneric nextchar (self))
+(defgeneric readline (self))
 
 
-(DEFCLASS PEEK-STREAM ()
-  ((INSTRE :READER   INSTRE :INITARG :STREAM  :TYPE STREAM)
-   (NEXT   :ACCESSOR NEXT   :INITFORM  8 :TYPE FIXNUM)
-   (HEAD   :ACCESSOR HEAD   :INITFORM  8 :TYPE FIXNUM)
-   (TAIL   :ACCESSOR TAIL   :INITFORM  8 :TYPE FIXNUM)
-   (BUFFER :ACCESSOR BUFFER :INITFORM (MAKE-ARRAY '(16)
-                                                  :ADJUSTABLE T
-                                                  :ELEMENT-TYPE 'CHARACTER)))
-  (:DOCUMENTATION "More than on character may be peeked and unread from this.")
-  ) ;;PEEK-STREAM
+(defclass peek-stream ()
+  ((instre :reader   instre :initarg :stream  :type stream)
+   (next   :accessor next   :initform  8 :type fixnum)
+   (head   :accessor head   :initform  8 :type fixnum)
+   (tail   :accessor tail   :initform  8 :type fixnum)
+   (buffer :accessor buffer :initform (make-array '(16)
+                                                  :adjustable t
+                                                  :element-type 'character)))
+  (:documentation "More than on character may be peeked and unread from this."))
 
 
 
@@ -93,63 +94,65 @@
 ;;              +--------------------head
 
 
-(DEFMETHOD PRINT-OBJECT ((SELF PEEK-STREAM) (STREAM STREAM))
-  (FORMAT STREAM "#<PEEK-STREAM: \"~{~A~}\" (H:~D N:~D T:~D) ~S>"
-          (IF (< (TAIL SELF) (HEAD SELF))
-              (LIST (SUBSEQ (BUFFER SELF) (HEAD SELF))
-                    (SUBSEQ (BUFFER SELF) 0 (TAIL SELF)))
-              (LIST (SUBSEQ (BUFFER SELF) (HEAD SELF) (TAIL SELF))))
-          (HEAD SELF) (NEXT SELF) (TAIL SELF)
-          (INSTRE SELF))) ;;PRINT-OBJECT
+(defmethod print-object ((self peek-stream) (stream stream))
+  (format stream "#<PEEK-STREAM: \"~{~A~}\" (H:~D N:~D T:~D) ~S>"
+          (if (< (tail self) (head self))
+              (list (subseq (buffer self) (head self))
+                    (subseq (buffer self) 0 (tail self)))
+              (list (subseq (buffer self) (head self) (tail self))))
+          (head self) (next self) (tail self)
+          (instre self)))
 
 
-(DEFMACRO MOD-INCF (MODULO PLACE &OPTIONAL (INCREMENT 1))
-  "
-BUG:  Evaluates PLACE several times.
-"
-  `(SETF ,PLACE (MOD (+ ,PLACE ,INCREMENT) ,MODULO))) ;;MOD-INCF
+(defmacro mod-incf (modulo place &optional (increment 1) &environment env)
+  "Increments the PLACE by INCREMENT modulo MODULO."
+  (multiple-value-bind (temps vals stores store-form access-form) (get-setf-expansion place env)
+    `(let* (,@(mapcar (function list) temps vals)
+            (,(first stores) (mod (+ ,access-form ,increment) ,modulo)))
+       ,store-form)))
 
 
-(DEFMACRO MOD-DECF (MODULO PLACE &OPTIONAL (DECREMENT 1))
-  "
-BUG:  Evaluates PLACE several times.
-"
-  `(SETF ,PLACE (MOD (- ,PLACE ,DECREMENT) ,MODULO))) ;;MOD-DECF
+(defmacro mod-decf (modulo place &optional (decrement 1) &environment env)
+  "Decrements the PLACE by DECREMENT modulo MODULO."
+  (multiple-value-bind (temps vals stores store-form access-form) (get-setf-expansion place env)
+    `(let* (,@(mapcar (function list) temps vals)
+            (,(first stores) (mod (- ,access-form ,decrement) ,modulo)))
+       ,store-form)))
 
 
-(DEFMETHOD EXTEND-BUFFER ((SELF PEEK-STREAM))
-  (LET ((OLD-LENGTH (LENGTH (BUFFER SELF))))
-    (ADJUST-ARRAY (BUFFER SELF) (LIST (* 2 OLD-LENGTH)))
-    (REPLACE (BUFFER SELF) (BUFFER SELF)
-             :START1 OLD-LENGTH :START2 0 :END2 (TAIL SELF))
-    (MOD-INCF (LENGTH (BUFFER SELF)) (TAIL SELF) OLD-LENGTH))) ;;EXTEND-BUFFER
+(defmethod extend-buffer ((self peek-stream))
+  (let ((old-length (length (buffer self))))
+    (adjust-array (buffer self) (list (* 2 old-length)))
+    (replace (buffer self) (buffer self)
+             :start1 old-length :start2 0 :end2 (tail self))
+    (mod-incf (length (buffer self)) (tail self) old-length)))
   
 
-(DEFMETHOD GETCHAR ((SELF PEEK-STREAM))
+(defmethod getchar ((self peek-stream))
   "
 RETURN:  The next character from SELF.
          (It can be a character newly read from the encapsulated stream,
           or a character buffered by NEXTCHAR or UNGETCHAR).
 "
-  (IF (= (HEAD SELF) (TAIL SELF))
-      (READ-CHAR (INSTRE SELF) NIL NIL)
-      (PROG1 (AREF (BUFFER SELF) (HEAD SELF))
-        (MOD-INCF (LENGTH (BUFFER SELF)) (HEAD SELF))
-        (SETF (NEXT SELF) (HEAD SELF))))) ;;GETCHAR
+  (if (= (head self) (tail self))
+      (read-char (instre self) nil nil)
+      (prog1 (aref (buffer self) (head self))
+        (mod-incf (length (buffer self)) (head self))
+        (setf (next self) (head self)))))
 
 
-(DEFMETHOD UNGETCHAR ((SELF PEEK-STREAM) (CH CHARACTER))
+(defmethod ungetchar ((self peek-stream) (ch character))
   "
 DO:      Put the character CH in front of the input buffer.
          It does not need to be the same as any character read from SELF.
 "
-  (MOD-DECF (LENGTH (BUFFER SELF)) (HEAD SELF))
-  (WHEN (= (HEAD SELF) (TAIL SELF))
-    (MOD-INCF (LENGTH (BUFFER SELF)) (HEAD SELF))
-    (EXTEND-BUFFER SELF)
-    (MOD-DECF (LENGTH (BUFFER SELF)) (HEAD SELF)))
-  (SETF (AREF (BUFFER SELF) (HEAD SELF)) CH
-        (NEXT SELF) (HEAD SELF))) ;;UNGETCHAR
+  (mod-decf (length (buffer self)) (head self))
+  (when (= (head self) (tail self))
+    (mod-incf (length (buffer self)) (head self))
+    (extend-buffer self)
+    (mod-decf (length (buffer self)) (head self)))
+  (setf (aref (buffer self) (head self)) ch
+        (next self) (head self)))
 
 
 ;; ungetchar ==> (decf head), put char at (aref buffer head), next:=head
@@ -161,7 +164,7 @@ DO:      Put the character CH in front of the input buffer.
 ;;                              (incf tail) (incf next)
 
 
-(DEFMETHOD NEXTCHAR ((SELF PEEK-STREAM))
+(defmethod nextchar ((self peek-stream))
   "
 RETURN:  The character that will be read soon by GETCHAR, or NIL when EOF.
          (equalp (loop repeat N for ch = (nextchar ps)
@@ -169,61 +172,75 @@ RETURN:  The character that will be read soon by GETCHAR, or NIL when EOF.
                  (loop repeat N for ch = (getchar  ps)
                        collect ch into result finally (return result)))
 "
-  (IF (/= (NEXT SELF) (TAIL SELF))
-      (PROG1 (AREF (BUFFER SELF) (NEXT SELF))
-        (MOD-INCF (LENGTH (BUFFER SELF)) (NEXT SELF)))
-      (LET ((CH (READ-CHAR (INSTRE SELF) NIL NIL)))
-        (WHEN CH
-          (SETF (AREF (BUFFER SELF) (TAIL SELF)) CH)
-          (MOD-INCF (LENGTH (BUFFER SELF)) (TAIL SELF))
-          (WHEN (= (HEAD SELF) (TAIL SELF))
-            (MOD-DECF (LENGTH (BUFFER SELF)) (TAIL SELF))
-            (EXTEND-BUFFER SELF)
-            (MOD-INCF (LENGTH (BUFFER SELF)) (TAIL SELF)))
-          (SETF (NEXT SELF) (TAIL SELF)))
-        CH))) ;;NEXTCHAR
+  (if (/= (next self) (tail self))
+      (prog1 (aref (buffer self) (next self))
+        (mod-incf (length (buffer self)) (next self)))
+      (let ((ch (read-char (instre self) nil nil)))
+        (when ch
+          (setf (aref (buffer self) (tail self)) ch)
+          (mod-incf (length (buffer self)) (tail self))
+          (when (= (head self) (tail self))
+            (mod-decf (length (buffer self)) (tail self))
+            (extend-buffer self)
+            (mod-incf (length (buffer self)) (tail self)))
+          (setf (next self) (tail self)))
+        ch)))
 
 
-(DEFUN TEST ()
-  (DOTIMES (N 10)
-    (WITH-INPUT-FROM-STRING (IN "ComMon-Lisp")
-      (LET* ((PS (MAKE-INSTANCE 'PEEK-STREAM :STREAM IN))
-             (NC (LOOP REPEAT N FOR CH = (NEXTCHAR PS)
-                    COLLECT CH INTO RESULT FINALLY (RETURN RESULT)))
-             (GC (LOOP REPEAT N FOR CH = (GETCHAR  PS)
-                    COLLECT CH INTO RESULT FINALLY (RETURN RESULT))))
-        (ASSERT (EQUAL NC GC)))))
-  (WITH-INPUT-FROM-STRING (IN "ComMon-Lisp")
-    (LET ((PS (MAKE-INSTANCE 'PEEK-STREAM :STREAM IN))
-          C1 C2 C3)
-      (ASSERT (EQUAL (LIST (GETCHAR PS) (GETCHAR PS) (GETCHAR PS))
-                     '(#\C #\O #\M)))
-      (SETF C1 (GETCHAR PS) C2 (GETCHAR PS) C3 (GETCHAR PS))
-      (ASSERT (EQUAL (LIST C1 C2 C3 (NEXTCHAR PS))
-                     '(#\M #\O #\N #\-)))
-      (UNGETCHAR PS C3)(UNGETCHAR PS C2)(UNGETCHAR PS C1)
-      (ASSERT (EQUAL (LIST (GETCHAR PS) (GETCHAR PS) (GETCHAR PS))
-                     '(#\M #\O #\N)))
-      (ASSERT (EQUAL (LIST  (GETCHAR PS) (GETCHAR PS) (GETCHAR PS))
-                     '(#\- #\L #\I)))))
-  (WITH-INPUT-FROM-STRING (IN "Common-Lisp")
-    (LET ((PS (MAKE-INSTANCE 'PEEK-STREAM :STREAM IN))
-          C1 C2 C3)
-      (ASSERT (EQUAL (LIST (GETCHAR PS) (GETCHAR PS) (GETCHAR PS))
-                     '(#\C #\O #\M)))
-      (SETF C1 (GETCHAR PS) C2 (GETCHAR PS))
-      (ASSERT (EQUAL (LIST C1 C2 (NEXTCHAR PS))
-                     '(#\M #\O #\N)))
-      (SETF C3 (GETCHAR PS))
-      (ASSERT (EQUAL (LIST C3 (NEXTCHAR PS))
-                     '(#\N #\-)))
-      (UNGETCHAR PS C3)(UNGETCHAR PS C2)(UNGETCHAR PS C1)
-      (ASSERT (EQUAL (LIST (GETCHAR PS) (GETCHAR PS) (GETCHAR PS))
-                     '(#\M #\O #\N)))
-      (ASSERT (EQUAL (LIST (GETCHAR PS) (GETCHAR PS) (GETCHAR PS))
-                     '(#\- #\L #\I)))))
-  (VALUES))
-      
+(defmethod readline ((self peek-stream))
+  "
+RETURN:  A whole line read from the peek-stream, or NIL in case of end of stream.
+"
+  (when (nextchar self)
+   (loop
+     :with line = (make-array 80 :element-type 'character :adjustable t :fill-pointer 0)
+     :for ch = (getchar self)
+     :while ch
+     :do (if  (char= ch #\Newline)
+              (loop-finish)
+              (vector-push-extend ch line (length line)))
+     :finally (return line))))
 
 
-;;;; peek-stream.lisp                 --                     --          ;;;;
+(defun test ()
+  (dotimes (n 10)
+    (with-input-from-string (in "ComMon-Lisp")
+      (let* ((ps (make-instance 'peek-stream :stream in))
+             (nc (loop repeat n for ch = (nextchar ps)
+                    collect ch into result finally (return result)))
+             (gc (loop repeat n for ch = (getchar  ps)
+                    collect ch into result finally (return result))))
+        (assert (equal nc gc)))))
+  (with-input-from-string (in "ComMon-Lisp")
+    (let ((ps (make-instance 'peek-stream :stream in))
+          c1 c2 c3)
+      (assert (equal (list (getchar ps) (getchar ps) (getchar ps))
+                     '(#\c #\o #\m)))
+      (setf c1 (getchar ps) c2 (getchar ps) c3 (getchar ps))
+      (assert (equal (list c1 c2 c3 (nextchar ps))
+                     '(#\m #\o #\n #\-)))
+      (ungetchar ps c3)(ungetchar ps c2)(ungetchar ps c1)
+      (assert (equal (list (getchar ps) (getchar ps) (getchar ps))
+                     '(#\m #\o #\n)))
+      (assert (equal (list  (getchar ps) (getchar ps) (getchar ps))
+                     '(#\- #\l #\i)))))
+  (with-input-from-string (in "Common-Lisp")
+    (let ((ps (make-instance 'peek-stream :stream in))
+          c1 c2 c3)
+      (assert (equal (list (getchar ps) (getchar ps) (getchar ps))
+                     '(#\c #\o #\m)))
+      (setf c1 (getchar ps) c2 (getchar ps))
+      (assert (equal (list c1 c2 (nextchar ps))
+                     '(#\m #\o #\n)))
+      (setf c3 (getchar ps))
+      (assert (equal (list c3 (nextchar ps))
+                     '(#\n #\-)))
+      (ungetchar ps c3)(ungetchar ps c2)(ungetchar ps c1)
+      (assert (equal (list (getchar ps) (getchar ps) (getchar ps))
+                     '(#\m #\o #\n)))
+      (assert (equal (list (getchar ps) (getchar ps) (getchar ps))
+                     '(#\- #\l #\i)))))
+  (values))
+
+
+;;;; THE END ;;;;
