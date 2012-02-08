@@ -35,10 +35,11 @@
 ;;;;**************************************************************************
 
 (IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.RAIDEN" (:USE "COMMON-LISP")
-            (:EXPORT "RAIDEN-DECIPHER" "RAIDEN-ENCIPHER")
-            (:DOCUMENTATION
-             "This package imlements the RAIDEN block cipher.
+(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.RAIDEN"
+  (:USE "COMMON-LISP")
+  (:EXPORT "RAIDEN-DECIPHER" "RAIDEN-ENCIPHER")
+  (:DOCUMENTATION
+   "This package imlements the RAIDEN block cipher.
     http://raiden-cipher.sourceforge.net/
 
     Copyright Pascal J. Bourguignon 2006 - 2006
@@ -78,26 +79,26 @@ K:    (vector (unsigned-byte 32) 4), the key
     (flet ((32bit (x) (logand #xffffffff x)))
       (declare (inline 32bit))
       (loop
-         :with b0 :of-type (unsigned-byte 32) = (ref v 0)
-         :with b1 :of-type (unsigned-byte 32) = (ref v 1)
-         :with k :of-type (vector (unsigned-byte 32) 4) = (copy-seq k)
-         :for i  :of-type fixnum :from 0 :below 16
-         :for sk :of-type (unsigned-byte 32)
-         = (32bit (+ (ref k 0) (ref k 1)
-                     (logxor (+ (ref k 2) (ref k 3))
-                             (32bit (ash (ref k 0)
-                                         (mod (ref k 2) 32))))))
-         :do
-         (setf (ref k (mod i 4)) sk
-               b0 (32bit (+ b0 (logxor (32bit (ash (+ sk b1) 9))
-                                       (32bit (- sk b1))
-                                       (32bit (ash (+ sk b1) -14)))))
-               b1 (32bit (+ b1 (logxor (32bit (ash (+ sk b0) 9))
-                                       (32bit (- sk b0))
-                                       (32bit (ash (+ sk b0) -14))))))
+        :with b0 :of-type (unsigned-byte 32) = (ref v 0)
+        :with b1 :of-type (unsigned-byte 32) = (ref v 1)
+        :with k :of-type (vector (unsigned-byte 32) 4) = (copy-seq k)
+        :for i  :of-type fixnum :from 0 :below 16
+        :for sk :of-type (unsigned-byte 32)
+        = (32bit (+ (ref k 0) (ref k 1)
+                    (logxor (+ (ref k 2) (ref k 3))
+                            (32bit (ash (ref k 0)
+                                        (mod (ref k 2) 32))))))
+        :do
+        (setf (ref k (mod i 4)) sk
+              b0 (32bit (+ b0 (logxor (32bit (ash (+ sk b1) 9))
+                                      (32bit (- sk b1))
+                                      (32bit (ash (+ sk b1) -14)))))
+              b1 (32bit (+ b1 (logxor (32bit (ash (+ sk b0) 9))
+                                      (32bit (- sk b0))
+                                      (32bit (ash (+ sk b0) -14))))))
 
-         :finally (setf (ref w 0) b0
-                        (ref w 1) b1)))))
+        :finally (setf (ref w 0) b0
+                       (ref w 1) b1)))))
 
 
 ;; void decode_raiden(unsigned long *data,unsigned long *result,unsigned
@@ -136,28 +137,28 @@ K:    (vector (unsigned-byte 32) 4), the key
   (flet ((32bit (x) (logand #xffffffff x)))
     #-eclxxx (declare (inline 32bit))
     (loop
-       :with b0  :of-type (unsigned-byte 32) = (aref v 0)
-       :with b1  :of-type (unsigned-byte 32) = (aref v 1)
-       :with k   :of-type (vector (unsigned-byte 32) 4) = (copy-seq k)
-       :with sks :of-type (vector (unsigned-byte 32) 32) = (make-array 32 :element-type '(unsigned-byte 32) :initial-element 0)
-       :for i      #-eclxxx :of-type #-eclxxx fixnum :from 0 :below 16
-       :for newval #-eclxxx :of-type #-eclxxx (unsigned-byte 32) = (32bit (+ (aref k 0) (aref k 1)
-                                                                       (logxor (+ (aref k 2) (aref k 3))
-                                                                               (32bit (ash (aref k 0)
-                                                                                           (mod (aref k 2) 32))))))
-       :do (setf (aref k (mod i 4)) newval
-                 (aref sks i)       newval)
-       :finally (loop
-                   :for i  :of-type fixnum :from 15 :downto 0
-                   :for sk :of-type (unsigned-byte 32) = (aref sks i)
-                   :do (setf b1 (32bit (- b1 (logxor (32bit (ash (+ sk b0) 9))
-                                                     (32bit (- sk b0))
-                                                     (32bit (ash (+ sk b0) -14)))))
-                             b0 (32bit (- b0 (logxor (32bit (ash (+ sk b1) 9))
-                                                     (32bit (- sk b1))
-                                                     (32bit (ash (+ sk b1) -14))))))
-                   :finally (setf (aref w 0) b0
-                                  (aref w 1) b1)))))
+      :with b0  :of-type (unsigned-byte 32) = (aref v 0)
+      :with b1  :of-type (unsigned-byte 32) = (aref v 1)
+      :with k   :of-type (vector (unsigned-byte 32) 4) = (copy-seq k)
+      :with sks :of-type (vector (unsigned-byte 32) 32) = (make-array 32 :element-type '(unsigned-byte 32) :initial-element 0)
+      :for i      #-eclxxx :of-type #-eclxxx fixnum :from 0 :below 16
+      :for newval #-eclxxx :of-type #-eclxxx (unsigned-byte 32) = (32bit (+ (aref k 0) (aref k 1)
+                                                                            (logxor (+ (aref k 2) (aref k 3))
+                                                                                    (32bit (ash (aref k 0)
+                                                                                                (mod (aref k 2) 32))))))
+      :do (setf (aref k (mod i 4)) newval
+                (aref sks i)       newval)
+      :finally (loop
+                 :for i  :of-type fixnum :from 15 :downto 0
+                 :for sk :of-type (unsigned-byte 32) = (aref sks i)
+                 :do (setf b1 (32bit (- b1 (logxor (32bit (ash (+ sk b0) 9))
+                                                   (32bit (- sk b0))
+                                                   (32bit (ash (+ sk b0) -14)))))
+                           b0 (32bit (- b0 (logxor (32bit (ash (+ sk b1) 9))
+                                                   (32bit (- sk b1))
+                                                   (32bit (ash (+ sk b1) -14))))))
+                 :finally (setf (aref w 0) b0
+                                (aref w 1) b1)))))
 
 
 (defun word (a b c d) 
@@ -165,15 +166,15 @@ K:    (vector (unsigned-byte 32) 4), the key
 
 (defun read-words (bits what)
   (loop
-     :for bytes = (progn (format t "Please enter ~D bits of ~A: " 
+    :for bytes = (progn (format t "Please enter ~D bits of ~A: " 
                                 bits what)
                         (let ((buffer (read-line *standard-input* nil nil)))
                           (when buffer
                             (coerce (loop
-                                       :for ch :in buffer
-                                       :collect (char-code ch)) 'vector))))
-     :while (and bytes (< (* 8 (length bytes)) bits))
-     :finally (return
+                                      :for ch :in buffer
+                                      :collect (char-code ch)) 'vector))))
+    :while (and bytes (< (* 8 (length bytes)) bits))
+    :finally (return
                (and bytes
                     (loop for i from 0 by 4 below (truncate (+ 7 bits) 8)
                        collect (word (aref bytes (+ i 0))
