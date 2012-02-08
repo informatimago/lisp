@@ -38,7 +38,7 @@
     :name "com.informatimago.common-lisp.cesarum"
     :description  "This library implements various general data types, algorithms and standards."
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
-    :version "1.2.1"
+    :version "1.2.2"
     :licence "GPL"
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Autumn 2010")
@@ -77,7 +77,7 @@
                  ;; Algorithms:
                  (:file "pmatch"          :depends-on ("utility"))
                  (:file "combination"     :depends-on ())
-                 (:file "constrains"      :depends-on ("utility" "dictionary"))
+                 (:file "constraints"     :depends-on ("utility" "dictionary"))
                  (:file "raiden"          :depends-on ())
                  (:file "dfa"             :depends-on ())
                  (:file "tea"             :depends-on ())
