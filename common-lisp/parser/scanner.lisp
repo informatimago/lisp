@@ -45,15 +45,25 @@
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PEEK-STREAM")
-  (:export "TOKEN" "TOKEN-KIND" "TOKEN-TEXT" "TOKEN-LINE" "TOKEN-COLUMN"
-           "*SPACE*"
-           "SCANNER" "SCANNER-CURRENT-TOKEN" 
-           "SCANNER-SOURCE" "SCANNER-LINE" "SCANNER-COLUMN" "SCANNER-STATE"
-           "SCANNER-SPACES" "SCANNER-TAB-WIDTH"
-           "SKIP-SPACES" "SCAN")
+  (:export
+   ;; TOKEN:
+   "TOKEN" "TOKEN-KIND" "TOKEN-TEXT" "TOKEN-LINE" "TOKEN-COLUMN"
+   "*SPACE*"
+   ;; SCANNER:
+   "SCANNER" "SCANNER-CURRENT-TOKEN" 
+   "SCANNER-SOURCE" "SCANNER-LINE" "SCANNER-COLUMN" "SCANNER-STATE"
+   "SCANNER-SPACES" "SCANNER-TAB-WIDTH"
+   ;; SCANNER-ERROR condition:
+   "SCANNER-ERROR" "SCANNER-ERROR-LINE" "SCANNER-ERROR-COLUMN"
+   "SCANNER-ERROR-STATE" "SCANNER-ERROR-CURRENT-TOKEN"
+   "SCANNER-ERROR-SCANNER"
+   "SCANNER-ERROR-FORMAT-CONTROL" "SCANNER-ERROR-FORMAT-ARGUMENTS"
+   "SCANNER-ERROR-INVALID-CHARACTER"
+   ;; SCANNER methods:
+   "SKIP-SPACES" "SCAN-NEXT-TOKEN")
   (:documentation
    "An abstract scanner class.
-A method to the SCAN generic function needs to be provided.
+A method to the SCAN-NEXT-TOKEN generic function needs to be provided.
 
 Copyright Pascal J. Bourguignon 2004 - 2012
 This package is provided under the GNU General Public License.
@@ -71,11 +81,13 @@ See the source file for details."))
 
 (defgeneric token-kind (token)
   (:documentation "Returns the kind of the token.")
-  (:method ((token symbol)) token))
+  (:method ((token symbol)) token)
+  (:method ((token string)) nil))
 
 (defgeneric token-text (token)
   (:documentation "Returns the literal text the token.")
-  (:method ((token symbol)) (symbol-name token)))
+  (:method ((token symbol)) (symbol-name token))
+  (:method ((token string)) token))
 
 (defgeneric token-line (token)
   (:documentation "Returns the line where the token was found.")
@@ -122,6 +134,26 @@ See the source file for details."))
       (let ((ch (char-supported-p name)))
         (when ch (push ch spaces))))
     (coerce spaces 'string)))
+
+
+
+;; Note we copy some fields in the condition from the scanner, so that
+;; they can change in the scanner object between the condition
+;; creation and its handling.
+
+(define-condition scanner-error (error)
+  ((line             :initarg :line             :initform 1   :reader scanner-error-line)
+   (column           :initarg :column           :initform 0   :reader scanner-error-column)
+   (state            :initarg :state            :initform 0   :reader scanner-error-state)
+   (current-token    :initarg :current-token    :initform nil :reader scanner-error-current-token)
+   (scanner          :initarg :scanner                        :reader scanner-error-scanner)
+   (format-control   :initarg :format-control   :initform ""  :reader scanner-error-format-control)
+   (format-arguments :initarg :format-arguments :initform '() :reader scanner-error-format-arguments)))
+
+
+(define-condition scanner-error-invalid-character (scanner-error)
+  ())
+
 
 
 
