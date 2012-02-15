@@ -74,14 +74,14 @@ NOTE:   It's advised to keep the l->f and f->l format for TO-NAME and FROM-NAME,
           (setf lisp-structure (car  arguments)
                 ffi-struct     (cadr arguments)
                 slots          (cddr arguments))
-          (setf to-name   (with-standard-io-syntax 
-                            (intern (format nil "~A->~A" 
-                                            lisp-structure ffi-struct)
-                                    (symbol-package lisp-structure)))
-                from-name (with-standard-io-syntax 
-                            (intern (format nil "~A->~A" 
-                                            ffi-struct lisp-structure)
-                                    (symbol-package lisp-structure))) )))
+          (setf to-name   (intern (with-standard-io-syntax
+                                    (format nil "~A->~A" 
+                                            lisp-structure ffi-struct))
+                                  (symbol-package lisp-structure))
+                from-name (intern (with-standard-io-syntax
+                                    (format nil "~A->~A" 
+                                            ffi-struct lisp-structure))
+                                  (symbol-package lisp-structure)))))
     (let ((complex-slots (remove-if (lambda (slot) (atom (first slot))) slots))
           (simple-slots  (remove-if (lambda (slot) (not (atom (first slot)))) 
                                     slots)))
@@ -92,12 +92,11 @@ NOTE:   It's advised to keep the l->f and f->l format for TO-NAME and FROM-NAME,
                   (lambda (slot)
                     (list
                      'list
-                     (list 'quote (with-standard-io-syntax 
-                                    (intern 
-                                     (format nil "~A->~A" 
-                                             (second (first  slot))
-                                             (second (second slot)))
-                                     (symbol-package (second (first slot))))))
+                     (list 'quote (intern (with-standard-io-syntax 
+                                            (format nil "~A->~A" 
+                                                    (second (first  slot))
+                                                    (second (second slot))))
+                                          (symbol-package (second (first slot)))))
                      (list 'list (list 'quote (first (first slot))) 'src)
                      (list 'list ''ffi:slot 'dst 
                            (list 'quote (list 'quote (first (second slot)))))))
@@ -116,12 +115,11 @@ NOTE:   It's advised to keep the l->f and f->l format for TO-NAME and FROM-NAME,
                   (lambda (slot)
                     (list
                      'list
-                     (list 'quote (with-standard-io-syntax 
-                                    (intern
-                                     (format nil "~A->~A" 
-                                             (second (second slot))
-                                             (second (first  slot)))
-                                     (symbol-package (second (first slot))))))
+                     (list 'quote  (intern (with-standard-io-syntax 
+                                             (format nil "~A->~A" 
+                                                     (second (second slot))
+                                                     (second (first  slot))))
+                                           (symbol-package (second (first slot)))))
                      (list 'list ''ffi:slot 'src
                            (list 'quote (list 'quote (first (second slot)))))
                      (list 'list (list 'quote (first (first slot))) 'dst)))

@@ -1753,7 +1753,7 @@ NOTE:   terminates with any kind of list, dotted, circular, etc.
   "Standard #S dispatch macro reader."
   (declare (ignore sub-char arg))
   (let* ((data (read stream t nil t))
-         (constructor (intern (format nil "MAKE-~A" (first data))))
+         (constructor (intern (with-standard-io-syntax (format nil "MAKE-~A" (first data)))))
          (arguments   (loop
                          :with keyword-package = (find-package "KEYWORD")
                          :for (k v) :on (rest data) :by (function cddr)

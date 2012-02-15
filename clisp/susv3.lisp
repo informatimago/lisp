@@ -72,7 +72,7 @@
 
 (DECLAIM (DECLARATION ALSO-USE-PACKAGES))
 (declaim (ALSO-USE-PACKAGES "EXT" "FFI" "LINUX"))
-
+(eval-when (:compile-toplevel :load-toplevel :execute) (require "linux"))
 (defpackage "COM.INFORMATIMAGO.CLISP.SUSV3"
   (:DOCUMENTATION "
     This packages exports SUSV3 functions.

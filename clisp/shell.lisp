@@ -39,6 +39,7 @@
 (in-package "COMMON-LISP-USER")
 (declaim (declaration also-use-packages))
 (declaim (also-use-packages "FFI"  "LINUX"))
+(eval-when (:compile-toplevel :load-toplevel :execute) (require "linux"))
 (defPACKAGE "COM.INFORMATIMAGO.CLISP.SHELL"
   (:DOCUMENTATION
    "This package export shell primitives (fork, pipe, redirections, exec).")
@@ -117,7 +118,7 @@ NOTE:       Doesn't return!  The current process image is replaced by
             the executed program.
 "
   (LET* ((ARGC (1- (LENGTH ARGV)))
-         (EXEC (INTERN (FORMAT NIL "EXECL~D" ARGC))))
+         (EXEC (INTERN (with-standard-io-syntax (FORMAT NIL "EXECL~D" ARGC)))))
     (IF (FBOUNDP EXEC)
         `(,EXEC ,PATH ,@ARGV NIL)
         `(PROGN
@@ -127,7 +128,8 @@ NOTE:       Doesn't return!  The current process image is replaced by
              (:ARGUMENTS
               (PATH FFI:C-STRING)
               ,@(DO ((I 0 (1+ I))
-                     (ARGUMENTS NIL (CONS (LIST (INTERN (FORMAT NIL "ARGV~D" I))
+                     (ARGUMENTS NIL (CONS (LIST (INTERN (with-standard-io-syntax
+                                                          (FORMAT NIL "ARGV~D" I)))
                                                 'FFI:C-STRING) ARGUMENTS)) )
                     ((< ARGC I) (NREVERSE ARGUMENTS)))
               (NULL FFI:C-STRING))
@@ -628,7 +630,7 @@ EDGE-LIST:      specifies the pipe and input or output as:
     (SETQ PROCESS-LIST
           (MAPCAR (LAMBDA (PROCESS)
                     (SETQ TAG-NUM (1+ TAG-NUM))
-                    (CONS (INTERN (FORMAT NIL "PROCESS-~A" TAG-NUM)
+                    (CONS (INTERN (with-standard-io-syntax (FORMAT NIL "PROCESS-~A" TAG-NUM))
                                   (FIND-PACKAGE "KEYWORD")) PROCESS))
                   PROCESS-LIST))
     (PIPE-AND-EXEC PROCESS-LIST

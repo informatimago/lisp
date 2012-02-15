@@ -549,7 +549,7 @@ DO:       Defines an HTML attribute.
          (let ((vattr (gensym))
                (vbody (gensym))
                (mname (intern (string-upcase name)))
-               (fname (intern (format nil "~:@(~A*~)" name))))
+               (fname (intern (with-standard-io-syntax (format nil "~:@(~A*~)" name)))))
            (push
             `(defmacro ,mname (&optional ,vattr &body ,vbody)
                (generate-element-macro-body ',fname ,vattr ,vbody)) forms)

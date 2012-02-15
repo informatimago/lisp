@@ -627,8 +627,8 @@ URL:                http://uffi.b9.com/manual/null-char-p.html
 PRIVATE
 DO:                 Builds an enum constant name.
 "
-  (INTERN (FORMAT NIL "~A~A~A" ENUM-NAME SEPARATOR-STRING CONSTANT-ID))
-  ) ;;MAKE-CONSTANT-NAME
+  (INTERN (with-standard-io-syntax
+            (FORMAT NIL "~A~A~A" ENUM-NAME SEPARATOR-STRING CONSTANT-ID))))
 
 
 
@@ -1141,10 +1141,8 @@ NOTE:               All Common-Lisp implementations are 'case-insensitive'.
   (let (l-name c-name)
     (if (stringp name)
         (setq c-name name
-              l-name (intern (with-standard-io-syntax
-                               (string-upcase
-                                (substitute (character "-") (character "_")
-                                            name)))))
+              l-name (intern (string-upcase
+                              (substitute (character "-") (character "_") name))))
         (setq c-name (first name)
               l-name (second name)))
     `(FFI:DEF-CALL-OUT

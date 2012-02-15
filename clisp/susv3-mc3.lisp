@@ -38,11 +38,10 @@
 ;;;;****************************************************************************
 
 
-(cl:in-package "COMMON-LISP-USER")
-
+(in-package "COMMON-LISP-USER")
 (DECLAIM (DECLARATION ALSO-USE-PACKAGES))
 (declaim (ALSO-USE-PACKAGES "FFI" "LINUX"))
-
+(eval-when (:compile-toplevel :load-toplevel :execute) (require "linux"))
 (defpackage "COM.INFORMATIMAGO.CLISP.SUSV3-MC3"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.CLISP.SUSV3")

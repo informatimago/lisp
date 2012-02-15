@@ -49,11 +49,11 @@
 ;;;;    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 ;;;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
-  (:USE "COMMON-LISP"
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
+  (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM" )
-  (:EXPORT
+  (:export
    ;; 3 - EVALUATION AND COMPILATION
    "WITH-GENSYMS" "WSIOSBP" "COMPOSE" "COMPOSE-AND-CALL"
    "DEFINE-IF-UNDEFINED"  "INCLUDE" "FUNCTIONAL-PIPE"
@@ -88,13 +88,13 @@
    ;;
    "DICHOTOMY"
    "TRACING" "TRACING-LET" "TRACING-LET*" "TRACING-LABELS")
-  (:DOCUMENTATION
+  (:documentation
    "This package exports some utility & syntactic sugar functions and macros.
 
     Copyright Pascal J. Bourguignon 2003 - 2008
     This package is provided under the GNU General Public License.
     See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
 
 
 
@@ -105,23 +105,23 @@
 
 
 #-:with-debug-gensym
-(DEFMACRO WITH-GENSYMS (SYMS &BODY BODY)
+(defmacro with-gensyms (syms &body body)
   "
 DO:      Replaces given symbols with gensyms. Useful for creating macros.
 NOTE:    This version by Paul Graham in On Lisp."
-  `(LET ,(MAPCAR (LAMBDA (S) `(,S (GENSYM ,(string s)))) SYMS) ,@BODY))
+  `(let ,(mapcar (lambda (s) `(,s (gensym ,(string s)))) syms) ,@body))
 
 
 #+:with-debug-gensym
-(defpackage "COM.INFORMATIMAGO.GENSYMS" (:USE))
+(defpackage "COM.INFORMATIMAGO.GENSYMS" (:use))
 #+:with-debug-gensym
-(DEFMACRO WITH-GENSYMS (SYMS &BODY BODY)
+(defmacro with-gensyms (syms &body body)
   "
 DO:      Replaces given symbols with gensyms. Useful for creating macros.
 NOTE:    This version by Paul Graham in On Lisp."
-  `(LET ,(MAPCAR
-          (LAMBDA (S) `(,S (INTERN (STRING (GENSYM ,(string s)))
-                                   "COM.INFORMATIMAGO.GENSYMS"))) SYMS) ,@BODY))
+  `(let ,(mapcar
+          (lambda (s) `(,s (intern (string (gensym ,(string s)))
+                                   "COM.INFORMATIMAGO.GENSYMS"))) syms) ,@body))
 
 
 (defmacro wsiosbp (&body body)
@@ -155,7 +155,7 @@ NOTE:    This version by Paul Graham in On Lisp."
       (list (car functions) (compose-sexp (cdr functions) var))))
 
 
-(defmacro COMPOSE (&rest functions)
+(defmacro compose (&rest functions)
   `(lambda (x) ,(compose-sexp functions 'x)))
 
 
@@ -253,8 +253,7 @@ Return the results of the last form.
       (pop constants))
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        ;; define a ({NAME}-LABEL value) function.
-       (defun ,(wsiosbp (intern (format nil "~A-LABEL" name)))
-           (value)
+       (defun ,(intern (wsiosbp (format nil "~A-LABEL" name))) (value)
          (case value
            ,@(loop
                 for cname in constants
@@ -447,7 +446,7 @@ The initarg an accessor are the same keyword built from the name.
      (INTERN (WITH-STANDARD-IO-SYNTAX (FORMAT NIL "~A~A~A" PREFIX NAME SUFFIX))))
     ((AND OPTION (LISTP OPTION) (CAR OPTION))
      (CAR OPTION))
-    (T NIL))) ;;MAKE-NAME
+    (T NIL)))
 
 
 (DEFUN GET-NAME (OPTION)
@@ -674,9 +673,7 @@ DO:       Define a macro: (WITH-{NAME} object &body body)
                (LAMBDA (SLOT)
                  (LIST SLOT
                        (LIST
-                        (INTERN (WITH-STANDARD-IO-SYNTAX 
-                                    (CONCATENATE 'STRING
-                                      (STRING ',CONC-NAME) (STRING SLOT))))
+                        (INTERN (CONCATENATE 'STRING (STRING ',CONC-NAME) (STRING SLOT)))
                         OBJECT))) ',SLOT-names)
              ,@BODY)
            (LET ((OBJV (GENSYM)))
@@ -686,9 +683,7 @@ DO:       Define a macro: (WITH-{NAME} object &body body)
                    (LAMBDA (SLOT)
                      (LIST SLOT
                            (LIST
-                            (INTERN (WITH-STANDARD-IO-SYNTAX
-                                        (CONCATENATE 'STRING
-                                          (STRING ',CONC-NAME) (STRING SLOT))))
+                            (INTERN (CONCATENATE 'STRING (STRING ',CONC-NAME) (STRING SLOT)))
                             OBJV))) ',SLOT-names)
                  ,@BODY))))))))
 
@@ -736,9 +731,7 @@ NOTE:    The last two arguments maybe :PACKAGE <a-package>
                (EQ :PACKAGE (CAR (LAST ARGS 2))))
       (SETF PACKAGE (CAR (LAST ARGS))
             ARGS (BUTLAST ARGS 2)))
-    (INTERN (WITH-STANDARD-IO-SYNTAX
-              (APPLY (FUNCTION CONCATENATE) 'STRING
-                     (MAPCAR (FUNCTION STRING) ARGS)))
+    (INTERN (APPLY (FUNCTION CONCATENATE) 'STRING (MAPCAR (FUNCTION STRING) ARGS))
             PACKAGE)))
 
 
@@ -1342,6 +1335,4 @@ DO:       Evaluate the expression, which must be a real,
                              right))))))
          (infix-to-tree clauses)))))
 
-
-
-;;;; utility.lisp                     --                     --          ;;;;
+;;;; THE END ;;;;

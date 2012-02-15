@@ -56,10 +56,9 @@
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
-
 (DECLAIM (DECLARATION ALSO-USE-PACKAGES))
 (declaim (ALSO-USE-PACKAGES "FFI" "LINUX"))
-
+(eval-when (:compile-toplevel :load-toplevel :execute) (require "linux"))
 (defPACKAGE "COM.INFORMATIMAGO.CLISP.SUSV3-XSI"
   (:DOCUMENTATION "This packages exports SUSV3 XSI functions.
     This is the CLISP specific implementation of the SUSV3 XSI API.")

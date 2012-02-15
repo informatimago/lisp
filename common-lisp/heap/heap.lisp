@@ -324,7 +324,7 @@ but some types are used only for array cells (ie. unboxed values)."
 
 (defmacro cvm-define-structure (name type &rest fields)
   ;; TODO: we could do without the defconstant for structure fields...
-  (wsiosbp
+  (WSIOSBP
    `(progn
       (defun ,(intern (format nil "CVM-~A-P" name)) (self)
         (and (cvm-structure-p self)
@@ -337,9 +337,9 @@ but some types are used only for array cells (ie. unboxed values)."
                                        (cvm-find-package ,(cdr type)))))
                 (cvm-structure-ref self 0))))
       ,@(loop
-           for field in fields
-           for index from 1
-           append (let ((cst (intern (format nil "+~A-~A+" name field)))
+           :for field :in fields
+           :for index :from 1
+          :append (let ((cst (intern (format nil "+~A-~A+" name field)))
                         (get (intern (format nil "CVM-~A-~A" name field)))
                         (set (intern (format nil "CVM-~A-SET-~A" name field))))
                     (list
@@ -759,7 +759,8 @@ but some types are used only for array cells (ie. unboxed values)."
 (defmacro gen-ieee-encoding (name type exponent-bits mantissa-bits)
   ;; Thanks to ivan4th (~ivan_iv@nat-msk-01.ti.ru) for correcting an off-by-1
   `(progn
-     (defun ,(intern (format nil "~A-TO-IEEE-754" name) (symbol-package name))  (float)
+     (defun ,(intern (with-standard-io-syntax (format nil "~A-TO-IEEE-754" name))
+                     (symbol-package name))  (float)
        (multiple-value-bind (mantissa exponent sign) 
            (integer-decode-float float)
          (dpb (if (minusp sign) 1 0)
@@ -768,7 +769,8 @@ but some types are used only for array cells (ie. unboxed values)."
                       exponent)
                    (byte ,exponent-bits ,(1- mantissa-bits))
                    (ldb (byte ,(1- mantissa-bits) 0) mantissa)))))
-     (defun ,(intern (format nil "IEEE-754-TO-~A" name) (symbol-package name))  (ieee)
+     (defun ,(intern (with-standard-io-syntax (format nil "IEEE-754-TO-~A" name))
+                     (symbol-package name))  (ieee)
        (let ((aval (scale-float
                     (coerce
                      (dpb 1 (byte 1 ,(1- mantissa-bits))
