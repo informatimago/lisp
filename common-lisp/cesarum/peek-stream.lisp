@@ -141,6 +141,9 @@ RETURN:  The next character from SELF.
         (setf (next self) (head self)))))
 
 
+(defmethod ungetchar ((self peek-stream) (ch null))
+  ch)
+
 (defmethod ungetchar ((self peek-stream) (ch character))
   "
 DO:      Put the character CH in front of the input buffer.
