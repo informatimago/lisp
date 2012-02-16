@@ -145,6 +145,7 @@ RETURN:  The next character from SELF.
   "
 DO:      Put the character CH in front of the input buffer.
          It does not need to be the same as any character read from SELF.
+RETURN:  CH.
 "
   (mod-decf (length (buffer self)) (head self))
   (when (= (head self) (tail self))
@@ -152,7 +153,8 @@ DO:      Put the character CH in front of the input buffer.
     (extend-buffer self)
     (mod-decf (length (buffer self)) (head self)))
   (setf (aref (buffer self) (head self)) ch
-        (next self) (head self)))
+        (next self) (head self))
+  ch)
 
 
 ;; ungetchar ==> (decf head), put char at (aref buffer head), next:=head
@@ -167,10 +169,8 @@ DO:      Put the character CH in front of the input buffer.
 (defmethod nextchar ((self peek-stream))
   "
 RETURN:  The character that will be read soon by GETCHAR, or NIL when EOF.
-         (equalp (loop repeat N for ch = (nextchar ps)
-                       collect ch into result finally (return result))
-                 (loop repeat N for ch = (getchar  ps)
-                       collect ch into result finally (return result)))
+         (equalp (loop repeat N collect (nextchar ps))
+                 (loop repeat N collect (getchar  ps)))
 "
   (if (/= (next self) (tail self))
       (prog1 (aref (buffer self) (next self))
