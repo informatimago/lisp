@@ -40,26 +40,26 @@
 ;;;;    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 ;;;;*****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DECLAIM (DECLARATION ALSO-USE-PACKAGES))
-(declaim (ALSO-USE-PACKAGES "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ECMA048"))
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
-  (:USE "COMMON-LISP"
+(in-package "COMMON-LISP-USER")
+(declaim (declaration also-use-packages))
+(declaim (also-use-packages "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ECMA048"))
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
+  (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
-  (:EXPORT
+  (:export
    "LOCALIZE" "DEFTRANSLATION" "STRING-JUSTIFY-LEFT" "STRING-PAD"
    "PREFIXP" "SUFFIXP"
    "SPLIT-NAME-VALUE" "STRING-REPLACE" "UNSPLIT-STRING" "SPLIT-STRING"
    "SPLIT-ESCAPED-STRING" "IMPLODE-STRING" "EXPLODE-STRING"
    "CONCATENATE-STRINGS")
-  (:DOCUMENTATION
+  (:documentation
    "This package exports some string processing functions.
 
     Copyright Pascal J. Bourguignon 2002 - 2005
     This package is provided under the GNU General Public License.
     See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
 
 
 
@@ -94,113 +94,136 @@ RETURN:          A string containing the concatenation of the strings
        :finally (return result))))
 
 
-(DEFUN EXPLODE-STRING (STRING)
+(defun explode-string (string)
   "
 return a new list containing the character in the sequence string.
 "
-  (MAP 'LIST (FUNCTION CHARACTER) STRING))
+  (map 'list (function character) string))
 
 
-(DEFUN IMPLODE-STRING (CHAR-SEQ)
+(defun implode-string (char-seq)
   "
 RETURN: A new string containing the characters in the sequence CHAR-SEQ.
 "
-  (MAP 'STRING (FUNCTION CHARACTER) CHAR-SEQ))
+  (map 'string (function character) char-seq))
 
 
-(DEFINE-COMPILER-MACRO IMPLODE-STRING (&WHOLE FORM  CHAR-SEQ)
+(define-compiler-macro implode-string (&whole form  char-seq)
   "
 RETURN:  An optimized form for compiled code.
 NOTE:    Unfortunately clisp does to take into account compiler-macros
          even when compiling...
 "
-  (DECLARE (IGNORABLE FORM))
-  (WITH-GENSYMS (SEQ)
-    `(LET ((,SEQ ,CHAR-SEQ))
-       (TYPECASE ,SEQ
-         (STRING     (COPY-SEQ ,SEQ))
-         (LIST       (DO ((RESULT (MAKE-STRING (LENGTH ,SEQ)))
-                          (I 0 (1+ I))
-                          (SEQU ,SEQ  (CDR SEQU)))
-                         ((NULL SEQU) RESULT)
-                       (SETF (CHAR RESULT I) (CHARACTER (CAR SEQU)))))
-         (OTHERWISE  (DO ((RESULT (MAKE-STRING (LENGTH ,SEQ)))
-                          (I 0 (1+ I))
-                          (MAX (LENGTH ,SEQ)))
-                         ((>= I MAX) RESULT)
-                       (SETF (CHAR RESULT I) (CHARACTER (AREF ,SEQ I)))))) )))
+  (declare (ignorable form))
+  (with-gensyms (seq)
+    `(let ((,seq ,char-seq))
+       (typecase ,seq
+         (string     (copy-seq ,seq))
+         (list       (do ((result (make-string (length ,seq)))
+                          (i 0 (1+ i))
+                          (sequ ,seq  (cdr sequ)))
+                         ((null sequ) result)
+                       (setf (char result i) (character (car sequ)))))
+         (otherwise  (do ((result (make-string (length ,seq)))
+                          (i 0 (1+ i))
+                          (max (length ,seq)))
+                         ((>= i max) result)
+                       (setf (char result i) (character (aref ,seq i)))))) )))
 
 
-(DEFUN SPLIT-ESCAPED-STRING (STRING ESCAPE SEPARATOR)
+(defun split-escaped-string (string escape separator)
   "
 DO:      Split the string on the separator character.
          It may be escaped with the escape character.
 RETURN:  A list of substrings of string.
 "
-  (UNLESS (SIMPLE-STRING-P STRING)  (SETF STRING    (COPY-SEQ STRING)))
-  (UNLESS (CHARACTERP ESCAPE)       (SETF ESCAPE    (CHARACTER ESCAPE)))
-  (UNLESS (CHARACTERP SEPARATOR)    (SETF SEPARATOR (CHARACTER SEPARATOR)))
-  (DO ((RESULT   ())
-       (ESCAPED  NIL)
-       (START    0)
-       (CURR     0))
-      ((>= CURR (LENGTH STRING))
-       (IF (AND (NULL RESULT) (= 0 CURR))
-           NIL
-           (PROGN (PUSH (SUBSEQ STRING START CURR) RESULT)
-                  (NREVERSE RESULT))))
-    (IF ESCAPED
-        (PROGN (INCF CURR)
-               (SETF ESCAPED NIL))
-        (COND
-          ((CHAR= (AREF STRING CURR) ESCAPE)   (INCF CURR) (SETF ESCAPED T))
-          ((CHAR= (AREF STRING CURR) SEPARATOR)
-           (PUSH (SUBSEQ STRING START CURR) RESULT)
-           (INCF CURR)
-           (SETF START CURR))
-          (T (INCF CURR))))))
+  (unless (simple-string-p string)  (setf string    (copy-seq string)))
+  (unless (characterp escape)       (setf escape    (character escape)))
+  (unless (characterp separator)    (setf separator (character separator)))
+  (do ((result   ())
+       (escaped  nil)
+       (start    0)
+       (curr     0))
+      ((>= curr (length string))
+       (if (and (null result) (= 0 curr))
+           nil
+           (progn (push (subseq string start curr) result)
+                  (nreverse result))))
+    (if escaped
+        (progn (incf curr)
+               (setf escaped nil))
+        (cond
+          ((char= (aref string curr) escape)   (incf curr) (setf escaped t))
+          ((char= (aref string curr) separator)
+           (push (subseq string start curr) result)
+           (incf curr)
+           (setf start curr))
+          (t (incf curr))))))
 
 
-(DEFUN SPLIT-STRING (STRING &OPTIONAL (SEPARATORS " "))
+(defun split-string (string &optional (separators " "))
   "
 NOTE:   current implementation only accepts as separators
         a string containing literal characters.
 "
-  (LET ((string     (if (SIMPLE-STRING-P STRING)
+  (let ((string     (if (simple-string-p string)
                         string
-                        (COPY-SEQ STRING)))
-        (SEPARATORS (if (SIMPLE-STRING-P SEPARATORS)
-                        SEPARATORS
-                        (COPY-SEQ SEPARATORS)))
-        (CHUNKS  '())
-        (POSITION 0)
-        (NEXTPOS  0)
-        (STRLEN   (LENGTH STRING)) )
-    (DECLARE (TYPE SIMPLE-STRING STRING SEPARATORS))
-    (LOOP :WHILE (< POSITION STRLEN)
-          :DO (LOOP :WHILE (AND (< NEXTPOS STRLEN)
-                                (NOT (POSITION (CHAR STRING NEXTPOS) SEPARATORS)))
-                    :DO (SETQ NEXTPOS (1+ NEXTPOS)))
-              (PUSH (SUBSEQ STRING POSITION NEXTPOS) CHUNKS)
-              (SETQ POSITION (1+ NEXTPOS))
-              (SETQ NEXTPOS  POSITION))
-    (NREVERSE CHUNKS)))
+                        (copy-seq string)))
+        (separators (if (simple-string-p separators)
+                        separators
+                        (copy-seq separators)))
+        (chunks  '())
+        (position 0)
+        (nextpos  0)
+        (strlen   (length string)) )
+    (declare (type simple-string string separators))
+    (loop :while (< position strlen)
+          :do (loop :while (and (< nextpos strlen)
+                                (not (position (char string nextpos) separators)))
+                    :do (setq nextpos (1+ nextpos)))
+              (push (subseq string position nextpos) chunks)
+              (setq position (1+ nextpos))
+              (setq nextpos  position))
+    (nreverse chunks)))
 
 
-(DEFUN UNSPLIT-STRING (STRING-LIST &OPTIONAL SEPARATOR)
+(defun unsplit-string (string-list &optional (separator " ")
+                       &key (adjustable nil) (fill-pointer nil) (size-increment 0))
   "
-DO:         The inverse than split-string.
-            If no separator is provided then a simple space is used.
-SEPARATOR:  (OR NULL STRINGP CHARACTERP)
+DO:             The inverse than split-string.
+                If no separator is provided then a simple space is used.
+SEPARATOR:      (OR NULL STRINGP CHARACTERP)
+ADJUSTABLE:     Create the string as an adjustable array.
+FILL-POINTER:   Add a fill pointer to the string.
+SIZE-INCREMENT: Add it to the size needed for the result.
 "
-  (COND
-    ((NULL SEPARATOR)
-     (SETQ SEPARATOR " "))
-    ((CHARACTERP SEPARATOR)
-     (SETQ SEPARATOR (MAKE-STRING 1 :INITIAL-ELEMENT SEPARATOR)))
-    ((NOT (STRINGP SEPARATOR))
-     (ERROR "unsplit-string: separator must be a string or a char.")))
-  (APPLY 'CONCATENATE 'STRING (LIST-INSERT-SEPARATOR STRING-LIST SEPARATOR)))
+  (if string-list
+      (let* ((separator
+              (cond
+                ((null separator)        " ")
+                ((characterp separator)  (make-string 1 :initial-element separator))
+                ((not (stringp separator))
+                 (error "~S: separator must be a string or a character, not a ~S."
+                        'unsplit-string (type-of separator)))))
+             (seplen (length separator))
+             (size   (+ (reduce (function +) string-list :key (function length))
+                        (* seplen (1- (length string-list)))))
+             (result (make-array (+ size-increment size)
+                                 :element-type 'character
+                                 :adjustable adjustable
+                                 :fill-pointer (case fill-pointer
+                                                 ((nil) nil)
+                                                 ((t)   size)
+                                                 (otherwise fill-pointer))))
+             (start  (length (first string-list))))
+        (replace result (first string-list))
+        (dolist (string (rest string-list) result)
+          (replace result separator :start1 start) (incf start seplen)
+          (replace result string    :start1 start) (incf start (length string))))
+      (make-array size-increment
+                  :element-type 'character
+                  :adjustable adjustable
+                  :fill-pointer (if fill-pointer 0 nil))))
 
 
 (defun string-replace (string pattern replace &key (test (function char=)))
@@ -222,25 +245,25 @@ TEST:     The function used to compare the elements of the PATTERN
 
 
 
-(DEFUN SPLIT-NAME-VALUE (STRING)
+(defun split-name-value (string)
   "
 RETURN:  a cons with two substrings of string such as:
          (string= (concat (car res) \"=\" (cdr res)) string)
          and (length (car res)) is minimum.
 "
   
-  (LET ((string (if (SIMPLE-STRING-P STRING)
+  (let ((string (if (simple-string-p string)
                     string
-                    (COPY-SEQ STRING)))
-        (POSITION 0)
-        (STRLEN   (LENGTH STRING)) )
-    (DECLARE (TYPE SIMPLE-STRING STRING))
-    (LOOP :WHILE (AND (< POSITION STRLEN)
-                     (CHAR/= (CHARACTER "=") (AREF STRING POSITION)))
-          :DO (SETQ POSITION (1+ POSITION)))
-    (IF (< POSITION STRLEN)
-        (CONS (SUBSEQ STRING 0 POSITION) (SUBSEQ STRING (1+ POSITION) STRLEN))
-        NIL)))
+                    (copy-seq string)))
+        (position 0)
+        (strlen   (length string)) )
+    (declare (type simple-string string))
+    (loop :while (and (< position strlen)
+                     (char/= (character "=") (aref string position)))
+          :do (setq position (1+ position)))
+    (if (< position strlen)
+        (cons (subseq string 0 position) (subseq string (1+ position) strlen))
+        nil)))
 
 
 (defun prefixp (prefix string &key (start 0) (end nil) (test (function char=)))
@@ -281,7 +304,7 @@ RETURN:         A padded string.
     (if (<= length slen)
         string
         (let ((result
-               (MAKE-STRING length :INITIAL-ELEMENT 
+               (make-string length :initial-element 
                             (etypecase padchar
                               (character padchar)
                               (string (aref padchar 0))
@@ -347,22 +370,22 @@ NOTE:   The default width is 72 characters, the default left-margin is 0.
     (apply (function concatenate) 'string (nreverse justified))))
 
 
-(DEFMACRO DEFTRANSLATION (TABLE TEXT LANGUAGE TRANSLATION
-                                &REST LANGS-TRANS)
+(defmacro deftranslation (table text language translation
+                                &rest langs-trans)
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      (unless (boundp (quote ,table))
-       (DEFVAR ,TABLE (MAKE-HASH-TABLE :TEST (FUNCTION EQUAL))))
-     (SETF ,@(DO ((LT (list* LANGUAGE TRANSLATION LANGS-TRANS))
-                  (RESULT '()))
-                 ((NULL LT) (NREVERSE RESULT))
-                 (PUSH  `(GETHASH (CONS ,TEXT ,(POP LT)) ,TABLE) RESULT)
-                 (push (LET ((TRANS (POP LT)))
-                         (IF (EQ TRANS :IDEM)
-                             `,TEXT
-                             `,TRANS)) result)))))
+       (defvar ,table (make-hash-table :test (function equal))))
+     (setf ,@(do ((lt (list* language translation langs-trans))
+                  (result '()))
+                 ((null lt) (nreverse result))
+                 (push  `(gethash (cons ,text ,(pop lt)) ,table) result)
+                 (push (let ((trans (pop lt)))
+                         (if (eq trans :idem)
+                             `,text
+                             `,trans)) result)))))
 
 
-(DEFUN LOCALIZE (TABLE LANGUAGE TEXT)
+(defun localize (table language text)
   "
 RETURN: A version of the TEXT in the given LANGUAGE, 
         or in english if LANGUAGE is not found,
@@ -373,3 +396,4 @@ RETURN: A version of the TEXT in the given LANGUAGE,
       text))
 
 
+;;;; THE END ;;;;
