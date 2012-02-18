@@ -141,7 +141,7 @@ See the source file for details."))
 ;; they can change in the scanner object between the condition
 ;; creation and its handling.
 
-(define-condition scanner-error (error)
+(define-condition scanner-error (simple-error)
   ((line             :initarg :line             :initform 1   :reader scanner-error-line)
    (column           :initarg :column           :initform 0   :reader scanner-error-column)
    (state            :initarg :state            :initform 0   :reader scanner-error-state)
@@ -257,4 +257,3 @@ RETURN:       (scanner-current-token scanner).
 
 
 ;;;; THE END ;;;;
-
