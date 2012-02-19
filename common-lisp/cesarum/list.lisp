@@ -11,6 +11,8 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2012-02-19 <PJB> Moved HASHED-* functions that work on sequence to
+;;;;                     COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE.
 ;;;;    2011-04-03 <PJB> Added LIST-LENGTHS.
 ;;;;    2008-06-24 <PJB> Added ENSURE-CIRCULAR, MAKE-CIRCULAR-LIST, CIRCULAR-LENGTH.
 ;;;;    2007-01-05 <PJB> Added REPLACE-TREE (should move to a new package later).
@@ -44,10 +46,12 @@
 ;;;;    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 ;;;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
-  (:USE "COMMON-LISP")
-  (:EXPORT "DLL-NEXT" "DLL-PREVIOUS" "DLL-NODE" "LIST-TO-DOUBLE-LINKED-LIST"
+(in-package "COMMON-LISP-USER")
+(DECLAIM (DECLARATION ALSO-USE-PACKAGES))
+(declaim (ALSO-USE-PACKAGES "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE"))
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
+  (:use "COMMON-LISP")
+  (:export "DLL-NEXT" "DLL-PREVIOUS" "DLL-NODE" "LIST-TO-DOUBLE-LINKED-LIST"
            "EQUIVALENCE-CLASSES" "SUBSETS" "COMBINE" "IOTA"
            "MAKE-LIST-OF-RANDOM-NUMBERS" "LIST-INSERT-SEPARATOR"
            "NSPLIT-LIST-ON-INDICATOR" "NSPLIT-LIST" "DEEPEST-REC" "DEEPEST" "DEPTH"
@@ -56,20 +60,20 @@
            "ENSURE-LIST" "PROPER-LIST-P" "LIST-LENGTHS"
            "ENSURE-CIRCULAR" "MAKE-CIRCULAR-LIST" "CIRCULAR-LENGTH"
            "TREE-DIFFERENCE" "REPLACE-TREE" "MAPTREE")
-  (:DOCUMENTATION
+  (:documentation
    "This package exports list processing functions.
     
     Copyright Pascal J. Bourguignon 2003 - 2011
     This package is provided under the GNU General Public License.
     See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
 
 
-(DEFUN ENSURE-LIST (ITEM)
+(defun ensure-list (item)
   "
 RETURN: item if it's a list or (list item) otherwise.
 "
-  (IF (LISTP ITEM) ITEM (LIST ITEM)))
+  (if (listp item) item (list item)))
 
 
 (defun proper-list-p (object)
@@ -217,85 +221,52 @@ RETURN: the total length ; the length of the stem ; the length of the circle.
 
 
 
-(DEFUN HASHED-SET-REMOVE-DUPLICATES (SEQUENCE &KEY (TEST (FUNCTION EQL))
-                                     (KEY (FUNCTION IDENTITY)))
-  (LET ((TABLE (MAKE-HASH-TABLE :TEST TEST :SIZE (LENGTH SEQUENCE)))
-        (RESULT '()))
-    (MAP NIL (LAMBDA (ITEM) (SETF (GETHASH (FUNCALL KEY ITEM) TABLE) ITEM)) SEQUENCE)
-    (MAPHASH (LAMBDA (KEY VALUE) (DECLARE (IGNORE KEY)) (PUSH VALUE RESULT)) TABLE)
-    RESULT))
+(defun hashed-set-remove-duplicates (sequence &key (test (function eql))
+                                     (key (function identity)))
+  (warn "Use COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE:HASHED-SET-REMOVE-DUPLICATES instead.")
+  (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE:HASHED-SET-REMOVE-DUPLICATES
+   sequence :test test :key key))
 
 
-(DEFUN HASHED-REMOVE-DUPLICATES (SEQUENCE &KEY (TEST (FUNCTION EQL))
-                                 TEST-NOT
-                                 (START 0) (END (LENGTH SEQUENCE))
-                                 (KEY (FUNCTION IDENTITY))
-                                 (FROM-END NIL))
-  (WHEN TEST-NOT
-    (WARN ":TEST-NOT is deprecated.")
-    (SETF TEST (COMPLEMENT TEST-NOT)))
-  (LET ((TABLE (MAKE-HASH-TABLE :TEST TEST :SIZE (- END START))))
-    (MAP NIL (IF FROM-END 
-                 (LAMBDA (ITEM)
-                   (LET ((ITEM-KEY (FUNCALL KEY ITEM)))
-                     (MULTIPLE-VALUE-BIND (VAL PRE) (GETHASH ITEM-KEY TABLE)
-                       (DECLARE (IGNORE VAL))
-                       (UNLESS PRE (SETF (GETHASH ITEM-KEY TABLE) ITEM)))))
-                 (LAMBDA (ITEM) (SETF (GETHASH (FUNCALL KEY ITEM) TABLE) ITEM)))
-         (IF (OR (/= START 0) (/= END (LENGTH SEQUENCE)))
-             (SUBSEQ SEQUENCE START END) SEQUENCE))
-    (IF (EQ (TYPE-OF SEQUENCE) 'CONS)
-        (LET ((RESULT '()))
-          (MAPHASH (LAMBDA (KEY VALUE) (DECLARE (IGNORE KEY)) (PUSH VALUE RESULT)) 
-                   TABLE)
-          (IF (OR (/= START 0) (/= END (LENGTH SEQUENCE)))
-              (NCONC (SUBSEQ SEQUENCE 0 START) RESULT (SUBSEQ SEQUENCE END))
-              RESULT))
-        (IF (OR (/= START 0) (/= END (LENGTH SEQUENCE)))
-            (LET ((RESULT (MAKE-SEQUENCE (TYPE-OF SEQUENCE)
-                                         (+ START (HASH-TABLE-COUNT TABLE)
-                                            (- (LENGTH SEQUENCE) END))))
-                  (I START))
-              (REPLACE RESULT SEQUENCE :END2 START)
-              (MAPHASH (LAMBDA (KEY VALUE) (DECLARE (IGNORE KEY)) 
-                               (SETF (AREF RESULT I) VALUE) (INCF I)) TABLE)
-              (REPLACE RESULT SEQUENCE :START2 END :START1 I)
-              RESULT)
-            (LET ((RESULT (MAKE-SEQUENCE (TYPE-OF SEQUENCE) 
-                                         (HASH-TABLE-COUNT TABLE)))
-                  (I 0))
-              (MAPHASH (LAMBDA (KEY VALUE) (DECLARE (IGNORE KEY)) 
-                               (SETF (AREF RESULT I) VALUE) (INCF I)) TABLE)
-              RESULT)))))
+(defun hashed-remove-duplicates (sequence &key (test (function eql))
+                                 test-not
+                                 (start 0) (end (length sequence))
+                                 (key (function identity))
+                                 (from-end nil))
+  (warn "Use COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE:HASHED-REMOVE-DUPLICATES instead.")
+  (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE:HASHED-REMOVE-DUPLICATES
+   sequence :test test :test-not test-not :start start :end end :key key :from-key from-key))
 
 
-(DEFUN HASHED-DELETE-DUPLICATES (SEQUENCE &KEY (TEST (FUNCTION EQL))
-                                 TEST-NOT
-                                 (START 0) (END (LENGTH SEQUENCE))
-                                 (KEY (FUNCTION IDENTITY))
-                                 (FROM-END NIL))
-  (HASHED-REMOVE-DUPLICATES 
-   SEQUENCE :TEST TEST :TEST-NOT TEST-NOT :START START :END END
-   :KEY KEY :FROM-END FROM-END))
+(defun hashed-delete-duplicates (sequence &key (test (function eql))
+                                 test-not
+                                 (start 0) (end (length sequence))
+                                 (key (function identity))
+                                 (from-end nil))
+  "Like DELETE-DUPLICATES but implemented using a HASH-TABLE."
+  (warn "Use COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE:HASHED-DELETE-DUPLICATES instead.")
+  (com.informatimago.common-lisp.cesarum.sequence:hashed-delete-duplicates 
+   sequence :test test :test-not test-not :start start :end end
+   :key key :from-end from-end))
 
 
-(DEFUN HASHED-INTERSECTION (SET1 SET2)
+(defun hashed-intersection (set1 set2)
   "
 AUTHORS: Paul F. Dietz <dietz@dls.net>
          Thomas A. Russ <tar@sevak.isi.edu>
 "
-  (DECLARE (OPTIMIZE SPEED (SAFETY 0) (DEBUG 0))
-           (LIST SET1 SET2))
-  (LET ((TABLE (MAKE-HASH-TABLE :SIZE (LENGTH SET2)))
-        (RESULT NIL))
-    (DOLIST (E SET2) (SETF (GETHASH E TABLE) T))
-    (DOLIST (E SET1) (WHEN (GETHASH E TABLE)
-                       (PUSH E RESULT)
-                       (SETF (GETHASH E TABLE) NIL)))
-    RESULT))
+  (declare (optimize speed (safety 0) (debug 0))
+           (list set1 set2))
+  (let ((table (make-hash-table :size (length set2)))
+        (result nil))
+    (dolist (e set2) (setf (gethash e table) t))
+    (dolist (e set1) (when (gethash e table)
+                       (push e result)
+                       (setf (gethash e table) nil)))
+    result))
 
 
-(DEFUN PLIST-PUT (PLIST PROP VALUE)
+(defun plist-put (plist prop value)
   "
  Change value in PLIST of PROP to VALUE.
  PLIST is a property list, which is a list of the form
@@ -305,11 +276,11 @@ AUTHORS: Paul F. Dietz <dietz@dls.net>
  use `(setq x (plist-put x prop val))' to be sure to use the new value.
  The PLIST is modified by side effects.
 "
-  (SETF (GETF PLIST PROP) VALUE)
-  PLIST)
+  (setf (getf plist prop) value)
+  plist)
 
 
-(DEFUN PLIST-GET (PLIST PROP)
+(defun plist-get (plist prop)
   "
  Extract a value from a property list.
  PLIST is a property list, which is a list of the form
@@ -317,133 +288,133 @@ AUTHORS: Paul F. Dietz <dietz@dls.net>
  corresponding to the given PROP, or nil if PROP is not
  one of the properties on the list.
 "
-  (GETF PLIST PROP))
+  (getf plist prop))
 
 
-(DEFUN PLIST-REMOVE (PLIST PROP)
+(defun plist-remove (plist prop)
   "
 DO:      (REMF PLIST PROP)
 RETURN:  The modified PLIST.
 "
-  (REMF PLIST PROP)
-  PLIST)
+  (remf plist prop)
+  plist)
 
 
-(DEFUN MEMQ (ITEM LIST)
+(defun memq (item list)
   "
 RETURN:   (MEMBER ITEM LIST :TEST (FUNCTION EQ))
 "
-  (MEMBER ITEM LIST :TEST (FUNCTION EQ)))
+  (member item list :test (function eq)))
 
-(DECLAIM (INLINE PLIST-PUT PLIST-GET PLIST-REMOVE MEMQ))
+(declaim (inline plist-put plist-get plist-remove memq))
 
 
-(DEFUN TRANSPOSE (TREE)
+(defun transpose (tree)
   "
 RETURN: A tree where all the CAR and CDR are exchanged.
 "
-  (IF (ATOM TREE)
-      TREE
-      (CONS (TRANSPOSE (CDR TREE)) (TRANSPOSE (CAR TREE)))))
+  (if (atom tree)
+      tree
+      (cons (transpose (cdr tree)) (transpose (car tree)))))
 
 
 
-(DEFUN LIST-TRIM (BAG LIST
-                  &KEY (TEST (FUNCTION EQL)) (KEY (FUNCTION IDENTITY)))
-  (DO ((LIST (REVERSE LIST) (CDR LIST)))
-      ((OR (NULL LIST) (NOT (MEMBER (CAR LIST) BAG :TEST TEST :KEY KEY)))
-       (DO ((LIST (NREVERSE LIST) (CDR LIST)))
-           ((OR (NULL LIST) (NOT (MEMBER (CAR LIST) BAG :TEST TEST :KEY KEY)))
-            LIST)))))
+(defun list-trim (bag list
+                  &key (test (function eql)) (key (function identity)))
+  (do ((list (reverse list) (cdr list)))
+      ((or (null list) (not (member (car list) bag :test test :key key)))
+       (do ((list (nreverse list) (cdr list)))
+           ((or (null list) (not (member (car list) bag :test test :key key)))
+            list)))))
 
 
-(DEFUN LIST-TRIM-TEST ()
-  (EVERY
-   (LAMBDA (X) (EQUALP '(D E F) X))
-   (LIST
-    (LIST-TRIM '(A B C) '( A B C D E F A B C C C ))
-    (LIST-TRIM '((A 1)(B 2)(C 3)) '( A B C D E F A B C C ) :KEY (FUNCTION CAR))
-    (LIST-TRIM '(:A :B :C) '( A B C D E F A B C C ) :TEST (FUNCTION STRING=))
-    (LIST-TRIM '(A B C) '( A B C D E F))
-    (LIST-TRIM '(A B C) '( D E F A B C C C )))))
+(defun list-trim-test ()
+  (every
+   (lambda (x) (equalp '(d e f) x))
+   (list
+    (list-trim '(a b c) '( a b c d e f a b c c c ))
+    (list-trim '((a 1)(b 2)(c 3)) '( a b c d e f a b c c ) :key (function car))
+    (list-trim '(:a :b :c) '( a b c d e f a b c c ) :test (function string=))
+    (list-trim '(a b c) '( a b c d e f))
+    (list-trim '(a b c) '( d e f a b c c c )))))
 
 
-(DEFUN MAPTREE (FUN &REST TREES)
-  (COND ((NULL TREES) NIL)
-        ((EVERY (FUNCTION NULL)  TREES) NIL)
-        ((EVERY (FUNCTION ATOM)  TREES) (APPLY FUN TREES))
-        ((EVERY (FUNCTION CONSP) TREES)
-         (CONS (APPLY (FUNCTION MAPTREE) FUN (MAPCAR (FUNCTION CAR) TREES))
-               (APPLY (FUNCTION MAPTREE) FUN (MAPCAR (FUNCTION CDR) TREES))))
-        (T NIL)))
+(defun maptree (fun &rest trees)
+  (cond ((null trees) nil)
+        ((every (function null)  trees) nil)
+        ((every (function atom)  trees) (apply fun trees))
+        ((every (function consp) trees)
+         (cons (apply (function maptree) fun (mapcar (function car) trees))
+               (apply (function maptree) fun (mapcar (function cdr) trees))))
+        (t nil)))
 
 
-(DEFUN FLATTEN (TREE)
+(defun flatten (tree)
   "
 RETURN: A list containing all the elements of the `tree'.
 "
-  (LOOP WITH RESULT = NIL
-     WITH STACK = NIL
-     WHILE (OR TREE STACK)
-     DO (COND
-          ((NULL TREE)
-           (SETQ TREE (POP STACK)))
-          ((ATOM TREE)
-           (PUSH TREE RESULT)
-           (SETQ TREE (POP STACK)))
-          ((LISTP (CAR TREE))
-           (PUSH (CDR TREE) STACK)
-           (SETQ TREE (CAR TREE)))
-          (T
-           (PUSH (CAR TREE) RESULT)
-           (SETQ TREE (CDR TREE))))
-     FINALLY (RETURN (NREVERSE RESULT))))
+  (loop with result = nil
+     with stack = nil
+     while (or tree stack)
+     do (cond
+          ((null tree)
+           (setq tree (pop stack)))
+          ((atom tree)
+           (push tree result)
+           (setq tree (pop stack)))
+          ((listp (car tree))
+           (push (cdr tree) stack)
+           (setq tree (car tree)))
+          (t
+           (push (car tree) result)
+           (setq tree (cdr tree))))
+     finally (return (nreverse result))))
 
 
-(DEFUN DEPTH (TREE)
+(defun depth (tree)
   "
 RETURN:     The depth of the tree.
 "
-  (IF (ATOM TREE)
+  (if (atom tree)
       0
-      (1+ (APPLY (FUNCTION MAX) 
+      (1+ (apply (function max) 
                  0
-                 (DO ((TREE TREE (CDR TREE))
-                      (RESULTS '()))
-                     ((ATOM TREE) RESULTS)
-                   (IF (LISTP (CAR TREE)) (PUSH (DEPTH (CAR TREE)) RESULTS)))))))
+                 (do ((tree tree (cdr tree))
+                      (results '()))
+                     ((atom tree) results)
+                   (if (listp (car tree)) (push (depth (car tree)) results)))))))
 
 
-(DEFUN DEEPEST-REC (TREE)
+(defun deepest-rec (tree)
   "
 RETURN:     The deepest list in the tree.
 NOTE:       Recursive algorithm.
 SEE-ALSO:   deepest-iti
 "
-  (LET ((SUBTREE (DELETE-IF (FUNCTION ATOM) TREE)))
-    (COND
-      ((NULL SUBTREE)    TREE)
-      ((EVERY (LAMBDA (ITEM) (EVERY (FUNCTION ATOM) ITEM)) SUBTREE)
-       (CAR SUBTREE))
-      (T
-       (DEEPEST-REC (APPLY 'CONCATENATE 'LIST SUBTREE))))))
+  (let ((subtree (delete-if (function atom) tree)))
+    (cond
+      ((null subtree)    tree)
+      ((every (lambda (item) (every (function atom) item)) subtree)
+       (car subtree))
+      (t
+       (deepest-rec (apply 'concatenate 'list subtree))))))
 
 
-(DEFUN DEEPEST (TREE)
+(defun deepest (tree)
   "
 RETURN:     The deepest list in the tree.
 NOTE:       Iterative algorithm.
 SEE-ALSO:   deepest-rec
 "
-  (DO* ((TREE TREE (APPLY 'CONCATENATE 'LIST SUBTREE))
-        (SUBTREE (DELETE-IF (FUNCTION ATOM) TREE)
-                 (DELETE-IF (FUNCTION ATOM) TREE)))
-       ((OR (NULL SUBTREE)
-            (EVERY (LAMBDA (ITEM) (EVERY (FUNCTION ATOM) ITEM)) SUBTREE))
-        (IF (NULL SUBTREE) TREE (CAR SUBTREE)))))
+  (do* ((tree tree (apply 'concatenate 'list subtree))
+        (subtree (delete-if (function atom) tree)
+                 (delete-if (function atom) tree)))
+       ((or (null subtree)
+            (every (lambda (item) (every (function atom) item)) subtree))
+        (if (null subtree) tree (car subtree)))))
 
 
-(DEFUN NSPLIT-LIST (LIST POSITION &KEY (FROM-END NIL))
+(defun nsplit-list (list position &key (from-end nil))
   "
 PRE:            0<=POSITION<=(LENGTH LIST)
 DO:             SPLIT THE LIST IN TWO AT THE GIVEN POSITION.
@@ -460,63 +431,63 @@ FROM-END:       WHEN SET, COUNT FROM THE END OF THE LIST.
                  === (NSPLIT-LIST L (- (LENGTH L) P))
 RETURN:         THE FIRST PART ; THE LAST PART
 "
-  (IF FROM-END
-      (NSPLIT-LIST LIST (- (LENGTH LIST) POSITION))
-      (DO* ((PREV NIL  REST)
-            (REST LIST (CDR REST)))
-           ((OR (NULL REST) (ZEROP POSITION))
-            (PROGN
-              (IF PREV
-                  (SETF (CDR PREV) NIL)
-                  (SETF LIST NIL))
-              (VALUES LIST REST)))
-        (DECF POSITION))))
+  (if from-end
+      (nsplit-list list (- (length list) position))
+      (do* ((prev nil  rest)
+            (rest list (cdr rest)))
+           ((or (null rest) (zerop position))
+            (progn
+              (if prev
+                  (setf (cdr prev) nil)
+                  (setf list nil))
+              (values list rest)))
+        (decf position))))
 
 
-(DEFUN NSPLIT-LIST-ON-INDICATOR (LIST INDICATOR)
+(defun nsplit-list-on-indicator (list indicator)
   "
 RETURN: a list of sublists of list (the conses from list are reused),
         the list is splited between items a and b for which (indicator a b).
 "
-  (DECLARE (TYPE (FUNCTION (T T) T) INDICATOR))
-  (LET* ((RESULT NIL)
-         (SUBLIST LIST)
-         (CURRENT LIST)
-         (NEXT    (CDR CURRENT)))
-    (LOOP :WHILE NEXT :DO
-         (IF (FUNCALL INDICATOR (CAR CURRENT) (CAR NEXT))
-             (PROGN ;; split
-               (SETF (CDR CURRENT) NIL)
-               (PUSH SUBLIST RESULT)
-               (SETQ CURRENT NEXT)
-               (SETQ NEXT (CDR CURRENT))
-               (SETQ SUBLIST CURRENT))
-             (PROGN ;; keep
-               (SETQ CURRENT NEXT)
-               (SETQ NEXT (CDR CURRENT)))))
-    (PUSH SUBLIST RESULT)
-    (NREVERSE RESULT)))
+  (declare (type (function (t t) t) indicator))
+  (let* ((result nil)
+         (sublist list)
+         (current list)
+         (next    (cdr current)))
+    (loop :while next :do
+         (if (funcall indicator (car current) (car next))
+             (progn ;; split
+               (setf (cdr current) nil)
+               (push sublist result)
+               (setq current next)
+               (setq next (cdr current))
+               (setq sublist current))
+             (progn ;; keep
+               (setq current next)
+               (setq next (cdr current)))))
+    (push sublist result)
+    (nreverse result)))
 
 
-(DEFUN LIST-INSERT-SEPARATOR (LIST SEPARATOR)
+(defun list-insert-separator (list separator)
   "
 RETURN:  A list composed of all the elements in `list'
          with `separator' in-between.
 EXAMPLE: (list-insert-separator '(a b (d e f)  c) 'x)
          ==> (a x b x (d e f) x c)
 "
-  (COND
-    ((NULL LIST)       '())
-    ((NULL (CDR LIST)) (LIST (CAR LIST)))
-    (T  (DO ((RESULT '())
-             (ITEMS LIST (CDR ITEMS)))
-            ((ENDP ITEMS) (NREVERSE (CDR RESULT)))
-          (PUSH (CAR ITEMS) RESULT)
-          (PUSH SEPARATOR RESULT)))))
+  (cond
+    ((null list)       '())
+    ((null (cdr list)) (list (car list)))
+    (t  (do ((result '())
+             (items list (cdr items)))
+            ((endp items) (nreverse (cdr result)))
+          (push (car items) result)
+          (push separator result)))))
 
 
 
-(DEFUN IOTA (COUNT &OPTIONAL (START 0)(STEP 1))
+(defun iota (count &optional (start 0)(step 1))
   "
 RETURN:   A list containing the elements 
           (start start+step ... start+(count-1)*step)
@@ -525,25 +496,25 @@ RETURN:   A list containing the elements
 EXAMPLE:  (iota 5) => (0 1 2 3 4)
           (iota 5 0 -0.1) => (0 -0.1 -0.2 -0.3 -0.4)
 "
-  (WHEN (< 0 COUNT)
-    (DO ((RESULT '())
-         (ITEM (+ START (* STEP (1- COUNT))) (- ITEM STEP)))
-        ((< ITEM START) RESULT)
-      (PUSH ITEM RESULT)))) ;;iota
+  (when (< 0 count)
+    (do ((result '())
+         (item (+ start (* step (1- count))) (- item step)))
+        ((< item start) result)
+      (push item result)))) ;;iota
 
 
-(DEFUN MAKE-LIST-OF-RANDOM-NUMBERS (LENGTH &KEY (MODULO MOST-POSITIVE-FIXNUM))
+(defun make-list-of-random-numbers (length &key (modulo most-positive-fixnum))
   "
 RETURN:  A list of length `length' filled with random numbers
 MODULO:  The argument to RANDOM.
 "
-  (LOOP WHILE (< 0 LENGTH)
-     COLLECT (RANDOM MODULO) INTO RESULT
-     DO (SETQ LENGTH (1- LENGTH))
-     FINALLY (RETURN RESULT)))
+  (loop while (< 0 length)
+     collect (random modulo) into result
+     do (setq length (1- length))
+     finally (return result)))
 
 
-(DEFUN COMBINE (&REST ARGS)
+(defun combine (&rest args)
   "
 RETURN:  (elt args 0) x (elt args 1) x ... x (elt args (1- (length args)))
          = the set of tuples built taking one item in order from each list
@@ -551,60 +522,60 @@ RETURN:  (elt args 0) x (elt args 1) x ... x (elt args (1- (length args)))
 EXAMPLE: (COMBINE '(WWW FTP) '(EXA) '(COM ORG))) 
            --> ((WWW EXA COM) (WWW EXA ORG) (FTP EXA COM) (FTP EXA ORG))
 "
-  (COND
-    ((NULL ARGS)        '(NIL))
-    ((NULL  (CAR ARGS)) (APPLY (FUNCTION COMBINE) (CDR ARGS)))
-    ((CONSP (CAR ARGS)) (MAPCAN (LAMBDA (ITEM)
-                                  (APPLY (FUNCTION COMBINE) ITEM (CDR ARGS)))
-                                (CAR ARGS)))
-    (T                  (MAPCAN (LAMBDA (REST) (LIST (CONS (CAR ARGS) REST)))
-                                (APPLY (FUNCTION COMBINE) (CDR ARGS))))))
+  (cond
+    ((null args)        '(nil))
+    ((null  (car args)) (apply (function combine) (cdr args)))
+    ((consp (car args)) (mapcan (lambda (item)
+                                  (apply (function combine) item (cdr args)))
+                                (car args)))
+    (t                  (mapcan (lambda (rest) (list (cons (car args) rest)))
+                                (apply (function combine) (cdr args))))))
 
 ;; Sets:
 
 
-(DEFUN SUBSETS (SET)
+(defun subsets (set)
   "
 RETURN: The set of all subsets of the strict SET.
 "
-  (LOOP
-     :WITH CARD = (LENGTH SET)
-     :FOR INDICATOR :FROM 0 :BELOW (EXPT 2 CARD)
-     :COLLECT (LOOP
-                 :FOR INDEX :FROM 0 :BELOW CARD
-                 :FOR ITEM :IN SET
-                 :NCONC (IF (LOGBITP INDEX INDICATOR) (LIST ITEM) NIL) 
-                 :INTO RESULT 
-                 :FINALLY (RETURN RESULT)) :INTO RESULT
-     :FINALLY (RETURN RESULT)))
+  (loop
+     :with card = (length set)
+     :for indicator :from 0 :below (expt 2 card)
+     :collect (loop
+                 :for index :from 0 :below card
+                 :for item :in set
+                 :nconc (if (logbitp index indicator) (list item) nil) 
+                 :into result 
+                 :finally (return result)) :into result
+     :finally (return result)))
 
 
-(DEFUN EQUIVALENCE-CLASSES (SET &KEY (TEST (FUNCTION EQL))
-                            (KEY (FUNCTION IDENTITY)))
+(defun equivalence-classes (set &key (test (function eql))
+                            (key (function identity)))
   "
 RETURN: The equivalence classes of SET, via KEY, modulo TEST.
 "
-  (LOOP
-     :WITH CLASSES = '()
-     :FOR ITEM :IN SET
-     :FOR ITEM-KEY = (FUNCALL KEY ITEM)
-     :FOR CLASS = (CAR (MEMBER ITEM-KEY CLASSES
-                               :TEST TEST :KEY (FUNCTION SECOND)))
-     :DO (IF CLASS
-             (PUSH ITEM (CDDR CLASS))
-             (PUSH (LIST :CLASS ITEM-KEY ITEM ) CLASSES))
-     :FINALLY (RETURN (MAPCAR (FUNCTION CDDR) CLASSES))))
+  (loop
+     :with classes = '()
+     :for item :in set
+     :for item-key = (funcall key item)
+     :for class = (car (member item-key classes
+                               :test test :key (function second)))
+     :do (if class
+             (push item (cddr class))
+             (push (list :class item-key item ) classes))
+     :finally (return (mapcar (function cddr) classes))))
 
 
 
 ;; A-lists:
 
-(DEFUN AGET (PLACE INDICATOR &OPTIONAL DEFAULT)
+(defun aget (place indicator &optional default)
   "
 RETURN:   The value of the entry INDICATOR of the a-list PLACE, or DEFAULT.
 "
-  (LET ((A (ASSOC INDICATOR PLACE)))
-    (IF A (CDR A) DEFAULT)))
+  (let ((a (assoc indicator place)))
+    (if a (cdr a) default)))
 
 
 ;; (DEFSETF AGET (PLACE INDICATOR &OPTIONAL DEFAULT) (VALUE)
@@ -632,10 +603,10 @@ RETURN:   The value of the entry INDICATOR of the a-list PLACE, or DEFAULT.
       (values (list* vindicator vars)
               (list* indicator  vals)
               (list  vvalue)
-              `(LET* ((,ACS (ASSOC ,vindicator ,reader-form)))
-                 (IF ,ACS
-                     (SETF (CDR ,ACS) ,vvalue)
-                     (let ((,vstore (ACONS ,vindicator ,vvalue ,reader-form)))
+              `(let* ((,acs (assoc ,vindicator ,reader-form)))
+                 (if ,acs
+                     (setf (cdr ,acs) ,vvalue)
+                     (let ((,vstore (acons ,vindicator ,vvalue ,reader-form)))
                         ,writer-form))
                  ,vvalue)
               `(assoc ,vindicator ,reader-form)))))
@@ -644,7 +615,7 @@ RETURN:   The value of the entry INDICATOR of the a-list PLACE, or DEFAULT.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Double-Linked Lists
 
-(DEFUN LIST-TO-DOUBLE-LINKED-LIST (SINGLE)
+(defun list-to-double-linked-list (single)
   "
 RETURN:  A double-linked-list.
 NOTE:    Use dll-node, dll-next and dll-previous to walk the double-linked-list.
@@ -657,34 +628,34 @@ EXAMPLE: (setq d (list-to-double-linked-list '( a b c)))
          (dll-previous (dll-next d))
          ==> (a nil b #0 c (b #0 c #1))
 "
-  (LOOP WITH HEAD = NIL
-     FOR PREVIOUS = NIL THEN CURRENT
-     FOR ELEMENT IN SINGLE
-     FOR CURRENT = (LIST ELEMENT PREVIOUS)
-     UNLESS HEAD DO (SETQ HEAD CURRENT)
-     WHEN PREVIOUS DO (SETF (CDR (CDR PREVIOUS))  CURRENT)
-     FINALLY (RETURN HEAD)))
+  (loop with head = nil
+     for previous = nil then current
+     for element in single
+     for current = (list element previous)
+     unless head do (setq head current)
+     when previous do (setf (cdr (cdr previous))  current)
+     finally (return head)))
 
 
-(DEFUN DLL-NODE     (DLL-CONS)
+(defun dll-node     (dll-cons)
   "
 RETURN:  The node in the `dll-cons' double-linked-list node.
 "
-  (CAR  DLL-CONS))
+  (car  dll-cons))
 
 
-(DEFUN DLL-PREVIOUS (DLL-CONS)
+(defun dll-previous (dll-cons)
   "
 RETURN:  The previous dll-cons in the `dll-cons' double-linked-list node.
 "
-  (CADR DLL-CONS))
+  (cadr dll-cons))
 
 
-(DEFUN DLL-NEXT     (DLL-CONS)
+(defun dll-next     (dll-cons)
   "
 RETURN:  The next dll-cons in the `dll-cons' double-linked-list node.
 "
-  (CDDR DLL-CONS))
+  (cddr dll-cons))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -829,4 +800,4 @@ RETURN: dst
 ;;;       (time (setf l2 (list-to-set l2))))
 ;; (array->list array) --> (coerce array 'list)
 
-;;;; list.lisp                        --                     --          ;;;;
+;;;; THE END ;;;;
