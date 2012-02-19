@@ -47,8 +47,6 @@
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
-(DECLAIM (DECLARATION ALSO-USE-PACKAGES))
-(declaim (ALSO-USE-PACKAGES "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE"))
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
   (:use "COMMON-LISP")
   (:export "DLL-NEXT" "DLL-PREVIOUS" "DLL-NODE" "LIST-TO-DOUBLE-LINKED-LIST"
@@ -56,7 +54,8 @@
            "MAKE-LIST-OF-RANDOM-NUMBERS" "LIST-INSERT-SEPARATOR"
            "NSPLIT-LIST-ON-INDICATOR" "NSPLIT-LIST" "DEEPEST-REC" "DEEPEST" "DEPTH"
            "FLATTEN" "LIST-TRIM" "TRANSPOSE" "AGET" "MEMQ" "PLIST-REMOVE" "PLIST-GET"
-           "PLIST-PUT" "HASHED-INTERSECTION" "HASHED-REMOVE-DUPLICATES"
+           "PLIST-PUT" "HASHED-INTERSECTION"
+           ;; "HASHED-REMOVE-DUPLICATES" moved to COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE
            "ENSURE-LIST" "PROPER-LIST-P" "LIST-LENGTHS"
            "ENSURE-CIRCULAR" "MAKE-CIRCULAR-LIST" "CIRCULAR-LENGTH"
            "TREE-DIFFERENCE" "REPLACE-TREE" "MAPTREE")
@@ -218,36 +217,6 @@ RETURN: the total length ; the length of the stem ; the length of the circle.
                  (return (values i index (- i index)))
                  (setf (gethash current indexes) i)))
        :finally (return (values i i 0)))))
-
-
-
-(defun hashed-set-remove-duplicates (sequence &key (test (function eql))
-                                     (key (function identity)))
-  (warn "Use COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE:HASHED-SET-REMOVE-DUPLICATES instead.")
-  (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE:HASHED-SET-REMOVE-DUPLICATES
-   sequence :test test :key key))
-
-
-(defun hashed-remove-duplicates (sequence &key (test (function eql))
-                                 test-not
-                                 (start 0) (end (length sequence))
-                                 (key (function identity))
-                                 (from-end nil))
-  (warn "Use COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE:HASHED-REMOVE-DUPLICATES instead.")
-  (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE:HASHED-REMOVE-DUPLICATES
-   sequence :test test :test-not test-not :start start :end end :key key :from-key from-key))
-
-
-(defun hashed-delete-duplicates (sequence &key (test (function eql))
-                                 test-not
-                                 (start 0) (end (length sequence))
-                                 (key (function identity))
-                                 (from-end nil))
-  "Like DELETE-DUPLICATES but implemented using a HASH-TABLE."
-  (warn "Use COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE:HASHED-DELETE-DUPLICATES instead.")
-  (com.informatimago.common-lisp.cesarum.sequence:hashed-delete-duplicates 
-   sequence :test test :test-not test-not :start start :end end
-   :key key :from-end from-end))
 
 
 (defun hashed-intersection (set1 set2)
