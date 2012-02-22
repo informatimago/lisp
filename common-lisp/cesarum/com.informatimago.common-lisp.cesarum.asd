@@ -38,7 +38,7 @@
     :name "com.informatimago.common-lisp.cesarum"
     :description  "This library implements various general data types, algorithms and standards."
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
-    :version "1.3.1"
+    :version "1.3.2"
     :licence "GPL"
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Autumn 2010")
@@ -53,9 +53,7 @@
                  (:file "utility"         :depends-on ())
                  (:file "array"           :depends-on ())
                  (:file "sequence"        :depends-on ())
-                 ;; list depends temporarily on sequence, until people have
-                 ;; updated their use for hashed-remove-duplicates.
-                 (:file "list"            :depends-on ("sequence"))
+                 (:file "list"            :depends-on ())
                  (:file "string"          :depends-on ("utility" "list" "ecma048"))
                  (:file "package"         :depends-on ())
                  

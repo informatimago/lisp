@@ -57,7 +57,8 @@ all::  compile-with-$(CLISP) compile-with-$(ECL) compile-with-$(SBCL) compile-wi
 
 
 
-PREFIX=/usr/local
+#PREFIX=/usr/local
+PREFIX=$(HOME)/quicklisp/local-projects
 PACKAGES:=$(shell get-directory SHARE_LISP | sed -e 's-/$$--')/packages
 PACKAGE_PATH=com/informatimago
 MODULES= common-lisp clext clmisc  sbcl  clisp  susv3

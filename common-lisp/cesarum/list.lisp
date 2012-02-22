@@ -96,10 +96,10 @@ DOTTED-LIST must be a dotted list or a proper list.
 RETURN:  the number of cons cells in the list.
 "
   (loop
-     :for length :from 0
-     :for current = dotted-list :then (cdr current)
-     :until (atom current)
-     :finally (return length)))
+    :for length :from 0
+    :for current = dotted-list :then (cdr current)
+    :until (atom current)
+    :finally (return length)))
 
 
 (defun circular-list-lengths (circular-list)
@@ -109,13 +109,13 @@ RETURN:  the length of the stem; the length of the circle.
 "
   (let ((cells (make-hash-table)))
     (loop
-       :for index :from 0
-       :for cell = circular-list :then (cdr cell)
-       :for previous = (gethash cell cells)
-       :do (if previous
-               (return-from circular-list-lengths
-                 (values previous (- index previous)))
-               (setf (gethash cell cells) index)))))
+      :for index :from 0
+      :for cell = circular-list :then (cdr cell)
+      :for previous = (gethash cell cells)
+      :do (if previous
+              (return-from circular-list-lengths
+                (values previous (- index previous)))
+              (setf (gethash cell cells) index)))))
 
 
 (defun list-lengths (list)
@@ -184,6 +184,7 @@ RETURN: for a proper list, the length of the list and 0;
                 list result expected)))))
 
 
+
 (defun ensure-circular (list)
   "
 If list is not a circular list, then modify it to make it circular.
@@ -209,30 +210,15 @@ RETURN: the total length ; the length of the stem ; the length of the circle.
 "
   (let ((indexes (make-hash-table)))
     (loop
-       :for i :from 0
-       :for current :on list
-       :do (let ((index (gethash current indexes)))
-             (if index
-                 ;; found loop
-                 (return (values i index (- i index)))
-                 (setf (gethash current indexes) i)))
-       :finally (return (values i i 0)))))
+      :for i :from 0
+      :for current :on list
+      :do (let ((index (gethash current indexes)))
+            (if index
+                ;; found loop
+                (return (values i index (- i index)))
+                (setf (gethash current indexes) i)))
+      :finally (return (values i i 0)))))
 
-
-(defun hashed-intersection (set1 set2)
-  "
-AUTHORS: Paul F. Dietz <dietz@dls.net>
-         Thomas A. Russ <tar@sevak.isi.edu>
-"
-  (declare (optimize speed (safety 0) (debug 0))
-           (list set1 set2))
-  (let ((table (make-hash-table :size (length set2)))
-        (result nil))
-    (dolist (e set2) (setf (gethash e table) t))
-    (dolist (e set1) (when (gethash e table)
-                       (push e result)
-                       (setf (gethash e table) nil)))
-    result))
 
 
 (defun plist-put (plist prop value)
@@ -322,10 +308,11 @@ RETURN: A tree where all the CAR and CDR are exchanged.
   "
 RETURN: A list containing all the elements of the `tree'.
 "
-  (loop with result = nil
-     with stack = nil
-     while (or tree stack)
-     do (cond
+  (loop
+    :with result = nil
+    :with stack = nil
+    :while (or tree stack)
+    :do (cond
           ((null tree)
            (setq tree (pop stack)))
           ((atom tree)
@@ -337,7 +324,7 @@ RETURN: A list containing all the elements of the `tree'.
           (t
            (push (car tree) result)
            (setq tree (cdr tree))))
-     finally (return (nreverse result))))
+    :finally (return (nreverse result))))
 
 
 (defun depth (tree)
@@ -424,16 +411,16 @@ RETURN: a list of sublists of list (the conses from list are reused),
          (current list)
          (next    (cdr current)))
     (loop :while next :do
-         (if (funcall indicator (car current) (car next))
-             (progn ;; split
-               (setf (cdr current) nil)
-               (push sublist result)
-               (setq current next)
-               (setq next (cdr current))
-               (setq sublist current))
-             (progn ;; keep
-               (setq current next)
-               (setq next (cdr current)))))
+      (if (funcall indicator (car current) (car next))
+          (progn ;; split
+            (setf (cdr current) nil)
+            (push sublist result)
+            (setq current next)
+            (setq next (cdr current))
+            (setq sublist current))
+          (progn ;; keep
+            (setq current next)
+            (setq next (cdr current)))))
     (push sublist result)
     (nreverse result)))
 
@@ -502,21 +489,36 @@ EXAMPLE: (COMBINE '(WWW FTP) '(EXA) '(COM ORG)))
 
 ;; Sets:
 
+(defun hashed-intersection (set1 set2)
+  "
+AUTHORS: Paul F. Dietz <dietz@dls.net>
+         Thomas A. Russ <tar@sevak.isi.edu>
+"
+  (declare (optimize speed (safety 0) (debug 0))
+           (list set1 set2))
+  (let ((table (make-hash-table :size (length set2)))
+        (result nil))
+    (dolist (e set2) (setf (gethash e table) t))
+    (dolist (e set1) (when (gethash e table)
+                       (push e result)
+                       (setf (gethash e table) nil)))
+    result))
+
 
 (defun subsets (set)
   "
 RETURN: The set of all subsets of the strict SET.
 "
   (loop
-     :with card = (length set)
-     :for indicator :from 0 :below (expt 2 card)
-     :collect (loop
-                 :for index :from 0 :below card
-                 :for item :in set
-                 :nconc (if (logbitp index indicator) (list item) nil) 
-                 :into result 
-                 :finally (return result)) :into result
-     :finally (return result)))
+    :with card = (length set)
+    :for indicator :from 0 :below (expt 2 card)
+    :collect (loop
+               :for index :from 0 :below card
+               :for item :in set
+               :nconc (if (logbitp index indicator) (list item) nil) 
+               :into result 
+               :finally (return result)) :into result
+    :finally (return result)))
 
 
 (defun equivalence-classes (set &key (test (function eql))
@@ -525,15 +527,15 @@ RETURN: The set of all subsets of the strict SET.
 RETURN: The equivalence classes of SET, via KEY, modulo TEST.
 "
   (loop
-     :with classes = '()
-     :for item :in set
-     :for item-key = (funcall key item)
-     :for class = (car (member item-key classes
-                               :test test :key (function second)))
-     :do (if class
-             (push item (cddr class))
-             (push (list :class item-key item ) classes))
-     :finally (return (mapcar (function cddr) classes))))
+    :with classes = '()
+    :for item :in set
+    :for item-key = (funcall key item)
+    :for class = (car (member item-key classes
+                              :test test :key (function second)))
+    :do (if class
+            (push item (cddr class))
+            (push (list :class item-key item ) classes))
+    :finally (return (mapcar (function cddr) classes))))
 
 
 
@@ -576,7 +578,7 @@ RETURN:   The value of the entry INDICATOR of the a-list PLACE, or DEFAULT.
                  (if ,acs
                      (setf (cdr ,acs) ,vvalue)
                      (let ((,vstore (acons ,vindicator ,vvalue ,reader-form)))
-                        ,writer-form))
+                       ,writer-form))
                  ,vvalue)
               `(assoc ,vindicator ,reader-form)))))
 
