@@ -847,7 +847,7 @@ NOTE:    This version avoids calling FUN twice with the same argument.
              :with result = '()
              :for list :in lists
              :do (loop :for item :in list :do (push item result))
-             :finally (print (return result)))))
+             :finally (return result))))
     (loop
       :for follows = (delete-duplicates (join (mapcar fun set)))
       :then (delete-duplicates (join (cons follows (mapcar fun newbies))))
