@@ -52,6 +52,7 @@ libraw-memory.so:raw-memory-lib.o
 	fi
 
 install::
-	install -m 644 libraw-memory.so  $(PREFIX)/lib
+	-mkdir $(PREFIX)/lib
+	install -m 644 libraw-memory.so  $(PREFIX)/lib/libraw-memory.so
 
 #### THE END ####

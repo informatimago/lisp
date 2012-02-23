@@ -58,13 +58,18 @@ all::  compile-with-$(CLISP) compile-with-$(ECL) compile-with-$(SBCL) compile-wi
 
 
 #PREFIX=/usr/local
+#PACKAGES:=$(shell get-directory SHARE_LISP | sed -e 's-/$$--')/packages
 PREFIX=$(HOME)/quicklisp/local-projects
-PACKAGES:=$(shell get-directory SHARE_LISP | sed -e 's-/$$--')/packages
+PACKAGES=$(PREFIX)
+
 PACKAGE_PATH=com/informatimago
 MODULES= common-lisp clext clmisc  sbcl  clisp  susv3
 
 
 
+help::
+	@printf $(HELP_FMT) 'show-variables' 'Shows the variables'
+	@printf $(HELP_FMT_2) 'then copy the whole library to '"$(PACKAGES)/$(PACKAGE_PATH)"
 show-variables::
 	@printf $(VAR_FMT) 'Where non-lisp stuff will be installed:'  PREFIX         "$(PREFIX)"
 	@printf $(VAR_FMT) 'Where lisp packages are installed.'       PACKAGES       "$(PACKAGES)"
@@ -94,10 +99,12 @@ install::
 		$(MM) MODULE_PATH=$(PACKAGES)/$(PACKAGE_PATH)/$$module  -C $$module install ;\
 	 done
 	@printf $(LINE)
-	@printf 'Installing the whole sources to %s\n' "$(PACKAGES)/$(PACKAGE_PATH)"
-	-@mkdir -p "$(PACKAGES)/$(PACKAGE_PATH)"
-	-@rm -rf   "$(PACKAGES)/$(PACKAGE_PATH)/"*
-	@tar --exclude \*~ -cf - . | tar -C "$(PACKAGES)/$(PACKAGE_PATH)/" -xvf -
+	@for module in $(MODULES) ; do \
+	 printf 'Installing the sources to %s\n' "$(PACKAGES)/$(PACKAGE_PATH)/$$module" ;\
+	 mkdir -p "$(PACKAGES)/$(PACKAGE_PATH)/$$module" || true ;\
+	 rm -rf   "$(PACKAGES)/$(PACKAGE_PATH)/$$module/"* ;\
+	 tar  --exclude \*~ -cf - $$module | tar -C "$(PACKAGES)/$(PACKAGE_PATH)/" -xf - ;\
+	 done
 	@printf $(LINE)
 
 
