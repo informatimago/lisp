@@ -853,7 +853,7 @@ NOTE:    This version avoids calling FUN twice with the same argument.
       :then (delete-duplicates (join (cons follows (mapcar fun newbies))))
       :for newbies = (set-difference follows set)
       :while newbies
-      :do (print (list 'newbies newbies))
+       ;; :do (print (list 'newbies newbies))
       :do (setf set (append newbies set))
       :finally (return set))))
 
