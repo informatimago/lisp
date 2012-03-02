@@ -45,22 +45,22 @@
 ;;;;****************************************************************************
 
 
-(IN-PACKAGE "COMMON-LISP-USER") 
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.BROWSER"
-  (:USE "COMMON-LISP"
+(in-package "COMMON-LISP-USER") 
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.BROWSER"
+  (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
-  (:EXPORT "MAKE" "MV" "CP" "DEFCOMMAND" "*SHELL*" "LESS" "MORE" "CAT" "LS"
+  (:export "MAKE" "MV" "CP" "DEFCOMMAND" "*SHELL*" "LESS" "MORE" "CAT" "LS"
            "MKDIR" "POPD" "PUSHD" "PWD" "CD" "BROWSE" "*TERMINAL-HEIGHT*"
            "CHANGE-WORKING-DIRECTORY" "WORKING-DIRECTORY" "*CHANGE-DIRECTORY-HOOK*"
            "*KEEP-DOT-FILES*")
-  (:DOCUMENTATION
+  (:documentation
    "This package exports a function to browse the directory hierarchy
     and load lisp files.
 
     Copyright Pascal J. Bourguignon 2002 - 2004
     This package is provided under the GNU General Public License.
     See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.BROWSER")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.BROWSER")
 
 
 
@@ -156,20 +156,20 @@ Client code can rebind it to another universal date or set it to (now).")
 (defcommand grep)
 
 
-(DEFVAR *KEEP-DOT-FILES* NIL
+(defvar *keep-dot-files* nil
   "Whether dot-files should be shown.")
 
-(DEFVAR *CHANGE-DIRECTORY-HOOK*
+(defvar *change-directory-hook*
   (list (lambda (working-directory)
           (setf *default-pathname-defaults*
                 (merge-pathnames working-directory *default-pathname-defaults* nil))))
   "A list of unary functions called with the path of 
    the new current working directory.")
 
-(DEFVAR *WORKING-DIRECTORY* (TRUENAME (USER-HOMEDIR-PATHNAME))
+(defvar *working-directory* (truename (user-homedir-pathname))
   "The current working directory")
 
-(DEFUN WORKING-DIRECTORY () *WORKING-DIRECTORY*)
+(defun working-directory () *working-directory*)
 
 (defun check-directories-exist (path)
   "Return: whether all the directories in PATH exist;
@@ -177,11 +177,25 @@ Client code can rebind it to another universal date or set it to (now).")
   (let* ((non-existent
           (find-if-not
            (lambda (dir)
-             ;; We cannot directory to check whether a directory
+             
+             ;; We cannot use directory to check whether a directory
              ;; exists.  So we try a file pattern, and if not found
              ;; but no error is signaled, assume the directory exists.
-             (ignore-errors (or (directory (make-pathname :directory dir :name "RARE" :type "RARE" :defaults path))
-                                t)))
+             
+             ;; Of course, this doesn't work on some implementations
+             ;; such as ccl.
+
+             ;; On ccl, if we try to create a file in an inexistant
+             ;; directory, it will create it!!!  But we can use
+             ;; probe-file to test directories in ccl…
+
+
+             (ignore-errors
+               (or
+                #-ccl (directory (make-pathname :directory dir :name "RARE" :type "RARE" :defaults path))
+                #+ccl (probe-file path)
+                t))
+             )
            (nreverse
             (loop
                :for dir :on (reverse (pathname-directory path))
@@ -191,129 +205,129 @@ Client code can rebind it to another universal date or set it to (now).")
                              path nil))))
 
 
-(DEFUN CHANGE-WORKING-DIRECTORY (PATH)
+(defun change-working-directory (path)
   (multiple-value-bind (exists-p dirpath) (check-directories-exist path)
     (if exists-p
         (progn
           ;; (print (list path dirpath (truename dirpath)))
-          (SETF *WORKING-DIRECTORY* (truename dirpath))
-          (DOLIST (HOOK *CHANGE-DIRECTORY-HOOK*)
-            (LET ((*WORKING-DIRECTORY* *WORKING-DIRECTORY*))
-              (FUNCALL HOOK *WORKING-DIRECTORY*))))
+          (setf *working-directory* (truename dirpath))
+          (dolist (hook *change-directory-hook*)
+            (let ((*working-directory* *working-directory*))
+              (funcall hook *working-directory*))))
         (error "nonexistent directory: ~S" dirpath)))
-  *WORKING-DIRECTORY*)
+  *working-directory*)
 
 
   
-(DEFUN PARENT-DIRECTORY (DIRPATH)
-  (MAKE-PATHNAME :DIRECTORY (LET ((DIR (PATHNAME-DIRECTORY DIRPATH)))
-                              (CONS (CAR DIR) (BUTLAST (CDR DIR))))
+(defun parent-directory (dirpath)
+  (make-pathname :directory (let ((dir (pathname-directory dirpath)))
+                              (cons (car dir) (butlast (cdr dir))))
                  :defaults dirpath))
 
 
-(DEFUN SUBDIRECTORIES (DIRPATH)
-  (DIRECTORY
-   (merge-pathnames (MAKE-PATHNAME :DIRECTORY '(:RELATIVE :WILD)) DIRPATH)))
+(defun subdirectories (dirpath)
+  (directory
+   (merge-pathnames (make-pathname :directory '(:relative :wild)) dirpath)))
 
 
-(DEFUN FILTER-OUT-DOTS (LIST)
-  (DELETE-IF
-   (LAMBDA (PATH)
-     (CHAR= (CHARACTER ".")
-            (AREF (OR (PATHNAME-NAME PATH)
-                      (CAR (LAST (PATHNAME-DIRECTORY PATH)))) 0)))
-   LIST))
+(defun filter-out-dots (list)
+  (delete-if
+   (lambda (path)
+     (char= (character ".")
+            (aref (or (pathname-name path)
+                      (car (last (pathname-directory path)))) 0)))
+   list))
 
 
-(DEFUN SUBDIRECTORIES-NAMES (DIRPATH &KEY (KEEP-DOT-FILES *KEEP-DOT-FILES*))
-  (LET ((SUBS (SUBDIRECTORIES DIRPATH)))
-    (UNLESS KEEP-DOT-FILES  (SETF SUBS (FILTER-OUT-DOTS SUBS)))
-    (MAPCAR (LAMBDA (PATH) (CAR (LAST (PATHNAME-DIRECTORY PATH)))) SUBS)))
+(defun subdirectories-names (dirpath &key (keep-dot-files *keep-dot-files*))
+  (let ((subs (subdirectories dirpath)))
+    (unless keep-dot-files  (setf subs (filter-out-dots subs)))
+    (mapcar (lambda (path) (car (last (pathname-directory path)))) subs)))
 
 
-(DEFUN CHILD-DIRECTORY (DIRPATH CHILD)
-  (MERGE-PATHNAMES (MAKE-PATHNAME :DIRECTORY (LIST :RELATIVE CHILD)) DIRPATH))
+(defun child-directory (dirpath child)
+  (merge-pathnames (make-pathname :directory (list :relative child)) dirpath))
 
 
-(DEFUN FILES (DIRPATH &KEY (TYPE :WILD) (KEEP-DOT-FILES *KEEP-DOT-FILES*))
-  (LET ((FILES (DIRECTORY
-                (MAKE-PATHNAME :NAME :WILD :TYPE TYPE :defaults DIRPATH))))
-    (UNLESS KEEP-DOT-FILES (SETF FILES (FILTER-OUT-DOTS FILES)))
-    (MAPCAR (LAMBDA (PATH) (CONS (PATHNAME-NAME PATH) PATH)) FILES)))
+(defun files (dirpath &key (type :wild) (keep-dot-files *keep-dot-files*))
+  (let ((files (directory
+                (make-pathname :name :wild :type type :defaults dirpath))))
+    (unless keep-dot-files (setf files (filter-out-dots files)))
+    (mapcar (lambda (path) (cons (pathname-name path) path)) files)))
 
 
-(DEFPARAMETER *SCREEN-WIDTH* 80)
+(defparameter *screen-width* 80)
 
-(DEFUN PRINT-LIST (STREAM LIST OFFSET &KEY (INDEX-WIDTH 2))
-  (LET* ((ITEM-WIDTH (REDUCE (FUNCTION MAX) LIST :KEY (FUNCTION LENGTH)))
-         (MAX-WIDTH (+ INDEX-WIDTH 3 ITEM-WIDTH))
-         (COL-COUNT (TRUNCATE *SCREEN-WIDTH* MAX-WIDTH))
-         (ROW-COUNT (TRUNCATE (+ (LENGTH LIST) COL-COUNT -1) COL-COUNT))
-         (TABLE (MAKE-ARRAY (LIST COL-COUNT ROW-COUNT) :INITIAL-ELEMENT ""))
-         (X 0) (Y 0))
-    (DOLIST (ITEM LIST)
-      (SETF (AREF TABLE X Y)
-            (FORMAT NIL "~V,D) ~V,A" INDEX-WIDTH OFFSET ITEM-WIDTH ITEM))
-      (INCF OFFSET)
-      (INCF Y)
-      (IF (<= ROW-COUNT Y)
-          (SETF X (1+ X) Y 0)))
-    (DOTIMES (Y ROW-COUNT)
-      (DOTIMES (X (1- COL-COUNT))
-        (PRINC (AREF TABLE X Y) STREAM)
-        (PRINC " " STREAM))
-      (PRINC (AREF TABLE (1- COL-COUNT) Y) STREAM)
-      (TERPRI STREAM))))
+(defun print-list (stream list offset &key (index-width 2))
+  (let* ((item-width (reduce (function max) list :key (function length)))
+         (max-width (+ index-width 3 item-width))
+         (col-count (truncate *screen-width* max-width))
+         (row-count (truncate (+ (length list) col-count -1) col-count))
+         (table (make-array (list col-count row-count) :initial-element ""))
+         (x 0) (y 0))
+    (dolist (item list)
+      (setf (aref table x y)
+            (format nil "~V,D) ~V,A" index-width offset item-width item))
+      (incf offset)
+      (incf y)
+      (if (<= row-count y)
+          (setf x (1+ x) y 0)))
+    (dotimes (y row-count)
+      (dotimes (x (1- col-count))
+        (princ (aref table x y) stream)
+        (princ " " stream))
+      (princ (aref table (1- col-count) y) stream)
+      (terpri stream))))
 
 
-(DEFUN BROWSE ()
+(defun browse ()
   "COMMAND
 DO:         Displays the contents of the working directory and
             allows the user to navigate in the directory tree and
             to load files.
 "
-  (LOOP
-     (LET* ((SUBDIRS     (SORT (SUBDIRECTORIES-NAMES (WORKING-DIRECTORY))
-                               (FUNCTION STRING<)))
-            (FILES       (SORT (FILES (WORKING-DIRECTORY) :TYPE "lisp")
-                               (LAMBDA (A B) (STRING< (CAR A) (CAR B)))))
-            (ITEM-COUNT  (+ (LENGTH SUBDIRS) (LENGTH FILES)))
-            (COUNT-WIDTH (if (= 0 item-count) 1 (CEILING (LOG ITEM-COUNT 10)))))
-       (FORMAT T "~&")
-       (FORMAT T "--- current directory ----------------------------~%")
-       (FORMAT T "~V,A  ~A~%" COUNT-WIDTH "" (WORKING-DIRECTORY))
-       (FORMAT T "--- parent directory ----------------------------~%")
-       (FORMAT T "~V,D) ~A~%"
-               COUNT-WIDTH 0 (PARENT-DIRECTORY (WORKING-DIRECTORY)))
-       (WHEN SUBDIRS
-         (FORMAT T "--- subdirectories -------------------------------~%")
-         (PRINT-LIST T SUBDIRS 1 :INDEX-WIDTH COUNT-WIDTH))
-       (WHEN FILES
-         (FORMAT T "--- files ----------------------------------------~%")
-         (PRINT-LIST T (MAPCAR (FUNCTION CAR) FILES)
-                     (1+ (LENGTH SUBDIRS)) :INDEX-WIDTH COUNT-WIDTH))
-       (FORMAT T "--------------------------------------------------~%")
-       (LET ((ANSWER
-              (BLOCK :ANSWER
-                (LOOP
-                   (FORMAT T "~&Change directory number, ~
+  (loop
+     (let* ((subdirs     (sort (subdirectories-names (working-directory))
+                               (function string<)))
+            (files       (sort (files (working-directory) :type "lisp")
+                               (lambda (a b) (string< (car a) (car b)))))
+            (item-count  (+ (length subdirs) (length files)))
+            (count-width (if (= 0 item-count) 1 (ceiling (log item-count 10)))))
+       (format t "~&")
+       (format t "--- current directory ----------------------------~%")
+       (format t "~V,A  ~A~%" count-width "" (working-directory))
+       (format t "--- parent directory ----------------------------~%")
+       (format t "~V,D) ~A~%"
+               count-width 0 (parent-directory (working-directory)))
+       (when subdirs
+         (format t "--- subdirectories -------------------------------~%")
+         (print-list t subdirs 1 :index-width count-width))
+       (when files
+         (format t "--- files ----------------------------------------~%")
+         (print-list t (mapcar (function car) files)
+                     (1+ (length subdirs)) :index-width count-width))
+       (format t "--------------------------------------------------~%")
+       (let ((answer
+              (block :answer
+                (loop
+                   (format t "~&Change directory number, ~
                             load file number, or -1 to quit: ")
-                   (FINISH-OUTPUT)
-                   (LET ((ANSWER (READ T NIL NIL)))
-                     (TYPECASE ANSWER
-                       (INTEGER (IF (<= -1 ANSWER ITEM-COUNT)
-                                    (RETURN-FROM :ANSWER ANSWER)
-                                    (FORMAT T "~&Input out of range.~%")))
-                       (OTHERWISE (FORMAT T "~&Bad input type.~%"))))))))
-         (COND
-           ((= -1 ANSWER) (RETURN))
-           ((= 0 ANSWER)
-            (CHANGE-WORKING-DIRECTORY (PARENT-DIRECTORY (WORKING-DIRECTORY))))
-           ((<= ANSWER (LENGTH SUBDIRS))
-            (CHANGE-WORKING-DIRECTORY 
-             (CHILD-DIRECTORY (WORKING-DIRECTORY) (ELT SUBDIRS (1- ANSWER)))))
-           (T (LOAD (CDR (ELT FILES (- ANSWER (LENGTH SUBDIRS) 1)))
-                    :VERBOSE T)))))))
+                   (finish-output)
+                   (let ((answer (read t nil nil)))
+                     (typecase answer
+                       (integer (if (<= -1 answer item-count)
+                                    (return-from :answer answer)
+                                    (format t "~&Input out of range.~%")))
+                       (otherwise (format t "~&Bad input type.~%"))))))))
+         (cond
+           ((= -1 answer) (return))
+           ((= 0 answer)
+            (change-working-directory (parent-directory (working-directory))))
+           ((<= answer (length subdirs))
+            (change-working-directory 
+             (child-directory (working-directory) (elt subdirs (1- answer)))))
+           (t (load (cdr (elt files (- answer (length subdirs) 1)))
+                    :verbose t)))))))
     
 
 (defun resolve (path &key (directory nil))
@@ -460,7 +474,7 @@ ARGUMENTS:  A list of paths possibly containing wildcards.
               (t (error "Invalid option ~A" opt))))
       (dolist (entry
                 (sort
-                 (DELETE-DUPLICATES
+                 (delete-duplicates
                   ;; SBCL RETURNS DIRECTORIES FOR "*" AS WELL AS FOR "*/".
                   (mapcan
                    (lambda (path) (handler-case (directory path) (error () nil)))
@@ -471,8 +485,8 @@ ARGUMENTS:  A list of paths possibly containing wildcards.
                          :key (function namestring)
                          :test (function string=))
                         '("*/" "*"))))
-                  :KEY (FUNCTION NAMESTRING)
-                  :TEST (FUNCTION STRING=))
+                  :key (function namestring)
+                  :test (function string=))
                  (function string<) :key (function namestring)))
         (if opt-long
             (format t "~1A ~10A ~11A ~A~%"
@@ -536,50 +550,50 @@ DO:         Same as more, but force no pagination.
   (apply (function more) :page nil paths))
   
 
-(DEFVAR *DIRECTORY-STACK* NIL)
+(defvar *directory-stack* nil)
 
 
-(DEFUN CD (&OPTIONAL PATH)
+(defun cd (&optional path)
   "COMMAND
 DO:         Change the working directory.
 ARGUMENTS:  The path of the new working directory.
             If not given, then change to the user home directory.
 "
-  (CHANGE-WORKING-DIRECTORY
+  (change-working-directory
    (if path
        (resolve path  :directory t)
-       (USER-HOMEDIR-PATHNAME))))
+       (user-homedir-pathname))))
 
 
-(DEFUN PWD   ()
+(defun pwd   ()
   "COMMAND
 DO:         Returns the current working directory.
 "
-  (WORKING-DIRECTORY))
+  (working-directory))
 
 
-(DEFUN POPD  ()
+(defun popd  ()
   "COMMAND
 DO:         Unstack the working directory from the stack.
 "
-  (IF *DIRECTORY-STACK*
-      (CONS (CHANGE-WORKING-DIRECTORY (POP *DIRECTORY-STACK*)) *DIRECTORY-STACK*)
-      (LIST (WORKING-DIRECTORY))))
+  (if *directory-stack*
+      (cons (change-working-directory (pop *directory-stack*)) *directory-stack*)
+      (list (working-directory))))
 
 
-(DEFUN PUSHD (&OPTIONAL PATH)
+(defun pushd (&optional path)
   "COMMAND
 DO:         Push the current working directory onto the stack, and
             change the working directory to the path (or home directory).
 SEE;        POPD, CD.
 "
-  (IF PATH
-      (PROGN
-        (PUSH (WORKING-DIRECTORY) *DIRECTORY-STACK*)
-        (CONS (CD PATH) *DIRECTORY-STACK*))
-      (LET ((TOP (POP *DIRECTORY-STACK*)))
-        (PUSH (WORKING-DIRECTORY) *DIRECTORY-STACK*)
-        (CONS (CD TOP)  *DIRECTORY-STACK*))))
+  (if path
+      (progn
+        (push (working-directory) *directory-stack*)
+        (cons (cd path) *directory-stack*))
+      (let ((top (pop *directory-stack*)))
+        (push (working-directory) *directory-stack*)
+        (cons (cd top)  *directory-stack*))))
 
 
 ;;;; THE END ;;;;
