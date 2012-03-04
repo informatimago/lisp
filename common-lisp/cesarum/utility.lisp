@@ -1,4 +1,4 @@
-;;;; -*- coding:utf-8 -*-
+;;;; -*- mode:lisp; coding:utf-8 -*-
 ;;;;****************************************************************************
 ;;;;FILE:              utility.lisp
 ;;;;LANGUAGE:          common-lisp
@@ -87,7 +87,10 @@
    "HASHTABLE" "PRINT-HASHTABLE" 
    ;;
    "DICHOTOMY"
-   "TRACING" "TRACING-LET" "TRACING-LET*" "TRACING-LABELS")
+   "TRACING" "TRACING-LET" "TRACING-LET*" "TRACING-LABELS"
+   ;;
+   "XOR" "EQUIV" "IMPLY" "SET-EQUAL"
+   )
   (:documentation
    "This package exports some utility & syntactic sugar functions and macros.
 
@@ -711,7 +714,6 @@ DO:       Define a macro: (WITH-{NAME} object &body body)
 ;; 10 - SYMBOLS
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
 (DEFUN MAKE-KEYWORD (SYM)
   "
 RETURN: A new keyword with SYM as name.
@@ -1334,5 +1336,23 @@ DO:       Evaluate the expression, which must be a real,
                              (gen-case)
                              right))))))
          (infix-to-tree clauses)))))
+
+
+(defun xor (a b)
+  "Return A ⊻ B"
+  (or (and a (not b)) (and (not a) b)))
+
+(defun equiv (a b)
+  "Return A ⇔ B"
+  (eql (not a) (not b)))
+
+(defun imply (p q)
+  "Return P ⇒ Q"
+  (or (not p) q))
+
+(defun set-equal (a b)
+  "Return A ⊂ B ∧ A ⊃ B"
+  (and (subsetp a b) (subsetp b a)))
+
 
 ;;;; THE END ;;;;
