@@ -1,4 +1,4 @@
-;;;; -*- coding:utf-8 -*-
+;;;; -*- mode:lisp; coding:utf-8 -*-
 ;;;;****************************************************************************
 ;;;;FILE:               float-binio.lisp
 ;;;;LANGUAGE:           Common-Lisp

@@ -1,4 +1,4 @@
-;;;; -*- coding:utf-8 -*-
+;;;; -*- mode:lisp; coding:utf-8 -*-
 
 (defparameter new
   '(
