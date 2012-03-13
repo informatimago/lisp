@@ -145,9 +145,7 @@ NOTE:       The file is not truncated.
 
 
 (defgeneric stream-input-stream (stream)
-  "
-RETURN: A simple INPUT-STREAM.
-"
+  (:documentation "RETURN: A simple INPUT-STREAM.")
   (:method ((stream stream))
     stream)
   (:method ((stream concatenated-stream))
@@ -161,9 +159,7 @@ RETURN: A simple INPUT-STREAM.
 
 
 (defgeneric stream-output-stream (stream)
-  "
-RETURN: A simple OUTPUT-STREAM.
-"
+  (:documentation "RETURN: A simple OUTPUT-STREAM.")
   (:method ((stream stream))
     stream)
   (:method ((stream broadcast-stream))
