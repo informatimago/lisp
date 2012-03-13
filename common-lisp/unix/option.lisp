@@ -38,8 +38,8 @@
   (:export "PNAME" "*PROGRAM-NAME*" "*DEBUG*"
            "REDIRECTING-STDOUT-TO-STDERR"
            "DEFINE-OPTION"
-           "CALL-OPTION-FUNCTION" 
-           "SET-DOCUMENTATION-TEXT"
+           "CALL-OPTION-FUNCTION"
+           "*DOCUMENTATION-TEXT*"
            "*BASH-COMPLETION-HOOK*"
            "PARSE-OPTIONS" "PARSE-OPTIONS-FINISH"
            ;; Exit codes:
@@ -389,9 +389,6 @@ RETURN:     The lisp-name of the option (this is a symbol
 
 (defvar *documentation-text* "")
 
-
-(defun set-documentation-text (text)
-  (setf *documentation-text* text))
 
 
 (defun option-list ()
