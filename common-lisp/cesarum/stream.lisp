@@ -144,34 +144,68 @@ NOTE:       The file is not truncated.
 
 
 
-(defun stream-input-stream (stream)
+(defgeneric stream-input-stream (stream)
   "
-RETURN: An input-stream.
+RETURN: A simple INPUT-STREAM.
 "
-  (etypecase stream
-    (two-way-stream  (two-way-stream-input-stream stream))
-    (echo-stream     (echo-stream-input-stream  stream))
-    (synonym-stream  (stream-input-stream
-                      (symbol-value (synonym-stream-symbol stream))))
-    (t
-     (if (input-stream-p stream)
-         stream
-         (error "Stream ~S is not an input-stream." stream)))))
+  (:method ((stream stream))
+    stream)
+  (:method ((stream concatenated-stream))
+    (stream-input-stream (first (concatenated-stream-streams stream))))
+  (:method ((stream echo-stream))
+    (stream-input-stream (echo-stream-input-stream stream)))
+  (:method ((stream synonym-stream))
+    (stream-input-stream (symbol-value (synonym-stream-symbol stream))))
+  (:method ((stream two-way-stream))
+    (stream-input-stream (two-way-stream-input-stream stream))))
 
 
-(defun stream-output-stream (stream)
+(defgeneric stream-output-stream (stream)
   "
-RETURN: An output-stream.
+RETURN: A simple OUTPUT-STREAM.
 "
-  (etypecase stream
-    (two-way-stream  (two-way-stream-output-stream stream))
-    (echo-stream     (echo-stream-output-stream  stream))
-    (synonym-stream  (stream-output-stream
-                      (symbol-value (synonym-stream-symbol stream))))
-    (t
-     (if (output-stream-p stream)
-         stream
-         (error "Stream ~S is not an output-stream." stream)))))
+  (:method ((stream stream))
+    stream)
+  (:method ((stream broadcast-stream))
+    (stream-output-stream (first (broadcast-stream-streams stream))))
+  (:method ((stream echo-stream))
+    (stream-input-stream (echo-stream-output-stream stream)))
+  (:method ((stream synonym-stream))
+    (stream-input-stream (symbol-value (synonym-stream-symbol stream))))
+  (:method ((stream two-way-stream))
+    (stream-input-stream (two-way-stream-output-stream stream))))
+
+
+;; (defun stream-input-stream (stream)
+;;   "
+;; RETURN: An input-stream.
+;; "
+;;   (etypecase stream
+;;     (two-way-stream      (two-way-stream-input-stream stream))
+;;     (echo-stream         (echo-stream-input-stream  stream))
+;;     (synonym-stream      (stream-input-stream
+;;                           (symbol-value (synonym-stream-symbol stream))))
+;;     (concatenated-stream (stream-input-stream
+;;                           (first (concatenated-stream-streams stream))))
+;;     (t
+;;      (if (input-stream-p stream)
+;;          stream
+;;          (error "Stream ~S is not an input-stream." stream)))))
+;; 
+;; 
+;; (defun stream-output-stream (stream)
+;;   "
+;; RETURN: An output-stream.
+;; "
+;;   (etypecase stream
+;;     (two-way-stream  (two-way-stream-output-stream stream))
+;;     (echo-stream     (echo-stream-output-stream  stream))
+;;     (synonym-stream  (stream-output-stream
+;;                       (symbol-value (synonym-stream-symbol stream))))
+;;     (t
+;;      (if (output-stream-p stream)
+;;          stream
+;;          (error "Stream ~S is not an output-stream." stream)))))
 
 
 (defun bare-stream (stream &key (direction :output))
@@ -204,6 +238,8 @@ RETURN: A stream or a list of streams that are not compound streams
       (mapcar (lambda (stream) (bare-stream stream :direction direction))
               (broadcast-stream-streams stream))))
     (stream stream)))
+
+
 
 ;;----------------------------------------------------------------------
 
