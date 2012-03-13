@@ -6,11 +6,10 @@
 ;;;;USER-INTERFACE:    UNIX
 ;;;;DESCRIPTION
 ;;;;    This module exports some list utility functions.
-;;;;USAGE
-;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2012-03-14 <PJB> Added plist-keys.
 ;;;;    2012-02-19 <PJB> Moved HASHED-* functions that work on sequence to
 ;;;;                     COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE.
 ;;;;    2011-04-03 <PJB> Added LIST-LENGTHS.
@@ -28,7 +27,7 @@
 ;;;;LEGAL
 ;;;;    GPL
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2002 - 2011
+;;;;    Copyright Pascal J. Bourguignon 2002 - 2012
 ;;;;
 ;;;;    This script is free software; you can redistribute it and/or
 ;;;;    modify it under the terms of the GNU  General Public
@@ -53,7 +52,8 @@
            "EQUIVALENCE-CLASSES" "SUBSETS" "COMBINE" "IOTA"
            "MAKE-LIST-OF-RANDOM-NUMBERS" "LIST-INSERT-SEPARATOR"
            "NSPLIT-LIST-ON-INDICATOR" "NSPLIT-LIST" "DEEPEST-REC" "DEEPEST" "DEPTH"
-           "FLATTEN" "LIST-TRIM" "TRANSPOSE" "AGET" "MEMQ" "PLIST-REMOVE" "PLIST-GET"
+           "FLATTEN" "LIST-TRIM" "TRANSPOSE" "AGET" "MEMQ"
+           "PLIST-KEYS" "PLIST-REMOVE" "PLIST-GET"
            "PLIST-PUT" "HASHED-INTERSECTION"
            ;; "HASHED-REMOVE-DUPLICATES" moved to COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE
            "ENSURE-LIST" "PROPER-LIST-P" "LIST-LENGTHS"
@@ -219,6 +219,10 @@ RETURN: the total length ; the length of the stem ; the length of the circle.
                 (setf (gethash current indexes) i)))
       :finally (return (values i i 0)))))
 
+
+(defun plist-keys (plist)
+  "Returns a list of the properties in PLIST."
+  (loop :for (key) :on plist :by (function cddr) :collect key))
 
 
 (defun plist-put (plist prop value)
