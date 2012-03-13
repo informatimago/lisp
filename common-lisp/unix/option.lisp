@@ -41,7 +41,7 @@
            "CALL-OPTION-FUNCTION" 
            "SET-DOCUMENTATION-TEXT"
            "*BASH-COMPLETION-HOOK*"
-           "PARSE-OPTIONS" "QUIT"
+           "PARSE-OPTIONS" "PARSE-OPTIONS-FINISH"
            ;; Exit codes:
            "EX-OK" "EX--BASE" "EX-USAGE" "EX-DATAERR" "EX-NOINPUT"
            "EX-NOUSER" "EX-NOHOST" "EX-UNAVAILABLE" "EX-SOFTWARE"
@@ -76,6 +76,12 @@ otherwise we fallback to *PROGRAM-NAME*.")
 ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(define-condition parse-options-finish (condition)
+  ((status-code :initarg :status-code :reader parse-options-finish-status-code))
+  (:report "PARSE-OPTIONS-FINISH must be called only in the dynamic context of a call to PARSE-OPTIONS"))
+
+(defun parse-options-finish (status-code)
+  (error 'parse-options-finish :status-code status-code))
 
 
 
@@ -101,7 +107,7 @@ otherwise we fallback to *PROGRAM-NAME*.")
         (princ ,verror *error-output*)
         (terpri *error-output*)
         (terpri *error-output*)
-        #-testing-script (throw 'quit 1)))))
+        #-testing-script (parse-options-finish ex-software)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -450,7 +456,7 @@ use directly.
       (if index
           (completion-option-prefix (elt words index))
           (completion-all-options))))
-  (throw 'quit 0))
+  (parse-options-finish ex-ok))
 
 
 (define-option ("--bash-completion-function") ()
@@ -467,29 +473,46 @@ autocomplete argument prefixes.
 COMPREPLY=( $(~:*~A --bash-completions \"$COMP_CWORD\" \"${COMP_WORDS[@]}\") ) ; } ;~
 complete -F completion_~:*~A ~:*~A~%"
           *program-name*)
-  (throw 'quit 0))
+  (parse-options-finish ex-ok))
 
 
 
 (defun parse-options (arguments &optional default undefined-argument)
-  (catch 'quit
-    (flet ((process-arguments ()
-             (cond
-               (arguments
-                (loop
-                  :while arguments
-                  :do (setf arguments (call-option-function (pop arguments)
-                                                            arguments
-                                                            undefined-argument))))
-               (default
-                (funcall default)))))
-      (if *debug*
-          (process-arguments)
-          (handler-case (process-arguments)
-            (error (err)
-              (format *error-output* "~%ERROR: ~A~%" err)
-              ;; TODO: select different sysexits codes depending on the error class.
-              (return-from parse-options ex-software)))))
-    0))
+  (handler-case
+      (flet ((process-arguments ()
+               (cond
+                 (arguments
+                  (loop
+                    :while arguments
+                    :do (setf arguments (call-option-function (pop arguments)
+                                                              arguments
+                                                              undefined-argument)))
+                  nil)
+                 (default
+                  (funcall default)))))
+        (if *debug*
+            (process-arguments)
+            (handler-case
+                (process-arguments)
+              ;; Somewhat arbitrary dispatching of lisp conditions to
+              ;; linux sysexits:
+              ((or arithmetic-error parse-error print-not-readable type-error) (err)
+                (format *error-output* "~%ERROR: ~A~%" err)
+               (parse-options-finish ex-dataerr))
+              ((or cell-error control-error package-error program-error) (err)
+                (format *error-output* "~%ERROR: ~A~%" err)
+               (parse-options-finish ex-software))
+              (file-error (err)
+                (format *error-output* "~%ERROR: ~A~%" err)
+                (parse-options-finish ex-osfile))
+              (stream-error (err)
+                (format *error-output* "~%ERROR: ~A~%" err)
+                (parse-options-finish ex-ioerr))
+              (error (err)
+                (format *error-output* "~%ERROR: ~A~%" err)
+                (parse-options-finish ex-software)))))
+    (parse-options-finish (condition)
+      (return-from parse-options (parse-options-finish-status-code condition)))))
+
 
 ;;;; THE END ;;;;
