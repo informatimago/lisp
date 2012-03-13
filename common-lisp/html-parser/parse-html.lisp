@@ -1802,7 +1802,7 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
                                       '(:string :identifier))
                           (parse-aivs parser))))
 
-:u(defun parse-open-tag (parser)
+(defun parse-open-tag (parser)
   ;;         | "<" ident ">"
   ;;            { open-tag: [(name ident) ] }
   ;;         | "<" ident attributes ">"
