@@ -47,7 +47,9 @@
            "EX-NOUSER" "EX-NOHOST" "EX-UNAVAILABLE" "EX-SOFTWARE"
            "EX-OSERR" "EX-OSFILE" "EX-CANTCREAT" "EX-IOERR"
            "EX-TEMPFAIL" "EX-PROTOCOL" "EX-NOPERM" "EX-CONFIG"
-           "EX--MAX")
+           "EX--MAX"
+           ;; 
+           "OPTION-KEYS" "OPTION-ARGUMENTS" "OPTION-DOCUMENTATION" "OPTION-FUNCTION")
   (:documentation "
 This package processes command line options.
 
@@ -411,6 +413,7 @@ RETURN:     The lisp-name of the option (this is a symbol
               (option-arguments option)
               (option-documentation option)))
     (format t "~A~%" *documentation-text*)))
+
 
 
 
