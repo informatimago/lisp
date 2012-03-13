@@ -48,6 +48,7 @@
            "WITH-INPUT-FROM-BYTE-VECTOR" "WITH-OUTPUT-TO-BYTE-VECTOR"
            "CONTENTS-FROM-STREAM"
            "COPY-OVER" "COPY-STREAM" "STREAM-TO-STRING-LIST"
+           "STREAM-INPUT-STREAM" "STREAM-OUTPUT-STREAM"
            "BARE-STREAM")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING" "SPLIT-STRING")
   (:documentation
@@ -139,7 +140,38 @@ NOTE:       The file is not truncated.
           (file-position stream to-pos)
           (write-sequence buffer stream :start 0 :end length)
           (setf to-pos (file-position stream))))))
-  
+
+
+
+
+(defun stream-input-stream (stream)
+  "
+RETURN: An input-stream.
+"
+  (etypecase stream
+    (two-way-stream  (two-way-stream-input-stream stream))
+    (echo-stream     (echo-stream-input-stream  stream))
+    (synonym-stream  (stream-input-stream
+                      (symbol-value (synonym-stream-symbol stream))))
+    (t
+     (if (input-stream-p stream)
+         stream
+         (error "Stream ~S is not an input-stream." stream)))))
+
+
+(defun stream-output-stream (stream)
+  "
+RETURN: An output-stream.
+"
+  (etypecase stream
+    (two-way-stream  (two-way-stream-output-stream stream))
+    (echo-stream     (echo-stream-output-stream  stream))
+    (synonym-stream  (stream-output-stream
+                      (symbol-value (synonym-stream-symbol stream))))
+    (t
+     (if (output-stream-p stream)
+         stream
+         (error "Stream ~S is not an output-stream." stream)))))
 
 
 (defun bare-stream (stream &key (direction :output))
