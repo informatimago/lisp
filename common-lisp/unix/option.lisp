@@ -396,16 +396,15 @@ RETURN:     The lisp-name of the option (this is a symbol
 
 (define-option ("help" "-h" "--help") ()
   "Give this help."
-  (with-pager ()
-      (let ((options (option-list)))
-        (format t "~2%~A options:~2%" (pname))
-        (dolist (option (sort options (function string<)
-                              :key (lambda (option) (first (option-keys option)))))
-          (format t "    ~{~A~^ | ~}  ~:@(~{~A ~}~)~%~@[~{~%        ~A~}~]~2%"
-                  (option-keys option)
-                  (option-arguments option)
-                  (option-documentation option)))
-        (format t "~A~%" *documentation-text*))))
+  (let ((options (option-list)))
+    (format t "~2%~A options:~2%" (pname))
+    (dolist (option (sort options (function string<)
+                          :key (lambda (option) (first (option-keys option)))))
+      (format t "    ~{~A~^ | ~}  ~:@(~{~A ~}~)~%~@[~{~%        ~A~}~]~2%"
+              (option-keys option)
+              (option-arguments option)
+              (option-documentation option)))
+    (format t "~A~%" *documentation-text*)))
 
 
 
