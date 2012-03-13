@@ -49,7 +49,8 @@
            "EX-TEMPFAIL" "EX-PROTOCOL" "EX-NOPERM" "EX-CONFIG"
            "EX--MAX"
            ;; 
-           "OPTION-KEYS" "OPTION-ARGUMENTS" "OPTION-DOCUMENTATION" "OPTION-FUNCTION")
+           "OPTION-KEYS" "OPTION-ARGUMENTS" "OPTION-DOCUMENTATION" "OPTION-FUNCTION"
+           "OPTION-LIST")
   (:documentation "
 This package processes command line options.
 
