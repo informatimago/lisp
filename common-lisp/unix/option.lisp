@@ -1,6 +1,6 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               options.lisp
+;;;;FILE:               option.lisp
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
@@ -32,9 +32,9 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.OPTION"
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.UNIX.OPTION"
   (:use "COMMON-LISP"
-         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
   (:export "PNAME" "*PROGRAM-NAME*" "*DEBUG*"
            "REDIRECTING-STDOUT-TO-STDERR"
            "DEFINE-OPTION"
@@ -58,7 +58,7 @@ it under the terms of the GNU Affero General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 "))
-(in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.OPTION")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.UNIX.OPTION")
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

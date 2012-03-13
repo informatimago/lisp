@@ -11,12 +11,13 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2012-03-13 <PJB> Added "option".
 ;;;;    2010-10-31 <PJB> Created this .asd file.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    GPL
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2010 - 2010
+;;;;    Copyright Pascal J. Bourguignon 2010 - 2012
 ;;;;    
 ;;;;    This program is free software; you can redistribute it and/or
 ;;;;    modify it under the terms of the GNU General Public License
@@ -38,10 +39,10 @@
     :name "com.informatimago.common-lisp.unix"
     :description  "This library implements access to a few unix administrative files (passwd, group, etc)."
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
-    :version "1.2.0"
+    :version "1.2.1"
     :licence "GPL"
     :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Autumn 2010")
+                 (#:date                           . "Winter 2012")
                  ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.unix/")
                  ((#:albert #:formats)             . ("docbook"))
                  ((#:albert #:docbook #:template)  . "book")
@@ -50,6 +51,7 @@
     :depends-on (:com.informatimago.common-lisp.cesarum)
     :components ((:file "aliases" :depends-on ())
                  (:file "group"   :depends-on ())
-                 (:file "passwd"  :depends-on ())))
+                 (:file "passwd"  :depends-on ())
+                 (:file "option"  :depends-on ())))
 
 ;;;; THE END ;;;;
