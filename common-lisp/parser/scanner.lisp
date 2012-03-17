@@ -152,7 +152,7 @@ See the source file for details."))
 
 
 (define-condition scanner-error-invalid-character (scanner-error)
-  ())
+  ((invalid-character :initarg :invalid-character :initform nil :reader scanner-error-invalid-character)))
 
 
 
