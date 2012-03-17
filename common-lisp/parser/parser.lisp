@@ -39,26 +39,20 @@
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
         "COM.INFORMATIMAGO.COMMON-LISP.PARSER.SCANNER")
-  (:export "REPORT-ERROR" "ADVANCE" "PARSER-NEXT-VALUE" "PARSER-NEXT-TOKEN"
-           "PARSER-VALUE" "PARSER-TOKEN" "PARSER-SCANNER" "PARSER")
+  (:export "PARSER" "PARSER-SCANNER"
+           "PARSER-NEXT-TOKEN" "PARSER-TOKEN"
+           "REPORT-ERROR" "ADVANCE")
   (:documentation ""))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.PARSER.PARSER")
-
-
 
 
 (defclass parser ()
   ((scanner     :accessor parser-scanner     :initform nil :initarg :scanner)
    (token       :accessor parser-token       :initform nil
                 :documentation "current token")
-   (value       :accessor parser-value       :initform nil
-                :documentation "text of the current token")
    (next-token  :accessor parser-next-token  :initform nil
-                :documentation "next token")
-   (next-value  :accessor parser-next-value  :initform nil
-                :documentation "text of the next token"))
+                :documentation "next token"))
   (:documentation "A parser."))
-
 
 (defgeneric advance (parser))
 (defgeneric report-error (parser message &rest arguments))
@@ -68,26 +62,24 @@
   (print-unreadable-object (self out :type t :identity t)
     (format out " :scanner ~S :token (~S ~S) :next (~S ~S)"
             (parser-scanner self)
-            (parser-token self)      (parser-value self)
-            (parser-next-token self) (parser-next-value self)))
+            (parser-token self)      (token-text (parser-token parser))
+            (parser-next-token self) (token-text (parser-next-token self))))
   self)
 
           
 (defmethod advance ((parser parser))
-  (multiple-value-bind (tok val) (get-token (parser-scanner parser))
+  (multiple-value-bind (tok val) (scan-next-token (parser-scanner parser))
     (setf (parser-token parser)      (parser-next-token parser)
-          (parser-value parser)      (parser-next-value parser) 
-          (parser-next-token parser) tok
-          (parser-next-value parser) val))
+          (parser-next-token parser) tok))
   parser)
 
 
 (defmethod report-error ((parser parser) message &rest arguments)
   (error "~A; (~S ~S) (~S ~S)" (apply (function format) nil message arguments)
          (parser-token parser)
-         (parser-value parser)
+         (token-text (parser-token parser))
          (parser-next-token parser)
-         (parser-next-value parser)))
+         (token-text (parser-next-token parser))))
 
 
 ;;;; THE END ;;;;
