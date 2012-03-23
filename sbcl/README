@@ -1,5 +1,13 @@
 .. comment: -*- mode:rst; coding:utf-8 -*-
 
+This library is discontinued.
+
+Current sbcl has a sb-posix:getenv function, so posix.lisp is not
+needed anymore.
+
+readline is not complete, and has never been used.
+
+
 com.informatimago.sbcl Common Lisp SBCL Library
 =================================================
 

@@ -63,7 +63,7 @@ PREFIX=$(HOME)/quicklisp/local-projects
 PACKAGES=$(PREFIX)
 
 PACKAGE_PATH=com/informatimago
-MODULES= common-lisp clext clmisc  sbcl  clisp  susv3
+MODULES= common-lisp clext clmisc  clisp  susv3
 
 
 

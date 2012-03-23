@@ -42,11 +42,11 @@
 (in-package "COMMON-LISP-USER")
 
 (defpackage "COM.INFORMATIMAGO.SBCL.READLINE"
-  (:DOCUMENTATION
+  (:documentation
    "This package is a foreign interface to the GNU readline
 and GNU history libraries.")
   (:use "COMMON-LISP" "SB-ALIEN" "SB-C" "SB-SYS")
-  (:EXPORT
+  (:export
    ;; functions
    "C-NULL" "INITIALIZE"
    ;; types:
@@ -195,20 +195,20 @@ and GNU history libraries.")
 
 ;;   typedef int Function ();
 
-(DEFUN C-NULL (PTR)
+(defun c-null (ptr)
   "
 RETURN:     Whether PTR is a C NULL pointer.
 "
-  (ZEROP (SAP-INT (ALIEN-SAP PTR)))
+  (zerop (sap-int (alien-sap ptr)))
   ) ;;C-NULL
 
 
 
-(DEFUN INITIALIZE ()
+(defun initialize ()
   "
 DO:         Loads the readline and history libraries.
 "
-  (LOAD-FOREIGN '("/usr/lib/libreadline.so"
+  (load-foreign '("/usr/lib/libreadline.so"
                   "/usr/lib/libhistory.so"))
   ) ;;INITIALIZE
 
@@ -217,95 +217,95 @@ DO:         Loads the readline and history libraries.
 
 
 
-(DEFINE-ALIEN-TYPE FILE  (STRUCT IO-FILE))
+(define-alien-type file  (struct io-file))
 
 
 
 ;; Bindable functions 
-(DEFINE-ALIEN-TYPE RL-COMMAND-FUNC-T
-    (FUNCTION INT INT INT ))
+(define-alien-type rl-command-func-t
+    (function int int int ))
 
 
 ;; Typedefs for the completion system 
 
-(DEFINE-ALIEN-TYPE RL-COMPENTRY-FUNC-T
-    (FUNCTION C-STRING  C-STRING   INT ))
+(define-alien-type rl-compentry-func-t
+    (function c-string  c-string   int ))
 
-(DEFINE-ALIEN-TYPE RL-COMPLETION-FUNC-T
-    (FUNCTION (* C-STRING)  C-STRING   INT   INT ))
+(define-alien-type rl-completion-func-t
+    (function (* c-string)  c-string   int   int ))
 
-(DEFINE-ALIEN-TYPE RL-QUOTE-FUNC-T
-    (FUNCTION C-STRING  C-STRING   INT   C-STRING ))
+(define-alien-type rl-quote-func-t
+    (function c-string  c-string   int   c-string ))
 
-(DEFINE-ALIEN-TYPE RL-DEQUOTE-FUNC-T
-    (FUNCTION C-STRING  C-STRING   INT ))
+(define-alien-type rl-dequote-func-t
+    (function c-string  c-string   int ))
 
-(DEFINE-ALIEN-TYPE RL-COMPIGNORE-FUNC-T
-    (FUNCTION INT  (* C-STRING) ))
+(define-alien-type rl-compignore-func-t
+    (function int  (* c-string) ))
 
-(DEFINE-ALIEN-TYPE RL-COMPDISP-FUNC-T
-    (FUNCTION VOID  (* C-STRING)   INT   INT ))
+(define-alien-type rl-compdisp-func-t
+    (function void  (* c-string)   int   int ))
 
 
 ;; Type for input and pre-read hook functions like rl_event_hook 
 
-(DEFINE-ALIEN-TYPE RL-HOOK-FUNC-T
-    (FUNCTION INT))
+(define-alien-type rl-hook-func-t
+    (function int))
 
 
 ;; Input function type 
 
-(DEFINE-ALIEN-TYPE RL-GETC-FUNC-T
-    (FUNCTION INT  (* FILE) ))
+(define-alien-type rl-getc-func-t
+    (function int  (* file) ))
 
 
 ;; Generic function that takes a character buffer (which could be the readline
 ;; line buffer) and an index into it (which could be rl_point) and returns
 ;; an int. 
-(DEFINE-ALIEN-TYPE RL-LINEBUF-FUNC-T
-    (FUNCTION INT  C-STRING   INT ))
+(define-alien-type rl-linebuf-func-t
+    (function int  c-string   int ))
 
 
 ;; `Generic' function pointer (DEFINE-ALIEN-TYPEs 
-(DEFINE-ALIEN-TYPE RL-INTFUNC-T    (FUNCTION INT  INT ))
-(DEFINE-ALIEN-TYPE RL-IVOIDFUNC-T  (FUNCTION INT))
-(DEFINE-ALIEN-TYPE RL-ICPFUNC-T    (FUNCTION INT  C-STRING ))
-(DEFINE-ALIEN-TYPE RL-ICPPFUNC-T   (FUNCTION INT  (* C-STRING) ))
-(DEFINE-ALIEN-TYPE RL-VOIDFUNC-T   (FUNCTION VOID))
-(DEFINE-ALIEN-TYPE RL-VINTFUNC-T   (FUNCTION VOID  INT ))
-(DEFINE-ALIEN-TYPE RL-VCPFUNC-T    (FUNCTION VOID  C-STRING ))
-(DEFINE-ALIEN-TYPE RL-VCPPFUNC-T   (FUNCTION VOID  (* C-STRING) ))
+(define-alien-type rl-intfunc-t    (function int  int ))
+(define-alien-type rl-ivoidfunc-t  (function int))
+(define-alien-type rl-icpfunc-t    (function int  c-string ))
+(define-alien-type rl-icppfunc-t   (function int  (* c-string) ))
+(define-alien-type rl-voidfunc-t   (function void))
+(define-alien-type rl-vintfunc-t   (function void  int ))
+(define-alien-type rl-vcpfunc-t    (function void  c-string ))
+(define-alien-type rl-vcppfunc-t   (function void  (* c-string) ))
 
 
 
 
 
 
-(DEFINE-ALIEN-TYPE KEYMAP-ENTRY
+(define-alien-type keymap-entry
     ;;  A keymap contains one entry for each key in the ASCII set.
     ;;    Each entry consists of a type and a pointer.
     ;;    FUNCTION is the address of a function to run, or the
     ;;    address of a keymap to indirect through.
     ;;    TYPE says which kind of thing FUNCTION is. 
-    (STRUCT KEYMAP-ENTRY
-      (TYPE CHAR)
-      (FUNCTION (* RL-COMMAND-FUNC-T)))) ;;KEYMAP-ENTRY
+    (struct keymap-entry
+      (type char)
+      (function (* rl-command-func-t)))) ;;KEYMAP-ENTRY
 
 
-(DEFCONSTANT KEYMAP-SIZE 256
+(defconstant keymap-size 256
   "This must be large enough to hold bindings for all of the characters
 in a desired character set (e.g, 128 for ASCII, 256 for ISO Latin-x,
 and so on).")
 
 
 
-(DEFINE-ALIEN-TYPE KEYMAP-ENTRY-ARRAY (ARRAY KEYMAP-ENTRY 256))
-(DEFINE-ALIEN-TYPE KEYMAP (* KEYMAP-ENTRY))
+(define-alien-type keymap-entry-array (array keymap-entry 256))
+(define-alien-type keymap (* keymap-entry))
 
 ;;  The values that TYPE can have in a keymap entry. 
-(DEFCONSTANT ISFUNC (CODE-CHAR 0))
-(DEFCONSTANT ISKMAP (CODE-CHAR 1))
-(DEFCONSTANT ISMACR (CODE-CHAR 2))
+(defconstant isfunc (code-char 0))
+(defconstant iskmap (code-char 1))
+(defconstant ismacr (code-char 2))
 
 
 
@@ -313,95 +313,95 @@ and so on).")
 ;; readline/history.h
 
 
-(DEFINE-ALIEN-TYPE HISTDATA-T (* T))
+(define-alien-type histdata-t (* t))
 
-(DEFINE-ALIEN-TYPE HIST-ENTRY
+(define-alien-type hist-entry
     ;; The structure used to store a history entry.
-    (STRUCT HIST-ENTRY
-      (LINE C-STRING)
-      (DATA HISTDATA-T))) ;;HIST-ENTRY
+    (struct hist-entry
+      (line c-string)
+      (data histdata-t))) ;;HIST-ENTRY
 
 
-(DEFINE-ALIEN-TYPE HISTORY-STATE
+(define-alien-type history-state
     ;; A structure used to pass the current state of the history stuff around. 
-    (STRUCT HIST-STATE
-      (ENTRIES (* (* HIST-ENTRY))) ;; Pointer to the entries themselves. 
-      (OFFSET INT) ;; The location pointer within this array. 
-      (LENGTH INT) ;; Number of elements within this array. 
-      (SIZE INT)   ;; Number of slots allocated to this array. 
-      (FLAGS INT)
+    (struct hist-state
+      (entries (* (* hist-entry))) ;; Pointer to the entries themselves. 
+      (offset int) ;; The location pointer within this array. 
+      (length int) ;; Number of elements within this array. 
+      (size int)   ;; Number of slots allocated to this array. 
+      (flags int)
       )) ;;HISTORY-STATE
 
 
-(DEFCONSTANT HS-STIFLED 1
+(defconstant hs-stifled 1
   "Flag values for the `FLAGS' member of HISTORY-STATE.")
 
 
 ;; Initialization and state management. 
 
-(DEFINE-ALIEN-ROUTINE "using_history" VOID
+(define-alien-routine "using_history" void
   ;; Begin a session in which the history functions might be used.  This
   ;; just initializes the interactive variables.
   )
 
 
-(DEFINE-ALIEN-ROUTINE "history_get_history_state" (* HISTORY-STATE)
+(define-alien-routine "history_get_history_state" (* history-state)
   ;; Return the current HISTORY_STATE of the history. 
   )
 
 
-(DEFINE-ALIEN-ROUTINE "history_set_history_state" VOID
-  ( STATE (* HISTORY-STATE))
+(define-alien-routine "history_set_history_state" void
+  ( state (* history-state))
   ;; Set the state of the current history array to STATE.
   )
 
 
 ;; Manage the history list.
   
-(DEFINE-ALIEN-ROUTINE "add_history" VOID
-  (STRING C-STRING :IN)
+(define-alien-routine "add_history" void
+  (string c-string :in)
   ;; Place STRING at the end of the history list.
   ;; The associated data field (if any) is set to NULL. 
   ) ;;add_history
 
 
-(DEFINE-ALIEN-ROUTINE "remove_history" (* HIST-ENTRY)
-  (WHICH INT :IN)
+(define-alien-routine "remove_history" (* hist-entry)
+  (which int :in)
   ;; A reasonably useless function, only here for completeness.  WHICH
   ;; is the magic number that tells us which element to delete.  The
   ;; elements are numbered from 0. 
   ) ;;remove_history
 
 
-(DEFINE-ALIEN-ROUTINE "replace_history_entry" (* HIST-ENTRY)
-  (WHICH INT        :IN)
-  (LINE  C-STRING   :IN)
-  (DATA  HISTDATA-T :IN)
+(define-alien-routine "replace_history_entry" (* hist-entry)
+  (which int        :in)
+  (line  c-string   :in)
+  (data  histdata-t :in)
   ;; Make the history entry at WHICH have LINE and DATA.  This returns
   ;; the old entry so you can dispose of the data.  In the case of an
   ;; invalid WHICH, a NULL pointer is returned. 
   ) ;;replace_history_entry
    
 
-(DEFINE-ALIEN-ROUTINE "clear_history" VOID
+(define-alien-routine "clear_history" void
   ;; Clear the history list and start over. 
   )
 
 
-(DEFINE-ALIEN-ROUTINE "stifle_history" VOID
-  (MAX INT :IN)
+(define-alien-routine "stifle_history" void
+  (max int :in)
   ;; Stifle the history list, remembering only MAX number of entries. 
   )
 
 
-(DEFINE-ALIEN-ROUTINE "unstifle_history" INT
+(define-alien-routine "unstifle_history" int
   ;; Stop stifling the history.  This returns the previous amount the
   ;; history was stifled by.  The value is positive if the history was
   ;; stifled, negative if it wasn't.
   ) ;;unstifle_history
 
 
-(DEFINE-ALIEN-ROUTINE "history_is_stifled" INT
+(define-alien-routine "history_is_stifled" int
   ;; Return 1 if the history is stifled, 0 if it is not. 
   )
 
@@ -409,33 +409,33 @@ and so on).")
 ;; Information about the history list. 
 
 
-(DEFINE-ALIEN-ROUTINE  "history_list" (* (* HIST-ENTRY))
+(define-alien-routine  "history_list" (* (* hist-entry))
   ;; Return a NULL terminated array of HIST-ENTRY which is the current input
   ;; history.  Element 0 of this list is the beginning of time.  If there
   ;; is no history, return NULL.
   ) ;;history_list
 
 
-(DEFINE-ALIEN-ROUTINE "where_history" INT
+(define-alien-routine "where_history" int
   ;; Returns the number which says what history element we are now
   ;; looking at.  
   )
 
 
-(DEFINE-ALIEN-ROUTINE "current_history" (* HIST-ENTRY)
+(define-alien-routine "current_history" (* hist-entry)
   ;; Return the history entry at the current position, as determined by
   ;; history_offset.  If there is no entry there, return a NULL pointer. 
   )
 
 
-(DEFINE-ALIEN-ROUTINE "history_get" (* HIST-ENTRY)
-  (OFFSET INT :IN)
+(define-alien-routine "history_get" (* hist-entry)
+  (offset int :in)
   ;; Return the history entry which is logically at OFFSET in the history
   ;; array.  OFFSET is relative to history_base.
   ) ;;history_get
 
 
-(DEFINE-ALIEN-ROUTINE "history_total_bytes" INT
+(define-alien-routine "history_total_bytes" int
   ;; Return the number of bytes that the primary history entries are using.
   ;; This just adds up the lengths of the_history->lines. 
   )
@@ -444,20 +444,20 @@ and so on).")
 ;; Moving around the history list. 
 
 
-(DEFINE-ALIEN-ROUTINE "history_set_pos" INT
-  (POS INT :IN)
+(define-alien-routine "history_set_pos" int
+  (pos int :in)
   ;; Set the position in the history list to POS. 
   )
 
 
-(DEFINE-ALIEN-ROUTINE "previous_history" (* HIST-ENTRY)
+(define-alien-routine "previous_history" (* hist-entry)
   ;; Back up history_offset to the previous history entry, and return
   ;; a pointer to that entry.  If there is no previous entry, return
   ;; a NULL pointer. 
   ) ;;previous_history
 
 
-(DEFINE-ALIEN-ROUTINE "next_history" (* HIST-ENTRY)
+(define-alien-routine "next_history" (* hist-entry)
   ;; Move history_offset forward to the next item in the input_history,
   ;; and return the a pointer to that entry.  If there is no next entry,
   ;; return a NULL pointer. 
@@ -466,9 +466,9 @@ and so on).")
 
 ;; Searching the history list. 
 
-(DEFINE-ALIEN-ROUTINE "history_search" INT
-  (STRING    C-STRING :IN)
-  (DIRECTION INT      :IN)
+(define-alien-routine "history_search" int
+  (string    c-string :in)
+  (direction int      :in)
   ;; Search the history for STRING, starting at history_offset.
   ;; If DIRECTION < 0, then the search is through previous entries,
   ;; else through subsequent.  If the string is found, then
@@ -478,19 +478,19 @@ and so on).")
   ) ;;history_search
 
 
-(DEFINE-ALIEN-ROUTINE "history_search_prefix" INT
-  (STRING    C-STRING :IN)
-  (DIRECTION INT      :IN)
+(define-alien-routine "history_search_prefix" int
+  (string    c-string :in)
+  (direction int      :in)
   ;; Search the history for STRING, starting at history_offset.
   ;; The search is anchored: matching lines must begin with string.
   ;; DIRECTION is as in history_search(). 
   ) ;;history_search_prefix
 
 
-(DEFINE-ALIEN-ROUTINE "history_search_pos" INT
-  (STRING C-STRING :IN)
-  (DIR    INT      :IN)
-  (POS    INT      :IN)
+(define-alien-routine "history_search_pos" int
+  (string c-string :in)
+  (dir    int      :in)
+  (pos    int      :in)
   ;; Search for STRING in the history list, starting at POS, an
   ;; absolute index into the list.  DIR, if negative, says to search
   ;; backwards from POS, else forwards.
@@ -501,18 +501,18 @@ and so on).")
 
 ;; Managing the history file. 
 
-(DEFINE-ALIEN-ROUTINE "read_history" INT
-  (FILENAME C-STRING :IN)
+(define-alien-routine "read_history" int
+  (filename c-string :in)
   ;; Add the contents of FILENAME to the history list, a line at a time.
   ;; If FILENAME is NULL, then read from ~/.history.  Returns 0 if
   ;; successful, or errno if not. 
   ) ;;read_history
 
 
-(DEFINE-ALIEN-ROUTINE "read_history_range" INT
-  (FILENAME C-STRING :IN)
-  (FROM     INT      :IN)
-  (TO       INT      :IN)
+(define-alien-routine "read_history_range" int
+  (filename c-string :in)
+  (from     int      :in)
+  (to       int      :in)
   ;; Read a range of lines from FILENAME, adding them to the history list.
   ;; Start reading at the FROM'th line and end at the TO'th.  If FROM
   ;; is zero, start at the beginning.  If TO is less than FROM, read
@@ -521,34 +521,34 @@ and so on).")
   ) ;;read_history_range
 
 
-(DEFINE-ALIEN-ROUTINE "write_history" INT
-  (FILENAME C-STRING :IN)
+(define-alien-routine "write_history" int
+  (filename c-string :in)
   ;; Write the current history to FILENAME.  If FILENAME is NULL,
   ;; then write the history list to ~/.history.  Values returned
   ;; are as in read_history ().  
   ) ;;write_history
 
 
-(DEFINE-ALIEN-ROUTINE "append_history" INT
-  (NELEMENT INT      :IN)
-  (FILENAME C-STRING :IN)
+(define-alien-routine "append_history" int
+  (nelement int      :in)
+  (filename c-string :in)
   ;; Append NELEMENT entries to FILENAME.  The entries appended are from
   ;; the end of the list minus NELEMENTs up to the end of the list. 
   ) ;;append_history
 
 
-(DEFINE-ALIEN-ROUTINE "history_truncate_file" INT
-  (FILENAME C-STRING :IN)
-  (NLINES   INT      :IN)
+(define-alien-routine "history_truncate_file" int
+  (filename c-string :in)
+  (nlines   int      :in)
   ;; Truncate the history file, leaving only the last NLINES lines. 
   ) ;;history_truncate_file
 
 
 ;; History expansion. 
 
-(DEFINE-ALIEN-ROUTINE "history_expand" INT
-  (STRING C-STRING :IN)
-  (OUTPUT (* C-STRING) :IN) ;; actually :OUT !
+(define-alien-routine "history_expand" int
+  (string c-string :in)
+  (output (* c-string) :in) ;; actually :OUT !
   ;; Expand the string STRING, placing the result into OUTPUT, a pointer
   ;; to a string.  Returns:
   ;;
@@ -564,20 +564,20 @@ and so on).")
   ) ;;history_expand
 
 
-(DEFINE-ALIEN-ROUTINE "history_arg_extract" C-STRING
-  (FIRST  INT      :IN)
-  (LAST   INT      :IN)
-  (STRING C-STRING :IN)
+(define-alien-routine "history_arg_extract" c-string
+  (first  int      :in)
+  (last   int      :in)
+  (string c-string :in)
   ;; Extract a string segment consisting of the FIRST through LAST
   ;; arguments present in STRING.  Arguments are broken up as in
   ;; the shell. 
   ) ;;history_arg_extract
 
 
-(DEFINE-ALIEN-ROUTINE "get_history_event" C-STRING
-  (STRING C-STRING       :IN)
-  (INDEX  INT            :IN-OUT)
-  (DELIMITING-QUOTE CHAR :IN)
+(define-alien-routine "get_history_event" c-string
+  (string c-string       :in)
+  (index  int            :in-out)
+  (delimiting-quote char :in)
   ;; Return the text of the history event beginning at the current
   ;; offset into STRING.  Pass STRING with *INDEX equal to the
   ;; history_expansion_char that begins this specification.
@@ -587,46 +587,46 @@ and so on).")
   ) ;;get_history_event
 
 
-(DEFINE-ALIEN-ROUTINE "history_tokenize" (* C-STRING)
-  (STRING C-STRING :IN)
+(define-alien-routine "history_tokenize" (* c-string)
+  (string c-string :in)
   ;; Return an array of tokens, much as the shell might.  The tokens are
   ;; parsed out of STRING. 
   ) ;;history_tokenize
 
 
-(DECLAIM
- (INLINE
-   USING-HISTORY HISTORY-GET-HISTORY-STATE HISTORY-SET-HISTORY-STATE
-   ADD-HISTORY REMOVE-HISTORY REPLACE-HISTORY-ENTRY CLEAR-HISTORY
-   STIFLE-HISTORY UNSTIFLE-HISTORY HISTORY-IS-STIFLED HISTORY-LIST
-   WHERE-HISTORY CURRENT-HISTORY HISTORY-GET HISTORY-TOTAL-BYTES
-   HISTORY-SET-POS PREVIOUS-HISTORY NEXT-HISTORY HISTORY-SEARCH
-   HISTORY-SEARCH-PREFIX HISTORY-SEARCH-POS READ-HISTORY
-   READ-HISTORY-RANGE WRITE-HISTORY APPEND-HISTORY
-   HISTORY-TRUNCATE-FILE HISTORY-EXPAND HISTORY-ARG-EXTRACT
-   GET-HISTORY-EVENT HISTORY-TOKENIZE ))
+(declaim
+ (inline
+   using-history history-get-history-state history-set-history-state
+   add-history remove-history replace-history-entry clear-history
+   stifle-history unstifle-history history-is-stifled history-list
+   where-history current-history history-get history-total-bytes
+   history-set-pos previous-history next-history history-search
+   history-search-prefix history-search-pos read-history
+   read-history-range write-history append-history
+   history-truncate-file history-expand history-arg-extract
+   get-history-event history-tokenize ))
 
 ;; Exported history variables.
 
-(DEFINE-ALIEN-VARIABLE "history_base" INT)
-(DEFINE-ALIEN-VARIABLE "history_length" INT)
-(DEFINE-ALIEN-VARIABLE "history_max_entries" INT)
-(DEFINE-ALIEN-VARIABLE "history_expansion_char" CHAR)
-(DEFINE-ALIEN-VARIABLE "history_subst_char" CHAR)
-(DEFINE-ALIEN-VARIABLE "history_word_delimiters" C-STRING)
-(DEFINE-ALIEN-VARIABLE "history_comment_char" CHAR)
-(DEFINE-ALIEN-VARIABLE "history_no_expand_chars" C-STRING)
-(DEFINE-ALIEN-VARIABLE "history_search_delimiter_chars" C-STRING)
-(DEFINE-ALIEN-VARIABLE "history_quotes_inhibit_expansion" INT)
+(define-alien-variable "history_base" int)
+(define-alien-variable "history_length" int)
+(define-alien-variable "history_max_entries" int)
+(define-alien-variable "history_expansion_char" char)
+(define-alien-variable "history_subst_char" char)
+(define-alien-variable "history_word_delimiters" c-string)
+(define-alien-variable "history_comment_char" char)
+(define-alien-variable "history_no_expand_chars" c-string)
+(define-alien-variable "history_search_delimiter_chars" c-string)
+(define-alien-variable "history_quotes_inhibit_expansion" int)
 
 
-(DEFINE-ALIEN-VARIABLE "max_input_history" INT
+(define-alien-variable "max_input_history" int
   ;; Backwards compatibility
   )
 
 
-(DEFINE-ALIEN-VARIABLE "history_inhibit_expansion_function"
-    (* RL-LINEBUF-FUNC-T)
+(define-alien-variable "history_inhibit_expansion_function"
+    (* rl-linebuf-func-t)
   ;; If set, this function is called to decide whether or not a particular
   ;; history expansion should be treated as a special case for the calling
   ;; application and not expanded. 
@@ -646,38 +646,38 @@ and so on).")
 ;; Maintaining the state of undo.  We remember individual deletes and inserts
 ;; on a chain of things to do. 
 
-(DEFINE-ALIEN-TYPE UNDO-CODE
+(define-alien-type undo-code
     ;; The actions that undo knows how to undo.  Notice that UNDO_DELETE means
     ;; to insert some text, and UNDO_INSERT means to delete some text.   I.e.,
     ;; the code tells undo what to undo, not how to undo it. 
-    (ENUM UNDO-CODE
-          :UNDO-DELETE :UNDO-INSERT :UNDO-BEGIN :UNDO-END)
+    (enum undo-code
+          :undo-delete :undo-insert :undo-begin :undo-end)
   ) ;;UNDO-CODE
 
 
-(DEFINE-ALIEN-TYPE UNDO-LIST
+(define-alien-type undo-list
     ;; What an element of THE_UNDO_LIST looks like. 
-    (STRUCT UNDO-LIST
-      (NEXT (* (STRUCT UNDO-LIST)))
-      (START INT) ;; Where the change took place.
-      (END INT)
-      (TEXT  C-STRING) ;; The text to insert, if undoing a delete. 
-      (WHAT (ENUM UNDO-CODE)) ;; Delete, Insert, Begin, End. 
+    (struct undo-list
+      (next (* (struct undo-list)))
+      (start int) ;; Where the change took place.
+      (end int)
+      (text  c-string) ;; The text to insert, if undoing a delete. 
+      (what (enum undo-code)) ;; Delete, Insert, Begin, End. 
       ))                      ;;UNDO-LIST
 
 
-(DEFINE-ALIEN-VARIABLE "rl_undo_list" 
+(define-alien-variable "rl_undo_list" 
     ;; The current undo list for RL_LINE_BUFFER. 
-    (* UNDO-LIST))
+    (* undo-list))
 
 
-(DEFINE-ALIEN-TYPE FUNMAP
+(define-alien-type funmap
     ;; The data structure for mapping textual names to code addresses.
-    (STRUCT FUNMAP
-      (NAME C-STRING)
-      (FUNCTION (* RL-COMMAND-FUNC-T)))) ;;FUNMAP
+    (struct funmap
+      (name c-string)
+      (function (* rl-command-func-t)))) ;;FUNMAP
 
-(DEFINE-ALIEN-VARIABLE "funmap" (* (* FUNMAP)))
+(define-alien-variable "funmap" (* (* funmap)))
 ;; SHOULD BE AN ARRAY OF (* FUNMAP)...
 
 
@@ -690,762 +690,762 @@ and so on).")
 
 ;; Bindable commands for numeric arguments.
 
-(DEFINE-ALIEN-ROUTINE "rl_digit_argument" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_digit_argument" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_universal_argument" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_universal_argument" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
 ;; Bindable commands for moving the cursor.
 
-(DEFINE-ALIEN-ROUTINE "rl_forward" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_forward" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_backward" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_backward" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_beg_of_line" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_beg_of_line" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_end_of_line" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_end_of_line" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_forward_word" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_forward_word" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_backward_word" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_backward_word" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_refresh_line" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_refresh_line" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_clear_screen" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_clear_screen" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_arrow_keys" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_arrow_keys" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
 ;; Bindable commands for inserting and deleting text. 
 
-(DEFINE-ALIEN-ROUTINE "rl_insert" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_insert" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_quoted_insert" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_quoted_insert" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_tab_insert" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_tab_insert" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_newline" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_newline" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_do_lowercase_version" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_do_lowercase_version" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_rubout" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_rubout" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_delete" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_delete" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_rubout_or_delete" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_rubout_or_delete" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_delete_horizontal_space" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_delete_horizontal_space" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_delete_or_show_completions" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_delete_or_show_completions" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_insert_comment" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_insert_comment" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
 ;; Bindable commands for changing case. 
 
-(DEFINE-ALIEN-ROUTINE "rl_upcase_word" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_upcase_word" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_downcase_word" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_downcase_word" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_capitalize_word" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_capitalize_word" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
 ;; Bindable commands for transposing characters and words. 
 
-(DEFINE-ALIEN-ROUTINE "rl_transpose_words" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_transpose_words" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_transpose_chars" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_transpose_chars" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
 ;; Bindable commands for searching within a line. 
 
-(DEFINE-ALIEN-ROUTINE "rl_char_search" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_char_search" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_backward_char_search" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_backward_char_search" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
 ;; Bindable commands for readline's interface to the command history. 
 
-(DEFINE-ALIEN-ROUTINE "rl_beginning_of_history" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_beginning_of_history" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_end_of_history" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_end_of_history" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_get_next_history" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_get_next_history" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_get_previous_history" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_get_previous_history" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
 ;; Bindable commands for managing the mark and region. 
 
-(DEFINE-ALIEN-ROUTINE "rl_set_mark" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_set_mark" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_exchange_point_and_mark" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_exchange_point_and_mark" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
 ;; Bindable commands to set the editing mode (emacs or vi). 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_editing_mode" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_editing_mode" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_emacs_editing_mode" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_emacs_editing_mode" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
 ;; Bindable commands for managing key bindings. 
 
-(DEFINE-ALIEN-ROUTINE "rl_re_read_init_file" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_re_read_init_file" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_dump_functions" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_dump_functions" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_dump_macros" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_dump_macros" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_dump_variables" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_dump_variables" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
 ;; Bindable commands for word completion. 
 
-(DEFINE-ALIEN-ROUTINE "rl_complete" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_complete" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_possible_completions" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_possible_completions" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_insert_completions" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_insert_completions" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_menu_complete" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_menu_complete" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
 ;; Bindable commands for killing and yanking text, and managing the kill ring. 
 
-(DEFINE-ALIEN-ROUTINE "rl_kill_word" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_kill_word" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_backward_kill_word" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_backward_kill_word" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_kill_line" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_kill_line" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_backward_kill_line" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_backward_kill_line" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_kill_full_line" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_kill_full_line" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_unix_word_rubout" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_unix_word_rubout" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_unix_line_discard" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_unix_line_discard" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_copy_region_to_kill" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_copy_region_to_kill" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_kill_region" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_kill_region" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_copy_forward_word" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_copy_forward_word" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_copy_backward_word" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_copy_backward_word" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_yank" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_yank" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_yank_pop" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_yank_pop" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_yank_nth_arg" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_yank_nth_arg" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_yank_last_arg" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_yank_last_arg" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
 ;; Bindable commands for incremental searching. 
 
-(DEFINE-ALIEN-ROUTINE "rl_reverse_search_history" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_reverse_search_history" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_forward_search_history" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_forward_search_history" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
 ;; Bindable keyboard macro commands. 
 
-(DEFINE-ALIEN-ROUTINE "rl_start_kbd_macro" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_start_kbd_macro" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_end_kbd_macro" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_end_kbd_macro" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_call_last_kbd_macro" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_call_last_kbd_macro" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
 ;; Bindable undo commands. 
 
-(DEFINE-ALIEN-ROUTINE "rl_revert_line" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_revert_line" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_undo_command" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_undo_command" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
 ;; Bindable tilde expansion commands. 
 
-(DEFINE-ALIEN-ROUTINE "rl_tilde_expand" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_tilde_expand" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
 ;; Bindable terminal control commands. 
 
-(DEFINE-ALIEN-ROUTINE "rl_restart_output" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_restart_output" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_stop_output" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_stop_output" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
 ;; Miscellaneous bindable commands. 
 
-(DEFINE-ALIEN-ROUTINE "rl_abort" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_abort" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_tty_status" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_tty_status" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
 ;; Bindable commands for incremental and non-incremental history searching. 
 
-(DEFINE-ALIEN-ROUTINE "rl_history_search_forward" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_history_search_forward" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_history_search_backward" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_history_search_backward" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_noninc_forward_search" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_noninc_forward_search" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_noninc_reverse_search" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_noninc_reverse_search" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_noninc_forward_search_again" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_noninc_forward_search_again" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_noninc_reverse_search_again" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_noninc_reverse_search_again" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
 ;; Bindable command used when inserting a matching close character. 
 
-(DEFINE-ALIEN-ROUTINE "rl_insert_close" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_insert_close" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
 ;; Not available unless READLINE_CALLBACKS is defined. 
 
-(DEFINE-ALIEN-ROUTINE "rl_callback_handler_install" VOID
-  (NAME      C-STRING          :IN)
-  (FUNCTION  (* RL-VCPFUNC-T)  :IN)
+(define-alien-routine "rl_callback_handler_install" void
+  (name      c-string          :in)
+  (function  (* rl-vcpfunc-t)  :in)
   )
 
-(DEFINE-ALIEN-ROUTINE "rl_callback_read_char" VOID )
+(define-alien-routine "rl_callback_read_char" void )
 
-(DEFINE-ALIEN-ROUTINE "rl_callback_handler_remove" VOID )
+(define-alien-routine "rl_callback_handler_remove" void )
 
 
 ;; Things for vi mode. Not available unless readline is compiled -DVI_MODE. 
 ;; VI-mode bindable commands. 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_redo" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_redo" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_undo" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_undo" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_yank_arg" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_yank_arg" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_fetch_history" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_fetch_history" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_search_again" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_search_again" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_search" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_search" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_complete" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_complete" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_tilde_expand" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_tilde_expand" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_prev_word" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_prev_word" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_next_word" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_next_word" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_end_word" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_end_word" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_insert_beg" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_insert_beg" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_append_mode" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_append_mode" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_append_eol" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_append_eol" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_eof_maybe" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_eof_maybe" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_insertion_mode" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_insertion_mode" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_movement_mode" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_movement_mode" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_arg_digit" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_arg_digit" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_change_case" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_change_case" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_put" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_put" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_column" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_column" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_delete_to" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_delete_to" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_change_to" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_change_to" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_yank_to" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_yank_to" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_delete" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_delete" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_back_to_indent" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_back_to_indent" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_first_print" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_first_print" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_char_search" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_char_search" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_match" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_match" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_change_char" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_change_char" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_subst" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_subst" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_overstrike" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_overstrike" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_overstrike_delete" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_overstrike_delete" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_replace" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_replace" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_set_mark" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_set_mark" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_goto_mark" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_goto_mark" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
 ;; VI-mode utility functions. 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_check" INT)
+(define-alien-routine "rl_vi_check" int)
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_domove" INT
-  (A  INT  :IN)
-  (B  INT  :IN-OUT)
+(define-alien-routine "rl_vi_domove" int
+  (a  int  :in)
+  (b  int  :in-out)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_bracktype" INT
-  (A  INT  :IN)
+(define-alien-routine "rl_vi_bracktype" int
+  (a  int  :in)
   )
 
 
@@ -1469,21 +1469,21 @@ and so on).")
 ;;;  )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_fword" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_fword" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_bword" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_bword" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_vi_eword" INT
-  (COUNT  INT  :IN)
-  (KEY    INT  :IN)
+(define-alien-routine "rl_vi_eword" int
+  (count  int  :in)
+  (key    int  :in)
   )
 
 
@@ -1496,451 +1496,451 @@ and so on).")
 ;; Readline functions. 
 ;; Read a line of input.  Prompt with PROMPT.  A NULL PROMPT means none. 
 
-(DEFINE-ALIEN-ROUTINE "readline" C-STRING
-  (PROMPT C-STRING :IN)
+(define-alien-routine "readline" c-string
+  (prompt c-string :in)
   )
 
 
 
-(DEFINE-ALIEN-ROUTINE "rl_set_prompt" INT
-  (PROMPT C-STRING :IN)
+(define-alien-routine "rl_set_prompt" int
+  (prompt c-string :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_expand_prompt" INT
-  (PROMPT C-STRING :IN)
+(define-alien-routine "rl_expand_prompt" int
+  (prompt c-string :in)
   )
 
 
 
-(DEFINE-ALIEN-ROUTINE "rl_initialize" INT)
+(define-alien-routine "rl_initialize" int)
 
 
 
 ;; Undocumented; unused by readline 
 
-(DEFINE-ALIEN-ROUTINE "rl_discard_argument" INT )
+(define-alien-routine "rl_discard_argument" int )
 
 
 ;; Utility functions to bind keys to readline commands. 
 
-(DEFINE-ALIEN-ROUTINE "rl_add_defun" INT
-  (NAME     C-STRING              :IN)
-  (FUNCTION (* RL-COMMAND-FUNC-T) :IN)
-  (KEY      INT                   :IN)
+(define-alien-routine "rl_add_defun" int
+  (name     c-string              :in)
+  (function (* rl-command-func-t) :in)
+  (key      int                   :in)
   ) ;;rl_add_defun
 
 
-(DEFINE-ALIEN-ROUTINE "rl_bind_key" INT
-  (KEY       INT                    :IN)
-  (FUNCTION  (* RL-COMMAND-FUNC-T)  :IN)
+(define-alien-routine "rl_bind_key" int
+  (key       int                    :in)
+  (function  (* rl-command-func-t)  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_bind_key_in_map" INT
-  (KEY       INT                    :IN)
-  (FUNCTION  (* RL-COMMAND-FUNC-T)  :IN)
-  (MAP       KEYMAP                 :IN)
+(define-alien-routine "rl_bind_key_in_map" int
+  (key       int                    :in)
+  (function  (* rl-command-func-t)  :in)
+  (map       keymap                 :in)
   ) ;;rl_bind_key_in_map
 
 
-(DEFINE-ALIEN-ROUTINE "rl_unbind_key" INT
-  (KEY  INT  :IN)
+(define-alien-routine "rl_unbind_key" int
+  (key  int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_unbind_key_in_map" INT
-  (KEY  INT  :IN)
-  (MAP  KEYMAP  :IN)
+(define-alien-routine "rl_unbind_key_in_map" int
+  (key  int  :in)
+  (map  keymap  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_unbind_function_in_map" INT
-  (FUNCTION  (* RL-COMMAND-FUNC-T)  :IN)
-  (MAP  KEYMAP  :IN)
+(define-alien-routine "rl_unbind_function_in_map" int
+  (function  (* rl-command-func-t)  :in)
+  (map  keymap  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_unbind_command_in_map" INT
-  (COMMAND  C-STRING  :IN)
-  (MAP  KEYMAP  :IN)
+(define-alien-routine "rl_unbind_command_in_map" int
+  (command  c-string  :in)
+  (map  keymap  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_set_key" INT
-  (KEYSEQ C-STRING  :IN)
-  (FUNCTION  (* RL-COMMAND-FUNC-T)  :IN)
-  (MAP  KEYMAP  :IN)
+(define-alien-routine "rl_set_key" int
+  (keyseq c-string  :in)
+  (function  (* rl-command-func-t)  :in)
+  (map  keymap  :in)
   ) ;;rl_set_key
 
 
-(DEFINE-ALIEN-ROUTINE "rl_generic_bind" INT
-  (TYPE  INT  :IN)
-  (KEYSEQ  C-STRING   :IN)
-  (DATA  (* CHAR)  :IN)
-  (MAP  KEYMAP  :IN)
+(define-alien-routine "rl_generic_bind" int
+  (type  int  :in)
+  (keyseq  c-string   :in)
+  (data  (* char)  :in)
+  (map  keymap  :in)
   ) ;;rl_generic_bind
 
 
-(DEFINE-ALIEN-ROUTINE "rl_variable_bind" INT
-  (VARIABLE  C-STRING   :IN)
-  (VALUE  C-STRING   :IN)
+(define-alien-routine "rl_variable_bind" int
+  (variable  c-string   :in)
+  (value  c-string   :in)
   )
 
 
 ;; Backwards compatibility, use rl_generic_bind instead. 
 
-(DEFINE-ALIEN-ROUTINE "rl_macro_bind" INT
-  (KEYSEQ  C-STRING   :IN)
-  (MACRO   C-STRING   :IN)
-  (MAP     KEYMAP     :IN)
+(define-alien-routine "rl_macro_bind" int
+  (keyseq  c-string   :in)
+  (macro   c-string   :in)
+  (map     keymap     :in)
   ) ;;rl_macro_bind
 
 
 
-(DEFINE-ALIEN-ROUTINE "rl_named_function" (* RL-COMMAND-FUNC-T)
-  (NAME  C-STRING   :IN)
+(define-alien-routine "rl_named_function" (* rl-command-func-t)
+  (name  c-string   :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_function_of_keyseq" (* RL-COMMAND-FUNC-T)
-  (KEYSEQ  C-STRING   :IN)
-  (MAP  KEYMAP  :IN)
-  (TYPE INT   :OUT)
+(define-alien-routine "rl_function_of_keyseq" (* rl-command-func-t)
+  (keyseq  c-string   :in)
+  (map  keymap  :in)
+  (type int   :out)
   ) ;;rl_function_of_keyseq
 
 
 
-(DEFINE-ALIEN-ROUTINE "rl_list_funmap_names" VOID )
+(define-alien-routine "rl_list_funmap_names" void )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_invoking_keyseqs_in_map" (* (* CHAR))
-  (FUNCTION  (* RL-COMMAND-FUNC-T)  :IN)
-  (MAP  KEYMAP  :IN)
+(define-alien-routine "rl_invoking_keyseqs_in_map" (* (* char))
+  (function  (* rl-command-func-t)  :in)
+  (map  keymap  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_invoking_keyseqs" (* (* CHAR))
-  (FUNCTION  (* RL-COMMAND-FUNC-T)  :IN)
+(define-alien-routine "rl_invoking_keyseqs" (* (* char))
+  (function  (* rl-command-func-t)  :in)
   )
 
  
 
-(DEFINE-ALIEN-ROUTINE "rl_function_dumper" VOID
-  (READABLE  INT  :IN)
+(define-alien-routine "rl_function_dumper" void
+  (readable  int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_macro_dumper" VOID
-  (READABLE  INT  :IN)
+(define-alien-routine "rl_macro_dumper" void
+  (readable  int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_variable_dumper" VOID
-  (READABLE  INT  :IN)
+(define-alien-routine "rl_variable_dumper" void
+  (readable  int  :in)
   )
 
 
 
-(DEFINE-ALIEN-ROUTINE "rl_read_init_file" INT
-  (FILENAME  C-STRING   :IN)
+(define-alien-routine "rl_read_init_file" int
+  (filename  c-string   :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_parse_and_bind" INT
-  (LINE  C-STRING  :IN)
+(define-alien-routine "rl_parse_and_bind" int
+  (line  c-string  :in)
   )
 
 
 ;; Functions for manipulating keymaps. 
 
-(DEFINE-ALIEN-ROUTINE "rl_make_bare_keymap" KEYMAP  )
+(define-alien-routine "rl_make_bare_keymap" keymap  )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_copy_keymap" KEYMAP
-  (MAP  KEYMAP  :IN)
+(define-alien-routine "rl_copy_keymap" keymap
+  (map  keymap  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_make_keymap" KEYMAP )
+(define-alien-routine "rl_make_keymap" keymap )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_discard_keymap" VOID
-  (MAP  KEYMAP  :IN)
+(define-alien-routine "rl_discard_keymap" void
+  (map  keymap  :in)
   )
 
 
 
-(DEFINE-ALIEN-ROUTINE "rl_get_keymap_by_name" KEYMAP
-  (NAME  C-STRING   :IN)
+(define-alien-routine "rl_get_keymap_by_name" keymap
+  (name  c-string   :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_get_keymap_name" C-STRING
-  (MAP  KEYMAP  :IN)
+(define-alien-routine "rl_get_keymap_name" c-string
+  (map  keymap  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_set_keymap" VOID
-  (MAP  KEYMAP  :IN)
+(define-alien-routine "rl_set_keymap" void
+  (map  keymap  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_get_keymap" KEYMAP )
+(define-alien-routine "rl_get_keymap" keymap )
 
 ;; Undocumented; used internally only. 
 
-(DEFINE-ALIEN-ROUTINE "rl_set_keymap_from_edit_mode" VOID )
+(define-alien-routine "rl_set_keymap_from_edit_mode" void )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_get_keymap_name_from_edit_mode" C-STRING )
+(define-alien-routine "rl_get_keymap_name_from_edit_mode" c-string )
 
 
 ;; Functions for manipulating the funmap, which maps command names to functions. 
 
-(DEFINE-ALIEN-ROUTINE "rl_add_funmap_entry" INT
-  (NAME  C-STRING   :IN)
-  (FUNCTION  (* RL-COMMAND-FUNC-T)  :IN)
+(define-alien-routine "rl_add_funmap_entry" int
+  (name  c-string   :in)
+  (function  (* rl-command-func-t)  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_funmap_names" (* C-STRING) )
+(define-alien-routine "rl_funmap_names" (* c-string) )
 
 
 
 ;; Utility functions for managing keyboard macros. 
 
-(DEFINE-ALIEN-ROUTINE "rl_push_macro_input" VOID
-  (MACRO C-STRING  :IN)
+(define-alien-routine "rl_push_macro_input" void
+  (macro c-string  :in)
   )
 
 
 ;; Functions for undoing, from undo.c 
 
-(DEFINE-ALIEN-ROUTINE "rl_add_undo" VOID
-  (WHAT (ENUM UNDO-CODE)  :IN)
-  (START  INT    :IN)
-  (END    INT    :IN)
-  (TEXT C-STRING :IN)
+(define-alien-routine "rl_add_undo" void
+  (what (enum undo-code)  :in)
+  (start  int    :in)
+  (end    int    :in)
+  (text c-string :in)
   ) ;;rl_add_undo
 
 
-(DEFINE-ALIEN-ROUTINE "rl_free_undo_list" VOID)
+(define-alien-routine "rl_free_undo_list" void)
 
 
-(DEFINE-ALIEN-ROUTINE "rl_do_undo" INT )
+(define-alien-routine "rl_do_undo" int )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_begin_undo_group" INT )
+(define-alien-routine "rl_begin_undo_group" int )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_end_undo_group" INT )
+(define-alien-routine "rl_end_undo_group" int )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_modifying" INT
-  (START  INT  :IN)
-  (END    INT  :IN)
+(define-alien-routine "rl_modifying" int
+  (start  int  :in)
+  (end    int  :in)
   )
 
 
 ;; Functions for redisplay. 
 
-(DEFINE-ALIEN-ROUTINE "rl_redisplay" VOID)
+(define-alien-routine "rl_redisplay" void)
 
 
-(DEFINE-ALIEN-ROUTINE "rl_on_new_line" INT )
+(define-alien-routine "rl_on_new_line" int )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_on_new_line_with_prompt" INT )
+(define-alien-routine "rl_on_new_line_with_prompt" int )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_forced_update_display" INT )
+(define-alien-routine "rl_forced_update_display" int )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_clear_message" INT )
+(define-alien-routine "rl_clear_message" int )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_reset_line_state" INT )
+(define-alien-routine "rl_reset_line_state" int )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_crlf" INT )
+(define-alien-routine "rl_crlf" int )
 
 
 ;; extern int rl_message (c-string , ...);
 
 
-(DEFINE-ALIEN-ROUTINE "rl_show_char" INT
-  (C  INT  :IN)
+(define-alien-routine "rl_show_char" int
+  (c  int  :in)
   )
 
 
 ;; Save and restore internal prompt redisplay information. 
 
-(DEFINE-ALIEN-ROUTINE "rl_save_prompt" VOID )
+(define-alien-routine "rl_save_prompt" void )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_restore_prompt" VOID )
+(define-alien-routine "rl_restore_prompt" void )
 
 
 ;; Modifying text. 
 
-(DEFINE-ALIEN-ROUTINE "rl_insert_text" INT
-  (TEXT  C-STRING   :IN)
+(define-alien-routine "rl_insert_text" int
+  (text  c-string   :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_delete_text" INT
-  (START  INT  :IN)
-  (END    INT  :IN)
+(define-alien-routine "rl_delete_text" int
+  (start  int  :in)
+  (end    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_kill_text" INT
-  (START  INT  :IN)
-  (END    INT  :IN)
+(define-alien-routine "rl_kill_text" int
+  (start  int  :in)
+  (end    int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_copy_text" C-STRING
-  (START  INT  :IN)
-  (END    INT  :IN)
+(define-alien-routine "rl_copy_text" c-string
+  (start  int  :in)
+  (end    int  :in)
   )
 
 
 ;; Terminal and tty mode management. 
 
-(DEFINE-ALIEN-ROUTINE "rl_prep_terminal" VOID
-  (META-FLAG  INT  :IN)
+(define-alien-routine "rl_prep_terminal" void
+  (meta-flag  int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_deprep_terminal" VOID )
+(define-alien-routine "rl_deprep_terminal" void )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_tty_set_default_bindings" VOID
-  (MAP  KEYMAP  :IN)
+(define-alien-routine "rl_tty_set_default_bindings" void
+  (map  keymap  :in)
   )
 
 
 
-(DEFINE-ALIEN-ROUTINE "rl_reset_terminal" INT
-  (TERMINAL-NAME  C-STRING   :IN)
+(define-alien-routine "rl_reset_terminal" int
+  (terminal-name  c-string   :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_resize_terminal" VOID )
+(define-alien-routine "rl_resize_terminal" void )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_set_screen_size" VOID
-  (ROWS  INT  :IN)
-  (COLS  INT  :IN)
+(define-alien-routine "rl_set_screen_size" void
+  (rows  int  :in)
+  (cols  int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_get_screen_size" VOID
-  (ROWS  INT :OUT)
-  (COLS  INT :OUT)
+(define-alien-routine "rl_get_screen_size" void
+  (rows  int :out)
+  (cols  int :out)
   )
 
 
 ;; Functions for character input. 
 
-(DEFINE-ALIEN-ROUTINE "rl_stuff_char" INT
-  (C  INT  :IN)
+(define-alien-routine "rl_stuff_char" int
+  (c  int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_execute_next" INT
-  (C  INT  :IN)
+(define-alien-routine "rl_execute_next" int
+  (c  int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_clear_pending_input" INT )
+(define-alien-routine "rl_clear_pending_input" int )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_read_key" INT )
+(define-alien-routine "rl_read_key" int )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_getc" INT
-  (STREAM  (* FILE)  :IN)
+(define-alien-routine "rl_getc" int
+  (stream  (* file)  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_set_keyboard_input_timeout" INT
-  (U  INT  :IN)
+(define-alien-routine "rl_set_keyboard_input_timeout" int
+  (u  int  :in)
   )
 
 
 ;; `Public' utility functions . 
 
-(DEFINE-ALIEN-ROUTINE "rl_extend_line_buffer" VOID
-  (LEN  INT  :IN)
+(define-alien-routine "rl_extend_line_buffer" void
+  (len  int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_ding" INT )
+(define-alien-routine "rl_ding" int )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_alphabetic" INT
-  (C  INT  :IN)
+(define-alien-routine "rl_alphabetic" int
+  (c  int  :in)
   )
 
 
 ;; Readline signal handling, from signals.c 
 
-(DEFINE-ALIEN-ROUTINE "rl_set_signals" INT)
+(define-alien-routine "rl_set_signals" int)
 
 
-(DEFINE-ALIEN-ROUTINE "rl_clear_signals" INT )
+(define-alien-routine "rl_clear_signals" int )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_cleanup_after_signal" VOID )
+(define-alien-routine "rl_cleanup_after_signal" void )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_reset_after_signal" VOID )
+(define-alien-routine "rl_reset_after_signal" void )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_free_line_state" VOID )
+(define-alien-routine "rl_free_line_state" void )
 
  
 
 
-(DEFINE-ALIEN-ROUTINE "rl_maybe_unsave_line" INT )
+(define-alien-routine "rl_maybe_unsave_line" int )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_maybe_replace_line" INT )
+(define-alien-routine "rl_maybe_replace_line" int )
 
 
 ;; Completion functions. 
 
-(DEFINE-ALIEN-ROUTINE "rl_complete_internal" INT
-  (WHAT-TO-DO  INT  :IN)
+(define-alien-routine "rl_complete_internal" int
+  (what-to-do  int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_display_match_list" VOID
-  (MATCHES  (* C-STRING)  :IN)
-  (LEN    INT  :IN)
-  (MAX    INT  :IN)
+(define-alien-routine "rl_display_match_list" void
+  (matches  (* c-string)  :in)
+  (len    int  :in)
+  (max    int  :in)
   ) ;;rl_display_match_list
 
 
 
-(DEFINE-ALIEN-ROUTINE "rl_completion_matches" (* C-STRING)
-  (TEXT  C-STRING   :IN)
-  (ENTRY-FUNC (* RL-COMPENTRY-FUNC-T)  :IN)
+(define-alien-routine "rl_completion_matches" (* c-string)
+  (text  c-string   :in)
+  (entry-func (* rl-compentry-func-t)  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_username_completion_function" C-STRING
-  (TEXT  C-STRING   :IN)
-  (STATE INT  :IN)
+(define-alien-routine "rl_username_completion_function" c-string
+  (text  c-string   :in)
+  (state int  :in)
   )
 
 
-(DEFINE-ALIEN-ROUTINE "rl_filename_completion_function" C-STRING
-  (TEXT  C-STRING   :IN)
-  (STATE INT  :IN)
+(define-alien-routine "rl_filename_completion_function" c-string
+  (text  c-string   :in)
+  (state int  :in)
   )
 
 
@@ -1952,145 +1952,145 @@ and so on).")
 ;; **************************************************************** 
 
 ;; The version of this incarnation of the readline library. 
-(DEFINE-ALIEN-VARIABLE "rl_library_version" C-STRING)
+(define-alien-variable "rl_library_version" c-string)
 
 
 ;; True if this is real GNU readline. 
-(DEFINE-ALIEN-VARIABLE "rl_gnu_readline_p" INT)
+(define-alien-variable "rl_gnu_readline_p" int)
 
 
 ;; Flags word encapsulating the current readline state. 
-(DEFINE-ALIEN-VARIABLE "rl_readline_state" INT)
+(define-alien-variable "rl_readline_state" int)
 
 
 ;; Says which editing mode readline is currently using.  1 means emacs mode;
 ;; 0 means vi mode. 
-(DEFINE-ALIEN-VARIABLE "rl_editing_mode" INT)
+(define-alien-variable "rl_editing_mode" int)
 
 
 ;; The name of the calling program.  You should initialize this to
 ;; whatever was in argv[0].  It is used when parsing conditionals. 
-(DEFINE-ALIEN-VARIABLE "rl_readline_name" C-STRING)
+(define-alien-variable "rl_readline_name" c-string)
 
 
 ;; The prompt readline uses.  This is set from the argument to
 ;; readline (), and should not be assigned to directly. 
-(DEFINE-ALIEN-VARIABLE "rl_prompt" C-STRING)
+(define-alien-variable "rl_prompt" c-string)
 
 
 ;; The line buffer that is in use. 
-(DEFINE-ALIEN-VARIABLE "rl_line_buffer" C-STRING)
+(define-alien-variable "rl_line_buffer" c-string)
 
 
 ;; The location of point, and end. 
-(DEFINE-ALIEN-VARIABLE "rl_point" INT)
+(define-alien-variable "rl_point" int)
 
-(DEFINE-ALIEN-VARIABLE "rl_end" INT)
+(define-alien-variable "rl_end" int)
 
 
 ;; The mark, or saved cursor position. 
-(DEFINE-ALIEN-VARIABLE "rl_mark" INT)
+(define-alien-variable "rl_mark" int)
 
 
 ;; Flag to indicate that readline has finished with the current input
 ;; line and should return it. 
-(DEFINE-ALIEN-VARIABLE "rl_done" INT)
+(define-alien-variable "rl_done" int)
 
 
 ;; If set to a character value, that will be the next keystroke read. 
-(DEFINE-ALIEN-VARIABLE "rl_pending_input" INT)
+(define-alien-variable "rl_pending_input" int)
 
 
 ;; Non-zero if we called this function from _rl_dispatch().  It's present
 ;; so functions can find out whether they were called from a key binding
 ;; or directly from an application. 
-(DEFINE-ALIEN-VARIABLE "rl_dispatching" INT)
+(define-alien-variable "rl_dispatching" int)
 
 
 ;; Non-zero if the user typed a numeric argument before executing the
 ;; current function. 
-(DEFINE-ALIEN-VARIABLE "rl_explicit_arg" INT)
+(define-alien-variable "rl_explicit_arg" int)
 
 
 ;; The current value of the numeric argument specified by the user. 
-(DEFINE-ALIEN-VARIABLE "rl_numeric_arg" INT)
+(define-alien-variable "rl_numeric_arg" int)
 
 
 ;; The address of the last command function Readline executed. 
-(DEFINE-ALIEN-VARIABLE "rl_last_func" (* RL-COMMAND-FUNC-T))
+(define-alien-variable "rl_last_func" (* rl-command-func-t))
 
 
 ;; The name of the terminal to use. 
-(DEFINE-ALIEN-VARIABLE "rl_terminal_name" C-STRING)
+(define-alien-variable "rl_terminal_name" c-string)
 
 
 ;; The input and output streams. 
-(DEFINE-ALIEN-VARIABLE "rl_instream" (* FILE))
+(define-alien-variable "rl_instream" (* file))
 
-(DEFINE-ALIEN-VARIABLE "rl_outstream" (* FILE))
+(define-alien-variable "rl_outstream" (* file))
 
 
 ;; If non-zero, then this is the address of a function to call just
 ;; before readline_internal () prints the first prompt. 
-(DEFINE-ALIEN-VARIABLE "rl_startup_hook" (* RL-HOOK-FUNC-T))
+(define-alien-variable "rl_startup_hook" (* rl-hook-func-t))
 
 
 ;; If non-zero, this is the address of a function to call just before
 ;; readline_internal_setup () returns and readline_internal starts
 ;; reading input characters. 
-(DEFINE-ALIEN-VARIABLE "rl_pre_input_hook" (* RL-HOOK-FUNC-T))
+(define-alien-variable "rl_pre_input_hook" (* rl-hook-func-t))
 
       
 ;; The address of a function to call periodically while Readline is
 ;; awaiting character input, or NULL, for no event handling. 
-(DEFINE-ALIEN-VARIABLE "rl_event_hook" (* RL-HOOK-FUNC-T))
+(define-alien-variable "rl_event_hook" (* rl-hook-func-t))
 
 
 ;; The address of the function to call to fetch a character from the current
 ;; Readline input stream 
-(DEFINE-ALIEN-VARIABLE "rl_getc_function" (* RL-GETC-FUNC-T))
+(define-alien-variable "rl_getc_function" (* rl-getc-func-t))
 
 
-(DEFINE-ALIEN-VARIABLE "rl_redisplay_function" (* RL-VOIDFUNC-T))
+(define-alien-variable "rl_redisplay_function" (* rl-voidfunc-t))
 
 
-(DEFINE-ALIEN-VARIABLE "rl_prep_term_function" (* RL-VINTFUNC-T))
+(define-alien-variable "rl_prep_term_function" (* rl-vintfunc-t))
 
-(DEFINE-ALIEN-VARIABLE "rl_deprep_term_function" (* RL-VOIDFUNC-T))
+(define-alien-variable "rl_deprep_term_function" (* rl-voidfunc-t))
 
 
 ;; Dispatch variables. 
-(DEFINE-ALIEN-VARIABLE "rl_executing_keymap" KEYMAP)
+(define-alien-variable "rl_executing_keymap" keymap)
 
-(DEFINE-ALIEN-VARIABLE "rl_binding_keymap" KEYMAP)
+(define-alien-variable "rl_binding_keymap" keymap)
 
 
 ;; Display variables. 
 ;; If non-zero, readline will erase the entire line, including any prompt,
 ;; if the only thing typed on an otherwise-blank line is something bound to
 ;; rl_newline. 
-(DEFINE-ALIEN-VARIABLE "rl_erase_empty_line" INT)
+(define-alien-variable "rl_erase_empty_line" int)
 
 
 ;; If non-zero, the application has already printed the prompt (rl_prompt)
 ;; before calling readline, so readline should not output it the first time
 ;; redisplay is done. 
-(DEFINE-ALIEN-VARIABLE "rl_already_prompted" INT)
+(define-alien-variable "rl_already_prompted" int)
 
 
 ;; A non-zero value means to read only this many characters rather than
 ;; up to a character bound to accept-line. 
-(DEFINE-ALIEN-VARIABLE "rl_num_chars_to_read" INT)
+(define-alien-variable "rl_num_chars_to_read" int)
 
 
 ;; The text of a currently-executing keyboard macro. 
-(DEFINE-ALIEN-VARIABLE "rl_executing_macro" (* CHAR))
+(define-alien-variable "rl_executing_macro" (* char))
 
 
 ;; Variables to control readline signal handling. 
 ;; If non-zero, readline will install its own signal handlers for
 ;; SIGINT, SIGTERM, SIGQUIT, SIGALRM, SIGTSTP, SIGTTIN, and SIGTTOU. 
-(DEFINE-ALIEN-VARIABLE "rl_catch_signals" INT)
+(define-alien-variable "rl_catch_signals" int)
 
 
 ;; If non-zero, readline will install a signal handler for SIGWINCH
@@ -2098,14 +2098,14 @@ and so on).")
 ;; handler.  Note that the terminal is not cleaned up before the
 ;; application's signal handler is called; use rl_cleanup_after_signal()
 ;; to do that. 
-(DEFINE-ALIEN-VARIABLE "rl_catch_sigwinch" INT)
+(define-alien-variable "rl_catch_sigwinch" int)
 
 
 ;; Completion variables. 
 ;; Pointer to the generator function for completion_matches ().
 ;; NULL means to use filename_entry_function (), the default filename
 ;; completer. 
-(DEFINE-ALIEN-VARIABLE "rl_completion_entry_function" (* RL-COMPENTRY-FUNC-T))
+(define-alien-variable "rl_completion_entry_function" (* rl-compentry-func-t))
 
 
 ;; If rl_ignore_some_completions_function is non-NULL it is the address
@@ -2114,7 +2114,7 @@ and so on).")
 ;; The function is called with one argument; a NULL terminated array
 ;; of (char *).  If your function removes any of the elements, they
 ;; must be free()'ed. 
-(DEFINE-ALIEN-VARIABLE "rl_ignore_some_completions_function" (* RL-COMPIGNORE-FUNC-T))
+(define-alien-variable "rl_ignore_some_completions_function" (* rl-compignore-func-t))
 
 
 ;; Pointer to alternative function to create matches.
@@ -2124,40 +2124,40 @@ and so on).")
 ;; If this function exists and returns NULL then call the value of
 ;; rl_completion_entry_function to try to match, otherwise use the
 ;; array of strings returned. 
-(DEFINE-ALIEN-VARIABLE "rl_attempted_completion_function" (* RL-COMPLETION-FUNC-T))
+(define-alien-variable "rl_attempted_completion_function" (* rl-completion-func-t))
 
 
 ;; The basic list of characters that signal a break between words for the
 ;; completer routine.  The initial contents of this variable is what
 ;; breaks words in the shell, i.e. "n\"\\'`@$>". 
-(DEFINE-ALIEN-VARIABLE "rl_basic_word_break_characters" C-STRING)
+(define-alien-variable "rl_basic_word_break_characters" c-string)
 
 
 ;; The list of characters that signal a break between words for
 ;; rl_complete_internal.  The default list is the contents of
 ;; rl_basic_word_break_characters.  
-(DEFINE-ALIEN-VARIABLE "rl_completer_word_break_characters" C-STRING)
+(define-alien-variable "rl_completer_word_break_characters" c-string)
 
 
 ;; List of characters which can be used to quote a substring of the line.
 ;; Completion occurs on the entire substring, and within the substring   
 ;; rl_completer_word_break_characters are treated as any other character,
 ;; unless they also appear within this list. 
-(DEFINE-ALIEN-VARIABLE "rl_completer_quote_characters" C-STRING)
+(define-alien-variable "rl_completer_quote_characters" c-string)
 
 
 ;; List of quote characters which cause a word break. 
-(DEFINE-ALIEN-VARIABLE "rl_basic_quote_characters" C-STRING)
+(define-alien-variable "rl_basic_quote_characters" c-string)
 
 
 ;; List of characters that need to be quoted in filenames by the completer. 
-(DEFINE-ALIEN-VARIABLE "rl_filename_quote_characters" C-STRING)
+(define-alien-variable "rl_filename_quote_characters" c-string)
 
 
 ;; List of characters that are word break characters, but should be left
 ;; in TEXT when it is passed to the completion function.  The shell uses
 ;; this to help determine what kind of completing to do. 
-(DEFINE-ALIEN-VARIABLE "rl_special_prefixes" C-STRING)
+(define-alien-variable "rl_special_prefixes" c-string)
 
 
 ;; If non-zero, then this is the address of a function to call when
@@ -2165,7 +2165,7 @@ and so on).")
 ;; the address of a string (the current directory name) as an arg.  It
 ;; changes what is displayed when the possible completions are printed
 ;; or inserted. 
-(DEFINE-ALIEN-VARIABLE "rl_directory_completion_hook" (* RL-ICPPFUNC-T))
+(define-alien-variable "rl_directory_completion_hook" (* rl-icppfunc-t))
 
 
 ;; If non-zero, this is the address of a function to call when completing
@@ -2175,7 +2175,7 @@ and so on).")
 ;; when the possible completions are printed or inserted.  It is called
 ;; before rl_directory_completion_hook.  I'm not happy with how this works
 ;; yet, so it's undocumented. 
-(DEFINE-ALIEN-VARIABLE "rl_directory_rewrite_hook" (* RL-ICPPFUNC-T))
+(define-alien-variable "rl_directory_rewrite_hook" (* rl-icppfunc-t))
 
 
 ;; If non-zero, then this is the address of a function to call when
@@ -2185,13 +2185,13 @@ and so on).")
 ;; where MATCHES is the array of strings that matched, NUM_MATCHES is the
 ;; number of strings in that array, and MAX_LENGTH is the length of the
 ;; longest string in that array. 
-(DEFINE-ALIEN-VARIABLE "rl_completion_display_matches_hook" (* RL-COMPDISP-FUNC-T))
+(define-alien-variable "rl_completion_display_matches_hook" (* rl-compdisp-func-t))
 
 
 ;; Non-zero means that the results of the matches are to be treated
 ;; as filenames.  This is ALWAYS zero on entry, and can only be changed
 ;; within a completion entry finder function. 
-(DEFINE-ALIEN-VARIABLE "rl_filename_completion_desired" INT)
+(define-alien-variable "rl_filename_completion_desired" int)
 
 
 ;; Non-zero means that the results of the matches are to be quoted using
@@ -2199,185 +2199,185 @@ and so on).")
 ;; filename contains any characters in rl_word_break_chars.  This is
 ;; ALWAYS non-zero on entry, and can only be changed within a completion
 ;; entry finder function. 
-(DEFINE-ALIEN-VARIABLE "rl_filename_quoting_desired" INT)
+(define-alien-variable "rl_filename_quoting_desired" int)
 
 
 ;; Set to a function to quote a filename in an application-specific fashion.
 ;; Called with the text to quote, the type of match found (single or multiple)
 ;; and a pointer to the quoting character to be used, which the function can
 ;; reset if desired. 
-(DEFINE-ALIEN-VARIABLE "rl_filename_quoting_function" (* RL-QUOTE-FUNC-T))
+(define-alien-variable "rl_filename_quoting_function" (* rl-quote-func-t))
 
 
 ;; Function to call to remove quoting characters from a filename.  Called
 ;; before completion is attempted, so the embedded quotes do not interfere
 ;; with matching names in the file system. 
-(DEFINE-ALIEN-VARIABLE "rl_filename_dequoting_function" (* RL-DEQUOTE-FUNC-T))
+(define-alien-variable "rl_filename_dequoting_function" (* rl-dequote-func-t))
 
 
 ;; Function to call to decide whether or not a word break character is
 ;; quoted.  If a character is quoted, it does not break words for the
 ;; completer. 
-(DEFINE-ALIEN-VARIABLE "rl_char_is_quoted_p" (* RL-LINEBUF-FUNC-T))
+(define-alien-variable "rl_char_is_quoted_p" (* rl-linebuf-func-t))
 
 
 ;; Non-zero means to suppress normal filename completion after the
 ;; user-specified completion function has been called. 
-(DEFINE-ALIEN-VARIABLE "rl_attempted_completion_over" INT)
+(define-alien-variable "rl_attempted_completion_over" int)
 
 
 ;; Set to a character describing the type of completion being attempted by
 ;; rl_complete_internal; available for use by application completion
 ;; functions. 
-(DEFINE-ALIEN-VARIABLE "rl_completion_type" INT)
+(define-alien-variable "rl_completion_type" int)
 
 
 ;; Character appended to completed words when at the end of the line.  The
 ;; default is a space.  Nothing is added if this is '\0'. 
-(DEFINE-ALIEN-VARIABLE "rl_completion_append_character" INT)
+(define-alien-variable "rl_completion_append_character" int)
 
 
 ;; Up to this many items will be displayed in response to a
 ;; possible-completions call.  After that, we ask the user if she
 ;; is sure she wants to see them all.  The default value is 100. 
-(DEFINE-ALIEN-VARIABLE "rl_completion_query_items" INT)
+(define-alien-variable "rl_completion_query_items" int)
 
 
 ;; If non-zero, then disallow duplicates in the matches. 
-(DEFINE-ALIEN-VARIABLE "rl_ignore_completion_duplicates" INT)
+(define-alien-variable "rl_ignore_completion_duplicates" int)
 
 
 ;; If this is non-zero, completion is (temporarily) inhibited, and the
 ;; completion character will be inserted as any other. 
-(DEFINE-ALIEN-VARIABLE "rl_inhibit_completion" INT)
+(define-alien-variable "rl_inhibit_completion" int)
 
    
 ;; Definitions available for use by readline clients. 
-(DEFCONSTANT RL-PROMPT-START-IGNORE (CODE-CHAR 1))
-(DEFCONSTANT RL-PROMPT-END-IGNORE   (CODE-CHAR 2))
+(defconstant rl-prompt-start-ignore (code-char 1))
+(defconstant rl-prompt-end-ignore   (code-char 2))
 
 
 
 ;; Possible values for do-replace argument to rl-filename-quoting-function,
 ;; called by rl-complete-internal. 
-(DEFCONSTANT NO-MATCH     0)
-(DEFCONSTANT SINGLE-MATCH 1)
-(DEFCONSTANT MULT-MATCH   2)
+(defconstant no-match     0)
+(defconstant single-match 1)
+(defconstant mult-match   2)
 
 
 
 ;; Possible state values for rl-readline-state 
-(DEFCONSTANT RL-STATE-NONE #X00000  "no state; before first call ")
-(DEFCONSTANT RL-STATE-INITIALIZING #X00001  "initializing ")
-(DEFCONSTANT RL-STATE-INITIALIZED #X00002  "initialization done ")
-(DEFCONSTANT RL-STATE-TERMPREPPED #X00004  "terminal is prepped ")
-(DEFCONSTANT RL-STATE-READCMD #X00008  "reading a command key ")
-(DEFCONSTANT RL-STATE-METANEXT #X00010  "reading input after ESC ")
-(DEFCONSTANT RL-STATE-DISPATCHING #X00020  "dispatching to a command ")
-(DEFCONSTANT RL-STATE-MOREINPUT #X00040  "reading more input in a command function ")
-(DEFCONSTANT RL-STATE-ISEARCH #X00080  "doing incremental search ")
-(DEFCONSTANT RL-STATE-NSEARCH #X00100  "doing non-inc search ")
-(DEFCONSTANT RL-STATE-SEARCH #X00200  "doing a history search ")
-(DEFCONSTANT RL-STATE-NUMERICARG #X00400  "reading numeric argument ")
-(DEFCONSTANT RL-STATE-MACROINPUT #X00800  "getting input from a macro ")
-(DEFCONSTANT RL-STATE-MACRODEF #X01000  "defining keyboard macro ")
-(DEFCONSTANT RL-STATE-OVERWRITE #X02000  "overwrite mode ")
-(DEFCONSTANT RL-STATE-COMPLETING #X04000  "doing completion ")
-(DEFCONSTANT RL-STATE-SIGHANDLER #X08000  "in readline sighandler ")
-(DEFCONSTANT RL-STATE-UNDOING #X10000  "doing an undo ")
-(DEFCONSTANT RL-STATE-INPUTPENDING #X20000  "rl-execute-next called ")
-(DEFCONSTANT RL-STATE-DONE #X80000  "done; accepted line ")
+(defconstant rl-state-none #x00000  "no state; before first call ")
+(defconstant rl-state-initializing #x00001  "initializing ")
+(defconstant rl-state-initialized #x00002  "initialization done ")
+(defconstant rl-state-termprepped #x00004  "terminal is prepped ")
+(defconstant rl-state-readcmd #x00008  "reading a command key ")
+(defconstant rl-state-metanext #x00010  "reading input after ESC ")
+(defconstant rl-state-dispatching #x00020  "dispatching to a command ")
+(defconstant rl-state-moreinput #x00040  "reading more input in a command function ")
+(defconstant rl-state-isearch #x00080  "doing incremental search ")
+(defconstant rl-state-nsearch #x00100  "doing non-inc search ")
+(defconstant rl-state-search #x00200  "doing a history search ")
+(defconstant rl-state-numericarg #x00400  "reading numeric argument ")
+(defconstant rl-state-macroinput #x00800  "getting input from a macro ")
+(defconstant rl-state-macrodef #x01000  "defining keyboard macro ")
+(defconstant rl-state-overwrite #x02000  "overwrite mode ")
+(defconstant rl-state-completing #x04000  "doing completion ")
+(defconstant rl-state-sighandler #x08000  "in readline sighandler ")
+(defconstant rl-state-undoing #x10000  "doing an undo ")
+(defconstant rl-state-inputpending #x20000  "rl-execute-next called ")
+(defconstant rl-state-done #x80000  "done; accepted line ")
 
 
 
-(DEFUN RL-SETSTATE (X)
-  (DECLARE (FIXNUM X))
-  (SETF RL-READLINE-STATE (LOGIOR RL-READLINE-STATE X)))
+(defun rl-setstate (x)
+  (declare (fixnum x))
+  (setf rl-readline-state (logior rl-readline-state x)))
 
-(DEFUN RL-UNSETSTATE (X)
-  (DECLARE (FIXNUM X))
-  (SETF RL-READLINE-STATE (LOGAND RL-READLINE-STATE (LOGNOT X))))
+(defun rl-unsetstate (x)
+  (declare (fixnum x))
+  (setf rl-readline-state (logand rl-readline-state (lognot x))))
 
-(DEFUN RL-ISSTATE (X)
-  (DECLARE (FIXNUM X))
-  (/= 0 (LOGAND RL-READLINE-STATE X)))
+(defun rl-isstate (x)
+  (declare (fixnum x))
+  (/= 0 (logand rl-readline-state x)))
 
 
-(DECLAIM
- (INLINE
-   USING-HISTORY HISTORY-GET-HISTORY-STATE HISTORY-SET-HISTORY-STATE
-   ADD-HISTORY REMOVE-HISTORY REPLACE-HISTORY-ENTRY CLEAR-HISTORY
-   STIFLE-HISTORY UNSTIFLE-HISTORY HISTORY-IS-STIFLED HISTORY-LIST
-   WHERE-HISTORY CURRENT-HISTORY HISTORY-GET HISTORY-TOTAL-BYTES
-   HISTORY-SET-POS PREVIOUS-HISTORY NEXT-HISTORY HISTORY-SEARCH
-   HISTORY-SEARCH-PREFIX HISTORY-SEARCH-POS READ-HISTORY
-   READ-HISTORY-RANGE WRITE-HISTORY APPEND-HISTORY
-   HISTORY-TRUNCATE-FILE HISTORY-EXPAND HISTORY-ARG-EXTRACT
-   GET-HISTORY-EVENT HISTORY-TOKENIZE RL-DIGIT-ARGUMENT
-   RL-UNIVERSAL-ARGUMENT RL-FORWARD RL-BACKWARD RL-BEG-OF-LINE
-   RL-END-OF-LINE RL-FORWARD-WORD RL-BACKWARD-WORD RL-REFRESH-LINE
-   RL-CLEAR-SCREEN RL-ARROW-KEYS RL-INSERT RL-QUOTED-INSERT
-   RL-TAB-INSERT RL-NEWLINE RL-DO-LOWERCASE-VERSION RL-RUBOUT RL-DELETE
-   RL-RUBOUT-OR-DELETE RL-DELETE-HORIZONTAL-SPACE
-   RL-DELETE-OR-SHOW-COMPLETIONS RL-INSERT-COMMENT RL-UPCASE-WORD
-   RL-DOWNCASE-WORD RL-CAPITALIZE-WORD RL-TRANSPOSE-WORDS
-   RL-TRANSPOSE-CHARS RL-CHAR-SEARCH RL-BACKWARD-CHAR-SEARCH
-   RL-BEGINNING-OF-HISTORY RL-END-OF-HISTORY RL-GET-NEXT-HISTORY
-   RL-GET-PREVIOUS-HISTORY RL-SET-MARK RL-EXCHANGE-POINT-AND-MARK
-   RL-VI-EDITING-MODE RL-EMACS-EDITING-MODE RL-RE-READ-INIT-FILE
-   RL-DUMP-FUNCTIONS RL-DUMP-MACROS RL-DUMP-VARIABLES RL-COMPLETE
-   RL-POSSIBLE-COMPLETIONS RL-INSERT-COMPLETIONS RL-MENU-COMPLETE
-   RL-KILL-WORD RL-BACKWARD-KILL-WORD RL-KILL-LINE
-   RL-BACKWARD-KILL-LINE RL-KILL-FULL-LINE RL-UNIX-WORD-RUBOUT
-   RL-UNIX-LINE-DISCARD RL-COPY-REGION-TO-KILL RL-KILL-REGION
-   RL-COPY-FORWARD-WORD RL-COPY-BACKWARD-WORD RL-YANK RL-YANK-POP
-   RL-YANK-NTH-ARG RL-YANK-LAST-ARG RL-REVERSE-SEARCH-HISTORY
-   RL-FORWARD-SEARCH-HISTORY RL-START-KBD-MACRO RL-END-KBD-MACRO
-   RL-CALL-LAST-KBD-MACRO RL-REVERT-LINE RL-UNDO-COMMAND
-   RL-TILDE-EXPAND RL-RESTART-OUTPUT RL-STOP-OUTPUT RL-ABORT
-   RL-TTY-STATUS RL-HISTORY-SEARCH-FORWARD RL-HISTORY-SEARCH-BACKWARD
-   RL-NONINC-FORWARD-SEARCH RL-NONINC-REVERSE-SEARCH
-   RL-NONINC-FORWARD-SEARCH-AGAIN RL-NONINC-REVERSE-SEARCH-AGAIN
-   RL-INSERT-CLOSE RL-CALLBACK-HANDLER-INSTALL RL-CALLBACK-READ-CHAR
-   RL-CALLBACK-HANDLER-REMOVE RL-VI-REDO RL-VI-UNDO RL-VI-YANK-ARG
-   RL-VI-FETCH-HISTORY RL-VI-SEARCH-AGAIN RL-VI-SEARCH RL-VI-COMPLETE
-   RL-VI-TILDE-EXPAND RL-VI-PREV-WORD RL-VI-NEXT-WORD RL-VI-END-WORD
-   RL-VI-INSERT-BEG RL-VI-APPEND-MODE RL-VI-APPEND-EOL RL-VI-EOF-MAYBE
-   RL-VI-INSERTION-MODE RL-VI-MOVEMENT-MODE RL-VI-ARG-DIGIT
-   RL-VI-CHANGE-CASE RL-VI-PUT RL-VI-COLUMN RL-VI-DELETE-TO
-   RL-VI-CHANGE-TO RL-VI-YANK-TO RL-VI-DELETE RL-VI-BACK-TO-INDENT
-   RL-VI-FIRST-PRINT RL-VI-CHAR-SEARCH RL-VI-MATCH RL-VI-CHANGE-CHAR
-   RL-VI-SUBST RL-VI-OVERSTRIKE RL-VI-OVERSTRIKE-DELETE RL-VI-REPLACE
-   RL-VI-SET-MARK RL-VI-GOTO-MARK RL-VI-CHECK RL-VI-DOMOVE
-   RL-VI-BRACKTYPE RL-VI-FWORD RL-VI-BWORD RL-VI-EWORD RL-VI-FWORD
-   RL-VI-BWORD RL-VI-EWORD READLINE RL-SET-PROMPT RL-EXPAND-PROMPT
-   RL-INITIALIZE RL-DISCARD-ARGUMENT RL-ADD-DEFUN RL-BIND-KEY
-   RL-BIND-KEY-IN-MAP RL-UNBIND-KEY RL-UNBIND-KEY-IN-MAP
-   RL-UNBIND-FUNCTION-IN-MAP RL-UNBIND-COMMAND-IN-MAP RL-SET-KEY
-   RL-GENERIC-BIND RL-VARIABLE-BIND RL-MACRO-BIND RL-NAMED-FUNCTION
-   RL-FUNCTION-OF-KEYSEQ RL-LIST-FUNMAP-NAMES
-   RL-INVOKING-KEYSEQS-IN-MAP RL-INVOKING-KEYSEQS RL-FUNCTION-DUMPER
-   RL-MACRO-DUMPER RL-VARIABLE-DUMPER RL-READ-INIT-FILE
-   RL-PARSE-AND-BIND RL-MAKE-BARE-KEYMAP RL-COPY-KEYMAP RL-MAKE-KEYMAP
-   RL-DISCARD-KEYMAP RL-GET-KEYMAP-BY-NAME RL-GET-KEYMAP-NAME
-   RL-SET-KEYMAP RL-GET-KEYMAP RL-SET-KEYMAP-FROM-EDIT-MODE
-   RL-GET-KEYMAP-NAME-FROM-EDIT-MODE RL-ADD-FUNMAP-ENTRY
-   RL-FUNMAP-NAMES RL-PUSH-MACRO-INPUT RL-ADD-UNDO RL-FREE-UNDO-LIST
-   RL-DO-UNDO RL-BEGIN-UNDO-GROUP RL-END-UNDO-GROUP RL-MODIFYING
-   RL-REDISPLAY RL-ON-NEW-LINE RL-ON-NEW-LINE-WITH-PROMPT
-   RL-FORCED-UPDATE-DISPLAY RL-CLEAR-MESSAGE RL-RESET-LINE-STATE
-   RL-CRLF RL-SHOW-CHAR RL-SAVE-PROMPT RL-RESTORE-PROMPT RL-INSERT-TEXT
-   RL-DELETE-TEXT RL-KILL-TEXT RL-COPY-TEXT RL-PREP-TERMINAL
-   RL-DEPREP-TERMINAL RL-TTY-SET-DEFAULT-BINDINGS RL-RESET-TERMINAL
-   RL-RESIZE-TERMINAL RL-SET-SCREEN-SIZE RL-GET-SCREEN-SIZE
-   RL-STUFF-CHAR RL-EXECUTE-NEXT RL-CLEAR-PENDING-INPUT RL-READ-KEY
-   RL-GETC RL-SET-KEYBOARD-INPUT-TIMEOUT RL-EXTEND-LINE-BUFFER RL-DING
-   RL-ALPHABETIC RL-SET-SIGNALS RL-CLEAR-SIGNALS
-   RL-CLEANUP-AFTER-SIGNAL RL-RESET-AFTER-SIGNAL RL-FREE-LINE-STATE
-   RL-MAYBE-UNSAVE-LINE RL-MAYBE-REPLACE-LINE RL-COMPLETE-INTERNAL
-   RL-DISPLAY-MATCH-LIST RL-COMPLETION-MATCHES
-   RL-USERNAME-COMPLETION-FUNCTION RL-FILENAME-COMPLETION-FUNCTION
-   RL-SETSTATE RL-UNSETSTATE RL-ISSTATE ))
+(declaim
+ (inline
+   using-history history-get-history-state history-set-history-state
+   add-history remove-history replace-history-entry clear-history
+   stifle-history unstifle-history history-is-stifled history-list
+   where-history current-history history-get history-total-bytes
+   history-set-pos previous-history next-history history-search
+   history-search-prefix history-search-pos read-history
+   read-history-range write-history append-history
+   history-truncate-file history-expand history-arg-extract
+   get-history-event history-tokenize rl-digit-argument
+   rl-universal-argument rl-forward rl-backward rl-beg-of-line
+   rl-end-of-line rl-forward-word rl-backward-word rl-refresh-line
+   rl-clear-screen rl-arrow-keys rl-insert rl-quoted-insert
+   rl-tab-insert rl-newline rl-do-lowercase-version rl-rubout rl-delete
+   rl-rubout-or-delete rl-delete-horizontal-space
+   rl-delete-or-show-completions rl-insert-comment rl-upcase-word
+   rl-downcase-word rl-capitalize-word rl-transpose-words
+   rl-transpose-chars rl-char-search rl-backward-char-search
+   rl-beginning-of-history rl-end-of-history rl-get-next-history
+   rl-get-previous-history rl-set-mark rl-exchange-point-and-mark
+   rl-vi-editing-mode rl-emacs-editing-mode rl-re-read-init-file
+   rl-dump-functions rl-dump-macros rl-dump-variables rl-complete
+   rl-possible-completions rl-insert-completions rl-menu-complete
+   rl-kill-word rl-backward-kill-word rl-kill-line
+   rl-backward-kill-line rl-kill-full-line rl-unix-word-rubout
+   rl-unix-line-discard rl-copy-region-to-kill rl-kill-region
+   rl-copy-forward-word rl-copy-backward-word rl-yank rl-yank-pop
+   rl-yank-nth-arg rl-yank-last-arg rl-reverse-search-history
+   rl-forward-search-history rl-start-kbd-macro rl-end-kbd-macro
+   rl-call-last-kbd-macro rl-revert-line rl-undo-command
+   rl-tilde-expand rl-restart-output rl-stop-output rl-abort
+   rl-tty-status rl-history-search-forward rl-history-search-backward
+   rl-noninc-forward-search rl-noninc-reverse-search
+   rl-noninc-forward-search-again rl-noninc-reverse-search-again
+   rl-insert-close rl-callback-handler-install rl-callback-read-char
+   rl-callback-handler-remove rl-vi-redo rl-vi-undo rl-vi-yank-arg
+   rl-vi-fetch-history rl-vi-search-again rl-vi-search rl-vi-complete
+   rl-vi-tilde-expand rl-vi-prev-word rl-vi-next-word rl-vi-end-word
+   rl-vi-insert-beg rl-vi-append-mode rl-vi-append-eol rl-vi-eof-maybe
+   rl-vi-insertion-mode rl-vi-movement-mode rl-vi-arg-digit
+   rl-vi-change-case rl-vi-put rl-vi-column rl-vi-delete-to
+   rl-vi-change-to rl-vi-yank-to rl-vi-delete rl-vi-back-to-indent
+   rl-vi-first-print rl-vi-char-search rl-vi-match rl-vi-change-char
+   rl-vi-subst rl-vi-overstrike rl-vi-overstrike-delete rl-vi-replace
+   rl-vi-set-mark rl-vi-goto-mark rl-vi-check rl-vi-domove
+   rl-vi-bracktype rl-vi-fword rl-vi-bword rl-vi-eword rl-vi-fword
+   rl-vi-bword rl-vi-eword readline rl-set-prompt rl-expand-prompt
+   rl-initialize rl-discard-argument rl-add-defun rl-bind-key
+   rl-bind-key-in-map rl-unbind-key rl-unbind-key-in-map
+   rl-unbind-function-in-map rl-unbind-command-in-map rl-set-key
+   rl-generic-bind rl-variable-bind rl-macro-bind rl-named-function
+   rl-function-of-keyseq rl-list-funmap-names
+   rl-invoking-keyseqs-in-map rl-invoking-keyseqs rl-function-dumper
+   rl-macro-dumper rl-variable-dumper rl-read-init-file
+   rl-parse-and-bind rl-make-bare-keymap rl-copy-keymap rl-make-keymap
+   rl-discard-keymap rl-get-keymap-by-name rl-get-keymap-name
+   rl-set-keymap rl-get-keymap rl-set-keymap-from-edit-mode
+   rl-get-keymap-name-from-edit-mode rl-add-funmap-entry
+   rl-funmap-names rl-push-macro-input rl-add-undo rl-free-undo-list
+   rl-do-undo rl-begin-undo-group rl-end-undo-group rl-modifying
+   rl-redisplay rl-on-new-line rl-on-new-line-with-prompt
+   rl-forced-update-display rl-clear-message rl-reset-line-state
+   rl-crlf rl-show-char rl-save-prompt rl-restore-prompt rl-insert-text
+   rl-delete-text rl-kill-text rl-copy-text rl-prep-terminal
+   rl-deprep-terminal rl-tty-set-default-bindings rl-reset-terminal
+   rl-resize-terminal rl-set-screen-size rl-get-screen-size
+   rl-stuff-char rl-execute-next rl-clear-pending-input rl-read-key
+   rl-getc rl-set-keyboard-input-timeout rl-extend-line-buffer rl-ding
+   rl-alphabetic rl-set-signals rl-clear-signals
+   rl-cleanup-after-signal rl-reset-after-signal rl-free-line-state
+   rl-maybe-unsave-line rl-maybe-replace-line rl-complete-internal
+   rl-display-match-list rl-completion-matches
+   rl-username-completion-function rl-filename-completion-function
+   rl-setstate rl-unsetstate rl-isstate ))
 
 
 
