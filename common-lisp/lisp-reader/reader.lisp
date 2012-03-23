@@ -2260,7 +2260,9 @@ RETURN: A list of all the macro and dispatch-macro characters in the readtable.
   nil)
  ((read-from-string "#P\"/tmp/a.c\"")
   (#.(make-pathname :directory '(:absolute "tmp")
-                     :name "a" :type "c" :version  #+ecl :newest #-ecl  nil
+                     :name "a"
+                     :type "c"
+                     :version #+(or ecl sbcl) :newest #-(or ecl sbcl) nil
                      :case :local) 12)
   nil))
 
