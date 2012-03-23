@@ -204,7 +204,8 @@ SIZE-INCREMENT: Add it to the size needed for the result.
                 ((characterp separator)  (make-string 1 :initial-element separator))
                 ((not (stringp separator))
                  (error "~S: separator must be a string or a character, not a ~S."
-                        'unsplit-string (type-of separator)))))
+                        'unsplit-string (type-of separator)))
+                (t separator)))
              (seplen (length separator))
              (size   (+ (reduce (function +) string-list :key (function length))
                         (* seplen (1- (length string-list)))))
@@ -219,7 +220,7 @@ SIZE-INCREMENT: Add it to the size needed for the result.
         (replace result (first string-list))
         (dolist (string (rest string-list) result)
           (replace result separator :start1 start) (incf start seplen)
-          (replace result string    :start1 start) (incf start (length string))))
+          (replace result string   :start1 start) (incf start (length string))))
       (make-array size-increment
                   :element-type 'character
                   :adjustable adjustable
