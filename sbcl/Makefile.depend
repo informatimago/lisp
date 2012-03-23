@@ -1,9 +1,0 @@
-# -*- mode: makefile -*-
-### clisp -ansi -q -x (SETF *LOAD-VERBOSE* NIL) (PROG1 (VALUES) (LOAD "/home/pjb/src/public/common/makedir/../common-lisp/make-depends.lisp")) (PROG1 (VALUES) (FORMAT T "~&") (COM.INFORMATIMAGO.COMMON-LISP.MAKE-DEPENDS:MAKE-DEPENDS '( "posix.fasl" "readline.fasl") '() '() '() :IDF NIL  :VERBOSE T )) (EXT:QUIT)
-;; Reading ASDF packages from /home/pjb/asdf-central-registry.data...
-; loading system definition from /usr/local/share/lisp/packages/net/sourceforge/cclan/asdf-install/asdf-install.asd into #<PACKAGE ASDF4109>
-; registering #<SYSTEM ASDF-INSTALL #x203F56A6> as ASDF-INSTALL
-# Processing posix.fasl
-posix.fasl :: posix.lisp  
-# Processing readline.fasl
-readline.fasl :: readline.lisp    

@@ -1,2 +1,0 @@
-#!/local/bin/sbcl --noinform
-(format t "~&Hello World!~%")
