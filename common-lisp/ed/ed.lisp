@@ -31,16 +31,21 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2012-03-31 <PJB> Made a few corrections.
 ;;;;    2003-12-19 <PJB> Created.
 ;;;;BUGS
 ;;;;
 ;;;;    Not complete.
 ;;;;    (Still waiting on regexp package...).
+;;;;
+;;;;    In: 1,20!(do-something-with *input*)
+;;;;    *input* is not bound to the 20 lines, and the output is not
+;;;;    *inserted in the buffer.
 ;;;; 
 ;;;;LEGAL
 ;;;;    GPL
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2003 - 2003
+;;;;    Copyright Pascal J. Bourguignon 2003 - 2012
 ;;;;
 ;;;;    This program is free software; you can redistribute it and/or
 ;;;;    modify it under the terms of the GNU General Public License
@@ -58,29 +63,29 @@
 ;;;;    Boston, MA 02111-1307 USA
 ;;;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.ED.ED"
-  (:DOCUMENTATION
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.ED.ED"
+  (:documentation
    "This package exports an implementation of the COMMON-LISP ED function
-    following the user manual of ed(1).
+following the user manual of ed(1).
 
-    Copyright Pascal J. Bourguignon 2003 - 2003
-    This package is provided under the GNU General Public License.
-    See the source file for details.")
-  (:USE "COMMON-LISP")
-  (:SHADOW "ED")
-  (:EXPORT "ED"))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.ED.ED")
+Copyright Pascal J. Bourguignon 2003 - 2012
+This package is provided under the GNU General Public License.
+See the source file for details.")
+  (:use "COMMON-LISP")
+  (:shadow "ED")
+  (:export "ED"))
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.ED.ED")
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (DEFCONSTANT +DEBUG+ T)
-  (defparameter show-debug t))
+  (defconstant +debug+       t)
+  (defparameter *show-debug* nil))
 
 
-(DEFMACRO DBG (&BODY BODY)
-  (WHEN +DEBUG+ 
-    `(when show-debug (LET ((*STANDARD-OUTPUT* *TRACE-OUTPUT*)) ,@BODY))))
+(defmacro dbg (&body body)
+  (when +debug+ 
+    `(when *show-debug* (let ((*standard-output* *trace-output*)) ,@body))))
 
 ;;(WHEN +DEBUG+
 ;;(shadow 'handler-case)
@@ -88,126 +93,115 @@
 
 
 
-(DEFSTRUCT BUFFER
-  (PATH         NIL)
-  (LINES        '(0)) ;; (index-of-current-line . lines)
-  (MARKS        '( )) ;; ((ch . linum) ...)
-  (OLD-LINES    '(0)) ;; (index-of-current-line . lines)
-  (OLD-MARKS    '( )) ;; ((ch . linum) ...)
-  (CUT-LINES    '( )) ;; (lines ...)
-  (MESSAGE      '(NIL nil ""))
-  (PROMPT       '(NIL . "*"))
-  (command      nil)
-  (MODIFIED     NIL)
-  (print        NIL)
-  (QUIT         NIL)
-  ) ;;BUFFER
+;;--------
+;; buffer:
+;;--------
+
+(defstruct buffer
+  (path          nil)
+  (lines         '(0)) ; (index-of-current-line . lines)
+  (marks         '( )) ; ((ch . linum) ...)
+  (old-lines     '(0)) ; (index-of-current-line . lines)
+  (old-marks     '( )) ; ((ch . linum) ...)
+  (cut-lines     '( )) ; (lines ...)
+  (show-errors   nil)
+  (got-error     nil)
+  (last-error    "")
+  (show-prompt   nil)
+  (prompt-string "")
+  (command       nil)
+  (modified      nil)
+  (print         nil)
+  (quit          nil))
 
 ;; (setq b (buffer-read "~/test.txt"))
 
-(DEFMACRO TOGGLE (PLACE) `(SETF ,PLACE (NOT ,PLACE)))
+(defmacro toggle (place &environment env)
+  (multiple-value-bind (vars vals stores setter getter) (get-setf-expansion place env)
+    `(let* (,@(mapcar (function list) vars vals)
+            (,(car stores) ,getter))
+       (prog1
+           (setq ,(car stores) (not ,(car stores)))
+         ,setter))))
 
 
 ;;-------
 ;; lines:
 ;;-------
 
-(DEFMACRO BUFFER-CURRENT-LINUM  (BUFFER) `(CAR (BUFFER-LINES ,BUFFER)))
-(DEFUN    BUFFER-LENGTH         (BUFFER) (LENGTH (CDR (BUFFER-LINES BUFFER))))
-(DEFUN    BUFFER-NTH-LINE (BUFFER LINUM) (CAR (BUFFER-LINE-CONS BUFFER LINUM)))
+(defun (setf buffer-current-linum) (new-linum buffer) (setf (car (buffer-lines buffer)) new-linum))
+(defun buffer-current-linum  (buffer) (car (buffer-lines buffer)))
+(defun buffer-length         (buffer) (length (cdr (buffer-lines buffer))))
+(defun buffer-nth-line (buffer linum) (car (buffer-line-cons buffer linum)))
 
-(DEFUN BUFFER-LINE-CONS (BUFFER LINUM)
-  (IF (< LINUM 0)
-      NIL
-      (NTHCDR  LINUM (BUFFER-LINES BUFFER)))
-  ) ;;BUFFER-LINE-CONS
+(defun buffer-line-cons (buffer linum)
+  "Return the cons cells where the line LINUM of the BUFFER is stored."
+  (if (< linum 0)
+      nil
+      (nthcdr linum (buffer-lines buffer))))
 
 ;;-------
 ;; marks:
 ;;-------
 
-(DEFUN BUFFER-SET-MARK (BUFFER CH LINUM)
-  (LET ((ASS (ASSOC CH (BUFFER-MARKS BUFFER))))
-    (IF ASS
-        (SETF (CDR ASS) LINUM)
-        (PUSH (CONS CH LINUM) (BUFFER-MARKS BUFFER))))
-  (VALUES)) ;;BUFFER-SET-MARK
+(defun buffer-set-mark (buffer ch linum)
+  (let ((ass (assoc ch (buffer-marks buffer))))
+    (if ass
+        (setf (cdr ass) linum)
+        (push (cons ch linum) (buffer-marks buffer))))
+  (values))
 
 
-(DEFUN BUFFER-GET-MARK (BUFFER CH)
-  (CDR (ASSOC CH (BUFFER-MARKS BUFFER)))
-  ) ;;BUFFER-GET-MARK
+(defun buffer-get-mark (buffer ch)
+  (cdr (assoc ch (buffer-marks buffer))))
 
 
-(DEFUN BUFFER-OFFSET-MARKS (BUFFER FROM OFFSET)
-  (IF (< OFFSET 0)
-      (LET ((MINDEL (+ FROM OFFSET)))
-        (SETF (BUFFER-MARKS BUFFER)
-              (MAPCAN (LAMBDA (ASS)
-                        (COND
-                          ((< (CDR ASS) MINDEL) (LIST ASS))
-                          ((< (CDR ASS) FROM)   NIL)
-                          (T  (INCF (CDR ASS) OFFSET) (LIST ASS))))
-                      (BUFFER-MARKS BUFFER))))
-      (MAP NIL (LAMBDA (ASS) (WHEN (<= FROM (CDR ASS)) (INCF (CDR ASS) OFFSET)))
-           (BUFFER-MARKS BUFFER)))
-  ) ;;BUFFER-OFFSET-MARKS
+(defun buffer-offset-marks (buffer from offset)
+  (if (< offset 0)
+      (let ((mindel (+ from offset)))
+        (setf (buffer-marks buffer)
+              (mapcan (lambda (ass)
+                        (cond
+                          ((< (cdr ass) mindel) (list ass))
+                          ((< (cdr ass) from)   nil)
+                          (t  (incf (cdr ass) offset) (list ass))))
+                      (buffer-marks buffer))))
+      (map nil (lambda (ass) (when (<= from (cdr ass)) (incf (cdr ass) offset)))
+           (buffer-marks buffer))))
 
 
-(DEFUN COPY-MARKS (MARKS)
-  (MAPCAR (LAMBDA (ASS) (CONS (CAR ASS) (CDR ASS))) MARKS)
-  ) ;;COPY-MARKS
-
-
-;;-------------
-;; undo buffer:
-;;-------------
-
-(DEFUN BUFFER-SAVE-UNDO (BUFFER)
-  (SETF (BUFFER-MODIFIED BUFFER) T)
-  (SETF (BUFFER-OLD-MARKS BUFFER) (COPY-MARKS (BUFFER-MARKS BUFFER))
-        (BUFFER-OLD-LINES BUFFER) (COPY-SEQ (BUFFER-LINES buffer)))
-  ) ;;BUFFER-SAVE-UNDO
-
-
-(DEFUN BUFFER-SWAP-UNDO (BUFFER)
-  (PSETF (BUFFER-OLD-MARKS BUFFER) (BUFFER-MARKS BUFFER)
-         (BUFFER-MARKS BUFFER)     (BUFFER-OLD-MARKS BUFFER)
-         (BUFFER-OLD-LINES BUFFER) (BUFFER-LINES BUFFER)
-         (BUFFER-LINES BUFFER)     (BUFFER-OLD-LINES BUFFER))
-  ) ;;BUFFER-SWAP-UNDO
+(defun copy-marks (marks)
+  (mapcar (lambda (ass) (cons (car ass) (cdr ass))) marks))
 
 
 ;;----------------
 ;; error messages:
 ;;----------------
 
-(defmacro buffer-show-errors (buffer) `(first  (buffer-message ,buffer)))
-(defmacro buffer-got-error   (buffer) `(second (buffer-message ,buffer)))
-(defmacro buffer-last-error  (buffer) `(third  (buffer-message ,buffer)))
-
-  
 (defun buffer-clear-error (buffer)
-  (setf (buffer-got-error buffer) nil)
-  ) ;;buffer-clear-error
+  (setf (buffer-got-error buffer) nil))
 
 
 (defun buffer-set-error (buffer message)
   (setf (buffer-last-error buffer) message
-        (buffer-got-error  buffer) t)
-  ) ;;buffer-set-error
+        (buffer-got-error  buffer) t))
 
 
+;;-------------
+;; undo buffer:
+;;-------------
 
-;;--------
-;; prompt:
-;;--------
-
-(defmacro buffer-show-prompt   (buffer) `(car (buffer-prompt ,buffer)))
-(defmacro buffer-prompt-string (buffer) `(cdr (buffer-prompt ,buffer)))
+(defun buffer-save-undo (buffer)
+  (setf (buffer-modified buffer) t)
+  (setf (buffer-old-marks buffer) (copy-marks (buffer-marks buffer))
+        (buffer-old-lines buffer) (copy-seq (buffer-lines buffer))))
 
 
-
+(defun buffer-swap-undo (buffer)
+  (psetf (buffer-old-marks buffer) (buffer-marks buffer)
+         (buffer-marks buffer)     (buffer-old-marks buffer)
+         (buffer-old-lines buffer) (buffer-lines buffer)
+         (buffer-lines buffer)     (buffer-old-lines buffer)))
 
 
 (defun buffer-erase (buffer)
@@ -217,82 +211,77 @@
         (buffer-old-lines buffer) '(0)
         (buffer-old-marks buffer) nil
         (buffer-cut-lines buffer) nil
-        (buffer-modified  buffer) t)
-  ) ;;buffer-erase
+        (buffer-modified  buffer) t))
 
 
 
-(DEFUN BUFFER-READ (PATH)
-  (let ((buffer (MAKE-BUFFER :PATH PATH)))
+(defun buffer-read (path)
+  (let ((buffer (make-buffer :path path)))
     (do-read buffer path 0)
-    buffer)
-  ) ;;BUFFER-READ
+    buffer))
 
 
-(DEFUN BUFFER-FROM-STRING (TEXT)
+(defun buffer-from-string (text)
   (let ((buffer(make-buffer)))
     (do-paste buffer 0
-              (DO ((NEWLINE (FORMAT NIL "~%"))
-                   (LINES ()) (POSITION 0) (NEXTPOS 0))
-                  ((>= NEXTPOS (LENGTH TEXT)) (NREVERSE LINES))
-                (SETQ POSITION (SEARCH NEWLINE TEXT :START2 NEXTPOS))
-                (IF POSITION
-                    (PROGN
-                      (PUSH (SUBSEQ TEXT NEXTPOS POSITION) LINES)
-                      (SETQ NEXTPOS (+ POSITION (LENGTH NEWLINE))))
-                    (PROGN
-                      (PUSH (SUBSEQ TEXT NEXTPOS) LINES)
-                      (SETQ NEXTPOS (LENGTH TEXT))))))
-    buffer)
-  ) ;;BUFFER-FROM-STRING
+              (do ((newline (format nil "~%"))
+                   (lines ()) (position 0) (nextpos 0))
+                  ((>= nextpos (length text)) (nreverse lines))
+                (setq position (search newline text :start2 nextpos))
+                (if position
+                    (progn
+                      (push (subseq text nextpos position) lines)
+                      (setq nextpos (+ position (length newline))))
+                    (progn
+                      (push (subseq text nextpos) lines)
+                      (setq nextpos (length text))))))
+    buffer))
 
 
 
-(DEFUN LIMIT (VALUE MIN MAX)
-  (IF (<= MIN VALUE MAX)
-      VALUE
-      NIL)) ;;LIMIT
+(defun limit (value min max)
+  (if (<= min value max)
+      value
+      nil))
 
 
-(DEFUN ADDRESS->LINUM (BUFFER ADDRESS &OPTIONAL (MIN 1))
-  (COND
-    ((NULL ADDRESS) NIL)
-    ((EQ ADDRESS :CURR)  (BUFFER-CURRENT-LINUM BUFFER))
-    ((EQ ADDRESS :FIRST) 1)
-    ((EQ ADDRESS :LAST)  (BUFFER-LENGTH BUFFER))
-    ((EQ ADDRESS :NEXT)  (LIMIT (1+ (BUFFER-CURRENT-LINUM BUFFER))
-                                1 (BUFFER-LENGTH BUFFER)))
-    ((EQ ADDRESS :PREV)  (LIMIT (1- (BUFFER-CURRENT-LINUM BUFFER))
-                                MIN (BUFFER-LENGTH BUFFER)))
-    ((NOT (CONSP ADDRESS)) NIL)
-    ((EQ (CAR ADDRESS) :NEXT) (LIMIT (+ (BUFFER-CURRENT-LINUM BUFFER)
-                                        (CDR ADDRESS))
-                                     1 (BUFFER-LENGTH BUFFER)))
-    ((EQ (CAR ADDRESS) :PREV) (LIMIT (- (BUFFER-CURRENT-LINUM BUFFER)
-                                        (CDR ADDRESS))
-                                     MIN (BUFFER-LENGTH BUFFER)))
-    ((EQ (CAR ADDRESS) :LINUM) (LIMIT (CDR ADDRESS)
-                                      MIN (BUFFER-LENGTH BUFFER)))
-    ((EQ (CAR ADDRESS) :MARK) (LIMIT (BUFFER-GET-MARK BUFFER (CDR ADDRESS))
-                                     1 (BUFFER-LENGTH BUFFER)))
-    ((EQ (CAR ADDRESS) :REGEXP)
+(defun address->linum (buffer address &optional (min 1))
+  (cond
+    ((null address) nil)
+    ((eq address :curr)  (buffer-current-linum buffer))
+    ((eq address :first) 1)
+    ((eq address :last)  (buffer-length buffer))
+    ((eq address :next)  (limit (1+ (buffer-current-linum buffer))
+                                1 (buffer-length buffer)))
+    ((eq address :prev)  (limit (1- (buffer-current-linum buffer))
+                                min (buffer-length buffer)))
+    ((not (consp address)) nil)
+    ((eq (car address) :next) (limit (+ (buffer-current-linum buffer)
+                                        (cdr address))
+                                     1 (buffer-length buffer)))
+    ((eq (car address) :prev) (limit (- (buffer-current-linum buffer)
+                                        (cdr address))
+                                     min (buffer-length buffer)))
+    ((eq (car address) :linum) (limit (cdr address)
+                                      min (buffer-length buffer)))
+    ((eq (car address) :mark) (limit (buffer-get-mark buffer (cdr address))
+                                     1 (buffer-length buffer)))
+    ((eq (car address) :regexp)
      ;; TODO: regexp not implemented yet.
-     (format *terminal-io* "REGEXP NOT IMPLEMENTED YET.~%")
-     ))) ;;ADDRESS->LINUM
+     (format *terminal-io* "REGEXP NOT IMPLEMENTED YET.~%"))))
 
 
 (defmacro with-addresses ((buffer . addresses) &body body)
-  `(LET ,(mapcar (lambda (vam)
+  `(let ,(mapcar (lambda (vam)
                    `(,(first vam)
-                      (ADDRESS->LINUM ,buffer ,(second vam) ,(third vam))))
+                      (address->linum ,buffer ,(second vam) ,(third vam))))
                  addresses)
-     (IF (or ,@(mapcar (lambda (vam) `(null ,(first vam))) addresses)
+     (if (or ,@(mapcar (lambda (vam) `(null ,(first vam))) addresses)
              ,@(when (<= 2 (length addresses))
                      `((< ,(first (second addresses))
                           ,(first (first  addresses))))))
          (buffer-set-error ,buffer "Invalid address")
-         (PROGN ,@body)))
-  ) ;;with-addresses
+         (progn ,@body))))
 
 
 (defmacro unless-modified (buffer &body body)
@@ -301,67 +290,62 @@
          (setf (buffer-modified ,buffer) nil)
          (buffer-set-error ,buffer "Warning: file modified"))
        (progn
-         ,@body))
-  ) ;;unless-modified
+         ,@body)))
 
 
 ;; (progn (PJB-CL+INDENT with-addresses 1)(PJB-CL+INDENT unless-modified 1))
 
-(DEFUN DO-INSERT (BUFFER LINUM)
-  (DBG (FORMAT T "DO-INSERT(~S ~S) ~%" "buffer" linum))
-  (DO ((PLACE (BUFFER-LINE-CONS BUFFER LINUM) (CDR PLACE))
-       (LINE  (READ-LINE *TERMINAL-IO* NIL ".")
-              (READ-LINE *TERMINAL-IO* NIL "."))
-       (CURR  LINUM (1+ CURR)))
-      ((STRING= LINE ".")
-       (PROGN
-         (SETF (BUFFER-CURRENT-LINUM BUFFER) CURR)
-         (BUFFER-OFFSET-MARKS BUFFER LINUM (- CURR LINUM))))
-    (SETF (CDR PLACE) (CONS LINE (CDR PLACE))))
-  ) ;;DO-INSERT
+(defun do-insert (buffer linum)
+  (dbg (format t "DO-INSERT(~S ~S) ~%" "buffer" linum))
+  (do ((place (buffer-line-cons buffer linum) (cdr place))
+       (line  (read-line *terminal-io* nil ".")
+              (read-line *terminal-io* nil "."))
+       (curr  linum (1+ curr)))
+      ((string= line ".")
+       (progn
+         (setf (buffer-current-linum buffer) curr)
+         (buffer-offset-marks buffer linum (- curr linum))))
+    (setf (cdr place) (cons line (cdr place)))))
 
 
 (defun do-paste (buffer linum new-lines)
-  (DBG (FORMAT T "DO-PASTE(~S ~S [~D lines]) ~%"
+  (dbg (format t "DO-PASTE(~S ~S [~D lines]) ~%"
                "buffer" linum (length new-lines)))
   (let* ((insert-point (buffer-line-cons buffer linum))
          (after        (cdr insert-point)))
     (setf (buffer-current-linum buffer) (+ linum (length new-lines)))
     (setf (cdr insert-point) new-lines)
-    (setf (cdr (last new-lines)) after))
-  ) ;;do-paste
+    (setf (cdr (last new-lines)) after)))
 
 
 (defun do-cut (buffer from last)
   "
 RETURN: The list of cut lines.
 "
-  (DBG (FORMAT T "DO-CUT(~S ~S ~S) ~%" "buffer" from last))
+  (dbg (format t "DO-CUT(~S ~S ~S) ~%" "buffer" from last))
   (let* ((delete-point (buffer-line-cons buffer (1- from)))
          (after-point  (buffer-line-cons buffer  last))
          (result       (cdr delete-point)))
     (setf (buffer-current-linum buffer)
           (if (null (cdr after-point)) from (1+ from)))
     (setf (cdr delete-point) (cdr after-point)
-          (cdr after-point) Nil)
-    (BUFFER-OFFSET-MARKS BUFFER from (- LAST from -1))
-    result)
-  ) ;;do-cut
+          (cdr after-point) nil)
+    (buffer-offset-marks buffer from (- last from -1))
+    result))
 
 
-(DEFUN DO-PRINT-LINES (BUFFER curr last FUNC)
-  (DBG (FORMAT T " DO-PRINT-LINES(~S ~S ~S [a function]) ~%" "buffer" curr last))
+(defun do-print-lines (buffer curr last func)
+  (dbg (format t " DO-PRINT-LINES(~S ~S ~S [a function]) ~%" "buffer" curr last))
   (setf (buffer-print buffer) nil)
-  (DO* ((CURR CURR (1+ CURR))
-        (LINES (BUFFER-LINE-CONS BUFFER CURR) (CDR LINES)))
-       ((> CURR LAST)
-        (SETF (BUFFER-CURRENT-LINUM BUFFER) LAST))
-    (FUNCALL FUNC CURR (CAR LINES)))
-  ) ;;DO-PRINT-LINES
+  (do* ((curr curr (1+ curr))
+        (lines (buffer-line-cons buffer curr) (cdr lines)))
+       ((> curr last)
+        (setf (buffer-current-linum buffer) last))
+    (funcall func curr (car lines))))
 
 
 (defun do-write (buffer path mode from last)
-  (DBG (FORMAT T "DO-WRITE(~S ~S ~S ~S ~S) ~%" "buffer" path mode from last))
+  (dbg (format t "DO-WRITE(~S ~S ~S ~S ~S) ~%" "buffer" path mode from last))
   (handler-case
       (with-open-file (output path :direction :output :if-exists mode
                               :if-does-not-exist :create)
@@ -369,12 +353,11 @@ RETURN: The list of cut lines.
              (curr from (1+ curr)))
             ((> curr last))
           (format output "~A~%" (car line))))
-    (error (err) (buffer-set-error buffer (format nil "~S" err))))
-  ) ;;do-write
+    (error (err) (buffer-set-error buffer (format nil "~S" err)))))
 
 
 (defun do-read (buffer path linum)
-  (DBG (FORMAT T "DO-READ(~S ~S ~S) ~%" "buffer" path linum))
+  (dbg (format t "DO-READ(~S ~S ~S) ~%" "buffer" path linum))
   (handler-case
       (do-paste buffer linum
                 (with-open-file (input path :direction :input
@@ -383,30 +366,30 @@ RETURN: The list of cut lines.
                        (line t))
                       ((null line) (nreverse (cdr lines)))
                     (setf line (read-line input nil nil)))))
-    (error (err) (buffer-set-error buffer (format nil "~S" err))))
-  ) ;;do-read
+    (error (err) (buffer-set-error buffer (format nil "~S" err)))))
 
 
 (defun filter-command-output (output)
   (if (and (listp output) (every (function stringp) output))
       output
-      (list (format nil "~S" output)))
-  ) ;;filter-command-output
+      (list (format nil "~S" output))))
 
 
 ;; (defmacro hc (form &rest rest) form)
 
 (defun do-command (buffer &key (input nil) (output :print))
-  (DBG (FORMAT T "DO-COMMAND(~S ~S ~S) ~%" "buffer" input output))
+  (dbg (format t "DO-COMMAND(~S ~S ~S) ~%" "buffer" input output))
   (if (buffer-command buffer)
       (handler-case
           (progn
             (format *terminal-io* "~A~%" (buffer-command buffer))
-            (let ((results  (eval `((lambda (*input*)
-                                      ,(read-from-string 
-                                        (format nil "(progn  ~A )"
-                                                (buffer-command buffer))))
-                                    (list ,@input)))))
+            (let* ((*package* (find-package "COM.INFORMATIMAGO.COMMON-LISP.ED.ED"))
+                   (results   (eval `((lambda (*input*)
+                                        (declare (ignorable *input*))
+                                        ,(read-from-string 
+                                          (format nil "(progn  ~A)"
+                                                  (buffer-command buffer))))
+                                      (list ,@input)))))
               (case output
                 ((:print)
                  (map nil (lambda (line) (format *terminal-io* "~A~%" line))
@@ -424,62 +407,57 @@ RETURN: The list of cut lines.
           (values)))
       (progn
         (buffer-set-error buffer "No previous command")
-        (values)))
-  ) ;;do-command
+        (values))))
 
 
-(DEFUN CMD-COMMENT (BUFFER FROM TO ARG)
-  (DECLARE (IGNORE FROM TO ARG))
-  (DBG (FORMAT T "CMD-COMMENT: ~%"))
+(defun cmd-comment (buffer from to arg)
+  (declare (ignore from to arg))
+  (dbg (format t "CMD-COMMENT: ~%"))
   ;; (.,.)#  Begins a comment;  the rest of the line, up to a newline,
   ;;         is ignored.  If a line address followed by a semicolon is
   ;;         given,  then  the current address is set to that address.
   ;;         Otherwise, the current address is unchanged.
-  (setf (buffer-print buffer) nil)
-  ) ;;CMD-COMMENT
+  (setf (buffer-print buffer) nil))
 
 
-(DEFUN CMD-APPEND (BUFFER FROM TO ARG)
+(defun cmd-append (buffer from to arg)
   (declare (ignore from arg))
-  (DBG (FORMAT T "CMD-APPEND: ~%"))
+  (dbg (format t "CMD-APPEND: ~%"))
   ;; (.)a    Appends text to the  buffer  after  the  addressed  line,
   ;;         which  may  be  the address 0 (zero).  Text is entered in
   ;;         input mode.  The current address  is  set  to  last  line
   ;;         entered.
   (with-addresses (buffer (linum to 0))
-    (BUFFER-SAVE-UNDO BUFFER)
-    (DO-INSERT BUFFER LINUM))
-  ) ;;CMD-APPEND
+    (buffer-save-undo buffer)
+    (do-insert buffer linum)))
 
 
-(DEFUN CMD-INSERT (BUFFER FROM TO ARG)
+(defun cmd-insert (buffer from to arg)
   (declare (ignore from arg))
-  (DBG (FORMAT T "CMD-INSERT: ~%"))
+  (dbg (format t "CMD-INSERT: ~%"))
   ;; (.)i    Inserts text in the buffer before the current line.  Text
   ;;         is entered in input mode.  The current address is set  to
   ;;         the last line entered.
   (with-addresses (buffer (linum to 1))
-    (BUFFER-SAVE-UNDO BUFFER)
-    (DO-INSERT BUFFER (1- LINUM)))
-  ) ;;CMD-INSERT
+    (buffer-save-undo buffer)
+    (do-insert buffer (1- linum))))
 
 
-(DEFUN CMD-DELETE-LINES (BUFFER FROM TO ARG)
+(defun cmd-delete-lines (buffer from to arg)
   (declare (ignore arg))
-  (DBG (FORMAT T "CMD-DELETE-LINES: ~%"))
+  (dbg (format t "CMD-DELETE-LINES: ~%"))
   ;; (.,.)d  Deletes the addressed lines from the buffer.  If there is
   ;;         a  line after the deleted range, then the current address
   ;;         is set to this line. Otherwise the current address is set
   ;;         to the line before the deleted range.
   (with-addresses (buffer (curr from 1) (last to 1))
-    (BUFFER-SAVE-UNDO BUFFER)
-    (SETF (BUFFER-CUT-LINES BUFFER) (do-cut buffer curr last)))
-  ) ;;CMD-DELETE-LINES
+    (buffer-save-undo buffer)
+    (setf (buffer-cut-lines buffer) (do-cut buffer curr last))))
 
                   
-(DEFUN CMD-COPY (BUFFER FROM TO ARG)
+(defun cmd-copy (buffer from to arg)
   (declare (ignore arg))
-  (DBG (FORMAT T "CMD-COPY: ~%"))
+  (dbg (format t "CMD-COPY: ~%"))
   ;; (.,.)y  Copies (yanks) the addressed lines  to  the  cut  buffer.
   ;;         The  cut  buffer  is  overwritten by subsequent `y', `s',
   ;;         `j', `d',  or  `c'  commands.   The  current  address  is
@@ -490,130 +468,120 @@ RETURN: The list of cut lines.
     ;; because they're considered immutable.
     ;; When edited (changed, substituted),
     ;; a new copy replaces the old one.
-    (SETF (BUFFER-CUT-LINES BUFFER)
-          (subseq (buffer-lines buffer) curr (1+ last))))
-  ) ;;CMD-COPY
+    (setf (buffer-cut-lines buffer)
+          (subseq (buffer-lines buffer) curr (1+ last)))))
 
  
-(DEFUN CMD-PASTE (BUFFER FROM TO ARG)
+(defun cmd-paste (buffer from to arg)
   (declare (ignore from arg))
-  (DBG (FORMAT T "CMD-PASTE: ~%"))
+  (dbg (format t "CMD-PASTE: ~%"))
   ;; (.)x    Copies (puts) the contents of the cut buffer to after the
   ;;         addressed  line.   The current address is set to the last
   ;;         line copied.
   (with-addresses (buffer (curr to 0))
-    (BUFFER-SAVE-UNDO BUFFER)
-    (do-paste buffer curr (copy-seq (buffer-cut-lines buffer))))
-  ) ;;CMD-PASTE
+    (buffer-save-undo buffer)
+    (do-paste buffer curr (copy-seq (buffer-cut-lines buffer)))))
 
 
-(DEFUN CMD-UNDO (BUFFER FROM TO ARG)
+(defun cmd-undo (buffer from to arg)
   (declare (ignore from to arg))
-  (DBG (FORMAT T "CMD-UNDO: ~%"))
+  (dbg (format t "CMD-UNDO: ~%"))
   ;; u       Undoes the last command and restores the current  address
   ;;         to  what  it was before the command.  The global commands
   ;;         `g', `G', `v', and `V'.  are treated as a single  command
   ;;         by undo.  `u' is its own inverse.
-  (buffer-swap-undo buffer)
-  ) ;;CMD-UNDO
+  (buffer-swap-undo buffer))
 
 
 
-(DEFUN CMD-COPY-LINES (BUFFER FROM TO ARG)
-  (DBG (FORMAT T "CMD-COPY-LINES: ~%"))
+(defun cmd-copy-lines (buffer from to arg)
+  (dbg (format t "CMD-COPY-LINES: ~%"))
   ;; (.,.)t(.)
   ;;         Copies (i.e., transfers) the addressed lines to after the
   ;;         right-hand destination address, which may be the  address
   ;;         0  (zero).   The  current address is set to the last line
   ;;         copied.
   (with-addresses (buffer (curr from 1) (last to 1) (target arg 0))
-    (BUFFER-SAVE-UNDO BUFFER)
-    (do-paste buffer arg (subseq (buffer-lines buffer) curr (1+ last))))
-  ) ;;CMD-COPY-LINES
+    (buffer-save-undo buffer)
+    (do-paste buffer arg (subseq (buffer-lines buffer) curr (1+ last)))))
 
 
-(DEFUN CMD-MOVE-LINES (BUFFER FROM TO ARG)
-  (DBG (FORMAT T "CMD-MOVE-LINES: ~%"))
+(defun cmd-move-lines (buffer from to arg)
+  (dbg (format t "CMD-MOVE-LINES: ~%"))
   ;; (.,.)m(.)
   ;;         Moves lines in the buffer.  The addressed lines are moved
   ;;         to after the right-hand destination address, which may be
   ;;         the address 0 (zero).  The current address is set to  the
   ;;         last line moved.
   (with-addresses (buffer (curr from 1) (last to 1) (target arg 0))
-    (BUFFER-SAVE-UNDO BUFFER)
-    (do-paste buffer arg (do-cut buffer curr last)))
-  ) ;;CMD-MOVE-LINES
+    (buffer-save-undo buffer)
+    (do-paste buffer arg (do-cut buffer curr last))))
 
 
-(DEFUN CMD-CHANGE-LINES (BUFFER FROM TO ARG)
-  (DBG (FORMAT T "CMD-CHANGE-LINES: ~%"))
+(defun cmd-change-lines (buffer from to arg)
+  (dbg (format t "CMD-CHANGE-LINES: ~%"))
   ;; (.,.)c  Changes  lines  in  the  buffer.  The addressed lines are
   ;;         deleted from the buffer, and text is  appended  in  their
   ;;         place.   Text  is  entered  in  input  mode.  The current
   ;;         address is set to last line entered.
   (with-addresses (buffer (curr from 1) (last to 1) (target arg 0))
-    (BUFFER-SAVE-UNDO BUFFER)
+    (buffer-save-undo buffer)
     (setf (buffer-cut-lines buffer) (do-cut buffer curr last))
-    (do-insert buffer curr))
-  ) ;;CMD-CHANGE-LINES
+    (do-insert buffer curr)))
 
 
-(DEFUN CMD-JOIN-LINES (BUFFER FROM TO ARG)
+(defun cmd-join-lines (buffer from to arg)
   (declare (ignore arg))
-  (DBG (FORMAT T "CMD-JOIN-LINES: ~%"))
+  (dbg (format t "CMD-JOIN-LINES: ~%"))
   ;; (.,.+1)j
   ;;         Joins  the  addressed  lines.   The  addressed  lines are
   ;;         deleted from the buffer and replaced  by  a  single  line
   ;;         containing their joined text.  The current address is set
   ;;         to the resultant line.
   (with-addresses (buffer (curr from 1) (last to 1))
-    (BUFFER-SAVE-UNDO BUFFER)
+    (buffer-save-undo buffer)
     (setf (buffer-cut-lines buffer) (do-cut buffer curr last))
     (do-paste buffer (1- curr)
               (apply (function concatenate) 'string
-                     (buffer-cut-lines buffer))))
-  ) ;;CMD-JOIN-LINES
+                     (buffer-cut-lines buffer)))))
 
 
-(DEFUN CMD-MARK (BUFFER FROM TO ARG)
+(defun cmd-mark (buffer from to arg)
   (declare (ignore from))
-  (DBG (FORMAT T "CMD-MARK: ~%"))
+  (dbg (format t "CMD-MARK: ~%"))
   ;; (.)klc  Marks a line with a lower case letter lc.  The  line  can
   ;;         then  be  addressed as 'lc (i.e., a single quote followed
   ;;         by lc ) in subsequent commands.  The mark is not  cleared
   ;;         until the line is deleted or otherwise modified.
   (with-addresses (buffer (curr to 1))
-    (BUFFER-SET-MARK BUFFER arg curr))
-  ) ;;CMD-MARK
+    (buffer-set-mark buffer arg curr)))
 
 
-(DEFUN CMD-PRINT-LINE-NUMBER (BUFFER FROM TO ARG)
+(defun cmd-print-line-number (buffer from to arg)
   (declare (ignore from arg))
-  (DBG (FORMAT T "CMD-PRINT-LINE-NUMBER: ~%"))
+  (dbg (format t "CMD-PRINT-LINE-NUMBER: ~%"))
   ;; ($)=    Prints the line number of the addressed line.
   (with-addresses (buffer (curr to 1))
-    (format *terminal-io* "~D~%" curr))
-  ) ;;CMD-PRINT-LINE-NUMBER
+    (format *terminal-io* "~D~%" curr)))
 
 
-(DEFUN CMD-SCROLL-LINES (BUFFER FROM TO ARG)
+(defun cmd-scroll-lines (buffer from to arg)
   (declare (ignore from arg))
-  (DBG (FORMAT T "CMD-SCROLL-LINES: ~%"))
+  (dbg (format t "CMD-SCROLL-LINES: ~%"))
   ;; (.+1)zn Scrolls n lines at a time starting at addressed line.  If
   ;;         n is not specified, then the current window size is used.
   ;;         The current address is set to the last line printed.
   (with-addresses (buffer (curr to 1))
     ;; TODO: IMPLEMENT SCROLL!
-    (DO-PRINT-LINES BUFFER curr (buffer-length buffer)
-                    (LAMBDA (LINUM LINE)
-                      (DECLARE (IGNORE LINUM))
-                      (FORMAT *TERMINAL-IO* "~A~%" LINE))) )
-  ) ;;CMD-SCROLL-LINES
+    (do-print-lines buffer curr (buffer-length buffer)
+                    (lambda (linum line)
+                      (declare (ignore linum))
+                      (format *terminal-io* "~A~%" line))) ))
 
 
-(DEFUN CMD-PRINT-LINES (BUFFER FROM TO ARG)
+(defun cmd-print-lines (buffer from to arg)
   (declare (ignore arg))
-  (DBG (FORMAT T "CMD-PRINT-LINES: ~%"))
+  (dbg (format t "CMD-PRINT-LINES: ~%"))
   ;;     (.+1)newline
   ;;             Prints the addressed line, and sets the  current  address
   ;;             to that line.
@@ -622,57 +590,54 @@ RETURN: The list of cut lines.
   ;;             entered.  The current address is set  to  the  last  line
   ;;             printed.
   (with-addresses (buffer (curr from 1) (last to 1))
-    (DO-PRINT-LINES BUFFER curr last
-                    (LAMBDA (LINUM LINE)
-                      (DECLARE (IGNORE LINUM))
-                      (FORMAT *TERMINAL-IO* "~A~%" LINE))))
-  ) ;;CMD-PRINT-LINES
+    (do-print-lines buffer curr last
+                    (lambda (linum line)
+                      (declare (ignore linum))
+                      (format *terminal-io* "~A~%" line)))))
 
 
-(DEFUN CMD-PRINT-LINES-AND-NUMBERS (BUFFER FROM TO ARG)
+(defun cmd-print-lines-and-numbers (buffer from to arg)
   (declare (ignore arg))
-  (DBG (FORMAT T "CMD-PRINT-LINES-AND-NUMBERS: ~%"))
+  (dbg (format t "CMD-PRINT-LINES-AND-NUMBERS: ~%"))
   ;;     (.,.)n  Prints the addressed lines along with their line numbers.
   ;;             The current address is set to the last line printed.
   ;;
   (with-addresses (buffer (curr from 1) (last to 1))
-    (DO-PRINT-LINES BUFFER curr last
-                    (LAMBDA (LINUM LINE)
-                      (FORMAT *TERMINAL-IO* "~6D  ~A~%" LINUM LINE))))
-  ) ;;CMD-PRINT-LINES-AND-NUMBERS
+    (do-print-lines buffer curr last
+                    (lambda (linum line)
+                      (format *terminal-io* "~6D  ~A~%" linum line)))))
 
    
-(DEFUN CMD-PRINT-LINES-UNAMBIGUOUSLY (BUFFER FROM TO ARG)
+(defun cmd-print-lines-unambiguously (buffer from to arg)
   (declare (ignore arg))
-  (DBG (FORMAT T "CMD-PRINT-LINES-UNAMBIGUOUSLY: ~%"))
+  (dbg (format t "CMD-PRINT-LINES-UNAMBIGUOUSLY: ~%"))
   ;;     (.,.)l  Prints  the  addressed  lines  unambiguously.  If invoked
   ;;             from a terminal, ed pauses at the end of each page  until
   ;;             a  newline is entered.  The current address is set to the
   ;;             last line printed.
   (with-addresses (buffer (curr from 1) (last to 1))
-    (DO-PRINT-LINES
-        BUFFER curr last
-        (LAMBDA (LINUM LINE)
-          (DECLARE (IGNORE LINUM))
-          (DO ((I 0 (1+ I))
-               (CH))
-              ((>= I (LENGTH LINE)) (FORMAT *TERMINAL-IO* "$~%"))
-            (SETQ CH (CHAR LINE I))
-            (IF (GRAPHIC-CHAR-P CH)
-                (format *TERMINAL-IO* "~C" ch)
-                (LET ((ASS (ASSOC (CHAR-CODE CH)
+    (do-print-lines
+        buffer curr last
+        (lambda (linum line)
+          (declare (ignore linum))
+          (do ((i 0 (1+ i))
+               (ch))
+              ((>= i (length line)) (format *terminal-io* "$~%"))
+            (setq ch (char line i))
+            (if (graphic-char-p ch)
+                (format *terminal-io* "~C" ch)
+                (let ((ass (assoc (char-code ch)
                                   '((7 . "a") (8 . "b") (9 . "t")
                                     (10 . "l") (11 . "v") (12 . "f")
                                     (13 . "r")))))
-                  (IF ASS
-                      (FORMAT *TERMINAL-IO* "\\~A" (CDR ASS))
-                      (FORMAT *TERMINAL-IO* "\\~3,'0O" (CHAR-CODE CH)))))))))
-  ) ;;CMD-PRINT-LINES-UNAMBIGUOUSLY
+                  (if ass
+                      (format *terminal-io* "\\~A" (cdr ass))
+                      (format *terminal-io* "\\~3,'0O" (char-code ch))))))))))
 
 
-(DEFUN CMD-SUBSTITUTE (BUFFER FROM TO ARG)
+(defun cmd-substitute (buffer from to arg)
   (declare (ignore buffer from to arg)) ;; TODO: implement this function.
-  (DBG (FORMAT T "CMD-SUBSTITUTE: ~%"))
+  (dbg (format t "CMD-SUBSTITUTE: ~%"))
   ;; (.,.)s/re/replacement/
   ;; (.,.)s/re/replacement/g
   ;; (.,.)s/re/replacement/n
@@ -711,13 +676,12 @@ RETURN: The list of cut lines.
   ;;         stitution.   The  `p'  suffix toggles the print suffix of
   ;;         the last substitution The current address is set  to  the
   ;;         last line affected.
-  (format *terminal-io* "NOT IMPLEMENTED YET.~%")
-  ) ;;CMD-SUBSTITUTE
+  (format *terminal-io* "NOT IMPLEMENTED YET.~%"))
     
         
-(DEFUN CMD-EDIT-MATCHING (BUFFER FROM TO ARG)
+(defun cmd-edit-matching (buffer from to arg)
   (declare (ignore buffer from to arg)) ;; TODO: implement this function.
-  (DBG (FORMAT T "CMD-EDIT-MATCHING: ~%"))
+  (dbg (format t "CMD-EDIT-MATCHING: ~%"))
   ;; (1,$)g/re/command-list
   ;;         Applies  command-list  to  each  of  the  addressed lines
   ;;         matching a regular expression re.  The current address is
@@ -731,25 +695,23 @@ RETURN: The list of cut lines.
   ;;         `g',  `G', `v', and `V'.  A newline alone in command-list
   ;;         is equivalent to a `p' command.
   ;;
-  (format *terminal-io* "NOT IMPLEMENTED YET.~%")
-  ) ;;CMD-EDIT-MATCHING
+  (format *terminal-io* "NOT IMPLEMENTED YET.~%"))
 
 
-(DEFUN CMD-EDIT-NOT-MATCHING (BUFFER FROM TO ARG)
+(defun cmd-edit-not-matching (buffer from to arg)
   (declare (ignore buffer from to arg)) ;; TODO: implement this function.
-  (DBG (FORMAT T "CMD-EDIT-NOT-MATCHING: ~%"))
+  (dbg (format t "CMD-EDIT-NOT-MATCHING: ~%"))
   ;; (1,$)v/re/command-list
   ;;         Applies  command-list  to each of the addressed lines not
   ;;         matching a regular expression re.  This is similar to the
   ;;         `g' command.
   ;;
-  (format *terminal-io* "NOT IMPLEMENTED YET.~%")
-  ) ;;CMD-EDIT-NOT-MATCHING
+  (format *terminal-io* "NOT IMPLEMENTED YET.~%"))
 
 
-(DEFUN CMD-USER-EDIT-MATCHING (BUFFER FROM TO ARG)
+(defun cmd-user-edit-matching (buffer from to arg)
   (declare (ignore buffer from to arg)) ;; TODO: implement this function.
-  (DBG (FORMAT T "CMD-USER-EDIT-MATCHING: ~%"))
+  (dbg (format t "CMD-USER-EDIT-MATCHING: ~%"))
   ;; (1,$)G/re/
   ;;         Interactively edits the addressed lines matching a  regu-
   ;;         lar  expression  re.  For each matching line, the line is
@@ -761,19 +723,17 @@ RETURN: The list of cut lines.
   ;;         The format of command-list is the same as that of the `g'
   ;;         command.  A newline alone acts as a null command list.  A
   ;;         single `&' repeats the last non-null command list.
-  (format *terminal-io* "NOT IMPLEMENTED YET.~%")
-  ) ;;CMD-USER-EDIT-MATCHING
+  (format *terminal-io* "NOT IMPLEMENTED YET.~%"))
 
 
-(DEFUN CMD-USER-EDIT-NOT-MATCHING (BUFFER FROM TO ARG)
+(defun cmd-user-edit-not-matching (buffer from to arg)
   (declare (ignore buffer from to arg)) ;; TODO: implement this function.
-  (DBG (FORMAT T "CMD-USER-EDIT-NOT-MATCHING: ~%"))
+  (dbg (format t "CMD-USER-EDIT-NOT-MATCHING: ~%"))
   ;; (1,$)V/re/
   ;;         Interactively  edits  the  addressed lines not matching a
   ;;         regular expression re.  This is similar to the  `G'  com-
   ;;         mand.
-  (format *terminal-io* "NOT IMPLEMENTED YET.~%")
-  ) ;;CMD-USER-EDIT-NOT-MATCHING
+  (format *terminal-io* "NOT IMPLEMENTED YET.~%"))
 
 
 (defun file-or-command-arg (arg)
@@ -798,12 +758,11 @@ RETURN: The list of cut lines.
           ((and (<= 1 (length arg)) (string= "!"  arg :end2 1))
            (values :command (subseq arg 1)))
           (t
-           (values :path arg (probe-file arg))))))
-  ) ;;file-or-command-arg
+           (values :path arg (probe-file arg)))))))
 
 
 
-(DEFUN cmd-write-or-append (BUFFER FROM TO ARG mode)
+(defun cmd-write-or-append (buffer from to arg mode)
   (with-addresses (buffer (curr from 1) (last to 1))
     (multiple-value-bind (kind path exists) (file-or-command-arg arg)
       (declare (ignore exists))
@@ -827,23 +786,21 @@ RETURN: The list of cut lines.
            :input (subseq (buffer-lines buffer) curr (1+ last))))
         ((:invalid) (buffer-set-error buffer path))
         (otherwise
-         (buffer-set-error buffer "Internal error: FILE-OR-COMMAND-ARG")))))
-  ) ;;cmd-write-or-append
+         (buffer-set-error buffer "Internal error: FILE-OR-COMMAND-ARG"))))))
 
 
-(DEFUN CMD-APPEND-FILE (BUFFER FROM TO ARG)
-  (DBG (FORMAT T "CMD-APPEND-FILE: ~%"))
+(defun cmd-append-file (buffer from to arg)
+  (dbg (format t "CMD-APPEND-FILE: ~%"))
   ;; (1,$)W file
   ;;         Appends  the addressed lines to the end of file.  This is
   ;;         similar to the `w' command, expect that the previous con-
   ;;         tents  of  file is not clobbered.  The current address is
   ;;         unchanged.
-  (cmd-write-or-append buffer from to arg :append)
-  ) ;;CMD-APPEND-FILE
+  (cmd-write-or-append buffer from to arg :append))
 
 
-(DEFUN CMD-WRITE-FILE (BUFFER FROM TO ARG)
-  (DBG (FORMAT T "CMD-WRITE-FILE: ~%"))
+(defun cmd-write-file (buffer from to arg)
+  (dbg (format t "CMD-WRITE-FILE: ~%"))
   ;; (1,$)w file
   ;;         Writes  the  addressed  lines to file.  Any previous con-
   ;;         tents of file is lost without warning.  If  there  is  no
@@ -856,20 +813,18 @@ RETURN: The list of cut lines.
   ;;         Writes  the  addressed  lines  to  the  standard input of
   ;;         `!command', (see the !command below).  The default  file-
   ;;         name and current address are unchanged.
-  (cmd-write-or-append buffer from to arg :supersede)
-  ) ;;CMD-WRITE-FILE
+  (cmd-write-or-append buffer from to arg :supersede))
 
 
-(DEFUN CMD-WRITE-FILE-QUIT (BUFFER FROM TO ARG)
-  (DBG (FORMAT T "CMD-WRITE-FILE-QUIT: ~%"))
+(defun cmd-write-file-quit (buffer from to arg)
+  (dbg (format t "CMD-WRITE-FILE-QUIT: ~%"))
   ;; (1,$)wq file
   ;;         Writes the addressed lines to file, and then  executes  a
   ;;         `q' command.
   ;;
   (cmd-write-file buffer from to arg)
   (unless (buffer-got-error buffer)
-    (cmd-quit buffer from to arg))
-  ) ;;CMD-WRITE-FILE-QUIT
+    (cmd-quit buffer from to arg)))
 
 
 (defun cmd-edit-or-read (buffer arg linum)
@@ -902,13 +857,12 @@ LINUM:  NIL ==> Edit, NUMBERP ==> Read
                  (filter-command-output (do-command buffer :output :result))))
       ((:invalid) (buffer-set-error buffer path))
       (otherwise
-       (buffer-set-error buffer "Internal error: FILE-OR-COMMAND-ARG"))))
-  ) ;;cmd-edit-or-read
+       (buffer-set-error buffer "Internal error: FILE-OR-COMMAND-ARG")))))
 
 
-(DEFUN CMD-READ-FILE (BUFFER FROM TO ARG)
+(defun cmd-read-file (buffer from to arg)
   (declare (ignore from))
-  (DBG (FORMAT T "CMD-READ: ~%"))
+  (dbg (format t "CMD-READ: ~%"))
   ;; ($)r file
   ;;         Reads  file  to after the addressed line.  If file is not
   ;;         specified, then the default filename is used.   If  there
@@ -923,13 +877,12 @@ LINUM:  NIL ==> Edit, NUMBERP ==> Read
   ;;         name is unchanged.  The current address  is  set  to  the
   ;;         last line read.
   (with-addresses (buffer (curr to 1))
-    (cmd-edit-or-read buffer arg curr))
-  ) ;;CMD-READ-FILE
+    (cmd-edit-or-read buffer arg curr)))
 
 
-(DEFUN CMD-EDIT-FILE-UNCONDITIONALLY (BUFFER FROM TO ARG)
+(defun cmd-edit-file-unconditionally (buffer from to arg)
   (declare (ignore from to))
-  (DBG (FORMAT T "CMD-EDIT-FILE-UNCONDITIONALLY: ~%"))
+  (dbg (format t "CMD-EDIT-FILE-UNCONDITIONALLY: ~%"))
   ;; E file  Edits  file  unconditionally.   This  is similar to the e
   ;;         command, except  that  unwritten  changes  are  discarded
   ;;         without  warning.  The current address is set to the last
@@ -937,13 +890,12 @@ LINUM:  NIL ==> Edit, NUMBERP ==> Read
   (cmd-edit-or-read buffer arg nil)
   (unless (buffer-got-error buffer)
     (setf (buffer-modified buffer) nil)
-    (format *terminal-io* "~D~%" (buffer-current-linum buffer)))
-  ) ;;CMD-EDIT-FILE-UNCONDITIONALLY
+    (format *terminal-io* "~D~%" (buffer-current-linum buffer))))
 
   
-(DEFUN CMD-EDIT-FILE (BUFFER FROM TO ARG)
+(defun cmd-edit-file (buffer from to arg)
   (declare (ignore from to))
-  (DBG (FORMAT T "CMD-EDIT-FILE: ~%"))
+  (dbg (format t "CMD-EDIT-FILE: ~%"))
   ;; e file  Edits  file,  and  sets the default filename.  If file is
   ;;         not specified, then the  default filename is  used.   Any
   ;;         lines  in  the  buffer are deleted before the new file is
@@ -955,13 +907,12 @@ LINUM:  NIL ==> Edit, NUMBERP ==> Read
   ;;         the  buffer  are  deleted before the output of command is
   ;;         read.  The current address is set to the last line  read.
   (unless-modified buffer
-                   (cmd-edit-or-read buffer arg nil))
-  ) ;;CMD-EDIT-FILE
+     (cmd-edit-or-read buffer arg nil)))
 
 
-(DEFUN CMD-SET-DEFAULT-FILENAME (BUFFER FROM TO ARG)
+(defun cmd-set-default-filename (buffer from to arg)
   (declare (ignore from to))
-  (DBG (FORMAT T "CMD-SET-DEFAULT-FILENAME: ~%"))
+  (dbg (format t "CMD-SET-DEFAULT-FILENAME: ~%"))
   ;; f file  Sets the default filename to file.  If file is not speci-
   ;;         fied, then the default unescaped filename is printed.
   (when (string/= "" arg)
@@ -971,62 +922,56 @@ LINUM:  NIL ==> Edit, NUMBERP ==> Read
             (handler-case (prog1 nil (probe-file arg)) (error nil t)))
         (buffer-set-error buffer "Invalid filename")
         (setf (buffer-path buffer) arg)))
-  (format *terminal-io* "~A~%" (buffer-path buffer))
-  ) ;;CMD-SET-DEFAULT-FILENAME
+  (format *terminal-io* "~A~%" (buffer-path buffer)))
 
 
-(DEFUN CMD-PRINT-LAST-ERROR (BUFFER FROM TO ARG)
+(defun cmd-print-last-error (buffer from to arg)
   (declare (ignore from to arg))
-  (DBG (FORMAT T "CMD-PRINT-LAST-ERROR: ~%"))
+  (dbg (format t "CMD-PRINT-LAST-ERROR: ~%"))
   ;; h       Prints an explanation of the last error.
-  (FORMAT *TERMINAL-IO* "~A~%" (buffer-last-error buffer))
-  ) ;;CMD-PRINT-LAST-ERROR
+  (format *terminal-io* "~A~%" (buffer-last-error buffer)))
 
 
-(DEFUN CMD-TOGGLE-ERROR-EXPLANATIONS (BUFFER FROM TO ARG)
-  (DECLARE (IGNORE FROM TO ARG))
-  (DBG (FORMAT T "CMD-TOGGLE-ERROR-EXPLANATIONS: ~%"))
+(defun cmd-toggle-error-explanations (buffer from to arg)
+  (declare (ignore from to arg))
+  (dbg (format t "CMD-TOGGLE-ERROR-EXPLANATIONS: ~%"))
   ;; H       Toggles  the printing of error explanations.  By default,
   ;;         explanations are not printed.  It is recommended that  ed
   ;;         scripts begin with this command to aid in debugging.
-  (TOGGLE (buffer-show-errors BUFFER))
+  (toggle (buffer-show-errors buffer))
   (unless (string= "" (buffer-last-error buffer))
-    (format *terminal-io* "~A~%" (buffer-last-error buffer)))
-  ) ;;CMD-TOGGLE-ERROR-EXPLANATIONS
+    (format *terminal-io* "~A~%" (buffer-last-error buffer))))
 
 
-(DEFUN CMD-TOGGLE-COMMAND-PROMPT (BUFFER FROM TO ARG)
-  (DECLARE (IGNORE FROM TO ARG))
-  (DBG (FORMAT T "CMD-TOGGLE-COMMAND-PROMPT: ~%"))
+(defun cmd-toggle-command-prompt (buffer from to arg)
+  (declare (ignore from to arg))
+  (dbg (format t "CMD-TOGGLE-COMMAND-PROMPT: ~%"))
   ;; P       Toggles  the  command prompt on and off.  Unless a prompt
   ;;         was specified by with command-line option -p string,  the
   ;;         command prompt is by default turned off.
-  (TOGGLE (BUFFER-show-PROMPT BUFFER))
-  ) ;;CMD-TOGGLE-COMMAND-PROMPT
+  (toggle (buffer-show-prompt buffer)))
 
 
-(DEFUN CMD-QUIT (BUFFER FROM TO ARG)
+(defun cmd-quit (buffer from to arg)
   (declare (ignore from to arg))
-  (DBG (FORMAT T "CMD-QUIT: ~%"))
+  (dbg (format t "CMD-QUIT: ~%"))
   ;; q       Quits ed.
   (unless-modified buffer
-                   (setf (buffer-quit buffer) t))
-  ) ;;CMD-QUIT
+     (setf (buffer-quit buffer) t)))
 
 
-(DEFUN CMD-QUIT-UNCONDITIONNALY (BUFFER FROM TO ARG)
-  (DECLARE (IGNORE FROM TO ARG))
-  (DBG (FORMAT T "CMD-QUIT-UNCONDITIONNALY: ~%"))
+(defun cmd-quit-unconditionnaly (buffer from to arg)
+  (declare (ignore from to arg))
+  (dbg (format t "CMD-QUIT-UNCONDITIONNALY: ~%"))
   ;; Q       Quits  ed unconditionally.  This is similar to the q com-
   ;;         mand, except that unwritten changes are discarded without
   ;;         warning.
-  (setf (buffer-quit buffer) t)
-  ) ;;CMD-QUIT-UNCONDITIONNALY
+  (setf (buffer-quit buffer) t))
 
 
-(DEFUN CMD-SUBSHELL (BUFFER FROM TO ARG)
-  (DECLARE (IGNORE FROM TO))
-  (DBG (FORMAT T "CMD-SUBSHELL: ~%"))
+(defun cmd-subshell (buffer from to arg)
+  (declare (ignore from to))
+  (dbg (format t "CMD-SUBSHELL: ~%"))
   ;; !command
   ;;         Executes  command  via  sh(1).  If the first character of
   ;;         command is `!', then it is replaced by text of the previ-
@@ -1039,55 +984,53 @@ LINUM:  NIL ==> Edit, NUMBERP ==> Read
         (if (char= (character "!") (char arg 0))
             (concatenate 'string (buffer-command buffer) (subseq arg 1))
             arg))
-  (do-command buffer)
-  ) ;;CMD-SUBSHELL
+  (do-command buffer))
 
 
 
-(DEFPARAMETER *COMMANDS*
+(defparameter *commands*
   '( ;;cmd from   to    argument     p   function
-    ("t"  :CURR  :CURR  :CURR        T   CMD-COPY-LINES)
-    ("m"  :CURR  :CURR  :CURR        T   CMD-MOVE-LINES)
-    ("c"  :CURR  :CURR  NIL          T   CMD-CHANGE-LINES)
-    ("#"  :CURR  :CURR  NIL          T   CMD-COMMENT)
-    ("y"  :CURR  :CURR  NIL          T   CMD-COPY)
-    ("d"  :CURR  :CURR  NIL          T   CMD-DELETE-LINES)
-    ("p"  :CURR  :CURR  NIL          T   CMD-PRINT-LINES)
-    ("n"  :CURR  :CURR  NIL          T   CMD-PRINT-LINES-AND-NUMBERS)
-    ("l"  :CURR  :CURR  NIL          T   CMD-PRINT-LINES-UNAMBIGUOUSLY)
-    ("s"  :CURR  :CURR  SUBSTITUTION T   CMD-SUBSTITUTE)
-    ("j"  :CURR  :NEXT  NIL          T   CMD-JOIN-LINES)
-    ("g"  :FIRST :LAST  REGEXP       NIL CMD-EDIT-MATCHING)
-    ("v"  :FIRST :LAST  REGEXP       NIL CMD-EDIT-NOT-MATCHING)
-    ("G"  :FIRST :LAST  REGEXP       T   CMD-USER-EDIT-MATCHING)
-    ("V"  :FIRST :LAST  REGEXP       T   CMD-USER-EDIT-NOT-MATCHING)
-    ("W"  :FIRST :LAST  STRING       NIL CMD-APPEND-FILE)
-    ("w"  :FIRST :LAST  STRING       NIL CMD-WRITE-FILE)
-    ("k"  NIL    :CURR  CHARACTER    T   CMD-MARK)
-    ("a"  NIL    :CURR  NIL          T   CMD-APPEND)
-    ("i"  NIL    :CURR  NIL          T   CMD-INSERT)
-    ("x"  NIL    :CURR  NIL          T   CMD-PASTE)
-    ("="  NIL    :LAST  NIL          T   CMD-PRINT-LINE-NUMBER)
-    ("r"  NIL    :LAST  STRING       NIL CMD-READ-FILE)
-    (NIL  NIL    :NEXT  NIL          NIL CMD-PRINT-LINES)
-    ("z"  NIL    :NEXT  NUMBER       T   CMD-SCROLL-LINES)
-    ("h"  NIL    NIL    NIL          T   CMD-PRINT-LAST-ERROR)
-    ("q"  NIL    NIL    NIL          T   CMD-QUIT)
-    ("Q"  NIL    NIL    NIL          T   CMD-QUIT-UNCONDITIONNALY)
-    ("P"  NIL    NIL    NIL          T   CMD-TOGGLE-COMMAND-PROMPT)
-    ("H"  NIL    NIL    NIL          T   CMD-TOGGLE-ERROR-EXPLANATIONS)
-    ("u"  NIL    NIL    NIL          T   CMD-UNDO)
-    ("e"  NIL    NIL    STRING       NIL CMD-EDIT-FILE)
-    ("E"  NIL    NIL    STRING       NIL CMD-EDIT-FILE-UNCONDITIONALLY)
-    ("f"  NIL    NIL    STRING       NIL CMD-SET-DEFAULT-FILENAME)
-    ("!"  NIL    NIL    STRING       NIL CMD-SUBSHELL)
-    ("wq" :FIRST :LAST  STRING       NIL CMD-WRITE-FILE-QUIT)
-    )) ;;*COMMANDS*
+    ("t"  :curr  :curr  :curr        t   cmd-copy-lines)
+    ("m"  :curr  :curr  :curr        t   cmd-move-lines)
+    ("c"  :curr  :curr  nil          t   cmd-change-lines)
+    ("#"  :curr  :curr  nil          t   cmd-comment)
+    ("y"  :curr  :curr  nil          t   cmd-copy)
+    ("d"  :curr  :curr  nil          t   cmd-delete-lines)
+    ("p"  :curr  :curr  nil          t   cmd-print-lines)
+    ("n"  :curr  :curr  nil          t   cmd-print-lines-and-numbers)
+    ("l"  :curr  :curr  nil          t   cmd-print-lines-unambiguously)
+    ("s"  :curr  :curr  substitution t   cmd-substitute)
+    ("j"  :curr  :next  nil          t   cmd-join-lines)
+    ("g"  :first :last  regexp       nil cmd-edit-matching)
+    ("v"  :first :last  regexp       nil cmd-edit-not-matching)
+    ("G"  :first :last  regexp       t   cmd-user-edit-matching)
+    ("V"  :first :last  regexp       t   cmd-user-edit-not-matching)
+    ("W"  :first :last  string       nil cmd-append-file)
+    ("w"  :first :last  string       nil cmd-write-file)
+    ("k"  nil    :curr  character    t   cmd-mark)
+    ("a"  nil    :curr  nil          t   cmd-append)
+    ("i"  nil    :curr  nil          t   cmd-insert)
+    ("x"  nil    :curr  nil          t   cmd-paste)
+    ("="  nil    :last  nil          t   cmd-print-line-number)
+    ("r"  nil    :last  string       nil cmd-read-file)
+    (nil  nil    :next  nil          nil cmd-print-lines)
+    ("z"  nil    :next  number       t   cmd-scroll-lines)
+    ("h"  nil    nil    nil          t   cmd-print-last-error)
+    ("q"  nil    nil    nil          t   cmd-quit)
+    ("Q"  nil    nil    nil          t   cmd-quit-unconditionnaly)
+    ("P"  nil    nil    nil          t   cmd-toggle-command-prompt)
+    ("H"  nil    nil    nil          t   cmd-toggle-error-explanations)
+    ("u"  nil    nil    nil          t   cmd-undo)
+    ("e"  nil    nil    string       nil cmd-edit-file)
+    ("E"  nil    nil    string       nil cmd-edit-file-unconditionally)
+    ("f"  nil    nil    string       nil cmd-set-default-filename)
+    ("!"  nil    nil    string       nil cmd-subshell)
+    ("wq" :first :last  string       nil cmd-write-file-quit)))
 
 
 (dbg
  (push '("D"  nil    nil    nil          nil cmd-toggle-debug) *commands*)
- (DEFUN cmd-toggle-debug (BUFFER FROM TO ARG)
+ (defun cmd-toggle-debug (buffer from to arg)
    ;; !command
    ;;         Executes  command  via  sh(1).  If the first character of
    ;;         command is `!', then it is replaced by text of the previ-
@@ -1097,23 +1040,20 @@ LINUM:  NIL ==> Edit, NUMBERP ==> Read
    ;;         execution, a `!'  is printed to the standard output.  The
    ;;         current line is unchanged.
    (declare (ignore buffer from to arg))
-   (DBG (FORMAT T "CMD-toggle-debug: ~%"))
-   (toggle show-debug)
-   ) ;;cmd-toggle-debug
- )
+   (dbg (format t "CMD-toggle-debug: ~%"))
+   (toggle *show-debug*)))
 
 
 
-(DEFUN SKIP-SPACES (COMMAND &OPTIONAL (START 0))
+(defun skip-spaces (command &optional (start 0))
   "
 RETURN: The index of the next non white space character in command,
         starting from position, or nil if end of string.
 "
-  (DO ((START START (1+ START)))
-      ((OR (>= START (LENGTH COMMAND))
-           (CHAR/= (CHARACTER " ") (CHAR COMMAND START)))
-       (WHEN (< START (LENGTH COMMAND)) START)))
-  ) ;;SKIP-SPACES
+  (do ((start start (1+ start)))
+      ((or (>= start (length command))
+           (char/= (character " ") (char command start)))
+       (when (< start (length command)) start))))
 
 ;;addresses -->   address
 ;;              | address ',' address
@@ -1145,197 +1085,194 @@ RETURN: The index of the next non white space character in command,
 ;;col-elm --> .
 
   
-(DEFUN PARSE-ADDRESS (COMMAND POSITION)
+(defun parse-address (command position)
   ;;address -->   '.' | '$' | number
   ;;            | '-' | '^' | '-' number | '^' number
   ;;                  | '+' | '+' number | space number
   ;;                  | '/' re '/' | '?' re '?' | '//' | '??'
   ;;                  | "'" lc .
   (declare (integer position))
-  (LET ((ADDRESS NIL) (CH))
-    (FLET ((PARSE-OPTIONAL-NUMBER
+  (let ((address nil) (ch))
+    (flet ((parse-optional-number
                ()
-             (SETQ POSITION (SKIP-SPACES COMMAND (1+ POSITION)))
-             (WHEN (AND POSITION
-                        (SETQ CH (CHAR COMMAND POSITION))
-                        (DIGIT-CHAR-P CH))
-               (MULTIPLE-VALUE-BIND (VALUE POS)
-                   (PARSE-INTEGER COMMAND :START POSITION :JUNK-ALLOWED T)
-                 (WHEN VALUE
-                   (SETQ ADDRESS (CONS ADDRESS VALUE)))
-                 (SETQ POSITION POS)))))
-      (SETQ POSITION (SKIP-SPACES COMMAND POSITION))
-      (WHEN POSITION
-        (SETQ CH (CHAR COMMAND POSITION))
-        (COND
-          ((CHAR= CH (CHARACTER ".")) (SETQ ADDRESS :CURR) (INCF POSITION))
-          ((CHAR= CH (CHARACTER "$")) (SETQ ADDRESS :LAST) (INCF POSITION))
-          ((DIGIT-CHAR-P CH)
-           (MULTIPLE-VALUE-BIND (VALUE POS)
-               (PARSE-INTEGER COMMAND :START POSITION :JUNK-ALLOWED T)
-             (WHEN VALUE
-               (SETQ ADDRESS (CONS :LINUM VALUE)))
-             (SETQ POSITION POS)))
-          ((OR (CHAR= CH (CHARACTER "^")) (CHAR= CH (CHARACTER "-")))
-           (SETQ ADDRESS :PREV)
-           (PARSE-OPTIONAL-NUMBER))
-          ((OR (CHAR= CH (CHARACTER " ")) (CHAR= CH (CHARACTER "+")))
-           (SETQ ADDRESS :NEXT)
-           (PARSE-OPTIONAL-NUMBER))
-          ((OR (CHAR= CH (CHARACTER "/")) (CHAR= CH (CHARACTER "?")))
+             (setq position (skip-spaces command (1+ position)))
+             (when (and position
+                        (setq ch (char command position))
+                        (digit-char-p ch))
+               (multiple-value-bind (value pos)
+                   (parse-integer command :start position :junk-allowed t)
+                 (when value
+                   (setq address (cons address value)))
+                 (setq position pos)))))
+      (setq position (skip-spaces command position))
+      (when position
+        (setq ch (char command position))
+        (cond
+          ((char= ch (character ".")) (setq address :curr) (incf position))
+          ((char= ch (character "$")) (setq address :last) (incf position))
+          ((digit-char-p ch)
+           (multiple-value-bind (value pos)
+               (parse-integer command :start position :junk-allowed t)
+             (when value
+               (setq address (cons :linum value)))
+             (setq position pos)))
+          ((or (char= ch (character "^")) (char= ch (character "-")))
+           (setq address :prev)
+           (parse-optional-number))
+          ((or (char= ch (character " ")) (char= ch (character "+")))
+           (setq address :next)
+           (parse-optional-number))
+          ((or (char= ch (character "/")) (char= ch (character "?")))
            ;; TODO: regexp
            ;; eat regexp:
-           (SETQ ADDRESS
-                 (CONS :REGEXP 
-                       (DO ((TERMINATOR CH)
-                            (END POSITION (1+ END)))
-                           ((OR (>= END (LENGTH COMMAND))
-                                (CHAR= TERMINATOR (CHAR COMMAND END)))
-                            (PROG1 (SUBSEQ COMMAND POSITION (1+ END))
-                              (SETQ POSITION (1+ END))))
+           (setq address
+                 (cons :regexp 
+                       (do ((terminator ch)
+                            (end position (1+ end)))
+                           ((or (>= end (length command))
+                                (char= terminator (char command end)))
+                            (prog1 (subseq command position (1+ end))
+                              (setq position (1+ end))))
                          (declare (integer end))))))
-          ((CHAR= CH (CHARACTER "'"))
-           (INCF POSITION)
+          ((char= ch (character "'"))
+           (incf position)
            ;; TODO: when there is an error here it's: "Invalid mark character"
            ;; TODO: not: "Invalid address" !
-           (WHEN (< POSITION (LENGTH COMMAND))
-             (SETQ ADDRESS (CONS :MARK (CHAR COMMAND POSITION)))
-             (INCF POSITION)))
+           (when (< position (length command))
+             (setq address (cons :mark (char command position)))
+             (incf position)))
           )))
-    (VALUES ADDRESS POSITION))
-  ) ;;PARSE-ADDRESS
+    (values address position)))
 
 
-(DEFUN PARSE-AND-RUN-COMMAND (BUFFER COMMAND)
-  (LET ((POSITION (SKIP-SPACES COMMAND))
-        (CMD) (CH) (FROM) (TO) (ARG) (PRINT NIL))
+(defun parse-and-run-command (buffer command)
+  (let ((position (skip-spaces command))
+        (cmd) (ch) (from) (to) (arg) (print nil))
     (buffer-clear-error buffer)
-    (MACROLET ((SET-ERROR (MESSAGE) `(buffer-set-error buffer ,message))
-               (GOT-ERROR () `(buffer-got-ERROR buffer)))
-      (WHEN POSITION
-        (SETQ CH (CHAR COMMAND POSITION))
-        (COND
-          ((OR (CHAR= (CHARACTER ",") CH)  (CHAR= (CHARACTER "%") CH))
-           (SETQ FROM :FIRST TO :LAST)
-           (SETQ POSITION (SKIP-SPACES COMMAND (1+ POSITION))))
-          ((CHAR= (CHARACTER ";") CH)
-           (SETQ FROM :CURR  TO :LAST)
-           (SETQ POSITION (SKIP-SPACES COMMAND (1+ POSITION))))
-          ((NOT (ALPHA-CHAR-P CH))
-           (MULTIPLE-VALUE-SETQ (TO POSITION) (PARSE-ADDRESS COMMAND POSITION))
-           (IF (EQ TO :ERROR)
-               (SET-ERROR "Invalid address")
-               (PROGN
-                 (SETQ POSITION (SKIP-SPACES COMMAND POSITION))
-                 (WHEN POSITION
-                   (SETQ CH (CHAR COMMAND POSITION))
-                   (WHEN (CHAR= (CHARACTER ",") CH)
-                     (SETQ FROM TO)
-                     (MULTIPLE-VALUE-SETQ (TO POSITION)
-                       (PARSE-ADDRESS COMMAND (1+ POSITION)))
-                     (IF (EQ TO :ERROR)
-                         (SET-ERROR "Invalid address")
-                         (SETQ POSITION (SKIP-SPACES COMMAND POSITION))))))))))
-      (DBG (FORMAT T "PARC: from= ~S to= ~S position= ~S got-error= ~S~%"
-                   FROM TO POSITION (GOT-ERROR)))
-      (UNLESS (GOT-ERROR)
-        (IF (NULL POSITION)
-            (SETQ CMD (ASSOC NIL *COMMANDS*))
-            (SETQ CMD (ASSOC (SUBSEQ COMMAND POSITION (1+ POSITION)) *COMMANDS*
-                             :TEST (FUNCTION STRING=))
-                  POSITION (1+ POSITION)))
-        (DBG (FORMAT T "PARC: command key= ~S ~%      cmd= ~S~%"
-                     (WHEN POSITION (SUBSEQ COMMAND (1- POSITION) POSITION))
-                     (nconc (butlast CMD)
+    (macrolet ((set-error (message) `(buffer-set-error buffer ,message))
+               (got-error () `(buffer-got-error buffer)))
+      (when position
+        (setq ch (char command position))
+        (cond
+          ((or (char= (character ",") ch)  (char= (character "%") ch))
+           (setq from :first to :last)
+           (setq position (skip-spaces command (1+ position))))
+          ((char= (character ";") ch)
+           (setq from :curr  to :last)
+           (setq position (skip-spaces command (1+ position))))
+          ((not (alpha-char-p ch))
+           (multiple-value-setq (to position) (parse-address command position))
+           (if (eq to :error)
+               (set-error "Invalid address")
+               (progn
+                 (setq position (skip-spaces command position))
+                 (when position
+                   (setq ch (char command position))
+                   (when (char= (character ",") ch)
+                     (setq from to)
+                     (multiple-value-setq (to position)
+                       (parse-address command (1+ position)))
+                     (if (eq to :error)
+                         (set-error "Invalid address")
+                         (setq position (skip-spaces command position))))))))))
+      (dbg (format t "PARC: from= ~S to= ~S position= ~S got-error= ~S~%"
+                   from to position (got-error)))
+      (unless (got-error)
+        (if (null position)
+            (setq cmd (assoc nil *commands*))
+            (setq cmd (assoc (subseq command position (1+ position)) *commands*
+                             :test (function string=))
+                  position (1+ position)))
+        (dbg (format t "PARC: command key= ~S ~%      cmd= ~S~%"
+                     (when position (subseq command (1- position) position))
+                     (nconc (butlast cmd)
                             (list (symbol-name (car (last cmd)))))))
-        (LET ((DEFR (SECOND CMD))
-              (DETO (THIRD  CMD))
-              (ARGK (FOURTH CMD))
-              (ACCP (FIFTH  CMD))
-              (CMDF (SIXTH  CMD)))
-          (UNLESS FROM (SETQ FROM DEFR))
-          (UNLESS TO   (SETQ TO   DETO))
-          (CASE ARGK
-            ((NIL))
-            ((CHARACTER)
-             (IF (AND POSITION (< POSITION (LENGTH COMMAND))
-                      (ALPHA-CHAR-P (CHAR COMMAND POSITION))
-                      (LOWER-CASE-P (CHAR COMMAND POSITION)))
-                 (SETF ARG (CHAR COMMAND POSITION))
-                 (SET-ERROR "Invalid mark character")))
-            ((NUMBER)
-             (WHEN POSITION
-               (MULTIPLE-VALUE-SETQ (ARG POSITION)
-                 (PARSE-INTEGER COMMAND :START POSITION :JUNK-ALLOWED T))
-               (UNLESS ARG
-                 (SET-ERROR "Invalid address"))))
-            ((STRING)
-             (WHEN POSITION
-               (SETQ ARG (SUBSEQ COMMAND POSITION)
-                     POSITION (LENGTH COMMAND))))
-            ((REGEXP)
+        (let ((defr (second cmd))
+              (deto (third  cmd))
+              (argk (fourth cmd))
+              (accp (fifth  cmd))
+              (cmdf (sixth  cmd)))
+          (unless from (setq from defr))
+          (unless to   (setq to   deto))
+          (case argk
+            ((nil))
+            ((character)
+             (if (and position (< position (length command))
+                      (alpha-char-p (char command position))
+                      (lower-case-p (char command position)))
+                 (setf arg (char command position))
+                 (set-error "Invalid mark character")))
+            ((number)
+             (when position
+               (multiple-value-setq (arg position)
+                 (parse-integer command :start position :junk-allowed t))
+               (unless arg
+                 (set-error "Invalid address"))))
+            ((string)
+             (when position
+               (setq arg (subseq command position)
+                     position (length command))))
+            ((regexp)
              )
-            ((SUBSTITUTION)
+            ((substitution)
              )
-            ((:CURR)
-             (WHEN POSITION
-               (MULTIPLE-VALUE-SETQ (ARG POSITION)
-                 (PARSE-ADDRESS COMMAND POSITION))
-               (COND
-                 ((EQ ARG :ERROR)  (SET-ERROR "Invalid address"))
-                 ((NULL ARG) (SETQ ARG :CURR)))))
-            (OTHERWISE
-             (SET-ERROR "Internal error: *command* table.")))
-          (DBG (FORMAT T "PARC: from= ~S to= ~S position= ~S got-error= ~S~%"
-                       FROM TO POSITION (GOT-ERROR))
-               (FORMAT T "      arg= ~S ~%" ARG))
-          (UNLESS (GOT-ERROR)
-            (IF (AND ACCP POSITION (< POSITION (LENGTH COMMAND))
-                     (CHAR= (character "p") (CHAR COMMAND POSITION)))
-                (SETQ  PRINT T)
-                (WHEN (AND POSITION (SKIP-SPACES COMMAND POSITION))
-                  (SET-ERROR "Invalid command suffix")))
-            (UNLESS (GOT-ERROR)
-              (DBG (FORMAT T "PARC: calling (~A ~S ~S ~S ~S ~S)~%"
-                           CMDF "BUFFER" FROM TO ARG PRINT))
+            ((:curr)
+             (when position
+               (multiple-value-setq (arg position)
+                 (parse-address command position))
+               (cond
+                 ((eq arg :error)  (set-error "Invalid address"))
+                 ((null arg) (setq arg :curr)))))
+            (otherwise
+             (set-error "Internal error: *command* table.")))
+          (dbg (format t "PARC: from= ~S to= ~S position= ~S got-error= ~S~%"
+                       from to position (got-error))
+               (format t "      arg= ~S ~%" arg))
+          (unless (got-error)
+            (if (and accp position (< position (length command))
+                     (char= (character "p") (char command position)))
+                (setq  print t)
+                (when (and position (skip-spaces command position))
+                  (set-error "Invalid command suffix")))
+            (unless (got-error)
+              (dbg (format t "PARC: calling (~A ~S ~S ~S ~S ~S)~%"
+                           cmdf "BUFFER" from to arg print))
               (setf (buffer-print buffer) print)
-              (FUNCALL CMDF BUFFER FROM TO ARG)))))))
-  ) ;;PARSE-AND-RUN-COMMAND
+              (funcall cmdf buffer from to arg))))))))
 
 
-(DEFUN EDIT (BUFFER)
-  (FORMAT *TERMINAL-IO* "~&")
+(defun edit (buffer)
+  (format *terminal-io* "~&")
   (setf (buffer-quit buffer) nil)
-  (FORMAT *TERMINAL-IO* "~D~%" (BUFFER-LENGTH BUFFER))
-  (LOOP
-     (LET ((COMMAND (READ-LINE *TERMINAL-IO* NIL NIL)))
-       (UNLESS COMMAND (RETURN))
-       (DBG (FORMAT T "EDIT: read command ~S~%" COMMAND))
+  (format *terminal-io* "~D~%" (buffer-length buffer))
+  (loop
+     (let ((command (read-line *terminal-io* nil nil)))
+       (unless command (return))
+       (dbg (format t "EDIT: read command ~S~%" command))
        (setf (buffer-print buffer) nil)
        (buffer-clear-error buffer)
-       (PARSE-AND-RUN-COMMAND BUFFER COMMAND)
-       (DBG (FORMAT T "EDIT: parc returned (~S ~S ~S)~%"
+       (parse-and-run-command buffer command)
+       (dbg (format t "EDIT: parc returned (~S ~S ~S)~%"
                     (buffer-print buffer)
                     (buffer-got-error buffer)
-                    (buffer-QUIT buffer)))
-       (IF (buffer-got-error buffer)
-           (IF (buffer-show-errors buffer)
-               (FORMAT *TERMINAL-IO* "~A~%" (buffer-last-error buffer))
-               (FORMAT *TERMINAL-IO* "?~%"))
-           (WHEN (buffer-print buffer)
-             (let ((current (BUFFER-CURRENT-linum buffer)))
-               (if (LIMIT current 1 (buffer-length buffer))
+                    (buffer-quit buffer)))
+       (if (buffer-got-error buffer)
+           (if (buffer-show-errors buffer)
+               (format *terminal-io* "~A~%" (buffer-last-error buffer))
+               (format *terminal-io* "?~%"))
+           (when (buffer-print buffer)
+             (let ((current (buffer-current-linum buffer)))
+               (if (limit current 1 (buffer-length buffer))
                    (format *terminal-io* "~A~%" (buffer-nth-line buffer current))
                    (progn
                      (buffer-set-error buffer "Invalid address")
-                     (IF (buffer-show-errors buffer)
-                         (FORMAT *TERMINAL-IO* "~A~%" (buffer-last-error buffer))
-                         (FORMAT *TERMINAL-IO* "?~%")))))))
-       (IF (buffer-quit buffer)
-           (RETURN)
-           (WHEN (BUFFER-show-PROMPT BUFFER)
-             (FORMAT *TERMINAL-IO* "~A~%" (buffer-PROMPT-string BUFFER))))))
-  ) ;;EDIT
+                     (if (buffer-show-errors buffer)
+                         (format *terminal-io* "~A~%" (buffer-last-error buffer))
+                         (format *terminal-io* "?~%")))))))
+       (if (buffer-quit buffer)
+           (return)
+           (when (buffer-show-prompt buffer)
+             (format *terminal-io* "~A~%" (buffer-prompt-string buffer)))))))
 
 
 ;; ed &optional x => implementation-dependent
@@ -1363,28 +1300,27 @@ RETURN: The index of the next non white space character in command,
 ;; means by which the function text is obtained is implementation-defined.
 
 
-(DEFVAR *CURRENT-BUFFER* (MAKE-BUFFER))
+(defparameter *current-buffer* (make-buffer))
 
 
-(DEFUN ED (&OPTIONAL X)
-  (COND
-    ((NULL X)
-     (EDIT *CURRENT-BUFFER*))
-    ((OR (PATHNAMEP X) (STRINGP X))
-     (SETQ *CURRENT-BUFFER* (BUFFER-READ X))
-     (EDIT *CURRENT-BUFFER*))
-    ((SYMBOLP X)
-     (LET ((FLE (FUNCTION-LAMBDA-EXPRESSION (FDEFINITION X))))
-       (SETQ *CURRENT-BUFFER*
-             (BUFFER-FROM-STRING
-              (IF (EQ 'LAMBDA (CAR FLE))
-                  (FORMAT NIL "~S~%"  (CONS 'DEFUN (CONS X (CDR FLE))))
-                  (FORMAT NIL "~S is not a function.~%" x))))
-       (EDIT *CURRENT-BUFFER*)))
+(defun ed (&optional x)
+  (cond
+    ((null x)
+     (edit *current-buffer*))
+    ((or (pathnamep x) (stringp x))
+     (setq *current-buffer* (buffer-read x))
+     (edit *current-buffer*))
+    ((symbolp x)
+     (let ((fle (function-lambda-expression (fdefinition x))))
+       (setq *current-buffer*
+             (buffer-from-string
+              (if (eq 'lambda (car fle))
+                  (format nil "~S~%"  (cons 'defun (cons x (cdr fle))))
+                  (format nil "~S is not a function.~%" x))))
+       (edit *current-buffer*)))
     ;; TODO: If x is a function name, ...
-    (T
-     (ERROR "Invalid argument ~S." X)))
-  ) ;;ED
+    (t
+     (error "Invalid argument ~S." x))))
 
 
 
@@ -1393,10 +1329,10 @@ RETURN: The index of the next non white space character in command,
   "One little boy and
 Two little girls, climbed up a
 Tree near the sky.
-Four bird lander on that tree.
+Four birds landed on that tree.
 Five eggs were layed each on one child head.
-") ;;test-text
+") 
 
 ;; (progn (ext:cd "/home/pascal/src/lisp/encours/") (load "ed.lisp"))
 
-;;;; ed.lisp                          --                     --          ;;;;
+;;;; THE END ;;;;
