@@ -5,7 +5,10 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
+;;;;
+;;;;    This file defines the package and the functions.
+;;;;
 ;;;;    Implements the Common Lisp package system.
 ;;;;    
 ;;;;    <Xach> The basic idea of that file is that the semantics of the CL
@@ -61,8 +64,6 @@
 ;;;;**************************************************************************
 
 
-(pushnew :test-zpack *features*)
-
 (cl:defpackage "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.PACKAGE"
   (:use "COMMON-LISP")
   (:nicknames "ZPACK")
@@ -97,7 +98,7 @@ This package implements the Common Lisp package system.
 Author: Zach Beane.
 Modified by Pascal Bourguignon.
 "))
-(cl:in-package "ZPACK")
+(cl:in-package "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.PACKAGE")
 
 ;;; Symbol internal management
 
@@ -267,10 +268,7 @@ Modified by Pascal Bourguignon.
 
 
 
-(defun ensure-list (object)
-  (if (listp object)
-      object
-      (list object)))
+
 
 
 ;;; Implementation of syms
@@ -662,10 +660,10 @@ Modified by Pascal Bourguignon.
                                                 :expected-type 'package-designator
                                                 :format-control "~S called with a non ~S: ~S"
                                                 :format-arguments (list ',name 'package-designator name)))))
-     (defmethod ,name ((name string))    (,name (normalize-package-designator name :if-package-does-not-exist ,if-package-does-not-exist)))
-     (defmethod ,name ((name character)) (,name (normalize-package-designator name :if-package-does-not-exist ,if-package-does-not-exist)))
-     (defmethod ,name ((name cl:symbol)) (,name (normalize-package-designator name :if-package-does-not-exist ,if-package-does-not-exist)))
-     (defmethod ,name ((name symbol))    (,name (normalize-package-designator (symbol-name name) :if-package-does-not-exist ,if-package-does-not-exist)))))
+        (defmethod ,name ((name string))    (,name (normalize-package-designator name :if-package-does-not-exist ,if-package-does-not-exist)))
+        (defmethod ,name ((name character)) (,name (normalize-package-designator name :if-package-does-not-exist ,if-package-does-not-exist)))
+        (defmethod ,name ((name cl:symbol)) (,name (normalize-package-designator name :if-package-does-not-exist ,if-package-does-not-exist)))
+        (defmethod ,name ((name symbol))    (,name (normalize-package-designator (symbol-name name) :if-package-does-not-exist ,if-package-does-not-exist)))))
 
 (define-normalize-package-methods package-name            :type-error t)
 (define-normalize-package-methods package-use-list        :type-error t)
@@ -710,6 +708,11 @@ Modified by Pascal Bourguignon.
 
 
 
+(defun ensure-list (object)
+  (if (listp object)
+      object
+      (list object)))
+
 (deftype string-designator ()
   '(or string character symbol cl:symbol))
 
@@ -746,6 +749,7 @@ Modified by Pascal Bourguignon.
             (normalize-string-designator
              new-string
              :if-not-a-string-designator if-not-a-string-designator))))))))
+
 
 
 (defun normalize-weak-designator-of-list-of-string-designator (object)
@@ -986,24 +990,24 @@ IF-PACKAGE-EXISTS           The default is :PACKAGE
                                              (unless (externalp sym package)
                                                (push sym symbols)))
                                            (present-table package)))
-                               ((:external)
-                                (tmap-syms (lambda (sym) (push sym symbols))
-                                           (external-table package)))
-                               ((:inherited)
-                                (dolist (pack (package-use-list package))
-                                  (tmap-syms (lambda (sym)
-                                               (let ((shadow (find-symbol (symbol-name sym) package)))
-                                                (unless (and shadow
-                                                             (shadowingp shadow package)
-                                                             (not (eq sym shadow)))
-                                                  (push sym symbols))))
-                                             (external-table (find-package pack)))))
-                               ((:present)
-                                (tmap-syms (lambda (sym) (push sym symbols))
-                                           (present-table package)))
-                               ((:shadowing)
-                                (tmap-syms (lambda (sym) (push sym symbols))
-                                           (shadowing-table package))))
+                                           ((:external)
+                                            (tmap-syms (lambda (sym) (push sym symbols))
+                                                       (external-table package)))
+                                           ((:inherited)
+                                            (dolist (pack (package-use-list package))
+                                              (tmap-syms (lambda (sym)
+                                                           (let ((shadow (find-symbol (symbol-name sym) package)))
+                                                             (unless (and shadow
+                                                                          (shadowingp shadow package)
+                                                                          (not (eq sym shadow)))
+                                                               (push sym symbols))))
+                                                         (external-table (find-package pack)))))
+                                           ((:present)
+                                            (tmap-syms (lambda (sym) (push sym symbols))
+                                                       (present-table package)))
+                                           ((:shadowing)
+                                            (tmap-syms (lambda (sym) (push sym symbols))
+                                                       (shadowing-table package))))
                              (iterator))
                  (packages   (setf package (pop packages)
                                    stypes  symbol-types)
@@ -1012,86 +1016,55 @@ IF-PACKAGE-EXISTS           The default is :PACKAGE
       (function iterator))))
 
 
-(defmacro with-package-iterator ((name package-list-form &rest symbol-types)
-                                 &body declarations-body)
-  (flet ((valid-symbol-type-p (object)
-           (member object '(:internal :external :inherited
-                            ;; extensions:
-                            :present :shadowing))))
-    (cond
-      ((null symbol-types) (error 'simple-program-error
-                                  :format-control "Missing at least one symbol-type"))
-      ((every (function valid-symbol-type-p) symbol-types))
-      (t (error 'simple-program-error
-                :format-control "Invalid symbol-type: ~S"
-                :format-arguments (list (find-if-not (function valid-symbol-type-p) symbol-types))))))
-  (let ((viterator (gensym "ITERATOR")))
-    `(let ((,viterator (make-package-iterator ,package-list-form ',symbol-types)))
-       (macrolet ((,name () '(funcall ,viterator)))
-         ,@declarations-body))))
 
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  
-  (defun declarations (body)
-    (loop
-      :for item :in body
-      :while (and (listp item) (eql 'declare (car item)))
-      :collect item))
-  
-  (defun body (body)
-    (loop
-      :for items :on body
-      :for item = (car items)
-      :while (and (listp item) (eql 'declare (car item)))
-      :finally (return items)))
+(defun declarations (body)
+  (loop
+    :for item :in body
+    :while (and (listp item) (eql 'declare (car item)))
+    :collect item))
 
-  (assert (equal (mapcar (lambda (body) (list (declarations body) (body body)))
-                         '(()
-                           ((declare (ignore x)))
-                           ((declare (ignore x)) (declare (ignore y)))
-                           ((print w) (print z))
-                           ((declare (ignore x)) (print w) (print z))
-                           ((declare (ignore x)) (declare (ignore y)) (print w) (print z))))
-                 '((nil nil)
-                   (((declare (ignore x))) nil)
-                   (((declare (ignore x)) (declare (ignore y))) nil)
-                   (nil ((print w) (print z)))
-                   (((declare (ignore x))) ((print w) (print z)))
-                   (((declare (ignore x)) (declare (ignore y))) ((print w) (print z))))))
+(defun body (body)
+  (loop
+    :for items :on body
+    :for item = (car items)
+    :while (and (listp item) (eql 'declare (car item)))
+    :finally (return items)))
 
-  
-  (defun generate-do-symbols-loop (var package result-form body symbol-types)
-    (let ((iter   (gensym "ITERATOR"))
-          (got-it (gensym "GOT-IT"))
-          (symbol (gensym "SYMBOL"))
-          (vpack  (gensym "PACKAGE")))
-      `(let ((,vpack (or ,package *package*)))
-         (with-package-iterator (,iter ,vpack ,@symbol-types)
-           (let (,var)
-             ,@(declarations body)
-             (loop
-               (multiple-value-bind (,got-it ,symbol) (,iter)
-                 (if ,got-it
-                     (tagbody
-                        (setf ,var ,symbol)
-                        ,@(body body))
-                     (progn
-                       (setf ,var nil)
-                       (return ,result-form)))))))))))
+(assert (equal (mapcar (lambda (body) (list (declarations body) (body body)))
+                       '(()
+                         ((declare (ignore x)))
+                         ((declare (ignore x)) (declare (ignore y)))
+                         ((print w) (print z))
+                         ((declare (ignore x)) (print w) (print z))
+                         ((declare (ignore x)) (declare (ignore y)) (print w) (print z))))
+               '((nil nil)
+                 (((declare (ignore x))) nil)
+                 (((declare (ignore x)) (declare (ignore y))) nil)
+                 (nil ((print w) (print z)))
+                 (((declare (ignore x))) ((print w) (print z)))
+                 (((declare (ignore x)) (declare (ignore y))) ((print w) (print z))))))
 
 
+(defun generate-do-symbols-loop (var package result-form body symbol-types)
+  (let ((iter   (gensym "ITERATOR"))
+        (got-it (gensym "GOT-IT"))
+        (symbol (gensym "SYMBOL"))
+        (vpack  (gensym "PACKAGE")))
+    `(let ((,vpack (or ,package *package*)))
+       (with-package-iterator (,iter ,vpack ,@symbol-types)
+         (let (,var)
+           ,@(declarations body)
+           (loop
+             (multiple-value-bind (,got-it ,symbol) (,iter)
+               (if ,got-it
+                   (tagbody
+                      (setf ,var ,symbol)
+                      ,@(body body))
+                   (progn
+                     (setf ,var nil)
+                     (return ,result-form))))))))))
 
-(defmacro do-symbols         ((var &optional package result-form) &body body)
-  (generate-do-symbols-loop var package result-form body '(:internal :external :inherited)))
-
-
-(defmacro do-external-symbols ((var &optional package result-form) &body body)
-  (generate-do-symbols-loop var package result-form body '(:external)))
-
-
-(defmacro do-all-symbols      ((var &optional result-form) &body body)
-  (generate-do-symbols-loop var '(list-all-packages) result-form body '(:internal :external :inherited)))
 
 
 
@@ -1114,8 +1087,13 @@ IF-PACKAGE-EXISTS           The default is :PACKAGE
         (values sym t))))
 
 
+(defmacro zdo-external-symbols ((var pack) &body body)
+  `(tmap-syms (lambda (,var)
+                ,@body)
+              (external-table ,pack)))
+
 (defmethod check-inherit-conflict (used-pack using-pack)
-  (do-external-symbols (inherited-sym used-pack)
+  (zdo-external-symbols (inherited-sym used-pack)
     (let ((existing-sym (find-symbol (symbol-name inherited-sym)
                                      using-pack)))
       (when (and existing-sym
@@ -1143,12 +1121,12 @@ IF-PACKAGE-EXISTS           The default is :PACKAGE
     (dolist (used-pack (package-use-list pack))
       (let ((existing-sym (find-symbol sym-name used-pack)))
         (when existing-sym
-         (if first-existing-sym
-             (unless (eq existing-sym first-existing-sym)
-               (error "Conflict: uninterning ~A would lead to conflict ~
+          (if first-existing-sym
+              (unless (eq existing-sym first-existing-sym)
+                (error "Conflict: uninterning ~A would lead to conflict ~
                       between ~A and ~A"
-                      sym first-existing-sym existing-sym))
-             (setf first-existing-sym existing-sym)))))))
+                       sym first-existing-sym existing-sym))
+              (setf first-existing-sym existing-sym)))))))
 
 
 (defmethod zimport-without-checks (sym pack)
@@ -1410,8 +1388,6 @@ IF-PACKAGE-EXISTS           The default is :PACKAGE
 
 
 
-
-
 (defun check-disjoints (shadows shadowing-import-froms import-froms
                         interns exports)
   (loop
@@ -1475,8 +1451,6 @@ IF-PACKAGE-EXISTS           The default is :PACKAGE
                                (list "E1" "E2" "E3" "S2"))))
 
 
-
-
 (defun %define-package (name shadows shadowing-imports
                         uses imports interns exports
                         documentation nicknames)
@@ -1525,102 +1499,6 @@ IF-PACKAGE-EXISTS           The default is :PACKAGE
 
 (define-modify-macro appendf (&rest args) append "Append onto list")
 
-
-(defmacro defpackage (defined-package-name &rest options)
-  ;; option::= (:nicknames nickname*)* |  
-  ;;           (:documentation string) |  
-  ;;           (:use package-name*)* |  
-  ;;           (:shadow {symbol-name}*)* |  
-  ;;           (:shadowing-import-from package-name {symbol-name}*)* |  
-  ;;           (:import-from package-name {symbol-name}*)* |  
-  ;;           (:export {symbol-name}*)* |  
-  ;;           (:intern {symbol-name}*)* |  
-  ;;           (:size integer)
-  (dolist (option options)
-    (unless (typep option 'list)
-      (error 'simple-type-error
-             :datum option
-             :expected-type 'list
-             :format-control "This implementation doesn't support any non-standard option such as ~S"
-             :format-arguments (list option)))
-    (unless (typep (car option) '(member :nicknames :documentation :use
-                                  :shadow :shadowing-import-from
-                                  :import-from :export :intern :size))
-      (error 'simple-type-error
-             :datum (car option)
-             :expected-type '(member :nicknames :documentation :use
-                              :shadow :shadowing-import-from
-                              :import-from :export :intern :size)
-             :format-control "This implementation doesn't support any non-standard option such as ~S"
-             :format-arguments (list option))))
-  (dolist (key '(:documentation :size))
-   (unless (<= (count key options :key (function first)) 1)
-     (cerror "Ignore all but the first" 'simple-program-error
-             :format-control "Too many ~S options given: ~S"
-             :format-arguments (list key (remove key options :test-not (function eql) :key (function first))))))
-  (labels ((extract-strings (key)
-             (delete-duplicates
-              (normalize-weak-designator-of-list-of-string-designator
-               (reduce (function append)
-                       (mapcar (function rest)
-                               (remove key options
-                                       :key (function first)
-                                       :test-not (function eql)))))))
-           (extract-packages (key)
-             (delete-duplicates
-              (mapcan (lambda (package)
-                        (list (normalize-package-designator
-                               package
-                               :if-package-does-not-exist :ignore-or-replace
-                               :if-package-exists :string)))
-                      (reduce (function append)
-                              (mapcar (function rest)
-                                      (remove key options
-                                              :key (function first)
-                                              :test-not (function eql)))))))           
-           (extract-from (key)
-             (let ((table (make-hash-table))
-                   (result '()))
-               (dolist (entry  (remove key options
-                                       :key (function first)
-                                       :test-not (function eql)))
-                 (let ((entry (rest entry)))
-                   (appendf (gethash (normalize-package-designator
-                                      (first entry) :if-package-does-not-exist :error)
-                                     table)
-                            (normalize-weak-designator-of-list-of-string-designator (rest entry)))))
-               ;; should do the same as in classify-per-package below.
-               (maphash (lambda (k v) (push (list k v) result))
-                        table)
-               result))
-           (check-string (object)
-             (check-type object string)
-             object)
-           (extract-one-string (key)
-             (let ((entries (remove key options
-                                    :key (function first)
-                                    :test-not (function eql))))
-               (let ((entry (first entries)))
-                 (when (rest entry)
-                   (assert (null (cddr entry))
-                           () "Invalid :DOCUMENTATION option: it should contain only one string.")
-                   (check-string (second entry)))))))
-    (let* ((shadows           (extract-strings    :shadow))
-           (shadowing-imports (extract-from       :shadowing-import-from))
-           (import-froms      (extract-from       :import-from))
-           (interns           (extract-strings    :intern))
-           (exports           (extract-strings    :export)))
-      (check-disjoints shadows shadowing-imports import-froms interns exports)
-      `(eval-when (:execute :compile-toplevel :load-toplevel)
-         (%define-package ',(normalize-string-designator defined-package-name :if-not-a-string-designator :replace)
-                          ',shadows
-                          ',shadowing-imports
-                          ',(extract-packages   :use)
-                          ',import-froms
-                          ',interns
-                          ',exports
-                          ',(extract-one-string :documentation)
-                          ',(extract-strings    :nicknames))))))
 
 
 
@@ -1710,374 +1588,7 @@ Each sublist contains the package followed by its imported symbols."
          (when new-package
            (setf *package* new-package))))))
 
-
-
-
-(defpackage "KEYWORD"
-  (:use)
-  (:documentation "The KEYWORD package."))
-
-(defpackage "COMMON-LISP"
-  (:use)
-  (:nicknames "CL")
-  (:export "*" "**" "***" "*BREAK-ON-SIGNALS*"
-           "*COMPILE-FILE-PATHNAME*" "*COMPILE-FILE-TRUENAME*"
-           "*COMPILE-PRINT*" "*COMPILE-VERBOSE*" "*DEBUG-IO*"
-           "*DEBUGGER-HOOK*" "*DEFAULT-PATHNAME-DEFAULTS*"
-           "*ERROR-OUTPUT*" "*FEATURES*" "*GENSYM-COUNTER*"
-           "*LOAD-PATHNAME*" "*LOAD-PRINT*" "*LOAD-TRUENAME*"
-           "*LOAD-VERBOSE*" "*MACROEXPAND-HOOK*" "*MODULES*"
-           "*PACKAGE*" "*PRINT-ARRAY*" "*PRINT-BASE*"
-           "*PRINT-CASE*" "*PRINT-CIRCLE*" "*PRINT-ESCAPE*"
-           "*PRINT-GENSYM*" "*PRINT-LENGTH*" "*PRINT-LEVEL*"
-           "*PRINT-LINES*" "*PRINT-MISER-WIDTH*"
-           "*PRINT-PPRINT-DISPATCH*" "*PRINT-PRETTY*"
-           "*PRINT-RADIX*" "*PRINT-READABLY*"
-           "*PRINT-RIGHT-MARGIN*" "*QUERY-IO*" "*RANDOM-STATE*"
-           "*READ-BASE*" "*READ-DEFAULT-FLOAT-FORMAT*"
-           "*READ-EVAL*" "*READ-SUPPRESS*" "*READTABLE*"
-           "*STANDARD-INPUT*" "*STANDARD-OUTPUT*"
-           "*TERMINAL-IO*" "*TRACE-OUTPUT*" "+" "++" "+++" "-"
-           "/" "//" "///" "/=" "1+" "1-" "<" "<=" "=" ">" ">="
-           "ABORT" "ABS" "ACONS" "ACOS" "ACOSH" "ADD-METHOD"
-           "ADJOIN" "ADJUST-ARRAY" "ADJUSTABLE-ARRAY-P"
-           "ALLOCATE-INSTANCE" "ALPHA-CHAR-P" "ALPHANUMERICP"
-           "AND" "APPEND" "APPLY" "APROPOS" "APROPOS-LIST"
-           "AREF" "ARITHMETIC-ERROR"
-           "ARITHMETIC-ERROR-OPERANDS"
-           "ARITHMETIC-ERROR-OPERATION" "ARRAY"
-           "ARRAY-DIMENSION" "ARRAY-DIMENSION-LIMIT"
-           "ARRAY-DIMENSIONS" "ARRAY-DISPLACEMENT"
-           "ARRAY-ELEMENT-TYPE" "ARRAY-HAS-FILL-POINTER-P"
-           "ARRAY-IN-BOUNDS-P" "ARRAY-RANK" "ARRAY-RANK-LIMIT"
-           "ARRAY-ROW-MAJOR-INDEX" "ARRAY-TOTAL-SIZE"
-           "ARRAY-TOTAL-SIZE-LIMIT" "ARRAYP" "ASH" "ASIN"
-           "ASINH" "ASSERT" "ASSOC" "ASSOC-IF" "ASSOC-IF-NOT"
-           "ATAN" "ATANH" "ATOM" "BASE-CHAR" "BASE-STRING"
-           "BIGNUM" "BIT" "BIT-AND" "BIT-ANDC1" "BIT-ANDC2"
-           "BIT-EQV" "BIT-IOR" "BIT-NAND" "BIT-NOR" "BIT-NOT"
-           "BIT-ORC1" "BIT-ORC2" "BIT-VECTOR" "BIT-VECTOR-P"
-           "BIT-XOR" "BLOCK" "BOOLE" "BOOLE-1" "BOOLE-2"
-           "BOOLE-AND" "BOOLE-ANDC1" "BOOLE-ANDC2" "BOOLE-C1"
-           "BOOLE-C2" "BOOLE-CLR" "BOOLE-EQV" "BOOLE-IOR"
-           "BOOLE-NAND" "BOOLE-NOR" "BOOLE-ORC1" "BOOLE-ORC2"
-           "BOOLE-SET" "BOOLE-XOR" "BOOLEAN" "BOTH-CASE-P"
-           "BOUNDP" "BREAK" "BROADCAST-STREAM"
-           "BROADCAST-STREAM-STREAMS" "BUILT-IN-CLASS"
-           "BUTLAST" "BYTE" "BYTE-POSITION" "BYTE-SIZE"
-           "CAAAAR" "CAAADR" "CAAAR" "CAADAR" "CAADDR" "CAADR"
-           "CAAR" "CADAAR" "CADADR" "CADAR" "CADDAR" "CADDDR"
-           "CADDR" "CADR" "CALL-ARGUMENTS-LIMIT" "CALL-METHOD"
-           "CALL-NEXT-METHOD" "CAR" "CASE" "CATCH" "CCASE"
-           "CDAAAR" "CDAADR" "CDAAR" "CDADAR" "CDADDR" "CDADR"
-           "CDAR" "CDDAAR" "CDDADR" "CDDAR" "CDDDAR" "CDDDDR"
-           "CDDDR" "CDDR" "CDR" "CEILING" "CELL-ERROR"
-           "CELL-ERROR-NAME" "CERROR" "CHANGE-CLASS" "CHAR"
-           "CHAR-CODE" "CHAR-CODE-LIMIT" "CHAR-DOWNCASE"
-           "CHAR-EQUAL" "CHAR-GREATERP" "CHAR-INT" "CHAR-LESSP"
-           "CHAR-NAME" "CHAR-NOT-EQUAL" "CHAR-NOT-GREATERP"
-           "CHAR-NOT-LESSP" "CHAR-UPCASE" "CHAR/=" "CHAR<"
-           "CHAR<=" "CHAR=" "CHAR>" "CHAR>=" "CHARACTER"
-           "CHARACTERP" "CHECK-TYPE" "CIS" "CLASS" "CLASS-NAME"
-           "CLASS-OF" "CLEAR-INPUT" "CLEAR-OUTPUT" "CLOSE"
-           "CLRHASH" "CODE-CHAR" "COERCE" "COMPILE"
-           "COMPILE-FILE" "COMPILE-FILE-PATHNAME"
-           "COMPILED-FUNCTION" "COMPILED-FUNCTION-P"
-           "COMPILER-MACRO-FUNCTION" "COMPLEMENT" "COMPLEX"
-           "COMPLEXP" "COMPUTE-APPLICABLE-METHODS"
-           "COMPUTE-RESTARTS" "CONCATENATE"
-           "CONCATENATED-STREAM" "CONCATENATED-STREAM-STREAMS"
-           "COND" "CONDITION" "CONJUGATE" "CONS" "CONSP"
-           "CONSTANTLY" "CONSTANTP" "CONTINUE" "CONTROL-ERROR"
-           "COPY-ALIST" "COPY-LIST" "COPY-PPRINT-DISPATCH"
-           "COPY-READTABLE" "COPY-SEQ" "COPY-STRUCTURE"
-           "COPY-SYMBOL" "COPY-TREE" "COS" "COSH" "COUNT"
-           "COUNT-IF" "COUNT-IF-NOT" "CTYPECASE" "DECF"
-           "DECLAIM" "DECLARATION" "DECLARE" "DECODE-FLOAT"
-           "DECODE-UNIVERSAL-TIME" "DEFCLASS" "DEFCONSTANT"
-           "DEFGENERIC" "DEFINE-COMPILER-MACRO"
-           "DEFINE-CONDITION" "DEFINE-METHOD-COMBINATION"
-           "DEFINE-MODIFY-MACRO" "DEFINE-SETF-EXPANDER"
-           "DEFINE-SYMBOL-MACRO" "DEFMACRO" "DEFMETHOD"
-           "DEFPACKAGE" "DEFPARAMETER" "DEFSETF" "DEFSTRUCT"
-           "DEFTYPE" "DEFUN" "DEFVAR" "DELETE"
-           "DELETE-DUPLICATES" "DELETE-FILE" "DELETE-IF"
-           "DELETE-IF-NOT" "DELETE-PACKAGE" "DENOMINATOR"
-           "DEPOSIT-FIELD" "DESCRIBE" "DESCRIBE-OBJECT"
-           "DESTRUCTURING-BIND" "DIGIT-CHAR" "DIGIT-CHAR-P"
-           "DIRECTORY" "DIRECTORY-NAMESTRING" "DISASSEMBLE"
-           "DIVISION-BY-ZERO" "DO" "DO*" "DO-ALL-SYMBOLS"
-           "DO-EXTERNAL-SYMBOLS" "DO-SYMBOLS" "DOCUMENTATION"
-           "DOLIST" "DOTIMES" "DOUBLE-FLOAT"
-           "DOUBLE-FLOAT-EPSILON"
-           "DOUBLE-FLOAT-NEGATIVE-EPSILON" "DPB" "DRIBBLE"
-           "DYNAMIC-EXTENT" "ECASE" "ECHO-STREAM"
-           "ECHO-STREAM-INPUT-STREAM"
-           "ECHO-STREAM-OUTPUT-STREAM" "ED" "EIGHTH" "ELT"
-           "END-OF-FILE" "ENDP" "ENOUGH-NAMESTRING"
-           "ENSURE-DIRECTORIES-EXIST" "ENSURE-GENERIC-FUNCTION"
-           "EQ" "EQL" "EQUAL" "EQUALP" "ERROR" "ETYPECASE"
-           "EVAL" "EVAL-WHEN" "EVENP" "EVERY" "EXP" "EXPORT"
-           "EXPT" "EXTENDED-CHAR" "FBOUNDP" "FCEILING"
-           "FDEFINITION" "FFLOOR" "FIFTH" "FILE-AUTHOR"
-           "FILE-ERROR" "FILE-ERROR-PATHNAME" "FILE-LENGTH"
-           "FILE-NAMESTRING" "FILE-POSITION" "FILE-STREAM"
-           "FILE-STRING-LENGTH" "FILE-WRITE-DATE" "FILL"
-           "FILL-POINTER" "FIND" "FIND-ALL-SYMBOLS"
-           "FIND-CLASS" "FIND-IF" "FIND-IF-NOT" "FIND-METHOD"
-           "FIND-PACKAGE" "FIND-RESTART" "FIND-SYMBOL"
-           "FINISH-OUTPUT" "FIRST" "FIXNUM" "FLET" "FLOAT"
-           "FLOAT-DIGITS" "FLOAT-PRECISION" "FLOAT-RADIX"
-           "FLOAT-SIGN" "FLOATING-POINT-INEXACT"
-           "FLOATING-POINT-INVALID-OPERATION"
-           "FLOATING-POINT-OVERFLOW" "FLOATING-POINT-UNDERFLOW"
-           "FLOATP" "FLOOR" "FMAKUNBOUND" "FORCE-OUTPUT"
-           "FORMAT" "FORMATTER" "FOURTH" "FRESH-LINE" "FROUND"
-           "FTRUNCATE" "FTYPE" "FUNCALL" "FUNCTION"
-           "FUNCTION-KEYWORDS" "FUNCTION-LAMBDA-EXPRESSION"
-           "FUNCTIONP" "GCD" "GENERIC-FUNCTION" "GENSYM"
-           "GENTEMP" "GET" "GET-DECODED-TIME"
-           "GET-DISPATCH-MACRO-CHARACTER"
-           "GET-INTERNAL-REAL-TIME" "GET-INTERNAL-RUN-TIME"
-           "GET-MACRO-CHARACTER" "GET-OUTPUT-STREAM-STRING"
-           "GET-PROPERTIES" "GET-SETF-EXPANSION"
-           "GET-UNIVERSAL-TIME" "GETF" "GETHASH" "GO"
-           "GRAPHIC-CHAR-P" "HANDLER-BIND" "HANDLER-CASE"
-           "HASH-TABLE" "HASH-TABLE-COUNT" "HASH-TABLE-P"
-           "HASH-TABLE-REHASH-SIZE"
-           "HASH-TABLE-REHASH-THRESHOLD" "HASH-TABLE-SIZE"
-           "HASH-TABLE-TEST" "HOST-NAMESTRING" "IDENTITY" "IF"
-           "IGNORABLE" "IGNORE" "IGNORE-ERRORS" "IMAGPART"
-           "IMPORT" "IN-PACKAGE" "INCF" "INITIALIZE-INSTANCE"
-           "INLINE" "INPUT-STREAM-P" "INSPECT" "INTEGER"
-           "INTEGER-DECODE-FLOAT" "INTEGER-LENGTH" "INTEGERP"
-           "INTERACTIVE-STREAM-P" "INTERN"
-           "INTERNAL-TIME-UNITS-PER-SECOND" "INTERSECTION"
-           "INVALID-METHOD-ERROR" "INVOKE-DEBUGGER"
-           "INVOKE-RESTART" "INVOKE-RESTART-INTERACTIVELY"
-           "ISQRT" "KEYWORD" "KEYWORDP" "LABELS" "LAMBDA"
-           "LAMBDA-LIST-KEYWORDS" "LAMBDA-PARAMETERS-LIMIT"
-           "LAST" "LCM" "LDB" "LDB-TEST" "LDIFF"
-           "LEAST-NEGATIVE-DOUBLE-FLOAT"
-           "LEAST-NEGATIVE-LONG-FLOAT"
-           "LEAST-NEGATIVE-NORMALIZED-DOUBLE-FLOAT"
-           "LEAST-NEGATIVE-NORMALIZED-LONG-FLOAT"
-           "LEAST-NEGATIVE-NORMALIZED-SHORT-FLOAT"
-           "LEAST-NEGATIVE-NORMALIZED-SINGLE-FLOAT"
-           "LEAST-NEGATIVE-SHORT-FLOAT"
-           "LEAST-NEGATIVE-SINGLE-FLOAT"
-           "LEAST-POSITIVE-DOUBLE-FLOAT"
-           "LEAST-POSITIVE-LONG-FLOAT"
-           "LEAST-POSITIVE-NORMALIZED-DOUBLE-FLOAT"
-           "LEAST-POSITIVE-NORMALIZED-LONG-FLOAT"
-           "LEAST-POSITIVE-NORMALIZED-SHORT-FLOAT"
-           "LEAST-POSITIVE-NORMALIZED-SINGLE-FLOAT"
-           "LEAST-POSITIVE-SHORT-FLOAT"
-           "LEAST-POSITIVE-SINGLE-FLOAT" "LENGTH" "LET" "LET*"
-           "LISP-IMPLEMENTATION-TYPE"
-           "LISP-IMPLEMENTATION-VERSION" "LIST" "LIST*"
-           "LIST-ALL-PACKAGES" "LIST-LENGTH" "LISTEN" "LISTP"
-           "LOAD" "LOAD-LOGICAL-PATHNAME-TRANSLATIONS"
-           "LOAD-TIME-VALUE" "LOCALLY" "LOG" "LOGAND"
-           "LOGANDC1" "LOGANDC2" "LOGBITP" "LOGCOUNT" "LOGEQV"
-           "LOGICAL-PATHNAME" "LOGICAL-PATHNAME-TRANSLATIONS"
-           "LOGIOR" "LOGNAND" "LOGNOR" "LOGNOT" "LOGORC1"
-           "LOGORC2" "LOGTEST" "LOGXOR" "LONG-FLOAT"
-           "LONG-FLOAT-EPSILON" "LONG-FLOAT-NEGATIVE-EPSILON"
-           "LONG-SITE-NAME" "LOOP" "LOOP-FINISH" "LOWER-CASE-P"
-           "MACHINE-INSTANCE" "MACHINE-TYPE" "MACHINE-VERSION"
-           "MACRO-FUNCTION" "MACROEXPAND" "MACROEXPAND-1"
-           "MACROLET" "MAKE-ARRAY" "MAKE-BROADCAST-STREAM"
-           "MAKE-CONCATENATED-STREAM" "MAKE-CONDITION"
-           "MAKE-DISPATCH-MACRO-CHARACTER" "MAKE-ECHO-STREAM"
-           "MAKE-HASH-TABLE" "MAKE-INSTANCE"
-           "MAKE-INSTANCES-OBSOLETE" "MAKE-LIST"
-           "MAKE-LOAD-FORM" "MAKE-LOAD-FORM-SAVING-SLOTS"
-           "MAKE-METHOD" "MAKE-PACKAGE" "MAKE-PATHNAME"
-           "MAKE-RANDOM-STATE" "MAKE-SEQUENCE" "MAKE-STRING"
-           "MAKE-STRING-INPUT-STREAM"
-           "MAKE-STRING-OUTPUT-STREAM" "MAKE-SYMBOL"
-           "MAKE-SYNONYM-STREAM" "MAKE-TWO-WAY-STREAM"
-           "MAKUNBOUND" "MAP" "MAP-INTO" "MAPC" "MAPCAN"
-           "MAPCAR" "MAPCON" "MAPHASH" "MAPL" "MAPLIST"
-           "MASK-FIELD" "MAX" "MEMBER" "MEMBER-IF"
-           "MEMBER-IF-NOT" "MERGE" "MERGE-PATHNAMES" "METHOD"
-           "METHOD-COMBINATION" "METHOD-COMBINATION-ERROR"
-           "METHOD-QUALIFIERS" "MIN" "MINUSP" "MISMATCH" "MOD"
-           "MOST-NEGATIVE-DOUBLE-FLOAT" "MOST-NEGATIVE-FIXNUM"
-           "MOST-NEGATIVE-LONG-FLOAT"
-           "MOST-NEGATIVE-SHORT-FLOAT"
-           "MOST-NEGATIVE-SINGLE-FLOAT"
-           "MOST-POSITIVE-DOUBLE-FLOAT" "MOST-POSITIVE-FIXNUM"
-           "MOST-POSITIVE-LONG-FLOAT"
-           "MOST-POSITIVE-SHORT-FLOAT"
-           "MOST-POSITIVE-SINGLE-FLOAT" "MUFFLE-WARNING"
-           "MULTIPLE-VALUE-BIND" "MULTIPLE-VALUE-CALL"
-           "MULTIPLE-VALUE-LIST" "MULTIPLE-VALUE-PROG1"
-           "MULTIPLE-VALUE-SETQ" "MULTIPLE-VALUES-LIMIT"
-           "NAME-CHAR" "NAMESTRING" "NBUTLAST" "NCONC"
-           "NEXT-METHOD-P" "NIL" "NINTERSECTION" "NINTH"
-           "NO-APPLICABLE-METHOD" "NO-NEXT-METHOD" "NOT"
-           "NOTANY" "NOTEVERY" "NOTINLINE" "NRECONC" "NREVERSE"
-           "NSET-DIFFERENCE" "NSET-EXCLUSIVE-OR"
-           "NSTRING-CAPITALIZE" "NSTRING-DOWNCASE"
-           "NSTRING-UPCASE" "NSUBLIS" "NSUBST" "NSUBST-IF"
-           "NSUBST-IF-NOT" "NSUBSTITUTE" "NSUBSTITUTE-IF"
-           "NSUBSTITUTE-IF-NOT" "NTH" "NTH-VALUE" "NTHCDR"
-           "NULL" "NUMBER" "NUMBERP" "NUMERATOR" "NUNION"
-           "ODDP" "OPEN" "OPEN-STREAM-P" "OPTIMIZE" "OR"
-           "OUTPUT-STREAM-P" "PACKAGE" "PACKAGE-ERROR"
-           "PACKAGE-ERROR-PACKAGE" "PACKAGE-NAME"
-           "PACKAGE-NICKNAMES" "PACKAGE-SHADOWING-SYMBOLS"
-           "PACKAGE-USE-LIST" "PACKAGE-USED-BY-LIST" "PACKAGEP"
-           "PAIRLIS" "PARSE-ERROR" "PARSE-INTEGER"
-           "PARSE-NAMESTRING" "PATHNAME" "PATHNAME-DEVICE"
-           "PATHNAME-DIRECTORY" "PATHNAME-HOST"
-           "PATHNAME-MATCH-P" "PATHNAME-NAME" "PATHNAME-TYPE"
-           "PATHNAME-VERSION" "PATHNAMEP" "PEEK-CHAR" "PHASE"
-           "PI" "PLUSP" "POP" "POSITION" "POSITION-IF"
-           "POSITION-IF-NOT" "PPRINT" "PPRINT-DISPATCH"
-           "PPRINT-EXIT-IF-LIST-EXHAUSTED" "PPRINT-FILL"
-           "PPRINT-INDENT" "PPRINT-LINEAR"
-           "PPRINT-LOGICAL-BLOCK" "PPRINT-NEWLINE" "PPRINT-POP"
-           "PPRINT-TAB" "PPRINT-TABULAR" "PRIN1"
-           "PRIN1-TO-STRING" "PRINC" "PRINC-TO-STRING" "PRINT"
-           "PRINT-NOT-READABLE" "PRINT-NOT-READABLE-OBJECT"
-           "PRINT-OBJECT" "PRINT-UNREADABLE-OBJECT"
-           "PROBE-FILE" "PROCLAIM" "PROG" "PROG*" "PROG1"
-           "PROG2" "PROGN" "PROGRAM-ERROR" "PROGV" "PROVIDE"
-           "PSETF" "PSETQ" "PUSH" "PUSHNEW" "QUOTE" "RANDOM"
-           "RANDOM-STATE" "RANDOM-STATE-P" "RASSOC" "RASSOC-IF"
-           "RASSOC-IF-NOT" "RATIO" "RATIONAL" "RATIONALIZE"
-           "RATIONALP" "READ" "READ-BYTE" "READ-CHAR"
-           "READ-CHAR-NO-HANG" "READ-DELIMITED-LIST"
-           "READ-FROM-STRING" "READ-LINE"
-           "READ-PRESERVING-WHITESPACE" "READ-SEQUENCE"
-           "READER-ERROR" "READTABLE" "READTABLE-CASE"
-           "READTABLEP" "REAL" "REALP" "REALPART" "REDUCE"
-           "REINITIALIZE-INSTANCE" "REM" "REMF" "REMHASH"
-           "REMOVE" "REMOVE-DUPLICATES" "REMOVE-IF"
-           "REMOVE-IF-NOT" "REMOVE-METHOD" "REMPROP"
-           "RENAME-FILE" "RENAME-PACKAGE" "REPLACE" "REQUIRE"
-           "REST" "RESTART" "RESTART-BIND" "RESTART-CASE"
-           "RESTART-NAME" "RETURN" "RETURN-FROM" "REVAPPEND"
-           "REVERSE" "ROOM" "ROTATEF" "ROUND" "ROW-MAJOR-AREF"
-           "RPLACA" "RPLACD" "SATISFIES" "SBIT" "SCALE-FLOAT"
-           "SCHAR" "SEARCH" "SECOND" "SEQUENCE"
-           "SERIOUS-CONDITION" "SET" "SET-DIFFERENCE"
-           "SET-DISPATCH-MACRO-CHARACTER" "SET-EXCLUSIVE-OR"
-           "SET-MACRO-CHARACTER" "SET-PPRINT-DISPATCH"
-           "SET-SYNTAX-FROM-CHAR" "SETF" "SETQ" "SEVENTH"
-           "SHADOW" "SHADOWING-IMPORT" "SHARED-INITIALIZE"
-           "SHIFTF" "SHORT-FLOAT" "SHORT-FLOAT-EPSILON"
-           "SHORT-FLOAT-NEGATIVE-EPSILON" "SHORT-SITE-NAME"
-           "SIGNAL" "SIGNED-BYTE" "SIGNUM" "SIMPLE-ARRAY"
-           "SIMPLE-BASE-STRING" "SIMPLE-BIT-VECTOR"
-           "SIMPLE-BIT-VECTOR-P" "SIMPLE-CONDITION"
-           "SIMPLE-CONDITION-FORMAT-ARGUMENTS"
-           "SIMPLE-CONDITION-FORMAT-CONTROL" "SIMPLE-ERROR"
-           "SIMPLE-STRING" "SIMPLE-STRING-P"
-           "SIMPLE-TYPE-ERROR" "SIMPLE-VECTOR"
-           "SIMPLE-VECTOR-P" "SIMPLE-WARNING" "SIN"
-           "SINGLE-FLOAT" "SINGLE-FLOAT-EPSILON"
-           "SINGLE-FLOAT-NEGATIVE-EPSILON" "SINH" "SIXTH"
-           "SLEEP" "SLOT-BOUNDP" "SLOT-EXISTS-P"
-           "SLOT-MAKUNBOUND" "SLOT-MISSING" "SLOT-UNBOUND"
-           "SLOT-VALUE" "SOFTWARE-TYPE" "SOFTWARE-VERSION"
-           "SOME" "SORT" "SPECIAL" "SPECIAL-OPERATOR-P" "SQRT"
-           "STABLE-SORT" "STANDARD-CHAR" "STANDARD-CHAR-P"
-           "STANDARD-CLASS" "STANDARD-GENERIC-FUNCTION"
-           "STANDARD-METHOD" "STANDARD-OBJECT" "STEP"
-           "STORAGE-CONDITION" "STORE-VALUE" "STREAM"
-           "STREAM-ELEMENT-TYPE" "STREAM-ERROR"
-           "STREAM-ERROR-STREAM" "STREAM-EXTERNAL-FORMAT"
-           "STREAMP" "STRING" "STRING-CAPITALIZE"
-           "STRING-DOWNCASE" "STRING-EQUAL" "STRING-GREATERP"
-           "STRING-LEFT-TRIM" "STRING-LESSP" "STRING-NOT-EQUAL"
-           "STRING-NOT-GREATERP" "STRING-NOT-LESSP"
-           "STRING-RIGHT-TRIM" "STRING-STREAM" "STRING-TRIM"
-           "STRING-UPCASE" "STRING/=" "STRING<" "STRING<="
-           "STRING=" "STRING>" "STRING>=" "STRINGP"
-           "STRUCTURE-CLASS" "STRUCTURE-OBJECT" "STYLE-WARNING"
-           "SUBLIS" "SUBSEQ" "SUBSETP" "SUBST" "SUBST-IF"
-           "SUBST-IF-NOT" "SUBSTITUTE" "SUBSTITUTE-IF"
-           "SUBSTITUTE-IF-NOT" "SUBTYPEP" "SVREF" "SXHASH"
-           "SYMBOL" "SYMBOL-FUNCTION" "SYMBOL-MACROLET"
-           "SYMBOL-NAME" "SYMBOL-PACKAGE" "SYMBOL-PLIST"
-           "SYMBOL-VALUE" "SYMBOLP" "SYNONYM-STREAM"
-           "SYNONYM-STREAM-SYMBOL" "T" "TAGBODY" "TAILP" "TAN"
-           "TANH" "TENTH" "TERPRI" "THE" "THIRD" "THROW" "TIME"
-           "TRACE" "TRANSLATE-LOGICAL-PATHNAME"
-           "TRANSLATE-PATHNAME" "TREE-EQUAL" "TRUENAME"
-           "TRUNCATE" "TWO-WAY-STREAM"
-           "TWO-WAY-STREAM-INPUT-STREAM"
-           "TWO-WAY-STREAM-OUTPUT-STREAM" "TYPE" "TYPE-ERROR"
-           "TYPE-ERROR-DATUM" "TYPE-ERROR-EXPECTED-TYPE"
-           "TYPE-OF" "TYPECASE" "TYPEP" "UNBOUND-SLOT"
-           "UNBOUND-SLOT-INSTANCE" "UNBOUND-VARIABLE"
-           "UNDEFINED-FUNCTION" "UNEXPORT" "UNINTERN" "UNION"
-           "UNLESS" "UNREAD-CHAR" "UNSIGNED-BYTE" "UNTRACE"
-           "UNUSE-PACKAGE" "UNWIND-PROTECT"
-           "UPDATE-INSTANCE-FOR-DIFFERENT-CLASS"
-           "UPDATE-INSTANCE-FOR-REDEFINED-CLASS"
-           "UPGRADED-ARRAY-ELEMENT-TYPE"
-           "UPGRADED-COMPLEX-PART-TYPE" "UPPER-CASE-P"
-           "USE-PACKAGE" "USE-VALUE" "USER-HOMEDIR-PATHNAME"
-           "VALUES" "VALUES-LIST" "VECTOR" "VECTOR-POP"
-           "VECTOR-PUSH" "VECTOR-PUSH-EXTEND" "VECTORP" "WARN"
-           "WARNING" "WHEN" "WILD-PATHNAME-P" "WITH-ACCESSORS"
-           "WITH-COMPILATION-UNIT" "WITH-CONDITION-RESTARTS"
-           "WITH-HASH-TABLE-ITERATOR" "WITH-INPUT-FROM-STRING"
-           "WITH-OPEN-STREAM" "WITH-OUTPUT-TO-STRING"
-           "WITH-PACKAGE-ITERATOR" "WITH-SIMPLE-RESTART"
-           "WITH-SLOTS" "WITH-STANDARD-IO-SYNTAX" "WRITE"
-           "WRITE-BYTE" "WRITE-CHAR" "WRITE-LINE"
-           "WRITE-SEQUENCE" "WRITE-STRING" "WRITE-TO-STRING"
-           "Y-OR-N-P" "YES-OR-NO-P" "ZEROP")
-  (:documentation "The COMMON-LISP package."))
-
-(defpackage "COMMON-LISP-USER"
-  (:use "COMMON-LISP")
-  (:nicknames "CL-USER")
-  (:documentation "The COMMON-LISP-USER package."))
-
-
-(setf *keyword-package* (find-package "KEYWORD")
-      *common-lisp-package* (find-package "COMMON-LISP")
-      *common-lisp-user-package* (find-package "COMMON-LISP-USER")
-      *package* *common-lisp-user-package*)
-
-
-;; (ignore-errors (delete-package "TEST-SHADOWING-IMPORT"))
-;; (ignore-errors (delete-package "TEST-LISP"))
-;; (defpackage "TEST-LISP"
-;;   (:use)
-;;   (:export "CONS" "CAR" "CDR" "NULL" "NIL" "T"))
-;; 
-;; (defpackage "TEST-SHADOWING-IMPORT"
-;;   (:use "COMMON-LISP")
-;;   (:shadowing-import-from "TEST-LISP"
-;;                           "CONS" "CAR" "CDR" "NULL" "NIL" "T")
-;;   (:shadow "IF" "COND")
-;;   (:export "IF" "COND"))
-;; 
-;; 
-;; (progn (unintern (find-symbol "CONS" "TEST-SHADOWING-IMPORT") "TEST-SHADOWING-IMPORT")
-;;        (shadowing-import (find-symbol "CONS" "TEST-LISP") "TEST-SHADOWING-IMPORT")
-;;        (assert (eql (symbol-package (find-symbol "CONS" "TEST-SHADOWING-IMPORT"))
-;;                     (find-package "TEST-LISP"))))
-;; 
-;; (progn (unintern (find-symbol "CONS" "TEST-SHADOWING-IMPORT") "TEST-SHADOWING-IMPORT")
-;;        (intern  "CONS" "TEST-SHADOWING-IMPORT")
-;;        (shadowing-import (find-symbol "CONS" "TEST-LISP") "TEST-SHADOWING-IMPORT")
-;;        (assert (eql (symbol-package (find-symbol "CONS" "TEST-SHADOWING-IMPORT"))
-;;                     (find-package "TEST-LISP"))))
-
-
-
-;; (list (package-shadowing-symbols "TEST-SHADOWING-IMPORT")
-;;       (package-shadow-list (find-package "TEST-SHADOWING-IMPORT"))
-;;       (package-shadowing-import-list (find-package "TEST-SHADOWING-IMPORT")))
-
+;; To test:
+;; (cl-user::cd #P"~/src/lisp/implementations/ansi-tests/") (mapc 'delete-file (directory "*.lx*")) (load "zpack-load.lsp")
 
 ;;;; THE END ;;;;

@@ -11,12 +11,13 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2012-04-03 <PJB> Added package.lisp (improved version of Xach Beane's zpack).
 ;;;;    2010-10-31 <PJB> Created this .asd file.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    GPL
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2010 - 2010
+;;;;    Copyright Pascal J. Bourguignon 2010 - 2012
 ;;;;    
 ;;;;    This program is free software; you can redistribute it and/or
 ;;;;    modify it under the terms of the GNU General Public License
@@ -38,16 +39,19 @@
     :name "com.informatimago.common-lisp.lisp-reader"
     :description  "This package implements a standard Common Lisp reader."
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
-    :version "1.2.0"
+    :version "1.2.1"
     :licence "GPL"
     :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Autumn 2010")
+                 (#:date                           . "Spring 2012")
                  ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.lisp-reader/")
                  ((#:albert #:formats)             . ("docbook"))
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
     :depends-on (:com.informatimago.common-lisp.lisp-sexp)
-    :components ((:file "reader"          :depends-on ())))
+    :components ((:file "reader"          :depends-on ())
+                 (:file "package-fun"     :depends-on ())
+                 (:file "package-mac"     :depends-on ("package-fun"))
+                 (:file "package-def"     :depends-on ("package-fun" "package-mac"))))
 
 ;;;; THE END ;;;;
