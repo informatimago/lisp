@@ -989,7 +989,7 @@ IF-PACKAGE-EXISTS           The default is :PACKAGE
                                 (tmap-syms (lambda (sym)
                                              (unless (externalp sym package)
                                                (push sym symbols)))
-                                           (present-table package)))
+                                           (present-table package)))
                                            ((:external)
                                             (tmap-syms (lambda (sym) (push sym symbols))
                                                        (external-table package)))
