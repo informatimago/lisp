@@ -82,7 +82,8 @@
    ;; 17 - SEQUENCES
    "NSUBSEQ"
    ;; 18 - HASH-TABLES
-   "HASH-TABLE-KEYS" "HASH-TABLE-ENTRIES" "HASH-TABLE-PATH"
+   "HASH-TABLE-KEYS" "HASH-TABLE-VALUES"
+   "HASH-TABLE-ENTRIES" "HASH-TABLE-PATH"
    "COPY-HASH-TABLE"
    "HASHTABLE" "PRINT-HASHTABLE" 
    ;;
@@ -1086,6 +1087,12 @@ RETURN:  When the SEQUENCE is a vector, the SEQUENCE itself, or a dispaced
   "Returns a list of the keys in the hash-table."
   (let ((result '()))
     (maphash (lambda (k v) (declare (ignore v)) (push k result)) hash)
+    result))
+
+(defun hash-table-values (table)
+  "Returns a list of the values in the hash-table."
+  (let ((result '()))
+    (maphash (lambda (k v) (declare (ignore k)) (push v result)) table)
     result))
 
 (defun hash-table-entries (hash)
