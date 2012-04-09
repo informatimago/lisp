@@ -60,7 +60,8 @@
    
    "CHARACTER-SET-TO-MIME-ENCODING" "CHARACTER-IN-CHARACTER-SET-P"
 
-   "READ-CHARACTER-SETS-FILE")
+   "READ-CHARACTER-SETS-FILE"
+   "*CHARACTER-SETS*")
   
   (:DOCUMENTATION
    "This package exports functions to manage character-sets,
