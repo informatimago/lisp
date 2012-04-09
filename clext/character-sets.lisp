@@ -584,9 +584,9 @@ RETURN:  the external-format value corresponding to this EMACS-ENCODING.
 
 
 
-
-(fill-character-set-emacs-encoding)
-(fill-character-set-lisp-encoding)
+(eval-when (:load-toplevel :execute)
+  (fill-character-set-emacs-encoding)
+  (fill-character-set-lisp-encoding))
 
 
 
