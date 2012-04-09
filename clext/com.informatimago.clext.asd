@@ -42,7 +42,7 @@ Implements the specification: http://clisp.cons.org/impnotes/weak.html
 for Common Lisp implementations that have only weak-pointers.
 "
     :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
-    :version "1.2.0"
+    :version "1.3.0"
     :licence "GPL"
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Autumn 2010")
@@ -52,9 +52,12 @@ for Common Lisp implementations that have only weak-pointers.
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
 
-    :depends-on ()
+    :depends-on ("com.informatimago.common-lisp.cesarum")
 
-    :components ((:file "closer-weak")))
+    :components (#+(or ccl clisp cmu ecl sbcl)
+                   (:file "character-sets")
+                   #+(or allegro clisp sbcl cmu)
+                   (:file "closer-weak")))
 
 
 ;;;; THE END ;;;;
