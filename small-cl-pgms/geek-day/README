@@ -1,0 +1,8 @@
+Get common/makedir makefiles with:
+
+    cvs -z3 -d :pserver:anonymous@cvs.informatimago.com:/local/cvs/public/chrooted-cvs/cvs co common/makedir
+
+and then compile with:
+
+    MAKEDIR=common/makedir make
+

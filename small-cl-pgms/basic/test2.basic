@@ -1,0 +1,7 @@
+  10 PRINT "toto" , "I" ; 
+  20 I = 1 : II = I + 1 : III = II + I 
+  30 FOR K = 1 TO 3 * III STEP II 
+  40 PRINT "k=" ; K 
+  50 NEXT K 
+  60 IF I < 10 THEN A = 10 : B = 1 ELSE J = 1 
+  80 REM ESPACE , ; : < > <= = >= = = <> > + - * / ^ 

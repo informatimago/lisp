@@ -1,0 +1,418 @@
+;; Loading file /home/pjb/.clisprc.lisp ...
+;; Reading ASDF packages from /home/pjb/asdf-central-registry.data...
+; loading system definition from /usr/local/share/lisp/packages/net/sourceforge/cclan/asdf-install/asdf-install.asd into #<PACKAGE ASDF0>
+; registering #<SYSTEM ASDF-INSTALL #x2048F146> as ASDF-INSTALL
+0 errors, 0 warnings
+[1]> (setf *print-circle* nil)
+NIL
+
+;;; First we load the parser generator.
+
+[2]> (load"rdp.lisp")
+;; Loading file rdp.lisp ...
+;; Loaded file rdp.lisp
+T
+
+
+;;; Next, we load the grammar definition.  
+;;; This will generate the scanner and parser for that language.
+
+[3]> (load"example-lisp.lisp")
+;; Loading file example-lisp.lisp ...
+;; Loaded file example-lisp.lisp
+T
+
+;;; Now we can parse a small example.
+
+[4]> (parse-example
+  "
+    const abc = 123,
+          pi=3.141592e+0; 
+    var a,b,c; 
+    procedure gcd; 
+    begin 
+        while a # b do 
+        begin
+             if a<b then b:=b-a ; 
+             if a>b then a:=a-b 
+        end 
+    end;
+begin 
+    a:=42;
+    b:=30.0;
+    call gcd
+end.")
+(BLOCK
+ (((IDENT "abc" 11) (INTEGER "123" 17))
+  ((IDENT "pi" 32) (REAL "3.141592e+0" 35)))
+ ((IDENT "a" 57) (IDENT "b" 59) (IDENT "c" 61))
+ ((PROCEDURE (IDENT "gcd" 79)
+   (BLOCK NIL NIL NIL
+    ((WHILE (("#" "#" 112) (+ ((IDENT "a" 110))) (+ ((IDENT "b" 114))))
+      ((IF (("<" "<" 151) (+ ((IDENT "a" 150))) (+ ((IDENT "b" 152))))
+        (SETF (IDENT "b" 159)
+         (+ ((IDENT "b" 162)) (("-" "-" 163) ((IDENT "a" 164))))))
+       (IF ((">" ">" 186) (+ ((IDENT "a" 185))) (+ ((IDENT "b" 187))))
+        (SETF (IDENT "a" 194)
+         (+ ((IDENT "a" 197)) (("-" "-" 198) ((IDENT "b" 199))))))))))))
+ ((SETF (IDENT "a" 235) (+ ((INTEGER "42" 238))))
+  (SETF (IDENT "b" 246) (+ ((REAL "30.0" 249)))) (CALL (IDENT "gcd" 264))))
+
+;;; The integers in third position in the sublists are the positions
+;;; in the source of the corresponding token.
+
+
+;;; Let's dump the source of the generated scanner and parser:
+
+[5]> (pprint (macroexpand-1
+                (with-open-file (gram "example-lisp.lisp") (read gram))))
+
+(PROGN
+ (DEFSTRUCT SCANNER SOURCE FUNCTION (POSITION 0) (CURRENT-TOKEN NIL)
+  (CURRENT-TEXT "") (CURRENT-POSITION 0))
+ (DEFUN SCANNER-END-OF-SOURCE (SCANNER)
+  (<= (LENGTH (SCANNER-SOURCE SCANNER)) (SCANNER-POSITION SCANNER)))
+ (DEFUN ACCEPT (SCANNER TOKEN)
+  (IF (WORD-EQUAL TOKEN (SCANNER-CURRENT-TOKEN SCANNER))
+   (PROG1
+    (LIST (SCANNER-CURRENT-TOKEN SCANNER) (SCANNER-CURRENT-TEXT SCANNER)
+     (SCANNER-CURRENT-POSITION SCANNER))
+    (FUNCALL (SCANNER-FUNCTION SCANNER) SCANNER))
+   (ERROR "At position ~D, expected ~S, not ~S"
+    (SCANNER-CURRENT-POSITION SCANNER) TOKEN (SCANNER-CURRENT-TOKEN SCANNER))))
+ (DEFPARAMETER *SPACES* (FORMAT NIL "^[~{~C~}]\\+" '(#\  #\Newline #\Tab)))
+ (DEFUN SCAN-EXAMPLE (SCANNER)
+  (LET
+   ((MATCH
+     (REGEXP:MATCH *SPACES* (SCANNER-SOURCE SCANNER) :START
+      (SCANNER-POSITION SCANNER))))
+   (WHEN MATCH (SETF (SCANNER-POSITION SCANNER) (REGEXP:MATCH-END MATCH)))
+   (SETF (SCANNER-CURRENT-POSITION SCANNER) (SCANNER-POSITION SCANNER))
+   (COND
+    ((SCANNER-END-OF-SOURCE SCANNER)
+     (SETF (SCANNER-POSITION SCANNER) (LENGTH (SCANNER-SOURCE SCANNER))
+      (SCANNER-CURRENT-TEXT SCANNER) "<END OF SOURCE>"
+      (SCANNER-CURRENT-TOKEN SCANNER) NIL))
+    ((SETF MATCH
+      (REGEXP:MATCH
+       '"^\\(procedure\\>\\|begin\\>\\|while\\>\\|const\\>\\|call\\>\\|then\\>\\|odd\\>\\|end\\>\\|var\\>\\|<=\\|>=\\|:=\\|if\\>\\|do\\>\\|(\\|)\\|\\*\\|/\\|+\\|-\\|#\\|<\\|>\\|=\\|,\\|;\\|\\.\\)"
+       (SCANNER-SOURCE SCANNER) :START (SCANNER-POSITION SCANNER)))
+     (SETF (SCANNER-POSITION SCANNER) (REGEXP:MATCH-END MATCH)
+      (SCANNER-CURRENT-TEXT SCANNER)
+      (REGEXP:MATCH-STRING (SCANNER-SOURCE SCANNER) MATCH)
+      (SCANNER-CURRENT-TOKEN SCANNER) (SCANNER-CURRENT-TEXT SCANNER)))
+    ((SETF MATCH
+      (REGEXP:MATCH '"^\\([A-Za-z][A-Za-z0-9]*\\)" (SCANNER-SOURCE SCANNER)
+       :START (SCANNER-POSITION SCANNER)))
+     (SETF (SCANNER-POSITION SCANNER) (REGEXP:MATCH-END MATCH)
+      (SCANNER-CURRENT-TEXT SCANNER)
+      (REGEXP:MATCH-STRING (SCANNER-SOURCE SCANNER) MATCH)
+      (SCANNER-CURRENT-TOKEN SCANNER) 'IDENT))
+    ((SETF MATCH
+      (REGEXP:MATCH
+       '"^\\(^\\([-+]\\?[0-9]\\+\\.[0-9]\\+\\([Ee][-+]\\?[0-9]\\+\\)\\?\\)\\)"
+       (SCANNER-SOURCE SCANNER) :START (SCANNER-POSITION SCANNER)))
+     (SETF (SCANNER-POSITION SCANNER) (REGEXP:MATCH-END MATCH)
+      (SCANNER-CURRENT-TEXT SCANNER)
+      (REGEXP:MATCH-STRING (SCANNER-SOURCE SCANNER) MATCH)
+      (SCANNER-CURRENT-TOKEN SCANNER) 'REAL))
+    ((SETF MATCH
+      (REGEXP:MATCH '"^\\([-+]\\?[0-9]\\+\\)" (SCANNER-SOURCE SCANNER) :START
+       (SCANNER-POSITION SCANNER)))
+     (SETF (SCANNER-POSITION SCANNER) (REGEXP:MATCH-END MATCH)
+      (SCANNER-CURRENT-TEXT SCANNER)
+      (REGEXP:MATCH-STRING (SCANNER-SOURCE SCANNER) MATCH)
+      (SCANNER-CURRENT-TOKEN SCANNER) 'INTEGER))
+    (T
+     (ERROR "Invalid character ~C at position: ~D"
+      (AREF (SCANNER-SOURCE SCANNER) (SCANNER-POSITION SCANNER))
+      (SCANNER-POSITION SCANNER))))))
+ (DEFUN PARSE-PROGRAM (SCANNER)
+  (LET
+   (($1
+     (WHEN
+      (MEMBER (SCANNER-CURRENT-TOKEN SCANNER)
+       '(IDENT "call" "begin" "if" "while" "procedure" "var" "const") :TEST
+       #'WORD-EQUAL)
+      (PARSE-BLOCK SCANNER)))
+    ($2 (ACCEPT SCANNER '".")))
+   (LET (($0 (LIST $1 $2))) $1)))
+ (DEFUN PARSE-FACTOR (SCANNER)
+  (LET
+   (($1
+     (COND
+      ((WORD-EQUAL (SCANNER-CURRENT-TOKEN SCANNER) 'IDENT)
+       (ACCEPT SCANNER 'IDENT))
+      ((MEMBER (SCANNER-CURRENT-TOKEN SCANNER) '(INTEGER REAL) :TEST
+        #'WORD-EQUAL)
+       (IF
+        (MEMBER (SCANNER-CURRENT-TOKEN SCANNER) '(INTEGER REAL) :TEST
+         #'WORD-EQUAL)
+        (PARSE-NUMBER SCANNER)
+        (ERROR "Unexpected token ~S" (SCANNER-CURRENT-TOKEN SCANNER))))
+      ((WORD-EQUAL (SCANNER-CURRENT-TOKEN SCANNER) '"(")
+       (LET
+        (($1 (ACCEPT SCANNER '"("))
+         ($2
+          (IF
+           (MEMBER (SCANNER-CURRENT-TOKEN SCANNER)
+            '(IDENT INTEGER REAL "(" "+" "-") :TEST #'WORD-EQUAL)
+           (PARSE-EXPRESSION SCANNER)
+           (ERROR "Unexpected token ~S" (SCANNER-CURRENT-TOKEN SCANNER))))
+         ($3 (ACCEPT SCANNER '")")))
+        (LET (($0 (LIST $1 $2 $3))) $2))))))
+   (LET (($0 (LIST $1))) $1)))
+ (DEFUN PARSE-TERM (SCANNER)
+  (LET
+   (($1
+     (IF
+      (MEMBER (SCANNER-CURRENT-TOKEN SCANNER) '(IDENT INTEGER REAL "(") :TEST
+       #'WORD-EQUAL)
+      (PARSE-FACTOR SCANNER)
+      (ERROR "Unexpected token ~S" (SCANNER-CURRENT-TOKEN SCANNER))))
+    ($2
+     (LOOP :WHILE
+      (MEMBER (SCANNER-CURRENT-TOKEN SCANNER) '("*" "/") :TEST #'WORD-EQUAL)
+      :COLLECT
+      (LET
+       (($1
+         (COND
+          ((WORD-EQUAL (SCANNER-CURRENT-TOKEN SCANNER) '"*")
+           (ACCEPT SCANNER '"*"))
+          ((WORD-EQUAL (SCANNER-CURRENT-TOKEN SCANNER) '"/")
+           (ACCEPT SCANNER '"/"))))
+        ($2
+         (IF
+          (MEMBER (SCANNER-CURRENT-TOKEN SCANNER) '(IDENT INTEGER REAL "(")
+           :TEST #'WORD-EQUAL)
+          (PARSE-FACTOR SCANNER)
+          (ERROR "Unexpected token ~S" (SCANNER-CURRENT-TOKEN SCANNER)))))
+       (LET (($0 (LIST $1 $2))) $0)))))
+   (LET (($0 (LIST $1 $2))) `(,$1 . ,$2))))
+ (DEFUN PARSE-EXPRESSION (SCANNER)
+  (LET
+   (($1
+     (WHEN
+      (MEMBER (SCANNER-CURRENT-TOKEN SCANNER) '("+" "-") :TEST #'WORD-EQUAL)
+      (COND
+       ((WORD-EQUAL (SCANNER-CURRENT-TOKEN SCANNER) '"+") (ACCEPT SCANNER '"+"))
+       ((WORD-EQUAL (SCANNER-CURRENT-TOKEN SCANNER) '"-")
+        (ACCEPT SCANNER '"-")))))
+    ($2
+     (IF
+      (MEMBER (SCANNER-CURRENT-TOKEN SCANNER) '(IDENT INTEGER REAL "(") :TEST
+       #'WORD-EQUAL)
+      (PARSE-TERM SCANNER)
+      (ERROR "Unexpected token ~S" (SCANNER-CURRENT-TOKEN SCANNER))))
+    ($3
+     (LOOP :WHILE
+      (MEMBER (SCANNER-CURRENT-TOKEN SCANNER) '("+" "-") :TEST #'WORD-EQUAL)
+      :COLLECT
+      (LET
+       (($1
+         (COND
+          ((WORD-EQUAL (SCANNER-CURRENT-TOKEN SCANNER) '"+")
+           (ACCEPT SCANNER '"+"))
+          ((WORD-EQUAL (SCANNER-CURRENT-TOKEN SCANNER) '"-")
+           (ACCEPT SCANNER '"-"))))
+        ($2
+         (IF
+          (MEMBER (SCANNER-CURRENT-TOKEN SCANNER) '(IDENT INTEGER REAL "(")
+           :TEST #'WORD-EQUAL)
+          (PARSE-TERM SCANNER)
+          (ERROR "Unexpected token ~S" (SCANNER-CURRENT-TOKEN SCANNER)))))
+       (LET (($0 (LIST $1 $2))) `(,$1 ,$2))))))
+   (LET (($0 (LIST $1 $2 $3))) `(+ ,(IF $1 `(,$1 ,$2) $2) . ,$3))))
+ (DEFUN PARSE-CONDITION (SCANNER)
+  (LET
+   (($1
+     (COND
+      ((WORD-EQUAL (SCANNER-CURRENT-TOKEN SCANNER) '"odd")
+       (LET
+        (($1 (ACCEPT SCANNER '"odd"))
+         ($2
+          (IF
+           (MEMBER (SCANNER-CURRENT-TOKEN SCANNER)
+            '(IDENT INTEGER REAL "(" "+" "-") :TEST #'WORD-EQUAL)
+           (PARSE-EXPRESSION SCANNER)
+           (ERROR "Unexpected token ~S" (SCANNER-CURRENT-TOKEN SCANNER)))))
+        (LET (($0 (LIST $1 $2))) `(ODDP ,$2))))
+      ((MEMBER (SCANNER-CURRENT-TOKEN SCANNER) '(IDENT INTEGER REAL "(" "+" "-")
+        :TEST #'WORD-EQUAL)
+       (LET
+        (($1
+          (IF
+           (MEMBER (SCANNER-CURRENT-TOKEN SCANNER)
+            '(IDENT INTEGER REAL "(" "+" "-") :TEST #'WORD-EQUAL)
+           (PARSE-EXPRESSION SCANNER)
+           (ERROR "Unexpected token ~S" (SCANNER-CURRENT-TOKEN SCANNER))))
+         ($2
+          (COND
+           ((WORD-EQUAL (SCANNER-CURRENT-TOKEN SCANNER) '"=")
+            (ACCEPT SCANNER '"="))
+           ((WORD-EQUAL (SCANNER-CURRENT-TOKEN SCANNER) '"#")
+            (ACCEPT SCANNER '"#"))
+           ((WORD-EQUAL (SCANNER-CURRENT-TOKEN SCANNER) '"<")
+            (ACCEPT SCANNER '"<"))
+           ((WORD-EQUAL (SCANNER-CURRENT-TOKEN SCANNER) '"<=")
+            (ACCEPT SCANNER '"<="))
+           ((WORD-EQUAL (SCANNER-CURRENT-TOKEN SCANNER) '">")
+            (ACCEPT SCANNER '">"))
+           ((WORD-EQUAL (SCANNER-CURRENT-TOKEN SCANNER) '">=")
+            (ACCEPT SCANNER '">="))))
+         ($3
+          (IF
+           (MEMBER (SCANNER-CURRENT-TOKEN SCANNER)
+            '(IDENT INTEGER REAL "(" "+" "-") :TEST #'WORD-EQUAL)
+           (PARSE-EXPRESSION SCANNER)
+           (ERROR "Unexpected token ~S" (SCANNER-CURRENT-TOKEN SCANNER)))))
+        (LET (($0 (LIST $1 $2 $3))) `(,$2 ,$1 ,$3)))))))
+   (LET (($0 (LIST $1))) $1)))
+ (DEFUN PARSE-NUMBER (SCANNER)
+  (LET
+   (($1
+     (COND
+      ((WORD-EQUAL (SCANNER-CURRENT-TOKEN SCANNER) 'INTEGER)
+       (ACCEPT SCANNER 'INTEGER))
+      ((WORD-EQUAL (SCANNER-CURRENT-TOKEN SCANNER) 'REAL)
+       (ACCEPT SCANNER 'REAL)))))
+   (LET (($0 (LIST $1))) $1)))
+ (DEFUN PARSE-STATEMENT (SCANNER)
+  (LET
+   (($1
+     (WHEN
+      (MEMBER (SCANNER-CURRENT-TOKEN SCANNER)
+       '(IDENT "call" "begin" "if" "while") :TEST #'WORD-EQUAL)
+      (COND
+       ((WORD-EQUAL (SCANNER-CURRENT-TOKEN SCANNER) 'IDENT)
+        (LET
+         (($1 (ACCEPT SCANNER 'IDENT)) ($2 (ACCEPT SCANNER '":="))
+          ($3
+           (IF
+            (MEMBER (SCANNER-CURRENT-TOKEN SCANNER)
+             '(IDENT INTEGER REAL "(" "+" "-") :TEST #'WORD-EQUAL)
+            (PARSE-EXPRESSION SCANNER)
+            (ERROR "Unexpected token ~S" (SCANNER-CURRENT-TOKEN SCANNER)))))
+         (LET (($0 (LIST $1 $2 $3))) `(SETF ,$1 ,$3))))
+       ((WORD-EQUAL (SCANNER-CURRENT-TOKEN SCANNER) '"call")
+        (LET (($1 (ACCEPT SCANNER '"call")) ($2 (ACCEPT SCANNER 'IDENT)))
+         (LET (($0 (LIST $1 $2))) `(CALL ,$2))))
+       ((WORD-EQUAL (SCANNER-CURRENT-TOKEN SCANNER) '"begin")
+        (LET
+         (($1 (ACCEPT SCANNER '"begin"))
+          ($2
+           (WHEN
+            (MEMBER (SCANNER-CURRENT-TOKEN SCANNER)
+             '(IDENT "call" "begin" "if" "while") :TEST #'WORD-EQUAL)
+            (PARSE-STATEMENT SCANNER)))
+          ($3
+           (LOOP :WHILE (WORD-EQUAL (SCANNER-CURRENT-TOKEN SCANNER) '";")
+            :COLLECT
+            (LET
+             (($1 (ACCEPT SCANNER '";"))
+              ($2
+               (WHEN
+                (MEMBER (SCANNER-CURRENT-TOKEN SCANNER)
+                 '(IDENT "call" "begin" "if" "while") :TEST #'WORD-EQUAL)
+                (PARSE-STATEMENT SCANNER))))
+             (LET (($0 (LIST $1 $2))) $2))))
+          ($4 (ACCEPT SCANNER '"end")))
+         (LET (($0 (LIST $1 $2 $3 $4))) `(,$2 . ,$3))))
+       ((WORD-EQUAL (SCANNER-CURRENT-TOKEN SCANNER) '"if")
+        (LET
+         (($1 (ACCEPT SCANNER '"if"))
+          ($2
+           (IF
+            (MEMBER (SCANNER-CURRENT-TOKEN SCANNER)
+             '("odd" IDENT INTEGER REAL "(" "+" "-") :TEST #'WORD-EQUAL)
+            (PARSE-CONDITION SCANNER)
+            (ERROR "Unexpected token ~S" (SCANNER-CURRENT-TOKEN SCANNER))))
+          ($3 (ACCEPT SCANNER '"then"))
+          ($4
+           (WHEN
+            (MEMBER (SCANNER-CURRENT-TOKEN SCANNER)
+             '(IDENT "call" "begin" "if" "while") :TEST #'WORD-EQUAL)
+            (PARSE-STATEMENT SCANNER))))
+         (LET (($0 (LIST $1 $2 $3 $4))) `(IF ,$2 ,$4))))
+       ((WORD-EQUAL (SCANNER-CURRENT-TOKEN SCANNER) '"while")
+        (LET
+         (($1 (ACCEPT SCANNER '"while"))
+          ($2
+           (IF
+            (MEMBER (SCANNER-CURRENT-TOKEN SCANNER)
+             '("odd" IDENT INTEGER REAL "(" "+" "-") :TEST #'WORD-EQUAL)
+            (PARSE-CONDITION SCANNER)
+            (ERROR "Unexpected token ~S" (SCANNER-CURRENT-TOKEN SCANNER))))
+          ($3 (ACCEPT SCANNER '"do"))
+          ($4
+           (WHEN
+            (MEMBER (SCANNER-CURRENT-TOKEN SCANNER)
+             '(IDENT "call" "begin" "if" "while") :TEST #'WORD-EQUAL)
+            (PARSE-STATEMENT SCANNER))))
+         (LET (($0 (LIST $1 $2 $3 $4))) `(WHILE ,$2 ,$4))))))))
+   (LET (($0 (LIST $1))) $1)))
+ (DEFUN PARSE-BLOCK (SCANNER)
+  (LET
+   (($1
+     (WHEN (WORD-EQUAL (SCANNER-CURRENT-TOKEN SCANNER) '"const")
+      (LET
+       (($1 (ACCEPT SCANNER '"const")) ($2 (ACCEPT SCANNER 'IDENT))
+        ($3 (ACCEPT SCANNER '"="))
+        ($4
+         (IF
+          (MEMBER (SCANNER-CURRENT-TOKEN SCANNER) '(INTEGER REAL) :TEST
+           #'WORD-EQUAL)
+          (PARSE-NUMBER SCANNER)
+          (ERROR "Unexpected token ~S" (SCANNER-CURRENT-TOKEN SCANNER))))
+        ($5
+         (LOOP :WHILE (WORD-EQUAL (SCANNER-CURRENT-TOKEN SCANNER) '",") :COLLECT
+          (LET
+           (($1 (ACCEPT SCANNER '",")) ($2 (ACCEPT SCANNER 'IDENT))
+            ($3 (ACCEPT SCANNER '"="))
+            ($4
+             (IF
+              (MEMBER (SCANNER-CURRENT-TOKEN SCANNER) '(INTEGER REAL) :TEST
+               #'WORD-EQUAL)
+              (PARSE-NUMBER SCANNER)
+              (ERROR "Unexpected token ~S" (SCANNER-CURRENT-TOKEN SCANNER)))))
+           (LET (($0 (LIST $1 $2 $3 $4))) `(,$2 ,$4)))))
+        ($6 (ACCEPT SCANNER '";")))
+       (LET (($0 (LIST $1 $2 $3 $4 $5 $6))) `((,$2 ,$4) . ,$5)))))
+    ($2
+     (WHEN (WORD-EQUAL (SCANNER-CURRENT-TOKEN SCANNER) '"var")
+      (LET
+       (($1 (ACCEPT SCANNER '"var")) ($2 (ACCEPT SCANNER 'IDENT))
+        ($3
+         (LOOP :WHILE (WORD-EQUAL (SCANNER-CURRENT-TOKEN SCANNER) '",") :COLLECT
+          (LET (($1 (ACCEPT SCANNER '",")) ($2 (ACCEPT SCANNER 'IDENT)))
+           (LET (($0 (LIST $1 $2))) $2))))
+        ($4 (ACCEPT SCANNER '";")))
+       (LET (($0 (LIST $1 $2 $3 $4))) `(,$2 . ,$3)))))
+    ($3
+     (LOOP :WHILE (WORD-EQUAL (SCANNER-CURRENT-TOKEN SCANNER) '"procedure")
+      :COLLECT
+      (LET
+       (($1 (ACCEPT SCANNER '"procedure")) ($2 (ACCEPT SCANNER 'IDENT))
+        ($3 (ACCEPT SCANNER '";"))
+        ($4
+         (WHEN
+          (MEMBER (SCANNER-CURRENT-TOKEN SCANNER)
+           '(IDENT "call" "begin" "if" "while" "procedure" "var" "const") :TEST
+           #'WORD-EQUAL)
+          (PARSE-BLOCK SCANNER)))
+        ($5 (ACCEPT SCANNER '";")))
+       (LET (($0 (LIST $1 $2 $3 $4 $5))) `(PROCEDURE ,$2 ,$4)))))
+    ($4
+     (WHEN
+      (MEMBER (SCANNER-CURRENT-TOKEN SCANNER)
+       '(IDENT "call" "begin" "if" "while") :TEST #'WORD-EQUAL)
+      (PARSE-STATEMENT SCANNER))))
+   (LET (($0 (LIST $1 $2 $3 $4))) `(BLOCK ,$1 ,$2 ,$3 ,$4))))
+ (DEFUN PARSE-EXAMPLE (SOURCE)
+  (LET ((SCANNER (MAKE-SCANNER :SOURCE SOURCE :FUNCTION #'SCAN-EXAMPLE)))
+   (SCAN-EXAMPLE SCANNER)
+   (PROG1 (PARSE-PROGRAM SCANNER)
+    (UNLESS (SCANNER-END-OF-SOURCE SCANNER)
+     (ERROR "End of source NOT reached."))))))
+
+[6]> 

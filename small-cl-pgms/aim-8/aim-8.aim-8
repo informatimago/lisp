@@ -1,0 +1,175 @@
+;;;; -*- mode: Lisp -*-
+;;;;****************************************************************************
+;;;;FILE:               aim-8.aim-8
+;;;;LANGUAGE:           AIM-8 LISP
+;;;;SYSTEM:             AIM-8 LISP
+;;;;USER-INTERFACE:     NONE
+;;;;DESCRIPTION
+;;;;    
+;;;;    Implements the LISP described in AIM-8 in AIM-8 LISP
+;;;;    Usage: At the AIM-8> prompt:  
+;;;;      (LOAD (QUOTE "aim-8.aim-8"))
+;;;;      (REPL)
+;;;;    The AIM-8 evaluation algorithm is pure substitution, no binding!
+;;;;    Therefore (read) is called every time it's _used_:
+;;;;    you need to enter the same sexp several times to get it processed!
+;;;;
+;;;;      (EVAL (QUOTE (FF1 (QUOTE ((())()()((A)B C)))))
+;;;;            (QUOTE ((FF1 LAMBDA (X) (COND ((OR (NULL X) (ATOM X)) X) 
+;;;;                                 (T (COND ((FF1 (FIRST X)) (FF1 (FIRST X)))
+;;;;                                          (T (FF1 (REST X)))))))))
+;;;;   Note: Since this implements an substitution interpreter on an interpreter
+;;;;   on a lisp system, it usually quite slow to compute the result of non
+;;;;   trivial functions.
+;;;;
+;;;;AUTHORS
+;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
+;;;;MODIFICATIONS
+;;;;    2004-10-24 <PJB> Created;
+;;;;BUGS
+;;;;LEGAL
+;;;;    GPL
+;;;;    
+;;;;    Copyright Pascal Bourguignon 2004 - 2004
+;;;;    
+;;;;    This program is free software; you can redistribute it and/or
+;;;;    modify it under the terms of the GNU General Public License
+;;;;    as published by the Free Software Foundation; either version
+;;;;    2 of the License, or (at your option) any later version.
+;;;;    
+;;;;    This program is distributed in the hope that it will be
+;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
+;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    
+;;;;    You should have received a copy of the GNU General Public
+;;;;    License along with this program; if not, write to the Free
+;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
+;;;;    Boston, MA 02111-1307 USA
+;;;;****************************************************************************
+
+;; NOTE: These functions are defined in the AIM-8/Common-Lisp environment
+;;       and don't appear in the AIM-8/AIM-8 environment. 
+;;       With (repl), you start with an empty environment...
+
+
+(DEFINE NIL ())
+(DEFINE F   ())
+(DEFINE T   T)
+(DEFINE AND     (LAMBDA (A B) (COND (A (COND (B T) (T NIL))) (T NIL))))
+(DEFINE OR      (LAMBDA (A B) (COND (A T) (B T) (T NIL))))
+(DEFINE NOT     (LAMBDA (A)   (COND (A NIL) (T T))))
+
+(DEFINE MAPLIST 
+        (LAMBDA (X F)
+          (COND ((NULL X) NIL)
+                (T (COMBINE (F X) (MAPLIST (REST X) F))))))
+
+(DEFINE SUBST 
+        (LAMBDA (X Y A)
+          (COND ((NULL A) NIL)
+                ((ATOM A) (COND ((EQ Y A) X) (T A)))
+                (T (COMBINE (SUBST X Y (FIRST A))
+                            (SUBST X Y (REST A)))))))
+
+(DEFINE SUBSQ
+        (LAMBDA (X Y Z)
+          (COND ((NULL Z) NIL)
+                ((ATOM Z) (COND ((EQ Y Z) X)  (T Z)))
+                ((EQ (FIRST Z) (QUOTE QUOTE)) Z)
+                (T (COMBINE (SUBSQ X Y (FIRST Z)) (SUBSQ X Y (REST Z)))))))
+
+
+(DEFINE EVCON 
+        (LAMBDA (C ENV)
+          (COND ((EVAL (FIRST (FIRST C)) ENV)
+                 (EVAL (FIRST (REST (FIRST C))) ENV))
+                (T (EVCON (REST C) ENV)))))
+
+
+(DEFINE EVLAM 
+        (LAMBDA  (VARS EXP ARGS ENV)
+          (COND ((NULL VARS) (EVAL EXP ENV))
+                (T (EVLAM (REST VARS) (SUBSQ (FIRST ARGS) (FIRST VARS) EXP)
+                          (REST ARGS) ENV)))))
+
+
+(DEFINE APPLY (LAMBDA (F ARGS ENV) (EVAL (COMBINE F ARGS) ENV)))
+
+
+(DEFINE ASSOC
+        (LAMBDA (ITEM LIST)
+          (COND ((NULL LIST) LIST)
+                ((EQ ITEM (first (first LIST))) (first LIST))
+                (T (ASSOC ITEM (rest LIST))))))
+
+
+(DEFINE APPEND 
+        (LAMBDA (L1 L2)
+          (COND ((NULL L2) L1)
+                ((NULL L1) L2)
+                (T (COMBINE (FIRST L1) (APPEND (REST L1) L2))))))
+
+(DEFINE LIST1 (LAMBDA (ON)       (COMBINE ON NIL)))
+(DEFINE LIST2 (LAMBDA (ON TW)    (COMBINE ON (COMBINE TW NIL))))
+(DEFINE LIST3 (LAMBDA (ON TW TH) (COMBINE ON (COMBINE TW (COMBINE TH NIL)))))
+        
+(DEFINE GET (LAMBDA (NAME ENV) (rest (ASSOC NAME ENV))))
+(DEFINE SET (LAMBDA (NAME VALUE ENV) (COMBINE (COMBINE NAME VALUE) ENV)))
+(DEFINE BOUNDP (LAMBDA (NAME ENV) (ASSOC NAME ENV)))
+
+(DEFINE ERROR  (LAMBDA (MESSAGE VALUES) (COMBINE (QUOTE :ERROR)
+                                            (APPEND MESSAGE VALUES))))
+
+
+(DEFINE 
+ EVAL 
+ (LAMBDA (E ENV)
+   (print (list3 (quote eval) e env))
+   (COND
+     ((ATOM E) (COND ((BOUNDP E ENV) (GET E ENV))
+                     (T (ERROR (LIST1 (QUOTE :UNDEFINED))
+                               (LIST1 E)))))
+     ((EQ (FIRST E) (QUOTE NULL))    (NULL  (EVAL (FIRST (REST E)) ENV)))
+     ((EQ (FIRST E) (QUOTE ATOM))    (ATOM  (EVAL (FIRST (REST E)) ENV)))
+     ((EQ (FIRST E) (QUOTE QUOTE))   (FIRST (REST E)))
+     ((EQ (FIRST E) (QUOTE EQ))      (EQ    (EVAL (FIRST (REST E)) ENV)
+                                            (EVAL (FIRST (REST (REST E))) ENV)))
+     ((EQ (FIRST E) (QUOTE COMBINE)) (COMBINE (EVAL (FIRST (REST E)) ENV)
+                                            (EVAL (FIRST (REST (REST E))) ENV)))
+     ((EQ (FIRST E) (QUOTE FIRST))   (FIRST (EVAL (FIRST (REST E)) ENV)))
+     ((EQ (FIRST E) (QUOTE REST))    (REST  (EVAL (FIRST (REST E)) ENV)))
+     ((EQ (FIRST E) (QUOTE COND))    (EVCON (REST E)))
+     ((EQ (FIRST E) (QUOTE LOAD))    (LOAD  (EVAL (FIRST (REST E)) ENV)))
+     ((EQ (FIRST E) (QUOTE PRINT))   (PRINT (EVAL (FIRST (REST E)) ENV)))
+     ((EQ (FIRST E) (QUOTE READ))    (READ))
+     ((ATOM (FIRST E))
+      (COND ((BOUNDP (FIRST E) env) (APPLY (GET (FIRST E) ENV) (REST E) ENV))
+            (T (ERROR (LIST1 (QUOTE :UNDEFINED))
+                      (LIST1 (FIRST E))))))
+     ((EQ (FIRST (FIRST E)) (QUOTE LAMBDA))
+      (EVLAM (FIRST (REST (FIRST E)))
+             (FIRST (REST (REST (FIRST E))))
+             (REST E) ENV))
+     ((EQ (FIRST (FIRST E)) (QUOTE LABEL)) 
+      (EVAL (COMBINE (SUBST (FIRST E)
+                         (FIRST (REST (FIRST E)))
+                         (FIRST (REST (REST (FIRST E)))))
+                  (REST E)) ENV))
+     (T (ERROR (LIST1 (QUOTE :INVALID))
+               (LIST1 (FIRST E)))))))
+
+(DEFINE REPL
+         (LAMBDA (INPUT ENV)
+           (COND
+             ((NULL INPUT) NIL)
+             (T ((LAMBDA (SEXP INPUT ENV)
+                   (COND
+                     ((AND (NOT (ATOM SEXP)) (EQ (FIRST SEXP) (QUOTE DEFINE)))
+                      (REPL INPUT (SET (FIRST (REST SEXP))
+                                       (FIRST (REST (REST SEXP))) ENV)))
+                     (T
+                      (COMBINE (EVAL SEXP ENV) (REPL INPUT ENV)))))
+                 (FIRST INPUT) (REST INPUT) ENV)))))
+        
+;;;; aim-8.aim-8                      --                     --          ;;;;
