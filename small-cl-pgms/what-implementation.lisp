@@ -81,7 +81,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      :license "GPL"
      :homepage      "http://www.clisp.org/"
      :documentation "http://www.clisp.org/impnotes/"
-     :plateforms ("Linux"
+     :platforms ("Linux"
                   "Mac OS X"
                   "MS-Windows"
                   "Solaris"
@@ -100,7 +100,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      :license       "public domain + BSD"
      :homepage      "http://www.cons.org/cmucl/"
      :documentation "http://common-lisp.net/project/cmucl/doc/cmu-user/"
-     :plateforms ("Linux"
+     :platforms ("Linux"
                   "Mac OS X"
                   "Solaris"
                   "FreeBSD" "NetBSD" "OpenBSD"
@@ -115,7 +115,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      :license "LGPL"
      :homepage "http://ecls.sourceforge.net/"
      :documentation "http://ecls.sourceforge.net/new-manual/index.html"
-     :plateforms ("Linux"
+     :platforms ("Linux"
                   "Mac OS X" "iOS"
                   "Solaris"
                   "FreeBSD" "OpenBSD"
@@ -134,7 +134,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      :license "LGPL"
      :homepage "http://www.gnu.org/software/gcl/"
      :documentation "http://www.gnu.org/software/gcl/"
-     :plateforms ("Linux"
+     :platforms ("Linux"
                   "Mac OS X" 
                   "Solaris"
                   "FreeBSD" "OpenBSD"
@@ -149,7 +149,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      :license "LLGPL"
      :homepage "http://ccl.clozure.com/"
      :documentation "http://ccl.clozure.com/ccl-documentation.html"
-     :plateforms ("Linux"
+     :platforms ("Linux"
                   "Mac OS X" "iOS"
                   "MS-Windows"
                   "Heroku"
@@ -169,7 +169,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      :license "public domain + BSD"
      :homepage "http://www.sbcl.org/"
      :documentation "http://www.sbcl.org/manual/index.html"
-     :plateforms ("Linux"
+     :platforms ("Linux"
                   "Mac OS X" 
                   "MS-Windows"
                   "FreeBSD" "OpenBSD")
@@ -184,28 +184,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      :license "GPL"
      :homepage "http://common-lisp.net/project/armedbear/"
      :documentation  "http://common-lisp.net/project/armedbear/doc/abcl-user.html"
-     :plateforms ("JVM" "Google App Engine")
+     :platforms ("JVM" "Google App Engine")
      :compiler ("JVM virtual machine")
      :threads ("native")
      :features ("FFI to Java"
-                "plateform independence")
+                "platform independence")
      :mostly-written-in ("Java"))
 
     (:name "UABCL"
      :license "GPL3"
      :homepage "http://code.google.com/p/uabcl/"
      :documentation "http://code.google.com/p/uabcl/"
-     :plateforms (".NET")
+     :platforms (".NET")
      :compiler ()
      :threads ("native")
-     :features ("plateform independence")
+     :features ("platform independence")
      :mostly-written-in ("Java"))
 
     (:name "MKCL"
      :license "LGPL"
      :homepage "http://common-lisp.net/project/mkcl/"
      :documentation "http://common-lisp.net/project/mkcl/"
-     :plateforms ("Linux" "MS-Windows")
+     :platforms ("Linux" "MS-Windows")
      :compiler ("native" "mkcl virtual machine")
      :threads ("native")
      :features ("POSIX compliant runtime on Linux"
@@ -216,7 +216,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      :license "GPL"
      :homepage "http://www.informatik.uni-kiel.de/~wg/clicc.html"
      :documentation "http://www.informatik.uni-kiel.de/~wg/clicc.html#information"
-     :plateforms ("Common Lisp + C")
+     :platforms ("Common Lisp + C")
      :compiler ("translator to C")
      :threads ("no")
      :features ("Translator of a subset of CL to maintainable, human-readable C")
@@ -226,7 +226,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      :license "GPL2"
      :homepage "http://www.lisp.se/emacs-cl/"
      :documentation "http://www.emacswiki.org/cgi-bin/wiki?EmacsCommonLisp"
-     :plateforms ("GNU emacs")
+     :platforms ("GNU emacs")
      :compiler ("emacs virtual machine")
      :threads ("no")
      :features ("emacs integration")
@@ -236,7 +236,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      :license "LGPL"
      :homepage "http://code.google.com/p/mcl/"
      :documentation "http://code.google.com/p/mcl/w/list"
-     :plateforms ("Mac OS" "Mac OS X Rosetta")
+     :platforms ("Mac OS" "Mac OS X Rosetta")
      :compiler ("native")
      :threads ("native")
      :features ()
@@ -246,7 +246,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      :license "LGPL"
      :homepage "http://common-lisp.net/project/movitz/"
      :documentation "http://common-lisp.net/project/movitz/movitz.html"
-     :plateforms ("ix86")
+     :platforms ("ix86")
      :compiler ("native")
      :threads ("no")
      :features ("targets bare ix86 hardware"
@@ -258,7 +258,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      :license "MIT/XFREE86"
      :homepage "http://www.cs.bham.ac.uk/research/projects/poplog/freepoplog.html"
      :documentation "http://en.wikipedia.org/wiki/Poplog"
-     :plateforms ("PDP-11" "VAX/VMS" "Solaris" "HP-UX" "Digital Unix" "MS-Windows"
+     :platforms ("PDP-11" "VAX/VMS" "Solaris" "HP-UX" "Digital Unix" "MS-Windows"
                   "Linux")
      :compiler ("Poplog virtual machine")
      :threads ()
@@ -270,7 +270,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      :license "BSD"
      :homepage "http://homepage1.nifty.com/bmonkey/lisp/sacla/index-en.html"
      :documentation  "http://homepage1.nifty.com/bmonkey/lisp/sacla/index-en.html"
-     :plateforms ("Common Lisp")
+     :platforms ("Common Lisp")
      :compiler ()
      :threads ("no")
      :features ("Partical CL implemented in CL")
@@ -280,7 +280,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      :license "GPL"
      :homepage "http://armedbear.org/"
      :documentation  "http://homepage1.nifty.com/bmonkey/lisp/sacla/index-en.html"
-     :plateforms ("Linux x86" "Linux x86-64")
+     :platforms ("Linux x86" "Linux x86-64")
      :compiler ("native")
      :threads ("native")
      :features ("native threads"
@@ -294,7 +294,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      :license "Proprietary"
      :homepage "http://www.commonlisp.net/"
      :documentation  "http://www.commonlisp.net/"
-     :plateforms ("Linux")
+     :platforms ("Linux")
      :compiler ("native thru gcc")
      :threads ("native")
      :features ("native thru"
@@ -307,7 +307,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      :license "Apache 1.0"
      :homepage "http://www.thinlisp.org/"
      :documentation "http://www.thinlisp.org/"
-     :plateforms ("Common Lisp")
+     :platforms ("Common Lisp")
      :compiler ("native thru gcc")
      :threads ()
      :features ("subset of Common Lisp"
@@ -318,7 +318,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      :license "GPL"
      :homepage "http://www.ufasoft.com/lisp/"
      :documentation "http://www.ufasoft.com/lisp/"
-     :plateforms ("MS-Windows" "MS-WIndows Mobile")
+     :platforms ("MS-Windows" "MS-WIndows Mobile")
      :compiler ("clisp virtual machine")
      :threads ()
      :features ("fork of clisp"
@@ -330,7 +330,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      :license "Proprietary"
      :homepage "http://www.franz.com/products/allegrocl/"
      :documentation "http://www.franz.com/support/documentation/"
-     :plateforms ("Mac OS X" "MS-Windows" "FreeBSD" "IBM AIX" "Linux"
+     :platforms ("Mac OS X" "MS-Windows" "FreeBSD" "IBM AIX" "Linux"
                   "Solaris")
      :compiler ("native")
      :threads ("native")
@@ -341,7 +341,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      :license "Proprietary"
      :homepage "http://www.lispworks.com/products/index.html"
      :documentation "http://www.lispworks.com/documentation/index.html"
-     :plateforms ("Mac OS X" "MS-Windows" "FreeBSD" "Linux" "Solaris")
+     :platforms ("Mac OS X" "MS-Windows" "FreeBSD" "Linux" "Solaris")
      :compiler ("native")
      :threads ("native")
      :features ("IDE"
@@ -377,7 +377,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      :license "Proprietary"
      :homepage "http://www.cormanlisp.com/index.html"
      :documentation "http://www.cormanlisp.com/index.html"     
-     :plateforms ("MS-Windows")
+     :platforms ("MS-Windows")
      :compiler ("native")
      :threads ("native")
      :features ("fast multi-generational garbage collector"
@@ -397,7 +397,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      :license "Proprietary"
      :homepage "http://www.cormanlisp.com/PowerLisp.html"
      :documentation "http://www.cormanlisp.com/PowerLisp.html"
-     :plateforms ("Mac OS")
+     :platforms ("Mac OS")
      :compiler ("native")
      :threads ()
      :features ())
