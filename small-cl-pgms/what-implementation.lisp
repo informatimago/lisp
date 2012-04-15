@@ -128,7 +128,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 "native powerful FFI"
                 "executable delivery"
                 "callbacks")
-     :mostly-written-in ("Common Lisp"))
+     :mostly-written-in ("C"))
 
     (:name "gcl"
      :license "LGPL"
