@@ -14,47 +14,45 @@
 ;;;;    2003-06-15 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal Bourguignon 2003 - 2003
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
 
-(DOLIST
-    (PACKAGE
-     '( COM.INFORMATIMAGO.COMMON-LISP.COMPATIBILITY
-        COM.INFORMATIMAGO.COMMON-LISP.DFA
-        COM.INFORMATIMAGO.COMMON-LISP.DICTIONARY
+(dolist
+    (package
+     '( com.informatimago.common-lisp.compatibility
+        com.informatimago.common-lisp.dfa
+        com.informatimago.common-lisp.dictionary
         ;; COM.INFORMATIMAGO.COMMON-LISP.GRAPH-DIAGRAM
         ;; COM.INFORMATIMAGO.COMMON-LISP.GRAPH-DOT
-        COM.INFORMATIMAGO.COMMON-LISP.GRAPH
+        com.informatimago.common-lisp.graph
         ;; collision with MAP: COM.INFORMATIMAGO.COMMON-LISP.HTML
-        COM.INFORMATIMAGO.COMMON-LISP.LIST
-        COM.INFORMATIMAGO.COMMON-LISP.MAKE-DEPENDS
-        COM.INFORMATIMAGO.COMMON-LISP.PICTURE
-        COM.INFORMATIMAGO.COMMON-LISP.STRING
-        COM.INFORMATIMAGO.COMMON-LISP.TREE-TO-DIAGRAM
-        COM.INFORMATIMAGO.COMMON-LISP.TREE-TO-ASCII
-        COM.INFORMATIMAGO.COMMON-LISP.UTILITY
+        com.informatimago.common-lisp.list
+        com.informatimago.common-lisp.make-depends
+        com.informatimago.common-lisp.picture
+        com.informatimago.common-lisp.string
+        com.informatimago.common-lisp.tree-to-diagram
+        com.informatimago.common-lisp.tree-to-ascii
+        com.informatimago.common-lisp.utility
         ))
-  (IN-PACKAGE "COMMON-LISP-USER")
-  (COM.INFORMATIMAGO.COMMON-LISP.PACKAGE:LOAD-PACKAGE PACKAGE)
-  (IN-PACKAGE "COMMON-LISP-USER")
+  (in-package "COMMON-LISP-USER")
+  (com.informatimago.common-lisp.package:load-package package)
+  (in-package "COMMON-LISP-USER")
 ;;  (USE-PACKAGE PACKAGE)
   )
 

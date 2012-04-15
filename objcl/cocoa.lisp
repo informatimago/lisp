@@ -14,24 +14,22 @@
 ;;;;    2010-12-16 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2010 - 2010
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -43,7 +41,7 @@
 (in-package "COCOA-PLAYGROUND")
 
 (objcl:set-objective-cl-syntax)
-(oclo:define-classname-translation "NSApplication" NS:NS-APPLICATION)
+(oclo:define-classname-translation "NSApplication" ns:ns-application)
 
 ;; (eval-when (:execute :compile-toplevel :load-toplevel)
 ;;   ;; oclo:*COCOA-APPLICATION-FRAMEWORKS*
@@ -53,13 +51,13 @@
 
 
 (eval-when (:execute :compile-toplevel :load-toplevel)
-  @[NSView subClass:Icals
+  @[nsview subclass:icals
            slots: ((stack :initform (make-array 4) :accessor icals-stack))])
 
 
-@[Icals classMethod:(newViewWithFrame:(<NSR>ect)frame)
-  resultType:(:id)
-  body: [[Icals alloc] initWithFrame:frame]]
+@[icals classmethod:(newviewwithframe:(<nsr>ect)frame)
+  resulttype:(:id)
+  body: [[icals alloc] initwithframe:frame]]
 
 
 ;; @[Icals method:(drawRect:(<NSR>ect)rect) resultType:(:void)
@@ -73,65 +71,65 @@
 ;;                   [context restoreGraphicsState]))]
 
 ;; For test-window:
-@[Icals method:(greet:(:id)sender)
-        resultType:(:id)
+@[icals method:(greet:(:id)sender)
+        resulttype:(:id)
         body:
         (declare (ignore sender))
-        (#_NSRunAlertPanel @"Icals"
+        (#_nsrunalertpanel @"Icals"
                            @"Hello, World!"
                            @"OK"
                            @"Welcome!"
                            @"Go Away")]
 
 
-@[Icals method:(initWithFrame:(<NSR>ect)frame)
-        resultType:(:id)
-        body: (when (setf self [super initWithFrame:frame])
+@[icals method:(initwithframe:(<nsr>ect)frame)
+        resulttype:(:id)
+        body: (when (setf self [super initwithframe:frame])
                 (create-interface self)
                 self)]
 
-@[Icals method:(setStackField:(:id #|NSTextField*|#)field atIndex:(:int)index)
-        resultType:(:void)
+@[icals method:(setstackfield:(:id #|NSTextField*|#)field atindex:(:int)index)
+        resulttype:(:void)
         body: (when (<= 0 index 3)
                 (setf (aref (icals-stack self) index) field))]
 
 
-@[Icals method:(pressDigit:(:id)sender)
-        resultType:(:id)
+@[icals method:(pressdigit:(:id)sender)
+        resulttype:(:id)
         body:
         (let ((acc (aref (icals-stack self) 0)))
-          [acc setIntValue:(+ [sender intValue] (* 10 [acc intValue]))])]
+          [acc setintvalue:(+ [sender intvalue] (* 10 [acc intvalue]))])]
 
   
 
-@[Icals method: (reportError:(:id #|<NSS>tring|#)text)
-        resultType:(:id)
+@[icals method: (reporterror:(:id #|<NSS>tring|#)text)
+        resulttype:(:id)
         body:
-        NSLog(@"Icals error: %@" text)]
+        nslog(@"Icals error: %@" text)]
 
-@[Icals method:(pressEnter:(:id)sender)
-        resultType:(:id)
+@[icals method:(pressenter:(:id)sender)
+        resulttype:(:id)
         body:
         (declare (ignore sender))
         (loop
            :for i :from 3 :above 0
-           :do [(aref (icals-stack self) i) setIntValue:[(aref (icals-stack self) (1- i)) intValue]]
-           :finally [(aref (icals-stack self) 0) setIntValue:0])]
+           :do [(aref (icals-stack self) i) setintvalue:[(aref (icals-stack self) (1- i)) intvalue]]
+           :finally [(aref (icals-stack self) 0) setintvalue:0])]
 
-@[Icals method:(pressPop:(:id)sender)
-        resultType:(:id)
+@[icals method:(presspop:(:id)sender)
+        resulttype:(:id)
         body:
         (declare (ignore sender))
         (loop
            :for i :from 0 :below 3
-           :do [(aref (icals-stack self) i) setIntValue:[(aref (icals-stack self) (1+ i)) intValue]])]
+           :do [(aref (icals-stack self) i) setintvalue:[(aref (icals-stack self) (1+ i)) intvalue]])]
 
-@[Icals method:(pressOperation:(:id)sender)
-        resultType:(:id)
+@[icals method:(pressoperation:(:id)sender)
+        resulttype:(:id)
         body:
         (let ((right (aref (icals-stack self) 0))
               (left  (aref (icals-stack self) 1))
-              (op    (cdr (assoc (objc:lisp-string-from-nsstring  [sender stringValue])
+              (op    (cdr (assoc (objc:lisp-string-from-nsstring  [sender stringvalue])
                                  '(("+" . +)
                                    ("-" . -)
                                    ("*" . *)
@@ -139,9 +137,9 @@
                                  :test (function string=)))))
           (if op
               (progn
-                [self pressPop:sender]
-                [(aref (icals-stack self) 0) setDoubleValue:(or (ignore-errors (funcall op left right)) 0)])
-              [self reportError:@"Invalid Operation Button"]))]
+                [self presspop:sender]
+                [(aref (icals-stack self) 0) setdoublevalue:(or (ignore-errors (funcall op left right)) 0)])
+              [self reporterror:@"Invalid Operation Button"]))]
 
 
 
@@ -154,13 +152,13 @@
   (let ((size (make-rect)))
     (flet ((make-button (title action)
              (let ((button (make-push-button :title title :action action :target ical)))
-               [button sizeToFit] 
+               [button sizetofit] 
                (oclo:slet ((frame  [button frame]))
                            (setf size  (rect-union size frame))
                            (cons button frame))))
            (make-field (value)
              (let ((field (make-text-field :frame (make-rect :x 0 :y 0 :width 120 :height 32))))
-               [field setStringValue:value]
+               [field setstringvalue:value]
                (oclo:slet ((frame [field frame]))
                            (cons field frame)))))
       (let ((digits (loop
@@ -198,12 +196,12 @@
         (loop
            :for (object . frame) :in (list* enter pop (append ops digits fields))
            :do (progn
-                 [object setFrame:frame]
-                 [ical addSubview:object]))
+                 [object setframe:frame]
+                 [ical addsubview:object]))
         (loop
            :for i :from 0
            :for (field . frame) :in fields
-           :do [ical setStackField:field atIndex:i])))))
+           :do [ical setstackfield:field atindex:i])))))
 
 
 
@@ -212,28 +210,28 @@
 
 (defconstant yes 1)
 (defconstant no  0)
-(defconstant +default-autoresizing-mask+ (logior #$NSViewMinXMargin
-                                                 #$NSViewWidthSizable
-                                                 #$NSViewMinYMargin
-                                                 #$NSViewHeightSizable))
+(defconstant +default-autoresizing-mask+ (logior #$nsviewminxmargin
+                                                 #$nsviewwidthsizable
+                                                 #$nsviewminymargin
+                                                 #$nsviewheightsizable))
 
 
 
 (defun make-window (&key (title @"Untitled")
                     (frame (ns:make-ns-rect 0 0 200 100))
-                    (style-mask (logior #$NSTitledWindowMask #$NSResizableWindowMask))
+                    (style-mask (logior #$nstitledwindowmask #$nsresizablewindowmask))
                     (order-front nil))
-  (let ((window [[NSWindow alloc]
-                 initWithContentRect:frame
-                 styleMask:style-mask
-                 backing:#$NSBackingStoreBuffered
+  (let ((window [[nswindow alloc]
+                 initwithcontentrect:frame
+                 stylemask:style-mask
+                 backing:#$nsbackingstorebuffered
                  defer:nil]))
-    [window setTitle:title]
-    [window setAutodisplay:t]
-    [window setViewsNeedDisplay:YES]
-    [window flushWindowIfNeeded]
+    [window settitle:title]
+    [window setautodisplay:t]
+    [window setviewsneeddisplay:yes]
+    [window flushwindowifneeded]
     (when order-front
-      [window orderFront:nil])
+      [window orderfront:nil])
     window))
 
 (defun close-window (window)
@@ -242,53 +240,53 @@
 
 
 
-(defun make-text-field (&key (frame (NS:MAKE-NS-RECT 20 50 120 32))
+(defun make-text-field (&key (frame (ns:make-ns-rect 20 50 120 32))
                         (title @"Field")
                         (autoresizing-mask +default-autoresizing-mask+)
                         target action
                         (editable t)
                         (selectable t))
-  (let ((field [[NSTextField alloc] initWithFrame:frame]))
-    [field setImagePosition:#$NSNoImage]
-    [field setTitle:title]
-    [field setAutoresizingMask:autoresizing-mask]
-    [field setEnabled:yes]
-    [field setEditable:editable]
-    [field setSelectable:selectable]
-    (when target [field setTarget:target])
-    (when action [field setAction:action])
+  (let ((field [[nstextfield alloc] initwithframe:frame]))
+    [field setimageposition:#$nsnoimage]
+    [field settitle:title]
+    [field setautoresizingmask:autoresizing-mask]
+    [field setenabled:yes]
+    [field seteditable:editable]
+    [field setselectable:selectable]
+    (when target [field settarget:target])
+    (when action [field setaction:action])
     field))
 
-(defun make-push-button (&key (frame (NS:MAKE-NS-RECT 20 50 120 32))
+(defun make-push-button (&key (frame (ns:make-ns-rect 20 50 120 32))
                          (title @"Button")
                          (autoresizing-mask +default-autoresizing-mask+)
                          target action)
-  (let ((button [[NSButton alloc] initWithFrame:frame]))
-    [button setButtonType:#$NSMomentaryPushInButton]
-    [button setImagePosition:#$NSNoImage]
-    [button setBezelStyle:#$NSRoundedBezelStyle]
-    [button setTitle:title]
-    [button setAutoresizingMask:autoresizing-mask]
-    [button setEnabled:yes]
-    (when target [button setTarget:target])
-    (when action [button setAction:action])
+  (let ((button [[nsbutton alloc] initwithframe:frame]))
+    [button setbuttontype:#$nsmomentarypushinbutton]
+    [button setimageposition:#$nsnoimage]
+    [button setbezelstyle:#$nsroundedbezelstyle]
+    [button settitle:title]
+    [button setautoresizingmask:autoresizing-mask]
+    [button setenabled:yes]
+    (when target [button settarget:target])
+    (when action [button setaction:action])
     button))
 
 
-(defun make-text-field (&key (frame (NS:MAKE-NS-RECT 20 50 120 32))
+(defun make-text-field (&key (frame (ns:make-ns-rect 20 50 120 32))
                         value))
 
 (defun make-icals-window (&key (title @"Untitled")
                           (frame (ns:make-ns-rect 0 0 200 100))
-                          (style-mask (logior #$NSTitledWindowMask #$NSResizableWindowMask))
+                          (style-mask (logior #$nstitledwindowmask #$nsresizablewindowmask))
                           (order-front nil))
   (let ((window (make-window :title title
                              :frame frame
                              :style-mask style-mask
                              :order-front order-front))
-        (view   [Icals newViewWithFrame:frame]))
-    [window setContentView:view]
-    [view addSubview: (make-push-button :title @"Hello"
+        (view   [icals newviewwithframe:frame]))
+    [window setcontentview:view]
+    [view addsubview: (make-push-button :title @"Hello"
                                         :target view
                                         :action (objc:@selector "greet:"))]
     window))

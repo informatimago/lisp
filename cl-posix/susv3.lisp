@@ -28,34 +28,31 @@
 ;;;;
 ;;;;
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal Bourguignon 2003 - 2003
-;;;;    mailto:pjb@informatimago.com
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
 
-(defPACKAGE "COM.INFORMATIMAGO.CLISP.SUSV3"
-  (:DOCUMENTATION "This packages exports SUSV3 functions.
+(defpackage "COM.INFORMATIMAGO.CLISP.SUSV3"
+  (:documentation "This packages exports SUSV3 functions.
     This is the CLISP specific implementation of the SUSV3 API.")
   (:use "COMMON-LISP"
         "EXT" "LINUX")
-  (:EXPORT
+  (:export
    
    ;; NOT IN SUSV3 API (Lisp/C support stuff):
    "BOUND-STRING" ;; type (BOUND-STRING min max)
@@ -93,29 +90,29 @@
 ;; Lisp/C support stuff
 
 
-(DEFTYPE BOUND-STRING (MIN MAX)
+(deftype bound-string (min max)
   "A TYPE REPRESENTING STRINGS OF MINIMUM SIZE MIN AND MAXIMUM SIZE MAX."
-  (IF (= (EVAL MIN) (EVAL MAX))
-    `(STRING ,(EVAL MIN))
-    `STRING) ;; TODO: (OR (STRING MIN) (STRING (1+ MIN)) ... (STRING MAX))
+  (if (= (eval min) (eval max))
+    `(string ,(eval min))
+    `string) ;; TODO: (OR (STRING MIN) (STRING (1+ MIN)) ... (STRING MAX))
   );;BOUND-STRING
 
 
-(DEFINE-CONDITION SUSV3-ERROR ()
+(define-condition susv3-error ()
   (
-   (ERRNO :INITARG :ERRNO
-          :ACCESSOR ERRNO
-          :TYPE (SIGNED-BYTE 32))
+   (errno :initarg :errno
+          :accessor errno
+          :type (signed-byte 32))
    ));;SUSV3-ERROR
 
   
-(DEFMACRO CHECK-ERRNO (&BODY BODY)
-  `(PROGN
-     (SETQ LINUX:|errno| 0)
-     (LET ((RESULT (PROGN ,@BODY)))
-       (IF (/= 0 LINUX:|errno|)
-         (SIGNAL (MAKE-CONDITION 'SUSV3-ERROR  :ERRNO LINUX:|errno|))
-         RESULT)))
+(defmacro check-errno (&body body)
+  `(progn
+     (setq linux:|errno| 0)
+     (let ((result (progn ,@body)))
+       (if (/= 0 linux:|errno|)
+         (signal (make-condition 'susv3-error  :errno linux:|errno|))
+         result)))
   );;CHECK-ERRNO
 
      
@@ -124,15 +121,15 @@
 ;; ???
 
 
-(DECLARE (FTYPE (FUNCTION (STRING) (OR NULL STRING)) GETENV))
+(declare (ftype (function (string) (or null string)) getenv))
 
 
-(DEFUN GETENV (NAME)
+(defun getenv (name)
   "
 URL:        http://www.opengroup.org/onlinepubs/007904975/functions/getenv.html
 RETURN:     NIL or the value of the environment variable named NAME.
 "
-  (EXT:GETENV NAME)
+  (ext:getenv name)
   );;GETENV
 
 
@@ -140,45 +137,45 @@ RETURN:     NIL or the value of the environment variable named NAME.
 ;; sys/types.h
 
 
-(DEFTYPE INO-T ()
+(deftype ino-t ()
   "The type of file serial numbers."
-  `(UNSIGNED-BYTE 32)
+  `(unsigned-byte 32)
   );;INO-T
 
 
-(DEFTYPE DEV-T ()
+(deftype dev-t ()
   "Device ID."
-  `(UNSIGNED-BYTE 32)
+  `(unsigned-byte 32)
   );;DEV-T
 
 
-(DEFTYPE MODE-T ()
+(deftype mode-t ()
   "Mode of file."
-  `(UNSIGNED-BYTE 32)
+  `(unsigned-byte 32)
   );;MODE-T
 
 
-(DEFTYPE NLINK-T ()
+(deftype nlink-t ()
   "Number of hard links to the file."
-  `(UNSIGNED-BYTE 32)
+  `(unsigned-byte 32)
   );;NLINK-T
 
 
-(DEFTYPE UID-T ()
+(deftype uid-t ()
   "User ID."
-  `(UNSIGNED-BYTE 32)
+  `(unsigned-byte 32)
   );;UID-T
 
 
-(DEFTYPE GID-T ()
+(deftype gid-t ()
   "Group ID."
-  `(UNSIGNED-BYTE 32)
+  `(unsigned-byte 32)
   );;GID-T
 
 
-(DEFTYPE TIME-T ()
+(deftype time-t ()
   "Time in seconds since epoch."
-  `(UNSIGNED-BYTE 32)
+  `(unsigned-byte 32)
   );;TIME-T
 
 
@@ -187,41 +184,41 @@ RETURN:     NIL or the value of the environment variable named NAME.
 ;; sys/stat.h
 
 
-(DEFTYPE BLKSIZE-T
+(deftype blksize-t
   ""
-  `(UNSIGNED-BYTE 32)
+  `(unsigned-byte 32)
   );;BLKSIZE-T
 
 
-(DEFTYPE BLKCNT-T
+(deftype blkcnt-t
   ""
-  `(UNSIGNED-BYTE 32)
+  `(unsigned-byte 32)
   );;BLKCNT-T
 
 
   
-(DEFSTRUCT STAT
-  (DEV     0 :TYPE DEV-T) ;; Device ID of device containing file. 
-  (INO     0 :TYPE INO-T) ;; File serial number. 
-  (MODE    0 :TYPE MODE-T) ;; Mode of file (see below).
-  (NLINK   0 :TYPE NLINK-T) ;; Number of hard links to the file.
-  (UID     0 :TYPE UID-T) ;; User ID of file.
-  (GID     0 :TYPE GID-T) ;; Group ID of file.
-  (RDEV    0 :TYPE DEV-T) ;; XSI: Device ID (if file is char or block special).
-  (SIZE    0 :TYPE OFF-T) ;; For regular files, the file size in bytes. 
+(defstruct stat
+  (dev     0 :type dev-t) ;; Device ID of device containing file. 
+  (ino     0 :type ino-t) ;; File serial number. 
+  (mode    0 :type mode-t) ;; Mode of file (see below).
+  (nlink   0 :type nlink-t) ;; Number of hard links to the file.
+  (uid     0 :type uid-t) ;; User ID of file.
+  (gid     0 :type gid-t) ;; Group ID of file.
+  (rdev    0 :type dev-t) ;; XSI: Device ID (if file is char or block special).
+  (size    0 :type off-t) ;; For regular files, the file size in bytes. 
   ;;                      For symbolic links, the length in bytes of the 
   ;;                      pathname contained in the symbolic link. 
   ;;                      SHM: For a shared memory object, the length in bytes.
   ;;                      TYM: For a typed memory object, the length in bytes. 
   ;;                      For other file types, the use of this field is 
   ;;                      unspecified.
-  (ATIME   0 :TYPE TIME-T) ;; Time of last access.
-  (MTIME   0 :TYPE TIME-T) ;; Time of last data modification.
-  (CTIME   0 :TYPE TIME-T) ;; Time of last status change.
-  (BLKSIZE 0 :TYPE BLKSIZE-T) ;; XSI: A file system-specific preferred I/O 
+  (atime   0 :type time-t) ;; Time of last access.
+  (mtime   0 :type time-t) ;; Time of last data modification.
+  (ctime   0 :type time-t) ;; Time of last status change.
+  (blksize 0 :type blksize-t) ;; XSI: A file system-specific preferred I/O 
   ;;                      block size for this object. In some file system 
   ;;                      types, this may vary from file to file.
-  (BLOCKS  0 :TYPE BLKCNT-T) ;; XSI: Num. of blocks allocated for this object.
+  (blocks  0 :type blkcnt-t) ;; XSI: Num. of blocks allocated for this object.
   );;STAT
 
 
@@ -263,14 +260,14 @@ RETURN:     NIL or the value of the environment variable named NAME.
 ;;     Symbolic link.S_IFSOCK
 ;;     Socket. [Option End]
 
-(DEFCONSTANT S-IFMT  #O0170000)
-(DEFCONSTANT S-IFDIR  #O040000)
-(DEFCONSTANT S-IFCHR  #O020000)
-(DEFCONSTANT S-IFBLK  #O060000)
-(DEFCONSTANT S-IFREG  #O100000)
-(DEFCONSTANT S-IFIFO  #O010000)
-(DEFCONSTANT S-IFLNK  #O120000)
-(DEFCONSTANT S-IFSOCK #O140000)
+(defconstant s-ifmt  #o0170000)
+(defconstant s-ifdir  #o040000)
+(defconstant s-ifchr  #o020000)
+(defconstant s-ifblk  #o060000)
+(defconstant s-ifreg  #o100000)
+(defconstant s-ififo  #o010000)
+(defconstant s-iflnk  #o120000)
+(defconstant s-ifsock #o140000)
 
 
 ;; File mode bits:
@@ -318,26 +315,26 @@ RETURN:     NIL or the value of the environment variable named NAME.
 ;; bitwise-inclusive OR of S_IRWXU, S_IRWXG, and S_IRWXO.
 
 
-(DEFCONSTANT S-ISUID  #O004000)
-(DEFCONSTANT S-ISGID  #O002000)
-(DEFCONSTANT S-ISVTX  #O001000)
+(defconstant s-isuid  #o004000)
+(defconstant s-isgid  #o002000)
+(defconstant s-isvtx  #o001000)
 
-(DEFINE-SYMBOL-MACRO S-IREAD S-IRUSR)
-(DEFINE-SYMBOL-MACRO S-IWRITE S-IWUSR)
-(DEFINE-SYMBOL-MACRO S-IEXEC S-IXUSR)
+(define-symbol-macro s-iread s-irusr)
+(define-symbol-macro s-iwrite s-iwusr)
+(define-symbol-macro s-iexec s-ixusr)
 
-(DEFCONSTANT S-IRUSR  #O000400)
-(DEFCONSTANT S-IWUSR  #O000200)
-(DEFCONSTANT S-IXUSR  #O000100)
-(DEFCONSTANT S-IRWXU  (LOGIOR S-IRUSR S-IWUSR S-IXUSR))
-(DEFCONSTANT S-IRGRP  #O000040)
-(DEFCONSTANT S-IWGRP  #O000020)
-(DEFCONSTANT S-IXGRP  #O000010)
-(DEFCONSTANT S-IRWXG  (LOGIOR S-IRGRP S-IWGRP S-IXGRP))
-(DEFCONSTANT S-IROTH  #O000004)
-(DEFCONSTANT S-IWOTH  #O000002)
-(DEFCONSTANT S-IXOTH  #O000001)
-(DEFCONSTANT S-IRWXO  (LOGIOR S-IROTH S-IWOTH S-IXOTH))
+(defconstant s-irusr  #o000400)
+(defconstant s-iwusr  #o000200)
+(defconstant s-ixusr  #o000100)
+(defconstant s-irwxu  (logior s-irusr s-iwusr s-ixusr))
+(defconstant s-irgrp  #o000040)
+(defconstant s-iwgrp  #o000020)
+(defconstant s-ixgrp  #o000010)
+(defconstant s-irwxg  (logior s-irgrp s-iwgrp s-ixgrp))
+(defconstant s-iroth  #o000004)
+(defconstant s-iwoth  #o000002)
+(defconstant s-ixoth  #o000001)
+(defconstant s-irwxo  (logior s-iroth s-iwoth s-ixoth))
 
 
 ;; The following macros shall be provided to test whether a file is of
@@ -355,13 +352,13 @@ RETURN:     NIL or the value of the environment variable named NAME.
 ;; Test for a symbolic link.S_ISSOCK(m)
 ;; Test for a socket.
 
-(DEFMACRO S-ISDIR  (M) `(= (LOGAND ,M S-IFMT) S-IFDIR))
-(DEFMACRO S-ISCHR  (M) `(= (LOGAND ,M S-IFMT) S-IFCHR))
-(DEFMACRO S-ISBLK  (M) `(= (LOGAND ,M S-IFMT) S-IFBLK))
-(DEFMACRO S-ISREG  (M) `(= (LOGAND ,M S-IFMT) S-IFREG))
-(DEFMACRO S-ISFIFO (M) `(= (LOGAND ,M S-IFMT) S-IFFIFO))
-(DEFMACRO S-ISLNK  (M) `(= (LOGAND ,M S-IFMT) S-IFLNK))
-(DEFMACRO S-ISSOCK (M) `(= (LOGAND ,M S-IFMT) S-IFSOCK))
+(defmacro s-isdir  (m) `(= (logand ,m s-ifmt) s-ifdir))
+(defmacro s-ischr  (m) `(= (logand ,m s-ifmt) s-ifchr))
+(defmacro s-isblk  (m) `(= (logand ,m s-ifmt) s-ifblk))
+(defmacro s-isreg  (m) `(= (logand ,m s-ifmt) s-ifreg))
+(defmacro s-isfifo (m) `(= (logand ,m s-ifmt) s-iffifo))
+(defmacro s-islnk  (m) `(= (logand ,m s-ifmt) s-iflnk))
+(defmacro s-issock (m) `(= (logand ,m s-ifmt) s-ifsock))
 
 
 ;; The implementation may implement message queues, semaphores, or
@@ -406,92 +403,92 @@ RETURN:     NIL or the value of the environment variable named NAME.
 ;; int    stat(const char *restrict, struct stat *restrict);
 ;; mode_t umask(mode_t);
 
-(DECLARE
- (FTYPE (FUNCTION (STRING MODE-T)  NIL)    CHMOD)
- (FTYPE (FUNCTION (INTEGER MODE-T) NIL)    FCHMOD)
- (FTYPE (FUNCTION (INTEGER)        STAT)   FSTAT)
- (FTYPE (FUNCTION (STRING)         STAT)   LSTAT)
- (FTYPE (FUNCTION (STRING)         STAT)   STAT)
- (FTYPE (FUNCTION (STRING MODE-T)  NIL)    MKDIR)
- (FTYPE (FUNCTION (STRING MODE-T)  NIL)    MKFIFO)
- (FTYPE (FUNCTION (MODE-T)         MODE-T) UMASK)
+(declare
+ (ftype (function (string mode-t)  nil)    chmod)
+ (ftype (function (integer mode-t) nil)    fchmod)
+ (ftype (function (integer)        stat)   fstat)
+ (ftype (function (string)         stat)   lstat)
+ (ftype (function (string)         stat)   stat)
+ (ftype (function (string mode-t)  nil)    mkdir)
+ (ftype (function (string mode-t)  nil)    mkfifo)
+ (ftype (function (mode-t)         mode-t) umask)
  )
 
-(DECLARE ;; XSI
- (FTYPE (FUNCTION (STRING MODE-T DEV-T) NIL) MKNOD)
+(declare ;; XSI
+ (ftype (function (string mode-t dev-t) nil) mknod)
 )
 
 
 
-(DEFUN CHMOD (PATH MODE)
-  (CHECK-ERRNO (LINUX:|chmod| PATH MODE))
-  (VALUES)
+(defun chmod (path mode)
+  (check-errno (linux:|chmod| path mode))
+  (values)
   );;CHMOD
 
 
-(DEFUN FCHMOD (FD MODE)
-  (CHECK-ERRNO (LINUX:|fchmod| FD MODE))
-  (VALUES)
+(defun fchmod (fd mode)
+  (check-errno (linux:|fchmod| fd mode))
+  (values)
   );;FCHMOD
 
 
-(DEFMACRO LINUX-STAT->SUSV3-STAT (SB)
+(defmacro linux-stat->susv3-stat (sb)
   "
 PRIVATE
 "
-  `(MAKE-STAT 
-    :DEV (LINUX:|stat-st_dev| ,SB)
-    :INO (LINUX:|stat-st_ino| ,SB)
-    :MODE (LINUX:|stat-st_mode| ,SB)
-    :NLINK (LINUX:|stat-st_nlink| ,SB)
-    :UID (LINUX:|stat-st_uid| ,SB)
-    :GID (LINUX:|stat-st_gid| ,SB)
-    :RDEV (LINUX:|stat-st_rdev| ,SB)
-    :SIZE (LINUX:|stat-st_size| ,SB)
-    :ATIME (LINUX:|stat-st_atime| ,SB)
-    :MTIME (LINUX:|stat-st_mtime| ,SB)
-    :CTIME (LINUX:|stat-st_ctime| ,SB)
-    :BLKSIZE (LINUX:|stat-st_blksize| ,SB)
-    :BLOCKS (LINUX:|stat-st_blocks| ,SB))
+  `(make-stat 
+    :dev (linux:|stat-st_dev| ,sb)
+    :ino (linux:|stat-st_ino| ,sb)
+    :mode (linux:|stat-st_mode| ,sb)
+    :nlink (linux:|stat-st_nlink| ,sb)
+    :uid (linux:|stat-st_uid| ,sb)
+    :gid (linux:|stat-st_gid| ,sb)
+    :rdev (linux:|stat-st_rdev| ,sb)
+    :size (linux:|stat-st_size| ,sb)
+    :atime (linux:|stat-st_atime| ,sb)
+    :mtime (linux:|stat-st_mtime| ,sb)
+    :ctime (linux:|stat-st_ctime| ,sb)
+    :blksize (linux:|stat-st_blksize| ,sb)
+    :blocks (linux:|stat-st_blocks| ,sb))
   );;LINUX-STAT->SUSV3-STAT
 
 
-(DEFUN STAT (PATH)
-    (LINUX-STAT->SUSV3-STAT (CHECK-ERRNO (LINUX:|stat| PATH)))
+(defun stat (path)
+    (linux-stat->susv3-stat (check-errno (linux:|stat| path)))
   );;STAT
 
 
-(DEFUN LSTAT (PATH)
-    (LINUX-STAT->SUSV3-STAT (CHECK-ERRNO (LINUX:|lstat| PATH)))
+(defun lstat (path)
+    (linux-stat->susv3-stat (check-errno (linux:|lstat| path)))
   );;LSTAT
 
 
-(DEFUN FSTAT (FD)
-    (LINUX-STAT->SUSV3-STAT (CHECK-ERRNO (LINUX:|fstat| FD)))
+(defun fstat (fd)
+    (linux-stat->susv3-stat (check-errno (linux:|fstat| fd)))
   );;FSTAT
 
 
-(DEFUN MKDIR (PATH MODE)
-  (CHECK-ERRNO (LINUX:|mkdir| PATH MODE))
-  (VALUES)
+(defun mkdir (path mode)
+  (check-errno (linux:|mkdir| path mode))
+  (values)
   );;MKDIR
 
 
-(DEFUN MKFIFO (PATH MODE)
-  (CHECK-ERRNO (LINUX:|mkfifo| PATH MODE))
-  (VALUES)
+(defun mkfifo (path mode)
+  (check-errno (linux:|mkfifo| path mode))
+  (values)
   );;MKFIFO
 
 
-(DEFUN UMASK (MODE)
-  (LINUX:|umask| MODE)
+(defun umask (mode)
+  (linux:|umask| mode)
   );;UMASK
 
 
   ;;XSI
-(DEFUN MKNOD (PATH MODE DEVICE)
-  (CHECK-ERRNO (LINUX:|mknod| PATH MODE DEVICE))
-  (VALUES)
+(defun mknod (path mode device)
+  (check-errno (linux:|mknod| path mode device))
+  (values)
   );;MKNOD
 
 
@@ -499,78 +496,78 @@ PRIVATE
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; dirent.h
 
-(DEFCONSTANT +NAME-MAX+ 255)
+(defconstant +name-max+ 255)
 
 
-(DEFTYPE DIR () 
+(deftype dir () 
   "A type representing a directory stream."
-  `T
+  `t
   );;DIR
 
 
-(DEFSTRUCT DIRENT 
-  (INO  0  :TYPE INO-T) ;; File serial number
-  (NAME "" :TYPE (BOUND-STRING 0 +NAME-MAX+)) ;; Name of entry
+(defstruct dirent 
+  (ino  0  :type ino-t) ;; File serial number
+  (name "" :type (bound-string 0 +name-max+)) ;; Name of entry
   );;DIRENT
 
 
-(DECLAIM
- (FTYPE (FUNCTION (DIR)    INTEGER)          CLOSEDIR)
- (FTYPE (FUNCTION (STRING) (OR NULL DIR))    OPENDIR)
- (FTYPE (FUNCTION (DIR)    (OR NULL DIRENT)) READDIR)
- (FTYPE (FUNCTION (DIR)    NIL)              REWINDDIR)
+(declaim
+ (ftype (function (dir)    integer)          closedir)
+ (ftype (function (string) (or null dir))    opendir)
+ (ftype (function (dir)    (or null dirent)) readdir)
+ (ftype (function (dir)    nil)              rewinddir)
  )
 
 
-(DECLAIM ;; XSI
- (FTYPE (FUNCTION (DIR INTEGER) NIL)         SEEKDIR)
- (FTYPE (FUNCTION (DIR)         INTEGER)     TELLDIR)
+(declaim ;; XSI
+ (ftype (function (dir integer) nil)         seekdir)
+ (ftype (function (dir)         integer)     telldir)
  )
 
 
-(DEFUN OPENDIR (PATH)
-  (CHECK-ERRNO (LINUX:|opendir| PATH))
+(defun opendir (path)
+  (check-errno (linux:|opendir| path))
   );;OPENDIR
 
 
-(DEFUN CLOSEDIR (DIR-STREAM)
-  (CHECK-ERRNO (LINUX:|closedir| DIR-STREAM))
+(defun closedir (dir-stream)
+  (check-errno (linux:|closedir| dir-stream))
   );;CLOSEDIR
 
 
-(DEFUN READDIR (DIR-STREAM)
-  (LET ((C-DIRENT (CHECK-ERRNO (LINUX:|readdir| DIR-STREAM))))
-    (AND C-DIRENT
-         (MAKE-DIRENT :INO (LINUX::|dirent-d_ino| C-DIRENT)
-                      :NAME (LINUX::|dirent-d_name| C-DIRENT))))
+(defun readdir (dir-stream)
+  (let ((c-dirent (check-errno (linux:|readdir| dir-stream))))
+    (and c-dirent
+         (make-dirent :ino (linux::|dirent-d_ino| c-dirent)
+                      :name (linux::|dirent-d_name| c-dirent))))
   );;READDIR
 
 
-(DEFUN REWINDDIR (DIR-STREAM)
-  (CHECK-ERRNO (LINUX:|rewinddir| DIR-STREAM))
-  (VALUES)
+(defun rewinddir (dir-stream)
+  (check-errno (linux:|rewinddir| dir-stream))
+  (values)
   );;REWINDDIR
 
 
 
-(DEFUN SEEKDIR (DIR-STREAM POSITION)
-  (CHECK-ERRNO (LINUX:|seekdir| DIR-STREAM POSITION))
-  (VALUES)
+(defun seekdir (dir-stream position)
+  (check-errno (linux:|seekdir| dir-stream position))
+  (values)
   );;SEEKDIR
 
 
-(DEFUN TELLDIR (DIR-STREAM)
-  (CHECK-ERRNO (LINUX:|telldir| DIR-STREAM))
+(defun telldir (dir-stream)
+  (check-errno (linux:|telldir| dir-stream))
   );;TELLDIR
 
 
 
 
-(DEFUN DIRENT-TEST ()
-  (DO* ((DIR-STREAM (OPENDIR "/tmp"))
-        (ENTRY (READDIR DIR-STREAM) (READDIR DIR-STREAM)))
-      ((NULL ENTRY))
-    (FORMAT T "entry: ~8D ~S~%" (DIRENT-INO ENTRY) (DIRENT-NAME ENTRY)))
+(defun dirent-test ()
+  (do* ((dir-stream (opendir "/tmp"))
+        (entry (readdir dir-stream) (readdir dir-stream)))
+      ((null entry))
+    (format t "entry: ~8D ~S~%" (dirent-ino entry) (dirent-name entry)))
   );;DIRENT-TEST
 
 

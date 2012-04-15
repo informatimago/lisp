@@ -17,33 +17,31 @@
 ;;;;    Not implemented as FFI, we're using the external program logger(1)
 ;;;;    in the mean time.
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2003
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
 
 (defpackage "COM.INFORMATIMAGO.CLISP.SYSLOG"
-  (:DOCUMENTATION "This module exports unix syslog functions.
+  (:documentation "This module exports unix syslog functions.
 Since FFI is not always available with clisp, we rather use logger(1).")
   (:use "COMMON-LISP")
-  (:EXPORT
+  (:export
    "OPENLOG" "SYSLOG" "CLOSELOG"
 
    "+LOG-PID+" "+LOG-CONS+" "+LOG-ODELAY+" "+LOG-NDELAY+" 
@@ -63,57 +61,57 @@ Since FFI is not always available with clisp, we rather use logger(1).")
 
 
 ;; options
-(DEFCONSTANT +LOG-PID+     1 "log the pid with each message ")
-(DEFCONSTANT +LOG-CONS+    2 "log on the console if errors in sending ")
-(DEFCONSTANT +LOG-ODELAY+  4 "delay open until first syslog() (default) ")
-(DEFCONSTANT +LOG-NDELAY+  8 "don't delay open ")
-(DEFCONSTANT +LOG-NOWAIT+ 16 "don't wait for console forks: DEPRECATED ")
-(DEFCONSTANT +LOG-PERROR+ 32 "log to stderr as well ")
+(defconstant +log-pid+     1 "log the pid with each message ")
+(defconstant +log-cons+    2 "log on the console if errors in sending ")
+(defconstant +log-odelay+  4 "delay open until first syslog() (default) ")
+(defconstant +log-ndelay+  8 "don't delay open ")
+(defconstant +log-nowait+ 16 "don't wait for console forks: DEPRECATED ")
+(defconstant +log-perror+ 32 "log to stderr as well ")
 
 ;; priorities
-(DEFCONSTANT +LOG-EMERG+   0 "system is unusable ")
-(DEFCONSTANT +LOG-ALERT+   1 "action must be taken immediately ")
-(DEFCONSTANT +LOG-CRIT+    2 "critical conditions ")
-(DEFCONSTANT +LOG-ERR+     3 "error conditions ")
-(DEFCONSTANT +LOG-WARNING+ 4 "warning conditions ")
-(DEFCONSTANT +LOG-NOTICE+  5 "normal but significant condition ")
-(DEFCONSTANT +LOG-INFO+    6 "informational ")
-(DEFCONSTANT +LOG-DEBUG+   7 "debug-level messages ")
+(defconstant +log-emerg+   0 "system is unusable ")
+(defconstant +log-alert+   1 "action must be taken immediately ")
+(defconstant +log-crit+    2 "critical conditions ")
+(defconstant +log-err+     3 "error conditions ")
+(defconstant +log-warning+ 4 "warning conditions ")
+(defconstant +log-notice+  5 "normal but significant condition ")
+(defconstant +log-info+    6 "informational ")
+(defconstant +log-debug+   7 "debug-level messages ")
 
 ;; facilities
-(DEFCONSTANT +LOG-KERN+       0 "kernel messages ")
-(DEFCONSTANT +LOG-USER+       8 "random user-level messages ")
-(DEFCONSTANT +LOG-MAIL+      16 "mail system ")
-(DEFCONSTANT +LOG-DAEMON+    24 "system daemons ")
-(DEFCONSTANT +LOG-AUTH+      32 "security/authorization messages ")
-(DEFCONSTANT +LOG-SYSLOG+    40 "messages generated internally by syslogd ")
-(DEFCONSTANT +LOG-LPR+       48 "line printer subsystem ")
-(DEFCONSTANT +LOG-NEWS+      56 "network news subsystem ")
-(DEFCONSTANT +LOG-UUCP+      64 "UUCP subsystem ")
-(DEFCONSTANT +LOG-CRON+      72 "clock daemon ")
-(DEFCONSTANT +LOG-AUTHPRIV+  80 "security/authorization messages (private) ")
-(DEFCONSTANT +LOG-FTP+       88 "ftp daemon ")
-(DEFCONSTANT +LOG-LOCAL0+   128 "reserved for local use ")
-(DEFCONSTANT +LOG-LOCAL1+   136 "reserved for local use ")
-(DEFCONSTANT +LOG-LOCAL2+   144 "reserved for local use ")
-(DEFCONSTANT +LOG-LOCAL3+   152 "reserved for local use ")
-(DEFCONSTANT +LOG-LOCAL4+   160 "reserved for local use ")
-(DEFCONSTANT +LOG-LOCAL5+   168 "reserved for local use ")
-(DEFCONSTANT +LOG-LOCAL6+   176 "reserved for local use ")
-(DEFCONSTANT +LOG-LOCAL7+   184 "reserved for local use ")
+(defconstant +log-kern+       0 "kernel messages ")
+(defconstant +log-user+       8 "random user-level messages ")
+(defconstant +log-mail+      16 "mail system ")
+(defconstant +log-daemon+    24 "system daemons ")
+(defconstant +log-auth+      32 "security/authorization messages ")
+(defconstant +log-syslog+    40 "messages generated internally by syslogd ")
+(defconstant +log-lpr+       48 "line printer subsystem ")
+(defconstant +log-news+      56 "network news subsystem ")
+(defconstant +log-uucp+      64 "UUCP subsystem ")
+(defconstant +log-cron+      72 "clock daemon ")
+(defconstant +log-authpriv+  80 "security/authorization messages (private) ")
+(defconstant +log-ftp+       88 "ftp daemon ")
+(defconstant +log-local0+   128 "reserved for local use ")
+(defconstant +log-local1+   136 "reserved for local use ")
+(defconstant +log-local2+   144 "reserved for local use ")
+(defconstant +log-local3+   152 "reserved for local use ")
+(defconstant +log-local4+   160 "reserved for local use ")
+(defconstant +log-local5+   168 "reserved for local use ")
+(defconstant +log-local6+   176 "reserved for local use ")
+(defconstant +log-local7+   184 "reserved for local use ")
 
 
 
 
 
-(DEFVAR *IDENT*      "clisp")
-(DEFVAR *FACILITY*   +LOG-LOCAL0+)
-(DEFVAR *LOG-PID*    NIL "log the pid with each message ")
-(DEFVAR *LOG-CONS*   NIL "log on the console if errors in sending ")
-(DEFVAR *LOG-ODELAY* NIL "delay open until first syslog() (default) ")
-(DEFVAR *LOG-NDELAY* NIL "don't delay open ")
-(DEFVAR *LOG-NOWAIT* NIL "don't wait for console forks: DEPRECATED ")
-(DEFVAR *LOG-PERROR* NIL "log to stderr as well ")
+(defvar *ident*      "clisp")
+(defvar *facility*   +log-local0+)
+(defvar *log-pid*    nil "log the pid with each message ")
+(defvar *log-cons*   nil "log on the console if errors in sending ")
+(defvar *log-odelay* nil "delay open until first syslog() (default) ")
+(defvar *log-ndelay* nil "don't delay open ")
+(defvar *log-nowait* nil "don't wait for console forks: DEPRECATED ")
+(defvar *log-perror* nil "log to stderr as well ")
 
 
 (defvar *loggers* (make-array '(256) :initial-element nil)
@@ -172,33 +170,33 @@ RETURN: A logger for the (facility priority) couple.
 
 
 
-(DEFUN OPENLOG (IDENT OPTION FACILITY)
-  (SETQ *IDENT*      IDENT
-        *FACILITY*   FACILITY
-        *LOG-PID*    (/= 0 (LOGAND OPTION +LOG-PID+))
-        *LOG-CONS*   (/= 0 (LOGAND OPTION +LOG-CONS+))
-        *LOG-ODELAY* (/= 0 (LOGAND OPTION +LOG-ODELAY+))
-        *LOG-NDELAY* (/= 0 (LOGAND OPTION +LOG-NDELAY+))
-        *LOG-NOWAIT* (/= 0 (LOGAND OPTION +LOG-NOWAIT+))
-        *LOG-PERROR* (/= 0 (LOGAND OPTION +LOG-PERROR+)))
-  (VALUES))
+(defun openlog (ident option facility)
+  (setq *ident*      ident
+        *facility*   facility
+        *log-pid*    (/= 0 (logand option +log-pid+))
+        *log-cons*   (/= 0 (logand option +log-cons+))
+        *log-odelay* (/= 0 (logand option +log-odelay+))
+        *log-ndelay* (/= 0 (logand option +log-ndelay+))
+        *log-nowait* (/= 0 (logand option +log-nowait+))
+        *log-perror* (/= 0 (logand option +log-perror+)))
+  (values))
 
 
-(DEFUN old-SYSLOG (PRIORITY FCTRL &REST ARGUMENTS)
-  (EXT:RUN-PROGRAM "logger"
-    :ARGUMENTS  (APPEND (WHEN *LOG-PID*    (LIST "-i"))
-                        (WHEN *LOG-PERROR* (LIST "-s"))
-                        (LIST "-p" (format nil "~D" (+ *facility* PRIORITY))
-                              "-t" *IDENT*
-                              "--" (APPLY (FUNCTION FORMAT) NIL FCTRL ARGUMENTS)))
-    :INPUT NIL :OUTPUT NIL :WAIT NIL)
-  (VALUES))
+(defun old-syslog (priority fctrl &rest arguments)
+  (ext:run-program "logger"
+    :arguments  (append (when *log-pid*    (list "-i"))
+                        (when *log-perror* (list "-s"))
+                        (list "-p" (format nil "~D" (+ *facility* priority))
+                              "-t" *ident*
+                              "--" (apply (function format) nil fctrl arguments)))
+    :input nil :output nil :wait nil)
+  (values))
 
 
 (defun newlinep (ch)
-  (member ch '(#\Newline #\Return #\Newline)))
+  (member ch '(#\newline #\return #\newline)))
 
-(DEFUN SYSLOG (PRIORITY FCTRL &REST ARGUMENTS)
+(defun syslog (priority fctrl &rest arguments)
   (let ((logger (get-logger *facility* priority)))
     (let ((lines (apply (function format) nil fctrl arguments)))
       (princ lines logger)
@@ -208,10 +206,10 @@ RETURN: A logger for the (facility priority) couple.
   (values))
 
 
-(DEFUN CLOSELOG ()
+(defun closelog ()
   (setf *loggers*
         (map 'array (lambda (logger) (when logger (close logger)) nil) *loggers*))
-  (VALUES))
+  (values))
 
 
 ;;;; THE END ;;;;

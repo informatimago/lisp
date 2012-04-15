@@ -33,12 +33,12 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.CLEXT.CHARACTER-SETS"
-  (:USE "COMMON-LISP"
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.CLEXT.CHARACTER-SETS"
+  (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CHARACTER-SETS")
-  (:EXPORT
+  (:export
    "MAKE-EXTERNAL-FORMAT"
    "EXTERNAL-FORMAT-CHARACTER-ENCODING"
    "EXTERNAL-FORMAT-LINE-TERMINATION"
@@ -47,7 +47,7 @@
    "CHARACTER-SET-TO-EMACS-ENCODING"
    "CHARACTER-SET-FROM-EMACS-ENCODING"
    "EMACS-ENCODING-TO-LISP-EXTERNAL-FORMAT")
-  (:DOCUMENTATION "
+  (:documentation "
 This package exports functions to manage character-sets,
 character encodings, coding systems and external format.
 It's all the same, but everyone likes to have his own terms...
@@ -56,7 +56,7 @@ Copyright Pascal J. Bourguignon 2005 - 2012
 This package is provided under the GNU General Public Licence.
 See the source file for details.
 "))
-(IN-PACKAGE "COM.INFORMATIMAGO.CLEXT.CHARACTER-SETS")
+(in-package "COM.INFORMATIMAGO.CLEXT.CHARACTER-SETS")
 
 
 (defparameter *aliases*
@@ -130,74 +130,74 @@ RETURN:     A new list of name and aliases, with the ALIASES added, if
   
   #+(and ccl (not ccl-1.6))
   (mapcar (lambda (x) (mapcar (function string-upcase) x))
-          '((:ISO-8859-1 :ISO_8859-1 :LATIN1 :L1 :IBM819 :CP819 :CSISOLATIN1)
-            (:ISO-8859-2 :ISO_8859-2 :LATIN-2 :L2 :CSISOLATIN2)
-            (:ISO-8859-3 :ISO_8859-3 :LATIN3 :L3 :CSISOLATIN3)
-            (:ISO-8859-4 :ISO_8859-4 :LATIN4 :L4 :CSISOLATIN4)
-            (:ISO-8859-5 :ISO_8859-5 :CYRILLIC :CSISOLATINCYRILLIC :ISO-IR-144)
-            (:ISO-8859-6 :ISO_8859-6 :ARABIC :CSISOLATINARABIC :ISO-IR-127)
-            (:ISO-8859-7 :ISO_8859-7 :GREEK :GREEK8 :CSISOLATINGREEK :ISO-IR-126 :ELOT_928 :ECMA-118)
-            (:ISO-8859-8 :ISO_8859-8 :HEBREW :CSISOLATINHEBREW :ISO-IR-138)
-            (:ISO-8859-9 :ISO_8859-9 :LATIN5 :CSISOLATIN5 :ISO-IR-148)
-            (:ISO-8859-10 :ISO_8859-10 :LATIN6 :CSISOLATIN6 :ISO-IR-157)
-            (:ISO-8859-11)
-            (:ISO-8859-13)
-            (:ISO-8859-14 :ISO_8859-14 :ISO-IR-199 :LATIN8 :L8 :ISO-CELTIC)
-            (:ISO-8859-15 :ISO_8859-15 :LATIN9)
-            (:ISO-8859-16 :ISO_8859-16 :ISO-IR-199 :LATIN8 :L8 :ISO-CELTIC)
-            (:MACINTOSH :MACOS-ROMAN :MACOSROMAN :MAC-ROMAN :MACROMAN)
-            (:UCS-2)
-            (:UCS-2BE)
-            (:UCS-2LE)
-            (:US-ASCII :CSASCII :CP637 :IBM637 :US :ISO646-US :ASCII :ISO-IR-6)
-            (:UTF-16)
-            (:UTF-16BE)
-            (:UTF-16LE)
-            (:UTF-32 :UTF-4)
-            (:UTF-32BE :UCS-4BE)
-            (:UTF-8)
-            (:UTF-32LE :UCS-4LE)
-            (:Windows-31j  :CP932 :CSWINDOWS31J)
-            (:EUC-JP :EUCJP)))
+          '((:iso-8859-1 :iso_8859-1 :latin1 :l1 :ibm819 :cp819 :csisolatin1)
+            (:iso-8859-2 :iso_8859-2 :latin-2 :l2 :csisolatin2)
+            (:iso-8859-3 :iso_8859-3 :latin3 :l3 :csisolatin3)
+            (:iso-8859-4 :iso_8859-4 :latin4 :l4 :csisolatin4)
+            (:iso-8859-5 :iso_8859-5 :cyrillic :csisolatincyrillic :iso-ir-144)
+            (:iso-8859-6 :iso_8859-6 :arabic :csisolatinarabic :iso-ir-127)
+            (:iso-8859-7 :iso_8859-7 :greek :greek8 :csisolatingreek :iso-ir-126 :elot_928 :ecma-118)
+            (:iso-8859-8 :iso_8859-8 :hebrew :csisolatinhebrew :iso-ir-138)
+            (:iso-8859-9 :iso_8859-9 :latin5 :csisolatin5 :iso-ir-148)
+            (:iso-8859-10 :iso_8859-10 :latin6 :csisolatin6 :iso-ir-157)
+            (:iso-8859-11)
+            (:iso-8859-13)
+            (:iso-8859-14 :iso_8859-14 :iso-ir-199 :latin8 :l8 :iso-celtic)
+            (:iso-8859-15 :iso_8859-15 :latin9)
+            (:iso-8859-16 :iso_8859-16 :iso-ir-199 :latin8 :l8 :iso-celtic)
+            (:macintosh :macos-roman :macosroman :mac-roman :macroman)
+            (:ucs-2)
+            (:ucs-2be)
+            (:ucs-2le)
+            (:us-ascii :csascii :cp637 :ibm637 :us :iso646-us :ascii :iso-ir-6)
+            (:utf-16)
+            (:utf-16be)
+            (:utf-16le)
+            (:utf-32 :utf-4)
+            (:utf-32be :ucs-4be)
+            (:utf-8)
+            (:utf-32le :ucs-4le)
+            (:windows-31j  :cp932 :cswindows31j)
+            (:euc-jp :eucjp)))
 
   #+(and ccl ccl-1.6)
   (mapcar (lambda (x) (mapcar (function string-upcase) x))
-          '((:ISO-8859-1 :ISO_8859-1  :LATIN1  :L1  :IBM819  :CP819  :CSISOLATIN1)
-            (:ISO-8859-2 :ISO_8859-2  :LATIN-2  :L2  :CSISOLATIN2)
-            (:ISO-8859-3 :ISO_8859-3  :LATIN3 :L3  :CSISOLATIN3)
-            (:ISO-8859-4 :ISO_8859-4  :LATIN4  :L4  :CSISOLATIN4)
-            (:ISO-8859-5 :ISO_8859-5  :CYRILLIC  :CSISOLATINCYRILLIC  :ISO-IR-144)
-            (:ISO-8859-6 :ISO_8859-6  :ARABIC  :CSISOLATINARABIC  :ISO-IR-127)
-            (:ISO-8859-7 :ISO_8859-7  :GREEK  :GREEK8  :CSISOLATINGREEK  :ISO-IR-126  :ELOT_928  :ECMA-118)
-            (:ISO-8859-8 :ISO_8859-8  :HEBREW  :CSISOLATINHEBREW  :ISO-IR-138)
-            (:ISO-8859-9 :ISO_8859-9  :LATIN5  :CSISOLATIN5  :ISO-IR-148)
-            (:ISO-8859-10 :ISO_8859-10  :LATIN6  :CSISOLATIN6  :ISO-IR-157)
-            (:ISO-8859-11)
-            (:ISO-8859-13)
-            (:ISO-8859-14 :ISO_8859-14  :ISO-IR-199  :LATIN8  :L8  :ISO-CELTIC)
-            (:ISO-8859-15 :ISO_8859-15  :LATIN9)
-            (:ISO-8859-16 :ISO_8859-16  :ISO-IR-199  :LATIN8  :L8  :ISO-CELTIC)
-            (:MACINTOSH :MACOS-ROMAN  :MACOSROMAN  :MAC-ROMAN  :MACROMAN)
-            (:UCS-2)
-            (:UCS-2BE)
-            (:UCS-2LE)
-            (:US-ASCII :CSASCII  :CP637 :IBM637  :US  :ISO646-US  :ASCII  :ISO-IR-6)
-            (:UTF-16)
-            (:UTF-16BE)
-            (:UTF-16LE)
-            (:UTF-32 :UTF-4)
-            (:UTF-32BE :UCS-4BE)
-            (:UTF-8)
-            (:UTF-32LE :UCS-4LE)
-            (:Windows-31j :CP932  :CSWINDOWS31J)
-            (:EUC-JP :EUCJP)
-            (:GB2312 :GB2312-80 :GB2312-1980 :EUC-CN :EUCCN)
-            (:CP936 :GBK :MS936 :WINDOWS-936)))
+          '((:iso-8859-1 :iso_8859-1  :latin1  :l1  :ibm819  :cp819  :csisolatin1)
+            (:iso-8859-2 :iso_8859-2  :latin-2  :l2  :csisolatin2)
+            (:iso-8859-3 :iso_8859-3  :latin3 :l3  :csisolatin3)
+            (:iso-8859-4 :iso_8859-4  :latin4  :l4  :csisolatin4)
+            (:iso-8859-5 :iso_8859-5  :cyrillic  :csisolatincyrillic  :iso-ir-144)
+            (:iso-8859-6 :iso_8859-6  :arabic  :csisolatinarabic  :iso-ir-127)
+            (:iso-8859-7 :iso_8859-7  :greek  :greek8  :csisolatingreek  :iso-ir-126  :elot_928  :ecma-118)
+            (:iso-8859-8 :iso_8859-8  :hebrew  :csisolatinhebrew  :iso-ir-138)
+            (:iso-8859-9 :iso_8859-9  :latin5  :csisolatin5  :iso-ir-148)
+            (:iso-8859-10 :iso_8859-10  :latin6  :csisolatin6  :iso-ir-157)
+            (:iso-8859-11)
+            (:iso-8859-13)
+            (:iso-8859-14 :iso_8859-14  :iso-ir-199  :latin8  :l8  :iso-celtic)
+            (:iso-8859-15 :iso_8859-15  :latin9)
+            (:iso-8859-16 :iso_8859-16  :iso-ir-199  :latin8  :l8  :iso-celtic)
+            (:macintosh :macos-roman  :macosroman  :mac-roman  :macroman)
+            (:ucs-2)
+            (:ucs-2be)
+            (:ucs-2le)
+            (:us-ascii :csascii  :cp637 :ibm637  :us  :iso646-us  :ascii  :iso-ir-6)
+            (:utf-16)
+            (:utf-16be)
+            (:utf-16le)
+            (:utf-32 :utf-4)
+            (:utf-32be :ucs-4be)
+            (:utf-8)
+            (:utf-32le :ucs-4le)
+            (:windows-31j :cp932  :cswindows31j)
+            (:euc-jp :eucjp)
+            (:gb2312 :gb2312-80 :gb2312-1980 :euc-cn :euccn)
+            (:cp936 :gbk :ms936 :windows-936)))
 
   #+clisp
   (let ((h (make-hash-table)))
     (do-external-symbols (s "CHARSET")
-      (push (string-upcase s) (gethash (EXT:ENCODING-CHARSET s) h)))
+      (push (string-upcase s) (gethash (ext:encoding-charset s) h)))
     (let ((r '()))
       (maphash (lambda (k v) (declare (ignore k)) (push  v r)) h)
       r))
@@ -208,16 +208,16 @@ RETURN:     A new list of name and aliases, with the ALIASES added, if
             #+unicode ("UTF-8"))
 
   #+sbcl
-  (etypecase SB-IMPL::*EXTERNAL-FORMATS*
+  (etypecase sb-impl::*external-formats*
     (hash-table (let ((result '()))
                   (maphash (lambda (name encoding) (pushnew encoding result))
-                           SB-IMPL::*EXTERNAL-FORMATS*)
+                           sb-impl::*external-formats*)
                   (mapcar (lambda (encoding)
                             (mapcar (function string-upcase)
-                                    (slot-value encoding 'SB-IMPL::names)))
+                                    (slot-value encoding 'sb-impl::names)))
                           result)))
     (list (mapcar (lambda (x) (mapcar (function string-upcase) (first x)))
-                  SB-IMPL::*EXTERNAL-FORMATS*)))
+                  sb-impl::*external-formats*)))
   
   #-(or ccl clisp cmu sbcl)
   (progn
@@ -605,7 +605,7 @@ DO:     Read the character-set file and build the *character-sets* list,
         and character set ranges (found in clisp).
 RETURN: *character-sets*
 "
-  (setf *CHARACTER-SETS* (READ-CHARACTER-SETS-FILE "character-sets"))
+  (setf *character-sets* (read-character-sets-file "character-sets"))
   (fill-character-set-emacs-encoding)
   (fill-character-set-lisp-encoding)
   (dolist (cs *character-sets*)
@@ -616,7 +616,7 @@ RETURN: *character-sets*
                           (cl:find-symbol "GET-CHARSET-RANGE" "SYSTEM"))
                          '(:and) '(:or))
               (map 'vector (function char-code)
-                   (SYSTEM::GET-CHARSET-RANGE charset))
+                   (system::get-charset-range charset))
               #-#.(cl:if (cl:ignore-errors
                           (cl:find-symbol "GET-CHARSET-RANGE" "SYSTEM"))
                          '(:and) '(:or))
@@ -638,7 +638,7 @@ RETURN: *character-sets*
                                   :do (incf i)
                                   :finally (return (1- i)))))
                'vector)))))
-  *CHARACTER-SETS*)
+  *character-sets*)
 
 
 ;;; Provide a default value for  *CHARACTER-SETS*

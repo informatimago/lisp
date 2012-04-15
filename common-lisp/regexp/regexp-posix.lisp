@@ -30,37 +30,35 @@
 ;;;;    2002-11-16 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
-;;;;
+;;;;    AGPL3
+;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2002 - 2004
-;;;;
-;;;;    This script is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU  General Public
-;;;;    License as published by the Free Software Foundation; either
-;;;;    version 2 of the License, or (at your option) any later version.
-;;;;
-;;;;    This script is distributed in the hope that it will be useful,
+;;;;    
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
+;;;;    
+;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
-;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;;;;    General Public License for more details.
-;;;;
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this library; see the file COPYING.LIB.
-;;;;    If not, write to the Free Software Foundation,
-;;;;    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
+;;;;    
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.REGEXP.REGEXP-POSIX"
-  (:USE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "COMMON-LISP")
-  (:EXPORT
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.REGEXP.REGEXP-POSIX"
+  (:use "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "COMMON-LISP")
+  (:export
    ;; CLISP REGEXP API:
    "REGEXP-MATCH" "REGEXP-QUOTE" "MATCH-STRING" "MATCH-END"
    "MATCH-START" "MATCH"
    ;; POSIX API:
    "REGEXEC" "REGCOMP" "RM-EO" "RM-SO" "REGMATCH-T"
    "RE-NSUB" "REGEX-T" "REGOFF-T" "SIZE-T")
-  (:DOCUMENTATION
+  (:documentation
    "This package implement POSIX Regular Expressions in Common-Lisp.
 This is interesting because it's available on any Common-Lisp platform
 while external C regexp libraries or internals are available or not,
@@ -68,17 +66,17 @@ and not always implement these same syntax or semantic.
 See specifications at:
    http://www.opengroup.org/onlinepubs/007904975/basedefs/xbd_chap09.html
 "))
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.REGEXP.REGEXP-POSIX.KEYWORD"
-  (:NICKNAMES "RK")
-  (:USE)
-  (:EXPORT
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.REGEXP.REGEXP-POSIX.KEYWORD"
+  (:nicknames "RK")
+  (:use)
+  (:export
    "COLLATING-SYMBOL" "EQUIVALENCE-CLASS" "CHARACTER-CLASS"
    "RANGE" "ANY" "L-ANCHOR" "R-ANCHOR" "MATCHING" "NON-MATCHING" "BACKREF"
    "SUBEXP" "SEQUENCE" "REPEAT" "REPEAT-SHY" "INFINITY" "ALTERNATIVE"
    "B-ANCHOR" "E-ANCHOR"
    "ITEM" "SET-SEQUENCE")
-  (:DOCUMENTATION "This package gathers and exports regexp keywords."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.REGEXP.REGEXP-POSIX")
+  (:documentation "This package gathers and exports regexp keywords."))
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.REGEXP.REGEXP-POSIX")
 
 #||
 regexp --> (or character
@@ -100,27 +98,27 @@ regexp --> (or character
 ||#
 
 
-(DEFUN LESSP (A B)
-  (IF (OR (EQ A 'RK:INFINITY) (EQ B 'RK:INFINITY))
-      NIL
-      (< A B))) ;;LESSP
+(defun lessp (a b)
+  (if (or (eq a 'rk:infinity) (eq b 'rk:infinity))
+      nil
+      (< a b))) ;;LESSP
 
 
 
-(DEFMACRO IF^2 (C1 C2 TT TF FT FF)  `(IF ,C1 (IF ,C2 ,TT ,TF) (IF ,C2 ,FT ,FF)))
+(defmacro if^2 (c1 c2 tt tf ft ff)  `(if ,c1 (if ,c2 ,tt ,tf) (if ,c2 ,ft ,ff)))
 ;; (if^2 cond1 cond2
 ;;      (t t)      (t f)
 ;;      (f t)      (f f))
-(DEFMACRO TOP (STACK) `(CAR ,STACK))
+(defmacro top (stack) `(car ,stack))
 
 
-(DEFMACRO INVARIANT (CONDITION &BODY BODY)
-  `(PROGN (ASSERT ,CONDITION) (PROG1 (PROGN ,@BODY) (ASSERT ,CONDITION))))
+(defmacro invariant (condition &body body)
+  `(progn (assert ,condition) (prog1 (progn ,@body) (assert ,condition))))
 
 
 
 
-(DEFUN PJB-RE-SPLIT-STRING (STRING &OPTIONAL SEPARATORS)
+(defun pjb-re-split-string (string &optional separators)
   "
 DOES:       Splits STRING into substrings where there are matches
             for SEPARATORS.
@@ -130,21 +128,21 @@ separators: A regexp matching the sub-string separators.
 NOTE:       Current implementation only accepts as separators
             a literal string containing only one character.
 "
-  (LET ((SEP (AREF SEPARATORS 0))
-        (CHUNKS  '())
-        (POSITION 0)
-        (NEXTPOS  0)
-        (STRLEN   (LENGTH STRING))
+  (let ((sep (aref separators 0))
+        (chunks  '())
+        (position 0)
+        (nextpos  0)
+        (strlen   (length string))
         )
-    (LOOP WHILE (< POSITION STRLEN)
-       DO
-       (LOOP WHILE (AND (< NEXTPOS STRLEN)
-                        (CHAR/= SEP (AREF STRING NEXTPOS)))
-          DO (SETQ NEXTPOS (1+ NEXTPOS)))
-       (PUSH (SUBSEQ STRING POSITION NEXTPOS) CHUNKS)
-       (SETQ POSITION (1+ NEXTPOS))
-       (SETQ NEXTPOS  POSITION))
-    (NREVERSE CHUNKS)))
+    (loop while (< position strlen)
+       do
+       (loop while (and (< nextpos strlen)
+                        (char/= sep (aref string nextpos)))
+          do (setq nextpos (1+ nextpos)))
+       (push (subseq string position nextpos) chunks)
+       (setq position (1+ nextpos))
+       (setq nextpos  position))
+    (nreverse chunks)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -153,63 +151,63 @@ NOTE:       Current implementation only accepts as separators
 ;;
 
 
-(DEFSTRUCT SC
-  (STRING           "" :TYPE STRING)
-  (POSITION         0  :TYPE INTEGER)
-  (BRACKET-POSITION 0  :TYPE INTEGER)
-  (EXPRESSION-START () :TYPE LIST))
+(defstruct sc
+  (string           "" :type string)
+  (position         0  :type integer)
+  (bracket-position 0  :type integer)
+  (expression-start () :type list))
 
 
-(DEFUN SC-LENGTH (SC) (LENGTH (SC-STRING SC)))
-(DEFUN SC-EOS    (SC) (>= (SC-POSITION SC) (SC-LENGTH SC)))
+(defun sc-length (sc) (length (sc-string sc)))
+(defun sc-eos    (sc) (>= (sc-position sc) (sc-length sc)))
 
 
-(DEFUN SC-CURR-CHAR (SC)
+(defun sc-curr-char (sc)
   "
 RETURN:  The current character, or nil if EOS.
 "
-  (IF (SC-EOS SC)
-      NIL
-      (CHAR (SC-STRING SC) (SC-POSITION SC))))
+  (if (sc-eos sc)
+      nil
+      (char (sc-string sc) (sc-position sc))))
 
 
-(DEFUN SC-NEXT-CHAR (SC)
+(defun sc-next-char (sc)
   "
 RETURN:  The next character, or nil if EOS.
 "
-  (IF (< (1+ (SC-POSITION SC)) (SC-LENGTH SC))
-      (CHAR (SC-STRING SC) (1+ (SC-POSITION SC)))
-      NIL))
+  (if (< (1+ (sc-position sc)) (sc-length sc))
+      (char (sc-string sc) (1+ (sc-position sc)))
+      nil))
 
 
-(DEFUN SC-AFTER-NEXT-CHAR (SC)
+(defun sc-after-next-char (sc)
   "
 RETURN:  The after next character, or nil if EOS.
 "
-  (IF (< (+ 2 (SC-POSITION SC)) (SC-LENGTH SC))
-      (CHAR (SC-STRING SC) (+ 2 (SC-POSITION SC)))
-      NIL))
+  (if (< (+ 2 (sc-position sc)) (sc-length sc))
+      (char (sc-string sc) (+ 2 (sc-position sc)))
+      nil))
 
 
-(DEFUN SC-ADVANCE (SC &OPTIONAL (INCREMENT 1))
+(defun sc-advance (sc &optional (increment 1))
   "
 PRE:     (= p (sc-position sc))
 POST:    (= (min (sc-length sc) (+ p increment)) (sc-position sc))
 RETURN:  The character at position p+increment or nil if EOS.
 "
-  (SETF (SC-POSITION SC) (MIN (SC-LENGTH SC) (+ (SC-POSITION SC) INCREMENT)))
-  (SC-CURR-CHAR SC))
+  (setf (sc-position sc) (min (sc-length sc) (+ (sc-position sc) increment)))
+  (sc-curr-char sc))
 
 
-(DEFUN SC-LOOKING-AT (SC SUBSTRING)
+(defun sc-looking-at (sc substring)
   "
 "
-  (STRING= (SC-STRING SC) SUBSTRING
-           :START1 (SC-POSITION SC)
-           :END1   (MIN (SC-LENGTH SC) (+ (SC-POSITION SC) (LENGTH SUBSTRING)))))
+  (string= (sc-string sc) substring
+           :start1 (sc-position sc)
+           :end1   (min (sc-length sc) (+ (sc-position sc) (length substring)))))
 
 
-(DEFUN SC-SCAN-TO (SC SUBSTRING)
+(defun sc-scan-to (sc substring)
   "
 RETURN:  the substring of (sc-string sc) starting from current position
          to the position just before the first occurence of the substring
@@ -225,13 +223,13 @@ POST:    (and (<=  p (sc-position sc))
                   (string/= substring (substring (sc-string sc)
                                           i (+ i (length substring))))))
 "
-  (LET* ((START (SC-POSITION SC))
-         (END   (SEARCH SUBSTRING (SC-STRING SC) :START2 START)))
-    (IF END
-        (PROGN
-          (SETF (SC-POSITION SC)  END)
-          (SUBSEQ (SC-STRING SC) START END))
-        NIL)))
+  (let* ((start (sc-position sc))
+         (end   (search substring (sc-string sc) :start2 start)))
+    (if end
+        (progn
+          (setf (sc-position sc)  end)
+          (subseq (sc-string sc) start end))
+        nil)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -239,8 +237,8 @@ POST:    (and (<=  p (sc-position sc))
 ;; ------------------------------------
 
 
-(DEFUN LENGTH>1 (LIST) (CDR LIST))
-(DEFUN ERRORP   (EXPR) (AND (CONSP EXPR) (EQ :ERROR (CAR EXPR))))
+(defun length>1 (list) (cdr list))
+(defun errorp   (expr) (and (consp expr) (eq :error (car expr))))
 
 (define-condition parsing-error (error)
   ((arguments :initarg :arguments :accessor parsing-error-arguments)))
@@ -248,18 +246,18 @@ POST:    (and (<=  p (sc-position sc))
   ;; (error 'parsing-error :arguments (copy-list args))
   (cons :error (copy-list args)))
 
-(DEFUN RE-INTEGER (SC)
+(defun re-integer (sc)
   "
 DO:     Parses an integer.
 RETURN: The integer, or NIL.
 "
-  (DO ((START (SC-POSITION SC)))
-      ((OR (SC-EOS SC) (NOT (DIGIT-CHAR-P (SC-CURR-CHAR SC) 10)))
-       (IF (< START (SC-POSITION SC))
-           (PARSE-INTEGER (SC-STRING SC) :START START :END (SC-POSITION SC)
-                          :RADIX 10 :JUNK-ALLOWED NIL)
-           NIL))
-    (SC-ADVANCE SC)))
+  (do ((start (sc-position sc)))
+      ((or (sc-eos sc) (not (digit-char-p (sc-curr-char sc) 10)))
+       (if (< start (sc-position sc))
+           (parse-integer (sc-string sc) :start start :end (sc-position sc)
+                          :radix 10 :junk-allowed nil)
+           nil))
+    (sc-advance sc)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -267,7 +265,7 @@ RETURN: The integer, or NIL.
 ;; ---------------------------
 
 
-(DEFUN BE-COLLATING-SYMBOL (SC)
+(defun be-collating-symbol (sc)
   "
 DO:     Parses a collating-symbol.
 RETURN: (rk:collating-symbol coll-elem)
@@ -279,19 +277,19 @@ NOTE:
                     | Open_dot META_CHAR Dot_close ;
    COLL_ELEM_SINGLE and META_CHAR form a partition of all characters.
 "
-  (IF (SC-LOOKING-AT SC "[.")
-      (PROGN
-        (SC-ADVANCE SC 2)
-        (LET ((COLLATING-SYMBOL (SC-SCAN-TO SC ".]")))
-          (IF COLLATING-SYMBOL
-              (PROGN
-                (SC-ADVANCE SC 2)
-                (LIST 'RK:COLLATING-SYMBOL COLLATING-SYMBOL))
+  (if (sc-looking-at sc "[.")
+      (progn
+        (sc-advance sc 2)
+        (let ((collating-symbol (sc-scan-to sc ".]")))
+          (if collating-symbol
+              (progn
+                (sc-advance sc 2)
+                (list 'rk:collating-symbol collating-symbol))
               (err "Missing a closing '.]' after '[.'."))))
-      NIL)) ;;BE-COLLATING-SYMBOL
+      nil)) ;;BE-COLLATING-SYMBOL
 
 
-(DEFUN BE-EQUIVALENCE-CLASS (SC)
+(defun be-equivalence-class (sc)
   "
 DO:     Parses an equivalence class.
 RETURN: (rk:equivalence-class coll-elem)
@@ -315,22 +313,22 @@ NOTE:
    ] is not first in a bracket expression                 ==> ] is meta-char
    - isn't first, shouldn't be last, isn't ending a range ==> - is meta-char
 "
-  (IF (SC-LOOKING-AT SC "[=")
-      (PROGN
-        (SC-ADVANCE SC 2)
-        (IF (OR (SC-LOOKING-AT SC "-") (SC-LOOKING-AT SC "]"))
-            (ERR (FORMAT NIL "Invalid meta-char ~S in equivalence class."
-                         (SC-CURR-CHAR SC)))
-            (LET ((EQUIVALENCE-CLASS (SC-SCAN-TO SC "=]")))
-              (IF EQUIVALENCE-CLASS
-                  (PROGN
-                    (SC-ADVANCE SC 2)
-                    (LIST 'RK:EQUIVALENCE-CLASS EQUIVALENCE-CLASS))
-                  (ERR "Missing a closing '=]' after '[='.")))))
-      NIL)) ;;BE-EQUIVALENCE-CLASS
+  (if (sc-looking-at sc "[=")
+      (progn
+        (sc-advance sc 2)
+        (if (or (sc-looking-at sc "-") (sc-looking-at sc "]"))
+            (err (format nil "Invalid meta-char ~S in equivalence class."
+                         (sc-curr-char sc)))
+            (let ((equivalence-class (sc-scan-to sc "=]")))
+              (if equivalence-class
+                  (progn
+                    (sc-advance sc 2)
+                    (list 'rk:equivalence-class equivalence-class))
+                  (err "Missing a closing '=]' after '[='.")))))
+      nil)) ;;BE-EQUIVALENCE-CLASS
 
 
-(DEFUN BE-CHARACTER-CLASS (SC)
+(defun be-character-class (sc)
   "
 DO:     Parses a character class
 RETURN: (rk:character-class class-name)
@@ -339,19 +337,19 @@ RETURN: (rk:character-class class-name)
 NOTES:
    character_class : Open_colon class_name Colon_close ;
 "
-  (IF (SC-LOOKING-AT SC "[:")
-      (PROGN
-        (SC-ADVANCE SC 2)
-        (LET ((CLASS-NAME (SC-SCAN-TO SC ":]")))
-          (IF CLASS-NAME
-              (PROGN
-                (SC-ADVANCE SC 2)
-                (LIST 'RK:CHARACTER-CLASS CLASS-NAME))
-              (ERR "Missing a closing ':]' after '[:'."))))
-      NIL)) ;;BE-CHARACTER-CLASS
+  (if (sc-looking-at sc "[:")
+      (progn
+        (sc-advance sc 2)
+        (let ((class-name (sc-scan-to sc ":]")))
+          (if class-name
+              (progn
+                (sc-advance sc 2)
+                (list 'rk:character-class class-name))
+              (err "Missing a closing ':]' after '[:'."))))
+      nil)) ;;BE-CHARACTER-CLASS
 
 
-(DEFUN BE-END-RANGE (SC)
+(defun be-end-range (sc)
   "
 DO:     Parses an end-range.
 RETURN: character or (rk:collating-symbol coll-elem)
@@ -369,22 +367,22 @@ NOTES:
     ]   When found anywhere but first (after an initial '^' , if any)
         in a bracket expression
 "
-  (LET ((COLL-SYM (BE-COLLATING-SYMBOL SC)))
-    (COND
-      (COLL-SYM COLL-SYM)
-      ((SC-EOS SC) NIL)
-      ((AND (= (SC-POSITION SC) (SC-BRACKET-POSITION SC))
-            (SC-LOOKING-AT SC "-"))
-       (PROG1 (SC-CURR-CHAR SC) (SC-ADVANCE SC)))
-      ((SC-LOOKING-AT SC "-]")
-       (PROG1 (SC-CURR-CHAR SC) (SC-ADVANCE SC)))
-      ((SC-LOOKING-AT SC "-") NIL)
-      ((SC-LOOKING-AT SC "]") NIL)
-      (T
-       (PROG1 (SC-CURR-CHAR SC) (SC-ADVANCE SC))))))
+  (let ((coll-sym (be-collating-symbol sc)))
+    (cond
+      (coll-sym coll-sym)
+      ((sc-eos sc) nil)
+      ((and (= (sc-position sc) (sc-bracket-position sc))
+            (sc-looking-at sc "-"))
+       (prog1 (sc-curr-char sc) (sc-advance sc)))
+      ((sc-looking-at sc "-]")
+       (prog1 (sc-curr-char sc) (sc-advance sc)))
+      ((sc-looking-at sc "-") nil)
+      ((sc-looking-at sc "]") nil)
+      (t
+       (prog1 (sc-curr-char sc) (sc-advance sc))))))
 
 
-(DEFUN BE-START-RANGE (SC)
+(defun be-start-range (sc)
   "
 DO:     Parses a start-range.
 RETURN: character or (rk:collating-symbol coll-elem)
@@ -392,16 +390,16 @@ RETURN: character or (rk:collating-symbol coll-elem)
 NOTES:
    start_range    : end_range '-' ;
 "
-  (LET ((START  (SC-POSITION SC))
-        (RESULT (BE-END-RANGE SC)))
-    (COND
-      ((NULL RESULT)          (SETF (SC-POSITION SC) START) NIL)
-      ((ERRORP RESULT)                                      RESULT)
-      ((SC-LOOKING-AT SC "-") (SC-ADVANCE SC)               RESULT)
-      (T                      (SETF (SC-POSITION SC) START) NIL))))
+  (let ((start  (sc-position sc))
+        (result (be-end-range sc)))
+    (cond
+      ((null result)          (setf (sc-position sc) start) nil)
+      ((errorp result)                                      result)
+      ((sc-looking-at sc "-") (sc-advance sc)               result)
+      (t                      (setf (sc-position sc) start) nil))))
 
 
-(DEFUN BE-RANGE-EXPRESSION (SC)
+(defun be-range-expression (sc)
   "
 DO:     Parses a range-expression.
 RETURN: (rk:range start end) or nil of not looking at a range-expression.
@@ -409,21 +407,21 @@ NOTES:
    range_expression : start_range end_range
                     | start_range '-' ;
 "
-  (LET ((START       (SC-POSITION SC))
-        (RANGE-START (BE-START-RANGE SC)))
-    (COND
-      ((NULL RANGE-START) NIL)
-      ((ERRORP RANGE-START) RANGE-START)
-      ((SC-LOOKING-AT SC "-")
-       (LIST 'RK:RANGE RANGE-START (CHARACTER "-")))
-      (T (LET ((RANGE-END (BE-END-RANGE SC)))
-           (COND
-             ((NULL RANGE-END)   (SETF (SC-POSITION SC) START) NIL)
-             ((ERRORP RANGE-END) RANGE-END) ;; error or not error?
-             (T (LIST 'RK:RANGE RANGE-START RANGE-END))))))))
+  (let ((start       (sc-position sc))
+        (range-start (be-start-range sc)))
+    (cond
+      ((null range-start) nil)
+      ((errorp range-start) range-start)
+      ((sc-looking-at sc "-")
+       (list 'rk:range range-start (character "-")))
+      (t (let ((range-end (be-end-range sc)))
+           (cond
+             ((null range-end)   (setf (sc-position sc) start) nil)
+             ((errorp range-end) range-end) ;; error or not error?
+             (t (list 'rk:range range-start range-end))))))))
 
 
-(DEFUN BE-SINGLE-EXPRESSION (SC)
+(defun be-single-expression (sc)
   "
 DO:      Parses a single-expression.
 RETURN:  (or (rk:equivalence-class ec) (rk:character-class cc)
@@ -434,33 +432,33 @@ NOTES:
                      | character_class
                      | equivalence_class ;
 "
-  (LET ((START  (SC-POSITION SC))
-        (SE     (BE-CHARACTER-CLASS SC))
-        (ERRPOS NIL)
-        (ERR    NIL))
-    (COND
-      ((NULL SE)   (SETF SE  (BE-EQUIVALENCE-CLASS SC)))
-      ((ERRORP SE) (SETF ERRPOS (OR ERRPOS (SC-POSITION SC))
-                         (SC-POSITION SC) START
-                         ERR (OR ERR SE)
-                         SE  (BE-EQUIVALENCE-CLASS SC)))
-      (T           (RETURN-FROM BE-SINGLE-EXPRESSION SE)))
-    (COND
-      ((NULL SE)   (SETF SE  (BE-END-RANGE SC)))
-      ((ERRORP SE) (SETF ERRPOS (OR ERRPOS (SC-POSITION SC))
-                         (SC-POSITION SC) START
-                         ERR (OR ERR SE)
-                         SE  (BE-END-RANGE SC)))
-      (T           (RETURN-FROM BE-SINGLE-EXPRESSION SE)))
-    (COND
-      ((NULL SE)   NIL)
-      ((ERRORP SE) (SETF ERRPOS (OR ERRPOS (SC-POSITION SC))
-                         ERR (OR ERR SE)
-                         (SC-POSITION SC) ERRPOS)    ERR)
-      (T           SE))))
+  (let ((start  (sc-position sc))
+        (se     (be-character-class sc))
+        (errpos nil)
+        (err    nil))
+    (cond
+      ((null se)   (setf se  (be-equivalence-class sc)))
+      ((errorp se) (setf errpos (or errpos (sc-position sc))
+                         (sc-position sc) start
+                         err (or err se)
+                         se  (be-equivalence-class sc)))
+      (t           (return-from be-single-expression se)))
+    (cond
+      ((null se)   (setf se  (be-end-range sc)))
+      ((errorp se) (setf errpos (or errpos (sc-position sc))
+                         (sc-position sc) start
+                         err (or err se)
+                         se  (be-end-range sc)))
+      (t           (return-from be-single-expression se)))
+    (cond
+      ((null se)   nil)
+      ((errorp se) (setf errpos (or errpos (sc-position sc))
+                         err (or err se)
+                         (sc-position sc) errpos)    err)
+      (t           se))))
 
 
-(DEFUN BE-EXPRESSION-TERM (SC)
+(defun be-expression-term (sc)
   "
 DO:
 RETURN:  (or (rk:equivalence-class ec) (rk:character-class cc)
@@ -471,26 +469,26 @@ NOTES:
    expression_term : single_expression
                    | range_expression ;
 "
-  (LET ((START  (SC-POSITION SC))
-        (ET     (BE-RANGE-EXPRESSION SC))
-        (ERRPOS NIL)
-        (ERR    NIL))
-    (COND
-      ((NULL ET)   (SETF ET  (BE-SINGLE-EXPRESSION SC)))
-      ((ERRORP ET) (SETF ERRPOS (OR ERRPOS (SC-POSITION SC))
-                         (SC-POSITION SC) START
-                         ERR (OR ERR ET)
-                         ET  (BE-SINGLE-EXPRESSION SC)))
-      (T           (RETURN-FROM BE-EXPRESSION-TERM ET)))
-    (COND
-      ((NULL ET)   NIL)
-      ((ERRORP ET) (SETF ERRPOS (OR ERRPOS (SC-POSITION SC))
-                         ERR (OR ERR ET)
-                         (SC-POSITION SC) ERRPOS)    ERR)
-      (T           ET))))
+  (let ((start  (sc-position sc))
+        (et     (be-range-expression sc))
+        (errpos nil)
+        (err    nil))
+    (cond
+      ((null et)   (setf et  (be-single-expression sc)))
+      ((errorp et) (setf errpos (or errpos (sc-position sc))
+                         (sc-position sc) start
+                         err (or err et)
+                         et  (be-single-expression sc)))
+      (t           (return-from be-expression-term et)))
+    (cond
+      ((null et)   nil)
+      ((errorp et) (setf errpos (or errpos (sc-position sc))
+                         err (or err et)
+                         (sc-position sc) errpos)    err)
+      (t           et))))
 
 
-(DEFUN BE-FOLLOW-LIST (SC)
+(defun be-follow-list (sc)
   "
 DO:
 RETURN:  (:follow-list expression...)
@@ -499,16 +497,16 @@ RETURN:  (:follow-list expression...)
    follow_list    :             expression_term
                   | follow_list expression_term  ;
 "
-  (DO ((EXPRESSION-TERM (BE-EXPRESSION-TERM SC) (BE-EXPRESSION-TERM SC))
-       (FOLLOW-LIST     NIL))
-      ((OR (NULL EXPRESSION-TERM) (ERRORP EXPRESSION-TERM))
-       (IF (ERRORP EXPRESSION-TERM)
-           EXPRESSION-TERM ;; (:error ...)
-           (AND FOLLOW-LIST (CONS :FOLLOW-LIST (NREVERSE FOLLOW-LIST)))))
-    (PUSH EXPRESSION-TERM FOLLOW-LIST)))
+  (do ((expression-term (be-expression-term sc) (be-expression-term sc))
+       (follow-list     nil))
+      ((or (null expression-term) (errorp expression-term))
+       (if (errorp expression-term)
+           expression-term ;; (:error ...)
+           (and follow-list (cons :follow-list (nreverse follow-list)))))
+    (push expression-term follow-list)))
 
 
-(DEFUN BE-BRACKET-LIST (SC)
+(defun be-bracket-list (sc)
   "
 DO:      Parses a bracket-list.
 RETURN:  (:follow-list expression...) or nil.
@@ -516,18 +514,18 @@ NOTES:
    bracket_list   : follow_list
                   | follow_list '-' ;
 "
-  (LET ((FOLLOW-LIST (BE-FOLLOW-LIST SC)))
-    (COND
-      ((NULL FOLLOW-LIST) NIL)
-      ((ERRORP FOLLOW-LIST) FOLLOW-LIST)
-      (T (OR (AND (SC-LOOKING-AT SC "-")
-                  (PROG1
-                      (NCONC FOLLOW-LIST (LIST (SC-CURR-CHAR SC)))
-                    (SC-ADVANCE SC)))
-             FOLLOW-LIST)))))
+  (let ((follow-list (be-follow-list sc)))
+    (cond
+      ((null follow-list) nil)
+      ((errorp follow-list) follow-list)
+      (t (or (and (sc-looking-at sc "-")
+                  (prog1
+                      (nconc follow-list (list (sc-curr-char sc)))
+                    (sc-advance sc)))
+             follow-list)))))
 
 
-(DEFUN BE-BRACKET-EXPRESSION (SC)
+(defun be-bracket-expression (sc)
   "
 DO:      Parses a bracket-expression.
 RETURN:  (rk:matching expression...) or (rk:non-matching expression...)
@@ -538,25 +536,25 @@ NOTES:
    matching_list  : bracket_list  ;
    nonmatching_list : '^' bracket_list ;
 "
-  (LET ((START (SC-POSITION SC))
-        BE)
-    (COND
-      ((SC-LOOKING-AT SC "[^")
-       (SC-ADVANCE SC 2)
-       (SETF BE 'RK:NON-MATCHING))
-      ((SC-LOOKING-AT SC "[")
-       (SC-ADVANCE SC)
-       (SETF BE 'RK:MATCHING))
-      (T (RETURN-FROM BE-BRACKET-EXPRESSION NIL)))
-    (SETF (SC-BRACKET-POSITION  SC) (SC-POSITION SC))
-    (LET ((MATCHING-LIST (BE-BRACKET-LIST SC)))
-      (COND
-        ((NULL MATCHING-LIST)   (SETF (SC-POSITION SC) START) NIL)
-        ((ERRORP MATCHING-LIST) MATCHING-LIST)
-        ((SC-LOOKING-AT SC "]")
-         (SC-ADVANCE SC)
-         (CONS BE (CDR MATCHING-LIST)))
-        (T (ERR "Missing ']' in bracket expression."))))))
+  (let ((start (sc-position sc))
+        be)
+    (cond
+      ((sc-looking-at sc "[^")
+       (sc-advance sc 2)
+       (setf be 'rk:non-matching))
+      ((sc-looking-at sc "[")
+       (sc-advance sc)
+       (setf be 'rk:matching))
+      (t (return-from be-bracket-expression nil)))
+    (setf (sc-bracket-position  sc) (sc-position sc))
+    (let ((matching-list (be-bracket-list sc)))
+      (cond
+        ((null matching-list)   (setf (sc-position sc) start) nil)
+        ((errorp matching-list) matching-list)
+        ((sc-looking-at sc "]")
+         (sc-advance sc)
+         (cons be (cdr matching-list)))
+        (t (err "Missing ']' in bracket expression."))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -564,7 +562,7 @@ NOTES:
 ;; ------------------------
 
 
-(DEFUN BRE-DUPL-SYMBOL (SC)
+(defun bre-dupl-symbol (sc)
   "
 DO:     Parse
 RETURN: (rk:repeat min max) with min,max in (or rk:infinity (integer 0))
@@ -576,37 +574,37 @@ RE_dupl_symbol : '*'
                | Back_open_brace DUP_COUNT ','           Back_close_brace
                | Back_open_brace DUP_COUNT ',' DUP_COUNT Back_close_brace ;
 "
-  (COND
-    ((SC-LOOKING-AT SC "*") (SC-ADVANCE SC) (LIST 'RK:REPEAT 0 'RK:INFINITY))
-    ((SC-LOOKING-AT SC "{")
-     (SC-ADVANCE SC)
-     (LET ((MIN (RE-INTEGER SC)))
-       (COND
-         ((NULL MIN) (ERR "Missing duplication count after '{'."))
-         ((SC-LOOKING-AT SC "}")  (SC-ADVANCE SC)  (LIST 'RK:REPEAT MIN MIN))
-         ((SC-LOOKING-AT SC ",")  (SC-ADVANCE SC)
-          (IF (SC-LOOKING-AT SC "}")
-              (PROGN  (SC-ADVANCE SC)  (LIST 'RK:REPEAT MIN 'RK:INFINITY))
-              (LET ((MAX (RE-INTEGER SC)))
-                (COND
-                  ((NULL MAX)
-                   (ERR (FORMAT NIL "Invalid ~S character in {...}."
-                                        (SC-CURR-CHAR SC))))
-                  ((SC-LOOKING-AT SC "}")
-                   (SC-ADVANCE SC)
-                   (LIST 'RK:REPEAT MIN MAX))
-                  ((SC-EOS SC)
+  (cond
+    ((sc-looking-at sc "*") (sc-advance sc) (list 'rk:repeat 0 'rk:infinity))
+    ((sc-looking-at sc "{")
+     (sc-advance sc)
+     (let ((min (re-integer sc)))
+       (cond
+         ((null min) (err "Missing duplication count after '{'."))
+         ((sc-looking-at sc "}")  (sc-advance sc)  (list 'rk:repeat min min))
+         ((sc-looking-at sc ",")  (sc-advance sc)
+          (if (sc-looking-at sc "}")
+              (progn  (sc-advance sc)  (list 'rk:repeat min 'rk:infinity))
+              (let ((max (re-integer sc)))
+                (cond
+                  ((null max)
+                   (err (format nil "Invalid ~S character in {...}."
+                                        (sc-curr-char sc))))
+                  ((sc-looking-at sc "}")
+                   (sc-advance sc)
+                   (list 'rk:repeat min max))
+                  ((sc-eos sc)
                    (err "Missing '}'."))
-                  (T (ERR (FORMAT NIL "Invalid ~S character in {...}."
-                                          (SC-CURR-CHAR SC))))))))
-         ((SC-EOS SC)            (ERR "Missing '}'."))
-         (T (ERR (FORMAT NIL "Invalid ~S character in {...}."
-                         (SC-CURR-CHAR SC)))))
+                  (t (err (format nil "Invalid ~S character in {...}."
+                                          (sc-curr-char sc))))))))
+         ((sc-eos sc)            (err "Missing '}'."))
+         (t (err (format nil "Invalid ~S character in {...}."
+                         (sc-curr-char sc)))))
        ))
-    (T NIL)))
+    (t nil)))
 
 
-(DEFUN BRE-ONE-CHAR-OR-COLL-ELEM (SC)
+(defun bre-one-char-or-coll-elem (sc)
   "
 DO:      Parses s single character or a coll-elem regexp.
 RETURN:  (or (rk:matching ...) (rk:non-matching ...) rk:any character)
@@ -630,98 +628,98 @@ SPEC_CHAR
          directly following an anchoring '^'.
    ==> ORD_CHAR excludes . \ [ and * but when first of the expression.
 "
-  (COND
-    ((SC-EOS SC) NIL)
+  (cond
+    ((sc-eos sc) nil)
     ;; quoted-char:
-    ((AND (CHAR= (CHARACTER "\\") (SC-CURR-CHAR SC))
-          (POSITION (SC-NEXT-CHAR SC) "^.*[$\\"))
-     (SC-ADVANCE SC)
-     (PROG1 (SC-CURR-CHAR SC) (SC-ADVANCE SC)))
+    ((and (char= (character "\\") (sc-curr-char sc))
+          (position (sc-next-char sc) "^.*[$\\"))
+     (sc-advance sc)
+     (prog1 (sc-curr-char sc) (sc-advance sc)))
     ;; dot:
-    ((SC-LOOKING-AT SC ".")
-     (SC-ADVANCE SC)
-     'RK:ANY)
+    ((sc-looking-at sc ".")
+     (sc-advance sc)
+     'rk:any)
     ;; bracket expression:
-    ((SC-LOOKING-AT SC "[")
-     (BE-BRACKET-EXPRESSION SC)) ;; [ is not an ord-char anyway.
+    ((sc-looking-at sc "[")
+     (be-bracket-expression sc)) ;; [ is not an ord-char anyway.
     ;; not looking at one-char-or-coll-elem-re:
-    ((OR (SC-LOOKING-AT SC "\\")
-         (SC-LOOKING-AT SC "[")
-         (AND (SC-EXPRESSION-START SC)                 (SC-LOOKING-AT SC "*"))
-         (AND (= (1+ (SC-POSITION SC)) (SC-LENGTH SC)) (SC-LOOKING-AT SC "$")))
-     NIL) ;; spec-char
-    ((AND (SC-EXPRESSION-START SC)
-          (OR (SC-LOOKING-AT SC "^") (SC-LOOKING-AT SC "$")))
-     (ERR (FORMAT NIL "Invalid ~S character inside '\\(' and '\\)'."
-                  (SC-CURR-CHAR SC))))
-    (T
-     (PROG1  (SC-CURR-CHAR SC) (SC-ADVANCE SC)))))
+    ((or (sc-looking-at sc "\\")
+         (sc-looking-at sc "[")
+         (and (sc-expression-start sc)                 (sc-looking-at sc "*"))
+         (and (= (1+ (sc-position sc)) (sc-length sc)) (sc-looking-at sc "$")))
+     nil) ;; spec-char
+    ((and (sc-expression-start sc)
+          (or (sc-looking-at sc "^") (sc-looking-at sc "$")))
+     (err (format nil "Invalid ~S character inside '\\(' and '\\)'."
+                  (sc-curr-char sc))))
+    (t
+     (prog1  (sc-curr-char sc) (sc-advance sc)))))
 
 
-(DEFUN BRE-NONDUPL-RE (SC)
+(defun bre-nondupl-re (sc)
   "
 nondupl_RE     : one_char_or_coll_elem_RE
                | Back_open_paren RE_expression Back_close_paren
                | BACKREF ;
 "
-  (COND
-    ((SC-LOOKING-AT SC "\\(")
-     (SC-ADVANCE SC 2)
-     (PUSH  (SC-POSITION SC) (SC-EXPRESSION-START SC))
-     (LET ((EXPRESSION (PROG1 (BRE-EXPRESSION SC)
-                         (POP (SC-EXPRESSION-START SC)))))
-       (COND
-         ((NULL EXPRESSION)
-          (ERR "Missing a regular expression after '\\('."))
-         ((ERRORP EXPRESSION)
-          EXPRESSION)
-         ((SC-LOOKING-AT SC "\\)")
-          (SC-ADVANCE SC 2)
-          (LIST 'RK:SUBEXP EXPRESSION))
-         (T
-          (ERR "Missing '\\)'.")))))
-    ((AND (SC-LOOKING-AT SC "\\") (DIGIT-CHAR-P (SC-NEXT-CHAR SC) 10))
-     (SC-ADVANCE SC 2)
-     (LIST 'RK:BACKREF (PARSE-INTEGER (SC-STRING SC) :START (1- (SC-POSITION SC))
-                                      :END (SC-POSITION SC))))
-    (T (BRE-ONE-CHAR-OR-COLL-ELEM SC))))
+  (cond
+    ((sc-looking-at sc "\\(")
+     (sc-advance sc 2)
+     (push  (sc-position sc) (sc-expression-start sc))
+     (let ((expression (prog1 (bre-expression sc)
+                         (pop (sc-expression-start sc)))))
+       (cond
+         ((null expression)
+          (err "Missing a regular expression after '\\('."))
+         ((errorp expression)
+          expression)
+         ((sc-looking-at sc "\\)")
+          (sc-advance sc 2)
+          (list 'rk:subexp expression))
+         (t
+          (err "Missing '\\)'.")))))
+    ((and (sc-looking-at sc "\\") (digit-char-p (sc-next-char sc) 10))
+     (sc-advance sc 2)
+     (list 'rk:backref (parse-integer (sc-string sc) :start (1- (sc-position sc))
+                                      :end (sc-position sc))))
+    (t (bre-one-char-or-coll-elem sc))))
 
 
-(DEFUN BRE-SIMPLE-RE (SC)
+(defun bre-simple-re (sc)
   "
 simple_RE      : nondupl_RE
                | nondupl_RE RE_dupl_symbol ;
 "
-  (LET ((EXPRESSION (BRE-NONDUPL-RE SC)))
-    (COND
-      ((NULL EXPRESSION) NIL)
-      ((ERRORP EXPRESSION) EXPRESSION)
-      (T (LET ((DUPL (BRE-DUPL-SYMBOL SC)))
-           (COND
-             ((NULL DUPL) EXPRESSION)
-             ((ERRORP DUPL) DUPL)
-             (T (NCONC DUPL (LIST EXPRESSION)))))))))
+  (let ((expression (bre-nondupl-re sc)))
+    (cond
+      ((null expression) nil)
+      ((errorp expression) expression)
+      (t (let ((dupl (bre-dupl-symbol sc)))
+           (cond
+             ((null dupl) expression)
+             ((errorp dupl) dupl)
+             (t (nconc dupl (list expression)))))))))
 
 
-(DEFUN BRE-EXPRESSION (SC)
+(defun bre-expression (sc)
   "
 RE_expression  :               simple_RE
                | RE_expression simple_RE ;
 "
-  (DO ((SIMPLE-RE        (BRE-SIMPLE-RE SC) (BRE-SIMPLE-RE SC))
-       (EXPRESSION-LIST   NIL))
-      ((OR (NULL SIMPLE-RE) (ERRORP SIMPLE-RE))
-       (COND
-         ((ERRORP SIMPLE-RE)
-          SIMPLE-RE) ;; (:error ...)
-         ((LENGTH>1 EXPRESSION-LIST)
-          (CONS 'RK:SEQUENCE (NREVERSE EXPRESSION-LIST)))
-         (T
-          (CAR EXPRESSION-LIST))))
-    (PUSH SIMPLE-RE EXPRESSION-LIST)))
+  (do ((simple-re        (bre-simple-re sc) (bre-simple-re sc))
+       (expression-list   nil))
+      ((or (null simple-re) (errorp simple-re))
+       (cond
+         ((errorp simple-re)
+          simple-re) ;; (:error ...)
+         ((length>1 expression-list)
+          (cons 'rk:sequence (nreverse expression-list)))
+         (t
+          (car expression-list))))
+    (push simple-re expression-list)))
 
 
-(DEFUN BRE-BASIC-REG-EXP (SC)
+(defun bre-basic-reg-exp (sc)
   "
 basic_reg_exp  :          RE_expression
                | L_ANCHOR
@@ -732,26 +730,26 @@ basic_reg_exp  :          RE_expression
                | L_ANCHOR RE_expression R_ANCHOR
                ;
 "
-  (LET ((SEQUENCE (LIST))
-        (RE-EXPRESSION))
-    (WHEN (SC-LOOKING-AT SC "^")
-      (SETF SEQUENCE (LIST 'RK:L-ANCHOR))
-      (SC-ADVANCE SC))
-    (SETF RE-EXPRESSION (BRE-EXPRESSION SC))
-    (COND
-      ((NULL RE-EXPRESSION))
-      ((ERRORP RE-EXPRESSION) (RETURN-FROM BRE-BASIC-REG-EXP RE-EXPRESSION))
-      (T (SETF SEQUENCE (APPEND SEQUENCE
-                                (IF (AND (LISTP RE-EXPRESSION)
-                                         (EQ 'RK:SEQUENCE (CAR RE-EXPRESSION)))
-                                    (CDR RE-EXPRESSION)
-                                    (LIST RE-EXPRESSION))))))
-    (WHEN (SC-LOOKING-AT SC "$")
-      (SETQ SEQUENCE (NCONC SEQUENCE (LIST 'RK:R-ANCHOR)))
-      (SC-ADVANCE SC))
-    (IF (LENGTH>1 SEQUENCE)
-        (CONS 'RK:SEQUENCE SEQUENCE)
-        (CAR SEQUENCE))))
+  (let ((sequence (list))
+        (re-expression))
+    (when (sc-looking-at sc "^")
+      (setf sequence (list 'rk:l-anchor))
+      (sc-advance sc))
+    (setf re-expression (bre-expression sc))
+    (cond
+      ((null re-expression))
+      ((errorp re-expression) (return-from bre-basic-reg-exp re-expression))
+      (t (setf sequence (append sequence
+                                (if (and (listp re-expression)
+                                         (eq 'rk:sequence (car re-expression)))
+                                    (cdr re-expression)
+                                    (list re-expression))))))
+    (when (sc-looking-at sc "$")
+      (setq sequence (nconc sequence (list 'rk:r-anchor)))
+      (sc-advance sc))
+    (if (length>1 sequence)
+        (cons 'rk:sequence sequence)
+        (car sequence))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -759,7 +757,7 @@ basic_reg_exp  :          RE_expression
 ;; ---------------------------
 
 
-(DEFUN ERE-DUPL-SYMBOL (SC)
+(defun ere-dupl-symbol (sc)
   "
 DO:     Parse
 RETURN: (rk:repeat min max) with min,max in (or rk:infinity (integer 0))
@@ -773,36 +771,36 @@ ERE_dupl_symbol    : '*'
                    | '{' DUP_COUNT ','           '}'
                    | '{' DUP_COUNT ',' DUP_COUNT '}'  ;
 "
-  (COND
-    ((SC-LOOKING-AT SC "*") (SC-ADVANCE SC) (LIST 'RK:REPEAT 0 'RK:INFINITY))
-    ((SC-LOOKING-AT SC "+") (SC-ADVANCE SC) (LIST 'RK:REPEAT 1 'RK:INFINITY))
-    ((SC-LOOKING-AT SC "?") (SC-ADVANCE SC) (LIST 'RK:REPEAT 0 1))
-    ((SC-LOOKING-AT SC "{")
-     (SC-ADVANCE SC)
-     (LET ((MIN (RE-INTEGER SC)))
-       (COND
-         ((NULL MIN) (ERR "Missing duplication count after '{'."))
-         ((SC-LOOKING-AT SC "}")  (SC-ADVANCE SC)  (LIST 'RK:REPEAT MIN MIN))
-         ((SC-LOOKING-AT SC ",")  (SC-ADVANCE SC)
-          (IF (SC-LOOKING-AT SC "}")
-              (PROGN  (SC-ADVANCE SC)  (LIST 'RK:REPEAT MIN 'RK:INFINITY))
-              (LET ((MAX (RE-INTEGER SC)))
-                (COND
-                  ((NULL MAX)
-                   (ERR (FORMAT NIL "Invalid ~S character in {...}."
-                                        (SC-CURR-CHAR SC))))
-                  ((SC-LOOKING-AT SC "}") (SC-ADVANCE SC)  (LIST 'RK:REPEAT MIN MAX))
-                  ((SC-EOS SC)           (ERR "Missing '}'."))
-                  (T (ERR (FORMAT NIL "Invalid ~S character in {...}."
-                                          (SC-CURR-CHAR SC))))))))
-         ((SC-EOS SC)            (ERR "Missing '}'."))
-         (T (ERR (FORMAT NIL "Invalid ~S character in {...}."
-                                 (SC-CURR-CHAR SC)))))
+  (cond
+    ((sc-looking-at sc "*") (sc-advance sc) (list 'rk:repeat 0 'rk:infinity))
+    ((sc-looking-at sc "+") (sc-advance sc) (list 'rk:repeat 1 'rk:infinity))
+    ((sc-looking-at sc "?") (sc-advance sc) (list 'rk:repeat 0 1))
+    ((sc-looking-at sc "{")
+     (sc-advance sc)
+     (let ((min (re-integer sc)))
+       (cond
+         ((null min) (err "Missing duplication count after '{'."))
+         ((sc-looking-at sc "}")  (sc-advance sc)  (list 'rk:repeat min min))
+         ((sc-looking-at sc ",")  (sc-advance sc)
+          (if (sc-looking-at sc "}")
+              (progn  (sc-advance sc)  (list 'rk:repeat min 'rk:infinity))
+              (let ((max (re-integer sc)))
+                (cond
+                  ((null max)
+                   (err (format nil "Invalid ~S character in {...}."
+                                        (sc-curr-char sc))))
+                  ((sc-looking-at sc "}") (sc-advance sc)  (list 'rk:repeat min max))
+                  ((sc-eos sc)           (err "Missing '}'."))
+                  (t (err (format nil "Invalid ~S character in {...}."
+                                          (sc-curr-char sc))))))))
+         ((sc-eos sc)            (err "Missing '}'."))
+         (t (err (format nil "Invalid ~S character in {...}."
+                                 (sc-curr-char sc)))))
        ))
-    (T NIL)))
+    (t nil)))
 
 
-(DEFUN ERE-ONE-CHAR-OR-COLL-ELEM (SC)
+(defun ere-one-char-or-coll-elem (sc)
   "
 DO:      Parses s single character or a coll-elem regexp.
 RETURN:  (or (rk:matching ...) (rk:non-matching ...) rk:any character)
@@ -831,26 +829,26 @@ SPEC_CHAR
 
    ==> ORD_CHAR excludes . \ [ and * but when first of the expression.
 "
-  (COND
-    ((SC-EOS SC) NIL)
+  (cond
+    ((sc-eos sc) nil)
     ;; quoted-char:
-    ((AND (CHAR= (CHARACTER "\\") (SC-CURR-CHAR SC))
-          (POSITION (SC-NEXT-CHAR SC) "^.[$()|*+?{\\"))
-     (SC-ADVANCE SC)
-     (PROG1 (SC-CURR-CHAR SC) (SC-ADVANCE SC)))
+    ((and (char= (character "\\") (sc-curr-char sc))
+          (position (sc-next-char sc) "^.[$()|*+?{\\"))
+     (sc-advance sc)
+     (prog1 (sc-curr-char sc) (sc-advance sc)))
     ;; dot:
-    ((SC-LOOKING-AT SC ".")
-     (SC-ADVANCE SC)
-     'RK:ANY)
+    ((sc-looking-at sc ".")
+     (sc-advance sc)
+     'rk:any)
     ;; bracket expression:
-    ((SC-LOOKING-AT SC "[")
-     (BE-BRACKET-EXPRESSION SC)) ;; [ is not an ord-char anyway.
+    ((sc-looking-at sc "[")
+     (be-bracket-expression sc)) ;; [ is not an ord-char anyway.
     ;; spec-char:
-    ((POSITION (SC-CURR-CHAR SC) "^.[$()|*+?{\\") NIL) ;;spec-char
-    (T (PROG1  (SC-CURR-CHAR SC) (SC-ADVANCE SC)))))
+    ((position (sc-curr-char sc) "^.[$()|*+?{\\") nil) ;;spec-char
+    (t (prog1  (sc-curr-char sc) (sc-advance sc)))))
 
 
-(DEFUN ERE-EXPRESSION (SC)
+(defun ere-expression (sc)
   "
 ERE_expression     : one_char_or_coll_elem_ERE
                    | '^'
@@ -858,97 +856,97 @@ ERE_expression     : one_char_or_coll_elem_ERE
                    | '(' extended_reg_exp ')'
                    | ERE_expression ERE_dupl_symbol ;
 "
-  (LET ((EXPRESSION
-         (COND
-           ((AND (NULL (SC-EXPRESSION-START SC)) (SC-LOOKING-AT SC "^"))
-            (SC-ADVANCE SC)  'RK:L-ANCHOR)
-           ((AND (NULL (SC-EXPRESSION-START SC)) (SC-LOOKING-AT SC "$"))
-            (SC-ADVANCE SC)  'RK:R-ANCHOR)
-           ((SC-LOOKING-AT SC "(")
-            (SC-ADVANCE SC)
-            (PUSH (SC-POSITION SC) (SC-EXPRESSION-START SC))
-            (LET ((ERE (PROG1 (ERE-EXTENDED-REG-EXP SC)
-                         (POP (SC-EXPRESSION-START SC)))))
-              (COND
-                ((NULL ERE)
-                 (ERR (FORMAT NIL "Expected a regular expression after ~
-                                  '(', not ~S." (SC-CURR-CHAR SC))))
-                ((ERRORP ERE) ERE)
-                ((SC-LOOKING-AT SC ")")
-                 (SC-ADVANCE SC)
-                 (LIST 'RK:SUBEXP ERE))
-                (T (ERR "Missing ')' after '('.")))))
-           (T  (ERE-ONE-CHAR-OR-COLL-ELEM SC)))))
-    (COND
-      ((NULL EXPRESSION) NIL)
-      ((ERRORP EXPRESSION) EXPRESSION)
-      (T (LET ((DUPL (ERE-DUPL-SYMBOL SC)))
-           (COND
-             ((NULL DUPL) EXPRESSION)
-             ((ERRORP DUPL) DUPL)
-             (T (NCONC DUPL (LIST EXPRESSION)))))))))
+  (let ((expression
+         (cond
+           ((and (null (sc-expression-start sc)) (sc-looking-at sc "^"))
+            (sc-advance sc)  'rk:l-anchor)
+           ((and (null (sc-expression-start sc)) (sc-looking-at sc "$"))
+            (sc-advance sc)  'rk:r-anchor)
+           ((sc-looking-at sc "(")
+            (sc-advance sc)
+            (push (sc-position sc) (sc-expression-start sc))
+            (let ((ere (prog1 (ere-extended-reg-exp sc)
+                         (pop (sc-expression-start sc)))))
+              (cond
+                ((null ere)
+                 (err (format nil "Expected a regular expression after ~
+                                  '(', not ~S." (sc-curr-char sc))))
+                ((errorp ere) ere)
+                ((sc-looking-at sc ")")
+                 (sc-advance sc)
+                 (list 'rk:subexp ere))
+                (t (err "Missing ')' after '('.")))))
+           (t  (ere-one-char-or-coll-elem sc)))))
+    (cond
+      ((null expression) nil)
+      ((errorp expression) expression)
+      (t (let ((dupl (ere-dupl-symbol sc)))
+           (cond
+             ((null dupl) expression)
+             ((errorp dupl) dupl)
+             (t (nconc dupl (list expression)))))))))
 
 
-(DEFUN ERE-BRANCH (SC)
+(defun ere-branch (sc)
   "
 ERE_branch         :            ERE_expression
                    | ERE_branch ERE_expression ;
 "
-  (DO ((EXPRESSION        (ERE-EXPRESSION SC) (ERE-EXPRESSION SC))
-       (EXPRESSION-LIST   NIL))
-      ((OR (NULL EXPRESSION) (ERRORP EXPRESSION))
-       (COND
-         ((ERRORP EXPRESSION)
-          EXPRESSION) ;; (:error ...)
-         ((LENGTH>1 EXPRESSION-LIST)
-          (CONS 'RK:SEQUENCE (NREVERSE EXPRESSION-LIST)))
-         (T
-          (CAR EXPRESSION-LIST))))
-    (PUSH EXPRESSION EXPRESSION-LIST)))
+  (do ((expression        (ere-expression sc) (ere-expression sc))
+       (expression-list   nil))
+      ((or (null expression) (errorp expression))
+       (cond
+         ((errorp expression)
+          expression) ;; (:error ...)
+         ((length>1 expression-list)
+          (cons 'rk:sequence (nreverse expression-list)))
+         (t
+          (car expression-list))))
+    (push expression expression-list)))
 
 
-(DEFUN ERE-EXTENDED-REG-EXP (SC)
+(defun ere-extended-reg-exp (sc)
   "
 extended_reg_exp   :                      ERE_branch
                    | extended_reg_exp '|' ERE_branch ;
 "
-  (DO ((BRANCH
-        (ERE-BRANCH SC)
-        (IF (SC-LOOKING-AT SC "|")
-            (LET ((START (SC-POSITION SC))
-                  (BRANCH (PROGN (SC-ADVANCE SC) (ERE-BRANCH SC))))
-              (IF (NULL BRANCH)
-                  (PROGN (SETF (SC-POSITION SC) START) NIL)
-                  BRANCH))))
-       (BRANCH-LIST   NIL))
-      ((OR (NULL BRANCH) (ERRORP BRANCH))
-       (COND
-         ((ERRORP BRANCH)
-          BRANCH) ;; (:error ...)
-         ((LENGTH>1 BRANCH-LIST)
-          (CONS 'RK:ALTERNATIVE (NREVERSE BRANCH-LIST)))
-         (T
-          (CAR BRANCH-LIST))))
-    (PUSH BRANCH BRANCH-LIST)))
+  (do ((branch
+        (ere-branch sc)
+        (if (sc-looking-at sc "|")
+            (let ((start (sc-position sc))
+                  (branch (progn (sc-advance sc) (ere-branch sc))))
+              (if (null branch)
+                  (progn (setf (sc-position sc) start) nil)
+                  branch))))
+       (branch-list   nil))
+      ((or (null branch) (errorp branch))
+       (cond
+         ((errorp branch)
+          branch) ;; (:error ...)
+         ((length>1 branch-list)
+          (cons 'rk:alternative (nreverse branch-list)))
+         (t
+          (car branch-list))))
+    (push branch branch-list)))
 
 
-(DEFUN PARSE-BASIC-RE (RESTRING)
-  (LET* ((SC  (MAKE-SC :STRING RESTRING))
-         (RE  (BRE-BASIC-REG-EXP SC)))
-    (COND
-      ((ERRORP RE) (ERR RESTRING (SC-POSITION SC) (SECOND RE)))
-      ((SC-EOS SC) RE)
-      (T           (ERR RESTRING (SC-POSITION SC)
+(defun parse-basic-re (restring)
+  (let* ((sc  (make-sc :string restring))
+         (re  (bre-basic-reg-exp sc)))
+    (cond
+      ((errorp re) (err restring (sc-position sc) (second re)))
+      ((sc-eos sc) re)
+      (t           (err restring (sc-position sc)
                          "Junk after basic regular expression.")))))
 
 
-(DEFUN PARSE-EXTENDED-RE (RESTRING)
-  (LET* ((SC  (MAKE-SC :STRING RESTRING))
-         (RE  (ERE-EXTENDED-REG-EXP SC)))
-    (COND
-      ((ERRORP RE) (ERR RESTRING (SC-POSITION SC) (SECOND RE)))
-      ((SC-EOS SC) RE)
-      (T           (ERR RESTRING (SC-POSITION SC)
+(defun parse-extended-re (restring)
+  (let* ((sc  (make-sc :string restring))
+         (re  (ere-extended-reg-exp sc)))
+    (cond
+      ((errorp re) (err restring (sc-position sc) (second re)))
+      ((sc-eos sc) re)
+      (t           (err restring (sc-position sc)
                          "Junk after extended regular expression.")))))
 
 
@@ -1020,23 +1018,23 @@ extended_reg_exp   :                      ERE_branch
 
 
 
-(DEFPARAMETER *CHARACTER-CLASSES*
+(defparameter *character-classes*
   ;; POSIX ==> ASCII.
-  (LIST
-   (LIST "alnum"  (FUNCTION ALPHANUMERICP))
-   (LIST "alpha"  (FUNCTION ALPHA-CHAR-P))
-   (LIST "blank"  (LAMBDA (CH) (OR (CHAR= (CODE-CHAR 32) CH)
-                                   (CHAR= (CODE-CHAR 9) CH))))
-   (LIST "cntrl"  (COMPLEMENT (FUNCTION GRAPHIC-CHAR-P)))
-   (LIST "digit"  (LAMBDA (CH) (DIGIT-CHAR-P CH 10)))
-   (LIST "graph"  (LAMBDA (CH) (AND (GRAPHIC-CHAR-P CH)
-                                    (NOT (CHAR= (CODE-CHAR 32) CH)))))
-   (LIST "lower"  (FUNCTION LOWER-CASE-P))
-   (LIST "print"  (FUNCTION GRAPHIC-CHAR-P))
-   (LIST "punct"  (LAMBDA (CH) (AND (GRAPHIC-CHAR-P CH) (NOT (ALPHANUMERICP CH)))))
-   (LIST "space"  (LAMBDA (CH) (MEMBER (CHAR-CODE CH) '(32 9 10 11 12 13))))
-   (LIST "upper"  (FUNCTION UPPER-CASE-P))
-   (LIST "xdigit" (LAMBDA (CH) (DIGIT-CHAR-P CH 16))))) ;;*CHARACTER-CLASSES*
+  (list
+   (list "alnum"  (function alphanumericp))
+   (list "alpha"  (function alpha-char-p))
+   (list "blank"  (lambda (ch) (or (char= (code-char 32) ch)
+                                   (char= (code-char 9) ch))))
+   (list "cntrl"  (complement (function graphic-char-p)))
+   (list "digit"  (lambda (ch) (digit-char-p ch 10)))
+   (list "graph"  (lambda (ch) (and (graphic-char-p ch)
+                                    (not (char= (code-char 32) ch)))))
+   (list "lower"  (function lower-case-p))
+   (list "print"  (function graphic-char-p))
+   (list "punct"  (lambda (ch) (and (graphic-char-p ch) (not (alphanumericp ch)))))
+   (list "space"  (lambda (ch) (member (char-code ch) '(32 9 10 11 12 13))))
+   (list "upper"  (function upper-case-p))
+   (list "xdigit" (lambda (ch) (digit-char-p ch 16))))) ;;*CHARACTER-CLASSES*
 
 ;;   0 NUL   1 SOH   2 STX   3 ETX   4 EOT   5 ENQ   6 ACK   7 BEL
 ;;   8 BS    9 HT   10 LF   11 VT   12 FF   13 CR   14 SO   15 SI
@@ -1048,25 +1046,25 @@ extended_reg_exp   :                      ERE_branch
 ;; charset
 ;; -------
 
-(DEFCLASS CHARSET ()
+(defclass charset ()
   ()
-  (:DOCUMENTATION "An abstract class for a character set.
+  (:documentation "An abstract class for a character set.
 This class defines the interface to whatever charset implementation."))
 
 
-(DEFUN MAKE-CHARSET ()
+(defun make-charset ()
   "
 RETURN:  An instance of a subclass of charset, selected according to
          the value of char-code-limit.
 "
-  (MAKE-INSTANCE (IF (<= CHAR-CODE-LIMIT 1024) 'CHARSET-BITMAP 'CHARSET-RANGE)))
+  (make-instance (if (<= char-code-limit 1024) 'charset-bitmap 'charset-range)))
 
 
-(DEFGENERIC ADD-CHAR        (CHARSET CHARACTER))
-(DEFGENERIC ADD-RANGE       (CHARSET CHAR-MIN CHAR-MAX))
-(DEFGENERIC ADD-CLASS       (CHARSET CHAR-CLASS-NAME))
-(DEFGENERIC INVERSE         (CHARSET))
-(DEFGENERIC CONTAINS-CHAR-P (CHARSET CHARACTER))
+(defgeneric add-char        (charset character))
+(defgeneric add-range       (charset char-min char-max))
+(defgeneric add-class       (charset char-class-name))
+(defgeneric inverse         (charset))
+(defgeneric contains-char-p (charset character))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1074,9 +1072,9 @@ RETURN:  An instance of a subclass of charset, selected according to
 ;; --------------
 
 
-(DEFCLASS CHARSET-BITMAP (CHARSET)
-  ((BITS :ACCESSOR BITS :TYPE (ARRAY BIT (*))))
-  (:DOCUMENTATION
+(defclass charset-bitmap (charset)
+  ((bits :accessor bits :type (array bit (*))))
+  (:documentation
    "A character set representation based on bit array.
 This is representation may be used when char-code-limit is 'small'."))
 
@@ -1087,50 +1085,50 @@ This is representation may be used when char-code-limit is 'small'."))
 ;;       This allow us to skip a not in contains-char-p...
 
 
-(DEFMETHOD INITIALIZE-INSTANCE ((SELF CHARSET-BITMAP) &REST ARGS)
-  (DECLARE (IGNORE ARGS))
-  (SETF (BITS SELF) (MAKE-ARRAY (LIST CHAR-CODE-LIMIT)
-                                :ELEMENT-TYPE 'BIT
-                                :INITIAL-ELEMENT 1))
-  SELF) ;;INITIALIZE-INSTANCE
+(defmethod initialize-instance ((self charset-bitmap) &rest args)
+  (declare (ignore args))
+  (setf (bits self) (make-array (list char-code-limit)
+                                :element-type 'bit
+                                :initial-element 1))
+  self) ;;INITIALIZE-INSTANCE
 
 
-(DEFMETHOD ADD-CHAR        ((SELF CHARSET-BITMAP) (CH CHARACTER))
-  (SETF (AREF (BITS SELF) (CHAR-CODE CH)) 0))
+(defmethod add-char        ((self charset-bitmap) (ch character))
+  (setf (aref (bits self) (char-code ch)) 0))
 
 
-(DEFMETHOD ADD-RANGE       ((SELF CHARSET-BITMAP)
-                            (MIN CHARACTER) (MAX CHARACTER))
-  (DO ((BITS (BITS SELF))
-       (LIMIT (CHAR-CODE MAX))
-       (CH (CHAR-CODE MIN) (1+ CH)) )
-      ((>= CH LIMIT))
-    (SETF (AREF BITS CH) 0)))
+(defmethod add-range       ((self charset-bitmap)
+                            (min character) (max character))
+  (do ((bits (bits self))
+       (limit (char-code max))
+       (ch (char-code min) (1+ ch)) )
+      ((>= ch limit))
+    (setf (aref bits ch) 0)))
 
 
-(DEFMETHOD ADD-CLASS       ((SELF CHARSET-BITMAP) (CHAR-CLASS-NAME STRING))
-  (LET ((CCF (SECOND (ASSOC CHAR-CLASS-NAME *CHARACTER-CLASSES*
-                            :TEST (function STRING=)))))
-    (UNLESS CCF (ERROR "Invalid character class ~S." CHAR-CLASS-NAME))
-    (DO ((BITS (BITS SELF))
-         (CH 0 (1+ CH)))
-        ((>= ch CHAR-CODE-LIMIT))
-      (WHEN (FUNCALL CCF CH) (SETF (AREF BITS CH) 0)))))
+(defmethod add-class       ((self charset-bitmap) (char-class-name string))
+  (let ((ccf (second (assoc char-class-name *character-classes*
+                            :test (function string=)))))
+    (unless ccf (error "Invalid character class ~S." char-class-name))
+    (do ((bits (bits self))
+         (ch 0 (1+ ch)))
+        ((>= ch char-code-limit))
+      (when (funcall ccf ch) (setf (aref bits ch) 0)))))
 
 
-(DEFMETHOD INVERSE         ((SELF CHARSET-BITMAP))
+(defmethod inverse         ((self charset-bitmap))
   "
 DO:     complements the set.
 "
-  (DO ((BITS (BITS SELF))
-       (CH 0 (1+ CH)))
-      ((>= CH CHAR-CODE-LIMIT))
-    (SETF (AREF BITS CH) (1- (AREF BITS CH)))))
+  (do ((bits (bits self))
+       (ch 0 (1+ ch)))
+      ((>= ch char-code-limit))
+    (setf (aref bits ch) (1- (aref bits ch)))))
  
 
 
-(DEFMETHOD CONTAINS-CHAR-P ((SELF CHARSET-BITMAP) (CH CHARACTER))
-  (ZEROP (AREF (BITS SELF) (CHAR-CODE CH))))
+(defmethod contains-char-p ((self charset-bitmap) (ch character))
+  (zerop (aref (bits self) (char-code ch))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1149,14 +1147,14 @@ DO:     complements the set.
 ;; (DEFMACRO RANGE-MAX  (RANGE)   `(IF (INTEGERP ,RANGE) ,RANGE (CDR ,RANGE)))
 
 
-(DEFUN RANGE-AFTER-LAST (RANGE)
-  (1+ (IF (NUMBERP RANGE) RANGE (RANGE-MAX RANGE))))
+(defun range-after-last (range)
+  (1+ (if (numberp range) range (range-max range))))
 
 
-(DEFUN RANGE-CONTAINS-P  (RANGE N)
-  (IF (INTEGERP RANGE)
-      (= RANGE N)
-      (<= (RANGE-MIN RANGE) N (RANGE-MAX  RANGE))))
+(defun range-contains-p  (range n)
+  (if (integerp range)
+      (= range n)
+      (<= (range-min range) n (range-max  range))))
 
 
 ;; range sets
@@ -1169,143 +1167,143 @@ DO:     complements the set.
 ;;    01234       56   7-14       15-45       46-
 
 
-(DEFUN MAKE-RANGE-SET (&OPTIONAL (RANGE-LIST NIL)) (APPEND RANGE-LIST '((NIL))))
-(DEFUN RANGE-SET-GUARD-P  (RS)                     (EQUAL '(NIL) (CAR RS)))
+(defun make-range-set (&optional (range-list nil)) (append range-list '((nil))))
+(defun range-set-guard-p  (rs)                     (equal '(nil) (car rs)))
 
 
-(DEFUN RANGE-SET-SEEK (RS N)
+(defun range-set-seek (rs n)
   "
 RETURN: The last cons whose cdr+1 is >= n.
 "
-  (DO ((RS RS (CDR RS)))
-      ((OR (RANGE-SET-GUARD-P RS) (<= N (RANGE-AFTER-LAST (CAR RS))))
-       RS)))
+  (do ((rs rs (cdr rs)))
+      ((or (range-set-guard-p rs) (<= n (range-after-last (car rs))))
+       rs)))
 
 
-(DEFUN RANGE-SET-ADD-NUMBER (RS N)
-  (IF (RANGE-SET-GUARD-P RS)
+(defun range-set-add-number (rs n)
+  (if (range-set-guard-p rs)
       ;; empty range set
-      (PROGN (PUSH N RS) RS)
-      (LET ((PREV (RANGE-SET-SEEK RS N)))
-        (COND
-          ((< (1+ N) (RANGE-MIN (CAR PREV)))
+      (progn (push n rs) rs)
+      (let ((prev (range-set-seek rs n)))
+        (cond
+          ((< (1+ n) (range-min (car prev)))
            ;; new singleton
-           (IF (EQ PREV RS)
-               (SETF RS (PUSH N PREV))
-               (PUSH N PREV)))
-          ((= (1+ N) (RANGE-MIN (CAR PREV)))
+           (if (eq prev rs)
+               (setf rs (push n prev))
+               (push n prev)))
+          ((= (1+ n) (range-min (car prev)))
            ;; extend lower
-           (SETF (RANGE-MIN (CAR PREV)) N))
-          ((= (1- N) (RANGE-MAX (CAR PREV)))
+           (setf (range-min (car prev)) n))
+          ((= (1- n) (range-max (car prev)))
            ;; extend upper
-           (SETF (RANGE-MAX (CAR PREV)) N))
+           (setf (range-max (car prev)) n))
           ;; otherwise (range-contains-p (car prev) n)
           ;;            inside
           )
-        RS))) ;;RANGE-SET-ADD-NUMBER
+        rs))) ;;RANGE-SET-ADD-NUMBER
 
 
-(DEFUN RANGE-SET-COPY (RS &OPTIONAL (COPY NIL))
-  (COND
-    ((NULL RS) (ERROR "Not guarded range set encountered."))
-    ((RANGE-SET-GUARD-P RS)
-     (PUSH (CAR RS) COPY) (NREVERSE COPY))
-    ((INTEGERP (CAR RS))
-     (RANGE-SET-COPY (CDR RS) (CONS (CAR RS) COPY)))
-    (T
-     (RANGE-SET-COPY (CDR RS) (CONS (CONS (RANGE-MIN (CAR RS))
-                                          (RANGE-MAX (CAR RS))) COPY)))))
+(defun range-set-copy (rs &optional (copy nil))
+  (cond
+    ((null rs) (error "Not guarded range set encountered."))
+    ((range-set-guard-p rs)
+     (push (car rs) copy) (nreverse copy))
+    ((integerp (car rs))
+     (range-set-copy (cdr rs) (cons (car rs) copy)))
+    (t
+     (range-set-copy (cdr rs) (cons (cons (range-min (car rs))
+                                          (range-max (car rs))) copy)))))
 
 
-(DEFUN RANGE-SET-UNION (RSA RSB &OPTIONAL (MIN NIL) (MAX NIL) (UNION NIL))
-  (COND
-    ((NULL RSA) (ERROR "Not guarded range set encountered."))
-    ((NULL RSB) (ERROR "Not guarded range set encountered."))
-    ((AND (RANGE-SET-GUARD-P RSA) (RANGE-SET-GUARD-P RSB))
+(defun range-set-union (rsa rsb &optional (min nil) (max nil) (union nil))
+  (cond
+    ((null rsa) (error "Not guarded range set encountered."))
+    ((null rsb) (error "Not guarded range set encountered."))
+    ((and (range-set-guard-p rsa) (range-set-guard-p rsb))
      ;; union = (min . max) U union
-     (WHEN MAX
-       (PUSH (IF (= MIN MAX) MIN (CONS MIN MAX)) UNION))
-     (NCONC (NREVERSE UNION) (MAKE-RANGE-SET)) )
-    ((OR (RANGE-SET-GUARD-P RSA) (RANGE-SET-GUARD-P RSB))
+     (when max
+       (push (if (= min max) min (cons min max)) union))
+     (nconc (nreverse union) (make-range-set)) )
+    ((or (range-set-guard-p rsa) (range-set-guard-p rsb))
      ;; union = (min . max) U union U (rsa or rsb)
-     (WHEN (RANGE-SET-GUARD-P RSA)
-       (PSETF  RSA RSB RSB RSA))
+     (when (range-set-guard-p rsa)
+       (psetf  rsa rsb rsb rsa))
      ;; union = (min . max) U union U rsa
-     (IF MAX
-         (IF (<= (+ 2 MAX) (RANGE-MIN (CAR RSA)))
-             (RANGE-SET-UNION RSA RSB NIL NIL
-                              (PUSH (IF (= MIN MAX) MIN (CONS MIN MAX)) UNION))
-             (RANGE-SET-UNION (CDR RSA) RSB MIN (MAX MAX (RANGE-MAX (CAR RSA)))
-                              UNION))
+     (if max
+         (if (<= (+ 2 max) (range-min (car rsa)))
+             (range-set-union rsa rsb nil nil
+                              (push (if (= min max) min (cons min max)) union))
+             (range-set-union (cdr rsa) rsb min (max max (range-max (car rsa)))
+                              union))
          ;; union = union U rsa
-         (NCONC (NREVERSE UNION) (RANGE-SET-COPY RSA))))
-    (MAX
-     (ASSERT (AND (NOT (RANGE-SET-GUARD-P RSA)) (NOT (RANGE-SET-GUARD-P RSB))))
-     (COND
-       ((AND (<= (+ 2 MAX) (RANGE-MIN (CAR RSA)))
-             (<= (+ 2 MAX) (RANGE-MIN (CAR RSB))))
-        (RANGE-SET-UNION RSA RSB NIL NIL
-                         (PUSH (IF (= MIN MAX) MIN (CONS MIN MAX)) UNION)))
-       ((> (+ 2 MAX) (RANGE-MIN (CAR RSA)))
-        (RANGE-SET-UNION (CDR RSA) RSB MIN (MAX MAX (RANGE-MAX (CAR RSA))) UNION))
-       ((> (+ 2 MAX) (RANGE-MIN (CAR RSB)))
-        (RANGE-SET-UNION RSA (CDR RSB) MIN (MAX MAX (RANGE-MAX (CAR RSB))) UNION))
+         (nconc (nreverse union) (range-set-copy rsa))))
+    (max
+     (assert (and (not (range-set-guard-p rsa)) (not (range-set-guard-p rsb))))
+     (cond
+       ((and (<= (+ 2 max) (range-min (car rsa)))
+             (<= (+ 2 max) (range-min (car rsb))))
+        (range-set-union rsa rsb nil nil
+                         (push (if (= min max) min (cons min max)) union)))
+       ((> (+ 2 max) (range-min (car rsa)))
+        (range-set-union (cdr rsa) rsb min (max max (range-max (car rsa))) union))
+       ((> (+ 2 max) (range-min (car rsb)))
+        (range-set-union rsa (cdr rsb) min (max max (range-max (car rsb))) union))
        ))
-    (T ;; initial
-     (LET ((MIN (MIN (RANGE-MIN (CAR RSA)) (RANGE-MIN (CAR RSB)))))
-       (RANGE-SET-UNION RSA RSB  MIN MIN UNION)))))
+    (t ;; initial
+     (let ((min (min (range-min (car rsa)) (range-min (car rsb)))))
+       (range-set-union rsa rsb  min min union)))))
 
 
-(DEFUN TEST-RANGE-SET-UNION ()
-  (MAP NIL (LAMBDA (TEST)
-             (LET ((U (RANGE-SET-UNION (FIRST TEST)  (SECOND TEST)))
-                   (V (RANGE-SET-UNION (SECOND TEST) (FIRST TEST))))
-               (UNLESS (AND (EQUAL U V) (EQUAL U (THIRD TEST)))
-                 (FORMAT T "ERROR:~%a=  ~S~%b=  ~S~%e=  ~S~%u=  ~S~%v=  ~S~2%"
-                         (FIRST TEST)  (SECOND TEST) (THIRD TEST) U V))))
+(defun test-range-set-union ()
+  (map nil (lambda (test)
+             (let ((u (range-set-union (first test)  (second test)))
+                   (v (range-set-union (second test) (first test))))
+               (unless (and (equal u v) (equal u (third test)))
+                 (format t "ERROR:~%a=  ~S~%b=  ~S~%e=  ~S~%u=  ~S~%v=  ~S~2%"
+                         (first test)  (second test) (third test) u v))))
        '(
-         ( (1 (NIL))
-          (3 (NIL))
-          (1 3 (NIL)) )
-         ( (1 (NIL))
-          (2 (NIL))
-          ((1 . 2) (NIL)) )
-         ( ((1 . 3) (NIL))
-          ((5 . 7) (NIL))
-          ((1 . 3) (5 . 7) (NIL)) )
-         ( ((1 . 3) (NIL))
-          ((4 . 6) (NIL))
-          ((1 . 6) (NIL)) )
-         ( ((1 . 4) (NIL))
-          ((4 . 6) (NIL))
-          ((1 . 6) (NIL)) )
-         ( ((1 . 4) (NIL))
-          ((3 . 6) (NIL))
-          ((1 . 6) (NIL)) )
-         ( ((1 . 4) (NIL))
-          ((1 . 6) (NIL))
-          ((1 . 6) (NIL)) )
-         ( ((1 . 4) (NIL))
-          ((0 . 6) (NIL))
-          ((0 . 6) (NIL)) )
-         ( ((1 . 3) (5 . 7) (9 . 11) (NIL))
-          ((3 . 5) (7 . 9) (11 . 13) (NIL))
-          ((1 . 13) (NIL)) )
-         ( ((1 . 3) (5 . 7) (9 . 11) (NIL))
-          (4 8 12 (NIL))
-          ((1 . 12) (NIL)) )
-         ( ((2 . 6) (10 . 14) (18 . 22) (NIL))
-          (0  8 16 34 (NIL))
-          (0 (2 . 6) 8 (10 . 14) 16 (18 . 22) 34 (NIL)) ))))
+         ( (1 (nil))
+          (3 (nil))
+          (1 3 (nil)) )
+         ( (1 (nil))
+          (2 (nil))
+          ((1 . 2) (nil)) )
+         ( ((1 . 3) (nil))
+          ((5 . 7) (nil))
+          ((1 . 3) (5 . 7) (nil)) )
+         ( ((1 . 3) (nil))
+          ((4 . 6) (nil))
+          ((1 . 6) (nil)) )
+         ( ((1 . 4) (nil))
+          ((4 . 6) (nil))
+          ((1 . 6) (nil)) )
+         ( ((1 . 4) (nil))
+          ((3 . 6) (nil))
+          ((1 . 6) (nil)) )
+         ( ((1 . 4) (nil))
+          ((1 . 6) (nil))
+          ((1 . 6) (nil)) )
+         ( ((1 . 4) (nil))
+          ((0 . 6) (nil))
+          ((0 . 6) (nil)) )
+         ( ((1 . 3) (5 . 7) (9 . 11) (nil))
+          ((3 . 5) (7 . 9) (11 . 13) (nil))
+          ((1 . 13) (nil)) )
+         ( ((1 . 3) (5 . 7) (9 . 11) (nil))
+          (4 8 12 (nil))
+          ((1 . 12) (nil)) )
+         ( ((2 . 6) (10 . 14) (18 . 22) (nil))
+          (0  8 16 34 (nil))
+          (0 (2 . 6) 8 (10 . 14) 16 (18 . 22) 34 (nil)) ))))
 
 
-(DEFUN RANGE-SET-CONTAINS-P (RS N)
-  (LET ((PREV (RANGE-SET-SEEK RS N)))
-    (AND PREV (NOT (RANGE-SET-GUARD-P PREV)) (RANGE-CONTAINS-P (CAR PREV) N))))
+(defun range-set-contains-p (rs n)
+  (let ((prev (range-set-seek rs n)))
+    (and prev (not (range-set-guard-p prev)) (range-contains-p (car prev) n))))
 
 
-(DEFUN MAKE-RANGE-SET-VECTOR (RS)
-  (MAKE-ARRAY (LIST (1- (LENGTH RS))) :INITIAL-CONTENTS (BUTLAST RS)))
+(defun make-range-set-vector (rs)
+  (make-array (list (1- (length rs))) :initial-contents (butlast rs)))
 
 
 ;; (setq v (make-array '(11) :initial-contents (mapcar (lambda (x) (* 3 x)) '( 1 2 3 4 5 6 7 8 9 10 11 ))))
@@ -1317,73 +1315,73 @@ RETURN: The last cons whose cdr+1 is >= n.
 ;; -------------
 
 
-(DEFCLASS CHARSET-RANGE (CHARSET)
-  ( (RANGE-SET    :ACCESSOR RANGE-SET
-                  :TYPE LIST
-                  :INITFORM (MAKE-RANGE-SET))
-   (RANGE-VECTOR :ACCESSOR RANGE-VECTOR
-                 :TYPE (OR NULL VECTOR)
-                 :INITFORM NIL)
-    (CHAR-CLASSES :ACCESSOR CHAR-CLASSES
-                  :TYPE LIST
-                  :INITFORM '())
-    (COMPLEMENTED :ACCESSOR COMPLEMENTED
-                  :TYPE BOOLEAN
-                  :INITFORM NIL) )
-  (:DOCUMENTATION
+(defclass charset-range (charset)
+  ( (range-set    :accessor range-set
+                  :type list
+                  :initform (make-range-set))
+   (range-vector :accessor range-vector
+                 :type (or null vector)
+                 :initform nil)
+    (char-classes :accessor char-classes
+                  :type list
+                  :initform '())
+    (complemented :accessor complemented
+                  :type boolean
+                  :initform nil) )
+  (:documentation
    "A character set representation based on binary trees of ranges
 and additional list of character classes.
 This is representation may be used when char-code-limit is 'big'."))
 
 
-(DEFUN RCCOMPARE (RANGE CC)
-  (COND ((< CC (RANGE-MIN RANGE)) -1)
-        ((> CC (RANGE-MAX RANGE)) +1)
-        (T 0)))
+(defun rccompare (range cc)
+  (cond ((< cc (range-min range)) -1)
+        ((> cc (range-max range)) +1)
+        (t 0)))
 
 
-(DEFMETHOD ADD-CHAR        ((SELF CHARSET-RANGE) (CH CHARACTER))
-  (SETF (RANGE-VECTOR SELF) NIL)
-  (RANGE-SET-ADD-NUMBER (RANGE-SET SELF) (CHAR-CODE CH)))
+(defmethod add-char        ((self charset-range) (ch character))
+  (setf (range-vector self) nil)
+  (range-set-add-number (range-set self) (char-code ch)))
 
 
-(DEFMETHOD ADD-RANGE       ((SELF CHARSET-RANGE)
-                            (MIN CHARACTER) (MAX CHARACTER))
-  (SETF (RANGE-VECTOR SELF) NIL)
-  (SETF (RANGE-SET SELF)
-        (RANGE-SET-UNION (RANGE-SET SELF)
-                         (MAKE-RANGE-SET (LIST (MAKE-RANGE (CHAR-CODE MIN)
-                                                           (CHAR-CODE MAX)))))))
+(defmethod add-range       ((self charset-range)
+                            (min character) (max character))
+  (setf (range-vector self) nil)
+  (setf (range-set self)
+        (range-set-union (range-set self)
+                         (make-range-set (list (make-range (char-code min)
+                                                           (char-code max)))))))
 
 
-(DEFMETHOD ADD-CLASS       ((SELF CHARSET-RANGE) (CHAR-CLASS-NAME STRING))
-  (LET ((CCF (SECOND (ASSOC CHAR-CLASS-NAME *CHARACTER-CLASSES*
-                            :TEST (function STRING=)))))
-    (UNLESS CCF (ERROR "Invalid character class ~S." CHAR-CLASS-NAME))
-    (PUSHNEW CCF (CHAR-CLASSES SELF))))
+(defmethod add-class       ((self charset-range) (char-class-name string))
+  (let ((ccf (second (assoc char-class-name *character-classes*
+                            :test (function string=)))))
+    (unless ccf (error "Invalid character class ~S." char-class-name))
+    (pushnew ccf (char-classes self))))
 
 
-(DEFMETHOD INVERSE         ((SELF CHARSET-RANGE))
+(defmethod inverse         ((self charset-range))
   "
 DO:     complements the set.
 "
-  (SETF (COMPLEMENTED SELF) (NOT (COMPLEMENTED SELF))))
+  (setf (complemented self) (not (complemented self))))
 
 
-(DEFMETHOD CONTAINS-CHAR-P ((SELF CHARSET-RANGE) (CH CHARACTER))
-  (LET ((CODE (CHAR-CODE CH))
-        (RESULT NIL))
-    (WHEN (NULL (RANGE-VECTOR SELF))
-      (SETF (RANGE-VECTOR SELF) (MAKE-RANGE-VECTOR (RANGE-SET SELF))))
-    (MULTIPLE-VALUE-BIND (FOUND INDEX ORDER)
-        (DICHOTOMY-SEARCH (RANGE-VECTOR SELF) CODE (FUNCTION RCCOMPARE))
-      (DECLARE (IGNORE ORDER))
-      (SETF RESULT (AND FOUND (RANGE-CONTAINS-P (AREF (RANGE-VECTOR SELF) INDEX)
-                                                CODE))))
-    (UNLESS RESULT
-      (SETF RESULT (SOME (LAMBDA (CLASSF) (FUNCALL CLASSF CODE))
-                         (CHAR-CLASSES SELF))))
-    (IF (COMPLEMENTED SELF) (NOT RESULT) RESULT)))
+(defmethod contains-char-p ((self charset-range) (ch character))
+  (let ((code (char-code ch))
+        (result nil))
+    (when (null (range-vector self))
+      (setf (range-vector self) (make-range-vector (range-set self))))
+    (multiple-value-bind (found index order)
+        (dichotomy-search (range-vector self) code (function rccompare))
+      (declare (ignore order))
+      (setf result (and found (range-contains-p (aref (range-vector self) index)
+                                                code))))
+    (unless result
+      (setf result (some (lambda (classf) (funcall classf code))
+                         (char-classes self))))
+    (if (complemented self) (not result) result)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1391,284 +1389,284 @@ DO:     complements the set.
 ;; ---------------------------
 
 
-(DEFUN LIGHTEN (OBJ)
-  (COND
-    ((SYMBOLP OBJ) (SYMBOL-NAME OBJ))
-    ((CONSP OBJ)   (CONS (LIGHTEN (CAR OBJ)) (LIGHTEN (CDR OBJ))))
-    (T             OBJ))) ;;LIGHTEN
+(defun lighten (obj)
+  (cond
+    ((symbolp obj) (symbol-name obj))
+    ((consp obj)   (cons (lighten (car obj)) (lighten (cdr obj))))
+    (t             obj))) ;;LIGHTEN
 
 
-(DEFUN PRINT-RNODE (NODE STREAM LEVEL)
+(defun print-rnode (node stream level)
   (declare (ignore level))
-  (FORMAT STREAM "<~A~{ ~S~}>"
-          (LIGHTEN (RNODE-TOKEN NODE))
-          (MAP 'LIST (FUNCTION IDENTITY) (RNODE-CHILDREN NODE))))
+  (format stream "<~A~{ ~S~}>"
+          (lighten (rnode-token node))
+          (map 'list (function identity) (rnode-children node))))
 
 
-(DEFSTRUCT (RNODE
-             (:PRINT-FUNCTION PRINT-RNODE))
+(defstruct (rnode
+             (:print-function print-rnode))
   "A rnode represent a compiled regexp node"
   ;; code:
-  (MATCHF   NIL)
-  (TOKEN    NIL)
-  (CHILDREN NIL :TYPE (OR NULL (ARRAY RNODE (*)))))
+  (matchf   nil)
+  (token    nil)
+  (children nil :type (or null (array rnode (*)))))
 ;; (equiv (null children) (not (< 0 (length children)))))
 
 
 
-(DEFMACRO WITH-RNODE (NODE &BODY BODY)
-  `(WITH-SLOTS ((MATCHF   MATCHF)
-                (TOKEN    TOKEN)
-                (CHILDREN CHILDREN))
-       ,NODE ,@BODY))
+(defmacro with-rnode (node &body body)
+  `(with-slots ((matchf   matchf)
+                (token    token)
+                (children children))
+       ,node ,@body))
 
 
-(DEFMACRO RNODE-MATCH (NODE STATE ENV)
-  (IF (SYMBOLP NODE)
-      `(FUNCALL (RNODE-MATCHF ,NODE) ,NODE ,STATE ,ENV)
-      `(LET ((NODE ,NODE))
-         (FUNCALL (RNODE-MATCHF NODE) NODE ,STATE ,ENV))))
+(defmacro rnode-match (node state env)
+  (if (symbolp node)
+      `(funcall (rnode-matchf ,node) ,node ,state ,env)
+      `(let ((node ,node))
+         (funcall (rnode-matchf node) node ,state ,env))))
 
 
-(DEFUN RNODE-WALK (NODE FUN)
-  (FUNCALL FUN NODE)
-  (MAP NIL (LAMBDA (NODE) (RNODE-WALK NODE FUN)) (RNODE-CHILDREN NODE)))
+(defun rnode-walk (node fun)
+  (funcall fun node)
+  (map nil (lambda (node) (rnode-walk node fun)) (rnode-children node)))
 
 
-(DEFSTRUCT (RSTATE (:PRINT-FUNCTION
-                    (LAMBDA (STATE STREAM LEVEL)
+(defstruct (rstate (:print-function
+                    (lambda (state stream level)
                       (declare (ignore level))
-                      (FORMAT STREAM "<rstate :try ~S :start ~S :end ~S>"
-                              (rstate-TRY   STATE)
-                              (rstate-START STATE)
-                              (rstate-END   STATE)))))
+                      (format stream "<rstate :try ~S :start ~S :end ~S>"
+                              (rstate-try   state)
+                              (rstate-start state)
+                              (rstate-end   state)))))
   "State data used when matching a rnode."
-  (TRY      NIL)
-  (START    0   :TYPE (OR NULL (INTEGER 0)))
-  (END      0   :TYPE (OR NULL (INTEGER 0)))) ;;RSTATE
+  (try      nil)
+  (start    0   :type (or null (integer 0)))
+  (end      0   :type (or null (integer 0)))) ;;RSTATE
 
 
-(DEFMACRO WITH-RSTATE (STATE &BODY BODY)
-  `(WITH-SLOTS ((START    START)
-                (END      END)
-                (TRY      TRY))
-       ,STATE ,@BODY)) ;;WITH-RSTATE
+(defmacro with-rstate (state &body body)
+  `(with-slots ((start    start)
+                (end      end)
+                (try      try))
+       ,state ,@body)) ;;WITH-RSTATE
 
 
-(DEFUN RSTATE-RETRY (STATE POSITION)
-  (WITH-RSTATE STATE (SETF START POSITION END NIL TRY NIL)))
+(defun rstate-retry (state position)
+  (with-rstate state (setf start position end nil try nil)))
 
 
-(DEFMACRO TRY-ONCE (&BODY BODY)
-  `(IF TRY NIL (PROGN (SETF TRY T) ,@BODY)))
+(defmacro try-once (&body body)
+  `(if try nil (progn (setf try t) ,@body)))
 
 
-(DEFMACRO TRY (&REST CLAUSES)
+(defmacro try (&rest clauses)
   "
 SYNTAX:  (try (initially [sexp|(immediately-then)]...)
               (then sexp...))
 "
-  (LET ((INITIAL NIL)
-        (THEN    NIL))
-    (DO ((CLAUSES CLAUSES (CDR CLAUSES)))
-        ((NULL CLAUSES))
-      (COND
-        ((STRING-EQUAL (CAAR CLAUSES) :INITIALLY)
-         (IF INITIAL
-             (ERROR "Can't have two (initially ...) in try.")
-             (SETF INITIAL (CDAR CLAUSES))))
-        ((STRING-EQUAL (CAAR CLAUSES) :THEN)
-         (IF THEN
-             (ERROR "Can't have two (then ...) in try.")
-             (SETF THEN (CDAR CLAUSES))))
-        (T
-         (ERROR "Invalid clause (~S) in try." (CAAR CLAUSES)))))
-    (IF INITIAL
-        (IF THEN
+  (let ((initial nil)
+        (then    nil))
+    (do ((clauses clauses (cdr clauses)))
+        ((null clauses))
+      (cond
+        ((string-equal (caar clauses) :initially)
+         (if initial
+             (error "Can't have two (initially ...) in try.")
+             (setf initial (cdar clauses))))
+        ((string-equal (caar clauses) :then)
+         (if then
+             (error "Can't have two (then ...) in try.")
+             (setf then (cdar clauses))))
+        (t
+         (error "Invalid clause (~S) in try." (caar clauses)))))
+    (if initial
+        (if then
             ;; both initial and then:
-            (WITH-GENSYMS (LABEL-TRY LABEL-THEN)
-              `(BLOCK ,LABEL-TRY
-                 (TAGBODY
-                    (UNLESS TRY
-                      (MACROLET ((IMMEDIATELY-THEN () `(GO ,',LABEL-THEN)))
-                        (SETF TRY T)
-                        (RETURN-FROM ,LABEL-TRY (PROGN ,@INITIAL))))
-                    ,LABEL-THEN
-                    (RETURN-FROM ,LABEL-TRY (PROGN ,@THEN))))) 
+            (with-gensyms (label-try label-then)
+              `(block ,label-try
+                 (tagbody
+                    (unless try
+                      (macrolet ((immediately-then () `(go ,',label-then)))
+                        (setf try t)
+                        (return-from ,label-try (progn ,@initial))))
+                    ,label-then
+                    (return-from ,label-try (progn ,@then))))) 
             ;; initial alone:
-            `(UNLESS TRY ,@INITIAL))
-        (IF THEN
+            `(unless try ,@initial))
+        (if then
             ;; then alone:
-            `(WHEN TRY ,@THEN)
+            `(when try ,@then)
             ;; nothing
-            (VALUES)))))
+            (values)))))
 
 
-(DEFSTRUCT RENV
+(defstruct renv
   "An renv gather the environment (variables) used to run a compiled
 regexp matched, ie. rnode."
-  (EQUALF   (FUNCTION EQUAL)) ;; use equalp for case insensitive.
+  (equalf   (function equal)) ;; use equalp for case insensitive.
   ;; equalf must take two sequence arguments
   ;; and accept :start1 :end1 :start2 :end2 keys.
-  (NEWLINEPF (COMPILE NIL (LAMBDA (CH) (EQL #\NEWLINE CH))))
-  (SEQUENCE ""  :TYPE VECTOR) ;; renv-set-sequence sets length and position too.
-  (LENGTH   0   :TYPE (INTEGER 0))
-  (POSITION 0   :TYPE (INTEGER 0))
-  (SUBEXPS  NIL :TYPE (OR NULL (VECTOR CONS *)))
-  (REGEXP   NIL :TYPE (OR NULL RNODE)) ;; renv-set-regexp sets subexps too.
-  (BOL      T   :TYPE BOOLEAN)
-  (EOL      T   :TYPE BOOLEAN)
-  (NEWLINE  T   :TYPE BOOLEAN)
+  (newlinepf (compile nil (lambda (ch) (eql #\NEWLINE ch))))
+  (sequence ""  :type vector) ;; renv-set-sequence sets length and position too.
+  (length   0   :type (integer 0))
+  (position 0   :type (integer 0))
+  (subexps  nil :type (or null (vector cons *)))
+  (regexp   nil :type (or null rnode)) ;; renv-set-regexp sets subexps too.
+  (bol      t   :type boolean)
+  (eol      t   :type boolean)
+  (newline  t   :type boolean)
   )
 
 
-(DEFMACRO WITH-RENV (ENV &BODY BODY)
-  `(WITH-SLOTS ((EQUALF     EQUALF   )
-                (NEWLINEPF  NEWLINEPF)
-                (SEQUENCE   SEQUENCE )
-                (LENGTH     LENGTH   )
-                (POSITION   POSITION )
-                (SUBEXPS    SUBEXPS  )
-                (REGEXP     REGEXP   )
-                (BOL        BOL      )
-                (EOL        EOL      )
-                (NEWLINE    NEWLINE  ))
-       ,ENV ,@BODY))
+(defmacro with-renv (env &body body)
+  `(with-slots ((equalf     equalf   )
+                (newlinepf  newlinepf)
+                (sequence   sequence )
+                (length     length   )
+                (position   position )
+                (subexps    subexps  )
+                (regexp     regexp   )
+                (bol        bol      )
+                (eol        eol      )
+                (newline    newline  ))
+       ,env ,@body))
 
 
-(DEFUN SUBEXP-FILLED-P (SUBEXP)         SUBEXP)
-(DEFMACRO SUBEXP-CLEAR (SUBEXP)         `(POP ,SUBEXP))
-(DEFMACRO SUBEXP-SET (SUBEXP START END) `(PUSH (CONS ,START ,END) ,SUBEXP))
-(DEFMACRO SUBEXP-START (SUBEXP)         `(CAR (TOP ,SUBEXP)))
-(DEFMACRO SUBEXP-END   (SUBEXP)         `(CDR (TOP ,SUBEXP)))
+(defun subexp-filled-p (subexp)         subexp)
+(defmacro subexp-clear (subexp)         `(pop ,subexp))
+(defmacro subexp-set (subexp start end) `(push (cons ,start ,end) ,subexp))
+(defmacro subexp-start (subexp)         `(car (top ,subexp)))
+(defmacro subexp-end   (subexp)         `(cdr (top ,subexp)))
 
 
-(DEFUN RENV-SET-SEQUENCE (ENV NEW-SEQ)
-  (WITH-RENV ENV
-    (SETF SEQUENCE (COND
-                     ((VECTORP NEW-SEQ) NEW-SEQ)
-                     ((LISTP   NEW-SEQ) (MAKE-ARRAY (LIST (LENGTH NEW-SEQ))
-                                                    :INITIAL-CONTENTS NEW-SEQ))
-                     (T (ERROR "Can match only vectors and lists.")))
-          LENGTH   (LENGTH SEQUENCE)
-          POSITION 0)))
+(defun renv-set-sequence (env new-seq)
+  (with-renv env
+    (setf sequence (cond
+                     ((vectorp new-seq) new-seq)
+                     ((listp   new-seq) (make-array (list (length new-seq))
+                                                    :initial-contents new-seq))
+                     (t (error "Can match only vectors and lists.")))
+          length   (length sequence)
+          position 0)))
 
 
-(DEFUN RENV-SET-REGEXP (ENV REGEXP)
-  (LET ((CREGEXP (IF (RNODE-P REGEXP) REGEXP  (COMPILE-REGEXP REGEXP)))
-        (SUBEXP-NUM  0))
-    (RNODE-WALK CREGEXP (LAMBDA (NODE)
-                          (WITH-RNODE NODE
-                            (WHEN (AND (CONSP TOKEN)
-                                       (EQ 'RK:SUBEXP (CAR TOKEN)))
-                              (SETF (CDR TOKEN) SUBEXP-NUM)
-                              (INCF SUBEXP-NUM)))))
-    (WITH-RENV ENV
-      (SETF REGEXP  CREGEXP
-            SUBEXPS (MAKE-ARRAY (LIST SUBEXP-NUM)))
-      (DOTIMES (I SUBEXP-NUM)
-        (SETF (AREF SUBEXPS I) NIL)))))
+(defun renv-set-regexp (env regexp)
+  (let ((cregexp (if (rnode-p regexp) regexp  (compile-regexp regexp)))
+        (subexp-num  0))
+    (rnode-walk cregexp (lambda (node)
+                          (with-rnode node
+                            (when (and (consp token)
+                                       (eq 'rk:subexp (car token)))
+                              (setf (cdr token) subexp-num)
+                              (incf subexp-num)))))
+    (with-renv env
+      (setf regexp  cregexp
+            subexps (make-array (list subexp-num)))
+      (dotimes (i subexp-num)
+        (setf (aref subexps i) nil)))))
 
 
 
 ;;(dolist (s '(collating-symbol equivalence-class character-class range any l-anchor r-anchor matching non-matching backref subexp sequence repeat infinity alternative b-anchor e-anchor item set-sequence)) (insert (format "(defun rmatch-%s (node env)\n)\n\n\n" s)))
 
 
-(DEFMACRO WITH-RENS (ENV NODE STATE &BODY BODY)
-  `(WITH-RENV ,ENV
-     (WITH-RNODE ,NODE
-       (WITH-RSTATE ,STATE
-         ,@BODY))))
+(defmacro with-rens (env node state &body body)
+  `(with-renv ,env
+     (with-rnode ,node
+       (with-rstate ,state
+         ,@body))))
 
 
-(DEFUN RMATCH-B-ANCHOR (NODE STATE ENV)
+(defun rmatch-b-anchor (node state env)
   "
 Beginning of string anchor.
 "
-  (WITH-RENS ENV NODE STATE
+  (with-rens env node state
     (declare (ignorable node))
-    (TRY-ONCE
-      (IF (= 0 POSITION)
-          (PROGN (SETF END POSITION) T)
-          NIL))))
+    (try-once
+      (if (= 0 position)
+          (progn (setf end position) t)
+          nil))))
 
 
-(DEFUN RMATCH-E-ANCHOR (NODE STATE ENV)
+(defun rmatch-e-anchor (node state env)
   "
 End of string anchor.
 "
-  (WITH-RENS ENV NODE STATE
+  (with-rens env node state
     (declare (ignorable node))
-    (TRY-ONCE
-      (IF (= LENGTH POSITION)
-          (PROGN (SETF END POSITION) T)
-          NIL))))
+    (try-once
+      (if (= length position)
+          (progn (setf end position) t)
+          nil))))
 
 
-(DEFUN RMATCH-L-ANCHOR (NODE STATE ENV)
+(defun rmatch-l-anchor (node state env)
   "
 Beginning of line anchor.
 "
-  (WITH-RENS ENV NODE STATE
+  (with-rens env node state
     (declare (ignorable node))
-    (TRY-ONCE
-      (IF (OR (AND BOL (= 0 POSITION))
-              (AND NEWLINE
-                   (< 1 POSITION)
-                   (FUNCALL NEWLINEPF (AREF SEQUENCE (1- POSITION)))))
-          (PROGN (SETF END POSITION) T)
-          NIL))))
+    (try-once
+      (if (or (and bol (= 0 position))
+              (and newline
+                   (< 1 position)
+                   (funcall newlinepf (aref sequence (1- position)))))
+          (progn (setf end position) t)
+          nil))))
 
 
-(DEFUN RMATCH-R-ANCHOR (NODE STATE ENV)
+(defun rmatch-r-anchor (node state env)
   "
 End of line anchor.
 "
-  (WITH-RENS ENV NODE STATE
+  (with-rens env node state
     (declare (ignorable node))
-    (TRY-ONCE
-      (IF (OR (AND EOL (= LENGTH POSITION))
-              (AND NEWLINE
-                   (< (1+ POSITION) (LENGTH SEQUENCE))
-                   (FUNCALL NEWLINEPF (AREF SEQUENCE (1+ POSITION)))))
-          (PROGN (SETF END POSITION) T)
-          NIL))))
+    (try-once
+      (if (or (and eol (= length position))
+              (and newline
+                   (< (1+ position) (length sequence))
+                   (funcall newlinepf (aref sequence (1+ position)))))
+          (progn (setf end position) t)
+          nil))))
 
 
-(DEFUN RMATCH-ANY (NODE STATE ENV)
-  (WITH-RENS ENV NODE STATE
+(defun rmatch-any (node state env)
+  (with-rens env node state
     (declare (ignorable node))
-    (TRY-ONCE
-      (IF (OR (<= LENGTH POSITION)
-              (AND NEWLINE ;; don't match newline
-                   (FUNCALL NEWLINEPF (AREF SEQUENCE POSITION))))
-          NIL
-          (PROGN
-            (INCF POSITION)
-            (SETF END POSITION)
-            T)))))
+    (try-once
+      (if (or (<= length position)
+              (and newline ;; don't match newline
+                   (funcall newlinepf (aref sequence position))))
+          nil
+          (progn
+            (incf position)
+            (setf end position)
+            t)))))
 
 
-(DEFUN RMATCH-ITEM (NODE STATE ENV)
-  (WITH-RENS ENV NODE STATE
+(defun rmatch-item (node state env)
+  (with-rens env node state
     (declare (ignorable node))
-    (TRY-ONCE
-      (IF (AND (< POSITION LENGTH)
-               (FUNCALL EQUALF TOKEN (AREF SEQUENCE POSITION)))
-          (PROGN
-            (INCF POSITION)
-            (SETF END POSITION)
-            T)
-          NIL))))
+    (try-once
+      (if (and (< position length)
+               (funcall equalf token (aref sequence position)))
+          (progn
+            (incf position)
+            (setf end position)
+            t)
+          nil))))
 
 
-(DEFUN RMATCH-SEQUENCE (NODE STATE ENV)
-  (WITH-RENS ENV NODE STATE
-    (IF CHILDREN
-        (INVARIANT (OR (NULL TRY)
-                       (AND (INTEGERP TRY)
-                            (OR (= 0 TRY) (= TRY (1- (LENGTH CHILDREN))))))
-          (LET (P N)
+(defun rmatch-sequence (node state env)
+  (with-rens env node state
+    (if children
+        (invariant (or (null try)
+                       (and (integerp try)
+                            (or (= 0 try) (= try (1- (length children))))))
+          (let (p n)
             ;; try = ( n state[n-1] state[n-1] ... state[0] )
             ;; n is the number of children matched in sequence so far.
             ;; follows the states of the n children in reverse order (stack).
@@ -1677,27 +1675,27 @@ End of line anchor.
             ;; The 'position' pointer advances and tracks back, walking the
             ;; tree of matching child position until we find one (or more,
             ;; in following tries) matching sequence.
-            (TRY (INITIALLY  (SETF N 0)
-                             (PUSH (MAKE-RSTATE :START POSITION) TRY))
-                 (THEN       (SETF N (POP TRY))))
-            (SETF P (RNODE-MATCH (AREF CHILDREN N) (TOP TRY) ENV))
-            (WHILE (OR (AND P (< (1+ N) (LENGTH CHILDREN)))
-                       (AND (NOT P) (<= 0 (1- N))))
-              (IF P
-                  (PROGN
-                    (INCF N)
-                    (PUSH (MAKE-RSTATE :START POSITION) TRY))
-                  (PROGN ;; backtrack
-                    (DECF N)
-                    (POP TRY)
-                    (SETF POSITION (RSTATE-START (TOP TRY)))))
-              (SETF P (RNODE-MATCH (AREF CHILDREN N) (TOP TRY) ENV)))
-            (PUSH N TRY)
-            (SETF END POSITION)
-            P))
-        (TRY-ONCE ;; no child -- empty sequence -- match once.
-          (SETF END POSITION)
-          T))))
+            (try (initially  (setf n 0)
+                             (push (make-rstate :start position) try))
+                 (then       (setf n (pop try))))
+            (setf p (rnode-match (aref children n) (top try) env))
+            (while (or (and p (< (1+ n) (length children)))
+                       (and (not p) (<= 0 (1- n))))
+              (if p
+                  (progn
+                    (incf n)
+                    (push (make-rstate :start position) try))
+                  (progn ;; backtrack
+                    (decf n)
+                    (pop try)
+                    (setf position (rstate-start (top try)))))
+              (setf p (rnode-match (aref children n) (top try) env)))
+            (push n try)
+            (setf end position)
+            p))
+        (try-once ;; no child -- empty sequence -- match once.
+          (setf end position)
+          t))))
 
 
 ;; shy
@@ -1732,18 +1730,18 @@ End of line anchor.
 ;; 222
 
 
-(DEFUN RMATCH-REPEAT-SHY (NODE STATE ENV)
+(defun rmatch-repeat-shy (node state env)
   "
 DO:    match min to max repeatition, smallest first.
 "
-  (WITH-RENS ENV NODE STATE
-             (IF (AND CHILDREN (LESSP 0 (CDR TOKEN)))
-                 (LET ((MIN (CAR TOKEN))
-                       (MAX (CDR TOKEN))
-                       (CHILD (AREF CHILDREN 0))
-                       P N)
-                   (IF (LESSP MAX MIN)
-                       NIL ;; never match.
+  (with-rens env node state
+             (if (and children (lessp 0 (cdr token)))
+                 (let ((min (car token))
+                       (max (cdr token))
+                       (child (aref children 0))
+                       p n)
+                   (if (lessp max min)
+                       nil ;; never match.
                        ;; try = ( n state[n-1] state[n-1] ... state[0] )
                        ;; n is the number of children matched in sequence so far.
                        ;; follows the states of the n children in reverse order (stack).
@@ -1751,58 +1749,58 @@ DO:    match min to max repeatition, smallest first.
                        ;; The 'position' pointer advances and tracks back, walking the
                        ;; tree of matching child position until we find one (or more,
                        ;; in following tries) matching sequence.
-                       (TAGBODY
-                        :INIT      (TRY (INITIALLY
-                                         (SETF TRY NIL N 0  P POSITION)
-                                         (IF (< N MIN)
-                                             (GO :FILL)
-                                             (GO :MATCH)))
-                                        (THEN
-                                         (WHEN (EQ :FAILED TRY)
-                                           (RETURN-FROM RMATCH-REPEAT-SHY NIL))
-                                         (SETF N (POP TRY))
-                                         (IF (= 0 N)
-                                             (GO :ADD)
-                                             (GO :INCREMENT))))
-                        :FILL      (PROGN
-                                     (PUSH (MAKE-RSTATE :START P) TRY)
-                                     (INCF N)
-                                     (SETF P (RNODE-MATCH CHILD (TOP TRY) ENV))
-                                     (COND
-                                       ((NOT P)   (GO :REMOVE-1))
-                                       ((< N MIN) (GO :FILL))
-                                       (T         (GO :MATCH)))) ;; n=min
-                        :ADD       (PROGN
-                                     (PUSH (MAKE-RSTATE :START P) TRY)
-                                     (INCF N)
-                                     (SETF P (RNODE-MATCH CHILD (TOP TRY) ENV))
-                                     (IF P
-                                         (GO :MATCH)
-                                         (GO :REMOVE-1)))
-                        :REMOVE-1  (PROGN
-                                     (POP TRY)
-                                     (DECF N)
-                                     (COND
-                                       ((<= MIN N)  (GO :MATCH))
-                                       ((= 0 N)     (GO :FAIL))
-                                       (T           (GO :INCREMENT))))
-                        :INCREMENT (PROGN
-                                     (SETF P (RNODE-MATCH CHILD (TOP TRY) ENV))
-                                     (COND
-                                       ((NOT P)       (GO :REMOVE-1))
-                                       ((< N MIN)     (GO :FILL))
-                                       ((LESSP N MAX) (GO :ADD))
-                                       (T             (GO :MATCH))))
-                        :MATCH     (PROGN
-                                     (SETF END POSITION)
-                                     (PUSH N TRY)
-                                     (RETURN-FROM RMATCH-REPEAT-SHY P))
-                        :FAIL      (PROGN
-                                     (SETF TRY :FAILED)
-                                     (RETURN-FROM RMATCH-REPEAT-SHY NIL)) )))
-                 (TRY-ONCE ;; max=0 or no child -- empty sequence -- match once.
-                  (SETF END POSITION)
-                  T))))
+                       (tagbody
+                        :init      (try (initially
+                                         (setf try nil n 0  p position)
+                                         (if (< n min)
+                                             (go :fill)
+                                             (go :match)))
+                                        (then
+                                         (when (eq :failed try)
+                                           (return-from rmatch-repeat-shy nil))
+                                         (setf n (pop try))
+                                         (if (= 0 n)
+                                             (go :add)
+                                             (go :increment))))
+                        :fill      (progn
+                                     (push (make-rstate :start p) try)
+                                     (incf n)
+                                     (setf p (rnode-match child (top try) env))
+                                     (cond
+                                       ((not p)   (go :remove-1))
+                                       ((< n min) (go :fill))
+                                       (t         (go :match)))) ;; n=min
+                        :add       (progn
+                                     (push (make-rstate :start p) try)
+                                     (incf n)
+                                     (setf p (rnode-match child (top try) env))
+                                     (if p
+                                         (go :match)
+                                         (go :remove-1)))
+                        :remove-1  (progn
+                                     (pop try)
+                                     (decf n)
+                                     (cond
+                                       ((<= min n)  (go :match))
+                                       ((= 0 n)     (go :fail))
+                                       (t           (go :increment))))
+                        :increment (progn
+                                     (setf p (rnode-match child (top try) env))
+                                     (cond
+                                       ((not p)       (go :remove-1))
+                                       ((< n min)     (go :fill))
+                                       ((lessp n max) (go :add))
+                                       (t             (go :match))))
+                        :match     (progn
+                                     (setf end position)
+                                     (push n try)
+                                     (return-from rmatch-repeat-shy p))
+                        :fail      (progn
+                                     (setf try :failed)
+                                     (return-from rmatch-repeat-shy nil)) )))
+                 (try-once ;; max=0 or no child -- empty sequence -- match once.
+                  (setf end position)
+                  t))))
 
 
 ;; "(a.{0,4}){1,}"
@@ -1838,18 +1836,18 @@ DO:    match min to max repeatition, smallest first.
 ;; /
 
 
-(DEFUN RMATCH-REPEAT-GREEDY (NODE STATE ENV)
+(defun rmatch-repeat-greedy (node state env)
   "
 DO:    match min to max repeatition, greatest first.
 "
-  (WITH-RENS ENV NODE STATE
-             (IF (AND CHILDREN (LESSP 0 (CDR TOKEN)))
-                 (LET ((MIN (CAR TOKEN))
-                       (MAX (CDR TOKEN))
-                       (CHILD (AREF CHILDREN 0))
-                       P N)
-                   (IF (LESSP MAX MIN)
-                       NIL ;; never match.
+  (with-rens env node state
+             (if (and children (lessp 0 (cdr token)))
+                 (let ((min (car token))
+                       (max (cdr token))
+                       (child (aref children 0))
+                       p n)
+                   (if (lessp max min)
+                       nil ;; never match.
                        ;; try = ( n state[n-1] state[n-1] ... state[0] )
                        ;; n is the number of children matched in sequence so far.
                        ;; follows the states of the n children in reverse order (stack).
@@ -1857,173 +1855,173 @@ DO:    match min to max repeatition, greatest first.
                        ;; The 'position' pointer advances and tracks back, walking the
                        ;; tree of matching child position until we find one (or more,
                        ;; in following tries) matching sequence.
-                       (TAGBODY
-                        :INIT      (TRY (INITIALLY
-                                         (SETF TRY NIL N 0  P POSITION)
-                                         (GO :FILL))
-                                        (THEN
-                                         (WHEN (EQ :FAILED TRY)
-                                           (RETURN-FROM RMATCH-REPEAT-GREEDY NIL))
-                                         (SETF N (POP TRY))
-                                         (GO :INCREMENT)))
-                        :FILL      (PROGN
-                                     (ASSERT (LESSP N MAX))
-                                     (PUSH (MAKE-RSTATE :START P) TRY)
-                                     (INCF N)
-                                     (SETF P (RNODE-MATCH CHILD (TOP TRY) ENV))
-                                     (COND
-                                       ((NOT P)       (GO :REMOVE-1))
-                                       ((LESSP N MAX) (GO :FILL))
-                                       (T             (GO :MATCH)))) ;; n=max
-                        :REMOVE-1  (PROGN
-                                     (POP TRY)
-                                     (DECF N)
-                                     (COND
-                                       ((<= MIN N)  (GO :MATCH))
-                                       ((= 0 N)     (GO :FAIL))
-                                       (T           (GO :INCREMENT))))
-                        :INCREMENT (PROGN
-                                     (SETF P (RNODE-MATCH CHILD (TOP TRY) ENV))
-                                     (COND
-                                       ((NOT P)       (GO :REMOVE-1))
-                                       ((LESSP N MAX) (GO :FILL))
-                                       (T             (GO :MATCH))))
-                        :MATCH     (PROGN
-                                     (SETF END POSITION)
-                                     (PUSH N TRY)
-                                     (RETURN-FROM RMATCH-REPEAT-GREEDY P))
-                        :FAIL      (PROGN
-                                     (SETF TRY :FAILED)
-                                     (RETURN-FROM RMATCH-REPEAT-GREEDY NIL)) )))
-                 (TRY-ONCE ;; max=0 or no child -- empty sequence -- match once.
-                  (SETF END POSITION)
-                  T))))
+                       (tagbody
+                        :init      (try (initially
+                                         (setf try nil n 0  p position)
+                                         (go :fill))
+                                        (then
+                                         (when (eq :failed try)
+                                           (return-from rmatch-repeat-greedy nil))
+                                         (setf n (pop try))
+                                         (go :increment)))
+                        :fill      (progn
+                                     (assert (lessp n max))
+                                     (push (make-rstate :start p) try)
+                                     (incf n)
+                                     (setf p (rnode-match child (top try) env))
+                                     (cond
+                                       ((not p)       (go :remove-1))
+                                       ((lessp n max) (go :fill))
+                                       (t             (go :match)))) ;; n=max
+                        :remove-1  (progn
+                                     (pop try)
+                                     (decf n)
+                                     (cond
+                                       ((<= min n)  (go :match))
+                                       ((= 0 n)     (go :fail))
+                                       (t           (go :increment))))
+                        :increment (progn
+                                     (setf p (rnode-match child (top try) env))
+                                     (cond
+                                       ((not p)       (go :remove-1))
+                                       ((lessp n max) (go :fill))
+                                       (t             (go :match))))
+                        :match     (progn
+                                     (setf end position)
+                                     (push n try)
+                                     (return-from rmatch-repeat-greedy p))
+                        :fail      (progn
+                                     (setf try :failed)
+                                     (return-from rmatch-repeat-greedy nil)) )))
+                 (try-once ;; max=0 or no child -- empty sequence -- match once.
+                  (setf end position)
+                  t))))
          
 
-(DEFUN RMATCH-ALTERNATIVE (NODE STATE ENV)
-  (WITH-RENS ENV NODE STATE
-             (IF CHILDREN
-                 (PROGN
-                   (TRY
+(defun rmatch-alternative (node state env)
+  (with-rens env node state
+             (if children
+                 (progn
+                   (try
                     ;; try = (index of alternative tried.
-                    (INITIALLY (SETF TRY (CONS 0 (MAKE-RSTATE :START POSITION)))))
-                   (LOOP
-                      (LET ((CHILD (AREF CHILDREN (CAR TRY))))
-                        (IF (RNODE-MATCH CHILD (CDR TRY) ENV)
-                            (PROGN
-                              (SETF END POSITION)
-                              (RETURN-FROM RMATCH-ALTERNATIVE T))
-                            (PROGN
-                              (INCF (CAR TRY))
-                              (IF (< (CAR TRY) (LENGTH CHILDREN))
-                                  (RSTATE-RETRY (CDR TRY) (RSTATE-START (CDR TRY)))
-                                  (RETURN-FROM RMATCH-ALTERNATIVE NIL)))))))
-                 (TRY-ONCE ;; no child -- empty alternative -- match once.
-                  (SETF END POSITION)
-                  T))))
+                    (initially (setf try (cons 0 (make-rstate :start position)))))
+                   (loop
+                      (let ((child (aref children (car try))))
+                        (if (rnode-match child (cdr try) env)
+                            (progn
+                              (setf end position)
+                              (return-from rmatch-alternative t))
+                            (progn
+                              (incf (car try))
+                              (if (< (car try) (length children))
+                                  (rstate-retry (cdr try) (rstate-start (cdr try)))
+                                  (return-from rmatch-alternative nil)))))))
+                 (try-once ;; no child -- empty alternative -- match once.
+                  (setf end position)
+                  t))))
 
 
-(DEFUN RMATCH-SUBEXP (NODE STATE ENV)
-  (WITH-RENS ENV NODE STATE
+(defun rmatch-subexp (node state env)
+  (with-rens env node state
              ;; token = (cons 'rk:subexp subexp-index)
              ;; one child
-             (IF CHILDREN
-                 (LET ((INDEX (CDR TOKEN))
-                       (CHILD (AREF CHILDREN 0)))
-                   (TRY
-                    (INITIALLY
-                     (SETF TRY (MAKE-RSTATE :START POSITION)))
-                    (THEN
-                     (WHEN (EQ :FAILED TRY)
-                       (RETURN-FROM RMATCH-SUBEXP NIL))))
-                   (LET ((P (RNODE-MATCH CHILD TRY ENV)))
-                     (IF P
-                         (PROGN
-                           (SETF END POSITION)
-                           (SUBEXP-SET (AREF SUBEXPS INDEX) START END))
-                         (PROGN
-                           (SETF TRY :FAILED)
-                           (SUBEXP-CLEAR (AREF SUBEXPS INDEX))))
-                     P))
+             (if children
+                 (let ((index (cdr token))
+                       (child (aref children 0)))
+                   (try
+                    (initially
+                     (setf try (make-rstate :start position)))
+                    (then
+                     (when (eq :failed try)
+                       (return-from rmatch-subexp nil))))
+                   (let ((p (rnode-match child try env)))
+                     (if p
+                         (progn
+                           (setf end position)
+                           (subexp-set (aref subexps index) start end))
+                         (progn
+                           (setf try :failed)
+                           (subexp-clear (aref subexps index))))
+                     p))
                  (let ((index (cdr token)))
-                   (TRY
+                   (try
                     ;; no child : match once
-                    (INITIALLY (SUBEXP-SET   (AREF SUBEXPS INDEX) POSITION POSITION) T)
-                    (THEN      (SUBEXP-CLEAR (AREF SUBEXPS INDEX))   NIL))))))
+                    (initially (subexp-set   (aref subexps index) position position) t)
+                    (then      (subexp-clear (aref subexps index))   nil))))))
 
 
-(DEFUN RMATCH-BACKREF (NODE STATE ENV)
-  (WITH-RENS ENV NODE STATE
-             (TRY-ONCE
-              (LET ((INDEX TOKEN))
-                (IF (AND (NUMBERP INDEX) (<= 0 INDEX) (< INDEX (LENGTH SUBEXPS))
-                         (SUBEXP-FILLED-P (AREF SUBEXPS INDEX)))
-                    (LET* ((MATCH (AREF SUBEXPS INDEX))
-                           (E (+ POSITION (- (SUBEXP-END   MATCH)
-                                             (SUBEXP-START MATCH)))))
-                      (IF (AND (<= E LENGTH)
-                               (FUNCALL EQUALF SEQUENCE SEQUENCE
-                                        :START1 (SUBEXP-START MATCH)
-                                        :END1   (SUBEXP-END   MATCH)
-                                        :START2 POSITION
-                                        :END2   E))
-                          (PROGN (SETF END E) T)
-                          NIL))
-                    (ERROR "Invalid back reference (\\~S)." INDEX))))))
+(defun rmatch-backref (node state env)
+  (with-rens env node state
+             (try-once
+              (let ((index token))
+                (if (and (numberp index) (<= 0 index) (< index (length subexps))
+                         (subexp-filled-p (aref subexps index)))
+                    (let* ((match (aref subexps index))
+                           (e (+ position (- (subexp-end   match)
+                                             (subexp-start match)))))
+                      (if (and (<= e length)
+                               (funcall equalf sequence sequence
+                                        :start1 (subexp-start match)
+                                        :end1   (subexp-end   match)
+                                        :start2 position
+                                        :end2   e))
+                          (progn (setf end e) t)
+                          nil))
+                    (error "Invalid back reference (\\~S)." index))))))
 
 
-(DEFUN RMATCH-MATCHING (NODE STATE ENV)
-  (WITH-RENS ENV NODE STATE
-             (TRY-ONCE
-              (IF (AND (< POSITION LENGTH)
-                       (CONTAINS-CHAR-P TOKEN (AREF SEQUENCE POSITION)))
-                  (PROGN
-                    (INCF POSITION)
-                    (SETF END POSITION)
-                    T)
-                  NIL))))
+(defun rmatch-matching (node state env)
+  (with-rens env node state
+             (try-once
+              (if (and (< position length)
+                       (contains-char-p token (aref sequence position)))
+                  (progn
+                    (incf position)
+                    (setf end position)
+                    t)
+                  nil))))
 
 
-(DEFUN RMATCH-NON-MATCHING (NODE STATE ENV)
-  (WITH-RENS ENV NODE STATE
-             (TRY-ONCE
-              (IF (OR (<= LENGTH POSITION)
-                      (AND NEWLINE ;; don't match newline
-                           (FUNCALL NEWLINEPF (AREF SEQUENCE POSITION)))
-                      (CONTAINS-CHAR-P TOKEN (AREF SEQUENCE POSITION)))
-                  NIL
-                  (PROGN
-                    (INCF POSITION)
-                    (SETF END POSITION)
-                    T)))))
+(defun rmatch-non-matching (node state env)
+  (with-rens env node state
+             (try-once
+              (if (or (<= length position)
+                      (and newline ;; don't match newline
+                           (funcall newlinepf (aref sequence position)))
+                      (contains-char-p token (aref sequence position)))
+                  nil
+                  (progn
+                    (incf position)
+                    (setf end position)
+                    t)))))
 
 
-(DEFPARAMETER *MATCH-FUNCTION-ALIST*
+(defparameter *match-function-alist*
   `(
-    (RK:B-ANCHOR             . ,(FUNCTION RMATCH-B-ANCHOR))
-    (RK:E-ANCHOR             . ,(FUNCTION RMATCH-E-ANCHOR))
-    (RK:L-ANCHOR             . ,(FUNCTION RMATCH-L-ANCHOR))
-    (RK:R-ANCHOR             . ,(FUNCTION RMATCH-R-ANCHOR))
-    (RK:ANY                  . ,(FUNCTION RMATCH-ANY))
-    (RK:ITEM                 . ,(FUNCTION RMATCH-ITEM))
-    (RK:SEQUENCE             . ,(FUNCTION RMATCH-SEQUENCE))
-    (RK:REPEAT               . ,(FUNCTION RMATCH-REPEAT-GREEDY))
-    (RK:REPEAT-SHY           . ,(FUNCTION RMATCH-REPEAT-SHY))
-    (RK:ALTERNATIVE          . ,(FUNCTION RMATCH-ALTERNATIVE))
-    (RK:SUBEXP               . ,(FUNCTION RMATCH-SUBEXP))
-    (RK:BACKREF              . ,(FUNCTION RMATCH-BACKREF))
+    (rk:b-anchor             . ,(function rmatch-b-anchor))
+    (rk:e-anchor             . ,(function rmatch-e-anchor))
+    (rk:l-anchor             . ,(function rmatch-l-anchor))
+    (rk:r-anchor             . ,(function rmatch-r-anchor))
+    (rk:any                  . ,(function rmatch-any))
+    (rk:item                 . ,(function rmatch-item))
+    (rk:sequence             . ,(function rmatch-sequence))
+    (rk:repeat               . ,(function rmatch-repeat-greedy))
+    (rk:repeat-shy           . ,(function rmatch-repeat-shy))
+    (rk:alternative          . ,(function rmatch-alternative))
+    (rk:subexp               . ,(function rmatch-subexp))
+    (rk:backref              . ,(function rmatch-backref))
     ;; ---
-    (RK:MATCHING             . ,(FUNCTION RMATCH-MATCHING))
-    (RK:NON-MATCHING         . ,(FUNCTION RMATCH-NON-MATCHING))))
+    (rk:matching             . ,(function rmatch-matching))
+    (rk:non-matching         . ,(function rmatch-non-matching))))
     ;;    (rk:collating-symbol     . ,(function rmatch-collating-symbol))
     ;;    (rk:equivalence-class    . ,(function rmatch-equivalence-class))
     ;;    (rk:character-class      . ,(function rmatch-character-class))
     ;;    (rk:range                . ,(function rmatch-range))))
 
 
-(DEFUN FIND-MATCH-FUNCTION (NODE)
-  (LET ((ASS (ASSOC NODE *MATCH-FUNCTION-ALIST*)))
-    (IF ASS (CDR ASS) (CDR (ASSOC 'RK:ITEM *MATCH-FUNCTION-ALIST*)))))
+(defun find-match-function (node)
+  (let ((ass (assoc node *match-function-alist*)))
+    (if ass (cdr ass) (cdr (assoc 'rk:item *match-function-alist*)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -2036,7 +2034,7 @@ DO:    match min to max repeatition, greatest first.
 ;;            (rk:range (or coll-elem-single collating-symbol)/start
 ;;                      (or coll-elem-single collating-symbol)/end))
 
-(DEFUN COMPILE-BRACKET-EXPRESSION (REGEXP)
+(defun compile-bracket-expression (regexp)
   "
 RETURN: The charset described by the regex, either a rk:matching
         or a rk:non-matching. The charset is not complemented for
@@ -2053,30 +2051,30 @@ mexpr --> (or
                      (or coll-elem-single collating-symbol)/end))
 NOTE: We don't compile bracket expressions for other atoms than characters!
 "
-  (LET ((CHARSET (MAKE-CHARSET)))
-    (DO ((ITEMS (CDR REGEXP) (CDR ITEMS)))
-        ((NULL ITEMS) CHARSET)
-      (COND
-        ((CHARACTERP (CAR ITEMS))
-         (ADD-CHAR CHARSET (CAR ITEMS)))
-        ((ATOM (CAR ITEMS))
-         (ERROR "Invalid atom in bracket expression ~S." (CAR ITEMS)))
-        ((EQ (CAAR ITEMS) 'RK:COLLATING-SYMBOL)
-         (ERROR "Collating symbols are not implemented yet."))
-        ((EQ (CAAR ITEMS) 'RK:EQUIVALENCE-CLASS)
-         (ERROR "Equivalence classes are not implemented yet."))
-        ((EQ (CAAR ITEMS) 'RK:CHARACTER-CLASS)
-         (ADD-CLASS CHARSET (SECOND (CAR ITEMS))))
-        ((EQ (CAAR ITEMS) 'RK:RANGE)
-         (LET ((MIN (SECOND (CAR ITEMS)))
-               (MAX (THIRD  (CAR ITEMS))) )
-           (WHEN (OR (LISTP MIN) (LISTP MAX))
-             (ERROR "Collating symbols are not implemented yet."))
-           (ADD-RANGE CHARSET MIN MAX)))
-        (T (ERROR "Unexpected item in bracket expression ~S." (CAR ITEMS)))))))
+  (let ((charset (make-charset)))
+    (do ((items (cdr regexp) (cdr items)))
+        ((null items) charset)
+      (cond
+        ((characterp (car items))
+         (add-char charset (car items)))
+        ((atom (car items))
+         (error "Invalid atom in bracket expression ~S." (car items)))
+        ((eq (caar items) 'rk:collating-symbol)
+         (error "Collating symbols are not implemented yet."))
+        ((eq (caar items) 'rk:equivalence-class)
+         (error "Equivalence classes are not implemented yet."))
+        ((eq (caar items) 'rk:character-class)
+         (add-class charset (second (car items))))
+        ((eq (caar items) 'rk:range)
+         (let ((min (second (car items)))
+               (max (third  (car items))) )
+           (when (or (listp min) (listp max))
+             (error "Collating symbols are not implemented yet."))
+           (add-range charset min max)))
+        (t (error "Unexpected item in bracket expression ~S." (car items)))))))
 
 
-(DEFUN COMPILE-REGEXP (REGEXP)
+(defun compile-regexp (regexp)
   "
 RETURN:  A rnode representing the compiled regexp.
 regexp --> (or character
@@ -2091,86 +2089,86 @@ regexp --> (or character
               (rk:repeat  integer (or integer rk:infinity) bexp)
               (rk:alternative regex...))
 "
-  (MACROLET
-      ((MNODE
-           (MFKEY TOKEN &OPTIONAL (CHILDREN NIL))
-         `(MAKE-RNODE
-           :MATCHF (FIND-MATCH-FUNCTION ,MFKEY)
-           :TOKEN ,TOKEN
-           :CHILDREN (WHEN ,CHILDREN
-                       (MAKE-ARRAY (LIST (LENGTH ,CHILDREN))
-                                   :INITIAL-CONTENTS
-                                   (MAPCAR (FUNCTION COMPILE-REGEXP) ,CHILDREN))))
+  (macrolet
+      ((mnode
+           (mfkey token &optional (children nil))
+         `(make-rnode
+           :matchf (find-match-function ,mfkey)
+           :token ,token
+           :children (when ,children
+                       (make-array (list (length ,children))
+                                   :initial-contents
+                                   (mapcar (function compile-regexp) ,children))))
          ))
-    (IF (LISTP REGEXP)
-        (CASE (CAR REGEXP)
-          ((RK:BACKREF)
-           (MNODE (FIRST REGEXP) (SECOND REGEXP)))
-          ((RK:SUBEXP)
-           (MNODE (CAR REGEXP) (CONS (CAR REGEXP) 0) (CDR REGEXP)))
-          ((RK:REPEAT RK:REPEAT-SHY)
-           (WHEN (< 1 (LENGTH (CDDDR REGEXP)))
-             (ERROR "Found a ~A with more than one child." (CAR REGEXP)))
-           (MNODE (FIRST REGEXP)
-                  (CONS (SECOND REGEXP) (THIRD REGEXP)) (CDDDR REGEXP)))
-          ((RK:MATCHING RK:NON-MATCHING)
-           (MNODE (FIRST REGEXP) (COMPILE-BRACKET-EXPRESSION REGEXP)))
-          (OTHERWISE
-           (MNODE (CAR REGEXP) (CAR REGEXP) (CDR REGEXP))))
-        (MNODE REGEXP REGEXP))))
+    (if (listp regexp)
+        (case (car regexp)
+          ((rk:backref)
+           (mnode (first regexp) (second regexp)))
+          ((rk:subexp)
+           (mnode (car regexp) (cons (car regexp) 0) (cdr regexp)))
+          ((rk:repeat rk:repeat-shy)
+           (when (< 1 (length (cdddr regexp)))
+             (error "Found a ~A with more than one child." (car regexp)))
+           (mnode (first regexp)
+                  (cons (second regexp) (third regexp)) (cdddr regexp)))
+          ((rk:matching rk:non-matching)
+           (mnode (first regexp) (compile-bracket-expression regexp)))
+          (otherwise
+           (mnode (car regexp) (car regexp) (cdr regexp))))
+        (mnode regexp regexp))))
 
 
-(DEFUN COUNT-SUBEXP (REGEXP)
+(defun count-subexp (regexp)
   "
 RETURN: The number of subexp found in regexp
 "
-  (LET ((COUNT 0))
-    (LABELS ((WALK (REGEXP)
-               (WHEN (LISTP REGEXP)
-                 (CASE (CAR REGEXP)
-                   ((RK:SEQUENCE RK:ALTERNATIVE)
-                    (MAP NIL (FUNCTION WALK) (CDR REGEXP)))
-                   ((RK:REPEAT RK:REPEAT-SHY)
-                    (MAP NIL (FUNCTION WALK) (CDDDR REGEXP)))
-                   ((RK:SUBEXP)
-                    (INCF COUNT)
-                    (MAP NIL (FUNCTION WALK) (CDR REGEXP))))) ))
-      (WALK REGEXP))
-    COUNT))
+  (let ((count 0))
+    (labels ((walk (regexp)
+               (when (listp regexp)
+                 (case (car regexp)
+                   ((rk:sequence rk:alternative)
+                    (map nil (function walk) (cdr regexp)))
+                   ((rk:repeat rk:repeat-shy)
+                    (map nil (function walk) (cdddr regexp)))
+                   ((rk:subexp)
+                    (incf count)
+                    (map nil (function walk) (cdr regexp))))) ))
+      (walk regexp))
+    count))
 
 
 
-(DEFSTRUCT MATCH
+(defstruct match
   "This structure stores a (start,end) couple specifying the range matched
 by a group (or the whole regexp)."
-  (START NIL :TYPE (OR NULL INTEGER))
-  (END   NIL :TYPE (OR NULL INTEGER)))
+  (start nil :type (or null integer))
+  (end   nil :type (or null integer)))
 
 
-(DEFUN MATCH-STRING (STRING MATCH)
+(defun match-string (string match)
   "Extracts the substring of STRING corresponding to a given pair of
 start and end indices. The result is shared with STRING.
 If you want a freshly consed string, use copy-string
 or (coerce (match-string ...) 'simple-string)."
-  (SUBSEQ STRING (MATCH-START MATCH) (MATCH-END MATCH)))
+  (subseq string (match-start match) (match-end match)))
 
 
-(DEFUN REGEXP-QUOTE (STRING)
-  (DECLARE (IGNORE STRING))
-  (ERROR "Not Implemented Yet: REGEXP-QUOTE~%" ))
+(defun regexp-quote (string)
+  (declare (ignore string))
+  (error "Not Implemented Yet: REGEXP-QUOTE~%" ))
 
 
-(defun MAKE-RANGE-VECTOR (&rest arguments) (declare (ignore arguments)) (error "NOT IMPLEMENTED YET"))
-(defun PJB-RE-PARSE-WHOLE-REGEXP (&rest arguments) (declare (ignore arguments)) (error "NOT IMPLEMENTED YET"))
-(defun PJB-RE-DECORATE-TREE (&rest arguments) (declare (ignore arguments)) (error "NOT IMPLEMENTED YET"))
-(defun PJB-RE-COLLECT-GROUPS (&rest arguments) (declare (ignore arguments)) (error "NOT IMPLEMENTED YET"))
-(defun PJB-RE-INIT (&rest arguments) (declare (ignore arguments)) (error "NOT IMPLEMENTED YET"))
-(defun PJB-RE-MATCH (&rest arguments) (declare (ignore arguments)) (error "NOT IMPLEMENTED YET"))
-(defun PJB-RE-SLOT-BEGIN (&rest arguments) (declare (ignore arguments)) (error "NOT IMPLEMENTED YET"))
-(defun PJB-RE-SLOT-END (&rest arguments) (declare (ignore arguments)) (error "NOT IMPLEMENTED YET"))
+(defun make-range-vector (&rest arguments) (declare (ignore arguments)) (error "NOT IMPLEMENTED YET"))
+(defun pjb-re-parse-whole-regexp (&rest arguments) (declare (ignore arguments)) (error "NOT IMPLEMENTED YET"))
+(defun pjb-re-decorate-tree (&rest arguments) (declare (ignore arguments)) (error "NOT IMPLEMENTED YET"))
+(defun pjb-re-collect-groups (&rest arguments) (declare (ignore arguments)) (error "NOT IMPLEMENTED YET"))
+(defun pjb-re-init (&rest arguments) (declare (ignore arguments)) (error "NOT IMPLEMENTED YET"))
+(defun pjb-re-match (&rest arguments) (declare (ignore arguments)) (error "NOT IMPLEMENTED YET"))
+(defun pjb-re-slot-begin (&rest arguments) (declare (ignore arguments)) (error "NOT IMPLEMENTED YET"))
+(defun pjb-re-slot-end (&rest arguments) (declare (ignore arguments)) (error "NOT IMPLEMENTED YET"))
 
 
-(DEFUN MATCH (REGEXP STRING &OPTIONAL START END)
+(defun match (regexp string &optional start end)
   "Common-Lisp: This function returns as first value a match structure
 containing the indices of the start and end of the first match for the
 regular expression REGEXP in STRING, or nil if there is no match.
@@ -2185,29 +2183,29 @@ end:     the after last character of STRING to be considered
          (defaults to (length string)).
 RETURN:  index of start of first match for REGEXP in STRING, nor nil.
 "
-  (UNLESS START (SETQ START 0))
-  (UNLESS END   (SETQ END (LENGTH STRING)))
-  (WHEN (< END START) (SETQ END START))
+  (unless start (setq start 0))
+  (unless end   (setq end (length string)))
+  (when (< end start) (setq end start))
   ;; TODO: What to do when start or end are out of bounds ?
 
-  (LET* ((SYN-TREE
-          (PJB-RE-PARSE-WHOLE-REGEXP
-           (MAKE-SC :string
-                    (CONCATENATE 'STRING "\\`.*?\\(" REGEXP "\\).*?\\'"))))
-         (DEC-TREE (PJB-RE-DECORATE-TREE SYN-TREE STRING))
-         (GROUPS  (PJB-RE-COLLECT-GROUPS DEC-TREE))
+  (let* ((syn-tree
+          (pjb-re-parse-whole-regexp
+           (make-sc :string
+                    (concatenate 'string "\\`.*?\\(" regexp "\\).*?\\'"))))
+         (dec-tree (pjb-re-decorate-tree syn-tree string))
+         (groups  (pjb-re-collect-groups dec-tree))
          )
 
-    (PJB-RE-INIT DEC-TREE START)
-    (PJB-RE-MATCH DEC-TREE)
+    (pjb-re-init dec-tree start)
+    (pjb-re-match dec-tree)
     ;; there's nowhere to backtrack at the top level...
-    (VALUES-LIST (MAPCAR (LAMBDA (G)
-                           (LET ((S (PJB-RE-SLOT-BEGIN G))
-                                 (E (PJB-RE-SLOT-END G)) )
-                             (IF (AND S E)
-                                 (MAKE-MATCH :START S :END E)
-                                 (MAKE-MATCH :START NIL :END NIL))))
-                         GROUPS))))
+    (values-list (mapcar (lambda (g)
+                           (let ((s (pjb-re-slot-begin g))
+                                 (e (pjb-re-slot-end g)) )
+                             (if (and s e)
+                                 (make-match :start s :end e)
+                                 (make-match :start nil :end nil))))
+                         groups))))
 
 
 
@@ -2218,39 +2216,39 @@ RETURN:  index of start of first match for REGEXP in STRING, nor nil.
 ;;; ---------
 
 
-(DEFTYPE   SIZE-T   () "Used for sizes of objects." '(INTEGER 0 *))
+(deftype   size-t   () "Used for sizes of objects." '(integer 0 *))
 
 
-(DEFTYPE   REGOFF-T ()
+(deftype   regoff-t ()
   "The type regoff_t shall be defined as a signed integer type that
 can hold the largest value that can be stored in either a type off_t
 or type ssize_t. "
-  'INTEGER) ;;REGOFF-T
+  'integer) ;;REGOFF-T
 
   
-(DEFSTRUCT (REGEX-T
-             (:CONC-NAME "RE-"))
+(defstruct (regex-t
+             (:conc-name "RE-"))
   "
 NSUB:  Number of parenthesized subexpressions.
 "
-  (NSUB 0 :TYPE SIZE-T)
+  (nsub 0 :type size-t)
   ;; the rest is private!
-  (ENV         NIL :TYPE (OR NULL RENV))
-  (EXTENDED    NIL :TYPE BOOLEAN)
-  (IGNORE-CASE NIL :TYPE BOOLEAN)
-  (NOSUB       NIL :TYPE BOOLEAN)
-  (NEWLINE     NIL :TYPE BOOLEAN))
+  (env         nil :type (or null renv))
+  (extended    nil :type boolean)
+  (ignore-case nil :type boolean)
+  (nosub       nil :type boolean)
+  (newline     nil :type boolean))
 
 
-(DEFSTRUCT (REGMATCH-T
-             (:CONC-NAME "RM-"))
+(defstruct (regmatch-t
+             (:conc-name "RM-"))
   "
 SO:  Byte offset from start of string to start of substring.
 EO:  Byte offset from start of string of the first character
      after the end of substring.
 "
-  (SO -1 :TYPE REGOFF-T)
-  (EO -1 :TYPE REGOFF-T))
+  (so -1 :type regoff-t)
+  (eo -1 :type regoff-t))
 
 
 ;; int regcomp(regex_t *restrict preg,const char *restrict pattern,
@@ -2269,32 +2267,32 @@ EO:  Byte offset from start of string of the first character
 ;; not implemented (we use lisp garbage collector)
 
 
-(DEFUN REGCOMP (PATTERN
-                &KEY (EXTENDED NIL) (IGNORE-CASE NIL) (NOSUB NIL) (NEWLINE NIL))
+(defun regcomp (pattern
+                &key (extended nil) (ignore-case nil) (nosub nil) (newline nil))
   "
 RETURN:  A regex-t representing the compiled regular expression PATTERN.
 RAISE:   An ERROR condition, in case of syntax error.
 "
-  (LET ((REGEXP  (IF EXTENDED
-                     (PARSE-EXTENDED-RE PATTERN)
-                     (PARSE-BASIC-RE    PATTERN))))
-    (IF (ERRORP REGEXP)
-        (ERROR "~D:~A" (THIRD REGEXP) (FOURTH REGEXP))
-        (LET ((ENV (MAKE-RENV :EQUALF (IF IGNORE-CASE
-                                          (FUNCTION EQUALP) (FUNCTION EQUAL))
-                              :NEWLINE NEWLINE)))
-          (RENV-SET-REGEXP ENV
-                           `(RK:SEQUENCE RK:B-ANCHOR
-                                         (RK:REPEAT-SHY 0 RK:INFINITY RK:ANY)
-                                         (RK:SUBEXP ,REGEXP)
-                                         (RK:REPEAT-SHY 0 RK:INFINITY RK:ANY)
-                                         RK:E-ANCHOR))
-          (MAKE-REGEX-T :NSUB (COUNT-SUBEXP REGEXP) :ENV ENV
-                        :EXTENDED EXTENDED :IGNORE-CASE IGNORE-CASE
-                        :NOSUB  NOSUB :NEWLINE NEWLINE)))))
+  (let ((regexp  (if extended
+                     (parse-extended-re pattern)
+                     (parse-basic-re    pattern))))
+    (if (errorp regexp)
+        (error "~D:~A" (third regexp) (fourth regexp))
+        (let ((env (make-renv :equalf (if ignore-case
+                                          (function equalp) (function equal))
+                              :newline newline)))
+          (renv-set-regexp env
+                           `(rk:sequence rk:b-anchor
+                                         (rk:repeat-shy 0 rk:infinity rk:any)
+                                         (rk:subexp ,regexp)
+                                         (rk:repeat-shy 0 rk:infinity rk:any)
+                                         rk:e-anchor))
+          (make-regex-t :nsub (count-subexp regexp) :env env
+                        :extended extended :ignore-case ignore-case
+                        :nosub  nosub :newline newline)))))
 
 
-(DEFUN REGEXEC (REGEX STRING &KEY (NMATCH NIL) (BOL T) (EOL T))
+(defun regexec (regex string &key (nmatch nil) (bol t) (eol t))
   "
 RETURN:  match ;
          (or (not match) (null nmatch) (zerop nmatch) (re-nosub regex)) ==> nil
@@ -2305,35 +2303,35 @@ WARNING: Entry #0 of the result vector is always the start and end of the
          whole expression.  To get the start and end of the last subexpression
          you need to pass :nmatch (1+ (re-nsub regex)) [or T].
 "
-  (WHEN (OR (NULL NMATCH)
-            (RE-NOSUB REGEX)
-            (AND (NUMBERP NMATCH) (ZEROP NMATCH)))
-    (SETF NMATCH NIL))
-  (WITH-SLOTS ((env ENV)) REGEX
-    (SETF (RENV-BOL ENV) BOL
-          (RENV-EOL ENV) EOL)
-    (RENV-SET-SEQUENCE ENV STRING)
-    (IF (RNODE-MATCH (RENV-REGEXP ENV) (MAKE-RSTATE) ENV)
-        (VALUES T ;; matches
-                (IF (NULL NMATCH)
-                    NIL
-                    (LET* ((SIZE (IF (NUMBERP NMATCH)
-                                     NMATCH ;;(min nmatch(length(renv-subexps env)))
-                                     (LENGTH (RENV-SUBEXPS ENV))))
-                           (RESULT (MAKE-ARRAY (LIST SIZE)
-                                               :ELEMENT-TYPE 'REGMATCH-T)))
-                      (DOTIMES (I SIZE)
-                        (SETF (AREF RESULT I)
-                              (IF (< I (LENGTH (RENV-SUBEXPS ENV)))
-                                  (LET ((SE (AREF (RENV-SUBEXPS ENV) I)))
-                                    (IF (SUBEXP-FILLED-P SE)
-                                        (MAKE-REGMATCH-T :SO (SUBEXP-START SE)
-                                                         :EO (SUBEXP-END   SE))
-                                        (MAKE-REGMATCH-T)))
-                                  (MAKE-REGMATCH-T))))
-                      RESULT)))
-        (VALUES NIL     ;; does not match
-                NIL))))
+  (when (or (null nmatch)
+            (re-nosub regex)
+            (and (numberp nmatch) (zerop nmatch)))
+    (setf nmatch nil))
+  (with-slots ((env env)) regex
+    (setf (renv-bol env) bol
+          (renv-eol env) eol)
+    (renv-set-sequence env string)
+    (if (rnode-match (renv-regexp env) (make-rstate) env)
+        (values t ;; matches
+                (if (null nmatch)
+                    nil
+                    (let* ((size (if (numberp nmatch)
+                                     nmatch ;;(min nmatch(length(renv-subexps env)))
+                                     (length (renv-subexps env))))
+                           (result (make-array (list size)
+                                               :element-type 'regmatch-t)))
+                      (dotimes (i size)
+                        (setf (aref result i)
+                              (if (< i (length (renv-subexps env)))
+                                  (let ((se (aref (renv-subexps env) i)))
+                                    (if (subexp-filled-p se)
+                                        (make-regmatch-t :so (subexp-start se)
+                                                         :eo (subexp-end   se))
+                                        (make-regmatch-t)))
+                                  (make-regmatch-t))))
+                      result)))
+        (values nil     ;; does not match
+                nil))))
 
 
                                      

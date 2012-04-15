@@ -14,45 +14,43 @@
 ;;;;    2004-10-05 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal Bourguignon 2004 - 2004
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
-(DEFPACKAGE "COM.1729.PLISP"
-  (:USE "COMMON-LISP")
-  (:EXPORT "PS-INIT" "PS-COMPILE"))
+(defpackage "COM.1729.PLISP"
+  (:use "COMMON-LISP")
+  (:export "PS-INIT" "PS-COMPILE"))
 
-(IN-PACKAGE "COM.1729.PLISP")
+(in-package "COM.1729.PLISP")
 
 
 ;;;  This builds an executable postscript compiler
 
-(LOAD "PACKAGES:COM;1729;PLISP;COMPILER;VARS")     ; has defvars
-(LOAD "PACKAGES:COM;1729;PLISP;COMPILER;MACROS")   ; useful macros
-(LOAD "PACKAGES:COM;1729;PLISP;COMPILER;TOP")      ; top level control
-(LOAD "PACKAGES:COM;1729;PLISP;COMPILER;COMPILE")  ; guts of the compilation process
-(LOAD "PACKAGES:COM;1729;PLISP;COMPILER;OUTPUT")   ; output routines
-(LOAD "PACKAGES:COM;1729;PLISP;COMPILER;DEFPS")    ; definitions of postscript functions
-(LOAD "PACKAGES:COM;1729;PLISP;COMPILER;ARGS")
-(LOAD "PACKAGES:COM;1729;PLISP;COMPILER;NAMES")
-(LOAD "PACKAGES:COM;1729;PLISP;COMPILER;FLOW")
-(LOAD "PACKAGES:COM;1729;PLISP;COMPILER;UTIL")
+(load "PACKAGES:COM;1729;PLISP;COMPILER;VARS")     ; has defvars
+(load "PACKAGES:COM;1729;PLISP;COMPILER;MACROS")   ; useful macros
+(load "PACKAGES:COM;1729;PLISP;COMPILER;TOP")      ; top level control
+(load "PACKAGES:COM;1729;PLISP;COMPILER;COMPILE")  ; guts of the compilation process
+(load "PACKAGES:COM;1729;PLISP;COMPILER;OUTPUT")   ; output routines
+(load "PACKAGES:COM;1729;PLISP;COMPILER;DEFPS")    ; definitions of postscript functions
+(load "PACKAGES:COM;1729;PLISP;COMPILER;ARGS")
+(load "PACKAGES:COM;1729;PLISP;COMPILER;NAMES")
+(load "PACKAGES:COM;1729;PLISP;COMPILER;FLOW")
+(load "PACKAGES:COM;1729;PLISP;COMPILER;UTIL")
 
 ;; Simple-minded iteration through the common-lisp directory -
 ;; may need changing depending of OS
@@ -64,7 +62,7 @@
 
 ;; This only needs to be done once.  ps-init is in defps
 
-(PS-INIT)
+(ps-init)
 
 
 

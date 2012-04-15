@@ -14,31 +14,29 @@
 ;;;;    2005-01-06 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2005 - 2005
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
-(declaim (declaration ALSO-USE-PACKAGES))
-(declaim (ALSO-USE-PACKAGES "EXT" "COM.INFORMATIMAGO.CLISP.SUSV3"))
+(declaim (declaration also-use-packages))
+(declaim (also-use-packages "EXT" "COM.INFORMATIMAGO.CLISP.SUSV3"))
 (defpackage "COM.INFORMATIMAGO.CLISP.XTERM"
-  (:DOCUMENTATION "
+  (:documentation "
     This package exports functions to open xterm streams.
 
     Copyright Pascal J. Bourguignon 2005 - 2005
@@ -50,7 +48,7 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
   (:shadowing-import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "WITH-GENSYMS")
   (:shadowing-import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST" "PROPER-LIST-P")
-  (:EXPORT
+  (:export
    "*XTERM-FONT*" "MAKE-XTERM-IO-STREAM" "SERVER-REPL" 
    "XTERM-LISTENER" "FORK-XTERM-LISTENER"))
 (in-package "COM.INFORMATIMAGO.CLISP.XTERM")
@@ -163,9 +161,9 @@
                                      :external-format external-format)))
     (when xterm
       (unwind-protect 
-           (let ((*QUERY-IO*        xterm)
-                 (*STANDARD-INPUT*  xterm)
-                 (*STANDARD-OUTPUT* xterm)
+           (let ((*query-io*        xterm)
+                 (*standard-input*  xterm)
+                 (*standard-output* xterm)
                  #||
                  (*ERROR-OUTPUT*    xterm)
                  (*DEBUG-IO*        xterm)
@@ -176,7 +174,7 @@
 
 
 (defun fork-xterm-listener (&key (display ":0.0"))
-  (when (zerop (COM.INFORMATIMAGO.CLISP.SUSV3:fork))
+  (when (zerop (com.informatimago.clisp.susv3:fork))
     (xterm-listener :display display)
     (ext:exit 0)))
 

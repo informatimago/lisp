@@ -16,27 +16,25 @@
 ;;;;    2009-07-23 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2009 - 2009
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
+(in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.SCRIPT"
   (:nicknames "SCRIPT")
   (:use "COMMON-LISP")
@@ -354,87 +352,87 @@ RETURN:     The lisp-name of the option (this is a symbol
 ;;; From /usr/include/sysexists.h (Linux)
 ;;;
 
-(DEFCONSTANT EX-OK            0   "successful termination")
+(defconstant ex-ok            0   "successful termination")
 
 
-(DEFCONSTANT EX--BASE         64  "base value for error messages")
+(defconstant ex--base         64  "base value for error messages")
 
 
-(DEFCONSTANT EX-USAGE         64  "command line usage error
+(defconstant ex-usage         64  "command line usage error
     The command was used incorrectly, e.g., with
     the wrong number of arguments, a bad flag, a bad
     syntax in a parameter, or whatever.") ;;EX-USAGE
 
-(DEFCONSTANT EX-DATAERR       65  "data format error
+(defconstant ex-dataerr       65  "data format error
     The input data was incorrect in some way.
     This should only be used for user's data & not
     system files.") ;;EX-DATAERR
 
-(DEFCONSTANT EX-NOINPUT       66  "cannot open input
+(defconstant ex-noinput       66  "cannot open input
     An input file (not a system file) did not
     exist or was not readable.  This could also include
     errors like \"No message\" to a mailer (if it cared
     to catch it).") ;;EX-NOINPUT
 
-(DEFCONSTANT EX-NOUSER        67  "addressee unknown
+(defconstant ex-nouser        67  "addressee unknown
     The user specified did not exist.  This might
     be used for mail addresses or remote logins.
     ") ;;EX-NOUSER
 
-(DEFCONSTANT EX-NOHOST        68  "host name unknown
+(defconstant ex-nohost        68  "host name unknown
     The host specified did not exist.  This is used
     in mail addresses or network requests.") ;;EX-NOHOST
 
-(DEFCONSTANT EX-UNAVAILABLE   69  "service unavailable
+(defconstant ex-unavailable   69  "service unavailable
     A service is unavailable.  This can occur
     if a support program or file does not exist.  This
     can also be used as a catchall message when something
     you wanted to do doesn't work, but you don't know
     why.") ;;EX-UNAVAILABLE
 
-(DEFCONSTANT EX-SOFTWARE      70  "internal software error
+(defconstant ex-software      70  "internal software error
     An internal software error has been detected.
     This should be limited to non-operating system related
     errors as possible.") ;;EX-SOFTWARE
 
-(DEFCONSTANT EX-OSERR         71  "system error (e.g., can't fork)
+(defconstant ex-oserr         71  "system error (e.g., can't fork)
     An operating system error has been detected.
     This is intended to be used for such things as \"cannot
     fork\", \"cannot create pipe\", or the like.  It includes
     things like getuid returning a user that does not
     exist in the passwd file.") ;;EX-OSERR
 
-(DEFCONSTANT EX-OSFILE        72  "critical OS file missing
+(defconstant ex-osfile        72  "critical OS file missing
     Some system file (e.g., /etc/passwd, /etc/utmp,
     etc.) does not exist, cannot be opened, or has some
     sort of error (e.g., syntax error).") ;;EX-OSFILE
 
-(DEFCONSTANT EX-CANTCREAT     73  "can't create (user) output file
+(defconstant ex-cantcreat     73  "can't create (user) output file
     A (user specified) output file cannot be created.") ;;EX-CANTCREAT
 
-(DEFCONSTANT EX-IOERR         74  "input/output error
+(defconstant ex-ioerr         74  "input/output error
      An error occurred while doing I/O on some file.") ;;EX-IOERR
 
-(DEFCONSTANT EX-TEMPFAIL      75  "temp failure; user is invited to retry
+(defconstant ex-tempfail      75  "temp failure; user is invited to retry
     temporary failure, indicating something that
     is not really an error.  In sendmail, this means
     that a mailer (e.g.) could not create a connection,
     and the request should be reattempted later.") ;;EX-TEMPFAIL
 
-(DEFCONSTANT EX-PROTOCOL      76  "remote error in protocol
+(defconstant ex-protocol      76  "remote error in protocol
     the remote system returned something that
     was \"not possible\" during a protocol exchange.") ;;EX-PROTOCOL
 
-(DEFCONSTANT EX-NOPERM        77  "permission denied
+(defconstant ex-noperm        77  "permission denied
     You did not have sufficient permission to
     perform the operation.  This is not intended for
     file system problems, which should use NOINPUT or
     CANTCREAT, but rather for higher level permissions.") ;;EX-NOPERM
 
-(DEFCONSTANT EX-CONFIG        78  "configuration error")
+(defconstant ex-config        78  "configuration error")
 
 
-(DEFCONSTANT EX--MAX          78  "maximum listed value")
+(defconstant ex--max          78  "maximum listed value")
 
 
 
@@ -485,11 +483,11 @@ MAX-EXTEND: NIL ==> double the buffer size, or double the buffer size until
 RETURN:     A vector containing the elements read from the STREAM.
 "
   (let* ((busize (or length (ignore-errors (file-length stream)) min-size))
-         (eltype (stream-ELEMENT-TYPE stream))
+         (eltype (stream-element-type stream))
          (initel (if (subtypep eltype 'integer) 0 #\Space))
-         (buffer (make-ARRAY busize 
-                             :ELEMENT-TYPE eltype
-                             :INITIAL-ELEMENT initel
+         (buffer (make-array busize 
+                             :element-type eltype
+                             :initial-element initel
                              :adjustable t :fill-pointer t))
          (start 0))
     (loop
@@ -636,7 +634,7 @@ Returns the shell's exit code.
 
     #+(or ecl gcl)
     (flet ((mktemp ()
-             #+ecl (SI:MKSTEMP "/tmp/out-")
+             #+ecl (si:mkstemp "/tmp/out-")
              #+gcl (format nil "/tmp/out-~A" (random 1000000))))
       (system-shell command
                     #+ecl (si:system command)

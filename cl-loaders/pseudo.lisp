@@ -13,11 +13,11 @@
 
 (if (equal (lisp-implementation-type) "Emacs Common Lisp")
     (progn
-      (LOAD "/usr/local/share/lisp/packages/edu/mit/ai/pseudo/loadit.lisp")
-      (LOAD-PSEUDOSCHEME  "/usr/local/share/lisp/packages/edu/mit/ai/pseudo/"))
+      (load "/usr/local/share/lisp/packages/edu/mit/ai/pseudo/loadit.lisp")
+      (load-pseudoscheme  "/usr/local/share/lisp/packages/edu/mit/ai/pseudo/"))
     (progn
-      (LOAD "PACKAGES:EDU;MIT;AI;PSEUDO;LOADIT")
-      (LOAD-PSEUDOSCHEME "PACKAGES:EDU;MIT;AI;PSEUDO;")))
-(DEFMACRO SCHEME () `(PS:SCHEME))
+      (load "PACKAGES:EDU;MIT;AI;PSEUDO;LOADIT")
+      (load-pseudoscheme "PACKAGES:EDU;MIT;AI;PSEUDO;")))
+(defmacro scheme () `(ps:scheme))
 (format t "~2%Use: (scheme)~2%")
 ;;;; pseudo.lisp                      --                     --          ;;;;

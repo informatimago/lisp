@@ -14,234 +14,231 @@
 ;;;;    2003-05-14 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal Bourguignon 2003 - 2003
-;;;;    mailto:pjb@informatimago.com
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
 
 (defpackage "COM.NORVIG"
   (:use "COMMON-LISP")
-  (:SHADOW "EXP"))
+  (:shadow "EXP"))
 (in-package "COM.NORVIG")
 
-(DEFPARAMETER CONFIGURATION
-  '(GPS-SEARCH  ELISA-PM PROLOG-CP KREP SYNTAX-3 SCHEME-3 SCHEME-C3))
+(defparameter configuration
+  '(gps-search  elisa-pm prolog-cp krep syntax-3 scheme-3 scheme-c3))
 
 
-(DEFMACRO EXCLUSIVE (&REST E-B)
-  (LET ((ETIQUETTES (MAPCAR (FUNCTION CAR) E-B))
-        (REP (GENSYM "REP")))
-    `(LET ((,REP (INTERSECTION CONFIGURATION ',ETIQUETTES)))
-       (IF (= 1 (LENGTH ,REP))
-         (PROGN
-           (SETQ ,REP (CAR ,REP))
-           (FORMAT T "~&CONFIGURED: ~A~%" ,REP))
-         (SETQ ,REP
-               (DO ((,REP NIL))
-                   (,REP ,REP)
-                 (FORMAT *QUERY-IO* "~&Please choose what to load from ~S: "
-                         ',ETIQUETTES)
-                 (SETQ ,REP (READ *QUERY-IO*))
-                 (UNLESS (MEMBER ,REP ',ETIQUETTES) (SETQ ,REP NIL)))))
-       (CASE ,REP
-         ,@E-B))))
+(defmacro exclusive (&rest e-b)
+  (let ((etiquettes (mapcar (function car) e-b))
+        (rep (gensym "REP")))
+    `(let ((,rep (intersection configuration ',etiquettes)))
+       (if (= 1 (length ,rep))
+         (progn
+           (setq ,rep (car ,rep))
+           (format t "~&CONFIGURED: ~A~%" ,rep))
+         (setq ,rep
+               (do ((,rep nil))
+                   (,rep ,rep)
+                 (format *query-io* "~&Please choose what to load from ~S: "
+                         ',etiquettes)
+                 (setq ,rep (read *query-io*))
+                 (unless (member ,rep ',etiquettes) (setq ,rep nil)))))
+       (case ,rep
+         ,@e-b))))
 
 
 
 
-(DEFVAR *PAIP-SOURCE-FILES*
-  (TRANSLATE-LOGICAL-PATHNAME (MAKE-PATHNAME
-                               :HOST "NORVIG"
-                               :DIRECTORY '(:ABSOLUTE)
-                               :NAME NIL
-                               :TYPE "LISP"))
+(defvar *paip-source-files*
+  (translate-logical-pathname (make-pathname
+                               :host "NORVIG"
+                               :directory '(:absolute)
+                               :name nil
+                               :type "LISP"))
   "The location of the source files for this book.
   CHANGE IT TO REFLECT THE LOCATION OF THE FILES ON YOUR COMPUTER.")
 
 
-(LOAD "norvig:intro.lisp") ;; A few simple definitions
-(LOAD "norvig:simple.lisp") ;; Random sentence generator (two versions)
-(LOAD "norvig:overview.lisp") ;; 14 versions of LENGTH and other examples
+(load "norvig:intro.lisp") ;; A few simple definitions
+(load "norvig:simple.lisp") ;; Random sentence generator (two versions)
+(load "norvig:overview.lisp") ;; 14 versions of LENGTH and other examples
 
 
-(LOAD "norvig:auxmacs.lisp") ;; A few macros; load this first.
+(load "norvig:auxmacs.lisp") ;; A few macros; load this first.
 
-(UNLESS (FBOUNDP 'COMMON-LISP:LOOP)
-  (LOAD "norvig:loop.lisp")) ;; Load if your Lisp doesn't support ANSI LOOP
+(unless (fboundp 'common-lisp:loop)
+  (load "norvig:loop.lisp")) ;; Load if your Lisp doesn't support ANSI LOOP
 
-(LOAD "norvig:auxfns.lisp") ;; Commonly used auxiliary functions.
+(load "norvig:auxfns.lisp") ;; Commonly used auxiliary functions.
 
 
-(LOAD "norvig:search.lisp") ;; Search Utility
+(load "norvig:search.lisp") ;; Search Utility
 ;;     "norvig:search.dat"      ;; Test data (examples) for above
 
-(EXCLUSIVE
- (GPS-SIMPLE
-  (LOAD "norvig:gps1.lisp") ;; Simple version of General Problem Solver
+(exclusive
+ (gps-simple
+  (load "norvig:gps1.lisp") ;; Simple version of General Problem Solver
   ;;     "norvig:gps1.dat"      ;; Test data (examples) for above
   )
- (GPS
-  (LOAD "norvig:gps1.lisp") ;; Simple version of General Problem Solver
-  (LOAD "norvig:gps.lisp") ;; Final version of General Problem Solver
+ (gps
+  (load "norvig:gps1.lisp") ;; Simple version of General Problem Solver
+  (load "norvig:gps.lisp") ;; Final version of General Problem Solver
   ;;     "norvig:gps.dat"       ;; Test data (examples) for above
   )
- (GPS-SEARCH
-  (LOAD "norvig:gps1.lisp") ;; Simple version of General Problem Solver
-  (LOAD "norvig:gps.lisp") ;; Final version of General Problem Solver
-  (LOAD "norvig:gps-srch.lisp") ;; Version of GPS using the search utility 
+ (gps-search
+  (load "norvig:gps1.lisp") ;; Simple version of General Problem Solver
+  (load "norvig:gps.lisp") ;; Final version of General Problem Solver
+  (load "norvig:gps-srch.lisp") ;; Version of GPS using the search utility 
   ;;     "norvig:gps-srch.dat"  ;; Test data (examples) for above
   ))
 
 
 
-(LOAD "norvig:patmatch.lisp") ;; Pattern Matching Utility
+(load "norvig:patmatch.lisp") ;; Pattern Matching Utility
 ;;     "norvig:patmatch.dat"    ;; Test data (examples) for above
 
 
-(EXCLUSIVE
- (ELISA-BASIC
-  (LOAD "norvig:eliza1.lisp") ;; Basic version of Eliza program
+(exclusive
+ (elisa-basic
+  (load "norvig:eliza1.lisp") ;; Basic version of Eliza program
   )
- (ELISA
-  (LOAD "norvig:eliza.lisp") ;; Eliza with more rules; different reader
+ (elisa
+  (load "norvig:eliza.lisp") ;; Eliza with more rules; different reader
   )
- (ELISA-PM
-  (LOAD "norvig:eliza-pm.lisp") ;; Version of Eliza using utilities
-  (LOAD "norvig:cmacsyma.lisp") ;; Efficient Macsyma with canonical form
+ (elisa-pm
+  (load "norvig:eliza-pm.lisp") ;; Version of Eliza using utilities
+  (load "norvig:cmacsyma.lisp") ;; Efficient Macsyma with canonical form
   ;;     "norvig:cmacsyma.dat"  ;; Test data (examples) for above
   ))
 
 
-(LOAD "norvig:eliza1.lisp")   ;; Needed by The Student Program
-(LOAD "norvig:student.lisp")  ;; The Student Program
+(load "norvig:eliza1.lisp")   ;; Needed by The Student Program
+(load "norvig:student.lisp")  ;; The Student Program
 ;;     "norvig:student.dat"   ;; Test data (examples) for above
 
-(LOAD "norvig:macsyma.lisp") ;; The Macsyma Program
-(LOAD "norvig:macsymar.lisp") ;; Simplification & integration rules for Macsyma
+(load "norvig:macsyma.lisp") ;; The Macsyma Program
+(load "norvig:macsymar.lisp") ;; Simplification & integration rules for Macsyma
 ;;     "norvig:macsyma.dat"   ;; Test data (examples) for above
 
 
-(LOAD "norvig:unify.lisp") ;; Unification functions
+(load "norvig:unify.lisp") ;; Unification functions
 
-(EXCLUSIVE
- (PROLOG1
-  (LOAD "norvig:prolog1.lisp") ;; First version of Prolog interpreter
+(exclusive
+ (prolog1
+  (load "norvig:prolog1.lisp") ;; First version of Prolog interpreter
   ;;     "norvig:prolog1.dat"   ;; Test data (examples) for above
   )
- (PROLOG
-  (LOAD "norvig:prolog.lisp") ;; Final version of Prolog interpreter
+ (prolog
+  (load "norvig:prolog.lisp") ;; Final version of Prolog interpreter
   ;;     "norvig:prolog.dat"    ;; Test data (examples) for above
   )
- (PROLOG-C1
-  (LOAD "norvig:prologc1.lisp") ;; First version of Prolog compiler
+ (prolog-c1
+  (load "norvig:prologc1.lisp") ;; First version of Prolog compiler
   ;;     "norvig:prologc1.dat"  ;; Test data (examples) for above
   )
- (PROLOG-C2
-  (LOAD "norvig:prologc2.lisp") ;; Second version of Prolog compiler
+ (prolog-c2
+  (load "norvig:prologc2.lisp") ;; Second version of Prolog compiler
   ;;     "norvig:prologc2.dat"  ;; Test data (examples) for above
   )
- (PROLOG-C 
-  (LOAD "norvig:prologc.lisp") ;; Final version of Prolog compiler
+ (prolog-c 
+  (load "norvig:prologc.lisp") ;; Final version of Prolog compiler
   ;;     "norvig:prologc.dat"   ;; Test data (examples) for above
   )
- (PROLOG-CP
+ (prolog-cp
   ;;(LOAD "norvig:prologcp.lisp") ;; Primitives for Prolog compiler
   ;;(LOAD "norvig:unifgram.lisp") ;; Unification Parser
   ;;     "norvig:unifgram.dat"  ;; Test data (examples) for above
 
   ;;(LOAD "norvig:lexicon.lisp") ;; Sample Lexicon of English
   ;;     "norvig:grammar.dat"   ;; Test data (examples) for above
-  (LOAD "norvig:grammar.lisp") ;; Comprehensive grammar of English
+  (load "norvig:grammar.lisp") ;; Comprehensive grammar of English
   ))
 
 
 
-(LOAD "norvig:clos.lisp") ;; Some object-oriented and CLOS code
+(load "norvig:clos.lisp") ;; Some object-oriented and CLOS code
 ;;     "norvig:clos.dat"      ;; Test data (examples) for above
 
-(EXCLUSIVE
- (KREP-1
-  (LOAD "norvig:krep1.lisp") ;; Knowledge Representation code: first version 
+(exclusive
+ (krep-1
+  (load "norvig:krep1.lisp") ;; Knowledge Representation code: first version 
   ;;     "norvig:krep1.dat"   ;; Test data (examples) for above
   )
- (KREP-2
-  (LOAD "norvig:krep2.lisp") ;; Knowledge Representation code w/ conjunctions
+ (krep-2
+  (load "norvig:krep2.lisp") ;; Knowledge Representation code w/ conjunctions
   )
- (KREP
-  (LOAD "norvig:krep.lisp") ;; Final KR code: worlds and attached functions
+ (krep
+  (load "norvig:krep.lisp") ;; Final KR code: worlds and attached functions
   ))
 
 
-(LOAD "norvig:mycin.lisp") ;; The Emycin expert system shell
-(LOAD "norvig:mycin-r.lisp") ;; Some rules for a medical application of emycin
+(load "norvig:mycin.lisp") ;; The Emycin expert system shell
+(load "norvig:mycin-r.lisp") ;; Some rules for a medical application of emycin
 ;;     "norvig:mycin.dat"     ;; Test data (examples) for above
 
-(LOAD "norvig:waltz.lisp") ;; A Line-Labeling program using Waltz algorithm
+(load "norvig:waltz.lisp") ;; A Line-Labeling program using Waltz algorithm
 ;;     "norvig:waltz.dat"     ;; Test data (examples) for above
 
 ;; (LOAD "norvig:othello.lisp") ;; The Othello playing program & strategies
 ;;     "norvig:othello.dat"   ;; Test data (examples) for above
-(LOAD "norvig:othello2.lisp") ;; Additional strategies for Othello
-(LOAD "norvig:edge-tab.lisp") ;; Edge table for Iago strategy
+(load "norvig:othello2.lisp") ;; Additional strategies for Othello
+(load "norvig:edge-tab.lisp") ;; Edge table for Iago strategy
 
-(EXCLUSIVE
- (SYNTAX-1
-  (LOAD "norvig:syntax1.lisp") ;; Syntactic Parser
+(exclusive
+ (syntax-1
+  (load "norvig:syntax1.lisp") ;; Syntactic Parser
   ;;     "norvig:syntax1.dat"   ;; Test data (examples) for above
   )
- (SYNTAX-2
-  (LOAD "norvig:syntax2.lisp") ;; Syntactic Parser with semantics
+ (syntax-2
+  (load "norvig:syntax2.lisp") ;; Syntactic Parser with semantics
   ;;     "norvig:syntax2.dat"   ;; Test data (examples) for above
   )
- (SYNTAX-3
-  (LOAD "norvig:syntax3.lisp") ;; Syntactic Parser with semantics and pref.
+ (syntax-3
+  (load "norvig:syntax3.lisp") ;; Syntactic Parser with semantics and pref.
   ;;     "norvig:syntax3.dat"   ;; Test data (examples) for above
   ))
 
 
 
-(EXCLUSIVE
- (SCHEME-1
-  (LOAD "norvig:interp1.lisp") ;; Scheme interpreter, incl. version with macros
+(exclusive
+ (scheme-1
+  (load "norvig:interp1.lisp") ;; Scheme interpreter, incl. version with macros
   ;;     "norvig:interp1.dat"   ;; Test data (examples) for above
   )
- (SCHEME-2
-  (LOAD "norvig:interp1.lisp") ;; Scheme interpreter, incl. version with macros
-  (LOAD "norvig:interp2.lisp") ;; A tail recurive Scheme interpreter
+ (scheme-2
+  (load "norvig:interp1.lisp") ;; Scheme interpreter, incl. version with macros
+  (load "norvig:interp2.lisp") ;; A tail recurive Scheme interpreter
   )
- (SCHEME-3
-  (LOAD "norvig:interp1.lisp") ;; Scheme interpreter, incl. version with macros
-  (LOAD "norvig:interp3.lisp") ;; A Scheme interpreter that handles call/cc
+ (scheme-3
+  (load "norvig:interp1.lisp") ;; Scheme interpreter, incl. version with macros
+  (load "norvig:interp3.lisp") ;; A Scheme interpreter that handles call/cc
   ;;     "norvig:interp3.dat"   ;; Test data (examples) for above
   ))
 
-(EXCLUSIVE
- (SCHEME-C1
-  (LOAD "norvig:compile1.lisp") ;; Simple Scheme compiler
+(exclusive
+ (scheme-c1
+  (load "norvig:compile1.lisp") ;; Simple Scheme compiler
   )
- (SCHEME-C2
-  (LOAD "norvig:compile2.lisp") ;; Compiler with tail recursion and primitives
+ (scheme-c2
+  (load "norvig:compile2.lisp") ;; Compiler with tail recursion and primitives
   )
- (SCHEME-C3
-  (LOAD "norvig:compile3.lisp") ;; Compiler with peephole optimizer
-  (LOAD "norvig:compopt.lisp") ;; Peephole optimizers for compile3.lisp
+ (scheme-c3
+  (load "norvig:compile3.lisp") ;; Compiler with peephole optimizer
+  (load "norvig:compopt.lisp") ;; Peephole optimizers for compile3.lisp
   ;;     "norvig:compile.dat"  ;; Test data (examples) for all 3 versions above
   ))
 

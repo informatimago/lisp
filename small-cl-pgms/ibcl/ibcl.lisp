@@ -36,24 +36,22 @@
 ;;;;    Missing some functions, like make-package, rename-package, etc.
 ;;;;    See also MOP functions.
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal Bourguignon 2006 - 2006
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
 (cl:defpackage "IMAGE-BASED-COMMON-LISP"
@@ -358,7 +356,7 @@
     (if (streamp path-or-stream)
         (save-packages path-or-stream package)
         (with-open-file (out path-or-stream
-                             :direction :output :if-exists :Supersede
+                             :direction :output :if-exists :supersede
                              :if-does-not-exist :create)
           (save-packages out package))))
   (values))
@@ -378,8 +376,8 @@
              (first args)
              keys)))
   #+sbcl 
-  (when (zerop (SB-POSIX:FORK))
-      (apply (function sb-ext:SAVE-LISP-AND-DIE) args))
+  (when (zerop (sb-posix:fork))
+      (apply (function sb-ext:save-lisp-and-die) args))
   #-(or clisp sbcl) (error "I don't know how to save an image in ~A" 
                            (lisp-implementation-type))
   (values))
@@ -390,23 +388,23 @@
   (loop
      :for path = (make-pathname :name (format nil "~36R" (get-universal-time))
                                 :type "LISP"
-                                :case :COMMON
+                                :case :common
                                 :defaults (user-homedir-pathname))
      :while (probe-file path)
      :finally (return path)))
 
 
 (cl:defmacro handling-errors (&body body)
-  `(HANDLER-CASE (progn ,@body)
+  `(handler-case (progn ,@body)
      (simple-condition 
-         (ERR) 
+         (err) 
        (format *error-output* "~&~A: ~%" (class-name (class-of err)))
        (apply (function format) *error-output*
               (simple-condition-format-control   err)
               (simple-condition-format-arguments err))
        (format *error-output* "~&"))
      (condition 
-         (ERR) 
+         (err) 
        (format *error-output* "~&~A: ~%  ~S~%"
                (class-name (class-of err)) err))))
 

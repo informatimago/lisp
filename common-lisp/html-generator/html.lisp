@@ -23,37 +23,37 @@
 ;;;;    2003-05-16 <PJB> Extracted from vacation.lisp.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
-;;;;
+;;;;    AGPL3
+;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2007
-;;;;    mailto:pjb@informatimago.com
-;;;;
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
-;;;;
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
-;;;;
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    Copyright Pascal J. Bourguignon 2003 - 2003
+;;;;    Copyright Pascal J. Bourguignon 2003 - 2003
+;;;;    Copyright Pascal J. Bourguignon 2003 - 2003
+;;;;    
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
+;;;;    
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
+;;;;    
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.HTML-GENERATOR.HTML"
-  (:USE "COMMON-LISP"
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.HTML-GENERATOR.HTML"
+  (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CHARACTER-SETS")
-  (:IMPORT-FROM "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
+  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
                 "SPLIT-STRING" "STRING-REPLACE")
-  (:SHADOW "MAP")
-  (:EXPORT
+  (:shadow "MAP")
+  (:export
 
    "*HTML-OUTPUT-STREAM*" "*HTML-CHARACTER-SET*"
    "*DOCTYPE*" "*HTML-VERSION*"
@@ -97,13 +97,13 @@
    "SPAN" "STRIKE" "STRONG" "STYLE" "SUB" "SUP" "TABLE" "TBODY" "TD"
    "TEXTAREA" "TFOOT" "TH" "THEAD" "TITLE" "TR" "TT" "U" "UL" "VAR")
 
-  (:DOCUMENTATION
+  (:documentation
    "This package exports functions to generate HTML pages.
 
     Copyright Pascal J. Bourguignon 2003 - 2007
     This package is provided under the GNU General Public License.
     See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.HTML-GENERATOR.HTML")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.HTML-GENERATOR.HTML")
 
 
 
@@ -122,12 +122,12 @@
     "The HTML macros collect issued elements into this list.")
 
 
-  (DEFVAR *DOCTYPE*      :STRICT
+  (defvar *doctype*      :strict
     "The DOCTYPE of HTML document being generated.
    May be a token: :STRICT, :TRANSITIONAL, :LOOSE or :FRAMESET.")
 
 
-  (DEFVAR *HTML-VERSION* "4.01"
+  (defvar *html-version* "4.01"
     "The HTML version of the document being generated.")
 
   (defvar *html-xhtml-mode-p* nil
@@ -146,29 +146,29 @@ the Common Lisp standard character set and HTML default character set.")
 
 
   (defun doctype* (kind)
-    (UNLESS (MEMBER KIND '(:STRICT :TRANSITIONAL :LOOSE :FRAMESET))
-      (ERROR "Unexpected DOCTYPE kind. Please choose :STRICT, ~
+    (unless (member kind '(:strict :transitional :loose :frameset))
+      (error "Unexpected DOCTYPE kind. Please choose :STRICT, ~
              :TRANSITIONAL, :LOOSE or :FRAMESET."))
     (html-string
-     (eCASE KIND
-       ((:STRICT)
+     (ecase kind
+       ((:strict)
         "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" ~
                 \"http://www.w3.org/TR/html4/strict.dtd\">~%")
-       ((:TRANSITIONAL :LOOSE)
+       ((:transitional :loose)
         "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" ~
                  \"http://www.w3.org/TR/html4/loose.dtd\">~%")
-       ((:FRAMESET)
+       ((:frameset)
         "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Frameset//EN\" ~
                  \"http://www.w3.org/TR/html4/frameset.dtd\">~%"))))
 
 
-  (DEFMACRO DOCTYPE (KIND &BODY BODY)
+  (defmacro doctype (kind &body body)
     (let ((vkind (gensym)))
       `(let* ((,vkind        ,kind)
-              (*DOCTYPE*     ,vkind)
-              (*HTML-VERSION* "4.01"))
+              (*doctype*     ,vkind)
+              (*html-version* "4.01"))
          (doctype* ,vkind)
-         ,@BODY)))
+         ,@body)))
 
 
 
@@ -239,7 +239,7 @@ RETURN:  An element storing the result of formating the CONTROL string
 EXAMPLE: (HTML-STRING \"<P>Some paragraph</P>\") --> #<element>
 "
     (make-instance 'html-string
-        :text (APPLY (FUNCTION FORMAT) NIL CONTROL ARGUMENTS)))
+        :text (apply (function format) nil control arguments)))
 
 
   (defun html-string (control &rest arguments)
@@ -247,16 +247,16 @@ EXAMPLE: (HTML-STRING \"<P>Some paragraph</P>\") --> #<element>
 
 
 
-  (DEFUN COMMENT* (CONTROL &REST ARGUMENTS)
+  (defun comment* (control &rest arguments)
     "
 RETURN:  An element storing the result of formating the CONTROL string
          with the ARGUMENTS as HTML comment.
 "
     (html-string "~&<!-- ~A -->~%"
-                 (STRING-REPLACE (APPLY (FUNCTION FORMAT) NIL CONTROL ARGUMENTS)
+                 (string-replace (apply (function format) nil control arguments)
                                  "--"  "==")))
 
-  (defun comment (CONTROL &REST ARGUMENTS)
+  (defun comment (control &rest arguments)
     (collect-element (apply (function comment*) control arguments)))
 
 
@@ -272,13 +272,13 @@ RETURN:  An element storing the result of formating the CONTROL string
                     (cdata-data self) stream)
     self)
 
-  (DEFUN CDATA* (CONTROL &REST ARGUMENTS)
+  (defun cdata* (control &rest arguments)
     "
 RETURN:  An element storing the result of formating the CONTROL string
          with the ARGUMENTS as CDATA (ie. post-processed to quote special
          HTML characters (&,\").
 "
-    (make-instance 'cdata :data (APPLY (FUNCTION FORMAT) NIL CONTROL ARGUMENTS)))
+    (make-instance 'cdata :data (apply (function format) nil control arguments)))
 
   (defun cdata (control &rest arguments)
     (collect-element (apply (function cdata*) control arguments)))
@@ -292,13 +292,13 @@ RETURN:  An element storing the result of formating the CONTROL string
     self)
 
 
-  (DEFUN PCDATA* (CONTROL &REST ARGUMENTS)
+  (defun pcdata* (control &rest arguments)
     "
 RETURN:  An element storing the result of formating the CONTROL string
          with the ARGUMENTS as CDATA (ie. post-processed to quote special
          HTML characters (<,>,&,\").
 "
-    (make-instance 'pcdata :data (APPLY (FUNCTION FORMAT) NIL CONTROL ARGUMENTS)))
+    (make-instance 'pcdata :data (apply (function format) nil control arguments)))
 
   (defun pcdata (control &rest arguments)
     (collect-element (apply (function pcdata*) control arguments)))
@@ -367,7 +367,7 @@ RETURN:  An element storing the result of formating the CONTROL string
 
 
 
-  (defun WRITE-HTML (element &optional (stream *html-output-stream*))
+  (defun write-html (element &optional (stream *html-output-stream*))
     "
 DO:    Write the HTML encoded in the ELEMENT to the output STREAM.
 "
@@ -437,15 +437,15 @@ ENCODING: indicates which character encoding is used to write the
     name elements type default options documentation)
 
 
-  (defparameter *ELEMENTS*   (make-hash-table :test (function equal))
+  (defparameter *elements*   (make-hash-table :test (function equal))
     "Maps element names to elements.")
 
 
-  (defparameter *ATTRIBUTES* (make-hash-table :test (function equal))
+  (defparameter *attributes* (make-hash-table :test (function equal))
     "Maps attribute names to attributes.")
 
 
-  (DEFMACRO DEFELEMENT (NAME OPTIONS &OPTIONAL (DOCUMENTATION "A HTML element."))
+  (defmacro defelement (name options &optional (documentation "A HTML element."))
     "
 DO:         Defines an HTML element macro.
 NAME:       A symbol that will be used to define a macro.
@@ -469,7 +469,7 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
 
 
 
-  (DEFMACRO DEFATTRIBUTE (ATTR-NAME ELEMENTS TYPE DEFAULT OPTIONS DOCUMENTATION)
+  (defmacro defattribute (attr-name elements type default options documentation)
     "
 DO:       Defines an HTML attribute.
 "
@@ -502,13 +502,13 @@ DO:       Defines an HTML attribute.
 
 
   (defun check-loose (name)
-    (UNLESS (EQ :LOOSE *DOCTYPE*)
-      (ERROR "The element ~A can be used only with loose DTD." NAME)))
+    (unless (eq :loose *doctype*)
+      (error "The element ~A can be used only with loose DTD." name)))
 
 
   (defun check-frameset (name)
-    (UNLESS (EQ :FRAMESET *DOCTYPE*)
-      (ERROR "The element ~A can be used only with frameset DTD." NAME)))
+    (unless (eq :frameset *doctype*)
+      (error "The element ~A can be used only with frameset DTD." name)))
 
 
 
@@ -558,10 +558,10 @@ DO:       Defines an HTML attribute.
                ,@(when (member :deprecated (el-options element))
                        `((warn ,(format nil "HTML element ~A is deprecated."
                                         name))))
-               ,@(COND
-                  ((MEMBER :LOOSE-DTD    (el-OPTIONS element))
+               ,@(cond
+                  ((member :loose-dtd    (el-options element))
                    `((check-loose    ',name)))
-                  ((MEMBER :FRAMESET-DTD (el-OPTIONS element))
+                  ((member :frameset-dtd (el-options element))
                    `((check-frameset ',name))))
                ,@(when (member :empty (el-options element))
                        `((when ,vbody
@@ -678,1055 +678,1055 @@ DO:       Defines an HTML attribute.
 ;;           [:loose-dtd] [:frameset-dtd])
 ;;
 
-(DEFELEMENT A          ()  "anchor")
-(DEFELEMENT ABBR       ()  "abbreviated form (e.g., WWW, HTTP, etc.)")
-(DEFELEMENT ACRONYM    ())
-(DEFELEMENT ADDRESS    ()                        "information on author")
-(DEFELEMENT APPLET     (:DEPRECATED :LOOSE-DTD)  "Java applet")
-(DEFELEMENT AREA       (:END-FORBIDDEN :EMPTY)   "client-side image map area")
-(DEFELEMENT B          ()                        "bold text style")
-(DEFELEMENT BASE       (:END-FORBIDDEN :EMPTY)   "document base URI")
-(DEFELEMENT BASEFONT   (:END-FORBIDDEN :EMPTY :DEPRECATED :LOOSE-DTD)
+(defelement a          ()  "anchor")
+(defelement abbr       ()  "abbreviated form (e.g., WWW, HTTP, etc.)")
+(defelement acronym    ())
+(defelement address    ()                        "information on author")
+(defelement applet     (:deprecated :loose-dtd)  "Java applet")
+(defelement area       (:end-forbidden :empty)   "client-side image map area")
+(defelement b          ()                        "bold text style")
+(defelement base       (:end-forbidden :empty)   "document base URI")
+(defelement basefont   (:end-forbidden :empty :deprecated :loose-dtd)
   "base font size")
-(DEFELEMENT BDO        ()                        "I18N BiDi over-ride")
-(DEFELEMENT BIG        ()                        "large text style")
-(DEFELEMENT BLOCKQUOTE ()                        "long quotation")
-(DEFELEMENT BODY       (:START-OPTIONAL :END-OPTIONAL)
+(defelement bdo        ()                        "I18N BiDi over-ride")
+(defelement big        ()                        "large text style")
+(defelement blockquote ()                        "long quotation")
+(defelement body       (:start-optional :end-optional)
   "document body")
-(DEFELEMENT BR         (:END-FORBIDDEN :EMPTY)   "forced line break")
-(DEFELEMENT BUTTON     ()                        "push button")
-(DEFELEMENT CAPTION    ()                        "table caption")
-(DEFELEMENT CENTER     (:DEPRECATED :LOOSE-DTD)
+(defelement br         (:end-forbidden :empty)   "forced line break")
+(defelement button     ()                        "push button")
+(defelement caption    ()                        "table caption")
+(defelement center     (:deprecated :loose-dtd)
   "shorthand for DIV align=center")
-(DEFELEMENT CITE       ()                        "citation")
-(DEFELEMENT CODE       ()                        "computer code fragment")
-(DEFELEMENT COL        (:END-FORBIDDEN :EMPTY)   "table column")
-(DEFELEMENT COLGROUP   (:END-OPTIONAL)           "table column group")
-(DEFELEMENT DD         (:END-OPTIONAL)  "defelementinition description")
-(DEFELEMENT DEL        ()                        "deleted text")
-(DEFELEMENT DFN        ()                        "instance defelementinition")
-(DEFELEMENT DIR        (:DEPRECATED :LOOSE-DTD)  "directory list")
-(DEFELEMENT DIV        ()  "generic language/style container")
-(DEFELEMENT DL         ()  "defelementinition list")
-(DEFELEMENT DT         (:END-OPTIONAL)           "defelementinition term")
-(DEFELEMENT EM         ()                        "emphasis")
-(DEFELEMENT FIELDSET   ()                        "form control group")
-(DEFELEMENT FONT       (:DEPRECATED :LOOSE-DTD)  "local change to font")
-(DEFELEMENT FORM       ()  "interactive form")
-(DEFELEMENT FRAME      (:END-FORBIDDEN :EMPTY :FRAMESET-DTD)  "subwindow")
-(DEFELEMENT FRAMESET   (:FRAMESET-DTD)           "window subdivision")
-(DEFELEMENT H1         ()                        "Heading")
-(DEFELEMENT H2         ()                        "Heading")
-(DEFELEMENT H3         ()                        "Heading")
-(DEFELEMENT H4         ()                        "Heading")
-(DEFELEMENT H5         ()                        "Heading")
-(DEFELEMENT H6         ()                        "Heading")
-(DEFELEMENT HEAD       (:START-OPTIONAL :END-OPTIONAL)  "document head")
-(DEFELEMENT HR         (:END-FORBIDDEN :EMPTY)   "horizontal rule")
-(DEFELEMENT HTML       (:START-OPTIONAL :END-OPTIONAL)
+(defelement cite       ()                        "citation")
+(defelement code       ()                        "computer code fragment")
+(defelement col        (:end-forbidden :empty)   "table column")
+(defelement colgroup   (:end-optional)           "table column group")
+(defelement dd         (:end-optional)  "defelementinition description")
+(defelement del        ()                        "deleted text")
+(defelement dfn        ()                        "instance defelementinition")
+(defelement dir        (:deprecated :loose-dtd)  "directory list")
+(defelement div        ()  "generic language/style container")
+(defelement dl         ()  "defelementinition list")
+(defelement dt         (:end-optional)           "defelementinition term")
+(defelement em         ()                        "emphasis")
+(defelement fieldset   ()                        "form control group")
+(defelement font       (:deprecated :loose-dtd)  "local change to font")
+(defelement form       ()  "interactive form")
+(defelement frame      (:end-forbidden :empty :frameset-dtd)  "subwindow")
+(defelement frameset   (:frameset-dtd)           "window subdivision")
+(defelement h1         ()                        "Heading")
+(defelement h2         ()                        "Heading")
+(defelement h3         ()                        "Heading")
+(defelement h4         ()                        "Heading")
+(defelement h5         ()                        "Heading")
+(defelement h6         ()                        "Heading")
+(defelement head       (:start-optional :end-optional)  "document head")
+(defelement hr         (:end-forbidden :empty)   "horizontal rule")
+(defelement html       (:start-optional :end-optional)
   "document root element")
-(DEFELEMENT I          ()                        "italic text style")
-(DEFELEMENT IFRAME     (:LOOSE-DTD)              "inline subwindow")
-(DEFELEMENT IMG        (:END-FORBIDDEN :EMPTY)   "embedded image")
-(DEFELEMENT INPUT      (:END-FORBIDDEN :EMPTY)   "form control")
-(DEFELEMENT INS        ()                        "inserted text")
-(DEFELEMENT ISINDEX    (:END-FORBIDDEN :EMPTY :DEPRECATED :LOOSE-DTD)
+(defelement i          ()                        "italic text style")
+(defelement iframe     (:loose-dtd)              "inline subwindow")
+(defelement img        (:end-forbidden :empty)   "embedded image")
+(defelement input      (:end-forbidden :empty)   "form control")
+(defelement ins        ()                        "inserted text")
+(defelement isindex    (:end-forbidden :empty :deprecated :loose-dtd)
   "single line prompt")
-(DEFELEMENT KBD        ()  "text to be entered by the user")
-(DEFELEMENT LABEL      ()                        "form field label text")
-(DEFELEMENT LEGEND     ()                        "fieldset legend")
-(DEFELEMENT LI         (:END-OPTIONAL)           "list item")
-(DEFELEMENT LINK       (:END-FORBIDDEN :EMPTY)   "a media-independent link")
-(DEFELEMENT MAP        ()                        "client-side image map")
-(DEFELEMENT MENU       (:DEPRECATED :LOOSE-DTD)  "menu list")
-(DEFELEMENT META       (:END-FORBIDDEN :EMPTY)   "generic metainformation")
-(DEFELEMENT NOFRAMES   (:FRAMESET-DTD)
+(defelement kbd        ()  "text to be entered by the user")
+(defelement label      ()                        "form field label text")
+(defelement legend     ()                        "fieldset legend")
+(defelement li         (:end-optional)           "list item")
+(defelement link       (:end-forbidden :empty)   "a media-independent link")
+(defelement map        ()                        "client-side image map")
+(defelement menu       (:deprecated :loose-dtd)  "menu list")
+(defelement meta       (:end-forbidden :empty)   "generic metainformation")
+(defelement noframes   (:frameset-dtd)
   "alternate content container for non frame-based rendering")
-(DEFELEMENT NOSCRIPT   ()
+(defelement noscript   ()
   "alternate content container for non script-based rendering")
-(DEFELEMENT OBJECT     ()               "generic embedded object")
-(DEFELEMENT OL         ()               "ordered list")
-(DEFELEMENT OPTGROUP   ()               "option group")
-(DEFELEMENT OPTION     (:END-OPTIONAL)  "selectable choice")
-(DEFELEMENT P          (:END-OPTIONAL)  "paragraph")
-(DEFELEMENT PARAM      (:END-FORBIDDEN :EMPTY)  "named property value")
-(DEFELEMENT PRE        ()               "preformatted text")
-(DEFELEMENT Q          ()               "short inline quotation")
-(DEFELEMENT S          (:DEPRECATED :LOOSE-DTD)
+(defelement object     ()               "generic embedded object")
+(defelement ol         ()               "ordered list")
+(defelement optgroup   ()               "option group")
+(defelement option     (:end-optional)  "selectable choice")
+(defelement p          (:end-optional)  "paragraph")
+(defelement param      (:end-forbidden :empty)  "named property value")
+(defelement pre        ()               "preformatted text")
+(defelement q          ()               "short inline quotation")
+(defelement s          (:deprecated :loose-dtd)
   "strike-through text style")
-(DEFELEMENT SAMP       ()               "sample program output, scripts, etc.")
-(DEFELEMENT SCRIPT     ()               "script statements")
-(DEFELEMENT SELECT     ()               "option selector")
-(DEFELEMENT SMALL      ()               "small text style")
-(DEFELEMENT SPAN       ()               "generic language/style container")
-(DEFELEMENT STRIKE     (:DEPRECATED :LOOSE-DTD)  "strike-through text")
-(DEFELEMENT STRONG     ()               "strong emphasis")
-(DEFELEMENT STYLE      ()               "style info")
-(DEFELEMENT SUB        ()               "subscript")
-(DEFELEMENT SUP        ()               "superscript")
-(DEFELEMENT TABLE      ())
-(DEFELEMENT TBODY      (:START-OPTIONAL :END-OPTIONAL)  "table body")
-(DEFELEMENT TD         (:END-OPTIONAL)  "table data cell")
-(DEFELEMENT TEXTAREA   ()               "multi-line text field")
-(DEFELEMENT TFOOT      (:END-OPTIONAL)  "table footer")
-(DEFELEMENT TH         (:END-OPTIONAL)  "table header cell")
-(DEFELEMENT THEAD      (:END-OPTIONAL)  "table header")
-(DEFELEMENT TITLE      ()               "document title")
-(DEFELEMENT TR         (:END-OPTIONAL)  "table row")
-(DEFELEMENT TT         ()  "teletype or monospaced text style")
-(DEFELEMENT U          (:DEPRECATED :LOOSE-DTD)  "underlined text style")
-(DEFELEMENT UL         ()  "unordered list")
-(DEFELEMENT VAR        ()  "instance of a variable or program argument")
+(defelement samp       ()               "sample program output, scripts, etc.")
+(defelement script     ()               "script statements")
+(defelement select     ()               "option selector")
+(defelement small      ()               "small text style")
+(defelement span       ()               "generic language/style container")
+(defelement strike     (:deprecated :loose-dtd)  "strike-through text")
+(defelement strong     ()               "strong emphasis")
+(defelement style      ()               "style info")
+(defelement sub        ()               "subscript")
+(defelement sup        ()               "superscript")
+(defelement table      ())
+(defelement tbody      (:start-optional :end-optional)  "table body")
+(defelement td         (:end-optional)  "table data cell")
+(defelement textarea   ()               "multi-line text field")
+(defelement tfoot      (:end-optional)  "table footer")
+(defelement th         (:end-optional)  "table header cell")
+(defelement thead      (:end-optional)  "table header")
+(defelement title      ()               "document title")
+(defelement tr         (:end-optional)  "table row")
+(defelement tt         ()  "teletype or monospaced text style")
+(defelement u          (:deprecated :loose-dtd)  "underlined text style")
+(defelement ul         ()  "unordered list")
+(defelement var        ()  "instance of a variable or program argument")
 
 
 
-(DEFATTRIBUTE ABBR 
-  (TD TH)
-  (%TEXT)  :IMPLIED
+(defattribute abbr 
+  (td th)
+  (%text)  :implied
   ()  "abbreviation for header cell")
 
-(DEFATTRIBUTE ACCEPT-CHARSET
-  (FORM)
-  (%CHARSETS)  :IMPLIED
+(defattribute accept-charset
+  (form)
+  (%charsets)  :implied
   ()  "list of supported charsets")
 
-(DEFATTRIBUTE ACCEPT 
-  (FORM INPUT)
-  (%CONTENTTYPES)  :IMPLIED
+(defattribute accept 
+  (form input)
+  (%contenttypes)  :implied
   ()  "list of MIME types for file upload")
 
-(DEFATTRIBUTE ACCESSKEY
-  (A AREA BUTTON INPUT LABEL LEGEND TEXTAREA)
-  (%CHARACTER)  :IMPLIED
+(defattribute accesskey
+  (a area button input label legend textarea)
+  (%character)  :implied
   ()  "accessibility key character")
 
-(DEFATTRIBUTE ACTION 
-  (FORM)
-  (%URI)  :REQUIRED
+(defattribute action 
+  (form)
+  (%uri)  :required
   ()  "server-side form handler")
 
 ;;
 ;; (DEFATTRIBUTE ATTR-NAME ELEMENTS TYPE DEFAULT OPTIONS DOCUMENTATION)
 ;;
 
-(DEFATTRIBUTE ALIGN
-  (CAPTION)
-  (%CALIGN)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "relative to table")
+(defattribute align
+  (caption)
+  (%calign)  :implied
+  (:deprecated  :loose-dtd)  "relative to table")
 
-(DEFATTRIBUTE ALIGN 
-  (APPLET IFRAME IMG INPUT OBJECT)
-  (%IALIGN)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "vertical or horizontal alignment")
+(defattribute align 
+  (applet iframe img input object)
+  (%ialign)  :implied
+  (:deprecated  :loose-dtd)  "vertical or horizontal alignment")
 
-(DEFATTRIBUTE ALIGN
-  (LEGEND)
-  (%LALIGN)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "relative to fieldset")
+(defattribute align
+  (legend)
+  (%lalign)  :implied
+  (:deprecated  :loose-dtd)  "relative to fieldset")
 
-(DEFATTRIBUTE ALIGN
-  (TABLE)
-  (%TALIGN)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "table position relative to window")
+(defattribute align
+  (table)
+  (%talign)  :implied
+  (:deprecated  :loose-dtd)  "table position relative to window")
 
-(DEFATTRIBUTE ALIGN
-  (HR)
-  (OR  "LEFT" "CENTER" "RIGHT")  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "")
+(defattribute align
+  (hr)
+  (or  "LEFT" "CENTER" "RIGHT")  :implied
+  (:deprecated  :loose-dtd)  "")
 
-(DEFATTRIBUTE ALIGN 
-  (DIV H1 H2 H3 H4 H5 H6 P)
-  (OR  "LEFT" "CENTER" "RIGHT" "JUSTIFY")  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "align, text alignment")
+(defattribute align 
+  (div h1 h2 h3 h4 h5 h6 p)
+  (or  "LEFT" "CENTER" "RIGHT" "JUSTIFY")  :implied
+  (:deprecated  :loose-dtd)  "align, text alignment")
 
-(DEFATTRIBUTE ALIGN 
-  (COL COLGROUP TBODY TD TFOOT TH THEAD TR)
-  (OR  "LEFT" "CENTER" "RIGHT" "JUSTIFY" "CHAR")  :IMPLIED
+(defattribute align 
+  (col colgroup tbody td tfoot th thead tr)
+  (or  "LEFT" "CENTER" "RIGHT" "JUSTIFY" "CHAR")  :implied
   ()  "")
 
-(DEFATTRIBUTE ALINK 
-  (BODY)
-  (%COLOR)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "color of selected links")
+(defattribute alink 
+  (body)
+  (%color)  :implied
+  (:deprecated  :loose-dtd)  "color of selected links")
 
-(DEFATTRIBUTE ALT 
-  (APPLET)
-  (%TEXT)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "short description")
+(defattribute alt 
+  (applet)
+  (%text)  :implied
+  (:deprecated  :loose-dtd)  "short description")
 
-(DEFATTRIBUTE ALT 
-  (AREA IMG)
-  (%TEXT)  :REQUIRED
+(defattribute alt 
+  (area img)
+  (%text)  :required
   ()  "short description")
 
-(DEFATTRIBUTE ALT 
-  (INPUT)
-  (CDATA)  :IMPLIED
+(defattribute alt 
+  (input)
+  (cdata)  :implied
   ()  "short description")
 
-(DEFATTRIBUTE ARCHIVE
-  (APPLET)
-  (CDATA)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "comma-separated archive list")
+(defattribute archive
+  (applet)
+  (cdata)  :implied
+  (:deprecated  :loose-dtd)  "comma-separated archive list")
 
-(DEFATTRIBUTE ARCHIVE
-  (OBJECT)
-  (CDATA)  :IMPLIED
+(defattribute archive
+  (object)
+  (cdata)  :implied
   ()  "space-separated list of URIs")
 
-(DEFATTRIBUTE AXIS 
-  (TD TH)
-  (CDATA)  :IMPLIED
+(defattribute axis 
+  (td th)
+  (cdata)  :implied
   ()  "comma-separated list of related headers")
 
-(DEFATTRIBUTE BACKGROUND
-  (BODY)
-  (%URI)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "texture tile for document background")
+(defattribute background
+  (body)
+  (%uri)  :implied
+  (:deprecated  :loose-dtd)  "texture tile for document background")
 
-(DEFATTRIBUTE BGCOLOR
-  (TABLE)
-  (%COLOR)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "background color for cells")
+(defattribute bgcolor
+  (table)
+  (%color)  :implied
+  (:deprecated  :loose-dtd)  "background color for cells")
 
-(DEFATTRIBUTE BGCOLOR
-  (TR)
-  (%COLOR)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "background color for row")
+(defattribute bgcolor
+  (tr)
+  (%color)  :implied
+  (:deprecated  :loose-dtd)  "background color for row")
 
-(DEFATTRIBUTE BGCOLOR
-  (TD TH)
-  (%COLOR)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "cell background color")
+(defattribute bgcolor
+  (td th)
+  (%color)  :implied
+  (:deprecated  :loose-dtd)  "cell background color")
 
-(DEFATTRIBUTE BGCOLOR
-  (BODY)
-  (%COLOR)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "document background color")
+(defattribute bgcolor
+  (body)
+  (%color)  :implied
+  (:deprecated  :loose-dtd)  "document background color")
 
-(DEFATTRIBUTE BORDER
-  (TABLE)
-  (%PIXELS)  :IMPLIED
+(defattribute border
+  (table)
+  (%pixels)  :implied
   ()  "controls frame width around table")
 
-(DEFATTRIBUTE BORDER
-  (IMG OBJECT)
-  (%PIXELS)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "link border width")
+(defattribute border
+  (img object)
+  (%pixels)  :implied
+  (:deprecated  :loose-dtd)  "link border width")
 
-(DEFATTRIBUTE CELLPADDING
-  (TABLE)
-  (%LENGTH)  :IMPLIED
+(defattribute cellpadding
+  (table)
+  (%length)  :implied
   ()  "spacing within cells")
 
-(DEFATTRIBUTE CELLSPACING
-  (TABLE)
-  (%LENGTH)  :IMPLIED
+(defattribute cellspacing
+  (table)
+  (%length)  :implied
   ()  "spacing between cells")
 
-(DEFATTRIBUTE CHAR 
-  (COL COLGROUP TBODY TD TFOOT TH THEAD TR)
-  (%CHARACTER)  :IMPLIED
+(defattribute char 
+  (col colgroup tbody td tfoot th thead tr)
+  (%character)  :implied
   ()  "alignment char, e.g. char=':'")
 
-(DEFATTRIBUTE CHAROFF 
-  (COL COLGROUP TBODY TD TFOOT TH THEAD TR)
-  (%LENGTH)  :IMPLIED
+(defattribute charoff 
+  (col colgroup tbody td tfoot th thead tr)
+  (%length)  :implied
   ()  "offset for alignment char")
 
-(DEFATTRIBUTE CHARSET 
-  (A LINK SCRIPT)
-  (%CHARSET)  :IMPLIED
+(defattribute charset 
+  (a link script)
+  (%charset)  :implied
   ()  "char encoding of linked resource")
 
-(DEFATTRIBUTE CHECKED 
-  (INPUT)
-  (CHECKED)  :IMPLIED
+(defattribute checked 
+  (input)
+  (checked)  :implied
   ()  "for radio buttons and check boxes")
 
-(DEFATTRIBUTE CITE 
-  (BLOCKQUOTE Q)
-  (%URI)  :IMPLIED
+(defattribute cite 
+  (blockquote q)
+  (%uri)  :implied
   ()  "URI for source document or msg")
 
-(DEFATTRIBUTE CITE 
-  (DEL INS)
-  (%URI)  :IMPLIED
+(defattribute cite 
+  (del ins)
+  (%uri)  :implied
   ()  "info on reason for change")
 
-(DEFATTRIBUTE CLASS 
-  (:ALL-ELEMENTS-BUT BASE BASEFONT HEAD HTML META PARAM SCRIPT STYLE TITLE)
-  (CDATA)  :IMPLIED
+(defattribute class 
+  (:all-elements-but base basefont head html meta param script style title)
+  (cdata)  :implied
   ()  "space-separated list of classes")
 
-(DEFATTRIBUTE CLASSID 
-  (OBJECT)
-  (%URI)  :IMPLIED
+(defattribute classid 
+  (object)
+  (%uri)  :implied
   ()  "identifies an implementation")
 
-(DEFATTRIBUTE CLEAR 
-  (BR)
-  (OR  "LEFT" "ALL" "RIGHT" "NONE")  "NONE"
-  (:DEPRECATED  :LOOSE-DTD)  "control of text flow")
+(defattribute clear 
+  (br)
+  (or  "LEFT" "ALL" "RIGHT" "NONE")  "NONE"
+  (:deprecated  :loose-dtd)  "control of text flow")
 
-(DEFATTRIBUTE CODE 
-  (APPLET)
-  (CDATA)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "applet class file")
+(defattribute code 
+  (applet)
+  (cdata)  :implied
+  (:deprecated  :loose-dtd)  "applet class file")
 
-(DEFATTRIBUTE CODEBASE
-  (OBJECT)
-  (%URI)  :IMPLIED
+(defattribute codebase
+  (object)
+  (%uri)  :implied
   ()  "base URI for classid, data, archive")
 
-(DEFATTRIBUTE CODEBASE
-  (APPLET)
-  (%URI)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "optional base URI for applet")
+(defattribute codebase
+  (applet)
+  (%uri)  :implied
+  (:deprecated  :loose-dtd)  "optional base URI for applet")
 
-(DEFATTRIBUTE CODETYPE
-  (OBJECT)
-  (%CONTENTTYPE)  :IMPLIED
+(defattribute codetype
+  (object)
+  (%contenttype)  :implied
   ()  "content type for code")
 
-(DEFATTRIBUTE COLOR
-  (BASEFONT FONT)
-  (%COLOR)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "text color")
+(defattribute color
+  (basefont font)
+  (%color)  :implied
+  (:deprecated  :loose-dtd)  "text color")
 
-(DEFATTRIBUTE COLS
-  (FRAMESET)
-  (%MULTILENGTHS)  :IMPLIED
-  (:FRAMESET-DTD)  "list of lengths, default: 100% (1 col)")
+(defattribute cols
+  (frameset)
+  (%multilengths)  :implied
+  (:frameset-dtd)  "list of lengths, default: 100% (1 col)")
 
-(DEFATTRIBUTE COLS
-  (TEXTAREA)
-  (NUMBER)  :REQUIRED
+(defattribute cols
+  (textarea)
+  (number)  :required
   ()  "")
 
-(DEFATTRIBUTE COLSPAN 
-  (TD TH)
-  (NUMBER) "1"
+(defattribute colspan 
+  (td th)
+  (number) "1"
   ()  "number of cols spanned by cell")
 
-(DEFATTRIBUTE COMPACT 
-  (DIR DL MENU OL UL)
-  (COMPACT)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "reduced interitem spacing")
+(defattribute compact 
+  (dir dl menu ol ul)
+  (compact)  :implied
+  (:deprecated  :loose-dtd)  "reduced interitem spacing")
 
-(DEFATTRIBUTE CONTENT 
-  (META)
-  (CDATA)  :REQUIRED
+(defattribute content 
+  (meta)
+  (cdata)  :required
   ()  "associated information")
 
-(DEFATTRIBUTE COORDS 
-  (AREA)
-  (%COORDS)  :IMPLIED
+(defattribute coords 
+  (area)
+  (%coords)  :implied
   ()  "comma-separated list of lengths")
 
-(DEFATTRIBUTE COORDS 
-  (A)
-  (%COORDS)  :IMPLIED
+(defattribute coords 
+  (a)
+  (%coords)  :implied
   ()  "for use with client-side image maps")
 
-(DEFATTRIBUTE DATA 
-  (OBJECT)
-  (%URI)  :IMPLIED
+(defattribute data 
+  (object)
+  (%uri)  :implied
   ()  "reference to object's data")
 
-(DEFATTRIBUTE DATETIME 
-  (DEL INS)
-  (%DATETIME)  :IMPLIED
+(defattribute datetime 
+  (del ins)
+  (%datetime)  :implied
   ()  "date and time of change")
 
-(DEFATTRIBUTE DECLARE 
-  (OBJECT)
-  (DECLARE)  :IMPLIED
+(defattribute declare 
+  (object)
+  (declare)  :implied
   ()  "declare but don't instantiate flag")
 
-(DEFATTRIBUTE DEFER 
-  (SCRIPT)
-  (DEFER)  :IMPLIED
+(defattribute defer 
+  (script)
+  (defer)  :implied
   ()  "UA may defer execution of script")
 
-(DEFATTRIBUTE DIR 
-  (:ALL-ELEMENTS-BUT APPLET BASE BASEFONT BDO BR FRAME FRAMESET IFRAME PARAM SCRIPT)
-  (OR  "LTR" "RTL")  :IMPLIED
+(defattribute dir 
+  (:all-elements-but applet base basefont bdo br frame frameset iframe param script)
+  (or  "LTR" "RTL")  :implied
   ()  "direction for weak/neutral text")
 
-(DEFATTRIBUTE DIR 
-  (BDO)
-  (OR  "LTR" "RTL")  :REQUIRED
+(defattribute dir 
+  (bdo)
+  (or  "LTR" "RTL")  :required
   ()  "directionality")
 
-(DEFATTRIBUTE DISABLED
-  (BUTTON INPUT OPTGROUP OPTION SELECT TEXTAREA)
-  (DISABLED)  :IMPLIED
+(defattribute disabled
+  (button input optgroup option select textarea)
+  (disabled)  :implied
   ()  "unavailable in this context")
 
-(DEFATTRIBUTE ENCTYPE 
-  (FORM)
-  (%CONTENTTYPE)
+(defattribute enctype 
+  (form)
+  (%contenttype)
   "application/x-www-form-urlencoded"
   ()  "")
 
-(DEFATTRIBUTE FACE
-  (BASEFONT FONT)
-  (CDATA)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "comma-separated list of font names")
+(defattribute face
+  (basefont font)
+  (cdata)  :implied
+  (:deprecated  :loose-dtd)  "comma-separated list of font names")
 
-(DEFATTRIBUTE FOR 
-  (LABEL)
-  (IDREF)  :IMPLIED
+(defattribute for 
+  (label)
+  (idref)  :implied
   ()  "matches field ID value")
 
-(DEFATTRIBUTE FRAME 
-  (TABLE)
-  (%TFRAME)  :IMPLIED
+(defattribute frame 
+  (table)
+  (%tframe)  :implied
   ()  "which parts of frame to render")
 
-(DEFATTRIBUTE FRAMEBORDER
-  (FRAME IFRAME)
-  (OR  "1" "0")  "1"
+(defattribute frameborder
+  (frame iframe)
+  (or  "1" "0")  "1"
 
-  :FRAMESET-DTD
+  :frameset-dtd
   "request frame borders?")
 
-(DEFATTRIBUTE HEADERS 
-  (TD TH)
-  (IDREFS)  :IMPLIED
+(defattribute headers 
+  (td th)
+  (idrefs)  :implied
   ()  "list of id's for header cells")
 
-(DEFATTRIBUTE HEIGHT
-  (IFRAME)
-  (%LENGTH)  :IMPLIED
-  (:LOOSE-DTD)  "frame height")
+(defattribute height
+  (iframe)
+  (%length)  :implied
+  (:loose-dtd)  "frame height")
 
-(DEFATTRIBUTE HEIGHT 
-  (TD TH)
-  (%LENGTH)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "height for cell")
+(defattribute height 
+  (td th)
+  (%length)  :implied
+  (:deprecated  :loose-dtd)  "height for cell")
 
-(DEFATTRIBUTE HEIGHT
-  (IMG OBJECT)
-  (%LENGTH)  :IMPLIED
+(defattribute height
+  (img object)
+  (%length)  :implied
   ()  "override height")
 
-(DEFATTRIBUTE HEIGHT
-  (APPLET)
-  (%LENGTH)  :REQUIRED
-  (:DEPRECATED  :LOOSE-DTD)  "initial height")
+(defattribute height
+  (applet)
+  (%length)  :required
+  (:deprecated  :loose-dtd)  "initial height")
 
-(DEFATTRIBUTE HREF 
-  (A AREA LINK)
-  (%URI)  :IMPLIED
+(defattribute href 
+  (a area link)
+  (%uri)  :implied
   ()  "URI for linked resource")
 
-(DEFATTRIBUTE HREF 
-  (BASE)
-  (%URI)  :IMPLIED
+(defattribute href 
+  (base)
+  (%uri)  :implied
   ()  "URI that acts as base URI")
 
-(DEFATTRIBUTE HREFLANG 
-  (A LINK)
-  (%LANGUAGECODE)  :IMPLIED
+(defattribute hreflang 
+  (a link)
+  (%languagecode)  :implied
   ()  "language code")
 
-(DEFATTRIBUTE HSPACE 
-  (APPLET IMG OBJECT)
-  (%PIXELS)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "horizontal gutter")
+(defattribute hspace 
+  (applet img object)
+  (%pixels)  :implied
+  (:deprecated  :loose-dtd)  "horizontal gutter")
 
-(DEFATTRIBUTE HTTP-EQUIV
-  (META)
-  (NAME)  :IMPLIED
+(defattribute http-equiv
+  (meta)
+  (name)  :implied
   ()  "HTTP response header name")
 
-(DEFATTRIBUTE ID 
-  (:ALL-ELEMENTS-BUT BASE HEAD HTML META SCRIPT STYLE TITLE)
-  (ID)  :IMPLIED
+(defattribute id 
+  (:all-elements-but base head html meta script style title)
+  (id)  :implied
   ()  "document-wide unique id")
 
-(DEFATTRIBUTE ISMAP 
-  (IMG INPUT)
-  (ISMAP)  :IMPLIED
+(defattribute ismap 
+  (img input)
+  (ismap)  :implied
   ()  "use server-side image map")
 
-(DEFATTRIBUTE LABEL
-  (OPTION)
-  (%TEXT)  :IMPLIED
+(defattribute label
+  (option)
+  (%text)  :implied
   ()  "for use in hierarchical menus")
 
-(DEFATTRIBUTE LABEL
-  (OPTGROUP)
-  (%TEXT)  :REQUIRED
+(defattribute label
+  (optgroup)
+  (%text)  :required
   ()  "for use in hierarchical menus")
 
-(DEFATTRIBUTE LANG 
-  (:ALL-ELEMENTS-BUT APPLET BASE BASEFONT BR FRAME FRAMESET IFRAME PARAM SCRIPT)
-  (%LANGUAGECODE)  :IMPLIED
+(defattribute lang 
+  (:all-elements-but applet base basefont br frame frameset iframe param script)
+  (%languagecode)  :implied
   ()  "language code")
 
-(DEFATTRIBUTE LANGUAGE
-  (SCRIPT)
-  (CDATA)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "predefined script language name")
+(defattribute language
+  (script)
+  (cdata)  :implied
+  (:deprecated  :loose-dtd)  "predefined script language name")
 
-(DEFATTRIBUTE LINK 
-  (BODY)
-  (%COLOR)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "color of links")
+(defattribute link 
+  (body)
+  (%color)  :implied
+  (:deprecated  :loose-dtd)  "color of links")
 
-(DEFATTRIBUTE LONGDESC
-  (IMG)
-  (%URI)  :IMPLIED
+(defattribute longdesc
+  (img)
+  (%uri)  :implied
   ()  "link to long description (complements alt)")
 
-(DEFATTRIBUTE LONGDESC
-  (FRAME IFRAME)
-  (%URI)  :IMPLIED
-  (:FRAMESET-DTD)  "link to long description (complements title)")
+(defattribute longdesc
+  (frame iframe)
+  (%uri)  :implied
+  (:frameset-dtd)  "link to long description (complements title)")
 
-(DEFATTRIBUTE MARGINHEIGHT
-  (FRAME IFRAME)
-  (%PIXELS)  :IMPLIED
-  (:FRAMESET-DTD)  "margin height in pixels")
+(defattribute marginheight
+  (frame iframe)
+  (%pixels)  :implied
+  (:frameset-dtd)  "margin height in pixels")
 
-(DEFATTRIBUTE MARGINWIDTH
-  (FRAME IFRAME)
-  (%PIXELS)  :IMPLIED
-  (:FRAMESET-DTD)  "margin widths in pixels")
+(defattribute marginwidth
+  (frame iframe)
+  (%pixels)  :implied
+  (:frameset-dtd)  "margin widths in pixels")
 
-(DEFATTRIBUTE MAXLENGTH
-  (INPUT)
-  (NUMBER)  :IMPLIED
+(defattribute maxlength
+  (input)
+  (number)  :implied
   ()  "max chars for text fields")
 
-(DEFATTRIBUTE MEDIA 
-  (STYLE)
-  (%MEDIADESC)  :IMPLIED
+(defattribute media 
+  (style)
+  (%mediadesc)  :implied
   ()  "designed for use with these media")
 
-(DEFATTRIBUTE MEDIA 
-  (LINK)
-  (%MEDIADESC)  :IMPLIED
+(defattribute media 
+  (link)
+  (%mediadesc)  :implied
   ()  "for rendering on these media")
 
-(DEFATTRIBUTE METHOD 
-  (FORM)
-  (OR  "GET" "POST")  "GET"
+(defattribute method 
+  (form)
+  (or  "GET" "POST")  "GET"
   ()  "HTTP method used to submit the form")
 
-(DEFATTRIBUTE MULTIPLE
-  (SELECT)
-  (MULTIPLE)  :IMPLIED
+(defattribute multiple
+  (select)
+  (multiple)  :implied
   ()  "default is single selection")
 
-(DEFATTRIBUTE NAME
-  (BUTTON TEXTAREA)
-  (CDATA)  :IMPLIED
+(defattribute name
+  (button textarea)
+  (cdata)  :implied
   ()  "")
 
-(DEFATTRIBUTE NAME
-  (APPLET)
-  (CDATA)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "allows applets to find each other")
+(defattribute name
+  (applet)
+  (cdata)  :implied
+  (:deprecated  :loose-dtd)  "allows applets to find each other")
 
-(DEFATTRIBUTE NAME
-  (SELECT)
-  (CDATA)  :IMPLIED
+(defattribute name
+  (select)
+  (cdata)  :implied
   ()  "field name")
 
-(DEFATTRIBUTE NAME 
-  (FORM)
-  (CDATA)  :IMPLIED
+(defattribute name 
+  (form)
+  (cdata)  :implied
   ()  "name of form for scripting")
 
-(DEFATTRIBUTE NAME 
-  (FRAME IFRAME)
-  (CDATA)  :IMPLIED
-  (:FRAMESET-DTD)  "name of frame for targetting")
+(defattribute name 
+  (frame iframe)
+  (cdata)  :implied
+  (:frameset-dtd)  "name of frame for targetting")
 
-(DEFATTRIBUTE NAME 
-  (IMG)
-  (CDATA)  :IMPLIED
+(defattribute name 
+  (img)
+  (cdata)  :implied
   ()  "name of image for scripting")
 
-(DEFATTRIBUTE NAME 
-  (A)
-  (CDATA)  :IMPLIED
+(defattribute name 
+  (a)
+  (cdata)  :implied
   ()  "named link end")
 
-(DEFATTRIBUTE NAME 
-  (INPUT OBJECT)
-  (CDATA)  :IMPLIED
+(defattribute name 
+  (input object)
+  (cdata)  :implied
   ()  "submit as part of form")
 
-(DEFATTRIBUTE NAME 
-  (MAP)
-  (CDATA)  :REQUIRED
+(defattribute name 
+  (map)
+  (cdata)  :required
   ()  "for reference by usemap")
 
-(DEFATTRIBUTE NAME 
-  (PARAM)
-  (CDATA)  :REQUIRED
+(defattribute name 
+  (param)
+  (cdata)  :required
   ()  "property name")
 
-(DEFATTRIBUTE NAME 
-  (META)
-  (NAME)  :IMPLIED
+(defattribute name 
+  (meta)
+  (name)  :implied
   ()  "metainformation name")
 
-(DEFATTRIBUTE NOHREF 
-  (AREA)
-  (NOHREF)  :IMPLIED
+(defattribute nohref 
+  (area)
+  (nohref)  :implied
   ()  "this region has no action")
 
-(DEFATTRIBUTE NORESIZE
-  (FRAME)
-  (NORESIZE)  :IMPLIED
-  (:FRAMESET-DTD)  "allow users to resize frames?")
+(defattribute noresize
+  (frame)
+  (noresize)  :implied
+  (:frameset-dtd)  "allow users to resize frames?")
 
-(DEFATTRIBUTE NOSHADE
-  (HR)
-  (NOSHADE)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "")
+(defattribute noshade
+  (hr)
+  (noshade)  :implied
+  (:deprecated  :loose-dtd)  "")
 
-(DEFATTRIBUTE NOWRAP 
-  (TD TH)
-  (NOWRAP)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "suppress word wrap")
+(defattribute nowrap 
+  (td th)
+  (nowrap)  :implied
+  (:deprecated  :loose-dtd)  "suppress word wrap")
 
-(DEFATTRIBUTE OBJECT 
-  (APPLET)
-  (CDATA)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "serialized applet file")
+(defattribute object 
+  (applet)
+  (cdata)  :implied
+  (:deprecated  :loose-dtd)  "serialized applet file")
 
-(DEFATTRIBUTE ONBLUR 
-  (A AREA BUTTON INPUT LABEL SELECT TEXTAREA)
-  (%SCRIPT)  :IMPLIED
+(defattribute onblur 
+  (a area button input label select textarea)
+  (%script)  :implied
   ()  "the element lost the focus")
 
-(DEFATTRIBUTE ONCHANGE
-  (INPUT SELECT TEXTAREA)
-  (%SCRIPT)  :IMPLIED
+(defattribute onchange
+  (input select textarea)
+  (%script)  :implied
   ()  "the element value was changed")
 
-(DEFATTRIBUTE ONCLICK
-  (:ALL-ELEMENTS-BUT APPLET BASE BASEFONT BDO BR FONT FRAME FRAMESET HEAD HTML IFRAME ISINDEX META PARAM SCRIPT STYLE TITLE)
-  (%SCRIPT)  :IMPLIED
+(defattribute onclick
+  (:all-elements-but applet base basefont bdo br font frame frameset head html iframe isindex meta param script style title)
+  (%script)  :implied
   ()  "a pointer button was clicked")
 
-(DEFATTRIBUTE ONDBLCLICK
-  (:ALL-ELEMENTS-BUT APPLET BASE BASEFONT BDO BR FONT FRAME FRAMESET HEAD HTML IFRAME ISINDEX META PARAM SCRIPT STYLE TITLE)
-  (%SCRIPT)  :IMPLIED
+(defattribute ondblclick
+  (:all-elements-but applet base basefont bdo br font frame frameset head html iframe isindex meta param script style title)
+  (%script)  :implied
   ()  "a pointer button was double clicked")
 
-(DEFATTRIBUTE ONFOCUS
-  (A AREA BUTTON INPUT LABEL SELECT TEXTAREA)
-  (%SCRIPT)  :IMPLIED
+(defattribute onfocus
+  (a area button input label select textarea)
+  (%script)  :implied
   ()  "the element got the focus")
 
-(DEFATTRIBUTE ONKEYDOWN
-  (:ALL-ELEMENTS-BUT APPLET BASE BASEFONT BDO BR FONT FRAME FRAMESET HEAD HTML IFRAME ISINDEX META PARAM SCRIPT STYLE TITLE)
-  (%SCRIPT)  :IMPLIED
+(defattribute onkeydown
+  (:all-elements-but applet base basefont bdo br font frame frameset head html iframe isindex meta param script style title)
+  (%script)  :implied
   ()  "a key was pressed down")
 
-(DEFATTRIBUTE ONKEYPRESS
-  (:ALL-ELEMENTS-BUT APPLET BASE BASEFONT BDO BR FONT FRAME FRAMESET HEAD HTML IFRAME ISINDEX META PARAM SCRIPT STYLE TITLE)
-  (%SCRIPT)  :IMPLIED
+(defattribute onkeypress
+  (:all-elements-but applet base basefont bdo br font frame frameset head html iframe isindex meta param script style title)
+  (%script)  :implied
   ()  "a key was pressed and released")
 
-(DEFATTRIBUTE ONKEYUP
-  (:ALL-ELEMENTS-BUT APPLET BASE BASEFONT BDO BR FONT FRAME FRAMESET HEAD HTML IFRAME ISINDEX META PARAM SCRIPT STYLE TITLE)
-  (%SCRIPT)  :IMPLIED
+(defattribute onkeyup
+  (:all-elements-but applet base basefont bdo br font frame frameset head html iframe isindex meta param script style title)
+  (%script)  :implied
   ()  "a key was released")
 
-(DEFATTRIBUTE ONLOAD 
-  (FRAMESET)
-  (%SCRIPT)  :IMPLIED
-  (:FRAMESET-DTD)  "all the frames have been loaded")
+(defattribute onload 
+  (frameset)
+  (%script)  :implied
+  (:frameset-dtd)  "all the frames have been loaded")
 
-(DEFATTRIBUTE ONLOAD 
-  (BODY)
-  (%SCRIPT)  :IMPLIED
+(defattribute onload 
+  (body)
+  (%script)  :implied
   ()  "the document has been loaded")
 
-(DEFATTRIBUTE ONMOUSEDOWN
-  (:ALL-ELEMENTS-BUT APPLET BASE BASEFONT BDO BR FONT FRAME FRAMESET HEAD HTML IFRAME ISINDEX META PARAM SCRIPT STYLE TITLE)
-  (%SCRIPT)  :IMPLIED
+(defattribute onmousedown
+  (:all-elements-but applet base basefont bdo br font frame frameset head html iframe isindex meta param script style title)
+  (%script)  :implied
   ()  "a pointer button was pressed down")
 
-(DEFATTRIBUTE ONMOUSEMOVE
-  (:ALL-ELEMENTS-BUT APPLET BASE BASEFONT BDO BR FONT FRAME FRAMESET HEAD HTML IFRAME ISINDEX META PARAM SCRIPT STYLE TITLE)
-  (%SCRIPT)  :IMPLIED
+(defattribute onmousemove
+  (:all-elements-but applet base basefont bdo br font frame frameset head html iframe isindex meta param script style title)
+  (%script)  :implied
   ()  "a pointer was moved within")
 
-(DEFATTRIBUTE ONMOUSEOUT
-  (:ALL-ELEMENTS-BUT APPLET BASE BASEFONT BDO BR FONT FRAME FRAMESET HEAD HTML IFRAME ISINDEX META PARAM SCRIPT STYLE TITLE)
-  (%SCRIPT)  :IMPLIED
+(defattribute onmouseout
+  (:all-elements-but applet base basefont bdo br font frame frameset head html iframe isindex meta param script style title)
+  (%script)  :implied
   ()  "a pointer was moved away")
 
-(DEFATTRIBUTE ONMOUSEOVER
-  (:ALL-ELEMENTS-BUT APPLET BASE BASEFONT BDO BR FONT FRAME FRAMESET HEAD HTML IFRAME ISINDEX META PARAM SCRIPT STYLE TITLE)
-  (%SCRIPT)  :IMPLIED
+(defattribute onmouseover
+  (:all-elements-but applet base basefont bdo br font frame frameset head html iframe isindex meta param script style title)
+  (%script)  :implied
   ()  "a pointer was moved onto")
 
-(DEFATTRIBUTE ONMOUSEUP
-  (:ALL-ELEMENTS-BUT APPLET BASE BASEFONT BDO BR FONT FRAME FRAMESET HEAD HTML IFRAME ISINDEX META PARAM SCRIPT STYLE TITLE)
-  (%SCRIPT)  :IMPLIED
+(defattribute onmouseup
+  (:all-elements-but applet base basefont bdo br font frame frameset head html iframe isindex meta param script style title)
+  (%script)  :implied
   ()  "a pointer button was released")
 
-(DEFATTRIBUTE ONRESET
-  (FORM)
-  (%SCRIPT)  :IMPLIED
+(defattribute onreset
+  (form)
+  (%script)  :implied
   ()  "the form was reset")
 
-(DEFATTRIBUTE ONSELECT
-  (INPUT TEXTAREA)
-  (%SCRIPT)  :IMPLIED
+(defattribute onselect
+  (input textarea)
+  (%script)  :implied
   ()  "some text was selected")
 
-(DEFATTRIBUTE ONSUBMIT
-  (FORM)
-  (%SCRIPT)  :IMPLIED
+(defattribute onsubmit
+  (form)
+  (%script)  :implied
   ()  "the form was submitted")
 
-(DEFATTRIBUTE ONUNLOAD
-  (FRAMESET)
-  (%SCRIPT)  :IMPLIED
-  (:FRAMESET-DTD)  "all the frames have been removed")
+(defattribute onunload
+  (frameset)
+  (%script)  :implied
+  (:frameset-dtd)  "all the frames have been removed")
 
-(DEFATTRIBUTE ONUNLOAD
-  (BODY)
-  (%SCRIPT)  :IMPLIED
+(defattribute onunload
+  (body)
+  (%script)  :implied
   ()  "the document has been removed")
 
-(DEFATTRIBUTE PROFILE 
-  (HEAD)
-  (%URI)  :IMPLIED
+(defattribute profile 
+  (head)
+  (%uri)  :implied
   ()  "named dictionary of meta info")
 
-(DEFATTRIBUTE PROMPT 
-  (ISINDEX)
-  (%TEXT)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "prompt message")
+(defattribute prompt 
+  (isindex)
+  (%text)  :implied
+  (:deprecated  :loose-dtd)  "prompt message")
 
-(DEFATTRIBUTE READONLY
-  (TEXTAREA)
-  (READONLY)  :IMPLIED
+(defattribute readonly
+  (textarea)
+  (readonly)  :implied
   ()  "")
 
-(DEFATTRIBUTE READONLY
-  (INPUT)
-  (READONLY)  :IMPLIED
+(defattribute readonly
+  (input)
+  (readonly)  :implied
   ()  "for text and passwd")
 
-(DEFATTRIBUTE REL 
-  (A LINK)
-  (%LINKTYPES)  :IMPLIED
+(defattribute rel 
+  (a link)
+  (%linktypes)  :implied
   ()  "forward link types")
 
-(DEFATTRIBUTE REV 
-  (A LINK)
-  (%LINKTYPES)  :IMPLIED
+(defattribute rev 
+  (a link)
+  (%linktypes)  :implied
   ()  "reverse link types")
 
-(DEFATTRIBUTE ROWS
-  (FRAMESET)
-  (%MULTILENGTHS)  :IMPLIED
-  (:FRAMESET-DTD)  "list of lengths, default: 100% (1 row)")
+(defattribute rows
+  (frameset)
+  (%multilengths)  :implied
+  (:frameset-dtd)  "list of lengths, default: 100% (1 row)")
 
-(DEFATTRIBUTE ROWS
-  (TEXTAREA)
-  (NUMBER)  :REQUIRED
+(defattribute rows
+  (textarea)
+  (number)  :required
   ()  "")
 
-(DEFATTRIBUTE ROWSPAN 
-  (TD TH)
-  (NUMBER) "1"
+(defattribute rowspan 
+  (td th)
+  (number) "1"
   ()  "number of rows spanned by cell")
 
-(DEFATTRIBUTE RULES 
-  (TABLE)
-  (%TRULES)  :IMPLIED
+(defattribute rules 
+  (table)
+  (%trules)  :implied
   ()  "rulings between rows and cols")
 
-(DEFATTRIBUTE SCHEME 
-  (META)
-  (CDATA)  :IMPLIED
+(defattribute scheme 
+  (meta)
+  (cdata)  :implied
   ()  "select form of content")
 
-(DEFATTRIBUTE SCOPE 
-  (TD TH)
-  (%SCOPE)  :IMPLIED
+(defattribute scope 
+  (td th)
+  (%scope)  :implied
   ()  "scope covered by header cells")
 
-(DEFATTRIBUTE SCROLLING
-  (FRAME IFRAME)
-  (OR  "YES" "NO" "AUTO")  "AUTO"
-  (:FRAMESET-DTD)  "scrollbar or none")
+(defattribute scrolling
+  (frame iframe)
+  (or  "YES" "NO" "AUTO")  "AUTO"
+  (:frameset-dtd)  "scrollbar or none")
 
-(DEFATTRIBUTE SELECTED
-  (OPTION)
-  (SELECTED)  :IMPLIED
+(defattribute selected
+  (option)
+  (selected)  :implied
   ()  "")
 
-(DEFATTRIBUTE SHAPE 
-  (AREA)
-  (%SHAPE)
+(defattribute shape 
+  (area)
+  (%shape)
   "rect"
   ()  "controls interpretation of coords")
 
-(DEFATTRIBUTE SHAPE 
-  (A)
-  (%SHAPE) "RECT"
+(defattribute shape 
+  (a)
+  (%shape) "RECT"
   ()  "for use with client-side image maps")
 
-(DEFATTRIBUTE SIZE 
-  (HR)
-  (%PIXELS)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "")
+(defattribute size 
+  (hr)
+  (%pixels)  :implied
+  (:deprecated  :loose-dtd)  "")
 
-(DEFATTRIBUTE SIZE
-  (FONT)
-  (CDATA)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "[+ -]nn e.g. size=\"+1\", size=\"4\"")
+(defattribute size
+  (font)
+  (cdata)  :implied
+  (:deprecated  :loose-dtd)  "[+ -]nn e.g. size=\"+1\", size=\"4\"")
 
-(DEFATTRIBUTE SIZE 
-  (INPUT)
-  (CDATA)  :IMPLIED
+(defattribute size 
+  (input)
+  (cdata)  :implied
   ()  "specific to each type of field")
 
-(DEFATTRIBUTE SIZE
-  (BASEFONT)
-  (CDATA)  :REQUIRED
-  (:DEPRECATED  :LOOSE-DTD)  "base font size for FONT elements")
+(defattribute size
+  (basefont)
+  (cdata)  :required
+  (:deprecated  :loose-dtd)  "base font size for FONT elements")
 
-(DEFATTRIBUTE SIZE
-  (SELECT)
-  (NUMBER)  :IMPLIED
+(defattribute size
+  (select)
+  (number)  :implied
   ()  "rows visible")
 
-(DEFATTRIBUTE SPAN 
-  (COL)
-  (NUMBER) "1"
+(defattribute span 
+  (col)
+  (number) "1"
   ()  "COL attributes affect N columns")
 
-(DEFATTRIBUTE SPAN
-  (COLGROUP)
-  (NUMBER) "1"
+(defattribute span
+  (colgroup)
+  (number) "1"
   ()  "default number of columns in group")
 
-(DEFATTRIBUTE SRC
-  (SCRIPT)
-  (%URI)  :IMPLIED
+(defattribute src
+  (script)
+  (%uri)  :implied
   ()  "URI for an external script")
 
-(DEFATTRIBUTE SRC 
-  (INPUT)
-  (%URI)  :IMPLIED
+(defattribute src 
+  (input)
+  (%uri)  :implied
   ()  "for fields with images")
 
-(DEFATTRIBUTE SRC 
-  (FRAME IFRAME)
-  (%URI)  :IMPLIED
-  (:FRAMESET-DTD)  "source of frame content")
+(defattribute src 
+  (frame iframe)
+  (%uri)  :implied
+  (:frameset-dtd)  "source of frame content")
 
-(DEFATTRIBUTE SRC 
-  (IMG)
-  (%URI)  :REQUIRED
+(defattribute src 
+  (img)
+  (%uri)  :required
   ()  "URI of image to embed")
 
-(DEFATTRIBUTE STANDBY 
-  (OBJECT)
-  (%TEXT)  :IMPLIED
+(defattribute standby 
+  (object)
+  (%text)  :implied
   ()  "message to show while loading")
 
-(DEFATTRIBUTE START 
-  (OL)
-  (NUMBER)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "starting sequence number")
+(defattribute start 
+  (ol)
+  (number)  :implied
+  (:deprecated  :loose-dtd)  "starting sequence number")
 
-(DEFATTRIBUTE STYLE 
-  (:ALL-ELEMENTS-BUT BASE BASEFONT HEAD HTML META PARAM SCRIPT STYLE TITLE)
-  (%STYLESHEET)  :IMPLIED
+(defattribute style 
+  (:all-elements-but base basefont head html meta param script style title)
+  (%stylesheet)  :implied
   ()  "associated style info")
 
-(DEFATTRIBUTE SUMMARY 
-  (TABLE)
-  (%TEXT)  :IMPLIED
+(defattribute summary 
+  (table)
+  (%text)  :implied
   ()  "purpose/structure for speech output")
 
-(DEFATTRIBUTE TABINDEX
-  (A AREA BUTTON INPUT OBJECT SELECT TEXTAREA)
-  (NUMBER)  :IMPLIED
+(defattribute tabindex
+  (a area button input object select textarea)
+  (number)  :implied
   ()  "position in tabbing order")
 
-(DEFATTRIBUTE TARGET 
-  (A AREA BASE FORM LINK)
-  (%FRAMETARGET)  :IMPLIED
-  (:LOOSE-DTD)  "render in this frame")
+(defattribute target 
+  (a area base form link)
+  (%frametarget)  :implied
+  (:loose-dtd)  "render in this frame")
 
-(DEFATTRIBUTE TEXT 
-  (BODY)
-  (%COLOR)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "document text color")
+(defattribute text 
+  (body)
+  (%color)  :implied
+  (:deprecated  :loose-dtd)  "document text color")
 
-(DEFATTRIBUTE TITLE 
-  (:ALL-ELEMENTS-BUT BASE BASEFONT HEAD HTML META PARAM SCRIPT TITLE)
-  (%TEXT)  :IMPLIED
+(defattribute title 
+  (:all-elements-but base basefont head html meta param script title)
+  (%text)  :implied
   ()  "advisory title")
 
-(DEFATTRIBUTE TYPE 
-  (A LINK)
-  (%CONTENTTYPE)  :IMPLIED
+(defattribute type 
+  (a link)
+  (%contenttype)  :implied
   ()  "advisory content type")
 
-(DEFATTRIBUTE TYPE
-  (OBJECT)
-  (%CONTENTTYPE)  :IMPLIED
+(defattribute type
+  (object)
+  (%contenttype)  :implied
   ()  "content type for data")
 
-(DEFATTRIBUTE TYPE 
-  (PARAM)
-  (%CONTENTTYPE)  :IMPLIED
+(defattribute type 
+  (param)
+  (%contenttype)  :implied
   ()  "content type for value when valuetype=ref")
 
-(DEFATTRIBUTE TYPE
-  (SCRIPT)
-  (%CONTENTTYPE)  :REQUIRED
+(defattribute type
+  (script)
+  (%contenttype)  :required
   ()  "content type of script language")
 
-(DEFATTRIBUTE TYPE 
-  (STYLE)
-  (%CONTENTTYPE)  :REQUIRED
+(defattribute type 
+  (style)
+  (%contenttype)  :required
   ()  "content type of style language")
 
-(DEFATTRIBUTE TYPE 
-  (INPUT)
-  (%INPUTTYPE) "TEXT"
+(defattribute type 
+  (input)
+  (%inputtype) "TEXT"
   ()  "what kind of widget is needed")
 
-(DEFATTRIBUTE TYPE 
-  (LI)
-  (%LISTYLE)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "list item style")
+(defattribute type 
+  (li)
+  (%listyle)  :implied
+  (:deprecated  :loose-dtd)  "list item style")
 
-(DEFATTRIBUTE TYPE 
-  (OL)
-  (%OLSTYLE)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "numbering style")
+(defattribute type 
+  (ol)
+  (%olstyle)  :implied
+  (:deprecated  :loose-dtd)  "numbering style")
 
-(DEFATTRIBUTE TYPE 
-  (UL)
-  (%ULSTYLE)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "bullet style")
+(defattribute type 
+  (ul)
+  (%ulstyle)  :implied
+  (:deprecated  :loose-dtd)  "bullet style")
 
-(DEFATTRIBUTE TYPE
-  (BUTTON)
-  (OR  "BUTTON" "SUBMIT" "RESET")  "SUBMIT"
+(defattribute type
+  (button)
+  (or  "BUTTON" "SUBMIT" "RESET")  "SUBMIT"
   ()  "for use as form button")
 
-(DEFATTRIBUTE USEMAP 
-  (IMG INPUT OBJECT)
-  (%URI)  :IMPLIED
+(defattribute usemap 
+  (img input object)
+  (%uri)  :implied
   ()  "use client-side image map")
 
-(DEFATTRIBUTE VALIGN 
-  (COL COLGROUP TBODY TD TFOOT TH THEAD TR)
-  (OR  "TOP" "MIDDLE" "BOTTOM" "BASELINE")  :IMPLIED
+(defattribute valign 
+  (col colgroup tbody td tfoot th thead tr)
+  (or  "TOP" "MIDDLE" "BOTTOM" "BASELINE")  :implied
   ()  "vertical alignment in cells")
 
-(DEFATTRIBUTE VALUE
-  (INPUT)
-  (CDATA)  :IMPLIED
+(defattribute value
+  (input)
+  (cdata)  :implied
   ()  "Specify for radio buttons and checkboxes")
 
-(DEFATTRIBUTE VALUE
-  (OPTION)
-  (CDATA)  :IMPLIED
+(defattribute value
+  (option)
+  (cdata)  :implied
   ()  "defaults to element content")
 
-(DEFATTRIBUTE VALUE
-  (PARAM)
-  (CDATA)  :IMPLIED
+(defattribute value
+  (param)
+  (cdata)  :implied
   ()  "property value")
 
-(DEFATTRIBUTE VALUE
-  (BUTTON)
-  (CDATA)  :IMPLIED
+(defattribute value
+  (button)
+  (cdata)  :implied
   ()  "sent to server when submitted")
 
-(DEFATTRIBUTE VALUE 
-  (LI)
-  (NUMBER)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "reset sequence number")
+(defattribute value 
+  (li)
+  (number)  :implied
+  (:deprecated  :loose-dtd)  "reset sequence number")
 
-(DEFATTRIBUTE VALUETYPE
-  (PARAM)
-  (OR  "DATA" "REF" "OBJECT")  "DATA"
+(defattribute valuetype
+  (param)
+  (or  "DATA" "REF" "OBJECT")  "DATA"
   ()  "How to interpret value")
 
-(DEFATTRIBUTE VERSION 
-  (HTML)
-  (CDATA) :%HTML.VERSION
-  (:DEPRECATED  :LOOSE-DTD)  "Constant")
+(defattribute version 
+  (html)
+  (cdata) :%html.version
+  (:deprecated  :loose-dtd)  "Constant")
 
-(DEFATTRIBUTE VLINK 
-  (BODY)
-  (%COLOR)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "color of visited links")
+(defattribute vlink 
+  (body)
+  (%color)  :implied
+  (:deprecated  :loose-dtd)  "color of visited links")
 
-(DEFATTRIBUTE VSPACE 
-  (APPLET IMG OBJECT)
-  (%PIXELS)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "vertical gutter")
+(defattribute vspace 
+  (applet img object)
+  (%pixels)  :implied
+  (:deprecated  :loose-dtd)  "vertical gutter")
 
-(DEFATTRIBUTE WIDTH
-  (HR)
-  (%LENGTH)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "")
+(defattribute width
+  (hr)
+  (%length)  :implied
+  (:deprecated  :loose-dtd)  "")
 
-(DEFATTRIBUTE WIDTH
-  (IFRAME)
-  (%LENGTH)  :IMPLIED
-  (:LOOSE-DTD)  "frame width")
+(defattribute width
+  (iframe)
+  (%length)  :implied
+  (:loose-dtd)  "frame width")
 
-(DEFATTRIBUTE WIDTH 
-  (IMG OBJECT)
-  (%LENGTH)  :IMPLIED
+(defattribute width 
+  (img object)
+  (%length)  :implied
   ()  "override width")
 
-(DEFATTRIBUTE WIDTH
-  (TABLE)
-  (%LENGTH)  :IMPLIED
+(defattribute width
+  (table)
+  (%length)  :implied
   ()  "table width")
 
-(DEFATTRIBUTE WIDTH 
-  (TD TH)
-  (%LENGTH)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "width for cell")
+(defattribute width 
+  (td th)
+  (%length)  :implied
+  (:deprecated  :loose-dtd)  "width for cell")
 
-(DEFATTRIBUTE WIDTH
-  (APPLET)
-  (%LENGTH)  :REQUIRED
-  (:DEPRECATED  :LOOSE-DTD)  "initial width")
+(defattribute width
+  (applet)
+  (%length)  :required
+  (:deprecated  :loose-dtd)  "initial width")
 
-(DEFATTRIBUTE WIDTH 
-  (COL)
-  (%MULTILENGTH)  :IMPLIED
+(defattribute width 
+  (col)
+  (%multilength)  :implied
   ()  "column width specification")
 
-(DEFATTRIBUTE WIDTH
-  (COLGROUP)
-  (%MULTILENGTH)  :IMPLIED
+(defattribute width
+  (colgroup)
+  (%multilength)  :implied
   ()  "default width for enclosed COLs")
 
-(DEFATTRIBUTE WIDTH 
-  (PRE)
-  (NUMBER)  :IMPLIED
-  (:DEPRECATED  :LOOSE-DTD)  "")
+(defattribute width 
+  (pre)
+  (number)  :implied
+  (:deprecated  :loose-dtd)  "")
 
 
 ;;;; THE END ;;;;
@@ -1767,15 +1767,15 @@ DO:       Defines an HTML attribute.
 ;;
 
 
-(DEFUN OBFUSCATE (ADDRESS)
+(defun obfuscate (address)
   "
 DO:         Generate an email address as an HTML string with the characters
             written as entities.
 "
-  (DO  ((I (1- (LENGTH ADDRESS)) (1- I))
-        (RES '()))
-       ((< I 0) (APPLY (FUNCTION CONCATENATE) 'STRING RES))
-    (PUSH (FORMAT NIL "&#~D;" (CHAR-CODE (AREF ADDRESS I))) RES)))
+  (do  ((i (1- (length address)) (1- i))
+        (res '()))
+       ((< i 0) (apply (function concatenate) 'string res))
+    (push (format nil "&#~D;" (char-code (aref address i))) res)))
 
 
 ;;;; THE END ;;;;

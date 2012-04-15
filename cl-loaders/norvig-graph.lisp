@@ -15,86 +15,83 @@
 ;;;;    2003-05-16 <PJB>  Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal Bourguignon 2003 - 2003
-;;;;    mailto:pjb@informatimago.com
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
 
-(LOAD "PACKAGE:COM;INFORMATIMAGO;COMMON-LISP;GRAPH")
-(LOAD "PACKAGE:COM;INFORMATIMAGO;COMMON-LISP;GRAPH-DOT")
-(LOAD "PACKAGE:COM;INFORMATIMAGO;COMMON-LISP;LIST")
-(LOAD "PACKAGE:COM;INFORMATIMAGO;COMMON-LISP;UTILITY")
-(USE-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.GRAPH")
-(USE-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.GRAPH-DOT")
-(USE-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.LIST")
-(USE-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.UTILITY")
+(load "PACKAGE:COM;INFORMATIMAGO;COMMON-LISP;GRAPH")
+(load "PACKAGE:COM;INFORMATIMAGO;COMMON-LISP;GRAPH-DOT")
+(load "PACKAGE:COM;INFORMATIMAGO;COMMON-LISP;LIST")
+(load "PACKAGE:COM;INFORMATIMAGO;COMMON-LISP;UTILITY")
+(use-package "COM.INFORMATIMAGO.COMMON-LISP.GRAPH")
+(use-package "COM.INFORMATIMAGO.COMMON-LISP.GRAPH-DOT")
+(use-package "COM.INFORMATIMAGO.COMMON-LISP.LIST")
+(use-package "COM.INFORMATIMAGO.COMMON-LISP.UTILITY")
 
-(DEFVAR DATA)
-(DEFVAR G)
+(defvar data)
+(defvar g)
 
-(SETQ DATA
-      (MAPCAN
-       (LAMBDA (FILE)
-         (LET ((REQUIRES
-                (WITH-OPEN-FILE (IN FILE :DIRECTION :INPUT)
-                  (LET ((*READTABLE* (COPY-READTABLE NIL)))
-                    (SET-DISPATCH-MACRO-CHARACTER
-                     #\# #\. (LAMBDA (&REST ARGS) ARGS))
-                    (DO* ((EOF (GENSYM "eof"))
-                          (SEXP (READ IN NIL EOF) (READ IN NIL EOF))
-                          (RESULT (LIST)))
-                        ((EQ EOF SEXP) RESULT)
-                      (WHEN (AND (CONSP SEXP) (EQ 'REQUIRES (CAR SEXP)))
-                        (SETQ RESULT (NCONC (CDR SEXP) RESULT ))))))  ))
-           (WHEN REQUIRES
-             (LIST (CONS
-                    (LET* ((NAME (FILE-NAMESTRING FILE))
-                           (POSI (SEARCH ".lisp" NAME)))
-                      (IF POSI (SUBSEQ NAME 0 POSI) NAME))
-                    REQUIRES)))
+(setq data
+      (mapcan
+       (lambda (file)
+         (let ((requires
+                (with-open-file (in file :direction :input)
+                  (let ((*readtable* (copy-readtable nil)))
+                    (set-dispatch-macro-character
+                     #\# #\. (lambda (&rest args) args))
+                    (do* ((eof (gensym "eof"))
+                          (sexp (read in nil eof) (read in nil eof))
+                          (result (list)))
+                        ((eq eof sexp) result)
+                      (when (and (consp sexp) (eq 'requires (car sexp)))
+                        (setq result (nconc (cdr sexp) result ))))))  ))
+           (when requires
+             (list (cons
+                    (let* ((name (file-namestring file))
+                           (posi (search ".lisp" name)))
+                      (if posi (subseq name 0 posi) name))
+                    requires)))
            ))
-       (DIRECTORY "NORVIG:*.LISP")))
-(SETQ G (MAKE-INSTANCE 'GRAPH-CLASS))
-(SET-PROPERTY G :NAME "NORVIG")
-(ADD-NODES  G (MAPCAR
-               (LAMBDA (NAME) (LET ((NODE (MAKE-INSTANCE 'ELEMENT-CLASS)))
-                                (SET-PROPERTY NODE :NAME NAME)
-                                NODE))
-               (DELETE-DUPLICATES (FLATTEN DATA) :TEST (FUNCTION STRING=))))
-(MAPC
- (LAMBDA (ARCS)
-   (LET* ((FROM (CAR ARCS))
-          (FROM-NODE (CAR (FIND-NODES-WITH-PROPERTY G :NAME FROM))))
-     (MAPC
-      (LAMBDA (TO)
-        (LET ((TO-NODE (CAR (FIND-NODES-WITH-PROPERTY G :NAME TO))))
-          (ADD-EDGE-BETWEEN-NODES G FROM-NODE TO-NODE)))
-      (CDR ARCS))))
- DATA)
+       (directory "NORVIG:*.LISP")))
+(setq g (make-instance 'graph-class))
+(set-property g :name "NORVIG")
+(add-nodes  g (mapcar
+               (lambda (name) (let ((node (make-instance 'element-class)))
+                                (set-property node :name name)
+                                node))
+               (delete-duplicates (flatten data) :test (function string=))))
+(mapc
+ (lambda (arcs)
+   (let* ((from (car arcs))
+          (from-node (car (find-nodes-with-property g :name from))))
+     (mapc
+      (lambda (to)
+        (let ((to-node (car (find-nodes-with-property g :name to))))
+          (add-edge-between-nodes g from-node to-node)))
+      (cdr arcs))))
+ data)
 
-(LET ((FNAME "norvig"))
-  (WITH-OPEN-FILE (OUT (FORMAT NIL "~A.dot" FNAME) :DIRECTION :OUTPUT
-                       :IF-EXISTS :SUPERSEDE :IF-DOES-NOT-EXIST :CREATE)
-    (PRINC (GENERATE-DOT G) OUT))
-  (EXT:SHELL (FORMAT NIL "n=~A ; (dot -Tps ${n}.dot -o ${n}.ps;gv ${n}.ps)&"
-                     FNAME))
+(let ((fname "norvig"))
+  (with-open-file (out (format nil "~A.dot" fname) :direction :output
+                       :if-exists :supersede :if-does-not-exist :create)
+    (princ (generate-dot g) out))
+  (ext:shell (format nil "n=~A ; (dot -Tps ${n}.dot -o ${n}.ps;gv ${n}.ps)&"
+                     fname))
 ;;;   (EXT:SHELL (FORMAT NIL "n=~A ; (tred ${n}.dot > ${n}-tred.dot ;~
 ;;;                           dot -Tps ${n}-tred.dot -o ${n}-tred.ps ;~
 ;;;                           gv ${n}-tred.ps) & " FNAME))
@@ -105,296 +102,296 @@
 
 
 ;; Give a list of conflicts, symbol defineds in two files.
-(MAPCON
- (LAMBDA (LEFT-REST)
-   (LET ((LEFT (CAR LEFT-REST)))
-     (MAPCAN (LAMBDA (RIGHT)
+(mapcon
+ (lambda (left-rest)
+   (let ((left (car left-rest)))
+     (mapcan (lambda (right)
                ;; (FORMAT T "~2%LEFT = ~S~%RIGHT= ~S~%" (CDR LEFT) (CDR RIGHT))
-               (LET ((RES (INTERSECTION (CDR LEFT) (CDR RIGHT)
-                                        :TEST (FUNCTION STRING-EQUAL))))
-                 (IF RES (LIST (CONS (CAR LEFT) (CONS (CAR RIGHT) RES))) NIL)))
-             (CDR LEFT-REST))))
- (REMOVE-IF
-  (LAMBDA (L) (= 1 (LENGTH L)))
-  (MAPCAR
-   (LAMBDA (FILE)
-     (CONS FILE
-           (MAPCAR
-            (LAMBDA (ITEM)
-              (COND
-               ((SYMBOLP (SECOND ITEM))
-                (SECOND ITEM))
-               ((AND (CONSP   (SECOND ITEM))
-                     (SYMBOLP (CAR (SECOND ITEM))))
-                (CAR (SECOND ITEM)))
-               (T NIL)))
-            (WITH-OPEN-FILE (IN FILE :DIRECTION :INPUT)
-              (LET ((*READTABLE* (COPY-READTABLE NIL)))
-                (SET-DISPATCH-MACRO-CHARACTER
-                 #\# #\. (LAMBDA (&REST ARGS) ARGS))
-                (DO* ((EOF (GENSYM "eof"))
-                      (SEXP (READ IN NIL EOF) (READ IN NIL EOF))
-                      (RESULT ()))
-                    ((EQ EOF SEXP) RESULT)
-                  (WHEN (AND (CONSP SEXP)
-                             (< 3 (LENGTH (STRING (CAR SEXP))))
-                             (STRING-EQUAL
-                              "DEF" (SUBSEQ (STRING (CAR SEXP)) 0 3)))
-                    (PUSH SEXP RESULT))))))))
-   (DIRECTORY "NORVIG:*.LISP"))))
+               (let ((res (intersection (cdr left) (cdr right)
+                                        :test (function string-equal))))
+                 (if res (list (cons (car left) (cons (car right) res))) nil)))
+             (cdr left-rest))))
+ (remove-if
+  (lambda (l) (= 1 (length l)))
+  (mapcar
+   (lambda (file)
+     (cons file
+           (mapcar
+            (lambda (item)
+              (cond
+               ((symbolp (second item))
+                (second item))
+               ((and (consp   (second item))
+                     (symbolp (car (second item))))
+                (car (second item)))
+               (t nil)))
+            (with-open-file (in file :direction :input)
+              (let ((*readtable* (copy-readtable nil)))
+                (set-dispatch-macro-character
+                 #\# #\. (lambda (&rest args) args))
+                (do* ((eof (gensym "eof"))
+                      (sexp (read in nil eof) (read in nil eof))
+                      (result ()))
+                    ((eq eof sexp) result)
+                  (when (and (consp sexp)
+                             (< 3 (length (string (car sexp))))
+                             (string-equal
+                              "DEF" (subseq (string (car sexp)) 0 3)))
+                    (push sexp result))))))))
+   (directory "NORVIG:*.LISP"))))
 
 
 
  
 (  
 
- ("eliza.lisp" "intro.lisp" MAPPEND)
+ ("eliza.lisp" "intro.lisp" mappend)
 
- ("eliza.lisp" "eliza1.lisp" *ELIZA-RULES* MAPPEND ELIZA)
+ ("eliza.lisp" "eliza1.lisp" *eliza-rules* mappend eliza)
 
- ("eliza.lisp" "eliza-pm.lisp" ELIZA)
+ ("eliza.lisp" "eliza-pm.lisp" eliza)
 
- ("eliza.lisp" "unifgram.lisp" PUNCTUATION-P)
+ ("eliza.lisp" "unifgram.lisp" punctuation-p)
 
- ("eliza.lisp" "auxfns.lisp" MAPPEND)
+ ("eliza.lisp" "auxfns.lisp" mappend)
 
- ("prolog.lisp" "prolog1.lisp" VARIABLES-IN   SHOW-PROLOG-VARS
-  TOP-LEVEL-PROVE PROVE PROVE-ALL ?- FIND-ANYWHERE-IF
-  UNIQUE-FIND-ANYWHERE-IF RENAME-VARIABLES CLEAR-PREDICATE CLEAR-DB
-  ADD-CLAUSE <- *DB-PREDICATES* PREDICATE GET-CLAUSES CLAUSE-BODY
-  CLAUSE-HEAD)
+ ("prolog.lisp" "prolog1.lisp" variables-in   show-prolog-vars
+  top-level-prove prove prove-all ?- find-anywhere-if
+  unique-find-anywhere-if rename-variables clear-predicate clear-db
+  add-clause <- *db-predicates* predicate get-clauses clause-body
+  clause-head)
 
- ("prolog.lisp" "krep2.lisp" SHOW-PROLOG-VARS TOP-LEVEL-PROVE PROVE
-  PROVE-ALL)
+ ("prolog.lisp" "krep2.lisp" show-prolog-vars top-level-prove prove
+  prove-all)
 
- ("prolog.lisp" "prologc2.lisp" ARGS)
+ ("prolog.lisp" "prologc2.lisp" args)
 
- ("prolog.lisp" "prologc1.lisp" ARGS)
+ ("prolog.lisp" "prologc1.lisp" args)
 
- ("prolog.lisp" "krep.lisp" REPLACE-?-VARS)
+ ("prolog.lisp" "krep.lisp" replace-?-vars)
 
- ("prolog.lisp" "prologc.lisp" TOP-LEVEL-PROVE ADD-CLAUSE <- ARGS)
+ ("prolog.lisp" "prologc.lisp" top-level-prove add-clause <- args)
 
- ("prolog.lisp" "compile3.lisp" ARGS)
+ ("prolog.lisp" "compile3.lisp" args)
 
- ("intro.lisp" "eliza1.lisp" MAPPEND)
+ ("intro.lisp" "eliza1.lisp" mappend)
 
- ("intro.lisp"   "auxfns.lisp" MAPPEND)
+ ("intro.lisp"   "auxfns.lisp" mappend)
 
- ("search.lisp" "mycin.lisp" IS IS)
+ ("search.lisp" "mycin.lisp" is is)
 
- ("search.lisp" "compile3.lisp" IS IS)
+ ("search.lisp" "compile3.lisp" is is)
 
- ("search.lisp" "gps.lisp"   FIND-PATH)
+ ("search.lisp" "gps.lisp"   find-path)
 
- ("othello2.lisp" "othello.lisp" MOBILITY ALL-SQUARES)
+ ("othello2.lisp" "othello.lisp" mobility all-squares)
 
- ("othello2.lisp" "overview.lisp" NODE)
+ ("othello2.lisp" "overview.lisp" node)
 
- ("simple.lisp" "lexicon.lisp"   VERB NOUN)
+ ("simple.lisp" "lexicon.lisp"   verb noun)
 
- ("simple.lisp" "eliza1.lisp" RANDOM-ELT)
+ ("simple.lisp" "eliza1.lisp" random-elt)
 
- ("simple.lisp"   "syntax3.lisp" *GRAMMAR*)
+ ("simple.lisp"   "syntax3.lisp" *grammar*)
 
- ("simple.lisp" "syntax2.lisp" *GRAMMAR*)
+ ("simple.lisp" "syntax2.lisp" *grammar*)
 
- ("simple.lisp" "syntax1.lisp" *GRAMMAR*)
+ ("simple.lisp" "syntax1.lisp" *grammar*)
 
- ("simple.lisp"   "auxfns.lisp" RANDOM-ELT)
+ ("simple.lisp"   "auxfns.lisp" random-elt)
 
- ("compopt.lisp" "mycin-r.lisp" NIL)
+ ("compopt.lisp" "mycin-r.lisp" nil)
 
- ("eliza1.lisp" "eliza-pm.lisp" USE-ELIZA-RULES ELIZA)
+ ("eliza1.lisp" "eliza-pm.lisp" use-eliza-rules eliza)
 
- ("eliza1.lisp"   "patmatch.lisp" SEGMENT-MATCH SEGMENT-MATCH
-  SEGMENT-PATTERN-P   PAT-MATCH EXTEND-BINDINGS MATCH-VARIABLE
-  PAT-MATCH EXTEND-BINDINGS   LOOKUP BINDING-VAL GET-BINDING FAIL
-  VARIABLE-P)
+ ("eliza1.lisp"   "patmatch.lisp" segment-match segment-match
+  segment-pattern-p   pat-match extend-bindings match-variable
+  pat-match extend-bindings   lookup binding-val get-binding fail
+  variable-p)
 
- ("eliza1.lisp"   "auxfns.lisp" RANDOM-ELT MAPPEND MKLIST FLATTEN
-  PAT-MATCH   EXTEND-BINDINGS MATCH-VARIABLE PAT-MATCH EXTEND-BINDINGS
-  LOOKUP   GET-BINDING FAIL VARIABLE-P)
+ ("eliza1.lisp"   "auxfns.lisp" random-elt mappend mklist flatten
+  pat-match   extend-bindings match-variable pat-match extend-bindings
+  lookup   get-binding fail variable-p)
 
- ("eliza1.lisp" "cmacsyma.lisp"   VARIABLE-P)
+ ("eliza1.lisp" "cmacsyma.lisp"   variable-p)
 
- ("eliza1.lisp" "macsyma.lisp" VARIABLE-P)
+ ("eliza1.lisp" "macsyma.lisp" variable-p)
 
- ("syntax3.lisp" "syntax2.lisp" INTEGERS 10*N+D INFIX-FUNCALL
-  EXTEND-PARSE PARSE TERMINAL-TREE-P APPLY-SEMANTICS LEXICAL-RULES
-  *OPEN-CATEGORIES* PARSER APPEND1 COMPLETE-PARSES FIRST-OR-NIL
-  RULES-STARTING-WITH LEXICAL-RULES PARSE-LHS PARSE USE TREE RULE
-  *GRAMMAR*)
+ ("syntax3.lisp" "syntax2.lisp" integers 10*n+d infix-funcall
+  extend-parse parse terminal-tree-p apply-semantics lexical-rules
+  *open-categories* parser append1 complete-parses first-or-nil
+  rules-starting-with lexical-rules parse-lhs parse use tree rule
+  *grammar*)
 
- ("syntax3.lisp" "syntax1.lisp" EXTEND-PARSE PARSE   LEXICAL-RULES
-  *OPEN-CATEGORIES* PARSER APPEND1 COMPLETE-PARSES
-  RULES-STARTING-WITH LEXICAL-RULES PARSE-LHS PARSE USE RULE
-  *GRAMMAR*)
+ ("syntax3.lisp" "syntax1.lisp" extend-parse parse   lexical-rules
+  *open-categories* parser append1 complete-parses
+  rules-starting-with lexical-rules parse-lhs parse use rule
+  *grammar*)
 
- ("syntax3.lisp" "mycin.lisp" RULE)
+ ("syntax3.lisp" "mycin.lisp" rule)
 
- ("syntax3.lisp"   "loop.lisp" SUM REPEAT)
+ ("syntax3.lisp"   "loop.lisp" sum repeat)
 
- ("syntax3.lisp" "unifgram.lisp" RULE)
+ ("syntax3.lisp" "unifgram.lisp" rule)
 
- ("syntax3.lisp" "student.lisp" RULE)
+ ("syntax3.lisp" "student.lisp" rule)
 
- ("syntax3.lisp" "auxfns.lisp"   FIRST-OR-NIL)
+ ("syntax3.lisp" "auxfns.lisp"   first-or-nil)
 
- ("syntax3.lisp" "cmacsyma.lisp" RULE)
+ ("syntax3.lisp" "cmacsyma.lisp" rule)
 
- ("syntax3.lisp"   "macsyma.lisp" RULE)
+ ("syntax3.lisp"   "macsyma.lisp" rule)
 
- ("syntax3.lisp" "compile3.lisp" ARG2)
+ ("syntax3.lisp" "compile3.lisp" arg2)
 
- ("syntax3.lisp" "gps.lisp" USE)
+ ("syntax3.lisp" "gps.lisp" use)
 
- ("syntax2.lisp" "syntax1.lisp"   EXTEND-PARSE PARSE *OPEN-CATEGORIES*
-  USE PARSER APPEND1   COMPLETE-PARSES RULES-STARTING-WITH
-  LEXICAL-RULES PARSE-LHS PARSE   RULE *GRAMMAR*)
+ ("syntax2.lisp" "syntax1.lisp"   extend-parse parse *open-categories*
+  use parser append1   complete-parses rules-starting-with
+  lexical-rules parse-lhs parse   rule *grammar*)
 
- ("syntax2.lisp" "mycin.lisp" RULE)
+ ("syntax2.lisp" "mycin.lisp" rule)
 
- ("syntax2.lisp"   "unifgram.lisp" RULE)
+ ("syntax2.lisp"   "unifgram.lisp" rule)
 
- ("syntax2.lisp" "student.lisp" RULE)
+ ("syntax2.lisp" "student.lisp" rule)
 
- ("syntax2.lisp" "auxfns.lisp" FIRST-OR-NIL)
+ ("syntax2.lisp" "auxfns.lisp" first-or-nil)
 
- ("syntax2.lisp"   "cmacsyma.lisp" RULE)
+ ("syntax2.lisp"   "cmacsyma.lisp" rule)
 
- ("syntax2.lisp" "macsyma.lisp" RULE)
+ ("syntax2.lisp" "macsyma.lisp" rule)
 
- ("syntax2.lisp" "gps.lisp" USE)
+ ("syntax2.lisp" "gps.lisp" use)
 
- ("syntax1.lisp" "mycin.lisp" RULE)
+ ("syntax1.lisp" "mycin.lisp" rule)
 
- ("syntax1.lisp" "unifgram.lisp" RULE)
+ ("syntax1.lisp" "unifgram.lisp" rule)
 
- ("syntax1.lisp" "student.lisp"   RULE)
+ ("syntax1.lisp" "student.lisp"   rule)
 
- ("syntax1.lisp" "cmacsyma.lisp" RULE)
+ ("syntax1.lisp" "cmacsyma.lisp" rule)
 
- ("syntax1.lisp"   "macsyma.lisp" RULE)
+ ("syntax1.lisp"   "macsyma.lisp" rule)
 
- ("syntax1.lisp" "gps.lisp" USE)
+ ("syntax1.lisp" "gps.lisp" use)
 
- ("prolog1.lisp"   "krep2.lisp" SHOW-PROLOG-VARS TOP-LEVEL-PROVE
-  PROVE-ALL PROVE)
+ ("prolog1.lisp"   "krep2.lisp" show-prolog-vars top-level-prove
+  prove-all prove)
 
- ("prolog1.lisp" "prologc.lisp" TOP-LEVEL-PROVE ADD-CLAUSE <-)
+ ("prolog1.lisp" "prologc.lisp" top-level-prove add-clause <-)
 
- ("mycin.lisp" "unifgram.lisp" RULE)
+ ("mycin.lisp" "unifgram.lisp" rule)
 
- ("mycin.lisp" "overview.lisp"   TRUE)
+ ("mycin.lisp" "overview.lisp"   true)
 
- ("mycin.lisp" "student.lisp" RULE)
+ ("mycin.lisp" "student.lisp" rule)
 
- ("mycin.lisp"   "cmacsyma.lisp" RULE)
+ ("mycin.lisp"   "cmacsyma.lisp" rule)
 
- ("mycin.lisp" "macsyma.lisp" RULE)
+ ("mycin.lisp" "macsyma.lisp" rule)
 
- ("mycin.lisp" "compile3.lisp" IS)
+ ("mycin.lisp" "compile3.lisp" is)
 
- ("loop.lisp" "overview.lisp"   WHILE)
+ ("loop.lisp" "overview.lisp"   while)
 
- ("patmatch.lisp" "auxfns.lisp" MATCH-VARIABLE EXTEND-BINDINGS
-  LOOKUP GET-BINDING VARIABLE-P FAIL PAT-MATCH)
+ ("patmatch.lisp" "auxfns.lisp" match-variable extend-bindings
+  lookup get-binding variable-p fail pat-match)
 
- ("patmatch.lisp"   "cmacsyma.lisp" VARIABLE-P)
+ ("patmatch.lisp"   "cmacsyma.lisp" variable-p)
 
- ("patmatch.lisp" "macsyma.lisp"   VARIABLE-P)
+ ("patmatch.lisp" "macsyma.lisp"   variable-p)
 
- ("unifgram.lisp" "student.lisp" RULE)
+ ("unifgram.lisp" "student.lisp" rule)
 
- ("unifgram.lisp"   "cmacsyma.lisp" RULE)
+ ("unifgram.lisp"   "cmacsyma.lisp" rule)
 
- ("unifgram.lisp" "macsyma.lisp" RULE)
+ ("unifgram.lisp" "macsyma.lisp" rule)
 
- ("krep2.lisp" "krep1.lisp" RETRIEVE MAPC-RETRIEVE INDEX)
+ ("krep2.lisp" "krep1.lisp" retrieve mapc-retrieve index)
 
- ("krep2.lisp" "krep.lisp" ADD-FACT INDEX)
+ ("krep2.lisp" "krep.lisp" add-fact index)
 
- ("krep2.lisp"   "prologc.lisp" TOP-LEVEL-PROVE)
+ ("krep2.lisp"   "prologc.lisp" top-level-prove)
 
- ("krep1.lisp" "krep.lisp"   DTREE-INDEX INDEX)
+ ("krep1.lisp" "krep.lisp"   dtree-index index)
 
- ("prologc2.lisp" "prologc1.lisp" COMPILE-CLAUSE   COMPILE-PREDICATE
-  PROPER-LISTP HAS-VARIABLE-P COMPILE-ARG   COMPILE-UNIFY =
-  DEF-PROLOG-COMPILER-MACRO PROLOG-COMPILER-MACRO   COMPILE-CALL
-  COMPILE-BODY MAKE-= MAKE-PREDICATE MAKE-PARAMETERS ARGS
-  RELATION-ARITY CLAUSES-WITH-ARITY PROLOG-COMPILE VAR *VAR-COUNTER*
-  UNDO-BINDINGS!  SET-BINDING! *TRAIL* PRINT-VAR SET-BINDING! UNIFY!
-  DEREF BOUND-P VAR UNBOUND)
+ ("prologc2.lisp" "prologc1.lisp" compile-clause   compile-predicate
+  proper-listp has-variable-p compile-arg   compile-unify =
+  def-prolog-compiler-macro prolog-compiler-macro   compile-call
+  compile-body make-= make-predicate make-parameters args
+  relation-arity clauses-with-arity prolog-compile var *var-counter*
+  undo-bindings!  set-binding! *trail* print-var set-binding! unify!
+  deref bound-p var unbound)
 
- ("prologc2.lisp" "prologc.lisp"   BIND-UNBOUND-VARS
-  MAYBE-ADD-UNDO-BINDINGS COMPILE-CLAUSE   COMPILE-PREDICATE
-  PROPER-LISTP HAS-VARIABLE-P COMPILE-ARG   COMPILE-UNIFY =
-  DEF-PROLOG-COMPILER-MACRO PROLOG-COMPILER-MACRO   COMPILE-CALL
-  COMPILE-BODY MAKE-= MAKE-PREDICATE MAKE-PARAMETERS ARGS
-  RELATION-ARITY CLAUSES-WITH-ARITY PROLOG-COMPILE VAR *VAR-COUNTER*
-  UNDO-BINDINGS! SET-BINDING! *TRAIL* PRINT-VAR SET-BINDING! UNIFY!
-  DEREF BOUND-P VAR UNBOUND)
+ ("prologc2.lisp" "prologc.lisp"   bind-unbound-vars
+  maybe-add-undo-bindings compile-clause   compile-predicate
+  proper-listp has-variable-p compile-arg   compile-unify =
+  def-prolog-compiler-macro prolog-compiler-macro   compile-call
+  compile-body make-= make-predicate make-parameters args
+  relation-arity clauses-with-arity prolog-compile var *var-counter*
+  undo-bindings! set-binding! *trail* print-var set-binding! unify!
+  deref bound-p var unbound)
 
- ("prologc2.lisp" "compile3.lisp" ARGS)
+ ("prologc2.lisp" "compile3.lisp" args)
 
- ("prologc1.lisp" "prologc.lisp" PROPER-LISTP HAS-VARIABLE-P
-  COMPILE-ARG COMPILE-UNIFY = DEF-PROLOG-COMPILER-MACRO
-  PROLOG-COMPILER-MACRO COMPILE-CALL COMPILE-BODY MAKE-=
-  COMPILE-CLAUSE MAKE-PREDICATE MAKE-PARAMETERS COMPILE-PREDICATE ARGS
-  RELATION-ARITY CLAUSES-WITH-ARITY PROLOG-COMPILE VAR *VAR-COUNTER*
-  UNDO-BINDINGS! SET-BINDING! *TRAIL* PRINT-VAR SET-BINDING! UNIFY!
-  DEREF BOUND-P VAR UNBOUND)
+ ("prologc1.lisp" "prologc.lisp" proper-listp has-variable-p
+  compile-arg compile-unify = def-prolog-compiler-macro
+  prolog-compiler-macro compile-call compile-body make-=
+  compile-clause make-predicate make-parameters compile-predicate args
+  relation-arity clauses-with-arity prolog-compile var *var-counter*
+  undo-bindings! set-binding! *trail* print-var set-binding! unify!
+  deref bound-p var unbound)
 
- ("prologc1.lisp" "compile3.lisp" ARGS)
+ ("prologc1.lisp" "compile3.lisp" args)
 
- ("overview.lisp" "auxfns.lisp" FIND-ALL)
+ ("overview.lisp" "auxfns.lisp" find-all)
 
- ("auxmacs.lisp"   "macsyma.lisp" FIND-ANYWHERE)
+ ("auxmacs.lisp"   "macsyma.lisp" find-anywhere)
 
- ("auxmacs.lisp" "gps.lisp"   STARTS-WITH)
+ ("auxmacs.lisp" "gps.lisp"   starts-with)
 
- ("student.lisp" "cmacsyma.lisp" PREFIX->INFIX   BINARY-EXP-P EXP-ARGS
-  EXP-P EXP RULE)
+ ("student.lisp" "cmacsyma.lisp" prefix->infix   binary-exp-p exp-args
+  exp-p exp rule)
 
- ("student.lisp" "macsyma.lisp"   PREFIX->INFIX BINARY-EXP-P EXP-ARGS
-  EXP-P EXP RULE)
+ ("student.lisp" "macsyma.lisp"   prefix->infix binary-exp-p exp-args
+  exp-p exp rule)
 
- ("auxfns.lisp"   "interp1.lisp" DELAY DELAY)
+ ("auxfns.lisp"   "interp1.lisp" delay delay)
 
- ("auxfns.lisp" "cmacsyma.lisp"   VARIABLE-P)
+ ("auxfns.lisp" "cmacsyma.lisp"   variable-p)
 
- ("auxfns.lisp" "macsyma.lisp" VARIABLE-P PARTITION-IF)
+ ("auxfns.lisp" "macsyma.lisp" variable-p partition-if)
 
- ("auxfns.lisp" "gps.lisp" MEMBER-EQUAL)
+ ("auxfns.lisp" "gps.lisp" member-equal)
 
- ("prologc.lisp"   "compile3.lisp" ARGS)
+ ("prologc.lisp"   "compile3.lisp" args)
 
- ("gps1.lisp" "gps.lisp" APPLY-OP APPROPRIATE-P   ACHIEVE GPS OP
-  *OPS*)
+ ("gps1.lisp" "gps.lisp" apply-op appropriate-p   achieve gps op
+  *ops*)
 
- ("interp3.lisp" "interp2.lisp" INTERP)
+ ("interp3.lisp" "interp2.lisp" interp)
 
- ("interp3.lisp" "interp1.lisp" INIT-SCHEME-PROC SCHEME INTERP)
+ ("interp3.lisp" "interp1.lisp" init-scheme-proc scheme interp)
 
- ("interp3.lisp" "compile3.lisp" SCHEME)
+ ("interp3.lisp" "compile3.lisp" scheme)
 
- ("interp2.lisp"   "interp1.lisp" INTERP)
+ ("interp2.lisp"   "interp1.lisp" interp)
 
- ("interp1.lisp" "compile3.lisp" SCHEME)
+ ("interp1.lisp" "compile3.lisp" scheme)
 
- ("interp1.lisp" "compile1.lisp" DEFINE)
+ ("interp1.lisp" "compile1.lisp" define)
 
- ("cmacsyma.lisp"   "macsyma.lisp" PREFIX->INFIX *INFIX->PREFIX-RULES*
-  VARIABLE-P   INFIX->PREFIX BINARY-EXP-P EXP-ARGS EXP-P EXP RULE)
+ ("cmacsyma.lisp"   "macsyma.lisp" prefix->infix *infix->prefix-rules*
+  variable-p   infix->prefix binary-exp-p exp-args exp-p exp rule)
 
- ("compile3.lisp"   "compile2.lisp" *PRIMITIVE-FNS* OPTYMIZE
-  INIT-SCHEME-COMP ASSEMBLE)
+ ("compile3.lisp"   "compile2.lisp" *primitive-fns* optymize
+  init-scheme-comp assemble)
 
- ("compile3.lisp" "compile1.lisp" SHOW-FN)
+ ("compile3.lisp" "compile1.lisp" show-fn)
 
- ("compile2.lisp"   "compile1.lisp" COMP-LAMBDA GEN-SET COMP-IF
-  COMP-BEGIN COMP)
+ ("compile2.lisp"   "compile1.lisp" comp-lambda gen-set comp-if
+  comp-begin comp)
 
  )
 

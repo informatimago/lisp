@@ -1,30 +1,30 @@
 ;;;; -*- coding:utf-8 -*-
 
 
-(IN-PACKAGE "COMMON-LISP-USER")
+(in-package "COMMON-LISP-USER")
 
-#+SBCL (PROGN
-         (LOAD "db-sockets")
-         (PUSHNEW :DB-SOCKETS *FEATURES*) )
-
-
-#+CLISP (DEFPARAMETER SAVED-WOFPC  CUSTOM:*WARN-ON-FLOATING-POINT-CONTAGION*)
-#+CLISP (SETQ CUSTOM:*WARN-ON-FLOATING-POINT-CONTAGION* NIL)
+#+sbcl (progn
+         (load "db-sockets")
+         (pushnew :db-sockets *features*) )
 
 
+#+clisp (defparameter saved-wofpc  custom:*warn-on-floating-point-contagion*)
+#+clisp (setq custom:*warn-on-floating-point-contagion* nil)
 
-(LET ((HOME (OR #+SBCL  (SB-EXT:POSIX-GETENV "HOME")
-                #+CLISP (EXT:GETENV "HOME")
+
+
+(let ((home (or #+sbcl  (sb-ext:posix-getenv "HOME")
+                #+clisp (ext:getenv "HOME")
                 "/home/pascal")))
-  (SETF (LOGICAL-PATHNAME-TRANSLATIONS "HOME")
-        (LIST
-         (LIST "**;*.*"  (CONCATENATE 'STRING HOME "/**/*.*"))
-         (LIST ";**;*.*" (CONCATENATE 'STRING HOME "/**/*.*")))))
+  (setf (logical-pathname-translations "HOME")
+        (list
+         (list "**;*.*"  (concatenate 'string home "/**/*.*"))
+         (list ";**;*.*" (concatenate 'string home "/**/*.*")))))
 
 
-(PUSHNEW :CLX-DEBUGGING *FEATURES*)
+(pushnew :clx-debugging *features*)
 
-(DEFPARAMETER *CLX-SOURCES*
+(defparameter *clx-sources*
   '(
     ;; First load port:
     "clocc:clocc;src;port;ext"
@@ -62,23 +62,23 @@
     ))
 
 
-(DOLIST (FILE *CLX-SOURCES*) (LOAD FILE))
+(dolist (file *clx-sources*) (load file))
 
-#+CLISP (SETQ CUSTOM:*WARN-ON-FLOATING-POINT-CONTAGION*  SAVED-WOFPC)
+#+clisp (setq custom:*warn-on-floating-point-contagion*  saved-wofpc)
 
 
-(DEFUN COMPILE-CLX ()
-  (DOLIST (FILE *CLX-SOURCES*)
+(defun compile-clx ()
+  (dolist (file *clx-sources*)
     (format t "Compiling ~A~%" file)
-    (LOAD (COMPILE-FILE FILE))))
+    (load (compile-file file))))
 
 
-(DEFUN TEST-CLX ()
-  (XLIB::HELLO-WORLD ""))
+(defun test-clx ()
+  (xlib::hello-world ""))
 
 
-(LOAD "PACKAGE:CLX-DEMOS;QIX.LISP")
-(LOAD "PACKAGE:CLX-DEMOS;SOKOBAN.LISP")
+(load "PACKAGE:CLX-DEMOS;QIX.LISP")
+(load "PACKAGE:CLX-DEMOS;SOKOBAN.LISP")
 ;; note: sokoban only works with clisp clx for it needs xpm extension.
 
 

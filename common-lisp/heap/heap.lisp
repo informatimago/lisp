@@ -66,34 +66,32 @@
 ;;;;             (cvm-symbol-set-value ptail (cvm-cdr ptail)))))))
 ;;;;
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2005
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
-(CL:IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.HEAP.HEAP"
-  (:USE "COMMON-LISP"
+(cl:in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.HEAP.HEAP"
+  (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.HEAP.MEMORY")
-  (:IMPORT-FROM "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "WSIOSBP" "DEFENUM")
-  (:EXPORT "SET-COMMON" "GET-COMMON" "WITH-COMMON-LOCK" "*COMMON-VARIABLES*"
+  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "WSIOSBP" "DEFENUM")
+  (:export "SET-COMMON" "GET-COMMON" "WITH-COMMON-LOCK" "*COMMON-VARIABLES*"
            "DEFCOMMON" "COMMON-INITIALIZE")
-  (:DOCUMENTATION
+  (:documentation
    "
       This package implements a heap for 'common' data
       in shared memory segments.
@@ -106,7 +104,7 @@
       as published by the Free Software Foundation; either version
       2 of the License, or (at your option) any later version.
      "))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.HEAP.HEAP")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.HEAP.HEAP")
 
 
 
@@ -125,7 +123,7 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (unless (boundp '+debug+)
-    (defconstant +DEBUG+ '(:*debug*)
+    (defconstant +debug+ '(:*debug*)
       "Possible items:
      :*debug*  check *DEBUG* at run-time.
      :range    check gc-address range.
@@ -324,7 +322,7 @@ but some types are used only for array cells (ie. unboxed values)."
 
 (defmacro cvm-define-structure (name type &rest fields)
   ;; TODO: we could do without the defconstant for structure fields...
-  (WSIOSBP
+  (wsiosbp
    `(progn
       (defun ,(intern (format nil "CVM-~A-P" name)) (self)
         (and (cvm-structure-p self)
@@ -798,7 +796,7 @@ but some types are used only for array cells (ie. unboxed values)."
              finally (progn
                        (let ((*print-base* 16)) (princ v))
                        (princ " ")
-                       (princ (IEEE-754-TO-FLOAT-64 v))
+                       (princ (ieee-754-to-float-64 v))
                        (terpri))))))
 
 (defun test-ieee-read-single ()
@@ -810,7 +808,7 @@ but some types are used only for array cells (ie. unboxed values)."
              finally (progn
                        (let ((*print-base* 16)) (princ v))
                        (princ " ")
-                       (princ (IEEE-754-TO-FLOAT-32 v))
+                       (princ (ieee-754-to-float-32 v))
                        (terpri))))))
 
 (defun test-single-to-ieee (&rest args)
@@ -1529,7 +1527,7 @@ CL-USER>
                    (loop for address from (+ 2 address)
                       repeat (- (cvm-size-of object) 2) do
                       (format stream "~A" margin)
-                      (gc-dump-cell address :Stream stream :margin margin)))
+                      (gc-dump-cell address :stream stream :margin margin)))
                  (gc-dump-block (+ 2 address) (- (cvm-size-of object) 2)
                                 stream :margin margin)))
             (otherwise

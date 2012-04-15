@@ -19,33 +19,31 @@
 ;;;;    Should be redone using hash tables.
 ;;;;
 ;;;;LEGAL
-;;;;    GPL
-;;;;
+;;;;    AGPL3
+;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 1995 - 1995
-;;;;
-;;;;    This script is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU  General Public
-;;;;    License as published by the Free Software Foundation; either
-;;;;    version 2 of the License, or (at your option) any later version.
-;;;;
-;;;;    This script is distributed in the hope that it will be useful,
+;;;;    
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
+;;;;    
+;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
-;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;;;;    General Public License for more details.
-;;;;
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this library; see the file COPYING.LIB.
-;;;;    If not, write to the Free Software Foundation,
-;;;;    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
+;;;;    
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.OBSOLETE-OR-INCOMPLEPTE.DICTIONARY"
-  (:USE "COMMON-LISP")
-  (:EXPORT "APPLY-TO-ASSOCIATIONS" "CONTAINS-KEY?" "CONTAINS-ASSOCIATION?"
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.OBSOLETE-OR-INCOMPLEPTE.DICTIONARY"
+  (:use "COMMON-LISP")
+  (:export "APPLY-TO-ASSOCIATIONS" "CONTAINS-KEY?" "CONTAINS-ASSOCIATION?"
            "PUT-AT-KEY" "ASSOCIATION-AT-KEY" "VALUE-AT-KEY" "GET-VALUES" "GET-KEYS"
            "DICTIONARY" "DICTIONARY-SUMMARY")
-  (:DOCUMENTATION
+  (:documentation
    "This is a DICTIONARY class.
     Silly implementation using linked lists to store the couples.
     Should be redone using hash tables.
@@ -53,83 +51,83 @@
     Copyright Pascal J. Bourguignon 1995 - 1995
     This package is provided under the GNU General Public License.
     See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.OBSOLETE-OR-INCOMPLEPTE.DICTIONARY")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.OBSOLETE-OR-INCOMPLEPTE.DICTIONARY")
 
 
 
 
-(DEFUN DICTIONARY-SUMMARY ()
-  (FORMAT T "~%")
+(defun dictionary-summary ()
+  (format t "~%")
   ;; egrep -i '^(DEFCLASS|^(DEFMETHOD' dictionary.lisp |sed -e 's/(DEFCLASS \(.*\)/	(FORMAT T "Class \1~%")/' -e 's/(DEFMETHOD\(.*\)/    (FORMAT T "\1~%")/'
-  (FORMAT T "Class DICTIONARY ()~%")
-  (FORMAT T " GET-KEYS              ((SELF DICTIONARY))~%")
-  (FORMAT T " GET-VALUES            ((SELF DICTIONARY))~%")
-  (FORMAT T " VALUE-AT-KEY           ((SELF DICTIONARY) KEY)~%")
-  (FORMAT T " ASSOCIATION-AT-KEY     ((SELF DICTIONARY) KEY)~%")
-  (FORMAT T " PUT-AT-KEY             ((SELF DICTIONARY) KEY VALUE)~%")
-  (FORMAT T " CONTAINS-ASSOCIATION? ((SELF DICTIONARY) ASSOCIATION)~%")
-  (FORMAT T " CONTAINS-KEY?         ((SELF DICTIONARY) KEY)~%")
-  (FORMAT T " APPLY-TO-ASSOCIATIONS  ((SELF DICTIONARY) FUNC)~%"))
+  (format t "Class DICTIONARY ()~%")
+  (format t " GET-KEYS              ((SELF DICTIONARY))~%")
+  (format t " GET-VALUES            ((SELF DICTIONARY))~%")
+  (format t " VALUE-AT-KEY           ((SELF DICTIONARY) KEY)~%")
+  (format t " ASSOCIATION-AT-KEY     ((SELF DICTIONARY) KEY)~%")
+  (format t " PUT-AT-KEY             ((SELF DICTIONARY) KEY VALUE)~%")
+  (format t " CONTAINS-ASSOCIATION? ((SELF DICTIONARY) ASSOCIATION)~%")
+  (format t " CONTAINS-KEY?         ((SELF DICTIONARY) KEY)~%")
+  (format t " APPLY-TO-ASSOCIATIONS  ((SELF DICTIONARY) FUNC)~%"))
 
 
 ;; M-x insert-generic RET
-(DEFGENERIC GET-KEYS (A))
-(DEFGENERIC GET-VALUES (A))
-(DEFGENERIC VALUE-AT-KEY (A B))
-(DEFGENERIC ASSOCIATION-AT-KEY (A B))
-(DEFGENERIC PUT-AT-KEY (A B C))
-(DEFGENERIC CONTAINS-ASSOCIATION? (A B))
-(DEFGENERIC CONTAINS-KEY? (A B))
-(DEFGENERIC APPLY-TO-ASSOCIATIONS (A B))
+(defgeneric get-keys (a))
+(defgeneric get-values (a))
+(defgeneric value-at-key (a b))
+(defgeneric association-at-key (a b))
+(defgeneric put-at-key (a b c))
+(defgeneric contains-association? (a b))
+(defgeneric contains-key? (a b))
+(defgeneric apply-to-associations (a b))
 
 
-(DEFCLASS DICTIONARY ()
-  ((ASSOCIATIONS :ACCESSOR ASSOCIATIONS :INITFORM '())))
+(defclass dictionary ()
+  ((associations :accessor associations :initform '())))
 
-(DEFMETHOD GET-KEYS              ((SELF DICTIONARY))
-  (MAPCAR (FUNCTION CAR) (ASSOCIATIONS SELF)))
+(defmethod get-keys              ((self dictionary))
+  (mapcar (function car) (associations self)))
 
-(DEFMETHOD GET-VALUES            ((SELF DICTIONARY))
-  (MAPCAR (FUNCTION CDR) (ASSOCIATIONS SELF)))
+(defmethod get-values            ((self dictionary))
+  (mapcar (function cdr) (associations self)))
 
-(DEFUN DICTIONARY-PRIVATE-ASSOCIATION-AT-KEY (ASSOCIATIONS KEY)
-  (COND
-    ((NULL ASSOCIATIONS)
-     ASSOCIATIONS)
-    ((EQ (CAAR ASSOCIATIONS) KEY)
-     (CAR ASSOCIATIONS))
-    (T	
-     (DICTIONARY-PRIVATE-ASSOCIATION-AT-KEY 
-      (CDR ASSOCIATIONS) KEY))))
+(defun dictionary-private-association-at-key (associations key)
+  (cond
+    ((null associations)
+     associations)
+    ((eq (caar associations) key)
+     (car associations))
+    (t	
+     (dictionary-private-association-at-key 
+      (cdr associations) key))))
 
-(DEFMETHOD VALUE-AT-KEY           ((SELF DICTIONARY) KEY)
-  (LET ((ASSOC 
-         (DICTIONARY-PRIVATE-ASSOCIATION-AT-KEY (ASSOCIATIONS SELF) KEY)))
-    (IF (NULL ASSOC)
-        ASSOC
-        (CDR ASSOC))))
+(defmethod value-at-key           ((self dictionary) key)
+  (let ((assoc 
+         (dictionary-private-association-at-key (associations self) key)))
+    (if (null assoc)
+        assoc
+        (cdr assoc))))
 
-(DEFMETHOD ASSOCIATION-AT-KEY     ((SELF DICTIONARY) KEY)
-  (DICTIONARY-PRIVATE-ASSOCIATION-AT-KEY (ASSOCIATIONS SELF) KEY))
+(defmethod association-at-key     ((self dictionary) key)
+  (dictionary-private-association-at-key (associations self) key))
 
-(DEFMETHOD PUT-AT-KEY             ((SELF DICTIONARY) KEY VALUE)
-  (LET ((ASSOC 
-         (DICTIONARY-PRIVATE-ASSOCIATION-AT-KEY (ASSOCIATIONS SELF) KEY)))
-    (COND
-      ((NULL ASSOC)
-       (SETF (ASSOCIATIONS SELF) 
-             (CONS (CONS KEY VALUE) (ASSOCIATIONS SELF))))
-      (T
-       (RPLACD ASSOC VALUE)))))
+(defmethod put-at-key             ((self dictionary) key value)
+  (let ((assoc 
+         (dictionary-private-association-at-key (associations self) key)))
+    (cond
+      ((null assoc)
+       (setf (associations self) 
+             (cons (cons key value) (associations self))))
+      (t
+       (rplacd assoc value)))))
 	
-(DEFMETHOD CONTAINS-ASSOCIATION? ((SELF DICTIONARY) ASSOCIATION)
-  (MEMBER ASSOCIATION (ASSOCIATIONS SELF)))
+(defmethod contains-association? ((self dictionary) association)
+  (member association (associations self)))
 	
-(DEFMETHOD CONTAINS-KEY?         ((SELF DICTIONARY) KEY)
-  (MEMBER KEY (MAPCAR 'CAR (ASSOCIATIONS SELF))))
+(defmethod contains-key?         ((self dictionary) key)
+  (member key (mapcar 'car (associations self))))
 
-(DEFMETHOD APPLY-TO-ASSOCIATIONS  ((SELF DICTIONARY) FUNC)
-  (DECLARE (TYPE (FUNCTION (CONS) T) FUNC))
-  (MAPCAR FUNC (ASSOCIATIONS SELF)))
+(defmethod apply-to-associations  ((self dictionary) func)
+  (declare (type (function (cons) t) func))
+  (mapcar func (associations self)))
 
 ;;;; dictionary.lisp                  --                     --          ;;;;

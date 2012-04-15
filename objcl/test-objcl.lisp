@@ -15,24 +15,22 @@
 ;;;;BUGS
 ;;;;    Should add more tests for error cases.
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2010 - 2010
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
 (in-package "COM.INFORMATIMAGO.OBJECTIVE-CL")
@@ -82,22 +80,22 @@
          (with-string-check (*objc-readtable*
                              stream "simpleSelector)")
            (read-method-signature stream))
-         '("simpleSelector" NIL nil))
+         '("simpleSelector" nil nil))
    (test equal
          (with-string-check (*objc-readtable*
                              stream "singleArgComplexSelector:(int)arg)")
            (read-method-signature stream))
-         '("singleArgComplexSelector:" ((:int arg)) NIL))
+         '("singleArgComplexSelector:" ((:int arg)) nil))
    (test equal
          (with-string-check (*objc-readtable*
                              stream "multipleArg:(int)arg1 complexSelector:(int)arg2)")
            (read-method-signature stream))
-         '("multipleArg:complexSelector:" ((:int arg1) (:int arg2)) NIL))
+         '("multipleArg:complexSelector:" ((:int arg1) (:int arg2)) nil))
    (test equal
          (with-string-check (*objc-readtable*
                              stream "multipleArgWithEmptyPart:(int)arg1 :(int)arg2)")
            (read-method-signature stream))
-         '("multipleArgWithEmptyPart::" ((:int arg1) (:int arg2)) NIL))
+         '("multipleArgWithEmptyPart::" ((:int arg1) (:int arg2)) nil))
 
    (test equal
          (with-string-check (*objc-readtable*
@@ -132,12 +130,12 @@
          (with-string-check (*objc-readtable*
                              stream "(integer)(+ one 2)]")
            (read-final-arguments stream))
-         '((:INTEGER (+ one 2))))
+         '((:integer (+ one 2))))
    (test equal
          (with-string-check (*objc-readtable*
                              stream "(integer)(+ 1 2) (float)(+ 1.0 2.0)]")
            (read-final-arguments stream))
-         '((:INTEGER (+ 1 2)) (:FLOAT (+ 1.0 2.0))))
+         '((:integer (+ 1 2)) (:float (+ 1.0 2.0))))
    (test eql
          (handler-case
              (progn
@@ -163,48 +161,48 @@
          (with-string-check (*objc-readtable*
                              stream "simpleSelector]")
            (read-message stream))
-         '("simpleSelector" NIL nil))
+         '("simpleSelector" nil nil))
    (test equal
          (with-string-check (*objc-readtable*
                              stream "singleArgComplexSelector:42]")
            (read-message stream))
-         '("singleArgComplexSelector:" (42) NIL))
+         '("singleArgComplexSelector:" (42) nil))
    (test equal
          (with-string-check (*objc-readtable*
                              stream "multipleArg:42 complexSelector:24]")
            (read-message stream))
-         '("multipleArg:complexSelector:" (42 24) NIL))
+         '("multipleArg:complexSelector:" (42 24) nil))
    (test equal
          (with-string-check (*objc-readtable*
                              stream "multipleArg:(+ 4 2) complexSelector:(* 2 4)]")
            (read-message stream))
-         '("multipleArg:complexSelector:" ((+ 4 2) (* 2 4)) NIL))
+         '("multipleArg:complexSelector:" ((+ 4 2) (* 2 4)) nil))
    (test equal
          (with-string-check (*objc-readtable*
                              stream "multipleArg:[self one] complexSelector:[self two]]")
            (read-message stream))
          `("multipleArg:complexSelector:"
-           (,(generate-message-send 'SELF '"one" 'nil 'nil)
-             ,(generate-message-send 'SELF '"two" 'nil 'nil))
-           NIL))
+           (,(generate-message-send 'self '"one" 'nil 'nil)
+             ,(generate-message-send 'self '"two" 'nil 'nil))
+           nil))
    (test equal
          (with-string-check (*objc-readtable*
                              stream "multipleArgWithEmptyPart:42 :24]")
            (read-message stream))
-         '("multipleArgWithEmptyPart::" (42 24) NIL))
+         '("multipleArgWithEmptyPart::" (42 24) nil))
    (test equal
          (with-string-check (*objc-readtable*
                              stream "singleArgComplexSelectorWithFinalArgs:42
                                                     (int)1]")
            (read-message stream))
-         '("singleArgComplexSelectorWithFinalArgs:" (42) ((:INT 1))))
+         '("singleArgComplexSelectorWithFinalArgs:" (42) ((:int 1))))
    (test equal
          (with-string-check (*objc-readtable*
                              stream "multipleArg:42
                                complexSelectorWithFinalArgs:24
                                              (int)1 (float)2.0]")
            (read-message stream))
-         '("multipleArg:complexSelectorWithFinalArgs:" (42 24) ((:INT 1) (:float 2.0))))))
+         '("multipleArg:complexSelectorWithFinalArgs:" (42 24) ((:int 1) (:float 2.0))))))
 
 
 (define-test test/read-message-send ()
@@ -213,48 +211,48 @@
           (with-string-check (*objc-readtable*
                               stream "simpleSelector]")
             (read-message-send stream 'self (function read-message)))
-          '(self "simpleSelector" NIL nil))
+          '(self "simpleSelector" nil nil))
     (test equal
           (with-string-check (*objc-readtable*
                               stream "singleArgComplexSelector:42]")
             (read-message-send stream 'self (function read-message)))
-          '(self "singleArgComplexSelector:" (42) NIL))
+          '(self "singleArgComplexSelector:" (42) nil))
     (test equal
           (with-string-check (*objc-readtable*
                               stream "multipleArg:42 complexSelector:24]")
             (read-message-send stream 'self (function read-message)))
-          '(self "multipleArg:complexSelector:" (42 24) NIL))
+          '(self "multipleArg:complexSelector:" (42 24) nil))
     (test equal
           (with-string-check (*objc-readtable*
                               stream "multipleArg:(+ 4 2) complexSelector:(* 2 4)]")
             (read-message-send stream 'self (function read-message)))
-          '(self "multipleArg:complexSelector:" ((+ 4 2) (* 2 4)) NIL))
+          '(self "multipleArg:complexSelector:" ((+ 4 2) (* 2 4)) nil))
     (test equal
           (with-string-check (*objc-readtable*
                               stream "multipleArg:[self one] complexSelector:[self two]]")
             (read-message-send stream 'self (function read-message)))
           `(self "multipleArg:complexSelector:"
-                 (,(generate-message-send 'SELF '"one" 'nil 'nil)
-                   ,(generate-message-send 'SELF '"two" 'nil 'nil))
-                 NIL))
+                 (,(generate-message-send 'self '"one" 'nil 'nil)
+                   ,(generate-message-send 'self '"two" 'nil 'nil))
+                 nil))
     (test equal
           (with-string-check (*objc-readtable*
                               stream "multipleArgWithEmptyPart:42 :24]")
             (read-message-send stream 'self (function read-message)))
-          '(self "multipleArgWithEmptyPart::" (42 24) NIL))
+          '(self "multipleArgWithEmptyPart::" (42 24) nil))
     (test equal
           (with-string-check (*objc-readtable*
                               stream "singleArgComplexSelectorWithFinalArgs:42
                                                     (int)1]")
             (read-message-send stream 'self (function read-message)))
-          '(self "singleArgComplexSelectorWithFinalArgs:" (42) ((:INT 1))))
+          '(self "singleArgComplexSelectorWithFinalArgs:" (42) ((:int 1))))
     (test equal
           (with-string-check (*objc-readtable*
                               stream "multipleArg:42
                                complexSelectorWithFinalArgs:24
                                              (int)1 (float)2.0]")
             (read-message-send stream 'self (function read-message)))
-          '(self "multipleArg:complexSelectorWithFinalArgs:" (42 24) ((:INT 1) (:float 2.0))))))
+          '(self "multipleArg:complexSelectorWithFinalArgs:" (42 24) ((:int 1) (:float 2.0))))))
 
 
 (define-test test/message-send ()
@@ -262,32 +260,32 @@
    (flet ((gen (args) (apply (function generate-message-send) args)))
      (declare (inline gen))
      (test equal
-           (gen '(self "simpleSelector" NIL nil))
-           '(oclo:SEND SELF 'SIMPLE-SELECTOR))
+           (gen '(self "simpleSelector" nil nil))
+           '(oclo:send self 'simple-selector))
      (test equal
-           (gen '(self "singleArgComplexSelector:" (42) NIL))
-           '(oclo:SEND SELF :SINGLE-ARG-COMPLEX-SELECTOR 42))
+           (gen '(self "singleArgComplexSelector:" (42) nil))
+           '(oclo:send self :single-arg-complex-selector 42))
      (test equal
-           (gen '(self "multipleArg:complexSelector:" (42 24) NIL))
-           '(oclo:SEND SELF :MULTIPLE-ARG 42 :COMPLEX-SELECTOR 24))
+           (gen '(self "multipleArg:complexSelector:" (42 24) nil))
+           '(oclo:send self :multiple-arg 42 :complex-selector 24))
      (test equal
-           (gen '(self "multipleArg:complexSelector:" ((+ 4 2) (* 2 4)) NIL))
-           '(oclo:SEND SELF :MULTIPLE-ARG (+ 4 2) :COMPLEX-SELECTOR (* 2 4)))
+           (gen '(self "multipleArg:complexSelector:" ((+ 4 2) (* 2 4)) nil))
+           '(oclo:send self :multiple-arg (+ 4 2) :complex-selector (* 2 4)))
      (test equal
            (gen `(self "multipleArg:complexSelector:"
-                       (,(generate-message-send 'SELF '"one" 'nil 'nil)
-                         ,(generate-message-send 'SELF '"two" 'nil 'nil))
-                       NIL))
-           '(oclo:SEND SELF :MULTIPLE-ARG (oclo:SEND SELF 'ONE) :COMPLEX-SELECTOR (oclo:SEND SELF 'TWO)))
+                       (,(generate-message-send 'self '"one" 'nil 'nil)
+                         ,(generate-message-send 'self '"two" 'nil 'nil))
+                       nil))
+           '(oclo:send self :multiple-arg (oclo:send self 'one) :complex-selector (oclo:send self 'two)))
      (test equal
-           (gen '(self "multipleArgWithEmptyPart::" (42 24) NIL))
-           '(oclo:SEND SELF :MULTIPLE-ARG-WITH-EMPTY-PART 42 :|| 24))
+           (gen '(self "multipleArgWithEmptyPart::" (42 24) nil))
+           '(oclo:send self :multiple-arg-with-empty-part 42 :|| 24))
      (test equal
-           (gen '(self "singleArgComplexSelectorWithFinalArgs:" (42) ((:INT 1))))
-           '(oclo:SEND SELF :SINGLE-ARG-COMPLEX-SELECTOR-WITH-FINAL-ARGS 42 (:INT 1)))
+           (gen '(self "singleArgComplexSelectorWithFinalArgs:" (42) ((:int 1))))
+           '(oclo:send self :single-arg-complex-selector-with-final-args 42 (:int 1)))
      (test equal
-           (gen '(self "multipleArg:complexSelectorWithFinalArgs:" (42 24) ((:INT 1) (:float 2.0))))
-           '(oclo:SEND SELF :MULTIPLE-ARG 42 :COMPLEX-SELECTOR-WITH-FINAL-ARGS 24 (:INT 1 :FLOAT 2.0))))))
+           (gen '(self "multipleArg:complexSelectorWithFinalArgs:" (42 24) ((:int 1) (:float 2.0))))
+           '(oclo:send self :multiple-arg 42 :complex-selector-with-final-args 24 (:int 1 :float 2.0))))))
 
 
 (define-test test/read-objcl-message-send ()
@@ -298,7 +296,7 @@
      (declare (inline read-objc))
      (test equal
            (read-objc "[self simpleSelector]")
-           '(oclo:SEND SELF 'SIMPLE-SELECTOR))
+           '(oclo:send self 'simple-selector))
      (test equal
            (read-objc "[[NSData alloc] init]")
            '(oclo:send (oclo:send ns:ns-data 'alloc) 'init))
@@ -307,60 +305,60 @@
            '(oclo:send (oclo:send my-obj 'do-something) 'do-something-else))
      (test equal
            (read-objc "[self singleArgComplexSelector:42]")
-           '(oclo:SEND SELF :SINGLE-ARG-COMPLEX-SELECTOR 42))
+           '(oclo:send self :single-arg-complex-selector 42))
      (test equal
            (read-objc "[self singleArgComplexSelector:(+ 4 2)]")
-           '(oclo:SEND SELF :SINGLE-ARG-COMPLEX-SELECTOR (+ 4 2)))
+           '(oclo:send self :single-arg-complex-selector (+ 4 2)))
      (test equal
            (read-objc "[self singleArgComplexSelector:(+ 4 XYZ)]")
-           '(oclo:SEND SELF :SINGLE-ARG-COMPLEX-SELECTOR (+ 4 XYZ)))
+           '(oclo:send self :single-arg-complex-selector (+ 4 xyz)))
      (test equal
            (read-objc "[self singleArgComplexSelector:abc]")
-           '(oclo:SEND SELF :SINGLE-ARG-COMPLEX-SELECTOR abc))
+           '(oclo:send self :single-arg-complex-selector abc))
      (test equal
            (read-objc "[self multipleArg:42 complexSelector:24]")
-           '(oclo:SEND SELF :MULTIPLE-ARG 42 :COMPLEX-SELECTOR 24))
+           '(oclo:send self :multiple-arg 42 :complex-selector 24))
      (test equal
            (read-objc "[self multipleArg: (+ 4 2) complexSelector: (* 2 4) ]")
-           '(oclo:SEND SELF :MULTIPLE-ARG (+ 4 2) :COMPLEX-SELECTOR (* 2 4)))
+           '(oclo:send self :multiple-arg (+ 4 2) :complex-selector (* 2 4)))
      (test equal
            (read-objc "[self multipleArg:[self one]complexSelector:[self two]]")
-           '(oclo:SEND SELF :MULTIPLE-ARG (oclo:SEND SELF 'ONE) :COMPLEX-SELECTOR (oclo:SEND SELF 'TWO)))
+           '(oclo:send self :multiple-arg (oclo:send self 'one) :complex-selector (oclo:send self 'two)))
      (test equal
            (read-objc "[self multipleArg:[self one]
              complexSelector:[self two]]")
-           '(oclo:SEND SELF :MULTIPLE-ARG (oclo:SEND SELF 'ONE) :COMPLEX-SELECTOR (oclo:SEND SELF 'TWO)))
+           '(oclo:send self :multiple-arg (oclo:send self 'one) :complex-selector (oclo:send self 'two)))
      (test equal
            (read-objc "[self multipleArg: [self one]
              complexSelector: [self two]  ]")
-           '(oclo:SEND SELF :MULTIPLE-ARG (oclo:SEND SELF 'ONE) :COMPLEX-SELECTOR (oclo:SEND SELF 'TWO)))
+           '(oclo:send self :multiple-arg (oclo:send self 'one) :complex-selector (oclo:send self 'two)))
      (test equal
            (read-objc "[self multipleArgWithEmptyPart:42 :24]")
-           '(oclo:SEND SELF :MULTIPLE-ARG-WITH-EMPTY-PART 42 :|| 24))
+           '(oclo:send self :multiple-arg-with-empty-part 42 :|| 24))
      (test equal
            (read-objc "[self multipleArgWithEmptyPart:42 : 24 ]")
-           '(oclo:SEND SELF :MULTIPLE-ARG-WITH-EMPTY-PART 42 :|| 24))
+           '(oclo:send self :multiple-arg-with-empty-part 42 :|| 24))
      (test equal
            (read-objc "[self multipleArgWithEmptyPart:ABC :DEF]")
-           '(oclo:SEND SELF :MULTIPLE-ARG-WITH-EMPTY-PART abc :|| def))
+           '(oclo:send self :multiple-arg-with-empty-part abc :|| def))
      (test equal
            (read-objc "[self singleArgComplexSelectorWithFinalArgs:42 (:int)1]")
-           '(oclo:SEND SELF :SINGLE-ARG-COMPLEX-SELECTOR-WITH-FINAL-ARGS 42 (:INT 1)))
+           '(oclo:send self :single-arg-complex-selector-with-final-args 42 (:int 1)))
      (test equal
            (read-objc "[self singleArgComplexSelectorWithFinalArgs:42(:int)  1 ]")
-           '(oclo:SEND SELF :SINGLE-ARG-COMPLEX-SELECTOR-WITH-FINAL-ARGS 42 (:INT 1)))
+           '(oclo:send self :single-arg-complex-selector-with-final-args 42 (:int 1)))
      (test equal
            (read-objc "[self multipleArg:42 complexSelectorWithFinalArgs:24 (:int)1 (:float)2.0]")
-           '(oclo:SEND SELF
-             :MULTIPLE-ARG 42
-             :COMPLEX-SELECTOR-WITH-FINAL-ARGS 24
-             (:INT 1 :FLOAT 2.0)))
+           '(oclo:send self
+             :multiple-arg 42
+             :complex-selector-with-final-args 24
+             (:int 1 :float 2.0)))
      (test equal
            (read-objc "(progn [self simpleSelector]
                              [self multipleArg:42 complexSelector:24])")
            '(progn
-             (oclo:SEND SELF 'SIMPLE-SELECTOR)
-             (oclo:SEND SELF :MULTIPLE-ARG 42 :COMPLEX-SELECTOR 24))))))
+             (oclo:send self 'simple-selector)
+             (oclo:send self :multiple-arg 42 :complex-selector 24))))))
 
 (define-test test/read-objcl-class-definition ()
   (let ((*package* (find-package "COM.INFORMATIMAGO.OBJECTIVE-CL")))
@@ -373,11 +371,11 @@
                          one
                          two
                          three)]")
-           '(DEFCLASS EXAMPLE (ns:ns-object)
-             (ONE
-              TWO
-              THREE)
-             (:METACLASS NS:+NS-OBJECT))))))
+           '(defclass example (ns:ns-object)
+             (one
+              two
+              three)
+             (:metaclass ns:+ns-object))))))
 
 
 
@@ -403,9 +401,9 @@
                                       body:
                          (ns-log @\"Example %d %d\" a b)
                          [[NSNumber alloc]initWithInteger:(+ a b)]]")
-           '(oclo:DEFINE-OBJC-CLASS-METHOD ((:ID :MULTIPLE-ARG (:INT A) :COMPLEX-SELECTOR (:INT B)) EXAMPLE)
-             (NS-LOG (@ "Example %d %d") A B)
-             (oclo:SEND (oclo:SEND NS:NS-NUMBER 'ALLOC) :INIT-WITH-INTEGER (+ A B)))))))
+           '(oclo:define-objc-class-method ((:id :multiple-arg (:int a) :complex-selector (:int b)) example)
+             (ns-log (@ "Example %d %d") a b)
+             (oclo:send (oclo:send ns:ns-number 'alloc) :init-with-integer (+ a b)))))))
 
 
 (define-test test/read-objcl-instance-method-definition ()
@@ -420,9 +418,9 @@
                                  body:
                          (ns-log @\"Example %d %d\" a b)
                          [[NSNumber alloc]initWithInteger:(+ a b)]]")
-           '(oclo:DEFINE-OBJC-METHOD ((:ID :MULTIPLE-ARG (:INT A) :COMPLEX-SELECTOR (:INT B)) EXAMPLE)
-             (NS-LOG (@ "Example %d %d") A B)
-             (oclo:SEND (oclo:SEND NS:NS-NUMBER 'ALLOC) :INIT-WITH-INTEGER (+ A B))))
+           '(oclo:define-objc-method ((:id :multiple-arg (:int a) :complex-selector (:int b)) example)
+             (ns-log (@ "Example %d %d") a b)
+             (oclo:send (oclo:send ns:ns-number 'alloc) :init-with-integer (+ a b))))
      )))
 
 
@@ -448,30 +446,30 @@
 (progn
   
  '(progn
-   [w alphaValue]
-   [w setAlphaValue:0.5]
-   [v mouse:p inRect:r]
-   [[w getFrame] mouse:p inRect:r]
-   [NSString stringWithInteger: (* 42 ten)]
-   [NSString stringWithFormat:@"%f %i %f" (double-float)2 (int)3 (double-float)4]
-   [[NSNumber alloc] initWithInt:42]
-   (let ((controller [NSWindowController alloc]))
-     [controller initWithWindowNibName:@"DataWindow" owner:controller])
-   [self doSomething]
-   [super doSomething])
+   [w alphavalue]
+   [w setalphavalue:0.5]
+   [v mouse:p inrect:r]
+   [[w getframe] mouse:p inrect:r]
+   [nsstring stringwithinteger: (* 42 ten)]
+   [nsstring stringwithformat:@"%f %i %f" (double-float)2 (int)3 (double-float)4]
+   [[nsnumber alloc] initwithint:42]
+   (let ((controller [nswindowcontroller alloc]))
+     [controller initwithwindownibname:@"DataWindow" owner:controller])
+   [self dosomething]
+   [super dosomething])
 
- (PROGN
-   (OBJC:SEND W 'ALPHA-VALUE)
-   (OBJC:SEND W :SET-ALPHA-VALUE 0.5)
-   (OBJC:SEND V :MOUSE P :IN-RECT R)
-   (OBJC:SEND (OBJC:SEND W 'GET-FRAME) :MOUSE P :IN-RECT R)
-   (OBJC:SEND NS:NS-STRING :STRING-WITH-INTEGER (* 42 TEN))
-   (OBJC:SEND NS:NS-STRING :STRING-WITH-FORMAT (CCL:@ "%f %i %f") (:DOUBLE-FLOAT 2 :INT 3 :DOUBLE-FLOAT 4))
-   (OBJC:SEND (OBJC:SEND NS:NS-NUMBER 'ALLOC) :INIT-WITH-INT 42)
-   (LET ((CONTROLLER (OBJC:SEND NS:NS-WINDOW-CONTROLLER 'ALLOC)))
-     (OBJC:SEND CONTROLLER :INIT-WITH-WINDOW-NIB-NAME (CCL:@ "DataWindow") :OWNER CONTROLLER))
-   (OBJC:SEND SELF 'DO-SOMETHING)
-   (OBJC:SEND-SUPER SELF 'DO-SOMETHING)))
+ (progn
+   (objc:send w 'alpha-value)
+   (objc:send w :set-alpha-value 0.5)
+   (objc:send v :mouse p :in-rect r)
+   (objc:send (objc:send w 'get-frame) :mouse p :in-rect r)
+   (objc:send ns:ns-string :string-with-integer (* 42 ten))
+   (objc:send ns:ns-string :string-with-format (ccl:@ "%f %i %f") (:double-float 2 :int 3 :double-float 4))
+   (objc:send (objc:send ns:ns-number 'alloc) :init-with-int 42)
+   (let ((controller (objc:send ns:ns-window-controller 'alloc)))
+     (objc:send controller :init-with-window-nib-name (ccl:@ "DataWindow") :owner controller))
+   (objc:send self 'do-something)
+   (objc:send-super self 'do-something)))
 
 
 ;;;; THE END ;;;;

@@ -43,33 +43,31 @@
 ;;;;    2006-11-10 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal Bourguignon 2006 - 2006
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.CLMISC.RESOURCE-UTILIZATION"
-  (:USE "COMMON-LISP")
-  (:EXPORT "REPORTING-SRU"
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.CLMISC.RESOURCE-UTILIZATION"
+  (:use "COMMON-LISP")
+  (:export "REPORTING-SRU"
            "SUMMARY-RESOURCE-UTILIZATION" )
-  (:DOCUMENTATION
+  (:documentation
    "This package exports a macro that gather resource utilization statistics
     and report them.
 
@@ -90,7 +88,7 @@
     Copyright Pascal J. Bourguignon 2006 - 2006
     This package is provided under the GNU General Public License.
     See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.CLMISC.RESOURCE-UTILIZATION")
+(in-package "COM.INFORMATIMAGO.CLMISC.RESOURCE-UTILIZATION")
 
 
 
@@ -134,7 +132,7 @@ NOTE:   Parentheses inside the string must be escaped by \ unless balanced.
   (let ((token (peek-char t stream  nil :eof recursive-p)))
     (cond
       ((eq :eof token) (if eof-error-p
-                           (error 'END-OF-FILE :stream stream)
+                           (error 'end-of-file :stream stream)
                             eof-value))
       ((eql #\( token)
        (read-char stream)
@@ -157,7 +155,7 @@ NOTE:   Parentheses inside the string must be escaped by \ unless balanced.
           :finally (if ch
                        (return buffer)
                        (if eof-error-p
-                           (error 'END-OF-FILE :stream stream)
+                           (error 'end-of-file :stream stream)
                            (return eof-value))))))))
 
 
@@ -315,12 +313,12 @@ RETURN: The status of the specified process.
         (vdeio-after  'da))
     `(let ((,vstat-before (process-status))
            (,vstat-after)
-           (,vstart-run  (GET-INTERNAL-RUN-TIME))
+           (,vstart-run  (get-internal-run-time))
            (,vend-run)
            (,vdeio-before (device-i/o))
            (,vdeio-after))
        (unwind-protect (progn ,@body)
-         (setf ,vend-run  (GET-INTERNAL-RUN-TIME)
+         (setf ,vend-run  (get-internal-run-time)
                ,vstat-after (process-status)
                ,vdeio-after (device-i/o))
          (flet ((before (x) (or (cdr (assoc x ,vstat-before)) 0))
@@ -331,7 +329,7 @@ RETURN: The status of the specified process.
              (,@(if report-to-p
                     (list 'funcall report-to)
                     '(summary-resource-utilization))
-                (/ (- ,vend-run ,vstart-run) INTERNAL-TIME-UNITS-PER-SECOND)
+                (/ (- ,vend-run ,vstart-run) internal-time-units-per-second)
                 (* *jiffy* (- (after :stime) (before :stime)))
                 devi-io page-io ,job-origin :stream ,stream)))))))
 

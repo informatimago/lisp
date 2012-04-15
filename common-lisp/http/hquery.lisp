@@ -13,32 +13,30 @@
 ;;;;    2007-05-30 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal Bourguignon 2007 - 2007
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.HTTP.HQUERY"
-  (:USE "COMMON-LISP" "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
-  (:EXPORT "QUERY-ESCAPE" "QUERY-UNESCAPE" "QUERY-PARSE" "QUERY-ARGUMENT"
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.HTTP.HQUERY"
+  (:use "COMMON-LISP" "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
+  (:export "QUERY-ESCAPE" "QUERY-UNESCAPE" "QUERY-PARSE" "QUERY-ARGUMENT"
            "BUILD-QUERY")
-  (:DOCUMENTATION
+  (:documentation
    "This packages exports utility routines for web applications.
     
     Copyright Pascal Bourguignon 2007 - 2007
@@ -48,81 +46,81 @@
     as published by the Free Software Foundation either version
     2 of the License, or (at your option) any later version.
 "))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.HTTP.HQUERY")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.HTTP.HQUERY")
 
 
-(DEFUN QUERY-ESCAPE (string)
+(defun query-escape (string)
   "
 RETURN:     A string where the spaces are replaced by '+'
             and other unsavory characters are replaced by %HL sequences.
 "
-  (DO ((RESULT (MAKE-STRING (* 3 (LENGTH string))))
-       (I 0)
-       (J 0))
-      ((<= (LENGTH string) I) (SUBSEQ RESULT 0 J))
-    (COND
-      ((CHAR= (CHARACTER " ") (CHAR STRING I))
-       (SETF (CHAR RESULT J) (CHARACTER "+")) (INCF J) (INCF I))
+  (do ((result (make-string (* 3 (length string))))
+       (i 0)
+       (j 0))
+      ((<= (length string) i) (subseq result 0 j))
+    (cond
+      ((char= (character " ") (char string i))
+       (setf (char result j) (character "+")) (incf j) (incf i))
       ((position
         (char string i)
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789")
-       (SETF (CHAR RESULT J) (CHAR STRING I)) (INCF J) (INCF I))
+       (setf (char result j) (char string i)) (incf j) (incf i))
       (t
        (let ((escape (format nil "%~16,2R" (char-code (char string i)))))
-         (SETF (CHAR RESULT J) (char escape 0)) (incf j)
-         (SETF (CHAR RESULT J) (char escape 1)) (incf j)
-         (SETF (CHAR RESULT J) (char escape 2)) (incf j)
+         (setf (char result j) (char escape 0)) (incf j)
+         (setf (char result j) (char escape 1)) (incf j)
+         (setf (char result j) (char escape 2)) (incf j)
          (incf i))))))
 
 
-(DEFUN QUERY-UNESCAPE (QPART)
+(defun query-unescape (qpart)
   "
 RETURN:     A string where the + are replaced by spaces
             and the %HL are replaced by the caracter whose code is HL
             in hexadecimal.
 "
-  (DO ((RESULT (MAKE-STRING (LENGTH QPART)))
-       (I 0)
-       (J 0))
-      ((<= (LENGTH QPART) I) (SUBSEQ RESULT 0 J))
-    (COND
-      ((CHAR= (CHARACTER "+") (CHAR QPART I))
-       (SETF (CHAR RESULT J) (CHARACTER " "))
-       (INCF J)
-       (INCF I))
-      ((AND (CHAR= (CHARACTER "%") (CHAR QPART I))
-            (< (+ I 2) (LENGTH QPART)))
-       (LET ((CODE (PARSE-INTEGER QPART :START (+ I 1) :END (+ I 3) :RADIX 16)))
-         (COND
-           ((NULL CODE)
-            (SETF (CHAR RESULT J) (CHAR QPART I)) (INCF J) (INCF I))
-           ((= 13 CODE)
-            (INCF I 3))
-           (T
-            (SETF (CHAR RESULT J) (CODE-CHAR CODE)) (INCF J) (INCF I 3))) ))
-      (T
-       (SETF (CHAR RESULT J) (CHAR QPART I)) (INCF J) (INCF I)))))
+  (do ((result (make-string (length qpart)))
+       (i 0)
+       (j 0))
+      ((<= (length qpart) i) (subseq result 0 j))
+    (cond
+      ((char= (character "+") (char qpart i))
+       (setf (char result j) (character " "))
+       (incf j)
+       (incf i))
+      ((and (char= (character "%") (char qpart i))
+            (< (+ i 2) (length qpart)))
+       (let ((code (parse-integer qpart :start (+ i 1) :end (+ i 3) :radix 16)))
+         (cond
+           ((null code)
+            (setf (char result j) (char qpart i)) (incf j) (incf i))
+           ((= 13 code)
+            (incf i 3))
+           (t
+            (setf (char result j) (code-char code)) (incf j) (incf i 3))) ))
+      (t
+       (setf (char result j) (char qpart i)) (incf j) (incf i)))))
 
 
-(DEFUN QUERY-PARSE (QUERY-STRING)
+(defun query-parse (query-string)
   "
 RETURN:  the QUERY-ARGUMENTS, a list of lists (variable . value)
          found in the HTML CGI QUERY-STRING.
 "
-  (MAPCAR
-   (LAMBDA (ASS)
-     (LET* ((POSEP (POSITION (CHARACTER "=") ASS))
-            (VAR (IF POSEP (SUBSEQ ASS 0 POSEP) ASS))
-            (VAL (IF POSEP (SUBSEQ ASS (1+ POSEP)) "")))
-       (CONS (QUERY-UNESCAPE VAR) (QUERY-UNESCAPE VAL))))
-   (SPLIT-STRING QUERY-STRING "&")))
+  (mapcar
+   (lambda (ass)
+     (let* ((posep (position (character "=") ass))
+            (var (if posep (subseq ass 0 posep) ass))
+            (val (if posep (subseq ass (1+ posep)) "")))
+       (cons (query-unescape var) (query-unescape val))))
+   (split-string query-string "&")))
 
 
-(DEFUN QUERY-ARGUMENT (NAME QUERY-ARGUMENTS)
+(defun query-argument (name query-arguments)
   "
 RETURN:  The value of the QUERY-STRING argument named NAME.
 "
-  (CDR (ASSOC NAME QUERY-ARGUMENTS :TEST (FUNCTION STRING-EQUAL))))
+  (cdr (assoc name query-arguments :test (function string-equal))))
 
 
 (defun build-query (&rest field-value)

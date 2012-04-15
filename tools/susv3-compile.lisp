@@ -18,24 +18,22 @@
 ;;;;    2004-07-23 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal Bourguignon 2004 - 2004
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
 ;; (defpackage "COM.INFORMATIMAGO.COMMON-LISP.COMPILE"
@@ -45,9 +43,9 @@
 
 
 ;; Not used yet.
-(defvar PREFIX "/usr/local/")
-(defvar MODULE "common-lisp")
-(defvar PACKAGE-PATH "com/informatimago/common-lisp")
+(defvar prefix "/usr/local/")
+(defvar module "common-lisp")
+(defvar package-path "com/informatimago/common-lisp")
 
 (defun logger (ctrl &rest args)
   (format *trace-output* "~&;;;;~%;;;; ~?~%;;;;~%" ctrl args))
@@ -55,15 +53,15 @@
 
 (load "init.lisp")
 ;; package.lisp is loaded by init.lisp.
-#+(or allegro ccl ecl) (load (compile-file #P"PACKAGES:net;sourceforge;cclan;asdf;asdf.lisp"))
-#-(or allegro ccl ecl) (load (compile-file #P"PACKAGES:NET;SOURCEFORGE;CCLAN;ASDF;ASDF.LISP"))
-(push (function package:PACKAGE-SYSTEM-DEFINITION)
-      ASDF:*SYSTEM-DEFINITION-SEARCH-FUNCTIONS*)
+#+(or allegro ccl ecl) (load (compile-file #p"PACKAGES:net;sourceforge;cclan;asdf;asdf.lisp"))
+#-(or allegro ccl ecl) (load (compile-file #p"PACKAGES:NET;SOURCEFORGE;CCLAN;ASDF;ASDF.LISP"))
+(push (function package:package-system-definition)
+      asdf:*system-definition-search-functions*)
 ;;(asdf:operate 'asdf:load-op :com.informatimago.common-lisp)
 (asdf:operate 'asdf:load-op :com.informatimago.clisp)
 
 
-(defparameter *SOURCES*
+(defparameter *sources*
   (append
    '(
      #+ffi tools
@@ -84,7 +82,7 @@
 
 (com.informatimago.common-lisp.make-depends.make-depends:generate-asd
  :com.informatimago.susv3 *sources* *source-type*
- :VERSION "1.0.0"
+ :version "1.0.0"
  :predefined-packages '("COMMON-LISP" "FFI" "EXT" "LINUX" "REGEXP" "GRAY" "SYS")
  :depends-on '(:com.informatimago.common-lisp :com.informatimago.clisp)
  :vanillap t)
@@ -95,7 +93,7 @@
 ;;;
 
 (logger "GENERATING THE SUMMARY.HTML")
-(COM.INFORMATIMAGO.COMMON-LISP.MAKE-DEPENDS.MAKE-DEPENDS:generate-summary
+(com.informatimago.common-lisp.make-depends.make-depends:generate-summary
  *sources*
  :source-type  *source-type*
  :summary-path "summary.html"
@@ -115,9 +113,9 @@
 ;;;
 
 (logger "COMPILING THE ASDF SYSTEM")
-(SETF ASDF:*COMPILE-FILE-WARNINGS-BEHAVIOUR* :IGNORE)
-(let ((*LOAD-VERBOSE* t)
-      (*COMPILE-VERBOSE* t)
+(setf asdf:*compile-file-warnings-behaviour* :ignore)
+(let ((*load-verbose* t)
+      (*compile-verbose* t)
       (asdf::*verbose-out* t))
   (asdf:operate 'asdf:load-op :com.informatimago.susv3))
 

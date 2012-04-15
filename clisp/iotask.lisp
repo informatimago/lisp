@@ -16,28 +16,26 @@
 ;;;;TODO merge with pollio?
 ;;;;
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal Bourguignon 2005 - 2005
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
-(defPACKAGE "COM.INFORMATIMAGO.CLISP.IOTASK"
-  (:DOCUMENTATION
+(defpackage "COM.INFORMATIMAGO.CLISP.IOTASK"
+  (:documentation
    "This package exports a sheduler encapsulating clisp SOCKET:SOCKET-STATUS
     which itself encapsulate select(2)/poll(2).
 
@@ -50,7 +48,7 @@
          "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
          "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
   (:shadowing-import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ECMA048" "ED")
-  (:EXPORT
+  (:export
    "IOTASK" "IOTASK-ENQUEUE" "IOTASK-ENQUEUE-STREAM" "IOTASK-DEQUEUE"
    "IOTASK-POLL" "IOTASK-SCHEDULE"
    "MAKE-BUFFERED-DISCIPLINE" "MAKE-KEYBOARD-DISCIPLINE"))
@@ -183,18 +181,18 @@
                (ch  (system::input-character-char ich)))
           (cond 
             ((null ch))
-            ((= (char-code ch) COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ecma048:CR)
+            ((= (char-code ch) com.informatimago.common-lisp.cesarum.ecma048:cr)
              (terpri)
              (finish-output)
              (funcall process-input 
                       task (subseq buffer 0 (fill-pointer buffer)))
              (setf (fill-pointer buffer) 0))
-            ((or (= (char-code ch) COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ecma048:BS)
-                 (= (char-code ch) COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ecma048::DEL))
+            ((or (= (char-code ch) com.informatimago.common-lisp.cesarum.ecma048:bs)
+                 (= (char-code ch) com.informatimago.common-lisp.cesarum.ecma048::del))
              (when (< 0 (fill-pointer buffer))
-               (princ (code-char COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ecma048:BS))
+               (princ (code-char com.informatimago.common-lisp.cesarum.ecma048:bs))
                (princ " ")
-               (princ (code-char COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ecma048:BS))
+               (princ (code-char com.informatimago.common-lisp.cesarum.ecma048:bs))
                (finish-output)
                (decf (fill-pointer buffer))))
             (t

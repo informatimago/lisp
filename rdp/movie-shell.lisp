@@ -46,7 +46,7 @@
 
 (defun sh-request-access-to (&key program database)
   (format t "~&ACCESS TO ~:[PROGRAM~;DATABASE~] ~A IS ~:[REJECTED~;GRANTED~]~%"
-          database (or program database)  (string= (cdr *PASSWORD*) "GOLDFINGER")))
+          database (or program database)  (string= (cdr *password*) "GOLDFINGER")))
 
 (defun sh-status-report-on (&rest what)
   (format t "~&~{~A~^ ~} STATUS IS OK~%" what))

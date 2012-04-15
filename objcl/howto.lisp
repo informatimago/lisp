@@ -182,13 +182,13 @@
 
 #| Just write: |#
 
-(defvar *my-window* [[NSWindow alloc]
-                     initWithContentRect:(ns:make-ns-rect 100 100 400 300)
-                     styleMask:(logior  #$NSTitledWindowMask 
-                                        #$NSClosableWindowMask  
-                                        #$NSMiniaturizableWindowMask 
-                                        #$NSResizableWindowMask)
-                     backing:#$NSBackingStoreBuffered
+(defvar *my-window* [[nswindow alloc]
+                     initwithcontentrect:(ns:make-ns-rect 100 100 400 300)
+                     stylemask:(logior  #$nstitledwindowmask 
+                                        #$nsclosablewindowmask  
+                                        #$nsminiaturizablewindowmask 
+                                        #$nsresizablewindowmask)
+                     backing:#$nsbackingstorebuffered
                      defer:nil])
 
 
@@ -197,7 +197,7 @@
 ;; 
 ;; (#/makeKeyAndOrderFront: my-window nil)
 
-[*my-window* makeKeyAndOrderFront:nil]
+[*my-window* makekeyandorderfront:nil]
 
 
 ;; The window, empty, but with the shape and features we specified,
@@ -248,11 +248,11 @@
 #| Again, it's much simplier to write just: |#
 
 (defparameter *my-button*
-  (let ((button [[NSButton alloc] initWithFrame:(ns:make-ns-rect 10 50 72 32)]))
-   [button setButtonType:#$NSMomentaryPushInButton]
-   [button setImagePosition:#$NSNoImage]
-   [button setBezelStyle:#$NSRoundedBezelStyle]
-   [[*my-window* contentView] addSubview:button]
+  (let ((button [[nsbutton alloc] initwithframe:(ns:make-ns-rect 10 50 72 32)]))
+   [button setbuttontype:#$nsmomentarypushinbutton]
+   [button setimageposition:#$nsnoimage]
+   [button setbezelstyle:#$nsroundedbezelstyle]
+   [[*my-window* contentview] addsubview:button]
    button))
 
  
@@ -271,7 +271,7 @@
 ;; ;   Undeclared free variable MY-BUTTON, in an anonymous lambda form
 ;; NIL
 
-[*my-button* setTitle:@"Hello!"]
+[*my-button* settitle:@"Hello!"]
 
 ;; The button changes to display the text "Hello!". Notice that we
 ;; are careful to save a reference to the button text and release it
@@ -310,7 +310,7 @@
    Smalltalk or Ruby).
 |#
 
-@[NSObject subClass:Greeter slots: ()]
+@[nsobject subclass:greeter slots: ()]
 
 
 
@@ -335,11 +335,11 @@
 ;;     (#/release default-button)
 ;;     (#/release other-button)))
 
-@[Greeter method:(greet:(:id)sender)
-          resultType:(:id)
+@[greeter method:(greet:(:id)sender)
+          resulttype:(:id)
           body:
           (declare (ignore sender))
-          (#_NSRunAlertPanel @"Hello!"
+          (#_nsrunalertpanel @"Hello!"
                              @"Hello, World!"
                              @"Hi!"
                              @"Hello!"
@@ -352,7 +352,7 @@
 ;; (setf my-greeter (#/init (#/alloc greeter)))
 ;; #<GREETER <Greeter: 0x136c58e0> (#x136C58E0)>
 
-(defparameter *my-greeter* [[Greeter alloc] init])
+(defparameter *my-greeter* [[greeter alloc] init])
 
 
 ;; (#/setTarget: my-button my-greeter)
@@ -361,8 +361,8 @@
 ;; NIL
 
 
-[*my-button* setTarget:*my-greeter*]
-[*my-button* setAction:(objc:@selector "greet:")]
+[*my-button* settarget:*my-greeter*]
+[*my-button* setaction:(objc:@selector "greet:")]
  
 ;; Now, if you click the button, an Alert panel appears.
 

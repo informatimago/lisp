@@ -32,120 +32,120 @@
 ;;    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 ;;****************************************************************************
 
-(DEFINE-PACKAGE COM.INFORMATIMAGO.COMMON-LISP.GEEK-DAY
-  (:NICKNAMES GEEK-DAY)
-  (:DOCUMENTATION "This programs plays geek-day.
+(define-package com.informatimago.common-lisp.geek-day
+  (:nicknames geek-day)
+  (:documentation "This programs plays geek-day.
     http://ars.userfriendly.org/cartoons/?id=20021215")
-  (:FROM COMMON-LISP :IMPORT :ALL)
-  (:EXPORT
-   PLAY-GEEK-DAY MAIN
+  (:from common-lisp :import :all)
+  (:export
+   play-geek-day main
    ;; low-level:
-   PLAYER LOST UPDATE-SANITY UPDATE-POPULARITY HAVE-BREAKFAST
-   HAVE-SHOWER CHOOSE-BACKWARD-OR-FORWARD RANDOMIZER SQUARE-LIST
-   GEEK-DAY  INITIALIZE PLAY )
+   player lost update-sanity update-popularity have-breakfast
+   have-shower choose-backward-or-forward randomizer square-list
+   geek-day  initialize play )
   );;COM.INFORMATIMAGO.COMMON-LISP.GEEK-DAY
 
 
-(DEFGENERIC LOST (A))
-(DEFGENERIC UPDATE-SANITY (A B))
-(DEFGENERIC UPDATE-POPULARITY (A B))
-(DEFGENERIC HAVE-BREAKFAST (A))
-(DEFGENERIC HAVE-SHOWER (A))
-(DEFGENERIC CHOOSE-BACKWARD-OR-FORWARD (A))
-(DEFGENERIC PLAY (A))
-(DEFGENERIC LANDING (A B C D))
-(DEFGENERIC TAKE-OFF (A B C D))
-(DEFGENERIC INITIALIZE (A))
+(defgeneric lost (a))
+(defgeneric update-sanity (a b))
+(defgeneric update-popularity (a b))
+(defgeneric have-breakfast (a))
+(defgeneric have-shower (a))
+(defgeneric choose-backward-or-forward (a))
+(defgeneric play (a))
+(defgeneric landing (a b c d))
+(defgeneric take-off (a b c d))
+(defgeneric initialize (a))
 
 
-(DEFCLASS PLAYER NIL
+(defclass player nil
   (
-   (NAME
-    :INITFORM "Unnamed Player"
-    :INITARG :NAME
-    :ACCESSOR NAME
-    :TYPE STRING
-    :DOCUMENTATION "This player's name.")
-   (POPULARITY
-    :INITFORM 5
-    :INITARG :POPULARITY
-    :ACCESSOR POPULARITY
-    :TYPE INTEGER
-    :DOCUMENTATION "This player's popularity.")
-   (SANITY
-    :INITFORM 5
-    :INITARG :SANITY
-    :ACCESSOR SANITY
-    :TYPE INTEGER
-    :DOCUMENTATION "This player's sanity.")
-   (HAVE-HAD-BREAKFAST
-    :INITFORM NIL
-    :INITARG :HAVE-HAD-BREAKFAST
-    :ACCESSOR HAVE-HAD-BREAKFAST
-    :TYPE (OR NIL T)
-    :DOCUMENTATION "This player have had a breakfast.")
-   (HAVE-HAD-SHOWER
-    :INITFORM NIL
-    :INITARG :HAVE-HAD-SHOWER
-    :ACCESSOR HAVE-HAD-SHOWER
-    :TYPE (OR NIL T)
-    :DOCUMENTATION "This player have had a shower.")
+   (name
+    :initform "Unnamed Player"
+    :initarg :name
+    :accessor name
+    :type string
+    :documentation "This player's name.")
+   (popularity
+    :initform 5
+    :initarg :popularity
+    :accessor popularity
+    :type integer
+    :documentation "This player's popularity.")
+   (sanity
+    :initform 5
+    :initarg :sanity
+    :accessor sanity
+    :type integer
+    :documentation "This player's sanity.")
+   (have-had-breakfast
+    :initform nil
+    :initarg :have-had-breakfast
+    :accessor have-had-breakfast
+    :type (or nil t)
+    :documentation "This player have had a breakfast.")
+   (have-had-shower
+    :initform nil
+    :initarg :have-had-shower
+    :accessor have-had-shower
+    :type (or nil t)
+    :documentation "This player have had a shower.")
    )
-  (:DOCUMENTATION "A Player at Geek-Day."));;PLAYER
+  (:documentation "A Player at Geek-Day."));;PLAYER
 
 
-(DEFMETHOD LOST ((SELF PLAYER))
-  (OR (<= (POPULARITY SELF) 0)
-      (<= (SANITY     SELF) 0))
+(defmethod lost ((self player))
+  (or (<= (popularity self) 0)
+      (<= (sanity     self) 0))
   );;LOST
 
 
-(DEFMETHOD UPDATE-SANITY ((SELF PLAYER) INCREMENT)
-  (SETF (SANITY SELF) (+ (SANITY SELF) INCREMENT))
-  (FORMAT T "    Your sanity is ~[increased~;decreased~] by ~A.~%"
-          (IF (< INCREMENT 0) 1 0) (ABS INCREMENT))
-  (IF (<=  (SANITY SELF) 0)
-      (FORMAT T "    YOU GO POSTAL AND LOSE!~%~%"))
+(defmethod update-sanity ((self player) increment)
+  (setf (sanity self) (+ (sanity self) increment))
+  (format t "    Your sanity is ~[increased~;decreased~] by ~A.~%"
+          (if (< increment 0) 1 0) (abs increment))
+  (if (<=  (sanity self) 0)
+      (format t "    YOU GO POSTAL AND LOSE!~%~%"))
   );;UPDATE-SANITY
 
 
-(DEFMETHOD UPDATE-POPULARITY ((SELF PLAYER) INCREMENT)
-  (SETF (POPULARITY SELF) (+ (POPULARITY SELF) INCREMENT))
-  (FORMAT T "    Your popularity is ~[increased~;decreased~] by ~A.~%"
-          (IF (< INCREMENT 0) 1 0) (ABS INCREMENT))
-  (IF (<= (POPULARITY SELF) 0)
-      (FORMAT T "    YOU'RE FIRED!~%~%"))
+(defmethod update-popularity ((self player) increment)
+  (setf (popularity self) (+ (popularity self) increment))
+  (format t "    Your popularity is ~[increased~;decreased~] by ~A.~%"
+          (if (< increment 0) 1 0) (abs increment))
+  (if (<= (popularity self) 0)
+      (format t "    YOU'RE FIRED!~%~%"))
   );;UPDATE-POPULARITY
 
 
-(DEFMETHOD HAVE-BREAKFAST ((SELF PLAYER))
-  (SETF (HAVE-HAD-BREAKFAST SELF) T)
+(defmethod have-breakfast ((self player))
+  (setf (have-had-breakfast self) t)
   );;HAVE-BREAKFAST
 
 
-(DEFMETHOD HAVE-SHOWER ((SELF PLAYER))
-  (SETF (HAVE-HAD-SHOWER SELF) T)
+(defmethod have-shower ((self player))
+  (setf (have-had-shower self) t)
   );;HAVE-SHOWER
 
 
-(DEFMETHOD CHOOSE-BACKWARD-OR-FORWARD ((SELF PLAYER))
-  (FORMAT T "~%~A, please choose backward or forward? " (NAME SELF))
-  (FINISH-OUTPUT *STANDARD-OUTPUT*)
-  (DO ((REP (READ-LINE) (READ-LINE)))
-      ((OR (STRING-EQUAL REP "backward")
-           (STRING-EQUAL REP "forward"))
-       (STRING-EQUAL REP "backward"))
-    (FORMAT T "~%Becareful! Next time, pop-1!~&~A, ~
+(defmethod choose-backward-or-forward ((self player))
+  (format t "~%~A, please choose backward or forward? " (name self))
+  (finish-output *standard-output*)
+  (do ((rep (read-line) (read-line)))
+      ((or (string-equal rep "backward")
+           (string-equal rep "forward"))
+       (string-equal rep "backward"))
+    (format t "~%Becareful! Next time, pop-1!~&~A, ~
                please choose backward or forward? "
-            (NAME SELF)))
+            (name self)))
   );;CHOOSE-BACKWARD-OR-FORWARD
 
 
   
-(DEFVAR RANDOM-STATE (MAKE-RANDOM-STATE T))
+(defvar random-state (make-random-state t))
 
-(DEFUN RANDOMIZER ()
-  (1+ (RANDOM 6 RANDOM-STATE))
+(defun randomizer ()
+  (1+ (random 6 random-state))
   );;RANDOMIZER
 
 
@@ -153,119 +153,119 @@
 
 ;;("title" (before) (after))
 
-(DEFVAR SQUARE-LIST
+(defvar square-list
   '(
     ("Starting blocks."
-     NIL
-     (LAMBDA (SQUARE DICE PLAYER)
-       (FORMAT T "~&    Therefore ~A."
-               (IF (<= 5 DICE) "get out of bed" "keep sleeping"))
-       (IF (<= 5 DICE)
-           (+ DICE SQUARE)
-         SQUARE)))
+     nil
+     (lambda (square dice player)
+       (format t "~&    Therefore ~A."
+               (if (<= 5 dice) "get out of bed" "keep sleeping"))
+       (if (<= 5 dice)
+           (+ dice square)
+         square)))
 
-    ("Ungum your eyes."            ( (POPULARITY +1) ) NIL)
-    ("Get a hot shower."           ( (POPULARITY +3)
-                                     (LAMBDA (PLAYER)
-                                       (HAVE-SHOWER PLAYER)) ) NIL)
-    ("Depilate."                   ( (POPULARITY +1) ) NIL)
-    ("Get a breakfast."            ( (SANITY +3)
-                                     (LAMBDA (PLAYER)
-                                       (HAVE-BREAKFAST PLAYER)) ) NIL)
-    ("Catch the bus."              ( (SANITY -1) (POPULARITY -1) ) NIL)
+    ("Ungum your eyes."            ( (popularity +1) ) nil)
+    ("Get a hot shower."           ( (popularity +3)
+                                     (lambda (player)
+                                       (have-shower player)) ) nil)
+    ("Depilate."                   ( (popularity +1) ) nil)
+    ("Get a breakfast."            ( (sanity +3)
+                                     (lambda (player)
+                                       (have-breakfast player)) ) nil)
+    ("Catch the bus."              ( (sanity -1) (popularity -1) ) nil)
     ("Oooh... Brain Engages."
-     NIL
-     (LAMBDA (SQUARE DICE PLAYER)
-       (IF (CHOOSE-BACKWARD-OR-FORWARD PLAYER)
-           (- SQUARE DICE)
-         (+ SQUARE DICE))))
-    ("Arrive \"late\"."            ( (POPULARITY +1) (SANITY -1) ) NIL)
-    ("First problem of the day."   ( (POPULARITY -2) (SANITY -3) ) NIL)
-    ("Called into meeting."        ( (SANITY -4) ) NIL)
-    ("Boss in bad mood."           ( (POPULARITY -2) ) NIL)
-    ("Water cooler break."         ( (LAMBDA (PLAYER)
-                                       (UNLESS (HAVE-HAD-SHOWER PLAYER)
-                                         (UPDATE-POPULARITY PLAYER -3))) ) NIL)
-    ("Caffeine break!"             ( (SANITY +3) ) NIL)
-    ("Caffeine break!"             ( (SANITY +3) ) NIL)
+     nil
+     (lambda (square dice player)
+       (if (choose-backward-or-forward player)
+           (- square dice)
+         (+ square dice))))
+    ("Arrive \"late\"."            ( (popularity +1) (sanity -1) ) nil)
+    ("First problem of the day."   ( (popularity -2) (sanity -3) ) nil)
+    ("Called into meeting."        ( (sanity -4) ) nil)
+    ("Boss in bad mood."           ( (popularity -2) ) nil)
+    ("Water cooler break."         ( (lambda (player)
+                                       (unless (have-had-shower player)
+                                         (update-popularity player -3))) ) nil)
+    ("Caffeine break!"             ( (sanity +3) ) nil)
+    ("Caffeine break!"             ( (sanity +3) ) nil)
     ("Co-worker gives you the blame."
-     ( (POPULARITY +2) ) NIL)
-    ("Nap."                        ( (SANITY +4) (POPULARITY -2) ) NIL)
+     ( (popularity +2) ) nil)
+    ("Nap."                        ( (sanity +4) (popularity -2) ) nil)
     ("Wooo! A thouht!"
-     NIL
-     (LAMBDA (SQUARE DICE PLAYER)
-       (IF (CHOOSE-BACKWARD-OR-FORWARD PLAYER)
-           (- SQUARE DICE)
-         (+ SQUARE DICE))))
-    ("Chair breaks."               ( (POPULARITY +2) (SANITY -1) ) NIL)
-    ("Machine locks up."           ( (SANITY -2) ) NIL)
-    ("Power outage."                   ( "It's okay, you're safe here." ) NIL)
-    ("Munchies!"                   ( (LAMBDA (PLAYER)
-                                       (UNLESS (HAVE-HAD-BREAKFAST PLAYER)
-                                         (UPDATE-SANITY PLAYER -2))) ) NIL)
-    ("Caffeine run."               ( (POPULARITY +1) ) NIL)
-    ("Sugar run."                  ( (SANITY +1) ) NIL)
-    ("Co-worker takes credit."     ( (SANITY -3) ) NIL)
-    ("Run to the loo."             ( (SANITY +1) ) NIL)
+     nil
+     (lambda (square dice player)
+       (if (choose-backward-or-forward player)
+           (- square dice)
+         (+ square dice))))
+    ("Chair breaks."               ( (popularity +2) (sanity -1) ) nil)
+    ("Machine locks up."           ( (sanity -2) ) nil)
+    ("Power outage."                   ( "It's okay, you're safe here." ) nil)
+    ("Munchies!"                   ( (lambda (player)
+                                       (unless (have-had-breakfast player)
+                                         (update-sanity player -2))) ) nil)
+    ("Caffeine run."               ( (popularity +1) ) nil)
+    ("Sugar run."                  ( (sanity +1) ) nil)
+    ("Co-worker takes credit."     ( (sanity -3) ) nil)
+    ("Run to the loo."             ( (sanity +1) ) nil)
     ("Collapse on the couch at home."
      ("It's over. Start again tomorrow.")
-     (LAMBDA (SQUARE DICE PLAYER)
+     (lambda (square dice player)
        0))
     ));;SQUARE-LIST
 
 
-(DEFCLASS GEEK-DAY  NIL
+(defclass geek-day  nil
   (
-   (BOARD
-    :INITFORM (MAKE-ARRAY (LENGTH SQUARE-LIST) :INITIAL-CONTENTS SQUARE-LIST)
-    :INITARG :BOARD
-    :ACCESSOR BOARD
-    :DOCUMENTATION "The array of square compounding the game.")
-   (PLAYERS
-    :INITFORM NIL
-    :INITARG :PLAYERS
-    :ACCESSOR PLAYERS
-    :DOCUMENTATION "The list of Player objects.")
-   (MARKERS
-    :INITFORM NIL
-    :ACCESSOR MARKERS
-    :DOCUMENTATION "A list of cons (player . square-index).")
+   (board
+    :initform (make-array (length square-list) :initial-contents square-list)
+    :initarg :board
+    :accessor board
+    :documentation "The array of square compounding the game.")
+   (players
+    :initform nil
+    :initarg :players
+    :accessor players
+    :documentation "The list of Player objects.")
+   (markers
+    :initform nil
+    :accessor markers
+    :documentation "A list of cons (player . square-index).")
    )
-  (:DOCUMENTATION "A Geek-Day game."));;GEEK-DAY
+  (:documentation "A Geek-Day game."));;GEEK-DAY
 
 
 
 
 
-(DEFMETHOD PLAY ((SELF GEEK-DAY))
-  (DO ()
-      ((NULL (MARKERS SELF)))
+(defmethod play ((self geek-day))
+  (do ()
+      ((null (markers self)))
     ;; let's run a turn.
-    (DOLIST (MARKER (MARKERS SELF))
+    (dolist (marker (markers self))
       ;; let's run a player.
-      (LET* ((PLAYER      (CAR MARKER))
-             (SQUARE      (CDR MARKER))
-             (SQUARE-DATA (AREF (BOARD SELF) SQUARE))
+      (let* ((player      (car marker))
+             (square      (cdr marker))
+             (square-data (aref (board self) square))
              )
-        (SETF (CDR MARKER) (TAKE-OFF SELF PLAYER SQUARE SQUARE-DATA))
-        (SETQ SQUARE       (CDR MARKER))
-        (SETQ SQUARE-DATA  (AREF (BOARD SELF) SQUARE))
-        (LANDING SELF PLAYER SQUARE SQUARE-DATA)
+        (setf (cdr marker) (take-off self player square square-data))
+        (setq square       (cdr marker))
+        (setq square-data  (aref (board self) square))
+        (landing self player square square-data)
         )) ;;dolist
-    (SETF (MARKERS SELF)
-          (DELETE-IF (LAMBDA (ITEM) (LOST (CAR ITEM))) (MARKERS SELF)))
-    (LET ((LINEFORM "~:(~20A~) ~16A ~16A ~16A~%"))
-      (FORMAT T "~%~%")
-      (FORMAT T LINEFORM  "--------------------"
+    (setf (markers self)
+          (delete-if (lambda (item) (lost (car item))) (markers self)))
+    (let ((lineform "~:(~20A~) ~16A ~16A ~16A~%"))
+      (format t "~%~%")
+      (format t lineform  "--------------------"
               "----------------"  "----------------"  "----------------")
-      (FORMAT T LINEFORM  "Name" "Popularity" "Sanity" "Square")
-      (FORMAT T LINEFORM  "--------------------"
+      (format t lineform  "Name" "Popularity" "Sanity" "Square")
+      (format t lineform  "--------------------"
               "----------------"  "----------------"  "----------------")
-      (DOLIST (PLAYER (PLAYERS SELF))
-        (FORMAT T LINEFORM  (NAME PLAYER) (POPULARITY PLAYER) (SANITY PLAYER)
-                (IF (LOST PLAYER) "Lost" (CDR (ASSOC PLAYER (MARKERS SELF)))))
+      (dolist (player (players self))
+        (format t lineform  (name player) (popularity player) (sanity player)
+                (if (lost player) "Lost" (cdr (assoc player (markers self)))))
         ) ;;dolist
-      (FORMAT T LINEFORM  "--------------------"
+      (format t lineform  "--------------------"
               "----------------"  "----------------"  "----------------")
       ) ;;let
     ) ;;do
@@ -273,89 +273,89 @@
 
 
 
-(DEFMACRO SQUARE-NAME (SQUARE-DATA) `(CAR   ,SQUARE-DATA))
-(DEFMACRO SQUARE-IN   (SQUARE-DATA) `(CADR  ,SQUARE-DATA))
-(DEFMACRO SQUARE-OUT  (SQUARE-DATA) `(CADDR ,SQUARE-DATA))
+(defmacro square-name (square-data) `(car   ,square-data))
+(defmacro square-in   (square-data) `(cadr  ,square-data))
+(defmacro square-out  (square-data) `(caddr ,square-data))
 
 
-(DEFUN LAMBDAP (ITEM)
-  (AND (CONSP ITEM) (EQ 'LAMBDA (CAR ITEM))));;LAMBDAP
+(defun lambdap (item)
+  (and (consp item) (eq 'lambda (car item))));;LAMBDAP
 
-(DEFMACRO LAMCALL (LAMBDA-EXPR &REST ARGUMENTS)
-  `(FUNCALL  (COERCE ,LAMBDA-EXPR 'FUNCTION) ,@ARGUMENTS));;LAMCALL
+(defmacro lamcall (lambda-expr &rest arguments)
+  `(funcall  (coerce ,lambda-expr 'function) ,@arguments));;LAMCALL
 
 
-(DEFMETHOD LANDING ((SELF GEEK-DAY) PLAYER SQUARE SQUARE-DATA)
-  (DECLARE (IGNORE SQUARE))
-  (FORMAT T "~%~%~:(~A~):  ~A~%"
-          (NAME PLAYER) (SQUARE-NAME SQUARE-DATA))
-  (DOLIST (ACTION (SQUARE-IN SQUARE-DATA))
-    (COND
-     ((NULL ACTION))
-     ((STRINGP ACTION)              (FORMAT T "    ~A~%" ACTION) )
-     ((LAMBDAP ACTION)              (LAMCALL ACTION PLAYER) )
-     ((EQ 'POPULARITY (CAR ACTION)) (UPDATE-POPULARITY PLAYER (CADR ACTION)) )
-     ((EQ 'SANITY (CAR ACTION))     (UPDATE-SANITY PLAYER (CADR ACTION)) )
-     (T (ERROR "Invalid action in square-in ~W." ACTION)))
+(defmethod landing ((self geek-day) player square square-data)
+  (declare (ignore square))
+  (format t "~%~%~:(~A~):  ~A~%"
+          (name player) (square-name square-data))
+  (dolist (action (square-in square-data))
+    (cond
+     ((null action))
+     ((stringp action)              (format t "    ~A~%" action) )
+     ((lambdap action)              (lamcall action player) )
+     ((eq 'popularity (car action)) (update-popularity player (cadr action)) )
+     ((eq 'sanity (car action))     (update-sanity player (cadr action)) )
+     (t (error "Invalid action in square-in ~W." action)))
     );;dolist
   );;LANDING
 
 
-(DEFMETHOD TAKE-OFF ((SELF GEEK-DAY) PLAYER SQUARE SQUARE-DATA)
-  (LET ((DICE        (RANDOMIZER))
-        (OUT         (SQUARE-OUT SQUARE-DATA))
+(defmethod take-off ((self geek-day) player square square-data)
+  (let ((dice        (randomizer))
+        (out         (square-out square-data))
         )
-    (FORMAT T "~%~%~:(~A~), you roll and get ~A.~%" (NAME PLAYER) DICE)
-    (MIN (1- (LENGTH (BOARD SELF)))
-               (IF OUT (LAMCALL OUT SQUARE DICE PLAYER)
-                 (+ SQUARE DICE)))
+    (format t "~%~%~:(~A~), you roll and get ~A.~%" (name player) dice)
+    (min (1- (length (board self)))
+               (if out (lamcall out square dice player)
+                 (+ square dice)))
     ));;TAKE-OFF
 
 
 
-(DEFMETHOD INITIALIZE ((SELF GEEK-DAY))
-  (UNLESS (PLAYERS SELF)
-    (ERROR "Please give me some player with make-instance!"))
-  (SETF (MARKERS SELF)
-        (MAPCAR (LAMBDA (PLAYER) (CONS PLAYER 0)) (PLAYERS SELF)))
-  (DOLIST (MARKER (MARKERS SELF))
+(defmethod initialize ((self geek-day))
+  (unless (players self)
+    (error "Please give me some player with make-instance!"))
+  (setf (markers self)
+        (mapcar (lambda (player) (cons player 0)) (players self)))
+  (dolist (marker (markers self))
     ;; let's run a player.
-    (LET* ((PLAYER      (CAR MARKER))
-           (SQUARE      (CDR MARKER))
-           (SQUARE-DATA (AREF (BOARD SELF) SQUARE))
+    (let* ((player      (car marker))
+           (square      (cdr marker))
+           (square-data (aref (board self) square))
            )
-      (LANDING SELF PLAYER SQUARE SQUARE-DATA)
+      (landing self player square square-data)
       )) ;;DOLIST
   );;INITIALIZE
 
 
-(DEFUN PLAY-GEEK-DAY (&REST PLAYER-NAMES)
-  (LET ((GAME (MAKE-INSTANCE 'GEEK-DAY
-                  :PLAYERS (MAPCAR (LAMBDA (NAME)
-                                     (MAKE-INSTANCE 'PLAYER :NAME NAME))
-                                   PLAYER-NAMES))) )
-    (DECLARE (TYPE GEEK-DAY GAME)) 
-    (INITIALIZE GAME)
-    (PLAY GAME))
+(defun play-geek-day (&rest player-names)
+  (let ((game (make-instance 'geek-day
+                  :players (mapcar (lambda (name)
+                                     (make-instance 'player :name name))
+                                   player-names))) )
+    (declare (type geek-day game)) 
+    (initialize game)
+    (play game))
   );;PLAY-GEEK-DAY
 
 
 
-(DEFUN MAIN (&rest args)
+(defun main (&rest args)
   "
 DO:     Ask for the names of the players from the terminal
         and call PLAY-GEEK-DAY.
 "
   (declare (ignore args))
-  (FORMAT T "~24%+----------------------------------+~&~
+  (format t "~24%+----------------------------------+~&~
                  |          G E E K - D A Y         |~&~
                  +----------------------------------+~&~
              ~4%~
              Please enter the names of the players, ~
              or an empty line to abort: ~&")
-  (LET* ((NAMES-STR (READ-LINE))
-         (NAMES (READ-FROM-STRING (FORMAT NIL "(~A)" NAMES-STR) T '())))
-    (WHEN NAMES
-      (APPLY (FUNCTION PLAY-GEEK-DAY) NAMES))));;MAIN
+  (let* ((names-str (read-line))
+         (names (read-from-string (format nil "(~A)" names-str) t '())))
+    (when names
+      (apply (function play-geek-day) names))));;MAIN
 
 ;;;; geek-day.lisp                    --                     --          ;;;;

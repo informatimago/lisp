@@ -14,33 +14,31 @@
 ;;;;    2005-01-16 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2005 - 2005
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CACHE"
-  (:USE "COMMON-LISP")
-  (:EXPORT "CACHE-EXPIRE-ALL" "CACHE-EXPIRE" "CACHE-EXPIRATION" "CACHE-GET"
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CACHE"
+  (:use "COMMON-LISP")
+  (:export "CACHE-EXPIRE-ALL" "CACHE-EXPIRE" "CACHE-EXPIRATION" "CACHE-GET"
            "SYNCHRONIZE-CACHE" "MAKE-CACHE" "CACHE-PRODUCER" "CACHE-VALUE-FILE-TYPE"
            "CACHE-INDEX-FILE-PATH" "CACHE-DIRECTORY-PATH" "CACHE")
-  (:DOCUMENTATION
+  (:documentation
    "
     A generic disk-based cache.
 
@@ -50,7 +48,7 @@
     modify it under the terms of the GNU General Public License
     as published by the Free Software Foundation; either version
     2 of the License, or (at your option) any later version."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CACHE")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CACHE")
 
 
 
@@ -109,18 +107,18 @@
 ;; header: (:type :cache-index :date cache-date :value-file-type str)
 ;; record: (:key readable :file-name str :fetch-date int :expire-date int)
 
-(DEFGENERIC set-cache-directory-path (self new-path))
-(DEFGENERIC touch-cache-date (self))
-(DEFGENERIC cache-index-read-date (self))
-(DEFGENERIC load-cache (self))
-(DEFGENERIC save-cache (self))
-(DEFGENERIC synchronize-cache (self))
-(DEFGENERIC old-value-file-path (self name))
-(DEFGENERIC new-value-file-path (self))
-(DEFGENERIC cache-expiration (self key))
-(DEFGENERIC cache-expire (self key &key keep-file))
-(DEFGENERIC cache-expire-all (self &key keep-files))
-(DEFGENERIC cache-map-entries (self result-type function))
+(defgeneric set-cache-directory-path (self new-path))
+(defgeneric touch-cache-date (self))
+(defgeneric cache-index-read-date (self))
+(defgeneric load-cache (self))
+(defgeneric save-cache (self))
+(defgeneric synchronize-cache (self))
+(defgeneric old-value-file-path (self name))
+(defgeneric new-value-file-path (self))
+(defgeneric cache-expiration (self key))
+(defgeneric cache-expire (self key &key keep-file))
+(defgeneric cache-expire-all (self &key keep-files))
+(defgeneric cache-map-entries (self result-type function))
 
 
 (defmethod initialize-instance :after ((self cache) &rest args)
@@ -474,7 +472,7 @@ NOTE:   Send synchronize
              (dolist (file (sort (mapcar (function namestring) (directory "/tmp/cache/**/*.*"))
                                  (function string<)))
                (princ file) (terpri))))
-      (setf *test-cache* (make-cache #P"/tmp/cache/" (function producer) 
+      (setf *test-cache* (make-cache #p"/tmp/cache/" (function producer) 
                                      :value-file-type "SYM"))
       (assert (string= (cache-get *test-cache* :one)   "ONE-1"))
       (assert (string= (cache-get *test-cache* :two)   "TWO-2"))
@@ -482,7 +480,7 @@ NOTE:   Send synchronize
       (assert (string= (cache-get *test-cache* :one)   "ONE-1"))
       (assert (string= (cache-get *test-cache* :two)   "TWO-2"))
       (assert (string= (cache-get *test-cache* :three) "THREE-3"))
-      (setf *test-cache-2* (make-cache #P"/tmp/cache/" (function producer)))
+      (setf *test-cache-2* (make-cache #p"/tmp/cache/" (function producer)))
       (assert (string= (cache-get *test-cache-2* :one)   "ONE-1"))
       (assert (string= "SYM" (cache-value-file-type *test-cache-2*)))
       (format t "~2&filled:~%")(finish-output)

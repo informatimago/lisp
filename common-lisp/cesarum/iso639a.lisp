@@ -15,224 +15,222 @@
 ;;;;    2003-09-10 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2003
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ISO639A"
-  (:USE "COMMON-LISP")
-  (:EXPORT "SPLIT-GROUPS" "NCAPITALIZE" "GET-LANGUAGES")
-  (:DOCUMENTATION
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ISO639A"
+  (:use "COMMON-LISP")
+  (:export "SPLIT-GROUPS" "NCAPITALIZE" "GET-LANGUAGES")
+  (:documentation
    "This package exports functions and data to process iso639a language codes.
     
     Copyright Pascal J. Bourguignon 2003 - 2003
     This package is provided under the GNU General Public License.
     See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ISO639A")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ISO639A")
 
 
 
 ;; http://www.loc.gov/standards/iso639-2/langcodes.html
 
-(defvar +LANGUAGES+
+(defvar +languages+
   '(
-    ( AYMARA          AY      AMERINDIAN )
-    ( GUARANI         GN      AMERINDIAN )
-    ( QUECHUA         QU      AMERINDIAN )
-    ( BHUTANI         DZ      ASIAN )
-    ( BURMESE         MY      ASIAN )
-    ( CAMBODIAN       KM      ASIAN )
-    ( CHINESE         ZH      ASIAN )
-    ( JAPANESE        JA      ASIAN )
-    ( KOREAN          KO      ASIAN )
-    ( LAOTHIAN        LO      ASIAN )
-    ( THAI            TH      ASIAN )
-    ( TIBETAN         BO      ASIAN )
-    ( VIETNAMESE      VI      ASIAN )
-    ( LATVIAN         LV      BALTIC )
-    ( LITHUANIAN      LT      BALTIC )
-    ( BASQUE          EU      BASQUE )
-    ( BRETON          BR      CELTIC )
-    ( IRISH           GA      CELTIC )
-    ( SCOTS-GAELIC    GD      CELTIC )
-    ( WELSH           CY      CELTIC )
-    ( KANNADA         KN      DRAVIDIAN )
-    ( MALAYALAM       ML      DRAVIDIAN )
-    ( TAMIL           TA      DRAVIDIAN )
-    ( TELUGU          TE      DRAVIDIAN )
-    ( GREENLANDIC     KL      ESKIMO )
-    ( INUPIAK         IK      ESKIMO )
-    ( ESTONIAN        ET      FINNO-UGRIC )
-    ( FINNISH         FI      FINNO-UGRIC )
-    ( HUNGARIAN       HU      FINNO-UGRIC )
-    ( AFRIKAANS       AF      GERMANIC )
-    ( DANISH          DA      GERMANIC )
-    ( DUTCH           NL      GERMANIC )
-    ( ENGLISH         EN      GERMANIC )
-    ( FAROESE         FO      GERMANIC )
-    ( FRISIAN         FY      GERMANIC )
-    ( GERMAN          DE      GERMANIC )
-    ( ICELANDIC       IS      GERMANIC )
-    ( NORWEGIAN       NO      GERMANIC )
-    ( SWEDISH         SV      GERMANIC )
-    ( YIDDISH         YI      GERMANIC )
-    ( AFAN            OM      HAMITIC )
-    ( AFAR            AA      HAMITIC )
-    ( SOMALI          SO      HAMITIC )
-    ( ABKHAZIAN       AB      IBERO-CAUCASIAN )
-    ( GEORGIAN        KA      IBERO-CAUCASIAN )
-    ( ASSAMESE        AS      INDIAN )
-    ( BENGALI         BN      INDIAN )
-    ( BIHARI          BH      INDIAN )
-    ( GUJARATI        GU      INDIAN )
-    ( HINDI           HI      INDIAN )
-    ( KASHMIRI        KS      INDIAN )
-    ( MARATHI         MR      INDIAN )
-    ( NEPALI          NE      INDIAN )
-    ( ORIYA           OR      INDIAN )
-    ( PUNJABI         PA      INDIAN )
-    ( SANSKRIT        SA      INDIAN )
-    ( SINDHI          SD      INDIAN )
-    ( SINGHALESE      SI      INDIAN )
-    ( URDU            UR      INDIAN )
-    ( ALBANIAN        SQ      INDO-EUROPEAN/OTHER)
-    ( ARMENIAN        HY      INDO-EUROPEAN/OTHER)
-    ( ESPERANTO       EO      INTERNATIONAL )
-    ( INTERLINGUA     IA      INTERNATIONAL )
-    ( INTERLINGUE     IE      INTERNATIONAL )
-    ( VOLAPUK         VO      INTERNATIONAL )
-    ( KURDISH         KU      IRANIAN )
-    ( PASHTO          PS      IRANIAN )
-    ( PERSIAN         FA      IRANIAN )
-    ( TAJIK           TG      IRANIAN )
-    ( GREEK           EL      LATIN/GREEK )
-    ( LATIN           LA      LATIN/GREEK )
-    ( HAUSA           HA      NEGRO-AFRICAN )
-    ( KINYARWANDA     RW      NEGRO-AFRICAN )
-    ( KURUNDI         RN      NEGRO-AFRICAN )
-    ( LINGALA         LN      NEGRO-AFRICAN )
-    ( SANGHO          SG      NEGRO-AFRICAN )
-    ( SESOTHO         ST      NEGRO-AFRICAN )
-    ( SETSWANA        TN      NEGRO-AFRICAN )
-    ( SHONA           SN      NEGRO-AFRICAN )
-    ( SISWATI         SS      NEGRO-AFRICAN )
-    ( SWAHILI         SW      NEGRO-AFRICAN )
-    ( TSONGA          TS      NEGRO-AFRICAN )
-    ( TWI             TW      NEGRO-AFRICAN )
-    ( WOLOF           WO      NEGRO-AFRICAN )
-    ( XHOSA           XH      NEGRO-AFRICAN )
-    ( YORUBA          YO      NEGRO-AFRICAN )
-    ( ZULU            ZU      NEGRO-AFRICAN )
-    ( FIJI            FJ      OCEANIC/INDONESIAN )
-    ( INDONESIAN      ID      OCEANIC/INDONESIAN )
-    ( JAVANESE        JV      OCEANIC/INDONESIAN )
-    ( MALAGASY        MG      OCEANIC/INDONESIAN )
-    ( MALAY           MS      OCEANIC/INDONESIAN )
-    ( MAORI           MI      OCEANIC/INDONESIAN )
-    ( SAMOAN          SM      OCEANIC/INDONESIAN )
-    ( SUNDANESE       SU      OCEANIC/INDONESIAN )
-    ( TAGALOG         TL      OCEANIC/INDONESIAN )
-    ( TONGA           TO      OCEANIC/INDONESIAN )
-    ( CATALAN         CA      ROMANCE )
-    ( CORSICAN        CO      ROMANCE )
-    ( FRENCH          FR      ROMANCE )
-    ( GALICIAN        GL      ROMANCE )
-    ( ITALIAN         IT      ROMANCE )
-    ( MOLDAVIAN       MO      ROMANCE )
-    ( OCCITAN         OC      ROMANCE )
-    ( PORTUGUESE      PT      ROMANCE )
-    ( RHAETO-ROMANCE  RM      ROMANCE )
-    ( ROMANIAN        RO      ROMANCE )
-    ( SPANISH         ES      ROMANCE )
-    ( AMHARIC         AM      SEMITIC )
-    ( ARABIC          AR      SEMITIC )
-    ( HEBREW          HE      SEMITIC )
-    ( MALTESE         MT      SEMITIC )
-    ( TIGRINYA        TI      SEMITIC )
-    ( BULGARIAN       BG      SLAVIC )
-    ( BYELORUSSIAN    BE      SLAVIC )
-    ( CROATIAN        HR      SLAVIC )
-    ( CZECH           CS      SLAVIC )
-    ( MACEDONIAN      MK      SLAVIC )
-    ( POLISH          PL      SLAVIC )
-    ( RUSSIAN         RU      SLAVIC )
-    ( SERBIAN         SR      SLAVIC )
-    ( SERBO-CROATIAN  SH      SLAVIC )
-    ( SLOVAK          SK      SLAVIC )
-    ( SLOVENIAN       SL      SLAVIC )
-    ( UKRAINIAN       UK      SLAVIC )
-    ( AZERBAIJANI     AZ      TURKIC/ALTAIC )
-    ( BASHKIR         BA      TURKIC/ALTAIC )
-    ( KAZAKH          KK      TURKIC/ALTAIC )
-    ( KIRGHIZ         KY      TURKIC/ALTAIC )
-    ( TATAR           TT      TURKIC/ALTAIC )
-    ( TURKISH         TR      TURKIC/ALTAIC )
-    ( TURKMEN         TK      TURKIC/ALTAIC )
-    ( UZBEK           UZ      TURKIC/ALTAIC )
-    ( BISLAMA         BI      MISCELLANEOUS )
-    ( MONGOLIAN       MN      MISCELLANEOUS )
-    ( NAURU           NA      MISCELLANEOUS )
+    ( aymara          ay      amerindian )
+    ( guarani         gn      amerindian )
+    ( quechua         qu      amerindian )
+    ( bhutani         dz      asian )
+    ( burmese         my      asian )
+    ( cambodian       km      asian )
+    ( chinese         zh      asian )
+    ( japanese        ja      asian )
+    ( korean          ko      asian )
+    ( laothian        lo      asian )
+    ( thai            th      asian )
+    ( tibetan         bo      asian )
+    ( vietnamese      vi      asian )
+    ( latvian         lv      baltic )
+    ( lithuanian      lt      baltic )
+    ( basque          eu      basque )
+    ( breton          br      celtic )
+    ( irish           ga      celtic )
+    ( scots-gaelic    gd      celtic )
+    ( welsh           cy      celtic )
+    ( kannada         kn      dravidian )
+    ( malayalam       ml      dravidian )
+    ( tamil           ta      dravidian )
+    ( telugu          te      dravidian )
+    ( greenlandic     kl      eskimo )
+    ( inupiak         ik      eskimo )
+    ( estonian        et      finno-ugric )
+    ( finnish         fi      finno-ugric )
+    ( hungarian       hu      finno-ugric )
+    ( afrikaans       af      germanic )
+    ( danish          da      germanic )
+    ( dutch           nl      germanic )
+    ( english         en      germanic )
+    ( faroese         fo      germanic )
+    ( frisian         fy      germanic )
+    ( german          de      germanic )
+    ( icelandic       is      germanic )
+    ( norwegian       no      germanic )
+    ( swedish         sv      germanic )
+    ( yiddish         yi      germanic )
+    ( afan            om      hamitic )
+    ( afar            aa      hamitic )
+    ( somali          so      hamitic )
+    ( abkhazian       ab      ibero-caucasian )
+    ( georgian        ka      ibero-caucasian )
+    ( assamese        as      indian )
+    ( bengali         bn      indian )
+    ( bihari          bh      indian )
+    ( gujarati        gu      indian )
+    ( hindi           hi      indian )
+    ( kashmiri        ks      indian )
+    ( marathi         mr      indian )
+    ( nepali          ne      indian )
+    ( oriya           or      indian )
+    ( punjabi         pa      indian )
+    ( sanskrit        sa      indian )
+    ( sindhi          sd      indian )
+    ( singhalese      si      indian )
+    ( urdu            ur      indian )
+    ( albanian        sq      indo-european/other)
+    ( armenian        hy      indo-european/other)
+    ( esperanto       eo      international )
+    ( interlingua     ia      international )
+    ( interlingue     ie      international )
+    ( volapuk         vo      international )
+    ( kurdish         ku      iranian )
+    ( pashto          ps      iranian )
+    ( persian         fa      iranian )
+    ( tajik           tg      iranian )
+    ( greek           el      latin/greek )
+    ( latin           la      latin/greek )
+    ( hausa           ha      negro-african )
+    ( kinyarwanda     rw      negro-african )
+    ( kurundi         rn      negro-african )
+    ( lingala         ln      negro-african )
+    ( sangho          sg      negro-african )
+    ( sesotho         st      negro-african )
+    ( setswana        tn      negro-african )
+    ( shona           sn      negro-african )
+    ( siswati         ss      negro-african )
+    ( swahili         sw      negro-african )
+    ( tsonga          ts      negro-african )
+    ( twi             tw      negro-african )
+    ( wolof           wo      negro-african )
+    ( xhosa           xh      negro-african )
+    ( yoruba          yo      negro-african )
+    ( zulu            zu      negro-african )
+    ( fiji            fj      oceanic/indonesian )
+    ( indonesian      id      oceanic/indonesian )
+    ( javanese        jv      oceanic/indonesian )
+    ( malagasy        mg      oceanic/indonesian )
+    ( malay           ms      oceanic/indonesian )
+    ( maori           mi      oceanic/indonesian )
+    ( samoan          sm      oceanic/indonesian )
+    ( sundanese       su      oceanic/indonesian )
+    ( tagalog         tl      oceanic/indonesian )
+    ( tonga           to      oceanic/indonesian )
+    ( catalan         ca      romance )
+    ( corsican        co      romance )
+    ( french          fr      romance )
+    ( galician        gl      romance )
+    ( italian         it      romance )
+    ( moldavian       mo      romance )
+    ( occitan         oc      romance )
+    ( portuguese      pt      romance )
+    ( rhaeto-romance  rm      romance )
+    ( romanian        ro      romance )
+    ( spanish         es      romance )
+    ( amharic         am      semitic )
+    ( arabic          ar      semitic )
+    ( hebrew          he      semitic )
+    ( maltese         mt      semitic )
+    ( tigrinya        ti      semitic )
+    ( bulgarian       bg      slavic )
+    ( byelorussian    be      slavic )
+    ( croatian        hr      slavic )
+    ( czech           cs      slavic )
+    ( macedonian      mk      slavic )
+    ( polish          pl      slavic )
+    ( russian         ru      slavic )
+    ( serbian         sr      slavic )
+    ( serbo-croatian  sh      slavic )
+    ( slovak          sk      slavic )
+    ( slovenian       sl      slavic )
+    ( ukrainian       uk      slavic )
+    ( azerbaijani     az      turkic/altaic )
+    ( bashkir         ba      turkic/altaic )
+    ( kazakh          kk      turkic/altaic )
+    ( kirghiz         ky      turkic/altaic )
+    ( tatar           tt      turkic/altaic )
+    ( turkish         tr      turkic/altaic )
+    ( turkmen         tk      turkic/altaic )
+    ( uzbek           uz      turkic/altaic )
+    ( bislama         bi      miscellaneous )
+    ( mongolian       mn      miscellaneous )
+    ( nauru           na      miscellaneous )
     )
   "A list of language records: ( name code family )."
   ) ;;+LANGUAGES+
 
 
-(DEFUN GET-FIELD (RECORD ORDER-CODE)
-  (CASE ORDER-CODE
-    (:NAME     (FIRST  RECORD))
-    (:CODE     (SECOND RECORD))
-    (:FAMILY   (THIRD  RECORD))
-    (OTHERWISE  ""))
+(defun get-field (record order-code)
+  (case order-code
+    (:name     (first  record))
+    (:code     (second record))
+    (:family   (third  record))
+    (otherwise  ""))
   ) ;;GET-FIELD
 
 
-(DEFUN SPLIT-GROUPS ( LIST CUT-INDICATOR )
-  (DO* ((GROUPS '())
-        (GROUP  '())
-        (LIST    LIST        (CDR LIST))
-        (CURRENT (CAR LIST)  (CAR LIST))
-        (NEXT    (CADR LIST) (CADR LIST)))
-       ((NULL LIST)
-        (PROGN (WHEN GROUP (PUSH (NREVERSE GROUP) GROUPS)) (NREVERSE GROUPS)))
-    (PUSH CURRENT GROUP)
-    (IF NEXT
-        (WHEN (FUNCALL CUT-INDICATOR CURRENT NEXT)
-          (PUSH (NREVERSE GROUP) GROUPS)
-          (SETQ GROUP NIL))))
+(defun split-groups ( list cut-indicator )
+  (do* ((groups '())
+        (group  '())
+        (list    list        (cdr list))
+        (current (car list)  (car list))
+        (next    (cadr list) (cadr list)))
+       ((null list)
+        (progn (when group (push (nreverse group) groups)) (nreverse groups)))
+    (push current group)
+    (if next
+        (when (funcall cut-indicator current next)
+          (push (nreverse group) groups)
+          (setq group nil))))
   ) ;;SPLIT-GROUPS
 
 
-(DEFUN MAKE-COMPARE (ORDER)
-  (LAMBDA (R1 R2)
-    (DO ((ORDER-LIST ORDER (CDR ORDER-LIST))
-         (CMP 0))
-        ((OR (/= 0 CMP) (NULL ORDER-LIST))   (<= CMP 0))
-      (LET ((F1 (GET-FIELD R1 (CAR ORDER-LIST)))
-            (F2 (GET-FIELD R2 (CAR ORDER-LIST))))
-        (SETQ CMP (COND ((STRING< F1 F2) -1)
-                        ((STRING> F1 F2)  1)
-                        (T                0)))))))
+(defun make-compare (order)
+  (lambda (r1 r2)
+    (do ((order-list order (cdr order-list))
+         (cmp 0))
+        ((or (/= 0 cmp) (null order-list))   (<= cmp 0))
+      (let ((f1 (get-field r1 (car order-list)))
+            (f2 (get-field r2 (car order-list))))
+        (setq cmp (cond ((string< f1 f2) -1)
+                        ((string> f1 f2)  1)
+                        (t                0)))))))
 
 
 
-(DEFUN GET-LANGUAGES (&KEY (GROUP-PER-FAMILY NIL) (ORDER NIL))
+(defun get-languages (&key (group-per-family nil) (order nil))
   "
 RETURN:  If group-per-family is true,
          then a list of ( family (name code)* )
@@ -241,36 +239,36 @@ RETURN:  If group-per-family is true,
          by the order list, which may contain any combination of:
          :NAME :CODE :FAMILY.
 "
-  (WHEN GROUP-PER-FAMILY
-    (SETQ ORDER (CONS :FAMILY (REMOVE :FAMILY ORDER))))
-  (LET ((LANGUAGES  (SORT (COPY-SEQ +LANGUAGES+) (MAKE-COMPARE ORDER))))
-    (IF GROUP-PER-FAMILY
-        (MAPCAR
-         (LAMBDA (GROUP)
-           (CONS (THIRD (CAR GROUP))
-                 (MAPCAR (LAMBDA (ITEM) (LIST (FIRST ITEM) (SECOND ITEM)))
-                         GROUP)))
-         (SPLIT-GROUPS LANGUAGES
-                       (LAMBDA (CURR NEXT) (STRING/= (THIRD CURR) (THIRD NEXT)))))
-        LANGUAGES)
+  (when group-per-family
+    (setq order (cons :family (remove :family order))))
+  (let ((languages  (sort (copy-seq +languages+) (make-compare order))))
+    (if group-per-family
+        (mapcar
+         (lambda (group)
+           (cons (third (car group))
+                 (mapcar (lambda (item) (list (first item) (second item)))
+                         group)))
+         (split-groups languages
+                       (lambda (curr next) (string/= (third curr) (third next)))))
+        languages)
     )) ;;GET-LANGUAGES
 
 
-(DEFUN NCAPITALIZE (TREE)
+(defun ncapitalize (tree)
   "
 DO:    Replace in place in TREE all occurence of a string or a symbol
        of length>2 by a string-capitalize'd copy.
 "
-  (DO ((ITEMS TREE (CDR ITEMS)))
-      ((NULL ITEMS) TREE)
-    (SETF (CAR ITEMS)
-          (COND
-            ((LISTP (CAR ITEMS))
-             (NCAPITALIZE (CAR ITEMS)))
-            ((< 2 (LENGTH (STRING (CAR ITEMS))))
-             (STRING-CAPITALIZE (CAR ITEMS)))
-            (T
-             (STRING (CAR ITEMS))))))
+  (do ((items tree (cdr items)))
+      ((null items) tree)
+    (setf (car items)
+          (cond
+            ((listp (car items))
+             (ncapitalize (car items)))
+            ((< 2 (length (string (car items))))
+             (string-capitalize (car items)))
+            (t
+             (string (car items))))))
   ) ;;NCAPITALIZE
 
 

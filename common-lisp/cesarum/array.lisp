@@ -18,42 +18,40 @@
 ;;;;    2005-05-02 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2005 - 2011
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ARRAY"
-  (:USE "COMMON-LISP")
-  (:EXPORT
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ARRAY"
+  (:use "COMMON-LISP")
+  (:export
    "POSITIONS" ; should go to a sequence package...
    "VECTOR-DELETE"
    "NUDGE-DISPLACED-VECTOR" "DISPLACED-VECTOR"
    "ARRAY-TO-LIST" "COPY-ARRAY")
-  (:DOCUMENTATION
+  (:documentation
    "Array functions.
     
     Copyright Pascal J. Bourguignon 2005 - 2005
     This package is provided under the GNU General Public License.
     See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ARRAY")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ARRAY")
 
 
 
@@ -159,21 +157,21 @@
                     (array-to-list subarray)))))
 
 
-(DEFUN DISPLACED-VECTOR (VECTOR START &OPTIONAL END &key (fill-pointer nil))
+(defun displaced-vector (vector start &optional end &key (fill-pointer nil))
   "Same as SUBSEQ but with a displaced array."
-  (SETF END (OR END  (LENGTH VECTOR)))
-  (ASSERT (<= 0 START (LENGTH VECTOR)) (START)
+  (setf end (or end  (length vector)))
+  (assert (<= 0 start (length vector)) (start)
           "START should be an integer between 0 and ~D, not ~D" 
-          (LENGTH VECTOR) START)
-  (ASSERT (<= START END (LENGTH VECTOR)) (END)
+          (length vector) start)
+  (assert (<= start end (length vector)) (end)
           "END should be an integer between ~D and ~D, not ~D"
-          START (LENGTH VECTOR) END)
-  (MAKE-ARRAY  (LIST (- END START)) 
-               :ELEMENT-TYPE (ARRAY-ELEMENT-TYPE VECTOR)
+          start (length vector) end)
+  (make-array  (list (- end start)) 
+               :element-type (array-element-type vector)
                :adjustable t
                :fill-pointer fill-pointer
-               :DISPLACED-TO VECTOR 
-               :DISPLACED-INDEX-OFFSET START))
+               :displaced-to vector 
+               :displaced-index-offset start))
 
 (defun nudge-displaced-vector (displaced-vector
                                &key

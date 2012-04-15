@@ -15,208 +15,205 @@
 ;;;;    2003-03-13 <PJB> Creation.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal Bourguignon 2003 - 2003
-;;;;    mailto:pjb@informatimago.com
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
 
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.AUTHOR-SIGNATURE"
-  (:DOCUMENTATION
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.AUTHOR-SIGNATURE"
+  (:documentation
    "This program compute an \"author signature\" from a text.
     See: http://unix.dsu.edu/~johnsone/comp.html
     
     Copyright Pascal Bourguignon 2003 - 2003
     This package is provided under the GNU General Public License.
     See the source file for details.")
-  (:USE "COMMON-LISP")
-  (:EXPORT COMPARE-TEXTS TALLY-COMPARE
-           TALLY-WORD-LENGTHS TALLY-SMALL-WORDS
-           TALLY-PERCENT  SPLIT-WORDS )
+  (:use "COMMON-LISP")
+  (:export compare-texts tally-compare
+           tally-word-lengths tally-small-words
+           tally-percent  split-words )
   );;COM.INFORMATIMAGO.COMMON-LISP.AUTHOR-SIGNATURE
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.AUTHOR-SIGNATURE")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.AUTHOR-SIGNATURE")
  
 
-(DEFUN STREAM-AS-STRING (STREAM)
+(defun stream-as-string (stream)
   "
 RETURN:  A string containing all the character read from the stream.
 "
-  (LOOP WITH RESULT = ""
-        WITH EOLN = (FORMAT NIL "~%")
-        FOR LINE = (READ-LINE STREAM NIL NIL)
-        WHILE LINE
-        DO (SETQ RESULT (CONCATENATE 'STRING RESULT LINE EOLN))
-        FINALLY (RETURN RESULT))
+  (loop with result = ""
+        with eoln = (format nil "~%")
+        for line = (read-line stream nil nil)
+        while line
+        do (setq result (concatenate 'string result line eoln))
+        finally (return result))
   );;STREAM-AS-STRING
 
 
-(DEFUN REMOVE-PONCTUATION (TEXT)
+(defun remove-ponctuation (text)
   "
 RETURN: A copy of the text string where all character not alphanumeric is
         replaced by a space.
 "
-  (SETQ TEXT (COPY-SEQ TEXT))
-  (LOOP FOR I FROM 0 BELOW (LENGTH TEXT)
-        FOR CH = (CHAR TEXT I)
-        DO (UNLESS (ALPHANUMERICP CH) (SETF (CHAR TEXT I) #\SPACE)))
-  TEXT
+  (setq text (copy-seq text))
+  (loop for i from 0 below (length text)
+        for ch = (char text i)
+        do (unless (alphanumericp ch) (setf (char text i) #\SPACE)))
+  text
   );;REMOVE-PONCTUATION
 
 
-(DEFUN SPLIT-WORDS (TEXT)
+(defun split-words (text)
   "
 RETURN: A list of words read from the text.
 "
-  (WITH-INPUT-FROM-STRING
-   (IN (REMOVE-PONCTUATION TEXT))
-   (LET ((RESULT  ())
-         (CH (READ-CHAR IN NIL NIL)))
-     (LOOP WHILE CH DO
-           (LOOP WHILE (AND CH (EQL #\SPACE CH)) ;;skip spaces
-                 DO (SETQ CH (READ-CHAR IN NIL NIL)))
-           (LOOP WHILE (AND CH (NOT (EQL #\SPACE CH)))
-                 COLLECT CH INTO WORD
-                 DO (SETQ CH (READ-CHAR IN NIL NIL))
-                 FINALLY (WHEN (< 0 (LENGTH WORD))
-                           (PUSH (MAKE-ARRAY (LIST (LENGTH WORD))
-                                             :ELEMENT-TYPE 'CHARACTER
-                                             :INITIAL-CONTENTS WORD) RESULT)))
+  (with-input-from-string
+   (in (remove-ponctuation text))
+   (let ((result  ())
+         (ch (read-char in nil nil)))
+     (loop while ch do
+           (loop while (and ch (eql #\SPACE ch)) ;;skip spaces
+                 do (setq ch (read-char in nil nil)))
+           (loop while (and ch (not (eql #\SPACE ch)))
+                 collect ch into word
+                 do (setq ch (read-char in nil nil))
+                 finally (when (< 0 (length word))
+                           (push (make-array (list (length word))
+                                             :element-type 'character
+                                             :initial-contents word) result)))
            )
-     (NREVERSE RESULT)))
+     (nreverse result)))
   ) ;;SPLIT-WORDS
 
 
-(DEFUN TALLY-WORD-LENGTHS (WORD-LIST)
+(defun tally-word-lengths (word-list)
   "
 RETURN: An array containing the number of words of each length (in
         slot 0 is stored the number of words greater than (length result),
         and (length word-list).
 "
   ;; max word length in French: 36.
-  (LET* ((MAX-LEN 36)
-         (TALLY (MAKE-ARRAY (LIST (1+ MAX-LEN))
-                            :ELEMENT-TYPE 'FIXNUM
-                            :INITIAL-ELEMENT 0))
+  (let* ((max-len 36)
+         (tally (make-array (list (1+ max-len))
+                            :element-type 'fixnum
+                            :initial-element 0))
          )
-    (LOOP FOR WORD IN WORD-LIST
-          FOR LEN = (LENGTH WORD)
-          FOR COUNT = 0 THEN (1+ COUNT)
-          DO
-          (IF (< MAX-LEN LEN)
-            (INCF (AREF TALLY 0))
-            (INCF (AREF TALLY LEN)))
-          FINALLY (RETURN (VALUES TALLY COUNT))))
+    (loop for word in word-list
+          for len = (length word)
+          for count = 0 then (1+ count)
+          do
+          (if (< max-len len)
+            (incf (aref tally 0))
+            (incf (aref tally len)))
+          finally (return (values tally count))))
   );;TALLY-WORD-LENGTHS
 
 
-(DEFUN TALLY-SMALL-WORDS (WORD-LIST)
+(defun tally-small-words (word-list)
   "
 RETURN: An array containing the number of occurences of a list of
         small words returned as third value.
         The second value is (length word-list).
 "
-  (LET* ((SMALL-WORDS '("A" "BUT" "IN" "NO" "OUR" "THE" "US"
+  (let* ((small-words '("A" "BUT" "IN" "NO" "OUR" "THE" "US"
                         "WE" "WHICH" "WITH"))
-         (MAX-LEN (LENGTH SMALL-WORDS))
-         (TALLY (MAKE-ARRAY (LIST (1+ MAX-LEN))
-                            :ELEMENT-TYPE 'FIXNUM
-                            :INITIAL-ELEMENT 0))
+         (max-len (length small-words))
+         (tally (make-array (list (1+ max-len))
+                            :element-type 'fixnum
+                            :initial-element 0))
          )
-    (LOOP FOR WORD IN WORD-LIST
-          FOR COUNT = 0 THEN (1+ COUNT)
-          FOR POS = (POSITION WORD SMALL-WORDS :TEST (FUNCTION STRING-EQUAL))
-          DO
-          (IF POS
-            (INCF (AREF TALLY (1+ POS)))
-            (INCF (AREF TALLY 0)))
-          FINALLY (RETURN (VALUES TALLY COUNT SMALL-WORDS))))
+    (loop for word in word-list
+          for count = 0 then (1+ count)
+          for pos = (position word small-words :test (function string-equal))
+          do
+          (if pos
+            (incf (aref tally (1+ pos)))
+            (incf (aref tally 0)))
+          finally (return (values tally count small-words))))
   );;TALLY-SMALL-WORDS
 
 
 ;; (TALLY-SMALL-WORDS (SPLIT-WORDS (WITH-OPEN-FILE (IN "~/tmp/misc/test.txt" :DIRECTION :INPUT) (STREAM-AS-STRING IN))))
 
 
-(DEFUN TALLY-PERCENT (TALLY COUNT)
-  (LET ((RESULT  (MAKE-ARRAY (LIST (LENGTH TALLY))
-                             :ELEMENT-TYPE 'FLOAT
-                             :INITIAL-ELEMENT 0.0)))
-    (DO ((I 0 (1+ I)))
-        ((<= (LENGTH TALLY) I) RESULT)
-      (SETF (AREF RESULT I) (COERCE (/ (AREF TALLY I) COUNT) 'FLOAT))))
+(defun tally-percent (tally count)
+  (let ((result  (make-array (list (length tally))
+                             :element-type 'float
+                             :initial-element 0.0)))
+    (do ((i 0 (1+ i)))
+        ((<= (length tally) i) result)
+      (setf (aref result i) (coerce (/ (aref tally i) count) 'float))))
   );;TALLY-PERCENT
 
 
-(DEFUN MODULE (VECTOR)
+(defun module (vector)
   "
 RETURN:  The module of the vector. [ sqrt(x^2+y^2+z^2) ]
 "
-  (SQRT (APPLY (FUNCTION +)
-               (MAP 'LIST (FUNCTION (LAMBDA (X) (* X X))) VECTOR)))
+  (sqrt (apply (function +)
+               (map 'list (function (lambda (x) (* x x))) vector)))
   );;MODULE
 
 
-(DEFUN TALLY-COMPARE (TALLY-1 TALLY-2)
+(defun tally-compare (tally-1 tally-2)
   "
 RETURN:  The module and the vector of percentages of differences
          between vectors tally-1 and tally-2.
 "
-  (ASSERT (= (LENGTH TALLY-1) (LENGTH TALLY-2)))
-  (LET ((DIFFERENCES (MAKE-ARRAY (LIST (LENGTH TALLY-1))
-                                 :ELEMENT-TYPE 'FLOAT
-                                 :INITIAL-ELEMENT 0.0)))
-    (DO* ((I 0 (1+ I))
-          (D) (M))
-        ((<= (LENGTH DIFFERENCES) I))
-      (SETQ D (ABS (- (AREF TALLY-1 I) (AREF TALLY-2 I)))
-            M (MAX (AREF TALLY-1 I) (AREF TALLY-2 I)))
-      (SETF (AREF DIFFERENCES I) (IF (= 0.0 M) M (COERCE (/ D M) 'FLOAT))) )
-    (VALUES (MODULE DIFFERENCES) DIFFERENCES))
+  (assert (= (length tally-1) (length tally-2)))
+  (let ((differences (make-array (list (length tally-1))
+                                 :element-type 'float
+                                 :initial-element 0.0)))
+    (do* ((i 0 (1+ i))
+          (d) (m))
+        ((<= (length differences) i))
+      (setq d (abs (- (aref tally-1 i) (aref tally-2 i)))
+            m (max (aref tally-1 i) (aref tally-2 i)))
+      (setf (aref differences i) (if (= 0.0 m) m (coerce (/ d m) 'float))) )
+    (values (module differences) differences))
   );;TALLY-COMPARE
 
 
-(DEFUN COMPARE-TEXTS (PATH-LIST TALLY-FUNCTION)
-  (LET ((TALLIES ()))
-    (MAPC
-     (LAMBDA (PATH)
-       (WITH-OPEN-FILE (INPUT PATH  :DIRECTION :INPUT)
-         (PUSH (CONS (NAMESTRING PATH)
-                     (MULTIPLE-VALUE-BIND (TALLY C)
-                         (FUNCALL TALLY-FUNCTION 
-                          (SPLIT-WORDS (STREAM-AS-STRING INPUT)))
-                       (TALLY-PERCENT TALLY C))) TALLIES)))
-     PATH-LIST)
-    (DO* ((T1 TALLIES (CDR T1))
-          (N-TALLY-1 (CAR T1) (CAR T1))
-          (TALLY-1 (CDR N-TALLY-1) (CDR N-TALLY-1)) )
-        ((NULL T1))
+(defun compare-texts (path-list tally-function)
+  (let ((tallies ()))
+    (mapc
+     (lambda (path)
+       (with-open-file (input path  :direction :input)
+         (push (cons (namestring path)
+                     (multiple-value-bind (tally c)
+                         (funcall tally-function 
+                          (split-words (stream-as-string input)))
+                       (tally-percent tally c))) tallies)))
+     path-list)
+    (do* ((t1 tallies (cdr t1))
+          (n-tally-1 (car t1) (car t1))
+          (tally-1 (cdr n-tally-1) (cdr n-tally-1)) )
+        ((null t1))
   
-      (DO* ((T2 (CDR T1) (CDR T2))
-            (N-TALLY-2 (CAR T2) (CAR T2))
-            (TALLY-2 (CDR N-TALLY-2) (CDR N-TALLY-2)) )
-          ((NULL T2))
+      (do* ((t2 (cdr t1) (cdr t2))
+            (n-tally-2 (car t2) (car t2))
+            (tally-2 (cdr n-tally-2) (cdr n-tally-2)) )
+          ((null t2))
 
-          (MULTIPLE-VALUE-BIND
-           (M D) (TALLY-COMPARE TALLY-1 TALLY-2)
-           (FORMAT T "~20A ~20A ~8A~%   ~A~%~%"
-                   (CAR N-TALLY-1) (CAR N-TALLY-2) M D))
+          (multiple-value-bind
+           (m d) (tally-compare tally-1 tally-2)
+           (format t "~20A ~20A ~8A~%   ~A~%~%"
+                   (car n-tally-1) (car n-tally-2) m d))
         ))
-    TALLIES)
+    tallies)
   );;COMPARE-TEXTS
 
 

@@ -15,24 +15,22 @@
 ;;;;    2011-01-08 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2011 - 2011
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
 
@@ -52,7 +50,7 @@
 (defun src    (word)  (ldb (byte 28 28) word))
 (defun dst    (word)  (ldb (byte 28  0) word))
 
-(defconstant +word-mask+ #xFFFFFFFFFFFFFFFF)
+(defconstant +word-mask+ #xffffffffffffffff)
 (defconstant +save-address+             1)
 (defconstant +illegal-instruction-trap+ 2)
 (defconstant +invalid-address-trap+     3)
@@ -430,9 +428,9 @@ an a-list of (symbol . values).
        or-op   (dcl #b1101)
        
        -op-hi           (dcl 0)
-       opcode-hi-mask   (dcl #xF000000000000000)
+       opcode-hi-mask   (dcl #xf000000000000000)
        opcode-hi-offset (dcl 60)
-       opcode-lo-mask   (dcl #x0F00000000000000)
+       opcode-lo-mask   (dcl #x0f00000000000000)
 
 
        ;; Not implemented yet, we'd need an OS to do something with those.
@@ -499,9 +497,9 @@ an a-list of (symbol . values).
        store-op    (store acc 0)
        
        src-offset  (dcl 28)
-       src-mask*   (dcl #xFF0000000FFFFFFF)
-       src-mask    (dcl #x00FFFFFFF0000000)
-       dst-mask    (dcl #x000000000FFFFFFF)
+       src-mask*   (dcl #xff0000000fffffff)
+       src-mask    (dcl #x00fffffff0000000)
+       dst-mask    (dcl #x000000000fffffff)
        one         (dcl 1)
        save-acc    (dcl 0)
        instruction (dcl 0)
@@ -532,7 +530,7 @@ an a-list of (symbol . values).
        ;; We will dump the memory from src to end when the machine
        ;; halts:
        
-       src     (dcl #x1122334455667788 #xff #xDeadBeef #xFeedBabe)
+       src     (dcl #x1122334455667788 #xff #xdeadbeef #xfeedbabe)
        dst     (dcl 0 0 0 0)
        pi      (dcl 3141592653589)
        pi-1    (dcl 2141592653589)

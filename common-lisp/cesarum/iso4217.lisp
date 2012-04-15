@@ -15,39 +15,37 @@
 ;;;;    2004-10-13 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2004
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ISO4217"
-  (:USE "COMMON-LISP")
-  (:EXPORT "GET-CURRENCIES" "FIND-CURRENCY" "CURRENCY-NAME"
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ISO4217"
+  (:use "COMMON-LISP")
+  (:export "GET-CURRENCIES" "FIND-CURRENCY" "CURRENCY-NAME"
            "CURRENCY-MINOR-UNIT" "CURRENCY-NUMERIC-CODE" "CURRENCY-ALPHABETIC-CODE"
            "CC-NOTE" "CC-CURRENCY" "CC-COUNTRY")
-  (:DOCUMENTATION
+  (:documentation
    "This package exports functions and data to process iso4217 currency codes.
     
      Copyright Pascal J. Bourguignon 2004 - 2004
      This package is provided under the GNU General Public License.
      See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ISO4217")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ISO4217")
 
 
 ;; http://www.unece.org/cefact/rec/cocucod.htm
@@ -82,7 +80,7 @@
   country currency note)
 
 
-(defparameter +COUNTRY-CURRENCY+
+(defparameter +country-currency+
   '(
     ("AD" "EUR")
     ("AE" "AED")
@@ -345,7 +343,7 @@
     alphabetic-code numeric-code minor-unit name )
 
 
-  (defparameter +CURRENCIES+
+  (defparameter +currencies+
     '(
       ("AED" 784 2 "UAE Dirham"                     )
       ("AFN" 971 2 "Afghani"                        )
@@ -539,7 +537,7 @@
   ) ;;eval-when
 
 
-(DEFUN FIND-CURRENCY (DESIGNATOR)
+(defun find-currency (designator)
   "
 DESIGNATOR:  An integer between 0 and 999, or a string or a symbol, 
              or a list whose first element is an integer between 0 and 999, 
@@ -549,20 +547,20 @@ RETURN:      A currency structure (list) if the designator matches one,
 RAISE:       An error when the type of DESIGNATOR is not as described above.
 "
   (or (gethash designator *currency-map*)
-      (when (LISTP DESIGNATOR) (gethash (FIRST DESIGNATOR) *currency-map*))
+      (when (listp designator) (gethash (first designator) *currency-map*))
       (progn
-        (SETF DESIGNATOR (IF (LISTP DESIGNATOR) (FIRST DESIGNATOR) DESIGNATOR))
-        (if (OR (STRINGP DESIGNATOR) (SYMBOLP DESIGNATOR))
-            (CAR (MEMBER-IF
-                  (LAMBDA (C) 
-                    (OR (STRING-EQUAL DESIGNATOR (CURRENCY-ALPHABETIC-CODE C))
-                        (STRING-EQUAL DESIGNATOR (CURRENCY-NAME C))))
-                  +CURRENCIES+))
-            (ERROR "Invalid currency designator: ~S" 
-                   DESIGNATOR))))) ;;FIND-CURRENCY
+        (setf designator (if (listp designator) (first designator) designator))
+        (if (or (stringp designator) (symbolp designator))
+            (car (member-if
+                  (lambda (c) 
+                    (or (string-equal designator (currency-alphabetic-code c))
+                        (string-equal designator (currency-name c))))
+                  +currencies+))
+            (error "Invalid currency designator: ~S" 
+                   designator))))) ;;FIND-CURRENCY
 
 
-(DEFUN GET-CURRENCIES (&KEY ONLY-EXISTING ORDER (LANGUAGE :EN))
+(defun get-currencies (&key only-existing order (language :en))
   "
      ONLY-EXISTING:  NOT IMPLEMENTED YET. Select only currencly in current use. 
      LANGUAGE:       NOT IMPLEMENTED YET.
@@ -571,25 +569,25 @@ RAISE:       An error when the type of DESIGNATOR is not as described above.
      RETURN:         A list of CURRENCY:
      (alphabetic-code numeric-code minor-unit name).
      "
-  (DECLARE (IGNORE ONLY-EXISTING LANGUAGE))
-  (LET ((RESULT (COPY-SEQ +CURRENCIES+)))
-    (WHEN ORDER
-      (SETQ RESULT
-            (SORT RESULT
-                  (CASE ORDER
-                    ((:NAME) 
-                     (LAMBDA (A B) (STRING-LESSP (CURRENCY-NAME A)
-                                                 (CURRENCY-NAME B))))
-                    ((:ALPHABETIC-CODE)
-                     (LAMBDA (A B) (STRING-LESSP (CURRENCY-ALPHABETIC-CODE A)
-                                                 (CURRENCY-ALPHABETIC-CODE B))))
-                    ((:NUMERIC-CODE)
-                     (LAMBDA (A B) (STRING-LESSP (CURRENCY-NUMERIC-CODE A)
-                                                 (CURRENCY-NUMERIC-CODE B))))
-                    (OTHERWISE
-                     (ERROR "Invalid order: ~S. Expected one of: ~
-      :NAME or :ALPHABETIC-CODE or :NUMERIC-CODE." ORDER))))))
-    RESULT)) ;;GET-CURRENCIES
+  (declare (ignore only-existing language))
+  (let ((result (copy-seq +currencies+)))
+    (when order
+      (setq result
+            (sort result
+                  (case order
+                    ((:name) 
+                     (lambda (a b) (string-lessp (currency-name a)
+                                                 (currency-name b))))
+                    ((:alphabetic-code)
+                     (lambda (a b) (string-lessp (currency-alphabetic-code a)
+                                                 (currency-alphabetic-code b))))
+                    ((:numeric-code)
+                     (lambda (a b) (string-lessp (currency-numeric-code a)
+                                                 (currency-numeric-code b))))
+                    (otherwise
+                     (error "Invalid order: ~S. Expected one of: ~
+      :NAME or :ALPHABETIC-CODE or :NUMERIC-CODE." order))))))
+    result)) ;;GET-CURRENCIES
 
 
 

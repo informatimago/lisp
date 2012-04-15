@@ -134,84 +134,84 @@
 
 (dotimes (i 192)
   (test-write-read 
-   (make-TEST-REC
-    :BUINT8  i
-    :BUINT24 (* (+ 32768 512 3) i)
-    :LUINT8  i
-    :LUINT24 (* (+ 32768 512 3) i)
-    :BUINT16 (* (+ 128 2) i)
-    :LUINT16 (* (+ 128 2) i)
-    :BUINT32 (* (+ 4194304 32768 512 3) i)
-    :LUINT32 (* (+ 4194304 32768 512 3) i)
-    :BINT8   (- i 128)
-    :BINT24  (- (* (+ 32768 512 3) i) (expt 2 23))
-    :LINT8   (- i 128)
-    :LINT24  (- (* (+ 32768 512 3) i) (expt 2 23))
-    :BINT16  (- (* (+ 128 2) i) (expt 2 15))
-    :LINT16  (- (* (+ 128 2) i) (expt 2 15))
-    :BINT32  (- (* (+ 4194304 32768 512 3) i) (expt 2 31))
-    :LINT32  (- (* (+ 4194304 32768 512 3) i) (expt 2 31))
-    :LBCD1   (- (mod i 19) 9)
-    :LBCD7   (- (mod (* 12345678 i) 1999999) 999999)
-    :BBCD1   (- (mod i 19) 9)
-    :BBCD7   (- (mod (* 12345678 i) 1999999) 999999)
-    :CSTR1   (format nil "~10,'0D" i)
-    :CSTR2   (format nil "~15,'0D" i)
-    :CSTR3   ""
-    :M2STR1  (format nil "~10,'0D" i) 
-    :M2STR2  (format nil "~15,'0D" i) 
-    :M2STR3  (format nil "~16,'0D" i)
-    :CBSTR1  (format nil "~10,'0D" i)
-    :CBSTR2  (format nil "~15,'0D" i) 
-    :CBSTR3  (format nil "~16,'0D" i)
-    :PSTR1   (format nil "~10,'0D" i) 
-    :PSTR2   (format nil "~15,'0D" i)
-    :PSTR3   "" 
-    :BSTR1   (format nil "~10,'0D" i) 
-    :BSTR2   (format nil "~14,'0D" i)
-    :BSTR3   "")
+   (make-test-rec
+    :buint8  i
+    :buint24 (* (+ 32768 512 3) i)
+    :luint8  i
+    :luint24 (* (+ 32768 512 3) i)
+    :buint16 (* (+ 128 2) i)
+    :luint16 (* (+ 128 2) i)
+    :buint32 (* (+ 4194304 32768 512 3) i)
+    :luint32 (* (+ 4194304 32768 512 3) i)
+    :bint8   (- i 128)
+    :bint24  (- (* (+ 32768 512 3) i) (expt 2 23))
+    :lint8   (- i 128)
+    :lint24  (- (* (+ 32768 512 3) i) (expt 2 23))
+    :bint16  (- (* (+ 128 2) i) (expt 2 15))
+    :lint16  (- (* (+ 128 2) i) (expt 2 15))
+    :bint32  (- (* (+ 4194304 32768 512 3) i) (expt 2 31))
+    :lint32  (- (* (+ 4194304 32768 512 3) i) (expt 2 31))
+    :lbcd1   (- (mod i 19) 9)
+    :lbcd7   (- (mod (* 12345678 i) 1999999) 999999)
+    :bbcd1   (- (mod i 19) 9)
+    :bbcd7   (- (mod (* 12345678 i) 1999999) 999999)
+    :cstr1   (format nil "~10,'0D" i)
+    :cstr2   (format nil "~15,'0D" i)
+    :cstr3   ""
+    :m2str1  (format nil "~10,'0D" i) 
+    :m2str2  (format nil "~15,'0D" i) 
+    :m2str3  (format nil "~16,'0D" i)
+    :cbstr1  (format nil "~10,'0D" i)
+    :cbstr2  (format nil "~15,'0D" i) 
+    :cbstr3  (format nil "~16,'0D" i)
+    :pstr1   (format nil "~10,'0D" i) 
+    :pstr2   (format nil "~15,'0D" i)
+    :pstr3   "" 
+    :bstr1   (format nil "~10,'0D" i) 
+    :bstr2   (format nil "~14,'0D" i)
+    :bstr3   "")
    (function write-test-rec)
    (function read-test-rec)))
 
 
  
 (test-write-read 
- (make-TEST-REC
-  :BUINT8  #x12
-  :BUINT24 #x123456
-  :LUINT8  #x12
-  :LUINT24 #x123456
-  :BUINT16 #x1234
-  :LUINT16 #x1234
-  :BUINT32 #x12345678
-  :LUINT32 #x12345678
-  :BINT8   (- #xfe #x100)
-  :BINT24  (- #xfedcba #x1000000)
-  :LINT8   (- #xfe #x100)
-  :LINT24  (- #xfedcba #x1000000)
-  :BINT16  (- #xfedc #x10000)
-  :LINT16  (- #xfedc #x10000)
-  :BINT32  (- #xfedcba98 #x100000000)
-  :LINT32  (- #xfedcba98 #x100000000)
-  :LBCD1   -7
-  :LBCD7   1234567
-  :BBCD1   -7
-  :BBCD7   1234567
-  :CSTR1   "cstr1"
-  :CSTR2   "Pascal"
-  :CSTR3   ""
-  :M2STR1  "m2str1"
-  :M2STR2  "Jacques"
-  :M2STR3  ""
-  :CBSTR1  "cbstr1"
-  :CBSTR2  "Bourguignon"
-  :CBSTR3  ""
-  :PSTR1   "pstr1"
-  :PSTR2   "La Manga"
-  :PSTR3   "" 
-  :BSTR1   "bstr1"
-  :BSTR2   "del Mar Menor"
-  :BSTR3   "")
+ (make-test-rec
+  :buint8  #x12
+  :buint24 #x123456
+  :luint8  #x12
+  :luint24 #x123456
+  :buint16 #x1234
+  :luint16 #x1234
+  :buint32 #x12345678
+  :luint32 #x12345678
+  :bint8   (- #xfe #x100)
+  :bint24  (- #xfedcba #x1000000)
+  :lint8   (- #xfe #x100)
+  :lint24  (- #xfedcba #x1000000)
+  :bint16  (- #xfedc #x10000)
+  :lint16  (- #xfedc #x10000)
+  :bint32  (- #xfedcba98 #x100000000)
+  :lint32  (- #xfedcba98 #x100000000)
+  :lbcd1   -7
+  :lbcd7   1234567
+  :bbcd1   -7
+  :bbcd7   1234567
+  :cstr1   "cstr1"
+  :cstr2   "Pascal"
+  :cstr3   ""
+  :m2str1  "m2str1"
+  :m2str2  "Jacques"
+  :m2str3  ""
+  :cbstr1  "cbstr1"
+  :cbstr2  "Bourguignon"
+  :cbstr3  ""
+  :pstr1   "pstr1"
+  :pstr2   "La Manga"
+  :pstr3   "" 
+  :bstr1   "bstr1"
+  :bstr2   "del Mar Menor"
+  :bstr3   "")
  (function write-test-rec)
  (function read-test-rec))
 

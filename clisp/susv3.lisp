@@ -48,33 +48,31 @@
 ;;;;    of here.
 ;;;;
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2004
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
 
-(DECLAIM (DECLARATION ALSO-USE-PACKAGES))
-(declaim (ALSO-USE-PACKAGES "EXT" "FFI" "LINUX"))
+(declaim (declaration also-use-packages))
+(declaim (also-use-packages "EXT" "FFI" "LINUX"))
 (eval-when (:compile-toplevel :load-toplevel :execute) (require "linux"))
 (defpackage "COM.INFORMATIMAGO.CLISP.SUSV3"
-  (:DOCUMENTATION "
+  (:documentation "
     This packages exports SUSV3 functions.
     This is the CLISP specific implementation of the SUSV3 API.
 
@@ -85,8 +83,8 @@
     as published by the Free Software Foundation; either version
     2 of the License, or (at your option) any later version.
 ")
-  (:USE "COMMON-LISP")
-  (:EXPORT
+  (:use "COMMON-LISP")
+  (:export
    "UNIX-ERROR" "UNIX-ERROR-NUMBER" "UNIX-ERROR-MESSAGE"
    "UNIX-ERROR-FUNCTION" "UNIX-ERROR-ARGUMENTS" "UNIX-ERROR-CALLER"
    "CHECK-POINTER" "CHECK-ERRNO" "REPORT-ERROR"
@@ -252,130 +250,130 @@ be signaled (but that check-errno returns instead of nil).
 
 ;; ---------------------------- <asm/errno.h> ----------------------------------
 
-(defconstant EPERM           linux:|EPERM|)  ; Operation not permitted
-(defconstant ENOENT          linux:|ENOENT|) ; No such file or directory
-(defconstant ESRCH           linux:|ESRCH|)  ; No such process
-(defconstant EINTR           linux:|EINTR|)  ; Interrupted system call
-(defconstant EIO             linux:|EIO|)    ; I/O error
-(defconstant ENXIO           linux:|ENXIO|) ; No such device or address
-(defconstant E2BIG           linux:|E2BIG|) ; Arg list too long
-(defconstant ENOEXEC         linux:|ENOEXEC|) ; Exec format error
-(defconstant EBADF           linux:|EBADF|)   ; Bad file number
-(defconstant ECHILD          linux:|ECHILD|)  ; No child processes
-(defconstant EAGAIN          linux:|EAGAIN|)  ; Try again
-(defconstant ENOMEM          linux:|ENOMEM|)  ; Out of memory
-(defconstant EACCES          linux:|EACCES|)  ; Permission denied
-(defconstant EFAULT          linux:|EFAULT|)  ; Bad address
-(defconstant ENOTBLK         linux:|ENOTBLK|) ; Block device required
-(defconstant EBUSY           linux:|EBUSY|)  ; Device or resource busy
-(defconstant EEXIST          linux:|EEXIST|) ; File exists
-(defconstant EXDEV           linux:|EXDEV|)  ; Cross-device link
-(defconstant ENODEV          linux:|ENODEV|) ; No such device
-(defconstant ENOTDIR         linux:|ENOTDIR|) ; Not a directory
-(defconstant EISDIR          linux:|EISDIR|)  ; Is a directory
-(defconstant EINVAL          linux:|EINVAL|)  ; Invalid argument
-(defconstant ENFILE          linux:|ENFILE|)  ; File table overflow
-(defconstant EMFILE          linux:|EMFILE|)  ; Too many open files
-(defconstant ENOTTY          linux:|ENOTTY|)  ; Not a typewriter
-(defconstant ETXTBSY         linux:|ETXTBSY|) ; Text file busy
-(defconstant EFBIG           linux:|EFBIG|)   ; File too large
-(defconstant ENOSPC          linux:|ENOSPC|) ; No space left on device
-(defconstant ESPIPE          linux:|ESPIPE|) ; Illegal seek
-(defconstant EROFS           linux:|EROFS|)  ; Read-only file system
-(defconstant EMLINK          linux:|EMLINK|) ; Too many links
-(defconstant EPIPE           linux:|EPIPE|)  ; Broken pipe
-(defconstant EDOM            linux:|EDOM|) ; Math argument out of domain of func
-(defconstant ERANGE          linux:|ERANGE|) ; Math result not representable
-(defconstant EDEADLK         linux:|EDEADLK|) ; Resource deadlock would occur
-(defconstant ENAMETOOLONG    linux:|ENAMETOOLONG|) ; File name too long
-(defconstant ENOLCK          linux:|ENOLCK|) ; No record locks available
-(defconstant ENOSYS          linux:|ENOSYS|) ; Function not implemented
-(defconstant ENOTEMPTY       linux:|ENOTEMPTY|) ; Directory not empty
-(defconstant ELOOP           linux:|ELOOP|) ; Too many symbolic links encountered
-(defconstant EWOULDBLOCK     linux:|EWOULDBLOCK|) ; Operation would block
-(defconstant ENOMSG          linux:|ENOMSG|) ; No message of desired type
-(defconstant EIDRM           linux:|EIDRM|)  ; Identifier removed
-(defconstant ECHRNG          linux:|ECHRNG|) ; Channel number out of range
-(defconstant EL2NSYNC        linux:|EL2NSYNC|) ; Level 2 not synchronized
-(defconstant EL3HLT          linux:|EL3HLT|)   ; Level 3 halted
-(defconstant EL3RST          linux:|EL3RST|)   ; Level 3 reset
-(defconstant ELNRNG          linux:|ELNRNG|) ; Link number out of range
-(defconstant EUNATCH         linux:|EUNATCH|) ; Protocol driver not attached
-(defconstant ENOCSI          linux:|ENOCSI|) ; No CSI structure available
-(defconstant EL2HLT          linux:|EL2HLT|) ; Level 2 halted
-(defconstant EBADE           linux:|EBADE|)  ; Invalid exchange
-(defconstant EBADR           linux:|EBADR|) ; Invalid request descriptor
-(defconstant EXFULL          linux:|EXFULL|) ; Exchange full
-(defconstant ENOANO          linux:|ENOANO|) ; No anode
-(defconstant EBADRQC         linux:|EBADRQC|) ; Invalid request code
-(defconstant EBADSLT         linux:|EBADSLT|) ; Invalid slot
-(defconstant EDEADLOCK       linux:|EDEADLOCK|) ; File locking deadlock error
-(defconstant EBFONT          linux:|EBFONT|)    ; Bad font file format
-(defconstant ENOSTR          linux:|ENOSTR|)    ; Device not a stream
-(defconstant ENODATA         linux:|ENODATA|)   ; No data available
-(defconstant ETIME           linux:|ETIME|)     ; Timer expired
-(defconstant ENOSR           linux:|ENOSR|) ; Out of streams resources
-(defconstant ENONET          linux:|ENONET|) ; Machine is not on the network
-(defconstant ENOPKG          linux:|ENOPKG|) ; Package not installed
-(defconstant EREMOTE         linux:|EREMOTE|) ; Object is remote
-(defconstant ENOLINK         linux:|ENOLINK|) ; Link has been severed
-(defconstant EADV            linux:|EADV|)    ; Advertise error
-(defconstant ESRMNT          linux:|ESRMNT|)  ; Srmount error
-(defconstant ECOMM           linux:|ECOMM|) ; Communication error on send
-(defconstant EPROTO          linux:|EPROTO|)    ; Protocol error
-(defconstant EMULTIHOP       linux:|EMULTIHOP|) ; Multihop attempted
-(defconstant EDOTDOT         linux:|EDOTDOT|)   ; RFS specific error
-(defconstant EBADMSG         linux:|EBADMSG|)   ; Not a data message
-(defconstant EOVERFLOW       linux:|EOVERFLOW|) ; Value too large for defined data type
-(defconstant ENOTUNIQ        linux:|ENOTUNIQ|) ; Name not unique on network
-(defconstant EBADFD          linux:|EBADFD|) ; File descriptor in bad state
-(defconstant EREMCHG         linux:|EREMCHG|) ; Remote address changed
-(defconstant ELIBACC         linux:|ELIBACC|) ; Can not access a needed shared library
-(defconstant ELIBBAD         linux:|ELIBBAD|) ; Accessing a corrupted shared library
-(defconstant ELIBSCN         linux:|ELIBSCN|) ; .lib section in a.out corrupted
-(defconstant ELIBMAX         linux:|ELIBMAX|) ; Attempting to link in too many shared libraries
-(defconstant ELIBEXEC        linux:|ELIBEXEC|) ; Cannot exec a shared library directly
-(defconstant EILSEQ          linux:|EILSEQ|)   ; Illegal byte sequence
-(defconstant ERESTART        linux:|ERESTART|) ; Interrupted system call should be restarted
-(defconstant ESTRPIPE        linux:|ESTRPIPE|) ; Streams pipe error
-(defconstant EUSERS          linux:|EUSERS|)   ; Too many users
-(defconstant ENOTSOCK        linux:|ENOTSOCK|) ; Socket operation on non-socket
-(defconstant EDESTADDRREQ    linux:|EDESTADDRREQ|) ; Destination address required
-(defconstant EMSGSIZE        linux:|EMSGSIZE|)     ; Message too long
-(defconstant EPROTOTYPE      linux:|EPROTOTYPE|) ; Protocol wrong type for socket
-(defconstant ENOPROTOOPT     linux:|ENOPROTOOPT|) ; Protocol not available
-(defconstant EPROTONOSUPPORT linux:|EPROTONOSUPPORT|) ; Protocol not supported
-(defconstant ESOCKTNOSUPPORT linux:|ESOCKTNOSUPPORT|) ; Socket type not supported
-(defconstant EOPNOTSUPP      linux:|EOPNOTSUPP|) ; Operation not supported on transport endpoint
-(defconstant EPFNOSUPPORT    linux:|EPFNOSUPPORT|) ; Protocol family not supported
-(defconstant EAFNOSUPPORT    linux:|EAFNOSUPPORT|) ; Address family not supported by protocol
-(defconstant EADDRINUSE      linux:|EADDRINUSE|) ; Address already in use
-(defconstant EADDRNOTAVAIL   linux:|EADDRNOTAVAIL|) ; Cannot assign requested address
-(defconstant ENETDOWN        linux:|ENETDOWN|)      ; Network is down
-(defconstant ENETUNREACH     linux:|ENETUNREACH|) ; Network is unreachable
-(defconstant ENETRESET       linux:|ENETRESET|) ; Network dropped connection because of reset
-(defconstant ECONNABORTED    linux:|ECONNABORTED|) ; Software caused connection abort
-(defconstant ECONNRESET      linux:|ECONNRESET|) ; Connection reset by peer
-(defconstant ENOBUFS         linux:|ENOBUFS|) ; No buffer space available
-(defconstant EISCONN         linux:|EISCONN|) ; Transport endpoint is already connected
-(defconstant ENOTCONN        linux:|ENOTCONN|) ; Transport endpoint is not connected
-(defconstant ESHUTDOWN       linux:|ESHUTDOWN|) ; Cannot send after transport endpoint shutdown
-(defconstant ETOOMANYREFS    linux:|ETOOMANYREFS|) ; Too many references: cannot splice
-(defconstant ETIMEDOUT       linux:|ETIMEDOUT|) ; Connection timed out
-(defconstant ECONNREFUSED    linux:|ECONNREFUSED|) ; Connection refused
-(defconstant EHOSTDOWN       linux:|EHOSTDOWN|)    ; Host is down
-(defconstant EHOSTUNREACH    linux:|EHOSTUNREACH|) ; No route to host
-(defconstant EALREADY        linux:|EALREADY|) ; Operation already in progress
-(defconstant EINPROGRESS     linux:|EINPROGRESS|) ; Operation now in progress
-(defconstant ESTALE          linux:|ESTALE|)  ; Stale NFS file handle
-(defconstant EUCLEAN         linux:|EUCLEAN|) ; Structure needs cleaning
-(defconstant ENOTNAM         linux:|ENOTNAM|) ; Not a XENIX named type file
-(defconstant ENAVAIL         linux:|ENAVAIL|) ; No XENIX semaphores available
-(defconstant EISNAM          linux:|EISNAM|)  ; Is a named type file
-(defconstant EREMOTEIO       linux:|EREMOTEIO|) ; Remote I/O error
-(defconstant EDQUOT          linux:|EDQUOT|)    ; Quota exceeded
-(defconstant ENOMEDIUM       linux:|ENOMEDIUM|) ; No medium found
-(defconstant EMEDIUMTYPE     linux:|EMEDIUMTYPE|) ; Wrong medium type
+(defconstant eperm           linux:|EPERM|)  ; Operation not permitted
+(defconstant enoent          linux:|ENOENT|) ; No such file or directory
+(defconstant esrch           linux:|ESRCH|)  ; No such process
+(defconstant eintr           linux:|EINTR|)  ; Interrupted system call
+(defconstant eio             linux:|EIO|)    ; I/O error
+(defconstant enxio           linux:|ENXIO|) ; No such device or address
+(defconstant e2big           linux:|E2BIG|) ; Arg list too long
+(defconstant enoexec         linux:|ENOEXEC|) ; Exec format error
+(defconstant ebadf           linux:|EBADF|)   ; Bad file number
+(defconstant echild          linux:|ECHILD|)  ; No child processes
+(defconstant eagain          linux:|EAGAIN|)  ; Try again
+(defconstant enomem          linux:|ENOMEM|)  ; Out of memory
+(defconstant eacces          linux:|EACCES|)  ; Permission denied
+(defconstant efault          linux:|EFAULT|)  ; Bad address
+(defconstant enotblk         linux:|ENOTBLK|) ; Block device required
+(defconstant ebusy           linux:|EBUSY|)  ; Device or resource busy
+(defconstant eexist          linux:|EEXIST|) ; File exists
+(defconstant exdev           linux:|EXDEV|)  ; Cross-device link
+(defconstant enodev          linux:|ENODEV|) ; No such device
+(defconstant enotdir         linux:|ENOTDIR|) ; Not a directory
+(defconstant eisdir          linux:|EISDIR|)  ; Is a directory
+(defconstant einval          linux:|EINVAL|)  ; Invalid argument
+(defconstant enfile          linux:|ENFILE|)  ; File table overflow
+(defconstant emfile          linux:|EMFILE|)  ; Too many open files
+(defconstant enotty          linux:|ENOTTY|)  ; Not a typewriter
+(defconstant etxtbsy         linux:|ETXTBSY|) ; Text file busy
+(defconstant efbig           linux:|EFBIG|)   ; File too large
+(defconstant enospc          linux:|ENOSPC|) ; No space left on device
+(defconstant espipe          linux:|ESPIPE|) ; Illegal seek
+(defconstant erofs           linux:|EROFS|)  ; Read-only file system
+(defconstant emlink          linux:|EMLINK|) ; Too many links
+(defconstant epipe           linux:|EPIPE|)  ; Broken pipe
+(defconstant edom            linux:|EDOM|) ; Math argument out of domain of func
+(defconstant erange          linux:|ERANGE|) ; Math result not representable
+(defconstant edeadlk         linux:|EDEADLK|) ; Resource deadlock would occur
+(defconstant enametoolong    linux:|ENAMETOOLONG|) ; File name too long
+(defconstant enolck          linux:|ENOLCK|) ; No record locks available
+(defconstant enosys          linux:|ENOSYS|) ; Function not implemented
+(defconstant enotempty       linux:|ENOTEMPTY|) ; Directory not empty
+(defconstant eloop           linux:|ELOOP|) ; Too many symbolic links encountered
+(defconstant ewouldblock     linux:|EWOULDBLOCK|) ; Operation would block
+(defconstant enomsg          linux:|ENOMSG|) ; No message of desired type
+(defconstant eidrm           linux:|EIDRM|)  ; Identifier removed
+(defconstant echrng          linux:|ECHRNG|) ; Channel number out of range
+(defconstant el2nsync        linux:|EL2NSYNC|) ; Level 2 not synchronized
+(defconstant el3hlt          linux:|EL3HLT|)   ; Level 3 halted
+(defconstant el3rst          linux:|EL3RST|)   ; Level 3 reset
+(defconstant elnrng          linux:|ELNRNG|) ; Link number out of range
+(defconstant eunatch         linux:|EUNATCH|) ; Protocol driver not attached
+(defconstant enocsi          linux:|ENOCSI|) ; No CSI structure available
+(defconstant el2hlt          linux:|EL2HLT|) ; Level 2 halted
+(defconstant ebade           linux:|EBADE|)  ; Invalid exchange
+(defconstant ebadr           linux:|EBADR|) ; Invalid request descriptor
+(defconstant exfull          linux:|EXFULL|) ; Exchange full
+(defconstant enoano          linux:|ENOANO|) ; No anode
+(defconstant ebadrqc         linux:|EBADRQC|) ; Invalid request code
+(defconstant ebadslt         linux:|EBADSLT|) ; Invalid slot
+(defconstant edeadlock       linux:|EDEADLOCK|) ; File locking deadlock error
+(defconstant ebfont          linux:|EBFONT|)    ; Bad font file format
+(defconstant enostr          linux:|ENOSTR|)    ; Device not a stream
+(defconstant enodata         linux:|ENODATA|)   ; No data available
+(defconstant etime           linux:|ETIME|)     ; Timer expired
+(defconstant enosr           linux:|ENOSR|) ; Out of streams resources
+(defconstant enonet          linux:|ENONET|) ; Machine is not on the network
+(defconstant enopkg          linux:|ENOPKG|) ; Package not installed
+(defconstant eremote         linux:|EREMOTE|) ; Object is remote
+(defconstant enolink         linux:|ENOLINK|) ; Link has been severed
+(defconstant eadv            linux:|EADV|)    ; Advertise error
+(defconstant esrmnt          linux:|ESRMNT|)  ; Srmount error
+(defconstant ecomm           linux:|ECOMM|) ; Communication error on send
+(defconstant eproto          linux:|EPROTO|)    ; Protocol error
+(defconstant emultihop       linux:|EMULTIHOP|) ; Multihop attempted
+(defconstant edotdot         linux:|EDOTDOT|)   ; RFS specific error
+(defconstant ebadmsg         linux:|EBADMSG|)   ; Not a data message
+(defconstant eoverflow       linux:|EOVERFLOW|) ; Value too large for defined data type
+(defconstant enotuniq        linux:|ENOTUNIQ|) ; Name not unique on network
+(defconstant ebadfd          linux:|EBADFD|) ; File descriptor in bad state
+(defconstant eremchg         linux:|EREMCHG|) ; Remote address changed
+(defconstant elibacc         linux:|ELIBACC|) ; Can not access a needed shared library
+(defconstant elibbad         linux:|ELIBBAD|) ; Accessing a corrupted shared library
+(defconstant elibscn         linux:|ELIBSCN|) ; .lib section in a.out corrupted
+(defconstant elibmax         linux:|ELIBMAX|) ; Attempting to link in too many shared libraries
+(defconstant elibexec        linux:|ELIBEXEC|) ; Cannot exec a shared library directly
+(defconstant eilseq          linux:|EILSEQ|)   ; Illegal byte sequence
+(defconstant erestart        linux:|ERESTART|) ; Interrupted system call should be restarted
+(defconstant estrpipe        linux:|ESTRPIPE|) ; Streams pipe error
+(defconstant eusers          linux:|EUSERS|)   ; Too many users
+(defconstant enotsock        linux:|ENOTSOCK|) ; Socket operation on non-socket
+(defconstant edestaddrreq    linux:|EDESTADDRREQ|) ; Destination address required
+(defconstant emsgsize        linux:|EMSGSIZE|)     ; Message too long
+(defconstant eprototype      linux:|EPROTOTYPE|) ; Protocol wrong type for socket
+(defconstant enoprotoopt     linux:|ENOPROTOOPT|) ; Protocol not available
+(defconstant eprotonosupport linux:|EPROTONOSUPPORT|) ; Protocol not supported
+(defconstant esocktnosupport linux:|ESOCKTNOSUPPORT|) ; Socket type not supported
+(defconstant eopnotsupp      linux:|EOPNOTSUPP|) ; Operation not supported on transport endpoint
+(defconstant epfnosupport    linux:|EPFNOSUPPORT|) ; Protocol family not supported
+(defconstant eafnosupport    linux:|EAFNOSUPPORT|) ; Address family not supported by protocol
+(defconstant eaddrinuse      linux:|EADDRINUSE|) ; Address already in use
+(defconstant eaddrnotavail   linux:|EADDRNOTAVAIL|) ; Cannot assign requested address
+(defconstant enetdown        linux:|ENETDOWN|)      ; Network is down
+(defconstant enetunreach     linux:|ENETUNREACH|) ; Network is unreachable
+(defconstant enetreset       linux:|ENETRESET|) ; Network dropped connection because of reset
+(defconstant econnaborted    linux:|ECONNABORTED|) ; Software caused connection abort
+(defconstant econnreset      linux:|ECONNRESET|) ; Connection reset by peer
+(defconstant enobufs         linux:|ENOBUFS|) ; No buffer space available
+(defconstant eisconn         linux:|EISCONN|) ; Transport endpoint is already connected
+(defconstant enotconn        linux:|ENOTCONN|) ; Transport endpoint is not connected
+(defconstant eshutdown       linux:|ESHUTDOWN|) ; Cannot send after transport endpoint shutdown
+(defconstant etoomanyrefs    linux:|ETOOMANYREFS|) ; Too many references: cannot splice
+(defconstant etimedout       linux:|ETIMEDOUT|) ; Connection timed out
+(defconstant econnrefused    linux:|ECONNREFUSED|) ; Connection refused
+(defconstant ehostdown       linux:|EHOSTDOWN|)    ; Host is down
+(defconstant ehostunreach    linux:|EHOSTUNREACH|) ; No route to host
+(defconstant ealready        linux:|EALREADY|) ; Operation already in progress
+(defconstant einprogress     linux:|EINPROGRESS|) ; Operation now in progress
+(defconstant estale          linux:|ESTALE|)  ; Stale NFS file handle
+(defconstant euclean         linux:|EUCLEAN|) ; Structure needs cleaning
+(defconstant enotnam         linux:|ENOTNAM|) ; Not a XENIX named type file
+(defconstant enavail         linux:|ENAVAIL|) ; No XENIX semaphores available
+(defconstant eisnam          linux:|EISNAM|)  ; Is a named type file
+(defconstant eremoteio       linux:|EREMOTEIO|) ; Remote I/O error
+(defconstant edquot          linux:|EDQUOT|)    ; Quota exceeded
+(defconstant enomedium       linux:|ENOMEDIUM|) ; No medium found
+(defconstant emediumtype     linux:|EMEDIUMTYPE|) ; Wrong medium type
 
 
 
@@ -384,65 +382,65 @@ be signaled (but that check-errno returns instead of nil).
 ;; Lisp/C support stuff
 
 
-(DEFTYPE BOUND-STRING (MIN MAX)
+(deftype bound-string (min max)
   "A TYPE REPRESENTING STRINGS OF MINIMUM SIZE MIN AND MAXIMUM SIZE MAX."
-  (IF (= (EVAL MIN) (EVAL MAX))
-      `(STRING ,(EVAL MIN))
-      `STRING)) ;; TODO: (OR (STRING MIN) (STRING (1+ MIN)) ... (STRING MAX)))
+  (if (= (eval min) (eval max))
+      `(string ,(eval min))
+      `string)) ;; TODO: (OR (STRING MIN) (STRING (1+ MIN)) ... (STRING MAX)))
 
      
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ???
 
 
-(DECLAIM (FTYPE (FUNCTION (STRING) (OR NULL STRING)) GETENV))
+(declaim (ftype (function (string) (or null string)) getenv))
 
 
-(DEFUN GETENV (NAME)
+(defun getenv (name)
   "
 URL:        http://www.opengroup.org/onlinepubs/007904975/functions/getenv.html
 RETURN:     NIL or the value of the environment variable named NAME.
 "
-  (EXT:GETENV NAME))
+  (ext:getenv name))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; sys/types.h
 
 
-(DEFTYPE INO-T ()
+(deftype ino-t ()
   "The type of file serial numbers."
-  `(UNSIGNED-BYTE 32))
+  `(unsigned-byte 32))
 
 
-(DEFTYPE DEV-T ()
+(deftype dev-t ()
   "Device ID."
-  `(UNSIGNED-BYTE 32))
+  `(unsigned-byte 32))
 
 
-(DEFTYPE MODE-T ()
+(deftype mode-t ()
   "Mode of file."
-  `(UNSIGNED-BYTE 32))
+  `(unsigned-byte 32))
 
 
-(DEFTYPE NLINK-T ()
+(deftype nlink-t ()
   "Number of hard links to the file."
-  `(UNSIGNED-BYTE 32))
+  `(unsigned-byte 32))
 
 
-(DEFTYPE UID-T ()
+(deftype uid-t ()
   "User ID."
-  `(UNSIGNED-BYTE 32))
+  `(unsigned-byte 32))
 
 
-(DEFTYPE GID-T ()
+(deftype gid-t ()
   "Group ID."
-  `(UNSIGNED-BYTE 32))
+  `(unsigned-byte 32))
 
 
-(DEFTYPE TIME-T ()
+(deftype time-t ()
   "Time in seconds since epoch."
-  `(UNSIGNED-BYTE 32))
+  `(unsigned-byte 32))
 
 
 
@@ -450,39 +448,39 @@ RETURN:     NIL or the value of the environment variable named NAME.
 ;; sys/stat.h
 
 
-(DEFTYPE BLKSIZE-T ()
+(deftype blksize-t ()
   ""
-  `(UNSIGNED-BYTE 32))
+  `(unsigned-byte 32))
 
 
-(DEFTYPE BLKCNT-T ()
+(deftype blkcnt-t ()
   ""
-  `(UNSIGNED-BYTE 32))
+  `(unsigned-byte 32))
 
 
   
-(DEFSTRUCT STAT
-  (DEV     0 :TYPE DEV-T) ;; Device ID of device containing file. 
-  (INO     0 :TYPE INO-T) ;; File serial number. 
-  (MODE    0 :TYPE MODE-T)  ;; Mode of file (see below).
-  (NLINK   0 :TYPE NLINK-T) ;; Number of hard links to the file.
-  (UID     0 :TYPE UID-T)   ;; User ID of file.
-  (GID     0 :TYPE GID-T)   ;; Group ID of file.
-  (RDEV    0 :TYPE DEV-T) ;; XSI: Device ID (if file is char or block special).
-  (SIZE    0 :TYPE OFF-T) ;; For regular files, the file size in bytes. 
+(defstruct stat
+  (dev     0 :type dev-t) ;; Device ID of device containing file. 
+  (ino     0 :type ino-t) ;; File serial number. 
+  (mode    0 :type mode-t)  ;; Mode of file (see below).
+  (nlink   0 :type nlink-t) ;; Number of hard links to the file.
+  (uid     0 :type uid-t)   ;; User ID of file.
+  (gid     0 :type gid-t)   ;; Group ID of file.
+  (rdev    0 :type dev-t) ;; XSI: Device ID (if file is char or block special).
+  (size    0 :type off-t) ;; For regular files, the file size in bytes. 
   ;;                      For symbolic links, the length in bytes of the 
   ;;                      pathname contained in the symbolic link. 
   ;;                      SHM: For a shared memory object, the length in bytes.
   ;;                      TYM: For a typed memory object, the length in bytes. 
   ;;                      For other file types, the use of this field is 
   ;;                      unspecified.
-  (ATIME   0 :TYPE TIME-T) ;; Time of last access.
-  (MTIME   0 :TYPE TIME-T) ;; Time of last data modification.
-  (CTIME   0 :TYPE TIME-T) ;; Time of last status change.
-  (BLKSIZE 0 :TYPE BLKSIZE-T) ;; XSI: A file system-specific preferred I/O 
+  (atime   0 :type time-t) ;; Time of last access.
+  (mtime   0 :type time-t) ;; Time of last data modification.
+  (ctime   0 :type time-t) ;; Time of last status change.
+  (blksize 0 :type blksize-t) ;; XSI: A file system-specific preferred I/O 
   ;;                      block size for this object. In some file system 
   ;;                      types, this may vary from file to file.
-  (BLOCKS  0 :TYPE BLKCNT-T)) ;; XSI: Num. of blocks allocated for this object.)
+  (blocks  0 :type blkcnt-t)) ;; XSI: Num. of blocks allocated for this object.)
 
 
 ;; The st_ino and st_dev fields taken together uniquely identify the
@@ -523,14 +521,14 @@ RETURN:     NIL or the value of the environment variable named NAME.
 ;;     Symbolic link.S_IFSOCK
 ;;     Socket. [Option End]
 
-(DEFCONSTANT S-IFMT  #O0170000)
-(DEFCONSTANT S-IFDIR  #O040000)
-(DEFCONSTANT S-IFCHR  #O020000)
-(DEFCONSTANT S-IFBLK  #O060000)
-(DEFCONSTANT S-IFREG  #O100000)
-(DEFCONSTANT S-IFIFO  #O010000)
-(DEFCONSTANT S-IFLNK  #O120000)
-(DEFCONSTANT S-IFSOCK #O140000)
+(defconstant s-ifmt  #o0170000)
+(defconstant s-ifdir  #o040000)
+(defconstant s-ifchr  #o020000)
+(defconstant s-ifblk  #o060000)
+(defconstant s-ifreg  #o100000)
+(defconstant s-ififo  #o010000)
+(defconstant s-iflnk  #o120000)
+(defconstant s-ifsock #o140000)
 
 
 ;; File mode bits:
@@ -578,26 +576,26 @@ RETURN:     NIL or the value of the environment variable named NAME.
 ;; bitwise-inclusive OR of S_IRWXU, S_IRWXG, and S_IRWXO.
 
 
-(DEFCONSTANT S-ISUID  #O004000)
-(DEFCONSTANT S-ISGID  #O002000)
-(DEFCONSTANT S-ISVTX  #O001000)
+(defconstant s-isuid  #o004000)
+(defconstant s-isgid  #o002000)
+(defconstant s-isvtx  #o001000)
 
-(DEFINE-SYMBOL-MACRO S-IREAD  S-IRUSR)
-(DEFINE-SYMBOL-MACRO S-IWRITE S-IWUSR)
-(DEFINE-SYMBOL-MACRO S-IEXEC  S-IXUSR)
+(define-symbol-macro s-iread  s-irusr)
+(define-symbol-macro s-iwrite s-iwusr)
+(define-symbol-macro s-iexec  s-ixusr)
 
-(DEFCONSTANT S-IRUSR  #O000400)
-(DEFCONSTANT S-IWUSR  #O000200)
-(DEFCONSTANT S-IXUSR  #O000100)
-(DEFCONSTANT S-IRWXU  (LOGIOR S-IRUSR S-IWUSR S-IXUSR))
-(DEFCONSTANT S-IRGRP  #O000040)
-(DEFCONSTANT S-IWGRP  #O000020)
-(DEFCONSTANT S-IXGRP  #O000010)
-(DEFCONSTANT S-IRWXG  (LOGIOR S-IRGRP S-IWGRP S-IXGRP))
-(DEFCONSTANT S-IROTH  #O000004)
-(DEFCONSTANT S-IWOTH  #O000002)
-(DEFCONSTANT S-IXOTH  #O000001)
-(DEFCONSTANT S-IRWXO  (LOGIOR S-IROTH S-IWOTH S-IXOTH))
+(defconstant s-irusr  #o000400)
+(defconstant s-iwusr  #o000200)
+(defconstant s-ixusr  #o000100)
+(defconstant s-irwxu  (logior s-irusr s-iwusr s-ixusr))
+(defconstant s-irgrp  #o000040)
+(defconstant s-iwgrp  #o000020)
+(defconstant s-ixgrp  #o000010)
+(defconstant s-irwxg  (logior s-irgrp s-iwgrp s-ixgrp))
+(defconstant s-iroth  #o000004)
+(defconstant s-iwoth  #o000002)
+(defconstant s-ixoth  #o000001)
+(defconstant s-irwxo  (logior s-iroth s-iwoth s-ixoth))
 
 
 ;; The following macros shall be provided to test whether a file is of
@@ -615,13 +613,13 @@ RETURN:     NIL or the value of the environment variable named NAME.
 ;; Test for a symbolic link.S_ISSOCK(m)
 ;; Test for a socket.
 
-(DEFMACRO S-ISDIR  (M) `(= (LOGAND ,M S-IFMT) S-IFDIR))
-(DEFMACRO S-ISCHR  (M) `(= (LOGAND ,M S-IFMT) S-IFCHR))
-(DEFMACRO S-ISBLK  (M) `(= (LOGAND ,M S-IFMT) S-IFBLK))
-(DEFMACRO S-ISREG  (M) `(= (LOGAND ,M S-IFMT) S-IFREG))
-(DEFMACRO S-ISFIFO (M) `(= (LOGAND ,M S-IFMT) S-IFFIFO))
-(DEFMACRO S-ISLNK  (M) `(= (LOGAND ,M S-IFMT) S-IFLNK))
-(DEFMACRO S-ISSOCK (M) `(= (LOGAND ,M S-IFMT) S-IFSOCK))
+(defmacro s-isdir  (m) `(= (logand ,m s-ifmt) s-ifdir))
+(defmacro s-ischr  (m) `(= (logand ,m s-ifmt) s-ifchr))
+(defmacro s-isblk  (m) `(= (logand ,m s-ifmt) s-ifblk))
+(defmacro s-isreg  (m) `(= (logand ,m s-ifmt) s-ifreg))
+(defmacro s-isfifo (m) `(= (logand ,m s-ifmt) s-iffifo))
+(defmacro s-islnk  (m) `(= (logand ,m s-ifmt) s-iflnk))
+(defmacro s-issock (m) `(= (logand ,m s-ifmt) s-ifsock))
 
 
 ;; The implementation may implement message queues, semaphores, or
@@ -665,81 +663,81 @@ RETURN:     NIL or the value of the environment variable named NAME.
 ;; int    stat(const char *restrict, struct stat *restrict)
 ;; mode_t umask(mode_t)
 
-(DECLAIM (FTYPE (FUNCTION (STRING MODE-T)  NIL)    CHMOD))
-(DECLAIM (FTYPE (FUNCTION (INTEGER MODE-T) NIL)    FCHMOD))
-(DECLAIM (FTYPE (FUNCTION (INTEGER)        STAT)   FSTAT))
-(DECLAIM (FTYPE (FUNCTION (STRING)         STAT)   LSTAT))
-(DECLAIM (FTYPE (FUNCTION (STRING)         STAT)   STAT))
-(DECLAIM (FTYPE (FUNCTION (STRING MODE-T)  NIL)    MKDIR))
-(DECLAIM (FTYPE (FUNCTION (STRING MODE-T)  NIL)    MKFIFO))
-(DECLAIM (FTYPE (FUNCTION (MODE-T)         MODE-T) UMASK))
+(declaim (ftype (function (string mode-t)  nil)    chmod))
+(declaim (ftype (function (integer mode-t) nil)    fchmod))
+(declaim (ftype (function (integer)        stat)   fstat))
+(declaim (ftype (function (string)         stat)   lstat))
+(declaim (ftype (function (string)         stat)   stat))
+(declaim (ftype (function (string mode-t)  nil)    mkdir))
+(declaim (ftype (function (string mode-t)  nil)    mkfifo))
+(declaim (ftype (function (mode-t)         mode-t) umask))
 
 
-(DECLAIM ;; XSI
- '(FTYPE (FUNCTION (STRING MODE-T DEV-T) NIL) MKNOD))
+(declaim ;; XSI
+ '(ftype (function (string mode-t dev-t) nil) mknod))
 
 
 
-(DEFUN CHMOD (PATH MODE)
-  (CHECK-ERRNO (LINUX:|chmod| PATH MODE))
-  (VALUES))
+(defun chmod (path mode)
+  (check-errno (linux:|chmod| path mode))
+  (values))
 
 
-(DEFUN FCHMOD (FD MODE)
-  (CHECK-ERRNO (LINUX:|fchmod| FD MODE))
-  (VALUES))
+(defun fchmod (fd mode)
+  (check-errno (linux:|fchmod| fd mode))
+  (values))
 
 
-(DEFMACRO LINUX-STAT->SUSV3-STAT (SB)
+(defmacro linux-stat->susv3-stat (sb)
   "
 PRIVATE
 "
-  `(MAKE-STAT 
-    :DEV (LINUX::|stat-st_dev| ,SB)
-    :INO (LINUX::|stat-st_ino| ,SB)
-    :MODE (LINUX::|stat-st_mode| ,SB)
-    :NLINK (LINUX::|stat-st_nlink| ,SB)
-    :UID (LINUX::|stat-st_uid| ,SB)
-    :GID (LINUX::|stat-st_gid| ,SB)
-    :RDEV (LINUX::|stat-st_rdev| ,SB)
-    :SIZE (LINUX::|stat-st_size| ,SB)
-    :ATIME (LINUX::|stat-st_atime| ,SB)
-    :MTIME (LINUX::|stat-st_mtime| ,SB)
-    :CTIME (LINUX::|stat-st_ctime| ,SB)
-    :BLKSIZE (LINUX::|stat-st_blksize| ,SB)
-    :BLOCKS (LINUX::|stat-st_blocks| ,SB)))
+  `(make-stat 
+    :dev (linux::|stat-st_dev| ,sb)
+    :ino (linux::|stat-st_ino| ,sb)
+    :mode (linux::|stat-st_mode| ,sb)
+    :nlink (linux::|stat-st_nlink| ,sb)
+    :uid (linux::|stat-st_uid| ,sb)
+    :gid (linux::|stat-st_gid| ,sb)
+    :rdev (linux::|stat-st_rdev| ,sb)
+    :size (linux::|stat-st_size| ,sb)
+    :atime (linux::|stat-st_atime| ,sb)
+    :mtime (linux::|stat-st_mtime| ,sb)
+    :ctime (linux::|stat-st_ctime| ,sb)
+    :blksize (linux::|stat-st_blksize| ,sb)
+    :blocks (linux::|stat-st_blocks| ,sb)))
 
 
-(DEFUN STAT (PATH)
-  (LINUX-STAT->SUSV3-STAT (CHECK-ERRNO (LINUX:|stat| PATH))))
+(defun stat (path)
+  (linux-stat->susv3-stat (check-errno (linux:|stat| path))))
 
 
-(DEFUN LSTAT (PATH)
-  (LINUX-STAT->SUSV3-STAT (CHECK-ERRNO (LINUX:|lstat| PATH))))
+(defun lstat (path)
+  (linux-stat->susv3-stat (check-errno (linux:|lstat| path))))
 
 
-(DEFUN FSTAT (FD)
-  (LINUX-STAT->SUSV3-STAT (CHECK-ERRNO (LINUX:|fstat| FD))))
+(defun fstat (fd)
+  (linux-stat->susv3-stat (check-errno (linux:|fstat| fd))))
 
 
-(DEFUN MKDIR (PATH MODE)
-  (CHECK-ERRNO (LINUX:|mkdir| PATH MODE))
-  (VALUES))
+(defun mkdir (path mode)
+  (check-errno (linux:|mkdir| path mode))
+  (values))
 
 
-(DEFUN MKFIFO (PATH MODE)
-  (CHECK-ERRNO (LINUX:|mkfifo| PATH MODE))
-  (VALUES))
+(defun mkfifo (path mode)
+  (check-errno (linux:|mkfifo| path mode))
+  (values))
 
 
-(DEFUN UMASK (MODE)
-  (LINUX:|umask| MODE))
+(defun umask (mode)
+  (linux:|umask| mode))
 
 
 ;;XSI
-(DEFUN MKNOD (PATH MODE DEVICE)
-  (CHECK-ERRNO (LINUX:|mknod| PATH MODE DEVICE))
-  (VALUES))
+(defun mknod (path mode device)
+  (check-errno (linux:|mknod| path mode device))
+  (values))
 
 
 
@@ -747,7 +745,7 @@ PRIVATE
 ;; dirent.h
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (DEFCONSTANT NAME-MAX 255))
+  (defconstant name-max 255))
 
 
 (ffi:def-c-type dirp   pointer)
@@ -760,7 +758,7 @@ PRIVATE
   (d_off       off_t)
   (d_reclen    ffi:ushort)
   (d_type      ffi:uchar)
-  (d_name      (ffi:c-array ffi:char #.(1+ NAME-MAX))))
+  (d_name      (ffi:c-array ffi:char #.(1+ name-max))))
 (defmacro dirent-name (d) `(dirent-d_name ,d))
 (defmacro dirent-ino  (d) `(dirent-d_ino  ,d))
 

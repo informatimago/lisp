@@ -19,24 +19,22 @@
 ;;;;    2004-07-23 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2005
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
 ;; (defpackage "COM.INFORMATIMAGO.COMMON-LISP.COMPILE"
@@ -46,9 +44,9 @@
 
 
 ;;; Not used yet:
-(defvar *PREFIX* "/usr/local/")
-(defvar *MODULE* "clmisc")
-(defvar *PACKAGE-PATH* "com/informatimago/clmisc")
+(defvar *prefix* "/usr/local/")
+(defvar *module* "clmisc")
+(defvar *package-path* "com/informatimago/clmisc")
 ;;; ----
 
 
@@ -56,18 +54,18 @@
   (format *trace-output* "~&;;;;~%;;;; ~?~%;;;;~%" ctrl args))
 (logger "*** COMPILING COM.INFORMATIMAGO.CLMISC ***")
 
-(LOAD "init.lisp")
+(load "init.lisp")
 ;; package.lisp is loaded by init.lisp.
-#+(or allegro ccl ecl) (load (compile-file #P"PACKAGES:net;sourceforge;cclan;asdf;asdf.lisp"))
-#-(or allegro ccl ecl) (load (compile-file #P"PACKAGES:NET;SOURCEFORGE;CCLAN;ASDF;ASDF.LISP"))
-(PUSH (FUNCTION PACKAGE:PACKAGE-SYSTEM-DEFINITION)
-      ASDF:*SYSTEM-DEFINITION-SEARCH-FUNCTIONS*)
+#+(or allegro ccl ecl) (load (compile-file #p"PACKAGES:net;sourceforge;cclan;asdf;asdf.lisp"))
+#-(or allegro ccl ecl) (load (compile-file #p"PACKAGES:NET;SOURCEFORGE;CCLAN;ASDF;ASDF.LISP"))
+(push (function package:package-system-definition)
+      asdf:*system-definition-search-functions*)
 (asdf:oos 'asdf:load-op :com.informatimago.common-lisp)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(defparameter *SOURCES*
+(defparameter *sources*
   '(
     resource-utilization
     ;; closer-weak-test.lisp
@@ -79,44 +77,44 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(DEFUN VERSION++ (&OPTIONAL PATH)
+(defun version++ (&optional path)
   "
 DO:      Increment the version compilation number.
          The version is persistent, stored in a file named VERSION.DAT
          in the same directory as *LOAD-PATHNAME*, or at PATH.
 RETURN:  The version as a string \"major.minor.compilation\"
 "
-  (FLET ((READ-VERSION (FILE)
-           (LOOP
-              :FOR LINE = (READ-LINE FILE NIL NIL)
-              :FOR =POS = (WHEN LINE (POSITION (CHARACTER "=") LINE))
-              :WHILE LINE
-              :WHEN =POS
-              :COLLECT (LIST (INTERN (STRING-UPCASE (SUBSEQ LINE 0 =POS)) "KEYWORD")
-                             (READ-FROM-STRING (SUBSEQ LINE (1+ =POS)))))))
-    (LET* ((DEFAULT-PATH       (OR *LOAD-PATHNAME* *DEFAULT-PATHNAME-DEFAULTS*))
-           (VERSION.PATH       (OR PATH 
-                                   (MAKE-PATHNAME :NAME "VERSION" :TYPE "DAT"
-                                                  :VERSION :NEWEST
-                                                  :DEFAULTS DEFAULT-PATH)))
-           (VERSION             (WITH-OPEN-FILE (FILE VERSION.PATH
-                                                      :DIRECTION :INPUT
-                                                      :IF-DOES-NOT-EXIST :ERROR)
-                                  (READ-VERSION FILE)))
-           (VERSION.MAJOR           (OR (SECOND (ASSOC :MAJOR       VERSION)) 0))
-           (VERSION.MINOR           (OR (SECOND (ASSOC :MINOR       VERSION)) 0))
-           (VERSION.COMPILATION (1+ (OR (SECOND (ASSOC :COMPILATION VERSION)) 0)))
-           (NEW-VERSION `((:MAJOR       ,VERSION.MAJOR)
-                          (:MINOR       ,VERSION.MINOR)
-                          (:COMPILATION ,VERSION.COMPILATION))))
-      (WITH-OPEN-FILE (FILE VERSION.PATH
-                            :DIRECTION :OUTPUT
-                            :IF-DOES-NOT-EXIST :CREATE
-                            :IF-EXISTS :SUPERSEDE)
-        (FORMAT FILE "~(~:{~A=~A~%~}~)" NEW-VERSION))
-      (VALUES (FORMAT NIL "~A.~A.~A"
-                      VERSION.MAJOR VERSION.MINOR VERSION.COMPILATION)
-              VERSION.MAJOR VERSION.MINOR VERSION.COMPILATION))))
+  (flet ((read-version (file)
+           (loop
+              :for line = (read-line file nil nil)
+              :for =pos = (when line (position (character "=") line))
+              :while line
+              :when =pos
+              :collect (list (intern (string-upcase (subseq line 0 =pos)) "KEYWORD")
+                             (read-from-string (subseq line (1+ =pos)))))))
+    (let* ((default-path       (or *load-pathname* *default-pathname-defaults*))
+           (version.path       (or path 
+                                   (make-pathname :name "VERSION" :type "DAT"
+                                                  :version :newest
+                                                  :defaults default-path)))
+           (version             (with-open-file (file version.path
+                                                      :direction :input
+                                                      :if-does-not-exist :error)
+                                  (read-version file)))
+           (version.major           (or (second (assoc :major       version)) 0))
+           (version.minor           (or (second (assoc :minor       version)) 0))
+           (version.compilation (1+ (or (second (assoc :compilation version)) 0)))
+           (new-version `((:major       ,version.major)
+                          (:minor       ,version.minor)
+                          (:compilation ,version.compilation))))
+      (with-open-file (file version.path
+                            :direction :output
+                            :if-does-not-exist :create
+                            :if-exists :supersede)
+        (format file "~(~:{~A=~A~%~}~)" new-version))
+      (values (format nil "~A.~A.~A"
+                      version.major version.minor version.compilation)
+              version.major version.minor version.compilation))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -125,9 +123,9 @@ RETURN:  The version as a string \"major.minor.compilation\"
 (logger "GENERATING THE ASDF SYSTEM FILE")
 
 (handler-bind ((warning #'muffle-warning))
-  (COM.INFORMATIMAGO.COMMON-LISP.MAKE-DEPENDS.MAKE-DEPENDS:GENERATE-ASD
-   :com.informatimago.clmisc *SOURCES* *SOURCE-TYPE*
-   :VERSION (VERSION++)
+  (com.informatimago.common-lisp.make-depends.make-depends:generate-asd
+   :com.informatimago.clmisc *sources* *source-type*
+   :version (version++)
    :licence "GPL"
    :depends-on '() ;; '("zlib")
    ;;  :IMPLICIT-DEPENDENCIES '("package")
@@ -140,12 +138,12 @@ RETURN:  The version as a string \"major.minor.compilation\"
 ;;;
 (logger "GENERATING THE SUMMARY.HTML")
 (handler-bind ((warning #'muffle-warning))
-  (COM.INFORMATIMAGO.COMMON-LISP.MAKE-DEPENDS.MAKE-DEPENDS:GENERATE-SUMMARY
-   *SOURCES*
-   :VERBOSE T
-   :SOURCE-TYPE *SOURCE-TYPE*
-   :SUMMARY-PATH "summary.html"
-   :REPOSITORY-URL (lambda (pp)
+  (com.informatimago.common-lisp.make-depends.make-depends:generate-summary
+   *sources*
+   :verbose t
+   :source-type *source-type*
+   :summary-path "summary.html"
+   :repository-url (lambda (pp)
                      (format nil
                              ;; "http://darcs.informatimago.com~
                              ;;  /darcs/public/lisp/~(~A/~A~).lisp"
@@ -163,62 +161,62 @@ RETURN:  The version as a string \"major.minor.compilation\"
 
 (logger "CLEANING THE LOADED PACKAGES")
 
-(DEFUN PACKAGE-USE*-PACKAGE-P (P Q)
+(defun package-use*-package-p (p q)
   "
 RETURN: Whether the package P uses the package Q, or a package 
         that uses the package Q.
 NOTE:   By definition, (PACKAGE-USE*-PACKAGE-P X X)
 "
-  (SETF P (FIND-PACKAGE P)
-        Q (FIND-PACKAGE Q))
-  (LOOP
-     :WITH PROCESSED = '()
-     :WITH USED = (LIST P)
-     :WHILE USED
+  (setf p (find-package p)
+        q (find-package q))
+  (loop
+     :with processed = '()
+     :with used = (list p)
+     :while used
      ;; :do (print (list used processed))
-     :DO (LET ((CURRENT (POP USED)))
-           (IF (EQ CURRENT Q)
-               (RETURN-FROM PACKAGE-USE*-PACKAGE-P T)
-               (PROGN
-                 (PUSH CURRENT PROCESSED)
-                 (DOLIST (NEW (PACKAGE-USE-LIST CURRENT))
-                   (UNLESS (MEMBER NEW PROCESSED)
-                     (PUSHNEW NEW USED))))))
-     :FINALLY (RETURN-FROM PACKAGE-USE*-PACKAGE-P NIL)))
+     :do (let ((current (pop used)))
+           (if (eq current q)
+               (return-from package-use*-package-p t)
+               (progn
+                 (push current processed)
+                 (dolist (new (package-use-list current))
+                   (unless (member new processed)
+                     (pushnew new used))))))
+     :finally (return-from package-use*-package-p nil)))
 
 
-(DEFUN TOPOLOGICAL-SORT (NODES LESSP)
+(defun topological-sort (nodes lessp)
   "
 RETURN: A list of NODES sorted topologically according to 
         the partial order function LESSP.
         If there are cycles (discounting reflexivity), 
         then the list returned won't contain all the NODES.
 "
-  (LOOP
-     :WITH SORTED = '()
-     :WITH INCOMING = (MAP 'VECTOR (LAMBDA (TO)
-                                     (LOOP
-                                        :FOR FROM :IN NODES
-                                        :WHEN (AND (NOT (EQ FROM TO))
-                                                   (FUNCALL LESSP FROM TO))
-                                        :SUM 1))
-                           NODES)
-     :WITH Q = (LOOP
-                  :FOR NODE :IN NODES
-                  :FOR INCO :ACROSS INCOMING
-                  :WHEN (ZEROP INCO)
-                  :COLLECT NODE) 
-     :WHILE Q
-     :DO (LET ((N (POP Q)))
-           (PUSH N SORTED)
-           (LOOP
-              :FOR M :IN NODES
-              :FOR I :FROM 0
-              :DO (WHEN (AND (AND (NOT (EQ N M))
-                                  (FUNCALL LESSP N M))
-                             (ZEROP (DECF (AREF INCOMING I))))
-                    (PUSH M Q))))
-     :FINALLY (RETURN (NREVERSE SORTED))))
+  (loop
+     :with sorted = '()
+     :with incoming = (map 'vector (lambda (to)
+                                     (loop
+                                        :for from :in nodes
+                                        :when (and (not (eq from to))
+                                                   (funcall lessp from to))
+                                        :sum 1))
+                           nodes)
+     :with q = (loop
+                  :for node :in nodes
+                  :for inco :across incoming
+                  :when (zerop inco)
+                  :collect node) 
+     :while q
+     :do (let ((n (pop q)))
+           (push n sorted)
+           (loop
+              :for m :in nodes
+              :for i :from 0
+              :do (when (and (and (not (eq n m))
+                                  (funcall lessp n m))
+                             (zerop (decf (aref incoming i))))
+                    (push m q))))
+     :finally (return (nreverse sorted))))
 
 
 ;; (defun print-graph (nodes edge-predicate)
@@ -272,22 +270,22 @@ RETURN: A list of NODES sorted topologically according to
 
 
 
-(DOLIST (P (LET* ((NODES
-                    (DELETE-IF-NOT
-                     (LAMBDA (P)
-                       (LET ((PREFIX "COM.INFORMATIMAGO.CLMISC."))
-                         (AND (<  (LENGTH PREFIX) (LENGTH (PACKAGE-NAME P)))
-                              (STRING= PREFIX (PACKAGE-NAME P)
-                                       :END2 (LENGTH PREFIX)))))
-                     (COPY-LIST (LIST-ALL-PACKAGES))))
-                   (SORTED
-                    (TOPOLOGICAL-SORT NODES
-                                      (FUNCTION PACKAGE-USE*-PACKAGE-P)))
-                   (CYCLIC (SET-DIFFERENCE NODES SORTED)))
-              (WHEN CYCLIC
-                (FORMAT T "Cyclic nodes = ~S~%" CYCLIC))
-              (NCONC CYCLIC SORTED)))
-  (DELETE-PACKAGE P))
+(dolist (p (let* ((nodes
+                    (delete-if-not
+                     (lambda (p)
+                       (let ((prefix "COM.INFORMATIMAGO.CLMISC."))
+                         (and (<  (length prefix) (length (package-name p)))
+                              (string= prefix (package-name p)
+                                       :end2 (length prefix)))))
+                     (copy-list (list-all-packages))))
+                   (sorted
+                    (topological-sort nodes
+                                      (function package-use*-package-p)))
+                   (cyclic (set-difference nodes sorted)))
+              (when cyclic
+                (format t "Cyclic nodes = ~S~%" cyclic))
+              (nconc cyclic sorted)))
+  (delete-package p))
 
 
 
@@ -297,11 +295,11 @@ RETURN: A list of NODES sorted topologically according to
 ;;;
 
 (logger "COMPILING THE ASDF SYSTEM")
-(SETF ASDF:*COMPILE-FILE-WARNINGS-BEHAVIOUR* :IGNORE)
-(let ((*LOAD-VERBOSE* t)
-      (*COMPILE-VERBOSE* t)
+(setf asdf:*compile-file-warnings-behaviour* :ignore)
+(let ((*load-verbose* t)
+      (*compile-verbose* t)
       (asdf::*verbose-out* t))
-  (ASDF:OPERATE 'ASDF:LOAD-OP :COM.INFORMATIMAGO.CLMISC))
+  (asdf:operate 'asdf:load-op :com.informatimago.clmisc))
 
 
 

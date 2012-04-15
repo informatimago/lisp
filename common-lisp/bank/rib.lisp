@@ -18,57 +18,55 @@
 ;;;;    1994-12-28 <PJB> Creation.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 1994 - 2004
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.BANK.RIB"
-  (:USE  "COMMON-LISP"
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.BANK.RIB"
+  (:use  "COMMON-LISP"
          "COM.INFORMATIMAGO.COMMON-LISP.BANK.IBAN")
-  (:EXPORT "CHECK-DIGITS" "SET-ACCOUNT-NUMBER" "ACCOUNT-NUMBER"
+  (:export "CHECK-DIGITS" "SET-ACCOUNT-NUMBER" "ACCOUNT-NUMBER"
            "SET-BRANCH-CODE" "BRANCH-CODE" "SET-BANK-CODE" "BANK-CODE" "SET-RIB"
            "GET-RIB" "RIB")
-  (:DOCUMENTATION
+  (:documentation
    "This class is a French \"Relevé d'Identité Banquaire\", composed of
     three codes and a control key value: (banque, branch-code, account-number, check-digits).
 
     Copyright Pascal J. Bourguignon 1994 - 2004
     This package is provided under the GNU General Public License.
     See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.BANK.RIB")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.BANK.RIB")
 
 
 
-(DEFINE-CONDITION RIB-ERROR (IBAN-ERROR) () (:DOCUMENTATION "A RIB error"))
+(define-condition rib-error (iban-error) () (:documentation "A RIB error"))
 
 
-(DEFCLASS RIB (IBAN)
+(defclass rib (iban)
   ((bank-code  
-    :READER bank-code  :INITFORM "00000"       :INITARG :bank-code  :TYPE (STRING 5))
-   (BRANCH-CODE
-    :READER BRANCH-CODE :INITFORM "00000"       :INITARG :BRANCH-CODE :TYPE (STRING 5))
-   (ACCOUNT-NUMBER
-    :READER ACCOUNT-NUMBER  :INITFORM "00000000000" :INITARG :ACCOUNT-NUMBER  :TYPE (STRING 11))
-   (CHECK-DIGITS             :INITFORM "00"          :INITARG :CHECK-DIGITS     :TYPE (STRING 2))
-   (CHECK-DIGITS-CHANGED :READER CHECK-DIGITS-CHANGED :INITFORM T :TYPE BOOLEAN))
-  (:DOCUMENTATION "
+    :reader bank-code  :initform "00000"       :initarg :bank-code  :type (string 5))
+   (branch-code
+    :reader branch-code :initform "00000"       :initarg :branch-code :type (string 5))
+   (account-number
+    :reader account-number  :initform "00000000000" :initarg :account-number  :type (string 11))
+   (check-digits             :initform "00"          :initarg :check-digits     :type (string 2))
+   (check-digits-changed :reader check-digits-changed :initform t :type boolean))
+  (:documentation "
 INVARIANT:  strlen(banque)=5,
             strlen(branch-code)=5,
             strlen(account-number)=11,
@@ -80,89 +78,89 @@ INVARIANT:  strlen(banque)=5,
 "))
 
 
-(DEFGENERIC CHECK-DIGITS (SELF))
-(DEFGENERIC GET-RIB (SELF &KEY WITH-SPACES))
-(DEFGENERIC SET-bank-code (SELF bank-code))
-(DEFGENERIC SET-BRANCH-CODE (SELF BRANCH-CODE))
-(DEFGENERIC SET-ACCOUNT-NUMBER (SELF ACCOUNT-NUMBER))
-(DEFGENERIC SET-RIB (SELF RIB &KEY WITH-CHECK-DIGITS))
+(defgeneric check-digits (self))
+(defgeneric get-rib (self &key with-spaces))
+(defgeneric set-bank-code (self bank-code))
+(defgeneric set-branch-code (self branch-code))
+(defgeneric set-account-number (self account-number))
+(defgeneric set-rib (self rib &key with-check-digits))
 (defgeneric (setf bank-code) (bank-code rib))
 (defgeneric (setf branch-code) (branch-code rib))
 (defgeneric (setf account-number) (account-number rib))
 
 
-(DEFPARAMETER +ALPHABET-VALUE+ "012345678912345678912345678923456789")
-(DEFPARAMETER +ALPHABET-FROM+  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+(defparameter +alphabet-value+ "012345678912345678912345678923456789")
+(defparameter +alphabet-from+  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
-(DEFUN COMPUTE-CHECK-DIGITS (bank-code BRANCH-CODE ACCOUNT-NUMBER)
-  (LET ((K (MOD (PARSE-INTEGER 
-                 (MAP 'STRING
-                      (LAMBDA (CH) (AREF +ALPHABET-VALUE+ 
-                                         (POSITION (char-upcase CH)
-                                                   +ALPHABET-FROM+)))
-                      (CONCATENATE 'STRING bank-code BRANCH-CODE ACCOUNT-NUMBER "00"))
-                 :JUNK-ALLOWED NIL) 97)))
-    (FORMAT NIL "~2,'0D" (IF (= 0 K) 0 (- 97 K)))))
-
-
-(DEFMETHOD INITIALIZE-INSTANCE ((SELF RIB) &REST ARGS)
-  (DECLARE (IGNORE ARGS))
-  (CALL-NEXT-METHOD)
-  (SETF (SLOT-VALUE SELF 'bank-code)  (GET-AND-CHECK-ALPHANUM  5 (bank-code  SELF))
-        (SLOT-VALUE SELF 'BRANCH-CODE) (GET-AND-CHECK-ALPHANUM  5 (BRANCH-CODE SELF))
-        (SLOT-VALUE SELF 'ACCOUNT-NUMBER)  (GET-AND-CHECK-ALPHANUM 11 (ACCOUNT-NUMBER  SELF))
-        (SLOT-VALUE SELF 'CHECK-DIGITS)     (COMPUTE-CHECK-DIGITS (bank-code SELF) (BRANCH-CODE SELF)
-                                                                  (ACCOUNT-NUMBER SELF))
-        (SLOT-VALUE SELF 'CHECK-DIGITS-CHANGED) NIL)
-  SELF)
+(defun compute-check-digits (bank-code branch-code account-number)
+  (let ((k (mod (parse-integer 
+                 (map 'string
+                      (lambda (ch) (aref +alphabet-value+ 
+                                         (position (char-upcase ch)
+                                                   +alphabet-from+)))
+                      (concatenate 'string bank-code branch-code account-number "00"))
+                 :junk-allowed nil) 97)))
+    (format nil "~2,'0D" (if (= 0 k) 0 (- 97 k)))))
 
 
-(DEFMETHOD CHECK-DIGITS ((SELF RIB))
-  (WHEN (CHECK-DIGITS-CHANGED SELF)
-    (SETF (SLOT-VALUE SELF 'CHECK-DIGITS)
-          (COMPUTE-CHECK-DIGITS  (bank-code SELF) (BRANCH-CODE SELF) (ACCOUNT-NUMBER SELF)))
-    (SETF (SLOT-VALUE SELF 'CHECK-DIGITS-CHANGED) NIL))
-  (SLOT-VALUE SELF 'CHECK-DIGITS))
+(defmethod initialize-instance ((self rib) &rest args)
+  (declare (ignore args))
+  (call-next-method)
+  (setf (slot-value self 'bank-code)  (get-and-check-alphanum  5 (bank-code  self))
+        (slot-value self 'branch-code) (get-and-check-alphanum  5 (branch-code self))
+        (slot-value self 'account-number)  (get-and-check-alphanum 11 (account-number  self))
+        (slot-value self 'check-digits)     (compute-check-digits (bank-code self) (branch-code self)
+                                                                  (account-number self))
+        (slot-value self 'check-digits-changed) nil)
+  self)
 
 
-(DEFMETHOD GET-RIB ((SELF RIB) &KEY (WITH-SPACES NIL))
-  (FORMAT NIL (IF WITH-SPACES "~5S ~5S ~11S ~2S" "~5S~5S~11S~2S")
-          (bank-code SELF) (BRANCH-CODE SELF) (ACCOUNT-NUMBER SELF) (CHECK-DIGITS SELF)))
+(defmethod check-digits ((self rib))
+  (when (check-digits-changed self)
+    (setf (slot-value self 'check-digits)
+          (compute-check-digits  (bank-code self) (branch-code self) (account-number self)))
+    (setf (slot-value self 'check-digits-changed) nil))
+  (slot-value self 'check-digits))
 
 
-(DEFMETHOD SET-bank-code ((SELF RIB) (bank-code STRING))
-  (SETF (SLOT-VALUE SELF 'bank-code) (GET-AND-CHECK-ALPHANUM 5 bank-code)
-        (SLOT-VALUE SELF 'CHECK-DIGITS-CHANGED) T)
-  SELF)
+(defmethod get-rib ((self rib) &key (with-spaces nil))
+  (format nil (if with-spaces "~5S ~5S ~11S ~2S" "~5S~5S~11S~2S")
+          (bank-code self) (branch-code self) (account-number self) (check-digits self)))
 
 
-(DEFMETHOD SET-BRANCH-CODE ((SELF RIB) (BRANCH-CODE STRING))
-  (SETF (SLOT-VALUE SELF 'BRANCH-CODE) (GET-AND-CHECK-ALPHANUM 5 BRANCH-CODE)
-        (SLOT-VALUE SELF 'CHECK-DIGITS-CHANGED) T)
-  SELF)
+(defmethod set-bank-code ((self rib) (bank-code string))
+  (setf (slot-value self 'bank-code) (get-and-check-alphanum 5 bank-code)
+        (slot-value self 'check-digits-changed) t)
+  self)
 
 
-(DEFMETHOD SET-ACCOUNT-NUMBER ((SELF RIB) (ACCOUNT-NUMBER STRING))
-  (SETF (SLOT-VALUE SELF 'ACCOUNT-NUMBER) (GET-AND-CHECK-ALPHANUM 11 ACCOUNT-NUMBER)
-        (SLOT-VALUE SELF 'CHECK-DIGITS-CHANGED) T)
-  SELF)
+(defmethod set-branch-code ((self rib) (branch-code string))
+  (setf (slot-value self 'branch-code) (get-and-check-alphanum 5 branch-code)
+        (slot-value self 'check-digits-changed) t)
+  self)
 
 
-(DEFMETHOD SET-RIB ((SELF RIB) (RIB STRING) &KEY (WITH-CHECK-DIGITS NIL))
-  (SETF RIB (GET-AND-CHECK-ALPHANUM (IF WITH-CHECK-DIGITS 23 21) RIB))
-  (LET* ((B  (SUBSEQ RIB  0  5))
-         (G  (SUBSEQ RIB  5  5))
-         (C  (SUBSEQ RIB 10 11))
-         (K  (WHEN WITH-CHECK-DIGITS (SUBSEQ RIB 21 2)))
-         (CK (COMPUTE-CHECK-DIGITS B G C)))
-    (WHEN (AND WITH-CHECK-DIGITS (STRING/= K CK))
-      (SIGNAL 'RIB-ERROR "Invalid key, given=~S, computed=~S." K CK))
-    (SETF (SLOT-VALUE SELF 'bank-code)  B
-          (SLOT-VALUE SELF 'BRANCH-CODE) G
-          (SLOT-VALUE SELF 'ACCOUNT-NUMBER)  C
-          (SLOT-VALUE SELF 'CHECK-DIGITS)     CK
-          (SLOT-VALUE SELF 'CHECK-DIGITS-CHANGED) NIL)
-    SELF))
+(defmethod set-account-number ((self rib) (account-number string))
+  (setf (slot-value self 'account-number) (get-and-check-alphanum 11 account-number)
+        (slot-value self 'check-digits-changed) t)
+  self)
+
+
+(defmethod set-rib ((self rib) (rib string) &key (with-check-digits nil))
+  (setf rib (get-and-check-alphanum (if with-check-digits 23 21) rib))
+  (let* ((b  (subseq rib  0  5))
+         (g  (subseq rib  5  5))
+         (c  (subseq rib 10 11))
+         (k  (when with-check-digits (subseq rib 21 2)))
+         (ck (compute-check-digits b g c)))
+    (when (and with-check-digits (string/= k ck))
+      (signal 'rib-error "Invalid key, given=~S, computed=~S." k ck))
+    (setf (slot-value self 'bank-code)  b
+          (slot-value self 'branch-code) g
+          (slot-value self 'account-number)  c
+          (slot-value self 'check-digits)     ck
+          (slot-value self 'check-digits-changed) nil)
+    self))
 
 (defmethod (setf bank-code)      (bank-code      (self rib))
   (set-bank-code self bank-code))
@@ -172,13 +170,13 @@ INVARIANT:  strlen(banque)=5,
   (set-account-number self account-number))
 
 
-(DEFUN TEST ()
-  (EVERY (LAMBDA (TEST)
-           (LET ((RIB (MAKE-INSTANCE 'RIB
-                        :bank-code (FIRST TEST)
-                        :BRANCH-CODE (SECOND TEST)
-                        :ACCOUNT-NUMBER (THIRD TEST))))
-             (STRING= (FOURTH TEST) (CHECK-DIGITS RIB))))
+(defun test ()
+  (every (lambda (test)
+           (let ((rib (make-instance 'rib
+                        :bank-code (first test)
+                        :branch-code (second test)
+                        :account-number (third test))))
+             (string= (fourth test) (check-digits rib))))
          '(("10011" "00020" "1202196212N" "93")
            ("10011" "00020" "0335091570T" "41")
            ("11899" "05900" "00014503740" "69")

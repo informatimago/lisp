@@ -16,35 +16,33 @@
 ;;;;    2004-03-01 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2011
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DLL"
-  (:USE "COMMON-LISP")
-  (:EXPORT "DLL-DELETE" "DLL-INSERT" "DLL-NODE-POSITION" "DLL-NODE-NTH"
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DLL"
+  (:use "COMMON-LISP")
+  (:export "DLL-DELETE" "DLL-INSERT" "DLL-NODE-POSITION" "DLL-NODE-NTH"
            "DLL-NODE-ITEM" "DLL-NODE-PREVIOUS" "DLL-NODE-NEXT" "DLL-NODE" "DLL-LAST"
            "DLL-FIRST" "DLL-POSITION" "DLL-NTH" "DLL-CONTENTS" "DLL-NCONC" "DLL-APPEND"
            "DLL-COPY" "DLL-EQUAL" "DLL-LENGTH" "DLL-EMPTY-P" "DLL-LAST-NODE"
            "DLL-FIRST-NODE" "DLL")
-  (:DOCUMENTATION
+  (:documentation
    "This module exports a double-linked list type.
     This is a structure optimized insertions and deletions in any place,
     each node keeping a pointer to both the previous and the next node.
@@ -54,13 +52,13 @@
     Copyright Pascal J. Bourguignon 2001 - 2005
     This package is provided under the GNU General Public License.
     See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DLL")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DLL")
 
 
 
 
 
-(defstruct (dll (:conc-name %DLL-))
+(defstruct (dll (:conc-name %dll-))
   (first    nil)
   (last     nil))
 
@@ -156,7 +154,7 @@ RETURN: A new dll with all the elements in DLLS.
       (apply (function dll-nconc) (mapcar (function dll-copy) dlls))))
 
 
-(defun dll-nconc (first-dll &rest DLLS)
+(defun dll-nconc (first-dll &rest dlls)
   "
 PRE:   No dll appears twice in (CONS FIRST-DLL DLLS).
 DO:    Extract the nodes from all but the FIRST-DLL,
@@ -193,7 +191,7 @@ RETURN:  A new list containing the items of the dll.
   (unless (dll-empty-p  dlist)  (dll-node-item (%dll-last  dlist))))
 
 
-(defun DLL-NODE-NTH (index dlist)
+(defun dll-node-nth (index dlist)
   (do ((i 0 (1+ i))
        (current (%dll-first dlist) (dll-node-next current)))
       ((or (null current) (= i index)) current)))

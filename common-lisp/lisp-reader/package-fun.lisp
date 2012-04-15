@@ -96,7 +96,8 @@
   (:documentation "
 This package implements the Common Lisp package system.
 Author: Zach Beane.
-Modified by Pascal Bourguignon.
+Modified by: Pascal Bourguignon.
+License: BSD
 "))
 (cl:in-package "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.PACKAGE")
 
