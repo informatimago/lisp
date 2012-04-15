@@ -55,24 +55,22 @@
 ;;;;    We should keep the last-modified date from the header.
 ;;;;
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal Bourguignon 2006 - 2006
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;***************************************************************************
 
 (unless (find-package :asdf-install)
@@ -85,12 +83,12 @@
 
 (in-package :asdf)
 ;; (cl:unless (cl:find-symbol "EXPORT") (cl:use-package :cl))
-(export '(SYSTEM-VERSION
+(export '(system-version
           ;; low level but usefull stuff:
-          PARSE-NAME-VERSION))
+          parse-name-version))
 
 
-(DEFUN PARSE-NAME-VERSION (NAME)
+(defun parse-name-version (name)
   "
 DO:      Parse the NAME with the regexp: \".*[-_]\([0-9]+\(\.[0-9]+\)+\)$\"
 RETURN:  a list containing the version numbers;
@@ -99,83 +97,83 @@ RETURN:  a list containing the version numbers;
          When a version cannot be scanned, the first two results are NIL,
          and the last is the suffix string down to the scanning error.
 "
-  (MACROLET ((COLLECT ()
-               `(HANDLER-CASE           ; check that at least on digit
+  (macrolet ((collect ()
+               `(handler-case           ; check that at least on digit
                                         ; is present between dots.
-                    (PROGN
-                      (PUSH (PARSE-INTEGER NAME :START (1+ P) :END E
-                                           :JUNK-ALLOWED NIL) N)
-                      (SETF E P))
-                  (PARSE-ERROR (ERR)
-                    (RETURN-FROM PARSE-NAME-VERSION
-                      (VALUES NIL NIL (SUBSEQ NAME P)))))))
-    (LOOP
-       :WITH N = '()
-       :WITH E =  (LENGTH NAME)
-       :FOR P :FROM (1- E) :DOWNTO 0
-       :FOR S = P 
-       :FOR CH = (AREF NAME P)
-       :WHILE (OR (DIGIT-CHAR-P CH) (CHAR= #\. CH))
-       :DO (WHEN (CHAR= #\. CH) (COLLECT)) 
-       :FINALLY (RETURN (IF (OR (CHAR= #\_ CH) (CHAR= #\- CH))
-                            (PROGN (COLLECT)
-                                   (VALUES N (SUBSEQ NAME 0 S) (SUBSEQ NAME S)))
-                            (VALUES NIL NIL (SUBSEQ NAME S)))))))
+                    (progn
+                      (push (parse-integer name :start (1+ p) :end e
+                                           :junk-allowed nil) n)
+                      (setf e p))
+                  (parse-error (err)
+                    (return-from parse-name-version
+                      (values nil nil (subseq name p)))))))
+    (loop
+       :with n = '()
+       :with e =  (length name)
+       :for p :from (1- e) :downto 0
+       :for s = p 
+       :for ch = (aref name p)
+       :while (or (digit-char-p ch) (char= #\. ch))
+       :do (when (char= #\. ch) (collect)) 
+       :finally (return (if (or (char= #\_ ch) (char= #\- ch))
+                            (progn (collect)
+                                   (values n (subseq name 0 s) (subseq name s)))
+                            (values nil nil (subseq name s)))))))
 
-(DEFUN TEST-PARSE-VERSION ()
-  (DOLIST (TEST '(("abc-1.2.3"   (1 2 3) "abc" "-1.2.3")
+(defun test-parse-version ()
+  (dolist (test '(("abc-1.2.3"   (1 2 3) "abc" "-1.2.3")
                   ("abc-123"     (123)   "abc" "-123")
                   ("-123"        (123)   ""    "-123")
                   ("abc_1.2.3"   (1 2 3) "abc" "_1.2.3")
                   ("abc_123"     (123)   "abc" "_123")
                   ("_123"        (123)   ""    "_123")
-                  ("abc_1.2.3p3" NIL     NIL   "p3")
-                  ("abc-1..3"    NIL     NIL   "..3")
-                  ("1.2.3"       NIL     NIL   "1.2.3")
-                  ("123"         NIL     NIL   "123")
+                  ("abc_1.2.3p3" nil     nil   "p3")
+                  ("abc-1..3"    nil     nil   "..3")
+                  ("1.2.3"       nil     nil   "1.2.3")
+                  ("123"         nil     nil   "123")
                   ))
-    (ASSERT (EQUALP (MULTIPLE-VALUE-LIST (PARSE-NAME-VERSION (FIRST TEST)))
-                    (REST TEST)))))
+    (assert (equalp (multiple-value-list (parse-name-version (first test)))
+                    (rest test)))))
 
-(DEFUN LASTCAR (X) (CAR (LAST X)))
+(defun lastcar (x) (car (last x)))
 
-(DEFUN SYSTEM-VERSION (SYSTEM-DESIGNATOR)
+(defun system-version (system-designator)
   "
 RETURN:  A version for the system designated by SYSTEM-DESIGNATOR.
          If the system doesn't have a version slot bound, we look
          at the pathname and extract the version from the directory name.
          If it has both and they don't match, a warning is issued.
 "
-  (LET* ((SYSTEM  (FIND-SYSTEM SYSTEM-DESIGNATOR))
-         (VERSION-IN-DIR
-          (MULTIPLE-VALUE-LIST
-           (PARSE-NAME-VERSION
-            (LASTCAR (PATHNAME-DIRECTORY
-                      (TRUENAME (SYSTEM-DEFINITION-PATHNAME SYSTEM)))))))
-         (VERSION-IN-ASD
-          (AND (SLOT-BOUNDP  SYSTEM 'VERSION)
-               (MULTIPLE-VALUE-LIST
-                (PARSE-NAME-VERSION
-                 (CONCATENATE 'STRING "-"
-                              (SLOT-VALUE SYSTEM 'VERSION)))))))
+  (let* ((system  (find-system system-designator))
+         (version-in-dir
+          (multiple-value-list
+           (parse-name-version
+            (lastcar (pathname-directory
+                      (truename (system-definition-pathname system)))))))
+         (version-in-asd
+          (and (slot-boundp  system 'version)
+               (multiple-value-list
+                (parse-name-version
+                 (concatenate 'string "-"
+                              (slot-value system 'version)))))))
     ;;     d   a   d=a
     ;;     nil nil t    no version
     ;;     v1  nil nil  v1
     ;;     nil v1  nil  v1
     ;;     v1  v1  t    v1
     ;;     v1  v2  nil  v1 warning
-    (COND ((AND (NULL (FIRST VERSION-IN-DIR))  (NULL (FIRST VERSION-IN-ASD)))
-           NIL)
-          ((AND (FIRST VERSION-IN-DIR) (FIRST VERSION-IN-ASD))
-           (UNLESS (EQUAL (FIRST VERSION-IN-DIR) (FIRST VERSION-IN-ASD))
-             (WARN "Version of ASD system ~A differs in ASD file (~A) from ~
+    (cond ((and (null (first version-in-dir))  (null (first version-in-asd)))
+           nil)
+          ((and (first version-in-dir) (first version-in-asd))
+           (unless (equal (first version-in-dir) (first version-in-asd))
+             (warn "Version of ASD system ~A differs in ASD file (~A) from ~
                     directory name (~A)"
-                   SYSTEM-DESIGNATOR
-                   (SUBSEQ (THIRD VERSION-IN-ASD) 1)
-                   (SUBSEQ (THIRD VERSION-IN-DIR) 1)))
-           (SUBSEQ (THIRD VERSION-IN-DIR) 1))
-          ((FIRST VERSION-IN-DIR) (SUBSEQ (THIRD VERSION-IN-DIR) 1))
-          (T                      (SUBSEQ (THIRD VERSION-IN-ASD) 1)))))
+                   system-designator
+                   (subseq (third version-in-asd) 1)
+                   (subseq (third version-in-dir) 1)))
+           (subseq (third version-in-dir) 1))
+          ((first version-in-dir) (subseq (third version-in-dir) 1))
+          (t                      (subseq (third version-in-asd) 1)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -284,15 +282,15 @@ RETURN:  A version for the system designated by SYSTEM-DESIGNATOR.
           (setf stream (make-stream-from-url (or *proxy* url)))
           (format stream
             "GET ~A HTTP/1.0~C~CHost: ~A~C~CCookie: CCLAN-SITE=~A~C~C"
-            (request-uri url) #\Return #\Linefeed
-            host #\Return #\Linefeed
-            *cclan-mirror* #\Return #\Linefeed)
+            (request-uri url) #\return #\linefeed
+            host #\return #\linefeed
+            *cclan-mirror* #\return #\linefeed)
           (when (and *proxy-passwd* *proxy-user*)
             (format stream "Proxy-Authorization: Basic ~A~C~C"
                     (base64-encode
                      (format nil "~A:~A" *proxy-user* *proxy-passwd*))
-                    #\Return #\Linefeed))
-          (format stream "~C~C" #\Return #\Linefeed)
+                    #\return #\linefeed))
+          (format stream "~C~C" #\return #\linefeed)
           (force-output stream)))
     (unless stream (error 'download-error :url url :response 404))
     (flet (#-:digitool
@@ -345,11 +343,11 @@ RETURN:  A version for the system designated by SYSTEM-DESIGNATOR.
                   (case byte
                     ((nil)
                      (return))
-                    ((#.(char-code #\Return)
-                        #.(char-code #\Linefeed))
+                    ((#.(char-code #\return)
+                        #.(char-code #\linefeed))
                      (case (setf byte (funcall reader arg))
-                       ((nil #.(char-code #\Return)
-                             #.(char-code #\Linefeed)))
+                       ((nil #.(char-code #\return)
+                             #.(char-code #\linefeed)))
                        (t (ccl:stream-untyi stream byte)))
                      (return))
                     (t
@@ -358,7 +356,7 @@ RETURN:  A version for the system designated by SYSTEM-DESIGNATOR.
                  line))))
       (list
        (let* ((l (read-header-line))
-              (space (position #\Space l)))
+              (space (position #\space l)))
          (parse-integer l :start (1+ space) :junk-allowed t))
        (loop for line = (read-header-line)
           until (or (null line)
@@ -367,7 +365,7 @@ RETURN:  A version for the system designated by SYSTEM-DESIGNATOR.
           collect
           (let ((colon (position #\: line)))
             (cons (intern (string-upcase (subseq line 0 colon)) :keyword)
-                  (string-trim (list #\Space (code-char 13))
+                  (string-trim (list #\space (code-char 13))
                                (subseq line (1+ colon))))))
        stream))))
 
@@ -391,7 +389,7 @@ RETURN:  A version for the system designated by SYSTEM-DESIGNATOR.
       (find-system-tarball-location package-name-or-url)
     (when (>= response 400)
       (error 'download-error :url url :response response))
-    (let ((length (parse-integer (or (cdr (assoc :CONTENT-LENGTH headers)) "")
+    (let ((length (parse-integer (or (cdr (assoc :content-length headers)) "")
                                  :junk-allowed t)))
       (when verbose
         (format t "Downloading ~:[some unknown number of ~;~:*~A~] ~
@@ -513,10 +511,10 @@ RETURN: A byte vector containing the contents of the resource
              (unless (member response '(301 302))	       
                (return-from got (list response headers stream)))
              (close stream)
-             (setf url (cdr (assoc :LOCATION headers))))))
+             (setf url (cdr (assoc :location headers))))))
     (when (>= response 400)
       (error 'download-error :url url :response response))
-    (let ((length (parse-integer (or (cdr (assoc :CONTENT-LENGTH headers)) "")
+    (let ((length (parse-integer (or (cdr (assoc :content-length headers)) "")
                                  :junk-allowed t)))
       (when verbose
         (format t "~&;;; Downloading ~A bytes~%;;;        from ~A~%"
@@ -569,7 +567,7 @@ RETURN: A list of system names found on cliki.
           (collect-nodes-tav
            (collect-nodes-tav
             (html-attributes 
-             (PARSE-HTML-STRING
+             (parse-html-string
               (let ((data (fetch-url *asdf-system-list-url* :verbose verbose)))
                 (if (stringp data)
                     data
@@ -602,7 +600,7 @@ RETURN:   url ; headers ; stream
            (when stream (close stream))
            (unless (member response '(301 302))	       
              (return-from got (values url response headers)))
-           (setf url (cdr (assoc :LOCATION headers))))))
+           (setf url (cdr (assoc :location headers))))))
 
 
 
@@ -751,7 +749,7 @@ PACKAGE-NAME-OR-URL:  Either a http:// url,
                (unless (member response '(301 302))	       
                  (return-from got (values response headers stream url)))
                (close stream)
-               (setf url (cdr (assoc :LOCATION headers)))))))))
+               (setf url (cdr (assoc :location headers)))))))))
 
 
 (defun prepare-informations (pattern informations)
@@ -770,9 +768,9 @@ PACKAGE-NAME-OR-URL:  Either a http:// url,
           (if system
               (list
                (namestring
-                (truename (asdf:component-relative-PATHNAME system)))
+                (truename (asdf:component-relative-pathname system)))
                (namestring
-                (truename (asdf:SYSTEM-DEFINITION-PATHNAME system)))
+                (truename (asdf:system-definition-pathname system)))
                (or (asdf:system-version system)
                    "Unknown")
                (or (ignore-errors (asdf:system-author system))
@@ -949,7 +947,7 @@ RETURN: The date as a universal time.
   (print date)
   (destructuring-bind (dow day month year hour minute second zone)
       (split-sequence:split-sequence-if (lambda (x) (position x " ,:")) date
-                                        :REMOVE-EMPTY-SUBSEQS t)
+                                        :remove-empty-subseqs t)
     (declare (ignore dow zone))
     (encode-universal-time
      (parse-integer second)
@@ -967,14 +965,14 @@ RETURN: The date as a universal time.
   (let ((temp-tarball (merge-pathnames
                        (make-pathname :name "TEMP" :type "TGZ" :version nil
                                       :case :common
-                                      :defaults *ASDF-SYSTEM-CACHE-DIRECTORY*)
-                       *ASDF-SYSTEM-CACHE-DIRECTORY* nil))
+                                      :defaults *asdf-system-cache-directory*)
+                       *asdf-system-cache-directory* nil))
         (temp-dir     (merge-pathnames
                        (make-pathname :directory '(:relative "TEMP")
                                       :name nil :type nil :version nil
                                       :case :common
-                                      :defaults *ASDF-SYSTEM-CACHE-DIRECTORY*)
-                       *ASDF-SYSTEM-CACHE-DIRECTORY* nil)))
+                                      :defaults *asdf-system-cache-directory*)
+                       *asdf-system-cache-directory* nil)))
     (ensure-this-directory-exists temp-dir)
     (when verbose
       (format "~&;;; Downloading tarball for ~A~%" system-name)

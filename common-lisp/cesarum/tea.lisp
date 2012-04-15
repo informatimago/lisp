@@ -1,4 +1,5 @@
-;;;; -*- mode:lisp;mode:mmm; coding:utf-8 -*-
+;;;; -*- mode:lisp; coding:utf-8 -*-
+;;;; mode:mmm;
 ;;;;**************************************************************************
 ;;;;FILE:               tea.lisp
 ;;;;LANGUAGE:           Common-Lisp
@@ -18,39 +19,37 @@
 ;;;;TODO
 ;;;;    Implement the new variant.
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal Bourguignon 2006 - 2006
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.TEA"
-  (:USE "COMMON-LISP")
-  (:EXPORT "TEA-DECIPHER" "TEA-ENCIPHER")
-  (:DOCUMENTATION
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.TEA"
+  (:use "COMMON-LISP")
+  (:export "TEA-DECIPHER" "TEA-ENCIPHER")
+  (:documentation
    "This package imlements the TEA, Tiny Encryption Algorithm.
     http://web.archive.org/web/20070929150931/http://www.simonshepherd.supanet.com/tea.htm
 
     Copyright Pascal J. Bourguignon 2006 - 2006
     This package is provided under the GNU General Public License.
     See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.TEA")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.TEA")
 
 
 
@@ -59,7 +58,7 @@
 (declaim (inline op))
 (defmacro ciploop ((v w k y z a b c d (sum init-sum) delta) &body body)
   `(let ((,y  (aref ,v 0)) (,z  (aref ,v 1))
-         (,sum  ,init-sum) (,delta  #x9E3779B9)
+         (,sum  ,init-sum) (,delta  #x9e3779b9)
          (,a  (aref ,k 0)) (,b  (aref ,k 1))
          (,c  (aref ,k 2)) (,d  (aref ,k 3)))
      (loop repeat +n+ do ,@body finally (setf (aref ,w 0) ,y (aref ,w 1) ,z))))
@@ -69,7 +68,7 @@
   (ciploop (v w k y z a b c d (sum 0) delta)
            (c-incf sum delta) (c-incf y (op z a b sum)) (c-incf z (op y c d sum))))
 (defun tea-decipher (v w k)
-  (ciploop (v w k y z a b c d (sum  #.(mod (* +n+ #x9E3779B9) #x100000000)) delta)
+  (ciploop (v w k y z a b c d (sum  #.(mod (* +n+ #x9e3779b9) #x100000000)) delta)
            (c-decf z (op y c d sum)) (c-decf y (op z a b sum)) (c-decf sum delta)))
 
 

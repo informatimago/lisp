@@ -31,32 +31,28 @@
 ;;;;    of COMMON-LISP:DIRECTORY.  Only a unix implementation is provided.
 ;;;;
 ;;;;LEGAL
-;;;;    LGPL
-;;;;
+;;;;    AGPL3
+;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2004
-;;;;
-;;;;    This library is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU Lesser General Public
-;;;;    License as published by the Free Software Foundation; either
-;;;;    version 2 of the License, or (at your option) any later
-;;;;    version.
-;;;;
-;;;;    This library is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU Lesser General Public License for more
-;;;;    details.
-;;;;
-;;;;    You should have received a copy of the GNU Lesser General
-;;;;    Public License along with this library; if not, write to the
-;;;;    Free Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
+;;;;    
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
+;;;;    
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.CLISP.UFFI"
-  (:NICKNAMES "UFFI")
-  (:DOCUMENTATION "
+(defpackage "COM.INFORMATIMAGO.CLISP.UFFI"
+  (:nicknames "UFFI")
+  (:documentation "
 This package implements over clisp native FFI the UFFI API as defined in
 'UFFI Reference Guide' by Kevin M. Rosenberg, Heart Hospital of New Mexico.
 
@@ -84,9 +80,9 @@ LEGAL:  Copyright Pascal J. Bourguignon 2003 - 2004
         Free Software Foundation, Inc., 59 Temple Place, Suite 330,
         Boston, MA 02111-1307 USA
 ")
-  (:USE "COMMON-LISP") ;; actually: FROM COMMON-LISP IMPORT ALL;
+  (:use "COMMON-LISP") ;; actually: FROM COMMON-LISP IMPORT ALL;
   ;; really: USE FFI,CUSTOM,EXT;
-  (:EXPORT
+  (:export
 
    ;; immediate types
    "DEF-TYPE"
@@ -143,7 +139,7 @@ LEGAL:  Copyright Pascal J. Bourguignon 2003 - 2004
    ;; not a UFFI.
 
    )) ;;COM.INFORMATIMAGO.CLISP.UFFI
-(IN-PACKAGE "COM.INFORMATIMAGO.CLISP.UFFI")
+(in-package "COM.INFORMATIMAGO.CLISP.UFFI")
 
 (provide :uffi) ;; Some client code use REQUIRE! Can you imagine that?
 
@@ -306,23 +302,23 @@ LEGAL:  Copyright Pascal J. Bourguignon 2003 - 2004
   uffi-type ffi-type cl-type)
 
 
-(DEFCONSTANT +TYPE-CONVERSION-LIST+
+(defconstant +type-conversion-list+
   '( ;; :UFFI                :FFI                    :CL
-    (:CHAR                  FFI:CHARACTER           CHARACTER)
-    (:UNSIGNED-CHAR         FFI:CHARACTER           CHARACTER)
-    (:BYTE                  FFI:SINT8               (SIGNED-BYTE    8))
-    (:UNSIGNED-BYTE         FFI:UINT8               (UNSIGNED-BYTE  9))
-    (:SHORT                 FFI:SINT16              (SIGNED-BYTE   16))
-    (:UNSIGNED-SHORT        FFI:UINT16              (UNSIGNED-BYTE 16))
-    (:INT                   FFI:SINT32              (SIGNED-BYTE   32))
-    (:UNSIGNED-INT          FFI:UINT32              (UNSIGNED-BYTE 32))
-    (:LONG                  FFI:SINT32              (SIGNED-BYTE   32))
-    (:UNSIGNED-LONG         FFI:UINT32              (UNSIGNED-BYTE 32))
-    (:FLOAT                 SINGLE-FLOAT            SINGLE-FLOAT)
-    (:DOUBLE                DOUBLE-FLOAT            DOUBLE-FLOAT)
-    (:CSTRING               FFI:C-POINTER           STRING)
-    (:POINTER-VOID          FFI:C-POINTER           T)
-    (:VOID                  NIL                     NIL)
+    (:char                  ffi:character           character)
+    (:unsigned-char         ffi:character           character)
+    (:byte                  ffi:sint8               (signed-byte    8))
+    (:unsigned-byte         ffi:uint8               (unsigned-byte  9))
+    (:short                 ffi:sint16              (signed-byte   16))
+    (:unsigned-short        ffi:uint16              (unsigned-byte 16))
+    (:int                   ffi:sint32              (signed-byte   32))
+    (:unsigned-int          ffi:uint32              (unsigned-byte 32))
+    (:long                  ffi:sint32              (signed-byte   32))
+    (:unsigned-long         ffi:uint32              (unsigned-byte 32))
+    (:float                 single-float            single-float)
+    (:double                double-float            double-float)
+    (:cstring               ffi:c-pointer           string)
+    (:pointer-void          ffi:c-pointer           t)
+    (:void                  nil                     nil)
 ;;;
 ;;; (:ENUM                  FFI:INT                 INTEGER)
 ;;; ((:STRUCT name)         FFI:C-STRUCT            STRUCTURE)
@@ -337,32 +333,32 @@ LEGAL:  Copyright Pascal J. Bourguignon 2003 - 2004
   ) ;;+TYPE-CONVERSION-LIST+
 
 
-(defvar +TYPE-CONVERSION-HASH+ 
-  (let ((table (MAKE-HASH-TABLE :SIZE 23)))
-    (DOLIST (RECORD +TYPE-CONVERSION-LIST+)
-      (SETF (GETHASH (UFFI-TYPE RECORD) table) RECORD))
+(defvar +type-conversion-hash+ 
+  (let ((table (make-hash-table :size 23)))
+    (dolist (record +type-conversion-list+)
+      (setf (gethash (uffi-type record) table) record))
     table)
   "A hash uffi-type --> (uffi-type  ffi-type  cl-type)."
   ) ;;+TYPE-CONVERSION-HASH+
 
 
-(PROCLAIM '(INLINE GET-TYPE-CONVERSION-RECORD))
-(DEFUN GET-TYPE-CONVERSION-RECORD (UFFI-TYPE)
+(proclaim '(inline get-type-conversion-record))
+(defun get-type-conversion-record (uffi-type)
   "
 PRIVATE
 RETURN:             THE RECORD FROM +TYPE-CONVERSION-HASH+ CORRESPONDING
                     TO UFFI-TYPE, OR NIL IF NONE EXISTS.
 "
-  (GETHASH UFFI-TYPE +TYPE-CONVERSION-HASH+)
+  (gethash uffi-type +type-conversion-hash+)
   ) ;;GET-TYPE-CONVERSION-RECORD
 
 
-(DEFVAR *FOREIGN-TYPES-HASH* (MAKE-HASH-TABLE :SIZE 23)
+(defvar *foreign-types-hash* (make-hash-table :size 23)
   "A HASH TABLE OF THE NAMED FOREIGN TYPES: NAME --> UFFI-TYPE."
   ) ;;*FOREIGN-TYPES-HASH*
 
 
-(DEFVAR *FOREIGN-STRUCTS-HASH* (MAKE-HASH-TABLE :SIZE 23)
+(defvar *foreign-structs-hash* (make-hash-table :size 23)
   "A HASH TABLE OF THE NAMED FOREIGN STRUCTS: NAME --> UFFI-STRUCT-TYPE."
   ) ;;*FOREIGN-STRUCTS-HASH*
 
@@ -380,7 +376,7 @@ RETURN:             THE RECORD FROM +TYPE-CONVERSION-HASH+ CORRESPONDING
 ;;; (:ARRAY     TYPE SIZE)
 
 
-(DEFUN CLEAN-UFFI-TYPE (UFFI-TYPE &OPTIONAL CURRENT-STRUCT)
+(defun clean-uffi-type (uffi-type &optional current-struct)
   "
 PRIVATE
 DO:                 REPLACE :POINTER-SELF BY (* (:STRUCT CURRENT-STRUCT),)
@@ -392,76 +388,76 @@ DO:                 REPLACE :POINTER-SELF BY (* (:STRUCT CURRENT-STRUCT),)
 RETURN:             A CLEANED UFFI-TYPE.
 TODO:               CHECK OF (STRUCT X (FIELD (STRUCT X))).
 "
-  (IF (ATOM UFFI-TYPE)
-      (IF (EQ UFFI-TYPE :POINTER-SELF)
-          (IF CURRENT-STRUCT
-              `(* (:STRUCT ,CURRENT-STRUCT))
-              (ERROR "FOUND :POINTER-SELF OUT OF A STRUCTURE."))
-          UFFI-TYPE)
-      (CASE (FIRST UFFI-TYPE)
-        (:STRUCT-POINTER
-         (UNLESS (= 2 (LENGTH UFFI-TYPE))
-           (ERROR "INVALID UFFI TYPE: ~S." UFFI-TYPE))
-         `(* ,(CLEAN-UFFI-TYPE (SECOND UFFI-TYPE))))
-        (:STRUCT
-            (COND
-              ((= 2 (LENGTH UFFI-TYPE))
-               (UNLESS (GETHASH (SECOND UFFI-TYPE) *FOREIGN-STRUCTS-HASH*)
-                 (ERROR "UNKNOWN STRUCT TYPE: ~S." UFFI-TYPE))
-               UFFI-TYPE)
-              ((< 2 (LENGTH UFFI-TYPE))
-               (LET ((STRUCT-NAME (SECOND UFFI-TYPE)))
-                 (UNLESS (SYMBOLP STRUCT-NAME)
-                   (ERROR "EXPECTED A SYMBOL AS STRUCT NAME INSTEAD OF ~S."
-                          STRUCT-NAME))
-                 `(:STRUCT ,STRUCT-NAME
-                    ,@(MAPCAR (LAMBDA (FIELD)
-                                (LET ((NAME (FIRST FIELD))
-                                      (TYPE (SECOND FIELD)))
-                                  (UNLESS (= 2 (LENGTH FIELD))
-                                    (ERROR "INVALID STRUCT FIELD ~S." FIELD))
-                                  (LIST NAME (CLEAN-UFFI-TYPE TYPE STRUCT-NAME))))
-                              (CDDR UFFI-TYPE)))))
-              (T
-               (ERROR "INVALID STRUCT TYPE: ~S." UFFI-TYPE))))
-        (COMMON-LISP:QUOTE
-         (CLEAN-UFFI-TYPE (SECOND UFFI-TYPE) CURRENT-STRUCT))
-        (:UNION
-         (UNLESS (< 2 (LENGTH UFFI-TYPE))
-           (ERROR "MISSING FIELDS IN UNION TYPE ~S." UFFI-TYPE))
-         `(:UNION ,(SECOND UFFI-TYPE)
-                  ,@(MAPCAR (LAMBDA (FIELD)
-                              (LET ((NAME (FIRST FIELD))
-                                    (TYPE (SECOND FIELD)))
-                                (UNLESS (= 2 (LENGTH FIELD))
-                                  (ERROR "INVALID UNION FIELD ~S." FIELD))
-                                (LIST NAME
-                                      (CLEAN-UFFI-TYPE TYPE CURRENT-STRUCT))))
-                            (CDDR UFFI-TYPE))))
-        (:ARRAY-PTR
-         (UNLESS (= 2 (LENGTH UFFI-TYPE))
-           (ERROR "INVALID ARRAY-PTR TYPE: ~S." UFFI-TYPE))
-         `(:ARRAY-PTR ,(CLEAN-UFFI-TYPE (SECOND UFFI-TYPE) CURRENT-STRUCT)))
-        (:ARRAY
-         (UNLESS (= 3 (LENGTH UFFI-TYPE))
-           (ERROR "INVALID ARRAY TYPE: ~S." UFFI-TYPE))
-         (LET ((SIZE (THIRD UFFI-TYPE)))
-           (UNLESS (AND (INTEGERP SIZE) (< 0 SIZE))
-             (ERROR "INVALID ARRAY SIZE: ~S." SIZE))
-           `(:ARRAY ,(CLEAN-UFFI-TYPE (SECOND UFFI-TYPE) CURRENT-STRUCT)
-                    ,SIZE)))
+  (if (atom uffi-type)
+      (if (eq uffi-type :pointer-self)
+          (if current-struct
+              `(* (:struct ,current-struct))
+              (error "FOUND :POINTER-SELF OUT OF A STRUCTURE."))
+          uffi-type)
+      (case (first uffi-type)
+        (:struct-pointer
+         (unless (= 2 (length uffi-type))
+           (error "INVALID UFFI TYPE: ~S." uffi-type))
+         `(* ,(clean-uffi-type (second uffi-type))))
+        (:struct
+            (cond
+              ((= 2 (length uffi-type))
+               (unless (gethash (second uffi-type) *foreign-structs-hash*)
+                 (error "UNKNOWN STRUCT TYPE: ~S." uffi-type))
+               uffi-type)
+              ((< 2 (length uffi-type))
+               (let ((struct-name (second uffi-type)))
+                 (unless (symbolp struct-name)
+                   (error "EXPECTED A SYMBOL AS STRUCT NAME INSTEAD OF ~S."
+                          struct-name))
+                 `(:struct ,struct-name
+                    ,@(mapcar (lambda (field)
+                                (let ((name (first field))
+                                      (type (second field)))
+                                  (unless (= 2 (length field))
+                                    (error "INVALID STRUCT FIELD ~S." field))
+                                  (list name (clean-uffi-type type struct-name))))
+                              (cddr uffi-type)))))
+              (t
+               (error "INVALID STRUCT TYPE: ~S." uffi-type))))
+        (common-lisp:quote
+         (clean-uffi-type (second uffi-type) current-struct))
+        (:union
+         (unless (< 2 (length uffi-type))
+           (error "MISSING FIELDS IN UNION TYPE ~S." uffi-type))
+         `(:union ,(second uffi-type)
+                  ,@(mapcar (lambda (field)
+                              (let ((name (first field))
+                                    (type (second field)))
+                                (unless (= 2 (length field))
+                                  (error "INVALID UNION FIELD ~S." field))
+                                (list name
+                                      (clean-uffi-type type current-struct))))
+                            (cddr uffi-type))))
+        (:array-ptr
+         (unless (= 2 (length uffi-type))
+           (error "INVALID ARRAY-PTR TYPE: ~S." uffi-type))
+         `(:array-ptr ,(clean-uffi-type (second uffi-type) current-struct)))
+        (:array
+         (unless (= 3 (length uffi-type))
+           (error "INVALID ARRAY TYPE: ~S." uffi-type))
+         (let ((size (third uffi-type)))
+           (unless (and (integerp size) (< 0 size))
+             (error "INVALID ARRAY SIZE: ~S." size))
+           `(:array ,(clean-uffi-type (second uffi-type) current-struct)
+                    ,size)))
         (*
          (unless (= 2 (length uffi-type))
            (error "INVALID POINTER TYPE: ~S." uffi-type))
-         `(* ,(CLEAN-UFFI-TYPE (SECOND UFFI-TYPE))))
+         `(* ,(clean-uffi-type (second uffi-type))))
         ;;(if (member (second uffi-type) '(:unsigned-char :char))
         ;;'FFI:C-POINTER
-        (OTHERWISE
-         (ERROR "INVALID TYPE: ~S." UFFI-TYPE))))
+        (otherwise
+         (error "INVALID TYPE: ~S." uffi-type))))
   ) ;;CLEAN-UFFI-TYPE
 
       
-(DEFUN CONVERT-FROM-UFFI-TYPE (UFFI-TYPE CONTEXT)
+(defun convert-from-uffi-type (uffi-type context)
   "
 PRIVATE
 DO:                 Converts from a uffi type to an implementation
@@ -471,73 +467,73 @@ CONTEXT:            :FFI OR :CL
 RETURN:             A FFI TYPE (C-TYPE), OR A COMMON-LISP TYPE,
                     DEPENDING ON THE CONTEXT.
 "
-  (UNLESS (OR (EQ CONTEXT :FFI) (EQ CONTEXT :CL))
-    (ERROR "UNEXPECTED CONTEXT ~S, SHOULD BE EITHER :FFI OR :CL." CONTEXT))
-  (IF (ATOM UFFI-TYPE)
-      (LET ((RECORD (GET-TYPE-CONVERSION-RECORD UFFI-TYPE)))
-        (IF RECORD
+  (unless (or (eq context :ffi) (eq context :cl))
+    (error "UNEXPECTED CONTEXT ~S, SHOULD BE EITHER :FFI OR :CL." context))
+  (if (atom uffi-type)
+      (let ((record (get-type-conversion-record uffi-type)))
+        (if record
             ;; primitive types
-            (IF (EQ CONTEXT :FFI)
-                (FFI-TYPE RECORD)
-                (CL-TYPE  RECORD))
+            (if (eq context :ffi)
+                (ffi-type record)
+                (cl-type  record))
             ;; named types
-            (LET ((TYPE (GETHASH UFFI-TYPE *FOREIGN-TYPES-HASH*)))
-              (IF TYPE
-                  (CONVERT-FROM-UFFI-TYPE TYPE CONTEXT)
-                  (ERROR "UNKNOWN UFFI TYPE ~S." UFFI-TYPE)))))
-      (LET ((SUB-TYPE (FIRST UFFI-TYPE)))
-        (CASE SUB-TYPE
-          (:STRUCT
-              (LET ((NAME (SECOND UFFI-TYPE))
-                    (FIELDS
-                     (MAPCAR
-                      (LAMBDA (FIELD)
-                        (LET ((NAME (FIRST FIELD))
-                              (TYPE (SECOND FIELD)))
-                          (LIST NAME (CONVERT-FROM-UFFI-TYPE TYPE CONTEXT))))
-                      (CDDR UFFI-TYPE))))
+            (let ((type (gethash uffi-type *foreign-types-hash*)))
+              (if type
+                  (convert-from-uffi-type type context)
+                  (error "UNKNOWN UFFI TYPE ~S." uffi-type)))))
+      (let ((sub-type (first uffi-type)))
+        (case sub-type
+          (:struct
+              (let ((name (second uffi-type))
+                    (fields
+                     (mapcar
+                      (lambda (field)
+                        (let ((name (first field))
+                              (type (second field)))
+                          (list name (convert-from-uffi-type type context))))
+                      (cddr uffi-type))))
                 ;; TODO: SEE GENERATION OF  (:STRUCT NAME)
                 ;;       VS. GENERATION OF: (:STRUCT NAME (FIELD TYPE)...)
-                (IF (NULL FIELDS)
-                    (LET ((TYPE (GETHASH NAME *FOREIGN-STRUCTS-HASH*)))
-                      (IF TYPE
-                          (IF (EQ CONTEXT :FFI)
-                              `(FFI:C-STRUCT ,NAME)
-                              NAME) ;; (CONVERT-FROM-UFFI-TYPE TYPE CONTEXT)
-                          (ERROR "UNKNOWN UFFI STRUCTURE ~S." NAME)))
-                    (IF (EQ CONTEXT :FFI)
-                        `(FFI:C-STRUCT ,NAME ,@FIELDS)
-                        `(DEFSTRUCT ,NAME ,@FIELDS)))))
-          (:UNION
-           (IF (EQ CONTEXT :FFI)
-               `(:C-UNION ,@(MAPCAR
-                             (LAMBDA (FIELD)
-                               (LET ((NAME (FIRST FIELD))
-                                     (TYPE (SECOND FIELD)))
-                                 (LIST NAME
-                                       (CONVERT-FROM-UFFI-TYPE TYPE CONTEXT))))
-                             (CDDR UFFI-TYPE)))
-               `(CONVERT-FROM-UFFI-TYPE (SECOND (SECOND UFFI-TYPE)) CONTEXT)))
-          (:ARRAY-PTR
-           (LET ((ELEMENT-TYPE
-                  (CONVERT-FROM-UFFI-TYPE  (SECOND UFFI-TYPE) CONTEXT)))
-             (IF (EQ CONTEXT :FFI)
-                 `(FFI:C-ARRAY-PTR ,ELEMENT-TYPE)
-                 `(ARRAY ,ELEMENT-TYPE *))))
-          (:ARRAY
-           (LET ((ELEMENT-TYPE
-                  (CONVERT-FROM-UFFI-TYPE (SECOND UFFI-TYPE) CONTEXT))
-                 (ARRAY-SIZE   (CDDR  UFFI-TYPE)))
-             (IF (EQ CONTEXT :FFI)
-                 `(FFI:C-ARRAY ,ELEMENT-TYPE ,ARRAY-SIZE)
-                 `(ARRAY ,ELEMENT-TYPE (,ARRAY-SIZE)))))
+                (if (null fields)
+                    (let ((type (gethash name *foreign-structs-hash*)))
+                      (if type
+                          (if (eq context :ffi)
+                              `(ffi:c-struct ,name)
+                              name) ;; (CONVERT-FROM-UFFI-TYPE TYPE CONTEXT)
+                          (error "UNKNOWN UFFI STRUCTURE ~S." name)))
+                    (if (eq context :ffi)
+                        `(ffi:c-struct ,name ,@fields)
+                        `(defstruct ,name ,@fields)))))
+          (:union
+           (if (eq context :ffi)
+               `(:c-union ,@(mapcar
+                             (lambda (field)
+                               (let ((name (first field))
+                                     (type (second field)))
+                                 (list name
+                                       (convert-from-uffi-type type context))))
+                             (cddr uffi-type)))
+               `(convert-from-uffi-type (second (second uffi-type)) context)))
+          (:array-ptr
+           (let ((element-type
+                  (convert-from-uffi-type  (second uffi-type) context)))
+             (if (eq context :ffi)
+                 `(ffi:c-array-ptr ,element-type)
+                 `(array ,element-type *))))
+          (:array
+           (let ((element-type
+                  (convert-from-uffi-type (second uffi-type) context))
+                 (array-size   (cddr  uffi-type)))
+             (if (eq context :ffi)
+                 `(ffi:c-array ,element-type ,array-size)
+                 `(array ,element-type (,array-size)))))
           (*
            (if (eq context :ffi)
                `(ffi:c-ptr ,(convert-from-uffi-type (second uffi-type) :ffi))
                ;;'FFI:C-POINTER
                (error "I don't know what a ~S is in Lisp.")))
-          (OTHERWISE
-           (ERROR "INVALID TYPE ~S." UFFI-TYPE)))))
+          (otherwise
+           (error "INVALID TYPE ~S." uffi-type)))))
   ) ;;CONVERT-FROM-UFFI-TYPE
 
 
@@ -547,7 +543,7 @@ RETURN:             A FFI TYPE (C-TYPE), OR A COMMON-LISP TYPE,
 ;;;;;;;;;;;;;;;;;;;;;
 
 
-(DEFMACRO DEF-TYPE (NAME TYPE)
+(defmacro def-type (name type)
   "
 DO:                 Defines a Common Lisp type based on a UFFI type.
 NAME:               A symbol naming the type
@@ -557,7 +553,7 @@ URL:                http://uffi.b9.com/manual/def-type.html
 URL:                http://www.lisp.org/HyperSpec/Body/mac_deftype.html
 "
   (setf type (clean-uffi-type type))
-  `(DEFTYPE ,NAME T ,(CONVERT-FROM-UFFI-TYPE TYPE :CL))) ;;DEF-TYPE
+  `(deftype ,name t ,(convert-from-uffi-type type :cl))) ;;DEF-TYPE
 
 
 
@@ -566,7 +562,7 @@ URL:                http://www.lisp.org/HyperSpec/Body/mac_deftype.html
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(DEFMACRO DEF-CONSTANT (NAME VALUE &KEY (EXPORT NIL))
+(defmacro def-constant (name value &key (export nil))
   "
 DO:                 This is a thin wrapper around defconstant.
                     It evaluates at compile-time and optionally
@@ -581,15 +577,15 @@ URL:                http://uffi.b9.com/manual/def-constant.html
 URL:                http://www.lisp.org/HyperSpec/Body/mac_defconstant.html
 URL:                http://www.lisp.org/HyperSpec/Body/fun_export.html
 "
-  `(EVAL-WHEN (:COMPILE-TOPLEVEL :LOAD-TOPLEVEL :EXECUTE)
-     (DEFCONSTANT ,NAME ,VALUE)
-     ,(WHEN EXPORT (LIST 'EXPORT `(QUOTE ,NAME)))
-     ',NAME)
+  `(eval-when (:compile-toplevel :load-toplevel :execute)
+     (defconstant ,name ,value)
+     ,(when export (list 'export `(quote ,name)))
+     ',name)
   ) ;;DEF-CONSTANT
 
 
 
-(DEFMACRO DEF-FOREIGN-TYPE (NAME TYPE)
+(defmacro def-foreign-type (name type)
   "
 DO:                 Defines a new foreign type.
 NAME:               A symbol naming the new foreign type.
@@ -598,16 +594,16 @@ VALUE:              A form that is not evaluated that defines
 URL:                http://uffi.b9.com/manual/def-foreign-type.html
 URL:                http://clisp.sourceforge.net/impnotes.html#def-c-type
 "
-  (LET* ((NAME NAME)
-         (UFFI-TYPE (CLEAN-UFFI-TYPE type NAME))
-         (FFI-TYPE  (CONVERT-FROM-UFFI-TYPE UFFI-TYPE :FFI)) )
-    `(EVAL-WHEN (:COMPILE-TOPLEVEL :LOAD-TOPLEVEL :EXECUTE)
-       (SETF (GETHASH ',NAME *FOREIGN-TYPES-HASH*) ',UFFI-TYPE)
-       (FFI:DEF-C-TYPE ,NAME ,FFI-TYPE)))) ;;DEF-FOREIGN-TYPE
+  (let* ((name name)
+         (uffi-type (clean-uffi-type type name))
+         (ffi-type  (convert-from-uffi-type uffi-type :ffi)) )
+    `(eval-when (:compile-toplevel :load-toplevel :execute)
+       (setf (gethash ',name *foreign-types-hash*) ',uffi-type)
+       (ffi:def-c-type ,name ,ffi-type)))) ;;DEF-FOREIGN-TYPE
 
 
 
-(DEFMACRO NULL-CHAR-P (VAL)
+(defmacro null-char-p (val)
   "
 DO:                 Tests if a character or integer is NULL.
                     This abstracts the difference in implementations where
@@ -617,18 +613,18 @@ CHAR:               A character or integer.
 RETURN:             A boolean flag indicating if char is a NULL value.
 URL:                http://uffi.b9.com/manual/null-char-p.html
 "
-  `(LET ((VAL ,VAL)) (IF (CHARACTERP VAL) (ZEROP (CHAR-CODE VAL)) (ZEROP VAL)))
+  `(let ((val ,val)) (if (characterp val) (zerop (char-code val)) (zerop val)))
   ) ;;NULL-CHAR-P
 
 
 
-(DEFUN MAKE-CONSTANT-NAME (ENUM-NAME SEPARATOR-STRING CONSTANT-ID)
+(defun make-constant-name (enum-name separator-string constant-id)
   "
 PRIVATE
 DO:                 Builds an enum constant name.
 "
-  (INTERN (with-standard-io-syntax
-            (FORMAT NIL "~A~A~A" ENUM-NAME SEPARATOR-STRING CONSTANT-ID))))
+  (intern (with-standard-io-syntax
+            (format nil "~A~A~A" enum-name separator-string constant-id))))
 
 
 
@@ -637,7 +633,7 @@ DO:                 Builds an enum constant name.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(DEFMACRO DEF-ENUM (NAME CONSTANTS &KEY (SEPARATOR-STRING "#"))
+(defmacro def-enum (name constants &key (separator-string "#"))
   "
 DO:                 Declares a C enumeration.
                     It generates constants with integer values for the
@@ -663,27 +659,27 @@ URL:                http://uffi.b9.com/manual/def-enum.html
 URL:                http://clisp.sourceforge.net/impnotes.html#def-c-enum
 URL:                http://clisp.sourceforge.net/impnotes.html#def-c-type
 "
-  (LET ((C-CONSTANTS
-         (MAPCAR
-          (LAMBDA (CONSTANT)
-            (COND
-              ((SYMBOLP CONSTANT)
-               (LIST (MAKE-CONSTANT-NAME NAME SEPARATOR-STRING CONSTANT))  )
-              ((AND (CONSP CONSTANT)
-                    (= 2 (LENGTH CONSTANT)) (INTEGERP (CADR CONSTANT)))
-               (LIST (MAKE-CONSTANT-NAME NAME SEPARATOR-STRING (CAR CONSTANT))
-                     (CADR CONSTANT)))
-              (T
-               (ERROR "INVALID ENUM CONSTANT SYNTAX: ~S." CONSTANT))))
-          CONSTANTS)))
-    `(EVAL-WHEN (:COMPILE-TOPLEVEL :LOAD-TOPLEVEL :EXECUTE)
-       (SETF (GETHASH ,NAME *FOREIGN-TYPES-HASH*) :INT)
-       (FFI:DEF-C-TYPE  ,NAME  ,(CONVERT-FROM-UFFI-TYPE :INT :FFI))
-       (FFI:DEF-C-ENUM  ,NAME  ,@C-CONSTANTS)))
+  (let ((c-constants
+         (mapcar
+          (lambda (constant)
+            (cond
+              ((symbolp constant)
+               (list (make-constant-name name separator-string constant))  )
+              ((and (consp constant)
+                    (= 2 (length constant)) (integerp (cadr constant)))
+               (list (make-constant-name name separator-string (car constant))
+                     (cadr constant)))
+              (t
+               (error "INVALID ENUM CONSTANT SYNTAX: ~S." constant))))
+          constants)))
+    `(eval-when (:compile-toplevel :load-toplevel :execute)
+       (setf (gethash ,name *foreign-types-hash*) :int)
+       (ffi:def-c-type  ,name  ,(convert-from-uffi-type :int :ffi))
+       (ffi:def-c-enum  ,name  ,@c-constants)))
   ) ;;DEF-ENUM
 
 
-(DEFMACRO DEF-STRUCT (NAME &REST FIELDS)
+(defmacro def-struct (name &rest fields)
   "
 DO:                 Declares a structure.
                     A special type is available as a slot in the field. It is
@@ -698,13 +694,13 @@ IMPLEMENTATION:     Generates a DEF-C-STRUCT which defines both a foreign
 URL:                http://uffi.b9.com/manual/def-struct.html
 URL:                http://clisp.sourceforge.net/impnotes.html#def-c-struct
 "
-  (LET* ((NAME NAME)
-         (UFFI-TYPE (CLEAN-UFFI-TYPE `(:STRUCT ,NAME ,@FIELDS) NAME))
-         (FFI-TYPE  (CONVERT-FROM-UFFI-TYPE UFFI-TYPE :FFI)) )
-    `(EVAL-WHEN (:COMPILE-TOPLEVEL :LOAD-TOPLEVEL :EXECUTE)
-       (SETF (GETHASH ',NAME *FOREIGN-TYPES-HASH*)
-             (SETF (GETHASH ',NAME *FOREIGN-STRUCTS-HASH*) ',UFFI-TYPE))
-       (FFI:DEF-C-STRUCT ,@(CDR FFI-TYPE))))
+  (let* ((name name)
+         (uffi-type (clean-uffi-type `(:struct ,name ,@fields) name))
+         (ffi-type  (convert-from-uffi-type uffi-type :ffi)) )
+    `(eval-when (:compile-toplevel :load-toplevel :execute)
+       (setf (gethash ',name *foreign-types-hash*)
+             (setf (gethash ',name *foreign-structs-hash*) ',uffi-type))
+       (ffi:def-c-struct ,@(cdr ffi-type))))
   ) ;;DEF-STRUCT
 
 ;; ,(CONVERT-FROM-UFFI-TYPE TYPE :CL)
@@ -712,7 +708,7 @@ URL:                http://clisp.sourceforge.net/impnotes.html#def-c-struct
 ;; (setf name 'ldap-error fields '((e_code :int) (e_reason (* :unsigned-char))))
 
 
-(DEFMACRO GET-SLOT-VALUE (OBJ TYPE FIELD)
+(defmacro get-slot-value (obj type field)
   "
 DO:                 Accesses a slot value from a structure.
 OBJ:                A pointer to foreign structure.
@@ -726,12 +722,12 @@ URL:                http://clisp.sourceforge.net/impnotes.html#slot
   (when (and (listp type) (eq 'quote (car type)))
     (setf type (second type)))
   ;; TODO: CHECK CONVERT TYPE.
-  `(FFI:SLOT (FFI:DEREF (FFI:CAST (ffi:foreign-value ,OBJ) (* ,TYPE)))
-             ,FIELD)) ;;GET-SLOT-VALUE
+  `(ffi:slot (ffi:deref (ffi:cast (ffi:foreign-value ,obj) (* ,type)))
+             ,field)) ;;GET-SLOT-VALUE
 
 
 
-(DEFMACRO GET-SLOT-POINTER (OBJ TYPE FIELD)
+(defmacro get-slot-pointer (obj type field)
   "
 DO:                 Accesses a slot value from a structure.
 OBJ:                A pointer to foreign structure.
@@ -745,12 +741,12 @@ URL:                http://uffi.b9.com/manual/get-slot-pointer.html
 URL:                http://clisp.sourceforge.net/impnotes.html#slot
 "
   ;; NO DIFFERENCE TO ACCESS POINTER FIELD THAN TO ACCESS VALUE FIELDS.
-  `(GET-SLOT-VALUE ,OBJ ,TYPE ,FIELD)
+  `(get-slot-value ,obj ,type ,field)
   ) ;;GET-SLOT-POINTER
 
 
 
-(DEFMACRO DEF-ARRAY-POINTER (NAME TYPE)
+(defmacro def-array-pointer (name type)
   "
 DO:                 Defines a type that is a pointer to an array of type.
 NAME:               A name of the new foreign type.
@@ -759,17 +755,17 @@ URL:                http://uffi.b9.com/manual/def-array-pointer.html
 URL:                http://clisp.sourceforge.net/impnotes.html#c-array-ptr
 URL:                http://clisp.sourceforge.net/impnotes.html#def-c-type
 "
-  (LET* ((NAME NAME)
-         (UFFI-TYPE (CLEAN-UFFI-TYPE `(:ARRAY-PTR ,TYPE)))
-         (FFI-TYPE  (CONVERT-FROM-UFFI-TYPE UFFI-TYPE :FFI)) )
-    `(EVAL-WHEN (:COMPILE-TOPLEVEL :LOAD-TOPLEVEL :EXECUTE)
-       (SETF (GETHASH ,NAME *FOREIGN-TYPES-HASH*) ,UFFI-TYPE)
-       (FFI:DEF-C-TYPE ,NAME ,FFI-TYPE)))
+  (let* ((name name)
+         (uffi-type (clean-uffi-type `(:array-ptr ,type)))
+         (ffi-type  (convert-from-uffi-type uffi-type :ffi)) )
+    `(eval-when (:compile-toplevel :load-toplevel :execute)
+       (setf (gethash ,name *foreign-types-hash*) ,uffi-type)
+       (ffi:def-c-type ,name ,ffi-type)))
   ) ;;DEF-ARRAY-POINTER
 
 
 
-(DEFMACRO DEF-UNION (NAME &REST FIELDS)
+(defmacro def-union (name &rest fields)
   "
 NAME:               A name of the new union type.
 FIELDS:             A list of fields of the union.
@@ -778,12 +774,12 @@ URL:                http://uffi.b9.com/manual/def-union.html
 URL:                http://clisp.sourceforge.net/impnotes.html#c-union
 URL:                http://clisp.sourceforge.net/impnotes.html#def-c-type
 "
-  (LET* ((NAME NAME)
-         (UFFI-TYPE (CLEAN-UFFI-TYPE `(:UNION ,NAME ,@FIELDS)))
-         (FFI-TYPE  (CONVERT-FROM-UFFI-TYPE UFFI-TYPE :FFI)) )
-    `(EVAL-WHEN (:COMPILE-TOPLEVEL :LOAD-TOPLEVEL :EXECUTE)
-       (SETF (GETHASH ,NAME *FOREIGN-TYPES-HASH*) ,UFFI-TYPE)
-       (FFI:DEF-C-TYPE ,NAME ,FFI-TYPE)))
+  (let* ((name name)
+         (uffi-type (clean-uffi-type `(:union ,name ,@fields)))
+         (ffi-type  (convert-from-uffi-type uffi-type :ffi)) )
+    `(eval-when (:compile-toplevel :load-toplevel :execute)
+       (setf (gethash ,name *foreign-types-hash*) ,uffi-type)
+       (ffi:def-c-type ,name ,ffi-type)))
   ) ;;DEF-UNION
 
 
@@ -793,23 +789,23 @@ URL:                http://clisp.sourceforge.net/impnotes.html#def-c-type
 ;;;;;;;;;;;;;;;;;
 
 
-(FFI:DEF-CALL-OUT MALLOC
-    (:NAME "malloc")
-  (:ARGUMENTS (SIZE FFI:UINT32 :IN))
-  (:RETURN-TYPE FFI:C-POINTER)
-  (:LANGUAGE :STDC)
+(ffi:def-call-out malloc
+    (:name "malloc")
+  (:arguments (size ffi:uint32 :in))
+  (:return-type ffi:c-pointer)
+  (:language :stdc)
   (:library "/lib/libc.so.6"))
 
 
-(FFI:DEF-CALL-OUT FREE
-    (:NAME "free")
-  (:ARGUMENTS (PTR FFI:C-POINTER :IN))
-  (:RETURN-TYPE NIL)
-  (:LANGUAGE :STDC)
+(ffi:def-call-out free
+    (:name "free")
+  (:arguments (ptr ffi:c-pointer :in))
+  (:return-type nil)
+  (:language :stdc)
   (:library "/lib/libc.so.6"))
 
 
-(DEFMACRO ALLOCATE-FOREIGN-OBJECT (TYPE &OPTIONAL (SIZE 1))
+(defmacro allocate-foreign-object (type &optional (size 1))
   "
 DO:                 Allocates an instance of a foreign object.
 TYPE:               The type of foreign object to allocate.
@@ -830,7 +826,7 @@ IMPLEMENTATION:
                          :count ,size)) ;;ALLOCATE-FOREIGN-OBJECT
 
 
-(DEFMACRO FREE-FOREIGN-OBJECT (PTR)
+(defmacro free-foreign-object (ptr)
   "
 DO:                 Frees the memory used by the allocation of a foreign
                     object.
@@ -843,7 +839,7 @@ IMPLEMENTATION:
   ) ;;FREE-FOREIGN-OBJECT
 
 
-(DEFMACRO WITH-FOREIGN-OBJECT ((VAR TYPE) &BODY BODY)
+(defmacro with-foreign-object ((var type) &body body)
   "
 DO:                 This function wraps the allocation, binding,
                     and destruction of a foreign object. On CMUCL and
@@ -857,14 +853,14 @@ RETURN:             The result of evaluating the body.
 URL:                http://uffi.b9.com/manual/with-foreign-object.html
 URL:
 "
-  `(LET ((,VAR (ALLOCATE-FOREIGN-OBJECT ,TYPE)))
-     (UNWIND-PROTECT
-          (PROGN ,@BODY)
-       (FREE-FOREIGN-OBJECT ,VAR)))
+  `(let ((,var (allocate-foreign-object ,type)))
+     (unwind-protect
+          (progn ,@body)
+       (free-foreign-object ,var)))
   ) ;;WITH-FOREIGN-OBJECT
 
 
-(DEFMACRO SIZE-OF-FOREIGN-TYPE (TYPE)
+(defmacro size-of-foreign-type (type)
   "
 FTYPE:              A foreign type specifier. This parameter is evaluated.
 RETURN:             The number of data bytes used by a foreign object type.
@@ -872,24 +868,24 @@ RETURN:             The number of data bytes used by a foreign object type.
 URL:                http://uffi.b9.com/manual/size-of-foreign-type.html
 URL:                http://clisp.sourceforge.net/impnotes.html#sizeof
 "
-  `(FFI:SIZEOF (CONVERT-FROM-UFFI-TYPE (CLEAN-UFFI-TYPE ,TYPE) :FFI))
+  `(ffi:sizeof (convert-from-uffi-type (clean-uffi-type ,type) :ffi))
   ) ;;SIZE-OF-FOREIGN-TYPE
 
 
-(DEFMACRO POINTER-ADDRESS (PTR)
+(defmacro pointer-address (ptr)
   "
 PTR:                A pointer to a foreign object.
 RETURN:             An integer representing the pointer's address.
 URL:                http://uffi.b9.com/manual/pointer-address.html
 URL:                http://clisp.sourceforge.net/impnotes.html#c-var-addr
 "
-  `(LET ((PTR ,PTR))
-     (DECLARE (TYPE 'FFI:FOREIGN-ADDRESS PTR))
-     (FFI::FOREIGN-ADDRESS-UNSIGNED PTR))
+  `(let ((ptr ,ptr))
+     (declare (type 'ffi:foreign-address ptr))
+     (ffi::foreign-address-unsigned ptr))
   ) ;;POINTER-ADDRESS
 
 
-(DEFMACRO DEREF-POINTER (PTR TYPE)
+(defmacro deref-pointer (ptr type)
   "
 PTR:                A pointer to a foreign object.
 TYPE:               A foreign type of the object being pointed to.
@@ -898,14 +894,14 @@ URL:                http://uffi.b9.com/manual/deref-pointer.html
 URL:                http://clisp.sourceforge.net/impnotes.html#deref
 NOTE:               This is an accessor and can be used with SETF .
 "
-  `(FFI:DEREF (FFI:CAST (ffi:foreign-value ,PTR)
-                        (CONVERT-FROM-UFFI-TYPE
-                         (CLEAN-UFFI-TYPE (LIST '* ,TYPE)) :FFI)
+  `(ffi:deref (ffi:cast (ffi:foreign-value ,ptr)
+                        (convert-from-uffi-type
+                         (clean-uffi-type (list '* ,type)) :ffi)
                         ))
   ) ;;DEREF-POINTER
 
 
-(DEFMACRO ENSURE-CHAR-CHARACTER (OBJECT)
+(defmacro ensure-char-character (object)
   "
 DO:                 Ensures that an object obtained by dereferencing
                     a :CHAR pointer is a character.
@@ -915,12 +911,12 @@ RETURN:             A character.
 URL:                http://uffi.b9.com/manual/ensure-char-character.html
 URL:
 "
-  `(LET ((OBJECT ,OBJECT))
-     (IF (CHARACTERP OBJECT) OBJECT (CODE-CHAR OBJECT)))
+  `(let ((object ,object))
+     (if (characterp object) object (code-char object)))
   ) ;;ENSURE-CHAR-CHARACTER
 
 
-(DEFMACRO ENSURE-CHAR-INTEGER (OBJECT)
+(defmacro ensure-char-integer (object)
   "
 DO:                 Ensures that an object obtained by dereferencing
                     a :CHAR pointer is an integer.
@@ -930,12 +926,12 @@ RETURN:             An integer.
 URL:                http://uffi.b9.com/manual/ensure-char-integer.html
 URL:
 "
-  `(LET ((OBJECT ,OBJECT))
-     (IF (CHARACTERP OBJECT) (CHAR-CODE OBJECT) OBJECT))
+  `(let ((object ,object))
+     (if (characterp object) (char-code object) object))
   ) ;;ENSURE-CHAR-INTEGER
 
 
-(DEFMACRO MAKE-NULL-POINTER (TYPE)
+(defmacro make-null-pointer (type)
   "
 DO:                 Creates a NULL pointer of a specified type.
 TYPE:               A type of object to which the pointer refers.
@@ -944,7 +940,7 @@ URL:                http://uffi.b9.com/manual/make-null-pointer.html
 URL:
 "
   (declare (ignore type))
-  (FFI::UNSIGNED-FOREIGN-ADDRESS 0)
+  (ffi::unsigned-foreign-address 0)
   ;;  `(FFI:CAST (ffi:foreign-value (FFI::UNSIGNED-FOREIGN-ADDRESS 0))
   ;;              (CONVERT-FROM-UFFI-TYPE
   ;;               (CLEAN-UFFI-TYPE (LIST '* ,TYPE)) :FFI))
@@ -952,7 +948,7 @@ URL:
 
 
 
-(DEFMACRO NULL-POINTER-P (PTR)
+(defmacro null-pointer-p (ptr)
   "
 DO:                 Tests if a pointer is has a NULL value.
 PTR:                A foreign object pointer.
@@ -960,12 +956,12 @@ RETURN:             Whether ptr is NULL.
 URL:                http://uffi.b9.com/manual/null-pointer-p.html
 URL:                http://clisp.sourceforge.net/impnotes.html#fa-null
 "
-  `(FFI:FOREIGN-ADDRESS-NULL ,PTR)
+  `(ffi:foreign-address-null ,ptr)
   ) ;;NULL-POINTER-P
 
 
-(DEFCONSTANT +NULL-CSTRING-POINTER+
-  (FFI::UNSIGNED-FOREIGN-ADDRESS 0)
+(defconstant +null-cstring-pointer+
+  (ffi::unsigned-foreign-address 0)
   ;;(FFI:CAST (ffi:foreign-value (FFI::UNSIGNED-FOREIGN-ADDRESS 0))
   ;;          (CONVERT-FROM-UFFI-TYPE (CLEAN-UFFI-TYPE :CSTRING) :FFI))
   "A NULL cstring pointer.
@@ -980,7 +976,7 @@ URL:                http://uffi.b9.com/manual/null-cstring-pointer.html
 ;;;;;;;;;;;;;;;;
 
 
-(DEFMACRO CONVERT-FROM-CSTRING (CSTRING)
+(defmacro convert-from-cstring (cstring)
   "
 CSTRING:            A cstring.
 RETURN:             A Lisp string.
@@ -990,12 +986,12 @@ DO:                 Converts a Lisp string to a cstring.
                     cstring.
 URL:                http://uffi.b9.com/manual/convert-from-cstring.html
 "
-  `,CSTRING
+  `,cstring
   ) ;;CONVERT-FROM-CSTRING
 
 
 
-(DEFMACRO CONVERT-TO-CSTRING (STRING)
+(defmacro convert-to-cstring (string)
   "
 STRING:             A Lisp string.
 RETURN:             A cstring.
@@ -1003,11 +999,11 @@ DO:                 Converts a Lisp string to a cstring.
                     The cstring should be freed with free-cstring.
 URL:                http://uffi.b9.com/manual/convert-to-cstring.html
 "
-  `,STRING
+  `,string
   ) ;;CONVERT-TO-CSTRING
 
 
-(DEFMACRO FREE-CSTRING (CSTRING)
+(defmacro free-cstring (cstring)
   "
 CSTRING:            A cstring.
 DO:                 Frees any memory possibly allocated by convert-to-cstring.
@@ -1019,7 +1015,7 @@ DO:                 Frees any memory possibly allocated by convert-to-cstring.
   ) ;;FREE-CSTRING
 
 
-(DEFMACRO WITH-CSTRING ((CSTRING STRING) &BODY BODY)
+(defmacro with-cstring ((cstring string) &body body)
   "
 CSTRING:            A symbol naming the cstring to be created.
 STRING:             A Lisp string that will be translated to a cstring.
@@ -1032,8 +1028,8 @@ URL:                http://uffi.b9.com/manual/with-cstring.html
   ;;    (unwind-protect
   ;;        (progn ,@body)
   ;;      (free-cstring ,cstring)))
-  `(LET ((,CSTRING ,STRING))
-     ,@BODY)
+  `(let ((,cstring ,string))
+     ,@body)
   ) ;;WITH-CSTRING
 
 
@@ -1043,8 +1039,8 @@ URL:                http://uffi.b9.com/manual/with-cstring.html
        len))) ;;foreign-string-length
 
 
-(DEFUN CONVERT-FROM-FOREIGN-STRING (FOREIGN-STRING
-                                    &KEY LENGTH (NULL-TERMINATED-P T))
+(defun convert-from-foreign-string (foreign-string
+                                    &key length (null-terminated-p t))
   "
 DO:                 Builds a Lisp string from a foreign string.
                     Can translate ASCII and binary strings.
@@ -1068,11 +1064,11 @@ URL:        http://clisp.sourceforge.net/impnotes.html#encoding
     (dotimes (i (length byte-vector))
       (setf (aref byte-vector i)
             (ffi:element (ffi:foreign-value foreign-string) i)))
-    (EXT:CONVERT-STRING-FROM-BYTES byte-vector CUSTOM:*FOREIGN-ENCODING*)  
+    (ext:convert-string-from-bytes byte-vector custom:*foreign-encoding*)  
     )) ;;CONVERT-FROM-FOREIGN-STRING
 
 
-(DEFUN CONVERT-TO-FOREIGN-STRING (STRING)
+(defun convert-to-foreign-string (string)
   "
 STRING:             A Lisp string.
 RETURN:             A foreign string.
@@ -1081,8 +1077,8 @@ DO:                 Converts a Lisp string to a foreign string.
 URL:        http://uffi.b9.com/manual/convert-to-foreign-string.html
 "
   (let* ((byte-vector
-          (EXT:CONVERT-STRING-TO-BYTES string CUSTOM:*FOREIGN-ENCODING*))
-         (result (ALLOCATE-FOREIGN-STRING (1+ (length byte-vector))))
+          (ext:convert-string-to-bytes string custom:*foreign-encoding*))
+         (result (allocate-foreign-string (1+ (length byte-vector))))
          (foreign-type `(ffi:c-array 
                          ffi:uchar ,(list (1+ (length byte-vector))))))
     (declare (ignore foreign-type))     ; TODO!
@@ -1093,7 +1089,7 @@ URL:        http://uffi.b9.com/manual/convert-to-foreign-string.html
     result)) ;;CONVERT-TO-FOREIGN-STRING
 
 
-(DEFUN ALLOCATE-FOREIGN-STRING (SIZE &KEY (UNSIGNED T))
+(defun allocate-foreign-string (size &key (unsigned t))
   "
 SIZE:               The size of the space to be allocated in bytes.
 UNSIGNED:           A boolean flag with a default value of T.
@@ -1103,7 +1099,7 @@ DO:                 Allocates space for a foreign string.
                     Memory should be freed with free-foreign-object.
 URL:            http://uffi.b9.com/manual/allocate-foreign-string.html
 "
-  (ALLOCATE-FOREIGN-OBJECT (if unsigned ':unsigned-char ':char) size)
+  (allocate-foreign-object (if unsigned ':unsigned-char ':char) size)
   ) ;;ALLOCATE-FOREIGN-STRING
 
 
@@ -1112,11 +1108,11 @@ URL:            http://uffi.b9.com/manual/allocate-foreign-string.html
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(DEFPARAMETER *MODULES-TO-LIBRARY-MAP* (MAKE-HASH-TABLE :TEST (FUNCTION EQUAL))
+(defparameter *modules-to-library-map* (make-hash-table :test (function equal))
   "Maps module names to library paths.")
 
 
-(DEFMACRO DEF-FUNCTION (NAME ARGS &KEY MODULE RETURNING)
+(defmacro def-function (name args &key module returning)
   "
 DO:                 Declares a foreign function.
 NAME:               A string or list specifying the function name.
@@ -1145,27 +1141,27 @@ NOTE:               All Common-Lisp implementations are 'case-insensitive'.
                               (substitute (character "-") (character "_") name))))
         (setq c-name (first name)
               l-name (second name)))
-    `(FFI:DEF-CALL-OUT
+    `(ffi:def-call-out
          ,l-name
          (:name ,c-name)
        ,@(when args
                `((:arguments
                   ,@(mapcar (lambda (arg)
                               `(,(first arg)
-                                 ,(CONVERT-FROM-UFFI-TYPE 
-                                   (clean-uffi-type (second arg)) :FFI)
+                                 ,(convert-from-uffi-type 
+                                   (clean-uffi-type (second arg)) :ffi)
                                  :in))
                             args))))
        ,@(when returning
-               `((:return-type ,(CONVERT-FROM-UFFI-TYPE
-                                 (clean-uffi-type returning) :FFI))))
+               `((:return-type ,(convert-from-uffi-type
+                                 (clean-uffi-type returning) :ffi))))
        ,@(when module
-               (let ((library (gethash module *MODULES-TO-LIBRARY-MAP*)))
+               (let ((library (gethash module *modules-to-library-map*)))
                  `((:library  ,(or library module)))))
-       (:LANGUAGE :STDC)))) ;;DEF-FUNCTION
+       (:language :stdc)))) ;;DEF-FUNCTION
 
 
-(DEFUN LOAD-FOREIGN-LIBRARY (FILENAME &KEY MODULE SUPPORTING-LIBRARIES)
+(defun load-foreign-library (filename &key module supporting-libraries)
   "
 DO:                 Loads a foreign library. Applies a module name
                     to functions within the library. Ensures that
@@ -1188,39 +1184,39 @@ IMPLEMENTATION:     Loading the library is defered to the first function call.
                     the FILENAME.
 TODO:               Should we explicitely load the SUPPORTING-LIBRARIES too?
 "
-  (declare (ignore SUPPORTING-LIBRARIES))
+  (declare (ignore supporting-libraries))
   (when module
-    (setf (gethash module *MODULES-TO-LIBRARY-MAP*) (namestring filename)))
+    (setf (gethash module *modules-to-library-map*) (namestring filename)))
   t) ;;LOAD-FOREIGN-LIBRARY
 
 
-(DEFUN SPLIT-STRING (STRING &OPTIONAL (SEPARATORS " "))
+(defun split-string (string &optional (separators " "))
   "
 NOTE:   current implementation only accepts as separators
         a string containing literal characters.
 "
-  (UNLESS (SIMPLE-STRING-P STRING)     (SETQ STRING     (COPY-SEQ STRING)))
-  (UNLESS (SIMPLE-STRING-P SEPARATORS) (SETQ SEPARATORS (COPY-SEQ SEPARATORS)))
-  (LET ((CHUNKS  '())
-        (POSITION 0)
-        (NEXTPOS  0)
-        (STRLEN   (LENGTH STRING)) )
-    (DECLARE (TYPE SIMPLE-STRING STRING SEPARATORS))
-    (LOOP WHILE (< POSITION STRLEN)
-       DO
-       (LOOP WHILE (AND (< NEXTPOS STRLEN)
-                        (NOT (POSITION (CHAR STRING NEXTPOS) SEPARATORS)))
-          DO (SETQ NEXTPOS (1+ NEXTPOS))
+  (unless (simple-string-p string)     (setq string     (copy-seq string)))
+  (unless (simple-string-p separators) (setq separators (copy-seq separators)))
+  (let ((chunks  '())
+        (position 0)
+        (nextpos  0)
+        (strlen   (length string)) )
+    (declare (type simple-string string separators))
+    (loop while (< position strlen)
+       do
+       (loop while (and (< nextpos strlen)
+                        (not (position (char string nextpos) separators)))
+          do (setq nextpos (1+ nextpos))
           ) ;;loop
-       (PUSH (SUBSEQ STRING POSITION NEXTPOS) CHUNKS)
-       (SETQ POSITION (1+ NEXTPOS))
-       (SETQ NEXTPOS  POSITION)
+       (push (subseq string position nextpos) chunks)
+       (setq position (1+ nextpos))
+       (setq nextpos  position)
        ) ;;loop
-    (NREVERSE CHUNKS)
+    (nreverse chunks)
     )) ;;SPLIT-STRING
 
 
-(DEFUN FIND-FOREIGN-LIBRARY (NAMES DIRECTORIES &KEY DRIVE-LETTERS TYPES VERBOSE)
+(defun find-foreign-library (names directories &key drive-letters types verbose)
   "
 NAMES:              A string or list of strings containing the base name
                     of the library file.

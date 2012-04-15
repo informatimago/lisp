@@ -16,41 +16,38 @@
 ;;;;    2003-05-14 <PJB> Extracted from pjb-cvs.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2003
-;;;;    mailto:pjb@informatimago.com
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a COPY of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.GRAPHVIZ.GRAPH-DOT"
-  (:USE "COMMON-LISP"
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.GRAPHVIZ.GRAPH-DOT"
+  (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.GRAPH")
-  (:EXPORT "GENERATE-DOT")
-  (:DOCUMENTATION
+  (:export "GENERATE-DOT")
+  (:documentation
    "This package exports methods for GRAPH to generate dot(1) files.
     
     Copyright Pascal J. Bourguignon 2003 - 2003
     This package is provided under the GNU General Public License.
     See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.GRAPHVIZ.GRAPH-DOT")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.GRAPHVIZ.GRAPH-DOT")
 
 
 
@@ -58,83 +55,83 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Generating dot files 
 
-(DEFUN DOT-IDENT (IDENT)
+(defun dot-ident (ident)
   "
 RETURN: A string containing the ident with the dash removed.
 "
-  (REMOVE (CHARACTER "-") (STRING IDENT)))
+  (remove (character "-") (string ident)))
 
 
-(DEFGENERIC GENERATE-DOT (SELF))
+(defgeneric generate-dot (self))
 
-(DEFMETHOD GENERATE-DOT ((SELF ELEMENT-CLASS))
+(defmethod generate-dot ((self element-class))
   "
 RETURN: A string containing the dot file data for this ELEMENT-CLASS node.
 "
-  (LET ((STYLE     (OR (GET-PROPERTY SELF :DOT-STYLE) "filled"))
-        (COLOR     (OR (GET-PROPERTY SELF :DOT-COLOR) "black"))
-        (FILLCOLOR (OR (GET-PROPERTY SELF :DOT-FILL-COLOR) "LightYellow"))
-        (LABEL     (OR (GET-PROPERTY SELF :DOT-LABEL)
-                       (LET ((PNAMES (PROPERTY-NAMES SELF)))
-                         (COND
-                           ((NULL PNAMES) NIL)
-                           ((= 1 (LENGTH PNAMES))
-                            (FORMAT NIL "~A" (GET-PROPERTY SELF (CAR PNAMES))))
-                           (T (UNSPLIT-STRING
-                               (MAPCAR
-                                (LAMBDA (PROP-NAME)
-                                  (IF (LET ((NAME (SYMBOL-NAME PROP-NAME)))
-                                        (AND (< 4 (LENGTH NAME) )
-                                             (STRING-EQUAL
+  (let ((style     (or (get-property self :dot-style) "filled"))
+        (color     (or (get-property self :dot-color) "black"))
+        (fillcolor (or (get-property self :dot-fill-color) "LightYellow"))
+        (label     (or (get-property self :dot-label)
+                       (let ((pnames (property-names self)))
+                         (cond
+                           ((null pnames) nil)
+                           ((= 1 (length pnames))
+                            (format nil "~A" (get-property self (car pnames))))
+                           (t (unsplit-string
+                               (mapcar
+                                (lambda (prop-name)
+                                  (if (let ((name (symbol-name prop-name)))
+                                        (and (< 4 (length name) )
+                                             (string-equal
                                               "DOT-"
-                                              (SUBSEQ
-                                               (SYMBOL-NAME PROP-NAME) 0 4))))
+                                              (subseq
+                                               (symbol-name prop-name) 0 4))))
                                       ""
-                                      (FORMAT NIL "~A = ~A" PROP-NAME
-                                              (GET-PROPERTY SELF PROP-NAME))))
-                                PNAMES)
-                               (FORMAT NIL "~%")))))
-                       (DOT-IDENT (IDENT SELF)))))
-    (FORMAT NIL "~A [ style=~A color=~A fillcolor=~A label=\"~A\" ];~%"
-            (DOT-IDENT (IDENT SELF)) STYLE COLOR FILLCOLOR LABEL)))
+                                      (format nil "~A = ~A" prop-name
+                                              (get-property self prop-name))))
+                                pnames)
+                               (format nil "~%")))))
+                       (dot-ident (ident self)))))
+    (format nil "~A [ style=~A color=~A fillcolor=~A label=\"~A\" ];~%"
+            (dot-ident (ident self)) style color fillcolor label)))
 
 
 
 
-(DEFMETHOD GENERATE-DOT ((SELF EDGE-CLASS))
+(defmethod generate-dot ((self edge-class))
   "
 RETURN: A string containing the dot file data for this edge.
 "
-  (FORMAT NIL "~A -> ~A ;~%"
-          (DOT-IDENT (IDENT (CAR (NODES SELF))))
-          (DOT-IDENT (IDENT (CDR (NODES SELF))))))
+  (format nil "~A -> ~A ;~%"
+          (dot-ident (ident (car (nodes self))))
+          (dot-ident (ident (cdr (nodes self))))))
 
 
 
 
-(DEFMETHOD GENERATE-DOT ((SELF DIRECTED-EDGE-CLASS))
+(defmethod generate-dot ((self directed-edge-class))
   "
 RETURN: A string containing the dot file data for this edge.
 "
-  (FORMAT NIL "~A -> ~A ;~%"
-          (DOT-IDENT (IDENT (FROM SELF)))
-          (DOT-IDENT (IDENT (TO SELF)))))
+  (format nil "~A -> ~A ;~%"
+          (dot-ident (ident (from self)))
+          (dot-ident (ident (to self)))))
 
 
 
-(DEFMETHOD GENERATE-DOT ((SELF WEIGHTED-DIRECTED-EDGE-CLASS))
+(defmethod generate-dot ((self weighted-directed-edge-class))
   "
 RETURN: A string containing the dot file data for this edge.
 "
-  (FORMAT NIL "~A -> ~A [ weight=~D, style=~A, color=~A ];~%"
-          (DOT-IDENT (IDENT (FROM SELF)))
-          (DOT-IDENT (IDENT (TO   SELF)))
-          (WEIGHT SELF)
-          (COND
-            ((< (WEIGHT SELF) 3)  "dotted")
-            ((< (WEIGHT SELF) 10) "dashed")
-            ((< (WEIGHT SELF) 15) "solid")
-            (T                    "bold"))
+  (format nil "~A -> ~A [ weight=~D, style=~A, color=~A ];~%"
+          (dot-ident (ident (from self)))
+          (dot-ident (ident (to   self)))
+          (weight self)
+          (cond
+            ((< (weight self) 3)  "dotted")
+            ((< (weight self) 10) "dashed")
+            ((< (weight self) 15) "solid")
+            (t                    "bold"))
           "black"))
 
 
@@ -145,19 +142,19 @@ RETURN: A string containing the dot file data for this edge.
 ;;; (car (element-list (NODES g)))
 
 
-(DEFMETHOD GENERATE-DOT ((SELF GRAPH-CLASS))
+(defmethod generate-dot ((self graph-class))
   "
 RETURN: A string containing the dot file data for this graph.
 NOTE:   dot graphs are directed.
 "
-  (APPLY 
-   (FUNCTION CONCATENATE) 'STRING
-   (FLATTEN
-    (LIST
-     (FORMAT NIL "digraph ~A~%" (OR (GET-PROPERTY SELF :NAME) "Untitled"))
-     (FORMAT
-         NIL
-       (CONCATENATE 'STRING
+  (apply 
+   (function concatenate) 'string
+   (flatten
+    (list
+     (format nil "digraph ~A~%" (or (get-property self :name) "Untitled"))
+     (format
+         nil
+       (concatenate 'string
          "{~%"
          (format nil "rankdir=~A;~%" (or (get-property self :dot-rankdir) "TB"))
          (format nil "concentrate=~:[false~;true~];~%" (get-property self :dot-concentrate))
@@ -172,10 +169,10 @@ NOTE:   dot graphs are directed.
          "center=1;~%"
          "// common attributes of NODES:~%"
          "node [height=0.2 width=0.5 shape=box fontsize=8 fontname=Times] ;~%"))
-     (MAP-ELEMENTS (NODES SELF) (LAMBDA (NODE) (GENERATE-DOT NODE)))
-     (FORMAT NIL "// common attributes of edges:~%edge [style=solid];~%")
-     (MAP-ELEMENTS (EDGES SELF) (LAMBDA (EDGE) (GENERATE-DOT EDGE)))
-     (FORMAT NIL "}~%")))))
+     (map-elements (nodes self) (lambda (node) (generate-dot node)))
+     (format nil "// common attributes of edges:~%edge [style=solid];~%")
+     (map-elements (edges self) (lambda (edge) (generate-dot edge)))
+     (format nil "}~%")))))
 
 
 

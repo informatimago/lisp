@@ -14,24 +14,22 @@
 ;;;;    2010-12-17 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2010 - 2010
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 (in-package "COM.INFORMATIMAGO.OBJECTIVE-CL")
 
@@ -136,7 +134,7 @@ NOTE:   current implementation only accepts as separators
   (mapcar (lambda (name)
             (if (zerop (length name))
                 :||
-                (first (oclo:OBJC-TO-LISP-MESSAGE (concatenate 'string name ":")))))
+                (first (oclo:objc-to-lisp-message (concatenate 'string name ":")))))
           (split-string selector ":")))
 
 
@@ -581,7 +579,7 @@ Assumes the '[' has been read already.
       (print (loop
                 for str = cstring
                 for i from 0 
-                for ch = (CCL:%GET-UNSIGNED-BYTE str i)
+                for ch = (ccl:%get-unsigned-byte str i)
                 while (plusp ch)
                 collect ch))
       (values cstring clen))))
@@ -591,14 +589,14 @@ Assumes the '[' has been read already.
   (let* ((llen  (length lstring)))
     (declare (fixnum llen))
     (let* ((cstring (ccl::malloc (the fixnum (1+ llen)))))
-      (CCL::ENCODE-STRING-TO-MEMORY (load-time-value (CCL:LOOKUP-CHARACTER-ENCODING :MACOSROMAN))
+      (ccl::encode-string-to-memory (load-time-value (ccl:lookup-character-encoding :macosroman))
                                     cstring 0 lstring 0 llen)
       (setf (ccl::%get-byte cstring llen) 0)
       #+testing
       (print (loop
                 for str = cstring
                 for i from 0 
-                for ch = (CCL:%GET-UNSIGNED-BYTE str i)
+                for ch = (ccl:%get-unsigned-byte str i)
                 while (plusp ch)
                 collect ch))
       (values cstring llen))))
@@ -609,10 +607,10 @@ Assumes the '[' has been read already.
 argument lisp string."
   #+apple-objc
   (if (mac-roman-string-p string)
-      (ccl::make-record :<NSC>onstant<S>tring
-                        :isa ccl::*NSConstantString-Class*
+      (ccl::make-record :<nsc>onstant<s>tring
+                        :isa ccl::*nsconstantstring-class*
                         :bytes (make-macroman-cstring string)
-                        :num<B>ytes (length string))
+                        :num<b>ytes (length string))
       (multiple-value-bind (bytes bytelen) (make-utf8-cstring string)
         (objc:send ns:ns-string
                    :string-with-c-string bytes
@@ -620,16 +618,16 @@ argument lisp string."
   #+cocotron-objc
   (warn "Check the encoding used for NSConstantString in cocotron.")
   #+cocotron-objc
-  (make-record :<NSC>onstant<S>tring
-               :isa *NSConstantString-Class*
+  (make-record :<nsc>onstant<s>tring
+               :isa *nsconstantstring-class*
                :_bytes (make-cstring string)
                :_length (length string))
 
   #+gnu-objc
   (warn "Check the encoding used for NSConstantString in GNUstep on this system.")
   #+gnu-objc
-  (make-record :<NXC>onstant<S>tring
-               :isa *NSConstantString-Class*
+  (make-record :<nxc>onstant<s>tring
+               :isa *nsconstantstring-class*
                :c_string (make-cstring string)
                :len (length string)))
 
@@ -656,8 +654,8 @@ argument lisp string."
 
 (defun lisp-string (an-objc-string)
   (typecase an-objc-string
-    (NS:NS-CONSTANT-STRING     (OBJC:LISP-STRING-FROM-NSSTRING an-objc-string))
-    (NS:NS-mutable-STRING      (OBJC:LISP-STRING-FROM-NSSTRING an-objc-string))
+    (ns:ns-constant-string     (objc:lisp-string-from-nsstring an-objc-string))
+    (ns:ns-mutable-string      (objc:lisp-string-from-nsstring an-objc-string))
     (ccl::objc-constant-string (ccl::objc-constant-string-string an-objc-string))
     (objc-constant-string      (objc-constant-string-string an-objc-string))
     (t                         (ccl::%get-utf-8-cstring
@@ -666,17 +664,17 @@ argument lisp string."
 (print (loop
           for str = (objc:send a-nsstring 'utf8-string)
           for i from 0
-          for ch = (CCL:%GET-UNSIGNED-BYTE str i)
+          for ch = (ccl:%get-unsigned-byte str i)
           while (plusp ch)
           collect ch))
 
 (eval-when (:execute :compile-toplevel :load-toplevel)
 
- (defmethod make-load-form ((s NS:NS-CONSTANT-STRING) &optional env)
+ (defmethod make-load-form ((s ns:ns-constant-string) &optional env)
    (declare (ignore env))
    `(ns-constant-string ,(lisp-string s)))
 
- (defmethod make-load-form ((s NS:NS-mutable-STRING) &optional env)
+ (defmethod make-load-form ((s ns:ns-mutable-string) &optional env)
    (declare (ignore env))
    `(ns-mutable-string ,(lisp-string s)))
 

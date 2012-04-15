@@ -33,29 +33,27 @@
 ;;;;    (READ-FROM-STRING "#1=(a b . #1#)") gives an error.
 ;;;;
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal Bourguignon 2006 - 2011
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.READER"
-  (:USE "COMMON-LISP"
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.READER"
+  (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM")
   (:shadow "READTABLE"
            "COPY-READTABLE" "MAKE-DISPATCH-MACRO-CHARACTER"
@@ -69,7 +67,7 @@
            "WITH-STANDARD-IO-SYNTAX"
            "*READ-BASE*" "*READ-DEFAULT-FLOAT-FORMAT*" "*READ-EVAL*"
            "*READ-SUPPRESS*" "*READTABLE*")
-  (:EXPORT "READTABLE"
+  (:export "READTABLE"
            "COPY-READTABLE" "MAKE-DISPATCH-MACRO-CHARACTER"
            "READ" "READ-PRESERVING-WHITESPACE"
            "READ-DELIMITED-LIST"
@@ -92,13 +90,13 @@
            "INTERN-HERE" "RETURN-UNINTERNED"
            ;; Utilities:
            "POTENTIAL-NUMBER-P")
-  (:DOCUMENTATION
+  (:documentation
    "This package implements a standard Common Lisp reader.
 
     Copyright Pascal J. Bourguignon 2006 - 2011
     This package is provided under the GNU General Public License.
     See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.READER")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.READER")
 
 
 
@@ -402,7 +400,7 @@ successfully.
 URL: http://www.lispworks.com/documentation/HyperSpec/Body/v_rd_sup.htm
 ")
 
-(defvar *READ-DEFAULT-FLOAT-FORMAT* 'single-float
+(defvar *read-default-float-format* 'single-float
   "
 Controls the floating-point format that is to be used when reading a
 floating-point number that has no exponent marker or that has e or E
@@ -829,7 +827,7 @@ exponent ::=  exponent-marker [sign] {digit}+"
   (let ((sign 1)
         (nume 0)
         (denu 1)
-        (type *READ-DEFAULT-FLOAT-FORMAT*)
+        (type *read-default-float-format*)
         (esgn 1)
         (expo 0)
         (i 0))
@@ -880,7 +878,7 @@ exponent ::=  exponent-marker [sign] {digit}+"
   (let ((sign 1)
         (nume 0)
         (denu 1)
-        (type *READ-DEFAULT-FLOAT-FORMAT*)
+        (type *read-default-float-format*)
         (esgn 1)
         (expo 0)
         (i 0))
@@ -1506,7 +1504,7 @@ RETURN: If TABLE is NIL, then NIL,
           "objects printed as #<...> cannot be read back in"))
 
 
-(defun reader-dispatch-macro-COMMENT           (stream arg sub-char)
+(defun reader-dispatch-macro-comment           (stream arg sub-char)
   "Standard #| dispatch macro reader."
   (declare (ignore sub-char arg))
   ;; #|...|# is treated as a comment by the reader. It must be balanced
@@ -1662,13 +1660,13 @@ URL: http://www.lispworks.com/documentation/HyperSpec/Body/02_dhd.htm
          :finally (return (copy-seq vector)))))
 
 
-(defun reader-dispatch-macro-CHAR              (stream arg sub-char)
+(defun reader-dispatch-macro-char              (stream arg sub-char)
   "Standard #\\ dispatch macro reader."
   (declare (ignore sub-char arg))
   (read-char stream t nil t))
 
 
-(defun reader-dispatch-macro-ARRAY             (stream arg sub-char)
+(defun reader-dispatch-macro-array             (stream arg sub-char)
   "Standard #A dispatch macro reader."
   (declare (ignore sub-char))
   (let ((initial-contents (read stream t nil t)))
@@ -1696,19 +1694,19 @@ RETURN:  The rational read.
                 "token \"~A\" after #~A is not a rational number in base ~D"
                 sub-char *read-base*))))
 
-(defun reader-dispatch-macro-BINARY            (stream arg sub-char)
+(defun reader-dispatch-macro-binary            (stream arg sub-char)
   "Standard #B dispatch macro reader."
   (read-rational-in-base stream arg sub-char 2.))
 
-(defun reader-dispatch-macro-OCTAL             (stream arg sub-char)
+(defun reader-dispatch-macro-octal             (stream arg sub-char)
   "Standard #O dispatch macro reader."
   (read-rational-in-base stream arg sub-char 8.))
 
-(defun reader-dispatch-macro-HEXADECIMAL       (stream arg sub-char)
+(defun reader-dispatch-macro-hexadecimal       (stream arg sub-char)
   "Standard #X dispatch macro reader."
   (read-rational-in-base stream arg sub-char 16.))
 
-(defun reader-dispatch-macro-RADIX             (stream arg sub-char)
+(defun reader-dispatch-macro-radix             (stream arg sub-char)
   "Standard #R dispatch macro reader."
   (unless arg
     (serror stream "the number base must be given between # and ~A" sub-char)) 
@@ -1731,7 +1729,7 @@ NOTE:   terminates with any kind of list, dotted, circular, etc.
     (and (listp object) (proper object (cons nil object)))))
 
 
-(defun reader-dispatch-macro-COMPLEX           (stream arg sub-char)
+(defun reader-dispatch-macro-complex           (stream arg sub-char)
   "Standard #C dispatch macro reader."
   (declare (ignore sub-char arg))
   (let ((c (read stream t nil t)))
@@ -1743,13 +1741,13 @@ NOTE:   terminates with any kind of list, dotted, circular, etc.
     (complex (first c) (second c))))
 
 
-(defun reader-dispatch-macro-PATHNAME          (stream arg sub-char)
+(defun reader-dispatch-macro-pathname          (stream arg sub-char)
   "Standard #P dispatch macro reader."
   (declare (ignore sub-char arg))
   (pathname (read stream t nil t)))
 
 
-(defun reader-dispatch-macro-STRUCTURE         (stream arg sub-char)
+(defun reader-dispatch-macro-structure         (stream arg sub-char)
   "Standard #S dispatch macro reader."
   (declare (ignore sub-char arg))
   (let* ((data (read stream t nil t))
@@ -1843,28 +1841,28 @@ NOTE:   terminates with any kind of list, dotted, circular, etc.
                               clauses))))
       (make-dispatch-macro-character #\# t self)
       (dmc
-       (#\# #\SPACE   READER-DISPATCH-MACRO-ERROR-INVALID)
-       (#\# #\NEWLINE READER-DISPATCH-MACRO-ERROR-INVALID)
-       (#\# #\# READER-DISPATCH-MACRO-LABEL-REFERENCE)
-       (#\# #\' READER-DISPATCH-MACRO-FUNCTION)
-       (#\# #\( READER-DISPATCH-MACRO-VECTOR)
-       (#\# #\* READER-DISPATCH-MACRO-BIT-VECTOR)
-       (#\# #\+ READER-DISPATCH-MACRO-FEATURE)
-       (#\# #\- READER-DISPATCH-MACRO-NOT-FEATURE)
-       (#\# #\. READER-DISPATCH-MACRO-READ-EVAL)
-       (#\# #\: READER-DISPATCH-MACRO-UNINTERNED)
-       (#\# #\< READER-DISPATCH-MACRO-UNREADABLE)
-       (#\# #\= READER-DISPATCH-MACRO-LABEL-DEFINITION)
-       (#\# #\A READER-DISPATCH-MACRO-ARRAY)
-       (#\# #\B READER-DISPATCH-MACRO-BINARY)
-       (#\# #\C READER-DISPATCH-MACRO-COMPLEX)
-       (#\# #\O READER-DISPATCH-MACRO-OCTAL)
-       (#\# #\P READER-DISPATCH-MACRO-PATHNAME)
-       (#\# #\R READER-DISPATCH-MACRO-RADIX)
-       (#\# #\S READER-DISPATCH-MACRO-STRUCTURE)
-       (#\# #\X READER-DISPATCH-MACRO-HEXADECIMAL)
-       (#\# #\\ READER-DISPATCH-MACRO-CHAR)
-       (#\# #\| READER-DISPATCH-MACRO-COMMENT)
+       (#\# #\SPACE   reader-dispatch-macro-error-invalid)
+       (#\# #\NEWLINE reader-dispatch-macro-error-invalid)
+       (#\# #\# reader-dispatch-macro-label-reference)
+       (#\# #\' reader-dispatch-macro-function)
+       (#\# #\( reader-dispatch-macro-vector)
+       (#\# #\* reader-dispatch-macro-bit-vector)
+       (#\# #\+ reader-dispatch-macro-feature)
+       (#\# #\- reader-dispatch-macro-not-feature)
+       (#\# #\. reader-dispatch-macro-read-eval)
+       (#\# #\: reader-dispatch-macro-uninterned)
+       (#\# #\< reader-dispatch-macro-unreadable)
+       (#\# #\= reader-dispatch-macro-label-definition)
+       (#\# #\A reader-dispatch-macro-array)
+       (#\# #\B reader-dispatch-macro-binary)
+       (#\# #\C reader-dispatch-macro-complex)
+       (#\# #\O reader-dispatch-macro-octal)
+       (#\# #\P reader-dispatch-macro-pathname)
+       (#\# #\R reader-dispatch-macro-radix)
+       (#\# #\S reader-dispatch-macro-structure)
+       (#\# #\X reader-dispatch-macro-hexadecimal)
+       (#\# #\\ reader-dispatch-macro-char)
+       (#\# #\| reader-dispatch-macro-comment)
        ;; clisp extensions:
        ;; (#\# #\! reader-dispatch-macro-executable)
        ;; (#\# #\" reader-dispatch-macro-clisp-pathname)
@@ -1885,7 +1883,7 @@ RETURN: A list of all the macro and dispatch-macro characters in the readtable.
 "
   (loop
      :with results = '()
-     :for code :from 0 :below CHAR-CODE-LIMIT
+     :for code :from 0 :below char-code-limit
      :for ch = (code-char code)
      :do (multiple-value-bind (fun ntp) (get-macro-character ch)
            (when (or fun ntp)
@@ -1928,7 +1926,7 @@ RETURN: A list of all the macro and dispatch-macro characters in the readtable.
            ("Doc" (declare (ignore it)) "Illegal" (declare (ignore it)) "Result")
            )))
     (assert
-     (equalp '(NIL NIL "Doc" NIL NIL "Doc" NIL NIL "Doc"
+     (equalp '(nil nil "Doc" nil nil "Doc" nil nil "Doc"
                "Doc" "Doc" "Doc" "Doc" "Doc" "Doc" "Doc" )
              (mapcar (function extract-documentation) test-cases)))
     (assert
@@ -1948,12 +1946,12 @@ RETURN: A list of all the macro and dispatch-macro characters in the readtable.
                ((declare (ignore it)))) ;; "Illegal"
              (mapcar (function extract-declarations) test-cases)))
     (assert
-     (equalp '((NIL) ("Result") ("Result")
-               ((DECLARE (IGNORE IT))) ("Result") ("Result")
-               ((DECLARE (IGNORE IT))) ("Result") ((DECLARE (IGNORE IT)))
-               ("Result") ("Result") ("Illegal" (DECLARE (IGNORE IT)) "Result")
-               ("Result") ((DECLARE (IGNORE IT))) ("Result")
-               ("Illegal" (DECLARE (IGNORE IT)) "Result"))
+     (equalp '((nil) ("Result") ("Result")
+               ((declare (ignore it))) ("Result") ("Result")
+               ((declare (ignore it))) ("Result") ((declare (ignore it)))
+               ("Result") ("Result") ("Illegal" (declare (ignore it)) "Result")
+               ("Result") ((declare (ignore it))) ("Result")
+               ("Illegal" (declare (ignore it)) "Result"))
              (mapcar (function extract-body) test-cases)))
     :success))
 
@@ -1962,7 +1960,7 @@ RETURN: A list of all the macro and dispatch-macro characters in the readtable.
   (let ((*read-base* 10)
         (*read-eval* t)
         (*read-suppress* nil)
-        (*READ-DEFAULT-FLOAT-FORMAT* 'single-float))
+        (*read-default-float-format* 'single-float))
     (dolist (test
               '(
                 ;; integer  ::= [sign] digit+      
@@ -2171,7 +2169,7 @@ RETURN: A list of all the macro and dispatch-macro characters in the readtable.
 
 (tests "symbols"
        ((read-from-string "( abc ab a || |a| |ab| |a b c| )")
-        ((ABC AB A || |a| |ab| |a b c|) ;
+        ((abc ab a || |a| |ab| |a b c|) ;
          32)
         nil))
 
@@ -2247,7 +2245,7 @@ RETURN: A list of all the macro and dispatch-macro characters in the readtable.
 (tests 
  ((let ((*features* (quote (:a :b)))) 
     (read-from-string "#+#1=(or a b) #1#"))
-  ((:OR :A :B) 44)
+  ((:or :a :b) 44)
   nil))
 
 
@@ -2270,7 +2268,7 @@ RETURN: A list of all the macro and dispatch-macro characters in the readtable.
 (tests
  ((progn
     (defstruct s a b c) (read-from-string "#S(s a 1 b 2 c 3)"))
-  (#S(S :A 1 :B 2 :C 3) 17)
+  (#s(s :a 1 :b 2 :c 3) 17)
   nil))
 
 
@@ -2278,9 +2276,9 @@ RETURN: A list of all the macro and dispatch-macro characters in the readtable.
  ((read-from-string "( #C(123 456) #c(-123 456)
                        #C(12.3 456) #c(-123 45.6)
                        #C(123/10 456/100) #c(-123/10 456/100) )")
-  (( #C(123 456) #c(-123 456)
-                       #C(12.3 456) #c(-123 45.6)
-                       #C(123/10 456/100) #c(-123/10 456/100) )
+  (( #c(123 456) #c(-123 456)
+                       #c(12.3 456) #c(-123 45.6)
+                       #c(123/10 456/100) #c(-123/10 456/100) )
    140)
   nil))
 
@@ -2290,49 +2288,49 @@ RETURN: A list of all the macro and dispatch-macro characters in the readtable.
  ((with-input-from-string (src " \"!A\"
 ) def)
 ")
-    (values (READ-delimited-list #\) src)
-            (READ-delimited-list #\) src)))
-  (("!A") (DEF))
+    (values (read-delimited-list #\) src)
+            (read-delimited-list #\) src)))
+  (("!A") (def))
   nil)
 
  ((with-input-from-string (src "#( \"!A\" 
 ) (def)
 ")
-    (values (READ src)
-            (READ src)))
-  (#("!A") (DEF))
+    (values (read src)
+            (read src)))
+  (#("!A") (def))
   nil)
 
  ((with-input-from-string (src "( \"!A\"
 ) (def)
 ")
-    (values (READ src)
-            (READ src)))
-  (("!A") (DEF))
+    (values (read src)
+            (read src)))
+  (("!A") (def))
   nil)
 
  ((with-input-from-string (src " \"!A\" ; comment
 ) def)
 ")
-    (values (READ-delimited-list #\) src)
-            (READ-delimited-list #\) src)))
-  (("!A") (DEF))
+    (values (read-delimited-list #\) src)
+            (read-delimited-list #\) src)))
+  (("!A") (def))
   nil)
  
   ((with-input-from-string (src "#( \"!A\"  ; comment
 ) (def)
 ")
-    (values (READ src)
-            (READ src)))
-  (#("!A") (DEF))
+    (values (read src)
+            (read src)))
+  (#("!A") (def))
   nil)
 
   ((with-input-from-string (src "( \"!A\" ; comment
 ) (def)
 ")
-    (values (READ src)
-            (READ src)))
-  (("!A") (DEF))
+    (values (read src)
+            (read src)))
+  (("!A") (def))
   nil))
 
 
@@ -2350,8 +2348,8 @@ RETURN: A list of all the macro and dispatch-macro characters in the readtable.
                  ) (a b .; comment
              ()) (a b . c;comment
                       ))")
-  ((NIL (A) (A B) (A B C) (A) (A . B) (A B) (A B . C) NIL (A) (A B) (A B C) (A)
-   (A) (A . B) (A . B) (A . B) (A B) (A B . C)) 
+  ((nil (a) (a b) (a b c) (a) (a . b) (a b) (a b . c) nil (a) (a b) (a b c) (a)
+   (a) (a . b) (a . b) (a . b) (a b) (a b . c)) 
    469)
   nil))
 
@@ -2359,7 +2357,7 @@ RETURN: A list of all the macro and dispatch-macro characters in the readtable.
 (tests "vector with too much data"
        ((with-input-from-string (input "#2(a b c) d e")
           (values (read input) (read-line input)))
-        (#(A B)                         
+        (#(a b)                         
           " d e")
         nil))
 
@@ -2383,10 +2381,10 @@ RETURN: A list of all the macro and dispatch-macro characters in the readtable.
                  ) #(a b ; comment
              #()) #(a b  c;comment
                       ))")
-        ((#() #(A) #(A B) #(A B C) #(A #()) #(A B) #(A B #()) #(A B C)
-           #(A A) #(A B) #(A B) #(A #()) #(A B) #(A B) #(A B) #() #(A)
-           #(A B) #(A B C) #(A #()) #(A #()) #(A B) #(A B) #(A B) #(A B #())
-           #(A B C))
+        ((#() #(a) #(a b) #(a b c) #(a #()) #(a b) #(a b #()) #(a b c)
+           #(a a) #(a b) #(a b) #(a #()) #(a b) #(a b) #(a b) #() #(a)
+           #(a b) #(a b c) #(a #()) #(a #()) #(a b) #(a b) #(a b) #(a b #())
+           #(a b c))
          580)
         nil))
 
@@ -2418,7 +2416,7 @@ RETURN: A list of all the macro and dispatch-macro characters in the readtable.
 
 (defun potential-number-p (token
                            &optional
-                           (*READ-BASE* *READ-BASE*)
+                           (*read-base* *read-base*)
                            (ratio-markers "/"))
   "
 TOKEN:         A string containing the token to be tested.

@@ -23,33 +23,30 @@
 ;;;;    2003-05-14 <PJB> Extracted from pjb-cvs.el
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2003
-;;;;    mailto:pjb@informatimago.com
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a COPY of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.GRAPH"
-  (:USE "COMMON-LISP"
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.GRAPH"
+  (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" 
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
-  (:EXPORT "EDGE-CLASS" "EDGES" "NODES" "TO" "FROM" "NODES" "WEIGHT" "INDEX"
+  (:export "EDGE-CLASS" "EDGES" "NODES" "TO" "FROM" "NODES" "WEIGHT" "INDEX"
            "ELEMENTS" "PROPERTIES" "IDENT" "SHOW-GRAPH" "FIND-NODES-WITH-PROPERTY"
            "COPY" "WALK-EDGES-FROM-NODE" "WALK-FROM-NODE" "FLOW-DISTANCE-FROM-NODE"
            "ADJACENT-NODES" "SUCCESSOR-NODES" "DIRECTED-EDGES-FROM-NODE"
@@ -65,14 +62,14 @@
            "SELECT-ELEMENTS" "MAP-ELEMENTS" "PERFORM-WITH-ELEMENTS" "REMOVE-ELEMENT"
            "ADD-ELEMENTS" "CARDINAL" "SET-CLASS" "DELETE-PROPERTY" "GET-PROPERTY"
            "SET-PROPERTY" "PROPERTY-NAMES" "ELEMENT-CLASS")
-  (:IMPORT-FROM "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "WHILE")
-  (:DOCUMENTATION
+  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "WHILE")
+  (:documentation
    "This package exports classes for elements, sets and graphs.
     
     Copyright Pascal J. Bourguignon 2003 - 2003
     This package is provided under the GNU General Public License.
     See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.GRAPH")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.GRAPH")
 
 
 
@@ -157,78 +154,78 @@
 ;; METHOD FIND-NODES-WITH-PROPERTY ((SELF GRAPH-CLASS)
 ;; METHOD SHOW-GRAPH ((SELF GRAPH-CLASS))
 
-(DEFGENERIC PROPERTY-NAMES (SELF))
-(DEFGENERIC SET-PROPERTY (SELF PROP-NAME PROP-VALUE))
-(DEFGENERIC GET-PROPERTY (SELF PROP-NAME))
-(DEFGENERIC DELETE-PROPERTY (SELF PROP-NAME))
-(DEFGENERIC CARDINAL (SELF))
-(DEFGENERIC ADD-ELEMENTS (SELF NEWELEMENTLIST))
-(DEFGENERIC REMOVE-ELEMENT (SELF OLDELEMENT))
-(DEFGENERIC PERFORM-WITH-ELEMENTS (SELF LAMBDA-BODY))
-(DEFGENERIC MAP-ELEMENTS (SELF LAMBDA-BODY))
-(DEFGENERIC SELECT-ELEMENTS (SELF SELECT-LAMBDA))
-(DEFGENERIC ELEMENT-LIST (SELF))
-(DEFGENERIC FIND-ELEMENTS-WITH-PROPERTY (SELF PROPERTY VALUE))
-(DEFGENERIC CONTAINS-ELEMENT (SELF ANELEMENT))
-(DEFGENERIC ADD-ELEMENT (SELF NEWELEMENT))
-(DEFGENERIC SET-WEIGHT (SELF NEWWEIGHT))
-(DEFGENERIC SET-NODES (SELF NEWFROM NEWTO))
-(DEFGENERIC DESCRIPTION (SELF))
-(DEFGENERIC ADD-NODE (SELF NEWNODE))
-(DEFGENERIC ADD-NODES (SELF NEWNODELIST))
-(DEFGENERIC REMOVE-NODE (SELF OLDNODE))
-(DEFGENERIC REMOVE-NODES (SELF OLDNODELIST))
-(DEFGENERIC ADD-EDGE (SELF NEWEDGE))
-(DEFGENERIC ADD-EDGE-BETWEEN-NODES (SELF NODEA NODEB))
-(DEFGENERIC REMOVE-EDGE (SELF OLDEDGE))
-(DEFGENERIC REMOVE-EDGES (SELF EDGE-LIST))
-(DEFGENERIC REMOVE-EDGES-BETWEEN-NODES (SELF NODEA NODEB))
-(DEFGENERIC EDGES-BETWEEN-NODES (SELF NODEA NODEB))
-(DEFGENERIC DIRECTED-EDGES-BETWEEN-NODES (SELF FROMNODE TONODE))
-(DEFGENERIC DIRECTED-EDGES-FROM-NODE (SELF FROMNODE))
-(DEFGENERIC SUCCESSOR-NODES (SELF NODE))
-(DEFGENERIC ADJACENT-NODES (SELF NODE))
-(DEFGENERIC FLOW-DISTANCE-FROM-NODE (SELF STARTNODE PROP-NAME))
-(DEFGENERIC WALK-FROM-NODE (SELF STARTNODE LAMBDA-BODY))
-(DEFGENERIC WALK-EDGES-FROM-NODE (SELF STARTNODE LAMBDA-BODY))
-(DEFGENERIC FIND-NODES-WITH-PROPERTY (SELF PROPERTY VALUE))
-(DEFGENERIC SHOW-GRAPH (SELF))
+(defgeneric property-names (self))
+(defgeneric set-property (self prop-name prop-value))
+(defgeneric get-property (self prop-name))
+(defgeneric delete-property (self prop-name))
+(defgeneric cardinal (self))
+(defgeneric add-elements (self newelementlist))
+(defgeneric remove-element (self oldelement))
+(defgeneric perform-with-elements (self lambda-body))
+(defgeneric map-elements (self lambda-body))
+(defgeneric select-elements (self select-lambda))
+(defgeneric element-list (self))
+(defgeneric find-elements-with-property (self property value))
+(defgeneric contains-element (self anelement))
+(defgeneric add-element (self newelement))
+(defgeneric set-weight (self newweight))
+(defgeneric set-nodes (self newfrom newto))
+(defgeneric description (self))
+(defgeneric add-node (self newnode))
+(defgeneric add-nodes (self newnodelist))
+(defgeneric remove-node (self oldnode))
+(defgeneric remove-nodes (self oldnodelist))
+(defgeneric add-edge (self newedge))
+(defgeneric add-edge-between-nodes (self nodea nodeb))
+(defgeneric remove-edge (self oldedge))
+(defgeneric remove-edges (self edge-list))
+(defgeneric remove-edges-between-nodes (self nodea nodeb))
+(defgeneric edges-between-nodes (self nodea nodeb))
+(defgeneric directed-edges-between-nodes (self fromnode tonode))
+(defgeneric directed-edges-from-node (self fromnode))
+(defgeneric successor-nodes (self node))
+(defgeneric adjacent-nodes (self node))
+(defgeneric flow-distance-from-node (self startnode prop-name))
+(defgeneric walk-from-node (self startnode lambda-body))
+(defgeneric walk-edges-from-node (self startnode lambda-body))
+(defgeneric find-nodes-with-property (self property value))
+(defgeneric show-graph (self))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(DEFCLASS ELEMENT-CLASS ()
-  ((IDENT
-    :READER   IDENT
-    :TYPE     SYMBOL
-    :DOCUMENTATION "A unique symbol identifying this element.")
-   (PROPERTIES 
-    :INITFORM NIL
-    :INITARG  :PROPERTIES
-    :ACCESSOR PROPERTIES
-    :TYPE     LIST
-    :DOCUMENTATION
+(defclass element-class ()
+  ((ident
+    :reader   ident
+    :type     symbol
+    :documentation "A unique symbol identifying this element.")
+   (properties 
+    :initform nil
+    :initarg  :properties
+    :accessor properties
+    :type     list
+    :documentation
     "A plist of properties for this elements.
 It can be used to store markers while walking sets or graphs containing them."))
-  (:DOCUMENTATION
+  (:documentation
    "An element of a SET-CLASS."))
 
 
-(DEFMETHOD INITIALIZE-INSTANCE :AFTER ((SELF ELEMENT-CLASS) &REST INITARGS
-                                       &KEY &ALLOW-OTHER-KEYS)
+(defmethod initialize-instance :after ((self element-class) &rest initargs
+                                       &key &allow-other-keys)
   "
 DO:     Initalize the instance id.
 "
-  (DECLARE (IGNORE INITARGS))
-  (SETF (SLOT-VALUE SELF 'IDENT) 
-        (GENSYM (FORMAT NIL "~A-"
-                        (STRING-UPCASE (CLASS-NAME (CLASS-OF SELF))))))
-  SELF)
+  (declare (ignore initargs))
+  (setf (slot-value self 'ident) 
+        (gensym (format nil "~A-"
+                        (string-upcase (class-name (class-of self))))))
+  self)
 
 
-(DEFMETHOD DESCRIPTION ((SELF ELEMENT-CLASS))
+(defmethod description ((self element-class))
   "
 RETURN: A string describing this element.
 "
-  (FORMAT NIL "<An instance of ~A>" (CLASS-NAME (CLASS-OF SELF))))
+  (format nil "<An instance of ~A>" (class-name (class-of self))))
 
 
 ;; (defmethod identicalTo ((self ELEMENT-CLASS) (other ELEMENT-CLASS))
@@ -238,69 +235,69 @@ RETURN: A string describing this element.
 ;;   (eq self other)
 ;;   )
 
-(DEFMETHOD PROPERTY-NAMES ((SELF ELEMENT-CLASS))
+(defmethod property-names ((self element-class))
   "
 RETURN: The list of property names (keys) of properties of this element.
 "
-  (DO ((PS (PROPERTIES SELF) (CDDR PS))
-       (RES '()))
-      ((NULL PS) RES)
-    (PUSH (CAR PS) RES)))
+  (do ((ps (properties self) (cddr ps))
+       (res '()))
+      ((null ps) res)
+    (push (car ps) res)))
 
 
-(DEFMETHOD SET-PROPERTY ((SELF ELEMENT-CLASS) (PROP-NAME SYMBOL) PROP-VALUE)
+(defmethod set-property ((self element-class) (prop-name symbol) prop-value)
   "
 POST:  (eq (GET-PROPERTY self prop-name) prop-value)
 "
-  (SETF (SLOT-VALUE SELF 'PROPERTIES)
-        (PLIST-PUT (PROPERTIES SELF) PROP-NAME PROP-VALUE)))
+  (setf (slot-value self 'properties)
+        (plist-put (properties self) prop-name prop-value)))
 
 
-(DEFMETHOD GET-PROPERTY ((SELF ELEMENT-CLASS) (PROP-NAME SYMBOL))
+(defmethod get-property ((self element-class) (prop-name symbol))
   "
 RETURN: the property `prop-name' of this element.
 "
-  (PLIST-GET (PROPERTIES SELF) PROP-NAME))
+  (plist-get (properties self) prop-name))
 
 
-(DEFMETHOD DELETE-PROPERTY ((SELF ELEMENT-CLASS) (PROP-NAME SYMBOL))
+(defmethod delete-property ((self element-class) (prop-name symbol))
   "
 DO:     Remove the property named `prop-name' from the property list of
         this element.
 "
-  (SETF (SLOT-VALUE SELF 'PROPERTIES)
-        (PLIST-REMOVE (PROPERTIES SELF) PROP-NAME)))
+  (setf (slot-value self 'properties)
+        (plist-remove (properties self) prop-name)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(DEFCLASS SET-CLASS (ELEMENT-CLASS)
-  ((ELEMENTS
-    :INITFORM NIL
-    :INITARG  :ELEMENTS
-    :ACCESSOR ELEMENTS
-    :TYPE     LIST
-    :DOCUMENTATION
+(defclass set-class (element-class)
+  ((elements
+    :initform nil
+    :initarg  :elements
+    :accessor elements
+    :type     list
+    :documentation
     "The list of elements in this set."))
-  (:DOCUMENTATION
+  (:documentation
    "A set of elements."))
 
 
-(DEFMETHOD DESCRIPTION ((SELF SET-CLASS))
+(defmethod description ((self set-class))
   "
 RETURN: A string describing this element.
 "
-  (FORMAT NIL "<An instance of ~A with ~D elements>" 
-          (CLASS-NAME (CLASS-OF SELF)) (CARDINAL SELF)))
+  (format nil "<An instance of ~A with ~D elements>" 
+          (class-name (class-of self)) (cardinal self)))
 
 
-(DEFMETHOD CARDINAL ((SELF SET-CLASS))
+(defmethod cardinal ((self set-class))
   "
 RETURN: The number of elements in this set.
 "
-  (LENGTH (ELEMENTS SELF)))
+  (length (elements self)))
 
 
-(DEFMETHOD CONTAINS-ELEMENT ((SELF SET-CLASS) (ANELEMENT ELEMENT-CLASS))
+(defmethod contains-element ((self set-class) (anelement element-class))
   "
 RETURN: Whether this set contains anElement.
 "
@@ -312,10 +309,10 @@ RETURN: Whether this set contains anElement.
   ;;         (setq elem-list nil))
   ;;       (setq elem-list (cdr elem-list)))
   ;;     result)
-  (MEMBER ANELEMENT (ELEMENTS SELF)))
+  (member anelement (elements self)))
 
 
-(DEFMETHOD ADD-ELEMENT ((SELF SET-CLASS) (NEWELEMENT ELEMENT-CLASS))
+(defmethod add-element ((self set-class) (newelement element-class))
   "
 PRE:    already_in   = (CONTAINS-ELEMENT self newElement),
         old_CARDINAL = (CARDINAL self)
@@ -323,19 +320,19 @@ POST:   already_in       ==> (CARDINAL self) == old_CARDINAL
         (not already_in) ==> (CARDINAL self) == (1+ old_CARDINAL)
                              (CONTAINS-ELEMENT self newElement)
 "
-  (WHEN (NOT (CONTAINS-ELEMENT SELF NEWELEMENT))
-    (SETF (SLOT-VALUE SELF 'ELEMENTS) (CONS NEWELEMENT (ELEMENTS SELF)))))
+  (when (not (contains-element self newelement))
+    (setf (slot-value self 'elements) (cons newelement (elements self)))))
 
 
-(DEFMETHOD ADD-ELEMENTS ((SELF SET-CLASS) NEWELEMENTLIST)
+(defmethod add-elements ((self set-class) newelementlist)
   "
 DO:     Add each element of the newElementList to this set.
 "
-  (DOLIST (NEWELEMENT NEWELEMENTLIST)
-    (ADD-ELEMENT SELF NEWELEMENT)))
+  (dolist (newelement newelementlist)
+    (add-element self newelement)))
 
 
-(DEFMETHOD REMOVE-ELEMENT ((SELF SET-CLASS) (OLDELEMENT ELEMENT-CLASS))
+(defmethod remove-element ((self set-class) (oldelement element-class))
   "
 PRE:    already_in   = (CONTAINS-ELEMENT self newElement),
         old_CARDINAL = (CARDINAL self)
@@ -343,74 +340,74 @@ POST:   already_in       ==> (CARDINAL self) == (1- old_CARDINAL),
                              (not (CONTAINS-ELEMENT self oldElement))
         (not already_in) ==> (CARDINAL self) == old_CARDINAL
 "
-  (SETF (SLOT-VALUE SELF 'ELEMENTS) (DELETE OLDELEMENT (ELEMENTS SELF))))
+  (setf (slot-value self 'elements) (delete oldelement (elements self))))
 
 
-(DEFMETHOD PERFORM-WITH-ELEMENTS ((SELF SET-CLASS) LAMBDA-BODY)
+(defmethod perform-with-elements ((self set-class) lambda-body)
   "
 DO:     calls lambda-body with each element in the set.
 NOTE:   lambda-body must not change this set.
 "
-  (MAPC LAMBDA-BODY (ELEMENTS SELF)))
+  (mapc lambda-body (elements self)))
 
 
-(DEFMETHOD MAP-ELEMENTS ((SELF SET-CLASS) LAMBDA-BODY)
+(defmethod map-elements ((self set-class) lambda-body)
   "
 RETURN: the list of results returned by lambda-body called with each element.
 NOTE:   lambda-body must not change this set.
 "
-  (MAPCAR LAMBDA-BODY (ELEMENTS SELF)))
+  (mapcar lambda-body (elements self)))
 
 
-(DEFMETHOD SELECT-ELEMENTS ((SELF SET-CLASS) SELECT-LAMBDA)
+(defmethod select-elements ((self set-class) select-lambda)
   "
 RETURN: A list of elements for which select-lambda returned true.
 "
-  (LET ((RESULT NIL))
-    (MAPC (LAMBDA (ELEM)
-            (WHEN (FUNCALL SELECT-LAMBDA ELEM)
-              (PUSH ELEM RESULT)))
-          (ELEMENTS SELF))
-    RESULT))
+  (let ((result nil))
+    (mapc (lambda (elem)
+            (when (funcall select-lambda elem)
+              (push elem result)))
+          (elements self))
+    result))
 
 
-(DEFMETHOD ELEMENT-LIST ((SELF SET-CLASS))
+(defmethod element-list ((self set-class))
   "
 RETURN: A new list of the elements in self.
 "
-  (MAP 'LIST (FUNCTION IDENTITY) (ELEMENTS SELF)))
+  (map 'list (function identity) (elements self)))
 
 
-(DEFMETHOD FIND-ELEMENTS-WITH-PROPERTY
-    ((SELF SET-CLASS) (PROPERTY SYMBOL) VALUE)
+(defmethod find-elements-with-property
+    ((self set-class) (property symbol) value)
   "
 RETURN: A list of elements that have as property PROPERTY the value VALUE.
 "
-  (SELECT-ELEMENTS SELF (LAMBDA (ELEM)
-                          (LET ((PVAL (GET-PROPERTY ELEM PROPERTY)))
-                            (AND PVAL (EQUAL PVAL VALUE))))))
+  (select-elements self (lambda (elem)
+                          (let ((pval (get-property elem property)))
+                            (and pval (equal pval value))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(DEFCLASS HASHED-SET-CLASS (SET-CLASS)
-  ((INDEX
-    :INITFORM (LAMBDA () (MAKE-HASH-TABLE :TEST 'EQ))
-    :INITARG :INDEX
-    :ACCESSOR INDEX
-    :TYPE     HASH-TABLE
-    :DOCUMENTATION "A hashtable used to index the elements in this set."))
-  (:DOCUMENTATION "This is a specialized kind of set that maintains a hashtable
+(defclass hashed-set-class (set-class)
+  ((index
+    :initform (lambda () (make-hash-table :test 'eq))
+    :initarg :index
+    :accessor index
+    :type     hash-table
+    :documentation "A hashtable used to index the elements in this set."))
+  (:documentation "This is a specialized kind of set that maintains a hashtable
 index of its elements to be able to retrieve them rapidly."))
                
 
-(DEFMETHOD CONTAINS-ELEMENT ((SELF HASHED-SET-CLASS) (ANELEMENT ELEMENT-CLASS))
+(defmethod contains-element ((self hashed-set-class) (anelement element-class))
   "
 RETURN: Whether this set contains anElement.
 "
-  (GETHASH ANELEMENT (INDEX SELF)))
+  (gethash anelement (index self)))
 
 
-(DEFMETHOD ADD-ELEMENT ((SELF HASHED-SET-CLASS) (NEWELEMENT ELEMENT-CLASS))
+(defmethod add-element ((self hashed-set-class) (newelement element-class))
   "
 PRE:    already_in   = (CONTAINS-ELEMENT self newElement),
         old_CARDINAL = (CARDINAL self)
@@ -418,54 +415,54 @@ POST:   already_in       ==> (CARDINAL self) == old_CARDINAL
         (not already_in) ==> (CARDINAL self) == (1+ old_CARDINAL)
                              (CONTAINS-ELEMENT self newElement)
 "
-  (CALL-NEXT-METHOD)
-  (SETF (GETHASH NEWELEMENT (INDEX SELF)) NEWELEMENT))
+  (call-next-method)
+  (setf (gethash newelement (index self)) newelement))
 
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(DEFCLASS EDGE-CLASS (ELEMENT-CLASS)
+(defclass edge-class (element-class)
   ((tag :initform nil :initarg :tag
         :documentation "Reserved for the client."))
-  (:DOCUMENTATION
+  (:documentation
    "An abstract  edge."))
 
 
-(DEFMETHOD DESCRIPTION ((SELF EDGE-CLASS))
+(defmethod description ((self edge-class))
   "
 RETURN: A string describing this element.
 "
-  (LET ((NODES (NODES SELF)))
-    (FORMAT NIL "<A ~A between { ~A and ~A }>" 
-            (CLASS-NAME (CLASS-OF SELF)) 
-            (DESCRIPTION (CAR  NODES)) 
-            (DESCRIPTION (CDR NODES)))))
+  (let ((nodes (nodes self)))
+    (format nil "<A ~A between { ~A and ~A }>" 
+            (class-name (class-of self)) 
+            (description (car  nodes)) 
+            (description (cdr nodes)))))
 
 
-(DEFGENERIC COPY (SELF &KEY &ALLOW-OTHER-KEYS)
-  (:DOCUMENTATION "
+(defgeneric copy (self &key &allow-other-keys)
+  (:documentation "
 RETURN: A COPY of this edge.
         The COPY has the same  NODES than this edge.
         Other attributes are normally copied."))
 
 
-(DEFGENERIC NODES (SELF)
-  (:DOCUMENTATION "
+(defgeneric nodes (self)
+  (:documentation "
 RETURN: A cons containing the two NODES of the edge, in no specific order.
         (Subclasses implementing directed edges should add specific methods
          to get the `from' and the `to' NODES)."))
 
 
-(DEFGENERIC IS-BETWEEN-NODES (SELF NODEA NODEB)
-  (:DOCUMENTATION "
+(defgeneric is-between-nodes (self nodea nodeb)
+  (:documentation "
 RETURN: Whether this edge is between `nodeA' and `nodeB'.
         If this edge is directed then `nodeA' is compared to the from node
                                   and `nodeB' is compared to the  to  node,
         otherwise, the node order is not important."))
 
 
-(DEFGENERIC SUCCESSOR-OF (SELF NODE)
-  (:DOCUMENTATION "
+(defgeneric successor-of (self node)
+  (:documentation "
 RETURN: If node is a node of the edge, then return its successor or nil.
         That is, for an undirected edge e, 
              (and (eq (SUCCESSOR-OF e (car (NODES e))) (cdr (NODES e)))
@@ -476,62 +473,62 @@ RETURN: If node is a node of the edge, then return its successor or nil.
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(DEFCLASS WEIGHT-MIXIN-CLASS ()
-  ((WEIGHT
-    :INITFORM 1
-    :INITARG  :WEIGHT
-    :ACCESSOR WEIGHT
-    :TYPE     NUMBER
-    :DOCUMENTATION "The weight of the edge."))
-  (:DOCUMENTATION
+(defclass weight-mixin-class ()
+  ((weight
+    :initform 1
+    :initarg  :weight
+    :accessor weight
+    :type     number
+    :documentation "The weight of the edge."))
+  (:documentation
    "This is a mixin for the subclasses of EDGE-CLASS
     to add a weight to the edge."))
 
 
-(DEFMETHOD SET-WEIGHT ((SELF WEIGHT-MIXIN-CLASS) (NEWWEIGHT INTEGER))
+(defmethod set-weight ((self weight-mixin-class) (newweight integer))
   "
 POST:   (equal (weight self) newWeight)
 "
-  (SETF (SLOT-VALUE SELF 'WEIGHT) NEWWEIGHT))
+  (setf (slot-value self 'weight) newweight))
 
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(DEFUN NODE-CONS-P (ITEM)
+(defun node-cons-p (item)
   "
 RETURN: Whether `item' is a cons of two objects kind of ELEMENT-CLASS.
 "
-  (AND (CONSP ITEM)
-       (TYPEP (CAR ITEM) 'ELEMENT-CLASS)
-       (TYPEP (CDR ITEM) 'ELEMENT-CLASS)))
+  (and (consp item)
+       (typep (car item) 'element-class)
+       (typep (cdr item) 'element-class)))
 
 
-(DEFCLASS UNDIRECTED-EDGE-CLASS (EDGE-CLASS)
-  ((NODES
-    :INITARG :NODES
-    :ACCESSOR NODES
-    :TYPE     (SATISFIES NODE-CONS-P)
-    :DOCUMENTATION
+(defclass undirected-edge-class (edge-class)
+  ((nodes
+    :initarg :nodes
+    :accessor nodes
+    :type     (satisfies node-cons-p)
+    :documentation
     "A cons containing the two unordered NODES of the edge." ))
-  (:DOCUMENTATION "An undirected edge."))
+  (:documentation "An undirected edge."))
 
 
-(DEFMETHOD COPY ((SELF UNDIRECTED-EDGE-CLASS) &KEY &ALLOW-OTHER-KEYS)
+(defmethod copy ((self undirected-edge-class) &key &allow-other-keys)
   "
 RETURN: A COPY of this edge (only with same NODES).
 "
-  (MAKE-INSTANCE (CLASS-OF SELF)
-    :NODES  (NODES SELF)))
+  (make-instance (class-of self)
+    :nodes  (nodes self)))
 
 
-(DEFUN IDENTICAL-NODES (NODES-CONS-A NODES-CONS-B)
+(defun identical-nodes (nodes-cons-a nodes-cons-b)
   "
 RETURN: Whether NODES-cons-a and NODES-cons-b contain the same NODES.
 "
-  (OR (AND (EQ (CAR NODES-CONS-A) (CAR NODES-CONS-B))
-           (EQ (CDR NODES-CONS-A) (CDR NODES-CONS-B)))
-      (AND (EQ (CAR NODES-CONS-A) (CDR NODES-CONS-B))
-           (EQ (CDR NODES-CONS-A) (CAR NODES-CONS-B)))))
+  (or (and (eq (car nodes-cons-a) (car nodes-cons-b))
+           (eq (cdr nodes-cons-a) (cdr nodes-cons-b)))
+      (and (eq (car nodes-cons-a) (cdr nodes-cons-b))
+           (eq (cdr nodes-cons-a) (car nodes-cons-b)))))
 
 
 ;; (defmethod identicalTo ((self UNDIRECTED-EDGE-CLASS) (other PjBElement))
@@ -545,85 +542,85 @@ RETURN: Whether NODES-cons-a and NODES-cons-b contain the same NODES.
 ;;        (IDENTICAL-NODES (NODES self) (NODES other)))
 ;;   )
 
-(DEFMETHOD IS-BETWEEN-NODES ((SELF EDGE-CLASS) 
-                             (NODEA ELEMENT-CLASS)  (NODEB ELEMENT-CLASS))
+(defmethod is-between-nodes ((self edge-class) 
+                             (nodea element-class)  (nodeb element-class))
   "
 RETURN: Whether this edge is between `nodeA' and `nodeB'.
         The node order is not important.
 "
-  (IDENTICAL-NODES (NODES SELF) (CONS NODEA NODEB)))
+  (identical-nodes (nodes self) (cons nodea nodeb)))
 
 
-(DEFMETHOD SUCCESSOR-OF ((SELF UNDIRECTED-EDGE-CLASS) (NODE ELEMENT-CLASS))
+(defmethod successor-of ((self undirected-edge-class) (node element-class))
   "
 RETURN: If node is a node of this edge, then the other node, else nil.
 "
-  (LET ( (NODES (NODES SELF)) )
-    (COND
-      ((EQ NODE (CAR NODES)) (CDR NODES))
-      ((EQ NODE (CDR NODES)) (CAR NODES))
-      (T NIL))))
+  (let ( (nodes (nodes self)) )
+    (cond
+      ((eq node (car nodes)) (cdr nodes))
+      ((eq node (cdr nodes)) (car nodes))
+      (t nil))))
 
 
-(DEFMETHOD SET-NODES ((SELF UNDIRECTED-EDGE-CLASS) 
-                      (NODEA ELEMENT-CLASS) (NODEB ELEMENT-CLASS))
+(defmethod set-nodes ((self undirected-edge-class) 
+                      (nodea element-class) (nodeb element-class))
   "
 DO:     set the NODES of this edge.
 "
-  (SETF (SLOT-VALUE SELF 'NODES) (CONS NODEA NODEB)))
+  (setf (slot-value self 'nodes) (cons nodea nodeb)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(DEFCLASS WEIGHTED-UNDIRECTED-EDGE-CLASS 
-    (UNDIRECTED-EDGE-CLASS WEIGHT-MIXIN-CLASS)
+(defclass weighted-undirected-edge-class 
+    (undirected-edge-class weight-mixin-class)
   ()
-  (:DOCUMENTATION
+  (:documentation
    "A weighted, undirected edge."))
 
 
-(DEFMETHOD DESCRIPTION ((SELF WEIGHTED-UNDIRECTED-EDGE-CLASS))
+(defmethod description ((self weighted-undirected-edge-class))
   "
 RETURN: A string describing this element.
 "
-  (LET ((NODES (NODES SELF)))
-    (FORMAT NIL "<A ~A between { ~A and ~A } weighting ~A>" 
-            (CLASS-NAME (CLASS-OF SELF)) 
-            (DESCRIPTION (CAR  NODES))
-            (DESCRIPTION (CDR NODES))
-            (WEIGHT SELF))))
+  (let ((nodes (nodes self)))
+    (format nil "<A ~A between { ~A and ~A } weighting ~A>" 
+            (class-name (class-of self)) 
+            (description (car  nodes))
+            (description (cdr nodes))
+            (weight self))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(DEFCLASS DIRECTED-EDGE-CLASS (EDGE-CLASS)
-  ((FROM
-    :INITARG  :FROM
-    :ACCESSOR  FROM
-    :TYPE      ELEMENT-CLASS
-    :DOCUMENTATION
+(defclass directed-edge-class (edge-class)
+  ((from
+    :initarg  :from
+    :accessor  from
+    :type      element-class
+    :documentation
     "The `from' node of this edge." )
-   (TO
-    :INITARG  :TO
-    :ACCESSOR  TO
-    :TYPE      ELEMENT-CLASS
-    :DOCUMENTATION
+   (to
+    :initarg  :to
+    :accessor  to
+    :type      element-class
+    :documentation
     "The `to' node of this edge." ))
-  (:DOCUMENTATION "An directed edge."))
+  (:documentation "An directed edge."))
 
 
-(DEFMETHOD COPY ((SELF DIRECTED-EDGE-CLASS) &KEY &ALLOW-OTHER-KEYS)
+(defmethod copy ((self directed-edge-class) &key &allow-other-keys)
   "
 RETURN: A COPY of this edge (only with same NODES).
 "
-  (MAKE-INSTANCE (CLASS-OF SELF)
-    :FROM   (FROM   SELF)
-    :TO     (TO     SELF)))
+  (make-instance (class-of self)
+    :from   (from   self)
+    :to     (to     self)))
 
 
-(DEFMETHOD NODES ((SELF DIRECTED-EDGE-CLASS))
+(defmethod nodes ((self directed-edge-class))
   "
 RETURN: A cons containing the two NODES of the edge in no particular order.
 NOTE:   Use the accessor methods `from' and `to' to get the wanted node.
 "
-  (CONS (FROM SELF) (TO SELF)))
+  (cons (from self) (to self)))
 
 
 ;; (defmethod identicalTo ((self DIRECTED-EDGE-CLASS) (other PjBElement))
@@ -639,366 +636,366 @@ NOTE:   Use the accessor methods `from' and `to' to get the wanted node.
 ;;   )
 
 
-(DEFMETHOD IS-BETWEEN-NODES ((SELF DIRECTED-EDGE-CLASS) 
-                             (NODEA ELEMENT-CLASS)  (NODEB ELEMENT-CLASS))
+(defmethod is-between-nodes ((self directed-edge-class) 
+                             (nodea element-class)  (nodeb element-class))
   "
 RETURN: Whether this edge is between `nodeA' and `nodeB'.
         `nodeA' is compared to the from node
         and `nodeB' is compared to the  to  node.
 
 "
-  (AND (EQ (FROM SELF) NODEA) (EQ (TO SELF) NODEB)))
+  (and (eq (from self) nodea) (eq (to self) nodeb)))
 
 
-(DEFMETHOD SUCCESSOR-OF ((SELF DIRECTED-EDGE-CLASS) (NODE ELEMENT-CLASS))
+(defmethod successor-of ((self directed-edge-class) (node element-class))
   "
 RETURN: If node is the `from'  node of this edge, then the `to' node, else nil.
 "
-  (IF (EQ NODE (FROM SELF))  (TO SELF)  NIL))
+  (if (eq node (from self))  (to self)  nil))
 
 
-(DEFMETHOD SET-NODES ((SELF DIRECTED-EDGE-CLASS)
-                      (NEWFROM ELEMENT-CLASS) (NEWTO ELEMENT-CLASS))
+(defmethod set-nodes ((self directed-edge-class)
+                      (newfrom element-class) (newto element-class))
   "
 DO:     set the NODES of this edge.
 "
-  (SETF (SLOT-VALUE SELF 'FROM) NEWFROM)
-  (SETF (SLOT-VALUE SELF 'TO)   NEWTO))
+  (setf (slot-value self 'from) newfrom)
+  (setf (slot-value self 'to)   newto))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(DEFCLASS WEIGHTED-DIRECTED-EDGE-CLASS (DIRECTED-EDGE-CLASS WEIGHT-MIXIN-CLASS)
+(defclass weighted-directed-edge-class (directed-edge-class weight-mixin-class)
   ()
-  (:DOCUMENTATION "A weighted, directed edge."))
+  (:documentation "A weighted, directed edge."))
 
 
-(DEFMETHOD DESCRIPTION ((SELF WEIGHTED-DIRECTED-EDGE-CLASS))
+(defmethod description ((self weighted-directed-edge-class))
   "
 RETURN: A string describing this element.
 "
-  (LET ((NODES (NODES SELF)))
-    (FORMAT NIL "<A ~A between { ~A and ~A } weighting ~A>" 
-            (CLASS-NAME (CLASS-OF SELF))
-            (DESCRIPTION (CAR  NODES))
-            (DESCRIPTION (CDR NODES))
-            (WEIGHT SELF))))
+  (let ((nodes (nodes self)))
+    (format nil "<A ~A between { ~A and ~A } weighting ~A>" 
+            (class-name (class-of self))
+            (description (car  nodes))
+            (description (cdr nodes))
+            (weight self))))
 
 
-(DEFMETHOD COPY ((SELF WEIGHTED-DIRECTED-EDGE-CLASS) &KEY &ALLOW-OTHER-KEYS)
+(defmethod copy ((self weighted-directed-edge-class) &key &allow-other-keys)
   "
 RETURN: A COPY of this edge (only with same NODES).
 "
-  (MAKE-INSTANCE (CLASS-OF SELF)
-    :WEIGHT (WEIGHT SELF)
-    :FROM   (FROM   SELF)
-    :TO     (TO     SELF)))
+  (make-instance (class-of self)
+    :weight (weight self)
+    :from   (from   self)
+    :to     (to     self)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(DEFUN SUBCLASS-OF-EDGE-P (ITEM)
+(defun subclass-of-edge-p (item)
   "
 RETURN: Whether `item' is a subclass of EDGE-CLASS (not EDGE-CLASS itself).
 "
-  (SUBTYPEP ITEM 'EDGE-CLASS))
+  (subtypep item 'edge-class))
 
 
-(DEFCLASS GRAPH-CLASS (ELEMENT-CLASS)
-  ((NODES
-    :INITARG  :NODES
-    :ACCESSOR NODES
-    :TYPE     SET-CLASS
-    :DOCUMENTATION
+(defclass graph-class (element-class)
+  ((nodes
+    :initarg  :nodes
+    :accessor nodes
+    :type     set-class
+    :documentation
     "The set of NODES in this graph.")
-   (EDGES
-    :INITARG :EDGES
-    :ACCESSOR EDGES
-    :TYPE     SET-CLASS
-    :DOCUMENTATION
+   (edges
+    :initarg :edges
+    :accessor edges
+    :type     set-class
+    :documentation
     "The set of edges in this graph.")
-   (EDGE-CLASS
-    :INITFORM 'UNDIRECTED-EDGE-CLASS
-    :INITARG  :EDGE-CLASS
-    :ACCESSOR EDGE-CLASS
+   (edge-class
+    :initform 'undirected-edge-class
+    :initarg  :edge-class
+    :accessor edge-class
     ;;:type     (satisfies 'SUBCLASS-OF-EDGE-P)
-    :DOCUMENTATION
+    :documentation
     "The class used to make new edges in this graph. 
 Default is UNDIRECTED-EDGE-CLASS."))
-  (:DOCUMENTATION 
+  (:documentation 
    "A graph of elements. By default, it's a undirected graph."))
 
 
-(DEFMETHOD INITIALIZE-INSTANCE :AFTER ((SELF GRAPH-CLASS) &REST INITARGS
-                                       &KEY &ALLOW-OTHER-KEYS)
+(defmethod initialize-instance :after ((self graph-class) &rest initargs
+                                       &key &allow-other-keys)
   "
 DO:     Initalize the instance nodes and edges.
 "
-  (DECLARE (IGNORE INITARGS))
+  (declare (ignore initargs))
   (unless (slot-boundp self 'nodes)
-    (SETF (NODES SELF) (MAKE-INSTANCE 'SET-CLASS)))
+    (setf (nodes self) (make-instance 'set-class)))
   (if (slot-boundp self 'edges)
       (progn
         ;; todo: we should check that all edges are between two nodes of the graph.
         )
-      (SETF (EDGES SELF) (MAKE-INSTANCE 'SET-CLASS)))
-  SELF)
+      (setf (edges self) (make-instance 'set-class)))
+  self)
 
 
 
-(DEFMETHOD DESCRIPTION ((SELF GRAPH-CLASS))
+(defmethod description ((self graph-class))
   "
 RETURN: A string describing this element.
 "
-  (FORMAT NIL "<A ~A with ~D NODES and ~D edges>" 
-          (CLASS-NAME (CLASS-OF SELF)) 
-          (CARDINAL (NODES SELF))
-          (CARDINAL (EDGES SELF))))
+  (format nil "<A ~A with ~D NODES and ~D edges>" 
+          (class-name (class-of self)) 
+          (cardinal (nodes self))
+          (cardinal (edges self))))
 
 
-(DEFMETHOD ADD-NODE ((SELF GRAPH-CLASS) (NEWNODE ELEMENT-CLASS))
+(defmethod add-node ((self graph-class) (newnode element-class))
   "
 DO:     Add newNode to the set of NODES of this graph.
 "
-  (ADD-ELEMENT (NODES SELF) NEWNODE))
+  (add-element (nodes self) newnode))
 
 
-(DEFMETHOD ADD-NODES ((SELF GRAPH-CLASS) NEWNODELIST)
+(defmethod add-nodes ((self graph-class) newnodelist)
   "
 DO:     Add a list of new NODES to the set of NODES of this graph.
 "
-  (ADD-ELEMENTS (NODES SELF) NEWNODELIST))
+  (add-elements (nodes self) newnodelist))
 
 
 
-(DEFMETHOD REMOVE-NODE ((SELF GRAPH-CLASS) (OLDNODE ELEMENT-CLASS))
+(defmethod remove-node ((self graph-class) (oldnode element-class))
   "
 DO:      Remove the oldNode from the graph. 
          This implies removing all the edges adjacent to the node too.
 "
-  (WHEN (CONTAINS-ELEMENT (NODES SELF) OLDNODE)
-    (REMOVE-EDGES SELF (SELECT-ELEMENTS (EDGES SELF)
-                                        (LAMBDA (EDGE)
-                                          (OR (EQ OLDNODE (FROM EDGE))
-                                              (EQ OLDNODE (TO   EDGE))))))))
+  (when (contains-element (nodes self) oldnode)
+    (remove-edges self (select-elements (edges self)
+                                        (lambda (edge)
+                                          (or (eq oldnode (from edge))
+                                              (eq oldnode (to   edge))))))))
 
 
-(DEFMETHOD REMOVE-NODES ((SELF GRAPH-CLASS) OLDNODELIST)
+(defmethod remove-nodes ((self graph-class) oldnodelist)
   "
 DO:      Remove all the NODES of the oldNodeList from this graph.
 "
-  (DOLIST (NODE OLDNODELIST) (REMOVE-NODE SELF NODE)))
+  (dolist (node oldnodelist) (remove-node self node)))
 
 
-(DEFMETHOD ADD-EDGE ((SELF GRAPH-CLASS) (NEWEDGE EDGE-CLASS))
+(defmethod add-edge ((self graph-class) (newedge edge-class))
   "
 PRE:    (and (CONTAINS-ELEMENT (NODES self) (nth 0 (NODES newEdge)))
              (CONTAINS-ELEMENT (NODES self) (nth 1 (NODES newEdge))))
 DO:     Add a new edge to this graph.
 "
-  (WHEN (AND (CONTAINS-ELEMENT (NODES SELF) (CAR (NODES NEWEDGE)))
-             (CONTAINS-ELEMENT (NODES SELF) (CDR (NODES NEWEDGE))))
-    (ADD-ELEMENT (EDGES SELF) NEWEDGE)))
+  (when (and (contains-element (nodes self) (car (nodes newedge)))
+             (contains-element (nodes self) (cdr (nodes newedge))))
+    (add-element (edges self) newedge)))
 
 
-(DEFMETHOD ADD-EDGE-BETWEEN-NODES ((SELF GRAPH-CLASS) 
-                                   (NODEA ELEMENT-CLASS) (NODEB ELEMENT-CLASS))
+(defmethod add-edge-between-nodes ((self graph-class) 
+                                   (nodea element-class) (nodeb element-class))
   "
 DO:     Create a new edge (of class edge-class) between `nodeA' and `nodeB'.
         and add it to this graph.
         If the edge is directed, 
         then `nodeA' is the `from' node and `nodeB' the `to' node.
 "
-  (LET ((EDGE (MAKE-INSTANCE (EDGE-CLASS SELF))))
-    (SET-NODES EDGE NODEA NODEB)
-    (ADD-EDGE SELF EDGE)))
+  (let ((edge (make-instance (edge-class self))))
+    (set-nodes edge nodea nodeb)
+    (add-edge self edge)))
 
 
-(DEFMETHOD REMOVE-EDGE ((SELF GRAPH-CLASS) (OLDEDGE EDGE-CLASS))
+(defmethod remove-edge ((self graph-class) (oldedge edge-class))
   "
 DO:     Remove the `oldEdge' from this graph.
 "
-  (REMOVE-ELEMENT (EDGES SELF) OLDEDGE))
+  (remove-element (edges self) oldedge))
 
 
-(DEFMETHOD REMOVE-EDGES ((SELF GRAPH-CLASS) EDGE-LIST)
+(defmethod remove-edges ((self graph-class) edge-list)
   "
 DO:     Remove all the edges in edge-list from this graph.
 "
-  (DOLIST (EDGE EDGE-LIST)  (REMOVE-EDGE SELF EDGE)))
+  (dolist (edge edge-list)  (remove-edge self edge)))
 
 
-(DEFMETHOD REMOVE-EDGES-BETWEEN-NODES ((SELF GRAPH-CLASS)
-                                       (NODEA ELEMENT-CLASS)
-                                       (NODEB ELEMENT-CLASS))
+(defmethod remove-edges-between-nodes ((self graph-class)
+                                       (nodea element-class)
+                                       (nodeb element-class))
   "
 DO:     Remove all edges between `nodeA' and `nodeB'.
 "
-  (MAPC (LAMBDA (EDGE)
-          (REMOVE-EDGE SELF EDGE))
-        (EDGES-BETWEEN-NODES SELF NODEA NODEB)))
+  (mapc (lambda (edge)
+          (remove-edge self edge))
+        (edges-between-nodes self nodea nodeb)))
 
 
-(DEFMETHOD EDGES-BETWEEN-NODES ((SELF GRAPH-CLASS)
-                                (NODEA ELEMENT-CLASS) (NODEB ELEMENT-CLASS))
+(defmethod edges-between-nodes ((self graph-class)
+                                (nodea element-class) (nodeb element-class))
   "
 RETURN: A list of edges existing between the `nodeA' and `nodeB'.
         If the graph is directed then `nodeA' corresponds to the from node
                                   and `nodeB' corresponds to the  to  node.
 "
-  (SELECT-ELEMENTS (EDGES SELF)
-                   (LAMBDA (EDGE)
-                     (IS-BETWEEN-NODES EDGE NODEA NODEB))))
+  (select-elements (edges self)
+                   (lambda (edge)
+                     (is-between-nodes edge nodea nodeb))))
 
 
-(DEFMETHOD DIRECTED-EDGES-BETWEEN-NODES ((SELF GRAPH-CLASS) 
-                                         (FROMNODE ELEMENT-CLASS)
-                                         (TONODE ELEMENT-CLASS))
+(defmethod directed-edges-between-nodes ((self graph-class) 
+                                         (fromnode element-class)
+                                         (tonode element-class))
   "
 RETURN: A list of edges existing from the `fromNode' and to the `toNode'.
 "
-  (SELECT-ELEMENTS (EDGES SELF)
-                   (LAMBDA (EDGE)
-                     (EQ (SUCCESSOR-OF EDGE FROMNODE) TONODE))))
+  (select-elements (edges self)
+                   (lambda (edge)
+                     (eq (successor-of edge fromnode) tonode))))
 
 
-(DEFMETHOD DIRECTED-EDGES-FROM-NODE ((SELF GRAPH-CLASS)
-                                     (FROMNODE ELEMENT-CLASS))
+(defmethod directed-edges-from-node ((self graph-class)
+                                     (fromnode element-class))
   "
 PRE:    edge-class is-subclass-of DIRECTED-EDGE-CLASS
         or edge-class eq DIRECTED-EDGE-CLASS.
 RETURN: A list of edges existing from the `fromNode'.
 "
-  (UNLESS (SUBTYPEP (EDGE-CLASS SELF) 'DIRECTED-EDGE-CLASS)
-    (ERROR "This graph is not a directed graph. Can't apply ~
+  (unless (subtypep (edge-class self) 'directed-edge-class)
+    (error "This graph is not a directed graph. Can't apply ~
             DIRECTED-EDGES-FROM-NODE."))
-  (SELECT-ELEMENTS (EDGES SELF)
-                   (LAMBDA (EDGE) (EQ (FROM EDGE) FROMNODE))))
+  (select-elements (edges self)
+                   (lambda (edge) (eq (from edge) fromnode))))
 
 
-(DEFMETHOD SUCCESSOR-NODES ((SELF GRAPH-CLASS) (NODE ELEMENT-CLASS))
+(defmethod successor-nodes ((self graph-class) (node element-class))
   "
 RETURN: The list of successors NODES of the given node in this graph.
 NOTE:   For undirected graphs, it's the same as ADJACENT-NODES.
 "
-  (LET ((RESULT NIL))
-    (PERFORM-WITH-ELEMENTS
-     (EDGES SELF)
-     (LAMBDA (EDGE)
-       (LET ( (SUCC (SUCCESSOR-OF EDGE NODE)) )
-         (WHEN SUCC
-           (UNLESS (MEMBER SUCC RESULT) (PUSH SUCC RESULT))))))
-    RESULT))
+  (let ((result nil))
+    (perform-with-elements
+     (edges self)
+     (lambda (edge)
+       (let ( (succ (successor-of edge node)) )
+         (when succ
+           (unless (member succ result) (push succ result))))))
+    result))
 
 
-(DEFMETHOD ADJACENT-NODES ((SELF GRAPH-CLASS) (NODE ELEMENT-CLASS))
+(defmethod adjacent-nodes ((self graph-class) (node element-class))
   "
 RETURN: The list of NODES adjacent to the given node in this graph.
 NOTE:   For directed graphs, an adjacent node is either a predecessor
         or a successors of the node.
 "
-  (LET ((RESULT NIL))
-    (PERFORM-WITH-ELEMENTS
-     (EDGES SELF)
-     (LAMBDA (EDGE)
-       (LET ((NS (NODES EDGE)))
-         (COND 
-           ((EQ NODE (CAR NS)) 
-            (UNLESS (MEMBER (CDR NS) RESULT) (PUSH (CDR NS) RESULT)))
-           ((EQ NODE (CDR NS)) 
-            (UNLESS (MEMBER (CAR NS) RESULT) (PUSH (CAR NS) RESULT)))))))
-    RESULT))
+  (let ((result nil))
+    (perform-with-elements
+     (edges self)
+     (lambda (edge)
+       (let ((ns (nodes edge)))
+         (cond 
+           ((eq node (car ns)) 
+            (unless (member (cdr ns) result) (push (cdr ns) result)))
+           ((eq node (cdr ns)) 
+            (unless (member (car ns) result) (push (car ns) result)))))))
+    result))
 
 
-(DEFMETHOD FLOW-DISTANCE-FROM-NODE ((SELF GRAPH-CLASS) 
-                                    (STARTNODE ELEMENT-CLASS)
-                                    (PROP-NAME SYMBOL))
+(defmethod flow-distance-from-node ((self graph-class) 
+                                    (startnode element-class)
+                                    (prop-name symbol))
   "
 DO:     Compute for each node in this graph the distance from the startNode,
         and store it as a property named prop-name.
 NOTE:   If the graph is not connex, then some distances will be nil, 
         meaning infinity.
 "
-  (PERFORM-WITH-ELEMENTS (NODES SELF) (LAMBDA (NODE) 
-                                        (SET-PROPERTY NODE PROP-NAME NIL)))
-  (WHEN (CONTAINS-ELEMENT (NODES SELF) STARTNODE)
-    (SET-PROPERTY STARTNODE PROP-NAME 0)
-    (LET ( (CUR-NODES (LIST STARTNODE))
-          CUR-NODE DISTANCE SUC-NODES SUC-DIST )
-      (WHILE CUR-NODES
-        (setf CUR-NODE (CAR CUR-NODES)
-              CUR-NODES (CDR CUR-NODES)
-              DISTANCE (1+ (GET-PROPERTY CUR-NODE PROP-NAME))
-              SUC-NODES (SUCCESSOR-NODES SELF CUR-NODE))
+  (perform-with-elements (nodes self) (lambda (node) 
+                                        (set-property node prop-name nil)))
+  (when (contains-element (nodes self) startnode)
+    (set-property startnode prop-name 0)
+    (let ( (cur-nodes (list startnode))
+          cur-node distance suc-nodes suc-dist )
+      (while cur-nodes
+        (setf cur-node (car cur-nodes)
+              cur-nodes (cdr cur-nodes)
+              distance (1+ (get-property cur-node prop-name))
+              suc-nodes (successor-nodes self cur-node))
         ;; (not (null distance))
-        (DOLIST (SUC-NODE SUC-NODES)
-          (setf SUC-DIST (GET-PROPERTY SUC-NODE PROP-NAME))
-          (WHEN (OR (NULL SUC-DIST) (< DISTANCE SUC-DIST))
-            (SET-PROPERTY SUC-NODE PROP-NAME DISTANCE)
-            (UNLESS (MEMBER SUC-NODE CUR-NODES)
-              (PUSH SUC-NODE CUR-NODES))))))))
+        (dolist (suc-node suc-nodes)
+          (setf suc-dist (get-property suc-node prop-name))
+          (when (or (null suc-dist) (< distance suc-dist))
+            (set-property suc-node prop-name distance)
+            (unless (member suc-node cur-nodes)
+              (push suc-node cur-nodes))))))))
 
 
-(DEFMETHOD WALK-FROM-NODE ((SELF GRAPH-CLASS) (STARTNODE ELEMENT-CLASS)
-                           LAMBDA-BODY)
+(defmethod walk-from-node ((self graph-class) (startnode element-class)
+                           lambda-body)
   "
 DO:     Walk the graph starting form startNode, calling lambda-body 
         with each node as argument. 
 "
-  (LET ((STAMP (GENSYM "walked-")))
-    (WHEN (CONTAINS-ELEMENT (NODES SELF) STARTNODE)
-      (PERFORM-WITH-ELEMENTS (NODES SELF) 
-                             (LAMBDA (NODE) (SET-PROPERTY NODE STAMP NIL)))
-      (LET ( (CUR-NODES (LIST STARTNODE))
-            CUR-NODE  SUC-NODES  )
-        (WHILE CUR-NODES
-          (SETQ CUR-NODE  (CAR CUR-NODES)
-                CUR-NODES (CDR CUR-NODES))
+  (let ((stamp (gensym "walked-")))
+    (when (contains-element (nodes self) startnode)
+      (perform-with-elements (nodes self) 
+                             (lambda (node) (set-property node stamp nil)))
+      (let ( (cur-nodes (list startnode))
+            cur-node  suc-nodes  )
+        (while cur-nodes
+          (setq cur-node  (car cur-nodes)
+                cur-nodes (cdr cur-nodes))
 
-          (SET-PROPERTY CUR-NODE STAMP T)
-          (FUNCALL LAMBDA-BODY CUR-NODE)
+          (set-property cur-node stamp t)
+          (funcall lambda-body cur-node)
 
-          (SETQ SUC-NODES (SUCCESSOR-NODES SELF CUR-NODE))
-          (DOLIST (SUC-NODE SUC-NODES)
-            (UNLESS (GET-PROPERTY SUC-NODE STAMP)
-              (PUSH SUC-NODE CUR-NODES)) )))
-      (PERFORM-WITH-ELEMENTS (NODES SELF) 
-                             (LAMBDA (NODE) (DELETE-PROPERTY NODE STAMP))))))
+          (setq suc-nodes (successor-nodes self cur-node))
+          (dolist (suc-node suc-nodes)
+            (unless (get-property suc-node stamp)
+              (push suc-node cur-nodes)) )))
+      (perform-with-elements (nodes self) 
+                             (lambda (node) (delete-property node stamp))))))
 
 
-(DEFMETHOD WALK-EDGES-FROM-NODE ((SELF GRAPH-CLASS)
-                                 (STARTNODE ELEMENT-CLASS) LAMBDA-BODY)
+(defmethod walk-edges-from-node ((self graph-class)
+                                 (startnode element-class) lambda-body)
   "
 DO:     Walk the graph starting form startNode, calling lambda-body 
         with each edges as argument. Since it's the edges that are passed
         to lambda-body, one node can be \"walked\" several times either as
         `from' or `to' node or different edges.
 "
-  (LET ((STAMP (GENSYM "walked-")))
-    (WHEN (CONTAINS-ELEMENT (NODES SELF) STARTNODE)
-      (PERFORM-WITH-ELEMENTS (EDGES SELF) 
-                             (LAMBDA (ITEM) (SET-PROPERTY ITEM STAMP NIL)))
-      (PERFORM-WITH-ELEMENTS (NODES SELF) 
-                             (LAMBDA (ITEM) (SET-PROPERTY ITEM STAMP NIL)))
-      (SET-PROPERTY STARTNODE STAMP T)
-      (LET ((CUR-NODES (LIST STARTNODE))
-            CUR-NODE)
-        (WHILE CUR-NODES
-          (SETQ CUR-NODE  (CAR CUR-NODES)
-                CUR-NODES (CDR CUR-NODES))
-          (DOLIST (EDGE (DIRECTED-EDGES-FROM-NODE SELF CUR-NODE))
-            (UNLESS (GET-PROPERTY EDGE STAMP)
-              (SET-PROPERTY EDGE STAMP T)
-              (FUNCALL LAMBDA-BODY EDGE)
-              (UNLESS (GET-PROPERTY (TO EDGE) STAMP)
-                (SET-PROPERTY (TO EDGE) STAMP T)
-                (PUSH (TO EDGE) CUR-NODES))))))
-      (PERFORM-WITH-ELEMENTS (EDGES SELF) 
-                             (LAMBDA (ITEM) (DELETE-PROPERTY ITEM STAMP)))
-      (PERFORM-WITH-ELEMENTS (NODES SELF) 
-                             (LAMBDA (ITEM) (DELETE-PROPERTY ITEM STAMP))))))
+  (let ((stamp (gensym "walked-")))
+    (when (contains-element (nodes self) startnode)
+      (perform-with-elements (edges self) 
+                             (lambda (item) (set-property item stamp nil)))
+      (perform-with-elements (nodes self) 
+                             (lambda (item) (set-property item stamp nil)))
+      (set-property startnode stamp t)
+      (let ((cur-nodes (list startnode))
+            cur-node)
+        (while cur-nodes
+          (setq cur-node  (car cur-nodes)
+                cur-nodes (cdr cur-nodes))
+          (dolist (edge (directed-edges-from-node self cur-node))
+            (unless (get-property edge stamp)
+              (set-property edge stamp t)
+              (funcall lambda-body edge)
+              (unless (get-property (to edge) stamp)
+                (set-property (to edge) stamp t)
+                (push (to edge) cur-nodes))))))
+      (perform-with-elements (edges self) 
+                             (lambda (item) (delete-property item stamp)))
+      (perform-with-elements (nodes self) 
+                             (lambda (item) (delete-property item stamp))))))
 
 
 
-(DEFMETHOD COPY ((SELF GRAPH-CLASS)
-                 &KEY (COPY-NODES NIL) (COPY-EDGES T) &ALLOW-OTHER-KEYS)
+(defmethod copy ((self graph-class)
+                 &key (copy-nodes nil) (copy-edges t) &allow-other-keys)
   "
 RETURN: A COPY of this graph.
 NOTE:   By default, the NODES are the same, but the edges are duplicated.
@@ -1017,65 +1014,65 @@ NOTE:   By default, the NODES are the same, but the edges are duplicated.
                                          edges to make it different from the
                                          original graph.
 "
-  (LET (NEW-NODES
-        NEW-EDGES
-        NODE-HASH)
-    (WHEN (AND COPY-NODES (NOT COPY-EDGES))
-      (ERROR "Can't have both COPY-NODES and (NOT COPY-EDGES)."))
-    (UNLESS COPY-NODES       (SETf COPY-NODES NIL))
-    (UNLESS (NOT COPY-EDGES) (SETf COPY-EDGES T))
-    (WHEN   (NOT COPY-EDGES) (SETf COPY-NODES NIL))
-    (WHEN   COPY-NODES       (SETf COPY-EDGES T))
-    (IF COPY-NODES 
-        (setf NODE-HASH (MAKE-HASH-TABLE :TEST 'EQ 
-                                         :SIZE (CARDINAL (NODES SELF)))
+  (let (new-nodes
+        new-edges
+        node-hash)
+    (when (and copy-nodes (not copy-edges))
+      (error "Can't have both COPY-NODES and (NOT COPY-EDGES)."))
+    (unless copy-nodes       (setf copy-nodes nil))
+    (unless (not copy-edges) (setf copy-edges t))
+    (when   (not copy-edges) (setf copy-nodes nil))
+    (when   copy-nodes       (setf copy-edges t))
+    (if copy-nodes 
+        (setf node-hash (make-hash-table :test 'eq 
+                                         :size (cardinal (nodes self)))
             
-              NEW-NODES (MAKE-INSTANCE 'SET-CLASS 
-                          :ELEMENTS (MAP-ELEMENTS 
-                                     (NODES SELF)
-                                     (LAMBDA (NODE)
-                                       (LET ((NEW-NODE (COPY NODE)))
-                                         (SETF (GETHASH NODE NODE-HASH) NEW-NODE)
-                                         NEW-NODE)))))
-        (setf NEW-NODES  (NODES SELF)))
-    (IF COPY-EDGES
-        (setf NEW-EDGES 
-              (MAKE-INSTANCE 'SET-CLASS 
-                :ELEMENTS (MAP-ELEMENTS
-                           (EDGES SELF)
-                           (LAMBDA (EDGE)
-                             (LET ((NEW-EDGE (COPY EDGE))
-                                   NODES)
-                               (WHEN COPY-NODES
-                                 (SETQ NODES (NODES NEW-EDGE))
-                                 (SET-NODES NEW-EDGE 
-                                            (GETHASH (CAR NODES) NODE-HASH)
-                                            (GETHASH (CDR NODES) NODE-HASH)))
-                               NEW-EDGE)))))
-        (setf NEW-EDGES (EDGES SELF)))
-    (MAKE-INSTANCE (CLASS-OF SELF) 
-      :NODES NEW-NODES
-      :EDGES NEW-EDGES
-      :EDGE-CLASS (EDGE-CLASS SELF))))
+              new-nodes (make-instance 'set-class 
+                          :elements (map-elements 
+                                     (nodes self)
+                                     (lambda (node)
+                                       (let ((new-node (copy node)))
+                                         (setf (gethash node node-hash) new-node)
+                                         new-node)))))
+        (setf new-nodes  (nodes self)))
+    (if copy-edges
+        (setf new-edges 
+              (make-instance 'set-class 
+                :elements (map-elements
+                           (edges self)
+                           (lambda (edge)
+                             (let ((new-edge (copy edge))
+                                   nodes)
+                               (when copy-nodes
+                                 (setq nodes (nodes new-edge))
+                                 (set-nodes new-edge 
+                                            (gethash (car nodes) node-hash)
+                                            (gethash (cdr nodes) node-hash)))
+                               new-edge)))))
+        (setf new-edges (edges self)))
+    (make-instance (class-of self) 
+      :nodes new-nodes
+      :edges new-edges
+      :edge-class (edge-class self))))
 
 
-(DEFMETHOD FIND-NODES-WITH-PROPERTY ((SELF GRAPH-CLASS)
-                                     (PROPERTY SYMBOL) VALUE)
+(defmethod find-nodes-with-property ((self graph-class)
+                                     (property symbol) value)
   "
 RETURN: A list of NODES that have as property PROPERTY the value VALUE.
 "
-  (FIND-ELEMENTS-WITH-PROPERTY (NODES SELF) PROPERTY VALUE))
+  (find-elements-with-property (nodes self) property value))
 
 
-(DEFMETHOD SHOW-GRAPH ((SELF GRAPH-CLASS))
-  (FORMAT T "~A {~%" (DESCRIPTION SELF))
-  (PERFORM-WITH-ELEMENTS 
-   (NODES SELF)
-   (LAMBDA (NODE) (FORMAT T "   node ~A~%"  (DESCRIPTION NODE))))
-  (PERFORM-WITH-ELEMENTS
-   (EDGES SELF)
-   (LAMBDA (EDGE) (FORMAT T "   edge ~A~%" (DESCRIPTION EDGE))))
-  (FORMAT T "}~%"))
+(defmethod show-graph ((self graph-class))
+  (format t "~A {~%" (description self))
+  (perform-with-elements 
+   (nodes self)
+   (lambda (node) (format t "   node ~A~%"  (description node))))
+  (perform-with-elements
+   (edges self)
+   (lambda (edge) (format t "   edge ~A~%" (description edge))))
+  (format t "}~%"))
 
 
 

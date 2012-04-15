@@ -17,24 +17,22 @@
 ;;;;    2006-09-10 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal Bourguignon 2006 - 2006
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
 
@@ -110,7 +108,7 @@
 
 
 
-(assert (equal (COM.INFORMATIMAGO.RDP.EXAMPLE:PARSE-EXAMPLE
+(assert (equal (com.informatimago.rdp.example:parse-example
                 "
     const abc = 123,
           pi=3.141592e+0; 
@@ -128,7 +126,7 @@ begin
     b:=30.0;
     call gcd
 end.")
-               '(BLOCK (((IDENT "abc" 11) (INTEGER "123" 17)) ((IDENT "pi" 32) (REAL "3.141592e+0" 35))) ((IDENT "a" 57) (IDENT "b" 59) (IDENT "c" 61)) ((PROCEDURE (IDENT "gcd" 79) (BLOCK NIL NIL NIL ((WHILE (("#" "#" 112) (+ ((IDENT "a" 110))) (+ ((IDENT "b" 114)))) ((IF (("<" "<" 151) (+ ((IDENT "a" 150))) (+ ((IDENT "b" 152)))) (SETF (IDENT "b" 159) (+ ((IDENT "b" 162)) (("-" "-" 163) ((IDENT "a" 164)))))) (IF ((">" ">" 186) (+ ((IDENT "a" 185))) (+ ((IDENT "b" 187)))) (SETF (IDENT "a" 194) (+ ((IDENT "a" 197)) (("-" "-" 198) ((IDENT "b" 199)))))))))))) ((SETF (IDENT "a" 235) (+ ((INTEGER "42" 238)))) (SETF (IDENT "b" 246) (+ ((REAL "30.0" 249)))) (CALL (IDENT "gcd" 264))))))
+               '(block (((ident "abc" 11) (integer "123" 17)) ((ident "pi" 32) (real "3.141592e+0" 35))) ((ident "a" 57) (ident "b" 59) (ident "c" 61)) ((procedure (ident "gcd" 79) (block nil nil nil ((while (("#" "#" 112) (+ ((ident "a" 110))) (+ ((ident "b" 114)))) ((if (("<" "<" 151) (+ ((ident "a" 150))) (+ ((ident "b" 152)))) (setf (ident "b" 159) (+ ((ident "b" 162)) (("-" "-" 163) ((ident "a" 164)))))) (if ((">" ">" 186) (+ ((ident "a" 185))) (+ ((ident "b" 187)))) (setf (ident "a" 194) (+ ((ident "a" 197)) (("-" "-" 198) ((ident "b" 199)))))))))))) ((setf (ident "a" 235) (+ ((integer "42" 238)))) (setf (ident "b" 246) (+ ((real "30.0" 249)))) (call (ident "gcd" 264))))))
 
 
 
@@ -177,7 +175,7 @@ end.")
                  block ".")))
 
 
-(assert (equal (COM.INFORMATIMAGO.RDP.EXAMPLE-WITHOUT-ACTION:PARSE-EXAMPLE-WITHOUT-ACTION
+(assert (equal (com.informatimago.rdp.example-without-action:parse-example-without-action
                 "
     const abc = 123,
           pi=3.141592e+0; 
@@ -195,7 +193,7 @@ begin
     b:=30.0;
     call gcd
 end.")
-               '(PROGRAM (BLOCK (("const" "const" 5) (IDENT "abc" 11) ("=" "=" 15) (NUMBER (INTEGER "123" 17)) ((("," "," 20) (IDENT "pi" 32) ("=" "=" 34) (NUMBER (REAL "3.141592e+0" 35)))) (";" ";" 46)) (("var" "var" 53) (IDENT "a" 57) ((("," "," 58) (IDENT "b" 59)) (("," "," 60) (IDENT "c" 61))) (";" ";" 62)) ((("procedure" "procedure" 69) (IDENT "gcd" 79) (";" ";" 82) (BLOCK NIL NIL NIL (STATEMENT (("begin" "begin" 89) (STATEMENT (("while" "while" 104) (CONDITION ((EXPRESSION NIL (TERM (FACTOR (IDENT "a" 110)) NIL) NIL) ("#" "#" 112) (EXPRESSION NIL (TERM (FACTOR (IDENT "b" 114)) NIL) NIL))) ("do" "do" 116) (STATEMENT (("begin" "begin" 128) (STATEMENT (("if" "if" 147) (CONDITION ((EXPRESSION NIL (TERM (FACTOR (IDENT "a" 150)) NIL) NIL) ("<" "<" 151) (EXPRESSION NIL (TERM (FACTOR (IDENT "b" 152)) NIL) NIL))) ("then" "then" 154) (STATEMENT ((IDENT "b" 159) (":=" ":=" 160) (EXPRESSION NIL (TERM (FACTOR (IDENT "b" 162)) NIL) ((("-" "-" 163) (TERM (FACTOR (IDENT "a" 164)) NIL)))))))) (((";" ";" 166) (STATEMENT (("if" "if" 182) (CONDITION ((EXPRESSION NIL (TERM (FACTOR (IDENT "a" 185)) NIL) NIL) (">" ">" 186) (EXPRESSION NIL (TERM (FACTOR (IDENT "b" 187)) NIL) NIL))) ("then" "then" 189) (STATEMENT ((IDENT "a" 194) (":=" ":=" 195) (EXPRESSION NIL (TERM (FACTOR (IDENT "a" 197)) NIL) ((("-" "-" 198) (TERM (FACTOR (IDENT "b" 199)) NIL)))))))))) ("end" "end" 210))))) NIL ("end" "end" 219)))) (";" ";" 222))) (STATEMENT (("begin" "begin" 224) (STATEMENT ((IDENT "a" 235) (":=" ":=" 236) (EXPRESSION NIL (TERM (FACTOR (NUMBER (INTEGER "42" 238))) NIL) NIL))) (((";" ";" 240) (STATEMENT ((IDENT "b" 246) (":=" ":=" 247) (EXPRESSION NIL (TERM (FACTOR (NUMBER (REAL "30.0" 249))) NIL) NIL)))) ((";" ";" 253) (STATEMENT (("call" "call" 259) (IDENT "gcd" 264))))) ("end" "end" 268)))) ("." "." 271))))
+               '(program (block (("const" "const" 5) (ident "abc" 11) ("=" "=" 15) (number (integer "123" 17)) ((("," "," 20) (ident "pi" 32) ("=" "=" 34) (number (real "3.141592e+0" 35)))) (";" ";" 46)) (("var" "var" 53) (ident "a" 57) ((("," "," 58) (ident "b" 59)) (("," "," 60) (ident "c" 61))) (";" ";" 62)) ((("procedure" "procedure" 69) (ident "gcd" 79) (";" ";" 82) (block nil nil nil (statement (("begin" "begin" 89) (statement (("while" "while" 104) (condition ((expression nil (term (factor (ident "a" 110)) nil) nil) ("#" "#" 112) (expression nil (term (factor (ident "b" 114)) nil) nil))) ("do" "do" 116) (statement (("begin" "begin" 128) (statement (("if" "if" 147) (condition ((expression nil (term (factor (ident "a" 150)) nil) nil) ("<" "<" 151) (expression nil (term (factor (ident "b" 152)) nil) nil))) ("then" "then" 154) (statement ((ident "b" 159) (":=" ":=" 160) (expression nil (term (factor (ident "b" 162)) nil) ((("-" "-" 163) (term (factor (ident "a" 164)) nil)))))))) (((";" ";" 166) (statement (("if" "if" 182) (condition ((expression nil (term (factor (ident "a" 185)) nil) nil) (">" ">" 186) (expression nil (term (factor (ident "b" 187)) nil) nil))) ("then" "then" 189) (statement ((ident "a" 194) (":=" ":=" 195) (expression nil (term (factor (ident "a" 197)) nil) ((("-" "-" 198) (term (factor (ident "b" 199)) nil)))))))))) ("end" "end" 210))))) nil ("end" "end" 219)))) (";" ";" 222))) (statement (("begin" "begin" 224) (statement ((ident "a" 235) (":=" ":=" 236) (expression nil (term (factor (number (integer "42" 238))) nil) nil))) (((";" ";" 240) (statement ((ident "b" 246) (":=" ":=" 247) (expression nil (term (factor (number (real "30.0" 249))) nil) nil)))) ((";" ";" 253) (statement (("call" "call" 259) (ident "gcd" 264))))) ("end" "end" 268)))) ("." "." 271))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

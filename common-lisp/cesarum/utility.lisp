@@ -29,24 +29,22 @@
 ;;;;    2003-01-08 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
-;;;;
+;;;;    AGPL3
+;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2008
-;;;;
-;;;;    This script is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU  General Public
-;;;;    License as published by the Free Software Foundation; either
-;;;;    version 2 of the License, or (at your option) any later version.
-;;;;
-;;;;    This script is distributed in the hope that it will be useful,
+;;;;    
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
+;;;;    
+;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
-;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;;;;    General Public License for more details.
-;;;;
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this library; see the file COPYING.LIB.
-;;;;    If not, write to the Free Software Foundation,
-;;;;    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
+;;;;    
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -204,19 +202,19 @@ NOTE:    This version by Paul Graham in On Lisp."
 ||#
 
 
-(DEFUN INCLUDE (PATH)
+(defun include (path)
   "
 NOTE:    Untasty, but sometimes useful.
 DO:      Read from the file at PATH all the sexps and returns a list of them
          prefixed with 'progn.
 USAGE:   #.(include \"source.lisp\")
 "
-  (CONS 'PROGN
-        (WITH-OPEN-FILE (FILE PATH :DIRECTION :INPUT :IF-DOES-NOT-EXIST :ERROR)
-          (DO ((RESULT '())
-               (EOF (GENSYM)))
-              ((EQ EOF (CAR RESULT)) (NREVERSE (CDR RESULT)))
-            (PUSH (READ FILE NIL EOF) RESULT)))))
+  (cons 'progn
+        (with-open-file (file path :direction :input :if-does-not-exist :error)
+          (do ((result '())
+               (eof (gensym)))
+              ((eq eof (car result)) (nreverse (cdr result)))
+            (push (read file nil eof) result)))))
 
 
 
@@ -287,23 +285,23 @@ Return the results of the last form.
                        collect val))))))
 
 
-(DEFUN OP-TYPE-OF (SYMBOL &OPTIONAL ENV)
+(defun op-type-of (symbol &optional env)
   "
 From: nikodemus@random-state.net
 Newsgroups: comp.lang.lisp
 Date: 29 Jul 2004 03:59:50 GMT
 Message-ID: <ce9snm$4bp8o$1@midnight.cs.hut.fi>
 "
-  (IF (FBOUNDP SYMBOL)
-      (COND ((MACRO-FUNCTION SYMBOL ENV) 
-             'MACRO)
-            ((SPECIAL-OPERATOR-P SYMBOL) 
-             'SPECIAL-OPERATOR)
-            ((COMPILED-FUNCTION-P (SYMBOL-FUNCTION SYMBOL))
-             'COMPILED-FUNCTION)
+  (if (fboundp symbol)
+      (cond ((macro-function symbol env) 
+             'macro)
+            ((special-operator-p symbol) 
+             'special-operator)
+            ((compiled-function-p (symbol-function symbol))
+             'compiled-function)
             (t
-             'INTERPRETED-FUNCTION))
-      (ERROR "Symbol ~S is not an operator." SYMBOL)))
+             'interpreted-function))
+      (error "Symbol ~S is not an operator." symbol)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -325,19 +323,19 @@ NOTE:  No prefix argument are allowed for REDUCE!
       (reduce fun (nconc (butlast args) arg-list)))))
 
 
-(DEFMACRO WHILE (CONDITION &BODY BODY)
+(defmacro while (condition &body body)
   "While loop."
-  `(DO () ((NOT ,CONDITION))  ,@BODY))
+  `(do () ((not ,condition))  ,@body))
 
 
 
-(DEFMACRO UNTIL (CONDITION &BODY BODY)
+(defmacro until (condition &body body)
   "Until loop."
-  `(DO () (,CONDITION)        ,@BODY))
+  `(do () (,condition)        ,@body))
 
 
 
-(DEFMACRO FOR ((VAR FIRST LAST . REST) &BODY BODY)
+(defmacro for ((var first last . rest) &body body)
   "For loop.
 DO:    Repeat BODY with VAR bound to successive integer values from 
        FIRST to LAST inclusive.
@@ -346,23 +344,23 @@ DO:    Repeat BODY with VAR bound to successive integer values from
        VAR is incremented by STEP and it stops when VAR goes above
        or below LAST depending on the sign of STEP.
 "
-  (LET ((FIRSTVAR (GENSYM "FIRST"))
-        (LASTVAR  (GENSYM "LAST"))
-        (STEPVAR  (GENSYM "STEP"))
-        (STEP     (AND REST (CAR REST))))
-    (WHEN (CDR REST) (ERROR "Too many forms in FOR parameters."))
-    `(LET ((,FIRSTVAR ,FIRST)
-           (,LASTVAR ,LAST)
-           (,STEPVAR ,STEP))
-       (IF (IF ,STEPVAR (< 0 ,STEPVAR) (<= ,FIRSTVAR ,LASTVAR))
-           (PROGN  (SETF ,STEPVAR (OR ,STEPVAR 1))
-                   (DO ((,VAR ,FIRSTVAR (INCF ,VAR ,STEPVAR)))
-                       ((> ,VAR ,LASTVAR))
-                     ,@BODY))
-           (PROGN  (SETF ,STEPVAR (OR ,STEPVAR -1))
-                   (DO ((,VAR ,FIRSTVAR (INCF ,VAR ,STEPVAR)))
-                       ((< ,VAR ,LASTVAR))
-                     ,@BODY))))))
+  (let ((firstvar (gensym "FIRST"))
+        (lastvar  (gensym "LAST"))
+        (stepvar  (gensym "STEP"))
+        (step     (and rest (car rest))))
+    (when (cdr rest) (error "Too many forms in FOR parameters."))
+    `(let ((,firstvar ,first)
+           (,lastvar ,last)
+           (,stepvar ,step))
+       (if (if ,stepvar (< 0 ,stepvar) (<= ,firstvar ,lastvar))
+           (progn  (setf ,stepvar (or ,stepvar 1))
+                   (do ((,var ,firstvar (incf ,var ,stepvar)))
+                       ((> ,var ,lastvar))
+                     ,@body))
+           (progn  (setf ,stepvar (or ,stepvar -1))
+                   (do ((,var ,firstvar (incf ,var ,stepvar)))
+                       ((< ,var ,lastvar))
+                     ,@body))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -370,7 +368,7 @@ DO:    Repeat BODY with VAR bound to successive integer values from
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
   
-(DEFMACRO PJB-DEFCLASS (NAME SUPER &REST ARGS)
+(defmacro pjb-defclass (name super &rest args)
   "
 This macro encapsulate DEFCLASS and allow the declaration of the attributes
 in a shorter syntax.
@@ -382,7 +380,7 @@ ARGS  is a list of s-expr, whose car is either :ATT (to declare an attribute)
       and documentation strings.  An accessor and an initarg keyword of
       same NAME are also defined.
 "
-  (flet ((ATTRIB (NAME TYPE &REST ARGS)
+  (flet ((attrib (name type &rest args)
            "
 This function outputs an attribute s-exp as used in defclass.
 ARGS  may be of length 1 or 2.
@@ -393,74 +391,74 @@ ARGS  may be of length 1 or 2.
       else the first is the initial value and the second is the documentation.
 The initarg an accessor are the same keyword built from the name.
 "
-           (LET ((IARG (INTERN (IF (SYMBOLP NAME) (SYMBOL-NAME NAME) NAME)
-                               (FIND-PACKAGE "KEYWORD")))
-                 INIT DOC)
-             (COND  ((= 2 (LENGTH ARGS))
-                     (SETQ INIT (CAR  ARGS)
-                           DOC  (CADR ARGS)) )
-                    ((= 1 (LENGTH ARGS))
-                     (IF (STRINGP (CAR ARGS))
-                       (SETQ INIT NIL
-                             DOC  (CAR ARGS))
-                       (SETQ INIT (CAR ARGS)
-                             DOC  NIL)) )
-                    (T (ERROR "Invalid attribute ~S"
+           (let ((iarg (intern (if (symbolp name) (symbol-name name) name)
+                               (find-package "KEYWORD")))
+                 init doc)
+             (cond  ((= 2 (length args))
+                     (setq init (car  args)
+                           doc  (cadr args)) )
+                    ((= 1 (length args))
+                     (if (stringp (car args))
+                       (setq init nil
+                             doc  (car args))
+                       (setq init (car args)
+                             doc  nil)) )
+                    (t (error "Invalid attribute ~S"
                               `(:att ,name ,type ,@args))))
-             (when (AND (SYMBOLP TYPE) (NULL INIT))
-               (setf TYPE (LIST 'OR 'NULL TYPE)))
-             (when (NULL DOC)
-               (setf DOC (SYMBOL-NAME NAME)))
-             `(,NAME 
-               :INITFORM ,INIT 
-               :INITARG  ,IARG
-               :ACCESSOR ,NAME
-               :TYPE     ,TYPE
-               :DOCUMENTATION ,DOC))))
-    (LET ((FIELDS  NIL)
-          (OPTIONS NIL))
-      (DO () ( (NOT ARGS) )
-        (COND ((EQ :ATT (CAAR ARGS))
-               (PUSH (apply (function ATTRIB) (CDAR ARGS)) FIELDS))
-              ((EQ :DOC (CAAR ARGS))
-               (PUSH (CONS :DOCUMENTATION (CDAR ARGS)) OPTIONS)))
-        (SETF ARGS (CDR ARGS)))
-      (SETF FIELDS (NREVERSE FIELDS))
-      (SETF OPTIONS (NREVERSE OPTIONS))
-      `(DEFCLASS ,NAME ,SUPER ,FIELDS ,@OPTIONS)))) 
+             (when (and (symbolp type) (null init))
+               (setf type (list 'or 'null type)))
+             (when (null doc)
+               (setf doc (symbol-name name)))
+             `(,name 
+               :initform ,init 
+               :initarg  ,iarg
+               :accessor ,name
+               :type     ,type
+               :documentation ,doc))))
+    (let ((fields  nil)
+          (options nil))
+      (do () ( (not args) )
+        (cond ((eq :att (caar args))
+               (push (apply (function attrib) (cdar args)) fields))
+              ((eq :doc (caar args))
+               (push (cons :documentation (cdar args)) options)))
+        (setf args (cdr args)))
+      (setf fields (nreverse fields))
+      (setf options (nreverse options))
+      `(defclass ,name ,super ,fields ,@options)))) 
 
 
 
 
-(DEFUN GET-OPTION (KEY OPTIONS &OPTIONAL LIST)
-  (LET ((OPT (REMOVE-IF (LAMBDA (X) (NOT (EQ KEY (IF (SYMBOLP X) X (CAR X)))))
-                        OPTIONS)))
-    (COND
-      (LIST OPT)
-      ((NULL OPT) NIL)
-      ((NULL (CDR OPT))
-       (IF (SYMBOLP (CAR OPT)) T (CDAR OPT)))
-      (T (ERROR "Expected only one ~A option."
-                (IF (SYMBOLP (CAR OPT)) (CAR OPT) (CAAR OPT))))))) ;;GET-OPTION
+(defun get-option (key options &optional list)
+  (let ((opt (remove-if (lambda (x) (not (eq key (if (symbolp x) x (car x)))))
+                        options)))
+    (cond
+      (list opt)
+      ((null opt) nil)
+      ((null (cdr opt))
+       (if (symbolp (car opt)) t (cdar opt)))
+      (t (error "Expected only one ~A option."
+                (if (symbolp (car opt)) (car opt) (caar opt))))))) ;;GET-OPTION
 
 
-(DEFUN MAKE-NAME (OPTION PREFIX NAME SUFFIX)
-  (COND
-    ((OR (NULL OPTION) (AND OPTION (NOT (LISTP OPTION))))
-     (INTERN (WITH-STANDARD-IO-SYNTAX (FORMAT NIL "~A~A~A" PREFIX NAME SUFFIX))))
-    ((AND OPTION (LISTP OPTION) (CAR OPTION))
-     (CAR OPTION))
-    (T NIL)))
+(defun make-name (option prefix name suffix)
+  (cond
+    ((or (null option) (and option (not (listp option))))
+     (intern (with-standard-io-syntax (format nil "~A~A~A" prefix name suffix))))
+    ((and option (listp option) (car option))
+     (car option))
+    (t nil)))
 
 
-(DEFUN GET-NAME (OPTION)
-  (IF (AND OPTION (LISTP OPTION))
-      (CAR OPTION)
-      NIL))
+(defun get-name (option)
+  (if (and option (listp option))
+      (car option)
+      nil))
 
 (declaim (ftype (function ((or string symbol character)) symbol) make-keyword))
 
-(DEFMACRO DEFINE-STRUCTURE-CLASS (NAME-AND-OPTIONS &REST DOC-AND-SLOTS)
+(defmacro define-structure-class (name-and-options &rest doc-and-slots)
   "
 DO:     Define a class implementing the structure API.
         This macro presents the same API as DEFSTRUCT, but instead of
@@ -468,128 +466,128 @@ DO:     Define a class implementing the structure API.
         as would be defined by DEFSTRUCT.
         The DEFSTRUCT options: :TYPE and :INITIAL-OFFSET are not supported.
 "
-  (LET (NAME OPTIONS DOCUMENTATION SLOTS SLOT-NAMES ACCESSORS
-             CONC-NAME CONSTRUCTORS COPIER
-             INCLUDE INITIAL-OFFSET PREDICATE
-             PRINT-FUNCTION PRINT-OBJECT)
-    (IF (SYMBOLP NAME-AND-OPTIONS)
-        (SETF NAME    NAME-AND-OPTIONS
-              OPTIONS NIL)
-        (SETF NAME    (CAR NAME-AND-OPTIONS)
-              OPTIONS (CDR NAME-AND-OPTIONS)))
-    (IF (STRINGP (CAR DOC-AND-SLOTS))
-        (SETF DOCUMENTATION (CAR DOC-AND-SLOTS)
-              SLOTS         (CDR DOC-AND-SLOTS))
-        (SETF DOCUMENTATION NIL
-              SLOTS         DOC-AND-SLOTS))
-    (SETF CONC-NAME      (GET-OPTION :CONC-NAME      OPTIONS)
-          CONSTRUCTORS   (GET-OPTION :CONSTRUCTOR    OPTIONS :LIST)
-          COPIER         (GET-OPTION :COPIER         OPTIONS)
-          PREDICATE      (GET-OPTION :PREDICATE      OPTIONS)
-          INCLUDE        (GET-OPTION :INCLUDE        OPTIONS)
-          INITIAL-OFFSET (GET-OPTION :INITIAL-OFFSET OPTIONS)
-          PRINT-FUNCTION (GET-OPTION :PRINT-FUNCTION OPTIONS)
-          PRINT-OBJECT   (GET-OPTION :PRINT-OBJECT   OPTIONS))
-    (WHEN (AND PRINT-OBJECT PRINT-FUNCTION)
-      (ERROR "Cannot have :print-object and :print-function options."))
-    (WHEN (CDR INCLUDE)
-      (SETF SLOTS   (APPEND (CDDR INCLUDE) SLOTS)
-            INCLUDE (LIST (CAR INCLUDE))))
-    (SETF CONC-NAME (MAKE-NAME CONC-NAME ""      NAME "-")
-          COPIER    (MAKE-NAME COPIER    "COPY-" NAME "")
-          PREDICATE (MAKE-NAME PREDICATE ""      NAME "-P")
-          PRINT-FUNCTION (GET-NAME PRINT-FUNCTION)
-          PRINT-OBJECT   (GET-NAME PRINT-OBJECT))
-    (SETF SLOT-NAMES (MAPCAR (LAMBDA (S) (IF (SYMBOLP S) S (CAR S))) SLOTS))
-    (SETF ACCESSORS  (MAPCAR
-                      (LAMBDA (S) (MAKE-NAME NIL (OR CONC-NAME "")
-                                             (IF (SYMBOLP S) S (CAR S)) "")) SLOTS))
-    (IF (NULL CONSTRUCTORS)
-        (SETF CONSTRUCTORS (LIST (MAKE-NAME NIL "MAKE-" NAME "")))
-        (SETF CONSTRUCTORS
-              (MAPCAN (LAMBDA (X)
-                        (COND
-                          ((OR (SYMBOLP X) (= 1 (LENGTH X)))
-                           (LIST (MAKE-NAME NIL "MAKE-" NAME "")))
-                          ((NULL (SECOND X))
-                           NIL)
-                          ((= 2 (LENGTH X))
-                           (LIST (SECOND X)))
-                          (T
-                           (LIST (LIST (SECOND X) (THIRD X)))))) CONSTRUCTORS)))
-    `(PROGN
-       (DEFCLASS ,NAME ,INCLUDE
-         ,(MAPCAR
-           (LAMBDA (SLOT ACCESSOR)
-             (IF (SYMBOLP SLOT)
-                 `(,SLOT :ACCESSOR  ,ACCESSOR)
-                 (LET* ((NAME        (FIRST SLOT))
-                        (INITFORM-P  (CDR SLOT))
-                        (INITFORM    (CAR INITFORM-P))
-                        (TYPE-P      (MEMBER :TYPE (CDDR SLOT)))
-                        (TYPE        (CADR TYPE-P))
-                        (READ-ONLY-P (MEMBER :READ-ONLY (CDDR SLOT)))
-                        (READ-ONLY   (CADR READ-ONLY-P)))
-                   `(,NAME
-                     ,(IF (AND READ-ONLY-P READ-ONLY) :READER :ACCESSOR)
-                     ,ACCESSOR
-                     ,@(WHEN INITFORM-P  (LIST :INITFORM INITFORM))
-                     ,@(WHEN TYPE-P      (LIST :TYPE     TYPE))))))
-           SLOTS ACCESSORS)
-         ,@(WHEN DOCUMENTATION (LIST `(:DOCUMENTATION ,DOCUMENTATION))))
-       ,@(MAPCAR
-          (LAMBDA (CONSTRUCTOR)
+  (let (name options documentation slots slot-names accessors
+             conc-name constructors copier
+             include initial-offset predicate
+             print-function print-object)
+    (if (symbolp name-and-options)
+        (setf name    name-and-options
+              options nil)
+        (setf name    (car name-and-options)
+              options (cdr name-and-options)))
+    (if (stringp (car doc-and-slots))
+        (setf documentation (car doc-and-slots)
+              slots         (cdr doc-and-slots))
+        (setf documentation nil
+              slots         doc-and-slots))
+    (setf conc-name      (get-option :conc-name      options)
+          constructors   (get-option :constructor    options :list)
+          copier         (get-option :copier         options)
+          predicate      (get-option :predicate      options)
+          include        (get-option :include        options)
+          initial-offset (get-option :initial-offset options)
+          print-function (get-option :print-function options)
+          print-object   (get-option :print-object   options))
+    (when (and print-object print-function)
+      (error "Cannot have :print-object and :print-function options."))
+    (when (cdr include)
+      (setf slots   (append (cddr include) slots)
+            include (list (car include))))
+    (setf conc-name (make-name conc-name ""      name "-")
+          copier    (make-name copier    "COPY-" name "")
+          predicate (make-name predicate ""      name "-P")
+          print-function (get-name print-function)
+          print-object   (get-name print-object))
+    (setf slot-names (mapcar (lambda (s) (if (symbolp s) s (car s))) slots))
+    (setf accessors  (mapcar
+                      (lambda (s) (make-name nil (or conc-name "")
+                                             (if (symbolp s) s (car s)) "")) slots))
+    (if (null constructors)
+        (setf constructors (list (make-name nil "MAKE-" name "")))
+        (setf constructors
+              (mapcan (lambda (x)
+                        (cond
+                          ((or (symbolp x) (= 1 (length x)))
+                           (list (make-name nil "MAKE-" name "")))
+                          ((null (second x))
+                           nil)
+                          ((= 2 (length x))
+                           (list (second x)))
+                          (t
+                           (list (list (second x) (third x)))))) constructors)))
+    `(progn
+       (defclass ,name ,include
+         ,(mapcar
+           (lambda (slot accessor)
+             (if (symbolp slot)
+                 `(,slot :accessor  ,accessor)
+                 (let* ((name        (first slot))
+                        (initform-p  (cdr slot))
+                        (initform    (car initform-p))
+                        (type-p      (member :type (cddr slot)))
+                        (type        (cadr type-p))
+                        (read-only-p (member :read-only (cddr slot)))
+                        (read-only   (cadr read-only-p)))
+                   `(,name
+                     ,(if (and read-only-p read-only) :reader :accessor)
+                     ,accessor
+                     ,@(when initform-p  (list :initform initform))
+                     ,@(when type-p      (list :type     type))))))
+           slots accessors)
+         ,@(when documentation (list `(:documentation ,documentation))))
+       ,@(mapcar
+          (lambda (constructor)
             ;; generate a constructor.
-            (IF (SYMBOLP CONSTRUCTOR)
-                (LET ((PREDS (MAPCAR (LAMBDA (X) (DECLARE (IGNORE X)) (GENSYM))
-                                     SLOT-NAMES)))
-                  `(DEFUN ,CONSTRUCTOR
-                       (&KEY ,@(MAPCAR (LAMBDA (S P) (LIST S NIL P)) SLOT-NAMES PREDS))
-                     (LET ((ARGS NIL))
-                       ,@(MAPCAR
-                          (LAMBDA (S P)
-                            `(WHEN ,P
-                               (PUSH ,S ARGS)
-                               (PUSH ,(MAKE-KEYWORD S) ARGS)))
-                          SLOT-NAMES PREDS)
-                       (APPLY (FUNCTION MAKE-INSTANCE) ',NAME ARGS))))
-                (LET ((CNAME  (FIRST  CONSTRUCTOR))
-                      (POSPAR (SECOND CONSTRUCTOR)))
-                  (DECLARE (IGNORE POSPAR))
-                  (WARN "pjb-defclass does not implement this case yet.")
-                  `(DEFUN ,CNAME (&rest args)
+            (if (symbolp constructor)
+                (let ((preds (mapcar (lambda (x) (declare (ignore x)) (gensym))
+                                     slot-names)))
+                  `(defun ,constructor
+                       (&key ,@(mapcar (lambda (s p) (list s nil p)) slot-names preds))
+                     (let ((args nil))
+                       ,@(mapcar
+                          (lambda (s p)
+                            `(when ,p
+                               (push ,s args)
+                               (push ,(make-keyword s) args)))
+                          slot-names preds)
+                       (apply (function make-instance) ',name args))))
+                (let ((cname  (first  constructor))
+                      (pospar (second constructor)))
+                  (declare (ignore pospar))
+                  (warn "pjb-defclass does not implement this case yet.")
+                  `(defun ,cname (&rest args)
                      (declare (ignore args))
                      (error "pjb-defclass does not implement this yet.")))))
-          CONSTRUCTORS)
-       ,@(WHEN COPIER
-               (LIST `(DEFMETHOD ,COPIER ((SELF ,NAME))
-                        (MAKE-INSTANCE ',NAME
-                          ,@(MAPCAN
-                             (LAMBDA (SLOT ACCESSOR)
-                               (LIST (MAKE-KEYWORD SLOT) (LIST ACCESSOR 'SELF)))
-                             SLOT-NAMES ACCESSORS)))))
-       ,@(WHEN PREDICATE
-               (LIST `(DEFMETHOD ,PREDICATE (OBJECT)
-                        (EQ (TYPE-OF OBJECT) ',NAME))))
-       ,@(WHEN PRINT-FUNCTION
-               (LIST `(DEFMETHOD PRINT-OBJECT ((SELF ,NAME) STREAM)
-                        (,PRINT-FUNCTION SELF STREAM 0))))
-       ,@(WHEN PRINT-OBJECT
-               (LIST `(DEFMETHOD PRINT-OBJECT ((SELF ,NAME) STREAM)
-                        (,PRINT-OBJECT SELF STREAM)))))))
+          constructors)
+       ,@(when copier
+               (list `(defmethod ,copier ((self ,name))
+                        (make-instance ',name
+                          ,@(mapcan
+                             (lambda (slot accessor)
+                               (list (make-keyword slot) (list accessor 'self)))
+                             slot-names accessors)))))
+       ,@(when predicate
+               (list `(defmethod ,predicate (object)
+                        (eq (type-of object) ',name))))
+       ,@(when print-function
+               (list `(defmethod print-object ((self ,name) stream)
+                        (,print-function self stream 0))))
+       ,@(when print-object
+               (list `(defmethod print-object ((self ,name) stream)
+                        (,print-object self stream)))))))
 
 
 
-(DEFMACRO DEFINE-WITH-OBJECT (CLASS-NAME SLOTS)
+(defmacro define-with-object (class-name slots)
   "
 DO:       Define a macro: (WITH-{CLASS-NAME} object &body body)
           expanding to:   (with-slots ({slots}) object @body)
 "
-  `(DEFMACRO
-       ,(INTERN (WITH-STANDARD-IO-SYNTAX (FORMAT NIL "WITH-~A" CLASS-NAME)))
-       (OBJECT &BODY BODY)
-     `(WITH-SLOTS (QUOTE ,,(MAPCAR (LAMBDA (SLOT) (LIST SLOT SLOT)) SLOTS))
-          ,OBJECT ,@BODY)))
+  `(defmacro
+       ,(intern (with-standard-io-syntax (format nil "WITH-~A" class-name)))
+       (object &body body)
+     `(with-slots (quote ,,(mapcar (lambda (slot) (list slot slot)) slots))
+          ,object ,@body)))
 
 
 
@@ -646,7 +644,7 @@ DO:       Define a macro: (WITH-{CLASS-NAME} object &body body)
 ;;                                  OBJV))) ',SLOTS)
 ;;                     ,@BODY)))))))) ;;DEFINE-WITH-STRUCTURE
 
-(DEFMACRO DEFINE-WITH-STRUCTURE (NAME-AND-OPTIONS &rest SLOTS)
+(defmacro define-with-structure (name-and-options &rest slots)
   "
 NAME-AND-OPTIONS:  Either a structure name or a list (name . options).
           Valid options are: (:conc-name prefix).
@@ -654,42 +652,42 @@ DO:       Define a macro: (WITH-{NAME} object &body body)
           expanding to a symbol-macrolet embedding body where
           symbol macros are defined to access the slots.
 "
-  (LET* ((NAME      (IF (SYMBOLP NAME-AND-OPTIONS)
-                      NAME-AND-OPTIONS (CAR NAME-AND-OPTIONS)))
-         (CONC-NAME (IF (SYMBOLP NAME-AND-OPTIONS)
-                      (CONCATENATE 'STRING (STRING NAME) "-")
-                      (LET ((CONC-OPT (CAR (MEMBER :CONC-NAME
-                                                   (CDR NAME-AND-OPTIONS)
-                                                   :KEY (FUNCTION CAR)))))
-                        (IF CONC-OPT
-                          (SECOND CONC-OPT)
-                          (CONCATENATE 'STRING (STRING NAME) "-")))))
+  (let* ((name      (if (symbolp name-and-options)
+                      name-and-options (car name-and-options)))
+         (conc-name (if (symbolp name-and-options)
+                      (concatenate 'string (string name) "-")
+                      (let ((conc-opt (car (member :conc-name
+                                                   (cdr name-and-options)
+                                                   :key (function car)))))
+                        (if conc-opt
+                          (second conc-opt)
+                          (concatenate 'string (string name) "-")))))
          (slot-names (mapcar (lambda (slot) (if (listp slot) (car slot) slot)) 
                              slots)))
-    `(PROGN
-       (DEFSTRUCT ,NAME-AND-OPTIONS ,@SLOTS)
-       (DEFMACRO
-         ,(INTERN (WITH-STANDARD-IO-SYNTAX (FORMAT NIL "WITH-~A" NAME)))
-         (OBJECT &BODY BODY)
-         (IF (SYMBOLP OBJECT)
-           `(SYMBOL-MACROLET
-             ,(MAPCAR
-               (LAMBDA (SLOT)
-                 (LIST SLOT
-                       (LIST
-                        (INTERN (CONCATENATE 'STRING (STRING ',CONC-NAME) (STRING SLOT)))
-                        OBJECT))) ',SLOT-names)
-             ,@BODY)
-           (LET ((OBJV (GENSYM)))
-             `(LET ((,OBJV ,OBJECT))
-                (SYMBOL-MACROLET
-                 ,(MAPCAR
-                   (LAMBDA (SLOT)
-                     (LIST SLOT
-                           (LIST
-                            (INTERN (CONCATENATE 'STRING (STRING ',CONC-NAME) (STRING SLOT)))
-                            OBJV))) ',SLOT-names)
-                 ,@BODY))))))))
+    `(progn
+       (defstruct ,name-and-options ,@slots)
+       (defmacro
+         ,(intern (with-standard-io-syntax (format nil "WITH-~A" name)))
+         (object &body body)
+         (if (symbolp object)
+           `(symbol-macrolet
+             ,(mapcar
+               (lambda (slot)
+                 (list slot
+                       (list
+                        (intern (concatenate 'string (string ',conc-name) (string slot)))
+                        object))) ',slot-names)
+             ,@body)
+           (let ((objv (gensym)))
+             `(let ((,objv ,object))
+                (symbol-macrolet
+                 ,(mapcar
+                   (lambda (slot)
+                     (list slot
+                           (list
+                            (intern (concatenate 'string (string ',conc-name) (string slot)))
+                            objv))) ',slot-names)
+                 ,@body))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 9 - CONDITIONS
@@ -697,15 +695,15 @@ DO:       Define a macro: (WITH-{NAME} object &body body)
 
 
 (defmacro handling-errors (&body body)
-  `(HANDLER-CASE (progn ,@body)
-     (simple-condition  (ERR) 
+  `(handler-case (progn ,@body)
+     (simple-condition  (err) 
        (format *error-output* "~&~A: ~%" (class-name (class-of err)))
        (apply (function format) *error-output*
               (simple-condition-format-control   err)
               (simple-condition-format-arguments err))
        (format *error-output* "~&")
        (finish-output))
-     (condition (ERR) 
+     (condition (err) 
        (format *error-output* "~&~A: ~%  ~S~%" (class-name (class-of err)) err)
        (finish-output))))
 
@@ -715,34 +713,34 @@ DO:       Define a macro: (WITH-{NAME} object &body body)
 ;; 10 - SYMBOLS
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(DEFUN MAKE-KEYWORD (SYM)
+(defun make-keyword (sym)
   "
 RETURN: A new keyword with SYM as name.
 "
-  (INTERN (STRING SYM) (FIND-PACKAGE "KEYWORD")))
+  (intern (string sym) (find-package "KEYWORD")))
 
 
-(DEFUN CONC-SYMBOL (&REST ARGS)
+(defun conc-symbol (&rest args)
   "
 DO:      Concatenate the arguments and INTERN the resulting string.
 NOTE:    The last two arguments maybe :PACKAGE <a-package>
          in which case the symbol is interned into the given package
          instead of *PACKAGE*.
 "
-  (LET ((PACKAGE *PACKAGE*))
-    (WHEN (AND (<= 2 (LENGTH ARGS))
-               (EQ :PACKAGE (CAR (LAST ARGS 2))))
-      (SETF PACKAGE (CAR (LAST ARGS))
-            ARGS (BUTLAST ARGS 2)))
-    (INTERN (APPLY (FUNCTION CONCATENATE) 'STRING (MAPCAR (FUNCTION STRING) ARGS))
-            PACKAGE)))
+  (let ((package *package*))
+    (when (and (<= 2 (length args))
+               (eq :package (car (last args 2))))
+      (setf package (car (last args))
+            args (butlast args 2)))
+    (intern (apply (function concatenate) 'string (mapcar (function string) args))
+            package)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 12 - NUMBERS
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun SIGN (n) (cond ((zerop n) 0) ((plusp n) 1) (t -1)))
+(defun sign (n) (cond ((zerop n) 0) ((plusp n) 1) (t -1)))
 
 
 (defmacro incf-mod (&environment env place modulo &optional (increment 1))
@@ -805,20 +803,20 @@ NOTE:    The last two arguments maybe :PACKAGE <a-package>
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(DEFUN MAXIMIZE (PREDICATE LIST)
+(defun maximize (predicate list)
   "
 RETURN: The maximum value and the item in list for which predicate
          is the maximum.
 "
-  (DO ((MAX-VALUE NIL)
-       (MAX-ITEM  NIL)
-       (LIST LIST (CDR LIST))
-       (VALUE))
-      ((NULL LIST) (VALUES MAX-VALUE MAX-ITEM))
-    (SETQ VALUE (FUNCALL PREDICATE (CAR LIST)))
-    (WHEN (OR (NULL MAX-VALUE) (> VALUE MAX-VALUE))
-      (SETQ MAX-VALUE VALUE
-            MAX-ITEM (CAR LIST))))) ;;MAXIMIZE
+  (do ((max-value nil)
+       (max-item  nil)
+       (list list (cdr list))
+       (value))
+      ((null list) (values max-value max-item))
+    (setq value (funcall predicate (car list)))
+    (when (or (null max-value) (> value max-value))
+      (setq max-value value
+            max-item (car list))))) ;;MAXIMIZE
 
 
 ;; (DEFUN COMPUTE-CLOSURE (FUN SET)
@@ -904,33 +902,33 @@ RETURN: A list of NODES sorted topologically according to
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(DEFUN VECTOR-INIT (VECTOR CONSTRUCTOR)
+(defun vector-init (vector constructor)
   "
 DO:      Sets all the slots in vector to the successive results of
          the function CONSTRUCTOR called with integers from 0 up
          to the dimension of the VECTOR.
 RETURN:  VECTOR
 "
-  (DO ((INDEX 0 (1+ INDEX)))
-      ((>= INDEX (ARRAY-DIMENSION VECTOR 0)))
-    (SETF (AREF VECTOR INDEX) (FUNCALL CONSTRUCTOR INDEX)))
-  VECTOR) ;;VECTOR-INIT
+  (do ((index 0 (1+ index)))
+      ((>= index (array-dimension vector 0)))
+    (setf (aref vector index) (funcall constructor index)))
+  vector) ;;VECTOR-INIT
 
 
-(DEFUN UNDISPLACE-ARRAY (ARRAY)
+(defun undisplace-array (array)
   "
 RETURN:  The fundamental array and the start and end positions into
          it of a displaced array.
 AUTHOR:  Erik Naggum <erik@naggum.no>
 "
-  (LET ((LENGTH (LENGTH ARRAY))
-        (START 0))
-    (LOOP
-       (MULTIPLE-VALUE-BIND (TO OFFSET) (ARRAY-DISPLACEMENT ARRAY)
-         (IF TO
-             (SETQ ARRAY TO
-                   START (+ START OFFSET))
-             (RETURN (VALUES ARRAY START (+ START LENGTH)))))))
+  (let ((length (length array))
+        (start 0))
+    (loop
+       (multiple-value-bind (to offset) (array-displacement array)
+         (if to
+             (setq array to
+                   start (+ start offset))
+             (return (values array start (+ start length)))))))
   ) ;;UNDISPLACE-ARRAY
 
 
@@ -975,9 +973,9 @@ POST:	(<= min index max)
       (values (= order 0) index order)))
 
 
-(DEFUN DICHOTOMY-SEARCH (VECTOR VALUE COMPARE &KEY
-                         (START 0) (END (LENGTH VECTOR))
-                         (KEY (FUNCTION IDENTITY)))
+(defun dichotomy-search (vector value compare &key
+                         (start 0) (end (length vector))
+                         (key (function identity)))
   "
 PRE:	entry is the element to be searched in the table.
         (<= start end)
@@ -992,20 +990,20 @@ POST:	(<= start index end)
         | a[max] < x        |   FALSE  |  max  |  greater |      0         |
         +-------------------+----------+-------+----------+----------------+
 "
-  (LET* ((CURMIN START)
-         (CURMAX END)
-         (INDEX    (TRUNCATE (+ CURMIN CURMAX) 2))
-         (ORDER  (FUNCALL COMPARE VALUE (FUNCALL KEY (AREF VECTOR INDEX)))) )
-    (LOOP :WHILE (AND (/= 0 ORDER) (/= CURMIN INDEX)) :DO
+  (let* ((curmin start)
+         (curmax end)
+         (index    (truncate (+ curmin curmax) 2))
+         (order  (funcall compare value (funcall key (aref vector index)))) )
+    (loop :while (and (/= 0 order) (/= curmin index)) :do
        ;; (FORMAT T "~&min=~S  cur=~S  max=~S   key=~S <~S> [cur]=~S ~%" CURMIN INDEX CURMAX VALUE (FUNCALL COMPARE VALUE (FUNCALL KEY (AREF VECTOR INDEX))) (AREF VECTOR INDEX))
-       (IF (< ORDER 0)
-           (SETF CURMAX INDEX)
-           (SETF CURMIN INDEX))
-       (SETF INDEX (TRUNCATE (+ CURMIN CURMAX) 2))
-       (SETF ORDER  (FUNCALL COMPARE VALUE (FUNCALL KEY (AREF VECTOR INDEX)))))
-    (WHEN (AND (< START INDEX) (< ORDER 0))
-      (SETF ORDER 1)
-      (DECF INDEX))
+       (if (< order 0)
+           (setf curmax index)
+           (setf curmin index))
+       (setf index (truncate (+ curmin curmax) 2))
+       (setf order  (funcall compare value (funcall key (aref vector index)))))
+    (when (and (< start index) (< order 0))
+      (setf order 1)
+      (decf index))
     (assert
      (or (< (funcall compare value (funcall key (aref vector index))) 0)
          (and (> (funcall compare value (funcall key (aref vector index))) 0)
@@ -1013,7 +1011,7 @@ POST:	(<= start index end)
                   (< (funcall compare value
                               (funcall key (aref vector (1+  index)))) 0)))
          (= (funcall compare value (funcall key (aref vector index))) 0)))
-    (VALUES (= ORDER 0) INDEX ORDER)))
+    (values (= order 0) index order)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1021,9 +1019,9 @@ POST:	(<= start index end)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(DEFMACRO SCONC (&REST ARGS)
+(defmacro sconc (&rest args)
   "Concatenate strings."
-  `(CONCATENATE 'STRING ,@ARGS))
+  `(concatenate 'string ,@args))
 
 
 (defun concat (&rest args)
@@ -1035,20 +1033,20 @@ POST:	(<= start index end)
                        (format nil "~A" item))) args)))
 
 
-(DEFMACRO SCASE (KEYFORM &REST CLAUSES)
+(defmacro scase (keyform &rest clauses)
   "
 DO:         A CASE, but for string keys. That is, it uses STRING= as test
             insteand of the ''being the same'' test.
 "
-  (LET ((KEY (GENSYM "KEY")))
-    `(LET ((,KEY ,KEYFORM))
-       (COND
-         ,@(MAPCAR (LAMBDA (CLAUSE)
-                     (IF (OR (EQ (CAR CLAUSE) 'OTHERWISE) (EQ (CAR CLAUSE) 'T))
-                         `(T ,@(CDR CLAUSE))
-                         `((MEMBER ,KEY ',(CAR CLAUSE) :TEST (FUNCTION STRING=))
-                           ,@(CDR CLAUSE))))
-                   CLAUSES)))))
+  (let ((key (gensym "KEY")))
+    `(let ((,key ,keyform))
+       (cond
+         ,@(mapcar (lambda (clause)
+                     (if (or (eq (car clause) 'otherwise) (eq (car clause) 't))
+                         `(t ,@(cdr clause))
+                         `((member ,key ',(car clause) :test (function string=))
+                           ,@(cdr clause))))
+                   clauses)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

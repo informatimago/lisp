@@ -16,24 +16,22 @@
 ;;;;    2010-07-09 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2010 - 2010
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
 (asdf-load :split-sequence)
@@ -97,19 +95,19 @@ To move, it rotates 1/4 turn on one of its edges that is in contact with the cel
   ;;         -1 0 0   -x      1 0 0    x        0 -1  0  -y        0  1  0   y   
   #(
     ;; +right+
-    #2A((0 0 1)
+    #2a((0 0 1)
         (0 1 0)
         (-1 0 0))
     ;; +left+
-    #2A((0 0 -1)
+    #2a((0 0 -1)
         (0 1 0)
         (1 0 0))
     ;; +front+
-    #2A((1 0 0)
+    #2a((1 0 0)
         (0 0 1)
         (0 -1 0))
     ;; +back+
-    #2A((1 0 0)
+    #2a((1 0 0)
         (0 0 -1)
         (0 1 0)))
   "A vector of 3D rotation matrices for right, left, front and back rotations.")
@@ -136,18 +134,18 @@ To move, it rotates 1/4 turn on one of its edges that is in contact with the cel
           (push (list direction (aref #(left--> right-> front-> back-->) rotation)
                       (rotate (aref *rotations* rotation)  direction))
                 result))))
-    '((#(0 0 -1) BACK--> #(0 1 0)) (#(0 0 -1) FRONT-> #(0 -1 0))
-      (#(0 0 -1) RIGHT-> #(1 0 0)) (#(0 0 -1) LEFT--> #(-1 0 0))
-      (#(0 0 1) BACK--> #(0 -1 0)) (#(0 0 1) FRONT-> #(0 1 0))
-      (#(0 0 1) RIGHT-> #(-1 0 0)) (#(0 0 1) LEFT--> #(1 0 0))
-      (#(0 -1 0) BACK--> #(0 0 -1)) (#(0 -1 0) FRONT-> #(0 0 1))
-      (#(0 -1 0) RIGHT-> #(0 -1 0)) (#(0 -1 0) LEFT--> #(0 -1 0))
-      (#(0 1 0) BACK--> #(0 0 1)) (#(0 1 0) FRONT-> #(0 0 -1))
-      (#(0 1 0) RIGHT-> #(0 1 0)) (#(0 1 0) LEFT--> #(0 1 0))
-      (#(-1 0 0) BACK--> #(-1 0 0)) (#(-1 0 0) FRONT-> #(-1 0 0))
-      (#(-1 0 0) RIGHT-> #(0 0 -1)) (#(-1 0 0) LEFT--> #(0 0 1))
-      (#(1 0 0) BACK--> #(1 0 0)) (#(1 0 0) FRONT-> #(1 0 0))
-      (#(1 0 0) RIGHT-> #(0 0 1)) (#(1 0 0) LEFT--> #(0 0 -1)))))
+    '((#(0 0 -1) back--> #(0 1 0)) (#(0 0 -1) front-> #(0 -1 0))
+      (#(0 0 -1) right-> #(1 0 0)) (#(0 0 -1) left--> #(-1 0 0))
+      (#(0 0 1) back--> #(0 -1 0)) (#(0 0 1) front-> #(0 1 0))
+      (#(0 0 1) right-> #(-1 0 0)) (#(0 0 1) left--> #(1 0 0))
+      (#(0 -1 0) back--> #(0 0 -1)) (#(0 -1 0) front-> #(0 0 1))
+      (#(0 -1 0) right-> #(0 -1 0)) (#(0 -1 0) left--> #(0 -1 0))
+      (#(0 1 0) back--> #(0 0 1)) (#(0 1 0) front-> #(0 0 -1))
+      (#(0 1 0) right-> #(0 1 0)) (#(0 1 0) left--> #(0 1 0))
+      (#(-1 0 0) back--> #(-1 0 0)) (#(-1 0 0) front-> #(-1 0 0))
+      (#(-1 0 0) right-> #(0 0 -1)) (#(-1 0 0) left--> #(0 0 1))
+      (#(1 0 0) back--> #(1 0 0)) (#(1 0 0) front-> #(1 0 0))
+      (#(1 0 0) right-> #(0 0 1)) (#(1 0 0) left--> #(0 0 -1)))))
   :success)
 
 
@@ -484,7 +482,7 @@ the game is lost."))
           :initarg :stone
           :reader game-stone
           :documentation "The stone.")
-   (cells :initform #2A()
+   (cells :initform #2a()
           :initarg :cells
           :reader game-cells
           :documentation "The cells.")))
@@ -754,42 +752,42 @@ See PARSE-GAME for the description of LEVEL.
 
 
 
-(defgeneric copy (object &KEY &ALLOW-OTHER-KEYS)
+(defgeneric copy (object &key &allow-other-keys)
 
   (:documentation "Copy the game objects.  Stateless cells are returned uncopied.")
   
-  (:method ((stone stone) &KEY &ALLOW-OTHER-KEYS)
+  (:method ((stone stone) &key &allow-other-keys)
     (make-instance 'stone
         :x (stone-x stone)
         :y (stone-y stone)
         :direction (stone-direction stone)))
 
-  (:method ((cell cell) &KEY &ALLOW-OTHER-KEYS)
+  (:method ((cell cell) &key &allow-other-keys)
     cell)
 
-  (:method ((cell button-cell) &KEY &ALLOW-OTHER-KEYS)
+  (:method ((cell button-cell) &key &allow-other-keys)
     (make-instance (class-of cell)
         :x (cell-x cell)
         :y (cell-y cell)
         :switches (button-cell-switches cell)))
 
-  (:method ((cell pathway-cell) &KEY &ALLOW-OTHER-KEYS)
+  (:method ((cell pathway-cell) &key &allow-other-keys)
     (make-instance (class-of cell)
         :x (cell-x cell)
         :y (cell-y cell)
         :state (pathway-cell-state cell)))
 
-  (:method ((cell crumble-cell) &KEY &ALLOW-OTHER-KEYS)
+  (:method ((cell crumble-cell) &key &allow-other-keys)
     (make-instance (class-of cell)
         :x (cell-x cell)
         :y (cell-y cell)
         :state (crumble-cell-state cell)))
 
-  (:method ((game game) &KEY &ALLOW-OTHER-KEYS)
+  (:method ((game game) &key &allow-other-keys)
     (make-instance 'game
         :stone (copy (game-stone game))
         :cells (loop
-                  :with cells    = (COM.INFORMATIMAGO.COMMON-LISP.ARRAY:COPY-ARRAY (game-cells game))
+                  :with cells    = (com.informatimago.common-lisp.array:copy-array (game-cells game))
                   :with pathways = '()
                   :with buttons  = '()
                   :for i :from 0 :below (array-total-size cells)
@@ -1019,8 +1017,8 @@ printing the number of states and the win states."
 
 
 "
-    (R :red 3)
-    (B :blue 1 2)
+    (r :red 3)
+    (b :blue 1 2)
     (1 :pathway :closed)
     (2 :pathway :closed)
     (3 :pathway :closed)))

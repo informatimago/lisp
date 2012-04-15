@@ -25,14 +25,26 @@
 ;;;;    2004-02-25 <PJB> Added this comment.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    Public Domain
+;;;;    AGPL3
 ;;;;    
-;;;;    This software is in Public Domain.
-;;;;    You're free to do with it as you please.
+;;;;    Copyright Pascal J. Bourguignon 2012 - 2012
+;;;;    
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
+;;;;    
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
+;;;;    
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.DOUZE"
-  (:DOCUMENTATION "
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.DOUZE"
+  (:documentation "
     A demographic simulator.
 
     Assuming an Adam and an Eve 20 years old each,
@@ -44,14 +56,14 @@
     Copyright Pascal Bourguignon 2003 - 2004
     This package is put in the Public Domain.
     ")
-  (:USE "COMMON-LISP")
-  (:EXPORT "SIMULATE")
+  (:use "COMMON-LISP")
+  (:export "SIMULATE")
   );;COM.INFORMATIMAGO.COMMON-LISP.DOUZE
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.DOUZE")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.DOUZE")
 
-(DEFVAR *YEAR* 0)
-(DEFVAR *POPULATION* '())
-(DEFVAR *CEMETERY* '())
+(defvar *year* 0)
+(defvar *population* '())
+(defvar *cemetery* '())
 
 
 
@@ -114,39 +126,39 @@
 
 
 
-(DEFCLASS HUMAN ()
+(defclass human ()
   (
-   (BIRTHDAY
-    :ACCESSOR BIRTHDAY
-    :INITARG :BIRTHDAY
-    :INITFORM *YEAR*
-    :TYPE     INTEGER
-    :DOCUMENTATION "The year of birth.")
+   (birthday
+    :accessor birthday
+    :initarg :birthday
+    :initform *year*
+    :type     integer
+    :documentation "The year of birth.")
    )
-  (:DOCUMENTATION "A human.")
+  (:documentation "A human.")
   );;HUMAN
 
 
-(DEFMETHOD AGE ((SELF HUMAN))
-  (- *YEAR* (BIRTHDAY SELF))
+(defmethod age ((self human))
+  (- *year* (birthday self))
   );;AGE
 
 
-(DEFMETHOD LIVE ((SELF HUMAN))
-  (IF (should-die self)
-    (DIE SELF))
+(defmethod live ((self human))
+  (if (should-die self)
+    (die self))
   );;LIVE
 
 
-(DEFMETHOD DIE ((SELF HUMAN))
-  (SETQ *POPULATION* (DELETE SELF *POPULATION*))
-  (PUSH SELF *CEMETERY*)
+(defmethod die ((self human))
+  (setq *population* (delete self *population*))
+  (push self *cemetery*)
   );;DIE
 
 
-(DEFCLASS MAN (HUMAN)
+(defclass man (human)
   ()
-  (:DOCUMENTATION "A man.")
+  (:documentation "A man.")
   );;MAN
 
 
@@ -157,15 +169,15 @@
 
 
 
-(DEFCLASS WOMAN (HUMAN)
+(defclass woman (human)
   (
-   (NUMBER-OF-CHILDREN
-    :ACCESSOR NUMBER-OF-CHILDREN
-    :INITFORM 0
-    :TYPE INTEGER
-    :DOCUMENTATION "The number of children brought by this woman.")
+   (number-of-children
+    :accessor number-of-children
+    :initform 0
+    :type integer
+    :documentation "The number of children brought by this woman.")
    )
-  (:DOCUMENTATION "A woman.")
+  (:documentation "A woman.")
   );;WOMAN
 
 
@@ -175,79 +187,79 @@
   );;should-die
 
 
-(DEFMETHOD LIVE ((SELF WOMAN))
-  (IF (AND (<= 20 (AGE SELF))
-           (< (NUMBER-OF-CHILDREN SELF) 12))
-    (GIVE-BIRTH SELF))
-  (CALL-NEXT-METHOD)
+(defmethod live ((self woman))
+  (if (and (<= 20 (age self))
+           (< (number-of-children self) 12))
+    (give-birth self))
+  (call-next-method)
   );;LIVE
 
 
-(DEFMETHOD GIVE-BIRTH ((SELF WOMAN))
-  (WHEN (SOME (LAMBDA (BEING) (AND (TYPEP BEING 'MAN)
-                                   (<= 20 (AGE BEING)))) *POPULATION*)
-    (PUSH (MAKE-INSTANCE (IF (ODDP (RANDOM 2)) 'MAN 'WOMAN)) *POPULATION*))
+(defmethod give-birth ((self woman))
+  (when (some (lambda (being) (and (typep being 'man)
+                                   (<= 20 (age being)))) *population*)
+    (push (make-instance (if (oddp (random 2)) 'man 'woman)) *population*))
   );;GIVE-BIRTH
 
 
 
-(DEFUN FILL-HISTOGRAM (N-SLICE SLICE-WIDTH VALUES)
-  (LET ((HISTOGRAM (MAKE-ARRAY (LIST N-SLICE)
-                               :INITIAL-ELEMENT 0
-                               :ELEMENT-TYPE 'INTEGER)))
-    (DOLIST (VALUE VALUES)
-      (INCF (AREF HISTOGRAM (TRUNCATE VALUE SLICE-WIDTH))))
-    HISTOGRAM)
+(defun fill-histogram (n-slice slice-width values)
+  (let ((histogram (make-array (list n-slice)
+                               :initial-element 0
+                               :element-type 'integer)))
+    (dolist (value values)
+      (incf (aref histogram (truncate value slice-width))))
+    histogram)
   );;FILL-HISTOGRAM
 
 
-(DEFUN MAX-ARRAY (ARRAY)
-  (LET ((RESULT (AREF ARRAY 0)))
-    (DOTIMES (I (LENGTH ARRAY))
-      (SETQ RESULT (MAX RESULT (AREF ARRAY I))))
-    RESULT)
+(defun max-array (array)
+  (let ((result (aref array 0)))
+    (dotimes (i (length array))
+      (setq result (max result (aref array i))))
+    result)
   );;MAX-ARRAY
 
 
-(DEFUN MAKE-BAR (ALIGNMENT WIDTH VALUE MAX-VALUE)
-  (LET* ((BAR-WIDTH (TRUNCATE (* WIDTH VALUE) MAX-VALUE))
-         (REST (- WIDTH BAR-WIDTH))
-         (LEFT (TRUNCATE REST 2))
-         (LEFT (TRUNCATE REST 2))
-         (RESULT (MAKE-STRING WIDTH)))
-    (CASE ALIGNMENT
-      ((:LEFT)
-       (FILL RESULT (CHARACTER "#") :START 0 :END BAR-WIDTH)
-       (FILL RESULT (CHARACTER " ") :START BAR-WIDTH))
-      ((:CENTER)
-       (FILL RESULT (CHARACTER " ") :START 0 :END LEFT)
-       (FILL RESULT (CHARACTER "#") :START LEFT :END (+ LEFT BAR-WIDTH))
-       (FILL RESULT (CHARACTER " ") :START (+ LEFT BAR-WIDTH)))
-      ((:RIGHT)
-       (FILL RESULT (CHARACTER " ") :START 0 :END (- width BAR-WIDTH))
-       (FILL RESULT (CHARACTER "#") :START (- width BAR-WIDTH))))
-    RESULT)
+(defun make-bar (alignment width value max-value)
+  (let* ((bar-width (truncate (* width value) max-value))
+         (rest (- width bar-width))
+         (left (truncate rest 2))
+         (left (truncate rest 2))
+         (result (make-string width)))
+    (case alignment
+      ((:left)
+       (fill result (character "#") :start 0 :end bar-width)
+       (fill result (character " ") :start bar-width))
+      ((:center)
+       (fill result (character " ") :start 0 :end left)
+       (fill result (character "#") :start left :end (+ left bar-width))
+       (fill result (character " ") :start (+ left bar-width)))
+      ((:right)
+       (fill result (character " ") :start 0 :end (- width bar-width))
+       (fill result (character "#") :start (- width bar-width))))
+    result)
   );;MAKE-BAR
 
 
-(DEFUN PRINT-PYRAMID (MEN-AGES DEAD-MEN WOMEN-AGES DEAD-WOMEN)
-  (LET* ((AGE-SLICE 5)
-         (WIDTH 26)
-         (MAX-AGE (MAX (APPLY (FUNCTION MAX) MEN-AGES)
-                       (APPLY (FUNCTION MAX) WOMEN-AGES)))
-         (N-SLICE (TRUNCATE (+ MAX-AGE AGE-SLICE -1) AGE-SLICE))
-         (MEN     (FILL-HISTOGRAM N-SLICE AGE-SLICE MEN-AGES))
-         (WOMEN   (FILL-HISTOGRAM N-SLICE AGE-SLICE WOMEN-AGES))
-         (MAX-COUNT (MAX (MAX-ARRAY MEN) (MAX-ARRAY WOMEN))))
-    (FORMAT T "~10A: ~VA ~4D : ~4D ~vA~%"
-            "Deceased"  width "" DEAD-MEN  DEAD-WOMEN width "")
-    (DOTIMES (J N-SLICE)
-      (let ((I (- n-slice 1 j)))
-        (FORMAT T "~3D to ~3D: ~VA ~4D : ~4D ~VA~%"
-                (* I AGE-SLICE) (1- (* (1+ I) AGE-SLICE))
-                width (MAKE-BAR :RIGHT  width (AREF MEN   I) MAX-COUNT)
+(defun print-pyramid (men-ages dead-men women-ages dead-women)
+  (let* ((age-slice 5)
+         (width 26)
+         (max-age (max (apply (function max) men-ages)
+                       (apply (function max) women-ages)))
+         (n-slice (truncate (+ max-age age-slice -1) age-slice))
+         (men     (fill-histogram n-slice age-slice men-ages))
+         (women   (fill-histogram n-slice age-slice women-ages))
+         (max-count (max (max-array men) (max-array women))))
+    (format t "~10A: ~VA ~4D : ~4D ~vA~%"
+            "Deceased"  width "" dead-men  dead-women width "")
+    (dotimes (j n-slice)
+      (let ((i (- n-slice 1 j)))
+        (format t "~3D to ~3D: ~VA ~4D : ~4D ~VA~%"
+                (* i age-slice) (1- (* (1+ i) age-slice))
+                width (make-bar :right  width (aref men   i) max-count)
                 (aref men i) (aref women i)
-                width (MAKE-BAR :left width (AREF WOMEN I) MAX-COUNT)))
+                width (make-bar :left width (aref women i) max-count)))
       ))
   );;PRINT-PYRAMID
 
@@ -336,34 +348,34 @@
 
 
 
-(DEFUN PRINT-STATS ()
-  (LET
-      ((MEN        (REMOVE-IF (LAMBDA (BEING) (TYPEP BEING 'MAN))      *POPULATION*))
-       (WOMEN      (REMOVE-IF (LAMBDA (BEING) (NOT (TYPEP BEING 'MAN)))*POPULATION*))
-       (DEAD-MEN   (REMOVE-IF (LAMBDA (BEING) (TYPEP BEING 'MAN))      *CEMETERY*))
-       (DEAD-WOMEN (REMOVE-IF (LAMBDA (BEING) (NOT (TYPEP BEING 'MAN)))*CEMETERY*)))
-    (PRINT-PYRAMID (MAPCAR (FUNCTION AGE) MEN)   (LENGTH DEAD-MEN)
-                   (MAPCAR (FUNCTION AGE) WOMEN) (LENGTH DEAD-WOMEN)))
+(defun print-stats ()
+  (let
+      ((men        (remove-if (lambda (being) (typep being 'man))      *population*))
+       (women      (remove-if (lambda (being) (not (typep being 'man)))*population*))
+       (dead-men   (remove-if (lambda (being) (typep being 'man))      *cemetery*))
+       (dead-women (remove-if (lambda (being) (not (typep being 'man)))*cemetery*)))
+    (print-pyramid (mapcar (function age) men)   (length dead-men)
+                   (mapcar (function age) women) (length dead-women)))
   );;PRINT-STATS
 
 
-(DEFUN SIMULATE ()
-  (SETQ *RANDOM-STATE* (MAKE-RANDOM-STATE T))
-  (SETQ *POPULATION* NIL
-        *CEMETERY*   NIL
-        *YEAR*       0)
-  (PUSH (MAKE-INSTANCE 'MAN)   *POPULATION*)
-  (PUSH (MAKE-INSTANCE 'WOMAN) *POPULATION*)
-  (DOTIMES (Y 80)
-    (SETQ *YEAR* (+ 20 Y))
-    (LET* ((MALE (COUNT-IF (LAMBDA (BEING) (TYPEP BEING 'MAN)) *POPULATION*))
-           (TPOP (LENGTH *POPULATION*))
-           (FEMA (- TPOP MALE)))
-      (FORMAT T "Year ~3D : ~5D m + ~5D f = ~5D total (~5D dead)~%"
-              *YEAR* MALE FEMA TPOP (LENGTH *CEMETERY*))
-      (MAPC (LAMBDA (BEING) (LIVE BEING)) (COPY-SEQ *POPULATION*))))
+(defun simulate ()
+  (setq *random-state* (make-random-state t))
+  (setq *population* nil
+        *cemetery*   nil
+        *year*       0)
+  (push (make-instance 'man)   *population*)
+  (push (make-instance 'woman) *population*)
+  (dotimes (y 80)
+    (setq *year* (+ 20 y))
+    (let* ((male (count-if (lambda (being) (typep being 'man)) *population*))
+           (tpop (length *population*))
+           (fema (- tpop male)))
+      (format t "Year ~3D : ~5D m + ~5D f = ~5D total (~5D dead)~%"
+              *year* male fema tpop (length *cemetery*))
+      (mapc (lambda (being) (live being)) (copy-seq *population*))))
   (when (< 2 (length *population*))
-    (PRINT-STATS))
+    (print-stats))
   );;SIMULATE
 
 

@@ -14,33 +14,31 @@
 ;;;;    2010-11-01 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2010 - 2010
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
 (in-package :cl-user)
 
 (defvar *asdf-source*
-  #P"/data/lisp/packages/net/common-lisp/projects/asdf/asdf/asdf.lisp")
+  #p"/data/lisp/packages/net/common-lisp/projects/asdf/asdf/asdf.lisp")
 
 (defvar *asdf-binary-locations-directory*
-  #P"/data/lisp/packages/net/common-lisp/projects/asdf-binary-locations/asdf-binary-locations/")
+  #p"/data/lisp/packages/net/common-lisp/projects/asdf-binary-locations/asdf-binary-locations/")
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -80,9 +78,9 @@
 
 (let ((sym (find-symbol "ENABLE-ASDF-BINARY-LOCATIONS-COMPATIBILITY" "ASDF")))
   (when (and sym (fboundp sym))
-    (push :HAS-ASDF-ENABLE-ASDF-BINARY-LOCATIONS-COMPATIBILITY *features*)))
+    (push :has-asdf-enable-asdf-binary-locations-compatibility *features*)))
 
-#+HAS-ASDF-ENABLE-ASDF-BINARY-LOCATIONS-COMPATIBILITY
+#+has-asdf-enable-asdf-binary-locations-compatibility
 (progn
   (format *trace-output* "enable-asdf-binary-locations-compatibility ~%")
   (asdf:enable-asdf-binary-locations-compatibility
@@ -96,12 +94,12 @@
 ;; We need (truename (user-homedir-pathname)) because in cmucl (user-homedir-pathname)
 ;; is a search path, and that cannot be merged...
 
-#-HAS-ASDF-ENABLE-ASDF-BINARY-LOCATIONS-COMPATIBILITY
+#-has-asdf-enable-asdf-binary-locations-compatibility
 (progn
  (push-asdf-repository *asdf-binary-locations-directory*)
  (asdf-load :asdf-binary-locations))
 
-#-HAS-ASDF-ENABLE-ASDF-BINARY-LOCATIONS-COMPATIBILITY
+#-has-asdf-enable-asdf-binary-locations-compatibility
 (progn
   (format *trace-output* "enable-asdf-binary-locations-compatibility ~%")
   (setf asdf:*centralize-lisp-binaries*     t
@@ -124,41 +122,41 @@
                        #-abcl
                        (directory "**/*.asd")
                        #+abcl
-                       '(#P"/home/pjb/src/git/public/lisp/tools/com.informatimago.common-lisp.tools.make-depends.asd"
-                         #P"/home/pjb/src/git/public/lisp/common-lisp/diagram/com.informatimago.common-lisp.diagram.asd"
-                         #P"/home/pjb/src/git/public/lisp/common-lisp/html-base/com.informatimago.common-lisp.html-base.asd"
-                         #P"/home/pjb/src/git/public/lisp/common-lisp/invoice/com.informatimago.common-lisp.invoice.asd"
-                         #P"/home/pjb/src/git/public/lisp/common-lisp/arithmetic/com.informatimago.common-lisp.arithmetic.asd"
-                         #P"/home/pjb/src/git/public/lisp/common-lisp/picture/com.informatimago.common-lisp.picture.asd"
-                         #P"/home/pjb/src/git/public/lisp/common-lisp/lisp-text/com.informatimago.common-lisp.lisp-text.asd"
-                         #P"/home/pjb/src/git/public/lisp/common-lisp/rfc3548/com.informatimago.common-lisp.rfc3548.asd"
-                         #P"/home/pjb/src/git/public/lisp/common-lisp/lisp-sexp/com.informatimago.common-lisp.lisp-sexp.asd"
-                         #P"/home/pjb/src/git/public/lisp/common-lisp/unix/com.informatimago.common-lisp.unix.asd"
-                         #P"/home/pjb/src/git/public/lisp/common-lisp/parser/com.informatimago.common-lisp.parser.asd"
-                         #P"/home/pjb/src/git/public/lisp/common-lisp/csv/com.informatimago.common-lisp.csv.asd"
-                         #P"/home/pjb/src/git/public/lisp/common-lisp/bank/com.informatimago.common-lisp.bank.asd"
-                         #P"/home/pjb/src/git/public/lisp/common-lisp/http/com.informatimago.common-lisp.http.asd"
-                         #P"/home/pjb/src/git/public/lisp/common-lisp/lisp-reader/com.informatimago.common-lisp.lisp-reader.asd"
-                         #P"/home/pjb/src/git/public/lisp/common-lisp/lisp/com.informatimago.common-lisp.lisp.asd"
-                         #P"/home/pjb/src/git/public/lisp/common-lisp/graphviz/com.informatimago.common-lisp.graphviz.asd"
-                         #P"/home/pjb/src/git/public/lisp/common-lisp/html-parser/com.informatimago.common-lisp.html-parser.asd"
-                         #P"/home/pjb/src/git/public/lisp/common-lisp/ed/com.informatimago.common-lisp.ed.asd"
-                         #P"/home/pjb/src/git/public/lisp/common-lisp/rfc2822/com.informatimago.common-lisp.rfc2822.asd"
-                         #P"/home/pjb/src/git/public/lisp/common-lisp/html-generator/com.informatimago.common-lisp.html-generator.asd"
-                         #P"/home/pjb/src/git/public/lisp/common-lisp/cxx/com.informatimago.common-lisp.cxx.asd"
-                         #P"/home/pjb/src/git/public/lisp/common-lisp/interactive/com.informatimago.common-lisp.interactive.asd"
-                         #P"/home/pjb/src/git/public/lisp/common-lisp/data-encoding/com.informatimago.common-lisp.data-encoding.asd"
-                         #P"/home/pjb/src/git/public/lisp/common-lisp/cesarum/com.informatimago.common-lisp.cesarum.asd"
-                         #P"/home/pjb/src/git/public/lisp/common-lisp/regexp/com.informatimago.common-lisp.regexp.asd"
-                         #P"/home/pjb/src/git/public/lisp/common-lisp/heap/com.informatimago.common-lisp.heap.asd"
-                         #P"/home/pjb/src/git/public/lisp/common-lisp/com.informatimago.common-lisp.asd"
-                         #P"/home/pjb/src/git/public/lisp/sbcl/com.informatimago.sbcl.asd"
-                         #P"/home/pjb/src/git/public/lisp/susv3/com.informatimago.susv3.asd"
-                         #P"/home/pjb/src/git/public/lisp/clisp/com.informatimago.clisp.asd"
-                         #P"/home/pjb/src/git/public/lisp/clext/com.informatimago.clext.asd"
-                         #P"/home/pjb/src/git/public/lisp/clmisc/com.informatimago.clmisc.asd"
-                         #P"/home/pjb/src/git/public/lisp/cl-posix/cliki/cliki.asd"
-                         #P"/home/pjb/src/git/public/lisp/cl-posix/cliki/clposixcliki.asd"))
+                       '(#p"/home/pjb/src/git/public/lisp/tools/com.informatimago.common-lisp.tools.make-depends.asd"
+                         #p"/home/pjb/src/git/public/lisp/common-lisp/diagram/com.informatimago.common-lisp.diagram.asd"
+                         #p"/home/pjb/src/git/public/lisp/common-lisp/html-base/com.informatimago.common-lisp.html-base.asd"
+                         #p"/home/pjb/src/git/public/lisp/common-lisp/invoice/com.informatimago.common-lisp.invoice.asd"
+                         #p"/home/pjb/src/git/public/lisp/common-lisp/arithmetic/com.informatimago.common-lisp.arithmetic.asd"
+                         #p"/home/pjb/src/git/public/lisp/common-lisp/picture/com.informatimago.common-lisp.picture.asd"
+                         #p"/home/pjb/src/git/public/lisp/common-lisp/lisp-text/com.informatimago.common-lisp.lisp-text.asd"
+                         #p"/home/pjb/src/git/public/lisp/common-lisp/rfc3548/com.informatimago.common-lisp.rfc3548.asd"
+                         #p"/home/pjb/src/git/public/lisp/common-lisp/lisp-sexp/com.informatimago.common-lisp.lisp-sexp.asd"
+                         #p"/home/pjb/src/git/public/lisp/common-lisp/unix/com.informatimago.common-lisp.unix.asd"
+                         #p"/home/pjb/src/git/public/lisp/common-lisp/parser/com.informatimago.common-lisp.parser.asd"
+                         #p"/home/pjb/src/git/public/lisp/common-lisp/csv/com.informatimago.common-lisp.csv.asd"
+                         #p"/home/pjb/src/git/public/lisp/common-lisp/bank/com.informatimago.common-lisp.bank.asd"
+                         #p"/home/pjb/src/git/public/lisp/common-lisp/http/com.informatimago.common-lisp.http.asd"
+                         #p"/home/pjb/src/git/public/lisp/common-lisp/lisp-reader/com.informatimago.common-lisp.lisp-reader.asd"
+                         #p"/home/pjb/src/git/public/lisp/common-lisp/lisp/com.informatimago.common-lisp.lisp.asd"
+                         #p"/home/pjb/src/git/public/lisp/common-lisp/graphviz/com.informatimago.common-lisp.graphviz.asd"
+                         #p"/home/pjb/src/git/public/lisp/common-lisp/html-parser/com.informatimago.common-lisp.html-parser.asd"
+                         #p"/home/pjb/src/git/public/lisp/common-lisp/ed/com.informatimago.common-lisp.ed.asd"
+                         #p"/home/pjb/src/git/public/lisp/common-lisp/rfc2822/com.informatimago.common-lisp.rfc2822.asd"
+                         #p"/home/pjb/src/git/public/lisp/common-lisp/html-generator/com.informatimago.common-lisp.html-generator.asd"
+                         #p"/home/pjb/src/git/public/lisp/common-lisp/cxx/com.informatimago.common-lisp.cxx.asd"
+                         #p"/home/pjb/src/git/public/lisp/common-lisp/interactive/com.informatimago.common-lisp.interactive.asd"
+                         #p"/home/pjb/src/git/public/lisp/common-lisp/data-encoding/com.informatimago.common-lisp.data-encoding.asd"
+                         #p"/home/pjb/src/git/public/lisp/common-lisp/cesarum/com.informatimago.common-lisp.cesarum.asd"
+                         #p"/home/pjb/src/git/public/lisp/common-lisp/regexp/com.informatimago.common-lisp.regexp.asd"
+                         #p"/home/pjb/src/git/public/lisp/common-lisp/heap/com.informatimago.common-lisp.heap.asd"
+                         #p"/home/pjb/src/git/public/lisp/common-lisp/com.informatimago.common-lisp.asd"
+                         #p"/home/pjb/src/git/public/lisp/sbcl/com.informatimago.sbcl.asd"
+                         #p"/home/pjb/src/git/public/lisp/susv3/com.informatimago.susv3.asd"
+                         #p"/home/pjb/src/git/public/lisp/clisp/com.informatimago.clisp.asd"
+                         #p"/home/pjb/src/git/public/lisp/clext/com.informatimago.clext.asd"
+                         #p"/home/pjb/src/git/public/lisp/clmisc/com.informatimago.clmisc.asd"
+                         #p"/home/pjb/src/git/public/lisp/cl-posix/cliki/cliki.asd"
+                         #p"/home/pjb/src/git/public/lisp/cl-posix/cliki/clposixcliki.asd"))
                :test (function equalp))
               asdf:*central-registry*))
 

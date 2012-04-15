@@ -16,32 +16,30 @@
 ;;;;    2002-11-16 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
-;;
+;;;;    AGPL3
+;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2002 - 2002
-;;;;
-;;;;    This script is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU  General Public
-;;;;    License as published by the Free Software Foundation; either
-;;;;    version 2 of the License, or (at your option) any later version.
-;;;;
-;;;;    This script is distributed in the hope that it will be useful,
+;;;;    
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
+;;;;    
+;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
-;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;;;;    General Public License for more details.
-;;;;
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this library; see the file COPYING.LIB.
-;;;;    If not, write to the Free Software Foundation,
-;;;;    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
+;;;;    
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.PICTURE.TREE-TO-ASCII"
-  (:USE "COMMON-LISP"
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.PICTURE.TREE-TO-ASCII"
+  (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.PICTURE.PICTURE")
-  (:EXPORT "TREE-TO-ASCII-DRAW-TO-PICT" "TREE-DECORATE" "TREE-TO-ASCII")
-  (:DOCUMENTATION
+  (:export "TREE-TO-ASCII-DRAW-TO-PICT" "TREE-DECORATE" "TREE-TO-ASCII")
+  (:documentation
    "This package draws a tree onto an ASCII-ART picture
     The tree drawn is a list whose car is the node displayed, and
     whose cdr is the list of children.
@@ -49,7 +47,7 @@
     Copyright Pascal J. Bourguignon 2002 - 2002
     This package is provided under the GNU General Public License.
     See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.PICTURE.TREE-TO-ASCII")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.PICTURE.TREE-TO-ASCII")
 
 
 
@@ -62,21 +60,21 @@
 ;;                  and whose cdr is the list of children.
 ;;
 
-(DEFUN TREE-DECORATE (TREE MAKE-DECORATION)
+(defun tree-decorate (tree make-decoration)
   "
 DOES:    Converts the list based tree to a decorated tree.
          The building of the decoration is done by the make-decoration
          function.
 RETURN:  The decorated tree.
 "
-  (DECLARE (TYPE (FUNCTION (LIST LIST) LIST) MAKE-DECORATION))
-  (IF (CONSP TREE)
-      (FUNCALL MAKE-DECORATION (CAR TREE)
-               (LOOP FOR SUB-TREE IN (CDR TREE)
-                  COLLECT (TREE-DECORATE SUB-TREE MAKE-DECORATION)
-                  INTO DECORATED
-                  FINALLY (RETURN DECORATED)))
-      (FUNCALL MAKE-DECORATION TREE NIL)))
+  (declare (type (function (list list) list) make-decoration))
+  (if (consp tree)
+      (funcall make-decoration (car tree)
+               (loop for sub-tree in (cdr tree)
+                  collect (tree-decorate sub-tree make-decoration)
+                  into decorated
+                  finally (return decorated)))
+      (funcall make-decoration tree nil)))
 
 
 
@@ -119,7 +117,7 @@ RETURN:  The decorated tree.
 
 
 
-(DEFUN TREE-TO-ASCII-MAKE-DECORATION (NODE CHILDREN)
+(defun tree-to-ascii-make-decoration (node children)
   "
 DOES:    Builds a new decorated node: an array of 4 entries:
          node, children list, formated string, and box array
@@ -148,8 +146,8 @@ RETURN:  The decorated node.
 
 
 
-(DEFUN TREE-TO-ASCII-COMPUTE-BOXES (TREE &KEY BOXED FORMAT-FUN
-                                    FROM-LENGTH TO-LENGTH)
+(defun tree-to-ascii-compute-boxes (tree &key boxed format-fun
+                                    from-length to-length)
   "
 DOES:           Compute the boxes and formated strings and store them in the
                 decorated tree.
@@ -172,126 +170,126 @@ NOTE:                     TO-LENGTH   FROM-LENGTH
                                     +-------------| Child 3 |
                                                   +---------+
 "
-  (DECLARE (TYPE (OR NULL (FUNCTION (CONS) STRING)) FORMAT-FUN))
-  (LET ((CHILDREN     (TREE-TO-ASCII-CHILDREN TREE))
-        (CHILDREN-BOX (make-tree-to-ascii-box))
-        (NODE-BOX     (make-tree-to-ascii-box)) )
-    (SETF (TREE-TO-ASCII-FORMATED TREE)
-          (IF FORMAT-FUN
-              (FUNCALL FORMAT-FUN (TREE-TO-ASCII-NODE TREE))
-              (FORMAT NIL "~S" (TREE-TO-ASCII-NODE TREE))))
-    (IF BOXED
-        (PROGN
-          (SETF (TREE-TO-ASCII-BOX-WIDTH NODE-BOX)
-                (+ 2 (LENGTH (TREE-TO-ASCII-FORMATED TREE))))
-          (SETF (TREE-TO-ASCII-BOX-HEIGHT NODE-BOX) 3)
-          (SETF (TREE-TO-ASCII-BOX-BASE NODE-BOX)   1) )
-        (PROGN
-          (SETF (TREE-TO-ASCII-BOX-WIDTH NODE-BOX)
-                (LENGTH (TREE-TO-ASCII-FORMATED TREE)))
-          (SETF (TREE-TO-ASCII-BOX-HEIGHT NODE-BOX) 1)
-          (SETF (TREE-TO-ASCII-BOX-BASE NODE-BOX)   0) ))
-    (WHEN CHILDREN
-      (LOOP FOR CHILD IN CHILDREN
-         FOR CHILD-BOX = (TREE-TO-ASCII-COMPUTE-BOXES
-                          CHILD  :BOXED BOXED  :FORMAT-FUN FORMAT-FUN
-                          :TO-LENGTH TO-LENGTH :FROM-LENGTH FROM-LENGTH)
-         MAXIMIZE (TREE-TO-ASCII-BOX-WIDTH CHILD-BOX)  INTO WIDTH
-         SUM (1+ (TREE-TO-ASCII-BOX-HEIGHT CHILD-BOX)) INTO HEIGHT
-         FINALLY
-         (SETF (TREE-TO-ASCII-BOX-WIDTH  CHILDREN-BOX) WIDTH)
-         (SETF (TREE-TO-ASCII-BOX-HEIGHT CHILDREN-BOX) (1- HEIGHT))
-         (SETF (TREE-TO-ASCII-BOX-BASE   CHILDREN-BOX)
-               (FLOOR (/ (1- HEIGHT) 2)))
+  (declare (type (or null (function (cons) string)) format-fun))
+  (let ((children     (tree-to-ascii-children tree))
+        (children-box (make-tree-to-ascii-box))
+        (node-box     (make-tree-to-ascii-box)) )
+    (setf (tree-to-ascii-formated tree)
+          (if format-fun
+              (funcall format-fun (tree-to-ascii-node tree))
+              (format nil "~S" (tree-to-ascii-node tree))))
+    (if boxed
+        (progn
+          (setf (tree-to-ascii-box-width node-box)
+                (+ 2 (length (tree-to-ascii-formated tree))))
+          (setf (tree-to-ascii-box-height node-box) 3)
+          (setf (tree-to-ascii-box-base node-box)   1) )
+        (progn
+          (setf (tree-to-ascii-box-width node-box)
+                (length (tree-to-ascii-formated tree)))
+          (setf (tree-to-ascii-box-height node-box) 1)
+          (setf (tree-to-ascii-box-base node-box)   0) ))
+    (when children
+      (loop for child in children
+         for child-box = (tree-to-ascii-compute-boxes
+                          child  :boxed boxed  :format-fun format-fun
+                          :to-length to-length :from-length from-length)
+         maximize (tree-to-ascii-box-width child-box)  into width
+         sum (1+ (tree-to-ascii-box-height child-box)) into height
+         finally
+         (setf (tree-to-ascii-box-width  children-box) width)
+         (setf (tree-to-ascii-box-height children-box) (1- height))
+         (setf (tree-to-ascii-box-base   children-box)
+               (floor (/ (1- height) 2)))
          ) ;;loop
-      (SETF (TREE-TO-ASCII-BOX-WIDTH NODE-BOX)
-            (+ (TREE-TO-ASCII-BOX-WIDTH NODE-BOX)
+      (setf (tree-to-ascii-box-width node-box)
+            (+ (tree-to-ascii-box-width node-box)
                ;; TODO: WE COULD USE (MAX TO-LENGTH FROM-LENGTH) WITH 1 CHILD
-               (IF (CDR CHILDREN) (+ TO-LENGTH 1 FROM-LENGTH) FROM-LENGTH)
-               (TREE-TO-ASCII-BOX-WIDTH CHILDREN-BOX)))
-      (SETF (TREE-TO-ASCII-BOX-HEIGHT NODE-BOX)
-            (MAX (TREE-TO-ASCII-BOX-HEIGHT NODE-BOX)
-                 (TREE-TO-ASCII-BOX-HEIGHT CHILDREN-BOX)))
-      (SETF (TREE-TO-ASCII-BOX-BASE NODE-BOX)
-            (TREE-TO-ASCII-BOX-BASE CHILDREN-BOX))
+               (if (cdr children) (+ to-length 1 from-length) from-length)
+               (tree-to-ascii-box-width children-box)))
+      (setf (tree-to-ascii-box-height node-box)
+            (max (tree-to-ascii-box-height node-box)
+                 (tree-to-ascii-box-height children-box)))
+      (setf (tree-to-ascii-box-base node-box)
+            (tree-to-ascii-box-base children-box))
       ) ;;when
-    (SETF (TREE-TO-ASCII-BOX TREE) NODE-BOX)
-    NODE-BOX))
+    (setf (tree-to-ascii-box tree) node-box)
+    node-box))
 
 
 
 
-(DEFUN TREE-TO-ASCII-DRAW-TO-PICT (TREE PICT LEFT BOTTOM
-                                   &KEY BOXED TO-LENGTH FROM-LENGTH)
+(defun tree-to-ascii-draw-to-pict (tree pict left bottom
+                                   &key boxed to-length from-length)
   "
 DOES:    Draw the decorated TREE into the PICT.
 "
-  (LET ((BOX (TREE-TO-ASCII-BOX      TREE))
-        (STR (TREE-TO-ASCII-FORMATED TREE))
-        (CHILDREN  (REVERSE (TREE-TO-ASCII-CHILDREN TREE)))
+  (let ((box (tree-to-ascii-box      tree))
+        (str (tree-to-ascii-formated tree))
+        (children  (reverse (tree-to-ascii-children tree)))
         )
     ;; draw the node:
-    (IF BOXED
-        (PROGN
-          (DRAW-STRING PICT (1+ LEFT) (+ BOTTOM (TREE-TO-ASCII-BOX-BASE BOX)) 
-                       STR)
-          (FRAME-RECT PICT LEFT (+ BOTTOM (TREE-TO-ASCII-BOX-BASE BOX) -1)
-                      (+ 2 (LENGTH STR)) 3)
-          (SETQ LEFT (+ LEFT 2 (LENGTH STR))))
-        (PROGN
-          (DRAW-STRING PICT LEFT (+ BOTTOM (TREE-TO-ASCII-BOX-BASE BOX)) STR)
-          (SETQ LEFT (+ LEFT (LENGTH STR)))))
-    (WHEN CHILDREN
+    (if boxed
+        (progn
+          (draw-string pict (1+ left) (+ bottom (tree-to-ascii-box-base box)) 
+                       str)
+          (frame-rect pict left (+ bottom (tree-to-ascii-box-base box) -1)
+                      (+ 2 (length str)) 3)
+          (setq left (+ left 2 (length str))))
+        (progn
+          (draw-string pict left (+ bottom (tree-to-ascii-box-base box)) str)
+          (setq left (+ left (length str)))))
+    (when children
       ;; draw the childen:
-      (IF (CDR CHILDREN)
-          (LET* ( ;; more than one child
-                 (CHILD-BOX (TREE-TO-ASCII-BOX (CAR (LAST CHILDREN))))
-                 (MIN       (TREE-TO-ASCII-BOX-BASE
-                             (TREE-TO-ASCII-BOX (CAR CHILDREN))))
-                 (MAX   (- (+ (TREE-TO-ASCII-BOX-HEIGHT BOX)
-                              (TREE-TO-ASCII-BOX-BASE CHILD-BOX))
-                           (TREE-TO-ASCII-BOX-HEIGHT CHILD-BOX)))
-                 (Y       BOTTOM)
+      (if (cdr children)
+          (let* ( ;; more than one child
+                 (child-box (tree-to-ascii-box (car (last children))))
+                 (min       (tree-to-ascii-box-base
+                             (tree-to-ascii-box (car children))))
+                 (max   (- (+ (tree-to-ascii-box-height box)
+                              (tree-to-ascii-box-base child-box))
+                           (tree-to-ascii-box-height child-box)))
+                 (y       bottom)
                  )
             ;; draw the vertical line:
-            (DRAW-LINE PICT  (+ LEFT TO-LENGTH) (+ BOTTOM MIN)
-                       0 (1+ (- MAX MIN)) :foreground (CHARACTER "|"))
+            (draw-line pict  (+ left to-length) (+ bottom min)
+                       0 (1+ (- max min)) :foreground (character "|"))
             ;; draw the stem from the node:
-            (DRAW-LINE PICT  LEFT (+ BOTTOM (TREE-TO-ASCII-BOX-BASE BOX))
-                       TO-LENGTH 0  :foreground (CHARACTER "-"))
-            (DRAW-POINT PICT (+ LEFT TO-LENGTH)
-                        (+ BOTTOM (TREE-TO-ASCII-BOX-BASE BOX))
-                        (CHARACTER "+"))
-            (DOLIST (CHILD CHILDREN)
-              (SETQ CHILD-BOX (TREE-TO-ASCII-BOX CHILD))
+            (draw-line pict  left (+ bottom (tree-to-ascii-box-base box))
+                       to-length 0  :foreground (character "-"))
+            (draw-point pict (+ left to-length)
+                        (+ bottom (tree-to-ascii-box-base box))
+                        (character "+"))
+            (dolist (child children)
+              (setq child-box (tree-to-ascii-box child))
               ;; draw the subnode:
-              (TREE-TO-ASCII-DRAW-TO-PICT
-               CHILD PICT (+ LEFT TO-LENGTH 1 FROM-LENGTH) Y
-               :BOXED BOXED :TO-LENGTH TO-LENGTH :FROM-LENGTH FROM-LENGTH)
+              (tree-to-ascii-draw-to-pict
+               child pict (+ left to-length 1 from-length) y
+               :boxed boxed :to-length to-length :from-length from-length)
               ;; draw the stem to the subnode:
-              (DRAW-LINE  PICT (+ LEFT TO-LENGTH 1)
-                          (+ Y (TREE-TO-ASCII-BOX-BASE CHILD-BOX))
-                          FROM-LENGTH 0 :foreground (CHARACTER "-"))
-              (DRAW-POINT PICT (+ LEFT TO-LENGTH)
-                          (+ Y (TREE-TO-ASCII-BOX-BASE CHILD-BOX))
-                          (CHARACTER "+"))
-              (SETQ Y (+ Y 1 (TREE-TO-ASCII-BOX-HEIGHT CHILD-BOX))) ) ;;dolist
+              (draw-line  pict (+ left to-length 1)
+                          (+ y (tree-to-ascii-box-base child-box))
+                          from-length 0 :foreground (character "-"))
+              (draw-point pict (+ left to-length)
+                          (+ y (tree-to-ascii-box-base child-box))
+                          (character "+"))
+              (setq y (+ y 1 (tree-to-ascii-box-height child-box))) ) ;;dolist
             )  ;;left*
-          (PROGN ;; only one child
+          (progn ;; only one child
             ;; draw the stem from the node:
             ;; TODO: WE COULD USE (MAX TO-LENGTH FROM-LENGTH)
-            (DRAW-LINE PICT  LEFT (+ BOTTOM (TREE-TO-ASCII-BOX-BASE BOX))
-                       FROM-LENGTH 0 :foreground (CHARACTER "-"))
-            (TREE-TO-ASCII-DRAW-TO-PICT
-             (CAR CHILDREN) PICT (+ LEFT FROM-LENGTH) BOTTOM
-             :BOXED BOXED :TO-LENGTH TO-LENGTH :FROM-LENGTH FROM-LENGTH))))))
+            (draw-line pict  left (+ bottom (tree-to-ascii-box-base box))
+                       from-length 0 :foreground (character "-"))
+            (tree-to-ascii-draw-to-pict
+             (car children) pict (+ left from-length) bottom
+             :boxed boxed :to-length to-length :from-length from-length))))))
 
 
 
 
 
-(DEFUN TREE-TO-ASCII (TLEE &KEY BOXED FORMAT-FUN BACKGROUND
-                      TO-LENGTH FROM-LENGTH)
+(defun tree-to-ascii (tlee &key boxed format-fun background
+                      to-length from-length)
   "
 tlee:        is a list-based tree, whose car is a \"node\",
              and whose cdr is the list of children.
@@ -303,22 +301,22 @@ background:  is a character used as background. Default: space.
 DOES:        Draw the tree onto an ASCII-art picture.
 RETURNS:     The string containing the ASCII-ART tree.
 "
-  (UNLESS FROM-LENGTH (SETQ FROM-LENGTH 2))
-  (UNLESS TO-LENGTH   (SETQ TO-LENGTH   2))
-  (UNLESS BACKGROUND  (SETQ BACKGROUND (CHARACTER " ")))
-  (LET* ((TREE (TREE-DECORATE TLEE (FUNCTION TREE-TO-ASCII-MAKE-DECORATION)))
-         (BOX (TREE-TO-ASCII-COMPUTE-BOXES TREE
-                                           :BOXED BOXED
-                                           :FORMAT-FUN FORMAT-FUN
-                                           :TO-LENGTH  TO-LENGTH
-                                           :FROM-LENGTH FROM-LENGTH))
-         (PICT (MAKE-instance 'PICTURE
+  (unless from-length (setq from-length 2))
+  (unless to-length   (setq to-length   2))
+  (unless background  (setq background (character " ")))
+  (let* ((tree (tree-decorate tlee (function tree-to-ascii-make-decoration)))
+         (box (tree-to-ascii-compute-boxes tree
+                                           :boxed boxed
+                                           :format-fun format-fun
+                                           :to-length  to-length
+                                           :from-length from-length))
+         (pict (make-instance 'picture
                  :width (tree-to-ascii-box-width box) 
                  :height (tree-to-ascii-box-height box)
-                 :background BACKGROUND))
+                 :background background))
          )
-    (TREE-TO-ASCII-DRAW-TO-PICT
-     TREE PICT 0 0 :BOXED BOXED :TO-LENGTH TO-LENGTH :FROM-LENGTH FROM-LENGTH)
+    (tree-to-ascii-draw-to-pict
+     tree pict 0 0 :boxed boxed :to-length to-length :from-length from-length)
     (to-string pict)))
 
 

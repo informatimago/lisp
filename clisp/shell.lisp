@@ -16,35 +16,32 @@
 ;;;;    2002-12-10 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;
-;;;;    GPL
-;;;;
+;;;;    AGPL3
+;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2002 - 2002
-;;;;
-;;;;    This script is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU  General Public
-;;;;    License as published by the Free Software Foundation; either
-;;;;    version 2 of the License, or (at your option) any later version.
-;;;;
-;;;;    This script is distributed in the hope that it will be useful,
+;;;;    
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
+;;;;    
+;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
-;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;;;;    General Public License for more details.
-;;;;
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this library; see the file COPYING.LIB.
-;;;;    If not, write to the Free Software Foundation,
-;;;;    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
+;;;;    
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 (in-package "COMMON-LISP-USER")
 (declaim (declaration also-use-packages))
 (declaim (also-use-packages "FFI"  "LINUX"))
 (eval-when (:compile-toplevel :load-toplevel :execute) (require "linux"))
-(defPACKAGE "COM.INFORMATIMAGO.CLISP.SHELL"
-  (:DOCUMENTATION
+(defpackage "COM.INFORMATIMAGO.CLISP.SHELL"
+  (:documentation
    "This package export shell primitives (fork, pipe, redirections, exec).")
   (:use "COMMON-LISP")
-  (:EXPORT
+  (:export
    ;; variables:
    "*TEMPORARY-PATHNAME*" ;; pathname of the temporary directory.
    ;; macro API:
@@ -56,7 +53,7 @@
 
 
 
-(DEFVAR *TEMPORARY-PATHNAME* "/tmp" "A path to a temporary directory.")
+(defvar *temporary-pathname* "/tmp" "A path to a temporary directory.")
 
 
 
@@ -109,7 +106,7 @@
 ;;;   );;EXECL
 
 
-(DEFMACRO EXECL (PATH &REST ARGV)
+(defmacro execl (path &rest argv)
   "
 DO:         Execute the program at path, passing the arguments argv.
 EXAMPLE:    (execl \"/bin/ls\" \"ls\" \"-l\" \"-F\" \"/tmp\")
@@ -117,25 +114,25 @@ PRE:        (<= 1 (length argv))
 NOTE:       Doesn't return!  The current process image is replaced by
             the executed program.
 "
-  (LET* ((ARGC (1- (LENGTH ARGV)))
-         (EXEC (INTERN (with-standard-io-syntax (FORMAT NIL "EXECL~D" ARGC)))))
-    (IF (FBOUNDP EXEC)
-        `(,EXEC ,PATH ,@ARGV NIL)
-        `(PROGN
-           (FFI:DEF-CALL-OUT
-               ,EXEC
-               (:LANGUAGE :STDC)
-             (:ARGUMENTS
-              (PATH FFI:C-STRING)
-              ,@(DO ((I 0 (1+ I))
-                     (ARGUMENTS NIL (CONS (LIST (INTERN (with-standard-io-syntax
-                                                          (FORMAT NIL "ARGV~D" I)))
-                                                'FFI:C-STRING) ARGUMENTS)) )
-                    ((< ARGC I) (NREVERSE ARGUMENTS)))
-              (NULL FFI:C-STRING))
-             (:RETURN-TYPE FFI:INT)
-             (:NAME "execl"))
-           (,EXEC ,PATH ,@ARGV NIL)))))
+  (let* ((argc (1- (length argv)))
+         (exec (intern (with-standard-io-syntax (format nil "EXECL~D" argc)))))
+    (if (fboundp exec)
+        `(,exec ,path ,@argv nil)
+        `(progn
+           (ffi:def-call-out
+               ,exec
+               (:language :stdc)
+             (:arguments
+              (path ffi:c-string)
+              ,@(do ((i 0 (1+ i))
+                     (arguments nil (cons (list (intern (with-standard-io-syntax
+                                                          (format nil "ARGV~D" i)))
+                                                'ffi:c-string) arguments)) )
+                    ((< argc i) (nreverse arguments)))
+              (null ffi:c-string))
+             (:return-type ffi:int)
+             (:name "execl"))
+           (,exec ,path ,@argv nil)))))
 
 
 
@@ -147,83 +144,83 @@ NOTE:       Doesn't return!  The current process image is replaced by
 ;; pipe-and-exec
 ;; -------------
 
-(DEFUN CHECK-PROCESS-LIST (PROCESS-LIST)
+(defun check-process-list (process-list)
   "PRIVATE.
 DO:         Checks and evaluates the process-list.
 RETURN:     An evaluated process-list.
 "
-  (MAPCAR
-   (LAMBDA (PROCESS)
-     (COND
-       ((ATOM PROCESS)
-        (ERROR "Invalid process ~S." PROCESS))
-       ((NOT (KEYWORDP (CAR PROCESS)))
-        (ERROR "Invalid tag for process ~S." PROCESS))
-       ((EQ :BEGIN (CADR PROCESS)) PROCESS)
-       (T (CONS (CAR PROCESS)
-                (MAPCAR (LAMBDA (ITEM)
-                          (IF (STRINGP ITEM)
-                              ITEM
-                              (FORMAT NIL "~A" (EVAL ITEM))))
-                        (CDR PROCESS))))))
-   PROCESS-LIST))
+  (mapcar
+   (lambda (process)
+     (cond
+       ((atom process)
+        (error "Invalid process ~S." process))
+       ((not (keywordp (car process)))
+        (error "Invalid tag for process ~S." process))
+       ((eq :begin (cadr process)) process)
+       (t (cons (car process)
+                (mapcar (lambda (item)
+                          (if (stringp item)
+                              item
+                              (format nil "~A" (eval item))))
+                        (cdr process))))))
+   process-list))
 
 
-(DEFUN CHECK-PROCESS-TAG (PROCESS-LIST TAG)
+(defun check-process-tag (process-list tag)
   "PRIVATE.
 DO:         Check the process tag.
 "
-  (UNLESS (MEMBER TAG PROCESS-LIST
-                  :TEST (FUNCTION EQ)
-                  :KEY  (FUNCTION CAR))
-    (ERROR "Tag ~S is not in the process-list." TAG)))
+  (unless (member tag process-list
+                  :test (function eq)
+                  :key  (function car))
+    (error "Tag ~S is not in the process-list." tag)))
 
 
-(DEFUN CHECK-PROCESS-FDES (PROCESS-LIST PROCESS-FDES &OPTIONAL TRIPLET)
+(defun check-process-fdes (process-list process-fdes &optional triplet)
   "PRIVATE.
 DO:         Checks and evaluates the process fdes.
 RETURN:     An evaluated process-fdes.
 "
-  (WHEN (ATOM PROCESS-FDES)
-    (ERROR "Invalid file descriptor specification ~S (must be a list)."
-           PROCESS-FDES))
-  (LET ((TAG (CAR PROCESS-FDES)))
-    (CHECK-PROCESS-TAG PROCESS-LIST TAG)
-    (COND
-      ((= 2 (LENGTH PROCESS-FDES))
-       (WHEN TRIPLET
-         (ERROR
+  (when (atom process-fdes)
+    (error "Invalid file descriptor specification ~S (must be a list)."
+           process-fdes))
+  (let ((tag (car process-fdes)))
+    (check-process-tag process-list tag)
+    (cond
+      ((= 2 (length process-fdes))
+       (when triplet
+         (error
           "Invalid file descriptor specification ~S (must have 3 elements)."
-          PROCESS-FDES))
-       (LET ((FDES (NTH 1 PROCESS-FDES)))
-         (UNLESS (INTEGERP FDES)
-           (SETQ FDES (EVAL FDES)))
-         (UNLESS (INTEGERP FDES)
-           (ERROR "Invalid file descriptor specification ~S (~S should evaluate to an integer)." PROCESS-FDES (NTH 1 PROCESS-FDES)))
-         (LIST TAG FDES)))
-      ((= 3 (LENGTH PROCESS-FDES))
-       (UNLESS TRIPLET
-         (ERROR
+          process-fdes))
+       (let ((fdes (nth 1 process-fdes)))
+         (unless (integerp fdes)
+           (setq fdes (eval fdes)))
+         (unless (integerp fdes)
+           (error "Invalid file descriptor specification ~S (~S should evaluate to an integer)." process-fdes (nth 1 process-fdes)))
+         (list tag fdes)))
+      ((= 3 (length process-fdes))
+       (unless triplet
+         (error
           "Invalid file descriptor specification ~S (must have 2 elements)."
-          PROCESS-FDES))
-       (LET ((FDES1 (NTH 1 PROCESS-FDES))
-             (FDES2 (NTH 2 PROCESS-FDES)))
-         (UNLESS (INTEGERP FDES1)
-           (SETQ FDES1 (EVAL FDES1)))
-         (UNLESS (INTEGERP FDES1)
-           (ERROR "Invalid file descriptor specification ~S (~S should evaluate to an integer)." PROCESS-FDES (NTH 1 PROCESS-FDES)))
-         (UNLESS (INTEGERP FDES2)
-           (SETQ FDES2 (EVAL FDES2)))
-         (UNLESS (INTEGERP FDES2)
-           (ERROR "Invalid file descriptor specification ~S (~S should evaluate to an integer)." PROCESS-FDES (NTH 2 PROCESS-FDES)))
-         (LIST TAG FDES1 FDES2)))
-      (T
-       (ERROR
+          process-fdes))
+       (let ((fdes1 (nth 1 process-fdes))
+             (fdes2 (nth 2 process-fdes)))
+         (unless (integerp fdes1)
+           (setq fdes1 (eval fdes1)))
+         (unless (integerp fdes1)
+           (error "Invalid file descriptor specification ~S (~S should evaluate to an integer)." process-fdes (nth 1 process-fdes)))
+         (unless (integerp fdes2)
+           (setq fdes2 (eval fdes2)))
+         (unless (integerp fdes2)
+           (error "Invalid file descriptor specification ~S (~S should evaluate to an integer)." process-fdes (nth 2 process-fdes)))
+         (list tag fdes1 fdes2)))
+      (t
+       (error
         "Invalid file descriptor specification ~S (must have ~D elements)."
-        PROCESS-FDES (IF TRIPLET 3 2))))))
+        process-fdes (if triplet 3 2))))))
 
     
-(DEFUN CHECK-EDGE-LIST (PROCESS-LIST EDGE-LIST)
+(defun check-edge-list (process-list edge-list)
   "PRIVATE.
 DO:         Checks the syntax of the edge-list and evalutes file names
             and descriptors. Issue error calls.
@@ -246,98 +243,98 @@ EDGE-LIST:  specifies the pipe and input or output as:
             close-fdes    (close (process-tag fdes)...)
             dup2-fdes     (dup2  (process-tag tfdes sfdes)...)
 "
-  (MAPCAR
-   (LAMBDA (EDGE)
-     (COND
-       ((ATOM EDGE)
-        (ERROR "An edge must be a list, not ~S." EDGE))
+  (mapcar
+   (lambda (edge)
+     (cond
+       ((atom edge)
+        (error "An edge must be a list, not ~S." edge))
        ;; ------------
        ;; a close edge
        ;; ------------
-       ((EQ :CLOSE (CAR EDGE))
-        (CONS :CLOSE
-              (MAPCAR (LAMBDA (PF) (CHECK-PROCESS-FDES PROCESS-LIST PF NIL))
-                      (CDR EDGE))) )
+       ((eq :close (car edge))
+        (cons :close
+              (mapcar (lambda (pf) (check-process-fdes process-list pf nil))
+                      (cdr edge))) )
        ;; -----------
        ;; a dup2 edge
        ;; -----------
-       ((EQ :DUPLICATE (CAR EDGE))
-        (CONS :DUPLICATE
-              (MAPC (LAMBDA (PF) (CHECK-PROCESS-FDES PROCESS-LIST PF T))
-                    (CDR EDGE))))
-       ((/= 2 (LENGTH EDGE))
-        (ERROR "Invalid edge ~S (must have two nodes)." EDGE))
+       ((eq :duplicate (car edge))
+        (cons :duplicate
+              (mapc (lambda (pf) (check-process-fdes process-list pf t))
+                    (cdr edge))))
+       ((/= 2 (length edge))
+        (error "Invalid edge ~S (must have two nodes)." edge))
        ;; -----------
        ;; a data edge
        ;; -----------
-       ((AND (CONSP (CAR EDGE)) (EQ :DATA (CAAR EDGE)))
-        (UNLESS (= 2 (LENGTH (CAR EDGE)))
-          (ERROR "Invalid data node ~S. Expected (:data form)."  (CAR EDGE)))
-        (CHECK-PROCESS-FDES PROCESS-LIST (CADR EDGE))
-        (LIST :DATA
-              (CADAR EDGE)
-              (CHECK-PROCESS-FDES PROCESS-LIST (CADR EDGE))) )
+       ((and (consp (car edge)) (eq :data (caar edge)))
+        (unless (= 2 (length (car edge)))
+          (error "Invalid data node ~S. Expected (:data form)."  (car edge)))
+        (check-process-fdes process-list (cadr edge))
+        (list :data
+              (cadar edge)
+              (check-process-fdes process-list (cadr edge))) )
        ;; -----------------
        ;; a file input edge
        ;; -----------------
-       ((STRINGP (CAR EDGE))
-        (LIST :INPUT
-              (LIST :FILE (CAR EDGE))
-              (CHECK-PROCESS-FDES PROCESS-LIST (CADR EDGE))) )
-       ((AND (CONSP (CAR EDGE))
-             (EQ :FILE (CAAR EDGE)))
-        (UNLESS (= 2 (LENGTH (CAR EDGE)))
-          (ERROR "Invalid input file specification ~S. Expected (:FILE fname)."
-                 (CAR EDGE)))
-        (LET ((FNAME (CADAR EDGE)) )
-          (SETQ FNAME (IF (STRINGP FNAME) FNAME
-                          (FORMAT NIL "~A" (EVAL FNAME))))
-          (LIST :INPUT
-                (LIST :FILE FNAME)
-                (CHECK-PROCESS-FDES PROCESS-LIST (CADR EDGE)))))
+       ((stringp (car edge))
+        (list :input
+              (list :file (car edge))
+              (check-process-fdes process-list (cadr edge))) )
+       ((and (consp (car edge))
+             (eq :file (caar edge)))
+        (unless (= 2 (length (car edge)))
+          (error "Invalid input file specification ~S. Expected (:FILE fname)."
+                 (car edge)))
+        (let ((fname (cadar edge)) )
+          (setq fname (if (stringp fname) fname
+                          (format nil "~A" (eval fname))))
+          (list :input
+                (list :file fname)
+                (check-process-fdes process-list (cadr edge)))))
        ;; ----------------------------
        ;; a file output or append edge
        ;; ----------------------------
-       ((STRINGP (CADR EDGE))
-        (LIST :OUTPUT
-              (CHECK-PROCESS-FDES PROCESS-LIST (CAR EDGE))
-              (LIST :FILE (CADR EDGE))))
-       ((AND (CONSP (CADR EDGE))
-             (EQ :FILE (CAADR EDGE)))
-        (UNLESS (OR (= 2 (LENGTH (CADR EDGE)))
-                    (AND (= 3 (LENGTH (CADR EDGE)))
-                         (EQ :APPEND (NTH 2 (CADR EDGE)))))
-          (ERROR (CONCATENATE 'STRING
+       ((stringp (cadr edge))
+        (list :output
+              (check-process-fdes process-list (car edge))
+              (list :file (cadr edge))))
+       ((and (consp (cadr edge))
+             (eq :file (caadr edge)))
+        (unless (or (= 2 (length (cadr edge)))
+                    (and (= 3 (length (cadr edge)))
+                         (eq :append (nth 2 (cadr edge)))))
+          (error (concatenate 'string
                    "Invalid output file specification ~S. "
                    "Expected (LFILE fname [:APPEND]).")
-                 (CADR EDGE)))
-        (LET ((FNAME  (CADAR EDGE))
-              (APPEND (MEMBER :APPEND (CADR EDGE) :TEST (FUNCTION EQ))) )
-          (SETQ FNAME (IF (STRINGP FNAME) FNAME
-                          (FORMAT NIL "~A" (EVAL FNAME))))
-          (LIST :OUTPUT 
-                (CHECK-PROCESS-FDES PROCESS-LIST (CAR EDGE))
-                (IF APPEND
-                    (LIST :FILE  FNAME :APPEND)
-                    (LIST :FILE  FNAME)))))
+                 (cadr edge)))
+        (let ((fname  (cadar edge))
+              (append (member :append (cadr edge) :test (function eq))) )
+          (setq fname (if (stringp fname) fname
+                          (format nil "~A" (eval fname))))
+          (list :output 
+                (check-process-fdes process-list (car edge))
+                (if append
+                    (list :file  fname :append)
+                    (list :file  fname)))))
        ;; -----------
        ;; a pipe edge
        ;; -----------
-       ((AND (CONSP (NTH 0 EDGE))
-             (CONSP (NTH 1 EDGE)))
-        (LIST :PIPE
-              (CHECK-PROCESS-FDES PROCESS-LIST (NTH 0 EDGE))
-              (CHECK-PROCESS-FDES PROCESS-LIST (NTH 1 EDGE))))
+       ((and (consp (nth 0 edge))
+             (consp (nth 1 edge)))
+        (list :pipe
+              (check-process-fdes process-list (nth 0 edge))
+              (check-process-fdes process-list (nth 1 edge))))
        ;; -----------
        ;; other edges
        ;; -----------
-       (T (ERROR "Invalid edge ~S." EDGE))
+       (t (error "Invalid edge ~S." edge))
        ))
-   EDGE-LIST))
+   edge-list))
 
 
 
-(DEFUN CREATE-DATAFILES-AND-PIPES (EDGE-LIST)
+(defun create-datafiles-and-pipes (edge-list)
   "PRIVATE.
 "
   ;; pre-process edge-list:
@@ -352,47 +349,47 @@ EDGE-LIST:  specifies the pipe and input or output as:
   ;; (pipe (process-tag fdes) (process-tag fdes))
   ;; --> (pipe in-fdes out-fdes (process-tag fdes) (process-tag fdes))
   ;;
-  (MAPCAR
-   (LAMBDA (EDGE)
-     (COND
+  (mapcar
+   (lambda (edge)
+     (cond
        ;; ------------------------------- ;;
        ;; create the temporary file
        ;; data: mkstemp;open;write;open;unlink;close
-       ((EQ :DATA (CAR EDGE))
-        (MULTIPLE-VALUE-BIND
-              (FDESC FPATH)
-            (LINUX:|mkstemp| (FORMAT NIL "~a/lisp-inline-data-XXXXXX"
-                                     *TEMPORARY-PATHNAME*))
-          (WHEN (< FDESC 0)
-            (ERROR "LINUX:mkstemp reported error errno=~a." LINUX::|errno|))
+       ((eq :data (car edge))
+        (multiple-value-bind
+              (fdesc fpath)
+            (linux:|mkstemp| (format nil "~a/lisp-inline-data-XXXXXX"
+                                     *temporary-pathname*))
+          (when (< fdesc 0)
+            (error "LINUX:mkstemp reported error errno=~a." linux::|errno|))
           ;; fill the temporary file
-          (WITH-OPEN-FILE (DATA FPATH
-                                :DIRECTION :OUTPUT
-                                :IF-EXISTS :OVERWRITE
-                                :IF-DOES-NOT-EXIST :CREATE)
-            (FORMAT NIL "~A" (NTH 1 EDGE)))
-          (PROG1
-              (LIST :DATA (LINUX:|open| FPATH LINUX:O_RDONLY 0)
-                    FPATH (NTH 2 EDGE))
+          (with-open-file (data fpath
+                                :direction :output
+                                :if-exists :overwrite
+                                :if-does-not-exist :create)
+            (format nil "~A" (nth 1 edge)))
+          (prog1
+              (list :data (linux:|open| fpath linux:o_rdonly 0)
+                    fpath (nth 2 edge))
             ;; close and delete the temporary file (we keep an input fd).
-            (DELETE-FILE FPATH)
-            (LINUX:|close| FDESC))))
+            (delete-file fpath)
+            (linux:|close| fdesc))))
        ;; ------------------------------- ;;
        ;; create the pipe
        ;; pipe: pipe
-       ((EQ :PIPE (CAR EDGE))
-        (MULTIPLE-VALUE-BIND (RESULT FDESCS) (LINUX:|pipe|)
-          (WHEN (/= 0 RESULT)
-            (ERROR "LINUX:pipe returned ~S." RESULT))
-          (CONS :PIPE (CONS (AREF FDESCS 0) (CONS (AREF FDESCS 1)
-                                                  (CDR EDGE))))))
+       ((eq :pipe (car edge))
+        (multiple-value-bind (result fdescs) (linux:|pipe|)
+          (when (/= 0 result)
+            (error "LINUX:pipe returned ~S." result))
+          (cons :pipe (cons (aref fdescs 0) (cons (aref fdescs 1)
+                                                  (cdr edge))))))
        ;; ------------------------------- ;;
        ;; don't do anything.
-       (T EDGE)))
-   EDGE-LIST))
+       (t edge)))
+   edge-list))
 
 
-(DEFUN PREPARE-FD (PROCESS EDGE-LIST)
+(defun prepare-fd (process edge-list)
   "PRIVATE.
 NOTE:       called in the child process `PROCESS'.
 DO:         open files, assign pipe descriptors, close file descriptors,
@@ -404,94 +401,94 @@ DO:         open files, assign pipe descriptors, close file descriptors,
   ;; 3.2. assign the pipe descriptor, or
   ;; 3.3. close the file descriptor, or
   ;; 3.4. dup2 the file decriptor.
-  (LET ((TAG (CAR PROCESS)))
-    (MAPC
-     (LAMBDA (EDGE)
-       (COND
+  (let ((tag (car process)))
+    (mapc
+     (lambda (edge)
+       (cond
          ;; ---------------------------------------- ;;
          ;; (:data ddes dname (:tag fdes))
-         ((AND (EQ :DATA (CAR EDGE))
-               (EQ TAG (CAR (NTH 3 EDGE)) ))
-          (LET* ((DDES  (NTH 1 EDGE))
-                 (FDES  (CADR (NTH 3 EDGE))) )
-            (WHEN (/= DDES FDES)
-              (LINUX:|dup2| DDES FDES)
-              (LINUX:|close| DDES)))) ;; "inline" data file.
+         ((and (eq :data (car edge))
+               (eq tag (car (nth 3 edge)) ))
+          (let* ((ddes  (nth 1 edge))
+                 (fdes  (cadr (nth 3 edge))) )
+            (when (/= ddes fdes)
+              (linux:|dup2| ddes fdes)
+              (linux:|close| ddes)))) ;; "inline" data file.
          ;; ---------------------------------------- ;;
          ;; (:input (file fname) (:tag fdes))
-         ((AND (EQ :INPUT (CAR EDGE))
-               (EQ (CAR (NTH 2 EDGE)) TAG))
-          (LET* ((FNAME (CADR (NTH 1 EDGE)))
-                 (FDES  (CADR (NTH 2 EDGE)))
-                 (ODES  (LINUX:|open| FNAME LINUX:O_RDONLY 0)) )
-            (WHEN (< ODES 0)
-              (ERROR "Can't open ~S for reading." FNAME))
-            (WHEN (/= ODES FDES)
-              (LINUX:|dup2| ODES FDES)
-              (LINUX:|close| ODES)))) ;; input data file
+         ((and (eq :input (car edge))
+               (eq (car (nth 2 edge)) tag))
+          (let* ((fname (cadr (nth 1 edge)))
+                 (fdes  (cadr (nth 2 edge)))
+                 (odes  (linux:|open| fname linux:o_rdonly 0)) )
+            (when (< odes 0)
+              (error "Can't open ~S for reading." fname))
+            (when (/= odes fdes)
+              (linux:|dup2| odes fdes)
+              (linux:|close| odes)))) ;; input data file
          ;; ---------------------------------------- ;;
          ;; (:output  (:tag fdes) (file fname [:append]))
-         ((AND (EQ :OUTPUT (CAR EDGE))
-               (EQ (CAR (NTH 1 EDGE)) TAG))
-          (LET* ((FDES   (CADR (NTH 1 EDGE)))
-                 (FNAME  (CADR (NTH 2 EDGE)))
-                 (APPEND (MEMBER :APPEND (NTH 2 EDGE) :TEST (FUNCTION EQ)))
-                 (ODES (LINUX:|open| FNAME
-                              (+ LINUX:O_WRONLY linux:O_CREAT
-                                 (IF APPEND LINUX:O_APPEND LINUX:O_TRUNC))
+         ((and (eq :output (car edge))
+               (eq (car (nth 1 edge)) tag))
+          (let* ((fdes   (cadr (nth 1 edge)))
+                 (fname  (cadr (nth 2 edge)))
+                 (append (member :append (nth 2 edge) :test (function eq)))
+                 (odes (linux:|open| fname
+                              (+ linux:o_wronly linux:o_creat
+                                 (if append linux:o_append linux:o_trunc))
                               438)) )
-            (WHEN (< ODES 0)
-              (ERROR "Can't open ~S for writting." FNAME))
-            (WHEN (/= ODES FDES)
-              (LINUX:|dup2| ODES FDES)
-              (LINUX:|close| ODES)))) ;; output data file
+            (when (< odes 0)
+              (error "Can't open ~S for writting." fname))
+            (when (/= odes fdes)
+              (linux:|dup2| odes fdes)
+              (linux:|close| odes)))) ;; output data file
          ;; ---------------------------------------- ;;
          ;; (:pipe ifdes ofdes (:tag fdes) (:tag fdes)) output pipe
-         ((AND (EQ :PIPE (CAR EDGE))
-               (EQ TAG (CAR (NTH 3 EDGE))))
-          (LET* ((IFDES (NTH 1 EDGE))
-                 (OFDES (NTH 2 EDGE))
-                 (FDES (CADR (NTH 3 EDGE))))
-            (WHEN (/= OFDES FDES)
-              (LINUX:|dup2| OFDES FDES)
-              (LINUX:|close| IFDES)
-              (LINUX:|close| OFDES)))) ;; output pipe
+         ((and (eq :pipe (car edge))
+               (eq tag (car (nth 3 edge))))
+          (let* ((ifdes (nth 1 edge))
+                 (ofdes (nth 2 edge))
+                 (fdes (cadr (nth 3 edge))))
+            (when (/= ofdes fdes)
+              (linux:|dup2| ofdes fdes)
+              (linux:|close| ifdes)
+              (linux:|close| ofdes)))) ;; output pipe
          ;; ---------------------------------------- ;;
          ;; (:pipe ifdes ofdes (:tag fdes) (:tag fdes)) input pipe
-         ((AND (EQ :PIPE (CAR EDGE) )
-               (EQ TAG (CAR (NTH 4 EDGE)) ))
-          (LET* ((IFDES (NTH 1 EDGE))
-                 (OFDES (NTH 2 EDGE))
-                 (FDES (CADR (NTH 4 EDGE))))
-            (WHEN (/= IFDES FDES)
-              (LINUX:|dup2| IFDES FDES)
-              (LINUX:|close| IFDES)
-              (LINUX:|close| OFDES)))) ;; input pipe
+         ((and (eq :pipe (car edge) )
+               (eq tag (car (nth 4 edge)) ))
+          (let* ((ifdes (nth 1 edge))
+                 (ofdes (nth 2 edge))
+                 (fdes (cadr (nth 4 edge))))
+            (when (/= ifdes fdes)
+              (linux:|dup2| ifdes fdes)
+              (linux:|close| ifdes)
+              (linux:|close| ofdes)))) ;; input pipe
          ;; ---------------------------------------- ;;
          ;; (:close (:tag fdes)...)
-         ((EQ :CLOSE (CAR EDGE))
-          (MAPC (LAMBDA (TAG-FDES)
-                  (WHEN (EQ (CAR TAG-FDES) TAG)
-                    (LINUX:|close| (CADR TAG-FDES))))
-                (CDR EDGE)))
+         ((eq :close (car edge))
+          (mapc (lambda (tag-fdes)
+                  (when (eq (car tag-fdes) tag)
+                    (linux:|close| (cadr tag-fdes))))
+                (cdr edge)))
          ;; ---------------------------------------- ;;
          ;; (:duplicate (:tag dfdes sfdes)...)
-         ((EQ :DUPLICATE (CAR EDGE))
-          (MAPC (LAMBDA (TAG-D-S)
-                  (WHEN (EQ (CAR TAG-D-S) TAG)
-                    (LET ((DST (NTH 1 TAG-D-S))
-                          (SRC (NTH 2 TAG-D-S)))
-                      (LINUX:|dup2| SRC DST)
+         ((eq :duplicate (car edge))
+          (mapc (lambda (tag-d-s)
+                  (when (eq (car tag-d-s) tag)
+                    (let ((dst (nth 1 tag-d-s))
+                          (src (nth 2 tag-d-s)))
+                      (linux:|dup2| src dst)
                       ;; we don't close the src, we leave that to the client.
                       )))
-                (CDR EDGE)))
+                (cdr edge)))
          ;; ---------------------------------------- ;;
-         (T (ERROR "Unknown edge type ~S." EDGE))))
-     EDGE-LIST)))
+         (t (error "Unknown edge type ~S." edge))))
+     edge-list)))
 
 
 
-(DEFUN PIPE-AND-EXEC (PROCESS-LIST EDGE-LIST &KEY WAIT)
+(defun pipe-and-exec (process-list edge-list &key wait)
   "
 RETURN:         NOT UP TO DATE a list of processes
                 (:tag status :begin form...) or
@@ -541,106 +538,106 @@ EDGE-LIST:      specifies the pipe and input or output as:
   ;; 6. in parent, wait for all the children.
   ;;
   ;; check the syntax, and evalutate process-list:
-  (SETQ PROCESS-LIST (CHECK-PROCESS-LIST PROCESS-LIST))
+  (setq process-list (check-process-list process-list))
   ;; check the syntax, and evaluate edge-list and canonize:
-  (SETQ EDGE-LIST (CHECK-EDGE-LIST PROCESS-LIST EDGE-LIST))
+  (setq edge-list (check-edge-list process-list edge-list))
   ;; 0. input-data must be evaluated and written to temporary files.
   ;; 1. create all the pipes
-  (SETQ EDGE-LIST (CREATE-DATAFILES-AND-PIPES EDGE-LIST))
+  (setq edge-list (create-datafiles-and-pipes edge-list))
   
   ;; 2. fork the processes.
-  (SETQ PROCESS-LIST
-        (MAPCAR
-         (LAMBDA (PROCESS)
-           (LET ((PID (LINUX:|fork|)))
-             (COND
-               ((< PID 0)
+  (setq process-list
+        (mapcar
+         (lambda (process)
+           (let ((pid (linux:|fork|)))
+             (cond
+               ((< pid 0)
                 ;; --------------------------------------------- error
                 ;; TODO: We should keep the errno along with the process.
-                (LIST :FORK-SUCCESS NIL
-                      :FORK-ERRNO LINUX::|errno|
-                      :PROCESS PROCESS))
-               ((= PID 0)
+                (list :fork-success nil
+                      :fork-errno linux::|errno|
+                      :process process))
+               ((= pid 0)
                 ;; --------------------------------------------- child
                 ;; 3. in each child in the order specified,
                 ;; 3.1. open the file, or
                 ;; 3.2. assign the pipe descriptor, or
                 ;; 3.3. close the file descriptor, or
                 ;; 3.4. dup2 the file decriptor.
-                (LET ((STATUS 69)) ;; EX_UNAVAILABLE
-                  (UNWIND-PROTECT
-                       (PROGN
-                         (PREPARE-FD PROCESS EDGE-LIST)
+                (let ((status 69)) ;; EX_UNAVAILABLE
+                  (unwind-protect
+                       (progn
+                         (prepare-fd process edge-list)
                          ;; 4. exec the program or run the lisp form, then exit.
-                         (IF (EQ :BEGIN (NTH 1 PROCESS))
+                         (if (eq :begin (nth 1 process))
                              ;; lisp form
-                             (SETQ STATUS (EVAL (CONS 'PROGN (CDDR PROCESS))))
+                             (setq status (eval (cons 'progn (cddr process))))
                              ;; program process
-                             (EVAL (CONS 'EXECL (CONS (NTH 1 PROCESS)
-                                                      (CDR PROCESS))))
+                             (eval (cons 'execl (cons (nth 1 process)
+                                                      (cdr process))))
                              ))
                     ;; no clean up
                     )
-                  (EXT:EXIT STATUS)))
-               (T
+                  (ext:exit status)))
+               (t
                 ;; --------------------------------------------- parent
-                (LIST :FORK-SUCCESS T
-                      :CHILD-PID PID
-                      :PROCESS PROCESS)) ) ;;COND
+                (list :fork-success t
+                      :child-pid pid
+                      :process process)) ) ;;COND
              ))                            ;;LAMBDA
-         PROCESS-LIST))
+         process-list))
   ;; 5. in parent, close the pipes 
-  (MAPC (LAMBDA (EDGE)
-          (COND
-            ((EQ :DATA (CAR EDGE))
-             (LINUX:|close| (NTH 1 EDGE))) ;; input fd we kept.
-            ((EQ :PIPE (CAR EDGE))
-             (LET* ((P1 (NTH 1 EDGE))
-                    (P2 (NTH 2 EDGE)))
-               (LINUX:|close| P1)
-               (LINUX:|close| P2))) ;; pipe open in parent, used by children.
+  (mapc (lambda (edge)
+          (cond
+            ((eq :data (car edge))
+             (linux:|close| (nth 1 edge))) ;; input fd we kept.
+            ((eq :pipe (car edge))
+             (let* ((p1 (nth 1 edge))
+                    (p2 (nth 2 edge)))
+               (linux:|close| p1)
+               (linux:|close| p2))) ;; pipe open in parent, used by children.
             ))                      ;;LAMBDA
-        EDGE-LIST)
-  (WHEN WAIT
+        edge-list)
+  (when wait
     ;; 6. wait for all the children.
-    (DO ((CHILD-COUNT (DO* ((PROCESSES PROCESS-LIST (CDR PROCESSES))
-                            (COUNT 0) )
-                           ((NULL PROCESSES) COUNT)
-                        (SETQ COUNT (IF (GETF (CAR PROCESSES) :FORK-SUCCESS)
-                                        (1+ COUNT) COUNT))))
+    (do ((child-count (do* ((processes process-list (cdr processes))
+                            (count 0) )
+                           ((null processes) count)
+                        (setq count (if (getf (car processes) :fork-success)
+                                        (1+ count) count))))
          )
-        ((= 0 CHILD-COUNT))
-      (MULTIPLE-VALUE-BIND (PID STATUS) (LINUX:|wait|)
-        (WHEN (< 0 PID)
-          (LET* ((PROCESS-PLACE (MEMBER
-                                 PID PROCESS-LIST
-                                 :KEY (LAMBDA (PROCESS)
-                                        (GETF PROCESS :CHILD-PID))))
-                 (PROCESS (CAR PROCESS-PLACE)))
-            (WHEN PROCESS
-              (SETF (GETF PROCESS :CHILD-STATUS) STATUS)
-              (SETF (CAR PROCESS-PLACE) PROCESS)
-              (SETQ CHILD-COUNT (1- CHILD-COUNT))))))))
-  PROCESS-LIST)
+        ((= 0 child-count))
+      (multiple-value-bind (pid status) (linux:|wait|)
+        (when (< 0 pid)
+          (let* ((process-place (member
+                                 pid process-list
+                                 :key (lambda (process)
+                                        (getf process :child-pid))))
+                 (process (car process-place)))
+            (when process
+              (setf (getf process :child-status) status)
+              (setf (car process-place) process)
+              (setq child-count (1- child-count))))))))
+  process-list)
  
 
 
-(DEFUN PIPE (PROCESS-LIST &KEY WAIT)
-  (LET ((TAG-NUM 0))
-    (SETQ PROCESS-LIST
-          (MAPCAR (LAMBDA (PROCESS)
-                    (SETQ TAG-NUM (1+ TAG-NUM))
-                    (CONS (INTERN (with-standard-io-syntax (FORMAT NIL "PROCESS-~A" TAG-NUM))
-                                  (FIND-PACKAGE "KEYWORD")) PROCESS))
-                  PROCESS-LIST))
-    (PIPE-AND-EXEC PROCESS-LIST
-                   (DO ((PREVIOUS (CAAR PROCESS-LIST) (CAAR PROCESS))
-                        (PROCESS  (CDR PROCESS-LIST)  (CDR PROCESS))
-                        (EDGES NIL
-                               (CONS (LIST (LIST PREVIOUS 1)
-                                           (LIST (CAAR PROCESS) 0)) EDGES)))
-                       ((NULL PROCESS) (NREVERSE EDGES)))
-                   :WAIT WAIT)))
+(defun pipe (process-list &key wait)
+  (let ((tag-num 0))
+    (setq process-list
+          (mapcar (lambda (process)
+                    (setq tag-num (1+ tag-num))
+                    (cons (intern (with-standard-io-syntax (format nil "PROCESS-~A" tag-num))
+                                  (find-package "KEYWORD")) process))
+                  process-list))
+    (pipe-and-exec process-list
+                   (do ((previous (caar process-list) (caar process))
+                        (process  (cdr process-list)  (cdr process))
+                        (edges nil
+                               (cons (list (list previous 1)
+                                           (list (caar process) 0)) edges)))
+                       ((null process) (nreverse edges)))
+                   :wait wait)))
 
 
 ;;; ;; pipe          ((process-tag fdes) (process-tag fdes))
@@ -711,30 +708,30 @@ EDGE-LIST:      specifies the pipe and input or output as:
 
 
 
-(DEFUN FORK (BODY-FUN)
+(defun fork (body-fun)
   "
 RETURN:  pid of child in parent ;
          never in child (exit with result of body-fun as status).
 "
-  (LET ((PID (LINUX:|fork|)))
-    (IF (= 0 PID)
+  (let ((pid (linux:|fork|)))
+    (if (= 0 pid)
         ;; child
-        (LET ((RESULT (FUNCALL BODY-FUN)))
-          (EXT:EXIT
-           (COND
-             ((NUMBERP RESULT) (LOGAND 255 RESULT))
-             ((NULL    RESULT) 1)
-             ((EQ T    RESULT) 0)
-             (T               0))))
+        (let ((result (funcall body-fun)))
+          (ext:exit
+           (cond
+             ((numberp result) (logand 255 result))
+             ((null    result) 1)
+             ((eq t    result) 0)
+             (t               0))))
         ;; parent
-        PID)))
+        pid)))
 
 
-(DEFUN WAIT (PID)
+(defun wait (pid)
   "
 RETURN:  pid;status
 "
-  (LINUX:|waitpid| PID 0)) ; options: (LOGIOR LINUX:WNOHANG LINUX:WUNTRACED)
+  (linux:|waitpid| pid 0)) ; options: (LOGIOR LINUX:WNOHANG LINUX:WUNTRACED)
 
 
 
@@ -780,50 +777,50 @@ RETURN:  pid;status
 
 
 
-(DEFMACRO EXEC-PATH (&REST COMMAND)
-  (WHEN (/= 1 (LENGTH COMMAND))
-    (SIGNAL 'WRONG-NUMBER-OF-ARGUMENTS 'EXEC-PATH (LENGTH COMMAND)))
-  (SETQ COMMAND 
-        (MAPCAR (LAMBDA (ITEM)
-                  (COND
-                    ((SYMBOLP ITEM)
-                     (SETQ ITEM (SYMBOL-NAME ITEM))
-                     (LET ((UTEM (STRING-UPCASE ITEM)))
+(defmacro exec-path (&rest command)
+  (when (/= 1 (length command))
+    (signal 'wrong-number-of-arguments 'exec-path (length command)))
+  (setq command 
+        (mapcar (lambda (item)
+                  (cond
+                    ((symbolp item)
+                     (setq item (symbol-name item))
+                     (let ((utem (string-upcase item)))
                        ;;(SHOW UTEM ITEM)
-                       (IF (STRING= UTEM ITEM)
-                           (STRING-DOWNCASE ITEM)
-                           ITEM)))
-                    (T (FORMAT NIL  "~a" ITEM))))
-                (CAR COMMAND)))
-  `(EXT:RUN-PROGRAM ,(CAR COMMAND)
-     :ARGUMENTS (QUOTE ,(CDR COMMAND))
-     :INPUT :TERMINAL
-     :OUTPUT :TERMINAL
-     :IF-OUTPUT-EXISTS :OVERWRITE
-     :WAIT T))
+                       (if (string= utem item)
+                           (string-downcase item)
+                           item)))
+                    (t (format nil  "~a" item))))
+                (car command)))
+  `(ext:run-program ,(car command)
+     :arguments (quote ,(cdr command))
+     :input :terminal
+     :output :terminal
+     :if-output-exists :overwrite
+     :wait t))
 
 
-(DEFMACRO EXEC-EPF (&REST EPF)
-  (LET ((PF (CAR EPF))
-        (REDIRECTIONS (CDR EPF)) )
-    (DECLARE (IGNORE PF REDIRECTIONS)) (ERROR "NOT IMPLEMENTED YET")
-    `( ,@(CAR EPF) )))
+(defmacro exec-epf (&rest epf)
+  (let ((pf (car epf))
+        (redirections (cdr epf)) )
+    (declare (ignore pf redirections)) (error "NOT IMPLEMENTED YET")
+    `( ,@(car epf) )))
 
 
 
 
-(DEFMACRO & (&REST EPF)   `(FORK (LAMBDA () (EXEC-EPF ,@EPF))))
+(defmacro & (&rest epf)   `(fork (lambda () (exec-epf ,@epf))))
 
 
-(DEFMACRO RUN (&REST EPF)  `(WAIT (& ,@EPF)))
+(defmacro run (&rest epf)  `(wait (& ,@epf)))
 
 
-(DEFMACRO OR-ELSE (&REST PF-LIST)
-  (DECLARE (IGNORE PF-LIST)) (ERROR "NOT IMPLEMENTED YET"))
+(defmacro or-else (&rest pf-list)
+  (declare (ignore pf-list)) (error "NOT IMPLEMENTED YET"))
 
 
-(DEFMACRO AND-THEN (&REST PF-LIST)
-  (DECLARE (IGNORE PF-LIST)) (ERROR "NOT IMPLEMENTED YET"))
+(defmacro and-then (&rest pf-list)
+  (declare (ignore pf-list)) (error "NOT IMPLEMENTED YET"))
 
 
 ;;;; THE END ;;;;

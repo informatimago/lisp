@@ -32,24 +32,22 @@
 ;;;;    2006-05-19 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal Bourguignon 2006 - 2006
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
 ;;; (push :debug-weak *features*) in clisp to have it on clisp for debugging...
@@ -77,9 +75,9 @@
    as published by the Free Software Foundation; either version
    2 of the License, or (at your option) any later version.
    ")
-  (:USE "COMMON-LISP")
+  (:use "COMMON-LISP")
   #-(and clisp (not debug-weak))
-  (:SHADOW "HASH-TABLE" "MAKE-HASH-TABLE"
+  (:shadow "HASH-TABLE" "MAKE-HASH-TABLE"
            "HASH-TABLE-P" "HASH-TABLE-COUNT" "HASH-TABLE-REHASH-SIZE"
            "HASH-TABLE-REHASH-THRESHOLD" "HASH-TABLE-SIZE" "HASH-TABLE-TEST"
            "GETHASH" "REMHASH" "MAPHASH" "WITH-HASH-TABLE-ITERATOR" "CLRHASH")
@@ -142,8 +140,8 @@
 
 (defpackage "COM.INFORMATIMAGO.CLEXT.CLOSER-WEAK-USER"
   (:nicknames "CLOSER-WEAK-USER" "C2WEAK-USER")
-  (:USE "COMMON-LISP" "COM.INFORMATIMAGO.CLEXT.CLOSER-WEAK")
-  (:SHADOWING-IMPORT-FROM
+  (:use "COMMON-LISP" "COM.INFORMATIMAGO.CLEXT.CLOSER-WEAK")
+  (:shadowing-import-from
    "COM.INFORMATIMAGO.CLEXT.CLOSER-WEAK"
    "HASH-TABLE" "MAKE-HASH-TABLE"
    "HASH-TABLE-P" "HASH-TABLE-COUNT" "HASH-TABLE-REHASH-SIZE"
@@ -154,8 +152,8 @@
 
 ;; When testing, we call the garbage collector soon to be more precisely weak.
 #+(and weak-test clisp)(import '(ext:gc))
-#+(and weak-test sbcl) (defun gc () (sb-ext:GC :full t))
-#+(and weak-test cmu)  (import '(EXTENSIONS:GC))
+#+(and weak-test sbcl) (defun gc () (sb-ext:gc :full t))
+#+(and weak-test cmu)  (import '(extensions:gc))
 
 
 
@@ -167,19 +165,19 @@
 #+cmu
 (defun weak-pointer-p (object)
   "Returns true if the object is of type WEAK-POINTER."
-  (typep object 'EXTENSIONS:WEAK-POINTER))
+  (typep object 'extensions:weak-pointer))
 
 
 #+sbcl
 (defun weak-pointer-p (object)
   "Returns true if the object is of type WEAK-POINTER."
-  (typep object 'SB-EXT:WEAK-POINTER))
+  (typep object 'sb-ext:weak-pointer))
 
 
 #+(and clisp debug-weak)
 (defun weak-pointer-p (object)
   "Returns true if the object is of type WEAK-POINTER."
-  (EXT:WEAK-POINTER-P object))
+  (ext:weak-pointer-p object))
 
 
 
@@ -824,7 +822,7 @@ It has no effect when some key has already been garbage-collected.")
   self)
 
 #-(and clisp (not debug-weak))
-(defun HASH-TABLE-WEAK-P (object)
+(defun hash-table-weak-p (object)
   "http://clisp.cons.org/impnotes/hash-dict.html#make-hash"
   (and (typep object 'weak-hash-table) (wht-pair-type object)))
 
@@ -845,10 +843,10 @@ It has no effect when some key has already been garbage-collected.")
 
 #-(and clisp (not debug-weak))
 (defmethod initialize-instance ((self weak-hash-table)
-                                &KEY (TEST (function eql) testp)
-                                (SIZE 37)
+                                &key (test (function eql) testp)
+                                (size 37)
                                 (rehash-size 2.0)
-                                (REHASH-THRESHOLD 0.90)
+                                (rehash-threshold 0.90)
                                 (weak :key)
                                 (initial-contents nil)
                                 &allow-other-keys)
@@ -1097,11 +1095,11 @@ It has no effect when some key has already been garbage-collected.")
 
 
 #-(and clisp (not debug-weak))
-(defun MAKE-HASH-TABLE (&rest other-keys
-                        &KEY (TEST (function eql) testp)
-                        (SIZE nil sizep)
+(defun make-hash-table (&rest other-keys
+                        &key (test (function eql) testp)
+                        (size nil sizep)
                         (rehash-size nil rehash-size-p)
-                        (REHASH-THRESHOLD nil REHASH-THRESHOLD-p)
+                        (rehash-threshold nil rehash-threshold-p)
                         (weak nil #|:KEY :VALUE :KEY-AND-VALUE :KEY-OR-VALUE|#) 
                         ;; implementation dependant:
                         &allow-other-keys)

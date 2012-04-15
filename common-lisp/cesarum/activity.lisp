@@ -39,32 +39,29 @@
 ;;;;    such as UCW's that can work with clisp's socket-status. 
 ;;;;
 ;;;;LEGAL
-;;;;    GPL
-;;;;
+;;;;    AGPL3
+;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2007
-;;;;    mailto:pjb@informatimago.com
-;;;;
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
-;;;;
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
-;;;;
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
+;;;;    
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
+;;;;    
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ACTIVITY"
-  (:USE "COMMON-LISP")
-  (:EXPORT
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ACTIVITY"
+  (:use "COMMON-LISP")
+  (:export
    "MAKE-ACTIVITY" "CURRENT-ACTIVITY" "ACTIVITYP" "ACTIVITY-YIELD"
    "ALL-ACTIVITIES" "DESTROY-ACTIVITY" "ACTIVITY-RUN"
    "ACTIVITY-NAME" "ACTIVITY-CLOSURE"
@@ -72,14 +69,14 @@
    "ACTIVITY-DROPABLE-P" "ACTIVITY-EXACT-P"
    ;; Utility:
    "PRINT-ACTIVITIES" "GET-TIME")
-  (:DOCUMENTATION
+  (:documentation
    "This package implements a kind of co-routine monitor.
     Activities are closure that get called periodically by a scheduler.
 
     Copyright Pascal J. Bourguignon 2003 - 2007
     This package is provided under the GNU General Public License.
     See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ACTIVITY")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ACTIVITY")
 
 
 
@@ -176,47 +173,47 @@ NOTE:   exactp => dropablep
   (defun get-next-activity-id () (incf next-activity-id)))
 
 
-(DEFVAR *CURRENT-ACTIVITY* NIL
+(defvar *current-activity* nil
   "The current activity.")
 
 (defvar *scheduler*)
 
-(DEFCLASS ACTIVITY ()
+(defclass activity ()
   ((id
     :reader activity-id
     :initform (get-next-activity-id)
     :type integer
     :documentation "A unique ID for activities.")
-   (NAME
-    :ACCESSOR ACTIVITY-NAME
-    :INITARG :NAME
-    :INITFORM "Unnamed"
-    :TYPE     STRING
-    :DOCUMENTATION "A label for the activity.")
-   (CLOSURE
-    :ACCESSOR ACTIVITY-CLOSURE
-    :INITARG :CLOSURE
-    :INITFORM (FUNCTION (LAMBDA ()))
-    :TYPE     FUNCTION
-    :DOCUMENTATION "The closure to be run periodically for this activity.")
+   (name
+    :accessor activity-name
+    :initarg :name
+    :initform "Unnamed"
+    :type     string
+    :documentation "A label for the activity.")
+   (closure
+    :accessor activity-closure
+    :initarg :closure
+    :initform (function (lambda ()))
+    :type     function
+    :documentation "The closure to be run periodically for this activity.")
    (scheduler
     :accessor activity-scheduler
     :initarg :scheduler
     :initform *scheduler*
     :type scheduler
     :documentation "The scheduler that schedules this activity.")
-   (SCHEDULED-TIME
+   (scheduled-time
     :initarg :scheduled-time
-    :ACCESSOR ACTIVITY-SCHEDULED-TIME
-    :INITFORM 0
-    :TYPE     real
-    :DOCUMENTATION "The scheduled time this activity should run")
-   (PERIOD
-    :ACCESSOR ACTIVITY-PERIOD
-    :INITARG :PERIOD
-    :INITFORM 0
-    :TYPE     real
-    :DOCUMENTATION "The period of this activity, expressed in seconds.
+    :accessor activity-scheduled-time
+    :initform 0
+    :type     real
+    :documentation "The scheduled time this activity should run")
+   (period
+    :accessor activity-period
+    :initarg :period
+    :initform 0
+    :type     real
+    :documentation "The period of this activity, expressed in seconds.
 If zero, then the activity is run as often as possible.")
    (dropable
     :accessor activity-dropable-p
@@ -231,7 +228,7 @@ If zero, then the activity is run as often as possible.")
     :initform nil
     :type     boolean
     :documentation "Whether the activity should be run only on exact time."))
-  (:DOCUMENTATION "An activity to be scheduled.
+  (:documentation "An activity to be scheduled.
 
 "))
 
@@ -250,14 +247,14 @@ If zero, then the activity is run as often as possible.")
   self)
 
 
-(DEFMETHOD PRINT-OBJECT ((SELF ACTIVITY) STREAM)
-  (PRINT-UNREADABLE-OBJECT (SELF STREAM :TYPE T :IDENTITY T)
-    (FORMAT STREAM ":NAME ~S " (ACTIVITY-NAME SELF))
-    (FORMAT STREAM ":scheduled-TIME ~A " (ACTIVITY-scheduled-TIME SELF))
-    (FORMAT STREAM ":PERIOD ~A " (ACTIVITY-PERIOD SELF))
-    (FORMAT STREAM ":dropable ~A " (ACTIVITY-dropable-p SELF))
-    (FORMAT STREAM ":exact ~A " (ACTIVITY-exact-p SELF)))
-  SELF)
+(defmethod print-object ((self activity) stream)
+  (print-unreadable-object (self stream :type t :identity t)
+    (format stream ":NAME ~S " (activity-name self))
+    (format stream ":scheduled-TIME ~A " (activity-scheduled-time self))
+    (format stream ":PERIOD ~A " (activity-period self))
+    (format stream ":dropable ~A " (activity-dropable-p self))
+    (format stream ":exact ~A " (activity-exact-p self)))
+  self)
 
 
 
@@ -271,7 +268,7 @@ If zero, then the activity is run as often as possible.")
 ;;;
 
 (defparameter *internal-time-unit*
-  (coerce (/ INTERNAL-TIME-UNITS-PER-SECOND) 'double-float)
+  (coerce (/ internal-time-units-per-second) 'double-float)
   "The internal time slice, in seconds, as a DOUBLE-FLOAT.")
 
 (defparameter *precise-real-time-offset*
@@ -279,7 +276,7 @@ If zero, then the activity is run as often as possible.")
      :with now = (get-universal-time)
      :while (= now (get-universal-time))
      :finally (return
-                (- now (* (GET-INTERNAL-REAL-TIME) *internal-time-unit*))))
+                (- now (* (get-internal-real-time) *internal-time-unit*))))
   "Contains the number of seconds that must be added to:
       (/ (GET-INTERNAL-REAL-TIME) INTERNAL-TIME-UNITS-PER-SECOND)
 to get the current universal-time with the higher internal time precision.")
@@ -290,7 +287,7 @@ RETURN: The universal-time (in seconds), offset by the
         internal-real-time fraction.
 "
   (+ *precise-real-time-offset*
-     (* (GET-INTERNAL-REAL-TIME) *internal-time-unit*)))
+     (* (get-internal-real-time) *internal-time-unit*)))
 
 (defun get-run-time ()
   (* (get-internal-run-time) *internal-time-unit*))
@@ -358,11 +355,11 @@ and restart the scheduling then.")
 (defvar *in-terminal-p*
   (and (string/= "dumb" (ext:getenv "TERM"))
        (intersection
-        (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST:ENSURE-LIST
-         (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM:bare-stream
+        (com.informatimago.common-lisp.cesarum.list:ensure-list
+         (com.informatimago.common-lisp.cesarum.stream:bare-stream
           *terminal-io*))
-        (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST:ENSURE-LIST
-         (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM:bare-stream
+        (com.informatimago.common-lisp.cesarum.list:ensure-list
+         (com.informatimago.common-lisp.cesarum.stream:bare-stream
           *standard-output*)))))
 
 (defun formatalot (control-string &rest arguments)
@@ -377,11 +374,11 @@ and restart the scheduling then.")
           (format *trace-output*
                   "~A~A~A~A"
                   (map 'string (function code-char)
-                       (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ECMA048:CR))
+                       (com.informatimago.common-lisp.cesarum.ecma048:cr))
                   (map 'string (function code-char)
-                       (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ECMA048:EL 3))
+                       (com.informatimago.common-lisp.cesarum.ecma048:el 3))
                   (map 'string (function code-char)
-                       (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ECMA048:CR))
+                       (com.informatimago.common-lisp.cesarum.ecma048:cr))
                   line)
           (format *trace-output* "~A~%" line)))))
 
@@ -413,7 +410,7 @@ and restart the scheduling then.")
     :documentation "The time-base used by this scheduler."))
   (:documentation "The base class for schedulers."))
 
-(defgeneric PRINT-scheduler-ACTIVITIES (scheduler &OPTIONAL STREAM))
+(defgeneric print-scheduler-activities (scheduler &optional stream))
 (defgeneric scheduler-all-activities (scheduler))
 (defgeneric schedule-activity   (scheduler activity))
 (defgeneric unschedule-activity (scheduler activity))
@@ -425,7 +422,7 @@ If an idle activity creates a new periodic class, or otherwise changes
 the schedule, the idle-scheduler needs to yield the hand to it's
 time-scheduler.")
 
-(defmethod ACTIVITY-SCHEDULED-TIME :after ((activity activity))
+(defmethod activity-scheduled-time :after ((activity activity))
   (declare (ignore activity))
   (setf *rescheduled* t))
 
@@ -478,7 +475,7 @@ in round-robin fashion for "))
     (setf (scheduler-activities scheduler) queue))
   scheduler)
 
-(defmethod run ((self idle-scheduler) &KEY ONE-STEP until)
+(defmethod run ((self idle-scheduler) &key one-step until)
   "
 DO:         Run idle activities.
 ONE-STEP:   If true, runs only one activity (or don't sleep).
@@ -488,12 +485,12 @@ UNTIL:  Time until which activities must be run.
   (let ((*rescheduled* nil))
     (macrolet ((run-step (debug)
                  `(with-debug ,debug
-                    (LET ((activity (pop (scheduler-activities self))))
+                    (let ((activity (pop (scheduler-activities self))))
                       (debug-format "Will run idle activity ~S.~%"
                                     (activity-name activity))
-                      (let ((*CURRENT-ACTIVITY* activity))
+                      (let ((*current-activity* activity))
                         (catch 'activity-yield
-                          (FUNCALL (ACTIVITY-CLOSURE activity))))
+                          (funcall (activity-closure activity))))
                       (debug-format "Did  run idle activity ~S.~%"
                                     (activity-name activity))
                       (when (and (activity-scheduler activity)
@@ -606,7 +603,7 @@ POST:           (MAX NOW (= (NEXT-TIME SELF) (+ LAST (activity-PERIOD SELF))))
         (activity-scheduler activity) nil)
   scheduler)
 
-(defmethod run ((self time-scheduler) &KEY ONE-STEP until)
+(defmethod run ((self time-scheduler) &key one-step until)
   "
 DO:         Run timed activities.
 ONE-STEP:   If true, runs only one activity (or don't sleep).
@@ -618,15 +615,15 @@ UNTIL:  Time until which activities must be run.
     (macrolet
         ((run-step (debug)
            `(with-debug ,debug
-              (LET* ((activity       (CAR (scheduler-activities self)))
-                     (scheduled-TIME (ACTIVITY-scheduled-TIME activity))
-                     (CURRENT-TIME   (get-time (scheduler-time-base self))))
+              (let* ((activity       (car (scheduler-activities self)))
+                     (scheduled-time (activity-scheduled-time activity))
+                     (current-time   (get-time (scheduler-time-base self))))
                 (debug-format "Now is ~D, current activity is ~S~%"
-                              CURRENT-TIME (activity-name activity))
-                (if (< CURRENT-TIME scheduled-time)
+                              current-time (activity-name activity))
+                (if (< current-time scheduled-time)
                     (progn
                       (debug-format "Running idle scheduler for ~A seconds.~%"
-                                    (- scheduled-time CURRENT-TIME))
+                                    (- scheduled-time current-time))
                       (run (time-scheduler-idle-scheduler self)
                            :until scheduled-time))
                     (multiple-value-bind (runp next-scheduled-time)
@@ -643,43 +640,43 @@ UNTIL:  Time until which activities must be run.
                               (cdr (scheduler-activities self)))
                         (debug-format "Will run periodic activity ~S.~%"
                                       (activity-name activity))
-                        (let ((*CURRENT-ACTIVITY* activity))
+                        (let ((*current-activity* activity))
                           (catch 'activity-yield
-                            (FUNCALL (ACTIVITY-CLOSURE activity))))
+                            (funcall (activity-closure activity))))
                         (debug-format "Did  run periodic activity ~S.~%"
                                       (activity-name activity))
                         (when (activity-scheduler activity)
                           (schedule-activity (activity-scheduler activity) activity))
                         (debug-format "Queue after rescheduling:~%")
                         ,(when debug
-                               `(PRINT-scheduler-ACTIVITIES self *TRACE-OUTPUT*)))))))))
-      (if ONE-STEP
+                               `(print-scheduler-activities self *trace-output*)))))))))
+      (if one-step
           (if *debug*
               (run-step t)
               (run-step nil))
           (cond
             ((null until)
              (if *debug*
-                 (LOOP
+                 (loop
                     :while (or (scheduler-activities self)
                                (scheduler-activities
                                 (time-scheduler-idle-scheduler self)))
                     :do (run-step t))
-                 (LOOP
+                 (loop
                     :while (or (scheduler-activities self)
                                (scheduler-activities
                                 (time-scheduler-idle-scheduler self)))
                     :do (run-step nil))))
             ((< (get-time (scheduler-time-base self)) until)
              (if *debug*
-                 (LOOP
+                 (loop
                     :while (and (< (get-time (scheduler-time-base self))
                                    until)
                                 (or (scheduler-activities self)
                                     (scheduler-activities
                                      (time-scheduler-idle-scheduler self))))
                     :do (run-step t))
-                 (LOOP
+                 (loop
                     :while (and (< (get-time (scheduler-time-base self))
                                    until)
                                 (or (scheduler-activities self)
@@ -704,7 +701,7 @@ UNTIL:  Time until which activities must be run.
 (defparameter *scheduler* (make-scheduler :real-time #|:universal-time|#))
 
 
-(DEFUN ACTIVITY-RUN (&KEY ONE-STEP until)
+(defun activity-run (&key one-step until)
   (run *scheduler* :one-step one-step :until until))
 
 
@@ -715,9 +712,9 @@ UNTIL:  Time until which activities must be run.
     (format nil "~~~D,~DF" width (truncate (- (log precision 10))))
     (format nil "~~~DD" width)))
 
-(defmethod PRINT-scheduler-ACTIVITIES ((scheduler time-scheduler)
-                                       &OPTIONAL (STREAM *STANDARD-OUTPUT*))
-  (LET ((NOW (get-time (scheduler-time-base scheduler)))
+(defmethod print-scheduler-activities ((scheduler time-scheduler)
+                                       &optional (stream *standard-output*))
+  (let ((now (get-time (scheduler-time-base scheduler)))
         (line-cs
          (let ((precision      (precision (scheduler-time-base scheduler)))
                (all-activities (scheduler-all-activities scheduler)))
@@ -732,26 +729,26 @@ UNTIL:  Time until which activities must be run.
     #+debug-com.informatimago.common-lisp.cesarum.activity
     (when *in-terminal-p*
       (format stream "~A" (map 'string (function code-char)
-                               (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ECMA048:RIS))))
+                               (com.informatimago.common-lisp.cesarum.ecma048:ris))))
     (flet ((line ()
-             (FORMAT stream
+             (format stream
                      "~&~4,,,'-A ~8,,,'-A ~16,,,'-A ~16,,,'-A -- ~32,,,'-A~%"
                      "" "" "" "" "")))
       (line)
-      (FORMAT stream title-cs
+      (format stream title-cs
               "ID" "STATE" "SCHEDULED TIME" "PERIOD" "D" "E" "NAME")
       (line)
       ;; TODO: Check if any period is float, and then format with 6 decimal digits.
       (flet ((print-activity (act &optional state)
-               (FORMAT STREAM line-cs
+               (format stream line-cs
                        (activity-id act)
-                       (or state (if (EQ ACT *CURRENT-ACTIVITY*)
+                       (or state (if (eq act *current-activity*)
                                      "CURRENT" "ACTIVE"))
-                       (- (ACTIVITY-scheduled-TIME ACT) NOW)
-                       (ACTIVITY-PERIOD ACT)
+                       (- (activity-scheduled-time act) now)
+                       (activity-period act)
                        (activity-dropable-p act)
                        (activity-exact-p act)
-                       (ACTIVITY-NAME ACT))))
+                       (activity-name act))))
         (loop
            :with queue = (if *current-activity*
                              (if (member *current-activity*
@@ -772,10 +769,10 @@ UNTIL:  Time until which activities must be run.
            :do (print-activity act "IDLE")
            :until (eq (cdr acts) queue)))
       (line)))
-  (VALUES))
+  (values))
 
 
-(defun print-activities (&OPTIONAL (STREAM *STANDARD-OUTPUT*))
+(defun print-activities (&optional (stream *standard-output*))
   (print-scheduler-activities *scheduler* stream))
 
 
@@ -838,7 +835,7 @@ RETURN:  A new list of all the activities.
 "
   (scheduler-all-activities *scheduler*))
 
-(defgeneric FIND-ACTIVITY-BY-ID (scheduler activity-id))
+(defgeneric find-activity-by-id (scheduler activity-id))
 
 (defmethod find-activity-by-id ((scheduler idle-scheduler) id)
   (find id (scheduler-activities scheduler) :key (function activity-id)))
@@ -901,7 +898,7 @@ not mere 'condition' objects.")
             (format *query-io* "~:{   ~A) ~A~%~}" ',items)
             (format *query-io* "~%Your choice: ")
             (let ((choice (string-trim " " (read-line *query-io*))))
-              (format *query-IO* "~%")
+              (format *query-io* "~%")
               (case (or (and (string= "" choice)
                              (let ((item (find :default ',items
                                                :key (function fourth))))
@@ -994,7 +991,7 @@ not mere 'condition' objects.")
                         (destroy-activity (current-activity))))
                :name "Destroyer of [period 5\", to be destroyed in 15s]"
                :start-in 15)))
-    (PRINT-scheduler-ACTIVITIES *scheduler*)
+    (print-scheduler-activities *scheduler*)
     (let ((*debug* debug)) (activity-run))
     (values)))
 

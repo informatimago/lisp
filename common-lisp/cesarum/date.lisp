@@ -19,24 +19,22 @@
 ;;;;    specification.
 ;;;;
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal Bourguignon 2007 - 2007
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
 ;; http://en.wikipedia.org/wiki/Julian_day#Calculation
@@ -142,7 +140,7 @@
 
 
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE"
-  (:USE "COMMON-LISP"
+  (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE.UTILITY")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.JULIAN-CALENDAR")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.GREGORIAN-CALENDAR"
@@ -158,7 +156,7 @@
                 "PREVIOUS-DAY" "NEXT-DAY"
                 "INCREMENT-DAY" "DECREMENT-DAY"
                 "DURATION-BETWEEN" "DATE-AFTER" "DATE-BEFORE")
-  (:EXPORT "DATE" "DATE<" "DATE>" "DATE<=" "DATE>=" "DATE=" "DATE/="
+  (:export "DATE" "DATE<" "DATE>" "DATE<=" "DATE>=" "DATE=" "DATE/="
            "DURATION"
            "*DURATION-KEYWORDS*"
            "SECONDE" "MINUTE" "HOUR" "DAY" "WEEK" "MONTH" "YEAR"
@@ -175,7 +173,7 @@
            "PREVIOUS-DAY" "NEXT-DAY"
            "INCREMENT-DAY" "DECREMENT-DAY"
            "DURATION-BETWEEN" "DATE-BEFORE" "DATE-AFTER")
-  (:DOCUMENTATION "
+  (:documentation "
     Calendars, dates and times.
 
     Copyright Pascal Bourguignon 2007 - 2007
@@ -586,7 +584,7 @@ BUG:    This uses the undetermined  local timezone, we don't know
      :nconc (loop
                :for d :from 1
                :below (aref
-                       (if (COM.INFORMATIMAGO.COMMON-LISP.GREGORIAN-CALENDAR:leap-year-p year)
+                       (if (com.informatimago.common-lisp.gregorian-calendar:leap-year-p year)
                            #(31 29 31 30 31 30 31 31 30 31 30 31)
                            #(31 28 31 30 31 30 31 31 30 31 30 31))
                        (1- m))
@@ -752,7 +750,7 @@ RETURN: Whether YEAR is a gregorian leap year.
                          (start 0) (end +days-in-fourcentury+))
   (loop
      :for i :from start :below end
-     :do (multiple-value-bind (d m y) (DATE-FROM-DAY-NUMBER i)
+     :do (multiple-value-bind (d m y) (date-from-day-number i)
            (when (or print-all (and trace-day (<= (abs (- trace-day i)) 10)))
              (format t "~%~6D ~4,'0D-~2,'0D-~2,'0D" i y m d))
            (assert (= i (date-to-day-number d m y))
@@ -825,7 +823,7 @@ RETURN: Whether YEAR is a gregorian leap year.
           ;; denoting the current timezone, may be a different timezone
           ;; than the original day, for DST.
           (multiple-value-bind (da mo ye)
-              (DATE-FROM-DAY-NUMBER (DATE-TO-DAY-NUMBER (+ day dinc) month year))
+              (date-from-day-number (date-to-day-number (+ day dinc) month year))
             (make-instance 'gregorian-calendar-date
               :year ye :month  mo :day da
               :hour ho :minute mi :seconde se
@@ -839,7 +837,7 @@ RETURN: Whether YEAR is a gregorian leap year.
   (or (slot-value self 'weekday)
       (setf (slot-value self 'weekday)
             (with-slots (day month year) self
-              (mod (- (DATE-TO-DAY-NUMBER day month year)
+              (mod (- (date-to-day-number day month year)
                       +1964-03-15-day-number+) 7)))))
 
 
@@ -895,8 +893,8 @@ RETURN: Whether YEAR is a gregorian leap year.
 (defmethod increment-day ((self gregorian-calendar-date) &optional (increment 1))
   (with-slots (year month day weekday) self
     (multiple-value-bind (da mo ye)
-        (DATE-FROM-DAY-NUMBER
-         (COM.INFORMATIMAGO.COMMON-LISP.GREGORIAN-CALENDAR:DATE-TO-DAY-NUMBER
+        (date-from-day-number
+         (com.informatimago.common-lisp.gregorian-calendar:date-to-day-number
           (+ day increment) month year))
       (setf year ye month mo day da weekday nil)
       self)))

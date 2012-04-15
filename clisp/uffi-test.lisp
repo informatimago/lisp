@@ -26,8 +26,8 @@
        len))) ;;foreign-string-length
 
 
-(DEFUN CONVERT-FROM-FOREIGN-STRING (FOREIGN-STRING
-                                    &KEY LENGTH (NULL-TERMINATED-P T))
+(defun convert-from-foreign-string (foreign-string
+                                    &key length (null-terminated-p t))
   "
 DO:                 Builds a Lisp string from a foreign string.
                     Can translate ASCII and binary strings.
@@ -50,7 +50,7 @@ URL:        http://clisp.sourceforge.net/impnotes.html#encoding
     (dotimes (i (length byte-vector))
       (setf (aref byte-vector i)
             (ffi:element (ffi:foreign-value foreign-string) i)))
-    (EXT:CONVERT-STRING-FROM-BYTES byte-vector CUSTOM:*FOREIGN-ENCODING*)  
+    (ext:convert-string-from-bytes byte-vector custom:*foreign-encoding*)  
     )) ;;CONVERT-FROM-FOREIGN-STRING
 
 
@@ -127,7 +127,7 @@ uffi                 ffi-arg                      ffi-ret
 
 (defun h-record-out ()
   (ffi:with-foreign-object (result 'record-t)
-    (record-out (ffi:FOREIGN-ADDRESS result)) 
+    (record-out (ffi:foreign-address result)) 
     (make-record-t
      :character (ffi:slot (ffi:foreign-value result) 'character)
      :number (ffi:slot (ffi:foreign-value result) 'number)

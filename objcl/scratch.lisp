@@ -1,6 +1,6 @@
 
 (push (setf (ccl:current-directory)
-            (setf *default-pathname-defaults* #P"/home/pjb/works/abalone-macosx/objcl/"))
+            (setf *default-pathname-defaults* #p"/home/pjb/works/abalone-macosx/objcl/"))
       asdf:*central-registry*)
 
 
@@ -14,25 +14,25 @@
 
 (progn
   (cl-user::asdf-delete-system  :com.informatimago.objcl)
-  (delete-package :COM.INFORMATIMAGO.OBJECTIVE-CL)
-  (delete-package :COM.INFORMATIMAGO.OBJECTIVE-C.LOWER)
-  (delete-package :COM.INFORMATIMAGO.SIMPLE-TEST)
+  (delete-package :com.informatimago.objective-cl)
+  (delete-package :com.informatimago.objective-c.lower)
+  (delete-package :com.informatimago.simple-test)
   (cl-user::asdf-load :com.informatimago.objcl))
 
 
 
-(X86-DARWIN64::|class_getInstanceMethod|
-               (CCL:WITH-CSTRS ((class-name "NSView")) (X86-DARWIN64::|objc_lookUpClass|  class-name))
+(x86-darwin64::|class_getInstanceMethod|
+               (ccl:with-cstrs ((class-name "NSView")) (x86-darwin64::|objc_lookUpClass|  class-name))
                (objc:\@selector "initWithFrame:"))
-#<A Foreign Pointer #x7FFF70E5AE58>
+#<a foreign pointer #x7fff70e5ae58>
 
 
 
 (cl:in-package :cl-user)
 (map nil (function delete-file)
-     (directory  #P"~/.cache/common-lisp/galatea.lan.informatimago.com/ccl-1.6-f94-macosx-amd64/home/pjb/src/git/public/lisp/objcl/*.*"))
-(cd #P"/home/pjb/src/public/lisp/objcl/")
-(push #P"/home/pjb/src/public/lisp/objcl/" asdf:*central-registry*)
+     (directory  #p"~/.cache/common-lisp/galatea.lan.informatimago.com/ccl-1.6-f94-macosx-amd64/home/pjb/src/git/public/lisp/objcl/*.*"))
+(cd #p"/home/pjb/src/public/lisp/objcl/")
+(push #p"/home/pjb/src/public/lisp/objcl/" asdf:*central-registry*)
 (asdf-load :com.informatimago.objcl)
 (asdf-load :com.informatimago.cocoa-playground)
 (in-package :cocoa-playground)
@@ -41,5 +41,5 @@
 
 (every (lambda (x) (typep x 'ns:ns-string))    '(@"summer"  @"été"  @"καλοκαίρι"))
 '(@"summer"  @"été"  @"καλοκαίρι")
-(mapcar (lambda (str) (cons str (COM.INFORMATIMAGO.OBJECTIVE-CL:LISP-STRING str)))
+(mapcar (lambda (str) (cons str (com.informatimago.objective-cl:lisp-string str)))
                           '(@"summer"  @"été"  @"καλοκαίρι"))

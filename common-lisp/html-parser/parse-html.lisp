@@ -16,24 +16,25 @@
 ;;;;    2003-11-12 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2003 - 2003
+;;;;    Copyright Pascal J. Bourguignon 2003 - 2003
+;;;;    Copyright Pascal J. Bourguignon 2003 - 2003
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -1752,15 +1753,15 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
                                         (advance parser)))
                         ((:cdata)     (prog1 (html-parser-value parser) 
                                         (advance parser)))
-                        ((:OPEN-DEF)  (parse-definition parser))
+                        ((:open-def)  (parse-definition parser))
                         ((:foreign)   (prog1 (make-foreign
                                               :data (html-parser-value parser))
                                         (advance parser)))
-                        ((:COMMENT)   (prog1 (make-comment 
+                        ((:comment)   (prog1 (make-comment 
                                               :data (html-parser-value parser))
                                         (advance parser)))
-                        ((:OPEN-TAG)  (parse-open-tag parser))
-                        ((:CLOSE-TAG) (parse-close-tag parser))
+                        ((:open-tag)  (parse-open-tag parser))
+                        ((:close-tag) (parse-close-tag parser))
                         (otherwise   (report-error parser
                                                    "Unexpected token")))
      :while synthetic :do (push synthetic items)
@@ -1871,95 +1872,95 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
 
 (defgeneric walk (html))
 
-(DEFMETHOD WALK ((SELF HTML-SEQ))
+(defmethod walk ((self html-seq))
   (do ((current self (html-seq-rest current))
        (result '()))
       ((not (typep current 'html-seq))
        (assert (null current))
        (nreverse result))
-    (push (WALK (HTML-SEQ-FIRST current)) result)))
+    (push (walk (html-seq-first current)) result)))
 
 
-(DEFMETHOD WALK ((SELF COMMENT))
-  (LIST :COMMENT
-        '() (WALK (COMMENT-DATA SELF))))
+(defmethod walk ((self comment))
+  (list :comment
+        '() (walk (comment-data self))))
 
 
-(DEFMETHOD WALK ((SELF foreign))
-  (LIST :foreign
-        '() (WALK (foreign-DATA SELF))))
+(defmethod walk ((self foreign))
+  (list :foreign
+        '() (walk (foreign-data self))))
 
 
-(DEFMETHOD WALK ((SELF ATTRIBUTE))
-  (LIST (INTERN (STRING-UPCASE (ATTRIBUTE-NAME SELF)) +tag-package+)
-        (OR (ATTRIBUTE-VALUE SELF) T)))
+(defmethod walk ((self attribute))
+  (list (intern (string-upcase (attribute-name self)) +tag-package+)
+        (or (attribute-value self) t)))
 
 
-(DEFMETHOD WALK ((SELF OPEN-TAG))
-  (LIST :OPEN
-        (INTERN (STRING-UPCASE (OPEN-TAG-NAME SELF)) +tag-package+)      
-        (WALK (OPEN-TAG-ATTRIBUTES SELF))))
+(defmethod walk ((self open-tag))
+  (list :open
+        (intern (string-upcase (open-tag-name self)) +tag-package+)      
+        (walk (open-tag-attributes self))))
 
 
-(DEFMETHOD WALK ((SELF CLOSE-TAG))
-  (LIST :CLOSE
-        (INTERN (STRING-UPCASE (CLOSE-TAG-NAME SELF)) +tag-package+)
-        (WALK (close-TAG-ATTRIBUTES SELF))))
+(defmethod walk ((self close-tag))
+  (list :close
+        (intern (string-upcase (close-tag-name self)) +tag-package+)
+        (walk (close-tag-attributes self))))
 
 
-(DEFMETHOD WALK ((SELF DEFINITION))
-  (LIST :DEFINITION
-        (INTERN (STRING-UPCASE (DEFINITION-NAME SELF)) +tag-package+)      
-        (WALK (DEFINITION-ATTRIBUTES SELF))))
+(defmethod walk ((self definition))
+  (list :definition
+        (intern (string-upcase (definition-name self)) +tag-package+)      
+        (walk (definition-attributes self))))
 
 
-(DEFMETHOD WALK ((SELF T))  SELF)
+(defmethod walk ((self t))  self)
 
 
-(DEFUN CLEAN-ATTRIBUTE (ATTR)
+(defun clean-attribute (attr)
   (cond ((not (stringp attr)) attr)
-        ((OR (AND (<= 2 (length attr))
-                  (CHAR= (CHARACTER "'") (CHAR ATTR 0))
-                  (CHAR= (CHARACTER "'") (CHAR ATTR (1- (LENGTH ATTR)))))
-             (AND (<= 2 (length attr))
-                  (CHAR= (CHARACTER "\"") (CHAR ATTR 0))
-                  (CHAR= (CHARACTER "\"") (CHAR ATTR (1- (LENGTH ATTR))))))
-         (SUBSEQ ATTR 1 (- (LENGTH ATTR) 1)))
-        (t    ATTR)))
+        ((or (and (<= 2 (length attr))
+                  (char= (character "'") (char attr 0))
+                  (char= (character "'") (char attr (1- (length attr)))))
+             (and (<= 2 (length attr))
+                  (char= (character "\"") (char attr 0))
+                  (char= (character "\"") (char attr (1- (length attr))))))
+         (subseq attr 1 (- (length attr) 1)))
+        (t    attr)))
 
 
-(DEFUN ENCASE (TAG-LIST)
+(defun encase (tag-list)
   ;;     content-list-reversed
   ;;     ( (tag (attributes)) content-list-reversed)
   ;;     ( (tag (attributes)) content-list-reversed)
   ;;     ( (tag (attributes)) content-list-reversed)
   ;;     ( (tag (attributes)) )
-  (DO* ((STACK    (list NIL))
-        (TAG-LIST TAG-LIST       (CDR TAG-LIST))
-        (TAG      (CAR TAG-LIST) (CAR TAG-LIST)))
-       ((NULL TAG-LIST)      (nreverse (pop stack)))
-    (COND
-      ((OR (ATOM TAG) (EQ (CAR TAG) :COMMENT))
-       (PUSH TAG (CAR STACK)))
-      ((EQ (CAR TAG) :DEFINITION)
+  (do* ((stack    (list nil))
+        (tag-list tag-list       (cdr tag-list))
+        (tag      (car tag-list) (car tag-list)))
+       ((null tag-list)      (nreverse (pop stack)))
+    (cond
+      ((or (atom tag) (eq (car tag) :comment))
+       (push tag (car stack)))
+      ((eq (car tag) :definition)
        ;; ignore
        )
-      ((EQ (CAR TAG) :OPEN)
-       (PUSH (CONS (SECOND TAG)
-                   (LIST
-                    (MAPCAN (LAMBDA (KV)
-                              (LIST (FIRST KV)
-                                    (CLEAN-ATTRIBUTE (SECOND KV))))
-                            (THIRD TAG)))) (CAR STACK))
-       (unless (ELEMENT-END-FORBIDDEN-P (second tag))
-         (PUSH NIL STACK)))
-      ((and (EQ (CAR TAG) :CLOSE)
+      ((eq (car tag) :open)
+       (push (cons (second tag)
+                   (list
+                    (mapcan (lambda (kv)
+                              (list (first kv)
+                                    (clean-attribute (second kv))))
+                            (third tag)))) (car stack))
+       (unless (element-end-forbidden-p (second tag))
+         (push nil stack)))
+      ((and (eq (car tag) :close)
             (position (cadr tag) stack :key (lambda (item)  (and (consp item) 
                                                                  (consp (car item)) 
                                                                  (caar item)))))
-       (UNTIL (AND (CONSP (CAAR STACK)) (EQ (CADR TAG) (CAAAR STACK)))
-              (LET ((ATTRIBUTES (NREVERSE (POP STACK))))
-                (SETF (CAAR STACK) (APPEND (CAAR STACK) ATTRIBUTES))))))))
+       (until (and (consp (caar stack)) (eq (cadr tag) (caaar stack)))
+              (let ((attributes (nreverse (pop stack))))
+                (setf (caar stack) (append (caar stack) attributes))))))))
 ;; (eq (car tag) :close) and no corresponding open )))
 
 
@@ -2081,122 +2082,122 @@ to a list of two elements:
 ;; ^  <a>^  x^  </a>^
 ;; :bo   :ao :bc    :ac
 
-(define-element-writer A                (:bo :ac)          :children)
-(define-element-writer ABBR             ()                 :children)
-(define-element-writer ACRONYM          ()                 :children)
-(define-element-writer ADDRESS          (:bo :ac)          :children)
-(define-element-writer APPLET           (:bo :ao :bc :ac)  :skip)
-(define-element-writer AREA             (:bo :ac)          :children)
-(define-element-writer B                ()                 (write-parenthesized-children self "**" "**"))
-(define-element-writer BASE             ()                 :children)
-(define-element-writer BASEFONT         ()                 :children)
-(define-element-writer BDO              ()                 :children)
-(define-element-writer BIG              ()                 :children)
-(define-element-writer BLOCKQUOTE       (:bo :ao :bc :ac)  (write-indented-children self))
-(define-element-writer BODY             (:bo :ao :bc :ac)  :children)
-(define-element-writer BR               (:bo :ac)
+(define-element-writer a                (:bo :ac)          :children)
+(define-element-writer abbr             ()                 :children)
+(define-element-writer acronym          ()                 :children)
+(define-element-writer address          (:bo :ac)          :children)
+(define-element-writer applet           (:bo :ao :bc :ac)  :skip)
+(define-element-writer area             (:bo :ac)          :children)
+(define-element-writer b                ()                 (write-parenthesized-children self "**" "**"))
+(define-element-writer base             ()                 :children)
+(define-element-writer basefont         ()                 :children)
+(define-element-writer bdo              ()                 :children)
+(define-element-writer big              ()                 :children)
+(define-element-writer blockquote       (:bo :ao :bc :ac)  (write-indented-children self))
+(define-element-writer body             (:bo :ao :bc :ac)  :children)
+(define-element-writer br               (:bo :ac)
   (terpri)
   (write-children-text self))
-(define-element-writer BUTTON           (:bo :ac)          :children)
-(define-element-writer CENTER           (:bo :ac)          :children)
-(define-element-writer CITE             (:bo :ac)          :children)
-(define-element-writer CODE             ()                 (write-parenthesized-children self "`" "`"))
-(define-element-writer DEL              ()                 :children)
-(define-element-writer DFN              ()                 :children)
-(define-element-writer DIR              ()                 :children)
-(define-element-writer DIV              (:bo :ac)          :children)
-(define-element-writer EM               ()                 (write-parenthesized-children self "*" "*"))
-(define-element-writer FIELDSET         ()                 :children)
-(define-element-writer FONT             ()                 :children)
-(define-element-writer FORM             (:bo :ao :bc :ac)  :children)
-(define-element-writer FRAME            (:bo :ao :bc :ac)  :children)
-(define-element-writer FRAMESET         (:bo :ao :bc :ac)  :children)
-(define-element-writer H1               (:bo :ac)          (write-title self #\#))
-(define-element-writer H2               (:bo :ac)          (write-title self #\*))
-(define-element-writer H3               (:bo :ac)          (write-title self #\=))
-(define-element-writer H4               (:bo :ac)          (write-title self #\-))
-(define-element-writer H5               (:bo :ac)          (write-title self #\^))
-(define-element-writer H6               (:bo :ac)          (write-title self #\.))
-(define-element-writer HEAD             (:bo :ao :bc :ac)
+(define-element-writer button           (:bo :ac)          :children)
+(define-element-writer center           (:bo :ac)          :children)
+(define-element-writer cite             (:bo :ac)          :children)
+(define-element-writer code             ()                 (write-parenthesized-children self "`" "`"))
+(define-element-writer del              ()                 :children)
+(define-element-writer dfn              ()                 :children)
+(define-element-writer dir              ()                 :children)
+(define-element-writer div              (:bo :ac)          :children)
+(define-element-writer em               ()                 (write-parenthesized-children self "*" "*"))
+(define-element-writer fieldset         ()                 :children)
+(define-element-writer font             ()                 :children)
+(define-element-writer form             (:bo :ao :bc :ac)  :children)
+(define-element-writer frame            (:bo :ao :bc :ac)  :children)
+(define-element-writer frameset         (:bo :ao :bc :ac)  :children)
+(define-element-writer h1               (:bo :ac)          (write-title self #\#))
+(define-element-writer h2               (:bo :ac)          (write-title self #\*))
+(define-element-writer h3               (:bo :ac)          (write-title self #\=))
+(define-element-writer h4               (:bo :ac)          (write-title self #\-))
+(define-element-writer h5               (:bo :ac)          (write-title self #\^))
+(define-element-writer h6               (:bo :ac)          (write-title self #\.))
+(define-element-writer head             (:bo :ao :bc :ac)
   :children)
-(define-element-writer HR               (:bo :ac)
+(define-element-writer hr               (:bo :ac)
   (terpri)
   (princ (make-string 78 :initial-element #\-))
   (terpri)
   (write-children-text self))
-(define-element-writer HTML             (:bo :ao :bc :ac)  :children)
-(define-element-writer I                ()                 (write-parenthesized-children self "/" "/"))
-(define-element-writer IFRAME           (:bo :ao :bc :ac)  :children)
-(define-element-writer IMG              (:bo :ac)
+(define-element-writer html             (:bo :ao :bc :ac)  :children)
+(define-element-writer i                ()                 (write-parenthesized-children self "/" "/"))
+(define-element-writer iframe           (:bo :ao :bc :ac)  :children)
+(define-element-writer img              (:bo :ac)
   (let ((alt (html-attribute self :alt)))
     (when alt (princ alt))))
-(define-element-writer INPUT            (:bo :ac)          :children)
-(define-element-writer INS              ()                 :children)
-(define-element-writer ISINDEX          ()                 :children)
-(define-element-writer KBD              ()                 (write-parenthesized-children self "[" "]"))
-(define-element-writer LABEL            ()                 :children)
-(define-element-writer LEGEND           ()                 :children)
-(define-element-writer LINK             (:bo :ac)          :children)
-(define-element-writer MAP              (:bo :ao :bc :ac)  :children)
-(define-element-writer MENU             (:bo :ao :bc :ac)  :children)
-(define-element-writer META             (:bo :ac)          :children)
-(define-element-writer NOFRAMES         (:bo :ao :bc :ac)  :children)
-(define-element-writer NOSCRIPT         (:bo :ao :bc :ac)  :children)
-(define-element-writer OBJECT           (:bo :ao :bc :ac)  :children)
-(define-element-writer OPTGROUP         (:bo :ao :bc :ac)  :children)
-(define-element-writer OPTION           (:bo :ac)          :children)
-(define-element-writer P                (:bo :ac)
+(define-element-writer input            (:bo :ac)          :children)
+(define-element-writer ins              ()                 :children)
+(define-element-writer isindex          ()                 :children)
+(define-element-writer kbd              ()                 (write-parenthesized-children self "[" "]"))
+(define-element-writer label            ()                 :children)
+(define-element-writer legend           ()                 :children)
+(define-element-writer link             (:bo :ac)          :children)
+(define-element-writer map              (:bo :ao :bc :ac)  :children)
+(define-element-writer menu             (:bo :ao :bc :ac)  :children)
+(define-element-writer meta             (:bo :ac)          :children)
+(define-element-writer noframes         (:bo :ao :bc :ac)  :children)
+(define-element-writer noscript         (:bo :ao :bc :ac)  :children)
+(define-element-writer object           (:bo :ao :bc :ac)  :children)
+(define-element-writer optgroup         (:bo :ao :bc :ac)  :children)
+(define-element-writer option           (:bo :ac)          :children)
+(define-element-writer p                (:bo :ac)
   (terpri) (terpri)
   (write-children-text self))
-(define-element-writer PARAM            (:bo :ac)          :children)
-(define-element-writer PRE              (:bo :ac)
+(define-element-writer param            (:bo :ac)          :children)
+(define-element-writer pre              (:bo :ac)
   (terpri)
   (princ "::")
   (terpri) (terpri)
   (write-indented-children self)
   (terpri) (terpri))
-(define-element-writer Q                ()                 :children)
-(define-element-writer S                ()                 :children)
-(define-element-writer SAMP             ()                 :children) 
-(define-element-writer SCRIPT           (:bo :ao :bc :ac)  :skip)
-(define-element-writer SELECT           (:bo :ao :bc :ac)  :children)
-(define-element-writer SMALL            ()                 :children)
-(define-element-writer SPAN             (:bo :ac)          :children)
-(define-element-writer STRIKE           ()                 :children)
-(define-element-writer STRONG           ()                 (write-parenthesized-children self "**" "**"))
-(define-element-writer STYLE            (:bo :ac)          :children)
-(define-element-writer SUB              ()                 :children)
-(define-element-writer SUP              ()                 :children)
-(define-element-writer TEXTAREA         (:bo :ac)          :children)
-(define-element-writer TITLE            (:bo :ac)          (write-title self #\# t))
-(define-element-writer TT               ()                 (write-parenthesized-children self "`" "`"))
-(define-element-writer U                ()                 :children)
-(define-element-writer VAR              ()                 :children)
+(define-element-writer q                ()                 :children)
+(define-element-writer s                ()                 :children)
+(define-element-writer samp             ()                 :children) 
+(define-element-writer script           (:bo :ao :bc :ac)  :skip)
+(define-element-writer select           (:bo :ao :bc :ac)  :children)
+(define-element-writer small            ()                 :children)
+(define-element-writer span             (:bo :ac)          :children)
+(define-element-writer strike           ()                 :children)
+(define-element-writer strong           ()                 (write-parenthesized-children self "**" "**"))
+(define-element-writer style            (:bo :ac)          :children)
+(define-element-writer sub              ()                 :children)
+(define-element-writer sup              ()                 :children)
+(define-element-writer textarea         (:bo :ac)          :children)
+(define-element-writer title            (:bo :ac)          (write-title self #\# t))
+(define-element-writer tt               ()                 (write-parenthesized-children self "`" "`"))
+(define-element-writer u                ()                 :children)
+(define-element-writer var              ()                 :children)
 
 
 (defvar *ol-index* nil)
 (defvar *ol-stack* '())
 
-(define-element-writer DL               (:bo :ac)
+(define-element-writer dl               (:bo :ac)
   (push *ol-index* *ol-stack*)
   (setf *ol-index* nil)
   (terpri) (write-children-text self) )
-(define-element-writer DT               (:bo)
+(define-element-writer dt               (:bo)
   (terpri)
   (write-children-text self))
-(define-element-writer DD               (:bo)
+(define-element-writer dd               (:bo)
   (terpri)
   (write-indented-children self))
 
-(define-element-writer OL               (:bo :ao :bc :ac)
+(define-element-writer ol               (:bo :ao :bc :ac)
   (push *ol-index* *ol-stack*)
   (setf *ol-index* 0)
   (terpri) (write-children-text self) )
-(define-element-writer UL               (:bo :ao :bc :ac)
+(define-element-writer ul               (:bo :ao :bc :ac)
   (push *ol-index* *ol-stack*)
   (setf *ol-index* nil)
   (terpri) (write-children-text self))
-(define-element-writer LI               (:bo :ac)
+(define-element-writer li               (:bo :ac)
   (if (integerp *ol-index*)
       (format t "~%~D. " (incf *ol-index*))
       (format t "~%- "))
@@ -2275,7 +2276,7 @@ to a list of two elements:
           (mapcar (lambda (width) (list (make-string width :initial-element #\space) width))
                   widths)))
 
-(define-element-writer TABLE            (:bo :ao :bc :ac)
+(define-element-writer table            (:bo :ao :bc :ac)
   ;; TODO: deal with colspan, rowspan.
   (let* ((*row-kind* :table)
          (rows       (collect-table-cells self))
@@ -2294,15 +2295,15 @@ to a list of two elements:
               :do (format t cstr data)
               :while (some (function identity) cells)
               :finally (princ line)))))
-(define-element-writer CAPTION          ()                 :children)
-(define-element-writer COLGROUP         ()                 :children)
-(define-element-writer COL              ()                 :children)
-(define-element-writer THEAD            (:bo :ao :bc :ac)  :children)
-(define-element-writer TFOOT            (:bo :ao :bc :ac)  :children)
-(define-element-writer TBODY            (:bo :ao :bc :ac)  :children)
-(define-element-writer TR               (:bo :ac)          :children)
-(define-element-writer TH               (:bo :ac)          :children)
-(define-element-writer TD               (:bo :ac)          :children)
+(define-element-writer caption          ()                 :children)
+(define-element-writer colgroup         ()                 :children)
+(define-element-writer col              ()                 :children)
+(define-element-writer thead            (:bo :ao :bc :ac)  :children)
+(define-element-writer tfoot            (:bo :ao :bc :ac)  :children)
+(define-element-writer tbody            (:bo :ao :bc :ac)  :children)
+(define-element-writer tr               (:bo :ac)          :children)
+(define-element-writer th               (:bo :ac)          :children)
+(define-element-writer td               (:bo :ac)          :children)
 
 
 

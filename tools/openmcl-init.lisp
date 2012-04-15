@@ -15,38 +15,35 @@
 ;;;;    2003-05-02 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal Bourguignon 2003 - 2003
-;;;;    mailto:pjb@informatimago.com
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
 ;;----------------------------------------------------------------------
 ;; Setting environment -- COMMON-LISP part --
 ;; ------------------------------------------
 
-(SETQ *LOAD-VERBOSE* NIL)
-(LOAD (MERGE-PATHNAMES
-       (MAKE-PATHNAME :NAME ".common" :TYPE "lisp") (user-homedir-pathname)))
+(setq *load-verbose* nil)
+(load (merge-pathnames
+       (make-pathname :name ".common" :type "lisp") (user-homedir-pathname)))
 
 
 (in-package "COM.INFORMATIMAGO.PJB")
-(export '(EDIT QUIT))
+(export '(edit quit))
 
 
 ;; ---------------------------------------------------------------------
@@ -89,7 +86,7 @@
 (def-lp-trans "COCOA"    "/usr/local/lib/" "ccl/examples/")
 (def-lp-trans "EXAMPLES" "/usr/local/lib/" "ccl/examples/")
 
-(setf COMMON-LISP-USER::*default-bundle-path* "CCL:OPENMCL.APP;")
+(setf common-lisp-user::*default-bundle-path* "CCL:OPENMCL.APP;")
 ;;  ccl::*module-search-path*  ;; paths used by REQUIRE.
 
 
@@ -116,26 +113,26 @@ We could try (setf CCL::*LINEFEED-EQUALS-NEWLINE* t)
 ;; editor-name is redefined in config.lisp to be:
 ;; (defun editor-name () (or (getenv "EDITOR") *editor*))
 
-(DEFUN GET-FIRST-WORD (STRING)
+(defun get-first-word (string)
   "
 RETURN:     The first word of the string, or the empty string.
 "
-  (DO ((I 0)
-       (J 0)
-       (FOUND NIL)
-       (DONE NIL))
-      (DONE (IF FOUND (SUBSEQ STRING I  J) ""))
-    (IF  (<= (LENGTH STRING) I)
-      (SETQ DONE T FOUND NIL)
-      (IF (<= J I)
-        (IF (ALPHA-CHAR-P (CHAR STRING I))
-          (SETQ J (1+ I))
-          (INCF I))
-        (IF (<= (LENGTH STRING) J)
-          (SETQ DONE T FOUND T)
-          (IF (ALPHA-CHAR-P (CHAR STRING J))
-            (INCF J)
-            (SETQ DONE T FOUND T))))))
+  (do ((i 0)
+       (j 0)
+       (found nil)
+       (done nil))
+      (done (if found (subseq string i  j) ""))
+    (if  (<= (length string) i)
+      (setq done t found nil)
+      (if (<= j i)
+        (if (alpha-char-p (char string i))
+          (setq j (1+ i))
+          (incf i))
+        (if (<= (length string) j)
+          (setq done t found t)
+          (if (alpha-char-p (char string j))
+            (incf j)
+            (setq done t found t))))))
   );;GET-FIRST-WORD
 
 

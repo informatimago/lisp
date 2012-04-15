@@ -4,11 +4,11 @@
 ;; -- CMU-AI -- AIMA: Artificial Inteligence - A Modern Approach --
 ;; ----------------------------------------------------------------
 
-(LOAD "cmu-ai:bookcode;aima;aima")
-(AIMA-LOAD 'ALL)
+(load "cmu-ai:bookcode;aima;aima")
+(aima-load 'all)
 
-(DEFUN COMPILE-AIMA ()
-  (AIMA-COMPILE)
-  (TEST 'ALL))
+(defun compile-aima ()
+  (aima-compile)
+  (test 'all))
 
 ;;;; aima.lisp                        -- 2003-05-02 08:02:18 -- pascal   ;;;;

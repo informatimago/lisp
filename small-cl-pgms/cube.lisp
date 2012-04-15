@@ -18,30 +18,26 @@
 ;;;;BUGS
 ;;;;    Does not solve it yet.
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
+;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 1995 - 2004
-;;;;
-;;;;    This file is part of the Cube Puzzle program.
-;;;;
-;;;;    This  program is  free software;  you can  redistribute  it and/or
-;;;;    modify it  under the  terms of the  GNU General Public  License as
-;;;;    published by the Free Software Foundation; either version 2 of the
-;;;;    License, or (at your option) any later version.
-;;;;
-;;;;    This program  is distributed in the  hope that it  will be useful,
-;;;;    but  WITHOUT ANY WARRANTY;  without even  the implied  warranty of
-;;;;    MERCHANTABILITY or FITNESS FOR  A PARTICULAR PURPOSE.  See the GNU
-;;;;    General Public License for more details.
-;;;;
-;;;;    You should have received a  copy of the GNU General Public License
-;;;;    along with  this program; see the  file COPYING; if  not, write to
-;;;;    the Free  Software Foundation, Inc.,  59 Temple Place,  Suite 330,
-;;;;    Boston, MA 02111-1307 USA
-;;;;
+;;;;    
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
+;;;;    
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
+;;;;    
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CUBE"
-  (:DOCUMENTATION
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.CUBE"
+  (:documentation
    "This program tries to resolve the Cube Puzzle, where a cube
     composed of 27 smaller cubes linked with a thread  must be
     recomposed.
@@ -49,12 +45,12 @@
     Copyright Pascal Bourguignon 1995 - 2004
     This package is provided under the GNU General Public License.
     See the source file for details.")
-  (:USE "COMMON-LISP")
-  (:EXPORT MAKE-CUBE-LIST
-           CUBE
-           SET-NUMBER SET-COORDINATE INPUT-VECTOR OUTPUT-VECTOR
-           COLLIDE ROLL SOLVE ADD-OUTPUT-CUBE-TO-SIDE
-           SET-INPUT-CUBE-TO-SIDE BOUNDS REVERSE-CUBES  )
+  (:use "COMMON-LISP")
+  (:export make-cube-list
+           cube
+           set-number set-coordinate input-vector output-vector
+           collide roll solve add-output-cube-to-side
+           set-input-cube-to-side bounds reverse-cubes  )
   );;COM.INFORMATIMAGO.COMMON-LISP.CUBE
 ;;(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CUBE")
 
@@ -163,7 +159,7 @@
       (o a b c d e f g h i))));;o-
 
 
-(DEFUN o*v (OPER VECT)
+(defun o*v (oper vect)
   "
     ((a b c) (d e f) (g h i)) (x y z)
     (ax+dy+gz bx+ey+hz cx+fy+iz)
@@ -182,52 +178,52 @@
 
 
 
-(DEFVAR origin #(0 0 0))
-(DEFVAR X-AXIS #(1 0 0))
-(DEFVAR Y-AXIS #(0 1 0))
-(DEFVAR Z-AXIS #(0 0 1))
-(DEFVAR -X-AXIS #(-1 0 0))
-(DEFVAR -Y-AXIS #(0 -1 0))
-(DEFVAR -Z-AXIS #(0 0 -1))
-(DEFVAR X-AXIS-QUARTER-TURN #(#(1 0 0) #(0 0 1) #(0 -1 0))) ; x y z --> x z -y
-(DEFVAR Y-AXIS-QUARTER-TURN #(#(0 0 -1) #(0 1 0) #(1 0 0))) ; x y z --> -z y x
-(DEFVAR Z-AXIS-QUARTER-TURN #(#(0 1 0) #(-1 0 0) #(0 0 1))) ; x y z --> y -x z
-(DEFVAR -X-AXIS-QUARTER-TURN #(#(-1 0 0) #(0 0 -1) #(0 1 0)))
-(DEFVAR -Y-AXIS-QUARTER-TURN #(#(0 0 1) #(0 -1 0) #(-1 0 0)))
-(DEFVAR -Z-AXIS-QUARTER-TURN #(#(0 -1 0) #(1 0 0) #(0 0 -1))
-(DEFVAR identity #(#(1 0 0) #(0 1 0) #(0 0 1))) ; also the base.
+(defvar origin #(0 0 0))
+(defvar x-axis #(1 0 0))
+(defvar y-axis #(0 1 0))
+(defvar z-axis #(0 0 1))
+(defvar -x-axis #(-1 0 0))
+(defvar -y-axis #(0 -1 0))
+(defvar -z-axis #(0 0 -1))
+(defvar x-axis-quarter-turn #(#(1 0 0) #(0 0 1) #(0 -1 0))) ; x y z --> x z -y
+(defvar y-axis-quarter-turn #(#(0 0 -1) #(0 1 0) #(1 0 0))) ; x y z --> -z y x
+(defvar z-axis-quarter-turn #(#(0 1 0) #(-1 0 0) #(0 0 1))) ; x y z --> y -x z
+(defvar -x-axis-quarter-turn #(#(-1 0 0) #(0 0 -1) #(0 1 0)))
+(defvar -y-axis-quarter-turn #(#(0 0 1) #(0 -1 0) #(-1 0 0)))
+(defvar -z-axis-quarter-turn #(#(0 -1 0) #(1 0 0) #(0 0 -1)))
+(defvar identity #(#(1 0 0) #(0 1 0) #(0 0 1))) ; also the base.
 
 
-(DEFUN QUARTER-TURN (VECT)
-  (COND
-   ((EQUAL VECT X-AXIS) X-AXIS-QUARTER-TURN)
-   ((EQUAL VECT Y-AXIS) Y-AXIS-QUARTER-TURN)
-   ((EQUAL VECT Z-AXIS) Z-AXIS-QUARTER-TURN)
-   ((EQUAL VECT -X-AXIS) -X-AXIS-QUARTER-TURN)
-   ((EQUAL VECT -Y-AXIS) -Y-AXIS-QUARTER-TURN)
-   ((EQUAL VECT -Z-AXIS) -Z-AXIS-QUARTER-TURN)
-   (T (ERROR "quarter-turn: general case not implemented~% vect must be a base vector or opposite thereof~%"))));;QUARTER-TURN
+(defun quarter-turn (vect)
+  (cond
+   ((equal vect x-axis) x-axis-quarter-turn)
+   ((equal vect y-axis) y-axis-quarter-turn)
+   ((equal vect z-axis) z-axis-quarter-turn)
+   ((equal vect -x-axis) -x-axis-quarter-turn)
+   ((equal vect -y-axis) -y-axis-quarter-turn)
+   ((equal vect -z-axis) -z-axis-quarter-turn)
+   (t (error "quarter-turn: general case not implemented~% vect must be a base vector or opposite thereof~%"))));;QUARTER-TURN
 
 
 
 
-(DEFUN CHECK-OPERATOR (OPERATOR ARGUMENT EXPECTED)
-  (FORMAT T "[~s]~a = ~a =? ~a (~a)~%"
-          OPERATOR ARGUMENT
-          (o*v OPERATOR ARGUMENT) EXPECTED
-          (EQUAL (o*v OPERATOR ARGUMENT) EXPECTED)));;CHECK-OPERATOR
+(defun check-operator (operator argument expected)
+  (format t "[~s]~a = ~a =? ~a (~a)~%"
+          operator argument
+          (o*v operator argument) expected
+          (equal (o*v operator argument) expected)));;CHECK-OPERATOR
 	
 
-(DEFUN CHECK ()
-  (CHECK-OPERATOR X-AXIS-QUARTER-TURN X-AXIS X-AXIS)
-  (CHECK-OPERATOR X-AXIS-QUARTER-TURN Y-AXIS Z-AXIS)
-  (CHECK-OPERATOR X-AXIS-QUARTER-TURN Z-AXIS (v- Y-AXIS))
-  (CHECK-OPERATOR Y-AXIS-QUARTER-TURN X-AXIS (v- Z-AXIS))
-  (CHECK-OPERATOR Y-AXIS-QUARTER-TURN Y-AXIS Y-AXIS)
-  (CHECK-OPERATOR Y-AXIS-QUARTER-TURN Z-AXIS X-AXIS)
-  (CHECK-OPERATOR Z-AXIS-QUARTER-TURN X-AXIS Y-AXIS)
-  (CHECK-OPERATOR Z-AXIS-QUARTER-TURN Y-AXIS (v- X-AXIS))
-  (CHECK-OPERATOR Z-AXIS-QUARTER-TURN Z-AXIS Z-AXIS)
+(defun check ()
+  (check-operator x-axis-quarter-turn x-axis x-axis)
+  (check-operator x-axis-quarter-turn y-axis z-axis)
+  (check-operator x-axis-quarter-turn z-axis (v- y-axis))
+  (check-operator y-axis-quarter-turn x-axis (v- z-axis))
+  (check-operator y-axis-quarter-turn y-axis y-axis)
+  (check-operator y-axis-quarter-turn z-axis x-axis)
+  (check-operator z-axis-quarter-turn x-axis y-axis)
+  (check-operator z-axis-quarter-turn y-axis (v- x-axis))
+  (check-operator z-axis-quarter-turn z-axis z-axis)
   );;CHECK
  
 
@@ -245,47 +241,47 @@
 (defmacro box-rtn (box) `(cdr ,box))
 
 
-(DEFUN BOX-SIZE   (BOX)
-  (let ((d (v- (box-lbf BOX) (box-rtn BOX))))
+(defun box-size   (box)
+  (let ((d (v- (box-lbf box) (box-rtn box))))
     (abs (* (aref d 0) (aref d 1) (aref d 2)))))
 
 
-(DEFUN BOX-EXPAND (BOX POS)
-  (LET ((LBF (box-lbf BOX)) (RTN (box-rtn BOX)) )
-    (make-box (v (MIN (aref POS 0) (aref LBF 0))
-                 (MIN (aref POS 1) (aref LBF 1))
-                 (MIN (aref POS 2) (aref LBF 2 )))
-              (v (MAX (aref POS 0) (aref RTN 0))
-                 (MAX (aref POS 1) (aref RTN 1))
-                 (MAX (aref POS 2) (aref RTN 2))))))
+(defun box-expand (box pos)
+  (let ((lbf (box-lbf box)) (rtn (box-rtn box)) )
+    (make-box (v (min (aref pos 0) (aref lbf 0))
+                 (min (aref pos 1) (aref lbf 1))
+                 (min (aref pos 2) (aref lbf 2 )))
+              (v (max (aref pos 0) (aref rtn 0))
+                 (max (aref pos 1) (aref rtn 1))
+                 (max (aref pos 2) (aref rtn 2))))))
 
 
 (defun check-box-expand ()
-  (PRINT (BOX-EXPAND (make-box origin origin) (v 0   0   0) ))
-  (PRINT (BOX-EXPAND (make-box origin origin) (v 1   0   0) ))
-  (PRINT (BOX-EXPAND (make-box origin origin) (v 0   1   0) ))
-  (PRINT (BOX-EXPAND (make-box origin origin) (v 0   0   1) ))
-  (PRINT (BOX-EXPAND (make-box origin origin) (v -1  0   0) ))
-  (PRINT (BOX-EXPAND (make-box origin origin) (v 0  -1   0) ))
-  (PRINT (BOX-EXPAND (make-box origin origin) (v 0   0  -1) ))
-  (PRINT (BOX-EXPAND (make-box origin origin) (v 1   0   0) ))
-  (PRINT (BOX-EXPAND (make-box origin origin) (v 1   1   0) ))
-  (PRINT (BOX-EXPAND (make-box origin origin) (v 1   0   1) ))
-  (PRINT (BOX-EXPAND (make-box origin origin) (v -1  0   0) ))
-  (PRINT (BOX-EXPAND (make-box origin origin) (v 1  -1   0) ))
-  (PRINT (BOX-EXPAND (make-box origin origin) (v 1   0  -1) ))
-  (PRINT (BOX-EXPAND (make-box origin origin) (v 1   1   0) ))
-  (PRINT (BOX-EXPAND (make-box origin origin) (v 0   1   0) ))
-  (PRINT (BOX-EXPAND (make-box origin origin) (v 0   1   1) ))
-  (PRINT (BOX-EXPAND (make-box origin origin) (v -1  1   0) ))
-  (PRINT (BOX-EXPAND (make-box origin origin) (v 0  -1   0) ))
-  (PRINT (BOX-EXPAND (make-box origin origin) (v 0   1  -1) ))
-  (PRINT (BOX-EXPAND (make-box origin origin) (v 1   0   1) ))
-  (PRINT (BOX-EXPAND (make-box origin origin) (v 0   1   1) ))
-  (PRINT (BOX-EXPAND (make-box origin origin) (v 0   0   1) ))
-  (PRINT (BOX-EXPAND (make-box origin origin) (v -1  0   1) ))
-  (PRINT (BOX-EXPAND (make-box origin origin) (v 0  -1   1) ))
-  (PRINT (BOX-EXPAND (make-box origin origin) (v 0   0  -1) ))
+  (print (box-expand (make-box origin origin) (v 0   0   0) ))
+  (print (box-expand (make-box origin origin) (v 1   0   0) ))
+  (print (box-expand (make-box origin origin) (v 0   1   0) ))
+  (print (box-expand (make-box origin origin) (v 0   0   1) ))
+  (print (box-expand (make-box origin origin) (v -1  0   0) ))
+  (print (box-expand (make-box origin origin) (v 0  -1   0) ))
+  (print (box-expand (make-box origin origin) (v 0   0  -1) ))
+  (print (box-expand (make-box origin origin) (v 1   0   0) ))
+  (print (box-expand (make-box origin origin) (v 1   1   0) ))
+  (print (box-expand (make-box origin origin) (v 1   0   1) ))
+  (print (box-expand (make-box origin origin) (v -1  0   0) ))
+  (print (box-expand (make-box origin origin) (v 1  -1   0) ))
+  (print (box-expand (make-box origin origin) (v 1   0  -1) ))
+  (print (box-expand (make-box origin origin) (v 1   1   0) ))
+  (print (box-expand (make-box origin origin) (v 0   1   0) ))
+  (print (box-expand (make-box origin origin) (v 0   1   1) ))
+  (print (box-expand (make-box origin origin) (v -1  1   0) ))
+  (print (box-expand (make-box origin origin) (v 0  -1   0) ))
+  (print (box-expand (make-box origin origin) (v 0   1  -1) ))
+  (print (box-expand (make-box origin origin) (v 1   0   1) ))
+  (print (box-expand (make-box origin origin) (v 0   1   1) ))
+  (print (box-expand (make-box origin origin) (v 0   0   1) ))
+  (print (box-expand (make-box origin origin) (v -1  0   1) ))
+  (print (box-expand (make-box origin origin) (v 0  -1   1) ))
+  (print (box-expand (make-box origin origin) (v 0   0  -1) ))
   )
 
 
@@ -298,18 +294,18 @@
 ;;
 
 
-(DEFCLASS CUBE ()
+(defclass cube ()
   (
    ;;Invariants:
    ;; coordinate    = input-cube.coordinate+input-cube.outputVector
    ;; orientation = rotation(input-cube.axe,input-cube.orientation)
-   (INDEX        :ACCESSOR INDEX         :INITFORM 0)
-   (COORDINATE   :ACCESSOR COORDINATE    :INITFORM '(0 0 0))
-   (ORIENTATION  :ACCESSOR ORIENTATION   :INITFORM BASIS)
-   (INPUT-SIDE   :ACCESSOR INPUT-SIDE    :INITFORM 0)
-   (INPUT-CUBE   :ACCESSOR INPUT-CUBE    :INITFORM '())
-   (OUTPUT-SIDE  :ACCESSOR OUTPUT-SIDE   :INITFORM 0)
-   (OUTPUT-CUBE  :ACCESSOR OUTPUT-CUBE   :INITFORM '())
+   (index        :accessor index         :initform 0)
+   (coordinate   :accessor coordinate    :initform '(0 0 0))
+   (orientation  :accessor orientation   :initform basis)
+   (input-side   :accessor input-side    :initform 0)
+   (input-cube   :accessor input-cube    :initform '())
+   (output-side  :accessor output-side   :initform 0)
+   (output-cube  :accessor output-cube   :initform '())
    )
   );;CUBE
 
@@ -319,130 +315,130 @@
 ;; egrep 'defclass|defmethod' $file |sed -e 's/(defclass \(.*\)/	(format t "class \1~%")/' -e 's/(defmethod\(.*\)/    (format t "\1~%")/' -e 's/;/~%  /g'|grep -v egrep
 
 
-(DEFMETHOD SET-INDEX           ((SELF CUBE) INDEX)
-  (SETF (INDEX SELF) INDEX)
-  (IF (NULL (OUTPUT-CUBE SELF))
-    INDEX
-    (SET-INDEX (OUTPUT-CUBE SELF) (1+ INDEX))));;SET-INDEX
+(defmethod set-index           ((self cube) index)
+  (setf (index self) index)
+  (if (null (output-cube self))
+    index
+    (set-index (output-cube self) (1+ index))));;SET-INDEX
 
 
-(DEFMETHOD SET-COORDINATE       ((SELF CUBE) NEWCOORDINATE)
-  (SETF (COORDINATE SELF) NEWCOORDINATE)
-  (IF (NULL (OUTPUT-CUBE SELF))
-    NEWCOORDINATE
-    (SET-COORDINATE (OUTPUT-CUBE SELF) 
-                    (ADD-VECTOR NEWCOORDINATE (OUTPUT-VECTOR SELF)))));;SET-COORDINATE
+(defmethod set-coordinate       ((self cube) newcoordinate)
+  (setf (coordinate self) newcoordinate)
+  (if (null (output-cube self))
+    newcoordinate
+    (set-coordinate (output-cube self) 
+                    (add-vector newcoordinate (output-vector self)))));;SET-COORDINATE
 				
 
-(DEFMETHOD INPUT-VECTOR         ((SELF CUBE))
-  (IF (= 0 (INPUT-SIDE SELF))
+(defmethod input-vector         ((self cube))
+  (if (= 0 (input-side self))
     '(0 0 0)
-    (OPPOSITE-VECTOR (OUTPUT-VECTOR (INPUT-CUBE SELF)))));;INPUT-VECTOR
+    (opposite-vector (output-vector (input-cube self)))));;INPUT-VECTOR
 
 
-(DEFMETHOD OUTPUT-VECTOR        ((SELF CUBE))
-  (COND
-   ((= 0 (OUTPUT-SIDE SELF)) '(0 0 0))
-   ((= 1 (OUTPUT-SIDE SELF)) 
-    (OPPOSITE-VECTOR (FIRST (ORIENTATION SELF))))
-   ((= 2 (OUTPUT-SIDE SELF)) 
-    (OPPOSITE-VECTOR (SECOND (ORIENTATION SELF))))
-   ((= 3 (OUTPUT-SIDE SELF)) 
-    (OPPOSITE-VECTOR (THIRD (ORIENTATION SELF))))
-   ((= 4 (OUTPUT-SIDE SELF)) 
-    (THIRD (ORIENTATION SELF)))
-   ((= 5 (OUTPUT-SIDE SELF)) 
-    (SECOND (ORIENTATION SELF)))
-   ((= 6 (OUTPUT-SIDE SELF)) 
-    (FIRST (ORIENTATION SELF)))
-   (T (ERROR "Invalid output-side (~a) for ~a~%" 
-             (OUTPUT-SIDE SELF) SELF)
+(defmethod output-vector        ((self cube))
+  (cond
+   ((= 0 (output-side self)) '(0 0 0))
+   ((= 1 (output-side self)) 
+    (opposite-vector (first (orientation self))))
+   ((= 2 (output-side self)) 
+    (opposite-vector (second (orientation self))))
+   ((= 3 (output-side self)) 
+    (opposite-vector (third (orientation self))))
+   ((= 4 (output-side self)) 
+    (third (orientation self)))
+   ((= 5 (output-side self)) 
+    (second (orientation self)))
+   ((= 6 (output-side self)) 
+    (first (orientation self)))
+   (t (error "Invalid output-side (~a) for ~a~%" 
+             (output-side self) self)
       '(0 0 0))));;OUTPUT-VECTOR
 
 
-(DEFMETHOD COLLIDE  ((SELF CUBE) OTHERCOORD)
-  (COND
-   ((NULL SELF) NIL)
-   ((EQUAL (COORDINATE SELF) OTHERCOORD) T)
-   ((NULL (INPUT-CUBE SELF)) NIL)
-   (T (COLLIDE (INPUT-CUBE SELF) OTHERCOORD)))
+(defmethod collide  ((self cube) othercoord)
+  (cond
+   ((null self) nil)
+   ((equal (coordinate self) othercoord) t)
+   ((null (input-cube self)) nil)
+   (t (collide (input-cube self) othercoord)))
   );;COLLIDE
 
 
-(DEFMETHOD ROLL     ((SELF CUBE))
-  (SETF (ORIENTATION SELF) 
-		(MAPCAR
-         (LAMBDA (V) 
-           (APPLY-OPERATOR (QUARTER-TURN (OUTPUT-VECTOR (INPUT-CUBE SELF))) V))
-         (ORIENTATION SELF)))
-  (SET-COORDINATE SELF (COORDINATE SELF))
+(defmethod roll     ((self cube))
+  (setf (orientation self) 
+		(mapcar
+         (lambda (v) 
+           (apply-operator (quarter-turn (output-vector (input-cube self))) v))
+         (orientation self)))
+  (set-coordinate self (coordinate self))
   );;ROLL
 
 
-(DEFMETHOD SOLVE   ((SELF CUBE) TRY) ;; try in [0..3+1]
-  (FORMAT T "--> ~a~%" (MAPCAR 'COORDINATE (INPUT-CUBE SELF)))
-  (COND
-   ((NULL SELF)    T)
-   ((> TRY 3)      (BLOCK T (ROLL SELF) NIL))
-   ((AND (INPUT-CUBE SELF) (OR 
-                            (> (APPLY 'MAX (BOX-SIZE (BOUNDS SELF))) 3) 
-                            (COLLIDE (INPUT-CUBE SELF) (COORDINATE SELF))))
-    (ROLL SELF)
-    (SOLVE SELF (1+ TRY)))
-   ((OUTPUT-CUBE SELF)
-    (IF (SOLVE (OUTPUT-CUBE SELF) 0)
-      T
-      (BLOCK T
-        (ROLL SELF)
-        (SOLVE SELF (1+ TRY)))))
-   (T T)
+(defmethod solve   ((self cube) try) ;; try in [0..3+1]
+  (format t "--> ~a~%" (mapcar 'coordinate (input-cube self)))
+  (cond
+   ((null self)    t)
+   ((> try 3)      (block t (roll self) nil))
+   ((and (input-cube self) (or 
+                            (> (apply 'max (box-size (bounds self))) 3) 
+                            (collide (input-cube self) (coordinate self))))
+    (roll self)
+    (solve self (1+ try)))
+   ((output-cube self)
+    (if (solve (output-cube self) 0)
+      t
+      (block t
+        (roll self)
+        (solve self (1+ try)))))
+   (t t)
    ));;SOLVE
 
 
-(DEFMETHOD ADD-OUTPUT-CUBE-TO-SIDE ((SELF CUBE) (NEW-OUTPUT CUBE) SIDE)
-  (SETF (OUTPUT-CUBE SELF) NEW-OUTPUT)
-  (SETF (OUTPUT-SIDE SELF) SIDE)
-  (SETF (ORIENTATION SELF) (ORIENTATION NEW-OUTPUT))
-  (SET-INPUT-CUBE-TO-SIDE NEW-OUTPUT SELF (- 7 SIDE))
-  (SETF (INDEX SELF)     (1- (INDEX NEW-OUTPUT)))
-  (SETF (COORDINATE SELF)
-        (ADD-VECTOR (COORDINATE NEW-OUTPUT)
-                    (OPPOSITE-VECTOR (OUTPUT-VECTOR SELF))))
+(defmethod add-output-cube-to-side ((self cube) (new-output cube) side)
+  (setf (output-cube self) new-output)
+  (setf (output-side self) side)
+  (setf (orientation self) (orientation new-output))
+  (set-input-cube-to-side new-output self (- 7 side))
+  (setf (index self)     (1- (index new-output)))
+  (setf (coordinate self)
+        (add-vector (coordinate new-output)
+                    (opposite-vector (output-vector self))))
   );;ADD-OUTPUT-CUBE-TO-SIDE
 
 
-(DEFMETHOD SET-INPUT-CUBE-TO-SIDE  ((SELF CUBE) (NEW-INPUT CUBE) SIDE)
-  (SETF (INPUT-CUBE SELF) NEW-INPUT)
-  (SETF (INPUT-SIDE SELF) SIDE));;SET-INPUT-CUBE-TO-SIDE
+(defmethod set-input-cube-to-side  ((self cube) (new-input cube) side)
+  (setf (input-cube self) new-input)
+  (setf (input-side self) side));;SET-INPUT-CUBE-TO-SIDE
 
 
-(DEFMETHOD BOUNDS              ((SELF CUBE)) ; returns a box.
-  (IF (NULL (INPUT-CUBE SELF))
-    (CONS (COORDINATE SELF) (COORDINATE SELF))
-    (BOX-EXPAND (BOUNDS (INPUT-CUBE SELF)) (COORDINATE SELF))));;BOUNDS
+(defmethod bounds              ((self cube)) ; returns a box.
+  (if (null (input-cube self))
+    (cons (coordinate self) (coordinate self))
+    (box-expand (bounds (input-cube self)) (coordinate self))));;BOUNDS
 
 
-(DEFMETHOD REVERSE-CUBES    ((SELF CUBE)) ; reverse the cube list.
-  (LET ((C (INPUT-CUBE SELF)) (S (INPUT-SIDE SELF)))
-    (SETF (INPUT-CUBE SELF) (OUTPUT-CUBE SELF))
-    (SETF (INPUT-SIDE SELF) (OUTPUT-SIDE SELF))
-    (SETF (OUTPUT-CUBE SELF) C)
-    (SETF (OUTPUT-SIDE SELF) S)
+(defmethod reverse-cubes    ((self cube)) ; reverse the cube list.
+  (let ((c (input-cube self)) (s (input-side self)))
+    (setf (input-cube self) (output-cube self))
+    (setf (input-side self) (output-side self))
+    (setf (output-cube self) c)
+    (setf (output-side self) s)
 	)
-  (REVERSE-CUBES (INPUT-CUBE SELF)));;REVERSE-CUBES
+  (reverse-cubes (input-cube self)));;REVERSE-CUBES
 
 
 
-(DEFUN MAKE-CUBE-LIST (L)
-  (LET ((CURRENT ()))
-    (MAPcar (LAMBDA (SIDE)
-            (LET ((NEWCUBE    (MAKE-INSTANCE 'CUBE)))
-              (IF (= 0 SIDE)
-                (SETQ CURRENT NEWCUBE)
-                (BLOCK T
-                  (ADD-OUTPUT-CUBE-TO-SIDE NEWCUBE CURRENT SIDE)
-                  (SETQ CURRENT NEWCUBE)))))
-          L)));;MAKE-CUBE-LIST
+(defun make-cube-list (l)
+  (let ((current ()))
+    (mapcar (lambda (side)
+            (let ((newcube    (make-instance 'cube)))
+              (if (= 0 side)
+                (setq current newcube)
+                (block t
+                  (add-output-cube-to-side newcube current side)
+                  (setq current newcube)))))
+          l)));;MAKE-CUBE-LIST
 
 
 
@@ -469,8 +465,8 @@
 
 
 (defun test-solve ()
-  (let ((CUBELIST (REVERSE (MAKE-CUBE-LIST (REVERSE '(6 6 2 2 6 6 2 2 6 2 6 2 6 6 2 2 6 2 2 6 2 2 6 2 6 6 0))))))
-    (SOLVE (CAR CUBELIST) 0)));;test-solve
+  (let ((cubelist (reverse (make-cube-list (reverse '(6 6 2 2 6 6 2 2 6 2 6 2 6 6 2 2 6 2 2 6 2 2 6 2 6 6 0))))))
+    (solve (car cubelist) 0)));;test-solve
 
 
 

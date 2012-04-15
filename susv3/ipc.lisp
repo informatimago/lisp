@@ -27,43 +27,41 @@
 ;;;;    export pure lisp.
 ;;;;
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal Bourguignon 2004 - 2004
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 
 
 (in-package "COMMON-LISP-USER")
 
 ;; TODO: This nicknaming should be done outside of the sources.
-(EVAL-WHEN (:COMPILE-TOPLEVEL :LOAD-TOPLEVEL :EXECUTE)
-  (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PACKAGE:ADD-NICKNAME
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (com.informatimago.common-lisp.cesarum.package:add-nickname
    "COM.INFORMATIMAGO.CLISP.SUSV3"   "SUSV3")
-  (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PACKAGE:ADD-NICKNAME
+  (com.informatimago.common-lisp.cesarum.package:add-nickname
      "COM.INFORMATIMAGO.CLISP.SUSV3-XSI" "SUSV3-XSI"))
 
 (defpackage "COM.INFORMATIMAGO.SUSV3.IPC"
-  (:DOCUMENTATION 
+  (:documentation 
    "An API over SUSV3-XSI IPC (msgget/msgctl/msgsnd/msgrcv).")
-  (:USE   "COMMON-LISP" "FFI"
+  (:use   "COMMON-LISP" "FFI"
           "COM.INFORMATIMAGO.SUSV3.TOOLS"
           "COM.INFORMATIMAGO.CLISP.SUSV3")
-  (:EXPORT 
+  (:export 
    ;; ipc:
    "IPC-PERMISSIONS" "IPC-PERMISSIONS-KEY" "IPC-PERMISSIONS-UID"
    "IPC-PERMISSIONS-GID" "IPC-PERMISSIONS-CUID" "IPC-PERMISSIONS-CGID"
@@ -287,7 +285,7 @@ the creator or owner of the message queue.
            (return-from message-send-sexp
              (print (message-send queue message-type mtext :no-wait no-wait)))
          (unix-error (err) (print err)
-                     (if (= susv3:EINTR (unix-error-number err))
+                     (if (= susv3:eintr (unix-error-number err))
                          (go :again)
                          (error err))))))) ;;message-send-sexp
 
@@ -301,7 +299,7 @@ the creator or owner of the message queue.
                (return-from :receive 
                  (message-receive queue message-type +message-size-limit+
                                   :no-wait no-wait :except except))
-             (unix-error (err) (if (= susv3:EINTR (unix-error-number err))
+             (unix-error (err) (if (= susv3:eintr (unix-error-number err))
                                    (go :again)
                                    (error err))))))
     (values (let ((*read-eval* nil))
@@ -589,9 +587,9 @@ the creator or owner of the message queue.
    semnum-th semaphore of the set).  The calling process
    must have read access  privileges  on  the  semaphore
    set."
-  (check-errno (susv3-xsi:semctl semaphore index susv3-xsi:GETNCNT 0)
+  (check-errno (susv3-xsi:semctl semaphore index susv3-xsi:getncnt 0)
                :function 'susv3-xsi:semctl 
-               :arguments (list semaphore index 'susv3-xsi:GETNCNT 0)
+               :arguments (list semaphore index 'susv3-xsi:getncnt 0)
                :caller 'semaphore-number-waiting-for-increase))
 
 
@@ -603,9 +601,9 @@ the creator or owner of the message queue.
    semaphore of the set to become 0).  The calling  pro­
    cess   must   have  read  access  privileges  on  the
    semaphore set."
-  (check-errno (susv3-xsi:semctl semaphore index susv3-xsi:GETZCNT 0)
+  (check-errno (susv3-xsi:semctl semaphore index susv3-xsi:getzcnt 0)
                :function 'susv3-xsi:semctl 
-               :arguments (list semaphore index 'susv3-xsi:GETZCNT 0)
+               :arguments (list semaphore index 'susv3-xsi:getzcnt 0)
                :caller 'semaphore-number-waiting-for-zero))
 
 
@@ -656,8 +654,8 @@ OPERATION: a list of (sem_num sem_op [:no-wait] [:undo])
       (setf (ffi:slot (ffi:element d i) 'susv3-xsi::sem_num) (first  (car ops))
             (ffi:slot (ffi:element d i) 'susv3-xsi::sem_op)  (second (car ops))
             (ffi:slot (ffi:element d i) 'susv3-xsi::sem_flg)
-            (+ (if (member :no-wait (cddr (car ops))) susv3-xsi:IPC_NOWAIT 0)
-               (if (member :undo    (cddr (car ops))) susv3-xsi:SEM_UNDO   0))))
+            (+ (if (member :no-wait (cddr (car ops))) susv3-xsi:ipc_nowait 0)
+               (if (member :undo    (cddr (car ops))) susv3-xsi:sem_undo   0))))
     (check-errno (susv3-xsi:semop semaphore 
                                   (ffi:foreign-address-unsigned
                                    (ffi:c-var-address d))
