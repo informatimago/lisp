@@ -1,0 +1,975 @@
+%PDF-1.3
+%“Œ‹ž ReportLab Generated PDF document http://www.reportlab.com
+% 'BasicFonts': class PDFDictionary 
+1 0 obj
+% The standard fonts dictionary
+<< /F1 2 0 R
+ /F2 3 0 R
+ /F3 4 0 R
+ /F4 6 0 R >>
+endobj
+% 'F1': class PDFType1Font 
+2 0 obj
+% Font Helvetica
+<< /BaseFont /Helvetica
+ /Encoding /WinAnsiEncoding
+ /Name /F1
+ /Subtype /Type1
+ /Type /Font >>
+endobj
+% 'F2': class PDFType1Font 
+3 0 obj
+% Font Helvetica-Bold
+<< /BaseFont /Helvetica-Bold
+ /Encoding /WinAnsiEncoding
+ /Name /F2
+ /Subtype /Type1
+ /Type /Font >>
+endobj
+% 'F3': class PDFType1Font 
+4 0 obj
+% Font Courier
+<< /BaseFont /Courier
+ /Encoding /WinAnsiEncoding
+ /Name /F3
+ /Subtype /Type1
+ /Type /Font >>
+endobj
+% 'Page1': class PDFPage 
+5 0 obj
+% Page dictionary
+<< /Contents 21 0 R
+ /MediaBox [ 0
+ 0
+ 595.2756
+ 841.8898 ]
+ /Parent 20 0 R
+ /Resources << /Font 1 0 R
+ /ProcSet [ /PDF
+ /Text
+ /ImageB
+ /ImageC
+ /ImageI ] >>
+ /Rotate 0
+ /Trans <<  >>
+ /Type /Page >>
+endobj
+% 'F4': class PDFType1Font 
+6 0 obj
+% Font Symbol
+<< /BaseFont /Symbol
+ /Encoding /SymbolEncoding
+ /Name /F4
+ /Subtype /Type1
+ /Type /Font >>
+endobj
+% 'Page2': class PDFPage 
+7 0 obj
+% Page dictionary
+<< /Contents 22 0 R
+ /MediaBox [ 0
+ 0
+ 595.2756
+ 841.8898 ]
+ /Parent 20 0 R
+ /Resources << /Font 1 0 R
+ /ProcSet [ /PDF
+ /Text
+ /ImageB
+ /ImageC
+ /ImageI ] >>
+ /Rotate 0
+ /Trans <<  >>
+ /Type /Page >>
+endobj
+% 'Page3': class PDFPage 
+8 0 obj
+% Page dictionary
+<< /Contents 23 0 R
+ /MediaBox [ 0
+ 0
+ 595.2756
+ 841.8898 ]
+ /Parent 20 0 R
+ /Resources << /Font 1 0 R
+ /ProcSet [ /PDF
+ /Text
+ /ImageB
+ /ImageC
+ /ImageI ] >>
+ /Rotate 0
+ /Trans <<  >>
+ /Type /Page >>
+endobj
+% 'Page4': class PDFPage 
+9 0 obj
+% Page dictionary
+<< /Contents 24 0 R
+ /MediaBox [ 0
+ 0
+ 595.2756
+ 841.8898 ]
+ /Parent 20 0 R
+ /Resources << /Font 1 0 R
+ /ProcSet [ /PDF
+ /Text
+ /ImageB
+ /ImageC
+ /ImageI ] >>
+ /Rotate 0
+ /Trans <<  >>
+ /Type /Page >>
+endobj
+% 'R10': class PDFCatalog 
+10 0 obj
+% Document Root
+<< /Outlines 12 0 R
+ /PageLabels 25 0 R
+ /PageMode /UseNone
+ /Pages 20 0 R
+ /Type /Catalog >>
+endobj
+% 'R11': class PDFInfo 
+11 0 obj
+<< /Author ()
+ /CreationDate (D:20101222161342-01'00')
+ /Keywords ()
+ /Producer (ReportLab http://www.reportlab.com)
+ /Subject (\(unspecified\))
+ /Title (Objective-CL) >>
+endobj
+% 'R12': class PDFOutlines 
+12 0 obj
+<< /Count 7
+ /First 13 0 R
+ /Last 19 0 R
+ /Type /Outlines >>
+endobj
+% 'Outline.0': class OutlineEntryObject 
+13 0 obj
+<< /Dest [ 5 0 R
+ /XYZ
+ 62.69291
+ 699.0236
+ 0 ]
+ /Next 14 0 R
+ /Parent 12 0 R
+ /Title (Bugs) >>
+endobj
+% 'Outline.1': class OutlineEntryObject 
+14 0 obj
+<< /Dest [ 5 0 R
+ /XYZ
+ 62.69291
+ 624.0236
+ 0 ]
+ /Next 15 0 R
+ /Parent 12 0 R
+ /Prev 13 0 R
+ /Title (Motivation) >>
+endobj
+% 'Outline.2': class OutlineEntryObject 
+15 0 obj
+<< /Dest [ 5 0 R
+ /XYZ
+ 62.69291
+ 417.0236
+ 0 ]
+ /Next 16 0 R
+ /Parent 12 0 R
+ /Prev 14 0 R
+ /Title (Principles) >>
+endobj
+% 'Outline.3': class OutlineEntryObject 
+16 0 obj
+<< /Dest [ 5 0 R
+ /XYZ
+ 62.69291
+ 138.0236
+ 0 ]
+ /Next 17 0 R
+ /Parent 12 0 R
+ /Prev 15 0 R
+ /Title (Message Sending) >>
+endobj
+% 'Outline.4': class OutlineEntryObject 
+17 0 obj
+<< /Dest [ 7 0 R
+ /XYZ
+ 62.69291
+ 201.4038
+ 0 ]
+ /Next 18 0 R
+ /Parent 12 0 R
+ /Prev 16 0 R
+ /Title (Class definition) >>
+endobj
+% 'Outline.5': class OutlineEntryObject 
+18 0 obj
+<< /Dest [ 8 0 R
+ /XYZ
+ 62.69291
+ 545.5124
+ 0 ]
+ /Next 19 0 R
+ /Parent 12 0 R
+ /Prev 17 0 R
+ /Title (Method definition) >>
+endobj
+% 'Outline.6': class OutlineEntryObject 
+19 0 obj
+<< /Dest [ 9 0 R
+ /XYZ
+ 62.69291
+ 691.8236
+ 0 ]
+ /Parent 12 0 R
+ /Prev 18 0 R
+ /Title (String literals) >>
+endobj
+% 'R20': class PDFPages 
+20 0 obj
+% page tree
+<< /Count 4
+ /Kids [ 5 0 R
+ 7 0 R
+ 8 0 R
+ 9 0 R ]
+ /Type /Pages >>
+endobj
+% 'R21': class PDFStream 
+21 0 obj
+% page stream
+<< /Length 7026 >>
+stream
+1 0 0 1 0 0 cm BT /F1 12 Tf 14.4 TL ET
+q
+1 0 0 1 62.69291 741.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 9.64 Tm /F2 20 Tf 24 TL 173.2649 0 Td (Objective-CL) Tj T* -173.2649 0 Td ET
+Q
+Q
+q
+1 0 0 1 62.69291 711.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 7.23 Tm /F2 15 Tf 18 TL 88.24488 0 Td (Objective-C\255like syntax for Common Lisp) Tj T* -88.24488 0 Td ET
+Q
+Q
+q
+1 0 0 1 62.69291 678.0236 cm
+q
+BT 1 0 0 1 0 8.435 Tm 21 TL /F2 17.5 Tf 0 0 0 rg (Bugs) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 636.0236 cm
+q
+BT 1 0 0 1 0 28.82 Tm .667633 Tw 12 TL /F1 10 Tf 0 0 0 rg (The ) Tj /F3 10 Tf (type-specifiers ) Tj /F1 10 Tf (are not defined yet. I need to learn about ) Tj /F3 10 Tf (ccl ) Tj /F1 10 Tf (FFI and perhaps add a syntax,) Tj T* 0 Tw 2.521984 Tw (or at least improve the reading of ) Tj /F3 10 Tf (type-specifiers) Tj /F1 10 Tf (. Notably, for now there's merely read in the) Tj T* 0 Tw (keyword package so we cannot give type specifiers such as: \(NSRect\) or \(NSWindow*\).) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 603.0236 cm
+q
+BT 1 0 0 1 0 8.435 Tm 21 TL /F2 17.5 Tf 0 0 0 rg (Motivation) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 573.0236 cm
+q
+BT 1 0 0 1 0 16.82 Tm .407633 Tw 12 TL /F1 10 Tf 0 0 0 rg (The purpose of this package is to provide a few reader macros implementing a syntax like Objective-C to) Tj T* 0 Tw (program with Objective-C FFI such as the ) Tj /F3 10 Tf (ccl ) Tj /F1 10 Tf (Objective-C bridge.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 543.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 16.82 Tm /F1 10 Tf 12 TL .539988 Tw (The principles of the Objective-C syntax is that it is a small set of extensions over the syntax of the base) Tj T* 0 Tw (language \(C in the case of Objective-C\). Namely:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 537.0236 cm
+Q
+q
+1 0 0 1 62.69291 537.0236 cm
+Q
+q
+1 0 0 1 62.69291 513.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 9 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 16.82 Tm /F1 10 Tf 12 TL .976647 Tw (message sending expressions are put inside brackets \(inspired from Smalltalk block notation\), and) Tj T* 0 Tw (have basically the Smalltalk message sending syntax.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 507.0236 cm
+Q
+q
+1 0 0 1 62.69291 483.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 9 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 16.82 Tm /F1 10 Tf 12 TL 2.616976 Tw (class declarations and definitions \(interface and implementation\) and other Objective-C specific) Tj T* 0 Tw (elements use keywords prefixed by the #\\@ character.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 483.0236 cm
+Q
+q
+1 0 0 1 62.69291 429.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 40.82 Tm /F1 10 Tf 12 TL .87832 Tw (The later is a little at odd with lisp nature, where every form is an expression, and where parenthesized) Tj T* 0 Tw 1.426651 Tw (syntax is prefered. We will therefore provide a more Smalltalk-like way to define classes and methods) Tj T* 0 Tw .203516 Tw (\(while retaining the #\\@ character as prefix for some symbols, and as a reader macro to read Objective-C) Tj T* 0 Tw (string literals\).) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 396.0236 cm
+q
+BT 1 0 0 1 0 8.435 Tm 21 TL /F2 17.5 Tf 0 0 0 rg (Principles) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 378.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (Two reader macros are provided:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 372.0236 cm
+Q
+q
+1 0 0 1 62.69291 372.0236 cm
+Q
+q
+1 0 0 1 62.69291 336.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 21 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 28.82 Tm /F1 10 Tf 12 TL .34936 Tw (a reader macro bound to #\\[ is used to parse message sending expressions, just like in Objective-C,) Tj T* 0 Tw .081412 Tw (but since the underlying language is lisp, sub-expressions starting with parentheses are read just like) Tj T* 0 Tw (normal sexps \(they may further contain Objective-CL syntax\).) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 330.0236 cm
+Q
+q
+1 0 0 1 62.69291 210.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 105 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 105 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (a reader macro bound to #\\@ which is used to read:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 23 99 cm
+Q
+q
+1 0 0 1 23 -3 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 96 cm
+Q
+q
+1 0 0 1 20 96 cm
+Q
+q
+1 0 0 1 20 84 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (an Objective-C literal strings when followed by a double-quote starting a lisp string.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 78 cm
+Q
+q
+1 0 0 1 20 18 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 45 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 52.82 Tm /F1 10 Tf 12 TL 1.866136 Tw (a class or method definition expression, when followed by an opening bracket #\\[. The) Tj T* 0 Tw 1.01229 Tw (syntax used for these definition expression is similar to the message sending syntax, but) Tj T* 0 Tw 1.757126 Tw (it's processed more like a special operator or macro than a real message sending: the) Tj T* 0 Tw .22152 Tw (sub-expression are evaluated with different rules that depend on the operation. It's called a) Tj T* 0 Tw (pseudo-message.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 12 cm
+Q
+q
+1 0 0 1 20 0 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (a normal lisp symbol otherwise.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 0 cm
+Q
+q
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 210.0236 cm
+Q
+q
+1 0 0 1 62.69291 192.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (\266) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 150.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 28.82 Tm /F1 10 Tf 12 TL 2.679983 Tw (These reader macros expand to normal lisp forms, using symbols exported from a portability layer) Tj T* 0 Tw .149213 Tw (package, nicknamed OCLO, which should be implemented specifically for each Objective-C bridge or FFI.) Tj T* 0 Tw (The implementation of this bridge is out of scope of these syntax- providing reader macros.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 117.0236 cm
+q
+BT 1 0 0 1 0 8.435 Tm 21 TL /F2 17.5 Tf 0 0 0 rg (Message Sending) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 99.02362 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (The syntax is:) Tj T* ET
+Q
+Q
+ 
+endstream
+
+endobj
+% 'R22': class PDFStream 
+22 0 obj
+% page stream
+<< /Length 4343 >>
+stream
+1 0 0 1 0 0 cm BT /F1 12 Tf 14.4 TL ET
+q
+1 0 0 1 62.69291 523.8236 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 6.6 6.6 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.960784 .960784 .862745 rg
+n -6 -6 468.6898 240 re B*
+Q
+q
+0 0 0 rg
+BT 1 0 0 1 0 221.71 Tm /F3 10 Tf 12 TL (objcl-message-expr := '[' message-send  ']' .) Tj T*  T* (message-send       := recipient message .) Tj T* (recipient          := sexp | class-name | 'super' | 'self' .) Tj T* (class-name         := objcl-identifier .) Tj T*  T* (message            := simple-selector | compound-selector final-arguments .) Tj T*  T* (simple-selector    := objcl-identifier .) Tj T* (compound-selector  := objcl-identifier ':' sexp compound-selector) Tj T* (                    | objcl-identifier ':' sexp .) Tj T* (final-arguments    := | '\(' type-identifier '\)' sexp  final-arguments .) Tj T* (type-identifier    := symbol .) Tj T*  T*  T* (-- FIXME type-identifier; perhaps we need:) Tj T* (-- type-identifier   := symbol | symbol sexp .) Tj T* (-- for example: \(char *\)cString \(array \(int 10\)\)tenInts ?) Tj T* (-- Check with what is available at the FFI/bridge level.) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 491.8236 cm
+q
+BT 1 0 0 1 0 16.82 Tm .587485 Tw 12 TL /F1 10 Tf 0 0 0 rg (An ) Tj /F3 10 Tf (objcl-identifier ) Tj /F1 10 Tf (is a case sensitive identifier that is converted to a lisp symbol according to the) Tj T* 0 Tw (rules of Objective-C to Common Lisp identifier translation.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 461.8236 cm
+q
+BT 1 0 0 1 0 16.82 Tm .647984 Tw 12 TL /F1 10 Tf 0 0 0 rg (A ) Tj /F3 10 Tf (sexp ) Tj /F1 10 Tf (is a normal lisp expression, which might be another message sending bracketed expression \(or) Tj T* 0 Tw (another Objective-CL form\).) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 419.8236 cm
+q
+BT 1 0 0 1 0 28.82 Tm 5.379982 Tw 12 TL /F1 10 Tf 0 0 0 rg (There should be no space between the ) Tj /F3 10 Tf (objcl-identifier ) Tj /F1 10 Tf (and the colon. After the first) Tj T* 0 Tw 1.409976 Tw /F3 10 Tf (objcl-identifier ) Tj /F1 10 Tf (in a compound-selector, the remaining ) Tj /F3 10 Tf (objcl-identifiers ) Tj /F1 10 Tf (can be absent, in) Tj T* 0 Tw (which case the colon must be separated from the previous expression by a space.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 389.8236 cm
+q
+BT 1 0 0 1 0 16.82 Tm .726905 Tw 12 TL /F1 10 Tf 0 0 0 rg (When recipient is ) Tj /F3 10 Tf (super) Tj /F1 10 Tf (, an ) Tj /F3 10 Tf (\(oclo:send-super self ...\) ) Tj /F1 10 Tf (form is returned. FIXME document the) Tj T* 0 Tw (other forms returned.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 371.8236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (Examples:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 213.4038 cm
+q
+q
+.956869 0 0 .956869 0 0 cm
+q
+1 0 0 1 6.6 6.897494 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.960784 .960784 .862745 rg
+n -6 -6 489.87 156 re B*
+Q
+q
+0 0 0 rg
+BT 1 0 0 1 0 137.71 Tm /F3 10 Tf 12 TL ([self update]) Tj T*  T* ([window orderFront:sender]) Tj T*  T* ([array performSelector:\(@selector "drawRect:"\) withObject:rect]) Tj T*  T* (\(let \(\(o [[NSObject alloc] init]\)\)) Tj T* (   [NSArray arrayWithObjects:o \(id\)o \(id\)o \(id\)nil]\)) Tj T*  T*  T* ('[array performSelector:\(@selector "drawRect:"\) withObject:rect]) Tj T* /F4 10 Tf 12 TL (\256) Tj /F3 10 Tf 12 TL ( \(OBJC:SEND ARRAY :PERFORM-SELECTOR \(@SELECTOR "drawRect:"\) :WITH-OBJECT RECT\)) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 180.4038 cm
+q
+BT 1 0 0 1 0 8.435 Tm 21 TL /F2 17.5 Tf 0 0 0 rg (Class definition) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 162.4038 cm
+q
+BT 1 0 0 1 0 4.82 Tm 12 TL /F1 10 Tf 0 0 0 rg (Classes are created by sending a ) Tj /F3 10 Tf (subClass:slots: ) Tj /F1 10 Tf (pseudo-message to its superclass.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 144.4038 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (The syntax is :) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 100.4607 cm
+q
+q
+.73055 0 0 .73055 0 0 cm
+q
+1 0 0 1 6.6 9.034289 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.960784 .960784 .862745 rg
+n -6 -6 642 48 re B*
+Q
+q
+0 0 0 rg
+BT 1 0 0 1 0 29.71 Tm /F3 10 Tf 12 TL (objcl-definition    := '@[' class-definition | instance-method-definition | class-method-definition ']' .) Tj T*  T* (class-definition           := super-class-name 'subClass:' class-name  'slots:' '\(' slots '\)' .) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+ 
+endstream
+
+endobj
+% 'R23': class PDFStream 
+23 0 obj
+% page stream
+<< /Length 4803 >>
+stream
+1 0 0 1 0 0 cm BT /F1 12 Tf 14.4 TL ET
+q
+1 0 0 1 62.69291 631.8236 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 6.6 6.6 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.960784 .960784 .862745 rg
+n -6 -6 468.6898 132 re B*
+Q
+q
+0 0 0 rg
+BT 1 0 0 1 0 113.71 Tm /F3 10 Tf 12 TL  T* (class-name         := objcl-identifier .) Tj T* (super-class-name   := objcl-identifier .) Tj T* (slots              := | slot slots .) Tj T* (slot               := lisp-slot | objcl-slot .) Tj T* (lisp-slot          := slot-specifier . -- see clhs defclass.) Tj T*  T*  T* (-- objcl-slot         := ...           -- not defined yet.) Tj T* (-- We'd want some simplified definition, and using Obj-C names.) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 611.8236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (Examples:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 557.5124 cm
+q
+q
+.941286 0 0 .941286 0 0 cm
+q
+1 0 0 1 6.6 7.011687 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.960784 .960784 .862745 rg
+n -6 -6 498 48 re B*
+Q
+q
+0 0 0 rg
+BT 1 0 0 1 0 29.71 Tm /F3 10 Tf 12 TL (@[NSObject subClass:SpaceShip) Tj T* (              slots:\(\(position :accessor ship-position :initform \(make-position\)\)) Tj T* (                     \(speed    :accessor ship-speed    :initform 0.0\)\)]) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 524.5124 cm
+q
+BT 1 0 0 1 0 8.435 Tm 21 TL /F2 17.5 Tf 0 0 0 rg (Method definition) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 482.5124 cm
+q
+BT 1 0 0 1 0 28.82 Tm 5.275366 Tw 12 TL /F1 10 Tf 0 0 0 rg (Class and instance methods are defined by sending a pseudo-message to the class, either) Tj T* 0 Tw .07247 Tw /F3 10 Tf (method:resultType:body: ) Tj /F1 10 Tf (to create an instance method, or ) Tj /F3 10 Tf (classMethod:resultType:body: ) Tj /F1 10 Tf (to) Tj T* 0 Tw (create a class method.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 464.5124 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (The syntax is :) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 254.0039 cm
+q
+q
+.73055 0 0 .73055 0 0 cm
+q
+1 0 0 1 6.6 9.034289 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.960784 .960784 .862745 rg
+n -6 -6 642 276 re B*
+Q
+q
+BT 1 0 0 1 0 257.71 Tm 12 TL /F3 10 Tf 0 0 0 rg (objcl-definition    := '@[' class-definition | instance-method-definition | class-method-definition ']' .) Tj T*  T* (instance-method-definition := class-name 'method:' '\(' signature '\)') Tj T* (                                     'resultType:' '\(' type-identifier '\)') Tj T* (                                           'body:' body .) Tj T*  T* (class-method-definition    := class-name 'classMethod:' '\(' signature '\)') Tj T* (                                          'resultType:' '\(' type-identifier '\)') Tj T* (                                                'body:' body .) Tj T*  T* (class-name         := objcl-identifier .) Tj T* (signature          := simple-signature | compound-signature final-signature .) Tj T* (simple-signature   := objcl-identifier .) Tj T* (compound-signature := objcl-identifier ':' '\(' type-identifier '\)' objcl-identifier compound-signature) Tj T* (                    | objcl-identifier ':' '\(' type-identifier '\)' objcl-identifier .) Tj T* (final-signature    := ') Tj (&) Tj (rest' objcl-identifier .) Tj T* (body               := | sexp body .) Tj T*  T* (-- FIXME type-identifier; perhaps we need:) Tj T* (-- type-identifier   := symbol | symbol sexp .) Tj T* (-- for example: \(char *\)cString \(array \(int 10\)\)tenInts ?) Tj T* (-- Check with what is available at the FFI/bridge level.) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 210.0039 cm
+q
+BT 1 0 0 1 0 28.82 Tm 5.379982 Tw 12 TL /F1 10 Tf 0 0 0 rg (There should be no space between the ) Tj /F3 10 Tf (objcl-identifier ) Tj /F1 10 Tf (and the colon. After the first) Tj T* 0 Tw 1.409976 Tw /F3 10 Tf (objcl-identifier ) Tj /F1 10 Tf (in a compound-selector, the remaining ) Tj /F3 10 Tf (objcl-identifiers ) Tj /F1 10 Tf (can be absent, in) Tj T* 0 Tw (which case the colon must be separated from the previous expression by a space.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 192.0039 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (Examples:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 89.08852 cm
+q
+q
+.976496 0 0 .976496 0 0 cm
+q
+1 0 0 1 6.6 6.758862 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.960784 .960784 .862745 rg
+n -6 -6 480 96 re B*
+Q
+q
+0 0 0 rg
+BT 1 0 0 1 0 77.71 Tm /F3 10 Tf 12 TL (@[SpaceShip classMethod:\(shipAtPosition:\(Position\)aPosition\)) Tj T* (             resultType:\(id\)) Tj T* (                   body:\(let \(\(new-ship [[self alloc] init]\)\)) Tj T* (                           [new-ship setPosition:aPosition]) Tj T* (                           new-ship\)]) Tj T*  T* (@[SpaceShip method:\(moveToward:\(Direction\)aDirection atSpeed:\(double\)velocity\)) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+ 
+endstream
+
+endobj
+% 'R24': class PDFStream 
+24 0 obj
+% page stream
+<< /Length 1771 >>
+stream
+1 0 0 1 0 0 cm BT /F1 12 Tf 14.4 TL ET
+q
+1 0 0 1 62.69291 703.8236 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 6.6 6.6 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.960784 .960784 .862745 rg
+n -6 -6 468.6898 60 re B*
+Q
+q
+0 0 0 rg
+BT 1 0 0 1 0 41.71 Tm /F3 10 Tf 12 TL (        resultType:\(id\)) Tj T* (              body:\(let \(\(new-pos [[self position] offset:...]\)\)) Tj T* (                     \(do-something new-pos\)) Tj T* (                     [self setPosition:new-pos]\)]) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 670.8236 cm
+q
+BT 1 0 0 1 0 8.435 Tm 21 TL /F2 17.5 Tf 0 0 0 rg (String literals) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 652.8236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (The syntax read is:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 619.6236 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 6.6 6.6 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.960784 .960784 .862745 rg
+n -6 -6 468.6898 24 re B*
+Q
+q
+0 0 0 rg
+BT 1 0 0 1 0 5.71 Tm /F3 10 Tf 12 TL (objcl-string-literal := '@"' { character } '"' .) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 587.6236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 16.82 Tm /F1 10 Tf 12 TL .394198 Tw (A CL string is read \(ie. with the same escaping rules as normal CL strings\), and an \(oclo:@ "string"\) form) Tj T* 0 Tw (is returned.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 569.6236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4.82 Tm /F1 10 Tf 12 TL (Examples:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 500.4236 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 6.6 6.6 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.960784 .960784 .862745 rg
+n -6 -6 468.6898 60 re B*
+Q
+q
+0 0 0 rg
+BT 1 0 0 1 0 41.71 Tm /F3 10 Tf 12 TL (@"Untitled") Tj T* (@"String with \\"quotes\\" and \\\\ backslash.") Tj T* (@"String with) Tj T* (new lines") Tj T* ET
+Q
+Q
+Q
+Q
+Q
+ 
+endstream
+
+endobj
+% 'R25': class PDFPageLabels 
+25 0 obj
+% Document Root
+<< /Nums [ 0
+ 26 0 R
+ 1
+ 27 0 R
+ 2
+ 28 0 R
+ 3
+ 29 0 R ] >>
+endobj
+% 'R26': class PDFPageLabel 
+26 0 obj
+% None
+<< /S /D
+ /St 1 >>
+endobj
+% 'R27': class PDFPageLabel 
+27 0 obj
+% None
+<< /S /D
+ /St 2 >>
+endobj
+% 'R28': class PDFPageLabel 
+28 0 obj
+% None
+<< /S /D
+ /St 3 >>
+endobj
+% 'R29': class PDFPageLabel 
+29 0 obj
+% None
+<< /S /D
+ /St 4 >>
+endobj
+xref
+0 30
+0000000000 65535 f
+0000000113 00000 n
+0000000245 00000 n
+0000000410 00000 n
+0000000585 00000 n
+0000000744 00000 n
+0000001025 00000 n
+0000001181 00000 n
+0000001460 00000 n
+0000001739 00000 n
+0000002019 00000 n
+0000002178 00000 n
+0000002402 00000 n
+0000002527 00000 n
+0000002691 00000 n
+0000002876 00000 n
+0000003061 00000 n
+0000003251 00000 n
+0000003442 00000 n
+0000003634 00000 n
+0000003793 00000 n
+0000003924 00000 n
+0000011051 00000 n
+0000015495 00000 n
+0000020399 00000 n
+0000022275 00000 n
+0000022407 00000 n
+0000022484 00000 n
+0000022561 00000 n
+0000022638 00000 n
+trailer
+<< /ID 
+ % ReportLab generated PDF document -- digest (http://www.reportlab.com) 
+ [(t1\007\316\266\342m\)@\350>B\373\225'\022) (t1\007\316\266\342m\)@\350>B\373\225'\022)] 
+
+ /Info 11 0 R
+ /Root 10 0 R
+ /Size 30 >>
+startxref
+22685
+%%EOF
