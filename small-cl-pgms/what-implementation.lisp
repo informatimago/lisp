@@ -442,6 +442,18 @@ FIELD one of the ACCEPTED-VALUES."
    (function string<)))
 
 
+(defun process-answer-line (line)
+  (let ((line (substitute-if #\space (lambda (ch) (find ch "	,.;()[]!:")) line)))
+    (when (every (lambda (ch) (or (char= #\space ch) (digit-char-p ch))) line)
+      (let ((answer (with-input-from-string (inp line)
+                       (loop
+                         :for index = (read inp nil nil)
+                         :while index :collect index))))
+        (if (= 1 (length answer))
+            (first answer)
+            answer)))))
+
+
 (defun select (field &optional (implementations *implementations*))
   "
 DO:     Let the user choose the IMPLEMENTATIONS he wants to select based on the FIELD.
@@ -458,10 +470,10 @@ RETURN: A sublist of IMPLEMENTATIONS.
           :initially (format *query-io* "Choice of ~(~A~):~%" field)
           :do (format *query-io* "~3D. ~A~%" i c)
           :finally (progn
-                     (format *query-io* "Enter a number or a list of numbers in parentheses: ")
+                     (format *query-io* "Enter a menu index or a list of menu indices: ")
                      (finish-output *query-io*)
                      (return
-                      (let ((answer (let ((*read-eval* nil)) (read *query-io*))))
+                       (let ((answer (process-answer-line (read-line *query-io*))))
                         (if (eql 0 answer)
                             choices
                             (delete nil
@@ -508,6 +520,105 @@ implementation~P ~:[is~;are~]: ~%"
       :while (< 1 (length selection))
       :do (setf selection (select selection-field selection))
       :finally (report-selection selection))))
+
+(defun quit (&optional (status 0))
+  #+ccl                  (ccl:quit status)
+  #+clisp                (ext:quit status)
+  #+(and cmu unix)       (UNIX:UNIX-EXIT status)
+  #+(and cmu (not unix)) (extensions:quit #|recklesslyp|# nil)
+  #+ecl                  (ext:quit status)
+  #+sbcl                 (sb-ext:quit status)
+  #-(or ccl clisp cmu ecl sbcl) (throw 'quit))
+
+
+(defun main ()
+  (handler-case
+      (loop
+        (format *query-io* "~2%Welcome to the Common Lisp implementation selector!~2%")
+        (finish-output  *query-io*)
+        (choose-an-implementation)
+        (unless (yes-or-no-p "~%Do you want to make another selection?")
+          (format *query-io* "~%Good bye!~2%")
+          (finish-output  *query-io*)
+          (quit)))
+    (error (err)
+      (format *query-io* "~%It seems an error occured: ~A~%I'm disconnecting.~%" err)
+      (finish-output  *query-io*)
+      (quit 1))
+    (condition (err)
+      (format *query-io* "~%It seems a condition occured: ~A~%I'm disconnecting.~%" err)
+      (finish-output  *query-io*)
+      (quit 2))))
+
+
+
+
+(defun save-program-and-quit (&key
+                              (name          "unnamed-lisp-program")
+                              (toplevel      (lambda ()))
+                              (documentation "Undocumented program.")
+                              (start-package "COMMON-LISP-USER"))
+  (declare (ignorable documentation))
+  
+  #+ccl
+  (ccl:save-application
+   name
+   :toplevel-function (lambda ()
+                        (setf *package* (or (find-package start-package)
+                                            "COMMON-LISP-USER"))
+                        (funcall toplevel))
+   :init-file nil
+   :error-handler :quit-quietly
+   ;; :application-class ccl:lisp-development-system
+   ;; :clear-clos-cache t
+   :purify nil
+   ;; :impurify t
+   :mode #o755
+   :prepend-kernel t
+   ;; :native t ; for shared libraries.
+   )
+
+  #+clisp
+  (ext:saveinitmem
+   name
+   :quiet t
+   :verbose t
+   :norc t
+   :init-function (lambda ()
+                    (ext:exit (handler-case
+                                  (progn
+                                    (funcall toplevel)
+                                    0)
+                                (t () 1))))
+   :script t
+   :documentation documentation
+   :start-package start-package
+   :keep-global-handlers nil
+   :executable t)
+
+  #+lispworks
+  (hcl:save-image name
+                  :restart-function  (lambda ()
+                                       (hcl:quit :status (handler-case
+                                                             (progn
+                                                               (funcall toplevel)
+                                                               0)
+                                                           (t () 1))))
+                  :console :always)
+  ;; save-image filename &key dll-exports dll-added-files
+  ;; automatic-init gc type normal-gc restart-function multiprocessing
+  ;; console environment remarks clean-down image-type split => nil
+
+  ;; Some implementations quit automatically in their save-application
+  ;; or save-lisp-and-die function…
+  (quit))
+
+
+
+(eval-when (:load-toplevel :execute)
+  (save-program-and-quit :name "what-implementation"
+                         :toplevel (function main)
+                         :documentation "Helps the user choose a Common Lisp implementation."))
 
 
 ;;;; THE END ;;;;
