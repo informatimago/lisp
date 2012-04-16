@@ -126,7 +126,12 @@ RETURN:     A new list of name and aliases, with the ALIASES added, if
 
 
 
+
 (defparameter *lisp-encodings*
+
+  ;; #+ccl-1.9
+  ;; ccl:list-character-encodings.  Use it
+  ;; in ccl:describe-character-encodings
   
   #+(and ccl (not ccl-1.6))
   (mapcar (lambda (x) (mapcar (function string-upcase) x))
