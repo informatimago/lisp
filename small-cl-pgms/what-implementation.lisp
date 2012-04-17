@@ -646,6 +646,8 @@ You may find its sources at http://tinyurl.com/what-implementation
         (license)
         (terpri  *query-io*)
         (finish-output *query-io*)
+        (format  *query-io* "~&I know ~D implementation~:*~P of Common Lisp.  Let me advise you one.~%"
+                 (length *implementations*))
         (choose-an-implementation)
         (unless (yes-or-no-p "~%Do you want to make another selection?")
           (format *query-io* "~%Good bye!~2%")
