@@ -531,16 +531,56 @@ implementation~P ~:[is~;are~]: ~%"
   #-(or ccl clisp cmu ecl sbcl) (throw 'quit))
 
 
+
+(defun locale-terminal-encoding ()
+  "Returns the terminal encoding specified by the locale(7)."
+  #+(and ccl windows-target)
+  :iso-8859-1
+  ;; ccl doesn't support :windows-1252.
+  ;; (intern (format nil "WINDOWS-~A" (#_GetACP)) "KEYWORD")
+  #-(and ccl windows-target)
+  (dolist (var '("LC_ALL" "LC_CTYPE" "LANG")
+               :iso-8859-1) ; some random default?
+    (let* ((val (getenv var))
+           (dot (position #\. val))
+           (at  (position #\@ val :start (or dot (length val)))))
+      (when (and dot (< dot (1- (length val))))
+        (return (intern (let ((name (string-upcase (subseq val (1+ dot)
+                                                           (or at (length val))))))
+                          (if (and (prefixp "ISO" name) (not (prefixp "ISO-" name)))
+                              (concatenate 'string "ISO-" (subseq name 3))
+                              name))
+                        "KEYWORD"))))))
+
+
+(defun set-terminal-encoding (encoding)
+  #-(and ccl (not swank)) (declare (ignore encoding))
+  #+(and ccl (not swank))
+  (mapc (lambda (stream)
+          (setf (ccl::stream-external-format stream)
+                (ccl:make-external-format :domain nil
+                                          :character-encoding encoding
+					  ;; telnet uses MS-DOS newlines.
+                                          :line-termination :windows
+                                          ;; #+unix :unix
+                                          ;; #+windows :windows
+                                          ;; #-(or unix windows) :unix
+					  )))
+        (list (two-way-stream-input-stream  *terminal-io*)
+              (two-way-stream-output-stream *terminal-io*)))
+  (values))
+
 (defun main ()
   (handler-case
       (loop
-        (format *query-io* "~2%Welcome to the Common Lisp implementation selector!~2%")
-        (finish-output  *query-io*)
-        (choose-an-implementation)
-        (unless (yes-or-no-p "~%Do you want to make another selection?")
-          (format *query-io* "~%Good bye!~2%")
-          (finish-output  *query-io*)
-          (quit)))
+	 (set-terminal-encoding :iso-8859-1)
+	 (format *query-io* "~2%Welcome to the Common Lisp implementation selector!~2%")
+	 (finish-output  *query-io*)
+	 (choose-an-implementation)
+	 (unless (yes-or-no-p "~%Do you want to make another selection?")
+	   (format *query-io* "~%Good bye!~2%")
+	   (finish-output  *query-io*)
+	   (quit)))
     (error (err)
       (format *query-io* "~%It seems an error occured: ~A~%I'm disconnecting.~%" err)
       (finish-output  *query-io*)
