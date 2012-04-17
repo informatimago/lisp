@@ -570,17 +570,25 @@ implementation~P ~:[is~;are~]: ~%"
               (two-way-stream-output-stream *terminal-io*)))
   (values))
 
+(defun license ()
+  (format *query-io*
+          "Note: this software is distributed under the GNU Affero General Public License.
+You may find its sources at http://tinyurl.com/what-implementation
+"))
+
 (defun main ()
   (handler-case
       (loop
-	 (set-terminal-encoding :iso-8859-1)
-	 (format *query-io* "~2%Welcome to the Common Lisp implementation selector!~2%")
-	 (finish-output  *query-io*)
-	 (choose-an-implementation)
-	 (unless (yes-or-no-p "~%Do you want to make another selection?")
-	   (format *query-io* "~%Good bye!~2%")
-	   (finish-output  *query-io*)
-	   (quit)))
+        (set-terminal-encoding :iso-8859-1)
+        (format *query-io* "~2%Welcome to the Common Lisp implementation selector!~2%")
+        (license)
+        (terpri  *query-io*)
+        (finish-output *query-io*)
+        (choose-an-implementation)
+        (unless (yes-or-no-p "~%Do you want to make another selection?")
+          (format *query-io* "~%Good bye!~2%")
+          (finish-output  *query-io*)
+          (quit)))
     (error (err)
       (format *query-io* "~%It seems an error occured: ~A~%I'm disconnecting.~%" err)
       (finish-output  *query-io*)
