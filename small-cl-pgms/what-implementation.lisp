@@ -458,7 +458,7 @@ FIELD one of the ACCEPTED-VALUES."
 
 (defun process-answer-line (line choices)
   (labels ((clean (line)
-             (string-trim #\space
+             (string-trim " "
                           (substitute-if #\space
                                          (lambda (ch) (find ch "	,.;()[]!:-=<>"))
                                          line)))
