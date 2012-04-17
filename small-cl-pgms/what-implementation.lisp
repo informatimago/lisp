@@ -286,9 +286,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      :features ("native threads"
                 "embeddable"
                 "compact code"
-                "small C++ kernel for bootstrapping")
+                "small C++ kernel for bootstrapping"
+                "experimental"
+                "slow startup"
+                "minimalist")
      :mostly-written-in ("C++"))
-
+    ;; xcl is experimental. Lacking a lot of features. Rather slow, at least at startup.
     
     (:name "WCL"
      :license "Proprietary"
@@ -404,7 +407,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
     ))
 
-
+(defun report-implementation (impl &optional (stream *query-io*))
+  (let ((*print-pretty* t)
+        (*print-right-margin* 80))
+    (format stream "~%Common Lisp Implementation:  ~A~%" (getf impl :name))
+    (format stream "  Home page:     ~A~%" (getf impl :homepage))
+    (format stream "  Documentation: ~A~%" (getf impl :documentation))
+    (format stream "  License:  ~A~%" (getf impl :license))
+    (format stream "  Runs on:  ~{~<~%~12<~>~2:;~A~>~^, ~}.~%" (getf impl :platforms))
+    (format stream "  Compiler: ~{~<~%~12<~>~2:;~A~>~^, ~}.~%" (getf impl :compiler))
+    (format stream "  Threads:  ~{~A~^, ~}.~%" (getf impl :threads))
+    (format stream "  Features: ~{~<~%~12<~>~2:;~A~>~^, ~}.~%" (getf impl :features))
+    impl))
 
 (defun ensure-list (object)
   (if (listp object) object (list object)))
@@ -442,16 +456,29 @@ FIELD one of the ACCEPTED-VALUES."
    (function string<)))
 
 
-(defun process-answer-line (line)
-  (let ((line (substitute-if #\space (lambda (ch) (find ch "	,.;()[]!:")) line)))
-    (when (every (lambda (ch) (or (char= #\space ch) (digit-char-p ch))) line)
-      (let ((answer (with-input-from-string (inp line)
-                       (loop
-                         :for index = (read inp nil nil)
-                         :while index :collect index))))
-        (if (= 1 (length answer))
-            (first answer)
-            answer)))))
+(defun process-answer-line (line choices)
+  (labels ((clean (line)
+             (string-trim #\space
+                          (substitute-if #\space
+                                         (lambda (ch) (find ch "	,.;()[]!:-=<>"))
+                                         line)))
+           (try-choice (clean-line)
+             (let ((pos (position-if (lambda (item)
+                                       (string-equal clean-line (clean item)))
+                                     choices)))
+               (when pos
+                 (1+ pos)))))
+    (let ((clean-line (clean line)))
+      (if (every (lambda (ch) (or (char= #\space ch) (digit-char-p ch))) clean-line)
+          (let ((answer (with-input-from-string (inp clean-line)
+                          (loop
+                            :for index = (read inp nil nil)
+                            :while index :collect index))))
+            (case (length answer)
+              ((0)        (try-choice clean-line))
+              ((1)        (first answer))
+              (otherwise  answer)))
+          (try-choice clean-line)))))
 
 
 (defun select (field &optional (implementations *implementations*))
@@ -473,7 +500,7 @@ RETURN: A sublist of IMPLEMENTATIONS.
                      (format *query-io* "Enter a menu index or a list of menu indices: ")
                      (finish-output *query-io*)
                      (return
-                       (let ((answer (process-answer-line (read-line *query-io*))))
+                       (let ((answer (process-answer-line (read-line *query-io*) choices)))
                         (if (eql 0 answer)
                             choices
                             (delete nil
@@ -504,7 +531,8 @@ implementation~P ~:[is~;are~]: ~%"
                (< 1 (length selection))
                (< 1 (length selection)))
        (dolist (sel selection)
-         (format *query-io* "~A~%" (getf sel :name))))))
+         ;; (format *query-io* "~A~%" (getf sel :name))
+         (report-implementation sel)))))
 
 
 (defun choose-an-implementation (&optional (implementations *implementations*))
@@ -529,6 +557,36 @@ implementation~P ~:[is~;are~]: ~%"
   #+ecl                  (ext:quit status)
   #+sbcl                 (sb-ext:quit status)
   #-(or ccl clisp cmu ecl sbcl) (throw 'quit))
+
+
+(defun getenv (var)
+  #+ccl           (ccl::getenv var)
+  #+clisp         (ext:getenv var)
+  #+CMU           (cdr (assoc var ext:*environment-list* :test #'string=))
+  #+ecl           (ext:getenv var)
+  #+SBCL          (sb-ext:posix-getenv var)
+  #+Allegro       (sys:getenv var)
+  #+Lispworks     (lispworks:environment-variable var)
+  #-(or ccl
+        clisp
+        cmu
+        ecl
+        sbcl
+        allegro
+        lispworks) (iolib.syscalls:getenv var))
+
+
+(defun prefixp (prefix string &key (start 0) (end nil) (test (function char=)))
+  "
+PREFIX:  A sequence.
+STRING:  A sequence.
+START:   The start of the substring of STRING to consider. Default: 0.
+END:     The end   of the substring of STRING to consider. Default: NIL.
+TEST:    A function to compare the elements of the strings.
+RETURN:  Whether PREFIX is a prefix of the (substring STRING START END).
+"
+  (let ((mis (mismatch prefix string :start2 start :end2 end :test test)))
+    (or (null mis) (<= (length prefix) mis))))
 
 
 
@@ -560,21 +618,25 @@ implementation~P ~:[is~;are~]: ~%"
           (setf (ccl::stream-external-format stream)
                 (ccl:make-external-format :domain nil
                                           :character-encoding encoding
-					  ;; telnet uses MS-DOS newlines.
-                                          :line-termination :windows
+                                          :line-termination
+                                          ;; telnet uses MS-DOS newlines.
+                                          #-testing :windows
+                                          #+testing :unix
                                           ;; #+unix :unix
                                           ;; #+windows :windows
                                           ;; #-(or unix windows) :unix
-					  )))
+                                          )))
         (list (two-way-stream-input-stream  *terminal-io*)
               (two-way-stream-output-stream *terminal-io*)))
   (values))
+
 
 (defun license ()
   (format *query-io*
           "Note: this software is distributed under the GNU Affero General Public License.
 You may find its sources at http://tinyurl.com/what-implementation
 "))
+
 
 (defun main ()
   (handler-case
@@ -662,7 +724,7 @@ You may find its sources at http://tinyurl.com/what-implementation
   (quit))
 
 
-
+#-testing
 (eval-when (:load-toplevel :execute)
   (save-program-and-quit :name "what-implementation"
                          :toplevel (function main)
