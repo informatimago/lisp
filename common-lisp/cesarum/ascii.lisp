@@ -19,6 +19,7 @@
 ;;;;    2012-04-20 <PJB> Added conditions;
 ;;;;                     Added :start and :stop to ASCII-STRING and ASCII-BYTES.
 ;;;;                     Added ASCII-CONTROL-CODE-P and ASCII-PRINTABLE-CODE-P.
+;;;;                     Completed the TEST function.
 ;;;;    2007-07-05 <PJB> Moved to public/lisp/common-lisp
 ;;;;    2006-10-01 <PJB> Created.
 ;;;;BUGS
@@ -177,9 +178,9 @@ accept any of CR-LF, CR or LF; LF-CR would read as two newlines).")
          :code code
          :coding-system :us-ascii
          :message (cond
-                    ((or (< code 32) (= code 127))
+                    ((or (< code sp) (= code del))
                      "ASCII control codes cannot be converted to characters.")
-                    ((< 127 code)
+                    ((< del code)
                      "Codes greater than 127 are not ASCII codes.")
                     (t
                      "[SHOULD NOT OCCUR]"))))
@@ -193,7 +194,7 @@ RETURN:  The character corresponding to the given ASCII code.
          and both CR and LF are mapped to #\newline.
 "
   (cond
-    ((<= sp code 126)             (aref *ascii-characters* (- code sp)))
+    ((<= sp code  (1- del))       (aref *ascii-characters* (- code sp)))
     ((or (= code cr) (= code lf)) #\newline)
     (t                            (ascii-error code))))
 
@@ -201,13 +202,13 @@ RETURN:  The character corresponding to the given ASCII code.
 (declaim (inline ascii-printable-code-p))
 (defun ascii-printable-code-p (code)
   "RETURN:  Whether CODE is the code of an ASCII printable character."
-  (<= 32 code 126))
+  (<= sp code (1- del)))
 
 
 (declaim (inline ascii-control-code-p))
 (defun ascii-control-code-p (code)
   "RETURN:  Whether CODE is an ASCII control code."
-  (or (<= 0 code 31) (= 127 code)))
+  (or (<= nul code (1- sp)) (= del code)))
 
 
 
@@ -428,8 +429,8 @@ like string<, but for byte vectors.
 
 (defun test ()
   "
-do:     test the ascii package; signal an error if something is wrong.
-return: :success
+DO:     test the ascii package; signal an error if something is wrong.
+RETURN: :success
 "
   (loop
      :for ch :across *ascii-characters*
@@ -440,8 +441,12 @@ return: :success
      :for code :from (ascii-code #\0) :to (ascii-code #\9)
      :for n :from 0
      :do (assert (eql n (code-ascii-digit-p code))))
-  (string= (ascii-string #(65 66 67 68)) "abcd")
-  (bytes=  #(65 66 67 68)  (ascii-bytes "abcd"))
+  (assert (typep (nth-value 1 (ignore-errors (ascii-string #(65 66 8 67 69)))) 'decoding-error))
+  (assert (typep (nth-value 1 (ignore-errors (ascii-bytes "En été, il fait chaud."))) 'encoding-error))
+  (assert (string= "ABCD" (ascii-string #(65 66 67 68))))
+  (assert (string= "ABCD" (ascii-string #(0 0 65 66 67 68 0 0 0 0) :start 2 :end 6)))
+  (assert (bytes=  #(65 66 67 68)  (ascii-bytes "ABCD")))
+  (assert (bytes=  #(65 66 67 68)  (ascii-bytes "00ABCD0000" :start 2 :end 6)))
   (let ((*readtable* (copy-readtable nil)))
     (set-dispatch-macro-character #\# #\Y (function ascii-dispatch-macro)
                                   *readtable*)
@@ -451,6 +456,9 @@ return: :success
     (assert (bytes= #(65 66 67 68) (read-from-string "#Y\"ABCD\""))))
   ;; TODO: Added more testing of bytes comparisons.
   :success)
+
+
+(test)
 
 
 ;;;; THE END ;;;;
