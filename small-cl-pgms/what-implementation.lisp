@@ -180,6 +180,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 "callbacks")
      :mostly-written-in ("Common Lisp"))
 
+    
+    (:name "CLforJava"
+     :license "Apache 2.0"
+     :homepage "http://www.clforjava.org/"
+     :documentation  "http://www.clforjava.org/?page=documents"
+     :platforms ("JVM")
+     :compiler ("JVM virtual machine")
+     :threads ()
+     :features ("FFI to Java"
+                "platform independence")
+     :mostly-written-in ("Java"))
+
     (:name "ABCL"
      :license "GPL"
      :homepage "http://common-lisp.net/project/armedbear/"
