@@ -16,13 +16,16 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2012-04-20 <PJB> Added conditions;
+;;;;                     Added :start and :stop to ASCII-STRING and ASCII-BYTES.
+;;;;                     Added ASCII-CONTROL-CODE-P and ASCII-PRINTABLE-CODE-P.
 ;;;;    2007-07-05 <PJB> Moved to public/lisp/common-lisp
 ;;;;    2006-10-01 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal Bourguignon 2006 - 2007
+;;;;    Copyright Pascal Bourguignon 2006 - 2012
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -46,14 +49,19 @@
    "FF" "CR" "SO" "SI" "DLE" "DC1" "DC2" "DC3" "DC4" "NAK" "SYN" "ETB"
    "CAN" "EM" "SUB" "ESC" "FS" "GS" "RS" "US" "DEL" "SP"
    "*NEWLINE*" "*ASCII-CHARACTERS*"  "*HEXADECIMAL-DIGITS*"
+   "ENCODING-ERROR" "ENCODING-ERROR-CHARACTER"
+   "ENCODING-ERROR-CODING-SYSTEM" "ENCODING-ERROR-MESSAGE"
+   "DECODING-ERROR" "DECODING-ERROR-CODE"
+   "DECODING-ERROR-CODING-SYSTEM" "DECODING-ERROR-MESSAGE"
    "ASCII-CODE"   "CODE-ASCII"   "CODE-ASCII-DIGIT-P"
+   "ASCII-CONTROL-CODE-P"    "ASCII-PRINTABLE-CODE-P"
    "ASCII-STRING" "ASCII-BYTES"  "ASCII-DISPATCH-MACRO"
    "READ-ASCII-LINE" "ASCII-FORMAT"
    "BYTES=" "BYTES/=" "BYTES<" "BYTES<=" "BYTES>=" "BYTES>")
   (:documentation "
     Some ASCII code utilities.
 
-    Copyright Pascal Bourguignon 2006 - 2007
+    Copyright Pascal Bourguignon 2006 - 2012
     
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -104,6 +112,28 @@
   (defconstant sp        #x20 "     Code of ASCII Character SPACE") 
 
 
+  (define-condition encoding-error (error)
+    ((character     :initarg :character     :reader encoding-error-character)
+     (coding-system :initarg :coding-system :reader encoding-error-coding-system)
+     (message       :initarg :message       :reader encoding-error-message))
+    (:report (lambda (condition stream)
+               (format stream "The character ~C (native code ~D) cannot be encoded in ~A: ~A"
+                       (encoding-error-character condition)
+                       (char-code (encoding-error-character condition))
+                       (encoding-error-coding-system condition)
+                       (encoding-error-message condition)))))
+
+  
+  (define-condition decoding-error (error)
+    ((code          :initarg :code           :reader decoding-error-code)
+     (coding-system :initarg :coding-system  :reader decoding-error-coding-system)
+     (message       :initarg :message        :reader decoding-error-message))
+    (:report (lambda (condition stream)
+               (format stream "The code ~D (hexa ~:*~2,'0X) cannot be decoded in ~A: ~A"
+                       (decoding-error-code condition)
+                       (decoding-error-coding-system condition)
+                       (decoding-error-message condition)))))
+  
 
   (defparameter *ascii-characters*  #.(concatenate 'string
                                         " !\"#$%&'()*+,-./0123456789:;<=>?"
@@ -122,7 +152,10 @@ RETURN:  The ASCII code of the character ch, or raise an error if the character
     (let ((code (position ch *ascii-characters*)))
       (if code
           (+ sp code)
-          (error "Character ~C cannot be encoded in ASCII" ch)))))
+          (error 'encoding-error
+                 :character ch
+                 :coding-system :us-ascii
+                 :message "This character cannot be encoded in ASCII")))))
 
 
 (defparameter *newline* :crlf
@@ -140,8 +173,16 @@ accept any of CR-LF, CR or LF; LF-CR would read as two newlines).")
 
 (declaim (inline ascii-error))
 (defun ascii-error (code)
-   (error "ASCII control codes cannot be converted to characters; ~
-           got ~D (#x~:*~2,'0X)" code))
+  (error 'decoding-error
+         :code code
+         :coding-system :us-ascii
+         :message (cond
+                    ((or (< code 32) (= code 127))
+                     "ASCII control codes cannot be converted to characters.")
+                    ((< 127 code)
+                     "Codes greater than 127 are not ASCII codes.")
+                    (t
+                     "[SHOULD NOT OCCUR]"))))
 
 
 (declaim (inline code-ascii))
@@ -157,6 +198,19 @@ RETURN:  The character corresponding to the given ASCII code.
     (t                            (ascii-error code))))
 
 
+(declaim (inline ascii-printable-code-p))
+(defun ascii-printable-code-p (code)
+  "RETURN:  Whether CODE is the code of an ASCII printable character."
+  (<= 32 code 126))
+
+
+(declaim (inline ascii-control-code-p))
+(defun ascii-control-code-p (code)
+  "RETURN:  Whether CODE is an ASCII control code."
+  (or (<= 0 code 31) (= 127 code)))
+
+
+
 (declaim (inline code-ascii-digit-p))
 (defun code-ascii-digit-p (code)
   "
@@ -168,21 +222,23 @@ RETURN:  The decimal digit value of the character encoded by the ASCII CODE,
 
 
 
-(defun ascii-string (bytes &key (newline *newline*))
+(defun ascii-string (bytes &key (newline *newline*) (start 0) (end (length bytes)))
   "
 DO:       Converts the ASCII bytes to a string. If there are control codes,
           an error is signaled.
 RETURN:   A string containing the characters encoded in the ASCII bytes.
 NEWLINE:  (member :crlf :cr :lf :any) ; the default is *NEWLINE*.
           If lone CR or LF are present, then an error is signaled.
+START:    index of the first byte to be converted.
+END:      index beyond the last byte to be converted.
 "
   (setf newline (input-newline newline))
   (loop
-     :with len = (length bytes)
+     :with len = (- end start)
      :with result = (make-array len :element-type 'character
                                 :adjustable t :fill-pointer 0)
-     :with i = 0
-     :while (< i len)
+     :with i = start
+     :while (< i end)
      :do (let ((code (aref bytes i)))
            (if (<= sp code 126)
                (vector-push (aref *ascii-characters* (- code sp)) result)
@@ -207,7 +263,7 @@ NEWLINE:  (member :crlf :cr :lf :any) ; the default is *NEWLINE*.
      :finally (return result)))
 
 
-(defun ascii-bytes (string &key (newline *newline*))
+(defun ascii-bytes (string &key (newline *newline*) (start 0) (end (length string)))
   "
 RETURN:   A byte vector containing the ASCII codes of the characters in
           the string.
@@ -216,22 +272,25 @@ RETURN:   A byte vector containing the ASCII codes of the characters in
           NEWLINE parameter.
 NEWLINE:  (member :crlf :cr :lf) ; the default is *NEWLINE*.
 "
-  (setf newline (output-newline newline))
   (loop
-     :with bytes = (make-array
-                    (+ (length string)
-                       (if (eq newline :crlf) (count #\newline string) 0))
-                    :element-type '(unsigned-byte 8))
-     :with b = -1
-     :for ch :across string
-     :do (if (char= ch #\newline)
-             (ecase newline
-               ((:crlf) (setf (aref bytes (incf b)) cr
-                              (aref bytes (incf b)) lf))
-               ((:cr)   (setf (aref bytes (incf b)) cr))
-               ((:lf)   (setf (aref bytes (incf b)) lf)))
-             (setf (aref bytes (incf b)) (ascii-code ch)))
-     :finally (return bytes)))
+    :with newline = (output-newline newline)
+    :with bytes = (make-array
+                   (+ (- end start)
+                      (if (eq newline :crlf)
+                          (count #\newline string :start start :end end)
+                          0))
+                   :element-type '(unsigned-byte 8))
+    :with b = -1
+    :for i :from start :below end
+    :for ch = (aref string i)
+    :do (if (char= ch #\newline)
+            (ecase newline
+              ((:crlf) (setf (aref bytes (incf b)) cr
+                             (aref bytes (incf b)) lf))
+              ((:cr)   (setf (aref bytes (incf b)) cr))
+              ((:lf)   (setf (aref bytes (incf b)) lf)))
+            (setf (aref bytes (incf b)) (ascii-code ch)))
+    :finally (return bytes)))
 
 
 (defun ascii-dispatch-macro (stream sub-char argument)
