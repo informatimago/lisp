@@ -14,4 +14,13 @@ cleanall:clean
 	-rm -rf index.html
 
 #(with-open-file (*STANDARD-OUTPUT* "index.html" :direction :output :if-exists :supersede :if-does-not-exist :create)
-#### Makefile                         --                     --          ####
+
+
+wi what-implementation:what-implementation.lisp
+	echo '(load (compile-file "what-implementation.lisp"))' | ccl -n 
+
+install:what-implementation
+	mv what-implementation /usr/local/bin/
+
+#### THE END ####
+
