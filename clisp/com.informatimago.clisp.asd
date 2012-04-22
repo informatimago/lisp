@@ -14,32 +14,50 @@
 ;;;;    2010-10-31 <PJB> Created this .asd file.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2010 - 2010
+;;;;    Copyright Pascal J. Bourguignon 2010 - 2012
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.clisp
-    :description "This library contains clisp-dependant packages, mostly POSIX API."
 
-    :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
-    :version "1.2.0"
-    :licence "GPL"
+    ;; system attributes:
+
+    :description "Clisp specific packages."
+
+    :long-description "
+
+Various packages using clisp specific features (some of them could or
+should be made into implementation independant packages).
+
+"
+
+    :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
+
+    :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
+    
+    
+    :licence "AGPL3"
+    
+    ;; component attributes:
+
+    :name "Informatimago Common Lisp Clisp Specific Packages"
+
+    :version "1.2.1"
+
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Autumn 2010")
                  ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.clmisc/")
@@ -52,7 +70,7 @@
 
     :components ((:file "syslog")
                  (:file "disk")
-                 (:file "objc")
+                 ;; (:file "objc")
                  (:file "string")
                  (:file "fifo-stream")
                  (:file "iotask")

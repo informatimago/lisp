@@ -25,10 +25,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2003 - 2007
-;;;;    Copyright Pascal J. Bourguignon 2003 - 2003
-;;;;    Copyright Pascal J. Bourguignon 2003 - 2003
-;;;;    Copyright Pascal J. Bourguignon 2003 - 2003
+;;;;    Copyright Pascal J. Bourguignon 2003 - 2012
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -653,7 +650,7 @@ DO:       Defines an HTML attribute.
 ;;;;LEGAL
 ;;;;    GPL
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2003 - 2003
+;;;;    Copyright Pascal J. Bourguignon 2003 - 2012
 ;;;;    
 ;;;;    This program is free software; you can redistribute it and/or
 ;;;;    modify it under the terms of the GNU General Public License

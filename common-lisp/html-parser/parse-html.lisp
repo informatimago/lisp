@@ -19,9 +19,6 @@
 ;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2012
-;;;;    Copyright Pascal J. Bourguignon 2003 - 2003
-;;;;    Copyright Pascal J. Bourguignon 2003 - 2003
-;;;;    Copyright Pascal J. Bourguignon 2003 - 2003
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -157,7 +154,7 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
 ;;;;LEGAL
 ;;;;    GPL
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2003 - 2003
+;;;;    Copyright Pascal J. Bourguignon 2003 - 2012
 ;;;;    
 ;;;;    This program is free software; you can redistribute it and/or
 ;;;;    modify it under the terms of the GNU General Public License

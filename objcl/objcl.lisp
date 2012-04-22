@@ -16,7 +16,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2010 - 2010
+;;;;    Copyright Pascal J. Bourguignon 2010 - 2012
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -634,9 +634,22 @@ argument lisp string."
 
 (defvar *objc-constant-strings* (make-hash-table :test #'equal))
 
-(defstruct objc-constant-string
-  string
-  nsstringptr)
+(eval-when (:execute :compile-toplevel :load-toplevel)
+
+  (defstruct objc-constant-string
+    string 
+    nsstringptr)
+
+  #-(and)
+  (defclass objc-constant-string ()
+   ((string      :initarg :string
+                 :accessor objc-constant-string-string
+                 :initform nil)
+    (nsstringptr :initarg :nsstringptr
+                 :accessor objc-constant-string-nsstringptr
+                 :initform nil)))
+
+  );;eval-when
 
 (defun ns-constant-string (string)
   (or (gethash string *objc-constant-strings*)

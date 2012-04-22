@@ -4,7 +4,7 @@
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
-;;;;DESCRIPTION
+;;;;nDESCRIPTION
 ;;;;    
 ;;;;    Minitel-1b Error Correction Procedure.
 ;;;;    Reference: page 55 and on in http://543210.free.fr/TV/stum1b.pdf
