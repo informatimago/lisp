@@ -200,13 +200,13 @@ See the source file for details."))
 
   (when (let ((ch (char-supported-p "Linefeed")))
           (and ch (char/= ch #\Newline)))
-    (push 'linefeed))
+    (push 'linefeed *features*))
 
   (when  (char-supported-p "Page")
-    (push 'page))
+    (push 'page *features*))
 
   (when  (char-supported-p "Tab")
-    (push 'tab))
+    (push 'tab *features*))
   
   );;eval-when
 
