@@ -192,6 +192,25 @@ See the source file for details."))
 
 
 
+
+;; Some tools can't deal with #+#. well, so we need to go thru
+;; *feature* instead.
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+
+  (when (let ((ch (char-supported-p "Linefeed")))
+          (and ch (char/= ch #\Newline)))
+    (push 'linefeed))
+
+  (when  (char-supported-p "Page")
+    (push 'page))
+
+  (when  (char-supported-p "Tab")
+    (push 'tab))
+  
+  );;eval-when
+
+
 (defmethod skip-spaces ((scanner scanner))
   "
 DO: Skips over the spaces in the input stream. Updates line and column slots.
@@ -206,18 +225,15 @@ RETURN: line; column
     :while ch
     :do (case ch
           ((#\Newline
-            #+#.(cl:if (cl:let ((com.informatimago.common-lisp.parser.scanner::ch
-                                 (com.informatimago.common-lisp.parser.scanner::char-supported-p "Linefeed")))
-                         (cl:and com.informatimago.common-lisp.parser.scanner::ch
-                              (cl:char/= com.informatimago.common-lisp.parser.scanner::ch #\newline))) '(:and) '(:or)) #\linefeed
-            #+#.(cl:if (com.informatimago.common-lisp.parser.scanner::char-supported-p "Page")     '(:and) '(:or)) #\page)
+            #+com.informatimago.common-lisp.parser.scanner::linefeed #\Linefeed
+            #+com.informatimago.common-lisp.parser.scanner::page     #\Page)
            (incf line)
            (getchar input))
           ((#\space)
            (incf column)
            (getchar input))
-          ((nil
-            #+#.(cl:if (com.informatimago.common-lisp.parser.scanner::char-supported-p "Tab") '(:and) '(:of)) #\tab)
+          ((:dummy
+            #+com.informatimago.common-lisp.parser.scanner::page     #\Tab)
            (setf column (* tab-width (ceiling column tab-width)))
            (getchar input))
           (otherwise (loop-finish)))
