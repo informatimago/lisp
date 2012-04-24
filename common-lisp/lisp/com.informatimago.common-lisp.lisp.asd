@@ -57,7 +57,7 @@ specialization.
     
     :name "Informatimago Common Lisp Lisp Language Stuff"
 
-    :version "1.2.1"
+    :version "1.2.2"
     
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Autumn 2010")
@@ -67,7 +67,7 @@ specialization.
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
     
-    :depends-on ()
+    :depends-on ("closer-mop")
     
     :components ((:file "generic-cl" :depends-on ())))
 
