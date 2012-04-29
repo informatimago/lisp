@@ -1,7 +1,61 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
+;;;;**************************************************************************
+;;;;FILE:               lispdoc.lisp
+;;;;LANGUAGE:           Common-Lisp
+;;;;SYSTEM:             Common-Lisp
+;;;;USER-INTERFACE:     NONE
+;;;;DESCRIPTION
+;;;;    
+;;;;    Generate HTML documentation of a set of CL packages.
 ;;;;
-;;;; $Id: lispdoc.lisp,v 1.8 2004/01/13 14:03:41 sven Exp $
+;;;     Originally:
+;;;;    Id: lispdoc.lisp,v 1.8 2004/01/13 14:03:41 sven Exp 
+;;;;AUTHORS
+;;;;    Sven Van Caekenberghe.
+;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
+;;;;MODIFICATIONS
+;;;;    2012-04-29 <PJB> 
+;;;;BUGS/TODO
 ;;;;
+;;;;    - improve class documentation (slots, accessors).
+;;;;
+;;;;    - improve navigation menu (symbol lists, tree).
+;;;;
+;;;;    - make it run on clisp, sbcl, etc.
+;;;;
+;;;;    - deal with re-exported symbol, whose home is not one of the
+;;;;      documented packages.
+;;;;
+;;;;    - make it merge documentations (tree, navigation), since some
+;;;;      packages can only be loaded in a specific implementation.
+;;;;
+;;;;
+;;;;LEGAL
+;;;;    LLGPL
+;;;;    
+;;;;    Copyright Pascal J. Bourguignon 2012 - 2012
+;;;;    Copyright (C) 2003 Sven Van Caekenberghe.
+;;;;    
+;;;;    This library is licenced under the Lisp Lesser General Public
+;;;;    License.
+;;;;    
+;;;;    This library is free software; you can redistribute it and/or
+;;;;    modify it under the terms of the GNU Lesser General Public
+;;;;    License as published by the Free Software Foundation; either
+;;;;    version 2 of the License, or (at your option) any later
+;;;;    version.
+;;;;    
+;;;;    This library is distributed in the hope that it will be
+;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
+;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+;;;;    PURPOSE.  See the GNU Lesser General Public License for more
+;;;;    details.
+;;;;    
+;;;;    You should have received a copy of the GNU Lesser General
+;;;;    Public License along with this library; if not, write to the
+;;;;    Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+;;;;    Boston, MA 02111-1307 USA
+;;;;**************************************************************************
 
 
 (defpackage :com.informatimago.lispdoc
