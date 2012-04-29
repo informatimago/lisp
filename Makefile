@@ -134,7 +134,10 @@ etags tags TAGS::
 
 help::
 	@printf $(HELP_FMT)  'documentation' 'Generates the README.pdf file.'
-documentation: README.pdf
+documentation: README.pdf README.html
+
+README.html:README
+	rst2html.py README > README.html
 
 README.pdf:README
 	rst2pdf README
