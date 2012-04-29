@@ -537,16 +537,16 @@ ENTRIES: A list of (list url text).
 "
   (div (:class "menu")
       (p - (loop
-             :for (url text) :in entries
-             :do (pcdata "   ") (a (:href url) (pcdata "~A" text))
+             :for (filename text) :in entries
+             :do (pcdata "   ") (a (:href (make-url filename)) (pcdata "~A" text))
              ;; (pcdata "   ")
-             ;; (form (:action url :method "GET")
+             ;; (form (:action (make-url filename) :method "GET")
              ;;       (input (:type "submit" :value text)))
              ))))
 
 (defun header (filename)
   (div (:class "header")
-      (navigation-menu (remove (make-url filename) *navigation*
+      (navigation-menu (remove  filename *navigation*
                                :test (function string=)
                                :key (function first))))
   (hr) (br))
@@ -555,9 +555,9 @@ ENTRIES: A list of (list url text).
 (defun footer (filename)
   (br) (hr)
   (div (:class "footer")
-   (navigation-menu (remove (make-url filename) *navigation*
-                            :test (function string=)
-                            :key (function first)))
+      (navigation-menu (remove filename *navigation*
+                               :test (function string=)
+                               :key (function first)))
     (p - (pcdata "Copyright Pascal J. Bourguignon 2012 - 2012"))))
 
 
@@ -584,11 +584,11 @@ ENTRIES: A list of (list url text).
              (return
                (append *navigation*
                        (when prev
-                         (list (list (make-url prev) (format nil "Previous: ~A" (shorten prev)))))
+                         (list (list prev   (format nil "Previous: ~A" (shorten prev)))))
                        (when next
-                         (list (list (make-url next) (format nil "Next: ~A" (shorten next)))))
+                         (list (list next   (format nil "Next: ~A" (shorten next)))))
                        (when parent
-                         (list (list (make-url parent) (format nil "Up: ~A" (shorten parent)))))))))
+                         (list (list parent (format nil "Up: ~A" (shorten parent)))))))))
       :finally (return *navigation*))))
 
 
@@ -980,8 +980,10 @@ RETURN: A list of (initial filename)
                                (header filename)
                                (h1 () (pcdata "~A" title))
                                (ul -
-                                   (loop :for (url text) :in *navigation*
-                                     :do (li -  (a (:href url) (pcdata "~A" text)))))
+                                   (loop
+                                     :for (fn text) :in *navigation*
+                                     :unless (equalp fn filename)
+                                     :do (li -  (a (:href (make-url fn)) (pcdata "~A" text)))))
                                (footer filename)))))))
     ;; ---
     (dolist (doc packdocs)
