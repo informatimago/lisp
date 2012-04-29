@@ -438,7 +438,8 @@ RETURN:  packdoc structure for the package.
   (with-open-file (css (report-file "style.css")
                        :direction :output
                        :if-does-not-exist :create
-                       :if-exists :supersede)
+                       :if-exists :supersede
+                       :external-format :utf-8)
     (format css "
 body {
   margin: 10px;
@@ -528,6 +529,18 @@ div.kind {
                      (i - (pcdata "~(~A~)" kind)))))))
 
 
+(defun pjb-head (title)
+  (head ()
+        (title () (pcdata "~A" title))
+        (link (:rel "shortcut icon" :href "/favicon.ico"))
+        (link (:rel "icon"          :href "/favicon.ico" :type "image/vnd.microsoft.icon"))
+        (link (:rel "icon"          :href "/favicon.png" :type "image/png"))
+        (meta (:http-equiv "Content-Type"   :content "text/html; charset=utf-8"))
+        (meta (:name "author"               :content "Pascal J. Bourguignon"))
+        (meta (:name "Reply-To"             :content "pjb@informatimago.com"))
+        (meta (:name "Keywords"             :content "Informatimago, Common Lisp, Lisp, Library"))        
+        (style-sheet)))
+
 
 (defvar *navigation* '())
 
@@ -615,15 +628,14 @@ ENTRIES: A list of (list url text).
    (with-open-file (html (report-file (make-url filename))
                          :direction :output
                          :if-does-not-exist :create
-                         :if-exists :supersede)
+                         :if-exists :supersede
+                         :external-format :utf-8)
      (let ((title  (format nil "Package ~A" (doc-name doc)))
            (*navigation* (package-navigation-menu  (doc-name doc) *navigation*)))
-       (with-html-output (html)
+       (with-html-output (html :encoding :utf-8)
          (doctype :transitional
                   (html ()
-                        (head ()
-                              (title () (pcdata "~A" title))
-                              (style-sheet))
+                        (pjb-head title)
                         (body ()
                               (header filename)
                               (h1 () (pcdata "~A" title))
@@ -677,14 +689,13 @@ ENTRIES: A list of (list url text).
       (with-open-file (html (report-file (make-url filename))
                             :direction :output
                             :if-does-not-exist :create
-                            :if-exists :supersede)
-        (with-html-output (html)
+                            :if-exists :supersede
+                            :external-format :utf-8)
+        (with-html-output (html :encoding :utf-8)
           (doctype :transitional
                    (html ()
-                         (head ()
-                               (title () (pcdata "~A" title))
-                               (style-sheet))
-                         (body ()
+                        (pjb-head title)
+                        (body ()
                                (header filename)
                                (h1 () (pcdata "~A" title))
                                (ul -
@@ -704,13 +715,12 @@ ENTRIES: A list of (list url text).
     (with-open-file (html (report-file (make-url filename))
                           :direction :output
                           :if-does-not-exist :create
-                          :if-exists :supersede)
-      (with-html-output (html)
+                          :if-exists :supersede
+                          :external-format :utf-8)
+      (with-html-output (html :encoding :utf-8)
         (doctype :transitional
                  (html ()
-                       (head ()
-                             (title () (pcdata "~A" title))
-                             (style-sheet))
+                       (pjb-head title)
                        (body ()
                              (header filename)
                              (h1 () (pcdata "~A" title))
@@ -761,13 +771,12 @@ RETURN: A list of (initial filename)
         (with-open-file (html (report-file (make-url filename))
                               :direction :output
                               :if-does-not-exist :create
-                              :if-exists :supersede)
-          (with-html-output (html)
+                              :if-exists :supersede
+                              :external-format :utf-8)
+          (with-html-output (html :encoding :utf-8)
             (doctype :transitional
                      (html ()
-                           (head ()
-                                 (title () (pcdata "~A" title))
-                                 (style-sheet))
+                           (pjb-head title)
                            (body ()
                                  (header filename)
                                  (h1 () (pcdata "~A" title))
@@ -846,13 +855,12 @@ RETURN: A list of (initial filename)
             (with-open-file (html (report-file (make-url filename))
                                   :direction :output
                                   :if-does-not-exist :create
-                                  :if-exists :supersede)
-              (with-html-output (html)
+                                  :if-exists :supersede
+                                  :external-format :utf-8)
+              (with-html-output (html :encoding :utf-8)
                 (doctype :transitional
                          (html ()
-                               (head ()
-                                     (title () (pcdata "~A" title))
-                                     (style-sheet))
+                               (pjb-head title)
                                (body ()
                                      (header filename)
                                      (h1 () (pcdata "~A" title))
@@ -893,13 +901,12 @@ RETURN: A list of (initial filename)
      (with-open-file (html (report-file (make-url filename))
                            :direction :output
                            :if-does-not-exist :create
-                           :if-exists :supersede)
-       (with-html-output (html)
+                           :if-exists :supersede
+                           :external-format :utf-8)
+       (with-html-output (html :encoding :utf-8)
          (doctype :transitional
                   (html ()
-                        (head ()
-                              (title () (pcdata "~A" title))
-                              (style-sheet))
+                        (pjb-head title)
                         (body ()
                               (header filename)
                               (h1 - (pcdata "Alphabetical Symbol Index"))
@@ -969,13 +976,12 @@ RETURN: A list of (initial filename)
       (with-open-file (html (report-file (make-url filename))
                             :direction :output
                             :if-does-not-exist :create
-                            :if-exists :supersede)
-        (with-html-output (html)
+                            :if-exists :supersede
+                            :external-format :utf-8)
+        (with-html-output (html :encoding :utf-8)
           (doctype :transitional
                    (html ()
-                         (head ()
-                               (title () (pcdata "~A" title))
-                               (style-sheet))
+                         (pjb-head title)
                          (body ()
                                (header filename)
                                (h1 () (pcdata "~A" title))
