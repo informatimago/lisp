@@ -30,7 +30,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -40,12 +40,34 @@
   (:export "SIZE-OF-ENCTYPE" "ENCTYPE-INSTANCE" "ENCTYPE-WRITE" "ENCTYPE-READ"
            "MAKE-ENCTYPE" "DEF-ENCRECORD" "DEF-ENCTYPE")
   (:documentation
-   "This package exports functions to encode and decode data 
-    in a byte vector buffer.
+   "
 
-    Copyright Pascal J. Bourguignon 2002 - 2004
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
+This package exports functions to encode and decode data 
+in a byte vector buffer.
+
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2002 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.DATA-ENCODING.DATA-ENCODING")
 
 
@@ -129,7 +151,8 @@
 (defgeneric maximum-length (self))
 (defgeneric to-lisp-type (self))
 (defgeneric default-value (self))
-(defgeneric size-of-enctype (self))
+(defgeneric size-of-enctype (self)
+  (:documentation "RETURN: The size in bytes of the ENCTYPE."))
 (defgeneric get-value (self buffer offset))
 (defgeneric set-value (self buffer offset record))
 
@@ -1102,8 +1125,7 @@ RETURN:  An instance of a subclass of enctype representing the enctype.
                                 :test (function string=))))
        (assert endian (endian) "Invalid endian ~S" (fourth enctype))
        (make-instance class  :name :number :size size :endian endian)))
-    (otherwise (make-enctype-instance (defined-enctype enctype))))
-  ) ;;make-enctype-instance
+    (otherwise (make-enctype-instance (defined-enctype enctype)))))
 
 
 
@@ -1128,7 +1150,7 @@ RETURN:  An instance of a subclass of enctype representing the enctype.
                  ((string array record number) (make-enctype-instance enctype))
                  (otherwise (make-enctype-instance (defined-enctype enctype)))))
               (otherwise
-               (error "Unknown enctype ~S." enctype)))))) ;;enctype-instance
+               (error "Unknown enctype ~S." enctype))))))
 
 
 
@@ -1142,8 +1164,7 @@ RETURN:  The decoded list value.
                             :initial-element 0)))
     (if (= (length buffer) (read-sequence buffer stream))
         (get-value enctype buffer 0)
-        (error "Could not read a ~A (~D bytes)." encname (length buffer))))
-  ) ;;ENCTYPE-READ
+        (error "Could not read a ~A (~D bytes)." encname (length buffer)))))
 
 
 (defun enctype-write (encname enctype stream value)
@@ -1155,7 +1176,7 @@ DO:      Write to the STREAM a value of type ENCTYPE.
                             :element-type '(unsigned-byte 8)
                             :initial-element 0)))
     (set-value enctype buffer 0 value)
-    (write-sequence buffer stream))) ;;ENCTYPE-WRITE
+    (write-sequence buffer stream)))
 
 
 
@@ -1172,6 +1193,13 @@ DO:      Write to the STREAM a value of type ENCTYPE.
 
 
 (defun make-enctype (name args definition)
+  "
+DO:         Makes an enctype template.
+NAME:       Name of the template.
+ARGS:
+DEFINITION:
+RETURN:     NAME
+"
   (setf (gethash name *enctype-definitions*) (cons args definition))
   name)
 
@@ -1182,16 +1210,14 @@ DO:     Defines an enctype template.
 "
   ;; TODO: make it more deftype - like.
   ;; TODO: we cannot create an instance because a def-enctype is actually a template.  But not when there's no argument! So we could create the reader and writer sometimes.
-  `(make-enctype ',name ',args ',definition)) ;;def-enctype
-
-
+  `(make-enctype ',name ',args ',definition)) 
 
 
 (defun even-list-p (list)
   (cond
     ((null list) t)
     ((null (cdr list)) nil)
-    (t (even-list-p (cddr list))))) ;;even-list-p
+    (t (even-list-p (cddr list)))))
 
 
 
@@ -1234,7 +1260,7 @@ DO:     Defines an enctype template for a record type,
            (enctype-read  ',name enctype stream))
          (defun ,(conc-symbol "WRITE-" name) (value stream)
            (enctype-write ',name enctype stream value))
-         ',name)))) ;;def-encrecord
+         ',name))))
 
     
 
@@ -1425,4 +1451,4 @@ DO:     Defines an enctype template for a record type,
 ;; ----------------------------------------------------------------------
 
 
-;;;; data-encoding.lisp               --                     --          ;;;;
+;;;; THE END ;;;;

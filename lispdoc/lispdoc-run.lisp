@@ -1,22 +1,22 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               compile-with-asdf.lisp
+;;;;FILE:               lispdoc-run.lisp
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    Compile the com.informatimago.common-lisp libraries with ASDF.
+;;;;    Generates the com.informatimago documentation.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2010-11-01 <PJB> Created.
+;;;;    2012-04-28 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2010 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2012 - 2012
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -29,29 +29,23 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
+;;;;    
 
-(load (merge-pathname (make-pathname :name "INIT-ASDF" :type "LISP" :case :common)
-                      *load-pathname*))
+(in-package :cl-user)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Compiling com.informatimago.common-lisp
-;;;
-
-(setf asdf:*central-registry*
-      (append (remove-duplicates
-               (mapcar (lambda (path)
-                         (make-pathname :name nil :type nil :version nil :defaults path))
-                       (directory "**/*.asd"))
-               :test (function equalp))
-              asdf:*central-registry*))
-
-(asdf-load  :com.informatimago.common-lisp)
+(defun doc () 
+  (let ((*print-length* 10)
+        (*print-level* 4))
+    (mapc 'delete-file (directory #P"/home/pjb/public_html/sites/com.informatimago.www/develop/lisp/doc/*.html"))
+    (com.informatimago.lispdoc:lispdoc-html
+     "/home/pjb/public_html/sites/com.informatimago.www/develop/lisp/doc/"
+     (remove-if-not (lambda (p)
+                      (and (search "COM.INFORMATIMAGO" (package-name p))
+                           (not (search "COM.INFORMATIMAGO.PJB" (package-name p)))))
+                    (list-all-packages))
+     :title  "Informatimago Common Lisp Packages Documentation")))
 
 
 ;;;; THE END ;;;;
-
-
-

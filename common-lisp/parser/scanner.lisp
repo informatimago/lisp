@@ -31,7 +31,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -60,12 +60,34 @@
    ;; SCANNER methods:
    "SKIP-SPACES" "SCAN-NEXT-TOKEN")
   (:documentation
-   "An abstract scanner class.
+   "
+An abstract scanner class.
+
 A method to the SCAN-NEXT-TOKEN generic function needs to be provided.
 
-Copyright Pascal J. Bourguignon 2004 - 2012
-This package is provided under the GNU General Public License.
-See the source file for details."))
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2004 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.PARSER.SCANNER")
 
 
@@ -112,7 +134,8 @@ See the source file for details."))
    (line       :accessor token-line
                :initarg :line
                :initform 0
-               :type (integer 0))))
+               :type (integer 0)))
+  (:documentation "A syntactic element."))
 
 
 
@@ -139,6 +162,24 @@ See the source file for details."))
 ;; they can change in the scanner object between the condition
 ;; creation and its handling.
 
+(defgeneric scanner-error-line (error)
+  (:documentation "The line on which the scanner error was detected."))
+(defgeneric scanner-error-column (error)
+  (:documentation "The column on which the scanner error was detected."))
+(defgeneric scanner-error-state (error)
+  (:documentation "The scanner state when error was detected."))
+(defgeneric scanner-error-current-token (error)
+  (:documentation "The scanner token where error was detected."))
+(defgeneric scanner-error-scanner (error)
+  (:documentation "The scanner that detected the error."))
+(defgeneric scanner-error-format-control (error)
+  (:documentation "The error message format control string."))
+(defgeneric scanner-error-format-arguments (error)
+  (:documentation "The error message format control arguments."))
+(defgeneric scanner-error-invalid-character (error)
+
+  (:documentation "The invalid character that made the scanner error."))
+
 (define-condition scanner-error (simple-error)
   ((line             :initarg :line             :initform 1   :reader scanner-error-line)
    (column           :initarg :column           :initform 0   :reader scanner-error-column)
@@ -146,13 +187,29 @@ See the source file for details."))
    (current-token    :initarg :current-token    :initform nil :reader scanner-error-current-token)
    (scanner          :initarg :scanner                        :reader scanner-error-scanner)
    (format-control   :initarg :format-control   :initform ""  :reader scanner-error-format-control)
-   (format-arguments :initarg :format-arguments :initform '() :reader scanner-error-format-arguments)))
+   (format-arguments :initarg :format-arguments :initform '() :reader scanner-error-format-arguments))
+  (:documentation "A scanner error."))
 
 
 (define-condition scanner-error-invalid-character (scanner-error)
-  ((invalid-character :initarg :invalid-character :initform nil :reader scanner-error-invalid-character)))
+  ((invalid-character :initarg :invalid-character :initform nil :reader scanner-error-invalid-character))
+  (:documentation "An invalid character scanner error."))
 
 
+(defgeneric scanner-source (scanner)
+  (:documentation "The source can be a PEEK-STREAM, a STREAM, or a STRING."))
+(defgeneric scanner-line (scanner)
+  (:documentation "The number of the current line."))
+(defgeneric scanner-column (scanner)
+  (:documentation "The number of the current column."))
+(defgeneric scanner-state (scanner)
+  (:documentation "The state of the scanner."))
+(defgeneric scanner-spaces (scanner)
+  (:documentation "A string containing the characters considered space by SKIP-SPACES."))
+(defgeneric scanner-tab-width (scanner)
+  (:documentation "TAB aligns to column number modulo TAB-WIDTH."))
+(defgeneric scanner-current-token (scanner)
+  (:documentation "The last token read."))
 
 
 (defclass scanner ()
@@ -210,6 +267,12 @@ See the source file for details."))
   
   );;eval-when
 
+
+(defgeneric skip-spaces (scanner)
+  (:documentation   "
+DO: Skips over the spaces in the input stream. Updates line and column slots.
+RETURN: line; column
+"))
 
 (defmethod skip-spaces ((scanner scanner))
   "

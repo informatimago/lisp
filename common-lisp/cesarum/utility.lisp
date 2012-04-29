@@ -44,7 +44,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -56,7 +56,7 @@
    "WITH-GENSYMS" "WSIOSBP" "COMPOSE" "COMPOSE-AND-CALL"
    "DEFINE-IF-UNDEFINED"  "INCLUDE" "FUNCTIONAL-PIPE"
    "FIRST-ARG" "SECOND-ARG" "THIRD-ARG" "FOURTH-ARG" "FIFTH-ARG"
-   "SIXTH-ARG" "SEVENTH-ARG" "EIGHT-ARG" "NINTH-ARG" "TENTH-ARG"
+   "SIXTH-ARG" "SEVENTH-ARG" "EIGHTH-ARG" "NINTH-ARG" "TENTH-ARG"
    ;; 4 - TYPES AND CLASSES
    "DEFENUM" "OP-TYPE-OF"
    ;; 5 - DATA AND CONTROL FLOW
@@ -91,11 +91,33 @@
    "XOR" "EQUIV" "IMPLY" "SET-EQUAL"
    )
   (:documentation
-   "This package exports some utility & syntactic sugar functions and macros.
+   "
 
-    Copyright Pascal J. Bourguignon 2003 - 2008
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
+This package exports some utility & syntactic sugar functions and macros.
+
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2003 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
 
 
@@ -127,6 +149,10 @@ NOTE:    This version by Paul Graham in On Lisp."
 
 
 (defmacro wsiosbp (&body body)
+  "
+Like with-standard-io-syntax but with the current package.
+The *PACKAGE* is kept bound to the current package.
+"
   (let ((vpack (gensym)))
     `(let ((,vpack *package*))
        (with-standard-io-syntax
@@ -137,6 +163,7 @@ NOTE:    This version by Paul Graham in On Lisp."
 (defmacro define-argument-selector (name argument-number)
   (let ((arguments (loop :for i :from 0 :to argument-number :collect (gensym))))
     `(defun ,name (,@(cdr arguments) &rest ,(car arguments))
+       ,(format nil "RETURN: The ~:R argument." argument-number)
        (declare (ignore ,@(butlast arguments)))
        ,(car (last arguments)))))
 (define-argument-selector first-arg   1)
@@ -146,7 +173,7 @@ NOTE:    This version by Paul Graham in On Lisp."
 (define-argument-selector fifth-arg   5)
 (define-argument-selector sixth-arg   6)
 (define-argument-selector seventh-arg 7)
-(define-argument-selector eigth-arg   8)
+(define-argument-selector eighth-arg  8)
 (define-argument-selector ninth-arg   9)
 (define-argument-selector tenth-arg   10)
 
@@ -158,10 +185,19 @@ NOTE:    This version by Paul Graham in On Lisp."
 
 
 (defmacro compose (&rest functions)
+  "
+RETURN:     The functional composition of the FUNCTIONS.
+EXAMPLE:    (compose abs sin cos) = (lambda (x) (abs (sin (cos x))))
+"
   `(lambda (x) ,(compose-sexp functions 'x)))
 
 
 (defmacro compose-and-call (&rest functions-and-arg)
+  "
+DO:         Call the functionnal composition of the functions, on the
+            argument.
+EXAMPLE:    (compose-and-call abs sin cos 0.234) --> 0.8264353
+"
   `(funcall ,((lambda (functions) (list 'lambda '(x) (compose-sexp functions 'x))) 
               (butlast functions-and-arg))
             ,(car (last functions-and-arg))))
@@ -248,6 +284,11 @@ Return the results of the last form.
 
 
 (defmacro defenum (name-and-options &rest constants)
+  "
+Define an named enumeration type, a set of constants with integer
+values, and a lable function to produce the name of the constants from
+the numerical value.
+"
   (let ((name (if (consp name-and-options)
                   (first name-and-options)
                   name-and-options)))
@@ -256,6 +297,7 @@ Return the results of the last form.
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        ;; define a ({NAME}-LABEL value) function.
        (defun ,(intern (wsiosbp (format nil "~A-LABEL" name))) (value)
+         ,(format nil "Produce the name of the constant having the given VALUE.")
          (case value
            ,@(loop
                 for cname in constants
@@ -273,9 +315,11 @@ Return the results of the last form.
             with val = -1
             do (when (consp cname)
                  (setf val (1- (second cname)) cname (first cname)))
-            collect `(defconstant ,cname ,(incf val)))
+            collect `(defconstant ,cname ,(incf val)
+                       ,(format nil "~A enumeration value." name)))
        ;; define the type.
        (deftype ,name ()
+         "An enumeration type." ;; TODO: get a docstring from the parameters.
          '(member ,@(loop
                        for cname in constants
                        with val = -1
@@ -695,6 +739,10 @@ DO:       Define a macro: (WITH-{NAME} object &body body)
 
 
 (defmacro handling-errors (&body body)
+  "
+DO:       Execute the BODY with a handler for CONDITION and
+          SIMPLE-CONDITION reporting the conditions.
+"
   `(handler-case (progn ,@body)
      (simple-condition  (err) 
        (format *error-output* "~&~A: ~%" (class-name (class-of err)))
@@ -740,7 +788,13 @@ NOTE:    The last two arguments maybe :PACKAGE <a-package>
 ;; 12 - NUMBERS
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun sign (n) (cond ((zerop n) 0) ((plusp n) 1) (t -1)))
+(defun sign (n)
+  "
+RETURN: -1 if N is negative,
+        +1 if N is positive,
+         0 if N is 0.
+"
+  (cond ((zerop n) 0) ((plusp n) 1) (t -1)))
 
 
 (defmacro incf-mod (&environment env place modulo &optional (increment 1))
@@ -1216,6 +1270,9 @@ This macro will work somewhat on any form in body.
 ;;   (print (list a b)))
 
 (defmacro tracing-let (clauses &body body)
+  "
+Like LET, but prints on the *trace-output* the value of the bindings.
+"
   (let ((vals (mapcar (lambda (clause)
                         (gensym (symbol-name
                                   (if (symbolp clause) clause (first clause)))))
@@ -1243,6 +1300,9 @@ This macro will work somewhat on any form in body.
 
 
 (defmacro tracing-let* (clauses &body body)
+    "
+Like LET*, but prints on the *trace-output* the value of the bindings.
+"
   (if (null clauses)
       `(progn ,@body)
       `(tracing-let (,(first clauses))

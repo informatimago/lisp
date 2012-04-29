@@ -5,14 +5,6 @@
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    Some ASCII code utilities, to process sequences of ASCII code
-;;;;    bytes as easily as strings.
-;;;;
-;;;;    Examples:
-;;;;
-;;;;     (bytes= buffer #.(ascii-bytes "HELO ") :end1 (min 5 (length buffer)))
-;;;;     (bytes= (read-ascii-line) #"HELO "     :end1 (min 5 (length buffer)))
-;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -39,7 +31,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -60,15 +52,35 @@
    "READ-ASCII-LINE" "ASCII-FORMAT"
    "BYTES=" "BYTES/=" "BYTES<" "BYTES<=" "BYTES>=" "BYTES>")
   (:documentation "
-    Some ASCII code utilities.
 
-    Copyright Pascal Bourguignon 2006 - 2012
+Some ASCII code utilities, to process sequences of ASCII code bytes as
+easily as strings.
+
+Examples:
+
+    (bytes= buffer #.(ascii-bytes \"HELO \") :end1 (min 5 (length buffer)))
+    (bytes= (read-ascii-line) #\"HELO \"     :end1 (min 5 (length buffer)))
+
+License:
+
+    AGPL3
     
-    This program is free software; you can redistribute it and/or
-    modify it under the terms of the GNU General Public License
-    as published by the Free Software Foundation; either version
-    2 of the License, or (at your option) any later version.
-   "))
+    Copyright Pascal J. Bourguignon 2006 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ASCII")
 
 ;;; http://en.wikipedia.org/wiki/Ascii
@@ -113,10 +125,18 @@
   (defconstant sp        #x20 "     Code of ASCII Character SPACE") 
 
 
+  (defgeneric encoding-error-character (err)
+    (:documentation "The character that cannot be encoded."))
+  (defgeneric encoding-error-coding-system (err)
+    (:documentation "A keyword denoting the coding system which cannot encode the character."))
+  (defgeneric encoding-error-message (err)
+    (:documentation "The error message."))
+  
   (define-condition encoding-error (error)
     ((character     :initarg :character     :reader encoding-error-character)
      (coding-system :initarg :coding-system :reader encoding-error-coding-system)
      (message       :initarg :message       :reader encoding-error-message))
+    (:documentation "The condition denoting an encoding error.")
     (:report (lambda (condition stream)
                (format stream "The character ~C (native code ~D) cannot be encoded in ~A: ~A"
                        (encoding-error-character condition)
@@ -125,10 +145,18 @@
                        (encoding-error-message condition)))))
 
   
+  (defgeneric decoding-error-code (err)
+    (:documentation "The code that corresponds to no character."))
+  (defgeneric decoding-error-coding-system (err)
+    (:documentation "A keyword denoting the coding system which cannot decode the code."))
+  (defgeneric decoding-error-message (err)
+    (:documentation "The error message."))
+
   (define-condition decoding-error (error)
     ((code          :initarg :code           :reader decoding-error-code)
      (coding-system :initarg :coding-system  :reader decoding-error-coding-system)
      (message       :initarg :message        :reader decoding-error-message))
+    (:documentation "The condition denoting a decoding error.")
     (:report (lambda (condition stream)
                (format stream "The code ~D (hexa ~:*~2,'0X) cannot be decoded in ~A: ~A"
                        (decoding-error-code condition)
@@ -136,12 +164,15 @@
                        (decoding-error-message condition)))))
   
 
-  (defparameter *ascii-characters*  #.(concatenate 'string
-                                        " !\"#$%&'()*+,-./0123456789:;<=>?"
-                                        "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
-                                        "`abcdefghijklmnopqrstuvwxyz{|}~"))
+  (defparameter *ascii-characters*
+    #.(concatenate 'string
+        " !\"#$%&'()*+,-./0123456789:;<=>?"
+        "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
+        "`abcdefghijklmnopqrstuvwxyz{|}~")
+    "A string containing all the ASCII characters in lexical order.")
 
-  (defparameter *hexadecimal-digits* "0123456789abcdef")
+  (defparameter *hexadecimal-digits* "0123456789abcdef"
+    "A string contaiing the hexadecimal digits (lower case letters) in order.")
 
   (declaim (inline ascii-code))
   (defun ascii-code  (ch)
@@ -356,6 +387,25 @@ newline:  (member :crlf :cr :lf) ; the defaultl is :CRLF since that's what's
 
 
 (defun ascii-format (destination ctrl-string &rest arguments)
+  "
+
+DO:             Format the CTRL-STRING and the ARGUMENTS with FORMAT,
+                convert the resulting string to a vector of ASCII
+                bytes and send it to the DESTINATION.
+
+RETURN:         NIL if DESTINATION is not NIL, a byte vector otherwise.
+
+DESTINATION:    T      -> *STANDARD-OUTPUT*
+                NIL    -> A vector of bytes is returned.
+                STREAM -> An output binary stream to which the bytes are written.
+
+CTRL-STRING:    A FORMAT control string (contaiing only characters in
+                the ASCII character set).
+
+ARGUMENTS:      Arguments to be formated with FORMAT.
+
+SEE ALSO:       FORMAT
+"
   (let ((bytes (ascii-bytes
                 (apply (function format) nil ctrl-string arguments))))
     (case destination

@@ -35,7 +35,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;*****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -52,11 +52,32 @@
    "SPLIT-ESCAPED-STRING" "IMPLODE-STRING" "EXPLODE-STRING"
    "CONCATENATE-STRINGS")
   (:documentation
-   "This package exports some string processing functions.
+   "
 
-    Copyright Pascal J. Bourguignon 2002 - 2005
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
+This package exports some string processing functions.
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2002 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
 
 
@@ -371,9 +392,22 @@ NOTE:   The default width is 72 characters, the default left-margin is 0.
 
 (defmacro deftranslation (table text language translation
                                 &rest langs-trans)
+  "
+DO:             Define a translation table.
+TABLE:          A symbol naming a variable to be bound to the
+                translation table (with defvar).
+TEXT:           A string containing the localizable text.
+LANGUAGE:       A keyword denoting a language.
+TRANSLATION:    A translation of the TEXT in the LANGUAGE.
+LANGS-TRANS:    Other couples language translation.
+EXAMPLE:        (deftranslation *words* \"car\" :fr \"automobile\"
+                                                :es \"coche\")
+                (localize *words* :fr \"car\")
+                --> \"automobile\"
+SEE ALSO:       LOCALIZE
+"
   `(eval-when (:compile-toplevel :load-toplevel :execute)
-     (unless (boundp (quote ,table))
-       (defvar ,table (make-hash-table :test (function equal))))
+     (defvar ,table (make-hash-table :test (function equal)))
      (setf ,@(do ((lt (list* language translation langs-trans))
                   (result '()))
                  ((null lt) (nreverse result))
@@ -386,9 +420,10 @@ NOTE:   The default width is 72 characters, the default left-margin is 0.
 
 (defun localize (table language text)
   "
-RETURN: A version of the TEXT in the given LANGUAGE, 
-        or in english if LANGUAGE is not found,
-        or TEXT itself if none found.
+RETURN:     A version of the TEXT in the given LANGUAGE, 
+            or in english if LANGUAGE is not found,
+            or TEXT itself if none found.
+SEE ALSO:   DEFTRANSLATION
 "
   (or (gethash (cons text language) table)
       (gethash (cons text :en) table)

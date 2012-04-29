@@ -6,13 +6,7 @@
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    Bencoding is a way to encode integers, strings, lists, and hash-tables
-;;;;    as strings (serialization), and bdecoding does the reverse operation.
-;;;;    It is part of the torrent metafile specification at 
-;;;;    http://bittorrent.org/beps/bep_0003.html
-;;;;
-;;;;    Notice that torrent files are binary files, since they contain
-;;;;    strings with octets instead of characters.
+;;;;    See defpackage documentation string.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
@@ -36,7 +30,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.DATA-ENCODING.BENCODE"
@@ -48,6 +42,15 @@
            "BENCODE-TO-BINARY-STREAM"    "BDECODE-FROM-BINARY-STREAM"
            "*KEY-MAP-EXCEPTIONS*" "*TORRENT-KEY-MAP-EXCEPTIONS*")
   (:documentation "
+
+Bencoding is a way to encode integers, strings, lists, and hash-tables
+as strings (serialization), and bdecoding does the reverse operation.
+It is part of the torrent metafile specification at 
+http://bittorrent.org/beps/bep_0003.html
+
+Notice that torrent files are binary files, since they contain
+strings with octets instead of characters.
+
 
 Data encoded and decoded
 ------------------------
@@ -155,8 +158,28 @@ Encoding BEncoded strings or streams
    --> \"li42el2:aa2:BB1:c2:DDed3:onei1e19:three-and-one-thirdl1:X1:X1:Xe3:two1:2ed3:onei1e19:three-and-one-thirdl1:X1:X1:Xe3:two1:2ee\"
 
 
-"))
 
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2010 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.DATA-ENCODING.BENCODE")
 
 

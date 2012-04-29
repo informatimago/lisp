@@ -31,7 +31,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -40,13 +40,33 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
   (:export "TREE-GENERATE-RANDOM" "TREE-SIZE" "TREE-DEPTH" "TREE-TO-DIAGRAM")
   (:documentation
-   "This package generates a Diagram text file drawing a tree.
-    The tree drawn is a list whose car is the node displayed, and
-    whose cdr is the list of children.
+   "
 
-    Copyright Pascal J. Bourguignon 199? - 2002
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
+This package generates a Diagram! text file drawing a tree.
+The tree drawn is a list whose car is the node displayed, and
+whose cdr is the list of children.
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 1994 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.DIAGRAM.TREE-TO-DIAGRAM")
 
 

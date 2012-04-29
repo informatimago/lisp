@@ -12,7 +12,8 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2005-08-31 <PJB> Added QUEUE-DELETE
+;;;;    2012-04-28 <PJB> Added QUEUE-ELEMENTS.
+;;;;    2005-08-31 <PJB> Added QUEUE-DELETE.
 ;;;;    2004-02-26 <PJB> Formated for publication.
 ;;;;    2001-12-31 <PJB> Added pjb-queue-requeue. 
 ;;;;                     Corrected the return value of some methods.
@@ -34,7 +35,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -42,47 +43,79 @@
   (:use "COMMON-LISP" "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
   (:export "QUEUE-TEST" "QUEUE-INVARIANT" "QUEUE-DELETE" "QUEUE-REQUEUE"
            "QUEUE-DEQUEUE" "QUEUE-ENQUEUE" "QUEUE-LAST-ELEMENT" "QUEUE-FIRST-ELEMENT"
-           "QUEUE-EMPTY-P" "QUEUE-LENGTH" "MAKE-QUEUE" "QUEUE")
+           "QUEUE-EMPTY-P" "QUEUE-LENGTH" "MAKE-QUEUE" "QUEUE"
+           "QUEUE-ELEMENTS" "QUEUE-APPEND")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "WHILE")
   (:documentation
-   "This module exports a queue type. This is a structure optimized for
-    FIFO operations, keeping a pointer to the head and the tail of a list.
+   "
+
+This module exports a queue type. This is a structure optimized for
+FIFO operations, keeping a pointer to the head and the tail of a list.
     
-    Copyright Pascal J. Bourguignon 2001 - 2004
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
+
+The structure of a queue is as follow:
+
+                 queue
+                   |
+                   V
+            +------+------+
+            | head | tail |--------------------------+
+            +------+------+                          |
+               |                                     |
+               V                                     V
+        +------+------+    +------+------+    +------+------+
+        | car  | cdr  |--->| car  | cdr  |--->| car  | cdr  |--->nil
+        +------+------+    +------+------+    +------+------+
+           |                  |                  |
+           V                  V                  V
+        +------+           +------+           +------+
+        | elem |           | elem |           | elem |
+        +------+           +------+           +------+
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2001 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.QUEUE")
 
 
 
 
-;;; The structure of a queue is as follow:
-;;; 
-;;;                  queue
-;;;                    |
-;;;                    V
-;;;             +------+------+
-;;;             | head | tail |--------------------------+
-;;;             +------+------+                          |
-;;;                |                                     |
-;;;                V                                     V
-;;;         +------+------+    +------+------+    +------+------+
-;;;         | car  | cdr  |--->| car  | cdr  |--->| car  | cdr  |--->nil
-;;;         +------+------+    +------+------+    +------+------+
-;;;            |                  |                  |
-;;;            V                  V                  V
-;;;         +------+           +------+           +------+
-;;;         | elem |           | elem |           | elem |
-;;;         +------+           +------+           +------+
-
-
 (defstruct (queue (:constructor %make-queue))
+  "The queue structure."
   (head nil :type list)
   (tail nil :type list))
 
 
+(defun queue-elements (queue)
+  "RETURN: The list of elements in the queue."
+  (queue-head queue))
+
+(declaim (inline queue-elements))
+
 (defun queue-invariant (queue)
-  (assert (queue-p queue))
+  "
+DO: Check the invariant of the QUEUE structure.
+"
+  (check-type queue queue)
   (assert (or (and (null (queue-head queue))  (null (queue-tail queue)))
               (and (queue-head queue) (queue-tail queue))))
   (when (queue-head queue)
@@ -91,7 +124,9 @@
     (assert (null (cdr (queue-tail queue))))))
 
 
-(defun make-queue () (%make-queue))
+(defun make-queue ()
+  "RETURN: A new empty queue."
+  (%make-queue))
 
 
 (defun queue-length (queue)
@@ -99,15 +134,15 @@
 PRE:     (queue-p queue)
 RETURN:  The number of elements in the queue.
 "
-  (assert (queue-p queue))
-  (length (queue-head queue))) ;;QUEUE-LENGTH
+  (check-type queue queue)
+  (length (queue-head queue)))
 
 
 (defun queue-empty-p (queue)
   "
 RETURN:  (= 0 (queue-length queue))
 "
-  (assert (queue-p queue))
+  (check-type queue queue)
   (null (queue-head queue)))
 
 
@@ -116,7 +151,7 @@ RETURN:  (= 0 (queue-length queue))
 PRE:     (queue-p queue)
 RETURN:  The first element of the queue.
 "
-  (assert (queue-p queue))
+  (check-type queue queue)
   (first (queue-head queue)))
 
 
@@ -125,7 +160,7 @@ RETURN:  The first element of the queue.
 PRE:     (queue-p queue)
 RETURN:  The last element of the queue.
 "
-  (assert (queue-p queue))
+  (check-type queue queue)
   (first (queue-tail queue)))
 
 
@@ -138,7 +173,7 @@ POST:    (eq (queue-last-element queue) element),
          l+1=(queue-length queue)
 RETURN:  queue
 "
-  (assert (queue-p queue))
+  (check-type queue queue)
   ;; (car q) = head      (cdr q) = tail
   (if (queue-head queue)
       (progn
@@ -151,6 +186,29 @@ RETURN:  queue
         (setf (queue-tail queue) (queue-head queue))))
   queue)
 
+(defun queue-append (queue elements)
+  "
+DO:      appends the elements to the queue.
+PRE:     (queue-p queue)
+         ql=(queue-length queue)
+         el=(length elements)
+POST:    (< 0 el) ⇒ (eq (queue-last-element queue) (first (last elements)))
+         (queue-p queue),
+         ql+el=(queue-length queue)
+RETURN:  queue
+"
+  (check-type queue queue)
+  ;; (car q) = head      (cdr q) = tail
+  (if (queue-head queue)
+      (progn
+        ;; There's already an element, just add to the tail.
+        (setf (cdr (queue-tail queue)) (copy-list elements))
+        (setf (queue-tail queue) (last (queue-tail queue))))
+      (progn
+        ;; The queue is empty, let's set the head.
+        (setf (queue-head queue) (copy-list elements))
+        (setf (queue-tail queue) (last (queue-head queue)))))
+  queue)
 
 (defun queue-delete (queue element &key (test (function eql)))
   "
@@ -171,7 +229,7 @@ POST:    l>0 ==> l-1=(queue-length queue)
          l=0 ==> 0=(queue-length queue)
 RETURN:  f
 "
-  (assert (queue-p queue))
+  (check-type queue queue)
   (prog1 (pop (queue-head queue))
     (when (null (queue-head queue))
       (setf (queue-tail queue) nil))))
@@ -187,7 +245,7 @@ POST:    (eq (queue-first-element queue) element)
          l+1=(queue-length queue)
 RETURN:  queue
 "
-  (assert (queue-p queue))
+  (check-type queue queue)
   (push element (queue-head queue))
   (when (null (queue-tail queue))
     (setf (queue-tail queue) (queue-head queue)))
@@ -261,10 +319,8 @@ DO:     Test the queue data type. Insert test log at the point.
       (while (< 0 (queue-length q))
         (format t   "Dequeuing queue~%")
         (format t  "~S~%" (queue-dequeue q))
-        (check  q))
-      ))) ;;QUEUE-TEST
+        (check  q)))))
 
 
-;;;; queue.lisp                       --                     --          ;;;;
-
+;;;; THE END ;;;;
 

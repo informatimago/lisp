@@ -31,7 +31,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -45,20 +45,36 @@
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "UNTIL" "WHILE")
   (:documentation
    "
-    This package reads and writes CSV files.
+This package reads and writes CSV files.
 
-    Copyright Pascal J. Bourguignon 2004 - 2005
-   
-    This program is free software; you can redistribute it and/or
-    modify it under the terms of the GNU General Public License
-    as published by the Free Software Foundation; either version
-    2 of the License, or (at your option) any later version.
-    "))
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2003 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CSV.CSV")
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (let ((*compile-verbose* nil)) (com.informatimago.common-lisp.cesarum.ecma048:generate-all-functions-in-ecma048)))
+  (let ((*compile-verbose* nil))
+    (com.informatimago.common-lisp.cesarum.ecma048:generate-all-functions-in-ecma048)))
 
 
 ;; http://planet.plt-scheme.org/docs/neil/csv.plt/1/0/doc.txt
@@ -184,6 +200,10 @@
 
 
 (defun write-record (fields &optional (out *standard-output*))
+  "
+DO:        write the record FIELDS to the stream OUT (default
+           *STANDARD-OUTPUT*).
+"
   (let ((*print-pretty* nil))
     (format out "~{\"~A\"~^,~}~%" (mapcar (function escape-field) fields))))
   
@@ -531,6 +551,16 @@ BUG:   Line termination should be determined once for the whole file.
                      (if-end-of-file-in-last-record :error)
                      (field-separator #\,)
                      (decimal-point #\.))
+  "
+RETURN:             A list of rows, each row being a list of cells.
+PATH:               A pathname designator of the CSV file to read.
+EXTERNAL-FORMAT:    The external format.
+ELEMENT-TYPE:       The type of element of the file (should be
+                    CHARACTER or a subtype of CHARACTER).
+IF-END-OF-FILE-IN-LAST-RECORD:  :ERROR or :IGNORE.
+FIELD-SEPARATOR:    The field separator; default: #\,
+DECIMAL-POINT:      The decimal point; default: #\.
+"
   (with-open-file (input path :direction :input
                          :external-format external-format
                          :element-type element-type)

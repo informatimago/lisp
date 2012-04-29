@@ -4,20 +4,8 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
-;;;;    Implements the Common Lisp Reader.
-;;;;    
-;;;;    We implement a Common Lisp Reader to be able to read lisp
-;;;;    sources.  This is a complete standard compliant lisp reader,
-;;;;    with additionnal hooks (token parser).
 ;;;;
-;;;;    A READTABLE-PARSE-TOKEN function takes a TOKEN as argument, and
-;;;;    must return two values:
-;;;;     - A boolean indicating whether the it could parse the token,
-;;;;     - a parsed lisp object it could, or an error message (string) if not.
-;;;;
-;;;;    See also the TOKEN functions, CONSTITUENT-TRAIT, SYNTAX-TABLE and
-;;;;    CHARACTER-DESCRIPTION...
+;;;;    See defpackage documentation string.
 ;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
@@ -48,7 +36,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -91,29 +79,69 @@
            ;; Utilities:
            "POTENTIAL-NUMBER-P")
   (:documentation
-   "This package implements a standard Common Lisp reader.
+   "
+This package implements a standard Common Lisp reader.
 
-    Copyright Pascal J. Bourguignon 2006 - 2011
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
+We implement a Common Lisp Reader to be able to read lisp
+sources.  This is a complete standard compliant lisp reader,
+with additionnal hooks (token parser).
+
+A READTABLE-PARSE-TOKEN function takes a TOKEN as argument, and
+must return two values:
+- A boolean indicating whether the it could parse the token,
+- a parsed lisp object it could, or an error message (string) if not.
+
+See also the TOKEN functions, CONSTITUENT-TRAIT, SYNTAX-TABLE and
+CHARACTER-DESCRIPTION...
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2006 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program. If not, see http://www.gnu.org/licenses/
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.READER")
 
 
 
-(define-condition simple-reader-error   (simple-error reader-error) ())
-(define-condition simple-end-of-file    (simple-error end-of-file)  ())
+(define-condition simple-reader-error   (simple-error reader-error)
+  ()
+  (:documentation "A simple reader error condition."))
+
+(define-condition simple-end-of-file    (simple-error end-of-file)
+  ()
+  (:documentation "A simple end-of-file condition."))
 
 (define-condition missing-package-error (reader-error)
-  ((package-name :initarg :package-name)))
+  ((package-name :initarg :package-name))
+  (:documentation "The error condition signaled when trying use an inexistant package."))
 
 (define-condition symbol-in-missing-package-error (missing-package-error)
-  ((symbol-name :initarg :symbol-name)))
+  ((symbol-name :initarg :symbol-name))
+  (:documentation "The error condition signaled when trying to read a symbol in an inexistant package."))
 
 (define-condition missing-symbol-error (reader-error)
-  ((symbol-name :initarg :symbol-name)))
+  ((symbol-name :initarg :symbol-name))
+  (:documentation "The error condition signaled when trying to read a symbol not exported from a package."))
 
 (define-condition symbol-missing-in-package-error (missing-symbol-error)
-  ((package-name :initarg :package-name)))
+  ((package-name :initarg :package-name))
+  (:documentation "The error condition signaled when trying to read a symbol not exported from a package."))
 
 (defun serror (condition stream control-string &rest arguments)
   (error condition
@@ -424,6 +452,13 @@ attempted on this stream.
 
 (declaim (ftype (function (t) t) parse-token))
 
+(defgeneric readtable-parse-token (readtable)
+  (:documentation "RETURN: The function used to parse a token that has been read."))
+(defgeneric (setf readtable-parse-token) (new-function readtable)
+  (:documentation "DO:     Set the function used to parse a token that has been read."))
+(defgeneric readtable-syntax-table (readtable)
+  (:documentation "RETURN: The syntax-table of the readtable."))
+
 (defclass readtable ()
   ((case          :initarg :case
                   :initform :upcase
@@ -452,6 +487,10 @@ URL: http://www.lispworks.com/documentation/HyperSpec/Body/t_rdtabl.htm
 
 
 (defun copy-readtable (&optional (from-readtable *readtable*) (to-readtable nil))
+"
+DO:     Copy the readtable.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_cp_rdt.htm
+"
   (if (null from-readtable)
       (if (null to-readtable)
           (make-instance 'readtable)
@@ -1117,20 +1156,29 @@ RETURN:         The token read, or
 (defun read (&optional input-stream
              (eof-error-p t) (eof-value nil)
              (recursive-p nil))
-  "URL: http://www.lispworks.com/documentation/HyperSpec/Body/f_rd_rd.htm"
+  "
+RETURN: An object read.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_rd_rd.htm
+"
   (read-1 input-stream eof-error-p eof-value recursive-p  nil  nil '()))
 
       
 (defun read-preserving-whitespace (&optional input-stream
                                    (eof-error-p t) (eof-value nil)
                                    (recursive-p nil))
-  "URL: http://www.lispworks.com/documentation/HyperSpec/Body/f_rd_rd.htm"
+  "
+RETURN: An object read.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_rd_rd.htm
+"
   (read-1 input-stream eof-error-p eof-value recursive-p  t    nil '()))
 
 
 (defun read-delimited-list (char &optional (input-stream *standard-input*)
                             (recursive-p nil))
-  "URL: http://www.lispworks.com/documentation/HyperSpec/Body/f_rd_del.htm"
+  "
+RETURN: A list of objects read.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_rd_del.htm
+"
   (loop
      :with result = '()
      :for peek = (peek-char t input-stream nil input-stream recursive-p)
@@ -1151,6 +1199,10 @@ RETURN:         The token read, or
 
 (defun read-from-string (string &optional (eof-error-p t) (eof-value nil)
                          &key (start 0) (end nil) (preserve-whitespace nil))
+"
+RETURN: An object read from the string.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_rd_fro.htm
+"
   (let ((index 0))
     (values
      (with-input-from-string (input string :index index :start start :end end)
@@ -1162,18 +1214,35 @@ RETURN:         The token read, or
 
 
 (defun readtable-case (readtable)
+"
+RETURN: The case of the readtable.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_rdtabl.htm
+"
   (slot-value readtable 'case))
 
 (defun (setf readtable-case) (value readtable)
+  "
+DO:     Set the case of the readtable.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_rdtabl.htm
+"
   (check-type value (member :upcase :downcase :preserve :invert))
   (setf (slot-value readtable 'case) value))
 
 
-(defun readtablep (object) (typep object 'readtable))
+(defun readtablep (object)
+  "
+RETURN: Whether the object is a readtable.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_rdta_1.htm
+"
+  (typep object 'readtable))
 
 
 (defun make-dispatch-macro-character
     (char &optional (non-terminating-p nil) (readtable *readtable*))
+"
+DO:     Make the character a dispatch macro character in the readtable.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_mk_dis.htm
+"
   (let ((rst  (readtable-syntax-table readtable)))
     (setf (character-description rst char)
           (make-instance 'character-description
@@ -1185,8 +1254,13 @@ RETURN:         The token read, or
             :macro (function reader-macro-dispatch-function)
             :dispatch (make-hash-table)))))
 
+
 (defun get-dispatch-macro-character (disp-char sub-char
                                      &optional (readtable *readtable*))
+"
+RETURN: The dispatch macro character function.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_set__1.htm
+"
   (let* ((rst  (readtable-syntax-table readtable))
          (cd   (character-description rst disp-char)))
     (unless (character-dispatch cd)
@@ -1194,8 +1268,13 @@ RETURN:         The token read, or
     (and (character-dispatch cd)
          (gethash (char-upcase sub-char) (character-dispatch cd)))))
 
+
 (defun set-dispatch-macro-character (disp-char sub-char new-function
                                      &optional (readtable *readtable*))
+"
+DO:     Set the dispatch macro character function.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_set__1.htm
+"
   (let* ((rst  (readtable-syntax-table readtable))
          (cd   (character-description rst disp-char)))
     (unless (character-dispatch cd)
@@ -1206,6 +1285,10 @@ RETURN:         The token read, or
 
 
 (defun get-macro-character (char &optional (readtable *readtable*))
+"
+RETURN: The macro character function.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_set_ma.htm
+"
   (let* ((rst  (readtable-syntax-table readtable))
          (cd   (character-description rst char)))
     (values (character-macro cd)
@@ -1213,15 +1296,19 @@ RETURN:         The token read, or
 
 (defun set-macro-character (char new-function &optional (non-terminating-p nil)
                             (readtable *readtable*))
+  "
+DO:     Set then macro character function. 
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_set_ma.htm
+"
   (let* ((rst  (readtable-syntax-table readtable)))
     (setf (character-description rst char)
           (make-instance 'character-description
-            :syntax (if non-terminating-p
-                        +cs-non-terminating-macro-character+
-                        +cs-terminating-macro-character+)
-            :traits (character-constituent-traits
-                     (character-description rst char))
-            :macro new-function)))
+              :syntax (if non-terminating-p
+                          +cs-non-terminating-macro-character+
+                          +cs-terminating-macro-character+)
+              :traits (character-constituent-traits
+                       (character-description rst char))
+              :macro new-function)))
   t)
 
 
@@ -1272,6 +1359,10 @@ RETURN: If TABLE is NIL, then NIL,
 (defun set-syntax-from-char (to-char from-char
                              &optional (to-readtable *readtable*)
                              (from-readtable *standard-readtable*))
+"
+DO:     Copy the syntax between characters in the readtable.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_set_sy.htm
+"
   (let* ((frst  (readtable-syntax-table from-readtable))
          (trst  (readtable-syntax-table   to-readtable))
          (fcd   (character-description frst from-char))

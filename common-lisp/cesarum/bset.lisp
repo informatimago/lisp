@@ -5,10 +5,8 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
-;;;;    Set of (integer 0 *) implemented with array of bitsets.
 ;;;;
-;;;;    (Inspired by Modula-2 cocktail-9309/reuse/src/Set.md)
+;;;;    See defpackage documentation string.
 ;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
@@ -39,7 +37,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 
@@ -55,11 +53,33 @@
   (:shadow "COMPLEMENT" "INTERSECTION" "UNION" "SET")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "VECTOR-INIT" "FOR")
   (:documentation
-   "Set of (integer 0 *) implemented with array of bitsets.
+   "
 
-    Copyright Pascal J. Bourguignon 2004 - 2004
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
+This package implements sets of (integer 0 *) as arrays of bitsets.
+
+\(Inspired by Modula-2 cocktail-9309/reuse/src/Set.md)
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2004 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET")
 
 
@@ -76,6 +96,7 @@
               (lambda (bset stream level)
                 (declare (ignore level))
                 (format stream "#S(~A :BITSETS #(~{ #16r~16R~} ) :CARDINAL ~A :FIRST-ELEMENT ~A :LAST-ELEMENT ~A)" (type-of bset) (map 'list (function identity) (bset-bitsets bset)) (bset-cardinal bset) (bset-first-element bset) (bset-last-element bset)))))
+  "A set of small integers, implemented as a vector of words."
   (bitsets (make-array (list 0)
                        :element-type 'bitset
                        :initial-element 0
@@ -92,6 +113,9 @@
 
 
 (defun copy-bset (original)
+  "
+RETURN: A new copy of the ORIGINAL bset.
+"
   (let ((copy (%make-bset)))
     (setf (bset-bitsets       copy) (bset-bitsets       original)
           (bset-cardinal      copy) (bset-cardinal      original)

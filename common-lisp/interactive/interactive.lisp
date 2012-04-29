@@ -31,7 +31,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -39,15 +39,7 @@
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING" 
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PACKAGE"
-        "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.BROWSER")
-  (:documentation "
-This package defines various interactive commands intended to be used
-at the REPL.  It also re-exports some functions from BROWSER and
-PACKAGE.
-
-Copyright Pascal J. Bourguignon 2006 - 2010
-This package is provided under the GNU General Public License.
-See the source file for details.")
+        "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.BROWSER")  
   (:export "UPTIME" "DATE" "*EDITOR*" "EDIT" "MOZILLA-STRING" "LSCHAR" "LSPACK"
            "DIFF-PACKAGE" "PSWITCH" "SHOW" "MKUPACK" "RESET-CLUSER" "POPP" "PUSHP"
            "COMPARE-PATHNAMES" "PRINT-PATHNAME" "LSSYMBOLS" "REPL" 
@@ -56,7 +48,33 @@ See the source file for details.")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PACKAGE"
                 "LIST-EXTERNAL-SYMBOLS" "LIST-ALL-SYMBOLS" "DEFINE-PACKAGE")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
-                "HANDLING-ERRORS"))
+                "HANDLING-ERRORS")
+  (:documentation "
+
+This package defines various interactive commands intended to be used
+at the REPL.  It also re-exports some functions from BROWSER and
+PACKAGE.
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2006 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.INTERACTIVE")
 
 
@@ -93,6 +111,9 @@ See the source file for details.")
 
 
 (defun repl ()
+  "
+DO:        Implements a minimalist CL REPL.
+"
   (catch 'repl
     (do ((+eof+ (gensym))
          (hist 1 (1+ hist)))
@@ -116,6 +137,9 @@ See the source file for details.")
 
 
 (defun lssymbols (&optional (package *package*))
+  "
+DO:        Prints a list of the symbols in the PACKAGE (default: *PACKAGE*).
+"
   (let ((table    (make-hash-table))
         (packages '()))
     (do-symbols (sym package)
@@ -125,12 +149,17 @@ See the source file for details.")
                (setf (gethash k table) (sort v (function string<))))
              table)
     (dolist (package (sort packages (function string<)
-                           :key (function package-name)) (values))
+                           :key (function package-name)))
       (format t "~%From package ~A~%" (package-name package))
-      (flow-list "   " (gethash package table)))))
+      (flow-list "   " (gethash package table)))
+    (values)))
 
 
 (defun print-pathname (p)
+  "
+DO:        Prints the components of the pathname P one by one.
+RETURN:    P.
+"
   (format t "~&~{~{~@(~9A~) : ~S~&~}~}"
           (mapcar (lambda (name field) (list name (funcall field p)))
                   '(host device directory name type version)
@@ -140,6 +169,10 @@ See the source file for details.")
 
 
 (defun compare-pathnames (p1 p2)
+  "
+DO:         Compare the pathnames P1 and P2 component by component,
+            reporting their differences on the *standard-output*.
+"
   (flet ((compare (name field)
            (unless (equal (funcall field p1) (funcall field p2))
              (format t "~&~A DIFFERENT: ~A /= ~A~%"
@@ -149,7 +182,8 @@ See the source file for details.")
     (compare 'directory (function pathname-directory))
     (compare 'name      (function pathname-name))
     (compare 'type      (function pathname-type))
-    (compare 'version   (function pathname-version))))
+    (compare 'version   (function pathname-version))
+    (values)))
 
 
 
@@ -214,6 +248,9 @@ If PACKAGE is NIL, the rotate *PACKAGE* and the top of the package stack."
 
 
 (defmacro show (&body expressions)
+  "
+DO:         Prints each expression and their values.
+"
   (let ((width (reduce (function max)
                        (mapcar (lambda (expr) (length (format nil "~S" expr)))
                                expressions)

@@ -36,7 +36,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -50,11 +50,34 @@
            "BARE-STREAM")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING" "SPLIT-STRING")
   (:documentation
-   "This package exports utility functions about streams.
+   "
+This package exports utility functions about streams.
 
-    Copyright Pascal J. Bourguignon 2003 - 2007
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
+
+See also: COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2003 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM")
 
 
@@ -237,9 +260,14 @@ RETURN: A stream or a list of streams that are not compound streams
 
 ;;----------------------------------------------------------------------
 
-(defgeneric bvstream-position (self position))
-(defgeneric bvstream-write-byte (self byte))
-(defgeneric bvstream-read-byte (self))
+(defgeneric bvstream-position (bvstream position)
+  (:documentation "Set the position of the BVSTREAM."))
+
+(defgeneric bvstream-write-byte (bvstream byte)
+  (:documentation "Write a byte to the BVSTREAM."))
+
+(defgeneric bvstream-read-byte (bvstream)
+  (:documentation "Read a byte from the BVSTREAM."))
 
 
 (defclass bvstream-out ()
@@ -250,7 +278,8 @@ RETURN: A stream or a list of streams that are not compound streams
                                 :element-type '(unsigned-byte 8)
                                 :adjustable t
                                 :fill-pointer 0)
-          :initarg :bytes)))
+          :initarg :bytes))
+  (:documentation "An output byte vector stream."))
 
 
 
@@ -269,9 +298,25 @@ RETURN: A stream or a list of streams that are not compound streams
 
 (defmacro with-output-to-byte-vector ((var &optional byte-vector-form 
                                            &key element-type) &body body)
-  (declare (ignore element-type)) ;; TODO: Remove this parameter!
-  `(let ((,var (make-instance 'bvstream-out
-                 ,@(when byte-vector-form `(:bytes ,byte-vector-form)))))
+    "
+
+DO:             Execute the BODY with VAR bound to an output byte vector
+                stream.  If BYTE-VECTOR-FORM is given it should produce a byte
+                vector with a fill-pointer where the bytes written to the
+                bvstream are stored.
+ELEMENT-TYPE:   The type of bytes. If BYTE-VECTOR-FORM is nil, one can
+                choose a different element-type for the byte vector.
+RETURN:         The byte vector written.
+"
+    `(let ((,var (make-instance 'bvstream-out
+                     ,@(cond
+                        (byte-vector-form
+                         `(:bytes ,byte-vector-form))
+                        (element-type
+                         `(:bytes (make-array '(1024)
+                                              :element-type ,element-type
+                                              :adjustable t
+                                              :fill-pointer 0)))))))
      (let ((,var ,var)) ,@body)
      (get-bytes ,var)))
 
@@ -283,7 +328,8 @@ RETURN: A stream or a list of streams that are not compound streams
    (position :reader get-position
              :accessor bis-position 
              :initarg :position :initform 0)
-   (end :initarg :end :initform nil)))
+   (end :initarg :end :initform nil))
+  (:documentation "An input byte vector stream."))
 
 
 
@@ -312,6 +358,13 @@ RETURN: A stream or a list of streams that are not compound streams
 
 (defmacro with-input-from-byte-vector ((var byte-vector &key index start end)
                                        &body body)
+  "
+DO:     Execute the BODY with VAR bound to an input byte vector stream
+        reading bytes from the BYTE-VECTOR, from START to END.  If
+        INDEX is given it should be a place into which the last
+        position is stored.
+RETURN: The last position.
+"
   `(let ((,var (make-instance 'bvstream-in :bytes ,byte-vector
                               ,@(when start `((:position ,start)))
                               ,@(when end   `((:end ,end))))))

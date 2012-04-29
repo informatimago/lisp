@@ -40,7 +40,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -58,11 +58,31 @@
            "ENSURE-CIRCULAR" "MAKE-CIRCULAR-LIST" "CIRCULAR-LENGTH"
            "TREE-DIFFERENCE" "REPLACE-TREE" "MAPTREE")
   (:documentation
-   "This package exports list processing functions.
+   "
+This package exports list processing functions.
     
-    Copyright Pascal J. Bourguignon 2003 - 2011
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2003 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
 
 
@@ -278,6 +298,10 @@ RETURN: A tree where all the CAR and CDR are exchanged.
 
 (defun list-trim (bag list
                   &key (test (function eql)) (key (function identity)))
+  "
+RETURN: A sublist of LIST with the elements in the BAG removed from
+        both ends.
+"
   (do ((list (reverse list) (cdr list)))
       ((or (null list) (not (member (car list) bag :test test :key key)))
        (do ((list (nreverse list) (cdr list)))
@@ -297,6 +321,13 @@ RETURN: A tree where all the CAR and CDR are exchanged.
 
 
 (defun maptree (fun &rest trees)
+  "
+DO:     Calls FUN on each non-null atom of the TREES.
+PRE:    The trees in TREES must be congruent, or else the result is
+        pruned like the smallest tree.
+RETURN: A tree congruent to the TREES, each node being the result of
+        FUN (it may be a subtree).
+"
   (cond ((null trees) nil)
         ((every (function null)  trees) nil)
         ((every (function atom)  trees) (apply fun trees))
@@ -634,6 +665,14 @@ RETURN:  The next dll-cons in the `dll-cons' double-linked-list node.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun tree-difference (a b &key (test (function eql)))
+  "
+RETURN: A tree congruent to A and B where each node is = when the
+        corresponding nodes are equal (as indicated by TEST),
+        or (/= a-elem b-elem) otherwise.
+
+EXAMPLE: (tree-difference '((a b c) 1 (d e f)) '((a b c) (1) (d x f)))
+         --> ((= = = . =) (/= 1 (1)) (= (/= e x) = . =) . =)
+"
   (cond
     ((funcall test a b)     '=)
     ((or (atom a) (atom b)) `(/= ,a ,b))

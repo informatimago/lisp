@@ -6,13 +6,7 @@
 ;;;;USER-INTERFACE:    UNIX
 ;;;;DESCRIPTION
 ;;;;
-;;;;    ASCII-ART primitives.
-;;;;    A  picture is an array of characters.
-;;;;    There are primitives to draw points, lines, rectangles, 
-;;;;    circles and ellipses, and strings.
-;;;;    The coordinate system is the direct one: 
-;;;;    - x increases toward the right,
-;;;;    - y increases toward the top. Bottom left is (0,0).
+;;;;    See defpackage documentation string.
 ;;;;
 ;;;;USAGE
 ;;;;    
@@ -41,7 +35,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -55,47 +49,185 @@
    "ERASE-RECT" "FILL-RECT" "DRAW-ARROW" "DRAW-LINE" "DRAW-STRING" "SIZE-STRING"
    "DRAW-POINT" "POINT-AT" "HEIGHT" "WIDTH" "BACKGROUND" "PICTURE")
   (:documentation
-   "This package exports functions to draw ASCII-ART pictures.
+   "
+This package exports functions to draw ASCII-ART pictures.
 
-    Copyright Pascal J. Bourguignon 2002 - 2004
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
+ASCII-ART primitives.
+
+A picture is a matrix of characters.
+There are primitives to draw points, lines, rectangles, 
+circles and ellipses, and strings.
+
+The coordinate system is the direct one: 
+- x increases toward the right,
+- y increases toward the top. Bottom left is (0,0).
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2002 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.PICTURE.PICTURE")
 
 
 
-(defgeneric to-string (self))
-(defgeneric point-at (self x y))
-(defgeneric draw-point (self x y foreground))
-(defgeneric size-string (self string &key direction))
-(defgeneric draw-string (self x y string &key direction))
-(defgeneric draw-line (self x y w h &key foreground))
-(defgeneric draw-arrow (pict x y w h &key tail))
-(defgeneric fill-rect (self x y w h &key foreground))
-(defgeneric erase-rect (self x y w h))
-(defgeneric frame-rect (self x y w h &key top-left top-right bottom-left bottom-right top bottom left right))
-(defgeneric width (self))
-(defgeneric height (self))
-(defgeneric frames (self))
-(defgeneric set-data (self data))
-(defgeneric draw-on-picture (self pict x y &optional frame))
+(defgeneric to-string (pict)
+  (:documentation
+     "
+RETURN:  A string containing the picture characters, (pict height) lines
+         of (pict width) characters.
+"))
+
+
+(defgeneric point-at (pict x y)
+  (:documentation  "
+PRE:     inside = (AND (<= 0 X) (< X (WIDTH PICT)) (<= 0 Y) (< Y (HEIGHT PICT)))
+RETURN:  inside       ==> The character at coordinate (X,Y).
+         (NOT inside) ==> (BACKGROUND PICT)
+"))
+
+
+(defgeneric draw-point (pict x y foreground)
+  (:documentation  "
+PRE:    inside = (AND (<= 0 X) (<= 0 Y) (< Y (HEIGHT PICT)) (< X (WIDTH PICT)))
+        old-point = (POINT-AT PICT X Y)
+POST:   inside       ==> (EQ FOREGROUND (POINT-AT PICT X Y))
+        (NOT inside) ==> (EQ old-point (POINT-AT PICT X Y))
+RETURN: PICT
+"))
+
+
+(defgeneric size-string (pict string &key direction)
+  (:documentation   "
+RETURN:  left bottom width height of the rectangle in which the
+         STRING will be drawn by DRAW-STRING, relative to the point
+         where it'll drawn.
+"))
+
+
+(defgeneric draw-string (pict x y string &key direction)
+  (:documentation   "
+PRE:     (MEMBER DIRECTION '(:E :W :N :S :NE :NW :SE :SW
+                           :NNE :NNW :SSE :SSW :ENE :ESE :WNW :WSW
+                           :LEFT :RIGHT :UP :DOWN NIL) :TEST (FUNCTION 'EQ))
+DO:      Draws the STRING in the given DIRECTION (default :RIGHT = :E).
+         STRING may be anything, it will be formated with ~A.
+         If it contains +NEW-LINE+ characters then it's split and
+         each line is written ''under'' the other, according to the DIRECTION.
+RETURN:  PICT
+"))
+
+
+(defgeneric draw-line (pict x y w h &key foreground)
+  (:documentation   "
+DO:      Draw a line between (x,y) and (x+w-1,y+h-1) 
+         with the foreground character.
+RETURN:  PICT
+"))
+
+
+(defgeneric draw-arrow (pict x y w h &key tail)
+  (:documentation "
+DO:      Draw a line between (x,y) and (x+w-1,y+h-1) and end it with
+         with an arrow tip. If TAIL is specified, draw it at the
+         start.
+RETURN:  PICT
+"))
+
+
+(defgeneric fill-rect (pict x y w h &key foreground)
+  (:documentation   "
+DO:      Fills the specified rectangle with FOREGROUND.
+RETURN:  PICT
+"))
+
+
+(defgeneric erase-rect (pict x y w h)
+  (:documentation   "
+DO:      Fills the specified rectangle with (BACKGROUND PICT).
+RETURN:  PICT
+"))
+
+
+(defgeneric frame-rect (pict x y w h &key top-left top-right bottom-left bottom-right top bottom left right)
+  (:documentation   "
+DO:      Draws the frame of a rect parallel to the axis
+         whose diagonal is [(x,y),(x+w-1,y+h-1)].
+RETURN:  PICT
+"))
+
+
+(defgeneric width (object)
+  (:documentation   "
+RETURN:  The width of the object.
+"))
+
+
+(defgeneric height (object)
+  (:documentation   "
+RETURN:  The height of the object.
+"))
+
+
+(defgeneric frames (sprite)
+  (:documentation "
+RETURN:  The number of frames in the SPRITE.
+"))
+
+
+(defgeneric set-data (sprite data)
+  (:documentation   "
+DATA may be either:
+       - a single string with frames separated by FF and lines separated by LF,
+       - a list of string frames with lines separated by LF,
+       - a list of list of string lines.
+       - a list of list of list of single character strings or symbols
+         or characters or character codes.
+       - a tri-dimentional array of characters.
+RETURN: SPRITE
+"))
+
+(defgeneric draw-on-picture (sprite pict x y &optional frame)
+  (:documentation   "
+DO:      Draws the frame FRAME of the SPRITE on the picture PICT,
+         placing the spot of the sprite at coordinates (X,Y).
+         Transparent pixels are not drawn.
+"))
 
 
 (defvar +form-feed+ (make-string 1 :initial-element (code-char 12))
-  "A string containing a single +form-feed+ character.") ;;+FORM-FEED+
+  "A string containing a single +form-feed+ character.")
 
 (defvar +new-line+  (make-string 1 :initial-element (code-char 10))
-  "A string containing a single +new-line+ character.") ;;+NEW-LINE+
+  "A string containing a single +new-line+ character.")
 
 ;; ------------------------------------------------------------------------
 ;; PICTURE
 ;; ------------------------------------------------------------------------
 
+(defgeneric background (picture)
+  (:documentation "The background character of the picture."))
+
 (pjb-defclass picture nil
   (:att data        (array character 2)       "Picture data.")
   (:att background  character (character " ") "The background character.")
-  (:doc "A picture is a bi-dimentional (y,x) array of characters.")
-  ) ;;PICTURE
+  (:doc "A picture is a bi-dimentional (y,x) array of characters."))
 
 
 (defun to-char (stuff)
@@ -103,14 +235,13 @@
         ((stringp    stuff) (aref stuff 0))
         ((symbolp    stuff) (aref (symbol-name stuff) 0))
         ((numberp    stuff) (code-char stuff))
-        (t (error "~S IS AN INVALID CHARACTER!" stuff)))
-  ) ;;TO-CHAR
+        (t (error "~S IS AN INVALID CHARACTER!" stuff))))
 
 
 (defmethod initialize-instance ((self picture) 
                                 &key (width 72) (height 24) (background " "))
   "
-RETURN:  SELF 
+RETURN:  SELF
 POST:    for all X in [0..WIDTH-1], for all Y in [0..HEIGHT-1],
            (EQ (to-char background) (point-at self x y))
 "
@@ -121,7 +252,7 @@ POST:    for all X in [0..WIDTH-1], for all Y in [0..HEIGHT-1],
                                       (truncate width))
                                 :element-type 'character
                                 :initial-element (background self)))
-  self) ;;initialize-instance
+  self)
 
 
 (defmethod to-string ((self picture))
@@ -129,20 +260,20 @@ POST:    for all X in [0..WIDTH-1], for all Y in [0..HEIGHT-1],
 RETURN:  A string containing the picture character (pict height) lines
          of (pict width) characters, separated by a +new-line+.
 "
-  (loop with str = (make-string (* (height self) (1+ (width self))))
-     with data = (data self)
-     with i = 0
-     with nl = (to-char +new-line+)
-     for y from (1- (height self)) downto 0
-     do
-     (loop for x from 0 below (width self)
-        do
-        (setf (aref str i) (aref data y x))
-        (setf i (1+ i)))
-     (setf (aref str i) nl)
-     (setf i (1+ i))
-     finally (return str))
-  ) ;;TO-STRING
+  (loop
+     :with str = (make-string (* (height self) (1+ (width self))))
+     :with data = (data self)
+     :with i = 0
+     :with nl = (to-char +new-line+)
+     :for y :from (1- (height self)) :downto 0
+     :do (progn
+          (loop for x from 0 below (width self)
+             do
+             (setf (aref str i) (aref data y x))
+             (setf i (1+ i)))
+          (setf (aref str i) nl)
+          (setf i (1+ i)))
+     :finally (return str)))
 
 
 
@@ -155,14 +286,14 @@ RETURN:  A string containing the picture character (pict height) lines
   "
 RETURN:  The width of the picture.
 "
-  (array-dimension (data self) 1)) ;;WIDTH
+  (array-dimension (data self) 1))
 
 
 (defmethod height ((self picture))
   "
 RETURN:  The height of the picture.
 "
-  (array-dimension (data self) 0)) ;;HEIGHT
+  (array-dimension (data self) 0))
 
 
 (defmethod point-at ((self picture) (x number) (y number))
@@ -174,7 +305,7 @@ RETURN:  inside       ==> The character at coordinate (X,Y).
   (setq x (truncate x) y (truncate y))
   (if (and (<= 0 x) (<= 0 y) (< y (height self)) (< x (width self)))
       (aref (data self) y x)
-      (background self))) ;;POINT-AT
+      (background self)))
 
 
 (defmethod draw-point ((self picture) (x number) (y number) foreground)
@@ -189,7 +320,7 @@ RETURN: SELF
   (setq foreground (to-char foreground))
   (when (and (<= 0 x) (<= 0 y) (< y (height self)) (< x (width self)))
     (setf (aref (data self) y x) foreground))
-  self) ;;DRAW-POINT
+  self)
 
 
 (defstruct (deplacement (:type list))  name dx dy line-dx line-dy)
@@ -212,7 +343,7 @@ RETURN: SELF
                          (:ene    2  1  1 -2) 
                          (:ese    2 -1 -1 -2) 
                          (:wnw   -2  1  1  2) 
-                         (:wsw   -2 -1 -1  2))) ;;+deplacements+
+                         (:wsw   -2 -1 -1  2)))
 
 
 (defvar *string-cache* nil "PRIVATE")
@@ -224,7 +355,7 @@ RETURN: SELF
                (eq separator (second *string-cache*)))
     (setf *string-cache* (list string separator 
                                (split-string string separator))))
-  (third *string-cache*)) ;;string-cache-split
+  (third *string-cache*))
 
 
 (defmethod size-string ((self picture) string &key (direction :e))
@@ -253,7 +384,7 @@ RETURN:  left bottom width height of the rectangle in which the
            (bottom (min lb-y lt-y rb-y rt-y))
            (right  (max lb-x lt-x rb-x rt-x))
            (top    (max lb-y lt-y rb-y rt-y)))
-      (values left bottom (- right left -1) (- top bottom -1))))) ;;size-string
+      (values left bottom (- right left -1) (- top bottom -1)))))
          
     
 (defmethod draw-string ((self picture) (x number) (y number)
@@ -294,7 +425,7 @@ NOTE:    A future implementation won't use DRAW-POINT for performance.
                       (x number) (y number) (w number) (h number)
                       &key (foreground "*"))
   "
-DOES:    Draw a line between (x,y) and (x+w-1,y+h-1) 
+DO:      Draw a line between (x,y) and (x+w-1,y+h-1) 
          with the foreground character.
 RETURN:  SELF
 NOTE:    A future implementation won't use DRAW-POINT for performance.
@@ -331,7 +462,7 @@ NOTE:    A future implementation won't use DRAW-POINT for performance.
                (setq cumul (- cumul dy)
                      x     (+ x xinc)))
              (draw-point self x y foreground) ))))
-  self) ;;DRAW-LINE
+  self)
 
 
 (defmethod draw-arrow ((pict picture) 
@@ -342,7 +473,7 @@ NOTE:    A future implementation won't use DRAW-POINT for performance.
                                        (if (< 0 h) "^" "v")
                                        (if (< 0 w) ">" "<")))
   (when tail (draw-point pict x y tail))
-  pict) ;;draw-arrow
+  pict)
   
 
 
@@ -350,7 +481,7 @@ NOTE:    A future implementation won't use DRAW-POINT for performance.
                        (x number) (y number) (w number) (h number) 
                        &key (foreground "*"))
   "
-DOES:    Fills the specified rectangle with FOREGROUND.
+DO:      Fills the specified rectangle with FOREGROUND.
 RETURN:  SELF
 "
   (setf x (truncate x)
@@ -367,7 +498,7 @@ RETURN:  SELF
 (defmethod erase-rect ((self picture)
                        (x number) (y number) (w number) (h number))
   "
-DOES:    Fills the specified rectangle with (BACKGROUND SELF).
+DO:      Fills the specified rectangle with (BACKGROUND SELF).
 RETURN:  SELF
 "
   (fill-rect self x y w h :foreground (background self))) ;;ERASE-RECT
@@ -379,7 +510,7 @@ RETURN:  SELF
                        (bottom-left "+")  (bottom-right "+")
                        (top "-") (bottom "-")  (left "|") (right "|"))
   "
-DOES:    Draws the frame of a rect parallel to the axis
+DO:      Draws the frame of a rect parallel to the axis
          whose diagonal is [(x,y),(x+w-1,y+h-1)].
 RETURN:  SELF
 NOTE:    A future implementation won't use DRAW-POINT for performance.
@@ -409,7 +540,7 @@ NOTE:    A future implementation won't use DRAW-POINT for performance.
   
 (defun test-picture-object ()
   "
-DOES:    Creates a test picture.
+DO:      Creates a test picture.
 RETURN:  the picture string.
 "
   (let ((p (make-instance 'picture :width 40 :height 20 :background ".")))
@@ -438,6 +569,16 @@ RETURN:  the picture string.
 ;; SPRITE
 ;; ------------------------------------------------------------------------
 
+(defgeneric name (sprite)
+  (:documentation "Name of this sprite."))
+(defgeneric data (sprite)
+  (:documentation "Sprite data."))
+(defgeneric spot-x (sprite)
+  (:documentation "X coordinate of the spot of the sprite."))
+(defgeneric spot-y (sprite)
+  (:documentation "Y coordinate of the spot of the sprite"))
+(defgeneric transparent (sprite)
+  (:documentation "The transparent character of the sprite."))
 
 (pjb-defclass sprite nil
   (:att name        string    "sprite"   "Name of this sprite.")
@@ -445,29 +586,28 @@ RETURN:  the picture string.
   (:att spot-x      fixnum    0          "X coordinate of spot.")
   (:att spot-y      fixnum    0          "Y coordinate of spot.")
   (:att transparent character (character " ") "The transparent character.")
-  (:doc "A sprite is a tri-dimentional (time,y,x) array of characters.")
-  ) ;;SPRITE
+  (:doc "A sprite is a tri-dimentional (time,y,x) array of characters."))
 
 
 (defmethod width ((self sprite))
   "
 RETURN:  The width of the sprite.
 "
-  (array-dimension (data self) 2)) ;;WIDTH
+  (array-dimension (data self) 2))
 
 
 (defmethod height ((self sprite))
   "
 RETURN:  The height of the sprite.
 "
-  (array-dimension (data self) 1)) ;;HEIGHT
+  (array-dimension (data self) 1))
 
 
 (defmethod frames ((self sprite))
   "
 RETURN:  The number of frames of the sprite.
 "
-  (array-dimension (data self) 0)) ;;FRAMES
+  (array-dimension (data self) 0))
 
 
 (defmethod set-data ((self sprite) data)
@@ -543,13 +683,13 @@ RETURN: SELF
        (setf (data self) adata)))
     ((arrayp data)
      (setf (data self) data)))
-  self) ;;SET-DATA
+  self)
 
 
 (defmethod draw-on-picture ((self sprite) (pict picture) (x number) (y number)
                             &optional frame)
   "
-DOES:    Draws the frame FRAME of the sprite on the picture PICT,
+DO:      Draws the frame FRAME of the sprite on the picture PICT,
          placing the spot of the sprite at coordinates (X,Y).
          Transparent pixels are not drawn.
 "
@@ -564,8 +704,8 @@ DOES:    Draws the frame FRAME of the sprite on the picture PICT,
            for pixel = (aref data frame j i) then (aref data frame j i)
            unless (eq pixel transparent)
            do (draw-point pict (+ x i) yj pixel)))
-  self) ;;DRAW-ON-PICTURE
+  self)
 
 
 
-;;;; picture.lisp                     --                     --          ;;;;
+;;;; THE END ;;;;

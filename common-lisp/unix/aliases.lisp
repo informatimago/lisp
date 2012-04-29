@@ -6,25 +6,6 @@
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    This package exports a function to read sendmail aliases files.
-;;;;    
-;;;;    (setf db (load-aliases [file]))
-;;;;    (save-aliases db [file])
-;;;;    (db-records db) --> list-of-records
-;;;;
-;;;;    (make-alias name address-list) --> record
-;;;;    (make-comment text) --> record
-;;;;    (find-record-if db predicate) --> record
-;;;;    (alias-record   db name) --> record
-;;;;    (comment-record-containing db substring) --> record
-;;;;    (insert-record  db record [:before record] [:after record])
-;;;;    (delete-record  db record)
-;;;;
-;;;;    (list-all-aliases db) --> ("name1" "name2" ...)
-;;;;    (alias-addresses db name) --> list
-;;;;    (setf (alias-addresses db name) list)
-;;;;    (insert-alias db name type value [:before record] [:after record])
-;;;;    (delete-alias db name)
 ;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
@@ -51,7 +32,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -67,11 +48,51 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM")
   (:export "READ-DOT-FORWARD" "READ-ALIASES")
   (:documentation
-   "This package exports a function to read unix aliases files.
+   "
 
-    Copyright Pascal J. Bourguignon 2003 - 2005
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
+This package exports a function to read sendmail aliases files.
+   
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2003 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
+
+   ;; (setf db (load-aliases [file]))
+   ;; (save-aliases db [file])
+   ;; (db-records db) --> list-of-records
+   ;; 
+   ;; (make-alias name address-list) --> record
+   ;; (make-comment text) --> record
+   ;; (find-record-if db predicate) --> record
+   ;; (alias-record   db name) --> record
+   ;; (comment-record-containing db substring) --> record
+   ;; (insert-record  db record [:before record] [:after record])
+   ;; (delete-record  db record)
+   ;; 
+   ;; (list-all-aliases db) --> (\"name1\" \"name2\" ...)
+   ;; (alias-addresses db name) --> list
+   ;; (setf (alias-addresses db name) list)
+   ;; (insert-alias db name type value [:before record] [:after record])
+   ;; (delete-alias db name)
+
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.UNIX.ALIASES")
 
 

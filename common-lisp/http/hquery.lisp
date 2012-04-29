@@ -28,7 +28,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -37,14 +37,30 @@
   (:export "QUERY-ESCAPE" "QUERY-UNESCAPE" "QUERY-PARSE" "QUERY-ARGUMENT"
            "BUILD-QUERY")
   (:documentation
-   "This packages exports utility routines for web applications.
+   "
+This packages exports utility routines for web applications.
     
-    Copyright Pascal Bourguignon 2007 - 2007
+
+License:
+
+    AGPL3
     
-    This program is free software you can redistribute it and/or
-    modify it under the terms of the GNU General Public License
-    as published by the Free Software Foundation either version
-    2 of the License, or (at your option) any later version.
+    Copyright Pascal J. Bourguignon 2007 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
 "))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.HTTP.HQUERY")
 
@@ -124,10 +140,16 @@ RETURN:  The value of the QUERY-STRING argument named NAME.
 
 
 (defun build-query (&rest field-value)
+  "
+RETURN:     A formated string containing the field=value&field=value…
+EXAMPLE:    (build-query :first-name \"john\" :surname \"doe\")
+            --> \"first%2Dname=john&surname=doe\"
+"
   (format nil "~{~A=~A~^&~}" 
           (mapcar (lambda (item) (query-escape (if (stringp item) 
                                                    item
                                                    (format nil "~A" item))))
                   field-value)))
+
 
 ;;;; THE END ;;;;

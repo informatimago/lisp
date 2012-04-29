@@ -6,12 +6,7 @@
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    This package exports functions to manage character-sets,
-;;;;    character encodings, coding systems and external format.
-;;;;    It's all the same, but each everybody likes to have his own terms...
-;;;;    
-;;;;    The base character set repertoire will be the IANA one, published at:
-;;;;    http://www.iana.org/assignments/character-sets
+;;;;    See defpackage documentation string.
 ;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
@@ -39,7 +34,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
 
@@ -62,13 +57,44 @@
    "*CHARACTER-SETS*")
   
   (:documentation
-   "This package exports functions to manage character-sets,
-    character encodings, coding systems and external format.
-    It's all the same, but everyone likes to have his own terms...
+   "
+This package exports functions to manage character-sets, character
+encodings, coding systems and external format.  It's all the same, but
+everyone likes to have his own terms...
+
+The base character set repertoire will be the IANA one, published at:
+http://www.iana.org/assignments/character-sets</a>
+
+
+The cs-lisp-encoding and cs-emacs-encoding of the character sets are
+hooked in by the implementation specific initialization code in the
+COM.INFORMATIMGO.CLEXT.CHARACTER-SET package.
+
+
+See also: COM.INFORMATIMGO.CLEXT.CHARACTER-SET
+
+
+License:
+
+    AGPL3
     
     Copyright Pascal J. Bourguignon 2005 - 2012
-    This package is provided under the GNU General Public Licence.
-    See the source file for details."))
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CHARACTER-SETS")
 
 
@@ -79,7 +105,7 @@
 ;;;;
 
  (defstruct (character-set (:conc-name cs-))
-
+   "Describes a character-set."
    ;; Identification.  name is a string. aliases is a list of strings.
    mib-enum name aliases
 
@@ -108,11 +134,35 @@
    ;; or NIL when unknown.
    ranges)
 
+(setf (documentation 'cs-mib-enum 'function)
+      "The integer identifying the character set in the SNMP MIBs."
+      (documentation 'cs-name 'function)
+      "The name of the character set (a string)."
+      (documentation 'cs-aliases 'function)
+      "A list of aliases for the character set (strings)."
+      (documentation 'cs-source 'function)
+      "The normative reference specifying the character set (string)."
+      (documentation 'cs-comments 'function)
+      "A comment (string)."
+      (documentation 'cs-references 'function)
+      "References (string)."
+      (documentation 'cs-lisp-encoding 'function)
+      "The name of the  encoding in the current lisp implementation."
+      (documentation 'cs-emacs-encoding 'function)
+      "The name of the  encoding in GNU emacs."
+      (documentation 'cs-mime-encoding 'function)
+      "The name of the encoding in MIME."
+      (documentation 'cs-ranges 'function)
+      "The set of unicode ranges of the characters that are in this character-set.")
+
+(defgeneric character-set-error-character-set (error)
+  (:documentation "The character-set in error."))
 
 (define-condition character-set-error (error)
   ((character-set    :initarg :character-set    :reader character-set-error-character-set)
    (format-control   :initarg :format-control   :reader format-control)
    (format-arguments :initarg :format-arguments :reader format-arguments))
+  (:documentation "The CHARACTER-SET-ERROR condition.")
   (:report (lambda (condition stream)
              (format stream "~?" (format-control condition) (format-arguments condition)))))
 

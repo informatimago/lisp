@@ -30,7 +30,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -40,11 +40,32 @@
            "CURRENCY-MINOR-UNIT" "CURRENCY-NUMERIC-CODE" "CURRENCY-ALPHABETIC-CODE"
            "CC-NOTE" "CC-CURRENCY" "CC-COUNTRY")
   (:documentation
-   "This package exports functions and data to process iso4217 currency codes.
+   "
+
+This package exports functions and data to process iso4217 currency codes.
     
-     Copyright Pascal J. Bourguignon 2004 - 2004
-     This package is provided under the GNU General Public License.
-     See the source file for details."))
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2004 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ISO4217")
 
 
@@ -78,6 +99,13 @@
 
 (defstruct (country-currency-row  (:type list) (:conc-name cc-))
   country currency note)
+
+(setf (documentation 'cc-country 'function)
+      "The country of the currency."
+      (documentation 'cc-currency 'function)
+      "The currency."
+      (documentation 'cc-note 'function)
+      "A note.")
 
 
 (defparameter +country-currency+
@@ -337,11 +365,20 @@
     )
   "Relation N-N between countries and currencies.") ;;+COUNTRY-CURRENCY+
 
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
   (defstruct (currency (:type list))
     alphabetic-code numeric-code minor-unit name )
 
+  (setf (documentation 'currency-alphabetic-code 'function)
+        "The alphabetic code (3 letters) of the currency."
+        (documentation 'currency-numeric-code 'function)
+        "The numeric code (between 0 and 999) of the currency."
+        (documentation 'currency-minor-unit 'function)
+        "The number of digits after the decimal point for amounts in the currency."
+        (documentation 'currency-name 'function)
+        "The name of the currency")
 
   (defparameter +currencies+
     '(

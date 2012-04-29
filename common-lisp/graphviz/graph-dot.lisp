@@ -31,7 +31,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -42,11 +42,32 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.GRAPH")
   (:export "GENERATE-DOT")
   (:documentation
-   "This package exports methods for GRAPH to generate dot(1) files.
+   "
+This package exports methods for GRAPH to generate dot(1) files.
+
     
-    Copyright Pascal J. Bourguignon 2003 - 2003
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2003 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.GRAPHVIZ.GRAPH-DOT")
 
 
@@ -62,7 +83,8 @@ RETURN: A string containing the ident with the dash removed.
   (remove (character "-") (string ident)))
 
 
-(defgeneric generate-dot (self))
+(defgeneric generate-dot (graph)
+  (:documentation "RETURN: a string containing the dot file contents for the GRAPH."))
 
 (defmethod generate-dot ((self element-class))
   "

@@ -101,17 +101,40 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PACKAGE"
   (:documentation
-   "This package exports a macro used to declare a package.
+   "
 
-    Copyright Pascal J. Bourguignon 2003 - 2005
-    This package is provided under the GNU General Public License.
-    See the source file for details.")
+Some package utilities.
+
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2003 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+
+")
   (:use "COMMON-LISP")
   (:export "PACKAGE-EXPORTS" ;; missing from CL or not?
            "*PACKAGES*" "PACKAGE-PATHNAME" "LOAD-PACKAGE"
@@ -123,7 +146,8 @@
            ;; debugging help:
            "CRACK-OPEN-PACKAGE"
            ;; Obsolete: define-package
-           "DEFINE-PACKAGE"))
+           ;; "DEFINE-PACKAGE"
+           ))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PACKAGE")
 
 
@@ -155,18 +179,34 @@ RETURN:    A list of the selected symbols.
       (error "No package ~S" package))))
 
 (defun list-all-symbols (package &key (sorted t))
+  "
+RETURN:     A list of all the symbols present in the PACKAGE.
+PACKAGE:    A package designator.
+SORTED:     Whether the result list is sorted (default T).
+"
   (list-symbols package :sorted sorted :all t))
 
 (defun list-external-symbols (package &key (sorted t))
+  "
+RETURN:     A list of all the symbols exported from the PACKAGE.
+PACKAGE:    A package designator.
+SORTED:     Whether the result list is sorted (default T).
+"
   (list-symbols package :sorted sorted :exported t))
 
 
 (defun copy-package (old-package new-name)
+  "
+RETURN:         A new package that exports all the external symbols of the OLD-PACKAGE.
+OLD-PACKAGE:    A package designator.
+NEW-NAME:       A package name (string designator)
+"
   (let ((new-package (make-package new-name))
         (symbols (list-external-symbols old-package :sorted nil)))
     (import symbols new-package)
     (export symbols new-package)
     new-package))
+
 
 (defun crack-open-package (package)
   "
@@ -179,7 +219,15 @@ NOTE:    USE-PACKAGE only imports exported symbols.
 ;;----------------------------------------------------------------------
 
 
-(defvar *package-verbose* nil)
+(defvar *package-verbose* nil
+
+  "Whether some package operation defined in this package shall issue
+some verbosity.
+
+SEE ALSO:  REGISTER, LOAD-PACKAGE, ADD-NICKNAME.
+")
+
+
 (defparameter *vout* t "Verbose output stream.")
 (defmacro verbose (fctrl &rest args)
   `(when *package-verbose* (format *vout* ,fctrl ,@args)))

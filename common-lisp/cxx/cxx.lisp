@@ -32,7 +32,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -41,9 +41,33 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.GRAPH" )
   (:export "BUILD-METHOD-CALL-GRAF" "PARSE" "C++PROGRAM")
   (:documentation
-   "Parsing C++ sources.
+   "
+Parsing C++ sources.
 This is a restricted parser, used just to analyze
-the call graph of C++ functions and methods."))
+the call graph of C++ functions and methods.
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 1996 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CXX.CXX")
 
 
@@ -80,10 +104,15 @@ the call graph of C++ functions and methods."))
 (defgeneric res-type (self))
 (defgeneric arguments (self))
 (defgeneric called-methods (self))
-(defgeneric parse (self file-name-list))
+(defgeneric parse (program file-name-list)
+  (:documentation "
+DO:                 Parse the files given into the program.
+PROGRAM:            An instance of C++PROGRAM.
+FILE-NAME-LIST:     A list of file pathnames, C++ sources and headers."))
 (defgeneric add-c++method (self method))
 (defgeneric unify-methods-by-name (self))
-(defgeneric build-method-call-graf (self))
+(defgeneric build-method-call-graf (program)
+  (:documentation "Builds the method call graph of the program."))
 (defgeneric print-c++method-names (self))
 
 ;;----------------------------------------------------------------------
@@ -529,7 +558,8 @@ the call graph of C++ functions and methods."))
 
 (defclass c++program ()
   ((methods  :accessor methods  :initform nil)
-   (dotrace  :accessor dotrace  :initform nil)))
+   (dotrace  :accessor dotrace  :initform nil))
+  (:documentation "Represents the C++ program."))
 
 (defmethod parse ((self c++program) file-name-list)
   (cond

@@ -31,7 +31,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -43,33 +43,66 @@
            "DLL-COPY" "DLL-EQUAL" "DLL-LENGTH" "DLL-EMPTY-P" "DLL-LAST-NODE"
            "DLL-FIRST-NODE" "DLL")
   (:documentation
-   "This module exports a double-linked list type.
-    This is a structure optimized insertions and deletions in any place,
-    each node keeping a pointer to both the previous and the next node.
-    The stub keeps a pointer to the head of the list, and the list is
-    circularly closed (the tail points to the head).
+   "
+
+This module exports a double-linked list type.  This is a structure
+optimized insertions and deletions in any place, each node keeping a
+pointer to both the previous and the next node.  The stub keeps a
+pointer to the head of the list, and the list is circularly closed
+\(the tail points to the head).
+
+
+License:
+
+    AGPL3
     
-    Copyright Pascal J. Bourguignon 2001 - 2005
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
+    Copyright Pascal J. Bourguignon 2001 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DLL")
 
 
 
-
-
 (defstruct (dll (:conc-name %dll-))
+  "A Doubly-Linked List.
+A DLL keeps a reference to the first node and to the last node."
   (first    nil)
   (last     nil))
 
 
 (defstruct dll-node
+  "A node in a Doubly-Linked List.
+Each node is linked to the previous and to the next node in the list,
+and keeps a reference to its item."
   (previous nil)
   (next     nil)
   (item     nil))
 
+(setf (documentation 'dll-node-previous 'function)
+      "The previous node."
+      (documentation 'dll-node-next 'function)
+      "The next node."
+      (documentation 'dll-node-item 'function)
+      "The item of the node.")
 
 (defun dll (&rest list)
+  "
+RETURN: A new DLL containing the elements passed as arguments.
+"
   (loop
      :with dlist = (make-dll)
      :for element :in list
@@ -77,20 +110,41 @@
      :then (dll-insert dlist last-node element)
      :finally (return dlist)))
 
-(defun dll-first-node (dlist) (%dll-first dlist))
-(defun dll-last-node  (dlist) (%dll-last dlist))
+
+(defun dll-first-node (dlist)
+  "
+RETURN: The first node of the DLIST.
+"
+  (%dll-first dlist))
+
+
+(defun dll-last-node  (dlist)
+    "
+RETURN: The last node of the DLIST.
+"
+    (%dll-last dlist))
+
 
 (defun dll-empty-p (dlist)
+  "
+RETURN: Whether the DLL DLIST is empty. ie. (zerop (dll-length dlist))
+"
   (null (%dll-first dlist)))
 
 
 (defun dll-length (dlist)
+  "
+RETURN: The number of elements in the DLL DLIST.
+"
   (do ((len 0 (1+ len))
        (current (%dll-last dlist) (dll-node-previous current)))
       ((null current) len)))
 
 
 (defun dll-nth (index dlist)
+  "
+RETURN: The INDEXth element in the DLL DLIST.
+"
   (do ((i 0 (1+ i))
        (current (%dll-first dlist) (dll-node-next current)))
       ((or (null current) (= i index))
@@ -98,20 +152,31 @@
 
 
 (defun dll-position (item dlist &key (test (function eql)))
+    "
+RETURN: The INDEX of the first element in the DLL DLIST that satisfies
+        the test (TEST element ITEM).
+"
   (do ((i 0 (1+ i))
        (current (%dll-first dlist) (dll-node-next current)))
       ((or (null current) (funcall test (dll-node-item current) item))
        (when current i))))
 
 
-(defun dll-node-position (item dlist &key (test (function eql)))
+(defun dll-node-position (node dlist &key (test (function eql)))
+  "
+RETURN: The INDEX of the first node in the DLL DLIST that satisfies
+        the test (TEST element NODE).
+"
   (do ((i 0 (1+ i))
        (current (%dll-first dlist) (dll-node-next current)))
-      ((or (null current) (funcall test current item))
+      ((or (null current) (funcall test current node))
        (when current i))))
 
 
 (defun dll-equal (&rest dlls)
+  "
+RETURN: Whether all the DLLS contain the same elements in the same order.
+"
   (or
    (null dlls)
    (null (cdr dlls))
@@ -136,6 +201,9 @@
 
 
 (defun dll-copy (dlist)
+  "
+RETURN: A copy of the DLL DLIST.
+"
   (do ((new-dll (make-dll))
        (src (%dll-first dlist) (dll-node-next src))
        (dst nil))
@@ -159,6 +227,9 @@ RETURN: A new dll with all the elements in DLLS.
 PRE:   No dll appears twice in (CONS FIRST-DLL DLLS).
 DO:    Extract the nodes from all but the FIRST-DLL,
        and append them all to that FIRST-DLL.
+POST:  ∀l∈dlls, (dll-empty-p l)
+       (dll-length first-dll) =   Σ  (dll-length old l)
+                                l∈dlls
 "
   (if (null dlls)
       first-dll
@@ -184,14 +255,23 @@ RETURN:  A new list containing the items of the dll.
 
 
 (defun dll-first (dlist)
+  "
+RETURN: The first element in the DLL DLIST, or NIL if it's empty.
+"
   (unless (dll-empty-p  dlist)  (dll-node-item (%dll-first dlist))))
 
 
 (defun dll-last  (dlist)
+    "
+RETURN: The last element in the DLL DLIST, or NIL if it's empty.
+"
   (unless (dll-empty-p  dlist)  (dll-node-item (%dll-last  dlist))))
 
 
 (defun dll-node-nth (index dlist)
+  "
+RETURN: The INDEXth node of the DLL DLIST, or NIL if it's empty.
+"
   (do ((i 0 (1+ i))
        (current (%dll-first dlist) (dll-node-next current)))
       ((or (null current) (= i index)) current)))
@@ -241,6 +321,10 @@ RETURN: The new node.
 
 
 (defun dll-delete (node dlist)
+  "
+DO:     Delete the NODE from the DLL DLIST.
+RETURN: DLIST
+"
   (unless (or (null node) (dll-empty-p dlist)
               (not (dll-node-position node dlist))) ;; Note O(N)!
     (dll-extract-node dlist node))
@@ -248,6 +332,10 @@ RETURN: The new node.
 
 
 (defun dll-delete-nth (index dlist)
+    "
+DO:     Delete the INDEXth element of the DLL DLIST.
+RETURN: DLIST
+"
   (dll-extract-node dlist (dll-node-nth index dlist)))
 
 

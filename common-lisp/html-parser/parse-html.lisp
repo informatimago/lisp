@@ -31,7 +31,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -47,7 +47,42 @@
            "PARSE-HTML-STRING" "PARSE-HTML-FILE")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING" "UNSPLIT-STRING"
                 "SPLIT-STRING" "STRING-REPLACE")
-  (:documentation "This package exports functions to parse HTML pages."))
+  (:documentation "
+
+This package implements a simple HTML parser.
+
+Example:
+
+        (parse-html-string \"&lt;html&gt;&lt;head&gt;&lt;title&gt;Test&lt;/title&gt;&lt;/head&gt;
+        &lt;body&gt;&lt;h1&gt;Little Test&lt;/h1&gt;
+        &lt;p&gt;How dy? &lt;a href=\\\"/check.html\\\"&gt;Check this&lt;/a&gt;&lt;/p&gt;
+        &lt;ul&gt;&lt;li&gt;one&lt;li&gt;two&lt;li&gt;three&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;\")
+        --> ((:html nil (:head nil (:title nil \"Test\")) \"
+            \" (:body nil (:h1 nil \"Little Test\") \"
+            \" (:p nil \"How dy? \" (:a (:href \"/check.html\") \"Check this\")) \"
+            \" (:ul nil (:li nil \"one\" (:li nil \"two\" (:li nil \"three\")))))))
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2003 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.HTML-PARSER.PARSE-HTML")
 
 
@@ -1962,6 +1997,13 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
 
 
 (defun parse-html-file (pathname &key (verbose nil) (external-format :default))
+  "
+DO:                 Parse the HTML file PATHNAME.
+VERBOSE:            When true, writes some information in the *TRACE-OUTPUT*.
+EXTERNAL-FORMAT:    The external-format to use to open the HTML file.
+RETURN:             A list of html elements.
+SEE ALSO:           HTML-TAG, HTML-ATTRIBUTES, HTML-ATTRIBUTE, HTML-CONTENTS.
+"
   (let ((name (namestring pathname))
         synthetic walked encased)
     (when verbose
@@ -1982,10 +2024,16 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
     encased))
 
 
-(defun parse-html-string (string &key (start 0) (verbose nil))
+(defun parse-html-string (string &key (start 0) (end (length string)) (verbose nil))
+   "
+DO:                 Parse the HTML in the STRING (between START and END)
+VERBOSE:            When true, writes some information in the *TRACE-OUTPUT*.
+RETURN:             A list of html elements.
+SEE ALSO:           HTML-TAG, HTML-ATTRIBUTES, HTML-ATTRIBUTE, HTML-CONTENTS.
+" 
   (when verbose
     (format *trace-output* "~&starting string parsing from ~D~%" start))
-  (let ((synthetic  (with-input-from-string (src string :start start)
+  (let ((synthetic  (with-input-from-string (src string :start start :end end)
                       (let ((parser (make-html-parser
                                      :scanner (make-html-scanner :source src))))
                         (advance parser)
@@ -2001,10 +2049,18 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
 
 
 
-(defun html-tag        (html)     (first  html))
-(defun html-attributes (html)     (second html))
-(defun html-contents   (html)     (cddr   html))
-(defun html-attribute  (html key) (cadr (member key (second html))))
+(defun html-tag        (html)
+  "RETURN: The TAG of the HTML element."
+  (first  html))
+(defun html-attributes (html)
+  "RETURN: The ATTRIBUTES of the HTML element."
+  (second html))
+(defun html-contents   (html)
+  "RETURN: The CONTENTS of the HTML element."
+  (cddr   html))
+(defun html-attribute  (html key)
+  "RETURN: The ATTRIBUTE named KEY in the HTML element."
+  (cadr (member key (second html))))
 
 
 (defparameter *nl* (make-hash-table)

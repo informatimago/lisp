@@ -6,37 +6,8 @@
 ;;;;USER-INTERFACE:     NONE
 ;;;;NOWEB:              t
 ;;;;DESCRIPTION
-;;;;    
-;;;;    A "transaction" manager for CGI.
 ;;;;
-;;;;
-;;;; html-client                  transac-manager                         cgi
-;;;;   |                                 |                                 |
-;;;;   |                                                                  
-;;;;   |                                 /                                 
-;;;;   |--------(initial-request)------->|                                 /
-;;;;   |                                 |-----initialrequest(sessid)----->|
-;;;;   |                                 |                                 |
-;;;;   |                                 |<------reply(sessid,trid)--------|
-;;;;   |<-------(html-form)--------------|                                 /
-;;;;   |                                 /                                 
-;;;;   |                                                                  
-;;;;   |                                 /                                 
-;;;;   |----------(action.get)---------->|                                 /
-;;;;   |                                 |----request(sesid,trid,data)---->|
-;;;;   |                                 |                                 |
-;;;;   |                                 |<------reply(sessid,trid+1)------|
-;;;;   |<-------(html-form)--------------|                                 /
-;;;;   |                                 /                                
-;;;;   |                                                                  
-;;;;   |                                 |                                 |
-;;;;   V                                 V                                 V
-;;;;
-;;;;
-;;;;    In this implementation transac-manager and cgi are linked together in
-;;;;    the CGI process and this CGI process lives from the HTML request to
-;;;;    the response.
-;;;;
+;;;;    See defpackage documentation string.
 ;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
@@ -60,7 +31,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -81,28 +52,104 @@
            "REFUSED-NETS" "ALLOWED-NETS" "ENVIRONMENT" "ARGUMENTS" "HPROGRAM")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING" "PREFIXP" "SPLIT-STRING")
   (:documentation
-   "A ''TRANSACTION'' manager for CGI.
+   "
+A simple \"transaction\" manager for CGI.
+
+
+   html-client                  transac-manager                         cgi
+     |                                 |                                 |
+     |                                                                  
+     |                                 /                                 
+     |--------(initial-request)------->|                                 /
+     |                                 |-----initialrequest(sessid)----->|
+     |                                 |                                 |
+     |                                 |<------reply(sessid,trid)--------|
+     |<-------(html-form)--------------|                                 /
+     |                                 /                                 
+     |                                                                  
+     |                                 /                                 
+     |----------(action.get)---------->|                                 /
+     |                                 |----request(sesid,trid,data)---->|
+     |                                 |                                 |
+     |                                 |<------reply(sessid,trid+1)------|
+     |<-------(html-form)--------------|                                 /
+     |                                 /                                
+     |                                                                  
+     |                                 |                                 |
+     V                                 V                                 V
+
+
+In this implementation transac-manager and cgi are linked together in
+the CGI process and this CGI process lives from the HTML request to
+the response.
+
+
+
+
+License:
+
+    AGPL3
     
-    Copyright Pascal J. Bourguignon 2003 - 2007
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
+    Copyright Pascal J. Bourguignon 2003 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.HTTP.HTRANS")
 
 
 (defvar +crlf+ (format nil "~C~C" (code-char 13) (code-char 10)))
 
-(defgeneric process-transaction (htp))
-(defgeneric send-reply (htp session-id transac-id title data commands))
-(defgeneric send-table (htp session-id transac-id title row-desc data commands))
+(defgeneric process-transaction (htp)
+  (:documentation   "
+DO:             Parses the CGI request and calls the REQUEST function passing
+                it the session-id, transaction-id and request data.
+                For the initial request, transaction-id and request data will
+                be NIL.
+NOTE:           Begins by outputing the HTML header and ends with
+                the HTML footer.
+"))
+(defgeneric send-reply (htp session-id transac-id title data commands)
+  (:documentation   "DO:       Sends a reply page."))
+(defgeneric send-table (htp session-id transac-id title row-desc data commands)
+  (:documentation   "DO:       Sends a table."))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; HTML Transaction Program Interface
 ;;;
 
+(defgeneric action (program)
+  (:documentation "A string naming the action used in the HTML forms."))
+(defgeneric allowed-nets (program)
+  (:documentation "A list of (ip-address ip-mask)."))
+(defgeneric arguments (program)
+  (:documentation "A list of command-line arguments."))
+(defgeneric body-attributes (program)
+  (:documentation "A list containing the HTML:BODY attributes."))
+(defgeneric environment (program)
+  (:documentation  "An a-list of unix environment variables: (var . value)*"))
+(defgeneric refused-nets (program)
+  (:documentation "A list of (ip-address ip-mask)."))
+(defgeneric title (program)
+  (:documentation "A string used as page title."))
+
+
 (defclass hprogram ()
-  (
-   (arguments
+  ((arguments
     :initform nil
     :initarg  :arguments
     :accessor arguments
@@ -113,7 +160,7 @@
     :initarg  :environment
     :accessor environment
     :type     list
-    :documentation "An alist of unix environment variables: (var . value)*")
+    :documentation "An a-list of unix environment variables: (var . value)*")
    (allowed-nets
     :initform nil
     :initarg  :allowed-nets
@@ -143,41 +190,34 @@
     :initarg  :body-attributes
     :accessor body-attributes
     :type     list
-    :documentation "A list containing the HTML:BODY attributes.")
-   )
+    :documentation "A list containing the HTML:BODY attributes."))
   (:documentation "An abstract class of a HTML Transaction Program.
-   This is the interface used by the HTRANS package to communicate with it.")
-  ) ;;HPROGRAM
+This is the interface used by the HTRANS package to communicate with it."))
 
 
 (defgeneric process-request (self session-id trans-id trans-data)
   (:documentation "A call-back function (hprogram session-id trans-id data)
- that will be called with the decoded request.")
-  ) ;;PROCESS-REQUEST
+that will be called with the decoded request."))
 
 
 (defgeneric refuse-remote (self session-id remote-ip)
   (:documentation "A call-back function called to display a message
-  indicating that the remote was refused access for it's IP address.")
-  ) ;;REFUSE-REMOTE
+indicating that the remote was refused access for it's IP address."))
 
 
 (defgeneric refuse-session (self session-id)
   (:documentation "A call-back function called to display a message
-  indicating that the session-id is bad.")
-  ) ;;REFUSE-SESSION
+indicating that the session-id is bad."))
 
 
 (defgeneric generate-html-header (self session-id)
   (:documentation "A hook allowing the hprogram to display a header.
-  It should not generate a form with the same action!")
-  ) ;;GENERATE-HTML-HEADER
+It should not generate a form with the same action!"))
 
 
 (defgeneric generate-html-footer (self session-id)
   (:documentation "A hook allowing the hprogram to display a footer.
-  It should not generate a form with the same action!")
-  ) ;;GENERATE-HTML-FOOTER
+It should not generate a form with the same action!"))
 
 
 
@@ -191,8 +231,7 @@
   "
 RETURN: The value of the unix environment variable named NAME.
 "
-  (cdr (assoc name environment :test (function string=)))
-  ) ;;UNIX-ENVIRONMENT-GET
+  (cdr (assoc name environment :test (function string=))))
 
 
 
@@ -202,7 +241,7 @@ RETURN: The value of the unix environment variable named NAME.
 ;;;
 
 (defun bytep (thing)
-  (and (integerp thing) (<= 0 thing) (<= thing 255))) ;;BYTEP
+  (and (integerp thing) (<= 0 thing) (<= thing 255)))
 
 
 (defun ip-string-to-address (ip-address)
@@ -216,8 +255,7 @@ RETURN: The value of the unix environment variable named NAME.
           (if (and (bytep a) (bytep b) (bytep c) (bytep d))
               (+ (* (+ (* (+ (* a 256) b) 256) c) 256) d)
               nil))
-        nil))
-  ) ;;IP-STRING-TO-ADDRESS
+        nil)))
 
 
 (defun address-in-lan-p (ip-string lan-address lan-mask)
@@ -226,8 +264,7 @@ RETURN: The value of the unix environment variable named NAME.
           lan-mask    (ip-string-to-address lan-mask))
     (and address
          (= (logand address lan-mask)
-            (logand    lan-address lan-mask))))
-  ) ;;ADDRESS-IN-LAN-P
+            (logand    lan-address lan-mask)))))
 
 
 
@@ -239,8 +276,7 @@ RETURN:  Whether ADDRESS is on some of the SUBNETS.
 "
   (some (lambda (subnet)
           (address-in-lan-p address (first subnet) (second subnet)))
-        subnets)
-  ) ;;ADDRESS-IN-SUBNETS-P
+        subnets))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -268,7 +304,7 @@ RETURN:  Whether ADDRESS is on some of the SUBNETS.
 
 
 (defvar +command-prefix+ "COMMAND-"
-  "A prefix used for the INPUT names.") ;;+COMMAND-PREFIX+
+  "A prefix used for the INPUT names.")
 
 
 (defun getcmds (trans-data)
@@ -564,6 +600,9 @@ NOTE:           Begins with outputing the HTML header and ends with
 
 (defmethod send-table ((htp hprogram) session-id transac-id title
                        row-desc data commands)
+    "
+DO:       Sends a table.
+"
   (html:comment "SEND-TABLE")
   (html:comment "ROW-DESC=~S" row-desc)
   (html:comment "DATA=~S" data)

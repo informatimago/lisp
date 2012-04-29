@@ -49,7 +49,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -80,7 +80,7 @@
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "DEFENUM")
   (:shadow "ED")
   (:export
-   "CODE" "MAKE-CODE" "COPY-CODE"
+   "CODE" 
    "CODE-REFERENCE" "CODE-NAME" "CODE-TITLE" "CODE-NOTATION"
    "CODE-REPRESENTATION" "CODE-DESCRIPTION" "CODE-DEFAULT"
    ;; The ECMA048 codes:
@@ -221,97 +221,97 @@
 ;; LOAD-CODE-SPECIFICATIONS uses the clisp-specific package REGEXP.
 ;; We'll uncomment it when COM.INFORMATIMAGO.COMMON-LISP.REGEXP will work.
 
-(DEFUN LOAD-CODE-SPECIFICATIONS (&OPTIONAL (PATH "ecma048.txt"))
+(defun load-code-specifications (&optional (path "ecma048.txt"))
   "This function converts ecma048.txt files (basically, copy-pasted
    text from ecma048.pdf), to the following *CODES* s-expression."
   (defparameter *codes* '())
-  (WITH-OPEN-FILE (IN PATH :DIRECTION :INPUT :IF-DOES-NOT-EXIST :ERROR)
-    (LET ((CURRENT NIL)
-          ALL REF NAME TITLE NOTATION REPRESENTATION DESCRIPTION DEFAULT)
-      (FLET ((FINISH-CODE ()
-               (WHEN CURRENT (PUSH CURRENT *CODES*))
-               (SETF CURRENT (MAKE-CODE))))
-        (LOOP :FOR LINE = (READ-LINE IN NIL NIL)
-              :WHILE (AND LINE (STRING/= "BEGIN" (STRING-TRIM " " LINE))))
-        (LOOP
-           :FOR LINE = (READ-LINE IN NIL NIL)
-           :WHILE LINE
-           :DO (COND
-                ((STRING= "FINE" (STRING-TRIM " " LINE))
-                 (FINISH-CODE)
-                 (LOOP-FINISH))
-                ((PROGN
-                   (MULTIPLE-VALUE-SETQ (ALL REF NAME TITLE)
-                     (REGEXP:MATCH
+  (with-open-file (in path :direction :input :if-does-not-exist :error)
+    (let ((current nil)
+          all ref name title notation representation description default)
+      (flet ((finish-code ()
+               (when current (push current *codes*))
+               (setf current (make-code))))
+        (loop :for line = (read-line in nil nil)
+              :while (and line (string/= "BEGIN" (string-trim " " line))))
+        (loop
+           :for line = (read-line in nil nil)
+           :while line
+           :do (cond
+                ((string= "FINE" (string-trim " " line))
+                 (finish-code)
+                 (loop-finish))
+                ((progn
+                   (multiple-value-setq (all ref name title)
+                     (regexp:match
                       "^\\(8.3.[0-9]\\+\\) \\([A-Z]\\+[0-9]*\\) - \\(.*\\)"
-                      LINE))
-                   ALL)
-                 (FINISH-CODE)
-                 (SETF (CODE-REFERENCE CURRENT) (REGEXP:MATCH-STRING LINE REF)
-                       (CODE-NAME CURRENT) (REGEXP:MATCH-STRING LINE NAME)
-                       (CODE-TITLE CURRENT)
-                       (STRING-TRIM " " (REGEXP:MATCH-STRING LINE TITLE))))
-                ((PROGN
-                   (MULTIPLE-VALUE-SETQ (ALL NOTATION)
-                     (REGEXP:MATCH "^Notation: \\(.*\\)" LINE))  ALL)
-                 (SETF (CODE-NOTATION CURRENT)
-                       (STRING-TRIM
-                        " " (REGEXP:MATCH-STRING LINE NOTATION))))
-                ((PROGN
-                   (MULTIPLE-VALUE-SETQ (ALL REPRESENTATION)
-                     (REGEXP:MATCH "^Representation: \\(.*\\)" LINE))  ALL)
-                 (SETF (CODE-REPRESENTATION CURRENT)
-                       (STRING-TRIM
-                        " " (REGEXP:MATCH-STRING LINE REPRESENTATION))))
-                ((PROGN
-                   (MULTIPLE-VALUE-SETQ (ALL DESCRIPTION)
-                     (REGEXP:MATCH "^Description: \\(.*\\)" LINE))  ALL)
-                 (SETF (CODE-DESCRIPTION CURRENT)
-                       (STRING-TRIM
-                        " " (REGEXP:MATCH-STRING LINE DESCRIPTION))))
-                ((PROGN
-                   (MULTIPLE-VALUE-SETQ (ALL DEFAULT)
-                     (REGEXP:MATCH "^Parameter default value: \\(.*\\)" LINE))
-                   ALL)
-                 (SETF (CODE-DEFAULT CURRENT)
-                       (STRING-TRIM
-                        " " (REGEXP:MATCH-STRING LINE DEFAULT)))))))))
-  (DOLIST (C *CODES*)
-    (LET ((DEFA (CODE-DEFAULT C)))
-      (WHEN DEFA
-        (SETF (CODE-DEFAULT C)
-              (CDR (ASSOC
-                    DEFA
-                    '(("Ps1 = 0; Ps2 =0"       . ((PS1 . 0) (PS2 . 0)))
-                      ("Pn1 = 100; Pn2 = 100"  . ((PN1 . 100) (PN2 . 100)))
-                      ("Pn1 = 1; Pn2 = 1"      . ((PN1 . 1) (PN2 . 1)))
-                      ("Ps1 = 0; Ps2 = 0"      . ((PS1 . 0) (PS2 . 0)))
-                      ("Pn = 0"                . ((PN . 0)))
-                      ("Ps = 0"                . ((PS . 0)))
-                      ("NONE for Pn1"          . ((PN1 . :NONE)))
-                      ("NONE"                  . ((* . :NONE))) 
-                      ("Pn = 1"                . ((PN . 1))) )
-                    :TEST (FUNCTION STRING=))))))
-    (LET ((NOTA (CODE-NOTATION C)))
-      (WHEN NOTA
-        (SETF (CODE-NOTATION C)
-              (CDR (ASSOC
-                    NOTA
-                    '(("(Fs)"      . (FS)) 
-                      ("(Ps...)"   . (PS...)) 
-                      ("(Ps1;Ps2)" . (PS1 PS2)) 
-                      ("(Ps)"      . (PS)) 
-                      ("(Pn1;Pn2)" . (PN1 PN2)) 
-                      ("(Pn)"      . (PN)) 
-                      ("(C0)"      . (C0)) 
-                      ("(C1)"      . (C1)) )
-                    :TEST (FUNCTION STRING=))))))
-    (LET ((REPR (CODE-REPRESENTATION C)))
-      (WHEN REPR
-        (SETF (CODE-REPRESENTATION C)
-              (MAPCAR (LAMBDA (S) (REGEXP:REGEXP-SPLIT " " S))
-                      (REGEXP:REGEXP-SPLIT " or "  REPR))))) )
-  (SETF *CODES* (NREVERSE *CODES*))
+                      line))
+                   all)
+                 (finish-code)
+                 (setf (code-reference current) (regexp:match-string line ref)
+                       (code-name current) (regexp:match-string line name)
+                       (code-title current)
+                       (string-trim " " (regexp:match-string line title))))
+                ((progn
+                   (multiple-value-setq (all notation)
+                     (regexp:match "^Notation: \\(.*\\)" line))  all)
+                 (setf (code-notation current)
+                       (string-trim
+                        " " (regexp:match-string line notation))))
+                ((progn
+                   (multiple-value-setq (all representation)
+                     (regexp:match "^Representation: \\(.*\\)" line))  all)
+                 (setf (code-representation current)
+                       (string-trim
+                        " " (regexp:match-string line representation))))
+                ((progn
+                   (multiple-value-setq (all description)
+                     (regexp:match "^Description: \\(.*\\)" line))  all)
+                 (setf (code-description current)
+                       (string-trim
+                        " " (regexp:match-string line description))))
+                ((progn
+                   (multiple-value-setq (all default)
+                     (regexp:match "^Parameter default value: \\(.*\\)" line))
+                   all)
+                 (setf (code-default current)
+                       (string-trim
+                        " " (regexp:match-string line default)))))))))
+  (dolist (c *codes*)
+    (let ((defa (code-default c)))
+      (when defa
+        (setf (code-default c)
+              (cdr (assoc
+                    defa
+                    '(("Ps1 = 0; Ps2 =0"       . ((ps1 . 0) (ps2 . 0)))
+                      ("Pn1 = 100; Pn2 = 100"  . ((pn1 . 100) (pn2 . 100)))
+                      ("Pn1 = 1; Pn2 = 1"      . ((pn1 . 1) (pn2 . 1)))
+                      ("Ps1 = 0; Ps2 = 0"      . ((ps1 . 0) (ps2 . 0)))
+                      ("Pn = 0"                . ((pn . 0)))
+                      ("Ps = 0"                . ((ps . 0)))
+                      ("NONE for Pn1"          . ((pn1 . :none)))
+                      ("NONE"                  . ((* . :none))) 
+                      ("Pn = 1"                . ((pn . 1))) )
+                    :test (function string=))))))
+    (let ((nota (code-notation c)))
+      (when nota
+        (setf (code-notation c)
+              (cdr (assoc
+                    nota
+                    '(("(Fs)"      . (fs)) 
+                      ("(Ps...)"   . (ps...)) 
+                      ("(Ps1;Ps2)" . (ps1 ps2)) 
+                      ("(Ps)"      . (ps)) 
+                      ("(Pn1;Pn2)" . (pn1 pn2)) 
+                      ("(Pn)"      . (pn)) 
+                      ("(C0)"      . (c0)) 
+                      ("(C1)"      . (c1)) )
+                    :test (function string=))))))
+    (let ((repr (code-representation c)))
+      (when repr
+        (setf (code-representation c)
+              (mapcar (lambda (s) (regexp:regexp-split " " s))
+                      (regexp:regexp-split " or "  repr))))) )
+  (setf *codes* (nreverse *codes*))
   (values))
 
 ;; At compile-time or when loading the source without compiling,
@@ -324,7 +324,23 @@
 
 
 (defstruct code
+  "Description of an ECMA-048 code."
   reference name title notation representation description default)
+
+(setf (documentation 'code-reference 'function)
+      "The section of the ECMA-048 standard where the code is specified."
+      (documentation 'code-name 'function)
+      "The name of the ECMA-048 code."
+      (documentation 'code-title 'function)
+      "The title of the ECMA-048 code."
+      (documentation 'code-notation 'function)
+      "The symbolic notation of the ECMA-048 code parameters."
+      (documentation 'code-representation 'function)
+      "The description of the ECMA-048 code representation (byte values)."
+      (documentation 'code-description 'function)
+      "The description of the semantics of the ECMA-048 code."
+      (documentation 'code-default 'function)
+      "The default value for the parameters of the ECMA-048 code.")
 
 (defparameter *codes* 
   (mapcar
@@ -2015,7 +2031,9 @@
       :description
       "VTS causes a line tabulation stop to be set at the active line
     (the line that contains the active presentation position)."
-      :default nil))))
+      :default nil)))
+
+  "Description of the ECMA-048 codes.")
 
 
 (defun parse-byte-specification (string)
@@ -2168,6 +2186,35 @@ BUGS:           Perhaps we should generate functions that take 8-BIT and
                                (8-bit nil)
                                (print nil)
                                (result-type '(vector (unsigned-byte 8))))
+  "
+DO:             Generate the functions for each of the ECMA-048 codes:
+                Defines (and may be compile) and exports a function
+                named as ,(CODE-NAME CODE) that
+                takes as arguments ,(CODE-NOTATION CODE) and that
+                returns a string or byte vector containing the control sequence.
+                In addition, if the sequence contains only one constant
+                byte, defines a constant of same name as the function equal
+                to this byte, or this character if RESULT-TYPE is STRING.
+CODE:           The code structure to be generated.
+COMPILE:        Whether the generated function must be compiled right now.
+VERBOSE:        If VERBOSE is true, prints a message in the form of a comment
+                (i.e., with a leading semicolon) to standard output
+                indicating what function is being compiled
+                and other useful information.
+                If VERBOSE is false, does not print this information.
+EXPORT:         Whether the generated function symbol must be exported.
+8-BIT:          Whether the generated function
+                must return 8-bit escape sequences or 7-bit escape sequences.
+PRINT:          If NIL, then return the escape sequence
+                else the function takes an optional last argument of type 
+                stream or T (which is the default) and writes the escape
+                sequence to this stream, or *STANDARD-OUTPUT* for T.
+RESULT-TYPE:    The type that the generated function must return:
+                '(vector (unsigned-byte 8))  the default.
+                'string  Note that it will be subject to encoding conversion!
+BUGS:           Perhaps we should generate functions that take 8-BIT and
+                RESULT-TYPE as arguments (or special variables) dynamically.
+"
   (dolist (code *codes*)
     (generate-code-function code
                             :verbose verbose
@@ -2213,6 +2260,12 @@ BUGS:           Perhaps we should generate functions that take 8-BIT and
 ;;                           :result-type '(vector (unsigned-byte 8))))
 
 (defun generate-all-functions-in-ecma048 ()
+  "
+DO:         Generate the functions for each of the ECMA-048 codes,
+            in the COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ECMA048 package,
+            compiling them, exporting them, using 8-bit codes, not printing,
+            but returning byte vectors.
+"
   (unless (and (boundp 'ht) (fboundp 'ht))
     (let ((*package* (find-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ECMA048")))
       (generate-all-functions :verbose *compile-verbose*

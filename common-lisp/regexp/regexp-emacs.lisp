@@ -7,20 +7,6 @@
 ;;;;NOWEB:              t
 ;;;;DESCRIPTION
 ;;;;
-;;;;    Posix Regexp implemented in Common-Lisp.
-;;;;
-;;;;    See specifications at:
-;;;;    http://www.opengroup.org/onlinepubs/007904975/basedefs/xbd_chap09.html
-;;;;
-;;;;    This is a strict implementation that will work both in clisp
-;;;;    (Common-Lisp) and emacs (with cl and pjb-cl Common-Lisp extensions).
-;;;;
-;;;;    This implementation is entirely in lisp, contrarily to what regexp
-;;;;    packages are available under clisp or emacs.  Thus it as the advantage
-;;;;    of portability and availability (you don't have to compile or link
-;;;;    a lisp system written in some barbarous language, and you get the same
-;;;;    regexp features in all programs including this module).
-;;;;
 ;;;;USAGE
 ;;;;    
 ;;;;AUTHORS
@@ -44,7 +30,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -55,16 +41,52 @@
   (:export "REGEXP-MATCH" "REGEXP-QUOTE" "MATCH-STRING" "MATCH-END"
            "MATCH-START" "MATCH")
   (:documentation
-   "This package implement REGEXP in COMMON-LISP,
-    which is interesting because then it's available on any COMMON-LISP platform
-    whether the external C regexp library is available or not, and moreover,
-    it's the same (that is, it's compatible) on all COMMON-LIST platforms.
+   "
+NOT COMPLETE YET.
 
-    NOT COMPLETE YET.
+This package implement REGEXP in COMMON-LISP, which is interesting
+because then it's available on any COMMON-LISP platform whether the
+external C regexp library is available or not, and moreover, it's the
+same (that is, it's compatible) on all COMMON-LIST platforms.
 
-    Copyright Pascal J. Bourguignon 2002 - 2002
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
+
+Posix Regexp implemented in Common-Lisp.
+
+See specifications at:
+http://www.opengroup.org/onlinepubs/007904975/basedefs/xbd_chap09.html
+
+This is a strict implementation that will work both in clisp
+(Common-Lisp) and emacs (with cl and pjb-cl Common-Lisp extensions).
+
+This implementation is entirely in lisp, contrarily to what regexp
+packages are available under clisp or emacs.  Thus it as the advantage
+of portability and availability (you don't have to compile or link
+a lisp system written in some barbarous language, and you get the same
+regexp features in all programs including this module).
+
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2002 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.REGEXP.REGEXP-EMACS")
 
 

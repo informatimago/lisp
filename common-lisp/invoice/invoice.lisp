@@ -34,7 +34,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -49,12 +49,32 @@
            "*INVOICE-SET*" "*CURRENCY-READTABLE*")
   (:shadow "ABS" "ZEROP" "ROUND" "/=" "=" ">=" ">" "<=" "<" "/" "*" "-" "+")
   (:documentation "
+
 This package exports classes and functions used for accounting:
 invoices, customers/providers, movements, taxes...
 
-Copyright Pascal J. Bourguignon 1990 - 2004
-This package is provided under the GNU General Public License.
-See the source file for details."))
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 1990 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.INVOICE.INVOICE")
 
 
@@ -113,7 +133,12 @@ movement (weak, I know).")
 (defgeneric debit-vat-inversion (self))
 (defgeneric ensure-sorted (self))
 (defgeneric extract (self year trimestre))
-(defgeneric generate (self &key stream verbose language &allow-other-keys))
+(defgeneric generate (invoice &key stream verbose language &allow-other-keys)
+  (:documentation   "
+DO:      Generate this invoice into a file in the directory 
+         *INVOICE-DIRECTORY-PATH*.
+RETURN:  The path to the file generated.
+"))
 (defgeneric get-invoice-with-issuer-and-number (self issuer-fiscal-id invoice-number))
 (defgeneric get-person-with-fiscal-id (self fiscal-id))
 (defgeneric invoices (self))
@@ -824,7 +849,7 @@ RETURN:       A number of seconds since 1900-01-01 00:00:00 GMT.
     :type     amount
     :documentation
     "The amount including the taxes of this line."))
-  (:documentation "An Invoice Line.")) ;;INVOICE-LINE
+  (:documentation "An Invoice Line.")) 
 
 
 ;;;---------------------------------------------------------------------
@@ -902,8 +927,7 @@ RETURN:       A number of seconds since 1900-01-01 00:00:00 GMT.
    )
   (:documentation
    "An invoice, either outgoing or incoming.
-    The amounts of the invoice may be negative when it's a refund.
-    ")) ;;INVOICE
+The amounts of the invoice may be negative when it's a refund."))
 
 
 (defmethod initialize-instance :after ((self invoice) &rest arguments)
@@ -2039,6 +2063,9 @@ DOES:    format and insert this entry.
 ;;;---------------------------------------------------------------------
 
 
+(defgeneric trimestre (journal)
+  (:documentation "RETURN: The quarter of the journal (1 2 3 or 4)."))
+
 (defclass journal ()
   ((sorted :initform nil
            :accessor sorted
@@ -2056,7 +2083,8 @@ DOES:    format and insert this entry.
                              (1- (date-month (calendar-current-date))) 3))
               :initarg :trimestre
               :accessor trimestre
-              :type (member 1 2 3 4)))) ;;JOURNAL
+              :type (member 1 2 3 4)))
+  (:documentation "An account journal."))
 
 
 (defmethod reset ((self journal))
@@ -2210,10 +2238,17 @@ DOES:   Prints the formated entries of the journal onto the stream.
 
 
 (defmacro person (&rest args)
+  "
+DO:       Add to the *INVOICE-SET* a new FISCAL-PERSON instance
+          created with the give initargs.
+"
   `(add-person *invoice-set* (make-instance 'fiscal-person ,@args)))
 
 
 (defmacro make-bank-reference (&rest args)
+  "
+RETURN: A new instance of BANK-REFERENCE with the given initargs.
+"
   `(make-instance 'bank-reference ,@args))
 
 
@@ -2252,6 +2287,9 @@ DOES:   Add a new journal entry.
 
 
 (defun load-journal (path &key (verbose *load-verbose*) (print *load-print*))
+  "
+DO:        Load the journal at PATH.
+"
   (let ((*readtable* *currency-readtable*)))
   (load path :verbose verbose :print print))
 

@@ -6,8 +6,8 @@
 ;;;;USER-INTERFACE:     common-lisp
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    Compute primes and factorize numbers.
-;;;;    
+;;;;    See defpackage documentation string.
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -31,7 +31,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -42,11 +42,30 @@
            "COMPUTE-PRIMES-TO")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "WHILE")
   (:documentation
-   "Compute primes and factorize numbers.
+   "
 
-Copyright Pascal J. Bourguignon 2003 - 2003
-This package is provided under the GNU General Public License.
-See the source file for details."))
+Compute primes and factorize numbers.
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2003 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see http://www.gnu.org/licenses/
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.ARITHMETIC.PRIMES")
 
 
@@ -102,7 +121,7 @@ RETURN: An array of prime numbers.
 N:        an INTEGER
 PRIMES:   a VECTOR of prime factors sorted in increasing order.
 RETURN:   a SEXP of the form: (* uncomensurate-factor
-                                 [ prime | (EXPT prime exponent) ]... [ -1 ] )
+                                 [ prime | (EXPT prime exponent) ]… [ -1 ] )
 "
   (setf primes (or primes (compute-primes-to (1+ (isqrt n)))))
   (let ((factors '())
@@ -165,14 +184,14 @@ RETURN:   a VECTOR of length (1+ (LENGTH PRIMES)), with the uncommensurate
 
 (defun print-factorization (exponents primes)
   "
-EXPONENTS:  [ uncommensurate-factor  exponents... ]
-PRIMES:     [ prime-factors ... ]
+EXPONENTS:  A sequence: ( uncommensurate-factor  exponents… )
+PRIMES:     A sequence: ( prime-factors… )
 PRE:        (= (LENGTH EXPONENTS) (1+ (LENGTH PRIMES)))
 DO:         Prints on *STANDARD-OUTPUT* an expression of the number.
 "
   (map nil (lambda (p e) (unless (zerop e) (format t "~12D ^ ~D *~%" p e)))
        primes (subseq exponents 1))
-  (format t "~12A   ~D~%" "" (aref exponents 0)))
+  (format t "~12A   ~D~%" "" (elt exponents 0)))
 
 
 (defun str-encode (str primes)

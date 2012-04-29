@@ -5,9 +5,9 @@
 ;;;;SYSTEM:            common-lisp
 ;;;;USER-INTERFACE:    NONE
 ;;;;DESCRIPTION
-;;;;    This modules draws a tree onto an ASCII-ART picture (pict.lisp)
-;;;;    The tree drawn is a list whose car is the node displayed, and
-;;;;    whose cdr is the list of children.
+;;;;
+;;;;    See defpackage documentation string.
+;;;;
 ;;;;USAGE
 ;;;;
 ;;;;AUTHORS
@@ -31,7 +31,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -40,13 +40,34 @@
         "COM.INFORMATIMAGO.COMMON-LISP.PICTURE.PICTURE")
   (:export "TREE-TO-ASCII-DRAW-TO-PICT" "TREE-DECORATE" "TREE-TO-ASCII")
   (:documentation
-   "This package draws a tree onto an ASCII-ART picture
-    The tree drawn is a list whose car is the node displayed, and
-    whose cdr is the list of children.
+   "
+This package draws a tree onto an ASCII-ART picture
+The tree drawn is a list whose car is the node displayed, and
+whose cdr is the list of children.
 
-    Copyright Pascal J. Bourguignon 2002 - 2002
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2002 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.PICTURE.TREE-TO-ASCII")
 
 
@@ -62,7 +83,7 @@
 
 (defun tree-decorate (tree make-decoration)
   "
-DOES:    Converts the list based tree to a decorated tree.
+DO:      Converts the list based tree to a decorated tree.
          The building of the decoration is done by the make-decoration
          function.
 RETURN:  The decorated tree.
@@ -119,7 +140,7 @@ RETURN:  The decorated tree.
 
 (defun tree-to-ascii-make-decoration (node children)
   "
-DOES:    Builds a new decorated node: an array of 4 entries:
+DO:      Builds a new decorated node: an array of 4 entries:
          node, children list, formated string, and box array
 RETURN:  The decorated node.
 "
@@ -149,7 +170,7 @@ RETURN:  The decorated node.
 (defun tree-to-ascii-compute-boxes (tree &key boxed format-fun
                                     from-length to-length)
   "
-DOES:           Compute the boxes and formated strings and store them in the
+DO:             Compute the boxes and formated strings and store them in the
                 decorated tree.
 FROM-LENGTH:    The length of the stem from the child box (default = 2).
 TO-LENGTH:      The length of the stem to the parent box (default = 2).
@@ -222,7 +243,7 @@ NOTE:                     TO-LENGTH   FROM-LENGTH
 (defun tree-to-ascii-draw-to-pict (tree pict left bottom
                                    &key boxed to-length from-length)
   "
-DOES:    Draw the decorated TREE into the PICT.
+DO:      Draw the decorated TREE into the PICT.
 "
   (let ((box (tree-to-ascii-box      tree))
         (str (tree-to-ascii-formated tree))
@@ -298,8 +319,23 @@ format-fun:  a function taking a node (one of the car's) and
              returning a string to be displayed as the node.
              Defaults merely use (format nil \"~S\" node).
 background:  is a character used as background. Default: space.
-DOES:        Draw the tree onto an ASCII-art picture.
+DO:          Draw the tree onto an ASCII-art picture.
 RETURNS:     The string containing the ASCII-ART tree.
+
+EXAMPLE:     (tree-to-ascii '(if (= a b) (decf b a) (decf a b)))
+             -->
+            \"          +--a   
+                 +--=--+      
+                 |     +--b   
+                 |            
+                 |        +--b
+             if--+--decf--+   
+                 |        +--a
+                 |            
+                 |        +--a
+                 +--decf--+   
+                          +--b
+             \"
 "
   (unless from-length (setq from-length 2))
   (unless to-length   (setq to-length   2))
@@ -313,11 +349,9 @@ RETURNS:     The string containing the ASCII-ART tree.
          (pict (make-instance 'picture
                  :width (tree-to-ascii-box-width box) 
                  :height (tree-to-ascii-box-height box)
-                 :background background))
-         )
+                 :background background)))
     (tree-to-ascii-draw-to-pict
      tree pict 0 0 :boxed boxed :to-length to-length :from-length from-length)
     (to-string pict)))
 
-
-;;;; tree-to-ascii.lisp               --                     --          ;;;;
+;;;; THE END ;;;;

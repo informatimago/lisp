@@ -7,7 +7,8 @@
 ;;;;DESCRIPTION
 ;;;;    
 ;;;;    Converts the IANA character sets assignments to a lisp package.
-;;;;    <a href=http://www.iana.org/assignments/character-sets>IANA character set</a>
+;;;;    IANA character sets:
+;;;;    http://www.iana.org/assignments/character-sets
 ;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
@@ -30,7 +31,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -40,8 +41,32 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "COMMON-LISP")
   (:export "CHARACTER-SETS-MAP" "READ-CHARACTER-SETS")
   (:documentation
-   "Converts the IANA character set assignments to a lisp package.
-    http://www.iana.org/assignments/character-sets"))
+   "
+Converts the IANA character set assignments to a lisp package.
+IANA character sets:
+http://www.iana.org/assignments/character-sets
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2005 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see http://www.gnu.org/licenses/
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.IANA-CHARACTER-SETS")
 
 
@@ -84,3 +109,4 @@
   
 
 
+;;;; THE END ;;;;

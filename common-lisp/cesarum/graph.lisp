@@ -38,7 +38,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -64,11 +64,43 @@
            "SET-PROPERTY" "PROPERTY-NAMES" "ELEMENT-CLASS")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "WHILE")
   (:documentation
-   "This package exports classes for elements, sets and graphs.
+   "
+
+This package exports classes for elements, sets and graphs.
+
+Graph class.
+
+This is a CLOS based implementation of graphs.
+It comes from an emacs/eieio implementation used to analyze
+CVS versioning graph.
+
+Subclasses exist to generate dot files, and Diagram! files.
+
+
+See also:
+
+
+License:
+
+    AGPL3
     
-    Copyright Pascal J. Bourguignon 2003 - 2003
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
+    Copyright Pascal J. Bourguignon 2003 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.GRAPH")
 
 
@@ -154,44 +186,259 @@
 ;; METHOD FIND-NODES-WITH-PROPERTY ((SELF GRAPH-CLASS)
 ;; METHOD SHOW-GRAPH ((SELF GRAPH-CLASS))
 
-(defgeneric property-names (self))
-(defgeneric set-property (self prop-name prop-value))
-(defgeneric get-property (self prop-name))
-(defgeneric delete-property (self prop-name))
-(defgeneric cardinal (self))
-(defgeneric add-elements (self newelementlist))
-(defgeneric remove-element (self oldelement))
-(defgeneric perform-with-elements (self lambda-body))
-(defgeneric map-elements (self lambda-body))
-(defgeneric select-elements (self select-lambda))
-(defgeneric element-list (self))
-(defgeneric find-elements-with-property (self property value))
-(defgeneric contains-element (self anelement))
-(defgeneric add-element (self newelement))
-(defgeneric set-weight (self newweight))
-(defgeneric set-nodes (self newfrom newto))
-(defgeneric description (self))
-(defgeneric add-node (self newnode))
-(defgeneric add-nodes (self newnodelist))
-(defgeneric remove-node (self oldnode))
-(defgeneric remove-nodes (self oldnodelist))
-(defgeneric add-edge (self newedge))
-(defgeneric add-edge-between-nodes (self nodea nodeb))
-(defgeneric remove-edge (self oldedge))
-(defgeneric remove-edges (self edge-list))
-(defgeneric remove-edges-between-nodes (self nodea nodeb))
-(defgeneric edges-between-nodes (self nodea nodeb))
-(defgeneric directed-edges-between-nodes (self fromnode tonode))
-(defgeneric directed-edges-from-node (self fromnode))
-(defgeneric successor-nodes (self node))
-(defgeneric adjacent-nodes (self node))
-(defgeneric flow-distance-from-node (self startnode prop-name))
-(defgeneric walk-from-node (self startnode lambda-body))
-(defgeneric walk-edges-from-node (self startnode lambda-body))
-(defgeneric find-nodes-with-property (self property value))
-(defgeneric show-graph (self))
+
+(defgeneric property-names (self)
+  (:documentation   "
+RETURN: The list of property names (keys) of properties of this element.
+"))
+
+
+(defgeneric set-property (self prop-name prop-value)
+  (:documentation  "
+POST:  (eql (GET-PROPERTY self prop-name) prop-value)
+"))
+
+
+(defgeneric get-property (self prop-name)
+  (:documentation   "
+RETURN: the property `prop-name' of this element.
+"))
+
+
+(defgeneric delete-property (self prop-name)
+  (:documentation   "
+DO:     Remove the property named `prop-name' from the property list of
+        this element.
+"))
+
+
+(defgeneric cardinal (self)
+  (:documentation   "
+RETURN: The number of elements in this set.
+"))
+
+
+(defgeneric add-elements (self newelementlist)
+  (:documentation   "
+DO:     Add each element of the newElementList to this set.
+"))
+
+
+(defgeneric remove-element (self oldelement)
+  (:documentation   "
+PRE:    already_in   = (CONTAINS-ELEMENT self newElement),
+        old_CARDINAL = (CARDINAL self)
+POST:   already_in       ==> (CARDINAL self) == (1- old_CARDINAL),
+                             (not (CONTAINS-ELEMENT self oldElement))
+        (not already_in) ==> (CARDINAL self) == old_CARDINAL
+"))
+
+
+(defgeneric perform-with-elements (self lambda-body)
+  (:documentation   "
+DO:     calls lambda-body with each element in the set.
+NOTE:   lambda-body must not change this set.
+"))
+
+
+(defgeneric map-elements (self lambda-body)
+  (:documentation   "
+RETURN: the list of results returned by lambda-body called with each element.
+NOTE:   lambda-body must not change this set.
+"))
+
+
+(defgeneric select-elements (self select-lambda)
+  (:documentation   "
+RETURN: A list of elements for which select-lambda returned true.
+"))
+
+
+(defgeneric element-list (self)
+  (:documentation   "
+RETURN: A new list of the elements in self.
+"))
+
+(defgeneric find-elements-with-property (self property value)
+  (:documentation   "
+RETURN: A list of elements that have as property PROPERTY the value VALUE.
+"))
+
+
+(defgeneric contains-element (self anelement)
+  (:documentation   "
+RETURN: Whether this set contains anElement.
+"))
+
+
+(defgeneric add-element (self newelement)
+  (:documentation   "
+PRE:    already_in   = (CONTAINS-ELEMENT self newElement),
+        old_CARDINAL = (CARDINAL self)
+POST:   already_in       ==> (CARDINAL self) == old_CARDINAL
+        (not already_in) ==> (CARDINAL self) == (1+ old_CARDINAL)
+                             (CONTAINS-ELEMENT self newElement)
+"))
+
+
+(defgeneric set-weight (self newweight)
+  (:documentation   "
+POST:   (equal (weight self) newWeight)
+"))
+
+
+(defgeneric set-nodes (self newfrom newto)
+  (:documentation   "
+DO:     set the NODES of this edge.
+"))
+
+
+(defgeneric description (self)
+  (:documentation   "
+RETURN: A string describing this element.
+"))
+
+
+(defgeneric add-node (self newnode)
+  (:documentation   "
+DO:     Add newNode to the set of NODES of this graph.
+"))
+
+
+(defgeneric add-nodes (self newnodelist)
+  (:documentation   "
+DO:     Add a list of new NODES to the set of NODES of this graph.
+"))
+
+
+(defgeneric remove-node (self oldnode)
+  (:documentation   "
+DO:      Remove the oldNode from the graph. 
+         This implies removing all the edges adjacent to the node too.
+"))
+
+
+(defgeneric remove-nodes (self oldnodelist)
+  (:documentation   "
+DO:      Remove all the NODES of the oldNodeList from this graph.
+"))
+
+
+(defgeneric add-edge (self newedge)
+  (:documentation   "
+PRE:    (and (CONTAINS-ELEMENT (NODES self) (nth 0 (NODES newEdge)))
+             (CONTAINS-ELEMENT (NODES self) (nth 1 (NODES newEdge))))
+DO:     Add a new edge to this graph.
+"))
+
+
+(defgeneric add-edge-between-nodes (self nodea nodeb)
+  (:documentation   "
+DO:     Create a new edge (of class edge-class) between `nodeA' and `nodeB'.
+        and add it to this graph.
+        If the edge is directed, 
+        then `nodeA' is the `from' node and `nodeB' the `to' node.
+"))
+
+
+(defgeneric remove-edge (self oldedge)
+  (:documentation   "
+DO:     Remove the `oldEdge' from this graph.
+"))
+
+
+(defgeneric remove-edges (self edge-list)
+  (:documentation   "
+DO:     Remove all the edges in edge-list from this graph.
+"))
+
+
+(defgeneric remove-edges-between-nodes (self nodea nodeb)
+  (:documentation   "
+DO:     Remove all edges between `nodeA' and `nodeB'.
+"))
+
+
+(defgeneric edges-between-nodes (self nodea nodeb)
+  (:documentation "
+RETURN: A list of edges existing between the `nodeA' and `nodeB'.
+        If the graph is directed then `nodeA' corresponds to the from node
+                                  and `nodeB' corresponds to the  to  node.
+"))
+
+
+(defgeneric directed-edges-between-nodes (self fromnode tonode)
+  (:documentation   "
+RETURN: A list of edges existing from the `fromNode' and to the `toNode'.
+"))
+
+
+(defgeneric directed-edges-from-node (self fromnode)
+  (:documentation   "
+PRE:    edge-class is-subclass-of DIRECTED-EDGE-CLASS
+        or edge-class eq DIRECTED-EDGE-CLASS.
+RETURN: A list of edges existing from the `fromNode'.
+"))
+
+
+(defgeneric successor-nodes (self node)
+  (:documentation   "
+RETURN: The list of successors NODES of the given node in this graph.
+NOTE:   For undirected graphs, it's the same as ADJACENT-NODES.
+"))
+
+
+(defgeneric adjacent-nodes (self node)
+  (:documentation   "
+RETURN: The list of NODES adjacent to the given node in this graph.
+NOTE:   For directed graphs, an adjacent node is either a predecessor
+        or a successors of the node.
+"))
+
+
+(defgeneric flow-distance-from-node (self startnode prop-name)
+  (:documentation   "
+DO:     Compute for each node in this graph the distance from the startNode,
+        and store it as a property named prop-name.
+NOTE:   If the graph is not connex, then some distances will be nil, 
+        meaning infinity.
+"))
+
+
+(defgeneric walk-from-node (self startnode lambda-body)
+  (:documentation   "
+DO:     Walk the graph starting form startNode, calling lambda-body 
+        with each node as argument. 
+"))
+
+
+(defgeneric walk-edges-from-node (self startnode lambda-body)
+  (:documentation   "
+DO:     Walk the graph starting form startNode, calling lambda-body 
+        with each edges as argument. Since it's the edges that are passed
+        to lambda-body, one node can be \"walked\" several times either as
+        `from' or `to' node or different edges.
+"))
+
+
+(defgeneric find-nodes-with-property (self property value)
+  (:documentation  "
+RETURN: A list of NODES that have as property PROPERTY the value VALUE.
+"))
+
+
+(defgeneric show-graph (self)
+  (:documentation "
+DO: Prints a description of the graph on the *STANDARD-OUTPUT*.
+"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defgeneric ident (element)
+  (:documentation "A unique symbol identifying this element."))
+(defgeneric properties (element)
+  (:documentation     "A plist of properties for this elements.
+It can be used to store markers while walking sets or graphs containing them."))
+
 (defclass element-class ()
   ((ident
     :reader   ident
@@ -247,7 +494,7 @@ RETURN: The list of property names (keys) of properties of this element.
 
 (defmethod set-property ((self element-class) (prop-name symbol) prop-value)
   "
-POST:  (eq (GET-PROPERTY self prop-name) prop-value)
+POST:  (eql (GET-PROPERTY self prop-name) prop-value)
 "
   (setf (slot-value self 'properties)
         (plist-put (properties self) prop-name prop-value)))
@@ -270,6 +517,9 @@ DO:     Remove the property named `prop-name' from the property list of
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defgeneric elements (set)
+  (:documentation "The elements in the set."))
+
 (defclass set-class (element-class)
   ((elements
     :initform nil
@@ -389,6 +639,10 @@ RETURN: A list of elements that have as property PROPERTY the value VALUE.
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defgeneric index (set)
+  (:documentation "A hashtable used to index the elements in this set."))
+
 (defclass hashed-set-class (set-class)
   ((index
     :initform (lambda () (make-hash-table :test 'eq))
@@ -473,6 +727,9 @@ RETURN: If node is a node of the edge, then return its successor or nil.
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defgeneric weight (edge)
+  (:documentation "The weight of the edge."))
+
 (defclass weight-mixin-class ()
   ((weight
     :initform 1
@@ -501,6 +758,7 @@ RETURN: Whether `item' is a cons of two objects kind of ELEMENT-CLASS.
   (and (consp item)
        (typep (car item) 'element-class)
        (typep (cdr item) 'element-class)))
+
 
 
 (defclass undirected-edge-class (edge-class)
@@ -590,6 +848,10 @@ RETURN: A string describing this element.
             (weight self))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defgeneric from (edge)
+  (:documentation "The `from' node of this edge."))
+(defgeneric to (edge)
+  (:documentation "The `to' node of this edge."))
 (defclass directed-edge-class (edge-class)
   ((from
     :initarg  :from
@@ -697,6 +959,14 @@ RETURN: Whether `item' is a subclass of EDGE-CLASS (not EDGE-CLASS itself).
 "
   (subtypep item 'edge-class))
 
+(defgeneric nodes (graph)
+  (:documentation "The nodes of the graph."))
+
+(defgeneric edges (graph)
+  (:documentation "The edges of the graph."))
+
+(defgeneric edge-class (graph)
+  (:documentation "The class of edges of the graph."))
 
 (defclass graph-class (element-class)
   ((nodes
@@ -1065,6 +1335,9 @@ RETURN: A list of NODES that have as property PROPERTY the value VALUE.
 
 
 (defmethod show-graph ((self graph-class))
+  "
+DO: Prints a description of the graph on the *STANDARD-OUTPUT*.
+"
   (format t "~A {~%" (description self))
   (perform-with-elements 
    (nodes self)
@@ -1075,5 +1348,4 @@ RETURN: A list of NODES that have as property PROPERTY the value VALUE.
   (format t "}~%"))
 
 
-
-;;;; graph.lisp                       --                     --          ;;;;
+;;;; THE END ;;;;

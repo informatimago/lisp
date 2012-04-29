@@ -29,7 +29,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -39,10 +39,51 @@
         "COM.INFORMATIMAGO.COMMON-LISP.PARSER.SCANNER")
   (:export "PARSER" "PARSER-SCANNER"
            "PARSER-NEXT-TOKEN" "PARSER-TOKEN"
-           "REPORT-ERROR" "ADVANCE")
-  (:documentation ""))
+           "ADVANCE"
+           "REPORT-ERROR"
+           "PARSER-ERROR"
+           "PARSER-ERROR-PARSER"
+           "PARSER-ERROR-TOKEN"
+           "PARSER-ERROR-NEXT-TOKEN"
+           "PARSER-ERROR-FORMAT-CONTROL"
+           "PARSER-ERROR-FORMAT-ARGUMENTS")
+  (:documentation "
+
+An abstract parser class.
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2004 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.PARSER.PARSER")
 
+
+(defgeneric parser-scanner (parser)
+  (:documentation "The scanner of the parser."))
+(defgeneric parser-token (parser)
+  (:documentation "The current token of the parser."))
+(defgeneric parser-next-token (parser)
+  (:documentation "The next-token of the parser."))
 
 (defclass parser ()
   ((scanner     :accessor parser-scanner     :initform nil :initarg :scanner)
@@ -51,9 +92,6 @@
    (next-token  :accessor parser-next-token  :initform nil
                 :documentation "next token"))
   (:documentation "A parser."))
-
-(defgeneric advance (parser))
-(defgeneric report-error (parser message &rest arguments))
 
 
 (defmethod print-object ((self parser) out)
@@ -64,6 +102,43 @@
             (parser-next-token self) (token-text (parser-next-token self))))
   self)
 
+
+(defgeneric parser-error-parser (error)
+  (:documentation "The parser that signaled the error."))
+(defgeneric parser-error-token (error)
+  (:documentation "The token where the error was detected."))
+(defgeneric parser-error-next-token (error)
+  (:documentation "The next-token where the error was detected."))
+(defgeneric parser-error-format-control (error)
+  (:documentation "The error message format control string."))
+(defgeneric parser-error-format-arguments (error)
+  (:documentation "The error message format control arguments."))
+
+(define-condition parser-error (error)
+  ((parser           :initarg :parser           :reader parser-error-parser)
+   (token            :initarg :token            :reader parser-error-token)
+   (next-token       :initarg :next-token       :reader parser-error-next-token)
+   (format-control   :initarg :format-control   :reader parser-error-format-control)
+   (format-arguments :initarg :format-arguments :reader parser-error-format-arguments))
+  (:documentation "A parser error.")
+  (:report (lambda (condition stream)
+             (format stream  "~?; (~S ~S) (~S ~S)"
+                     (parser-error-format-control condition)
+                     (parser-error-format-arguments condition)
+                     (parser-error-token condition)
+                     (token-text (parser-error-token condition))
+                     (parser-error-next-token condition)
+                     (token-text (parser-error-next-token condition))))))
+
+
+(defgeneric advance (parser)
+  (:documentation "Shitf next-token into token and scan the next token."))
+
+(defgeneric report-error (parser message &rest arguments)
+  (:documentation "Signal a parser-error."))
+
+
+
           
 (defmethod advance ((parser parser))
   (multiple-value-bind (tok val) (scan-next-token (parser-scanner parser))
@@ -73,11 +148,12 @@
 
 
 (defmethod report-error ((parser parser) message &rest arguments)
-  (error "~A; (~S ~S) (~S ~S)" (apply (function format) nil message arguments)
-         (parser-token parser)
-         (token-text (parser-token parser))
-         (parser-next-token parser)
-         (token-text (parser-next-token parser))))
+  (error 'parser-error
+         :parser parser
+         :token (parser-token parser)
+         :next-token (parser-next-token parser)
+         :format-control message
+         :format-arguments arguments))
 
 
 ;;;; THE END ;;;;

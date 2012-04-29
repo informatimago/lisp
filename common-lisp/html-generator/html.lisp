@@ -9,11 +9,8 @@
 ;;;;    Generating HTML pages.
 ;;;;
 ;;;;    See also:
-;;;;    <a href=http://www.cliki.net/HTML-from-sexpr>cliki HTML from sexpr</a>
-;;;;
-;;;;
-;;;;
-;;;;
+;;;;    cliki HTML from sexpr
+;;;;    http://www.cliki.net/HTML-from-sexpr
 ;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
@@ -38,7 +35,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -46,6 +43,7 @@
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.QUEUE"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CHARACTER-SETS")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
                 "SPLIT-STRING" "STRING-REPLACE")
@@ -63,7 +61,7 @@
    "ELEMENT-WITH-BODY" "ELEMENT-WITHOUT-END"
    "ELEMENT-TAG" "ELEMENT-ATRIBUTES" "ELEMENT-BODY" "WRITE-ELEMENT"
    "HTML-STRING-TEXT" "CDATA-DATA" "PCDATA-DATA"
-   "WRITE-HTML" "WITH-HTML-OUTPUT" "COLLECT-ELEMENT"
+   "WRITE-HTML" "WITH-HTML-OUTPUT" "COLLECT-ELEMENT" "COLLECT-ELEMENTS"
 
    ;; Low level stuff:
    "*HTML-XHTML-MODE-P*"  "WRITE-ESCAPING" "NORMALIZE-ATTRIBUTE-NAME"
@@ -95,11 +93,88 @@
    "TEXTAREA" "TFOOT" "TH" "THEAD" "TITLE" "TR" "TT" "U" "UL" "VAR")
 
   (:documentation
-   "This package exports functions to generate HTML pages.
+   "
+This package exports macros and functions to generate HTML pages.
 
-    Copyright Pascal J. Bourguignon 2003 - 2007
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
+See also: http://www.cliki.net/HTML-from-sexpr
+          html-generators-in-lisp.txt
+
+
+EXAMPLES:
+
+
+    With macros, issuing static html; the pcdata must be tagged with the
+    PCDATA macro:
+
+        (with-html-output ()
+          (doctype :loose
+                   (html -
+                         (head -
+                               (title - (pcdata \"title\")))
+                         (body (:color \"#123456\" \"background-color\" \"red\")
+                               (p - (pcdata \"para\") (pcdata \"var\")))))
+          (values))
+
+    prints:
+
+
+        <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">
+        <html>
+        <head>
+        <title>title </title></head>
+        <body color=\"#123456\" background-color=\"red\">
+        <p>para var </p></body></html>
+
+
+
+
+    With functions the lists of attributes and body elements can be built
+    dynamically.  The strings are automatically converted to pcdata:
+
+        (progn
+          (write-html (doctype* :loose))
+          (write-html
+           (html* '()
+                  (list 
+                   (head* '()
+                          (list (title* '() (list (pcdata* \"title\")))))
+                   (body* (list :color \"#123456\" \"background-color\" \"red\")
+                          (list (p* '() (list \"para\" (pcdata \"variable\"))))))))
+          (values))
+
+    prints:
+
+
+        <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">
+        <html>
+        <head>
+        <title>title </title></head>
+        <body color=\"#123456\" background-color=\"red\">
+        <p>para variable </p></body></html>
+
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2003 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.HTML-GENERATOR.HTML")
 
 
@@ -115,8 +190,8 @@
     "The stream used by WITH-HTML-OUTPUT and WRITE-HTML by default.")
 
 
-  (defvar *html-output-elements* '()
-    "The HTML macros collect issued elements into this list.")
+  (defvar *html-output-elements* (make-queue)
+    "The HTML macros collect issued elements into this queue.")
 
 
   (defvar *doctype*      :strict
@@ -138,11 +213,28 @@ the Common Lisp standard character set and HTML default character set.")
 
 
   (defun collect-element (element)
-    (push element *html-output-elements*)
+    "
+DO:     Collect the ELEMENT into the current *HTML-OUTPUT-ELEMENTS*.
+RETURN: ELEMENT.
+"
+    (queue-enqueue *html-output-elements* element)
     element)
+
+  
+  (defun collect-elements (elements)
+    "
+DO:     Collect the ELEMENTS into the current *HTML-OUTPUT-ELEMENTS*.
+RETURN: ELEMENTS.
+"
+    (queue-append *html-output-elements* elements)
+    elements)
 
 
   (defun doctype* (kind)
+    "
+KIND:   one of :STRICT, :TRANSITIONAL, :LOOSE or :FRAMESET.
+RETURN: The DOCTYPE tag.
+"
     (unless (member kind '(:strict :transitional :loose :frameset))
       (error "Unexpected DOCTYPE kind. Please choose :STRICT, ~
              :TRANSITIONAL, :LOOSE or :FRAMESET."))
@@ -160,6 +252,10 @@ the Common Lisp standard character set and HTML default character set.")
 
 
   (defmacro doctype (kind &body body)
+        "
+KIND:   one of :STRICT, :TRANSITIONAL, :LOOSE or :FRAMESET.
+RETURN: The DOCTYPE tag.
+"
     (let ((vkind (gensym)))
       `(let* ((,vkind        ,kind)
               (*doctype*     ,vkind)
@@ -179,15 +275,20 @@ the Common Lisp standard character set and HTML default character set.")
 
 
 
-  (defgeneric element-tag (element))
-  (defgeneric element-attributes (element))
-  (defgeneric element-body (element))
-  (defgeneric write-element (element stream))
+  (defgeneric element-tag (element)
+    (:documentation "RETURN: The tag of the ELEMENT."))
+  (defgeneric element-attributes (element)
+    (:documentation "RETURN: The attributes of the ELEMENT."))
+  (defgeneric element-body (element)
+    (:documentation "RETURN: The body of the ELEMENT."))
+  (defgeneric write-element (element stream)
+    (:documentation "DO:     Write the ELEMENT to the STREAM."))
 
 
 
   (defclass element ()
-    ())
+    ()
+    (:documentation "Represents an HTML element."))
   (defmethod write-element ((self element) stream)
     (declare (ignore stream))
     self)
@@ -195,6 +296,14 @@ the Common Lisp standard character set and HTML default character set.")
 
 
   (defun write-escaping (escapes string stream)
+    "
+DO:         Write the STRING to the STREAM, escaping characters found
+            in ESCAPES, or not found in the ranges of the
+            *HTML-CHARACTER-SET* as &amp;#nn; escapes.
+ESCAPES:    An a-list mapping characters to escape strings.
+STRING:     A text string.
+STREAM:     An output stream.
+"
     (if (cs-ranges *html-character-set*)
         (loop
            :for ch :across string
@@ -221,9 +330,11 @@ the Common Lisp standard character set and HTML default character set.")
 
 
 
-
+  (defgeneric html-string-text (element)
+    (:documentation "RETURN: The string text of the element." ))
   (defclass html-string (element)
-    ((text :initarg :text :reader html-string-text :type string)))
+    ((text :initarg :text :reader html-string-text :type string))
+    (:documentation "Represents HTML text."))
   (defmethod write-element ((self html-string) stream)
     (write-string (html-string-text self) stream)
     self)
@@ -247,19 +358,26 @@ EXAMPLE: (HTML-STRING \"<P>Some paragraph</P>\") --> #<element>
   (defun comment* (control &rest arguments)
     "
 RETURN:  An element storing the result of formating the CONTROL string
-         with the ARGUMENTS as HTML comment.
+         with the ARGUMENTS as a HTML comment.
 "
     (html-string "~&<!-- ~A -->~%"
                  (string-replace (apply (function format) nil control arguments)
                                  "--"  "==")))
 
   (defun comment (control &rest arguments)
+    "
+RETURN:  An element storing the result of formating the CONTROL string
+         with the ARGUMENTS as a HTML comment.
+"   
     (collect-element (apply (function comment*) control arguments)))
 
 
+  (defgeneric cdata-data (element)
+    (:documentation "The CDATA text."))
 
   (defclass cdata (element)
-    ((data :initarg :data :reader cdata-data :type string)))
+    ((data :initarg :data :reader cdata-data :type string))
+    (:documentation "Represents CDATA text."))
   (defmethod initialize-instance :after ((self cdata) &rest args)
     (declare (ignore args))
     (setf (slot-value self 'data) (string-trim " " (slot-value self 'data)))
@@ -281,8 +399,12 @@ RETURN:  An element storing the result of formating the CONTROL string
     (collect-element (apply (function cdata*) control arguments)))
 
 
+  (defgeneric pcdata-data (element)
+    (:documentation "The PCDATA text."))
+  
   (defclass pcdata (element)
-    ((data :initarg :data :reader pcdata-data :type string)))
+    ((data :initarg :data :reader pcdata-data :type string))
+    (:documentation "Represents PCDATA text."))
   (defmethod write-element ((self pcdata) stream)
     (write-escaping '((#\& . "&amp;") (#\< . "&lt;") (#\> . "&gt;"))
                     (pcdata-data self) stream)
@@ -301,6 +423,12 @@ RETURN:  An element storing the result of formating the CONTROL string
     (collect-element (apply (function pcdata*) control arguments)))
 
 
+
+  (defparameter *newline-elements*
+    '(p h1 h2 h3 h4 h5 h6 ul ol pre dl div noscript blockquote hr form table fieldset address
+      br dt dd li textarea thead tbody tfoot tr td
+      html head title meta link style script noscript body))
+  
   (defclass element-with-tag (element)
     ((tag        :initarg :tag
                  :reader element-tag
@@ -308,7 +436,8 @@ RETURN:  An element storing the result of formating the CONTROL string
      (attributes :initarg :attributes
                  :reader element-attributes
                  :type list
-                 :initform '())))
+                 :initform '()))
+    (:documentation "Represents an HTML tagged element."))
   (defmethod print-object ((self element-with-tag) stream)
     (print-unreadable-object (self stream :identity t :type t)
       (format stream "~A" (element-tag self)))
@@ -316,20 +445,23 @@ RETURN:  An element storing the result of formating the CONTROL string
   (defmethod write-element ((self element-with-tag) stream)
     (loop
        :for (k v) :on (element-attributes self) :by (function cddr)
-       :initially (format stream "~&<~A" (element-tag self))
+       :initially (format stream "~:[~;~%~]<~A"
+                          (member (element-tag self) *newline-elements* :test (function string-equal))
+                          (element-tag self))
        :do (format stream " ~A=\"" k)
        :do (write-element v stream)
        :do (princ "\"" stream)
        :finally (princ ">" stream)))
 
-
   (defclass element-without-end (element-with-tag)
-    ())
+    ()
+    (:documentation "Represents an HTML tagged element, without a closing tag."))
 
 
 
   (defclass element-with-body (element-with-tag)
-    ((body :initarg :body :reader element-body :type list)))
+    ((body :initarg :body :reader element-body :type list))
+    (:documentation "Represents an HTML tagged element, with a body."))
   (defmethod write-element ((self element-with-body) stream)
     (call-next-method)
     (unwind-protect
@@ -392,7 +524,7 @@ ENCODING: indicates which character encoding is used to write the
 "
     (let ((vstream (gensym)))
       `(let ((,vstream ,stream)
-             (*html-output-elements* '())
+             (*html-output-elements* (make-queue))
              (*html-xhtml-mode-p*  ,(if kindp
                                         `(not (eq ,kind :html))
                                         `*html-xhtml-mode-p*))
@@ -405,7 +537,7 @@ ENCODING: indicates which character encoding is used to write the
                                                   (string ,venc)))))
                                         `*html-character-set*)))
          (multiple-value-prog1 (progn ,@body)
-           (dolist (tag (nreverse *html-output-elements*))
+           (dolist (tag (queue-elements *html-output-elements*))
              (write-html tag ,vstream))))))
 
 
@@ -511,6 +643,10 @@ DO:       Defines an HTML attribute.
 
 
   (defun normalize-attribute-name (name)
+    "
+NAME:       A string or a symbol.
+RETURN:     A string containing the normalized attribute name, ie: downcased.
+"
     (etypecase name
       (string name)
       (symbol (let ((name (string name)))
@@ -521,21 +657,20 @@ DO:       Defines an HTML attribute.
   (defun generate-element-macro-body (fname vattr vbody)
     (let ((vresults (gensym)))
       `(let ((,vresults))
-         (push (,fname ,(cond
-                         ((or (null vattr) (eq '- vattr)) '())
-                         ((or (keywordp (first vattr))
-                              (not (symbolp (first vattr)))
-                              (and (evenp (length vattr))
-                                   (loop
-                                      :for (k) :on vattr :by (function cddr)
-                                      :always (keywordp k))))
-                          `(list ,@vattr))
-                         (t vattr))
-                       (let ((*html-output-elements* '()))
-                         (setf ,vresults (multiple-value-list
-                                          (progn ,@vbody)))
-                         (nreverse *html-output-elements*)))
-               *html-output-elements*)
+         (collect-element (,fname ,(cond
+                                    ((or (null vattr) (eq '- vattr)) '())
+                                    ((or (keywordp (first vattr))
+                                         (not (symbolp (first vattr)))
+                                         (and (evenp (length vattr))
+                                              (loop
+                                                :for (k) :on vattr :by (function cddr)
+                                                :always (keywordp k))))
+                                     `(list ,@vattr))
+                                    (t vattr))
+                                  (let ((*html-output-elements* (make-queue)))
+                                    (setf ,vresults (multiple-value-list
+                                                     (progn ,@vbody)))
+                                    (queue-elements *html-output-elements*))))
          (apply (function values) ,vresults))))
 
 
@@ -543,15 +678,39 @@ DO:       Defines an HTML attribute.
     (let ((forms '()))
       (maphash
        (lambda (name element)
-         (let ((vattr (gensym))
-               (vbody (gensym))
+         (let ((vattr (make-symbol "ATTRIBUTES"))
+               (vbody (make-symbol "BODY"))
                (mname (intern (string-upcase name)))
                (fname (intern (with-standard-io-syntax (format nil "~:@(~A*~)" name)))))
            (push
             `(defmacro ,mname (&optional ,vattr &body ,vbody)
+               ,(format nil  "
+DO:          ~?
+ATTRIBUTES:  A P-list of attributes. Attribute names are keywords,
+             attribute values are strings.
+BODY:        Lisp forms, evaluated between the opening tag of the
+             element and the closing tag of the element.
+RETURN:      The generated HTML.
+"
+                        "Generate a &lt;~A&gt; HTML element~:[: ~A~;~]."
+                        (list (el-name element)
+                              (string= (el-documentation element) "A HTML element.")
+                              (el-documentation element)))
                (generate-element-macro-body ',fname ,vattr ,vbody)) forms)
            (push
             `(defun ,fname (&optional ,vattr ,vbody)
+               ,(format nil  "
+DO:          ~?
+ATTRIBUTES:  A P-list of attributes. Attribute names are keywords,
+             attribute values are strings.
+BODY:        Lisp forms, evaluated between the opening tag of the
+             element and the closing tag of the element.
+RETURN:      The generated HTML.
+"
+                        "Generate a &lt;~A&gt; HTML element~:[: ~A~;~]."
+                        (list (el-name element)
+                              (string= (el-documentation element) "A HTML element.")
+                              (el-documentation element)))
                ,@(when (member :deprecated (el-options element))
                        `((warn ,(format nil "HTML element ~A is deprecated."
                                         name))))

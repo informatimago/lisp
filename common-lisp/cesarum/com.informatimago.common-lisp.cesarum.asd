@@ -29,7 +29,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.common-lisp.cesarum
@@ -123,6 +123,7 @@ all written in 100% conforming Common Lisp.
                  (:file "peek-stream"     :depends-on ())
                  (:file "cache"           :depends-on ())
                  (:file "float-binio"     :depends-on ())
+
                  ))
 
 

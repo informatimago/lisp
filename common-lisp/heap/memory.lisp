@@ -30,7 +30,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -42,16 +42,33 @@
            "MEMORY-VECTOR-64" "MEMORY")
   (:documentation
    "
-      This packages exports a memory abstract class 
-      and a concrete subclass implemented as a lisp array of unsigned bytes.
 
-      Copyright Pascal J. Bourguignon 2004 - 2004
-      
-      This program is free software  you can redistribute it and/or
-      modify it under the terms of the GNU General Public License
-      as published by the Free Software Foundation  either version
-      2 of the License, or (at your option) any later version.
-      "))
+This packages exports a memory abstract class  and a concrete subclass
+implemented as a lisp array of unsigned bytes.
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2004 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.HEAP.MEMORY")
 
 
@@ -61,6 +78,11 @@
 ;; MEMORY
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+(defgeneric base (memory)
+  (:documentation "Minimum value for an address in the given memory."))
+(defgeneric size (memory)
+  (:documentation "Number of bytes this memory holds."))
 
 (defclass memory ()
   ((base :reader base :initarg :base :type (integer 0)
@@ -80,18 +102,31 @@
   self)
 
 
-(defgeneric peek-uint8  (memory address))
-(defgeneric peek-uint16 (memory address))
-(defgeneric peek-uint32 (memory address))
-(defgeneric peek-uint64 (memory address))
-(defgeneric poke-uint8  (memory address value))
-(defgeneric poke-uint16 (memory address value))
-(defgeneric poke-uint32 (memory address value))
-(defgeneric poke-uint64 (memory address value))
-(defgeneric valid-address-p (memory address))
-(defgeneric memory-prolog (memory))
-(defgeneric memory-epilog (memory))
-(defgeneric dump (memory address length &key byte-size stream margin))
+(defgeneric peek-uint8  (memory address)
+  (:documentation "RETURN: The 8-bit byte at the given ADDRESS of the MEMORY."))
+(defgeneric peek-uint16 (memory address)
+  (:documentation "RETURN: The 16-bit byte at the given ADDRESS of the MEMORY."))
+(defgeneric peek-uint32 (memory address)
+  (:documentation "RETURN: The 32-bit byte at the given ADDRESS of the MEMORY."))
+(defgeneric peek-uint64 (memory address)
+  (:documentation "RETURN: The 64-bit byte at the given ADDRESS of the MEMORY."))
+(defgeneric poke-uint8  (memory address value)
+  (:documentation "DO: Store the 8-bit VALUE into the given ADDRESS of the MEMORY."))
+(defgeneric poke-uint16 (memory address value)
+  (:documentation "DO: Store the 16-bit VALUE into the given ADDRESS of the MEMORY."))
+(defgeneric poke-uint32 (memory address value)
+  (:documentation "DO: Store the 32-bit VALUE into the given ADDRESS of the MEMORY."))
+(defgeneric poke-uint64 (memory address value)
+  (:documentation "DO: Store the 64-bit VALUE into the given ADDRESS of the MEMORY."))
+(defgeneric valid-address-p (memory address)
+  (:documentation "RETURN: Whether ADDRESS is a valid address of the MEMORY."))
+(defgeneric memory-prolog (memory)
+  (:documentation "DO:  Prepare access to the memory (eg. acquire any needed lock)."))
+(defgeneric memory-epilog (memory)
+  (:documentation "DO:  Finalize access to the memory (eg. relinquish any lock)."))
+(defgeneric dump (memory address length &key byte-size stream margin)
+  (:documentation "Print on the STREAM the contents of the MEMORY from
+the ADDRESS for LENGTH bytes of bit size BYTE-SIZE."))
 
 
 (defmacro with-memory (memory &body body)

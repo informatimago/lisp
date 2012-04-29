@@ -1,17 +1,17 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               com.informatimago.objcl.asd
+;;;;FILE:               com.informatimago.lispdoc.asd
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    Reader macros and tools to program with Objective-C object libraries.
+;;;;    ASD file to generate the documentation of the com.informatimago lisp packages.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2012-04-22 <PJB> Added this header.
+;;;;    2010-10-31 <PJB> Created this .asd file.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
@@ -32,51 +32,48 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.objcl
+
+(asdf:defsystem :com.informatimago.lispdoc
 
     ;; system attributes:
     
-    :description "Reader macros and tools to program with Objective-C object libraries."
-
-    :long-description "
-
-Defines readers macros to provide an Objective-C -like syntax to wrap
-over the Objective-C FFI.
-
-Current implementation work only on ccl, but it should be extended to
-cover generic FFI to both Apple and GNUstep objc2 runtimes.
-
-"
+    :description  "This system builds a derivative of lispdoc to generate the documentation of com.informatimago packages."
     
+    :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
+
+    :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
+
+    :licence "LLGPL"
+
     
-    :author     "Pascal Bourguignon <pjb@informatimago.com>"
-
-    :maintainer "Pascal Bourguignon <pjb@informatimago.com>"
-
-    :licence "AGPL3"
-
     ;; component attributes:
+
+    :name "Informatimago Common Lisp Documentation"
     
-    :name "Reader macros to implement an Objective-CL syntax."
-    
-    :version "0.9.1"
-    
+    :version "1.0.0"
+
     :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Spring 2011")
-                 ((#:albert #:output-dir)          . "../documentation/com.informatimago.objc/")
+                 (#:date                           . "Spring 2012")
+                 ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.lispdoc/")
                  ((#:albert #:formats)             . ("docbook"))
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
     
-    :depends-on ()
-    
-    :components ((:file "packages")
-                 (:file "simple-test"        :depends-on ("packages"))
-                 (:file "mac-roman"          :depends-on ("packages"))
-                 #+ccl (:file "oclo-ccl"     :depends-on ("packages"))
-                 (:file "oclo"               :depends-on ("packages" #+ccl "oclo-ccl"))
-                 (:file "objcl"              :depends-on ("packages" "oclo"))
-                 (:file "test-objcl"         :depends-on ("packages" "objcl" "simple-test"))))
+    :depends-on (
+                 ;; Dependencies:
+                 "cl-ppcre"
+                 "closer-mop"
+                 "split-sequence"
+                 ;; The documented systems:
+                 "com.informatimago.common-lisp"
+                 "com.informatimago.clext"
+                 "com.informatimago.clmisc"
+                 "com.informatimago.rdp"
+                 #+(and ccl mac) "com.informatimago.objcl"
+                 )
+    :components ((:file "lispdoc")
+                 (:file "lispdoc-run" :depends-on ("lispdoc"))))
+
 
 ;;;; THE END ;;;;

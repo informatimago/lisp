@@ -31,7 +31,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -41,11 +41,31 @@
         "COM.INFORMATIMAGO.COMMON-LISP.PICTURE.PICTURE")
   (:export "PRINT-IDENTIFIED-CONSES" "PRINT-CONSES" "DRAW-CELL" "DRAW-LIST")
   (:documentation
-   "This packages draws ASCII art cons cell diagrams.
+   "
 
-    Copyright Pascal J. Bourguignon 2004 - 2005
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
+This packages draws ASCII art cons cell diagrams.
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2004 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.PICTURE.CONS-TO-ASCII")
 
 
@@ -53,7 +73,8 @@
 
 (defgeneric size-cell (pict cell &optional max-width))
 (defgeneric draw-cons (pict x y cell))
-(defgeneric draw-cell (pict x y cell))
+(defgeneric draw-cell (pict x y cell)
+  (:documentation "Draws the CELL in the picture PICT, at coordinates X,Y"))
 (defgeneric draw-decorated-cell (pict x y dec))
 
 (defvar +cell-width+ 12 "+---+---+")
@@ -232,7 +253,49 @@ RETURN:  The decorated list.
   ) ;;DRAW-DECORATED-CELL
 
 
-(defun draw-list (list &key (title ""))
+(defun draw-list (list &key (title (format nil "~(~S~)" list)))
+  "
+DO:         Draws the LIST structure.
+TITLE:      An alternative title.
+RETURN:     A string containing the drawing.
+EXAMPLE:    (draw-list '(if (< a b) (decf b a) (decf a b)))
+            returns: 
+           \"+-----------------------------------------------------------------------+
+            | (if (< a b) (decf b a) (decf a b))                                    |
+            |                                                                       |
+            | +---+---+   +---+---+   +---+---+   +---+---+                         |
+            | | * | * |-->| * | * |-->| * | * |-->| * |NIL|                         |
+            | +---+---+   +---+---+   +---+---+   +---+---+                         |
+            |   |           |           |           |                               |
+            |   v           |           |           v                               |
+            | +----+        |           |         +---+---+   +---+---+   +---+---+ |
+            | | if |        |           |         | * | * |-->| * | * |-->| * |NIL| |
+            | +----+        |           |         +---+---+   +---+---+   +---+---+ |
+            |               |           |           |           |           |       |
+            |               |           |           v           v           v       |
+            |               |           |         +------+    +---+       +---+     |
+            |               |           |         | decf |    | a |       | b |     |
+            |               |           |         +------+    +---+       +---+     |
+            |               |           v                                           |
+            |               |         +---+---+   +---+---+   +---+---+             |
+            |               |         | * | * |-->| * | * |-->| * |NIL|             |
+            |               |         +---+---+   +---+---+   +---+---+             |
+            |               |           |           |           |                   |
+            |               |           v           v           v                   |
+            |               |         +------+    +---+       +---+                 |
+            |               |         | decf |    | b |       | a |                 |
+            |               |         +------+    +---+       +---+                 |
+            |               v                                                       |
+            |             +---+---+   +---+---+   +---+---+                         |
+            |             | * | * |-->| * | * |-->| * |NIL|                         |
+            |             +---+---+   +---+---+   +---+---+                         |
+            |               |           |           |                               |
+            |               v           v           v                               |
+            |             +---+       +---+       +---+                             |
+            |             | < |       | a |       | b |                             |
+            |             +---+       +---+       +---+                             |
+            +-----------------------------------------------------------------------+\"
+"
   (let* ((dec (decorate list))
          (tw 0)
          (th 0)
@@ -309,7 +372,15 @@ RETURN:  The decorated list.
 
 
 (defun print-conses (tree &optional (stream *standard-output*))
-  ;; WARNING: doesn't handle circles nor identify EQ subtrees.
+  "
+DO:         Print the TREE with all cons cells as dotted pairs.
+TREE:       A sexp.
+STREAM:     The output stream (default: *STANDARD-OUTPUT*)
+WARNING:    doesn't handle circles nor identify EQ subtrees.
+EXAMPLE:    (print-conses '(a b c d))
+            prints:
+            (a  . (b  . (c  . (d  . ()))))
+"
   (cond
     ((null tree) (princ "()"))
     ((atom tree)  (princ tree stream) (princ " " stream))
@@ -337,7 +408,18 @@ RETURN:  The decorated list.
     (t (incf (gethash tree table 0))
        (find-nodes (cdr tree) (find-nodes (car tree) table)))))
 
+
 (defun print-identified-conses (tree  &optional (stream *standard-output*))
+    "
+DO:      Print the TREE with all cons cells identified with a #n= notation.
+TREE:    A sexp.
+STREAM:  The output stream (default: *STANDARD-OUTPUT*)
+NOTE:    Handles circles in the cons structure, but not thru the other
+         atoms (vectors, structures, objects).
+EXAMPLE: (print-identified-conses '((a . b) #1=(c . d) (e . #1#)))
+         prints:
+         ((a . b) . (#1=(c . d) . ((e . #1# ) . ())))
+"
   (let ((table (find-nodes tree (make-hash-table :test (function eq))))
         (index 0))
     (maphash (lambda (k v)
@@ -373,4 +455,4 @@ RETURN:  The decorated list.
 #1=(#2=(A) (B C A #2# #1#) . #1#)                                      
 ||#
 
-;;;; cons-to-ascii.lisp               --                     --          ;;;;
+;;;; THE END ;;;;

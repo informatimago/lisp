@@ -30,19 +30,40 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ISO639A"
   (:use "COMMON-LISP")
-  (:export "SPLIT-GROUPS" "NCAPITALIZE" "GET-LANGUAGES")
+  (:export "GET-LANGUAGES")
   (:documentation
-   "This package exports functions and data to process iso639a language codes.
+   "
+
+This package exports functions and data to process iso639a language codes.
+
+
+License:
+
+    AGPL3
     
-    Copyright Pascal J. Bourguignon 2003 - 2003
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
+    Copyright Pascal J. Bourguignon 2003 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ISO639A")
 
 
@@ -197,11 +218,18 @@
     (:name     (first  record))
     (:code     (second record))
     (:family   (third  record))
-    (otherwise  ""))
-  ) ;;GET-FIELD
+    (otherwise  "")))
 
 
-(defun split-groups ( list cut-indicator )
+(defun split-groups (list cut-indicator)
+  "
+RETURN:        A list of sublists of LIST, split where the
+               CUT-INDICATOR function indicated.
+LIST:          A list.
+CUT-INDICATOR: A function of two successive elements of the list,
+               indicating whether the list must be split between the
+               two elements.
+"
   (do* ((groups '())
         (group  '())
         (list    list        (cdr list))
@@ -213,8 +241,7 @@
     (if next
         (when (funcall cut-indicator current next)
           (push (nreverse group) groups)
-          (setq group nil))))
-  ) ;;SPLIT-GROUPS
+          (setq group nil)))))
 
 
 (defun make-compare (order)
@@ -250,8 +277,7 @@ RETURN:  If group-per-family is true,
                          group)))
          (split-groups languages
                        (lambda (curr next) (string/= (third curr) (third next)))))
-        languages)
-    )) ;;GET-LANGUAGES
+        languages)))
 
 
 (defun ncapitalize (tree)
@@ -268,8 +294,7 @@ DO:    Replace in place in TREE all occurence of a string or a symbol
             ((< 2 (length (string (car items))))
              (string-capitalize (car items)))
             (t
-             (string (car items))))))
-  ) ;;NCAPITALIZE
+             (string (car items)))))))
 
 
-;;;; iso639a.lisp                     --                     --          ;;;;
+;;;; THE END ;;;;

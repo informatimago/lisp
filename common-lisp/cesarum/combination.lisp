@@ -6,10 +6,8 @@
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    This package exports three classes to generate lazily combinations,
-;;;;    and arrangement with and without repeatition (permutations).
+;;;;    See defpackage documentation string.
 ;;;;
-;;;;    (Sorry about the comments that are untranslated from C++ to Lisp).
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -31,7 +29,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -43,12 +41,34 @@
            "ARRANGEMENT-WITH-REPEAT")
   (:shadow "STEP")
   (:documentation
-   "This package exports three classes to generate lazily combinations,
-    and arrangement with and without repeatition (permutations).
+   "
 
-    Copyright Pascal J. Bourguignon 2005 - 2005
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
+This package exports three classes to generate lazily combinations,
+and arrangements with and without repeatition (permutations).
+
+See also: http://fr.wikipedia.org/wiki/Combinatoire
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2003 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.COMBINATION")
 
 
@@ -166,6 +186,15 @@ RETURN:     !atBegining()
 ;; Set Functor
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defgeneric base-cardinal (functor)
+  (:documentation "RETURN: The cardinal n of the base set."))
+
+(defgeneric set-base-cardinal (functor cardinal))
+(defgeneric set-element-size (functor size))
+(defgeneric step (functor index))
+
+
+
 (defclass set-functor ()
   ((base-cardinal  :type cardinal :initform 0 :reader base-cardinal
                    :documentation "The cardinal of the base set.")
@@ -174,12 +203,10 @@ RETURN:     !atBegining()
    (index          :type cardinal :initform 0 :reader index)
    (element-size   :type cardinal :initform 0 :reader element-size)
    (choice         :type vector   :initform nil)
-   (at-beginning-p :type boolean  :initform nil :reader at-beginning-p)))
+   (at-beginning-p :type boolean  :initform nil :reader at-beginning-p))
+  (:documentation "Representation of an enumerable set."))
 
 
-(defgeneric set-base-cardinal (functor cardinal))
-(defgeneric set-element-size (functor size))
-(defgeneric step (functor index))
 
 (defmethod set-base-cardinal ((self set-functor) card)
   "
@@ -242,16 +269,20 @@ DO:         Sets the elementSize() parameter.
     
 (defclass arrangement-sans-repeat (set-functor)
   ((done  :type boolean)
-   (taken :type (vector boolean))))
+   (taken :type (vector boolean)))
+  (:documentation "We choose k objects in order without repeating the same object, amongst n objects."))
 
 
 (defmethod done-p ((self arrangement-sans-repeat))
   (= (aref (slot-value self 'choice) 0) (base-cardinal self)))
     
 
-(defun arrangement (n m)
+(defun arrangement (k n)
+  "
+RETURN: The number of arrangement of k elements (without repeat) taken amongst n.
+"
   (loop with r = 1
-     for i from (- m n -1) to m
+     for i from (- n k -1) to m
      do (setf r (* r i))
      finally (return r)))
 
@@ -314,7 +345,8 @@ DO:         Sets the elementSize() parameter.
 
 
 (defclass arrangement-with-repeat (set-functor)
-  ())
+  ()
+  (:documentation "We choose k objects in order possibly repeating the same object, amongst n objects."))
 
 
 (defmethod done-p ((self arrangement-with-repeat))
@@ -355,7 +387,8 @@ DO:         Sets the elementSize() parameter.
 
 
 (defclass combination (set-functor)
-  ())
+  ()
+  (:documentation "We choose k distinct objects,  without taking into account the order, amongst n objects."))
 
 
 (defmethod done-p ((self combination))
@@ -365,17 +398,18 @@ DO:         Sets the elementSize() parameter.
       t))
 
 
-(defun combination (n m)
+(defun combination (k n)
+  "RETURN: The number of combinations of k elements taken amongst n."
   (let ((r 1)
         a b)
-    (if (> n (- m n))
-        (setf a n
-              b (- m n))
-        (setf a (- m n)
-              b n))
+    (if (> k (- n k))
+        (setf a k
+              b (- n k))
+        (setf a (- n k)
+              b k))
     ;; a>=b
     ;; N!/(a!b!) = Pi(i=a+1,N,i)/b!
-    (loop for i from (1+ a) to m do (setf r (* r i)))
+    (loop for i from (1+ a) to n do (setf r (* r i)))
     (loop for i from 2      to b do (setf r (/ r i)))
     r))
 

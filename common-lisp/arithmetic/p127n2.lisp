@@ -6,10 +6,7 @@
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    This module implements routines to compute modulo-2 polynomials 
-;;;;    in P127[N/2]. (Ensemble de polynomes de degre inferieur ou egal a 127 
-;;;;    dans l'ensemble quotient N/2 (ensemble des classes d'equivalences 
-;;;;    modulo 2 dans N)).
+;;;;    See defpackage documentation string.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
@@ -32,7 +29,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
 
@@ -47,16 +44,39 @@
            "REMAINDER32"
            "EVEN-PARITY" "ODD-PARITY")
   (:documentation "
+
 This module implements routines to compute modulo-2 polynomials 
-in P127[N/2]. (Ensemble de polynomes de degre inferieur ou egal a 127 
-dans l'ensemble quotient N/2 (ensemble des classes d'equivalences 
-modulo 2 dans N)).
+in P127[N/2]. (Ensemble de polynômes de degré inférieur ou égal à 127 
+dans l'ensemble quotient N/2 (ensemble des classes d'équivalences 
+modulo 2 dans ℕ)).
 
 
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 1994 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
 "))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.ARITHMETIC.P127N2")
 
-(deftype poly () '(vector (unsigned-byte 32) 4))
+
+(deftype poly () 
+  "A polynom of order 127.  We represent them as vectors of four 32-bit words."
+  '(vector (unsigned-byte 32) 4))
 
 ;;      CARD32* bb parameters are pointers to an array of 4 CARD32:
 ;;              
@@ -185,8 +205,21 @@ RETURN:  A string containing a human readable representation of the polynom POLY
                                   ))
   "A vector with all legal odd-parity bytes, in 7-bit order.")
 
-(defun even-parity (byte) (aref *even-parity* (logand byte #x7f)))
-(defun odd-parity  (byte) (aref *odd-parity*  (logand byte #x7f)))
+
+(defun even-parity (byte)
+  "
+RETURN: The BYTE with the parity bit set to even parity.
+"
+  (aref *even-parity* (logand byte #x7f)))
+
+
+(defun odd-parity  (byte)
+    "
+RETURN: The BYTE with the parity bit set to odd parity.
+
+"
+    (aref *odd-parity*  (logand byte #x7f)))
+
 (declaim (inline even-parity odd-parity))
 
 

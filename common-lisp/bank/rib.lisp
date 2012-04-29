@@ -6,9 +6,7 @@
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    This class is a French "Relevé d'Identité Banquaire", composed of
-;;;;    three codes and a control key value: (banque, branch-code, account-
-;;;;    number, check-digits).
+;;;;    See defpackage documentation string.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
@@ -33,7 +31,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -44,22 +42,126 @@
            "SET-BRANCH-CODE" "BRANCH-CODE" "SET-BANK-CODE" "BANK-CODE" "SET-RIB"
            "GET-RIB" "RIB")
   (:documentation
-   "This class is a French \"Relevé d'Identité Banquaire\", composed of
-    three codes and a control key value: (banque, branch-code, account-number, check-digits).
+   "
 
-    Copyright Pascal J. Bourguignon 1994 - 2004
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
+This package provides a class representing a French \"Relevé
+d'Identité Banquaire\", composed of three codes and a control key
+value: (banque, branch-code, account-number, check-digits).
+
+See also:
+
+    COM.INFORMATIMAGO.COMMON-LISP.BANK.IBAN  --  the new European bank account numbers.
+
+License:
+
+    Copyright Pascal Bourguignon 1994 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see http://www.gnu.org/licenses/
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.BANK.RIB")
 
 
 
-(define-condition rib-error (iban-error) () (:documentation "A RIB error"))
+(define-condition rib-error (iban-error)
+  ()
+  (:documentation "A RIB error"))
+
+
+
+(defgeneric bank-code            (rib)
+  (:documentation "
+RETURN: The bank code of the RIB.
+"))
+
+(defgeneric branch-code          (rib)
+  (:documentation "
+RETURN: The branch code of the RIB.
+"))
+
+(defgeneric account-number       (rib)
+  (:documentation "
+RETURN: The account number of the RIB.
+"))
+
+(defgeneric check-digits         (rib)
+  (:documentation "
+RETURN: The check digits of the RIB.
+"))
+
+(defgeneric check-digits-changed (rib)
+  (:documentation "
+RETURN: The check digits changed flag.
+NOTE:   The check-digits are updated lazily when other slots are
+        changed.  This flag indicates that check-digits need to be
+        recomputed.
+"))
+
+(defgeneric get-rib (rib &key with-spaces)
+  (:documentation "
+RETURN: A string containing the RIB. When WITH-SPACES is true, spaces
+        are used to separate the various fields of the RIB.
+"))
+
+(defgeneric set-bank-code (rib bank-code)
+  (:documentation "
+DO:     Sets the bank-code of the RIB.
+RETURN: RIB
+"))
+
+(defgeneric set-branch-code (rib branch-code)
+  (:documentation "
+DO:     Sets the branch-code of the RIB.
+RETURN: RIB
+"))
+
+(defgeneric set-account-number (rib account-number)
+  (:documentation "
+DO:     Sets the account-number of the RIB.
+RETURN: RIB
+"))
+
+(defgeneric set-rib (rib new-rib &key with-check-digits)
+  (:documentation "
+DO:         Replace the RIB fields with the data obtained from the
+            NEW-RIB string.
+NEW-RIB:    A string containing the new rib numbers.
+RETURN:     RIB
+"))
+
+(defgeneric (setf bank-code) (bank-code rib)
+  (:documentation "
+DO:     Sets the bank-code of the RIB.
+RETURN: RIB
+"))
+
+(defgeneric (setf branch-code) (branch-code rib)
+  (:documentation "
+DO:     Sets the branch-code of the RIB.
+RETURN: RIB
+"))
+
+(defgeneric (setf account-number) (account-number rib)
+  (:documentation "
+DO:     Sets the account-number of the RIB.
+RETURN: RIB
+"))
+
 
 
 (defclass rib (iban)
   ((bank-code  
-    :reader bank-code  :initform "00000"       :initarg :bank-code  :type (string 5))
+    :reader bank-code   :initform "00000"       :initarg :bank-code   :type (string 5))
    (branch-code
     :reader branch-code :initform "00000"       :initarg :branch-code :type (string 5))
    (account-number
@@ -67,26 +169,16 @@
    (check-digits             :initform "00"          :initarg :check-digits     :type (string 2))
    (check-digits-changed :reader check-digits-changed :initform t :type boolean))
   (:documentation "
-INVARIANT:  strlen(banque)=5,
-            strlen(branch-code)=5,
-            strlen(account-number)=11,
-            strlen(check-digits)=2,
+INVARIANT:  (length banque)=5,
+            (length branch-code)=5,
+            (length account-number)=11,
+            (length check-digits)=2,
             for each attribute in {banque,branch-code,account-number,check-digits},
                 foreach i in [0,strlen(attribute)-1],
                     attribute()[i] in {'0',...,'9','A',...,'Z'}.
             check-digits=f(banque,branch-code,account-number).
 "))
 
-
-(defgeneric check-digits (self))
-(defgeneric get-rib (self &key with-spaces))
-(defgeneric set-bank-code (self bank-code))
-(defgeneric set-branch-code (self branch-code))
-(defgeneric set-account-number (self account-number))
-(defgeneric set-rib (self rib &key with-check-digits))
-(defgeneric (setf bank-code) (bank-code rib))
-(defgeneric (setf branch-code) (branch-code rib))
-(defgeneric (setf account-number) (account-number rib))
 
 
 (defparameter +alphabet-value+ "012345678912345678912345678923456789")
@@ -188,4 +280,5 @@ INVARIANT:  strlen(banque)=5,
            ("10278" "05900" "00014503760" "39"))))
 
 
-;;;; rib.lisp                         --                     --          ;;;;
+;;;; THE END ;;;;
+

@@ -7,19 +7,7 @@
 ;;;;NOWEB:              t
 ;;;;DESCRIPTION
 ;;;;
-;;;;    Posix Regexp implemented in Common-Lisp.
-;;;;
-;;;;    See specifications at:
-;;;;    http://www.opengroup.org/onlinepubs/007904975/basedefs/xbd_chap09.html
-;;;;
-;;;;    This is a strict implementation that will work both in clisp
-;;;;    (Common-Lisp) and emacs (with cl and pjb-cl Common-Lisp extensions).
-;;;;
-;;;;    This implementation is entirely in lisp, contrarily to what regexp
-;;;;    packages are available under clisp or emacs.  Thus it has the advantage
-;;;;    of portability and availability (you don't have to compile or link
-;;;;    a lisp system written in some barbarous language, and you get the same
-;;;;    regexp features in all programs including this module).
+;;;;    See defpackage documentation string.
 ;;;;
 ;;;;USAGE
 ;;;;
@@ -45,7 +33,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -59,13 +47,54 @@
    "REGEXEC" "REGCOMP" "RM-EO" "RM-SO" "REGMATCH-T"
    "RE-NSUB" "REGEX-T" "REGOFF-T" "SIZE-T")
   (:documentation
-   "This package implement POSIX Regular Expressions in Common-Lisp.
+   "
+
+NOT COMPLETE YET.
+
+This package implement POSIX Regular Expressions in Common-Lisp.
 This is interesting because it's available on any Common-Lisp platform
 while external C regexp libraries or internals are available or not,
 and not always implement these same syntax or semantic.
+
+
+Posix Regexp implemented in Common-Lisp.
+
 See specifications at:
-   http://www.opengroup.org/onlinepubs/007904975/basedefs/xbd_chap09.html
+http://www.opengroup.org/onlinepubs/007904975/basedefs/xbd_chap09.html
+
+This is a strict implementation that will work both in clisp
+(Common-Lisp) and emacs (with cl and pjb-cl Common-Lisp extensions).
+
+This implementation is entirely in lisp, contrarily to what regexp
+packages are available under clisp or emacs.  Thus it has the advantage
+of portability and availability (you don't have to compile or link
+a lisp system written in some barbarous language, and you get the same
+regexp features in all programs including this module).
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2002 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+
 "))
+
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.REGEXP.REGEXP-POSIX.KEYWORD"
   (:nicknames "RK")
   (:use)
@@ -75,7 +104,53 @@ See specifications at:
    "SUBEXP" "SEQUENCE" "REPEAT" "REPEAT-SHY" "INFINITY" "ALTERNATIVE"
    "B-ANCHOR" "E-ANCHOR"
    "ITEM" "SET-SEQUENCE")
-  (:documentation "This package gathers and exports regexp keywords."))
+  (:documentation "
+This package gathers and exports regexp keywords.
+
+    ALTERNATIVE
+    ANY
+    BACKREF
+    B-ANCHOR
+    CHARACTER-CLASS
+    COLLATING-SYMBOL
+    E-ANCHOR
+    EQUIVALENCE-CLASS
+    INFINITY
+    ITEM
+    L-ANCHOR
+    MATCHING
+    NON-MATCHING
+    R-ANCHOR
+    RANGE
+    REPEAT
+    REPEAT-SHY
+    SEQUENCE
+    SET-SEQUENCE
+    SUBEXP
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2002 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.REGEXP.REGEXP-POSIX")
 
 #||

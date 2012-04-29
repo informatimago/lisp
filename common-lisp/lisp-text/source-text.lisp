@@ -38,7 +38,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
 
@@ -63,12 +63,13 @@
   (:export
    "BUILD-LINE-INDEX"  "GET-LINE-AND-COLUMN"
    ;; ---- ;;
-   "*SOURCE-READTABLE*"  "SOURCE-SIGNAL-ERRORS*"
+   "*SOURCE-READTABLE*"  "*SOURCE-SIGNAL-ERRORS*"
    "SOURCE-READ"
    "SOURCE-OBJECT"
    "SOURCE-OBJECT-FILE"
    "SOURCE-OBJECT-POSITION"
    "SOURCE-OBJECT-TEXT"
+   "SOURCE-OBJECT-SUBFORM"
    "SOURCE-TOKEN"
    "SOURCE-TOKEN-TEXT"
    "SOURCE-TOKEN-TRAITS"
@@ -85,7 +86,6 @@
    "SOURCE-STRING"
    "SOURCE-STRING-VALUE"
    "SOURCE-SUBFORM"
-   "SOURCE-OBJECT-SUBFORM"
    "SOURCE-QUOTE"
    "SOURCE-BACKQUOTE"
    "SOURCE-UNQUOTE"
@@ -102,7 +102,6 @@
    "SOURCE-NOT-FEATURE"
    "SOURCE-READ-EVAL"
    "SOURCE-TOKEN"
-   "SOURCE-OBJECT-TOKEN"
    "SOURCE-SHARP-PIPE-COMMENT"
    "SOURCE-FUNCTION"
    "SOURCE-VECTOR"
@@ -137,6 +136,12 @@
 ;;; ---------------------------------------- ;;;
 
 (defun build-line-index (file-path &key (external-format :default))
+  "
+DO:                 Build an index of the line positions in the file.
+FILE-PATH:          The pathname of a text file.
+EXTERNAL-FORMAT:    Passed to OPEN. Default: :default.
+RETURN:             A vector of file positions of the beginning of each line.
+"
   (with-open-file (input file-path :external-format external-format)
     (let ((line-positions (make-array 0
                                       :adjustable t :fill-pointer 0
@@ -398,8 +403,12 @@ MACRO-CHARACTER: The macro character that has been read (as passed
 ;;; STANDARD READER MACRO FUNCTIONS
 ;;;---------------------------------------------
 
+(defgeneric comment-text (comment)
+  (:documentation "The text of the comment."))
+
 (defclass comment (source-object)
-  ((comment :accessor comment-text :initarg :comment)))
+  ((comment :accessor comment-text :initarg :comment))
+  (:documentation "Represents a source comment."))
 
 
 ;;; ---------------------------------------- ;;;

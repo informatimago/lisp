@@ -38,7 +38,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -47,29 +47,50 @@
   (:export "PEEK-STREAM" "NEXTCHAR" "UNGETCHAR" "GETCHAR" "READLINE")
   (:documentation
    "
-    This package exports a class named PEEK-STREAM that encapsulates
-    a stream and a buffer in such a way that reading, peeking or
-    unreading characters can be done in any number and in any order.
-    
-    We don't use gray stream to keep it pure Common-Lisp.
-    The I/O methods are GETCHAR, UNGETCHAR and NEXTCHAR to avoid
-    name clashes with un-generic READ-CHAR, UNREAD-CHAR and PEEK-CHAR.
 
-    Copyright Pascal J. Bourguignon 2004 - 2004
-   
-    This program is free software; you can redistribute it and/or
-    modify it under the terms of the GNU General Public License
-    as published by the Free Software Foundation; either version
-    2 of the License, or (at your option) any later version.
-    "))
+This package exports a class named PEEK-STREAM that encapsulates a
+stream and a buffer in such a way that reading, peeking or unreading
+characters can be done in any number and in any order.
+
+We don't use gray stream to keep it pure Common-Lisp.  The I/O methods
+are GETCHAR, UNGETCHAR and NEXTCHAR to avoid name clashes with
+un-generic READ-CHAR, UNREAD-CHAR and PEEK-CHAR.
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2004 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PEEK-STREAM")
 
 
 (defgeneric extend-buffer (self))
-(defgeneric getchar (self))
-(defgeneric ungetchar (self ch))
-(defgeneric nextchar (self))
-(defgeneric readline (self))
+(defgeneric getchar (self)
+  (:documentation "RETURN: The next character in the PEEK-STREAM, advancing."))
+(defgeneric ungetchar (self ch)
+  (:documentation "DO: Unread the character CH from the PEEK-STREAM."))
+(defgeneric nextchar (self)
+  (:documentation "RETURN: The next character in the PEEK-STREAM, without advancing."))
+(defgeneric readline (self)
+  (:documentation "RETURN: A string containing the read line."))
 
 
 (defclass peek-stream ()
@@ -80,7 +101,7 @@
    (buffer :accessor buffer :initform (make-array '(16)
                                                   :adjustable t
                                                   :element-type 'character)))
-  (:documentation "More than on character may be peeked and unread from this."))
+  (:documentation "More than one character may be peeked and unread from this."))
 
 
 

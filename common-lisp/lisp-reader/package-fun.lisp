@@ -6,16 +6,7 @@
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;
-;;;;
-;;;;    This file defines the package and the functions.
-;;;;
-;;;;    Implements the Common Lisp package system.
-;;;;    
-;;;;    <Xach> The basic idea of that file is that the semantics of the CL
-;;;;    package system can be implemented by an object with three special
-;;;;    kinds of tables (present-table, shadowing-table, external-table)
-;;;;    and two lists (used-packs, used-by-packs). The rest is
-;;;;    implementation.
+;;;;    See defpackage documentation string.
 ;;;;
 ;;;;AUTHORS
 ;;;;    <XACH> Zachary Beane <xach@xach.com>,
@@ -95,9 +86,58 @@
            "PACKAGE-DOCUMENTATION")
   (:documentation "
 This package implements the Common Lisp package system.
-Author: Zach Beane.
-Modified by: Pascal Bourguignon.
-License: BSD
+
+<Xach> The basic idea of that file is that the semantics of the CL
+package system can be implemented by an object with three special
+kinds of tables (present-table, shadowing-table, external-table)
+and two lists (used-packs, used-by-packs). The rest is
+implementation.
+
+It shadows the CL symbols dealing with packages, and exports
+replacements that implement the package system anew.
+
+
+Additionnal symbol exported:
+
+    PACKAGE-EXISTS-ERROR
+    PACKAGE-DOES-NOT-EXIST-ERROR
+    SYMBOL-CONFLICT-ERROR
+    SYMBOL-CONFLICT-EXISTING-SYMBOL
+    SYMBOL-CONFLICT-IMPORTED-SYMBOL
+    PACKAGE-DOCUMENTATION
+
+
+License:
+
+    BSD
+
+    Copyright (c) 2012 Zachary Beane <xach@xach.com>, All Rights Reserved
+    Copyright (c) 2012 Pascal Bourguignon <pjb@informatimago.com>, All Rights Reserved
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions
+    are met:
+
+      * Redistributions of source code must retain the above copyright
+        notice, this list of conditions and the following disclaimer.
+
+      * Redistributions in binary form must reproduce the above
+        copyright notice, this list of conditions and the following
+        disclaimer in the documentation and/or other materials
+        provided with the distribution.
+
+    THIS SOFTWARE IS PROVIDED BY THE AUTHOR 'AS IS' AND ANY EXPRESSED
+    OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+    DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+    GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+    WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 "))
 (cl:in-package "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.PACKAGE")
 
@@ -142,34 +182,137 @@ License: BSD
 
 ;;; Clone of the CL symbol/package interface
 
-(defgeneric make-symbol (sym-name))
-(defgeneric symbol-name (sym))
-(defgeneric symbol-package (sym))
+(defgeneric make-symbol (sym-name)
+  (:documentation "
+DO:     Make a new symbol
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_mk_sym.htm
+"))
 
-(defgeneric make-package (pack-name &key nicknames use))
-(defgeneric find-package (pack-name))
-(defgeneric delete-package (pack-name))
+(defgeneric symbol-name (sym)
+  (:documentation "
+RETURN: the name of the symbol.     
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_symb_2.htm
+"))
 
-(defgeneric find-symbol (sym-name &optional pack))
-(defgeneric import (sym &optional pack))
-(defgeneric intern (sym-name &optional pack))
-(defgeneric shadow (sym-name &optional pack))
-(defgeneric shadowing-import (sym &optional pack))
-(defgeneric export (sym &optional pack))
+(defgeneric symbol-package (sym)
+  (:documentation "
+RETURN: the home package of the symbol.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_symb_3.htm
+"))
 
-(defgeneric unexport (sym &optional pack))
-(defgeneric unintern (sym &optional pack))
+(defgeneric make-package (pack-name &key nicknames use)
+  (:documentation "
+DO:     Make a new package.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_mk_pkg.htm
+"))
 
-(defgeneric use-package (pack &optional using-pack))
-(defgeneric unuse-package (pack &optional using-pack))
+(defgeneric find-package (pack-name)
+  (:documentation "
+RETURN: The package designated by PACK-NAME, or NIL if none.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_find_p.htm
+"))
 
-(defgeneric package-name (pack))
-(defgeneric package-use-list (pack))
-(defgeneric package-used-by-list (pack))
-(defgeneric package-shadowing-symbols (pack))
+(defgeneric delete-package (pack-name)
+  (:documentation "
+DO:     Delete the package.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_del_pk.htm
+"))
 
-(defgeneric find-all-symbols (name))
-(defgeneric rename-package (package new-name &optional new-nicknames))
+(defgeneric find-symbol (sym-name &optional pack)
+  (:documentation "
+RETURN: the symbol named SYM-NAME in the package PACK, if found and a status keyword.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_find_s.htm
+"))
+
+(defgeneric import (symbols &optional pack)
+  (:documentation "
+DO:     Import the symbols into the package.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_import.htm
+"))
+
+(defgeneric intern (sym-name &optional pack)
+  (:documentation "
+DO:     Intern the symbol name in the package.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_intern.htm
+"))
+
+(defgeneric shadow (symbol-names &optional pack)
+  (:documentation "
+DO:     Shadow the designated symbols.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_shadow.htm
+"))
+
+(defgeneric shadowing-import (symbols &optional pack)
+  (:documentation "
+DO:     Shadow and import the designated symbols.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_shdw_i.htm
+"))
+
+(defgeneric export (sym &optional pack)
+  (:documentation "
+DO:     Export the designated symbols from the package.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_export.htm
+"))
+
+(defgeneric unexport (sym &optional pack)
+  (:documentation "
+DO:     Unexport the designated symbols from the package.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_unexpo.htm
+"))
+
+(defgeneric unintern (sym &optional pack)
+  (:documentation "
+DO:     Unintern the designated symbols from the package.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_uninte.htm
+"))
+
+(defgeneric use-package (pack &optional using-pack)
+  (:documentation "
+DO:     Make the USING-PACK use the package PACK.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_use_pk.htm
+"))
+
+(defgeneric unuse-package (pack &optional using-pack)
+  (:documentation "
+DO:     Make the USING-PACK unuse the package PACK 
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_unuse_.htm
+"))
+
+(defgeneric package-name (pack)
+  (:documentation "
+RETURN: The package name.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_pkg_na.htm
+"))
+
+(defgeneric package-use-list (pack)
+  (:documentation "
+RETURN: The list of packages used by PACK.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_pkg_us.htm
+"))
+
+(defgeneric package-used-by-list (pack)
+  (:documentation "
+RETURN: The list of packages that use PACK.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_pkg__1.htm
+"))
+
+(defgeneric package-shadowing-symbols (pack)
+  (:documentation "
+RETURN: The list of shadowing symbols of the package.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_pkg_sh.htm
+"))
+
+(defgeneric find-all-symbols (name)
+  (:documentation "
+RETURN: The list of all symbols named NAME in all packages.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_find_a.htm
+"))
+
+(defgeneric rename-package (package new-name &optional new-nicknames)
+  (:documentation "
+DO:     Rename the package giving it the NEW-NAME and NEW-NICKNAMES.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_rn_pkg.htm
+"))
 
 
 
@@ -178,7 +321,12 @@ License: BSD
 (defparameter *keyword-package*           nil) 
 (defparameter *common-lisp-package*       nil)
 (defparameter *common-lisp-user-package*  nil)
-(defvar *package*)
+(defvar *package* nil
+  "
+The current package.
+
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/v_pkg.htm
+")
 
 
 
@@ -201,21 +349,38 @@ License: BSD
   ())
 
 
+(defgeneric package-error-package (package-error)
+  (:documentation "
+RETURN: The package in error.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_pkg_er.htm
+"))
 
 (define-condition package-error (error)
   ((package :initarg :package :reader package-error-package))
   (:report (lambda (condition stream)
-             (format stream "Package error with ~A" (package-error-package condition)))))
+             (format stream "Package error with ~A" (package-error-package condition))))
+(:documentation "
+The type package-error consists of error conditions related to operations on packages. 
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/e_pkg_er.htm
+"))
 
 
 (define-condition simple-package-error (package-error simple-error-mixin)
   ())
 
 (define-condition package-exists-error (simple-package-error)
-  ())
+  ()
+  (:documentation "The error condition signaling that a package with the same name already exists."))
 
 (define-condition package-does-not-exist-error (simple-package-error)
-  ())
+  ()
+  (:documentation "The error condition signaling that no package with that name exists."))
+
+(defgeneric symbol-conflict-existing-symbol (error)
+  (:documentation "RETURN: The existing symbol in conflict."))
+
+(defgeneric symbol-conflict-imported-symbol (error)
+  (:documentation "RETURN: The imported symbol in conflict."))
 
 (define-condition symbol-conflict-error (simple-package-error)
   ((existing-symbol :initarg :existing-symbol :reader symbol-conflict-existing-symbol)
@@ -224,7 +389,8 @@ License: BSD
              (format stream "The would-be imported symbol ~S conflicts with the existing symbol ~S in the package ~S"
                      (symbol-conflict-imported-symbol condition)
                      (symbol-conflict-existing-symbol condition)
-                     (package-name (package-error-package condition))))))
+                     (package-name (package-error-package condition)))))
+(:documentation "The error condition signaling a symbol conflict."))
 
 (define-condition symbol-does-not-exist-error (simple-package-error)
   ((symbol-name :initarg :symbol-name :reader symbol-does-not-exist-symbol-name))
@@ -274,6 +440,24 @@ License: BSD
 
 ;;; Implementation of syms
 
+(defgeneric symbol-plist (symbol)
+(:documentation "
+RETURN: The plist of the symbol.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_symb_4.htm
+"))
+
+(defgeneric symbol-value (symbol)
+(:documentation "
+RETURN: The value of the symbol.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_symb_5.htm
+"))
+
+(defgeneric symbol-function (symbol)
+(:documentation "
+RETURN: The function of the symbol.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_symb_1.htm
+"))
+
 (defclass symbol ()
   ((name
     :initarg :name
@@ -297,27 +481,57 @@ License: BSD
     :initform nil
     :accessor symbol-constantp))
   (:default-initargs
-   :pack nil))
+   :pack nil)
+  (:documentation "
+The symbol class.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/t_symbol.htm
+"))
 
-(defmethod symbolp ((object t))      nil)
-(defmethod symbolp ((object symbol)) t)
+(defgeneric symbolp (object)
+  (:method ((object t))      nil)
+  (:method ((object symbol)) t)
+  (:documentation "
+RETURN: Whether the object is a symbol.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_symbol.htm
+"))
 
-(defmethod boundp ((object t))
-  (error 'type-error :datum object :expected-type 'symbol))
-(defmethod boundp ((object symbol))
-  (slot-boundp object 'value))
 
-(defmethod fboundp ((object t))
-  (error 'type-error :datum object :expected-type 'symbol))
-(defmethod fboundp ((object symbol))
-  (slot-boundp object 'function))
+(defgeneric boundp (object)
+  (:method ((object t))
+    (error 'type-error :datum object :expected-type 'symbol))
+  (:method ((object symbol))
+    (slot-boundp object 'value))
+  (:documentation "
+RETURN: Whether the symbol is bound to a value.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_boundp.htm
+"))
+
+(defgeneric fboundp (object)
+  (:method ((object t))
+    (error 'type-error :datum object :expected-type 'symbol))
+  (:method ((object symbol))
+    (slot-boundp object 'function))
+  (:documentation "
+RETURN: Whether the symbol is fbound to a function.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_fbound.htm
+"))
 
 
 (defclass keyword (symbol)
-  ())
+  ()
+  (:documentation "
+The keyword class.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/t_kwd.htm
+"))
 
-(defmethod keywordp ((object t))       nil)
-(defmethod keywordp ((object keyword)) t)
+
+(defgeneric keywordp (object)
+  (:method ((object t))       nil)
+  (:method ((object keyword)) t)
+  (:documentation "
+RETURN: Whether the object is a keyword.     
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_kwdp.htm
+"))
 
 
 (defmethod make-symbol (sym-name)
@@ -610,10 +824,18 @@ License: BSD
 
 
 (defun list-all-packages ()
+  "
+RETURN: A fresh list of all registered packages.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_list_a.htm
+"
   (let ((packages '()))
     (maphash (lambda (k v) (declare (ignore k)) (pushnew v packages)) *packs*)
     packages))
 
+(defgeneric package-documentation (package)
+  (:documentation "RETURN: The documentation string of the package."))
+(defgeneric package-nicknames (package)
+  (:documentation "RETURN: The list of nicknames of the package."))
 
 (defclass package ()
   ((name
@@ -651,7 +873,11 @@ License: BSD
     :present-table (make-sym-table)
     :shadowing-table (make-sym-table)
     :used-packs nil
-    :used-by-packs nil))
+    :used-by-packs nil)
+  (:documentation "
+The package class.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/t_pkg.htm
+"))
 
 (defmacro define-normalize-package-methods (name &key (if-package-does-not-exist :replace) (type-error nil))
   `(progn
@@ -676,7 +902,11 @@ License: BSD
 
 (defgeneric packagep (package)
   (:method ((object t)) nil)
-  (:method ((package package)) t))
+  (:method ((package package)) t)
+  (:documentation "
+RETURN: Whether the object is a package.     
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_pkgp.htm
+"))
 
 
 (defmethod print-object ((pack package) stream)
@@ -991,24 +1221,24 @@ IF-PACKAGE-EXISTS           The default is :PACKAGE
                                              (unless (externalp sym package)
                                                (push sym symbols)))
                                            (present-table package)))
-                                           ((:external)
-                                            (tmap-syms (lambda (sym) (push sym symbols))
-                                                       (external-table package)))
-                                           ((:inherited)
-                                            (dolist (pack (package-use-list package))
-                                              (tmap-syms (lambda (sym)
-                                                           (let ((shadow (find-symbol (symbol-name sym) package)))
-                                                             (unless (and shadow
-                                                                          (shadowingp shadow package)
-                                                                          (not (eq sym shadow)))
-                                                               (push sym symbols))))
-                                                         (external-table (find-package pack)))))
-                                           ((:present)
-                                            (tmap-syms (lambda (sym) (push sym symbols))
-                                                       (present-table package)))
-                                           ((:shadowing)
-                                            (tmap-syms (lambda (sym) (push sym symbols))
-                                                       (shadowing-table package))))
+                               ((:external)
+                                (tmap-syms (lambda (sym) (push sym symbols))
+                                           (external-table package)))
+                               ((:inherited)
+                                (dolist (pack (package-use-list package))
+                                  (tmap-syms (lambda (sym)
+                                               (let ((shadow (find-symbol (symbol-name sym) package)))
+                                                 (unless (and shadow
+                                                              (shadowingp shadow package)
+                                                              (not (eq sym shadow)))
+                                                   (push sym symbols))))
+                                             (external-table (find-package pack)))))
+                               ((:present)
+                                (tmap-syms (lambda (sym) (push sym symbols))
+                                           (present-table package)))
+                               ((:shadowing)
+                                (tmap-syms (lambda (sym) (push sym symbols))
+                                           (shadowing-table package))))
                              (iterator))
                  (packages   (setf package (pop packages)
                                    stypes  symbol-types)
@@ -1095,16 +1325,16 @@ IF-PACKAGE-EXISTS           The default is :PACKAGE
 
 (defmethod check-inherit-conflict (used-pack using-pack)
   (zdo-external-symbols (inherited-sym used-pack)
-    (let ((existing-sym (find-symbol (symbol-name inherited-sym)
-                                     using-pack)))
-      (when (and existing-sym
-                 (not (eq inherited-sym existing-sym))
-                 (not (shadowingp existing-sym using-pack)))
-        (error "Conflict: Inheriting ~A from ~A conflicts with ~A in ~A"
-               inherited-sym
-               used-pack
-               existing-sym
-               using-pack)))))
+                        (let ((existing-sym (find-symbol (symbol-name inherited-sym)
+                                                         using-pack)))
+                          (when (and existing-sym
+                                     (not (eq inherited-sym existing-sym))
+                                     (not (shadowingp existing-sym using-pack)))
+                            (error "Conflict: Inheriting ~A from ~A conflicts with ~A in ~A"
+                                   inherited-sym
+                                   used-pack
+                                   existing-sym
+                                   using-pack)))))
 
 (defmethod check-export-conflict (sym pack)
   (let ((sym-name (symbol-name sym)))
@@ -1582,6 +1812,10 @@ Each sublist contains the package followed by its imported symbols."
 
 
 (defmacro in-package (name)
+  "
+DO:     Sets the current *package* to the package designated by NAME.
+URL:    http://www.lispworks.com/documentation/HyperSpec/Body/m_in_pkg.htm
+"
   (let ((name (normalize-string-designator name)))
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (let ((new-package (normalize-package-designator

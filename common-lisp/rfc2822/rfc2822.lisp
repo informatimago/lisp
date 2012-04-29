@@ -6,22 +6,7 @@
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    RFC0822/RFC2822 support funtions.
-;;;;    
-;;;;    RFC822      STANDARD FOR THE FORMAT OF ARPA INTERNET TEXT MESSAGES
-;;;;    RFC2822     Internet Message Format
-;;;;   
-;;;;    RFC822 in fixnum words:
-;;;;   
-;;;;    In transmission, message lines are separated by CRLF.
-;;;;    Header lines are separated from body lines by an empty line (CRLFCRLF).
-;;;;    Header lines may be cut by replacing any space or tab by CRLF, (space or tab).
-;;;;    Field name consists of any ASCII printable character but space and colon,
-;;;;    followed by a colon.
-;;;;    Field body begins immediately after the colon. (Customary space included).
-;;;;    NOTE: rfc2822 forbid spaces between field name and colon,
-;;;;          but it IS possible in rfc822 to insert spaces here.
-;;;;          (For example, see Annex A of RFC822).
+;;;;    See defpackage documentation string.
 ;;;;   
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
@@ -45,7 +30,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -59,9 +44,46 @@
   (:documentation
    "RFC0822/RFC2822 support funtions.
 
-    Copyright Pascal J. Bourguignon 2004 - 2005
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
+RFC0822/RFC2822 support funtions.
+
+RFC822      STANDARD FOR THE FORMAT OF ARPA INTERNET TEXT MESSAGES
+RFC2822     Internet Message Format
+
+RFC822 in fixnum words:
+
+In transmission, message lines are separated by CRLF.
+Header lines are separated from body lines by an empty line (CRLFCRLF).
+Header lines may be cut by replacing any space or tab by CRLF, (space or tab).
+Field name consists of any ASCII printable character but space and colon,
+followed by a colon.
+Field body begins immediately after the colon. (Customary space included).
+NOTE: rfc2822 forbid spaces between field name and colon,
+ but it IS possible in rfc822 to insert spaces here.
+ (For example, see Annex A of RFC822).
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2004 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.RFC2822.RFC2822")
 
 
@@ -77,11 +99,12 @@
 
 (defun unquote (value)
   "
-RETURN:    A STRING WHERE THE QUOTES AND ESCAPES ARE MOVED.
-NOTE:      IT IS ASSUMED THAT THE VALUE CONTAINS ONLY ONE STRING, OR NONE.
-EXAMPLE:   ''A string \'' with \'' a quoted word.''
-           becomes: A string '' with '' a quoted word.
+RETURN:    A string where the quotes and escapes are moved.
+NOTE:      It is assumed that the value contains only one string, or none.
+EXAMPLE:   (unquote \"A string \\\\\" with \\\\\" a quoted word.\")
+           -->  \"A string \\\" with \\\" a quoted word.\"
 "
+
   (macrolet ((when-char (ch) (if (stringp ch)
                                  `(char= (character ,ch) (aref value i))
                                  `(char=  ,ch            (aref value i))))
@@ -139,7 +162,7 @@ RETURN:     A string with unquoted spaces and tabulations removed.
 
 (defun remove-comments (value)
   "
-RETURN:   A STRING WITH THE RFC822 COMMENTS REMOVED.
+RETURN:   A string with the RFC822 comments removed.
 "
 ;;;      comment     =  "(" *(ctext / quoted-pair / comment) ")"
 ;;;      ctext       =  <any CHAR excluding "(",     ; => may be folded

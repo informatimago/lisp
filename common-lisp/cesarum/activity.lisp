@@ -6,15 +6,7 @@
 ;;;;USER-INTERFACE:     common-lisp
 ;;;;DESCRIPTION
 ;;;;
-;;;;    This package implements a kind of co-routine monitor.
-;;;;
-;;;;    An activity is a closure that is called at specified times (T+k*P).
-;;;;    It should return before processing can go on.  This package is
-;;;;    implemented in pure Common Lisp and allows to schedule independent
-;;;;    "tasks" portably, as long as you can split each task in small chunks,
-;;;;    timewise.
-;;;;
-;;;;    See the comment at the end of this file for a example of use.
+;;;;    See defpackage documentation string.
 ;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
@@ -54,7 +46,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 
@@ -70,12 +62,36 @@
    ;; Utility:
    "PRINT-ACTIVITIES" "GET-TIME")
   (:documentation
-   "This package implements a kind of co-routine monitor.
-    Activities are closure that get called periodically by a scheduler.
+   "
+This package implements a kind of co-routine monitor.
 
-    Copyright Pascal J. Bourguignon 2003 - 2007
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
+An activity is a closure that is called at specified times (T+k*P).
+It should return before processing can go on.  This package is
+implemented in pure Common Lisp and allows to schedule independent
+\"tasks\" portably, as long as you can split each task in small
+chunks, timewise.
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2003 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ACTIVITY")
 
 
@@ -178,6 +194,31 @@ NOTE:   exactp => dropablep
 
 (defvar *scheduler*)
 
+
+
+(defgeneric activity-closure (activity)
+  (:documentation "RETURN: the closure executed each time the activity is scheduled."))
+
+(defgeneric activity-dropable-p (activity)
+  (:documentation "RETURN: Whether the activity should be skipped instead of scheduled too late."))
+
+(defgeneric activity-exact-p (activity)
+  (:documentation "RETURN: Whether the activity should be run only on exact time."))
+
+(defgeneric activity-name (activity)
+  (:documentation "RETURN: A label for the activity."))
+
+(defgeneric activity-period (activity)
+  (:documentation "
+RETURN: The period of this activity, expressed in seconds.  If zero,
+        then the activity is run as often as possible."))
+
+(defgeneric activity-scheduled-time (activity)
+  (:documentation "RETURN: The scheduled time this activity should run."))
+
+
+
+
 (defclass activity ()
   ((id
     :reader activity-id
@@ -207,7 +248,7 @@ NOTE:   exactp => dropablep
     :accessor activity-scheduled-time
     :initform 0
     :type     real
-    :documentation "The scheduled time this activity should run")
+    :documentation "The scheduled time this activity should run.")
    (period
     :accessor activity-period
     :initarg :period
@@ -271,6 +312,7 @@ If zero, then the activity is run as often as possible.")
   (coerce (/ internal-time-units-per-second) 'double-float)
   "The internal time slice, in seconds, as a DOUBLE-FLOAT.")
 
+
 (defparameter *precise-real-time-offset*
   (loop
      :with now = (get-universal-time)
@@ -281,6 +323,7 @@ If zero, then the activity is run as often as possible.")
       (/ (GET-INTERNAL-REAL-TIME) INTERNAL-TIME-UNITS-PER-SECOND)
 to get the current universal-time with the higher internal time precision.")
 
+
 (defun get-real-time ()
   "
 RETURN: The universal-time (in seconds), offset by the
@@ -289,13 +332,16 @@ RETURN: The universal-time (in seconds), offset by the
   (+ *precise-real-time-offset*
      (* (get-internal-real-time) *internal-time-unit*)))
 
+
 (defun get-run-time ()
   (* (get-internal-run-time) *internal-time-unit*))
+
 
 
 (deftype time-base ()
   "A value that designates one of the timebases."
   '(member :universal-time :real-time :run-time))
+
 
 (defgeneric precision (timebase)
   (:documentation "Return the number of seconds (or fraction of a second)
@@ -313,8 +359,14 @@ that is the minimum non-zero difference between two calls to GET-TIME.")
     (declare (ignorable timebase))
     *internal-time-unit*))
 
+
 (defgeneric get-time (timebase)
-  (:documentation "Return current number of seconds since epoch.")
+  (:documentation "
+RETURN:     Current number of seconds since epoch.
+TIMEBASE:   :universal-time to get the time from (get-univeral-time),
+            :real-time      to get the time from (get-internal-real-time),
+            :run-time       to get the time from (get-internal-run-time).
+            (in all cases, the time is in number of seconds since the epoch).")
   (:method ((timebase t))
     (declare (ignorable timebase))
     (error "Invalid TIMEBASE: ~S" timebase))
@@ -327,6 +379,7 @@ that is the minimum non-zero difference between two calls to GET-TIME.")
   (:method ((timebase (eql :run-time)))
     (declare (ignorable timebase))
     (get-run-time)))
+
 
 (defgeneric wait-delay (timebase delay)
   (:documentation "Sleep for DELAY seconds.
@@ -702,6 +755,12 @@ UNTIL:  Time until which activities must be run.
 
 
 (defun activity-run (&key one-step until)
+  "
+DO:         Runs the scheduler.
+ONE-STEP:   If true, runs only one activity (or don't sleep).
+UNTIL:      Time (in universal-time seconds) until which activities
+            must be run.
+"
   (run *scheduler* :one-step one-step :until until))
 
 
@@ -773,6 +832,11 @@ UNTIL:  Time until which activities must be run.
 
 
 (defun print-activities (&optional (stream *standard-output*))
+  "
+DO:         Prints on the STREAM a formated list of activities.
+STREAM:     An output stream to which the list of activities is
+            printed.  Defaults to *STANDARD-OUTPUT*.
+"
   (print-scheduler-activities *scheduler* stream))
 
 
@@ -820,14 +884,28 @@ START-IN:   (mutually exclusive with START-AT)
     (schedule-activity (activity-scheduler activity) activity)
     activity))
 
+
 (defun current-activity ()
+  "RETURN: The current activity."
   *current-activity*)
 
+
 (defun activityp (object)
+  "
+RETURN: Whether the OBJECT is an instance of the ACTIVITY class (or
+        one of its subclasses).
+"
   (typep object 'activity))
 
+
 (defun activity-yield ()
+  "
+DO:         Returns control to the scheduler.
+NOTE:       This may be called from an activity closure to return
+            early to the scheduler.
+"
   (throw 'activity-yield nil))
+
 
 (defun all-activities ()
   "
@@ -835,7 +913,10 @@ RETURN:  A new list of all the activities.
 "
   (scheduler-all-activities *scheduler*))
 
+
+
 (defgeneric find-activity-by-id (scheduler activity-id))
+
 
 (defmethod find-activity-by-id ((scheduler idle-scheduler) id)
   (find id (scheduler-activities scheduler) :key (function activity-id)))

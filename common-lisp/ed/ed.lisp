@@ -6,27 +6,7 @@
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;
-;;;;    ed(1) in COMMON-LISP.
-;;;;
-;;;;    Real men do it with magnets.  ed is for girly men.
-;;;;
-;;;;    This is a clone of the unix ed(1) editor written in pure Common-Lisp.
-;;;;    Since Common-Lisp does not define any process management functions,
-;;;;    all !command forms are taken as Lisp forms instead of sh(1) commands.
-;;;;    These forms are executed within a (LAMBDA (*INPUT*) command) with
-;;;;    the *INPUT* argument bound to a mutable list of inmutable input strings,
-;;;;    one per line.  The result of the returning form in command must be
-;;;;    a list of string, the list of resulting lines to be inserted into the
-;;;;    buffer or to be printed on the terminal.
-;;;;
-;;;;    For the rest, the aim is to be 100% user-interface compatible with ed(1).
-;;;;
-;;;;    <a href=http://www.gnu.org/fun/jokes/ed.msg.html>Ed, man! !man ed</a>
-;;;;
-;;;;    Can you imagine that some Common-Lisp implementations DON'T provide
-;;;;    any editor (in conformity with the Common-Lisp specifications)?
-;;;;    Not complete (waiting for a REGEXP package). But otherwise
-;;;;    functional enough. 
+;;;;    See defpackage documentation string.
 ;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
@@ -58,18 +38,63 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.ED.ED"
   (:documentation
-   "This package exports an implementation of the COMMON-LISP ED function
+   "
+This package exports an implementation of the COMMON-LISP ED function
 following the user manual of ed(1).
 
-Copyright Pascal J. Bourguignon 2003 - 2012
-This package is provided under the GNU General Public License.
-See the source file for details.")
+
+ed(1) in COMMON-LISP.
+
+Real men do it with magnets.  ed is for girly men.
+
+This is a clone of the unix ed(1) editor written in pure Common-Lisp.
+Since Common-Lisp does not define any process management functions,
+all !command forms are taken as Lisp forms instead of sh(1) commands.
+These forms are executed within a (LAMBDA (*INPUT*) command) with
+the *INPUT* argument bound to a mutable list of inmutable input strings,
+one per line.  The result of the returning form in command must be
+a list of string, the list of resulting lines to be inserted into the
+buffer or to be printed on the terminal.
+
+For the rest, the aim is to be 100% user-interface compatible with ed(1).
+
+Ed, man! !man ed: http://www.gnu.org/fun/jokes/ed.msg.html
+
+
+Can you imagine that some Common-Lisp implementations DON'T provide
+any editor (in conformity with the Common-Lisp specifications)?
+Not complete (waiting for a REGEXP package). But otherwise
+functional enough. 
+
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2003 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+")
   (:use "COMMON-LISP")
   (:shadow "ED")
   (:export "ED"))
@@ -1302,6 +1327,10 @@ RETURN: The index of the next non white space character in command,
 
 
 (defun ed (&optional x)
+  "
+DO:  Invokes the ed(1)-like editor.
+X:   NIL, a pathname, a string, or a function name. The default is NIL.
+"
   (cond
     ((null x)
      (edit *current-buffer*))

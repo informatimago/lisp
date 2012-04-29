@@ -30,7 +30,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.DATA-ENCODING.ECP"
@@ -39,7 +39,7 @@
         "COM.INFORMATIMAGO.COMMON-LISP.ARITHMETIC.P127N2")
   (:export "+ECP-BLOCK-SIZE+"
            "ECP-DATA" "ECP-ACTIVE" "ECP-STATE"
-           "ECP-START" "ECP-STOP"
+           "START-ECP" "STOP-ECP"
            "STATISTICS" "STATISTICS-BYTES-RECEIVED" "STATISTICS-PARITY-ERRORS"
            "STATISTICS-UNCORRECTABLE-COUNT" "STATISTICS-INVALID-COUNT"
            "STATISTICS-CORRECT-COUNT" "STATISTICS-VALID-SYN-COUNT"
@@ -48,7 +48,31 @@
            "PROCESS-OUTPUT-BUFFER")
   (:documentation "
 Minitel-1b Error Correction Procedure.
+
 Reference: page 55 and on in http://543210.free.fr/TV/stum1b.pdf
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2012 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+
 "))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.DATA-ENCODING.ECP")
 
@@ -56,6 +80,7 @@ Reference: page 55 and on in http://543210.free.fr/TV/stum1b.pdf
 
 
 (defstruct statistics
+  "Statistics for the ECP algorithm."
   (bytes-received      0)
   (parity-errors       0)
   (uncorrectable-count 0)
@@ -65,13 +90,32 @@ Reference: page 55 and on in http://543210.free.fr/TV/stum1b.pdf
   (valid-syn-count     0)
   (invalid-syn-count   0))
 
+(setf (documentation 'statistics-bytes-received 'function)
+      "ECP statistics: number of bytes processed."
+      (documentation 'statistics-parity-errors 'function)
+      "ECP statistics: number of parity errors."
+      (documentation 'statistics-uncorrectable-count 'function)
+      "ECP statistics: number of uncorrectable errors."
+      (documentation 'statistics-uncorrected-count 'function)
+      "ECP statistics: number of uncorrected errors."
+      (documentation 'statistics-invalid-count 'function)
+      "ECP statistics: number of invalid blocks."
+      (documentation 'statistics-correct-count 'function)
+      "ECP statistics: number of correct blocks."
+      (documentation 'statistics-valid-syn-count 'function)
+      "ECP statistics: number of valid syn."
+      (documentation 'statistics-invalid-syn-count 'function)
+      "ECP statistics: number of invalid syn.")
+
 
 
 (deftype ecp-state () '(member :ecp-start :ecp-block :ecp-syn))
 
-(defconstant +ecp-block-size+ 17)
+(defconstant +ecp-block-size+ 17
+  "Size of an ECP block.")
 
 (defstruct (ecp-data (:conc-name ecp-))
+  "State for the ECP algorithm."
   (active nil :type boolean)
   (state  :ecp-start :type ecp-state)
   (count 0) ; bytes in block
@@ -79,6 +123,11 @@ Reference: page 55 and on in http://543210.free.fr/TV/stum1b.pdf
   (parity-errors 0)
   (block-number 0) ; current block
   (block (make-array +ecp-block-size+ :element-type '(unsigned-byte 8) :initial-element 0)))
+
+(setf (documentation 'ecp-active 'function)
+      "Whether the ECP is active."
+      (documentation 'ecp-state 'function)
+      "State of the ECP, one of :ecp-start, :ecp-block or :ecp-syn.")
 
 
 (defun start-ecp (ecp)
