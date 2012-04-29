@@ -29,6 +29,7 @@
 ;;;;    - make it merge documentations (tree, navigation), since some
 ;;;;      packages can only be loaded in a specific implementation.
 ;;;;
+;;;;    - make links from symbols and packages to source files (eg. gitorious).
 ;;;;
 ;;;;LEGAL
 ;;;;    LLGPL
