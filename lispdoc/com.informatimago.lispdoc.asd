@@ -70,7 +70,7 @@
                  "com.informatimago.clext"
                  "com.informatimago.clmisc"
                  "com.informatimago.rdp"
-                 #+(and ccl mac) "com.informatimago.objcl"
+                 #+(and ccl darwin) "com.informatimago.objcl"
                  )
     :components ((:file "lispdoc")
                  (:file "lispdoc-run" :depends-on ("lispdoc"))))
