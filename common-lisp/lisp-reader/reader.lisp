@@ -2592,6 +2592,30 @@ RETURN:        Whether the TOKEN is a potential number.
       (assert (notany (function potential-number-p) pns))))
   :success)
 
+(defmacro WITH-STANDARD-IO-SYNTAX (&body body)
+  `(let ((*package*                    (find-package "COMMON-LISP-USER"))
+         (*print-array*                t)
+         (*print-base*                 10)
+         (*print-case*                 :upcase)
+         (*print-circle*               nil)
+         (*print-escape*               t)
+         (*print-gensym*               t)
+         (*print-length*               nil)
+         (*print-level*                nil)
+         (*print-lines*                nil)
+         (*print-miser-width*          nil)
+         (*print-pprint-dispatch*      nil #|implementation dependant|#)
+         (*print-pretty*               nil)
+         (*print-radix*                nil)
+         (*print-readably*             t)
+         (*print-right-margin*         nil)
+         (*read-base*                  10)
+         (*read-default-float-format*  'single-float)
+         (*read-eval*                  t)
+         (*read-suppress*              nil)
+         (*readtable*                  (make-instance 'readtable)))
+     ,@body))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; The End
