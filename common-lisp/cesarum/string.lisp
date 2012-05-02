@@ -50,6 +50,7 @@
    "PREFIXP" "SUFFIXP"
    "SPLIT-NAME-VALUE" "STRING-REPLACE" "UNSPLIT-STRING" "SPLIT-STRING"
    "SPLIT-ESCAPED-STRING" "IMPLODE-STRING" "EXPLODE-STRING"
+   "IMPLODE" "EXPLODE"
    "CONCATENATE-STRINGS")
   (:documentation
    "
@@ -113,11 +114,52 @@ RETURN:          A string containing the concatenation of the strings
        :finally (return result))))
 
 
-(defun explode-string (string)
+(defgeneric explode (object &optional result-type)
+  (:documentation "
+RETURN:         A sequence of character of type RESULT-TYPE containing
+                the character of the OBJECT.
+RESULT-TYPE:    A sequence type accepted by MAP (not NIL). Default: LIST.
+OBJECT:         Can be a string, a symbol (its symbol-name is exploded),
+                or a random object (its prin1 representation is exploded).
+")
+  (:method ((object symbol) &optional (result-type 'list))
+    (explode-string (symbol-name object) result-type))
+  (:method ((object string) &optional (result-type 'list))
+    (explode-string object result-type))
+  (:method ((object vector) &optional (result-type 'list))
+    (explode-string (implode-string object) result-type))
+  (:method ((object t) &optional (result-type 'list))
+    (explode-string (prin1-to-string object) result-type)))
+
+
+(defun implode (char-seq &optional (result-type 'symbol) (package *package*))
   "
-return a new list containing the character in the sequence string.
+RETURN:         An object of type RESULT-TYPE made with the character
+                in the CHAR-SEQ sequence. Default: SYMBOL.
+RESULT-TYPE:    SYMBOL (default), or STRING, or another type, in which
+                case the object is obtained from reading from the
+                string obtained from the implosion of the characters
+                CHAR-SEQ.
+PACKAGE:        When RESULT-TYPE is SYMBOL, then the package where the
+                symbol is interned. Default: *PACKAGE*.
 "
-  (map 'list (function character) string))
+  (case result-type
+    (string (implode-string char-seq))
+    (symbol (intern (implode-string char-seq) package))
+    (otherwise  (let ((object (read-from-string (implode-string char-seq))))
+                  (assert (typep object result-type) ()
+                          "~S is of type ~S which is not the expected type ~S"
+                          object (type-of object) result-type)
+                  object))))
+
+
+(defun explode-string (string &optional (result-type 'list))
+  "
+RETURN:         A new sequence containing the character in the
+                sequence string.
+RESULT-TYPE:    A sequence type accepted by MAP.  Default: LIST.
+"
+  (map result-type (function character) string))
 
 
 (defun implode-string (char-seq)
@@ -125,6 +167,71 @@ return a new list containing the character in the sequence string.
 RETURN: A new string containing the characters in the sequence CHAR-SEQ.
 "
   (map 'string (function character) char-seq))
+
+
+(defun test/implode-explode ()
+  ;; implode-string
+  (assert (string= "" (implode-string "")))
+  (assert (string= "" (implode-string #())))
+  (assert (string= "" (implode-string '())))
+  (assert (null (ignore-errors (implode-string 42))))
+  (assert (string= "ABC" (implode-string "ABC")))
+  (assert (string= "ABC" (implode-string #(#\A #\B #\C))))
+  (assert (string= "ABC" (implode-string '(#\A #\B #\C))))
+  (assert (null (ignore-errors (implode-string '(42)))))
+  ;; explode-string
+  (assert (eq      (explode-string "")         nil))
+  (assert (eq      (explode-string "" 'list)   nil))
+  (assert (string= (explode-string "" 'string) ""))
+  (assert (equalp  (explode-string "" 'vector) #()))
+  (assert (equal  (explode-string "ABC")       '(#\A #\B #\C)))
+  (assert (equal  (explode-string "ABC" 'list) '(#\A #\B #\C)))
+  (assert (and  (every 'char= (explode-string "ABC" 'vector) #(#\A #\B #\C))
+                (= (length (explode-string "ABC" 'vector)) (length  #(#\A #\B #\C)))))
+  (assert (string= (explode-string "ABC" 'string) "ABC"))
+  ;; implode a string
+  (assert (eq      (implode "" 'symbol "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING") '||))
+  (assert (eq      (implode "ABC" 'symbol "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING") 'ABC))
+  (assert (eq      (implode "ABC" 'symbol :keyword) ':ABC))
+  (assert (string= (implode "" 'string) ""))
+  (assert (string= (implode "ABC" 'string) "ABC"))
+  (assert (equal   (implode "(1 2 3)" 'list) '(1 2 3))) 
+  (assert (equal   (implode "NIL" 'list) '()))
+  (assert (equalp  (implode "#(1 2 3)" 'vector) #(1 2 3))) 
+  ;; implode a vector
+  (assert (eq      (implode #() 'symbol "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING") '||))
+  (assert (eq      (implode #(#\A #\B #\C) 'symbol "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING") 'ABC))
+  (assert (eq      (implode #(#\A #\B #\C) 'symbol :keyword) ':ABC))
+  (assert (string= (implode #() 'string) ""))
+  (assert (string= (implode #(#\A #\B #\C) 'string) "ABC"))
+  (assert (equal   (implode #(#\( #\1 #\space #\2  #\space #\3 #\)) 'list) '(1 2 3))) 
+  (assert (equal   (implode #(#\N #\I #\L) 'list) '()))
+  (assert (equalp  (implode #(#\# #\( #\1 #\space #\2  #\space #\3 #\)) 'vector) #(1 2 3))) 
+  ;; implode a list
+  (assert (eq      (implode '() 'symbol "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING") '||))
+  (assert (eq      (implode '(#\A #\B #\C) 'symbol "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING") 'ABC))
+  (assert (eq      (implode '(#\A #\B #\C) 'symbol :keyword) ':ABC))
+  (assert (string= (implode '() 'string) ""))
+  (assert (string= (implode '(#\A #\B #\C) 'string) "ABC"))
+  (assert (equal   (implode '(#\( #\1 #\space #\2  #\space #\3 #\)) 'list) '(1 2 3))) 
+  (assert (equal   (implode '(#\N #\I #\L) 'list) '()))
+  (assert (equalp  (implode '(#\# #\( #\1 #\space #\2  #\space #\3 #\)) 'vector) #(1 2 3)))
+  ;; explode
+  (assert (equal  (explode 'hello) '(#\H #\E #\L #\L #\O)))
+  (assert (equal  (explode 'hello 'list) '(#\H #\E #\L #\L #\O)))
+  (assert (equalp (explode 'hello 'vector) #(#\H #\E #\L #\L #\O)))
+  (assert (equalp (explode 'hello 'string) "HELLO"))
+  (assert (equal  (explode "HELLO") '(#\H #\E #\L #\L #\O)))
+  (assert (equal  (explode "HELLO" 'list) '(#\H #\E #\L #\L #\O)))
+  (assert (equalp (explode "HELLO" 'vector) #(#\H #\E #\L #\L #\O)))
+  (assert (equalp (explode "HELLO" 'string) "HELLO"))
+  (assert (equalp (explode #(#\H #\E #\L #\L #\O)) '(#\H #\E #\L #\L #\O)))
+  (assert (equalp (explode #(#\H #\E #\L #\L #\O) 'list) '(#\H #\E #\L #\L #\O)))
+  (assert (equalp (explode #(#\H #\E #\L #\L #\O) 'vector) #(#\H #\E #\L #\L #\O)))
+  (assert (equalp (explode #(#\H #\E #\L #\L #\O) 'string) "HELLO"))
+  :success)
+
+(test/implode-explode)
 
 
 (define-compiler-macro implode-string (&whole form  char-seq)
