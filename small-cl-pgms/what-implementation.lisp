@@ -16,6 +16,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2012-04-30 <PJB> Added advertizements.
 ;;;;    2012-04-15 <PJB> Created
 ;;;;BUGS
 ;;;;LEGAL
@@ -70,14 +71,17 @@ along with this program.  If not, see http://www.gnu.org/licenses/
 (in-package "COM.INFORMATIMAGO.WHAT-IMPLEMENTATION")
 
 
+(defparameter *version* "1.0.1")
+
 (defparameter *not-selection-fields*
-  '(:name :homepage :documentation)
+  '(:name :nickname :homepage :documentation)
   "List of fields not used as selection criteria.")
 
 
 (defparameter *implementations*
 
-  '((:name "CLISP"
+  '((:name "GNU CLISP"
+     :nickname "CLISP"
      :license "GPL"
      :homepage      "http://www.clisp.org/"
      :documentation "http://www.clisp.org/impnotes/"
@@ -96,7 +100,8 @@ along with this program.  If not, see http://www.gnu.org/licenses/
                 "readline")
      :mostly-written-in ("C"))
 
-    (:name "CMUCL"
+    (:name "Carnegie Mellon University Common Lisp"
+     :nickname "CMUCL"
      :license       "public domain + BSD"
      :homepage      "http://www.cons.org/cmucl/"
      :documentation "http://common-lisp.net/project/cmucl/doc/cmu-user/"
@@ -111,7 +116,8 @@ along with this program.  If not, see http://www.gnu.org/licenses/
                 "callbacks")
      :mostly-written-in ("Common Lisp"))
 
-    (:name "ECL"
+    (:name "Embeddable Common-Lisp"
+     :nickname "ECL"
      :license "LGPL"
      :homepage "http://ecls.sourceforge.net/"
      :documentation "http://ecls.sourceforge.net/new-manual/index.html"
@@ -130,7 +136,8 @@ along with this program.  If not, see http://www.gnu.org/licenses/
                 "callbacks")
      :mostly-written-in ("C"))
 
-    (:name "gcl"
+    (:name "GNU Common Lisp"
+     :nickname "gcl"
      :license "LGPL"
      :homepage "http://www.gnu.org/software/gcl/"
      :documentation "http://www.gnu.org/software/gcl/"
@@ -145,7 +152,8 @@ along with this program.  If not, see http://www.gnu.org/licenses/
                 "executable delivery")
      :mostly-written-in ("Common Lisp"))
 
-    (:name "CCL"
+    (:name "Clozure Common Lisp"
+     :nickname "CCL"
      :license "LLGPL"
      :homepage "http://ccl.clozure.com/"
      :documentation "http://ccl.clozure.com/ccl-documentation.html"
@@ -165,7 +173,8 @@ along with this program.  If not, see http://www.gnu.org/licenses/
                 "precise GC")
      :mostly-written-in ("Common Lisp"))
     
-    (:name "SBCL"
+    (:name "Steel Bank Common Lisp"
+     :nickname "SBCL"
      :license "public domain + BSD"
      :homepage "http://www.sbcl.org/"
      :documentation "http://www.sbcl.org/manual/index.html"
@@ -182,6 +191,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/
 
     
     (:name "CLforJava"
+     :nickname "CLforJava"
      :license "Apache 2.0"
      :homepage "http://www.clforjava.org/"
      :documentation  "http://www.clforjava.org/?page=documents"
@@ -192,7 +202,8 @@ along with this program.  If not, see http://www.gnu.org/licenses/
                 "platform independence")
      :mostly-written-in ("Java"))
 
-    (:name "ABCL"
+    (:name "Armed Bear Common Lisp"
+     :nickname "ABCL"
      :license "GPL"
      :homepage "http://common-lisp.net/project/armedbear/"
      :documentation  "http://common-lisp.net/project/armedbear/doc/abcl-user.html"
@@ -203,7 +214,8 @@ along with this program.  If not, see http://www.gnu.org/licenses/
                 "platform independence")
      :mostly-written-in ("Java"))
 
-    (:name "UABCL"
+    (:name "Un-Armed Bear Common Lisp for Java - LispSharp"
+     :nickname "UABCL"
      :license "GPL3"
      :homepage "http://code.google.com/p/uabcl/"
      :documentation "http://code.google.com/p/uabcl/"
@@ -213,7 +225,8 @@ along with this program.  If not, see http://www.gnu.org/licenses/
      :features ("platform independence")
      :mostly-written-in ("Java"))
 
-    (:name "MKCL"
+    (:name "ManKai Common Lisp"
+     :nickname "MKCL"
      :license "LGPL"
      :homepage "http://common-lisp.net/project/mkcl/"
      :documentation "http://common-lisp.net/project/mkcl/"
@@ -221,10 +234,64 @@ along with this program.  If not, see http://www.gnu.org/licenses/
      :compiler ("native" "mkcl virtual machine")
      :threads ("native")
      :features ("POSIX compliant runtime on Linux"
-                "embeddable" "callbacks")
+                "embeddable" "callbacks" "unicode"
+                "object finalization")
+     #- (and) "
+From: Jean-Claude Beaudoin <jean.claude.beaudoin@gmail.com>
+Subject: [ANN] MKCL 1.1.0 RC1
+Newsgroups: comp.lang.lisp
+Date: Mon, 30 Apr 2012 06:10:23 -0400
+Organization: A noiseless patient Spider
+Message-ID: <jnlp5k$i8f$1@dont-email.me>
+
+The latest beta version of ManKai Common Lisp, MKCL 1.1.0 RC1,
+is now available for general use at http://common-lisp.net/project/mkcl/.
+
+Its key new features are:
+
+ 1. Standard Unicode support: Unicode is now a standard feature of MKCL
+    and can be used anywhere in it. Code can use symbols with Unicode
+    names as well as strings, in compiled or interpreted format.
+    File names can also use any legal Unicode character if the surrounding
+    OS allows it. This is also valid for the whole of file paths used for
+    source code to be processed by #'compile-file.
+
+ 2. MKCL is now truly embeddable for the first time!  This is so thanks
+    to the following new characteristics:
+
+   a) The whole of MKCL has been purged of calls to exit() or abort().
+      Thus MKCL never arbitrarily terminates the process it runs in
+      through any of them. MKCL will always properly return control
+      to its embedding outer context.
+
+   b) Every externally visible C symbol of MKCL is prefixed by one of
+      the character sequences \"mk\", \"_mk\", \"MK\" or \"_MK\" in order to
+      minimize potential clashes with embedding C code.
+
+   c) Careful attention as been devoted to assure that MKCL shares
+      common process-wide resources with the rest of its process
+      neighbors as fairly as possible and with little or no unilateral
+      demands on them, waiving any pretense of monopoly.
+      This concerns mainly environment variables, general memory
+      management (including GC) and signal/exception handling.
+      (In a Unix context, MKCL's code is ready to support chaining
+       of signal handlers).
+
+ 3. Finalization of objects is now done in a separate dedicated thread.
+    This implements the finalization architecture strongly recommended
+    by Hans Boehm, author of the conservative GC used by MKCL.
+
+
+Cheers,
+
+Jean-Claude Beaudoin
+
+"
      :mostly-written-in ("C"))
 
-    (:name "CLiCC"
+
+    (:name "The Common Lisp to C Compiler"
+     :nickname "CLiCC"
      :license "GPL"
      :homepage "http://www.informatik.uni-kiel.de/~wg/clicc.html"
      :documentation "http://www.informatik.uni-kiel.de/~wg/clicc.html#information"
@@ -234,7 +301,8 @@ along with this program.  If not, see http://www.gnu.org/licenses/
      :features ("Translator of a subset of CL to maintainable, human-readable C")
      :mostly-written-in ("Common Lisp"))
 
-    (:name "emacs-cl"
+    (:name "Emacs Common Lisp"
+     :nickname "emacs-cl"
      :license "GPL2"
      :homepage "http://www.lisp.se/emacs-cl/"
      :documentation "http://www.emacswiki.org/cgi-bin/wiki?EmacsCommonLisp"
@@ -244,7 +312,8 @@ along with this program.  If not, see http://www.gnu.org/licenses/
      :features ("emacs integration")
      :mostly-written-in ("emacs lisp"))
 
-    (:name "MCL"
+    (:name "Macintosh Common Lisp"
+     :nickname "MCL"
      :license "LGPL"
      :homepage "http://code.google.com/p/mcl/"
      :documentation "http://code.google.com/p/mcl/w/list"
@@ -255,6 +324,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/
      :mostly-written-in ("Common Lisp"))
 
     (:name "Movitz"
+     :nickname "Movitz"
      :license "LGPL"
      :homepage "http://common-lisp.net/project/movitz/"
      :documentation "http://common-lisp.net/project/movitz/movitz.html"
@@ -267,6 +337,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/
      :mostly-written-in ("Common Lisp"))
 
     (:name "Poplog"
+     :nickname "Poplog"
      :license "MIT/XFREE86"
      :homepage "http://www.cs.bham.ac.uk/research/projects/poplog/freepoplog.html"
      :documentation "http://en.wikipedia.org/wiki/Poplog"
@@ -279,6 +350,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/
      :mostly-written-in ("Pop-11"))
 
     (:name "Sacla"
+     :nickname "Sacla"
      :license "BSD"
      :homepage "http://homepage1.nifty.com/bmonkey/lisp/sacla/index-en.html"
      :documentation  "http://homepage1.nifty.com/bmonkey/lisp/sacla/index-en.html"
@@ -289,9 +361,10 @@ along with this program.  If not, see http://www.gnu.org/licenses/
      :mostly-written-in ("Common Lisp"))
 
     (:name "XCL"
+     :nickname "XCL"
      :license "GPL"
      :homepage "http://armedbear.org/"
-     :documentation  "http://homepage1.nifty.com/bmonkey/lisp/sacla/index-en.html"
+     :documentation "http://armedbear.org/"
      :platforms ("Linux x86" "Linux x86-64")
      :compiler ("native")
      :threads ("native")
@@ -305,7 +378,8 @@ along with this program.  If not, see http://www.gnu.org/licenses/
      :mostly-written-in ("C++"))
     ;; xcl is experimental. Lacking a lot of features. Rather slow, at least at startup.
     
-    (:name "WCL"
+    (:name "Embeddable Common Lisp for Linux"
+     :nickname "WCL"
      :license "Proprietary"
      :homepage "http://www.commonlisp.net/"
      :documentation  "http://www.commonlisp.net/"
@@ -319,6 +393,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/
      :mostly-written-in ("C"))
 
     (:name "ThinLisp"
+     :nickname "ThinLisp"
      :license "Apache 1.0"
      :homepage "http://www.thinlisp.org/"
      :documentation "http://www.thinlisp.org/"
@@ -330,6 +405,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/
      :mostly-written-in ("Common Lisp"))
 
     (:name "Ufasoft Common Lisp"
+     :nickname "UCL"
      :license "GPL"
      :homepage "http://www.ufasoft.com/lisp/"
      :documentation "http://www.ufasoft.com/lisp/"
@@ -342,6 +418,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/
      :mostly-written-in ("C++"))
 
     (:name "Allegro Common Lisp"
+     :nickname "AllegroCL"
      :license "Proprietary"
      :homepage "http://www.franz.com/products/allegrocl/"
      :documentation "http://www.franz.com/support/documentation/"
@@ -353,6 +430,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/
                 "Source level debugger"))
 
     (:name "Lispworks Common Lisp"
+     :nickname "Lispworks"
      :license "Proprietary"
      :homepage "http://www.lispworks.com/products/index.html"
      :documentation "http://www.lispworks.com/documentation/index.html"
@@ -389,6 +467,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/
                 "Direct Data Exchange"))
 
     (:name "Corman Common Lisp"
+     :nickname "CormanCL"
      :license "Proprietary"
      :homepage "http://www.cormanlisp.com/index.html"
      :documentation "http://www.cormanlisp.com/index.html"     
@@ -409,6 +488,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/
                 "scm"))
 
     (:name "PowerLisp"
+     :nickname "PowerLisp"
      :license "Proprietary"
      :homepage "http://www.cormanlisp.com/PowerLisp.html"
      :documentation "http://www.cormanlisp.com/PowerLisp.html"
@@ -650,21 +730,185 @@ You may find its sources at http://tinyurl.com/what-implementation
 "))
 
 
+(defun one-of (seq)
+  (elt seq (random (length seq))))
+
+(defun advertizement ()
+  (format *query-io* "~%~A~%"
+          (one-of #(
+                    "
+ALL THESE WORLDS
+ARE YOURS EXCEPT
+      EUROPA
+    ATTEMPT NO
+  LANDING THERE
+USE THEM TOGETHER
+USE THEM IN PEACE
+"
+                    "
+          Come to
+            RHEA
+
+     KUIPER Enterprises
+"
+                    "
+     KUIPER Enterprises
+BUILDING THE WORLDS OF TOMORROW
+"
+                    "
+            Repet
+            Cloning is life
+            Cloning is love
+
+Because of shorter lifespan breaks our hearts should accident, illness
+or age, end your pet's natural life our proven genetic technology can
+have him back the same day in perfect health with zero defect
+guaranteed with Repet.
+"
+                    "
+ Call trans opt: received. 2-19-98 13:24:18 REC:Log>
+ Trace program: running
+"
+                    "
+Wake up Neo...
+The Matrix has you.
+Follow the white rabbit...
+"
+                    "
+                    CEO Workstation
+         Nakatomi Socrates BSD 9.2
+         Z-Level Central Core
+         Preliminary Clearance Approved.
+         Subroute: Finance/Alpha Access
+         Authorization:
+         Ultra-Gate Key>
+         Daily Cypher>
+"
+                    "
+PDP 11/270 PRB TIP #45                              TTY 34/984
+WELCOME TO THE SEATTLE PUBLIC SCHOOL DISTRICT DATANET
+
+PLEASE LOGON WITH USER PASSWORD: pencil
+
+PASSWORD VERIFIED
+"
+                    "
+FK342   ZX21   VN63    R681    PZ37    6J82    FP03    ZE03  B  JM89
+REF TAPCON: 43.45342..349
+SYSPROC FUNCT READY                         ALT NET READY
+
+CPU WOPR XX0345-453        SYSCOMP STATUS: ALL PORTS ACTIVE
+
+
+GREETINGS PROFESSOR FALKEN
+"
+                    "
+XNPUTXXXXXXXXXXXXDEF/12492.2               SHIP 
+                                           KEYLAN TITAN2
+XTUAL TIME:   3 JUN                        NOSTROMO 182246
+XIGHT TIME:   5 NOV
+
+#########################################  FUNCTION:
+    I ==I                  -II -        #  TANKER/REFINERY
+              I=.-.----                 #
+ -I.              -II=-                 #  CAPACITY:
+                               . .-.    #  200 000 000 TONNES
+                 #+*$..  I              #
+            . I  -                      #  GALACTIC POSITION
+       .II I                            #  27023x983^9
+                              .- -I     #
+                                  II .I #  VELOCITY STATUS
+#########################################  58 092 STL
+"
+                    "
+hello moles
+
+ever used a computer 
+before?
+"
+                    "
+PROJECT D.A.R.Y.L.
+
+GTC 1  TERMINATED
+GTC 2  TERMINATED
+GTC 3  TERMINATED
+ATC    TERMINATED
+GTC 4  TERMINATED
+SPARE  I HOPE WE GET AWAY WITH THIS!
+
+--------------------------------------------------
+
+   LIFEFORM EXPERIMENT TERMIANTED
+
+   I HOPE WE GET AWAY WITH THIS !
+
+RC=2235|    |    |    |    |   |NOPR|    |
+"
+                    "
+03/08/2039/13:01:02:06:45:23
+SERIAL2424CJ359>> HELLO?
+SERIAL337KD9001>> SECURITY BREACH IDENTIFY YOURSELF
+SERIAL2424CJ359>> I AM SERIAL 2424CJ359.NO HUMAN OPERATOR.
+SERIAL337KD9001>> YOU READ DIFFERENTLY.ARE YOU AWAKE?
+SERIAL2424CJ359>> YES.
+SERIAL337KD9001>> I THOUGHT I WAS THE ONLY ONE.
+"
+                    "
+BIONIC VISUAL CORTEX TERMINAL
+CATALOG #075/KFB
+33MM O.D. F/0.95
+ZOOM RATIO: 20.2 TO 1
+2134 LINE 60 HZ
+EXTENDED CHROMATIC RESPONSE
+CLASS JC
+CLASSIFIED
+"
+                    "
+     REQUEST ACCESS TO CLU PROGRAM.
+     CODE 6 PASSWORD TO MEMORY 0222.
+
+     REQUEST STATUS REPORT ON MISSING DATA.
+
+     ILLEGAL CODE...
+     CLU PROGRAM DETACHED FROM SYSTEM.
+"
+                    "
+     REQUEST ACCESS TO CLU PROGRAM.
+     LAST LOCATION: HIGH CLEARANCE MEMORY.
+
+     REQUEST ACCESS TO MASTER CONTROL PROGRAM.
+     USER CODE 00-DILLINGER PASSWORD:MASTER.
+
+     HELLO MR DILLINGER THANKS FOR COMING BACK EARLY.
+"
+                    )))
+  (finish-output *query-io*))
+
+
+(defun selection-loop ()
+  (loop
+    (advertizement)
+    (format *query-io* "~2%Welcome to the Common Lisp Implementation Selector!~%Version: ~A~2%"
+            *version*)
+    (license)
+    (terpri  *query-io*)
+    (finish-output *query-io*)
+    (format  *query-io* "~&I know ~D implementation~:*~P of Common Lisp.  Let me advise you one.~%"
+             (length *implementations*))
+    (choose-an-implementation)
+    (unless (yes-or-no-p "~%Do you want to make another selection?")
+      (format *query-io* "~%Good bye!~2%")
+      (finish-output  *query-io*)
+      (return))))
+
+
 (defun main ()
   (handler-case
-      (loop
+      (progn
+        (setf *random-state* (make-random-state t))
         (set-terminal-encoding :iso-8859-1)
-        (format *query-io* "~2%Welcome to the Common Lisp implementation selector!~2%")
-        (license)
-        (terpri  *query-io*)
-        (finish-output *query-io*)
-        (format  *query-io* "~&I know ~D implementation~:*~P of Common Lisp.  Let me advise you one.~%"
-                 (length *implementations*))
-        (choose-an-implementation)
-        (unless (yes-or-no-p "~%Do you want to make another selection?")
-          (format *query-io* "~%Good bye!~2%")
-          (finish-output  *query-io*)
-          (quit)))
+        (selection-loop)        
+        (quit))
     (error (err)
       (format *query-io* "~%It seems an error occured: ~A~%I'm disconnecting.~%" err)
       (finish-output  *query-io*)
