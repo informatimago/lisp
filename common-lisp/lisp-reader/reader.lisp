@@ -10,6 +10,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2012-05-14 <PJB> Corrected set-syntax-from-char.
 ;;;;    2011-04-29 <PJB> Added potential-number-p.
 ;;;;    2009-08-26 <PJB> Corrected bugs reading "||", "( ;comment )" and "#C(123 456)".
 ;;;;    2007-03-04 <PJB> Extracted from source.lisp
@@ -1367,12 +1368,16 @@ URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_set_sy.htm
          (trst  (readtable-syntax-table   to-readtable))
          (fcd   (character-description frst from-char))
          (tcd   (character-description trst   to-char)))
-    (setf (slot-value tcd 'syntax)
+    (setf (character-description trst to-char)
           (make-instance 'character-description
-            :syntax (character-syntax fcd)
-            :traits (character-constituent-traits fcd)
-            :macro (character-macro fcd)
-            :dispatch (copy-hash-table (character-dispatch fcd)))))
+              :syntax   (character-syntax fcd)
+              ;; constituent traits are not copied.
+              :traits   (character-constituent-traits tcd) 
+              ;; macros are copied only if from is a macro character.
+              :macro    (or (character-macro fcd) (character-macro tcd))
+              :dispatch (if (character-dispatch fcd)
+                            (copy-hash-table (character-dispatch fcd))
+                            (character-dispatch tcd)))))
   t)
 
 
