@@ -122,7 +122,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/
      :homepage "http://ecls.sourceforge.net/"
      :documentation "http://ecls.sourceforge.net/new-manual/index.html"
      :platforms ("Linux"
-                  "Mac OS X" "iOS"
+                  "Mac OS X" "iOS" "Android"
                   "Solaris"
                   "FreeBSD" "OpenBSD"
                   "IRIS" "HPUX")
@@ -736,6 +736,31 @@ You may find its sources at http://tinyurl.com/what-implementation
 (defun advertizement ()
   (format *query-io* "~%~A~%"
           (one-of #(
+                    "
+
+                             BREATHE EASY
+
+                              MORE SPACE
+
+                               ALL NEW
+
+                              LIVE CLEAN
+
+                                 OFF
+                                WORLD
+"
+
+                    "
+A new life awaits you in the Offworld colonies.  The chance to begin
+again in a golden land of opportunity and adventure.   New climate,
+recreational facilities… a loyal trouble-free companion given to you
+upon your arrival absolutely free.  Use your new friend as a personal
+body servant or a tireless field hand—the custom tailored genetically
+engineered humanoid replicant designed especially for your needs.  So
+come on America, let's put our team up there…
+"
+                                   
+                    
                     "
 ALL THESE WORLDS
 ARE YOURS EXCEPT
