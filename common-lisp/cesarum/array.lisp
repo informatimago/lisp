@@ -1,31 +1,4 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
-;;;;**************************************************************************
-;;;;FILE:               array.lisp
-;;;;LANGUAGE:           Common-Lisp
-;;;;SYSTEM:             Common-Lisp
-;;;;USER-INTERFACE:     NONE
-;;;;DESCRIPTDefines some Patchwork packages.
-;;;;    
-;;;;    X
-;;;;    
-;;;;AUTHORS
-;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
-;;;;MODIFICATIONS
-;;;;    2012-04-25 <PJB> Created.
-;;;;BUGS
-;;;;LEGAL
-;;;;    Proprietary
-;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2012 - 2012
-;;;;    
-;;;;    All Rights Reserved.
-;;;;    
-;;;;    This program and its documentation constitute intellectual property 
-;;;;    of Pascal J. Bourguignon and is protected by the copyright laws of 
-;;;;    the E
-;;;;**************************************************************************
-;;;;    
-;;;; -*- coding:utf-8 -*-
 ;;;;****************************************************************************
 ;;;;FILE:               array.lisp
 ;;;;LANGUAGE:           Common-Lisp
@@ -38,6 +11,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2012-06-09 <PJB> Added ARRAY-EQUAL-P.
 ;;;;    2011-08-03 <PJB> Added POSITIONS and VECTOR-DELETE.
 ;;;;    2006-10-20 <PJB> Added nudge-displaced-vector.
 ;;;;                     Moved in displaced-vector from
@@ -71,7 +45,8 @@
    "POSITIONS" ; should go to a sequence package...
    "VECTOR-DELETE"
    "NUDGE-DISPLACED-VECTOR" "DISPLACED-VECTOR"
-   "ARRAY-TO-LIST" "COPY-ARRAY")
+   "ARRAY-TO-LIST" "COPY-ARRAY"
+   "ARRAY-EQUAL-P")
   (:documentation
    "
 This package exports a few array utility functions.
@@ -343,5 +318,34 @@ EXAMPLE:        (let* ((s #(a door a window a big hole and a bucket))
        :displaced-to vector
        :displaced-index-offset new-start))))
 
+
+
+
+(defun array-equal-p (a1 a2)
+  "RETURN: A1 and A2 have the same dimensions (or the same length in
+case of vectors) and their elements in the same position are = if
+numbers, or equal otherwise."
+  (if (and (vectorp a1) (vectorp a2))
+      (and (= (length a1) (length a2))
+           (flet ((same (i)
+                    (let ((x1 (aref a1 i))
+                          (x2 (aref a2 i)))
+                      (if (and (numberp x1) (numberp x2))
+                          (= x1 x2)
+                          (equal x1 x2)))))
+             (declare (inline same))
+             (loop
+               :for i :below (length a1)
+               :always (same i))))
+      (and (equal (array-dimensions a1) (array-dimensions a2))
+           (flet ((same (i)
+                    (let ((x1 (row-major-aref a1 i))
+                          (x2 (row-major-aref a2 i)))
+                      (if (and (numberp x1) (numberp x2))
+                          (= x1 x2)
+                          (equal x1 x2)))))
+             (loop
+               :for i :below (array-total-size a1)
+               :always (same i))))))
 
 ;;;; THE END ;;;;
