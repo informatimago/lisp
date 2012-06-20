@@ -63,12 +63,13 @@
 
 
 
-(defvar *paip-source-files*
+(defparameter *paip-source-files*
   (translate-logical-pathname (make-pathname
                                :host "NORVIG"
                                :directory '(:absolute)
                                :name nil
-                               :type "LISP"))
+                               :type "LISP"
+                               :case :common))
   "The location of the source files for this book.
   CHANGE IT TO REFLECT THE LOCATION OF THE FILES ON YOUR COMPUTER.")
 
