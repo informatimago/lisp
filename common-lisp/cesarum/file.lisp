@@ -126,7 +126,8 @@ RETURN: The first SEXP of the file at PATH,
                       :if-does-not-exist if-does-not-exist
                       :external-format external-format)
     (if (and (streamp in) (not (eq in if-does-not-exist)))
-        (read in nil in)
+        (let ((*read-base* 10.))
+          (read in nil in))
         in)))
 
 
