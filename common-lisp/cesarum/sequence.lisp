@@ -282,7 +282,8 @@ RETURN:         Either the modified SEQUENCE, or a fresh sequence of
       (assert (string= "7891230123"   (print (replace-subseq "23" str (length str)))))
       (assert (string= "567891230123" (print (replace-subseq "56" str 0 0))))
       (assert (string= "123"          (print (replace-subseq "123" str 0))))
-      (assert (string= "hello"        (print (replace-subseq "hello" "" 0)))))
+      (assert (string= "hello"        (print (replace-subseq "hello" "" 0))))
+      (assert (string= ""             (print (replace-subseq "" "hello" 0)))))
     (let ((str (list 'a 'b 'c 'd 'e 'f 'g 'h 'i 'j)))
       (print str)
       (assert (equal '(a b c 1 2 3 g h i j)     (print (replace-subseq '(1 2 3) str 3 6))))
@@ -294,12 +295,14 @@ RETURN:         Either the modified SEQUENCE, or a fresh sequence of
       (assert (equal '(7 8 9 1 2 3 0 1 2 3)     (print (replace-subseq #(2 3) str (length str)))))
       (assert (equal '(5 6 7 8 9 1 2 3 0 1 2 3) (print (replace-subseq '(5 6) str 0 0))))
       (assert (equal '(1 2 3)                   (print (replace-subseq '(1 2 3) str 0))))
-      (assert (equal (coerce "hello" 'list) (print (replace-subseq "hello" '() 0))))))
+      (assert (equal (coerce "hello" 'list)     (print (replace-subseq "hello" '() 0))))
+      (assert (equal '()                        (print (replace-subseq "" '(1 2 3) 0))))))
   (assert (nth-value 1 (ignore-errors (replace-subseq "abc" "def" -1 2))))
   (assert (nth-value 1 (ignore-errors (replace-subseq "abc" "def" 1 4))))
   (assert (nth-value 1 (ignore-errors (replace-subseq "abc" "def" 2 1))))
   (assert (nth-value 1 (ignore-errors (replace-subseq "abc" "def" -2 4))))
   :success)
+
 
 (test/replace-subseq)
 
