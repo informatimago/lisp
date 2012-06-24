@@ -7,7 +7,10 @@
 ;;;;DESCRIPTION
 ;;;;    
 ;;;;    Implements the Rock Paper Scissor Lizard Spock game against the computer.
-;;;;    
+;;;;
+;;;;    http://www.umop.com/rps25.htm
+;;;;    http://www.umop.com/rps101.htm
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
