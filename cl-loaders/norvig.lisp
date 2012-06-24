@@ -6,11 +6,30 @@
 ;;;;USER-INTERFACE:     -
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    Loaded for Norvig's code
+;;;;    Loader for Norvig's code.
+;;;;
+;;;;
+;;;;    wget ftp://www.informatimago.com/pub/lisp/norvig-paip-pjb.tar.gz
+;;;;    tar zxvf norvig-paip-pjb.tar.gz
+;;;;    wget http://norvig.com/paip/paip.zip
+;;;;    mkdir norvig
+;;;;    cd norvig
+;;;;    unzip -x ../paip.zip
+;;;;    patch -p1 < ../norvig-paip-pjb.patch
+;;;;    pwd
+;;;;    clisp -ansi -q norc
+;;;;    ;; replace /home/… in the following strings by the current
+;;;;    ;; directory printed by the above pwd command.
+;;;;    (setf (logical-pathname-translations "NORVIG")
+;;;;          `(("NORVIG:**;*.*"   "/home/…/norvig/**/*.*")
+;;;;            ("NORVIG:**;*.*.*" "/home/…/norvig/**/*.*")))
+;;;;    (load #P"../norvig-paip-pjb.lisp")
+;;;;
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal Bourguignon
 ;;;;MODIFICATIONS
+;;;;    2012-06-20 <PJB> Made some corrections, added instructions.
 ;;;;    2003-05-14 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
