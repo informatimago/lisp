@@ -62,13 +62,23 @@
 (defparameter *default-readtable*  (copy-readtable nil nil)
   "The default readtable.  Used to read @symbols.")
 
+(defun set-objc-reader-macros (&optional (*readtable* *readtable*))
+  (set-syntax-from-char #\[ #\()
+  (set-syntax-from-char #\] #\))
+  (set-macro-character #\[ 'objcl-expression-reader-macro nil)
+  (set-macro-character #\@ 'objcl-definition-reader-macro t)
+  *readtable*)
+
+(defun reset-objc-reader-macros (&optional (*readtable* *readtable*))
+  (set-syntax-from-char #\[ #\a)
+  (set-syntax-from-char #\] #\a)
+  (set-macro-character #\[ nil t)
+  (set-macro-character #\@ nil t)
+  *readtable*)
+
+
 (defparameter *lisp-readtable*
-  (let ((rt (copy-readtable *readtable* nil)))
-    (set-syntax-from-char #\[ #\( rt)
-    (set-syntax-from-char #\] #\) rt)
-    (set-macro-character #\[ 'objcl-expression-reader-macro nil rt)
-    (set-macro-character #\@ 'objcl-definition-reader-macro t   rt)
-    rt)
+  (set-objc-reader-macros (copy-readtable *readtable* nil))
   "The lisp readtable, used to read lisp expressions (possibly
 including Objective-CL forms starting with #\\[ or #\\@).")
 
@@ -136,6 +146,7 @@ NOTE:   current implementation only accepts as separators
                 :||
                 (first (oclo:objc-to-lisp-message (concatenate 'string name ":")))))
           (split-string selector ":")))
+
 
 
 (defun read-type-specifier (stream)
@@ -410,9 +421,8 @@ Return a list containing:
   ;;               ))
   ;;             ,result)
   `(,@(if (and (symbolp recipient) (string-equal "super" recipient))
-          `(oclo:objc-message-send-super ;; ,(objc-to-lisp-identifier "self")
-                                         )
-          `(oclo:send ,recipient))
+          `(oclo:send-super)
+          `(oclo:send       ,recipient))
       ,@(if arguments
             (mapcan (function list)
                     (objc-to-lisp-message selector)
@@ -447,7 +457,8 @@ LEVEL is :+ or :-  for class methods or instance methods.
                (mapcan (function list)
                        (objc-to-lisp-message selector)
                        fixed-parameters)
-               (list `',(intern (symbol-name (first (objc-to-lisp-message selector))))))
+               ;;(list `',(intern (symbol-name (first (objc-to-lisp-message selector)))))
+               (list `,(intern (symbol-name (first (objc-to-lisp-message selector))))))
          ,@(when rest-parameter (list rest-parameter)))
         ,class-name)
        ,@body)))
@@ -665,7 +676,26 @@ argument lisp string."
                :encoding #$|NSUTF8StringEncoding|)))
 
 
+(defun objcl-string (object)
+  "
+
+RETURN:         Either a NSMutableString instance, containing the
+                character of the OBJECT.  If OBJECT is not a string
+                designator, then its PRINC-TO-STRING representation is
+                used.
+
+OBJECT:         A string designator, or another lisp object.
+"
+  (ns-mutable-string  (typecase object
+                        (string                object)
+                        ((or character symbol) (string object))
+                        (t                     (princ-to-string object)))))
+
+
 (defun lisp-string (an-objc-string)
+  "
+RETURN:         A Lisp STRING containing the characters of AN-OBJC-STRING.
+"
   (typecase an-objc-string
     (ns:ns-constant-string     (objc:lisp-string-from-nsstring an-objc-string))
     (ns:ns-mutable-string      (objc:lisp-string-from-nsstring an-objc-string))
@@ -716,10 +746,26 @@ argument lisp string."
 
 (defparameter *objective-cl-readtable* *lisp-readtable*)
 
+
+(defmacro enable-objcl-reader-macros ()
+  "Sets in the *READTABLE* the reader macros for #\[ and #\@."
+  '(eval-when (:compile-toplevel :load-toplevel :execute)
+    (set-objc-reader-macros)))
+
+
+(defmacro disable-objcl-reader-macros ()
+  "Reset in the *READTABLE* the reader macros for #\[ and #\@."
+  '(eval-when (:compile-toplevel :load-toplevel :execute)
+    (reset-objc-reader-macros)))
+
+
 (defmacro set-objective-cl-syntax ()
   "Sets the *READTABLE* to *OBJECTIVE-CL-READTABLE*.
 Must be a macro to be taken into account when compiling and loading."
   '(eval-when (:compile-toplevel :load-toplevel :execute)
     (setf *readtable* *objective-cl-readtable*)))
+
+(defparameter yes #$YES)
+(defparameter no  #$NO)
 
 ;;;; THE END ;;;;

@@ -361,8 +361,8 @@
 ;; NIL
 
 
-[*my-button* settarget:*my-greeter*]
-[*my-button* setaction:(objc:@selector "greet:")]
+[*my-button* setTarget:*my-greeter*]
+[*my-button* setAction:(objc:@selector "greet:")]
  
 ;; Now, if you click the button, an Alert panel appears.
 

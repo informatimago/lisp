@@ -46,7 +46,8 @@ This package defines a simple test tool.
 
 
 (defpackage "COM.INFORMATIMAGO.OBJECTIVE-C.LOWER"
-  (:nicknames "OCLO")
+  (:nicknames "COM.INFORMATIMAGO.OCLO"
+              "OCLO")
   (:use "CL")
 
   #+ccl
@@ -136,7 +137,9 @@ This package defines a simple test tool.
    "STRET"
    ;; implemented in oclo-<implementation>.lisp
    "LISP-TO-OBJC-CLASSNAME-P"
-   "OBJC-TO-LISP-CLASSNAME-P")
+   "OBJC-TO-LISP-CLASSNAME-P"
+   "*NULL*" "NULLP" 
+   "SELECTOR")
   
   (:documentation "
 This package exports low level Objective-C stuff,
@@ -147,17 +150,21 @@ single package exporting all these symbols.
 
 
 (defpackage "COM.INFORMATIMAGO.OBJECTIVE-CL"
-  (:nicknames "OBJCL")
+  (:nicknames "COM.INFORMATIMAGO.OBJCL"
+              "OBJCL")
   (:use "CL" "COM.INFORMATIMAGO.SIMPLE-TEST")
   ;; also use "COM.INFORMATIMAGO.OBJECTIVE-C.LOWER" as "OCLO".
-  (:export "*OBJECTIVE-CL-READTABLE*"
-           "SET-OBJECTIVE-CL-SYNTAX"
-           "READ-ERROR" "READ-ERROR-CONTROL-STRING" "READ-ERROR-ARGUMENTS"
-           "OBJC-DEFINITION-READER-MACRO" ; #\@
-           "OBJC-EXPRESSION-READER-MACRO" ; \#[
-           "@" ; macro to make NSString literals with unicode.
-           "LISP-STRING"
-           )
+  (:export
+   "*OBJECTIVE-CL-READTABLE*"
+   "DISABLE-OBJCL-READER-MACROS"
+   "ENABLE-OBJCL-READER-MACROS"
+   "SET-OBJECTIVE-CL-SYNTAX" ; deprecated; use (enable-objc-reader-macros).
+   "READ-ERROR" "READ-ERROR-CONTROL-STRING" "READ-ERROR-ARGUMENTS"
+   "OBJC-DEFINITION-READER-MACRO" ; #\@
+   "OBJC-EXPRESSION-READER-MACRO" ; \#[
+   "@" ; macro to make NSString literals with unicode.
+   "OBJCL-STRING" "LISP-STRING"
+   "YES" "NO")
   (:documentation "
 This package exports a readtable with a couple of reader macros to
 read Objective-C bracketed expressions, and @\"\" strings.

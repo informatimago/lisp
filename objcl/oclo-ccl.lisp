@@ -39,11 +39,35 @@
   (declare (ignore package))
   (let ((name (gethash str ccl::*lisp-classname-table*)))
     (typecase name
-      (string (setf  (gethash str ccl::*lisp-classname-table*) (intern name package)))
+      (string (setf (gethash str ccl::*lisp-classname-table*)
+                    (or (find-symbol name "NS")
+                        (intern name package))))
       (t      name))))
+
 
 (defun lisp-to-objc-classname-p (sym)
    (gethash sym ccl::*objc-classname-table*))
+
+
+
+(defparameter *null* ccl:+null-ptr+
+  "A NULL pointer.
+Don't compare to it to check for a null pointer, but use NULLP instead.")
+
+
+(defun nullp (object)
+  "
+RETURN: Whether OBJECT is a null pointer.
+"
+  (ccl::%null-ptr-p object))
+
+
+(defun selector (name)
+  "
+NAME:   A selector name (string). Example: \"initWithFrame:\"
+RETURN: The Objective-C selector named NAME.
+"
+  (ccl::%get-selector (ccl::ensure-objc-selector name)))
 
 
 ;;;; THE END ;;;;
