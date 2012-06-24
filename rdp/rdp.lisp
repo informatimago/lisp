@@ -57,7 +57,9 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CONSTRAINTS"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PEEK-STREAM"
-        "COM.INFORMATIMAGO.COMMON-LISP.PARSER.SCANNER")
+        "COM.INFORMATIMAGO.COMMON-LISP.PARSER.SCANNER"
+        ;; "COM.INFORMATIMAGO.COMMON-LISP.PARSER.PARSER"
+        )
   (:export "DEFGRAMMAR" "SEQ" "REP" "OPT" "ALT" "GRAMMAR-NAMED"
            "GENERATE-GRAMMAR"
            
@@ -93,8 +95,12 @@
            "PARSER-ERROR-FORMAT-CONTROL"
            "PARSER-ERROR-FORMAT-ARGUMENTS"
            "PARSER-END-OF-SOURCE-NOT-REACHED"
-           "PARSER-ERROR-UNEXPECTED-TOKEN"
-           "PARSER-ERROR-EXPECTED-TOKEN")
+           ;; "PARSER-ERROR-UNEXPECTED-TOKEN"
+           ;; "PARSER-ERROR-EXPECTED-TOKEN"
+           "UNEXPECTED-TOKEN-ERROR"
+           "UNEXPECTED-TOKEN-ERROR-EXPECTED-TOKEN"
+           "UNEXPECTED-TOKEN-ERROR-NON-TERMINAL-STACK"
+           )
   (:documentation "
 This package implements a simple recursive descent parser.
 
@@ -144,7 +150,10 @@ Use (GRAMMAR-NAMED name) to look up a grammar.")
 This code must be a single lisp form.  In the case of the :lisp
 target-language, this form is the code of the boilerplate itself.  For
 another language, this form is lisp code used to generate that other
-language boilerplate."))
+language boilerplate.")
+  (:method (target-language grammar &key trace)
+    (declare (ignore target-language grammar trace))
+    nil))
 
 
 (defgeneric generate-scanner     (target-language grammar &key trace)
@@ -217,7 +226,7 @@ RETURN:     A form that defines the grammar object and its parser functions.
          (compute-all-non-terminals ,g)
          (compute-first-follow      ,g)
          
-         ,(generate-boilerplate target-language grammar :trace trace)
+         ,(generate-boilerplate target-language grammar :trace trace)         
          ,(generate-scanner     target-language grammar :trace trace)
          ,@(mapcar (lambda (non-terminal)
                      (generate-nt-parser target-language grammar non-terminal  :trace trace))
@@ -852,115 +861,115 @@ RETURN:  When the SEQUENCE is a vector, the SEQUENCE itself, or a dispaced
 ;;; Generator -- LISP
 ;;;
 
-(defvar *boilerplate-generated* nil)
-;; (setf *boilerplate-generated* nil)
-
-
-(defmethod generate-boilerplate ((target (eql :lisp)) (grammar grammar) &key (trace nil))
-  (declare (ignore trace))
-  (if *boilerplate-generated*
-      nil
-      (progn
-        (setf *boilerplate-generated* t)
-        `(progn
-
-           (defvar *non-terminal-stack* '()
-             "For error reporting.")
-
-           (define-condition parser-error (error)
-             ((line    :initarg :line    :initform 1   :reader parser-error-line)
-              (column  :initarg :column  :initform 0   :reader parser-error-column)
-              (grammar :initarg :grammar :initform nil :reader parser-error-grammar)
-              (scanner :initarg :scanner :initform nil :reader parser-error-scanner)
-              (non-terminal-stack :initarg :non-terminal-stack
-                                  :initform '()
-                                  :reader parser-error-non-terminal-stack)
-              (format-control     :initarg :format-control
-                                  :initform ""
-                                  :reader parser-error-format-control)
-              (format-arguments   :initarg :format-arguments
-                                  :initform '()
-                                  :reader parser-error-format-arguments))
-             (:report print-parser-error))
-
-           (defmethod print-parser-error ((err parser-error) stream)
-             (format stream
-                     "~&~@[~A:~]~D:~D: ~?~%"
-                     (let ((source (scanner-source (parser-error-scanner err))))
-                       (unless (stringp source) (ignore-errors (pathname source))))
-                     (parser-error-line err)
-                     (parser-error-column err)
-                     (parser-error-format-control err)
-                     (parser-error-format-arguments err)))
-
-           (define-condition parser-end-of-source-not-reached (parser-error)
-             ())
-
-           (define-condition parser-error-unexpected-token (parser-error)
-             ((expected-token :initarg :expected-token
-                              :initform nil
-                              :reader parser-error-expected-token)))
-
-
-           (defclass rdp-scanner (scanner)
-             ((buffer       :accessor scanner-buffer
-                            :type     (or null string)
-                            :initform nil)
-              (current-text :accessor scanner-current-text
-                            :initform "")))
-
-           (defmethod scanner-current-token ((scanner rdp-scanner))
-             (token-kind (call-next-method)))
-
-           (defmethod scanner-end-of-source-p ((scanner rdp-scanner))
-             (and (or (null (scanner-buffer scanner))
-                      (<= (length (scanner-buffer scanner))
-                          (scanner-column scanner)))
-                  (let ((ps  (slot-value scanner 'stream)))
-                   (not (ungetchar ps (getchar ps))))))
-
-           (defmethod advance-line ((scanner rdp-scanner))
-             "RETURN: The new current token, old next token"
-             (cond
-               ((scanner-end-of-source-p scanner)
-                #|End of File -- don't move.|#)
-               ((setf (scanner-buffer scanner) (readline (slot-value scanner 'stream)))
-                ;; got a line -- advance a token.
-                (setf (scanner-column scanner) 0)
-                (incf (scanner-line   scanner))
-                (setf (scanner-current-token scanner) nil
-                      (scanner-current-text  scanner) "")
-                (scan-next-token scanner))
-               (t
-                ;; Just got EOF
-                (setf (scanner-current-token scanner) '|<END OF FILE>|
-                      (scanner-current-text  scanner) "<END OF FILE>")))
-             (scanner-current-token scanner))
-
-           (defmethod accept ((scanner rdp-scanner) token)
-             (if (word-equal token (scanner-current-token scanner))
-                 (prog1 (list (token-kind (scanner-current-token scanner))
-                              (scanner-current-text scanner)
-                              (scanner-column scanner))
-                   (scan-next-token scanner))
-                 (error 'parser-error-unexpected-token
-                        :line   (scanner-line scanner)
-                        :column (scanner-column scanner)
-                        :grammar (grammar-named ',(grammar-name grammar))
-                        :scanner scanner
-                        :non-terminal-stack (copy-list *non-terminal-stack*)
-                        :expected-token token
-                        :format-control "Expected ~S, not ~A (~S)~%~S~%~{~A --> ~S~}"
-                        :format-arguments (list
-                                           token
-                                           (scanner-current-token scanner)
-                                           (scanner-current-text scanner)
-                                           *non-terminal-stack*
-                                           (assoc (first *non-terminal-stack*)
-                                                  ',(grammar-rules grammar))))))
-
-           (defparameter *spaces*
-             (format nil "^([~{~C~}]+)" '(#\space #\newline #\tab)))))))
+;; (defvar *boilerplate-generated* nil)
+;; ;; (setf *boilerplate-generated* nil)
+;; 
+;; 
+;; (defmethod generate-boilerplate ((target (eql :lisp)) (grammar grammar) &key (trace nil))
+;;   (declare (ignore trace))
+;;   (if *boilerplate-generated*
+;;       nil
+;;       (progn
+;;         (setf *boilerplate-generated* t)
+;;         `(progn
+;; 
+;;            (defvar *non-terminal-stack* '()
+;;              "For error reporting.")
+;; 
+;;            (define-condition parser-error (error)
+;;              ((line    :initarg :line    :initform 1   :reader parser-error-line)
+;;               (column  :initarg :column  :initform 0   :reader parser-error-column)
+;;               (grammar :initarg :grammar :initform nil :reader parser-error-grammar)
+;;               (scanner :initarg :scanner :initform nil :reader parser-error-scanner)
+;;               (non-terminal-stack :initarg :non-terminal-stack
+;;                                   :initform '()
+;;                                   :reader parser-error-non-terminal-stack)
+;;               (format-control     :initarg :format-control
+;;                                   :initform ""
+;;                                   :reader parser-error-format-control)
+;;               (format-arguments   :initarg :format-arguments
+;;                                   :initform '()
+;;                                   :reader parser-error-format-arguments))
+;;              (:report print-parser-error))
+;; 
+;;            (defmethod print-parser-error ((err parser-error) stream)
+;;              (format stream
+;;                      "~&~@[~A:~]~D:~D: ~?~%"
+;;                      (let ((source (scanner-source (parser-error-scanner err))))
+;;                        (unless (stringp source) (ignore-errors (pathname source))))
+;;                      (parser-error-line err)
+;;                      (parser-error-column err)
+;;                      (parser-error-format-control err)
+;;                      (parser-error-format-arguments err)))
+;; 
+;;            (define-condition parser-end-of-source-not-reached (parser-error)
+;;              ())
+;; 
+;;            (define-condition parser-error-unexpected-token (parser-error)
+;;              ((expected-token :initarg :expected-token
+;;                               :initform nil
+;;                               :reader parser-error-expected-token)))
+;; 
+;; 
+;;            (defclass rdp-scanner (scanner)
+;;              ((buffer       :accessor scanner-buffer
+;;                             :type     (or null string)
+;;                             :initform nil)
+;;               (current-text :accessor scanner-current-text
+;;                             :initform "")))
+;; 
+;;            (defmethod scanner-current-token ((scanner rdp-scanner))
+;;              (token-kind (call-next-method)))
+;; 
+;;            (defmethod scanner-end-of-source-p ((scanner rdp-scanner))
+;;              (and (or (null (scanner-buffer scanner))
+;;                       (<= (length (scanner-buffer scanner))
+;;                           (scanner-column scanner)))
+;;                   (let ((ps  (slot-value scanner 'stream)))
+;;                    (not (ungetchar ps (getchar ps))))))
+;; 
+;;            (defmethod advance-line ((scanner rdp-scanner))
+;;              "RETURN: The new current token, old next token"
+;;              (cond
+;;                ((scanner-end-of-source-p scanner)
+;;                 #|End of File -- don't move.|#)
+;;                ((setf (scanner-buffer scanner) (readline (slot-value scanner 'stream)))
+;;                 ;; got a line -- advance a token.
+;;                 (setf (scanner-column scanner) 0)
+;;                 (incf (scanner-line   scanner))
+;;                 (setf (scanner-current-token scanner) nil
+;;                       (scanner-current-text  scanner) "")
+;;                 (scan-next-token scanner))
+;;                (t
+;;                 ;; Just got EOF
+;;                 (setf (scanner-current-token scanner) '|<END OF FILE>|
+;;                       (scanner-current-text  scanner) "<END OF FILE>")))
+;;              (scanner-current-token scanner))
+;; 
+;;            (defmethod accept ((scanner rdp-scanner) token)
+;;              (if (word-equal token (scanner-current-token scanner))
+;;                  (prog1 (list (token-kind (scanner-current-token scanner))
+;;                               (scanner-current-text scanner)
+;;                               (scanner-column scanner))
+;;                    (scan-next-token scanner))
+;;                  (error 'parser-error-unexpected-token
+;;                         :line   (scanner-line scanner)
+;;                         :column (scanner-column scanner)
+;;                         :grammar (grammar-named ',(grammar-name grammar))
+;;                         :scanner scanner
+;;                         :non-terminal-stack (copy-list *non-terminal-stack*)
+;;                         :expected-token token
+;;                         :format-control "Expected ~S, not ~A (~S)~%~S~%~{~A --> ~S~}"
+;;                         :format-arguments (list
+;;                                            token
+;;                                            (scanner-current-token scanner)
+;;                                            (scanner-current-text scanner)
+;;                                            *non-terminal-stack*
+;;                                            (assoc (first *non-terminal-stack*)
+;;                                                   ',(grammar-rules grammar))))))
+;; 
+;;            (defparameter *spaces*
+;;              (format nil "^([~{~C~}]+)" '(#\space #\newline #\tab)))))))
 
 
 (defvar *non-terminal-stack* '()
@@ -1186,10 +1195,10 @@ RETURN:  When the SEQUENCE is a vector, the SEQUENCE itself, or a dispaced
                     (,(gen-parse-function-name target grammar item) scanner))
                  `(if ,(gen-in-firsts target (remove nil firsts))
                       (,(gen-parse-function-name target grammar item) scanner)
-                      (error 'parser-error-unexpected-token
+                      (error 'unexpected-token-error
                              :line    (scanner-line scanner)
                              :column  (scanner-column scanner)
-                             :grammar (grammar-named ',(grammar-name grammar))
+                             ;; :grammar (grammar-named ',(grammar-name grammar))
                              :scanner scanner
                              :non-terminal-stack (copy-list *non-terminal-stack*)
                              :format-control "Unexpected token ~S~%~S~%~{~A --> ~S~}"

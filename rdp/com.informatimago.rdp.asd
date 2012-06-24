@@ -56,7 +56,7 @@ different languages than lisp.
     
     :name "Recursive Descent Parser Generator"
     
-    :version "1.0.1"
+    :version "1.0.2"
 
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Summer 2011")
@@ -71,6 +71,7 @@ different languages than lisp.
                  "com.informatimago.common-lisp.parser")
     
     :components ((:file "rdp")
-                 (:file "rdp-macro" :depends-on ("rdp"))))
+                 (:file "rdp-lisp-boilerplate" :depends-on ("rdp"))
+                 (:file "rdp-macro"            :depends-on ("rdp"))))
 
 ;;;; THE END ;;;;
