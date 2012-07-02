@@ -564,7 +564,7 @@ div.kind {
                 (format nil "(SETF ~A)" (symbol-name (second name))))))
   (table (:border "0" :width "100%")
          (tr -
-             (td (:valing "top" :align "left")
+             (td (:valign "top" :align "left")
                  (div (:class "symbol")
                      (cond
                        ((not (member kind '(:function :generic-function :macro)))
