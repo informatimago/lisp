@@ -198,8 +198,8 @@ NOTE:       The file is not truncated.
 ;; RETURN: An input-stream.
 ;; "
 ;;   (etypecase stream
-;;     (two-way-stream      (two-way-stream-input-stream stream))
 ;;     (echo-stream         (echo-stream-input-stream  stream))
+;;     (two-way-stream      (two-way-stream-input-stream stream))
 ;;     (synonym-stream      (stream-input-stream
 ;;                           (symbol-value (synonym-stream-symbol stream))))
 ;;     (concatenated-stream (stream-input-stream
@@ -215,8 +215,8 @@ NOTE:       The file is not truncated.
 ;; RETURN: An output-stream.
 ;; "
 ;;   (etypecase stream
-;;     (two-way-stream  (two-way-stream-output-stream stream))
 ;;     (echo-stream     (echo-stream-output-stream  stream))
+;;     (two-way-stream  (two-way-stream-output-stream stream))
 ;;     (synonym-stream  (stream-output-stream
 ;;                       (symbol-value (synonym-stream-symbol stream))))
 ;;     (t
@@ -231,17 +231,18 @@ RETURN: A stream or a list of streams that are not compound streams
         (and therefore usable by #+clisp SOCKET:SOCKET-STATUS).
 "
   (etypecase stream
-    (two-way-stream
-     (ecase direction
-       (:output (bare-stream (two-way-stream-output-stream stream)
-                             :direction direction))
-       (:input  (bare-stream (two-way-stream-input-stream stream)
-                             :direction direction))))
+
     (echo-stream
      (ecase direction
        (:output (bare-stream (echo-stream-output-stream stream)
                              :direction direction))
        (:input  (bare-stream (echo-stream-input-stream  stream)
+                             :direction direction))))
+    (two-way-stream
+     (ecase direction
+       (:output (bare-stream (two-way-stream-output-stream stream)
+                             :direction direction))
+       (:input  (bare-stream (two-way-stream-input-stream stream)
                              :direction direction))))
     (synonym-stream
      (bare-stream (symbol-value (synonym-stream-symbol stream))
