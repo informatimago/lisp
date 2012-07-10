@@ -52,7 +52,7 @@
            "NSPLIT-LIST-ON-INDICATOR" "NSPLIT-LIST" "DEEPEST-REC" "DEEPEST" "DEPTH"
            "FLATTEN" "LIST-TRIM" "TRANSPOSE" "AGET" "MEMQ"
            "PLIST-KEYS" "PLIST-REMOVE" "PLIST-GET"
-           "PLIST-PUT" "HASHED-INTERSECTION"
+           "PLIST-PUT" "PLIST-CLEANUP" "HASHED-INTERSECTION" 
            ;; "HASHED-REMOVE-DUPLICATES" moved to COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE
            "ENSURE-LIST" "PROPER-LIST-P" "LIST-LENGTHS"
            "ENSURE-CIRCULAR" "MAKE-CIRCULAR-LIST" "CIRCULAR-LENGTH"
@@ -240,7 +240,24 @@ RETURN: the total length ; the length of the stem ; the length of the circle.
 
 (defun plist-keys (plist)
   "Returns a list of the properties in PLIST."
-  (loop :for (key) :on plist :by (function cddr) :collect key))
+  (remove-duplicates (loop :for (key) :on plist :by (function cddr) :collect key)))
+
+
+(defun plist-cleanup (plist)
+  "Returns a plist that has the same associations than PLIST, but with
+a single occurence of each key and the first value found.
+
+EXAMPLE:        (plist-cleanup '(:a 1 :b 2 :a 11 :c 3)) --> (:b 2 :c 3 :a 1)
+"
+  (loop
+    :with h =  (make-hash-table)
+    :for (key value) :on plist :by (function cddr)
+    :do (when (eq h (gethash key h h))
+          (setf (gethash key h) value))
+    :finally (let ((result '()))
+               (maphash (lambda (key value) (push value result) (push key result)) h)
+               (return result))))
+
 
 
 (defun plist-put (plist prop value)
