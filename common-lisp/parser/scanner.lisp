@@ -257,13 +257,13 @@ License:
 
   (when (let ((ch (char-supported-p "Linefeed")))
           (and ch (char/= ch #\Newline)))
-    (push 'linefeed *features*))
+    (pushnew 'linefeed *features*))
 
   (when  (char-supported-p "Page")
-    (push 'page *features*))
+    (pushnew 'page *features*))
 
   (when  (char-supported-p "Tab")
-    (push 'tab *features*))
+    (pushnew 'tab *features*))
   
   );;eval-when
 
