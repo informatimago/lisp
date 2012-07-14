@@ -158,6 +158,25 @@ License:
 
 
 
+;; Some tools can't deal with #+#.(...) well, so we go thru *feature*
+;; instead.
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+
+  (when (let ((ch (char-supported-p "Linefeed")))
+          (and ch (char/= ch #\Newline)))
+    (pushnew 'linefeed *features*))
+
+  (when  (char-supported-p "Page")
+    (pushnew 'page *features*))
+
+  (when  (char-supported-p "Tab")
+    (pushnew 'tab *features*))
+  
+  );;eval-when
+
+
+
 ;; Note we copy some fields in the condition from the scanner, so that
 ;; they can change in the scanner object between the condition
 ;; creation and its handling.
@@ -214,10 +233,12 @@ License:
 
 (defclass scanner ()
   ((source        :initarg :source
-                  :accessor scanner-source
+                  :reader scanner-source
                   :documentation "The source can be a PEEK-STREAM, a STREAM, or a STRING.")
    (stream        :type peek-stream
-                  :documentation "The source is wrapped into this PEEK-STREAM.")
+                  :reader scanner-stream
+                  :documentation "The source is wrapped into this PEEK-STREAM.
+Subclasses may use scanner-stream to read from the source.")
    (line          :initarg :line
                   :accessor scanner-line
                   :type (integer 0)
@@ -248,24 +269,6 @@ License:
   (:documentation "An abstract scanner."))
 
 
-
-
-;; Some tools can't deal with #+#. well, so we need to go thru
-;; *feature* instead.
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-
-  (when (let ((ch (char-supported-p "Linefeed")))
-          (and ch (char/= ch #\Newline)))
-    (pushnew 'linefeed *features*))
-
-  (when  (char-supported-p "Page")
-    (pushnew 'page *features*))
-
-  (when  (char-supported-p "Tab")
-    (pushnew 'tab *features*))
-  
-  );;eval-when
 
 
 (defgeneric skip-spaces (scanner)
@@ -315,12 +318,17 @@ RETURN:       (scanner-current-token scanner).
 "))
 
 
+(defmethod (setf scanner-source) (new-source (scanner scanner))
+  (etypecase (setf (slot-value scanner 'source) new-source)
+    (peek-stream (setf (slot-value scanner 'stream) (slot-value scanner 'source)))
+    (stream      (setf (slot-value scanner 'stream) (make-instance 'peek-stream :stream (slot-value scanner 'source))))
+    (string      (setf (slot-value scanner 'stream) (make-instance 'peek-stream :stream (make-string-input-stream (slot-value scanner 'source))))))
+  (slot-value scanner 'source))
+
+
 (defmethod initialize-instance :after ((scanner scanner) &rest args &key &allow-other-keys)
   (declare (ignore args))
-  (etypecase (scanner-source scanner)
-    (peek-stream (setf (slot-value scanner 'stream) (scanner-source scanner)))
-    (stream      (setf (slot-value scanner 'stream) (make-instance 'peek-stream :stream (scanner-source scanner))))
-    (string      (setf (slot-value scanner 'stream) (make-instance 'peek-stream :stream (make-string-input-stream (scanner-source scanner)))))))
+  (setf (scanner-source scanner) (slot-value scanner 'source)))
 
 
 (defmethod print-object ((self scanner) out)
