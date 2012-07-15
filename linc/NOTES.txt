@@ -1,0 +1,25 @@
+
+
+c-syntax
+
+   A layer of CLOS classes to generate C++ syntax.
+   Also, we could have a C++ parser producing a parse tree using these
+   objects.
+
+   Note: identical terminals or non-terminals may correspond to
+         different C-syntax classes, depending on their use in
+         production:
+
+            (char*)42     * --> pointer
+            4*2           * --> times
+            *str          * --> deref
+            char  *a;     * --> defptr ?
+
+c-sexp
+  
+   A S-expr syntax for C++ code.  Parsing (evaluating?) these
+   S-expressions will produce a C-syntax object tree.
+
+
+linc
+
