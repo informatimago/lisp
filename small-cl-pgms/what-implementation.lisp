@@ -19,6 +19,10 @@
 ;;;;    2012-04-30 <PJB> Added advertizements.
 ;;;;    2012-04-15 <PJB> Created
 ;;;;BUGS
+;;;;
+;;;;    <quotemstr> pjb: It's unclear whether "choice of
+;;;;                platforms" is a conjunctive or disjunctive choice
+;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    

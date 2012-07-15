@@ -17,11 +17,12 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2012-07-15 <PJB> Re-implemented NEXTCHAR with same semantics as PEEKCHAR.
+;;;;                     (The old NEXTCHAR behavior is available as GET-FUTURE-CHAR).
 ;;;;    2012-02-07 <PJB> Corrected mod-incf and mod-decf.
 ;;;;    2004-09-06 <PJB> Extracted from parse-html.
 ;;;;BUGS
 ;;;;    Does not implement other I/O than these three character input methods.
-;;;;    NEXTCHAR can be called only once in a row.
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
@@ -44,7 +45,9 @@
 (in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PEEK-STREAM"
   (:use "COMMON-LISP")
-  (:export "PEEK-STREAM" "NEXTCHAR" "UNGETCHAR" "GETCHAR" "READLINE")
+  (:export "PEEK-STREAM" "PEEK-STREAM-SPACES"
+           "NEXTCHAR" "UNGETCHAR" "GETCHAR" "READLINE"
+           "GET-FUTURE-CHAR")
   (:documentation
    "
 
@@ -82,15 +85,91 @@ License:
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PEEK-STREAM")
 
 
-(defgeneric extend-buffer (self))
-(defgeneric getchar (self)
+(defgeneric extend-buffer (peek-stream)
+  (:documentation "INTERNAL"))
+
+(defgeneric getchar (peek-stream)
   (:documentation "RETURN: The next character in the PEEK-STREAM, advancing."))
-(defgeneric ungetchar (self ch)
+
+(defgeneric ungetchar (peek-stream ch)
   (:documentation "DO: Unread the character CH from the PEEK-STREAM."))
-(defgeneric nextchar (self)
-  (:documentation "RETURN: The next character in the PEEK-STREAM, without advancing."))
-(defgeneric readline (self)
+
+
+(defgeneric peek-stream-spaces (peek-stream)
+  (:documentation "
+RETURN:         A sequence of characters to be considered whitespace
+                by (nextchar peek-stream T).
+"))
+
+(defgeneric (setf peek-stream-spaces) (new-whitespaces peek-stream)
+  (:documentation "
+DO:             Changes the sequence of characters to be considered
+                whitespace by (nextchar peek-stream T).
+"))
+
+(defgeneric nextchar (peek-stream &optional peek-type)
+  (:documentation "
+DO:             Just like CL:PEEK-CHAR.
+
+                If peek-type is not supplied or NIL, peek-char returns
+                the next character to be read from input-stream,
+                without actually removing it from input-stream. The
+                next time input is done from input-stream, the
+                character will still be there.
+
+                If  peek-type is T, then peek-char skips over
+                whitespace[2] characters, but not comments, and then
+                performs the peeking operation on the next
+                character. The last character examined, the one that
+                starts an object, is not removed from  input-stream.
+
+                If peek-type is a CHARACTER, then peek-char skips over
+                input characters until a character that is char= to
+                that character is found; that character is left in
+                input-stream.
+
+RETURN:         The same character that will be returned by the next
+                (getchar self).
+
+NOTE:           There's no conforming way to determine whether a
+                character has the whitespace[2] syntax in the current
+                *readtable*.  Therefore we use instead the
+                PEEK-STREAM-SPACES method to get the list of spaces.
+"))
+
+(defgeneric get-future-char (peek-stream)
+  (:documentation "
+DO:             Read a character from the underlying stream and keep
+                it in the buffer for GETCHAR.
+
+RETURN:         The character that has been read, or NIL when EOF
+                (which doesn't mean GETCHAR would return NIL).
+
+NOTE:           We have:
+                    (equalp (loop repeat N collect (nextchar ps))
+                            (loop repeat N collect (getchar  ps)))
+                but not:
+                    (equalp (loop repeat N collect (getchar  ps))
+                            (loop repeat N collect (nextchar ps)))
+SEE ALSO:       NEXTCHAR.
+"))
+
+(defgeneric readline (peek-stream)
   (:documentation "RETURN: A string containing the read line."))
+
+
+
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun char-name-supported-p (name)
+     (ignore-errors (read-from-string (format nil "#\\~A" name)))))
+
+(defvar *spaces*
+  (let ((spaces '()))
+    (dolist (name '("Vt" "Page" "Linefeed" "Return" "Tab" "Newline" "Space"))
+      (let ((ch (char-name-supported-p name)))
+        (when ch (push ch spaces))))
+    (coerce spaces 'string)))
 
 
 (defclass peek-stream ()
@@ -100,7 +179,8 @@ License:
    (tail   :accessor tail   :initform  8 :type fixnum)
    (buffer :accessor buffer :initform (make-array '(16)
                                                   :adjustable t
-                                                  :element-type 'character)))
+                                                  :element-type 'character))
+   (spaces :accessor peek-stream-spaces :initarg :spaces :initform *spaces* :type sequence))
   (:documentation "More than one character may be peeked and unread from this."))
 
 
@@ -151,7 +231,7 @@ License:
   "
 RETURN:  The next character from SELF.
          (It can be a character newly read from the encapsulated stream,
-          or a character buffered by NEXTCHAR or UNGETCHAR).
+         or a character buffered by NEXTCHAR or UNGETCHAR).
 "
   (if (= (head self) (tail self))
       (read-char (instre self) nil nil)
@@ -179,34 +259,48 @@ RETURN:  CH.
   ch)
 
 
-;; ungetchar ==> (decf head), put char at (aref buffer head), next:=head
-;; getchar   ==> get char at (aref buffer head), (incf head), next:=head
-;;               head==tail ==> read-char
-;; nextchar  ==> get char at (aref buffer next), (incf next)
-;;               next==tail ==> read-char,
-;;                              put ch at (aref buffer tail),
-;;                              (incf tail) (incf next)
+;; ungetchar       ==> (decf head), put char at (aref buffer head), next:=head
+;; nextchar        ==> get char at (aref buffer head).
+;; getchar         ==> get char at (aref buffer head), (incf head), next:=head
+;;                     head==tail ==> read-char
+;; get-future-char ==> get char at (aref buffer next), (incf next)
+;;                     next==tail ==> read-char,
+;;                                    put ch at (aref buffer tail),
+;;                                    (incf tail) (incf next)
+
+(defmethod nextchar ((self peek-stream) &optional (peek-type nil))
+  (case peek-type
+    ((nil)
+     (if (/= (next self) (tail self))
+       (aref (buffer self) (next self))
+       (let ((ch (read-char (instre self) nil nil)))
+         (when ch
+           (setf (aref (buffer self) (tail self)) ch)
+           (mod-incf (length (buffer self)) (tail self))
+           (when (= (head self) (tail self))
+             (mod-decf (length (buffer self)) (tail self))
+             (extend-buffer self)
+             (mod-incf (length (buffer self)) (tail self))))
+         ch)))
+    ((t)
+     (loop
+       :with spaces = (peek-stream-spaces self)
+       :for ch = (nextchar self)
+       :while (find ch spaces)
+       :do (getchar self)
+       :finally (return ch)))
+    (otherwise
+     (loop
+       :for ch = (nextchar self)
+       :until (char= ch peek-type)
+       :do (getchar self)
+       :finally (return ch)))))
 
 
-(defmethod nextchar ((self peek-stream))
-  "
-RETURN:  The character that will be read soon by GETCHAR, or NIL when EOF.
-         (equalp (loop repeat N collect (nextchar ps))
-                 (loop repeat N collect (getchar  ps)))
-"
-  (if (/= (next self) (tail self))
-      (prog1 (aref (buffer self) (next self))
-        (mod-incf (length (buffer self)) (next self)))
-      (let ((ch (read-char (instre self) nil nil)))
-        (when ch
-          (setf (aref (buffer self) (tail self)) ch)
-          (mod-incf (length (buffer self)) (tail self))
-          (when (= (head self) (tail self))
-            (mod-decf (length (buffer self)) (tail self))
-            (extend-buffer self)
-            (mod-incf (length (buffer self)) (tail self)))
-          (setf (next self) (tail self)))
-        ch)))
+(defmethod get-future-char ((self peek-stream))
+  (prog1 (nextchar self)
+    (assert (/= (next self) (tail self)))
+    (mod-incf (length (buffer self)) (next self))))
 
 
 (defmethod readline ((self peek-stream))
@@ -224,45 +318,85 @@ RETURN:  A whole line read from the peek-stream, or NIL in case of end of stream
      :finally (return line))))
 
 
-(defun test ()
+
+(defun test/peek-stream/get-future-char ()
   (dotimes (n 10)
     (with-input-from-string (in "ComMon-Lisp")
       (let* ((ps (make-instance 'peek-stream :stream in))
-             (nc (loop repeat n for ch = (nextchar ps)
-                    collect ch into result finally (return result)))
-             (gc (loop repeat n for ch = (getchar  ps)
-                    collect ch into result finally (return result))))
+             (nc (loop
+                   :repeat n :for ch = (get-future-char ps)
+                   :collect ch :into result :finally (return result)))
+             (gc (loop
+                   :repeat n :for ch = (getchar  ps)
+                   :collect ch :into result :finally (return result))))
         (assert (equal nc gc)))))
+  :success)
+
+
+(defun test/peek-stream/nextchar/1 ()
   (with-input-from-string (in "ComMon-Lisp")
     (let ((ps (make-instance 'peek-stream :stream in))
           c1 c2 c3)
-      (assert (equal (list (getchar ps) (getchar ps) (getchar ps))
-                     '(#\c #\o #\m)))
+      (setf c1 (getchar ps) c2 (getchar ps) c3 (getchar ps))
+      (assert (equal (list c1 c2 c3)
+                     '(#\C #\o #\m)))
       (setf c1 (getchar ps) c2 (getchar ps) c3 (getchar ps))
       (assert (equal (list c1 c2 c3 (nextchar ps))
-                     '(#\m #\o #\n #\-)))
-      (ungetchar ps c3)(ungetchar ps c2)(ungetchar ps c1)
-      (assert (equal (list (getchar ps) (getchar ps) (getchar ps))
-                     '(#\m #\o #\n)))
-      (assert (equal (list  (getchar ps) (getchar ps) (getchar ps))
-                     '(#\- #\l #\i)))))
+                     '(#\M #\o #\n #\-)))
+      (ungetchar ps c3) (ungetchar ps c2) (ungetchar ps c1)
+      (setf c1 (getchar ps) c2 (getchar ps) c3 (getchar ps))
+      (assert (equal (list c1 c2 c3)
+                     '(#\M #\o #\n)))
+      (setf c1 (getchar ps) c2 (getchar ps) c3 (getchar ps))
+      (assert (equal (list c1 c2 c3)
+                     '(#\- #\L #\i)))))
+  :success)
+
+
+(defun test/peek-stream/nextchar/2 ()
   (with-input-from-string (in "Common-Lisp")
     (let ((ps (make-instance 'peek-stream :stream in))
           c1 c2 c3)
-      (assert (equal (list (getchar ps) (getchar ps) (getchar ps))
-                     '(#\c #\o #\m)))
+      (setf c1 (getchar ps) c2 (getchar ps) c3 (getchar ps))
+      (assert (equal (list c1 c2 c3)
+                     '(#\C #\o #\m)))
       (setf c1 (getchar ps) c2 (getchar ps))
       (assert (equal (list c1 c2 (nextchar ps))
                      '(#\m #\o #\n)))
       (setf c3 (getchar ps))
       (assert (equal (list c3 (nextchar ps))
                      '(#\n #\-)))
-      (ungetchar ps c3)(ungetchar ps c2)(ungetchar ps c1)
-      (assert (equal (list (getchar ps) (getchar ps) (getchar ps))
+      (ungetchar ps c3) (ungetchar ps c2) (ungetchar ps c1)
+      (setf c1 (getchar ps) c2 (getchar ps) c3 (getchar ps))
+      (assert (equal (list c1 c2 c3)
                      '(#\m #\o #\n)))
-      (assert (equal (list (getchar ps) (getchar ps) (getchar ps))
-                     '(#\- #\l #\i)))))
-  (values))
+      (setf c1 (getchar ps) c2 (getchar ps) c3 (getchar ps))
+      (assert (equal (list c1 c2 c3)
+                     '(#\- #\L #\i)))))
+  :success)
+
+(defun test/peek-stream/nextchar/3 ()
+  (with-input-from-string (in "  Common   Lisp")
+    (let ((ps (make-instance 'peek-stream :stream in))
+          c1 c2 c3)
+      (setf c1 (getchar ps) c2 (getchar ps) c3 (nextchar ps))
+      (assert (equal (list c1 c2 c3) '(#\space #\space #\C)))
+      (setf c1 (getchar ps) c2 (getchar ps) c3 (nextchar ps #\n))
+      (assert (equal (list c1 c2 c3) '(#\C #\o #\n)))
+      (setf c1 (getchar ps) c2 (nextchar ps t) c3 (getchar ps))
+      (assert (equal (list c1 c2 c3) '(#\n #\L #\L)))))
+  :success)
+
+
+(defun test/peek-stream ()
+  (test/peek-stream/get-future-char)
+  (test/peek-stream/nextchar/1)
+  (test/peek-stream/nextchar/2)
+  (test/peek-stream/nextchar/3)
+  :success)
+
+
+(test/peek-stream)
 
 
 ;;;; THE END ;;;;

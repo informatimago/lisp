@@ -48,6 +48,8 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
+(cl:in-package "COMMON-LISP-USER")
+
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (setf *features* (cons :use-ppcre (set-difference *features* '(:use-ppcre :use-regexp)))))
 
@@ -107,9 +109,9 @@ This package implements a simple recursive descent parser.
 Copyright Pascal Bourguignon 2006 - 2012
 
 This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
 "))
 (in-package "COM.INFORMATIMAGO.RDP")
 
@@ -537,7 +539,9 @@ RETURN: A hash-table containing the follow-set for each non-terminal
           (declare (ignore seq action))
           (when symbols
             (loop
-               :for (n . beta) :on symbols
+              :for current :on symbols
+              :for n = (car current)
+              :for beta = (cdr current)
                :do (when (non-terminal-p grammar n)
                      (let ((m (first-set beta)))
                        (when beta

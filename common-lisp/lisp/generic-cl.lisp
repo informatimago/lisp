@@ -39,12 +39,13 @@
               "GENERIC-CL")
   (:use "COMMON-LISP")
   (:documentation
-   "This package exports generic functions that forward to the COMMON-LISP 
+   "
+This package exports generic functions that forward to the COMMON-LISP
 package when there's no specialization.
 
-    Copyright Pascal J. Bourguignon 2006 - 2006
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
+Copyright Pascal J. Bourguignon 2006 - 2006
+This package is provided under the Afero General Public License 3.
+See the source file for details."))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.GENERIC-COMMON-LISP")
 
 

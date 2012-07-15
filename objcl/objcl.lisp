@@ -383,7 +383,7 @@ Return a list containing:
   (let ((class-name       (progn (skip-spaces     stream)
                                  (read-identifier stream)))
         (super-class-name (progn (skip-spaces     stream)
-                                 (read-identifier stream)))
+                                  (read-identifier stream)))
         (slots            (let ((*readtable* *lisp-readtable*))
                             (loop
                                :until (char= #\] (skip-spaces stream))
