@@ -7,7 +7,8 @@
 ;;;;DESCRIPTION
 ;;;;    
 ;;;;    This package exports a LUA scanner and parser.
-;;;;    
+;;;;    http://www.lua.org/manual/5.1/manual.html#2.1
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
