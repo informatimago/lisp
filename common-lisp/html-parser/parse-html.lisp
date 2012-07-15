@@ -1618,22 +1618,25 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
                 (values :pcdata value)))))
         ((:script :style)
          (setf (html-scanner-state scanner) :normal)
-         (values :cdata (loop for ch = (get-char-and-keep)
-                           for nc = (next-char)
-                           while (and ch nc
+         (values :cdata (loop
+                          :for ch = (get-char-and-keep)
+                          :for nc = (next-char)
+                          :while (and ch nc
                                       (or (char/= ch (character "<"))
                                           (char/= nc (character "/"))))
-                           finally (progn (unget-char ch) (return value)))))
+                          :finally (progn (unget-char ch) (return value)))))
         ((:tag-ident :tag)
-         (let ((ch (loop for ch = (eat-char)
-                      while (and ch (cs-space-p ch))
-                      finally (progn (when ch (vector-push-extend ch value))
+         (let ((ch (loop
+                     :for ch = (eat-char)
+                     :while (and ch (cs-space-p ch))
+                     :finally (progn (when ch (vector-push-extend ch value))
                                      (return ch)))))
            (cond
              ;; eof
              ((null ch) (return-from get-token (values :eof nil)))
              ;; /> close close tag
-             ((and (char= ch (character "/")) (char= (next-char) (character ">")))
+             ((and (char= ch (character "/"))
+                   (char= (next-char) (character ">")))
               (get-char-and-keep)
               (setf (html-scanner-state scanner) :normal)
               (values :close-end-tag value))
