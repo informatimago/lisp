@@ -467,7 +467,7 @@ URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_symb_1.htm
     :reader symbol-package
     :accessor sym-pack)
    (plist
-    :initarg :plisp
+    :initarg :plist
     :initform nil
     :accessor symbol-plist)
    (value
