@@ -6,8 +6,9 @@
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    Defines the LUA Parser.
-;;;;    
+;;;;    Defines the LUA 5.2 Parser.
+;;;;    http://www.lua.org/manual/5.2/manual.html#9
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -34,23 +35,29 @@
 
 (in-package "COM.INFORMATIMAGO.LUA.PARSER")
 
-#-(and)
+
 (defgrammar lua
     :trace t
     :scanner lua-scanner
-    :terminals ()
+    :terminals ((number "[0-9]+")
+                (string "\"[^\"]*\"")
+                (name  "[_A-Za-z][_A-Za-z0-9]*"))
     :start chunk
     :rules (
 
             (--> chunk
-                 (rep stat (opt ";")) (opt laststat (opt ";")))
+                 block)
 
             (--> block
-                 chunk)
+                 (seq (rep stat) (opt retstat)))
 
             (--> stat
-                 (alt (seq varlist "=" explist) 
+                 (alt ";"
+                      (seq varlist "=" explist)
                       (seq functioncall) 
+                      (seq label)
+                      (seq "break")
+                      (seq "goto" Name)
                       (seq "do" block "end")
                       (seq "while" exp "do" block "end")
                       (seq "repeat" block "until" exp)
@@ -61,27 +68,25 @@
                       (seq "local" "function" Name funcbody)
                       (seq "local" namelist (opt "=" explist))))
 
-            (--> laststat
-                 (alt (seq "return" (opt explist))
-                      "break"))
+            (--> retstat
+                 (seq "return" (opt explist) (opt ";")))
 
+            (--> label
+                 (seq "::" Name "::"))
+            
             (--> funcname
-                 Name (rep "." Name) (opt ":" Name))
+                 (seq Name (rep (seq "." Name)) (opt (seq ":" Name))))
 
             (--> varlist
-                 var (rep "," var))
-
-            (--> var
-                 (alt Name
-                      (seq prefixexp "[" exp "]")
-                      (seq prefixexp "." Name)) )
+                 (seq var (rep (seq "," var))))
 
             (--> namelist
-                 Name (rep "," Name))
+                 (seq Name (rep (seq "," Name))))
 
             (--> explist
-                 (rep exp ",") exp)
+                 (seq exp (rep (seq "," exp))))
 
+            #-(and)
             (--> exp
                  (alt "nil" 
                       "false" 
@@ -89,27 +94,89 @@
                       Number 
                       String 
                       "..." 
-                      function 
+                      functiondef
                       prefixexp 
                       tableconstructor 
                       (seq exp binop exp) 
                       (seq unop exp)))
 
-            (--> prefixexp
-                 (alt var 
-                      functioncall 
-                      (seq "(" exp ")")))
+            (--> exp disjonction)
+            (--> disjonction
+                 (seq conjonction (rep "or" conjonction)))
+            (--> conjonction
+                 (seq comparaison (rep "and" comparaison)))
+            (--> comparaison
+                 (seq concatenation (rep (alt "<" ">" "<=" ">=" "~=" "==") concatenation)))
+            (--> concatenation
+                 (seq summation (rep ".." summation)))
+            (--> summation
+                 (seq term (rep (alt "+" "-") term)))
+            (--> term
+                 (seq factor (rep (alt "*" "/" "%") factor)))
+            (--> factor
+                 (seq (opt (alt "not" "#" "-")) exponentiation))
+            (--> exponentiation
+                 (seq simple (rep "^" simple)))
+            (--> simple
+                 (alt
+                  "nil"
+                  "false"
+                  "true"
+                  Number
+                  String
+                  "…"
+                  functiondef
+                  prefixexp
+                  tableconstructor))
 
+
+
+            #-(and)
+            (--> prefixexp
+                 (alt var
+                      functioncall
+                      "(" exp ")"))
+            #-(and)
+            (--> var
+                 (alt Name
+                      (seq prefixexp "[" exp "]")
+                      (seq prefixexp "." Name)) )
+
+            #-(and)
             (--> functioncall
                  (alt (seq prefixexp args)
                       (seq prefixexp ":" Name args)))
+
+            (--> callpart
+                 (seq (opt (seq ":" name)) args))
+
+            (--> indexpart
+                 (alt (seq "[" exp "]")
+                      (seq "." Name)))
+            
+            (--> prefixexp
+                 (alt
+                  (seq (alt Name
+                            (seq "(" exp ")"))
+                       (rep (alt callpart
+                                 indexpart)))))
+            (--> var
+                 )
+            (--> functioncall
+                 )
+            
+
+
+
+
+
 
             (--> args
                  (alt (seq "(" (opt explist) ")" )
                       tableconstructor 
                       String) )
 
-            (--> function
+            (--> functiondef
                  "function" funcbody)
 
             (--> funcbody
@@ -120,7 +187,7 @@
                       "..."))
 
             (--> tableconstructor
-                 (seq "(rep " (opt fieldlist) ")"))
+                 (seq "{" (opt fieldlist) "}"))
 
             (--> fieldlist
                  (seq field (rep fieldsep field) (opt fieldsep)))
@@ -133,7 +200,8 @@
             (--> fieldsep
                  (alt "," 
                       ";"))
-
+            
+            #-(and)
             (--> binop
                  (alt "+" 
                       "-" 
@@ -153,6 +221,7 @@
                       "and" 
                       "or"))
 
+            #-(and)
             (--> unop
                  (alt "-" 
                       "not" 
@@ -160,4 +229,19 @@
 
 
 
-
+;; Operator precedence in Lua follows the table below, from lower to
+;; higher priority: 
+;;
+;;      or
+;;      and
+;;      <     >     <=    >=    ~=    ==
+;;      ..
+;;      +     -
+;;      *     /     %
+;;      not   #     - (unary)
+;;      ^
+;; 
+;; As usual, you can use parentheses to change the precedences of an
+;; expression. The concatenation ('..') and exponentiation ('^')
+;; operators are right associative. All other binary operators are left
+;; associative. 
