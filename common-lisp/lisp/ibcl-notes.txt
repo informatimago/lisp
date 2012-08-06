@@ -1,0 +1,102 @@
+.. comment: -*- mode:rst -*-
+
+Purpose
+#######
+
+The general purpose would be to have an integrated development
+environment providing sophisticated tools for Common Lisp development
+including:
+
+- source level steppers, tracers, debuggers,
+- embedded editors.
+
+
+Eventually, tools involving global analysis (type inference, tree
+shakers), project structuring tools (the code would be edited in a
+code browser (kind of like the Smalltalk browser), and would be
+automatically saved into files by the system).
+
+
+
+Maintaining an in-image source database serves several purposes:
+
+- allows for interactive development, at the REPL, and after the fact
+  saving of the sources forms to external files.
+
+- having the source accessible allows for sophisticated development
+  tools.
+   
+Notably, it allows automatic and dynamic rewriting and processing of
+the source code by development tools.
+
+
+Sexp Sources
+============
+
+The advantage of keeping the source Sexp is that it simple and
+directly accessible and processable.
+
+The inconvenient is that we don't keep comments, reader macros and
+indenting.  Also, it may be harder to keep the real source form.  The
+old IBCL prototype catches the source Sexps from various CL `def*` macro
+calls, not from the real source macro call, that may expand to one or
+more CL `def*` macro calls.  Also, it's easy to write source form that
+build lisp objects (including functions), without going thru CL `def*`
+macros (eg. `make-package`, `(setf symbol-function)`, etc.).
+
+
+Text Sources
+============
+
+The inconvenients are:
+
+- the text form is bigger than the Sexp form (there are already 360 MB
+  of `.lisp`/`.asd` sources in `~/quicklisp`). 
+
+- each processing the text form requires re-reading it (which requires
+  to keep track of the read-time `*package*`, taking into account the
+  possibility that the old `*package*` is deleted (and possibly
+  re-created), and which means that the same text source may become
+  invalid.
+
+Therefore we may also want to keep the derived Sexp source in
+parallel.
+
+The advantage is that we keep the comments, reader macros and
+indenting.
+
+
+
+Text Sources + CL + Emacs + Slime
+=================================
+
+The current setup includes:
+
+- text source files in the host file system.
+
+- a Common Lisp implementation, usually compiling the lisp sources
+  into write-only binary.
+
+- Swank/Slime to interface the CL implementation with emacs.
+
+- emacs text editor.
+
+
+Several difficuties appears in this setup, because of the indirection
+between the source code and the tools used to develop them.
+
+- emacs is a text editor, even with the addition of paredit, it's not
+  really a structured editor;  even if we don't want or need to edit
+  directly the sexp structure, emacs doesn't provide tools to edit
+  eg. toplevel forms with no relation to file system files.
+
+- CL implementations may or may not keep track of the source file and
+  position for each compiled function (and perhaps subexpression).
+  Notably they don't keep the source text for forms entered at the REPL
+  (and what REPL?  slime REPL or the `*inferior-lisp*` REPL?).
+
+- slime needs information from the CL implementation to jump to the
+  file positions corresponding to the debugging frames.  It cannot
+  provide stepping or other sophisticated source-level debugging
+  features.
+
