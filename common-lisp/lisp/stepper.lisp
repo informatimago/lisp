@@ -45,6 +45,85 @@ Implements a Common Lisp stepper.
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.LISP.STEPPER")
 
 
+#|Random notes.
+
+Note
+====
+
+The term "to trace" here doen't mean CL:TRACE, but executing forms
+while printing each subexpressions before evaluating them and printing
+their results once they return (or informing of a non-local exit).
+The same printing is done while stepping, but interrupted by user
+interaction to let him decide what to do next (step into, step over,
+trace or "run").
+
+The terms "to run" here means to evaluate the form (or the remaining
+of the evaluation of the form) without printing any trace.
+
+Whenever breakpoints are implemented however, tracing and running
+would stop at the next breakpoint encountered.
+
+
+
+Principle of operation
+======================
+
+
+Since we don't have yet the infrastructure to manage editing units
+(text source along with sexp source, etc), we'll take a few shortcuts.
+
+The main problem is to get at the source sexp for the functions and
+methods to be stepped and traced.  For this, we cannot count on
+``function-lambda-expression``, and it would be largely insufficient
+anyways: we want to implement the CL:STEP API allowing to step into a
+toplevel or stand-alone form, and we may want to trace or step into
+the loading of a lisp file too.
+
+
+Eager Option
+------------
+
+In the eager option, we instrument all the toplevel forms we read as
+soon as we read them.
+
+- we need to implement a LOAD function.
+- difficulties with ASDF which tries to compile everything first, so:
+- we need to implement a COMPILE-FILE function too.
+- and of course, we may want to provide a REPL (⚠ slime).
+
+
+Lazy Option
+-----------
+
+In the lazy option, we only instrument the forms and the functions or
+methods needed to perform he stepping or tracing.  This require
+keeping around the source forms.  This can be done by IBCL.
+
+But IBCL only keeps the source of predefined macros (a subset of the
+CL def* macros), so we may miss user defined macros
+(define-such-and-such…), unless they expand to CL def* macros.
+
+A macro that would expand to something like: ::
+
+    (progn
+      (setf (gethash 'some-key *some-hash*) (some-object (lambda () 'some-code)))
+      (defun something ()
+        'some-code))
+
+would instrument the function ``something``, but not the anonymous
+function or code possibly returned by the ``some-object`` function.
+
+
+Problems
+----------
+
+In ccl, a macro like cl:defmethod expands to implementation specific
+special operators (ccl:nfunction) or even, to calls to internal
+functions passing lambda expressions or other code chunks as data.
+This would prevent their instrumenting by IBCL-like macros.
+
+
+|#
 ;;;----------------------------------------------------------------------
 ;;;
 ;;; Environment
