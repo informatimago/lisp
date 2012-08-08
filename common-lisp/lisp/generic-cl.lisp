@@ -6,8 +6,7 @@
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    This package exports generic functions that forward to the 
-;;;;    COMMON-LISP package when there's no specialization.
+;;;;    See :documentation of package below.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
@@ -40,12 +39,15 @@
   (:use "COMMON-LISP")
   (:documentation
    "
+
 This package exports generic functions that forward to the COMMON-LISP
 package when there's no specialization.
 
 Copyright Pascal J. Bourguignon 2006 - 2006
 This package is provided under the Afero General Public License 3.
-See the source file for details."))
+See the source file for details.
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.GENERIC-COMMON-LISP")
 
 

@@ -167,16 +167,19 @@ RETURN:    A list of the selected symbols.
   (let ((pack (find-package package)))
     (if pack
       (let ((sl '()))
-        (and exported
-             (do-external-symbols (s pack)
-               (push s sl)))
+        (when exported
+          (do-external-symbols (s pack)
+            (push s sl)))
         (do-symbols (s pack) 
           (when (or all
-                    (and homely (eq pack (symbol-package s)))
+                    (and homely    (eq pack (symbol-package s)))
                     (and shadowing (member s (package-shadowing-symbols pack))))
             (pushnew s sl)))
-        (if sorted (sort sl (function string<)) sl))
+        (if sorted
+          (sort sl (function string<))
+          sl))
       (error "No package ~S" package))))
+
 
 (defun list-all-symbols (package &key (sorted t))
   "
@@ -185,6 +188,7 @@ PACKAGE:    A package designator.
 SORTED:     Whether the result list is sorted (default T).
 "
   (list-symbols package :sorted sorted :all t))
+
 
 (defun list-external-symbols (package &key (sorted t))
   "
@@ -613,39 +617,40 @@ STEAL:      If another package has already this nickname, then steal it.
 FORCE:      If another package has this nickname as package name, then steal it.
 RETURN:     The package designated by PACKAGE.
 "
-  ;; !!! The consequences are undefined if new-name or any new-nickname
-  ;; !!! conflicts with any existing package names.  Therefore we use a temp name.
   (verbose "~&# ADDING TO PACKAGE ~S~%
             ~&#      THE NICKNAME ~S~%" package nickname)
   (let* ((pack     (find-package package))
-         (package  (if pack
-                       (package-name pack)
-                       (error "~S: There is no package named \"~A\"."
-                              'add-nickname package)))
+         (packname (if pack
+                     (package-name pack)
+                     (error "~S: There is no package named \"~A\"."
+                            'add-nickname package)))
          (nickpack (find-package nickname))
          (cnt      0))
     (flet ((temp-name ()
              (loop
-                :for name = (format nil "TEMP-~A-~A" package (incf cnt))
+                :for name = (format nil "TEMP-~A-~A" packname (incf cnt))
                 :while (find-package name)
                 :finally (return name))))
       (cond
         ((eq nickpack pack)  (verbose "~&#    ALREADY GOT IT~%"))
         ((null nickpack)
+         ;; The consequences are undefined if new-name or any
+         ;; new-nickname conflicts with any existing package names.
+         ;; Therefore we use a temp name.
          (let ((temp  (temp-name))
                (nicks (cons nickname (copy-seq (package-nicknames pack)))))
-          (rename-package pack temp    nicks)
-          (rename-package pack package nicks))
-         (when (built-in-p package)
+           (rename-package pack temp     nicks)
+           (rename-package pack packname nicks))
+         (when (built-in-p packname)
            (pushnew nickname *built-in-packages* :test (function string=))))
         ((and force (string= nickname (package-name nickpack)))
          (let ((nicks (or (package-nicknames nickpack)
                           (list (gen-old-name nickname)))))
            (rename-package nickpack (first nicks) (rest nicks))
-           (add-nickname package nickname)))
+           (add-nickname pack nickname)))
         ((and (or steal force) (string/= nickname (package-name nickpack)))
          (remove-nickname nickpack nickname)
-         (add-nickname package nickname))
+         (add-nickname pack nickname))
         (force
          (error "~S is already a nickname of the package ~S" nickname nickpack))
         (t

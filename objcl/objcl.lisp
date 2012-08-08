@@ -580,7 +580,10 @@ Assumes the '[' has been read already.
 
 
 (defun make-utf8-cstring (lstring)
-  (let* ((llen  (length lstring))
+  (let* ((lstring (if (typep lstring 'simple-base-string)
+                    lstring
+                    (copy-seq lstring)))
+         (llen  (length lstring))
          (clen  (ccl::utf-8-octets-in-string lstring 0 llen)))
     (declare (fixnum llen clen))
     (let* ((cstring (ccl::malloc (the fixnum (1+ clen)))))

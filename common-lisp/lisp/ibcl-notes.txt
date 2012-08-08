@@ -1,0 +1,393 @@
+.. comment: -*- mode:rst -*-
+
+cf. how clisp debugger is written?
+
+Those are a few notes about ibcl, stepper and future possible projects.
+
+Purpose
+#######
+
+The general purpose would be to have an integrated development
+environment providing sophisticated tools for Common Lisp development
+including:
+
+- source level steppers, tracers, debuggers,
+- embedded editors.
+
+
+Eventually, tools involving global analysis (type inference, tree
+shakers), project structuring tools (the code would be edited in a
+code browser (kind of like the Smalltalk browser), and would be
+automatically saved into files by the system).
+
+
+
+Maintaining an in-image source database serves several purposes:
+
+- allows for interactive development, at the REPL, and after the fact
+  saving of the sources forms to external files.
+
+- having the source accessible allows for sophisticated development
+  tools.
+   
+Notably, it allows automatic and dynamic rewriting and processing of
+the source code by development tools.
+
+
+Sexp Sources
+============
+
+The advantage of keeping the source Sexp is that it simple and
+directly accessible and processable.
+
+The inconvenient is that we don't keep comments, reader macros and
+indenting.  Also, it may be harder to keep the real source form.  The
+old IBCL prototype catches the source Sexps from various CL ``def*`` macro
+calls, not from the real source macro call, that may expand to one or
+more CL ``def*`` macro calls.  Also, it's easy to write source form that
+build lisp objects (including functions), without going thru CL ``def*``
+macros (eg. ``make-package``, ``(setf symbol-function)``, etc.).
+
+
+Text Sources
+============
+
+The inconvenients are:
+
+- the text form is bigger than the Sexp form (there are already 360 MB
+  of ``.lisp``/``.asd`` sources in ``~/quicklisp``). 
+
+- each processing the text form requires re-reading it (which requires
+  to keep track of the read-time ``*package*`` and the ``*readtable*``
+  with its set of activated reader macros, taking into account the
+  possibility that the old ``*package*`` is deleted (and possibly
+  re-created), and which means that the same text source may become
+  invalid.
+
+Therefore we may also want to keep the derived Sexp source in
+parallel.
+
+The advantage is that we keep the comments, reader macros and
+indenting.
+
+
+
+Text Sources + CL + Emacs + Slime
+=================================
+
+The current setup includes:
+
+- text source files in the host file system.
+
+- a Common Lisp implementation, usually compiling the lisp sources
+  into write-only binary.
+
+- Swank/Slime to interface the CL implementation with emacs.
+
+- emacs text editor.
+
+
+Several difficuties appears in this setup, because of the indirection
+between the source code and the tools used to develop them.
+
+- emacs is a text editor, even with the addition of paredit, it's not
+  really a structured editor;  even if we don't want or need to edit
+  directly the sexp structure, emacs doesn't provide tools to edit
+  eg. toplevel forms with no relation to file system files.
+
+- CL implementations may or may not keep track of the source file and
+  position for each compiled function (and perhaps subexpression).
+  Notably they don't keep the source text for forms entered at the REPL
+  (and what REPL?  slime REPL or the ``*inferior-lisp*`` REPL?).
+
+- slime needs information from the CL implementation to jump to the
+  file positions corresponding to the debugging frames.  It cannot
+  provide stepping or other sophisticated source-level debugging
+  features.
+
+
+Project
+###########
+
+- comments ``;…``, ``#|…|#``, ``#+(or)…``, ``#-(and)…``.
+- other standard or user reader macros ``#.…``,  ``#x…``, ``#b…`` etc.
+- indenting, or rather, line splitting, since indenting is done
+  automatically.
+
+The editing unit shall be the toplevel form.  Text source blocks shall
+contain a single toplevel form, or a single toplevel comment block.
+If an editing block is valided containing several toplevel forms, it's
+split into as many toplevel forms.
+
+Editing units can A source browser shall allow the classification
+
+
+
+Source Persistence
+==================
+
+The text source can be kept in files when it comes from files.  Then
+we only need the pathname and file positions to refer to it.
+
+In the case of the REPL, we can read and keep the text, or save it to
+a dribble file.
+
+
+
+
+Project structure
+====================
+
+File based structure
+--------------------
+
+Quicklisp: 
+
+    A DAG of interdependent asdf systems.
+
+ASDF: 
+
+    A DAG of interdependent lisp files.
+
+Lisp: 
+
+    A set of packages.  There may be circularities in package
+    dependencies, but not in the source files: defpackage forms cannot
+    define a circular dependency, (and notably, redefining a package
+    in a second defpackage is unspecified), but other toplevel forms
+    can establish later circular dependencies.  So while the set of
+    packages may form a graph in general, the text source of
+    defpackage forms is a DAG.  The evaluation of each toplevel form
+    builds one or more objects.  
+
+The toplevel forms are read each in a specific package, and in a
+specific order.  However, this order can be infered.
+
+
+Image based structure
+---------------------
+
+This kind of project is built in memory and the objects composing it
+form a graph in general.  There's no need to save them in files that
+will have to be loaded in a specific order (DAG).  The editing units
+are kept to allow for the editing of the objects.
+
+In this structure persistence is assured by saving the whole image.
+
+Saving the editing units would pose the problem of reloading them,
+since they may have circular dependencies.  (There may be a way to
+still load them automatically despite the circular dependencies, by
+loading the cycles repeatitively until a fixed point is reached).
+
+
+Reading
+===============
+
+
+Reading from a file
+----------------------
+
+We may wrap each reader macro to take note of the file and positions
+of the text processed by the reader macro.
+
+
+Reading from the REPL
+----------------------
+
+Reading from the REPL or other non-file based streams, we need to wrap
+the stream to save the text that is processed by the reader macros.
+This can be done with gray streams, or by a hook in the lisp reader.
+
+This way to save the editing unit can also be used when reading from
+the file.
+
+(Note: not only read-char, but read-line or read-sequence; cf. gray
+streams).
+
+
+Read-Eval
+---------
+
+Once the text is read, a lisp object "source form" and an editing unit
+(text and/or file & positions) are produced by the lisp reader.
+Notice: only a single object reference is returned by the lisp reader.
+    
+
+When reading "(a . (b . nil))", we have five lisp objects: two conses
+and three symbols.  The two conses can be associated with that editing
+unit (and even, to different positions).  The symbols could also be
+associated with this editing unit and positions, but they would have
+also other associations with other editing units, unless we want to
+identify the place where the symbol was interned first, which wouldn't
+be too useful.  But the point is that with: ::
+
+   (defparameter *a* '(a . (b . nil)))   ; line 1
+   (defparameter *b* (cdr *a*))          ; line 2
+
+- The source of the value of ``*a*`` is line 1.
+- The source of the value of ``*b*`` is line 1 too!
+- The source of the definition of ``*b*`` is line 2.
+
+
+
+The source form is evaluated.  It may contain macros that are
+macroexpanded.  This may create and register several lisp objects
+(packages, variables, functions, methods, etc, and other lisp
+objects).  All those lisp objects could be associated with the source
+form and the editing unit.  Collecting all the lisp objects created by
+the evaluation of a source form would require access to the
+implementation (or the use of an interpreter).
+
+::
+
+    (package 'x)
+    (symbol-value 'x)
+    (symbol-function 'x)
+    (find-class 'x)
+    type 'x
+    (find-method (function x) …) ; <---
+    (color 'x)
+    (thingy 'x)
+    (grammar 'x)
+    (etc 'x)
+
+
+Each object created has a "source".  A function that creates an object
+at run-time may be considered the source of that object.  So asking
+where this object has been created, we can return this function, or
+even this function call: ::
+
+    (defun f (ch)
+       (list (string ch)))
+    ;;   ^1     ^2
+
+    (f #\x) --> ("x")
+
+- Source of ("x") is function call ^1 in function F. (Why not a call
+  to CL:CONS in CL:LIST?)
+- Source of "x" is function call ^2 in function F.
+
+
+
+Saving sources
+--------------
+
+The COM.INFORMATIMAGO.COMMON-LISP.LISP.CL-SAVING-DEFINES package
+defines CL macros to record source sexp.
+
+::
+
+   ----     --------------------------    ----------- -----------  ------
+                                          time        source-type  name  
+   ----     --------------------------    ----------- -----------  ------
+   done     DEFPACKAGE                                :package     string
+            actually we could generate the defpackage form
+            from the package object. 
+                                                                         
+   done     DEFVAR                                    :variable    symbol
+   done     DEFPARAMETER                              :variable    symbol
+   done     DEFCONSTANT                               :variable    symbol
+   done     DEFINE-SYMBOL-MACRO                       :variable    symbol
+                                                                         
+   done     DEFSTRUCT                                 :type        symbol
+            constructors, predicates and accessors:
+            we won't trace into them.
+  
+   done     DEFCLASS                                  :type        symbol
+            accessors: we won't trace into them.
+   
+   done     DEFTYPE                                   :type        symbol
+            
+   done     DEFINE-CONDITION              runtime     :type        symbol
+            accessors and report functions:
+            we won't trace into them.
+  
+
+   done     DEFINE-COMPILER-MACRO         compilation              symbol
+             can be :compiler-macro or :setf-compiler-macro
+  
+   done     DEFINE-MODIFY-MACRO           compilation :function    symbol
+   done     DEFINE-SETF-EXPANDER          compilation :setf-mac    symbol
+   done     DEFSETF                       compilation :setf-mac    symbol
+   done     DEFMACRO                      compilation :function    symbol
+                                                                         
+   done     DEFINE-METHOD-COMBINATION     runtime     :meth-comb   symbol
+  
+   done     DEFUN                         runtime     :function    symbol or (setf symbol)
+   done     DEFGENERIC                    runtime     :function    symbol or (setf symbol)
+  
+            DEFMETHOD                     runtime     :method      symbol or (setf symbol)
+            methods need method-qualifiers and specializer in addition to the symbol.
+   ----     --------------------------    ----------- -----------  ------
+
+We store the source forms to the symbol-plist.
+
+When the stepper needs to walk the source to generate a stepping
+function, it takes the source form, process it, and redefine the
+symbol, putting a property indicating that the stepped form is
+the current definition.
+
+When we want to remove the stepping form, we just re-evaluate the
+source form.  ⚠ this works only for toplevel forms, not for clozure:
+
+    (let ((x 42))
+      (defun f () x))
+
+    --> (source 'f 'function :package *package*) --> (defun f () x)
+
+    
+    (source '(m () (t t))                   :method) --> (defmethod m (x y) …)
+    (source '(m () (t t))              :setf-method) --> (defmethod (setf m) (new-value x) …)
+    (source '((setf m) () (t t))            :method) --> (defmethod (setf m) (new-value x) …)
+    (source '(m (:around) (string integer)) :method) --> (defmethod m :around ((x string) (n integer)) …)
+
+    remove-method
+    rename-package
+    delete-package
+
+
+Tools
+######
+
+Code Browser
+============
+
+Editor
+======
+
+Interpreter
+===========
+
+Stepper
+=======
+
+Tracer
+======
+
+Source Debugger
+================
+
+- Insert break points (at function call, function exit, at specific
+  forms).
+- Inspection of the stack frames.
+- REPL in the scope of a given frame.
+- Invoke restarts.
+- Continue execution ("run").
+- Continue tracing.
+- Step Over the next form.
+- Step Into the next form.
+- We could also add the ability to "jump" to a specific form with some
+  limits.
+
+
+Compiler to LLVM
+================
+
+We can dream, can't we?
+
+
+
+.. comment:  -----------------------------------------------
+                            -------------
+                                  -
+                                  .    

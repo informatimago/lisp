@@ -32,7 +32,7 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(cl:in-package "COM.INFORMATIMAGO.LINC")
+(in-package "COM.INFORMATIMAGO.LINC")
 
 (make-declare com.informatimago.linc.c::variable  "A variable.")
 (make-declare com.informatimago.linc.c::class     "A class.")

@@ -281,10 +281,11 @@ DO:         Sets the elementSize() parameter.
   "
 RETURN: The number of arrangement of k elements (without repeat) taken amongst n.
 "
-  (loop with r = 1
-     for i from (- n k -1) to m
-     do (setf r (* r i))
-     finally (return r)))
+  (loop
+    :with r = 1
+    :for i :from (- n k -1) :to n
+    :do (setf r (* r i))
+    :finally (return r)))
 
 
 (defmethod compute-cardinal ((self arrangement-sans-repeat))

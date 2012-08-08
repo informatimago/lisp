@@ -35,7 +35,6 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
-(in-package "COMMON-LISP-USER")
 
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM"
   (:use "COMMON-LISP")
@@ -59,7 +58,7 @@
    "MACRO-LAMBDA-LIST" "TYPE-LAMBDA-LIST" "DESTRUCTURING-LAMBDA-LIST"
    "SETF-LAMBDA-LIST" "METHOD-COMBINATION-LAMBDA-LIST"
    ;; Lambda-List Methods:
-   "ORIGINAL-LAMBDA-LIST" #|"LAMBDA-LIST-PARAMETERS"|#
+   "ORIGINAL-LAMBDA-LIST" "LAMBDA-LIST-PARAMETERS"
    "LAMBDA-LIST-MANDATORY-PARAMETERS"  "LAMBDA-LIST-OPTIONAL-PARAMETERS"
    "LAMBDA-LIST-REST-PARAMETER" "LAMBDA-LIST-ALLOW-OTHER-KEYS-P" "LAMBDA-LIST-KEY-P"
    "LAMBDA-LIST-KEYWORD-PARAMETERS" "LAMBDA-LIST-ENVIRONMENT-PARAMETER"
@@ -85,23 +84,11 @@
    ;; "DEFUN""DEFGENERIC""DEFMETHOD"
    ;; *CALL-STACK*" ;; not yet
    )
-  (:shadow "READTABLE"
-           "COPY-READTABLE" "MAKE-DISPATCH-MACRO-CHARACTER"
-           "READ" "READ-PRESERVING-WHITESPACE"
-           "READ-DELIMITED-LIST"
-           "READ-FROM-STRING"
-           "READTABLE-CASE" "READTABLEP"
-           "SET-DISPATCH-MACRO-CHARACTER" "GET-DISPATCH-MACRO-CHARACTER"
-           "SET-MACRO-CHARACTER" "GET-MACRO-CHARACTER"
-           "SET-SYNTAX-FROM-CHAR"
-           "WITH-STANDARD-IO-SYNTAX"
-           "*READ-BASE*" "*READ-DEFAULT-FLOAT-FORMAT*" "*READ-EVAL*"
-           "*READ-SUPPRESS*" "*READTABLE*")
   (:documentation "
 This package exports functions to parse and manipulate
 Common Lisp sources as lisp forms (such as in macros).
 
-Copyright Pascal J. Bourguignon 2003 - 2007
+Copyright Pascal J. Bourguignon 2003 - 2012
 This package is provided under the GNU General Public License.
 See the source file for details.
 "))
@@ -548,12 +535,11 @@ some constraints may be different from one lambda-list to the other."))
 (defclass lambda-list ()
   ((original   :accessor original-lambda-list
                :initarg :lambda-list
-               :type     list)
-   (parameters :accessor lambda-list-parameters
-               :initarg :parameters
-               :type     list
-               :documentation "An ordered list of the parameters or destructuring-lambda-list instances."))
+               :type     list))
   (:documentation "An abstract lambda-list."))
+
+(defgeneric lambda-list-parameters (lambda-list)
+  (:documentation "An ordered list of the parameters or destructuring-lambda-list instances."))
 
 (defclass ordinary-lambda-list           (lambda-list oraka-ll)    ())
 (defclass boa-lambda-list                (lambda-list oraka-ll)    ())
@@ -923,7 +909,9 @@ RETURN: A list of arguments taken from the parameters usable with apply
        (mapcan (lambda (par) (list (ensure-parameter-keyword par)
                               (parameter-name par)))
                (lambda-list-keyword-parameters  self)))
-     (list (if rest  (parameter-name rest) 'nil)))))
+     (list (if rest
+             (parameter-name rest)
+             '())))))
 
 
 
@@ -1031,6 +1019,15 @@ BUG:    We don't handle MACRO-LAMBDA-LISTs nor DESTRUCTURING-LAMBDA-LISTs, etc.
 
 
 
+
+(defmethod parameter-specifier ((parameter destructuring-lambda-list))
+  "
+NOTE:   DESTRUCTURING-LAMBDA-LIST instances may appear in parameter lists.
+        Therefore we need to build the parameter-specifier sexp for them.
+"
+  (make-lambda-list parameter))
+
+
 (defmethod make-lambda-list ((self lambda-list))
   "
 RETURN:     A newly rebuilt lambda-list s-expr.
@@ -1063,12 +1060,26 @@ RETURN:     A newly rebuilt lambda-list s-expr.
                          (lambda-list-auxiliary-parameters self))))))
 
 
-(defmethod parameter-specifier ((parameter destructuring-lambda-list))
-  "
-NOTE:   DESTRUCTURING-LAMBDA-LIST instances may appear in parameter lists.
-        Therefore we need to build the parameter-specifier sexp for them.
-"
-  (make-lambda-list parameter))
+
+(defmethod lambda-list-parameters ((self lambda-list))
+  (append
+   (when (lambda-list-whole-parameter-p self)
+     (list (lambda-list-whole-parameter self)))
+   (when (lambda-list-environment-parameter-p self)
+     (list (lambda-list-environment-parameter self)))
+   (lambda-list-mandatory-parameters self)
+   (when (lambda-list-optional-parameters self)
+     (lambda-list-optional-parameters self))
+   (when (lambda-list-body-parameter-p self)
+     (list (lambda-list-body-parameter self)))
+   (when (lambda-list-rest-parameter-p self)
+     (list (lambda-list-rest-parameter self)))
+   (when (lambda-list-keyword-parameters self)
+     (lambda-list-keyword-parameters self))
+   (when (lambda-list-auxiliary-parameters self)
+     (lambda-list-auxiliary-parameters self))))
+
+
 
 
 

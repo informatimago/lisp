@@ -84,7 +84,7 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
-(cl:in-package "COMMON-LISP-USER")
+(in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.HEAP.HEAP"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.HEAP.MEMORY")

@@ -7,21 +7,30 @@
 ;;;;DESCRIPTION
 ;;;;    
 ;;;;    This package exports a LUA scanner and parser.
-;;;;    
+;;;;    http://www.lua.org/manual/5.2/manual.html#3.1
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
 ;;;;    2012-07-14 <PJB> Created.  Implemented the scanner.
 ;;;;BUGS
+;;;;
+;;;;    Implemented the parser of 5.1;
+;;;;    in 5.2 we miss :: and "\z", "\xHH"; 0XHH (we implement 0xHH),
+;;;;    and hexadecimal floating points. 0x1.921FBP+1 0xA23p-4
+;;;;
+;;;;    #x = (length x)
+;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2012 - 2012
 ;;;;    
-;;;;    This program is free software: you can redistribute it and/or modify
-;;;;    it under the terms of the GNU Affero General Public License as published by
-;;;;    the Free Software Foundation, either version 3 of the License, or
-;;;;    (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or
+;;;;    modify it under the terms of the GNU Affero General Public
+;;;;    License as published by the Free Software Foundation, either
+;;;;    version 3 of the License, or (at your option) any later
+;;;;    version.
 ;;;;    
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
