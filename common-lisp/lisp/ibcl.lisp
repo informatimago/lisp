@@ -102,6 +102,10 @@ vs. (defpackage …), the IBCL package will be used instead of the CL
 package.  This should allow loading libraries using IBCL instead of
 CL.
 
+ (in-package :ibcl-user)
+ (asdf-load-source :some-system)
+ (source 'some-system:some-function :function)
+ --> (defun some-system:some-function …)
 
 Copyright Pascal J. Bourguignon 2006 - 2012
 This package is provided under the Afero General Public License 3.
