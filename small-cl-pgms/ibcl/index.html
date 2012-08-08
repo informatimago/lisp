@@ -63,6 +63,44 @@ Informatimago  Common Lisp Library at gitorious</a>, specifically:
 href="https://gitorious.org/com-informatimago/com-informatimago/trees/master/common-lisp/lisp">
 com.informatimago.common-lisp.lisp</a>.
 
+<p>You can load it in a Common Lisp implementation with <a
+href="http://www.quicklisp.org/">quicklisp</a>:
+<pre>
+cl-user&gt; (ql:quickload :com.informatimago.common-lisp.lisp.ibcl)
+To load "com.informatimago.common-lisp.lisp.ibcl":
+  Load 1 ASDF system:
+    com.informatimago.common-lisp.lisp.ibcl
+; Loading "com.informatimago.common-lisp.lisp.ibcl"
+[package com.informatimago.common-lisp.lisp.image-based-common-lisp]
+[package com.informatimago.common-lisp.lisp.image-based-common-lisp-user]
+(:com.informatimago.common-lisp.lisp.ibcl)
+cl-user&gt; (in-package :ibcl-user)
+#&lt;Package "COM.INFORMATIMAGO.COMMON-LISP.LISP.IMAGE-BASED-COMMON-LISP-USER"&gt;
+image-based-common-lisp-user&gt; (defun f (x)
+                                (if (zerop x)
+                                  1
+                                  (* x (f (1- x)))))
+
+f
+image-based-common-lisp-user&gt; (source 'f :function)
+(defun f (x) (if (zerop x) 1 (* x (f (1- x)))))
+#&lt;Package "COM.INFORMATIMAGO.COMMON-LISP.LISP.IMAGE-BASED-COMMON-LISP-USER"&gt;
+image-based-common-lisp-user&gt; (defvar f 42)
+f
+image-based-common-lisp-user&gt; (source 'f :variable)
+(defvar f 42)
+#&lt;Package "COM.INFORMATIMAGO.COMMON-LISP.LISP.IMAGE-BASED-COMMON-LISP-USER"&gt;
+image-based-common-lisp-user&gt; (defun (setf f) (newval) (setf f newval))
+(setf f)
+image-based-common-lisp-user&gt; (source '(setf f) :function)
+(defun (setf f) (newval) (setf f newval))
+#&lt;Package "COM.INFORMATIMAGO.COMMON-LISP.LISP.IMAGE-BASED-COMMON-LISP-USER"&gt;
+image-based-common-lisp-user&gt; (in-package :cl-user)
+#&lt;Package "COM.INFORMATIMAGO.COMMON-LISP.LISP.IMAGE-BASED-COMMON-LISP-USER"&gt;
+image-based-common-lisp-user&gt; (cl:in-package :cl-user)
+#&lt;Package "COMMON-LISP-USER"&gt;
+cl-user&gt; 
+</pre>
 
 <p>Old proof-of-concept source:
 <UL>
