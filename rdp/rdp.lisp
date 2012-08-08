@@ -48,7 +48,7 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(cl:in-package "COMMON-LISP-USER")
+(in-package "COMMON-LISP-USER")
 
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (setf *features* (cons :use-ppcre (set-difference *features* '(:use-ppcre :use-regexp)))))

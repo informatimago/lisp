@@ -2,6 +2,8 @@
 
 cf. how clisp debugger is written?
 
+Those are a few notes about ibcl, stepper and future possible projects.
+
 Purpose
 #######
 
@@ -264,6 +266,84 @@ even this function call: ::
 - Source of ("x") is function call ^1 in function F. (Why not a call
   to CL:CONS in CL:LIST?)
 - Source of "x" is function call ^2 in function F.
+
+
+
+Saving sources
+--------------
+
+The COM.INFORMATIMAGO.COMMON-LISP.LISP.CL-SAVING-DEFINES package
+defines CL macros to record source sexp.
+
+::
+
+   ----     --------------------------    ----------- -----------  ------
+                                          time        source-type  name  
+   ----     --------------------------    ----------- -----------  ------
+   done     DEFPACKAGE                                :package     string
+            actually we could generate the defpackage form
+            from the package object. 
+                                                                         
+   done     DEFVAR                                    :variable    symbol
+   done     DEFPARAMETER                              :variable    symbol
+   done     DEFCONSTANT                               :variable    symbol
+   done     DEFINE-SYMBOL-MACRO                       :variable    symbol
+                                                                         
+   done     DEFSTRUCT                                 :type        symbol
+            constructors, predicates and accessors:
+            we won't trace into them.
+  
+   done     DEFCLASS                                  :type        symbol
+            accessors: we won't trace into them.
+   
+   done     DEFTYPE                                   :type        symbol
+            
+   done     DEFINE-CONDITION              runtime     :type        symbol
+            accessors and report functions:
+            we won't trace into them.
+  
+
+   done     DEFINE-COMPILER-MACRO         compilation              symbol
+             can be :compiler-macro or :setf-compiler-macro
+  
+   done     DEFINE-MODIFY-MACRO           compilation :function    symbol
+   done     DEFINE-SETF-EXPANDER          compilation :setf-mac    symbol
+   done     DEFSETF                       compilation :setf-mac    symbol
+   done     DEFMACRO                      compilation :function    symbol
+                                                                         
+   done     DEFINE-METHOD-COMBINATION     runtime     :meth-comb   symbol
+  
+   done     DEFUN                         runtime     :function    symbol or (setf symbol)
+   done     DEFGENERIC                    runtime     :function    symbol or (setf symbol)
+  
+            DEFMETHOD                     runtime     :method      symbol or (setf symbol)
+            methods need method-qualifiers and specializer in addition to the symbol.
+   ----     --------------------------    ----------- -----------  ------
+
+We store the source forms to the symbol-plist.
+
+When the stepper needs to walk the source to generate a stepping
+function, it takes the source form, process it, and redefine the
+symbol, putting a property indicating that the stepped form is
+the current definition.
+
+When we want to remove the stepping form, we just re-evaluate the
+source form.  ⚠ this works only for toplevel forms, not for clozure:
+
+    (let ((x 42))
+      (defun f () x))
+
+    --> (source 'f 'function :package *package*) --> (defun f () x)
+
+    
+    (source '(m () (t t))                   :method) --> (defmethod m (x y) …)
+    (source '(m () (t t))              :setf-method) --> (defmethod (setf m) (new-value x) …)
+    (source '((setf m) () (t t))            :method) --> (defmethod (setf m) (new-value x) …)
+    (source '(m (:around) (string integer)) :method) --> (defmethod m :around ((x string) (n integer)) …)
+
+    remove-method
+    rename-package
+    delete-package
 
 
 Tools

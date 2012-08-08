@@ -46,7 +46,7 @@
 
 ;; file:///home/pjb/library/informatique/protocols_and_standards/ISO-IEC-14882/www.kuzbass.ru:8086/docs/isocpp/index.html
 
-(cl:in-package "COM.INFORMATIMAGO.LINC")  
+(in-package "COM.INFORMATIMAGO.LINC")  
 
 
 
@@ -58,8 +58,8 @@
 ;;   :arguments '(2 3))
 
 
-;;  (cl:in-package :com.informatimago.linc)
-;;  (cl:in-package :com.informatimago.linc.c)
+;;  (in-package :com.informatimago.linc)
+;;  (in-package :com.informatimago.linc.c)
 
 ;; c1::c2::m1(a,b,c);
 ;; ((:: c1 c2 m1) (a b c))

@@ -47,8 +47,8 @@ Implements a Common Lisp stepper.
 
 #|Random notes.
 
-Note
-====
+Terminology
+===========
 
 The term "to trace" here doen't mean CL:TRACE, but executing forms
 while printing each subexpressions before evaluating them and printing
@@ -97,24 +97,28 @@ Lazy Option
 
 In the lazy option, we only instrument the forms and the functions or
 methods needed to perform he stepping or tracing.  This require
-keeping around the source forms.  This can be done by IBCL.
+keeping around the source forms.
 
-But IBCL only keeps the source of predefined macros (a subset of the
-CL def* macros), so we may miss user defined macros
-(define-such-and-such…), unless they expand to CL def* macros.
 
-A macro that would expand to something like: ::
+Macro Option
+------------
+
+IBCL only keeps the source of predefined macros (a subset of the CL
+def* macros), so we may miss user defined macros (define-such-and-such…),
+unless they expand to CL def* macros.
+
+With a macro that would expand to something like: ::
 
     (progn
       (setf (gethash 'some-key *some-hash*) (some-object (lambda () 'some-code)))
       (defun something ()
         'some-code))
 
-would instrument the function ``something``, but not the anonymous
+we would instrument the function ``something``, but not the anonymous
 function or code possibly returned by the ``some-object`` function.
 
 
-Problems
+Note
 ----------
 
 In ccl, a macro like cl:defmethod expands to implementation specific
@@ -123,6 +127,8 @@ functions passing lambda expressions or other code chunks as data.
 This would prevent their instrumenting by IBCL-like macros.
 
 
+Operation
+-------------
 |#
 ;;;----------------------------------------------------------------------
 ;;;

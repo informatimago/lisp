@@ -35,12 +35,12 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(cl:in-package "COM.INFORMATIMAGO.LINC")
+(in-package "COM.INFORMATIMAGO.LINC")
 (setf *c-out* (open "test.c" :direction :output
                     :if-exists :supersede
                     :if-does-not-exist :create))
 
-(cl:in-package "COM.INFORMATIMAGO.LINC")
+(in-package "COM.INFORMATIMAGO.LINC")
 
 (defpackage "BC-MEM"
   (:documentation "A package corresponding to a C module with prefixed function names.")
@@ -48,7 +48,7 @@
   (:export "COPY" "ALLOCATE" "DEALLOCATE"))
 
 
-(cl:in-package "COM.INFORMATIMAGO.LINC.C")
+(in-package "COM.INFORMATIMAGO.LINC.C")
 
 (declare-variable '(n-allocation n-data copy n-length))
 (declare-function '(bc-mem:allocate bc-mem:deallocate bc-mem:copy))
@@ -64,7 +64,7 @@
 ;;              (delete [] arr))))
 
 
-;; (cl:in-package :c)
+;; (in-package :c)
 ;; (com.informatimago.linc::generate-expression '(+ 1 2))
 ;; (com.informatimago.linc::generate-expression
 ;;  '(* (+ 1 2 3 4) (/ 5 4 3 2) (- 5 4 3 2)
@@ -143,7 +143,7 @@
    (pos a) (neg b) (deref c) (~ d) (! e)
    (pos (+ 1 a)) (neg (+ 2 b)) (deref (+ c 3)) (~ (+ 4 d)) (! (< e 0))))
 
-;; (cl:in-package :com.informatimago.linc) 
+;; (in-package :com.informatimago.linc) 
 
 (setf *c-out* (open "test.c" :direction :output
                     :if-exists :supersede

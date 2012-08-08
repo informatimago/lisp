@@ -109,7 +109,7 @@ CONTENTS: A p-list containing the initial key value pairs.
   (:documentation "RETURN: the number of associations in the DICTIONARY."))
 
 (defsetf dictionary-get (dictionary key &optional default) (new-value)
-  (declare (ignore default))
+  (declare (ignorable default))
   `(dictionary-set ,dictionary ,key ,new-value))
 
 

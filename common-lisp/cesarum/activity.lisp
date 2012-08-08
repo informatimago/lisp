@@ -444,6 +444,7 @@ and restart the scheduling then.")
                                    (format nil ,control-string ,@arguments))))
          ,@body)
       `(macrolet ((debug-format (control-string &rest arguments)
+                                (declare (ignore control-string arguments))
                     `(progn)))
          ,@body)))
 

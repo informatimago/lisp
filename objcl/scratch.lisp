@@ -28,7 +28,7 @@
 
 
 
-(cl:in-package :cl-user)
+(in-package :cl-user)
 (map nil (function delete-file)
      (directory  #p"~/.cache/common-lisp/galatea.lan.informatimago.com/ccl-1.6-f94-macosx-amd64/home/pjb/src/git/public/lisp/objcl/*.*"))
 (cd #p"/home/pjb/src/public/lisp/objcl/")

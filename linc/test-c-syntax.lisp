@@ -32,7 +32,7 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(cl:in-package "COM.INFORMATIMAGO.LINC.C")
+(in-package "COM.INFORMATIMAGO.LINC.C")
 
 ;; (c-sexp (stmt-for (assign 'a 1) (expr-le 'a 10) (expr-postincr 'a) (expr-call 'printf 'a)))
 
