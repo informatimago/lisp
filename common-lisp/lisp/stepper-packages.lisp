@@ -62,7 +62,7 @@
    "STEP-BINDINGS")
   
   (:documentation "
-An internal packageo of the Common Lisp stepper.
+An internal package of the Common Lisp stepper.
 This package exports the stepper interactive functions,
 and the stepper generator functions.
 "))
@@ -88,7 +88,7 @@ and the stepper generator functions.
    "MULTIPLE-VALUE-PROG1" "PROGN" "PROGV" "QUOTE" "RETURN-FROM" "SETQ"
    "SYMBOL-MACROLET" "TAGBODY" "THE" "THROW" "UNWIND-PROTECT")
   
-  (:export ; everything from COMMON-LISP
+  (:export ;; everything from COMMON-LISP
    . #.(cl:let ((e '()))
          (cl:do-external-symbols (s "COMMON-LISP" e)
            (push (string s) e))))
