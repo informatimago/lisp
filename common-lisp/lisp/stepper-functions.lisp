@@ -151,8 +151,9 @@ RETURN: The list of step-break-exitd functions remaining.
   "
 RETURN: VALUE
 "
-  (with-step-printing
-      (format stream "~&~V<~>Bind ~16A to ~S~%" *step-level* variable value))
+  (unless (eq :run *step-mode*)
+   (with-step-printing
+       (format stream "~&~V<~>Bind ~16A to ~S~%" *step-level* variable value)))
   value)
 
 (defun print-step-results (results &optional (stream *trace-output*))
@@ -219,6 +220,58 @@ RETURN: VALUE
 
 ;; Instrumentation:
 
+(defun substitute-ignorable (declarations)
+  (mapcar (lambda (declaration)
+              (destructuring-bind (declare &rest items) declaration
+                `(,declare
+                  ,@(mapcar (lambda (item)
+                                (if (consp item)
+                                  (destructuring-bind (op &rest args) item
+                                    (if (eq 'ignore op)
+                                      `(ignorable ,@args)
+                                      item))
+                                  item))
+                            items))))
+          declarations))
+
+(assert (equalp
+         (substitute-ignorable '((declare (type q x) (ignore x))
+                                 (declare (ignore z))
+                                 (declare (type p z))
+                                 (declare thing)))
+         '((declare (type q x) (ignorable x))
+           (declare (ignorable z))
+           (declare (type p z))
+           (declare thing))))
+
+
+(defun call-step-atom (atom thunk)
+  (flet ((do-step ()
+           (let ((results (let ((*step-level* (1+ *step-level*)))
+                            (multiple-value-list (funcall thunk)))))
+             (if (= 1 (length results))
+               (if (symbolp atom)
+                 (format *trace-output* "~V<~>~S --> ~S~%" *step-level* atom (first results))
+                 (format *trace-output* "~V<~>==> ~S~%" *step-level* atom))
+               (progn
+                 ;; (will-step display-form)
+                 (did-step atom results)))
+             (values-list results))))
+    (case *step-mode*
+      (:run    (funcall thunk))
+      (:trace  (do-step))
+      (:step   (ecase (step-choice (lambda (out) (will-step atom out)))
+                 (:abort     (throw 'abort-stepping nil))
+                 (:run       (setf *step-mode* :run)   (funcall thunk))
+                 (:trace     (setf *step-mode* :trace) (do-step))
+                 (:step-into (do-step))
+                 (:step-over (let ((*step-mode* :run)) (do-step))))))))
+
+(defun step-atom (object thunk)
+  `(call-step-atom ',object ,thunk))
+
+
+
 (defun call-simple-step (thunk display-form)
   (flet ((do-step ()
            (will-step display-form)
@@ -243,7 +296,7 @@ RETURN: VALUE
 (defun step-body (where body env)
   (multiple-value-bind (docstring declarations body) (parse-body where body)
     (append (when docstring (list docstring))
-            declarations
+            (substitute-ignorable declarations)
             (mapcar (lambda (form) (step-expression form env)) body))))
 
 
@@ -309,10 +362,16 @@ RETURN:         A stepping body.
   (let ((parameters (mapcar (function parameter-name)
                             (lambda-list-parameters
                              (parse-lambda-list lambda-list kind)))))
-    `(call-step-function ',name ',parameters (list ,@parameters)
-                         ,(if name
-                              `(lambda () (block ,name ,@(step-body :lambda body env)))
-                              `(lambda () ,@(step-body :lambda body env))))))
+    (multiple-value-bind (docstring declarations body) (parse-body :lambda body)
+      (append (when docstring (list docstring))
+              (substitute-ignorable declarations)
+              `((call-step-function
+                 ',name ',parameters (list ,@parameters)
+                 (lambda ()
+                     ,@(if name
+                           `((block ,name #|inner block for non-local exit|#
+                               ,@(step-body :progn body env)))
+                           (step-body :progn body env)))))))))
 
 
 (defun step-lambda (lambda-form &key (kind :ordinary) name environment)
@@ -334,7 +393,7 @@ RETURN:         A stepping lambda-form from the LAMBDA-FORM.
   (destructuring-bind (lambda lambda-list &body body) lambda-form
     (declare (ignore lambda))
     `(cl:lambda ,lambda-list
-         ,(step-function kind name lambda-list body environment))))
+         ,@(step-function kind name lambda-list body environment))))
 
 
 (defun step-bindings (mode bindings form env)
@@ -345,8 +404,7 @@ RETURN:         A stepping lambda-form from the LAMBDA-FORM.
     (mapcar (lambda (binding)
                 (cond
                   ((symbolp binding)
-                   `(,binding
-                     ,(binding-step binding 'nil)))
+                   (binding-step binding 'nil))
                   ((atom binding)
                    (error "Invalid atom ~S in binding list of ~S"
                           binding form))
@@ -361,11 +419,11 @@ RETURN:         A stepping lambda-form from the LAMBDA-FORM.
 (defmacro symbol-reference (symbol &environment env)
   (let ((expansion  (macroexpand symbol env)))
     (if (eq symbol expansion)
-      (simple-step symbol)
+      (step-atom symbol (lambda () symbol))
       (step-expression expansion env))))
 
 (defmacro self-evaluating (object)
-  (simple-step object))
+  (step-atom object (lambda () object)))
 
 (defun step-function-call (form env)
   (destructuring-bind (function-name &rest arguments) form
@@ -407,7 +465,7 @@ RETURN:         A stepping lambda-form from the LAMBDA-FORM.
         (if (macro-function (first form) env)
           ;; For a macro, we let the host CL expand it:
           (simple-step form)
-          ;; For a fucntion, we step the arguments:
+          ;; For a function, we step the arguments:
           (step-function-call form env)))))))
 
 ;;;; THE END ;;;;

@@ -111,7 +111,7 @@
    `(cl:flet ,(mapcar (cl:lambda (fun)
                           (destructuring-bind (name lambda-list &body body) fun
                             `(,name ,lambda-list
-                                    ,(step-function :ordinary name lambda-list body env))))
+                                    ,@(step-function :ordinary name lambda-list body env))))
                       bindings)
       ,@(step-body :locally body env))
    form))
@@ -121,7 +121,7 @@
    `(cl:labels ,(mapcar (cl:lambda (fun)
                             (destructuring-bind (name lambda-list &body body) fun
                               `(,name ,lambda-list
-                                      ,(step-function :ordinary name lambda-list body env))))
+                                      ,@(step-function :ordinary name lambda-list body env))))
                         bindings)
       ,@(step-body :locally body env))
    form))
@@ -143,7 +143,8 @@
         ,@(loop
             :for (var val) :on pairs :by (function cddr)
             :collect (macroexpand `(setq ,var ,val) env))))))
- 
+
+
 
 (define-special-operator (let (&rest bindings) &body body) (&whole form &environment env)
   (multiple-value-bind (ds declarations body) (parse-body :locally body)
@@ -151,7 +152,7 @@
     (simple-step `(cl:let ,(step-bindings :parallel bindings form env)
                     ;; TODO: When we did-bind the variable, they should not be declared ignore
                     ;;       so replace those declarations by ignorable.
-                    ,@declarations
+                    ,@(substitute-ignorable declarations)
                     (unless (eq *step-mode* :run)
                       ,@(mapcar (cl:lambda (binding)
                                     (cl:let ((var (cl:if (atom binding)
@@ -211,21 +212,21 @@
 
 
 
-(define-special-operator (the value-type expression) (&whole form &environment env)
+(define-special-operator (the value-type expression) (&environment env)
   ;; TODO: Check the semantics of (the (values t) (values 1 2 3))
   ;;       --> It seems (values t) == (VALUES INTEGER &REST T)
   ;; TODO: Handle (values &rest) in value-type.
   (cl:let ((results (gensym))
-           (temp (gensym)))
+           (temp    (gensym)))
     (simple-step
-     `(cl:let ((results (cl:multiple-value-list ,(step-expression expression env))))
+     `(cl:let ((,results (cl:multiple-value-list ,(step-expression expression env))))
         ,(cl:if (and (listp value-type)
                      (eq 'values (first value-type)))
                 `(cl:let ((,temp ,results))
                    ,@(mapcar (cl:lambda (value-type)
                                  `(check-type (pop ,temp) ,value-type))
                              (rest value-type)))
-                `(check-type ,(first result) ,value-type))
+                `(check-type ,(first results) ,value-type))
         (cl:the ,value-type (values-list ,results)))
      `(the ,value-type ,expression))))
 
@@ -260,7 +261,7 @@
 
 (cl:defmacro defun (name lambda-list &body body &environment env)
   `(cl:defun ,name ,lambda-list
-     ,(step-function :ordinary name lambda-list body env)))
+     ,@(step-function :ordinary name lambda-list body env)))
 
 
 (cl:defmacro defgeneric (name lambda-list &rest options &environment env)
@@ -274,7 +275,7 @@
                                              :collect (pop arguments))))
                        (destructuring-bind (lambda-list &body body) arguments
                         `(:method ,@qualifiers ,lambda-list
-                                  ,(step-function :specialized name lambda-list body env))))
+                                  ,@(step-function :specialized name lambda-list body env))))
                      option))
                options)))
 
@@ -285,7 +286,7 @@
                       :collect (pop arguments))))
     (destructuring-bind (lambda-list &body body) arguments
       `(cl:defmethod ,name ,@qualifiers ,lambda-list
-                     ,(step-function :specialized name lambda-list body env)))))
+                     ,@(step-function :specialized name lambda-list body env)))))
 
 
 (cl:defmacro lambda (&whole form &environment env lambda-list &body body)
@@ -306,5 +307,11 @@
        ,(step-expression form env))))
 
 
+;; ;; Let's forward the class:
+;; 
+;; (defclass function (cl:function)
+;;   ())
+;;
+;; Doesn't work for meta-classes…
 
-;;;; THE END ;;;;
+;;;; the END ;;;;
