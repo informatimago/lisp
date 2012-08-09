@@ -1,0 +1,150 @@
+.. comment: -*- mode:rst -*-
+
+===============================
+Common Lisp Source Code Stepper
+===============================
+
+
+Random notes.
+
+Terminology
+===========
+
+The term "to trace" here doen't mean CL:TRACE, but executing forms
+while printing each subexpressions before evaluating them and printing
+their results once they return (or informing of a non-local exit).
+The same printing is done while stepping, but interrupted by user
+interaction to let him decide what to do next (step into, step over,
+trace or "run").
+
+The terms "to run" here means to evaluate the form (or the remaining
+of the evaluation of the form) without printing any trace.
+
+Whenever breakpoints are implemented however, tracing and running
+would stop at the next breakpoint encountered.
+
+
+
+Principle of operation
+======================
+
+
+Since we don't have yet the infrastructure to manage editing units
+(text source along with sexp source, etc), we'll take a few shortcuts.
+
+The main problem is to get at the source sexp for the functions and
+methods to be stepped and traced.  For this, we cannot count on
+``function-lambda-expression``, and it would be largely insufficient
+anyways: we want to implement the CL:STEP API allowing to step into a
+toplevel or stand-alone form, and we may want to trace or step into
+the loading of a lisp file too.
+
+
+Eager Option
+------------
+
+In the eager option, we instrument all the toplevel forms we read as
+soon as we read them.
+
+- we need to implement a LOAD function.
+- difficulties with ASDF which tries to compile everything first, so:
+- we need to implement a COMPILE-FILE function too.
+- and of course, we may want to provide a REPL (⚠ slime).
+
+
+Lazy Option
+-----------
+
+In the lazy option, we only instrument the forms and the functions or
+methods needed to perform he stepping or tracing.  This require
+keeping around the source forms.  Note this means definiting reader
+macros (to keep text source) or macros (as done by IBCL).
+
+
+Macro Option
+------------
+
+IBCL only keeps the source of predefined macros (a subset of the CL
+def* macros), so we may miss user defined macros (define-such-and-such…),
+unless they expand to CL def* macros.
+
+With a macro that would expand to something like: ::
+
+(progn
+(setf (gethash 'some-key *some-hash*) (some-object (lambda () 'some-code)))
+(cl:defun something ()
+'some-code))
+
+we would instrument the function ``something``, but not the anonymous
+function or code possibly returned by the ``some-object`` function.
+
+
+But we can define alternate special operators as macro too.
+
+The big advantage of this solution is that it allows to capture
+closures without effort: ::
+
+    (shadow '(let cl:defun))
+    (defmacro let (bindings &body body)
+      `(cl:let ,(generate-stepping-bindings bindings)
+        ,@(generate-stepping-body body)))
+    (defmacro cl:defun (name lambda-list &body body)
+      `(cl:cl:defun ,name ,lambda-list
+        ,@(generate-stepping-function name lambda-list body)))
+    (let ((x 42))
+        (cl:defun g () x)
+        (cl:defun s (z) (setf x z)))
+
+
+At minimum we only have to define macros for (lambda cl:defun defgeneric
+defmethod) in addition to the special operators.  But we could define
+wrappers for all the CL macros to catch them as toplevel forms too.
+This would be useful also for implementations that expands standard
+macros into non-standard special operators.  Otherwise, macros expand
+eventually to special operators so we should be able to trace the
+execution of the expansion there, unless they expand to a single
+function call.
+
+::
+
+    (and assert case ccase check-type cond ctypecase decf declaim defclass
+    defconstant defgeneric define-compiler-macro define-condition
+    define-method-combination define-modify-macro define-setf-expander
+    define-symbol-macro defmacro defmethod defpackage defparameter defsetf
+    defstruct deftype cl:defun defvar destructuring-bind do do*
+    do-all-symbols do-external-symbols do-symbols dolist dotimes ecase
+    etypecase formatter handler-bind handler-case ignore-errors in-package
+    incf lambda loop loop-finish multiple-value-bind multiple-value-list
+    multiple-value-setq nth-value or pop pprint-logical-block
+    print-unreadable-object prog prog* prog1 prog2 psetf psetq push
+    pushnew remf restart-bind restart-case return rotatef setf shiftf step
+    time trace typecase unless untrace when with-accessors
+    with-compilation-unit with-condition-restarts with-hash-table-iterator
+    with-input-from-string with-open-file with-open-stream
+    with-output-to-string with-package-iterator with-simple-restart
+    with-slots with-standard-io-syntax)
+
+
+- we define macros for the special operators and (lambda defun defgeneric
+defmethod).
+
+- we process step interaction using restarts, and breaking into the
+debugger.  This allows for easy integration into the debugger.
+
+- progn and similary special operators with body will have to
+macroexpand the body expressions to catch the function calls.
+
+Note
+----------
+
+In ccl, a macro like cl:defmethod expands to implementation specific
+special operators (ccl:nfunction) or even, to calls to internal
+functions passing lambda expressions or other code chunks as data.
+This would prevent their instrumenting by IBCL-like macros.
+
+
+.. comment:  -----------------------------------------------
+                            -------------
+                                  -
+                                  .    
+

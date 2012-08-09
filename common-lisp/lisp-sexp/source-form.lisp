@@ -77,6 +77,7 @@
    "MAKE-HELP" "MAKE-ARGUMENT-LIST" "MAKE-ARGUMENT-LIST-FORM" "MAKE-LAMBDA-LIST"
    ;; Parsing sources:
    "EXTRACT-DOCUMENTATION" "EXTRACT-DECLARATIONS" "EXTRACT-BODY"
+   "PARSE-BODY"
    "DECLARATIONS-HASH-TABLE"
    "EXTRACT-METHOD-QUALIFIERS"   "EXTRACT-METHOD-LAMBDA-LIST"
    "EXTRACT-METHOD-DDL"          "EXTRACT-METHOD-DOCUMENTATION"
@@ -1114,6 +1115,7 @@ RETURN:     A newly rebuilt lambda-list s-expr.
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
+
   (defun extract-documentation (body)
     "
 RETURN: The documentation string found in BODY, or NIL if none is present.
@@ -1129,43 +1131,72 @@ be a form; otherwise, S is taken as a documentation string. The consequences
 are unspecified if more than one such documentation string is present.
 "
     (loop
-       :for (item . rest) :on body
-       :while (and (consp item) (eq 'declare (first item)))
-       :finally (return (and (stringp item) rest item))))
+      :for (item . rest) :on body
+      :while (and (consp item) (eq 'declare (first item)))
+      :finally (return (and (stringp item) rest item))))
 
 
-  (defun extract-declarations (body)
+  (defun extract-declarations (body &optional (allow-docstring t))
     "
 RETURN: The list of declaration forms.
 "
     (loop
-       :with seen-doc = nil
-       :for item :in body
-       :while (or (and (not seen-doc) (stringp item))
-                  (and (consp item) (eq 'declare (car item))))
-       :when  (and (not seen-doc) (stringp item)) :do (setf seen-doc t)
-       :when  (and (consp item) (eq 'declare (car item))) :collect item))
+      :with seen-doc = (not allow-docstring)
+      :for item :in body
+      :while (or (and (not seen-doc) (stringp item))
+                 (and (consp item) (eq 'declare (car item))))
+      :when  (and (not seen-doc) (stringp item)) :do (setf seen-doc t)
+      :when  (and (consp item) (eq 'declare (car item))) :collect item))
 
 
   (defun declarations-hash-table (declarations)
     ;; Todo: add some knowledge on how declarations merge.
     (loop
-       :with table = (make-hash-table)
-       :for decl :in declarations
-       :do (loop
-              :for (key . value) :in (rest decl)
-              :do (push value (gethash key table '())))
-       :finally (return table)))
+      :with table = (make-hash-table)
+      :for decl :in declarations
+      :do (loop
+            :for (key . value) :in (rest decl)
+            :do (push value (gethash key table '())))
+      :finally (return table)))  
 
 
   (defun extract-body (body)
     (loop
-       :with seen-doc = nil
-       :for (item . rest) :on body
-       :while (or (and (not seen-doc) (stringp item))
-                  (and (consp item) (eq 'declare (car item))))
-       :when (and (not seen-doc) (stringp item)) :do (setf seen-doc t)
-       :finally (return (cons item rest)))))
+      :with seen-doc = nil
+      :for (item . rest) :on body
+      :while (or (and (not seen-doc) (stringp item))
+                 (and (consp item) (eq 'declare (car item))))
+      :when (and (not seen-doc) (stringp item)) :do (setf seen-doc t)
+      :finally (return (cons item rest))))
+
+  (defun parse-body (where body)
+    "
+WHERE:          (member :lambda :locally :progn) specifies where the
+                body is found, that is whether it may contains
+                docstrings and declarations, or just declarations, or
+                none.
+
+BODY:           A list of forms.
+
+RETURN:         Three values: a docstring or nil, a list of declarations, a list of forms.
+"
+    (ecase where
+      ((:lambda)
+       ;; {declaration} [docstring declaration {declaration}] {form}
+       ;; {declaration} [docstring] form {form}
+       (values (extract-documentation body)
+               (extract-declarations body t)
+               (extract-body body)))
+      ((:locally)
+       ;; {declaration} {form}
+       (values nil
+               (extract-declarations body nil)
+               (extract-body body)))
+      ((:progn)
+       ;; {form}
+       (values nil
+               nil
+               body)))))
 
 
 (defun extract-method-qualifiers (method-stuff)
