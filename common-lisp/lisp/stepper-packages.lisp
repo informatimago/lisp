@@ -42,11 +42,14 @@
 
   (:export
    "*STEP-PACKAGE*"
+   "*STEP-PRINT-READABLY*" 
    "*STEP-PRINT-LENGTH*"   
    "*STEP-PRINT-LEVEL*"     
-   "*STEP-PRINT-READABLY*" 
    "*STEP-PRINT-CASE*"    
 
+   "STEP-TRACE" "STEP-UNTRACE"
+   "STEP-BREAK-ENTRY" "STEP-UNBREAK-ENTRY"
+   "STEP-BREAK-EXIT" "STEP-UNBREAK-EXIT"
 
    "*STEP-MODE*" "*STEP-LEVEL*"
 
@@ -93,6 +96,14 @@ and the stepper generator functions.
          (cl:do-external-symbols (s "COMMON-LISP" e)
            (push (string s) e))))
 
+  (:export
+   "*STEP-PRINT-LENGTH*"   
+   "*STEP-PRINT-LEVEL*"     
+   "*STEP-PRINT-CASE*"    
+
+   "STEP-TRACE" "STEP-UNTRACE"
+   "STEP-BREAK-ENTRY" "STEP-UNBREAK-ENTRY"
+   "STEP-BREAK-EXIT" "STEP-UNBREAK-EXIT")
   
   (:documentation "
 Implements a Common Lisp stepper.

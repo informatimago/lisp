@@ -146,16 +146,21 @@
  
 
 (define-special-operator (let (&rest bindings) &body body) (&whole form &environment env)
-  (simple-step `(cl:let ,(step-bindings :parallel bindings form env)
-                  (unless (eq *step-mode* :run)
-                    ,@(mapcar (cl:lambda (binding)
-                                  (cl:let ((var (cl:if (atom binding)
-                                                  binding
-                                                  (first binding))))
-                                    `(did-bind ',var ,var)))
-                              bindings))
-                  ,@(step-body :locally body env))
-               form))
+  (multiple-value-bind (ds declarations body) (parse-body :locally body)
+    (declare (ignore ds))
+    (simple-step `(cl:let ,(step-bindings :parallel bindings form env)
+                    ;; TODO: When we did-bind the variable, they should not be declared ignore
+                    ;;       so replace those declarations by ignorable.
+                    ,@declarations
+                    (unless (eq *step-mode* :run)
+                      ,@(mapcar (cl:lambda (binding)
+                                    (cl:let ((var (cl:if (atom binding)
+                                                    binding
+                                                    (first binding))))
+                                      `(did-bind ',var ,var)))
+                                bindings))
+                    ,@(step-body :progn body env))
+                 form)))
 
 
 (define-special-operator (let* (&rest bindings) &body body) (&whole form &environment env)
@@ -283,7 +288,7 @@
                      ,(step-function :specialized name lambda-list body env)))))
 
 
-(cl:defmacro lambda (&whole form lambda-list &body body)
+(cl:defmacro lambda (&whole form &environment env lambda-list &body body)
   (declare (ignorable lambda-list body))
   (simple-step `(cl:function ,(step-lambda form :environment env))
                form))

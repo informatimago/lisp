@@ -55,6 +55,75 @@ break-point is reached.
 ")
 
 
+(defvar *trace-functions* '()
+  "A list of function names that we must trace with the stepper.")
+
+(defvar *break-functions-entry* '()
+  "A list of function names that we must break into the stepper upon entry.")
+
+(defvar *break-functions-exit* '()
+  "A list of function names that we must break into the stepper upon exit.")
+
+
+
+(defmacro step-trace (&rest fnames)
+  "
+RETURN: the list of function names added.
+"
+  `(mapc (lambda (fname) (pushnew fname *trace-functions* :test (function equal)))
+         ',fnames))
+
+
+(defmacro step-untrace (&rest fnames)
+  "
+RETURN: The list of step-traced functions remaining.
+"
+  `(progn
+     (mapc (lambda (fname) (setf *trace-functions* (delete fname *trace-functions* :test (function equal))))
+          ',fnames)
+     *trace-functions*))
+
+
+(defmacro step-break-entry (&rest fnames)
+  "
+RETURN: the list of function names added.
+"
+  `(mapc (lambda (fname) (pushnew fname *break-entry-functions* :test (function equal)))
+         ',fnames))
+
+
+(defmacro step-unbreak-entry (&rest fnames)
+  "
+RETURN: The list of step-break-entryd functions remaining.
+"
+  `(progn
+     (mapc (lambda (fname) (setf *break-entry-functions* (delete fname *break-entry-functions* :test (function equal))))
+          ',fnames)
+     *break-entry-functions*))
+
+
+(defmacro step-break-exit (&rest fnames)
+  "
+RETURN: the list of function names added.
+"
+  `(mapc (lambda (fname) (pushnew fname *break-exit-functions* :test (function equal)))
+         ',fnames))
+
+
+(defmacro step-unbreak-exit (&rest fnames)
+  "
+RETURN: The list of step-break-exitd functions remaining.
+"
+  `(progn
+     (mapc (lambda (fname) (setf *break-exit-functions* (delete fname *break-exit-functions* :test (function equal))))
+          ',fnames)
+     *break-exit-functions*))
+
+
+
+
+
+
 (defvar *step-level* 0
   "The level.")
 
@@ -185,9 +254,9 @@ RETURN: VALUE
                          *step-level* name))
              (let ((*step-level* (1+ *step-level*)))
                (mapc (function did-bind) pnames pvals)))
-           (report-exit (non-local-exit results)
+           (report-exit (non-local-exit results out)
              (with-step-printing
-                 (format *trace-output* "~&~V<~>Exiting  ~:[anonymous ~;~]function ~:*~:[~;~:*~S ~]~
+                 (format out "~&~V<~>Exiting  ~:[anonymous ~;~]function ~:*~:[~;~:*~S ~]~
                           ~:[returned ~:[no result~;~R result~:P~]~;by non-local exit.~]~%"
                          *step-level* name non-local-exit results (length results)))
              (print-step-results results))
@@ -198,18 +267,29 @@ RETURN: VALUE
                    (setf results (let ((*step-level* (1+ *step-level*)))
                                    (multiple-value-list (funcall thunk)))
                          non-local-exit nil)
-                 (report-exit non-local-exit results))
-               (values-list results))))
-    (case *step-mode*
-      (:run     (funcall thunk))
-      (:trace   (report-enter *trace-output*)
-                (do-step))
-      (:step    (ecase (step-choice (lambda (out) (report-enter out)))
-                  (:abort     (throw 'abort-stepping nil))
-                  (:run       (setf *step-mode* :run) (funcall thunk))
-                  (:trace     (setf *step-mode* :trace) (do-step))
-                  (:step-into (do-step))
-                  (:step-over (let ((*step-mode* :run)) (do-step))))))))
+                 (if (eq :run *step-mode*)
+                   (when (member name *break-functions-exit* :test (function equal))
+                     (choice (lambda (out) (report-exit non-local-exit results out))))
+                   (report-exit non-local-exit results *trace-output*)))
+               (values-list results)))
+           (choice (report)
+             (ecase (step-choice report)
+               (:abort     (throw 'abort-stepping nil))
+               (:run       (setf *step-mode* :run)   (do-step))
+               (:trace     (setf *step-mode* :trace) (do-step))
+               (:step-into (do-step))
+               (:step-over (let ((*step-mode* :run)) (do-step))))))
+    (if (member name *break-functions-entry* :test (function equal))
+      (choice (function report-enter))
+      (case *step-mode*
+        (:run     (if (member name *trace-functions*)
+                    (let ((*step-mode* :trace))
+                      (report-enter *trace-output*)
+                      (do-step))
+                    (do-step)))
+        (:trace   (report-enter *trace-output*)
+                  (do-step))
+        (:step    (choice (function report-enter)))))))
 
 
 (defun step-function (kind name lambda-list body env)
@@ -230,7 +310,9 @@ RETURN:         A stepping body.
                             (lambda-list-parameters
                              (parse-lambda-list lambda-list kind)))))
     `(call-step-function ',name ',parameters (list ,@parameters)
-                         (lambda () ,@(step-body :lambda body env)))))
+                         ,(if name
+                              `(lambda () (block ,name ,@(step-body :lambda body env)))
+                              `(lambda () ,@(step-body :lambda body env))))))
 
 
 (defun step-lambda (lambda-form &key (kind :ordinary) name environment)
@@ -252,7 +334,7 @@ RETURN:         A stepping lambda-form from the LAMBDA-FORM.
   (destructuring-bind (lambda lambda-list &body body) lambda-form
     (declare (ignore lambda))
     `(cl:lambda ,lambda-list
-         ,@(step-function kind name lambda-list body environment))))
+         ,(step-function kind name lambda-list body environment))))
 
 
 (defun step-bindings (mode bindings form env)
@@ -268,7 +350,7 @@ RETURN:         A stepping lambda-form from the LAMBDA-FORM.
                   ((atom binding)
                    (error "Invalid atom ~S in binding list of ~S"
                           binding form))
-                  ((/= 2 (length binding))
+                  ((< 2 (length binding))
                    (error "Invalid binding ~S in binding list of ~S"
                           binding form))
                   (t
@@ -289,7 +371,7 @@ RETURN:         A stepping lambda-form from the LAMBDA-FORM.
   (destructuring-bind (function-name &rest arguments) form
     (if (consp function-name)
       (if (member (first function-name)
-                  '(com.informatimago.common-lisp.lisp.stepper-common-lisp:lambda cl:lambda))
+                  '(com.informatimago.common-lisp.lisp.common-lisp-stepper:lambda cl:lambda))
         (simple-step `(,(step-lambda function-name :environment env)
                         ,@(mapcar (lambda (argument) (step-expression argument env))
                                   arguments))

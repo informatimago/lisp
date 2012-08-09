@@ -1163,7 +1163,9 @@ RETURN: The list of declaration forms.
   (defun extract-body (body)
     (loop
       :with seen-doc = nil
-      :for (item . rest) :on body
+      :for current = body :then rest
+      :for item = (car current)
+      :for rest = (cdr current)
       :while (or (and (not seen-doc) (stringp item))
                  (and (consp item) (eq 'declare (car item))))
       :when (and (not seen-doc) (stringp item)) :do (setf seen-doc t)
