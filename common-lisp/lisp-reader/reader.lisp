@@ -740,21 +740,19 @@ when the token could still be of another lexical category.
 In the body of the parser, there are macrolet defined to REJECT or ACCEPT
 the token, and to describe the parsed syntax with ALT, ZERO-OR-MORE, 
 ONE-OR-MORE and OPT-SIGN."
-  (let ((docu (extract-documentation body))
-        (decl (extract-declarations body))
-        (body (extract-body body)))
+  (multiple-value-bind (docu decl body) (parse-body :lambda body)
     `(defun ,name ,arguments
        ,@(when docu (list docu))
        ,@decl
        (macrolet ((reject (strongp &rest ctrlstring-and-args)
-                    `(return-from ,',name
-                       (values nil ,strongp
-                               ,(when ctrlstring-and-args
-                                      `(format nil ,@ctrlstring-and-args)))))
+                          `(return-from ,',name
+                             (values nil ,strongp
+                                     ,(when ctrlstring-and-args
+                                            `(format nil ,@ctrlstring-and-args)))))
                   (accept (type token)
-                    `(return-from ,',name (values t ,type ,token)))
+                          `(return-from ,',name (values t ,type ,token)))
                   (alt (&rest clauses)
-                    `(cond ,@clauses))
+                       `(cond ,@clauses))
                   (zero-or-more (test &body body)
                     `(loop :while ,test :do ,@body))
                   (one-or-more  (test &body body)
@@ -762,12 +760,12 @@ ONE-OR-MORE and OPT-SIGN."
                        (if ,test (progn ,@body) (reject nil))
                        (loop :while ,test :do ,@body)))
                   (opt-sign (sign token i)
-                    `(alt ((>= ,i (token-length ,token)))
-                          ((traitp +ct-plus-sign+  (token-char-traits ,token ,i))
-                           (setf ,sign +1 ,i (1+ ,i)))
-                          ((traitp +ct-minus-sign+ (token-char-traits ,token ,i))
-                           (setf ,sign -1 ,i (1+ ,i))))))
-         ,@body))))
+                            `(alt ((>= ,i (token-length ,token)))
+                                  ((traitp +ct-plus-sign+  (token-char-traits ,token ,i))
+                                   (setf ,sign +1 ,i (1+ ,i)))
+                                  ((traitp +ct-minus-sign+ (token-char-traits ,token ,i))
+                                   (setf ,sign -1 ,i (1+ ,i))))))
+           ,@body))))
 
 
 (defparser parse-decimal-integer-token (token)
@@ -2002,57 +2000,8 @@ RETURN: A list of all the macro and dispatch-macro characters in the readtable.
 ;;; Tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun test-extract ()
-  (let ((test-cases
-         '(()
-           ("Result")
-           ("Doc" "Result")
-           ((declare (ignore it)))
-           ((declare (ignore it)) "Result")
-           ((declare (ignore it)) "Doc" "Result")
-           ((declare (ignore it)) (declare (ignore it)))
-           ((declare (ignore it)) (declare (ignore it)) "Result")
-           ((declare (ignore it)) "Doc" (declare (ignore it)))
-           ((declare (ignore it)) (declare (ignore it)) "Doc" "Result")
-           ((declare (ignore it)) "Doc" (declare (ignore it)) "Result")
-           ((declare (ignore it)) "Doc" "Illegal" (declare (ignore it)) "Result")
-           ("Doc" (declare (ignore it)) "Result")
-           ("Doc" (declare (ignore it)) (declare (ignore it)))
-           ("Doc" (declare (ignore it)) (declare (ignore it)) "Result")
-           ("Doc" (declare (ignore it)) "Illegal" (declare (ignore it)) "Result")
-           )))
-    (assert
-     (equalp '(nil nil "Doc" nil nil "Doc" nil nil "Doc"
-               "Doc" "Doc" "Doc" "Doc" "Doc" "Doc" "Doc" )
-             (mapcar (function extract-documentation) test-cases)))
-    (assert
-     (equalp '(nil nil nil
-               ((declare (ignore it)))
-               ((declare (ignore it)))
-               ((declare (ignore it)))
-               ((declare (ignore it)) (declare (ignore it)))
-               ((declare (ignore it)) (declare (ignore it)))
-               ((declare (ignore it)) (declare (ignore it)))
-               ((declare (ignore it)) (declare (ignore it)))
-               ((declare (ignore it)) (declare (ignore it)))
-               ((declare (ignore it))) ;; "Illegal"
-               ((declare (ignore it)))
-               ((declare (ignore it)) (declare (ignore it)))
-               ((declare (ignore it)) (declare (ignore it)))
-               ((declare (ignore it)))) ;; "Illegal"
-             (mapcar (function extract-declarations) test-cases)))
-    (assert
-     (equalp '((nil) ("Result") ("Result")
-               ((declare (ignore it))) ("Result") ("Result")
-               ((declare (ignore it))) ("Result") ((declare (ignore it)))
-               ("Result") ("Result") ("Illegal" (declare (ignore it)) "Result")
-               ("Result") ((declare (ignore it))) ("Result")
-               ("Illegal" (declare (ignore it)) "Result"))
-             (mapcar (function extract-body) test-cases)))
-    :success))
 
-
-(defun test-reader ()
+(defun test/reader ()
   (let ((*read-base* 10)
         (*read-eval* t)
         (*read-suppress* nil)
@@ -2258,10 +2207,7 @@ RETURN: A list of all the macro and dispatch-macro characters in the readtable.
       `(test-cases ,(first cases) ',(rest cases))
       `(test-cases "unamed" ',cases)))
 
-
-(test-extract)
-(test-reader)
-
+(test/reader)
 
 (tests "symbols"
        ((read-from-string "( abc ab a || |a| |ab| |a b c| )")
@@ -2596,6 +2542,9 @@ RETURN:        Whether the TOKEN is a potential number.
     (let ((*read-base* 10.))
       (assert (notany (function potential-number-p) pns))))
   :success)
+
+(test/potential-number-p)
+
 
 (defmacro WITH-STANDARD-IO-SYNTAX (&body body)
   `(let ((*package*                    (find-package "COMMON-LISP-USER"))

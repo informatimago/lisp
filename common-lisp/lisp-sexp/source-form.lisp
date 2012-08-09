@@ -1116,61 +1116,12 @@ RETURN:     A newly rebuilt lambda-list s-expr.
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
-  (defun extract-documentation (body)
-    "
-RETURN: The documentation string found in BODY, or NIL if none is present.
-
-3.4.11 Syntactic Interaction of Documentation Strings and Declarations
-
-In a number of situations, a documentation string can appear amidst a series of
-declare expressions prior to a series of forms.
-
-In that case, if a string S appears where a documentation string is permissible
-and is not followed by either a declare expression or a form then S is taken to
-be a form; otherwise, S is taken as a documentation string. The consequences
-are unspecified if more than one such documentation string is present.
-"
-    (loop
-      :for (item . rest) :on body
-      :while (and (consp item) (eq 'declare (first item)))
-      :finally (return (and (stringp item) rest item))))
-
-
-  (defun extract-declarations (body &optional (allow-docstring t))
-    "
-RETURN: The list of declaration forms.
-"
-    (loop
-      :with seen-doc = (not allow-docstring)
-      :for item :in body
-      :while (or (and (not seen-doc) (stringp item))
-                 (and (consp item) (eq 'declare (car item))))
-      :when  (and (not seen-doc) (stringp item)) :do (setf seen-doc t)
-      :when  (and (consp item) (eq 'declare (car item))) :collect item))
-
-
-  (defun declarations-hash-table (declarations)
-    ;; Todo: add some knowledge on how declarations merge.
-    (loop
-      :with table = (make-hash-table)
-      :for decl :in declarations
-      :do (loop
-            :for (key . value) :in (rest decl)
-            :do (push value (gethash key table '())))
-      :finally (return table)))  
-
-
-  (defun extract-body (body)
-    (loop
-      :with seen-doc = nil
-      :for current = body :then rest
-      :for item = (car current)
-      :for rest = (cdr current)
-      :while (or (and (not seen-doc) (stringp item))
-                 (and (consp item) (eq 'declare (car item))))
-      :when (and (not seen-doc) (stringp item)) :do (setf seen-doc t)
-      :finally (return (cons item rest))))
-
+  (defun declarationp (form)
+    (and (consp form) (eq 'declare (first form))))
+  
+  (define-condition simple-program-error (program-error simple-error)
+    ())
+  
   (defun parse-body (where body)
     "
 WHERE:          (member :lambda :locally :progn) specifies where the
@@ -1182,23 +1133,242 @@ BODY:           A list of forms.
 
 RETURN:         Three values: a docstring or nil, a list of declarations, a list of forms.
 "
-    (ecase where
-      ((:lambda)
-       ;; {declaration} [docstring declaration {declaration}] {form}
-       ;; {declaration} [docstring] form {form}
-       (values (extract-documentation body)
-               (extract-declarations body t)
-               (extract-body body)))
-      ((:locally)
-       ;; {declaration} {form}
-       (values nil
-               (extract-declarations body nil)
-               (extract-body body)))
-      ((:progn)
-       ;; {form}
-       (values nil
-               nil
-               body)))))
+    (flet ((progn-body (body)
+             (if (some (lambda (form) (and (consp form) (eq 'declare (first form))))
+                       body)
+               (error 'simple-program-error
+                      :format-control "Found a declaration in the a progn body: ~S"
+                      :format-arguments (list body))
+               body)))
+      (ecase where
+        ((:lambda)
+         ;; {declaration} [docstring declaration {declaration}] {form}
+         ;; {declaration} [docstring] form {form}
+         (loop
+           :with docstring    = nil
+           :with declarations = '()
+           :with actual-body  = '()
+           :with state        = :opt-decl
+           :for form :in body
+           :do (ecase state
+                 (:opt-decl
+                  (cond
+                    ((declarationp form) (push form declarations))
+                    ((stringp form)      (setf docstring form
+                                               state :seen-string))
+                    (t                   (push form actual-body)
+                                         (setf state :body))))
+                 ((:seen-string :after-decl)
+                  (if (declarationp form)
+                    (progn (push form declarations)
+                           (setf state :after-decl))
+                    (progn (push form actual-body)
+                           (setf state :body))))
+                 (:body
+                   (if (declarationp form)
+                     (error 'simple-program-error
+                            :format-control "Found a declaration ~S in the body: ~S"
+                            :format-arguments (list form body))
+                     (push form actual-body))))
+           :finally (return (ecase state
+                              (:opt-decl
+                               (values docstring declarations (nreverse actual-body)))
+                              (:seen-string
+                               (if actual-body
+                                 (values docstring declarations (nreverse actual-body))
+                                 (values nil declarations (list docstring))))
+                              ((:after-decl :body)
+                               (values docstring declarations (nreverse actual-body)))))))
+        ((:locally)
+         ;; {declaration} {form}
+         (loop
+           :for current :on body
+           :for form = (car current)
+           :while (declarationp form)
+           :collect form :into declarations
+           :finally (return  (values nil
+                                     declarations
+                                     (progn-body current)))))
+        ((:progn)
+         ;; {form}
+         (values nil
+                 nil
+                 (progn-body body))))))
+
+
+  (defun extract-documentation (body)
+    "
+RETURN: The documentation string found in BODY, or NIL if none is present.
+
+CLHS:   3.4.11 Syntactic Interaction of Documentation Strings and
+        Declarations
+
+        In a number of situations, a documentation string can appear
+        amidst a series of declare expressions prior to a series of
+        forms.
+
+        In that case, if a string S appears where a documentation
+        string is permissible and is not followed by either a declare
+        expression or a form then S is taken to be a form; otherwise,
+        S is taken as a documentation string. The consequences are
+        unspecified if more than one such documentation string is
+        present.
+
+NOTE:   This parses the body as a lambda body.
+        It's better to use PARSE-BODY directly.
+"
+    (values (parse-body :lambda body)))
+
+
+  (defun extract-declarations (body &optional (allow-docstring t))
+    "
+RETURN: The list of declaration forms.
+
+NOTE:   This parses the body as a lambda body.
+        It's better to use PARSE-BODY directly.
+"
+    (nth-value 1 (parse-body (if allow-docstring :lambda :locally) body)))
+
+  
+  (defun extract-body (body)
+    "
+RETURN: The list of body forms.
+
+NOTE:   This parses the body as a lambda body.
+        It's better to use PARSE-BODY directly.
+"
+    (nth-value 2 (parse-body :lambda body)))
+
+
+  (defun declarations-hash-table (declarations)
+    ;; Todo: add some knowledge on how declarations merge.
+    (loop
+      :with table = (make-hash-table)
+      :for decl :in declarations
+      :do (loop
+            :for (key . value) :in (rest decl)
+            :do (push value (gethash key table '())))
+      :finally (return table))))
+
+
+(defun test/parse-body ()
+  (flet ((test/lambda (body expect-error-p docstring declarations forms)
+           (handler-case
+               (multiple-value-bind (doc dec for) (parse-body :lambda body)
+                 (assert (not expect-error-p))
+                 (assert (equalp doc docstring))
+                 (assert (equalp dec declarations))
+                 (assert (equalp for forms)))
+             (program-error () (assert expect-error-p))))
+         (test/locally (body expect-error-p declarations forms)
+           (handler-case
+               (multiple-value-bind (doc dec for) (parse-body :locally body)
+                 (assert (not expect-error-p))
+                 (assert (null doc))
+                 (assert (equalp dec declarations))
+                 (assert (equalp for forms))
+                 (assert (equalp (append dec for) body)))
+             (program-error () (assert expect-error-p))))
+         (test/progn (body expect-error-p forms)
+           (handler-case
+               (multiple-value-bind (doc dec for) (parse-body :progn body)
+                 (assert (not expect-error-p))
+                 (assert (null doc))
+                 (assert (null dec))
+                 (assert (equalp for forms))
+                 (assert (equalp for body)))
+             (program-error () (assert expect-error-p))))
+         (test/extract (body rlambda rlocally)
+           (destructuring-bind (expect-error-p docstring declarations forms) rlambda
+             (handler-case
+                 (let ((doc (extract-documentation body))
+                       (dec (extract-declarations body t))
+                       (for (extract-body body)))
+                   (assert (not expect-error-p))
+                   (assert (equalp doc docstring))
+                   (assert (equalp dec declarations))
+                   (assert (equalp for forms)))
+               (program-error () (assert expect-error-p))))
+           (destructuring-bind (expect-error-p declarations forms) rlocally
+             (declare (ignore forms))
+             (handler-case
+                 (let ((dec (extract-declarations body nil)))
+                   (assert (not expect-error-p))
+                   (assert (equalp dec declarations)))
+               (program-error () (assert expect-error-p))))))
+    (let ((test-cases
+           '((()
+              (nil nil () ())
+              (nil     () ())
+              (nil        ()))
+             (("Result")
+              (nil nil () ("Result"))
+              (nil     () ("Result"))
+              (nil        ("Result")))
+             (("Doc" "Result")
+              (nil "Doc" () ("Result"))
+              (nil       () ("Doc" "Result"))
+              (nil          ("Doc" "Result")))
+             (((declare (ignore it)))
+              (nil nil ((declare (ignore it))) ())
+              (nil     ((declare (ignore it))) ())
+              (t                               nil))
+             (((declare (ignore it)) "Result")
+              (nil nil ((declare (ignore it))) ("Result"))
+              (nil     ((declare (ignore it))) ("Result"))
+              (t                               nil))
+             (((declare (ignore it)) "Doc" "Result")
+              (nil "Doc" ((declare (ignore it))) ("Result"))
+              (nil       ((declare (ignore it))) ("Doc" "Result"))
+              (t                                 nil))
+             (((declare (ignore it)) (declare (ignore it)))
+              (nil nil ((declare (ignore it)) (declare (ignore it))) ())
+              (nil     ((declare (ignore it)) (declare (ignore it))) ())
+              (t                                                     nil))
+             (((declare (ignore it)) (declare (ignore it)) "Result")
+              (nil nil ((declare (ignore it)) (declare (ignore it))) ("Result"))
+              (nil     ((declare (ignore it)) (declare (ignore it))) ("Result"))
+              (t                                                     nil))
+             (((declare (ignore it)) "Doc" (declare (ignore it)))
+              (nil "Doc" ((declare (ignore it)) (declare (ignore it))) ())
+              (t         nil                                           nil)
+              (t                                                       nil))
+             (((declare (ignore it)) (declare (ignore it)) "Doc" "Result")
+              (nil "Doc" ((declare (ignore it)) (declare (ignore it))) ("Result"))
+              (nil       ((declare (ignore it)) (declare (ignore it))) ("Doc" "Result"))
+              (t                                                       nil))
+             (((declare (ignore it)) "Doc" (declare (ignore it)) "Result")
+              (nil "Doc" ((declare (ignore it)) (declare (ignore it))) ("Result"))
+              (t         nil                                           nil)
+              (t                                                       nil))
+             (((declare (ignore it)) "Doc" "Illegal" (declare (ignore it)) "Result")
+              (t  nil nil nil)
+              (t      nil nil)
+              (t          nil))
+             (("Doc" (declare (ignore it)) "Result")
+              (nil "Doc" ((declare (ignore it))) ("Result"))
+              (t         nil                     nil)
+              (t                                 nil))
+             (("Doc" (declare (ignore it)) (declare (ignore it)))
+              (nil "Doc" ((declare (ignore it)) (declare (ignore it))) ())
+              (t         nil                                          nil)
+              (t                                                      nil))
+             (("Doc" (declare (ignore it)) (declare (ignore it)) "Result")
+              (nil "Doc" ((declare (ignore it)) (declare (ignore it))) ("Result"))
+              (t         nil                                          nil)
+              (t                                                      nil))
+             (("Doc" (declare (ignore it)) "Illegal" (declare (ignore it)) "Result")
+              (t  nil nil nil)
+              (t      nil nil)
+              (t          nil)))))
+      (loop :for (test rlambda rlocally rprogn) :in test-cases :do
+        (apply (function test/lambda)  test rlambda)
+        (apply (function test/locally) test rlocally)
+        (apply (function test/progn)   test rprogn)
+        (test/extract test rlambda rlocally))
+      :success)))
+
+(test/parse-body)
 
 
 (defun extract-method-qualifiers (method-stuff)
