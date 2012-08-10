@@ -2152,7 +2152,8 @@ RETURN: a list containing the totals:
 (defun journal-split-and-justify-description (description width)
   "PRIVATE"
   (or (mapcan (lambda (line) (split-lines(string-justify-left line width 0)))
-              (split-lines description)) '(" ")))
+              (split-lines description))
+      (list " ")))
 
 
 (defun journal-print-header (year trimestre &key (stream t))
