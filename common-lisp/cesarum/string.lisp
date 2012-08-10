@@ -289,27 +289,19 @@ RETURN:  A list of substrings of string.
 
 (defun split-string (string &optional (separators " "))
   "
-NOTE:   current implementation only accepts as separators
-        a string containing literal characters.
+RETURN: A list of subsequence of STRING, split upon any element of SEPARATORS.
 "
-  (let ((string     (if (simple-string-p string)
-                        string
-                        (copy-seq string)))
-        (separators (if (simple-string-p separators)
-                        separators
-                        (copy-seq separators)))
-        (chunks  '())
+  (let ((chunks  '())
         (position 0)
         (nextpos  0)
         (strlen   (length string)) )
-    (declare (type simple-string string separators))
     (loop :while (< position strlen)
-          :do (loop :while (and (< nextpos strlen)
-                                (not (position (char string nextpos) separators)))
-                    :do (setq nextpos (1+ nextpos)))
-              (push (subseq string position nextpos) chunks)
-              (setq position (1+ nextpos))
-              (setq nextpos  position))
+      :do (loop :while (and (< nextpos strlen)
+                            (not (find (char string nextpos) separators)))
+            :do (incf nextpos))
+      (push (subseq string position nextpos) chunks)
+      (incf position)
+      (setq nextpos  position))
     (nreverse chunks)))
 
 
