@@ -33,7 +33,7 @@
 ;;;;**************************************************************************
 
 
-(in-package "COM.INFORMATIMAGO.COMMON-LISP.LISP.COMMON-LISP-STEPPER")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.LISP.STEPPER")
 
 
 ;;;----------------------------------------------------------------------
@@ -139,7 +139,7 @@
      (error "An odd number of arguments given to SETQ in ~S" `(setq ,var ,val ,pairs)))
     (t
      `(cl:progn
-        (macroexpand `(setq ,var ,val) env)
+        ,(macroexpand `(setq ,var ,val) env)
         ,@(loop
             :for (var val) :on pairs :by (function cddr)
             :collect (macroexpand `(setq ,var ,val) env))))))

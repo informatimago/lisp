@@ -6,9 +6,7 @@
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    An internal packageo of the Common Lisp stepper.
-;;;;    This package exports the stepper interactive functions,
-;;;;    and the stepper generator functions.
+;;;;    Defines the Common Lisp Stepper packages.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
@@ -35,7 +33,16 @@
 ;;;;**************************************************************************
 
 
-(defpackage "COM.INFORMATIMAGO.COMMON-LISP.LISP.STEPPER.INTERACTIVE"
+;; We define an internal package that uses COMMON-LISP to easily
+;; define functions and macros, since the CL-STEPPER package shadows
+;; all the special operators and defun, defgeneric and defmacro
+;; macros.
+;;
+;; The CL-STEPPER package only contains those shadowed macro
+;; definitions.
+
+
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.LISP.STEPPER.INTERNAL"
   
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM")
@@ -67,12 +74,15 @@
   
   (:documentation "
 An internal package of the Common Lisp stepper.
-This package exports the stepper interactive functions,
-and the stepper generator functions.
+This package exports the  stepper generator functions,
+and defines stepper interactive functions (not exported).
+
+BUG: we should probably design it with hooks so that client may define
+     the stepping/tracing user interface.
 "))
 
 
-(defpackage "COM.INFORMATIMAGO.COMMON-LISP.LISP.COMMON-LISP-STEPPER"
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.LISP.STEPPER"
 
   (:nicknames "COMMON-LISP-STEPPER"
               "CL-STEPPER"
@@ -80,7 +90,7 @@ and the stepper generator functions.
   
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM"
-        "COM.INFORMATIMAGO.COMMON-LISP.LISP.STEPPER.INTERACTIVE")
+        "COM.INFORMATIMAGO.COMMON-LISP.LISP.STEPPER.INTERNAL")
 
   (:shadow ;; macros
    "DEFUN" "DEFGENERIC" "DEFMETHOD" "LAMBDA"
@@ -98,16 +108,76 @@ and the stepper generator functions.
            (push (string s) e))))
 
   (:export
+   "*STEP-MODE*"
    "*STEP-PRINT-LENGTH*"   
    "*STEP-PRINT-LEVEL*"     
    "*STEP-PRINT-CASE*"    
+   "*STEP-PACKAGE*"
 
-   "STEP-TRACE" "STEP-UNTRACE"
+   "STEP-TRACE"       "STEP-UNTRACE"
    "STEP-BREAK-ENTRY" "STEP-UNBREAK-ENTRY"
-   "STEP-BREAK-EXIT" "STEP-UNBREAK-EXIT")
+   "STEP-BREAK-EXIT"  "STEP-UNBREAK-EXIT")
   
   (:documentation "
-Implements a Common Lisp stepper.
+Implements a Common Lisp Stepper.
+
+This package should be used instead of COMMON-LISP, and the code
+recompiled or reloaded.  This will instrumentablize the functions so
+that tracing and stepping is available.
+
+To start running some code step-by-step, you can use:
+
+    (step (some-expression))
+
+Or you may use STEP-TRACE, to activate tracing of some functions (that
+must have been compiled with CL-STEPPER), or STEP-BREAK-ENTRY or
+STEP-BREAK-EXIT to enter the stepper upon entry or exit of the named
+functions.
+
+It is also possible to run the tracer on all code (that has been
+compiled with CL-STEPPER) with:
+
+   (setf *step-mode* :trace)
+
+Reset it with:
+
+   (setf *step-mode* :run)
+
+
+The stepper menu is:
+
+    Step Into (s, si, RET), Step over (so), Trace (t), Run (r), Debugger (d),
+    Abort (a, q)?
+
+Step Into:
+
+    Continue evaluating each forms and subforms step by step.
+
+Step Over:
+
+    Evaluate the current form in one step. 
+
+Trace:
+
+    The code is executed, and all the instrumented code produces traces.
+
+Run:
+
+    The code is executed silently.
+
+Debugger:
+
+    The debugger is invoked with a STEP-CONDITION.  There are restarts
+    installed to invoke all the stepper menu commands.
+
+Abort:
+
+    The evaluation of the STEP form is aborted.
+
+With the Step Over Trace, and Run commands,  if a function with a
+break-point or an active trace is reached, it will still enter the
+stepper menu again, or trace it.
+
 "))
 
 

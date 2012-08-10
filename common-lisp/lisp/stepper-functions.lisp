@@ -6,9 +6,9 @@
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    An internal packageo of the Common Lisp stepper.
-;;;;    This package exports the stepper interactive functions,
-;;;;    and the stepper generator functions.
+;;;;    An internal package of the Common Lisp stepper.
+;;;;    This package exports the stepper generator functions
+;;;;    and defines the stepper interactive functions.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
@@ -34,15 +34,14 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-
-
-(in-package "COM.INFORMATIMAGO.COMMON-LISP.LISP.STEPPER.INTERACTIVE")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.LISP.STEPPER.INTERNAL")
 
 
 (defvar *step-mode* :run
-  "May be :run, :trace or :step.
+  "
+May be :run, :trace or :step.
 
-:run     don't print anything, just evaluate the forms.  
+:run     don't print anything, just evaluate the forms.
 
 :trace   just prints the forms and their results as they are evaluted.
 
@@ -55,20 +54,31 @@ break-point is reached.
 ")
 
 
+
 (defvar *trace-functions* '()
-  "A list of function names that we must trace with the stepper.")
+  "A list of function names that we must trace with the stepper.
+SEE: STEP-TRACE, STEP-UNTRACE.")
 
 (defvar *break-functions-entry* '()
-  "A list of function names that we must break into the stepper upon entry.")
+  "A list of function names that we must break into the stepper upon entry.
+SEE: STEP-BREAK-ENTRY, STEP-UNBREAK-ENTRY.")
 
 (defvar *break-functions-exit* '()
-  "A list of function names that we must break into the stepper upon exit.")
+  "A list of function names that we must break into the stepper upon exit.
+SEE: STEP-BREAK-EXIT, STEP-UNBREAK-EXIT.")
 
 
 
 (defmacro step-trace (&rest fnames)
   "
-RETURN: the list of function names added.
+DO:             Enable tracing of functions named by FNAMES.
+
+FNAMES:         A list of function names.
+
+NOTE:           The functions must have been compiled with the operators from
+                the CL-STEPPER package not the CL package.
+
+RETURN:         The list of function names added.
 "
   `(mapc (lambda (fname) (pushnew fname *trace-functions* :test (function equal)))
          ',fnames))
@@ -76,7 +86,14 @@ RETURN: the list of function names added.
 
 (defmacro step-untrace (&rest fnames)
   "
-RETURN: The list of step-traced functions remaining.
+DO:             Disable tracing of functions named by FNAMES.
+
+FNAMES:         A list of function names.
+
+NOTE:           The functions must have been compiled with the operators from
+                the CL-STEPPER package not the CL package.
+
+RETURN:         The list of step-traced functions remaining.
 "
   `(progn
      (mapc (lambda (fname) (setf *trace-functions* (delete fname *trace-functions* :test (function equal))))
@@ -86,7 +103,14 @@ RETURN: The list of step-traced functions remaining.
 
 (defmacro step-break-entry (&rest fnames)
   "
-RETURN: the list of function names added.
+DO:             Enable breaking on entry of functions named by FNAMES.
+
+FNAMES:         A list of function names.
+
+NOTE:           The functions must have been compiled with the operators from
+                the CL-STEPPER package not the CL package.
+
+RETURN:         The list of function names added.
 "
   `(mapc (lambda (fname) (pushnew fname *break-entry-functions* :test (function equal)))
          ',fnames))
@@ -94,17 +118,33 @@ RETURN: the list of function names added.
 
 (defmacro step-unbreak-entry (&rest fnames)
   "
-RETURN: The list of step-break-entryd functions remaining.
+DO:             Disable breaking on entry of functions named by FNAMES.
+
+FNAMES:         A list of function names.
+
+NOTE:           The functions must have been compiled with the operators from
+                the CL-STEPPER package not the CL package.
+
+RETURN:         The list of step-break-entry functions remaining.
 "
   `(progn
-     (mapc (lambda (fname) (setf *break-entry-functions* (delete fname *break-entry-functions* :test (function equal))))
+     (mapc (lambda (fname)
+               (setf *break-entry-functions* (delete fname *break-entry-functions*
+                                                     :test (function equal))))
           ',fnames)
      *break-entry-functions*))
 
 
 (defmacro step-break-exit (&rest fnames)
   "
-RETURN: the list of function names added.
+DO:             Enable breaking on exit of functions named by FNAMES.
+
+FNAMES:         A list of function names.
+
+NOTE:           The functions must have been compiled with the operators from
+                the CL-STEPPER package not the CL package.
+
+RETURN:         The list of function names added.
 "
   `(mapc (lambda (fname) (pushnew fname *break-exit-functions* :test (function equal)))
          ',fnames))
@@ -112,26 +152,41 @@ RETURN: the list of function names added.
 
 (defmacro step-unbreak-exit (&rest fnames)
   "
-RETURN: The list of step-break-exitd functions remaining.
+DO:             Disable breaking on exit of functions named by FNAMES.
+
+FNAMES:         A list of function names.
+
+NOTE:           The functions must have been compiled with the operators from
+                the CL-STEPPER package not the CL package.
+
+RETURN:         The list of step-break-entry functions remaining.
 "
   `(progn
      (mapc (lambda (fname) (setf *break-exit-functions* (delete fname *break-exit-functions* :test (function equal))))
-          ',fnames)
+           ',fnames)
      *break-exit-functions*))
-
-
-
 
 
 
 (defvar *step-level* 0
   "The level.")
 
-(defvar *step-package*         (find-package :cl-user))
-(defvar *step-print-length*    10)
-(defvar *step-print-level*      3)
-(defvar *step-print-readably* nil)
-(defvar *step-print-case*     :downcase)
+(defvar *step-package*         (find-package :cl-user)
+  "The package bound to *PACKAGE* while printing tracing logs.")
+
+(defvar *step-print-readably* nil
+  "The value bound to *PRINT-READABLY* while printing tracing logs.")
+
+
+(defvar *step-print-length*    10
+  "The value bound to *PRINT-LENGTH* while printing tracing logs.")
+
+(defvar *step-print-level*      3
+  "The value bound to *PRINT-LEVEl* while printing tracing logs.")
+
+(defvar *step-print-case*     :downcase
+  "The value bound to *PRINT-CASE* while printing tracing logs.")
+
 
 (defmacro with-step-printing (&body body)
   `(let ((*print-length*   *step-print-length*)
@@ -140,6 +195,8 @@ RETURN: The list of step-break-exitd functions remaining.
          (*print-case*     *step-print-case*)
          (*package*        *step-package*))
      ,@body))
+
+
 
 ;; Tracing steps:
 
@@ -219,6 +276,9 @@ RETURN: VALUE
 
 
 ;; Instrumentation:
+;; The step-* functions are called by macros to generate the stepping
+;; code. Usually, calling a call-step-* function that does the actual
+;; work.
 
 (defun substitute-ignorable (declarations)
   (mapcar (lambda (declaration)
@@ -335,7 +395,7 @@ RETURN: VALUE
     (if (member name *break-functions-entry* :test (function equal))
       (choice (function report-enter))
       (case *step-mode*
-        (:run     (if (member name *trace-functions*)
+        (:run     (if (member name *trace-functions* :test (function equal))
                     (let ((*step-mode* :trace))
                       (report-enter *trace-output*)
                       (do-step))
@@ -369,7 +429,7 @@ RETURN:         A stepping body.
                  ',name ',parameters (list ,@parameters)
                  (lambda ()
                      ,@(if name
-                           `((block ,name #|inner block for non-local exit|#
+                           `((block ,(if (consp name) (second name) name) #|inner block for non-local exit|#
                                ,@(step-body :progn body env)))
                            (step-body :progn body env)))))))))
 
@@ -392,7 +452,7 @@ RETURN:         A stepping lambda-form from the LAMBDA-FORM.
 "
   (destructuring-bind (lambda lambda-list &body body) lambda-form
     (declare (ignore lambda))
-    `(cl:lambda ,lambda-list
+    `(lambda ,lambda-list
          ,@(step-function kind name lambda-list body environment))))
 
 
@@ -419,7 +479,7 @@ RETURN:         A stepping lambda-form from the LAMBDA-FORM.
 (defmacro symbol-reference (symbol &environment env)
   (let ((expansion  (macroexpand symbol env)))
     (if (eq symbol expansion)
-      (step-atom symbol (lambda () symbol))
+      (step-atom symbol `(lambda () ,symbol))
       (step-expression expansion env))))
 
 (defmacro self-evaluating (object)
@@ -429,7 +489,7 @@ RETURN:         A stepping lambda-form from the LAMBDA-FORM.
   (destructuring-bind (function-name &rest arguments) form
     (if (consp function-name)
       (if (member (first function-name)
-                  '(com.informatimago.common-lisp.lisp.common-lisp-stepper:lambda cl:lambda))
+                  '(com.informatimago.common-lisp.lisp.stepper:lambda lambda))
         (simple-step `(,(step-lambda function-name :environment env)
                         ,@(mapcar (lambda (argument) (step-expression argument env))
                                   arguments))
@@ -441,11 +501,10 @@ RETURN:         A stepping lambda-form from the LAMBDA-FORM.
                                arguments))
                    form))))
 
-(defun step-expression (form env)
 
-  ;; Operators in stepper-cl are macros, so they're taken care of
+(defun step-expression (form env)
+  ;; Operators in CL-STEPPER are macros, so they're taken care of
   ;; automatically.
-  
   (cond
     ((symbolp form)  `(symbol-reference ,form))
     ;; The other atoms are unchanged:
@@ -458,7 +517,7 @@ RETURN:         A stepping lambda-form from the LAMBDA-FORM.
                load-time-value locally macrolet multiple-value-call
                multiple-value-prog1 progn progv quote return-from setq
                symbol-macrolet tagbody the throw unwind-protect)
-        ;; then we just step it wholesale. (If there are macros inside
+        ;; We just step them wholesale. (If there are macros inside
         ;; they'll be expanded and we may step them.
         (simple-step form))
        (otherwise
@@ -467,5 +526,6 @@ RETURN:         A stepping lambda-form from the LAMBDA-FORM.
           (simple-step form)
           ;; For a function, we step the arguments:
           (step-function-call form env)))))))
+
 
 ;;;; THE END ;;;;
