@@ -94,6 +94,7 @@ BUG: we should probably design it with hooks so that client may define
 
   (:shadow ;; macros
    "DEFUN" "DEFGENERIC" "DEFMETHOD" "LAMBDA"
+   "DEFINE-CONDITION"
    "STEP")
   
   (:shadow ;; special operators

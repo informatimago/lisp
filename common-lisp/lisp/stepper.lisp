@@ -188,10 +188,10 @@
      form)))
 
 
-(define-special-operator (progn &body body) (&whole form &environment env)
-  (simple-step `(cl:progn
-                ,@(step-body :progn body env))
-               form))
+(define-special-operator (progn &body body) (&environment env)
+  ;; We must preserve toplevelness.
+  `(cl:progn
+     ,@(step-body :progn body env)))
 
 
 (define-special-operator (progv symbols values &body body) (&whole form &environment env)
@@ -231,10 +231,10 @@
      `(the ,value-type ,expression))))
 
 
-(define-special-operator (eval-when (&rest situations) &body body) (&whole form &environment env)
-  (simple-step `(cl:eval-when (,@situations)
-                  ,@(step-body :progn body env))
-               form))
+(define-special-operator (eval-when (&rest situations) &body body) (&environment env)
+  ;; We must preserve toplevelness.
+  `(cl:eval-when (,@situations)
+     ,@(step-body :progn body env)))
 
 
 (define-special-operator (symbol-macrolet (&rest bindings) &body body) (&whole form &environment env)
@@ -293,6 +293,18 @@
   (declare (ignorable lambda-list body))
   (simple-step `(cl:function ,(step-lambda form :environment env))
                form))
+
+(cl:defmacro define-condition (&whole form &environment env name parent slots &rest options)
+  (simple-step
+   `(cl:define-condition ,name ,parent
+      ,slots
+      ,@(mapcar (lambda (option)
+                    (if (and (consp option) (eq :report (car option)))
+                      `(:report
+                        ,(step-lambda (second option) :environment env))
+                      option))
+                options))
+   form))
 
 
 ;;;----------------------------------------------------------------------
