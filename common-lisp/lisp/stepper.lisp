@@ -96,7 +96,7 @@
                    ,@(mapcan (cl:lambda (form)
                                  (cl:if (or (symbolp form) (integerp form))
                                    (list form
-                                         (did-tag form))
+                                         `(did-tag ',form))
                                    (list (step-expression form env))))
                              body))
                form))
