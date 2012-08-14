@@ -53,20 +53,20 @@
 
 
 (define-special-operator (quote literal) (&whole form)
-    (simple-step `(cl:quote ,literal) form))
+  (simple-step `(cl:quote ,literal) form))
 
 
 (define-special-operator (if test then &optional (else nil elsep)) (&whole form &environment env)
-    (simple-step `(cl:if ,(step-expression test env)
-                    ,(step-expression then env)
-                    ,(step-expression else env))
-                 form))
+  (simple-step `(cl:if ,(step-expression test env)
+                  ,(step-expression then env)
+                  ,(step-expression else env))
+               form))
 
 
 (define-special-operator (block name &body body) (&whole form &environment env)
-    (simple-step `(cl:block ,name
-                    ,@(step-body :progn body env))
-                 form))
+  (simple-step `(cl:block ,name
+                  ,@(step-body :progn body env))
+               form))
 
 
 (define-special-operator (return-from name &optional result) (&whole form &environment env)
@@ -87,7 +87,7 @@
 
 (define-special-operator (unwind-protect protected &body cleanup) (&whole form &environment env)
   (simple-step `(cl:unwind-protect ,(step-expression protected env)
-                ,@(step-body :progn cleanup env))
+                  ,@(step-body :progn cleanup env))
                form))
 
 
@@ -107,24 +107,32 @@
 
 
 (define-special-operator (flet (&rest bindings) &body body) (&whole form &environment env)
-  (simple-step
-   `(cl:flet ,(mapcar (cl:lambda (fun)
-                          (destructuring-bind (name lambda-list &body body) fun
-                            `(,name ,lambda-list
-                                    ,@(step-function :ordinary name lambda-list body env))))
-                      bindings)
-      ,@(step-body :locally body env))
-   form))
+  (multiple-value-bind (ds declarations real-body) (parse-body :locally body)
+    (declare (ignore ds real-body))
+    (cl:if (stepper-disabled-p declarations)
+      (step-disabled form)
+      (simple-step
+       `(cl:flet ,(mapcar (cl:lambda (fun)
+                              (destructuring-bind (name lambda-list &body body) fun
+                                `(,name ,lambda-list
+                                        ,@(step-function :ordinary name lambda-list body env))))
+                          bindings)
+          ,@(step-body :locally body env))
+       form))))
 
 (define-special-operator (labels (&rest bindings) &body body) (&whole form &environment env)
-  (simple-step
-   `(cl:labels ,(mapcar (cl:lambda (fun)
-                            (destructuring-bind (name lambda-list &body body) fun
-                              `(,name ,lambda-list
-                                      ,@(step-function :ordinary name lambda-list body env))))
-                        bindings)
-      ,@(step-body :locally body env))
-   form))
+  (multiple-value-bind (ds declarations real-body) (parse-body :locally body)
+    (declare (ignore ds real-body))
+    (cl:if (stepper-disabled-p declarations)
+      (step-disabled form)
+      (simple-step
+       `(cl:labels ,(mapcar (cl:lambda (fun)
+                                (destructuring-bind (name lambda-list &body body) fun
+                                  `(,name ,lambda-list
+                                          ,@(step-function :ordinary name lambda-list body env))))
+                            bindings)
+          ,@(step-body :locally body env))
+       form))))
 
 
 (define-special-operator (setq var val &rest pairs) (&environment env)
@@ -149,25 +157,31 @@
 (define-special-operator (let (&rest bindings) &body body) (&whole form &environment env)
   (multiple-value-bind (ds declarations body) (parse-body :locally body)
     (declare (ignore ds))
-    (simple-step `(cl:let ,(step-bindings :parallel bindings form env)
-                    ;; TODO: When we did-bind the variable, they should not be declared ignore
-                    ;;       so replace those declarations by ignorable.
-                    ,@(substitute-ignorable declarations)
-                    (unless (eq *step-mode* :run)
-                      ,@(mapcar (cl:lambda (binding)
-                                    (cl:let ((var (cl:if (atom binding)
-                                                    binding
-                                                    (first binding))))
-                                      `(did-bind ',var ,var)))
-                                bindings))
-                    ,@(step-body :progn body env))
-                 form)))
+    (cl:if (stepper-disabled-p declarations)
+      (step-disabled form)
+      (simple-step `(cl:let ,(step-bindings :parallel bindings form env)
+                      ;; TODO: When we did-bind the variable, they should not be declared ignore
+                      ;;       so replace those declarations by ignorable.
+                      ,@(substitute-ignorable declarations)
+                      (unless (eq *step-mode* :run)
+                        ,@(mapcar (cl:lambda (binding)
+                                      (cl:let ((var (cl:if (atom binding)
+                                                      binding
+                                                      (first binding))))
+                                        `(did-bind ',var ,var)))
+                                  bindings))
+                      ,@(step-body :progn body env))
+                   form))))
 
 
 (define-special-operator (let* (&rest bindings) &body body) (&whole form &environment env)
-  (simple-step `(cl:let* ,(step-bindings :sequential bindings form env)
-                  ,@(step-body :locally body env))
-               form))
+  (multiple-value-bind (ds declarations real-body) (parse-body :locally body)
+    (declare (ignore ds real-body))
+    (cl:if (stepper-disabled-p declarations)
+      (step-disabled form)
+      (simple-step `(cl:let* ,(step-bindings :sequential bindings form env)
+                      ,@(step-body :locally body env))
+                   form))))
 
 
 (define-special-operator (multiple-value-call  function-form &rest arguments) (&whole form &environment env)
@@ -206,9 +220,12 @@
 
 
 (define-special-operator (locally &body body) (&whole form &environment env)
-  (simple-step `(cl:locally
-                    ,@(step-body :locally body env))
-               form))
+  (multiple-value-bind (ds declarations real-body) (parse-body :locally body)
+    (declare (ignore ds real-body))
+    (cl:if (stepper-disabled-p declarations)
+      (step-disabled form)
+      ;; We must preserve toplevelness.
+      `(cl:locally ,@(step-body :locally body env)))))
 
 
 
@@ -238,14 +255,22 @@
 
 
 (define-special-operator (symbol-macrolet (&rest bindings) &body body) (&whole form &environment env)
-  (simple-step `(cl:symbol-macrolet ,bindings
-                  ,@(step-body :locally body env))
-               form))
+  (multiple-value-bind (ds declarations real-body) (parse-body :locally body)
+    (declare (ignore ds real-body))
+    (cl:if (stepper-disabled-p declarations)
+      (step-disabled form)
+      (simple-step `(cl:symbol-macrolet ,bindings
+                      ,@(step-body :locally body env))
+                   form))))
 
 (define-special-operator (macrolet (&rest bindings) &body body) (&whole form &environment env)
-  (simple-step `(cl:macrolet ,bindings
-                  ,@(step-body :locally body env))
-               form))
+  (multiple-value-bind (ds declarations real-body) (parse-body :locally body)
+    (declare (ignore ds real-body))
+    (cl:if (stepper-disabled-p declarations)
+      (step-disabled form)
+      (simple-step `(cl:macrolet ,bindings
+                        ,@(step-body :locally body env))
+                   form))))
 
 (define-special-operator (load-time-value expression &optional read-only-p) (&whole form &environment env)
   (simple-step `(cl:load-time-value ,(step-expression expression env) ,read-only-p)
@@ -274,16 +299,16 @@
                                              :while (not (listp (first arguments)))
                                              :collect (pop arguments))))
                        (destructuring-bind (lambda-list &body body) arguments
-                        `(:method ,@qualifiers ,lambda-list
-                                  ,@(step-function :specialized name lambda-list body env))))
+                         `(:method ,@qualifiers ,lambda-list
+                                   ,@(step-function :specialized name lambda-list body env))))
                      option))
                options)))
 
 
 (cl:defmacro defmethod (name &rest arguments &environment env)
   (cl:let ((qualifiers (loop
-                      :while (not (listp (first arguments)))
-                      :collect (pop arguments))))
+                         :while (not (listp (first arguments)))
+                         :collect (pop arguments))))
     (destructuring-bind (lambda-list &body body) arguments
       `(cl:defmethod ,name ,@qualifiers ,lambda-list
                      ,@(step-function :specialized name lambda-list body env)))))
@@ -298,8 +323,8 @@
   (simple-step
    `(cl:define-condition ,name ,parent
       ,slots
-      ,@(mapcar (lambda (option)
-                    (if (and (consp option) (eq :report (car option)))
+      ,@(mapcar (cl:lambda (option)
+                    (cl:if (and (consp option) (eq :report (car option)))
                       `(:report
                         ,(step-lambda (second option) :environment env))
                       option))
@@ -324,6 +349,7 @@
 ;; (defclass function (cl:function)
 ;;   ())
 ;;
-;; Doesn't work for meta-classes…
+;; Doesn't work because of missing built-in meta-class.
+;; And subclassing a built-in class is not conforming.
 
 ;;;; the END ;;;;

@@ -53,7 +53,9 @@
    "*STEP-PRINT-LENGTH*"   
    "*STEP-PRINT-LEVEL*"     
    "*STEP-PRINT-CASE*"    
-
+   "*STEP-TRACE-OUTPUT*"
+   "*STEP-MAX-TRACE-DEPTH*"
+   
    "STEP-TRACE" "STEP-UNTRACE"
    "STEP-BREAK-ENTRY" "STEP-UNBREAK-ENTRY"
    "STEP-BREAK-EXIT" "STEP-UNBREAK-EXIT"
@@ -64,6 +66,9 @@
    
    "STEP-CONDITION" "STEP-MESSAGE" "STEP-CHOICE"
 
+   "STEPPER" "DISABLE" "STEPPER-DISABLED-P"
+
+   "STEP-DISABLED"
    "SUBSTITUTE-IGNORABLE"
    "SIMPLE-STEP"
    "STEP-EXPRESSION"
@@ -73,12 +78,20 @@
    "STEP-BINDINGS")
   
   (:documentation "
-An internal package of the Common Lisp stepper.
+This is an internal package of the Common Lisp stepper.
 This package exports the  stepper generator functions,
 and defines stepper interactive functions (not exported).
 
-BUG: we should probably design it with hooks so that client may define
-     the stepping/tracing user interface.
+See the documentation of the package
+COM.INFORMATIMAGO.COMMON-LISP.LISP.STEPPER.
+
+BUGS: we should probably design it with hooks so that clients may
+      define the stepping/tracing user interface.
+
+Copyright Pascal J. Bourguignon 2012 - 2012
+This package is provided under the Afero General Public License 3.
+See the source file for details.
+
 "))
 
 
@@ -114,29 +127,37 @@ BUG: we should probably design it with hooks so that client may define
    "*STEP-PRINT-LEVEL*"     
    "*STEP-PRINT-CASE*"    
    "*STEP-PACKAGE*"
-
+   "*STEP-TRACE-OUTPUT*"
+   "*STEP-MAX-TRACE-DEPTH*"
+   
    "STEP-TRACE"       "STEP-UNTRACE"
    "STEP-BREAK-ENTRY" "STEP-UNBREAK-ENTRY"
-   "STEP-BREAK-EXIT"  "STEP-UNBREAK-EXIT")
+   "STEP-BREAK-EXIT"  "STEP-UNBREAK-EXIT"
+
+   
+   "STEPPER" "DISABLE" 
+   ;; (declare (stepper disable)) ; to prevent instrumentation of the
+   ;; enclosing sexp and sub expressions.
+   )
   
   (:documentation "
-Implements a Common Lisp Stepper.
+Implements a Portable Common Lisp Stepper.
 
 This package should be used instead of COMMON-LISP, and the code
-recompiled or reloaded.  This will instrumentablize the functions so
+recompiled or reloaded.  This will instrumentalize the functions so
 that tracing and stepping is available.
 
 To start running some code step-by-step, you can use:
 
-    (step (some-expression))
+    (step (some-expression)) ; note: it's cl-stepper:step, not cl:step.
 
 Or you may use STEP-TRACE, to activate tracing of some functions (that
 must have been compiled with CL-STEPPER), or STEP-BREAK-ENTRY or
 STEP-BREAK-EXIT to enter the stepper upon entry or exit of the named
 functions.
 
-It is also possible to run the tracer on all code (that has been
-compiled with CL-STEPPER) with:
+It is also possible to run the tracer on all the code that has been
+compiled with CL-STEPPER, with:
 
    (setf *step-mode* :trace)
 
@@ -144,11 +165,20 @@ Reset it with:
 
    (setf *step-mode* :run)
 
+If you load a lot of packages with CL-STEPPER, you may want to set
+*STEP-MAX-CALL-DEPTH* to a small integer when using *STEP-MODE*
+:trace, to avoid very big output.  You may also redirect the tracing
+output to a different stream setting *STEP-TRACE-OUTPUT*.
+
+Note: when tracing a function with (step-trace fun), the depth is
+reset while tracing that function (*step-max-call-depth* still applies
+for the call tree starting from that function).
+
 
 The stepper menu is:
 
-    Step Into (s, si, RET), Step over (so), Trace (t), Run (r), Debugger (d),
-    Abort (a, q)?
+    Step Into (s, si, RET), Step over (so), Trace (t), Run (r),
+    Debugger (d), Abort (a, q)?
 
 Step Into:
 
@@ -175,9 +205,27 @@ Abort:
 
     The evaluation of the STEP form is aborted.
 
-With the Step Over Trace, and Run commands,  if a function with a
+With the Step Over, Trace, and Run commands,  if a function with a
 break-point or an active trace is reached, it will still enter the
 stepper menu again, or trace it.
+
+
+To disable instrumentation of a form, you can insert (stepper disable)
+declarations in the places where declarations are allowed.
+
+   (declaim (declaration stepper)) ; for when CL-STEPPER is not used.
+
+   (…
+     (declare (stepper disable))
+     …)
+
+declarations.  Use (locally (declare (stepper disable)) …) to disable
+in random places.
+
+
+Copyright Pascal J. Bourguignon 2012 - 2012
+This package is provided under the Afero General Public License 3.
+See the source file for details.
 
 "))
 
