@@ -133,9 +133,17 @@ See the source file for details.
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.LISP.IMAGE-BASED-COMMON-LISP")
 
 
+(define-condition simple-package-error (package-error simple-error)
+  ())
 
 (defun normalize-package-designator (package)
-  (package-name (cl:find-package package)))
+  (let ((pack (cl:find-package package)))
+    (if pack
+      (package-name pack)
+      (error 'simple-package-error
+             :package package
+             :format-control "No such package ~S"
+             :format-arguments (list package)))))
 
 
 (defun substitute-package-designator (new old sequence)

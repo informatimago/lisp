@@ -15,11 +15,18 @@
 ;;;;    2006-07-01 <PJB> Added deftype, defclass.
 ;;;;    2006-05-04 <PJB> Added this header. Augmented.
 ;;;;BUGS
-;;;;    Missing some def* macros, like define-symbol-macro,
-;;;;    defconditions, defmethod, defgeneric, etc.
-;;;;    Missing some functions, like make-package, rename-package, etc.
-;;;;    See also MOP functions.
-;;;;BUGS
+;;;;
+;;;;    Since we collect only the whole forms of some specific macros,
+;;;;    we don't save closure, or eval-when, progn, etc.
+;;;;
+;;;;    (let ((x 42))
+;;;;      (defun g () x)
+;;;;      (defun s (z) (setf x z)))
+;;;;    (source 'g 'function)
+;;;;    --> (defun g nil x)             ; instead of (let …)
+;;;;    (source 's 'function)
+;;;;    --> (defun s (z) (setf x z))    ; instead of (let …)
+;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    

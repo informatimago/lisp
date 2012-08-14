@@ -11,6 +11,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2012-08-10 <PJB> Improved split-string and string-justify-left.
 ;;;;    2006-10-20 <PJB> Moved displaced-vector to
 ;;;;                     com.informatimago.common-lisp.cesarum.array.
 ;;;;    2005-09-01 <PJB> Made use of ISO6429 to improve portability.
@@ -287,30 +288,33 @@ RETURN:  A list of substrings of string.
           (t (incf curr))))))
 
 
-(defun split-string (string &optional (separators " "))
+(defun split-string (string &optional (separators " ") (remove-empty nil))
   "
-NOTE:   current implementation only accepts as separators
-        a string containing literal characters.
+STRING:         A sequence.
+
+SEPARATOR:      A sequence.
+
+RETURN:         A list of subsequence of STRING, split upon any element of SEPARATORS.
+                Separators are compared to elements of the STRING with EQL.
+
+NOTE:           It's actually a simple split-sequence now.
+
+EXAMPLES:       (split-string '(1 2 0 3 4 5 0 6 7 8 0 9) '(0))
+                --> ((1 2) (3 4 5) (6 7 8) (9))
+                (split-string #(1 2 0 3 4 5 0 6 7 8 0 9) #(0))
+                --> (#(1 2) #(3 4 5) #(6 7 8) #(9))
+                (split-string \"1 2 0 3 4 5 0 6 7 8\" '(#\space #\0))
+                --> (\"1\" \"2\" \"\" \"\" \"3\" \"4\" \"5\" \"\" \"\" \"6\" \"7\" \"8\")
 "
-  (let ((string     (if (simple-string-p string)
-                        string
-                        (copy-seq string)))
-        (separators (if (simple-string-p separators)
-                        separators
-                        (copy-seq separators)))
-        (chunks  '())
-        (position 0)
-        (nextpos  0)
-        (strlen   (length string)) )
-    (declare (type simple-string string separators))
-    (loop :while (< position strlen)
-          :do (loop :while (and (< nextpos strlen)
-                                (not (position (char string nextpos) separators)))
-                    :do (setq nextpos (1+ nextpos)))
-              (push (subseq string position nextpos) chunks)
-              (setq position (1+ nextpos))
-              (setq nextpos  position))
-    (nreverse chunks)))
+  (loop
+    :with strlen = (length string)
+    :for position = 0 :then (1+ nextpos)
+    :for nextpos = (position-if (lambda (e) (find e separators)) string :start position)
+    :unless (and remove-empty
+                 (or (and (= position strlen) (null nextpos ))
+                     (eql position nextpos)))
+    :collect (subseq string position nextpos)
+    :while (and nextpos (< position strlen))))
 
 
 (defun unsplit-string (string-list &optional (separator " ")
@@ -454,46 +458,39 @@ RETURN:         A padded string.
 ;;            (mapcan #'list cw (split-sequence long-string #\Space)))))
 
 
-(defun string-justify-left (string &optional (width 72) (left-margin 0))
+(defun string-justify-left (string &optional (width 72) (left-margin 0) (separators #(#\Space #\Newline)))
   "
-RETURN: a left-justified string built from string. 
-NOTE:   The default width is 72 characters, the default left-margin is 0. 
-        The width is counted from column 0.
-        The word separators are those of split-string: [ \\f\\t\\n\\r\\v]+, 
-        which means that the string is justified as one paragraph."
-  (unless (stringp string)
-    (error "STRING-JUSTIFY-LEFT: The first argument must be a STRING."))
-  (unless (and (integerp width) (integerp left-margin))
-    (error "STRING-JUSTIFY-LEFT: The optional arguments must be INTEGER."))
-  (let* ((margin (make-string left-margin :initial-element (character " ")))
-         (splited (delete "" (split-string
-                              string
-                              (map 'vector (function code-char)
-                                   (list (char-code #\space)
-                                         com.informatimago.common-lisp.cesarum.ecma048:ht
-                                         com.informatimago.common-lisp.cesarum.ecma048:cr
-                                         com.informatimago.common-lisp.cesarum.ecma048:lf
-                                         com.informatimago.common-lisp.cesarum.ecma048:ff
-                                         com.informatimago.common-lisp.cesarum.ecma048:vt)))
-                          :test (function string=)))
-         (col left-margin)
+RETURN:         A left-justified string built from string.
+
+WIDTH:          The maximum width of the generated lines.  Default is 72 characters.
+
+LEFT-MARGIN:    The left margin, filled with spaces.  Default is 0 characters.
+
+SEPARATORS:     A sequence containing the characters on which to split the words.
+                Default: #\(#\space #\newline).
+"
+  (check-type string string)
+  (check-type width integer)
+  (check-type left-margin integer)
+  (let* ((margin    (make-string left-margin :initial-element (character " ")))
+         (splited   (split-string string separators t))
+         (col       left-margin)
          (justified (list (subseq margin 0 col)))
          (separator ""))
     (dolist (word splited)
-      (when (< 0 (length word))
-        (if (<= width (+ col (length word)))
-            (progn (push #(#\newline) justified)
-                   (push margin justified)
-                   (push word justified)
-                   (setf col (+ left-margin (length word))))
-            (progn (push separator justified)
-                   (push word justified)
-                   (incf col (+ 1 (length word))))))
+      (if (<= width (+ col (length word)))
+          (progn (push #(#\newline) justified)
+                 (push margin justified)
+                 (push word justified)
+                 (setf col (+ left-margin (length word))))
+          (progn (push separator justified)
+                 (push word justified)
+                 (incf col (+ 1 (length word)))))
       (setf separator " "))
-    ;; Pad with spaces up to width.
-    (when (< col width)
-      (push (make-string (- width col) :initial-element (character " "))
-            justified))
+    ;; ;; Pad with spaces up to width.
+    ;; (when (< col width)
+    ;;   (push (make-string (- width col) :initial-element (character " "))
+    ;;         justified))
     (apply (function concatenate) 'string (nreverse justified))))
 
 
