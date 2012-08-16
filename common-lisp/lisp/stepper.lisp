@@ -48,12 +48,12 @@
 (define-special-operator (function name) (&whole form &environment env)
   (cl:if (and (consp name)
               (eq 'lambda (first name)))
-    (simple-step (step-expression name env) form)
-    (simple-step `(cl:function ,name)   form)))
+    (step-simple-form (step-expression name env) form)
+    (step-simple-form `(cl:function ,name)       form)))
 
 
 (define-special-operator (quote literal) (&whole form)
-  (simple-step `(cl:quote ,literal) form))
+  (step-simple-form `(cl:quote ,literal) form))
 
 
 (define-special-operator (if test then &optional (else nil elsep)) (&whole form &environment env)
@@ -342,6 +342,8 @@
      (cl:let ((*step-mode* ,mode)
               (*step-package* *package*))
        ,(step-expression form env))))
+
+
 
 
 ;; ;; Let's forward the class:
