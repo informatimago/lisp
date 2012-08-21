@@ -298,7 +298,7 @@ RETURN:         The source of the specified object; the package.
 
 ;;; Operate symbols:
 
-(defmethod operate-source ((name symbol) (source-type keyword)
+(defmethod operate-source ((name symbol) (source-type symbol)
                               &key other-keys new-source package)
   (declare (ignore other-keys))
   (values-list (if new-source
