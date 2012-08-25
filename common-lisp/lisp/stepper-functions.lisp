@@ -552,19 +552,19 @@ RETURN: VALUE
 (declaim (declaration stepper))
 (pushnew :com.informatimago.common-lisp.lisp.cl-stepper *features*)
 
-(defun stepper-disable-declaration-p (specifier)
-  (and (consp specifier)
-       (eq 'stepper (first specifier))
-       (member 'disable (rest specifier))))
-
-(defun stepper-disabled-p (declarations)
+(defun stepper-declaration-p (declarations keyword)
   (find-if (lambda (declaration)
                (and (consp declaration)
                 (eq 'declare (first declaration))
-                (find-if (function stepper-disable-declaration-p) (rest declaration))))
+                (find-if (lambda (specifier)
+                             (and (consp specifier)
+                              (eq 'stepper (first specifier))
+                              (member keyword (rest specifier))))
+                         (rest declaration))))
            declarations))
-;; (stepper-disabled-p '((declare (ignorable object) (stepper disable))))
-;; (stepper-disabled-p '((declare (type integer x)) (declare (stepper disable))))
+
+;; (stepper-declaration-p '((declare (ignorable object) (stepper disable))) 'disable)
+;; (stepper-declaration-p '((declare (type integer x)) (declare (stepper trace))) 'trace)
 
 
 
@@ -586,20 +586,24 @@ RETURN:         A stepping body.
                             (lambda-list-parameters
                              (parse-lambda-list lambda-list kind)))))
     (multiple-value-bind (docstring declarations real-body) (parse-body :lambda body)
-      (if (stepper-disabled-p declarations)
+      (if (stepper-declaration-p declarations 'disabled)
         (append (when docstring (list docstring))
                 declarations
                 (list (step-disabled `(progn ,@real-body))))
         (append (when docstring (list docstring))
                 (substitute-ignorable declarations)
-                `((call-step-function
-                   ',name ',parameters (list ,@parameters)
-                   (lambda ()
-                       ,@(if name
-                             `((block ,(if (consp name) (second name) name)
-                                 ;; inner block for non-local exit.
-                                 ,@(step-body :progn real-body env)))
-                             (step-body :progn real-body env))))))))))
+                (let ((form `((call-step-function
+                               ',name ',parameters (list ,@parameters)
+                               (lambda ()
+                                   ,@(if name
+                                         `((block ,(if (consp name) (second name) name)
+                                             ;; inner block for non-local exit.
+                                             ,@(step-body :progn real-body env)))
+                                         (step-body :progn real-body env)))))))
+                  (if (stepper-declaration-p declarations 'trace)
+                    `(let ((*step-mode* :trace))
+                       ,form)
+                    form)))))))
 
 
 (defun step-lambda (lambda-form &key (kind :ordinary) name environment)

@@ -109,7 +109,7 @@
 (define-special-operator (flet (&rest bindings) &body body) (&whole form &environment env)
   (multiple-value-bind (ds declarations real-body) (parse-body :locally body)
     (declare (ignore ds real-body))
-    (cl:if (stepper-disabled-p declarations)
+    (cl:if (stepper-declaration-p declarations 'disable)
       (step-disabled form)
       (simple-step
        `(cl:flet ,(mapcar (cl:lambda (fun)
@@ -123,7 +123,7 @@
 (define-special-operator (labels (&rest bindings) &body body) (&whole form &environment env)
   (multiple-value-bind (ds declarations real-body) (parse-body :locally body)
     (declare (ignore ds real-body))
-    (cl:if (stepper-disabled-p declarations)
+    (cl:if (stepper-declaration-p declarations 'disable)
       (step-disabled form)
       (simple-step
        `(cl:labels ,(mapcar (cl:lambda (fun)
@@ -157,7 +157,7 @@
 (define-special-operator (let (&rest bindings) &body body) (&whole form &environment env)
   (multiple-value-bind (ds declarations body) (parse-body :locally body)
     (declare (ignore ds))
-    (cl:if (stepper-disabled-p declarations)
+    (cl:if (stepper-declaration-p declarations 'disabled)
       (step-disabled form)
       (simple-step `(cl:let ,(step-bindings :parallel bindings form env)
                       ;; TODO: When we did-bind the variable, they should not be declared ignore
@@ -177,7 +177,7 @@
 (define-special-operator (let* (&rest bindings) &body body) (&whole form &environment env)
   (multiple-value-bind (ds declarations real-body) (parse-body :locally body)
     (declare (ignore ds real-body))
-    (cl:if (stepper-disabled-p declarations)
+    (cl:if (stepper-declaration-p declarations 'disabled)
       (step-disabled form)
       (simple-step `(cl:let* ,(step-bindings :sequential bindings form env)
                       ,@(step-body :locally body env))
@@ -222,7 +222,7 @@
 (define-special-operator (locally &body body) (&whole form &environment env)
   (multiple-value-bind (ds declarations real-body) (parse-body :locally body)
     (declare (ignore ds real-body))
-    (cl:if (stepper-disabled-p declarations)
+    (cl:if (stepper-declaration-p declarations 'disabled)
       (step-disabled form)
       ;; We must preserve toplevelness.
       `(cl:locally ,@(step-body :locally body env)))))
@@ -257,7 +257,7 @@
 (define-special-operator (symbol-macrolet (&rest bindings) &body body) (&whole form &environment env)
   (multiple-value-bind (ds declarations real-body) (parse-body :locally body)
     (declare (ignore ds real-body))
-    (cl:if (stepper-disabled-p declarations)
+    (cl:if (stepper-declaration-p declarations 'disabled)
       (step-disabled form)
       (simple-step `(cl:symbol-macrolet ,bindings
                       ,@(step-body :locally body env))
@@ -266,7 +266,7 @@
 (define-special-operator (macrolet (&rest bindings) &body body) (&whole form &environment env)
   (multiple-value-bind (ds declarations real-body) (parse-body :locally body)
     (declare (ignore ds real-body))
-    (cl:if (stepper-disabled-p declarations)
+    (cl:if (stepper-declaration-p declarations 'disabled)
       (step-disabled form)
       (simple-step `(cl:macrolet ,bindings
                         ,@(step-body :locally body env))

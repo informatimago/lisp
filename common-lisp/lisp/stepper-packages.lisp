@@ -66,7 +66,7 @@
    
    "STEP-CONDITION" "STEP-MESSAGE" "STEP-CHOICE"
 
-   "STEPPER" "DISABLE" "STEPPER-DISABLED-P"
+   "STEPPER" "DISABLE" "STEPPER-DECLARATION-P"
 
    "STEP-DISABLED"
    "SUBSTITUTE-IGNORABLE"
@@ -136,7 +136,7 @@ See the source file for details.
    "STEP-BREAK-EXIT"     "STEP-UNBREAK-EXIT"
 
    
-   "STEPPER" "DISABLE" 
+   "STEPPER" "DISABLE" #| "TRACE" already exported as CL symbol |#
    ;; (declare (stepper disable)) ; to prevent instrumentation of the
    ;; enclosing sexp and sub expressions.
    )
@@ -211,6 +211,7 @@ break-point or an active trace is reached, it will still enter the
 stepper menu again, or trace it.
 
 
+
 To disable instrumentation of a form, you can insert (stepper disable)
 declarations in the places where declarations are allowed.
 
@@ -222,6 +223,12 @@ declarations in the places where declarations are allowed.
 
 declarations.  Use (locally (declare (stepper disable)) …) to disable
 in random places.
+
+
+Similarly, to force tracing a function or a form,
+use the (declare (stepper trace)) declaration.
+\(stepper disable) has priority over (stepper trace).
+
 
 
 Copyright Pascal J. Bourguignon 2012 - 2012
