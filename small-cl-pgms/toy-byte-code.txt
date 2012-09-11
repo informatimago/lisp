@@ -60,6 +60,8 @@ to that of the following interpreter.
 Note: all the code following is written as toy code; real interpreters,
 virtual machines and compilers would be structured differently, having
 to deal with more cases and more details, notably error handling etc.
+Also, source code at:
+https://gitorious.org/com-informatimago/com-informatimago/blobs/master/small-cl-pgms/toy-byte-code.lisp
 
 
     (defstruct tl-env
@@ -710,3 +712,5 @@ Writing the scanner and parser that will generate syntactic trees such as:
 
 from the specified grammar is left to tools such as lex and yacc (or
 cl-ppcre and cl-yacc).
+
+
