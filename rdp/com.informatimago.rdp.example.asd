@@ -68,6 +68,8 @@ both producing parsers in Lips.
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
     
+    #+asdf-unicode :encoding #+asdf-unicode :utf-8
+
     :depends-on ("com.informatimago.rdp")
     
     :components ((:file "example-lisp")))

@@ -58,7 +58,7 @@ a format similar to what is used by LISTSERV.
     :name    "Informatimago Common Lisp Miscellaneous"
     
     :version "1.2.1"
-    
+
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Autumn 2010")
                  ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.clmisc/")
@@ -68,7 +68,7 @@ a format similar to what is used by LISTSERV.
                  ((#:albert #:docbook #:textcolor) . "black"))
 
     :depends-on ()
-    
+    #+asdf-unicode :encoding #+asdf-unicode :utf-8
     :components ((:file "resource-utilization")))
 
 

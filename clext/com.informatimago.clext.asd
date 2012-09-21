@@ -67,6 +67,8 @@ specifications, like GRAY or other portability libraries.
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
 
+    #+asdf-unicode :encoding #+asdf-unicode :utf-8
+
     :depends-on ("com.informatimago.common-lisp.cesarum")
 
     :components (#+(or ccl clisp cmu ecl sbcl)

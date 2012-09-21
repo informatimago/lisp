@@ -69,6 +69,8 @@ COM.INFORMATIMAGO.COMMON-LISP.LISP.IBCL                IBCL package.
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
     
+    #+asdf-unicode :encoding #+asdf-unicode :utf-8
+
     :depends-on ("com.informatimago.common-lisp.lisp-sexp")
     
     :components ((:file "source")

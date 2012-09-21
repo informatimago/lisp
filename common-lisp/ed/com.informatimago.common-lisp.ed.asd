@@ -69,6 +69,8 @@ cl-ppcre or #+clisp regexp).
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
     
+    #+asdf-unicode :encoding #+asdf-unicode :utf-8
+
     :depends-on ("com.informatimago.common-lisp.cesarum"
                  "com.informatimago.common-lisp.regexp")
                                         

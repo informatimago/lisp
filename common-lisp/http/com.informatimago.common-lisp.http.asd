@@ -64,8 +64,12 @@ A transaction manager for HTTP CGI.
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
+
+    #+asdf-unicode :encoding #+asdf-unicode :utf-8
+
     :depends-on (:com.informatimago.common-lisp.cesarum
                  :com.informatimago.common-lisp.html-generator)
+
     :components ((:file "hquery" :depends-on ())
                  (:file "htrans" :depends-on ("hquery"))))
 

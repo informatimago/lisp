@@ -67,6 +67,8 @@ specialization.
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
     
+    #+asdf-unicode :encoding #+asdf-unicode :utf-8
+
     :depends-on ("closer-mop")
     
     :components ((:file "generic-cl" :depends-on ())))

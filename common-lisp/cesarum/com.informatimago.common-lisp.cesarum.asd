@@ -76,7 +76,7 @@ all written in 100% conforming Common Lisp.
                  ((#:albert #:docbook #:textcolor) . "black"))
     
     :depends-on (:com.informatimago.common-lisp.lisp-sexp)
-    
+    #+asdf-unicode :encoding #+asdf-unicode :utf-8
     :components (
                  ;; Common Lisp addendum:
                  (:file "utility"         :depends-on ())

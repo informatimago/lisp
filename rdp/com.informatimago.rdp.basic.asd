@@ -65,6 +65,8 @@ Provides methods specialized on the :basic target-language, to emit a generator 
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
     
+    #+asdf-unicode :encoding #+asdf-unicode :utf-8
+
     :depends-on ("com.informatimago.rdp")
     
     :components ((:file "rdp-basic-gen")))

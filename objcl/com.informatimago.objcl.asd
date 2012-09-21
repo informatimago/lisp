@@ -69,6 +69,8 @@ cover generic FFI to both Apple and GNUstep objc2 runtimes.
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
     
+    #+asdf-unicode :encoding #+asdf-unicode :utf-8
+
     :depends-on ()
     
     :components ((:file "packages")

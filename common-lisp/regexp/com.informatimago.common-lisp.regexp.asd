@@ -59,8 +59,12 @@
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
+
+    #+asdf-unicode :encoding #+asdf-unicode :utf-8
+
     :depends-on (:com.informatimago.common-lisp.cesarum
                  :com.informatimago.common-lisp.picture)
+
     :components ((:file "regexp-emacs"         :depends-on ())
                  (:file "regexp-posix"         :depends-on ())))
 

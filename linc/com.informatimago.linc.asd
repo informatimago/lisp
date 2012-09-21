@@ -75,6 +75,8 @@ generate a corresponding C source.
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
     
+    #+asdf-unicode :encoding #+asdf-unicode :utf-8
+
     :depends-on ("split-sequence"
                  "closer-mop"
                  "com.informatimago.common-lisp.cesarum")
