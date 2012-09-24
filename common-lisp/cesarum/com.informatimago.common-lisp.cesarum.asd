@@ -32,6 +32,11 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
+
+#+clisp
+(unless custom:*ansi*
+  (warn "clisp should be used with -ansi or (setf custom:*ansi* t) in ~/.clisprc"))
+
 (asdf:defsystem :com.informatimago.common-lisp.cesarum
 
     ;; system attributes:
