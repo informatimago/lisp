@@ -1,3 +1,4 @@
+;;;; -*- mode:lisp; coding:utf-8 -*-
 ;;;;**************************************************************************
 ;;;;FILE:               resource-utilization.lisp
 ;;;;LANGUAGE:           Common-Lisp

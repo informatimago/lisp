@@ -911,7 +911,7 @@ RETURN: A list of arguments taken from the parameters usable with apply
                               (parameter-name par)))
                (lambda-list-keyword-parameters  self)))
      (list (if rest
-             (parameter-name rest)
+             (parameter-name (lambda-list-rest-parameter self))
              '())))))
 
 

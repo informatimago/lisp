@@ -60,6 +60,8 @@
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
     
+    #+asdf-unicode :encoding #+asdf-unicode :utf-8
+
     :depends-on (
                  ;; Dependencies:
                  "cl-ppcre"
@@ -72,6 +74,7 @@
                  "com.informatimago.rdp"
                  #+(and ccl darwin) "com.informatimago.objcl"
                  )
+    
     :components ((:file "lispdoc")
                  (:file "lispdoc-run" :depends-on ("lispdoc"))))
 

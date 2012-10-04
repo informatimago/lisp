@@ -66,6 +66,8 @@ different languages than lisp.
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
     
+    #+asdf-unicode :encoding #+asdf-unicode :utf-8
+
     :depends-on ("cl-ppcre" 
                  "com.informatimago.common-lisp.cesarum"
                  "com.informatimago.common-lisp.parser")

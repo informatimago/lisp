@@ -62,6 +62,8 @@ A few RFC0822/RFC2822 utility fucntions.
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
     
+    #+asdf-unicode :encoding #+asdf-unicode :utf-8
+
     :depends-on ("com.informatimago.common-lisp.cesarum")
     
     :components ((:file "rfc2822" :depends-on ()))) 

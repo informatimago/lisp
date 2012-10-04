@@ -66,6 +66,8 @@ target-language method will let the RDPG generate a parser in BASIC.
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
     
+    #+asdf-unicode :encoding #+asdf-unicode :utf-8
+
     :depends-on ("com.informatimago.rdp"
                  "com.informatimago.rdp.basic")
     

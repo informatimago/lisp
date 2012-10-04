@@ -172,6 +172,13 @@ KEY:      A key function. Default: IDENTITY.
 
 (defgeneric replace-subseq (insert sequence start &optional end)
 
+  ;; Note: we could add a filler parameter and not adjust the size
+  ;;       when reduced, but this would make a different behavior than
+  ;;       when increasing the size.  Would still be nice for some
+  ;;       applications.  Perhaps also a truncatep parameter?
+  
+  ;; BUG:  we should use the fill-pointer before trying to adjust.
+  
   (:documentation "
 
 DO:             Destructively (if possible) replace the (subseq
@@ -189,7 +196,7 @@ SEQUENCE:       A sequence.   If it is a list or an adjustable vector,
 START:          Bounding index designator of SEQUENCE. 
 
 END:            Bounding index designator of SEQUENCE. The default for
-                end is NIL, whicg means (LENGTH SEQUENCE).
+                end is NIL, which means (LENGTH SEQUENCE).
 
 RETURN:         Either the modified SEQUENCE, or a fresh sequence of
                 the same type with the specified subseq replaced by

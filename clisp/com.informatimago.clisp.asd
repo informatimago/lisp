@@ -66,7 +66,9 @@ should be made into implementation independant packages).
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
 
-    :depends-on (:com.informatimago.common-lisp.cesarum)
+    #+asdf-unicode :encoding #+asdf-unicode :utf-8
+
+    :depends-on ("com.informatimago.common-lisp.cesarum")
 
     :components ((:file "syslog")
                  (:file "disk")

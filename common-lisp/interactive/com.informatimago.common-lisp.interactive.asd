@@ -67,6 +67,8 @@ CL specific commands such as: mkupack, lspack, pushp, popp, etc.
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
     
+    #+asdf-unicode :encoding #+asdf-unicode :utf-8
+
     :depends-on ("com.informatimago.common-lisp.cesarum")
     
     :components ((:file "browser"     :depends-on ())

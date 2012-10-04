@@ -32,6 +32,11 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
+
+#+clisp
+(unless custom:*ansi*
+  (warn "clisp should be used with -ansi or (setf custom:*ansi* t) in ~/.clisprc"))
+
 (asdf:defsystem :com.informatimago.common-lisp.cesarum
 
     ;; system attributes:
@@ -76,7 +81,7 @@ all written in 100% conforming Common Lisp.
                  ((#:albert #:docbook #:textcolor) . "black"))
     
     :depends-on (:com.informatimago.common-lisp.lisp-sexp)
-    
+    #+asdf-unicode :encoding #+asdf-unicode :utf-8
     :components (
                  ;; Common Lisp addendum:
                  (:file "utility"         :depends-on ())

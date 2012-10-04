@@ -66,9 +66,11 @@ Currently implemented: DIRENT, IPC and PROCESS APIs.
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
 
-    :depends-on (:com.informatimago.common-lisp.cesarum
-                 :com.informatimago.common-lisp.heap
-                 :com.informatimago.clisp)
+    #+asdf-unicode :encoding #+asdf-unicode :utf-8
+
+    :depends-on ("com.informatimago.common-lisp.cesarum"
+                 "com.informatimago.common-lisp.heap"
+                 "com.informatimago.clisp")
 
     :components ((:file "tools")
                  (:file "dirent"  :depends-on ("tools"))

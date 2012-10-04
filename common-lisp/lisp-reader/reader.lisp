@@ -606,6 +606,8 @@ READTABLE:      The readtable to use.
 RETURN:         tokenp == t    ; a token.  Or
                 tokenp == :EOF ; the eof-value.  Or
                 tokenp == NIL  ; a list of values read.
+
+BUG:            The handling of readtable-case :invert is wrong.
 "
   (macrolet ((unless-eof (place &body body)
                `(cond

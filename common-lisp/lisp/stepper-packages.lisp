@@ -56,7 +56,7 @@
    "*STEP-TRACE-OUTPUT*"
    "*STEP-MAX-TRACE-DEPTH*"
    
-   "STEP-TRACE" "STEP-UNTRACE"
+   "STEP-TRACE-FUNCTION" "STEP-UNTRACE-FUNCTION"
    "STEP-BREAK-ENTRY" "STEP-UNBREAK-ENTRY"
    "STEP-BREAK-EXIT" "STEP-UNBREAK-EXIT"
 
@@ -66,11 +66,12 @@
    
    "STEP-CONDITION" "STEP-MESSAGE" "STEP-CHOICE"
 
-   "STEPPER" "DISABLE" "STEPPER-DISABLED-P"
+   "STEPPER" "DISABLE" "STEPPER-DECLARATION-P"
 
    "STEP-DISABLED"
    "SUBSTITUTE-IGNORABLE"
    "SIMPLE-STEP"
+   "STEP-SIMPLE-FORM" "STEP-ATOM"
    "STEP-EXPRESSION"
    "STEP-BODY"
    "STEP-FUNCTION"
@@ -130,12 +131,12 @@ See the source file for details.
    "*STEP-TRACE-OUTPUT*"
    "*STEP-MAX-TRACE-DEPTH*"
    
-   "STEP-TRACE"       "STEP-UNTRACE"
-   "STEP-BREAK-ENTRY" "STEP-UNBREAK-ENTRY"
-   "STEP-BREAK-EXIT"  "STEP-UNBREAK-EXIT"
+   "STEP-TRACE-FUNCTION" "STEP-UNTRACE-FUNCTION"
+   "STEP-BREAK-ENTRY"    "STEP-UNBREAK-ENTRY"
+   "STEP-BREAK-EXIT"     "STEP-UNBREAK-EXIT"
 
    
-   "STEPPER" "DISABLE" 
+   "STEPPER" "DISABLE" #| "TRACE" already exported as CL symbol |#
    ;; (declare (stepper disable)) ; to prevent instrumentation of the
    ;; enclosing sexp and sub expressions.
    )
@@ -151,7 +152,7 @@ To start running some code step-by-step, you can use:
 
     (step (some-expression)) ; note: it's cl-stepper:step, not cl:step.
 
-Or you may use STEP-TRACE, to activate tracing of some functions (that
+Or you may use STEP-TRACE-FUNCTION, to activate tracing of some functions (that
 must have been compiled with CL-STEPPER), or STEP-BREAK-ENTRY or
 STEP-BREAK-EXIT to enter the stepper upon entry or exit of the named
 functions.
@@ -170,7 +171,7 @@ If you load a lot of packages with CL-STEPPER, you may want to set
 :trace, to avoid very big output.  You may also redirect the tracing
 output to a different stream setting *STEP-TRACE-OUTPUT*.
 
-Note: when tracing a function with (step-trace fun), the depth is
+Note: when tracing a function with (step-trace-function fun), the depth is
 reset while tracing that function (*step-max-call-depth* still applies
 for the call tree starting from that function).
 
@@ -210,6 +211,7 @@ break-point or an active trace is reached, it will still enter the
 stepper menu again, or trace it.
 
 
+
 To disable instrumentation of a form, you can insert (stepper disable)
 declarations in the places where declarations are allowed.
 
@@ -221,6 +223,12 @@ declarations in the places where declarations are allowed.
 
 declarations.  Use (locally (declare (stepper disable)) …) to disable
 in random places.
+
+
+Similarly, to force tracing a function or a form,
+use the (declare (stepper trace)) declaration.
+\(stepper disable) has priority over (stepper trace).
+
 
 
 Copyright Pascal J. Bourguignon 2012 - 2012

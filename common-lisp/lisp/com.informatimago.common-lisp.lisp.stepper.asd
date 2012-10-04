@@ -65,6 +65,8 @@ This system implements a portable stepper.
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
     
+    #+asdf-unicode :encoding #+asdf-unicode :utf-8
+
     :depends-on ("com.informatimago.common-lisp.lisp-sexp")
     
     :components ((:file "stepper-packages")

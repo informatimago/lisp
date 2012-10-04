@@ -258,12 +258,12 @@ License:
 Subclasses may use scanner-stream to read from the source.")
    (line          :initarg :line
                   :accessor scanner-line
-                  :type (integer 1)
+                  :type integer
                   :initform 1
                   :documentation "The number of the current line. First line is line number 1.")
    (column        :initarg :column
                   :accessor scanner-column
-                  :type (integer 1)
+                  :type integer
                   :initform 1
                   :documentation "The number of the current column. First column is column number 1.")
    (state         :initarg :state
@@ -295,6 +295,7 @@ RETURN:         SCANNER
   (:method ((scanner scanner))
     (let ((tab-width (scanner-tab-width scanner)))
       (setf (scanner-column scanner)
+            ;; Assuming column starts from 1.
             (1+ (* (ceiling (scanner-column scanner) tab-width)
                    tab-width))
             ;; #+column-base=0 (* tab-width (ceiling (scanner-column scanner) tab-width))

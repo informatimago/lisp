@@ -13,6 +13,7 @@
 ;;;;MODIFICATIONS
 ;;;;    2010-12-17 <PJB> Created.
 ;;;;BUGS
+;;;;    Cannot read comments inside [] quite well.
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
@@ -265,6 +266,9 @@ RETURN: a list containing the selector, a list of parameters, and the rest param
                       (read-final-arguments stream))))
              ((char= #\: next-char) ; empty selector-part
               (push "" selector))
+             ;; ((char= #\; next-char) ; comment
+             ;;  (read-line stream)
+             ;;  (setf next-char (peek-char nil stream nil nil t)))
              (t
               (push (and (skip-spaces stream)
                          (read-identifier stream)) selector)
@@ -373,6 +377,9 @@ Return a list containing:
       ((char= #\] next-char)
        (read-error stream "Syntax error, missing a selector in the brackets, after ~S"
                    recipient))
+      ((char= #\; next-char)
+       (read-line stream) ; skip comment
+       (read-message-send stream recipient read-message))
       (t
        (read-error stream "Lexical error,  unexpected character: ~C, in the brackets, after ~S"
                    next-char recipient)))))

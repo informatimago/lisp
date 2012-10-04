@@ -35,7 +35,10 @@
 ;;;;**************************************************************************
 
 
+;; Only the step-disabled function is read in the cl-stepper package;
+;; the rest of the file is read in the .stepper.internal package.
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.LISP.STEPPER")
+
 
 ;; When instrumenting is disabled with a declaration, all the forms and
 ;; subforms in the scope must use the CL operators instead of the stepper
@@ -53,12 +56,12 @@ RETURN:         A form where FORM is evaluated in an environment where
   `(cl:macrolet
        ((function (name) (cl:if (and (consp name)
                                      (eq 'lambda (first name)))
-                           `(cl:function (cl:lambda ,@(rest (first name))))
-                           `(cl:function ,name)))
+                                `(cl:function (cl:lambda ,@(rest (first name))))
+                                `(cl:function ,name)))
         (quote (literal) `(cl:quote ,literal))
         (if (&whole form test then &optional else)
-          (declare (ignorable test then else))
-          `(cl:if ,@(rest form)))
+            (declare (ignorable test then else))
+            `(cl:if ,@(rest form)))
         (block (&whole form name &body body)
           (declare (ignorable name body))
           `(cl:block ,@(rest form)))
@@ -85,7 +88,7 @@ RETURN:         A form where FORM is evaluated in an environment where
           (declare (ignorable bindings body))
           `(cl:labels ,@(rest form)))
         (macrolet (&whole form (&rest bindings) &body body)
-            (declare (ignorable bindings body))
+          (declare (ignorable bindings body))
           `(cl:macrolet ,@(rest form)))
         (symbol-macrolet (&whole form (&rest bindings) &body body)
           (declare (ignorable bindings body))
@@ -95,10 +98,10 @@ RETURN:         A form where FORM is evaluated in an environment where
           `(cl:let ,@(rest form)))
         (let* (&whole form (&rest bindings) &body body)
           (declare (ignorable bindings body))
-          `(cl:let ,@(rest form)))
+          `(cl:let* ,@(rest form)))
         (setq (&whole form var val &rest pairs)
-              (declare (ignorable var val pairs))
-              `(cl:setq ,@(rest form)))
+          (declare (ignorable var val pairs))
+          `(cl:setq ,@(rest form)))
         (multiple-value-call (&whole form function-form &rest arguments)
           (declare (ignore function-form arguments))
           `(cl:multiple-value-call ,@(rest form)))
@@ -121,9 +124,10 @@ RETURN:         A form where FORM is evaluated in an environment where
           (declare (ignore situations body))
           `(cl:eval-when ,@(rest form)))
         (load-time-value (&whole form expression &optional read-only-p)
-                         (declare (ignore expression read-only-p))
-                         `(cl:load-time-value ,@(rest form))))
-       ,form))
+          (declare (ignore expression read-only-p))
+          `(cl:load-time-value ,@(rest form))))
+     ,form))
+
 
 
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.LISP.STEPPER.INTERNAL")
@@ -131,17 +135,19 @@ RETURN:         A form where FORM is evaluated in an environment where
 
 (defvar *step-mode* :run
   "
-May be :run, :trace or :step.
+May be :run, :function :trace or :step.
 
-:run     don't print anything, just evaluate the forms.
+:run       don't print anything, just evaluate the forms.
 
-:trace   just prints the forms and their results as they are evaluted.
+:function just prints the function calls and their results.
 
-:step    prints the form, then ask the user what to do (step over,
-         step into, trace, run).
+:trace    just prints the forms and their results as they are evaluted.
 
-When break-points are implemented, :run and :trace will run until a
-break-point is reached.
+:step     prints the form, then ask the user what to do (step over,
+          step into, trace, run).
+
+When break-points are implemented, :run, :function and :trace will run
+until a break-point is reached.
 
 ")
 
@@ -177,7 +183,7 @@ SEE: STEP-BREAK-EXIT, STEP-UNBREAK-EXIT.")
 
 
 
-(defmacro step-trace (&rest fnames)
+(defmacro step-trace-function (&rest fnames)
   "
 DO:             Enable tracing of functions named by FNAMES.
 
@@ -188,11 +194,14 @@ NOTE:           The functions must have been compiled with the operators from
 
 RETURN:         The list of function names added.
 "
-  `(mapc (lambda (fname) (pushnew fname *trace-functions* :test (function equal)))
-         ',fnames))
+  ;; We use :test 'equal for (setf fname).
+  `(setf *trace-functions*
+         (delete-duplicates (union *trace-functions* ',fnames
+                                   :test (function equal))
+                            :test (function equal))))
 
 
-(defmacro step-untrace (&rest fnames)
+(defmacro step-untrace-function (&rest fnames)
   "
 DO:             Disable tracing of functions named by FNAMES.
 
@@ -203,10 +212,8 @@ NOTE:           The functions must have been compiled with the operators from
 
 RETURN:         The list of step-traced functions remaining.
 "
-  `(progn
-     (mapc (lambda (fname) (setf *trace-functions* (delete fname *trace-functions* :test (function equal))))
-          ',fnames)
-     *trace-functions*))
+  `(setf *trace-functions* (set-difference *trace-functions* ',fnames
+                                           :test (function equal))))
 
 
 (defmacro step-break-entry (&rest fnames)
@@ -220,8 +227,10 @@ NOTE:           The functions must have been compiled with the operators from
 
 RETURN:         The list of function names added.
 "
-  `(mapc (lambda (fname) (pushnew fname *break-entry-functions* :test (function equal)))
-         ',fnames))
+  `(setf *break-entry-functions*
+         (delete-duplicates (union *break-entry-functions* ',fnames
+                                   :test (function equal))
+                            :test (function equal))))
 
 
 (defmacro step-unbreak-entry (&rest fnames)
@@ -235,12 +244,8 @@ NOTE:           The functions must have been compiled with the operators from
 
 RETURN:         The list of step-break-entry functions remaining.
 "
-  `(progn
-     (mapc (lambda (fname)
-               (setf *break-entry-functions* (delete fname *break-entry-functions*
-                                                     :test (function equal))))
-          ',fnames)
-     *break-entry-functions*))
+  `(setf *break-entry-functions* (set-difference *break-entry-functions* ',fnames
+                                                 :test (function equal))))
 
 
 (defmacro step-break-exit (&rest fnames)
@@ -254,8 +259,10 @@ NOTE:           The functions must have been compiled with the operators from
 
 RETURN:         The list of function names added.
 "
-  `(mapc (lambda (fname) (pushnew fname *break-exit-functions* :test (function equal)))
-         ',fnames))
+  `(setf *break-exit-functions*
+         (delete-duplicates (union *break-exit-functions* ',fnames
+                                   :test (function equal))
+                            :test (function equal))))
 
 
 (defmacro step-unbreak-exit (&rest fnames)
@@ -269,10 +276,8 @@ NOTE:           The functions must have been compiled with the operators from
 
 RETURN:         The list of step-break-entry functions remaining.
 "
-  `(progn
-     (mapc (lambda (fname) (setf *break-exit-functions* (delete fname *break-exit-functions* :test (function equal))))
-           ',fnames)
-     *break-exit-functions*))
+  `(setf *break-exit-functions* (set-difference *break-exit-functions* ',fnames
+                                                :test (function equal))))
 
 
 
@@ -303,16 +308,30 @@ RETURN:         The list of step-break-entry functions remaining.
          (*print-level*    *step-print-level*)
          (*print-readably* *step-print-readably*)
          (*print-case*     *step-print-case*)
-         (*package*        *step-package*))
+         (*package*        *step-package*)
+         (*step-mode*     :run))
      ,@body))
 
 
 
 ;; Tracing steps:
 
+(defmacro with-parens (stream &body body)
+  (let ((vstream (gensym)))
+    `(let ((,vstream ,stream))
+       (unwind-protect
+            (progn
+              (format ,vstream "~&~V<~>(" *step-level*)
+              ,@body)
+         (format ,vstream ")")))))
+
+
 (defun will-step (form &optional (stream *step-trace-output*))
   (with-step-printing
-      (format stream "~&~V<~>Will evaluate ~S~%" *step-level* form)))
+      (format stream "Will evaluate ~S" form)))
+
+
+
 
 (defun did-bind (variable value &optional (stream *step-trace-output*))
   "
@@ -320,7 +339,7 @@ RETURN: VALUE
 "
   (unless (eq :run *step-mode*)
    (with-step-printing
-       (format stream "~&~V<~>Bind ~16A to ~S~%" *step-level* variable value)))
+       (format stream "~&~V<~> (Bind ~16A to ~S)" *step-level* variable value)))
   value)
 
 (defun print-step-results (results &optional (stream *step-trace-output*))
@@ -328,19 +347,21 @@ RETURN: VALUE
     (with-step-printing
         (let ((start "==>"))
           (dolist (result results)
-            (format stream "~V<~>~A ~S~%" *step-level* start result)
+            (format stream "~%~V<~>~A ~S" *step-level* start result)
             (setf start "   "))))))
 
 (defun did-step (form results &optional (stream *step-trace-output*))
   (with-step-printing
-      (format stream "~&~V<~>Evaluation of ~S returned ~:[no result~;~R result~:P~]~%"
+      (format stream "~&~V<~> Evaluation of ~S returned ~:[no result~;~R result~:P~]"
               *step-level* form results (length results)))
-  (print-step-results results))
+  (if (= 1 (length results))
+      (format stream " ==> ~S" (first results))
+      (print-step-results results stream)))
 
 (defun did-tag (tag &optional (stream *step-trace-output*))
   (unless (eq :run *step-mode*)
     (with-step-printing
-        (format stream "~&~V<~>Passed tag ~S~%" *step-level* tag))))
+        (format stream "~&~V<~> (Passed tag ~S)" *step-level* tag))))
 
 
 ;; Interactive stepping:
@@ -353,16 +374,18 @@ RETURN: VALUE
 (defun step-choice (&optional thunk)
   (when thunk (funcall thunk *step-trace-output*))
   (with-step-printing
-      (format *query-io* "~V<~>~{~A~^, ~}?"
+      (format *query-io* "~&~V<~> ~{~A~^, ~}?"
               *step-level*
               '("Step Into (s, si, RET)" "Step over (so)" "Trace (t)"
-                "Run (r)" "Debugger (d)" "Abort (a, q)")))
+                "Function (f)" "Run (r)" "Debugger (d)" "Abort (a, q)")))
   (let ((answer (string-trim " " (read-line *query-io*))))
     (cond
       ((member answer '("" "s" "si") :test (function string-equal))
        :step-into)
       ((string-equal answer "so")
        :step-over)
+      ((string-equal answer "f")
+       :function)
       ((string-equal answer "t")
        :trace)
       ((string-equal answer "r")
@@ -373,13 +396,14 @@ RETURN: VALUE
                                                    :message (if thunk
                                                               (with-output-to-string (out)
                                                                 (funcall thunk out))
-                                                              "Step1")))
+                                                              "Step")))
                   :step-into)
-         (step-into  () :report "Step Into"      (progn :step-into))
-         (step-over  () :report "Step Over"      (progn :step-over))
-         (step-trace () :report "Trace"          (progn :trace))
-         (step-run   () :report "Run"            (progn :run))
-         (abort      () :Report "Abort Stepping" (progn :abort))))
+         (step-into     () :report "Step Into"      (progn :step-into))
+         (step-over     () :report "Step Over"      (progn :step-over))
+         (step-trace    () :report "Trace"          (progn :trace))
+         (step-function () :report "Function"       (progn :function))
+         (step-run      () :report "Run"            (progn :run))
+         (abort         () :Report "Abort Stepping" (progn :abort))))
       ((member answer '("a" "q") :test (function string-equal))
        :abort)
       (t
@@ -416,32 +440,60 @@ RETURN: VALUE
            (declare thing))))
 
 
+
+(defun trivial-atom-p (atom)
+  "Trivial atoms are either (quote something) forms, or atoms that are self-evaluating."
+  (typecase atom
+    (keyword        t) ; self evaluating
+    ((member nil t) t) ; self evaluating
+    (symbol         nil) ; variable or symbol-macro
+    (cons           (eq 'cl:quote (car atom)))
+    (t              t))) ; self evaluating
+
 (defun call-step-atom (atom thunk)
-  (flet ((do-step ()
-           (let ((results (let ((*step-level* (1+ *step-level*)))
-                            (multiple-value-list (funcall thunk)))))
-             (if (= 1 (length results))
+  (case *step-mode*
+    ((:run :function)
+     (funcall thunk))
+    (:trace
+     (let ((results (let ((*step-level* (1+ *step-level*)))
+                      (multiple-value-list (funcall thunk)))))
+       (if (= 1 (length results))
+           (unless (trivial-atom-p atom)
+             (with-parens *step-trace-output* 
                (with-step-printing
-                   (if (symbolp atom)
-                     (format *step-trace-output* "~V<~>~S ==> ~S~%" *step-level* atom (first results))
-                     (format *step-trace-output* "~V<~>--> ~S~%" *step-level* atom)))
-               (progn
-                 ;; (will-step display-form)
-                 (did-step atom results)))
-             (values-list results))))
-    (case *step-mode*
-      (:run    (funcall thunk))
-      (:trace  (do-step))
-      (:step   (ecase (step-choice (lambda (out) (will-step atom out)))
-                 (:abort     (throw 'abort-stepping nil))
-                 (:run       (setf *step-mode* :run)   (funcall thunk))
-                 (:trace     (setf *step-mode* :trace) (do-step))
-                 (:step-into (do-step))
-                 (:step-over (let ((*step-mode* :run)) (do-step))))))))
+                   (format *step-trace-output* "~S ==> ~S" atom (first results)))))
+           (with-parens *step-trace-output* 
+             (with-step-printing
+                 (did-step atom results))))
+       (values-list results)))
+    (:step
+     (flet ((do-step ()
+              (let ((results (let ((*step-level* (1+ *step-level*)))
+                               (multiple-value-list (funcall thunk)))))
+                (with-step-printing
+                 (if (= 1 (length results))
+                     (if (trivial-atom-p atom) 
+                         (format *step-trace-output* "~&~V<~> (--> ~S)" *step-level* atom)
+                         (format *step-trace-output* "~&~V<~> (~S ==> ~S)"
+                                 *step-level* atom (first results)))
+                     ;; (will-step display-form)
+                     (did-step atom results)))
+                (values-list results))))
+       (with-parens *step-trace-output*
+         (ecase (step-choice (lambda (out) (will-step atom out)))
+           (:abort     (throw 'abort-stepping nil))
+           (:run       (setf *step-mode* :run)      (funcall thunk))
+           (:function  (setf *step-mode* :function) (funcall thunk))
+           (:trace     (setf *step-mode* :trace)    (do-step))
+           (:step-into (do-step))
+           (:step-over (let ((*step-mode* :run)) (do-step)))))))))
 
-(defun step-atom (object thunk)
-  `(call-step-atom ',object ,thunk))
 
+(defun step-atom (object)
+  `(call-step-atom ',object (lambda () ,object)))
+
+(defun step-simple-form (actual &optional (form actual))
+  `(call-step-atom ',form (lambda () ,actual)))
 
 
 (defun call-simple-step (thunk display-form)
@@ -452,14 +504,16 @@ RETURN: VALUE
              (did-step display-form results)
              (values-list results))))
     (case *step-mode*
-      (:run    (funcall thunk))
-      (:trace  (do-step))
-      (:step   (ecase (step-choice (lambda (out) (will-step display-form out)))
-                 (:abort     (throw 'abort-stepping nil))
-                 (:run       (setf *step-mode* :run)   (funcall thunk))
-                 (:trace     (setf *step-mode* :trace) (do-step))
-                 (:step-into (do-step))
-                 (:step-over (let ((*step-mode* :run)) (do-step))))))))
+      ((:run :function)  (funcall thunk))
+      (:trace  (with-parens *step-trace-output* (do-step)))
+      (:step   (with-parens *step-trace-output*
+                   (ecase (step-choice (lambda (out) (will-step display-form out)))
+                     (:abort     (throw 'abort-stepping nil))
+                     (:run       (setf *step-mode* :run)      (funcall thunk))
+                     (:function  (setf *step-mode* :function) (do-step))
+                     (:trace     (setf *step-mode* :trace)    (do-step))
+                     (:step-into (do-step))
+                     (:step-over (let ((*step-mode* :run))    (do-step)))))))))
 
 (defun simple-step (form &optional (display-form form))
   `(call-simple-step (lambda () ,form) ',display-form))
@@ -477,73 +531,91 @@ RETURN: VALUE
 (defun call-step-function (name pnames pvals thunk)
   (labels ((report-enter (out)
              (with-step-printing
-                 (format out "~&~V<~>Entering ~:[anonymous ~;~]function ~:*~:[~;~:*~S~]~%"
-                         *step-level* name))
+                 (format out "Entering ~:[anonymous ~;~]function ~:*~:[~;~:*~S~]"  name))
              (let ((*step-level* (1+ *step-level*)))
                (mapc (function did-bind) pnames pvals)))
            (report-exit (non-local-exit results out)
              (with-step-printing
-                 (format out "~&~V<~>Exiting  ~:[anonymous ~;~]function ~:*~:[~;~:*~S ~]~
-                          ~:[returned ~:[no result~;~R result~:P~]~;by non-local exit.~]~%"
+                 (format out "~&~V<~> Exiting  ~:[anonymous ~;~]function ~:*~:[~;~:*~S ~]~
+                          ~:[returned ~:[no result~;~R result~:P~]~;by non-local exit.~]"
                          *step-level* name non-local-exit results (length results)))
-             (print-step-results results))
+             (if (= 1 (length results))
+                 (format out " ==> ~S" (first results))
+                 (print-step-results results out)))
            (do-step ()
              (let ((results        '())
                    (non-local-exit t))
                (unwind-protect
-                   (setf results (let ((*step-level* (1+ *step-level*)))
-                                   (multiple-value-list (funcall thunk)))
-                         non-local-exit nil)
-                 (if (eq :run *step-mode*)
-                   (when (member name *break-functions-exit* :test (function equal))
-                     (choice (lambda (out) (report-exit non-local-exit results out))))
-                   (report-exit non-local-exit results *step-trace-output*)))
+                    (setf results (let ((*step-level* (1+ *step-level*)))
+                                    (multiple-value-list (funcall thunk)))
+                          non-local-exit nil)
+                 (unless (eq *step-mode* :run)
+                   (report-exit non-local-exit results *step-trace-output*))
+                 (when (member name *break-functions-exit* :test (function equal))
+                   (ecase (step-choice (lambda (out) (declare (ignore out))))
+                     (:abort     (throw 'abort-stepping nil))
+                     (:run       (setf *step-mode* :run))
+                     (:function  (setf *step-mode* :function))
+                     (:trace     (setf *step-mode* :trace))
+                     (:step-into (setf *step-mode* :step))
+                     (:step-over (setf *step-mode* :step)))))
                (values-list results)))
            (choice (report)
              (ecase (step-choice report)
                (:abort     (throw 'abort-stepping nil))
-               (:run       (setf *step-mode* :run)   (do-step))
-               (:trace     (setf *step-mode* :trace) (do-step))
+               (:run       (setf *step-mode* :run)      (do-step))
+               (:function  (setf *step-mode* :function) (do-step))
+               (:trace     (setf *step-mode* :trace)    (do-step))
                (:step-into (do-step))
                (:step-over (let ((*step-mode* :run)) (do-step))))))
     (let ((*step-current-trace-depth* (1+ *step-current-trace-depth*)))
       (if (member name *break-functions-entry* :test (function equal))
-        (choice (function report-enter))
-        (case *step-mode*
-          (:run     (if (member name *trace-functions* :test (function equal))
-                      (let ((*step-mode* :trace)
-                            (*step-current-trace-depth* 0)) ; reset it
-                        (report-enter *step-trace-output*)
-                        (do-step))
-                      (do-step)))
-          (:trace   (if (and *step-max-trace-depth*
-                             (< *step-max-trace-depth* *step-current-trace-depth*))
-                      (let ((*step-mode* :run))
-                        (do-step))
-                      (progn
-                        (report-enter *step-trace-output*)
-                        (do-step))))
-          (:step    (choice (function report-enter))))))))
-
+          (with-parens *step-trace-output*
+            (choice (function report-enter)))
+          (case *step-mode*
+            ((:run)
+             ;; (print (list (not (not (member name *trace-functions* :test (function equal)))) name *trace-functions*))
+             (if (member name *trace-functions* :test (function equal))
+                 (let ((*step-mode* :trace)
+                       (*step-current-trace-depth* 0)) ; reset it
+                   (with-parens *step-trace-output*
+                    (report-enter *step-trace-output*)
+                    (do-step)))
+                 (do-step)))
+            ((:function :trace)
+             (if (and *step-max-trace-depth*
+                      (< *step-max-trace-depth* *step-current-trace-depth*))
+                 (let ((*step-mode* :run))
+                   (do-step))
+                 (with-parens *step-trace-output*
+                   (report-enter *step-trace-output*)
+                   (do-step))))
+            ((:step)
+             (with-parens *step-trace-output*
+              (choice (function report-enter)))))))))
 
 
 
 (declaim (declaration stepper))
 (pushnew :com.informatimago.common-lisp.lisp.cl-stepper *features*)
 
-(defun stepper-disable-declaration-p (specifier)
-  (and (consp specifier)
-       (eq 'stepper (first specifier))
-       (member 'disable (rest specifier))))
+(defun stepper-declaration-p (declarations keyword)
+  (let ((result
+         (dolist (declaration declarations)
+           (let ((decl (and (consp declaration)
+                            (eq 'declare (first declaration))
+                            (find-if (lambda (specifier)
+                                       (and (consp specifier)
+                                            (eq 'stepper (first specifier))
+                                            (member keyword (rest specifier))))
+                                     (rest declaration)))))
+             (when decl (return decl))))))
+    ;; (format *step-trace-output* "~&(~S ~S ~S) --> ~S~%"
+    ;;         'stepper-declaration-p declarations keyword result)
+    result))
 
-(defun stepper-disabled-p (declarations)
-  (find-if (lambda (declaration)
-               (and (consp declaration)
-                (eq 'declare (first declaration))
-                (find-if (function stepper-disable-declaration-p) (rest declaration))))
-           declarations))
-
-;; (stepper-disabled-p '((declare (type integer x)) (declare (stepper disable))))
+;; (stepper-declaration-p '((declare (ignorable object) (stepper disable))) 'disable)
+;; (stepper-declaration-p '((declare (type integer x)) (declare (stepper trace))) 'trace)
 
 
 
@@ -565,20 +637,24 @@ RETURN:         A stepping body.
                             (lambda-list-parameters
                              (parse-lambda-list lambda-list kind)))))
     (multiple-value-bind (docstring declarations real-body) (parse-body :lambda body)
-      (if (stepper-disabled-p declarations)
+      (if (stepper-declaration-p declarations 'disable)
         (append (when docstring (list docstring))
                 declarations
                 (list (step-disabled `(progn ,@real-body))))
         (append (when docstring (list docstring))
                 (substitute-ignorable declarations)
-                `((call-step-function
-                   ',name ',parameters (list ,@parameters)
-                   (lambda ()
-                       ,@(if name
-                             `((block ,(if (consp name) (second name) name)
-                                 ;; inner block for non-local exit.
-                                 ,@(step-body :progn real-body env)))
-                             (step-body :progn real-body env))))))))))
+                (let ((form `((call-step-function
+                               ',name ',parameters (list ,@parameters)
+                               (lambda ()
+                                   ,@(if name
+                                         `((block ,(if (consp name) (second name) name)
+                                             ;; inner block for non-local exit.
+                                             ,@(step-body :progn real-body env)))
+                                         (step-body :progn real-body env)))))))
+                  (if (stepper-declaration-p declarations 'trace)
+                    `(let ((*step-mode* :trace))
+                       ,form)
+                    form)))))))
 
 
 (defun step-lambda (lambda-form &key (kind :ordinary) name environment)
@@ -626,27 +702,31 @@ RETURN:         A stepping lambda-form from the LAMBDA-FORM.
 (defmacro symbol-reference (symbol &environment env)
   (let ((expansion  (macroexpand symbol env)))
     (if (eq symbol expansion)
-      (step-atom symbol `(lambda () ,symbol))
+      (step-atom symbol)
       (step-expression expansion env))))
 
 (defmacro self-evaluating (object)
-  (step-atom object (lambda () object)))
+  (step-atom object))
 
 (defun step-function-call (form env)
   (destructuring-bind (function-name &rest arguments) form
     (if (consp function-name)
-      (if (member (first function-name)
-                  '(com.informatimago.common-lisp.lisp.stepper:lambda lambda))
-        (simple-step `(,(step-lambda function-name :environment env)
-                        ,@(mapcar (lambda (argument) (step-expression argument env))
-                                  arguments))
-                     form)
-        (error "Invalid object used as function name ~S in function call ~S"
-               function-name form))
-      (simple-step `(,function-name
-                     ,@(mapcar (lambda (argument) (step-expression argument env))
-                               arguments))
-                   form))))
+        (if (member (first function-name)
+                    '(com.informatimago.common-lisp.lisp.stepper:lambda lambda))
+            `(progn
+               ;; (print '(2) *step-trace-output*)
+               (simple-step `(,(step-lambda function-name :environment env)
+                               ,@(mapcar (lambda (argument) (step-expression argument env))
+                                         arguments))
+                            form))
+            (error "Invalid object used as function name ~S in function call ~S"
+                   function-name form))
+        `(progn
+           ;; (print '(3) *step-trace-output*)
+           ,(simple-step `(,function-name
+                           ,@(mapcar (lambda (argument) (step-expression argument env))
+                                     arguments))
+                         form)))))
 
 
 (defun step-expression (form env)
@@ -663,20 +743,24 @@ RETURN:         A stepping lambda-form from the LAMBDA-FORM.
        ;; First we check the real CL special operators:
        ;; We just step them wholesale. (If there are macros inside
        ;; they'll be expanded and we may step them.
-       ((block catch eval-when flet function go if labels let let*
+       ((function quote)
+        (step-simple-form form))
+       ((block catch eval-when flet go if labels let let*
                load-time-value locally macrolet multiple-value-call
-               multiple-value-prog1 progn progv quote return-from setq
+               multiple-value-prog1 progn progv return-from setq
                symbol-macrolet tagbody the throw unwind-protect)
         (simple-step form))
 
        ;; Next we check for the stepper macros.  Since they already
        ;; expand to simple-step, we just use them as is, unless
        ;; they're toplevelness protected forms:
+       ((com.informatimago.common-lisp.lisp.stepper:function
+         com.informatimago.common-lisp.lisp.stepper:quote)
+        (step-simple-form form))
        ((com.informatimago.common-lisp.lisp.stepper:block
             com.informatimago.common-lisp.lisp.stepper:catch
           ;; com.informatimago.common-lisp.lisp.stepper:eval-when
           com.informatimago.common-lisp.lisp.stepper:flet
-          com.informatimago.common-lisp.lisp.stepper:function
           com.informatimago.common-lisp.lisp.stepper:go
           com.informatimago.common-lisp.lisp.stepper:if
           com.informatimago.common-lisp.lisp.stepper:labels
@@ -689,7 +773,6 @@ RETURN:         A stepping lambda-form from the LAMBDA-FORM.
           com.informatimago.common-lisp.lisp.stepper:multiple-value-prog1
           ;; com.informatimago.common-lisp.lisp.stepper:progn
           com.informatimago.common-lisp.lisp.stepper:progv
-          com.informatimago.common-lisp.lisp.stepper:quote
           com.informatimago.common-lisp.lisp.stepper:return-from
           com.informatimago.common-lisp.lisp.stepper:setq
           com.informatimago.common-lisp.lisp.stepper:symbol-macrolet
