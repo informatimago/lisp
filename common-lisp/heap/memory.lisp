@@ -13,11 +13,12 @@
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
 ;;;;    2004-12-22 <PJB> Created.
+;;;;    2012-10-26 <PJB> Added memory-operate.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    GPL
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2004 - 2004
+;;;;    Copyright Pascal J. Bourguignon 2004 - 2012
 ;;;;    
 ;;;;    This program is free software; you can redistribute it and/or
 ;;;;    modify it under the terms of the GNU General Public License
@@ -91,9 +92,40 @@
 (defgeneric poke-uint32 (memory address value))
 (defgeneric poke-uint64 (memory address value))
 (defgeneric valid-address-p (memory address))
-(defgeneric memory-prolog (memory))
-(defgeneric memory-epilog (memory))
+
+(defgeneric memory-prolog (memory)
+  (:documentation "
+This function is called before accessing the memory, so that any locking
+for shared memories may be implemented.
+
+An alternative is to override MEMORY-OPERATE.
+"))
+
+(defgeneric memory-operate (memory thunk)
+    (:documentation "
+This function is called to access the memory, so that any
+locking/unlocking for shared memories may be implemented.
+
+The default method just calls the THUNK.  Any specialization of this
+function must funcall THUNK or CALL-NEXT-METHOD.
+
+An alternative is to override MEMORY-PROLOG and MEMORY-EPILOG.
+"))
+
+(defgeneric memory-epilog (memory)
+  (:documentation "
+This function is called after accessing the memory, so that any unlocking
+for shared memories may be implemented.
+
+An alternative is to override MEMORY-OPERATE.
+"))
+
 (defgeneric dump (memory address length &key byte-size stream margin))
+
+
+(defmethod memory-prolog  ((self memory))       (declare (ignorable self)) (values))
+(defmethod memory-operate ((self memory) thunk) (declare (ignorable self)) (funcall thunk))
+(defmethod memory-epilog  ((self memory))       (declare (ignorable self)) (values))
 
 
 (defmacro with-memory (memory &body body)
@@ -104,7 +136,7 @@ set signal handler, or to acquire locks, and then release them.
   (let ((vmemory (gensym)))
     `(let ((,vmemory ,memory))
        (memory-prolog ,vmemory)
-       (unwind-protect (progn ,@body)
+       (unwind-protect (memory-operate ,vmemory (lambda () ,@body))
          (memory-epilog ,vmemory)))))
 
 
@@ -151,10 +183,6 @@ set signal handler, or to acquire locks, and then release them.
                                  :initial-element 0))
   self)
                                  
-
-(defmethod memory-prolog ((self memory-vector-64)) (declare (ignorable self)) (values))
-(defmethod memory-epilog ((self memory-vector-64)) (declare (ignorable self)) (values))
-
 
 (defmethod peek-uint8  ((self memory-vector-64) address)
   (decf address (base self))
