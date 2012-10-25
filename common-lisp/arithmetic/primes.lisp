@@ -6,8 +6,8 @@
 ;;;;USER-INTERFACE:     common-lisp
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    Compute primes and factorize numbers.
-;;;;    
+;;;;    See defpackage documentation string.
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -16,44 +16,60 @@
 ;;;;    2003-12-03 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2003 - 2003
-;;;;    mailto:pjb@informatimago.com
+;;;;    Copyright Pascal J. Bourguignon 2003 - 2012
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.ARITHMETIC.PRIMES"
-  (:USE "COMMON-LISP"
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.ARITHMETIC.PRIMES"
+  (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
-  (:EXPORT "STR-DECODE" "STR-ENCODE" "PRINT-FACTORIZATION" "FACTORIZE"
+  (:export "STR-DECODE" "STR-ENCODE" "PRINT-FACTORIZATION" "FACTORIZE"
            "COMPUTE-PRIMES-TO")
-  (:IMPORT-FROM "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "WHILE")
-  (:DOCUMENTATION
-   "Compute primes and factorize numbers.
+  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "WHILE")
+  (:documentation
+   "
 
-Copyright Pascal J. Bourguignon 2003 - 2003
-This package is provided under the GNU General Public License.
-See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.ARITHMETIC.PRIMES")
+Compute primes and factorize numbers.
 
 
-(DEFUN COMPUTE-PRIMES-TO (N)
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2003 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see http://www.gnu.org/licenses/
+"))
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.ARITHMETIC.PRIMES")
+
+
+(defun compute-primes-to (n)
   "
 DO:     Compute an Eratostene sieve to find all prime numbers up to N.
 RETURN: An array of prime numbers.
@@ -63,75 +79,75 @@ RETURN: An array of prime numbers.
     ((= n 2) #(2))
     ((= n 3) #(2 3))
     (t
-     (LET (BITS-MAX BITS BIT (PRIME-COUNT 2) (CUR-PRIME 3) PRIMES)
+     (let (bits-max bits bit (prime-count 2) (cur-prime 3) primes)
        ;; (SETQ N (+ N (IF (ODDP N) 3 2)))
-       (SETQ N (- N (IF (ODDP N) 3 2))) ; base of bits array is 3.
-       (SETQ BITS-MAX (/ N 2))
+       (setq n (- n (if (oddp n) 3 2))) ; base of bits array is 3.
+       (setq bits-max (/ n 2))
        ;; set the bitset to full bits;
-       (SETQ BITS (MAKE-ARRAY (LIST BITS-MAX)
-                              :INITIAL-ELEMENT 1 :ELEMENT-TYPE 'BIT))
-       (WHILE (< CUR-PRIME N)
-         (SETQ BIT (+ CUR-PRIME (/ (- CUR-PRIME 3) 2)))
-         (WHILE (< BIT BITS-MAX)
-           (SETF (AREF BITS BIT) 0)
-           (INCF BIT CUR-PRIME))
-         (SETQ BIT (1+ (/ (- CUR-PRIME 3) 2)))
+       (setq bits (make-array (list bits-max)
+                              :initial-element 1 :element-type 'bit))
+       (while (< cur-prime n)
+         (setq bit (+ cur-prime (/ (- cur-prime 3) 2)))
+         (while (< bit bits-max)
+           (setf (aref bits bit) 0)
+           (incf bit cur-prime))
+         (setq bit (1+ (/ (- cur-prime 3) 2)))
          ;; search next prime
-         (SETQ BIT (POSITION 1 BITS :START BIT))
-         (IF BIT
-             (SETQ CUR-PRIME (+ BIT BIT 3)
-                   PRIME-COUNT (1+ PRIME-COUNT))
-             (SETQ CUR-PRIME N)))
+         (setq bit (position 1 bits :start bit))
+         (if bit
+             (setq cur-prime (+ bit bit 3)
+                   prime-count (1+ prime-count))
+             (setq cur-prime n)))
        ;; gather the primes.
-       (SETQ PRIMES (MAKE-ARRAY (LIST PRIME-COUNT) :ELEMENT-TYPE 'INTEGER))
-       (LET ((CURNUM 0))
-         (SETF (AREF PRIMES CURNUM) 2)
-         (INCF CURNUM)
-         (SETF (AREF PRIMES CURNUM) 3)
-         (INCF CURNUM)
-         (SETQ CUR-PRIME 3)
-         (SETQ BIT 0)
-         (SETQ BIT (POSITION 1 BITS :START (1+ BIT)))
-         (WHILE BIT
-           (SETQ CUR-PRIME (+ BIT BIT 3))
-           (SETF (AREF PRIMES CURNUM) CUR-PRIME)
-           (INCF CURNUM)
-           (SETQ BIT (POSITION 1 BITS :START (1+ BIT)))))
-       PRIMES))))
+       (setq primes (make-array (list prime-count) :element-type 'integer))
+       (let ((curnum 0))
+         (setf (aref primes curnum) 2)
+         (incf curnum)
+         (setf (aref primes curnum) 3)
+         (incf curnum)
+         (setq cur-prime 3)
+         (setq bit 0)
+         (setq bit (position 1 bits :start (1+ bit)))
+         (while bit
+           (setq cur-prime (+ bit bit 3))
+           (setf (aref primes curnum) cur-prime)
+           (incf curnum)
+           (setq bit (position 1 bits :start (1+ bit)))))
+       primes))))
 
 
-(DEFUN FACTORIZE (N &optional (PRIMES nil))
+(defun factorize (n &optional (primes nil))
   "
 N:        an INTEGER
 PRIMES:   a VECTOR of prime factors sorted in increasing order.
 RETURN:   a SEXP of the form: (* uncomensurate-factor
-                                 [ prime | (EXPT prime exponent) ]... [ -1 ] )
+                                 [ prime | (EXPT prime exponent) ]… [ -1 ] )
 "
   (setf primes (or primes (compute-primes-to (1+ (isqrt n)))))
-  (LET ((FACTORS '())
-        (PRIME-IDX 0) )
-    (UNLESS (INTEGERP N)
-      (ERROR "I can only decompose integer values."))
-    (WHEN (< N 0)
-      (PUSH -1 FACTORS)
-      (SETQ N (- N)))
-    (WHILE (AND (< PRIME-IDX (LENGTH PRIMES)) (< 1 N))
-      (LET ((PRIME (elt PRIMES PRIME-IDX))
-            (EXPO 0))
-        (MULTIPLE-VALUE-BIND (Q R) (TRUNCATE N PRIME)
-          (WHILE (= 0 R)
-            (INCF EXPO)
-            (SETQ N Q)
-            (MULTIPLE-VALUE-SETQ (Q R) (TRUNCATE N PRIME))))
-        (WHEN (< 0 EXPO)
-          (PUSH (IF (= 1 EXPO) PRIME (LIST 'EXPT PRIME EXPO)) FACTORS)  ))
-      (INCF PRIME-IDX))
-    (WHEN (< 1 N)
-      (PUSH N FACTORS))
-    (CONS '* FACTORS)))
+  (let ((factors '())
+        (prime-idx 0) )
+    (unless (integerp n)
+      (error "I can only decompose integer values."))
+    (when (< n 0)
+      (push -1 factors)
+      (setq n (- n)))
+    (while (and (< prime-idx (length primes)) (< 1 n))
+      (let ((prime (elt primes prime-idx))
+            (expo 0))
+        (multiple-value-bind (q r) (truncate n prime)
+          (while (= 0 r)
+            (incf expo)
+            (setq n q)
+            (multiple-value-setq (q r) (truncate n prime))))
+        (when (< 0 expo)
+          (push (if (= 1 expo) prime (list 'expt prime expo)) factors)  ))
+      (incf prime-idx))
+    (when (< 1 n)
+      (push n factors))
+    (cons '* factors)))
 
 
-(DEFUN FACTORIZE-VECTOR (N PRIMES)
+(defun factorize-vector (n primes)
   "
 N:        an INTEGER
 PRIMES:   a VECTOR of prime factors sorted in increasing order.
@@ -139,62 +155,62 @@ RETURN:   a VECTOR of length (1+ (LENGTH PRIMES)), with the uncommensurate
           factor in the slot 0, and the exponents of the primes in the
           following slots. (PRIMES could have a 1 in the first slot!)
 "
-  (LET ((LAST-PRIME (1- (LENGTH PRIMES)))
-        (EXPONENTS (MAKE-ARRAY (LIST (1+ (LENGTH PRIMES)))
-                               :INITIAL-ELEMENT 0 :ELEMENT-TYPE 'INTEGER))
-        (CUR-EXPONENT 0)
-        (CUR-PRIME -1)
-        PRIME)
-    (IF (< N 0)
-        (SETF (AREF EXPONENTS 0) -1
-              N (- N))
-        (SETF (AREF EXPONENTS 0) 1))
-    (SETQ PRIME (AREF PRIMES (INCF CUR-PRIME)))
-    (WHILE (AND (< CUR-PRIME LAST-PRIME) (< 1 N))
-      (LET ((EXPO 0))
-        (MULTIPLE-VALUE-BIND (Q R) (TRUNCATE N PRIME)
-          (WHILE (= 0 R)
-            (INCF EXPO)
-            (SETQ N Q)
-            (MULTIPLE-VALUE-SETQ (Q R) (TRUNCATE N PRIME))))
-        (SETF (AREF EXPONENTS (INCF CUR-EXPONENT)) EXPO)
-        (SETQ PRIME (AREF PRIMES (INCF CUR-PRIME)))))
-    (SETF (AREF EXPONENTS 0) (* (AREF EXPONENTS 0) N))
-    EXPONENTS))
+  (let ((last-prime (1- (length primes)))
+        (exponents (make-array (list (1+ (length primes)))
+                               :initial-element 0 :element-type 'integer))
+        (cur-exponent 0)
+        (cur-prime -1)
+        prime)
+    (if (< n 0)
+        (setf (aref exponents 0) -1
+              n (- n))
+        (setf (aref exponents 0) 1))
+    (setq prime (aref primes (incf cur-prime)))
+    (while (and (< cur-prime last-prime) (< 1 n))
+      (let ((expo 0))
+        (multiple-value-bind (q r) (truncate n prime)
+          (while (= 0 r)
+            (incf expo)
+            (setq n q)
+            (multiple-value-setq (q r) (truncate n prime))))
+        (setf (aref exponents (incf cur-exponent)) expo)
+        (setq prime (aref primes (incf cur-prime)))))
+    (setf (aref exponents 0) (* (aref exponents 0) n))
+    exponents))
 
 ;; (defparameter *primes* (compute-primes-to 1000))
 ;; (factorize -4004 *primes*)
 
 
-(DEFUN PRINT-FACTORIZATION (EXPONENTS PRIMES)
+(defun print-factorization (exponents primes)
   "
-EXPONENTS:  [ uncommensurate-factor  exponents... ]
-PRIMES:     [ prime-factors ... ]
+EXPONENTS:  A sequence: ( uncommensurate-factor  exponents… )
+PRIMES:     A sequence: ( prime-factors… )
 PRE:        (= (LENGTH EXPONENTS) (1+ (LENGTH PRIMES)))
 DO:         Prints on *STANDARD-OUTPUT* an expression of the number.
 "
-  (MAP NIL (LAMBDA (P E) (UNLESS (ZEROP E) (FORMAT T "~12D ^ ~D *~%" P E)))
-       PRIMES (SUBSEQ EXPONENTS 1))
-  (FORMAT T "~12A   ~D~%" "" (AREF EXPONENTS 0)))
+  (map nil (lambda (p e) (unless (zerop e) (format t "~12D ^ ~D *~%" p e)))
+       primes (subseq exponents 1))
+  (format t "~12A   ~D~%" "" (elt exponents 0)))
 
 
-(DEFUN STR-ENCODE (STR PRIMES)
+(defun str-encode (str primes)
   "
 RETURN:  An integer encoding the string STR factorized with the PRIMES.
 "
-  (APPLY (FUNCTION *)
-         (MAP 'LIST (LAMBDA (CH PRIME) (EXPT PRIME (CHAR-CODE CH))) STR PRIMES)))
+  (apply (function *)
+         (map 'list (lambda (ch prime) (expt prime (char-code ch))) str primes)))
 
 
-(DEFUN STR-DECODE (NUM PRIMES)
+(defun str-decode (num primes)
   "
 RETURN:  A string decoding the integer NUM factorized with the PRIMES.
 "
-  (WITH-OUTPUT-TO-STRING (*STANDARD-OUTPUT*)
-    (MAP NIL (LAMBDA (P E)
-               (DECLARE (IGNORE P))
-               (UNLESS (ZEROP E) (FORMAT T "~C" (CODE-CHAR E))))
-         PRIMES (SUBSEQ (FACTORIZE-VECTOR NUM PRIMES) 1))))
+  (with-output-to-string (*standard-output*)
+    (map nil (lambda (p e)
+               (declare (ignore p))
+               (unless (zerop e) (format t "~C" (code-char e))))
+         primes (subseq (factorize-vector num primes) 1))))
 
 
 ;;;; THE END ;;;;

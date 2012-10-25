@@ -14,34 +14,32 @@
 ;;;;    2003-06-05 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal Bourguignon 2003 - 2003
+;;;;    Copyright Pascal Bourguignon 2003 - 2012
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
-(LOAD "CCLAN:ASDF;ASDF.LISP")
-(LOAD "CCLAN:CCLAN-GET;PACKAGE.LISP")
-(LOAD "CCLAN:CCLAN-GET;CCLAN-GET.ASD")
-(ASDF:OPERATE 'ASDF:LOAD-OP :CCLAN-GET)  
-(SETF CCLAN-GET::*CCLAN-TARBALL-DIRECTORY* "SHARE-LISP:CCLAN;TARBALL;"
-      CCLAN-GET::*CCLAN-SOURCE-DIRECTORY*  "SHARE-LISP:CCLAN;SOURCE;"
-      CCLAN-GET::*CCLAN-ASDF-REGISTRY*     "SHARE-LISP:CCLAN;REGISTRY;")
-(PUSH CCLAN-GET::*CCLAN-ASDF-REGISTRY* ASDF:*CENTRAL-REGISTRY*)
+(load "CCLAN:ASDF;ASDF.LISP")
+(load "CCLAN:CCLAN-GET;PACKAGE.LISP")
+(load "CCLAN:CCLAN-GET;CCLAN-GET.ASD")
+(asdf:operate 'asdf:load-op :cclan-get)  
+(setf cclan-get::*cclan-tarball-directory* "SHARE-LISP:CCLAN;TARBALL;"
+      cclan-get::*cclan-source-directory*  "SHARE-LISP:CCLAN;SOURCE;"
+      cclan-get::*cclan-asdf-registry*     "SHARE-LISP:CCLAN;REGISTRY;")
+(push cclan-get::*cclan-asdf-registry* asdf:*central-registry*)
 
 (format t  "Push on ASDF:*CENTRAL-REGISTRY* directories where .asd files are ~
             to be found.~%")

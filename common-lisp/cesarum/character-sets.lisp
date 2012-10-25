@@ -6,96 +6,250 @@
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    This package exports functions to manage character-sets,
-;;;;    character encodings, coding systems and external format.
-;;;;    It's all the same, but each everybody likes to have his own terms...
-;;;;    
-;;;;    The base character set repertoire will be the IANA one, published at:
-;;;;    http://www.iana.org/assignments/character-sets
+;;;;    See defpackage documentation string.
 ;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2012-04-06 <PJB> Moved the implementation specific stuff to
+;;;;                     com.informatimago.clext.character-sets
+;;;;                     CHARACTER-SET-TO-LISP-ENCODING
+;;;;                     CHARACTER-SET-FROM-LISP-ENCODING
 ;;;;    2007-05-18 <PJB> Merged with stuff from make-depend, and augmented.
 ;;;;    2005-08-31 <PJB> Created (iana-character-sets.lisp).
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal Bourguignon 2005 - 2007
+;;;;    Copyright Pascal Bourguignon 2005 - 2012
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CHARACTER-SETS"
-  (:USE "COMMON-LISP"
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CHARACTER-SETS"
+  (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
-  (:EXPORT
-   "CHARACTER-SET"
-   "CS-MIB-ENUM" "CS-NAME" "CS-ALIASES"
-   "CS-SOURCE" "CS-COMMENTS" "CS-REFERENCES" "CS-RANGES"
-   "CS-LISP-ENCODING" "CS-EMACS-ENCODING" "CS-MIME-ENCODING" 
+  (:export
+
+   "CHARACTER-SET" "CS-MIB-ENUM" "CS-NAME" "CS-ALIASES" "CS-SOURCE"
+   "CS-COMMENTS" "CS-REFERENCES" "CS-RANGES" "CS-LISP-ENCODING"
+   "CS-EMACS-ENCODING" "CS-MIME-ENCODING"
+   
+   "REGISTER-CHARACTER-SET" "FIND-CHARACTER-SET"
+   "CHARACTER-SET-ERROR" "CHARACTER-SET-ERROR-CHARACTER-SET"
+   
+   "CHARACTER-SET-TO-MIME-ENCODING" "CHARACTER-IN-CHARACTER-SET-P"
+
    "READ-CHARACTER-SETS-FILE"
-   "*CHARACTER-SETS*" "FIND-CHARACTER-SET"
-   "CHARACTER-SET-TO-EMACS-ENCODING"
-   "CHARACTER-SET-FROM-EMACS-ENCODING"
-   "CHARACTER-SET-TO-LISP-ENCODING"
-   "CHARACTER-SET-FROM-LISP-ENCODING"
-   "CHARACTER-SET-TO-MIME-ENCODING"
-   "EMACS-ENCODING-TO-LISP-EXTERNAL-FORMAT"
-   "CHARACTER-IN-CHARACTER-SET-P")
-  (:DOCUMENTATION
-   "This package exports functions to manage character-sets,
-    character encodings, coding systems and external format.
-    It's all the same, but each everybody likes to have his own terms...
+   "*CHARACTER-SETS*")
+  
+  (:documentation
+   "
+This package exports functions to manage character-sets, character
+encodings, coding systems and external format.  It's all the same, but
+everyone likes to have his own terms...
+
+The base character set repertoire will be the IANA one, published at:
+http://www.iana.org/assignments/character-sets</a>
+
+
+The cs-lisp-encoding and cs-emacs-encoding of the character sets are
+hooked in by the implementation specific initialization code in the
+COM.INFORMATIMGO.CLEXT.CHARACTER-SET package.
+
+
+See also: COM.INFORMATIMGO.CLEXT.CHARACTER-SET
+
+
+License:
+
+    AGPL3
     
-    Copyright Pascal J. Bourguignon 2005 - 2007
-    This package is provided under the GNU General Public Licence.
-    See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CHARACTER-SETS")
+    Copyright Pascal J. Bourguignon 2005 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CHARACTER-SETS")
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;; Processing IANA charactet-sets file.
+;;;;
+;;;; Character-set descriptions. (obtained from processing IANA
+;;;; charactet-sets file).
 ;;;;
 
  (defstruct (character-set (:conc-name cs-))
+   "Describes a character-set."
+   ;; Identification.  name is a string. aliases is a list of strings.
    mib-enum name aliases
+
    ;; Comments and other human readable information:
    source comments references
-   ;; We associate each IANA character set with the cl-encoding and
+
+   ;; We associate each IANA character set with the lisp encoding and
    ;; the emacs encoding.
-   ;;
+   
    ;; We keep only the current Common Lisp implementation encoding, to
    ;; promote standardization of implementation encoding names around
    ;; this IANA character set registry. (We don't want to manage cross
    ;; CL implementations encodings, let's go thru the IANA registry).
    lisp-encoding
+
    ;; However, we keep also here the emacs encoding for its important
    ;; application in reading source files edited with emacs.
    emacs-encoding
+
    ;; The preferred name for MIME is stored here, otherwise name is used.
    mime-encoding
+
    ;; Character ranges: a vector of pairs of unicode character codes:
    ;;    [ (aref range (* 2 i))   (aref range (1+ (* 2 i))) ]
    ;; indicating which characters belong to the character set,
    ;; or NIL when unknown.
    ranges)
+
+(setf (documentation 'cs-mib-enum 'function)
+      "The integer identifying the character set in the SNMP MIBs."
+      (documentation 'cs-name 'function)
+      "The name of the character set (a string)."
+      (documentation 'cs-aliases 'function)
+      "A list of aliases for the character set (strings)."
+      (documentation 'cs-source 'function)
+      "The normative reference specifying the character set (string)."
+      (documentation 'cs-comments 'function)
+      "A comment (string)."
+      (documentation 'cs-references 'function)
+      "References (string)."
+      (documentation 'cs-lisp-encoding 'function)
+      "The name of the  encoding in the current lisp implementation."
+      (documentation 'cs-emacs-encoding 'function)
+      "The name of the  encoding in GNU emacs."
+      (documentation 'cs-mime-encoding 'function)
+      "The name of the encoding in MIME."
+      (documentation 'cs-ranges 'function)
+      "The set of unicode ranges of the characters that are in this character-set.")
+
+(defgeneric character-set-error-character-set (error)
+  (:documentation "The character-set in error."))
+
+(define-condition character-set-error (error)
+  ((character-set    :initarg :character-set    :reader character-set-error-character-set)
+   (format-control   :initarg :format-control   :reader format-control)
+   (format-arguments :initarg :format-arguments :reader format-arguments))
+  (:documentation "The CHARACTER-SET-ERROR condition.")
+  (:report (lambda (condition stream)
+             (format stream "~?" (format-control condition) (format-arguments condition)))))
+
+
+(defvar *character-sets* nil "The list of Character Sets.")
+
+
+(defun find-character-set (name)
+  "
+RETURN: The character-set in *CHARACTER-SETS* that has NAME as name or alias,
+        or some variation of NAME (removing non alphanumeric characters
+        and prefixing 'cs'. 
+"
+  (flet ((memb (item list)
+           (member item list :test (function string-equal))))
+    (declare (inline memb))
+    (let* ((name (string name))
+           (result
+            (find-if
+            (lambda (cs)
+              (or  (string-equal name (cs-name cs))
+                   (memb name (cs-aliases cs))
+                   (memb name (cs-lisp-encoding cs))
+                   (memb name (cs-emacs-encoding cs))
+                   (memb (concatenate 'string "cs"
+                                      (remove-if-not (function alphanumericp)
+                                                     name))
+                           (cs-aliases cs))))
+            *character-sets*)))
+      ;; We move the found character set in front of the list to speed next
+      ;; searches, assuming the application will often search several times
+      ;; the same few character sets.
+      (when result
+        (setf *character-sets* (cons result (delete result *character-sets*))))
+      result)))
+
+
+(defun register-character-set (cs)
+  "
+DO:     Register a new character-set CS.  If there's already a
+        character set with the same name or aliase, signal a
+        CHARACTER-SET-ERROR.
+RETURN: CS
+"
+  (let ((old-cs (find-if (lambda (name) (find-character-set name))
+                         (cons (cs-name cs) (cs-aliases cs)))))
+    (if old-cs
+     (error 'character-set-error
+            :character-set old-cs
+            :format-control "There is already a character set with same name or alias ~S"
+            :format-arguments (list (cons (cs-name cs) (cs-aliases cs))))
+     (push cs *character-sets*)))
+  cs)
+
+
+
+(defun character-in-character-set-p (character character-set)
+  "
+RETURN: Whether the CHARACTER belongs to the CHARACTER-SET.
+"
+  (let ((code   (char-code character))
+        (ranges (cs-ranges character-set)))
+    (if ranges
+        (loop
+           :for i :from 0 :below (length ranges) :by 2
+           :do (when (<= (aref ranges i) code (aref ranges (1+ i)))
+                 (return (values code :known)))
+           :finally (return (values nil :known)))
+        (values t :unknown))))
+
+
+(defun encodings-not-in-iana (encodings)
+  "
+RETURN: the subset of ENCODINGS that is not in *CHARACTER-SETS*.
+"
+  (let ((result '()))
+    (dolist (enc encodings result)
+      (let ((cs (some (function find-character-set) enc)))
+        (unless cs
+          (push enc result))))))
+
+
+(defun character-set-to-mime-encoding (cs)
+  "
+RETURN: The MIME encoding of the given character set, or it's NAME.
+"
+  (or (cs-mime-encoding cs) (cs-name cs)))
 
 
 
@@ -193,501 +347,17 @@ RETURN: A list of character-set structures read from the file.
          :finally (when cs (push cs sets)) (return sets)))))
 
 
-(defvar *CHARACTER-SETS* nil "The list of IANA Character Sets.")
-
-
-(defun find-character-set (name)
-  "
-RETURN: The character-set in *CHARACTER-SETS* that has NAME as name or alias,
-        or some variation of NAME (removing non alphanumeric characters
-        and prefixing 'cs'. 
-"
-  (flet ((memb (item list)
-           (member item list :test (function string-equal))))
-    (declare (inline memb))
-    (let* ((name (string name))
-           (result
-            (find-if
-            (lambda (cs)
-              (or  (string-equal name (cs-name cs))
-                   (memb name (cs-aliases cs))
-                   (memb name (cs-lisp-encoding cs))
-                   (memb name (cs-emacs-encoding cs))
-                   (memb (concatenate 'string "cs"
-                                      (remove-if-not (function alphanumericp)
-                                                     name))
-                           (cs-aliases cs))))
-            *character-sets*)))
-      ;; We move the found character set in front of the list to speed next
-      ;; searches, assuming the application will often search several times
-      ;; the same few character sets.
-      (when result
-        (setf *character-sets* (cons result (delete result *character-sets*))))
-      result)))
-
-
-
-(defun character-in-character-set-p (character character-set)
-  (let ((code   (char-code character))
-        (ranges (cs-ranges character-set)))
-    (if ranges
-        (loop
-           :for i :from 0 :below (length ranges) :by 2
-           :do (when (<= (aref ranges i) code (aref ranges (1+ i)))
-                 (return (values code :known)))
-           :finally (return (values nil :known)))
-        (values t :unknown))))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; EMACS-ENCODINGS
-;;;
-
-(defparameter *emacs-encodings*
-  #||
-  ;; emacs lisp code to generate the following list.
-  (require 'cl)
-  (sort*
-   (mapcar
-    (lambda (sl) (mapcar (lambda (sym) (upcase (symbol-name sym))) sl))
-    (delete-duplicates
-     (mapcar (lambda (coding-system)
-               (or (coding-system-get coding-system 'alias-coding-systems)
-                   (list coding-system)))
-             (let ((coding-system-list '()))
-               (mapatoms (lambda (sym) (when (and sym (coding-system-p sym))
-                                    (push sym coding-system-list))))
-               coding-system-list))
-     :test (function equal)))
-   (function string<) :key (function first))
-  ||#
-  (quote
-   (("CHINESE-BIG5" "BIG5" "CN-BIG5" "CP950")
-    ("CHINESE-HZ" "HZ-GB-2312" "HZ")
-    ("CHINESE-ISO-8BIT" "CN-GB-2312" "EUC-CHINA" "EUC-CN" "CN-GB" "GB2312" "CP936")
-    ("CHINESE-ISO-8BIT-WITH-ESC")
-    ("COMPOUND-TEXT" "X-CTEXT" "CTEXT")
-    ("COMPOUND-TEXT-WITH-EXTENSIONS" "X-CTEXT-WITH-EXTENSIONS" "CTEXT-WITH-EXTENSIONS")
-    ("CP1125" "RUSCII" "CP866U")
-    ("CP437")
-    ("CP720")
-    ("CP737")
-    ("CP775")
-    ("CP850")
-    ("CP851")
-    ("CP852")
-    ("CP855")
-    ("CP857")
-    ("CP860")
-    ("CP861")
-    ("CP862")
-    ("CP863")
-    ("CP864")
-    ("CP865")
-    ("CP866")
-    ("CP869")
-    ("CP874")
-    ("CTEXT-NO-COMPOSITIONS")
-    ("CYRILLIC-ALTERNATIVNYJ" "ALTERNATIVNYJ")
-    ("CYRILLIC-ISO-8BIT" "ISO-8859-5")
-    ("CYRILLIC-ISO-8BIT-WITH-ESC")
-    ("CYRILLIC-KOI8" "KOI8-R" "KOI8" "CP878")
-    ("EMACS-MULE")
-    ("EUC-TW" "EUC-TAIWAN")
-    ("GEORGIAN-PS")
-    ("GREEK-ISO-8BIT" "ISO-8859-7")
-    ("GREEK-ISO-8BIT-WITH-ESC")
-    ("HEBREW-ISO-8BIT" "ISO-8859-8" "ISO-8859-8-E" "ISO-8859-8-I")
-    ("HEBREW-ISO-8BIT-WITH-ESC")
-    ("IN-IS13194" "DEVANAGARI")
-    ("IN-IS13194-WITH-ESC")
-    ("ISO-2022-7BIT")
-    ("ISO-2022-7BIT-LOCK" "ISO-2022-INT-1")
-    ("ISO-2022-7BIT-LOCK-SS2" "ISO-2022-CJK")
-    ("ISO-2022-7BIT-SS2")
-    ("ISO-2022-8BIT-SS2")
-    ("ISO-2022-CN" "CHINESE-ISO-7BIT")
-    ("ISO-2022-CN-EXT")
-    ("ISO-2022-JP" "JUNET")
-    ("ISO-2022-JP-2")
-    ("ISO-2022-KR" "KOREAN-ISO-7BIT-LOCK")
-    ("ISO-8859-11")
-    ("ISO-8859-6" "ARABIC-ISO-8BIT")
-    ("ISO-LATIN-1" "ISO-8859-1" "LATIN-1")
-    ("ISO-LATIN-1-WITH-ESC")
-    ("ISO-LATIN-10" "ISO-8859-16" "LATIN-10")
-    ("ISO-LATIN-2" "ISO-8859-2" "LATIN-2")
-    ("ISO-LATIN-2-WITH-ESC")
-    ("ISO-LATIN-3" "ISO-8859-3" "LATIN-3")
-    ("ISO-LATIN-3-WITH-ESC")
-    ("ISO-LATIN-4" "ISO-8859-4" "LATIN-4")
-    ("ISO-LATIN-4-WITH-ESC")
-    ("ISO-LATIN-5" "ISO-8859-9" "LATIN-5")
-    ("ISO-LATIN-5-WITH-ESC")
-    ("ISO-LATIN-6" "ISO-8859-10" "LATIN-6")
-    ("ISO-LATIN-7" "ISO-8859-13" "LATIN-7")
-    ("ISO-LATIN-8" "ISO-8859-14" "LATIN-8")
-    ("ISO-LATIN-8-WITH-ESC")
-    ("ISO-LATIN-9" "ISO-8859-15" "LATIN-9" "LATIN-0")
-    ("ISO-LATIN-9-WITH-ESC")
-    ("ISO-SAFE" "US-ASCII")
-    ("JAPANESE-ISO-7BIT-1978-IRV" "ISO-2022-JP-1978-IRV" "OLD-JIS")
-    ("JAPANESE-ISO-8BIT" "EUC-JAPAN-1990" "EUC-JAPAN" "EUC-JP")
-    ("JAPANESE-ISO-8BIT-WITH-ESC")
-    ("JAPANESE-SHIFT-JIS" "SHIFT_JIS" "SJIS" "CP932")
-    ("KOI8-T" "CYRILLIC-KOI8-T")
-    ("KOI8-U")
-    ("KOREAN-ISO-8BIT" "EUC-KR" "EUC-KOREA" "CP949")
-    ("KOREAN-ISO-8BIT-WITH-ESC")
-    ("LAO")
-    ("LAO-WITH-ESC")
-    ("MAC-ROMAN")
-    ("MIK")
-    ("MULE-UTF-16" "UTF-16")
-    ("MULE-UTF-16BE" "UTF-16BE")
-    ("MULE-UTF-16BE-WITH-SIGNATURE" "UTF-16BE-WITH-SIGNATURE"
-                                    "MULE-UTF-16-BE" "UTF-16-BE")
-    ("MULE-UTF-16LE" "UTF-16LE")
-    ("MULE-UTF-16LE-WITH-SIGNATURE" "UTF-16LE-WITH-SIGNATURE"
-                                    "MULE-UTF-16-LE" "UTF-16-LE")
-    ("MULE-UTF-8" "UTF-8")
-    ("NEXT")
-    ("NO-CONVERSION")
-    ("PT154")
-    ("RAW-TEXT")
-    ("THAI-TIS620" "TH-TIS620" "TIS620" "TIS-620")
-    ("THAI-TIS620-WITH-ESC")
-    ("TIBETAN-ISO-8BIT" "TIBETAN")
-    ("TIBETAN-ISO-8BIT-WITH-ESC")
-    ("UNDECIDED")
-    ("UTF-7")
-    ("VIETNAMESE-TCVN" "TCVN" "TCVN-5712")
-    ("VIETNAMESE-VIQR" "VIQR")
-    ("VIETNAMESE-VISCII" "VISCII")
-    ("VIETNAMESE-VSCII" "VSCII")
-    ("W3M-EUC-JAPAN")
-    ("W3M-ISO-LATIN-1")
-    ("WINDOWS-1250" "CP1250")
-    ("WINDOWS-1251" "CP1251" "CP1251")
-    ("WINDOWS-1252" "CP1252" "CP1252")
-    ("WINDOWS-1253" "CP1253")
-    ("WINDOWS-1254" "CP1254")
-    ("WINDOWS-1255" "CP1255")
-    ("WINDOWS-1256" "CP1256")
-    ("WINDOWS-1257" "CP1257")
-    ("WINDOWS-1258" "CP1258")))
-  "List of emacs encoding, grouped by aliases")
-
-
-
-(defun add-aliases-to-group (group aliases)
-  (let ((alias (find-if
-                (lambda (alias)
-                  (intersection group alias :test (function string-equal)))
-                aliases)))
-    (if alias
-        (remove-duplicates (union group alias :test (function string-equal))
-                           :test (function string-equal))
-        group)))
-
-
-(defparameter *aliases*
-  '(
-    ;; clisp, emacs:
-    ("UNICODE-32-LITTLE-ENDIAN" "UTF-32-LE" "UTF-32LE")
-    ("UNICODE-32-BIG-ENDIAN"    "UTF-32-BE" "UTF-32BE")
-    ("UNICODE-16-LITTLE-ENDIAN" "UTF-16-LE" "UTF-16LE")
-    ("UNICODE-16-BIG-ENDIAN"    "UTF-16-BE" "UTF-16BE")
-    ;; clisp
-    ("CP437-IBM" "CP437")
-    ("CP852-IBM" "CP852")
-    ("CP860-IBM" "CP860")
-    ("CP861-IBM" "CP861")
-    ("CP862-IBM" "CP862")
-    ("CP863-IBM" "CP863")
-    ("CP864-IBM" "CP864")
-    ("CP865-IBM" "CP865")
-    ("CP869-IBM" "CP869")
-    ("CP874-IBM" "CP874")
-    ;; emacs:
-    ("VSCII" "VISCII")
-    ;; TODO: Add aliases for other implementations if needed.
-    ))
-
-
-(defun fill-character-set-emacs-encoding ()
-  (dolist (ecsl  *emacs-encodings*)
-    (let ((cs (some (function find-character-set)
-                    (add-aliases-to-group ecsl *aliases*))))
-      (when cs
-        (setf (cs-emacs-encoding cs) ecsl)))))
-
-
-(defun character-set-to-emacs-encoding (cs &key (line-terminator :unix))
-  "
-RETURN: A string naming the emacs encoding for the given character-set
-        and line-terminator.
-SIGNAL: An error if line-terminator is not (member :unix :mac :dos nil) or
-        if cs has no emacs encoding.
-"
-  (assert (member line-terminator '(:unix :mac :dos nil)))
-  (unless  (cs-emacs-encoding cs)
-    (error "The character-set ~A has no corresponding emacs encoding"
-           (cs-name cs)))
-  (format nil "~(~A~:[~;~:*-~A~]~)" (first (cs-emacs-encoding cs))
-          line-terminator))
-
-
-(defun character-set-from-emacs-encoding (ecs)
-  "
-ECS:  A string or symbol naming the emacs encoding,
-        possibly suffixed by a line-terminator.
-RETURN: The character-set that correspond to this emacs-encoding ;
-       the line-terminator.
-"
-  (let ((line-terminator nil)
-        (ecs (string ecs)))
-    (cond
-      ((suffixp "-unix" ecs :test (function char-equal))
-       (setf ecs  (subseq ecs 0 (- (length ecs) 5))
-             line-terminator :unix))
-      ((suffixp "-dos" ecs :test (function char-equal))
-       (setf ecs (subseq ecs 0 (- (length ecs) 4))
-             line-terminator :dos))
-      ((suffixp "-mac" ecs :test (function char-equal))
-       (setf ecs (subseq ecs 0 (- (length ecs) 4))
-             line-terminator :mac)))
-    (values
-     (find (lambda (cs) (member ecs (cs-emacs-encoding cs)
-                           :test (function string-equal)))
-           *character-sets*)
-     line-terminator)))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Lisp Encodings
-;;;
-
-#+clisp
-(defun group-charset-aliases ()
-  "
-RETURN: A list of sublists grouping character set aliases, ie. charset encodings
-     that have the same charset."
-  (let ((h (make-hash-table)))
-    (do-external-symbols (s "CHARSET")
-      (push (string-upcase s) (gethash (EXT:ENCODING-CHARSET s) h)))
-    (let ((r '()))
-      (maphash (lambda (k v) (declare (ignore k)) (push  v r)) h)
-      r)))
-
-
-(defparameter *lisp-encodings*
-  #+clisp (group-charset-aliases)
-  #+sbcl  (etypecase SB-IMPL::*EXTERNAL-FORMATS*
-            (hash-table (let ((result '()))
-                          (maphash (lambda (name encoding) (pushnew encoding result))
-                                   SB-IMPL::*EXTERNAL-FORMATS*)
-                          (mapcar (lambda (encoding)
-                                    (mapcar (function string-upcase)
-                                            (slot-value encoding 'SB-IMPL::names)))
-                                  result)))
-            (list (mapcar (lambda (x) (mapcar (function string-upcase) (first x)))
-                          SB-IMPL::*EXTERNAL-FORMATS*)))
-  #+cmu   '(("ISO-8859-1"))          ; :iso-latin-1-unix ;  what else?
-  #+ccl   (mapcar (lambda (x) (mapcar (function string-upcase) x))
-                  '((:ISO-8859-1 :ISO_8859-1 :LATIN1 :L1 :IBM819 :CP819 :CSISOLATIN1)
-                    (:ISO-8859-2 :ISO_8859-2 :LATIN-2 :L2 :CSISOLATIN2)
-                    (:ISO-8859-3 :ISO_8859-3 :LATIN3 :L3 :CSISOLATIN3)
-                    (:ISO-8859-4 :ISO_8859-4 :LATIN4 :L4 :CSISOLATIN4)
-                    (:ISO-8859-5 :ISO_8859-5 :CYRILLIC :CSISOLATINCYRILLIC :ISO-IR-144)
-                    (:ISO-8859-6 :ISO_8859-6 :ARABIC :CSISOLATINARABIC :ISO-IR-127)
-                    (:ISO-8859-7 :ISO_8859-7 :GREEK :GREEK8 :CSISOLATINGREEK :ISO-IR-126 :ELOT_928 :ECMA-118)
-                    (:ISO-8859-8 :ISO_8859-8 :HEBREW :CSISOLATINHEBREW :ISO-IR-138)
-                    (:ISO-8859-9 :ISO_8859-9 :LATIN5 :CSISOLATIN5 :ISO-IR-148)
-                    (:ISO-8859-10 :ISO_8859-10 :LATIN6 :CSISOLATIN6 :ISO-IR-157)
-                    (:ISO-8859-11)
-                    (:ISO-8859-13)
-                    (:ISO-8859-14 :ISO_8859-14 :ISO-IR-199 :LATIN8 :L8 :ISO-CELTIC)
-                    (:ISO-8859-15 :ISO_8859-15 :LATIN9)
-                    (:ISO-8859-16 :ISO_8859-16 :ISO-IR-199 :LATIN8 :L8 :ISO-CELTIC)
-                    (:MACINTOSH :MACOS-ROMAN :MACOSROMAN :MAC-ROMAN :MACROMAN)
-                    (:UCS-2)
-                    (:UCS-2BE)
-                    (:UCS-2LE)
-                    (:US-ASCII :CSASCII :CP637 :IBM637 :US :ISO646-US :ASCII :ISO-IR-6)
-                    (:UTF-16)
-                    (:UTF-16BE)
-                    (:UTF-16LE)
-                    (:UTF-32 :UTF-4)
-                    (:UTF-32BE :UCS-4BE)
-                    (:UTF-8)
-                    (:UTF-32LE :UCS-4LE)
-                    (:Windows-31j  :CP932 :CSWINDOWS31J)
-                    (:EUC-JP :EUCJP)))
-  #-(or clisp sbcl cmu ccl)
-  (progn
-    (warn "What are the available external formats in ~A ?"
-          (lisp-implementation-type))
-    '(("US-ASCII"))))
-
-
-(defun fill-character-set-lisp-encoding ()
-  (dolist (lsl *lisp-encodings*)
-    (let ((cs (some (function find-character-set)
-                    (add-aliases-to-group lsl *aliases*))))
-      (when cs
-        (setf (cs-lisp-encoding cs) lsl)))))
-
-
-
-
-(defun character-set-to-lisp-encoding (cs &key (line-terminator :unix))
-  "
-RETURN: An implementation specific object representing the  encoding for
-        the given character-set and line-terminator.
-SIGNAL: An error if line-terminator is not (member :unix :mac :dos nil) or
-        if cs has no emacs encoding.
-"
-  (assert (member line-terminator '(:unix :mac :dos nil)))
-  (unless  (cs-lisp-encoding cs)
-    (error "The character-set ~A has no corresponding lisp encoding"
-           (cs-name cs)))
-  #+clisp (let ((sym (find-symbol (first (cs-lisp-encoding cs)) "CHARSET")))
-            (if sym
-                (ext:make-encoding :charset (symbol-value sym)
-                                   :line-terminator line-terminator)
-                :default #|should not occur|#))
-  #-clisp (warn "How should I handle the line-terminator in ~A?"
-                (lisp-implementation-type))
-  #+sbcl  (intern (first (cs-lisp-encoding cs)) "KEYWORD")
-  #+cmu   (if (string-equal (first (cs-lisp-encoding cs)) "ISO-8859-1")
-              :iso-latin-1-unix
-              (error "I don't know a charset for ~A in ~A"
-                     cs (lisp-implementation-type)))
-  #-(or clisp sbcl cmu)
-  (if (string-equal (first (cs-lisp-encoding cs)) "US-ASCII")
-      :default
-      (error "I don't know the coding systems of ~A"
-             (lisp-implementation-type))))
-
-
-(defun character-set-for-lisp-encoding (encoding)
-  "
-ENCODIGN:  An implementation specific object representing an encoding.
-        possibly with line-terminator.
-RETURN: The character-set that correspond to this emacs-encoding ;
-       the line-terminator.
-"
-  #+clisp (values (EXT:ENCODING-charset encoding)
-                  (EXT:ENCODING-line-terminator encoding))
-  #-clisp (values
-           (find (lambda (cs) (member encoding (cs-lisp-encoding cs)
-                                 :test (function string-equal)))
-                 *character-sets*)
-           :unix))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-
-(defun encodings-not-in-iana (encodings)
-  "
-RETURN: a list of encoding groups that aren't in *CHARACTER-SETS*.
-"
-  (let ((result '()))
-    (dolist (enc encodings result)
-      (let ((cs (some (function find-character-set) enc)))
-        (unless cs
-          (push enc result))))))
-
-
-(defun CHARACTER-SET-TO-MIME-ENCODING (cs)
-  (or (cs-mime-encoding cs) (cs-name cs)))
-
-
-(defun emacs-encoding-to-lisp-external-format (emacs-encoding)
-  "
-RETURN:  the external-format value corresponding to this EMACS-ENCODING.
-"
-  (multiple-value-bind (charset line-terminator)
-      (character-set-from-emacs-encoding emacs-encoding)
-    (when charset
-      (character-set-to-lisp-encoding charset :line-terminator line-terminator))))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Provide a default value for  *CHARACTER-SETS*
 ;;;
 
-#+clisp
-(defun compute-character-set-ranges ()
-  "
-DO:     Read the character-set file and build the *character-sets* list,
-        then update the character sets with emacs encodings, lisp encodings,
-        and character set ranges (found in clisp).
-RETURN: *character-sets*
-"
-  (setf *CHARACTER-SETS* (READ-CHARACTER-SETS-FILE "character-sets"))
-  (fill-character-set-emacs-encoding)
-  (fill-character-set-lisp-encoding)
-  (dolist (cs *character-sets*)
-    (when (cs-lisp-encoding cs)
-      (let ((charset (find-symbol (first (cs-lisp-encoding cs)) "CHARSET")))
-        (setf (cs-ranges cs)
-              #+#.(cl:if (cl:ignore-errors
-                          (cl:find-symbol "GET-CHARSET-RANGE" "SYSTEM"))
-                         '(:and) '(:or))
-              (map 'vector (function char-code)
-                   (SYSTEM::GET-CHARSET-RANGE charset))
-              #-#.(cl:if (cl:ignore-errors
-                          (cl:find-symbol "GET-CHARSET-RANGE" "SYSTEM"))
-                         '(:and) '(:or))
-              (coerce
-               (loop
-                  :with charset = (symbol-value charset)
-                  :with i = 0
-                  :for start = (loop
-                                  :until (or (< char-code-limit i)
-                                             (typep (code-char i) charset))
-                                  :do (incf i)
-                                  :finally (return (when (<= i char-code-limit)
-                                                     i)))
-                  :while start
-                  :nconc (list start
-                               (loop
-                                  :while (and (<= i char-code-limit)
-                                              (typep (code-char i) charset))
-                                  :do (incf i)
-                                  :finally (return (1- i)))))
-               'vector)))))
-  *CHARACTER-SETS*)
-
-
-;; Provide a default value for  *CHARACTER-SETS*
-#||
-(let ((*print-right-margin* 72))
-  (pprint
-   `(setf *CHARACTER-SETS*
-      (LIST
-       ,@(mapcar
-          (lambda (cs)
-            `(make-character-set
-              :mib-enum ,(cs-mib-enum cs)
-              :name ,(cs-name cs)
-              :aliases ',(cs-aliases cs)
-              :mime-encoding  ',(cs-mime-encoding cs)
-              :source ',(cs-source cs)
-              :comments ',(cs-comments cs)
-              :references ',(cs-references cs)
-              :ranges ,(cs-ranges cs)))
-          (compute-character-set-ranges))))))
-||#
-
-
-(SETF *CHARACTER-SETS*
- (LIST
-  (MAKE-CHARACTER-SET :MIB-ENUM 2052 :NAME "IBM865" :ALIASES
-   '("csIBM865" "865" "cp865") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM DOS 3.3 Ref (Abridged), 94X9575 (Feb 1987)" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES
+(setf *character-sets*
+ (list
+  (make-character-set :mib-enum 2052 :name "IBM865" :aliases
+   '("csIBM865" "865" "cp865") :mime-encoding 'nil :source
+   '"IBM DOS 3.3 Ref (Abridged), 94X9575 (Feb 1987)" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges
    #(0 127 160 161 163 164 170 172 176 178 181 181 183 183 186 186 188
      189 191 191 196 199 201 201 209 209 214 214 216 216 220 220 223 226
      228 239 241 244 246 252 255 255 402 402 915 915 920 920 931 931 934
@@ -697,10 +367,10 @@ RETURN: *character-sets*
      9492 9496 9496 9500 9500 9508 9508 9516 9516 9524 9524 9532 9532
      9552 9580 9600 9600 9604 9604 9608 9608 9612 9612 9616 9619 9632
      9632))
-  (MAKE-CHARACTER-SET :MIB-ENUM 2051 :NAME "IBM864" :ALIASES
-   '("csIBM864" "cp864") :MIME-ENCODING 'NIL :SOURCE
+  (make-character-set :mib-enum 2051 :name "IBM864" :aliases
+   '("csIBM864" "cp864") :mime-encoding 'nil :source
    '"IBM Keyboard layouts and code pages, PN 07G4586 June 1991"
-   :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]") :RANGES
+   :comments 'nil :references '("[RFC1345,KXS2]") :ranges
    #(0 36 38 127 160 160 162 164 166 166 171 173 176 177 183 183 187 189
      215 215 247 247 946 946 966 966 1548 1548 1563 1563 1567 1567 1600
      1600 1617 1617 1632 1642 8729 8730 8734 8734 8776 8776 9472 9472
@@ -715,10 +385,10 @@ RETURN: *character-sets*
      65241 65241 65243 65243 65245 65245 65247 65247 65249 65249 65251
      65251 65253 65253 65255 65255 65257 65257 65259 65261 65263 65267
      65269 65272 65275 65276))
-  (MAKE-CHARACTER-SET :MIB-ENUM 38 :NAME #1="EUC-KR" :ALIASES
-   '("csEUCKR") :MIME-ENCODING '#1# :SOURCE
-   '"RFC-1557 (see also KS_C_5861-1992)" :COMMENTS 'NIL :REFERENCES
-   '("[RFC1557,Choi]") :RANGES
+  (make-character-set :mib-enum 38 :name #1="EUC-KR" :aliases
+   '("csEUCKR") :mime-encoding '#1# :source
+   '"RFC-1557 (see also KS_C_5861-1992)" :comments 'nil :references
+   '("[RFC1557,Choi]") :ranges
    #(0 127 161 161 164 164 167 168 170 170 173 174 176 180 182 186 188
      191 198 198 208 208 215 216 222 223 230 230 240 240 247 248 254 254
      273 273 294 295 305 307 312 312 319 322 329 331 338 339 358 359 711
@@ -1331,25 +1001,25 @@ RETURN: *character-sets*
      40799 40799 40801 40801 40807 40807 40810 40810 40812 40812 40823
      40823 40845 40845 40848 40848 40853 40853 40860 40860 44032 55203
      63744 64011 65281 65374 65504 65507 65509 65510 917504 917631))
-  (MAKE-CHARACTER-SET :MIB-ENUM 2082 :NAME "VISCII" :ALIASES
-   '("csVISCII") :MIME-ENCODING 'NIL :SOURCE '"RFC 1456" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1456]") :RANGES
+  (make-character-set :mib-enum 2082 :name "VISCII" :aliases
+   '("csVISCII") :mime-encoding 'nil :source '"RFC 1456" :comments 'nil
+   :references '("[RFC1456]") :ranges
    #(0 1 3 4 7 19 21 24 26 29 31 127 192 195 200 202 204 205 210 213 217
      218 221 221 224 227 232 234 236 237 242 245 249 250 253 253 258 259
      272 273 296 297 360 361 416 417 431 432 7840 7929 917504 917631))
-  (MAKE-CHARACTER-SET :MIB-ENUM 2084 :NAME #2="KOI8-R" :ALIASES
-   '("csKOI8R") :MIME-ENCODING '#2# :SOURCE
+  (make-character-set :mib-enum 2084 :name #2="KOI8-R" :aliases
+   '("csKOI8R") :mime-encoding '#2# :source
    '"RFC 1489, based on GOST-19768-74, ISO-6937/8,  INIS-Cyrillic, ISO-5427."
-   :COMMENTS 'NIL :REFERENCES '("[RFC1489]") :RANGES
+   :comments 'nil :references '("[RFC1489]") :ranges
    #(0 127 160 160 169 169 176 176 178 178 183 183 247 247 1025 1025
      1040 1103 1105 1105 8729 8730 8776 8776 8804 8805 8992 8993 9472
      9472 9474 9474 9484 9484 9488 9488 9492 9492 9496 9496 9500 9500
      9508 9508 9516 9516 9524 9524 9532 9532 9552 9580 9600 9600 9604
      9604 9608 9608 9612 9612 9616 9619 9632 9632))
-  (MAKE-CHARACTER-SET :MIB-ENUM 2011 :NAME "IBM437" :ALIASES
-   '("csPC8CodePage437" "437" "cp437") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES
+  (make-character-set :mib-enum 2011 :name "IBM437" :aliases
+   '("csPC8CodePage437" "437" "cp437") :mime-encoding 'nil :source
+   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges
    #(0 127 160 163 165 165 170 172 176 178 183 183 186 189 191 191 196
      199 201 201 209 209 214 214 220 220 223 226 228 239 241 244 246 247
      249 252 255 255 402 402 915 915 920 920 931 931 934 934 937 937 945
@@ -1358,10 +1028,10 @@ RETURN: *character-sets*
      8976 8992 8993 9472 9472 9474 9474 9484 9484 9488 9488 9492 9492
      9496 9496 9500 9500 9508 9508 9516 9516 9524 9524 9532 9532 9552
      9580 9600 9600 9604 9604 9608 9608 9612 9612 9616 9619 9632 9632))
-  (MAKE-CHARACTER-SET :MIB-ENUM 113 :NAME "GBK" :ALIASES
-   '("windows-936" "MS936" "CP936") :MIME-ENCODING 'NIL :SOURCE
+  (make-character-set :mib-enum 113 :name "GBK" :aliases
+   '("windows-936" "MS936" "CP936") :mime-encoding 'nil :source
    '"Chinese IT Standardization Technical Committee   Please see: <http://www.iana.org/assignments/charset-reg/GBK>"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES
+   :comments 'nil :references 'nil :ranges
    #(0 127 164 164 167 168 176 177 183 183 215 215 224 225 232 234 236
      237 242 243 247 247 249 250 252 252 257 257 275 275 283 283 299 299
      324 324 328 328 333 333 363 363 462 462 464 464 466 466 468 468 470
@@ -1384,13 +1054,13 @@ RETURN: *character-sets*
      64024 64031 64033 64035 64036 64039 64041 65072 65073 65075 65092
      65097 65106 65108 65111 65113 65126 65128 65131 65281 65374 65504
      65509 917504 917631))
-  (MAKE-CHARACTER-SET :MIB-ENUM 1014 :NAME "UTF-16LE" :ALIASES 'NIL
-   :MIME-ENCODING 'NIL :SOURCE '"RFC 2781" :COMMENTS 'NIL :REFERENCES
-   '("[RFC2781]") :RANGES #(0 65535))
-  (MAKE-CHARACTER-SET :MIB-ENUM 114 :NAME "GB18030" :ALIASES 'NIL
-   :MIME-ENCODING 'NIL :SOURCE
+  (make-character-set :mib-enum 1014 :name "UTF-16LE" :aliases 'nil
+   :mime-encoding 'nil :source '"RFC 2781" :comments 'nil :references
+   '("[RFC2781]") :ranges #(0 65535))
+  (make-character-set :mib-enum 114 :name "GB18030" :aliases 'nil
+   :mime-encoding 'nil :source
    '"Chinese IT Standardization Technical Committee Please see: <http://www.iana.org/assignments/charset-reg/GB18030>"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES
+   :comments 'nil :references 'nil :ranges
    #(0 544 546 563 592 685 688 750 768 847 864 879 884 885 890 890 894
      894 900 906 908 908 910 929 931 974 976 1014 1024 1158 1160 1230
      1232 1269 1272 1273 1280 1295 1329 1366 1369 1375 1377 1415 1417
@@ -1447,10 +1117,10 @@ RETURN: *character-sets*
      65128 65131 65136 65140 65142 65276 65279 65279 65281 65470 65474
      65479 65482 65487 65490 65495 65498 65500 65504 65510 65512 65518
      65529 65533))
-  (MAKE-CHARACTER-SET :MIB-ENUM 2048 :NAME "IBM860" :ALIASES
-   '("csIBM860" "860" "cp860") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES
+  (make-character-set :mib-enum 2048 :name "IBM860" :aliases
+   '("csIBM860" "860" "cp860") :mime-encoding 'nil :source
+   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges
    #(0 127 160 163 170 172 176 178 183 183 186 189 191 195 199 202 204
      205 209 213 217 218 220 220 223 227 231 234 236 237 241 245 247 247
      249 250 252 252 915 915 920 920 931 931 934 934 937 937 945 945 948
@@ -1459,18 +1129,18 @@ RETURN: *character-sets*
      9472 9474 9474 9484 9484 9488 9488 9492 9492 9496 9496 9500 9500
      9508 9508 9516 9516 9524 9524 9532 9532 9552 9580 9600 9600 9604
      9604 9608 9608 9612 9612 9616 9619 9632 9632))
-  (MAKE-CHARACTER-SET :MIB-ENUM 1019 :NAME "UTF-32LE" :ALIASES 'NIL
-   :MIME-ENCODING 'NIL :SOURCE
-   '"<http://www.unicode.org/unicode/reports/tr19/>" :COMMENTS 'NIL
-   :REFERENCES '("[Davis]") :RANGES #(0 1114111))
-  (MAKE-CHARACTER-SET :MIB-ENUM 1001 :NAME "ISO-10646-UCS-4" :ALIASES
-   '("csUCS4") :MIME-ENCODING 'NIL :SOURCE
+  (make-character-set :mib-enum 1019 :name "UTF-32LE" :aliases 'nil
+   :mime-encoding 'nil :source
+   '"<http://www.unicode.org/unicode/reports/tr19/>" :comments 'nil
+   :references '("[Davis]") :ranges #(0 1114111))
+  (make-character-set :mib-enum 1001 :name "ISO-10646-UCS-4" :aliases
+   '("csUCS4") :mime-encoding 'nil :source
    '"the full code space. (same comment about byte order, these are 31-bit numbers."
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES #(0 1114111))
-  (MAKE-CHARACTER-SET :MIB-ENUM 2087 :NAME "IBM775" :ALIASES
-   '("csPC775Baltic" "cp775") :MIME-ENCODING 'NIL :SOURCE
-   '"HP PCL 5 Comparison Guide (P/N 5021-0329) pp B-13, 1996" :COMMENTS
-   'NIL :REFERENCES '("[HP-PCL5]") :RANGES
+   :comments 'nil :references 'nil :ranges #(0 1114111))
+  (make-character-set :mib-enum 2087 :name "IBM775" :aliases
+   '("csPC775Baltic" "cp775") :mime-encoding 'nil :source
+   '"HP PCL 5 Comparison Guide (P/N 5021-0329) pp B-13, 1996" :comments
+   'nil :references '("[HP-PCL5]") :ranges
    #(0 127 160 160 162 164 166 167 169 169 171 174 176 179 181 183 185
      185 187 190 196 198 201 201 211 211 213 216 220 220 223 223 228 230
      233 233 243 243 245 248 252 252 256 257 260 263 268 269 274 275 278
@@ -1481,28 +1151,28 @@ RETURN: *character-sets*
      9556 9559 9559 9562 9562 9565 9565 9568 9568 9571 9571 9574 9574
      9577 9577 9580 9580 9600 9600 9604 9604 9608 9608 9612 9612 9616
      9619 9632 9632))
-  (MAKE-CHARACTER-SET :MIB-ENUM 1013 :NAME "UTF-16BE" :ALIASES 'NIL
-   :MIME-ENCODING 'NIL :SOURCE '"RFC 2781" :COMMENTS 'NIL :REFERENCES
-   '("[RFC2781]") :RANGES #(0 65535))
-  (MAKE-CHARACTER-SET :MIB-ENUM 11 :NAME "ISO_8859-8:1988" :ALIASES
+  (make-character-set :mib-enum 1013 :name "UTF-16BE" :aliases 'nil
+   :mime-encoding 'nil :source '"RFC 2781" :comments 'nil :references
+   '("[RFC2781]") :ranges #(0 65535))
+  (make-character-set :mib-enum 11 :name "ISO_8859-8:1988" :aliases
    '("csISOLatinHebrew" "hebrew" #3="ISO-8859-8" "ISO_8859-8"
      "iso-ir-138")
-   :MIME-ENCODING '#3# :SOURCE '"ECMA registry" :COMMENTS
-   '("Alias: ISO-8859-8 (preferred MIME name)") :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES
+   :mime-encoding '#3# :source '"ECMA registry" :comments
+   '("Alias: ISO-8859-8 (preferred MIME name)") :references
+   '("[RFC1345,KXS2]") :ranges
    #(0 160 162 169 171 185 187 190 215 215 247 247 1488 1514 8206 8207
      8215 8215))
-  (MAKE-CHARACTER-SET :MIB-ENUM 2004 :NAME "hp-roman8" :ALIASES
-   '("csHPRoman8" "r8" "roman8") :MIME-ENCODING 'NIL :SOURCE
+  (make-character-set :mib-enum 2004 :name "hp-roman8" :aliases
+   '("csHPRoman8" "r8" "roman8") :mime-encoding 'nil :source
    '"LaserJet IIP Printer User's Manual,  HP part no 33471-90901, Hewlet-Packard, June 1989."
-   :COMMENTS 'NIL :REFERENCES '("[HP-PCL5,RFC1345,KXS2]") :RANGES
+   :comments 'nil :references '("[HP-PCL5,RFC1345,KXS2]") :ranges
    #(0 165 167 168 170 171 175 177 180 183 186 214 216 246 248 255 352
      353 376 376 402 402 710 710 715 715 732 732 8212 8212 8356 8356
      9632 9632))
-  (MAKE-CHARACTER-SET :MIB-ENUM 2010 :NAME "IBM852" :ALIASES
-   '("csPCp852" "852" "cp852") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES
+  (make-character-set :mib-enum 2010 :name "IBM852" :aliases
+   '("csPCp852" "852" "cp852") :mime-encoding 'nil :source
+   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges
    #(0 127 160 160 164 164 167 168 171 173 176 176 180 180 184 184 187
      187 193 194 196 196 199 199 201 201 203 203 205 206 211 212 214 215
      218 218 220 221 223 223 225 226 228 228 231 231 233 233 235 235 237
@@ -1513,27 +1183,27 @@ RETURN: *character-sets*
      9524 9532 9532 9552 9553 9556 9556 9559 9559 9562 9562 9565 9565
      9568 9568 9571 9571 9574 9574 9577 9577 9580 9580 9600 9600 9604
      9604 9608 9608 9617 9619 9632 9632))
-  (MAKE-CHARACTER-SET :MIB-ENUM 12 :NAME "ISO_8859-9:1989" :ALIASES
+  (make-character-set :mib-enum 12 :name "ISO_8859-9:1989" :aliases
    '("csISOLatin5" "l5" "latin5" #4="ISO-8859-9" "ISO_8859-9"
      "iso-ir-148")
-   :MIME-ENCODING '#4# :SOURCE '"ECMA registry" :COMMENTS
-   '("Alias: ISO-8859-9 (preferred MIME name)") :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES
+   :mime-encoding '#4# :source '"ECMA registry" :comments
+   '("Alias: ISO-8859-9 (preferred MIME name)") :references
+   '("[RFC1345,KXS2]") :ranges
    #(0 207 209 220 223 239 241 252 255 255 286 287 304 305 350 351))
-  (MAKE-CHARACTER-SET :MIB-ENUM 2054 :NAME "IBM869" :ALIASES
-   '("csIBM869" "cp-gr" "869" "cp869") :MIME-ENCODING 'NIL :SOURCE
+  (make-character-set :mib-enum 2054 :name "IBM869" :aliases
+   '("csIBM869" "cp-gr" "869" "cp869") :mime-encoding 'nil :source
    '"IBM Keyboard layouts and code pages, PN 07G4586 June 1991"
-   :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]") :RANGES
+   :comments 'nil :references '("[RFC1345,KXS2]") :ranges
    #(0 127 160 160 163 163 166 169 171 173 176 180 187 187 189 189 901
      906 908 908 910 929 931 974 8213 8213 8216 8217 9472 9472 9474 9474
      9484 9484 9488 9488 9492 9492 9496 9496 9500 9500 9508 9508 9516
      9516 9524 9524 9532 9532 9552 9553 9556 9556 9559 9559 9562 9562
      9565 9565 9568 9568 9571 9571 9574 9574 9577 9577 9580 9580 9600
      9600 9604 9604 9608 9608 9617 9619 9632 9632))
-  (MAKE-CHARACTER-SET :MIB-ENUM 39 :NAME #5="ISO-2022-JP" :ALIASES
-   '("csISO2022JP") :MIME-ENCODING '#5# :SOURCE
-   '"RFC-1468 (see also RFC-2237)" :COMMENTS 'NIL :REFERENCES
-   '("[RFC1468,Murai]") :RANGES
+  (make-character-set :mib-enum 39 :name #5="ISO-2022-JP" :aliases
+   '("csISO2022JP") :mime-encoding '#5# :source
+   '"RFC-1468 (see also RFC-2237)" :comments 'nil :references
+   '("[RFC1468,Murai]") :ranges
    #(0 127 162 163 165 165 167 168 172 172 176 177 180 180 182 182 215
      215 247 247 913 929 931 937 945 961 963 969 1025 1025 1040 1103
      1105 1105 8208 8208 8213 8214 8216 8217 8220 8221 8224 8225 8229
@@ -2282,39 +1952,39 @@ RETURN: *character-sets*
      40812 40818 40818 40822 40823 40845 40845 40853 40853 40860 40861
      40864 40864 65281 65281 65283 65286 65288 65292 65294 65373 65507
      65507 65509 65509))
-  (MAKE-CHARACTER-SET :MIB-ENUM 2009 :NAME "IBM850" :ALIASES
-   '("csPC850Multilingual" "850" "cp850") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES
+  (make-character-set :mib-enum 2009 :name "IBM850" :aliases
+   '("csPC850Multilingual" "850" "cp850") :mime-encoding 'nil :source
+   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges
    #(0 127 160 255 305 305 402 402 8215 8215 9472 9472 9474 9474 9484
      9484 9488 9488 9492 9492 9496 9496 9500 9500 9508 9508 9516 9516
      9524 9524 9532 9532 9552 9553 9556 9556 9559 9559 9562 9562 9565
      9565 9568 9568 9571 9571 9574 9574 9577 9577 9580 9580 9600 9600
      9604 9604 9608 9608 9617 9619 9632 9632))
-  (MAKE-CHARACTER-SET :MIB-ENUM 7 :NAME "ISO_8859-4:1988" :ALIASES
+  (make-character-set :mib-enum 7 :name "ISO_8859-4:1988" :aliases
    '("csISOLatin4" "l4" "latin4" #6="ISO-8859-4" "ISO_8859-4"
      "iso-ir-110")
-   :MIME-ENCODING '#6# :SOURCE '"ECMA registry" :COMMENTS
-   '("Alias: ISO-8859-4 (preferred MIME name)") :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES
+   :mime-encoding '#6# :source '"ECMA registry" :comments
+   '("Alias: ISO-8859-4 (preferred MIME name)") :references
+   '("[RFC1345,KXS2]") :ranges
    #(0 160 164 164 167 168 173 173 175 176 180 180 184 184 193 198 201
      201 203 203 205 206 212 216 218 220 223 223 225 230 233 233 235 235
      237 238 244 248 250 252 256 257 260 261 268 269 272 275 278 281 290
      291 296 299 302 303 310 312 315 316 325 326 330 333 342 343 352 353
      358 363 370 371 381 382 711 711 729 729 731 731))
-  (MAKE-CHARACTER-SET :MIB-ENUM 2047 :NAME "IBM857" :ALIASES
-   '("csIBM857" "857" "cp857") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES
+  (make-character-set :mib-enum 2047 :name "IBM857" :aliases
+   '("csIBM857" "857" "cp857") :mime-encoding 'nil :source
+   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges
    #(0 127 160 207 209 220 223 239 241 252 255 255 286 287 304 305 350
      351 9472 9472 9474 9474 9484 9484 9488 9488 9492 9492 9496 9496
      9500 9500 9508 9508 9516 9516 9524 9524 9532 9532 9552 9553 9556
      9556 9559 9559 9562 9562 9565 9565 9568 9568 9571 9571 9574 9574
      9577 9577 9580 9580 9600 9600 9604 9604 9608 9608 9617 9619 9632
      9632))
-  (MAKE-CHARACTER-SET :MIB-ENUM 40 :NAME #7="ISO-2022-JP-2" :ALIASES
-   '("csISO2022JP2") :MIME-ENCODING '#7# :SOURCE '"RFC-1554" :COMMENTS
-   'NIL :REFERENCES '("[RFC1554,Ohta]") :RANGES
+  (make-character-set :mib-enum 40 :name #7="ISO-2022-JP-2" :aliases
+   '("csISO2022JP2") :mime-encoding '#7# :source '"RFC-1554" :comments
+   'nil :references '("[RFC1554,Ohta]") :ranges
    #(0 275 278 290 292 299 302 333 336 382 461 476 501 501 711 711 713
      713 720 720 728 731 733 733 890 890 900 902 904 906 908 908 910 929
      931 974 1025 1036 1038 1103 1105 1116 1118 1119 8208 8208 8213 8214
@@ -3375,67 +3045,67 @@ RETURN: *character-sets*
      55156 55156 55164 55165 55169 55169 55176 55177 55180 55180 55184
      55184 55192 55193 55195 55195 55197 55197 63744 64011 65281 65374
      65377 65439 65504 65507 65509 65510 917504 917631))
-  (MAKE-CHARACTER-SET :MIB-ENUM 2259 :NAME "TIS-620" :ALIASES 'NIL
-   :MIME-ENCODING 'NIL :SOURCE
+  (make-character-set :mib-enum 2259 :name "TIS-620" :aliases 'nil
+   :mime-encoding 'nil :source
    '"Thai Industrial Standards Institute (TISI)                             [Tantsetthi]"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES
+   :comments 'nil :references 'nil :ranges
    #(0 127 3585 3642 3647 3675 917504 917631))
-  (MAKE-CHARACTER-SET :MIB-ENUM 8 :NAME "ISO_8859-5:1988" :ALIASES
+  (make-character-set :mib-enum 8 :name "ISO_8859-5:1988" :aliases
    '("csISOLatinCyrillic" "cyrillic" #8="ISO-8859-5" "ISO_8859-5"
      "iso-ir-144")
-   :MIME-ENCODING '#8# :SOURCE '"ECMA registry" :COMMENTS
-   '("Alias: ISO-8859-5 (preferred MIME name)") :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES
+   :mime-encoding '#8# :source '"ECMA registry" :comments
+   '("Alias: ISO-8859-5 (preferred MIME name)") :references
+   '("[RFC1345,KXS2]") :ranges
    #(0 160 167 167 173 173 1025 1036 1038 1103 1105 1116 1118 1119 8470
      8470))
-  (MAKE-CHARACTER-SET :MIB-ENUM 9 :NAME "ISO_8859-6:1987" :ALIASES
+  (make-character-set :mib-enum 9 :name "ISO_8859-6:1987" :aliases
    '("csISOLatinArabic" "arabic" "ASMO-708" "ECMA-114" #9="ISO-8859-6"
      "ISO_8859-6" "iso-ir-127")
-   :MIME-ENCODING '#9# :SOURCE '"ECMA registry" :COMMENTS
-   '("Alias: ISO-8859-6 (preferred MIME name)") :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES
+   :mime-encoding '#9# :source '"ECMA registry" :comments
+   '("Alias: ISO-8859-6 (preferred MIME name)") :references
+   '("[RFC1345,KXS2]") :ranges
    #(0 160 164 164 173 173 1548 1548 1563 1563 1567 1567 1569 1594 1600
      1618))
-  (MAKE-CHARACTER-SET :MIB-ENUM 2046 :NAME "IBM855" :ALIASES
-   '("csIBM855" "855" "cp855") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES
+  (make-character-set :mib-enum 2046 :name "IBM855" :aliases
+   '("csIBM855" "855" "cp855") :mime-encoding 'nil :source
+   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges
    #(0 127 160 160 164 164 167 167 171 171 173 173 187 187 1025 1036
      1038 1103 1105 1116 1118 1119 8470 8470 9472 9472 9474 9474 9484
      9484 9488 9488 9492 9492 9496 9496 9500 9500 9508 9508 9516 9516
      9524 9524 9532 9532 9552 9553 9556 9556 9559 9559 9562 9562 9565
      9565 9568 9568 9571 9571 9574 9574 9577 9577 9580 9580 9600 9600
      9604 9604 9608 9608 9617 9619 9632 9632))
-  (MAKE-CHARACTER-SET :MIB-ENUM 10 :NAME "ISO_8859-7:1987" :ALIASES
+  (make-character-set :mib-enum 10 :name "ISO_8859-7:1987" :aliases
    '("csISOLatinGreek" "greek8" "greek" "ECMA-118" "ELOT_928"
      #10="ISO-8859-7" "ISO_8859-7" "iso-ir-126")
-   :MIME-ENCODING '#10# :SOURCE '"ECMA registry" :COMMENTS
-   '("Alias: ISO-8859-7 (preferred MIME name)") :REFERENCES
-   '("[RFC1947,RFC1345,KXS2]") :RANGES
+   :mime-encoding '#10# :source '"ECMA registry" :comments
+   '("Alias: ISO-8859-7 (preferred MIME name)") :references
+   '("[RFC1947,RFC1345,KXS2]") :ranges
    #(0 160 163 163 166 169 171 173 176 179 183 183 187 187 189 189 890
      890 900 902 904 906 908 908 910 929 931 974 8213 8213 8216 8217
      8364 8364 8367 8367))
-  (MAKE-CHARACTER-SET :MIB-ENUM 13 :NAME #11="ISO-8859-10" :ALIASES
+  (make-character-set :mib-enum 13 :name #11="ISO-8859-10" :aliases
    '("latin6" "csISOLatin6" "ISO_8859-10:1992" "l6" "iso-ir-157")
-   :MIME-ENCODING '#11# :SOURCE '"ECMA registry" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES
+   :mime-encoding '#11# :source '"ECMA registry" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges
    #(0 160 167 167 173 173 176 176 183 183 193 198 201 201 203 203 205
      208 211 214 216 216 218 223 225 230 233 233 235 235 237 240 243 246
      248 248 250 254 256 257 260 261 268 269 272 275 278 281 290 291 296
      299 302 303 310 312 315 316 325 326 330 333 352 353 358 363 370 371
      381 382 8213 8213))
-  (MAKE-CHARACTER-SET :MIB-ENUM 4 :NAME "ISO_8859-1:1987" :ALIASES
+  (make-character-set :mib-enum 4 :name "ISO_8859-1:1987" :aliases
    '("csISOLatin1" "CP819" "IBM819" "l1" "latin1" #12="ISO-8859-1"
      "ISO_8859-1" "iso-ir-100")
-   :MIME-ENCODING '#12# :SOURCE '"ECMA registry" :COMMENTS
-   '("Alias: ISO-8859-1 (preferred MIME name)") :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES #(0 255))
-  (MAKE-CHARACTER-SET :MIB-ENUM 106 :NAME "UTF-8" :ALIASES 'NIL
-   :MIME-ENCODING 'NIL :SOURCE '"RFC 3629" :COMMENTS 'NIL :REFERENCES
-   '("[RFC3629]") :RANGES #(0 1114111))
-  (MAKE-CHARACTER-SET :MIB-ENUM 105 :NAME "ISO-2022-CN-EXT" :ALIASES
-   'NIL :MIME-ENCODING 'NIL :SOURCE '"RFC-1922" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1922]") :RANGES
+   :mime-encoding '#12# :source '"ECMA registry" :comments
+   '("Alias: ISO-8859-1 (preferred MIME name)") :references
+   '("[RFC1345,KXS2]") :ranges #(0 255))
+  (make-character-set :mib-enum 106 :name "UTF-8" :aliases 'nil
+   :mime-encoding 'nil :source '"RFC 3629" :comments 'nil :references
+   '("[RFC3629]") :ranges #(0 1114111))
+  (make-character-set :mib-enum 105 :name "ISO-2022-CN-EXT" :aliases
+   'nil :mime-encoding 'nil :source '"RFC-1922" :comments 'nil
+   :references '("[RFC1922]") :ranges
    #(0 127 162 165 167 168 176 177 183 183 215 215 224 225 232 234 236
      237 242 243 247 247 249 250 252 252 257 257 275 275 283 283 299 299
      324 324 328 328 333 333 363 363 462 462 464 464 466 466 468 468 470
@@ -4822,32 +4492,32 @@ RETURN: *character-sets*
      195021 195023 195027 195029 195033 195035 195046 195048 195050
      195052 195052 195054 195056 195058 195063 195065 195080 195082
      195090 195092 195101 917504 917631))
-  (MAKE-CHARACTER-SET :MIB-ENUM 5 :NAME "ISO_8859-2:1987" :ALIASES
+  (make-character-set :mib-enum 5 :name "ISO_8859-2:1987" :aliases
    '("csISOLatin2" "l2" "latin2" #13="ISO-8859-2" "ISO_8859-2"
      "iso-ir-101")
-   :MIME-ENCODING '#13# :SOURCE '"ECMA registry" :COMMENTS
-   '("Alias: ISO-8859-2 (preferred MIME name)") :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES
+   :mime-encoding '#13# :source '"ECMA registry" :comments
+   '("Alias: ISO-8859-2 (preferred MIME name)") :references
+   '("[RFC1345,KXS2]") :ranges
    #(0 160 164 164 167 168 173 173 176 176 180 180 184 184 193 194 196
      196 199 199 201 201 203 203 205 206 211 212 214 215 218 218 220 221
      223 223 225 226 228 228 231 231 233 233 235 235 237 238 243 244 246
      247 250 250 252 253 258 263 268 273 280 283 313 314 317 318 321 324
      327 328 336 337 340 341 344 347 350 357 366 369 377 382 711 711 728
      729 731 731 733 733))
-  (MAKE-CHARACTER-SET :MIB-ENUM 6 :NAME "ISO_8859-3:1988" :ALIASES
+  (make-character-set :mib-enum 6 :name "ISO_8859-3:1988" :aliases
    '("csISOLatin3" "l3" "latin3" #14="ISO-8859-3" "ISO_8859-3"
      "iso-ir-109")
-   :MIME-ENCODING '#14# :SOURCE '"ECMA registry" :COMMENTS
-   '("Alias: ISO-8859-3 (preferred MIME name)") :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES
+   :mime-encoding '#14# :source '"ECMA registry" :comments
+   '("Alias: ISO-8859-3 (preferred MIME name)") :references
+   '("[RFC1345,KXS2]") :ranges
    #(0 160 163 164 167 168 173 173 176 176 178 181 183 184 189 189 192
      194 196 196 199 207 209 212 214 215 217 220 223 226 228 228 231 239
      241 244 246 247 249 252 264 267 284 289 292 295 304 305 308 309 348
      351 364 365 379 380 728 729))
-  (MAKE-CHARACTER-SET :MIB-ENUM 2013 :NAME "IBM862" :ALIASES
-   '("csPC862LatinHebrew" "862" "cp862") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES
+  (make-character-set :mib-enum 2013 :name "IBM862" :aliases
+   '("csPC862LatinHebrew" "862" "cp862") :mime-encoding 'nil :source
+   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges
    #(0 127 160 163 165 165 170 172 176 178 183 183 186 189 191 191 209
      209 223 223 225 225 237 237 241 241 243 243 247 247 250 250 402 402
      915 915 920 920 931 931 934 934 937 937 945 945 948 949 956 956 960
@@ -4856,29 +4526,29 @@ RETURN: *character-sets*
      9472 9472 9474 9474 9484 9484 9488 9488 9492 9492 9496 9496 9500
      9500 9508 9508 9516 9516 9524 9524 9532 9532 9552 9580 9600 9600
      9604 9604 9608 9608 9612 9612 9616 9619 9632 9632))
-  (MAKE-CHARACTER-SET :MIB-ENUM 109 :NAME "ISO-8859-13" :ALIASES 'NIL
-   :MIME-ENCODING 'NIL :SOURCE
+  (make-character-set :mib-enum 109 :name "ISO-8859-13" :aliases 'nil
+   :mime-encoding 'nil :source
    '"ISO See (http://www.iana.org/assignments/charset-reg/ISO-8859-13)[Tumasonis]"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES
+   :comments 'nil :references 'nil :ranges
    #(0 160 162 164 166 167 169 169 171 174 176 179 181 183 185 185 187
      190 196 198 201 201 211 211 213 216 220 220 223 223 228 230 233 233
      243 243 245 248 252 252 256 257 260 263 268 269 274 275 278 281 290
      291 298 299 302 303 310 311 315 316 321 326 332 333 342 343 346 347
      352 353 362 363 370 371 377 382 8217 8217 8220 8222))
-  (MAKE-CHARACTER-SET :MIB-ENUM 110 :NAME "ISO-8859-14" :ALIASES
+  (make-character-set :mib-enum 110 :name "ISO-8859-14" :aliases
    '("l8" "iso-celtic" "latin8" "ISO_8859-14" "ISO_8859-14:1998"
      "iso-ir-199")
-   :MIME-ENCODING 'NIL :SOURCE
+   :mime-encoding 'nil :source
    '"ISO See (http://www.iana.org/assignments/charset-reg/ISO-8859-14) [Simonsen]"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES
+   :comments 'nil :references 'nil :ranges
    #(0 160 163 163 167 167 169 169 173 174 182 182 192 207 209 214 216
      221 223 239 241 246 248 253 255 255 266 267 288 289 372 376 7682
      7683 7690 7691 7710 7711 7744 7745 7766 7767 7776 7777 7786 7787
      7808 7813 7922 7923))
-  (MAKE-CHARACTER-SET :MIB-ENUM 2258 :NAME "windows-1258" :ALIASES 'NIL
-   :MIME-ENCODING 'NIL :SOURCE
+  (make-character-set :mib-enum 2258 :name "windows-1258" :aliases 'nil
+   :mime-encoding 'nil :source
    '"Microsoft  (http://www.iana.org/assignments/charset-reg/windows-1258) [Lazhintseva]"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES
+   :comments 'nil :references 'nil :ranges
    #(0 127 160 207 209 221 223 239 241 253 255 255 258 259 262 263 272
      273 296 297 313 314 323 324 338 341 346 347 360 361 376 378 402 402
      416 417 431 432 471 472 475 476 500 501 504 511 710 710 732 732 768
@@ -4888,25 +4558,25 @@ RETURN: *character-sets*
      7804 7811 7816 7817 7826 7827 7840 7929 8173 8174 8211 8212 8216
      8218 8220 8222 8224 8226 8230 8230 8240 8240 8249 8250 8363 8364
      8482 8482 917504 917631))
-  (MAKE-CHARACTER-SET :MIB-ENUM 111 :NAME "ISO-8859-15" :ALIASES
-   '("Latin-9" "ISO_8859-15") :MIME-ENCODING 'NIL :SOURCE
+  (make-character-set :mib-enum 111 :name "ISO-8859-15" :aliases
+   '("Latin-9" "ISO_8859-15") :mime-encoding 'nil :source
    '"ISO  Please see: <http://www.iana.org/assignments/charset-reg/ISO-8859-15>"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES
+   :comments 'nil :references 'nil :ranges
    #(0 163 165 165 167 167 169 179 181 183 185 187 191 255 338 339 352
      353 376 376 381 382 8364 8364))
-  (MAKE-CHARACTER-SET :MIB-ENUM 112 :NAME "ISO-8859-16" :ALIASES
+  (make-character-set :mib-enum 112 :name "ISO-8859-16" :aliases
    '("l10" "latin10" "ISO_8859-16" "ISO_8859-16:2001" "iso-ir-226")
-   :MIME-ENCODING 'NIL :SOURCE '"ISO" :COMMENTS 'NIL :REFERENCES 'NIL
-   :RANGES
+   :mime-encoding 'nil :source '"ISO" :comments 'nil :references 'nil
+   :ranges
    #(0 160 167 167 169 169 171 171 173 173 176 177 182 183 187 187 192
      194 196 196 198 207 210 212 214 214 217 220 223 226 228 228 230 239
      242 244 246 246 249 252 255 255 258 263 268 269 272 273 280 281 321
      324 336 339 346 347 352 353 368 369 376 382 536 539 8221 8222 8364
      8364))
-  (MAKE-CHARACTER-SET :MIB-ENUM 2025 :NAME #15="GB2312" :ALIASES
-   '("csGB2312") :MIME-ENCODING '#15# :SOURCE
+  (make-character-set :mib-enum 2025 :name #15="GB2312" :aliases
+   '("csGB2312") :mime-encoding '#15# :source
    '"Chinese for People's Republic of China (PRC) mixed one byte,  two byte set: 20-7E = one byte ASCII A1-FE = two byte PRC Kanji See GB 2312-80 PCL Symbol Set Id: 18C"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES
+   :comments 'nil :references 'nil :ranges
    #(0 127 164 164 167 168 176 177 215 215 224 225 232 234 236 237 242
      243 247 247 249 250 252 252 257 257 275 275 283 283 299 299 333 333
      363 363 462 462 464 464 466 466 468 468 470 470 472 472 474 474 476
@@ -5565,10 +5235,10 @@ RETURN: *character-sets*
      40766 40772 40772 40784 40785 40831 40832 40835 40844 40857 40859
      40863 40864 65281 65374 65504 65505 65507 65507 65509 65509 917504
      917631))
-  (MAKE-CHARACTER-SET :MIB-ENUM 17 :NAME #16="Shift_JIS" :ALIASES
-   '("csShiftJIS" "MS_Kanji") :MIME-ENCODING '#16# :SOURCE
+  (make-character-set :mib-enum 17 :name #16="Shift_JIS" :aliases
+   '("csShiftJIS" "MS_Kanji") :mime-encoding '#16# :source
    '"This charset is an extension of csHalfWidthKatakana by adding graphic characters in JIS X 0208.  The CCS's are JIS X0201:1997 and JIS X0208:1997.  The complete definition is shown in Appendix 1 of JIS X0208:1997. This charset can be used for the top-level media type \"text\"."
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES
+   :comments 'nil :references 'nil :ranges
    #(0 127 162 163 165 165 167 168 172 172 176 177 180 180 182 182 215
      215 247 247 913 929 931 937 945 961 963 969 1025 1025 1040 1103
      1105 1105 8208 8208 8212 8214 8216 8217 8220 8221 8224 8225 8229
@@ -6340,25 +6010,25 @@ RETURN: *character-sets*
      40822 40823 40845 40845 40853 40853 40860 40861 40864 40864 57344
      59223 63785 63785 63964 63964 64014 64045 65281 65374 65377 65439
      65504 65509 917504 917631))
-  (MAKE-CHARACTER-SET :MIB-ENUM 2252 :NAME "windows-1252" :ALIASES 'NIL
-   :MIME-ENCODING 'NIL :SOURCE
+  (make-character-set :mib-enum 2252 :name "windows-1252" :aliases 'nil
+   :mime-encoding 'nil :source
    '"Microsoft  (http://www.iana.org/assignments/charset-reg/windows-1252)       [Wendt]"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES
+   :comments 'nil :references 'nil :ranges
    #(0 127 160 255 338 339 352 353 376 376 381 382 402 402 710 710 732
      732 8211 8212 8216 8218 8220 8222 8224 8226 8230 8230 8240 8240
      8249 8250 8364 8364 8482 8482))
-  (MAKE-CHARACTER-SET :MIB-ENUM 2253 :NAME "windows-1253" :ALIASES 'NIL
-   :MIME-ENCODING 'NIL :SOURCE
+  (make-character-set :mib-enum 2253 :name "windows-1253" :aliases 'nil
+   :mime-encoding 'nil :source
    '"Microsoft  (http://www.iana.org/assignments/charset-reg/windows-1253) [Lazhintseva]"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES
+   :comments 'nil :references 'nil :ranges
    #(0 127 160 160 163 169 171 174 176 179 181 183 187 187 189 189 402
      402 900 902 904 906 908 908 910 929 931 974 8211 8213 8216 8218
      8220 8222 8224 8226 8230 8230 8240 8240 8249 8250 8364 8364 8482
      8482))
-  (MAKE-CHARACTER-SET :MIB-ENUM 2250 :NAME "windows-1250" :ALIASES 'NIL
-   :MIME-ENCODING 'NIL :SOURCE
+  (make-character-set :mib-enum 2250 :name "windows-1250" :aliases 'nil
+   :mime-encoding 'nil :source
    '"Microsoft  (http://www.iana.org/assignments/charset-reg/windows-1250) [Lazhintseva]"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES
+   :comments 'nil :references 'nil :ranges
    #(0 127 160 160 164 164 166 169 171 174 176 177 180 184 187 187 193
      194 196 196 199 199 201 201 203 203 205 206 211 212 214 215 218 218
      220 221 223 223 225 226 228 228 231 231 233 233 235 235 237 238 243
@@ -6366,26 +6036,26 @@ RETURN: *character-sets*
      321 324 327 328 336 337 340 341 344 347 350 357 366 369 377 382 711
      711 728 729 731 731 733 733 8211 8212 8216 8218 8220 8222 8224 8226
      8230 8230 8240 8240 8249 8250 8364 8364 8482 8482))
-  (MAKE-CHARACTER-SET :MIB-ENUM 1012 :NAME "UTF-7" :ALIASES 'NIL
-   :MIME-ENCODING 'NIL :SOURCE '"RFC 2152" :COMMENTS 'NIL :REFERENCES
-   '("[RFC2152]") :RANGES #(0 1114111))
-  (MAKE-CHARACTER-SET :MIB-ENUM 2251 :NAME "windows-1251" :ALIASES 'NIL
-   :MIME-ENCODING 'NIL :SOURCE
+  (make-character-set :mib-enum 1012 :name "UTF-7" :aliases 'nil
+   :mime-encoding 'nil :source '"RFC 2152" :comments 'nil :references
+   '("[RFC2152]") :ranges #(0 1114111))
+  (make-character-set :mib-enum 2251 :name "windows-1251" :aliases 'nil
+   :mime-encoding 'nil :source
    '"Microsoft  (http://www.iana.org/assignments/charset-reg/windows-1251) [Lazhintseva]"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES
+   :comments 'nil :references 'nil :ranges
    #(0 127 160 160 164 164 166 167 169 169 171 174 176 177 181 183 187
      187 1025 1036 1038 1103 1105 1116 1118 1119 1168 1169 8211 8212
      8216 8218 8220 8222 8224 8226 8230 8230 8240 8240 8249 8250 8364
      8364 8470 8470 8482 8482))
-  (MAKE-CHARACTER-SET :MIB-ENUM 15 :NAME "JIS_X0201" :ALIASES
-   '("csHalfWidthKatakana" "X0201") :MIME-ENCODING 'NIL :SOURCE
+  (make-character-set :mib-enum 15 :name "JIS_X0201" :aliases
+   '("csHalfWidthKatakana" "X0201") :mime-encoding 'nil :source
    '"JIS X 0201-1976.   One byte only, this is equivalent to  JIS/Roman (similar to ASCII) plus eight-bit half-width Katakana"
-   :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]") :RANGES
+   :comments 'nil :references '("[RFC1345,KXS2]") :ranges
    #(0 91 93 125 127 127 165 165 8254 8254 65377 65439))
-  (MAKE-CHARACTER-SET :MIB-ENUM 2256 :NAME "windows-1256" :ALIASES 'NIL
-   :MIME-ENCODING 'NIL :SOURCE
+  (make-character-set :mib-enum 2256 :name "windows-1256" :aliases 'nil
+   :mime-encoding 'nil :source
    '"Microsoft  (http://www.iana.org/assignments/charset-reg/windows-1256) [Lazhintseva]"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES
+   :comments 'nil :references 'nil :ranges
    #(0 127 160 160 162 169 171 185 187 190 215 215 224 224 226 226 231
      235 238 239 244 244 247 247 249 249 251 252 338 339 402 402 710 710
      1548 1548 1563 1563 1567 1567 1569 1594 1600 1618 1657 1657 1662
@@ -6393,10 +6063,10 @@ RETURN: *character-sets*
      1722 1722 1726 1726 1729 1729 1746 1746 8204 8207 8211 8212 8216
      8218 8220 8222 8224 8226 8230 8230 8240 8240 8249 8250 8364 8364
      8482 8482))
-  (MAKE-CHARACTER-SET :MIB-ENUM 2049 :NAME "IBM861" :ALIASES
-   '("csIBM861" "cp-is" "861" "cp861") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES
+  (make-character-set :mib-enum 2049 :name "IBM861" :aliases
+   '("csIBM861" "cp-is" "861" "cp861") :mime-encoding 'nil :source
+   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges
    #(0 127 160 161 163 163 171 172 176 178 183 183 187 189 191 191 193
      193 196 199 201 201 205 205 208 208 211 211 214 214 216 216 218 218
      220 226 228 235 237 237 240 240 243 244 246 248 250 254 402 402 915
@@ -6406,10 +6076,10 @@ RETURN: *character-sets*
      9474 9484 9484 9488 9488 9492 9492 9496 9496 9500 9500 9508 9508
      9516 9516 9524 9524 9532 9532 9552 9580 9600 9600 9604 9604 9608
      9608 9612 9612 9616 9619 9632 9632))
-  (MAKE-CHARACTER-SET :MIB-ENUM 2026 :NAME #17="Big5" :ALIASES
-   '("csBig5") :MIME-ENCODING '#17# :SOURCE
+  (make-character-set :mib-enum 2026 :name #17="Big5" :aliases
+   '("csBig5") :mime-encoding '#17# :source
    '"Chinese for Taiwan Multi-byte set. PCL Symbol Set Id: 18T"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES
+   :comments 'nil :references 'nil :ranges
    #(0 128 167 167 175 177 183 183 215 215 247 247 711 711 713 715 717
      717 729 729 913 929 931 937 945 961 963 969 8211 8212 8216 8217
      8220 8221 8229 8231 8242 8242 8245 8245 8251 8251 8364 8364 8451
@@ -7100,19 +6770,19 @@ RETURN: *character-sets*
      65092 65097 65106 65108 65111 65113 65126 65128 65131 65281 65281
      65283 65286 65288 65338 65340 65340 65343 65343 65345 65374 65504
      65505 65507 65507 65509 65509 917504 917631))
-  (MAKE-CHARACTER-SET :MIB-ENUM 2257 :NAME "windows-1257" :ALIASES 'NIL
-   :MIME-ENCODING 'NIL :SOURCE
+  (make-character-set :mib-enum 2257 :name "windows-1257" :aliases 'nil
+   :mime-encoding 'nil :source
    '"Microsoft  (http://www.iana.org/assignments/charset-reg/windows-1257) [Lazhintseva]"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES
+   :comments 'nil :references 'nil :ranges
    #(0 127 160 160 162 164 166 169 171 185 187 190 196 198 201 201 211
      211 213 216 220 220 223 223 228 230 233 233 243 243 245 248 252 252
      256 257 260 263 268 269 274 275 278 281 290 291 298 299 302 303 310
      311 315 316 321 326 332 333 342 343 346 347 352 353 362 363 370 371
      377 382 711 711 729 729 731 731 8211 8212 8216 8218 8220 8222 8224
      8226 8230 8230 8240 8240 8249 8250 8364 8364 8482 8482))
-  (MAKE-CHARACTER-SET :MIB-ENUM 104 :NAME "ISO-2022-CN" :ALIASES 'NIL
-   :MIME-ENCODING 'NIL :SOURCE '"RFC-1922" :COMMENTS 'NIL :REFERENCES
-   '("[RFC1922]") :RANGES
+  (make-character-set :mib-enum 104 :name "ISO-2022-CN" :aliases 'nil
+   :mime-encoding 'nil :source '"RFC-1922" :comments 'nil :references
+   '("[RFC1922]") :ranges
    #(0 127 164 164 167 168 176 177 183 183 215 215 224 225 232 234 236
      237 242 243 247 247 249 250 252 252 257 257 275 275 283 283 299 299
      333 333 363 363 462 462 464 464 466 466 468 468 470 470 472 472 474
@@ -7820,40 +7490,40 @@ RETURN: *character-sets*
      40868 65072 65074 65077 65092 65097 65102 65104 65106 65108 65111
      65113 65126 65128 65131 65281 65374 65504 65505 65507 65507 65509
      65509 917504 917631))
-  (MAKE-CHARACTER-SET :MIB-ENUM 2254 :NAME "windows-1254" :ALIASES 'NIL
-   :MIME-ENCODING 'NIL :SOURCE
+  (make-character-set :mib-enum 2254 :name "windows-1254" :aliases 'nil
+   :mime-encoding 'nil :source
    '"Microsoft  (http://www.iana.org/assignments/charset-reg/windows-1254) [Lazhintseva]"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES
+   :comments 'nil :references 'nil :ranges
    #(0 127 160 207 209 220 223 239 241 252 255 255 286 287 304 305 338
      339 350 353 376 376 402 402 710 710 732 732 8211 8212 8216 8218
      8220 8222 8224 8226 8230 8230 8240 8240 8249 8250 8364 8364 8482
      8482))
-  (MAKE-CHARACTER-SET :MIB-ENUM 2255 :NAME "windows-1255" :ALIASES 'NIL
-   :MIME-ENCODING 'NIL :SOURCE
+  (make-character-set :mib-enum 2255 :name "windows-1255" :aliases 'nil
+   :mime-encoding 'nil :source
    '"Microsoft  (http://www.iana.org/assignments/charset-reg/windows-1255) [Lazhintseva]"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES
+   :comments 'nil :references 'nil :ranges
    #(0 127 160 163 165 169 171 185 187 191 215 215 247 247 402 402 710
      710 732 732 1456 1465 1467 1475 1488 1514 1520 1524 8206 8207 8211
      8212 8216 8218 8220 8222 8224 8226 8230 8230 8240 8240 8249 8250
      8362 8362 8364 8364 8482 8482 64285 64285 64287 64287 64298 64310
      64312 64316 64318 64318 64320 64321 64323 64324 64326 64334 917504
      917631))
-  (MAKE-CHARACTER-SET :MIB-ENUM 2027 :NAME "macintosh" :ALIASES
-   '("csMacintosh" "mac") :MIME-ENCODING 'NIL :SOURCE
+  (make-character-set :mib-enum 2027 :name "macintosh" :aliases
+   '("csMacintosh" "mac") :mime-encoding 'nil :source
    '"The Unicode Standard ver1.0, ISBN 0-201-56788-1, Oct 1991"
-   :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]") :RANGES
+   :comments 'nil :references '("[RFC1345,KXS2]") :ranges
    #(0 127 160 165 167 172 174 177 180 184 186 187 191 207 209 214 216
      220 223 239 241 252 255 255 305 305 338 339 376 376 402 402 710 711
      728 733 960 960 8211 8212 8216 8218 8220 8222 8224 8226 8230 8230
      8240 8240 8249 8250 8260 8260 8482 8482 8486 8486 8706 8706 8710
      8710 8719 8719 8721 8721 8730 8730 8734 8734 8747 8747 8776 8776
      8800 8800 8804 8805 9674 9674 64257 64258))
-  (MAKE-CHARACTER-SET :MIB-ENUM 18 :NAME
-   "Extended_UNIX_Code_Packed_Format_for_Japanese" :ALIASES
-   '(#18="EUC-JP" "csEUCPkdFmtJapanese") :MIME-ENCODING '#18# :SOURCE
+  (make-character-set :mib-enum 18 :name
+   "Extended_UNIX_Code_Packed_Format_for_Japanese" :aliases
+   '(#18="EUC-JP" "csEUCPkdFmtJapanese") :mime-encoding '#18# :source
    '"Standardized by OSF, UNIX International, and UNIX Systems Laboratories Pacific.  Uses ISO 2022 rules to select code set 0: US-ASCII (a single 7-bit byte set) code set 1: JIS X0208-1990 (a double 8-bit byte set) restricted to A0-FF in both bytes code set 2: Half Width Katakana (a single 7-bit byte set) requiring SS2 as the character prefix code set 3: JIS X0212-1990 (a double 7-bit byte set) restricted to A0-FF in both bytes requiring SS3 as the character prefix"
-   :COMMENTS '("Alias: EUC-JP  (preferred MIME name)") :REFERENCES 'NIL
-   :RANGES
+   :comments '("Alias: EUC-JP  (preferred MIME name)") :references 'nil
+   :ranges
    #(0 141 144 159 161 170 172 172 174 177 180 180 182 182 184 184 186
      186 191 207 209 275 278 290 292 299 302 333 336 382 461 476 501 501
      711 711 728 731 733 733 900 902 904 906 908 908 910 929 931 974
@@ -8636,10 +8306,10 @@ RETURN: *character-sets*
      40860 40862 40864 40867 40869 40869 65281 65281 65283 65286 65288
      65292 65294 65374 65377 65439 65507 65507 65509 65509 917504
      917631))
-  (MAKE-CHARACTER-SET :MIB-ENUM 2101 :NAME "Big5-HKSCS" :ALIASES 'NIL
-   :MIME-ENCODING 'NIL :SOURCE
+  (make-character-set :mib-enum 2101 :name "Big5-HKSCS" :aliases 'nil
+   :mime-encoding 'nil :source
    '"See (http://www.iana.org/assignments/charset-reg/Big5-HKSCS)"
-   :COMMENTS 'NIL :REFERENCES '("[Yick]") :RANGES
+   :comments 'nil :references '("[Yick]") :ranges
    #(0 128 162 163 165 165 167 168 176 177 183 183 192 193 200 202 210
      211 215 215 224 225 232 234 236 237 242 243 247 250 252 252 256 257
      274 275 282 283 299 299 331 333 339 339 363 363 461 462 464 466 468
@@ -9538,16 +9208,16 @@ RETURN: *character-sets*
      172722 172722 172767 172767 172969 172969 173510 173510 173737
      173737 194624 194624 194708 194708 194765 194765 194964 194964
      195028 195028 917504 917631))
-  (MAKE-CHARACTER-SET :MIB-ENUM 3 :NAME "ANSI_X3.4-1968" :ALIASES
+  (make-character-set :mib-enum 3 :name "ANSI_X3.4-1968" :aliases
    '("csASCII" "cp367" "IBM367" "us" #19="US-ASCII" "ISO646-US" "ASCII"
      "ISO_646.irv:1991" "ANSI_X3.4-1986" "iso-ir-6")
-   :MIME-ENCODING '#19# :SOURCE '"ECMA registry" :COMMENTS
-   '("Alias: US-ASCII (preferred MIME name)") :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES #(0 127))
-  (MAKE-CHARACTER-SET :MIB-ENUM 2050 :NAME "IBM863" :ALIASES
-   '("csIBM863" "863" "cp863") :MIME-ENCODING 'NIL :SOURCE
+   :mime-encoding '#19# :source '"ECMA registry" :comments
+   '("Alias: US-ASCII (preferred MIME name)") :references
+   '("[RFC1345,KXS2]") :ranges #(0 127))
+  (make-character-set :mib-enum 2050 :name "IBM863" :aliases
+   '("csIBM863" "863" "cp863") :mime-encoding 'nil :source
    '"IBM Keyboard layouts and code pages, PN 07G4586 June 1991"
-   :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]") :RANGES
+   :comments 'nil :references '("[RFC1345,KXS2]") :ranges
    #(0 127 160 160 162 164 166 168 171 172 175 180 182 184 187 190 192
      192 194 194 199 203 206 207 212 212 217 217 219 220 223 224 226 226
      231 235 238 239 243 244 247 247 249 252 402 402 915 915 920 920 931
@@ -9557,13 +9227,13 @@ RETURN: *character-sets*
      9488 9488 9492 9492 9496 9496 9500 9500 9508 9508 9516 9516 9524
      9524 9532 9532 9552 9580 9600 9600 9604 9604 9608 9608 9612 9612
      9616 9619 9632 9632))
-  (MAKE-CHARACTER-SET :MIB-ENUM 1015 :NAME "UTF-16" :ALIASES 'NIL
-   :MIME-ENCODING 'NIL :SOURCE '"RFC 2781" :COMMENTS 'NIL :REFERENCES
-   '("[RFC2781]") :RANGES #(0 55295 57344 1114111))
-  (MAKE-CHARACTER-SET :MIB-ENUM 37 :NAME #20="ISO-2022-KR" :ALIASES
-   '("csISO2022KR") :MIME-ENCODING '#20# :SOURCE
-   '"RFC-1557 (see also KS_C_5601-1987)" :COMMENTS 'NIL :REFERENCES
-   '("[RFC1557,Choi]") :RANGES
+  (make-character-set :mib-enum 1015 :name "UTF-16" :aliases 'nil
+   :mime-encoding 'nil :source '"RFC 2781" :comments 'nil :references
+   '("[RFC2781]") :ranges #(0 55295 57344 1114111))
+  (make-character-set :mib-enum 37 :name #20="ISO-2022-KR" :aliases
+   '("csISO2022KR") :mime-encoding '#20# :source
+   '"RFC-1557 (see also KS_C_5601-1987)" :comments 'nil :references
+   '("[RFC1557,Choi]") :ranges
    #(0 127 161 161 164 164 167 168 170 170 173 174 176 180 182 186 188
      191 198 198 208 208 215 216 222 223 230 230 240 240 247 248 254 254
      273 273 294 295 305 307 312 312 319 322 329 331 338 339 358 359 711
@@ -10470,18 +10140,18 @@ RETURN: *character-sets*
      55176 55177 55180 55180 55184 55184 55192 55193 55195 55195 55197
      55197 63744 64011 65281 65374 65504 65507 65509 65510 917504
      917631))
-  (MAKE-CHARACTER-SET :MIB-ENUM 2086 :NAME "IBM866" :ALIASES
-   '("csIBM866" "866" "cp866") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM NLDG Volume 2 (SE09-8002-03) August 1994" :COMMENTS 'NIL
-   :REFERENCES '("[Pond]") :RANGES
+  (make-character-set :mib-enum 2086 :name "IBM866" :aliases
+   '("csIBM866" "866" "cp866") :mime-encoding 'nil :source
+   '"IBM NLDG Volume 2 (SE09-8002-03) August 1994" :comments 'nil
+   :references '("[Pond]") :ranges
    #(0 127 160 160 164 164 176 176 183 183 1025 1025 1028 1028 1031 1031
      1038 1038 1040 1103 1105 1105 1108 1108 1111 1111 1118 1118 8470
      8470 8729 8730 9472 9472 9474 9474 9484 9484 9488 9488 9492 9492
      9496 9496 9500 9500 9508 9508 9516 9516 9524 9524 9532 9532 9552
      9580 9600 9600 9604 9604 9608 9608 9612 9612 9616 9619 9632 9632))
-  (MAKE-CHARACTER-SET :MIB-ENUM 2088 :NAME "KOI8-U" :ALIASES 'NIL
-   :MIME-ENCODING 'NIL :SOURCE '"RFC 2319" :COMMENTS 'NIL :REFERENCES
-   '("[RFC2319]") :RANGES
+  (make-character-set :mib-enum 2088 :name "KOI8-U" :aliases 'nil
+   :mime-encoding 'nil :source '"RFC 2319" :comments 'nil :references
+   '("[RFC2319]") :ranges
    #(0 127 160 160 169 169 176 176 178 178 183 183 247 247 1025 1025
      1028 1028 1030 1031 1040 1103 1105 1105 1108 1108 1110 1111 1168
      1169 8729 8730 8776 8776 8804 8805 8992 8993 9472 9472 9474 9474
@@ -10489,780 +10159,777 @@ RETURN: *character-sets*
      9516 9524 9524 9532 9532 9552 9554 9556 9556 9559 9563 9565 9569
      9571 9571 9574 9578 9580 9580 9600 9600 9604 9604 9608 9608 9612
      9612 9616 9619 9632 9632))
-  (MAKE-CHARACTER-SET :MIB-ENUM 2083 :NAME "VIQR" :ALIASES '("csVIQR")
-   :MIME-ENCODING 'NIL :SOURCE '"RFC 1456" :COMMENTS 'NIL :REFERENCES
-   '("[RFC1456]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2103 :NAME "PTCP154" :ALIASES
-   '("Cyrillic-Asian" "CP154" "PT154" "csPTCP154") :MIME-ENCODING 'NIL
-   :SOURCE '"See (http://www.iana.org/assignments/charset-reg/PTCP154)"
-   :COMMENTS 'NIL :REFERENCES '("[Uskov]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2045 :NAME "IBM851" :ALIASES
-   '("csIBM851" "851" "cp851") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2085 :NAME "HZ-GB-2312" :ALIASES 'NIL
-   :MIME-ENCODING 'NIL :SOURCE
+  (make-character-set :mib-enum 2083 :name "VIQR" :aliases '("csVIQR")
+   :mime-encoding 'nil :source '"RFC 1456" :comments 'nil :references
+   '("[RFC1456]") :ranges nil)
+  (make-character-set :mib-enum 2103 :name "PTCP154" :aliases
+   '("Cyrillic-Asian" "CP154" "PT154" "csPTCP154") :mime-encoding 'nil
+   :source '"See (http://www.iana.org/assignments/charset-reg/PTCP154)"
+   :comments 'nil :references '("[Uskov]") :ranges nil)
+  (make-character-set :mib-enum 2045 :name "IBM851" :aliases
+   '("csIBM851" "851" "cp851") :mime-encoding 'nil :source
+   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2085 :name "HZ-GB-2312" :aliases 'nil
+   :mime-encoding 'nil :source
    '"RFC 1842, RFC 1843                                               [RFC1842, RFC1843]"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2107 :NAME "TSCII" :ALIASES '("csTSCII")
-   :MIME-ENCODING 'NIL :SOURCE
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum 2107 :name "TSCII" :aliases '("csTSCII")
+   :mime-encoding 'nil :source
    '"See <http://www.iana.org/assignments/charset-reg/TSCII>           [Kalyanasundaram]"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2106 :NAME "BRF" :ALIASES '("csBRF")
-   :MIME-ENCODING 'NIL :SOURCE
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum 2106 :name "BRF" :aliases '("csBRF")
+   :mime-encoding 'nil :source
    '"See <http://www.iana.org/assignments/charset-reg/BRF>                    [Thibault]"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2105 :NAME "KOI7-switched" :ALIASES 'NIL
-   :MIME-ENCODING 'NIL :SOURCE
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum 2105 :name "KOI7-switched" :aliases 'nil
+   :mime-encoding 'nil :source
    '"See <http://www.iana.org/assignments/charset-reg/KOI7-switched>"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2104 :NAME "Amiga-1251" :ALIASES
-   '("Ami-1251" "Amiga1251" "Ami1251") :MIME-ENCODING 'NIL :SOURCE
-   '"See (http://www.amiga.ultranet.ru/Amiga-1251.html)" :COMMENTS
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum 2104 :name "Amiga-1251" :aliases
+   '("Ami-1251" "Amiga1251" "Ami1251") :mime-encoding 'nil :source
+   '"See (http://www.amiga.ultranet.ru/Amiga-1251.html)" :comments
    '("															"
      "(Aliases are provided for historical reasons and should not be used) [Malyshev]")
-   :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2102 :NAME "IBM1047" :ALIASES
-   '("IBM-1047") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM1047 (EBCDIC Latin 1/Open Systems)" :COMMENTS
+   :references 'nil :ranges nil)
+  (make-character-set :mib-enum 2102 :name "IBM1047" :aliases
+   '("IBM-1047") :mime-encoding 'nil :source
+   '"IBM1047 (EBCDIC Latin 1/Open Systems)" :comments
    '("http://www-1.ibm.com/servers/eserver/iseries/software/globalization/pdf/cp01047z.pdf")
-   :REFERENCES '("[Robrigado]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2100 :NAME "IBM01149" :ALIASES
-   '("ebcdic-is-871+euro" "CP01149" "CCSID01149") :MIME-ENCODING 'NIL
-   :SOURCE
+   :references '("[Robrigado]") :ranges nil)
+  (make-character-set :mib-enum 2100 :name "IBM01149" :aliases
+   '("ebcdic-is-871+euro" "CP01149" "CCSID01149") :mime-encoding 'nil
+   :source
    '"IBM See (http://www.iana.org/assignments/charset-reg/IBM01149)    [Mahdi]"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2099 :NAME "IBM01148" :ALIASES
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum 2099 :name "IBM01148" :aliases
    '("ebcdic-international-500+euro" "CP01148" "CCSID01148")
-   :MIME-ENCODING 'NIL :SOURCE
+   :mime-encoding 'nil :source
    '"IBM See (http://www.iana.org/assignments/charset-reg/IBM01148)    [Mahdi]"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2098 :NAME "IBM01147" :ALIASES
-   '("ebcdic-fr-297+euro" "CP01147" "CCSID01147") :MIME-ENCODING 'NIL
-   :SOURCE
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum 2098 :name "IBM01147" :aliases
+   '("ebcdic-fr-297+euro" "CP01147" "CCSID01147") :mime-encoding 'nil
+   :source
    '"IBM See (http://www.iana.org/assignments/charset-reg/IBM01147)    [Mahdi]"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2097 :NAME "IBM01146" :ALIASES
-   '("ebcdic-gb-285+euro" "CP01146" "CCSID01146") :MIME-ENCODING 'NIL
-   :SOURCE
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum 2097 :name "IBM01146" :aliases
+   '("ebcdic-gb-285+euro" "CP01146" "CCSID01146") :mime-encoding 'nil
+   :source
    '"IBM See (http://www.iana.org/assignments/charset-reg/IBM01146)    [Mahdi]"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2096 :NAME "IBM01145" :ALIASES
-   '("ebcdic-es-284+euro" "CP01145" "CCSID01145") :MIME-ENCODING 'NIL
-   :SOURCE
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum 2096 :name "IBM01145" :aliases
+   '("ebcdic-es-284+euro" "CP01145" "CCSID01145") :mime-encoding 'nil
+   :source
    '"IBM See (http://www.iana.org/assignments/charset-reg/IBM01145)    [Mahdi]"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2095 :NAME "IBM01144" :ALIASES
-   '("ebcdic-it-280+euro" "CP01144" "CCSID01144") :MIME-ENCODING 'NIL
-   :SOURCE
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum 2095 :name "IBM01144" :aliases
+   '("ebcdic-it-280+euro" "CP01144" "CCSID01144") :mime-encoding 'nil
+   :source
    '"IBM See (http://www.iana.org/assignments/charset-reg/IBM01144)    [Mahdi]"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2094 :NAME "IBM01143" :ALIASES
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum 2094 :name "IBM01143" :aliases
    '("ebcdic-se-278+euro" "ebcdic-fi-278+euro" "CP01143" "CCSID01143")
-   :MIME-ENCODING 'NIL :SOURCE
+   :mime-encoding 'nil :source
    '"IBM See (http://www.iana.org/assignments/charset-reg/IBM01143)    [Mahdi]"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2093 :NAME "IBM01142" :ALIASES
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum 2093 :name "IBM01142" :aliases
    '("ebcdic-no-277+euro" "ebcdic-dk-277+euro" "CP01142" "CCSID01142")
-   :MIME-ENCODING 'NIL :SOURCE
+   :mime-encoding 'nil :source
    '"IBM See (http://www.iana.org/assignments/charset-reg/IBM01142)    [Mahdi]"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2092 :NAME "IBM01141" :ALIASES
-   '("ebcdic-de-273+euro" "CP01141" "CCSID01141") :MIME-ENCODING 'NIL
-   :SOURCE
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum 2092 :name "IBM01141" :aliases
+   '("ebcdic-de-273+euro" "CP01141" "CCSID01141") :mime-encoding 'nil
+   :source
    '"IBM See (http://www.iana.org/assignments/charset-reg/IBM01141)    [Mahdi]"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2091 :NAME "IBM01140" :ALIASES
-   '("ebcdic-us-37+euro" "CP01140" "CCSID01140") :MIME-ENCODING 'NIL
-   :SOURCE
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum 2091 :name "IBM01140" :aliases
+   '("ebcdic-us-37+euro" "CP01140" "CCSID01140") :mime-encoding 'nil
+   :source
    '"IBM See (http://www.iana.org/assignments/charset-reg/IBM01140)    [Mahdi]"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2090 :NAME "IBM00924" :ALIASES
-   '("ebcdic-Latin9--euro" "CP00924" "CCSID00924") :MIME-ENCODING 'NIL
-   :SOURCE
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum 2090 :name "IBM00924" :aliases
+   '("ebcdic-Latin9--euro" "CP00924" "CCSID00924") :mime-encoding 'nil
+   :source
    '"IBM See (http://www.iana.org/assignments/charset-reg/IBM00924)    [Mahdi]"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2089 :NAME "IBM00858" :ALIASES
-   '("PC-Multilingual-850+euro" "CP00858" "CCSID00858") :MIME-ENCODING
-   'NIL :SOURCE
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum 2089 :name "IBM00858" :aliases
+   '("PC-Multilingual-850+euro" "CP00858" "CCSID00858") :mime-encoding
+   'nil :source
    '"IBM See (http://www.iana.org/assignments/charset-reg/IBM00858)    [Mahdi]"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2081 :NAME "MNEM" :ALIASES '("csMnem")
-   :MIME-ENCODING 'NIL :SOURCE
-   '"RFC 1345, also known as \"mnemonic+ascii+8200\"" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2080 :NAME "MNEMONIC" :ALIASES
-   '("csMnemonic") :MIME-ENCODING 'NIL :SOURCE
-   '"RFC 1345, also known as \"mnemonic+ascii+38\"" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2079 :NAME "UNKNOWN-8BIT" :ALIASES
-   '("csUnknown8BiT") :MIME-ENCODING 'NIL :SOURCE 'NIL :COMMENTS 'NIL
-   :REFERENCES '("[RFC1428]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2078 :NAME "EBCDIC-US" :ALIASES
-   '("csEBCDICUS") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM 3270 Char Set Ref Ch 10, GA27-2837-9, April 1987" :COMMENTS
-   'NIL :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2077 :NAME "EBCDIC-UK" :ALIASES
-   '("csEBCDICUK") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM 3270 Char Set Ref Ch 10, GA27-2837-9, April 1987" :COMMENTS
-   'NIL :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2076 :NAME "EBCDIC-ES-S" :ALIASES
-   '("csEBCDICESS") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM 3270 Char Set Ref Ch 10, GA27-2837-9, April 1987" :COMMENTS
-   'NIL :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2075 :NAME "EBCDIC-ES-A" :ALIASES
-   '("csEBCDICESA") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM 3270 Char Set Ref Ch 10, GA27-2837-9, April 1987" :COMMENTS
-   'NIL :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2074 :NAME "EBCDIC-ES" :ALIASES
-   '("csEBCDICES") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM 3270 Char Set Ref Ch 10, GA27-2837-9, April 1987" :COMMENTS
-   'NIL :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2073 :NAME "EBCDIC-PT" :ALIASES
-   '("csEBCDICPT") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM 3270 Char Set Ref Ch 10, GA27-2837-9, April 1987" :COMMENTS
-   'NIL :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2072 :NAME "EBCDIC-IT" :ALIASES
-   '("csEBCDICIT") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM 3270 Char Set Ref Ch 10, GA27-2837-9, April 1987" :COMMENTS
-   'NIL :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2071 :NAME "EBCDIC-FR" :ALIASES
-   '("csEBCDICFR") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM 3270 Char Set Ref Ch 10, GA27-2837-9, April 1987" :COMMENTS
-   'NIL :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2070 :NAME "EBCDIC-FI-SE-A" :ALIASES
-   '("csEBCDICFISEA") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM 3270 Char Set Ref Ch 10, GA27-2837-9, April 1987" :COMMENTS
-   'NIL :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2069 :NAME "EBCDIC-FI-SE" :ALIASES
-   '("csEBCDICFISE") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM 3270 Char Set Ref Ch 10, GA27-2837-9, April 1987" :COMMENTS
-   'NIL :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2068 :NAME "EBCDIC-DK-NO-A" :ALIASES
-   '("csEBCDICDKNOA") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM 3270 Char Set Ref Ch 10, GA27-2837-9, April 1987" :COMMENTS
-   'NIL :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2067 :NAME "EBCDIC-DK-NO" :ALIASES
-   '("csEBCDICDKNO") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM 3270 Char Set Ref Ch 10, GA27-2837-9, April 1987" :COMMENTS
-   'NIL :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2066 :NAME "EBCDIC-CA-FR" :ALIASES
-   '("csEBCDICCAFR") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM 3270 Char Set Ref Ch 10, GA27-2837-9, April 1987" :COMMENTS
-   'NIL :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2065 :NAME "EBCDIC-AT-DE-A" :ALIASES
-   '("csEBCDICATDEA") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM 3270 Char Set Ref Ch 10, GA27-2837-9, April 1987" :COMMENTS
-   'NIL :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2064 :NAME "EBCDIC-AT-DE" :ALIASES
-   '("csIBMEBCDICATDE") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM 3270 Char Set Ref Ch 10, GA27-2837-9, April 1987" :COMMENTS
-   'NIL :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2063 :NAME "IBM1026" :ALIASES
-   '("csIBM1026" "CP1026") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2062 :NAME "IBM918" :ALIASES
-   '("csIBM918" "ebcdic-cp-ar2" "CP918") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2061 :NAME "IBM905" :ALIASES
-   '("csIBM905" "ebcdic-cp-tr" "CP905") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM 3174 Character Set Ref, GA27-3831-02, March 1990" :COMMENTS
-   'NIL :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2060 :NAME "IBM904" :ALIASES
-   '("csIBBM904" "904" "cp904") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2059 :NAME "IBM903" :ALIASES
-   '("csIBM903" "cp903") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2058 :NAME "IBM891" :ALIASES
-   '("csIBM891" "cp891") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2057 :NAME "IBM880" :ALIASES
-   '("csIBM880" "EBCDIC-Cyrillic" "cp880") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2056 :NAME "IBM871" :ALIASES
-   '("csIBM871" "ebcdic-cp-is" "CP871") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2055 :NAME "IBM870" :ALIASES
-   '("csIBM870" "ebcdic-cp-yu" "ebcdic-cp-roece" "CP870") :MIME-ENCODING
-   'NIL :SOURCE '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :COMMENTS
-   'NIL :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2053 :NAME "IBM868" :ALIASES
-   '("csIBM868" "cp-ar" "CP868") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2044 :NAME "IBM500" :ALIASES
-   '("csIBM500" "ebcdic-cp-ch" "ebcdic-cp-be" "CP500") :MIME-ENCODING
-   'NIL :SOURCE '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :COMMENTS
-   'NIL :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2043 :NAME "IBM424" :ALIASES
-   '("csIBM424" "ebcdic-cp-he" "cp424") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2042 :NAME "IBM423" :ALIASES
-   '("csIBM423" "ebcdic-cp-gr" "cp423") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2041 :NAME "IBM420" :ALIASES
-   '("csIBM420" "ebcdic-cp-ar1" "cp420") :MIME-ENCODING 'NIL :SOURCE
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum 2081 :name "MNEM" :aliases '("csMnem")
+   :mime-encoding 'nil :source
+   '"RFC 1345, also known as \"mnemonic+ascii+8200\"" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2080 :name "MNEMONIC" :aliases
+   '("csMnemonic") :mime-encoding 'nil :source
+   '"RFC 1345, also known as \"mnemonic+ascii+38\"" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2079 :name "UNKNOWN-8BIT" :aliases
+   '("csUnknown8BiT") :mime-encoding 'nil :source 'nil :comments 'nil
+   :references '("[RFC1428]") :ranges nil)
+  (make-character-set :mib-enum 2078 :name "EBCDIC-US" :aliases
+   '("csEBCDICUS") :mime-encoding 'nil :source
+   '"IBM 3270 Char Set Ref Ch 10, GA27-2837-9, April 1987" :comments
+   'nil :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2077 :name "EBCDIC-UK" :aliases
+   '("csEBCDICUK") :mime-encoding 'nil :source
+   '"IBM 3270 Char Set Ref Ch 10, GA27-2837-9, April 1987" :comments
+   'nil :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2076 :name "EBCDIC-ES-S" :aliases
+   '("csEBCDICESS") :mime-encoding 'nil :source
+   '"IBM 3270 Char Set Ref Ch 10, GA27-2837-9, April 1987" :comments
+   'nil :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2075 :name "EBCDIC-ES-A" :aliases
+   '("csEBCDICESA") :mime-encoding 'nil :source
+   '"IBM 3270 Char Set Ref Ch 10, GA27-2837-9, April 1987" :comments
+   'nil :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2074 :name "EBCDIC-ES" :aliases
+   '("csEBCDICES") :mime-encoding 'nil :source
+   '"IBM 3270 Char Set Ref Ch 10, GA27-2837-9, April 1987" :comments
+   'nil :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2073 :name "EBCDIC-PT" :aliases
+   '("csEBCDICPT") :mime-encoding 'nil :source
+   '"IBM 3270 Char Set Ref Ch 10, GA27-2837-9, April 1987" :comments
+   'nil :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2072 :name "EBCDIC-IT" :aliases
+   '("csEBCDICIT") :mime-encoding 'nil :source
+   '"IBM 3270 Char Set Ref Ch 10, GA27-2837-9, April 1987" :comments
+   'nil :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2071 :name "EBCDIC-FR" :aliases
+   '("csEBCDICFR") :mime-encoding 'nil :source
+   '"IBM 3270 Char Set Ref Ch 10, GA27-2837-9, April 1987" :comments
+   'nil :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2070 :name "EBCDIC-FI-SE-A" :aliases
+   '("csEBCDICFISEA") :mime-encoding 'nil :source
+   '"IBM 3270 Char Set Ref Ch 10, GA27-2837-9, April 1987" :comments
+   'nil :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2069 :name "EBCDIC-FI-SE" :aliases
+   '("csEBCDICFISE") :mime-encoding 'nil :source
+   '"IBM 3270 Char Set Ref Ch 10, GA27-2837-9, April 1987" :comments
+   'nil :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2068 :name "EBCDIC-DK-NO-A" :aliases
+   '("csEBCDICDKNOA") :mime-encoding 'nil :source
+   '"IBM 3270 Char Set Ref Ch 10, GA27-2837-9, April 1987" :comments
+   'nil :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2067 :name "EBCDIC-DK-NO" :aliases
+   '("csEBCDICDKNO") :mime-encoding 'nil :source
+   '"IBM 3270 Char Set Ref Ch 10, GA27-2837-9, April 1987" :comments
+   'nil :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2066 :name "EBCDIC-CA-FR" :aliases
+   '("csEBCDICCAFR") :mime-encoding 'nil :source
+   '"IBM 3270 Char Set Ref Ch 10, GA27-2837-9, April 1987" :comments
+   'nil :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2065 :name "EBCDIC-AT-DE-A" :aliases
+   '("csEBCDICATDEA") :mime-encoding 'nil :source
+   '"IBM 3270 Char Set Ref Ch 10, GA27-2837-9, April 1987" :comments
+   'nil :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2064 :name "EBCDIC-AT-DE" :aliases
+   '("csIBMEBCDICATDE") :mime-encoding 'nil :source
+   '"IBM 3270 Char Set Ref Ch 10, GA27-2837-9, April 1987" :comments
+   'nil :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2063 :name "IBM1026" :aliases
+   '("csIBM1026" "CP1026") :mime-encoding 'nil :source
+   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2062 :name "IBM918" :aliases
+   '("csIBM918" "ebcdic-cp-ar2" "CP918") :mime-encoding 'nil :source
+   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2061 :name "IBM905" :aliases
+   '("csIBM905" "ebcdic-cp-tr" "CP905") :mime-encoding 'nil :source
+   '"IBM 3174 Character Set Ref, GA27-3831-02, March 1990" :comments
+   'nil :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2060 :name "IBM904" :aliases
+   '("csIBBM904" "904" "cp904") :mime-encoding 'nil :source
+   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2059 :name "IBM903" :aliases
+   '("csIBM903" "cp903") :mime-encoding 'nil :source
+   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2058 :name "IBM891" :aliases
+   '("csIBM891" "cp891") :mime-encoding 'nil :source
+   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2057 :name "IBM880" :aliases
+   '("csIBM880" "EBCDIC-Cyrillic" "cp880") :mime-encoding 'nil :source
+   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2056 :name "IBM871" :aliases
+   '("csIBM871" "ebcdic-cp-is" "CP871") :mime-encoding 'nil :source
+   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2055 :name "IBM870" :aliases
+   '("csIBM870" "ebcdic-cp-yu" "ebcdic-cp-roece" "CP870") :mime-encoding
+   'nil :source '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :comments
+   'nil :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2053 :name "IBM868" :aliases
+   '("csIBM868" "cp-ar" "CP868") :mime-encoding 'nil :source
+   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2044 :name "IBM500" :aliases
+   '("csIBM500" "ebcdic-cp-ch" "ebcdic-cp-be" "CP500") :mime-encoding
+   'nil :source '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :comments
+   'nil :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2043 :name "IBM424" :aliases
+   '("csIBM424" "ebcdic-cp-he" "cp424") :mime-encoding 'nil :source
+   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2042 :name "IBM423" :aliases
+   '("csIBM423" "ebcdic-cp-gr" "cp423") :mime-encoding 'nil :source
+   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2041 :name "IBM420" :aliases
+   '("csIBM420" "ebcdic-cp-ar1" "cp420") :mime-encoding 'nil :source
    '"IBM NLS RM Vol2 SE09-8002-01, March 1990,  IBM NLS RM p 11-11"
-   :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2040 :NAME "IBM297" :ALIASES
-   '("csIBM297" "ebcdic-cp-fr" "cp297") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2039 :NAME "IBM290" :ALIASES
-   '("csIBM290" "EBCDIC-JP-kana" "cp290") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM 3174 Character Set Ref, GA27-3831-02, March 1990" :COMMENTS
-   'NIL :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2038 :NAME "IBM285" :ALIASES
-   '("csIBM285" "ebcdic-cp-gb" "CP285") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2037 :NAME "IBM284" :ALIASES
-   '("csIBM284" "ebcdic-cp-es" "CP284") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2036 :NAME "IBM281" :ALIASES
-   '("csIBM281" "cp281" "EBCDIC-JP-E") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM 3174 Character Set Ref, GA27-3831-02, March 1990" :COMMENTS
-   'NIL :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2035 :NAME "IBM280" :ALIASES
-   '("csIBM280" "ebcdic-cp-it" "CP280") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2034 :NAME "IBM278" :ALIASES
-   '("csIBM278" "ebcdic-cp-se" "ebcdic-cp-fi" "CP278") :MIME-ENCODING
-   'NIL :SOURCE '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :COMMENTS
-   'NIL :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2033 :NAME "IBM277" :ALIASES
-   '("csIBM277" "EBCDIC-CP-NO" "EBCDIC-CP-DK") :MIME-ENCODING 'NIL
-   :SOURCE '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2032 :NAME "IBM275" :ALIASES
-   '("csIBM275" "cp275" "EBCDIC-BR") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2031 :NAME "IBM274" :ALIASES
-   '("csIBM274" "CP274" "EBCDIC-BE") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM 3174 Character Set Ref, GA27-3831-02, March 1990" :COMMENTS
-   'NIL :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2030 :NAME "IBM273" :ALIASES
-   '("csIBM273" "CP273") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2029 :NAME "IBM038" :ALIASES
-   '("csIBM038" "cp038" "EBCDIC-INT") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM 3174 Character Set Ref, GA27-3831-02, March 1990" :COMMENTS
-   'NIL :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2028 :NAME "IBM037" :ALIASES
+   :comments 'nil :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2040 :name "IBM297" :aliases
+   '("csIBM297" "ebcdic-cp-fr" "cp297") :mime-encoding 'nil :source
+   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2039 :name "IBM290" :aliases
+   '("csIBM290" "EBCDIC-JP-kana" "cp290") :mime-encoding 'nil :source
+   '"IBM 3174 Character Set Ref, GA27-3831-02, March 1990" :comments
+   'nil :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2038 :name "IBM285" :aliases
+   '("csIBM285" "ebcdic-cp-gb" "CP285") :mime-encoding 'nil :source
+   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2037 :name "IBM284" :aliases
+   '("csIBM284" "ebcdic-cp-es" "CP284") :mime-encoding 'nil :source
+   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2036 :name "IBM281" :aliases
+   '("csIBM281" "cp281" "EBCDIC-JP-E") :mime-encoding 'nil :source
+   '"IBM 3174 Character Set Ref, GA27-3831-02, March 1990" :comments
+   'nil :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2035 :name "IBM280" :aliases
+   '("csIBM280" "ebcdic-cp-it" "CP280") :mime-encoding 'nil :source
+   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2034 :name "IBM278" :aliases
+   '("csIBM278" "ebcdic-cp-se" "ebcdic-cp-fi" "CP278") :mime-encoding
+   'nil :source '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :comments
+   'nil :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2033 :name "IBM277" :aliases
+   '("csIBM277" "EBCDIC-CP-NO" "EBCDIC-CP-DK") :mime-encoding 'nil
+   :source '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2032 :name "IBM275" :aliases
+   '("csIBM275" "cp275" "EBCDIC-BR") :mime-encoding 'nil :source
+   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2031 :name "IBM274" :aliases
+   '("csIBM274" "CP274" "EBCDIC-BE") :mime-encoding 'nil :source
+   '"IBM 3174 Character Set Ref, GA27-3831-02, March 1990" :comments
+   'nil :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2030 :name "IBM273" :aliases
+   '("csIBM273" "CP273") :mime-encoding 'nil :source
+   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2029 :name "IBM038" :aliases
+   '("csIBM038" "cp038" "EBCDIC-INT") :mime-encoding 'nil :source
+   '"IBM 3174 Character Set Ref, GA27-3831-02, March 1990" :comments
+   'nil :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2028 :name "IBM037" :aliases
    '("csIBM037" "ebcdic-cp-nl" "ebcdic-cp-wt" "ebcdic-cp-ca"
      "ebcdic-cp-us" "cp037")
-   :MIME-ENCODING 'NIL :SOURCE
-   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2024 :NAME "Windows-31J" :ALIASES
-   '("csWindows31J") :MIME-ENCODING 'NIL :SOURCE
+   :mime-encoding 'nil :source
+   '"IBM NLS RM Vol2 SE09-8002-01, March 1990" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2024 :name "Windows-31J" :aliases
+   '("csWindows31J") :mime-encoding 'nil :source
    '"Windows Japanese.  A further extension of Shift_JIS to include NEC special characters (Row 13), NEC selection of IBM extensions (Rows 89 to 92), and IBM extensions (Rows 115 to 119).  The CCS's are JIS X0201:1997, JIS X0208:1997, and these extensions. This charset can be used for the top-level media type \"text\", but it is of limited or specialized use (see RFC2278). PCL Symbol Set id: 19K"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2023 :NAME "Microsoft-Publishing"
-   :ALIASES '("csMicrosoftPublishing") :MIME-ENCODING 'NIL :SOURCE
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum 2023 :name "Microsoft-Publishing"
+   :aliases '("csMicrosoftPublishing") :mime-encoding 'nil :source
    '"PCL 5 Comparison Guide, Hewlett-Packard, HP part number 5961-0510, October 1992 PCL Symbol Set id: 6J"
-   :COMMENTS 'NIL :REFERENCES '("[HP-PCL5]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2022 :NAME "Ventura-Math" :ALIASES
-   '("csVenturaMath") :MIME-ENCODING 'NIL :SOURCE
+   :comments 'nil :references '("[HP-PCL5]") :ranges nil)
+  (make-character-set :mib-enum 2022 :name "Ventura-Math" :aliases
+   '("csVenturaMath") :mime-encoding 'nil :source
    '"PCL 5 Comparison Guide, Hewlett-Packard, HP part number 5961-0510, October 1992 PCL Symbol Set id: 6M"
-   :COMMENTS 'NIL :REFERENCES '("[HP-PCL5]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2021 :NAME "HP-DeskTop" :ALIASES
-   '("csHPDesktop") :MIME-ENCODING 'NIL :SOURCE
+   :comments 'nil :references '("[HP-PCL5]") :ranges nil)
+  (make-character-set :mib-enum 2021 :name "HP-DeskTop" :aliases
+   '("csHPDesktop") :mime-encoding 'nil :source
    '"PCL 5 Comparison Guide, Hewlett-Packard, HP part number 5961-0510, October 1992 PCL Symbol Set id: 7J"
-   :COMMENTS 'NIL :REFERENCES '("[HP-PCL5]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2020 :NAME "Adobe-Symbol-Encoding"
-   :ALIASES '("csHPPSMath") :MIME-ENCODING 'NIL :SOURCE
+   :comments 'nil :references '("[HP-PCL5]") :ranges nil)
+  (make-character-set :mib-enum 2020 :name "Adobe-Symbol-Encoding"
+   :aliases '("csHPPSMath") :mime-encoding 'nil :source
    '"PostScript Language Reference Manual PCL Symbol Set id: 5M"
-   :COMMENTS 'NIL :REFERENCES '("[Adobe]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2019 :NAME "HP-Math8" :ALIASES
-   '("csHPMath8") :MIME-ENCODING 'NIL :SOURCE
+   :comments 'nil :references '("[Adobe]") :ranges nil)
+  (make-character-set :mib-enum 2019 :name "HP-Math8" :aliases
+   '("csHPMath8") :mime-encoding 'nil :source
    '"PCL 5 Comparison Guide, Hewlett-Packard, HP part number 5961-0510, October 1992 PCL Symbol Set id: 8M"
-   :COMMENTS 'NIL :REFERENCES '("[HP-PCL5]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2018 :NAME "HP-Pi-font" :ALIASES
-   '("csHPPiFont") :MIME-ENCODING 'NIL :SOURCE
+   :comments 'nil :references '("[HP-PCL5]") :ranges nil)
+  (make-character-set :mib-enum 2018 :name "HP-Pi-font" :aliases
+   '("csHPPiFont") :mime-encoding 'nil :source
    '"PCL 5 Comparison Guide, Hewlett-Packard, HP part number 5961-0510, October 1992 PCL Symbol Set id: 15U"
-   :COMMENTS 'NIL :REFERENCES '("[HP-PCL5]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2017 :NAME "HP-Legal" :ALIASES
-   '("csHPLegal") :MIME-ENCODING 'NIL :SOURCE
+   :comments 'nil :references '("[HP-PCL5]") :ranges nil)
+  (make-character-set :mib-enum 2017 :name "HP-Legal" :aliases
+   '("csHPLegal") :mime-encoding 'nil :source
    '"PCL 5 Comparison Guide, Hewlett-Packard, HP part number 5961-0510, October 1992 PCL Symbol Set id: 1U"
-   :COMMENTS 'NIL :REFERENCES '("[HP-PCL5]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2016 :NAME "IBM-Thai" :ALIASES
-   '("csIBMThai") :MIME-ENCODING 'NIL :SOURCE
-   '"Presentation Set, CPGID: 838" :COMMENTS 'NIL :REFERENCES
-   '("[IBM-CIDT]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2015 :NAME "IBM-Symbols" :ALIASES
-   '("csIBMSymbols") :MIME-ENCODING 'NIL :SOURCE
-   '"Presentation Set, CPGID: 259" :COMMENTS 'NIL :REFERENCES
-   '("[IBM-CIDT]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2014 :NAME "PC8-Turkish" :ALIASES
-   '("csPC8Turkish") :MIME-ENCODING 'NIL :SOURCE
-   '"PC Latin Turkish.  PCL Symbol Set id: 9T" :COMMENTS 'NIL
-   :REFERENCES '("[HP-PCL5]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2012 :NAME "PC8-Danish-Norwegian"
-   :ALIASES '("csPC8DanishNorwegian") :MIME-ENCODING 'NIL :SOURCE
+   :comments 'nil :references '("[HP-PCL5]") :ranges nil)
+  (make-character-set :mib-enum 2016 :name "IBM-Thai" :aliases
+   '("csIBMThai") :mime-encoding 'nil :source
+   '"Presentation Set, CPGID: 838" :comments 'nil :references
+   '("[IBM-CIDT]") :ranges nil)
+  (make-character-set :mib-enum 2015 :name "IBM-Symbols" :aliases
+   '("csIBMSymbols") :mime-encoding 'nil :source
+   '"Presentation Set, CPGID: 259" :comments 'nil :references
+   '("[IBM-CIDT]") :ranges nil)
+  (make-character-set :mib-enum 2014 :name "PC8-Turkish" :aliases
+   '("csPC8Turkish") :mime-encoding 'nil :source
+   '"PC Latin Turkish.  PCL Symbol Set id: 9T" :comments 'nil
+   :references '("[HP-PCL5]") :ranges nil)
+  (make-character-set :mib-enum 2012 :name "PC8-Danish-Norwegian"
+   :aliases '("csPC8DanishNorwegian") :mime-encoding 'nil :source
    '"PC Danish Norwegian 8-bit PC set for Danish Norwegian PCL Symbol Set id: 11U"
-   :COMMENTS 'NIL :REFERENCES '("[HP-PCL5]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2008 :NAME "DEC-MCS" :ALIASES
-   '("csDECMCS" "dec") :MIME-ENCODING 'NIL :SOURCE
+   :comments 'nil :references '("[HP-PCL5]") :ranges nil)
+  (make-character-set :mib-enum 2008 :name "DEC-MCS" :aliases
+   '("csDECMCS" "dec") :mime-encoding 'nil :source
    '"VAX/VMS User's Manual,  Order Number: AI-Y517A-TE, April 1986."
-   :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2007 :NAME "Ventura-International"
-   :ALIASES '("csVenturaInternational") :MIME-ENCODING 'NIL :SOURCE
+   :comments 'nil :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 2007 :name "Ventura-International"
+   :aliases '("csVenturaInternational") :mime-encoding 'nil :source
    '"Ventura International.  ASCII plus coded characters similar  to Roman8. PCL Symbol Set id: 13J"
-   :COMMENTS 'NIL :REFERENCES '("[HP-PCL5]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2006 :NAME "Ventura-US" :ALIASES
-   '("csVenturaUS") :MIME-ENCODING 'NIL :SOURCE
+   :comments 'nil :references '("[HP-PCL5]") :ranges nil)
+  (make-character-set :mib-enum 2006 :name "Ventura-US" :aliases
+   '("csVenturaUS") :mime-encoding 'nil :source
    '"Ventura US.  ASCII plus characters typically used in  publishing, like pilcrow, copyright, registered, trade mark, section, dagger, and double dagger in the range A0 (hex) to FF (hex). PCL Symbol Set id: 14J"
-   :COMMENTS 'NIL :REFERENCES '("[HP-PCL5]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2005 :NAME "Adobe-Standard-Encoding"
-   :ALIASES '("csAdobeStandardEncoding") :MIME-ENCODING 'NIL :SOURCE
+   :comments 'nil :references '("[HP-PCL5]") :ranges nil)
+  (make-character-set :mib-enum 2005 :name "Adobe-Standard-Encoding"
+   :aliases '("csAdobeStandardEncoding") :mime-encoding 'nil :source
    '"PostScript Language Reference Manual PCL Symbol Set id: 10J"
-   :COMMENTS 'NIL :REFERENCES '("[Adobe]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2003 :NAME "ISO-8859-9-Windows-Latin-5"
-   :ALIASES '("csWindows31Latin5") :MIME-ENCODING 'NIL :SOURCE
+   :comments 'nil :references '("[Adobe]") :ranges nil)
+  (make-character-set :mib-enum 2003 :name "ISO-8859-9-Windows-Latin-5"
+   :aliases '("csWindows31Latin5") :mime-encoding 'nil :source
    '"Extended ISO 8859-9.  Latin-5 for Windows 3.1 PCL Symbol Set id: 5T"
-   :COMMENTS 'NIL :REFERENCES '("[HP-PCL5]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2002 :NAME "ISO-8859-2-Windows-Latin-2"
-   :ALIASES '("csWindows31Latin2") :MIME-ENCODING 'NIL :SOURCE
+   :comments 'nil :references '("[HP-PCL5]") :ranges nil)
+  (make-character-set :mib-enum 2002 :name "ISO-8859-2-Windows-Latin-2"
+   :aliases '("csWindows31Latin2") :mime-encoding 'nil :source
    '"Extended ISO 8859-2.  Latin-2 for Windows 3.1. PCL Symbol Set id: 9E"
-   :COMMENTS 'NIL :REFERENCES '("[HP-PCL5]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2001 :NAME
-   "ISO-8859-1-Windows-3.1-Latin-1" :ALIASES '("csWindows31Latin1")
-   :MIME-ENCODING 'NIL :SOURCE
+   :comments 'nil :references '("[HP-PCL5]") :ranges nil)
+  (make-character-set :mib-enum 2001 :name
+   "ISO-8859-1-Windows-3.1-Latin-1" :aliases '("csWindows31Latin1")
+   :mime-encoding 'nil :source
    '"Extended ISO 8859-1 Latin-1 for Windows 3.1.   PCL Symbol Set id: 19U"
-   :COMMENTS 'NIL :REFERENCES '("[HP-PCL5]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 2000 :NAME
-   "ISO-8859-1-Windows-3.0-Latin-1" :ALIASES '("csWindows30Latin1")
-   :MIME-ENCODING 'NIL :SOURCE
+   :comments 'nil :references '("[HP-PCL5]") :ranges nil)
+  (make-character-set :mib-enum 2000 :name
+   "ISO-8859-1-Windows-3.0-Latin-1" :aliases '("csWindows30Latin1")
+   :mime-encoding 'nil :source
    '"Extended ISO 8859-1 Latin-1 for Windows 3.0.   PCL Symbol Set id: 9U"
-   :COMMENTS 'NIL :REFERENCES '("[HP-PCL5]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 1020 :NAME "BOCU-1" :ALIASES
-   '("csBOCU-1") :MIME-ENCODING 'NIL :SOURCE
-   '"http://www.unicode.org/notes/tn6/" :COMMENTS 'NIL :REFERENCES
-   '("[Scherer]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 1018 :NAME "UTF-32BE" :ALIASES 'NIL
-   :MIME-ENCODING 'NIL :SOURCE
-   '"<http://www.unicode.org/unicode/reports/tr19/>" :COMMENTS 'NIL
-   :REFERENCES '("[Davis]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 1017 :NAME "UTF-32" :ALIASES 'NIL
-   :MIME-ENCODING 'NIL :SOURCE
-   '"<http://www.unicode.org/unicode/reports/tr19/>" :COMMENTS 'NIL
-   :REFERENCES '("[Davis]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 1016 :NAME "CESU-8" :ALIASES
-   '("csCESU-8") :MIME-ENCODING 'NIL :SOURCE
-   '"<http://www.unicode.org/unicode/reports/tr26>" :COMMENTS 'NIL
-   :REFERENCES '("[Phipps]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 1011 :NAME "SCSU" :ALIASES 'NIL
-   :MIME-ENCODING 'NIL :SOURCE
+   :comments 'nil :references '("[HP-PCL5]") :ranges nil)
+  (make-character-set :mib-enum 1020 :name "BOCU-1" :aliases
+   '("csBOCU-1") :mime-encoding 'nil :source
+   '"http://www.unicode.org/notes/tn6/" :comments 'nil :references
+   '("[Scherer]") :ranges nil)
+  (make-character-set :mib-enum 1018 :name "UTF-32BE" :aliases 'nil
+   :mime-encoding 'nil :source
+   '"<http://www.unicode.org/unicode/reports/tr19/>" :comments 'nil
+   :references '("[Davis]") :ranges nil)
+  (make-character-set :mib-enum 1017 :name "UTF-32" :aliases 'nil
+   :mime-encoding 'nil :source
+   '"<http://www.unicode.org/unicode/reports/tr19/>" :comments 'nil
+   :references '("[Davis]") :ranges nil)
+  (make-character-set :mib-enum 1016 :name "CESU-8" :aliases
+   '("csCESU-8") :mime-encoding 'nil :source
+   '"<http://www.unicode.org/unicode/reports/tr26>" :comments 'nil
+   :references '("[Phipps]") :ranges nil)
+  (make-character-set :mib-enum 1011 :name "SCSU" :aliases 'nil
+   :mime-encoding 'nil :source
    '"SCSU See (http://www.iana.org/assignments/charset-reg/SCSU)     [Scherer]"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 1010 :NAME "UNICODE-1-1" :ALIASES
-   '("csUnicode11") :MIME-ENCODING 'NIL :SOURCE '"RFC 1641" :COMMENTS
-   'NIL :REFERENCES '("[RFC1641]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 1009 :NAME "ISO-Unicode-IBM-1265"
-   :ALIASES '("csUnicodeIBM1265") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM Hebrew Presentation Set, GCSGID: 1265" :COMMENTS 'NIL
-   :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 1008 :NAME "ISO-Unicode-IBM-1264"
-   :ALIASES '("csUnicodeIBM1264") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM Arabic Presentation Set, GCSGID: 1264" :COMMENTS 'NIL
-   :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 1007 :NAME "ISO-Unicode-IBM-1276"
-   :ALIASES '("csUnicodeIBM1276") :MIME-ENCODING 'NIL :SOURCE
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum 1010 :name "UNICODE-1-1" :aliases
+   '("csUnicode11") :mime-encoding 'nil :source '"RFC 1641" :comments
+   'nil :references '("[RFC1641]") :ranges nil)
+  (make-character-set :mib-enum 1009 :name "ISO-Unicode-IBM-1265"
+   :aliases '("csUnicodeIBM1265") :mime-encoding 'nil :source
+   '"IBM Hebrew Presentation Set, GCSGID: 1265" :comments 'nil
+   :references 'nil :ranges nil)
+  (make-character-set :mib-enum 1008 :name "ISO-Unicode-IBM-1264"
+   :aliases '("csUnicodeIBM1264") :mime-encoding 'nil :source
+   '"IBM Arabic Presentation Set, GCSGID: 1264" :comments 'nil
+   :references 'nil :ranges nil)
+  (make-character-set :mib-enum 1007 :name "ISO-Unicode-IBM-1276"
+   :aliases '("csUnicodeIBM1276") :mime-encoding 'nil :source
    '"IBM Cyrillic Greek Extended Presentation Set, GCSGID: 1276"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 1006 :NAME "ISO-Unicode-IBM-1268"
-   :ALIASES '("csUnicodeIBM1268") :MIME-ENCODING 'NIL :SOURCE
-   '"IBM Latin-4 Extended Presentation Set, GCSGID: 1268" :COMMENTS 'NIL
-   :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 1005 :NAME "ISO-Unicode-IBM-1261"
-   :ALIASES '("csUnicodeIBM1261") :MIME-ENCODING 'NIL :SOURCE
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum 1006 :name "ISO-Unicode-IBM-1268"
+   :aliases '("csUnicodeIBM1268") :mime-encoding 'nil :source
+   '"IBM Latin-4 Extended Presentation Set, GCSGID: 1268" :comments 'nil
+   :references 'nil :ranges nil)
+  (make-character-set :mib-enum 1005 :name "ISO-Unicode-IBM-1261"
+   :aliases '("csUnicodeIBM1261") :mime-encoding 'nil :source
    '"IBM Latin-2, -3, -5, Extended Presentation Set, GCSGID: 1261"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM NIL :NAME "ISO-10646-J-1" :ALIASES 'NIL
-   :MIME-ENCODING 'NIL :SOURCE '"ISO 10646 Japanese, see RFC 1815."
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 1003 :NAME "ISO-10646-Unicode-Latin1"
-   :ALIASES '("ISO-10646" "csUnicodeLatin1") :MIME-ENCODING 'NIL :SOURCE
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum nil :name "ISO-10646-J-1" :aliases 'nil
+   :mime-encoding 'nil :source '"ISO 10646 Japanese, see RFC 1815."
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum 1003 :name "ISO-10646-Unicode-Latin1"
+   :aliases '("ISO-10646" "csUnicodeLatin1") :mime-encoding 'nil :source
    '"ISO Latin-1 subset of Unicode. Basic Latin and Latin-1  Supplement  = collections 1 and 2.  See ISO 10646, Appendix A.  See RFC 1815."
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 1002 :NAME "ISO-10646-UCS-Basic"
-   :ALIASES '("csUnicodeASCII") :MIME-ENCODING 'NIL :SOURCE
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum 1002 :name "ISO-10646-UCS-Basic"
+   :aliases '("csUnicodeASCII") :mime-encoding 'nil :source
    '"ASCII subset of Unicode.  Basic Latin = collection 1 See ISO 10646, Appendix A"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 1000 :NAME "ISO-10646-UCS-2" :ALIASES
-   '("csUnicode") :MIME-ENCODING 'NIL :SOURCE
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum 1000 :name "ISO-10646-UCS-2" :aliases
+   '("csUnicode") :mime-encoding 'nil :source
    '"the 2-octet Basic Multilingual Plane, aka Unicode this needs to specify network byte order: the standard does not specify (it is a 16-bit integer space)"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 119 :NAME "KZ-1048" :ALIASES
-   '("csKZ1048" "RK1048" "STRK1048-2002") :MIME-ENCODING 'NIL :SOURCE
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum 119 :name "KZ-1048" :aliases
+   '("csKZ1048" "RK1048" "STRK1048-2002") :mime-encoding 'nil :source
    '"See <http://www.iana.org/assignments/charset-reg/KZ-1048>      [Veremeev, Kikkarin]"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 118 :NAME "ISO-11548-1" :ALIASES
-   '("csISO115481" "ISO_TR_11548-1" "ISO_11548-1") :MIME-ENCODING 'NIL
-   :SOURCE
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum 118 :name "ISO-11548-1" :aliases
+   '("csISO115481" "ISO_TR_11548-1" "ISO_11548-1") :mime-encoding 'nil
+   :source
    '"See <http://www.iana.org/assignments/charset-reg/ISO-11548-1>            [Thibault]"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 117 :NAME "OSD_EBCDIC_DF04_1" :ALIASES
-   'NIL :MIME-ENCODING 'NIL :SOURCE
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum 117 :name "OSD_EBCDIC_DF04_1" :aliases
+   'nil :mime-encoding 'nil :source
    '"Fujitsu-Siemens standard mainframe EBCDIC encoding Please see: <http://www.iana.org/assignments/charset-reg/OSD-EBCDIC-DF04-1>"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 116 :NAME "OSD_EBCDIC_DF03_IRV" :ALIASES
-   'NIL :MIME-ENCODING 'NIL :SOURCE
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum 116 :name "OSD_EBCDIC_DF03_IRV" :aliases
+   'nil :mime-encoding 'nil :source
    '"Fujitsu-Siemens standard mainframe EBCDIC encoding Please see: <http://www.iana.org/assignments/charset-reg/OSD-EBCDIC-DF03-IRV>"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 115 :NAME "OSD_EBCDIC_DF04_15" :ALIASES
-   'NIL :MIME-ENCODING 'NIL :SOURCE
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum 115 :name "OSD_EBCDIC_DF04_15" :aliases
+   'nil :mime-encoding 'nil :source
    '"Fujitsu-Siemens standard mainframe EBCDIC encoding Please see: <http://www.iana.org/assignments/charset-reg/OSD-EBCDIC-DF04-15>"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 103 :NAME "UNICODE-1-1-UTF-7" :ALIASES
-   '("csUnicode11UTF7") :MIME-ENCODING 'NIL :SOURCE '"RFC 1642"
-   :COMMENTS 'NIL :REFERENCES '("[RFC1642]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 102 :NAME "KSC5636" :ALIASES
-   '("csKSC5636" "ISO646-KR") :MIME-ENCODING 'NIL :SOURCE 'NIL :COMMENTS
-   'NIL :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 101 :NAME "dk-us" :ALIASES '("csDKUS")
-   :MIME-ENCODING 'NIL :SOURCE 'NIL :COMMENTS 'NIL :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 100 :NAME "us-dk" :ALIASES '("csUSDK")
-   :MIME-ENCODING 'NIL :SOURCE 'NIL :COMMENTS 'NIL :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 99 :NAME "DS_2089" :ALIASES
-   '("csISO646Danish" "dk" "ISO646-DK" "DS2089") :MIME-ENCODING 'NIL
-   :SOURCE '"Danish Standard, DS 2089, February 1974" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 98 :NAME "JIS_X0212-1990" :ALIASES
-   '("csISO159JISX02121990" "iso-ir-159" "x0212") :MIME-ENCODING 'NIL
-   :SOURCE '"ECMA registry" :COMMENTS 'NIL :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 97 :NAME "latin-lap" :ALIASES
-   '("csISO158Lap" "iso-ir-158" "lap") :MIME-ENCODING 'NIL :SOURCE
-   '"ECMA registry" :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]")
-   :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 96 :NAME "ISO_10367-box" :ALIASES
-   '("csISO10367Box" "iso-ir-155") :MIME-ENCODING 'NIL :SOURCE
-   '"ECMA registry" :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]")
-   :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 95 :NAME "ISO_8859-supp" :ALIASES
-   '("csISO8859Supp" "latin1-2-5" "iso-ir-154") :MIME-ENCODING 'NIL
-   :SOURCE '"ECMA registry" :COMMENTS 'NIL :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 94 :NAME "GOST_19768-74" :ALIASES
-   '("csISO153GOST1976874" "iso-ir-153" "ST_SEV_358-88") :MIME-ENCODING
-   'NIL :SOURCE '"ECMA registry" :COMMENTS 'NIL :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 93 :NAME "ISO_6937-2-25" :ALIASES
-   '("csISO6937Add" "iso-ir-152") :MIME-ENCODING 'NIL :SOURCE
-   '"ECMA registry" :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]")
-   :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 92 :NAME "NC_NC00-10:81" :ALIASES
-   '("csISO151Cuba" "ISO646-CU" "iso-ir-151" "cuba") :MIME-ENCODING 'NIL
-   :SOURCE '"ECMA registry" :COMMENTS 'NIL :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 91 :NAME "greek-ccitt" :ALIASES
-   '("csISO150GreekCCITT" "csISO150" "iso-ir-150") :MIME-ENCODING 'NIL
-   :SOURCE '"ECMA registry" :COMMENTS 'NIL :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 90 :NAME "JUS_I.B1.003-mac" :ALIASES
-   '("csISO147Macedonian" "iso-ir-147" "macedonian") :MIME-ENCODING 'NIL
-   :SOURCE '"ECMA registry" :COMMENTS 'NIL :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 89 :NAME "JUS_I.B1.003-serb" :ALIASES
-   '("csISO146Serbian" "serbian" "iso-ir-146") :MIME-ENCODING 'NIL
-   :SOURCE '"ECMA registry" :COMMENTS 'NIL :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 88 :NAME "IEC_P27-1" :ALIASES
-   '("csISO143IECP271" "iso-ir-143") :MIME-ENCODING 'NIL :SOURCE
-   '"ECMA registry" :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]")
-   :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 87 :NAME "JUS_I.B1.002" :ALIASES
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum 103 :name "UNICODE-1-1-UTF-7" :aliases
+   '("csUnicode11UTF7") :mime-encoding 'nil :source '"RFC 1642"
+   :comments 'nil :references '("[RFC1642]") :ranges nil)
+  (make-character-set :mib-enum 102 :name "KSC5636" :aliases
+   '("csKSC5636" "ISO646-KR") :mime-encoding 'nil :source 'nil :comments
+   'nil :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 101 :name "dk-us" :aliases '("csDKUS")
+   :mime-encoding 'nil :source 'nil :comments 'nil :references
+   '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 100 :name "us-dk" :aliases '("csUSDK")
+   :mime-encoding 'nil :source 'nil :comments 'nil :references
+   '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 99 :name "DS_2089" :aliases
+   '("csISO646Danish" "dk" "ISO646-DK" "DS2089") :mime-encoding 'nil
+   :source '"Danish Standard, DS 2089, February 1974" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 98 :name "JIS_X0212-1990" :aliases
+   '("csISO159JISX02121990" "iso-ir-159" "x0212") :mime-encoding 'nil
+   :source '"ECMA registry" :comments 'nil :references
+   '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 97 :name "latin-lap" :aliases
+   '("csISO158Lap" "iso-ir-158" "lap") :mime-encoding 'nil :source
+   '"ECMA registry" :comments 'nil :references '("[RFC1345,KXS2]")
+   :ranges nil)
+  (make-character-set :mib-enum 96 :name "ISO_10367-box" :aliases
+   '("csISO10367Box" "iso-ir-155") :mime-encoding 'nil :source
+   '"ECMA registry" :comments 'nil :references '("[RFC1345,KXS2]")
+   :ranges nil)
+  (make-character-set :mib-enum 95 :name "ISO_8859-supp" :aliases
+   '("csISO8859Supp" "latin1-2-5" "iso-ir-154") :mime-encoding 'nil
+   :source '"ECMA registry" :comments 'nil :references
+   '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 94 :name "GOST_19768-74" :aliases
+   '("csISO153GOST1976874" "iso-ir-153" "ST_SEV_358-88") :mime-encoding
+   'nil :source '"ECMA registry" :comments 'nil :references
+   '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 93 :name "ISO_6937-2-25" :aliases
+   '("csISO6937Add" "iso-ir-152") :mime-encoding 'nil :source
+   '"ECMA registry" :comments 'nil :references '("[RFC1345,KXS2]")
+   :ranges nil)
+  (make-character-set :mib-enum 92 :name "NC_NC00-10:81" :aliases
+   '("csISO151Cuba" "ISO646-CU" "iso-ir-151" "cuba") :mime-encoding 'nil
+   :source '"ECMA registry" :comments 'nil :references
+   '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 91 :name "greek-ccitt" :aliases
+   '("csISO150GreekCCITT" "csISO150" "iso-ir-150") :mime-encoding 'nil
+   :source '"ECMA registry" :comments 'nil :references
+   '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 90 :name "JUS_I.B1.003-mac" :aliases
+   '("csISO147Macedonian" "iso-ir-147" "macedonian") :mime-encoding 'nil
+   :source '"ECMA registry" :comments 'nil :references
+   '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 89 :name "JUS_I.B1.003-serb" :aliases
+   '("csISO146Serbian" "serbian" "iso-ir-146") :mime-encoding 'nil
+   :source '"ECMA registry" :comments 'nil :references
+   '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 88 :name "IEC_P27-1" :aliases
+   '("csISO143IECP271" "iso-ir-143") :mime-encoding 'nil :source
+   '"ECMA registry" :comments 'nil :references '("[RFC1345,KXS2]")
+   :ranges nil)
+  (make-character-set :mib-enum 87 :name "JUS_I.B1.002" :aliases
    '("csISO141JUSIB1002" "yu" "js" "ISO646-YU" "iso-ir-141")
-   :MIME-ENCODING 'NIL :SOURCE '"ECMA registry" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 86 :NAME "CSN_369103" :ALIASES
-   '("csISO139CSN369103" "iso-ir-139") :MIME-ENCODING 'NIL :SOURCE
-   '"ECMA registry" :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]")
-   :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 85 :NAME "ISO_8859-8-I" :ALIASES
-   '(#21="ISO-8859-8-I" "csISO88598I") :MIME-ENCODING '#21# :SOURCE
-   '"RFC1556" :COMMENTS '("Alias: ISO-8859-8-I (preferred MIME name)")
-   :REFERENCES '("[RFC1556,Nussbacher]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 84 :NAME "ISO_8859-8-E" :ALIASES
-   '(#22="ISO-8859-8-E" "csISO88598E") :MIME-ENCODING '#22# :SOURCE
-   '"RFC1556" :COMMENTS '("Alias: ISO-8859-8-E (preferred MIME name)")
-   :REFERENCES '("[RFC1556,Nussbacher]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 83 :NAME "T.101-G2" :ALIASES
-   '("csISO128T101G2" "iso-ir-128") :MIME-ENCODING 'NIL :SOURCE
-   '"ECMA registry" :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]")
-   :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 82 :NAME "ISO_8859-6-I" :ALIASES
-   '(#23="ISO-8859-6-I" "csISO88596I") :MIME-ENCODING '#23# :SOURCE
-   '"RFC1556" :COMMENTS '("Alias: ISO-8859-6-I (preferred MIME name)")
-   :REFERENCES '("[RFC1556,IANA]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 81 :NAME "ISO_8859-6-E" :ALIASES
-   '(#24="ISO-8859-6-E" "csISO88596E") :MIME-ENCODING '#24# :SOURCE
-   '"RFC1556" :COMMENTS '("Alias: ISO-8859-6-E (preferred MIME name)")
-   :REFERENCES '("[RFC1556,IANA]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 80 :NAME "CSA_Z243.4-1985-gr" :ALIASES
-   '("csISO123CSAZ24341985gr" "iso-ir-123") :MIME-ENCODING 'NIL :SOURCE
-   '"ECMA registry" :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]")
-   :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 79 :NAME "CSA_Z243.4-1985-2" :ALIASES
+   :mime-encoding 'nil :source '"ECMA registry" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 86 :name "CSN_369103" :aliases
+   '("csISO139CSN369103" "iso-ir-139") :mime-encoding 'nil :source
+   '"ECMA registry" :comments 'nil :references '("[RFC1345,KXS2]")
+   :ranges nil)
+  (make-character-set :mib-enum 85 :name "ISO_8859-8-I" :aliases
+   '(#21="ISO-8859-8-I" "csISO88598I") :mime-encoding '#21# :source
+   '"RFC1556" :comments '("Alias: ISO-8859-8-I (preferred MIME name)")
+   :references '("[RFC1556,Nussbacher]") :ranges nil)
+  (make-character-set :mib-enum 84 :name "ISO_8859-8-E" :aliases
+   '(#22="ISO-8859-8-E" "csISO88598E") :mime-encoding '#22# :source
+   '"RFC1556" :comments '("Alias: ISO-8859-8-E (preferred MIME name)")
+   :references '("[RFC1556,Nussbacher]") :ranges nil)
+  (make-character-set :mib-enum 83 :name "T.101-G2" :aliases
+   '("csISO128T101G2" "iso-ir-128") :mime-encoding 'nil :source
+   '"ECMA registry" :comments 'nil :references '("[RFC1345,KXS2]")
+   :ranges nil)
+  (make-character-set :mib-enum 82 :name "ISO_8859-6-I" :aliases
+   '(#23="ISO-8859-6-I" "csISO88596I") :mime-encoding '#23# :source
+   '"RFC1556" :comments '("Alias: ISO-8859-6-I (preferred MIME name)")
+   :references '("[RFC1556,IANA]") :ranges nil)
+  (make-character-set :mib-enum 81 :name "ISO_8859-6-E" :aliases
+   '(#24="ISO-8859-6-E" "csISO88596E") :mime-encoding '#24# :source
+   '"RFC1556" :comments '("Alias: ISO-8859-6-E (preferred MIME name)")
+   :references '("[RFC1556,IANA]") :ranges nil)
+  (make-character-set :mib-enum 80 :name "CSA_Z243.4-1985-gr" :aliases
+   '("csISO123CSAZ24341985gr" "iso-ir-123") :mime-encoding 'nil :source
+   '"ECMA registry" :comments 'nil :references '("[RFC1345,KXS2]")
+   :ranges nil)
+  (make-character-set :mib-enum 79 :name "CSA_Z243.4-1985-2" :aliases
    '("csISO122Canadian2" "csa7-2" "ISO646-CA2" "iso-ir-122")
-   :MIME-ENCODING 'NIL :SOURCE '"ECMA registry" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 78 :NAME "CSA_Z243.4-1985-1" :ALIASES
+   :mime-encoding 'nil :source '"ECMA registry" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 78 :name "CSA_Z243.4-1985-1" :aliases
    '("csISO121Canadian1" "ca" "csa7-1" "ISO646-CA" "iso-ir-121")
-   :MIME-ENCODING 'NIL :SOURCE '"ECMA registry" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 77 :NAME "ECMA-cyrillic" :ALIASES
-   '("csISO111ECMACyrillic" "KOI8-E" "iso-ir-111") :MIME-ENCODING 'NIL
-   :SOURCE
+   :mime-encoding 'nil :source '"ECMA registry" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 77 :name "ECMA-cyrillic" :aliases
+   '("csISO111ECMACyrillic" "KOI8-E" "iso-ir-111") :mime-encoding 'nil
+   :source
    '"ISO registry (formerly ECMA registry) http://www.itscj.ipsj.jp/ISO-IR/111.pdf"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 76 :NAME "T.61-8bit" :ALIASES
-   '("csISO103T618bit" "iso-ir-103" "T.61") :MIME-ENCODING 'NIL :SOURCE
-   '"ECMA registry" :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]")
-   :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 75 :NAME "T.61-7bit" :ALIASES
-   '("csISO102T617bit" "iso-ir-102") :MIME-ENCODING 'NIL :SOURCE
-   '"ECMA registry" :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]")
-   :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 74 :NAME "ANSI_X3.110-1983" :ALIASES
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum 76 :name "T.61-8bit" :aliases
+   '("csISO103T618bit" "iso-ir-103" "T.61") :mime-encoding 'nil :source
+   '"ECMA registry" :comments 'nil :references '("[RFC1345,KXS2]")
+   :ranges nil)
+  (make-character-set :mib-enum 75 :name "T.61-7bit" :aliases
+   '("csISO102T617bit" "iso-ir-102") :mime-encoding 'nil :source
+   '"ECMA registry" :comments 'nil :references '("[RFC1345,KXS2]")
+   :ranges nil)
+  (make-character-set :mib-enum 74 :name "ANSI_X3.110-1983" :aliases
    '("csISO99NAPLPS" "NAPLPS" "CSA_T500-1983" "iso-ir-99")
-   :MIME-ENCODING 'NIL :SOURCE '"ECMA registry" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 73 :NAME "ISO_2033-1983" :ALIASES
-   '("csISO2033" "e13b" "iso-ir-98") :MIME-ENCODING 'NIL :SOURCE
-   '"ECMA registry" :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]")
-   :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 72 :NAME "JIS_C6229-1984-kana" :ALIASES
-   '("csISO96JISC62291984kana" "iso-ir-96") :MIME-ENCODING 'NIL :SOURCE
-   '"ECMA registry" :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]")
-   :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 71 :NAME "JIS_C6229-1984-hand-add"
-   :ALIASES '("csISO95JIS62291984handadd" "jp-ocr-hand-add" "iso-ir-95")
-   :MIME-ENCODING 'NIL :SOURCE '"ECMA registry" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 70 :NAME "JIS_C6229-1984-hand" :ALIASES
-   '("csISO94JIS62291984hand" "jp-ocr-hand" "iso-ir-94") :MIME-ENCODING
-   'NIL :SOURCE '"ECMA registry" :COMMENTS 'NIL :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 69 :NAME "JIS_C6229-1984-b-add" :ALIASES
-   '("csISO93JIS62291984badd" "jp-ocr-b-add" "iso-ir-93") :MIME-ENCODING
-   'NIL :SOURCE '"ECMA registry" :COMMENTS 'NIL :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 68 :NAME "JIS_C6229-1984-b" :ALIASES
+   :mime-encoding 'nil :source '"ECMA registry" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 73 :name "ISO_2033-1983" :aliases
+   '("csISO2033" "e13b" "iso-ir-98") :mime-encoding 'nil :source
+   '"ECMA registry" :comments 'nil :references '("[RFC1345,KXS2]")
+   :ranges nil)
+  (make-character-set :mib-enum 72 :name "JIS_C6229-1984-kana" :aliases
+   '("csISO96JISC62291984kana" "iso-ir-96") :mime-encoding 'nil :source
+   '"ECMA registry" :comments 'nil :references '("[RFC1345,KXS2]")
+   :ranges nil)
+  (make-character-set :mib-enum 71 :name "JIS_C6229-1984-hand-add"
+   :aliases '("csISO95JIS62291984handadd" "jp-ocr-hand-add" "iso-ir-95")
+   :mime-encoding 'nil :source '"ECMA registry" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 70 :name "JIS_C6229-1984-hand" :aliases
+   '("csISO94JIS62291984hand" "jp-ocr-hand" "iso-ir-94") :mime-encoding
+   'nil :source '"ECMA registry" :comments 'nil :references
+   '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 69 :name "JIS_C6229-1984-b-add" :aliases
+   '("csISO93JIS62291984badd" "jp-ocr-b-add" "iso-ir-93") :mime-encoding
+   'nil :source '"ECMA registry" :comments 'nil :references
+   '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 68 :name "JIS_C6229-1984-b" :aliases
    '("csISO92JISC62991984b" "jp-ocr-b" "ISO646-JP-OCR-B" "iso-ir-92")
-   :MIME-ENCODING 'NIL :SOURCE '"ECMA registry" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 67 :NAME "JIS_C6229-1984-a" :ALIASES
-   '("csISO91JISC62291984a" "jp-ocr-a" "iso-ir-91") :MIME-ENCODING 'NIL
-   :SOURCE '"ECMA registry" :COMMENTS 'NIL :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 66 :NAME "iso-ir-90" :ALIASES
-   '("csISO90") :MIME-ENCODING 'NIL :SOURCE '"ECMA registry" :COMMENTS
-   'NIL :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 65 :NAME "ASMO_449" :ALIASES
-   '("csISO89ASMO449" "iso-ir-89" "arabic7" "ISO_9036") :MIME-ENCODING
-   'NIL :SOURCE '"ECMA registry" :COMMENTS 'NIL :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 64 :NAME "greek7" :ALIASES
-   '("csISO88Greek7" "iso-ir-88") :MIME-ENCODING 'NIL :SOURCE
-   '"ECMA registry" :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]")
-   :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 63 :NAME "JIS_C6226-1983" :ALIASES
+   :mime-encoding 'nil :source '"ECMA registry" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 67 :name "JIS_C6229-1984-a" :aliases
+   '("csISO91JISC62291984a" "jp-ocr-a" "iso-ir-91") :mime-encoding 'nil
+   :source '"ECMA registry" :comments 'nil :references
+   '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 66 :name "iso-ir-90" :aliases
+   '("csISO90") :mime-encoding 'nil :source '"ECMA registry" :comments
+   'nil :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 65 :name "ASMO_449" :aliases
+   '("csISO89ASMO449" "iso-ir-89" "arabic7" "ISO_9036") :mime-encoding
+   'nil :source '"ECMA registry" :comments 'nil :references
+   '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 64 :name "greek7" :aliases
+   '("csISO88Greek7" "iso-ir-88") :mime-encoding 'nil :source
+   '"ECMA registry" :comments 'nil :references '("[RFC1345,KXS2]")
+   :ranges nil)
+  (make-character-set :mib-enum 63 :name "JIS_C6226-1983" :aliases
    '("csISO87JISX0208" "JIS_X0208-1983" "x0208" "iso-ir-87")
-   :MIME-ENCODING 'NIL :SOURCE '"ECMA registry" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 62 :NAME "MSZ_7795.3" :ALIASES
-   '("csISO86Hungarian" "hu" "ISO646-HU" "iso-ir-86") :MIME-ENCODING
-   'NIL :SOURCE '"ECMA registry" :COMMENTS 'NIL :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 61 :NAME "ES2" :ALIASES
-   '("csISO85Spanish2" "ISO646-ES2" "iso-ir-85") :MIME-ENCODING 'NIL
-   :SOURCE '"ECMA registry" :COMMENTS 'NIL :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 60 :NAME "PT2" :ALIASES
-   '("csISO84Portuguese2" "ISO646-PT2" "iso-ir-84") :MIME-ENCODING 'NIL
-   :SOURCE '"ECMA registry" :COMMENTS 'NIL :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 59 :NAME "videotex-suppl" :ALIASES
-   '("csISO70VideotexSupp1" "iso-ir-70") :MIME-ENCODING 'NIL :SOURCE
-   '"ECMA registry" :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]")
-   :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 58 :NAME "NS_4551-2" :ALIASES
-   '("csISO61Norwegian2" "no2" "iso-ir-61" "ISO646-NO2") :MIME-ENCODING
-   'NIL :SOURCE '"ECMA registry" :COMMENTS 'NIL :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 57 :NAME "GB_2312-80" :ALIASES
-   '("csISO58GB231280" "chinese" "iso-ir-58") :MIME-ENCODING 'NIL
-   :SOURCE '"ECMA registry" :COMMENTS 'NIL :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 56 :NAME "GB_1988-80" :ALIASES
-   '("csISO57GB1988" "ISO646-CN" "cn" "iso-ir-57") :MIME-ENCODING 'NIL
-   :SOURCE '"ECMA registry" :COMMENTS 'NIL :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 55 :NAME "ISO_5428:1980" :ALIASES
-   '("csISO5428Greek" "iso-ir-55") :MIME-ENCODING 'NIL :SOURCE
-   '"ECMA registry" :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]")
-   :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 54 :NAME "ISO_5427:1981" :ALIASES
-   '("ISO5427Cyrillic1981" "iso-ir-54") :MIME-ENCODING 'NIL :SOURCE
-   '"ECMA registry" :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]")
-   :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 53 :NAME "INIS-cyrillic" :ALIASES
-   '("csISO51INISCyrillic" "iso-ir-51") :MIME-ENCODING 'NIL :SOURCE
-   '"ECMA registry" :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]")
-   :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 52 :NAME "INIS-8" :ALIASES
-   '("csISO50INIS8" "iso-ir-50") :MIME-ENCODING 'NIL :SOURCE
-   '"ECMA registry" :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]")
-   :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 51 :NAME "INIS" :ALIASES
-   '("csISO49INIS" "iso-ir-49") :MIME-ENCODING 'NIL :SOURCE
-   '"ECMA registry" :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]")
-   :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 50 :NAME "BS_viewdata" :ALIASES
-   '("csISO47BSViewdata" "iso-ir-47") :MIME-ENCODING 'NIL :SOURCE
-   '"ECMA registry" :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]")
-   :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 49 :NAME "JIS_C6226-1978" :ALIASES
-   '("csISO42JISC62261978" "iso-ir-42") :MIME-ENCODING 'NIL :SOURCE
-   '"ECMA registry" :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]")
-   :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 48 :NAME "ISO_5427" :ALIASES
-   '("csISO5427Cyrillic" "iso-ir-37") :MIME-ENCODING 'NIL :SOURCE
-   '"ECMA registry" :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]")
-   :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 47 :NAME "Latin-greek-1" :ALIASES
-   '("csISO27LatinGreek1" "iso-ir-27") :MIME-ENCODING 'NIL :SOURCE
-   '"ECMA registry" :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]")
-   :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 46 :NAME "NF_Z_62-010_(1973)" :ALIASES
-   '("csISO25French" "ISO646-FR1" "iso-ir-25") :MIME-ENCODING 'NIL
-   :SOURCE '"ECMA registry" :COMMENTS 'NIL :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 45 :NAME "latin-greek" :ALIASES
-   '("csISO19LatinGreek" "iso-ir-19") :MIME-ENCODING 'NIL :SOURCE
-   '"ECMA registry" :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]")
-   :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 44 :NAME "greek7-old" :ALIASES
-   '("csISO18Greek7Old" "iso-ir-18") :MIME-ENCODING 'NIL :SOURCE
-   '"ECMA registry" :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]")
-   :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 43 :NAME "PT" :ALIASES
-   '("csISO16Portuguese" "ISO646-PT" "iso-ir-16") :MIME-ENCODING 'NIL
-   :SOURCE '"ECMA registry" :COMMENTS 'NIL :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 42 :NAME "JIS_C6220-1969-ro" :ALIASES
-   '("csISO14JISC6220ro" "ISO646-JP" "jp" "iso-ir-14") :MIME-ENCODING
-   'NIL :SOURCE '"ECMA registry" :COMMENTS 'NIL :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 41 :NAME "JIS_C6220-1969-jp" :ALIASES
+   :mime-encoding 'nil :source '"ECMA registry" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 62 :name "MSZ_7795.3" :aliases
+   '("csISO86Hungarian" "hu" "ISO646-HU" "iso-ir-86") :mime-encoding
+   'nil :source '"ECMA registry" :comments 'nil :references
+   '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 61 :name "ES2" :aliases
+   '("csISO85Spanish2" "ISO646-ES2" "iso-ir-85") :mime-encoding 'nil
+   :source '"ECMA registry" :comments 'nil :references
+   '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 60 :name "PT2" :aliases
+   '("csISO84Portuguese2" "ISO646-PT2" "iso-ir-84") :mime-encoding 'nil
+   :source '"ECMA registry" :comments 'nil :references
+   '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 59 :name "videotex-suppl" :aliases
+   '("csISO70VideotexSupp1" "iso-ir-70") :mime-encoding 'nil :source
+   '"ECMA registry" :comments 'nil :references '("[RFC1345,KXS2]")
+   :ranges nil)
+  (make-character-set :mib-enum 58 :name "NS_4551-2" :aliases
+   '("csISO61Norwegian2" "no2" "iso-ir-61" "ISO646-NO2") :mime-encoding
+   'nil :source '"ECMA registry" :comments 'nil :references
+   '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 57 :name "GB_2312-80" :aliases
+   '("csISO58GB231280" "chinese" "iso-ir-58") :mime-encoding 'nil
+   :source '"ECMA registry" :comments 'nil :references
+   '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 56 :name "GB_1988-80" :aliases
+   '("csISO57GB1988" "ISO646-CN" "cn" "iso-ir-57") :mime-encoding 'nil
+   :source '"ECMA registry" :comments 'nil :references
+   '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 55 :name "ISO_5428:1980" :aliases
+   '("csISO5428Greek" "iso-ir-55") :mime-encoding 'nil :source
+   '"ECMA registry" :comments 'nil :references '("[RFC1345,KXS2]")
+   :ranges nil)
+  (make-character-set :mib-enum 54 :name "ISO_5427:1981" :aliases
+   '("ISO5427Cyrillic1981" "iso-ir-54") :mime-encoding 'nil :source
+   '"ECMA registry" :comments 'nil :references '("[RFC1345,KXS2]")
+   :ranges nil)
+  (make-character-set :mib-enum 53 :name "INIS-cyrillic" :aliases
+   '("csISO51INISCyrillic" "iso-ir-51") :mime-encoding 'nil :source
+   '"ECMA registry" :comments 'nil :references '("[RFC1345,KXS2]")
+   :ranges nil)
+  (make-character-set :mib-enum 52 :name "INIS-8" :aliases
+   '("csISO50INIS8" "iso-ir-50") :mime-encoding 'nil :source
+   '"ECMA registry" :comments 'nil :references '("[RFC1345,KXS2]")
+   :ranges nil)
+  (make-character-set :mib-enum 51 :name "INIS" :aliases
+   '("csISO49INIS" "iso-ir-49") :mime-encoding 'nil :source
+   '"ECMA registry" :comments 'nil :references '("[RFC1345,KXS2]")
+   :ranges nil)
+  (make-character-set :mib-enum 50 :name "BS_viewdata" :aliases
+   '("csISO47BSViewdata" "iso-ir-47") :mime-encoding 'nil :source
+   '"ECMA registry" :comments 'nil :references '("[RFC1345,KXS2]")
+   :ranges nil)
+  (make-character-set :mib-enum 49 :name "JIS_C6226-1978" :aliases
+   '("csISO42JISC62261978" "iso-ir-42") :mime-encoding 'nil :source
+   '"ECMA registry" :comments 'nil :references '("[RFC1345,KXS2]")
+   :ranges nil)
+  (make-character-set :mib-enum 48 :name "ISO_5427" :aliases
+   '("csISO5427Cyrillic" "iso-ir-37") :mime-encoding 'nil :source
+   '"ECMA registry" :comments 'nil :references '("[RFC1345,KXS2]")
+   :ranges nil)
+  (make-character-set :mib-enum 47 :name "Latin-greek-1" :aliases
+   '("csISO27LatinGreek1" "iso-ir-27") :mime-encoding 'nil :source
+   '"ECMA registry" :comments 'nil :references '("[RFC1345,KXS2]")
+   :ranges nil)
+  (make-character-set :mib-enum 46 :name "NF_Z_62-010_(1973)" :aliases
+   '("csISO25French" "ISO646-FR1" "iso-ir-25") :mime-encoding 'nil
+   :source '"ECMA registry" :comments 'nil :references
+   '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 45 :name "latin-greek" :aliases
+   '("csISO19LatinGreek" "iso-ir-19") :mime-encoding 'nil :source
+   '"ECMA registry" :comments 'nil :references '("[RFC1345,KXS2]")
+   :ranges nil)
+  (make-character-set :mib-enum 44 :name "greek7-old" :aliases
+   '("csISO18Greek7Old" "iso-ir-18") :mime-encoding 'nil :source
+   '"ECMA registry" :comments 'nil :references '("[RFC1345,KXS2]")
+   :ranges nil)
+  (make-character-set :mib-enum 43 :name "PT" :aliases
+   '("csISO16Portuguese" "ISO646-PT" "iso-ir-16") :mime-encoding 'nil
+   :source '"ECMA registry" :comments 'nil :references
+   '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 42 :name "JIS_C6220-1969-ro" :aliases
+   '("csISO14JISC6220ro" "ISO646-JP" "jp" "iso-ir-14") :mime-encoding
+   'nil :source '"ECMA registry" :comments 'nil :references
+   '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 41 :name "JIS_C6220-1969-jp" :aliases
    '("csISO13JISC6220jp" "x0201-7" "katakana" "iso-ir-13"
      "JIS_C6220-1969")
-   :MIME-ENCODING 'NIL :SOURCE '"ECMA registry" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 36 :NAME "KS_C_5601-1987" :ALIASES
+   :mime-encoding 'nil :source '"ECMA registry" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 36 :name "KS_C_5601-1987" :aliases
    '("csKSC56011987" "korean" "KSC_5601" "KS_C_5601-1989" "iso-ir-149")
-   :MIME-ENCODING 'NIL :SOURCE '"ECMA registry" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 35 :NAME "SEN_850200_B" :ALIASES
+   :mime-encoding 'nil :source '"ECMA registry" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 35 :name "SEN_850200_B" :aliases
    '("csISO10Swedish" "se" "ISO646-SE" "ISO646-FI" "FI" "iso-ir-10")
-   :MIME-ENCODING 'NIL :SOURCE '"ECMA registry" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 34 :NAME "NATS-DANO-ADD" :ALIASES
-   '("csNATSDANOADD" "iso-ir-9-2") :MIME-ENCODING 'NIL :SOURCE
-   '"ECMA registry" :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]")
-   :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 33 :NAME "NATS-DANO" :ALIASES
-   '("csNATSDANO" "iso-ir-9-1") :MIME-ENCODING 'NIL :SOURCE
-   '"ECMA registry" :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]")
-   :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 32 :NAME "NATS-SEFI-ADD" :ALIASES
-   '("csNATSSEFIADD" "iso-ir-8-2") :MIME-ENCODING 'NIL :SOURCE
-   '"ECMA registry" :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]")
-   :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 31 :NAME "NATS-SEFI" :ALIASES
-   '("csNATSSEFI" "iso-ir-8-1") :MIME-ENCODING 'NIL :SOURCE
-   '"ECMA registry" :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]")
-   :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 30 :NAME "ISO_646.irv:1983" :ALIASES
-   '("csISO2IntlRefVersion" "irv" "iso-ir-2") :MIME-ENCODING 'NIL
-   :SOURCE '"ECMA registry" :COMMENTS 'NIL :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 29 :NAME "INVARIANT" :ALIASES
-   '("csINVARIANT") :MIME-ENCODING 'NIL :SOURCE 'NIL :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 28 :NAME "ISO_646.basic:1983" :ALIASES
-   '("csISO646basic1983" "ref") :MIME-ENCODING 'NIL :SOURCE
-   '"ECMA registry" :COMMENTS 'NIL :REFERENCES '("[RFC1345,KXS2]")
-   :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 27 :NAME "ISO-10646-UTF-1" :ALIASES
-   '("csISO10646UTF1") :MIME-ENCODING 'NIL :SOURCE
+   :mime-encoding 'nil :source '"ECMA registry" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 34 :name "NATS-DANO-ADD" :aliases
+   '("csNATSDANOADD" "iso-ir-9-2") :mime-encoding 'nil :source
+   '"ECMA registry" :comments 'nil :references '("[RFC1345,KXS2]")
+   :ranges nil)
+  (make-character-set :mib-enum 33 :name "NATS-DANO" :aliases
+   '("csNATSDANO" "iso-ir-9-1") :mime-encoding 'nil :source
+   '"ECMA registry" :comments 'nil :references '("[RFC1345,KXS2]")
+   :ranges nil)
+  (make-character-set :mib-enum 32 :name "NATS-SEFI-ADD" :aliases
+   '("csNATSSEFIADD" "iso-ir-8-2") :mime-encoding 'nil :source
+   '"ECMA registry" :comments 'nil :references '("[RFC1345,KXS2]")
+   :ranges nil)
+  (make-character-set :mib-enum 31 :name "NATS-SEFI" :aliases
+   '("csNATSSEFI" "iso-ir-8-1") :mime-encoding 'nil :source
+   '"ECMA registry" :comments 'nil :references '("[RFC1345,KXS2]")
+   :ranges nil)
+  (make-character-set :mib-enum 30 :name "ISO_646.irv:1983" :aliases
+   '("csISO2IntlRefVersion" "irv" "iso-ir-2") :mime-encoding 'nil
+   :source '"ECMA registry" :comments 'nil :references
+   '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 29 :name "INVARIANT" :aliases
+   '("csINVARIANT") :mime-encoding 'nil :source 'nil :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 28 :name "ISO_646.basic:1983" :aliases
+   '("csISO646basic1983" "ref") :mime-encoding 'nil :source
+   '"ECMA registry" :comments 'nil :references '("[RFC1345,KXS2]")
+   :ranges nil)
+  (make-character-set :mib-enum 27 :name "ISO-10646-UTF-1" :aliases
+   '("csISO10646UTF1") :mime-encoding 'nil :source
    '"Universal Transfer Format (1), this is the multibyte encoding, that subsets ASCII-7. It does not have byte ordering issues."
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 26 :NAME "NF_Z_62-010" :ALIASES
-   '("csISO69French" "fr" "ISO646-FR" "iso-ir-69") :MIME-ENCODING 'NIL
-   :SOURCE '"ECMA registry" :COMMENTS 'NIL :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 25 :NAME "NS_4551-1" :ALIASES
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum 26 :name "NF_Z_62-010" :aliases
+   '("csISO69French" "fr" "ISO646-FR" "iso-ir-69") :mime-encoding 'nil
+   :source '"ECMA registry" :comments 'nil :references
+   '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 25 :name "NS_4551-1" :aliases
    '("csISO60Norwegian1" "csISO60DanishNorwegian" "no" "ISO646-NO"
      "iso-ir-60")
-   :MIME-ENCODING 'NIL :SOURCE '"ECMA registry" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 24 :NAME "DIN_66003" :ALIASES
-   '("csISO21German" "ISO646-DE" "de" "iso-ir-21") :MIME-ENCODING 'NIL
-   :SOURCE '"ECMA registry" :COMMENTS 'NIL :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 23 :NAME "ES" :ALIASES
-   '("csISO17Spanish" "ISO646-ES" "iso-ir-17") :MIME-ENCODING 'NIL
-   :SOURCE '"ECMA registry" :COMMENTS 'NIL :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 22 :NAME "IT" :ALIASES
-   '("csISO15Italian" "ISO646-IT" "iso-ir-15") :MIME-ENCODING 'NIL
-   :SOURCE '"ECMA registry" :COMMENTS 'NIL :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 21 :NAME "SEN_850200_C" :ALIASES
+   :mime-encoding 'nil :source '"ECMA registry" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 24 :name "DIN_66003" :aliases
+   '("csISO21German" "ISO646-DE" "de" "iso-ir-21") :mime-encoding 'nil
+   :source '"ECMA registry" :comments 'nil :references
+   '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 23 :name "ES" :aliases
+   '("csISO17Spanish" "ISO646-ES" "iso-ir-17") :mime-encoding 'nil
+   :source '"ECMA registry" :comments 'nil :references
+   '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 22 :name "IT" :aliases
+   '("csISO15Italian" "ISO646-IT" "iso-ir-15") :mime-encoding 'nil
+   :source '"ECMA registry" :comments 'nil :references
+   '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 21 :name "SEN_850200_C" :aliases
    '("csISO11SwedishForNames" "se2" "ISO646-SE2" "iso-ir-11")
-   :MIME-ENCODING 'NIL :SOURCE '"ECMA registry" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 20 :NAME "BS_4730" :ALIASES
+   :mime-encoding 'nil :source '"ECMA registry" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 20 :name "BS_4730" :aliases
    '("csISO4UnitedKingdom" "uk" "gb" "ISO646-GB" "iso-ir-4")
-   :MIME-ENCODING 'NIL :SOURCE '"ECMA registry" :COMMENTS 'NIL
-   :REFERENCES '("[RFC1345,KXS2]") :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 19 :NAME
-   "Extended_UNIX_Code_Fixed_Width_for_Japanese" :ALIASES
-   '("csEUCFixWidJapanese") :MIME-ENCODING 'NIL :SOURCE
+   :mime-encoding 'nil :source '"ECMA registry" :comments 'nil
+   :references '("[RFC1345,KXS2]") :ranges nil)
+  (make-character-set :mib-enum 19 :name
+   "Extended_UNIX_Code_Fixed_Width_for_Japanese" :aliases
+   '("csEUCFixWidJapanese") :mime-encoding 'nil :source
    '"Used in Japan.  Each character is 2 octets. code set 0: US-ASCII (a single 7-bit byte set) 1st byte = 00 2nd byte = 20-7E code set 1: JIS X0208-1990 (a double 7-bit byte set) restricted  to A0-FF in both bytes code set 2: Half Width Katakana (a single 7-bit byte set) 1st byte = 00 2nd byte = A0-FF code set 3: JIS X0212-1990 (a double 7-bit byte set) restricted to A0-FF in the first byte and 21-7E in the second byte"
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 16 :NAME "JIS_Encoding" :ALIASES
-   '("csJISEncoding") :MIME-ENCODING 'NIL :SOURCE
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum 16 :name "JIS_Encoding" :aliases
+   '("csJISEncoding") :mime-encoding 'nil :source
    '"JIS X 0202-1991.  Uses ISO 2022 escape sequences to shift code sets as documented in JIS X 0202-1991."
-   :COMMENTS 'NIL :REFERENCES 'NIL :RANGES NIL)
-  (MAKE-CHARACTER-SET :MIB-ENUM 14 :NAME "ISO_6937-2-add" :ALIASES
-   '("csISOTextComm" "iso-ir-142") :MIME-ENCODING 'NIL :SOURCE
-   '"ECMA registry and ISO 6937-2:1983" :COMMENTS 'NIL :REFERENCES
-   '("[RFC1345,KXS2]") :RANGES NIL)))
+   :comments 'nil :references 'nil :ranges nil)
+  (make-character-set :mib-enum 14 :name "ISO_6937-2-add" :aliases
+   '("csISOTextComm" "iso-ir-142") :mime-encoding 'nil :source
+   '"ECMA registry and ISO 6937-2:1983" :comments 'nil :references
+   '("[RFC1345,KXS2]") :ranges nil)))
 
-
-(fill-character-set-emacs-encoding)
-(fill-character-set-lisp-encoding)
 
 ;;;; THE END ;;;;
 

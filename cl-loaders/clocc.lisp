@@ -4,23 +4,23 @@
 ;; CLOCC -- Compiling the CLOCC --
 ;; -------------------------------
 
-(DEFPARAMETER *CLOCC-ROOT*
+(defparameter *clocc-root*
   (namestring
    (translate-logical-pathname "PACKAGES:NET;SOURCEFORGE;CLOCC;CLOCC;")))
-(LOAD "CLOCC:CLOCC")
-(LOAD "CLOCC:SRC;DEFSYSTEM;DEFSYSTEM")
-(LOAD "CLOCC:SRC;CLLIB;BASE")
+(load "CLOCC:CLOCC")
+(load "CLOCC:SRC;DEFSYSTEM;DEFSYSTEM")
+(load "CLOCC:SRC;CLLIB;BASE")
 
-(DEFUN COMPILE-CLOCC ()
-  (LOAD (compile-file "CLOCC:CLOCC"))
-  (LOAD (compile-file "CLOCC:SRC;DEFSYSTEM;DEFSYSTEM"))
+(defun compile-clocc ()
+  (load (compile-file "CLOCC:CLOCC"))
+  (load (compile-file "CLOCC:SRC;DEFSYSTEM;DEFSYSTEM"))
   ;; * compile some systems
-   (SETQ MK::*CENTRAL-REGISTRY*
-        (NCONC
+   (setq mk::*central-registry*
+        (nconc
          ;; select the systems you want to use
-         (MAPCAR (LAMBDA (SYSSUB)
-                   (TRANSLATE-LOGICAL-PATHNAME
-                    (CONCATENATE 'STRING "CLOCC:SRC;" SYSSUB)))
+         (mapcar (lambda (syssub)
+                   (translate-logical-pathname
+                    (concatenate 'string "CLOCC:SRC;" syssub)))
                  '("CLLIB;"
                    "EXT;QUEUES;"
                    "EXT;UNION-FIND;"
@@ -36,39 +36,39 @@
                    "SCREAMER;"
                    "SCREAMER;"
                    ))
-         MK::*CENTRAL-REGISTRY*))
-  (MK:OOS "cllib" :COMPILE)
-  (MK:OOS "f2cl" :COMPILE));;COMPILE-CLOCC
+         mk::*central-registry*))
+  (mk:oos "cllib" :compile)
+  (mk:oos "f2cl" :compile));;COMPILE-CLOCC
 
 ;; ----------------------------------------------------------------------
 ;; -- CLOCC -- FORTRAN to LISP translator --
 ;; -----------------------------------------
 
-(DEFVAR *EXT*
-  #+CLISP   ".fas"
-  #+CMUCL   ".x86f"
-  #+SBCL    ".fasl"
-  #+ALLEGRO ".fasl"
-  #+VMS     ".fas"
-  #+LUCID   ".sbin")
-(DEFVAR *F2CL_DIR* "CLOCC:CLOCC;SRC;F2CL;SRC;")
-(DEFUN LOAD-F2CL-MODULE (X) 
-  (LOAD (CONCATENATE 'STRING *F2CL_DIR* X *EXT*) :PRINT NIL :VERBOSE NIL)) ;;LOAD-F2CL-MODULE
-(DEFUN LOAD-F2CL ()
-  (LOAD-F2CL-MODULE "f2cl0" )
-  (LOAD-F2CL-MODULE "f2cl1" )
-  (LOAD-F2CL-MODULE "f2cl2" )
-  (LOAD-F2CL-MODULE "f2cl3" )
-  (LOAD-F2CL-MODULE "f2cl4" )
-  (LOAD-F2CL-MODULE "f2cl5" )
-  (LOAD-F2CL-MODULE "f2cl6" )
-  (LOAD-F2CL-MODULE "f2cl7" )
-  (LOAD-F2CL-MODULE "macros" )
-  (FORMAT T "~&The f2cl software has been loaded.~%"));;LOAD-F2CL
+(defvar *ext*
+  #+clisp   ".fas"
+  #+cmucl   ".x86f"
+  #+sbcl    ".fasl"
+  #+allegro ".fasl"
+  #+vms     ".fas"
+  #+lucid   ".sbin")
+(defvar *f2cl_dir* "CLOCC:CLOCC;SRC;F2CL;SRC;")
+(defun load-f2cl-module (x) 
+  (load (concatenate 'string *f2cl_dir* x *ext*) :print nil :verbose nil)) ;;LOAD-F2CL-MODULE
+(defun load-f2cl ()
+  (load-f2cl-module "f2cl0" )
+  (load-f2cl-module "f2cl1" )
+  (load-f2cl-module "f2cl2" )
+  (load-f2cl-module "f2cl3" )
+  (load-f2cl-module "f2cl4" )
+  (load-f2cl-module "f2cl5" )
+  (load-f2cl-module "f2cl6" )
+  (load-f2cl-module "f2cl7" )
+  (load-f2cl-module "macros" )
+  (format t "~&The f2cl software has been loaded.~%"));;LOAD-F2CL
 
 (format t  "Push on MK::*CENTRAL-REGISTRY* directories where .system files are ~
             to be found.~%")
 
-(push "clocc:src;port;" MK::*CENTRAL-REGISTRY*)
+(push "clocc:src;port;" mk::*central-registry*)
 
 ;;;; clocc.lisp                       --                     --          ;;;;

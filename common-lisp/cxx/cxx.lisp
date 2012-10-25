@@ -17,25 +17,22 @@
 ;;;;    1996-10-23 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 1996 - 2003
-;;;;    mailto:pjb@informatimago.com
+;;;;    Copyright Pascal J. Bourguignon 1996 - 2012
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -44,9 +41,33 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.GRAPH" )
   (:export "BUILD-METHOD-CALL-GRAF" "PARSE" "C++PROGRAM")
   (:documentation
-   "Parsing C++ sources.
+   "
+Parsing C++ sources.
 This is a restricted parser, used just to analyze
-the call graph of C++ functions and methods."))
+the call graph of C++ functions and methods.
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 1996 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CXX.CXX")
 
 
@@ -83,10 +104,15 @@ the call graph of C++ functions and methods."))
 (defgeneric res-type (self))
 (defgeneric arguments (self))
 (defgeneric called-methods (self))
-(defgeneric parse (self file-name-list))
+(defgeneric parse (program file-name-list)
+  (:documentation "
+DO:                 Parse the files given into the program.
+PROGRAM:            An instance of C++PROGRAM.
+FILE-NAME-LIST:     A list of file pathnames, C++ sources and headers."))
 (defgeneric add-c++method (self method))
 (defgeneric unify-methods-by-name (self))
-(defgeneric build-method-call-graf (self))
+(defgeneric build-method-call-graf (program)
+  (:documentation "Builds the method call graph of the program."))
 (defgeneric print-c++method-names (self))
 
 ;;----------------------------------------------------------------------
@@ -214,9 +240,9 @@ the call graph of C++ functions and methods."))
 ;;----------------------------------------------------------------------
 
 (defclass c++token-filter (token-filter)
-  ((source   :accessor source   :initform nil)
-   (doquotes :accessor doquotes :initform t)
-   (dotrace  :accessor dotrace  :initform nil)))
+  ((c++source :accessor c++source :initform nil)
+   (doquotes  :accessor doquotes  :initform t)
+   (dotrace   :accessor dotrace   :initform nil)))
 
 (defmethod do-quotes ((self c++token-filter) flag)
   (let ((old (doquotes self)))
@@ -224,30 +250,30 @@ the call graph of C++ functions and methods."))
     old))
 
 (defmethod set-source ((self c++token-filter) (input look-ahead-char-filter))
-  (setf (source self) input))
+  (setf (c++source self) input))
 
 (defmethod read-a-token ((self c++token-filter))
   ;; * '::' ( ) { } ;; '->'  "<char>*" CR '/*' '*/' '//'
-  (let ((r (let ((s nil) (c (read-a-char (source self))))
+  (let ((r (let ((s nil) (c (read-a-char (c++source self))))
              ;; skip spaces;; note we don't skip new-lines here.
              (loop while (equal (char-kind c) 'space) do
-                  (setq c (read-a-char (source self))))
+                  (setq c (read-a-char (c++source self))))
              (if (equal 'eof c)
                  'eof
                  (let ((kind (char-kind c)))
                    (setq s (cons c s))
                    (cond
                      ((equal kind 'letter)
-                      (setq c (next-char (source self)))
+                      (setq c (next-char (c++source self)))
                       (setq kind (char-kind c))
                       (loop while (or (equal kind 'letter) 
                                       (equal kind 'digit)) do
-                           (setq c (read-a-char (source self)))
+                           (setq c (read-a-char (c++source self)))
                            (setq s (cons c s))
-                           (setq c (next-char (source self)))
+                           (setq c (next-char (c++source self)))
                            (setq kind (char-kind c))))
                      ((equal kind 'digit)
-                      (setq c (next-char (source self)))
+                      (setq c (next-char (c++source self)))
                       (setq kind (char-kind c))
                       (loop while (or (equal kind 'digit)
                                       (equal c (character ".")) 
@@ -258,13 +284,13 @@ the call graph of C++ functions and methods."))
                                       (equal c (character "x"))
                                       (equal c (character "X"))
                                       ) do
-                           (setq c (read-a-char (source self)))
+                           (setq c (read-a-char (c++source self)))
                            (setq s (cons c s))
-                           (setq c (next-char (source self)))
+                           (setq c (next-char (c++source self)))
                            (setq kind (char-kind c))))
                      ((and (doquotes self) (equal kind 'quote))
                       (let ((term c))
-                        (setq c (read-a-char (source self)))
+                        (setq c (read-a-char (c++source self)))
                         (loop while (not (or (equal 'eof c)
                                              (equal (char-kind c) 'new-line)
                                              (equal term c))) do
@@ -272,42 +298,42 @@ the call graph of C++ functions and methods."))
                              (if (char= (character "\\") c)
                                  (progn
                                    (setq c (read-a-char 
-                                            (source self)))
+                                            (c++source self)))
                                    (setq s (cons c s))))
-                             (setq c (read-a-char (source self))))
+                             (setq c (read-a-char (c++source self))))
                         (if (equal term c)
                             (setq s (cons c s)))))
                      ((equal kind 'new-line)
-                      (setq c (next-char (source self)))
+                      (setq c (next-char (c++source self)))
                       (loop while (equal (char-kind c) 'new-line) do
-                           (setq c (read-a-char (source self)))
+                           (setq c (read-a-char (c++source self)))
                            (setq s (cons c s))
-                           (setq c (next-char (source self)))))
+                           (setq c (next-char (c++source self)))))
                      ((char= (character "-") c)
                       (if (char= (character ">")
-                                 (next-char (source self)))
+                                 (next-char (c++source self)))
                           (progn
-                            (setq c (read-a-char (source self)))
+                            (setq c (read-a-char (c++source self)))
                             (setq s (cons c s)))))
                      ((char= (character "/") c)
                       (if (or (char= (character "/")
-                                     (next-char (source self)))
+                                     (next-char (c++source self)))
                               (char= (character "*")
-                                     (next-char (source self))))
+                                     (next-char (c++source self))))
                           (progn
-                            (setq c (read-a-char (source self)))
+                            (setq c (read-a-char (c++source self)))
                             (setq s (cons c s)))))
                      ((char= (character "*") c)
                       (if (char= (character "/")
-                                 (next-char (source self)))
+                                 (next-char (c++source self)))
                           (progn
-                            (setq c (read-a-char (source self)))
+                            (setq c (read-a-char (c++source self)))
                             (setq s (cons c s)))))
                      ((char= (character ":") c)
                       (if (char= (character ":")
-                                 (next-char (source self)))
+                                 (next-char (c++source self)))
                           (progn
-                            (setq c (read-a-char (source self)))
+                            (setq c (read-a-char (c++source self)))
                             (setq s (cons c s))))))
                    (concatenate 'string (reverse s)))))))
     (if (dotrace self)
@@ -532,14 +558,14 @@ the call graph of C++ functions and methods."))
 
 (defclass c++program ()
   ((methods  :accessor methods  :initform nil)
-   (dotrace  :accessor dotrace  :initform nil)))
+   (dotrace  :accessor dotrace  :initform nil))
+  (:documentation "Represents the C++ program."))
 
 (defmethod parse ((self c++program) file-name-list)
   (cond
     ((stringp file-name-list)  (parse self (list file-name-list)))
     ((null file-name-list)     t)
-    (t (let (
-             (source            (make-instance 'file-filter))
+    (t (let ((source            (make-instance 'file-filter))
              (lasource          (make-instance 'look-ahead-char-filter))
              (tokens            (make-instance 'c++token-filter))
              (skip-ccomments    (make-instance 'ccomment-filter))
@@ -547,7 +573,6 @@ the call graph of C++ functions and methods."))
              (preprocess        (make-instance 'cpreprocessor-filter))
              (nonltokens        (make-instance 'c++nonltoken-filter))
              (analysis          (make-instance 'look-ahead-token-filter)))
-
          (set-file       source           (open (car file-name-list)))
          (push-on-filter lasource         source)
          (set-source     tokens           lasource)

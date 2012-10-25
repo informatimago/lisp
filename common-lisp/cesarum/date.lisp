@@ -19,24 +19,22 @@
 ;;;;    specification.
 ;;;;
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal Bourguignon 2007 - 2007
+;;;;    Copyright Pascal Bourguignon 2007 - 2012
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
 ;; http://en.wikipedia.org/wiki/Julian_day#Calculation
@@ -91,7 +89,6 @@
 
 
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE.UTILITY"
-  (:documentation "Internal date utilities.")
   (:use "COMMON-LISP")
   (:export "DATE" "DATE<" "DATE>" "DATE<=" "DATE>=" "DATE=" "DATE/="
            "DURATION"
@@ -112,13 +109,73 @@
            "ENGLISH-NAME-OF-JULIAN-WEEKDAY" "ENGLISH-NAME-OF-JULIAN-MONTH"
            "COLLAPSE-JULIAN-DURATION"
            "JULIAN-DAY-NUMBER/GREGORIAN" "JULIAN-DAY-NUMBER/JULIAN"
-           "JULIAN-DATE" "WEEKDAY-OF-JULIAN-DATE"))
+           "JULIAN-DATE" "WEEKDAY-OF-JULIAN-DATE")
+  (:documentation "
 
+Internal date utilities.
+Defines utilities to process dates.
+
+
+See also: COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE
+          COM.INFORMATIMAGO.COMMON-LISP.GREGORIAN-CALENDAR
+          COM.INFORMATIMAGO.COMMON-LISP.JULIAN-CALENDAR
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2007 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
 
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.JULIAN-CALENDAR"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE.UTILITY")
-  (:export "LEAP-YEAR-P" "DATE-FROM-DAY-NUMBER" "DATE-TO-DAY-NUMBER"))
+  (:export "LEAP-YEAR-P" "DATE-FROM-DAY-NUMBER" "DATE-TO-DAY-NUMBER")
+  (:documentation "
+
+Defines the Julian calendar.
+
+
+See also: COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE
+          COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE.UTILITY
+          COM.INFORMATIMAGO.COMMON-LISP.GREGORIAN-CALENDAR
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2007 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
 
 
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.GREGORIAN-CALENDAR"
@@ -138,11 +195,41 @@
            "DURATION-BETWEEN" "DATE-AFTER" "DATE-BEFORE"
            ;; Internal:
            "AS-LIST-OF-NUMBERS"
-           "DATE-FROM-DAY-NUMBER" "DATE-TO-DAY-NUMBER"))
+           "DATE-FROM-DAY-NUMBER" "DATE-TO-DAY-NUMBER")
+  (:documentation "
+
+Defines the Gregorian calendar.
+
+
+See also: COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE
+          COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE.UTILITY
+          COM.INFORMATIMAGO.COMMON-LISP.JULIAN-CALENDAR
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2007 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
 
 
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE"
-  (:USE "COMMON-LISP"
+  (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE.UTILITY")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.JULIAN-CALENDAR")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.GREGORIAN-CALENDAR"
@@ -158,7 +245,7 @@
                 "PREVIOUS-DAY" "NEXT-DAY"
                 "INCREMENT-DAY" "DECREMENT-DAY"
                 "DURATION-BETWEEN" "DATE-AFTER" "DATE-BEFORE")
-  (:EXPORT "DATE" "DATE<" "DATE>" "DATE<=" "DATE>=" "DATE=" "DATE/="
+  (:export "DATE" "DATE<" "DATE>" "DATE<=" "DATE>=" "DATE=" "DATE/="
            "DURATION"
            "*DURATION-KEYWORDS*"
            "SECONDE" "MINUTE" "HOUR" "DAY" "WEEK" "MONTH" "YEAR"
@@ -175,15 +262,35 @@
            "PREVIOUS-DAY" "NEXT-DAY"
            "INCREMENT-DAY" "DECREMENT-DAY"
            "DURATION-BETWEEN" "DATE-BEFORE" "DATE-AFTER")
-  (:DOCUMENTATION "
-    Calendars, dates and times.
+  (:documentation "
 
-    Copyright Pascal Bourguignon 2007 - 2007
+Calendars, dates and times.
+
+See also: COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE
+          COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE.UTILITY
+          COM.INFORMATIMAGO.COMMON-LISP.GREGORIAN-CALENDAR
+          COM.INFORMATIMAGO.COMMON-LISP.JULIAN-CALENDAR
+
+License:
+
+    AGPL3
     
-    This program is free software you can redistribute it and/or
-    modify it under the terms of the GNU General Public License
-    as published by the Free Software Foundation either version
-    2 of the License, or (at your option) any later version.
+    Copyright Pascal J. Bourguignon 2007 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
 "))
 
 
@@ -195,6 +302,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (in-package  "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE.UTILITY")
+
+
+(defgeneric  date-after (date duration)
+  (:documentation "RETURN: The date DURATION after DATE."))
+
+(defgeneric  date-before (date duration)
+  (:documentation "RETURN: The date DURATION before DATE."))
+
 
 (defun compare-lists-of-numbers (a b)
   "
@@ -288,18 +403,18 @@ WARNING: COMMON-LISP convention is West positive.
 
 
 
-(defconstant +january+    1)
-(defconstant +february+   2)
-(defconstant +march+      3)
-(defconstant +april+      4)
-(defconstant +may+        5)
-(defconstant +june+       6)
-(defconstant +july+       7)
-(defconstant +august+     8)
-(defconstant +september+  9)
-(defconstant +october+   10)
-(defconstant +november+  11)
-(defconstant +december+  12)
+(defconstant +january+    1 "The number of the January month in the Gregorial calendar.")
+(defconstant +february+   2 "The number of the February month in the Gregorial calendar.")
+(defconstant +march+      3 "The number of the Marchmonth in the Gregorial calendar.")
+(defconstant +april+      4 "The number of the April month in the Gregorial calendar.")
+(defconstant +may+        5 "The number of the May month in the Gregorial calendar.")
+(defconstant +june+       6 "The number of the June month in the Gregorial calendar.")
+(defconstant +july+       7 "The number of the July month in the Gregorial calendar.")
+(defconstant +august+     8 "The number of the August month in the Gregorial calendar.")
+(defconstant +september+  9 "The number of the September month in the Gregorial calendar.")
+(defconstant +october+   10 "The number of the October month in the Gregorial calendar.")
+(defconstant +november+  11 "The number of the November month in the Gregorial calendar.")
+(defconstant +december+  12 "The number of the December month in the Gregorial calendar.")
 
 
 (defun english-name-of-julian-weekday (weekday)
@@ -393,6 +508,14 @@ but could be merged there."))
 ;;; First define the generic functions for date<, date=, etc...
 (macrolet ((define-generic-date-compare (name)
              `(defgeneric ,name  (date1 date2)
+                (:documentation ,(format nil "RETURN: Whether DATE1 is ~A DATE2."
+                                         (case name
+                                           (date< "before")
+                                           (date<= "before or the same as")
+                                           (date> "after")
+                                           (date>= "after or the same as")
+                                           (date= "the same as")
+                                           (date/= "different from"))))
                 (:method (date1 date2)
                   (error (if (and (typep date1 (type-of date2))
                                   (typep date2 (type-of date1)))
@@ -411,6 +534,9 @@ but could be merged there."))
 ;;; Then define the macros for date<, date=, for any class having
 ;;; an as-list-of-numbers method:
 (defmacro define-date-compare-methods (class)
+  "
+DO:     Define date comparison methods.
+"
   `(macrolet ((define-date-compare (name op)
                `(defmethod ,name ((a ,',class) (b ,',class))
                   (,op (compare-lists-of-numbers (as-list-of-numbers a)
@@ -497,9 +623,14 @@ NOTE:    Only the keywords listed in *DURATION-KEYWORDS* are really allowed.
 
 (macrolet ((define-accessor (name &optional no-writer-p)
              `(progn
-                (defmethod ,name ((self duration))
-                  (getf (slot-value self 'expression)
-                        ',(intern (string name) "KEYWORD") 0))
+                (defgeneric ,name (duration)
+                  (:documentation ,(let ((*print-circle* nil))
+                                        (format nil "RETURN: The ~A of the duration.
+NOTE:   This is not the duration expressed in ~:*~A, just the ~:*~A
+        component of the duration." (string-downcase name))))
+                  (:method ((self duration))
+                    (getf (slot-value self 'expression)
+                          ',(intern (string name) "KEYWORD") 0)))
                 ,@(unless
                    no-writer-p
                    `((defmethod (setf ,name) (value (self duration))
@@ -536,6 +667,11 @@ NOTE:    Only the keywords listed in *DURATION-KEYWORDS* are really allowed.
      :finally (return (nreverse r))))
 
 
+(defgeneric duration+ (a b) (:documentation "RETURN: The sum of two durations."))
+(defgeneric duration- (a b) (:documentation "RETURN: The difference of two durations."))
+(defgeneric duration* (a n) (:documentation "RETURN: The product of a duration by a number."))
+(defgeneric duration/ (a n) (:documentation "RETURN: The division of a duration by a number."))
+
 (defmethod duration+ ((a duration) (b duration))
   (apply (function duration)
          (op-plist (slot-value a 'expression) (slot-value b 'expression) 1)))
@@ -553,15 +689,23 @@ NOTE:    Only the keywords listed in *DURATION-KEYWORDS* are really allowed.
          (op-plist '() (slot-value a 'expression) (/ b))))
 
 
-(defparameter *seconde* (duration :seconde 1))
-(defparameter *minute*  (duration :minute  1))
-(defparameter *hour*    (duration :hour    1))
-(defparameter *day*     (duration :day     1))
-(defparameter *week*    (duration :week    1))
-(defparameter *month*   (duration :month   1))
-(defparameter *quarter* (duration :month   3))
-(defparameter *year*    (duration :year    1))
+(defparameter *seconde* (duration :seconde 1) "Symbolic duration of one second.")
+(defparameter *minute*  (duration :minute  1) "Symbolic duration of one minute.")
+(defparameter *hour*    (duration :hour    1) "Symbolic duration of one hour.")
+(defparameter *day*     (duration :day     1) "Symbolic duration of one day.")
+(defparameter *week*    (duration :week    1) "Symbolic duration of one week.")
+(defparameter *month*   (duration :month   1) "Symbolic duration of one month.")
+(defparameter *quarter* (duration :month   3) "Symbolic duration of one quarter.")
+(defparameter *year*    (duration :year    1) "Symbolic duration of one year.")
 
+
+(defgeneric collapse-julian-duration (duration)
+  (:documentation "
+DO:     Collapse weeks as 7 days.
+RETURN: secondes; minutes; hours; days; months; years
+NOTE:   If you add keywords to *DURATION-KEYWORDS* you may have to
+        override this method. 
+"))
 
 (defmethod collapse-julian-duration ((self duration))
   "
@@ -586,7 +730,7 @@ BUG:    This uses the undetermined  local timezone, we don't know
      :nconc (loop
                :for d :from 1
                :below (aref
-                       (if (COM.INFORMATIMAGO.COMMON-LISP.GREGORIAN-CALENDAR:leap-year-p year)
+                       (if (com.informatimago.common-lisp.gregorian-calendar:leap-year-p year)
                            #(31 29 31 30 31 30 31 31 30 31 30 31)
                            #(31 28 31 30 31 30 31 31 30 31 30 31))
                        (1- m))
@@ -691,8 +835,10 @@ RETURN: Whether YEAR is a gregorian leap year.
 
 
 (defun date-from-day-number (day-number)
-  (multiple-value-bind (4centuries rest) (floor day-number
-                                                +days-in-fourcentury+)
+  "
+RETURN: the gregorian-date of the given DAY-NUMBER.
+"
+  (multiple-value-bind (4centuries rest) (floor day-number +days-in-fourcentury+)
     (let ((centuries 0))
       (when (<= 36525 rest)
         (multiple-value-setq (centuries rest) (floor (- rest 36525) 36524))
@@ -727,6 +873,9 @@ RETURN: Whether YEAR is a gregorian leap year.
 
 
 (defun date-to-day-number (day month year)
+    "
+RETURN: the day number of the gregorian-date given by DAY, MONTH and YEAR.
+"
   (multiple-value-bind (yinc month) (floor (1- month) 12)
     (incf year yinc)
     (incf month)
@@ -752,7 +901,7 @@ RETURN: Whether YEAR is a gregorian leap year.
                          (start 0) (end +days-in-fourcentury+))
   (loop
      :for i :from start :below end
-     :do (multiple-value-bind (d m y) (DATE-FROM-DAY-NUMBER i)
+     :do (multiple-value-bind (d m y) (date-from-day-number i)
            (when (or print-all (and trace-day (<= (abs (- trace-day i)) 10)))
              (format t "~%~6D ~4,'0D-~2,'0D-~2,'0D" i y m d))
            (assert (= i (date-to-day-number d m y))
@@ -765,7 +914,11 @@ RETURN: Whether YEAR is a gregorian leap year.
 ;; (CHECK-DAY-NUMBER :start (- +days-in-fourcentury+) :print-all nil)
 
 
-
+(defgeneric timezone (date)
+  (:documentation "RETURN: The timezone of a date
+        = number of seconds from Greenwich; East positive."))
+(defgeneric weekday (date)
+  (:documentation "RETURN: The weekday of a date."))
 
 (defclass gregorian-calendar-date ()
   ((year     :initarg :year     :accessor year     :initform 1582)
@@ -781,7 +934,8 @@ RETURN: Whether YEAR is a gregorian leap year.
    ;;       timezone relative to Rome, but it will be less confusing if all 
    ;;       the calendars of a same planet are relative to the same longitud.
    (weekday  :initform nil
-             :documentation "Weekday cache.")))
+             :documentation "Weekday cache."))
+  (:documentation "A date in the Gregorian calendar."))
 
 
 (defmethod print-object ((self gregorian-calendar-date) stream)
@@ -807,6 +961,19 @@ RETURN: Whether YEAR is a gregorian leap year.
                   (hour 0 hourp) (minute 0 minutep) (seconde 0 secondep)
                   (timezone nil)
                   (universal-time nil))
+  "
+RETURN:         A new Gregorian date.
+YEAR:           The year (historically, should be greater or equal to 1582).
+MONTH:          The month.
+DAY:            The day.
+HOUR:           The hour.
+MINUTE:         The minute.
+SECONDE:        The second.
+TIMEZONE:       The timezone.
+UNIVERSAL-TIME: The date expressed in universal-time.
+NOTE:           UNIVERSAL-TIME when present gives a base date with
+                default values for the other fields.
+"
   (if universal-time
       (multiple-value-bind (se mi ho da mo ye)
           (apply (function decode-universal-time) universal-time
@@ -825,7 +992,7 @@ RETURN: Whether YEAR is a gregorian leap year.
           ;; denoting the current timezone, may be a different timezone
           ;; than the original day, for DST.
           (multiple-value-bind (da mo ye)
-              (DATE-FROM-DAY-NUMBER (DATE-TO-DAY-NUMBER (+ day dinc) month year))
+              (date-from-day-number (date-to-day-number (+ day dinc) month year))
             (make-instance 'gregorian-calendar-date
               :year ye :month  mo :day da
               :hour ho :minute mi :seconde se
@@ -839,9 +1006,11 @@ RETURN: Whether YEAR is a gregorian leap year.
   (or (slot-value self 'weekday)
       (setf (slot-value self 'weekday)
             (with-slots (day month year) self
-              (mod (- (DATE-TO-DAY-NUMBER day month year)
+              (mod (- (date-to-day-number day month year)
                       +1964-03-15-day-number+) 7)))))
 
+(defgeneric as-julian-date (date)
+  (:documentation "RETURN: The date converted to the Julian calendar."))
 
 (defmethod as-julian-date ((self gregorian-calendar-date))
   (with-slots (seconde minute hour day month year) (to-timezone self 0)
@@ -853,6 +1022,9 @@ RETURN: Whether YEAR is a gregorian leap year.
 ;; 2454264.
 ;;  June 13, 2007 (UTC) the JDN is  
 
+
+(defgeneric to-timezone (date timezone)
+  (:documentation "RETURN: A new date equal to the DATE, but in the given TIMEZONE."))
 
 (defmethod to-timezone ((self gregorian-calendar-date) timezone)
   (let* ((new-timezone (or timezone (current-timezone)))
@@ -876,6 +1048,8 @@ RETURN: Whether YEAR is a gregorian leap year.
 (define-date-compare-methods gregorian-calendar-date)
 
 
+(defgeneric as-universal-time (date)
+  (:documentation "RETURN: The date converted to universal-time."))
 
 (defmethod as-universal-time ((self gregorian-calendar-date))
   (with-slots (year month day hour minute seconde timezone) self
@@ -884,6 +1058,19 @@ RETURN: Whether YEAR is a gregorian leap year.
 
 
 
+(defgeneric next-day (date &optional increment)
+  (:documentation "RETURN: A new date that is INCREMENT days after DATE."))
+
+(defgeneric increment-day (date &optional increment)
+  (:documentation "DO: Changes the DATE to INCREMENT days after DATE."))
+
+(defgeneric previous-day (date &optional increment)
+  (:documentation "RETURN: A new date that is INCREMENT days before DATE."))
+
+(defgeneric decrement-day (date &optional increment)
+  (:documentation "DO: Changes the DATE to INCREMENT days before DATE."))
+ 
+
 
 (defmethod next-day      ((self gregorian-calendar-date) &optional (increment 1))
   (with-slots (year month day hour minute seconde timezone) self
@@ -891,12 +1078,11 @@ RETURN: Whether YEAR is a gregorian leap year.
                :hour hour :minute minute :seconde seconde
                :timezone timezone)))
 
-
 (defmethod increment-day ((self gregorian-calendar-date) &optional (increment 1))
   (with-slots (year month day weekday) self
     (multiple-value-bind (da mo ye)
-        (DATE-FROM-DAY-NUMBER
-         (COM.INFORMATIMAGO.COMMON-LISP.GREGORIAN-CALENDAR:DATE-TO-DAY-NUMBER
+        (date-from-day-number
+         (com.informatimago.common-lisp.gregorian-calendar:date-to-day-number
           (+ day increment) month year))
       (setf year ye month mo day da weekday nil)
       self)))
@@ -929,7 +1115,6 @@ RETURN: Whether YEAR is a gregorian leap year.
                        (unless (zerop ho) (list :hour    ho))
                        (unless (zerop mi) (list :minute  mi))
                        (unless (zerop se) (list :seconde se))))))))
-
 
 
 (defmethod date-after ((self gregorian-calendar-date) (duration duration))

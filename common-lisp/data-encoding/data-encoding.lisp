@@ -15,40 +15,60 @@
 ;;;;    2004-06-18 <PJB> Extracted from palm-dba.lisp. Augmented.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2004 - 2004
+;;;;    Copyright Pascal J. Bourguignon 2004 - 2012
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.DATA-ENCODING.DATA-ENCODING"
-  (:USE "COMMON-LISP"
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.DATA-ENCODING.DATA-ENCODING"
+  (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
-  (:EXPORT "SIZE-OF-ENCTYPE" "ENCTYPE-INSTANCE" "ENCTYPE-WRITE" "ENCTYPE-READ"
+  (:export "SIZE-OF-ENCTYPE" "ENCTYPE-INSTANCE" "ENCTYPE-WRITE" "ENCTYPE-READ"
            "MAKE-ENCTYPE" "DEF-ENCRECORD" "DEF-ENCTYPE")
-  (:DOCUMENTATION
-   "This package exports functions to encode and decode data 
-    in a byte vector buffer.
+  (:documentation
+   "
 
-    Copyright Pascal J. Bourguignon 2002 - 2004
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.DATA-ENCODING.DATA-ENCODING")
+This package exports functions to encode and decode data 
+in a byte vector buffer.
+
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2002 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.DATA-ENCODING.DATA-ENCODING")
 
 
 
@@ -126,14 +146,15 @@
 ;;     display-number-enctype
 
 
-(DEFGENERIC write-value (self buffer offset value))
-(DEFGENERIC number-of-digit (self))
-(DEFGENERIC maximum-length (self))
-(DEFGENERIC to-lisp-type (self))
-(DEFGENERIC default-value (self))
-(DEFGENERIC size-of-enctype (self))
-(DEFGENERIC get-value (self buffer offset))
-(DEFGENERIC set-value (self buffer offset record))
+(defgeneric write-value (self buffer offset value))
+(defgeneric number-of-digit (self))
+(defgeneric maximum-length (self))
+(defgeneric to-lisp-type (self))
+(defgeneric default-value (self))
+(defgeneric size-of-enctype (self)
+  (:documentation "RETURN: The size in bytes of the ENCTYPE."))
+(defgeneric get-value (self buffer offset))
+(defgeneric set-value (self buffer offset record))
 
 ;; ------------------------------------------------------------
 
@@ -334,7 +355,7 @@
 
 
 (defun integer-to-bcd (value)
-  (do ((bcd   (if (< value 0)  #xD      #xC))
+  (do ((bcd   (if (< value 0)  #xd      #xc))
        (value (if (< value 0) (- value) value))
        (hex 16 (* 16 hex)))
       ((zerop value) bcd)
@@ -344,7 +365,7 @@
 
 
 (defun integer-from-bcd (bcd)
-  (do ((sign   (if (= #xC (mod bcd 16)) 1 -1))
+  (do ((sign   (if (= #xc (mod bcd 16)) 1 -1))
        (value  0)
        (bcd    (truncate bcd 16))
        (dix 1 (* 10 dix)))
@@ -537,8 +558,8 @@
   ASCII encoding.")
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defconstant +ASCII-LF+ 10 "Code of ASCII LF")
-  (defconstant +ASCII-CR+ 13 "Code of ASCII CR")
+  (defconstant +ascii-lf+ 10 "Code of ASCII LF")
+  (defconstant +ascii-cr+ 13 "Code of ASCII CR")
   );;eval-when
 
 
@@ -558,7 +579,7 @@ DO:      This function decodes a byte vector containing only ASCII codes
       ((>= i end) string)
     (setf code (aref byte-vector i))
     (cond
-      ((or (= code +ASCII-LF+) (= code +ASCII-CR+))
+      ((or (= code +ascii-lf+) (= code +ascii-cr+))
        (setf (aref string j) #\newline))
       ((<= 32 code 126)
        (setf (aref string j) (aref +standard-characters+ (- code 31))))
@@ -587,7 +608,7 @@ DO:      This function encodes a string containing only COMMON-LISP
       ((null code)
        (error "Character ~C is not a COMMON-LISP standard character."
               (aref string i)))
-      ((= 0 code) (setf (aref bytes j) +ASCII-LF+))
+      ((= 0 code) (setf (aref bytes j) +ascii-lf+))
       (t          (setf (aref bytes j) (+ 31 code))))) ) ;;standard-encode-string
 
 
@@ -1104,8 +1125,7 @@ RETURN:  An instance of a subclass of enctype representing the enctype.
                                 :test (function string=))))
        (assert endian (endian) "Invalid endian ~S" (fourth enctype))
        (make-instance class  :name :number :size size :endian endian)))
-    (otherwise (make-enctype-instance (defined-enctype enctype))))
-  ) ;;make-enctype-instance
+    (otherwise (make-enctype-instance (defined-enctype enctype)))))
 
 
 
@@ -1130,11 +1150,11 @@ RETURN:  An instance of a subclass of enctype representing the enctype.
                  ((string array record number) (make-enctype-instance enctype))
                  (otherwise (make-enctype-instance (defined-enctype enctype)))))
               (otherwise
-               (error "Unknown enctype ~S." enctype)))))) ;;enctype-instance
+               (error "Unknown enctype ~S." enctype))))))
 
 
 
-(defun ENCTYPE-READ (encname enctype stream)
+(defun enctype-read (encname enctype stream)
   "
 DO:      Read from the STREAM a value of type ENCTYPE.
 RETURN:  The decoded list value.
@@ -1144,11 +1164,10 @@ RETURN:  The decoded list value.
                             :initial-element 0)))
     (if (= (length buffer) (read-sequence buffer stream))
         (get-value enctype buffer 0)
-        (error "Could not read a ~A (~D bytes)." encname (length buffer))))
-  ) ;;ENCTYPE-READ
+        (error "Could not read a ~A (~D bytes)." encname (length buffer)))))
 
 
-(defun ENCTYPE-WRITE (encname enctype stream value)
+(defun enctype-write (encname enctype stream value)
   "
 DO:      Write to the STREAM a value of type ENCTYPE.
 "
@@ -1157,7 +1176,7 @@ DO:      Write to the STREAM a value of type ENCTYPE.
                             :element-type '(unsigned-byte 8)
                             :initial-element 0)))
     (set-value enctype buffer 0 value)
-    (write-sequence buffer stream))) ;;ENCTYPE-WRITE
+    (write-sequence buffer stream)))
 
 
 
@@ -1174,6 +1193,13 @@ DO:      Write to the STREAM a value of type ENCTYPE.
 
 
 (defun make-enctype (name args definition)
+  "
+DO:         Makes an enctype template.
+NAME:       Name of the template.
+ARGS:
+DEFINITION:
+RETURN:     NAME
+"
   (setf (gethash name *enctype-definitions*) (cons args definition))
   name)
 
@@ -1184,16 +1210,14 @@ DO:     Defines an enctype template.
 "
   ;; TODO: make it more deftype - like.
   ;; TODO: we cannot create an instance because a def-enctype is actually a template.  But not when there's no argument! So we could create the reader and writer sometimes.
-  `(make-enctype ',name ',args ',definition)) ;;def-enctype
-
-
+  `(make-enctype ',name ',args ',definition)) 
 
 
 (defun even-list-p (list)
   (cond
     ((null list) t)
     ((null (cdr list)) nil)
-    (t (even-list-p (cddr list))))) ;;even-list-p
+    (t (even-list-p (cddr list)))))
 
 
 
@@ -1232,11 +1256,11 @@ DO:     Defines an enctype template for a record type,
                             fields))
        (let ((enctype (enctype-instance ',name)))
          (setf (name enctype) ',name)
-         (defun ,(conc-symbol "READ-" NAME)  (stream)
+         (defun ,(conc-symbol "READ-" name)  (stream)
            (enctype-read  ',name enctype stream))
-         (defun ,(conc-symbol "WRITE-" NAME) (value stream)
+         (defun ,(conc-symbol "WRITE-" name) (value stream)
            (enctype-write ',name enctype stream value))
-         ',name)))) ;;def-encrecord
+         ',name))))
 
     
 
@@ -1427,4 +1451,4 @@ DO:     Defines an enctype template for a record type,
 ;; ----------------------------------------------------------------------
 
 
-;;;; data-encoding.lisp               --                     --          ;;;;
+;;;; THE END ;;;;

@@ -7,20 +7,6 @@
 ;;;;NOWEB:              t
 ;;;;DESCRIPTION
 ;;;;
-;;;;    Posix Regexp implemented in Common-Lisp.
-;;;;
-;;;;    See specifications at:
-;;;;    http://www.opengroup.org/onlinepubs/007904975/basedefs/xbd_chap09.html
-;;;;
-;;;;    This is a strict implementation that will work both in clisp
-;;;;    (Common-Lisp) and emacs (with cl and pjb-cl Common-Lisp extensions).
-;;;;
-;;;;    This implementation is entirely in lisp, contrarily to what regexp
-;;;;    packages are available under clisp or emacs.  Thus it as the advantage
-;;;;    of portability and availability (you don't have to compile or link
-;;;;    a lisp system written in some barbarous language, and you get the same
-;;;;    regexp features in all programs including this module).
-;;;;
 ;;;;USAGE
 ;;;;    
 ;;;;AUTHORS
@@ -29,45 +15,79 @@
 ;;;;    2002-11-16 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
-;;;;
-;;;;    Copyright Pascal J. Bourguignon 2002 - 2002
-;;;;
-;;;;    This script is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU  General Public
-;;;;    License as published by the Free Software Foundation; either
-;;;;    version 2 of the License, or (at your option) any later version.
-;;;;
-;;;;    This script is distributed in the hope that it will be useful,
+;;;;    AGPL3
+;;;;    
+;;;;    Copyright Pascal J. Bourguignon 2002 - 2012
+;;;;    
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
+;;;;    
+;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
-;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;;;;    General Public License for more details.
-;;;;
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this library; see the file COPYING.LIB.
-;;;;    If not, write to the Free Software Foundation,
-;;;;    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
+;;;;    
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.REGEXP.REGEXP-EMACS"
-  (:USE "COMMON-LISP"
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.REGEXP.REGEXP-EMACS"
+  (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
         "COM.INFORMATIMAGO.COMMON-LISP.PICTURE.TREE-TO-ASCII")
-  (:EXPORT "REGEXP-MATCH" "REGEXP-QUOTE" "MATCH-STRING" "MATCH-END"
+  (:export "REGEXP-MATCH" "REGEXP-QUOTE" "MATCH-STRING" "MATCH-END"
            "MATCH-START" "MATCH")
-  (:DOCUMENTATION
-   "This package implement REGEXP in COMMON-LISP,
-    which is interesting because then it's available on any COMMON-LISP platform
-    whether the external C regexp library is available or not, and moreover,
-    it's the same (that is, it's compatible) on all COMMON-LIST platforms.
+  (:documentation
+   "
+NOT COMPLETE YET.
 
-    NOT COMPLETE YET.
+This package implement REGEXP in COMMON-LISP, which is interesting
+because then it's available on any COMMON-LISP platform whether the
+external C regexp library is available or not, and moreover, it's the
+same (that is, it's compatible) on all COMMON-LIST platforms.
 
-    Copyright Pascal J. Bourguignon 2002 - 2002
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.REGEXP.REGEXP-EMACS")
+
+Posix Regexp implemented in Common-Lisp.
+
+See specifications at:
+http://www.opengroup.org/onlinepubs/007904975/basedefs/xbd_chap09.html
+
+This is a strict implementation that will work both in clisp
+(Common-Lisp) and emacs (with cl and pjb-cl Common-Lisp extensions).
+
+This implementation is entirely in lisp, contrarily to what regexp
+packages are available under clisp or emacs.  Thus it as the advantage
+of portability and availability (you don't have to compile or link
+a lisp system written in some barbarous language, and you get the same
+regexp features in all programs including this module).
+
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2002 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.REGEXP.REGEXP-EMACS")
 
 
 
@@ -98,7 +118,7 @@
 
 
 
-(DEFUN PJB-RE-SPLIT-STRING (STRING &OPTIONAL SEPARATORS)
+(defun pjb-re-split-string (string &optional separators)
   "
 DO:         Splits STRING into substrings where there are matches
             for SEPARATORS.
@@ -108,19 +128,19 @@ separators: A regexp matching the sub-string separators.
 NOTE:       Current implementation only accepts as separators
             a literal string containing only one character.
 "
-  (LET ((SEP (AREF SEPARATORS 0))
-        (CHUNKS  '())
-        (POSITION 0)
-        (NEXTPOS  0)
-        (STRLEN   (LENGTH STRING)))
-    (LOOP :WHILE (< POSITION STRLEN)
-          :DO (LOOP :WHILE (AND (< NEXTPOS STRLEN)
-                                (CHAR/= SEP (AREF STRING NEXTPOS)))
-                    :DO (SETQ NEXTPOS (1+ NEXTPOS)))
-              (PUSH (SUBSEQ STRING POSITION NEXTPOS) CHUNKS)
-              (SETQ POSITION (1+ NEXTPOS))
-              (SETQ NEXTPOS  POSITION))
-    (NREVERSE CHUNKS)))
+  (let ((sep (aref separators 0))
+        (chunks  '())
+        (position 0)
+        (nextpos  0)
+        (strlen   (length string)))
+    (loop :while (< position strlen)
+          :do (loop :while (and (< nextpos strlen)
+                                (char/= sep (aref string nextpos)))
+                    :do (setq nextpos (1+ nextpos)))
+              (push (subseq string position nextpos) chunks)
+              (setq position (1+ nextpos))
+              (setq nextpos  position))
+    (nreverse chunks)))
 
 
 
@@ -131,58 +151,58 @@ NOTE:       Current implementation only accepts as separators
 ;; string scanner:
 ;;
 
-(DEFUN MAKE-SC (STRING)
-  (LET ((SC (MAKE-ARRAY '(3))))
-    (SETF (AREF SC 0) STRING)
-    (SETF (AREF SC 1) 0)
-    (SETF (AREF SC 2) (LENGTH STRING))
-    SC))
+(defun make-sc (string)
+  (let ((sc (make-array '(3))))
+    (setf (aref sc 0) string)
+    (setf (aref sc 1) 0)
+    (setf (aref sc 2) (length string))
+    sc))
 
 
-(DEFUN SC-STRING (SC)
+(defun sc-string (sc)
   "
 RETURN:  The string being scanned.
 "
-  (AREF SC 0))
+  (aref sc 0))
 
 
-(DEFUN SC-POSITION (SC)
+(defun sc-position (sc)
   "
 RETURN:  The current position.
 "
-  (AREF SC 1))
+  (aref sc 1))
 
 
-(DEFUN SC-CURR-CHAR (SC)
+(defun sc-curr-char (sc)
   "
 RETURN:  The current character, or nil if EOS.
 "
-  (IF (< (AREF SC 1) (AREF SC 2))
-      (CHAR (AREF SC 0) (AREF SC 1))
-      NIL))
+  (if (< (aref sc 1) (aref sc 2))
+      (char (aref sc 0) (aref sc 1))
+      nil))
 
 
-(DEFUN SC-NEXT-CHAR (SC)
+(defun sc-next-char (sc)
   "
 RETURN:  The next character, or nil if EOS.
 "
-  (IF (< (1+ (AREF SC 1)) (AREF SC 2))
-      (CHAR (AREF SC 0) (1+ (AREF SC 1)))
-      NIL))
+  (if (< (1+ (aref sc 1)) (aref sc 2))
+      (char (aref sc 0) (1+ (aref sc 1)))
+      nil))
 
 
-(DEFUN SC-ADVANCE (SC)
+(defun sc-advance (sc)
   "
 PRE:     (= p      (sc-position sc))
 POST:    (= (1+ p) (sc-position sc))
 RETURN:  The character at position 1+p.
 "
-  (IF (< (AREF SC 1) (AREF SC 2))
-      (SETF (AREF SC 1) (1+ (AREF SC 1))))
-  (SC-CURR-CHAR SC))
+  (if (< (aref sc 1) (aref sc 2))
+      (setf (aref sc 1) (1+ (aref sc 1))))
+  (sc-curr-char sc))
 
 
-(DEFUN SC-SCAN-TO-CHAR (SC CHAR)
+(defun sc-scan-to-char (sc char)
   "
 RETURN:  the substring of (sc-string sc) starting from current position
          to the position just before the first character equal to `char'
@@ -196,13 +216,13 @@ POST:    (and (<=  p (sc-position sc))
               (forall i between p and (1- (sc-position sc))
                   (char/= char (char (sc-string sc) i))))
 "
-  (LET ((S (AREF SC 0))
-        (P (AREF SC 1))
-        (L (AREF SC 2)))
-    (LOOP :WHILE (AND (< P L) (CHAR/= CHAR (CHAR S P)))
-          :DO (SETQ P (1+ P)))
-    (PROG1 (SUBSEQ S (AREF SC 1) P)
-      (SETF (AREF SC 1) P))))
+  (let ((s (aref sc 0))
+        (p (aref sc 1))
+        (l (aref sc 2)))
+    (loop :while (and (< p l) (char/= char (char s p)))
+          :do (setq p (1+ p)))
+    (prog1 (subseq s (aref sc 1) p)
+      (setf (aref sc 1) p))))
           
 
 
@@ -214,7 +234,7 @@ POST:    (and (<=  p (sc-position sc))
 ;; This produces a syntactical tree.
 ;;
 
-(DEFUN PJB-RE-PARSE-SIMPLE (SC)
+(defun pjb-re-parse-simple (sc)
   "
 DO:     Parses a regexp simple.
 RETURN: A parse tree.
@@ -257,25 +277,25 @@ simple ::= '[' '^' character-set ']' .
 simple ::= '['     character-set ']' .
                                    (:char-set         char-or-char-interval )
 "
-  (LET ((TREE NIL)
-        CURR-CHAR TOKEN)
-    (SETQ CURR-CHAR (SC-CURR-CHAR SC))
-    (COND
-      ((NULL CURR-CHAR)
-       (SETQ TREE '(:ERROR "EOS")))
+  (let ((tree nil)
+        curr-char token)
+    (setq curr-char (sc-curr-char sc))
+    (cond
+      ((null curr-char)
+       (setq tree '(:error "EOS")))
 
-      ((SETQ TOKEN
-             (CDR (ASSOC CURR-CHAR
-                         (LIST
-                          (CONS (CHARACTER '\.) :ANY-CHARACTER)
-                          (CONS (CHARACTER '\^) :EMPTY-AT-BEGINNING-OF-LINE)
-                          (CONS (CHARACTER '\$) :EMPTY-AT-END-OF-LINE)
+      ((setq token
+             (cdr (assoc curr-char
+                         (list
+                          (cons (character '\.) :any-character)
+                          (cons (character '\^) :empty-at-beginning-of-line)
+                          (cons (character '\$) :empty-at-end-of-line)
                           )
-                         :TEST (FUNCTION EQ))))
-       (SC-ADVANCE SC)
-       (SETQ TREE TOKEN))
+                         :test (function eq))))
+       (sc-advance sc)
+       (setq tree token))
 
-      ((EQ (CHARACTER '\[) CURR-CHAR)
+      ((eq (character '\[) curr-char)
        ;; simple ::= '[' '^' character-set ']' .
        ;; (:inverse-char-set char-or-char-interval )
        ;; simple ::= '['     character-set ']' .
@@ -297,7 +317,7 @@ simple ::= '['     character-set ']' .
        ;; So, after the optional initial ']', we can search for the next ']'
        ;; and parse then. A missing closing ']' is an error.
 
-       (ERROR "[charset] Not implemented yet.")
+       (error "[charset] Not implemented yet.")
 ;;; (let ((set nil)
 ;;;             (min nil)
 ;;;             max)
@@ -341,106 +361,106 @@ simple ::= '['     character-set ']' .
        )
 
 
-      ((EQ (CHARACTER '\\) CURR-CHAR)
-       (UNLESS (OR (EQ (SC-NEXT-CHAR SC) (CHARACTER '\|))
-                   (EQ (SC-NEXT-CHAR SC) (CHARACTER ")")))
-         (SC-ADVANCE SC)
-         (SETQ CURR-CHAR (SC-CURR-CHAR SC))
-         (IF (SETQ TOKEN
-                   (CDR
-                    (ASSOC CURR-CHAR
-                           (LIST
-                            (CONS (CHARACTER '\w) :ANY-WORD-CHARACTER)
-                            (CONS (CHARACTER '\W) :ANY-NOT-WORD-CHARACTER)
-                            (CONS (CHARACTER '\=) :EMPTY-AT-POINT)
-                            (CONS (CHARACTER '\b) :EMPTY-AT-LIMIT-OF-WORD)
-                            (CONS (CHARACTER '\B) :EMPTY-NOT-AT-LIMIT-OF-WORD)
-                            (CONS (CHARACTER '\<) :EMPTY-AT-BEGINNING-OF-WORD)
-                            (CONS (CHARACTER '\>) :EMPTY-AT-END-OF-WORD)
-                            (CONS (CHARACTER '\`) :EMPTY-AT-BEGINNING-OF-STRING)
-                            (CONS (CHARACTER '\') :EMPTY-AT-END-OF-STRING)
-                            (CONS (CHARACTER '\$) (CHARACTER '\$))
-                            (CONS (CHARACTER '\^) (CHARACTER '\^))
-                            (CONS (CHARACTER '\.) (CHARACTER '\.))
-                            (CONS (CHARACTER '\*) (CHARACTER '\*))
-                            (CONS (CHARACTER '\+) (CHARACTER '\+))
-                            (CONS (CHARACTER '\?) (CHARACTER '\?))
-                            (CONS (CHARACTER '\[) (CHARACTER '\[))
-                            (CONS (CHARACTER '\]) (CHARACTER '\]))
-                            (CONS (CHARACTER '\\) (CHARACTER '\\))
-                            (CONS (CHARACTER '\0) '(:REFERENCE 0))
-                            (CONS (CHARACTER '\1) '(:REFERENCE 1))
-                            (CONS (CHARACTER '\2) '(:REFERENCE 2))
-                            (CONS (CHARACTER '\3) '(:REFERENCE 3))
-                            (CONS (CHARACTER '\4) '(:REFERENCE 4))
-                            (CONS (CHARACTER '\5) '(:REFERENCE 5))
-                            (CONS (CHARACTER '\6) '(:REFERENCE 6))
-                            (CONS (CHARACTER '\7) '(:REFERENCE 7))
-                            (CONS (CHARACTER '\8) '(:REFERENCE 8))
-                            (CONS (CHARACTER '\9) '(:REFERENCE 9))
+      ((eq (character '\\) curr-char)
+       (unless (or (eq (sc-next-char sc) (character '\|))
+                   (eq (sc-next-char sc) (character ")")))
+         (sc-advance sc)
+         (setq curr-char (sc-curr-char sc))
+         (if (setq token
+                   (cdr
+                    (assoc curr-char
+                           (list
+                            (cons (character '\w) :any-word-character)
+                            (cons (character '\W) :any-not-word-character)
+                            (cons (character '\=) :empty-at-point)
+                            (cons (character '\b) :empty-at-limit-of-word)
+                            (cons (character '\B) :empty-not-at-limit-of-word)
+                            (cons (character '\<) :empty-at-beginning-of-word)
+                            (cons (character '\>) :empty-at-end-of-word)
+                            (cons (character '\`) :empty-at-beginning-of-string)
+                            (cons (character '\') :empty-at-end-of-string)
+                            (cons (character '\$) (character '\$))
+                            (cons (character '\^) (character '\^))
+                            (cons (character '\.) (character '\.))
+                            (cons (character '\*) (character '\*))
+                            (cons (character '\+) (character '\+))
+                            (cons (character '\?) (character '\?))
+                            (cons (character '\[) (character '\[))
+                            (cons (character '\]) (character '\]))
+                            (cons (character '\\) (character '\\))
+                            (cons (character '\0) '(:reference 0))
+                            (cons (character '\1) '(:reference 1))
+                            (cons (character '\2) '(:reference 2))
+                            (cons (character '\3) '(:reference 3))
+                            (cons (character '\4) '(:reference 4))
+                            (cons (character '\5) '(:reference 5))
+                            (cons (character '\6) '(:reference 6))
+                            (cons (character '\7) '(:reference 7))
+                            (cons (character '\8) '(:reference 8))
+                            (cons (character '\9) '(:reference 9))
                             )
-                           :TEST (FUNCTION EQ))))
-             (PROGN
-               (SETQ TREE TOKEN)
-               (SC-ADVANCE SC))
+                           :test (function eq))))
+             (progn
+               (setq tree token)
+               (sc-advance sc))
 
-             (COND
-               ((EQ (CHARACTER "(") CURR-CHAR)
+             (cond
+               ((eq (character "(") curr-char)
                 ;; simple ::= '\('   regexp '\)' .    (:group     regexp)
                 ;; simple ::= '\(?:' regexp '\)' .    (:shy-group regexp)
-                (SC-ADVANCE SC)
-                (IF (AND (EQ (CHARACTER '\?) (SC-CURR-CHAR SC))
-                         (EQ (CHARACTER '\:) (SC-NEXT-CHAR SC)))
-                    (PROGN
-                      (SC-ADVANCE SC)
-                      (SC-ADVANCE SC)
-                      (SETQ TOKEN :SHY-GROUP)
+                (sc-advance sc)
+                (if (and (eq (character '\?) (sc-curr-char sc))
+                         (eq (character '\:) (sc-next-char sc)))
+                    (progn
+                      (sc-advance sc)
+                      (sc-advance sc)
+                      (setq token :shy-group)
                       )
-                    (SETQ TOKEN :GROUP))
-                (SETQ TREE (LIST TOKEN (PJB-RE-PARSE-REGEXP SC)))
-                (IF (AND (EQ (CHARACTER '\\) (SC-CURR-CHAR SC))
-                         (EQ (CHARACTER ")") (SC-NEXT-CHAR SC)))
-                    (PROGN
-                      (SC-ADVANCE SC)
-                      (SC-ADVANCE SC))
-                    (SETQ TREE
-                          (LIST :ERROR
-                                (FORMAT
-                                    NIL
+                    (setq token :group))
+                (setq tree (list token (pjb-re-parse-regexp sc)))
+                (if (and (eq (character '\\) (sc-curr-char sc))
+                         (eq (character ")") (sc-next-char sc)))
+                    (progn
+                      (sc-advance sc)
+                      (sc-advance sc))
+                    (setq tree
+                          (list :error
+                                (format
+                                    nil
                                   "Invalid character at ~D '~A~A' expected '\\)'."
-                                  (SC-POSITION SC)
-                                  (SC-CURR-CHAR SC)
-                                  (IF (SC-NEXT-CHAR SC)
-                                      (SC-NEXT-CHAR SC)  ""))
-                                TREE))) )
+                                  (sc-position sc)
+                                  (sc-curr-char sc)
+                                  (if (sc-next-char sc)
+                                      (sc-next-char sc)  ""))
+                                tree))) )
 
-               ((SETQ TOKEN
-                      (CDR (ASSOC CURR-CHAR
-                                  (LIST
-                                   (CONS (CHARACTER '\s) :ANY-SYNTAX-CLASS)
-                                   (CONS (CHARACTER '\S) :ANY-NOT-SYNTAX-CLASS)
-                                   (CONS (CHARACTER '\c) :ANY-CATEGORY)
-                                   (CONS (CHARACTER '\C) :ANY-NOT-CATEGORY))
-                                  :TEST (FUNCTION EQ))))
-                (SC-ADVANCE SC)
-                (SETQ CURR-CHAR (SC-CURR-CHAR SC))
-                (IF CURR-CHAR
-                    (PROGN
-                      (SETQ TREE (LIST TOKEN CURR-CHAR))
-                      (SC-ADVANCE SC))
-                    (SETQ TREE '(:ERROR "EOS"))))
-               ((EQ (CHARACTER '\|) (SC-NEXT-CHAR SC))
+               ((setq token
+                      (cdr (assoc curr-char
+                                  (list
+                                   (cons (character '\s) :any-syntax-class)
+                                   (cons (character '\S) :any-not-syntax-class)
+                                   (cons (character '\c) :any-category)
+                                   (cons (character '\C) :any-not-category))
+                                  :test (function eq))))
+                (sc-advance sc)
+                (setq curr-char (sc-curr-char sc))
+                (if curr-char
+                    (progn
+                      (setq tree (list token curr-char))
+                      (sc-advance sc))
+                    (setq tree '(:error "EOS"))))
+               ((eq (character '\|) (sc-next-char sc))
 
                 )))))
 
-      (T
-       (SETQ TREE CURR-CHAR)
-       (SC-ADVANCE SC)))
+      (t
+       (setq tree curr-char)
+       (sc-advance sc)))
 
-    TREE))
+    tree))
 
 
-(DEFUN PJB-RE-PARSE-ELEMENT (SC)
+(defun pjb-re-parse-element (sc)
   "
 DO:      Parses a regexp element.
 RETURNS: A parse tree.
@@ -459,75 +479,75 @@ element ::= simple '\{' number '\}' .
 element ::= simple '\{' number ',' [ number ] '\}' .
                                    (:repeat-between simple number [number])
 "
-  (LET (TREE SIMPLE CURR-CHAR)
-    (SETQ SIMPLE (PJB-RE-PARSE-SIMPLE SC))
-    (SETQ CURR-CHAR (SC-CURR-CHAR SC))
-    (COND
-      ((NULL CURR-CHAR)  (SETQ TREE SIMPLE))
+  (let (tree simple curr-char)
+    (setq simple (pjb-re-parse-simple sc))
+    (setq curr-char (sc-curr-char sc))
+    (cond
+      ((null curr-char)  (setq tree simple))
 
-      ((EQ (CHARACTER '\?) CURR-CHAR)
-       (SC-ADVANCE SC)
-       (IF (EQ (CHARACTER '\?) (SC-CURR-CHAR SC))
-           (PROGN
-             (SC-ADVANCE SC)
-             (SETQ TREE (LIST :NON-GREEDY-OPTIONAL  SIMPLE)))
-           (SETQ TREE (LIST :OPTIONAL SIMPLE))))
+      ((eq (character '\?) curr-char)
+       (sc-advance sc)
+       (if (eq (character '\?) (sc-curr-char sc))
+           (progn
+             (sc-advance sc)
+             (setq tree (list :non-greedy-optional  simple)))
+           (setq tree (list :optional simple))))
 
-      ((EQ (CHARACTER '\*) CURR-CHAR)
-       (SC-ADVANCE SC)
-       (IF (EQ (CHARACTER '\?) (SC-CURR-CHAR SC))
-           (PROGN
-             (SC-ADVANCE SC)
-             (SETQ TREE (LIST :NON-GREEDY-ZERO-OR-MORE  SIMPLE)))
-           (SETQ TREE (LIST :ZERO-OR-MORE SIMPLE)))) 
+      ((eq (character '\*) curr-char)
+       (sc-advance sc)
+       (if (eq (character '\?) (sc-curr-char sc))
+           (progn
+             (sc-advance sc)
+             (setq tree (list :non-greedy-zero-or-more  simple)))
+           (setq tree (list :zero-or-more simple)))) 
 
-      ((EQ (CHARACTER '\+) CURR-CHAR)
-       (SC-ADVANCE SC)
-       (IF (EQ (CHARACTER '\?) (SC-CURR-CHAR SC))
-           (PROGN
-             (SC-ADVANCE SC)
-             (SETQ TREE (LIST :NON-GREEDY-ONE-OR-MORE  SIMPLE)))
-           (SETQ TREE (LIST :ONE-OR-MORE SIMPLE))))
+      ((eq (character '\+) curr-char)
+       (sc-advance sc)
+       (if (eq (character '\?) (sc-curr-char sc))
+           (progn
+             (sc-advance sc)
+             (setq tree (list :non-greedy-one-or-more  simple)))
+           (setq tree (list :one-or-more simple))))
 
-      ((AND (EQ (CHARACTER '\\) CURR-CHAR)
-            (EQ (CHARACTER '\{) (SC-NEXT-CHAR SC)))
-       (SC-ADVANCE SC)
-       (SC-ADVANCE SC)
-       (SETQ TREE '(:ERROR "\{...\} not implemented yet.")))
+      ((and (eq (character '\\) curr-char)
+            (eq (character '\{) (sc-next-char sc)))
+       (sc-advance sc)
+       (sc-advance sc)
+       (setq tree '(:error "\{...\} not implemented yet.")))
 
-      (T                 (SETQ TREE SIMPLE)))
-    TREE))
+      (t                 (setq tree simple)))
+    tree))
 
 
-(DEFUN PJB-RE-COLLAPSE-STRINGS (TREE)
+(defun pjb-re-collapse-strings (tree)
   "
 RETURNS: A new list where all sequences of characters are collapsed
          into strings. Signle characters are not collapsed.
 NOTE:    Does not works recursively because recursive sequences are built
          bottom-up.
 "
-  (LOOP
-    :WITH RESULT = NIL
-    :WITH STRING = NIL
-    :FOR ITEM :IN TREE
-    :DO (IF (CHARACTERP ITEM)
-            (PUSH ITEM STRING)
-            (PROGN
-              (WHEN STRING
-                (IF (= 1 (LENGTH STRING))
-                    (PUSH (CAR STRING) RESULT)
-                    (PUSH (implode-string (NREVERSE STRING)) RESULT))
-                (SETQ STRING NIL))
-              (PUSH ITEM RESULT)))
-    :FINALLY (WHEN STRING
-               (IF (= 1 (LENGTH STRING))
-                   (PUSH (CAR STRING) RESULT)
-                   (PUSH (implode-string (NREVERSE STRING)) RESULT))
-               (SETQ STRING NIL))
-             (RETURN (NREVERSE RESULT))))
+  (loop
+    :with result = nil
+    :with string = nil
+    :for item :in tree
+    :do (if (characterp item)
+            (push item string)
+            (progn
+              (when string
+                (if (= 1 (length string))
+                    (push (car string) result)
+                    (push (implode-string (nreverse string)) result))
+                (setq string nil))
+              (push item result)))
+    :finally (when string
+               (if (= 1 (length string))
+                   (push (car string) result)
+                   (push (implode-string (nreverse string)) result))
+               (setq string nil))
+             (return (nreverse result))))
 
 
-(DEFUN PJB-RE-PARSE-SEQUENCE (SC)
+(defun pjb-re-parse-sequence (sc)
   "
 DO:      Parses a regexp sequence.
 RETURNS: A parse tree.
@@ -536,14 +556,14 @@ sequence ::= element sequence  .  (:sequence element element ...)
 sequence ::= element .             element
 sequence ::= .                     nil
 "
-  (LET ((TREE NIL))
-    (LOOP
-      :WHILE (AND (SC-CURR-CHAR SC)
-                  (NOT (AND (EQ (CHARACTER '\\) (SC-CURR-CHAR SC))
-                            (OR (EQ (SC-NEXT-CHAR SC) (CHARACTER '\|))
-                                (EQ (SC-NEXT-CHAR SC) (CHARACTER ")") )))))
-      :DO (PUSH (PJB-RE-PARSE-ELEMENT SC) TREE))
-    (CONS :SEQUENCE (PJB-RE-COLLAPSE-STRINGS (NREVERSE TREE)))
+  (let ((tree nil))
+    (loop
+      :while (and (sc-curr-char sc)
+                  (not (and (eq (character '\\) (sc-curr-char sc))
+                            (or (eq (sc-next-char sc) (character '\|))
+                                (eq (sc-next-char sc) (character ")") )))))
+      :do (push (pjb-re-parse-element sc) tree))
+    (cons :sequence (pjb-re-collapse-strings (nreverse tree)))
 ;;;     (if (<= (length tree) 1)
 ;;;         (car tree)
 ;;;       (progn
@@ -554,7 +574,7 @@ sequence ::= .                     nil
     ))
 
 
-(DEFUN PJB-RE-PARSE-REGEXP (SC)
+(defun pjb-re-parse-regexp (sc)
   "
 DO:      Parses a regexp.
 RETURNS: A parse tree.
@@ -563,30 +583,30 @@ NOTE:    The result may contain the symbol :error followed by a string.
 regexp ::= sequence '\|' regexp .   (:alternative sequence sequence...)
 regexp ::= sequence .               sequence
 "
-  (LET (TREE)
-    (SETQ TREE (LIST (PJB-RE-PARSE-SEQUENCE SC)))
-    (LOOP :WHILE (AND (EQ (CHARACTER '\\) (SC-CURR-CHAR SC))
-                      (EQ (CHARACTER '\|) (SC-NEXT-CHAR SC)))
-          :DO (SC-ADVANCE SC)
-              (SC-ADVANCE SC)
-              (PUSH (PJB-RE-PARSE-SEQUENCE SC) TREE))
-    (IF (= 1 (LENGTH TREE))
-        (CAR TREE)
-        (CONS :ALTERNATIVE (NREVERSE TREE)))))
+  (let (tree)
+    (setq tree (list (pjb-re-parse-sequence sc)))
+    (loop :while (and (eq (character '\\) (sc-curr-char sc))
+                      (eq (character '\|) (sc-next-char sc)))
+          :do (sc-advance sc)
+              (sc-advance sc)
+              (push (pjb-re-parse-sequence sc) tree))
+    (if (= 1 (length tree))
+        (car tree)
+        (cons :alternative (nreverse tree)))))
 
 
-(DEFUN PJB-RE-PARSE-WHOLE-REGEXP (SC)
-  (LET ((TREE (PJB-RE-PARSE-REGEXP SC))
-        (CURR-CHAR (SC-CURR-CHAR SC)))
-    (IF CURR-CHAR
-        (SETQ TREE
-              (LIST :ERROR (FORMAT NIL "Syntax error at ~D (~A ~A)."
-                                   (SC-POSITION SC)
-                                   CURR-CHAR
-                                   (IF (SC-NEXT-CHAR SC)
-                                       (SC-NEXT-CHAR SC)  ""))
-                    TREE)))
-    TREE))
+(defun pjb-re-parse-whole-regexp (sc)
+  (let ((tree (pjb-re-parse-regexp sc))
+        (curr-char (sc-curr-char sc)))
+    (if curr-char
+        (setq tree
+              (list :error (format nil "Syntax error at ~D (~A ~A)."
+                                   (sc-position sc)
+                                   curr-char
+                                   (if (sc-next-char sc)
+                                       (sc-next-char sc)  ""))
+                    tree)))
+    tree))
 
 
 
@@ -676,17 +696,17 @@ regexp ::= sequence .               sequence
 
 
 
-(defvar PJB-RE-NEW-LINE (CODE-CHAR 10) "A new-line.")
+(defvar pjb-re-new-line (code-char 10) "A new-line.")
 
 
-(DEFMACRO PJB-RE-SLOT-NODE        (OBJ)        `(AREF ,OBJ 0))
-(DEFMACRO PJB-RE-SLOT-MATCH       (OBJ)        `(AREF ,OBJ 1))
-(DEFMACRO PJB-RE-SLOT-STRING      (OBJ)        `(AREF ,OBJ 2))
-(DEFMACRO PJB-RE-SLOT-BEGIN       (OBJ)        `(AREF ,OBJ 3))
-(DEFMACRO PJB-RE-SLOT-END         (OBJ)        `(AREF ,OBJ 4))
-(DEFMACRO PJB-RE-SLOT-TRY         (OBJ)        `(AREF ,OBJ 5))
-(DEFMACRO PJB-RE-SLOT-PRIVATE     (OBJ)        `(AREF ,OBJ 6))
-(DEFMACRO PJB-RE-SLOT-CHILDREN    (OBJ)        `(AREF ,OBJ 7))
+(defmacro pjb-re-slot-node        (obj)        `(aref ,obj 0))
+(defmacro pjb-re-slot-match       (obj)        `(aref ,obj 1))
+(defmacro pjb-re-slot-string      (obj)        `(aref ,obj 2))
+(defmacro pjb-re-slot-begin       (obj)        `(aref ,obj 3))
+(defmacro pjb-re-slot-end         (obj)        `(aref ,obj 4))
+(defmacro pjb-re-slot-try         (obj)        `(aref ,obj 5))
+(defmacro pjb-re-slot-private     (obj)        `(aref ,obj 6))
+(defmacro pjb-re-slot-children    (obj)        `(aref ,obj 7))
 
 ;;; (DEFMACRO PJB-RE-SLOT-BEGIN-SET   (OBJ VALUE) `(SETF (AREF ,OBJ 3) ,VALUE))
 ;;; (DEFMACRO PJB-RE-SLOT-END-SET     (OBJ VALUE) `(SETF (AREF ,OBJ 4) ,VALUE))
@@ -697,116 +717,116 @@ regexp ::= sequence .               sequence
 ;;; (DEFSETF  PJB-RE-SLOT-TRY         PJB-RE-SLOT-TRY-SET)
 ;;; (DEFSETF  PJB-RE-SLOT-PRIVATE     PJB-RE-SLOT-PRIVATE-SET)
 
-(DECLAIM (TYPE (FUNCTION (ARRAY) (FUNCTION (ARRAY) T)) PJB-RE-SLOT-MATCH))
+(declaim (type (function (array) (function (array) t)) pjb-re-slot-match))
 
-(DEFMACRO PJB-RE-INIT (NODE POSITION)
-  `(LET ((NODE ,NODE)
-         (POSITION ,POSITION))
-     (SETF (PJB-RE-SLOT-BEGIN NODE) POSITION)
-     (SETF (PJB-RE-SLOT-TRY NODE) NIL)
-     (SETF (PJB-RE-SLOT-END NODE) NIL)
+(defmacro pjb-re-init (node position)
+  `(let ((node ,node)
+         (position ,position))
+     (setf (pjb-re-slot-begin node) position)
+     (setf (pjb-re-slot-try node) nil)
+     (setf (pjb-re-slot-end node) nil)
      (values)))
   
 
-(DEFMACRO PJB-RE-MATCH (NODE)
-  `(LET ((NODE ,NODE))
-     (FUNCALL (PJB-RE-SLOT-MATCH NODE) NODE)))
+(defmacro pjb-re-match (node)
+  `(let ((node ,node))
+     (funcall (pjb-re-slot-match node) node)))
 
 
 
 
 
-(DEFUN PJB-RE-CHARACTER-MATCH (NODE)
+(defun pjb-re-character-match (node)
   "Matches a character.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((P  (PJB-RE-SLOT-BEGIN NODE)) )
-    (IF (PJB-RE-SLOT-TRY   NODE)
+  (let ((p  (pjb-re-slot-begin node)) )
+    (if (pjb-re-slot-try   node)
         ;; already tested. no more match:
-        NIL
+        nil
         ;; first test, let's see:
-        (PROGN
-          (SETF (PJB-RE-SLOT-TRY NODE) T)
-          (IF (CHAR= (PJB-RE-SLOT-NODE NODE) (CHAR (PJB-RE-SLOT-STRING NODE) P))
-              (PROGN
-                (SETQ P (1+ P))
-                (SETF (PJB-RE-SLOT-END NODE) P)
-                P)
-              NIL)))))
+        (progn
+          (setf (pjb-re-slot-try node) t)
+          (if (char= (pjb-re-slot-node node) (char (pjb-re-slot-string node) p))
+              (progn
+                (setq p (1+ p))
+                (setf (pjb-re-slot-end node) p)
+                p)
+              nil)))))
 
 
 
-(DEFUN PJB-RE-STRING-MATCH (NODE)
+(defun pjb-re-string-match (node)
   "Matches a string.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((P  (PJB-RE-SLOT-BEGIN NODE)) )
-    (IF (PJB-RE-SLOT-TRY   NODE)
+  (let ((p  (pjb-re-slot-begin node)) )
+    (if (pjb-re-slot-try   node)
         ;; already tested. no more match:
-        NIL
+        nil
         ;; first test, let's see:
-        (LET* ((M   (PJB-RE-SLOT-NODE NODE))
-               (LEN (LENGTH M))
-               (E   (+ P LEN))
-               (S   (PJB-RE-SLOT-STRING NODE)) )
-          (SETF (PJB-RE-SLOT-TRY NODE) T)
-          (UNLESS (AND (< E (LENGTH S))
-                       (STRING= M S :START2 P :END2 E))
-            (SETQ E NIL))
-          (SETF (PJB-RE-SLOT-END NODE) E)
-          E))))
+        (let* ((m   (pjb-re-slot-node node))
+               (len (length m))
+               (e   (+ p len))
+               (s   (pjb-re-slot-string node)) )
+          (setf (pjb-re-slot-try node) t)
+          (unless (and (< e (length s))
+                       (string= m s :start2 p :end2 e))
+            (setq e nil))
+          (setf (pjb-re-slot-end node) e)
+          e))))
 
 
 
-(DEFUN PJB-RE-NULL-MATCH (NODE)
+(defun pjb-re-null-match (node)
   "Matches a null.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (IF (PJB-RE-SLOT-TRY   NODE)
+  (if (pjb-re-slot-try   node)
       ;; already tested. no more match:
-      NIL
+      nil
       ;; first test, let's see:
-      (PROGN
-        (SETF (PJB-RE-SLOT-TRY NODE) T)
-        T ;; yes! we match.
+      (progn
+        (setf (pjb-re-slot-try node) t)
+        t ;; yes! we match.
         )))
 
 
-(DEFUN PJB-RE-ALTERNATIVE-MATCH (NODE)
+(defun pjb-re-alternative-match (node)
   "Matches a alternative.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((P         (PJB-RE-SLOT-BEGIN NODE))
-        (N         (PJB-RE-SLOT-TRY   NODE))
-        (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE))
-        (FOUND NIL) )
-    (WHEN (NULL N) (SETQ N 0))
-    (LOOP :WHILE (AND (< N (LENGTH CHILDREN))
-                      (NOT FOUND))
-          :DO (PJB-RE-INIT (AREF CHILDREN N) P)
-              (SETQ FOUND (PJB-RE-MATCH (AREF CHILDREN N)))
-          :FINALLY (SETF (PJB-RE-SLOT-END NODE) FOUND)
-                   (SETF (PJB-RE-SLOT-TRY NODE) (1+ N))
-          :FINALLY (RETURN FOUND))))
+  (let ((p         (pjb-re-slot-begin node))
+        (n         (pjb-re-slot-try   node))
+        (children  (pjb-re-slot-children node))
+        (found nil) )
+    (when (null n) (setq n 0))
+    (loop :while (and (< n (length children))
+                      (not found))
+          :do (pjb-re-init (aref children n) p)
+              (setq found (pjb-re-match (aref children n)))
+          :finally (setf (pjb-re-slot-end node) found)
+                   (setf (pjb-re-slot-try node) (1+ n))
+          :finally (return found))))
 
 
-(DEFUN PJB-RE-ANY-CATEGORY-MATCH (NODE)
+(defun pjb-re-any-category-match (node)
   "Matches a any-category.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((P         (PJB-RE-SLOT-BEGIN NODE))
-        (N         (PJB-RE-SLOT-TRY   NODE))
-        (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
+  (let ((p         (pjb-re-slot-begin node))
+        (n         (pjb-re-slot-try   node))
+        (children  (pjb-re-slot-children node)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
+    (error "Not Implemented Yet: ~S~%" (pjb-re-slot-node node))))
 
 
-(DEFUN PJB-RE-ANY-CHARACTER-MATCH (NODE)
+(defun pjb-re-any-character-match (node)
   "Matches a any-character.  That is, anything but a NEW-LINE!
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
@@ -816,487 +836,487 @@ that shall match any character in the supported character set except
 NUL.
 
 "
-  (LET ((P         (PJB-RE-SLOT-BEGIN NODE)) )
-    (IF (PJB-RE-SLOT-TRY   NODE)
+  (let ((p         (pjb-re-slot-begin node)) )
+    (if (pjb-re-slot-try   node)
         ;; already tested. no more match:
-        NIL
-        (PROGN ;; first test, let's see:
-          (SETF (PJB-RE-SLOT-TRY NODE) T)
-          (IF (< P (LENGTH (PJB-RE-SLOT-STRING NODE)))
-              (PROGN
-                (SETQ P (1+ P))
-                (SETF (PJB-RE-SLOT-END NODE) P))
-              (SETF  (PJB-RE-SLOT-END NODE) NIL))))))
+        nil
+        (progn ;; first test, let's see:
+          (setf (pjb-re-slot-try node) t)
+          (if (< p (length (pjb-re-slot-string node)))
+              (progn
+                (setq p (1+ p))
+                (setf (pjb-re-slot-end node) p))
+              (setf  (pjb-re-slot-end node) nil))))))
 
 
-(DEFUN PJB-RE-ANY-NOT-CATEGORY-MATCH (NODE)
+(defun pjb-re-any-not-category-match (node)
   "Matches a any-not-category.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((P         (PJB-RE-SLOT-BEGIN NODE))
-        (N         (PJB-RE-SLOT-TRY   NODE))
-        (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
+  (let ((p         (pjb-re-slot-begin node))
+        (n         (pjb-re-slot-try   node))
+        (children  (pjb-re-slot-children node)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
+    (error "Not Implemented Yet: ~S~%" (pjb-re-slot-node node))))
 
 
-(DEFUN PJB-RE-ANY-NOT-SYNTAX-CLASS-MATCH (NODE)
+(defun pjb-re-any-not-syntax-class-match (node)
   "Matches a any-not-syntax-class.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((P         (PJB-RE-SLOT-BEGIN NODE))
-        (N         (PJB-RE-SLOT-TRY   NODE))
-        (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
+  (let ((p         (pjb-re-slot-begin node))
+        (n         (pjb-re-slot-try   node))
+        (children  (pjb-re-slot-children node)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
+    (error "Not Implemented Yet: ~S~%" (pjb-re-slot-node node))))
 
 
-(DEFUN PJB-RE-ANY-NOT-WORD-CHARACTER-MATCH (NODE)
+(defun pjb-re-any-not-word-character-match (node)
   "Matches a any-not-word-character.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((P         (PJB-RE-SLOT-BEGIN NODE))
-        (N         (PJB-RE-SLOT-TRY   NODE))
-        (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
+  (let ((p         (pjb-re-slot-begin node))
+        (n         (pjb-re-slot-try   node))
+        (children  (pjb-re-slot-children node)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
+    (error "Not Implemented Yet: ~S~%" (pjb-re-slot-node node))))
 
 
-(DEFUN PJB-RE-ANY-SYNTAX-CLASS-MATCH (NODE)
+(defun pjb-re-any-syntax-class-match (node)
   "Matches a any-syntax-class.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((P         (PJB-RE-SLOT-BEGIN NODE))
-        (N         (PJB-RE-SLOT-TRY   NODE))
-        (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
+  (let ((p         (pjb-re-slot-begin node))
+        (n         (pjb-re-slot-try   node))
+        (children  (pjb-re-slot-children node)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
+    (error "Not Implemented Yet: ~S~%" (pjb-re-slot-node node))))
 
 
-(DEFUN PJB-RE-ANY-WORD-CHARACTER-MATCH (NODE)
+(defun pjb-re-any-word-character-match (node)
   "Matches a any-word-character.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((P         (PJB-RE-SLOT-BEGIN NODE))
-        (N         (PJB-RE-SLOT-TRY   NODE))
-        (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
+  (let ((p         (pjb-re-slot-begin node))
+        (n         (pjb-re-slot-try   node))
+        (children  (pjb-re-slot-children node)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
+    (error "Not Implemented Yet: ~S~%" (pjb-re-slot-node node))))
 
 
-(DEFUN PJB-RE-CHAR-SET-MATCH (NODE)
+(defun pjb-re-char-set-match (node)
   "Matches a char-set.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((P         (PJB-RE-SLOT-BEGIN NODE))
-        (N         (PJB-RE-SLOT-TRY   NODE))
-        (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
+  (let ((p         (pjb-re-slot-begin node))
+        (n         (pjb-re-slot-try   node))
+        (children  (pjb-re-slot-children node)) )
     (declare (ignore p n children))    
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
+    (error "Not Implemented Yet: ~S~%" (pjb-re-slot-node node))))
 
 
-(DEFUN PJB-RE-EMPTY-AT-BEGINNING-OF-LINE-MATCH (NODE)
+(defun pjb-re-empty-at-beginning-of-line-match (node)
   "Matches a empty-at-beginning-of-line.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((P         (PJB-RE-SLOT-BEGIN NODE))
-        (N         (PJB-RE-SLOT-TRY   NODE))
-        (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
+  (let ((p         (pjb-re-slot-begin node))
+        (n         (pjb-re-slot-try   node))
+        (children  (pjb-re-slot-children node)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
+    (error "Not Implemented Yet: ~S~%" (pjb-re-slot-node node))))
 
 
-(DEFUN PJB-RE-EMPTY-AT-BEGINNING-OF-STRING-MATCH (NODE)
+(defun pjb-re-empty-at-beginning-of-string-match (node)
   "Matches a empty-at-beginning-of-string.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((P  (PJB-RE-SLOT-BEGIN  NODE)) )
-    (IF (PJB-RE-SLOT-TRY  NODE)
+  (let ((p  (pjb-re-slot-begin  node)) )
+    (if (pjb-re-slot-try  node)
         ;; already tested. no more match:
-        NIL
+        nil
         ;; first test, let's see:
-        (PROGN
-          (SETF (PJB-RE-SLOT-TRY NODE) T)
-          (IF (=  0 P) ;; TODO use a :start / :end for the string!
-              (PROGN
-                (SETF (PJB-RE-SLOT-END NODE) P)
-                P)
-              NIL)))))
+        (progn
+          (setf (pjb-re-slot-try node) t)
+          (if (=  0 p) ;; TODO use a :start / :end for the string!
+              (progn
+                (setf (pjb-re-slot-end node) p)
+                p)
+              nil)))))
 
 
-(DEFUN PJB-RE-EMPTY-AT-BEGINNING-OF-WORD-MATCH (NODE)
+(defun pjb-re-empty-at-beginning-of-word-match (node)
   "Matches a empty-at-beginning-of-word.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((P         (PJB-RE-SLOT-BEGIN NODE))
-        (N         (PJB-RE-SLOT-TRY   NODE))
-        (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
+  (let ((p         (pjb-re-slot-begin node))
+        (n         (pjb-re-slot-try   node))
+        (children  (pjb-re-slot-children node)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
+    (error "Not Implemented Yet: ~S~%" (pjb-re-slot-node node))))
 
 
-(DEFUN PJB-RE-EMPTY-AT-END-OF-LINE-MATCH (NODE)
+(defun pjb-re-empty-at-end-of-line-match (node)
   "Matches a empty-at-end-of-line.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((P         (PJB-RE-SLOT-BEGIN NODE))
-        (N         (PJB-RE-SLOT-TRY   NODE))
-        (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
+  (let ((p         (pjb-re-slot-begin node))
+        (n         (pjb-re-slot-try   node))
+        (children  (pjb-re-slot-children node)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
+    (error "Not Implemented Yet: ~S~%" (pjb-re-slot-node node))))
 
 
-(DEFUN PJB-RE-EMPTY-AT-END-OF-STRING-MATCH (NODE)
+(defun pjb-re-empty-at-end-of-string-match (node)
   "Matches a empty-at-end-of-string.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((P  (PJB-RE-SLOT-BEGIN  NODE)) )
-    (IF (PJB-RE-SLOT-TRY  NODE)
+  (let ((p  (pjb-re-slot-begin  node)) )
+    (if (pjb-re-slot-try  node)
         ;; already tested. no more match:
-        NIL
+        nil
         ;; first test, let's see:
-        (PROGN
-          (SETF (PJB-RE-SLOT-TRY NODE) T)
-          (IF (=  (LENGTH (PJB-RE-SLOT-STRING NODE)) P) ;; TODO use a :start / :end for the string!
-              (PROGN
-                (SETF (PJB-RE-SLOT-END NODE) P)
-                P)
-              NIL)))))
+        (progn
+          (setf (pjb-re-slot-try node) t)
+          (if (=  (length (pjb-re-slot-string node)) p) ;; TODO use a :start / :end for the string!
+              (progn
+                (setf (pjb-re-slot-end node) p)
+                p)
+              nil)))))
 
 
-(DEFUN PJB-RE-EMPTY-AT-END-OF-WORD-MATCH (NODE)
+(defun pjb-re-empty-at-end-of-word-match (node)
   "Matches a empty-at-end-of-word.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((P         (PJB-RE-SLOT-BEGIN NODE))
-        (N         (PJB-RE-SLOT-TRY   NODE))
-        (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
+  (let ((p         (pjb-re-slot-begin node))
+        (n         (pjb-re-slot-try   node))
+        (children  (pjb-re-slot-children node)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
+    (error "Not Implemented Yet: ~S~%" (pjb-re-slot-node node))))
 
 
-(DEFUN PJB-RE-EMPTY-AT-LIMIT-OF-WORD-MATCH (NODE)
+(defun pjb-re-empty-at-limit-of-word-match (node)
   "Matches a empty-at-limit-of-word.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((P         (PJB-RE-SLOT-BEGIN NODE))
-        (N         (PJB-RE-SLOT-TRY   NODE))
-        (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
+  (let ((p         (pjb-re-slot-begin node))
+        (n         (pjb-re-slot-try   node))
+        (children  (pjb-re-slot-children node)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
+    (error "Not Implemented Yet: ~S~%" (pjb-re-slot-node node))))
 
 
-(DEFUN PJB-RE-EMPTY-AT-POINT-MATCH (NODE)
+(defun pjb-re-empty-at-point-match (node)
   "Matches a empty-at-point.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((P         (PJB-RE-SLOT-BEGIN NODE))
-        (N         (PJB-RE-SLOT-TRY   NODE))
-        (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
+  (let ((p         (pjb-re-slot-begin node))
+        (n         (pjb-re-slot-try   node))
+        (children  (pjb-re-slot-children node)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
+    (error "Not Implemented Yet: ~S~%" (pjb-re-slot-node node))))
 
 
-(DEFUN PJB-RE-EMPTY-NOT-AT-LIMIT-OF-WORD-MATCH (NODE)
+(defun pjb-re-empty-not-at-limit-of-word-match (node)
   "Matches a empty-not-at-limit-of-word.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((P         (PJB-RE-SLOT-BEGIN NODE))
-        (N         (PJB-RE-SLOT-TRY   NODE))
-        (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
+  (let ((p         (pjb-re-slot-begin node))
+        (n         (pjb-re-slot-try   node))
+        (children  (pjb-re-slot-children node)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
+    (error "Not Implemented Yet: ~S~%" (pjb-re-slot-node node))))
 
 
-(DEFUN PJB-RE-ERROR-MATCH (NODE)
+(defun pjb-re-error-match (node)
   "Matches a error.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((P         (PJB-RE-SLOT-BEGIN NODE))
-        (N         (PJB-RE-SLOT-TRY   NODE))
-        (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
+  (let ((p         (pjb-re-slot-begin node))
+        (n         (pjb-re-slot-try   node))
+        (children  (pjb-re-slot-children node)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
+    (error "Not Implemented Yet: ~S~%" (pjb-re-slot-node node))))
 
 
-(DEFUN PJB-RE-GROUP-MATCH (NODE)
+(defun pjb-re-group-match (node)
   "Matches a group.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((P         (PJB-RE-SLOT-BEGIN NODE))
-        (CHILD     (AREF (PJB-RE-SLOT-CHILDREN NODE) 0)) )
-    (IF (PJB-RE-SLOT-TRY   NODE)
+  (let ((p         (pjb-re-slot-begin node))
+        (child     (aref (pjb-re-slot-children node) 0)) )
+    (if (pjb-re-slot-try   node)
         ;; already tested. no more match:
-        NIL
+        nil
         ;; first test, let's see:
-        (PROGN
-          (SETF (PJB-RE-SLOT-TRY NODE) T)
-          (PJB-RE-INIT CHILD P)
-          (SETQ P (PJB-RE-MATCH CHILD))
-          (WHEN P
-            (SETF (PJB-RE-SLOT-END NODE) P))
-          P))))
+        (progn
+          (setf (pjb-re-slot-try node) t)
+          (pjb-re-init child p)
+          (setq p (pjb-re-match child))
+          (when p
+            (setf (pjb-re-slot-end node) p))
+          p))))
 
 
-(DEFUN PJB-RE-INVERSE-CHAR-SET-MATCH (NODE)
+(defun pjb-re-inverse-char-set-match (node)
   "Matches a inverse-char-set.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((P         (PJB-RE-SLOT-BEGIN NODE))
-        (N         (PJB-RE-SLOT-TRY   NODE))
-        (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
+  (let ((p         (pjb-re-slot-begin node))
+        (n         (pjb-re-slot-try   node))
+        (children  (pjb-re-slot-children node)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
+    (error "Not Implemented Yet: ~S~%" (pjb-re-slot-node node))))
 
 
-(DEFUN PJB-RE-NON-GREEDY-ONE-OR-MORE-MATCH (NODE)
+(defun pjb-re-non-greedy-one-or-more-match (node)
   "Matches a non-greedy-one-or-more.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((N      (PJB-RE-SLOT-TRY   NODE))
-        (P      (PJB-RE-SLOT-BEGIN NODE))
-        (CHILD  (AREF (PJB-RE-SLOT-CHILDREN  NODE) 0)) )
-    (COND
-      ((NULL N) ;; first time
-       (PJB-RE-INIT CHILD P)
-       (SETQ P (PJB-RE-MATCH CHILD))
-       (SETF (PJB-RE-SLOT-END NODE) P)
-       (SETF (PJB-RE-SLOT-TRY NODE) (IF P :MORE :OVER))
-       P)
-      ((EQ :MORE N)
-       (SETQ P (PJB-RE-SLOT-END NODE))
-       (PJB-RE-INIT CHILD P)
-       (SETQ P (PJB-RE-MATCH CHILD))
-       (SETF (PJB-RE-SLOT-END NODE) P)
-       (SETF (PJB-RE-SLOT-TRY NODE) (IF P :MORE :OVER))
-       P)
-      (T
-       NIL))))
+  (let ((n      (pjb-re-slot-try   node))
+        (p      (pjb-re-slot-begin node))
+        (child  (aref (pjb-re-slot-children  node) 0)) )
+    (cond
+      ((null n) ;; first time
+       (pjb-re-init child p)
+       (setq p (pjb-re-match child))
+       (setf (pjb-re-slot-end node) p)
+       (setf (pjb-re-slot-try node) (if p :more :over))
+       p)
+      ((eq :more n)
+       (setq p (pjb-re-slot-end node))
+       (pjb-re-init child p)
+       (setq p (pjb-re-match child))
+       (setf (pjb-re-slot-end node) p)
+       (setf (pjb-re-slot-try node) (if p :more :over))
+       p)
+      (t
+       nil))))
 
 
-(DEFUN PJB-RE-NON-GREEDY-OPTIONAL-MATCH (NODE)
+(defun pjb-re-non-greedy-optional-match (node)
   "Matches a non-greedy-optional.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((P         (PJB-RE-SLOT-BEGIN NODE))
-        (N         (PJB-RE-SLOT-TRY   NODE))
-        (CHILD     (AREF (PJB-RE-SLOT-CHILDREN NODE) 0)) )
-    (COND
-      ((NULL N) ;; first time, let's be non greedy: match nothing.
-       (SETF (PJB-RE-SLOT-END NODE) P)
-       (SETF (PJB-RE-SLOT-TRY NODE) :SECOND) )
-      ((EQ N :SECOND) ;; second time, we expect the child.
-       (PJB-RE-INIT CHILD P)
-       (SETQ P (PJB-RE-MATCH CHILD))
-       (SETF (PJB-RE-SLOT-END NODE) P)
-       (SETF (PJB-RE-SLOT-TRY NODE) :LAST) )
-      (T ;; too late we don't match anything.
-       (SETQ P NIL)
-       (SETF (PJB-RE-SLOT-END NODE) P) ))
-    P))
+  (let ((p         (pjb-re-slot-begin node))
+        (n         (pjb-re-slot-try   node))
+        (child     (aref (pjb-re-slot-children node) 0)) )
+    (cond
+      ((null n) ;; first time, let's be non greedy: match nothing.
+       (setf (pjb-re-slot-end node) p)
+       (setf (pjb-re-slot-try node) :second) )
+      ((eq n :second) ;; second time, we expect the child.
+       (pjb-re-init child p)
+       (setq p (pjb-re-match child))
+       (setf (pjb-re-slot-end node) p)
+       (setf (pjb-re-slot-try node) :last) )
+      (t ;; too late we don't match anything.
+       (setq p nil)
+       (setf (pjb-re-slot-end node) p) ))
+    p))
 
 
-(DEFUN PJB-RE-NON-GREEDY-ZERO-OR-MORE-MATCH (NODE)
+(defun pjb-re-non-greedy-zero-or-more-match (node)
   "Matches a non-greedy-zero-or-more.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((N      (PJB-RE-SLOT-TRY  NODE))
-        (S      (PJB-RE-SLOT-STRING  NODE))
-        (CHILD  (AREF (PJB-RE-SLOT-CHILDREN  NODE) 0)) )
-    (COND
-      ((NULL N) ;; case zero
-       (SETQ N (PJB-RE-SLOT-BEGIN NODE))
-       (SETF (PJB-RE-SLOT-END NODE) N)
-       (SETF (PJB-RE-SLOT-TRY NODE) N)
+  (let ((n      (pjb-re-slot-try  node))
+        (s      (pjb-re-slot-string  node))
+        (child  (aref (pjb-re-slot-children  node) 0)) )
+    (cond
+      ((null n) ;; case zero
+       (setq n (pjb-re-slot-begin node))
+       (setf (pjb-re-slot-end node) n)
+       (setf (pjb-re-slot-try node) n)
        )
-      ((EQ T N) ;; no more match
+      ((eq t n) ;; no more match
        )
-      ((= N (LENGTH S))
+      ((= n (length s))
        ;; match end of string with any number, but no more.
-       (SETF (PJB-RE-SLOT-END NODE) N)
-       (SETF (PJB-RE-SLOT-TRY NODE) T))
-      (T
-       (PJB-RE-INIT CHILD N)
-       (SETQ N (PJB-RE-MATCH CHILD))
-       (IF N
-           (PROGN
-             (SETF (PJB-RE-SLOT-END NODE) N)
-             (SETF (PJB-RE-SLOT-TRY NODE) N))
-           (PROGN
-             (SETF (PJB-RE-SLOT-END NODE) NIL)
-             (SETF (PJB-RE-SLOT-TRY NODE) T)))))
-    N))
+       (setf (pjb-re-slot-end node) n)
+       (setf (pjb-re-slot-try node) t))
+      (t
+       (pjb-re-init child n)
+       (setq n (pjb-re-match child))
+       (if n
+           (progn
+             (setf (pjb-re-slot-end node) n)
+             (setf (pjb-re-slot-try node) n))
+           (progn
+             (setf (pjb-re-slot-end node) nil)
+             (setf (pjb-re-slot-try node) t)))))
+    n))
 
 
-(DEFUN PJB-RE-OPTIONAL-MATCH (NODE)
+(defun pjb-re-optional-match (node)
   "Matches a optional.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((P         (PJB-RE-SLOT-BEGIN NODE))
-        (N         (PJB-RE-SLOT-TRY   NODE))
-        (CHILD     (AREF (PJB-RE-SLOT-CHILDREN NODE) 0)) )
-    (COND
-      ((NULL N) ;; first time, we expect the child.
-       (PJB-RE-INIT CHILD P)
-       (SETQ P (PJB-RE-MATCH CHILD))
-       (SETF (PJB-RE-SLOT-END NODE) P)
-       (SETF (PJB-RE-SLOT-TRY NODE) :SECOND) )
-      ((EQ N :SECOND) ;; second time,  let's be non greedy: match nothing.
-       (SETF (PJB-RE-SLOT-END NODE) P)
-       (SETF (PJB-RE-SLOT-TRY NODE) :LAST) )
-      (T ;; too late we don't match anything.
-       (SETQ P NIL)
-       (SETF (PJB-RE-SLOT-END NODE) P) ))
-    P))
+  (let ((p         (pjb-re-slot-begin node))
+        (n         (pjb-re-slot-try   node))
+        (child     (aref (pjb-re-slot-children node) 0)) )
+    (cond
+      ((null n) ;; first time, we expect the child.
+       (pjb-re-init child p)
+       (setq p (pjb-re-match child))
+       (setf (pjb-re-slot-end node) p)
+       (setf (pjb-re-slot-try node) :second) )
+      ((eq n :second) ;; second time,  let's be non greedy: match nothing.
+       (setf (pjb-re-slot-end node) p)
+       (setf (pjb-re-slot-try node) :last) )
+      (t ;; too late we don't match anything.
+       (setq p nil)
+       (setf (pjb-re-slot-end node) p) ))
+    p))
 
 
-(DEFUN PJB-RE-ONE-OR-MORE-MATCH (NODE)
+(defun pjb-re-one-or-more-match (node)
   "Matches a one-or-more.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((P         (PJB-RE-SLOT-BEGIN NODE))
-        (N         (PJB-RE-SLOT-TRY   NODE))
-        (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
+  (let ((p         (pjb-re-slot-begin node))
+        (n         (pjb-re-slot-try   node))
+        (children  (pjb-re-slot-children node)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
+    (error "Not Implemented Yet: ~S~%" (pjb-re-slot-node node))))
 
 
-(DEFUN PJB-RE-REFERENCE-MATCH (NODE)
+(defun pjb-re-reference-match (node)
   "Matches a reference.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((P         (PJB-RE-SLOT-BEGIN NODE))
-        (N         (PJB-RE-SLOT-TRY   NODE))
-        (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
+  (let ((p         (pjb-re-slot-begin node))
+        (n         (pjb-re-slot-try   node))
+        (children  (pjb-re-slot-children node)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
+    (error "Not Implemented Yet: ~S~%" (pjb-re-slot-node node))))
 
 
-(DEFUN PJB-RE-REPEAT-BETWEEN-MATCH (NODE)
+(defun pjb-re-repeat-between-match (node)
   "Matches a repeat-between.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((P         (PJB-RE-SLOT-BEGIN NODE))
-        (N         (PJB-RE-SLOT-TRY   NODE))
-        (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
+  (let ((p         (pjb-re-slot-begin node))
+        (n         (pjb-re-slot-try   node))
+        (children  (pjb-re-slot-children node)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
+    (error "Not Implemented Yet: ~S~%" (pjb-re-slot-node node))))
 
 
-(DEFUN PJB-RE-REPEAT-EXACT-MATCH (NODE)
+(defun pjb-re-repeat-exact-match (node)
   "Matches a repeat-exact.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((P         (PJB-RE-SLOT-BEGIN NODE))
-        (N         (PJB-RE-SLOT-TRY   NODE))
-        (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
+  (let ((p         (pjb-re-slot-begin node))
+        (n         (pjb-re-slot-try   node))
+        (children  (pjb-re-slot-children node)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
+    (error "Not Implemented Yet: ~S~%" (pjb-re-slot-node node))))
 
 
-(DEFUN PJB-RE-SEQUENCE-MATCH (NODE)
+(defun pjb-re-sequence-match (node)
   "Matches a sequence.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((P         (PJB-RE-SLOT-BEGIN NODE))
-        (N         (PJB-RE-SLOT-TRY   NODE))
-        (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
-    (WHEN CHILDREN
-      (UNLESS N
-        (SETQ N 0)
-        (PJB-RE-INIT (AREF CHILDREN N) P))
-      (SETQ P (PJB-RE-MATCH (AREF CHILDREN N)))
-      (LOOP :WHILE (OR (AND P (< (1+ N) (LENGTH CHILDREN)))
-                       (AND (NOT P) (<= 0 (1- N))))
-            :DO (IF P
-                    (PROGN
-                      (SETQ N (1+ N))
-                      (PJB-RE-INIT (AREF CHILDREN N) P))
-                    (SETQ N (1- N)))
-                (SETQ P (PJB-RE-MATCH (AREF CHILDREN N))))
+  (let ((p         (pjb-re-slot-begin node))
+        (n         (pjb-re-slot-try   node))
+        (children  (pjb-re-slot-children node)) )
+    (when children
+      (unless n
+        (setq n 0)
+        (pjb-re-init (aref children n) p))
+      (setq p (pjb-re-match (aref children n)))
+      (loop :while (or (and p (< (1+ n) (length children)))
+                       (and (not p) (<= 0 (1- n))))
+            :do (if p
+                    (progn
+                      (setq n (1+ n))
+                      (pjb-re-init (aref children n) p))
+                    (setq n (1- n)))
+                (setq p (pjb-re-match (aref children n))))
       ;; p       ==> (= (1+ n) (length children)) ==> 0 <= n < (length children)
       ;; (not p) ==>    (= -1 (1- n)) ==>  n=0    ==> 0 <= n < (length children)
-      (SETF (PJB-RE-SLOT-TRY NODE) N)
-      (SETF (PJB-RE-SLOT-END NODE) P))
-    P))
+      (setf (pjb-re-slot-try node) n)
+      (setf (pjb-re-slot-end node) p))
+    p))
 
 
-(DEFUN PJB-RE-SHY-GROUP-MATCH (NODE)
+(defun pjb-re-shy-group-match (node)
   "Matches a shy-group.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((P         (PJB-RE-SLOT-BEGIN NODE))
-        (N         (PJB-RE-SLOT-TRY   NODE))
-        (CHILDREN  (PJB-RE-SLOT-CHILDREN NODE)) )
+  (let ((p         (pjb-re-slot-begin node))
+        (n         (pjb-re-slot-try   node))
+        (children  (pjb-re-slot-children node)) )
     (declare (ignore p n children))
-    (ERROR "Not Implemented Yet: ~S~%" (PJB-RE-SLOT-NODE NODE))))
+    (error "Not Implemented Yet: ~S~%" (pjb-re-slot-node node))))
 
 
-(DEFUN PJB-RE-ZERO-OR-MORE-MATCH (NODE)
+(defun pjb-re-zero-or-more-match (node)
   "Matches a zero-or-more.
 RETURNS: nil when no match,
          or the next unmatched position when there's a match.
 "
-  (LET ((N      (PJB-RE-SLOT-TRY     NODE))
-        (S      (PJB-RE-SLOT-STRING  NODE))
-        (P      (PJB-RE-SLOT-BEGIN   NODE))
-        (CHILD  (AREF (PJB-RE-SLOT-CHILDREN  NODE) 0)) )
+  (let ((n      (pjb-re-slot-try     node))
+        (s      (pjb-re-slot-string  node))
+        (p      (pjb-re-slot-begin   node))
+        (child  (aref (pjb-re-slot-children  node) 0)) )
     ;; Note: we should try to save all the previous matches (from zero to n)
     ;;       to backtrack faster, but we would need to save possibly a lot
     ;;       of recursive state for all the child subtree...
-    (COND
-      ((NULL N) ;; first time: match all we can.
-       (SETQ N (LOOP :WITH P = (PJB-RE-SLOT-BEGIN   NODE)
-                     :FOR N = 0 :THEN (1+ N)
-                     :WHILE (AND P (< P (LENGTH S)))
-                     :DO (PJB-RE-INIT CHILD P)
-                         (SETQ P (PJB-RE-MATCH CHILD))
-                     :FINALLY (RETURN N)))
+    (cond
+      ((null n) ;; first time: match all we can.
+       (setq n (loop :with p = (pjb-re-slot-begin   node)
+                     :for n = 0 :then (1+ n)
+                     :while (and p (< p (length s)))
+                     :do (pjb-re-init child p)
+                         (setq p (pjb-re-match child))
+                     :finally (return n)))
        ;; oops we did one too many.
        ;; let's redo it till the limit
-       (SETF (PJB-RE-SLOT-TRY NODE) N)
-       (PJB-RE-ZERO-OR-MORE-MATCH NODE))
-      ((< N 0) ;; we tried everything.
-       (SETF (PJB-RE-SLOT-END NODE) NIL))
-      (T ;; match n-1 times.
-       (LOOP :FOR I :FROM 1 :BELOW N
-             :DO (PJB-RE-INIT CHILD P)
-                 (SETQ P (PJB-RE-MATCH CHILD)))
-       (SETF (PJB-RE-SLOT-END NODE) P)
-       (SETF (PJB-RE-SLOT-TRY NODE) (1- N))
-       P))))
+       (setf (pjb-re-slot-try node) n)
+       (pjb-re-zero-or-more-match node))
+      ((< n 0) ;; we tried everything.
+       (setf (pjb-re-slot-end node) nil))
+      (t ;; match n-1 times.
+       (loop :for i :from 1 :below n
+             :do (pjb-re-init child p)
+                 (setq p (pjb-re-match child)))
+       (setf (pjb-re-slot-end node) p)
+       (setf (pjb-re-slot-try node) (1- n))
+       p))))
 
 
 
-(DEFUN PJB-RE-MAKE-PJB-RE-SYMBOL (KEY EXT)
+(defun pjb-re-make-pjb-re-symbol (key ext)
   "
 RETURN:     A symbol corresponding to one of the pjb-re-*-{init,match} 
             functions defined here.
@@ -1312,97 +1332,97 @@ NOTE:
 URL:        http://www.informatimago.com/local/lisp/HyperSpec/Body/02_cd.htm
             http://www.informatimago.com/local/lisp/HyperSpec/Body/f_intern.htm#intern
 "
-  (IF (STRING= "emacs" (LISP-IMPLEMENTATION-TYPE))
-      (INTERN (STRING-DOWNCASE (FORMAT NIL "pjb-re-~s-~s"
-                                       (SUBSEQ (SYMBOL-NAME KEY) 1) EXT)))
-      (INTERN (STRING-UPCASE (FORMAT NIL "pjb-re-~a-~a" (SYMBOL-NAME KEY) EXT))
-              (FIND-PACKAGE "PJB-REGEXP"))))
+  (if (string= "emacs" (lisp-implementation-type))
+      (intern (string-downcase (format nil "pjb-re-~s-~s"
+                                       (subseq (symbol-name key) 1) ext)))
+      (intern (string-upcase (format nil "pjb-re-~a-~a" (symbol-name key) ext))
+              (find-package "PJB-REGEXP"))))
 
 
-(DEFUN PJB-RE-DECORATE-TREE (TREE STRING)
+(defun pjb-re-decorate-tree (tree string)
   "
 RETURN:  A decorated tree that can be used for the matching the string.
 "
-  (TREE-DECORATE
-   TREE
-   (LAMBDA (NODE CHILDREN)
-     (LET ((OBJ (MAKE-ARRAY '(9)))
-           KEY)
-       (COND
-         ((NULL       NODE) (SETQ KEY :NULL))
-         ((CHARACTERP NODE) (SETQ KEY :CHARACTER))
-         ((STRINGP    NODE) (SETQ KEY :STRING))
-         ((LISTP      NODE) (SETQ KEY :LIST))
-         ((MEMBER NODE '(
-                         :ALTERNATIVE :ANY-CATEGORY :ANY-CHARACTER
-                         :ANY-NOT-CATEGORY :ANY-NOT-SYNTAX-CLASS
-                         :ANY-NOT-WORD-CHARACTER :ANY-SYNTAX-CLASS
-                         :ANY-WORD-CHARACTER :CHAR-SET
-                         :EMPTY-AT-BEGINNING-OF-LINE
-                         :EMPTY-AT-BEGINNING-OF-STRING
-                         :EMPTY-AT-BEGINNING-OF-WORD
-                         :EMPTY-AT-END-OF-LINE :EMPTY-AT-END-OF-STRING
-                         :EMPTY-AT-END-OF-WORD :EMPTY-AT-LIMIT-OF-WORD
-                         :EMPTY-AT-POINT :EMPTY-NOT-AT-LIMIT-OF-WORD
-                         :ERROR :GROUP :INVERSE-CHAR-SET
-                         :NON-GREEDY-ONE-OR-MORE :NON-GREEDY-OPTIONAL
-                         :NON-GREEDY-ZERO-OR-MORE :OPTIONAL :ONE-OR-MORE
-                         :REFERENCE :REPEAT-BETWEEN :REPEAT-EXACT
-                         :SEQUENCE :SHY-GROUP :ZERO-OR-MORE)
-                  :TEST (FUNCTION EQ))
-          (SETQ KEY NODE))
-         (T (ERROR "INTERNAL: Unexpected node in match tree: ~S !"
-                   NODE)))
-       (SETF (AREF OBJ 0) NODE)
-       (SETF (AREF OBJ 1) (PJB-RE-MAKE-PJB-RE-SYMBOL KEY "match"))
-       (SETF (AREF OBJ 2) STRING)
-       (SETF (AREF OBJ 3) 0) ;; beg (start)
-       (SETF (AREF OBJ 4) 0) ;; end
-       (SETF (AREF OBJ 5) NIL) ;; try
-       (SETF (AREF OBJ 6) NIL) ;; private
-       (SETF (AREF OBJ 7) (WHEN CHILDREN
-                            (MAKE-ARRAY (LIST (LENGTH CHILDREN))
-                                        :INITIAL-CONTENTS CHILDREN)))
-       OBJ))))
+  (tree-decorate
+   tree
+   (lambda (node children)
+     (let ((obj (make-array '(9)))
+           key)
+       (cond
+         ((null       node) (setq key :null))
+         ((characterp node) (setq key :character))
+         ((stringp    node) (setq key :string))
+         ((listp      node) (setq key :list))
+         ((member node '(
+                         :alternative :any-category :any-character
+                         :any-not-category :any-not-syntax-class
+                         :any-not-word-character :any-syntax-class
+                         :any-word-character :char-set
+                         :empty-at-beginning-of-line
+                         :empty-at-beginning-of-string
+                         :empty-at-beginning-of-word
+                         :empty-at-end-of-line :empty-at-end-of-string
+                         :empty-at-end-of-word :empty-at-limit-of-word
+                         :empty-at-point :empty-not-at-limit-of-word
+                         :error :group :inverse-char-set
+                         :non-greedy-one-or-more :non-greedy-optional
+                         :non-greedy-zero-or-more :optional :one-or-more
+                         :reference :repeat-between :repeat-exact
+                         :sequence :shy-group :zero-or-more)
+                  :test (function eq))
+          (setq key node))
+         (t (error "INTERNAL: Unexpected node in match tree: ~S !"
+                   node)))
+       (setf (aref obj 0) node)
+       (setf (aref obj 1) (pjb-re-make-pjb-re-symbol key "match"))
+       (setf (aref obj 2) string)
+       (setf (aref obj 3) 0) ;; beg (start)
+       (setf (aref obj 4) 0) ;; end
+       (setf (aref obj 5) nil) ;; try
+       (setf (aref obj 6) nil) ;; private
+       (setf (aref obj 7) (when children
+                            (make-array (list (length children))
+                                        :initial-contents children)))
+       obj))))
 
 
-(DEFUN PJB-RE-COLLECT-GROUPS (DEC-TREE &OPTIONAL GROUPS)
-  (LET ((MAKE-GROUPS-FLAG (NOT GROUPS)))
-    (UNLESS GROUPS
-      (SETQ GROUPS (CONS :GROUPS NIL)))
-    (IF (EQ :GROUP (PJB-RE-SLOT-NODE DEC-TREE))
-        (PUSH DEC-TREE (CDR GROUPS)))
-    (LOOP :WITH CHILDREN = (PJB-RE-SLOT-CHILDREN DEC-TREE)
-          :FOR I :FROM 0 :BELOW (LENGTH CHILDREN)
-          :FOR CHILD = (AREF CHILDREN I)
-          :DO (PJB-RE-COLLECT-GROUPS CHILD GROUPS))
-    (IF MAKE-GROUPS-FLAG
-        (NREVERSE (CDR GROUPS))
-        NIL)))
+(defun pjb-re-collect-groups (dec-tree &optional groups)
+  (let ((make-groups-flag (not groups)))
+    (unless groups
+      (setq groups (cons :groups nil)))
+    (if (eq :group (pjb-re-slot-node dec-tree))
+        (push dec-tree (cdr groups)))
+    (loop :with children = (pjb-re-slot-children dec-tree)
+          :for i :from 0 :below (length children)
+          :for child = (aref children i)
+          :do (pjb-re-collect-groups child groups))
+    (if make-groups-flag
+        (nreverse (cdr groups))
+        nil)))
 
 
 
-(DEFSTRUCT MATCH
+(defstruct match
   "This structure stores a (start,end) couple specifying the range matched
 by a group (or the whole regexp)."
-  (START NIL :TYPE (OR NULL INTEGER))
-  (END   NIL :TYPE (OR NULL INTEGER)))
+  (start nil :type (or null integer))
+  (end   nil :type (or null integer)))
 
 
-(DEFUN MATCH-STRING (STRING MATCH)
+(defun match-string (string match)
   "Extracts the substring of STRING corresponding to a given pair of
 start and end indices. The result is shared with STRING.
 If you want a freshly consed string, use copy-string
 or (coerce (match-string ...) 'simple-string)."
-  (SUBSEQ STRING (MATCH-START MATCH) (MATCH-END MATCH)))
+  (subseq string (match-start match) (match-end match)))
 
 
-(DEFUN REGEXP-QUOTE (STRING)
+(defun regexp-quote (string)
   (declare (ignore string))
-  (ERROR "Not Implemented Yet: REGEXP-QUOTE~%" ))
+  (error "Not Implemented Yet: REGEXP-QUOTE~%" ))
  
 
-(DEFUN MATCH (REGEXP STRING &OPTIONAL START END)
+(defun match (regexp string &optional start end)
   "Common-Lisp: This function returns as first value a match structure
 containing the indices of the start and end of the first match for the
 regular expression REGEXP in STRING, or nil if there is no match.
@@ -1417,24 +1437,24 @@ end:     the after last character of STRING to be considered
          (defaults to (length string)).
 RETURN:  index of start of first match for REGEXP in STRING, nor nil.
 "
-  (UNLESS START (SETQ START 0))
-  (UNLESS END   (SETQ END (LENGTH STRING)))
-  (WHEN (< END START) (SETQ END START))
+  (unless start (setq start 0))
+  (unless end   (setq end (length string)))
+  (when (< end start) (setq end start))
   ;; TODO: What to do when start or end are out of bounds ?
-  (LET* ((SYN-TREE
-          (PJB-RE-PARSE-WHOLE-REGEXP
-           (MAKE-SC (CONCATENATE 'STRING "\\`.*?\\(" REGEXP "\\).*?\\'"))))
-         (DEC-TREE (PJB-RE-DECORATE-TREE SYN-TREE STRING))
-         (GROUPS  (PJB-RE-COLLECT-GROUPS DEC-TREE)) )
-    (PJB-RE-INIT DEC-TREE START)
-    (PJB-RE-MATCH DEC-TREE) 
+  (let* ((syn-tree
+          (pjb-re-parse-whole-regexp
+           (make-sc (concatenate 'string "\\`.*?\\(" regexp "\\).*?\\'"))))
+         (dec-tree (pjb-re-decorate-tree syn-tree string))
+         (groups  (pjb-re-collect-groups dec-tree)) )
+    (pjb-re-init dec-tree start)
+    (pjb-re-match dec-tree) 
     ;; there's nowhere to backtrack at the top level...
-    (VALUES-LIST (MAPCAR (LAMBDA (G)
-                           (LET ((S (PJB-RE-SLOT-BEGIN G))
-                                 (E (PJB-RE-SLOT-END G)) )
-                             (IF (AND S E)
-                                 (MAKE-MATCH :START S :END E)
-                                 (MAKE-MATCH :START NIL :END NIL))))
-                         GROUPS))))
+    (values-list (mapcar (lambda (g)
+                           (let ((s (pjb-re-slot-begin g))
+                                 (e (pjb-re-slot-end g)) )
+                             (if (and s e)
+                                 (make-match :start s :end e)
+                                 (make-match :start nil :end nil))))
+                         groups))))
 
 ;;;; THE END ;;;;

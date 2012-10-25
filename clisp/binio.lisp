@@ -15,29 +15,27 @@
 ;;;;    2005-09-03 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal Bourguignon 2005 - 2005
+;;;;    Copyright Pascal Bourguignon 2005 - 2012
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
-(defPACKAGE "COM.INFORMATIMAGO.CLISP.BINIO"
+(defpackage "COM.INFORMATIMAGO.CLISP.BINIO"
   ;;(:NICKNAMES "BINIO")
-  (:DOCUMENTATION "
+  (:documentation "
    This package exports clisp specific, binary I/O functions, including:
    - reading and writing encoded text from/to binary streams.
    - reading and writing byte from/to text streams.
@@ -50,12 +48,12 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ECMA048")
-  (:SHADOW
+  (:shadow
    "READ-BYTE"  "WRITE-BYTE" "PEEK-CHAR" "READ-CHAR" "READ-CHAR-NO-HANG"
    "TERPRI" "UNREAD-CHAR" "WRITE-CHAR" "READ-LINE" "WRITE-STRING"
    "READ-SEQUENCE" "WRITE-SEQUENCE" "LISTEN"  "Y-OR-N-P" "YES-OR-NO-P"
    "FORMAT")
-  (:EXPORT
+  (:export
    "READ-BYTE"  "WRITE-BYTE" "PEEK-CHAR" "READ-CHAR" "READ-CHAR-NO-HANG"
    "TERPRI" "UNREAD-CHAR" "WRITE-CHAR" "READ-LINE" "WRITE-STRING"
    "READ-SEQUENCE" "WRITE-SEQUENCE" "LISTEN"  "Y-OR-N-P" "YES-OR-NO-P"
@@ -81,7 +79,7 @@
 
 
 (defun eoln-bytes (stream)
-(ecase (EXT:ENCODING-LINE-TERMINATOR
+(ecase (ext:encoding-line-terminator
         (stream-external-format stream))
   (:unix #.(vector lf))
   (:mac  #.(vector cr))
@@ -93,8 +91,8 @@
 (defun listen (&optional (stream *input-stream*))
   ;; TODO: write a better version comparison function
 #+#.(cl:when (cl:string<=
-              (cl:LISP-IMPLEMENTATION-VERSION)  "2.35"
-              :end1 (cl:min (cl:length (cl:LISP-IMPLEMENTATION-VERSION)) 4))
+              (cl:lisp-implementation-version)  "2.35"
+              :end1 (cl:min (cl:length (cl:lisp-implementation-version)) 4))
       :clisp)
 (if (socket:socketp stream)
     (case (socket:socket-status stream 0)
@@ -102,8 +100,8 @@
       (otherwise    nil))
     (common-lisp:listen stream))
 #-#.(cl:when (cl:string<=
-              (cl:LISP-IMPLEMENTATION-VERSION)  "2.35"
-              :end1 (cl:min (cl:length (cl:LISP-IMPLEMENTATION-VERSION)) 4))
+              (cl:lisp-implementation-version)  "2.35"
+              :end1 (cl:min (cl:length (cl:lisp-implementation-version)) 4))
       :clisp)
 (common-lisp:listen stream))
 
@@ -175,12 +173,12 @@
 
 (defun peek-char (&optional (peek-type nil) (input-stream *standard-input*)
                   (eof-error-p t) (eof-value nil) (recursive-p nil))
-(if (subtypep (stream-element-type stream) 'character)
-    (common-lisp:peek-char peek-type input-stream
-                           eof-error-p eof-value recursive-p)
-    (or (get-peek-byte stream)
-        (progn
-          )))
+  (if (subtypep (stream-element-type stream) 'character)
+      (common-lisp:peek-char peek-type input-stream
+                             eof-error-p eof-value recursive-p)
+      (or (get-peek-byte stream)
+          (progn
+            ))))
 
 (defun read-char ()
   )
@@ -235,7 +233,7 @@
 
         )))
 
-(DEFUN READ-LINE (&optional (input-stream *standard-input*) (eof-error-p t)
+(defun read-line (&optional (input-stream *standard-input*) (eof-error-p t)
                   (eof-value nil) (recursive-p nil))
   "
 NEWLINE:  nil   <=> accepts any CR, LF, or CRLF as a new-line.
@@ -253,15 +251,15 @@ NEWLINE:  nil   <=> accepts any CR, LF, or CRLF as a new-line.
                (cond
                  ((and missing-newline-p eof-error-p)
                   (error (make-condition
-                          'SYSTEM::SIMPLE-END-OF-FILE
+                          'system::simple-end-of-file
                           :stream input-stream
                           :format-control "~S: input stream ~S has reached its end"
-                          :format-ARGUMENTS (list 'READ input-stream))))
+                          :format-arguments (list 'read input-stream))))
                  ((and missing-newline-p (zerop (length buffer)))
                   (values eof-value missing-newline-p))
                  (t
                   (values (ext:convert-string-from-bytes
-                           buffer custom:*DEFAULT-FILE-ENCODING*)
+                           buffer custom:*default-file-encoding*)
                           missing-newline-p)))))
         (loop with buffer = (make-array '(4094) :element-type '(unsigned-byte 8)
                                         :initial-element 0
@@ -318,7 +316,7 @@ NEWLINE:  nil   <=> accepts any CR, LF, or CRLF as a new-line.
 (defun write-line (string &optional (output-stream *standard-output*)
                    &key (start 0) (end nil))
   )
-v
+
 
 (defun y-or-n-p (&optional control &rest arguments)
   )
@@ -342,7 +340,7 @@ v
   )
        
 
-(DEFUN FORMAT (dest ctrl &rest args)
+(defun format (dest ctrl &rest args)
   (when (eq t dest)
     (setf dest *standard-output*))
   (if (or (null dest)
@@ -357,7 +355,7 @@ v
 
 
 
-(IN-PACKAGE "COMMON-LISP-USER")
+(in-package "COMMON-LISP-USER")
 
 (setf custom:*default-file-encoding* (ext:make-encoding
                                       :charset charset:iso-8859-1
@@ -382,16 +380,16 @@ v
 
 (defparameter +ascii+
   #(
-    NUL SOH STX ETX EOT ENQ ACK BEL BS TAB LF VT FF CR SO SI 
-    DLE DC1 DC2 DC3 DC4 NAK SYN ETB CAN EM SUB ESC FS GS RS US 
-    SP nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil 
+    nul soh stx etx eot enq ack bel bs tab lf vt ff cr so si 
+    dle dc1 dc2 dc3 dc4 nak syn etb can em sub esc fs gs rs us 
+    sp nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil 
     nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil 
-    nil NIL NIL NIL NIL NIL NIL NIL NIL nil NIL NIL NIL NIL NIL NIL 
-    NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL nil nil nil nil nil 
     nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil 
-    nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil DEL 
-    PAD HOP BPH NBH IND NEL SSA ESA HTS HTJ VTS PLD PLU RI SS2 SS3 
-    DCS PU1 PU2 STS CCH MW SPA EPA SOS SGCI SCI CSI ST OSC PM APC))
+    nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil 
+    nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil 
+    nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil del 
+    pad hop bph nbh ind nel ssa esa hts htj vts pld plu ri ss2 ss3 
+    dcs pu1 pu2 sts cch mw spa epa sos sgci sci csi st osc pm apc))
 
 (defun show-all (string &optional (out t))
   (loop for ch across string

@@ -15,51 +15,49 @@
 ;;;;    2003-06-05 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal Bourguignon 2003 - 2005.
+;;;;    Copyright Pascal Bourguignon 2003 - 2012
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
-(LOAD "CCLAN:ASDF;ASDF.LISP")
-(LOAD "CCLAN:CCLAN-GET;PACKAGE.LISP")
-(LOAD "CCLAN:CCLAN-GET;CCLAN-GET.ASD")
-(handler-case (ASDF:OPERATE 'ASDF:load-OP :CCLAN-GET)
-  (error ()  (ASDF:OPERATE 'ASDF:compile-OP :CCLAN-GET)))
+(load "CCLAN:ASDF;ASDF.LISP")
+(load "CCLAN:CCLAN-GET;PACKAGE.LISP")
+(load "CCLAN:CCLAN-GET;CCLAN-GET.ASD")
+(handler-case (asdf:operate 'asdf:load-op :cclan-get)
+  (error ()  (asdf:operate 'asdf:compile-op :cclan-get)))
 
 (in-package "COM.INFORMATIMAGO.PJB")
 
-(defparameter *original-asdf-registry* ASDF:*CENTRAL-REGISTRY*)
+(defparameter *original-asdf-registry* asdf:*central-registry*)
 
-(SETF CCLAN-GET::*CCLAN-TARBALL-DIRECTORY* "SHARE-LISP:CCLAN;TARBALL;"
-      CCLAN-GET::*CCLAN-SOURCE-DIRECTORY*  "SHARE-LISP:CCLAN;SOURCE;"
-      CCLAN-GET::*CCLAN-ASDF-REGISTRY*     "SHARE-LISP:CCLAN;REGISTRY;")
+(setf cclan-get::*cclan-tarball-directory* "SHARE-LISP:CCLAN;TARBALL;"
+      cclan-get::*cclan-source-directory*  "SHARE-LISP:CCLAN;SOURCE;"
+      cclan-get::*cclan-asdf-registry*     "SHARE-LISP:CCLAN;REGISTRY;")
 
 (defun asdf-rescan-packages ()
   (format *trace-output* "~&;; Scanning ASDF packages...~%")
   (prog1
-      (SORT 
-       (DELETE-DUPLICATES 
-        (MAPCAR
-         (LAMBDA (P) (MAKE-PATHNAME :NAME NIL :TYPE NIL :VERSION NIL :DEFAULTS P))
-         (DIRECTORY "PACKAGES:**;*.ASD")) 
+      (sort 
+       (delete-duplicates 
+        (mapcar
+         (lambda (p) (make-pathname :name nil :type nil :version nil :defaults p))
+         (directory "PACKAGES:**;*.ASD")) 
         :test (function equal))
-       (LAMBDA (A B) (if (= (length a) (length b))
+       (lambda (a b) (if (= (length a) (length b))
                   (string< a b)
                   (< (length a) (length b))))
        :key (function namestring))
@@ -67,12 +65,12 @@
 
 
 (defun update-asdf-registry ()
-  (setf ASDF:*CENTRAL-REGISTRY*
+  (setf asdf:*central-registry*
         (nconc (asdf-rescan-packages)
-                (list CCLAN-GET::*CCLAN-ASDF-REGISTRY*)
+                (list cclan-get::*cclan-asdf-registry*)
                 *original-asdf-registry*)))
 
-(EXPORT 'UPDATE-ASDF-REGISTRY)
+(export 'update-asdf-registry)
 (update-asdf-registry)
 
 (in-package "COMMON-LISP-USER")

@@ -16,24 +16,22 @@
 ;;;;    2004-10-10 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2012
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -60,14 +58,38 @@
    "SCANNER-ERROR-FORMAT-CONTROL" "SCANNER-ERROR-FORMAT-ARGUMENTS"
    "SCANNER-ERROR-INVALID-CHARACTER"
    ;; SCANNER methods:
-   "SKIP-SPACES" "SCAN-NEXT-TOKEN")
+   "SKIP-SPACES" "SCAN-NEXT-TOKEN"
+   ;; PEEK-STREAM methods specialized on SCANNER:
+   "NEXTCHAR" "UNGETCHAR" "GETCHAR" "READLINE"
+   ;; Internal
+   "CHAR-NAME-SUPPORTED-P")
   (:documentation
-   "An abstract scanner class.
+   "
+An abstract scanner class.
+
 A method to the SCAN-NEXT-TOKEN generic function needs to be provided.
 
-Copyright Pascal J. Bourguignon 2004 - 2012
-This package is provided under the GNU General Public License.
-See the source file for details."))
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2004 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.PARSER.SCANNER")
 
 
@@ -109,12 +131,13 @@ See the source file for details."))
                :type     string)
    (column     :accessor token-column
                :initarg :column
-               :initform 0
-               :type (integer 0))
+               :initform 1
+               :type (integer 1))
    (line       :accessor token-line
                :initarg :line
-               :initform 0
-               :type (integer 0))))
+               :initform 1
+               :type (integer 0)))
+  (:documentation "A syntactic element."))
 
 
 
@@ -124,16 +147,48 @@ See the source file for details."))
 ;;----------------------------------------------------------------------
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defun char-supported-p (name)
+  (defun char-name-supported-p (name)
      (ignore-errors (read-from-string (format nil "#\\~A" name)))))
 
 
 (defvar *spaces*
   (let ((spaces '()))
     (dolist (name '("Page" "Linefeed" "Return" "Tab" "Newline" "Space"))
-      (let ((ch (char-supported-p name)))
+      (let ((ch (char-name-supported-p name)))
         (when ch (push ch spaces))))
     (coerce spaces 'string)))
+
+
+
+;; Some tools can't deal with #+#.(...) well, so we go thru *feature*
+;; instead.
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+
+  ;; Semi-standard character names:
+  
+  (when (let ((ch (char-name-supported-p "Linefeed")))
+          (and ch (char/= ch #\Newline)))
+    (pushnew :linefeed *features*))
+
+  (when  (char-name-supported-p "Page")
+    (pushnew :page *features*))
+
+  (when  (char-name-supported-p "Backspace")
+    (pushnew :backspace *features*))
+
+  (when  (char-name-supported-p "Tab")
+    (pushnew :tab *features*))
+
+  ;; Non-standard character names:
+  
+  (when  (char-name-supported-p "Bell")
+    (pushnew :bell *features*))
+
+  (when  (char-name-supported-p "Vt")
+    (pushnew :vt *features*))
+  
+  );;eval-when
 
 
 
@@ -141,38 +196,76 @@ See the source file for details."))
 ;; they can change in the scanner object between the condition
 ;; creation and its handling.
 
+(defgeneric scanner-error-line (error)
+  (:documentation "The line on which the scanner error was detected."))
+(defgeneric scanner-error-column (error)
+  (:documentation "The column on which the scanner error was detected."))
+(defgeneric scanner-error-state (error)
+  (:documentation "The scanner state when error was detected."))
+(defgeneric scanner-error-current-token (error)
+  (:documentation "The scanner token where error was detected."))
+(defgeneric scanner-error-scanner (error)
+  (:documentation "The scanner that detected the error."))
+(defgeneric scanner-error-format-control (error)
+  (:documentation "The error message format control string."))
+(defgeneric scanner-error-format-arguments (error)
+  (:documentation "The error message format control arguments."))
+(defgeneric scanner-error-invalid-character (error)
+
+  (:documentation "The invalid character that made the scanner error."))
+
 (define-condition scanner-error (simple-error)
-  ((line             :initarg :line             :initform 1   :reader scanner-error-line)
-   (column           :initarg :column           :initform 0   :reader scanner-error-column)
+  ((line             :initarg :line             :initform 1   :reader scanner-error-line
+                     :documentation "The number of the line. First line is line number 1.")
+   (column           :initarg :column           :initform 1   :reader scanner-error-column
+                     :documentation "The number of the column.  First column is column number 1.")
    (state            :initarg :state            :initform 0   :reader scanner-error-state)
    (current-token    :initarg :current-token    :initform nil :reader scanner-error-current-token)
    (scanner          :initarg :scanner                        :reader scanner-error-scanner)
    (format-control   :initarg :format-control   :initform ""  :reader scanner-error-format-control)
-   (format-arguments :initarg :format-arguments :initform '() :reader scanner-error-format-arguments)))
+   (format-arguments :initarg :format-arguments :initform '() :reader scanner-error-format-arguments))
+  (:documentation "A scanner error."))
 
 
 (define-condition scanner-error-invalid-character (scanner-error)
-  ((invalid-character :initarg :invalid-character :initform nil :reader scanner-error-invalid-character)))
+  ((invalid-character :initarg :invalid-character :initform nil :reader scanner-error-invalid-character))
+  (:documentation "An invalid character scanner error."))
 
 
+(defgeneric scanner-source (scanner)
+  (:documentation "The source can be a PEEK-STREAM, a STREAM, or a STRING."))
+(defgeneric scanner-line (scanner)
+  (:documentation "The number of the current line."))
+(defgeneric scanner-column (scanner)
+  (:documentation "The number of the current column."))
+(defgeneric scanner-state (scanner)
+  (:documentation "The state of the scanner."))
+(defgeneric scanner-spaces (scanner)
+  (:documentation "A string containing the characters considered space by SKIP-SPACES."))
+(defgeneric scanner-tab-width (scanner)
+  (:documentation "TAB aligns to column number modulo TAB-WIDTH."))
+(defgeneric scanner-current-token (scanner)
+  (:documentation "The last token read."))
 
 
 (defclass scanner ()
   ((source        :initarg :source
-                  :accessor scanner-source
+                  :reader scanner-source
                   :documentation "The source can be a PEEK-STREAM, a STREAM, or a STRING.")
    (stream        :type peek-stream
-                  :documentation "The source is wrapped into this PEEK-STREAM.")
+                  :reader scanner-stream
+                  :documentation "The source is wrapped into this PEEK-STREAM.
+Subclasses may use scanner-stream to read from the source.")
    (line          :initarg :line
                   :accessor scanner-line
-                  :type (integer 0)
-                  :initform 0
-                  :documentation "The number of the current line.")
+                  :type integer
+                  :initform 1
+                  :documentation "The number of the current line. First line is line number 1.")
    (column        :initarg :column
                   :accessor scanner-column
-                  :type (integer 0)
-                  :initform 0
-                  :documentation "The number of the current column.")
+                  :type integer
+                  :initform 1
+                  :documentation "The number of the current column. First column is column number 1.")
    (state         :initarg :state
                   :accessor scanner-state
                   :initform nil
@@ -194,39 +287,48 @@ See the source file for details."))
 
 
 
+(defgeneric increment-column-to-next-tab-stop (scanner)
+  (:documentation "
+DO:             Increments the scanner-column to the next tab-stop.
+RETURN:         SCANNER
+")
+  (:method ((scanner scanner))
+    (let ((tab-width (scanner-tab-width scanner)))
+      (setf (scanner-column scanner)
+            ;; Assuming column starts from 1.
+            (1+ (* (ceiling (scanner-column scanner) tab-width)
+                   tab-width))
+            ;; #+column-base=0 (* tab-width (ceiling (scanner-column scanner) tab-width))
+            ))
+    scanner))
+
+
+(defgeneric skip-spaces (scanner)
+  (:documentation   "
+DO: Skips over the spaces in the input stream. Updates line and column slots.
+RETURN: line; column
+"))
+
 (defmethod skip-spaces ((scanner scanner))
   "
 DO: Skips over the spaces in the input stream. Updates line and column slots.
 RETURN: line; column
 "
   (loop
-    :with input     = (slot-value scanner 'stream)
-    :with tab-width = (scanner-tab-width scanner)
-    :with line      = (scanner-line scanner)
-    :with column    = (scanner-column scanner)
-    :for ch = (nextchar input)
+    :for ch = (getchar scanner)
     :while ch
     :do (case ch
-          ((#\Newline
-            #+#.(cl:if (cl:let ((com.informatimago.common-lisp.parser.scanner::ch
-                                 (com.informatimago.common-lisp.parser.scanner::char-supported-p "Linefeed")))
-                         (cl:and com.informatimago.common-lisp.parser.scanner::ch
-                              (cl:char/= com.informatimago.common-lisp.parser.scanner::ch #\newline))) '(:and) '(:or)) #\linefeed
-            #+#.(cl:if (com.informatimago.common-lisp.parser.scanner::char-supported-p "Page")     '(:and) '(:or)) #\page)
-           (incf line)
-           (getchar input))
-          ((#\space)
-           (incf column)
-           (getchar input))
-          ((nil
-            #+#.(cl:if (com.informatimago.common-lisp.parser.scanner::char-supported-p "Tab") '(:and) '(:of)) #\tab)
-           (setf column (* tab-width (ceiling column tab-width)))
-           (getchar input))
-          (otherwise (loop-finish)))
+          ((#\Space
+            #\Newline
+            #+linefeed #\Linefeed
+            #+page     #\Page
+            #+tab      #\Tab))
+          (otherwise
+           (loop-finish)))
     :finally (progn
-               (setf (scanner-line   scanner) line
-                     (scanner-column scanner) column)
-               (return (values line column)))))
+               (ungetchar scanner ch)
+               (return (values (scanner-line   scanner)
+                               (scanner-column scanner))))))
 
 
 
@@ -238,12 +340,23 @@ RETURN:       (scanner-current-token scanner).
 "))
 
 
+(defmethod (setf scanner-source) (new-source (scanner scanner))
+  (setf (slot-value scanner 'stream)
+        (etypecase (setf (slot-value scanner 'source) new-source)
+          (peek-stream (slot-value scanner 'source))
+          (stream      (make-instance 'peek-stream
+                         :spaces (scanner-spaces scanner)
+                         :stream (slot-value scanner 'source)))
+          (string      (make-instance 'peek-stream
+                         :spaces (scanner-spaces scanner)
+                         :stream (make-string-input-stream
+                                  (slot-value scanner 'source))))))
+  (slot-value scanner 'source))
+
+
 (defmethod initialize-instance :after ((scanner scanner) &rest args &key &allow-other-keys)
   (declare (ignore args))
-  (etypecase (scanner-source scanner)
-    (peek-stream (setf (slot-value scanner 'stream) (scanner-source scanner)))
-    (stream      (setf (slot-value scanner 'stream) (make-instance 'peek-stream :stream (scanner-source scanner))))
-    (string      (setf (slot-value scanner 'stream) (make-instance 'peek-stream :stream (make-string-input-stream (scanner-source scanner)))))))
+  (setf (scanner-source scanner) (slot-value scanner 'source)))
 
 
 (defmethod print-object ((self scanner) out)
@@ -255,5 +368,61 @@ RETURN:       (scanner-current-token scanner).
                   :source        (scanner-source        self))))
   self)
 
+
+
+;;; We implement the generic functions of peek-stream to track columns
+;;; and lines.
+
+
+(defmethod nextchar ((scanner scanner) &optional (peek-type nil))
+  ;; No impact on line/column.
+  (nextchar (scanner-stream scanner) peek-type))
+
+
+(defmethod getchar ((scanner scanner))
+  (let ((ch (getchar (scanner-stream scanner))))
+    (case ch
+      ((#\Newline)
+       (incf (scanner-line scanner))
+       (setf (scanner-column scanner) 1))
+      #+tab
+      ((#\Tab)
+       (increment-to-next-tab-stop scanner))
+      (otherwise
+       ;; including #\Return #+linefeed #\Linefeed #+page #\Page
+       (incf (scanner-column scanner))))
+    ch))
+
+(defmethod ungetchar ((scanner scanner) (ch null))
+  ch)
+
+(defmethod ungetchar ((scanner scanner) (ch character))
+  (let ((ch (ungetchar (scanner-stream scanner) ch)))
+    (case ch
+      ((#\Newline)
+       ;; We don't know the length of the last line.
+       (decf (scanner-line scanner))
+       (setf (scanner-column scanner) 0))
+      #+tab
+      ((#\Tab)
+       ;; We don't know how many characters there was in the last tab-width.
+       (setf (scanner-column scanner)  (truncate (1- (scanner-column scanner))
+                                                 (scanner-tab-stop scanner))))
+      (otherwise
+       ;; including #\Return #+linefeed #\Linefeed #+page #\Page
+       (decf (scanner-column scanner))))
+    ch))
+
+
+(defmethod readline ((scanner scanner))
+  #-(and)
+  (with-output-to-string (out)
+    (loop
+      :for ch = (getchar scanner)
+      :until (find ch #(#\Newline #\Return #+linefeed #\Linefeed #+page #\Page))
+      :do (write-char ch out)))
+  (prog1 (readline (scanner-stream scanner))
+    (incf (scanner-line scanner))
+    (setf (scanner-column scanner) 1)))
 
 ;;;; THE END ;;;;

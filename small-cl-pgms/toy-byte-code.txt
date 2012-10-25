@@ -1,0 +1,716 @@
+Somebody asked:
+
+I have this language.  
+
+    pgm          ::= stmt* .
+    stmt         ::= block-stmt | if-stmt | while-stmt | assign-expr .
+    block-stmt   ::= '{' stmt* '}' .
+    if-stmt      ::= 'if' logic-expr 'then' stmt .
+    while-stmt   ::= 'while' logic-expr 'do' stmt .
+    assign-expr  ::= identifier '=' logic-expr ';' .
+    logic-expr   ::= compar-expr { logic-op compar-expr } .
+    compare-expr ::= sum-expr { compare-op sum-expr } .
+    sump-expr    ::= prod-expr { sum-op prod-expr } .
+    prod-expr    ::= simple-expr { prod-op simple-expr } .
+    simple-expr  ::= identifier | literal | '(' logic-expr ')' | assign-expr .
+    identifier   := /[A-Za-z][A-Za-z0-9]*/ .
+    literal      := /[-+]?[0-9]+(\.[0-9]+)?/ .
+
+How do I write a byte-code compiler for it?
+
+----------------------------------------
+
+
+Any Turing complete language can be translated to any Turing complete
+language.
+
+So assuming your small toy language is Turing complete, you can
+compile it to any bytecode you want, as long as it's Turing complete
+too.
+
+You don't need much for a language to be Turing complete.  On a
+processor, you only need a single instruction:
+http://en.wikipedia.org/wiki/One_instruction_set_computer
+
+I have a little conjecture that says that given the expressivity E1 of
+language L1, the expressivity E2 of language L2, and the complexity
+C12 of the compiler C(E1,E2), the following relationship exists:
+
+      L1=C12*L2
+
+That is, if you are compiling a language very expressive into a
+language not expressive, then you need a complex compiler.  And
+vice-versa.
+
+That means that if you're free to choose the language L2 (designing
+your own byte code), then you can minimize compiler complexity by
+choosing L2 to be L1, or a more powerful (more expressive) language.
+
+On the other hand, if you know how to build complex compilers, you can
+design a very simple (unexpressive) language L2 (such as a One
+Instruction Set Computer).
+
+
+What's missing in your specification is the semantics of your
+language.   The syntax of a language is the less important thing.  For
+the sake of the discussion, I will assume you mean semantics similar
+to that of the following interpreter.
+
+
+Note: all the code following is written as toy code; real interpreters,
+virtual machines and compilers would be structured differently, having
+to deal with more cases and more details, notably error handling etc.
+Also, source code at:
+https://gitorious.org/com-informatimago/com-informatimago/blobs/master/small-cl-pgms/toy-byte-code.lisp
+
+
+    (defstruct tl-env
+      (variables (make-hash-table)))
+
+    (defun tl-var (env identifier)
+      (gethash identifier (tl-env-variables env) 0))
+
+    (defun (setf tl-var) (new-value env identifier)
+      (setf (gethash identifier (tl-env-variables env)) new-value))
+
+
+    (defun tl-eval (env &rest stmt*)
+      (dolist (stmt stmt*)
+        (ecase (first stmt)
+          ((block) (apply (function tl-eval) env (rest stmt)))
+          ((if)    (if (tl-expr-assign env (second stmt))
+                       (tl-eval env (third stmt))))
+          ((while) (loop :while (tl-expr-assign env (second stmt))
+                     :do (tl-eval env (third stmt))))
+          ((assign) (tl-expr-assign env stmt)))))
+
+    (defun tl-expr-assign (env expr-assign)
+      (if (atom expr-assign)
+          (tl-expr env expr-assign)
+          (case (first expr-assign)
+            ((assign) (setf (tl-var env (second expr-assign))
+                            (tl-expr-assign env (third expr-assign))))
+            (otherwise (tl-expr env expr-assign)))))
+
+    (defparameter *tl-ops*
+      (list (list '&& (lambda (&rest args) (every (function identity) args)))
+            (list '|| (lambda (&rest args) (some  (function identity) args)))
+            (list '<  (function <))
+            (list '>  (function >))
+            (list '== (function =))
+            (list '<> (function /=))
+            (list '+  (function +))
+            (list '-  (function -))
+            (list '*  (function *))
+            (list '/  (function /))))
+
+    (defun tl-expr (env expr)
+      (cond
+        ((symbolp expr) (tl-var env expr))
+        ((numberp expr) expr)
+        ((atom expr) (error "Invalid atom ~S" expr))
+        (t (let ((entry (assoc (first expr) *tl-ops*)))
+             (if entry
+                 (apply (second entry) (mapcar (lambda (expr) (tl-expr env expr)) (rest expr)))
+                 (error "Invalid operation ~S" (first expr)))))))
+
+
+This allows us to write programs in your language:
+
+    (tl-expr-assign (make-tl-env) '(assign i (* 42 42)))
+    --> 1764
+
+    (let ((env  (make-tl-env)))
+      (tl-eval env
+                     '(block
+                       (assign i 42)
+                       (assign j 33)
+                       (while (<> i j)
+                         (block
+                             (if (< i j)
+                                 (assign j (- j i)))
+                           (if (< j i)
+                               (assign i (- i j)))))))
+      (tl-var env 'i))
+    --> 3
+
+
+    (defun hash-table-to-alist (ht)
+      (let ((result '()))
+        (maphash (lambda (key value) 
+                   (setq result (acons key value result)))
+                 ht)
+        result))
+
+
+    (let ((env (make-tl-env)))
+      (tl-eval env
+                     '(block
+                       (assign i (* 42 42))
+                       (if (< i 0) (assign j -1))
+                       (if (> i 0) (assign j +1))
+                       (assign k (- i 12))
+                       (while (< 0 i)
+                         (assign i (- i 12)))))
+      (hash-table-to-alist (tl-env-variables env)))
+    --> ((k . 1752) (i . 0) (j . 1))
+
+
+
+But one problem of specifying the semantics with such an interpreter,
+is that it gives too much a specification.  For example, Common Lisp
+uses a deterministic order evaluation of the arguments; your language
+may want to have a semantics where the order of evaluation of the
+arguments is not determined (which leaves more freedom to the
+compiler, which makes it simplier).  We will assume that the order of
+evaluation of the arguments is not specified in the semantics of the
+language, so that we can compile them in any order (but it's more
+agreable for a programmer to work with a deterministic argument
+evaluation order).
+
+Since there's no I/O primitives, and since there are statements that
+are distinguished from expressions (a very bad design error), we have
+to dump the environment after evaluating statements to know what
+happened.
+
+
+Now if we want to design another language that could run those kinds
+of programs, to be able to convert easily from your language to this
+new language we notice that we'll need:
+
+* a way to create variables, to read their value, to store their
+  value, in a global environment.
+
+* a way to execute a sequence of instructions.
+
+* a way to jump around according to the result of some instruction.
+
+* a way to compute those operations: and or less-than greater-than
+  equal not-equal add subtract multipl y and divide.
+
+* it's not specified what data types are available (the  interpreter
+  above, written in Common Lisp, can handle integers, floating points,
+  rationals, complexes).  Your syntax seems to allow only decimal
+  numbers literals, but the semantics of your language could include
+  rationals or other numbers:  1 / 3 --> 1/3
+
+Since computing expressions seems to be an important part of your
+language, perhaps a stack machine would be a nice target language.
+
+The term "byte-code" only qualifies the format of the target language,
+but not its semantics, not the complexity and sophistication of the
+target processor.  We could just take the source of your language,
+convert it into ASCII bytes, and call that a byte code, to be run by
+the target language (which would be the same as the source language,
+therefore the complexity of the compiler would be 1).  "byte" is also
+a relatively generic term.  You may or may not exclude "symbolic"
+values. If you allow only numerical values, then do you impose a
+range? Eg. if you say 0-255, then how do you want to proceed with
+literal numbers that are bigger?  How do you encode decimal numbers?
+(You may want an immediate addressing mode, or you can have to store
+them in memory).  In any case, you will need literal addresses, so you
+need a way to encode bigger numbers into small bytes.
+
+Without any constraints, you have a lot of choices to make to design
+your "byte code" language.
+
+
+Here, I will make some choices for you, but you could choose
+completely different a design.
+
+Let's have a machine that has three memories:
+
+* a data memory, where each cell can contain values of any lisp number
+  types, directly addressable.
+
+* a stack memory, where each cell can contain values of any lisp
+  number types, organized as stack.
+
+* a program memory, where each cell can contain one octet 0-255.
+  Instructions are encoded as one octet.  Some instructions may
+  require an immediate address encoded as two octets in big endian
+  order, or an immediate relative address encoded as two octets in big
+  endian order (always positive).
+
+* there's a stack pointer into the stack memory managed by the
+  processor. Some instructions push values on the stack, some pop
+  values from the stack.
+
+* there's an instruction pointer (program counter).
+
+* the processor can execute the following instructions:
+
+
+   0 AND   (push (and (pop stack) (pop stack)) stack)
+   1 OR    (push (or  (pop stack) (pop stack)) stack)
+   2 LT    (push (<   (pop stack) (pop stack)) stack)
+   3 GT    (push (>   (pop stack) (pop stack)) stack)
+   4 EQ    (push (=   (pop stack) (pop stack)) stack)
+   5 NE    (push (/=  (pop stack) (pop stack)) stack)
+
+The result pushed on the stack is not numerical, but boolean values.
+
+
+   6 ADD   (push (+   (pop stack) (pop stack)) stack)
+   7 SUB   (push (-   (pop stack) (pop stack)) stack)
+   8 MUL   (push (*   (pop stack) (pop stack)) stack)
+   9 DIV   (push (/   (pop stack) (pop stack)) stack)
+
+The result pushed on the stack is a number, if the arguments are numbers.
+In case of error (type or arithmetic (division by zero)), the program stops.
+Note:  (load&push i) (load&push j) (sub) (pop&store k) ==  (assign k (- j i))
+
+   10 LOAD&PUSH address   (push (aref data address) stack) 
+   11 POP&STORE address   (setf (aref data address) (pop stack))
+
+
+Branch Forward if False
+
+   12 BFOF relative       (if (not (pop stack))  (incf pc relative))
+
+
+Branch Backward Always:
+
+   13 BBA relative       (decf pc relative)
+
+End:
+
+   14 STOP               stops the machine.
+
+
+The compiler will have to collect all the variables and literal
+numbers and assign them a cell in the data memory.  
+
+
+
+    (eval-when (:compile-toplevel :load-toplevel :execute)
+
+      (defparameter *instructions* #(and or lt gt eq ne add sub mul div
+                                     load&push pop&store bfof bba stop)
+         "Defines a mapping of symbolic instructions to byte code 
+          (as their index in the vector).")
+
+      (defun codop (instruction) (position instruction *instructions*)))
+
+    (defparameter *data-memory-size*    1024)
+    (defparameter *program-memory-size* 8192)
+
+    (deftype octet () '(unsigned-byte 8))
+
+    (defstruct machine
+      (memory  (make-array *data-memory-size*    :element-type 'number :initial-element 0))
+      (stack  '())
+      (program (make-array *program-memory-size* :element-type 'octet :initial-element (codop 'stop)))
+      (pc      0)
+      (stopped t))
+
+    (defun load-program (machine data pgm)
+      (replace (machine-memory  machine) data)
+      (replace (machine-program machine) pgm)
+      (setf (machine-stack   machine) '())
+      (setf (machine-pc      machine) 0)
+      (setf (machine-stopped machine) nil)
+      machine)
+
+
+    (defun machine-step (machine)
+      (unless (machine-stopped machine)
+        (handler-case
+            (symbol-macrolet ((stack   (machine-stack  machine))
+                              (data    (machine-memory machine))
+                              (program (machine-program machine))
+                              (pc      (machine-pc machine)))
+              (flet ((get-iword ()
+                       (let ((hi (aref program pc))
+                             (lo (aref program (incf pc))))
+                         (incf pc)
+                         (dpb hi (byte 8 8) lo))))
+                (let ((code (aref program pc)))
+                  (incf pc)
+                  (ecase code
+                    ((#.(codop 'and)) (push (and (pop stack) (pop stack)) stack))
+                    ((#.(codop 'or))  (push (or  (pop stack) (pop stack)) stack))
+                    ((#.(codop 'lt))  (push (<   (pop stack) (pop stack)) stack))
+                    ((#.(codop 'gt))  (push (>   (pop stack) (pop stack)) stack))
+                    ((#.(codop 'eq))  (push (=   (pop stack) (pop stack)) stack))
+                    ((#.(codop 'ne))  (push (/=  (pop stack) (pop stack)) stack))
+                    ((#.(codop 'add)) (push (+   (pop stack) (pop stack)) stack))
+                    ((#.(codop 'sub)) (push (-   (pop stack) (pop stack)) stack))
+                    ((#.(codop 'mul)) (push (*   (pop stack) (pop stack)) stack))
+                    ((#.(codop 'div)) (push (/   (pop stack) (pop stack)) stack))
+                    ((#.(codop 'load&push))
+                     (let ((address (get-iword)))
+                       (push (aref data address) stack)))
+                    ((#.(codop 'pop&store))
+                     (let ((address (get-iword)))
+                       (setf (aref data address) (pop stack))))
+                    ((#.(codop 'bfof))
+                     (let ((relative (get-iword)))
+                       (if (not (pop stack))
+                           (incf pc relative))))
+                    ((#.(codop 'bba))
+                     (let ((relative (get-iword)))
+                       (decf pc relative)))
+                    ((#.(codop 'stop))
+                     (setf (machine-stopped machine) t))))))
+          (error (err)
+            (format *error-output* "~%~A~%" err)
+            (setf (machine-stopped machine) t)))))
+
+
+    (defun machine-run (machine)
+      (loop
+        :until (machine-stopped machine)
+        :do (machine-step machine)))
+
+
+Now let's write a little assember to test our machine:
+
+    (defun lap* (body)
+      "
+    body is a list of instructions or labels.
+    instructions are: (and) (or) (lt) (gt) (eq) (ne) (add) (sub) (mul) (div) (stop)
+                      (load&push address) (pop&store address)
+                      (loadi&push value) 
+                      (bfof label) (bba label)
+    address is a symbol.
+    value is a literal value.
+    labels are symbols present in the body.
+    loadi&push is translated into a load&push with the address where the value is stored.
+
+    RESULT: a byte-code program vector;
+            a memory vector;
+            a program symbol table;
+            a data symbol table.
+    "
+      (let ((data
+             ;; build the data symbol table.
+             ;; It's a vector with each variable or literal.
+             (coerce
+              (delete-duplicates
+               (mapcar (function second)
+                       (remove-if-not (lambda (instruction)
+                                        (and (listp instruction)
+                                             (member (first instruction)
+                                                     '(load&push pop&store loadi&push))))
+                                      body)))
+              'vector))
+            (program
+             ;; build the program symbol table.
+             ;; It's an a-list mapping the label to the iaddress.
+             (loop
+               :with pc = 0
+               :with table = '()
+               :for instruction :in body
+               :do (if (atom instruction)
+                       (push (cons instruction pc) table)
+                       (case (first instruction)
+                         ((load&push pop&store loadi&push bfof bba) (incf pc 3))
+                         (otherwise (incf pc))))
+               :finally (return table))))
+        (values
+         ;; generate the program byte code:
+         (loop
+           :with code = (make-array (length body) :adjustable t :fill-pointer 0
+                                    :element-type '(unsigned-byte 8))
+           :for instruction :in body
+           :do (unless (atom instruction)
+                 (case (first instruction)
+                   ((loadi&push)
+                    (let ((address (position (second instruction) data)))
+                      (vector-push-extend (codop 'load&push) code)
+                      (vector-push-extend (ldb (byte 8 8) address) code)
+                      (vector-push-extend (ldb (byte 8 0) address) code)))
+                   ((load&push pop&store)
+                    (let ((address (position (second instruction) data)))
+                      (vector-push-extend (codop (first instruction)) code)
+                      (vector-push-extend (ldb (byte 8 8) address) code)
+                      (vector-push-extend (ldb (byte 8 0) address) code)))
+                   ((bfof)
+                    (let ((relative (- (cdr (assoc (second instruction) program))
+                                       (+ (length code) 3))))
+                      (when (minusp relative)
+                        (error "~D: (~S ~S) backward~%~S"
+                               (length code) (first instruction) (second instruction)
+                               program))
+                      (vector-push-extend (codop (first instruction)) code)
+                      (vector-push-extend (ldb (byte 8 8) relative) code)
+                      (vector-push-extend (ldb (byte 8 0) relative) code)))
+                   ((bba)
+                    (let ((relative (- (+ (length code) 3)
+                                       (cdr (assoc (second instruction) program)))))
+                      (when (minusp relative)
+                        (error "~D: (~S ~S) forward~%~S"
+                               (length code) (first instruction) (second instruction)
+                               program))
+                      (vector-push-extend (codop (first instruction)) code)
+                      (vector-push-extend (ldb (byte 8 8) relative) code)
+                      (vector-push-extend (ldb (byte 8 0) relative) code)))
+                   (otherwise
+                    (vector-push-extend (codop (first instruction)) code))))
+           :finally (return code))
+         ;; generate the data vector:
+         (map 'vector (lambda (item) (if (symbolp item) 0 item)) data)
+         ;; program symbol table:
+         program
+         ;; data symbol table:
+         data)))
+
+    (defmacro lap (&body body)
+      `(lap* ',body))
+
+
+So we can write little assembler programs for our machine:
+
+    (lap
+     (loadi&push 42)
+     (pop&store i)
+     (loadi&push 33)
+     (pop&store j)
+     :while
+     (load&push j)
+     (load&push i)
+     (eq)
+     (bfof :end-while)
+     :if-1
+     (load&push j)
+     (load&push i)
+     (lt)
+     (bfof :end-if-1)
+     (load&push i)
+     (load&push j)
+     (sub)
+     (pop&store j)
+     :end-if-1
+     :if-2
+     (load&push i)
+     (load&push j)
+     (lt)
+     (bfof :end-if-2)
+     (load&push j)
+     (load&push i)
+     (sub)
+     (pop&store i)
+     :end-if-2
+     (bba :while)
+     :end-while
+     (stop))
+    --> #(10 0 0 11 0 3 10 0 1 11 0 2 10 0 2 10 0 3 4 12 0 43 10 0 2 10 0 3 2 12 0 10 10 0 3 10 0 2 7 11 0 2 10 0 3 10 0 2 2 12 0 10 10 0 2 10 0 3 7 11 0 3 13 0 53 14)
+        #(42 33 0 0)
+        ((:end-while . 65) (:end-if-2 . 62) (:if-2 . 42) (:end-if-1 . 42) (:if-1 . 22) (:while . 12))
+        #(42 33 j i)
+
+
+And we can run programs:
+
+    (setf *print-length* 20)
+
+    (let ((machine (make-machine)))
+      (multiple-value-bind (program data ptable dtable)
+          (lap
+           (loadi&push 42)
+           (pop&store i)
+           (loadi&push 33)
+           (pop&store j)
+           :while
+           (load&push j)
+           (load&push i)
+           (ne)
+           (bfof :end-while)
+           :if-1
+           (load&push j)
+           (load&push i)
+           (lt)
+           (bfof :end-if-1)
+           (load&push i)
+           (load&push j)
+           (sub)
+           (pop&store j)
+           :end-if-1
+           :if-2
+           (load&push j)
+           (load&push i)
+           (gt)
+           (bfof :end-if-2)
+           (load&push j)
+           (load&push i)
+           (sub)
+           (pop&store i)
+           :end-if-2
+           (bba :while)
+           :end-while
+           (stop))
+        (load-program machine data program)
+        (machine-run machine)
+        machine))
+    --> #S(machine :memory #(42 33 3 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ...)
+                   :stack nil
+                   :program #(10 0 0 11 0 3 10 0 1 11 0 2 10 0 2 10 0 3 5 12 ...)
+                   :pc 66
+                   :stopped t)
+
+(gcd 33 42) --> 3, we indeed get 3 in the i and j cells.
+
+There remains now to write a compiler.
+
+Since we have an assembler that deals with the symbol tables, we can
+defer to it.  Also since we have instructions to implement directly
+each of our primitives, we don't need to deal with a run-time library
+and so on.  So the compiler will be quite simple and direct.
+
+    (defun tl-compile (&rest stmt*)
+      "
+    Compile the program (sequence of stmt) STMT*.
+    return:  the same as LAP*.
+    "
+      (lap* (tl-generate-stmts stmt*)))
+
+
+    (defun tl-generate-stmts (stmts)
+      (mapcan (lambda (stmt)
+                (ecase (first stmt)
+                  ((block) (tl-generate-stmts (rest stmt)))
+                  ((if)    (let ((end-if (gensym "END-IF")))
+                             (append (tl-generate-expr-assign (second stmt))
+                                     `((bfof ,end-if))
+                                     (tl-generate-stmts (list (third stmt)))
+                                     `(,end-if))))
+                  ((while) (let ((begin-while (gensym "BEGIN-WHILE"))
+                                 (end-while   (gensym "END-WHILE")))
+                             (append `(,begin-while)
+                                     (tl-generate-expr-assign (second stmt))
+                                     `((bfof ,end-while))
+                                     (tl-generate-stmts (list (third stmt)))
+                                     `((bba ,begin-while)
+                                       ,end-while))))
+                  ((assign) (tl-generate-expr-assign stmt))))
+              stmts))
+
+    (defun tl-generate-expr-assign (expr-assign)
+      (if (atom expr-assign)
+          (tl-generate-expr expr-assign)
+          (case (first expr-assign)
+            ((assign) (append (tl-generate-expr-assign (third expr-assign))
+                              `((pop&store ,(second expr-assign)))))
+            (otherwise (tl-generate-expr expr-assign)))))
+
+    (defparameter *tl-op-instructions*
+      '((&& . and) (|| . or) (< . lt) (> . gt) (== . eq) (<> . ne)
+        (+ . add) (- . sub) (* . mul) (/ . div)))
+
+    (defun tl-generate-expr (expr)
+      (cond
+        ((symbolp expr) `((load&push ,expr)))
+        ((numberp expr) `((loadi&push ,expr)))
+        ((atom expr) (error "Invalid atom ~S" expr))
+        (t (let ((entry (assoc (first expr) *tl-op-instructions*)))
+             (if entry
+                 (if (and (member (first expr) '(- /))
+                          (< 2 (length (rest expr))))
+                     ;; transforms: (- a b c d) into (- a (+ b c d))
+                     (tl-generate-expr `(,(first expr) ,(second expr)
+                                               (,(ecase (first expr)
+                                                       ((-) +)
+                                                       ((/) *))
+                                                 ,@(cddr expr))))
+                     (append (mapcan (function tl-generate-expr) (reverse (rest expr)))
+                             (make-list (1- (length (rest expr)))
+                                        :initial-element (list (cdr entry)))))
+                 (error "Invalid operation ~S" (first expr)))))))
+
+
+So we can now generate code from your language:
+
+    (tl-generate-stmts
+     '((block
+           (assign i 42)
+         (assign j 33)
+         (while (<> i j)
+           (block
+               (if (< i j)
+                   (assign j (- j i)))
+             (if (< j i)
+                 (assign i (- i j))))))))
+    --> ((loadi&push 42)
+         (pop&store i)
+         (loadi&push 33)
+         (pop&store j)
+         #3=#:begin-while7234
+         (load&push j)
+         (load&push i)
+         (ne)
+         (bfof #4=#:end-while7235)
+         (load&push j)
+         (load&push i)
+         (lt)
+         (bfof #1=#:end-if7236)
+         (load&push i)
+         (load&push j)
+         (sub)
+         (pop&store j)
+         #1#
+         (load&push i)
+         (load&push j)
+         (lt)
+         (bfof #2=#:end-if7237)
+         (load&push j)
+         (load&push i)
+         (sub)
+         (pop&store i)
+         #2#
+         (bba #3#)
+         #4#)
+
+    (tl-compile '(block
+                        (assign i 42)
+                        (assign j 33)
+                        (while (<> i j)
+                          (block
+                              (if (< i j)
+                                  (assign j (- j i)))
+                            (if (< j i)
+                                (assign i (- i j)))))))
+    --> #(10 0 0 11 0 3 10 0 1 11 0 2 10 0 2 10 0 3 5 12 0 43 10 0 2 10 0 3 2 12 0 10 10 0 3 10 0 2 7 11 0 2 10 0 3 10 0 2 2 12 0 10 10 0 2 10 0 3 7 11 0 3 13 0 53)
+        #(42 33 0 0)
+        ((#:end-while7243 . 65) (#:end-if7245 . 62) (#:end-if7244 . 42) (#:begin-while7242 . 12))
+        #(42 33 j i)
+
+
+and compile and run programs:
+
+    (let ((machine (make-machine)))
+      (multiple-value-bind (program data ptable dtable)
+          (tl-compile '(block
+                              (assign i 42)
+                              (assign j 33)
+                              (while (<> i j)
+                                (block
+                                    (if (< i j)
+                                        (assign j (- j i)))
+                                  (if (< j i)
+                                      (assign i (- i j)))))))
+        (load-program machine data program)
+        (machine-run machine)
+        machine))
+    --> #S(machine :memory #(42 33 3 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ...)
+                   :stack nil
+                   :program #(10 0 0 11 0 3 10 0 1 11 0 2 10 0 2 10 0 3 5 12 ...)
+                   :pc 66
+                   :stopped t)
+
+Writing the scanner and parser that will generate syntactic trees such as:
+
+    (block
+      (assign i 42)
+      (assign j 33)
+      (while (<> i j)
+        (block
+            (if (< i j)
+                (assign j (- j i)))
+          (if (< j i)
+              (assign i (- i j))))))
+
+from the specified grammar is left to tools such as lex and yacc (or
+cl-ppcre and cl-yacc).
+
+

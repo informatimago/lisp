@@ -14,31 +14,29 @@
 ;;;;    2004-08-28 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2004 - 2004
+;;;;    Copyright Pascal J. Bourguignon 2004 - 2012
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;***************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.OBSOLETE-OR-INCOMPLEPTE.ISBN"
-  (:USE "COMMON-LISP")
-  (:EXPORT "COMPUTE-ISBN-CHECK")
-  (:DOCUMENTATION
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.OBSOLETE-OR-INCOMPLEPTE.ISBN"
+  (:use "COMMON-LISP")
+  (:export "COMPUTE-ISBN-CHECK")
+  (:documentation
    "
     Compute ISBN check digit.
 
@@ -49,26 +47,26 @@
     as published by the Free Software Foundation; either version
     2 of the License, or (at your option) any later version.
     "))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.OBSOLETE-OR-INCOMPLEPTE.ISBN")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.OBSOLETE-OR-INCOMPLEPTE.ISBN")
 
 
 
-(DEFUN COMPUTE-ISBN-CHECK (ISBN)
-  (WHEN (OR (NOT (STRINGP ISBN))
-            (/= 9 (LENGTH ISBN))
-            (NOT (EVERY (FUNCTION DIGIT-CHAR-P) ISBN)))
-    (ERROR "An ISBN must be a string of 9 digits."))
-  (AREF "0123456789X"
-        (- 11 (MOD (REDUCE (FUNCTION +)
-                           (MAPCAR (FUNCTION *) 
-                                   (MAP 'LIST 
-                                        (LAMBDA (CH) (PARSE-INTEGER (STRING CH)))
-                                        ISBN)
+(defun compute-isbn-check (isbn)
+  (when (or (not (stringp isbn))
+            (/= 9 (length isbn))
+            (not (every (function digit-char-p) isbn)))
+    (error "An ISBN must be a string of 9 digits."))
+  (aref "0123456789X"
+        (- 11 (mod (reduce (function +)
+                           (mapcar (function *) 
+                                   (map 'list 
+                                        (lambda (ch) (parse-integer (string ch)))
+                                        isbn)
                                    '(10 9 8 7 6 5 4 3 2))) 
                    11))));;COMPUTE-ISBN-CHECK
 
 
-(DEFUN TEST ()
-  (ASSERT (CHAR= #\4 (COMPUTE-ISBN-CHECK "052135938"))))
+(defun test ()
+  (assert (char= #\4 (compute-isbn-check "052135938"))))
 
 ;;;; isbn.lisp                        --                     --          ;;;;

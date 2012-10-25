@@ -6,9 +6,7 @@
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    Implements a DICTIONARY API over HASH-TABLE, P-LIST, A-LIST
-;;;;    and an ADAPTATIVE-DICTIONARY class that automatically switch
-;;;;    between HASH-TABLE and A-LIST depending on the number of entries.
+;;;;    See defpackage documentation string.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
@@ -16,24 +14,22 @@
 ;;;;    2010-08-16 <PJB> Created
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2010 - 2010
+;;;;    Copyright Pascal J. Bourguignon 2010 - 2012
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
 
@@ -45,25 +41,47 @@
            "DICTIONARY-MAP" "DICTIONARY-COUNT"
            ;; low-level:
            "DICTIONARY-CLASS" "DICTIONARY-TEST" "DICTIONARY-DATA"
-           "ADAPTATING-DICTIONARY-LIMIT"
-           "TEST" "TEST-DICTIONARY")
+           "ADAPTATING-DICTIONARY-LIMIT")
   (:documentation "
-    GPL
 
-    Copyright Pascal J. Bourguignon 2010 - 2010
+Implements a DICTIONARY API over HASH-TABLE, P-LIST, A-LIST and an
+ADAPTATIVE-DICTIONARY class that automatically switch between
+HASH-TABLE and A-LIST depending on the number of entries.
 
-    Implements a DICTIONARY API over HASH-TABLE, P-LIST, A-LIST
-    and an ADAPTATIVE-DICTIONARY class that automatically switch
-    between HASH-TABLE and A-LIST depending on the number of entries.
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2010 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
 "))
 
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DICTIONARY")
 
 
+(defgeneric dictionary-test (dictionary)
+  (:documentation "RETURN: The test function of the dictionary."))
+
 (defclass dictionary-class ()
   ((test :initarg :test
          :initform (function eql)
-         :reader dictionary-test)))
+         :reader dictionary-test))
+  (:documentation "An abstract Dictionary clas."))
 
 (deftype dictionary () '(or hash-table dictionary-class))
 
@@ -74,14 +92,24 @@ TEST:     Restricted to EQL, EQUAL or EQUALP when type is HASH-TABLE.
 CONTENTS: A p-list containing the initial key value pairs.
 "))
 
-(defgeneric dictionary-set    (dictionary key value))
-(defgeneric dictionary-get    (dictionary key &optional default))
-(defgeneric dictionary-delete (dictionary key))
-(defgeneric dictionary-map    (fun dictionary))
-(defgeneric dictionary-count  (dictionary))
+
+(defgeneric dictionary-set    (dictionary key value)
+  (:documentation "Enter or update the VALUE associated with the KEY into the DICTIONARY."))
+
+(defgeneric dictionary-get    (dictionary key &optional default)
+  (:documentation "RETURN: The value associated with the KEY in the DICTIONARY."))
+
+(defgeneric dictionary-delete (dictionary key)
+  (:documentation "Remove the KEY from the DICTIONARY."))
+
+(defgeneric dictionary-map    (fun dictionary)
+  (:documentation "Call the function FUN on each KEY VALUE association in the DICTIONARY."))
+
+(defgeneric dictionary-count  (dictionary)
+  (:documentation "RETURN: the number of associations in the DICTIONARY."))
 
 (defsetf dictionary-get (dictionary key &optional default) (new-value)
-  (declare (ignore default))
+  (declare (ignorable default))
   `(dictionary-set ,dictionary ,key ,new-value))
 
 
@@ -115,11 +143,14 @@ CONTENTS: A p-list containing the initial key value pairs.
   (hash-table-count dictionary))
 
 
+(defgeneric dictionary-data (dictionary)
+  (:documentation "The data in the dictionary."))
 
 (defclass a-list (dictionary-class)
   ((data :initarg :data
          :initform '()
-         :accessor dictionary-data)))
+         :accessor dictionary-data))
+  (:documentation "A dictionary implemented as an A-list."))
 
 
 (defmethod make-dictionary ((type (eql 'a-list)) &key (test (function eql)) (size 8) (contents '()))
@@ -166,7 +197,8 @@ CONTENTS: A p-list containing the initial key value pairs.
 (defclass p-list (dictionary-class)
   ((data :initarg :data
          :initform '()
-         :accessor dictionary-data)))
+         :accessor dictionary-data))
+  (:documentation "A dictionary implemented as a P-list."))
 
 ;; Note: these are not lisp p-list, which are restricted to symbol keys and therefore eql test.
 
@@ -218,13 +250,19 @@ CONTENTS: A p-list containing the initial key value pairs.
 
 
 
+(defgeneric adaptating-dictionary-limit (dictionary)
+  (:documentation
+   "The number of elements over which the adaptating DICTIONARY
+switches to hash-tables, and below which it switches to A-lists."))
+
 
 (defclass adaptating-dictionary (dictionary-class)
   ((dictionary :initarg :dictionary)
    (limit      :initarg :limit
                :initform 10
                :type (integer 0)
-               :accessor adaptating-dictionary-limit)))
+               :accessor adaptating-dictionary-limit))
+  (:documentation "A dictionary that changes between an A-list implementation and a hash-table implementation depending on the number of entries."))
 
 
 (defmethod adaptating-dictionary-adapt ((dictionary adaptating-dictionary))
@@ -285,7 +323,7 @@ CONTENTS: A p-list containing the initial key value pairs.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun test-dictionary (type)
+(defun test/dictionary (type)
   (let ((d (make-dictionary type
                             :test (function equal)
                             :contents '(a 1
@@ -361,7 +399,7 @@ CONTENTS: A p-list containing the initial key value pairs.
 
 (defun test ()
   "Tests all the kinds of dictionary defined in this package."
-  (print (mapcar (function test-dictionary)
+  (print (mapcar (function test/dictionary)
                  '(hash-table p-list a-list adaptating-dictionary))))
 
 

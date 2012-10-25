@@ -14,35 +14,32 @@
 ;;;;    2003-01-30 <PJB> Creation.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
-;;;;    Copyright Pascal J. Bourguignon 2003 - 2003
-;;;;
-;;;;    This file is part of PJB Clisp Utilities.
-;;;;
-;;;;    This  program is  free software;  you can  redistribute  it and/or
-;;;;    modify it  under the  terms of the  GNU General Public  License as
-;;;;    published by the Free Software Foundation; either version 2 of the
-;;;;    License, or (at your option) any later version.
-;;;;
-;;;;    This program  is distributed in the  hope that it  will be useful,
-;;;;    but  WITHOUT ANY WARRANTY;  without even  the implied  warranty of
-;;;;    MERCHANTABILITY or FITNESS FOR  A PARTICULAR PURPOSE.  See the GNU
-;;;;    General Public License for more details.
-;;;;
-;;;;    You should have received a  copy of the GNU General Public License
-;;;;    along with  this program; see the  file COPYING; if  not, write to
-;;;;    the Free  Software Foundation, Inc.,  59 Temple Place,  Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    AGPL3
+;;;;    
+;;;;    Copyright Pascal J. Bourguignon 2003 - 2012
+;;;;    
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
+;;;;    
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
+;;;;    
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;*****************************************************************************
 
 
-(defPACKAGE "COM.INFORMATIMAGO.CLISP.STRING"
-  (:DOCUMENTATION "This module exports string functions.")
+(defpackage "COM.INFORMATIMAGO.CLISP.STRING"
+  (:documentation "This module exports string functions.")
   (:use "COMMON-LISP"
         "REGEXP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
-  (:EXPORT "SPLIT-STRING" "UNSPLIT-STRING"
+  (:export "SPLIT-STRING" "UNSPLIT-STRING"
            "STRING-MATCH" "STRING-TO-NUMBER"
            "CAPITALIZATION" "REPLACE-REGEXP-IN-STRING"
            "SUBSTRING"))
@@ -53,43 +50,43 @@
 ;; We have our own implementation of SPLIT-STRING using REGEXP,
 ;; specific to CLISP.
 
-(DEFPARAMETER SPLIT-STRING-DEFAULT-SEPARATORS
-  (FORMAT NIL "[ ~C~C~C~C~C]\\+"
-          (CODE-CHAR 9) (CODE-CHAR 10) (CODE-CHAR 11) (CODE-CHAR 12)
-          (CODE-CHAR 13))
+(defparameter split-string-default-separators
+  (format nil "[ ~C~C~C~C~C]\\+"
+          (code-char 9) (code-char 10) (code-char 11) (code-char 12)
+          (code-char 13))
   "The default separators for split-string (HT, LF, VT, FF, CR, SP)")
 
 
-(DEFUN SPLIT-STRING (STRING &OPTIONAL SEPARATORS)
+(defun split-string (string &optional separators)
   "
 NOTE:   This implementation uses he REGEXP package.
 "
-  (UNLESS SEPARATORS (SETQ SEPARATORS SPLIT-STRING-DEFAULT-SEPARATORS))
-  (LET ((RESULT (REGEXP:REGEXP-SPLIT SEPARATORS STRING)))
-    (IF (STRING= "" (CAR RESULT))
-        (SETQ RESULT (CDR RESULT)))
-    (IF (STRING= "" (CAR (LAST RESULT)))
-        (SETQ RESULT (NBUTLAST RESULT)))
-    RESULT))
+  (unless separators (setq separators split-string-default-separators))
+  (let ((result (regexp:regexp-split separators string)))
+    (if (string= "" (car result))
+        (setq result (cdr result)))
+    (if (string= "" (car (last result)))
+        (setq result (nbutlast result)))
+    result))
 
 ;; But we inherit UNSPLIT-STRING from COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING.
 
 
-(DEFUN STRING-MATCH (REGEXP STRING &KEY (START 0) (END NIL)
-                     (CASE-SENSITIVE NIL)
-                     (EXTENDED NIL)
-                     (NEWLINE NIL)
-                     (NOSUB NIL))
+(defun string-match (regexp string &key (start 0) (end nil)
+                     (case-sensitive nil)
+                     (extended nil)
+                     (newline nil)
+                     (nosub nil))
   "An alias for REGEXP:MATCH."
-  (REGEXP:MATCH REGEXP STRING
-                :START START :END END
-                :IGNORE-CASE (NOT CASE-SENSITIVE)
-                :EXTENDED EXTENDED
-                :NEWLINE NEWLINE :NOSUB NOSUB))
+  (regexp:match regexp string
+                :start start :end end
+                :ignore-case (not case-sensitive)
+                :extended extended
+                :newline newline :nosub nosub))
 
 
 
-(DEFVAR *CASE-FOLD-SEARCH* NIL
+(defvar *case-fold-search* nil
   "Whether searches and matches should ignore case.
 Used by: REPLACE-REGEXP-IN-STRING.
 ")
@@ -139,9 +136,9 @@ Used by: REPLACE-REGEXP-IN-STRING.
 ;;;   (( T  NO) SP) --> (NIL SP)
 ;;;    ( T  SP) is impossible.
 
-(DEFPARAMETER +CAPITALIZATION-TRANSITIONS+
-  (MAKE-ARRAY '(2 4 4)
-              :INITIAL-CONTENTS
+(defparameter +capitalization-transitions+
+  (make-array '(2 4 4)
+              :initial-contents
               '((( (0 0 3)
                   (0 1 3 0)
                   (0 2 3)
@@ -177,65 +174,65 @@ Used by: REPLACE-REGEXP-IN-STRING.
 
 
 
-(DEFUN CAPITALIZATION (STRING)
+(defun capitalization (string)
   "
 RETURN:  :LOWER :UPPER :CAPITALIZED or :WHATEVER
 "
-  (LET ((ALL-UPCASE 0)
-        (ALL-LOCASE 1)
-        (ALL-CAPITA 2)
-        (NO-2C-WORD 3)
-        (RESULT     (MAKE-ARRAY '(4) :INITIAL-ELEMENT T))
-        (STATE      (CONS 0 3)) )
-    (MAP NIL (LAMBDA (CH)
-               (LET ((NEW-STATE (AREF +CAPITALIZATION-TRANSITIONS+
-                                      (CAR STATE) (CDR STATE)
-                                      (COND 
-                                        ((NOT (ALPHA-CHAR-P CH)) 3)
-                                        ((UPPER-CASE-P CH)       0)
-                                        ((LOWER-CASE-P CH)       1)
-                                        (T                       2)))))
-                 (SETF (CAR STATE) (POP NEW-STATE))
-                 (SETF (CDR STATE) (POP NEW-STATE))
-                 (MAPC (LAMBDA (SYM) (SETF (AREF RESULT SYM) NIL)) NEW-STATE)
+  (let ((all-upcase 0)
+        (all-locase 1)
+        (all-capita 2)
+        (no-2c-word 3)
+        (result     (make-array '(4) :initial-element t))
+        (state      (cons 0 3)) )
+    (map nil (lambda (ch)
+               (let ((new-state (aref +capitalization-transitions+
+                                      (car state) (cdr state)
+                                      (cond 
+                                        ((not (alpha-char-p ch)) 3)
+                                        ((upper-case-p ch)       0)
+                                        ((lower-case-p ch)       1)
+                                        (t                       2)))))
+                 (setf (car state) (pop new-state))
+                 (setf (cdr state) (pop new-state))
+                 (mapc (lambda (sym) (setf (aref result sym) nil)) new-state)
                  ))
-         STRING)
-    (COND ((AREF RESULT NO-2C-WORD) :WHATEVER)
-          ((AREF RESULT ALL-UPCASE) :UPPER)
-          ((AREF RESULT ALL-LOCASE) :LOWER)
-          ((AREF RESULT ALL-CAPITA) :CAPITALIZED)
-          (T                        :WHATEVER))))
+         string)
+    (cond ((aref result no-2c-word) :whatever)
+          ((aref result all-upcase) :upper)
+          ((aref result all-locase) :lower)
+          ((aref result all-capita) :capitalized)
+          (t                        :whatever))))
 
 
 
 
 
-(DEFUN EMACS-BUGGED-STRING-CAPITALIZE (STRING)
+(defun emacs-bugged-string-capitalize (string)
   "
 The string-capitalized that emacs implements in its replace-regexp-in-string
 which is not even its capitalize (which is correct)!
 Namely, it seems to  touch only the first character of each word.
 "
-  (DO ((RESULT (COPY-SEQ STRING))
-       (I 0 (1+ I))
-       (SP T)
-       (CH) )
-      ((<= (LENGTH RESULT) I) RESULT)
-    (SETQ CH (CHAR RESULT I))
-    (IF SP
-        (WHEN (ALPHA-CHAR-P CH)
-          (SETF (CHAR RESULT I) (CHAR-UPCASE CH))
-          (SETQ SP NIL))
-        (WHEN (NOT (ALPHANUMERICP CH))
-          (SETQ SP T)))))
+  (do ((result (copy-seq string))
+       (i 0 (1+ i))
+       (sp t)
+       (ch) )
+      ((<= (length result) i) result)
+    (setq ch (char result i))
+    (if sp
+        (when (alpha-char-p ch)
+          (setf (char result i) (char-upcase ch))
+          (setq sp nil))
+        (when (not (alphanumericp ch))
+          (setq sp t)))))
 
 
 
-(DEFUN REPLACE-REGEXP-IN-STRING
-    (REGEXP REP STRING
-     &OPTIONAL (FIXEDCASE NIL) (LITERAL NIL) (SUBEXP 0) (START 0)
-     &KEY (CASE-SENSITIVE (NOT *CASE-FOLD-SEARCH*))
-     (EXTENDED NIL) (NEWLINE NIL) (NOSUB NIL))
+(defun replace-regexp-in-string
+    (regexp rep string
+     &optional (fixedcase nil) (literal nil) (subexp 0) (start 0)
+     &key (case-sensitive (not *case-fold-search*))
+     (extended nil) (newline nil) (nosub nil))
   "
 NOTE:       emacs regexps are a mix between POSIX basic regexps
             and POSIX extended regexps.
@@ -301,79 +298,79 @@ since only regular expressions have distinguished subexpressions.
 ;;; LITERAL     NIL       substitute \&, \N, \\ and \x.
 ;;;
 ;;; SUBEXP      N         replaces only \N instead of \0
-  (DO ((DONE NIL)
-       (PIECES '())
-       (POS 0)
-       (REPLACEMENT)
-       (REPLACED-MATCH)
-       (MATCHES))
-      (DONE
-       (PROGN (PUSH (SUBSEQ STRING POS) PIECES)
-              (APPLY (FUNCTION CONCATENATE) 'STRING (NREVERSE PIECES))))
-    (SETQ MATCHES (MULTIPLE-VALUE-LIST
-                   (REGEXP:MATCH REGEXP STRING
-                                 :START START
-                                 :IGNORE-CASE (NOT CASE-SENSITIVE)
-                                 :EXTENDED EXTENDED
-                                 :NEWLINE NEWLINE
-                                 :NOSUB NOSUB)))
-    (IF (AND MATCHES (CAR MATCHES))
-        (PROGN
+  (do ((done nil)
+       (pieces '())
+       (pos 0)
+       (replacement)
+       (replaced-match)
+       (matches))
+      (done
+       (progn (push (subseq string pos) pieces)
+              (apply (function concatenate) 'string (nreverse pieces))))
+    (setq matches (multiple-value-list
+                   (regexp:match regexp string
+                                 :start start
+                                 :ignore-case (not case-sensitive)
+                                 :extended extended
+                                 :newline newline
+                                 :nosub nosub)))
+    (if (and matches (car matches))
+        (progn
           ;; -1- Find the replacement:
-          (SETQ REPLACEMENT
-                (IF (FUNCTIONP REP)
-                    (FUNCALL REP (REGEXP:MATCH-STRING STRING (CAR MATCHES)))
-                    REP))
+          (setq replacement
+                (if (functionp rep)
+                    (funcall rep (regexp:match-string string (car matches)))
+                    rep))
           ;; -2- Process FIXEDCASE
-          (WHEN (OR (< SUBEXP 0) (<= (LENGTH MATCHES) SUBEXP))
-            (ERROR "Argument out of range SUBEXP=~A." SUBEXP))
-          (SETQ REPLACED-MATCH (NTH SUBEXP MATCHES))
-          (UNLESS FIXEDCASE
-            (LET ((CAP (CAPITALIZATION
-                        (REGEXP:MATCH-STRING STRING REPLACED-MATCH))) )
-              (SETQ REPLACEMENT
-                    (FUNCALL
-                     (COND
-                       ((EQ CAP :UPPER) (FUNCTION STRING-UPCASE))
-                       ((EQ CAP :LOWER) (FUNCTION IDENTITY))
+          (when (or (< subexp 0) (<= (length matches) subexp))
+            (error "Argument out of range SUBEXP=~A." subexp))
+          (setq replaced-match (nth subexp matches))
+          (unless fixedcase
+            (let ((cap (capitalization
+                        (regexp:match-string string replaced-match))) )
+              (setq replacement
+                    (funcall
+                     (cond
+                       ((eq cap :upper) (function string-upcase))
+                       ((eq cap :lower) (function identity))
                        ;;                That's what emacs does...
-                       ((EQ CAP :CAPITALIZED)
-                        (FUNCTION EMACS-BUGGED-STRING-CAPITALIZE))
-                       (T               (FUNCTION IDENTITY)))
-                     REPLACEMENT))))
+                       ((eq cap :capitalized)
+                        (function emacs-bugged-string-capitalize))
+                       (t               (function identity)))
+                     replacement))))
           ;; -3- Process LITERAL
-          (UNLESS LITERAL
+          (unless literal
             ;; substitute \&, \N and \\.
-            (SETQ REPLACEMENT
-                  (REPLACE-REGEXP-IN-STRING
+            (setq replacement
+                  (replace-regexp-in-string
                    "\\\\\\(.\\)"
-                   (LAMBDA (SUBSTR)
-                     (COND
-                       ((CHAR= (CHAR SUBSTR 1) (CHARACTER "&"))
-                        (REGEXP:MATCH-STRING STRING (CAR MATCHES)) )
-                       ((DIGIT-CHAR-P (CHAR SUBSTR 1))
-                        (LET ((N (PARSE-INTEGER SUBSTR :START 1)))
-                          (IF (<= (LENGTH MATCHES) N)
-                              SUBSTR ;; How coherent emacs is!
-                              (REGEXP:MATCH-STRING STRING (NTH N MATCHES)))) )
-                       ((CHAR= (CHARACTER "\\") (CHAR SUBSTR 1))
-                        (SUBSEQ SUBSTR 1) )
-                       (T
-                        (ERROR "Invalid use of '\\' in replacement text ~W."
-                               SUBSTR) )))
-                   REPLACEMENT T T)) )
+                   (lambda (substr)
+                     (cond
+                       ((char= (char substr 1) (character "&"))
+                        (regexp:match-string string (car matches)) )
+                       ((digit-char-p (char substr 1))
+                        (let ((n (parse-integer substr :start 1)))
+                          (if (<= (length matches) n)
+                              substr ;; How coherent emacs is!
+                              (regexp:match-string string (nth n matches)))) )
+                       ((char= (character "\\") (char substr 1))
+                        (subseq substr 1) )
+                       (t
+                        (error "Invalid use of '\\' in replacement text ~W."
+                               substr) )))
+                   replacement t t)) )
           ;; -4- Replace.
-          (PUSH (SUBSEQ STRING POS
-                        (REGEXP:MATCH-START (NTH SUBEXP MATCHES))) PIECES)
-          (PUSH REPLACEMENT PIECES)
-          (SETQ START
-                (IF (= 0 (LENGTH REGEXP))
-                    (1+ START)
-                    (REGEXP:MATCH-END (CAR MATCHES))))
-          (SETQ POS (REGEXP:MATCH-END (NTH SUBEXP MATCHES)))
-          (SETQ DONE (<= (LENGTH STRING) START)) )
-        (PROGN
-          (SETQ DONE T) ))))
+          (push (subseq string pos
+                        (regexp:match-start (nth subexp matches))) pieces)
+          (push replacement pieces)
+          (setq start
+                (if (= 0 (length regexp))
+                    (1+ start)
+                    (regexp:match-end (car matches))))
+          (setq pos (regexp:match-end (nth subexp matches)))
+          (setq done (<= (length string) start)) )
+        (progn
+          (setq done t) ))))
 
 
 
@@ -467,17 +464,17 @@ Test cases for REPLACE-REGEXP-IN-STRING
 ;; (replace-regexp-in-string "blue" "\\\\b\\X\\&" "blue box and bluetooth")
 
 
-(DEFUN STRING-TO-NUMBER (STRING &KEY (BASE 10) (START 0) (END NIL))
+(defun string-to-number (string &key (base 10) (start 0) (end nil))
   "
 DO:         Converts the string to a number.
 RETURN:     A number.
 "
   ;; PARSE-INTEGER is for integers...
-  (LET ((RESULT  (WITH-INPUT-FROM-STRING
-                     (STREAM STRING :START START :END END)
-                   (LET ((*READ-BASE* BASE)) (READ STREAM)))))
-    (UNLESS (NUMBERP RESULT)
-      (ERROR "Expected a number, not ~S." RESULT))
-    RESULT))
+  (let ((result  (with-input-from-string
+                     (stream string :start start :end end)
+                   (let ((*read-base* base)) (read stream)))))
+    (unless (numberp result)
+      (error "Expected a number, not ~S." result))
+    result))
 
 ;;;; THE END ;;;;

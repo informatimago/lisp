@@ -17,8 +17,8 @@ an error occurs, invalid HTML is issued if no buffering is explicitely
 done.
 
 The main problem with all these schemes is that the attributes must be
-symbols or keywords and not expressions to be evaluated, so we cannot
-pass a variable list of attributes.
+literal symbols or keywords and not expressions to be evaluated, so we
+cannot pass a variable list of attributes.
 
 Another problem with these schemes where a root macro walks its body
 to transform the keyword HTML tags into lisp is that it needs to be

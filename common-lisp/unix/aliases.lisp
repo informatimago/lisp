@@ -6,25 +6,6 @@
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    This package exports a function to read sendmail aliases files.
-;;;;    
-;;;;    (setf db (load-aliases [file]))
-;;;;    (save-aliases db [file])
-;;;;    (db-records db) --> list-of-records
-;;;;
-;;;;    (make-alias name address-list) --> record
-;;;;    (make-comment text) --> record
-;;;;    (find-record-if db predicate) --> record
-;;;;    (alias-record   db name) --> record
-;;;;    (comment-record-containing db substring) --> record
-;;;;    (insert-record  db record [:before record] [:after record])
-;;;;    (delete-record  db record)
-;;;;
-;;;;    (list-all-aliases db) --> ("name1" "name2" ...)
-;;;;    (alias-addresses db name) --> list
-;;;;    (setf (alias-addresses db name) list)
-;;;;    (insert-alias db name type value [:before record] [:after record])
-;;;;    (delete-alias db name)
 ;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
@@ -36,76 +17,114 @@
 ;;;;    2003-10-22 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2003 - 2005
+;;;;    Copyright Pascal J. Bourguignon 2003 - 2012
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
+(in-package "COMMON-LISP-USER")
 
-(DECLAIM (DECLARATION ALSO-USE-PACKAGES))
-(declaim (ALSO-USE-PACKAGES "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ECMA048"))
+(declaim (declaration also-use-packages))
+(declaim (also-use-packages "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ECMA048"))
 
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.UNIX.ALIASES"
-  (:USE "COMMON-LISP"
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.UNIX.ALIASES"
+  (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM")
-  (:EXPORT "READ-DOT-FORWARD" "READ-ALIASES")
-  (:DOCUMENTATION
-   "This package exports a function to read unix aliases files.
+  (:export "READ-DOT-FORWARD" "READ-ALIASES")
+  (:documentation
+   "
 
-    Copyright Pascal J. Bourguignon 2003 - 2005
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.UNIX.ALIASES")
+This package exports a function to read sendmail aliases files.
+   
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2003 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
+
+   ;; (setf db (load-aliases [file]))
+   ;; (save-aliases db [file])
+   ;; (db-records db) --> list-of-records
+   ;; 
+   ;; (make-alias name address-list) --> record
+   ;; (make-comment text) --> record
+   ;; (find-record-if db predicate) --> record
+   ;; (alias-record   db name) --> record
+   ;; (comment-record-containing db substring) --> record
+   ;; (insert-record  db record [:before record] [:after record])
+   ;; (delete-record  db record)
+   ;; 
+   ;; (list-all-aliases db) --> (\"name1\" \"name2\" ...)
+   ;; (alias-addresses db name) --> list
+   ;; (setf (alias-addresses db name) list)
+   ;; (insert-alias db name type value [:before record] [:after record])
+   ;; (delete-alias db name)
+
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.UNIX.ALIASES")
 
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (let ((*compile-verbose* nil)) (com.informatimago.common-lisp.cesarum.ecma048:generate-all-functions-in-ecma048)))
 
-(defvar +HT+ (or (ignore-errors (read-from-string "#\\TAB"))
-                 (CODE-CHAR com.informatimago.common-lisp.cesarum.ecma048:ht)))
+(defvar +ht+ (or (ignore-errors (read-from-string "#\\TAB"))
+                 (code-char com.informatimago.common-lisp.cesarum.ecma048:ht)))
 ;; How can we define a HT character portably?
 ;; Even (code-char 9) may not work...
 ;; If the TAB code doesn't exist on the host,
 ;; the input files wouldn't contain any, and we shouldn't evey try to test it.
 
-(defvar +SPHTCRLF+
-  (FORMAT NIL " ~C~C~C"
-          (CODE-CHAR com.informatimago.common-lisp.cesarum.ecma048:ht) (CODE-CHAR com.informatimago.common-lisp.cesarum.ecma048:cr) (CODE-CHAR com.informatimago.common-lisp.cesarum.ecma048:lf))
+(defvar +sphtcrlf+
+  (format nil " ~C~C~C"
+          (code-char com.informatimago.common-lisp.cesarum.ecma048:ht) (code-char com.informatimago.common-lisp.cesarum.ecma048:cr) (code-char com.informatimago.common-lisp.cesarum.ecma048:lf))
   "A string containing space, tabulation, carriage return and line feed.")
 
 
-(defvar +SPHT+
-  (FORMAT NIL " ~C" (CODE-CHAR com.informatimago.common-lisp.cesarum.ecma048:ht))
+(defvar +spht+
+  (format nil " ~C" (code-char com.informatimago.common-lisp.cesarum.ecma048:ht))
   "A string containing space and tabulation.")
 
 
-(defvar +CRLF+
-  (FORMAT NIL "~C~C" (CODE-CHAR com.informatimago.common-lisp.cesarum.ecma048:cr) (CODE-CHAR com.informatimago.common-lisp.cesarum.ecma048:lf))
+(defvar +crlf+
+  (format nil "~C~C" (code-char com.informatimago.common-lisp.cesarum.ecma048:cr) (code-char com.informatimago.common-lisp.cesarum.ecma048:lf))
   "A string containing a carriage return and a line feed.")
 
 
-(defvar +CR+
-  (FORMAT NIL "~C" (CODE-CHAR com.informatimago.common-lisp.cesarum.ecma048:cr))
+(defvar +cr+
+  (format nil "~C" (code-char com.informatimago.common-lisp.cesarum.ecma048:cr))
   "A string containing a carriage return.")
 
 
@@ -120,18 +139,18 @@
 ;; :include:/file/name    ( :include  /file/name )
 
 
-(DEFUN PARSE-TOKEN (LINE POS TOKEN)
-  (AND (<= (+ POS (LENGTH TOKEN)) (LENGTH LINE))
-       (STRING= LINE TOKEN :START1 POS :END1 (+ POS (LENGTH TOKEN)))))
+(defun parse-token (line pos token)
+  (and (<= (+ pos (length token)) (length line))
+       (string= line token :start1 pos :end1 (+ pos (length token)))))
 
 
-(DEFUN SKIP-SPACES (LINE POS)
-  (WHILE (PARSE-TOKEN LINE POS " ")
-    (INCF POS))
-  POS)
+(defun skip-spaces (line pos)
+  (while (parse-token line pos " ")
+    (incf pos))
+  pos)
 
 
-(DEFUN PARSE-ADDRESS (LINE POS follow)
+(defun parse-address (line pos follow)
   "
 start ::= address | file | command | include .
 address ::= rfc822-address .
@@ -139,122 +158,122 @@ file ::= '/' path .
 command ::= '|' command .
 include ::= ':include:' '/' path.
 "
-  (SETQ POS (SKIP-SPACES LINE POS))
-  (COND
-    ((<= (LENGTH LINE) POS) (ERROR "Expected an address, got end of line."))
-    ((CHAR= (CHARACTER "\"") (CHAR LINE POS))
-     (READ-FROM-STRING LINE NIL NIL :START POS))
-    (T  (DO ((I POS (1+ I)))
-            ((OR (<= (LENGTH LINE) I)
-                 (POSITION (CHAR LINE I) follow))
-             (VALUES (SUBSEQ LINE POS I) I))))))
+  (setq pos (skip-spaces line pos))
+  (cond
+    ((<= (length line) pos) (error "Expected an address, got end of line."))
+    ((char= (character "\"") (char line pos))
+     (read-from-string line nil nil :start pos))
+    (t  (do ((i pos (1+ i)))
+            ((or (<= (length line) i)
+                 (position (char line i) follow))
+             (values (subseq line pos i) i))))))
 
 
-(DEFUN PARSE-ADDRESS-LIST (LINE POS)
-  (MULTIPLE-VALUE-BIND (ADDRESS NPOS) (PARSE-ADDRESS LINE POS ", #")
-    (LET ((ADDRESS-LIST (LIST ADDRESS)))
-      (SETQ POS (SKIP-SPACES LINE NPOS))
+(defun parse-address-list (line pos)
+  (multiple-value-bind (address npos) (parse-address line pos ", #")
+    (let ((address-list (list address)))
+      (setq pos (skip-spaces line npos))
       (loop :while (< pos (length line)) :do
          
-         (MULTIPLE-VALUE-BIND (ADDRESS NPOS)
-             (PARSE-ADDRESS LINE (+ (if (PARSE-TOKEN LINE POS ",")
-                                        1 0) POS) ", #")
-           (PUSH ADDRESS ADDRESS-LIST)
-           (SETQ POS (SKIP-SPACES LINE NPOS))))
-      (VALUES (nreverse ADDRESS-LIST) POS))))
+         (multiple-value-bind (address npos)
+             (parse-address line (+ (if (parse-token line pos ",")
+                                        1 0) pos) ", #")
+           (push address address-list)
+           (setq pos (skip-spaces line npos))))
+      (values (nreverse address-list) pos))))
 
 ;; address-list ::= address | address-list [ ',' ] address .
 ;; address      ::= '"' ( but-quote-or-antislash | '\' anychar ) * '"'
 ;;                  | but-quote-space-or-comma .
 
 
-(DEFUN PARSE-EOLN (LINE POS)
-  (SETQ POS (SKIP-SPACES LINE POS))
-  (<= (LENGTH LINE) POS))
+(defun parse-eoln (line pos)
+  (setq pos (skip-spaces line pos))
+  (<= (length line) pos))
 
 
-(DEFUN ENCAPSULATE (ADDR)
-  (COND
-    ((CHAR= (CHAR ADDR 0) (CHARACTER "\\"))
-     (CONS :QUOTE   (STRING-DOWNCASE (SUBSEQ ADDR 1))))
-    ((CHAR= (CHAR ADDR 0) (CHARACTER "|"))
-     (CONS :COMMAND (SUBSEQ ADDR 1)))
-    ((CHAR= (CHAR ADDR 0) (CHARACTER "/"))
-     (CONS :FILE    ADDR))
-    ((PREFIXP ":include:" ADDR)
-     (CONS :INCLUDE (SUBSEQ ADDR 9)))
-    (T
-     (CONS :ADDRESS (STRING-DOWNCASE ADDR)))))
+(defun encapsulate (addr)
+  (cond
+    ((char= (char addr 0) (character "\\"))
+     (cons :quote   (string-downcase (subseq addr 1))))
+    ((char= (char addr 0) (character "|"))
+     (cons :command (subseq addr 1)))
+    ((char= (char addr 0) (character "/"))
+     (cons :file    addr))
+    ((prefixp ":include:" addr)
+     (cons :include (subseq addr 9)))
+    (t
+     (cons :address (string-downcase addr)))))
 
      
-(DEFUN PARSE-DOT-FORWARD-ALIAS (LINE)
-  (MULTIPLE-VALUE-BIND (ADDRESS-LIST POS) (PARSE-ADDRESS-LIST LINE 0)
+(defun parse-dot-forward-alias (line)
+  (multiple-value-bind (address-list pos) (parse-address-list line 0)
     ;; TODO: Check that we reach EOLN!!!
-    (PARSE-EOLN LINE POS)
-    (MAPCAR (FUNCTION ENCAPSULATE) ADDRESS-LIST)))
+    (parse-eoln line pos)
+    (mapcar (function encapsulate) address-list)))
 
 
-(DEFUN PARSE-ALIAS (LINE)
+(defun parse-alias (line)
   (if (or (zerop (length line)) (char= #\# (aref line 0)))
       ;; A comment
       (list :comment line)
       ;; An alias
-      (MULTIPLE-VALUE-BIND (ADDRESS POS) (PARSE-ADDRESS LINE 0 ": #")
-        (SETQ POS (SKIP-SPACES LINE POS))
-        (IF (PARSE-TOKEN LINE POS ":")
-            (MULTIPLE-VALUE-BIND (ADDRESS-LIST POS)
-                (PARSE-ADDRESS-LIST LINE (1+ POS))
+      (multiple-value-bind (address pos) (parse-address line 0 ": #")
+        (setq pos (skip-spaces line pos))
+        (if (parse-token line pos ":")
+            (multiple-value-bind (address-list pos)
+                (parse-address-list line (1+ pos))
               ;; TODO: Check that we reach EOLN!!!
-              (PARSE-EOLN LINE POS)
-              (CONS (STRING-DOWNCASE ADDRESS)
-                    (MAPCAR (FUNCTION ENCAPSULATE) ADDRESS-LIST)))
-            (ERROR "Expected a ':'.")))))
+              (parse-eoln line pos)
+              (cons (string-downcase address)
+                    (mapcar (function encapsulate) address-list)))
+            (error "Expected a ':'.")))))
 
 
-(DEFUN JOIN-CONTINUATION-LINES (LINES)
-  (NREVERSE
-   (CDR
-    (LET ((TAG (GENSYM)))
-      (REDUCE (LAMBDA (&OPTIONAL A B)
-                (LET (JOINED LINE)
-                  (IF (AND (LISTP A) (EQ TAG (CAR A)))
-                      (SETQ JOINED A LINE B)
-                      (SETQ JOINED B LINE A))
-                  (IF (AND (and (plusp (length line))
-                                (CHAR= (CHARACTER " ") (CHAR LINE 0)))
-                           (FIRST (CDR JOINED)))
+(defun join-continuation-lines (lines)
+  (nreverse
+   (cdr
+    (let ((tag (gensym)))
+      (reduce (lambda (&optional a b)
+                (let (joined line)
+                  (if (and (listp a) (eq tag (car a)))
+                      (setq joined a line b)
+                      (setq joined b line a))
+                  (if (and (and (plusp (length line))
+                                (char= (character " ") (char line 0)))
+                           (first (cdr joined)))
                       ;; continuation-line
-                      (SETF (FIRST (CDR JOINED))
-                            (CONCATENATE 'STRING (FIRST (CDR JOINED)) LINE))
-                      (SETF (CDR JOINED) (CONS LINE (CDR JOINED))))
-                  JOINED))
-              LINES
-              :INITIAL-VALUE (CONS TAG NIL))))))
+                      (setf (first (cdr joined))
+                            (concatenate 'string (first (cdr joined)) line))
+                      (setf (cdr joined) (cons line (cdr joined))))
+                  joined))
+              lines
+              :initial-value (cons tag nil))))))
 
 
-(DEFUN REMOVE-COMMENTS (LINES)
-  (MAPCAN (LAMBDA (LINE)
-            (SETQ LINE (STRING-RIGHT-TRIM " " LINE))
-            (WHEN (AND (< 0 (LENGTH LINE))
-                       (CHAR/= (CHARACTER "#") (CHAR LINE 0)))
-              (LIST LINE)))
-          LINES))
+(defun remove-comments (lines)
+  (mapcan (lambda (line)
+            (setq line (string-right-trim " " line))
+            (when (and (< 0 (length line))
+                       (char/= (character "#") (char line 0)))
+              (list line)))
+          lines))
 
 
-(DEFUN CLEAN-LINES (LINES)
+(defun clean-lines (lines)
   "
 DO:    Clean CR/LF stuff and replace tabulations by spaces.
 "
-  (MAPCAN (LAMBDA (IN-LINE)
-            (MAPCAR (LAMBDA (LINE)
-                      (SUBSTITUTE (CHARACTER " ") (CODE-CHAR 9) LINE))
+  (mapcan (lambda (in-line)
+            (mapcar (lambda (line)
+                      (substitute (character " ") (code-char 9) line))
                     ;; This SPLIT-STRING returns NIL for an empty string.
-                    (SPLIT-STRING (STRING-TRIM +CRLF+ IN-LINE) +CRLF+)))
-          LINES))
+                    (split-string (string-trim +crlf+ in-line) +crlf+)))
+          lines))
 
 
 
-(DEFUN READ-ALIASES (&OPTIONAL (ALIAS-FILE-PATH "/etc/aliases"))
+(defun read-aliases (&optional (alias-file-path "/etc/aliases"))
   "
 RETURN:  A list of ( alias address...).
          alias is a downcased string containing the alias name.
@@ -265,17 +284,17 @@ RETURN:  A list of ( alias address...).
           ( :command . command )    ;; |command
           ( :include . /file/name ) ;; :include:/file/name
 "
-  (MAPCAR (FUNCTION PARSE-ALIAS)
-          (JOIN-CONTINUATION-LINES
-           (REMOVE-COMMENTS
-            (CLEAN-LINES
-             (WITH-OPEN-FILE (IN ALIAS-FILE-PATH
-                                 :DIRECTION :INPUT
-                                 :IF-DOES-NOT-EXIST :ERROR)
-               (STREAM-TO-STRING-LIST IN)))))))
+  (mapcar (function parse-alias)
+          (join-continuation-lines
+           (remove-comments
+            (clean-lines
+             (with-open-file (in alias-file-path
+                                 :direction :input
+                                 :if-does-not-exist :error)
+               (stream-to-string-list in)))))))
   
 
-(DEFUN READ-DOT-FORWARD (FORWARD-FILE-PATH)
+(defun read-dot-forward (forward-file-path)
   "
 RETURN:  A list of ( address...).
          address is a cons:
@@ -285,15 +304,15 @@ RETURN:  A list of ( address...).
           ( :command . command )    ;; |command
           ( :include . /file/name ) ;; :include:/file/name
 "
-  (MAPCAR (FUNCTION PARSE-DOT-FORWARD-ALIAS)
-          (JOIN-CONTINUATION-LINES
-           (REMOVE-COMMENTS
-            (CLEAN-LINES
-             (WITH-OPEN-FILE (IN FORWARD-FILE-PATH
-                                 :DIRECTION :INPUT
-                                 :IF-DOES-NOT-EXIST nil)
+  (mapcar (function parse-dot-forward-alias)
+          (join-continuation-lines
+           (remove-comments
+            (clean-lines
+             (with-open-file (in forward-file-path
+                                 :direction :input
+                                 :if-does-not-exist nil)
                (when in
-                 (STREAM-TO-STRING-LIST IN))))))))
+                 (stream-to-string-list in))))))))
 
 
 
@@ -370,23 +389,23 @@ RETURN:  A list of ( address...).
      :do (setf (car current) (substitute #\space #\tab  (car current))))
   lines)
 
-(defun load-aliases (&OPTIONAL (ALIAS-FILE-PATH "/etc/aliases")
+(defun load-aliases (&optional (alias-file-path "/etc/aliases")
                      &key (external-format :default))
   (make-db :path alias-file-path
-           :records (MAPCAR
-                     (FUNCTION PARSE-ALIAS)
-                     (JOIN-CONTINUATION-LINES
-                      (CLEAN-DB-LINES
-                       (WITH-OPEN-FILE (IN ALIAS-FILE-PATH
-                                           :DIRECTION :INPUT
-                                           :IF-DOES-NOT-EXIST :ERROR
+           :records (mapcar
+                     (function parse-alias)
+                     (join-continuation-lines
+                      (clean-db-lines
+                       (with-open-file (in alias-file-path
+                                           :direction :input
+                                           :if-does-not-exist :error
                                            :external-format external-format)
-                         (STREAM-TO-STRING-LIST IN)))))))
+                         (stream-to-string-list in)))))))
 
 (defparameter *max-column* 78)
 
 (defun save-aliases (db &key (stream *standard-output* streamp)
-                     (FILE-PATH (db-path db) file-path-p)
+                     (file-path (db-path db) file-path-p)
                      (if-exists :error)
                      (if-does-not-exist :create)
                      (external-format :default))

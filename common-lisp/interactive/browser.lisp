@@ -6,10 +6,7 @@
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    This package exports a function to browse the directory hierarchy
-;;;;    and load lisp files, and a few interactive commands:
-;;;;    CD, PWD, PUSHD, POPD, MKDIR,
-;;;;    LS, CAT, MORE, CP, MV, MAKE, GREP.
+;;;;    See defpackage documentation string.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
@@ -24,24 +21,22 @@
 ;;;;    processed...
 ;;;;
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2004 - 2004
+;;;;    Copyright Pascal J. Bourguignon 2004 - 2012
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 
@@ -54,12 +49,36 @@
            "CHANGE-WORKING-DIRECTORY" "WORKING-DIRECTORY" "*CHANGE-DIRECTORY-HOOK*"
            "*KEEP-DOT-FILES*")
   (:documentation
-   "This package exports a function to browse the directory hierarchy
-    and load lisp files.
+   "
 
-    Copyright Pascal J. Bourguignon 2002 - 2004
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
+This package exports a function to browse the directory hierarchy
+and load lisp files, and a few interactive commands:
+
+CD, PWD, PUSHD, POPD, MKDIR,
+LS, CAT, MORE, CP, MV, MAKE, GREP.
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2002 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.BROWSER")
 
 
@@ -129,8 +148,11 @@ Client code can rebind it to another universal date or set it to (now).")
 
 
 
-(defvar *shell* nil)
-(defvar *verbose* nil)
+(defvar *shell* nil
+  "A function of one string argument executing it as a shell command.")
+
+(defvar *verbose* nil
+  "Makes some functions output information on *trace-output*.")
 
 (defun runcommand (name args)
   (if *shell*
@@ -146,8 +168,11 @@ Client code can rebind it to another universal date or set it to (now).")
                                     (otherwise item))) (cons name args)))))
       (error "Please assign a shell function to ~S" '*shell*)))
   
-(defmacro defcommand (name)
+(defmacro defcommand (name &optional docstring)
+  "Define a macro named NAME taking any number of arguments, and
+calling the external program of same name thru the shell."
   `(defmacro ,name (&rest args)
+     ,(or docstring (format nil "COMMAND~%Runs the ~A command." name))
      (list 'runcommand '',name (list 'quote args))))
 
 (defcommand cp)
@@ -163,13 +188,23 @@ Client code can rebind it to another universal date or set it to (now).")
   (list (lambda (working-directory)
           (setf *default-pathname-defaults*
                 (merge-pathnames working-directory *default-pathname-defaults* nil))))
-  "A list of unary functions called with the path of 
-   the new current working directory.")
+
+  "A list of unary functions called with the path of  the new current
+working directory.  The default list contains a hook to set the
+*DEFAULT-PATHNAME-DEFAULTS*.
+
+A common usage is to set the unix current working directory to the
+same directory, so that the *default-pathname-defaults*, the
+*working-directory* and the unix current working directory are all
+three synchronized.
+")
 
 (defvar *working-directory* (truename (user-homedir-pathname))
   "The current working directory")
 
-(defun working-directory () *working-directory*)
+(defun working-directory ()
+  "RETURN: The working directory."
+  *working-directory*)
 
 (defun check-directories-exist (path)
   "Return: whether all the directories in PATH exist;
@@ -206,6 +241,11 @@ Client code can rebind it to another universal date or set it to (now).")
 
 
 (defun change-working-directory (path)
+  "
+DO:     Sets *WORKING-DIRECTORY* to the new PATH, if it exists and is a directory path.
+        Runs the hooks on *CHANGE-DIRECTORY-HOOK*.
+RETURN: *WORKING-DIRECTORY*
+"
   (multiple-value-bind (exists-p dirpath) (check-directories-exist path)
     (if exists-p
         (progn
@@ -503,7 +543,9 @@ ARGUMENTS:  A list of paths possibly containing wildcards.
   (values))
 
 
-(defvar *terminal-height* 50)
+(defvar *terminal-height* 50
+  "The number of line displayed on the terminal.
+Used by functions like MORE.")
 
 (defun more (&rest args)
   "COMMAND

@@ -16,47 +16,63 @@
 ;;;;    199?-??-?? <PJB> Creation.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
-;;;;    Copyright Pascal J. Bourguignon 199? - 2002
-;;;;
-;;;;    This file is part of the PJB Common Lisp Library.
-;;;;
-;;;;    This  program is  free software;  you can  redistribute  it and/or
-;;;;    modify it  under the  terms of the  GNU General Public  License as
-;;;;    published by the Free Software Foundation; either version 2 of the
-;;;;    License, or (at your option) any later version.
-;;;;
-;;;;    This program  is distributed in the  hope that it  will be useful,
-;;;;    but  WITHOUT ANY WARRANTY;  without even  the implied  warranty of
-;;;;    MERCHANTABILITY or FITNESS FOR  A PARTICULAR PURPOSE.  See the GNU
-;;;;    General Public License for more details.
-;;;;
-;;;;    You should have received a  copy of the GNU General Public License
-;;;;    along with  this program; see the  file COPYING; if  not, write to
-;;;;    the Free  Software Foundation, Inc.,  59 Temple Place,  Suite 330,
-;;;;    Boston, MA 02111-1307 USA
-;;;;
+;;;;    AGPL3
+;;;;    
+;;;;    Copyright Pascal J. Bourguignon 2012 - 2012
+;;;;    
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
+;;;;    
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
+;;;;    
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.DIAGRAM.TREE-TO-DIAGRAM"
-  (:USE "COMMON-LISP"
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.DIAGRAM.TREE-TO-DIAGRAM"
+  (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
-  (:EXPORT "TREE-GENERATE-RANDOM" "TREE-SIZE" "TREE-DEPTH" "TREE-TO-DIAGRAM")
-  (:DOCUMENTATION
-   "This package generates a Diagram text file drawing a tree.
-    The tree drawn is a list whose car is the node displayed, and
-    whose cdr is the list of children.
+  (:export "TREE-GENERATE-RANDOM" "TREE-SIZE" "TREE-DEPTH" "TREE-TO-DIAGRAM")
+  (:documentation
+   "
 
-    Copyright Pascal J. Bourguignon 199? - 2002
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.DIAGRAM.TREE-TO-DIAGRAM")
+This package generates a Diagram! text file drawing a tree.
+The tree drawn is a list whose car is the node displayed, and
+whose cdr is the list of children.
 
 
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 1994 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+"))
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.DIAGRAM.TREE-TO-DIAGRAM")
 
 
-(DEFUN TREE-DIAGRAM-GENERATE-NODE (N L X Y NODE)
+
+
+(defun tree-diagram-generate-node (n l x y node)
   "PRIVATE.
 DOES:    Generates the Diagram text for a node.
 n:       the Diagram symbol number (may be used in Diagram links).
@@ -65,26 +81,26 @@ x,y:     the coordinates.
 node:    the text in the node rectangle.
 RETURN:  a list (n' l' x' y') for the following brother node.
 "
-  (FORMAT T "symbol ~s~%" N)
-  (FORMAT T "	layer ~s~%" L)
-  (FORMAT T "	shape ~aRectangle~a~%" 
-          (CODE-CHAR 34) (CODE-CHAR 34))
-  (FORMAT T "	location ~s.00 ~s.00~%" X Y)
-  (FORMAT T "	size 126.00 18.00~%")
-  (FORMAT T "	framed~%")
-  (FORMAT T "	fillColor colorIndex 0~%")
-  (FORMAT T "	frameColor colorIndex 1~%")
-  (FORMAT T "	shadowColor colorIndex 2~%")
-  (FORMAT T "	lineWidth 1.00~%")
-  (FORMAT T "	filled~%")
-  (FORMAT T "	rtfText {\\rtf0\\ansi{\\fonttbl\\f0\\fswiss Helvetica;}\\margl40\\margr40\\pard\\tx960\\tx1920\\tx2880\\tx3840\\tx4800\\tx5760\\tx6720\\tx7680\\tx8640\\tx9600\\f0\\b\\i0\\ulnone\\qc\\fs20\\fc0\\cf0 ~s}~%" NODE)
-  (FORMAT T "	textPlacement middle~%")
-  (FORMAT T "end~%~%")
-  (LIST (1+ N) (1+ L) X (+ 27 Y))
+  (format t "symbol ~s~%" n)
+  (format t "	layer ~s~%" l)
+  (format t "	shape ~aRectangle~a~%" 
+          (code-char 34) (code-char 34))
+  (format t "	location ~s.00 ~s.00~%" x y)
+  (format t "	size 126.00 18.00~%")
+  (format t "	framed~%")
+  (format t "	fillColor colorIndex 0~%")
+  (format t "	frameColor colorIndex 1~%")
+  (format t "	shadowColor colorIndex 2~%")
+  (format t "	lineWidth 1.00~%")
+  (format t "	filled~%")
+  (format t "	rtfText {\\rtf0\\ansi{\\fonttbl\\f0\\fswiss Helvetica;}\\margl40\\margr40\\pard\\tx960\\tx1920\\tx2880\\tx3840\\tx4800\\tx5760\\tx6720\\tx7680\\tx8640\\tx9600\\f0\\b\\i0\\ulnone\\qc\\fs20\\fc0\\cf0 ~s}~%" node)
+  (format t "	textPlacement middle~%")
+  (format t "end~%~%")
+  (list (1+ n) (1+ l) x (+ 27 y))
   ) ;;TREE-DIAGRAM-GENERATE-NODE
 
 
-(DEFUN TREE-DIAGRAM-GENERATE-INHERIT (N L X Y)
+(defun tree-diagram-generate-inherit (n l x y)
   "PRIVATE.
 DOES:    Generates the Diagram text for a 'inherit' symbol (vertical triangle).
 n:       the Diagram symbol number (may be used in Diagram links).
@@ -92,99 +108,99 @@ l:       the Diagram layer.
 x,y:     the coordinates.
 RETURN:  a list (n' l' x' y') for the first child node.
 "
-  (FORMAT T "symbol ~s~%" N)
-  (FORMAT T "	layer ~s~%" L)
-  (FORMAT T "	shape ~aVertical Triangle~a~%"
-          (CODE-CHAR 34) (CODE-CHAR 34))
-  (FORMAT T "	location ~s.00 ~s.00~%" (+ 52 X) (+ 10 Y))
-  (FORMAT T "	size 21.00 11.00~%")
-  (FORMAT T "	framed~%")
-  (FORMAT T "	fillColor colorIndex 0~%")
-  (FORMAT T "	frameColor colorIndex 1~%")
-  (FORMAT T "	shadowColor colorIndex 2~%")
-  (FORMAT T "	lineWidth 1.00~%")
-  (FORMAT T "	filled~%")
-  (FORMAT T "	textPlacement top~%")
-  (FORMAT T "end~%")
-  (LIST (1+ N) (1+ L) (+ 81 X) (+ 27 Y))
+  (format t "symbol ~s~%" n)
+  (format t "	layer ~s~%" l)
+  (format t "	shape ~aVertical Triangle~a~%"
+          (code-char 34) (code-char 34))
+  (format t "	location ~s.00 ~s.00~%" (+ 52 x) (+ 10 y))
+  (format t "	size 21.00 11.00~%")
+  (format t "	framed~%")
+  (format t "	fillColor colorIndex 0~%")
+  (format t "	frameColor colorIndex 1~%")
+  (format t "	shadowColor colorIndex 2~%")
+  (format t "	lineWidth 1.00~%")
+  (format t "	filled~%")
+  (format t "	textPlacement top~%")
+  (format t "end~%")
+  (list (1+ n) (1+ l) (+ 81 x) (+ 27 y))
   ) ;;TREE-DIAGRAM-GENERATE-INHERIT
 
 
-(DEFUN TREE-DIAGRAM-GENERATE-ADJUST-X (INC)
+(defun tree-diagram-generate-adjust-x (inc)
   "PRIVATE.
 inc:     a list (n l x y) corresponding to the after last brother.
 RETURN:  a list (n' l' x' y') for the next uncle node.
 "
-  (LIST (CAR INC) (CADR INC) (- (CADDR INC) 81) (CAR (CDDDR INC)))
+  (list (car inc) (cadr inc) (- (caddr inc) 81) (car (cdddr inc)))
   ) ;;TREE-DIAGRAM-GENERATE-ADJUST-X
 
 
-(DEFUN TREE-DIAGRAM-GENERATE-TREE (N L X Y TREE)
+(defun tree-diagram-generate-tree (n l x y tree)
   "PRIVATE.
 DOES:    writes to the *standard-output* the Diagram text
          for the subtree 'tree'.
 RETURN:  a list (n' l' x' y') for the next brother subtree.
 "
-  (IF (NULL (CDR TREE))
-      (APPLY 'TREE-DIAGRAM-GENERATE-NODE (LIST N L X Y (CAR TREE)))
-      (LET ((INC (APPLY 'TREE-DIAGRAM-GENERATE-INHERIT
-                        (APPLY 'TREE-DIAGRAM-GENERATE-NODE
-                               (LIST N L X Y (CAR TREE))))))
-        (DO ((SUBTREES (CDR TREE) (CDR SUBTREES)))	((NULL SUBTREES))
-          (SETQ INC (APPLY 'TREE-DIAGRAM-GENERATE-TREE 
-                           (APPEND INC (LIST (CAR SUBTREES))))))
-        (TREE-DIAGRAM-GENERATE-ADJUST-X INC)))) ;;TREE-DIAGRAM-GENERATE-TREE
+  (if (null (cdr tree))
+      (apply 'tree-diagram-generate-node (list n l x y (car tree)))
+      (let ((inc (apply 'tree-diagram-generate-inherit
+                        (apply 'tree-diagram-generate-node
+                               (list n l x y (car tree))))))
+        (do ((subtrees (cdr tree) (cdr subtrees)))	((null subtrees))
+          (setq inc (apply 'tree-diagram-generate-tree 
+                           (append inc (list (car subtrees))))))
+        (tree-diagram-generate-adjust-x inc)))) ;;TREE-DIAGRAM-GENERATE-TREE
 
 
-(DEFUN TREE-TO-DIAGRAM (TREE)
+(defun tree-to-diagram (tree)
   "
 PRE:    tree is a cons of the node and the list of children.
 DOES:   writes to the *standard-output* the Diagram file text.
 "
-  (TREE-DIAGRAM-GENERATE-TREE 1000 60 45 27 TREE)
+  (tree-diagram-generate-tree 1000 60 45 27 tree)
   ) ;;TREE-TO-DIAGRAM
 
 
 
-(DEFUN TREE-DEPTH (TREE)
+(defun tree-depth (tree)
   "
 PRE:    tree is a cons of the node and the list of children.
 RETURN: the depth of the tree.
 "
-  (IF (NULL TREE)
+  (if (null tree)
       0
-      (1+ (APPLY 'MAX (CONS 0 (REMOVE NIL (MAPCAR 'TREE-DEPTH (CDR TREE)))))))
+      (1+ (apply 'max (cons 0 (remove nil (mapcar 'tree-depth (cdr tree)))))))
   ) ;;TREE-DEPTH
 
 
 
-(DEFUN TREE-SIZE (TREE)
+(defun tree-size (tree)
   "
 PRE:    tree is a cons of the node and the list of children.
 RETURN: The size of the tree (number of nodes)
 "
-  (LOOP WITH COUNT = 0
-     FOR ITEM IN TREE
-     DO (IF (LISTP ITEM)
-            (SETQ COUNT (+ COUNT (TREE-SIZE ITEM)))
-            (SETQ COUNT (1+ COUNT)))
-     FINALLY (RETURN COUNT))
+  (loop with count = 0
+     for item in tree
+     do (if (listp item)
+            (setq count (+ count (tree-size item)))
+            (setq count (1+ count)))
+     finally (return count))
   ) ;;TREE-SIZE
 
 
 
-(DEFUN TREE-GENERATE-RANDOM (DEPTH WIDTH)
+(defun tree-generate-random (depth width)
   "
 RETURN:  A random tree with random number as node, of maximal depth `depth'
          and where each node has a maximum of `width` children.
 NOTE:    The result can easily be degenreate (a single node,
          or a much smaller tree).
 "
-  (IF (>= 1 DEPTH)
-      (RANDOM MOST-POSITIVE-FIXNUM)
-      (LOOP FOR I FROM 0 BELOW (RANDOM (1+ WIDTH))
-         COLLECT (TREE-GENERATE-RANDOM (1- DEPTH) WIDTH) INTO CHILDREN
-         FINALLY (RETURN (CONS (RANDOM MOST-POSITIVE-FIXNUM) CHILDREN))))
+  (if (>= 1 depth)
+      (random most-positive-fixnum)
+      (loop for i from 0 below (random (1+ width))
+         collect (tree-generate-random (1- depth) width) into children
+         finally (return (cons (random most-positive-fixnum) children))))
   ) ;;TREE-GENERATE-RANDOM
 
 

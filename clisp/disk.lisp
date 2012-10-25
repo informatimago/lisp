@@ -17,29 +17,26 @@
 ;;;;    2002-10-?? <PJB> Creation.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
-;;;;    Copyright Pascal J. Bourguignon 2002 - 2010
-;;;;
-;;;;    This file is part of PJB Clisp Utilities.
-;;;;
-;;;;    This  program is  free software;  you can  redistribute  it and/or
-;;;;    modify it  under the  terms of the  GNU General Public  License as
-;;;;    published by the Free Software Foundation; either version 2 of the
-;;;;    License, or (at your option) any later version.
-;;;;
-;;;;    This program  is distributed in the  hope that it  will be useful,
-;;;;    but  WITHOUT ANY WARRANTY;  without even  the implied  warranty of
-;;;;    MERCHANTABILITY or FITNESS FOR  A PARTICULAR PURPOSE.  See the GNU
-;;;;    General Public License for more details.
-;;;;
-;;;;    You should have received a  copy of the GNU General Public License
-;;;;    along with  this program; see the  file COPYING; if  not, write to
-;;;;    the Free  Software Foundation, Inc.,  59 Temple Place,  Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    AGPL3
+;;;;    
+;;;;    Copyright Pascal J. Bourguignon 2002 - 2012
+;;;;    
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
+;;;;    
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
+;;;;    
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
-(defPACKAGE "COM.INFORMATIMAGO.CLISP.DISK"
-  (:DOCUMENTATION
+(defpackage "COM.INFORMATIMAGO.CLISP.DISK"
+  (:documentation
    "This package exports disk management functions.
 
     Copyright Pascal J. Bourguignon 2002 - 2003
@@ -49,70 +46,70 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
-  (:EXPORT "VOLINFO" "VOLINFO-PATH" "VOLINFO-FS-TYPE"  "VOLINFO-SIZE"
+  (:export "VOLINFO" "VOLINFO-PATH" "VOLINFO-FS-TYPE"  "VOLINFO-SIZE"
            "VOLINFO-USED" "VOLINFO-AVAILABLE" "VOLINFO-MOUNT-POINT"
            "DF" "DU" ))
 (in-package  "COM.INFORMATIMAGO.CLISP.DISK")
 
 
-(DEFUN OLD-DF ()
+(defun old-df ()
   "
 RETURN:  A list of sublists each containing:
            (device size used available mount-point)
 "
-  (MAPCAR
-   (LAMBDA (LINE) (SPLIT-STRING LINE " "))
-   (STREAM-TO-STRING-LIST
-    (EXT:RUN-SHELL-COMMAND
+  (mapcar
+   (lambda (line) (split-string line " "))
+   (stream-to-string-list
+    (ext:run-shell-command
      "/bin/df -T|postodax|/bin/awk '/Available/{next;}{print $1,$2,$3,$4,$5,$7;}'"
-     :OUTPUT :STREAM))))
+     :output :stream))))
 
 
-(DEFSTRUCT VOLINFO
-  (PATH        "" :TYPE STRING)
-  (FS-TYPE     "" :TYPE STRING)
-  (SIZE        0  :TYPE NUMBER)
-  (USED        0  :TYPE NUMBER)
-  (AVAILABLE   0  :TYPE NUMBER)
-  (MOUNT-POINT "" :TYPE STRING)
+(defstruct volinfo
+  (path        "" :type string)
+  (fs-type     "" :type string)
+  (size        0  :type number)
+  (used        0  :type number)
+  (available   0  :type number)
+  (mount-point "" :type string)
   ) ;;VOLINFO
 
 
-(DEFUN DF (&OPTIONAL PATH)
+(defun df (&optional path)
   "
 RETURN:  A list of volinfo structures.
 "
-  (UNLESS PATH (SETQ PATH ""))
-  (MAPCAR
-   (LAMBDA (LINE)
-     (LET ((DATA (SPLIT-STRING LINE " \\+")))
-       (MAKE-VOLINFO :PATH (NTH 0 DATA)
-                     :FS-TYPE (NTH 1 DATA)
-                     :SIZE (* 1024 (READ-FROM-STRING (NTH 2 DATA)))
-                     :USED (* 1024 (READ-FROM-STRING (NTH 3 DATA)))
-                     :AVAILABLE (* 1024 (READ-FROM-STRING (NTH 4 DATA)))
-                     :MOUNT-POINT (NTH 5 DATA))))
-   (STREAM-TO-STRING-LIST
-    (EXT:RUN-SHELL-COMMAND
-     (FORMAT
-      NIL "df -k -T ~A|postodax|/bin/awk '/Available/{next;}{print $1,$2,$3,$4,$5,$7;}'"
-      PATH)
-     :OUTPUT :STREAM))))
+  (unless path (setq path ""))
+  (mapcar
+   (lambda (line)
+     (let ((data (split-string line " \\+")))
+       (make-volinfo :path (nth 0 data)
+                     :fs-type (nth 1 data)
+                     :size (* 1024 (read-from-string (nth 2 data)))
+                     :used (* 1024 (read-from-string (nth 3 data)))
+                     :available (* 1024 (read-from-string (nth 4 data)))
+                     :mount-point (nth 5 data))))
+   (stream-to-string-list
+    (ext:run-shell-command
+     (format
+      nil "df -k -T ~A|postodax|/bin/awk '/Available/{next;}{print $1,$2,$3,$4,$5,$7;}'"
+      path)
+     :output :stream))))
 
 
-(DEFUN DU (&OPTIONAL (PATH (EXT:CD)))
+(defun du (&optional (path (ext:cd)))
   "
 RETURN:  The Disk Usage of the given PATH (or the current directory).
          It's given as the underlying du command gives it, either in
          blocks of 1KB or of 512 B.
 "
-  (VALUES
-   (READ-FROM-STRING
-    (CAAR
-     (MAPCAR (LAMBDA (LINE) (SPLIT-STRING LINE #.(string (CODE-CHAR 9))))
-             (STREAM-TO-STRING-LIST
-              (EXT:RUN-PROGRAM "du"
-                               :ARGUMENTS (LIST "-s" PATH) :OUTPUT :STREAM)))))))
+  (values
+   (read-from-string
+    (caar
+     (mapcar (lambda (line) (split-string line #.(string (code-char 9))))
+             (stream-to-string-list
+              (ext:run-program "du"
+                               :arguments (list "-s" path) :output :stream)))))))
 
 
 ;;;; THE END ;;;;

@@ -16,24 +16,22 @@
 ;;;;    2009-09-12 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2009 - 2009
+;;;;    Copyright Pascal J. Bourguignon 2009 - 2012
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LLRBTREE"
@@ -46,16 +44,32 @@
            "MAP-TREE" "WITH-TREE-ITERATOR"
            "TREE-CLEAR")
   (:documentation "
-   Implementation of Left Leaning Red Black Trees.
-   Robert Sedgewick's algorithms.
-   http://www.cs.princeton.edu/~rs
+Implementation of Left Leaning Red Black Trees.
+Robert Sedgewick's algorithms.
+http://www.cs.princeton.edu/~rs
 
-   Copyright Pascal J. Bourguignon 2009 - 2009
-   
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; either version
-   2 of the License, or (at your option) any later version.
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2009 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
 "))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LLRBTREE")
 
@@ -79,6 +93,10 @@
           :type t; (function (t t) t)
           :read-only t))
 
+(setf (documentation 'tree-root  'function) "The root node."
+      (documentation 'tree-count 'function) "The number of nodes in the tree."
+      (documentation 'tree-lessp 'function) "The key order."
+      (documentation 'treep      'function) "Whether the object is a left leaning red-black tree.")
 
 
 

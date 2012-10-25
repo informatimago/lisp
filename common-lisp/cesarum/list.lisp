@@ -25,24 +25,22 @@
 ;;;;    199?-??-?? <PJB> Creation.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
-;;;;
+;;;;    AGPL3
+;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2002 - 2012
-;;;;
-;;;;    This script is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU  General Public
-;;;;    License as published by the Free Software Foundation; either
-;;;;    version 2 of the License, or (at your option) any later version.
-;;;;
-;;;;    This script is distributed in the hope that it will be useful,
+;;;;    
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
+;;;;    
+;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
-;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;;;;    General Public License for more details.
-;;;;
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this library; see the file COPYING.LIB.
-;;;;    If not, write to the Free Software Foundation,
-;;;;    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
+;;;;    
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -54,17 +52,37 @@
            "NSPLIT-LIST-ON-INDICATOR" "NSPLIT-LIST" "DEEPEST-REC" "DEEPEST" "DEPTH"
            "FLATTEN" "LIST-TRIM" "TRANSPOSE" "AGET" "MEMQ"
            "PLIST-KEYS" "PLIST-REMOVE" "PLIST-GET"
-           "PLIST-PUT" "HASHED-INTERSECTION"
+           "PLIST-PUT" "PLIST-CLEANUP" "HASHED-INTERSECTION" 
            ;; "HASHED-REMOVE-DUPLICATES" moved to COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE
            "ENSURE-LIST" "PROPER-LIST-P" "LIST-LENGTHS"
            "ENSURE-CIRCULAR" "MAKE-CIRCULAR-LIST" "CIRCULAR-LENGTH"
            "TREE-DIFFERENCE" "REPLACE-TREE" "MAPTREE")
   (:documentation
-   "This package exports list processing functions.
+   "
+This package exports list processing functions.
     
-    Copyright Pascal J. Bourguignon 2003 - 2011
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2003 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
 
 
@@ -222,7 +240,24 @@ RETURN: the total length ; the length of the stem ; the length of the circle.
 
 (defun plist-keys (plist)
   "Returns a list of the properties in PLIST."
-  (loop :for (key) :on plist :by (function cddr) :collect key))
+  (remove-duplicates (loop :for (key) :on plist :by (function cddr) :collect key)))
+
+
+(defun plist-cleanup (plist)
+  "Returns a plist that has the same associations than PLIST, but with
+a single occurence of each key and the first value found.
+
+EXAMPLE:        (plist-cleanup '(:a 1 :b 2 :a 11 :c 3)) --> (:b 2 :c 3 :a 1)
+"
+  (loop
+    :with h =  (make-hash-table)
+    :for (key value) :on plist :by (function cddr)
+    :do (when (eq h (gethash key h h))
+          (setf (gethash key h) value))
+    :finally (let ((result '()))
+               (maphash (lambda (key value) (push value result) (push key result)) h)
+               (return result))))
+
 
 
 (defun plist-put (plist prop value)
@@ -280,6 +315,10 @@ RETURN: A tree where all the CAR and CDR are exchanged.
 
 (defun list-trim (bag list
                   &key (test (function eql)) (key (function identity)))
+  "
+RETURN: A sublist of LIST with the elements in the BAG removed from
+        both ends.
+"
   (do ((list (reverse list) (cdr list)))
       ((or (null list) (not (member (car list) bag :test test :key key)))
        (do ((list (nreverse list) (cdr list)))
@@ -299,6 +338,13 @@ RETURN: A tree where all the CAR and CDR are exchanged.
 
 
 (defun maptree (fun &rest trees)
+  "
+DO:     Calls FUN on each non-null atom of the TREES.
+PRE:    The trees in TREES must be congruent, or else the result is
+        pruned like the smallest tree.
+RETURN: A tree congruent to the TREES, each node being the result of
+        FUN (it may be a subtree).
+"
   (cond ((null trees) nil)
         ((every (function null)  trees) nil)
         ((every (function atom)  trees) (apply fun trees))
@@ -636,6 +682,14 @@ RETURN:  The next dll-cons in the `dll-cons' double-linked-list node.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun tree-difference (a b &key (test (function eql)))
+  "
+RETURN: A tree congruent to A and B where each node is = when the
+        corresponding nodes are equal (as indicated by TEST),
+        or (/= a-elem b-elem) otherwise.
+
+EXAMPLE: (tree-difference '((a b c) 1 (d e f)) '((a b c) (1) (d x f)))
+         --> ((= = = . =) (/= 1 (1)) (= (/= e x) = . =) . =)
+"
   (cond
     ((funcall test a b)     '=)
     ((or (atom a) (atom b)) `(/= ,a ,b))

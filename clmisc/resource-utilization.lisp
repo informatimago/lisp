@@ -1,3 +1,4 @@
+;;;; -*- mode:lisp; coding:utf-8 -*-
 ;;;;**************************************************************************
 ;;;;FILE:               resource-utilization.lisp
 ;;;;LANGUAGE:           Common-Lisp
@@ -5,37 +6,7 @@
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    Display resource utilisation summary.
-;;;;    
-;;;;    This package exports a macro that gather resource utilization statistics
-;;;;    and report them.
-;;;; 
-;;;;    Usage:
-;;;; 
-;;;;     (reporting-sru (:job-origin (remote-client) :stream (remote-stream))
-;;;;        (do-something-lengthy))
-;;;; 
-;;;;     (reporting-sru (:job-origin (remote-client) :stream (remote-stream)
-;;;;                     :report-to (lambda (cpu-time sys-time device-i/o paging-i/o
-;;;;                                    job-origin &key (stream t))
-;;;;                                 (SUMMARY-RESOURCE-UTILIZATION
-;;;;                                    cpu-time sys-time device-i/o paging-i/o
-;;;;                                    job-origin :stream stream)))
-;;;;        (do-something-lengthy))
-;;;;
-;;;;    Example:
-;;;;
-;;;;       (reporting-sru (:job-origin "REPL")
-;;;;          (asdf-load :com.informatimago.clext))
-;;;;
-;;;;       prints:
-;;;;
-;;;;     Summary of resource utilization
-;;;;     -------------------------------
-;;;;      CPU time:       0.300 sec                Device I/O:      175
-;;;;      Overhead CPU:   0.012 sec                Paging I/O:        1
-;;;;      CPU model:   AMD Athlon(tm) Processor 6.4.2 1200.303 MHz (2402.66 bogomips)
-;;;;      Job origin:  REPL
+;;;;    See defpackage documentation string.
 ;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
@@ -43,37 +14,35 @@
 ;;;;    2006-11-10 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal Bourguignon 2006 - 2006
+;;;;    Copyright Pascal Bourguignon 2006 - 2012
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.CLMISC.RESOURCE-UTILIZATION"
-  (:USE "COMMON-LISP")
-  (:EXPORT "REPORTING-SRU"
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.CLMISC.RESOURCE-UTILIZATION"
+  (:use "COMMON-LISP")
+  (:export "REPORTING-SRU"
            "SUMMARY-RESOURCE-UTILIZATION" )
-  (:DOCUMENTATION
-   "This package exports a macro that gather resource utilization statistics
-    and report them.
+  (:documentation
+   "
+Gather resource utilization statistics and report them.
 
-    Usage:
+Usage:
 
     (reporting-sru (:job-origin (remote-client) :stream (remote-stream))
        (do-something-lengthy))
@@ -86,15 +55,47 @@
                                    job-origin :stream stream)))
        (do-something-lengthy))
 
+Example:
 
-    Copyright Pascal J. Bourguignon 2006 - 2006
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.CLMISC.RESOURCE-UTILIZATION")
+    (reporting-sru (:job-origin \"REPL\")
+       (asdf-load :com.informatimago.clext))
 
+    prints:
+
+    Summary of resource utilization
+    -------------------------------
+     CPU time:       0.300 sec                Device I/O:      175
+     Overhead CPU:   0.012 sec                Paging I/O:        1
+     CPU model:   AMD Athlon(tm) Processor 6.4.2 1200.303 MHz (2402.66 bogomips)
+     Job origin:  REPL
+
+
+License:
+
+    AGPL3
+
+    Copyright Pascal Bourguignon 2006 - 2012
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see http://www.gnu.org/licenses/
+"))
+(in-package "COM.INFORMATIMAGO.CLMISC.RESOURCE-UTILIZATION")
 
 
 (defun cpu-info ()
+  "
+RETURN: An A-list containing the data from /proc/cpuinfo.
+"
   (cond
    ((with-open-file (info "/proc/cpuinfo" :if-does-not-exist nil)
       (and info
@@ -112,6 +113,9 @@
 
 
 (defun cpu-short-description ()
+  "
+RETURN: A short description of the CPU.
+"
   (let ((info (cpu-info)))
     (flet ((gac (x) (or (cdr (assoc x info)) "")))
       (format nil "~A ~A.~A.~A ~A MHz (~A bogomips)" (gac :model-name)
@@ -134,7 +138,7 @@ NOTE:   Parentheses inside the string must be escaped by \ unless balanced.
   (let ((token (peek-char t stream  nil :eof recursive-p)))
     (cond
       ((eq :eof token) (if eof-error-p
-                           (error 'END-OF-FILE :stream stream)
+                           (error 'end-of-file :stream stream)
                             eof-value))
       ((eql #\( token)
        (read-char stream)
@@ -157,11 +161,11 @@ NOTE:   Parentheses inside the string must be escaped by \ unless balanced.
           :finally (if ch
                        (return buffer)
                        (if eof-error-p
-                           (error 'END-OF-FILE :stream stream)
+                           (error 'end-of-file :stream stream)
                            (return eof-value))))))))
 
 
-(defun test-read-parenthesized-string ()
+(defun test/read-parenthesized-string ()
   (loop
      :with success = 0
      :for tcount :from 0
@@ -216,6 +220,9 @@ RETURN: The status of the specified process.
 
 
 (defun disk-statistics (&optional disk)
+  "
+RETURN: Statistics from the DISK usage, obtained from /proc/diskstats.
+"
   (declare (ignore disk))
   ;; TODO: Implement disk filter.
   (with-open-file (info "/proc/diskstats"
@@ -255,6 +262,9 @@ RETURN: The status of the specified process.
 
 
 (defun device-i/o ()
+  "
+RETURN: The number of disk I/O collected by (DISK-STATISTICS).
+"
   (reduce (function +)
           (remove-if (lambda (entry) (eq  :partition (cdr (assoc :type entry))))
                      (disk-statistics))
@@ -290,6 +300,15 @@ RETURN: The status of the specified process.
 
 (defun summary-resource-utilization (cpu-time sys-time device-i/o paging-i/o
                                      job-origin &key (stream t))
+  "
+DO:         Reports resource utilisaty summary.
+CPU-TIME:   CPU time used, in seconds.
+SYS-TIME:   System time used, in seconds.
+DEVICE-I/O: Number of Disk I/O.
+PAGING-I/O: Number of Swap I/O.
+JOB-ORIGIN: Label of the originator of the job.
+STREAM:     Output stream (the default T means *standard-output*).
+"
   (format stream
     "Summary of resource utilization
 -------------------------------
@@ -307,6 +326,17 @@ RETURN: The status of the specified process.
 (defmacro reporting-sru ((&key (job-origin '(short-site-name)) (stream t)
                                (report-to nil report-to-p))
                          &body body)
+  "
+DO:         Execute the BODY collecting resource usage statistics, and
+            finally reporting them.
+JOB-ORIGIN: Label of the originator of the job; defaults to (SHORT-SITE-NAME).
+STREAM:     Output stream (the default T means *standard-output*).
+REPORT-TO:  If provided, it's a function with the same signature as
+            SUMMARY-RESOURCE-UTILIZATION, ie.:
+            (cpu-time sys-time device-i/o paging-i/o job-origin &key (stream t))
+            which is called to report the collected statistics.
+            The default is SUMMARY-RESOURCE-UTILIZATION.
+"
   (let ((vstart-run   'sr)
         (vend-run     'er)
         (vstat-before 'sb)
@@ -315,12 +345,12 @@ RETURN: The status of the specified process.
         (vdeio-after  'da))
     `(let ((,vstat-before (process-status))
            (,vstat-after)
-           (,vstart-run  (GET-INTERNAL-RUN-TIME))
+           (,vstart-run  (get-internal-run-time))
            (,vend-run)
            (,vdeio-before (device-i/o))
            (,vdeio-after))
        (unwind-protect (progn ,@body)
-         (setf ,vend-run  (GET-INTERNAL-RUN-TIME)
+         (setf ,vend-run  (get-internal-run-time)
                ,vstat-after (process-status)
                ,vdeio-after (device-i/o))
          (flet ((before (x) (or (cdr (assoc x ,vstat-before)) 0))
@@ -331,7 +361,7 @@ RETURN: The status of the specified process.
              (,@(if report-to-p
                     (list 'funcall report-to)
                     '(summary-resource-utilization))
-                (/ (- ,vend-run ,vstart-run) INTERNAL-TIME-UNITS-PER-SECOND)
+                (/ (- ,vend-run ,vstart-run) internal-time-units-per-second)
                 (* *jiffy* (- (after :stime) (before :stime)))
                 devi-io page-io ,job-origin :stream ,stream)))))))
 
@@ -339,7 +369,7 @@ RETURN: The status of the specified process.
 
 #||
 
-(test-read-parenthesized-string)
+(test/read-parenthesized-string)
 (reporting-sru ()
   (with-open-file (input "/usr/share/dict/words")
     (loop :for line = (read-line input nil nil) :while line))

@@ -1,4 +1,4 @@
-;;;; -*- coding:utf-8 -*-
+;;;; -*- mode:lisp; coding:utf-8 -*-
 ;;;;****************************************************************************
 ;;;;FILE:               brelation.lisp
 ;;;;LANGUAGE:           Common-Lisp
@@ -27,32 +27,30 @@
 ;;;;    (relations with different sizes)
 ;;;;
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2004 - 2004
+;;;;    Copyright Pascal J. Bourguignon 2004 - 2012
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DECLAIM (DECLARATION ALSO-USE-PACKAGES))
-(declaim (ALSO-USE-PACKAGES "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET"))
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BRELATION"
-  (:USE "COMMON-LISP")
-  (:EXPORT "PROJECT-2" "PROJECT-1" "WRITE-BRELATION" "READ-BRELATION"
+(in-package "COMMON-LISP-USER")
+(declaim (declaration also-use-packages))
+(declaim (also-use-packages "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET"))
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BRELATION"
+  (:use "COMMON-LISP")
+  (:export "PROJECT-2" "PROJECT-1" "WRITE-BRELATION" "READ-BRELATION" 
            "FOR-ALL-DO" "EXISTS-1" "EXISTS" "FOR-ALL" "EXTRACT" "SELECT" "CARDINAL"
            "IS-EMPTY" "IS-NOT-EQUAL" "IS-EQUAL" "IS-STRICT-SUBSET" "IS-SUBSET"
            "COMPLEMENT" "SYM-DIFF" "INTERSECTION" "DIFFERENCE" "UNION" "ASSIGN"
@@ -60,332 +58,512 @@
            "HAS-REFLEXIVE" "IS-EQUIVALENCE" "IS-TRANSITIVE" "IS-SYMMETRIC"
            "IS-REFLEXIVE" "IS-TRANSITIVE-1" "IS-REFLEXIVE-1" "IS-RELATED" "IS-ELEMENT"
            "EXCLUDE" "INCLUDE" "MAKE-BRELATION" "BRELATION")
-  (:SHADOW "COMPLEMENT" "INTERSECTION" "UNION")
-  (:IMPORT-FROM "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "VECTOR-INIT" "FOR")
-  (:DOCUMENTATION
-   "This package implements a relation abstract data type
-    based on an array of bset.
-    It can represent only relations between two positive
-    and bounded integers.
+  (:shadow "COMPLEMENT" "INTERSECTION" "UNION")
+  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "VECTOR-INIT" "FOR")
+  (:documentation
+   "
 
-    Copyright Pascal J. Bourguignon 2004 - 2004
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BRELATION")
+This package implements a relation abstract data type based on an
+array of bset.  It can represent only relations between two positive
+and bounded integers.
+
+\(Inspired by Modula-2 cocktail-9309/reuse/src/Relations.md).
+
+See also: COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2004 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BRELATION")
 
 
 
-(DEFSTRUCT (BRELATION (:CONSTRUCTOR %MAKE-BRELATION))
-  (ADJSETS (MAKE-ARRAY '(0) :ELEMENT-TYPE 'COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:BSET
+(defstruct (brelation (:constructor %make-brelation))
+  "The Binary Relation Class."
+  (adjsets (make-array '(0) :element-type 'com.informatimago.common-lisp.cesarum.bset:bset
                        :initial-element (com.informatimago.common-lisp.cesarum.bset:make-bset 0))
-           :TYPE (ARRAY COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:BSET (*)))
-  (SIZE-1 0 :TYPE (INTEGER 0))
-  (SIZE-2 0 :TYPE (INTEGER 0)))
+           :type (array com.informatimago.common-lisp.cesarum.bset:bset (*)))
+  (size-1 0 :type (integer 0))
+  (size-2 0 :type (integer 0)))
 
 
 
-(DEFUN MAKE-BRELATION (SIZE-1 SIZE-2)
-  (DECLARE (TYPE (INTEGER 0) SIZE-1 SIZE-2))
-  (%MAKE-BRELATION
-   :ADJSETS (VECTOR-INIT (MAKE-ARRAY (LIST (1+ SIZE-1))
-                                     :ELEMENT-TYPE 'COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:BSET
+(defun make-brelation (size-1 size-2)
+  "
+RETURN: A new BRELATION between sets of sizes SIZE-1 and SIZE-2.
+"
+  (declare (type (integer 0) size-1 size-2))
+  (%make-brelation
+   :adjsets (vector-init (make-array (list (1+ size-1))
+                                     :element-type 'com.informatimago.common-lisp.cesarum.bset:bset
                                      :initial-element (com.informatimago.common-lisp.cesarum.bset:make-bset 0))
-                         (LAMBDA (INDEX)
-                           (DECLARE (IGNORE INDEX))
-                           (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:MAKE-BSET SIZE-2)))
-   :SIZE-1 SIZE-1
-   :SIZE-2 SIZE-2))
+                         (lambda (index)
+                           (declare (ignore index))
+                           (com.informatimago.common-lisp.cesarum.bset:make-bset size-2)))
+   :size-1 size-1
+   :size-2 size-2))
 
 
-(DEFMACRO IMPLY (P Q) `(OR (NOT ,P) ,Q))
-(DEFMACRO ADJREF (REL I)      `(AREF (BRELATION-ADJSETS ,REL) ,I))
-(DEFMACRO RELATED (REL E1 E2) `(COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:IS-ELEMENT ,E2 (ADJREF ,REL ,E1)))
+(defmacro imply (p q)
+  "
+RETURN: P ⇒ Q
+NOTE:   This short circuits the evaluation of Q if P is false.
+"
+  `(or (not ,p) ,q))
+
+(defmacro adjref (rel i)
+  `(aref (brelation-adjsets ,rel) ,i))
+
+(defmacro related (rel e1 e2)
+  `(com.informatimago.common-lisp.cesarum.bset:is-element ,e2 (adjref ,rel ,e1)))
 
 
-(DEFUN INCLUDE (REL E1 E2)
-  (DECLARE (TYPE (INTEGER 0) E1 E2))
-  (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:INCLUDE (ADJREF REL E1) E2)
-  REL)
+(defun include (rel e1 e2)
+  "
+DO:     Adds (E1 E2) to the relation REL.
+POST:   REL(E1,E2)
+"
+  (declare (type (integer 0) e1 e2))
+  (com.informatimago.common-lisp.cesarum.bset:include (adjref rel e1) e2)
+  rel)
 
 
-(DEFUN EXCLUDE (REL E1 E2)
-  (DECLARE (TYPE (INTEGER 0) E1 E2))
-  (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:EXCLUDE (ADJREF REL E1) E2)
-  REL)
+(defun exclude (rel e1 e2)
+  "
+DO:     Remove (E1 E2) from the relation REL.
+POST:   ¬ REL(E1,E2)
+"
+  (declare (type (integer 0) e1 e2))
+  (com.informatimago.common-lisp.cesarum.bset:exclude (adjref rel e1) e2)
+  rel)
 
 
-(DEFUN IS-ELEMENT (E1 E2 REL)
-  (DECLARE (TYPE (INTEGER 0) E1 E2))
-  (RELATED REL E1 E2)
-  )
+(defun is-element (e1 e2 rel)
+  "
+RETURN: Whether REL(E1,E2).
+"
+  (declare (type (integer 0) e1 e2))
+  (related rel e1 e2))
 
 
-(DEFUN IS-RELATED (E1 E2 REL)
-  (DECLARE (TYPE (INTEGER 0) E1 E2))
-  (RELATED REL E1 E2)
-  )
+(defun is-related (e1 e2 rel)
+  "
+RETURN: Whether REL(E1,E2).
+"
+  (declare (type (integer 0) e1 e2))
+  (related rel e1 e2))
 
 
-(DEFUN IS-REFLEXIVE-1 (E1 REL)
-  (DECLARE (TYPE (INTEGER 0) E1))
-  (RELATED REL E1 E1)
-  )
+(defun is-reflexive-1 (e1 rel)
+  "
+RETURN: Whether REL(E1,E1)
+"
+  (declare (type (integer 0) e1))
+  (related rel e1 e1))
 
 
-(DEFUN IS-SYMMETRIC-1 (E1 E2 REL)
-  (DECLARE (TYPE (INTEGER 0) E1 E2))
-  (IMPLY (RELATED REL E1 E2) (RELATED REL E2 E1))
-  )
+(defun is-symmetric-1 (e1 e2 rel)
+    "
+RETURN: Whether REL(E1,E2) ∧ REL(E2,E1)
+"
+  (declare (type (integer 0) e1 e2))
+  (imply (related rel e1 e2) (related rel e2 e1)))
 
 
-(DEFUN IS-TRANSITIVE-1 (E1 E2 E3 REL)
-  (DECLARE (TYPE (INTEGER 0) E1 E2 E3))
-  (IMPLY (AND (RELATED REL E1 E2) (RELATED REL E2 E3)) (RELATED REL E1 E3))
-  )
+(defun is-transitive-1 (e1 e2 e3 rel)
+      "
+RETURN: Whether (REL(E1,E2) ∧ REL(E2,E3)) ⇒ REL(E1,E3)
+NOTE:   Tests the transitivity of the relation REL only on the
+        elements E1, E2, and E3.  This doesn't mean the relation REL
+        is transitive (but it's a necessary condition).
+"
+  (declare (type (integer 0) e1 e2 e3))
+  (imply (and (related rel e1 e2) (related rel e2 e3)) (related rel e1 e3)))
 
 
-(DEFUN IS-REFLEXIVE (REL)
-  (FOR (I 0 (BRELATION-SIZE-1 REL))
-       (UNLESS (RELATED REL I I) (RETURN-FROM IS-REFLEXIVE NIL)))
-  T)
+(defun is-reflexive (rel)
+  "
+RETURN: Whether the relation REL is reflexive. Ie. ∀i∈[0,SIZE1-1], REL(i,i)
+"
+  (for (i 0 (brelation-size-1 rel))
+       (unless (related rel i i) (return-from is-reflexive nil)))
+  t)
 
 
-(DEFUN IS-SYMMETRIC (REL)
-  (FOR (I 0 (BRELATION-SIZE-1 REL))
-       (UNLESS (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:FOR-ALL (ADJREF REL I)
-                             (LAMBDA (J) (RELATED REL J I)))
-         (RETURN-FROM IS-SYMMETRIC NIL)))
-  T)
+(defun is-symmetric (rel)
+  "
+RETURN: Whether the relation REL is symetric. Ie. ∀(i,j)∈[0,SIZE1-1]², REL(i,j) ⇒ REL(j,i)
+"
+  (for (i 0 (brelation-size-1 rel))
+       (unless (com.informatimago.common-lisp.cesarum.bset:for-all (adjref rel i)
+                                                                   (lambda (j) (related rel j i)))
+         (return-from is-symmetric nil)))
+  t)
 
 
-(DEFUN IS-TRANSITIVE (REL)
-  (LET ((R (MAKE-BRELATION (BRELATION-SIZE-1 REL) (BRELATION-SIZE-2 REL))))
-    (ASSIGN R REL)
-    (CLOSURE R)
-    (IS-EQUAL R REL) ))
+(defun is-transitive (rel)
+   "
+RETURN: Whether the relation REL is transitive. Ie. ∀(i,j,k)∈[0,SIZE1-1]³, REL(i,j) ∧ REL(j,k) ⇒ REL(i,k)
+"
+   (let ((r (make-brelation (brelation-size-1 rel) (brelation-size-2 rel))))
+    (assign r rel)
+    (closure r)
+    (is-equal r rel) ))
 
 
-(DEFUN IS-EQUIVALENCE (REL)
-  (AND (IS-REFLEXIVE REL) (IS-SYMMETRIC REL) (IS-TRANSITIVE REL))
-  )
+(defun is-equivalence (rel)
+  "
+RETURN: Whether REL is an equivalence relation. Ie. REL is reflexive, symetric and transitive.
+"
+  (and (is-reflexive rel) (is-symmetric rel) (is-transitive rel)))
 
 
-(DEFUN HAS-REFLEXIVE (REL)
-  (FOR (I 0 (BRELATION-SIZE-1 REL))
-       (WHEN (RELATED REL I I) (RETURN-FROM HAS-REFLEXIVE T)))
-  NIL)
+(defun has-reflexive (rel)
+  "
+RETURN: ∃i∈[0,SIZE1-1], REL(i,i)
+"
+  (for (i 0 (brelation-size-1 rel))
+       (when (related rel i i) (return-from has-reflexive t)))
+  nil)
 
 
-(DEFMACRO UNTIL (CONDITION &BODY BODY) `(DO () (,CONDITION) ,@BODY))
+(defmacro until (condition &body body) `(do () (,condition) ,@body))
 
 
-(DEFUN IS-CYCLIC (REL)
-  (LET ((WITH-PRED (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:MAKE-BSET (BRELATION-SIZE-1 REL)))
-        (WITHOUT-PRED (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:MAKE-BSET (BRELATION-SIZE-1 REL)))
-        (PRED-COUNT (MAKE-ARRAY (LIST (1+ (BRELATION-SIZE-1 REL)))
-                                :ELEMENT-TYPE '(INTEGER 0)
-                                :INITIAL-ELEMENT 0)))
-    (FOR (I 0 (BRELATION-SIZE-1 REL))
-         (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:FOR-ALL-DO (ADJREF REL I)
-                          (LAMBDA (E) (INCF (AREF PRED-COUNT E)))))
-    (FOR (I 0 (BRELATION-SIZE-1 REL))
-         (WHEN (= 0 (AREF PRED-COUNT I))   (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:INCLUDE WITHOUT-PRED I)))
-    (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:COMPLEMENT WITH-PRED)
-    (UNTIL (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:IS-EMPTY WITHOUT-PRED)
-      (LET ((I (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:EXTRACT WITHOUT-PRED)))
-        (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:EXCLUDE WITH-PRED I)
-        (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:FOR-ALL-DO (ADJREF REL I)
-                         (LAMBDA (E) (DECF (AREF PRED-COUNT E))
-                            (WHEN (= 0 (AREF PRED-COUNT E))
-                              (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:INCLUDE WITHOUT-PRED E))))))
-    (NOT (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:IS-EMPTY WITH-PRED))))
+(defun is-cyclic (rel)
+  "
+RETURN: Whether the relation REL is cyclic.
+"
+  (let ((with-pred (com.informatimago.common-lisp.cesarum.bset:make-bset (brelation-size-1 rel)))
+        (without-pred (com.informatimago.common-lisp.cesarum.bset:make-bset (brelation-size-1 rel)))
+        (pred-count (make-array (list (1+ (brelation-size-1 rel)))
+                                :element-type '(integer 0)
+                                :initial-element 0)))
+    (for (i 0 (brelation-size-1 rel))
+         (com.informatimago.common-lisp.cesarum.bset:for-all-do (adjref rel i)
+                          (lambda (e) (incf (aref pred-count e)))))
+    (for (i 0 (brelation-size-1 rel))
+         (when (= 0 (aref pred-count i))   (com.informatimago.common-lisp.cesarum.bset:include without-pred i)))
+    (com.informatimago.common-lisp.cesarum.bset:complement with-pred)
+    (until (com.informatimago.common-lisp.cesarum.bset:is-empty without-pred)
+      (let ((i (com.informatimago.common-lisp.cesarum.bset:extract without-pred)))
+        (com.informatimago.common-lisp.cesarum.bset:exclude with-pred i)
+        (com.informatimago.common-lisp.cesarum.bset:for-all-do (adjref rel i)
+                         (lambda (e) (decf (aref pred-count e))
+                            (when (= 0 (aref pred-count e))
+                              (com.informatimago.common-lisp.cesarum.bset:include without-pred e))))))
+    (not (com.informatimago.common-lisp.cesarum.bset:is-empty with-pred))))
 
 
 
-(DEFUN GET-CYCLICS (REL BSET)
-  (LET ((R (MAKE-BRELATION (BRELATION-SIZE-1 REL)(BRELATION-SIZE-2 REL))))
-    (ASSIGN R REL)
-    (CLOSURE R)
-    (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:ASSIGN-EMPTY BSET)
-    (FOR (I 0 (BRELATION-SIZE-1 REL))
-         (WHEN (RELATED R I I) (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:INCLUDE BSET I))))
-  BSET)
+(defun get-cyclics (rel bset)
+  "
+RETURN: The set of elements that are in cycles.
+"
+  (let ((r (make-brelation (brelation-size-1 rel)(brelation-size-2 rel))))
+    (assign r rel)
+    (closure r)
+    (com.informatimago.common-lisp.cesarum.bset:assign-empty bset)
+    (for (i 0 (brelation-size-1 rel))
+         (when (related r i i) (com.informatimago.common-lisp.cesarum.bset:include bset i))))
+  bset)
 
 
-(DEFUN ASSIGN-EMPTY (REL)
-  (FOR (I 0 (BRELATION-SIZE-1 REL))
-       (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:ASSIGN-EMPTY (ADJREF REL I)))
-  REL)
+(defun assign-empty (rel)
+  "
+POST:   REL is the empty relation.
+RETURN: REL
+"
+  (for (i 0 (brelation-size-1 rel))
+       (com.informatimago.common-lisp.cesarum.bset:assign-empty (adjref rel i)))
+  rel)
 
 
-(DEFUN ASSIGN-ELEMENT (REL E1 E2)
-  (ASSIGN-EMPTY REL)
-  (INCLUDE REL E1 E2)
-  REL)
+(defun assign-element (rel e1 e2)
+    "
+POST:   REL contains only (E1,E2).
+RETURN: REL
+"
+  (assign-empty rel)
+  (include rel e1 e2)
+  rel)
 
 
-(DEFUN ASSIGN (REL1 REL2)
-  (FOR (I 0 (BRELATION-SIZE-1 REL1))
-       (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:ASSIGN-EMPTY (ADJREF REL1 I))
-       (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:ASSIGN-EMPTY (ADJREF REL2 I)))
-  REL1)
+(defun assign (rel1 rel2)
+  "
+POST:   REL1 is a copy of REL2.
+RETURN: REL1
+"
+  (for (i 0 (brelation-size-1 rel1))
+       (com.informatimago.common-lisp.cesarum.bset:assign-empty (adjref rel1 i))
+       (com.informatimago.common-lisp.cesarum.bset:assign-empty (adjref rel2 i)))
+  rel1)
 
 
-(DEFUN CLOSURE (REL)
-  (FOR (J 0 (BRELATION-SIZE-1 REL))
-       (UNLESS (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:IS-EMPTY (ADJREF REL J))
-         (FOR (I 0 (BRELATION-SIZE-1 REL))
-              (WHEN (RELATED REL I J)
-                (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:UNION (ADJREF REL I)
-                            (ADJREF REL J))))))
-  REL)
+(defun closure (rel)
+    "
+POST:   REL is the transitive closure of the old REL.
+RETURN: REL
+"
+  (for (j 0 (brelation-size-1 rel))
+       (unless (com.informatimago.common-lisp.cesarum.bset:is-empty (adjref rel j))
+         (for (i 0 (brelation-size-1 rel))
+              (when (related rel i j)
+                (com.informatimago.common-lisp.cesarum.bset:union (adjref rel i)
+                            (adjref rel j))))))
+  rel)
            
   
-(DEFUN UNION (REL1 REL2)
-  (FOR (I 0 (BRELATION-SIZE-1 REL1))
-       (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:UNION (ADJREF REL1 I) (ADJREF REL2 I)))
-  REL1)
+(defun union (rel1 rel2)
+     "
+POST:   REL1 is the union of old REL1 and REL2.
+RETURN: REL1
+"
+  (for (i 0 (brelation-size-1 rel1))
+       (com.informatimago.common-lisp.cesarum.bset:union (adjref rel1 i) (adjref rel2 i)))
+  rel1)
 
 
-(DEFUN DIFFERENCE (REL1 REL2)
-  (FOR (I 0 (BRELATION-SIZE-1 REL1))
-       (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:DIFFERENCE (ADJREF REL1 I) (ADJREF REL2 I)))
-  REL1)
+(defun difference (rel1 rel2)
+  "
+POST:   REL1 is the difference of old REL1 and REL2.
+RETURN: REL1
+"
+  (for (i 0 (brelation-size-1 rel1))
+       (com.informatimago.common-lisp.cesarum.bset:difference (adjref rel1 i) (adjref rel2 i)))
+  rel1)
 
 
-(DEFUN INTERSECTION (REL1 REL2)
-  (FOR (I 0 (BRELATION-SIZE-1 REL1))
-       (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:INTERSECTION (ADJREF REL1 I) (ADJREF REL2 I)))
-  REL1)
+(defun intersection (rel1 rel2)
+    "
+POST:   REL1 is the intersection of old REL1 and REL2.
+RETURN: REL1
+"
+  (for (i 0 (brelation-size-1 rel1))
+       (com.informatimago.common-lisp.cesarum.bset:intersection (adjref rel1 i) (adjref rel2 i)))
+  rel1)
 
 
-(DEFUN SYM-DIFF (REL1 REL2)
-  (FOR (I 0 (BRELATION-SIZE-1 REL1))
-       (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:SYM-DIFF (ADJREF REL1 I) (ADJREF REL2 I)))
-  REL1)
+(defun sym-diff (rel1 rel2)
+  "
+POST:   REL1 is the symetric difference of old REL1 and REL2.
+RETURN: REL1
+"
+  (for (i 0 (brelation-size-1 rel1))
+       (com.informatimago.common-lisp.cesarum.bset:sym-diff (adjref rel1 i) (adjref rel2 i)))
+  rel1)
 
 
-(DEFUN COMPLEMENT (REL)
-  (FOR (I 0 (BRELATION-SIZE-1 REL))
-       (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:COMPLEMENT (ADJREF REL I)))
-  REL)
+(defun complement (rel)
+  "
+POST:   REL is the complement of old REL.
+RETURN: REL
+"
+  (for (i 0 (brelation-size-1 rel))
+       (com.informatimago.common-lisp.cesarum.bset:complement (adjref rel i)))
+  rel)
 
 
-(DEFUN IS-SUBSET (REL1 REL2)
-  (FOR (I 0 (BRELATION-SIZE-1 REL1))
-       (UNLESS (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:IS-SUBSET (ADJREF REL1 I) (ADJREF REL2 I))
-         (RETURN-FROM IS-SUBSET NIL)))
-  T)
+(defun is-subset (rel1 rel2)
+  "
+RETURN: Whether REL1 is a subset of REL2.
+"
+  (for (i 0 (brelation-size-1 rel1))
+       (unless (com.informatimago.common-lisp.cesarum.bset:is-subset (adjref rel1 i) (adjref rel2 i))
+         (return-from is-subset nil)))
+  t)
 
 
-(DEFUN IS-STRICT-SUBSET (REL1 REL2)
-  (AND (IS-SUBSET REL1 REL2) (IS-NOT-EQUAL REL1 REL2))
-  )
+(defun is-strict-subset (rel1 rel2)
+    "
+RETURN: Whether REL1 is a strict subset of REL2.
+"
+  (and (is-subset rel1 rel2) (is-not-equal rel1 rel2)))
 
 
-(DEFUN IS-EQUAL (REL1 REL2)
-  (FOR (I 0 (BRELATION-SIZE-1 REL1))
-       (UNLESS (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:IS-EQUAL  (ADJREF REL1 I) (ADJREF REL2 I))
-         (RETURN-FROM IS-EQUAL NIL)))
-  T)
+(defun is-equal (rel1 rel2)
+      "
+RETURN: Whether REL1 is equal to REL2.
+"
+  (for (i 0 (brelation-size-1 rel1))
+       (unless (com.informatimago.common-lisp.cesarum.bset:is-equal  (adjref rel1 i) (adjref rel2 i))
+         (return-from is-equal nil)))
+  t)
 
 
-(DEFUN IS-NOT-EQUAL (REL1 REL2)
-  (NOT (IS-EQUAL REL1 REL2)))
+(defun is-not-equal (rel1 rel2)
+        "
+RETURN: Whether REL1 is not equal to REL2.
+"
+  (not (is-equal rel1 rel2)))
 
 
-(DEFUN IS-EMPTY (REL)
-  (FOR (I 0 (BRELATION-SIZE-1 REL))
-       (UNLESS (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:IS-EMPTY  (ADJREF REL I))
-         (RETURN-FROM IS-EMPTY  NIL)))
-  T)
+(defun is-empty (rel)
+          "
+RETURN: Whether REL is empty.
+"
+  (for (i 0 (brelation-size-1 rel))
+       (unless (com.informatimago.common-lisp.cesarum.bset:is-empty  (adjref rel i))
+         (return-from is-empty  nil)))
+  t)
 
 
-(DEFUN CARDINAL (REL)
-  (LET ((N 0))
-    (FOR (I 0 (BRELATION-SIZE-1 REL))
-         (INCF N (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:CARDINAL (ADJREF REL I))))
-    N))
+(defun cardinal (rel)
+  "
+RETURN: The number of couples in the relation REL.
+"
+  (let ((n 0))
+    (for (i 0 (brelation-size-1 rel))
+         (incf n (com.informatimago.common-lisp.cesarum.bset:cardinal (adjref rel i))))
+    n))
     
 
-(DEFUN SELECT (REL)
-  (FOR (I 0 (BRELATION-SIZE-1 REL))
-       (UNLESS (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:IS-EMPTY (ADJREF REL I))
-         (RETURN-FROM SELECT (VALUES I (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:SELECT (ADJREF REL I))))))
-  (VALUES 0 0))
+(defun select (rel)
+    "
+RETURN: (values i j) such as REL(i,j), or NIL if REL is empty.
+"
+  (for (i 0 (brelation-size-1 rel))
+       (unless (com.informatimago.common-lisp.cesarum.bset:is-empty (adjref rel i))
+         (return-from select (values i (com.informatimago.common-lisp.cesarum.bset:select (adjref rel i))))))
+  nil)
 
 
-(DEFUN EXTRACT (REL)
-  (MULTIPLE-VALUE-BIND (E1 E2) (SELECT REL)
-    (EXCLUDE REL E1 E2)
-    (VALUES E1 E2)))
+(defun extract (rel)
+  "
+DO:     Selects a couple in the relation REL, exclude it from REL, and return it.
+PRE:    (not (is-empty rel))
+POST:   ¬REL(i,j)
+RETURN: (values i j) such as old REL(i,j), or NIL if REL is empty.
+" 
+  (multiple-value-bind (e1 e2) (select rel)
+    (when e2
+      (exclude rel e1 e2)
+      (values e1 e2))))
 
 
-(DEFUN FOR-ALL (REL PROC)
-  (FOR (I 0 (BRELATION-SIZE-1 REL))
-       (UNLESS (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:FOR-ALL (ADJREF REL I) (LAMBDA (E) (FUNCALL PROC I E)))
-         (RETURN-FROM FOR-ALL NIL)))
-  T)
+(defun for-all (rel proc)
+  "
+DO:     Calls PROC on couples of the relation REL while it returns true.
+PROC:   A predicate of two elements.
+RETURN: Whether PROC returned true for all couples.
+"
+  (for (i 0 (brelation-size-1 rel))
+       (unless (com.informatimago.common-lisp.cesarum.bset:for-all (adjref rel i) (lambda (e) (funcall proc i e)))
+         (return-from for-all nil)))
+  t)
 
 
-(DEFUN EXISTS (REL PROC)
-  (FOR (I 0 (BRELATION-SIZE-1 REL))
-       (WHEN (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:EXISTS (ADJREF REL I) (LAMBDA (E) (FUNCALL PROC I E)))
-         (RETURN-FROM EXISTS T)))
-  NIL)
+(defun exists (rel proc)
+   "
+DO:     Calls PROC on  couples of the relation REL until it returns true.
+PROC:   A predicate of two elements.
+RETURN: Whether PROC returned true for at least one couple.
+"
+  (for (i 0 (brelation-size-1 rel))
+       (when (com.informatimago.common-lisp.cesarum.bset:exists (adjref rel i) (lambda (e) (funcall proc i e)))
+         (return-from exists t)))
+  nil)
   
 
-(DEFUN EXISTS-1 (REL PROC)
-  (LET ((N 0))
-    (FOR (I 0 (BRELATION-SIZE-1 REL))
-         (WHEN (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:EXISTS (ADJREF REL I) (LAMBDA (E) (FUNCALL PROC I E)))
-           (INCF N)))
-    (= N 1)))
+(defun exists-1 (rel proc)
+  "
+DO:     Calls PROC on each couples of the relation REL.
+PROC:   A predicate of two elements.
+RETURN: Whether PROC returned true for exactly one couple.
+"
+  (let ((n 0))
+    (for (i 0 (brelation-size-1 rel))
+         (when (com.informatimago.common-lisp.cesarum.bset:exists (adjref rel i) (lambda (e) (funcall proc i e)))
+           (incf n)))
+    (= n 1)))
 
 
-(DEFUN FOR-ALL-DO (REL PROC)
-  (FOR (I 0 (BRELATION-SIZE-1 REL))
-       (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:FOR-ALL-DO (ADJREF REL I) (LAMBDA (E) (FUNCALL PROC I E))))
-  REL)
+(defun for-all-do (rel proc)
+  "
+DO:     Calls PROC on each couple of the relation REL.
+PROC:   A function of two elements.
+RETURN: REL
+"
+  (for (i 0 (brelation-size-1 rel))
+       (com.informatimago.common-lisp.cesarum.bset:for-all-do (adjref rel i) (lambda (e) (funcall proc i e))))
+  rel)
 
 
-(DEFUN READ-BRELATION (STREAM REL)
-  (ASSIGN-EMPTY REL)
-  (WHEN (PEEK-CHAR (CHARACTER "(") STREAM NIL NIL)
-    (READ-CHAR STREAM)
-    (DO ()
-        ((CHAR= (PEEK-CHAR T STREAM NIL (CHARACTER ")")) (CHARACTER ")"))
-         (READ-CHAR STREAM))
-      (LET ((I (READ STREAM)))
+(defun read-brelation (stream rel)
+  "
+DO:     Read a relation from the STREAM.
+POST:   REL is the relation read.
+RETURN: REL.
+NOTE:   The serialization format is that of a list of adjacency lists.
+        ((1 (2 3)) (2 (3)) (4)) = ({1 2 3 4} {(1 2) (1 3) (2 3)})
+"
+  (assign-empty rel)
+  (when (peek-char (character "(") stream nil nil)
+    (read-char stream)
+    (do ()
+        ((char= (peek-char t stream nil (character ")")) (character ")"))
+         (read-char stream))
+      (let ((i (read stream)))
         
-        (WHEN (PEEK-CHAR (CHARACTER "(") STREAM NIL NIL)
-          (READ-CHAR STREAM)
-          (DO ()
-              ((CHAR= (PEEK-CHAR T STREAM NIL (CHARACTER ")")) (CHARACTER ")"))
-               (READ-CHAR STREAM))
-            (INCLUDE REL I (READ STREAM)))))))
-  REL)
+        (when (peek-char (character "(") stream nil nil)
+          (read-char stream)
+          (do ()
+              ((char= (peek-char t stream nil (character ")")) (character ")"))
+               (read-char stream))
+            (include rel i (read stream)))))))
+  rel)
 
 
-(DEFUN WRITE-REL (STREAM REL)
-  (PRINC "(" STREAM)
-  (FOR (I 0 (BRELATION-SIZE-1 REL))
-       (PRINC I STREAM)
-       (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:WRITE-BSET STREAM (ADJREF REL I))
-       (TERPRI STREAM))
-  (PRINC ")" STREAM)
-  REL)
+(defun write-brelation (stream rel)
+  "
+DO:     Write the relation REL to the STREAM.
+RETURN: REL.
+"
+  (princ "(" stream)
+  (for (i 0 (brelation-size-1 rel))
+       (princ i stream)
+       (com.informatimago.common-lisp.cesarum.bset:write-bset stream (adjref rel i))
+       (terpri stream))
+  (princ ")" stream)
+  rel)
 
        
-(DEFUN PROJECT-1 (REL E1 BSET)
-  (ASSIGN-EMPTY BSET)
-  (FOR (I 0 (BRELATION-SIZE-1 REL))
-       (WHEN (RELATED REL I E1)
-         (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET:INCLUDE BSET I)))
-  BSET)
+(defun project-1 (rel e1 bset)
+  "
+POST:   BSET is the set of all elements I that are in relation REL(I,E2).
+RETURN: BSET
+"
+  (assign-empty bset)
+  (for (i 0 (brelation-size-1 rel))
+       (when (related rel i e1)
+         (com.informatimago.common-lisp.cesarum.bset:include bset i)))
+  bset)
 
 
-(DEFUN PROJECT-2 (REL E1 BSET)  (ASSIGN BSET (ADJREF REL E1)))
+(defun project-2 (rel e1 bset)
+  "
+POST:   BSET is the set of all elements E2 that are in relation REL(E1,E2).
+RETURN: BSET
+"
+  (assign bset (adjref rel e1)))
 
 
 ;;;; THE END ;;;;

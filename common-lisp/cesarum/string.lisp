@@ -11,6 +11,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2012-08-10 <PJB> Improved split-string and string-justify-left.
 ;;;;    2006-10-20 <PJB> Moved displaced-vector to
 ;;;;                     com.informatimago.common-lisp.cesarum.array.
 ;;;;    2005-09-01 <PJB> Made use of ISO6429 to improve portability.
@@ -20,24 +21,22 @@
 ;;;;    2002-11-16 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
-;;;;
-;;;;    Copyright Pascal J. Bourguignon 2002 - 2005
-;;;;
-;;;;    This script is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU  General Public
-;;;;    License as published by the Free Software Foundation; either
-;;;;    version 2 of the License, or (at your option) any later version.
-;;;;
-;;;;    This script is distributed in the hope that it will be useful,
+;;;;    AGPL3
+;;;;    
+;;;;    Copyright Pascal J. Bourguignon 2002 - 2012
+;;;;    
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
+;;;;    
+;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
-;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;;;;    General Public License for more details.
-;;;;
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this library; see the file COPYING.LIB.
-;;;;    If not, write to the Free Software Foundation,
-;;;;    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
+;;;;    
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;*****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -52,13 +51,35 @@
    "PREFIXP" "SUFFIXP"
    "SPLIT-NAME-VALUE" "STRING-REPLACE" "UNSPLIT-STRING" "SPLIT-STRING"
    "SPLIT-ESCAPED-STRING" "IMPLODE-STRING" "EXPLODE-STRING"
+   "IMPLODE" "EXPLODE"
    "CONCATENATE-STRINGS")
   (:documentation
-   "This package exports some string processing functions.
+   "
 
-    Copyright Pascal J. Bourguignon 2002 - 2005
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
+This package exports some string processing functions.
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2002 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
 
 
@@ -94,11 +115,52 @@ RETURN:          A string containing the concatenation of the strings
        :finally (return result))))
 
 
-(defun explode-string (string)
+(defgeneric explode (object &optional result-type)
+  (:documentation "
+RETURN:         A sequence of character of type RESULT-TYPE containing
+                the character of the OBJECT.
+RESULT-TYPE:    A sequence type accepted by MAP (not NIL). Default: LIST.
+OBJECT:         Can be a string, a symbol (its symbol-name is exploded),
+                or a random object (its prin1 representation is exploded).
+")
+  (:method ((object symbol) &optional (result-type 'list))
+    (explode-string (symbol-name object) result-type))
+  (:method ((object string) &optional (result-type 'list))
+    (explode-string object result-type))
+  (:method ((object vector) &optional (result-type 'list))
+    (explode-string (implode-string object) result-type))
+  (:method ((object t) &optional (result-type 'list))
+    (explode-string (prin1-to-string object) result-type)))
+
+
+(defun implode (char-seq &optional (result-type 'symbol) (package *package*))
   "
-return a new list containing the character in the sequence string.
+RETURN:         An object of type RESULT-TYPE made with the character
+                in the CHAR-SEQ sequence. Default: SYMBOL.
+RESULT-TYPE:    SYMBOL (default), or STRING, or another type, in which
+                case the object is obtained from reading from the
+                string obtained from the implosion of the characters
+                CHAR-SEQ.
+PACKAGE:        When RESULT-TYPE is SYMBOL, then the package where the
+                symbol is interned. Default: *PACKAGE*.
 "
-  (map 'list (function character) string))
+  (case result-type
+    (string (implode-string char-seq))
+    (symbol (intern (implode-string char-seq) package))
+    (otherwise  (let ((object (read-from-string (implode-string char-seq))))
+                  (assert (typep object result-type) ()
+                          "~S is of type ~S which is not the expected type ~S"
+                          object (type-of object) result-type)
+                  object))))
+
+
+(defun explode-string (string &optional (result-type 'list))
+  "
+RETURN:         A new sequence containing the character in the
+                sequence string.
+RESULT-TYPE:    A sequence type accepted by MAP.  Default: LIST.
+"
+  (map result-type (function character) string))
 
 
 (defun implode-string (char-seq)
@@ -106,6 +168,71 @@ return a new list containing the character in the sequence string.
 RETURN: A new string containing the characters in the sequence CHAR-SEQ.
 "
   (map 'string (function character) char-seq))
+
+
+(defun test/implode-explode ()
+  ;; implode-string
+  (assert (string= "" (implode-string "")))
+  (assert (string= "" (implode-string #())))
+  (assert (string= "" (implode-string '())))
+  (assert (null (ignore-errors (implode-string 42))))
+  (assert (string= "ABC" (implode-string "ABC")))
+  (assert (string= "ABC" (implode-string #(#\A #\B #\C))))
+  (assert (string= "ABC" (implode-string '(#\A #\B #\C))))
+  (assert (null (ignore-errors (implode-string '(42)))))
+  ;; explode-string
+  (assert (eq      (explode-string "")         nil))
+  (assert (eq      (explode-string "" 'list)   nil))
+  (assert (string= (explode-string "" 'string) ""))
+  (assert (equalp  (explode-string "" 'vector) #()))
+  (assert (equal  (explode-string "ABC")       '(#\A #\B #\C)))
+  (assert (equal  (explode-string "ABC" 'list) '(#\A #\B #\C)))
+  (assert (and  (every 'char= (explode-string "ABC" 'vector) #(#\A #\B #\C))
+                (= (length (explode-string "ABC" 'vector)) (length  #(#\A #\B #\C)))))
+  (assert (string= (explode-string "ABC" 'string) "ABC"))
+  ;; implode a string
+  (assert (eq      (implode "" 'symbol "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING") '||))
+  (assert (eq      (implode "ABC" 'symbol "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING") 'ABC))
+  (assert (eq      (implode "ABC" 'symbol :keyword) ':ABC))
+  (assert (string= (implode "" 'string) ""))
+  (assert (string= (implode "ABC" 'string) "ABC"))
+  (assert (equal   (implode "(1 2 3)" 'list) '(1 2 3))) 
+  (assert (equal   (implode "NIL" 'list) '()))
+  (assert (equalp  (implode "#(1 2 3)" 'vector) #(1 2 3))) 
+  ;; implode a vector
+  (assert (eq      (implode #() 'symbol "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING") '||))
+  (assert (eq      (implode #(#\A #\B #\C) 'symbol "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING") 'ABC))
+  (assert (eq      (implode #(#\A #\B #\C) 'symbol :keyword) ':ABC))
+  (assert (string= (implode #() 'string) ""))
+  (assert (string= (implode #(#\A #\B #\C) 'string) "ABC"))
+  (assert (equal   (implode #(#\( #\1 #\space #\2  #\space #\3 #\)) 'list) '(1 2 3))) 
+  (assert (equal   (implode #(#\N #\I #\L) 'list) '()))
+  (assert (equalp  (implode #(#\# #\( #\1 #\space #\2  #\space #\3 #\)) 'vector) #(1 2 3))) 
+  ;; implode a list
+  (assert (eq      (implode '() 'symbol "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING") '||))
+  (assert (eq      (implode '(#\A #\B #\C) 'symbol "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING") 'ABC))
+  (assert (eq      (implode '(#\A #\B #\C) 'symbol :keyword) ':ABC))
+  (assert (string= (implode '() 'string) ""))
+  (assert (string= (implode '(#\A #\B #\C) 'string) "ABC"))
+  (assert (equal   (implode '(#\( #\1 #\space #\2  #\space #\3 #\)) 'list) '(1 2 3))) 
+  (assert (equal   (implode '(#\N #\I #\L) 'list) '()))
+  (assert (equalp  (implode '(#\# #\( #\1 #\space #\2  #\space #\3 #\)) 'vector) #(1 2 3)))
+  ;; explode
+  (assert (equal  (explode 'hello) '(#\H #\E #\L #\L #\O)))
+  (assert (equal  (explode 'hello 'list) '(#\H #\E #\L #\L #\O)))
+  (assert (equalp (explode 'hello 'vector) #(#\H #\E #\L #\L #\O)))
+  (assert (equalp (explode 'hello 'string) "HELLO"))
+  (assert (equal  (explode "HELLO") '(#\H #\E #\L #\L #\O)))
+  (assert (equal  (explode "HELLO" 'list) '(#\H #\E #\L #\L #\O)))
+  (assert (equalp (explode "HELLO" 'vector) #(#\H #\E #\L #\L #\O)))
+  (assert (equalp (explode "HELLO" 'string) "HELLO"))
+  (assert (equalp (explode #(#\H #\E #\L #\L #\O)) '(#\H #\E #\L #\L #\O)))
+  (assert (equalp (explode #(#\H #\E #\L #\L #\O) 'list) '(#\H #\E #\L #\L #\O)))
+  (assert (equalp (explode #(#\H #\E #\L #\L #\O) 'vector) #(#\H #\E #\L #\L #\O)))
+  (assert (equalp (explode #(#\H #\E #\L #\L #\O) 'string) "HELLO"))
+  :success)
+
+(test/implode-explode)
 
 
 (define-compiler-macro implode-string (&whole form  char-seq)
@@ -161,30 +288,33 @@ RETURN:  A list of substrings of string.
           (t (incf curr))))))
 
 
-(defun split-string (string &optional (separators " "))
+(defun split-string (string &optional (separators " ") (remove-empty nil))
   "
-NOTE:   current implementation only accepts as separators
-        a string containing literal characters.
+STRING:         A sequence.
+
+SEPARATOR:      A sequence.
+
+RETURN:         A list of subsequence of STRING, split upon any element of SEPARATORS.
+                Separators are compared to elements of the STRING with EQL.
+
+NOTE:           It's actually a simple split-sequence now.
+
+EXAMPLES:       (split-string '(1 2 0 3 4 5 0 6 7 8 0 9) '(0))
+                --> ((1 2) (3 4 5) (6 7 8) (9))
+                (split-string #(1 2 0 3 4 5 0 6 7 8 0 9) #(0))
+                --> (#(1 2) #(3 4 5) #(6 7 8) #(9))
+                (split-string \"1 2 0 3 4 5 0 6 7 8\" '(#\space #\0))
+                --> (\"1\" \"2\" \"\" \"\" \"3\" \"4\" \"5\" \"\" \"\" \"6\" \"7\" \"8\")
 "
-  (let ((string     (if (simple-string-p string)
-                        string
-                        (copy-seq string)))
-        (separators (if (simple-string-p separators)
-                        separators
-                        (copy-seq separators)))
-        (chunks  '())
-        (position 0)
-        (nextpos  0)
-        (strlen   (length string)) )
-    (declare (type simple-string string separators))
-    (loop :while (< position strlen)
-          :do (loop :while (and (< nextpos strlen)
-                                (not (position (char string nextpos) separators)))
-                    :do (setq nextpos (1+ nextpos)))
-              (push (subseq string position nextpos) chunks)
-              (setq position (1+ nextpos))
-              (setq nextpos  position))
-    (nreverse chunks)))
+  (loop
+    :with strlen = (length string)
+    :for position = 0 :then (1+ nextpos)
+    :for nextpos = (position-if (lambda (e) (find e separators)) string :start position)
+    :unless (and remove-empty
+                 (or (and (= position strlen) (null nextpos ))
+                     (eql position nextpos)))
+    :collect (subseq string position nextpos)
+    :while (and nextpos (< position strlen))))
 
 
 (defun unsplit-string (string-list &optional (separator " ")
@@ -328,54 +458,60 @@ RETURN:         A padded string.
 ;;            (mapcan #'list cw (split-sequence long-string #\Space)))))
 
 
-(defun string-justify-left (string &optional (width 72) (left-margin 0))
+(defun string-justify-left (string &optional (width 72) (left-margin 0) (separators #(#\Space #\Newline)))
   "
-RETURN: a left-justified string built from string. 
-NOTE:   The default width is 72 characters, the default left-margin is 0. 
-        The width is counted from column 0.
-        The word separators are those of split-string: [ \\f\\t\\n\\r\\v]+, 
-        which means that the string is justified as one paragraph."
-  (unless (stringp string)
-    (error "STRING-JUSTIFY-LEFT: The first argument must be a STRING."))
-  (unless (and (integerp width) (integerp left-margin))
-    (error "STRING-JUSTIFY-LEFT: The optional arguments must be INTEGER."))
-  (let* ((margin (make-string left-margin :initial-element (character " ")))
-         (splited (delete "" (split-string
-                              string
-                              (map 'vector (function code-char)
-                                   (list (char-code #\space)
-                                         com.informatimago.common-lisp.cesarum.ecma048:ht
-                                         com.informatimago.common-lisp.cesarum.ecma048:cr
-                                         com.informatimago.common-lisp.cesarum.ecma048:lf
-                                         com.informatimago.common-lisp.cesarum.ecma048:ff
-                                         com.informatimago.common-lisp.cesarum.ecma048:vt)))
-                          :test (function string=)))
-         (col left-margin)
+RETURN:         A left-justified string built from string.
+
+WIDTH:          The maximum width of the generated lines.  Default is 72 characters.
+
+LEFT-MARGIN:    The left margin, filled with spaces.  Default is 0 characters.
+
+SEPARATORS:     A sequence containing the characters on which to split the words.
+                Default: #\(#\space #\newline).
+"
+  (check-type string string)
+  (check-type width integer)
+  (check-type left-margin integer)
+  (let* ((margin    (make-string left-margin :initial-element (character " ")))
+         (splited   (split-string string separators t))
+         (col       left-margin)
          (justified (list (subseq margin 0 col)))
          (separator ""))
     (dolist (word splited)
-      (when (< 0 (length word))
-        (if (<= width (+ col (length word)))
-            (progn (push #(#\newline) justified)
-                   (push margin justified)
-                   (push word justified)
-                   (setf col (+ left-margin (length word))))
-            (progn (push separator justified)
-                   (push word justified)
-                   (incf col (+ 1 (length word))))))
+      (if (<= width (+ col (length word)))
+          (progn (push #(#\newline) justified)
+                 (push margin justified)
+                 (push word justified)
+                 (setf col (+ left-margin (length word))))
+          (progn (push separator justified)
+                 (push word justified)
+                 (incf col (+ 1 (length word)))))
       (setf separator " "))
-    ;; Pad with spaces up to width.
-    (when (< col width)
-      (push (make-string (- width col) :initial-element (character " "))
-            justified))
+    ;; ;; Pad with spaces up to width.
+    ;; (when (< col width)
+    ;;   (push (make-string (- width col) :initial-element (character " "))
+    ;;         justified))
     (apply (function concatenate) 'string (nreverse justified))))
 
 
 (defmacro deftranslation (table text language translation
                                 &rest langs-trans)
+  "
+DO:             Define a translation table.
+TABLE:          A symbol naming a variable to be bound to the
+                translation table (with defvar).
+TEXT:           A string containing the localizable text.
+LANGUAGE:       A keyword denoting a language.
+TRANSLATION:    A translation of the TEXT in the LANGUAGE.
+LANGS-TRANS:    Other couples language translation.
+EXAMPLE:        (deftranslation *words* \"car\" :fr \"automobile\"
+                                                :es \"coche\")
+                (localize *words* :fr \"car\")
+                --> \"automobile\"
+SEE ALSO:       LOCALIZE
+"
   `(eval-when (:compile-toplevel :load-toplevel :execute)
-     (unless (boundp (quote ,table))
-       (defvar ,table (make-hash-table :test (function equal))))
+     (defvar ,table (make-hash-table :test (function equal)))
      (setf ,@(do ((lt (list* language translation langs-trans))
                   (result '()))
                  ((null lt) (nreverse result))
@@ -388,9 +524,10 @@ NOTE:   The default width is 72 characters, the default left-margin is 0.
 
 (defun localize (table language text)
   "
-RETURN: A version of the TEXT in the given LANGUAGE, 
-        or in english if LANGUAGE is not found,
-        or TEXT itself if none found.
+RETURN:     A version of the TEXT in the given LANGUAGE, 
+            or in english if LANGUAGE is not found,
+            or TEXT itself if none found.
+SEE ALSO:   DEFTRANSLATION
 "
   (or (gethash (cons text language) table)
       (gethash (cons text :en) table)

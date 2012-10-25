@@ -36,19 +36,19 @@
 ;;    Boston, MA 02111-1307 USA
 ;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
+(in-package "COMMON-LISP-USER")
 
-(DECLAIM (DECLARATION ALSO-USE-PACKAGES))
-(declaim (ALSO-USE-PACKAGES "COM.INFORMATIMAGO.COMMON-LISP.HTML-PARSER.PARSE-HTML"))
+(declaim (declaration also-use-packages))
+(declaim (also-use-packages "COM.INFORMATIMAGO.COMMON-LISP.HTML-PARSER.PARSE-HTML"))
 
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.OBSOLETE-OR-INCOMPLEPTE.WEB-CACHE"
-  (:USE "COM.INFORMATIMAGO.PA.PROCESS-HTML"
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.OBSOLETE-OR-INCOMPLEPTE.WEB-CACHE"
+  (:use "COM.INFORMATIMAGO.PA.PROCESS-HTML"
         "COM.INFORMATIMAGO.PA.HTTP-CLIENT"
         "COMMON-LISP")
-  (:EXPORT "*CACHE-DIRECTORY-PATH*" "SYNCHRONIZE-CACHE" "FORGET-ALL"
+  (:export "*CACHE-DIRECTORY-PATH*" "SYNCHRONIZE-CACHE" "FORGET-ALL"
            "FORGET-URI" "FREE-PARSED-HTML-AT-URI" "FREE-RESOURCE-AT-URI"
            "GET-PARSED-HTML-AT-URI" "GET-RESOURCE-AT-URI")
-  (:DOCUMENTATION
+  (:documentation
    "
     This package implements a cache for web pages, 
     mapping urls to HTML text and parsed tree.
@@ -58,7 +58,7 @@
     modify it under the terms of the GNU General Public License
     as published by the Free Software Foundation; either version
     2 of the License, or (at your option) any later version."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.OBSOLETE-OR-INCOMPLEPTE.WEB-CACHE")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.OBSOLETE-OR-INCOMPLEPTE.WEB-CACHE")
 
 
 
@@ -302,21 +302,21 @@ DO:     Ensure the cache index in core and on disk are synchronized.
                  :defaults directory))
 
 
-(defmethod FREE-RESOURCE-AT-URI ((self web-cache) URI)
+(defmethod free-resource-at-uri ((self web-cache) uri)
   (let ((entry (gethash uri (cache-index self))))
     (when entry
       (setf (cache-entry-resource   entry) nil
             (cache-entry-resource-p entry) nil))))
 
 
-(defmethod FREE-PARSED-HTML-AT-URI ((self web-cache) URI)
+(defmethod free-parsed-html-at-uri ((self web-cache) uri)
   (let ((entry (gethash uri (cache-index self))))
     (when entry
       (setf (cache-entry-parsed-html   entry) nil
             (cache-entry-parsed-html-p entry) nil))))
 
 
-(defmethod FORGET-URI ((self web-cache) URI)
+(defmethod forget-uri ((self web-cache) uri)
   "
 DO:     Forget the resource at URI; delete the cached files.
 "
@@ -335,7 +335,7 @@ DO:     Forget the resource at URI; delete the cached files.
       (touch-cache-date self))))
 
 
-(defmethod FORGET-ALL ((self web-cache))
+(defmethod forget-all ((self web-cache))
   "
 DO:     Forget all the URI, deleting all the cached files.
 "
@@ -380,7 +380,7 @@ DO:     Forget all the URI, deleting all the cached files.
   (when *cache*
     (gethash uri *cache*))
   (unless entry
-    (multiple-value-bind (header body) (FETCH-RESOURCE-AT-URI uri)
+    (multiple-value-bind (header body) (fetch-resource-at-uri uri)
       )))
 
 

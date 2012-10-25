@@ -14,32 +14,64 @@
 ;;;;    2010-10-31 <PJB> Created this .asd file.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2010 - 2010
+;;;;    Copyright Pascal J. Bourguignon 2010 - 2012
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
+
+#+clisp
+(unless custom:*ansi*
+  (warn "clisp should be used with -ansi or (setf custom:*ansi* t) in ~/.clisprc"))
+
 (asdf:defsystem :com.informatimago.common-lisp.cesarum
+
+    ;; system attributes:
+    
+    :description  "Various general data types, algorithms, utilities and standards."
+
+    :long-description "
+
+This system provides various kinds of packages:
+
+- Common Lisp addendums (utility, array, sequence, list, string,
+  package, file, stream);
+
+- Data structures (sets, relations, dictionaries, lists, queues,
+  trees, graphs);
+
+- Standards (ascii, ecma048, iso3166, iso4217, iso693a);
+
+- Algorithms (pattern matcher, combinations, constraints, dfa, etc);
+
+all written in 100% conforming Common Lisp.
+"
+    
+    :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
+    
+    :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
+    
+    :licence "AGPL3"
+
+    ;; component attributes:
+    
     :name "com.informatimago.common-lisp.cesarum"
-    :description  "This library implements various general data types, algorithms and standards."
-    :author "<PJB> Pascal J. Bourguignon <pjb@informatimago.com>"
+
     :version "1.3.2"
-    :licence "GPL"
+
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Autumn 2010")
                  ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.cesarum/")
@@ -47,7 +79,9 @@
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
+    
     :depends-on (:com.informatimago.common-lisp.lisp-sexp)
+    #+asdf-unicode :encoding #+asdf-unicode :utf-8
     :components (
                  ;; Common Lisp addendum:
                  (:file "utility"         :depends-on ())
@@ -94,6 +128,7 @@
                  (:file "peek-stream"     :depends-on ())
                  (:file "cache"           :depends-on ())
                  (:file "float-binio"     :depends-on ())
+
                  ))
 
 

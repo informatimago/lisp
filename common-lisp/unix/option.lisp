@@ -6,7 +6,7 @@
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    This package processes command line options.
+;;;;    See defpackage documentation string.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
@@ -29,7 +29,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.UNIX.OPTION"
@@ -52,14 +52,44 @@
            "OPTION-KEYS" "OPTION-ARGUMENTS" "OPTION-DOCUMENTATION" "OPTION-FUNCTION"
            "OPTION-LIST")
   (:documentation "
+
 This package processes command line options.
 
-Copyright Pascal J. Bourguignon 2012 - 2012
+Example:
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+        (defvar *force-execution* nil)
+
+        (define-option (\"-f\" \"--force\" \"force\") ()
+           \"Force execution\"
+           (setf *force-execution* t))
+
+        (defun main (arguments)
+            (parse-options arguments)
+            (when *force-execution* (do-it))
+            (ext:exit ex-ok))
+
+        (main ext:*args*)
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2012 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
 "))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.UNIX.OPTION")
 
@@ -81,9 +111,11 @@ otherwise we fallback to *PROGRAM-NAME*.")
 
 (define-condition parse-options-finish (condition)
   ((status-code :initarg :status-code :reader parse-options-finish-status-code))
-  (:report "PARSE-OPTIONS-FINISH must be called only in the dynamic context of a call to PARSE-OPTIONS"))
+  (:report "PARSE-OPTIONS-FINISH must be called only in the dynamic context of a call to PARSE-OPTIONS")
+  (:documentation "Condition signaled to finish the parsing of options early."))
 
 (defun parse-options-finish (status-code)
+  "Signals the PARSE-OPTIONS-FINISH condition, which terminates option parsing early."
   (error 'parse-options-finish :status-code status-code))
 
 
@@ -94,6 +126,11 @@ otherwise we fallback to *PROGRAM-NAME*.")
 
 
 (defmacro redirecting-stdout-to-stderr (&body body)
+  "
+Execute BODY with the *standard-output*, *error-output*, and
+*trace-output* redirected.  If an error occurs in BODY, then all the
+redirected output is sent to *error-output*.
+"
   (let ((verror  (gensym))
         (voutput (gensym)))
    `(let* ((,verror  nil)
@@ -123,75 +160,75 @@ otherwise we fallback to *PROGRAM-NAME*.")
 (defconstant ex--base         64  "base value for error messages")
 
 (defconstant ex-usage         64  "command line usage error
-    The command was used incorrectly, e.g., with
-    the wrong number of arguments, a bad flag, a bad
-    syntax in a parameter, or whatever.")
+The command was used incorrectly, e.g., with
+the wrong number of arguments, a bad flag, a bad
+syntax in a parameter, or whatever.")
 
 (defconstant ex-dataerr       65  "data format error
-    The input data was incorrect in some way.
-    This should only be used for user's data & not
-    system files.")
+The input data was incorrect in some way.
+This should only be used for user's data & not
+system files.")
 
 (defconstant ex-noinput       66  "cannot open input
-    An input file (not a system file) did not
-    exist or was not readable.  This could also include
-    errors like \"No message\" to a mailer (if it cared
-    to catch it).")
+An input file (not a system file) did not
+exist or was not readable.  This could also include
+errors like \"No message\" to a mailer (if it cared
+to catch it).")
 
 (defconstant ex-nouser        67  "addressee unknown
-    The user specified did not exist.  This might
-    be used for mail addresses or remote logins.
-    ")
+The user specified did not exist.  This might
+be used for mail addresses or remote logins.
+")
 
 (defconstant ex-nohost        68  "host name unknown
-    The host specified did not exist.  This is used
-    in mail addresses or network requests.")
+The host specified did not exist.  This is used
+in mail addresses or network requests.")
 
 (defconstant ex-unavailable   69  "service unavailable
-    A service is unavailable.  This can occur
-    if a support program or file does not exist.  This
-    can also be used as a catchall message when something
-    you wanted to do doesn't work, but you don't know
-    why.")
+A service is unavailable.  This can occur
+if a support program or file does not exist.  This
+can also be used as a catchall message when something
+you wanted to do doesn't work, but you don't know
+why.")
 
 (defconstant ex-software      70  "internal software error
-    An internal software error has been detected.
-    This should be limited to non-operating system related
-    errors as possible.")
+An internal software error has been detected.
+This should be limited to non-operating system related
+errors as possible.")
 
 (defconstant ex-oserr         71  "system error (e.g., can't fork)
-    An operating system error has been detected.
-    This is intended to be used for such things as \"cannot
-    fork\", \"cannot create pipe\", or the like.  It includes
-    things like getuid returning a user that does not
-    exist in the passwd file.")
+An operating system error has been detected.
+This is intended to be used for such things as \"cannot
+fork\", \"cannot create pipe\", or the like.  It includes
+things like getuid returning a user that does not
+exist in the passwd file.")
 
 (defconstant ex-osfile        72  "critical OS file missing
-    Some system file (e.g., /etc/passwd, /etc/utmp,
-    etc.) does not exist, cannot be opened, or has some
-    sort of error (e.g., syntax error).")
+Some system file (e.g., /etc/passwd, /etc/utmp,
+etc.) does not exist, cannot be opened, or has some
+sort of error (e.g., syntax error).")
 
 (defconstant ex-cantcreat     73  "can't create (user) output file
-    A (user specified) output file cannot be created.")
+A (user specified) output file cannot be created.")
 
 (defconstant ex-ioerr         74  "input/output error
-     An error occurred while doing I/O on some file.")
+An error occurred while doing I/O on some file.")
 
 (defconstant ex-tempfail      75  "temp failure; user is invited to retry
-    temporary failure, indicating something that
-    is not really an error.  In sendmail, this means
-    that a mailer (e.g.) could not create a connection,
-    and the request should be reattempted later.")
+temporary failure, indicating something that
+is not really an error.  In sendmail, this means
+that a mailer (e.g.) could not create a connection,
+and the request should be reattempted later.")
 
 (defconstant ex-protocol      76  "remote error in protocol
-    the remote system returned something that
-    was \"not possible\" during a protocol exchange.")
+the remote system returned something that
+was \"not possible\" during a protocol exchange.")
 
 (defconstant ex-noperm        77  "permission denied
-    You did not have sufficient permission to
-    perform the operation.  This is not intended for
-    file system problems, which should use NOINPUT or
-    CANTCREAT, but rather for higher level permissions.")
+You did not have sufficient permission to
+perform the operation.  This is not intended for
+file system problems, which should use NOINPUT or
+CANTCREAT, but rather for higher level permissions.")
 
 (defconstant ex-config        78  "configuration error")
 
@@ -217,7 +254,17 @@ the main script  (setf script:*program-name* (script:pname))
 
 
 (defstruct option
+  "An option structure."
   keys arguments documentation function)
+
+(setf (documentation 'option-keys 'function)
+      "A list of option keys."
+      (documentation 'option-arguments 'function)
+      "A lambda-list of option arguments."
+      (documentation 'option-documentation 'function)
+      "The documentation of the option (a string)."
+      (documentation 'option-function 'function)
+      "The option function.")
 
 
 (defun q&d-parse-parameters (parameters)
@@ -336,6 +383,14 @@ BUG: when the optionals or keys have a present indicator,
 
 
 (defgeneric call-option-function (option arguments &optional undefined-argument)
+  (:documentation  "
+DO:                  Call the option function with the ARGUMENTS.
+RETURN:              The remaining list of arguments.
+UNDEFINED-ARGUMENT:  A function taking an option key and the remaining
+                     list of arguments, called if an undefined
+                     argument is found in ARGUMENTS.  It should return
+                     the new remaining list of arguments.
+")
   (:method ((key string) arguments &optional undefined-argument)
     (let* ((funopt  (gethash key *options*)))
       (cond
@@ -387,11 +442,15 @@ RETURN:     The lisp-name of the option (this is a symbol
        ',lisp-name)))
 
 
-(defvar *documentation-text* "")
+(defvar *documentation-text* ""
+  "Some general documentation text issued by the --help command.")
 
 
 
 (defun option-list ()
+  "
+RETURN: The list of options defined.
+"
   (let ((options '()))
     (maphash (lambda (key option)
                (declare (ignore key))
@@ -479,6 +538,12 @@ complete -F completion_~:*~A ~:*~A~%"
 
 
 (defun parse-options (arguments &optional default undefined-argument)
+  "
+DO:                 Parse the options in the ARGUMENTS list.
+DEFAULT:            Thunk called if ARGUMENTS is empty.
+UNDEFINED-ARGUMENT: Thunk called if an undefined option is present in
+                    the ARGUMENTS.
+"
   (handler-case
       (flet ((process-arguments ()
                (cond

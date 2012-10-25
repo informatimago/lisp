@@ -16,46 +16,61 @@
 ;;;;    2012-10-26 <PJB> Added memory-operate.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2012
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.HEAP.MEMORY"
-  (:USE "COMMON-LISP")
-  (:EXPORT "MEMORY-EPILOG" "MEMORY-PROLOG" "DUMP" "VALID-ADDRESS-P"
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.HEAP.MEMORY"
+  (:use "COMMON-LISP")
+  (:export "MEMORY-EPILOG" "MEMORY-PROLOG" "DUMP" "VALID-ADDRESS-P"
            "WITH-MEMORY" "POKE-UINT64" "POKE-UINT32" "POKE-UINT16" "POKE-UINT8"
            "PEEK-UINT64" "PEEK-UINT32" "PEEK-UINT16" "PEEK-UINT8" "SIZE" "BASE"
            "MEMORY-VECTOR-64" "MEMORY")
-  (:DOCUMENTATION
+  (:documentation
    "
-      This packages exports a memory abstract class 
-      and a concrete subclass implemented as a lisp array of unsigned bytes.
 
-      Copyright Pascal J. Bourguignon 2004 - 2004
-      
-      This program is free software  you can redistribute it and/or
-      modify it under the terms of the GNU General Public License
-      as published by the Free Software Foundation  either version
-      2 of the License, or (at your option) any later version.
-      "))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.HEAP.MEMORY")
+This packages exports a memory abstract class  and a concrete subclass
+implemented as a lisp array of unsigned bytes.
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2004 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+
+"))
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.HEAP.MEMORY")
 
 
 
@@ -64,6 +79,11 @@
 ;; MEMORY
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+(defgeneric base (memory)
+  (:documentation "Minimum value for an address in the given memory."))
+(defgeneric size (memory)
+  (:documentation "Number of bytes this memory holds."))
 
 (defclass memory ()
   ((base :reader base :initarg :base :type (integer 0)
@@ -83,15 +103,24 @@
   self)
 
 
-(defgeneric peek-uint8  (memory address))
-(defgeneric peek-uint16 (memory address))
-(defgeneric peek-uint32 (memory address))
-(defgeneric peek-uint64 (memory address))
-(defgeneric poke-uint8  (memory address value))
-(defgeneric poke-uint16 (memory address value))
-(defgeneric poke-uint32 (memory address value))
-(defgeneric poke-uint64 (memory address value))
-(defgeneric valid-address-p (memory address))
+(defgeneric peek-uint8  (memory address)
+  (:documentation "RETURN: The 8-bit byte at the given ADDRESS of the MEMORY."))
+(defgeneric peek-uint16 (memory address)
+  (:documentation "RETURN: The 16-bit byte at the given ADDRESS of the MEMORY."))
+(defgeneric peek-uint32 (memory address)
+  (:documentation "RETURN: The 32-bit byte at the given ADDRESS of the MEMORY."))
+(defgeneric peek-uint64 (memory address)
+  (:documentation "RETURN: The 64-bit byte at the given ADDRESS of the MEMORY."))
+(defgeneric poke-uint8  (memory address value)
+  (:documentation "DO: Store the 8-bit VALUE into the given ADDRESS of the MEMORY."))
+(defgeneric poke-uint16 (memory address value)
+  (:documentation "DO: Store the 16-bit VALUE into the given ADDRESS of the MEMORY."))
+(defgeneric poke-uint32 (memory address value)
+  (:documentation "DO: Store the 32-bit VALUE into the given ADDRESS of the MEMORY."))
+(defgeneric poke-uint64 (memory address value)
+  (:documentation "DO: Store the 64-bit VALUE into the given ADDRESS of the MEMORY."))
+(defgeneric valid-address-p (memory address)
+  (:documentation "RETURN: Whether ADDRESS is a valid address of the MEMORY."))
 
 (defgeneric memory-prolog (memory)
   (:documentation "
@@ -120,7 +149,9 @@ for shared memories may be implemented.
 An alternative is to override MEMORY-OPERATE.
 "))
 
-(defgeneric dump (memory address length &key byte-size stream margin))
+(defgeneric dump (memory address length &key byte-size stream margin)
+  (:documentation "Print on the STREAM the contents of the MEMORY from
+the ADDRESS for LENGTH bytes of bit size BYTE-SIZE."))
 
 
 (defmethod memory-prolog  ((self memory))       (declare (ignorable self)) (values))

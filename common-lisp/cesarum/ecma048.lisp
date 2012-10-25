@@ -34,30 +34,28 @@
 ;;;;    2004-10-01 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2004 - 2006
+;;;;    Copyright Pascal J. Bourguignon 2004 - 2012
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ECMA048"
-  (:NICKNAMES "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ISO6429")
-  (:DOCUMENTATION
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ECMA048"
+  (:nicknames "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ISO6429")
+  (:documentation
    "
     This package loads the ECMA-048 standard text and from
     this specifications can generate functions returning
@@ -78,11 +76,11 @@
     as published by the Free Software Foundation; either version
     2 of the License, or (at your option) any later version.
    ")
-  (:USE "COMMON-LISP" "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
-  (:IMPORT-FROM "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "DEFENUM")
+  (:use "COMMON-LISP" "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
+  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "DEFENUM")
   (:shadow "ED")
-  (:EXPORT
-   "CODE" "MAKE-CODE" "COPY-CODE"
+  (:export
+   "CODE" 
    "CODE-REFERENCE" "CODE-NAME" "CODE-TITLE" "CODE-NOTATION"
    "CODE-REPRESENTATION" "CODE-DESCRIPTION" "CODE-DEFAULT"
    ;; The ECMA048 codes:
@@ -129,7 +127,7 @@
    "TAC"  "TALE" "TATE" "TBC"  "TCC"
    "TSR"  "TSS"  "VPA"  "VPB"  "VPR"
    "VT"   "VTS"  "SPD"  "EL"))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ECMA048")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ECMA048")
 
 
 
@@ -206,16 +204,16 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   ;; The following  names and codes don't appear in ECMA048.
   ;; Some older ASCII names:
-  (defconstant FS   #x1c "IS4 -- file separator")
-  (defconstant GS   #x1d "IS3 -- group separator")
-  (defconstant RS   #x1e "IS2 -- record separator")
-  (defconstant US   #x1f "IS1 -- unit separator")
-  (defconstant DEL  #x7f " -- delete")
+  (defconstant fs   #x1c "IS4 -- file separator")
+  (defconstant gs   #x1d "IS3 -- group separator")
+  (defconstant rs   #x1e "IS2 -- record separator")
+  (defconstant us   #x1f "IS1 -- unit separator")
+  (defconstant del  #x7f " -- delete")
   ;; Where are these defined?
-  (defconstant PAD  #x80 " -- PADDING CHARACTER") 
-  (defconstant HOP  #x81 " -- HIGH OCTET PRESET") 
-  (defconstant IND  #x84 " -- INDEX") 
-  (defconstant SGCI #x99 " -- SINGLE GRAPHIC CHARACTER INTRODUCER") 
+  (defconstant pad  #x80 " -- PADDING CHARACTER") 
+  (defconstant hop  #x81 " -- HIGH OCTET PRESET") 
+  (defconstant ind  #x84 " -- INDEX") 
+  (defconstant sgci #x99 " -- SINGLE GRAPHIC CHARACTER INTRODUCER") 
   );;eval-when
 
 
@@ -223,97 +221,97 @@
 ;; LOAD-CODE-SPECIFICATIONS uses the clisp-specific package REGEXP.
 ;; We'll uncomment it when COM.INFORMATIMAGO.COMMON-LISP.REGEXP will work.
 
-(DEFUN LOAD-CODE-SPECIFICATIONS (&OPTIONAL (PATH "ecma048.txt"))
+(defun load-code-specifications (&optional (path "ecma048.txt"))
   "This function converts ecma048.txt files (basically, copy-pasted
    text from ecma048.pdf), to the following *CODES* s-expression."
   (defparameter *codes* '())
-  (WITH-OPEN-FILE (IN PATH :DIRECTION :INPUT :IF-DOES-NOT-EXIST :ERROR)
-    (LET ((CURRENT NIL)
-          ALL REF NAME TITLE NOTATION REPRESENTATION DESCRIPTION DEFAULT)
-      (FLET ((FINISH-CODE ()
-               (WHEN CURRENT (PUSH CURRENT *CODES*))
-               (SETF CURRENT (MAKE-CODE))))
-        (LOOP :FOR LINE = (READ-LINE IN NIL NIL)
-              :WHILE (AND LINE (STRING/= "BEGIN" (STRING-TRIM " " LINE))))
-        (LOOP
-           :FOR LINE = (READ-LINE IN NIL NIL)
-           :WHILE LINE
-           :DO (COND
-                ((STRING= "FINE" (STRING-TRIM " " LINE))
-                 (FINISH-CODE)
-                 (LOOP-FINISH))
-                ((PROGN
-                   (MULTIPLE-VALUE-SETQ (ALL REF NAME TITLE)
-                     (REGEXP:MATCH
+  (with-open-file (in path :direction :input :if-does-not-exist :error)
+    (let ((current nil)
+          all ref name title notation representation description default)
+      (flet ((finish-code ()
+               (when current (push current *codes*))
+               (setf current (make-code))))
+        (loop :for line = (read-line in nil nil)
+              :while (and line (string/= "BEGIN" (string-trim " " line))))
+        (loop
+           :for line = (read-line in nil nil)
+           :while line
+           :do (cond
+                ((string= "FINE" (string-trim " " line))
+                 (finish-code)
+                 (loop-finish))
+                ((progn
+                   (multiple-value-setq (all ref name title)
+                     (regexp:match
                       "^\\(8.3.[0-9]\\+\\) \\([A-Z]\\+[0-9]*\\) - \\(.*\\)"
-                      LINE))
-                   ALL)
-                 (FINISH-CODE)
-                 (SETF (CODE-REFERENCE CURRENT) (REGEXP:MATCH-STRING LINE REF)
-                       (CODE-NAME CURRENT) (REGEXP:MATCH-STRING LINE NAME)
-                       (CODE-TITLE CURRENT)
-                       (STRING-TRIM " " (REGEXP:MATCH-STRING LINE TITLE))))
-                ((PROGN
-                   (MULTIPLE-VALUE-SETQ (ALL NOTATION)
-                     (REGEXP:MATCH "^Notation: \\(.*\\)" LINE))  ALL)
-                 (SETF (CODE-NOTATION CURRENT)
-                       (STRING-TRIM
-                        " " (REGEXP:MATCH-STRING LINE NOTATION))))
-                ((PROGN
-                   (MULTIPLE-VALUE-SETQ (ALL REPRESENTATION)
-                     (REGEXP:MATCH "^Representation: \\(.*\\)" LINE))  ALL)
-                 (SETF (CODE-REPRESENTATION CURRENT)
-                       (STRING-TRIM
-                        " " (REGEXP:MATCH-STRING LINE REPRESENTATION))))
-                ((PROGN
-                   (MULTIPLE-VALUE-SETQ (ALL DESCRIPTION)
-                     (REGEXP:MATCH "^Description: \\(.*\\)" LINE))  ALL)
-                 (SETF (CODE-DESCRIPTION CURRENT)
-                       (STRING-TRIM
-                        " " (REGEXP:MATCH-STRING LINE DESCRIPTION))))
-                ((PROGN
-                   (MULTIPLE-VALUE-SETQ (ALL DEFAULT)
-                     (REGEXP:MATCH "^Parameter default value: \\(.*\\)" LINE))
-                   ALL)
-                 (SETF (CODE-DEFAULT CURRENT)
-                       (STRING-TRIM
-                        " " (REGEXP:MATCH-STRING LINE DEFAULT)))))))))
-  (DOLIST (C *CODES*)
-    (LET ((DEFA (CODE-DEFAULT C)))
-      (WHEN DEFA
-        (SETF (CODE-DEFAULT C)
-              (CDR (ASSOC
-                    DEFA
-                    '(("Ps1 = 0; Ps2 =0"       . ((PS1 . 0) (PS2 . 0)))
-                      ("Pn1 = 100; Pn2 = 100"  . ((PN1 . 100) (PN2 . 100)))
-                      ("Pn1 = 1; Pn2 = 1"      . ((PN1 . 1) (PN2 . 1)))
-                      ("Ps1 = 0; Ps2 = 0"      . ((PS1 . 0) (PS2 . 0)))
-                      ("Pn = 0"                . ((PN . 0)))
-                      ("Ps = 0"                . ((PS . 0)))
-                      ("NONE for Pn1"          . ((PN1 . :NONE)))
-                      ("NONE"                  . ((* . :NONE))) 
-                      ("Pn = 1"                . ((PN . 1))) )
-                    :TEST (FUNCTION STRING=))))))
-    (LET ((NOTA (CODE-NOTATION C)))
-      (WHEN NOTA
-        (SETF (CODE-NOTATION C)
-              (CDR (ASSOC
-                    NOTA
-                    '(("(Fs)"      . (FS)) 
-                      ("(Ps...)"   . (PS...)) 
-                      ("(Ps1;Ps2)" . (PS1 PS2)) 
-                      ("(Ps)"      . (PS)) 
-                      ("(Pn1;Pn2)" . (PN1 PN2)) 
-                      ("(Pn)"      . (PN)) 
-                      ("(C0)"      . (C0)) 
-                      ("(C1)"      . (C1)) )
-                    :TEST (FUNCTION STRING=))))))
-    (LET ((REPR (CODE-REPRESENTATION C)))
-      (WHEN REPR
-        (SETF (CODE-REPRESENTATION C)
-              (MAPCAR (LAMBDA (S) (REGEXP:REGEXP-SPLIT " " S))
-                      (REGEXP:REGEXP-SPLIT " or "  REPR))))) )
-  (SETF *CODES* (NREVERSE *CODES*))
+                      line))
+                   all)
+                 (finish-code)
+                 (setf (code-reference current) (regexp:match-string line ref)
+                       (code-name current) (regexp:match-string line name)
+                       (code-title current)
+                       (string-trim " " (regexp:match-string line title))))
+                ((progn
+                   (multiple-value-setq (all notation)
+                     (regexp:match "^Notation: \\(.*\\)" line))  all)
+                 (setf (code-notation current)
+                       (string-trim
+                        " " (regexp:match-string line notation))))
+                ((progn
+                   (multiple-value-setq (all representation)
+                     (regexp:match "^Representation: \\(.*\\)" line))  all)
+                 (setf (code-representation current)
+                       (string-trim
+                        " " (regexp:match-string line representation))))
+                ((progn
+                   (multiple-value-setq (all description)
+                     (regexp:match "^Description: \\(.*\\)" line))  all)
+                 (setf (code-description current)
+                       (string-trim
+                        " " (regexp:match-string line description))))
+                ((progn
+                   (multiple-value-setq (all default)
+                     (regexp:match "^Parameter default value: \\(.*\\)" line))
+                   all)
+                 (setf (code-default current)
+                       (string-trim
+                        " " (regexp:match-string line default)))))))))
+  (dolist (c *codes*)
+    (let ((defa (code-default c)))
+      (when defa
+        (setf (code-default c)
+              (cdr (assoc
+                    defa
+                    '(("Ps1 = 0; Ps2 =0"       . ((ps1 . 0) (ps2 . 0)))
+                      ("Pn1 = 100; Pn2 = 100"  . ((pn1 . 100) (pn2 . 100)))
+                      ("Pn1 = 1; Pn2 = 1"      . ((pn1 . 1) (pn2 . 1)))
+                      ("Ps1 = 0; Ps2 = 0"      . ((ps1 . 0) (ps2 . 0)))
+                      ("Pn = 0"                . ((pn . 0)))
+                      ("Ps = 0"                . ((ps . 0)))
+                      ("NONE for Pn1"          . ((pn1 . :none)))
+                      ("NONE"                  . ((* . :none))) 
+                      ("Pn = 1"                . ((pn . 1))) )
+                    :test (function string=))))))
+    (let ((nota (code-notation c)))
+      (when nota
+        (setf (code-notation c)
+              (cdr (assoc
+                    nota
+                    '(("(Fs)"      . (fs)) 
+                      ("(Ps...)"   . (ps...)) 
+                      ("(Ps1;Ps2)" . (ps1 ps2)) 
+                      ("(Ps)"      . (ps)) 
+                      ("(Pn1;Pn2)" . (pn1 pn2)) 
+                      ("(Pn)"      . (pn)) 
+                      ("(C0)"      . (c0)) 
+                      ("(C1)"      . (c1)) )
+                    :test (function string=))))))
+    (let ((repr (code-representation c)))
+      (when repr
+        (setf (code-representation c)
+              (mapcar (lambda (s) (regexp:regexp-split " " s))
+                      (regexp:regexp-split " or "  repr))))) )
+  (setf *codes* (nreverse *codes*))
   (values))
 
 ;; At compile-time or when loading the source without compiling,
@@ -325,68 +323,84 @@
 ||#
 
 
-(DEFSTRUCT CODE
-  REFERENCE NAME TITLE NOTATION REPRESENTATION DESCRIPTION DEFAULT)
+(defstruct code
+  "Description of an ECMA-048 code."
+  reference name title notation representation description default)
 
-(DEFPARAMETER *CODES* 
+(setf (documentation 'code-reference 'function)
+      "The section of the ECMA-048 standard where the code is specified."
+      (documentation 'code-name 'function)
+      "The name of the ECMA-048 code."
+      (documentation 'code-title 'function)
+      "The title of the ECMA-048 code."
+      (documentation 'code-notation 'function)
+      "The symbolic notation of the ECMA-048 code parameters."
+      (documentation 'code-representation 'function)
+      "The description of the ECMA-048 code representation (byte values)."
+      (documentation 'code-description 'function)
+      "The description of the semantics of the ECMA-048 code."
+      (documentation 'code-default 'function)
+      "The default value for the parameters of the ECMA-048 code.")
+
+(defparameter *codes* 
   (mapcar
    (lambda (data) (apply (function make-code) data))
-   '((:REFERENCE "8.3.1" :NAME "ACK" :TITLE "ACKNOWLEDGE" :NOTATION (C0)
-      :REPRESENTATION (("00/06"))
-      :DESCRIPTION
+   '((:reference "8.3.1" :name "ACK" :title "ACKNOWLEDGE" :notation (c0)
+      :representation (("00/06"))
+      :description
       "ACK is transmitted by a receiver as an affirmative response
     to the sender. The use of ACK is defined in ISO 1745."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.2" :NAME "APC" :TITLE "APPLICATION PROGRAM COMMAND"
-      :NOTATION (C1) :REPRESENTATION (("09/15") ("ESC" "05/15"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.2" :name "APC" :title "APPLICATION PROGRAM COMMAND"
+      :notation (c1) :representation (("09/15") ("ESC" "05/15"))
+      :description
       "APC is used as the opening delimiter of a control string for
     application program use. The command string following may consist of
     bit combinations in the range 00/08 to 00/13 and 02/00 to 07/14. The
     control string is closed by the terminating delimiter STRING
     TERMINATOR (ST). The interpretation of the command string depends on
     the relevant application program."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.3" :NAME "BEL" :TITLE "BELL" :NOTATION (C0)
-      :REPRESENTATION (("00/07"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.3" :name "BEL" :title "BELL" :notation (c0)
+      :representation (("00/07"))
+      :description
       "BEL is used when there is a need to call for attention; it
     may control alarm or attention devices."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.4" :NAME "BPH" :TITLE "BREAK PERMITTED HERE"
-      :NOTATION (C1) :REPRESENTATION (("08/02") ("ESC" "04/02"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.4" :name "BPH" :title "BREAK PERMITTED HERE"
+      :notation (c1) :representation (("08/02") ("ESC" "04/02"))
+      :description
       "BPH is used to indicate a point where a line break may occur
     when text is formatted. BPH may occur between two graphic characters,
     either or both of which may be SPACE."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.5" :NAME "BS" :TITLE "BACKSPACE" :NOTATION (C0)
-      :REPRESENTATION (("00/08"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.5" :name "BS" :title "BACKSPACE" :notation (c0)
+      :representation (("00/08"))
+      :description
       "BS causes the active data position to be moved one character
     position in the data component in the direction opposite to that of
     the implicit movement. The direction of the implicit movement depends
     on the parameter value of SELECT IMPLICIT MOVEMENT DIRECTION (SIMD)."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.6" :NAME "CAN" :TITLE "CANCEL" :NOTATION (C0)
-      :REPRESENTATION (("01/08"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.6" :name "CAN" :title "CANCEL" :notation (c0)
+      :representation (("01/08"))
+      :description
       "CAN is used to indicate that the data preceding it in the
     data stream is in error. As a result, this data shall be ignored. The
     specific meaning of this control function shall be defined for each
     application and/or between sender and recipient."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.7" :NAME "CBT" :TITLE "CURSOR BACKWARD TABULATION"
-      :NOTATION (PN) :REPRESENTATION (("CSI" "Pn" "05/10"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.7" :name "CBT" :title "CURSOR BACKWARD TABULATION"
+      :notation (pn) :representation (("CSI" "Pn" "05/10"))
+      :description
       "CBT causes the active presentation position to be moved to
     the character position corresponding to the n-th preceding character
     tabulation stop in the presentation component, according to the
     character path, where n equals the value of Pn."
-      :DEFAULT ((PN . 1)))
-     (:REFERENCE "8.3.8" :NAME "CCH" :TITLE "CANCEL CHARACTER" :NOTATION (C1)
-      :REPRESENTATION (("09/04") ("ESC" "05/04"))
-      :DESCRIPTION
+      :default ((pn . 1)))
+     (:reference "8.3.8" :name "CCH" :title "CANCEL CHARACTER" :notation (c1)
+      :representation (("09/04") ("ESC" "05/04"))
+      :description
       "CCH is used to indicate that both the preceding graphic
     character in the data stream, (represented by one or more bit
     combinations) including SPACE, and the control function CCH itself are
@@ -394,48 +408,48 @@
     character preceding CCH in the data stream is a control function
     (represented by one or more bit combinations), the effect of CCH is
     not defined by this Standard."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.9" :NAME "CHA" :TITLE "CURSOR CHARACTER ABSOLUTE"
-      :NOTATION (PN) :REPRESENTATION (("CSI" "Pn" "04/07"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.9" :name "CHA" :title "CURSOR CHARACTER ABSOLUTE"
+      :notation (pn) :representation (("CSI" "Pn" "04/07"))
+      :description
       "CHA causes the active presentation position to be moved to
     character position n in the active line in the presentation component,
     where n equals the value of Pn."
-      :DEFAULT ((PN . 1)))
-     (:REFERENCE "8.3.10" :NAME "CHT" :TITLE "CURSOR FORWARD TABULATION"
-      :NOTATION (PN) :REPRESENTATION (("CSI" "Pn" "04/09"))
-      :DESCRIPTION
+      :default ((pn . 1)))
+     (:reference "8.3.10" :name "CHT" :title "CURSOR FORWARD TABULATION"
+      :notation (pn) :representation (("CSI" "Pn" "04/09"))
+      :description
       "CHT causes the active presentation position to be moved to
     the character position corresponding to the n-th following character
     tabulation stop in the presentation component, according to the
     character path, where n equals the value of Pn."
-      :DEFAULT ((PN . 1)))
-     (:REFERENCE "8.3.11" :NAME "CMD" :TITLE "CODING METHOD DELIMITER"
-      :NOTATION (FS) :REPRESENTATION (("ESC" "06/04"))
-      :DESCRIPTION
+      :default ((pn . 1)))
+     (:reference "8.3.11" :name "CMD" :title "CODING METHOD DELIMITER"
+      :notation (fs) :representation (("ESC" "06/04"))
+      :description
       "CMD is used as the delimiter of a string of data coded
     according to Standard ECMA-35 and to switch to a general level of
     control. The use of CMD is not mandatory if the higher level protocol
     defines means of delimiting the string, for instance, by specifying
     the length of the string."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.12" :NAME "CNL" :TITLE "CURSOR NEXT LINE"
-      :NOTATION (PN) :REPRESENTATION (("CSI" "Pn" "04/05"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.12" :name "CNL" :title "CURSOR NEXT LINE"
+      :notation (pn) :representation (("CSI" "Pn" "04/05"))
+      :description
       "CNL causes  the active presentation  position to be  moved to
     the first  character position  of the n-th  following line  in the
     presentation component, where n equals the value of Pn."
-      :DEFAULT ((PN . 1)))
-     (:REFERENCE "8.3.13" :NAME "CPL" :TITLE "CURSOR PRECEDING LINE"
-      :NOTATION (PN) :REPRESENTATION (("CSI" "Pn" "04/06"))
-      :DESCRIPTION
+      :default ((pn . 1)))
+     (:reference "8.3.13" :name "CPL" :title "CURSOR PRECEDING LINE"
+      :notation (pn) :representation (("CSI" "Pn" "04/06"))
+      :description
       "CPL causes the active presentation position to be moved to
     the first character position of the n-th preceding line in the
     presentation component, where n equals the value of Pn."
-      :DEFAULT ((PN . 1)))
-     (:REFERENCE "8.3.14" :NAME "CPR" :TITLE "ACTIVE POSITION REPORT"
-      :NOTATION (PN1 PN2) :REPRESENTATION (("CSI" "Pn1;Pn2" "05/02"))
-      :DESCRIPTION
+      :default ((pn . 1)))
+     (:reference "8.3.14" :name "CPR" :title "ACTIVE POSITION REPORT"
+      :notation (pn1 pn2) :representation (("CSI" "Pn1;Pn2" "05/02"))
+      :description
       "If the DEVICE COMPONENT SELECT MODE (DCSM) is set to
     PRESENTATION, CPR is used to report the active presentation position
     of the sending device as residing in the presentation component at the
@@ -448,10 +462,10 @@
     m-th character position according to the character progression, where
     n equals the value of Pn1 and m equals the value of Pn2. CPR may be
     solicited by a DEVICE STATUS REPORT (DSR) or be sent unsolicited."
-      :DEFAULT ((PN1 . 1) (PN2 . 1)))
-     (:REFERENCE "8.3.15" :NAME "CR" :TITLE "CARRIAGE RETURN" :NOTATION (C0)
-      :REPRESENTATION (("00/13"))
-      :DESCRIPTION
+      :default ((pn1 . 1) (pn2 . 1)))
+     (:reference "8.3.15" :name "CR" :title "CARRIAGE RETURN" :notation (c0)
+      :representation (("00/13"))
+      :description
       "The effect of CR depends on the setting of the DEVICE
     COMPONENT SELECT MODE (DCSM) and on the parameter value of SELECT
     IMPLICIT MOVEMENT DIRECTION (SIMD). If the DEVICE COMPONENT SELECT
@@ -472,89 +486,89 @@
     limit position of the same line in the data component. The line limit
     position is established by the parameter value of SET LINE LIMIT
     (SLL)."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.16" :NAME "CSI" :TITLE "CONTROL SEQUENCE INTRODUCER"
-      :NOTATION (C1) :REPRESENTATION (("09/11") ("ESC" "05/11"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.16" :name "CSI" :title "CONTROL SEQUENCE INTRODUCER"
+      :notation (c1) :representation (("09/11") ("ESC" "05/11"))
+      :description
       "CSI is used as the first character of a control sequence, see 5.4."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.17" :NAME "CTC" :TITLE "CURSOR TABULATION CONTROL"
-      :NOTATION (PS...) :REPRESENTATION (("CSI" "Ps..." "05/07"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.17" :name "CTC" :title "CURSOR TABULATION CONTROL"
+      :notation (ps...) :representation (("CSI" "Ps..." "05/07"))
+      :description
       "CTC causes one or more tabulation stops to be set or cleared
     in the presentation component, depending on the parameter values:"
-      :DEFAULT ((PS . 0)))
-     (:REFERENCE "8.3.18" :NAME "CUB" :TITLE "CURSOR LEFT" :NOTATION (PN)
-      :REPRESENTATION (("CSI" "Pn" "04/04"))
-      :DESCRIPTION
+      :default ((ps . 0)))
+     (:reference "8.3.18" :name "CUB" :title "CURSOR LEFT" :notation (pn)
+      :representation (("CSI" "Pn" "04/04"))
+      :description
       "CUB causes the active presentation position to be moved
     leftwards in the presentation component by n character positions if
     the character path is horizontal, or by n line positions if the
     character path is vertical, where n equals the value of Pn."
-      :DEFAULT ((PN . 1)))
-     (:REFERENCE "8.3.19" :NAME "CUD" :TITLE "CURSOR DOWN" :NOTATION (PN)
-      :REPRESENTATION (("CSI" "Pn" "04/02"))
-      :DESCRIPTION
+      :default ((pn . 1)))
+     (:reference "8.3.19" :name "CUD" :title "CURSOR DOWN" :notation (pn)
+      :representation (("CSI" "Pn" "04/02"))
+      :description
       "CUD causes the active presentation position to be moved
     downwards in the presentation component by n line positions if the
     character path is horizontal, or by n character positions if the
     character path is vertical, where n equals the value of Pn."
-      :DEFAULT ((PN . 1)))
-     (:REFERENCE "8.3.20" :NAME "CUF" :TITLE "CURSOR RIGHT" :NOTATION (PN)
-      :REPRESENTATION (("CSI" "Pn" "04/03"))
-      :DESCRIPTION
+      :default ((pn . 1)))
+     (:reference "8.3.20" :name "CUF" :title "CURSOR RIGHT" :notation (pn)
+      :representation (("CSI" "Pn" "04/03"))
+      :description
       "CUF causes the active presentation position to be moved
     rightwards in the presentation component by n character positions if
     the character path is horizontal, or by n line positions if the
     character path is vertical, where n equals the value of Pn."
-      :DEFAULT ((PN . 1)))
-     (:REFERENCE "8.3.21" :NAME "CUP" :TITLE "CURSOR POSITION"
-      :NOTATION (PN1 PN2) :REPRESENTATION (("CSI" "Pn1;Pn2" "04/08"))
-      :DESCRIPTION
+      :default ((pn . 1)))
+     (:reference "8.3.21" :name "CUP" :title "CURSOR POSITION"
+      :notation (pn1 pn2) :representation (("CSI" "Pn1;Pn2" "04/08"))
+      :description
       "CUP causes the active presentation position to be moved in
     the presentation component to the n-th line position according to the
     line progression and to the m-th character position according to the
     character path, where n equals the value of Pn1 and m equals the value
     of Pn2."
-      :DEFAULT ((PN1 . 1) (PN2 . 1)))
-     (:REFERENCE "8.3.22" :NAME "CUU" :TITLE "CURSOR UP" :NOTATION (PN)
-      :REPRESENTATION (("CSI" "Pn" "04/01"))
-      :DESCRIPTION
+      :default ((pn1 . 1) (pn2 . 1)))
+     (:reference "8.3.22" :name "CUU" :title "CURSOR UP" :notation (pn)
+      :representation (("CSI" "Pn" "04/01"))
+      :description
       "CUU causes the active presentation position to be moved
     upwards in the presentation component by n line positions if the
     character path is horizontal, or by n character positions if the
     character path is vertical, where n equals the value of Pn."
-      :DEFAULT ((PN . 1)))
-     (:REFERENCE "8.3.23" :NAME "CVT" :TITLE "CURSOR LINE TABULATION"
-      :NOTATION (PN) :REPRESENTATION (("CSI" "Pn" "05/09"))
-      :DESCRIPTION
+      :default ((pn . 1)))
+     (:reference "8.3.23" :name "CVT" :title "CURSOR LINE TABULATION"
+      :notation (pn) :representation (("CSI" "Pn" "05/09"))
+      :description
       "CVT causes the active presentation position to be moved to
     the corresponding character position of the line corresponding to the
     n-th following line tabulation stop in the presentation component,
     where n equals the value of Pn."
-      :DEFAULT ((PN . 1)))
-     (:REFERENCE "8.3.24" :NAME "DA" :TITLE "DEVICE ATTRIBUTES"
-      :NOTATION (PS) :REPRESENTATION (("CSI" "Ps" "06/03"))
-      :DESCRIPTION
+      :default ((pn . 1)))
+     (:reference "8.3.24" :name "DA" :title "DEVICE ATTRIBUTES"
+      :notation (ps) :representation (("CSI" "Ps" "06/03"))
+      :description
       "With a parameter value not equal to 0, DA is used to identify
     the device which sends the DA. The parameter value is a device type
     identification code according to a register which is to be
     established. If the parameter value is 0, DA is used to request an
     identifying DA from a device."
-      :DEFAULT ((PS . 0)))
-     (:REFERENCE "8.3.25" :NAME "DAQ" :TITLE "DEFINE AREA QUALIFICATION"
-      :NOTATION (PS...) :REPRESENTATION (("CSI" "Ps..." "06/15"))
-      :DESCRIPTION
+      :default ((ps . 0)))
+     (:reference "8.3.25" :name "DAQ" :title "DEFINE AREA QUALIFICATION"
+      :notation (ps...) :representation (("CSI" "Ps..." "06/15"))
+      :description
       "DAQ is used to indicate that the active presentation position
     in the presentation component is the first character position of a
     qualified area. The last character position of the qualified area is
     the character position in the presentation component immediately
     preceding the first character position of the following qualified
     area. The parameter value designates the type of qualified area:"
-      :DEFAULT ((PS . 0)))
-     (:REFERENCE "8.3.26" :NAME "DCH" :TITLE "DELETE CHARACTER"
-      :NOTATION (PN) :REPRESENTATION (("CSI" "Pn" "05/00"))
-      :DESCRIPTION
+      :default ((ps . 0)))
+     (:reference "8.3.26" :name "DCH" :title "DELETE CHARACTER"
+      :notation (pn) :representation (("CSI" "Pn" "05/00"))
+      :description
       "If the DEVICE COMPONENT SELECT MODE (DCSM) is set to
     PRESENTATION, DCH causes the contents of the active presentation
     position and, depending on the setting of the CHARACTER EDITING MODE
@@ -576,10 +590,10 @@
     character positions towards the active data position. At the other end
     of the shifted part, n character positions are put into the erased
     state."
-      :DEFAULT ((PN . 1)))
-     (:REFERENCE "8.3.27" :NAME "DCS" :TITLE "DEVICE CONTROL STRING"
-      :NOTATION (C1) :REPRESENTATION (("09/00") ("ESC" "05/00"))
-      :DESCRIPTION
+      :default ((pn . 1)))
+     (:reference "8.3.27" :name "DCS" :title "DEVICE CONTROL STRING"
+      :notation (c1) :representation (("09/00") ("ESC" "05/00"))
+      :description
       "DCS is used as the opening delimiter of a control string for
     device control use. The command string following may consist of
     bit combinations in the range 00/08 to 00/13 and 02/00 to
@@ -590,46 +604,46 @@
     command string are specified by the most recent occurrence of
     IDENTIFY DEVICE CONTROL STRING (IDCS), if any, or depend on the
     sending and/or the receiving device."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.28" :NAME "DC1" :TITLE "DEVICE CONTROL ONE"
-      :NOTATION (C0) :REPRESENTATION (("01/01"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.28" :name "DC1" :title "DEVICE CONTROL ONE"
+      :notation (c0) :representation (("01/01"))
+      :description
       "DC1 is primarily intended for turning on or starting an
     ancillary device. If it is not required for this purpose, it may be
     used to restore a device to the basic mode of operation (see also DC2
     and DC3), or any other device control function not provided by other
     DCs."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.29" :NAME "DC2" :TITLE "DEVICE CONTROL TWO"
-      :NOTATION (C0) :REPRESENTATION (("01/02"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.29" :name "DC2" :title "DEVICE CONTROL TWO"
+      :notation (c0) :representation (("01/02"))
+      :description
       "DC2 is primarily intended for turning on or starting an
     ancillary device. If it is not required for this purpose, it may be
     used to set a device to a special mode of operation (in which case DC1
     is used to restore the device to the basic mode), or for any other
     device control function not provided by other DCs."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.30" :NAME "DC3" :TITLE "DEVICE CONTROL THREE"
-      :NOTATION (C0) :REPRESENTATION (("01/03"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.30" :name "DC3" :title "DEVICE CONTROL THREE"
+      :notation (c0) :representation (("01/03"))
+      :description
       "DC3 is primarily intended for turning off or stopping an
     ancillary device. This function may be a secondary level stop, for
     example wait, pause, stand-by or halt (in which case DC1 is used to
     restore normal operation). If it is not required for this purpose, it
     may be used for any other device control function not provided by
     other DCs."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.31" :NAME "DC4" :TITLE "DEVICE CONTROL FOUR"
-      :NOTATION (C0) :REPRESENTATION (("01/04"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.31" :name "DC4" :title "DEVICE CONTROL FOUR"
+      :notation (c0) :representation (("01/04"))
+      :description
       "DC4 is primarily intended for turning off, stopping or
     interrupting an ancillary device. If it is not required for this
     purpose, it may be used for any other device control function not
     provided by other DCs."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.32" :NAME "DL" :TITLE "DELETE LINE" :NOTATION (PN)
-      :REPRESENTATION (("CSI" "Pn" "04/13"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.32" :name "DL" :title "DELETE LINE" :notation (pn)
+      :representation (("CSI" "Pn" "04/13"))
+      :description
       "If the DEVICE COMPONENT SELECT MODE (DCSM) is set to
     PRESENTATION, DL causes the contents of the active line (the line that
     contains the active presentation position) and, depending on the
@@ -657,28 +671,28 @@
     active data position is moved to the line home position in the active
     line. The line home position is established by the parameter value of
     SET LINE HOME (SLH)."
-      :DEFAULT ((PN . 1)))
-     (:REFERENCE "8.3.33" :NAME "DLE" :TITLE "DATA LINK ESCAPE"
-      :NOTATION (C0) :REPRESENTATION (("01/00"))
-      :DESCRIPTION
+      :default ((pn . 1)))
+     (:reference "8.3.33" :name "DLE" :title "DATA LINK ESCAPE"
+      :notation (c0) :representation (("01/00"))
+      :description
       "DLE is used exclusively to provide supplementary transmission
     control functions. The use of DLE is defined in ISO 1745."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.34" :NAME "DMI" :TITLE "DISABLE MANUAL INPUT"
-      :NOTATION (FS) :REPRESENTATION (("ESC" "06/00"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.34" :name "DMI" :title "DISABLE MANUAL INPUT"
+      :notation (fs) :representation (("ESC" "06/00"))
+      :description
       "DMI causes the manual input facilities of a device to be disabled."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.35" :NAME "DSR" :TITLE "DEVICE STATUS REPORT"
-      :NOTATION (PS) :REPRESENTATION (("CSI" "Ps" "06/14"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.35" :name "DSR" :title "DEVICE STATUS REPORT"
+      :notation (ps) :representation (("CSI" "Ps" "06/14"))
+      :description
       "DSR is used either to report the status of the sending device
     or to request a status report from the receiving device, depending on
     the parameter values:"
-      :DEFAULT ((PS . 0)))
-     (:REFERENCE "8.3.36" :NAME "DTA" :TITLE "DIMENSION TEXT AREA"
-      :NOTATION (PN1 PN2) :REPRESENTATION (("CSI" "Pn1;Pn2" "02/00" "05/04"))
-      :DESCRIPTION
+      :default ((ps . 0)))
+     (:reference "8.3.36" :name "DTA" :title "DIMENSION TEXT AREA"
+      :notation (pn1 pn2) :representation (("CSI" "Pn1;Pn2" "02/00" "05/04"))
+      :description
       "DTA is used to establish the dimensions of the text area for
     subsequent pages. The established dimensions remain in effect until
     the next occurrence of DTA in the data stream. Pn1 specifies the
@@ -686,19 +700,19 @@
     specifies the dimension in the direction parallel to the line
     orientation The unit in which the parameter value is expressed is that
     established by the parameter value of SELECT SIZE UNIT (SSU)."
-      :DEFAULT ((* . :NONE)))
-     (:REFERENCE "8.3.37" :NAME "EA" :TITLE "ERASE IN AREA" :NOTATION (PS)
-      :REPRESENTATION (("CSI" "Ps" "04/15"))
-      :DESCRIPTION
+      :default ((* . :none)))
+     (:reference "8.3.37" :name "EA" :title "ERASE IN AREA" :notation (ps)
+      :representation (("CSI" "Ps" "04/15"))
+      :description
       "If the DEVICE COMPONENT SELECT MODE (DCSM) is set to
     PRESENTATION, EA causes some or all character positions in the active
     qualified area (the qualified area in the presentation component which
     contains the active presentation position) to be put into the erased
     state, depending on the parameter values:"
-      :DEFAULT ((PS . 0)))
-     (:REFERENCE "8.3.38" :NAME "ECH" :TITLE "ERASE CHARACTER" :NOTATION (PN)
-      :REPRESENTATION (("CSI" "Pn" "05/08"))
-      :DESCRIPTION
+      :default ((ps . 0)))
+     (:reference "8.3.38" :name "ECH" :title "ERASE CHARACTER" :notation (pn)
+      :representation (("CSI" "Pn" "05/08"))
+      :description
       "If the DEVICE COMPONENT SELECT MODE (DCSM) is set to
     PRESENTATION, ECH causes the active presentation position and the n-1
     following character positions in the presentation component to be put
@@ -709,61 +723,61 @@
     Pn. Whether the character positions of protected areas are put into
     the erased state, or the character positions of unprotected areas
     only, depends on the setting of the ERASURE MODE (ERM)."
-      :DEFAULT ((PN . 1)))
-     (:REFERENCE "8.3.39" :NAME "ED" :TITLE "ERASE IN PAGE" :NOTATION (PS)
-      :REPRESENTATION (("CSI" "Ps" "04/10"))
-      :DESCRIPTION
+      :default ((pn . 1)))
+     (:reference "8.3.39" :name "ED" :title "ERASE IN PAGE" :notation (ps)
+      :representation (("CSI" "Ps" "04/10"))
+      :description
       "If the DEVICE COMPONENT SELECT MODE (DCSM) is set to
     PRESENTATION, ED causes some or all character positions of the active
     page (the page which contains the active presentation position in the
     presentation component) to be put into the erased state, depending on
     the parameter values:"
-      :DEFAULT ((PS . 0)))
-     (:REFERENCE "8.3.40" :NAME "EF" :TITLE "ERASE IN FIELD" :NOTATION (PS)
-      :REPRESENTATION (("CSI" "Ps" "04/14"))
-      :DESCRIPTION
+      :default ((ps . 0)))
+     (:reference "8.3.40" :name "EF" :title "ERASE IN FIELD" :notation (ps)
+      :representation (("CSI" "Ps" "04/14"))
+      :description
       "If the DEVICE COMPONENT SELECT MODE (DCSM) is set to
     PRESENTATION, EF causes some or all character positions of the active
     field (the field which contains the active presentation position in
     the presentation component) to be put into the erased state, depending
     on the parameter values:"
-      :DEFAULT ((PS . 0)))
-     (:REFERENCE "8.3.41" :NAME "EL" :TITLE "ERASE IN LINE" :NOTATION (PS)
-      :REPRESENTATION (("CSI" "Ps" "04/11"))
-      :DESCRIPTION
+      :default ((ps . 0)))
+     (:reference "8.3.41" :name "EL" :title "ERASE IN LINE" :notation (ps)
+      :representation (("CSI" "Ps" "04/11"))
+      :description
       "If the DEVICE COMPONENT SELECT MODE (DCSM) is set to
     PRESENTATION, EL causes some or all character positions of the active
     line (the line which contains the active presentation position in the
     presentation component) to be put into the erased state, depending on
     the parameter values:"
-      :DEFAULT ((PS . 0)))
-     (:REFERENCE "8.3.42" :NAME "EM" :TITLE "END OF MEDIUM" :NOTATION (C0)
-      :REPRESENTATION (("01/09"))
-      :DESCRIPTION
+      :default ((ps . 0)))
+     (:reference "8.3.42" :name "EM" :title "END OF MEDIUM" :notation (c0)
+      :representation (("01/09"))
+      :description
       "EM is used to identify the physical end of a medium, or the
     end of the used portion of a medium, or the end of the wanted portion
     of data recorded on a medium."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.43" :NAME "EMI" :TITLE "ENABLE MANUAL INPUT"
-      :NOTATION (FS) :REPRESENTATION (("ESC" "06/02"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.43" :name "EMI" :title "ENABLE MANUAL INPUT"
+      :notation (fs) :representation (("ESC" "06/02"))
+      :description
       "EMI is used to enable the manual input facilities of a device."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.44" :NAME "ENQ" :TITLE "ENQUIRY" :NOTATION (C0)
-      :REPRESENTATION (("00/05"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.44" :name "ENQ" :title "ENQUIRY" :notation (c0)
+      :representation (("00/05"))
+      :description
       "ENQ is transmitted by a sender as a request for a response
     from a receiver. The use of ENQ is defined in ISO 1745."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.45" :NAME "EOT" :TITLE "END OF TRANSMISSION"
-      :NOTATION (C0) :REPRESENTATION (("00/04"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.45" :name "EOT" :title "END OF TRANSMISSION"
+      :notation (c0) :representation (("00/04"))
+      :description
       "EOT is used to indicate the conclusion of the transmission of
     one or more texts. The use of EOT is defined in ISO 1745."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.46" :NAME "EPA" :TITLE "END OF GUARDED AREA"
-      :NOTATION (C1) :REPRESENTATION (("09/07") ("ESC" "05/07"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.46" :name "EPA" :title "END OF GUARDED AREA"
+      :notation (c1) :representation (("09/07") ("ESC" "05/07"))
+      :description
       "EPA is used to indicate that the active presentation position
     is the last of a string of character positions in the presentation
     component, the contents of which are protected against manual
@@ -772,79 +786,79 @@
     protected against erasure, depending on the setting of the ERASURE
     MODE (ERM). The beginning of this string is indicated by START OF
     GUARDED AREA (SPA)."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.47" :NAME "ESA" :TITLE "END OF SELECTED AREA"
-      :NOTATION (C1) :REPRESENTATION (("08/07") ("ESC" "04/07"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.47" :name "ESA" :title "END OF SELECTED AREA"
+      :notation (c1) :representation (("08/07") ("ESC" "04/07"))
+      :description
       "ESA is used to indicate that the active presentation position
     is the last of a string of character positions in the presentation
     component, the contents of which are eligible to be transmitted in the
     form of a data stream or transferred to an auxiliary input/output
     device. The beginning of this string is indicated by START OF SELECTED
     AREA (SSA)."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.48" :NAME "ESC" :TITLE "ESCAPE" :NOTATION (C0)
-      :REPRESENTATION (("01/11"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.48" :name "ESC" :title "ESCAPE" :notation (c0)
+      :representation (("01/11"))
+      :description
       "ESC is used for code extension purposes. It causes the
     meanings of a limited number of bit combinations following it in the
     data stream to be changed. The use of ESC is defined in Standard
     ECMA-35."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.49" :NAME "ETB" :TITLE "END OF TRANSMISSION BLOCK"
-      :NOTATION (C0) :REPRESENTATION (("01/07"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.49" :name "ETB" :title "END OF TRANSMISSION BLOCK"
+      :notation (c0) :representation (("01/07"))
+      :description
       "ETB is used to indicate the end of a block of data where the
     data are divided into such blocks for transmission purposes. The use
     of ETB is defined in ISO 1745."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.50" :NAME "ETX" :TITLE "END OF TEXT" :NOTATION (C0)
-      :REPRESENTATION (("00/03"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.50" :name "ETX" :title "END OF TEXT" :notation (c0)
+      :representation (("00/03"))
+      :description
       "ETX is used to indicate the end of a text. The use of ETX is
     defined in ISO 1745."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.51" :NAME "FF" :TITLE "FORM FEED" :NOTATION (C0)
-      :REPRESENTATION (("00/12"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.51" :name "FF" :title "FORM FEED" :notation (c0)
+      :representation (("00/12"))
+      :description
       "FF causes the active presentation position to be moved to the
     corresponding character position of the line at the page home position
     of the next form or page in the presentation component. The page home
     position is established by the parameter value of SET PAGE HOME
     (SPH)."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.52" :NAME "FNK" :TITLE "FUNCTION KEY" :NOTATION (PN)
-      :REPRESENTATION (("CSI" "Pn" "02/00" "05/07"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.52" :name "FNK" :title "FUNCTION KEY" :notation (pn)
+      :representation (("CSI" "Pn" "02/00" "05/07"))
+      :description
       "FNK is a control function in which the parameter value
     identifies the function key which has been operated."
-      :DEFAULT ((* . :NONE)))
-     (:REFERENCE "8.3.53" :NAME "FNT" :TITLE "FONT SELECTION"
-      :NOTATION (PS1 PS2) :REPRESENTATION (("CSI" "Ps1;Ps2" "02/00" "04/04"))
-      :DESCRIPTION
+      :default ((* . :none)))
+     (:reference "8.3.53" :name "FNT" :title "FONT SELECTION"
+      :notation (ps1 ps2) :representation (("CSI" "Ps1;Ps2" "02/00" "04/04"))
+      :description
       "FNT is used to identify the character font to be selected as
     primary or alternative font by subsequent occurrences of SELECT
     GRAPHIC RENDITION (SGR) in the data stream. Ps"
-      :DEFAULT ((PS1 . 0) (PS2 . 0)))
-     (:REFERENCE "8.3.54" :NAME "GCC" :TITLE "GRAPHIC CHARACTER COMBINATION"
-      :NOTATION (PS) :REPRESENTATION (("CSI" "Ps" "02/00" "05/15"))
-      :DESCRIPTION
+      :default ((ps1 . 0) (ps2 . 0)))
+     (:reference "8.3.54" :name "GCC" :title "GRAPHIC CHARACTER COMBINATION"
+      :notation (ps) :representation (("CSI" "Ps" "02/00" "05/15"))
+      :description
       "GCC is used to indicate that two or more graphic characters
     are to be imaged as one single graphic symbol. GCC with a parameter
     value of"
-      :DEFAULT ((PS . 0)))
-     (:REFERENCE "8.3.55" :NAME "GSM" :TITLE "GRAPHIC SIZE MODIFICATION"
-      :NOTATION (PN1 PN2) :REPRESENTATION (("CSI" "Pn1;Pn2" "02/00" "04/02"))
-      :DESCRIPTION
+      :default ((ps . 0)))
+     (:reference "8.3.55" :name "GSM" :title "GRAPHIC SIZE MODIFICATION"
+      :notation (pn1 pn2) :representation (("CSI" "Pn1;Pn2" "02/00" "04/02"))
+      :description
       "GSM is used to modify for subsequent text the height and/or
     the width of all primary and alternative fonts identified by FONT
     SELECTION (FNT) and established by GRAPHIC SIZE SELECTION (GSS). The
     established values remain in effect until the next occurrence of GSM
     or GSS in the data steam. Pn"
-      :DEFAULT ((PN1 . 100) (PN2 . 100)))
-     (:REFERENCE "8.3.56" :NAME "GSS" :TITLE "GRAPHIC SIZE SELECTION"
-      :NOTATION (PN) :REPRESENTATION (("CSI" "Pn" "02/00" "04/03"))
-      :DESCRIPTION
+      :default ((pn1 . 100) (pn2 . 100)))
+     (:reference "8.3.56" :name "GSS" :title "GRAPHIC SIZE SELECTION"
+      :notation (pn) :representation (("CSI" "Pn" "02/00" "04/03"))
+      :description
       "GSS is used to establish for subsequent text the height and
     the width of all primary and alternative fonts identified by FONT
     SELECTION (FNT). The established values remain in effect until the
@@ -852,31 +866,31 @@
     the width is implicitly defined by the height. The unit in which the
     parameter value is expressed is that established by the parameter
     value of SELECT SIZE UNIT (SSU)."
-      :DEFAULT ((* . :NONE)))
-     (:REFERENCE "8.3.57" :NAME "HPA" :TITLE "CHARACTER POSITION ABSOLUTE"
-      :NOTATION (PN) :REPRESENTATION (("CSI" "Pn" "06/00"))
-      :DESCRIPTION
+      :default ((* . :none)))
+     (:reference "8.3.57" :name "HPA" :title "CHARACTER POSITION ABSOLUTE"
+      :notation (pn) :representation (("CSI" "Pn" "06/00"))
+      :description
       "HPA causes the active data position to be moved to character
     position n in the active line (the line in the data component that
     contains the active data position), where n equals the value of Pn."
-      :DEFAULT ((PN . 1)))
-     (:REFERENCE "8.3.58" :NAME "HPB" :TITLE "CHARACTER POSITION BACKWARD"
-      :NOTATION (PN) :REPRESENTATION (("CSI" "Pn" "06/10"))
-      :DESCRIPTION
+      :default ((pn . 1)))
+     (:reference "8.3.58" :name "HPB" :title "CHARACTER POSITION BACKWARD"
+      :notation (pn) :representation (("CSI" "Pn" "06/10"))
+      :description
       "HPB causes the active data position to be moved by n
     character positions in the data component in the direction opposite to
     that of the character progression, where n equals the value of Pn."
-      :DEFAULT ((PN . 1)))
-     (:REFERENCE "8.3.59" :NAME "HPR" :TITLE "CHARACTER POSITION FORWARD"
-      :NOTATION (PN) :REPRESENTATION (("CSI" "Pn" "06/01"))
-      :DESCRIPTION
+      :default ((pn . 1)))
+     (:reference "8.3.59" :name "HPR" :title "CHARACTER POSITION FORWARD"
+      :notation (pn) :representation (("CSI" "Pn" "06/01"))
+      :description
       "HPR causes the active data position to be moved by n
     character positions in the data component in the direction of the
     character progression, where n equals the value of Pn."
-      :DEFAULT ((PN . 1)))
-     (:REFERENCE "8.3.60" :NAME "HT" :TITLE "CHARACTER TABULATION"
-      :NOTATION (C0) :REPRESENTATION (("00/09"))
-      :DESCRIPTION
+      :default ((pn . 1)))
+     (:reference "8.3.60" :name "HT" :title "CHARACTER TABULATION"
+      :notation (c0) :representation (("00/09"))
+      :description
       "HT causes the active presentation position to be moved to the
     following character tabulation stop in the presentation component. In
     addition, if that following character tabulation stop has been set by
@@ -887,11 +901,11 @@
     tabulation stop. The end of the string is indicated by the next
     occurrence of HT or CARRIAGE RETURN (CR) or NEXT LINE (NEL) in the
     data stream."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.61" :NAME "HTJ"
-      :TITLE "CHARACTER TABULATION WITH JUSTIFICATION" :NOTATION (C1)
-      :REPRESENTATION (("08/09") ("ESC" "04/09"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.61" :name "HTJ"
+      :title "CHARACTER TABULATION WITH JUSTIFICATION" :notation (c1)
+      :representation (("08/09") ("ESC" "04/09"))
+      :description
       "HTJ causes the contents of the active field (the field in the
     presentation component that contains the active presentation position)
     to be shifted forward so that it ends at the character position
@@ -899,27 +913,27 @@
     presentation position is moved to that following character tabulation
     stop. The character positions which precede the beginning of the
     shifted string are put into the erased state."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.62" :NAME "HTS" :TITLE "CHARACTER TABULATION SET"
-      :NOTATION (C1) :REPRESENTATION (("08/08") ("ESC" "04/08"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.62" :name "HTS" :title "CHARACTER TABULATION SET"
+      :notation (c1) :representation (("08/08") ("ESC" "04/08"))
+      :description
       "HTS causes a character tabulation stop to be set at the
     active presentation position in the presentation component. The number
     of lines affected depends on the setting of the TABULATION STOP MODE
     (TSM)."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.63" :NAME "HVP" :TITLE "CHARACTER AND LINE POSITION"
-      :NOTATION (PN1 PN2) :REPRESENTATION (("CSI" "Pn1;Pn2" "06/06"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.63" :name "HVP" :title "CHARACTER AND LINE POSITION"
+      :notation (pn1 pn2) :representation (("CSI" "Pn1;Pn2" "06/06"))
+      :description
       "HVP causes the active data position to be moved in the data
     component to the n-th line position according to the line progression
     and to the m-th character position according to the character
     progression, where n equals the value of Pn1 and m equals the value of
     Pn2."
-      :DEFAULT ((PN1 . 1) (PN2 . 1)))
-     (:REFERENCE "8.3.64" :NAME "ICH" :TITLE "INSERT CHARACTER"
-      :NOTATION (PN) :REPRESENTATION (("CSI" "Pn" "04/00"))
-      :DESCRIPTION
+      :default ((pn1 . 1) (pn2 . 1)))
+     (:reference "8.3.64" :name "ICH" :title "INSERT CHARACTER"
+      :notation (pn) :representation (("CSI" "Pn" "04/00"))
+      :description
       "If the DEVICE COMPONENT SELECT MODE (DCSM) is set to
     PRESENTATION, ICH is used to prepare the insertion of n characters, by
     putting into the erased state the active presentation position and,
@@ -947,90 +961,90 @@
     removed. The active data position is moved to the line home position
     in the active line. The line home position is established by the
     parameter value of SET LINE HOME (SLH)."
-      :DEFAULT ((PN . 1)))
-     (:REFERENCE "8.3.65" :NAME "IDCS"
-      :TITLE "IDENTIFY DEVICE CONTROL STRING" :NOTATION (PS)
-      :REPRESENTATION (("CSI" "Ps" "02/00" "04/15"))
-      :DESCRIPTION
+      :default ((pn . 1)))
+     (:reference "8.3.65" :name "IDCS"
+      :title "IDENTIFY DEVICE CONTROL STRING" :notation (ps)
+      :representation (("CSI" "Ps" "02/00" "04/15"))
+      :description
       "IDCS is used to specify the purpose and format of the command
     string of subsequent DEVICE CONTROL STRINGs (DCS). The specified
     purpose and format remain in effect until the next occurrence of IDCS
     in the data stream. The parameter values are"
-      :DEFAULT ((* . :NONE)))
-     (:REFERENCE "8.3.66" :NAME "IGS" :TITLE "IDENTIFY GRAPHIC SUBREPERTOIRE"
-      :NOTATION (PS) :REPRESENTATION (("CSI" "Ps" "02/00" "04/13"))
-      :DESCRIPTION
+      :default ((* . :none)))
+     (:reference "8.3.66" :name "IGS" :title "IDENTIFY GRAPHIC SUBREPERTOIRE"
+      :notation (ps) :representation (("CSI" "Ps" "02/00" "04/13"))
+      :description
       "IGS is used to indicate that a repertoire of the graphic
     characters of ISO/IEC 10367 is used in the subsequent text. The
     parameter value of IGS identifies a graphic character repertoire
     registered in accordance with ISO/IEC 7350."
-      :DEFAULT ((* . :NONE)))
-     (:REFERENCE "8.3.67" :NAME "IL" :TITLE "INSERT LINE" :NOTATION (PN)
-      :REPRESENTATION (("CSI" "Pn" "04/12"))
-      :DESCRIPTION
+      :default ((* . :none)))
+     (:reference "8.3.67" :name "IL" :title "INSERT LINE" :notation (pn)
+      :representation (("CSI" "Pn" "04/12"))
+      :description
       "If the DEVICE COMPONENT SELECT MODE (DCSM) is set to
     PRESENTATION, IL is used to prepare the insertion of n lines, by
     putting into the erased state in the presentation component the active
     line (the line that contains the active presentation position) and,
     depending on the setting of the LINE EDITING MODE (VEM), the n-"
-      :DEFAULT ((PN . 1)))
-     (:REFERENCE "8.3.68" :NAME "INT" :TITLE "INTERRUPT" :NOTATION (FS)
-      :REPRESENTATION (("ESC" "06/01"))
-      :DESCRIPTION
+      :default ((pn . 1)))
+     (:reference "8.3.68" :name "INT" :title "INTERRUPT" :notation (fs)
+      :representation (("ESC" "06/01"))
+      :description
       "INT is used to indicate to the receiving device that the
     current process is to be interrupted and an agreed procedure is to be
     initiated. This control function is applicable to either direction of
     transmission."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.69" :NAME "IS1"
-      :TITLE "INFORMATION SEPARATOR ONE (US - UNIT SEPARATOR)" :NOTATION (C0)
-      :REPRESENTATION (("01/15"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.69" :name "IS1"
+      :title "INFORMATION SEPARATOR ONE (US - UNIT SEPARATOR)" :notation (c0)
+      :representation (("01/15"))
+      :description
       "IS1 is used to separate and qualify data logically; its
     specific meaning has to be defined for each application. If this
     control function is used in hierarchical order, it may delimit a data
     item called a unit, see"
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.70" :NAME "IS2"
-      :TITLE "INFORMATION SEPARATOR TWO (RS - RECORD SEPARATOR)" 
-      :NOTATION (C0)
-      :REPRESENTATION (("01/14"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.70" :name "IS2"
+      :title "INFORMATION SEPARATOR TWO (RS - RECORD SEPARATOR)" 
+      :notation (c0)
+      :representation (("01/14"))
+      :description
       "IS2 is used to separate and qualify data logically; its
     specific meaning has to be defined for each application. If this
     control function is used in hierarchical order, it may delimit a data
     item called a record, see"
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.71" :NAME "IS3"
-      :TITLE "INFORMATION SEPARATOR THREE (GS - GROUP SEPARATOR)"
-      :NOTATION (C0)
-      :REPRESENTATION (("01/13"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.71" :name "IS3"
+      :title "INFORMATION SEPARATOR THREE (GS - GROUP SEPARATOR)"
+      :notation (c0)
+      :representation (("01/13"))
+      :description
       "IS3 is used to separate and qualify data logically; its
     specific meaning has to be defined for each application. If this
     control function is used in hierarchical order, it may delimit a data
     item called a group, see"
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.72" :NAME "IS4"
-      :TITLE "INFORMATION SEPARATOR FOUR (FS - FILE SEPARATOR)" :NOTATION (C0)
-      :REPRESENTATION (("01/12"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.72" :name "IS4"
+      :title "INFORMATION SEPARATOR FOUR (FS - FILE SEPARATOR)" :notation (c0)
+      :representation (("01/12"))
+      :description
       "IS4 is used to separate and qualify data logically; its
     specific meaning has to be defined for each application. If this
     control function is used in hierarchical order, it may delimit a data
     item called a file, see"
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.73" :NAME "JFY" :TITLE "JUSTIFY" :NOTATION (PS...)
-      :REPRESENTATION (("CSI" "Ps..." "02/00" "04/06"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.73" :name "JFY" :title "JUSTIFY" :notation (ps...)
+      :representation (("CSI" "Ps..." "02/00" "04/06"))
+      :description
       "JFY is used to indicate the beginning of a string of graphic
     characters in the presentation component that are to be justified
     according to the layout specified by the parameter values, see annex
     C:"
-      :DEFAULT ((PS . 0)))
-     (:REFERENCE "8.3.74" :NAME "LF" :TITLE "LINE FEED" :NOTATION (C0)
-      :REPRESENTATION (("00/10"))
-      :DESCRIPTION
+      :default ((ps . 0)))
+     (:reference "8.3.74" :name "LF" :title "LINE FEED" :notation (c0)
+      :representation (("00/10"))
+      :description
       "If the DEVICE COMPONENT SELECT MODE (DCSM) is set to
     PRESENTATION, LF causes the active presentation position to be moved
     to the corresponding character position of the following line in the
@@ -1038,66 +1052,66 @@
     set to DATA, LF causes the active data position to be moved to the
     corresponding character position of the following line in the data
     component."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.75" :NAME "LS0" :TITLE "LOCKING-SHIFT ZERO"
-      :NOTATION (C0) :REPRESENTATION (("00/15"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.75" :name "LS0" :title "LOCKING-SHIFT ZERO"
+      :notation (c0) :representation (("00/15"))
+      :description
       "LS0 is used for code extension purposes. It causes the
     meanings of the bit combinations following it in the data stream to be
     changed. The use of LS0 is defined in Standard ECMA-35."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.76" :NAME "LS1" :TITLE "LOCKING-SHIFT ONE"
-      :NOTATION (FS) :REPRESENTATION (("ESC" "07/14"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.76" :name "LS1" :title "LOCKING-SHIFT ONE"
+      :notation (fs) :representation (("ESC" "07/14"))
+      :description
       "LS1 is used for code extension purposes. It causes the
     meanings of the bit combinations following it in the data stream to be
     changed. The use of LS1 is defined in Standard ECMA-35."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.78" :NAME "LS2" :TITLE "LOCKING-SHIFT TWO"
-      :NOTATION (FS) :REPRESENTATION (("ESC" "07/13"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.78" :name "LS2" :title "LOCKING-SHIFT TWO"
+      :notation (fs) :representation (("ESC" "07/13"))
+      :description
       "LS2R is used for code extension purposes. It causes the
     meanings of the bit combinations following it in the data stream to be
     changed. The use of LS2R is defined in Standard ECMA-35."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.80" :NAME "LS3" :TITLE "LOCKING-SHIFT THREE"
-      :NOTATION (FS) :REPRESENTATION (("ESC" "07/12"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.80" :name "LS3" :title "LOCKING-SHIFT THREE"
+      :notation (fs) :representation (("ESC" "07/12"))
+      :description
       "LS3R is used for code extension purposes. It causes the
     meanings of the bit combinations following it in the data stream to be
     changed. The use of LS3R is defined in Standard ECMA-35."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.82" :NAME "MC" :TITLE "MEDIA COPY" :NOTATION (PS)
-      :REPRESENTATION (("CSI" "Ps" "06/09"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.82" :name "MC" :title "MEDIA COPY" :notation (ps)
+      :representation (("CSI" "Ps" "06/09"))
+      :description
       "MC is used either to initiate a transfer of data from or to
     an auxiliary input/output device or to enable or disable the relay of
     the received data stream to an auxiliary input/output device,
     depending on the parameter value:"
-      :DEFAULT ((PS . 0)))
-     (:REFERENCE "8.3.83" :NAME "MW" :TITLE "MESSAGE WAITING" :NOTATION (C1)
-      :REPRESENTATION (("09/05") ("ESC" "05/05"))
-      :DESCRIPTION
+      :default ((ps . 0)))
+     (:reference "8.3.83" :name "MW" :title "MESSAGE WAITING" :notation (c1)
+      :representation (("09/05") ("ESC" "05/05"))
+      :description
       "MW is used to set a message waiting indicator in the
     receiving device. An appropriate acknowledgement to the receipt of MW
     may be given by using DEVICE STATUS REPORT (DSR)."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.84" :NAME "NAK" :TITLE "NEGATIVE ACKNOWLEDGE"
-      :NOTATION (C0) :REPRESENTATION (("01/05"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.84" :name "NAK" :title "NEGATIVE ACKNOWLEDGE"
+      :notation (c0) :representation (("01/05"))
+      :description
       "NAK is transmitted by a receiver as a negative response to
     the sender. The use of NAK is defined in ISO 1745."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.85" :NAME "NBH" :TITLE "NO BREAK HERE" :NOTATION (C1)
-      :REPRESENTATION (("08/03") ("ESC" "04/03"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.85" :name "NBH" :title "NO BREAK HERE" :notation (c1)
+      :representation (("08/03") ("ESC" "04/03"))
+      :description
       "NBH is used to indicate a point where a line break shall not
     occur when text is formatted. NBH may occur between two graphic
     characters either or both of which may be SPACE."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.86" :NAME "NEL" :TITLE "NEXT LINE" :NOTATION (C1)
-      :REPRESENTATION (("08/05") ("ESC" "04/05"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.86" :name "NEL" :title "NEXT LINE" :notation (c1)
+      :representation (("08/05") ("ESC" "04/05"))
+      :description
       "The effect of NEL depends on the setting of the DEVICE
     COMPONENT SELECT MODE (DCSM) and on the parameter value of SELECT
     IMPLICIT MOVEMENT DIRECTION (SIMD). If the DEVICE COMPONENT SELECT
@@ -1118,37 +1132,37 @@
     active data position to be moved to the line limit position of the
     following line in the data component. The line limit position is
     established by the parameter value of SET LINE LIMIT (SLL)."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.87" :NAME "NP" :TITLE "NEXT PAGE" :NOTATION (PN)
-      :REPRESENTATION (("CSI" "Pn" "05/05"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.87" :name "NP" :title "NEXT PAGE" :notation (pn)
+      :representation (("CSI" "Pn" "05/05"))
+      :description
       "NP causes the n-th following page in the presentation
     component to be displayed, where n equals the value of Pn. The effect
     of this control function on the active presentation position is not
     defined by this Standard."
-      :DEFAULT ((PN . 1)))
-     (:REFERENCE "8.3.88" :NAME "NUL" :TITLE "NULL" :NOTATION (C0)
-      :REPRESENTATION (("00/00"))
-      :DESCRIPTION
+      :default ((pn . 1)))
+     (:reference "8.3.88" :name "NUL" :title "NULL" :notation (c0)
+      :representation (("00/00"))
+      :description
       "NUL is used for media-fill or time-fill. NUL characters may
     be inserted into, or removed from, a data stream without affecting the
     information content of that stream, but such action may affect the
     information layout and/or the control of equipment."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.89" :NAME "OSC" :TITLE "OPERATING SYSTEM COMMAND"
-      :NOTATION (C1) :REPRESENTATION (("09/13") ("ESC" "05/13"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.89" :name "OSC" :title "OPERATING SYSTEM COMMAND"
+      :notation (c1) :representation (("09/13") ("ESC" "05/13"))
+      :description
       "OSC is used as the opening delimiter of a control string for
     operating system use. The command string following may consist of a
     sequence of bit combinations in the range 00/08 to 00/13 and 02/00 to
     07/14. The control string is closed by the terminating delimiter
     STRING TERMINATOR (ST). The interpretation of the command string
     depends on the relevant operating system."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.90" :NAME "PEC"
-      :TITLE "PRESENTATION EXPAND OR CONTRACT" :NOTATION (PS)
-      :REPRESENTATION (("CSI" "Ps" "02/00" "05/10"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.90" :name "PEC"
+      :title "PRESENTATION EXPAND OR CONTRACT" :notation (ps)
+      :representation (("CSI" "Ps" "02/00" "05/10"))
+      :description
       "PEC is used to establish the spacing and the extent of the
     graphic characters for subsequent text. The spacing is specified in
     the line as multiples of the spacing established by the most recent
@@ -1158,19 +1172,19 @@
     functions. The established spacing and the extent remain in effect
     until the next occurrence of PEC, of SCS, of SHS or of SPI in the data
     stream. The parameter values are"
-      :DEFAULT ((PS . 0)))
-     (:REFERENCE "8.3.91" :NAME "PFS" :TITLE "PAGE FORMAT SELECTION"
-      :NOTATION (PS) :REPRESENTATION (("CSI" "Ps" "02/00" "04/10"))
-      :DESCRIPTION
+      :default ((ps . 0)))
+     (:reference "8.3.91" :name "PFS" :title "PAGE FORMAT SELECTION"
+      :notation (ps) :representation (("CSI" "Ps" "02/00" "04/10"))
+      :description
       "PFS is used to establish the available area for the imaging
     of pages of text based on paper size. The pages are introduced by the
     subsequent occurrence of FORM FEED (FF) in the data stream. The
     established image area remains in effect until the next occurrence of
     PFS in the data stream. The parameter values are (see also annex E):"
-      :DEFAULT ((PS . 0)))
-     (:REFERENCE "8.3.92" :NAME "PLD" :TITLE "PARTIAL LINE FORWARD"
-      :NOTATION (C1) :REPRESENTATION (("08/11") ("ESC" "04/11"))
-      :DESCRIPTION
+      :default ((ps . 0)))
+     (:reference "8.3.92" :name "PLD" :title "PARTIAL LINE FORWARD"
+      :notation (c1) :representation (("08/11") ("ESC" "04/11"))
+      :description
       "PLD causes the active presentation position to be moved in
     the presentation component to the corresponding position of an
     imaginary line with a partial offset in the direction of the line
@@ -1181,10 +1195,10 @@
     of following characters to the active line (the line that contains the
     active presentation position). Any interactions between PLD and format
     effectors other than PLU are not defined by this Standard."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.93" :NAME "PLU" :TITLE "PARTIAL LINE BACKWARD"
-      :NOTATION (C1) :REPRESENTATION (("08/12") ("ESC" "04/12"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.93" :name "PLU" :title "PARTIAL LINE BACKWARD"
+      :notation (c1) :representation (("08/12") ("ESC" "04/12"))
+      :description
       "PLU causes the active presentation position to be moved in
     the presentation component to the corresponding position of an
     imaginary line with a partial offset in the direction opposite to that
@@ -1195,88 +1209,88 @@
     following characters to the active line (the line that contains the
     active presentation position). Any interactions between PLU and format
     effectors other than PLD are not defined by this Standard."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.94" :NAME "PM" :TITLE "PRIVACY MESSAGE" :NOTATION (C1)
-      :REPRESENTATION (("09/14") ("ESC" "05/14"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.94" :name "PM" :title "PRIVACY MESSAGE" :notation (c1)
+      :representation (("09/14") ("ESC" "05/14"))
+      :description
       "PM is used as the opening delimiter of a control string for
     privacy message use. The command string following may consist of a
     sequence of bit combinations in the range 00/08 to 00/13 and 02/00 to
     07/14. The control string is closed by the terminating delimiter
     STRING TERMINATOR (ST). The interpretation of the command string
     depends on the relevant privacy discipline."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.95" :NAME "PP" :TITLE "PRECEDING PAGE" :NOTATION (PN)
-      :REPRESENTATION (("CSI" "Pn" "05/06"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.95" :name "PP" :title "PRECEDING PAGE" :notation (pn)
+      :representation (("CSI" "Pn" "05/06"))
+      :description
       "PP causes the n-th preceding page in the presentation
     component to be displayed, where n equals the value of Pn. The effect
     of this control function on the active presentation position is not
     defined by this Standard."
-      :DEFAULT ((PN . 1)))
-     (:REFERENCE "8.3.96" :NAME "PPA" :TITLE "PAGE POSITION ABSOLUTE"
-      :NOTATION (PN) :REPRESENTATION (("CSI" "Pn" "02/00" "05/00"))
-      :DESCRIPTION
+      :default ((pn . 1)))
+     (:reference "8.3.96" :name "PPA" :title "PAGE POSITION ABSOLUTE"
+      :notation (pn) :representation (("CSI" "Pn" "02/00" "05/00"))
+      :description
       "PPA causes the active data position to be moved in the data
     component to the corresponding character position on the n-th page,
     where n equals the value of Pn."
-      :DEFAULT ((PN . 1)))
-     (:REFERENCE "8.3.97" :NAME "PPB" :TITLE "PAGE POSITION BACKWARD"
-      :NOTATION (PN) :REPRESENTATION (("CSI" "Pn" "02/00" "05/02"))
-      :DESCRIPTION
+      :default ((pn . 1)))
+     (:reference "8.3.97" :name "PPB" :title "PAGE POSITION BACKWARD"
+      :notation (pn) :representation (("CSI" "Pn" "02/00" "05/02"))
+      :description
       "PPB causes the active data position to be moved in the data
     component to the corresponding character position on the n-th
     preceding page, where n equals the value of Pn."
-      :DEFAULT ((PN . 1)))
-     (:REFERENCE "8.3.98" :NAME "PPR" :TITLE "PAGE POSITION FORWARD"
-      :NOTATION (PN) :REPRESENTATION (("CSI" "Pn" "02/00" "05/01"))
-      :DESCRIPTION
+      :default ((pn . 1)))
+     (:reference "8.3.98" :name "PPR" :title "PAGE POSITION FORWARD"
+      :notation (pn) :representation (("CSI" "Pn" "02/00" "05/01"))
+      :description
       "PPR causes the active data position to be moved in the data
     component to the corresponding character position on the n-th
     following page, where n equals the value of Pn."
-      :DEFAULT ((PN . 1)))
-     (:REFERENCE "8.3.99" :NAME "PTX" :TITLE "PARALLEL TEXTS" :NOTATION (PS)
-      :REPRESENTATION (("CSI" "Ps" "05/12"))
-      :DESCRIPTION
+      :default ((pn . 1)))
+     (:reference "8.3.99" :name "PTX" :title "PARALLEL TEXTS" :notation (ps)
+      :representation (("CSI" "Ps" "05/12"))
+      :description
       "PTX is used to delimit strings of graphic characters that are
     communicated one after another in the data stream but that are
     intended to be presented in parallel with one another, usually in
     adjacent lines. The parameter values are"
-      :DEFAULT ((PS . 0)))
-     (:REFERENCE "8.3.100" :NAME "PU1" :TITLE "PRIVATE USE ONE"
-      :NOTATION (C1) :REPRESENTATION (("09/01") ("ESC" "05/01"))
-      :DESCRIPTION
+      :default ((ps . 0)))
+     (:reference "8.3.100" :name "PU1" :title "PRIVATE USE ONE"
+      :notation (c1) :representation (("09/01") ("ESC" "05/01"))
+      :description
       "PU1 is reserved for a function without standardized meaning
     for private use as required, subject to the prior agreement between
     the sender and the recipient of the data."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.101" :NAME "PU2" :TITLE "PRIVATE USE TWO"
-      :NOTATION (C1) :REPRESENTATION (("09/02") ("ESC" "05/02"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.101" :name "PU2" :title "PRIVATE USE TWO"
+      :notation (c1) :representation (("09/02") ("ESC" "05/02"))
+      :description
       "PU2 is reserved for a function without standardized meaning
     for private use as required, subject to the prior agreement between
     the sender and the recipient of the data."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.102" :NAME "QUAD" :TITLE "QUAD" :NOTATION (PS...)
-      :REPRESENTATION (("CSI" "Ps..." "02/00" "04/08"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.102" :name "QUAD" :title "QUAD" :notation (ps...)
+      :representation (("CSI" "Ps..." "02/00" "04/08"))
+      :description
       "QUAD is used to indicate the end of a string of graphic
     characters that are to be positioned on a single line according to the
     layout specified by the parameter values, see annex C:"
-      :DEFAULT ((PS . 0)))
-     (:REFERENCE "8.3.103" :NAME "REP" :TITLE "REPEAT" :NOTATION (PN)
-      :REPRESENTATION (("CSI" "Pn" "06/02"))
-      :DESCRIPTION
+      :default ((ps . 0)))
+     (:reference "8.3.103" :name "REP" :title "REPEAT" :notation (pn)
+      :representation (("CSI" "Pn" "06/02"))
+      :description
       "REP is used to indicate that the preceding character in the
     data stream, if it is a graphic character (represented by one or more
     bit combinations) including SPACE, is to be repeated n times, where n
     equals the value of Pn. If the character preceding REP is a control
     function or part of a control function, the effect of REP is not
     defined by this Standard."
-      :DEFAULT ((PN . 1)))
-     (:REFERENCE "8.3.104" :NAME "RI" :TITLE "REVERSE LINE FEED"
-      :NOTATION (C1) :REPRESENTATION (("08/13") ("ESC" "04/13"))
-      :DESCRIPTION
+      :default ((pn . 1)))
+     (:reference "8.3.104" :name "RI" :title "REVERSE LINE FEED"
+      :notation (c1) :representation (("08/13") ("ESC" "04/13"))
+      :description
       "If the DEVICE COMPONENT SELECT MODE (DCSM) is set to
     PRESENTATION, RI causes the active presentation position to be moved
     in the presentation component to the corresponding character position
@@ -1284,10 +1298,10 @@
     set to DATA, RI causes the active data position to be moved in the
     data component to the corresponding character position of the
     preceding line."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.105" :NAME "RIS" :TITLE "RESET TO INITIAL STATE"
-      :NOTATION (FS) :REPRESENTATION (("ESC" "06/03"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.105" :name "RIS" :title "RESET TO INITIAL STATE"
+      :notation (fs) :representation (("ESC" "06/03"))
+      :description
       "RIS causes a device to be reset to its initial state,
     i.e. the state it has after it is made operational. This may imply, if
     applicable: clear tabulation stops, remove qualified areas, reset
@@ -1296,17 +1310,17 @@
     first line in the presentation component, move the active data
     position to the first character position of the first line in the data
     component, set the modes into the reset state, etc."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.106" :NAME "RM" :TITLE "RESET MODE" :NOTATION (PS...)
-      :REPRESENTATION (("CSI" "Ps..." "06/12"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.106" :name "RM" :title "RESET MODE" :notation (ps...)
+      :representation (("CSI" "Ps..." "06/12"))
+      :description
       "RM causes the modes of the receiving device to be reset as
     specified by the parameter values:"
-      :DEFAULT ((* . :NONE)))
-     (:REFERENCE "8.3.107" :NAME "SACS"
-      :TITLE "SET ADDITIONAL CHARACTER SEPARATION" :NOTATION (PN)
-      :REPRESENTATION (("CSI" "Pn" "02/00" "05/12"))
-      :DESCRIPTION
+      :default ((* . :none)))
+     (:reference "8.3.107" :name "SACS"
+      :title "SET ADDITIONAL CHARACTER SEPARATION" :notation (pn)
+      :representation (("CSI" "Pn" "02/00" "05/12"))
+      :description
       "SACS is used to establish extra inter-character escapement
     for subsequent text. The established extra escapement remains in
     effect until the next occurrence of SACS or of SET REDUCED CHARACTER
@@ -1316,25 +1330,25 @@
     specifies the number of units by which the inter-character escapement
     is enlarged. The unit in which the parameter value is expressed is
     that established by the parameter value of SELECT SIZE UNIT (SSU)."
-      :DEFAULT ((PN . 0)))
-     (:REFERENCE "8.3.108" :NAME "SAPV"
-      :TITLE "SELECT ALTERNATIVE PRESENTATION VARIANTS" :NOTATION (PS...)
-      :REPRESENTATION (("CSI" "Ps..." "02/00" "05/13"))
-      :DESCRIPTION
+      :default ((pn . 0)))
+     (:reference "8.3.108" :name "SAPV"
+      :title "SELECT ALTERNATIVE PRESENTATION VARIANTS" :notation (ps...)
+      :representation (("CSI" "Ps..." "02/00" "05/13"))
+      :description
       "SAPV is used to specify one or more variants for the
     presentation of subsequent text. The parameter values are"
-      :DEFAULT ((PS . 0)))
-     (:REFERENCE "8.3.109" :NAME "SCI" :TITLE "SINGLE CHARACTER INTRODUCER"
-      :NOTATION (C1) :REPRESENTATION (("09/10") ("ESC" "05/10"))
-      :DESCRIPTION
+      :default ((ps . 0)))
+     (:reference "8.3.109" :name "SCI" :title "SINGLE CHARACTER INTRODUCER"
+      :notation (c1) :representation (("09/10") ("ESC" "05/10"))
+      :description
       "SCI and the bit combination following it are used to
     represent a control function or a graphic character. The bit
     combination following SCI must be from 00/08 to 00/13 or 02/00 to
     07/14. The use of SCI is reserved for future standardization."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.110" :NAME "SCO" :TITLE "SELECT CHARACTER ORIENTATION"
-      :NOTATION (PS) :REPRESENTATION (("CSI" "Ps" "02/00" "06/05"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.110" :name "SCO" :title "SELECT CHARACTER ORIENTATION"
+      :notation (ps) :representation (("CSI" "Ps" "02/00" "06/05"))
+      :description
       "SCO is used to establish the amount of rotation of the
     graphic characters following in the data stream. The established value
     remains in effect until the next occurrence of SCO in the data
@@ -1343,10 +1357,10 @@
     to the normal presentation of the graphic characters along the
     character path. The centre of rotation of the affected graphic
     characters is not defined by this Standard."
-      :DEFAULT ((PS . 0)))
-     (:REFERENCE "8.3.111" :NAME "SCP" :TITLE "SELECT CHARACTER PATH"
-      :NOTATION (PS1 PS2) :REPRESENTATION (("CSI" "Ps1;Ps2" "02/00" "06/11"))
-      :DESCRIPTION
+      :default ((ps . 0)))
+     (:reference "8.3.111" :name "SCP" :title "SELECT CHARACTER PATH"
+      :notation (ps1 ps2) :representation (("CSI" "Ps1;Ps2" "02/00" "06/11"))
+      :description
       "SCP is used to select the character path, relative to the
     line orientation, for the active line (the line that contains the
     active presentation position) and subsequent lines in the presentation
@@ -1360,29 +1374,29 @@
     bottom-to-top (in the case of vertical line orientation) Ps2 specifies
     the effect on the content of the presentation component and the
     content of the data component: 0 undefined (implementation-dependent)"
-      :DEFAULT ((* . :NONE)))
-     (:REFERENCE "8.3.112" :NAME "SCS" :TITLE "SET CHARACTER SPACING"
-      :NOTATION (PN) :REPRESENTATION (("CSI" "Pn" "02/00" "06/07"))
-      :DESCRIPTION
+      :default ((* . :none)))
+     (:reference "8.3.112" :name "SCS" :title "SET CHARACTER SPACING"
+      :notation (pn) :representation (("CSI" "Pn" "02/00" "06/07"))
+      :description
       "SCS is used to establish the character spacing for subsequent
     text. The established spacing remains in effect until the next
     occurrence of SCS, or of SELECT CHARACTER SPACING (SHS) or of SPACING
     INCREMENT (SPI) in the data stream, see annex C. Pn specifies the
     character spacing. The unit in which the parameter value is expressed
     is that established by the parameter value of SELECT SIZE UNIT (SSU)."
-      :DEFAULT ((* . :NONE)))
-     (:REFERENCE "8.3.113" :NAME "SD" :TITLE "SCROLL DOWN" :NOTATION (PN)
-      :REPRESENTATION (("CSI" "Pn" "05/04"))
-      :DESCRIPTION
+      :default ((* . :none)))
+     (:reference "8.3.113" :name "SD" :title "SCROLL DOWN" :notation (pn)
+      :representation (("CSI" "Pn" "05/04"))
+      :description
       "SD causes the data in the presentation component to be moved
     by n line positions if the line orientation is horizontal, or by n
     character positions if the line orientation is vertical, such that the
     data appear to move down; where n equals the value of Pn. The active
     presentation position is not affected by this control function."
-      :DEFAULT ((PN . 1)))
-     (:REFERENCE "8.3.114" :NAME "SDS" :TITLE "START DIRECTED STRING"
-      :NOTATION (PS) :REPRESENTATION (("CSI" "Ps" "05/13"))
-      :DESCRIPTION
+      :default ((pn . 1)))
+     (:reference "8.3.114" :name "SDS" :title "START DIRECTED STRING"
+      :notation (ps) :representation (("CSI" "Ps" "05/13"))
+      :description
       "SDS is used to establish in the data component the beginning
     and the end of a string of characters as well as the direction of the
     string. This direction may be different from that currently
@@ -1406,10 +1420,10 @@
     re-establish the previous direction 1 start of a directed string;
     establish the direction left-to-right 2 start of a directed string;
     establish the direction right-to-left"
-      :DEFAULT ((PS . 0)))
-     (:REFERENCE "8.3.115" :NAME "SEE" :TITLE "SELECT EDITING EXTENT"
-      :NOTATION (PS) :REPRESENTATION (("CSI" "Ps" "05/01"))
-      :DESCRIPTION
+      :default ((ps . 0)))
+     (:reference "8.3.115" :name "SEE" :title "SELECT EDITING EXTENT"
+      :notation (ps) :representation (("CSI" "Ps" "05/01"))
+      :description
       "SEE is used to establish the editing extent for subsequent
     character or line insertion or deletion. The established extent
     remains in effect until the next occurrence of SEE in the data
@@ -1420,10 +1434,10 @@
     field in the presentation component 3 the shifted part is limited to
     the active qualified area 4 the shifted part consists of the relevant
     part of the entire presentation component."
-      :DEFAULT ((PS . 0)))
-     (:REFERENCE "8.3.116" :NAME "SEF" :TITLE "SHEET EJECT AND FEED"
-      :NOTATION (PS1 PS2) :REPRESENTATION (("CSI" "Ps1;Ps2" "02/00" "05/09"))
-      :DESCRIPTION
+      :default ((ps . 0)))
+     (:reference "8.3.116" :name "SEF" :title "SHEET EJECT AND FEED"
+      :notation (ps1 ps2) :representation (("CSI" "Ps1;Ps2" "02/00" "05/09"))
+      :description
       "SEF causes a sheet of paper to be ejected from a printing
     device into a specified output stacker and another sheet to be loaded
     into the printing device from a specified paper bin. Parameter values
@@ -1432,10 +1446,10 @@
     eject sheet and load another from bin n Parameter values of Ps2 are: 0
     eject sheet, no stacker specified 1 eject sheet into stacker 1 2 eject
     sheet into stacker 2 . . . n eject sheet into stacker n"
-      :DEFAULT ((PS1 . 0) (PS2 . 0)))
-     (:REFERENCE "8.3.117" :NAME "SGR" :TITLE "SELECT GRAPHIC RENDITION"
-      :NOTATION (PS...) :REPRESENTATION (("CSI" "Ps..." "06/13"))
-      :DESCRIPTION
+      :default ((ps1 . 0) (ps2 . 0)))
+     (:reference "8.3.117" :name "SGR" :title "SELECT GRAPHIC RENDITION"
+      :notation (ps...) :representation (("CSI" "Ps..." "06/13"))
+      :description
       "SGR is used to establish one or more graphic rendition
     aspects for subsequent text. The established aspects remain in effect
     until the next occurrence of SGR in the data stream, depending on the
@@ -1479,10 +1493,10 @@
     double line on the left side 64 ideogram stress marking 65 cancels the
     effect of the rendition aspects established by parameter values 60 to
     64"
-      :DEFAULT ((PS . 0)))
-     (:REFERENCE "8.3.118" :NAME "SHS" :TITLE "SELECT CHARACTER SPACING"
-      :NOTATION (PS) :REPRESENTATION (("CSI" "Ps" "02/00" "04/11"))
-      :DESCRIPTION
+      :default ((ps . 0)))
+     (:reference "8.3.118" :name "SHS" :title "SELECT CHARACTER SPACING"
+      :notation (ps) :representation (("CSI" "Ps" "02/00" "04/11"))
+      :description
       "SHS is used to establish the character spacing for subsequent
     text. The established spacing remains in effect until the next
     occurrence of SHS or of SET CHARACTER SPACING (SCS) or of SPACING
@@ -1490,38 +1504,38 @@
     characters per 25,4 mm 1 12 characters per 25,4 mm 2 15 characters per
     25,4 mm 3 6 characters per 25,4 mm 4 3 characters per 25,4 mm 5 9
     characters per 50,8 mm 6 4 characters per 25,4 mm"
-      :DEFAULT ((PS . 0)))
-     (:REFERENCE "8.3.119" :NAME "SI" :TITLE "SHIFT-IN" :NOTATION (C0)
-      :REPRESENTATION (("00/15"))
-      :DESCRIPTION
+      :default ((ps . 0)))
+     (:reference "8.3.119" :name "SI" :title "SHIFT-IN" :notation (c0)
+      :representation (("00/15"))
+      :description
       "SI is used for code extension purposes. It causes the
     meanings of the bit combinations following it in the data stream to be
     changed. The use of SI is defined in Standard ECMA-35."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.120" :NAME "SIMD"
-      :TITLE "SELECT IMPLICIT MOVEMENT DIRECTION" :NOTATION (PS)
-      :REPRESENTATION (("CSI" "Ps" "05/14"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.120" :name "SIMD"
+      :title "SELECT IMPLICIT MOVEMENT DIRECTION" :notation (ps)
+      :representation (("CSI" "Ps" "05/14"))
+      :description
       "SIMD is used to select the direction of implicit movement of
     the data position relative to the character progression. The direction
     selected remains in effect until the next occurrence of SIMD. The
     parameter values are: 0 the direction of implicit movement is the same
     as that of the character progression 1 the direction of implicit
     movement is opposite to that of the character progression."
-      :DEFAULT ((PS . 0)))
-     (:REFERENCE "8.3.121" :NAME "SL" :TITLE "SCROLL LEFT" :NOTATION (PN)
-      :REPRESENTATION (("CSI" "Pn" "02/00" "04/00"))
-      :DESCRIPTION
+      :default ((ps . 0)))
+     (:reference "8.3.121" :name "SL" :title "SCROLL LEFT" :notation (pn)
+      :representation (("CSI" "Pn" "02/00" "04/00"))
+      :description
       "SL causes the data in the presentation component to be moved
     by n character positions if the line orientation is horizontal, or by
     n line positions if the line orientation is vertical, such that the
     data appear to move to the left; where n equals the value of Pn. The
     active presentation position is not affected by this control
     function."
-      :DEFAULT ((PN . 1)))
-     (:REFERENCE "8.3.122" :NAME "SLH" :TITLE "SET LINE HOME" :NOTATION (PN)
-      :REPRESENTATION (("CSI" "Pn" "02/00" "05/05"))
-      :DESCRIPTION
+      :default ((pn . 1)))
+     (:reference "8.3.122" :name "SLH" :title "SET LINE HOME" :notation (pn)
+      :representation (("CSI" "Pn" "02/00" "05/05"))
+      :description
       "SLH is used to establish at character position n in the
     active line (the line that contains the active presentation position)
     and lines of subsequent text in the presentation component the
@@ -1541,10 +1555,10 @@
     position shall occur. The established position is called the line home
     position and remains in effect until the next occurrence of SLH in the
     data stream."
-      :DEFAULT ((* . :NONE)))
-     (:REFERENCE "8.3.123" :NAME "SLL" :TITLE "SET LINE LIMIT" :NOTATION (PN)
-      :REPRESENTATION (("CSI" "Pn" "02/00" "05/06"))
-      :DESCRIPTION
+      :default ((* . :none)))
+     (:reference "8.3.123" :name "SLL" :title "SET LINE LIMIT" :notation (pn)
+      :representation (("CSI" "Pn" "02/00" "05/06"))
+      :description
       "SLL is used to establish at character position n in the
     active line (the line that contains the active presentation position)
     and lines of subsequent text in the presentation component the
@@ -1565,20 +1579,20 @@
     equal to 1. The established position is called the line limit position
     and remains in effect until the next occurrence of SLL in the data
     stream."
-      :DEFAULT ((* . :NONE)))
-     (:REFERENCE "8.3.124" :NAME "SLS" :TITLE "SET LINE SPACING"
-      :NOTATION (PN) :REPRESENTATION (("CSI" "Pn" "02/00" "06/08"))
-      :DESCRIPTION
+      :default ((* . :none)))
+     (:reference "8.3.124" :name "SLS" :title "SET LINE SPACING"
+      :notation (pn) :representation (("CSI" "Pn" "02/00" "06/08"))
+      :description
       "SLS is used to establish the line spacing for subsequent
     text. The established spacing remains in effect until the next
     occurrence of SLS or of SELECT LINE SPACING (SVS) or of SPACING
     INCREMENT (SPI) in the data stream. Pn specifies the line spacing. The
     unit in which the parameter value is expressed is that established by
     the parameter value of SELECT SIZE UNIT (SSU)."
-      :DEFAULT ((* . :NONE)))
-     (:REFERENCE "8.3.125" :NAME "SM" :TITLE "SET MODE" :NOTATION (PS...)
-      :REPRESENTATION (("CSI" "Ps..." "06/08"))
-      :DESCRIPTION
+      :default ((* . :none)))
+     (:reference "8.3.125" :name "SM" :title "SET MODE" :notation (ps...)
+      :representation (("CSI" "Ps..." "06/08"))
+      :description
       "SM causes the modes of the receiving device to be set as
     specified by the parameter values: 1 GUARDED AREA TRANSFER MODE (GATM)
     2 KEYBOARD ACTION MODE (KAM) 3 CONTROL REPRESENTATION MODE (CRM) 4
@@ -1586,32 +1600,32 @@
     6 ERASURE MODE (ERM) 7 LINE EDITING MODE (VEM) 8 BI-DIRECTIONAL
     SUPPORT MODE (BDSM) 9 DEVICE COMPONENT SELECT MODE (DCSM) 10 CHARACTER
     EDITING MODE (HEM) 11 POSITIONING UNIT MODE (PUM) (see F.4.1 in annex"
-      :DEFAULT ((* . :NONE)))
-     (:REFERENCE "8.3.126" :NAME "SO" :TITLE "SHIFT-OUT" :NOTATION (C0)
-      :REPRESENTATION (("00/14"))
-      :DESCRIPTION
+      :default ((* . :none)))
+     (:reference "8.3.126" :name "SO" :title "SHIFT-OUT" :notation (c0)
+      :representation (("00/14"))
+      :description
       "SO is used for code extension purposes. It causes the
     meanings of the bit combinations following it in the data stream to be
     changed. The use of SO is defined in Standard ECMA-35."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.127" :NAME "SOH" :TITLE "START OF HEADING"
-      :NOTATION (C0) :REPRESENTATION (("00/01"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.127" :name "SOH" :title "START OF HEADING"
+      :notation (c0) :representation (("00/01"))
+      :description
       "SOH is used to indicate the beginning of a heading. The use
     of SOH is defined in ISO 1745."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.128" :NAME "SOS" :TITLE "START OF STRING"
-      :NOTATION (C1) :REPRESENTATION (("09/08") ("ESC" "05/08"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.128" :name "SOS" :title "START OF STRING"
+      :notation (c1) :representation (("09/08") ("ESC" "05/08"))
+      :description
       "SOS is used as the opening delimiter of a control string. The
     character string following may consist of any bit combination, except
     those representing SOS or STRING TERMINATOR (ST). The control string
     is closed by the terminating delimiter STRING TERMINATOR (ST). The
     interpretation of the character string depends on the application."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.129" :NAME "SPA" :TITLE "START OF GUARDED AREA"
-      :NOTATION (C1) :REPRESENTATION (("09/06") ("ESC" "05/06"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.129" :name "SPA" :title "START OF GUARDED AREA"
+      :notation (c1) :representation (("09/06") ("ESC" "05/06"))
+      :description
       "SPA is used to indicate that the active presentation position is
     the first of a string of character positions in the presentation
     component, the contents of which are protected against manual
@@ -1620,11 +1634,11 @@
     protected against erasure, depending on the setting of the ERASURE
     MODE (ERM). The end of this string is indicated by END OF GUARDED AREA
     (EPA)."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.130" :NAME "SPD"
-      :TITLE "SELECT PRESENTATION DIRECTIONS" :NOTATION (PS1 PS2)
-      :REPRESENTATION (("CSI" "Ps1;Ps2" "02/00" "05/03"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.130" :name "SPD"
+      :title "SELECT PRESENTATION DIRECTIONS" :notation (ps1 ps2)
+      :representation (("CSI" "Ps1;Ps2" "02/00" "05/03"))
+      :description
       "SPD is used to select the line orientation, the line progression,
     and the character path in the presentation component. It is also used
     to update the content of the presentation component and the content of
@@ -1644,10 +1658,10 @@
     Ps2 specifies the effect on the content of the presentation component
     and the content of the data component: 0 undefined
     (implementation-dependent)"
-      :DEFAULT ((PS1 . 0) (PS2 . 0)))
-     (:REFERENCE "8.3.131" :NAME "SPH" :TITLE "SET PAGE HOME" :NOTATION (PN)
-      :REPRESENTATION (("CSI" "Pn" "02/00" "06/09"))
-      :DESCRIPTION
+      :default ((ps1 . 0) (ps2 . 0)))
+     (:reference "8.3.131" :name "SPH" :title "SET PAGE HOME" :notation (pn)
+      :representation (("CSI" "Pn" "02/00" "06/09"))
+      :description
       "SPH is used to establish at line position n in the active page
     (the page that contains the active presentation position) and
     subsequent pages in the presentation component the position to which
@@ -1665,10 +1679,10 @@
     presentation position shall occur. The established position is called
     the page home position and remains in effect until the next occurrence
     of SPH in the data stream."
-      :DEFAULT ((* . :NONE)))
-     (:REFERENCE "8.3.132" :NAME "SPI" :TITLE "SPACING INCREMENT"
-      :NOTATION (PN1 PN2) :REPRESENTATION (("CSI" "Pn1;Pn2" "02/00" "04/07"))
-      :DESCRIPTION
+      :default ((* . :none)))
+     (:reference "8.3.132" :name "SPI" :title "SPACING INCREMENT"
+      :notation (pn1 pn2) :representation (("CSI" "Pn1;Pn2" "02/00" "04/07"))
+      :description
       "SPI is used to establish the line spacing and the character
     spacing for subsequent text. The established line spacing remains in
     effect until the next occurrence of SPI or of SET LINE SPACING (SLS)
@@ -1679,10 +1693,10 @@
     the character spacing The unit in which the parameter values are
     expressed is that established by the parameter value of SELECT SIZE
     UNIT (SSU)."
-      :DEFAULT ((* . :NONE)))
-     (:REFERENCE "8.3.133" :NAME "SPL" :TITLE "SET PAGE LIMIT" :NOTATION (PN)
-      :REPRESENTATION (("CSI" "Pn" "02/00" "06/10"))
-      :DESCRIPTION
+      :default ((* . :none)))
+     (:reference "8.3.133" :name "SPL" :title "SET PAGE LIMIT" :notation (pn)
+      :representation (("CSI" "Pn" "02/00" "06/10"))
+      :description
       "SPL is used to establish at line position n in the active page
     (the page that contains the active presentation position) and pages of
     subsequent text in the presentation component the position beyond
@@ -1697,11 +1711,11 @@
     shall occur. The established position is called the page limit
     position and remains in effect until the next occurrence of SPL in the
     data stream."
-      :DEFAULT ((* . :NONE)))
-     (:REFERENCE "8.3.134" :NAME "SPQR"
-      :TITLE "SELECT PRINT QUALITY AND RAPIDITY" :NOTATION (PS)
-      :REPRESENTATION (("CSI" "Ps" "02/00" "05/08"))
-      :DESCRIPTION
+      :default ((* . :none)))
+     (:reference "8.3.134" :name "SPQR"
+      :title "SELECT PRINT QUALITY AND RAPIDITY" :notation (ps)
+      :representation (("CSI" "Ps" "02/00" "05/08"))
+      :description
       "SPQR is used to select the relative print quality and the print
     speed for devices the output quality and speed of which are inversely
     related. The selected values remain in effect until the next
@@ -1709,21 +1723,21 @@
     highest available print quality, low print speed 1 medium print
     quality, medium print speed 2 draft print quality, highest available
     print speed"
-      :DEFAULT ((PS . 0)))
-     (:REFERENCE "8.3.135" :NAME "SR" :TITLE "SCROLL RIGHT" :NOTATION (PN)
-      :REPRESENTATION (("CSI" "Pn" "02/00" "04/01"))
-      :DESCRIPTION
+      :default ((ps . 0)))
+     (:reference "8.3.135" :name "SR" :title "SCROLL RIGHT" :notation (pn)
+      :representation (("CSI" "Pn" "02/00" "04/01"))
+      :description
       "SR causes the data in the presentation component to be moved by n
     character positions if the line orientation is horizontal, or by n
     line positions if the line orientation is vertical, such that the data
     appear to move to the right; where n equals the value of Pn. The
     active presentation position is not affected by this control
     function."
-      :DEFAULT ((PN . 1)))
-     (:REFERENCE "8.3.136" :NAME "SRCS"
-      :TITLE "SET REDUCED CHARACTER SEPARATION" :NOTATION (PN)
-      :REPRESENTATION (("CSI" "Pn" "02/00" "06/06"))
-      :DESCRIPTION
+      :default ((pn . 1)))
+     (:reference "8.3.136" :name "SRCS"
+      :title "SET REDUCED CHARACTER SEPARATION" :notation (pn)
+      :representation (("CSI" "Pn" "02/00" "06/06"))
+      :description
       "SRCS is used to establish reduced inter-character escapement for
     subsequent text. The established reduced escapement remains in effect
     until the next occurrence of SRCS or of SET ADDITIONAL CHARACTER
@@ -1733,10 +1747,10 @@
     specifies the number of units by which the inter-character escapement
     is reduced. The unit in which the parameter values are expressed is
     that established by the parameter value of SELECT SIZE UNIT (SSU)."
-      :DEFAULT ((PN . 0)))
-     (:REFERENCE "8.3.137" :NAME "SRS" :TITLE "START REVERSED STRING"
-      :NOTATION (PS) :REPRESENTATION (("CSI" "Ps" "05/11"))
-      :DESCRIPTION
+      :default ((pn . 0)))
+     (:reference "8.3.137" :name "SRS" :title "START REVERSED STRING"
+      :notation (ps) :representation (("CSI" "Ps" "05/11"))
+      :description
       "SRS is used to establish in the data component the beginning and
     the end of a string of characters as well as the direction of the
     string. This direction is opposite to that currently established. The
@@ -1758,10 +1772,10 @@
     characters of the string just ended. The parameter values are: 0 end
     of a reversed string; re-establish the previous direction 1 beginning
     of a reversed string; reverse the direction."
-      :DEFAULT ((PS . 0)))
-     (:REFERENCE "8.3.138" :NAME "SSA" :TITLE "START OF SELECTED AREA"
-      :NOTATION (C1) :REPRESENTATION (("08/06") ("ESC" "04/06"))
-      :DESCRIPTION
+      :default ((ps . 0)))
+     (:reference "8.3.138" :name "SSA" :title "START OF SELECTED AREA"
+      :notation (c1) :representation (("08/06") ("ESC" "04/06"))
+      :description
       "SSA is used to indicate that the active presentation position is
     the first of a string of character positions in the presentation
     component, the contents of which are eligible to be transmitted in the
@@ -1771,10 +1785,10 @@
     depends on the setting of the GUARDED AREA TRANSFER MODE (GATM) and on
     any guarded areas established by DEFINE AREA QUALIFICATION (DAQ), or
     by START OF GUARDED AREA (SPA) and END OF GUARDED AREA (EPA)."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.139" :NAME "SSU" :TITLE "SELECT SIZE UNIT"
-      :NOTATION (PS) :REPRESENTATION (("CSI" "Ps" "02/00" "04/09"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.139" :name "SSU" :title "SELECT SIZE UNIT"
+      :notation (ps) :representation (("CSI" "Ps" "02/00" "04/09"))
+      :description
       "SSU is used to establish the unit in which the numeric parameters
     of certain control functions are expressed. The established unit
     remains in effect until the next occurrence of SSU in the data
@@ -1785,10 +1799,10 @@
     17 mm (1/1 200 of 25,4 mm) 6 MICROMETRE - 0,001 mm 7 PIXEL - The
     smallest increment that can be specified in a device 8 DECIPOINT -
     0,035 14 mm (35/996 mm)"
-      :DEFAULT ((PS . 0)))
-     (:REFERENCE "8.3.140" :NAME "SSW" :TITLE "SET SPACE WIDTH"
-      :NOTATION (PN) :REPRESENTATION (("CSI" "Pn" "02/00" "05/11"))
-      :DESCRIPTION
+      :default ((ps . 0)))
+     (:reference "8.3.140" :name "SSW" :title "SET SPACE WIDTH"
+      :notation (pn) :representation (("CSI" "Pn" "02/00" "05/11"))
+      :description
       "SSW is used to establish for subsequent text the character
     escapement associated with the character SPACE. The established
     escapement remains in effect until the next occurrence of SSW in the
@@ -1803,42 +1817,42 @@
     data stream if the current font has constant spacing, or is specified
     by the nominal width of the character SPACE in the current font if
     that font has proportional spacing."
-      :DEFAULT ((* . :NONE)))
-     (:REFERENCE "8.3.141" :NAME "SS2" :TITLE "SINGLE-SHIFT TWO"
-      :NOTATION (C1) :REPRESENTATION (("08/14") ("ESC" "04/14"))
-      :DESCRIPTION
+      :default ((* . :none)))
+     (:reference "8.3.141" :name "SS2" :title "SINGLE-SHIFT TWO"
+      :notation (c1) :representation (("08/14") ("ESC" "04/14"))
+      :description
       "SS2 is used for code extension purposes. It causes the meanings of
     the bit combinations following it in the data stream to be
     changed. The use of SS2 is defined in Standard ECMA-35."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.142" :NAME "SS3" :TITLE "SINGLE-SHIFT THREE"
-      :NOTATION (C1) :REPRESENTATION (("08/15") ("ESC" "04/15"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.142" :name "SS3" :title "SINGLE-SHIFT THREE"
+      :notation (c1) :representation (("08/15") ("ESC" "04/15"))
+      :description
       "SS3 is used for code extension purposes. It causes the meanings of
     the bit combinations following it in the data stream to be
     changed. The use of SS3 is defined in Standard ECMA-35."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.143" :NAME "ST" :TITLE "STRING TERMINATOR"
-      :NOTATION (C1) :REPRESENTATION (("09/12") ("ESC" "05/12"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.143" :name "ST" :title "STRING TERMINATOR"
+      :notation (c1) :representation (("09/12") ("ESC" "05/12"))
+      :description
       "ST is used as the closing delimiter of a control string opened by
     APPLICATION PROGRAM COMMAND (APC), DEVICE CONTROL STRING (DCS),
     OPERATING SYSTEM COMMAND (OSC), PRIVACY MESSAGE (PM), or START OF
     STRING (SOS)."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.144" :NAME "STAB" :TITLE "SELECTIVE TABULATION"
-      :NOTATION (PS) :REPRESENTATION (("CSI" "Ps" "02/00" "05/14"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.144" :name "STAB" :title "SELECTIVE TABULATION"
+      :notation (ps) :representation (("CSI" "Ps" "02/00" "05/14"))
+      :description
       "STAB causes subsequent text in the presentation component to be
     aligned according to the position and the properties of a tabulation
     stop which is selected from a list according to the value of the
     parameter Ps. The use of this control function and means of specifying
     a list of tabulation stops to be referenced by the control function
     are specified in other standards, for example ISO 8613-6."
-      :DEFAULT ((* . :NONE)))
-     (:REFERENCE "8.3.145" :NAME "STS" :TITLE "SET TRANSMIT STATE"
-      :NOTATION (C1) :REPRESENTATION (("09/03") ("ESC" "05/03"))
-      :DESCRIPTION
+      :default ((* . :none)))
+     (:reference "8.3.145" :name "STS" :title "SET TRANSMIT STATE"
+      :notation (c1) :representation (("09/03") ("ESC" "05/03"))
+      :description
       "STS is used to establish the transmit state in the receiving
     device. In this state the transmission of data from the device is
     possible. The actual initiation of transmission of data is performed
@@ -1846,32 +1860,32 @@
     which is outside the scope of this Standard. The transmit state is
     established either by STS appearing in the received data stream or by
     the operation of an appropriate key on a keyboard."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.146" :NAME "STX" :TITLE "START OF TEXT" :NOTATION (C0)
-      :REPRESENTATION (("00/02"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.146" :name "STX" :title "START OF TEXT" :notation (c0)
+      :representation (("00/02"))
+      :description
       "STX is used to indicate the beginning of a text and the end of a
     heading. The use of STX is defined in ISO 1745."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.147" :NAME "SU" :TITLE "SCROLL UP" :NOTATION (PN)
-      :REPRESENTATION (("CSI" "Pn" "05/03"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.147" :name "SU" :title "SCROLL UP" :notation (pn)
+      :representation (("CSI" "Pn" "05/03"))
+      :description
       "SU causes the data in the presentation component to be moved by n
     line positions if the line orientation is horizontal, or by n
     character positions if the line orientation is vertical, such that the
     data appear to move up; where n equals the value of Pn. The active
     presentation position is not affected by this control function."
-      :DEFAULT ((PN . 1)))
-     (:REFERENCE "8.3.148" :NAME "SUB" :TITLE "SUBSTITUTE" :NOTATION (C0)
-      :REPRESENTATION (("01/10"))
-      :DESCRIPTION
+      :default ((pn . 1)))
+     (:reference "8.3.148" :name "SUB" :title "SUBSTITUTE" :notation (c0)
+      :representation (("01/10"))
+      :description
       "SUB is used in the place of a character that has been found to be
     invalid or in error. SUB is intended to be introduced by automatic
     means."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.149" :NAME "SVS" :TITLE "SELECT LINE SPACING"
-      :NOTATION (PS) :REPRESENTATION (("CSI" "Ps" "02/00" "04/12"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.149" :name "SVS" :title "SELECT LINE SPACING"
+      :notation (ps) :representation (("CSI" "Ps" "02/00" "04/12"))
+      :description
       "SVS is used to establish the line spacing for subsequent text. The
     established spacing remains in effect until the next occurrence of SVS
     or of SET LINE SPACING (SLS) or of SPACING INCREMENT (SPI) in the data
@@ -1879,18 +1893,18 @@
     25,4 mm 2 3 lines per 25,4 mm 3 12 lines per 25,4 mm 4 8 lines per
     25,4 mm 5 6 lines per 30,0 mm 6 4 lines per 30,0 mm 7 3 lines per 30,0
     mm 8 12 lines per 30,0 mm 9 2 lines per 25,4 mm"
-      :DEFAULT ((PS . 0)))
-     (:REFERENCE "8.3.150" :NAME "SYN" :TITLE "SYNCHRONOUS IDLE"
-      :NOTATION (C0) :REPRESENTATION (("01/06"))
-      :DESCRIPTION
+      :default ((ps . 0)))
+     (:reference "8.3.150" :name "SYN" :title "SYNCHRONOUS IDLE"
+      :notation (c0) :representation (("01/06"))
+      :description
       "SYN is used by a synchronous transmission system in the absence of
     any other character (idle condition) to provide a signal from which
     synchronism may be achieved or retained between data terminal
     equipment. The use of SYN is defined in ISO 1745."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.151" :NAME "TAC" :TITLE "TABULATION ALIGNED CENTRED"
-      :NOTATION (PN) :REPRESENTATION (("CSI" "Pn" "02/00" "06/02"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.151" :name "TAC" :title "TABULATION ALIGNED CENTRED"
+      :notation (pn) :representation (("CSI" "Pn" "02/00" "06/02"))
+      :description
       "TAC causes a character tabulation stop calling for centring to be
     set at character position n in the active line (the line that contains
     the active presentation position) and lines of subsequent text in the
@@ -1901,11 +1915,11 @@
     the (trailing edge of the) first graphic character and the (leading
     edge of the) last graphic character are at approximately equal
     distances from the tabulation stop."
-      :DEFAULT ((* . :NONE)))
-     (:REFERENCE "8.3.152" :NAME "TALE"
-      :TITLE "TABULATION ALIGNED LEADING EDGE" :NOTATION (PN)
-      :REPRESENTATION (("CSI" "Pn" "02/00" "06/01"))
-      :DESCRIPTION
+      :default ((* . :none)))
+     (:reference "8.3.152" :name "TALE"
+      :title "TABULATION ALIGNED LEADING EDGE" :notation (pn)
+      :representation (("CSI" "Pn" "02/00" "06/01"))
+      :description
       "TALE causes a character tabulation stop calling for leading edge
     alignment to be set at character position n in the active line (the
     line that contains the active presentation position) and lines of
@@ -1915,11 +1929,11 @@
     tabulation stops. A text string aligned with a tabulation stop set by
     TALE will be positioned so that the (leading edge of the) last graphic
     character of the string is placed at the tabulation stop."
-      :DEFAULT ((* . :NONE)))
-     (:REFERENCE "8.3.153" :NAME "TATE"
-      :TITLE "TABULATION ALIGNED TRAILING EDGE" :NOTATION (PN)
-      :REPRESENTATION (("CSI" "Pn" "02/00" "06/00"))
-      :DESCRIPTION
+      :default ((* . :none)))
+     (:reference "8.3.153" :name "TATE"
+      :title "TABULATION ALIGNED TRAILING EDGE" :notation (pn)
+      :representation (("CSI" "Pn" "02/00" "06/00"))
+      :description
       "TATE causes a character tabulation stop calling for trailing edge
     alignment to be set at character position n in the active line (the
     line that contains the active presentation position) and lines of
@@ -1929,10 +1943,10 @@
     tabulation stops. A text string aligned with a tabulation stop set by
     TATE will be positioned so that the (trailing edge of the) first
     graphic character of the string is placed at the tabulation stop."
-      :DEFAULT ((* . :NONE)))
-     (:REFERENCE "8.3.154" :NAME "TBC" :TITLE "TABULATION CLEAR"
-      :NOTATION (PS) :REPRESENTATION (("CSI" "Ps" "06/07"))
-      :DESCRIPTION
+      :default ((* . :none)))
+     (:reference "8.3.154" :name "TBC" :title "TABULATION CLEAR"
+      :notation (ps) :representation (("CSI" "Ps" "06/07"))
+      :description
       "TBC causes one or more tabulation stops in the presentation
     component to be cleared, depending on the parameter value: 0 the
     character tabulation stop at the active presentation position is
@@ -1942,11 +1956,11 @@
     cleared 5 all tabulation stops are cleared In the case of parameter
     value 0 or 2 the number of lines affected depends on the setting of
     the TABULATION STOP MODE (TSM)"
-      :DEFAULT ((PS . 0)))
-     (:REFERENCE "8.3.155" :NAME "TCC"
-      :TITLE "TABULATION CENTRED ON CHARACTER" :NOTATION (PN1 PN2)
-      :REPRESENTATION (("CSI" "Pn1;Pn2" "02/00" "06/03"))
-      :DESCRIPTION
+      :default ((ps . 0)))
+     (:reference "8.3.155" :name "TCC"
+      :title "TABULATION CENTRED ON CHARACTER" :notation (pn1 pn2)
+      :representation (("CSI" "Pn1;Pn2" "02/00" "06/03"))
+      :description
       "TCC causes a character tabulation stop calling for alignment of a
     target graphic character to be set at character position n in the
     active line (the line that contains the active presentation position)
@@ -1964,60 +1978,62 @@
     value) of the target character in the currently invoked code. For a
     7-bit code, the permissible range of values is 32 to 127; for an 8-bit
     code, the permissible range of values is 32 to 127 and 160 to 255."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.156" :NAME "TSR" :TITLE "TABULATION STOP REMOVE"
-      :NOTATION (PN) :REPRESENTATION (("CSI" "Pn" "02/00" "06/04"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.156" :name "TSR" :title "TABULATION STOP REMOVE"
+      :notation (pn) :representation (("CSI" "Pn" "02/00" "06/04"))
+      :description
       "TSR causes any character tabulation stop at character position n
     in the active line (the line that contains the active presentation
     position) and lines of subsequent text in the presentation component
     to be cleared, but does not affect other tabulation stops. n equals
     the value of Pn."
-      :DEFAULT ((* . :NONE)))
-     (:REFERENCE "8.3.157" :NAME "TSS" :TITLE "THIN SPACE SPECIFICATION"
-      :NOTATION (PN) :REPRESENTATION (("CSI" "Pn" "02/00" "04/05"))
-      :DESCRIPTION
+      :default ((* . :none)))
+     (:reference "8.3.157" :name "TSS" :title "THIN SPACE SPECIFICATION"
+      :notation (pn) :representation (("CSI" "Pn" "02/00" "04/05"))
+      :description
       "TSS is used to establish the width of a thin space for subsequent
     text. The established width remains in effect until the next
     occurrence of TSS in the data stream, see annex C. Pn specifies the
     width of the thin space. The unit in which the parameter value is
     expressed is that established by the parameter value of SELECT SIZE
     UNIT (SSU)."
-      :DEFAULT ((* . :NONE)))
-     (:REFERENCE "8.3.158" :NAME "VPA" :TITLE "LINE POSITION ABSOLUTE"
-      :NOTATION (PN) :REPRESENTATION (("CSI" "Pn" "06/04"))
-      :DESCRIPTION
+      :default ((* . :none)))
+     (:reference "8.3.158" :name "VPA" :title "LINE POSITION ABSOLUTE"
+      :notation (pn) :representation (("CSI" "Pn" "06/04"))
+      :description
       "VPA causes the active data position to be moved to line position n
     in the data component in a direction parallel to the line progression,
     where n equals the value of Pn."
-      :DEFAULT ((PN . 1)))
-     (:REFERENCE "8.3.159" :NAME "VPB" :TITLE "LINE POSITION BACKWARD"
-      :NOTATION (PN) :REPRESENTATION (("CSI" "Pn" "06/11"))
-      :DESCRIPTION
+      :default ((pn . 1)))
+     (:reference "8.3.159" :name "VPB" :title "LINE POSITION BACKWARD"
+      :notation (pn) :representation (("CSI" "Pn" "06/11"))
+      :description
       "VPB causes the active data position to be moved by n line
     positions in the data component in a direction opposite to that of the
     line progression, where n equals the value of Pn."
-      :DEFAULT ((PN . 1)))
-     (:REFERENCE "8.3.160" :NAME "VPR" :TITLE "LINE POSITION FORWARD"
-      :NOTATION (PN) :REPRESENTATION (("CSI" "Pn" "06/05"))
-      :DESCRIPTION
+      :default ((pn . 1)))
+     (:reference "8.3.160" :name "VPR" :title "LINE POSITION FORWARD"
+      :notation (pn) :representation (("CSI" "Pn" "06/05"))
+      :description
       "VPR causes the active data position to be moved by n line
     positions in the data component in a direction parallel to the line
     progression, where n equals the value of Pn."
-      :DEFAULT ((PN . 1)))
-     (:REFERENCE "8.3.161" :NAME "VT" :TITLE "LINE TABULATION" :NOTATION (C0)
-      :REPRESENTATION (("00/11"))
-      :DESCRIPTION
+      :default ((pn . 1)))
+     (:reference "8.3.161" :name "VT" :title "LINE TABULATION" :notation (c0)
+      :representation (("00/11"))
+      :description
       "VT causes the active presentation position to be moved in the
     presentation component to the corresponding character position on the
     line at which the following line tabulation stop is set."
-      :DEFAULT NIL)
-     (:REFERENCE "8.3.162" :NAME "VTS" :TITLE "LINE TABULATION SET"
-      :NOTATION (C1) :REPRESENTATION (("08/10") ("ESC" "04/10"))
-      :DESCRIPTION
+      :default nil)
+     (:reference "8.3.162" :name "VTS" :title "LINE TABULATION SET"
+      :notation (c1) :representation (("08/10") ("ESC" "04/10"))
+      :description
       "VTS causes a line tabulation stop to be set at the active line
     (the line that contains the active presentation position)."
-      :DEFAULT NIL))))
+      :default nil)))
+
+  "Description of the ECMA-048 codes.")
 
 
 (defun parse-byte-specification (string)
@@ -2033,13 +2049,13 @@ and return (VALUES high low) or NIL."
             (parse-integer string :start 3 :end 5))))
 
   
-(DEFUN GENERATE-CODE-FUNCTION (CODE &KEY
-                                    (COMPILE NIL)
-                                    (VERBOSE NIL)
-                                    (EXPORT NIL)
-                                    (8-BIT NIL)
+(defun generate-code-function (code &key
+                                    (compile nil)
+                                    (verbose nil)
+                                    (export nil)
+                                    (8-bit nil)
                                     (print nil)
-                                    (RESULT-TYPE '(VECTOR (UNSIGNED-BYTE 8))))
+                                    (result-type '(vector (unsigned-byte 8))))
   "
 DO:             Defines (and may be compile) and exports a function
                 named as ,(CODE-NAME CODE) that
@@ -2068,91 +2084,91 @@ RESULT-TYPE:    The type that the generated function must return:
 BUGS:           Perhaps we should generate functions that take 8-BIT and
                 RESULT-TYPE as arguments (or special variables) dynamically.
 "
-  (LABELS ((COMPILE-ARGS
-               (FMT ARGS)
-             (LIST `(MAP 'LIST (FUNCTION CHAR-CODE) 
-                         (FORMAT NIL ,FMT ,@ARGS))))
-           (COMPILE-REP
-               (R)
-             (LET (HIGH LOW)
-               (COND
-                 ((MULTIPLE-VALUE-SETQ (HIGH LOW) (parse-byte-specification R))
-                  (LIST (+ (* high 16) low)))
+  (labels ((compile-args
+               (fmt args)
+             (list `(map 'list (function char-code) 
+                         (format nil ,fmt ,@args))))
+           (compile-rep
+               (r)
+             (let (high low)
+               (cond
+                 ((multiple-value-setq (high low) (parse-byte-specification r))
+                  (list (+ (* high 16) low)))
                  ;; TODO: We are asuming ASCII with these FORMAT!
-                 ((STRING-EQUAL "Ps1;Ps2" R) (COMPILE-ARGS "~D;~D" '(PS1 PS2)))
-                 ((STRING-EQUAL "Pn1;Pn2" R) (COMPILE-ARGS "~D;~D" '(PN1 PN2)))
-                 ((STRING-EQUAL "Pn"      R) (COMPILE-ARGS "~D" '(PN)))
-                 ((STRING-EQUAL "Ps"      R) (COMPILE-ARGS "~D" '(PS)))
-                 ((STRING-EQUAL "Ps..."   R)
-                  (COMPILE-ARGS "~{~D~^;~}" 
+                 ((string-equal "Ps1;Ps2" r) (compile-args "~D;~D" '(ps1 ps2)))
+                 ((string-equal "Pn1;Pn2" r) (compile-args "~D;~D" '(pn1 pn2)))
+                 ((string-equal "Pn"      r) (compile-args "~D" '(pn)))
+                 ((string-equal "Ps"      r) (compile-args "~D" '(ps)))
+                 ((string-equal "Ps..."   r)
+                  (compile-args "~{~D~^;~}" 
                                 (if print
                                     '((let ((last (car (last ps...))))
                                         (if (or (eq 't last) (streamp last))
                                             (progn (setf stream last)
-                                                   (butlast PS...))
+                                                   (butlast ps...))
                                             ps...)))
-                                    '(PS...))))
-                 ((STRING-EQUAL "ESC"   R) (LIST 27))
-                 ((STRING-EQUAL "CSI"   R) (IF 8-BIT (LIST 155) (LIST 27 91)))
-                 (T (LIST R))))))
-    (LET* ((ARGUMENTS
-            (CDR (ASSOC (CODE-NOTATION CODE)
-                        '(((FS) . ())
-                          ((PS...) . (&REST PS...))
-                          ((PS1 PS2)  . (PS1 PS2))
-                          ((PS) . (PS))
-                          ((PN1 PN2) . (PN1 PN2))
-                          ((PN) . (PN))
-                          ((C0) . ())
-                          ((C1) . ())) :TEST (FUNCTION EQUAL))))
-           (REPRESENTATION
-            (LET ((REPS (CODE-REPRESENTATION CODE)))
-              (IF (CDR REPS)
-                  (FIRST
-                   (FUNCALL
-                    (IF 8-BIT(FUNCTION REMOVE-IF)(FUNCTION REMOVE-IF-NOT))
-                    (LAMBDA (R) (MEMBER "ESC" R :TEST (FUNCTION STRING=))) REPS))
-                  (CAR REPS))))
-           (RESULT (LET* ((RESULT (MAPCAN (FUNCTION COMPILE-REP)
-                                          REPRESENTATION))
-                          (POS (POSITION-IF
-                                (LAMBDA (X) (AND (CONSP X) (EQ 'MAP (CAR X))))
-                                RESULT)))
-                     (IF POS
-                         `(APPEND ',(SUBSEQ RESULT 0 POS)
-                                  ,(ELT RESULT POS) ',(SUBSEQ RESULT (1+ POS)))
-                         RESULT)))
-           (NAME (LET ((MINE *PACKAGE*))
-                   (WITH-STANDARD-IO-SYNTAX
-                     (INTERN (STRING-UPCASE (CODE-NAME CODE)) MINE))))
-           (sequence (IF ARGUMENTS
-                         `(MAP ',RESULT-TYPE ,(IF (EQ 'STRING RESULT-TYPE)
-                                                  (FUNCTION CODE-CHAR)
-                                                  (FUNCTION IDENTITY))
-                               ,(IF (EQ 'APPEND (CAR RESULT))
-                                    RESULT
-                                    (CONS 'LIST RESULT)))
-                         (MAP RESULT-TYPE (IF (EQ 'STRING RESULT-TYPE)
-                                              (FUNCTION CODE-CHAR)
-                                              (FUNCTION IDENTITY))
-                              RESULT))))     
+                                    '(ps...))))
+                 ((string-equal "ESC"   r) (list 27))
+                 ((string-equal "CSI"   r) (if 8-bit (list 155) (list 27 91)))
+                 (t (list r))))))
+    (let* ((arguments
+            (cdr (assoc (code-notation code)
+                        '(((fs) . ())
+                          ((ps...) . (&rest ps...))
+                          ((ps1 ps2)  . (ps1 ps2))
+                          ((ps) . (ps))
+                          ((pn1 pn2) . (pn1 pn2))
+                          ((pn) . (pn))
+                          ((c0) . ())
+                          ((c1) . ())) :test (function equal))))
+           (representation
+            (let ((reps (code-representation code)))
+              (if (cdr reps)
+                  (first
+                   (funcall
+                    (if 8-bit(function remove-if)(function remove-if-not))
+                    (lambda (r) (member "ESC" r :test (function string=))) reps))
+                  (car reps))))
+           (result (let* ((result (mapcan (function compile-rep)
+                                          representation))
+                          (pos (position-if
+                                (lambda (x) (and (consp x) (eq 'map (car x))))
+                                result)))
+                     (if pos
+                         `(append ',(subseq result 0 pos)
+                                  ,(elt result pos) ',(subseq result (1+ pos)))
+                         result)))
+           (name (let ((mine *package*))
+                   (with-standard-io-syntax
+                     (intern (string-upcase (code-name code)) mine))))
+           (sequence (if arguments
+                         `(map ',result-type ,(if (eq 'string result-type)
+                                                  (function code-char)
+                                                  (function identity))
+                               ,(if (eq 'append (car result))
+                                    result
+                                    (cons 'list result)))
+                         (map result-type (if (eq 'string result-type)
+                                              (function code-char)
+                                              (function identity))
+                              result))))     
       (when print
         (setf arguments (append arguments
                                 (if (eq '&rest (car arguments))
                                     '(&aux      (stream *standard-output*))
                                     '(&optional (stream *standard-output*))))))
-      (FUNCALL
-       (IF COMPILE (FUNCTION COMPILE) (FUNCTION IDENTITY))
-       (EVAL `(PROGN
-                ,@(WHEN EXPORT  `((EXPORT '(,NAME))))
-                ,@(WHEN VERBOSE `((FORMAT T "~&; Defining ~A~%" ',NAME)))
+      (funcall
+       (if compile (function compile) (function identity))
+       (eval `(progn
+                ,@(when export  `((export '(,name))))
+                ,@(when verbose `((format t "~&; Defining ~A~%" ',name)))
                 ,(when (and (not arguments) (= 1 (length sequence)))
                        `(defconstant ,name ,(aref sequence 0)
                           ,(code-title code)))
-                (DEFUN ,NAME
-                    ,ARGUMENTS
+                (defun ,name
+                    ,arguments
                   ,(concatenate 'string
-                                (CODE-TITLE CODE)
+                                (code-title code)
                                 (format nil "~2%    ")
                                 (code-description code))
                   ,(if print
@@ -2164,12 +2180,41 @@ BUGS:           Perhaps we should generate functions that take 8-BIT and
                 ',name))))))
 
 
-(DEFUN GENERATE-all-functions (&KEY (COMPILE NIL)
-                               (VERBOSE NIL)
-                               (EXPORT NIL)
-                               (8-BIT NIL)
+(defun generate-all-functions (&key (compile nil)
+                               (verbose nil)
+                               (export nil)
+                               (8-bit nil)
                                (print nil)
-                               (RESULT-TYPE '(VECTOR (UNSIGNED-BYTE 8))))
+                               (result-type '(vector (unsigned-byte 8))))
+  "
+DO:             Generate the functions for each of the ECMA-048 codes:
+                Defines (and may be compile) and exports a function
+                named as ,(CODE-NAME CODE) that
+                takes as arguments ,(CODE-NOTATION CODE) and that
+                returns a string or byte vector containing the control sequence.
+                In addition, if the sequence contains only one constant
+                byte, defines a constant of same name as the function equal
+                to this byte, or this character if RESULT-TYPE is STRING.
+CODE:           The code structure to be generated.
+COMPILE:        Whether the generated function must be compiled right now.
+VERBOSE:        If VERBOSE is true, prints a message in the form of a comment
+                (i.e., with a leading semicolon) to standard output
+                indicating what function is being compiled
+                and other useful information.
+                If VERBOSE is false, does not print this information.
+EXPORT:         Whether the generated function symbol must be exported.
+8-BIT:          Whether the generated function
+                must return 8-bit escape sequences or 7-bit escape sequences.
+PRINT:          If NIL, then return the escape sequence
+                else the function takes an optional last argument of type 
+                stream or T (which is the default) and writes the escape
+                sequence to this stream, or *STANDARD-OUTPUT* for T.
+RESULT-TYPE:    The type that the generated function must return:
+                '(vector (unsigned-byte 8))  the default.
+                'string  Note that it will be subject to encoding conversion!
+BUGS:           Perhaps we should generate functions that take 8-BIT and
+                RESULT-TYPE as arguments (or special variables) dynamically.
+"
   (dolist (code *codes*)
     (generate-code-function code
                             :verbose verbose
@@ -2215,6 +2260,12 @@ BUGS:           Perhaps we should generate functions that take 8-BIT and
 ;;                           :result-type '(vector (unsigned-byte 8))))
 
 (defun generate-all-functions-in-ecma048 ()
+  "
+DO:         Generate the functions for each of the ECMA-048 codes,
+            in the COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ECMA048 package,
+            compiling them, exporting them, using 8-bit codes, not printing,
+            but returning byte vectors.
+"
   (unless (and (boundp 'ht) (fboundp 'ht))
     (let ((*package* (find-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ECMA048")))
       (generate-all-functions :verbose *compile-verbose*
@@ -2270,9 +2321,9 @@ Prints the documentation of the escape sequence functions generated.
 ;;----------------------------------------------------------------------
 
 
-(DEFUN GENERATE-SHELL-FUNCTION (CODE &KEY
-                                     (VERBOSE NIL)
-                                     (8-BIT NIL))
+(defun generate-shell-function (code &key
+                                     (verbose nil)
+                                     (8-bit nil))
   "
 CODE:           The code structure to be generated.
 VERBOSE:        If VERBOSE is true, prints a message in the form of a comment
@@ -2289,50 +2340,50 @@ RETURN:         A string containing a shell function definition
 BUGS:           Perhaps we should generate functions that take 8-BIT and
                 RESULT-TYPE as arguments (or special variables) dynamically.
 "
-  (LABELS ((COMPILE-REP
-               (R)
-             (LET (HIGH LOW)
-               (COND
-                 ((MULTIPLE-VALUE-SETQ (HIGH LOW) (parse-byte-specification R))
-                  (STRING (CODE-CHAR (+ (* high 16) low))))
+  (labels ((compile-rep
+               (r)
+             (let (high low)
+               (cond
+                 ((multiple-value-setq (high low) (parse-byte-specification r))
+                  (string (code-char (+ (* high 16) low))))
                  ;; TODO: We are asuming ASCII with these FORMAT!
-                 ((STRING-EQUAL "Ps1;Ps2" R) "${PS1};${PS2}")
-                 ((STRING-EQUAL "Pn1;Pn2" R) "${PN1};${PN2}")
-                 ((STRING-EQUAL "Pn"      R) "${PN}")
-                 ((STRING-EQUAL "Ps"      R) "${PS}")
-                 ((STRING-EQUAL "Ps..."   R) "$(semicolon='';res='';for arg in $@;do res=\"${res}${semicolon}${arg}\";semicolon=';';done;echo -n \"${res}\")")
-                 ((STRING-EQUAL "ESC"     R) (STRING(CODE-CHAR 27)))
-                 ((STRING-EQUAL "CSI"     R) (IF 8-BIT
-                                                 (STRING(CODE-CHAR 155))
-                                                 (CONCATENATE 'STRING
-                                                   (STRING(CODE-CHAR 27))
-                                                   (STRING(CODE-CHAR 91)))))
-                 (T (LIST R))))))
-    (LET* ((ARGUMENTS
-            (CDR (ASSOC (CODE-NOTATION CODE)
-                        '(((FS)      . "")
-                          ((PS...)   . "")
-                          ((PS1 PS2) . "local PS1=\"$1\";local PS2=\"$2\"")
-                          ((PS)      . "local PS=\"$1\"")
-                          ((PN1 PN2) . "local PN1=\"$1\";local PN2=\"$2\"")
-                          ((PN)      . "local PN=\"$1\"")
-                          ((C0)      . "")
-                          ((C1)      . "")) :TEST (FUNCTION EQUAL))))
-           (REPRESENTATION
-            (LET ((REPS (CODE-REPRESENTATION CODE)))
-              (IF (CDR REPS)
-                  (FIRST
-                   (FUNCALL
-                    (IF 8-BIT(FUNCTION REMOVE-IF)(FUNCTION REMOVE-IF-NOT))
-                    (LAMBDA (R) (MEMBER "ESC" R :TEST (FUNCTION STRING=))) REPS))
-                  (CAR REPS))))
-           (RESULT (MAPCAR (FUNCTION COMPILE-REP) REPRESENTATION))
-           (NAME (STRING-UPCASE (CODE-NAME CODE))))
-      (WHEN VERBOSE (FORMAT T "~&; Defining ~A~%" NAME))
-      (FORMAT NIL
+                 ((string-equal "Ps1;Ps2" r) "${PS1};${PS2}")
+                 ((string-equal "Pn1;Pn2" r) "${PN1};${PN2}")
+                 ((string-equal "Pn"      r) "${PN}")
+                 ((string-equal "Ps"      r) "${PS}")
+                 ((string-equal "Ps..."   r) "$(semicolon='';res='';for arg in $@;do res=\"${res}${semicolon}${arg}\";semicolon=';';done;echo -n \"${res}\")")
+                 ((string-equal "ESC"     r) (string(code-char 27)))
+                 ((string-equal "CSI"     r) (if 8-bit
+                                                 (string(code-char 155))
+                                                 (concatenate 'string
+                                                   (string(code-char 27))
+                                                   (string(code-char 91)))))
+                 (t (list r))))))
+    (let* ((arguments
+            (cdr (assoc (code-notation code)
+                        '(((fs)      . "")
+                          ((ps...)   . "")
+                          ((ps1 ps2) . "local PS1=\"$1\";local PS2=\"$2\"")
+                          ((ps)      . "local PS=\"$1\"")
+                          ((pn1 pn2) . "local PN1=\"$1\";local PN2=\"$2\"")
+                          ((pn)      . "local PN=\"$1\"")
+                          ((c0)      . "")
+                          ((c1)      . "")) :test (function equal))))
+           (representation
+            (let ((reps (code-representation code)))
+              (if (cdr reps)
+                  (first
+                   (funcall
+                    (if 8-bit(function remove-if)(function remove-if-not))
+                    (lambda (r) (member "ESC" r :test (function string=))) reps))
+                  (car reps))))
+           (result (mapcar (function compile-rep) representation))
+           (name (string-upcase (code-name code))))
+      (when verbose (format t "~&; Defining ~A~%" name))
+      (format nil
         "function ~A () {~%    # ~A~%    ~A~%    echo -n ~{~S~}~%}~%"
-        NAME (CODE-TITLE CODE)
-        ARGUMENTS RESULT))))
+        name (code-title code)
+        arguments result))))
 
 
 (defun print-shell-functions  (&key (stream *standard-output*))

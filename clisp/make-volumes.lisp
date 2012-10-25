@@ -16,28 +16,26 @@
 ;;;;    2003-06-10 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2003 - 2003
+;;;;    Copyright Pascal J. Bourguignon 2003 - 2012
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
-(defPACKAGE "COM.INFORMATIMAGO.CLISP.MAKE-VOLUMES"
-  (:DOCUMENTATION
+(defpackage "COM.INFORMATIMAGO.CLISP.MAKE-VOLUMES"
+  (:documentation
    "This package exports a function to tally a directory tree and make if it
     'volumes' of a given maximum size.")
   (:use "COMMON-LISP"
@@ -45,7 +43,7 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
         "COM.INFORMATIMAGO.CLISP.SUSV3")
-  (:EXPORT  "MAIN" "MAKE-VOLUMES"))
+  (:export  "MAIN" "MAKE-VOLUMES"))
 (in-package  "COM.INFORMATIMAGO.CLISP.MAKE-VOLUMES")
 
 
@@ -55,7 +53,7 @@
 ;;
 
 
-(DEFUN DEEP-COPY-TREE (TREE)
+(defun deep-copy-tree (tree)
   "
 NOTE:           COPY-TREE ONLY DUPLICATES THE CONS, NOT THE OBJECTS.
                 THIS IS UNFORTUNATE, BECAUSE WE OFTEN NEED TO DUPLICATE
@@ -63,11 +61,11 @@ NOTE:           COPY-TREE ONLY DUPLICATES THE CONS, NOT THE OBJECTS.
                 MUTABLE/IMMUTABLE PROBLEM.
 DO:             MAKES A COPY OF THE TREE, COPYING THE LEAF OBJECTS TOO.
 "
-  (COND
-    ((CONSP TREE)   (CONS (DEEP-COPY-TREE (CAR TREE))
-                          (DEEP-COPY-TREE (CDR TREE))))
-    ((VECTORP TREE) (COPY-SEQ TREE))
-    (T              TREE)))
+  (cond
+    ((consp tree)   (cons (deep-copy-tree (car tree))
+                          (deep-copy-tree (cdr tree))))
+    ((vectorp tree) (copy-seq tree))
+    (t              tree)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -79,55 +77,55 @@ DO:             MAKES A COPY OF THE TREE, COPYING THE LEAF OBJECTS TOO.
 ;; BE USELESS).
 
 
-(DEFUN MAKE-LIST-ENUMERATOR (LIST)
+(defun make-list-enumerator (list)
   "
 RETURN:         A ENUMERATOR FUNCTION FOR THE LIST.
 NOTE:           THE ENUMERATOR FUNCTION RETURNS IN TURN EACH ELEMENT OF THE
                 LIST AS FIRST VALUE AND A BOOLEAN T UNLESS THE END OF THE
                 LIST IS REACHED AS SECOND VALUE.
 "
-  (LAMBDA ()
-    (MULTIPLE-VALUE-PROG1
-        (VALUES (CAR LIST) (NOT (NULL LIST)))
-      (SETQ LIST (CDR LIST)))))
+  (lambda ()
+    (multiple-value-prog1
+        (values (car list) (not (null list)))
+      (setq list (cdr list)))))
 
 
 
-(DEFUN APPEND-ENUMERATORS (&REST ENUMERATORS)
+(defun append-enumerators (&rest enumerators)
   "
 RETURN:        An enumerator that enumerates all the enumerators in turn.
 "
-  (LAMBDA ()
-    (BLOCK :META-ENUM
-      (LOOP
-         (IF (NULL ENUMERATORS)
-             (RETURN-FROM :META-ENUM (VALUES NIL NIL))
-             (MULTIPLE-VALUE-BIND (VAL IND) (FUNCALL (CAR ENUMERATORS))
-               (IF IND
-                   (RETURN-FROM :META-ENUM (VALUES VAL IND))
-                   (POP ENUMERATORS))))))))
+  (lambda ()
+    (block :meta-enum
+      (loop
+         (if (null enumerators)
+             (return-from :meta-enum (values nil nil))
+             (multiple-value-bind (val ind) (funcall (car enumerators))
+               (if ind
+                   (return-from :meta-enum (values val ind))
+                   (pop enumerators))))))))
 
 
 
-(DEFUN COLLECT-ENUMERATOR (ENUMERATOR)
-  (DO ((RESULT '())
-       (DONE NIL))
-      (DONE RESULT)
-    (MULTIPLE-VALUE-BIND (VAL IND) (FUNCALL ENUMERATOR)
-      (IF IND
-          (PUSH VAL RESULT)
-          (SETQ DONE T)))))
+(defun collect-enumerator (enumerator)
+  (do ((result '())
+       (done nil))
+      (done result)
+    (multiple-value-bind (val ind) (funcall enumerator)
+      (if ind
+          (push val result)
+          (setq done t)))))
 
 
 
-(DEFUN MAP-ENUMERATOR (LAMBDA-EXPR ENUMERATOR)
-  (DO ((RESULT '())
-       (DONE NIL))
-      (DONE (NREVERSE RESULT))
-    (MULTIPLE-VALUE-BIND (VAL IND) (FUNCALL ENUMERATOR)
-      (IF IND
-          (PUSH (FUNCALL LAMBDA-EXPR VAL) RESULT)
-          (SETQ DONE T)))))
+(defun map-enumerator (lambda-expr enumerator)
+  (do ((result '())
+       (done nil))
+      (done (nreverse result))
+    (multiple-value-bind (val ind) (funcall enumerator)
+      (if ind
+          (push (funcall lambda-expr val) result)
+          (setq done t)))))
 
 
 
@@ -135,20 +133,20 @@ RETURN:        An enumerator that enumerates all the enumerators in turn.
 ;;
 ;; UNIX PATHNAMES
 
-(DEFUN BASENAME (UNIX-PATH)
+(defun basename (unix-path)
   "
 UNIX-PATH:  A STRING CONTAINING A UNIX PATH.
 RETURN:         THE BASENAME, THAT IS, THE LAST COMPONENT OF THE PATH.
                 TRAILING '/'S ARE REMOVED FIRST.
 "
-  (DO* ((END (DO ((END (1- (LENGTH UNIX-PATH)) (1- END)))
-                 ((OR (< END 0)
-                      (CHAR/= (CHARACTER "/") (CHAR UNIX-PATH END)))
-                  (1+ END))))
-        (START (1- END) (1- START)))
-       ((OR (< START 0)
-            (CHAR= (CHARACTER "/") (CHAR UNIX-PATH START)))
-        (SUBSEQ UNIX-PATH (1+ START) END))))
+  (do* ((end (do ((end (1- (length unix-path)) (1- end)))
+                 ((or (< end 0)
+                      (char/= (character "/") (char unix-path end)))
+                  (1+ end))))
+        (start (1- end) (1- start)))
+       ((or (< start 0)
+            (char= (character "/") (char unix-path start)))
+        (subseq unix-path (1+ start) end))))
 
 
 
@@ -159,42 +157,42 @@ RETURN:         THE BASENAME, THAT IS, THE LAST COMPONENT OF THE PATH.
 
 
 
-(DEFUN UNIX-FS-NODE-NAME (NODE) ;; --> NAME
+(defun unix-fs-node-name (node) ;; --> NAME
   (declare (ignore node)))
-(DEFUN UNIX-FS-NODE-KIND (NODE)
+(defun unix-fs-node-kind (node)
   (declare (ignore node)))
-(DEFUN UNIX-FS-NODE-DIRECTORY-PATH (NODE) ;; --> "/DIR/PATH"
+(defun unix-fs-node-directory-path (node) ;; --> "/DIR/PATH"
   (declare (ignore node)))
-(DEFUN UNIX-FS-NODE-PATH (NODE) ;; --> /DIR/PATH/NAME
+(defun unix-fs-node-path (node) ;; --> /DIR/PATH/NAME
   (declare (ignore node)))
 
-(defun LOGICAL-PATHNAME-NAMESTRING-P (&rest arguments) (declare (ignore arguments)) (error "NOT IMPLEMENTED YET"))
-(defun PARSE-LOGICAL-PATHNAME-NAMESTRING (&rest arguments) (declare (ignore arguments)) (error "NOT IMPLEMENTED YET"))
-(defun PARSE-UNIX-PATHNAME-NAMESTRING (&rest arguments) (declare (ignore arguments)) (error "NOT IMPLEMENTED YET"))
-(defun SAFE-MAKE-PATHNAME (&rest arguments) (declare (ignore arguments)) (error "NOT IMPLEMENTED YET"))
-(defun SAFE-DIRECTORY (&rest arguments) (declare (ignore arguments)) (error "NOT IMPLEMENTED YET"))
+(defun logical-pathname-namestring-p (&rest arguments) (declare (ignore arguments)) (error "NOT IMPLEMENTED YET"))
+(defun parse-logical-pathname-namestring (&rest arguments) (declare (ignore arguments)) (error "NOT IMPLEMENTED YET"))
+(defun parse-unix-pathname-namestring (&rest arguments) (declare (ignore arguments)) (error "NOT IMPLEMENTED YET"))
+(defun safe-make-pathname (&rest arguments) (declare (ignore arguments)) (error "NOT IMPLEMENTED YET"))
+(defun safe-directory (&rest arguments) (declare (ignore arguments)) (error "NOT IMPLEMENTED YET"))
 
 
-(DEFUN MAKE-VOLUMES (ROOT-DIR)
-  (LET ((ROOT-APATH
+(defun make-volumes (root-dir)
+  (let ((root-apath
          ;; TODO: WHAT IF NOT UNIX?
-         (IF (LOGICAL-PATHNAME-NAMESTRING-P  ROOT-DIR)
-             (PARSE-LOGICAL-PATHNAME-NAMESTRING ROOT-DIR)
-             (PARSE-UNIX-PATHNAME-NAMESTRING ROOT-DIR)))
-        PATHSPEC)
-    (WHEN (EQ :ERROR ROOT-APATH)
-      (ERROR "BAD PATHNAME ~S." ROOT-DIR))
-    (SETQ PATHSPEC (SAFE-MAKE-PATHNAME
-                    :HOST      (AGET ROOT-APATH :HOST)
-                    :DEVICE    (AGET ROOT-APATH :DEVICE)
-                    :DIRECTORY (APPEND (AGET ROOT-APATH :DIRECTORY)
-                                       (LIST :WILD-INFERIORS))
-                    :NAME :WILD
-                    :TYPE :WILD
-                    :VERSION NIL
-                    :CASE :COMMON))
-    (FORMAT T "PATHSPEC=~S~%" PATHSPEC)
-    (SAFE-DIRECTORY PATHSPEC)))
+         (if (logical-pathname-namestring-p  root-dir)
+             (parse-logical-pathname-namestring root-dir)
+             (parse-unix-pathname-namestring root-dir)))
+        pathspec)
+    (when (eq :error root-apath)
+      (error "BAD PATHNAME ~S." root-dir))
+    (setq pathspec (safe-make-pathname
+                    :host      (aget root-apath :host)
+                    :device    (aget root-apath :device)
+                    :directory (append (aget root-apath :directory)
+                                       (list :wild-inferiors))
+                    :name :wild
+                    :type :wild
+                    :version nil
+                    :case :common))
+    (format t "PATHSPEC=~S~%" pathspec)
+    (safe-directory pathspec)))
 
 #||
 (LOAD "PACKAGES:COM;INFORMATIMAGO;ENCOURS;MAKE-VOLUMES")

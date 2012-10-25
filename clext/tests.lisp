@@ -9,7 +9,7 @@
 
 (defun princ-error (c) (format t "~&[~A]: ~A~%" (type-of c) c))
 
-#+OLD-CLISP
+#+old-clisp
 ;; Binding *ERROR-HANDLER* is a hammer technique for catching errors. It also
 ;; disables CLCS processing and thus breaks tests that rely on the condition
 ;; system, such as:
@@ -17,9 +17,9 @@
 ;;   - all tests that use IGNORE-ERRORS
 (defmacro with-ignored-errors (&rest forms)
   (let ((b (gensym)))
-    `(BLOCK ,b
-       (LET ((*ERROR-HANDLER*
-              #'(LAMBDA (&REST ARGS)
+    `(block ,b
+       (let ((*error-handler*
+              #'(lambda (&rest args)
                   (with-standard-io-syntax
                     (let* ((*print-readably* nil)
                            (error-message (apply #'format nil (cdr args))))
@@ -27,32 +27,32 @@
                       (return-from ,b (values 'error error-message)))))))
          ,@forms))))
 
-#+(or (and AKCL (not GCL)) ECL)
+#+(or (and akcl (not gcl)) ecl)
 (defmacro with-ignored-errors (&rest forms)
   (let ((b (gensym))
         (h (gensym)))
-    `(BLOCK ,b
-       (LET ((,h (SYMBOL-FUNCTION 'SYSTEM:UNIVERSAL-ERROR-HANDLER)))
-         (UNWIND-PROTECT
-              (PROGN (SETF (SYMBOL-FUNCTION 'SYSTEM:UNIVERSAL-ERROR-HANDLER)
-                           #'(LAMBDA (&REST ARGS) (RETURN-FROM ,b 'ERROR)))
+    `(block ,b
+       (let ((,h (symbol-function 'system:universal-error-handler)))
+         (unwind-protect
+              (progn (setf (symbol-function 'system:universal-error-handler)
+                           #'(lambda (&rest args) (return-from ,b 'error)))
                      ,@forms)
-           (SETF (SYMBOL-FUNCTION 'SYSTEM:UNIVERSAL-ERROR-HANDLER) ,h))))))
+           (setf (symbol-function 'system:universal-error-handler) ,h))))))
 
-#+ALLEGRO
+#+allegro
 (defmacro with-ignored-errors (&rest forms)
   (let ((r (gensym)))
-    `(LET ((,r (MULTIPLE-VALUE-LIST (EXCL:ERRORSET (PROGN ,@forms)))))
-       (IF (CAR ,r) (VALUES-LIST (CDR ,r)) 'ERROR))))
+    `(let ((,r (multiple-value-list (excl:errorset (progn ,@forms)))))
+       (if (car ,r) (values-list (cdr ,r)) 'error))))
 
-#-(or OLD-CLISP (and AKCL (not GCL)) ECL ALLEGRO)
+#-(or old-clisp (and akcl (not gcl)) ecl allegro)
 (defmacro with-ignored-errors (&rest forms)
   (let ((b (gensym)))
-    `(BLOCK ,b
-       (HANDLER-BIND
-           ((ERROR #'(LAMBDA (CONDITION)
-                       (PRINC-ERROR CONDITION)
-                       (RETURN-FROM ,b (values 'ERROR
+    `(block ,b
+       (handler-bind
+           ((error #'(lambda (condition)
+                       (princ-error condition)
+                       (return-from ,b (values 'error
                                                (princ-to-string condition))))))
          ,@forms))))
 
@@ -62,8 +62,8 @@
 ;; (lisp-implementation-type) may return something quite long, e.g.,
 ;; on CMUCL it returns "CMU Common Lisp".
 (defvar lisp-implementation
-  #+CLISP "CLISP" #+(and AKCL (not GCL)) "AKCL" #+GCL "GCL" #+ECL "ECL" #+ALLEGRO "ALLEGRO" #+CMU "CMUCL"
-  #-(or CLISP AKCL GCL ECL ALLEGRO CMU) (lisp-implementation-type))
+  #+clisp "CLISP" #+(and akcl (not gcl)) "AKCL" #+gcl "GCL" #+ecl "ECL" #+allegro "ALLEGRO" #+cmu "CMUCL"
+  #-(or clisp akcl gcl ecl allegro cmu) (lisp-implementation-type))
 
 (defvar *eval-method* :eval)
 (defvar *eval-out* nil)
@@ -228,9 +228,9 @@ NIL: sacla-style: forms should evaluate to non-NIL.")
     (setq *run-test-truename* (truename s))
     (format t "~&~s: started ~s~%" 'run-test s)
     (with-open-file (log logfile :direction :output
-                         #+(or CMU SBCL) :if-exists
-                         #+(or CMU SBCL) :supersede
-                         #+ANSI-CL :if-exists #+ANSI-CL :new-version)
+                         #+(or cmu sbcl) :if-exists
+                         #+(or cmu sbcl) :supersede
+                         #+ansi-cl :if-exists #+ansi-cl :new-version)
       (setq logfile (truename log))
       (let* ((*package* *package*) (*print-circle* t) (*print-pretty* nil)
              (*eval-err* (make-string-output-stream))
@@ -272,18 +272,18 @@ NIL: sacla-style: forms should evaluate to non-NIL.")
 (defun run-all-tests (&key (disable-risky t)
                       ((:eval-method *eval-method*) *eval-method*))
   (let ((res ())
-        #+CLISP (custom:*load-paths* nil)
+        #+clisp (custom:*load-paths* nil)
         (*features* (if disable-risky *features*
                         (cons :enable-risky-tests *features*))))
     ;; Since weakptr can run on #+cmu, we should run
     ;; the other too with CLOSER-WEAK.
-    (dolist (ff '(#+(or CLISP CMU SBCL)                           "weak-oid"
-                  #+(or CLISP CMU SBCL)                           "weak"
-                  #+(or CLISP CMU SBCL ALLEGRO OpenMCL LISPWORKS) "weakhash"
-                  #+(or CLISP CMU SBCL LISPWORKS)                 "weakhash2"
+    (dolist (ff '(#+(or clisp cmu sbcl)                           "weak-oid"
+                  #+(or clisp cmu sbcl)                           "weak"
+                  #+(or clisp cmu sbcl allegro openmcl lispworks) "weakhash"
+                  #+(or clisp cmu sbcl lispworks)                 "weakhash2"
                   ))
       (push (run-test ff) res))
-    #+(or CLISP CMU SBCL ALLEGRO LISPWORKS)
+    #+(or clisp cmu sbcl allegro lispworks)
     (let ((tmp (list "weakptr" 0 0)))
       (push tmp res)
       (dotimes (i 20)

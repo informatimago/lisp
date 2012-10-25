@@ -14,63 +14,61 @@
 ;;;;    2003-09-11 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2003 - 2003
+;;;;    Copyright Pascal J. Bourguignon 2003 - 2012
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (defpackage "COM.INFORMATIMAGO.CLISP.FIFO-STREAM"
   (:use "COMMON-LISP" "GRAY")
   (:export "FIFO-STREAM")
-  (:DOCUMENTATION
+  (:documentation
    "
     A fifo stream: all input is buffered and restituted as output.
     
     Copyright Pascal J. Bourguignon 2003 - 2003
 "))
-(IN-PACKAGE "COM.INFORMATIMAGO.CLISP.FIFO-STREAM")
+(in-package "COM.INFORMATIMAGO.CLISP.FIFO-STREAM")
 
 
-(DEFUN MAKE-FIFO ()
+(defun make-fifo ()
   ;; (VALUES INPUT-STREAM OUTPUT-STREAM)
   (values nil nil))
 
 
 
-(DEFCONSTANT +CHUNK-SIZE+ 4096 "Size of one buffer string.")
+(defconstant +chunk-size+ 4096 "Size of one buffer string.")
 
-(DEFCLASS FIFO-STREAM (FUNDAMENTAL-INPUT-STREAM
-                       FUNDAMENTAL-OUTPUT-STREAM
-                       FUNDAMENTAL-CHARACTER-STREAM)
-  ((OUTPUT
-    :INITform '()
-    :initarg :OUTPUT
+(defclass fifo-stream (fundamental-input-stream
+                       fundamental-output-stream
+                       fundamental-character-stream)
+  ((output
+    :initform '()
+    :initarg :output
     :accessor output
-    :TYPE     LIST
-    :DOCUMENTATION "The head of the FIFO buffer list.")
-   (INPUT
+    :type     list
+    :documentation "The head of the FIFO buffer list.")
+   (input
      :initform '()
-     :initarg :INPUT
+     :initarg :input
      :accessor input
-     :TYPE     LIST
-     :DOCUMENTATION "The tail of the FIFO buffer list.")
+     :type     list
+     :documentation "The tail of the FIFO buffer list.")
    )
-  (:DOCUMENTATION
+  (:documentation
    "A fifo stream: all input is buffered and restituted as output.")
   )
 
@@ -86,15 +84,15 @@
 ;;;
 ;;; We could use the fill-pointer for the input.
 
-(DEFUN MAKE-BUFFER ()
-  (LIST (MAKE-STRING +CHUNK-SIZE+) 0 0 NIL))
+(defun make-buffer ()
+  (list (make-string +chunk-size+) 0 0 nil))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;  
 ;;; general generic functions defined on streams
 ;;; 
 
-(DEFMETHOD CLOSE ((STREAM FIFO-STREAM) &KEY ABORT)
+(defmethod close ((stream fifo-stream) &key abort)
   "
 Closes the stream and flushes any associated buffers.
 "
@@ -102,7 +100,7 @@ Closes the stream and flushes any associated buffers.
   ;; When you define a primary method on this function, do not forget to
   ;; CALL-NEXT-METHOD.
   ;; TODO: (SETF (BUFFERS STREAM) 'NIL)
-  (CALL-NEXT-METHOD))
+  (call-next-method))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -111,42 +109,42 @@ Closes the stream and flushes any associated buffers.
 ;;;
 
 
-(defmethod STREAM-READ-CHAR ((STREAM FIFO-STREAM))
+(defmethod stream-read-char ((stream fifo-stream))
   "
 If a character was pushed back using DEFUN STREAM-UNREAD-CHAR, returns
 and consumes it. Otherwise returns and consumes the next character
 from the stream. Returns :EOF if the end-of-stream is reached.
 "
-  (LET ((BUFFER (CAR (OUTPUT STREAM))))
-    (IF BUFFER
-        (LET* ((STR (POP BUFFER))
-               (OUT (POP BUFFER))
-               (INP (POP BUFFER))
-               (CLOSED (POP BUFFER)))
-          (COND
-            ((< OUT INP)
-             (INCF (SECOND BUFFER))
-             (CHAR STR OUT))
-            (CLOSED
-             :EOF)
-            (T
-             (POP (OUTPUT STREAM))
-             (STREAM-READ-CHAR STREAM))))
-        :EOF)))
+  (let ((buffer (car (output stream))))
+    (if buffer
+        (let* ((str (pop buffer))
+               (out (pop buffer))
+               (inp (pop buffer))
+               (closed (pop buffer)))
+          (cond
+            ((< out inp)
+             (incf (second buffer))
+             (char str out))
+            (closed
+             :eof)
+            (t
+             (pop (output stream))
+             (stream-read-char stream))))
+        :eof)))
 
 
-(defmethod STREAM-UNREAD-CHAR ((STREAM FIFO-STREAM) (CHAR CHARACTER))
+(defmethod stream-unread-char ((stream fifo-stream) (char character))
   "
 Pushes char, which must be the last character read from the stream,
 back onto the front of the stream.
 "
-  (SETF (OUTPUT STREAM) (CONS (LIST (MAKE-STRING 1 :INITIAL-ELEMENT CHAR) 0 1 T)
-                              (OUTPUT STREAM)))
-  (UNLESS (INPUT STREAM) (SETF (INPUT STREAM) (OUTPUT STREAM)))
-  NIL)
+  (setf (output stream) (cons (list (make-string 1 :initial-element char) 0 1 t)
+                              (output stream)))
+  (unless (input stream) (setf (input stream) (output stream)))
+  nil)
 
 
-(defmethod STREAM-READ-CHAR-NO-HANG ((STREAM FIFO-STREAM))
+(defmethod stream-read-char-no-hang ((stream fifo-stream))
   "
 Returns a character or :EOF, like DEFUN STREAM-READ-CHAR, if that
 would return immediately. If DEFUN STREAM-READ-CHAR's value is not
@@ -159,7 +157,7 @@ blocks.
   )
 
 
-(defmethod STREAM-PEEK-CHAR ((STREAM FIFO-STREAM))
+(defmethod stream-peek-char ((stream fifo-stream))
   "
 If a character was pushed back using DEFUN STREAM-UNREAD-CHAR, returns
 it. Otherwise returns the next character from the stream, avoiding any
@@ -173,7 +171,7 @@ STREAM-READ-CHAR method has no side-effects.
   )
 
 
-(defmethod STREAM-LISTEN ((STREAM FIFO-STREAM))
+(defmethod stream-listen ((stream fifo-stream))
   "
 If a character was pushed back using DEFUN STREAM-UNREAD-CHAR, returns it. Otherwise returns the next character from the stream, if already available. If no character is available immediately, or if end-of-stream is reached, returns NIL.
 
@@ -182,7 +180,7 @@ The default method calls DEFUN STREAM-READ-CHAR-NO-HANG and DEFUN STREAM-UNREAD-
   )
 
 
-(defmethod STREAM-READ-CHAR-WILL-HANG-P ((STREAM FIFO-STREAM))
+(defmethod stream-read-char-will-hang-p ((stream fifo-stream))
   "
 Returns NIL if DEFUN STREAM-READ-CHAR will return immediately. Otherwise it returns true.
 
@@ -193,8 +191,8 @@ This function is a CLISP extension (see EXT:READ-CHAR-WILL-HANG-P).
   )
 
 
-(defmethod STREAM-READ-CHAR-SEQUENCE ((STREAM FIFO-STREAM)
-                                      SEQUENCE &OPTIONAL (START 0) (END NIL))
+(defmethod stream-read-char-sequence ((stream fifo-stream)
+                                      sequence &optional (start 0) (end nil))
   "
 Fills the subsequence of sequence specified by :START and :END with
 characters consecutively read from stream. Returns the index of the
@@ -214,7 +212,7 @@ This function is a CLISP extension (see EXT:READ-CHAR-SEQUENCE)
   0)
 
 
-(DEFMETHOD STREAM-READ-LINE ((STREAM FIFO-STREAM))
+(defmethod stream-read-line ((stream fifo-stream))
   "
 Reads a line of characters, and return two values: the line (a string, without the terminating #\Newline character), and a boolean value which is true if the line was terminated by end-of-stream instead of #\Newline.
 
@@ -224,7 +222,7 @@ The default method repeatedly calls DEFUN STREAM-READ-CHAR; this is always suffi
   )
 
 
-(DEFMETHOD STREAM-CLEAR-INPUT ((STREAM FIFO-STREAM))
+(defmethod stream-clear-input ((stream fifo-stream))
   "
 Clears all pending interactive input from the stream, and returns true if some pending input was removed.
 
@@ -239,7 +237,7 @@ The default method does nothing and returns NIL; this is sufficient for non-inte
 ;;; generic functions for character output
 ;;;
 
-(DEFMETHOD STREAM-WRITE-CHAR ((STREAM FIFO-STREAM) (CHAR CHARACTER))
+(defmethod stream-write-char ((stream fifo-stream) (char character))
   "
 Writes char.
 
@@ -248,7 +246,7 @@ You must define a method for this function.
   )
 
 
-(DEFMETHOD STREAM-LINE-COLUMN ((STREAM FIFO-STREAM))
+(defmethod stream-line-column ((stream fifo-stream))
   "
 Returns the column number where the next character would be written (0 stands for the first column), or NIL if that is not meaningful for this stream.
 

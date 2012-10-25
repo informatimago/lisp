@@ -19,32 +19,30 @@
 ;;;;    2006-06-05 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2006 - 2006
+;;;;    Copyright Pascal J. Bourguignon 2006 - 2012
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
-(SETQ *LOAD-VERBOSE* NIL)
+(setq *load-verbose* nil)
 
 ;; clean the imported packages:
-(MAPC (LAMBDA (USED) (UNUSE-PACKAGE USED "COMMON-LISP-USER"))
-      (REMOVE (FIND-PACKAGE "COMMON-LISP") 
-              (COPY-SEQ (PACKAGE-USE-LIST "COMMON-LISP-USER"))))
+(mapc (lambda (used) (unuse-package used "COMMON-LISP-USER"))
+      (remove (find-package "COMMON-LISP") 
+              (copy-seq (package-use-list "COMMON-LISP-USER"))))
 
 (progn 
   (defvar *directories*  '())
@@ -65,9 +63,9 @@
 
 
 #+clisp
-(when (string= (LISP-IMPLEMENTATION-VERSION)  "2.33.83"
-               :end1 (min (length (LISP-IMPLEMENTATION-VERSION)) 7))
-  (EXT:WITHOUT-PACKAGE-LOCK ("COMMON-LISP")
+(when (string= (lisp-implementation-version)  "2.33.83"
+               :end1 (min (length (lisp-implementation-version)) 7))
+  (ext:without-package-lock ("COMMON-LISP")
     (let ((oldload (function cl:load)))
       (fmakunbound 'cl:load)
       (defun cl:load (filespec &key (verbose *load-verbose*)
@@ -77,7 +75,7 @@
         (handler-case (funcall oldload filespec :verbose verbose
                                :print print :if-does-not-exist if-does-not-exist
                                :external-format external-format)
-          (SYSTEM::SIMPLE-PARSE-ERROR
+          (system::simple-parse-error
               ()
             (funcall oldload (translate-logical-pathname filespec)
                      :verbose verbose
@@ -116,14 +114,14 @@
      ((:name :wild :type nil   :version nil)   "*"))
    #+sbcl
    '(((:name :wild :type :wild :version :wild)  "*.*"))
-   #-(OR CLISP sbcl)
+   #-(or clisp sbcl)
    '(((:name :wild :type nil   :version nil)   "*")
      ((:name :wild :type :wild :version nil)   "*.*")
      ((:name :wild :type :wild :version :wild) "*.*"))))
 
 
-(setf (LOGICAL-PATHNAME-TRANSLATIONS "PACKAGES") NIL
-      (LOGICAL-PATHNAME-TRANSLATIONS "PACKAGES")
+(setf (logical-pathname-translations "PACKAGES") nil
+      (logical-pathname-translations "PACKAGES")
       (append
        (make-translations "PACKAGES" '("COM" "INFORMATIMAGO" "CLMISC")
                           *project-directory*)
@@ -132,10 +130,10 @@
        (make-translations "PACKAGES" '()
                           (get-directory :share-lisp "packages/"))))
 
-(HANDLER-CASE (LOAD "PACKAGES:COM;INFORMATIMAGO;COMMON-LISP;PACKAGE")
-  (T ()       (LOAD "PACKAGES:COM;INFORMATIMAGO;COMMON-LISP;PACKAGE.LISP")))
+(handler-case (load "PACKAGES:COM;INFORMATIMAGO;COMMON-LISP;PACKAGE")
+  (t ()       (load "PACKAGES:COM;INFORMATIMAGO;COMMON-LISP;PACKAGE.LISP")))
 
-(IMPORT 'PACKAGE:DEFINE-PACKAGE)
+(import 'package:define-package)
 
 
 ;;;; init.lisp                        --                     --          ;;;;

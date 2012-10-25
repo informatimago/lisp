@@ -15,28 +15,26 @@
 ;;;;    2006-04-21 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal Bourguignon 2006 - 2006
+;;;;    Copyright Pascal Bourguignon 2006 - 2012
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(defPACKAGE "COM.INFORMATIMAGO.CLISP.MYSQL"
-  (:DOCUMENTATION
+(defpackage "COM.INFORMATIMAGO.CLISP.MYSQL"
+  (:documentation
    "This package exports mysql functions.
 
     Copyright Pascal J. Bourguignon 2006 - 2006
@@ -44,7 +42,7 @@
     See the source file for details.")
   (:use "COMMON-LISP"
          "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
-  (:EXPORT ))
+  (:export ))
 (in-package "COM.INFORMATIMAGO.CLISP.MYSQL")
 
 
@@ -57,81 +55,81 @@
 (ffi:def-c-type my-socket ffi:int)
 
 (defconstant +name-len+                    64 "Field/table name length")
-(defconstant +HOSTNAME-LENGTH+             60)
-(defconstant +USERNAME-LENGTH+             16)
-(defconstant +SERVER-VERSION-LENGTH        60)
-(defconstant +LOCAL-HOST+             "localhost")
-(defconstant +LOCAL-HOST-NAMEDPIPE+   ".")
+(defconstant +hostname-length+             60)
+(defconstant +username-length+             16)
+(defconstant +server-version-length        60)
+(defconstant +local-host+             "localhost")
+(defconstant +local-host-namedpipe+   ".")
 
 
 (defenum enum-server-command
-  +COM-SLEEP+ +COM-QUIT+ +COM-INIT-DB+ +COM-QUERY+ +COM-FIELD-LIST+
-  +COM-CREATE-DB+ +COM-DROP-DB+ +COM-REFRESH+ +COM-SHUTDOWN+
-  +COM-STATISTICS+ +COM-PROCESS-INFO+ +COM-CONNECT+
-  +COM-PROCESS-KILL+ +COM-DEBUG+ +COM-PING+ +COM-TIME+
-  +COM-DELAYED-INSERT+ +COM-CHANGE-USER+ +COM-BINLOG-DUMP+
-  +COM-TABLE-DUMP+ +COM-CONNECT-OUT+)
+  +com-sleep+ +com-quit+ +com-init-db+ +com-query+ +com-field-list+
+  +com-create-db+ +com-drop-db+ +com-refresh+ +com-shutdown+
+  +com-statistics+ +com-process-info+ +com-connect+
+  +com-process-kill+ +com-debug+ +com-ping+ +com-time+
+  +com-delayed-insert+ +com-change-user+ +com-binlog-dump+
+  +com-table-dump+ +com-connect-out+)
 
 
-(defconstant +NOT-NULL-FLAG+                1 "Field can't be NULL")
-(defconstant +PRI-KEY-FLAG+                 2 "Field is part of a primary key")
-(defconstant +UNIQUE-KEY-FLAG+              4 "Field is part of a unique key")
-(defconstant +MULTIPLE-KEY-FLAG+            8 "Field is part of a key")
-(defconstant +BLOB-FLAG+                   16 "Field is a blob")
-(defconstant +UNSIGNED-FLAG+               32 "Field is unsigned")
-(defconstant +ZEROFILL-FLAG+               64 "Field is zerofill")
-(defconstant +BINARY-FLAG+                128 "")
+(defconstant +not-null-flag+                1 "Field can't be NULL")
+(defconstant +pri-key-flag+                 2 "Field is part of a primary key")
+(defconstant +unique-key-flag+              4 "Field is part of a unique key")
+(defconstant +multiple-key-flag+            8 "Field is part of a key")
+(defconstant +blob-flag+                   16 "Field is a blob")
+(defconstant +unsigned-flag+               32 "Field is unsigned")
+(defconstant +zerofill-flag+               64 "Field is zerofill")
+(defconstant +binary-flag+                128 "")
 ;; The following are only sent to new clients 
-(defconstant +ENUM-FLAG+                  256 "field is an enum")
-(defconstant +AUTO-INCREMENT-FLAG+        512 "field is a autoincrement field")
-(defconstant +TIMESTAMP-FLAG+            1024 "Field is a timestamp")
-(defconstant +SET-FLAG+                  2048 "field is a set")
-(defconstant +NUM-FLAG+                 32768 "Field is num (for clients)")
-(defconstant +PART-KEY-FLAG+            16384 "Intern; Part of some key")
-(defconstant +GROUP-FLAG+               32768 "Intern: Group field")
-(defconstant +UNIQUE-FLAG+              65536 "Intern: Used by sql-yacc")
+(defconstant +enum-flag+                  256 "field is an enum")
+(defconstant +auto-increment-flag+        512 "field is a autoincrement field")
+(defconstant +timestamp-flag+            1024 "Field is a timestamp")
+(defconstant +set-flag+                  2048 "field is a set")
+(defconstant +num-flag+                 32768 "Field is num (for clients)")
+(defconstant +part-key-flag+            16384 "Intern; Part of some key")
+(defconstant +group-flag+               32768 "Intern: Group field")
+(defconstant +unique-flag+              65536 "Intern: Used by sql-yacc")
 
-(defconstant +REFRESH-GRANT+                1 "Refresh grant tables")
-(defconstant +REFRESH-LOG+                  2 "Start on new log file")
-(defconstant +REFRESH-TABLES+               4 "close all tables")
-(defconstant +REFRESH-HOSTS+                8 "Flush host cache")
-(defconstant +REFRESH-STATUS+              16 "Flush status variables")
-(defconstant +REFRESH-THREADS+             32 "Flush thread cache")
-(defconstant +REFRESH-SLAVE+               64 
+(defconstant +refresh-grant+                1 "Refresh grant tables")
+(defconstant +refresh-log+                  2 "Start on new log file")
+(defconstant +refresh-tables+               4 "close all tables")
+(defconstant +refresh-hosts+                8 "Flush host cache")
+(defconstant +refresh-status+              16 "Flush status variables")
+(defconstant +refresh-threads+             32 "Flush thread cache")
+(defconstant +refresh-slave+               64 
   "Reset master info and restart slave thread")
-(defconstant +REFRESH-MASTER+             128 
+(defconstant +refresh-master+             128 
   "Remove all bin logs in the index and truncate the index")
 
 ;; The following can't be set with mysql-refresh() 
-(defconstant +REFRESH-READ-LOCK+        16384 "Lock tables for read")
-(defconstant +REFRESH-FAST+             32768 "Intern flag")
+(defconstant +refresh-read-lock+        16384 "Lock tables for read")
+(defconstant +refresh-fast+             32768 "Intern flag")
 
-(defconstant +CLIENT-LONG-PASSWORD+         1 "new more secure passwords")
-(defconstant +CLIENT-FOUND-ROWS+            2 "Found instead of affected rows")
-(defconstant +CLIENT-LONG-FLAG+             4 "Get all column flags")
-(defconstant +CLIENT-CONNECT-WITH-DB+       8 "One can specify db on connect")
-(defconstant +CLIENT-NO-SCHEMA+            16 "Don't allow database.table.column")
-(defconstant +CLIENT-COMPRESS+             32 "Can use compression protocol")
-(defconstant +CLIENT-ODBC+                 64 "Odbc client")
-(defconstant +CLIENT-LOCAL-FILES+         128 "Can use LOAD DATA LOCAL")
-(defconstant +CLIENT-IGNORE-SPACE+        256 "Ignore spaces before '('")
-(defconstant +CLIENT-CHANGE-USER+         512 "Support the mysql-change-user()")
-(defconstant +CLIENT-INTERACTIVE+        1024 "This is an interactive client")
-(defconstant +CLIENT-SSL+                2048 "Switch to SSL after handshake")
-(defconstant +CLIENT-IGNORE-SIGPIPE+     4096 "IGNORE sigpipes")
-(defconstant +CLIENT-TRANSACTIONS+       8192 "Client knows about transactions")
+(defconstant +client-long-password+         1 "new more secure passwords")
+(defconstant +client-found-rows+            2 "Found instead of affected rows")
+(defconstant +client-long-flag+             4 "Get all column flags")
+(defconstant +client-connect-with-db+       8 "One can specify db on connect")
+(defconstant +client-no-schema+            16 "Don't allow database.table.column")
+(defconstant +client-compress+             32 "Can use compression protocol")
+(defconstant +client-odbc+                 64 "Odbc client")
+(defconstant +client-local-files+         128 "Can use LOAD DATA LOCAL")
+(defconstant +client-ignore-space+        256 "Ignore spaces before '('")
+(defconstant +client-change-user+         512 "Support the mysql-change-user()")
+(defconstant +client-interactive+        1024 "This is an interactive client")
+(defconstant +client-ssl+                2048 "Switch to SSL after handshake")
+(defconstant +client-ignore-sigpipe+     4096 "IGNORE sigpipes")
+(defconstant +client-transactions+       8192 "Client knows about transactions")
 
-(defconstant +SERVER-STATUS-IN-TRANS+       1 "Transaction has started")
-(defconstant +SERVER-STATUS-AUTOCOMMIT+     2 "Server in auto-commit mode")
+(defconstant +server-status-in-trans+       1 "Transaction has started")
+(defconstant +server-status-autocommit+     2 "Server in auto-commit mode")
 
-(defconstant +MYSQL-ERRMSG-SIZE+          200)
-(defconstant +NET-READ-TIMEOUT+            30 "Timeout on read")
-(defconstant +NET-WRITE-TIMEOUT+           60 "Timeout on write")
-(defconstant +NET-WAIT-TIMEOUT+   (* 8 60 60) "Wait for new query")
+(defconstant +mysql-errmsg-size+          200)
+(defconstant +net-read-timeout+            30 "Timeout on read")
+(defconstant +net-write-timeout+           60 "Timeout on write")
+(defconstant +net-wait-timeout+   (* 8 60 60) "Wait for new query")
 
 
-(defconstant +MAX-CHAR-WIDTH+             255 "Max length for a CHAR colum")
-(defconstant +MAX-BLOB-WIDTH+            8192 "Default width for blob")
+(defconstant +max-char-width+             255 "Max length for a CHAR colum")
+(defconstant +max-blob-width+            8192 "Default width for blob")
 
 (ffi:def-c-type net
   (vio                ffi:c-pointer)
@@ -141,7 +139,7 @@
   (buff-end           ffi:c-pointer)
   (write-pos          ffi:c-pointer)
   (read-pos           ffi:c-pointer)
-  (last-error        (ffi:c-array-max ffi:char +MYSQL-ERRMSG-SIZE+))
+  (last-error        (ffi:c-array-max ffi:char +mysql-errmsg-size+))
   (last-errno         ffi:uint)
   (max-packet         ffi:uint)
   (timeout            ffi:uint)
@@ -163,32 +161,32 @@
 (defconstant +packet-error+ #xffffffff)
 
 (defenum enum-field-types 
-  +FIELD-TYPE-DECIMAL+
-  +FIELD-TYPE-TINY+
-  +FIELD-TYPE-SHORT+
-  +FIELD-TYPE-LONG+
-  +FIELD-TYPE-FLOAT+
-  +FIELD-TYPE-DOUBLE+
-  +FIELD-TYPE-NULL+
-  +FIELD-TYPE-TIMESTAMP+
-  +FIELD-TYPE-LONGLONG+
-  +FIELD-TYPE-INT24+
-  +FIELD-TYPE-DATE+
-  +FIELD-TYPE-TIME+
-  +FIELD-TYPE-DATETIME+
-  +FIELD-TYPE-YEAR+
-  +FIELD-TYPE-NEWDATE+
-  (+FIELD-TYPE-ENUM+        247)
-  (+FIELD-TYPE-SET+         248)
-  (+FIELD-TYPE-TINY-BLOB+   249)
-  (+FIELD-TYPE-MEDIUM-BLOB+ 250)
-  (+FIELD-TYPE-LONG-BLOB+   251)
-  (+FIELD-TYPE-BLOB+        252)
-  (+FIELD-TYPE-VAR-STRING+  253)
-  (+FIELD-TYPE-STRING+      254))
+  +field-type-decimal+
+  +field-type-tiny+
+  +field-type-short+
+  +field-type-long+
+  +field-type-float+
+  +field-type-double+
+  +field-type-null+
+  +field-type-timestamp+
+  +field-type-longlong+
+  +field-type-int24+
+  +field-type-date+
+  +field-type-time+
+  +field-type-datetime+
+  +field-type-year+
+  +field-type-newdate+
+  (+field-type-enum+        247)
+  (+field-type-set+         248)
+  (+field-type-tiny-blob+   249)
+  (+field-type-medium-blob+ 250)
+  (+field-type-long-blob+   251)
+  (+field-type-blob+        252)
+  (+field-type-var-string+  253)
+  (+field-type-string+      254))
 
-(defconstant +FIELD-TYPE-CHAR+        +FIELD-TYPE-TINY+ "For compability")
-(defconstant +FIELD-TYPE-INTERVAL+    +FIELD-TYPE-ENUM+ "For compability")
+(defconstant +field-type-char+        +field-type-tiny+ "For compability")
+(defconstant +field-type-interval+    +field-type-enum+ "For compability")
 
 (ffi:def-c-var max-allowed-packet 
     (:name "max_allowed_packet")
@@ -266,9 +264,9 @@
 ;; The following is for user defined functions 
 
 (defenum item-result
-  +STRING-RESULT+
-  +REAL-RESULT+
-  +INT-RESULT+)
+  +string-result+
+  +real-result+
+  +int-result+)
 
 (ffi:def-c-type udf-args
   (arg-count   ffi:uint)                     ; Number of arguments 
@@ -287,8 +285,8 @@
   (const-item  my-bool))   ;  0 if result is independent of arguments 
 
 ;; Constants when using compression 
-(defconstant +NET-HEADER-SIZE+              4 "standard header size")
-(defconstant +COMP-HEADER-SIZE+             3 "compression header extra size")
+(defconstant +net-header-size+              4 "standard header size")
+(defconstant +comp-header-size+             3 "compression header extra size")
 
 ;; Prototypes to password functions
 

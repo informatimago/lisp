@@ -35,56 +35,54 @@
 ;;;;      (avl-count) would be nice too.
 ;;;;      
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2004 - 2004
+;;;;    Copyright Pascal J. Bourguignon 2004 - 2012
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.OBSOLETE-OR-INCOMPLEPTE.AVL"
-  (:USE "COMMON-LISP"
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.OBSOLETE-OR-INCOMPLEPTE.AVL"
+  (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
-  (:EXPORT "AVL-WALK" "AVL-SEARCH" "AVL-VALUE" "AVL-INSERT" "AVL-EMPTY" "AVL")
-  (:IMPORT-FROM "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
+  (:export "AVL-WALK" "AVL-SEARCH" "AVL-VALUE" "AVL-INSERT" "AVL-EMPTY" "AVL")
+  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
                 "MAKE-LIST-OF-RANDOM-NUMBERS")
-  (:IMPORT-FROM "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
+  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
                 "UNTIL" "WHILE")
-  (:DOCUMENTATION
+  (:documentation
    "This package exports an AVL balanced binary tree data type.
 
     Copyright Pascal J. Bourguignon 2003 - 2004
     This package is provided under the GNU General Public License.
     See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.OBSOLETE-OR-INCOMPLEPTE.AVL")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.OBSOLETE-OR-INCOMPLEPTE.AVL")
 
 
 
 
-(DEFSTRUCT AVL
-  (LEFT      NIL :TYPE (OR NULL AVL))
-  (RIGHT     NIL :TYPE (OR NULL AVL))
-  (UNBALANCE 0   :TYPE INTEGER)
-  (VALUE)
+(defstruct avl
+  (left      nil :type (or null avl))
+  (right     nil :type (or null avl))
+  (unbalance 0   :type integer)
+  (value)
   ) ;;AVL
 
 
-(DEFUN AVL-RL (AVL)
+(defun avl-rl (avl)
   "
 DO:         Rotate left.
 RETURN:     The rotated tree.
@@ -92,14 +90,14 @@ PRE:        (a!=NULL)&&(a->droite!=NULL)
             a=<p,U,<q,V,W>>
 POST:       a=<q,<p,U,V>,W>
 "
-  (ASSERT (AND AVL (AVL-RIGHT AVL)))
-  (PSETF AVL             (AVL-RIGHT AVL)
-         (AVL-RIGHT AVL) (AVL-LEFT AVL)
-         (AVL-LEFT AVL)  AVL)
-  AVL) ;;AVL-RL
+  (assert (and avl (avl-right avl)))
+  (psetf avl             (avl-right avl)
+         (avl-right avl) (avl-left avl)
+         (avl-left avl)  avl)
+  avl) ;;AVL-RL
     
     
-(DEFUN AVL-RR (AVL)
+(defun avl-rr (avl)
   "
 DO:         Rotate right.
 RETURN:     The rotated tree.
@@ -107,14 +105,14 @@ PRE:        (a!=NULL)&&(a->gauche!=NULL)
             a=<q,<p,U,V>,W>
 POST:       a=<p,U,<q,V,W>>
 "
-  (ASSERT (AND AVL (AVL-LEFT AVL)))
-  (PSETF AVL             (AVL-LEFT AVL)
-         (AVL-LEFT AVL)  (AVL-RIGHT AVL)
-         (AVL-RIGHT AVL)  AVL)
-  AVL) ;;AVL-RR
+  (assert (and avl (avl-left avl)))
+  (psetf avl             (avl-left avl)
+         (avl-left avl)  (avl-right avl)
+         (avl-right avl)  avl)
+  avl) ;;AVL-RR
 
 
-(DEFUN AVL-RLR (AVL)
+(defun avl-rlr (avl)
   "
 DO:         Rotate left-right.
 RETURN:     The rotated tree.
@@ -122,13 +120,13 @@ PRE:        (a!=NULL)&&(a->gauche!=NULL)&&(a->gauche->droite!=NULL)
             a=<r,<p,T,<q,U,V>>,W>
 POST:       a=<q,<p<T,U>,<r,V,W>>
 "
-  (ASSERT (AND AVL (AVL-LEFT AVL) (AVL-RIGHT (AVL-LEFT AVL))))
-  (SETF (AVL-LEFT AVL) (AVL-RL (AVL-LEFT AVL)))
-  (SETF AVL (AVL-RR AVL))
-  AVL) ;;AVL-RLR
+  (assert (and avl (avl-left avl) (avl-right (avl-left avl))))
+  (setf (avl-left avl) (avl-rl (avl-left avl)))
+  (setf avl (avl-rr avl))
+  avl) ;;AVL-RLR
     
     
-(DEFUN AVL-RRL (AVL)
+(defun avl-rrl (avl)
   "
 DO:         Rotate right-left.
 RETURN:     The rotated tree.
@@ -136,130 +134,130 @@ PRE:        (a!=NULL)&&(a->droite!=NULL)&&(a->droite->gauche!=NULL)
             a=<r,T,<p,<q,U,V>,W>>
 POST:       a=<q,<r,T,U>,<p,V,W>>
 "
-  (ASSERT (AND AVL (AVL-RIGHT AVL) (AVL-LEFT (AVL-RIGHT AVL))))
-  (SETF (AVL-RIGHT AVL) (AVL-RR (AVL-RIGHT AVL)))
-  (SETF AVL (AVL-RL AVL))
-  AVL) ;;AVL-RRL
+  (assert (and avl (avl-right avl) (avl-left (avl-right avl))))
+  (setf (avl-right avl) (avl-rr (avl-right avl)))
+  (setf avl (avl-rl avl))
+  avl) ;;AVL-RRL
 
 
-(DEFUN AVL-EMPTY ()
+(defun avl-empty ()
   "
 RETURN: A new empty AVL tree.
 "
-  NIL) ;;AVL-EMPTY
+  nil) ;;AVL-EMPTY
     
 
-(DEFUN AVL-SEARCH (AVL VALUE COMPARE)
+(defun avl-search (avl value compare)
   "
 COMPARE:  A function (x y) --> { -1, 0, +1 } indicating whether x<y, x=y or x>y.
 RETURN:   The avl node such as (funcall compare value (avl-value avl)) == 0
           or nil of none found.
 "
-  (WHILE AVL
-    (CASE (FUNCALL COMPARE VALUE (AVL-VALUE AVL))
-      ((-1) (SETF AVL (AVL-LEFT AVL)))
-      ((0)  (RETURN-FROM AVL-SEARCH AVL))
-      ((1)  (SETF AVL (AVL-RIGHT AVL)))))
-  NIL) ;;AVL-SEARCH
+  (while avl
+    (case (funcall compare value (avl-value avl))
+      ((-1) (setf avl (avl-left avl)))
+      ((0)  (return-from avl-search avl))
+      ((1)  (setf avl (avl-right avl)))))
+  nil) ;;AVL-SEARCH
     
 
-(DEFUN AVL-INSERT (AVL VALUE COMPARE)
+(defun avl-insert (avl value compare)
   "
 COMPARE:  A function (x y) --> { -1, 0, +1 } indicating whether x<y, x=y or x>y.
 RETURN:   The modified avl tree where a new node has been added for value.
 "
-  (LET (Y A P AA PP)
-    (SETF Y (MAKE-AVL :VALUE VALUE))
-    (WHEN (NULL AVL) (RETURN-FROM AVL-INSERT Y))
-    (SETF A  AVL
-          AA NIL
-          P  A
-          PP NIL)
+  (let (y a p aa pp)
+    (setf y (make-avl :value value))
+    (when (null avl) (return-from avl-insert y))
+    (setf a  avl
+          aa nil
+          p  a
+          pp nil)
     ;; aa est le pere de a; pp est le pere de p
-    (WHILE P
+    (while p
       ;; Descente a la recherche de la feuille, en memorisant le 
       ;; dernier noeud pointe par a dont le desequilibrage est +/-1.
-      (UNLESS (ZEROP (AVL-UNBALANCE P))
-        (SETF A P  AA PP))
-      (SETF PP P)
-      (IF (<= (FUNCALL COMPARE VALUE (AVL-VALUE P)) 0)
-          (SETF P (AVL-LEFT P))
-          (SETF P (AVL-RIGHT P))))
+      (unless (zerop (avl-unbalance p))
+        (setf a p  aa pp))
+      (setf pp p)
+      (if (<= (funcall compare value (avl-value p)) 0)
+          (setf p (avl-left p))
+          (setf p (avl-right p))))
     ;; adjonction
-    (IF (<= (FUNCALL COMPARE VALUE (AVL-VALUE PP)) 0)
-        (SETF (AVL-LEFT PP) Y)
-        (SETF (AVL-RIGHT PP) Y))
+    (if (<= (funcall compare value (avl-value pp)) 0)
+        (setf (avl-left pp) y)
+        (setf (avl-right pp) y))
     ;; modification du desequilibre sur le chemin de a a y 
-    (SETF P A)
-    (UNTIL (EQ P Y)
-      (IF (<= (FUNCALL COMPARE VALUE (AVL-VALUE P)) 0)
-          (PROGN (INCF (AVL-UNBALANCE P))
-                 (SETF P (AVL-LEFT P)))
-          (PROGN (DECF (AVL-UNBALANCE P))
-                 (SETF P (AVL-RIGHT P)))))
+    (setf p a)
+    (until (eq p y)
+      (if (<= (funcall compare value (avl-value p)) 0)
+          (progn (incf (avl-unbalance p))
+                 (setf p (avl-left p)))
+          (progn (decf (avl-unbalance p))
+                 (setf p (avl-right p)))))
     ;; reequilibrage
-    (CASE (AVL-UNBALANCE A)
-      ((-1 0 +1) (RETURN-FROM AVL-INSERT AVL))
-      ((+2)      (CASE (AVL-UNBALANCE (AVL-LEFT A))
+    (case (avl-unbalance a)
+      ((-1 0 +1) (return-from avl-insert avl))
+      ((+2)      (case (avl-unbalance (avl-left a))
                    ((+1)
-                    (SETF A (AVL-RR A)
-                          (AVL-UNBALANCE A) 0
-                          (AVL-UNBALANCE (AVL-RIGHT A)) 0))
+                    (setf a (avl-rr a)
+                          (avl-unbalance a) 0
+                          (avl-unbalance (avl-right a)) 0))
                    ((-1)
-                    (SETF A (AVL-RLR A))
-                    (CASE (AVL-UNBALANCE A)
-                      ((+1) (SETF (AVL-UNBALANCE (AVL-LEFT  A)) 0
-                                  (AVL-UNBALANCE (AVL-RIGHT A)) -1))
-                      ((-1) (SETF (AVL-UNBALANCE (AVL-LEFT  A)) +1
-                                  (AVL-UNBALANCE (AVL-RIGHT A)) 0))
+                    (setf a (avl-rlr a))
+                    (case (avl-unbalance a)
+                      ((+1) (setf (avl-unbalance (avl-left  a)) 0
+                                  (avl-unbalance (avl-right a)) -1))
+                      ((-1) (setf (avl-unbalance (avl-left  a)) +1
+                                  (avl-unbalance (avl-right a)) 0))
                       ((0) ;; case when (eq a y)
-                       (SETF (AVL-UNBALANCE (AVL-LEFT  A)) 0
-                             (AVL-UNBALANCE (AVL-RIGHT A)) 0)))
-                    (SETF (AVL-UNBALANCE A) 0))))
-      ((-2)      (CASE (AVL-UNBALANCE (AVL-RIGHT A))
+                       (setf (avl-unbalance (avl-left  a)) 0
+                             (avl-unbalance (avl-right a)) 0)))
+                    (setf (avl-unbalance a) 0))))
+      ((-2)      (case (avl-unbalance (avl-right a))
                    ((-1)
-                    (SETF A (AVL-RL A)
-                          (AVL-UNBALANCE A) 0
-                          (AVL-UNBALANCE (AVL-LEFT A)) 0))
+                    (setf a (avl-rl a)
+                          (avl-unbalance a) 0
+                          (avl-unbalance (avl-left a)) 0))
                    ((+1)
-                    (SETF A (AVL-RRL A))
-                    (CASE (AVL-UNBALANCE A)
-                      ((+1) (SETF (AVL-UNBALANCE (AVL-RIGHT A)) 0
-                                  (AVL-UNBALANCE (AVL-LEFT  A)) +1))
-                      ((-1) (SETF (AVL-UNBALANCE (AVL-RIGHT A)) -1
-                                  (AVL-UNBALANCE (AVL-LEFT  A)) 0))
+                    (setf a (avl-rrl a))
+                    (case (avl-unbalance a)
+                      ((+1) (setf (avl-unbalance (avl-right a)) 0
+                                  (avl-unbalance (avl-left  a)) +1))
+                      ((-1) (setf (avl-unbalance (avl-right a)) -1
+                                  (avl-unbalance (avl-left  a)) 0))
                       ((0) ;; case when (eq a y)
-                       (SETF (AVL-UNBALANCE (AVL-RIGHT  A)) 0
-                             (AVL-UNBALANCE (AVL-LEFT A)) 0)))
-                    (SETF (AVL-UNBALANCE A) 0)))))
+                       (setf (avl-unbalance (avl-right  a)) 0
+                             (avl-unbalance (avl-left a)) 0)))
+                    (setf (avl-unbalance a) 0)))))
     ;; mise a jour des pointeurs apres une rotation
-    (COND
-      ((NULL AA) (SETF AVL A))
-      ((<= (FUNCALL COMPARE (AVL-VALUE A) (AVL-VALUE AA)) 0)
-       (SETF (AVL-LEFT AA) A))
-      (T (SETF (AVL-RIGHT AA) A)))
-    AVL)) ;;AVL-INSERT
+    (cond
+      ((null aa) (setf avl a))
+      ((<= (funcall compare (avl-value a) (avl-value aa)) 0)
+       (setf (avl-left aa) a))
+      (t (setf (avl-right aa) a)))
+    avl)) ;;AVL-INSERT
     
     
-(DEFUN AVL-WALK (AVL &KEY (PREFIX (FUNCTION IDENTITY))
-                 (INFIX (FUNCTION IDENTITY))
-                 (SUFFIX (FUNCTION IDENTITY)))
+(defun avl-walk (avl &key (prefix (function identity))
+                 (infix (function identity))
+                 (suffix (function identity)))
   "
 DO:  Walks the avl tree applying the functions prefix, infix, and suffix
      on the value of each node.
 "
-  (WHEN AVL
-    (FUNCALL PREFIX (AVL-VALUE AVL))
-    (AVL-WALK (AVL-LEFT AVL)  :PREFIX PREFIX :INFIX INFIX :SUFFIX SUFFIX)
-    (FUNCALL INFIX (AVL-VALUE AVL))
-    (AVL-WALK (AVL-RIGHT AVL) :PREFIX PREFIX :INFIX INFIX :SUFFIX SUFFIX)
-    (FUNCALL SUFFIX (AVL-VALUE AVL)))
+  (when avl
+    (funcall prefix (avl-value avl))
+    (avl-walk (avl-left avl)  :prefix prefix :infix infix :suffix suffix)
+    (funcall infix (avl-value avl))
+    (avl-walk (avl-right avl) :prefix prefix :infix infix :suffix suffix)
+    (funcall suffix (avl-value avl)))
   ) ;;AVL-WALK
 
 
 
 (defun test (size)
-  (let* ((data (delete-duplicates (MAKE-LIST-OF-RANDOM-NUMBERS size)))
+  (let* ((data (delete-duplicates (make-list-of-random-numbers size)))
          (hash (make-hash-table :size size))
          (tree (avl-empty)))
     (flet ((reset (hash) (maphash (lambda (k v)
@@ -268,20 +266,20 @@ DO:  Walks the avl tree applying the functions prefix, infix, and suffix
            (check (hash) (maphash (lambda (k v)
                                     (declare (ignore k))
                                     (assert (= 1 (second v)))) hash))
-           (COMPARE (a b) (cond ((< (first a) (first b)) -1)
+           (compare (a b) (cond ((< (first a) (first b)) -1)
                                 ((> (first a) (first b)) +1)
                                 (t 0))))
       ;; -1- fill a tree.
       (dolist (item data)
         (let ((record (list item 0)))
           (setf (gethash (first record) hash) record)
-          (setf tree (avl-insert tree record (FUNCTION COMPARE)))))
+          (setf tree (avl-insert tree record (function compare)))))
       ;; -2- check we have all the data.
       (dolist (item data)
-        (let* ((node (avl-search tree (gethash item hash) (FUNCTION COMPARE)))
+        (let* ((node (avl-search tree (gethash item hash) (function compare)))
                (record (and node (avl-value node))))
           (assert record)
-          (ASSERT (eql (first record) (gethash (second record) hash)))))
+          (assert (eql (first record) (gethash (second record) hash)))))
       ;; -3- walk the tree (three ways) and check we get all the data.
       (dolist (mode '(:prefix :infix :suffix))
         (reset hash)

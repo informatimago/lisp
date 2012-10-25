@@ -1,0 +1,92 @@
+;;;; -*- mode:lisp;coding:utf-8 -*-
+;;;;**************************************************************************
+;;;;FILE:               example.linc
+;;;;LANGUAGE:           Common-Lisp
+;;;;SYSTEM:             Common-Lisp
+;;;;USER-INTERFACE:     NONE
+;;;;DESCRIPTION
+;;;;    
+;;;;    Sample linc code.
+;;;;    
+;;;;AUTHORS
+;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
+;;;;MODIFICATIONS
+;;;;    2007-12-19 <PJB> Extracted from linc.lisp
+;;;;BUGS
+;;;;LEGAL
+;;;;    AGPL3
+;;;;    
+;;;;    Copyright Pascal Bourguignon 2007 - 2007
+;;;;    
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
+;;;;    
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
+;;;;    
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;**************************************************************************
+
+
+(cl:in-package :com.informatimago.linc.c)
+
+(cl:defpackage :bc-mem
+  (:use)
+  (:export "COPY" "ALLOCATE" "DEALLOCATE"))
+
+(declare-variable '(n-allocation
+                    n-data
+                    copy
+                    n-length))
+(declare-function '(bc-mem:allocate
+                    bc-mem:deallocate
+                    bc-mem:copy))
+(declare-macro    '(minimum))
+
+
+(comment "Here is a little function")
+
+(define-function string_add ((a string_t) (b string_t)) string_t
+  (let ((av int)
+        (bv int)
+        (res string_t (malloc (+ 2 (max (strlen a) (strlen b))))))
+    (sscanf a "%d" (address av))
+    (sscanf b "%d" (address bv))
+    (sprintf res "%d" (+ a b))
+    (return res)))
+
+(comment "Here is another function."
+         "Slightly bigger this time."
+         (* 42 12))
+
+(define-function test () void
+  (if (> n-allocation 1)
+    (progn
+      (= n-data (bc-mem:allocate (* (sizeof char) n-allocation)))
+      (if copy
+        (progn
+          (= n-length (minimum (- n-allocation 1) (-> this dlength)))
+          (bc-mem:copy (-> this data) n-data (* n-length (sizeof char))))
+        (= n-length 0)))
+    (progn
+      (= n-allocation 1)
+      (= n-data (bc-mem:allocate (* (sizeof char) n-allocation)))
+      (= n-length 0)))
+  (= (aref n-data  n-length) (cast 0 char))
+  (bc-mem:deallocate (cast (address (-> this data)) (pointer (pointer void))))
+  (= (-> this data)       n-data)
+  (= (-> this dlength)    n-length)
+  (= (-> this allocation) n-allocation)
+  (let ((test double
+              (* (+ 1 2 3 4) (/ 5 4 3 2) (- 5 4 3 2)
+                 (pos a) (neg b) (deref c) (~ d) (! e)
+                 (pos (+ 1 a)) (neg (+ 2 b)) (deref (+ c 3))
+                 (~ (+ 4 d)) (! (< e 0)))))
+    (printf "%d\\n" test))
+  (return this))
+

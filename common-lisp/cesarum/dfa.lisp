@@ -15,24 +15,22 @@
 ;;;;    2012-02-01 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2012 - 2012
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DFA"
@@ -42,11 +40,79 @@
    "GO-TO-STATE")
   
   (:documentation "
+
 This package implements a DFA, Deterministic Finite Automaton (or
 Deterministic Finite State Machine).
 
-Each DFA implemented as a class, and the events are implemented as
-methods of same name of that class.
+A DFA has a state.
+
+Our DFAs also have a set of slots. 
+
+Each DFA is implemented as a class.
+
+Events are represented as generic functions called with the DFA
+instance as first argument (and optionnaly other arguments).  They are
+specialized on each specific class of DFA they're applicable to.
+
+
+
+Example:
+
+    (define-state-machine test-dfa
+        :slots ((data :initarg :data :initform nil :accessor data))
+        :initial zero
+        :states ((zero
+                  (:entry () (print `(entering zero)))
+                  (:exit  () (print `(exiting zero)))
+                  (got-a (sym) (push (cons 'a sym) data))
+                  (got-b (sym) (push (cons 'b sym) data) (go-to-state one sym)))
+                 (one
+                  (:entry (sym) (print `(entering one ,sym)))
+                  (:exit  ()    (print `(exiting one)))
+                  (got-a (sym) (push (cons 'a sym) data))
+                  (got-b (sym) (push (cons 'b sym) data) (go-to-state zero))))
+        :documentation \"A test DFA\")
+
+    (defparameter *d* (make-test-dfa '()))
+    prints:
+    (entering zero)
+    --> *d*
+
+    (got-a *d* 'a)
+    --> ((a . a))
+
+    (got-b *d* 'b)
+    prints:
+    (exiting zero) 
+    (entering one b)
+    --> (entering one b)
+
+    (got-a *d* 'a)
+    --> ((a . a) (b . b) (a . a))
+
+    (slot-value *d* 'data)
+    --> ((a . a) (b . b) (a . a))
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2012 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
 
 
 "))
@@ -54,36 +120,11 @@ methods of same name of that class.
 
 
 
-;;; A DFA has a state.
-;;; 
-;;; Our DFAs also have a set of slots. 
-;;; 
-;;; Events are represented as generic functions called with the dfa as
-;;; first argument (and optionnaly other arguments).
-
-;; (define-state-machine test-dfa
-;;     (data)
-;;   (:initial zero)
-;;   (:states
-;;    (zero
-;;     (:entry () (print `(entering zero)))
-;;     (:exit  () (print `(exiting zero)))
-;;     (got-a (sym) (push (cons 'a sym) data))
-;;     (got-b (sym) (push (cons 'b sym) data) (go-to-state one sym)))
-;;    (one
-;;     (:entry (sym) (print `(entering one ,sym)))
-;;     (:exit  ()    (print `(exiting one)))
-;;     (got-a (sym) (push (cons 'a sym) data))
-;;     (got-b (sym) (push (cons 'b sym) data) (go-to-state zero)))))
-;; 
-;; (defvar *d* (make-test-dfa '()))
-;; (got-a *d* 'a)
-;; (got-b *d* 'b)
-;; (got-a *d* 'a)
-;; (slot-value *d* 'data)
 
 
 
+(defgeneric dfa-state (dfa)
+  (:documentation "The state of the DFA."))
 
 (defclass dfa ()
   ((state
@@ -335,8 +376,7 @@ generic functions on the DFA class.
 
          ;; TODO: add a INITIALIZE-INSTANCE method to let the user initialize the DFA with MAKE-INSTANCE.
          
-         (defun ,(intern (with-standard-io-syntax (format nil "MAKE-~A" name)) (or (symbol-package name) *package*)) ()
-             "Constructor for a DFA."
+         (defun ,(intern (with-standard-io-syntax (format nil "MAKE-~A" name)) (or (symbol-package name) *package*))
              ,(append
                ;; make-dfa takes as mandatory parameters all the slots that have a :initarg
                init-slots
@@ -346,8 +386,8 @@ generic functions on the DFA class.
              ,@(when slots
                      `((setf ,@(mapcan
                                 (lambda (slot)
-                                    (let ((sname (if (symbolp slot) slot (first slot))))
-                                      (list `(slot-value ,vdfa ',sname) sname)))
+                                  (let ((sname (if (symbolp slot) slot (first slot))))
+                                    (list `(slot-value ,vdfa ',sname) sname)))
                                 init-slots))))
              (on-entry ,vdfa ',initial ,@(when initial-ex (dfa-entrex-lambda-list initial-ex)))
              ,vdfa))

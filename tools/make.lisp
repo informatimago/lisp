@@ -55,15 +55,15 @@
   :quit-option ("-quit")
   :quit-expression "(ext:quit)")
 
-SBCL          := sbcl
-CMUCL         := cmucl
-OPENMCL       := openmcl
+sbcl          := sbcl
+cmucl         := cmucl
+openmcl       := openmcl
 
-ABCL_FLAGS    := 
-ALLEGRO_FLAGS := 
-CCL_FLAGS     := 
-CLISP_FLAGS   := -ansi -q -norc -Kfull -E iso-8859-1 -Efile UTF-8 -Eterminal UTF-8  -on-error debug
-CMUCL_FLAGS   := -noinit -nositeinit 
-ECL_FLAGS     := -norc 
-OPENMCL_FLAGS := 
-SBCL_FLAGS    := --noinform --sysinit /dev/null --userinit /dev/null 
+abcl_flags    := 
+allegro_flags := 
+ccl_flags     := 
+clisp_flags   := -ansi -q -norc -kfull -e iso-8859-1 -efile utf-8 -eterminal utf-8  -on-error debug
+cmucl_flags   := -noinit -nositeinit 
+ecl_flags     := -norc 
+openmcl_flags := 
+sbcl_flags    := --noinform --sysinit /dev/null --userinit /dev/null 

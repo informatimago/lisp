@@ -14,8 +14,8 @@
 
 
 #+clisp(import '(ext:gc))
-#+sbcl (defun gc () (sb-ext:GC :full t))
-#+cmu  (import '(EXTENSIONS:GC))
+#+sbcl (defun gc () (sb-ext:gc :full t))
+#+cmu  (import '(extensions:gc))
 
 (defvar tab)
 

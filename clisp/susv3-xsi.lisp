@@ -35,36 +35,34 @@
 ;;;;    of here.
 ;;;;
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2004 - 2004
+;;;;    Copyright Pascal J. Bourguignon 2004 - 2012
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
-(DECLAIM (DECLARATION ALSO-USE-PACKAGES))
-(declaim (ALSO-USE-PACKAGES "FFI" "LINUX"))
+(declaim (declaration also-use-packages))
+(declaim (also-use-packages "FFI" "LINUX"))
 (eval-when (:compile-toplevel :load-toplevel :execute) (require "linux"))
-(defPACKAGE "COM.INFORMATIMAGO.CLISP.SUSV3-XSI"
-  (:DOCUMENTATION "This packages exports SUSV3 XSI functions.
+(defpackage "COM.INFORMATIMAGO.CLISP.SUSV3-XSI"
+  (:documentation "This packages exports SUSV3 XSI functions.
     This is the CLISP specific implementation of the SUSV3 XSI API.")
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.CLISP.SUSV3")
-  (:EXPORT 
+  (:export 
    ;; FTW
    "+FTW-F+" "+FTW-D+" "+FTW-DNR+" "+FTW-DP+" "+FTW-NS+" "+FTW-SL+"
    "+FTW-SLN+" "+FTW-PHYS+" "+FTW-MOUNT+" "+FTW-DEPTH+" "+FTW-CHDIR+"
@@ -127,40 +125,40 @@
 ;;
 
 
-(DEFCONSTANT +FTW-F+   0 "File.")
-(DEFCONSTANT +FTW-D+   1 "Directory.")
-(DEFCONSTANT +FTW-DNR+ 2 "Directory without read permission.")
-(DEFCONSTANT +FTW-DP+  3 "Directory with subdirectories visited.")
-(DEFCONSTANT +FTW-NS+  4 "Unknown type; stat() failed.")
-(DEFCONSTANT +FTW-SL+  5 "Symbolic link.")
-(DEFCONSTANT +FTW-SLN+ 6 "Symbolic link that names a nonexistent file.")
+(defconstant +ftw-f+   0 "File.")
+(defconstant +ftw-d+   1 "Directory.")
+(defconstant +ftw-dnr+ 2 "Directory without read permission.")
+(defconstant +ftw-dp+  3 "Directory with subdirectories visited.")
+(defconstant +ftw-ns+  4 "Unknown type; stat() failed.")
+(defconstant +ftw-sl+  5 "Symbolic link.")
+(defconstant +ftw-sln+ 6 "Symbolic link that names a nonexistent file.")
 
 
-(DEFCONSTANT +FTW-PHYS+ 1
+(defconstant +ftw-phys+ 1
   "Physical walk, does not follow symbolic links. Otherwise, NFTW
 follows links but does not walk down any path that crosses itself.")
 
-(DEFCONSTANT +FTW-MOUNT+ 2 "The walk does not cross a mount point.")
-(DEFCONSTANT +FTW-DEPTH+ 4
+(defconstant +ftw-mount+ 2 "The walk does not cross a mount point.")
+(defconstant +ftw-depth+ 4
   "All subdirectories are visited before the directory itself.")
-(DEFCONSTANT +FTW-CHDIR+ 8
+(defconstant +ftw-chdir+ 8
   "The walk changes to each directory before reading it.")
 
 
-(DEFSTRUCT FTW
-  (BASE  0 :TYPE INTEGER)
-  (LEVEL 0 :TYPE INTEGER))
+(defstruct ftw
+  (base  0 :type integer)
+  (level 0 :type integer))
 
 
-(DEFTYPE FTW-FILTER  ()
-  '(FUNCTION (SIMPLE-STRING STAT INTEGER)     INTEGER))
-(DEFTYPE NFTW-FILTER ()
-  '(FUNCTION (SIMPLE-STRING STAT INTEGER FTW) INTEGER))
+(deftype ftw-filter  ()
+  '(function (simple-string stat integer)     integer))
+(deftype nftw-filter ()
+  '(function (simple-string stat integer ftw) integer))
 
 
 (declaim
- (FTYPE (FUNCTION (SIMPLE-STRING FTW-FILTER  INTEGER)         INTEGER) FTW)
- (FTYPE (FUNCTION (SIMPLE-STRING NFTW-FILTER INTEGER INTEGER) INTEGER) NFTW))
+ (ftype (function (simple-string ftw-filter  integer)         integer) ftw)
+ (ftype (function (simple-string nftw-filter integer integer) integer) nftw))
 
 
 ;; ISSUE:  SHOULD THE FILTER RETURN NIL/T OR ZEROP/NOT ZEROP?
@@ -181,54 +179,54 @@ follows links but does not walk down any path that crosses itself.")
 ;;         in SUSv3).
 
 
-(DEFUN FTW (PATH FILTER NDIRS)
+(defun ftw (path filter ndirs)
   "
 URL:        http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html
 "
-  (DECLARE (TYPE (INTEGER 1 #|+OPEN-MAX+|#) NDIRS))
+  (declare (type (integer 1 #|+OPEN-MAX+|#) ndirs))
   (declare (ignore ndirs))
   ;; We'll have always only one DIR-STREAM open: we keep the list of
   ;; subdirectories in memory and process them after having read the directory.
-  (LET ((DIR-STREAM (OPENDIR PATH)))
-    (UNWIND-PROTECT
-         (DO* ((ENTRY (READDIR DIR-STREAM) (READDIR DIR-STREAM))
-               (DIRECTORIES '())
-               SUBPATH STAT FLAG
-               (RESULT 0))
-              ((OR (NULL ENTRY) (/= 0 RESULT)) DIRECTORIES)
-           (UNLESS (OR (STRING= (DIRENT-NAME ENTRY) "..")
-                       (STRING= (DIRENT-NAME ENTRY) "."))
-             (SETQ SUBPATH (CONCATENATE 'STRING PATH "/"
-                                        (DIRENT-NAME ENTRY)))
-             (HANDLER-CASE (SETQ STAT (LSTAT SUBPATH))
-               (T () (SETQ STAT NIL)))
-             (COND
-               ((NULL STAT)
-                (SETQ FLAG +FTW-NS+))
-               ((S-ISREG (STAT-MODE STAT))
-                (SETQ FLAG +FTW-F+))
-               ((S-ISDIR (STAT-MODE STAT))
-                (PUSH SUBPATH DIRECTORIES)
-                (SETQ FLAG +FTW-F+))
-               ((S-ISLNK (STAT-MODE STAT))
-                (HANDLER-CASE (SETQ STAT (STAT SUBPATH)
-                                    FLAG +FTW-SL+)))
-               (T () (SETQ STAT NIL
-                           FLAG +FTW-SLN+)))
-             (SETQ RESULT
-                   (HANDLER-CASE
-                       (funcall FILTER (DIRENT-NAME ENTRY) STAT FLAG)
-                     (T () -1)))))
-      (CLOSEDIR DIR-STREAM))))
+  (let ((dir-stream (opendir path)))
+    (unwind-protect
+         (do* ((entry (readdir dir-stream) (readdir dir-stream))
+               (directories '())
+               subpath stat flag
+               (result 0))
+              ((or (null entry) (/= 0 result)) directories)
+           (unless (or (string= (dirent-name entry) "..")
+                       (string= (dirent-name entry) "."))
+             (setq subpath (concatenate 'string path "/"
+                                        (dirent-name entry)))
+             (handler-case (setq stat (lstat subpath))
+               (t () (setq stat nil)))
+             (cond
+               ((null stat)
+                (setq flag +ftw-ns+))
+               ((s-isreg (stat-mode stat))
+                (setq flag +ftw-f+))
+               ((s-isdir (stat-mode stat))
+                (push subpath directories)
+                (setq flag +ftw-f+))
+               ((s-islnk (stat-mode stat))
+                (handler-case (setq stat (stat subpath)
+                                    flag +ftw-sl+)))
+               (t () (setq stat nil
+                           flag +ftw-sln+)))
+             (setq result
+                   (handler-case
+                       (funcall filter (dirent-name entry) stat flag)
+                     (t () -1)))))
+      (closedir dir-stream))))
 
     
-(DEFCONSTANT +FTW-F+   0 "File.")
-(DEFCONSTANT +FTW-D+   1 "Directory.")
-(DEFCONSTANT +FTW-DNR+ 2 "Directory without read permission.")
-(DEFCONSTANT +FTW-DP+  3 "Directory with subdirectories visited.")
-(DEFCONSTANT +FTW-NS+  4 "Unknown type; stat() failed.")
-(DEFCONSTANT +FTW-SL+  5 "Symbolic link.")
-(DEFCONSTANT +FTW-SLN+ 6 "Symbolic link that names a nonexistent file.")
+(defconstant +ftw-f+   0 "File.")
+(defconstant +ftw-d+   1 "Directory.")
+(defconstant +ftw-dnr+ 2 "Directory without read permission.")
+(defconstant +ftw-dp+  3 "Directory with subdirectories visited.")
+(defconstant +ftw-ns+  4 "Unknown type; stat() failed.")
+(defconstant +ftw-sl+  5 "Symbolic link.")
+(defconstant +ftw-sln+ 6 "Symbolic link that names a nonexistent file.")
 
 
 ;; int ftw(const char *,int (*)(const char *,const struct stat *,int),int)
@@ -247,17 +245,17 @@ URL:        http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html
 ;; ipc
 ;;----------------------------------------------------------------------
 
-(defconstant IPC_CREAT   #o01000 "Create key if key does not exist.")
-(defconstant IPC_EXCL    #o02000 "Fail if key exists.")
-(defconstant IPC_NOWAIT  #o04000 "Return error on wait.")
+(defconstant ipc_creat   #o01000 "Create key if key does not exist.")
+(defconstant ipc_excl    #o02000 "Fail if key exists.")
+(defconstant ipc_nowait  #o04000 "Return error on wait.")
 
 ;; Control commands for `msgctl', `semctl', and `shmctl'. 
-(defconstant IPC_RMID    0       "Remove identifier.")
-(defconstant IPC_SET     1       "Set `ipc_perm' options.")
-(defconstant IPC_STAT    2       "Get `ipc_perm' options.")
-(defconstant IPC_INFO    3       "See ipcs.")
+(defconstant ipc_rmid    0       "Remove identifier.")
+(defconstant ipc_set     1       "Set `ipc_perm' options.")
+(defconstant ipc_stat    2       "Get `ipc_perm' options.")
+(defconstant ipc_info    3       "See ipcs.")
 
-(defconstant IPC_PRIVATE 0 "Private key.")
+(defconstant ipc_private 0 "Private key.")
 
 
 (ffi:def-c-struct ipc_perm
@@ -284,8 +282,8 @@ URL:        http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html
 ;; msg
 ;;----------------------------------------------------------------------
 
-(defconstant MSG_NOERROR  #o010000 "no error if message is too big")
-(defconstant MSG_EXCEPT   #o020000 "recv any msg except of specified type")
+(defconstant msg_noerror  #o010000 "no error if message is too big")
+(defconstant msg_except   #o020000 "recv any msg except of specified type")
 
 ;; Types used in the structure definition.  
 (ffi:def-c-type msgqnum_t ffi:ulong)
@@ -311,8 +309,8 @@ URL:        http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html
   (__unused5   ffi:ulong))
 
 ;; ipcs ctl commands
-(defconstant MSG_STAT 11)
-(defconstant MSG_INFO 12)
+(defconstant msg_stat 11)
+(defconstant msg_info 12)
 
 
 ;; buffer for msgctl calls IPC_INFO, MSG_INFO 
@@ -366,17 +364,17 @@ URL:        http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html
 
 
 ;; Permission flag for shmget. 
-(defconstant SHM_R #o0400 "or S_IRUGO from <linux/stat.h> *")
-(defconstant SHM_W #o0200 "or S_IWUGO from <linux/stat.h> *")
+(defconstant shm_r #o0400 "or S_IRUGO from <linux/stat.h> *")
+(defconstant shm_w #o0200 "or S_IWUGO from <linux/stat.h> *")
 
 ;; Flags for `shmat'. 
-(defconstant SHM_RDONLY #o010000 "attach read-only else read-write *")
-(defconstant SHM_RND    #o020000 "round attach address to SHMLBA *")
-(defconstant SHM_REMAP  #o040000 "take-over region on attach *")
+(defconstant shm_rdonly #o010000 "attach read-only else read-write *")
+(defconstant shm_rnd    #o020000 "round attach address to SHMLBA *")
+(defconstant shm_remap  #o040000 "take-over region on attach *")
 
 ;; Commands for `shmctl'.  
-(defconstant SHM_LOCK   11 "lock segment (root only) *")
-(defconstant SHM_UNLOCK 12 "unlock segment (root only) *")
+(defconstant shm_lock   11 "lock segment (root only) *")
+(defconstant shm_unlock 12 "unlock segment (root only) *")
 
 
 (ffi:def-call-out getpagesize (:name "getpagesize")
@@ -385,7 +383,7 @@ URL:        http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html
   (:library #.+libc+) (:language :stdc))
 
 
-(defun SHMLBA () 
+(defun shmlba () 
   "Segment low boundary address multiple. "
   (getpagesize))
 
@@ -467,24 +465,24 @@ URL:        http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html
 
 
 ;; Flags for `semop'.  
-(defconstant SEM_UNDO   #x1000 "undo the operation on exit")
+(defconstant sem_undo   #x1000 "undo the operation on exit")
 
 ;; Commands for `semctl'.  
-(defconstant  GETPID          11 "get sempid")
-(defconstant  GETVAL          12 "get semval")
-(defconstant  GETALL          13 "get all semval's")
-(defconstant  GETNCNT         14 "get semncnt")
-(defconstant  GETZCNT         15 "get semzcnt")
-(defconstant  SETVAL          16 "set semval")
-(defconstant  SETALL          17 "set all semval's")
+(defconstant  getpid          11 "get sempid")
+(defconstant  getval          12 "get semval")
+(defconstant  getall          13 "get all semval's")
+(defconstant  getncnt         14 "get semncnt")
+(defconstant  getzcnt         15 "get semzcnt")
+(defconstant  setval          16 "set semval")
+(defconstant  setall          17 "set all semval's")
 
-(defconstant SEMMNI  128         "<= IPCMNI  max # of semaphore identifiers")
-(defconstant SEMMSL  250         "<= 8 000 max num of semaphores per id")
-(defconstant SEMMNS  32000 #|(* SEMMNI SEMMSL)|#
+(defconstant semmni  128         "<= IPCMNI  max # of semaphore identifiers")
+(defconstant semmsl  250         "<= 8 000 max num of semaphores per id")
+(defconstant semmns  32000 #|(* SEMMNI SEMMSL)|#
   "<= INT_MAX max # of semaphores in system")
-(defconstant SEMOPM  32	         "<= 1 000 max num of ops per semop call")
-(defconstant SEMVMX  32767       "<= 32767 semaphore maximum value")
-(defconstant SEMAEM  32767 #|SEMVMX|#   "adjust on exit max value")
+(defconstant semopm  32	         "<= 1 000 max num of ops per semop call")
+(defconstant semvmx  32767       "<= 32767 semaphore maximum value")
+(defconstant semaem  32767 #|SEMVMX|#   "adjust on exit max value")
 
 
 (ffi:def-c-struct semid_ds
@@ -515,8 +513,8 @@ URL:        http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html
 ;;    one must define the union or not.  
 
 ;; ipcs ctl cmds 
-(defconstant SEM_STAT 18)
-(defconstant SEM_INFO 19)
+(defconstant sem_stat 18)
+(defconstant sem_info 19)
 
 (ffi:def-c-struct seminfo
   (semmap ffi:int)

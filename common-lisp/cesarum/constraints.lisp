@@ -5,17 +5,8 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
-;;;;    A little constraint solver.
 ;;;;
-;;;;    Given a graph of nodes, and a propagate function that
-;;;;    propagates constraints from node to nodes, the solver
-;;;;    propagates the constraints until no change occurs.
-;;;;
-;;;;    It computes the strongly connected components, and performs a
-;;;;    topological sort of the condensed graph to minimalize the
-;;;;    number of calls to propagate.
-;;;;
+;;;;    See defpackage documentation string.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
@@ -23,24 +14,22 @@
 ;;;;    2011-07-31 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2011 - 2011
+;;;;    Copyright Pascal J. Bourguignon 2011 - 2012
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CONSTRAINTS"
@@ -49,6 +38,39 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
   (:export "SOLVE-CONSTRAINTS")
   (:documentation "
+
+A little constraint solver.
+
+Given a graph of nodes, and a propagate function that propagates
+constraints from node to nodes, the solver propagates the constraints
+until no change occurs.
+
+It computes the strongly connected components, and performs a
+topological sort of the condensed graph to minimalize the number of
+calls to propagate.
+
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2011 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
 
 "))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CONSTRAINTS")

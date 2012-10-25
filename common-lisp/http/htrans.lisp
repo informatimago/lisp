@@ -6,37 +6,8 @@
 ;;;;USER-INTERFACE:     NONE
 ;;;;NOWEB:              t
 ;;;;DESCRIPTION
-;;;;    
-;;;;    A "transaction" manager for CGI.
 ;;;;
-;;;;
-;;;; html-client                  transac-manager                         cgi
-;;;;   |                                 |                                 |
-;;;;   |                                                                  
-;;;;   |                                 /                                 
-;;;;   |--------(initial-request)------->|                                 /
-;;;;   |                                 |-----initialrequest(sessid)----->|
-;;;;   |                                 |                                 |
-;;;;   |                                 |<------reply(sessid,trid)--------|
-;;;;   |<-------(html-form)--------------|                                 /
-;;;;   |                                 /                                 
-;;;;   |                                                                  
-;;;;   |                                 /                                 
-;;;;   |----------(action.get)---------->|                                 /
-;;;;   |                                 |----request(sesid,trid,data)---->|
-;;;;   |                                 |                                 |
-;;;;   |                                 |<------reply(sessid,trid+1)------|
-;;;;   |<-------(html-form)--------------|                                 /
-;;;;   |                                 /                                
-;;;;   |                                                                  
-;;;;   |                                 |                                 |
-;;;;   V                                 V                                 V
-;;;;
-;;;;
-;;;;    In this implementation transac-manager and cgi are linked together in
-;;;;    the CGI process and this CGI process lives from the HTML request to
-;;;;    the response.
-;;;;
+;;;;    See defpackage documentation string.
 ;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
@@ -45,141 +16,208 @@
 ;;;;    2003-09-05 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2003 - 2005
+;;;;    Copyright Pascal J. Bourguignon 2003 - 2012
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DECLAIM (DECLARATION ALSO-USE-PACKAGES))
-(declaim (ALSO-USE-PACKAGES "COM.INFORMATIMAGO.COMMON-LISP.HTML-GENERATOR.HTML"
+(in-package "COMMON-LISP-USER")
+(declaim (declaration also-use-packages))
+(declaim (also-use-packages "COM.INFORMATIMAGO.COMMON-LISP.HTML-GENERATOR.HTML"
                             "COM.INFORMATIMAGO.COMMON-LISP.HTTP.HQUERY"))
 
-(EVAL-WHEN (:COMPILE-TOPLEVEL :LOAD-TOPLEVEL :EXECUTE)
-  (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PACKAGE:ADD-NICKNAME
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (com.informatimago.common-lisp.cesarum.package:add-nickname
    "COM.INFORMATIMAGO.COMMON-LISP.HTML-GENERATOR.HTML" "HTML"))
 
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.HTTP.HTRANS"
-  (:USE "COMMON-LISP"
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.HTTP.HTRANS"
+  (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
-  (:EXPORT "GETCMDS" "GETARG" "SEND-TABLE" "SEND-REPLY" "PROCESS-TRANSACTION"
+  (:export "GETCMDS" "GETARG" "SEND-TABLE" "SEND-REPLY" "PROCESS-TRANSACTION"
            "GENERATE-HTML-FOOTER" "GENERATE-HTML-HEADER" "REFUSE-SESSION"
            "REFUSE-REMOTE" "PROCESS-REQUEST" "BODY-ATTRIBUTES" "TITLE" "ACTION"
            "REFUSED-NETS" "ALLOWED-NETS" "ENVIRONMENT" "ARGUMENTS" "HPROGRAM")
-  (:IMPORT-FROM "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING" "PREFIXP" "SPLIT-STRING")
-  (:DOCUMENTATION
-   "A ''TRANSACTION'' manager for CGI.
+  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING" "PREFIXP" "SPLIT-STRING")
+  (:documentation
+   "
+A simple \"transaction\" manager for CGI.
+
+
+   html-client                  transac-manager                         cgi
+     |                                 |                                 |
+     |                                                                  
+     |                                 /                                 
+     |--------(initial-request)------->|                                 /
+     |                                 |-----initialrequest(sessid)----->|
+     |                                 |                                 |
+     |                                 |<------reply(sessid,trid)--------|
+     |<-------(html-form)--------------|                                 /
+     |                                 /                                 
+     |                                                                  
+     |                                 /                                 
+     |----------(action.get)---------->|                                 /
+     |                                 |----request(sesid,trid,data)---->|
+     |                                 |                                 |
+     |                                 |<------reply(sessid,trid+1)------|
+     |<-------(html-form)--------------|                                 /
+     |                                 /                                
+     |                                                                  
+     |                                 |                                 |
+     V                                 V                                 V
+
+
+In this implementation transac-manager and cgi are linked together in
+the CGI process and this CGI process lives from the HTML request to
+the response.
+
+
+
+
+License:
+
+    AGPL3
     
-    Copyright Pascal J. Bourguignon 2003 - 2007
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.HTTP.HTRANS")
+    Copyright Pascal J. Bourguignon 2003 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+
+
+"))
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.HTTP.HTRANS")
 
 
 (defvar +crlf+ (format nil "~C~C" (code-char 13) (code-char 10)))
 
-(DEFGENERIC PROCESS-TRANSACTION (HTP))
-(DEFGENERIC SEND-REPLY (HTP SESSION-ID TRANSAC-ID TITLE DATA COMMANDS))
-(DEFGENERIC SEND-TABLE (HTP SESSION-ID TRANSAC-ID TITLE ROW-DESC DATA COMMANDS))
+(defgeneric process-transaction (htp)
+  (:documentation   "
+DO:             Parses the CGI request and calls the REQUEST function passing
+                it the session-id, transaction-id and request data.
+                For the initial request, transaction-id and request data will
+                be NIL.
+NOTE:           Begins by outputing the HTML header and ends with
+                the HTML footer.
+"))
+(defgeneric send-reply (htp session-id transac-id title data commands)
+  (:documentation   "DO:       Sends a reply page."))
+(defgeneric send-table (htp session-id transac-id title row-desc data commands)
+  (:documentation   "DO:       Sends a table."))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; HTML Transaction Program Interface
 ;;;
 
-(DEFCLASS HPROGRAM ()
-  (
-   (ARGUMENTS
-    :INITFORM NIL
-    :INITARG  :ARGUMENTS
-    :ACCESSOR ARGUMENTS
-    :TYPE     LIST
-    :DOCUMENTATION "A list of command-line arguments.")
-   (ENVIRONMENT
-    :INITFORM NIL
-    :INITARG  :ENVIRONMENT
-    :ACCESSOR ENVIRONMENT
-    :TYPE     LIST
-    :DOCUMENTATION "An alist of unix environment variables: (var . value)*")
-   (ALLOWED-NETS
-    :INITFORM NIL
-    :INITARG  :ALLOWED-NETS
-    :ACCESSOR ALLOWED-NETS
-    :TYPE     LIST
-    :DOCUMENTATION "A list of (ip-address ip-mask).")
-   (REFUSED-NETS
-    :INITFORM NIL
-    :INITARG  :REFUSED-NETS
-    :ACCESSOR REFUSED-NETS
-    :TYPE     LIST
-    :DOCUMENTATION "A list of (ip-address ip-mask).")
-   (ACTION
-    :INITFORM "action"
-    :INITARG  :ACTION
-    :ACCESSOR ACTION
-    :TYPE     STRING
-    :DOCUMENTATION "A string naming the action used in the HTML forms.")
-   (TITLE
-     :INITFORM "Untitled"
-     :INITARG  :TITLE
-     :ACCESSOR TITLE
-     :TYPE     STRING
-     :DOCUMENTATION "A string used as page title.")
-   (BODY-ATTRIBUTES
-    :INITFORM NIL
-    :INITARG  :BODY-ATTRIBUTES
-    :ACCESSOR BODY-ATTRIBUTES
-    :TYPE     LIST
-    :DOCUMENTATION "A list containing the HTML:BODY attributes.")
-   )
-  (:DOCUMENTATION "An abstract class of a HTML Transaction Program.
-   This is the interface used by the HTRANS package to communicate with it.")
-  ) ;;HPROGRAM
+(defgeneric action (program)
+  (:documentation "A string naming the action used in the HTML forms."))
+(defgeneric allowed-nets (program)
+  (:documentation "A list of (ip-address ip-mask)."))
+(defgeneric arguments (program)
+  (:documentation "A list of command-line arguments."))
+(defgeneric body-attributes (program)
+  (:documentation "A list containing the HTML:BODY attributes."))
+(defgeneric environment (program)
+  (:documentation  "An a-list of unix environment variables: (var . value)*"))
+(defgeneric refused-nets (program)
+  (:documentation "A list of (ip-address ip-mask)."))
+(defgeneric title (program)
+  (:documentation "A string used as page title."))
 
 
-(DEFGENERIC PROCESS-REQUEST (SELF SESSION-ID TRANS-ID TRANS-DATA)
-  (:DOCUMENTATION "A call-back function (hprogram session-id trans-id data)
- that will be called with the decoded request.")
-  ) ;;PROCESS-REQUEST
+(defclass hprogram ()
+  ((arguments
+    :initform nil
+    :initarg  :arguments
+    :accessor arguments
+    :type     list
+    :documentation "A list of command-line arguments.")
+   (environment
+    :initform nil
+    :initarg  :environment
+    :accessor environment
+    :type     list
+    :documentation "An a-list of unix environment variables: (var . value)*")
+   (allowed-nets
+    :initform nil
+    :initarg  :allowed-nets
+    :accessor allowed-nets
+    :type     list
+    :documentation "A list of (ip-address ip-mask).")
+   (refused-nets
+    :initform nil
+    :initarg  :refused-nets
+    :accessor refused-nets
+    :type     list
+    :documentation "A list of (ip-address ip-mask).")
+   (action
+    :initform "action"
+    :initarg  :action
+    :accessor action
+    :type     string
+    :documentation "A string naming the action used in the HTML forms.")
+   (title
+     :initform "Untitled"
+     :initarg  :title
+     :accessor title
+     :type     string
+     :documentation "A string used as page title.")
+   (body-attributes
+    :initform nil
+    :initarg  :body-attributes
+    :accessor body-attributes
+    :type     list
+    :documentation "A list containing the HTML:BODY attributes."))
+  (:documentation "An abstract class of a HTML Transaction Program.
+This is the interface used by the HTRANS package to communicate with it."))
 
 
-(DEFGENERIC REFUSE-REMOTE (SELF SESSION-ID REMOTE-IP)
-  (:DOCUMENTATION "A call-back function called to display a message
-  indicating that the remote was refused access for it's IP address.")
-  ) ;;REFUSE-REMOTE
+(defgeneric process-request (self session-id trans-id trans-data)
+  (:documentation "A call-back function (hprogram session-id trans-id data)
+that will be called with the decoded request."))
 
 
-(DEFGENERIC REFUSE-SESSION (SELF SESSION-ID)
-  (:DOCUMENTATION "A call-back function called to display a message
-  indicating that the session-id is bad.")
-  ) ;;REFUSE-SESSION
+(defgeneric refuse-remote (self session-id remote-ip)
+  (:documentation "A call-back function called to display a message
+indicating that the remote was refused access for it's IP address."))
 
 
-(DEFGENERIC GENERATE-HTML-HEADER (SELF SESSION-ID)
-  (:DOCUMENTATION "A hook allowing the hprogram to display a header.
-  It should not generate a form with the same action!")
-  ) ;;GENERATE-HTML-HEADER
+(defgeneric refuse-session (self session-id)
+  (:documentation "A call-back function called to display a message
+indicating that the session-id is bad."))
 
 
-(DEFGENERIC GENERATE-HTML-FOOTER (SELF SESSION-ID)
-  (:DOCUMENTATION "A hook allowing the hprogram to display a footer.
-  It should not generate a form with the same action!")
-  ) ;;GENERATE-HTML-FOOTER
+(defgeneric generate-html-header (self session-id)
+  (:documentation "A hook allowing the hprogram to display a header.
+It should not generate a form with the same action!"))
+
+
+(defgeneric generate-html-footer (self session-id)
+  (:documentation "A hook allowing the hprogram to display a footer.
+It should not generate a form with the same action!"))
 
 
 
@@ -189,12 +227,11 @@
 ;;; unix environment
 ;;;
 
-(DEFUN UNIX-ENVIRONMENT-GET (ENVIRONMENT NAME)
+(defun unix-environment-get (environment name)
   "
 RETURN: The value of the unix environment variable named NAME.
 "
-  (CDR (ASSOC NAME ENVIRONMENT :TEST (FUNCTION STRING=)))
-  ) ;;UNIX-ENVIRONMENT-GET
+  (cdr (assoc name environment :test (function string=))))
 
 
 
@@ -203,46 +240,43 @@ RETURN: The value of the unix environment variable named NAME.
 ;;; IP ADDRESS MANIPULATION
 ;;;
 
-(DEFUN BYTEP (THING)
-  (AND (INTEGERP THING) (<= 0 THING) (<= THING 255))) ;;BYTEP
+(defun bytep (thing)
+  (and (integerp thing) (<= 0 thing) (<= thing 255)))
 
 
-(DEFUN IP-STRING-TO-ADDRESS (IP-ADDRESS)
-  (LET ((BYTES (SPLIT-STRING IP-ADDRESS ".")))
+(defun ip-string-to-address (ip-address)
+  (let ((bytes (split-string ip-address ".")))
     ;; NOTE: This SPLIT-STRING takes only a literal pattern!
-    (IF (= 4 (LENGTH BYTES))
-        (LET* ((A (READ-FROM-STRING (POP BYTES)))
-               (B (READ-FROM-STRING (POP BYTES)))
-               (C (READ-FROM-STRING (POP BYTES)))
-               (D (READ-FROM-STRING (POP BYTES))))
-          (IF (AND (BYTEP A) (BYTEP B) (BYTEP C) (BYTEP D))
-              (+ (* (+ (* (+ (* A 256) B) 256) C) 256) D)
-              NIL))
-        NIL))
-  ) ;;IP-STRING-TO-ADDRESS
+    (if (= 4 (length bytes))
+        (let* ((a (read-from-string (pop bytes)))
+               (b (read-from-string (pop bytes)))
+               (c (read-from-string (pop bytes)))
+               (d (read-from-string (pop bytes))))
+          (if (and (bytep a) (bytep b) (bytep c) (bytep d))
+              (+ (* (+ (* (+ (* a 256) b) 256) c) 256) d)
+              nil))
+        nil)))
 
 
-(DEFUN ADDRESS-IN-LAN-P (IP-STRING LAN-ADDRESS LAN-MASK)
-  (LET ((ADDRESS (IP-STRING-TO-ADDRESS IP-STRING)))
-    (SETQ LAN-ADDRESS (IP-STRING-TO-ADDRESS LAN-ADDRESS)
-          LAN-MASK    (IP-STRING-TO-ADDRESS LAN-MASK))
-    (AND ADDRESS
-         (= (LOGAND ADDRESS LAN-MASK)
-            (LOGAND    LAN-ADDRESS LAN-MASK))))
-  ) ;;ADDRESS-IN-LAN-P
+(defun address-in-lan-p (ip-string lan-address lan-mask)
+  (let ((address (ip-string-to-address ip-string)))
+    (setq lan-address (ip-string-to-address lan-address)
+          lan-mask    (ip-string-to-address lan-mask))
+    (and address
+         (= (logand address lan-mask)
+            (logand    lan-address lan-mask)))))
 
 
 
-(DEFUN ADDRESS-IN-SUBNETS-P (ADDRESS SUBNETS)
+(defun address-in-subnets-p (address subnets)
   "
 ADDRESS: A string containing an IP address.
 SUBNETS: A list of (''address''  ''mask'')  identifying the subnets.
 RETURN:  Whether ADDRESS is on some of the SUBNETS.
 "
-  (SOME (LAMBDA (SUBNET)
-          (ADDRESS-IN-LAN-P ADDRESS (FIRST SUBNET) (SECOND SUBNET)))
-        SUBNETS)
-  ) ;;ADDRESS-IN-SUBNETS-P
+  (some (lambda (subnet)
+          (address-in-lan-p address (first subnet) (second subnet)))
+        subnets))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -250,41 +284,41 @@ RETURN:  Whether ADDRESS is on some of the SUBNETS.
 ;;; Session-ID
 ;;;
 
-(DEFVAR *SESSION-COUNTER* 0)
+(defvar *session-counter* 0)
 
 (defgeneric make-session-id (program ip-string))
 (defgeneric check-session-id (program session-id ip-string))
 
-(defmethod MAKE-SESSION-ID ((htp hprogram) IP-STRING)
-  (LET ((STAMP   (+ (INCF *SESSION-COUNTER* (* 1000000 (GET-UNIVERSAL-TIME)))))
-        (ADDRESS (IP-STRING-TO-ADDRESS  IP-STRING)))
-    (FORMAT NIL "~16R-~D" STAMP ADDRESS)))
+(defmethod make-session-id ((htp hprogram) ip-string)
+  (let ((stamp   (+ (incf *session-counter* (* 1000000 (get-universal-time)))))
+        (address (ip-string-to-address  ip-string)))
+    (format nil "~16R-~D" stamp address)))
 
-(defmethod CHECK-SESSION-ID ((htp hprogram) SESSION-ID IP-STRING)
-  (LET* ((FIELDS (SPLIT-STRING SESSION-ID "-"))
-         (STAMP (LET ((*READ-BASE* 16)) (READ-FROM-STRING (FIRST FIELDS))))
-         (ADDRESS (IP-STRING-TO-ADDRESS  IP-STRING))
-         (CHECK-ID (FORMAT NIL "~16R-~D" STAMP ADDRESS)))
-    (STRING-EQUAL CHECK-ID SESSION-ID)))
-
-
-
-(defvar +COMMAND-PREFIX+ "COMMAND-"
-  "A prefix used for the INPUT names.") ;;+COMMAND-PREFIX+
+(defmethod check-session-id ((htp hprogram) session-id ip-string)
+  (let* ((fields (split-string session-id "-"))
+         (stamp (let ((*read-base* 16)) (read-from-string (first fields))))
+         (address (ip-string-to-address  ip-string))
+         (check-id (format nil "~16R-~D" stamp address)))
+    (string-equal check-id session-id)))
 
 
-(DEFUN GETCMDS (TRANS-DATA)
+
+(defvar +command-prefix+ "COMMAND-"
+  "A prefix used for the INPUT names.")
+
+
+(defun getcmds (trans-data)
   "
 RETURN:  A list of commands appearing in TRANS-DATA.
 NOTE:    Normaly, only one command is present. But if the GET url is hacked,
          zero or multiple commands may be present.
 "
-  (MAPCAN (LAMBDA (VAR-VAL)
-            (LET ((VAR (FIRST VAR-VAL)))
-              (IF (PREFIXP +COMMAND-PREFIX+ VAR)
-                  (LIST (SUBSEQ VAR (LENGTH +COMMAND-PREFIX+)))
-                  NIL)))
-          TRANS-DATA))
+  (mapcan (lambda (var-val)
+            (let ((var (first var-val)))
+              (if (prefixp +command-prefix+ var)
+                  (list (subseq var (length +command-prefix+)))
+                  nil)))
+          trans-data))
 
 
 
@@ -326,7 +360,7 @@ NOTE:    Normaly, only one command is present. But if the GET url is hacked,
 
 
                
-(DEFMETHOD PROCESS-TRANSACTION ((HTP HPROGRAM))
+(defmethod process-transaction ((htp hprogram))
   "
 DO:             Parses the CGI request and calls the REQUEST function passing
                 it the session-id, transaction-id and request data.
@@ -335,41 +369,41 @@ DO:             Parses the CGI request and calls the REQUEST function passing
 NOTE:           Begins with outputing the HTML header and ends with
                 the HTML footer.
 "
-  (FORMAT T "Content-type: text/html; charset=iso-8859-1~A~A" +CRLF+ +CRLF+)
+  (format t "Content-type: text/html; charset=iso-8859-1~A~A" +crlf+ +crlf+)
   (html:with-html-output (*standard-output*)
-    (HTML:DOCTYPE :STRICT
-      (HTML:HTML ()
-        (HTML:HEAD ()
-          (HTML:TITLE () (HTML:PCDATA "~A" (TITLE HTP)))
-          (HTML:META (:HTTP-EQUIV "Content-Type"
-                                  :CONTENT  "text/html; charset=iso-8859-1"))
-          (HTML:META (:NAME "generator"
-                            :CONTENT "COM.INFORMATIMAGO.COMMON-LISP.HTTP.HTRANS")))
+    (html:doctype :strict
+      (html:html ()
+        (html:head ()
+          (html:title () (html:pcdata "~A" (title htp)))
+          (html:meta (:http-equiv "Content-Type"
+                                  :content  "text/html; charset=iso-8859-1"))
+          (html:meta (:name "generator"
+                            :content "COM.INFORMATIMAGO.COMMON-LISP.HTTP.HTRANS")))
         (html:collect-element
-         (HTML:BODY*
-          (BODY-ATTRIBUTES HTP)
-          (LET* ((ENVIRONMENT    (ENVIRONMENT HTP))
-                 (REMOTE-ADDRESS (UNIX-ENVIRONMENT-GET ENVIRONMENT "REMOTE_ADDR"))
-                 (QUERY-STRING (UNIX-ENVIRONMENT-GET ENVIRONMENT "QUERY_STRING"))
-                 (QUERY-ARGS   (com.informatimago.common-lisp.http.hquery:QUERY-PARSE QUERY-STRING))
-                 (SESSION-ID   (OR (com.informatimago.common-lisp.http.hquery:QUERY-ARGUMENT "SESSION-ID" QUERY-ARGS)
-                                   (MAKE-SESSION-ID htp REMOTE-ADDRESS))))
+         (html:body*
+          (body-attributes htp)
+          (let* ((environment    (environment htp))
+                 (remote-address (unix-environment-get environment "REMOTE_ADDR"))
+                 (query-string (unix-environment-get environment "QUERY_STRING"))
+                 (query-args   (com.informatimago.common-lisp.http.hquery:query-parse query-string))
+                 (session-id   (or (com.informatimago.common-lisp.http.hquery:query-argument "SESSION-ID" query-args)
+                                   (make-session-id htp remote-address))))
             (list
-             (GENERATE-HTML-HEADER HTP SESSION-ID)
-             (COND
-               ((NOT (CHECK-SESSION-ID htp SESSION-ID REMOTE-ADDRESS))
-                (REFUSE-SESSION HTP SESSION-ID))
-               ((AND (OR (NOT (ALLOWED-NETS HTP))
-                         (ADDRESS-IN-SUBNETS-P REMOTE-ADDRESS (ALLOWED-NETS HTP)))
-                     (OR (NOT (REFUSED-NETS HTP))
-                         (NOT (ADDRESS-IN-SUBNETS-P REMOTE-ADDRESS
-                                                    (REFUSED-NETS HTP)))))
-                (PROCESS-REQUEST HTP SESSION-ID
-                                 (com.informatimago.common-lisp.http.hquery:QUERY-ARGUMENT "TRANSAC-ID" QUERY-ARGS)
-                                 QUERY-ARGS))
-               (T
-                (REFUSE-REMOTE HTP SESSION-ID REMOTE-ADDRESS)))
-             (GENERATE-HTML-FOOTER HTP SESSION-ID)))))))))
+             (generate-html-header htp session-id)
+             (cond
+               ((not (check-session-id htp session-id remote-address))
+                (refuse-session htp session-id))
+               ((and (or (not (allowed-nets htp))
+                         (address-in-subnets-p remote-address (allowed-nets htp)))
+                     (or (not (refused-nets htp))
+                         (not (address-in-subnets-p remote-address
+                                                    (refused-nets htp)))))
+                (process-request htp session-id
+                                 (com.informatimago.common-lisp.http.hquery:query-argument "TRANSAC-ID" query-args)
+                                 query-args))
+               (t
+                (refuse-remote htp session-id remote-address)))
+             (generate-html-footer htp session-id)))))))))
 
 
 
@@ -394,21 +428,21 @@ NOTE:           Begins with outputing the HTML header and ends with
 ;;           | (:RESET  command label     [:SIZE NUMBER])
 ;;           | (:IMAGE  command image-url [:SIZE NUMBER])
 
-(DEFUN KTYPE (TYPE)
-  (IF (LISTP TYPE) (FIRST TYPE) TYPE))
+(defun ktype (type)
+  (if (listp type) (first type) type))
 
 
 
-(DEFUN KSIZE (TYPE)
-  (IF (LISTP TYPE)
-      (CADR (MEMBER :SIZE (CDR TYPE)))
-      NIL))
+(defun ksize (type)
+  (if (listp type)
+      (cadr (member :size (cdr type)))
+      nil))
 
 
-(DEFUN KMAXLENGTH (TYPE)
-  (IF (LISTP TYPE)
-      (CADR (MEMBER :MAXLENGTH (CDR TYPE)))
-      NIL))
+(defun kmaxlength (type)
+  (if (listp type)
+      (cadr (member :maxlength (cdr type)))
+      nil))
 
 
 
@@ -416,206 +450,209 @@ NOTE:           Begins with outputing the HTML header and ends with
 ;;                       FIELD-TYPE
 
 
-(DEFUN GENERATE-MENU-ITEMS (ITEMS)
+(defun generate-menu-items (items)
   (mapcan
    (lambda (item)
-     (COND
-       ((SYMBOLP ITEM) '())
-       ((EQ :GROUP (FIRST ITEM))
-        (list (HTML:OPTGROUP* (list :LABEL (SECOND ITEM))
-                              (GENERATE-MENU-ITEMS (CDDR ITEM)))))
-       (T
-        (list (HTML:OPTION* (list :VALUE (FIRST ITEM)
-                                  (AND (MEMBER :SELECTED ITEM) :SELECTED))
-                            (list (HTML:PCDATA* "~A" (SECOND ITEM))))))))
+     (cond
+       ((symbolp item) '())
+       ((eq :group (first item))
+        (list (html:optgroup* (list :label (second item))
+                              (generate-menu-items (cddr item)))))
+       (t
+        (list (html:option* (list :value (first item)
+                                  (and (member :selected item) :selected))
+                            (list (html:pcdata* "~A" (second item))))))))
    items))
 
 
-(DEFUN GENERATE-MENU (NAME ITEMS)
-  (HTML:SELECT* (list :NAME NAME (WHEN (MEMBER :MULTIPLE ITEMS) :MULTIPLE))
-                (GENERATE-MENU-ITEMS ITEMS)))
+(defun generate-menu (name items)
+  (html:select* (list :name name (when (member :multiple items) :multiple))
+                (generate-menu-items items)))
 
 
-(DEFUN GENERATE-COMMAND-BUTTONS (COMMANDS)
+(defun generate-command-buttons (commands)
   (mapcar
-   (lambda (BUTTON)
-     (LET ((COMMAND (SECOND BUTTON))
-           (LABEL   (THIRD BUTTON))
-           (SIZE    (CADR (ASSOC :SIZE BUTTON))))
-       (CASE (KTYPE BUTTON)
-         (:SUBMIT
-          (HTML:INPUT* (list :NAME (FORMAT NIL "~A~A"
-                                           +COMMAND-PREFIX+ COMMAND)
-                             :TYPE "SUBMIT"
-                             :VALUE LABEL
-                             (AND SIZE :SIZE) SIZE)))
-         (:RESET
-          (HTML:INPUT* (list :NAME (FORMAT NIL "~A~A"
-                                           +COMMAND-PREFIX+ COMMAND)
-                             :TYPE "RESET"
-                             :VALUE LABEL
-                             (AND SIZE :SIZE) SIZE)))
-         (:IMAGE
-          (HTML:INPUT* (list :NAME (FORMAT NIL "~A~A"
-                                           +COMMAND-PREFIX+ COMMAND)
-                             :TYPE "IMAGE"
-                             :SRC LABEL
-                             (AND SIZE :SIZE)))))))
-   COMMANDS))
+   (lambda (button)
+     (let ((command (second button))
+           (label   (third button))
+           (size    (cadr (assoc :size button))))
+       (case (ktype button)
+         (:submit
+          (html:input* (list :name (format nil "~A~A"
+                                           +command-prefix+ command)
+                             :type "SUBMIT"
+                             :value label
+                             (and size :size) size)))
+         (:reset
+          (html:input* (list :name (format nil "~A~A"
+                                           +command-prefix+ command)
+                             :type "RESET"
+                             :value label
+                             (and size :size) size)))
+         (:image
+          (html:input* (list :name (format nil "~A~A"
+                                           +command-prefix+ command)
+                             :type "IMAGE"
+                             :src label
+                             (and size :size)))))))
+   commands))
 
 
-(DEFMETHOD SEND-REPLY ((HTP HPROGRAM) SESSION-ID TRANSAC-ID TITLE DATA COMMANDS)
-  (HTML:COMMENT "SEND-REPLY")
-  (HTML:COMMENT "DATA=~S" DATA)
-  (HTML:COMMENT "COMMANDS=~S" COMMANDS)
-  (HTML:H2 () (HTML:PCDATA "~A" TITLE))
-  (HTML:FORM (:METHOD "GET" :ACTION (ACTION HTP))
-    (LET ((HAS-COMMENTS
-           (SOME (LAMBDA (FIELD)
-                   (AND (FIFTH FIELD)
-                        (NOT (EQ :HIDDEN (KTYPE (THIRD FIELD))))))  DATA))
-          (HIDDEN-FIELDS  '())
-          (VISIBLE-FIELDS '()))
-      (HTML:DIV ()
-        (HTML:INPUT (:NAME "SESSION-ID"   :TYPE "HIDDEN" :VALUE SESSION-ID))
-        (HTML:INPUT (:NAME "TRANSAC-ID"   :TYPE "HIDDEN" :VALUE TRANSAC-ID))
-        (DOLIST (FIELD DATA)
-          (IF (EQ :HIDDEN (KTYPE (THIRD FIELD)))
-              (PUSH FIELD HIDDEN-FIELDS)
-              (PUSH FIELD VISIBLE-FIELDS)))
-        (SETQ HIDDEN-FIELDS (NREVERSE HIDDEN-FIELDS)
-              VISIBLE-FIELDS (NREVERSE VISIBLE-FIELDS))
-        (DOLIST (FIELD HIDDEN-FIELDS)
-          (LET ((NAME    (SECOND FIELD))
-                (VALUE   (FOURTH FIELD)))
-            (HTML:INPUT (:NAME NAME :TYPE 'HIDDEN (WHEN VALUE :VALUE) VALUE)))))
-      (HTML:TABLE (:SUMMARY (FORMAT NIL "SESSION ~A, TRANSACTION ~A"
-                                    SESSION-ID TRANSAC-ID)
-                            :WIDTH "95%")
-        (DOLIST (FIELD VISIBLE-FIELDS)
-          (LET ((TITLE   (FIRST  FIELD))
-                (NAME    (SECOND FIELD))
-                (TYPE    (THIRD  FIELD))
-                (VALUE   (FOURTH FIELD))
-                (COMMENT (FIFTH  FIELD)))
-            (HTML:TR (:VALIGN "TOP")
-              (HTML:TD ()
-                (IF TITLE
-                    (HTML:PCDATA "~A" TITLE)
-                    (FORMAT T "&nbsp;"))) ;; don't escape &nbsp;!
+(defmethod send-reply ((htp hprogram) session-id transac-id title data commands)
+  (html:comment "SEND-REPLY")
+  (html:comment "DATA=~S" data)
+  (html:comment "COMMANDS=~S" commands)
+  (html:h2 () (html:pcdata "~A" title))
+  (html:form (:method "GET" :action (action htp))
+    (let ((has-comments
+           (some (lambda (field)
+                   (and (fifth field)
+                        (not (eq :hidden (ktype (third field))))))  data))
+          (hidden-fields  '())
+          (visible-fields '()))
+      (html:div ()
+        (html:input (:name "SESSION-ID"   :type "HIDDEN" :value session-id))
+        (html:input (:name "TRANSAC-ID"   :type "HIDDEN" :value transac-id))
+        (dolist (field data)
+          (if (eq :hidden (ktype (third field)))
+              (push field hidden-fields)
+              (push field visible-fields)))
+        (setq hidden-fields (nreverse hidden-fields)
+              visible-fields (nreverse visible-fields))
+        (dolist (field hidden-fields)
+          (let ((name    (second field))
+                (value   (fourth field)))
+            (html:input (:name name :type 'hidden (when value :value) value)))))
+      (html:table (:summary (format nil "SESSION ~A, TRANSACTION ~A"
+                                    session-id transac-id)
+                            :width "95%")
+        (dolist (field visible-fields)
+          (let ((title   (first  field))
+                (name    (second field))
+                (type    (third  field))
+                (value   (fourth field))
+                (comment (fifth  field)))
+            (html:tr (:valign "TOP")
+              (html:td ()
+                (if title
+                    (html:pcdata "~A" title)
+                    (format t "&nbsp;"))) ;; don't escape &nbsp;!
               ;; TODO: We need an HTML:PRINTQ or something...
-              (HTML:TD ()
-                (CASE (KTYPE TYPE)
-                  (:LABEL
-                    (HTML:PCDATA "~A" VALUE))
-                  ((:TEXT :PASSWORD)
-                   (LET ((ML (KMAXLENGTH TYPE))
-                         (SZ (KSIZE TYPE)))
-                     (HTML:INPUT
-                         (list :NAME NAME
-                               :TYPE (IF (EQ (KTYPE TYPE) :TEXT)
+              (html:td ()
+                (case (ktype type)
+                  (:label
+                    (html:pcdata "~A" value))
+                  ((:text :password)
+                   (let ((ml (kmaxlength type))
+                         (sz (ksize type)))
+                     (html:input
+                         (list :name name
+                               :type (if (eq (ktype type) :text)
                                          "TEXT" "PASSWORD")
-                               (WHEN ML :MAXLENGTH) ML
-                               (WHEN SZ :SIZE)      SZ
-                               (WHEN VALUE :VALUE)  VALUE))))
-                  (:TEXTAREA (ERROR ":TEXTAREA NOT IMPLEMENTED IN DISPLAY."))
-                  (:FILE     (ERROR ":FILE NOT IMPLEMENTED IN DISPLAY."))
-                  (:CHECKBOX
-                   (HTML:INPUT
-                       (list :NAME NAME
-                             :TYPE "CHECKBOX"
-                             :VALUE (OR VALUE "ON")
-                             (AND (EQ :CHECKED (THIRD TYPE)) :CHECKED)))
-                   (HTML:PCDATA "~A" (SECOND TYPE)))
-                  (:RADIO
-                   (LET ((VERTICAL (MEMBER :VERTICAL TYPE))
-                         (TITLES (CDR TYPE)))
-                     (WHEN (SYMBOLP (CAR TITLES)) (POP TITLES))
-                     (IF VERTICAL
-                         (HTML:TABLE (:SUMMARY "radio buttons")
-                           (DOLIST (TITLE TITLES)
-                             (HTML:TR ()
-                               (HTML:TD ()
-                                 (HTML:INPUT
-                                     (list :NAME NAME
-                                           :TYPE "RADIO"
-                                           :VALUE (OR (FIRST TITLE) "ON")
-                                           (AND (MEMBER :CHECKED TITLE)
-                                                :CHECKED)))
-                                 (HTML:PCDATA "~A" (SECOND TITLE))))))
-                         (DOLIST (TITLE TITLES)
-                           (HTML:INPUT
-                               (list :NAME NAME
-                                     :TYPE "RADIO"
-                                     :VALUE (OR (FIRST TITLE) "ON")
-                                     (AND (MEMBER :CHECKED TITLE) :CHECKED)))
-                           (HTML:PCDATA "~A " (SECOND TITLE))))))
-                  (:MENU (html:collect-element
-                          (GENERATE-MENU NAME TYPE)))))
-              (WHEN HAS-COMMENTS
-                (HTML:TD ()
-                  (IF COMMENT
-                      (HTML:PCDATA "~A" COMMENT)
+                               (when ml :maxlength) ml
+                               (when sz :size)      sz
+                               (when value :value)  value))))
+                  (:textarea (error ":TEXTAREA NOT IMPLEMENTED IN DISPLAY."))
+                  (:file     (error ":FILE NOT IMPLEMENTED IN DISPLAY."))
+                  (:checkbox
+                   (html:input
+                       (list :name name
+                             :type "CHECKBOX"
+                             :value (or value "ON")
+                             (and (eq :checked (third type)) :checked)))
+                   (html:pcdata "~A" (second type)))
+                  (:radio
+                   (let ((vertical (member :vertical type))
+                         (titles (cdr type)))
+                     (when (symbolp (car titles)) (pop titles))
+                     (if vertical
+                         (html:table (:summary "radio buttons")
+                           (dolist (title titles)
+                             (html:tr ()
+                               (html:td ()
+                                 (html:input
+                                     (list :name name
+                                           :type "RADIO"
+                                           :value (or (first title) "ON")
+                                           (and (member :checked title)
+                                                :checked)))
+                                 (html:pcdata "~A" (second title))))))
+                         (dolist (title titles)
+                           (html:input
+                               (list :name name
+                                     :type "RADIO"
+                                     :value (or (first title) "ON")
+                                     (and (member :checked title) :checked)))
+                           (html:pcdata "~A " (second title))))))
+                  (:menu (html:collect-element
+                          (generate-menu name type)))))
+              (when has-comments
+                (html:td ()
+                  (if comment
+                      (html:pcdata "~A" comment)
                       (html:html-string "&nbsp;")))))))
-        (HTML:TR ()
-          (HTML:TD (:COLSPAN (IF HAS-COMMENTS 3 2))
+        (html:tr ()
+          (html:td (:colspan (if has-comments 3 2))
             (html:p ()
               (html:collect-element
-               (GENERATE-COMMAND-BUTTONS COMMANDS)))))))))
+               (generate-command-buttons commands)))))))))
 
 
-(DEFMETHOD SEND-TABLE ((HTP HPROGRAM) SESSION-ID TRANSAC-ID TITLE
-                       ROW-DESC DATA COMMANDS)
-  (HTML:COMMENT "SEND-TABLE")
-  (HTML:COMMENT "ROW-DESC=~S" ROW-DESC)
-  (HTML:COMMENT "DATA=~S" DATA)
-  (HTML:COMMENT "COMMANDS=~S" COMMANDS)
-  (HTML:H2 () (HTML:PCDATA "~A" TITLE))
-  (HTML:TABLE (:SUMMARY TITLE :WIDTH "95%")
-    (MAPC
-     (LAMBDA (ROW-DATA)
+(defmethod send-table ((htp hprogram) session-id transac-id title
+                       row-desc data commands)
+    "
+DO:       Sends a table.
+"
+  (html:comment "SEND-TABLE")
+  (html:comment "ROW-DESC=~S" row-desc)
+  (html:comment "DATA=~S" data)
+  (html:comment "COMMANDS=~S" commands)
+  (html:h2 () (html:pcdata "~A" title))
+  (html:table (:summary title :width "95%")
+    (mapc
+     (lambda (row-data)
        ;; interpret a row
-       (HTML:TR (:VALIGN "TOP")
-         (MAPC
-          (LAMBDA (COL-DESC)
-            (CASE (POP COL-DESC)
-              (:LABEL
-                (HTML:TD ()
-                  (HTML:PCDATA "~A" (NTH (POP COL-DESC) ROW-DATA))))
-              (:SUBMIT
-               (LET ((COMMAND (POP COL-DESC))
-                     (LABEL   (POP COL-DESC))
-                     (SIZE    (WHEN (EQ :SIZE (CAR COL-DESC))
-                                (POP COL-DESC) (POP COL-DESC)))
-                     (HFIELDS COL-DESC))
-                 (HTML:TD ()
-                   (HTML:FORM (:METHOD "GET" :ACTION (ACTION HTP))
-                     (HTML:DIV ()
-                       (HTML:INPUT (list :NAME "SESSION-ID"
-                                         :TYPE "HIDDEN" :VALUE SESSION-ID))
-                       (HTML:INPUT (list :NAME "TRANSAC-ID"
-                                         :TYPE "HIDDEN" :VALUE TRANSAC-ID))
-                       (HTML:INPUT
+       (html:tr (:valign "TOP")
+         (mapc
+          (lambda (col-desc)
+            (case (pop col-desc)
+              (:label
+                (html:td ()
+                  (html:pcdata "~A" (nth (pop col-desc) row-data))))
+              (:submit
+               (let ((command (pop col-desc))
+                     (label   (pop col-desc))
+                     (size    (when (eq :size (car col-desc))
+                                (pop col-desc) (pop col-desc)))
+                     (hfields col-desc))
+                 (html:td ()
+                   (html:form (:method "GET" :action (action htp))
+                     (html:div ()
+                       (html:input (list :name "SESSION-ID"
+                                         :type "HIDDEN" :value session-id))
+                       (html:input (list :name "TRANSAC-ID"
+                                         :type "HIDDEN" :value transac-id))
+                       (html:input
                            (list
-                            :NAME (FORMAT NIL "~A~A" +COMMAND-PREFIX+ COMMAND)
-                            :TYPE "SUBMIT" :VALUE LABEL
-                            (AND SIZE :SIZE) SIZE))
-                       (MAPC
-                        (LAMBDA (HFIELD)
-                          (HTML:INPUT
-                              (list :NAME (FIRST HFIELD)
-                                    :TYPE "HIDDEN"
-                                    :VALUE (NTH (SECOND HFIELD) ROW-DATA))))
-                        HFIELDS))))))))
-          ROW-DESC)))
-     DATA))
-  (HTML:FORM (:METHOD "GET" :ACTION (ACTION HTP))
-    (HTML:P ()
-      (HTML:INPUT (list :NAME "SESSION-ID"
-                         :TYPE "HIDDEN" :VALUE SESSION-ID))
-      (HTML:INPUT (list :NAME "TRANSAC-ID"
-                         :TYPE "HIDDEN" :VALUE TRANSAC-ID))
-      (html:collect-element (GENERATE-COMMAND-BUTTONS COMMANDS)))))
+                            :name (format nil "~A~A" +command-prefix+ command)
+                            :type "SUBMIT" :value label
+                            (and size :size) size))
+                       (mapc
+                        (lambda (hfield)
+                          (html:input
+                              (list :name (first hfield)
+                                    :type "HIDDEN"
+                                    :value (nth (second hfield) row-data))))
+                        hfields))))))))
+          row-desc)))
+     data))
+  (html:form (:method "GET" :action (action htp))
+    (html:p ()
+      (html:input (list :name "SESSION-ID"
+                         :type "HIDDEN" :value session-id))
+      (html:input (list :name "TRANSAC-ID"
+                         :type "HIDDEN" :value transac-id))
+      (html:collect-element (generate-command-buttons commands)))))
 
 
 ;;;; THE END ;;;;

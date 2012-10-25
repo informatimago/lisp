@@ -6,7 +6,7 @@
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    This packages draws ASCIi art cons cell diagrams.
+;;;;    This packages draws ASCII art cons cell diagrams.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
@@ -16,194 +16,213 @@
 ;;;;    2004-08-14 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2004 - 2005
+;;;;    Copyright Pascal J. Bourguignon 2004 - 2012
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.PICTURE.CONS-TO-ASCII"
-  (:USE "COMMON-LISP"
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.PICTURE.CONS-TO-ASCII"
+  (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
         "COM.INFORMATIMAGO.COMMON-LISP.PICTURE.PICTURE")
-  (:EXPORT "PRINT-IDENTIFIED-CONSES" "PRINT-CONSES" "DRAW-CELL" "DRAW-LIST")
-  (:DOCUMENTATION
-   "This packages draws ASCII art cons cell diagrams.
+  (:export "PRINT-IDENTIFIED-CONSES" "PRINT-CONSES" "DRAW-CELL" "DRAW-LIST")
+  (:documentation
+   "
 
-    Copyright Pascal J. Bourguignon 2004 - 2005
-    This package is provided under the GNU General Public License.
-    See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.PICTURE.CONS-TO-ASCII")
+This packages draws ASCII art cons cell diagrams.
 
 
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2004 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see http://www.gnu.org/licenses/
+"))
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.PICTURE.CONS-TO-ASCII")
 
 
-(DEFGENERIC SIZE-CELL (PICT CELL &OPTIONAL MAX-WIDTH))
-(DEFGENERIC DRAW-CONS (PICT X Y CELL))
-(DEFGENERIC DRAW-CELL (PICT X Y CELL))
-(DEFGENERIC DRAW-DECORATED-CELL (PICT X Y DEC))
-
-(DEFVAR +CELL-WIDTH+ 12 "+---+---+")
 
 
-(DEFMETHOD SIZE-CELL ((PICT PICTURE) CELL &OPTIONAL (MAX-WIDTH (WIDTH PICT)))
-  (COND
-    ((NULL CELL) (VALUES :ABSENT 0 0))
-    ((ATOM CELL) (LET ((REP (FORMAT NIL "~S" CELL)))
-                   (MULTIPLE-VALUE-BIND (L B W H) (SIZE-STRING PICT REP)
-                     (DECLARE (IGNORE L B))
-                     (VALUES :HORIZONTAL (+ W 4) (+ H 2)))))
-    (T
+(defgeneric size-cell (pict cell &optional max-width))
+(defgeneric draw-cons (pict x y cell))
+(defgeneric draw-cell (pict x y cell)
+  (:documentation "Draws the CELL in the picture PICT, at coordinates X,Y"))
+(defgeneric draw-decorated-cell (pict x y dec))
+
+(defvar +cell-width+ 12 "+---+---+")
+
+
+(defmethod size-cell ((pict picture) cell &optional (max-width (width pict)))
+  (cond
+    ((null cell) (values :absent 0 0))
+    ((atom cell) (let ((rep (format nil "~S" cell)))
+                   (multiple-value-bind (l b w h) (size-string pict rep)
+                     (declare (ignore l b))
+                     (values :horizontal (+ w 4) (+ h 2)))))
+    (t
      ;; first compute horizontal layout
      ;; if too large, then compute a vertical layout (could still be too large).
-     (LET ((WIDTH  0)
-           (HEIGHT 0)
-           (DISPO))
-       (WHEN (<= (LENGTH CELL) (TRUNCATE MAX-WIDTH +CELL-WIDTH+))
+     (let ((width  0)
+           (height 0)
+           (dispo))
+       (when (<= (length cell) (truncate max-width +cell-width+))
          ;; horizontal
-         (SETF DISPO :HORIZONTAL)
-         (DO  ((ITEMS CELL (CDR ITEMS))
-               (I 0 (1+ I)))
-              ((NULL ITEMS))
-           (MULTIPLE-VALUE-BIND (D W H) (SIZE-CELL PICT (CAR ITEMS))
-             (DECLARE (IGNORE D))
-             (SETF WIDTH  (MAX WIDTH  (+ W (* I +CELL-WIDTH+))))
-             (SETF HEIGHT (MAX HEIGHT (+ H 5))))))
-       (WHEN (<= (WIDTH PICT) WIDTH)
+         (setf dispo :horizontal)
+         (do  ((items cell (cdr items))
+               (i 0 (1+ i)))
+              ((null items))
+           (multiple-value-bind (d w h) (size-cell pict (car items))
+             (declare (ignore d))
+             (setf width  (max width  (+ w (* i +cell-width+))))
+             (setf height (max height (+ h 5))))))
+       (when (<= (width pict) width)
          ;; vertical
          ;; (setf dispo :vertical)
          )
-       (VALUES DISPO WIDTH HEIGHT))))) ;;SIZE-CELL
+       (values dispo width height))))) ;;SIZE-CELL
 
 
-(DEFVAR +NONE+ (CONS NIL NIL))
+(defvar +none+ (cons nil nil))
 
 
-(DEFCLASS DECORATION ()
-  ((W :ACCESSOR W :INITARG :W :INITFORM 0 :TYPE INTEGER)
-   (H :ACCESSOR H :INITARG :H :INITFORM 0 :TYPE INTEGER)
-   (X :ACCESSOR X :INITARG :X :INITFORM 0 :TYPE INTEGER)
-   (Y :ACCESSOR Y :INITARG :Y :INITFORM 0 :TYPE INTEGER))) ;;DECORATION
+(defclass decoration ()
+  ((w :accessor w :initarg :w :initform 0 :type integer)
+   (h :accessor h :initarg :h :initform 0 :type integer)
+   (x :accessor x :initarg :x :initform 0 :type integer)
+   (y :accessor y :initarg :y :initform 0 :type integer))) ;;DECORATION
 
 
-(DEFCLASS CONS-DECORATION (DECORATION)
-  ((CELL :ACCESSOR CELL-VALUE :INITARG :CELL :INITFORM +NONE+ :TYPE CONS)
-   (CAR  :ACCESSOR CAR-DECO  :INITARG :CAR  :INITFORM NIL    
-         :TYPE (OR NULL DECORATION))
-   (CDR  :ACCESSOR CDR-DECO  :INITARG :CDR  :INITFORM NIL
-         :TYPE (OR NULL DECORATION)))) ;;CONS-DECORATION
+(defclass cons-decoration (decoration)
+  ((cell :accessor cell-value :initarg :cell :initform +none+ :type cons)
+   (car  :accessor car-deco  :initarg :car  :initform nil    
+         :type (or null decoration))
+   (cdr  :accessor cdr-deco  :initarg :cdr  :initform nil
+         :type (or null decoration)))) ;;CONS-DECORATION
 
 
-(DEFMETHOD PRINT-OBJECT ((SELF CONS-DECORATION) STREAM)
-  (PRINT (LIST :CONS-DECORATION (CELL-VALUE SELF)
-               :CAR (CAR-DECO SELF) :CDR (CDR-DECO SELF)
-               :W (W SELF) :H (H SELF) :X (X SELF) :Y (Y SELF)) STREAM))
+(defmethod print-object ((self cons-decoration) stream)
+  (print (list :cons-decoration (cell-value self)
+               :car (car-deco self) :cdr (cdr-deco self)
+               :w (w self) :h (h self) :x (x self) :y (y self)) stream))
 
 
-(DEFCLASS ATOM-DECORATION (DECORATION)
-  ((ATOM :ACCESSOR ATOM-VALUE :INITARG :ATOM :INITFORM  NIL    :TYPE ATOM)))
+(defclass atom-decoration (decoration)
+  ((atom :accessor atom-value :initarg :atom :initform  nil    :type atom)))
 
 
-(DEFMETHOD PRINT-OBJECT ((SELF ATOM-DECORATION) STREAM)
-  (PRINT (LIST :ATOM-DECORATION (ATOM-VALUE SELF)
-               :W (W SELF) :H (H SELF) :X (X SELF) :Y (Y SELF)) STREAM))
+(defmethod print-object ((self atom-decoration) stream)
+  (print (list :atom-decoration (atom-value self)
+               :w (w self) :h (h self) :x (x self) :y (y self)) stream))
 
 
-(DEFVAR +PICTURE-INSTANCE+ (MAKE-INSTANCE 'PICTURE :WIDTH 1 :HEIGHT 1))
-(DEFVAR +NIL-DECORATION+   (MAKE-INSTANCE 'ATOM-DECORATION))
+(defvar +picture-instance+ (make-instance 'picture :width 1 :height 1))
+(defvar +nil-decoration+   (make-instance 'atom-decoration))
 
 
-(DEFMETHOD INITIALIZE-INSTANCE ((SELF ATOM-DECORATION) &REST ARGS)
-  (DECLARE (IGNORE ARGS))
-  (CALL-NEXT-METHOD)
-  (MULTIPLE-VALUE-BIND (D W H) (SIZE-CELL +PICTURE-INSTANCE+ (ATOM-VALUE SELF))
-    (DECLARE (IGNORE D))
-    (SETF (W SELF) W (H SELF) H))
-  SELF) ;;INITIALIZE-INSTANCE
+(defmethod initialize-instance ((self atom-decoration) &rest args)
+  (declare (ignore args))
+  (call-next-method)
+  (multiple-value-bind (d w h) (size-cell +picture-instance+ (atom-value self))
+    (declare (ignore d))
+    (setf (w self) w (h self) h))
+  self) ;;INITIALIZE-INSTANCE
 
   
-(DEFUN DECORATE (CELL)
+(defun decorate (cell)
   "
 DOES:    Converts the list CELL to a decorated list.
          The building of the decoration is done by the make-decoration
          function.
 RETURN:  The decorated list.
 "
-  (COND
-    ((NULL  CELL) +NIL-DECORATION+)
-    ((CONSP CELL)
-     (LET ((DEC (MAKE-INSTANCE 'CONS-DECORATION
-                  :CELL CELL
-                  :CAR (DECORATE (CAR CELL))
-                  :CDR (DECORATE (CDR CELL)))))
+  (cond
+    ((null  cell) +nil-decoration+)
+    ((consp cell)
+     (let ((dec (make-instance 'cons-decoration
+                  :cell cell
+                  :car (decorate (car cell))
+                  :cdr (decorate (cdr cell)))))
        ;; Coordinates:
        ;;   #---+---+     
        ;;   $NIL| * |-->      # = (0,0) ;  $ = (0,-1)
        ;;   +---+---+     
-       (WHEN (CDR CELL)
+       (when (cdr cell)
          ;; let's compute relative coordinates of (cdr cell)
-         (SETF (X (CDR-DECO DEC)) 12
-               (Y (CDR-DECO DEC)) 0))
-       (WHEN (CAR CELL)
+         (setf (x (cdr-deco dec)) 12
+               (y (cdr-deco dec)) 0))
+       (when (car cell)
          ;; slightly more complex: if width of (car cell) is > 12
          ;; then move it down under the (cdr cell), unless it's null.
-         (IF (OR (NULL (CDR CELL)) (<= (W (CAR-DECO DEC)) 12))
+         (if (or (null (cdr cell)) (<= (w (car-deco dec)) 12))
              ;; no problem:
-             (SETF (X (CAR-DECO DEC)) 0
-                   (Y (CAR-DECO DEC)) -5)
-             (SETF (X (CAR-DECO DEC)) 0
-                   (Y (CAR-DECO DEC)) (MIN -5 (- (Y (CDR-DECO DEC))
-                                                 (H (CDR-DECO DEC))
+             (setf (x (car-deco dec)) 0
+                   (y (car-deco dec)) -5)
+             (setf (x (car-deco dec)) 0
+                   (y (car-deco dec)) (min -5 (- (y (cdr-deco dec))
+                                                 (h (cdr-deco dec))
                                                  1)))))
-       (SETF (W DEC) (IF (NULL (CDR CELL))
-                         (MAX (+ (X (CAR-DECO DEC)) (W (CAR-DECO DEC))) 9)
-                         (MAX (+ (X (CAR-DECO DEC)) (W (CAR-DECO DEC)))
-                              (+ (X (CDR-DECO DEC)) (W (CDR-DECO DEC)))))
-             (H DEC) (IF (NULL (CAR CELL))
-                         (MAX (- (H (CDR-DECO DEC)) (Y (CDR-DECO DEC))) 3)
-                         (MAX (- (H (CAR-DECO DEC)) (Y (CAR-DECO DEC)))
-                              (- (H (CDR-DECO DEC)) (Y (CDR-DECO DEC))))))
-       DEC))
-    (T (MAKE-INSTANCE 'ATOM-DECORATION :ATOM CELL)))) ;;DECORATE
+       (setf (w dec) (if (null (cdr cell))
+                         (max (+ (x (car-deco dec)) (w (car-deco dec))) 9)
+                         (max (+ (x (car-deco dec)) (w (car-deco dec)))
+                              (+ (x (cdr-deco dec)) (w (cdr-deco dec)))))
+             (h dec) (if (null (car cell))
+                         (max (- (h (cdr-deco dec)) (y (cdr-deco dec))) 3)
+                         (max (- (h (car-deco dec)) (y (car-deco dec)))
+                              (- (h (cdr-deco dec)) (y (cdr-deco dec))))))
+       dec))
+    (t (make-instance 'atom-decoration :atom cell)))) ;;DECORATE
 
 
-(DEFMETHOD DRAW-CONS ((PICT PICTURE) X Y CELL)
+(defmethod draw-cons ((pict picture) x y cell)
   ;; @---+---+
   ;; | * |NIL|    @ = (0,0)
   ;; +---+---+
-  (FRAME-RECT PICT    X    (- Y 2) 5 3)
-  (FRAME-RECT PICT (+ X 4) (- Y 2) 5 3)
-  (DRAW-STRING PICT (+ X 1) (1- Y) (IF (CAR CELL) " * " "NIL"))
-  (DRAW-STRING PICT (+ X 5) (1- Y) (IF (CDR CELL) " * " "NIL"))
-  PICT) ;;DRAW-CONS
+  (frame-rect pict    x    (- y 2) 5 3)
+  (frame-rect pict (+ x 4) (- y 2) 5 3)
+  (draw-string pict (+ x 1) (1- y) (if (car cell) " * " "NIL"))
+  (draw-string pict (+ x 5) (1- y) (if (cdr cell) " * " "NIL"))
+  pict) ;;DRAW-CONS
 
 
-(DEFMETHOD DRAW-CELL ((PICT PICTURE) X Y CELL)
-  (DRAW-DECORATED-CELL PICT X Y  (DECORATE CELL)))
+(defmethod draw-cell ((pict picture) x y cell)
+  (draw-decorated-cell pict x y  (decorate cell)))
 
 
-(DEFMETHOD DRAW-DECORATED-CELL ((PICT PICTURE) X Y (DEC ATOM-DECORATION))
-  (LET ((REP (FORMAT NIL "~S" (ATOM-VALUE DEC))))
-    (FRAME-RECT PICT X (- Y (H DEC) -1) (W DEC) (H DEC))
-    (DRAW-STRING PICT (+ X 2) (- Y 1) REP)))
+(defmethod draw-decorated-cell ((pict picture) x y (dec atom-decoration))
+  (let ((rep (format nil "~S" (atom-value dec))))
+    (frame-rect pict x (- y (h dec) -1) (w dec) (h dec))
+    (draw-string pict (+ x 2) (- y 1) rep)))
 
 
-(DEFMETHOD DRAW-DECORATED-CELL ((PICT PICTURE) X Y (DEC CONS-DECORATION))
+(defmethod draw-decorated-cell ((pict picture) x y (dec cons-decoration))
   ;; +---+---+   +---+---+   +---+---+   +---+---+
   ;; | * | * |-->| * | * |-->| * | * |-->| * |NIL|
   ;; +---+---+   +---+---+   +---+---+   +---+---+
@@ -218,37 +237,79 @@ RETURN:  The decorated list.
   ;;                         +--------------------+
   ;;(if (<= (length cell) (truncate (width pict) +cell-width+))
   ;; horizontal
-  (DRAW-CONS PICT X Y (CELL-VALUE DEC))
-  (WHEN (CDR (CELL-VALUE DEC))
-    (DRAW-ARROW PICT (+ X 9) (- Y 1) 2 0)
-    (DRAW-DECORATED-CELL PICT
-                         (+ X (X (CDR-DECO DEC)))
-                         (+ Y (Y (CDR-DECO DEC)))
-                         (CDR-DECO DEC)))
-  (WHEN (CAR (CELL-VALUE DEC))
-    (DRAW-ARROW PICT (+ X 2) (- Y 3) 0 (+ (Y (CAR-DECO DEC)) 4))
-    (DRAW-DECORATED-CELL PICT
-                         (+ X (X (CAR-DECO DEC)))
-                         (+ Y (Y (CAR-DECO DEC))) 
-                         (CAR-DECO DEC)))
+  (draw-cons pict x y (cell-value dec))
+  (when (cdr (cell-value dec))
+    (draw-arrow pict (+ x 9) (- y 1) 2 0)
+    (draw-decorated-cell pict
+                         (+ x (x (cdr-deco dec)))
+                         (+ y (y (cdr-deco dec)))
+                         (cdr-deco dec)))
+  (when (car (cell-value dec))
+    (draw-arrow pict (+ x 2) (- y 3) 0 (+ (y (car-deco dec)) 4))
+    (draw-decorated-cell pict
+                         (+ x (x (car-deco dec)))
+                         (+ y (y (car-deco dec))) 
+                         (car-deco dec)))
   ) ;;DRAW-DECORATED-CELL
 
 
-(DEFUN DRAW-LIST (LIST &KEY (TITLE ""))
-  (LET* ((DEC (DECORATE LIST))
-         (TW 0)
-         (TH 0)
-         (PIC))
-    (MULTIPLE-VALUE-SETQ (TW TH) (SIZE-STRING +PICTURE-INSTANCE+ TITLE))
-    (SETF TH (ABS TH))
-    (SETF PIC (MAKE-INSTANCE 'PICTURE 
-                :WIDTH  (+ 4 (MAX TW (W DEC)))
-                :HEIGHT (+ 4 TH (H DEC))))
-    (FRAME-RECT PIC 0 0 (WIDTH PIC) (HEIGHT PIC))
-    (WHEN TITLE
-      (DRAW-STRING PIC 2 (- (HEIGHT PIC) 2) TITLE))
-    (DRAW-DECORATED-CELL PIC 2 (- (HEIGHT PIC) 4 TH) DEC)
-    PIC)) ;;DRAW-LIST
+(defun draw-list (list &key (title (format nil "~(~S~)" list)))
+  "
+DO:         Draws the LIST structure.
+TITLE:      An alternative title.
+RETURN:     A string containing the drawing.
+EXAMPLE:    (draw-list '(if (< a b) (decf b a) (decf a b)))
+            returns: 
+           \"+-----------------------------------------------------------------------+
+            | (if (< a b) (decf b a) (decf a b))                                    |
+            |                                                                       |
+            | +---+---+   +---+---+   +---+---+   +---+---+                         |
+            | | * | * |-->| * | * |-->| * | * |-->| * |NIL|                         |
+            | +---+---+   +---+---+   +---+---+   +---+---+                         |
+            |   |           |           |           |                               |
+            |   v           |           |           v                               |
+            | +----+        |           |         +---+---+   +---+---+   +---+---+ |
+            | | if |        |           |         | * | * |-->| * | * |-->| * |NIL| |
+            | +----+        |           |         +---+---+   +---+---+   +---+---+ |
+            |               |           |           |           |           |       |
+            |               |           |           v           v           v       |
+            |               |           |         +------+    +---+       +---+     |
+            |               |           |         | decf |    | a |       | b |     |
+            |               |           |         +------+    +---+       +---+     |
+            |               |           v                                           |
+            |               |         +---+---+   +---+---+   +---+---+             |
+            |               |         | * | * |-->| * | * |-->| * |NIL|             |
+            |               |         +---+---+   +---+---+   +---+---+             |
+            |               |           |           |           |                   |
+            |               |           v           v           v                   |
+            |               |         +------+    +---+       +---+                 |
+            |               |         | decf |    | b |       | a |                 |
+            |               |         +------+    +---+       +---+                 |
+            |               v                                                       |
+            |             +---+---+   +---+---+   +---+---+                         |
+            |             | * | * |-->| * | * |-->| * |NIL|                         |
+            |             +---+---+   +---+---+   +---+---+                         |
+            |               |           |           |                               |
+            |               v           v           v                               |
+            |             +---+       +---+       +---+                             |
+            |             | < |       | a |       | b |                             |
+            |             +---+       +---+       +---+                             |
+            +-----------------------------------------------------------------------+\"
+"
+  (let* ((dec (decorate list))
+         (tw 0)
+         (th 0)
+         (pic))
+    (multiple-value-setq (tw th) (size-string +picture-instance+ title))
+    (setf th (abs th))
+    (setf pic (make-instance 'picture 
+                :width  (+ 4 (max tw (w dec)))
+                :height (+ 4 th (h dec))))
+    (frame-rect pic 0 0 (width pic) (height pic))
+    (when title
+      (draw-string pic 2 (- (height pic) 2) title))
+    (draw-decorated-cell pic 2 (- (height pic) 4 th) dec)
+    pic)) ;;DRAW-LIST
 
 
 (defun transpose-tree (tree)
@@ -311,7 +372,15 @@ RETURN:  The decorated list.
 
 
 (defun print-conses (tree &optional (stream *standard-output*))
-  ;; WARNING: doesn't handle circles nor identify EQ subtrees.
+  "
+DO:         Print the TREE with all cons cells as dotted pairs.
+TREE:       A sexp.
+STREAM:     The output stream (default: *STANDARD-OUTPUT*)
+WARNING:    doesn't handle circles nor identify EQ subtrees.
+EXAMPLE:    (print-conses '(a b c d))
+            prints:
+            (a  . (b  . (c  . (d  . ()))))
+"
   (cond
     ((null tree) (princ "()"))
     ((atom tree)  (princ tree stream) (princ " " stream))
@@ -339,7 +408,18 @@ RETURN:  The decorated list.
     (t (incf (gethash tree table 0))
        (find-nodes (cdr tree) (find-nodes (car tree) table)))))
 
+
 (defun print-identified-conses (tree  &optional (stream *standard-output*))
+    "
+DO:      Print the TREE with all cons cells identified with a #n= notation.
+TREE:    A sexp.
+STREAM:  The output stream (default: *STANDARD-OUTPUT*)
+NOTE:    Handles circles in the cons structure, but not thru the other
+         atoms (vectors, structures, objects).
+EXAMPLE: (print-identified-conses '((a . b) #1=(c . d) (e . #1#)))
+         prints:
+         ((a . b) . (#1=(c . d) . ((e . #1# ) . ())))
+"
   (let ((table (find-nodes tree (make-hash-table :test (function eq))))
         (index 0))
     (maphash (lambda (k v)
@@ -375,4 +455,4 @@ RETURN:  The decorated list.
 #1=(#2=(A) (B C A #2# #1#) . #1#)                                      
 ||#
 
-;;;; cons-to-ascii.lisp               --                     --          ;;;;
+;;;; THE END ;;;;

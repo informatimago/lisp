@@ -2,1001 +2,1001 @@
 
 (defparameter new
   '(
-    ( 004 AFG AF  T   "Afghanistan")
-    ( 248 ALA AX  T   "Áland Islands")
-    ( 008 ALB AL  T   "Albania")
-    ( 012 DZA DZ  T   "Algeria")
-    ( 016 ASM AS  T   "American Samoa")
-    ( 020 AND AD  T   "Andorra")
-    ( 024 AGO AO  T   "Angola")
-    ( 660 AIA AI  T   "Anguilla")
-    ( 010 ATA AQ  T   "Antarctica")
-    ( 028 ATG AG  T   "Antigua and Barbuda")
-    ( 032 ARG AR  T   "Argentina")
-    ( 051 ARM AM  T   "Armenia")
-    ( 533 ABW AW  T   "Aruba")
-    ( 036 AUS AU  T   "Australia")
-    ( 040 AUT AT  T   "Austria")
-    ( 031 AZE AZ  T   "Azerbaijan")
-    ( 044 BHS BS  T   "Bahamas")
-    ( 048 BHR BH  T   "Bahrain")
-    ( 050 BGD BD  T   "Bangladesh")
-    ( 052 BRB BB  T   "Barbados")
-    ( 112 BLR BY  T   "Belarus")
-    ( 056 BEL BE  T   "Belgium")
-    ( 084 BLZ BZ  T   "Belize")
-    ( 204 BEN BJ  T   "Benin")
-    ( 060 BMU BM  T   "Bermuda")
-    ( 064 BTN BT  T   "Bhutan")
-    ( 068 BOL BO  T   "Bolivia")
-    ( 070 BIH BA  T   "Bosnia and Herzegovina")
-    ( 072 BWA BW  T   "Botswana")
-    ( 074 BVT BV  T   "Bouvet Island")
-    ( 076 BRA BR  T   "Brazil")
-    ( 092 IOT IO  T   "British Indian Ocean Territory")
-    ( 096 BRN BN  T   "Brunei Darussalam")
-    ( 100 BGR BG  T   "Bulgaria")
-    ( 854 BFA BF  T   "Burkina Faso")
-    ( 108 BDI BI  T   "Burundi")
-    ( 116 KHM KH  T   "Cambodia")
-    ( 120 CMR CM  T   "Cameroon")
-    ( 124 CAN CA  T   "Canada")
-    ( 132 CPV CV  T   "Cape Verde")
-    ( 136 CYM KY  T   "Cayman Islands")
-    ( 140 CAF CF  T   "Central African Republic")
-    ( 148 TCD TD  T   "Chad")
-    ( 152 CHL CL  T   "Chile")
-    ( 156 CHN CN  T   "China, mainland")
-    ( 162 CXR CX  T   "Christmas Island")
-    ( 166 CCK CC  T   "Cocos (Keeling) Islands")
-    ( 170 COL CO  T   "Colombia")
-    ( 174 COM KM  T   "Comoros")
-    ( 178 COG CG  T   "Congo, Republic of the ")
-    ( 180 COD CD  T   "Congo, The Democratic Republic Of The")
-    ( 184 COK CK  T   "Cook Islands")
-    ( 188 CRI CR  T   "Costa Rica")
-    ( 384 CIV CI  T   "Côte d'Ivoire")
-    ( 191 HRV HR  T   "Croatia")
-    ( 192 CUB CU  T   "Cuba")
-    ( 196 CYP CY  T   "Cyprus")
-    ( 203 CZE CZ  T   "Czech Republic")
-    ( 208 DNK DK  T   "Denmark")
-    ( 262 DJI DJ  T   "Djibouti")
-    ( 212 DMA DM  T   "Dominica")
-    ( 214 DOM DO  T   "Dominican Republic")
-    ( 218 ECU EC  T   "Ecuador")
-    ( 818 EGY EG  T   "Egypt")
-    ( 222 SLV SV  T   "El Salvador")
-    ( 226 GNQ GQ  T   "Equatorial Guinea")
-    ( 232 ERI ER  T   "Eritrea")
-    ( 233 EST EE  T   "Estonia")
-    ( 231 ETH ET  T   "Ethiopia")
-    ( 238 FLK FK  T   "Falkland Islands")
-    ( 234 FRO FO  T   "Faroe Islands")
-    ( 242 FJI FJ  T   "Fiji")
-    ( 246 FIN FI  T   "Finland")
-    ( 250 FRA FR  T   "France")
-    ( 254 GUF GF  T   "French Guiana")
-    ( 258 PYF PF  T   "French Polynesia")
-    ( 260 ATF TF  T   "French Southern Territories")
-    ( 266 GAB GA  T   "Gabon")
-    ( 270 GMB GM  T   "Gambia")
-    ( 268 GEO GE  T   "Georgia")
-    ( 276 DEU DE  T   "Germany")
-    ( 288 GHA GH  T   "Ghana")
-    ( 292 GIB GI  T   "Gibraltar")
-    ( 300 GRC GR  T   "Greece")
-    ( 304 GRL GL  T   "Greenland")
-    ( 308 GRD GD  T   "Grenada")
-    ( 312 GLP GP  T   "Guadeloupe")
-    ( 316 GUM GU  T   "Guam")
-    ( 320 GTM GT  T   "Guatemala")
-    ( 324 GIN GN  T   "Guinea")
-    ( 624 GNB GW  T   "Guinea-Bissau")
-    ( 328 GUY GY  T   "Guyana")
-    ( 332 HTI HT  T   "Haiti")
-    ( 334 HMD HM  T   "Heard Island and McDonald Islands")
-    ( 336 VAT VA  T   "Vatican City State")
-    ( 340 HND HN  T   "Honduras")
-    ( 344 HKG HK  T   "Hong Kong")
-    ( 348 HUN HU  T   "Hungary")
-    ( 352 ISL IS  T   "Iceland")
-    ( 356 IND IN  T   "India")
-    ( 360 IDN ID  T   "Indonesia")
-    ( 364 IRN IR  T   "Iran, Islamic Republic of")
-    ( 368 IRQ IQ  T   "Iraq")
-    ( 372 IRL IE  T   "Ireland, Republic of")
-    ( 376 ISR IL  T   "Israel")
-    ( 380 ITA IT  T   "Italy")
-    ( 388 JAM JM  T   "Jamaica")
-    ( 392 JPN JP  T   "Japan")
-    ( 400 JOR JO  T   "Jordan")
-    ( 398 KAZ KZ  T   "Kazakhstan")
-    ( 404 KEN KE  T   "Kenya")
-    ( 296 KIR KI  T   "Kiribati")
-    ( 408 PRK KP  T   "Korea, Democratic People's Republic of")
-    ( 410 KOR KR  T   "Korea, Republic of")
-    ( 414 KWT KW  T   "Kuwait")
-    ( 417 KGZ KG  T   "Kyrgyzstan")
-    ( 418 LAO LA  T   "Lao People's Democratic Republic")
-    ( 428 LVA LV  T   "Latvia")
-    ( 422 LBN LB  T   "Lebanon")
-    ( 426 LSO LS  T   "Lesotho")
-    ( 430 LBR LR  T   "Liberia")
-    ( 434 LBY LY  T   "Libyan Arab Jamahiriya")
-    ( 438 LIE LI  T   "Liechtenstein")
-    ( 440 LTU LT  T   "Lithuania")
-    ( 442 LUX LU  T   "Luxembourg")
-    ( 446 MAC MO  T   "Macao")
-    ( 807 MKD MK  T   "Macedonia, The Former Yugoslav Republic of")
-    ( 450 MDG MG  T   "Madagascar")
-    ( 454 MWI MW  T   "Malawi")
-    ( 458 MYS MY  T   "Malaysia")
-    ( 462 MDV MV  T   "Maldives")
-    ( 466 MLI ML  T   "Mali")
-    ( 470 MLT MT  T   "Malta")
-    ( 584 MHL MH  T   "Marshall Islands")
-    ( 474 MTQ MQ  T   "Martinique")
-    ( 478 MRT MR  T   "Mauritania")
-    ( 480 MUS MU  T   "Mauritius")
-    ( 175 MYT YT  T   "Mayotte")
-    ( 484 MEX MX  T   "Mexico")
-    ( 583 FSM FM  T   "Micronesia, Federated States of")
-    ( 498 MDA MD  T   "Moldova, Republic of")
-    ( 492 MCO MC  T   "Monaco")
-    ( 496 MNG MN  T   "Mongolia")
-    ( 500 MSR MS  T   "Montserrat")
-    ( 504 MAR MA  T   "Morocco")
-    ( 508 MOZ MZ  T   "Mozambique")
-    ( 104 MMR MM  T   "Myanmar")
-    ( 516 NAM NA  T   "Namibia")
-    ( 520 NRU NR  T   "Nauru")
-    ( 524 NPL NP  T   "Nepal")
-    ( 528 NLD NL  T   "Netherlands")
-    ( 530 ANT AN  T   "Netherlands Antilles")
-    ( 540 NCL NC  T   "New Caledonia")
-    ( 554 NZL NZ  T   "New Zealand")
-    ( 558 NIC NI  T   "Nicaragua")
-    ( 562 NER NE  T   "Niger")
-    ( 566 NGA NG  T   "Nigeria")
-    ( 570 NIU NU  T   "Niue")
-    ( 574 NFK NF  T   "Norfolk Island")
-    ( 580 MNP MP  T   "Northern Mariana Islands")
-    ( 578 NOR NO  T   "Norway")
-    ( 512 OMN OM  T   "Oman")
-    ( 586 PAK PK  T   "Pakistan")
-    ( 585 PLW PW  T   "Palau")
-    ( 275 PSE PS  T   "Palestinian Territory, Occupied")
-    ( 591 PAN PA  T   "Panama")
-    ( 598 PNG PG  T   "Papua New Guinea")
-    ( 600 PRY PY  T   "Paraguay")
-    ( 604 PER PE  T   "Peru")
-    ( 608 PHL PH  T   "Philippines")
-    ( 612 PCN PN  T   "Pitcairn")
-    ( 616 POL PL  T   "Poland")
-    ( 620 PRT PT  T   "Portugal")
-    ( 630 PRI PR  T   "Puerto Rico")
-    ( 634 QAT QA  T   "Qatar")
-    ( 638 REU RE  T   "Réunion")
-    ( 642 ROU RO  T   "Romania")
-    ( 643 RUS RU  T   "Russian Federation")
-    ( 646 RWA RW  T   "Rwanda")
-    ( 654 SHN SH  T   "Saint Helena")
-    ( 659 KNA KN  T   "Saint Kitts and Nevis")
-    ( 662 LCA LC  T   "Saint Lucia")
-    ( 666 SPM PM  T   "Saint Pierre and Miquelon")
-    ( 670 VCT VC  T   "Saint Vincent and the Grenadines")
-    ( 882 WSM WS  T   "Samoa")
-    ( 674 SMR SM  T   "San Marino")
-    ( 678 STP ST  T   "Sáo Tomó and Príncipe")
-    ( 682 SAU SA  T   "Saudi Arabia")
-    ( 686 SEN SN  T   "Senegal")
-    ( 891 SCG CS  T   "Serbia and Montenegro")
-    ( 690 SYC SC  T   "Seychelles")
-    ( 694 SLE SL  T   "Sierra Leone")
-    ( 702 SGP SG  T   "Singapore")
-    ( 703 SVK SK  T   "Slovakia")
-    ( 705 SVN SI  T   "Slovenia")
-    ( 090 SLB SB  T   "Solomon Islands")
-    ( 706 SOM SO  T   "Somalia")
-    ( 710 ZAF ZA  T   "South Africa")
-    ( 239 SGS GS  T   "South Georgia and the South Sandwich Islands")
-    ( 724 ESP ES  T   "Spain")
-    ( 144 LKA LK  T   "Sri Lanka")
-    ( 736 SDN SD  T   "Sudan")
-    ( 740 SUR SR  T   "Suriname")
-    ( 744 SJM SJ  T   "Svalbard and Jan Mayen")
-    ( 748 SWZ SZ  T   "Swaziland")
-    ( 752 SWE SE  T   "Sweden")
-    ( 756 CHE CH  T   "Switzerland")
-    ( 760 SYR SY  T   "Syrian Arab Republic")
-    ( 158 TWN TW  T   "Taiwan (Republic of China)")
-    ( 762 TJK TJ  T   "Tajikistan")
-    ( 834 TZA TZ  T   "Tanzania, United Republic Of")
-    ( 764 THA TH  T   "Thailand")
-    ( 626 TLS TL  T   "Timor-Leste")
-    ( 768 TGO TG  T   "Togo")
-    ( 772 TKL TK  T   "Tokelau")
-    ( 776 TON TO  T   "Tonga")
-    ( 780 TTO TT  T   "Trinidad and Tobago")
-    ( 788 TUN TN  T   "Tunisia")
-    ( 792 TUR TR  T   "Turkey")
-    ( 795 TKM TM  T   "Turkmenistan")
-    ( 796 TCA TC  T   "Turks and Caicos Islands")
-    ( 798 TUV TV  T   "Tuvalu")
-    ( 800 UGA UG  T   "Uganda")
-    ( 804 UKR UA  T   "Ukraine")
-    ( 784 ARE AE  T   "United Arab Emirates")
-    ( 826 GBR GB  T   "United Kingdom")
-    ( 840 USA US  T   "United States")
-    ( 581 UMI UM  T   "United States Minor Outlying Islands")
-    ( 858 URY UY  T   "Uruguay")
-    ( 860 UZB UZ  T   "Uzbekistan")
-    ( 548 VUT VU  T   "Vanuatu")
-    ( 862 VEN VE  T   "Venezuela")
-    ( 704 VNM VN  T   "Viet Nam")
-    ( 092 VGB VG  T   "Virgin Islands, British")
-    ( 850 VIR VI  T   "Virgin Islands, U.S.")
-    ( 876 WLF WF  T   "Wallis and Futuna")
-    ( 732 ESH EH  T   "Western Sahara")
-    ( 887 YEM YE  T   "Yemen")
-    ( 894 ZMB ZM  T   "Zambia")
-    ( 716 ZWE ZW  T   "Zimbabwe")
+    ( 004 afg af  t   "Afghanistan")
+    ( 248 ala ax  t   "Áland Islands")
+    ( 008 alb al  t   "Albania")
+    ( 012 dza dz  t   "Algeria")
+    ( 016 asm as  t   "American Samoa")
+    ( 020 and ad  t   "Andorra")
+    ( 024 ago ao  t   "Angola")
+    ( 660 aia ai  t   "Anguilla")
+    ( 010 ata aq  t   "Antarctica")
+    ( 028 atg ag  t   "Antigua and Barbuda")
+    ( 032 arg ar  t   "Argentina")
+    ( 051 arm am  t   "Armenia")
+    ( 533 abw aw  t   "Aruba")
+    ( 036 aus au  t   "Australia")
+    ( 040 aut at  t   "Austria")
+    ( 031 aze az  t   "Azerbaijan")
+    ( 044 bhs bs  t   "Bahamas")
+    ( 048 bhr bh  t   "Bahrain")
+    ( 050 bgd bd  t   "Bangladesh")
+    ( 052 brb bb  t   "Barbados")
+    ( 112 blr by  t   "Belarus")
+    ( 056 bel be  t   "Belgium")
+    ( 084 blz bz  t   "Belize")
+    ( 204 ben bj  t   "Benin")
+    ( 060 bmu bm  t   "Bermuda")
+    ( 064 btn bt  t   "Bhutan")
+    ( 068 bol bo  t   "Bolivia")
+    ( 070 bih ba  t   "Bosnia and Herzegovina")
+    ( 072 bwa bw  t   "Botswana")
+    ( 074 bvt bv  t   "Bouvet Island")
+    ( 076 bra br  t   "Brazil")
+    ( 092 iot io  t   "British Indian Ocean Territory")
+    ( 096 brn bn  t   "Brunei Darussalam")
+    ( 100 bgr bg  t   "Bulgaria")
+    ( 854 bfa bf  t   "Burkina Faso")
+    ( 108 bdi bi  t   "Burundi")
+    ( 116 khm kh  t   "Cambodia")
+    ( 120 cmr cm  t   "Cameroon")
+    ( 124 can ca  t   "Canada")
+    ( 132 cpv cv  t   "Cape Verde")
+    ( 136 cym ky  t   "Cayman Islands")
+    ( 140 caf cf  t   "Central African Republic")
+    ( 148 tcd td  t   "Chad")
+    ( 152 chl cl  t   "Chile")
+    ( 156 chn cn  t   "China, mainland")
+    ( 162 cxr cx  t   "Christmas Island")
+    ( 166 cck cc  t   "Cocos (Keeling) Islands")
+    ( 170 col co  t   "Colombia")
+    ( 174 com km  t   "Comoros")
+    ( 178 cog cg  t   "Congo, Republic of the ")
+    ( 180 cod cd  t   "Congo, The Democratic Republic Of The")
+    ( 184 cok ck  t   "Cook Islands")
+    ( 188 cri cr  t   "Costa Rica")
+    ( 384 civ ci  t   "Côte d'Ivoire")
+    ( 191 hrv hr  t   "Croatia")
+    ( 192 cub cu  t   "Cuba")
+    ( 196 cyp cy  t   "Cyprus")
+    ( 203 cze cz  t   "Czech Republic")
+    ( 208 dnk dk  t   "Denmark")
+    ( 262 dji dj  t   "Djibouti")
+    ( 212 dma dm  t   "Dominica")
+    ( 214 dom do  t   "Dominican Republic")
+    ( 218 ecu ec  t   "Ecuador")
+    ( 818 egy eg  t   "Egypt")
+    ( 222 slv sv  t   "El Salvador")
+    ( 226 gnq gq  t   "Equatorial Guinea")
+    ( 232 eri er  t   "Eritrea")
+    ( 233 est ee  t   "Estonia")
+    ( 231 eth et  t   "Ethiopia")
+    ( 238 flk fk  t   "Falkland Islands")
+    ( 234 fro fo  t   "Faroe Islands")
+    ( 242 fji fj  t   "Fiji")
+    ( 246 fin fi  t   "Finland")
+    ( 250 fra fr  t   "France")
+    ( 254 guf gf  t   "French Guiana")
+    ( 258 pyf pf  t   "French Polynesia")
+    ( 260 atf tf  t   "French Southern Territories")
+    ( 266 gab ga  t   "Gabon")
+    ( 270 gmb gm  t   "Gambia")
+    ( 268 geo ge  t   "Georgia")
+    ( 276 deu de  t   "Germany")
+    ( 288 gha gh  t   "Ghana")
+    ( 292 gib gi  t   "Gibraltar")
+    ( 300 grc gr  t   "Greece")
+    ( 304 grl gl  t   "Greenland")
+    ( 308 grd gd  t   "Grenada")
+    ( 312 glp gp  t   "Guadeloupe")
+    ( 316 gum gu  t   "Guam")
+    ( 320 gtm gt  t   "Guatemala")
+    ( 324 gin gn  t   "Guinea")
+    ( 624 gnb gw  t   "Guinea-Bissau")
+    ( 328 guy gy  t   "Guyana")
+    ( 332 hti ht  t   "Haiti")
+    ( 334 hmd hm  t   "Heard Island and McDonald Islands")
+    ( 336 vat va  t   "Vatican City State")
+    ( 340 hnd hn  t   "Honduras")
+    ( 344 hkg hk  t   "Hong Kong")
+    ( 348 hun hu  t   "Hungary")
+    ( 352 isl is  t   "Iceland")
+    ( 356 ind in  t   "India")
+    ( 360 idn id  t   "Indonesia")
+    ( 364 irn ir  t   "Iran, Islamic Republic of")
+    ( 368 irq iq  t   "Iraq")
+    ( 372 irl ie  t   "Ireland, Republic of")
+    ( 376 isr il  t   "Israel")
+    ( 380 ita it  t   "Italy")
+    ( 388 jam jm  t   "Jamaica")
+    ( 392 jpn jp  t   "Japan")
+    ( 400 jor jo  t   "Jordan")
+    ( 398 kaz kz  t   "Kazakhstan")
+    ( 404 ken ke  t   "Kenya")
+    ( 296 kir ki  t   "Kiribati")
+    ( 408 prk kp  t   "Korea, Democratic People's Republic of")
+    ( 410 kor kr  t   "Korea, Republic of")
+    ( 414 kwt kw  t   "Kuwait")
+    ( 417 kgz kg  t   "Kyrgyzstan")
+    ( 418 lao la  t   "Lao People's Democratic Republic")
+    ( 428 lva lv  t   "Latvia")
+    ( 422 lbn lb  t   "Lebanon")
+    ( 426 lso ls  t   "Lesotho")
+    ( 430 lbr lr  t   "Liberia")
+    ( 434 lby ly  t   "Libyan Arab Jamahiriya")
+    ( 438 lie li  t   "Liechtenstein")
+    ( 440 ltu lt  t   "Lithuania")
+    ( 442 lux lu  t   "Luxembourg")
+    ( 446 mac mo  t   "Macao")
+    ( 807 mkd mk  t   "Macedonia, The Former Yugoslav Republic of")
+    ( 450 mdg mg  t   "Madagascar")
+    ( 454 mwi mw  t   "Malawi")
+    ( 458 mys my  t   "Malaysia")
+    ( 462 mdv mv  t   "Maldives")
+    ( 466 mli ml  t   "Mali")
+    ( 470 mlt mt  t   "Malta")
+    ( 584 mhl mh  t   "Marshall Islands")
+    ( 474 mtq mq  t   "Martinique")
+    ( 478 mrt mr  t   "Mauritania")
+    ( 480 mus mu  t   "Mauritius")
+    ( 175 myt yt  t   "Mayotte")
+    ( 484 mex mx  t   "Mexico")
+    ( 583 fsm fm  t   "Micronesia, Federated States of")
+    ( 498 mda md  t   "Moldova, Republic of")
+    ( 492 mco mc  t   "Monaco")
+    ( 496 mng mn  t   "Mongolia")
+    ( 500 msr ms  t   "Montserrat")
+    ( 504 mar ma  t   "Morocco")
+    ( 508 moz mz  t   "Mozambique")
+    ( 104 mmr mm  t   "Myanmar")
+    ( 516 nam na  t   "Namibia")
+    ( 520 nru nr  t   "Nauru")
+    ( 524 npl np  t   "Nepal")
+    ( 528 nld nl  t   "Netherlands")
+    ( 530 ant an  t   "Netherlands Antilles")
+    ( 540 ncl nc  t   "New Caledonia")
+    ( 554 nzl nz  t   "New Zealand")
+    ( 558 nic ni  t   "Nicaragua")
+    ( 562 ner ne  t   "Niger")
+    ( 566 nga ng  t   "Nigeria")
+    ( 570 niu nu  t   "Niue")
+    ( 574 nfk nf  t   "Norfolk Island")
+    ( 580 mnp mp  t   "Northern Mariana Islands")
+    ( 578 nor no  t   "Norway")
+    ( 512 omn om  t   "Oman")
+    ( 586 pak pk  t   "Pakistan")
+    ( 585 plw pw  t   "Palau")
+    ( 275 pse ps  t   "Palestinian Territory, Occupied")
+    ( 591 pan pa  t   "Panama")
+    ( 598 png pg  t   "Papua New Guinea")
+    ( 600 pry py  t   "Paraguay")
+    ( 604 per pe  t   "Peru")
+    ( 608 phl ph  t   "Philippines")
+    ( 612 pcn pn  t   "Pitcairn")
+    ( 616 pol pl  t   "Poland")
+    ( 620 prt pt  t   "Portugal")
+    ( 630 pri pr  t   "Puerto Rico")
+    ( 634 qat qa  t   "Qatar")
+    ( 638 reu re  t   "Réunion")
+    ( 642 rou ro  t   "Romania")
+    ( 643 rus ru  t   "Russian Federation")
+    ( 646 rwa rw  t   "Rwanda")
+    ( 654 shn sh  t   "Saint Helena")
+    ( 659 kna kn  t   "Saint Kitts and Nevis")
+    ( 662 lca lc  t   "Saint Lucia")
+    ( 666 spm pm  t   "Saint Pierre and Miquelon")
+    ( 670 vct vc  t   "Saint Vincent and the Grenadines")
+    ( 882 wsm ws  t   "Samoa")
+    ( 674 smr sm  t   "San Marino")
+    ( 678 stp st  t   "Sáo Tomó and Príncipe")
+    ( 682 sau sa  t   "Saudi Arabia")
+    ( 686 sen sn  t   "Senegal")
+    ( 891 scg cs  t   "Serbia and Montenegro")
+    ( 690 syc sc  t   "Seychelles")
+    ( 694 sle sl  t   "Sierra Leone")
+    ( 702 sgp sg  t   "Singapore")
+    ( 703 svk sk  t   "Slovakia")
+    ( 705 svn si  t   "Slovenia")
+    ( 090 slb sb  t   "Solomon Islands")
+    ( 706 som so  t   "Somalia")
+    ( 710 zaf za  t   "South Africa")
+    ( 239 sgs gs  t   "South Georgia and the South Sandwich Islands")
+    ( 724 esp es  t   "Spain")
+    ( 144 lka lk  t   "Sri Lanka")
+    ( 736 sdn sd  t   "Sudan")
+    ( 740 sur sr  t   "Suriname")
+    ( 744 sjm sj  t   "Svalbard and Jan Mayen")
+    ( 748 swz sz  t   "Swaziland")
+    ( 752 swe se  t   "Sweden")
+    ( 756 che ch  t   "Switzerland")
+    ( 760 syr sy  t   "Syrian Arab Republic")
+    ( 158 twn tw  t   "Taiwan (Republic of China)")
+    ( 762 tjk tj  t   "Tajikistan")
+    ( 834 tza tz  t   "Tanzania, United Republic Of")
+    ( 764 tha th  t   "Thailand")
+    ( 626 tls tl  t   "Timor-Leste")
+    ( 768 tgo tg  t   "Togo")
+    ( 772 tkl tk  t   "Tokelau")
+    ( 776 ton to  t   "Tonga")
+    ( 780 tto tt  t   "Trinidad and Tobago")
+    ( 788 tun tn  t   "Tunisia")
+    ( 792 tur tr  t   "Turkey")
+    ( 795 tkm tm  t   "Turkmenistan")
+    ( 796 tca tc  t   "Turks and Caicos Islands")
+    ( 798 tuv tv  t   "Tuvalu")
+    ( 800 uga ug  t   "Uganda")
+    ( 804 ukr ua  t   "Ukraine")
+    ( 784 are ae  t   "United Arab Emirates")
+    ( 826 gbr gb  t   "United Kingdom")
+    ( 840 usa us  t   "United States")
+    ( 581 umi um  t   "United States Minor Outlying Islands")
+    ( 858 ury uy  t   "Uruguay")
+    ( 860 uzb uz  t   "Uzbekistan")
+    ( 548 vut vu  t   "Vanuatu")
+    ( 862 ven ve  t   "Venezuela")
+    ( 704 vnm vn  t   "Viet Nam")
+    ( 092 vgb vg  t   "Virgin Islands, British")
+    ( 850 vir vi  t   "Virgin Islands, U.S.")
+    ( 876 wlf wf  t   "Wallis and Futuna")
+    ( 732 esh eh  t   "Western Sahara")
+    ( 887 yem ye  t   "Yemen")
+    ( 894 zmb zm  t   "Zambia")
+    ( 716 zwe zw  t   "Zimbabwe")
     )
   );;new
 
 
-(defparameter +COUNTRIES+ 
+(defparameter +countries+ 
   '( 
-    ( CD NIL
+    ( cd nil
         "La République Démocratique Du Congo"
         "The Democratic Republic Of The Congo")
-    ( MK NIL
+    ( mk nil
         "L'Ex-République Yougoslave De Macédoine"
         "The Former Yugoslav Republic Of Macedonia")
-    ( PS NIL
+    ( ps nil
         "Territoire Palestinien Occupé"
         "Occupied Palestinian Territory")
-    ( TL NIL
+    ( tl nil
         "Timor-Leste"
         "Timor-Leste")
-    ( AD T
+    ( ad t
         "Andorre"
         "Andorra")
-    ( AE T
+    ( ae t
         "Émirats Arabes Unis"
         "United Arab Emirates")
-    ( AF T
+    ( af t
         "Afghanistan"
         "Afghanistan")
-    ( AG T
+    ( ag t
         "Antigua et Barbuda"
         "Antigua and Barbuda")
-    ( AI T
+    ( ai t
         "Anguilla"
         "Anguilla")
-    ( AL T
+    ( al t
         "Albanie"
         "Albania")
-    ( AM T
+    ( am t
         "Arménie"
         "Armenia")
-    ( AN T
+    ( an t
         "Antilles Néerlandaises"
         "Netherlands Antilles")
-    ( AO T
+    ( ao t
         "Angola"
         "Angola")
-    ( AQ T
+    ( aq t
         "Antarctique"
         "Antarctica")
-    ( AR T
+    ( ar t
         "Argentine"
         "Argentina")
-    ( AS T
+    ( as t
         "Samoa Américaines"
         "American Samoa")
-    ( AT T
+    ( at t
         "Autriche"
         "Austria")
-    ( AU T
+    ( au t
         "Australie"
         "Australia")
-    ( AW T
+    ( aw t
         "Aruba"
         "Aruba")
-    ( AZ T
+    ( az t
         "Azerbaïdjan"
         "Azerbaijan")
-    ( BA T
+    ( ba t
         "Bosnie-Herzégovine"
         "Bosnia and Herzegovina")
-    ( BB T
+    ( bb t
         "Barbade"
         "Barbados")
-    ( BD T
+    ( bd t
         "Bangladesh"
         "Bangladesh")
-    ( BE T
+    ( be t
         "Belgique"
         "Belgium")
-    ( BF T
+    ( bf t
         "Burkina Faso"
         "Burkina Faso")
-    ( BG T
+    ( bg t
         "Bulgarie"
         "Bulgaria")
-    ( BH T
+    ( bh t
         "Bahreïn"
         "Bahrain")
-    ( BI T
+    ( bi t
         "Burundi"
         "Burundi")
-    ( BJ T
+    ( bj t
         "Bénin"
         "Benin")
-    ( BM T
+    ( bm t
         "Bermudes"
         "Bermuda")
-    ( BN T
+    ( bn t
         "Brunéi Darussalam"
         "Brunei Darussalam")
-    ( BO T
+    ( bo t
         "Bolivie"
         "Bolivia")
-    ( BR T
+    ( br t
         "Brésil"
         "Brazil")
-    ( BS T
+    ( bs t
         "Bahamas"
         "Bahamas")
-    ( BT T
+    ( bt t
         "Bhoutan"
         "Bhutan")
-    ( BU NIL
+    ( bu nil
         "Burma"
         "Burma")
-    ( BV T
+    ( bv t
         "Île Bouvet"
         "Bouvet Island")
-    ( BW T
+    ( bw t
         "Botswana"
         "Botswana")
-    ( BY T
+    ( by t
         "Bélarus"
         "Belarus")
-    ( BZ T
+    ( bz t
         "Belize"
         "Belize")
-    ( CA T
+    ( ca t
         "Canada"
         "Canada")
-    ( CC T
+    ( cc t
         "Îles Cocos ( Keeling)"
         "Cocos ( Keeling) Islands")
-    ( CF T
+    ( cf t
         "République Centrafricaine"
         "Central African Republic")
-    ( CG NIL
+    ( cg nil
         "Congo"
         "Congo")
-    ( CH T
+    ( ch t
         "Suisse"
         "Switzerland")
-    ( CI T
+    ( ci t
         "Côte D'Ivoire"
         "Ivory Coast")
-    ( CK T
+    ( ck t
         "Îles Cook"
         "Cook Islands")
-    ( CL T
+    ( cl t
         "Chili"
         "Chile")
-    ( CM T
+    ( cm t
         "Cameroun"
         "Cameroon")
-    ( CN T
+    ( cn t
         "Chine"
         "China")
-    ( CO T
+    ( co t
         "Colombie"
         "Colombia")
-    ( CR T
+    ( cr t
         "Costa Rica"
         "Costa Rica")
-    ( CS NIL
+    ( cs nil
         "Serbie et Monténégro"
         "Serbia and Montenegro")
-    ( CU T
+    ( cu t
         "Cuba"
         "Cuba")
-    ( CV T
+    ( cv t
         "Cap-Vert"
         "Cape Verde")
-    ( CX T
+    ( cx t
         "Île Christmas"
         "Christmas Island")
-    ( CY T
+    ( cy t
         "Chypre"
         "Cyprus")
-    ( CZ T
+    ( cz t
         "République Tchèque"
         "Czech Republic")
-    ( DD NIL
+    ( dd nil
         "République Démocratique d'Allemagne"
         "German Democratic Republic")
-    ( DE T
+    ( de t
         "Allemagne"
         "Germany")
-    ( DJ T
+    ( dj t
         "Djibouti"
         "Djibouti")
-    ( DK T
+    ( dk t
         "Danemark"
         "Denmark")
-    ( DM T
+    ( dm t
         "Dominique"
         "Dominica")
-    ( DO T
+    ( do t
         "République Dominicaine"
       "Dominican Republic")
-    ( DZ T
+    ( dz t
         "Algérie"
         "Algeria")
-    ( EC T
+    ( ec t
         "Équateur"
         "Ecuador")
-    ( EE T
+    ( ee t
         "Estonie"
         "Estonia")
-    ( EG T
+    ( eg t
         "Égypte"
         "Egypt")
-    ( EH T
+    ( eh t
         "Sahara Occidental"
         "Western Sahara")
-    ( ER T
+    ( er t
         "Érythrée"
         "Eritrea")
-    ( ES T
+    ( es t
         "Espagne"
         "Spain")
-    ( ET T
+    ( et t
         "Éthiopie"
         "Ethiopia")
-    ( FI T
+    ( fi t
         "Finlande"
         "Finland")
-    ( FJ T
+    ( fj t
         "Fidji"
         "Fiji")
-    ( FK T
+    ( fk t
         "Îles Malouines"
         "Falkland Islands")
-    ( FM T
+    ( fm t
         "États Fédérés De Micronésie"
         "Federated States Of Micronesia")
-    ( FO T
+    ( fo t
         "Îles Féroé"
         "Faroe Islands")
-    ( FR T
+    ( fr t
         "France"
         "France")
-    ( FX T
+    ( fx t
         "France Métropolitaine"
         "Metropolitan France")
-    ( GA T
+    ( ga t
         "Gabon"
         "Gabon")
-    ( GB T
+    ( gb t
         "Royaume-Uni"
         "United Kingdom")
-    ( GD T
+    ( gd t
         "Grenade"
         "Grenada")
-    ( GE T
+    ( ge t
         "Géorgie"
         "Georgia")
-    ( GF T
+    ( gf t
         "Guyane Française"
         "French Guiana")
-    ( GH T
+    ( gh t
         "Ghana"
         "Ghana")
-    ( GI T
+    ( gi t
         "Gibraltar"
         "Gibraltar")
-    ( GL T
+    ( gl t
         "Groenland"
         "Greenland")
-    ( GM T
+    ( gm t
         "Gambie"
         "Gambia")
-    ( GN T
+    ( gn t
         "Guinée"
         "Guinea")
-    ( GP T
+    ( gp t
         "Guadeloupe"
         "Guadeloupe")
-    ( GQ T
+    ( gq t
         "Guinée Équatoriale"
         "Equatorial Guinea")
-    ( GR T
+    ( gr t
         "Grèce"
         "Greece")
-    ( GS T
+    ( gs t
         "Géorgie Du Sud et Les Îles Sandwich Du Sud"
         "South Georgia and the South Sandwich Islands")
-    ( GT T
+    ( gt t
         "Guatemala"
         "Guatemala")
-    ( GU T
+    ( gu t
         "Guam"
         "Guam")
-    ( GW T
+    ( gw t
         "Guinée-Bissau"
         "Guinea-Bissau")
-    ( GY T
+    ( gy t
         "Guyana"
         "Guyana")
-    ( HK T
+    ( hk t
         "Hong-Kong"
         "Hong Kong")
-    ( HM T
+    ( hm t
         "Île Mcdonald et îles Heard"
         "Heard Island and Mcdonald Islands")
-    ( HN T
+    ( hn t
         "Honduras"
         "Honduras")
-    ( HR T
+    ( hr t
         "Croatie"
         "Croatia")
-    ( HT T
+    ( ht t
         "Haïti"
         "Haiti")
-    ( HU T
+    ( hu t
         "Hongrie"
         "Hungary")
-    ( ID T
+    ( id t
         "Indonésie"
         "Indonesia")
-    ( IE T
+    ( ie t
         "Irlande"
         "Ireland")
-    ( IL T
+    ( il t
         "Israël"
         "Israel")
-    ( IN T
+    ( in t
         "Inde"
         "India")
-    ( IO T
+    ( io t
         "Territoire Britannique de l'Océan Indien"
         "British Indian Ocean Territory")
-    ( IQ T
+    ( iq t
         "Iraq"
         "Iraq")
-    ( IR T
+    ( ir t
         "République Islamique D' Iran"
         "Islamic Republic of Iran")
-    ( IS T
+    ( is t
         "Islande"
         "Iceland")
-    ( IT T
+    ( it t
         "Italie"
         "Italy")
-    ( JM T
+    ( jm t
         "Jamaïque"
         "Jamaica")
-    ( JO T
+    ( jo t
         "Jordanie"
         "Jordan")
-    ( JP T
+    ( jp t
         "Japon"
         "Japan")
-    ( KE T
+    ( ke t
         "Kenya"
         "Kenya")
-    ( KG T
+    ( kg t
         "Kirghizistan"
         "Kyrgyzstan")
-    ( KH T
+    ( kh t
         "Cambodge"
         "Cambodia")
-    ( KI T
+    ( ki t
         "Kiribati"
         "Kiribati")
-    ( KM T
+    ( km t
         "Comores"
         "Comoros")
-    ( KN T
+    ( kn t
         "Saint-Kitts et Nevis"
         "Saint Kitts and Nevis")
-    ( KP T
+    ( kp t
         "République Populaire Démocratique De Corée"
         "Democratic People's Republic of Korea")
-    ( KR T
+    ( kr t
         "République De Corée"
         "Republic of Korea")
-    ( KW T
+    ( kw t
         "Koweït"
         "Kuwait")
-    ( KY T
+    ( ky t
         "Îles Caïmanes"
         "Cayman Islands")
-    ( KZ T
+    ( kz t
         "Kazakhstan"
         "Kazakhstan")
-    ( LA T
+    ( la t
         "République Démocratique Populaire Lao"
         "Lao People's Democratic Republic")
-    ( LB T
+    ( lb t
         "Liban"
         "Lebanon")
-    ( LC T
+    ( lc t
         "Sainte-Lucie"
         "Saint Lucia")
-    ( LI T
+    ( li t
         "Liechtenstein"
         "Liechtenstein")
-    ( LK T
+    ( lk t
         "Sri Lanka"
         "Sri Lanka")
-    ( LR T
+    ( lr t
         "Libéria"
         "Liberia")
-    ( LS T
+    ( ls t
         "Lesotho"
         "Lesotho")
-    ( LT T
+    ( lt t
         "Lituanie"
         "Lithuania")
-    ( LU T
+    ( lu t
         "Luxembourg"
         "Luxembourg")
-    ( LV T
+    ( lv t
         "Lettonie"
         "Latvia")
-    ( LY T
+    ( ly t
         "Jamahiriya Arabe Libyenne"
         "Libyan Arab Jamahiriya")
-    ( MA T
+    ( ma t
         "Maroc"
         "Morocco")
-    ( MC T
+    ( mc t
         "Monaco"
         "Monaco")
-    ( MD T
+    ( md t
         "République De Moldova"
         "Republic of Moldova")
-    ( MG T
+    ( mg t
         "Madagascar"
         "Madagascar")
-    ( MH T
+    ( mh t
         "Îles Marshall"
         "Marshall Islands")
-    ( ML T
+    ( ml t
         "Mali"
         "Mali")
-    ( MM T
+    ( mm t
         "Myanmar"
         "Myanmar")
-    ( MN T
+    ( mn t
         "Mongolie"
         "Mongolia")
-    ( MO T
+    ( mo t
         "Macao"
         "Macao"
         "Macau")
-    ( MP T
+    ( mp t
         "Îles Mariannes Du Nord"
         "Northern Mariana Islands")
-    ( MQ T
+    ( mq t
         "Martinique"
         "Martinique")
-    ( MR T
+    ( mr t
         "Mauritanie"
         "Mauritania")
-    ( MS T
+    ( ms t
         "Montserrat"
         "Montserrat"
         "Monserrat")
-    ( MT T
+    ( mt t
         "Malte"
         "Malta")
-    ( MU T
+    ( mu t
         "Maurice"
         "Mauritius")
-    ( MV T
+    ( mv t
         "Maldives"
         "Maldives")
-    ( MW T
+    ( mw t
         "Malawi"
         "Malawi")
-    ( MX T
+    ( mx t
         "Mexique"
         "Mexico")
-    ( MY T
+    ( my t
         "Malaisie"
         "Malaysia")
-    ( MZ T
+    ( mz t
         "Mozambique"
         "Mozambique")
-    ( NA T
+    ( na t
         "Namibie"
         "Namibia"
         "Nambia")
-    ( NC T
+    ( nc t
         "Nouvelle-Calédonie"
         "New Caledonia")
-    ( NE T
+    ( ne t
         "Niger"
         "Niger")
-    ( NF T
+    ( nf t
         "Île Norfolk"
         "Norfolk Island")
-    ( NG T
+    ( ng t
         "Nigéria"
         "Nigeria")
-    ( NI T
+    ( ni t
         "Nicaragua"
         "Nicaragua")
-    ( NL T
+    ( nl t
         "Pays-Bas"
         "Netherlands")
-    ( NO T
+    ( no t
         "Norvège"
         "Norway")
-    ( NP T
+    ( np t
         "Népal"
         "Nepal")
-    ( NR T
+    ( nr t
         "Nauru"
         "Nauru")
-    ( NT NIL
+    ( nt nil
         "Nil"
         "Nil"
         "Neutral Zone")
-    ( NU T
+    ( nu t
         "Niué"
         "Niue")
-    ( NZ T
+    ( nz t
         "Nouvelle-Zélande"
         "New Zealand")
-    ( OM T
+    ( om t
         "Oman"
         "Oman")
-    ( PA T
+    ( pa t
         "Panama"
         "Panama")
-    ( PE T
+    ( pe t
         "Pérou"
         "Peru")
-    ( PF T
+    ( pf t
         "Polynésie Française"
         "French Polynesia")
-    ( PG T
+    ( pg t
         "Papouasie-Nouvelle-Guinée"
         "Papua New Guinea")
-    ( PH T
+    ( ph t
         "Philippines"
         "Philippines")
-    ( PK T
+    ( pk t
         "Pakistan"
         "Pakistan")
-    ( PL T
+    ( pl t
         "Pologne"
         "Poland")
-    ( PM T
+    ( pm t
         "Saint-Pierre et Miquelon"
         "Saint Pierre and Miquelon")
-    ( PN T
+    ( pn t
         "Pitcairn"
         "Pitcairn")
-    ( PR T
+    ( pr t
         "Porto Rico"
         "Puerto Rico")
-    ( PT T
+    ( pt t
         "Portugal"
         "Portugal")
-    ( PW T
+    ( pw t
         "Palaos"
         "Palau")
-    ( PY T
+    ( py t
         "Paraguay"
         "Paraguay")
-    ( QA T
+    ( qa t
         "Qatar"
         "Qatar")
-    ( RE T
+    ( re t
         "Réunion"
         "Reunion")
-    ( RO T
+    ( ro t
         "Roumanie"
         "Romania")
-    ( RU T
+    ( ru t
         "Fédération De Russie"
         "Russian Federation")
-    ( RW T
+    ( rw t
         "Rwanda"
         "Rwanda")
-    ( SA T
+    ( sa t
         "Arabie Saoudite"
         "Saudi Arabia")
-    ( SB T
+    ( sb t
         "Îles Salomon"
         "Solomon Islands")
-    ( SC T
+    ( sc t
         "Seychelles"
         "Seychelles")
-    ( SD T
+    ( sd t
         "Soudan"
         "Sudan")
-    ( SE T
+    ( se t
         "Suède"
         "Sweden")
-    ( SG T
+    ( sg t
         "Singapour"
         "Singapore")
-    ( SH T
+    ( sh t
         "Sainte-Hélène"
         "Saint Helena")
-    ( SI T
+    ( si t
         "Slovénie"
         "Slovenia")
-    ( SJ T
+    ( sj t
         "Svalbard et île Jan Mayen"
         "Svalbard and Jan Mayen Islands")
-    ( SK T
+    ( sk t
         "Slovaquie"
         "Slovakia")
-    ( SL T
+    ( sl t
         "Sierra Leone"
         "Sierra Leone")
-    ( SM T
+    ( sm t
         "Saint-Marin"
         "San Marino")
-    ( SN T
+    ( sn t
         "Sénégal"
         "Senegal")
-    ( SO T
+    ( so t
         "Somalie"
         "Somalia")
-    ( SR T
+    ( sr t
         "Suriname"
         "Suriname")
-    ( ST T
+    ( st t
         "Sao Tomé et Principe"
         "Sao Tome and Principe")
-    ( SU NIL
+    ( su nil
         "Union des Républiques Socialistes Soviétiques"
         "Union of Soviet Socialist Republics")
-    ( SV T
+    ( sv t
         "El Salvador"
         "El Salvador")
-    ( SY T
+    ( sy t
         "République Arabe Syrienne"
         "Syrian Arab Republic")
-    ( SZ T
+    ( sz t
         "Swaziland"
         "Swaziland")
-    ( TC T
+    ( tc t
         "Îles Turks et Caïques"
         "Turks and Caicos Islands")
-    ( TD T
+    ( td t
         "Tchad"
         "Chad")
-    ( TF T
+    ( tf t
         "Terres Australes Françaises"
         "French Southern Territories")
-    ( TG T
+    ( tg t
         "Togo"
         "Togo")
-    ( TH T
+    ( th t
         "Thaïlande"
         "Thailand")
-    ( TJ T
+    ( tj t
         "Tadjikistan"
         "Tajikistan")
-    ( TK T
+    ( tk t
         "Tokelau"
         "Tokelau")
-    ( TM T
+    ( tm t
         "Turkménistan"
         "Turkmenistan")
-    ( TN T
+    ( tn t
         "Tunisie"
         "Tunisia")
-    ( TO T
+    ( to t
         "Tonga"
         "Tonga")
-    ( TP T
+    ( tp t
         "Timor Oriental"
         "East Timor")
-    ( TR T
+    ( tr t
         "Turquie"
         "Turkey")
-    ( TT T
+    ( tt t
         "Trinité et Tobago"
         "Trinidad and Tobago")
-    ( TV T
+    ( tv t
         "Tuvalu"
         "Tuvalu")
-    ( TW T
+    ( tw t
         "Province de Chine Taïwan"
         "Province of China Taiwan")
-    ( TZ T
+    ( tz t
         "République-Unie de Tanzanie"
         "United Republic of Tanzania")
-    ( UA T
+    ( ua t
         "Ukraine"
         "Ukraine")
-    ( UG T
+    ( ug t
         "Ouganda"
         "Uganda")
-    ( UM T
+    ( um t
         "Îles Mineures Éloignées des États-Unis"
         "United States Minor Outlying Islands")
-    ( US T
+    ( us t
         "États-Unis"
         "United States of America")
-    ( UY T
+    ( uy t
         "Uruguay"
         "Uruguay")
-    ( UZ T
+    ( uz t
         "Ouzbékistan"
         "Uzbekistan")
-    ( VA T
+    ( va t
         "Saint-Siège ( État de La Cité Du Vatican)"
         "Holy See ( Vatican City State)")
-    ( VC T
+    ( vc t
         "Saint-Vincent et Les Grenadines"
         "Saint Vincent and The Grenadines")
-    ( VE T
+    ( ve t
         "Venezuela"
         "Venezuela")
-    ( VG T
+    ( vg t
         "Îles Vierges Britanniques"
         "British Virgin Islands")
-    ( VI T
+    ( vi t
         "Îles Vierges Des États-Unis"
         "United States Virgin Islands")
-    ( VN T
+    ( vn t
         "Viet Nam"
         "Viet Nam")
-    ( VU T
+    ( vu t
         "Vanuatu"
         "Vanuatu")
-    ( WF T
+    ( wf t
         "Wallis Et Futuna"
         "Wallis and Futuna Islands")
-    ( WS T
+    ( ws t
         "Samoa"
         "Samoa")
-    ( YD NIL
+    ( yd nil
         "Yemen Démocratique"
         "Democratic Yemen")
-    ( YE T
+    ( ye t
         "Yémen"
         "Yemen")
-    ( YT T
+    ( yt t
         "Mayotte"
         "Mayotte")
-    ( YU T
+    ( yu t
         "Yougoslavie"
         "Yugoslavia")
-    ( ZA T
+    ( za t
         "Afrique Du Sud"
         "South Africa")
-    ( ZM T
+    ( zm t
         "Zambie"
         "Zambia")
-    ( ZR T
+    ( zr t
         "Zaïre"
         "Zaire")
-    ( ZW T
+    ( zw t
         "Zimbabwe"
         "Zimbabwe")
-    ( ZZ T
+    ( zz t
         "Pays inconnu ou non spécifié"
         "Unknown or unspecified country")
     ));;+COUNTRIES+

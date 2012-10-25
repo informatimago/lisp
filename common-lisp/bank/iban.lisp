@@ -6,10 +6,7 @@
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    This class is an Internationnal Bank Account Number, 
-;;;;    according to European standard.
-;;;;
-;;;;    <a href=http://www.ecbs.org/iban/iban.htm>IBAN Format</a>
+;;;;    See defpackage documentation string.
 ;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
@@ -20,109 +17,161 @@
 ;;;;    as defined by iso-3166.  Some of these country code are not used
 ;;;;    (GP --> FR for example).  So an incorrect use of GP is not detected.
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2004 - 2004
+;;;;    Copyright Pascal J. Bourguignon 1994 - 2012
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DECLAIM (DECLARATION ALSO-USE-PACKAGES))
-(declaim (ALSO-USE-PACKAGES "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ISO3166"))
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.BANK.IBAN"
-  (:USE "COMMON-LISP"
+(in-package "COMMON-LISP-USER")
+(declaim (declaration also-use-packages))
+(declaim (also-use-packages "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ISO3166"))
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.BANK.IBAN"
+  (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
-  (:EXPORT "GET-AND-CHECK-ALPHANUM" "COMPUTE-IBAN-KEY" "CHECK-IBAN-KEY"
+  (:export "GET-AND-CHECK-ALPHANUM" "COMPUTE-IBAN-KEY" "CHECK-IBAN-KEY"
            "GET-IBAN" "GET-KEY" "GET-COUNTRY-CODE" "SET-IBAN" "GET-IBAN" "GET-KEY"
            "GET-COUNTRY-CODE" "CHECK-COUNTRY" "BASIC-FORM" "IBAN" "IBAN-ERROR")
-  (:DOCUMENTATION "
+  (:documentation "
 This class is an Internationnal Bank Account Number, 
-according to European standard.
-IBAN Format: http://www.ecbs.org/iban/iban.htm 
-
-Copyright Pascal J. Bourguignon 1994 - 2004
-This package is provided under the GNU General Public License.
-See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.BANK.IBAN")
+according to the European standard:
+IBAN Format: http://www.ecbs.org/iban/iban.htm
 
 
+License:
 
-
-
-(DEFINE-CONDITION IBAN-ERROR (ERROR) () (:DOCUMENTATION "An IBAN error."))
-
-
-
-(DEFCLASS IBAN ()
-  ((BASIC-FORM
-    :READER BASIC-FORM :INITFORM "FR00000000000000000000000"
-    :INITARG :BASIC-FORM  :TYPE STRING))
-  ) ;;IBAN
-
-
-(DEFGENERIC GET-AND-CHECK-ALPHANUM (SELF STRING &OPTIONAL LENGTH))
-(DEFGENERIC CHECK-COUNTRY (SELF))
-(DEFGENERIC GET-COUNTRY-CODE (SELF))
-(DEFGENERIC GET-KEY (SELF))
-(DEFGENERIC GET-IBAN (SELF &KEY WITH-SPACES))
-(DEFGENERIC SET-IBAN (SELF IBAN &KEY WITH-KEY))
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 1994 - 2012
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see http://www.gnu.org/licenses/
+"))
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.BANK.IBAN")
 
 
 
-(DEFMETHOD INITIALIZE-INSTANCE ((SELF IBAN) &REST ARGS)
-  (DECLARE (IGNORE ARGS))
-  (CALL-NEXT-METHOD)
-  (WHEN  (BASIC-FORM  SELF) 
-    (SET-IBAN SELF (BASIC-FORM  SELF)))
-  SELF) ;;INITIALIZE-INSTANCE
 
 
 
-(DEFMETHOD GET-COUNTRY-CODE ((SELF IBAN))
+(defgeneric basic-form (iban)
+  (:documentation "RETURN: The basic form of the IBAN."))
+
+(defgeneric get-and-check-alphanum (self string &optional length)
+  (:documentation "Check that STRING contains only alphanumeric character valid in an IBAN."))
+
+(defgeneric check-country (self)
+  (:documentation "
+DO:     Checks the country code in the basic-form, 
+        and raises an error if not valid.
+RAISE:  IBAN-ERROR 
+RETURN: SELF
+"))
+
+(defgeneric get-country-code (self)
+  (:documentation   "
+RETURN: The country code in the IBAN.
+"))
+
+(defgeneric get-key (self)
+  (:documentation   "
+RETURN: The computed key of the IBAN.
+"))
+
+(defgeneric get-iban (self &key with-spaces)
+  (:documentation   "
+RETURN: The IBAN as a string, with spaces inserted when WITH-SPACES is
+        true, else in basic form.
+"))
+
+(defgeneric set-iban (self iban &key with-key)
+  (:documentation  "
+DO:     Change the IBAN. If WITH-KEY is true then the IBAN key is checked
+        and an error raised if it is not valid, else the IBAN key is
+        computed and substituted.
+RETURN: SELF
+SIGNAL: An IBAN-ERROR when with-key and the key in the IBAN is incorrect.
+"))
+
+
+
+(define-condition iban-error (error)
+  ()
+  (:documentation "An IBAN error."))
+
+
+(defclass iban ()
+  ((basic-form
+    :reader basic-form
+    :initform "FR00000000000000000000000"
+    :initarg :basic-form
+    :type string
+    :documentation "The basic form of the IBAN."))
+  (:documentation "The Internationnal Bank Account Number class."))
+
+
+(defmethod initialize-instance ((self iban) &rest args)
+  (declare (ignore args))
+  (call-next-method)
+  (when  (basic-form  self) 
+    (set-iban self (basic-form  self)))
+  self) ;;INITIALIZE-INSTANCE
+
+
+
+(defmethod get-country-code ((self iban))
   "
 RETURN: The country code in the IBAN.
 "
-  (SUBSEQ (BASIC-FORM SELF) 0 2)) ;;GET-COUNTRY-CODE
+  (subseq (basic-form self) 0 2))
 
 
-(DEFMETHOD GET-KEY ((SELF IBAN))
+(defmethod get-key ((self iban))
   "
 RETURN: The computed key of the IBAN.
 "
-  (SUBSEQ (SLOT-VALUE SELF 'BASIC-FORM) 2 4)) ;;GET-KEY
+  (subseq (slot-value self 'basic-form) 2 4))
 
 
-(DEFMETHOD GET-IBAN ((SELF IBAN) &KEY (WITH-SPACES NIL))
+(defmethod get-iban ((self iban) &key (with-spaces nil))
   "
 RETURN: The IBAN, with spaces inserted when WITH-SPACES is true, 
         else in basic form.
 "
-  (IF WITH-SPACES
-      (DO ((IBAN (BASIC-FORM SELF))
-           (RES '())
-           (I 0 (+ I 4)))
-          ((>= (+ I 4) (LENGTH IBAN))
-           (PROGN (PUSH (SUBSEQ IBAN I) RES)
-                  (APPLY (FUNCTION CONCATENATE) 'STRING (NREVERSE RES))))
-        (PUSH (SUBSEQ IBAN I (+ I 4)) RES)
-        (PUSH " " RES))
-      (COPY-SEQ (BASIC-FORM SELF)))) ;;GET-IBAN
+  (if with-spaces
+      (do ((iban (basic-form self))
+           (res '())
+           (i 0 (+ i 4)))
+          ((>= (+ i 4) (length iban))
+           (progn (push (subseq iban i) res)
+                  (apply (function concatenate) 'string (nreverse res))))
+        (push (subseq iban i (+ i 4)) res)
+        (push " " res))
+      (copy-seq (basic-form self))))
 
 
 
@@ -131,81 +180,90 @@ RETURN: The IBAN, with spaces inserted when WITH-SPACES is true,
 ;;         0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ 
 
 
-(DEFPARAMETER +ALPHABET-FROM+
+(defparameter +alphabet-from+
   "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
 
 
-(DEFMETHOD GET-AND-CHECK-ALPHANUM ((SELF IBAN) STRING &OPTIONAL LENGTH)
-  (WHEN (AND LENGTH (/= LENGTH (LENGTH STRING)))
-    (SIGNAL 'IBAN-ERROR
+(defmethod get-and-check-alphanum ((self iban) string &optional length)
+  (when (and length (/= length (length string)))
+    (signal 'iban-error
             "For IBAN ~S:~%   Bad length,  expected ~D, got ~D: ~S" 
-            SELF LENGTH (LENGTH STRING) STRING))
-  (MAP 'STRING (LAMBDA (CH) 
-                 (LET ((INDEX (POSITION CH +ALPHABET-FROM+)))
-                   (UNLESS INDEX 
-                     (SIGNAL 'IBAN-ERROR
+            self length (length string) string))
+  (map 'string (lambda (ch) 
+                 (let ((index (position ch +alphabet-from+)))
+                   (unless index 
+                     (signal 'iban-error
                              "For IBAN ~S:~%    Bad character '~C' in ~S, ~
-                              should be alphanumeric." SELF CH STRING))
-                   (AREF +ALPHABET-FROM+ (IF (< INDEX 36) INDEX (- INDEX 26)))))
-       STRING))
+                              should be alphanumeric." self ch string))
+                   (aref +alphabet-from+ (if (< index 36) index (- index 26)))))
+       string))
 
 
-(DEFPARAMETER +COUNTRY-CODES+
-  (MAPCAR
-   (FUNCTION THIRD)
-   (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ISO3166:GET-COUNTRIES :ONLY-EXISTING T))
-  "List of 2-letter country codes.") ;;+COUNTRY-CODES+
+(defparameter +country-codes+
+  (mapcar
+   (function third)
+   (com.informatimago.common-lisp.cesarum.iso3166:get-countries :only-existing t))
+  "List of 2-letter country codes.")
 
 
-(DEFMETHOD CHECK-COUNTRY ((SELF IBAN))
+(defmethod check-country ((self iban))
   "
 DO:     Checks the country code in the basic-form, 
         and raises an error if not valid.
 RAISE:  IBAN-ERROR 
 RETURN: SELF
 "
-  (LET ((CC  (SUBSEQ (BASIC-FORM SELF) 0 2)))
-    (UNLESS (MEMBER CC +COUNTRY-CODES+ :TEST (FUNCTION STRING-EQUAL))
-      (SIGNAL 'IBAN-ERROR "For IBAN ~S:~%   Bad country code: ~S" SELF CC)))
-  SELF) ;;CHECK-COUNTRY
+  (let ((cc  (subseq (basic-form self) 0 2)))
+    (unless (member cc +country-codes+ :test (function string-equal))
+      (signal 'iban-error "For IBAN ~S:~%   Bad country code: ~S" self cc)))
+  self)
 
 
-(DEFUN CHECK-IBAN-KEY (IBAN)
-  ;; IBAN must be in basic format,  all non alphanumeric characters removed.
-  ;; 0- move the first four characters of the IBAN to the end.
-  ;; 1- convert the letters into numerics.
-  ;; 2- apply MOD 97-10 (ISO 7064) : remainder of n by 97 must be 1
-  ;; 3- return T when the IBAN key checks.
-  (= 1 (MOD
-        (LOOP
-           FOR CH ACROSS (CONCATENATE 'STRING (SUBSEQ IBAN 4) (SUBSEQ IBAN 0 4))
-           WITH N = 0
-           DO (SETF N (+ (* (IF (ALPHA-CHAR-P CH) 100 10) N)
-                         (PARSE-INTEGER (STRING CH) :RADIX 36 :JUNK-ALLOWED NIL)))
-           FINALLY (RETURN N)) 97))) ;;CHECK-IBAN-KEY
+(defun check-iban-key (iban)
+  "
+DO:         Check the IBAN KEY
+            The IBAN string must be in basic format,
+            all non alphanumeric characters removed.
+            0- move the first four characters of the IBAN to the end.
+            1- convert the letters into numerics.
+            2- apply MOD 97-10 (ISO 7064) : remainder of n by 97 must be 1
+            3- return T when the IBAN key checks.
+RETURN: Whether the IBAN key checks.
+"
+  (= 1 (mod
+        (loop
+           for ch across (concatenate 'string (subseq iban 4) (subseq iban 0 4))
+           with n = 0
+           do (setf n (+ (* (if (alpha-char-p ch) 100 10) n)
+                         (parse-integer (string ch) :radix 36 :junk-allowed nil)))
+           finally (return n)) 97)))
 
 
-(DEFUN COMPUTE-IBAN-KEY (COUNTRY ACCOUNT)
-  ;; ACCOUNT must be in basic format, all non alphanumeric characters removed.
-  ;; 0- create artificial IBAN with 00 check sum.
-  ;; 1- move the first four characters of the IBAN to the end.
-  ;; 2- convert the letters into numerics.
-  ;; 3- apply MOD 97-10 (ISO 7064): check sum is 98 - n mod 97.
-  ;; 4- return the complete IBAN.
-  (FORMAT NIL "~2A~2,'0D~A" 
-          COUNTRY
-          (- 98 (MOD (LOOP
-                        FOR CH ACROSS (CONCATENATE 'STRING  ACCOUNT COUNTRY "00")
-                        WITH N = 0
-                        DO (SETF N (+ (* (IF (ALPHA-CHAR-P CH) 100 10) N)
-                                      (PARSE-INTEGER (STRING CH)
-                                                     :RADIX 36 
-                                                     :JUNK-ALLOWED NIL)))
-                        FINALLY (RETURN N)) 97))
-          ACCOUNT)) ;;COMPUTE-IBAN-KEY
+(defun compute-iban-key (country account)
+  "
+DO:         Compute the IBAN key for the given ACCOUNT.
+            ACCOUNT must be in basic format, all non alphanumeric characters removed.
+            0- create artificial IBAN with 00 check sum.
+            1- move the first four characters of the IBAN to the end.
+            2- convert the letters into numerics.
+            3- apply MOD 97-10 (ISO 7064): check sum is 98 - n mod 97.
+            4- return the complete IBAN.
+RETURN: The new complete IBANA.
+"
+  (format nil "~2A~2,'0D~A" 
+          country
+          (- 98 (mod (loop
+                        for ch across (concatenate 'string  account country "00")
+                        with n = 0
+                        do (setf n (+ (* (if (alpha-char-p ch) 100 10) n)
+                                      (parse-integer (string ch)
+                                                     :radix 36 
+                                                     :junk-allowed nil)))
+                        finally (return n)) 97))
+          account))
 
 
-(DEFMETHOD SET-IBAN ((SELF IBAN) (IBAN STRING) &KEY (WITH-KEY NIL))
+(defmethod set-iban ((self iban) (iban string) &key (with-key nil))
   "
 DO:     Change the IBAN. If WITH-KEY is true then the IBAN key is checked
         and an error raised if it is not valid, else the IBAN key is
@@ -213,20 +271,19 @@ DO:     Change the IBAN. If WITH-KEY is true then the IBAN key is checked
 RETURN: SELF
 RAISE:  An IBAN-ERROR when with-key and the key in the IBAN is incorrect.
 "
-  (SETF IBAN (GET-AND-CHECK-ALPHANUM 
-              SELF (REMOVE-IF (COMPLEMENT (FUNCTION ALPHANUMERICP)) IBAN)))
-  (SETF (SLOT-VALUE SELF 'BASIC-FORM) 
-        (IF WITH-KEY
-            (IF (CHECK-IBAN-KEY IBAN)
-                (SIGNAL 'IBAN-ERROR
+  (setf iban (get-and-check-alphanum 
+              self (remove-if (complement (function alphanumericp)) iban)))
+  (setf (slot-value self 'basic-form) 
+        (if with-key
+            (if (check-iban-key iban)
+                (signal 'iban-error
                         "For IBAN ~S~%    Invalid key, given=~S, computed=~S."
-                        (SUBSEQ IBAN 2 4)
-                        (SUBSEQ (COMPUTE-IBAN-KEY (SUBSEQ IBAN 0 2)
-                                                  (SUBSEQ IBAN 4)) 2 4))
-                IBAN)
-            (COMPUTE-IBAN-KEY (SUBSEQ IBAN 0 2) (SUBSEQ IBAN 4))))
-  (CHECK-COUNTRY SELF)
-  SELF) ;;SET-IBAN
+                        (subseq iban 2 4)
+                        (subseq (compute-iban-key (subseq iban 0 2)
+                                                  (subseq iban 4)) 2 4))
+                iban)
+            (compute-iban-key (subseq iban 0 2) (subseq iban 4))))
+  (check-country self)
+  self)
 
-
-;;;; iban.lisp                        --                     --          ;;;;
+;;;; THE END ;;;;

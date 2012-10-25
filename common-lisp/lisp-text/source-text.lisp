@@ -23,30 +23,28 @@
 ;;;;  - write (port from pjb-emacs.el) the "source" walker  WALK-FORMS (walk-sexp), etc.
 ;;;;
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal Bourguignon 2007 - 2007
+;;;;    Copyright Pascal Bourguignon 2007 - 2012
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
 
-(IN-PACKAGE "COMMON-LISP-USER")
-(DEFPACKAGE "COM.INFORMATIMAGO.COMMON-LISP.LISP-TEXT.SOURCE-TEXT"
-  (:USE "COMMON-LISP"
+(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.LISP-TEXT.SOURCE-TEXT"
+  (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.READER")
   (:shadowing-import-from
    "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.READER"
@@ -62,15 +60,16 @@
    "WITH-STANDARD-IO-SYNTAX"
    "*READ-BASE*" "*READ-DEFAULT-FLOAT-FORMAT*" "*READ-EVAL*"
    "*READ-SUPPRESS*" "*READTABLE*")
-  (:EXPORT
+  (:export
    "BUILD-LINE-INDEX"  "GET-LINE-AND-COLUMN"
    ;; ---- ;;
-   "*SOURCE-READTABLE*"  "SOURCE-SIGNAL-ERRORS*"
+   "*SOURCE-READTABLE*"  "*SOURCE-SIGNAL-ERRORS*"
    "SOURCE-READ"
    "SOURCE-OBJECT"
    "SOURCE-OBJECT-FILE"
    "SOURCE-OBJECT-POSITION"
    "SOURCE-OBJECT-TEXT"
+   "SOURCE-OBJECT-SUBFORM"
    "SOURCE-TOKEN"
    "SOURCE-TOKEN-TEXT"
    "SOURCE-TOKEN-TRAITS"
@@ -87,7 +86,6 @@
    "SOURCE-STRING"
    "SOURCE-STRING-VALUE"
    "SOURCE-SUBFORM"
-   "SOURCE-OBJECT-SUBFORM"
    "SOURCE-QUOTE"
    "SOURCE-BACKQUOTE"
    "SOURCE-UNQUOTE"
@@ -104,7 +102,6 @@
    "SOURCE-NOT-FEATURE"
    "SOURCE-READ-EVAL"
    "SOURCE-TOKEN"
-   "SOURCE-OBJECT-TOKEN"
    "SOURCE-SHARP-PIPE-COMMENT"
    "SOURCE-FUNCTION"
    "SOURCE-VECTOR"
@@ -123,7 +120,7 @@
    ;; ---- ;;
    "SOURCE-ATOM-P" "MAP-SOURCE-STREAM" "MAP-SOURCE-FILE"
    )
-  (:DOCUMENTATION "
+  (:documentation "
     This package exports functions to read and manipulate
     Common Lisp sources.  Most of the text source properties
     are kept (file position, line number, comments, feature
@@ -133,12 +130,18 @@
     Copyright Pascal J. Bourguignon 2007 - 2007
     This package is provided under the GNU General Public License.
     See the source file for details."))
-(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.LISP-TEXT.SOURCE-TEXT")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.LISP-TEXT.SOURCE-TEXT")
 
 
 ;;; ---------------------------------------- ;;;
 
 (defun build-line-index (file-path &key (external-format :default))
+  "
+DO:                 Build an index of the line positions in the file.
+FILE-PATH:          The pathname of a text file.
+EXTERNAL-FORMAT:    Passed to OPEN. Default: :default.
+RETURN:             A vector of file positions of the beginning of each line.
+"
   (with-open-file (input file-path :external-format external-format)
     (let ((line-positions (make-array 0
                                       :adjustable t :fill-pointer 0
@@ -154,9 +157,9 @@
 
 ;;; Copied from utility.lisp to avoid package loops
 
-(DEFUN DICHOTOMY-SEARCH (VECTOR VALUE COMPARE &KEY
-                         (START 0) (END (LENGTH VECTOR))
-                         (KEY (FUNCTION IDENTITY)))
+(defun dichotomy-search (vector value compare &key
+                         (start 0) (end (length vector))
+                         (key (function identity)))
   "
 PRE:	entry is the element to be searched in the table.
         (<= start end)
@@ -171,19 +174,19 @@ POST:	(<= start index end)
         | a[max] < x        |   FALSE  |  max  |  greater |      0         |
         +-------------------+----------+-------+----------+----------------+
 "
-  (LET* ((CURMIN START)
-         (CURMAX END)
-         (INDEX    (TRUNCATE (+ CURMIN CURMAX) 2))
-         (ORDER  (FUNCALL COMPARE VALUE (FUNCALL KEY (AREF VECTOR INDEX)))) )
-    (LOOP :WHILE (AND (/= 0 ORDER) (/= CURMIN INDEX)) :DO
-       (IF (< ORDER 0)
-           (SETF CURMAX INDEX)
-           (SETF CURMIN INDEX))
-       (SETF INDEX (TRUNCATE (+ CURMIN CURMAX) 2))
-       (SETF ORDER  (FUNCALL COMPARE VALUE (FUNCALL KEY (AREF VECTOR INDEX)))))
-    (WHEN (AND (< START INDEX) (< ORDER 0))
-      (SETF ORDER 1)
-      (DECF INDEX))
+  (let* ((curmin start)
+         (curmax end)
+         (index    (truncate (+ curmin curmax) 2))
+         (order  (funcall compare value (funcall key (aref vector index)))) )
+    (loop :while (and (/= 0 order) (/= curmin index)) :do
+       (if (< order 0)
+           (setf curmax index)
+           (setf curmin index))
+       (setf index (truncate (+ curmin curmax) 2))
+       (setf order  (funcall compare value (funcall key (aref vector index)))))
+    (when (and (< start index) (< order 0))
+      (setf order 1)
+      (decf index))
     (assert
      (or (< (funcall compare value (funcall key (aref vector index))) 0)
          (and (> (funcall compare value (funcall key (aref vector index))) 0)
@@ -191,7 +194,7 @@ POST:	(<= start index end)
                   (< (funcall compare value
                               (funcall key (aref vector (1+  index)))) 0)))
          (= (funcall compare value (funcall key (aref vector index))) 0)))
-    (VALUES (= ORDER 0) INDEX ORDER)))
+    (values (= order 0) index order)))
 
 
 (defun get-line-and-column (line-positions pos)
@@ -400,8 +403,12 @@ MACRO-CHARACTER: The macro character that has been read (as passed
 ;;; STANDARD READER MACRO FUNCTIONS
 ;;;---------------------------------------------
 
+(defgeneric comment-text (comment)
+  (:documentation "The text of the comment."))
+
 (defclass comment (source-object)
-  ((comment :accessor comment-text :initarg :comment)))
+  ((comment :accessor comment-text :initarg :comment))
+  (:documentation "Represents a source comment."))
 
 
 ;;; ---------------------------------------- ;;;
@@ -716,7 +723,7 @@ POST:  The dispatching reader macro function for the MACRO-CHARACTER
 
 (defclass source-sharp-pipe-comment (comment dispatch-macro-character-mixin) ())
 
-(defun source-reader-dispatch-macro-COMMENT           (stream arg sub-char)
+(defun source-reader-dispatch-macro-comment           (stream arg sub-char)
   "Source reader #| dispatch macro reader."
   ;; #|...|# is treated as a comment by the reader. It must be balanced
   ;; with respect to other occurrences of #| and |#, but otherwise may
@@ -829,7 +836,7 @@ URL: http://www.lispworks.com/documentation/HyperSpec/Body/02_dhd.htm
               :initarg :character)))
 
 
-(defun source-reader-dispatch-macro-CHAR              (stream arg sub-char)
+(defun source-reader-dispatch-macro-char              (stream arg sub-char)
   "Source reader #\\ dispatch macro reader."
   (building-reader-dispatch-macro-source-object
    stream arg sub-char
@@ -841,7 +848,7 @@ URL: http://www.lispworks.com/documentation/HyperSpec/Body/02_dhd.htm
 
 (defclass source-array (source-subform dispatch-macro-character-mixin) ())
 
-(defun source-reader-dispatch-macro-ARRAY             (stream arg sub-char)
+(defun source-reader-dispatch-macro-array             (stream arg sub-char)
   "Source reader #A dispatch macro reader."
   (building-reader-dispatch-macro-source-object
    stream arg sub-char
@@ -861,7 +868,7 @@ URL: http://www.lispworks.com/documentation/HyperSpec/Body/02_dhd.htm
    (specificp :accessor source-base-number-specific
               :initarg :specificp)))
 
-(defun source-reader-dispatch-macro-BINARY            (stream arg sub-char)
+(defun source-reader-dispatch-macro-binary            (stream arg sub-char)
   "Source reader #B dispatch macro reader."
   (building-reader-dispatch-macro-source-object
    stream arg sub-char
@@ -872,7 +879,7 @@ URL: http://www.lispworks.com/documentation/HyperSpec/Body/02_dhd.htm
            stream arg sub-char 2.)))
 
 
-(defun source-reader-dispatch-macro-OCTAL             (stream arg sub-char)
+(defun source-reader-dispatch-macro-octal             (stream arg sub-char)
   "Source reader #O dispatch macro reader."
   (building-reader-dispatch-macro-source-object
    stream arg sub-char
@@ -883,7 +890,7 @@ URL: http://www.lispworks.com/documentation/HyperSpec/Body/02_dhd.htm
            stream arg sub-char 8.)))
 
 
-(defun source-reader-dispatch-macro-HEXADECIMAL       (stream arg sub-char)
+(defun source-reader-dispatch-macro-hexadecimal       (stream arg sub-char)
   "Source reader #X dispatch macro reader."
   (building-reader-dispatch-macro-source-object
    stream arg sub-char
@@ -894,7 +901,7 @@ URL: http://www.lispworks.com/documentation/HyperSpec/Body/02_dhd.htm
            stream arg sub-char 16.)))
 
 
-(defun source-reader-dispatch-macro-RADIX             (stream arg sub-char)
+(defun source-reader-dispatch-macro-radix             (stream arg sub-char)
   "Source reader #R dispatch macro reader."
   (building-reader-dispatch-macro-source-object
    stream arg sub-char
@@ -913,7 +920,7 @@ URL: http://www.lispworks.com/documentation/HyperSpec/Body/02_dhd.htm
 (defclass source-complex (source-subform dispatch-macro-character-mixin) ())
 
 
-(defun source-reader-dispatch-macro-COMPLEX           (stream arg sub-char)
+(defun source-reader-dispatch-macro-complex           (stream arg sub-char)
   "Source reader #C dispatch macro reader."
   (building-reader-dispatch-macro-source-object
    stream arg sub-char
@@ -932,7 +939,7 @@ URL: http://www.lispworks.com/documentation/HyperSpec/Body/02_dhd.htm
 
 (defclass source-pathname (source-subform dispatch-macro-character-mixin) ())
 
-(defun source-reader-dispatch-macro-PATHNAME          (stream arg sub-char)
+(defun source-reader-dispatch-macro-pathname          (stream arg sub-char)
   "Source reader #P dispatch macro reader."
   (building-reader-dispatch-macro-source-object
    stream arg sub-char
@@ -944,7 +951,7 @@ URL: http://www.lispworks.com/documentation/HyperSpec/Body/02_dhd.htm
 
 (defclass source-structure (source-subform dispatch-macro-character-mixin) ())
 
-(defun source-reader-dispatch-macro-STRUCTURE         (stream arg sub-char)
+(defun source-reader-dispatch-macro-structure         (stream arg sub-char)
   "Source reader #S dispatch macro reader."
   (building-reader-dispatch-macro-source-object
    stream arg sub-char
@@ -955,7 +962,7 @@ URL: http://www.lispworks.com/documentation/HyperSpec/Body/02_dhd.htm
 ;;; ---------------------------------------- ;;;
 
 
-(defun SOURCE-READER-DISPATCH-MACRO-ERROR-INVALID (stream sub-char arg)
+(defun source-reader-dispatch-macro-error-invalid (stream sub-char arg)
   (building-reader-dispatch-macro-source-object
    stream arg sub-char
    'source-lexical-error
@@ -1000,28 +1007,28 @@ RETURN: A new readtable where all the reader macros are set to
                               clauses))))
       (make-dispatch-macro-character #\# t readtable)
       (dmc
-       (#\# #\SPACE   SOURCE-READER-DISPATCH-MACRO-ERROR-INVALID)
-       (#\# #\NEWLINE SOURCE-READER-DISPATCH-MACRO-ERROR-INVALID)
-       (#\# #\# SOURCE-READER-DISPATCH-MACRO-LABEL-REFERENCE)
-       (#\# #\' SOURCE-READER-DISPATCH-MACRO-FUNCTION)
-       (#\# #\( SOURCE-READER-DISPATCH-MACRO-VECTOR)
-       (#\# #\* SOURCE-READER-DISPATCH-MACRO-BIT-VECTOR)
-       (#\# #\+ SOURCE-READER-DISPATCH-MACRO-FEATURE)
-       (#\# #\- SOURCE-READER-DISPATCH-MACRO-NOT-FEATURE)
-       (#\# #\. SOURCE-READER-DISPATCH-MACRO-READ-EVAL)
-       (#\# #\: SOURCE-READER-DISPATCH-MACRO-UNINTERNED)
-       (#\# #\< SOURCE-READER-DISPATCH-MACRO-UNREADABLE)
-       (#\# #\= SOURCE-READER-DISPATCH-MACRO-LABEL-DEFINITION)
-       (#\# #\A SOURCE-READER-DISPATCH-MACRO-ARRAY)
-       (#\# #\B SOURCE-READER-DISPATCH-MACRO-BINARY)
-       (#\# #\C SOURCE-READER-DISPATCH-MACRO-COMPLEX)
-       (#\# #\O SOURCE-READER-DISPATCH-MACRO-OCTAL)
-       (#\# #\P SOURCE-READER-DISPATCH-MACRO-PATHNAME)
-       (#\# #\R SOURCE-READER-DISPATCH-MACRO-RADIX)
-       (#\# #\S SOURCE-READER-DISPATCH-MACRO-STRUCTURE)
-       (#\# #\X SOURCE-READER-DISPATCH-MACRO-HEXADECIMAL)
-       (#\# #\\ SOURCE-READER-DISPATCH-MACRO-CHAR)
-       (#\# #\| SOURCE-READER-DISPATCH-MACRO-COMMENT)
+       (#\# #\SPACE   source-reader-dispatch-macro-error-invalid)
+       (#\# #\NEWLINE source-reader-dispatch-macro-error-invalid)
+       (#\# #\# source-reader-dispatch-macro-label-reference)
+       (#\# #\' source-reader-dispatch-macro-function)
+       (#\# #\( source-reader-dispatch-macro-vector)
+       (#\# #\* source-reader-dispatch-macro-bit-vector)
+       (#\# #\+ source-reader-dispatch-macro-feature)
+       (#\# #\- source-reader-dispatch-macro-not-feature)
+       (#\# #\. source-reader-dispatch-macro-read-eval)
+       (#\# #\: source-reader-dispatch-macro-uninterned)
+       (#\# #\< source-reader-dispatch-macro-unreadable)
+       (#\# #\= source-reader-dispatch-macro-label-definition)
+       (#\# #\A source-reader-dispatch-macro-array)
+       (#\# #\B source-reader-dispatch-macro-binary)
+       (#\# #\C source-reader-dispatch-macro-complex)
+       (#\# #\O source-reader-dispatch-macro-octal)
+       (#\# #\P source-reader-dispatch-macro-pathname)
+       (#\# #\R source-reader-dispatch-macro-radix)
+       (#\# #\S source-reader-dispatch-macro-structure)
+       (#\# #\X source-reader-dispatch-macro-hexadecimal)
+       (#\# #\\ source-reader-dispatch-macro-char)
+       (#\# #\| source-reader-dispatch-macro-comment)
        ;; clisp extensions:
        ;; (#\# #\! reader-dispatch-macro-executable)
        ;; (#\# #\" reader-dispatch-macro-clisp-pathname)
