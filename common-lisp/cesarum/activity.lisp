@@ -52,7 +52,8 @@
 
 (in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ACTIVITY"
-  (:use "COMMON-LISP")
+  (:use "COMMON-LISP"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
   (:export
    "MAKE-ACTIVITY" "CURRENT-ACTIVITY" "ACTIVITYP" "ACTIVITY-YIELD"
    "ALL-ACTIVITIES" "DESTROY-ACTIVITY" "ACTIVITY-RUN"
@@ -464,6 +465,7 @@ and restart the scheduling then.")
     :documentation "The time-base used by this scheduler."))
   (:documentation "The base class for schedulers."))
 
+
 (defgeneric print-scheduler-activities (scheduler &optional stream))
 (defgeneric scheduler-all-activities (scheduler))
 (defgeneric schedule-activity   (scheduler activity))
@@ -493,7 +495,7 @@ are not idle activities anymore (ie with period>0."))
 in round-robin fashion for "))
 
 (defmethod scheduler-all-activities ((scheduler idle-scheduler))
-  (copy-list (scheduler-activities scheduler)))
+  (list-elements (scheduler-activities scheduler)))
 
 (defmethod schedule-activity ((scheduler idle-scheduler) (activity activity))
   (setf *rescheduled* t)
@@ -502,8 +504,7 @@ in round-robin fashion for "))
      (if (scheduler-activities scheduler)
          (push activity (scheduler-activities scheduler))
          (setf (scheduler-activities scheduler) (list activity)
-               (cdr (scheduler-activities scheduler))
-               (scheduler-activities scheduler))))
+               (cdr (scheduler-activities scheduler)) (scheduler-activities scheduler))))
     ((idle-scheduler-main-scheduler scheduler)
      (schedule-activity (idle-scheduler-main-scheduler scheduler)
                         activity)))
@@ -621,11 +622,11 @@ UNTIL:  Time until which activities must be run.
 (defgeneric time-scheduler-idle-activities (scheduler))
 
 (defmethod time-scheduler-idle-activities ((scheduler time-scheduler))
-  (scheduler-activities (time-scheduler-idle-scheduler scheduler)))
+  (list-elements (scheduler-activities (time-scheduler-idle-scheduler scheduler))))
 
 (defmethod scheduler-all-activities ((scheduler time-scheduler))
-  (append (time-scheduler-idle-activities scheduler)
-          (copy-list (scheduler-activities scheduler))))
+  (nconc (time-scheduler-idle-activities scheduler)
+         (list-elements (scheduler-activities scheduler))))
 
 (defmethod schedule-activity ((scheduler time-scheduler) (activity activity))
   "
@@ -778,6 +779,7 @@ UNTIL:      Time (in universal-time seconds) until which activities
         (line-cs
          (let ((precision      (precision (scheduler-time-base scheduler)))
                (all-activities (scheduler-all-activities scheduler)))
+           (print (list 'all-activities all-activities)) (finish-output)
            (format nil "~~&~~4D ~~8A ~A ~A ~~:[.~~;D~~]~~:[.~~;E~~] ~~S~~%"
                    (format-for-field all-activities
                                      (function activity-scheduled-time)
