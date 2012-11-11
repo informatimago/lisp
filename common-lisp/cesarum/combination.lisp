@@ -38,7 +38,9 @@
   (:export "DONE-P" "GET-NEXT-ELEMENT" "GET-CURRENT-ELEMENT" "RESET"
            "AT-BEGINNING-P" "ELEMENT-SIZE" "BASE-CARDINAL" "INDEX" "CARDINAL"
            "ARRANGEMENT" "COMBINATION" "ARRANGEMENT-SANS-REPEAT"
-           "ARRANGEMENT-WITH-REPEAT")
+           "ARRANGEMENT-WITH-REPEAT"
+           ;; ---
+           "COMBINATIONS")
   (:shadow "STEP")
   (:documentation
    "
@@ -440,6 +442,24 @@ RETURN: The number of arrangement of k elements (without repeat) taken amongst n
   (next-step (slot-value self 'choice)
              (- (base-cardinal self) (1- (element-size self)))
              (1- (element-size self))))
+
+
+(defun combinations (list n)
+  "
+RETURN: a list of all the combinations of N elements from the LIST.
+"
+  (cond
+    ((zerop n)
+     '(()))
+    ((< (length list) n)
+     '())
+    ((= (length list) n)
+     (list list))
+    (t
+     (nconc (mapcar (lambda (subcomb)
+                      (cons (first list) subcomb))
+                    (combinations (rest list) (1- n)))
+            (combinations (rest list) n)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
