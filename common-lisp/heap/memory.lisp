@@ -12,8 +12,8 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2004-12-22 <PJB> Created.
 ;;;;    2012-10-26 <PJB> Added memory-operate.
+;;;;    2004-12-22 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
@@ -37,7 +37,7 @@
 (in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.HEAP.MEMORY"
   (:use "COMMON-LISP")
-  (:export "MEMORY-EPILOG" "MEMORY-PROLOG" "DUMP" "VALID-ADDRESS-P"
+  (:export "MEMORY-EPILOG" "MEMORY-PROLOG" "MEMORY-OPERATE" "DUMP" "VALID-ADDRESS-P"
            "WITH-MEMORY" "POKE-UINT64" "POKE-UINT32" "POKE-UINT16" "POKE-UINT8"
            "PEEK-UINT64" "PEEK-UINT32" "PEEK-UINT16" "PEEK-UINT8" "SIZE" "BASE"
            "MEMORY-VECTOR-64" "MEMORY")
