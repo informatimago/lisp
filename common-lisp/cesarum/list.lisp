@@ -54,7 +54,7 @@
            "PLIST-KEYS" "PLIST-REMOVE" "PLIST-GET"
            "PLIST-PUT" "PLIST-CLEANUP" "HASHED-INTERSECTION" 
            ;; "HASHED-REMOVE-DUPLICATES" moved to COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE
-           "ENSURE-LIST" "PROPER-LIST-P" "LIST-LENGTHS"
+           "ENSURE-LIST" "PROPER-LIST-P" "LIST-LENGTHS" "LIST-ELEMENTS"
            "ENSURE-CIRCULAR" "MAKE-CIRCULAR-LIST" "CIRCULAR-LENGTH"
            "TREE-DIFFERENCE" "REPLACE-TREE" "MAPTREE")
   (:documentation
@@ -157,7 +157,6 @@ RETURN: for a proper list, the length of the list and 0;
       (null  (values 0 0))
       (t     (values 0 nil)))))
 
-
 (defun test/list-lengths ()
   (dolist (test
             '( ;; proper lists
@@ -200,6 +199,85 @@ RETURN: for a proper list, the length of the list and 0;
                 (result)
                 "(list-lengths '~S)~%  returned ~S~%  expected ~S~%"
                 list result expected)))))
+
+
+
+(defun list-elements (clist)
+  "
+CLIST is any kind of list: proper-list, circular-list or dotted-list.
+RETURN: for a proper list:     a copy of clist, the length of the list and 0;
+        for a circular list:   a list of elements in the clist, the length of the stem, and the length of the circle;
+        for a dotted list:     a list of the elements in the clist, the number of cons cells, and nil;
+        for an atom:           a list of the atom, 0, and nil.
+"
+  (cond
+    ((null clist) ; a proper list
+     (values '() 0 0))
+    ((atom clist)
+     (values (list clist) 0 nil))
+    (t
+     (loop
+       :named scan
+       :with cells = (make-hash-table)
+       :with elements = '()
+       :for index :from 0
+       :for cell = clist :then (cdr cell)
+       :for previous = (gethash cell cells)
+       :do (cond
+             ((null cell)             ; proper list
+              (return-from scan (values (nreverse elements) index 0)))
+             ((atom cell)             ; dotted list
+              (push cell elements)
+              (return-from scan (values (nreverse elements) index nil)))
+             (previous                ; a circular list
+              (return-from scan (values (nreverse elements) previous (- index previous))))
+             (t                       ; in the middle
+              (setf (gethash cell cells) index)
+              (push (car cell) elements)))))))
+
+
+(defun test/list-elements ()
+  (dolist (test
+            '( ;; proper lists
+              (()  ()  0 0)
+              ((a)  (a) 1 0)
+              ((a b)  (a b) 2 0)
+              ((a b c)  (a b c) 3 0)
+              ((a b c d)  (a b c d) 4 0)
+              ((a b c d e)  (a b c d e) 5 0)
+              ;; dotted lists
+              (a  (a) 0 nil)
+              ((a . b) (a b) 1 nil)
+              ((a b . c) (a b c) 2 nil)
+              ((a b c . d) (a b c d) 3 nil)
+              ((a b c d . e) (a b c d e) 4 nil)
+              ((a b c d e . f) (a b c d e f) 5 nil)
+              ;; circular lists
+              (#1=(a . #1#)  (a) 0 1)
+              (#2=(a b . #2#)  (a b) 0 2)
+              (#3=(a b c . #3#) (a b c) 0 3)
+              (#4=(a b c d . #4#) (a b c d) 0 4)
+              (#5=(a b c d e . #5#) (a b c d e) 0 5)
+              ((a . #6=(b . #6#)) (a b) 1 1)
+              ((a . #7=(b c . #7#)) (a b c) 1 2)
+              ((a . #8=(b c d . #8#)) (a b c d) 1 3)
+              ((a . #9=(b c d e . #9#)) (a b c d e) 1 4)
+              ((a b . #10=(c . #10#)) (a b c) 2 1)
+              ((a b . #11=(c d . #11#)) (a b c d) 2 2)
+              ((a b . #12=(c d e . #12#)) (a b c d e) 2 3)
+              ((a b c . #13=(d . #13#)) (a b c d) 3 1)
+              ((a b c . #14=(d e . #14#)) (a b c d e) 3 2)
+              ((a b c d . #15=(e . #15#)) (a b c d e) 4 1)
+              ((a b c d e . #16=(#16#)) (a b c d e #16#) 6 0) ; a proper list! :-)
+              )
+           :success)
+    (destructuring-bind (list . expected) test
+      (let ((result  (multiple-value-list (list-elements list)))
+            (*print-circle* t))
+        (assert (equal expected result)
+                (result)
+                "(~A '~S)~%  returned ~S~%  expected ~S~%"
+                'list-elements list result expected)))))
 
 
 
@@ -828,5 +906,9 @@ RETURN: dst
 ;;;       (finish-output)
 ;;;       (time (setf l2 (list-to-set l2))))
 ;; (array->list array) --> (coerce array 'list)
+
+(defun test ()
+  (test/list-lengths)
+  (test/list-elements))
 
 ;;;; THE END ;;;;
