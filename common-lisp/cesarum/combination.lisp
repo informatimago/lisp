@@ -38,7 +38,9 @@
   (:export "DONE-P" "GET-NEXT-ELEMENT" "GET-CURRENT-ELEMENT" "RESET"
            "AT-BEGINNING-P" "ELEMENT-SIZE" "BASE-CARDINAL" "INDEX" "CARDINAL"
            "ARRANGEMENT" "COMBINATION" "ARRANGEMENT-SANS-REPEAT"
-           "ARRANGEMENT-WITH-REPEAT")
+           "ARRANGEMENT-WITH-REPEAT"
+           ;; ---
+           "COMBINATIONS")
   (:shadow "STEP")
   (:documentation
    "
@@ -458,6 +460,7 @@ RETURN: a list of all the combinations of N elements from the LIST.
                       (cons (first list) subcomb))
                     (combinations (rest list) (1- n)))
             (combinations (rest list) n)))))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

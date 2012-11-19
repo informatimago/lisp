@@ -56,6 +56,7 @@
 
 (defpackage "COM.INFORMATIMAGO.RDP"
   (:use "COMMON-LISP"
+        ;; "CL-STEPPER"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CONSTRAINTS"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PEEK-STREAM"
@@ -118,10 +119,11 @@ License, or (at your option) any later version.
 
 
 (defstruct (grammar
-             (:print-function (lambda (object stream depth)
-                                (declare (ignore depth))
-                                (print-unreadable-object (object stream :type t :identity t)
-                                  (format stream "~A" (grammar-name object))))))
+             (:print-function
+              (cl:lambda (object stream depth)
+                (declare (ignore depth))
+                (print-unreadable-object (object stream :type t :identity t)
+                  (format stream "~A" (grammar-name object))))))
   name terminals start rules
   all-terminals
   all-non-terminals
@@ -1055,67 +1057,70 @@ RETURN:  When the SEQUENCE is a vector, the SEQUENCE itself, or a dispaced
                           ,@(when (grammar-skip-spaces grammar)
                                   `((setf match (string-match *spaces*
                                                               (scanner-buffer scanner)
-                                                              :start (scanner-column scanner)))
+                                                              :start (1- (scanner-column scanner))))
                                     (when match
-                                      (setf (scanner-column scanner) (match-end 1 match)))))
-                          (cond
-                            ;; end of source
-                            ((scanner-end-of-source-p scanner)
-                             (setf (scanner-column scanner)   (length (scanner-buffer scanner))
-                                   (scanner-current-token scanner) '|<END OF SOURCE>|
-                                   (scanner-current-text scanner)   "<END OF SOURCE>"))
-                            ;; Literal Alpha Numeric and Non Alpha Numeric Terminals:
-                            ,@(when (or an-terminals nan-terminals)
-                                    `(((or ,@(when an-terminals
-                                                   `((setf match (string-match ',lit-an-terminals-regexp
-                                                                               (scanner-buffer scanner)
-                                                                               :start (scanner-column scanner)))))
-                                           ,@(when nan-terminals
-                                                   `((setf match (string-match ',lit-nan-terminals-regexp
-                                                                               (scanner-buffer scanner)
-                                                                               :start (scanner-column scanner))))))
-                                       (let ((text (match-string 1 (scanner-buffer scanner) match)))
-                                        (setf (scanner-column scanner)        (match-end 1 match)
-                                              ;; TODO: See what package we intern in!
-                                              (scanner-current-token scanner) (intern text)
-                                              (scanner-current-text scanner)  text)))))
-                            ;; Non Literal Terminals: we have a regexp for each terminal.
-                            ,@(mapcar
-                               (lambda (terminal)
-                                 `(,(if (= 4 (length terminal))
-                                        ;; (terminal-name match-regexp / exclude-regexp)
-                                        `(and (setf match (string-match
-                                                           ',(format nil "^(~A)" (second terminal))
-                                                           (scanner-buffer scanner)
-                                                           :start (scanner-column scanner)))
-                                              (not (string-match ,(format nil "^(~A)" (fourth terminal))
-                                                                 (scanner-buffer scanner)
-                                                                 :start (match-end 1 match))))
-                                        ;; (terminal-name match-regexp)
-                                        `(setf match (string-match
-                                                      ',(format nil "^(~A)" (second terminal))
-                                                      (scanner-buffer scanner)
-                                                      :start (scanner-column scanner))))
-                                    (setf (scanner-column scanner)        (match-end 1 match)
-                                          (scanner-current-token scanner) ',(first terminal)
-                                          (scanner-current-text scanner)  (match-string 1 (scanner-buffer scanner) match))))
-                               nl-terminals)
-                            ;; Else we have an error:
-                            (t
-                             (error 'scanner-error-invalid-character
-                                    :line   (scanner-line   scanner)
-                                    :column (scanner-column scanner)
-                                    :state  (scanner-state  scanner)
-                                    :current-token (scanner-current-token scanner)
-                                    :scanner scanner
-                                    :invalid-character (aref (scanner-buffer scanner) (scanner-column scanner))
-                                    :format-control "Invalid character ~C at position: ~D~%~S~%~{~A --> ~S~}"
-                                    :format-arguments (list
-                                                       (aref (scanner-buffer scanner) (scanner-column scanner))
-                                                       (scanner-column scanner)
-                                                       *non-terminal-stack*
-                                                       (assoc (first *non-terminal-stack*)
-                                                              ',(grammar-rules grammar)))))))))))
+                                      (setf (scanner-column scanner) (1+ (match-end 1 match))))))
+                          (let ((pos (1- (scanner-column scanner))))
+                            (cond
+                              ;; end of source
+                              ((scanner-end-of-source-p scanner)
+                               (setf (scanner-column scanner)   (1+ (length (scanner-buffer scanner)))
+                                     (scanner-current-token scanner) '|<END OF SOURCE>|
+                                     (scanner-current-text scanner)   "<END OF SOURCE>"))
+                              ;; end of line
+                              ((scanner-end-of-line-p scanner)
+                               (advance-line scanner))
+                              ;; Literal Alpha Numeric and Non Alpha Numeric Terminals:
+                              ,@(when (or an-terminals nan-terminals)
+                                      `(((or ,@(when an-terminals
+                                                     `((setf match (string-match ',lit-an-terminals-regexp
+                                                                                 (scanner-buffer scanner)
+                                                                                 :start pos))))
+                                             ,@(when nan-terminals
+                                                     `((setf match (string-match ',lit-nan-terminals-regexp
+                                                                                 (scanner-buffer scanner)
+                                                                                 :start pos)))))
+                                         (let ((text (match-string 1 (scanner-buffer scanner) match)))
+                                           (setf (scanner-column scanner)        (1+ (match-end 1 match))
+                                                 (scanner-current-token scanner) text ;; (intern text) ;; TODO: See what package we intern in!
+                                                 (scanner-current-text scanner)  text)))))
+                              ;; Non Literal Terminals: we have a regexp for each terminal.
+                              ,@(mapcar
+                                 (lambda (terminal)
+                                   `(,(if (= 4 (length terminal))
+                                          ;; (terminal-name match-regexp / exclude-regexp)
+                                          `(and (setf match (string-match
+                                                             ',(format nil "^(~A)" (second terminal))
+                                                             (scanner-buffer scanner)
+                                                             :start pos))
+                                                (not (string-match ,(format nil "^(~A)" (fourth terminal))
+                                                                   (scanner-buffer scanner)
+                                                                   :start (match-end 1 match))))
+                                          ;; (terminal-name match-regexp)
+                                          `(setf match (string-match
+                                                        ',(format nil "^(~A)" (second terminal))
+                                                        (scanner-buffer scanner)
+                                                        :start pos)))
+                                      (setf (scanner-column scanner)        (1+ (match-end 1 match))
+                                            (scanner-current-token scanner) ',(first terminal)
+                                            (scanner-current-text scanner)  (match-string 1 (scanner-buffer scanner) match))))
+                                 nl-terminals)
+                              ;; Else we have an error:
+                              (t
+                               (error 'scanner-error-invalid-character
+                                      :line   (scanner-line   scanner)
+                                      :column (scanner-column scanner)
+                                      :state  (scanner-state  scanner)
+                                      :current-token (scanner-current-token scanner)
+                                      :scanner scanner
+                                      :invalid-character (aref (scanner-buffer scanner) pos)
+                                      :format-control "Invalid character ~S at position: ~D~%~S~%~{~A --> ~S~}"
+                                      :format-arguments (list
+                                                         (aref (scanner-buffer scanner) pos)
+                                                         (scanner-column scanner)
+                                                         *non-terminal-stack*
+                                                         (assoc (first *non-terminal-stack*)
+                                                                ',(grammar-rules grammar))))))))))))
        (setf (grammar-scanner (grammar-named (grammar-name grammar))) scanner-class-name)
        (gen-trace 'scan-next-token form trace)))
     (otherwise

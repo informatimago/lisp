@@ -331,7 +331,10 @@
    `(cl:define-condition ,name ,parent
       ,slots
       ,@(mapcar (cl:lambda (option)
-                    (cl:if (and (consp option) (eq :report (car option)))
+                    (cl:if (and (consp option)
+                                (eq :report (first option))
+                                (consp (second option))
+                                (eq 'lambda (first (second option))))
                       `(:report
                         ,(step-lambda (second option) :environment env))
                       option))
