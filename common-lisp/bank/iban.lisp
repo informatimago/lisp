@@ -11,6 +11,8 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2012-11-29 <PJB> Added a PRINT-OBJECT method, corrected SIGNAL calls,
+;;;;                     added examples to the package comment.
 ;;;;    2004-10-10 <PJB> Created.
 ;;;;BUGS
 ;;;;    The verification of the country code accepts all existing countries
@@ -50,6 +52,19 @@
 This class is an Internationnal Bank Account Number, 
 according to the European standard:
 IBAN Format: http://www.ecbs.org/iban/iban.htm
+
+
+To create find the IBAN given an account number with a country-code:
+
+   (make-instance 'iban
+      :basic-form (remove #\\space (format nil \"~2A00~A\" country-code account)))
+
+this will compute the IBAN key, and print the IBAN instance.
+
+To get the IBAN as a string with groups separated by spaces:
+
+   (com.informatimago.common-lisp.bank.iban:get-iban  iban  :with-spaces t)
+
 
 
 License:
@@ -119,7 +134,7 @@ SIGNAL: An IBAN-ERROR when with-key and the key in the IBAN is incorrect.
 
 
 
-(define-condition iban-error (error)
+(define-condition iban-error (simple-error)
   ()
   (:documentation "An IBAN error."))
 
@@ -137,10 +152,15 @@ SIGNAL: An IBAN-ERROR when with-key and the key in the IBAN is incorrect.
 (defmethod initialize-instance ((self iban) &rest args)
   (declare (ignore args))
   (call-next-method)
-  (when  (basic-form  self) 
+  (when (basic-form  self) 
     (set-iban self (basic-form  self)))
-  self) ;;INITIALIZE-INSTANCE
+  self)
 
+
+(defmethod print-object ((self iban) stream)
+  (print-unreadable-object (self stream :identity t :type t)
+    (princ (basic-form self) stream))
+  self)
 
 
 (defmethod get-country-code ((self iban))
@@ -187,14 +207,15 @@ RETURN: The IBAN, with spaces inserted when WITH-SPACES is true,
 (defmethod get-and-check-alphanum ((self iban) string &optional length)
   (when (and length (/= length (length string)))
     (signal 'iban-error
-            "For IBAN ~S:~%   Bad length,  expected ~D, got ~D: ~S" 
-            self length (length string) string))
+            :format-control "For IBAN ~S:~%   Bad length,  expected ~D, got ~D: ~S" 
+            :format-arguments (list self length (length string) string)))
   (map 'string (lambda (ch) 
                  (let ((index (position ch +alphabet-from+)))
                    (unless index 
                      (signal 'iban-error
-                             "For IBAN ~S:~%    Bad character '~C' in ~S, ~
-                              should be alphanumeric." self ch string))
+                             :format-control "For IBAN ~S:~%    Bad character '~C' in ~S, ~
+                              should be alphanumeric."
+                             :format-arguments (list self ch string)))
                    (aref +alphabet-from+ (if (< index 36) index (- index 26)))))
        string))
 
@@ -215,7 +236,8 @@ RETURN: SELF
 "
   (let ((cc  (subseq (basic-form self) 0 2)))
     (unless (member cc +country-codes+ :test (function string-equal))
-      (signal 'iban-error "For IBAN ~S:~%   Bad country code: ~S" self cc)))
+      (signal 'iban-error :format-control "For IBAN ~S:~%   Bad country code: ~S"
+              :format-arguments (list self cc))))
   self)
 
 
@@ -277,10 +299,10 @@ RAISE:  An IBAN-ERROR when with-key and the key in the IBAN is incorrect.
         (if with-key
             (if (check-iban-key iban)
                 (signal 'iban-error
-                        "For IBAN ~S~%    Invalid key, given=~S, computed=~S."
-                        (subseq iban 2 4)
-                        (subseq (compute-iban-key (subseq iban 0 2)
-                                                  (subseq iban 4)) 2 4))
+                        :format-control "For IBAN ~S~%    Invalid key, given=~S, computed=~S."
+                        :format-arguments (list (subseq iban 2 4)
+                                                (subseq (compute-iban-key (subseq iban 0 2)
+                                                                          (subseq iban 4)) 2 4)))
                 iban)
             (compute-iban-key (subseq iban 0 2) (subseq iban 4))))
   (check-country self)
