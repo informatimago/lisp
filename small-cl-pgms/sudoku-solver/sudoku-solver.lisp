@@ -36,11 +36,19 @@
 
 (ql:quickload :com.informatimago.common-lisp.cesarum)
 
-(defpackage "COM.INFORMATIMAGO.SUDOKU"
+(defpackage "COM.INFORMATIMAGO.SUDOKU-SOLVER"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ARRAY"))
-(in-package "COM.INFORMATIMAGO.SUDOKU")
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ARRAY")
+  (:export "SUDOKU-SOLVER" "SUDOKU-PRINT"))
+
+(in-package "COM.INFORMATIMAGO.SUDOKU-SOLVER")
+
+
+(defun emptyp (slot)
+  (or (null slot)
+      (and (symbolp slot)
+           (string= slot 'x))))
 
 
 (defun row (sudoku row)
@@ -48,7 +56,7 @@
   (loop
     :for col :below (array-dimension sudoku 1)
     :for item = (aref sudoku row col)
-    :when (and item (not (eq item 'x)))
+    :unless (emptyp item)
     :collect item))
 
 
@@ -57,7 +65,7 @@
   (loop
     :for row :below (array-dimension sudoku 0)
     :for item = (aref sudoku row col)
-    :when (and item (not (eq item 'x)))
+    :unless (emptyp item)
     :collect item))
 
 
@@ -73,7 +81,7 @@
              :repeat 3
              :for j :from bac
              :for item = (aref sudoku i j)
-             :when (and item (not (eq item 'x)))
+             :unless (emptyp item)
              :collect item)))
 
 
@@ -238,7 +246,7 @@ RETURN: A list of sudoku solution boards.
                            :do (setf (aref regs i j) (reg sudoku (* 3 i) (* 3 j)))))
                    regs)))
     (for-each-slot ((slot i j) sudoku)
-      (when (eq 'x slot)
+      (when (emptyp slot)
         (let ((possibles (set-difference all (union
                                               (union (aref rows i) (aref cols j))
                                               (aref regs (truncate i 3) (truncate j 3))))))
@@ -270,7 +278,7 @@ RETURN  SUDOKU.
           :for i :below (array-dimension sudoku 0)
           :do (format t (if (zerop (mod i 3)) "|~2@A " " ~2@A ")
                       (let ((slot  (aref sudoku i j)))
-                        (if (or (null slot) (eq slot 'x))
+                        (if (emptyp slot)
                             "."
                             slot)))
           :finally (princ "|") (terpri))

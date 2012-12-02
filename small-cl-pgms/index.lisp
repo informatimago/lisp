@@ -164,8 +164,8 @@
 
                            ("Sudoku Solver" 
                             ;;----------
-                            ("sudoku-solver.lisp")
-                            "This program solves sudoku boards.")
+                            (("sudoku-solver/" "This program solves sudoku boards."))
+                            "")
 
                            ("Common-Lisp quines"
                             ;;-----------------
