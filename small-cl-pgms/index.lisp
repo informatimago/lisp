@@ -32,6 +32,7 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;****************************************************************************
 
+
 (com.informatimago.common-lisp.cesarum.package:add-nickname
  "COM.INFORMATIMAGO.COMMON-LISP.HTML-GENERATOR.HTML" "<")
 
@@ -160,6 +161,11 @@
                             ("cube.lisp")
                             "This program tries to resolve the Cube Puzzle, where a cube
   composed of 27 smaller cubes linked with a thread  must be recomposed.")
+
+                           ("Sudoku Solver" 
+                            ;;----------
+                            ("sudoku-solver.lisp")
+                            "This program solves sudoku boards.")
 
                            ("Common-Lisp quines"
                             ;;-----------------
