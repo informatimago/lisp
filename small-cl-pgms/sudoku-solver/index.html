@@ -97,22 +97,23 @@
 <p>Example:
 
 <pre class="code">
-<span class="slime-repl-prompt">cl-user&gt; </span><span class="slime-repl-input">(use-package :com.informatimago.sudoku-solver)</span>
+<span class="slime-repl-prompt">sudoku-solver&gt; </span><span class="slime-repl-input">(use-package :com.informatimago.sudoku-solver)</span>
 <span class="slime-repl-result"><span class="slime-repl-inputed-output">t</span></span><span class="slime-repl-result">
-</span><span class="slime-repl-prompt">cl-user&gt; </span><span class="slime-repl-input">(</span><span class="cl-special-operator"><span class="slime-repl-input">let*</span></span><span class="slime-repl-input"> ((sudoku #2A((x x x 8 x 4 2 x x)
-                            (6 x 8 x 2 x x x 4)
-                            (2 1 x 6 5 3 x x 8)
-                            (x 7 x 2 x 6 x 9 x)
-                            (x x x x 3 x 1 x x)
-                            (4 2 3 x x 9 x 5 7)
-                            (x 6 x 4 1 5 7 x x)
-                            (x x 7 x x 8 3 x x)
-                            (x 5 9 x x x x 1 x)))
-                (solutions (sudoku-solver sudoku)))
-           (</span><span class="cl-function"><span class="slime-repl-input">terpri</span></span><span class="slime-repl-input">)
-           (sudoku-print sudoku)
-           (</span><span class="cl-function"><span class="slime-repl-input">format</span></span><span class="slime-repl-input"> </span><span class="cl-system-class"><span class="slime-repl-input">t</span></span><span class="slime-repl-input"> </span><span class="string"><span class="slime-repl-input">" has ~D solution~:*~P.~2%"</span></span><span class="slime-repl-input"> (</span><span class="cl-function"><span class="slime-repl-input">length</span></span><span class="slime-repl-input"> solutions))
-           (</span><span class="cl-function"><span class="slime-repl-input">map</span></span><span class="slime-repl-input"> </span><span class="cl-type"><span class="slime-repl-input">nil</span></span><span class="slime-repl-input"> 'sudoku-print solutions))
+</span><span class="slime-repl-prompt">sudoku-solver&gt; </span><span class="slime-repl-input">(</span><span class="cl-special-operator"><span class="slime-repl-input">let*</span></span><span class="slime-repl-input"> ((sudoku #2A((x x x 8 x 4 2 x x)
+                                  (6 x 8 x 2 x x x 4)
+                                  (2 1 x 6 5 3 x x 8)
+                                  (x 7 x 2 x 6 x 9 x)
+                                  (x x x x 3 x 1 x x)
+                                  (4 2 3 x x 9 x 5 7)
+                                  (x 6 x 4 1 5 7 x x)
+                                  (x x 7 x x 8 3 x x)
+                                  (x 5 9 x x x x 1 x))))
+                 (</span><span class="cl-macro"><span class="slime-repl-input">multiple-value-bind</span></span><span class="slime-repl-input"> (solutions tries) (sudoku-solver sudoku)
+                   (</span><span class="cl-function"><span class="slime-repl-input">terpri</span></span><span class="slime-repl-input">)
+                   (sudoku-print sudoku)
+                   (</span><span class="cl-function"><span class="slime-repl-input">format</span></span><span class="slime-repl-input"> </span><span class="cl-system-class"><span class="slime-repl-input">t</span></span><span class="slime-repl-input"> </span><span class="string"><span class="slime-repl-input">"  has ~D solution~:*~P,~%  found in ~D tries.~2%"</span></span><span class="slime-repl-input"> 
+                           (</span><span class="cl-function"><span class="slime-repl-input">length</span></span><span class="slime-repl-input"> solutions) tries)
+                   (</span><span class="cl-function"><span class="slime-repl-input">map</span></span><span class="slime-repl-input"> </span><span class="cl-type"><span class="slime-repl-input">nil</span></span><span class="slime-repl-input"> 'sudoku-print solutions)))
 </span>
 <span class="slime-repl-output">
 +---+---+---+---+---+---+---+---+---+
@@ -135,7 +136,8 @@
 | .   4   8 | .   .   7 | .   .   . |
 +---+---+---+---+---+---+---+---+---+
 
- has 12 solutions.
+  has 1 solution,
+  found in 44 tries.
 
 +---+---+---+---+---+---+---+---+---+
 | 7   6   2 | 5   9   4 | 3   1   8 |
@@ -149,226 +151,6 @@
 | 9   2   5 | 4   3   8 | 1   6   7 |
 |   +   +   |   +   +   |   +   +   |
 | 4   1   3 | 6   7   9 | 5   8   2 |
-+---+---+---+---+---+---+---+---+---+
-| 2   5   9 | 8   1   6 | 7   3   4 |
-|   +   +   |   +   +   |   +   +   |
-| 6   3   7 | 9   4   5 | 8   2   1 |
-|   +   +   |   +   +   |   +   +   |
-| 1   4   8 | 3   2   7 | 9   5   6 |
-+---+---+---+---+---+---+---+---+---+
-
-+---+---+---+---+---+---+---+---+---+
-| 7   6   2 | 1   9   4 | 3   1   8 |
-|   +   +   |   +   +   |   +   +   |
-| 3   9   1 | 7   8   2 | 6   4   5 |
-|   +   +   |   +   +   |   +   +   |
-| 5   8   4 | 5   6   3 | 2   7   9 |
-+---+---+---+---+---+---+---+---+---+
-| 8   7   6 | 2   5   1 | 4   9   3 |
-|   +   +   |   +   +   |   +   +   |
-| 9   2   5 | 4   3   8 | 1   6   7 |
-|   +   +   |   +   +   |   +   +   |
-| 4   1   3 | 6   7   9 | 5   8   2 |
-+---+---+---+---+---+---+---+---+---+
-| 2   5   9 | 8   1   6 | 7   3   4 |
-|   +   +   |   +   +   |   +   +   |
-| 6   3   7 | 9   4   5 | 8   2   1 |
-|   +   +   |   +   +   |   +   +   |
-| 1   4   8 | 3   2   7 | 9   5   6 |
-+---+---+---+---+---+---+---+---+---+
-
-+---+---+---+---+---+---+---+---+---+
-| 7   6   2 | 5   9   4 | 3   1   8 |
-|   +   +   |   +   +   |   +   +   |
-| 3   9   1 | 7   8   2 | 6   4   5 |
-|   +   +   |   +   +   |   +   +   |
-| 5   8   4 | 1   6   3 | 2   7   9 |
-+---+---+---+---+---+---+---+---+---+
-| 8   1   6 | 2   7   1 | 4   9   3 |
-|   +   +   |   +   +   |   +   +   |
-| 9   2   5 | 4   3   8 | 1   6   7 |
-|   +   +   |   +   +   |   +   +   |
-| 4   7   3 | 6   7   9 | 5   8   2 |
-+---+---+---+---+---+---+---+---+---+
-| 2   5   9 | 8   1   6 | 7   3   4 |
-|   +   +   |   +   +   |   +   +   |
-| 6   3   7 | 9   4   5 | 8   2   1 |
-|   +   +   |   +   +   |   +   +   |
-| 1   4   8 | 3   2   7 | 9   5   6 |
-+---+---+---+---+---+---+---+---+---+
-
-+---+---+---+---+---+---+---+---+---+
-| 7   6   2 | 5   9   4 | 3   1   8 |
-|   +   +   |   +   +   |   +   +   |
-| 3   9   1 | 7   8   2 | 6   4   5 |
-|   +   +   |   +   +   |   +   +   |
-| 5   8   4 | 1   6   3 | 2   7   9 |
-+---+---+---+---+---+---+---+---+---+
-| 8   1   6 | 2   5   1 | 4   9   3 |
-|   +   +   |   +   +   |   +   +   |
-| 9   2   5 | 4   3   8 | 1   6   7 |
-|   +   +   |   +   +   |   +   +   |
-| 4   7   3 | 6   7   9 | 5   8   2 |
-+---+---+---+---+---+---+---+---+---+
-| 2   5   9 | 8   1   6 | 7   3   4 |
-|   +   +   |   +   +   |   +   +   |
-| 6   3   7 | 9   4   5 | 8   2   1 |
-|   +   +   |   +   +   |   +   +   |
-| 1   4   8 | 3   2   7 | 9   5   6 |
-+---+---+---+---+---+---+---+---+---+
-
-+---+---+---+---+---+---+---+---+---+
-| 7   6   2 | 1   9   4 | 3   1   8 |
-|   +   +   |   +   +   |   +   +   |
-| 3   9   1 | 7   8   2 | 6   4   5 |
-|   +   +   |   +   +   |   +   +   |
-| 5   8   4 | 5   6   3 | 2   7   9 |
-+---+---+---+---+---+---+---+---+---+
-| 8   1   6 | 2   7   1 | 4   9   3 |
-|   +   +   |   +   +   |   +   +   |
-| 9   2   5 | 4   3   8 | 1   6   7 |
-|   +   +   |   +   +   |   +   +   |
-| 4   7   3 | 6   7   9 | 5   8   2 |
-+---+---+---+---+---+---+---+---+---+
-| 2   5   9 | 8   1   6 | 7   3   4 |
-|   +   +   |   +   +   |   +   +   |
-| 6   3   7 | 9   4   5 | 8   2   1 |
-|   +   +   |   +   +   |   +   +   |
-| 1   4   8 | 3   2   7 | 9   5   6 |
-+---+---+---+---+---+---+---+---+---+
-
-+---+---+---+---+---+---+---+---+---+
-| 7   6   2 | 1   9   4 | 3   1   8 |
-|   +   +   |   +   +   |   +   +   |
-| 3   9   1 | 7   8   2 | 6   4   5 |
-|   +   +   |   +   +   |   +   +   |
-| 5   8   4 | 5   6   3 | 2   7   9 |
-+---+---+---+---+---+---+---+---+---+
-| 8   1   6 | 2   5   1 | 4   9   3 |
-|   +   +   |   +   +   |   +   +   |
-| 9   2   5 | 4   3   8 | 1   6   7 |
-|   +   +   |   +   +   |   +   +   |
-| 4   7   3 | 6   7   9 | 5   8   2 |
-+---+---+---+---+---+---+---+---+---+
-| 2   5   9 | 8   1   6 | 7   3   4 |
-|   +   +   |   +   +   |   +   +   |
-| 6   3   7 | 9   4   5 | 8   2   1 |
-|   +   +   |   +   +   |   +   +   |
-| 1   4   8 | 3   2   7 | 9   5   6 |
-+---+---+---+---+---+---+---+---+---+
-
-+---+---+---+---+---+---+---+---+---+
-| 5   6   2 | 1   9   4 | 3   1   8 |
-|   +   +   |   +   +   |   +   +   |
-| 3   9   1 | 7   8   2 | 6   4   5 |
-|   +   +   |   +   +   |   +   +   |
-| 5   8   4 | 5   6   3 | 2   7   9 |
-+---+---+---+---+---+---+---+---+---+
-| 8   7   6 | 2   5   1 | 4   9   3 |
-|   +   +   |   +   +   |   +   +   |
-| 9   2   5 | 4   3   8 | 1   6   7 |
-|   +   +   |   +   +   |   +   +   |
-| 4   1   3 | 6   7   9 | 5   8   2 |
-+---+---+---+---+---+---+---+---+---+
-| 2   5   9 | 8   1   6 | 7   3   4 |
-|   +   +   |   +   +   |   +   +   |
-| 7   3   7 | 9   4   5 | 8   2   1 |
-|   +   +   |   +   +   |   +   +   |
-| 1   4   8 | 3   2   7 | 9   5   6 |
-+---+---+---+---+---+---+---+---+---+
-
-+---+---+---+---+---+---+---+---+---+
-| 5   6   2 | 1   9   4 | 3   1   8 |
-|   +   +   |   +   +   |   +   +   |
-| 3   9   1 | 7   8   2 | 6   4   5 |
-|   +   +   |   +   +   |   +   +   |
-| 5   8   4 | 5   6   3 | 2   7   9 |
-+---+---+---+---+---+---+---+---+---+
-| 8   1   6 | 2   7   1 | 4   9   3 |
-|   +   +   |   +   +   |   +   +   |
-| 9   2   5 | 4   3   8 | 1   6   7 |
-|   +   +   |   +   +   |   +   +   |
-| 4   7   3 | 6   7   9 | 5   8   2 |
-+---+---+---+---+---+---+---+---+---+
-| 2   5   9 | 8   1   6 | 7   3   4 |
-|   +   +   |   +   +   |   +   +   |
-| 7   3   7 | 9   4   5 | 8   2   1 |
-|   +   +   |   +   +   |   +   +   |
-| 1   4   8 | 3   2   7 | 9   5   6 |
-+---+---+---+---+---+---+---+---+---+
-
-+---+---+---+---+---+---+---+---+---+
-| 5   6   2 | 1   9   4 | 3   1   8 |
-|   +   +   |   +   +   |   +   +   |
-| 3   9   1 | 7   8   2 | 6   4   5 |
-|   +   +   |   +   +   |   +   +   |
-| 5   8   4 | 5   6   3 | 2   7   9 |
-+---+---+---+---+---+---+---+---+---+
-| 8   1   6 | 2   5   1 | 4   9   3 |
-|   +   +   |   +   +   |   +   +   |
-| 9   2   5 | 4   3   8 | 1   6   7 |
-|   +   +   |   +   +   |   +   +   |
-| 4   7   3 | 6   7   9 | 5   8   2 |
-+---+---+---+---+---+---+---+---+---+
-| 2   5   9 | 8   1   6 | 7   3   4 |
-|   +   +   |   +   +   |   +   +   |
-| 7   3   7 | 9   4   5 | 8   2   1 |
-|   +   +   |   +   +   |   +   +   |
-| 1   4   8 | 3   2   7 | 9   5   6 |
-+---+---+---+---+---+---+---+---+---+
-
-+---+---+---+---+---+---+---+---+---+
-| 5   6   2 | 1   9   4 | 3   1   8 |
-|   +   +   |   +   +   |   +   +   |
-| 3   9   1 | 7   8   2 | 6   4   5 |
-|   +   +   |   +   +   |   +   +   |
-| 5   8   4 | 5   6   3 | 2   7   9 |
-+---+---+---+---+---+---+---+---+---+
-| 8   7   6 | 2   5   1 | 4   9   3 |
-|   +   +   |   +   +   |   +   +   |
-| 9   2   5 | 4   3   8 | 1   6   7 |
-|   +   +   |   +   +   |   +   +   |
-| 4   1   3 | 6   7   9 | 5   8   2 |
-+---+---+---+---+---+---+---+---+---+
-| 2   5   9 | 8   1   6 | 7   3   4 |
-|   +   +   |   +   +   |   +   +   |
-| 6   3   7 | 9   4   5 | 8   2   1 |
-|   +   +   |   +   +   |   +   +   |
-| 1   4   8 | 3   2   7 | 9   5   6 |
-+---+---+---+---+---+---+---+---+---+
-
-+---+---+---+---+---+---+---+---+---+
-| 5   6   2 | 1   9   4 | 3   1   8 |
-|   +   +   |   +   +   |   +   +   |
-| 3   9   1 | 7   8   2 | 6   4   5 |
-|   +   +   |   +   +   |   +   +   |
-| 5   8   4 | 5   6   3 | 2   7   9 |
-+---+---+---+---+---+---+---+---+---+
-| 8   1   6 | 2   7   1 | 4   9   3 |
-|   +   +   |   +   +   |   +   +   |
-| 9   2   5 | 4   3   8 | 1   6   7 |
-|   +   +   |   +   +   |   +   +   |
-| 4   7   3 | 6   7   9 | 5   8   2 |
-+---+---+---+---+---+---+---+---+---+
-| 2   5   9 | 8   1   6 | 7   3   4 |
-|   +   +   |   +   +   |   +   +   |
-| 6   3   7 | 9   4   5 | 8   2   1 |
-|   +   +   |   +   +   |   +   +   |
-| 1   4   8 | 3   2   7 | 9   5   6 |
-+---+---+---+---+---+---+---+---+---+
-
-+---+---+---+---+---+---+---+---+---+
-| 5   6   2 | 1   9   4 | 3   1   8 |
-|   +   +   |   +   +   |   +   +   |
-| 3   9   1 | 7   8   2 | 6   4   5 |
-|   +   +   |   +   +   |   +   +   |
-| 5   8   4 | 5   6   3 | 2   7   9 |
-+---+---+---+---+---+---+---+---+---+
-| 8   1   6 | 2   5   1 | 4   9   3 |
-|   +   +   |   +   +   |   +   +   |
-| 9   2   5 | 4   3   8 | 1   6   7 |
-|   +   +   |   +   +   |   +   +   |
-| 4   7   3 | 6   7   9 | 5   8   2 |
 +---+---+---+---+---+---+---+---+---+
 | 2   5   9 | 8   1   6 | 7   3   4 |
 |   +   +   |   +   +   |   +   +   |
@@ -378,7 +160,7 @@
 +---+---+---+---+---+---+---+---+---+
 
 </span><span class="slime-repl-result"><span class="slime-repl-inputed-output">nil</span></span><span class="slime-repl-result">
-</span><span class="slime-repl-prompt">cl-user&gt; </span></pre>
+</span><span class="slime-repl-prompt">sudoku-solver&gt; </span></pre>
 
 <!--MENU-BEGIN-->
 <!--MENU-END-->

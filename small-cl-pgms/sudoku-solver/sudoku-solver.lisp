@@ -50,12 +50,18 @@
       (and (symbolp slot)
            (string= slot 'x))))
 
+(defun list-or-single-element (list)
+  (if (null (rest list))
+      (first list)
+      list))
+
+
 
 (defun row (sudoku row)
   "Return the list of elements present in the row ROW of the sudoku."
   (loop
-    :for col :below (array-dimension sudoku 1)
-    :for item = (aref sudoku row col)
+    :for col :below (array-dimension sudoku 0)
+    :for item = (aref sudoku col row)
     :unless (emptyp item)
     :collect item))
 
@@ -63,23 +69,23 @@
 (defun col (sudoku col)
   "Return the list of elements present in the column COL of the sudoku."
   (loop
-    :for row :below (array-dimension sudoku 0)
-    :for item = (aref sudoku row col)
+    :for row :below (array-dimension sudoku 1)
+    :for item = (aref sudoku col row)
     :unless (emptyp item)
     :collect item))
 
 
-(defun reg (sudoku row col)
+(defun reg (sudoku col row)
   "Return the list of elements present in the region containing slot
-\(row col) of the sudoku."
+\(col row) of the sudoku."
   (loop
-    :with bar = (* (truncate row 3) 3)
     :with bac = (* (truncate col 3) 3)
+    :with bar = (* (truncate row 3) 3)
     :repeat 3
-    :for i :from bar
+    :for i :from bac
     :nconc (loop
              :repeat 3
-             :for j :from bac
+             :for j :from bar
              :for item = (aref sudoku i j)
              :unless (emptyp item)
              :collect item)))
@@ -168,6 +174,31 @@ RETURN:  If an extremum is found: the extremum value; the row; the column;
     (values minv mini minj)))
 
 
+(defun conflictp (sudoku col row)
+  "Predicates whether there's a conflict around slot (col row)."
+  (let ((val (aref sudoku col row)))
+    (loop
+      :for i :below (array-dimension sudoku 0)
+      :when (and (/= i col) (eql val (aref sudoku i row)))
+      :do (return-from conflictp :row-conflict))
+    (loop
+      :for j :below (array-dimension sudoku 1)
+      :when (and (/= j row) (eql val (aref sudoku col j)))
+      :do (return-from conflictp :col-conflict))
+    (loop
+      :repeat 3
+      :for i :from (* (truncate col 3) 3)
+      :when (/= i col)
+      :do (loop
+            :repeat 3
+            :for j :from (* (truncate row 3) 3)
+            :when (and (/= j row) (eql val (aref sudoku i j)))
+            :do (return-from conflictp :reg-conflict)))
+    nil))
+
+
+(defvar *sudoku-tries* 0)
+
 (defun sudoku-backtracking (sudoku)
   "
 PRE:        The slots of sudoku contain either an atom, an empty list,
@@ -191,33 +222,67 @@ RETURN:     A list of sudoku solutions boards.
                                     ((listp slot) (length slot))
                                     (t            infinite)))))
     (declare (ignore possibles))
+    ;; (format t "Found a small set of choices at (~D ~D): ~S~%" i j (aref sudoku i j))
     (if (consp (aref sudoku i j))
         (loop
           :with results = '()
           :for val :in (aref sudoku i j)
           :do (catch 'sudoku-backtrack
-                (let ((sudoku (copy-array sudoku)))
+                (incf *sudoku-tries*)
+                (let ((sudoku (copy-array sudoku))
+                      (check-list '()))
                   (setf (aref sudoku i j) val)
-                  (loop
-                    :named update-row
-                    :for row :below (array-dimension sudoku 0)
-                    :when (listp (aref sudoku row j))
-                    :do (setf (aref sudoku row j) (remove val (aref sudoku row j))))
+                  ;; (format t "Trying to put ~D at (~D ~D)~%" val i j)
+                  ;; (sudoku-print sudoku)
                   (loop
                     :named update-col
-                    :for col :below (array-dimension sudoku 1)
-                    :when (listp (aref sudoku i col))
-                    :do (setf (aref sudoku i col) (remove val (aref sudoku i col))))
+                    :for col :below (array-dimension sudoku 0)
+                    :do (cond
+                          ((= col i))
+                          ((listp (aref sudoku col j))
+                           (setf (aref sudoku col j) (list-or-single-element (remove val (aref sudoku col j))))
+                           (when (atom (aref sudoku col j))
+                             (push (list col j) check-list)))
+                          ((eql (aref sudoku col j) val)
+                           ;; (format t "  won't do, there's already a ~D on the same row.~%" val)
+                           (throw 'sudoku-backtrack nil))))
+                  (loop
+                    :named update-row
+                    :for row :below (array-dimension sudoku 1)
+                    :do (cond
+                          ((= row j))
+                          ((listp (aref sudoku i row))
+                           (setf (aref sudoku i row) (list-or-single-element (remove val (aref sudoku i row))))
+                           (when (atom (aref sudoku i row))
+                             (push (list i row) check-list)))
+                          ((eql (aref sudoku i row) val)
+                           ;; (format t "  won't do there's already a ~D on the same column.~%" val)
+                           (throw 'sudoku-backtrack nil))))
                   (loop
                     :named update-reg
                     :repeat 3
-                    :for row :from (* (truncate i 3) 3)
+                    :for col :from (* (truncate i 3) 3)
                     :do (loop
                           :repeat 3
-                          :for col :from (* (truncate j 3) 3)
-                          :when (listp (aref sudoku row col))
-                          :do (setf (aref sudoku row col) (remove val (aref sudoku row col)))))
-                  (setf results (nconc results (sudoku-backtracking sudoku)))))
+                          :for row :from (* (truncate j 3) 3)
+                          :do (cond
+                                ((and (= col i) (= row j)))
+                                ((listp (aref sudoku col row))
+                                 (setf (aref sudoku col row) (list-or-single-element (remove val (aref sudoku col row))))
+                                 (when (atom (aref sudoku col row))
+                                   (push (list col row) check-list)))
+                                ((eql (aref sudoku col row) val)
+                                 ;; (format t "  won't do there's already a ~D in the same region.~%" val)
+                                 (throw 'sudoku-backtrack nil)))))
+                  (loop
+                    :for (col row) :in check-list
+                    :for conflict = (conflictp sudoku col row)
+                    :do (when conflict
+                          ;; (format t "  won't do, there'd be a ~(~A~) at (~D ~D).~%" conflict col row)
+                          (throw 'sudoku-backtrack nil)))
+                  ;; (format t "  fits so far.~%")
+                  ;; (sudoku-print sudoku)
+                  (setf results (nconc (sudoku-backtracking sudoku) results))))
           :finally (return results))
         (list sudoku))))
 
@@ -230,15 +295,16 @@ DO:     Solves the SUDOKU board (it contains atoms and X or NIL that
 
 RETURN: A list of sudoku solution boards.
 "
-  (let* ((sudoku (copy-array sudoku))
+  (let* ((*sudoku-tries* 1)
+         (sudoku (copy-array sudoku))
          ;; Well for now, the atoms are integers from 1 up to the
          ;; maximal dimension of the matrix.
          (all    (iota (max (array-dimension sudoku 0)
                             (array-dimension sudoku 1))
                        1))
-         (rows   (coerce (loop :for row :below (array-dimension sudoku 0) :collect (row sudoku row)) 'vector))
-         (cols   (coerce (loop :for col :below (array-dimension sudoku 1) :collect (col sudoku col)) 'vector))
-         (regs   (let ((regs (make-array (mapcar (lambda (x) (truncate x 3)) (array-dimensions sudoku)))))
+         (cols   (coerce (loop :for col :below (array-dimension sudoku 0) :collect (col sudoku col)) 'vector))
+         (rows   (coerce (loop :for row :below (array-dimension sudoku 1) :collect (row sudoku row)) 'vector))
+         (regs   (let ((regs (make-array (mapcar (lambda (x) (ceiling x 3)) (array-dimensions sudoku)))))
                    (loop
                      :for i :below (array-dimension regs 0)
                      :do (loop
@@ -248,12 +314,11 @@ RETURN: A list of sudoku solution boards.
     (for-each-slot ((slot i j) sudoku)
       (when (emptyp slot)
         (let ((possibles (set-difference all (union
-                                              (union (aref rows i) (aref cols j))
+                                              (union (aref cols i) (aref rows j))
                                               (aref regs (truncate i 3) (truncate j 3))))))
-          (setf slot (if (null (rest possibles))
-                         (first possibles)
-                         possibles)))))
-    (sudoku-backtracking sudoku)))
+          (setf slot (list-or-single-element possibles)))))
+    (catch 'sudoku-backtrack
+      (values (sudoku-backtracking sudoku) *sudoku-tries*))))
 
 
 (defun sudoku-print (sudoku &optional (*standard-output* *standard-output*))
@@ -296,11 +361,11 @@ RETURN  SUDOKU.
                    (4 2 3 x x 9 x 5 7)
                    (x 6 x 4 1 5 7 x x)
                    (x x 7 x x 8 3 x x)
-                   (x 5 9 x x x x 1 x)))
-       (solutions (sudoku-solver sudoku)))
-  (terpri)
-  (sudoku-print sudoku)
-  (format t " has ~D solution~:*~P.~2%" (length solutions))
-  (map nil 'sudoku-print solutions))
+                   (x 5 9 x x x x 1 x))))
+  (multiple-value-bind (solutions tries) (sudoku-solver sudoku)
+    (terpri)
+    (sudoku-print sudoku)
+    (format t "  has ~D solution~:*~P,~%  found in ~D tries.~2%" (length solutions) tries)
+    (map nil 'sudoku-print solutions)))
 
 ;;;; THE END ;;;;
