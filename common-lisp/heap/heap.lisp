@@ -16,6 +16,9 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2012-10-26 <PJB> Corrected gc-store and gc-load, added
+;;;;                     docstrings. (Thanks to Dan Lentz for the bug
+;;;;                     report).
 ;;;;    2005-08-10 <PJB> Added some EVAL-WHEN needed for macros.
 ;;;;    2004-12-18 <PJB> Reached usable state.
 ;;;;    2004-12-02 <PJB> Created.
@@ -245,8 +248,18 @@ License:
 ;; cell access / raw-memory
 ;;--------------------------
 ;; CVM Memory is organized as an array of 64-byte cells;
-;; CVM Memory addresses (gc-addresses) are indices in this array.
-;; valid gc-addresses are from 1 to (1- size)
+;; CVM Memory addresses (gc-addresses) are indices into this array.
+;; valid gc-addresses are from 1 to (1- size).
+;;
+;; NOTE: MEMORY objects are byte-addressed, however the various sized
+;;       operations are only called on naturally aligned addresses: a
+;;       PEEK-UINT64 will be called only with addresses multiple of 8.
+;;       (However, this heap usually addresses 64-bit words, GC-STORE
+;;       and GC-LOAD convert the heap addresses into the memory byte
+;;       addresses, and CVM-SVOPERATE does similarly, but may address
+;;       into MEMORY 8-bit, 16-bit, 32-bit or 64-bit words depending
+;;       on the size of the data type).
+
 
 (declaim (inline gc-store gc-load))
 
@@ -256,11 +269,13 @@ License:
 (defun gc-sign (signature)
   (poke-uint64 *gc-memory* *gc-heap-base* signature))
 (defun gc-store (gc-address object)
-  (assert (< 0 gc-address (size *gc-memory*)))
-  (poke-uint64 *gc-memory* (+ *gc-heap-base* gc-address) object))
+  (let ((address (* 8 gc-address)))
+   (assert (< 0 address (size *gc-memory*)))
+   (poke-uint64 *gc-memory* (+ *gc-heap-base* address) object)))
 (defun gc-load (gc-address)
-  (assert (< 0 gc-address (size *gc-memory*)))
-  (peek-uint64 *gc-memory* (+ *gc-heap-base* gc-address)))
+  (let ((address (* 8 gc-address)))
+    (assert (< 0 address (size *gc-memory*)))
+    (peek-uint64 *gc-memory* (+ *gc-heap-base* address))))
 (defun gc-peek-function (bit-size)
   (case bit-size
     (( 8) (values (lambda (address) (peek-uint8  *gc-memory* address)) 1))
@@ -271,19 +286,16 @@ License:
                       bit-size))))
 (defun gc-poke-function (bit-size)
   (case bit-size
-    (( 8) (values (lambda (address object) 
-                    (poke-uint8  *gc-memory* address object)) 1))
-    ((16) (values (lambda (address object) 
-                    (poke-uint16 *gc-memory* address object)) 2))
-    ((32) (values (lambda (address object) 
-                    (poke-uint32 *gc-memory* address object)) 4))
-    ((64) (values (lambda (address object) 
-                    (poke-uint64 *gc-memory* address object)) 8))
+    (( 8) (values (lambda (address object) (poke-uint8  *gc-memory* address object)) 1))
+    ((16) (values (lambda (address object) (poke-uint16 *gc-memory* address object)) 2))
+    ((32) (values (lambda (address object) (poke-uint32 *gc-memory* address object)) 4))
+    ((64) (values (lambda (address object) (poke-uint64 *gc-memory* address object)) 8))
     (otherwise (error "No poke function defined for bit field of width ~D" 
                       bit-size))))
 (defun gc-dump-block (gc-address size stream &key (margin ""))
-  (dump *gc-memory* (+ *gc-heap-base* gc-address) size
-        :stream stream :margin margin :byte-size 8))
+  (let ((address (* 8 gc-address)))
+    (dump *gc-memory* (+ *gc-heap-base* address) (* 8 size)
+          :stream stream :margin margin :byte-size 8)))
 
 
                 
@@ -1254,15 +1266,34 @@ CL-USER>
 ;; [structure-data 15 | [T,6] |NIL| @'COMMON-LISP' | @'SYMBOL' |NIL|NIL|NIL]
 
 
-(defun cvm-svoperate (address index operation &optional value)
+(defun cvm-svoperate (gc-address index operation &optional value)
+  "
+DO:             Perform a peek or a poke of the slot at INDEX in the
+                array or structure at the GC-ADDRESS.
+
+GC-ADDRESS:     A heap address (addressing 64-bit words), which is the
+                base of the array or structure.
+
+INDEX:          An index into te slots of the array or structure.  The
+                element size is taken from the gc-address element-type
+                field.
+
+OPERATION:      (member :peek :poke) indicates the operation to
+                execute.  
+
+VALUE:          When OPERATION is :poke then the value to be stored.
+
+
+RETURN:         When OPERATION is :peek, the value of the slot.
+"
   (let ((element-size (cvm-bit-size-of-unboxed-type 
-                       (cvm-element-type address))))
-    (multiple-value-bind (dimension address) (cvm-rows address)
+                       (cvm-element-type gc-address))))
+    (multiple-value-bind (dimension gc-address) (cvm-rows gc-address)
       (unless (<= 0 index (1- dimension))
         (error "SVREF: index out of bounds ~D [0,~D[" index dimension))
       ;; element-size: 1 8 16 32 64
       (if (= 1 element-size)
-          (let* ((opaddr (+ *gc-heap-base* (* 8 (+ address (/ index 64)))))
+          (let* ((opaddr (+ *gc-heap-base* (* 8 (+ gc-address (/ index 64)))))
                  (opofst (mod index 64))
                  (word (funcall (gc-peek-function 64) opaddr)))
             (if (eq operation :peek) 
@@ -1270,10 +1301,10 @@ CL-USER>
                 (funcall (gc-poke-function 64) opaddr
                          (dpb value (byte 1 opofst) word))))
           (let ((opaddr (case element-size
-                          ((8)  (+ *gc-heap-base* (* 8 address ) index))
-                          ((16) (+ *gc-heap-base* (* 8 address ) (* 2 index)))
-                          ((32) (+ *gc-heap-base* (* 8 address ) (* 4 index)))
-                          ((64) (+ *gc-heap-base* (* 8 (+ address index))))
+                          ((8)  (+ *gc-heap-base* (* 8 gc-address ) index))
+                          ((16) (+ *gc-heap-base* (* 8 gc-address ) (* 2 index)))
+                          ((32) (+ *gc-heap-base* (* 8 gc-address ) (* 4 index)))
+                          ((64) (+ *gc-heap-base* (* 8 (+ gc-address index))))
                           (otherwise "CVM-SVOPERATE: bad element-size ~D" 
                                      element-size))))
             (if (eq operation :peek)
@@ -2682,8 +2713,22 @@ RETURN:  An interned lisp symbol whose plist, value and function are updated
 
 (defun common-initialize (memory)
   "
-DOES:           Get a shared memory block and a semaphore set, 
-                and initialize a shared heap.
+DOES:           Initialize the memory instance as a shared heap.
+
+MEMORY:         A subclass of COM.INFORMATIMAGO.COMMON-LISP.HEAP.MEMORY:MEMORY.
+
+NOTE:           MEMORY objects are byte-addressed, however the various
+                sized operations are only called on naturally aligned
+                addresses: a peek-uint64 will be called only with
+                addresses multiple of 8.  (However, this heap usually
+                addresses 64-bit words, gc-store and gc-load convert
+                the heap addresses into the memory byte addresses, and
+                cvm-svoperate does similarly, but may address 8-bit,
+                16-bit, 32-bit or 64-bit words depending on the size
+                of the data types).
+"
+  ;; this was the old API:
+  #-(and) "
 KEY:            An IPC key, built with IPC:MAKE-KEY, used to get 
                 the shared memory block ('common' memory) and the
                 semaphore set from which a semaphore is needed.

@@ -12,6 +12,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2012-10-26 <PJB> Added memory-operate.
 ;;;;    2004-12-22 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
@@ -36,7 +37,7 @@
 (in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.HEAP.MEMORY"
   (:use "COMMON-LISP")
-  (:export "MEMORY-EPILOG" "MEMORY-PROLOG" "DUMP" "VALID-ADDRESS-P"
+  (:export "MEMORY-EPILOG" "MEMORY-PROLOG" "MEMORY-OPERATE" "DUMP" "VALID-ADDRESS-P"
            "WITH-MEMORY" "POKE-UINT64" "POKE-UINT32" "POKE-UINT16" "POKE-UINT8"
            "PEEK-UINT64" "PEEK-UINT32" "PEEK-UINT16" "PEEK-UINT8" "SIZE" "BASE"
            "MEMORY-VECTOR-64" "MEMORY")
@@ -120,13 +121,42 @@ License:
   (:documentation "DO: Store the 64-bit VALUE into the given ADDRESS of the MEMORY."))
 (defgeneric valid-address-p (memory address)
   (:documentation "RETURN: Whether ADDRESS is a valid address of the MEMORY."))
+
 (defgeneric memory-prolog (memory)
-  (:documentation "DO:  Prepare access to the memory (eg. acquire any needed lock)."))
+  (:documentation "
+This function is called before accessing the memory, so that any locking
+for shared memories may be implemented.
+
+An alternative is to override MEMORY-OPERATE.
+"))
+
+(defgeneric memory-operate (memory thunk)
+    (:documentation "
+This function is called to access the memory, so that any
+locking/unlocking for shared memories may be implemented.
+
+The default method just calls the THUNK.  Any specialization of this
+function must funcall THUNK or CALL-NEXT-METHOD.
+
+An alternative is to override MEMORY-PROLOG and MEMORY-EPILOG.
+"))
+
 (defgeneric memory-epilog (memory)
-  (:documentation "DO:  Finalize access to the memory (eg. relinquish any lock)."))
+  (:documentation "
+This function is called after accessing the memory, so that any unlocking
+for shared memories may be implemented.
+
+An alternative is to override MEMORY-OPERATE.
+"))
+
 (defgeneric dump (memory address length &key byte-size stream margin)
   (:documentation "Print on the STREAM the contents of the MEMORY from
 the ADDRESS for LENGTH bytes of bit size BYTE-SIZE."))
+
+
+(defmethod memory-prolog  ((self memory))       (declare (ignorable self)) (values))
+(defmethod memory-operate ((self memory) thunk) (declare (ignorable self)) (funcall thunk))
+(defmethod memory-epilog  ((self memory))       (declare (ignorable self)) (values))
 
 
 (defmacro with-memory (memory &body body)
@@ -137,7 +167,7 @@ set signal handler, or to acquire locks, and then release them.
   (let ((vmemory (gensym)))
     `(let ((,vmemory ,memory))
        (memory-prolog ,vmemory)
-       (unwind-protect (progn ,@body)
+       (unwind-protect (memory-operate ,vmemory (lambda () ,@body))
          (memory-epilog ,vmemory)))))
 
 
@@ -184,10 +214,6 @@ set signal handler, or to acquire locks, and then release them.
                                  :initial-element 0))
   self)
                                  
-
-(defmethod memory-prolog ((self memory-vector-64)) (declare (ignorable self)) (values))
-(defmethod memory-epilog ((self memory-vector-64)) (declare (ignorable self)) (values))
-
 
 (defmethod peek-uint8  ((self memory-vector-64) address)
   (decf address (base self))
