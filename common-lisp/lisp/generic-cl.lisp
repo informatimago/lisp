@@ -78,7 +78,7 @@ See the source file for details.
   ;;          ,(if (consp name)
   ;;               `(setf (,cl-name ,@(cdr arguments)) ,(car arguments))
   ;;               `(,cl-name ,@arguments))))))
-  (error "Not implemented yet."))
+  `(error "Not implemented yet."))
 
 ;; t
 ;;    sequence
