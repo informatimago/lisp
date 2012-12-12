@@ -32,16 +32,13 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(ql:quickload :COM.INFORMATIMAGO.RDP)
-(ql:quickload :COM.INFORMATIMAGO.COMMON-LISP.PARSER)
-
-(defpackage "COM.INFORMATIMGO.XCODE"
+(defpackage "COM.INFORMATIMAGO.XCODE"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.RDP"
         "COM.INFORMATIMAGO.COMMON-LISP.PARSER.SCANNER")
   (:export "READ-PBXPROJ"
            "WRITE-PBXPROJ"))
-(in-package "COM.INFORMATIMGO.XCODE")
+(in-package "COM.INFORMATIMAGO.XCODE")
 
 
 

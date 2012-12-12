@@ -368,4 +368,21 @@ RETURN  SUDOKU.
     (format t "  has ~D solution~:*~P,~%  found in ~D tries.~2%" (length solutions) tries)
     (map nil 'sudoku-print solutions)))
 
+
+(let* ((sudoku #2A((2 x 4 1 5 x 8 7 x)
+                   (x x x 3 x x x 9 1)
+                   (x 7 x 8 6 x x x 4)
+                   (x x 3 x 2 1 x 8 x)
+                   (x x 1 x 8 x 3 x x)
+                   (x 8 x 4 3 x 9 x x)
+                   (9 x x x 1 3 x 6 x)
+                   (3 2 x x x 4 x x x)
+                   (x 1 7 x 9 8 4 x 3))))
+  (multiple-value-bind (solutions tries) (sudoku-solver sudoku)
+    (terpri)
+    (sudoku-print sudoku)
+    (format t "  has ~D solution~:*~P,~%  found in ~D tries.~2%" (length solutions) tries)
+    (map nil 'sudoku-print solutions)))
+
+
 ;;;; THE END ;;;;
