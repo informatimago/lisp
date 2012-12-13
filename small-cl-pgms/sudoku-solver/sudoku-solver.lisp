@@ -373,6 +373,16 @@ RETURN  SUDOKU.
                                            (3 2 x x x 4 x x x)
                                            (x 1 7 x 9 8 4 x 3)))
 
+(defparameter *20-minutes/1501/difficile* #2A((x 1 5 x 8 9 x x x)
+                                              (2 x 6 3 x 5 x x x)
+                                              (x 7 x x x x x 8 x)
+                                              (x 6 9 x x 1 x x 3)
+                                              (x x x 8 x 3 x x x)
+                                              (3 x x 6 x x 2 9 x)
+                                              (x 9 x x x x x 2 x)
+                                              (x x x 9 x 6 1 x 5)
+                                              (x x x 7 1 x 9 3 x)))
+
 (defparameter *metrofrance/694/moyen* #2A((x x 1 2 x x x x 8)
                                           (x x x x 5 1 x x 3)
                                           (x 7 x x x x 6 x 1)
@@ -392,12 +402,14 @@ RETURN  SUDOKU.
                  *royco-minut-soup*
                  *20-minutes/1499/facile*
                  *metrofrance/694/moyen*
+                 *20-minutes/1501/difficile*
                  ))
   (multiple-value-bind (solutions tries) (sudoku-solver sudoku)
     (terpri)
     (sudoku-print sudoku)
     (format t "  has ~D solution~:*~P,~%  found in ~D tries.~2%" (length solutions) tries)
     (map nil 'sudoku-print solutions)))
+
 
 
 ;;;; THE END ;;;;
