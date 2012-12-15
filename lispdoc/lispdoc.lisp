@@ -74,7 +74,7 @@ exported from packages.
 
 This is tool automatically generates documentation for Common Lisp code
 based on symbols that exported from packages and properly documented.
-This code was written for OpenMCL http://openmcl.clozure.com
+This code was written for OpenMCL <http://openmcl.clozure.com>
 
 
 License:
@@ -86,7 +86,7 @@ License:
 
     You are granted the rights to distribute and use this software
     as governed by the terms of the Lisp Lesser GNU Public License
-    http://opensource.franz.com/preamble.html also known as the LLGPL.
+    <http://opensource.franz.com/preamble.html> also known as the LLGPL.
 "))
 
 (in-package :com.informatimago.lispdoc)
@@ -99,83 +99,296 @@ License:
 ;;; processing pjb docstrings.
 ;;;
 
-;;; URLs:
 
-(define-parse-tree-synonym num
+
+;;; URIs:
+;;; http://www.ietf.org/rfc/rfc3986.txt
+
+(define-parse-tree-synonym digit
     (:char-class (:range #\0 #\9)))
+
 (define-parse-tree-synonym alpha
     (:char-class (:range #\A #\Z) (:range #\a #\z)))
+
 (define-parse-tree-synonym alphanum
     (:char-class (:range #\A #\Z) (:range #\a #\z) (:range #\0 #\9)))
-(define-parse-tree-synonym alpha-num
-    (:char-class #\- (:range #\A #\Z) (:range #\a #\z) (:range #\0 #\9)))
+
+(define-parse-tree-synonym hexdig
+    (:char-class (:range #\A #\F) (:range #\a #\f) (:range #\0 #\9)))
+
+
+
+
+;; dec-octet     = DIGIT                 ; 0-9
+;;               / %x31-39 DIGIT         ; 10-99
+;;               / "1" 2DIGIT            ; 100-199
+;;               / "2" %x30-34 DIGIT     ; 200-249
+;;               / "25" %x30-35          ; 250-255
+
+(define-parse-tree-synonym dec-octet
+    (:alternation digit
+                  (:sequence (:char-class (:range #\1 #\9)) digit)
+                  (:sequence #\1 digit digit)
+                  (:sequence #\2 (:char-class (:range #\0 #\4)) digit)
+                  (:sequence #\2 #\5 (:char-class (:range #\0 #\5)))))
+
+
+;; IPv4address   = dec-octet "." dec-octet "." dec-octet "." dec-octet
+
+(define-parse-tree-synonym ipv4address
+    (:sequence dec-octet #\. dec-octet #\. dec-octet #\. dec-octet))
+
+
+;; h16           = 1*4HEXDIG
+
+(define-parse-tree-synonym h16
+    (:greedy-repetition 1 4 hexdig))
+
+
+;; ls32          = ( h16 ":" h16 ) / IPv4address
+
+(define-parse-tree-synonym ls32
+    (:alternation (:sequence h16 #\: h16) ipv4address))
+
+
+;; IPv6address   =                            6( h16 ":" ) ls32
+;;               /                       "::" 5( h16 ":" ) ls32
+;;               / [               h16 ] "::" 4( h16 ":" ) ls32
+;;               / [ *1( h16 ":" ) h16 ] "::" 3( h16 ":" ) ls32
+;;               / [ *2( h16 ":" ) h16 ] "::" 2( h16 ":" ) ls32
+;;               / [ *3( h16 ":" ) h16 ] "::"    h16 ":"   ls32
+;;               / [ *4( h16 ":" ) h16 ] "::"              ls32
+;;               / [ *5( h16 ":" ) h16 ] "::"              h16
+;;               / [ *6( h16 ":" ) h16 ] "::"
+
+(define-parse-tree-synonym ipv6address
+    (:alternation
+     (:sequence                                                                                           (:greedy-repetition 6 6 (:sequence h16 #\:)) ls32)
+     (:sequence                                                                                   #\: #\: (:greedy-repetition 5 5 (:sequence h16 #\:)) ls32)
+     (:sequence (:alternation :void h16)                                                          #\: #\: (:greedy-repetition 4 4 (:sequence h16 #\:)) ls32)
+     (:sequence (:alternation :void (:sequence (:greedy-repetition 0 1 (:sequence h16 #\:)) h16)) #\: #\: (:greedy-repetition 3 3 (:sequence h16 #\:)) ls32)
+     (:sequence (:alternation :void (:sequence (:greedy-repetition 0 2 (:sequence h16 #\:)) h16)) #\: #\: (:greedy-repetition 2 2 (:sequence h16 #\:)) ls32)
+     (:sequence (:alternation :void (:sequence (:greedy-repetition 0 3 (:sequence h16 #\:)) h16)) #\: #\:                         (:sequence h16 #\:)  ls32)
+     (:sequence (:alternation :void (:sequence (:greedy-repetition 0 4 (:sequence h16 #\:)) h16)) #\: #\:                                              ls32)
+     (:sequence (:alternation :void (:sequence (:greedy-repetition 0 5 (:sequence h16 #\:)) h16)) #\: #\:                                    h16)
+     (:sequence (:alternation :void (:sequence (:greedy-repetition 0 6 (:sequence h16 #\:)) h16)) #\: #\:)))
+
+
+;; IPvFuture     = "v" 1*HEXDIG "." 1*( unreserved / sub-delims / ":" )
+
+(define-parse-tree-synonym ipvfuture
+    (:sequence #\v (:greedy-repetition 1 nil hexdig) #\.  (:greedy-repetition 1 nil (:alternation unreserved sub-delims #\:))))
+
+
+;; IP-literal    = "[" ( IPv6address / IPvFuture  ) "]"
+
+(define-parse-tree-synonym ip-literal
+    (:sequence #\[  (:alternation unreserved ipv6address ipvfuture) #\]))
+
+
+
+
+;; gen-delims    = ":" / "/" / "?" / "#" / "[" / "]" / "@"
 
 (define-parse-tree-synonym gen-delims
     (:char-class #\: #\/ #\? #\# #\[ #\] #\@))
+
+
+;; sub-delims    = "!" / "$" / "&" / "'" / "(" / ")"
+;;               / "*" / "+" / "," / ";" / "="
+
 (define-parse-tree-synonym sub-delims
     (:char-class #\! #\$ #\& #\' #\( #\) #\* #\+ #\, #\; #\=))
 
 
-(define-parse-tree-synonym http-scheme
-    (:alternation "http" "https" "ftp" "telnet" "irc" "file"
-                  "aaa" "aaas" "acap" "cap" "crid" "icap"
-                  "dav" "dict"  "dns"  "go" "gopher" "imap" "info"
-                  "ipp" "iris" "iris.beep" "iris.xpc" "iris.xpcs" "iris.lws"
-                  "ldap" "msrp" "msrps" "mtqp" "mupdate" "nfs" "nntp"
-                  "opaquelocktoken" "pop" "prospero" "rsync" "rtsp"
-                  "service" "shttp" "sieve" "snmp" "tftp" "thismessage" "tip" "tv"
-                  "soap.beep" "soap.beeps" "vmmi" "z39.50r" "z39.50s"
-                  ;; and so on
-                  ))
+;; reserved      = gen-delims / sub-delims
 
-(define-parse-tree-synonym mail-scheme
-    (:alternation "mailto" "phoneto" "faxto" "fax"
-                  "cid" "data" "geo" "h323" "iax" "im" "lsid" "mid" "modem"
-                  "news" "pres" "sip" "sms" "tag" "tel" "urn" "uuid"
-                  "ws" "wss" "xmpp"
-                  ;; and so on
-                  ))
+(define-parse-tree-synonym reserved
+    (:alternation gen-delims sub-delims))
 
-(define-parse-tree-synonym phonenumber
-    (:sequence (:greedy-repetition 0 1 "+")
-               (:greedy-repetition 1 nil num)))
-(define-parse-tree-synonym username
-    (:greedy-repetition 1 nil (:inverted-char-class #\space #\newline #\@ #\:)))
-(define-parse-tree-synonym password
-    (:greedy-repetition 1 nil (:inverted-char-class #\space #\newline #\@)))
-(define-parse-tree-synonym port
-    (:greedy-repetition 1 nil num))
-(define-parse-tree-synonym name
-    (:greedy-repetition 1 nil alpha-num))
-(define-parse-tree-synonym host
-    (:sequence name
-               (:greedy-repetition 1 nil (:sequence "." name))
-               (:greedy-repetition 0 1 ".")))
+
+;; unreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~"
+
+(define-parse-tree-synonym unreserved
+    (:alternation alpha digit #\- #\. #\_ #\~))
+
+
+;; pct-encoded   = "%" HEXDIG HEXDIG
+(define-parse-tree-synonym pct-encoded
+    (:sequence #\% hexdig hexdig))
+
+
+;; pchar         = unreserved / pct-encoded / sub-delims / ":" / "@"
+
+(define-parse-tree-synonym pchar
+    (:alternation unreserved pct-encoded sub-delims #\" #\@))
+
+
+
+
+;; segment       = *pchar
+;; segment-nz    = 1*pchar
+;; segment-nz-nc = 1*( unreserved / pct-encoded / sub-delims / "@" )
+;;               ; non-zero-length segment without any colon ":"
+
+(define-parse-tree-synonym segment
+    (:greedy-repetition 0 nil pchar))
+
+(define-parse-tree-synonym segment-nz
+    (:greedy-repetition 1 nil pchar))
+
+(define-parse-tree-synonym segment-nz-nc
+    (:greedy-repetition 1 nil (:alternation unreserved pct-encoded sub-delims #\@)))
+
+
+
+;; path-abempty  = *( "/" segment )
+;; path-absolute = "/" [ segment-nz *( "/" segment ) ]
+;; path-noscheme = segment-nz-nc *( "/" segment )
+;; path-rootless = segment-nz *( "/" segment )
+;; path-empty    = 0<pchar>
+
+(define-parse-tree-synonym path-abempty
+    (:greedy-repetition 0 nil (:sequence #\/ segment)))
+
+(define-parse-tree-synonym path-absolute
+    (:greedy-repetition 0 nil
+                        (:alternation :void
+                                      (:sequence segment-nz
+                                                 (:greedy-repetition 0 nil
+                                                                     (:sequence #\/ segment))))))
+
+(define-parse-tree-synonym path-noscheme
+    (:sequence segment-nz-nc (:greedy-repetition 0 nil (:sequence #\/ segment))))
+
+(define-parse-tree-synonym path-rootless
+    (:sequence segment-nz    (:greedy-repetition 0 nil (:sequence #\/ segment))))
+
+(define-parse-tree-synonym path-empty
+    :void)
+
+
+;; path          = path-abempty    ; begins with "/" or is empty
+;;               / path-absolute   ; begins with "/" but not "//"
+;;               / path-noscheme   ; begins with a non-colon segment
+;;               / path-rootless   ; begins with a segment
+;;               / path-empty      ; zero characters
+
 (define-parse-tree-synonym path
-    (:greedy-repetition 1 nil (:inverted-char-class #\space #\newline #\? #\#)))
+    (:alternation path-abempty
+                  path-absolute
+                  path-noscheme
+                  path-rootless
+                  path-empty))
+
+
+;; reg-name      = *( unreserved / pct-encoded / sub-delims )
+
+(define-parse-tree-synonym reg-name
+    (:greedy-repetition 0 nil (:alternation unreserved pct-encoded sub-delims)))
+
+
+
+;; scheme        = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
+
+(define-parse-tree-synonym scheme
+    (:sequence alpha (:greedy-repetition 0 nil (:alternation alpha digit #\+ #\- #\.))))
+
+   
+;; userinfo      = *( unreserved / pct-encoded / sub-delims / ":" )
+
+(define-parse-tree-synonym userinfo
+    (:greedy-repetition 0 nil (:alternation unreserved pct-encoded sub-delims #\:)))
+
+
+;; host          = IP-literal / IPv4address / reg-name
+
+(define-parse-tree-synonym host
+    (:alternation ip-literal ipv4address reg-name))
+
+
+;; port          = *DIGIT
+
+(define-parse-tree-synonym port
+    (:greedy-repetition 0 nil digit))
+
+
+;; authority     = [ userinfo "@" ] host [ ":" port ]
+
+(define-parse-tree-synonym authority
+    (:sequence (:alternation :void (:sequence userinfo #\@))
+               host
+               (:alternation :void (:sequence #\: port))))
+
+
+
+;; query         = *( pchar / "/" / "?" )
+
 (define-parse-tree-synonym query
-    (:greedy-repetition 1 nil (:inverted-char-class #\space #\newline #\#)))
+    (:greedy-repetition 0 nil (:alternation pchar #\/ #\?)))
+
+
+;; fragment      = *( pchar / "/" / "?" )
+
 (define-parse-tree-synonym fragment
-    (:greedy-repetition 1 nil (:inverted-char-class #\space #\newline)))
+    (:greedy-repetition 0 nil (:alternation pchar #\/ #\?)))
 
 
-(define-parse-tree-synonym url
-    (:alternation
-     (:sequence http-scheme "://"
-                (:greedy-repetition 0 1 (:sequence
-                                         (:greedy-repetition 0 1 (:sequence username
-                                                                            (:greedy-repetition 0 1 ":" password)
-                                                                            "@"))
-                                         host
-                                         (:greedy-repetition 0 1 (:sequence ":" port))))
-                (:greedy-repetition 0 1 (:sequence path))
-                (:greedy-repetition 0 1 (:sequence "?" query))
-                (:greedy-repetition 0 1 (:sequence "#" fragment))
-                )
-     (:sequence mail-scheme ":"
-                (:alternation (:sequence username "@" host
-                                         (:greedy-repetition 0 1 query))
-                              (:sequence phonenumber)))))
+;; relative-part = "//" authority path-abempty
+;;               / path-absolute
+;;               / path-noscheme
+;;               / path-empty
+
+(define-parse-tree-synonym relative-part
+    (:alternation (:sequence #\/ #\/ authority path-abempty)
+                  path-absolute
+                  path-noscheme
+                  path-empty))
+
+
+;; relative-ref  = relative-part [ "?" query ] [ "#" fragment ]
+
+(define-parse-tree-synonym relative-ref
+    (:sequence relative-part 
+               (:alternation :void (:sequence #\? query))
+               (:alternation :void (:sequence #\# fragment))))
+
+
+;; hier-part     = "//" authority path-abempty
+;;               / path-absolute
+;;               / path-rootless
+;;               / path-empty
+
+(define-parse-tree-synonym hier-part
+    (:alternation (:sequence #\/ #\/ authority path-abempty)
+                  path-absolute
+                  path-rootless
+                  path-empty))
+
+
+;; absolute-URI  = scheme ":" hier-part [ "?" query ]
+
+(define-parse-tree-synonym absolute-uri
+    (:sequence scheme #\: hier-part
+               (:alternation :void (:sequence #\? query))))
+
+
+
+;; URI           = scheme ":" hier-part [ "?" query ] [ "#" fragment ]
+
+(define-parse-tree-synonym uri
+    (:sequence scheme #\: hier-part
+               (:alternation :void (:sequence #\? query))
+               (:alternation :void (:sequence #\# fragment))))
+
+
+;; URI-reference = URI / relative-ref
+
+(define-parse-tree-synonym uri-reference
+    (:alternation uri relative-ref))
+
+
+
 
 
 (defun replace-urls (text)
@@ -184,14 +397,18 @@ Search all the urls in the text, and replace them with an A tag.
 "
   (let ((start 0))
     (loop
-      (multiple-value-bind (begin end) (scan '(:group url) text :start start)
-        (unless begin
-          (pcdata "~A" (subseq text start (length text)))
-          (return))
-        (pcdata "~A" (subseq text start begin))
-        (let ((url (subseq text begin end)))
-          (a (:href url) (pcdata "~A" url)))
-        (setf start end)))))
+      (multiple-value-bind (wbegin wend begins ends)
+          (scan '(:sequence #\< (:register uri) #\>) text :start start)
+        (if begins
+            (let ((begin (aref begins 0))
+                  (end   (aref ends   0)))
+              (pcdata "~A" (subseq text start begin))
+              (let ((url (subseq text begin end)))
+                (a (:href url) (pcdata "~A" url)))
+              (setf start end))
+            (progn
+              (pcdata "~A" (subseq text start (length text)))
+              (return)))))))
 
 
 ;;; pjb docstrings:

@@ -35,7 +35,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -96,7 +96,7 @@
    "
 This package exports macros and functions to generate HTML pages.
 
-See also: http://www.cliki.net/HTML-from-sexpr
+See also: <http://www.cliki.net/HTML-from-sexpr>
           html-generators-in-lisp.txt
 
 
@@ -172,7 +172,7 @@ License:
     
     You should have received a copy of the GNU Affero General Public License
     along with this program.
-    If not, see http://www.gnu.org/licenses/
+    If not, see <http://www.gnu.org/licenses/>
 
 "))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.HTML-GENERATOR.HTML")

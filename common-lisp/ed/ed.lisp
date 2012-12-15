@@ -38,7 +38,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -64,7 +64,7 @@ buffer or to be printed on the terminal.
 
 For the rest, the aim is to be 100% user-interface compatible with ed(1).
 
-Ed, man! !man ed: http://www.gnu.org/fun/jokes/ed.msg.html
+Ed, man! !man ed: <http://www.gnu.org/fun/jokes/ed.msg.html>
 
 
 Can you imagine that some Common-Lisp implementations DON'T provide
@@ -92,7 +92,7 @@ License:
     
     You should have received a copy of the GNU Affero General Public License
     along with this program.
-    If not, see http://www.gnu.org/licenses/
+    If not, see <http://www.gnu.org/licenses/>
 
 ")
   (:use "COMMON-LISP")

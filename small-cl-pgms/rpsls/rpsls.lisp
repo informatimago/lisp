@@ -32,7 +32,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
 
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.ROCK-PAPER-SCISSOR-LIZARD-SPOCK"
@@ -493,7 +493,7 @@ Implements the Rock Paper Scissor Lizard Spock game against the computer.
   "Hyper-Geeky Rock, Paper, Scissors, Gun, Dynamite, Nuke, Lightning,
 Devil, Dragon, Alien, Water, Bowl, Air, Moon, Sponge, Wolf, Cockroach,
 Tree, Man, Woman, Monkey, Snake, Axe, Fire, Sun.
-http://loscuatroojos.com/wp-content/uploads/2008/04/rock-paper-scissors.jpg")
+<http://loscuatroojos.com/wp-content/uploads/2008/04/rock-paper-scissors.jpg>")
 
 
 (defparameter *rps101*
@@ -501,7 +501,7 @@ http://loscuatroojos.com/wp-content/uploads/2008/04/rock-paper-scissors.jpg")
 
     
     )
- "http://www.umop.com/rps101.htm")
+ "<http://www.umop.com/rps101.htm>")
 
 
 (defparameter *games*

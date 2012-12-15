@@ -185,133 +185,133 @@ License:
 (defgeneric make-symbol (sym-name)
   (:documentation "
 DO:     Make a new symbol
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_mk_sym.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_mk_sym.htm>
 "))
 
 (defgeneric symbol-name (sym)
   (:documentation "
 RETURN: the name of the symbol.     
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_symb_2.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_symb_2.htm>
 "))
 
 (defgeneric symbol-package (sym)
   (:documentation "
 RETURN: the home package of the symbol.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_symb_3.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_symb_3.htm>
 "))
 
 (defgeneric make-package (pack-name &key nicknames use)
   (:documentation "
 DO:     Make a new package.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_mk_pkg.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_mk_pkg.htm>
 "))
 
 (defgeneric find-package (pack-name)
   (:documentation "
 RETURN: The package designated by PACK-NAME, or NIL if none.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_find_p.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_find_p.htm>
 "))
 
 (defgeneric delete-package (pack-name)
   (:documentation "
 DO:     Delete the package.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_del_pk.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_del_pk.htm>
 "))
 
 (defgeneric find-symbol (sym-name &optional pack)
   (:documentation "
 RETURN: the symbol named SYM-NAME in the package PACK, if found and a status keyword.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_find_s.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_find_s.htm>
 "))
 
 (defgeneric import (symbols &optional pack)
   (:documentation "
 DO:     Import the symbols into the package.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_import.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_import.htm>
 "))
 
 (defgeneric intern (sym-name &optional pack)
   (:documentation "
 DO:     Intern the symbol name in the package.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_intern.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_intern.htm>
 "))
 
 (defgeneric shadow (symbol-names &optional pack)
   (:documentation "
 DO:     Shadow the designated symbols.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_shadow.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_shadow.htm>
 "))
 
 (defgeneric shadowing-import (symbols &optional pack)
   (:documentation "
 DO:     Shadow and import the designated symbols.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_shdw_i.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_shdw_i.htm>
 "))
 
 (defgeneric export (sym &optional pack)
   (:documentation "
 DO:     Export the designated symbols from the package.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_export.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_export.htm>
 "))
 
 (defgeneric unexport (sym &optional pack)
   (:documentation "
 DO:     Unexport the designated symbols from the package.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_unexpo.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_unexpo.htm>
 "))
 
 (defgeneric unintern (sym &optional pack)
   (:documentation "
 DO:     Unintern the designated symbols from the package.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_uninte.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_uninte.htm>
 "))
 
 (defgeneric use-package (pack &optional using-pack)
   (:documentation "
 DO:     Make the USING-PACK use the package PACK.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_use_pk.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_use_pk.htm>
 "))
 
 (defgeneric unuse-package (pack &optional using-pack)
   (:documentation "
 DO:     Make the USING-PACK unuse the package PACK 
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_unuse_.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_unuse_.htm>
 "))
 
 (defgeneric package-name (pack)
   (:documentation "
 RETURN: The package name.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_pkg_na.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_pkg_na.htm>
 "))
 
 (defgeneric package-use-list (pack)
   (:documentation "
 RETURN: The list of packages used by PACK.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_pkg_us.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_pkg_us.htm>
 "))
 
 (defgeneric package-used-by-list (pack)
   (:documentation "
 RETURN: The list of packages that use PACK.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_pkg__1.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_pkg__1.htm>
 "))
 
 (defgeneric package-shadowing-symbols (pack)
   (:documentation "
 RETURN: The list of shadowing symbols of the package.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_pkg_sh.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_pkg_sh.htm>
 "))
 
 (defgeneric find-all-symbols (name)
   (:documentation "
 RETURN: The list of all symbols named NAME in all packages.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_find_a.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_find_a.htm>
 "))
 
 (defgeneric rename-package (package new-name &optional new-nicknames)
   (:documentation "
 DO:     Rename the package giving it the NEW-NAME and NEW-NICKNAMES.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_rn_pkg.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_rn_pkg.htm>
 "))
 
 
@@ -325,7 +325,7 @@ URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_rn_pkg.htm
   "
 The current package.
 
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/v_pkg.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/v_pkg.htm>
 ")
 
 
@@ -352,7 +352,7 @@ URL:    http://www.lispworks.com/documentation/HyperSpec/Body/v_pkg.htm
 (defgeneric package-error-package (package-error)
   (:documentation "
 RETURN: The package in error.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_pkg_er.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_pkg_er.htm>
 "))
 
 (define-condition package-error (error)
@@ -361,7 +361,7 @@ URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_pkg_er.htm
              (format stream "Package error with ~A" (package-error-package condition))))
 (:documentation "
 The type package-error consists of error conditions related to operations on packages. 
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/e_pkg_er.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/e_pkg_er.htm>
 "))
 
 
@@ -443,19 +443,19 @@ URL:    http://www.lispworks.com/documentation/HyperSpec/Body/e_pkg_er.htm
 (defgeneric symbol-plist (symbol)
 (:documentation "
 RETURN: The plist of the symbol.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_symb_4.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_symb_4.htm>
 "))
 
 (defgeneric symbol-value (symbol)
 (:documentation "
 RETURN: The value of the symbol.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_symb_5.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_symb_5.htm>
 "))
 
 (defgeneric symbol-function (symbol)
 (:documentation "
 RETURN: The function of the symbol.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_symb_1.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_symb_1.htm>
 "))
 
 (defclass symbol ()
@@ -484,7 +484,7 @@ URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_symb_1.htm
    :pack nil)
   (:documentation "
 The symbol class.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/t_symbol.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/t_symbol.htm>
 "))
 
 (defgeneric symbolp (object)
@@ -492,7 +492,7 @@ URL:    http://www.lispworks.com/documentation/HyperSpec/Body/t_symbol.htm
   (:method ((object symbol)) t)
   (:documentation "
 RETURN: Whether the object is a symbol.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_symbol.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_symbol.htm>
 "))
 
 
@@ -503,7 +503,7 @@ URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_symbol.htm
     (slot-boundp object 'value))
   (:documentation "
 RETURN: Whether the symbol is bound to a value.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_boundp.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_boundp.htm>
 "))
 
 (defgeneric fboundp (object)
@@ -513,7 +513,7 @@ URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_boundp.htm
     (slot-boundp object 'function))
   (:documentation "
 RETURN: Whether the symbol is fbound to a function.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_fbound.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_fbound.htm>
 "))
 
 
@@ -521,7 +521,7 @@ URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_fbound.htm
   ()
   (:documentation "
 The keyword class.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/t_kwd.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/t_kwd.htm>
 "))
 
 
@@ -530,7 +530,7 @@ URL:    http://www.lispworks.com/documentation/HyperSpec/Body/t_kwd.htm
   (:method ((object keyword)) t)
   (:documentation "
 RETURN: Whether the object is a keyword.     
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_kwdp.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_kwdp.htm>
 "))
 
 
@@ -826,7 +826,7 @@ URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_kwdp.htm
 (defun list-all-packages ()
   "
 RETURN: A fresh list of all registered packages.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_list_a.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_list_a.htm>
 "
   (let ((packages '()))
     (maphash (lambda (k v) (declare (ignore k)) (pushnew v packages)) *packs*)
@@ -876,7 +876,7 @@ URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_list_a.htm
     :used-by-packs nil)
   (:documentation "
 The package class.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/t_pkg.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/t_pkg.htm>
 "))
 
 (defmacro define-normalize-package-methods (name &key (if-package-does-not-exist :replace) (type-error nil))
@@ -905,7 +905,7 @@ URL:    http://www.lispworks.com/documentation/HyperSpec/Body/t_pkg.htm
   (:method ((package package)) t)
   (:documentation "
 RETURN: Whether the object is a package.     
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_pkgp.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_pkgp.htm>
 "))
 
 
@@ -1814,7 +1814,7 @@ Each sublist contains the package followed by its imported symbols."
 (defmacro in-package (name)
   "
 DO:     Sets the current *package* to the package designated by NAME.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/m_in_pkg.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/m_in_pkg.htm>
 "
   (let ((name (normalize-string-designator name)))
     `(eval-when (:compile-toplevel :load-toplevel :execute)

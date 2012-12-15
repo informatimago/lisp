@@ -43,7 +43,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
 
 
@@ -126,7 +126,7 @@
 
 (defun getenv (name)
   "
-URL:        http://www.opengroup.org/onlinepubs/007904975/functions/getenv.html
+URL:        <http://www.opengroup.org/onlinepubs/007904975/functions/getenv.html>
 RETURN:     NIL or the value of the environment variable named NAME.
 "
   (ext:getenv name)

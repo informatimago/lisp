@@ -39,7 +39,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
 
 (defpackage "COM.INFORMATIMAGO.WHAT-IMPLEMENTATION"
@@ -70,7 +70,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
-along with this program.  If not, see http://www.gnu.org/licenses/
+along with this program.  If not, see <http://www.gnu.org/licenses/>
 "))
 (in-package "COM.INFORMATIMAGO.WHAT-IMPLEMENTATION")
 
@@ -249,7 +249,7 @@ Organization: A noiseless patient Spider
 Message-ID: <jnlp5k$i8f$1@dont-email.me>
 
 The latest beta version of ManKai Common Lisp, MKCL 1.1.0 RC1,
-is now available for general use at http://common-lisp.net/project/mkcl/.
+is now available for general use at <http://common-lisp.net/project/mkcl/>.
 
 Its key new features are:
 
@@ -922,7 +922,7 @@ CLASSIFIED
     (license)
     (terpri  *query-io*)
     (finish-output *query-io*)
-    (format  *query-io* "~&I know ~D implementation~:*~P of Common Lisp.  Let me advise you one.~%"
+    (format  *query-io* "~&I know ~D implementation~:*~P of Common Lisp.  Let me help you choose one.~%"
              (length *implementations*))
     (choose-an-implementation)
     (unless (yes-or-no-p "~%Do you want to make another selection?")

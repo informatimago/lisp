@@ -50,7 +50,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -181,7 +181,7 @@ follows links but does not walk down any path that crosses itself.")
 
 (defun ftw (path filter ndirs)
   "
-URL:        http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html
+URL:        <http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html>
 "
   (declare (type (integer 1 #|+OPEN-MAX+|#) ndirs))
   (declare (ignore ndirs))

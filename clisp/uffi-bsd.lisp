@@ -46,7 +46,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -58,8 +58,8 @@ This package implements over clisp native FFI the UFFI API as defined in
 
 The version of the UFFI implemented here is uffi-1.2.15.
 
-URL:    http://uffi.b9.com/manual/book1.html
-URL:    http://uffi.b9.com/
+URL:    <http://uffi.b9.com/manual/book1.html>
+URL:    <http://uffi.b9.com/>
 
 LEGAL:  Copyright Pascal J. Bourguignon 2003 - 2004
 
@@ -561,8 +561,8 @@ DO:                 Defines a Common Lisp type based on a UFFI type.
 NAME:               A symbol naming the type
 TYPE:               A form that is evaluated that specifies the UFFI type.
 IMPLEMENTATION:     For now, we generate `(DEFTYPE ,NAME T).
-URL:                http://uffi.b9.com/manual/def-type.html
-URL:                http://www.lisp.org/HyperSpec/Body/mac_deftype.html
+URL:                <http://uffi.b9.com/manual/def-type.html>
+URL:                <http://www.lisp.org/HyperSpec/Body/mac_deftype.html>
 "
   (setf type (clean-uffi-type type))
   `(deftype ,name t ,(convert-from-uffi-type type :cl))) ;;DEF-TYPE
@@ -585,9 +585,9 @@ EXPORT:             EXPORT <=> The name is exported from the current package.
                     The default is NIL
 NOTE:               I would not advise using this macro, since it does not
                     allow to attach a documentation string!
-URL:                http://uffi.b9.com/manual/def-constant.html
-URL:                http://www.lisp.org/HyperSpec/Body/mac_defconstant.html
-URL:                http://www.lisp.org/HyperSpec/Body/fun_export.html
+URL:                <http://uffi.b9.com/manual/def-constant.html>
+URL:                <http://www.lisp.org/HyperSpec/Body/mac_defconstant.html>
+URL:                <http://www.lisp.org/HyperSpec/Body/fun_export.html>
 "
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      (defconstant ,name ,value)
@@ -603,8 +603,8 @@ DO:                 Defines a new foreign type.
 NAME:               A symbol naming the new foreign type.
 VALUE:              A form that is not evaluated that defines
                     the new foreign type.
-URL:                http://uffi.b9.com/manual/def-foreign-type.html
-URL:                http://clisp.sourceforge.net/impnotes.html#def-c-type
+URL:                <http://uffi.b9.com/manual/def-foreign-type.html>
+URL:                <http://clisp.sourceforge.net/impnotes.html#def-c-type>
 "
   (let* ((name name)
          (uffi-type (clean-uffi-type type name))
@@ -623,7 +623,7 @@ DO:                 Tests if a character or integer is NULL.
                     when dereferencing a C character pointer.
 CHAR:               A character or integer.
 RETURN:             A boolean flag indicating if char is a NULL value.
-URL:                http://uffi.b9.com/manual/null-char-p.html
+URL:                <http://uffi.b9.com/manual/null-char-p.html>
 "
   `(let ((val ,val)) (if (characterp val) (zerop (char-code val)) (zerop val)))
   ) ;;NULL-CHAR-P
@@ -667,9 +667,9 @@ SEPARATOR-STRING:   A string that governs the creation of constants.
                     The default is \"#\".
 IMPLEMENTATION:     We generate both a DEF-C-TYPE for the NAME
                     and a DEF-C-ENUM for the constants.
-URL:                http://uffi.b9.com/manual/def-enum.html
-URL:                http://clisp.sourceforge.net/impnotes.html#def-c-enum
-URL:                http://clisp.sourceforge.net/impnotes.html#def-c-type
+URL:                <http://uffi.b9.com/manual/def-enum.html>
+URL:                <http://clisp.sourceforge.net/impnotes.html#def-c-enum>
+URL:                <http://clisp.sourceforge.net/impnotes.html#def-c-type>
 "
   (let ((c-constants
          (mapcar
@@ -703,8 +703,8 @@ FIELDS:             A variable number of field definitions.
                     the field followed by its foreign type.  
 IMPLEMENTATION:     Generates a DEF-C-STRUCT which defines both a foreign
                     C type and a Common-Lisp STRUCTURE-CLASS.
-URL:                http://uffi.b9.com/manual/def-struct.html
-URL:                http://clisp.sourceforge.net/impnotes.html#def-c-struct
+URL:                <http://uffi.b9.com/manual/def-struct.html>
+URL:                <http://clisp.sourceforge.net/impnotes.html#def-c-struct>
 "
   (let* ((name name)
          (uffi-type (clean-uffi-type `(:struct ,name ,@fields) name))
@@ -728,8 +728,8 @@ TYPE:               A name of the foreign structure type.
 FIELD:              A name of the desired field in foreign structure.
 RETURN:             The value of the field in the structure.
 SEE ALSO:           GET-SLOT-POINTER
-URL:                http://uffi.b9.com/manual/get-slot-value.html
-URL:                http://clisp.sourceforge.net/impnotes.html#slot
+URL:                <http://uffi.b9.com/manual/get-slot-value.html>
+URL:                <http://clisp.sourceforge.net/impnotes.html#slot>
 "
   (when (and (listp type) (eq 'quote (car type)))
     (setf type (second type)))
@@ -749,8 +749,8 @@ RETURN:             The value of the field in the structure: A POINTER.
 NOTE:               This is similar to GET-SLOT-VALUE.
                     It is used when the value of a slot is a pointer type.
 SEE ALSO:           GET-SLOT-VALUE
-URL:                http://uffi.b9.com/manual/get-slot-pointer.html
-URL:                http://clisp.sourceforge.net/impnotes.html#slot
+URL:                <http://uffi.b9.com/manual/get-slot-pointer.html>
+URL:                <http://clisp.sourceforge.net/impnotes.html#slot>
 "
   ;; NO DIFFERENCE TO ACCESS POINTER FIELD THAN TO ACCESS VALUE FIELDS.
   `(get-slot-value ,obj ,type ,field)
@@ -763,9 +763,9 @@ URL:                http://clisp.sourceforge.net/impnotes.html#slot
 DO:                 Defines a type that is a pointer to an array of type.
 NAME:               A name of the new foreign type.
 TYPE:               The foreign type of the array elements.
-URL:                http://uffi.b9.com/manual/def-array-pointer.html
-URL:                http://clisp.sourceforge.net/impnotes.html#c-array-ptr
-URL:                http://clisp.sourceforge.net/impnotes.html#def-c-type
+URL:                <http://uffi.b9.com/manual/def-array-pointer.html>
+URL:                <http://clisp.sourceforge.net/impnotes.html#c-array-ptr>
+URL:                <http://clisp.sourceforge.net/impnotes.html#def-c-type>
 "
   (let* ((name name)
          (uffi-type (clean-uffi-type `(:array-ptr ,type)))
@@ -782,9 +782,9 @@ URL:                http://clisp.sourceforge.net/impnotes.html#def-c-type
 NAME:               A name of the new union type.
 FIELDS:             A list of fields of the union.
 DO:                 Defines a foreign union type.
-URL:                http://uffi.b9.com/manual/def-union.html
-URL:                http://clisp.sourceforge.net/impnotes.html#c-union
-URL:                http://clisp.sourceforge.net/impnotes.html#def-c-type
+URL:                <http://uffi.b9.com/manual/def-union.html>
+URL:                <http://clisp.sourceforge.net/impnotes.html#c-union>
+URL:                <http://clisp.sourceforge.net/impnotes.html#def-c-type>
 "
   (let* ((name name)
          (uffi-type (clean-uffi-type `(:union ,name ,@fields)))
@@ -825,7 +825,7 @@ SIZE:               An optional size parameter that is evaluated.
                     of type that is size members long.
                     This parameter is evaluated.
 RETURN:             A pointer to the foreign object.
-URL:                http://uffi.b9.com/manual/allocate-foreign-object.html
+URL:                <http://uffi.b9.com/manual/allocate-foreign-object.html>
 URL:                
 IMPLEMENTATION:     
 "
@@ -841,7 +841,7 @@ IMPLEMENTATION:
 DO:                 Frees the memory used by the allocation of a foreign
                     object.
 PTR:                A pointer to the allocated foreign object to free.
-URL:                http://uffi.b9.com/manual/free-foreign-object.html
+URL:                <http://uffi.b9.com/manual/free-foreign-object.html>
 URL:
 IMPLEMENTATION:     
 "
@@ -860,7 +860,7 @@ VAR:                The variable name to bind.
 TYPE:               The type of foreign object to allocate.
                     This parameter is evaluated.
 RETURN:             The result of evaluating the body.
-URL:                http://uffi.b9.com/manual/with-foreign-object.html
+URL:                <http://uffi.b9.com/manual/with-foreign-object.html>
 URL:
 "
   `(let ((,var (allocate-foreign-object ,type)))
@@ -875,8 +875,8 @@ URL:
 FTYPE:              A foreign type specifier. This parameter is evaluated.
 RETURN:             The number of data bytes used by a foreign object type.
                     This does not include any Lisp storage overhead.
-URL:                http://uffi.b9.com/manual/size-of-foreign-type.html
-URL:                http://clisp.sourceforge.net/impnotes.html#sizeof
+URL:                <http://uffi.b9.com/manual/size-of-foreign-type.html>
+URL:                <http://clisp.sourceforge.net/impnotes.html#sizeof>
 "
   `(ffi:sizeof (convert-from-uffi-type (clean-uffi-type ,type) :ffi))
   ) ;;SIZE-OF-FOREIGN-TYPE
@@ -886,8 +886,8 @@ URL:                http://clisp.sourceforge.net/impnotes.html#sizeof
   "
 PTR:                A pointer to a foreign object.
 RETURN:             An integer representing the pointer's address.
-URL:                http://uffi.b9.com/manual/pointer-address.html
-URL:                http://clisp.sourceforge.net/impnotes.html#c-var-addr
+URL:                <http://uffi.b9.com/manual/pointer-address.html>
+URL:                <http://clisp.sourceforge.net/impnotes.html#c-var-addr>
 "
   `(let ((ptr ,ptr))
      (declare (type 'ffi:foreign-address ptr))
@@ -900,8 +900,8 @@ URL:                http://clisp.sourceforge.net/impnotes.html#c-var-addr
 PTR:                A pointer to a foreign object.
 TYPE:               A foreign type of the object being pointed to.
 RETURN:             The value of the object where the pointer points.
-URL:                http://uffi.b9.com/manual/deref-pointer.html
-URL:                http://clisp.sourceforge.net/impnotes.html#deref
+URL:                <http://uffi.b9.com/manual/deref-pointer.html>
+URL:                <http://clisp.sourceforge.net/impnotes.html#deref>
 NOTE:               This is an accessor and can be used with SETF .
 "
   `(ffi:deref (ffi:cast (ffi:foreign-value ,ptr)
@@ -918,7 +918,7 @@ DO:                 Ensures that an object obtained by dereferencing
 OBJECT:             Either a character or a integer specifying
                     a character code.
 RETURN:             A character.
-URL:                http://uffi.b9.com/manual/ensure-char-character.html
+URL:                <http://uffi.b9.com/manual/ensure-char-character.html>
 URL:
 "
   `(let ((object ,object))
@@ -933,7 +933,7 @@ DO:                 Ensures that an object obtained by dereferencing
 OBJECT:             Either a character or a integer specifying
                     a character code.
 RETURN:             An integer.
-URL:                http://uffi.b9.com/manual/ensure-char-integer.html
+URL:                <http://uffi.b9.com/manual/ensure-char-integer.html>
 URL:
 "
   `(let ((object ,object))
@@ -946,7 +946,7 @@ URL:
 DO:                 Creates a NULL pointer of a specified type.
 TYPE:               A type of object to which the pointer refers.
 RETURN:             The NULL pointer of type TYPE.
-URL:                http://uffi.b9.com/manual/make-null-pointer.html
+URL:                <http://uffi.b9.com/manual/make-null-pointer.html>
 URL:
 "
   (declare (ignore type))
@@ -963,8 +963,8 @@ URL:
 DO:                 Tests if a pointer is has a NULL value.
 PTR:                A foreign object pointer.
 RETURN:             Whether ptr is NULL.
-URL:                http://uffi.b9.com/manual/null-pointer-p.html
-URL:                http://clisp.sourceforge.net/impnotes.html#fa-null
+URL:                <http://uffi.b9.com/manual/null-pointer-p.html>
+URL:                <http://clisp.sourceforge.net/impnotes.html#fa-null>
 "
   `(ffi:foreign-address-null ,ptr)
   ) ;;NULL-POINTER-P
@@ -976,7 +976,7 @@ URL:                http://clisp.sourceforge.net/impnotes.html#fa-null
   ;;          (CONVERT-FROM-UFFI-TYPE (CLEAN-UFFI-TYPE :CSTRING) :FFI))
   "A NULL cstring pointer.
 This can be used for testing if a cstring returned by a function is NULL.
-URL:                http://uffi.b9.com/manual/null-cstring-pointer.html
+URL:                <http://uffi.b9.com/manual/null-cstring-pointer.html>
 "
   ) ;;+NULL-CSTRING-POINTER+
 
@@ -994,7 +994,7 @@ DO:                 Converts a Lisp string to a cstring.
                     This is most often used when processing the
                     results of a foreign function that returns a
                     cstring.
-URL:                http://uffi.b9.com/manual/convert-from-cstring.html
+URL:                <http://uffi.b9.com/manual/convert-from-cstring.html>
 "
   `,cstring
   ) ;;CONVERT-FROM-CSTRING
@@ -1007,7 +1007,7 @@ STRING:             A Lisp string.
 RETURN:             A cstring.
 DO:                 Converts a Lisp string to a cstring.
                     The cstring should be freed with free-cstring.
-URL:                http://uffi.b9.com/manual/convert-to-cstring.html
+URL:                <http://uffi.b9.com/manual/convert-to-cstring.html>
 "
   `,string
   ) ;;CONVERT-TO-CSTRING
@@ -1032,7 +1032,7 @@ STRING:             A Lisp string that will be translated to a cstring.
 BODY:               The body of where the CSTRING will be bound.
 DO:                 Binds a symbol to a cstring created from conversion
                     of a string. Automatically frees the cstring.
-URL:                http://uffi.b9.com/manual/with-cstring.html
+URL:                <http://uffi.b9.com/manual/with-cstring.html>
 "
   ;; `(let ((,cstring (convert-to-cstring ,string)))
   ;;    (unwind-protect
@@ -1062,8 +1062,8 @@ NULL-TERMINATED-P:  A boolean flag with a default value of T.
                     When true, the string is converted until the first
                     NULL character is reached.
 RETURN:             A Lisp string.
-URL:        http://uffi.b9.com/manual/convert-from-foreign-string.html
-URL:        http://clisp.sourceforge.net/impnotes.html#encoding
+URL:        <http://uffi.b9.com/manual/convert-from-foreign-string.html>
+URL:        <http://clisp.sourceforge.net/impnotes.html#encoding>
 "
   (let ((byte-vector (make-array (list (if (or null-terminated-p (null length))
                                            (foreign-string-length foreign-string)
@@ -1084,7 +1084,7 @@ STRING:             A Lisp string.
 RETURN:             A foreign string.
 DO:                 Converts a Lisp string to a foreign string.
                     Memory should be freed with free-foreign-object.
-URL:        http://uffi.b9.com/manual/convert-to-foreign-string.html
+URL:        <http://uffi.b9.com/manual/convert-to-foreign-string.html>
 "
   (let* ((byte-vector
           (ext:convert-string-to-bytes string custom:*foreign-encoding*))
@@ -1107,7 +1107,7 @@ UNSIGNED:           A boolean flag with a default value of T.
 RETURN:             A foreign string which has undefined contents.
 DO:                 Allocates space for a foreign string.
                     Memory should be freed with free-foreign-object.
-URL:            http://uffi.b9.com/manual/allocate-foreign-string.html
+URL:            <http://uffi.b9.com/manual/allocate-foreign-string.html>
 "
   (allocate-foreign-object (if unsigned ':unsigned-char ':char) size)
   ) ;;ALLOCATE-FOREIGN-STRING
@@ -1140,9 +1140,9 @@ MODULE:             A string specifying which module (or library)
 RETURNING:          A declaration specifying the result type of
                     the foreign function. :VOID indicates that this function
                     does not return any value.
-URL:                http://uffi.b9.com/manual/def-function.html
+URL:                <http://uffi.b9.com/manual/def-function.html>
 NOTE:               All Common-Lisp implementations are 'case-insensitive'.
-                    http://www.lisp.org/HyperSpec/Body/sec_2-1-1-2.html
+                    <http://www.lisp.org/HyperSpec/Body/sec_2-1-1-2.html>
 "
   (let (l-name c-name)
     (if (stringp name)
@@ -1188,7 +1188,7 @@ SUPPORTING-LIBRARIES:
 RETURN:             A boolean flag, T if the library was able to be
                     loaded successfully or if the library has been
                     previously loaded, otherwise NIL.
-URL:                http://uffi.b9.com/manual/load-foreign-library.html
+URL:                <http://uffi.b9.com/manual/load-foreign-library.html>
 IMPLEMENTATION:     Loading the library is defered to the first function call.
                     Here we just register the mapping between the MODULE and
                     the FILENAME.
@@ -1244,7 +1244,7 @@ RETURN:             The path of the first found file, or NIL if the
                     library file was not found.
 DO:                 Finds a foreign library by searching through a number
                     of possible locations.
-URL:                http://uffi.b9.com/manual/find-foreign-library.html
+URL:                <http://uffi.b9.com/manual/find-foreign-library.html>
 IMPLEMENTATION:     You'd better leave it up to the system to find the library!
                     This implementation can't locate libc because on linux,
                     there's no link named libc.so and this API doesn't allow
