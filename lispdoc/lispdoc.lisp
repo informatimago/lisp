@@ -74,7 +74,7 @@ exported from packages.
 
 This is tool automatically generates documentation for Common Lisp code
 based on symbols that exported from packages and properly documented.
-This code was written for OpenMCL (http://openmcl.clozure.com)
+This code was written for OpenMCL http://openmcl.clozure.com
 
 
 License:
@@ -86,7 +86,7 @@ License:
 
     You are granted the rights to distribute and use this software
     as governed by the terms of the Lisp Lesser GNU Public License
-    (http://opensource.franz.com/preamble.html), also known as the LLGPL.
+    http://opensource.franz.com/preamble.html also known as the LLGPL.
 "))
 
 (in-package :com.informatimago.lispdoc)
@@ -109,6 +109,11 @@ License:
     (:char-class (:range #\A #\Z) (:range #\a #\z) (:range #\0 #\9)))
 (define-parse-tree-synonym alpha-num
     (:char-class #\- (:range #\A #\Z) (:range #\a #\z) (:range #\0 #\9)))
+
+(define-parse-tree-synonym gen-delims
+    (:char-class #\: #\/ #\? #\# #\[ #\] #\@))
+(define-parse-tree-synonym sub-delims
+    (:char-class #\! #\$ #\& #\' #\( #\) #\* #\+ #\, #\; #\=))
 
 
 (define-parse-tree-synonym http-scheme
