@@ -877,7 +877,7 @@ ENTRIES: A list of (list url text).
                          (list (list prev   (format nil "Previous: ~A" (shorten prev)))))
                        (when next
                          (list (list next   (format nil "Next: ~A" (shorten next)))))
-                       (when parent
+                       (when parent-path
                          (list (list parent (format nil "Up: ~A" (shorten parent)))))))))
       :finally (return *navigation*))))
 
