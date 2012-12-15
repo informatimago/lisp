@@ -132,9 +132,22 @@ etags tags TAGS::
 
 
 
+WEBDOCDIR="$(HOME)/public_html/sites/com.informatimago.www"
 help::
 	@printf $(HELP_FMT)  'documentation' 'Generates the README.pdf file.'
+	@printf $(HELP_FMT)  'doc'           'Generates documentation lispdoc and upload.'
+	@printf $(HELP_FMT)  'lispdoc'       "Generates the lispdoc documentation (in $(WEBDOCDIR))."
+	@printf $(HELP_FMT)  'upload'        "Uploads $(WEBDOCDIR) to the web hosting server."
+
 documentation: README.pdf README.html
+
+doc:documentation lispdoc upload
+
+lispdoc:
+	$(MAKE) $(MFLAGS) -C lispdoc 
+
+upload:
+	$(MAKE) $(MFLAGS) -C $(WEBDOCDIR) update upload
 
 README.html:README
 	rst2html.py README > README.html
