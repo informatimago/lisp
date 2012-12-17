@@ -47,7 +47,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
 
 ;;; (push :debug-weak *features*) in clisp to have it on clisp for debugging...
@@ -57,7 +57,7 @@
 (defpackage "COM.INFORMATIMAGO.CLEXT.CLOSER-WEAK"
   (:documentation "
    Closer to Weak objects.
-   Implements the specification: http://clisp.cons.org/impnotes/weak.html
+   Implements the specification: <http://clisp.cons.org/impnotes/weak.html>
    for Common Lisp implementations that have weak-pointers.
 
    WEAK-OR-RELATION is a primitive that cannot be implemented propertly
@@ -823,7 +823,7 @@ It has no effect when some key has already been garbage-collected.")
 
 #-(and clisp (not debug-weak))
 (defun hash-table-weak-p (object)
-  "http://clisp.cons.org/impnotes/hash-dict.html#make-hash"
+  "<http://clisp.cons.org/impnotes/hash-dict.html#make-hash>"
   (and (typep object 'weak-hash-table) (wht-pair-type object)))
 
 #-(and clisp (not debug-weak))

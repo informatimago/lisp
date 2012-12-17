@@ -73,7 +73,7 @@ DO:     Within the lexical scope of the body forms, the name is
         defined via macrolet such that successive invocations of
         (name) will return the symbols, one by one, from the packages
         in package-list.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/m_w_pkg_.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/m_w_pkg_.htm>
 "
   (flet ((valid-symbol-type-p (object)
            (member object '(:internal :external :inherited
@@ -95,7 +95,7 @@ URL:    http://www.lispworks.com/documentation/HyperSpec/Body/m_w_pkg_.htm
 (defmacro do-symbols         ((var &optional package result-form) &body body)
   "
 DO:     Iterate over all the symbols of the package.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/m_do_sym.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/m_do_sym.htm>
 "
   (generate-do-symbols-loop var package result-form body '(:internal :external :inherited)))
 
@@ -103,7 +103,7 @@ URL:    http://www.lispworks.com/documentation/HyperSpec/Body/m_do_sym.htm
 (defmacro do-external-symbols ((var &optional package result-form) &body body)
   "
 DO:     Iterate over all the external symbols of the package.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/m_do_sym.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/m_do_sym.htm>
 "
   (generate-do-symbols-loop var package result-form body '(:external)))
 
@@ -111,7 +111,7 @@ URL:    http://www.lispworks.com/documentation/HyperSpec/Body/m_do_sym.htm
 (defmacro do-all-symbols      ((var &optional result-form) &body body)
   "
 DO:     Iterate over all the symbols of all the packages.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/m_do_sym.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/m_do_sym.htm>
 "
   (generate-do-symbols-loop var '(list-all-packages) result-form body '(:internal :external :inherited)))
 
@@ -119,7 +119,7 @@ URL:    http://www.lispworks.com/documentation/HyperSpec/Body/m_do_sym.htm
 (defmacro defpackage (defined-package-name &rest options)
   "
 DO:     Define a new package.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/m_defpkg.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/m_defpkg.htm>
 "
   ;; option::= (:nicknames nickname*)* |  
   ;;           (:documentation string) |  

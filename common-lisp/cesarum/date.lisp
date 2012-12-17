@@ -34,7 +34,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
 
 ;; http://en.wikipedia.org/wiki/Julian_day#Calculation
@@ -138,7 +138,7 @@ License:
     
     You should have received a copy of the GNU Affero General Public License
     along with this program.
-    If not, see http://www.gnu.org/licenses/
+    If not, see <http://www.gnu.org/licenses/>
 
 "))
 
@@ -173,7 +173,7 @@ License:
     
     You should have received a copy of the GNU Affero General Public License
     along with this program.
-    If not, see http://www.gnu.org/licenses/
+    If not, see <http://www.gnu.org/licenses/>
 
 "))
 
@@ -223,7 +223,7 @@ License:
     
     You should have received a copy of the GNU Affero General Public License
     along with this program.
-    If not, see http://www.gnu.org/licenses/
+    If not, see <http://www.gnu.org/licenses/>
 
 "))
 
@@ -289,7 +289,7 @@ License:
     
     You should have received a copy of the GNU Affero General Public License
     along with this program.
-    If not, see http://www.gnu.org/licenses/
+    If not, see <http://www.gnu.org/licenses/>
 
 "))
 
@@ -441,7 +441,7 @@ RETURN: A string containing the name in English of the MONTH
 (defun julian-day-number/gregorian (day month year)
   "
 RETURN: The Julian Day Number for the given Gregorian Date.
-URL:    http://en.wikipedia.org/wiki/Julian_day#Calculation
+URL:    <http://en.wikipedia.org/wiki/Julian_day#Calculation>
 "
   (let* ((a (floor (- 14 month) 12))
          (y (- (+ year 4800) a))
@@ -458,7 +458,7 @@ URL:    http://en.wikipedia.org/wiki/Julian_day#Calculation
 (defun julian-day-number/julian (day month year)
   "
 RETURN: The Julian Day Number for the given Julian Date.
-URL:    http://en.wikipedia.org/wiki/Julian_day#Calculation
+URL:    <http://en.wikipedia.org/wiki/Julian_day#Calculation>
 "
   (let* ((a (floor (- 14 month) 12))
          (y (- (+ year 4800) a))
@@ -473,7 +473,7 @@ URL:    http://en.wikipedia.org/wiki/Julian_day#Calculation
 (defun julian-date (seconde minute hour julian-day-number)
   "
 RETURN: The Julian Date for the given time and Julian Day Number.
-URL:    http://en.wikipedia.org/wiki/Julian_day#Calculation
+URL:    <http://en.wikipedia.org/wiki/Julian_day#Calculation>
 "
   (+ julian-day-number (/ (- hour 12) 24) (/ minute 1440) (/ seconde 86400)))
 
@@ -482,7 +482,7 @@ URL:    http://en.wikipedia.org/wiki/Julian_day#Calculation
   "
 RETURN: The Day of the week of the given Julian Day.
         0 = Monday, 1 = Tuesday, ..., 6 = Sunday.
-URL:    http://en.wikipedia.org/wiki/Julian_day#Calculation
+URL:    <http://en.wikipedia.org/wiki/Julian_day#Calculation>
 "
   (mod (truncate (+ julian-date 1/2)) 7))
 

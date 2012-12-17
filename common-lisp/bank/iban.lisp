@@ -34,7 +34,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -50,7 +50,7 @@
   (:documentation "
 This class is an Internationnal Bank Account Number, 
 according to the European standard:
-IBAN Format: http://www.ecbs.org/iban/iban.htm
+IBAN Format: <http://www.ecbs.org/iban/iban.htm>
 
 
 To create find the IBAN given an account number with a country-code:
@@ -83,7 +83,7 @@ License:
     GNU Affero General Public License for more details.
     
     You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see http://www.gnu.org/licenses/
+    along with this program.  If not, see <http://www.gnu.org/licenses/>
 "))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.BANK.IBAN")
 

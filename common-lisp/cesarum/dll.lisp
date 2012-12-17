@@ -31,7 +31,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -46,8 +46,8 @@
    "
 
 This module exports a double-linked list type.  This is a structure
-optimized insertions and deletions in any place, each node keeping a
-pointer to both the previous and the next node.  The stub keeps a
+optimized for insertions and deletions in any place, each node keeping
+a pointer to both the previous and the next node.  The stub keeps a
 pointer to the head of the list, and the list is circularly closed
 \(the tail points to the head).
 
@@ -70,7 +70,7 @@ License:
     
     You should have received a copy of the GNU Affero General Public License
     along with this program.
-    If not, see http://www.gnu.org/licenses/
+    If not, see <http://www.gnu.org/licenses/>
 
 "))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DLL")

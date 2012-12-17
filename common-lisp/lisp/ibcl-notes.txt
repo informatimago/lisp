@@ -116,10 +116,9 @@ Project
 
 The editing unit shall be the toplevel form.  Text source blocks shall
 contain a single toplevel form, or a single toplevel comment block.
-If an editing block is valided containing several toplevel forms, it's
+If an editing block is validated containing several toplevel forms, it's
 split into as many toplevel forms.
 
-Editing units can A source browser shall allow the classification
 
 
 

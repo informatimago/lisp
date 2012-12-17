@@ -35,7 +35,7 @@
 (define-package com.informatimago.common-lisp.geek-day
   (:nicknames geek-day)
   (:documentation "This programs plays geek-day.
-    http://ars.userfriendly.org/cartoons/?id=20021215")
+    <http://ars.userfriendly.org/cartoons/?id=20021215>")
   (:from common-lisp :import :all)
   (:export
    play-geek-day main
