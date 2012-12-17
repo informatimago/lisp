@@ -383,6 +383,27 @@ RETURN  SUDOKU.
                                               (x x x 9 x 6 1 x 5)
                                               (x x x 7 1 x 9 3 x)))
 
+
+(defparameter *20-minutes/1502/expert* #2A((5 7 x x x x x x x)
+                                           (x x 8 x x x 1 7 x)
+                                           (x 1 x 7 x 4 x 2 8)
+                                           (x x 1 x 4 x x 8 5)
+                                           (x 5 x x 1 x x 3 x)
+                                           (8 6 x x 7 x 4 x x)
+                                           (1 4 x 3 x 9 x 6 x)
+                                           (x 3 2 x x x 9 x x)
+                                           (x x x x x x x 1 3)))
+
+(defparameter *20-minutes/1505/moyen* #2A((1 x 2 x 6 5 9 x x)
+                                          (x 4 x 8 x x x x 5)
+                                          (x 8 x 1 x x 4 3 6)
+                                          (x x 1 9 x x x x x)
+                                          (6 5 x x x x x 4 9)
+                                          (x x x x x 6 1 x x)
+                                          (2 1 3 x x 8 x 5 x)
+                                          (8 x x x x 2 x 9 x)
+                                          (x x 4 5 7 x 3 x 2)))
+
 (defparameter *metrofrance/694/moyen* #2A((x x 1 2 x x x x 8)
                                           (x x x x 5 1 x x 3)
                                           (x 7 x x x x 6 x 1)
@@ -393,6 +414,16 @@ RETURN  SUDOKU.
                                           (3 x x 8 7 x x x x)
                                           (7 x x x x 4 3 x x)))
 
+(defparameter *metrofrance/696/facile* #2A((2 4 x 9 x x 7 6 x)
+                                           (3 x x x 8 x x x x)
+                                           (8 5 x 4 x x x x x)
+                                           (5 x x x x 8 4 x x)
+                                           (7 x 4 6 9 3 2 x 5)
+                                           (x x 9 5 x x x x 3)
+                                           (x x x x x 1 x 2 4)
+                                           (x x x x 6 x x x 1)
+                                           (x 6 8 x x 9 x 5 7)))
+
 
 
 
@@ -400,9 +431,12 @@ RETURN  SUDOKU.
 
 (dolist (sudoku (list
                  *royco-minut-soup*
-                 *20-minutes/1499/facile*
                  *metrofrance/694/moyen*
+                 *20-minutes/1499/facile*
                  *20-minutes/1501/difficile*
+                 *20-minutes/1502/expert*
+                 *metrofrance/696/facile*
+                 *20-minutes/1505/moyen*
                  ))
   (multiple-value-bind (solutions tries) (sudoku-solver sudoku)
     (terpri)
