@@ -194,7 +194,7 @@ EXAMPLE:    (compose abs sin cos) = (lambda (x) (abs (sin (cos x))))
 
 (defmacro compose-and-call (&rest functions-and-arg)
   "
-DO:         Call the functionnal composition of the functions, on the
+DO:         Call the functional composition of the functions, on the
             argument.
 EXAMPLE:    (compose-and-call abs sin cos 0.234) --> 0.8264353
 "
@@ -1090,7 +1090,7 @@ POST:	(<= start index end)
 (defmacro scase (keyform &rest clauses)
   "
 DO:         A CASE, but for string keys. That is, it uses STRING= as test
-            insteand of the ''being the same'' test.
+            instead of the ''being the same'' test.
 "
   (let ((key (gensym "KEY")))
     `(let ((,key ,keyform))
