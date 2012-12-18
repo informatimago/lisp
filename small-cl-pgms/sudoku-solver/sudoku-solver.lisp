@@ -351,6 +351,13 @@ RETURN  SUDOKU.
   sudoku)
 
 
+(defun sudoku-count-empty-slots (sudoku)
+  (let ((empty-count 0))
+    (for-each-slot (slot sudoku)
+                   (when (emptyp slot)
+                     (incf empty-count)))
+    empty-count))
+
 ;;----------------------------------------------------------------------
 
 (defparameter *royco-minut-soup* #2A((x x x 8 x 4 2 x x)
@@ -404,6 +411,16 @@ RETURN  SUDOKU.
                                           (8 x x x x 2 x 9 x)
                                           (x x 4 5 7 x 3 x 2)))
 
+(defparameter *20-minutes/1506/facile* #2A((3 x 5 8 4 x x x 1)
+                                           (7 x x x x x 5 x x)
+                                           (4 x 1 6 3 x 8 x x)
+                                           (8 x x x x x 3 5 7)
+                                           (x x 3 x x x 9 x x)
+                                           (6 1 9 x x x x x 8)
+                                           (x x 8 x 6 2 4 x 5)
+                                           (x x 7 x x x x x 2)
+                                           (2 x x x 5 1 7 x 3)))
+
 (defparameter *metrofrance/694/moyen* #2A((x x 1 2 x x x x 8)
                                           (x x x x 5 1 x x 3)
                                           (x 7 x x x x 6 x 1)
@@ -424,24 +441,39 @@ RETURN  SUDOKU.
                                            (x x x x 6 x x x 1)
                                            (x 6 8 x x 9 x 5 7)))
 
+(defparameter *metrofrance/700/moyen* #2A ((1 9 x 8 3 7 x x x)
+                                           (7 5 x x 2 x x x x)
+                                           (4 x x x 9 x x x 7)
+                                           (x 3 4 x x x x x 9)
+                                           (9 x 7 x x x 6 x 2)
+                                           (8 x x x x x 4 7 x)
+                                           (3 x x x 1 x x x 6)
+                                           (x x x x 6 x x 3 4)
+                                           (x x x 9 4 3 x 2 8)))
 
 
 
 
 
-(dolist (sudoku (list
-                 *royco-minut-soup*
-                 *metrofrance/694/moyen*
-                 *20-minutes/1499/facile*
-                 *20-minutes/1501/difficile*
-                 *20-minutes/1502/expert*
-                 *metrofrance/696/facile*
-                 *20-minutes/1505/moyen*
-                 ))
-  (multiple-value-bind (solutions tries) (sudoku-solver sudoku)
-    (terpri)
-    (sudoku-print sudoku)
-    (format t "  has ~D solution~:*~P,~%  found in ~D tries.~2%" (length solutions) tries)
+
+(dolist (sudoku '(
+                  *20-minutes/1499/facile*
+                  *20-minutes/1501/difficile*
+                  *20-minutes/1502/expert*
+                  *20-minutes/1505/moyen*
+                  *20-minutes/1506/facile*
+                  *metrofrance/694/moyen*
+                  *metrofrance/696/facile*
+                  *metrofrance/700/moyen*
+                  *royco-minut-soup*
+                  ))
+  (multiple-value-bind (solutions tries) (sudoku-solver (symbol-value sudoku))
+    (terpri) (print sudoku) (terpri)
+    
+    (sudoku-print (symbol-value sudoku))
+    (format t "  ~A (with ~D empty slots)~%  has ~D solution~:*~P,~%  found in ~D tries.~2%"
+            sudoku (sudoku-count-empty-slots (symbol-value sudoku))
+            (length solutions) tries)
     (map nil 'sudoku-print solutions)))
 
 
