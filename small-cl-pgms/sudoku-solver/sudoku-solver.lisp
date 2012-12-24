@@ -45,6 +45,10 @@
 (in-package "COM.INFORMATIMAGO.SUDOKU-SOLVER")
 
 
+
+(defun make-sudoku ()
+  (make-array '(9 9) :initial-element 'x))
+
 (defun emptyp (slot)
   (or (null slot)
       (and (symbolp slot)
@@ -358,6 +362,7 @@ RETURN  SUDOKU.
                      (incf empty-count)))
     empty-count))
 
+
 ;;----------------------------------------------------------------------
 
 (defparameter *royco-minut-soup* #2A((x x x 8 x 4 2 x x)
@@ -455,27 +460,83 @@ RETURN  SUDOKU.
 
 
 
+(defun solve-sudokus ()
+  (dolist (sudoku '(
+                    *20-minutes/1499/facile*
+                    *20-minutes/1501/difficile*
+                    *20-minutes/1502/expert*
+                    *20-minutes/1505/moyen*
+                    *20-minutes/1506/facile*
+                    *metrofrance/694/moyen*
+                    *metrofrance/696/facile*
+                    *metrofrance/700/moyen*
+                    *royco-minut-soup*
+                    ))
+    (multiple-value-bind (solutions tries) (sudoku-solver (symbol-value sudoku))
+      (terpri) (print sudoku) (terpri)
+      
+      (sudoku-print (symbol-value sudoku))
+      (format t "  ~A (with ~D empty slots)~%  has ~D solution~:*~P,~%  found in ~D tries.~2%"
+              sudoku (sudoku-count-empty-slots (symbol-value sudoku))
+              (length solutions) tries)
+      (map nil 'sudoku-print solutions))))
 
-(dolist (sudoku '(
-                  *20-minutes/1499/facile*
-                  *20-minutes/1501/difficile*
-                  *20-minutes/1502/expert*
-                  *20-minutes/1505/moyen*
-                  *20-minutes/1506/facile*
-                  *metrofrance/694/moyen*
-                  *metrofrance/696/facile*
-                  *metrofrance/700/moyen*
-                  *royco-minut-soup*
-                  ))
-  (multiple-value-bind (solutions tries) (sudoku-solver (symbol-value sudoku))
-    (terpri) (print sudoku) (terpri)
-    
-    (sudoku-print (symbol-value sudoku))
-    (format t "  ~A (with ~D empty slots)~%  has ~D solution~:*~P,~%  found in ~D tries.~2%"
-            sudoku (sudoku-count-empty-slots (symbol-value sudoku))
-            (length solutions) tries)
-    (map nil 'sudoku-print solutions)))
 
+
+;;----------------------------------------------------------------------
+
+(defun read-grid (stream)
+  (let ((line (read-line stream nil nil)))
+    (when (and line (plusp (length line)))
+      (if (= 81 (length line))
+          (let ((sudoku (make-sudoku))
+                (i -1))
+            (for-each-slot (slot sudoku)
+                           (setf slot (let ((value (digit-char-p (aref line (incf i)))))
+                                        (if (and value (plusp value))
+                                            value
+                                            'x))))
+            sudoku)
+          (loop
+            :with sudoku = (make-sudoku)
+            :for j :below 9
+            :for line = (read-line stream)
+            :do (loop
+                  :for i :below 9
+                  :for value = (digit-char-p (aref line i))
+                  :do (setf (aref sudoku i j) (if (and value (plusp value)) value 'x)))
+            :finally (return sudoku))))))
+
+
+(defun solve-grids (grid-file)
+  (with-open-file (grids grid-file)
+    (loop
+      :for sudoku = (read-grid grids)
+      :while sudoku
+      :do (multiple-value-bind (solutions tries) (sudoku-solver sudoku)
+            (sudoku-print sudoku)
+            (format t "  (with ~D empty slots)~%  has ~D solution~:*~P,~%  found in ~D tries.~2%"
+                    (sudoku-count-empty-slots sudoku)
+                    (length solutions) tries)
+            (map nil 'sudoku-print solutions)))))
+
+
+(defun solve-grids/no-print (grid-file)
+  (with-open-file (grids grid-file)
+    (loop
+      :for sudoku = (read-grid grids)
+      :while sudoku
+      :collect (multiple-value-bind (solutions tries) (sudoku-solver sudoku)
+                 (declare (ignore solutions))
+                 tries))))
+
+(defun time-dim-grids ()
+  (dolist (file '(#P"~/src-lisp/usenet/dim-sudoku/sudoku.txt"
+                  #P"~/src-lisp/usenet/dim-sudoku/easy50.txt"
+                  #P"~/src-lisp/usenet/dim-sudoku/top95.txt"
+                  #P"~/src-lisp/usenet/dim-sudoku/hardest.txt"))
+    (terpri) (print file) (terpri)
+    (print (time (solve-grids/no-print file)))))
 
 
 ;;;; THE END ;;;;
