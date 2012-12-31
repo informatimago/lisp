@@ -99,9 +99,12 @@
                                       
                                       ("Old LISP programs still run in Common Lisp"
                                        ;;-----------------------------------------
-                                       (("wang.html" "Wang's Algorithm in LISP 1, runs on COMMON-LISP"))
+                                       (("wang.html"
+                                         "Wang's Algorithm in LISP 1, runs on COMMON-LISP"))
                                        "The Wang's algorithm, implemented in LISP 1 on IBM 704
                   in March 1960 still runs well on Common Lisp in 2006."))
+
+                                     
                                      
                                      ("Lisp Cookbook"
                                       ;;============
@@ -117,14 +120,32 @@
                                        ;;----------------------
                                        (("sedit/"
                                          "A Structural Editor"))
-                                       "This is a simple structural editor to edit lisp sources considered as syntactic forests.")
+                                       "This is a simple structural editor to edit lisp
+                                        sources considered as syntactic forests.")
 
                                       ("Recursive Descent Parser Generator"
                                        ;;---------------------------------
                                        (("rdp/"
                                          "A Quick and Dirty Recursive Descent Parser Generator"))
                                        "But not so ugly.  
- Can generate the parser in lisp and in pseudo-basic."))
+                                        Can generate the parser in lisp and in pseudo-basic."))
+
+
+
+                                     ("Lisp Curiosities"
+                                      ;;============
+                                      ""
+
+                                      ("Common-Lisp quines"
+                                       ;;-----------------
+                                       ("quine.lisp")
+                                       "Three Common-Lisp quines (autogenerating programs).")
+
+                                      ("Intersection between Common-Lisp, Emacs-Lisp and R5RS Scheme"
+                                       ;;-----------------
+                                       ("intersection-r5rs-common-lisp-emacs-lisp/")
+                                       "A unique program that can be run on Common Lisp,
+                                        Emacs Lisp or R5RS Scheme."))
 
                                      
                                      ("Lisp Tidbits"
@@ -134,22 +155,48 @@
                                       ("Author Signature" 
                                        ;;---------------
                                        ("author-signature.lisp")
-                                       "This program computes an \"author signature\" from a text, with
- the algorithm from  http://unix.dsu.edu/~~johnsone/comp.html")
+                                       "This program computes an \"author signature\" from a text,
+                                        with the algorithm from
+                                        http://unix.dsu.edu/~~johnsone/comp.html")
 
                                       ("Demographic Simulator"
                                        ;;--------------------
                                        ("douze.lisp")
                                        "Assuming an Adam and an Eve 20 years old each,
- assuming the current US life table,
- and assuming an \"intensive\" reproduction rate, with gene selection,
- simulate the population growth during 80 years
- and draw the final age pyramid.")
+                                        assuming the current US life
+                                        table, and assuming an
+                                        \"intensive\" reproduction
+                                        rate, with gene selection,
+                                        simulate the population growth
+                                        during 80 years and draw the
+                                        final age pyramid.")
+
+                                      ("Common-Lisp quines"
+                                       ;;-----------------
+                                       ("quine.lisp")
+                                       "Three Common-Lisp quines (autogenerating programs).")
+                                      
+                                      ("BASIC"
+                                       ;;----
+                                       (("basic/"  "A Quick, Dirty and Ugly Basic interpreter."))
+                                       "")
+
+                                      ("Brainfuck"
+                                       ;;--------
+                                       (("brainfuck/"
+                                         "A brainfuck virtual machine, and brainfuck compiler."))
+                                       ""))
+
+                                     
+                                     ("Little Games"
+                                      ;;============
+                                      ""
 
                                       ("Solitaire"
                                        ;;--------------------
                                        ("solitaire.lisp")
-                                       "A solitaire playing program. The user just watch the program play solitaire.")
+                                       "A solitaire playing program. The user just watch the
+                                        program play solitaire.")
 
                                       ("Conway's Life Game"
                                        ;;-----------------
@@ -159,34 +206,23 @@
                                       ("Cube Puzzle" 
                                        ;;----------
                                        ("cube.lisp")
-                                       "This program tries to resolve the Cube Puzzle, where a cube
-  composed of 27 smaller cubes linked with a thread  must be recomposed.")
+
+                                       "This program tries to resolve
+                                        the Cube Puzzle, where a cube
+                                        composed of 27 smaller cubes
+                                        linked with a thread  must be
+                                        recomposed.")
 
                                       ("Sudoku Solver" 
                                        ;;----------
                                        (("sudoku-solver/" "This program solves sudoku boards."))
                                        "")
 
-                                      ("Common-Lisp quines"
-                                       ;;-----------------
-                                       ("quine.lisp")
-                                       "Three Common-Lisp quines (autogenerating programs).")
-                                      
                                       ("Geek Day"
                                        ;;-------
                                        ("geek-day/geek-day.lisp" "geek-day/Makefile" "geek-day/README")
                                        "The famous Geek Day games by userfriendly.org's Illiad.
-    See: http://ars.userfriendly.org/cartoons/?id=20021215")
-
-                                      ("BASIC"
-                                       ;;----
-                                       (("basic/"  "A Quick, Dirty and Ugly Basic interpreter."))
-                                       "")
-
-                                      ("Brainfuck"
-                                       ;;--------
-                                       (("brainfuck/"  "A brainfuck virtual machine, and brainfuck compiler."))
-                                       ""))))
+                                        See: http://ars.userfriendly.org/cartoons/?id=20021215"))))
 
 
                                (<:h2 () (<:pcdata (first section)))
