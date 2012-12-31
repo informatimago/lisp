@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<HTML>
+ <HEAD>
+  <link rel="icon"          href="/favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"> 
+  <link rel="stylesheet"    href="default.css"  type="text/css">
+
+  <TITLE>Brainfuck in Lisp -- Lisp in Brainfuck</TITLE>
+
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+  <META HTTP-EQUIV="Description" 
+        NAME="description" CONTENT="BASIC in Common Lisp">
+  <META NAME="author"      CONTENT="Pascal J. Bourguignon">
+
+  <META NAME="keywords"    CONTENT="Brainfuck, Common Lisp, Lisp, virtual machine, compiler, emulator">
+
+
+    <style type="text/css">
+    <!--
+      .code {
+        color: #00ff00;
+        background-color: #000000;
+      }
+
+      .cl-function {
+        /* font-lock-cl-function-face */
+        color: #1e90ff;
+        font-weight: bold;
+      }
+      .cl-special-operator {
+        /* font-lock-cl-special-operator-face */
+        color: #8a2be2;
+        font-weight: bold;
+      }
+      .cl-system-class {
+        /* font-lock-cl-system-class-face */
+        color: #20b2aa;
+        font-weight: bold;
+      }
+      .cl-type {
+        /* font-lock-cl-type-face */
+        color: #3cb371;
+        font-weight: bold;
+      }
+      .slime-repl-input {
+        /* slime-repl-input-face */
+        font-weight: bold;
+      }
+      .slime-repl-inputed-output {
+        /* slime-repl-inputed-output-face */
+        color: #ff0000;
+      }
+      .slime-repl-output {
+        /* slime-repl-output-face */
+        color: #7cfc00;
+      }
+      .slime-repl-prompt {
+        /* slime-repl-prompt-face */
+        color: #00ffff;
+      }
+      .slime-repl-result {
+      }
+      .string {
+        /* font-lock-string-face */
+        color: #da70d6;
+      }
+
+      .comint-highlight-input {
+        /* comint-highlight-input */
+        font-weight: bold;
+      }
+      .comint-highlight-prompt {
+        /* comint-highlight-prompt */
+        color: #00ffff;
+      }
+      .comment {
+        /* font-lock-comment-face */
+        color: #ff0000;
+      }
+
+    -->
+    </style>
+
+ </HEAD>
+<BODY>
+<!--TOP-BEGIN-->
+<!--TOP-END-->
+<!--MENU-BEGIN-->
+<!--MENU-END-->
+
+<H1>Intersection Common Lisp, Emacs Lisp and R5RS Scheme</H1>
+
+<p><A HREF="intersection-cl-el-r5rs.lisp">intersection-cl-el-r5rs.lisp</A></LI>
+<br>This lisp source file can be loaded and run on:
+<ul>
+<li> any Common Lisp conforming implementation, 
+<li> any R5RS implementation,
+<li> GNU emacs (tested with emacs-23 and emacs-24).
+</ul></p>
+
+<p>Example:
+<pre class="code">
+<span class="comint-highlight-prompt">[pjb@kuiper :0 intersection-r5rs-common-lisp-emacs-lisp]$ </span><span class="comint-highlight-input">make test-intersection-cl-el-r5rs</span>
+
+
+;;======================================================================
+;; Test intersection-cl-el-r5rs
+;;
+
+;; Common Lisp
+clisp <span class="comment">-ansi</span> <span class="comment">-norc</span> <span class="comment">-q</span> intersection-cl-el-r5rs.lisp 
+
+(booted a lisp over common-lisp) 
+((fact 10) = 3628800) 
+
+;; Emacs Lisp
+emacs <span class="comment">-Q</span> <span class="comment">--batch</span> <span class="comment">-l</span> intersection-cl-el-r5rs.lisp <span class="comment">-q</span>
+
+(booted a lisp over emacs-lisp)
+((fact 10) = 3628800)
+
+;; Scheme
+bigloo <span class="comment">-no-hello</span> <span class="comment">-q</span> <span class="comment">-w</span> <span class="comment">-load</span>  intersection-cl-el-r5rs.lisp <span class="comment">-eval</span> '(quit)'
+
+(booted a lisp over scheme)
+((fact 10) = 3628800)
+<span class="comint-highlight-prompt">[pjb@kuiper :0 intersection-r5rs-common-lisp-emacs-lisp]$</span></pre>
+  </body>
+</html>
+
+<!--MENU-BEGIN-->
+<!--MENU-END-->
+<!--BOTTOM-BEGIN-->
+<!--BOTTOM-END-->
+</BODY>
+</HTML>
