@@ -39,8 +39,8 @@ NULL-TERMINATED-P:  A boolean flag with a default value of T.
                     When true, the string is converted until the first
                     NULL character is reached.
 RETURN:             A Lisp string.
-URL:        http://uffi.b9.com/manual/convert-from-foreign-string.html
-URL:        http://clisp.sourceforge.net/impnotes.html#encoding
+URL:        <http://uffi.b9.com/manual/convert-from-foreign-string.html>
+URL:        <http://clisp.sourceforge.net/impnotes.html#encoding>
 "
   (let ((byte-vector (make-array (list (if (or null-terminated-p (null length))
                                            (foreign-string-length foreign-string)

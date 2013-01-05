@@ -30,7 +30,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -84,7 +84,7 @@ License:
     
     You should have received a copy of the GNU Affero General Public License
     along with this program.
-    If not, see http://www.gnu.org/licenses/
+    If not, see <http://www.gnu.org/licenses/>
 
 "))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.REGEXP.REGEXP-EMACS")
@@ -1329,8 +1329,8 @@ NOTE:
             (symbol-name 'key)        ''key''        ''KEY''
             (symbol-name :key)        '':key''       ''KEY''
             (eq 'key 'KEY)              nil             T
-URL:        http://www.informatimago.com/local/lisp/HyperSpec/Body/02_cd.htm
-            http://www.informatimago.com/local/lisp/HyperSpec/Body/f_intern.htm#intern
+URL:        <http://www.informatimago.com/local/lisp/HyperSpec/Body/02_cd.htm>
+            <http://www.informatimago.com/local/lisp/HyperSpec/Body/f_intern.htm#intern>
 "
   (if (string= "emacs" (lisp-implementation-type))
       (intern (string-downcase (format nil "pjb-re-~s-~s"

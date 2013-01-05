@@ -29,7 +29,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -78,7 +78,7 @@ See the source file for details.
   ;;          ,(if (consp name)
   ;;               `(setf (,cl-name ,@(cdr arguments)) ,(car arguments))
   ;;               `(,cl-name ,@arguments))))))
-  (error "Not implemented yet."))
+  `(error "Not implemented yet."))
 
 ;; t
 ;;    sequence

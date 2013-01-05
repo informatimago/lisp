@@ -32,7 +32,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -141,7 +141,7 @@ License:
     
     You should have received a copy of the GNU Affero General Public License
     along with this program.
-    If not, see http://www.gnu.org/licenses/
+    If not, see <http://www.gnu.org/licenses/>
 
 "))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.RFC3548.RFC3548")

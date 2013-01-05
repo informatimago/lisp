@@ -35,7 +35,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
 
 
@@ -49,7 +49,7 @@
 This package imlements the TEA, Tiny Encryption Algorithm.
 
 Tiny Encryption Algorithm:
-http://web.archive.org/web/20070929150931/http://www.simonshepherd.supanet.com/tea.htm
+<http://web.archive.org/web/20070929150931/http://www.simonshepherd.supanet.com/tea.htm>
 
 Note:      This algorithm as weaknesses.
 See also:  COM.INFORMATIMAGO.COMMON-LISP.CESARUM.RAIDEN
@@ -72,7 +72,7 @@ License:
     
     You should have received a copy of the GNU Affero General Public License
     along with this program.
-    If not, see http://www.gnu.org/licenses/
+    If not, see <http://www.gnu.org/licenses/>
 
 "))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.TEA")

@@ -1,0 +1,170 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<HTML>
+ <HEAD>
+  <link rel="icon"          href="/favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"> 
+  <link rel="stylesheet"    href="default.css"  type="text/css">
+
+  <TITLE>Brainfuck in Lisp -- Lisp in Brainfuck</TITLE>
+
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+  <META HTTP-EQUIV="Description" 
+        NAME="description" CONTENT="BASIC in Common Lisp">
+  <META NAME="author"      CONTENT="Pascal J. Bourguignon">
+
+  <META NAME="keywords"    CONTENT="Brainfuck, Common Lisp, Lisp, virtual machine, compiler, emulator">
+
+
+    <style type="text/css">
+    <!--
+      .code {
+        color: #00ff00;
+        background-color: #000000;
+      }
+
+      .cl-function {
+        /* font-lock-cl-function-face */
+        color: #1e90ff;
+        font-weight: bold;
+      }
+      .cl-special-operator {
+        /* font-lock-cl-special-operator-face */
+        color: #8a2be2;
+        font-weight: bold;
+      }
+      .cl-system-class {
+        /* font-lock-cl-system-class-face */
+        color: #20b2aa;
+        font-weight: bold;
+      }
+      .cl-type {
+        /* font-lock-cl-type-face */
+        color: #3cb371;
+        font-weight: bold;
+      }
+      .slime-repl-input {
+        /* slime-repl-input-face */
+        font-weight: bold;
+      }
+      .slime-repl-inputed-output {
+        /* slime-repl-inputed-output-face */
+        color: #ff0000;
+      }
+      .slime-repl-output {
+        /* slime-repl-output-face */
+        color: #7cfc00;
+      }
+      .slime-repl-prompt {
+        /* slime-repl-prompt-face */
+        color: #00ffff;
+      }
+      .slime-repl-result {
+      }
+      .string {
+        /* font-lock-string-face */
+        color: #da70d6;
+      }
+
+    -->
+    </style>
+
+      <!-- a { -->
+      <!--   color: inherit; -->
+      <!--   background-color: inherit; -->
+      <!--   font: inherit; -->
+      <!--   text-decoration: inherit; -->
+      <!-- } -->
+      <!-- a:hover { -->
+      <!--   text-decoration: underline; -->
+      <!-- } -->
+
+
+ </HEAD>
+<BODY>
+<!--TOP-BEGIN-->
+<!--TOP-END-->
+<!--MENU-BEGIN-->
+<!--MENU-END-->
+
+<H1>Sudoku Solver</H1>
+<p>This file contains a sudoku solver.
+
+<UL>
+<LI><A HREF="sudoku-solver.lisp">sudoku-solver.lisp</A></LI>
+</UL>
+
+<p>Example:
+
+<pre class="code">
+<span class="slime-repl-prompt">sudoku-solver&gt; </span><span class="slime-repl-input">(use-package :com.informatimago.sudoku-solver)</span>
+<span class="slime-repl-result"><span class="slime-repl-inputed-output">t</span></span><span class="slime-repl-result">
+</span><span class="slime-repl-prompt">sudoku-solver&gt; </span><span class="slime-repl-input">(</span><span class="cl-special-operator"><span class="slime-repl-input">let*</span></span><span class="slime-repl-input"> ((sudoku #2A((x x x 8 x 4 2 x x)
+                                  (6 x 8 x 2 x x x 4)
+                                  (2 1 x 6 5 3 x x 8)
+                                  (x 7 x 2 x 6 x 9 x)
+                                  (x x x x 3 x 1 x x)
+                                  (4 2 3 x x 9 x 5 7)
+                                  (x 6 x 4 1 5 7 x x)
+                                  (x x 7 x x 8 3 x x)
+                                  (x 5 9 x x x x 1 x))))
+                 (</span><span class="cl-macro"><span class="slime-repl-input">multiple-value-bind</span></span><span class="slime-repl-input"> (solutions tries) (sudoku-solver sudoku)
+                   (</span><span class="cl-function"><span class="slime-repl-input">terpri</span></span><span class="slime-repl-input">)
+                   (sudoku-print sudoku)
+                   (</span><span class="cl-function"><span class="slime-repl-input">format</span></span><span class="slime-repl-input"> </span><span class="cl-system-class"><span class="slime-repl-input">t</span></span><span class="slime-repl-input"> </span><span class="string"><span class="slime-repl-input">"  has ~D solution~:*~P,~%  found in ~D tries.~2%"</span></span><span class="slime-repl-input"> 
+                           (</span><span class="cl-function"><span class="slime-repl-input">length</span></span><span class="slime-repl-input"> solutions) tries)
+                   (</span><span class="cl-function"><span class="slime-repl-input">map</span></span><span class="slime-repl-input"> </span><span class="cl-type"><span class="slime-repl-input">nil</span></span><span class="slime-repl-input"> 'sudoku-print solutions)))
+</span>
+<span class="slime-repl-output">
++---+---+---+---+---+---+---+---+---+
+| .   6   2 | .   .   4 | .   .   . |
+|   +   +   |   +   +   |   +   +   |
+| .   .   1 | 7   .   2 | 6   .   5 |
+|   +   +   |   +   +   |   +   +   |
+| .   8   . | .   .   3 | .   7   9 |
++---+---+---+---+---+---+---+---+---+
+| 8   .   6 | 2   .   . | 4   .   . |
+|   +   +   |   +   +   |   +   +   |
+| .   2   5 | .   3   . | 1   .   . |
+|   +   +   |   +   +   |   +   +   |
+| 4   .   3 | 6   .   9 | 5   8   . |
++---+---+---+---+---+---+---+---+---+
+| 2   .   . | .   1   . | 7   3   . |
+|   +   +   |   +   +   |   +   +   |
+| .   .   . | 9   .   5 | .   .   1 |
+|   +   +   |   +   +   |   +   +   |
+| .   4   8 | .   .   7 | .   .   . |
++---+---+---+---+---+---+---+---+---+
+
+  has 1 solution,
+  found in 44 tries.
+
++---+---+---+---+---+---+---+---+---+
+| 7   6   2 | 5   9   4 | 3   1   8 |
+|   +   +   |   +   +   |   +   +   |
+| 3   9   1 | 7   8   2 | 6   4   5 |
+|   +   +   |   +   +   |   +   +   |
+| 5   8   4 | 1   6   3 | 2   7   9 |
++---+---+---+---+---+---+---+---+---+
+| 8   7   6 | 2   5   1 | 4   9   3 |
+|   +   +   |   +   +   |   +   +   |
+| 9   2   5 | 4   3   8 | 1   6   7 |
+|   +   +   |   +   +   |   +   +   |
+| 4   1   3 | 6   7   9 | 5   8   2 |
++---+---+---+---+---+---+---+---+---+
+| 2   5   9 | 8   1   6 | 7   3   4 |
+|   +   +   |   +   +   |   +   +   |
+| 6   3   7 | 9   4   5 | 8   2   1 |
+|   +   +   |   +   +   |   +   +   |
+| 1   4   8 | 3   2   7 | 9   5   6 |
++---+---+---+---+---+---+---+---+---+
+
+</span><span class="slime-repl-result"><span class="slime-repl-inputed-output">nil</span></span><span class="slime-repl-result">
+</span><span class="slime-repl-prompt">sudoku-solver&gt; </span></pre>
+
+<!--MENU-BEGIN-->
+<!--MENU-END-->
+<!--BOTTOM-BEGIN-->
+<!--BOTTOM-END-->
+</BODY>
+</HTML>

@@ -50,7 +50,7 @@
 
 
 ;; Lua is a case-sensitive language: and is a reserved word, but And
-;; and AND are two different, valid names. As a convention, names
+;; and AND are two different, valid names.  As a convention, names
 ;; starting with an underscore followed by uppercase letters (such as
 ;; _VERSION) are reserved for internal global variables used by Lua.
 

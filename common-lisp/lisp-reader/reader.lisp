@@ -37,7 +37,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -113,7 +113,7 @@ License:
     GNU Affero General Public License for more details.
     
     You should have received a copy of the GNU Affero General Public License
-    along with this program. If not, see http://www.gnu.org/licenses/
+    along with this program. If not, see <http://www.gnu.org/licenses/>
 
 "))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.READER")
@@ -389,7 +389,7 @@ The value of *READTABLE* is called the current readtable. It controls
 the parsing behavior of the Lisp reader, and can also influence the
 Lisp printer (e.g., see the  function READTABLE-CASE).
 
-URL: http://www.lispworks.com/documentation/HyperSpec/Body/v_rdtabl.htm
+URL: <http://www.lispworks.com/documentation/HyperSpec/Body/v_rdtabl.htm>
 ")
 
 (defvar *read-base*                  10
@@ -406,7 +406,7 @@ The effect of *READ-BASE* on the reading of any particular rational
 number can be locally overridden by explicit use of the #O, #X, #B, or
 #nR syntax or by a trailing decimal point.
 
-URL: http://www.lispworks.com/documentation/HyperSpec/Body/v_rd_bas.htm
+URL: <http://www.lispworks.com/documentation/HyperSpec/Body/v_rd_bas.htm>
 ")
 
 (defvar *read-eval*                  t
@@ -414,7 +414,7 @@ URL: http://www.lispworks.com/documentation/HyperSpec/Body/v_rd_bas.htm
 If it is true, the #. reader macro has its normal effect. Otherwise,
 that reader macro signals an error of type reader-error.
 
-URL: http://www.lispworks.com/documentation/HyperSpec/Body/v_rd_eva.htm
+URL: <http://www.lispworks.com/documentation/HyperSpec/Body/v_rd_eva.htm>
 ")
 
 (defvar *read-suppress*              nil
@@ -426,7 +426,7 @@ read, read-preserving-whitespace,  read-delimited-list, and
 read-from-string all return a primary value of nil when they complete
 successfully.
 
-URL: http://www.lispworks.com/documentation/HyperSpec/Body/v_rd_sup.htm
+URL: <http://www.lispworks.com/documentation/HyperSpec/Body/v_rd_sup.htm>
 ")
 
 (defvar *read-default-float-format* 'single-float
@@ -439,7 +439,7 @@ the floating-point format to be used.
 The printer uses *read-default-float-format* to guide the choice of
 exponent markers when printing floating-point numbers.
 
-URL: http://www.lispworks.com/documentation/HyperSpec/Body/v_rd_def.htm
+URL: <http://www.lispworks.com/documentation/HyperSpec/Body/v_rd_def.htm>
 ")
 
 ;; extensions
@@ -482,7 +482,7 @@ Each simple character must be representable in the readtable. It is
 implementation-defined whether non-simple characters can have syntax
 descriptions in the readtable.
 
-URL: http://www.lispworks.com/documentation/HyperSpec/Body/t_rdtabl.htm
+URL: <http://www.lispworks.com/documentation/HyperSpec/Body/t_rdtabl.htm>
 "))
 
 
@@ -490,7 +490,7 @@ URL: http://www.lispworks.com/documentation/HyperSpec/Body/t_rdtabl.htm
 (defun copy-readtable (&optional (from-readtable *readtable*) (to-readtable nil))
 "
 DO:     Copy the readtable.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_cp_rdt.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_cp_rdt.htm>
 "
   (if (null from-readtable)
       (if (null to-readtable)
@@ -1159,7 +1159,7 @@ RETURN:         The token read, or
              (recursive-p nil))
   "
 RETURN: An object read.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_rd_rd.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_rd_rd.htm>
 "
   (read-1 input-stream eof-error-p eof-value recursive-p  nil  nil '()))
 
@@ -1169,7 +1169,7 @@ URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_rd_rd.htm
                                    (recursive-p nil))
   "
 RETURN: An object read.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_rd_rd.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_rd_rd.htm>
 "
   (read-1 input-stream eof-error-p eof-value recursive-p  t    nil '()))
 
@@ -1178,7 +1178,7 @@ URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_rd_rd.htm
                             (recursive-p nil))
   "
 RETURN: A list of objects read.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_rd_del.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_rd_del.htm>
 "
   (loop
      :with result = '()
@@ -1202,7 +1202,7 @@ URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_rd_del.htm
                          &key (start 0) (end nil) (preserve-whitespace nil))
 "
 RETURN: An object read from the string.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_rd_fro.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_rd_fro.htm>
 "
   (let ((index 0))
     (values
@@ -1217,14 +1217,14 @@ URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_rd_fro.htm
 (defun readtable-case (readtable)
 "
 RETURN: The case of the readtable.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_rdtabl.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_rdtabl.htm>
 "
   (slot-value readtable 'case))
 
 (defun (setf readtable-case) (value readtable)
   "
 DO:     Set the case of the readtable.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_rdtabl.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_rdtabl.htm>
 "
   (check-type value (member :upcase :downcase :preserve :invert))
   (setf (slot-value readtable 'case) value))
@@ -1233,7 +1233,7 @@ URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_rdtabl.htm
 (defun readtablep (object)
   "
 RETURN: Whether the object is a readtable.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_rdta_1.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_rdta_1.htm>
 "
   (typep object 'readtable))
 
@@ -1242,7 +1242,7 @@ URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_rdta_1.htm
     (char &optional (non-terminating-p nil) (readtable *readtable*))
 "
 DO:     Make the character a dispatch macro character in the readtable.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_mk_dis.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_mk_dis.htm>
 "
   (let ((rst  (readtable-syntax-table readtable)))
     (setf (character-description rst char)
@@ -1260,7 +1260,7 @@ URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_mk_dis.htm
                                      &optional (readtable *readtable*))
 "
 RETURN: The dispatch macro character function.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_set__1.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_set__1.htm>
 "
   (let* ((rst  (readtable-syntax-table readtable))
          (cd   (character-description rst disp-char)))
@@ -1274,7 +1274,7 @@ URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_set__1.htm
                                      &optional (readtable *readtable*))
 "
 DO:     Set the dispatch macro character function.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_set__1.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_set__1.htm>
 "
   (let* ((rst  (readtable-syntax-table readtable))
          (cd   (character-description rst disp-char)))
@@ -1288,7 +1288,7 @@ URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_set__1.htm
 (defun get-macro-character (char &optional (readtable *readtable*))
 "
 RETURN: The macro character function.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_set_ma.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_set_ma.htm>
 "
   (let* ((rst  (readtable-syntax-table readtable))
          (cd   (character-description rst char)))
@@ -1299,7 +1299,7 @@ URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_set_ma.htm
                             (readtable *readtable*))
   "
 DO:     Set then macro character function. 
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_set_ma.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_set_ma.htm>
 "
   (let* ((rst  (readtable-syntax-table readtable)))
     (setf (character-description rst char)
@@ -1362,7 +1362,7 @@ RETURN: If TABLE is NIL, then NIL,
                              (from-readtable *standard-readtable*))
 "
 DO:     Copy the syntax between characters in the readtable.
-URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_set_sy.htm
+URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_set_sy.htm>
 "
   (let* ((frst  (readtable-syntax-table from-readtable))
          (trst  (readtable-syntax-table   to-readtable))
@@ -1701,7 +1701,7 @@ URL:    http://www.lispworks.com/documentation/HyperSpec/Body/f_set_sy.htm
 
 (defun reader-dispatch-macro-bit-vector        (stream arg sub-char)
   "Standard #* dispatch macro reader.
-URL: http://www.lispworks.com/documentation/HyperSpec/Body/02_dhd.htm
+URL: <http://www.lispworks.com/documentation/HyperSpec/Body/02_dhd.htm>
 "
   (declare (ignore sub-char))
   ;; Syntax: #*<<bits>>

@@ -34,7 +34,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
 
 
@@ -92,7 +92,7 @@ License:
     
     You should have received a copy of the GNU Affero General Public License
     along with this program.
-    If not, see http://www.gnu.org/licenses/
+    If not, see <http://www.gnu.org/licenses/>
 
 "))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CHARACTER-SETS")
@@ -255,7 +255,7 @@ RETURN: The MIME encoding of the given character set, or it's NAME.
 
 (defun read-character-sets-file (file)
   "
-DO:     Parse the http://www.iana.org/assignments/character-sets file,
+DO:     Parse the <http://www.iana.org/assignments/character-sets> file,
         and extracts the character-sets defined there.
 RETURN: A list of character-set structures read from the file.
 "

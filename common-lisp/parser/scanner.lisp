@@ -31,7 +31,7 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
@@ -88,7 +88,7 @@ License:
     
     You should have received a copy of the GNU Affero General Public License
     along with this program.
-    If not, see http://www.gnu.org/licenses/
+    If not, see <http://www.gnu.org/licenses/>
 "))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.PARSER.SCANNER")
 
@@ -138,6 +138,15 @@ License:
                :initform 1
                :type (integer 0)))
   (:documentation "A syntactic element."))
+
+
+(defmethod print-object ((token token) stream)
+  (print-unreadable-object (token stream :identity t :type t)
+    (prin1 (list (token-kind token)
+                 (token-text token)
+                 (token-column token)
+                 (token-line token)) stream))
+  token)
 
 
 
@@ -387,7 +396,7 @@ RETURN:       (scanner-current-token scanner).
        (setf (scanner-column scanner) 1))
       #+tab
       ((#\Tab)
-       (increment-to-next-tab-stop scanner))
+       (increment-column-to-next-tab-stop scanner))
       (otherwise
        ;; including #\Return #+linefeed #\Linefeed #+page #\Page
        (incf (scanner-column scanner))))
@@ -407,7 +416,7 @@ RETURN:       (scanner-current-token scanner).
       ((#\Tab)
        ;; We don't know how many characters there was in the last tab-width.
        (setf (scanner-column scanner)  (truncate (1- (scanner-column scanner))
-                                                 (scanner-tab-stop scanner))))
+                                                 (scanner-tab-width scanner))))
       (otherwise
        ;; including #\Return #+linefeed #\Linefeed #+page #\Page
        (decf (scanner-column scanner))))
