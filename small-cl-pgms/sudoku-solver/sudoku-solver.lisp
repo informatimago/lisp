@@ -456,6 +456,15 @@ RETURN  SUDOKU.
                                            (x x x x 6 x x 3 4)
                                            (x x x 9 4 3 x 2 8)))
 
+(defparameter *andre* #2A ((x x x x x 2 x x x)
+                           (1 x x x 3 x x 4 x)
+                           (x x x x 1 9 x 6 x)
+                           (7 x x 3 4 x 1 x 5)
+                           (x x x x x x 8 x x)
+                           (9 x x x x 5 x 3 4)
+                           (2 x 6 x 5 1 x x x)
+                           (x 7 x x x x x x x)
+                           (x x 8 9 x 4 5 7 x)))
 
 
 
@@ -471,6 +480,7 @@ RETURN  SUDOKU.
                     *metrofrance/696/facile*
                     *metrofrance/700/moyen*
                     *royco-minut-soup*
+                    *andre*
                     ))
     (multiple-value-bind (solutions tries) (sudoku-solver (symbol-value sudoku))
       (terpri) (print sudoku) (terpri)
