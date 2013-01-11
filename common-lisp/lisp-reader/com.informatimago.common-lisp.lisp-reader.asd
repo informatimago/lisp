@@ -71,8 +71,9 @@ Beane's zpack.lisp).
     :depends-on ("com.informatimago.common-lisp.lisp-sexp")
     
     :components ((:file "reader"          :depends-on ())
-                 (:file "package-fun"     :depends-on ())
-                 (:file "package-mac"     :depends-on ("package-fun"))
-                 (:file "package-def"     :depends-on ("package-fun" "package-mac"))))
+                 (:file "package-pac"     :depends-on ())
+                 (:file "package-mac"     :depends-on ("package-pac"))
+                 (:file "package-fun"     :depends-on ("package-pac" "package-mac"))
+                 (:file "package-def"     :depends-on ("package-pac" "package-mac" "package-fun"))))
 
 ;;;; THE END ;;;;

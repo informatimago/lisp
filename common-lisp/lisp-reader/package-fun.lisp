@@ -55,90 +55,7 @@
 ;;;;**************************************************************************
 
 
-(cl:defpackage "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.PACKAGE"
-  (:use "COMMON-LISP")
-  (:nicknames "ZPACK")
-  (:shadow "SIMPLE-TYPE-ERROR")
-  (:shadow . #1=("SYMBOL"
-                 "SYMBOLP" "MAKE-SYMBOL" "SYMBOL-NAME" "SYMBOL-PACKAGE" 
-                 "SYMBOL-VALUE" "SYMBOL-FUNCTION" "SYMBOL-PLIST"
-                 "BOUNDP" "FBOUNDP"
-                 "KEYWORD" "KEYWORDP"
-                 "PACKAGE"
-                 "PACKAGEP"  "MAKE-PACKAGE" "FIND-PACKAGE" "DELETE-PACKAGE"
-                 "FIND-SYMBOL" "IMPORT" "INTERN" "SHADOW" "SHADOWING-IMPORT"
-                 "EXPORT" "UNEXPORT" "UNINTERN" "USE-PACKAGE"
-                 "UNUSE-PACKAGE" "PACKAGE-NAME" "PACKAGE-NICKNAMES"
-                 "PACKAGE-USE-LIST" "PACKAGE-USED-BY-LIST" "PACKAGE-SHADOWING-SYMBOLS"
-                 "LIST-ALL-PACKAGES" "FIND-ALL-SYMBOLS" "RENAME-PACKAGE"
-                 "*PACKAGE*"
-                 "WITH-PACKAGE-ITERATOR"
-                 "DO-SYMBOLS" "DO-EXTERNAL-SYMBOLS" "DO-ALL-SYMBOLS"
-                 "DEFPACKAGE" "IN-PACKAGE" 
-                 "PACKAGE-ERROR" "PACKAGE-ERROR-PACKAGE"))
-  (:export . #1#)
-  ;; Additionnal conditions:
-  (:export "PACKAGE-EXISTS-ERROR"
-           "PACKAGE-DOES-NOT-EXIST-ERROR"
-           "SYMBOL-CONFLICT-ERROR"
-           "SYMBOL-CONFLICT-EXISTING-SYMBOL"
-           "SYMBOL-CONFLICT-IMPORTED-SYMBOL"
-           "PACKAGE-DOCUMENTATION")
-  (:documentation "
-This package implements the Common Lisp package system.
 
-<Xach> The basic idea of that file is that the semantics of the CL
-package system can be implemented by an object with three special
-kinds of tables (present-table, shadowing-table, external-table)
-and two lists (used-packs, used-by-packs). The rest is
-implementation.
-
-It shadows the CL symbols dealing with packages, and exports
-replacements that implement the package system anew.
-
-
-Additionnal symbol exported:
-
-    PACKAGE-EXISTS-ERROR
-    PACKAGE-DOES-NOT-EXIST-ERROR
-    SYMBOL-CONFLICT-ERROR
-    SYMBOL-CONFLICT-EXISTING-SYMBOL
-    SYMBOL-CONFLICT-IMPORTED-SYMBOL
-    PACKAGE-DOCUMENTATION
-
-
-License:
-
-    BSD
-
-    Copyright (c) 2012 Zachary Beane <xach@xach.com>, All Rights Reserved
-    Copyright (c) 2012 Pascal Bourguignon <pjb@informatimago.com>, All Rights Reserved
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions
-    are met:
-
-      * Redistributions of source code must retain the above copyright
-        notice, this list of conditions and the following disclaimer.
-
-      * Redistributions in binary form must reproduce the above
-        copyright notice, this list of conditions and the following
-        disclaimer in the documentation and/or other materials
-        provided with the distribution.
-
-    THIS SOFTWARE IS PROVIDED BY THE AUTHOR 'AS IS' AND ANY EXPRESSED
-    OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-    DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
-    GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-    WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-"))
 (cl:in-package "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.PACKAGE")
 
 ;;; Symbol internal management
@@ -1249,56 +1166,6 @@ IF-PACKAGE-EXISTS           The default is :PACKAGE
 
 
 
-(defun declarations (body)
-  (loop
-    :for item :in body
-    :while (and (listp item) (eql 'declare (car item)))
-    :collect item))
-
-(defun body (body)
-  (loop
-    :for items :on body
-    :for item = (car items)
-    :while (and (listp item) (eql 'declare (car item)))
-    :finally (return items)))
-
-(assert (equal (mapcar (lambda (body) (list (declarations body) (body body)))
-                       '(()
-                         ((declare (ignore x)))
-                         ((declare (ignore x)) (declare (ignore y)))
-                         ((print w) (print z))
-                         ((declare (ignore x)) (print w) (print z))
-                         ((declare (ignore x)) (declare (ignore y)) (print w) (print z))))
-               '((nil nil)
-                 (((declare (ignore x))) nil)
-                 (((declare (ignore x)) (declare (ignore y))) nil)
-                 (nil ((print w) (print z)))
-                 (((declare (ignore x))) ((print w) (print z)))
-                 (((declare (ignore x)) (declare (ignore y))) ((print w) (print z))))))
-
-
-(defun generate-do-symbols-loop (var package result-form body symbol-types)
-  (let ((iter   (gensym "ITERATOR"))
-        (got-it (gensym "GOT-IT"))
-        (symbol (gensym "SYMBOL"))
-        (vpack  (gensym "PACKAGE")))
-    `(let ((,vpack (or ,package *package*)))
-       (with-package-iterator (,iter ,vpack ,@symbol-types)
-         (let (,var)
-           ,@(declarations body)
-           (loop
-             (multiple-value-bind (,got-it ,symbol) (,iter)
-               (if ,got-it
-                   (tagbody
-                      (setf ,var ,symbol)
-                      ,@(body body))
-                   (progn
-                     (setf ,var nil)
-                     (return ,result-form))))))))))
-
-
-
-
 (defmethod check-import-conflict (sym pack)
   (let ((existing-sym (find-symbol (symbol-name sym) pack)))
     (if (and existing-sym (not (eq existing-sym sym)))
@@ -1728,7 +1595,7 @@ IF-PACKAGE-EXISTS           The default is :PACKAGE
 
 
 
-(define-modify-macro appendf (&rest args) append "Append onto list")
+
 
 
 
