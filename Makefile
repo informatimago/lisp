@@ -93,19 +93,21 @@ help::
 	@printf $(HELP_FMT) 'install' 'Install each submodule directory specific stuff,'
 	@printf $(HELP_FMT_2) 'then copy the whole library to '"$(PACKAGES)/$(PACKAGE_PATH)"
 install::
-	@for module in $(MODULES) ; do \
-		printf $(LINE) ;\
-		printf ";;;;;; INSTALLING STUFF SPECIFIC TO $$module \n" ;\
-		$(MM) MODULE_PATH=$(PACKAGES)/$(PACKAGE_PATH)/$$module  -C $$module install ;\
-	 done
-	@printf $(LINE)
-	@for module in $(MODULES) ; do \
-	 printf 'Installing the sources to %s\n' "$(PACKAGES)/$(PACKAGE_PATH)/$$module" ;\
-	 mkdir -p "$(PACKAGES)/$(PACKAGE_PATH)/$$module" || true ;\
-	 rm -rf   "$(PACKAGES)/$(PACKAGE_PATH)/$$module/"* ;\
-	 tar  --exclude \*~ -cf - $$module | tar -C "$(PACKAGES)/$(PACKAGE_PATH)/" -xf - ;\
-	 done
-	@printf $(LINE)
+	@echo "Obsolete.  Use quicklisp."
+	@exit 1
+#	 @for module in $(MODULES) ; do \
+#	 	printf $(LINE) ;\
+#	 	printf ";;;;;; INSTALLING STUFF SPECIFIC TO $$module \n" ;\
+#	 	$(MM) MODULE_PATH=$(PACKAGES)/$(PACKAGE_PATH)/$$module  -C $$module install ;\
+#	  done
+#	 @printf $(LINE)
+#	 @for module in $(MODULES) ; do \
+#	  printf 'Installing the sources to %s\n' "$(PACKAGES)/$(PACKAGE_PATH)/$$module" ;\
+#	  mkdir -p "$(PACKAGES)/$(PACKAGE_PATH)/$$module" || true ;\
+#	  rm -rf   "$(PACKAGES)/$(PACKAGE_PATH)/$$module/"* ;\
+#	  tar  --exclude \*~ -cf - $$module | tar -C "$(PACKAGES)/$(PACKAGE_PATH)/" -xf - ;\
+#	  done
+#	 @printf $(LINE)
 
 
 help::
