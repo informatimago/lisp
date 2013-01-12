@@ -67,7 +67,9 @@
                                   (<:a (:href "http://git-scm.com/") (<:pcdata "git"))
                                   (<:pcdata ". Use the following command to fetch them:"))
                              (<:pre ()
-                                    (<:pcdata "git clone git://git.informatimago.com/public/small-cl-pgms"))
+                                    (<:pcdata "mkdir com
+git clone https://git.gitorious.org/com-informatimago/com-informatimago.git com/informatimago
+ls com/informatimago/small-cl-pgms"))
 
                              (dolist
                                  (section 

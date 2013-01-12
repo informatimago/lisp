@@ -30,7 +30,9 @@
 <p>The sources of these small Common-Lisp
                                   programs can be downloaded via 
 <a href="http://git-scm.com/">git</a>. Use the following command to fetch them:</p>
-<pre>git clone git://git.informatimago.com/public/small-cl-pgms</pre>
+<pre>mkdir com
+git clone https://git.gitorious.org/com-informatimago/com-informatimago.git com/informatimago
+ls com/informatimago/small-cl-pgms</pre>
 <h2>Lisp History</h2>
 <p></p>
 <h3>The original LISP</h3>
@@ -67,69 +69,56 @@
 <li>
 <a href="ibcl/">A package that saves the definitions typed at the REPL</a></li></ul>
 <h3>Small Simple Structural Editor</h3>
-<p>This is a simple structural editor to edit lisp sources considered as syntactic forests.</p>
+<p>This is a simple structural editor to edit lisp
+                                        sources considered as syntactic forests.</p>
 <ul>
 <li>
 <a href="sedit/">A Structural Editor</a></li></ul>
 <h3>Recursive Descent Parser Generator</h3>
 <p>But not so ugly.  
- Can generate the parser in lisp and in pseudo-basic.</p>
+                                        Can generate the parser in lisp and in pseudo-basic.</p>
 <ul>
 <li>
 <a href="rdp/">A Quick and Dirty Recursive Descent Parser Generator</a></li></ul>
-<h2>Lisp Tidbits</h2>
+<h2>Lisp Curiosities</h2>
 <p></p>
-<h3>Author Signature</h3>
-<p>This program computes an "author signature" from a text, with
- the algorithm from  http://unix.dsu.edu/~johnsone/comp.html</p>
-<ul>
-<li>
-<a href="author-signature.lisp">author-signature.lisp</a></li></ul>
-<h3>Demographic Simulator</h3>
-<p>Assuming an Adam and an Eve 20 years old each,
- assuming the current US life table,
- and assuming an "intensive" reproduction rate, with gene selection,
- simulate the population growth during 80 years
- and draw the final age pyramid.</p>
-<ul>
-<li>
-<a href="douze.lisp">douze.lisp</a></li></ul>
-<h3>Solitaire</h3>
-<p>A solitaire playing program. The user just watch the program play solitaire.</p>
-<ul>
-<li>
-<a href="solitaire.lisp">solitaire.lisp</a></li></ul>
-<h3>Conway's Life Game</h3>
-<p>A small life game program.</p>
-<ul>
-<li>
-<a href="life.lisp">life.lisp</a></li></ul>
-<h3>Cube Puzzle</h3>
-<p>This program tries to resolve the Cube Puzzle, where a cube
-  composed of 27 smaller cubes linked with a thread  must be recomposed.</p>
-<ul>
-<li>
-<a href="cube.lisp">cube.lisp</a></li></ul>
-<h3>Sudoku Solver</h3>
-<p></p>
-<ul>
-<li>
-<a href="sudoku-solver/">This program solves sudoku boards.</a></li></ul>
 <h3>Common-Lisp quines</h3>
 <p>Three Common-Lisp quines (autogenerating programs).</p>
 <ul>
 <li>
 <a href="quine.lisp">quine.lisp</a></li></ul>
-<h3>Geek Day</h3>
-<p>The famous Geek Day games by userfriendly.org's Illiad.
-    See: http://ars.userfriendly.org/cartoons/?id=20021215</p>
+<h3>Intersection between Common-Lisp, Emacs-Lisp and R5RS Scheme</h3>
+<p>A unique program that can be run on Common Lisp,
+                                        Emacs Lisp or R5RS Scheme.</p>
 <ul>
 <li>
-<a href="geek-day/geek-day.lisp">geek-day/geek-day.lisp</a></li>
+<a href="intersection-r5rs-common-lisp-emacs-lisp/">intersection-r5rs-common-lisp-emacs-lisp/</a></li></ul>
+<h2>Lisp Tidbits</h2>
+<p></p>
+<h3>Author Signature</h3>
+<p>This program computes an "author signature" from a text,
+                                        with the algorithm from
+                                        http://unix.dsu.edu/~johnsone/comp.html</p>
+<ul>
 <li>
-<a href="geek-day/Makefile">geek-day/Makefile</a></li>
+<a href="author-signature.lisp">author-signature.lisp</a></li></ul>
+<h3>Demographic Simulator</h3>
+<p>Assuming an Adam and an Eve 20 years old each,
+                                        assuming the current US life
+                                        table, and assuming an
+                                        "intensive" reproduction
+                                        rate, with gene selection,
+                                        simulate the population growth
+                                        during 80 years and draw the
+                                        final age pyramid.</p>
+<ul>
 <li>
-<a href="geek-day/README">geek-day/README</a></li></ul>
+<a href="douze.lisp">douze.lisp</a></li></ul>
+<h3>Common-Lisp quines</h3>
+<p>Three Common-Lisp quines (autogenerating programs).</p>
+<ul>
+<li>
+<a href="quine.lisp">quine.lisp</a></li></ul>
 <h3>BASIC</h3>
 <p></p>
 <ul>
@@ -139,7 +128,44 @@
 <p></p>
 <ul>
 <li>
-<a href="brainfuck/">A brainfuck virtual machine, and brainfuck compiler.</a></li></ul><!-- BOTTOM-BEGIN -->
+<a href="brainfuck/">A brainfuck virtual machine, and brainfuck compiler.</a></li></ul>
+<h2>Little Games</h2>
+<p></p>
+<h3>Solitaire</h3>
+<p>A solitaire playing program. The user just watch the
+                                        program play solitaire.</p>
+<ul>
+<li>
+<a href="solitaire.lisp">solitaire.lisp</a></li></ul>
+<h3>Conway's Life Game</h3>
+<p>A small life game program.</p>
+<ul>
+<li>
+<a href="life.lisp">life.lisp</a></li></ul>
+<h3>Cube Puzzle</h3>
+<p>This program tries to resolve
+                                        the Cube Puzzle, where a cube
+                                        composed of 27 smaller cubes
+                                        linked with a thread  must be
+                                        recomposed.</p>
+<ul>
+<li>
+<a href="cube.lisp">cube.lisp</a></li></ul>
+<h3>Sudoku Solver</h3>
+<p></p>
+<ul>
+<li>
+<a href="sudoku-solver/">This program solves sudoku boards.</a></li></ul>
+<h3>Geek Day</h3>
+<p>The famous Geek Day games by userfriendly.org's Illiad.
+                                        See: http://ars.userfriendly.org/cartoons/?id=20021215</p>
+<ul>
+<li>
+<a href="geek-day/geek-day.lisp">geek-day/geek-day.lisp</a></li>
+<li>
+<a href="geek-day/Makefile">geek-day/Makefile</a></li>
+<li>
+<a href="geek-day/README">geek-day/README</a></li></ul><!-- BOTTOM-BEGIN -->
 <!-- BOTTOM-BEGIN -->
 <!-- BOTTOM-END -->
 <!-- BOTTOM-END -->
