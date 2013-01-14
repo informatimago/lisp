@@ -335,9 +335,14 @@ STREAM:     An output stream.
   (defclass html-string (element)
     ((text :initarg :text :reader html-string-text :type string))
     (:documentation "Represents HTML text."))
+  (defmethod print-object ((self html-string) stream)
+    (print-unreadable-object (self stream  :type t :identity t)
+      (format stream ":text ~S" (html-string-text self)))
+    self)
   (defmethod write-element ((self html-string) stream)
     (write-string (html-string-text self) stream)
     self)
+
 
 
   (defun html-string* (control &rest arguments)
@@ -369,7 +374,7 @@ RETURN:  An element storing the result of formating the CONTROL string
 RETURN:  An element storing the result of formating the CONTROL string
          with the ARGUMENTS as a HTML comment.
 "   
-    (collect-element (apply (function comment*) control arguments)))
+    (apply (function comment*) control arguments))
 
 
   (defgeneric cdata-data (element)
@@ -382,10 +387,15 @@ RETURN:  An element storing the result of formating the CONTROL string
     (declare (ignore args))
     (setf (slot-value self 'data) (string-trim " " (slot-value self 'data)))
     self)
+  (defmethod print-object ((self cdata) stream)
+    (print-unreadable-object (self stream  :type t :identity t)
+      (format stream ":data ~S" (cdata-data self)))
+    self)
   (defmethod write-element ((self cdata) stream)
     (write-escaping '((#\& . "&amp;") (#\" . "&quot;"))
                     (cdata-data self) stream)
     self)
+
 
   (defun cdata* (control &rest arguments)
     "
@@ -405,6 +415,10 @@ RETURN:  An element storing the result of formating the CONTROL string
   (defclass pcdata (element)
     ((data :initarg :data :reader pcdata-data :type string))
     (:documentation "Represents PCDATA text."))
+  (defmethod print-object ((self pcdata) stream)
+    (print-unreadable-object (self stream  :type t :identity t)
+      (format stream ":data ~S" (pcdata-data self)))
+    self)
   (defmethod write-element ((self pcdata) stream)
     (write-escaping '((#\& . "&amp;") (#\< . "&lt;") (#\> . "&gt;"))
                     (pcdata-data self) stream)
@@ -440,7 +454,9 @@ RETURN:  An element storing the result of formating the CONTROL string
     (:documentation "Represents an HTML tagged element."))
   (defmethod print-object ((self element-with-tag) stream)
     (print-unreadable-object (self stream :identity t :type t)
-      (format stream "~A" (element-tag self)))
+      (format stream ":tag ~A :attributes ~S"
+              (element-tag self)
+              (element-attributes self)))
     self)
   (defmethod write-element ((self element-with-tag) stream)
     (loop
@@ -462,6 +478,13 @@ RETURN:  An element storing the result of formating the CONTROL string
   (defclass element-with-body (element-with-tag)
     ((body :initarg :body :reader element-body :type list))
     (:documentation "Represents an HTML tagged element, with a body."))
+  (defmethod print-object ((self element-with-body) stream)
+    (print-unreadable-object (self stream :identity t :type t)
+      (format stream ":tag ~A :attributes ~S :body ~S"
+              (element-tag self)
+              (element-attributes self)
+              (element-body self)))
+    self)
   (defmethod write-element ((self element-with-body) stream)
     (call-next-method)
     (unwind-protect

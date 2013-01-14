@@ -1,0 +1,67 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<HTML>
+  <HEAD>
+    <link rel="icon"          href="/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"> 
+    <link rel="stylesheet"    href="../../../../../../default.css" type="text/css">
+    <TITLE>A Quick and Dirty Recursive Descent Parser Generator</TITLE>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+    <META NAME="author" CONTENT="Pascal J. Bourguignon">
+    <META HTTP-EQUIV="Description" NAME="description" 
+          CONTENT="Pascal Bourguignon Web Page">
+    <META NAME="keywords" 
+          CONTENT="Recursive Descent Parser Generator,lisp,common lisp, basic">
+  </HEAD>
+  <BODY>
+    <!--TOP-BEGIN-->
+    <!--TOP-END-->
+    <!--MENU-BEGIN-->
+    <!--MENU-END-->
+
+
+    <H1>A Quick and Dirty Recursive Descent Parser Generator</H1>
+
+    <P>Here is a recursive descent parser generator, written in 
+      <a href="http://www.cliki.net/">Common Lisp</a>.</p>
+    
+    <P>It generates the scanner and parser in lisp, or in a pseudo-basic.
+      It is possible to add generation of the parser in other programming
+      languages.
+    </p>
+
+    <p>Files:
+      <ul>
+        <li>the <a href="rdp.lisp">sources of the parser generator</a></li>
+        <li>an <a href="example-lisp.lisp">example grammar with actions
+            to generate a lisp parser</a></li>
+        <li>an <a href="example-lisp-dribble.txt">example of the output of generator: a lisp recursive descent parser</a></li>
+        <br>
+        <li>the <a href="rdp-basic-gen.lisp">basic code generator</a></li>
+        <li>an <a href="example-basic.lisp">example grammar with actions
+            to generate a (pseudo) basic parser</a></li>
+        <li>an <a href="example-basic-dribble.txt">example of the output of generator: a (pseudo)basic recursive descent parser</a></li>
+    </ul></p>
+
+
+    <p><b>Note:</b> those are old files, an ancient version of RDP.
+      For real uses, get the current sources from gitorious; the RDP
+      Generator is now included in the com.informatimago repository:
+      <pre>
+        git clone https://git.gitorious.org/com-informatimago/com-informatimago.git
+      </pre>
+
+    <p>or you can just get it with <a href="http://quicklisp.org/">quicklisp</a>:
+
+      <pre>
+        (ql:quicklisp :com.informatimago.rdp)
+      </pre>
+
+
+
+      <!--MENU-BEGIN-->
+      <!--MENU-END-->
+      <!--BOTTOM-BEGIN-->
+      <!--BOTTOM-END-->
+  </BODY>
+</HTML>

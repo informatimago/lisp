@@ -65,6 +65,8 @@
 
 (cl:in-package "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.PACKAGE")
 
+(define-modify-macro appendf (&rest args) append "Append onto list")
+
 
 (defmacro with-package-iterator ((name package-list-form &rest symbol-types)
                                  &body declarations-body)
@@ -142,7 +144,6 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/m_w_pkg_.htm>
                        (return ,result-form))))))))))
 
   );;eval-when
-
 
 
 (defmacro do-symbols         ((var &optional package result-form) &body body)
