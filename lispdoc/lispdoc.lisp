@@ -8,7 +8,7 @@
 ;;;;    
 ;;;;    Generate HTML documentation of a set of CL packages.
 ;;;;
-;;;     Originally:
+;;;;    Originally:
 ;;;;    Id: lispdoc.lisp,v 1.8 2004/01/13 14:03:41 sven Exp 
 ;;;;AUTHORS
 ;;;;    Sven Van Caekenberghe.
@@ -30,6 +30,10 @@
 ;;;;      packages can only be loaded in a specific implementation.
 ;;;;
 ;;;;    - make links from symbols and packages to source files (eg. gitorious).
+;;;;
+;;;;    - It would be nice to have a reST parser for the docstrings.
+;;;;    Check cl-docutils for its reST parser?
+;;;;    http://www.jarw.org.uk/lisp/cl-docutils.html
 ;;;;
 ;;;;LEGAL
 ;;;;    LLGPL
