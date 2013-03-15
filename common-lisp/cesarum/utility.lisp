@@ -178,11 +178,11 @@ The *PACKAGE* is kept bound to the current package.
 (define-argument-selector tenth-arg   10)
 
 
-(defun compose-sexp (functions var)
-  (if (null functions)
-      var
-      (list (car functions) (compose-sexp (cdr functions) var))))
-
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun compose-sexp (functions var)
+    (if (null functions)
+        var
+        (list (car functions) (compose-sexp (cdr functions) var)))))
 
 (defmacro compose (&rest functions)
   "
