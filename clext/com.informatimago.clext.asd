@@ -73,7 +73,7 @@ specifications, like GRAY or other portability libraries.
 
     :components (#+(or ccl clisp cmu ecl sbcl)
                    (:file "character-sets")
-                   #+(or allegro clisp sbcl cmu)
+                   #+(or allegro clisp sbcl cmu ccl)
                    (:file "closer-weak")))
 
 
