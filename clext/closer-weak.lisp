@@ -148,11 +148,14 @@ your option) any later version.
 
 (in-package "COM.INFORMATIMAGO.CLEXT.CLOSER-WEAK")
 
-;; When testing, we call the garbage collector soon to be more precisely weak.
-#+ccl   (import '(ccl:gc))
-#+cmu   (import '(extensions:gc))
-#+clisp (import '(ext:gc))
-#+sbcl  (defun gc () (sb-ext:gc :full t))
+
+(defun gc ()
+  "Calls the garbage collector."
+  nil
+  #+ccl   (ccl:gc)
+  #+clisp (ext:gc)
+  #+cmu   (extensions:gc)
+  #+sbcl  (sb-ext:gc :full t))
 
 
 
