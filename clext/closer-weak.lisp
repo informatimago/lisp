@@ -248,7 +248,7 @@ WEAK-POINTERs would be."
 #+ccl (defun make-weak-list (list) (ccl:make-population :initial-contents list))
 #+ccl (defun weak-list-p (wl) (and (typep wl 'ccl:population) (eq :list (ccl:population-type wl))))
 #+ccl (defun weak-list-list (wl) (ccl:population-contents wl))
-#+ccl (defun (setf weak-list-list) (value wl) (setf (ccl:population-contents wl) list))
+#+ccl (defun (setf weak-list-list) (value wl) (setf (ccl:population-contents wl) value))
 
 
 #-(and (or ccl clisp) (not debug-weak))
