@@ -521,7 +521,7 @@ RETURN: VALUE
 
 (defun step-body (where body env)
   (multiple-value-bind (docstring declarations body) (parse-body where body)
-    (append (when docstring (list docstring))
+    (append docstring
             (substitute-ignorable declarations)
             (mapcar (lambda (form)
                         (step-expression form env))
@@ -638,23 +638,23 @@ RETURN:         A stepping body.
                              (parse-lambda-list lambda-list kind)))))
     (multiple-value-bind (docstring declarations real-body) (parse-body :lambda body)
       (if (stepper-declaration-p declarations 'disable)
-        (append (when docstring (list docstring))
-                declarations
-                (list (step-disabled `(progn ,@real-body))))
-        (append (when docstring (list docstring))
-                (substitute-ignorable declarations)
-                (let ((form `((call-step-function
-                               ',name ',parameters (list ,@parameters)
-                               (lambda ()
+          (append docstring
+                  declarations
+                  (list (step-disabled `(progn ,@real-body))))
+          (append docstring
+                  (substitute-ignorable declarations)
+                  (let ((form `((call-step-function
+                                 ',name ',parameters (list ,@parameters)
+                                 (lambda ()
                                    ,@(if name
                                          `((block ,(if (consp name) (second name) name)
                                              ;; inner block for non-local exit.
                                              ,@(step-body :progn real-body env)))
                                          (step-body :progn real-body env)))))))
-                  (if (stepper-declaration-p declarations 'trace)
-                    `(let ((*step-mode* :trace))
-                       ,form)
-                    form)))))))
+                    (if (stepper-declaration-p declarations 'trace)
+                        `(let ((*step-mode* :trace))
+                           ,form)
+                        form)))))))
 
 
 (defun step-lambda (lambda-form &key (kind :ordinary) name environment)
