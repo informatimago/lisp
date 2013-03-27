@@ -752,7 +752,7 @@ DO:       Execute the BODY with a handler for CONDITION and
        (format *error-output* "~&")
        (finish-output))
      (condition (err) 
-       (format *error-output* "~&~A: ~%  ~S~%" (class-name (class-of err)) err)
+       (format *error-output* "~&~A: ~%  ~A~%" (class-name (class-of err)) err)
        (finish-output))))
 
 
