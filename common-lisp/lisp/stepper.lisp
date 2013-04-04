@@ -45,7 +45,7 @@
   `(cl:defmacro ,name ,(append prefix lambda-list) ,@body))
 
 
-(deftype function () 'cl:function)
+(deftype function (&rest args) (if args `(cl:function ,@args) 'cl:function))
 
 (define-special-operator (function name) (&whole form &environment env)
   (cl:if (and (consp name)
