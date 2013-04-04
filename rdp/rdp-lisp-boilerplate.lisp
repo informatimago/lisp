@@ -119,16 +119,17 @@
          (not (ungetchar ps (getchar ps))))))
 
 (defmethod advance-line ((scanner rdp-scanner))
-  "RETURN: The new current token, old next token"
+  "RETURN: The new current token = old next token"
   (cond
     ((scanner-end-of-source-p scanner)
-     #|End of File -- don't move.|#)
+     #|End of File -- don't move.|#
+     (scanner-current-token scanner))
     ((setf (scanner-buffer scanner) (readline (slot-value scanner 'stream)))
-     ;; We must scrip the empty lines.
-     (setf (scanner-column scanner) 1)
-     (setf (scanner-current-token scanner) nil
-           (scanner-current-text  scanner) "")
-     (incf (scanner-line   scanner))
+     ;; We must skip the empty lines.
+     (incf (scanner-line          scanner))
+     (setf (scanner-column        scanner) 1
+           (scanner-current-text  scanner) ""
+           (scanner-current-token scanner) nil)
      ;; (loop :do (incf (scanner-line   scanner))
      ;;   :while (and (zerop (length (scanner-buffer scanner)))
      ;;               (setf (scanner-buffer scanner) (readline (slot-value scanner 'stream)))))
@@ -136,9 +137,8 @@
      (scan-next-token scanner))
     (t
      ;; Just got EOF
-     (setf (scanner-current-token scanner) '|<END OF FILE>|
-           (scanner-current-text  scanner) "<END OF FILE>")))
-  (scanner-current-token scanner))
+     (setf (scanner-current-text  scanner) "<END OF FILE>"
+           (scanner-current-token scanner) '|<END OF FILE>|))))
 
 
 (defmethod accept ((scanner rdp-scanner) token)

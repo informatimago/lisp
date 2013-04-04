@@ -1052,8 +1052,9 @@ RETURN:  When the SEQUENCE is a vector, the SEQUENCE itself, or a dispaced
                         ())
 
                       (defmethod scan-next-token ((scanner ,scanner-class-name) &optional parser-data)
+                        "RETURN: (scanner-current-token scanner)" 
                         (declare (ignore parser-data))
-                        (let (match)
+                        (let (match) 
                           ,@(when (grammar-skip-spaces grammar)
                                   `((setf match (string-match *spaces*
                                                               (scanner-buffer scanner)
@@ -1065,8 +1066,8 @@ RETURN:  When the SEQUENCE is a vector, the SEQUENCE itself, or a dispaced
                               ;; end of source
                               ((scanner-end-of-source-p scanner)
                                (setf (scanner-column scanner)   (1+ (length (scanner-buffer scanner)))
-                                     (scanner-current-token scanner) '|<END OF SOURCE>|
-                                     (scanner-current-text scanner)   "<END OF SOURCE>"))
+                                     (scanner-current-text scanner)   "<END OF SOURCE>"
+                                     (scanner-current-token scanner) '|<END OF SOURCE>|))
                               ;; end of line
                               ((scanner-end-of-line-p scanner)
                                (advance-line scanner))
@@ -1082,8 +1083,8 @@ RETURN:  When the SEQUENCE is a vector, the SEQUENCE itself, or a dispaced
                                                                                  :start pos)))))
                                          (let ((text (match-string 1 (scanner-buffer scanner) match)))
                                            (setf (scanner-column scanner)        (1+ (match-end 1 match))
-                                                 (scanner-current-token scanner) text ;; (intern text) ;; TODO: See what package we intern in!
-                                                 (scanner-current-text scanner)  text)))))
+                                                 (scanner-current-text scanner)  text
+                                                 (scanner-current-token scanner) text)))))
                               ;; Non Literal Terminals: we have a regexp for each terminal.
                               ,@(mapcar
                                  (lambda (terminal)
@@ -1102,8 +1103,8 @@ RETURN:  When the SEQUENCE is a vector, the SEQUENCE itself, or a dispaced
                                                         (scanner-buffer scanner)
                                                         :start pos)))
                                       (setf (scanner-column scanner)        (1+ (match-end 1 match))
-                                            (scanner-current-token scanner) ',(first terminal)
-                                            (scanner-current-text scanner)  (match-string 1 (scanner-buffer scanner) match))))
+                                            (scanner-current-text scanner)  (match-string 1 (scanner-buffer scanner) match)
+                                            (scanner-current-token scanner) ',(first terminal))))
                                  nl-terminals)
                               ;; Else we have an error:
                               (t
@@ -1230,9 +1231,9 @@ RETURN:  When the SEQUENCE is a vector, the SEQUENCE itself, or a dispaced
                        ;; new:
                        ,@ (let ((increments (make-hash-table)))
                             (mapcan (lambda (dollar item)
-                                      (when (and (or (non-terminal-p grammar item)
-                                                     (terminalp grammar item))
-                                                 (token-kind item))
+                                      (when (and (symbolp item)
+                                                 (or (non-terminal-p grammar item)
+                                                     (terminalp grammar item)))
                                         (let* ((index  (incf (gethash item increments 0)))
                                                (igno   (intern (format nil "~:@(~A.~A~)" item index))))
                                           (pushnew item ignorables)
