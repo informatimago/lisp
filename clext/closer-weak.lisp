@@ -178,7 +178,7 @@ your option) any later version.
                 (gethash '%weak-object% h) object)
           h))
 
-#-(and clisp debug-weak)
+#+(not clisp)
 (defun weak-pointer-p (object)
   "Returns true if the object is of type WEAK-POINTER."
   #+allegro                (typep object 'weak-pointer)
@@ -224,7 +224,8 @@ WEAK-POINTERs would be."
 #-(and (or ccl clisp))
 (defun make-weak-list (list)
   "Creates a WEAK-LIST pointing to each of the elements in the given list."
-  (%make-weak-list :head (map 'list (function make-weak-pointer) list)))
+  (check-type list list)
+  (%make-weak-list :head (mapcar (function make-weak-pointer) list)))
 
 #-(and (or ccl clisp) (not debug-weak))
 (defun weak-list-list (weak-list)
@@ -245,7 +246,7 @@ WEAK-POINTERs would be."
   value)
 
 #+ccl (deftype weak-list () 'ccl:population)
-#+ccl (defun make-weak-list (list) (ccl:make-population :initial-contents list))
+#+ccl (defun make-weak-list (list) (check-type list list) (ccl:make-population :initial-contents list))
 #+ccl (defun weak-list-p (wl) (and (typep wl 'ccl:population) (eq :list (ccl:population-type wl))))
 #+ccl (defun weak-list-list (wl) (ccl:population-contents wl))
 #+ccl (defun (setf weak-list-list) (value wl) (setf (ccl:population-contents wl) value))
