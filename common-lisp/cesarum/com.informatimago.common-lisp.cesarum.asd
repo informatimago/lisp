@@ -70,7 +70,7 @@ all written in 100% conforming Common Lisp.
     
     :name "com.informatimago.common-lisp.cesarum"
 
-    :version "1.3.2"
+    :version "1.3.3"
 
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Autumn 2010")
@@ -89,7 +89,7 @@ all written in 100% conforming Common Lisp.
                  (:file "sequence"        :depends-on ())
                  (:file "list"            :depends-on ())
                  (:file "string"          :depends-on ("utility" "list" "ecma048"))
-                 (:file "package"         :depends-on ())
+                 (:file "package"         :depends-on ("utility"))
                  
                  ;; Data structures:
                  (:file "bset"            :depends-on ("utility"))
