@@ -1,0 +1,24 @@
+#!/usr/bin/env ruby
+# -*- mode:ruby; coding:utf-8 -*-
+
+class AstRuby
+  class << self
+    def checkVersion
+      major,minor,bug=RUBY_VERSION.split('.').map{|s|s.to_i}
+      if (major < 1) or ((major == 1) and (minor < 9)) then
+        printf "%s needs ruby 1.9 at least (there are bugs in 1.8.7)\n",self.name
+        exit 1
+      end
+    end
+  end
+end
+
+AstRuby.checkVersion
+
+require 'ripper'
+
+ARGV.each do |path|
+  printf "[:file,\"%s\",\n",path
+  print Ripper.sexp_raw(File.open(path,"r"){|file| file.read})
+  printf "]\n"
+end

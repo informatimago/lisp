@@ -303,12 +303,12 @@ DO:         Set the cs-lisp-encoding of the character-sets present in
           #+sbcl
           (intern (first (cs-lisp-encoding cs)) "KEYWORD")
 
-
-          #-(or clisp) (values
-                      (find (lambda (cs) (member encoding (cs-lisp-encoding cs)
-                                                 :test (function string-equal)))
-                            *character-sets*)
-                      :unix))
+          #-(or ccl clisp cmu ecl sbcl)
+          (values
+           (find (lambda (cs) (member encoding (cs-lisp-encoding cs)
+                                      :test (function string-equal)))
+                 *character-sets*)
+           :unix))
         (error 'character-set-error
                :character-set cs
                :format-control "The character-set ~S has no lisp-encoding in ~A"

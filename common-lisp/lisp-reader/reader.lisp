@@ -744,7 +744,7 @@ the token, and to describe the parsed syntax with ALT, ZERO-OR-MORE,
 ONE-OR-MORE and OPT-SIGN."
   (multiple-value-bind (docu decl body) (parse-body :lambda body)
     `(defun ,name ,arguments
-       ,@(when docu (list docu))
+       ,@docu
        ,@decl
        (macrolet ((reject (strongp &rest ctrlstring-and-args)
                           `(return-from ,',name

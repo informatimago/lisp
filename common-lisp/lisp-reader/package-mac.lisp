@@ -65,6 +65,8 @@
 
 (cl:in-package "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.PACKAGE")
 
+(define-modify-macro appendf (&rest args) append "Append onto list")
+
 
 (defmacro with-package-iterator ((name package-list-form &rest symbol-types)
                                  &body declarations-body)
@@ -90,6 +92,58 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/m_w_pkg_.htm>
     `(let ((,viterator (make-package-iterator ,package-list-form ',symbol-types)))
        (macrolet ((,name () '(funcall ,viterator)))
          ,@declarations-body))))
+
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  
+  (defun declarations (body)
+    (loop
+      :for item :in body
+      :while (and (listp item) (eql 'declare (car item)))
+      :collect item))
+
+  (defun body (body)
+    (loop
+      :for items :on body
+      :for item = (car items)
+      :while (and (listp item) (eql 'declare (car item)))
+      :finally (return items)))
+
+  (assert (equal (mapcar (lambda (body) (list (declarations body) (body body)))
+                         '(()
+                           ((declare (ignore x)))
+                           ((declare (ignore x)) (declare (ignore y)))
+                           ((print w) (print z))
+                           ((declare (ignore x)) (print w) (print z))
+                           ((declare (ignore x)) (declare (ignore y)) (print w) (print z))))
+                 '((nil nil)
+                   (((declare (ignore x))) nil)
+                   (((declare (ignore x)) (declare (ignore y))) nil)
+                   (nil ((print w) (print z)))
+                   (((declare (ignore x))) ((print w) (print z)))
+                   (((declare (ignore x)) (declare (ignore y))) ((print w) (print z))))))
+
+
+  (defun generate-do-symbols-loop (var package result-form body symbol-types)
+    (let ((iter   (gensym "ITERATOR"))
+          (got-it (gensym "GOT-IT"))
+          (symbol (gensym "SYMBOL"))
+          (vpack  (gensym "PACKAGE")))
+      `(let ((,vpack (or ,package *package*)))
+         (with-package-iterator (,iter ,vpack ,@symbol-types)
+           (let (,var)
+             ,@(declarations body)
+             (loop
+               (multiple-value-bind (,got-it ,symbol) (,iter)
+                 (if ,got-it
+                     (tagbody
+                        (setf ,var ,symbol)
+                        ,@(body body))
+                     (progn
+                       (setf ,var nil)
+                       (return ,result-form))))))))))
+
+  );;eval-when
 
 
 (defmacro do-symbols         ((var &optional package result-form) &body body)

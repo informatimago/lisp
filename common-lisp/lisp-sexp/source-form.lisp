@@ -1131,7 +1131,8 @@ WHERE:          (member :lambda :locally :progn) specifies where the
 
 BODY:           A list of forms.
 
-RETURN:         Three values: a docstring or nil, a list of declarations, a list of forms.
+RETURN:         Three values: a list containing one docstring or nil,
+                a list of declarations, a list of forms.
 "
     (flet ((progn-body (body)
              (if (some (lambda (form) (and (consp form) (eq 'declare (first form))))
@@ -1170,15 +1171,27 @@ RETURN:         Three values: a docstring or nil, a list of declarations, a list
                             :format-control "Found a declaration ~S in the body: ~S"
                             :format-arguments (list form body))
                      (push form actual-body))))
-           :finally (return (ecase state
-                              (:opt-decl
-                               (values docstring declarations (nreverse actual-body)))
-                              (:seen-string
-                               (if actual-body
-                                 (values docstring declarations (nreverse actual-body))
-                                 (values nil declarations (list docstring))))
-                              ((:after-decl :body)
-                               (values docstring declarations (nreverse actual-body)))))))
+           :finally (flet ((ensure-list (object)
+                             (if (listp object)
+                                 object
+                                 (list object))))
+                      (return (ecase state
+                                (:opt-decl
+                                 (values (ensure-list docstring)
+                                         declarations
+                                         (nreverse actual-body)))
+                                (:seen-string
+                                 (if actual-body
+                                     (values (ensure-list docstring)
+                                             declarations
+                                             (nreverse actual-body))
+                                     (values nil
+                                             declarations
+                                             (list docstring))))
+                                ((:after-decl :body)
+                                 (values (ensure-list docstring)
+                                         declarations
+                                         (nreverse actual-body))))))))
         ((:locally)
          ;; {declaration} {form}
          (loop
@@ -1217,7 +1230,7 @@ CLHS:   3.4.11 Syntactic Interaction of Documentation Strings and
 NOTE:   This parses the body as a lambda body.
         It's better to use PARSE-BODY directly.
 "
-    (values (parse-body :lambda body)))
+    (values (first (parse-body :lambda body))))
 
 
   (defun extract-declarations (body &optional (allow-docstring t))
@@ -1256,7 +1269,7 @@ NOTE:   This parses the body as a lambda body.
            (handler-case
                (multiple-value-bind (doc dec for) (parse-body :lambda body)
                  (assert (not expect-error-p))
-                 (assert (equalp doc docstring))
+                 (assert (equalp (first doc) docstring))
                  (assert (equalp dec declarations))
                  (assert (equalp for forms)))
              (program-error () (assert expect-error-p))))

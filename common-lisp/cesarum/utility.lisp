@@ -178,11 +178,11 @@ The *PACKAGE* is kept bound to the current package.
 (define-argument-selector tenth-arg   10)
 
 
-(defun compose-sexp (functions var)
-  (if (null functions)
-      var
-      (list (car functions) (compose-sexp (cdr functions) var))))
-
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun compose-sexp (functions var)
+    (if (null functions)
+        var
+        (list (car functions) (compose-sexp (cdr functions) var)))))
 
 (defmacro compose (&rest functions)
   "
@@ -752,7 +752,7 @@ DO:       Execute the BODY with a handler for CONDITION and
        (format *error-output* "~&")
        (finish-output))
      (condition (err) 
-       (format *error-output* "~&~A: ~%  ~S~%" (class-name (class-of err)) err)
+       (format *error-output* "~&~A: ~%  ~A~%" (class-name (class-of err)) err)
        (finish-output))))
 
 

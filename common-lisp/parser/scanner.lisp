@@ -104,7 +104,7 @@ License:
 (defgeneric token-kind (token)
   (:documentation "Returns the kind of the token.")
   (:method ((token symbol)) token)
-  (:method ((token string)) nil))
+  (:method ((token string)) token))
 
 (defgeneric token-text (token)
   (:documentation "Returns the literal text the token.")
@@ -142,13 +142,11 @@ License:
 
 (defmethod print-object ((token token) stream)
   (print-unreadable-object (token stream :identity t :type t)
-    (prin1 (list (token-kind token)
-                 (token-text token)
-                 (token-column token)
-                 (token-line token)) stream))
+    (prin1 (list (slot-value token 'kind)
+                 (slot-value token 'text)
+                 (slot-value token 'column)
+                 (slot-value token 'line)) stream))
   token)
-
-
 
 
 ;;----------------------------------------------------------------------
@@ -371,10 +369,10 @@ RETURN:       (scanner-current-token scanner).
 (defmethod print-object ((self scanner) out)
   (print-unreadable-object (self out :type t :identity t)
     (format out "~{~S~^ ~}"
-            (list :line          (scanner-line          self)
-                  :column        (scanner-column        self)
-                  :current-token (scanner-current-token self)
-                  :source        (scanner-source        self))))
+            (list :line          (slot-value self          'line)
+                  :column        (slot-value self          'column)
+                  :current-token (slot-value self          'current-token)
+                  :source        (slot-value self          'source))))
   self)
 
 

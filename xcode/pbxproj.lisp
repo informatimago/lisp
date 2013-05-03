@@ -53,6 +53,9 @@
 (defun eofp (object) (null object))
 (defvar *eof* nil)
 
+(defun unquoted-string-char-p (ch)
+   (or (alphanumericp ch) (find ch ".$_/")))
+
 (defmethod scan-next-token ((scanner pbxproj-scanner) &optional parser-data)
   (declare (ignore parser-data))
   (when (zerop (scanner-line scanner))
@@ -65,7 +68,7 @@
                                               :initial-element #\space
                                               :adjustable t :fill-pointer 0)
                    :for ch = (getchar scanner)
-                   :while (or (alphanumericp ch) (find ch "._/"))
+                   :while (unquoted-string-char-p ch)
                    :do (vector-push-extend ch string (length string))
                    :finally (progn
                               (ungetchar scanner ch)
@@ -147,7 +150,7 @@
               ((#\/)
                (getchar scanner)
                (if (char= #\* (nextchar scanner))
-                   (progn
+                   (progn ; comment
                      (getchar scanner) 
                      (loop
                        :named :eat-comment
@@ -170,7 +173,7 @@
                (getchar scanner)
                (scan-next-token scanner))
               (otherwise
-               (if (or (alphanumericp ch) (char= ch #\.))
+               (if (unquoted-string-char-p ch)
                    (scan-unquoted-string scanner)
                    (progn
                      (getchar scanner) ; let's eat it so that error recovery skips it.
@@ -286,5 +289,9 @@
 
 ;; (test/scan-file  #P"~/works/abalone-macosx/Abalone-10.7/Abalone.xcodeproj/project.pbxproj")
 
-(with-open-file (stream #P"~/works/abalone-macosx/Abalone-10.7/Abalone.xcodeproj/project.pbxproj")
- (parse-pbxproj  stream))
+(defun read-pbxproj (path)
+  (with-open-file (stream path)
+    (parse-pbxproj  stream)))
+
+;; (read-pbxproj #P"~/works/abalone-macosx/Abalone-10.7/Abalone.xcodeproj/project.pbxproj")
+

@@ -81,7 +81,6 @@
 
                  "com.informatimago.common-lisp.bank"
                  "com.informatimago.common-lisp.csv"
-                 "com.informatimago.common-lisp.cxx"
                  "com.informatimago.common-lisp.diagram"
                  "com.informatimago.common-lisp.regexp"
                  "com.informatimago.common-lisp.ed"
