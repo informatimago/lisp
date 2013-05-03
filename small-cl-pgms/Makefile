@@ -34,32 +34,34 @@
 
 PREFIX=/usr/local
 TARGETS=index.html.in what-implementation
+HELPFORMAT="make %-20s \# %s\n"
+
+all::help
 
 help::
-	@echo "$(MAKE) generate                     # generates $(TARGETS)"
-all:$(TARGETS) access-rights clean
+	@printf $(HELPFORMAT) generate "Generate the index.html page."
+generate:index.html access-rights clean
 
 help::
-	@echo "$(MAKE) install                      # Installs everything PREFIX=$(PREFIX)"
-install:install-what-implementation
-
-
-
-help::
-	@echo "$(MAKE) access-rights                # publishes this subdirectory."
+	@printf $(HELPFORMAT) access-rights "Sets the access-rights for publication."
 access-rights:
 	publish .
 
+help::
+	@printf $(HELPFORMAT) clean "Erase backup and fasl files."
+
+clean:
+	-rm -rf  *~ *.lx*fsl
 
 help::
-	@echo "$(MAKE) clean                        # Remove backups."
-	@echo "$(MAKE) cleanall                     # Remove backups and generated files."
-clean:
-	-rm -rf  *~
+	@printf $(HELPFORMAT) cleanall "make clean and erase targets."
 cleanall:clean
 	-rm -rf $(TARGETS)
 
-#(with-open-file (*STANDARD-OUTPUT* "index.html" :direction :output :if-exists :supersede :if-does-not-exist :create)
+
+help::
+	@printf $(HELPFORMAT) install "Installs everything in PREFIX=$(PREFIX)"
+install:install-what-implementation
 
 
 help::
@@ -73,18 +75,19 @@ index index.html.in:init.lisp index.lisp Makefile
 
 
 
+#(with-open-file (*STANDARD-OUTPUT* "index.html" :direction :output :if-exists :supersede :if-does-not-exist :create)
 
 help::
-	@echo "$(MAKE) what-implementation          # Compile the what-implementation program."
+	@printf $(HELPFORMAT) what-implementation "Builds the what-implementation executable."
 wi what-implementation:what-implementation.lisp
 	echo '(load (compile-file "what-implementation.lisp"))' | ccl -n 
+
+
 help::
-	@echo "$(MAKE) install-what-implementation  # Installs the what-implementation program PREFIX=$(PREFIX)"
+	@printf $(HELPFORMAT) install-what-implementation "Install the what-implementation executable."
 install-what-implementation:what-implementation
 	cp what-implementation $PREFIX/bin
 	chmod 755
-
-
 
 
 #### THE END ####
