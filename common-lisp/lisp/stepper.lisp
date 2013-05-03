@@ -45,7 +45,7 @@
   `(cl:defmacro ,name ,(append prefix lambda-list) ,@body))
 
 
-(deftype function (&rest args) (if args `(cl:function ,@args) 'cl:function))
+(deftype function (&rest args) (cl:if args `(cl:function ,@args) 'cl:function))
 
 (define-special-operator (function name) (&whole form &environment env)
   (cl:if (and (consp name)
@@ -116,12 +116,12 @@
         ((stepper-declaration-p declarations 'disable)
          (step-disabled form))
         ((stepper-declaration-p declarations 'trace)
-         (if preserve-toplevelness-p
+         (cl:if preserve-toplevelness-p
              instrumented-form ;; TODO: perhaps wrap the body in the LET?
              `(cl:let ((*step-mode* :trace))
                 ,(simple-step instrumented-form form))))
         (t
-         (if preserve-toplevelness-p
+         (cl:if preserve-toplevelness-p
              instrumented-form
              (simple-step instrumented-form form)))))))
 
