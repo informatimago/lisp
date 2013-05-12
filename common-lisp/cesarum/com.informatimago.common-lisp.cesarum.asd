@@ -83,6 +83,9 @@ all written in 100% conforming Common Lisp.
     :depends-on (:com.informatimago.common-lisp.lisp-sexp)
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
     :components (
+                 ;; Simple Test Framework
+                 (:file "simple-test"     :depends-on ())
+
                  ;; Common Lisp addendum:
                  (:file "utility"         :depends-on ())
                  (:file "array"           :depends-on ())
@@ -92,7 +95,9 @@ all written in 100% conforming Common Lisp.
                  (:file "package"         :depends-on ("utility"))
                  
                  ;; Data structures:
-                 (:file "bset"            :depends-on ("utility"))
+                 (:file "set"             :depends-on ("simple-test" "utility" "array"))
+                 (:file "index-set"       :depends-on ("simple-test" "utility" "array" "sequence" "set"))
+                 (:file "bset"            :depends-on ("utility" "set"))
                  (:file "brelation"       :depends-on ("utility" "bset"))
                  (:file "dictionary"      :depends-on ())
                  (:file "dll"             :depends-on ())

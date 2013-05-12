@@ -53,7 +53,8 @@
         "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM" )
   (:export
    ;; 3 - EVALUATION AND COMPILATION
-   "WITH-GENSYMS" "WSIOSBP" "COMPOSE" "COMPOSE-AND-CALL"
+   "WITH-GENSYMS" "WSIOSBP"
+   "CURRY" "COMPOSE" "COMPOSE-AND-CALL"
    "DEFINE-IF-UNDEFINED"  "INCLUDE" "FUNCTIONAL-PIPE"
    "FIRST-ARG" "SECOND-ARG" "THIRD-ARG" "FOURTH-ARG" "FIFTH-ARG"
    "SIXTH-ARG" "SEVENTH-ARG" "EIGHTH-ARG" "NINTH-ARG" "TENTH-ARG"
@@ -88,7 +89,7 @@
    "DICHOTOMY"
    "TRACING" "TRACING-LET" "TRACING-LET*" "TRACING-LABELS"
    ;;
-   "XOR" "EQUIV" "IMPLY" "SET-EQUAL"
+   "XOR" "EQUIV" "IMPLY" ;; "SET-EQUAL"
    )
   (:documentation
    "
@@ -176,6 +177,18 @@ The *PACKAGE* is kept bound to the current package.
 (define-argument-selector eighth-arg  8)
 (define-argument-selector ninth-arg   9)
 (define-argument-selector tenth-arg   10)
+
+
+(defun curry (function &rest left-arguments)
+  (lambda (&rest right-arguments)
+    (apply function (append left-arguments right-arguments))))
+
+;; (defmacro curry (function &rest left-arguments)
+;;   (let ((parameters (mapcar (lambda (arg) (gensym)) left-arguments))
+;;         (right-arguments (gensym)))
+;;     `(let ,(mapcar (function list) parameters left-arguments)
+;;        (lambda (&rest ,right-arguments)
+;;          (apply (function ,function) ,@parameters ,right-arguments)))))
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -286,13 +299,24 @@ Return the results of the last form.
 (defmacro defenum (name-and-options &rest constants)
   "
 Define an named enumeration type, a set of constants with integer
-values, and a lable function to produce the name of the constants from
+values, and a label function to produce the name of the constants from
 the numerical value.
+
+NAME-AND-OPTIONS:
+
+            The name of the enum type, or a list containing the name
+            of the enum type and options (no option defined so far).
+            The label function defined is named <enum-type-name>-LABEL
+
+CONSTANTS:  The first element of CONSTANTS may be an optional docstring.
+            Each constant is either a symbol naming the constant of the enum,
+            (the value is then the successor of the previous value),
+            or a list containing the constant name and the constant value.
 "
   (let ((name (if (consp name-and-options)
                   (first name-and-options)
                   name-and-options)))
-    (when (stringp (first constants))
+    (when (stringp (first constants)) ; docstring
       (pop constants))
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        ;; define a ({NAME}-LABEL value) function.
@@ -300,33 +324,33 @@ the numerical value.
          ,(format nil "Produce the name of the constant having the given VALUE.")
          (case value
            ,@(loop
-                for cname in constants
-                with val = -1
-                do (if (consp cname)
+               :with val = -1
+               :for cname :in constants
+               :do (if (consp cname)
                        (setf val (second cname))
                        (incf val))
-                collect `((,val) ',(if (consp cname)
+               :collect `((,val) ',(if (consp cname)
                                        (first cname)
                                        cname)))
            (otherwise (format nil "#<~A:~D>" ',name value))))
        ;; define the constants.
        ,@(loop
-            for cname in constants
-            with val = -1
-            do (when (consp cname)
+           :with val = -1
+           :for cname :in constants
+           :do (when (consp cname)
                  (setf val (1- (second cname)) cname (first cname)))
-            collect `(defconstant ,cname ,(incf val)
+           :collect `(defconstant ,cname ,(incf val)
                        ,(format nil "~A enumeration value." name)))
        ;; define the type.
        (deftype ,name ()
          "An enumeration type." ;; TODO: get a docstring from the parameters.
          '(member ,@(loop
-                       for cname in constants
-                       with val = -1
-                       do (if (consp cname)
+                      :with val = -1
+                      :for cname :in constants
+                      :do (if (consp cname)
                               (setf val (second cname))
                               (incf val))
-                       collect val))))))
+                      :collect val))))))
 
 
 (defun op-type-of (symbol &optional env)
@@ -1044,28 +1068,30 @@ POST:	(<= start index end)
         | a[max] < x        |   FALSE  |  max  |  greater |      0         |
         +-------------------+----------+-------+----------+----------------+
 "
-  (let* ((curmin start)
-         (curmax end)
-         (index    (truncate (+ curmin curmax) 2))
-         (order  (funcall compare value (funcall key (aref vector index)))) )
-    (loop :while (and (/= 0 order) (/= curmin index)) :do
-       ;; (FORMAT T "~&min=~S  cur=~S  max=~S   key=~S <~S> [cur]=~S ~%" CURMIN INDEX CURMAX VALUE (FUNCALL COMPARE VALUE (FUNCALL KEY (AREF VECTOR INDEX))) (AREF VECTOR INDEX))
-       (if (< order 0)
-           (setf curmax index)
-           (setf curmin index))
-       (setf index (truncate (+ curmin curmax) 2))
-       (setf order  (funcall compare value (funcall key (aref vector index)))))
-    (when (and (< start index) (< order 0))
-      (setf order 1)
-      (decf index))
-    (assert
-     (or (< (funcall compare value (funcall key (aref vector index))) 0)
-         (and (> (funcall compare value (funcall key (aref vector index))) 0)
-              (or (>= (1+ index) end)
-                  (< (funcall compare value
-                              (funcall key (aref vector (1+  index)))) 0)))
-         (= (funcall compare value (funcall key (aref vector index))) 0)))
-    (values (= order 0) index order)))
+  (if (zerop (length vector))
+      (values nil 0 -1)
+      (let* ((curmin start)
+             (curmax end)
+             (index  (truncate (+ curmin curmax) 2))
+             (order  (funcall compare value (funcall key (aref vector index)))) )
+        (loop :while (and (/= 0 order) (/= curmin index)) :do
+          ;; (FORMAT T "~&min=~S  cur=~S  max=~S   key=~S <~S> [cur]=~S ~%" CURMIN INDEX CURMAX VALUE (FUNCALL COMPARE VALUE (FUNCALL KEY (AREF VECTOR INDEX))) (AREF VECTOR INDEX))
+          (if (< order 0)
+              (setf curmax index)
+              (setf curmin index))
+          (setf index (truncate (+ curmin curmax) 2))
+          (setf order  (funcall compare value (funcall key (aref vector index)))))
+        (when (and (< start index) (< order 0))
+          (setf order 1)
+          (decf index))
+        (assert
+         (or (< (funcall compare value (funcall key (aref vector index))) 0)
+             (and (> (funcall compare value (funcall key (aref vector index))) 0)
+                  (or (>= (1+ index) end)
+                      (< (funcall compare value
+                                  (funcall key (aref vector (1+  index)))) 0)))
+             (= (funcall compare value (funcall key (aref vector index))) 0)))
+        (values (= order 0) index order))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1415,9 +1441,9 @@ DO:       Evaluate the expression, which must be a real,
   "Return P ⇒ Q"
   (or (not p) q))
 
-(defun set-equal (a b)
-  "Return A ⊂ B ∧ A ⊃ B"
-  (and (subsetp a b) (subsetp b a)))
+;; (defun set-equal (a b)
+;;   "Return A ⊂ B ∧ A ⊃ B"
+;;   (and (subsetp a b) (subsetp b a)))
 
 
 ;;;; THE END ;;;;

@@ -43,8 +43,11 @@
   (:use "COMMON-LISP")
   (:export
    "POSITIONS" ; should go to a sequence package...
-   "VECTOR-DELETE"
+
+   "VECTOR-EMPTYP" "VECTOR-FIRST" "VECTOR-LAST" "VECTOR-REST"
+   "VECTOR-BUTLAST" "VECTOR-DELETE"
    "NUDGE-DISPLACED-VECTOR" "DISPLACED-VECTOR"
+   
    "ARRAY-TO-LIST" "COPY-ARRAY"
    "ARRAY-EQUAL-P")
   (:documentation
@@ -108,6 +111,60 @@ EXAMPLE:    (positions 'a #(a door a window a big hole and a bucket) :start 1)
                           args)
           :while (and p (or (null count) (<= 0 (decf count))))
           :collect p))))
+
+
+
+(defun vector-emptyp (vector)
+  "
+RETURN:  Whether the vector is empty.
+"
+  (zerop (length vector)))
+
+
+(defun vector-first (vector)
+  "
+RETURN: The first element of the vector, or 0 values if empty.
+"
+  (if (plusp (length vector))
+      (aref vector 0)
+      (values)))
+
+
+(defun vector-last (vector)
+  "
+RETURN: The last element of the vector, or 0 values if empty.
+"
+  (if (plusp (length vector))
+      (aref vector (1- (length vector)))
+      (values)))
+
+
+(defun vector-rest (vector)
+  "
+RETURN: A displaced, adjustable array, with fill-pointer,  covering all the elements of the VECTOR but the first.
+"
+  (let* ((emptyp (vector-emptyp vector))
+         (size   (if emptyp 0 (1- (length vector)))))
+    (make-array size
+                :element-type (array-element-type vector)
+                :displaced-to vector
+                :dispalced-index-offset (if emptyp 0 1)
+                :adjustable t
+                :fill-pointer size)))
+
+
+(defun vector-butlast (vector)
+  "
+RETURN: A displaced, adjustable array, with fill-pointer, covering all the elements of the VECTOR but the last.
+"
+  (let* ((emptyp (vector-emptyp vector))
+         (size   (if emptyp 0 (1- (length vector)))))
+    (make-array size
+                :element-type (array-element-type vector)
+                :displaced-to vector
+                :dispalced-index-offset 0
+                :adjustable t
+                :fill-pointer size)))
 
 
 (defun vector-delete (item vector &rest keys &key (from-end nil) (test 'eql) (test-not nil) (start 0) (end nil) (count nil) (key 'identity))
