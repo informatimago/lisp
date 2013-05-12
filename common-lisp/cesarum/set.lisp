@@ -42,15 +42,29 @@
   (:shadow "INCLUDE")
   (:export
    "CONTAINS" "CARDINAL" "EMPTYP" "MINIMUM" "MAXIMUM"
-   "COLLECTING-RESULT" "MAKE-COLLECTOR" "MAPELEMENTS" "THEREIS"
+   "COLLECTING-RESULT" "MAKE-COLLECTOR" "MAP-ELEMENTS" "THEREIS"
    "THEREIS1" "ALWAYS" "SET-EQUAL" "IS-SUBSET" "IS-STRICT-SUBSET"
    "INTENSION" "COPY" "UNION" "INTERSECTION" "DIFFERENCE"
    "SYMETRIC-DIFFERENCE" "INCLUDE" "EXCLUDE" "ASSIGN-EMPTY"
    "ASSIGN-SINGLETON" "ASSIGN" "MERGE" "INTERSECT" "SUBTRACT")
+  (:export "LIST-SET" "ELEMENTS")
   (:documentation
    "
 
 This package defines an abstract set class API.
+
+The minimum implementation should define methods for: INCLUDE,
+EXCLUDE, CONTAINS, CARDINAL, SELECT, MINIMUM, MAXIMUM, MAP-ELEMENTS
+and MAKE-COLLECTOR.
+
+But an efficient implementation will have to implement specializations
+for the other generic functions too.
+
+Methods of MAKE-COLLECTOR specify which RESULT-TYPE sets are
+available.  Methods are defined for NIL, LIST and VECTOR,  to make
+null collector (ignoring the collected elements), a list collector or
+a vector collector.
+
 
 License:
 
@@ -75,21 +89,28 @@ License:
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SET")
 
 
-;; The minimum implementation should define methods for: include
-;; exclude contains cardinal select minimum maximum mapelements
-;; make-collector.  But an efficient implementation will have to
-;; implement specialization for the other generic functions too.
-
-
 (defgeneric contains              (set element)
+  (:documentation "
+RETURN: Whether the SET contains the ELEMENT.
+")
   (:method ((set sequence) element)
     (find element set)))
 
+
 (defgeneric cardinal              (set)
+  (:documentation "
+RETURN: The number of elements in the SET.
+NOTE:   We only consider finite sets.
+")
   (:method ((set sequence))
     (length set)))
 
+
 (defgeneric emptyp              (set)
+  (:documentation "
+RETURN: (zerop (cardinal set))
+NOTE:   Implementations of EMPTYP may be more efficient than CARDINAL.
+")
   (:method (set)
     (zerop (cardinal set)))
   (:method ((set null))
@@ -108,7 +129,7 @@ RETURN: one element from the SET.
 ;; When the elements are ordered:
 
 (defgeneric minimum               (set)
-    (:documentation "
+  (:documentation "
 PRE:    (not (emptyp SET))
 RETURN: the smallest element of the SET.
 "))
@@ -127,6 +148,19 @@ RETURN: the biggest element of the SET.
 
 
 (defgeneric make-collector        (result-type)
+  (:documentation "
+RETURN: A collector for the RESULT-TYPE.
+
+        A collector is a function that takes optionnaly two arguments,
+        a set and an element.
+
+        When called with no argument, it should return a fresh empty
+        set object.
+
+        When called with a set and an element argument, it should
+        include the element into the set, and return the (possibly
+        new) set.
+")
   (:method ((result-type (eql 'nil)))
     (declare (ignore result-type))
     (lambda (&optional set element)
@@ -148,8 +182,14 @@ RETURN: the biggest element of the SET.
           (make-array 2 :element-type 'integer :adjustable t :fill-pointer 0)))))
 
 
-#+emacs (put 'collecting-result 'lisp-indent-function 1)
 (defmacro collecting-result ((collect-operator-name result-type) &body body)
+  "
+DO:     Evaluate BODY in an environment where a function named by
+        COLLECT-OPERATOR-NAME is defined to take one argument and to
+        add it to a set of type RESULT-TYPE.
+
+RETURN: The collected set of elements.
+"
   (let ((collector (gensym))
         (result    (gensym)))
     `(let* ((,collector (make-collector ,result-type))
@@ -160,7 +200,22 @@ RETURN: the biggest element of the SET.
        ,result)))
 
 
-(defgeneric mapelements           (result-type mapper set)
+(defgeneric map-elements           (result-type mapper set)
+  (:documentation "
+DO:             Calls MAPPER on each element of the SET in turn (no
+                specified order), collecting the results in a set of
+                type RESULT-TYPE.
+
+RESULT-TYPE:    A symbol denoting a set class, or LIST or VECTOR.
+
+MAPPER:         A function taking an element of SET as argument, and
+                returning an element for the set of type RESULT-TYPE.
+
+SET:            A set.
+
+RETURN:         A set of type RESULT-TYPE containing the elements
+                returned by MAPPER.
+")
   (:method (result-type mapper (elements sequence))
     (collecting-result (collect result-type)
       (map nil
@@ -170,36 +225,51 @@ RETURN: the biggest element of the SET.
 
 
 (defgeneric thereis               (predicate set)
+  (:documentation "
+RETURN:         Whether there is an element in the SET for which the
+                PREDICATE is true.
+")
   (:method (predicate set)
-    (mapelements nil (lambda (element)
-                       (when (funcall predicate element)
-                         (return-from thereis t)))
-                 set)
+    (map-elements nil (lambda (element)
+                        (when (funcall predicate element)
+                          (return-from thereis t)))
+                  set)
     nil))
 
 
 (defgeneric thereis1              (predicate set)
+  (:documentation "
+RETURN:         Whether there is exactly one element in the SET for
+                which the PREDICATE is true.
+")
   (:method (predicate set)
     (let ((seen-one nil))
-      (mapelements nil (lambda (element)
-                         (when (funcall predicate element)
-                           (if seen-one
-                               (return-from thereis1)
-                               (setf seen-one t))))
-                   set)
+      (map-elements nil (lambda (element)
+                          (when (funcall predicate element)
+                            (if seen-one
+                                (return-from thereis1)
+                                (setf seen-one t))))
+                    set)
       seen-one)))
 
 
 (defgeneric always                (predicate set)
+  (:documentation "
+RETURN:         Whether the PREDICATE is true for all the elements of
+                the SET.
+")  
   (:method (predicate set)
-    (mapelements nil (lambda (element)
-                       (unless (funcall predicate element)
-                         (return-from always nil)))
-                 set)
+    (map-elements nil (lambda (element)
+                        (unless (funcall predicate element)
+                          (return-from always nil)))
+                  set)
     t))
 
 
 (defgeneric set-equal             (set1 set2)
+  (:documentation "
+RETURN:         Whether the two sets contains the same elements.
+")
   (:method ((set1 list) (set2 list))
     (and (subsetp set1 set2)
          (subsetp set2 set1)))
@@ -209,12 +279,18 @@ RETURN: the biggest element of the SET.
 
 
 (defgeneric is-subset             (subset set)
+  (:documentation "
+RETURN:         Whether SUBSET is a subset of SET.
+")
   (:method (subset set)
     (and (<= (cardinal subset) (cardinal set))
          (always (curry (function contains) set) subset))))
 
 
 (defgeneric is-strict-subset      (subset set)
+  (:documentation "
+RETURN:         Whether SUBSET is a strict subset of SET.
+")
   (:method (subset set)
     (and (< (cardinal subset) (cardinal set))
          (always (curry (function contains) set) subset))))
@@ -222,28 +298,43 @@ RETURN: the biggest element of the SET.
 
 
 (defgeneric intension             (result-type predicate set)
-  (:documentation "Return a new set containing only the elements of SET that have PREDICATE true.")
+  (:documentation "
+RETURN:         A new set containing only the elements of SET that
+                have PREDICATE true.
+")
   (:method (result-type predicate set)
     (collecting-result (collect result-type)
-      (mapelements nil (lambda (element)
-                         (when (funcall predicate element)
-                           (collect element)))
-                   set))))
+      (map-elements nil (lambda (element)
+                          (when (funcall predicate element)
+                            (collect element)))
+                    set))))
 
 
 (defgeneric copy                  (result-type set)
+  (:documentation "
+RETURN:         A new set of type RESULT-TYPE containing the same
+                elements as SET.
+")
   (:method (result-type set)
-    (mapelements result-type 'identity set)))
+    (map-elements result-type 'identity set)))
 
 
 (defgeneric union                 (result-type set1 set2)
+  (:documentation "
+RETURN:         A new set of type RESULT-TYPE containing the union of
+                the two sets.
+")
   (:method (result-type set1 set2)
     (collecting-result (collect result-type)
-      (mapelements nil (function collect) set1)
-      (mapelements nil (function collect) set2))))
+      (map-elements nil (function collect) set1)
+      (map-elements nil (function collect) set2))))
 
 
 (defgeneric intersection          (result-type set1 set2)
+  (:documentation "
+RETURN:         A new set of type RESULT-TYPE containing the
+                intersection of the two sets.
+")
   (:method (result-type set1 set2)
     (let* ((smallest-is-1  (< (cardinal set1) (cardinal set2)))
            (smallest (if smallest-is-1
@@ -256,11 +347,19 @@ RETURN: the biggest element of the SET.
 
 
 (defgeneric difference            (result-type set1 set2)
+  (:documentation "
+RETURN:         A new set of type RESULT-TYPE containing the
+                difference between set1 and set2.
+")
   (:method (result-type set1 set2)
     (intension result-type (complement (curry (function contains) set2)) set1)))
 
 
 (defgeneric symetric-difference   (result-type set1 set2)
+  (:documentation "
+RETURN:         A new set of type RESULT-TYPE containing the
+                symetric difference between the two sets.
+")
   (:method (result-type set1 set2)
     (union result-type
            (difference (class-of set1) set1 set2)
@@ -276,7 +375,7 @@ RETURN: DESTINATION-SET
 "))
 
 (defgeneric exclude               (destination-set element)
-    (:documentation "
+  (:documentation "
 POST:   (not (contains DESTINATION-SET ELEMENT))
 RETURN: DESTINATION-SET
 "))
@@ -310,7 +409,7 @@ RETURN: DESTINATION-SET
 ")
   (:method (destination-set source-set)
     (assign-empty destination-set)
-    (mapelements nil (lambda (element) (include destination-set element)) source-set)
+    (map-elements nil (lambda (element) (include destination-set element)) source-set)
     destination-set))
 
 (defgeneric merge                 (destination-set source-set)
@@ -320,7 +419,7 @@ POST:   (and (is-subset SOURCE-SET DESTINATION-SET)
 RETURN: DESTINATION-SET
 ")
   (:method (destination-set source-set)
-    (mapelements nil (curry (function include) destination-set) source-set)
+    (map-elements nil (curry (function include) destination-set) source-set)
     destination-set))
 
 (defgeneric intersect             (destination-set source-set)
@@ -330,10 +429,10 @@ POST:   (and (set-equal DESTINATION-SET (intersection (old DESTINATION-SET) SOUR
 RETURN: DESTINATION-SET
 ")
   (:method (destination-set source-set)
-    (mapelements nil (lambda (element)
-                       (unless (contains source-set element)
-                         (exclude destination-set element)))
-                 destination-set)
+    (map-elements nil (lambda (element)
+                        (unless (contains source-set element)
+                          (exclude destination-set element)))
+                  destination-set)
     destination-set))
 
 (defgeneric subtract              (destination-set source-set)
@@ -343,7 +442,7 @@ POST:   (and (set-equal DESTINATION-SET (difference (old DESTINATION-SET) SOURCE
 RETURN: DESTINATION-SET
 ")
   (:method (destination-set source-set)
-    (mapelements nil (curry (function exclude) destination-set) source-set)
+    (map-elements nil (curry (function exclude) destination-set) source-set)
     destination-set))
 
 
@@ -377,12 +476,12 @@ RETURN: SET.
   (:method (set stream)
     (princ "(" stream)
     (let ((separator ""))
-      (mapelements nil
-                   (lambda (element)
-                     (princ separator stream)
-                     (princ element stream)
-                     (setf separator " "))
-                   set))
+      (map-elements nil
+                    (lambda (element)
+                      (princ separator stream)
+                      (princ element stream)
+                      (setf separator " "))
+                    set))
     (princ ")" stream)
     set))
 
@@ -421,7 +520,7 @@ RETURN: SET.
       (first (slot-value set 'elements))
       (values)))
 
-(defmethod mapelements           (result-type mapper (set list-set))
+(defmethod map-elements           (result-type mapper (set list-set))
   (collecting-result (collect result-type)
     (map nil
          (lambda (element)
@@ -459,18 +558,18 @@ RETURN: SET.
   (loop
     :for seq :in (test-sets 'list-set)
     :do
-    (test eql (mapelements nil (function identity) seq) nil)
+    (test eql (map-elements nil (function identity) seq) nil)
     (test set-equal (let ((result '()))
-                      (mapelements nil (lambda (element) (push element result)) seq)
+                      (map-elements nil (lambda (element) (push element result)) seq)
                       result)
           seq)))
 
-(define-test test/mapelements (test-class)
+(define-test test/map-elements (test-class)
   (loop
     :for set :in (test-sets test-class)
     :do (loop
           :for class :in (list 'list 'vector test-class)
-          :do (test set-equal (mapelements class (function identity) set)
+          :do (test set-equal (map-elements class (function identity) set)
                     (ecase (cardinal set)
                       (0 '())
                       (1 '(1))
@@ -651,7 +750,7 @@ RETURN: SET.
   (test/is-subseq test-class test-class)
   (test/set-equal test-class)
   (test/copy        test-class)
-  (test/mapelements test-class))
+  (test/map-elements test-class))
 
 (define-test test/all/class (test-class)
   "All the tests working on set classes."

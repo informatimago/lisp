@@ -42,24 +42,26 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SET")
   (:shadow "MERGE" "INTERSECTION" "UNION")
   (:shadowing-import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SET" "INCLUDE")
+
   (:export
    "CONTAINS" "CARDINAL" "EMPTYP" "MINIMUM" "MAXIMUM"
-   "MAKE-COLLECTOR" "MAPELEMENTS" "THEREIS" "THEREIS1" "ALWAYS"
+   "MAKE-COLLECTOR" "MAP-ELEMENTS" "THEREIS" "THEREIS1" "ALWAYS"
    "SET-EQUAL" "IS-SUBSET" "IS-STRICT-SUBSET" "INTENSION" "COPY"
    "UNION" "INTERSECTION" "DIFFERENCE" "SYMETRIC-DIFFERENCE" "INCLUDE"
    "EXCLUDE" "ASSIGN-EMPTY" "ASSIGN-SINGLETON" "ASSIGN" "MERGE"
    "INTERSECT" "SUBTRACT")
 
   (:export
-   "INDEX-SET"
-
-   "RANGE" "MAKE-RANGE" "RANGE-EMPTYP" "RANGE-START" "RANGE-LAST"
-   "RANGE-END"  "RANGE-COUNT" "RANGE-COPY" "EQUAL-RANGE")
+   "INDEX-SET" "MAP-RANGES"
+   
+   "MAKE-RANGE" "COPY-RANGE" "EQUAL-RANGE"
+   "RANGE" "RANGE-EMPTYP" "RANGE-COUNT"
+   "RANGE-START" "RANGE-END" "RANGE-FIRST" "RANGE-LAST")
   
   (:documentation
    "
 
-This package implements sets of (integer 0 *) as a sequence of ranges.
+This package implements sets of INTEGER as a sequence of ranges.
 
 License:
 
@@ -251,6 +253,16 @@ License:
          :always (< (range-end (aref ranges i)) (range-start (aref ranges (1+ i)))))))))
 
 
+(defgeneric map-ranges (result-type mapper index-set)
+  (:method (result-type mapper (set index-set))
+    (collecting-result (collect result-type)
+      (loop
+        :for range :across ranges
+        :do (collect (funcall mapper range))))))
+
+
+
+
 (defmethod emptyp              ((set index-set))
   (vector-emptyp (slot-value set 'ranges)))
 
@@ -293,7 +305,7 @@ License:
         (make-instance 'index-set))))
 
 
-(defmethod mapelements           (result-type mapper (set index-set))
+(defmethod map-elements           (result-type mapper (set index-set))
   (collecting-result (collect result-type)
     (loop
       :for range :across (slot-value set 'ranges)
@@ -683,8 +695,8 @@ License:
 (test/all)
 
 ;; (copy 'index-set '(1 2 3 4))
-;; (mapelements 'list 'identity  (copy 'index-set '(1 2 3 4)))
-;; (mapelements 'vector 'identity  (copy 'index-set '(1 2 3 4)))
+;; (map-elements 'list 'identity  (copy 'index-set '(1 2 3 4)))
+;; (map-elements 'vector 'identity  (copy 'index-set '(1 2 3 4)))
 ;; (copy 'vectorx (copy 'index-set '(1 2 3 4)))
 
 ;;;; THE END ;;;;
