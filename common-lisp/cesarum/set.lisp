@@ -638,56 +638,56 @@ RETURN: SET.
 
 (define-test test/union (operator test-class)
   (flet ((test-set (&rest elements)
-           (copy test-class elements))
-         (test set-equal (funcall operator 
-                                  (test-set 1 2 3 7 8 10 11 12)
-                                  (test-set 1 2 3 7 8 10 11 12))
-               (test-set 1 2 3 7 8 10 11 12))
+           (copy test-class elements))) 
+    (test set-equal (funcall operator 
+                             (test-set 1 2 3 7 8 10 11 12)
+                             (test-set 1 2 3 7 8 10 11 12))
+          (test-set 1 2 3 7 8 10 11 12))
 
-         (test set-equal (funcall operator 
-                                  (test-set)
-                                  (test-set 1 2 3 7 8 10 11 12))
-               (test-set 1 2 3 7 8 10 11 12))
+    (test set-equal (funcall operator 
+                             (test-set)
+                             (test-set 1 2 3 7 8 10 11 12))
+          (test-set 1 2 3 7 8 10 11 12))
 
-         (test set-equal (funcall operator 
-                                  (test-set 1 2 3 7 8 10 11 12)
-                                  (test-set))
-               (test-set 1 2 3 7 8 10 11 12))
+    (test set-equal (funcall operator 
+                             (test-set 1 2 3 7 8 10 11 12)
+                             (test-set))
+          (test-set 1 2 3 7 8 10 11 12))
 
-         (test set-equal (funcall operator 
-                                  (test-set 1 2 3 7 8 10 11 12)
-                                  (test-set 0 4 5 6 9 10))
-               (test-set 0 1 2 3 4 5 6 7 8 9 10 11 12))
+    (test set-equal (funcall operator 
+                             (test-set 1 2 3 7 8 10 11 12)
+                             (test-set 0 4 5 6 9 10))
+          (test-set 0 1 2 3 4 5 6 7 8 9 10 11 12))
 
-         (test set-equal (funcall operator 
-                                  (test-set 10 11 12)
-                                  (test-set 1 2 3 7 8))
-               (test-set 1 2 3 7 8 10 11 12))
+    (test set-equal (funcall operator 
+                             (test-set 10 11 12)
+                             (test-set 1 2 3 7 8))
+          (test-set 1 2 3 7 8 10 11 12))
 
-         (test set-equal (funcall operator 
-                                  (test-set 1 2 3 7 8)
-                                  (test-set 10 11 12))
-               (test-set 1 2 3 7 8 10 11 12))
+    (test set-equal (funcall operator 
+                             (test-set 1 2 3 7 8)
+                             (test-set 10 11 12))
+          (test-set 1 2 3 7 8 10 11 12))
 
-         (test set-equal (funcall operator 
-                                  (test-set 1 2 3 5 6 7)
-                                  (test-set 3 4 5 7 8 9  12 13))
-               (test-set 1 2 3 4 5 6 7 8 9 12 13))
+    (test set-equal (funcall operator 
+                             (test-set 1 2 3 5 6 7)
+                             (test-set 3 4 5 7 8 9  12 13))
+          (test-set 1 2 3 4 5 6 7 8 9 12 13))
 
-         (test set-equal (funcall operator 
-                                  (test-set 1 2 3 5 6 7  12 13)
-                                  (test-set 3 4 5 7 8 9))
-               (test-set 1 2 3 4 5 6 7 8 9 12 13))
+    (test set-equal (funcall operator 
+                             (test-set 1 2 3 5 6 7  12 13)
+                             (test-set 3 4 5 7 8 9))
+          (test-set 1 2 3 4 5 6 7 8 9 12 13))
 
-         (test set-equal (funcall operator 
-                                  (test-set 1 2 3  11 12 13)
-                                  (test-set 3 4 5  13 14 15))
-               (test-set 1 2 3 4 5 11 12 13 14 15))
-         
-         (test set-equal (funcall operator 
-                                  (test-set 3 4 5  13 14 15)
-                                  (test-set 1 2 3  11 12 13))
-               (test-set 1 2 3 4 5 11 12 13 14 15)))))
+    (test set-equal (funcall operator 
+                             (test-set 1 2 3  11 12 13)
+                             (test-set 3 4 5  13 14 15))
+          (test-set 1 2 3 4 5 11 12 13 14 15))
+    
+    (test set-equal (funcall operator 
+                             (test-set 3 4 5  13 14 15)
+                             (test-set 1 2 3  11 12 13))
+          (test-set 1 2 3 4 5 11 12 13 14 15))))
 
 
 (define-test test/intersection (operator test-class)
