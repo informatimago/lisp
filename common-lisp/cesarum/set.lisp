@@ -170,16 +170,19 @@ RETURN: A collector for the RESULT-TYPE.
     (declare (ignorable result-type))
     (lambda (&optional set (element nil add-element-p))
       (if add-element-p
-          (cons element set)
+          (if (member element set)
+              set
+              (cons element set))
           '())))
   (:method ((result-type (eql 'vector)))
     (declare (ignorable result-type))
     (lambda (&optional set (element nil add-element-p))
       (if add-element-p
           (progn
-            (vector-push-extend element set (length set))
+            (unless (find element set)
+              (vector-push-extend element set (length set)))
             set)
-          (make-array 2 :element-type 'integer :adjustable t :fill-pointer 0)))))
+          (make-array 2 :adjustable t :fill-pointer 0)))))
 
 
 (defmacro collecting-result ((collect-operator-name result-type) &body body)
@@ -278,6 +281,8 @@ RETURN:         Whether the two sets contains the same elements.
          (is-subset set2 set1))))
 
 
+
+
 (defgeneric is-subset             (subset set)
   (:documentation "
 RETURN:         Whether SUBSET is a subset of SET.
@@ -285,6 +290,7 @@ RETURN:         Whether SUBSET is a subset of SET.
   (:method (subset set)
     (and (<= (cardinal subset) (cardinal set))
          (always (curry (function contains) set) subset))))
+
 
 
 (defgeneric is-strict-subset      (subset set)
@@ -636,6 +642,7 @@ RETURN: SET.
                                  (test-set 1 2 3))))))
 
 
+
 (define-test test/union (operator test-class)
   (flet ((test-set (&rest elements)
            (copy test-class elements))) 
@@ -688,6 +695,9 @@ RETURN: SET.
                              (test-set 3 4 5  13 14 15)
                              (test-set 1 2 3  11 12 13))
           (test-set 1 2 3 4 5 11 12 13 14 15))))
+
+
+
 
 
 (define-test test/intersection (operator test-class)
@@ -774,5 +784,6 @@ RETURN: SET.
   (test/all/class    'list-set))
 
 (test/all)
+
 
 ;;;; THE END ;;;;

@@ -40,9 +40,8 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SET")
-  (:shadow "MERGE" "INTERSECTION" "UNION")
-  (:shadowing-import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SET" "INCLUDE")
-
+  (:shadowing-import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SET"
+                          "INCLUDE"  "MERGE" "INTERSECTION" "UNION")
   (:export
    "CONTAINS" "CARDINAL" "EMPTYP" "MINIMUM" "MAXIMUM"
    "MAKE-COLLECTOR" "MAP-ELEMENTS" "THEREIS" "THEREIS1" "ALWAYS"
@@ -680,7 +679,8 @@ License:
 
 (defmethod subtract              ((destination-set index-set) (source-set index-set))
   (setf (slot-value destination-set 'ranges)
-        (difference-ranges (slot-value destination-set 'ranges) (slot-value source-set 'ranges)))
+        (difference-ranges (slot-value destination-set 'ranges)
+                           (slot-value source-set 'ranges)))
   destination-set)
 
 
