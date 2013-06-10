@@ -33,7 +33,7 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(in-package "COM.INFORMATIMAGO.LUA.PARSER")
+(in-package "COM.INFORMATIMAGO.LANGUAGES.LUA.PARSER")
 
 
 (defgrammar lua
