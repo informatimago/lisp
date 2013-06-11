@@ -2,8 +2,6 @@
 
 (defparameter *systems*
   '(
-    :scexp
-    :common-idioms
     :com.informatimago.xcode
     :com.informatimago.rdp.example
     :com.informatimago.rdp.basic.example
