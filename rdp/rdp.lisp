@@ -1073,6 +1073,7 @@ RETURN:  When the SEQUENCE is a vector, the SEQUENCE itself, or a dispaced
                                (advance-line scanner))
                               ;; Literal Alpha Numeric and Non Alpha Numeric Terminals:
                               ,@(when (or an-terminals nan-terminals)
+                                      (print (list an-terminals nan-terminals))
                                       `(((or ,@(when an-terminals
                                                      `((setf match (string-match ',lit-an-terminals-regexp
                                                                                  (scanner-buffer scanner)
@@ -1088,6 +1089,7 @@ RETURN:  When the SEQUENCE is a vector, the SEQUENCE itself, or a dispaced
                               ;; Non Literal Terminals: we have a regexp for each terminal.
                               ,@(mapcar
                                  (lambda (terminal)
+                                   (print terminal)
                                    `(,(if (= 4 (length terminal))
                                           ;; (terminal-name match-regexp / exclude-regexp)
                                           `(and (setf match (string-match
