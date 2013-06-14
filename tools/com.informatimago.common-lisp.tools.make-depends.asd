@@ -70,7 +70,8 @@ translations and ad-hoc processing.
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
 
     :depends-on ("com.informatimago.common-lisp.cesarum"
-                 "com.informatimago.common-lisp.html-generator")
+                 "com.informatimago.common-lisp.html-generator"
+                 "com.informatimago.clext")
     
     :components ((:file "make-depends" :depends-on ())))
 
