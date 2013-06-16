@@ -197,10 +197,10 @@
 (defmethod word-equal ((a symbol) (b token)) (eql a (token-kind b)))
 (defmethod word-equal ((a token) (b symbol)) (eql (token-kind a) b))
 
-(when (find-method (function scanner-current-token) '()  '(rdp-scanner) nil)
-  (remove-method (function scanner-current-token) (find-method (function scanner-current-token) '()  '(rdp-scanner))))
+;; (when (find-method (function scanner-current-token) '()  '(rdp-scanner) nil)
+;;   (remove-method (function scanner-current-token) (find-method (function scanner-current-token) '()  '(rdp-scanner))))
 
-(defmethod accept ((scanner rdp-scanner) expected)
+(defmethod accept ((scanner pbxproj-scanner) expected)
   (let ((token (scanner-current-token scanner)))
    (if (word-equal expected token)
        (prog1 (list (token-kind token)
@@ -295,3 +295,4 @@
 
 ;; (read-pbxproj #P"~/works/abalone-macosx/Abalone-10.7/Abalone.xcodeproj/project.pbxproj")
 
+;;;; THE END ;;;;
