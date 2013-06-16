@@ -39,6 +39,14 @@
 (defvar *non-terminal-stack* '()
   "For error reporting.")
 
+(defgeneric print-parser-error  (error stream))
+(defgeneric print-scanner-error (error stream))
+(defgeneric scanner-end-of-line-p   (scanner))
+(defgeneric scanner-end-of-source-p (scanner))
+(defgeneric advance-line            (scanner))
+(defgeneric accept                  (scanner token))
+
+
 (define-condition parser-error (error)
   ((line    :initarg :line    :initform 1   :reader parser-error-line)
    (column  :initarg :column  :initform 0   :reader parser-error-column)
