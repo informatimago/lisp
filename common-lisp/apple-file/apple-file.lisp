@@ -33,7 +33,7 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-0000
+
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.APPLE-FILE.APPLE-FILE"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
@@ -669,19 +669,19 @@ FORK:   (member :info :data :resource)
 (defun open-apple-file (pathname &key (direction :input) (if-does-not-exist :error))
   (assert (eq direction :input) () "non :input direction not supported yet.")
   (flet ((get-header (info-path format)
-           (let ((stream (open info-path
-                               :direction :input
-                               :if-does-not-exist nil
-                               :element-type 'octet))
-                 (header (when stream
-                           (file-position stream 0)
-                           (ignore-errors (read-header stream format)))))
+           (let* ((stream (open info-path
+                                :direction :input
+                                :if-does-not-exist nil
+                                :element-type 'octet))
+                  (header (when stream
+                            (file-position stream 0)
+                            (ignore-errors (read-header stream format)))))
              (when header
                (setf (header-info-stream header) stream))
              header)))
-    (let ((header (or (get-header (apple-file-fork-pathname pathname :apple-single :info))
-                      (get-header (apple-file-fork-pathname pathname :apple-double :info))
-                      (get-header (apple-file-fork-pathname pathname :apple-triple :info)))))
+    (let ((header (or (get-header (apple-file-fork-pathname pathname :apple-single :info) :apple-single)
+                      (get-header (apple-file-fork-pathname pathname :apple-double :info) :apple-double)
+                      (get-header (apple-file-fork-pathname pathname :apple-triple :info) :apple-triple))))
       (if header
         (make-instance 'apple-file
           :header header
@@ -702,19 +702,19 @@ FORK:   (member :info :data :resource)
                                (element-type 'character)
                                (if-does-not-exist :error)
                                if-exists)
-  (let ((data-path (apple-file-fork-pathname apple-file (apple-file-header-kind apple-file) :data)))
-    ;; (if (equalp data-path (pathname (apple-file-info-stream )))
-    ;;     )
-    )
-  (open 
-        :direction direction
-        :external-format external-format
-        :element-type element-type
-        :if-does-not-exist if-does-not-exist
-        :if-exists if-exists))
+  (let ((data-path (apple-file-fork-pathname apple-file (apple-file-header-kind apple-file) :data))
+        (info-path (apple-file-fork-pathname apple-file (apple-file-header-kind apple-file) :info)))
+    (if (equalp data-path info-path)
+        (error "~S not implemented for apple-triple files yet." 'apple-file-data-fork)
+        (open data-path
+              :direction direction
+              :external-format external-format
+              :element-type element-type
+              :if-does-not-exist if-does-not-exist
+              :if-exists if-exists))))
 
 (defun apple-file-resource-fork (apple-file)
-  (error "not implemented yet"))
+  (error "~S not implemented yet" 'apple-file-resource-fork))
 
 
 
