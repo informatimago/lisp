@@ -834,8 +834,9 @@ accompanied by a TCP Urgent notification.")
   ((code :initarg :code
          :reader option-code)
    (name :initarg :name)
-   (us   :initform :no    :type side-option-state
-         :accessor opt-us)
+   (#-sbcl us #+sbcl sbcl-has-a-bug-so-we-cannot-name-our-slot-us-see-|https://bugs.launchpad.net/sbcl/+bug/539540|
+           :initform :no    :type side-option-state
+           :accessor opt-us)
    (usq  :initform :empty :type side-option-queue
          :accessor opt-usq)
    (him  :initform :no    :type side-option-state
