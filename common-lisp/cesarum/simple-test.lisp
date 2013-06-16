@@ -33,7 +33,8 @@
 ;;;;**************************************************************************
 
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SIMPLE-TEST"
-  (:use "COMMON-LISP")
+  (:use "COMMON-LISP"
+        "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM")
   (:export "*DEBUG-ON-ERROR*" "WITH-DEBUGGER-ON-ERROR"
            "DEFINE-TEST" "TEST" "ASSERT-TRUE" "EXPECT-CONDITION"
 
@@ -279,22 +280,25 @@ EXAMPLE:  (test equal (list 1 2 3) '(1 2 3))
                      :for param :in parameters
                      :while (symbolp param)
                      :collect param)))
-    `(defun ,name ,parameters
-       (multiple-value-bind (successes failures)
-           (let ((*success-count* 0)
-                 (*failure-count* 0)
-                 (*current-test-name*        ',name)
-                 (*current-test-parameters* (list ,@mandatory))
-                 (*current-test-printed-p*  nil))
-             (progress-start)
-             (locally ,@body)
-             (progress-tally *success-count* *failure-count*)
-             (values *success-count* *failure-count*))
-         (incf *success-count* successes)
-         (incf *failure-count* failures)
-         (if (zerop failures)
-             :success
-             :failure)))))
+    (multiple-value-bind (docstrings declarations forms) (parse-body :lambda body)
+      `(defun ,name ,parameters
+         ,@docstrings
+         ,@declarations
+         (multiple-value-bind (successes failures)
+             (let ((*success-count* 0)
+                   (*failure-count* 0)
+                   (*current-test-name*        ',name)
+                   (*current-test-parameters* (list ,@mandatory))
+                   (*current-test-printed-p*  nil))
+               (progress-start)
+               (progn ,@forms)
+               (progress-tally *success-count* *failure-count*)
+               (values *success-count* *failure-count*))
+           (incf *success-count* successes)
+           (incf *failure-count* failures)
+           (if (zerop failures)
+               :success
+               :failure))))))
 
 (defmacro with-debugger-on-error (&body body)
   `(let ((*debug-on-error* t))

@@ -254,19 +254,19 @@
 
 
 (defun check-ranges (header)
-  (let ((sorted-entries (sort (copy-list (header-entries header))
-                              (function <) :key (function entry-offset))))
-
-    )
   (let ((file-set  (make-instance 'index-set))
         (entry-set (make-instance 'index-set)))
     (dolist (entry (header-entries header))
       (assign-empty entry-set)
       (include entry-set  (make-range :start (entry-offset entry)
                                       :count (entry-length entry)))
-      (if (emptyp (intersection file-set entry-set))
+      (if (emptyp (intersection 'index-set file-set entry-set))
         (merge file-set entry-set)
-        (report-collision entry)))))
+        (report-collision header entry)))))
+
+(defun report-collision (header  entry)
+  ;; TODO:
+  (error "Some entries collide in ~S." header))
 
 
 (defun read-header (stream kind)
@@ -543,7 +543,7 @@
   (let* ((start            (resource-header-map-offset resource-header))
          (end              (+ start (resource-header-map-length resource-header)))
          (resource         (resource-header-resource resource-header))
-         (file-attributes  (get-ushort resource (+ start 22)))
+         ;; (file-attributes  (get-ushort resource (+ start 22)))
          (type-list-offset (+ start (get-short resource (+ start 24))))
          (name-list-offset (+ start (get-short resource (+ start 26))))
          (data-offset      (resource-header-data-offset resource-header)))
@@ -623,6 +623,7 @@ FORK:   (member :info :data :resource)
   (:method ((path string) format fork)
     (apple-file-fork-pathname (pathname path) format fork))
   (:method ((info-path pathname) (format (eql :apple-single)) fork)
+    (declare (ignore fork))
     info-path)
   (:method ((info-path pathname) (format (eql :apple-double)) fork)
     (let ((name (pathname-name info-path)))
@@ -644,16 +645,39 @@ FORK:   (member :info :data :resource)
                    :defaults info-path)))
 
 
+(defun tree-structure-and-leaf-difference (a b &key (test (function eql)))
+  (cond
+    ((and (null a) (null b)) '=)
+    ((or (null a) (null b)) `(/= ,a ,b))
+    ((and (atom a) (atom b))
+     (if (funcall test a b)
+         '=
+         `(/= ,a ,b)))
+    ((or (atom a) (atom b)) `(/= ,a ,b))
+    (t (cons (tree-structure-and-leaf-difference (car a) (car b) :test test)
+             (tree-structure-and-leaf-difference (cdr a) (cdr b) :test test)))))
+
 (defun test/apple-file-fork-pathname ()
-  (assert (equalp
-           (mapcar (lambda (format)
-                     (mapcar (lambda (fork)
-                               (apple-file-fork-pathname "test.single" format fork))
-                             '(:info :data :resource)))
-                   '(:apple-single :apple-double :apple-triple))
-           '((#P"test.single" #P"test.single" #P"test.single")
-             (#P"\\._test.single" #P"test.single" #P"\\._test.single")
-             (#P"test.info" #P"test.data" #P"test.rsrc"))))
+  #+unix
+  (let ((*default-pathname-defaults* #P"/"))
+    (assert
+     (tree-structure-and-leaf-difference 
+      (mapcar (lambda (format)
+                (mapcar (lambda (fork)
+                          (apple-file-fork-pathname (make-pathname :name "test" :type "single" :case :local)
+                                                    format fork))
+                        '(:info :data :resource)))
+              '(:apple-single :apple-double :apple-triple))
+      (list (list (make-pathname :name "test" :type "single" :case :local)
+                  (make-pathname :name "test" :type "single" :case :local)
+                  (make-pathname :name "test" :type "single" :case :local))
+            (list (make-pathname :name "._test" :type "single" :case :local)
+                  (make-pathname :name "test" :type "single" :case :local)
+                  (make-pathname :name "._test" :type "single" :case :local))
+            (list (make-pathname :name "test" :type "info" :case :local)
+                  (make-pathname :name "test" :type "data" :case :local)
+                  (make-pathname :name "test" :type "rsrc" :case :local)))
+      :test 'pathname-match-p)))
   :success)
 
 
@@ -694,7 +718,7 @@ FORK:   (member :info :data :resource)
 
 (defgeneric close-apple-file (apple-file)
   (:method ((apple-file apple-file))
-    (close (apple-file-header-info-stream apple-file))))
+    (close (header-info-stream (apple-file-header apple-file)))))
 
 (defun apple-file-data-fork (apple-file
                              &key (direction :input)
@@ -763,10 +787,11 @@ FORK:   (member :info :data :resource)
 (define-attribute apple-file-prodos-auxiliary-type  :prodos-file-info    "RETURN: NIL or the PRODOS auxiliary type code of the APPLE-FILE."              file-auxiliary-type)
 (define-attribute apple-file-msdos-attributes       :msdos-file-info     "RETURN: NIL or the MSDOS attributes of the APPLE-FILE."                        file-msdos-attributes)
 (define-attribute apple-file-afp-backup-needed      :afp-file-info       "RETURN: NIL or the AFP backup needed flag of the APPLE-FILE."                  file-backup-needed)
-(define-attribute apple-file-afp-system             :afp-file-info       "RETURN: NIL or the AFP system flag of the APPLE-FILE."                         file-system)
-(define-attribute apple-file-afp-multi-user         :afp-file-info       "RETURN: NIL or the AFP multi-user flag of the APPLE-FILE."                     file-multi-user)
-(define-attribute apple-file-afp-invisible          :afp-file-info       "RETURN: NIL or the AFP invisible flag of the APPLE-FILE."                      file-invisible)
-(define-attribute apple-file-afp-directory-id       :afp-file-info       "RETURN: NIL or the AFP directory ID of the APPLE-FILE."                        file-directory-id)
+(define-attribute apple-file-afp-system             :afp-file-info       "RETURN: NIL or the AFP system flag of the APPLE-FILE."                         afp-file-system)
+(define-attribute apple-file-afp-multi-user         :afp-file-info       "RETURN: NIL or the AFP multi-user flag of the APPLE-FILE."                     afp-file-multi-user)
+(define-attribute apple-file-afp-invisible          :afp-file-info       "RETURN: NIL or the AFP invisible flag of the APPLE-FILE."                      afp-file-invisible)
+(define-attribute apple-file-afp-directory-id       :afp-file-info       "RETURN: NIL or the AFP directory ID of the APPLE-FILE."                        afp-file-directory-id)
+
 
 
 ;;----------------------------------------------------------------------

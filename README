@@ -114,6 +114,12 @@ References
         git push gitorious master
 
 
+TODO
+==================
+
+- create a library for low level utilities (eg. proper-list-p) that
+  are used by several libraries to break circular dependencies.
+
 
           -------------------------------------------------
                            ---------------

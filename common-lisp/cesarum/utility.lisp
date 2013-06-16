@@ -769,16 +769,14 @@ DO:       Execute the BODY with a handler for CONDITION and
 "
   `(handler-case (progn ,@body)
      (simple-condition  (err) 
-       (format *error-output* "~&~A: ~%" (class-name (class-of err)))
-       (apply (function format) *error-output*
-              (simple-condition-format-control   err)
-              (simple-condition-format-arguments err))
-       (format *error-output* "~&")
-       (finish-output))
+       (format *error-output* "~&~A:~%~?~&"
+               (class-name (class-of err))
+               (simple-condition-format-control   err)
+               (simple-condition-format-arguments err))
+       (finish-output *error-output*))
      (condition (err) 
-       (format *error-output* "~&~A: ~%  ~A~%" (class-name (class-of err)) err)
-       (finish-output))))
-
+       (format *error-output* "~&~A:~%~A~%" (class-name (class-of err)) err)
+       (finish-output *error-output*))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -973,74 +971,8 @@ RETURN: A list of NODES sorted topologically according to
                    (push m q))))
      :finally (return (nreverse sorted))))
 
-(error "Check topological-sort")
-#-(and)
-(tree-difference
- '(defun topological-sort (nodes lessp)
-   "
-RETURN: A list of NODES sorted topologically according to 
-        the partial order function LESSP.
-        If there are cycles (discounting reflexivity), 
-        then the list returned won't contain all the NODES.
-"
-   (loop
-     :with sorted = '()
-     :with incoming = (map 'vector (lambda (to)
-                                     (loop
-                                       :for from :in nodes
-                                       :when (and (not (eq from to))
-                                                  (funcall lessp from to))
-                                       :sum 1))
-                           nodes)
-     :with q = (loop
-                 :for node :in nodes
-                 :for inco :across incoming
-                 :when (zerop inco)
-                 :collect node) 
-     :while q
-     :do (let ((n (pop q)))
-           (push n sorted)
-           (loop
-             :for m :in nodes
-             :for i :from 0
-             :do (when (and (and (not (eq n m))
-                                 (funcall lessp n m))
-                            (zerop (decf (aref incoming i))))
-                   (push m q))))
-     :finally (return (nreverse sorted))))
 
- '(defun topological-sort (nodes lessp)
-   "
-RETURN: A list of NODES sorted topologically according to 
-        the partial order function LESSP.
-        If there are cycles (discounting reflexivity), 
-        then the list returned won't contain all the NODES.
-"
-   (loop
-     :with sorted = '()
-     :with incoming = (map 'vector (lambda (to)
-                                     (loop
-                                       :for from :in nodes
-                                       :when (and (not (eq from to))
-                                                  (funcall lessp from to))
-                                       :sum 1))
-                           nodes)
-     :with q = (loop
-                 :for node :in nodes
-                 :for inco :across incoming
-                 :when (zerop inco)
-                 :collect node) 
-     :while q
-     :do (let ((n (pop q)))
-           (push n sorted)
-           (loop
-             :for m :in nodes
-             :for i :from 0
-             :do (when (and (and (not (eq n m))
-                                 (funcall lessp n m))
-                            (zerop (decf (aref incoming i))))
-                   (push m q))))
-     :finally (return (nreverse sorted)))))
+
 
 
 

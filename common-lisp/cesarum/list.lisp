@@ -775,6 +775,18 @@ EXAMPLE: (tree-difference '((a b c) 1 (d e f)) '((a b c) (1) (d x f)))
              (tree-difference (cdr a) (cdr b) :test test)))))
 
 
+(defun tree-structure-and-leaf-difference (a b &key (test (function eql)))
+  (cond
+    ((and (null a) (null b)) '=)
+    ((or (null a) (null b)) `(/= ,a ,b))
+    ((and (atom a) (atom b))
+     (if (funcall test a b)
+         '=
+         `(/= ,a ,b)))
+    ((or (atom a) (atom b)) `(/= ,a ,b))`(/= ,a ,b)
+    (t (cons (tree-structure-and-leaf-difference (car a) (car b) :test test)
+             (tree-structure-and-leaf-difference (cdr a) (cdr b) :test test)))))
+
 (defun replace-tree (dst src)
   "
 DO:     Copies the elements of the src tree into the dst tree.

@@ -159,13 +159,16 @@ Defines two functions for each KIND:
                         (symbol-package kind))))
     `(progn
        (defun ,fname (name &key external)
+         ,@(list (format nil "Declare a C ~(~A~).~%~@[~A~]" kind docstring))
          (if (listp name)
              (map nil (function ,fname) name)
              (progn
                (when external (export name (symbol-package name)))
                (setf (get name ',kind) t)))
          name)
-       (defun ,pname (name)  (get name ',kind))
+       (defun ,pname (name)
+         ,@(list (format nil "Predicate whether NAME is a C ~(~A~).~%~@[~A~]" kind docstring))
+         (get name ',kind))
        ',kind)))
 
 
@@ -242,8 +245,7 @@ BUG: Correct C number syntax!
 (defun exactly-one-p   (list) (and       list  (not (cdr   list))))
 (defun exactly-two-p   (list) (and (cdr  list) (not (cddr  list))))
 (defun exactly-three-p (list) (and (cddr list) (not (cdddr list))))
-(defun proper-list-p (list)
-  (or (endp list) (proper-list-p (rest list))))
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -369,8 +371,6 @@ BUG: Correct C number syntax!
     `(let ((,vcount 0))
        ,@(mapcar (lambda (arg) `(when ,arg (incf ,vcount))) args)
        ,vcount)))
-
-(defun xor (a b) (and (or a b) (not (and a b))))
 
 (defmethod initialize-instance :after ((self 2-arguments)
                                        &rest all-init-args

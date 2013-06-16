@@ -488,19 +488,6 @@
 
 
 
-(defmacro handling-errors (&body body)
-  `(HANDLER-CASE (progn ,@body)
-     (simple-condition  (ERR) 
-       (format *error-output* "~&~A: ~%" (class-name (class-of err)))
-       (apply (function format) *error-output*
-              (simple-condition-format-control   err)
-              (simple-condition-format-arguments err))
-       (format *error-output* "~&")
-       (finish-output))
-     (condition (ERR) 
-       (format *error-output* "~&~A: ~%  ~S~%" (class-name (class-of err)) err)
-       (finish-output))))
-
 (defun repl ()
   (catch 'repl     ; allow for emergency exit with (throw 'com.informatimago.linc::repl)
     (let ((*package* (find-package "C"))
