@@ -205,7 +205,7 @@ See the source file for details.
 (defun make-package (package &key nicknames uses)
   (cl:make-package package
                    :nicknames nicknames
-                   :uses (substitute-packages *package-map* uses)))
+                   :use (substitute-packages *package-map* uses)))
 
 (defmacro with-package-iterator ((name package-list-form &rest symbol-types) &body body)
   `(cl:with-package-iterator (,name
