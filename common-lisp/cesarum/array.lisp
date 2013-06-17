@@ -148,7 +148,7 @@ RETURN: A displaced, adjustable array, with fill-pointer,  covering all the elem
     (make-array size
                 :element-type (array-element-type vector)
                 :displaced-to vector
-                :dispalced-index-offset (if emptyp 0 1)
+                :displaced-index-offset (if emptyp 0 1)
                 :adjustable t
                 :fill-pointer size)))
 
@@ -162,7 +162,7 @@ RETURN: A displaced, adjustable array, with fill-pointer, covering all the eleme
     (make-array size
                 :element-type (array-element-type vector)
                 :displaced-to vector
-                :dispalced-index-offset 0
+                :displaced-index-offset 0
                 :adjustable t
                 :fill-pointer size)))
 

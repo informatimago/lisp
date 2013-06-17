@@ -36,7 +36,7 @@
 ;;;;****************************************************************************
 
 (in-package "COMMON-LISP-USER")
-(defpackage "COM.INFORMATIMAGO.COMMON-LISP.CXX.CXX"
+(defpackage "COM.INFORMATIMAGO.LANGUAGES.CXX.CXX"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.GRAPH" )
   (:export "BUILD-METHOD-CALL-GRAF" "PARSE" "C++PROGRAM")
@@ -68,7 +68,7 @@ License:
     If not, see <http://www.gnu.org/licenses/>
 
 "))
-(in-package "COM.INFORMATIMAGO.COMMON-LISP.CXX.CXX")
+(in-package "COM.INFORMATIMAGO.LANGUAGES.CXX.CXX")
 
 
 
@@ -669,7 +669,7 @@ FILE-NAME-LIST:     A list of file pathnames, C++ sources and headers."))
 
 
 #||
-(use-package          "COM.INFORMATIMAGO.COMMON-LISP.CXX.CXX")
+(use-package          "COM.INFORMATIMAGO.LANGUAGES.CXX.CXX")
 
 (setq source (make-instance 'File-Filter))
 (set-File source (open "/home/pascal/firms/bauhaus/hermstedt/cme_stutel/generic/CME.cpp"))

@@ -92,11 +92,12 @@
 ;;; general generic functions defined on streams
 ;;; 
 
-(defmethod close ((stream fifo-stream) &key abort)
+(defmethod close ((stream fifo-stream) &key ((:abort abort-flag) nil))
+  ;; clisp-2.49|asdf|quicklisp seem to have a constant declaration on abort.
   "
 Closes the stream and flushes any associated buffers.
 "
-  (declare (ignore abort))
+  (declare (ignore abort-flag))
   ;; When you define a primary method on this function, do not forget to
   ;; CALL-NEXT-METHOD.
   ;; TODO: (SETF (BUFFERS STREAM) 'NIL)

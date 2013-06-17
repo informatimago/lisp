@@ -42,7 +42,7 @@
 ;;;;**************************************************************************
 
 
-(in-package "COM.INFORMATIMAGO.LUA.SCANNER")
+(in-package "COM.INFORMATIMAGO.LANGUAGES.LUA.SCANNER")
 
 
 ;; We need to write a specific scanner because of long brackets. :-(

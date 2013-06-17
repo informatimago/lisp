@@ -32,7 +32,7 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.lua
+(asdf:defsystem :com.informatimago.languages.lua
 
     ;; system attributes:
     

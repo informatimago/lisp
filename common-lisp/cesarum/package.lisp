@@ -265,9 +265,6 @@ SEE ALSO:  REGISTER, LOAD-PACKAGE, ADD-NICKNAME.
 (defmacro verbose (fctrl &rest args)
   `(when *package-verbose* (format *vout* ,fctrl ,@args)))
 
-(defmacro while (condition &body body)  `(do () ((not ,condition))  ,@body))
-
-
 (defun package-exports (package)
   "
 RETURN:   A new list of exported symbols from PACKAGE.
@@ -736,8 +733,5 @@ DO:         Declares a package.
        (defpackage ,name ,@defpack-args)
        (in-package ,name))))
 
-
-
-
-;;;; package.lisp                     --                     --          ;;;;
+;;;; THE END ;;;;
 

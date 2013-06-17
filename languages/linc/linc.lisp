@@ -488,19 +488,6 @@
 
 
 
-(defmacro handling-errors (&body body)
-  `(HANDLER-CASE (progn ,@body)
-     (simple-condition  (ERR) 
-       (format *error-output* "~&~A: ~%" (class-name (class-of err)))
-       (apply (function format) *error-output*
-              (simple-condition-format-control   err)
-              (simple-condition-format-arguments err))
-       (format *error-output* "~&")
-       (finish-output))
-     (condition (ERR) 
-       (format *error-output* "~&~A: ~%  ~S~%" (class-name (class-of err)) err)
-       (finish-output))))
-
 (defun repl ()
   (catch 'repl     ; allow for emergency exit with (throw 'com.informatimago.linc::repl)
     (let ((*package* (find-package "C"))
@@ -821,6 +808,8 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
 ;; enum { blue=1, white, red } colors;
 
 
+(defgeneric generate (expression))
+
 (defun generate-type (expression &key name)
 
   (ecase (first expression)
@@ -953,7 +942,7 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
      (emit "extern" " ")
      (generate-expression ?string)
      (with-parens "{}"
-       (dolist (?declaration ?declartions)
+       (dolist (?declaration ?declarations)
          (generate-declaration ?declaration)))
      (emit :newline))
     
@@ -961,10 +950,11 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
      (error "Not a declaration: ~S" ?everything))))
 
 
+(defmethod generate ((expression t))
+  (generate-expression expression))
 
-(defmethod generate (expression)
-  (if (atom expression)
-    (generate-expression expression)
+(defmethod generate ((expression cons))
+  
     (let ((key (first expression)))
       (ecase key
 
@@ -1044,7 +1034,7 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
            com.informatimago.linc.c::scope
            com.informatimago.linc.c::literal
            com.informatimago.linc.c::identifier)
-         (generate-expression expression))))))
+         (generate-expression expression)))))
 
 ;; (class (scope Configuration Exception InvalidFieldException))
 
@@ -1072,14 +1062,15 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
         ((\#cond)
          (let ((op "#if"))
            (dolist (clause clauses)
-             (if (find (first clause) '(t (quote t)) :test (function equal))
-               (emit :fresh-line "#else" :newline)
-               (progn (emit :fresh-line op " ")
-                      (generate-expression (first clauses))
-                      (emit :newline)
-                      (setf op "#elif")))
-             (dolist (item (rest clauses))
-               (generate item)))))
+             (destructuring-bind (condi &rest body) clause
+              (if (find condi '(t (quote t)) :test (function equal))
+                  (emit :fresh-line "#else" :newline)
+                  (progn (emit :fresh-line op " ")
+                         (generate-expression condi)
+                         (emit :newline)
+                         (setf op "#elif")))
+              (dolist (item body)
+                (generate item))))))
 
         ((\#if \#ifdef \#ifndef)
          (destructuring-bind (\#test ?condition ?then &optional ?else) expression
@@ -1093,7 +1084,7 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
            (emit :fresh-line "#endif" :newline)))
       
         ((\#define)
-         (destructuring-bind (?operator ?name &rest ?arguments)
+         (destructuring-bind (?operator ?name &rest ?arguments) expression
              (if (listp ?name)
                (in-continuation-lines
                 (emit "#define" " " (first ?name))

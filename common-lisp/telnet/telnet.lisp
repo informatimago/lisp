@@ -834,8 +834,9 @@ accompanied by a TCP Urgent notification.")
   ((code :initarg :code
          :reader option-code)
    (name :initarg :name)
-   (us   :initform :no    :type side-option-state
-         :accessor opt-us)
+   (#-sbcl us #+sbcl sbcl-has-a-bug-so-we-cannot-name-our-slot-us-see-|https://bugs.launchpad.net/sbcl/+bug/539540|
+           :initform :no    :type side-option-state
+           :accessor opt-us)
    (usq  :initform :empty :type side-option-queue
          :accessor opt-usq)
    (him  :initform :no    :type side-option-state
@@ -1731,7 +1732,7 @@ The returned sexp must start with (:SB option-name …).
     (declare (ignore byte start end))
     (cerror "Ignore the subnegotiation status."
             'telnet-option-error
-            :nvt nvt
+            ;; :nvt nvt ;; TODO: Do we need it? Should we keep the nvt in a dynamic variable?
             :option opt
             :format-control "Option STATUS received an unknown subnegotiation status for option ~:@(~A~)."
             :format-arguments (list (option-name opt)))

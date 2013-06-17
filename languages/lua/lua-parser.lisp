@@ -14,6 +14,9 @@
 ;;;;MODIFICATIONS
 ;;;;    2012-07-15 <PJB> Created.
 ;;;;BUGS
+;;;;
+;;;;    This is unfinished.
+;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
@@ -33,7 +36,7 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(in-package "COM.INFORMATIMAGO.LUA.PARSER")
+(in-package "COM.INFORMATIMAGO.LANGUAGES.LUA.PARSER")
 
 
 (defgrammar lua
@@ -62,11 +65,19 @@
                       (seq "while" exp "do" block "end")
                       (seq "repeat" block "until" exp)
                       (seq "if" exp "then" block (rep "elseif" exp "then" block) (opt "else" block) "end")
-                      (seq "for" Name "=" exp "," exp (opt "," exp) "do" block "end")
-                      (seq "for" namelist "in" explist "do" block "end")
-                      (seq "function" funcname funcbody) 
-                      (seq "local" "function" Name funcbody)
-                      (seq "local" namelist (opt "=" explist))))
+
+                      (seq "for" Name (alt for-name-=
+                                           for-namelist))
+                      
+                      (seq "function" funcname funcbody)
+                      (seq "local"
+                           (alt (seq "function" Name funcbody)
+                                (seq namelist (opt "=" explist))))))
+            
+            (--> for-name-=
+                 (seq "=" exp "," exp (opt "," exp) "do" block "end"))
+            (--> for-namelist
+                 (seq namelist-cont "in" explist "do" block "end"))
 
             (--> retstat
                  (seq "return" (opt explist) (opt ";")))
@@ -81,7 +92,10 @@
                  (seq var (rep (seq "," var))))
 
             (--> namelist
-                 (seq Name (rep (seq "," Name))))
+                 (seq Name namelist-cont))
+
+            (--> namelist-cont
+                 (rep (seq "," Name)))
 
             (--> explist
                  (seq exp (rep (seq "," exp))))
@@ -153,17 +167,25 @@
             (--> indexpart
                  (alt (seq "[" exp "]")
                       (seq "." Name)))
-            
+
+            #-(and)
             (--> prefixexp
                  (alt
                   (seq (alt Name
                             (seq "(" exp ")"))
                        (rep (alt callpart
                                  indexpart)))))
+            ;; TODO:
+            (--> prefixexp
+                 "prefix")
+
+            ;; TODO:
             (--> var
-                 )
+                 Name)
+            
+            ;; TODO:
             (--> functioncall
-                 )
+                 (seq "funcall" Name "(" exp ")"))
             
 
 

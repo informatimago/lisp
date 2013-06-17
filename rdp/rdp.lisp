@@ -48,75 +48,7 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
 
-(in-package "COMMON-LISP-USER")
-
-(eval-when (:execute :compile-toplevel :load-toplevel)
-  (setf *features* (cons :use-ppcre (set-difference *features* '(:use-ppcre :use-regexp)))))
-
-
-(defpackage "COM.INFORMATIMAGO.RDP"
-  (:use "COMMON-LISP"
-        ;; "CL-STEPPER"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CONSTRAINTS"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PEEK-STREAM"
-        "COM.INFORMATIMAGO.COMMON-LISP.PARSER.SCANNER"
-        ;; "COM.INFORMATIMAGO.COMMON-LISP.PARSER.PARSER"
-        )
-  (:export "DEFGRAMMAR" "SEQ" "REP" "OPT" "ALT" "GRAMMAR-NAMED"
-           "GENERATE-GRAMMAR"
-           
-           "GRAMMAR" "MAKE-GRAMMAR" "COPY-GRAMMAR"
-           "GRAMMAR-NAME" "GRAMMAR-TERMINALS" "GRAMMAR-START" "GRAMMAR-RULES"
-           "GRAMMAR-ALL-TERMINALS" "GRAMMAR-ALL-NON-TERMINALS"
-           "GRAMMAR-SKIP-SPACES"
-           
-           "FIND-RULE" "TERMINALP" "NON-TERMINAL-P"
-           "FIRST-SET" "FOLLOW-SET" "NULLABLEP"
-
-           "CLEAN-RULES"
-           "NORMALIZE-GRAMMAR" "COMPUTE-FIRST-SETS" "COMPUTE-FOLLOW-SETS"
-           
-           "$0"
-
-           "*NON-TERMINAL-STACK*"
-           ;; Re-export form com.informatimago.common-lisp.parser.scanner:
-           "TOKEN" "TOKEN-KIND" "TOKEN-TEXT" "TOKEN-LINE" "TOKEN-COLUMN"
-           "*SPACE*" "WORD-EQUAL"
-           "RDP-SCANNER"
-           "SCANNER-LINE" "SCANNER-COLUMN" "SCANNER-STATE" "SCANNER-CURRENT-TOKEN"
-           "SCANNER-SPACES" "SCANNER-TAB-WIDTH"
-           "SKIP-SPACES" "SCAN-NEXT-TOKEN"
-           "SCANNER-BUFFER" "SCANNER-CURRENT-TEXT"
-           "SCANNER-END-OF-SOURCE-P" "ADVANCE-LINE" "ACCEPT"
-           "PARSER-ERROR"
-           "PARSER-ERROR-LINE"
-           "PARSER-ERROR-COLUMN"
-           "PARSER-ERROR-GRAMMAR"
-           "PARSER-ERROR-SCANNER"
-           "PARSER-ERROR-NON-TERMINAL-STACK"
-           "PARSER-ERROR-FORMAT-CONTROL"
-           "PARSER-ERROR-FORMAT-ARGUMENTS"
-           "PARSER-END-OF-SOURCE-NOT-REACHED"
-           ;; "PARSER-ERROR-UNEXPECTED-TOKEN"
-           ;; "PARSER-ERROR-EXPECTED-TOKEN"
-           "UNEXPECTED-TOKEN-ERROR"
-           "UNEXPECTED-TOKEN-ERROR-EXPECTED-TOKEN"
-           "UNEXPECTED-TOKEN-ERROR-NON-TERMINAL-STACK"
-           )
-  (:documentation "
-This package implements a simple recursive descent parser.
-
-Copyright Pascal Bourguignon 2006 - 2012
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as
-published by the Free Software Foundation, either version 3 of the
-License, or (at your option) any later version.
-"))
 (in-package "COM.INFORMATIMAGO.RDP")
-
-
 
 (defstruct (grammar
              (:print-function
@@ -987,6 +919,12 @@ RETURN:  When the SEQUENCE is a vector, the SEQUENCE itself, or a dispaced
      ,@body))
 
 
+(defgeneric gen-scanner-function-name (target grammar))
+(defgeneric gen-scanner-class-name    (target grammar))
+(defgeneric gen-parse-function-name   (target grammar non-terminal))
+(defgeneric gen-in-firsts             (target firsts))
+(defgeneric gen-parsing-statement     (target grammar item))
+
 (defmethod gen-scanner-function-name ((target (eql :lisp)) (grammar grammar))
   (intern (format nil "~:@(SCAN-~A~)" (grammar-name grammar))))
 
@@ -1073,6 +1011,7 @@ RETURN:  When the SEQUENCE is a vector, the SEQUENCE itself, or a dispaced
                                (advance-line scanner))
                               ;; Literal Alpha Numeric and Non Alpha Numeric Terminals:
                               ,@(when (or an-terminals nan-terminals)
+                                      ;; (print (list an-terminals nan-terminals))
                                       `(((or ,@(when an-terminals
                                                      `((setf match (string-match ',lit-an-terminals-regexp
                                                                                  (scanner-buffer scanner)
@@ -1088,6 +1027,7 @@ RETURN:  When the SEQUENCE is a vector, the SEQUENCE itself, or a dispaced
                               ;; Non Literal Terminals: we have a regexp for each terminal.
                               ,@(mapcar
                                  (lambda (terminal)
+                                   ;; (print terminal)
                                    `(,(if (= 4 (length terminal))
                                           ;; (terminal-name match-regexp / exclude-regexp)
                                           `(and (setf match (string-match
@@ -1267,7 +1207,7 @@ RETURN:  When the SEQUENCE is a vector, the SEQUENCE itself, or a dispaced
                    ,(format nil "~S" (assoc non-terminal (grammar-rules grammar)))
                    (with-non-terminal ,non-terminal
                        ,(gen-parsing-statement target grammar (find-rule grammar non-terminal))))))
-    (gen-trace fname form trace)))
+    (gen-trace fname `(progn (fmakunbound ',fname) ,form) trace)))
 
 
 (defmethod generate-parser ((target (eql :lisp)) grammar &key (trace nil))
@@ -1293,7 +1233,7 @@ SOURCE: When the grammar has a scanner generated, or a scanner class
                                    :grammar (grammar-named ',(grammar-name grammar))
                                    :scanner scanner
                                    :non-terminal-stack (copy-list *non-terminal-stack*)))))))))
-    (gen-trace fname form trace)))
+    (gen-trace fname `(progn (fmakunbound ',fname) ,form) trace)))
 
 
 
