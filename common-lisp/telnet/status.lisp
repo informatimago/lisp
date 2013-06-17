@@ -74,7 +74,7 @@ or:
 (defmethod send-status-request ((opt status) nvt)
   "Send a STATUS SEND message."
   (if (option-enabled-p nvt :status :him)
-      (send-raw-bytes nvt (vector IAC SB STATUS SEND IAC SE))
+      (send-raw-bytes nvt (vector IAC SB STATUS tq-SEND IAC SE))
       (error 'telnet-option-error
              :nvt nvt
              :option opt
@@ -141,9 +141,10 @@ We send a RECEIVE-OPTION message to the UP-SENDER with a value such as:
                                                          (#.IAC (if (= IAC (aref bytes (1+ j)))
                                                                     (incf j 2)
                                                                     (return j)))
-                                                         (otherwise (incf j))))))
-                                        (prog1 (decode-subnegotiation opt bytes :start i :end j)
-                                          (setf i j))))
+                                                         (otherwise (incf j)))
+                                                   :finally (return j))))
+                                        (prog1 (decode-subnegotiation opt bytes :start i :end end)
+                                          (setf i end))))
                                      (otherwise
                                       (warn 'telnet-option-warning
                                             :nvt nvt
@@ -159,8 +160,8 @@ We send a RECEIVE-OPTION message to the UP-SENDER with a value such as:
 (defmethod receive-subnegotiation ((opt status) nvt bytes &key (start 0) (end (length bytes)))
   "Parses the STATUS subnegotiation.
 The NVT has already parsed 'IAC SB STATUS' and 'IAC SE'.
-IAC SB STATUS SEND IAC SE
-IAC SB STATUS IS … IAC SE
+IAC SB STATUS TQ-SEND IAC SE
+IAC SB STATUS TQ-IS … IAC SE
 "
   (let ((len    (- end start))
         (subcmd (aref bytes (+ start 3))))

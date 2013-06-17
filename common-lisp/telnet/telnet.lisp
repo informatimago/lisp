@@ -1732,7 +1732,7 @@ The returned sexp must start with (:SB option-name …).
     (declare (ignore byte start end))
     (cerror "Ignore the subnegotiation status."
             'telnet-option-error
-            :nvt nvt
+            ;; :nvt nvt ;; TODO: Do we need it? Should we keep the nvt in a dynamic variable?
             :option opt
             :format-control "Option STATUS received an unknown subnegotiation status for option ~:@(~A~)."
             :format-arguments (list (option-name opt)))
