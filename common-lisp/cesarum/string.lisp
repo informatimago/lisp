@@ -167,6 +167,7 @@ RESULT-TYPE:    A sequence type accepted by MAP.  Default: LIST.
   "
 RETURN: A new string containing the characters in the sequence CHAR-SEQ.
 "
+  (check-type char-seq sequence)
   (map 'string (function character) char-seq))
 
 

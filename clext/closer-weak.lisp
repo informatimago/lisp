@@ -758,6 +758,24 @@ It has no effect when some key has already been garbage-collected.")
 ;;;---------------------------------------------------------------------
 ;;; Weak Hash Tables
 
+  
+#-(and (or ccl clisp) (not debug-weak)) 
+(defgeneric %gethash (key self &optional default)
+  (:method (key (self t) &optional default)
+    (common-lisp:gethash key self default)))
+#-(and (or ccl clisp) (not debug-weak)) 
+(defgeneric (setf %gethash) (value key self &optional default)
+  (:method (value key (self t) &optional default)
+    (setf (common-lisp:gethash key self default) value)))
+#-(and (or ccl clisp) (not debug-weak)) 
+(defgeneric %remhash (key self)
+  (:method (key (self t)) (common-lisp:remhash key self)))
+#-(and (or ccl clisp) (not debug-weak)) 
+(defgeneric %maphash (function self)
+  (:method (function (self t)) (common-lisp:maphash function self)))
+#-(and (or ccl clisp) (not debug-weak)) 
+(defgeneric %clrhash (self)
+  (:method ((self t)) (common-lisp:clrhash self)))
 
 #-(and (or ccl clisp) (not debug-weak))
 (defclass weak-hash-table ()
@@ -1062,39 +1080,22 @@ It has no effect when some key has already been garbage-collected.")
 
 
 #-(and (or ccl clisp) (not debug-weak)) 
-(defgeneric %gethash (key self &optional default)
-  (:method (key (self t) &optional default)
-    (common-lisp:gethash key self default)))
-#-(and (or ccl clisp) (not debug-weak)) 
 (defun gethash (key hash-table &optional default)
   (%gethash key hash-table default))
 
-#-(and (or ccl clisp) (not debug-weak)) 
-(defgeneric (setf %gethash) (value key self &optional default)
-  (:method (value key (self t) &optional default)
-    (setf (common-lisp:gethash key self default) value)))
+
 #-(and (or ccl clisp) (not debug-weak)) 
 (defun (setf gethash) (value key hash-table &optional default)
   (setf  (%gethash key hash-table default) value))
 
 
 #-(and (or ccl clisp) (not debug-weak)) 
-(defgeneric %remhash (key self)
-  (:method (key (self t)) (common-lisp:remhash key self)))
-#-(and (or ccl clisp) (not debug-weak)) 
 (defun remhash (key hash-table) (%remhash key hash-table))
 
-#-(and (or ccl clisp) (not debug-weak)) 
-(defgeneric %maphash (function self)
-  (:method (function (self t)) (common-lisp:maphash function self)))
 #-(and (or ccl clisp) (not debug-weak)) 
 (defun maphash (function hash-table) (%maphash function hash-table))
 
 
-  
-#-(and (or ccl clisp) (not debug-weak)) 
-(defgeneric %clrhash (self)
-  (:method ((self t)) (common-lisp:clrhash self)))
 #-(and (or ccl clisp) (not debug-weak)) 
 (defun clrhash (hash-table) (%clrhash hash-table))
 

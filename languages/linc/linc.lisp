@@ -808,7 +808,6 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
 ;; enum { blue=1, white, red } colors;
 
 
-(defgeneric generate (expression))
 
 (defun generate-type (expression &key name)
 
@@ -818,26 +817,26 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
      (emit (format nil "~(~A~)" (first expression)))
      (cond
        ((listp (second expression))
-        ;; (class (superclass...) :public|:protected|:private member...)
-        ;; superclass ::= (classname [:virtual] [:public|:protected|:private])
-        ;; superclass ::= classname
-         
         (when name
           (emit " ")
           (generate name))
+        
+        ;; (class (superclass...) :public|:protected|:private member...)
+        ;; superclass ::= (classname [:virtual] [:public|:protected|:private])
+        ;; superclass ::= classname
+     
         (when (second expression)
           (emit ":")
           (generate-list ","
                          (lambda (superclass)
                              (if (listp superclass)
-                               (case (length item)
-                                 ((1) (generate (first item)))
+                               (case (length superclass)
+                                 ((1) (generate (first superclass)))
                                  ((2 3)
-                                  (emit (format nil "~(~{~A~^ ~}~)" (rest item)))
-                                  (generate (first item)))
+                                  (emit (format nil "~(~{~A~^ ~}~)" (rest superclass)))
+                                  (generate (first superclass)))
                                  (otherwise
-                                  (error "Invalid syntax for a superclass: ~S"
-                                         superclass)))
+                                  (error "Invalid syntax for a superclass: ~S" superclass)))
                                (generate superclass)))
                          (second expression)))
         (emit :fresh-line)
@@ -846,8 +845,8 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
             (if (member member '(:public :protected :private))
               (emit :fresh-line (format nil "~(~A~):" member) :newline)
               (generate member)))))
-       (progn
-         (emit ))))
+       (t
+        (error "Not implemented yet, generation of type ~S" expression))))
 
     ((com.informatimago.linc.c::enum)
      ;; (enum (blue 1) white red (yellow 10))
@@ -866,10 +865,7 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
              (otherwise
               (error "Invalid syntax for an enum constant: ~S" item)))
            (generate item))
-         (emit "," :newline))))
-
-    
-    ))
+         (emit "," :newline))))))
 
 
 (defun generate-declaration (?declaration)
@@ -1060,17 +1056,18 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
       (case (first expression)
 
         ((\#cond)
-         (let ((op "#if"))
+         (let ((op "#if")
+               (clauses (rest expression)))
            (dolist (clause clauses)
              (destructuring-bind (condi &rest body) clause
-              (if (find condi '(t (quote t)) :test (function equal))
-                  (emit :fresh-line "#else" :newline)
-                  (progn (emit :fresh-line op " ")
-                         (generate-expression condi)
-                         (emit :newline)
-                         (setf op "#elif")))
-              (dolist (item body)
-                (generate item))))))
+               (if (find condi '(t (quote t)) :test (function equal))
+                   (emit :fresh-line "#else" :newline)
+                   (progn (emit :fresh-line op " ")
+                          (generate-expression condi)
+                          (emit :newline)
+                          (setf op "#elif")))
+               (dolist (item body)
+                 (generate item))))))
 
         ((\#if \#ifdef \#ifndef)
          (destructuring-bind (\#test ?condition ?then &optional ?else) expression
