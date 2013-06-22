@@ -126,6 +126,11 @@
 when NIL, comments are skipped as spaces."))
   (:documentation "A scanner for LUA."))
 
+(defgeneric process-escape (scanner  text value))
+(defgeneric scan-string-starting-with (scanner delimiter))
+(defgeneric scan-string-starting-with-long-bracket (scanner bracket))
+(defgeneric scan-identifier (scanner))
+(defgeneric scan-number (scanner))
 
 (defmethod process-escape ((scanner lua-scanner) text value)
   (let ((ch (getchar scanner)))
@@ -237,6 +242,7 @@ when NIL, comments are skipped as spaces."))
                                         :format-control "Reached end-of-file with unterminated string starting with: ~S."
                                         :format-arguments (list (get-output-stream-string text)))))))))
     (values text value)))
+
 
 
 (defmethod scan-string-starting-with-long-bracket ((scanner lua-scanner) bracket)

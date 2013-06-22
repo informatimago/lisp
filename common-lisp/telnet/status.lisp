@@ -70,6 +70,9 @@ or:
 
 "))
 
+(defgeneric send-status-request (status nvt))
+(defgeneric send-status (status nvt))
+(defgeneric receive-status (status nvt bytes &key start end))
 
 (defmethod send-status-request ((opt status) nvt)
   "Send a STATUS SEND message."

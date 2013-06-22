@@ -844,6 +844,8 @@ accompanied by a TCP Urgent notification.")
    (himq :initform :empty :type side-option-queue
          :accessor opt-himq)))
 
+(defgeneric option-name (option))
+
 (defmethod option-name ((opt option))
   "RETURN: The option name if it has one, otherwise the option code."
   (if (slot-boundp opt 'name)
@@ -1212,6 +1214,9 @@ Bytes received from down, waiting to be parsed by the local NVT.")
 and are discarding text bytes till the next IAC DM."))
   (:documentation "Represents a telnet end-point (both 'client' and 'server')."))
 
+(defgeneric init-option-name (nvt option-name))
+(defgeneric init-option-code (nvt option-code &optional option-name))
+(defgeneric get-option (nvt option-name))
 
 (defmethod print-object ((self network-virtual-terminal) stream)
   (print-unreadable-object (self stream :identity t :type t)
@@ -1221,6 +1226,7 @@ and are discarding text bytes till the next IAC DM."))
             (nvt-send-wait-p self)))
   self)
 
+(defgeneric nvt-options (nvt))
 
 (defmethod nvt-options ((nvt network-virtual-terminal))
   "RETURN: A fresh list of the current OPTION instance in the NVT."
@@ -1254,6 +1260,8 @@ and are discarding text bytes till the next IAC DM."))
 ;; TODO: When LINE-MODE we should keep in a buffer until an end of
 ;;       record (CRLF, EOR, FORW1 FORW2, etc) is sent.  On the other
 ;;       hand, this may be done by the terminal layer itself?
+(defgeneric send-raw-bytes  (nvt  bytes))
+(defgeneric send-urgent-notification  (nvt))
 
 (defmethod send-raw-bytes  ((nvt network-virtual-terminal) bytes)
   "Send the binary bytes.
@@ -1333,6 +1341,8 @@ CONTROL: (member :synch :are-you-there :abort-output :interrupt-process :go-ahea
 
 
 ;; Down interface (from down):
+
+(defgeneric receive-urgent-notification (nvt))
 
 (defmethod receive-urgent-notification ((nvt network-virtual-terminal))
   (setf (urgent-mode-p nvt) t))
@@ -1581,7 +1591,7 @@ NEXT:   the index of the first unprocessed byte. (<= START NEXT END)
     (#.CR  :cr)
     (otherwise nil)))
 
-
+(defgeneric dispatch-message (nvt bytes start end))
 (defmethod dispatch-message ((nvt network-virtual-terminal) bytes start end)
   "
 RETURN: the length of bytes processed.
@@ -1790,7 +1800,6 @@ BUFFER: An adjustable vector with a fill-pointer.
       (t
        (setf (gethash option-code (slot-value nvt 'options))
              (make-option option-code option-name))))))
-
 
 (defmethod init-option-name ((nvt network-virtual-terminal) option-name)
   (let ((code (option-code-for-name option-name)))
