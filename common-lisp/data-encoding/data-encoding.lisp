@@ -194,11 +194,10 @@ License:
   self) ;;initialize-instance
 
 
-(defmethod print-object ((self unsigned-integer-enctype) (out stream))
-  (warn "We don't implement printer control variables in UNSIGNED-INTEGER-ENCTYPE PRINT-OBJECT.~&")
-  (format out "#<UNSIGNED-INTEGER ~D-BIT, ~A-ENDIAN>"
-          (* 8 (size-of-enctype self)) (endian self))
-  self) ;;print-object
+(defmethod print-object ((self unsigned-integer-enctype) out)
+  (print-unreadable-object (self out :type t)
+    (format out "~D-BIT, ~A-ENDIAN" (* 8 (size-of-enctype self)) (endian self)))
+  self)
 
 
 (defmethod to-lisp-type    ((self unsigned-integer-enctype))
@@ -246,11 +245,10 @@ License:
   (:documentation "A two-complement signed integer type."))
 
 
-(defmethod print-object ((self two-complement-integer-enctype) (out stream))
-  (warn "We don't implement printer control variables in TWO-COMPLEMENT-INTEGER-ENCTYPE PRINT-OBJECT.")
-  (format out "#<TWO-COMPLEMENT-INTEGER ~D-BIT, ~A-ENDIAN>"
-          (* 8 (size-of-enctype self)) (endian self))
-  self) ;;print-object
+(defmethod print-object ((self two-complement-integer-enctype) out)
+  (print-unreadable-object (self out :type t)
+    (format out "~D-BIT, ~A-ENDIAN" (* 8 (size-of-enctype self)) (endian self)))
+  self)
 
 
 (defmethod to-lisp-type    ((self two-complement-integer-enctype))
@@ -286,11 +284,10 @@ License:
   (:documentation "A one-complement signed integer type."))
 
 
-(defmethod print-object ((self one-complement-integer-enctype) (out stream))
-  (warn "We don't implement printer control variables in ONE-COMPLEMENT-INTEGER-ENCTYPE PRINT-OBJECT.~&")
-  (format out "#<ONE-COMPLEMENT-INTEGER ~D-BIT, ~A-ENDIAN>"
-          (* 8 (size-of-enctype self)) (endian self))
-  self) ;;print-object
+(defmethod print-object ((self one-complement-integer-enctype) out)
+  (print-unreadable-object (self out :type t)
+    (format out "~D-BIT, ~A-ENDIAN" (* 8 (size-of-enctype self)) (endian self)))
+  self)
 
 
 (defmethod to-lisp-type    ((self one-complement-integer-enctype))
@@ -325,19 +322,18 @@ License:
   (:documentation "A binary-coded-decimal signed integer type."))
 
 
-(defmethod initialize-instance ((self binary-coded-decimal-integer-enctype) &rest args)
-  (declare (ignore args))
-  (call-next-method)
-  (setf (modulo self) (expt 10 (number-of-digit self)))
-  self) ;;initialize-instance
+((defmethod initialize-instance ((self binary-coded-decimal-integer-enctype) &rest args)
+     (declare (ignore args))
+   (call-next-method)
+   (setf (modulo self) (expt 10 (number-of-digit self)))
+   self) ;;initialize-instance
 
 
 
-(defmethod print-object ((self binary-coded-decimal-integer-enctype) (out stream))
-  (warn "We don't implement printer control variables in BINARY-CODED-DECIMAL-INTEGER-ENCTYPE PRINT-OBJECT.~&")
-  (format out "#<BINARY-CODED-DECIMAL-INTEGER ~D-DIGITS, ~A-ENDIAN>"
-          (number-of-digit self) (endian self))
-  self) ;;print-object
+ defmethod print-object ((self binary-coded-decimal-integer-enctype) out)
+ (print-unreadable-object (self out :type t)
+   (format out "~D-DIGITS, ~A-ENDIAN" (number-of-digit self) (endian self)))
+ self)
 
 
 (defmethod to-lisp-type    ((self binary-coded-decimal-integer-enctype))
@@ -662,11 +658,11 @@ DO:      This function encodes a string containing only COMMON-LISP
   (:documentation "")) ;;green-length-string-enctype
 
 
-(defmethod print-object ((self green-length-string-enctype) (out stream))
-  (warn "We don't implement printer control variables in GREEN-LENGTH-STRING-ENCTYPE PRINT-OBJECT.~&")
-  (format out "#<GREEN-LENGTH-STRING ~D WITH GREEN-LENGTH ~S, ENCODED IN ~A>"
-          (allocated-size self)  (green-length self) (encoding self))
-  self) ;;print-object
+(defmethod print-object ((self green-length-string-enctype) out)
+  (print-unreadable-object (self out :type t)
+    (format out "~D WITH GREEN-LENGTH ~S, ENCODED IN ~A"
+            (allocated-size self)  (green-length self) (encoding self)))
+  self) 
 
 
 (defmethod maximum-length ((self green-length-string-enctype))
@@ -713,12 +709,11 @@ DO:      This function encodes a string containing only COMMON-LISP
   (:documentation "")) ;;terminated-string-enctype
 
 
-(defmethod print-object ((self terminated-string-enctype) (out stream))
-  (warn "We don't implement printer control variables in TERMINATED-STRING-ENCTYPE PRINT-OBJECT.~&")
-  (format out
-    "#<TERMINATED-STRING ~D TERMINATED WITH ~S~:[~; IF-SMALLER~], ENCODED IN ~A>"
-    (allocated-size self) (pad-code self) (if-smaller self) (encoding self))
-  self) ;;print-object
+(defmethod print-object ((self terminated-string-enctype) out)
+  (print-unreadable-object (self out :type t)
+    (format out "~D TERMINATED WITH ~S~:[~; IF-SMALLER~], ENCODED IN ~A"
+            (allocated-size self) (pad-code self) (if-smaller self) (encoding self)))
+  self)
 
 
 (defmethod maximum-length ((self terminated-string-enctype))
@@ -773,12 +768,11 @@ NOTE:    This is the same implementation as for PADDED-STRING-ENCTYPE.
   (:documentation "")) ;;padded-string-enctype
 
                                                               
-(defmethod print-object ((self padded-string-enctype) (out stream))
-  (warn "We don't implement printer control variables in PADDED-STRING-ENCTYPE PRINT-OBJECT.~&")
-  (format out
-    "#<PADDED-STRING ~D PADDED WITH ~S~:[~;, STRIPPED~], ENCODED IN ~A>"
-    (allocated-size self) (pad-code self) (strip self) (encoding self))
-  self) ;;print-object
+(defmethod print-object ((self padded-string-enctype) out)
+  (print-unreadable-object (self out :type t)
+    (format out "~D PADDED WITH ~S~:[~;, STRIPPED~], ENCODED IN ~A"
+            (allocated-size self) (pad-code self) (strip self) (encoding self)))
+  self)
 
 
 (defmethod maximum-length ((self padded-string-enctype))
@@ -834,9 +828,9 @@ NOTE:    This is the same implementation as for TERMINATED-STRING-ENCTYPE.
   (:documentation "An array type.")) ;;array-enctype
 
 
-(defmethod print-object ((self array-enctype) (out stream))
-  (warn "We don't implement printer control variables in ARRAY-ENCTYPE PRINT-OBJECT.")
-  (format out "#<ARRAY ~S [~S]>" (element-type self) (dimensions self) )
+(defmethod print-object ((self array-enctype) out)
+  (print-unreadable-object (self out :type t)
+    (format out "~S [~S]" (element-type self) (dimensions self)))
   self)
 
 
@@ -911,11 +905,10 @@ set and retrieve the values of the fields.")
   (type   nil :type (or null enctype)))
 
 
-(defmethod print-object ((self record-enctype) (out stream))
-  (warn "We don't implement printer control variables in RECORD-ENCTYPE PRINT-OBJECT.")
-  (format out "~&#<RECORD ~S :SIZE ~D~{~&  ~S~}>" (lisp-type self)
-          (size self) (fields self))
-  self) ;;print-object
+(defmethod print-object ((self record-enctype) out)
+  (print-unreadable-object (self out :type t)
+    (format out "~S :SIZE ~D~{~&  ~S~}" (lisp-type self) (size self) (fields self)))
+  self)
 
 
 (defmethod to-lisp-type  ((self record-enctype))

@@ -808,7 +808,6 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
 ;; enum { blue=1, white, red } colors;
 
 
-
 (defun generate-type (expression &key name)
 
   (ecase (first expression)

@@ -176,7 +176,7 @@ RETURN: A new string containing the characters in the sequence CHAR-SEQ.
   (assert (string= "" (implode-string "")))
   (assert (string= "" (implode-string #())))
   (assert (string= "" (implode-string '())))
-  (assert (null (ignore-errors (implode-string 42))))
+  #-sbcl (assert (null (ignore-errors (implode-string 42))))
   (assert (string= "ABC" (implode-string "ABC")))
   (assert (string= "ABC" (implode-string #(#\A #\B #\C))))
   (assert (string= "ABC" (implode-string '(#\A #\B #\C))))

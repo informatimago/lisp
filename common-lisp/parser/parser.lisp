@@ -98,7 +98,7 @@ License:
   (print-unreadable-object (self out :type t :identity t)
     (format out " :scanner ~S :token (~S ~S) :next (~S ~S)"
             (parser-scanner self)
-            (parser-token self)      (token-text (parser-token parser))
+            (parser-token self)      (token-text (parser-token self))
             (parser-next-token self) (token-text (parser-next-token self))))
   self)
 

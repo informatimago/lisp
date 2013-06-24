@@ -47,7 +47,12 @@ Copyright Pascal J. Bourguignon 2006 - 2006
 This package is provided under the Afero General Public License 3.
 See the source file for details.
 
-"))
+")
+  ;; export the same symbols as CL:
+  (:export . #.(let ((symbols '()))
+         (do-external-symbols (sym "COMMON-LISP")
+           (push (string sym) symbols))
+         symbols)))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.LISP.GENERIC-COMMON-LISP")
 
 
@@ -248,12 +253,6 @@ See the source file for details.
                    (start 0) (end nil) (count nil) (key nil)))))
 
 
-;; We must pass the symbol in a list to export CL:NIL.
-(export (mapcar (lambda (name) (intern name "GENERIC-CL"))
-                (let ((symbols '()))
-                  (do-external-symbols (sym "COMMON-LISP")
-                    (push (string sym) symbols))
-                  symbols)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
