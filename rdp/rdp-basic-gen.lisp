@@ -192,7 +192,7 @@
   (if (atom item)
       (if (terminalp grammar item)
           `(emit "TOKEN$=~S : CALL ACCEPT" ',(string item))
-          (let* ((firsts (first-rhs grammar item))
+          (let* ((firsts (first-set grammar item))
                  (emptyp (member nil firsts)))
             `(progn
                (emit "IF ~A THEN" ',(gen-in-firsts target (remove nil firsts)))
@@ -227,7 +227,7 @@
            `(progn
               (emit "L~DRES=NIL" ,lex)
               (emit "WHILE ~A"
-                    ',(gen-in-firsts target (first-rhs grammar (second item))))
+                    ',(gen-in-firsts target (first-set grammar (second item))))
               ,(gen-parsing-statement target grammar (second item))
               (emit "NCAR=RET:NCDR=L~DRES:CALL CONS:L~DRES=RES" ,lex ,lex)
               (emit "ENDWHILE")
@@ -237,7 +237,7 @@
            `(progn
               (emit "L~DRES=NIL" ,lex)
               (emit "IF ~A THEN"
-                    ',(gen-in-firsts target (first-rhs grammar (second item))))
+                    ',(gen-in-firsts target (first-set grammar (second item))))
               ,(gen-parsing-statement target grammar (second item))
               (emit "ELSE")
               (emit "  RES=NIL")
@@ -250,8 +250,7 @@
                            (emit "STOP"))
                         `(progn
                            (emit "IF ~A THEN"
-                                 ',(gen-in-firsts target
-                                                  (first-rhs grammar (car items))))
+                                 ',(gen-in-firsts target (first-set grammar (car items))))
                            ,(gen-parsing-statement target grammar (car items))
                            (emit "ELSE")
                            ,(gen (cdr items))

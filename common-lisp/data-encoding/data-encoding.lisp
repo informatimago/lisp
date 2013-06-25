@@ -322,18 +322,18 @@ License:
   (:documentation "A binary-coded-decimal signed integer type."))
 
 
-((defmethod initialize-instance ((self binary-coded-decimal-integer-enctype) &rest args)
-     (declare (ignore args))
-   (call-next-method)
-   (setf (modulo self) (expt 10 (number-of-digit self)))
-   self) ;;initialize-instance
+(defmethod initialize-instance ((self binary-coded-decimal-integer-enctype) &rest args)
+  (declare (ignore args))
+  (call-next-method)
+  (setf (modulo self) (expt 10 (number-of-digit self)))
+  self) ;;initialize-instance
 
 
 
- defmethod print-object ((self binary-coded-decimal-integer-enctype) out)
- (print-unreadable-object (self out :type t)
-   (format out "~D-DIGITS, ~A-ENDIAN" (number-of-digit self) (endian self)))
- self)
+(defmethod print-object ((self binary-coded-decimal-integer-enctype) out)
+  (print-unreadable-object (self out :type t)
+    (format out "~D-DIGITS, ~A-ENDIAN" (number-of-digit self) (endian self)))
+  self)
 
 
 (defmethod to-lisp-type    ((self binary-coded-decimal-integer-enctype))
