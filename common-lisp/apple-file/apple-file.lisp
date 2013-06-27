@@ -199,7 +199,8 @@
   backup-needed
   system
   multi-user
-  invisible)
+  invisible
+  directory-id)
 
 (defun get-ubyte (bytes offset)
   (aref bytes offset))
@@ -265,6 +266,7 @@
         (report-collision header entry)))))
 
 (defun report-collision (header  entry)
+  (declare (ignore entry))
   ;; TODO:
   (error "Some entries collide in ~S." header))
 
@@ -718,7 +720,7 @@ FORK:   (member :info :data :resource)
 
 (defgeneric close-apple-file (apple-file)
   (:method ((apple-file apple-file))
-    (close (header-info-stream (apple-file-header apple-file)))))
+    (close (header-info-stream  apple-file))))
 
 (defun apple-file-data-fork (apple-file
                              &key (direction :input)
@@ -738,6 +740,7 @@ FORK:   (member :info :data :resource)
               :if-exists if-exists))))
 
 (defun apple-file-resource-fork (apple-file)
+  (declare (ignore apple-file))
   (error "~S not implemented yet" 'apple-file-resource-fork))
 
 
@@ -787,10 +790,10 @@ FORK:   (member :info :data :resource)
 (define-attribute apple-file-prodos-auxiliary-type  :prodos-file-info    "RETURN: NIL or the PRODOS auxiliary type code of the APPLE-FILE."              file-auxiliary-type)
 (define-attribute apple-file-msdos-attributes       :msdos-file-info     "RETURN: NIL or the MSDOS attributes of the APPLE-FILE."                        file-msdos-attributes)
 (define-attribute apple-file-afp-backup-needed      :afp-file-info       "RETURN: NIL or the AFP backup needed flag of the APPLE-FILE."                  file-backup-needed)
-(define-attribute apple-file-afp-system             :afp-file-info       "RETURN: NIL or the AFP system flag of the APPLE-FILE."                         afp-file-system)
-(define-attribute apple-file-afp-multi-user         :afp-file-info       "RETURN: NIL or the AFP multi-user flag of the APPLE-FILE."                     afp-file-multi-user)
-(define-attribute apple-file-afp-invisible          :afp-file-info       "RETURN: NIL or the AFP invisible flag of the APPLE-FILE."                      afp-file-invisible)
-(define-attribute apple-file-afp-directory-id       :afp-file-info       "RETURN: NIL or the AFP directory ID of the APPLE-FILE."                        afp-file-directory-id)
+(define-attribute apple-file-afp-system             :afp-file-info       "RETURN: NIL or the AFP system flag of the APPLE-FILE."                         file-system)
+(define-attribute apple-file-afp-multi-user         :afp-file-info       "RETURN: NIL or the AFP multi-user flag of the APPLE-FILE."                     file-multi-user)
+(define-attribute apple-file-afp-invisible          :afp-file-info       "RETURN: NIL or the AFP invisible flag of the APPLE-FILE."                      file-invisible)
+(define-attribute apple-file-afp-directory-id       :afp-file-info       "RETURN: NIL or the AFP directory ID of the APPLE-FILE."                        file-directory-id)
 
 
 

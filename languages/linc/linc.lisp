@@ -136,7 +136,7 @@
 ;; }
 
 
-
+(defgeneric generate-expression (expression))
 
 ;; (defun generate-expression (expr &key (level 99 levelp) (naked t))
 ;;   ;;   (+ a (* b c))    (10 16 (11 16 16))
@@ -429,7 +429,7 @@
 
 
 (defmacro com.informatimago.linc.c::when   (condi &body body)
-  `(com.informatimago.linc.c::if mcondi          (com.informatimago.linc.c::block ,@body)))
+  `(com.informatimago.linc.c::if ,condi (com.informatimago.linc.c::block ,@body)))
 
 (defmacro com.informatimago.linc.c::unless (condi &body body)
   `(com.informatimago.linc.c::if (com.informatimago.linc.c::not ,condi) (com.informatimago.linc.c::block ,@body)))
@@ -483,8 +483,11 @@
                               :if-exists :supersede
                               :if-does-not-exist :create
                               :external-format external-format)
-        (let ((*c-out* output))
-          (load input))))))
+        (let ((*c-out* output)
+              (*h-out* header)) ;; TODO: not implemented yet.
+          (declare (special *c-out* *h-out*))
+          (warn "not implemented yet")
+          (load input :verbose verbose :print print))))))
 
 
 
@@ -757,6 +760,7 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
       (let ((var (gensym)))
         (values var (list (cons var pattern)) nil))))))
 
+;; TODO: handle declarations.
 (defmacro pcond (expression &rest clauses)
   (let ((vexpression (gensym)))
     `(let ((,vexpression ,expression))
@@ -942,6 +946,7 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
      (emit :newline))
     
     ((&whole ?everything &rest ?anything)
+     (declare (ignore ?anything))
      (error "Not a declaration: ~S" ?everything))))
 
 
@@ -1081,6 +1086,7 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
       
         ((\#define)
          (destructuring-bind (?operator ?name &rest ?arguments) expression
+           (declare (ignore ?operator))
              (if (listp ?name)
                (in-continuation-lines
                 (emit "#define" " " (first ?name))

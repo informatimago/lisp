@@ -209,12 +209,16 @@ Defines two functions for each KIND:
   "
 BUG: What about the character encoding of C strings?
 "
+  ;; TODO: Get the C-string writer to generate this.
   (emit (with-output-to-string (out)
           (princ "\"" out)
           (loop
              :for ch :across self
              :do (princ (case ch
-                          ((#\newline #\linefeed) "\\n")
+                          #+#.(cl:if (cl:char/= #\newline #\return) '(:and) '(:or))
+                          ((#\newline)            "\\n")
+                          #+#.(cl:if (cl:char/= #\newline #\linefeed) '(:and) '(:or))
+                          ((#\linefeed)           "\\l")
                           ((#\return)             "\\r")
                           ((#\tab)                "\\t")
                           ((#\bell)               "\\a")
@@ -228,8 +232,8 @@ BUG: What about the character encoding of C strings?
           (princ "\"" out))))
 
 
-(defmethod generate ((self real))
-  "
+(defmethod generate ((self real)) 
+ "
 BUG: Correct C number syntax!
 "
   (emit (format nil "~A" self)))
@@ -337,10 +341,10 @@ BUG: Correct C number syntax!
               :reader arity
               :allocation :class)))
 (defmethod initialize-instance :after ((self 1-argument)
-                                       &rest all-init-args
                                        &key (arguments nil argumentsp)
                                        (argument nil argumentp)
                                        &allow-other-keys)
+  (declare (ignorable argument))
   (assert (and (or argumentsp argumentp) (not (and argumentsp argumentp)))
           () ":argument and :arguments are mutually exclusive, but one of them must be given.")
   (when arguments
@@ -373,7 +377,6 @@ BUG: Correct C number syntax!
        ,vcount)))
 
 (defmethod initialize-instance :after ((self 2-arguments)
-                                       &rest all-init-args
                                        &key (arguments nil argumentsp)
                                        (left nil leftp)
                                        (right nil rightp)
@@ -382,6 +385,7 @@ BUG: Correct C number syntax!
                                        (left-argument nil left-argument-p)
                                        (right-argument nil right-argument-p)
                                        &allow-other-keys)
+  (declare (ignorable left-arg right-arg left-argument right-argument))
   (let ((l (count-true leftp  left-arg-p  left-argument-p))
         (r (count-true rightp right-arg-p right-argument-p)))
     (assert (xor argumentsp (or (plusp l) (plusp r)))

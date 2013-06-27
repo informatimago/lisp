@@ -403,6 +403,7 @@ Search all the urls in the text, and replace them with an A tag.
     (loop
       (multiple-value-bind (wbegin wend begins ends)
           (scan '(:sequence #\< (:register uri) #\>) text :start start)
+        (declare (ignore wbegin wend))
         (if begins
             (let ((begin (aref begins 0))
                   (end   (aref ends   0)))

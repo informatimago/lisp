@@ -283,7 +283,7 @@ specific options subnegotiations.
   (:report (lambda (condition stream)
              (format stream "Telnet Warning with NVT ~S, option ~A: ~?"
                      (telnet-warning-nvt condition)
-                     (telnet-protocol-warning-option condition)
+                     (telnet-option-warning-option condition)
                      (telnet-warning-format-control condition)
                      (telnet-warning-format-arguments condition)))))
 
@@ -1739,7 +1739,7 @@ The returned sexp must start with (:SB option-name …).
 \(Used by RECEIVE-STATUS of class STATUS to decode the SB statuses.)
 ")
   (:method ((opt option) byte &key (start 0) (end (length byte)))
-    (declare (ignore byte start end))
+    (declare (ignorable byte start end)) ; for some implementation byte is not used …
     (cerror "Ignore the subnegotiation status."
             'telnet-option-error
             ;; :nvt nvt ;; TODO: Do we need it? Should we keep the nvt in a dynamic variable?
@@ -1890,8 +1890,8 @@ OPTION-CLASS: a class designator."
      (if code
          (let ((opt (gethash code (slot-value nvt 'options))))
            (typecase opt
-             (option (change-class opt option-class))
-             (t (setf (gethash code (slot-value nvt 'options)) option-class))))
+             (option (change-class opt class))
+             (t (setf (gethash code (slot-value nvt 'options)) class))))
         (error 'telnet-invalid-option-name-error
                :nvt nvt
                :option-name option-name))))

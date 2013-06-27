@@ -360,7 +360,7 @@ PRE:    (non-terminal-p non-terminal)
 (defun compute-first-sets (grammar)
   "  
 PRE:    The GRAMMAR must be normalized.
-        (ie. containly only SEQ rules)
+        (ie. contains only SEQ rules)
 
 DO:     Signals an error if there are duplicates in the first set of a non-terminal.
 RETURN: A hash-table containing the first-set for each symbol of the
@@ -423,8 +423,8 @@ RETURN: The first-set function for the grammar symbols.
                                        item (grammar-name grammar)))))
                          (t (loop
                                :with result = '()
-                               :for item :in symbol-or-sequence
-                               :for first-set = (first-set item)
+                               :for itemus :in item
+                               :for first-set = (first-set itemus)
                                :do (prependf result first-set)
                                :while (member nil first-set)
                                :finally (return (delete-duplicates result :test (function equal))))))))
@@ -539,8 +539,7 @@ RETURN: The follow-set function for the grammar non-terminals.
 (defun compute-first-follow (grammar)
   (let ((ng (normalize-grammar grammar)))
     (setf (grammar-first-function  grammar) (compute-first-function ng)
-          (grammar-follow-function grammar)
-          (compute-follow-function ng (grammar-all-non-terminals grammar)))
+          (grammar-follow-function grammar) (compute-follow-function ng (grammar-all-non-terminals grammar)))
     grammar))
  
 (defun first-set (grammar symbol)
