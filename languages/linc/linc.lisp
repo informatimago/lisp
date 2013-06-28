@@ -137,6 +137,8 @@
 
 
 (defgeneric generate-expression (expression))
+(defgeneric generate-statement (expression &key same-line))
+(defgeneric generate-identifier (expression))
 
 ;; (defun generate-expression (expr &key (level 99 levelp) (naked t))
 ;;   ;;   (+ a (* b c))    (10 16 (11 16 16))
@@ -760,29 +762,34 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
       (let ((var (gensym)))
         (values var (list (cons var pattern)) nil))))))
 
-;; TODO: handle declarations.
 (defmacro pcond (expression &rest clauses)
+  ;; The pattern variable are declared ignorable since depending on
+  ;; the compiler, they may or may not used by potentially dead code.
   (let ((vexpression (gensym)))
     `(let ((,vexpression ,expression))
        (cond
          ,@(mapcar
             (lambda (clause)
-                (multiple-value-bind (dll sal val)
-                    (pcond-substitute-literals (first clause))
-                  `((let ,(mapcar (function cdr) val)
-                      (when (ignore-errors
-                              (destructuring-bind ,dll ,vexpression
-                                (when (and
-                                       ,@(mapcar
-                                          (lambda (binding)
+              (multiple-value-bind (docstrings declarations body) (parse-body :locally (rest clause))
+                (declare (ignore docstrings))
+                (multiple-value-bind (dll sal val) (pcond-substitute-literals (first clause))
+                  (let ((variables (mapcar (function cdr) val)))
+                    `((let ,variables
+                        (declare (ignorable ,@variables))
+                        ,@declarations
+                        (when (ignore-errors
+                                (destructuring-bind ,dll ,vexpression
+                                  (when (and
+                                         ,@(mapcar
+                                            (lambda (binding)
                                               `(equal ,(car binding) ',(cdr binding)))
-                                          sal))
-                                  (setf ,@(mapcan
-                                           (lambda (binding)
+                                            sal))
+                                    (setf ,@(mapcan
+                                             (lambda (binding)
                                                (list (cdr binding) (car binding)))
-                                           val))
-                                  t)))
-                        ,@(rest clause))))))
+                                             val))
+                                    t)))
+                          ,@body)))))))
             clauses)))))
 
 ;; ;;
@@ -946,7 +953,6 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
      (emit :newline))
     
     ((&whole ?everything &rest ?anything)
-     (declare (ignore ?anything))
      (error "Not a declaration: ~S" ?everything))))
 
 

@@ -538,6 +538,7 @@ DO:     Define a class implementing the structure API.
              conc-name constructors copier
              include initial-offset predicate
              print-function print-object)
+    (declare (ignorable initial-offset))
     (if (symbolp name-and-options)
         (setf name    name-and-options
               options nil)
@@ -838,6 +839,54 @@ RETURN: -1 if N is negative,
        (let ((,(car store-vars) (mod (- ,reader-form ,decrement) ,modulo)))
          ,writer-form))))
 
+;; (defun generate-distinct-float-type-typecase (operator expresion clauses)
+;;   
+;;   )
+;; 
+;; (defun type-equal-p (t1 t2)
+;;   (and (subtypep t1) (subtypep t2)))
+;; 
+;; (defun distinct-float-types ()
+;;   "
+;; 
+;; RETURN: a subset of (long-float double-float single-float short-float)
+;; that represents the partition of the float type for this
+;; implementation.
+;; 
+;; There can be fewer than four internal representations for floats. If there are fewer distinct representations, the
+;; following rules apply:
+;; 
+;;   • If there is only one, it is the type single-float. In this
+;;     representation, an object is simultaneously of types single-float,
+;;     double-float, short-float, and long-float.
+;; 
+;;   • Two internal representations can be arranged in either of the
+;;     following ways:
+;;    
+;;       □ Two types are provided: single-float and short-float. An
+;;         object is simultaneously of types single-float,  double-float,
+;;         and long-float.
+;; 
+;;       □ Two types are provided: single-float and double-float. An
+;;         object is simultaneously of types single-float and
+;;         short-float, or double-float and long-float.
+;;        
+;;   • Three internal representations can be arranged in either of the
+;;     following ways:
+;;    
+;;       □ Three types are provided: short-float, single-float, and
+;;         double-float. An object can simultaneously be of  type
+;;         double-float and long-float.
+;; 
+;;       □ Three types are provided: single-float, double-float, and
+;;         long-float. An object can simultaneously be of  types
+;;         single-float and short-float.
+;; 
+;; "
+;;   ;; We process them in preference order
+;;   (loop :for type :in '(double-float single-float long-float short-float))
+;; 
+;;   )
 
 (defun +epsilon (float)
   "Returns the float incremented by the smallest increment possible."
