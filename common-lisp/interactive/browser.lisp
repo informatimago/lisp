@@ -212,6 +212,7 @@ three synchronized.
   (let* ((non-existent
           (find-if-not
            (lambda (dir)
+             #+ccl (declare (ignore dir))
              
              ;; We cannot use directory to check whether a directory
              ;; exists.  So we try a file pattern, and if not found

@@ -256,7 +256,7 @@ License:
   (:method (result-type mapper (set index-set))
     (collecting-result (collect result-type)
       (loop
-        :for range :across (ranges index-set)
+        :for range :across (slot-value set 'ranges)
         :do (collect (funcall mapper range))))))
 
 

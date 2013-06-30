@@ -783,7 +783,7 @@ EXAMPLE: (tree-difference '((a b c) 1 (d e f)) '((a b c) (1) (d x f)))
      (if (funcall test a b)
          '=
          `(/= ,a ,b)))
-    ((or (atom a) (atom b)) `(/= ,a ,b))`(/= ,a ,b)
+    ((or (atom a) (atom b)) `(/= ,a ,b))
     (t (cons (tree-structure-and-leaf-difference (car a) (car b) :test test)
              (tree-structure-and-leaf-difference (cdr a) (cdr b) :test test)))))
 

@@ -422,7 +422,7 @@ POST:   (not (sas-cursor-end-p self))"))
 
 
 (define-method make-sequence ((result-type sequence) size &key initial-element)
-  (declare (ignore result-type size initial-element))
+  (declare (ignore result-type size initial-element))
   (not-implemented-yet  make-sequence))
 
 

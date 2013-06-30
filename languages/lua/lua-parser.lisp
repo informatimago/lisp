@@ -40,7 +40,7 @@
 
 
 (defgrammar lua
-    :trace t
+    :trace nil
     :scanner lua-scanner
     :terminals ((number "[0-9]+")
                 (string "\"[^\"]*\"")
@@ -267,3 +267,5 @@
 ;; expression. The concatenation ('..') and exponentiation ('^')
 ;; operators are right associative. All other binary operators are left
 ;; associative. 
+
+;;;; THE END ;;;;

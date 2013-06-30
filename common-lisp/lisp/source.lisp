@@ -271,7 +271,7 @@ RETURN:         The source of the specified object; the package.
 ;;; Register the object/source-type/other-keys in the *order* list.
 
 (defmethod operate-source :after (name source-type &key other-keys new-source package)
-  (declare (ignore package other-keys))
+  (declare (ignore package))
   (when new-source
     (pushnew (case source-type
                ((:method :setf-method) (list (cons name other-keys) source-type))

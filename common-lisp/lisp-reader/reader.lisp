@@ -563,9 +563,9 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_cp_rdt.htm>
                  token-length token-char token-char-traits
                  token-collect-character))
 (defun make-token ()
-  (declare (inline arr))
   (flet ((arr (type)
            (make-array 8 :adjustable t :fill-pointer 0 :element-type type)))
+    (declare (inline arr))
     (cons (arr 'character) (arr 'constituent-trait))))
 (defun token-text        (token)       (car token))
 (defun token-traits      (token)       (cdr token))

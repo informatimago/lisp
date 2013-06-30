@@ -31,6 +31,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2013-06-30 <PJB> Improved selection of libc library.
 ;;;;    2004-12-12 <PJB> Added getpid, fork, etc...
 ;;;;    2003-06-13 <PJB> Added dirent stuff.
 ;;;;    2003-05-13 <PJB> Created.
@@ -50,7 +51,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2003 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2003 - 2013
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -151,10 +152,9 @@
   ;; TODO: Actually, we should include the features only if it's proven to exist on the current system. At run-time.
   (pushnew :susv3 *features*))
 
+(ffi:default-foreign-library "libc.so.6")
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defparameter +libc+ "/lib/libc.so.6")
-
   ;; If we want to have only Lisp type in the SUSV3 API, we cannot use
   ;; FFI:C-POINTER for addresses.
   ;; Internal routines can convert integers between FFI:C-POINTER
@@ -388,7 +388,7 @@ be signaled (but that check-errno returns instead of nil).
       `(string ,(eval min))
       `string)) ;; TODO: (OR (STRING MIN) (STRING (1+ MIN)) ... (STRING MAX)))
 
-     
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ???
 
@@ -458,7 +458,7 @@ RETURN:     NIL or the value of the environment variable named NAME.
   `(unsigned-byte 32))
 
 
-  
+
 (defstruct stat
   (dev     0 :type dev-t) ;; Device ID of device containing file. 
   (ino     0 :type ino-t) ;; File serial number. 
@@ -493,7 +493,7 @@ RETURN:     NIL or the value of the environment variable named NAME.
 ;; st_dev, st_uid, st_gid, st_atime, st_ctime, and st_mtime shall have
 ;; meaningful values for all file types defined in IEEE Std
 ;; 1003.1-2001.
- 
+
 ;; For symbolic links, the st_mode member shall contain meaningful
 ;; information, which can be used with the file type macros described
 ;; below, that take a mode argument. The st_size member shall contain
@@ -502,11 +502,11 @@ RETURN:     NIL or the value of the environment variable named NAME.
 ;; the stat structure are unspecified. The value returned in the
 ;; st_size field shall be the length of the contents of the symbolic
 ;; link, and shall not count a trailing null if one is present.
- 
+
 
 ;; The following symbolic names for the values of type mode_t shall
 ;; also be defined.
- 
+
 ;; File type:
 ;; 
 ;; S_IFMT
@@ -558,17 +558,17 @@ RETURN:     NIL or the value of the environment variable named NAME.
 ;; Set-user-ID on execution.S_ISGID
 ;; Set-group-ID on execution.S_ISVTX
 ;; [XSI] [Option Start] On directories, restricted deletion flag. [Option End]
- 
+
 ;; The bits defined by S_IRUSR, S_IWUSR, S_IXUSR, S_IRGRP, S_IWGRP,
 ;; S_IXGRP, S_IROTH, S_IWOTH, S_IXOTH, S_ISUID, S_ISGID, [XSI] [Option
 ;; Start]  and S_ISVTX [Option End]  shall be unique.
- 
+
 ;; S_IRWXU is the bitwise-inclusive OR of S_IRUSR, S_IWUSR, and S_IXUSR.
 ;; 
 ;; S_IRWXG is the bitwise-inclusive OR of S_IRGRP, S_IWGRP, and S_IXGRP.
 ;; 
 ;; S_IRWXO is the bitwise-inclusive OR of S_IROTH, S_IWOTH, and S_IXOTH.
- 
+
 ;; Implementations may OR other implementation-defined bits into
 ;; S_IRWXU, S_IRWXG, and S_IRWXO, but they shall not overlap any of
 ;; the other bits defined in this volume of IEEE Std 1003.1-2001. The
@@ -602,7 +602,7 @@ RETURN:     NIL or the value of the environment variable named NAME.
 ;; the specified type. The value m supplied to the macros is the value
 ;; of st_mode from a stat structure. The macro shall evaluate to a
 ;; non-zero value if the test is true; 0 if the test is false.
- 
+
 ;; S_ISBLK(m)
 ;; 
 ;; Test for a block special file.S_ISCHR(m)
@@ -630,11 +630,11 @@ RETURN:     NIL or the value of the environment variable named NAME.
 ;; value if the specified object is implemented as a distinct file
 ;; type and the specified file type is contained in the stat structure
 ;; referenced by buf. Otherwise, the macro shall evaluate to zero.
- 
+
 ;; S_TYPEISMQ(buf)    Test for a message queue.
 ;; S_TYPEISSEM(buf)   Test for a semaphore.
 ;; S_TYPEISSHM(buf)   Test for a shared memory object.
- 
+
 ;; [TYM] [Option Start] The implementation may implement typed memory
 ;; objects as distinct file types, and the following macro shall test
 ;; whether a file is of the specified type. The value of the buf
@@ -643,14 +643,14 @@ RETURN:     NIL or the value of the environment variable named NAME.
 ;; specified object is implemented as a distinct file type and the
 ;; specified file type is contained in the stat structure referenced
 ;; by buf. Otherwise, the macro shall evaluate to zero.
- 
+
 ;; S_TYPEISTMO(buf)
 ;; Test macro for a typed memory object.
 ;; [Option End]
- 
+
 ;; The following shall be declared as functions and may also be
 ;; defined as macros. Function prototypes shall be provided.
- 
+
 ;; int    chmod(const char *, mode_t)
 ;; int    fchmod(int, mode_t)
 ;; int    fstat(int, struct stat *)
@@ -754,7 +754,7 @@ PRIVATE
 
 
 (ffi:def-c-struct dirent
-  (d_ino       ino_t)
+    (d_ino       ino_t)
   (d_off       off_t)
   (d_reclen    ffi:ushort)
   (d_type      ffi:uchar)
@@ -765,32 +765,32 @@ PRIVATE
 (ffi:def-call-out opendir (:name "opendir")
   (:arguments (name ffi:c-string))
   (:return-type dirp)
-  (:library #.+libc+) (:language :stdc))
+  (:language :stdc))
 
 (ffi:def-call-out closedir (:name "closedir")
   (:arguments (dir dirp))
   (:return-type ffi:int)
-  (:library #.+libc+) (:language :stdc))
+  (:language :stdc))
 
 (ffi:def-call-out readdir (:name "readdir")
   (:arguments (dir dirp))
   (:return-type pointer)
-  (:library #.+libc+) (:language :stdc))
+  (:language :stdc))
 
 (ffi:def-call-out rewinddir (:name "rewinddir")
   (:arguments (dir dirp))
   (:return-type nil)
-  (:library #.+libc+) (:language :stdc))
+  (:language :stdc))
 
 (ffi:def-call-out telldir (:name "telldir")
   (:arguments (dir dirp))
   (:return-type off_t)
-  (:library #.+libc+) (:language :stdc))
+  (:language :stdc))
 
 (ffi:def-call-out seekdir (:name "seekdir")
   (:arguments (dir dirp) (offset off_t))
   (:return-type nil)
-  (:library #.+libc+) (:language :stdc))
+  (:language :stdc))
 
 
 ;;;; THE END ;;;;

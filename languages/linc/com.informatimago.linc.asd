@@ -83,7 +83,7 @@ generate a corresponding C source.
     
     :components ((:file "packages")
                  (:file "c-syntax"           :depends-on ("packages"))
-                 (:file "c-operators"       :depends-on ("packages" "c-syntax"))
+                 (:file "c-operators"        :depends-on ("packages" "c-syntax"))
                  ;; Not yet (:file "c++-syntax"         :depends-on ("packages"))
                  (:file "linc"               :depends-on ("packages" "c-syntax" "c-operators"))))
 

@@ -318,25 +318,17 @@ EXAMPLES:       (split-string '(1 2 0 3 4 5 0 6 7 8 0 9) '(0))
     :while (and nextpos (< position strlen))))
 
 
-(defun unsplit-string (string-list &optional (separator " ")
-                       &key (adjustable nil) (fill-pointer nil) (size-increment 0))
+(defun unsplit-string (string-list separator &key (adjustable nil) (fill-pointer nil) (size-increment 0))
   "
 DO:             The inverse than split-string.
-                If no separator is provided then a simple space is used.
-SEPARATOR:      (OR NULL STRINGP CHARACTERP)
+SEPARATOR:      (OR STRINGP CHARACTERP)
 ADJUSTABLE:     Create the string as an adjustable array.
 FILL-POINTER:   Add a fill pointer to the string.
 SIZE-INCREMENT: Add it to the size needed for the result.
 "
+  (check-type separator (or character string))
   (if string-list
-      (let* ((separator
-              (cond
-                ((null separator)        " ")
-                ((characterp separator)  (make-string 1 :initial-element separator))
-                ((not (stringp separator))
-                 (error "~S: separator must be a string or a character, not a ~S."
-                        'unsplit-string (type-of separator)))
-                (t separator)))
+      (let* ((separator (string separator))
              (seplen (length separator))
              (size   (+ (reduce (function +) string-list :key (function length))
                         (* seplen (1- (length string-list)))))

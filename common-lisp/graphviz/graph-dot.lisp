@@ -112,7 +112,7 @@ RETURN: A string containing the dot file data for this ELEMENT-CLASS node.
                                       (format nil "~A = ~A" prop-name
                                               (get-property self prop-name))))
                                 pnames)
-                               (format nil "~%")))))
+                               #\Newline))))
                        (dot-ident (ident self)))))
     (format nil "~A [ style=~A color=~A fillcolor=~A label=\"~A\" ];~%"
             (dot-ident (ident self)) style color fillcolor label)))

@@ -73,8 +73,7 @@
 
 
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defparameter +libc+ "/lib/libc.so.6"))
+(ffi:default-foreign-library "libc.so.6")
 
 
 
@@ -105,12 +104,12 @@
               (prot ffi:int) (flags ffi:int)
               (fd ffi:int) (offset linux:|off_t|))
   (:return-type pointer)
-  (:library #.+libc+) (:language :stdc))
+  (:language :stdc))
 
 
 (ffi:def-call-out munmap  (:name "munmap")
   (:arguments  (start pointer) (size ffi:size_t))
   (:return-type pointer)
-  (:library #.+libc+) (:language :stdc))
+  (:language :stdc))
 
 ;;;; THE END ;;;;

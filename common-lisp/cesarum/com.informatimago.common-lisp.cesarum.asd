@@ -87,10 +87,10 @@ all written in 100% conforming Common Lisp.
                  (:file "simple-test"     :depends-on ())
 
                  ;; Common Lisp addendum:
-                 (:file "utility"         :depends-on ())
                  (:file "array"           :depends-on ())
                  (:file "sequence"        :depends-on ())
                  (:file "list"            :depends-on ())
+                 (:file "utility"         :depends-on ("list"))
                  (:file "string"          :depends-on ("utility" "list" "ecma048"))
                  (:file "package"         :depends-on ("utility"))
                  

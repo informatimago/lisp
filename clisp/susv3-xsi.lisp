@@ -105,13 +105,14 @@
 (in-package "COM.INFORMATIMAGO.CLISP.SUSV3-XSI")
 
 
+
+(ffi:default-foreign-library "libc.so.6")
+
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   ;; TODO: Actually, we should include the features only if it's proven to exist on the current system. At run-time.
   (pushnew :susv3-xsi *features*))
 
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defparameter +libc+ "/lib/libc.so.6"))
 
 
 
@@ -219,7 +220,7 @@ URL:        <http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html>
                      (t () -1)))))
       (closedir dir-stream))))
 
-    
+
 (defconstant +ftw-f+   0 "File.")
 (defconstant +ftw-d+   1 "Directory.")
 (defconstant +ftw-dnr+ 2 "Directory without read permission.")
@@ -259,7 +260,7 @@ URL:        <http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html>
 
 
 (ffi:def-c-struct ipc_perm
-  (key     linux:|key_t|)               ; Key.
+    (key     linux:|key_t|)               ; Key.
   (uid     linux:|uid_t|)               ; Owner's user ID. 
   (gid     linux:|gid_t|)               ; Owner's group ID.
   (cuid    linux:|uid_t|)               ; Creator's user ID.
@@ -275,7 +276,7 @@ URL:        <http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html>
 (ffi:def-call-out ftok (:name "ftok")
   (:arguments (pathname ffi:c-string) (proj-id ffi:int))
   (:return-type linux:|key_t|)
-  (:library #.+libc+) (:language :stdc))
+  (:language :stdc))
 
 
 ;;----------------------------------------------------------------------
@@ -293,7 +294,7 @@ URL:        <http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html>
 ;; Structure of record for one message inside the kernel.
 ;; The type `struct msg' is opaque.
 (ffi:def-c-struct msqid_ds
-  (msg_perm    ipc_perm)   ; structure describing operation permission
+    (msg_perm    ipc_perm)   ; structure describing operation permission
   (msg_stime   linux:|time_t|)          ; time of last msgsnd command 
   (__unused1   ffi:ulong)
   (msg_rtime   linux:|time_t|)          ; time of last msgrcv command 
@@ -315,7 +316,7 @@ URL:        <http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html>
 
 ;; buffer for msgctl calls IPC_INFO, MSG_INFO 
 (ffi:def-c-struct msginfo
-  (msgpool ffi:int)
+    (msgpool ffi:int)
   (msgmap  ffi:int)
   (msgmax  ffi:int)
   (msgmnb  ffi:int)
@@ -333,7 +334,7 @@ URL:        <http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html>
 (ffi:def-call-out msgget (:name "msgget")
   (:arguments (key linux:|key_t|) (msgflg ffi:int))
   (:return-type ffi:int)
-  (:library #.+libc+) (:language :stdc))
+  (:language :stdc))
 
 
 (ffi:def-call-out msgctl (:name "msgctl")
@@ -341,21 +342,21 @@ URL:        <http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html>
   ;; We cannot use (ffi:c-ptr msqid_ds) because in that case
   ;; it would not be copied back as output parameter.
   (:return-type ffi:int)
-  (:library #.+libc+) (:language :stdc))
+  (:language :stdc))
 
 
 (ffi:def-call-out msgsnd (:name "msgsnd")
   (:arguments (msqid ffi:int) (msgbuf pointer) (msgsz ffi:size_t)
               (msgflg ffi:int))
   (:return-type ffi:int)
-  (:library #.+libc+) (:language :stdc))
+  (:language :stdc))
 
 
 (ffi:def-call-out msgrcv (:name "msgrcv")
   (:arguments (msqid ffi:int) (msgbuf pointer) (msgsz ffi:size_t)
               (msgtyp ffi:long) (msgflg ffi:int))
   (:return-type ffi:ssize_t)
-  (:library #.+libc+) (:language :stdc))
+  (:language :stdc))
 
 
 ;;----------------------------------------------------------------------
@@ -380,7 +381,7 @@ URL:        <http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html>
 (ffi:def-call-out getpagesize (:name "getpagesize")
   (:arguments)
   (:return-type ffi:int)
-  (:library #.+libc+) (:language :stdc))
+  (:language :stdc))
 
 
 (defun shmlba () 
@@ -394,8 +395,8 @@ URL:        <http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html>
 
 
 (ffi:def-c-struct shmid_ds
-  ;; Data structure describing a set of semaphores.
-  (shm_perm    ipc_perm)   ; structure describing operation permission
+    ;; Data structure describing a set of semaphores.
+    (shm_perm    ipc_perm)   ; structure describing operation permission
   (shm_segsz   ffi:size_t)          ;  size of segment in bytes 
   (shm_atime   linux:|time_t|)          ;  time of last shmat() 
   (__unused1   ffi:ulong)               ; 
@@ -410,7 +411,7 @@ URL:        <http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html>
   (__unused5   ffi:ulong))
 
 (ffi:def-c-struct shminfo
-  (shmmax     ffi:ulong)
+    (shmmax     ffi:ulong)
   (shmmin     ffi:ulong)
   (shmmni     ffi:ulong)
   (shmseg     ffi:ulong)
@@ -422,7 +423,7 @@ URL:        <http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html>
 
 
 (ffi:def-c-struct shm_info
-  (used_ids ffi:int)                    ; 
+    (used_ids ffi:int)                    ; 
   (shm_tot ffi:ulong)                   ; total allocated shm
   (shm_rss ffi:ulong)                   ; total resident shm*
   (shm_swp ffi:ulong)                   ; total swapped shm
@@ -430,33 +431,33 @@ URL:        <http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html>
   (swap_successes ffi:ulong))
 
 
- 
+
 (ffi:def-call-out shmget (:name "shmget")
   ;; Get shared memory segment.
   (:arguments (key linux:|key_t|) (size ffi:size_t) (shmflg ffi:int))
   (:return-type ffi:int)
-  (:library #.+libc+) (:language :stdc))
+  (:language :stdc))
 
 
 (ffi:def-call-out shmctl (:name "shmctl")
   ;; Shared memory control operation. 
   (:arguments (shmid ffi:int) (cmd ffi:int) (buf pointer))
   (:return-type ffi:int)
-  (:library #.+libc+) (:language :stdc))
+  (:language :stdc))
 
 
 (ffi:def-call-out shmat (:name "shmat")
   ;; Attach shared memory segment. 
   (:arguments (shmid ffi:int) (shmaddr pointer) (shmflg ffi:int))
   (:return-type ffi:int)
-  (:library #.+libc+) (:language :stdc))
+  (:language :stdc))
 
 
 (ffi:def-call-out shmdt (:name "shmdt")
   ;; Detach shared memory segment.
   (:arguments (shmaddr pointer))
   (:return-type ffi:int)
-  (:library #.+libc+) (:language :stdc))
+  (:language :stdc))
 
 
 ;;----------------------------------------------------------------------
@@ -486,8 +487,8 @@ URL:        <http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html>
 
 
 (ffi:def-c-struct semid_ds
-  ;; Data structure describing a set of semaphores.  
-  (sem_perm ipc_perm)                   ; operation permission struct 
+    ;; Data structure describing a set of semaphores.  
+    (sem_perm ipc_perm)                   ; operation permission struct 
   (sem_otime linux:|time_t|)            ; last semop() time 
   (__unused1 ffi:ulong)
   (sem_ctime linux:|time_t|)          ; last time changed by semctl() 
@@ -517,7 +518,7 @@ URL:        <http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html>
 (defconstant sem_info 19)
 
 (ffi:def-c-struct seminfo
-  (semmap ffi:int)
+    (semmap ffi:int)
   (semmni ffi:int)
   (semmns ffi:int)
   (semmnu ffi:int)
@@ -531,8 +532,8 @@ URL:        <http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html>
 
 
 (ffi:def-c-struct sembuf
-  ;; Structure used for argument to `semop' to describe operations. 
-  (sem_num ffi:ushort)                  ; semaphore number 
+    ;; Structure used for argument to `semop' to describe operations. 
+    (sem_num ffi:ushort)                  ; semaphore number 
   (sem_op ffi:short)                    ; semaphore operation 
   (sem_flg ffi:short)                   ; operation flag
   )
@@ -542,21 +543,21 @@ URL:        <http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html>
   ;; Get semaphore. 
   (:arguments (key linux:|key_t|) (nsems ffi:int) (semflg ffi:int))
   (:return-type ffi:int)
-  (:library #.+libc+) (:language :stdc))
+  (:language :stdc))
 
 
 (ffi:def-call-out semctl (:name "semctl")
   ;; Semaphore control operation.
   (:arguments (semid ffi:int) (semnum ffi:int) (cmt ffi:int) (arg pointer))
   (:return-type ffi:int)
-  (:library #.+libc+) (:language :stdc))
+  (:language :stdc))
 
 
 (ffi:def-call-out semop (:name "semop")
   ;; Operate on semaphore. 
   (:arguments (semid ffi:int) (sops pointer) (nsops ffi:size_t))
   (:return-type ffi:int)
-  (:library #.+libc+) (:language :stdc))
+  (:language :stdc))
 
 
 ;;;; THE END ;;;;

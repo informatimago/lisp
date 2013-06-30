@@ -1622,23 +1622,16 @@ EXAMPLE: (list-insert-separator '(a b (d e f)  c) 'x)
   (or (characterp object) (stringp object)))
 
 
-(defun pjb-unsplit-string (string-list &rest separator)
+(defun pjb-unsplit-string (string-list &optional (separator " "))
   "Does the inverse than pjb-split-string. If no separator is provided
 then a simple space is used."
-  (cond
-    ((null separator)         (setq separator " "))
-    ((/= 1 (length separator))
-     (error "pjb-unsplit-string: Too many separator arguments."))
-    ((not (char-or-string-p (car separator)))
-     (error "pjb-unsplit-string: separator must be a string or a char."))
-    (t (setq separator (car separator))))
+  (check-type separator (or string char))
   (apply 'concatenate 'string
          (mapcar (lambda (object)
                    (if (stringp object)
                        object
                        (format nil "~A" object)))
-                 (list-insert-separator string-list separator)))
-  ) ;;PJB-UNSPLIT-STRING
+                 (list-insert-separator string-list separator))))
 
 
 (defun pjb-split-string (string &optional separators)

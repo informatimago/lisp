@@ -1314,16 +1314,16 @@ LOAD:-PATHS     A list of directory paths where the sources are searched in.
            (description
             (unsplit-string 
              (or (ensure-list description)
-                 (flatten
-                  (mapcar
-                   (lambda (header)
-                     (list (format nil "~2%PACKAGE: ~A~2%"
-                                   (second
-                                    (get-package (header-slot header :path))))
-                           (mapcar (lambda (line) (format nil "~A~%" line))
-                                   (header-description header))
-                           (format nil "~%")))
-                   headers)))))
+                 (mapcan
+                  (lambda (header)
+                    (append (list (format nil "~2%PACKAGE: ~A~2%"
+                                          (second
+                                           (get-package (header-slot header :path)))))
+                            (mapcar (lambda (line) (format nil "~A~%" line))
+                                    (header-description header))
+                            (list (format nil "~%"))))
+                  headers))
+             " "))
            (components (make-components
                         paths
                         :component-class component-class

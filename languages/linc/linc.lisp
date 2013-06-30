@@ -136,6 +136,7 @@
 ;; }
 
 
+;; (defgeneric generate (thing)) ; defined in c-syntax.lisp
 (defgeneric generate-expression (expression))
 (defgeneric generate-statement (expression &key same-line))
 (defgeneric generate-identifier (expression))

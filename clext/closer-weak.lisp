@@ -785,6 +785,20 @@ It has no effect when some key has already been garbage-collected.")
 (defgeneric %clrhash (self)
   (:method ((self t)) (common-lisp:clrhash self)))
 
+
+(defmacro define-forward (name)
+  (let ((method-name (intern (with-standard-io-syntax (format nil "%~A" name))))
+        (cl-name     (intern (string name) "COMMON-LISP")))
+    `(progn
+       (defgeneric ,method-name (self) (:method ((self t)) (,cl-name self)))
+       (defun ,name (hash-table) (,method-name hash-table)))))
+
+#-(and (or ccl clisp) (not debug-weak)) (define-forward hash-table-count)
+#-(and (or ccl clisp) (not debug-weak)) (define-forward hash-table-rehash-size)
+#-(and (or ccl clisp) (not debug-weak)) (define-forward hash-table-rehash-threshold)
+#-(and (or ccl clisp) (not debug-weak)) (define-forward hash-table-size)
+#-(and (or ccl clisp) (not debug-weak)) (define-forward hash-table-test)
+
 #-(and (or ccl clisp) (not debug-weak))
 (defclass weak-hash-table ()
   ((rehash-size      :accessor %hash-table-rehash-size
@@ -800,20 +814,6 @@ It has no effect when some key has already been garbage-collected.")
                      :initarg :weak
                      :initform :key)
    (buckets          :accessor wht-buckets)))
-
-
-(defmacro define-forward (name)
-  (let ((method-name (intern (with-standard-io-syntax (format nil "%~A" name))))
-        (cl-name     (intern (string name) "COMMON-LISP")))
-    `(progn
-       (defgeneric ,method-name (self) (:method ((self t)) (,cl-name self)))
-       (defun ,name (hash-table) (,method-name hash-table)))))
-
-#-(and (or ccl clisp) (not debug-weak)) (define-forward hash-table-count)
-#-(and (or ccl clisp) (not debug-weak)) (define-forward hash-table-rehash-size)
-#-(and (or ccl clisp) (not debug-weak)) (define-forward hash-table-rehash-threshold)
-#-(and (or ccl clisp) (not debug-weak)) (define-forward hash-table-size)
-#-(and (or ccl clisp) (not debug-weak)) (define-forward hash-table-test)
 
 #-(and (or ccl clisp) (not debug-weak))
 (defmethod %hash-table-count ((self weak-hash-table))
@@ -948,7 +948,7 @@ It has no effect when some key has already been garbage-collected.")
   (values-list result-values))
 
 #-(and (or ccl clisp) (not debug-weak))
-(defgeneric check-increase-size (self weak-hash-table result-values))
+(defgeneric check-increase-size (table result-values))
 #-(and (or ccl clisp) (not debug-weak))
 (defmethod check-increase-size ((self weak-hash-table) result-values)
   (let ((threshold-count  (* (hash-table-size self)

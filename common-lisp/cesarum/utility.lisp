@@ -9,6 +9,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2013-06-30 <PJB> Added FLOAT-{,C,E}TYPECASE; exported [-+]EPSILON.
 ;;;;    2008-06-24 <PJB> Added INCF-MOD and DECF-MOD.
 ;;;;    2007-12-01 <PJB> Removed PJB-ATTRIB macro (made it a flet of PJB-DEFCLASS).
 ;;;;    2007-07-07 <PJB> Added TRACING.
@@ -31,7 +32,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2003 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2003 - 2013
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -50,7 +51,8 @@
 (in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
   (:use "COMMON-LISP"
-        "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM" )
+        "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
   (:export
    ;; 3 - EVALUATION AND COMPILATION
    "WITH-GENSYMS" "WSIOSBP"
@@ -72,6 +74,8 @@
    "MAKE-KEYWORD" "CONC-SYMBOL"
    ;; 12 - NUMBERS
    "SIGN"
+   "DISTINCT-FLOAT-TYPES" "FLOAT-TYPECASE" "FLOAT-CTYPECASE" "FLOAT-ETYPECASE"
+   "+EPSILON" "-EPSILON"
    ;; 14 - CONSES
    "MAXIMIZE" "COMPUTE-CLOSURE" "TOPOLOGICAL-SORT"
    ;; 15 - ARRAYS
@@ -839,66 +843,210 @@ RETURN: -1 if N is negative,
        (let ((,(car store-vars) (mod (- ,reader-form ,decrement) ,modulo)))
          ,writer-form))))
 
-;; (defun generate-distinct-float-type-typecase (operator expresion clauses)
-;;   
-;;   )
-;; 
-;; (defun type-equal-p (t1 t2)
-;;   (and (subtypep t1) (subtypep t2)))
-;; 
-;; (defun distinct-float-types ()
-;;   "
-;; 
-;; RETURN: a subset of (long-float double-float single-float short-float)
-;; that represents the partition of the float type for this
-;; implementation.
-;; 
-;; There can be fewer than four internal representations for floats. If there are fewer distinct representations, the
-;; following rules apply:
-;; 
-;;   • If there is only one, it is the type single-float. In this
-;;     representation, an object is simultaneously of types single-float,
-;;     double-float, short-float, and long-float.
-;; 
-;;   • Two internal representations can be arranged in either of the
-;;     following ways:
-;;    
-;;       □ Two types are provided: single-float and short-float. An
-;;         object is simultaneously of types single-float,  double-float,
-;;         and long-float.
-;; 
-;;       □ Two types are provided: single-float and double-float. An
-;;         object is simultaneously of types single-float and
-;;         short-float, or double-float and long-float.
-;;        
-;;   • Three internal representations can be arranged in either of the
-;;     following ways:
-;;    
-;;       □ Three types are provided: short-float, single-float, and
-;;         double-float. An object can simultaneously be of  type
-;;         double-float and long-float.
-;; 
-;;       □ Three types are provided: single-float, double-float, and
-;;         long-float. An object can simultaneously be of  types
-;;         single-float and short-float.
-;; 
-;; "
-;;   ;; We process them in preference order
-;;   (loop :for type :in '(double-float single-float long-float short-float))
-;; 
-;;   )
+
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun type-equal-p (t1 t2)
+    (and (subtypep t1 t2) (subtypep t2 t1)))
+  (declaim (inline type-equal-p))
+
+  (defun distinct-float-types ()
+    "
+RETURN: a subset of (long-float double-float single-float short-float)
+that represents the partition of the float type for this
+implementation.
+
+There can be fewer than four internal representations for floats. If
+there are fewer distinct representations, the following rules apply:
+
+  • If there is only one, it is the type single-float. In this
+    representation, an object is simultaneously of types single-float,
+    double-float, short-float, and long-float.
+
+  • Two internal representations can be arranged in either of the
+    following ways:
+   
+      □ Two types are provided: single-float and short-float. An
+        object is simultaneously of types single-float,  double-float,
+        and long-float.
+
+      □ Two types are provided: single-float and double-float. An
+        object is simultaneously of types single-float and
+        short-float, or double-float and long-float.
+       
+  • Three internal representations can be arranged in either of the
+    following ways:
+   
+      □ Three types are provided: short-float, single-float, and
+        double-float. An object can simultaneously be of  type
+        double-float and long-float.
+
+      □ Three types are provided: single-float, double-float, and
+        long-float. An object can simultaneously be of  types
+        single-float and short-float.
+
+"
+
+    ;; #+emacs
+    ;; (insert
+    ;;  (karnaugh '(s=i s=d s=l i=d i=l d=l)
+    ;;            (list "1" "21" "22" "31" "32" "4"
+    ;;                  (cons "i" (lambda (s=i s=d s=l i=d i=l d=l)
+    ;;                              (and (==> (and s=i s=d) i=d)
+    ;;                                   (==> (and s=i s=l) i=l)
+    ;;                                   (==> (and s=i i=d) s=d)
+    ;;                                   (==> (and s=i i=l) s=l)
+    ;;                                   
+    ;;                                   (==> (and s=d s=l) d=l)
+    ;;                                   (==> (and s=d i=d) s=i)
+    ;;                                   (==> (and s=d i=l) s=l)
+    ;;                                   (==> (and s=d d=l) s=l)
+    ;;                                   
+    ;;                                   (==> (and s=l i=l) s=i)
+    ;;                                   (==> (and s=l d=l) s=d)
+    ;;                                   
+    ;;                                   (==> (and i=d i=l) d=l)
+    ;;                                   (==> (and i=d d=l) i=l)
+    ;; 
+    ;;                                   (==> (and s=i s=l) s=d)
+    ;;                                   (==> (and s=l s=d) s=i)
+    ;;                                   
+    ;;                                   (==> (not s=i) (not (or s=d s=l)))
+    ;;                                   (==> (not s=d) (not s=l))
+    ;;                                   (==> (not i=d) (not i=l))
+    ;;                                   (==> (not d=l) (not i=l))
+    ;; 
+    ;;                                   ))))))
+    ;;
+    ;; 1  short-float=single-float=double-float=long-float
+    ;; 21 short-float | single-float=double-float=long-float
+    ;; 22 short-float=single-float | double-float=long-float
+    ;; 31 short-float | single-float | double-float=long-float
+    ;; 32 short-float=single-float | double-float | long-float
+    ;; 4  short-float | single-float | double-float | long-float
+    ;; not conforming configuruations:
+    ;; n1 short-float=single-float=double-float | long-float
+    ;; n2 short-float | single-float=double-float | long-float
+    ;;
+    ;; +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+
+    ;; | s=i | s=d | s=l | i=d | i=l | d=l |  1  | 21  | 22  | 31  | 32  |  4  | n1  | n2  |
+    ;; +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+
+    ;; | YES | YES | YES | YES | YES | YES |  v  |     |     |     |     |     |     |     |
+    ;; | YES | YES |  NO | YES |  NO |  NO |     |     |     |     |     |     |  v  |     |
+    ;; |  NO |  NO |  NO | YES | YES | YES |     |  v  |     |     |     |     |     |     |
+    ;; |  NO |  NO |  NO | YES |  NO |  NO |     |     |     |     |     |     |     |  v  |
+    ;; | YES |  NO |  NO |  NO |  NO | YES |     |     |  v  |     |     |     |     |     |
+    ;; | YES |  NO |  NO |  NO |  NO |  NO |     |     |     |     |  v  |     |     |     |
+    ;; |  NO |  NO |  NO |  NO |  NO | YES |     |     |     |  v  |     |     |     |     |
+    ;; |  NO |  NO |  NO |  NO |  NO |  NO |     |     |     |     |     |  v  |     |     |
+    ;; +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+
+    (let ((s=i (type-equal-p 'short-float 'single-float))
+          (i=d (type-equal-p 'single-float 'double-float))
+          (d=l (type-equal-p 'double-float 'long-float)))
+      (if i=d
+          (if s=i
+              (if d=l
+                  '(single-float) #|1|#
+                  '(single-float long-float) #|n1|#)
+              (if d=l
+                  '(short-float single-float) #|21|#
+                  '(short-float single-float long-float) #|n2|#))
+          (if s=i
+              (if d=l
+                  '(single-float double-float) #|22|#
+                  '(single-float double-float long-float) #|32|#)
+              (if d=l
+                  '(short-float single-float double-float) #|31|#
+                  '(short-float single-float double-float long-float) #|4|#)))))
+
+
+  (defun generate-distinct-float-types-typecase (operator expression clauses)
+    (let ((types (distinct-float-types)))
+      `(,operator ,expression
+                  ,@(loop
+                      :for (type . body) :in clauses
+                      :when (member type types)
+                      :collect `(,type ,@body))))))
+
+
+(defmacro float-typecase (expression &rest clauses)
+  "
+EXPRESSION: an expression evaluate to some value.
+
+CLAUSES:    typecase clauses where the type is one of the standard
+            FLOAT direct subtypes, ie. one of (SHORT-FLOAT
+            SINGLE-FLOAT DOUBLE-FLOAT LONG-FLOAT).
+
+NOTE:      Implementations may conflate the various subtypes of FLOAT.
+           When two float types are conflated, some implementation
+           will signal a warning on any typecase that have them in
+           separate clauses.  Since they're the same type, we can as
+           well remove the duplicate clauses.
+
+SEE:       CLHS Type SHORT-FLOAT, SINGLE-FLOAT, DOUBLE-FLOAT, LONG-FLOAT
+
+DO:        Expands to a TYPECASE where only the clauses with unique
+           float types are present.
+"
+  (generate-distinct-float-types-typecase 'typecase expression clauses))
+
+
+(defmacro float-etypecase (expression &rest clauses)
+  "
+EXPRESSION: an expression evaluate to some value.
+
+CLAUSES:    etypecase clauses where the type is one of the standard
+            FLOAT direct subtypes, ie. one of (SHORT-FLOAT
+            SINGLE-FLOAT DOUBLE-FLOAT LONG-FLOAT).
+
+NOTE:      Implementations may conflate the various subtypes of FLOAT.
+           When two float types are conflated, some implementation
+           will signal a warning on any typecase that have them in
+           separate clauses.  Since they're the same type, we can as
+           well remove the duplicate clauses.
+
+SEE:       CLHS Type SHORT-FLOAT, SINGLE-FLOAT, DOUBLE-FLOAT, LONG-FLOAT
+
+DO:        Expands to a ETYPECASE where only the clauses with unique
+           float types are present.
+"
+  (generate-distinct-float-types-typecase 'etypecase expression clauses))
+
+
+(defmacro float-ctypecase (expression &rest clauses)
+    "
+EXPRESSION: an expression evaluate to some value.
+
+CLAUSES:    ctypecase clauses where the type is one of the standard
+            FLOAT direct subtypes, ie. one of (SHORT-FLOAT
+            SINGLE-FLOAT DOUBLE-FLOAT LONG-FLOAT).
+
+NOTE:      Implementations may conflate the various subtypes of FLOAT.
+           When two float types are conflated, some implementation
+           will signal a warning on any typecase that have them in
+           separate clauses.  Since they're the same type, we can as
+           well remove the duplicate clauses.
+
+SEE:       CLHS Type SHORT-FLOAT, SINGLE-FLOAT, DOUBLE-FLOAT, LONG-FLOAT
+
+DO:        Expands to a CTYPECASE where only the clauses with unique
+           float types are present.
+"
+  (generate-distinct-float-types-typecase 'ctypecase expression clauses))
+
+
 
 (defun +epsilon (float)
   "Returns the float incremented by the smallest increment possible."
   (multiple-value-bind (significand exponent sign) (decode-float float)
     (* sign (scale-float
              (if (minusp sign)
-                 (- significand (etypecase float
+                 (- significand (float-etypecase float
                                   (long-float   long-float-negative-epsilon)
                                   (double-float double-float-negative-epsilon)
                                   (single-float single-float-negative-epsilon)
                                   (short-float  short-float-negative-epsilon)))
-                 (+ significand (etypecase float
+                 (+ significand (float-etypecase float
                                   (long-float   long-float-epsilon)
                                   (double-float double-float-epsilon)
                                   (single-float single-float-epsilon)
@@ -910,12 +1058,12 @@ RETURN: -1 if N is negative,
    (multiple-value-bind (significand exponent sign) (decode-float float)
      (* sign (scale-float
               (if (minusp sign)
-                  (+ significand (etypecase float
+                  (+ significand (float-etypecase float
                                    (long-float   long-float-negative-epsilon)
                                    (double-float double-float-negative-epsilon)
                                    (single-float single-float-negative-epsilon)
                                    (short-float  short-float-negative-epsilon)))
-                  (- significand (etypecase float
+                  (- significand (float-etypecase float
                                    (long-float   long-float-epsilon)
                                    (double-float double-float-epsilon)
                                    (single-float single-float-epsilon)
@@ -1034,7 +1182,7 @@ RETURN: A list of NODES sorted topologically according to
   "
 DO:      Sets all the slots in vector to the successive results of
          the function CONSTRUCTOR called with integers from 0 up
-         to the dimension of the VECTOR.
+s         to the dimension of the VECTOR.
 RETURN:  VECTOR
 "
   (do ((index 0 (1+ index)))

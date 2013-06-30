@@ -142,6 +142,7 @@ License:
           
 (defmethod advance ((parser parser))
   (multiple-value-bind (tok val) (scan-next-token (parser-scanner parser))
+    (declare (ignore val))
     (setf (parser-token parser)      (parser-next-token parser)
           (parser-next-token parser) tok))
   parser)

@@ -194,14 +194,14 @@ SEE ALSO:       NEXTCHAR.
 
 
 (defmethod print-object ((self peek-stream) stream)
-  (print-unredable-object (self stream :type t)
-                          (format stream "\"~{~A~}\" (H:~D N:~D T:~D) ~S"
-                                  (if (< (tail self) (head self))
-                                      (list (subseq (buffer self) (head self))
-                                            (subseq (buffer self) 0 (tail self)))
-                                      (list (subseq (buffer self) (head self) (tail self))))
-                                  (head self) (next self) (tail self)
-                                  (instre self)))
+  (print-unreadable-object (self stream :type t)
+    (format stream "\"~{~A~}\" (H:~D N:~D T:~D) ~S"
+            (if (< (tail self) (head self))
+                (list (subseq (buffer self) (head self))
+                      (subseq (buffer self) 0 (tail self)))
+                (list (subseq (buffer self) (head self) (tail self))))
+            (head self) (next self) (tail self)
+            (instre self)))
   self)
 
 

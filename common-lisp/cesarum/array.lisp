@@ -279,7 +279,7 @@ EXAMPLE:    (array-to-list #3A(((1 2 3) (4 5 6)) ((a b c) (d e f))))
                    (array-to-list subarray)))))
 
 
-(defun displaced-vector (vector start &optional end &key (fill-pointer nil))
+(defun displaced-vector (vector start &optional end fill-pointer)
   "
 DO:         Same as SUBSEQ but with a displaced array.
 RETURN:     A new displaced vector.
@@ -330,7 +330,7 @@ NOTES:          START, START+ and START- are mutually exclusive.
 RETURN:         The adjusted array.
 
 EXAMPLE:        (let* ((s #(a door a window a big hole and a bucket))
-                            (v (displaced-vector s 0 3 :fill-pointer t)))
+                            (v (displaced-vector s 0 3 t)))
                        (show v)
                        (show (nudge-displaced-vector v :end+   1))
                        (show (nudge-displaced-vector v :fill-pointer 2))

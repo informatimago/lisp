@@ -40,11 +40,11 @@
   (:export "+ECP-BLOCK-SIZE+"
            "ECP-DATA" "ECP-ACTIVE" "ECP-STATE"
            "START-ECP" "STOP-ECP"
-           "STATISTICS" "STATISTICS-BYTES-RECEIVED" "STATISTICS-PARITY-ERRORS"
-           "STATISTICS-UNCORRECTABLE-COUNT" "STATISTICS-INVALID-COUNT"
-           "STATISTICS-CORRECT-COUNT" "STATISTICS-VALID-SYN-COUNT"
-           "STATISTICS-INVALID-SYN-COUNT"
-           "PROCESS-INPUT-BUFFER"
+           "STATISTICS" "STATISTICS-BYTES-RECEIVED"
+           "STATISTICS-PARITY-ERRORS" "STATISTICS-UNCORRECTABLE-COUNT"
+           "STATISTICS-UNCORRECTED-COUNT" "STATISTICS-CORRECTED-COUNT"
+           "STATISTICS-INVALID-COUNT" "STATISTICS-CORRECT-COUNT"
+           "STATISTICS-VALID-SYN-COUNT" "STATISTICS-INVALID-SYN-COUNT"
            "PROCESS-OUTPUT-BUFFER")
   (:documentation "
 Minitel-1b Error Correction Procedure.
@@ -85,6 +85,7 @@ License:
   (parity-errors       0)
   (uncorrectable-count 0)
   (uncorrected-count   0)
+  (corrected-count     0)
   (invalid-count       0)
   (correct-count       0)
   (valid-syn-count     0)
@@ -98,6 +99,8 @@ License:
       "ECP statistics: number of uncorrectable errors."
       (documentation 'statistics-uncorrected-count 'function)
       "ECP statistics: number of uncorrected errors."
+      (documentation 'statistics-corrected-count 'function)
+      "ECP statistics: number of corrected errors."
       (documentation 'statistics-invalid-count 'function)
       "ECP statistics: number of invalid blocks."
       (documentation 'statistics-correct-count 'function)
@@ -390,7 +393,7 @@ RETURN:     NIL;         next; NIL;          STATS -- in case of incomplete or e
                                  (setf (ecp-count ecp) 0)))
                                         ; parity error
                            (progn
-                             (incf (statistics-parity-error stats))
+                             (incf (statistics-parity-errors stats))
                              (when (= byte #x16)
                                (incf (statistics-invalid-syn-count stats))
                                (when send-nak (funcall send-nak)))
@@ -492,6 +495,7 @@ programme\" de Wang, systeme \"P\".
                               :with start = 0
                               :while (< start (length stream))
                               :do (multiple-value-bind (data-chunk next block-number) (process-input-buffer ecp stream :start start :statistics stats)
+                                    (declare (ignorable block-number))
                                     (setf start next)
                                     ;; (print (list start block-number data-chunk  (map 'string (function code-char) data-chunk))) (finish-output)                 
                                     (princ (map 'string (function code-char) data-chunk) out))

@@ -702,9 +702,12 @@ RETURN: A COPY of this edge.
 
 (defgeneric nodes (self)
   (:documentation "
-RETURN: A cons containing the two NODES of the edge, in no specific order.
+RETURN: A list of NODES.
+        For a GRAPH, it would be the nodes of the graph.
+        For an edge, it would be the two nodes of the edge in no specific order.
         (Subclasses implementing directed edges should add specific methods
          to get the `from' and the `to' NODES)."))
+
 
 
 (defgeneric is-between-nodes (self nodea nodeb)
@@ -751,13 +754,14 @@ POST:   (equal (weight self) newWeight)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun node-cons-p (item)
+(defun node-list-p (item)
   "
-RETURN: Whether `item' is a cons of two objects kind of ELEMENT-CLASS.
+RETURN: Whether `item' is a list of two objects kind of ELEMENT-CLASS.
 "
-  (and (consp item)
-       (typep (car item) 'element-class)
-       (typep (cdr item) 'element-class)))
+  (and (listp item)
+       (null (cddr item))
+       (typep (first  item) 'element-class)
+       (typep (second item) 'element-class)))
 
 
 
@@ -765,7 +769,7 @@ RETURN: Whether `item' is a cons of two objects kind of ELEMENT-CLASS.
   ((nodes
     :initarg :nodes
     :accessor nodes
-    :type     (satisfies node-cons-p)
+    :type     (satisfies node-list-p)
     :documentation
     "A cons containing the two unordered NODES of the edge." ))
   (:documentation "An undirected edge."))
@@ -879,10 +883,10 @@ RETURN: A COPY of this edge (only with same NODES).
 
 (defmethod nodes ((self directed-edge-class))
   "
-RETURN: A cons containing the two NODES of the edge in no particular order.
+RETURN: A list containing the two NODES of the edge in no particular order.
 NOTE:   Use the accessor methods `from' and `to' to get the wanted node.
 "
-  (cons (from self) (to self)))
+  (list (from self) (to self)))
 
 
 ;; (defmethod identicalTo ((self DIRECTED-EDGE-CLASS) (other PjBElement))
@@ -959,9 +963,6 @@ RETURN: Whether `item' is a subclass of EDGE-CLASS (not EDGE-CLASS itself).
 "
   (subtypep item 'edge-class))
 
-(defgeneric nodes (graph)
-  (:documentation "The nodes of the graph."))
-
 (defgeneric edges (graph)
   (:documentation "The edges of the graph."))
 
@@ -985,7 +986,7 @@ RETURN: Whether `item' is a subclass of EDGE-CLASS (not EDGE-CLASS itself).
     :initform 'undirected-edge-class
     :initarg  :edge-class
     :accessor edge-class
-    ;;:type     (satisfies 'SUBCLASS-OF-EDGE-P)
+    ;;:type     (satisfies SUBCLASS-OF-EDGE-P)
     :documentation
     "The class used to make new edges in this graph. 
 Default is UNDIRECTED-EDGE-CLASS."))
