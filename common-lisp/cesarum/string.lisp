@@ -5,7 +5,7 @@
 ;;;;SYSTEM:            UNIX
 ;;;;USER-INTERFACE:    UNIX
 ;;;;DESCRIPTION
-;;;;    This package exports some string utility functions.
+;;;;    This package exports some string and string-designator utility functions.
 ;;;;USAGE
 ;;;;    
 ;;;;AUTHORS
@@ -23,7 +23,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2002 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2002 - 2013
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -47,6 +47,7 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
   (:export
+   "STRING-DESIGNATOR" "DESIGNATED-STRING"
    "LOCALIZE" "DEFTRANSLATION" "STRING-JUSTIFY-LEFT" "STRING-PAD"
    "PREFIXP" "SUFFIXP"
    "SPLIT-NAME-VALUE" "STRING-REPLACE" "UNSPLIT-STRING" "SPLIT-STRING"
@@ -89,30 +90,70 @@ License:
     (com.informatimago.common-lisp.cesarum.ecma048:generate-all-functions-in-ecma048)))
 
 
-(defun concatenate-strings (list-of-strings)
+(deftype string-designator ()
+  "The type of string designators."
+  '(or string symbol character))
+
+(defun designated-string (object)
   "
-LIST-OF-STRINGS: Each element may be either a string,
-                 or a list containing a string, and a start and end position
+RETURN:   The string designated by the string designator OBJECT.
+NOTE:     If OBJECT is not a string designator, then signal a TYPE-ERROR.
+SEE ALSO: PRINC-TO-STRING, PRIN1-TO-STRING.
+"
+  (check-type object string-designator)
+  (typecase object
+    (string object)
+    (symbol (symbol-name object))
+    (character (string object))))
+
+
+(defun test/concatenate-strings ()
+  (assert (equal "" (concatenate-strings '())))
+  (assert (equal "" (concatenate-strings '(""))))
+  (assert (equal "" (concatenate-strings '("" "" ""))))
+  (assert (equal "" (concatenate-strings '(("" 0 0) ("abc" 0 0) ("abc" 1 1) (#\a 0 0)))))
+  (assert (equal "abc" (concatenate-strings '("abc"))))
+  (assert (equal "abc" (concatenate-strings '("a" "b" "c"))))
+  (assert (equal "abc" (concatenate-strings '(#\a #\b #\c))))
+  (assert (equal "abc" (concatenate-strings '(|a| |b| |c|))))
+  (assert (equal "abc" (concatenate-strings '(|a| "b" #\c))))
+  (assert (equal "abcdef" (concatenate-strings '("ab" "cd" "ef"))))
+  (assert (equal "abcdef" (concatenate-strings '(("abcdef" 0 2) ("abcdef" 2 4) ("abcdef" 4 6)))))
+  (assert (equal "abcdef" (concatenate-strings '(#\a #\b #\c "def"))))
+  :succes)
+
+(defun concatenate-strings (list-of-string-designators)
+  "
+LIST-OF-STRING-DESIGNATORS:
+                 EACH element may be either a string-designator,
+                 or a list containing a string-designator, and a start and end position
                  denoting a substring.
+
 RETURN:          A string containing the concatenation of the strings
                  of the LIST-OF-STRINGS.
 "
   (flet ((slength (string)
            (if (stringp string)
-                      (length string)
-                      (- (or (third string) (length (first string)))
-                         (second string)))))
+               (length string)
+               (- (or (third string) (length (first string)))
+                  (second string)))))
     (loop
-       :with result = (make-string (loop :for s :in list-of-strings
-                                      :sum (slength s)))
-       :for pos = 0
-       :then (+ pos (slength string))
-       :for string :in list-of-strings
-       :do (if (stringp string)
-               (replace result string :start1 pos)
-               (replace result (first string) :start1 pos
-                        :start2 (second string) :end2 (third string)))
-       :finally (return result))))
+      :with strings = (mapcar (lambda (item)
+                                (if (consp item)
+                                    (list (designated-string (first item))
+                                          (second item)
+                                          (third item))
+                                    (designated-string item)))
+                              list-of-string-designators)
+      :with result = (make-string (reduce (function +) strings :key (function slength)))
+      :for pos = 0
+      :then (+ pos (slength string))
+      :for string :in strings
+      :do (if (stringp string)
+              (replace result string :start1 pos)
+              (replace result (first string) :start1 pos
+                       :start2 (second string) :end2 (third string)))
+      :finally (return result))))
 
 
 (defgeneric explode (object &optional result-type)
@@ -233,7 +274,6 @@ RETURN: A new string containing the characters in the sequence CHAR-SEQ.
   (assert (equalp (explode #(#\H #\E #\L #\L #\O) 'string) "HELLO"))
   :success)
 
-(test/implode-explode)
 
 
 (define-compiler-macro implode-string (&whole form  char-seq)
@@ -525,6 +565,11 @@ SEE ALSO:   DEFTRANSLATION
   (or (gethash (cons text language) table)
       (gethash (cons text :en) table)
       text))
+
+
+(defun test ()
+  (test/concatenate-strings)
+  (test/implode-explode))
 
 
 ;;;; THE END ;;;;
