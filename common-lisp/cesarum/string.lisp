@@ -11,6 +11,9 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2013-07-02 <PJB> Added designator types, upgraded some
+;;;;                     functions to take more specifically string or
+;;;;                     character designators. Added some tests.
 ;;;;    2012-08-10 <PJB> Improved split-string and string-justify-left.
 ;;;;    2006-10-20 <PJB> Moved displaced-vector to
 ;;;;                     com.informatimago.common-lisp.cesarum.array.
@@ -47,7 +50,8 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
   (:export
-   "STRING-DESIGNATOR" "DESIGNATED-STRING"
+   "STRING-DESIGNATOR" "CHARACTER-DESIGNATOR"
+   "NO-LOWER-CASE-P" "NO-UPPER-CASE-P" "MIXED-CASE-P"
    "LOCALIZE" "DEFTRANSLATION" "STRING-JUSTIFY-LEFT" "STRING-PAD"
    "PREFIXP" "SUFFIXP"
    "SPLIT-NAME-VALUE" "STRING-REPLACE" "UNSPLIT-STRING" "SPLIT-STRING"
@@ -64,7 +68,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2002 - 2012
+    Copyright Pascal J. Bourguignon 2002 - 2013
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -90,37 +94,82 @@ License:
     (com.informatimago.common-lisp.cesarum.ecma048:generate-all-functions-in-ecma048)))
 
 
-(deftype string-designator ()
-  "The type of string designators."
-  '(or string symbol character))
 
-(defun designated-string (object)
+(defun symbol-of-name-of-length=1 (object)
+  "PREDICATE of symbols of name of length = 1"
+  (and (symbolp object)
+       (= 1 (length (symbol-name object)))))
+
+(defun symbol-of-name-of-length=n (n)
+  "RETURN: A symbol naming a predicate for a symbol of name of length = N."
+  (flet ((predicate (object)
+           (and (symbolp object)
+                (= n (length (symbol-name object))))))
+    (let ((name (gensym)))
+      (setf (symbol-function name) (function predicate))
+      name)))
+
+(deftype string-designator (&optional length)
   "
-RETURN:   The string designated by the string designator OBJECT.
-NOTE:     If OBJECT is not a string designator, then signal a TYPE-ERROR.
-SEE ALSO: PRINC-TO-STRING, PRIN1-TO-STRING.
+STRING-DESIGNATOR       is the type of string designators.
+\(STRING-DESIGNATOR n)  is the type of string designators of strings of length n.
+
+NOTE:    characters are all designators of strings of length 1,
+         therefore (STRING-DESIGNATOR n) with n/=1 doesn't designate a
+         CHARACTER.
 "
-  (check-type object string-designator)
-  (typecase object
-    (string object)
-    (symbol (symbol-name object))
-    (character (string object))))
+  (case length
+    ;; sbcl binds * to length for 'string-designator ; is this conforming?
+    ((nil *)   '(or character string symbol))
+    ((1)       '(or character (string 1) (satisfies symbol-of-name-of-length=1)))
+    (otherwise `(or (string ,length) (satisfies ,(symbol-of-name-of-length=n length))))))
 
 
-(defun test/concatenate-strings ()
-  (assert (equal "" (concatenate-strings '())))
-  (assert (equal "" (concatenate-strings '(""))))
-  (assert (equal "" (concatenate-strings '("" "" ""))))
-  (assert (equal "" (concatenate-strings '(("" 0 0) ("abc" 0 0) ("abc" 1 1) (#\a 0 0)))))
-  (assert (equal "abc" (concatenate-strings '("abc"))))
-  (assert (equal "abc" (concatenate-strings '("a" "b" "c"))))
-  (assert (equal "abc" (concatenate-strings '(#\a #\b #\c))))
-  (assert (equal "abc" (concatenate-strings '(|a| |b| |c|))))
-  (assert (equal "abc" (concatenate-strings '(|a| "b" #\c))))
-  (assert (equal "abcdef" (concatenate-strings '("ab" "cd" "ef"))))
-  (assert (equal "abcdef" (concatenate-strings '(("abcdef" 0 2) ("abcdef" 2 4) ("abcdef" 4 6)))))
-  (assert (equal "abcdef" (concatenate-strings '(#\a #\b #\c "def"))))
-  :succes)
+(defun test/string-designator ()
+  (assert (typep "toto" 'string-designator))
+  (assert (typep 'toto  'string-designator))
+  (assert (typep #\t    'string-designator))
+  (assert (not (typep 42 'string-designator)))
+  (assert (not (typep #(#\a #\b) 'string-designator)))
+  (assert (not (typep '(#\a #\b) 'string-designator)))
+  (assert (typep "t"    '(string-designator 1)))
+  (assert (typep 't     '(string-designator 1)))
+  (assert (typep #\t    '(string-designator 1)))
+  (assert (typep "toto" '(string-designator 4)))
+  (assert (typep 'toto  '(string-designator 4)))
+  (assert (not (typep "toto" '(string-designator 2))))
+  (assert (not (typep 'toto  '(string-designator 2))))
+  (assert (not (typep #\t    '(string-designator 2))))
+  (assert (not (typep 42 '(string-designator 1))))
+  (assert (not (typep #(#\a #\b) '(string-designator 2))))
+  (assert (not (typep '(#\a #\b) '(string-designator 2))))
+  :success)
+
+
+(deftype character-designator ()
+  "
+CHARACTER-DESIGNATOR is the type of character or designators of
+                     strings of length 1.
+"
+  ;; note: (subtypep 'character '(string-designator 1)), but it's
+  ;; expected to be more efficient this way:
+  
+  '(or character (string-designator 1)))
+
+
+
+(defun test/character-designator ()
+  (assert (typep "t"    'character-designator))
+  (assert (typep 't     'character-designator))
+  (assert (typep #\t    'character-designator))
+  (assert (not (typep "toto" 'character-designator)))
+  (assert (not (typep 'toto  'character-designator)))
+  (assert (not (typep 42     'character-designator)))
+  (assert (not (typep #(#\a) 'character-designator)))
+  (assert (not (typep '(#\a) 'character-designator)))
+  :success)
+
+
 
 (defun concatenate-strings (list-of-string-designators)
   "
@@ -140,10 +189,10 @@ RETURN:          A string containing the concatenation of the strings
     (loop
       :with strings = (mapcar (lambda (item)
                                 (if (consp item)
-                                    (list (designated-string (first item))
+                                    (list (string (first item))
                                           (second item)
                                           (third item))
-                                    (designated-string item)))
+                                    (string item)))
                               list-of-string-designators)
       :with result = (make-string (reduce (function +) strings :key (function slength)))
       :for pos = 0
@@ -156,60 +205,66 @@ RETURN:          A string containing the concatenation of the strings
       :finally (return result))))
 
 
-(defgeneric explode (object &optional result-type)
-  (:documentation "
-RETURN:         A sequence of character of type RESULT-TYPE containing
-                the character of the OBJECT.
-RESULT-TYPE:    A sequence type accepted by MAP (not NIL). Default: LIST.
-OBJECT:         Can be a string, a symbol (its symbol-name is exploded),
-                or a random object (its prin1 representation is exploded).
-")
-  (:method ((object symbol) &optional (result-type 'list))
-    (explode-string (symbol-name object) result-type))
-  (:method ((object string) &optional (result-type 'list))
-    (explode-string object result-type))
-  (:method ((object vector) &optional (result-type 'list))
-    (explode-string (implode-string object) result-type))
-  (:method ((object t) &optional (result-type 'list))
-    (explode-string (prin1-to-string object) result-type)))
+(defun test/concatenate-strings ()
+  (assert (equal "" (concatenate-strings '())))
+  (assert (equal "" (concatenate-strings '(""))))
+  (assert (equal "" (concatenate-strings '("" "" ""))))
+  (assert (equal "" (concatenate-strings '(("" 0 0) ("abc" 0 0) ("abc" 1 1) (#\a 0 0)))))
+  (assert (equal "abc" (concatenate-strings '("abc"))))
+  (assert (equal "abc" (concatenate-strings '("a" "b" "c"))))
+  (assert (equal "abc" (concatenate-strings '(#\a #\b #\c))))
+  (assert (equal "abc" (concatenate-strings '(|a| |b| |c|))))
+  (assert (equal "abc" (concatenate-strings '(|a| "b" #\c))))
+  (assert (equal "abcdef" (concatenate-strings '("ab" "cd" "ef"))))
+  (assert (equal "abcdef" (concatenate-strings '(("abcdef" 0 2) ("abcdef" 2 4) ("abcdef" 4 6)))))
+  (assert (equal "abcdef" (concatenate-strings '(#\a #\b #\c "def"))))
+  :succes)
 
 
-(defun implode (char-seq &optional (result-type 'symbol) (package *package*))
+
+
+
+
+(defun explode-string (character-designators &optional (result-type 'list))
   "
-RETURN:         An object of type RESULT-TYPE made with the character
-                in the CHAR-SEQ sequence. Default: SYMBOL.
-RESULT-TYPE:    SYMBOL (default), or STRING, or another type, in which
-                case the object is obtained from reading from the
-                string obtained from the implosion of the characters
-                CHAR-SEQ.
-PACKAGE:        When RESULT-TYPE is SYMBOL, then the package where the
-                symbol is interned. Default: *PACKAGE*.
-"
-  (case result-type
-    (string (implode-string char-seq))
-    (symbol (intern (implode-string char-seq) package))
-    (otherwise  (let ((object (read-from-string (implode-string char-seq))))
-                  (assert (typep object result-type) ()
-                          "~S is of type ~S which is not the expected type ~S"
-                          object (type-of object) result-type)
-                  object))))
-
-
-(defun explode-string (string &optional (result-type 'list))
-  "
-RETURN:         A new sequence containing the character in the
-                sequence string.
+RETURN:         A new sequence of type RESULT-TYPE, containing the
+                characters in the sequence CHARACTER-DESIGNATORS.
 RESULT-TYPE:    A sequence type accepted by MAP.  Default: LIST.
 "
-  (map result-type (function character) string))
+  (check-type character-designators sequence)
+  (map result-type (function character) character-designators))
 
 
-(defun implode-string (char-seq)
+(defun implode-string (character-designators)
   "
-RETURN: A new string containing the characters in the sequence CHAR-SEQ.
+RETURN: A new string containing the characters in the sequence CHARACTER-DESIGNATORS.
+NOTE:   (implode-string cds) == (explode-string cds 'string)
 "
-  (check-type char-seq sequence)
-  (map 'string (function character) char-seq))
+  (check-type character-designators sequence)
+  (map 'string (function character) character-designators))
+
+
+(define-compiler-macro implode-string (&whole form  character-designators)
+  "
+RETURN:  An optimized form for compiled code.
+NOTE:    Unfortunately some implementations don't take into account
+         compiler-macros even when compiling.
+"
+  (declare (ignorable form))
+  (with-gensyms (seq)
+    `(let ((,seq ,character-designators))
+       (typecase ,seq
+         (string     (copy-seq ,seq))
+         (list       (do ((result (make-string (length ,seq)))
+                          (i 0 (1+ i))
+                          (sequ ,seq  (cdr sequ)))
+                         ((null sequ) result)
+                       (setf (char result i) (character (car sequ)))))
+         (otherwise  (do ((result (make-string (length ,seq)))
+                          (i 0 (1+ i))
+                          (max (length ,seq)))
+                         ((>= i max) result)
+                       (setf (char result i) (character (aref ,seq i)))))) )))
 
 
 (defun test/implode-explode ()
@@ -275,58 +330,78 @@ RETURN: A new string containing the characters in the sequence CHAR-SEQ.
   :success)
 
 
+(defgeneric explode (object &optional result-type)
+  (:documentation "
+RETURN:         A sequence of character of type RESULT-TYPE containing
+                the character of the OBJECT.
+RESULT-TYPE:    A sequence type accepted by MAP (not NIL). Default: LIST.
+OBJECT:         Can be a string, a symbol (its symbol-name is exploded),
+                or a random object (its prin1 representation is exploded).
+")
+  (:method ((object symbol) &optional (result-type 'list))
+    (explode-string (symbol-name object) result-type))
+  (:method ((object string) &optional (result-type 'list))
+    (explode-string object result-type))
+  (:method ((object vector) &optional (result-type 'list))
+    (explode-string (implode-string object) result-type))
+  (:method ((object t) &optional (result-type 'list))
+    (explode-string (prin1-to-string object) result-type)))
+ 
 
-(define-compiler-macro implode-string (&whole form  char-seq)
+(defun implode (char-seq &optional (result-type 'symbol) (package *package*))
   "
-RETURN:  An optimized form for compiled code.
-NOTE:    Unfortunately clisp does to take into account compiler-macros
-         even when compiling...
+RETURN:         An object of type RESULT-TYPE made with the character
+                in the CHAR-SEQ sequence. Default: SYMBOL.
+RESULT-TYPE:    SYMBOL (default), or STRING, or another type, in which
+                case the object is obtained from reading from the
+                string obtained from the implosion of the characters
+                CHAR-SEQ.
+PACKAGE:        When RESULT-TYPE is SYMBOL, then the package where the
+                symbol is interned. Default: *PACKAGE*.
 "
-  (declare (ignorable form))
-  (with-gensyms (seq)
-    `(let ((,seq ,char-seq))
-       (typecase ,seq
-         (string     (copy-seq ,seq))
-         (list       (do ((result (make-string (length ,seq)))
-                          (i 0 (1+ i))
-                          (sequ ,seq  (cdr sequ)))
-                         ((null sequ) result)
-                       (setf (char result i) (character (car sequ)))))
-         (otherwise  (do ((result (make-string (length ,seq)))
-                          (i 0 (1+ i))
-                          (max (length ,seq)))
-                         ((>= i max) result)
-                       (setf (char result i) (character (aref ,seq i)))))) )))
+  (case result-type
+    (string (implode-string char-seq))
+    (symbol (intern (implode-string char-seq) package))
+    (otherwise  (let ((object (read-from-string (implode-string char-seq))))
+                  (assert (typep object result-type) ()
+                          "~S is of type ~S which is not the expected type ~S"
+                          object (type-of object) result-type)
+                  object))))
 
 
-(defun split-escaped-string (string escape separator)
+(defun split-escaped-string (string-designator escape separator)
   "
-DO:      Split the string on the separator character.
-         It may be escaped with the escape character.
-RETURN:  A list of substrings of string.
+STRING-DESIGNATOR:  A string designator.
+ESCAPE:             A character designator.
+SEPARATOR:          A character designator.
+DO:                 Split the STRING-DESIGNATOR on the SEPARATOR
+                    character.  It may be escaped with the ESCAPE
+                    character, in which case it's not split.
+RETURN:             A list of substrings of the string denoted by
+                    STRING-DESIGNATOR.  
 "
-  (unless (simple-string-p string)  (setf string    (copy-seq string)))
-  (unless (characterp escape)       (setf escape    (character escape)))
-  (unless (characterp separator)    (setf separator (character separator)))
-  (do ((result   ())
-       (escaped  nil)
-       (start    0)
-       (curr     0))
-      ((>= curr (length string))
-       (if (and (null result) (= 0 curr))
-           nil
-           (progn (push (subseq string start curr) result)
-                  (nreverse result))))
-    (if escaped
-        (progn (incf curr)
-               (setf escaped nil))
-        (cond
-          ((char= (aref string curr) escape)   (incf curr) (setf escaped t))
-          ((char= (aref string curr) separator)
-           (push (subseq string start curr) result)
-           (incf curr)
-           (setf start curr))
-          (t (incf curr))))))
+  (let ((string    (string string-designator))
+        (escape    (character escape))
+        (separator (character separator)))
+    (do ((result   ())
+         (escaped  nil)
+         (start    0)
+         (curr     0))
+        ((>= curr (length string))
+         (if (and (null result) (= 0 curr))
+             nil
+             (progn (push (subseq string start curr) result)
+                    (nreverse result))))
+      (if escaped
+          (progn (incf curr)
+                 (setf escaped nil))
+          (cond
+            ((char= (aref string curr) escape)   (incf curr) (setf escaped t))
+            ((char= (aref string curr) separator)
+             (push (subseq string start curr) result)
+             (incf curr)
+             (setf start curr))
+            (t (incf curr)))))))
 
 
 (defun split-string (string &optional (separators " ") (remove-empty nil))
@@ -527,6 +602,35 @@ SEPARATORS:     A sequence containing the characters on which to split the words
     (apply (function concatenate) 'string (nreverse justified))))
 
 
+(defun no-lower-case-p (string-designator)
+  "
+RETURN:         Whether the string denoted by STRING-DESIGNATOR
+                contains no lower case character.
+"
+  (notany (function lower-case-p) (string string-designator)))
+
+
+(defun no-upper-case-p (string-designator)
+  "
+RETURN:         Whether the string denoted by STRING-DESIGNATOR
+                contains no upper case character.
+"
+  (notany (function upper-case-p) (string string-designator)))
+
+
+(defun mixed-case-p (string-designator)
+  "
+RETURN:         Whether the string denoted by STRING-DESIGNATOR
+                contains both upper case characters and lower case
+                characters.  If there are characters that are
+                both-case-p, then mixed-case-p returns true.
+"
+  (let ((string (string string-designator)))
+    (and (some (function upper-case-p) string)
+         (some (function lower-case-p) string))))
+
+
+
 (defmacro deftranslation (table text language translation
                                 &rest langs-trans)
   "
@@ -568,8 +672,12 @@ SEE ALSO:   DEFTRANSLATION
 
 
 (defun test ()
+  (test/string-designator)
+  (test/character-designator)
   (test/concatenate-strings)
   (test/implode-explode))
+
+(test)
 
 
 ;;;; THE END ;;;;
