@@ -14,9 +14,11 @@
 ;;;;    2012-02-03 <PJB> Added match-case*.
 ;;;;    2003-12-17 <PJB> Created.
 ;;;;BUGS
-;;;;    pattern matcher and instantiation won't work with arrays/matrices,
-;;;;    structures...
-;;;;BUGS
+;;;;    - pattern matcher and instantiation won't work with arrays/matrices,
+;;;;      structures...
+;;;;    - ?/ alternative is not implemented.
+;;;;    - ?* and ?+ may lead to infinite recursion,
+;;;;      eg: (match '(a (?*  (?n n b))) '(a b b b))
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
@@ -393,7 +395,7 @@ RETURN:    A list of the symbol used in the various (?. sym) items,
   "
 SEXP:    A symbolic expression, evaluated.
 CLAUSES: A list of (pattern func) or (otherwise ofunc)
-         The functions FUNC is called with one BINDING argument.
+         The functions FUNC is called with one BINDINGS argument.
          The function OFUNC is called with no argument.
 DO:      Call the function of the clause whose pattern matches the SEXP,
          or whose pattern is a symbol string-equal to OTHERWISE.
