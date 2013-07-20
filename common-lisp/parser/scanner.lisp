@@ -132,7 +132,7 @@ License:
    (column     :accessor token-column
                :initarg :column
                :initform 1
-               :type (integer 1))
+               :type (integer 0))
    (line       :accessor token-line
                :initarg :line
                :initform 1
