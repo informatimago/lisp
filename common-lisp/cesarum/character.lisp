@@ -1,6 +1,6 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               characters.lisp
+;;;;FILE:               character.lisp
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
@@ -32,16 +32,17 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CHARACTERS"
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CHARACTER"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ASCII")
   (:export "STANDARD-CHARACTER-IS-ASCII-CODED-P"
-           "HAS-ASCII-CODES-AS-CHARACTERS-P"
+           "STANDARD-CHARACTERS"
+           "HAS-ASCII-CODES-P"
            "HAS-CHARACTER-NAMED-P"
            "PUSH-FEATURE-FOR-CHARACTER-NAMED")
   (:documentation "
-Define features for present semi-standard character names and
-other ASCII features.
+Define features (both at compilation time, load time and execute) for
+present semi-standard character names and other ASCII features.
 
    #+has-rubout    can read #\rubout
    #+has-page      can read #\page
@@ -86,21 +87,30 @@ License:
     If not, see <http://www.gnu.org/licenses/>
 
 "))
-(in-package  "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CHARACTERS")
+(in-package  "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CHARACTER")
 
 
-(defparameter *standard-characters*
-  #.(concatenate 'string
-      " !\"#$%&'()*+,-./0123456789:;<=>?"
-      "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
-      "`abcdefghijklmnopqrstuvwxyz{|}~")
-  "A string containing all the STANDARD-CHARACTER.
+
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  
+  (defparameter *standard-characters*
+    #.(concatenate 'string
+        " !\"#$%&'()*+,-./0123456789:;<=>?"
+        "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
+        "`abcdefghijklmnopqrstuvwxyz{|}~")
+    "A string containing all the STANDARD-CHARACTER.
 Notice: it's the same character set as
 COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ASCII:*ASCII-CHARACTERS*.")
 
 
-(defun has-character-named-p (name)
-  "
+  (defun standard-characters ()
+    "Return a string containing all the standard-characters."
+    (copy-seq *standard-characters*))
+
+
+  (defun has-character-named-p (name)
+    "
 NAME:       A case-insensitive string designator for the semi-standard
             character names:
 
@@ -113,11 +123,11 @@ NAME:       A case-insensitive string designator for the semi-standard
 
 Return:     Whether reading #\{name} will not produce an error.
 "
-  (ignore-errors (read-from-string (format nil "#\\~A" name))))
+    (ignore-errors (read-from-string (format nil "#\\~A" name))))
 
 
-(defun push-feature-for-character-named (name)
-  "
+  (defun push-feature-for-character-named (name)
+    "
 NAME:       A case-insensitive string designator for the semi-standard
             character names:
 
@@ -133,13 +143,12 @@ DO:         If the implementation has the semi standard character
             upcased.
 
 "
-  (when (has-character-named-p name)
-    (pushnew  (intern (format nil "~:@(HAS-~A~)" name)
-                      (load-time-value (find-package"KEYWORD")))
-              *features*)))
+    (when (has-character-named-p name)
+      (pushnew  (intern (format nil "~:@(HAS-~A~)" name)
+                        (load-time-value (find-package"KEYWORD")))
+                *features*)))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  
+
   (dolist (name '("Rubout" "Page" "Tab" "Backspace" "Return" "Linefeed"
                   ;; Non standard character names:
                   "Escape" "Bell" "Vt"))
@@ -148,16 +157,18 @@ DO:         If the implementation has the semi standard character
   );;eval-when
 
 
-(defun standard-character-is-ascii-coded-p ()
-  (load-time-value
-   (ignore-errors
-     (every (lambda (ch) (= (char-code ch) (ascii-code ch)))
-            *standard-characters*))))
-
-
+;; Must be a separate form:
 (eval-when (:compile-toplevel :load-toplevel :execute)
   
-  (defun has-ascii-codes-as-characters-p ()
+  (defun standard-character-is-ascii-coded-p ()
+    "Whether the char-code of the standard-characters are their ASCII codes."
+    (load-time-value
+     (ignore-errors
+       (every (lambda (ch) (= (char-code ch) (ascii-code ch)))
+              *standard-characters*))))
+
+  (defun has-ascii-code-p ()
+    "Whether it looks ASCII is implemented by char-code and code-char."
     (let ((codes (cons 127 (loop :for code :from 0 :to 31 :collect code))))
       (and (standard-character-is-ascii-coded-p)
            (ignore-errors
@@ -175,7 +186,7 @@ DO:         If the implementation has the semi standard character
            #+has-bell      (=   7 (char-code #\bell))
            #+has-vt        (=  11 (char-code #\vt)))))
 
-  (when (has-ascii-codes-as-characters-p)
+  (when (has-ascii-code-p)
     (pushnew :has-ascii-code *features*))
   
   #+has-return   (when (char= #\newline #\return)
