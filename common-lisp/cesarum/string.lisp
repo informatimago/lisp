@@ -93,21 +93,21 @@ License:
   (let ((*compile-verbose* nil))
     (com.informatimago.common-lisp.cesarum.ecma048:generate-all-functions-in-ecma048)))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 
-
-(defun symbol-of-name-of-length=1 (object)
-  "PREDICATE of symbols of name of length = 1"
-  (and (symbolp object)
-       (= 1 (length (symbol-name object)))))
-
-(defun symbol-of-name-of-length=n (n)
-  "RETURN: A symbol naming a predicate for a symbol of name of length = N."
-  (flet ((predicate (object)
-           (and (symbolp object)
-                (= n (length (symbol-name object))))))
-    (let ((name (gensym)))
-      (setf (symbol-function name) (function predicate))
-      name)))
+  (defun symbol-of-name-of-length=1 (object)
+    "PREDICATE of symbols of name of length = 1"
+    (and (symbolp object)
+         (= 1 (length (symbol-name object)))))
+  
+  (defun symbol-of-name-of-length=n (n)
+    "RETURN: A symbol naming a predicate for a symbol of name of length = N."
+    (flet ((predicate (object)
+             (and (symbolp object)
+                  (= n (length (symbol-name object))))))
+      (let ((name (gensym "symbol-of-name-of-length=n-predicate")))
+        (setf (symbol-function name) (function predicate))
+        name))))
 
 (deftype string-designator (&optional length)
   "
@@ -122,7 +122,9 @@ NOTE:    characters are all designators of strings of length 1,
     ;; sbcl binds * to length for 'string-designator ; is this conforming?
     ((nil *)   '(or character string symbol))
     ((1)       '(or character (string 1) (satisfies symbol-of-name-of-length=1)))
-    (otherwise `(or (string ,length) (satisfies ,(symbol-of-name-of-length=n length))))))
+    (otherwise `(or (string ,length)
+                    #-sbcl (satisfies ,(symbol-of-name-of-length=n length))
+                    #+sbcl symbol))))
 
 
 (defun test/string-designator ()
@@ -672,7 +674,7 @@ SEE ALSO:   DEFTRANSLATION
 
 
 (defun test ()
-  (test/string-designator)
+  #-sbcl (test/string-designator)
   (test/character-designator)
   (test/concatenate-strings)
   (test/implode-explode))
