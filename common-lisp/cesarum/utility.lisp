@@ -66,6 +66,7 @@
    "SAFE-APPLY" "WHILE" "UNTIL" "FOR"
    ;; 7 - OBJECTS
    "DEFINE-STRUCTURE-CLASS" "DEFINE-WITH-OBJECT" "PJB-DEFCLASS"
+   "PRINT-PARSEABLE-OBJECT"
    ;; 8 - STRUCTURES
    "DEFINE-WITH-STRUCTURE"
    ;; 9 - CONDITIONS
@@ -663,6 +664,113 @@ DO:       Define a macro: (WITH-{CLASS-NAME} object &body body)
           ,object ,@body)))
 
 
+
+
+
+;;;
+;;;
+;;;
+
+
+(declaim (declaration stepper))
+
+(defun object-identity (object)
+  "
+RETURN:         A string containing the object identity as printed by
+                PRINT-UNREADABLE-OBJECT.
+"
+  (declare (stepper disable))
+  (let ((*step-mode* :run)
+        (*print-readably* nil))
+    (declare (special *step-mode*))
+    (let ((ident
+           (with-output-to-string (stream)
+             (print-unreadable-object (object stream :type nil :identity t)))))
+      (subseq ident 3 (1- (length ident))))))
+
+
+(defun call-print-parseable-object (object stream type identity thunk)
+  "
+SEE:            PRINT-PARSEABLE-OBJECT
+"
+  (declare (stepper disable))
+  (let ((*step-mode* :run))
+    (declare (special *step-mode*))
+    (if *print-readably*
+        (error 'print-not-readable :object object)
+        (progn
+          (format stream "~S"
+                  (append (when type
+                            (list (class-name (class-of object))))
+                          (funcall thunk object)
+                          (when identity
+                            (list (object-identity object))))) 
+          object))))
+
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun extract-slots (ovar slots)
+    "
+SEE:            PRINT-PARSEABLE-OBJECT
+RETURN:         A form building a plist of slot values.
+"
+    (cons 'list
+          (loop
+            :for slot :in slots
+            :collect  (if (symbolp slot)
+                          (intern (symbol-name slot) "KEYWORD")
+                          `(quote ,(first slot)))
+            :collect  (if (symbolp slot)
+                        `(ignore-errors (slot-value ,ovar ',slot))
+                        `(ignore-errors ,(second slot)))))))
+
+
+(defmacro print-parseable-object ((object stream &key (type t) identity) &rest slots)
+  "
+
+DO:             Prints on the STREAM the object as a list.  If all the
+                objects printed inside it are printed readably or with
+                PRINT-PARSEABLE-OBJECT, then that list should be
+                readable, at least with *READ-SUPPRESS* set to T.
+
+OBJECT:         Either a variable bound to the object to be printed,
+                or a binding list (VARNAME OBJECT-EXPRESSION), in
+                which case the VARNAME is bound to the
+                OBJECT-EXPRESSION during the evaluation of the SLOTS.
+
+STREAM:         The output stream where the object is printed to.
+
+TYPE:           If true, the class-name of the OBJECT is printed as
+                first element of the list.
+
+IDENTITY:       If true, the object identity is printed as a string in
+                the last position of the list.
+
+SLOTS:          A list of either a symbol naming the slot, or a list
+                (name expression), name being included quoted in the
+                list, and the expression being evalauted to obtain the
+                value.
+
+RETURN:         The object that bas been printed (so that you can use
+                it in tail position in PRINT-OBJECT conformingly).
+
+EXAMPLE:        (print-parseable-object (object stream :type t :identity t)
+                  slot-1
+                  (:slot-2 (thing-to-list (slot-2 object)))
+                  slot-3)
+"
+  `(locally (declare (stepper disable))
+     ,(if (symbolp object)
+         `(call-print-parseable-object ,object ,stream ,type ,identity
+                                       (lambda (,object)
+                                         (declare (ignorable ,object) (stepper disable))
+                                         ,(extract-slots object slots)))
+         (destructuring-bind (ovar oval) object
+           `(let ((,ovar ,oval))
+              (call-print-parseable-object ,ovar ,stream ,type ,identity
+                                           (lambda (,ovar)
+                                             (declare (ignorable ,ovar) (stepper disable))
+                                             ,(extract-slots object slots))))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
