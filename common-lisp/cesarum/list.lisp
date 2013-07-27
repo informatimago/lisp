@@ -56,7 +56,7 @@
            ;; "HASHED-REMOVE-DUPLICATES" moved to COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE
            "ENSURE-LIST" "PROPER-LIST-P" "LIST-LENGTHS" "LIST-ELEMENTS"
            "ENSURE-CIRCULAR" "MAKE-CIRCULAR-LIST" "CIRCULAR-LENGTH"
-           "TREE-DIFFERENCE" "REPLACE-TREE" "MAPTREE")
+           "TREE-FIND" "TREE-DIFFERENCE" "REPLACE-TREE" "MAPTREE")
   (:documentation
    "
 This package exports list processing functions.
@@ -759,6 +759,42 @@ RETURN:  The next dll-cons in the `dll-cons' double-linked-list node.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defun tree-find (object tree &key (key (function identity)) (test (function eql)))
+  "
+RETURN: The object in TREE that matches OBJECT (using the KEY and TEST functions.
+TREE:   A sexp.
+"
+  (if (atom tree)
+      (if (funcall test object (funcall key tree))
+          tree
+          nil)
+      (or (tree-find object (car tree) :key key :test test)
+          (tree-find object (cdr tree) :key key :test test))))
+
+(defun test/tree-find ()
+  (assert (equal 'x (tree-find 'x 'x)))
+  (assert (equal 'x (tree-find 'x '(x))))
+  (assert (equal 'x (tree-find 'x '(a b c x d e f))))
+  (assert (equal 'x (tree-find 'x '(a b c d . x))))
+  (assert (equal 'x (tree-find 'x '(() (a b c d . x)))))
+  (assert (equal 'x (tree-find 'x '((a b (a b c d . x) x)))))
+
+  (assert (equal 'x (tree-find "x" 'x :test (function string-equal))))
+  (assert (equal 'x (tree-find "x" '(x) :test (function string-equal))))
+  (assert (equal 'x (tree-find "x" '(a b c x d e f) :test (function string-equal))))
+  (assert (equal 'x (tree-find "x" '(a b c d . x) :test (function string-equal))))
+  (assert (equal 'x (tree-find "x" '(() (a b c d . x)) :test (function string-equal))))
+  (assert (equal 'x (tree-find "x" '((a b (a b c d . x) |x|)) :test (function string-equal))))
+
+  (assert (equal 'x (tree-find "x" 'x :test (function string=) :key (function string-downcase))))
+  (assert (equal 'x (tree-find "x" '(x) :test (function string=) :key (function string-downcase))))
+  (assert (equal 'x (tree-find "x" '(a b c x d e f) :test (function string=) :key (function string-downcase))))
+  (assert (equal 'x (tree-find "x" '(a b c d . x) :test (function string=) :key (function string-downcase))))
+  (assert (equal 'x (tree-find "x" '(() (a b c d . x)) :test (function string=) :key (function string-downcase))))
+  (assert (equal 'x (tree-find "x" '((a b (a b c d . x) |x|)) :test (function string=) :key (function string-downcase))))
+  :success)
+
+
 (defun tree-difference (a b &key (test (function eql)))
   "
 RETURN: A tree congruent to A and B where each node is = when the
@@ -921,6 +957,8 @@ RETURN: dst
 
 (defun test ()
   (test/list-lengths)
-  (test/list-elements))
+  (test/list-elements)
+  (test/tree-find))
 
+(test)
 ;;;; THE END ;;;;
