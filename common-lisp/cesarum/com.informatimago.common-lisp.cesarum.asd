@@ -108,6 +108,7 @@ all written in 100% conforming Common Lisp.
 
                  ;; Standards:
                  (:file "ascii"           :depends-on ())
+                 (:file "character"       :depends-on ("ascii"))
                  (:file "character-sets"  :depends-on ("string"))
                  (:file "ecma048"         :depends-on ("utility"))
                  (:file "iso3166"         :depends-on ())
