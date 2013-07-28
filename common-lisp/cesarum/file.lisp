@@ -92,8 +92,9 @@ License:
                 "STREAM-TO-STRING-LIST" "COPY-STREAM" "COPY-OVER")
   (:export "REMOVE-FIRST-LINES" "BINARY-FILE-CONTENTS"
            "SAFE-TEXT-FILE-TO-STRING-LIST"
-           "STRING-LIST-TEXT-FILE-CONTENTS"
-           "TEXT-FILE-CONTENTS" "SEXP-FILE-CONTENTS" "COPY-FILE"))
+           "STRING-LIST-TEXT-FILE-CONTENTS" "TEXT-FILE-CONTENTS"
+           "SEXP-FILE-CONTENTS" "SEXP-LIST-FILE-CONTENTS"
+           "COPY-FILE"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE")
 
 
@@ -152,6 +153,56 @@ RETURN: The NEW-CONTENTS, or if-exists or if-does-not-exist in case of error.
                :miser-width nil  :pretty nil
                :radix t :readably t :right-margin nil)
         out)))
+
+
+(defun sexp-list-file-contents (path &key (if-does-not-exist :error)
+                                       (external-format :default))
+  "
+RETURN: All the SEXPs of the file at PATH gathered in a list
+        or what is specified by IF-DOES-NOT-EXIST if it doesn't exist.
+"
+  (with-open-file (in path :direction :input
+                      :if-does-not-exist if-does-not-exist
+                      :external-format external-format)
+    (if (and (streamp in) (not (eq in if-does-not-exist)))
+        (let ((*read-base* 10.))
+          (loop
+            :for form = (read in nil in)
+            :until (eq form in)
+            :collect form))
+        in)))
+
+(defun (setf sexp-list-file-contents) (new-contents path
+                                       &key (if-does-not-exist :create)
+                                         (if-exists :supersede)
+                                         (external-format :default))
+  "
+NEW-CONTENTS:   A list of sexps.
+
+DO:             Writes the NEW-CONTENTS SEXPs readably into the file
+                at PATH.  By default, that file is created or
+                superseded; this can be changed with the keyword
+                IF-DOES-NOT-EXIST or IF-EXISTS.
+
+RETURN:         The NEW-CONTENTS, or if-exists or if-does-not-exist in
+                case of error.
+"
+  (with-open-file (out path :direction :output
+                       :if-does-not-exist if-does-not-exist
+                       :if-exists if-exists
+                       :external-format external-format)
+    (if (and (streamp out) (not (or (eq out if-exists)  (eq out if-does-not-exist))))
+        (let ((*read-base* 10.))
+          (loop
+            :for form :in new-contents
+            :do (write form :stream out
+                       :array t :base 10. :case :upcase :circle t
+                       :escape t :gensym t :length nil :level nil :lines nil
+                       :miser-width nil  :pretty nil
+                       :radix t :readably t :right-margin nil)
+            :do (terpri out)))
+        out)))
+
 
 
 (defun string-list-text-file-contents (path &key (if-does-not-exist :error)
