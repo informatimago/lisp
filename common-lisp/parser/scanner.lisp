@@ -153,12 +153,14 @@ License:
 
 
 ;; Note: the features are defined in .cesarum.characters
-(defvar *spaces*  '(#\Space
-                    #+has-newline #\Newline
-                    #+has-tab #\Tab
-                    #+(and has-return (not newline-is-return)) #\return
-                    #+(and has-linefeed (not newline-is-linefeed)) #\linefeed
-                    #+has-page #\page))
+(defvar *spaces*  (coerce (remove-duplicates
+                           '(#\Space
+                             #+has-newline #\Newline
+                             #+has-tab #\Tab
+                             #+(and has-return (not newline-is-return)) #\return
+                             #+(and has-linefeed (not newline-is-linefeed)) #\linefeed
+                             #+has-page #\page))
+                          'string))
 
 
 ;; Note we copy some fields in the condition from the scanner, so that
@@ -329,13 +331,8 @@ RETURN:       (scanner-current-token scanner).
 
 
 (defmethod print-object ((self scanner) out)
-  (print-unreadable-object (self out :type t :identity t)
-    (format out "~{~S~^ ~}"
-            (list :line          (slot-value self          'line)
-                  :column        (slot-value self          'column)
-                  :current-token (slot-value self          'current-token)
-                  :source        (slot-value self          'source))))
-  self)
+  (print-parseable-object (self out :type t :identity t)
+                          line column current-token source))
 
 
 
