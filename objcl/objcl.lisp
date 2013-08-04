@@ -633,9 +633,11 @@ argument lisp string."
                         :bytes (make-macroman-cstring string)
                         :num<b>ytes (length string))
       (multiple-value-bind (bytes bytelen) (make-utf8-cstring string)
+        (declare (ignore bytelen))
         (objc:send ns:ns-string
                    :string-with-c-string bytes
                    :encoding #$|NSUTF8StringEncoding|)))
+
   #+cocotron-objc
   (warn "Check the encoding used for NSConstantString in cocotron.")
   #+cocotron-objc
