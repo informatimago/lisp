@@ -11,12 +11,13 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2013-09-06 <PJB> Updated for publication.
 ;;;;    2012-04-06 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2012 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2012 - 2013
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -32,21 +33,61 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(defpackage "COM.INFORMATIMAGO.DEPENDENCY-CYCLES"
+(defpackage "COM.INFORMATIMAGO.TOOLS.DEPENDENCY-CYCLES"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.GRAPH"
         "COM.INFORMATIMAGO.COMMON-LISP.GRAPHVIZ.GRAPH-DOT"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CHARACTER-SETS"
         "COM.INFORMATIMAGO.CLEXT.CHARACTER-SETS")
-  (:export "*ROOT-PATH*" "CHECK-CYCLES"
-           "ADJACENCY-LIST" "REACHABLE-LIST"
-           "REPORT-PROBLEMS"
-           "FIND-CYCLES"
-           "PRINT-CYCLES"
-           "FIND-SHORTEST-PATH"
-           "*ISO-8859-1*" "*UTF-8*"))
-(in-package "COM.INFORMATIMAGO.DEPENDENCY-CYCLES")
+  (:export "ADJACENCY-LIST" "REACHABLE-LIST"
+           "FIND-CYCLES" "FIND-SHORTEST-PATH"
+           "REPORT-PROBLEMS" "PRINT-CYCLES"
+           "DEPENDENCIES-GRAPH" "GENERATE-DEPENDENCIES-GRAPH")
+  (:documentation "
+
+Find cycles in a dependency graph.
+
+The graph is defined by a list of nodes and two methods:
+
+ (ADJACENCY-LIST node) -> list-of-nodes
+
+ (REACHABLE-LIST node) -> list-of-nodes
+
+             which is the recursive closure of ADJACENCY-LIST,
+             but provided for efficiency.
+
+
+The function FIND-CYCLES returns a list of cycles in the graph defined
+by the given list of nodes and the previous methods.
+
+ (FIND-CYCLES nodes) -> list-of-cycles
+
+The function REPORT-PROBLEMS prints a report of the found cycles.
+
+ (REPORT-PROBLEMS nodes)
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2012 - 2013
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"))
+(in-package "COM.INFORMATIMAGO.TOOLS.DEPENDENCY-CYCLES")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -148,11 +189,15 @@ RETURN: The shortest path of length>0 from FROM to TO if it exists, or NIL.
 
 
 (defun find-cycles (objects)
-  (mapcar (lambda (cycle) (find-shortest-path cycle cycle (function adjacency-list)))
-          (remove-if-not (lambda (x) (member x (reachable-list x))) objects)))
+  (map 'list (lambda (cycle) (find-shortest-path cycle cycle (function adjacency-list)))
+       (remove-if-not (lambda (x) (member x (reachable-list x))) objects)))
 
 
 (defun report-problems (objects &key (report *error-output*))
+  "
+DO:     Find cycles in the graph defined by the nodes in the OBJECTS
+        sequence and the ADJACENCY-LIST an REACHABLE-LIST methods.
+"
   (let ((cycles (find-cycles objects)))
     (when cycles
       (format report "~&There are ~A cycles in the dependency relationship!~%"
@@ -169,16 +214,26 @@ RETURN: The shortest path of length>0 from FROM to TO if it exists, or NIL.
 
 
 (defun dependencies-graph (objects)
+  "
+RETURN:  a graph as defined by the nodes in the OBJECTS sequence and
+         the ADJACENCY-LIST an REACHABLE-LIST methods.
+"
   (let ((graph (make-instance 'graph-class :edge-class 'directed-edge-class )))
     (add-nodes graph objects)
-    (dolist (from objects)
-      (dolist (to (adjacency-list from))
-        (when (member to objects)
-          (add-edge-between-nodes graph from to))))
+    (map nil (lambda (form)
+               (dolist (to (adjacency-list from))
+                 (when (find to objects)
+                   (add-edge-between-nodes graph from to))))
+         objects)
     graph))
 
 
 (defun generate-dependencies-graph (objects output-dotfile-path)
+  "
+DO:     Generates a GraphViz dot file to draw the dependency-graph defined
+        by the nodes in the OBJECTS sequence and the ADJACENCY-LIST an
+        REACHABLE-LIST methods.
+"
   (with-open-file (dot output-dotfile-path
                        :direction :output
                        :if-does-not-exist :create
@@ -195,9 +250,6 @@ RETURN: The shortest path of length>0 from FROM to TO if it exists, or NIL.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-
-
-
 
 ;; (defun load-dependencies (path files)
 ;;   (with-open-file (stream path :external-format *iso-8859-1*)
@@ -247,8 +299,7 @@ RETURN: The shortest path of length>0 from FROM to TO if it exists, or NIL.
 ;;              (format t "~&The #include relationship between sources contains cycles! It should be a tree.~%"))
 ;;          (report-problems (hash-table-values *files*))))
 
+;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-;; (cd "/home/pjb/works/patchwork/pw-src/")
-;; (push (pwd) asdf:*central-registry*)
-;; (ql:quickload :patchwork)
+;;;; THE END ;;;;

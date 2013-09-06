@@ -1,6 +1,6 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               check-asdf.asd
+;;;;FILE:               bad-system-with-cycles.asd
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
@@ -32,16 +32,19 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.tools.check-asdf
-    :name "com.informatimago.check-asdf"
-    :description "Checks ASD Files and reports circular dependencies."
+(asdf:defsystem :com.informatimago.tools.bad-system-with-cycles
+    :name "com.informatimago.tools.bad-system-with-cycles"
+    :description "A bad system with cycles, to test check-asdf"
     :author "Pascal J. Bourguignon"
     :version "1.0.1"
     :license "GPL3"
     :depends-on ("com.informatimago.common-lisp.cesarum"
                  "com.informatimago.clext") 
-    :components ((:file "dependency-cycles")
-                 (:file "asdf-file"  :depends-on ("dependency-cycles"))
-                 (:file "check-asdf" :depends-on ("dependency-cycles" "asdf-file"))))
+    :components ((:file "a")
+                 (:file "b" :depends-on ("a" "c"))
+                 (:file "c" :depends-on ("b" "a"))
+                 (:file "d" :depends-on ("e"))
+                 (:file "e" :depends-on ("f"))
+                 (:file "f" :depends-on ("d"))))
 
 ;;;; THE END ;;;;
