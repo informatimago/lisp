@@ -553,7 +553,7 @@ License:
   (collect-ranges result-type (difference-ranges (slot-value set1 'ranges) (slot-value set2 'ranges))))
 
 (defmethod symetric-difference   ((result-type (eql 'index-set)) (set1 index-set) set2)
-  (make-instance 'index-set (symetric-difference-ranges (slot-value set1 'ranges) (slot-value set2 'ranges))))
+  (make-instance 'index-set 'ranges (symetric-difference-ranges (slot-value set1 'ranges) (slot-value set2 'ranges))))
 
 (defmethod symetric-difference   (result-type (set1 index-set) set2)
   (collect-ranges result-type (symetric-difference-ranges (slot-value set1 'ranges) (slot-value set2 'ranges))))

@@ -67,7 +67,8 @@ This system implements a portable stepper.
     
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
 
-    :depends-on ("com.informatimago.common-lisp.lisp-sexp")
+    :depends-on ("com.informatimago.common-lisp.cesarum"
+                 "com.informatimago.common-lisp.lisp-sexp")
     
     :components ((:file "stepper-packages")
                  (:file "stepper-functions" :depends-on ("stepper-packages"))
