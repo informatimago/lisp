@@ -32,6 +32,14 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
 
+#+(and ccl ccl-1.9)
+(let ((initialized nil))
+ (defun ccl::open-main-bundle ()
+   (if initialized
+       (#/mainBundle ns:ns-bundle)
+       (let ((mainBundle (#/mainBundle ns:ns-bundle)))
+         (#/initWithPath: mainBundle (namestring (truename ccl::*cocoa-ide-path*)))))))
+
 #+ccl (eval-when (:compile-toplevel :load-toplevel :execute)
         (require :cocoa))
 
