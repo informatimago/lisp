@@ -94,20 +94,34 @@ License:
     (com.informatimago.common-lisp.cesarum.ecma048:generate-all-functions-in-ecma048)))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-
-  (defun symbol-of-name-of-length=1 (object)
-    "PREDICATE of symbols of name of length = 1"
-    (and (symbolp object)
-         (= 1 (length (symbol-name object)))))
   
   (defun symbol-of-name-of-length=n (n)
     "RETURN: A symbol naming a predicate for a symbol of name of length = N."
-    (flet ((predicate (object)
-             (and (symbolp object)
-                  (= n (length (symbol-name object))))))
-      (let ((name (gensym "symbol-of-name-of-length=n-predicate")))
-        (setf (symbol-function name) (function predicate))
-        name))))
+    #-(and) (flet ((predicate (object)
+                     (and (symbolp object)
+                          (= n (length (symbol-name object))))))
+              (let ((name (gensym "symbol-of-name-of-length=n-predicate")))        
+                (setf (symbol-function name) (function predicate))
+                name))
+    #-(and) (eval `(defun ,(gensym "symbol-of-name-of-length=n-predicate") (object)
+                     (and (symbolp object)
+                          (= ,n (length (symbol-name object))))))
+    (intern (format nil "SYMBOL-OF-NAME-OF-LENGTH=~D-P" n)
+            (load-time-value (or (find-package #1="COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
+                                 (error "Could not find the package named ~S" '#1#)))))
+
+  );;eval-when
+
+(defmacro define-string-designator-satisfies-function (n)
+  `(eval-when  (:compile-toplevel :load-toplevel :execute)
+     (defun ,(symbol-of-name-of-length=n n)
+         (object)
+       (and (symbolp object)
+            (= ,n (length (symbol-name object)))))))
+
+(define-string-designator-satisfies-function 1)
+(define-string-designator-satisfies-function 2)
+(define-string-designator-satisfies-function 4)
 
 (deftype string-designator (&optional length)
   "
