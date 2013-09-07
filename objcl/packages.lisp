@@ -81,7 +81,7 @@ This package defines a simple test tool.
 
   #+ccl
   (:shadowing-import-from "CCL"
-                          "*COCOA-APPLICATION-FRAMEWORKS*" 
+                          #-ccl-1.9 "*COCOA-APPLICATION-FRAMEWORKS*" 
                           "@"
                           "DEFINE-CLASSNAME-TRANSLATION"
                           "LISP-TO-OBJC-CLASSNAME"
@@ -124,7 +124,7 @@ This package defines a simple test tool.
    "WITH-AUTORELEASED-NSSTRINGS"
 
    ;; from ccl.
-   "*COCOA-APPLICATION-FRAMEWORKS*" 
+   #-ccl-1.9 "*COCOA-APPLICATION-FRAMEWORKS*" 
    "@"
    "DEFINE-CLASSNAME-TRANSLATION"
    "LISP-TO-OBJC-CLASSNAME"
