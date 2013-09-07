@@ -58,7 +58,7 @@
   (step-simple-form `(cl:quote ,literal) form))
 
 
-(define-special-operator (if test then &optional (else nil elsep)) (&whole form &environment env)
+(define-special-operator (if test then &optional (else nil)) (&whole form &environment env)
   (simple-step `(cl:if ,(step-expression test env)
                   ,(step-expression then env)
                   ,(step-expression else env))
