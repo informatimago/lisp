@@ -135,10 +135,8 @@ NOTE:    characters are all designators of strings of length 1,
   (case length
     ;; sbcl binds * to length for 'string-designator ; is this conforming?
     ((nil *)   '(or character string symbol))
-    ((1)       '(or character (string 1) (satisfies symbol-of-name-of-length=1)))
-    (otherwise `(or (string ,length)
-                    #-sbcl (satisfies ,(symbol-of-name-of-length=n length))
-                    #+sbcl symbol))))
+    ((1)       `(or character (string 1) (satisfies ,(symbol-of-name-of-length=n 1))))
+    (otherwise `(or (string ,length) (satisfies ,(symbol-of-name-of-length=n length))))))
 
 
 (defun test/string-designator ()
