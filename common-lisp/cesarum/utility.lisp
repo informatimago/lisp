@@ -227,9 +227,9 @@ EXAMPLE:    (compose-and-call abs sin cos 0.234) --> 0.8264353
 
 (defmacro define-if-undefined (&rest definitions)
   "Use this to conditionally define functions, variables, or macros that
-  may or may not be pre-defined in this Lisp.  This can be used to provide
-  CLtL2 compatibility for older Lisps.
-  WHO'S THE AUTHOR?"
+may or may not be pre-defined in this Lisp.  This can be used to provide
+CLtL2 compatibility for older Lisps.
+WHO'S THE AUTHOR?"
   `(progn
      ,@(mapcar #'(lambda (def)
                    (let ((name (second def)))
