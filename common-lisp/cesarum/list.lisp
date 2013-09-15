@@ -27,7 +27,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2002 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2002 - 2013
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -46,17 +46,19 @@
 (in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
   (:use "COMMON-LISP")
-  (:export "DLL-NEXT" "DLL-PREVIOUS" "DLL-NODE" "LIST-TO-DOUBLE-LINKED-LIST"
-           "EQUIVALENCE-CLASSES" "SUBSETS" "COMBINE" "IOTA"
-           "MAKE-LIST-OF-RANDOM-NUMBERS" "LIST-INSERT-SEPARATOR"
-           "NSPLIT-LIST-ON-INDICATOR" "NSPLIT-LIST" "DEEPEST-REC" "DEEPEST" "DEPTH"
-           "FLATTEN" "LIST-TRIM" "TRANSPOSE" "AGET" "MEMQ"
-           "PLIST-KEYS" "PLIST-REMOVE" "PLIST-GET"
-           "PLIST-PUT" "PLIST-CLEANUP" "HASHED-INTERSECTION" 
-           ;; "HASHED-REMOVE-DUPLICATES" moved to COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE
-           "ENSURE-LIST" "PROPER-LIST-P" "LIST-LENGTHS" "LIST-ELEMENTS"
-           "ENSURE-CIRCULAR" "MAKE-CIRCULAR-LIST" "CIRCULAR-LENGTH"
-           "TREE-FIND" "TREE-DIFFERENCE" "REPLACE-TREE" "MAPTREE")
+  (:export
+   "PREPENDF"  "PUSH*"
+   "DLL-NEXT" "DLL-PREVIOUS" "DLL-NODE" "LIST-TO-DOUBLE-LINKED-LIST"
+   "EQUIVALENCE-CLASSES" "SUBSETS" "COMBINE" "IOTA"
+   "MAKE-LIST-OF-RANDOM-NUMBERS" "LIST-INSERT-SEPARATOR"
+   "NSPLIT-LIST-ON-INDICATOR" "NSPLIT-LIST" "DEEPEST-REC" "DEEPEST" "DEPTH"
+   "FLATTEN" "LIST-TRIM" "TRANSPOSE" "AGET" "MEMQ"
+   "PLIST-KEYS" "PLIST-REMOVE" "PLIST-GET"
+   "PLIST-PUT" "PLIST-CLEANUP" "HASHED-INTERSECTION" 
+   ;; "HASHED-REMOVE-DUPLICATES" moved to COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE
+   "ENSURE-LIST" "PROPER-LIST-P" "LIST-LENGTHS" "LIST-ELEMENTS"
+   "ENSURE-CIRCULAR" "MAKE-CIRCULAR-LIST" "CIRCULAR-LENGTH"
+   "TREE-FIND" "TREE-DIFFERENCE" "REPLACE-TREE" "MAPTREE")
   (:documentation
    "
 This package exports list processing functions.
@@ -66,7 +68,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2003 - 2012
+    Copyright Pascal J. Bourguignon 2003 - 2013
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -84,6 +86,22 @@ License:
 
 "))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
+
+
+(define-modify-macro prependf (place &rest lists)
+  (lambda (tail &rest lists) (apply (function append) (append lists (list tail)))))
+
+(defmacro push* (&rest elements-and-place)
+  `(prependf ,(car (last elements-and-place))
+             (list ,@(butlast elements-and-place))))
+
+(assert (equal (let ((i -1)
+                     (v (vector nil)))
+                 (push* 5 6 7 8 (aref v (incf i)))
+                 (decf i)
+                 (push* 1 2 3 4 (aref v (incf i)))
+                 (aref v 0))
+               '(1 2 3 4 5 6 7 8)))
 
 
 (defun ensure-list (item)
