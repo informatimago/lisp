@@ -80,8 +80,9 @@ Various Data Encoding/Decoding Algorithms:
     
     :components ((:file "data-encoding" :depends-on ())
                  ;; (:file "data-encoding-test" :depends-on ())
-                 (:file "bencode" :depends-on ())
-                 (:file "ecp"     :depends-on ())))
+                 (:file "bencode"     :depends-on ())
+                 (:file "hexadecimal" :depends-on ())
+                 (:file "ecp"         :depends-on ())))
 
 
 ;;;; THE END ;;;;
