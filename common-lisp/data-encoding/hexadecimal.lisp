@@ -136,7 +136,7 @@ License:
        (princ digits output))
       (:little-endian
        (loop
-         :for end :from (length digits) :by (- sex-width)
+         :for end :downfrom (length digits) :by sex-width
          :for start = (max 0 (- end sex-width))
          :while (plusp end)
          :do (princ (subseq digits start end) output))))))
