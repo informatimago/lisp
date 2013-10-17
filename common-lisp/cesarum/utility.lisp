@@ -78,7 +78,8 @@
    "DISTINCT-FLOAT-TYPES" "FLOAT-TYPECASE" "FLOAT-CTYPECASE" "FLOAT-ETYPECASE"
    "+EPSILON" "-EPSILON"
    ;; 14 - CONSES
-   "MAXIMIZE" "COMPUTE-CLOSURE" "TOPOLOGICAL-SORT"
+   "MAXIMIZE" "TOPOLOGICAL-SORT" "TRANSITIVE-CLOSURE"
+   "COMPUTE-CLOSURE" ; deprecated, renamed to transitive-closure
    ;; 15 - ARRAYS
    "VECTOR-INIT" "UNDISPLACE-ARRAY" "DICHOTOMY-SEARCH"
    ;; 16 - STRINGS
@@ -1216,6 +1217,11 @@ RETURN: The maximum value and the item in list for which predicate
 
 
 (defun compute-closure (fun set)
+  (warn "The function ~S has been renamed ~S, please update your programs."
+        'compute-closure 'transitive-closure)
+  (transitive-closure fun set))
+
+(defun transitive-closure (fun set)
   "
 FUN:     set --> P(set)
           x |--> { y }
