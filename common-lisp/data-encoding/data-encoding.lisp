@@ -33,7 +33,6 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
 
-(in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.DATA-ENCODING.DATA-ENCODING"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
