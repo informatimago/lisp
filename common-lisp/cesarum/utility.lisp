@@ -89,8 +89,8 @@
    ;; 18 - HASH-TABLES
    "HASH-TABLE-KEYS" "HASH-TABLE-VALUES"
    "HASH-TABLE-ENTRIES" "HASH-TABLE-PATH"
-   "COPY-HASH-TABLE"
-   "HASHTABLE" "PRINT-HASHTABLE" 
+   "COPY-HASH-TABLE" "MAP-INTO-HASH-TABLE"
+   "HASHTABLE" "PRINT-HASHTABLE"
    ;;
    "DICHOTOMY"
    "TRACING" "TRACING-LET" "TRACING-LET*" "TRACING-LABELS"
@@ -1535,6 +1535,33 @@ Note: we use the name HASHTABLE to avoid name collision."
                           (list :rehash-threshold rehash-threshold))))))
     (dolist (item elements table)
       (setf (gethash (first item) table) (second item)))))
+
+
+(defun map-into-hash-table (sequence &key
+                                       (key   (function identity))
+                                       (value (function identity))
+                                       (test  (function eql))
+                                       (size nil sizep)
+                                       (rehash-size nil rehash-size-p)
+                                       (rehash-threshold nil rehash-threshold-p))
+  "
+Creates a new hash-table, filled with the associations obtained by
+applying the function KEY and the function VALUE on each element of
+the SEQUENCE.
+The other key parameter are passed to MAKE-HASH-TABLE.
+"
+  (let ((table (apply (function make-hash-table)
+                      :test test
+                      (append (when sizep
+                                (list :size size))
+                              (when rehash-size-p
+                                (list :rehash-size rehash-size))
+                              (when rehash-threshold-p
+                                (list :rehash-threshold rehash-threshold))))))
+    (map nil (lambda (element)
+               (setf (gethash (funcall key element) table) (funcall value element)))
+         sequence)
+    table))
 
 
 (defun print-hashtable (table &optional (stream *standard-output*))
