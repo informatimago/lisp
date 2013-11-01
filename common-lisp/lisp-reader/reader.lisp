@@ -21,6 +21,8 @@
 ;;;;
 ;;;;    (READ-FROM-STRING "#1=(a b . #1#)") gives an error.
 ;;;;
+;;;;    `(,@x) is read as `(, @x) instead of `(,@ x)
+;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
