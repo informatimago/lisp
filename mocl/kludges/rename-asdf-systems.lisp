@@ -102,39 +102,51 @@
     `(,defsystem ,(rename-system-name system)
          ,@(process-options options))))
 
+
+(defun replace-asdf/defsystem (sexp-text)
+  (let* ((target  "asdf/defsystem")
+         (pos (search target sexp-text)))
+    (concatenate 'string (subseq sexp-text 0 pos)
+                 "asdf"
+                 (subseq sexp-text (+ pos (length target))))))
+
 (defun process-asd-file (path)
   (let ((name (pathname-name path)))
     (when (position #\. name)
-      (let* ((new-name (substitute +replacement+ #\. name))
-             (new-path (make-pathname :name new-name :defaults path))
-             (*package* (find-package "COMMON-LISP-USER")))
-        (with-open-file (out new-path
-                             :direction :output
-                             :if-does-not-exist :create
-                             :if-exists :supersede
-                             :external-format :iso-8859-1)
-          (with-open-file (inp path
-                               :direction :input
-                               :if-does-not-exist :error
+      (with-standard-io-syntax
+        (let* ((new-name (substitute +replacement+ #\. name))
+               (new-path (make-pathname :name new-name :defaults path))
+               (*package* (find-package "COMMON-LISP-USER"))
+               (*features* (remove :asdf-unicode *features*))
+               (*print-case* :downcase))
+          (with-open-file (out new-path
+                               :direction :output
+                               :if-does-not-exist :create
+                               :if-exists :supersede
                                :external-format :iso-8859-1)
-            (loop
-              :for sexp = (read inp nil inp)
-              :until (eq sexp inp)
-              :do (cond
-                    ((and (listp sexp)
-                          (eql 'cl:in-package (first sexp)))
-                     (setf *package* (find-package (second sexp)))
-                     (pprint (print sexp out)))
-                    ((and (listp sexp)
-                          (eql 'asdf:defsystem (first sexp)))
-                     (pprint (print (rename-systems sexp) out)))
-                    (t
-                      (pprint (print sexp out)))))))))))
+            (with-open-file (inp path
+                                 :direction :input
+                                 :if-does-not-exist :error
+                                 :external-format :iso-8859-1)
+              (loop
+                :for sexp = (read inp nil inp)
+                :until (eq sexp inp)
+                :do (cond
+                      ((and (listp sexp)
+                            (eql 'cl:in-package (first sexp)))
+                       (setf *package* (find-package (second sexp)))
+                       (print sexp out))
+                      ((and (listp sexp)
+                            (eql 'asdf:defsystem (first sexp)))
+                       (terpri out)
+                       (princ (replace-asdf/defsystem (prin1-to-string (rename-systems sexp))) out))
+                      (t
+                       (print sexp out)))))))))))
 
 (defun generate-renamed-systems-from-directory (directory)
   (map nil (function process-asd-file)
        (directory (merge-pathnames "**/*.asd" directory nil))))
 
 
-
+;; (com.informatimago.mocl.kludges.rename-asdf-systems:generate-renamed-systems-from-directory #P"~/src/public/lisp/")
 ;;;; THE END ;;;;
