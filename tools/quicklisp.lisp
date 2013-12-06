@@ -48,7 +48,8 @@
            "QUICK-WHERE"
            "QUICK-DELETE"
            "QUICK-RELOAD"
-           "QUICK-LOCAL-PROJECTS"))
+           "QUICK-LOCAL-PROJECTS")
+  (:documentation "Quicklisp quick commands."))
 (in-package "COM.INFORMATIMAGO.TOOLS.QUICKLISP")
 
 (defun print-systems (systems pattern)

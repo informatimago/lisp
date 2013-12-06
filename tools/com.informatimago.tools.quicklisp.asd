@@ -39,6 +39,8 @@
     :version "1.0.0"
     :license "GPL3"
     :depends-on ("quicklisp") 
-    :components ((:file "quicklisp")))
+    :components ((:file "quicklisp")
+                 (:file "pathname")
+                 (:file "asdf" :depends-on ("quicklisp" "pathname"))))
 
 ;;;; THE END ;;;;
