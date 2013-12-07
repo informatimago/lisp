@@ -34,7 +34,8 @@
 
 (defpackage "COM.INFORMATIMAGO.TOOLS.QUICKLISP"
   (:use "COMMON-LISP"
-        "QUICKLISP")
+        "QUICKLISP"
+        "ASDF")
   (:export "PRINT-SYSTEMS"
            "QUICK-INSTALLED-SYSTEMS"
            "QUICK-LIST-SYSTEMS"
@@ -135,7 +136,7 @@ are listed."
 
 (defun quick-delete (&rest systems)
   "Delete the ASDF systems so they'll be reloaded."
-  (map 'list (lambda (system) (asdf-delete-system system)) systems))
+  (map 'list (lambda (system) (asdf:clear-system system)) systems))
 
 (defun quick-reload (&rest systems)
   "Delete and reload the ASDF systems."

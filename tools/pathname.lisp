@@ -33,26 +33,53 @@
 ;;;;**************************************************************************
 (defpackage "COM.INFORMATIMAGO.TOOLS.PATHNAME"
   (:use "COMMON-LISP")
-  (:export "MAKE-PATHNAME*"
-           "USER-PATHNAME")
+  (:shadow "MAKE-PATHNAME"
+           "USER-HOMEDIR-PATHNAME"
+           "TRANSLATE-LOGICAL-PATHNAME")
+  (:export "MAKE-PATHNAME"
+           "USER-HOMEDIR-PATHNAME"
+           "TRANSLATE-LOGICAL-PATHNAME")
   (:documentation "Pathname tools."))
 (in-package "COM.INFORMATIMAGO.TOOLS.PATHNAME")
 
-
-(defun user-pathname ()
-  "On MS-Windows, it's not the USER-HOMEDIR-PATHNAME."
-  #+windows-target (let ((home (ccl::getenv "HOME")))
-                     (if home
-                         (pathname (format nil "~A\\" home))
-                         #P"C:\\cygwin\\home\\pjb\\"))
-  #-windows-target (USER-HOMEDIR-PATHNAME))
+;; in those implementations, :case :common is not downcased on posix systems.
+#+(or allegro ccl emacs-cl)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (pushnew :bad-pathname-implementation *features*))
 
 
-(defun make-pathname* (&key (host nil hostp) (device nil devicep) (directory nil directoryp)
+(defun user-homedir-pathname ()
+  "On CCL on MS-Windows, it's not the USER-HOMEDIR-PATHNAME."
+  #+(and ccl windows-target)
+  (let ((home (ccl::getenv "HOME")))
+    (if home
+        (pathname (format nil "~A\\" home))
+        #P"C:\\cygwin\\home\\pjb\\"))
+  #-(and ccl windows-target)
+  (cl:user-homedir-pathname))
+
+
+(defun translate-logical-pathname (pathname)
+  (cl:translate-logical-pathname
+   (etypecase pathname
+     (string             (pathname pathname))
+     (logical-pathname   (make-pathname :host      (pathname-host pathname)
+                                        :device    (pathname-device pathname)
+                                        :directory (pathname-directory pathname)
+                                        :name      (pathname-name pathname)
+                                        :type      (pathname-type pathname)
+                                        :version   (pathname-version pathname)
+                                        :defaults  pathname
+                                        :case      :common))
+     (pathname           pathname))))
+
+
+(defun make-pathname (&key (host nil hostp) (device nil devicep) (directory nil directoryp)
                        (name nil namep) (type nil typep) (version nil versionp)
                        (defaults nil defaultsp) (case :local casep))
   (declare (ignorable casep))
-  #+ (or abcl ccl allegro)
+
+  #+:bad-pathname-implementation
   (labels ((localize (object)
              (typecase object
                (list   (mapcar (function localize) object))
@@ -63,7 +90,7 @@
                (list key (if (eql case :common)
                              (localize value)
                              value)))))
-    (apply (function make-pathname)
+    (apply (function cl:make-pathname)
            (append (parameter hostp      :host      host)
                    (parameter devicep    :device    device)
                    (parameter directoryp :directory directory)
@@ -72,8 +99,8 @@
                    (parameter versionp   :version   version)
                    (parameter defaultsp  :defaults  defaults)
                    (list :case :local))))
-  #-(or abcl ccl allegro)
-  (apply (function make-pathname)
+  #-:bad-pathname-implementation
+  (apply (function cl:make-pathname)
          (append
           (when hostp      (list :host      host))
           (when devicep    (list :device    device))

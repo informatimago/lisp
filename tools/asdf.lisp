@@ -35,8 +35,10 @@
 (defpackage "COM.INFORMATIMAGO.TOOLS.ASDF"
   (:use "COMMON-LISP"
         "ASDF"
-        "QUICKLISP"
-        "COM.INFORMATIMAGO.TOOLS.PATHNAME")
+        "QUICKLISP")
+  (:shadowing-import-from 
+   "COM.INFORMATIMAGO.TOOLS.PATHNAME"
+   "USER-HOMEDIR-PATHNAME" "MAKE-PATHNAME" "TRANSLATE-LOGICAL-PATHNAME")
   (:export "ASDF-LOAD"
            "ASDF-LOAD-SOURCE"
            "ASDF-INSTALL"
@@ -81,9 +83,9 @@
 
 
 (defparameter *asdf-registry-file*
-  (merge-pathnames (user-pathname)
-                   (make-pathname* :name "ASDF-CENTRAL-REGISTRY" :type "DATA" :version :newest :case :common
-                                   :defaults (user-pathname))
+  (merge-pathnames (user-homedir-pathname)
+                   (make-pathname :name "ASDF-CENTRAL-REGISTRY" :type "DATA" :version :newest :case :common
+                                  :defaults (user-homedir-pathname))
                    nil)
   "Cache file.")
 
@@ -97,10 +99,10 @@ It is sorted in ascending namestring length."
       (sort 
        (delete-duplicates 
         (mapcar
-         (lambda (p) (make-pathname* :name nil :type nil :version nil :defaults p))
+         (lambda (p) (make-pathname :name nil :type nil :version nil :defaults p))
          (mapcan (lambda (dir)
                    (directory (merge-pathnames
-                               (make-pathname* :directory (if (pathname-directory dir)
+                               (make-pathname :directory (if (pathname-directory dir)
                                                              '(:relative :wild-inferiors)
                                                              '(:absolute :wild-inferiors))
                                               :name :wild
@@ -112,8 +114,8 @@ It is sorted in ascending namestring length."
                  directories))
         :test (function equal))
        (lambda (a b) (if (= (length a) (length b))
-                    (string< a b)
-                    (< (length a) (length b))))
+                         (string< a b)
+                         (< (length a) (length b))))
        :key (function namestring))
     (format *trace-output* "~&;; Done.~%")))
 
