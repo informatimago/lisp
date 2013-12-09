@@ -42,10 +42,9 @@
   (:documentation "Pathname tools."))
 (in-package "COM.INFORMATIMAGO.TOOLS.PATHNAME")
 
-;; in those implementations, :case :common is not downcased on posix systems.
-#+(or allegro ccl emacs-cl)
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (pushnew :bad-pathname-implementation *features*))
+(defparameter *case-common-is-not-downcased-on-posix-systems*
+  #+(or allegro ccl emacs-cl) t
+  #+(or allegro ccl emacs-cl) nil)
 
 
 (defun user-homedir-pathname ()
@@ -59,10 +58,47 @@
   (cl:user-homedir-pathname))
 
 
+(defun make-pathname (&key (host nil hostp) (device nil devicep) (directory nil directoryp)
+                        (name nil namep) (type nil typep) (version nil versionp)
+                        (defaults nil defaultsp) (case :local casep))
+  (declare (ignorable casep))
+
+  (if *case-common-is-not-downcased-on-posix-systems*
+      (labels ((localize (object)
+                 (typecase object
+                   (list   (mapcar (function localize) object))
+                   (string (string-downcase object))
+                   (t      object)))
+               (parameter (indicator key value)
+                 (when indicator
+                   (list key (if (eql case :common)
+                                 (localize value)
+                                 value)))))
+        (apply (function cl:make-pathname)
+               (print (append (parameter hostp      :host      host)
+                        (parameter devicep    :device    device)
+                        (parameter directoryp :directory directory)
+                        (parameter namep      :name      name)
+                        (parameter typep      :type      type)
+                        (parameter versionp   :version   version)
+                        (parameter defaultsp  :defaults  defaults)
+                        (list :case :local)))))
+      (apply (function cl:make-pathname)
+             (append
+              (when hostp      (list :host      host))
+              (when devicep    (list :device    device))
+              (when directoryp (list :directory directory))
+              (when namep      (list :name      name))
+              (when typep      (list :type      type))
+              (when versionp   (list :version   version))
+              (when defaultsp  (list :defaults  defaults))
+              (when casep      (list :case      case))))))
+
+
 (defun translate-logical-pathname (pathname)
   (cl:translate-logical-pathname
    (etypecase pathname
-     (string             (pathname pathname))
+     (string             (translate-logical-pathname (pathname pathname)))
      (logical-pathname   (make-pathname :host      (pathname-host pathname)
                                         :device    (pathname-device pathname)
                                         :directory (pathname-directory pathname)
@@ -72,44 +108,6 @@
                                         :defaults  pathname
                                         :case      :common))
      (pathname           pathname))))
-
-
-(defun make-pathname (&key (host nil hostp) (device nil devicep) (directory nil directoryp)
-                       (name nil namep) (type nil typep) (version nil versionp)
-                       (defaults nil defaultsp) (case :local casep))
-  (declare (ignorable casep))
-
-  #+:bad-pathname-implementation
-  (labels ((localize (object)
-             (typecase object
-               (list   (mapcar (function localize) object))
-               (string (string-downcase object))
-               (t      object)))
-           (parameter (indicator key value)
-             (when indicator
-               (list key (if (eql case :common)
-                             (localize value)
-                             value)))))
-    (apply (function cl:make-pathname)
-           (append (parameter hostp      :host      host)
-                   (parameter devicep    :device    device)
-                   (parameter directoryp :directory directory)
-                   (parameter namep      :name      name)
-                   (parameter typep      :type      type)
-                   (parameter versionp   :version   version)
-                   (parameter defaultsp  :defaults  defaults)
-                   (list :case :local))))
-  #-:bad-pathname-implementation
-  (apply (function cl:make-pathname)
-         (append
-          (when hostp      (list :host      host))
-          (when devicep    (list :device    device))
-          (when directoryp (list :directory directory))
-          (when namep      (list :name      name))
-          (when typep      (list :type      type))
-          (when versionp   (list :version   version))
-          (when defaultsp  (list :defaults  defaults))
-          (when casep      (list :case      case)))))
 
 
 ;;;; THE END ;;;;
