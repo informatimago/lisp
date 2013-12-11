@@ -40,7 +40,8 @@
   (:shadowing-import-from "CLOSER-MOP"
                           "STANDARD-CLASS" "STANDARD-GENERIC-FUNCTION" "STANDARD-METHOD"
                           "DEFMETHOD" "DEFGENERIC")
-  (:export "DEFINE-CLASS" "DEFINE-ASSOCIATION" "CHECK-OBJECT" "CHECK-CHAIN"))
+  (:export "DEFINE-CLASS" "DEFINE-ASSOCIATION" "CHECK-OBJECT" "CHECK-CHAIN"
+           "ATTACH" "DETACH" "ASSOCIATEDP"  "DID-LINK" "WILL-UNLINK"))
 (in-package "COM.INFORMATIMAGO.CLEXT.ASSOCIATION")
 
 
@@ -111,7 +112,7 @@ DO:     Define a class, with a slightly different syntax.
     "
 DO:            Decodes the multiplicity.
 MULTIPLICITY:  may be either an integer,  or a string designator
-               the form  \"*\"or \"MIN-MAX\" or \"MIN..MAX\".
+               the form  \"*\" or \"MIN-MAX\" or \"MIN..MAX\".
                (beware that the token 0..1 is a 'potential number').
 RETURN:        MIN; MAX"
     (multiple-value-bind (min max)
@@ -458,6 +459,11 @@ RETURN:        MIN; MAX"
     class))
 
 
+(defun scat (&rest string-designators)
+  (intern (apply (function concatenate) 'string
+                 (mapcar (function string) string-designators))))
+
+
 (defmacro define-association (name endpoints &rest options)
   "
 Define functions to manage the association:
@@ -554,6 +560,8 @@ IMPLEMENTATION is (OR (MEMBER REFERENCE LIST VECTOR HASH-TABLE A-LIST P-LIST REI
 
 ORDERED        boolean indicating whether the objects are ordered in the containers
                (only for REFERENCE, LIST, VECTOR and REIFIED).
+
+
 OPTIONS        a list of (:keyword ...) options.
    (:DOCUMENTATION string)
 
@@ -564,7 +572,7 @@ BUGS:    If there is an error in handling one association end, after
     (error "The association ~A needs at least two endpoints." name))
   (assert (= 2 (length endpoints)) ()
           "Sorry, associations with more than two endpoints such ~
-           as ~A are not implemented yet." name)
+            as ~A are not implemented yet." name)
   (let* ((link-parameters (generate-link-parameters endpoints))
          (link-arguments  (generate-link-arguments  endpoints))
          (types           (loop :for endpoint :in endpoints
@@ -574,9 +582,9 @@ BUGS:    If there is an error in handling one association end, after
                              (length (remove-duplicates types))))
          (attach-args-permutations
           (and attachp (permutations (generate-attach-parameters endpoints))))
-         (link            (intern (format nil "~A-LINK"   name)))
-         (unlink          (intern (format nil "~A-UNLINK" name)))
-         (contains-p      (intern (format nil "~A-CONTAINS-P" name))))
+         (link            (scat name '-link))
+         (unlink          (scat name '-unlink))
+         (contains-p      (scat name '-contains-p)))
 
     `(progn
        ,@(loop
@@ -621,7 +629,8 @@ BUGS:    If there is an error in handling one association end, after
               t))
        ,@ (when attachp
             (let ((link-arguments
-                   (generate-link-arguments (first attach-args-permutations))))
+                   (generate-link-arguments endpoints ;; (first attach-args-permutations)
+                                            )))
               (mapcar (lambda (arguments)
                         (let ((arguments (cons `(asso (eql ',name)) arguments)))
                           `(progn
