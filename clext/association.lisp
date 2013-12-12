@@ -237,6 +237,7 @@ RETURN:        MIN; MAX"
               :test ,test))
 
   (defun generate-getter (accessor slot copier object value)
+    (declare (ignore value))
     (if (eq copier 'identity)
         (if accessor
             `(,accessor ,object)
@@ -249,12 +250,16 @@ RETURN:        MIN; MAX"
   (defgeneric did-link    (association-name left right)
     (:documentation
      "Hook called after a new link for the association is created between LEFT and RIGHT.")
-    (:method (association-name (left t) (right t)) (values)))
+    (:method (association-name (left t) (right t))
+      (declare (ignorable association-name))
+      (values)))
 
   (defgeneric will-unlink (association-name left right)
     (:documentation
      "Hook called before an old link for the association is removed between LEFT and RIGHT.")
-    (:method (association-name (left t) (right t)) (values)))
+    (:method (association-name (left t) (right t))
+      (declare (ignorable association-name))
+      (values)))
 
 
   (defun generate-addset (association-name value object this)
@@ -267,6 +272,7 @@ RETURN:        MIN; MAX"
                                    ((:copy this-copy) '(function identity))
                                    &allow-other-keys) this
       (multiple-value-bind (this-min this-max) (multiplicity this-multiplicity)
+        (declare (ignore this-min))
         (let ((this-implementation (or this-implementation
                                        (if (equal 1 this-max) 'reference 'list))))
           (assert (member this-implementation  '(list reference))
@@ -324,6 +330,7 @@ RETURN:        MIN; MAX"
                                    ((:test this-test) '(function eql))
                                    ((:copy this-copy) '(function identity))
                                    &allow-other-keys) this
+      (declare (ignore this-copy))
       (multiple-value-bind (this-min this-max) (multiplicity this-multiplicity)
         (let ((this-implementation (or this-implementation
                                        (if (equal 1 this-max) 'reference 'list))))
@@ -375,6 +382,7 @@ RETURN:        MIN; MAX"
 
   
   (defun generate-contains-p (association-name value object this)
+    (declare (ignore association-name))
     (destructuring-bind (this-role &key
                                    ((:slot this-slot))
                                    ((:accessor this-accessor))
@@ -383,7 +391,9 @@ RETURN:        MIN; MAX"
                                    ((:test this-test) '(function eql))
                                    ((:copy this-copy) '(function identity))
                                    &allow-other-keys) this
+      (declare (ignore this-role this-copy))
       (multiple-value-bind (this-min this-max) (multiplicity this-multiplicity)
+        (declare (ignore this-min))
         (let ((this-implementation (or this-implementation
                                        (if (equal 1 this-max) 'reference 'list))))
           (assert (member this-implementation  '(list reference))
@@ -568,12 +578,25 @@ OPTIONS        a list of (:keyword ...) options.
 BUGS:    If there is an error in handling one association end, after
          handling the other end, the state becomes invalid. No transaction :-(
 "
+  (declare (ignore options)) ; for now
   (when (endp (rest endpoints))
     (error "The association ~A needs at least two endpoints." name))
   (assert (= 2 (length endpoints)) ()
           "Sorry, associations with more than two endpoints such ~
             as ~A are not implemented yet." name)
-  (let* ((link-parameters (generate-link-parameters endpoints))
+  (let* ((endpoints (mapcar (lambda (endpoint)
+                              (destructuring-bind (role &rest others
+                                                        &key slot accessor type
+                                                        &allow-other-keys) endpoint
+                                (unless (or slot accessor)
+                                  (assert type (type)
+                                          "A :TYPE for the association end must be given ~
+                                                when there's no :ACCESSOR or :SLOT.")
+                                  (unless slot
+                                    (setf slot role)))
+                                (list* role :slot slot :accessor accessor :type type others)))
+                            endpoints))
+         (link-parameters (generate-link-parameters endpoints))
          (link-arguments  (generate-link-arguments  endpoints))
          (types           (loop :for endpoint :in endpoints
                              :for type = (getf (rest endpoint) :type)
@@ -587,20 +610,15 @@ BUGS:    If there is an error in handling one association end, after
          (contains-p      (scat name '-contains-p)))
 
     `(progn
-       ,@(loop
-            :with result = '()
-            :for endpoint :in endpoints
-            :do (destructuring-bind (this-role &key
-                                               ((:slot this-slot))
-                                               ((:accessor this-accessor))
-                                               ((:type this-type))
-                                               &allow-other-keys) endpoint
-                  (unless (or this-slot this-accessor)
-                    (assert this-type (this-type)
-                            "A :TYPE for the association end must be given ~
-                             when there's no :ACCESSOR or :SLOT.")
-                    (push `(ensure-class-slot ',this-type ',this-role) result)))
-            :finally (return result)) 
+       ,@(let ((troles (mapcar (lambda (endpoint)
+                                 (destructuring-bind (role &key slot &allow-other-keys) endpoint
+                                   (list role slot)))
+                               endpoints)))
+              (append
+               (when (second (second troles))
+                 (list `(ensure-class-slot ',(first (first troles)) ',(second (second troles)))))
+               (when (second (first troles))
+                 (list `(ensure-class-slot ',(first (second troles)) ',(second (first troles))))))) 
        (defun ,link (&key ,@link-parameters)
          ,(generate-addset name
                            (first link-parameters) (second link-parameters)
