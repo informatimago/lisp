@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2"
+xmlns:gx="http://www.google.com/kml/ext/2.2"
+xmlns:atom="http://www.w3.org/2005/Atom">
+<Document>
+<open>1</open>
+<visibility>1</visibility>
+<name><![CDATA[rue_saint_lazarre]]></name>
+<atom:author><atom:name><![CDATA[Created by Google My Tracks on Android.]]></atom:name></atom:author>
+<Style id="track">
+<LineStyle><color>7f0000ff</color><width>4</width></LineStyle>
+<IconStyle>
+<scale>1.3</scale>
+<Icon><href>http://earth.google.com/images/kml-icons/track-directional/track-0.png</href></Icon>
+</IconStyle>
+</Style>
+<Style id="start"><IconStyle>
+<scale>1.3</scale>
+<Icon><href>http://maps.google.com/mapfiles/kml/paddle/grn-circle.png</href></Icon>
+<hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+</IconStyle></Style>
+<Style id="end"><IconStyle>
+<scale>1.3</scale>
+<Icon><href>http://maps.google.com/mapfiles/kml/paddle/red-circle.png</href></Icon>
+<hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+</IconStyle></Style>
+<Style id="statistics"><IconStyle>
+<scale>1.3</scale>
+<Icon><href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href></Icon>
+<hotSpot x="20" y="2" xunits="pixels" yunits="pixels"/>
+</IconStyle></Style>
+<Style id="waypoint"><IconStyle>
+<scale>1.3</scale>
+<Icon><href>http://maps.google.com/mapfiles/kml/pushpin/blue-pushpin.png</href></Icon>
+<hotSpot x="20" y="2" xunits="pixels" yunits="pixels"/>
+</IconStyle></Style>
+<Schema id="schema">
+<gx:SimpleArrayField name="power" type="int">
+<displayName><![CDATA[Power (W)]]></displayName>
+</gx:SimpleArrayField>
+<gx:SimpleArrayField name="cadence" type="int">
+<displayName><![CDATA[Cadence (rpm)]]></displayName>
+</gx:SimpleArrayField>
+<gx:SimpleArrayField name="heart_rate" type="int">
+<displayName><![CDATA[Heart rate (bpm)]]></displayName>
+</gx:SimpleArrayField>
+</Schema>
+<Placemark>
+<name><![CDATA[rue_saint_lazarre (Start)]]></name>
+<description><![CDATA[]]></description>
+<TimeStamp><when>2013-12-12T09:57:03.357Z</when></TimeStamp>
+<styleUrl>#start</styleUrl>
+<Point>
+<coordinates>2.329783,48.876475</coordinates>
+</Point>
+</Placemark>
+<Placemark id="tour">
+<name><![CDATA[rue_saint_lazarre]]></name>
+<description><![CDATA[test]]></description>
+<styleUrl>#track</styleUrl>
+<ExtendedData>
+<Data name="type"><value><![CDATA[walking]]></value></Data>
+</ExtendedData>
+<gx:MultiTrack>
+<altitudeMode>absolute</altitudeMode>
+<gx:interpolate>1</gx:interpolate>
+<gx:Track>
+<when>2013-12-12T09:57:03.357Z</when>
+<gx:coord>2.329783 48.876475</gx:coord>
+<when>2013-12-12T09:59:06.252Z</when>
+<gx:coord>2.329823 48.876416</gx:coord>
+<when>2013-12-12T09:59:17.998Z</when>
+<gx:coord>2.33033 48.876009</gx:coord>
+<when>2013-12-12T10:00:11.818Z</when>
+<gx:coord>2.330355 48.876095</gx:coord>
+<when>2013-12-12T10:00:34.358Z</when>
+<gx:coord>2.330694 48.876177</gx:coord>
+<when>2013-12-12T10:01:10.672Z</when>
+<gx:coord>2.33068 48.876137</gx:coord>
+<when>2013-12-12T10:01:15.448Z</when>
+<gx:coord>2.330462 48.876</gx:coord>
+<when>2013-12-12T10:01:35.959Z</when>
+<gx:coord>2.330492 48.876052</gx:coord>
+<when>2013-12-12T10:01:40.951Z</when>
+<gx:coord>2.330828 48.876201</gx:coord>
+<when>2013-12-12T10:03:46.203Z</when>
+<gx:coord>2.330729 48.876172</gx:coord>
+<when>2013-12-12T10:03:51.377Z</when>
+<gx:coord>2.330676 48.876133</gx:coord>
+<when>2013-12-12T10:04:04.718Z</when>
+<gx:coord>2.330644 48.87611</gx:coord>
+<when>2013-12-12T10:04:09.568Z</when>
+<gx:coord>2.330258 48.875949</gx:coord>
+<when>2013-12-12T10:04:37.833Z</when>
+<gx:coord>2.330155 48.875928</gx:coord>
+<when>2013-12-12T10:04:46.491Z</when>
+<gx:coord>2.330115 48.875935</gx:coord>
+<when>2013-12-12T10:05:26.697Z</when>
+<gx:coord>2.330107 48.875976</gx:coord>
+<when>2013-12-12T10:05:26.825Z</when>
+<gx:coord>2.329811 48.876438</gx:coord>
+<when>2013-12-12T10:06:56.739Z</when>
+<gx:coord>2.329808 48.876452</gx:coord>
+<ExtendedData>
+<SchemaData schemaUrl="#schema">
+</SchemaData>
+</ExtendedData>
+</gx:Track>
+</gx:MultiTrack>
+</Placemark>
+<Placemark>
+<name><![CDATA[rue_saint_lazarre (End)]]></name>
+<description><![CDATA[Created by Google My Tracks on Android.
+
+Name: rue_saint_lazarre
+Activity type: walking
+Description: test
+Total distance: 0.28 km (0.2 mi)
+Total time: 09:59
+Moving time: 01:02
+Average speed: 1.68 km/h (1.0 mi/h)
+Average moving speed: 16.06 km/h (10.0 mi/h)
+Max speed: 16.06 km/h (10.0 mi/h)
+Average pace: 35:38 min/km (57:21 min/mi)
+Average moving pace: 3:44 min/km (6:01 min/mi)
+Fastest pace: 3:44 min/km (6:01 min/mi)
+Max elevation: -9223372036854775808 m (-9223372036854775808 ft)
+Min elevation: 9223372036854775807 m (9223372036854775807 ft)
+Elevation gain: 0 m (0 ft)
+Max grade: 0 %
+Min grade: 0 %
+Recorded: 12/12/2013 10:56
+]]></description>
+<TimeStamp><when>2013-12-12T10:06:56.739Z</when></TimeStamp>
+<styleUrl>#end</styleUrl>
+<Point>
+<coordinates>2.329808,48.876452</coordinates>
+</Point>
+</Placemark>
+</Document>
+</kml>

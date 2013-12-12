@@ -47,6 +47,7 @@
 
            "MAKE-ELEMENT" "ELEMENT-NAME" "ELEMENT-ATTRIBUTES" "ELEMENT-CHILDREN"
            "MAKE-ATTRIBUTE" "ATTRIBUTE-NAME" "ATTRIBUTE-VALUE"
+           "ELEMENT-TAG"
 
            "GET-ATTRIBUTE-NAMED" "VALUE-OF-ATTRIBUTE-NAMED"
            "GET-FIRST-CHILD" "GET-FIRST-CHILD-VALUED"
@@ -436,6 +437,13 @@ FIELDS: A list of symbols.  The before the last one can be &REST in which case
 
 (define-list-structure element name attributes &rest children)
 (define-list-structure attribute name value)
+
+(defgeneric element-tag       (element)
+  (:method ((element t))
+    (let ((tag (element-name element)))
+      (if (listp tag)
+          (first tag)
+          tag))))
 
 (defgeneric entity-name-equal-p (a b)
   (:documentation "xmls entity name may go in namespaces in which case they're lists: (name namespace)")
