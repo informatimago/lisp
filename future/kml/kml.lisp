@@ -1,0 +1,88 @@
+(ql:quickload :xmls)
+(ql:quickload :split-sequence)
+(load #P"/home/pjb/src/public/lisp/future/xmls-tools.lisp")
+(use-package '("XMLS-TOOLS" "SPLIT-SEQUENCE"))
+
+(defun cated-element-children (node)
+  (with-output-to-string (out)
+    (format out "~{~A~^ ~}" (element-children node))))
+
+(defun lat-lon-from-coord (string)
+  (values-list (SPLIT-SEQUENCE-if (lambda (ch) (find ch " ,")) string)))
+
+(defun kml-to-gpx (kml)
+  (let* ((doc (element-at-path kml '("Document")))
+         (name (cated-element-children (element-at-path  doc '("name"))))
+         (author-name (cated-element-children (element-at-path  doc '("author" "name"))))
+         (waypoints)
+         (tracks))
+    (dolist (placemark  (get-children-tagged doc "Placemark"))
+      (cond
+        ((get-children-tagged placemark "Point")
+         (let ((name  (cated-element-children (element-at-path  placemark '("name"))))
+               (desc  (cated-element-children (element-at-path  placemark '("description"))))
+               (time  (cated-element-children (element-at-path  placemark '("TimeStamp" "when"))))
+               (type  (cated-element-children (element-at-path  placemark '("styleUrl"))))
+               (coord (cated-element-children (element-at-path  placemark '("Point" "coordinates")))))
+           (multiple-value-bind (latitude longitude) (lat-lon-from-coord coord)
+             (push `("wpt" (("lat" ,latitude) ("lon" ,longitude))
+                           ("name" () ,name)
+                           ("desc" () ,desc)
+                           ("time" () ,time)
+                           ("type" () ,type))
+                   waypoints))))
+        ((get-children-tagged placemark "MultiTrack")
+         (let ((name  (cated-element-children (element-at-path  placemark '("name"))))
+               (desc  (cated-element-children (element-at-path  placemark '("description"))))
+               (time  (cated-element-children (element-at-path  placemark '("TimeStamp" "when"))))
+               (type  (cated-element-children (element-at-path (get-first-child-valued (element-at-path  placemark '("ExtendedData")) "name" "type")
+                                                               '("value"))))
+               (multi  (element-at-path  placemark '("MultiTrack")))
+               (segments))
+           (dolist (track (get-children-tagged multi "Track"))
+             (push `("trkseg" () ,@(loop
+                                     :with waypoints = '()
+                                     :with when
+                                     :for item :in (element-children track)
+                                     :do (cond
+                                           ((string= "when" (element-tag item))
+                                            (setf when (cated-element-children item)))
+                                           ((string= "coord" (element-tag item))
+                                            (multiple-value-bind (latitude longitude) (lat-lon-from-coord (cated-element-children item))
+                                              (push `("trkpt" (("lat" ,latitude) ("lon" ,longitude)) ("time" () ,when)) waypoints))))
+                                     :finally (return waypoints)))
+                   segments))
+           (push `("trk" ()
+                         ("name" () ,name)
+                         ("desc" () ,desc)
+                         ("time" () ,time)
+                         ("type" () ,type)
+                         ,@(reverse segments))
+                 tracks)))
+        (t (warn "Unknown kind of placemark ~S" placemark))))
+
+    `("gpx" (("xmlns" "http://www.topografix.com/GPX/1/1")
+             ("xmlns:xsi" "http://www.w3.org/2001/XMLSchema-instance")
+             ("xsi:schemaLocation" "http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd")
+             ("version" "1.1")
+             ("creator" "com.informatimago.kml2gpx"))
+            ("name" () ,name)
+            ("author" () ("name" () ,author-name))
+            ,@(reverse  waypoints)
+            ,@(reverse tracks))))
+
+
+(defun convert-kml-to-gpx (kml-file)
+  (let ((gpx-file (make-pathname :type "gpx" :case :local :defaults kml-file)))
+    (with-open-file (gpx gpx-file
+                         :direction :output
+                         :if-does-not-exist :create
+                         :if-exists :supersede)
+      (write-line "<?xml version=\"1.0\" standalone=\"yes\"?>" gpx)
+      (xmls:write-xml (kml-to-gpx (with-open-file (kml kml-file) (xmls:parse kml)))
+                      gpx :indent nil)
+      (pathname gpx))))
+
+(convert-kml-to-gpx  #P"~/src/kml/rue_saint_lazarre.kml")
+
+

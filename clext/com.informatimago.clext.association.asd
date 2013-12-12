@@ -1,12 +1,12 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               com.informatimago.clext.asd
+;;;;FILE:               com.informatimago.clext.association.asd
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    ASD file to load the com.informatimago.clext library.
+;;;;    ASD file to load the com.informatimago.clext.association library.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
@@ -32,17 +32,16 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.clext
+(asdf:defsystem :com.informatimago.clext.association
 
     ;; system attributes:
     
-    :description "Common Lisp Extensions."
+    :description "Common Lisp Extensions: Associations."
 
     :long-description "
 
-This system provides Common-Lisp packages that are mostly portable,
-but that use some extensions, packages out of the Common-Lisp
-specifications, like GRAY or other portability libraries.
+This system provides a Common-Lisp package exporting a macro to define
+CLOS associations.  It uses CLOSER-MOP.
 
 "
 
@@ -55,9 +54,9 @@ specifications, like GRAY or other portability libraries.
     
     ;; component attributes:
     
-    :name "Informatimago Common Lisp Extensions"
+    :name "Informatimago Common Lisp Extensions Associations"
     
-    :version "1.3.2"
+    :version "1.0.0"
     
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Autumn 2010")
@@ -69,13 +68,9 @@ specifications, like GRAY or other portability libraries.
 
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
 
-    :depends-on ("com.informatimago.common-lisp.cesarum"
-                 "com.informatimago.clext.association")
+    :depends-on ("closer-mop")
 
-    :components (#+(or ccl clisp cmu ecl sbcl)
-                   (:file "character-sets")
-                   #+(or allegro ccl clisp sbcl cmu)
-                   (:file "closer-weak")))
+    :components ((:file "association")))
 
 
 ;;;; THE END ;;;;
