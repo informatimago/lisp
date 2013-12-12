@@ -390,6 +390,16 @@ Note: we cannot say :definition (satisfies keywordp)
 (declare-symbol DECLARE)
 (declare-symbol LAMBDA)
 
+(declare-symbol &OPTIONAL           :lambda-list-keyword)
+(declare-symbol &REST               :lambda-list-keyword)
+(declare-symbol &AUX                :lambda-list-keyword)
+(declare-symbol &KEY                :lambda-list-keyword)
+(declare-symbol &ALLOW-OTHER-KEYS   :lambda-list-keyword)
+(declare-symbol &BODY               :lambda-list-keyword)
+(declare-symbol &ENVIRONMENT        :lambda-list-keyword)
+(declare-symbol &WHOLE              :lambda-list-keyword)
+
+
 
 (declare-variable *BREAK-ON-SIGNALS*)
 (declare-variable *COMPILE-FILE-PATHNAME*)

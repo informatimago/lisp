@@ -113,9 +113,21 @@ RETURN: item if it's a list or (list item) otherwise.
 
 (defun proper-list-p (object)
   "
-RETURN: whether object is a proper list
+RETURN: whether OBJECT is a proper list
 NOTE:   terminates with any kind of list, dotted, circular, etc.
 "
+  (and (listp object)
+       (loop
+         :named proper
+         :for current = object :then (cddr current)
+         :for slow = (cons nil object) :then (cdr slow)
+         :do (cond
+               ((null current)       (return-from proper t))
+               ((atom current)       (return-from proper nil))
+               ((null (cdr current)) (return-from proper t))
+               ((atom (cdr current)) (return-from proper nil))
+               ((eq current slow)    (return-from proper nil)))))
+  #-(and)
   (labels ((proper (current slow)
              (cond ((null current)       t)
                    ((atom current)       nil)
@@ -162,6 +174,20 @@ RETURN: for a proper list, the length of the list and 0;
         for a dotted list, the number of cons cells, and nil;
         for an atom, 0, and nil.
 "
+  (typecase list
+    (cons  (loop
+             :named proper
+             :for current = list :then (cddr current)
+             :for slow = (cons nil list) :then (cdr slow)
+             :do (cond
+                   ((null current)       (return-from proper (values (list-length        list) 0)))
+                   ((atom current)       (return-from proper (values (dotted-list-length list) nil)))
+                   ((null (cdr current)) (return-from proper (values (list-length        list) 0)))
+                   ((atom (cdr current)) (return-from proper (values (dotted-list-length list) nil)))
+                   ((eq current slow)    (return-from proper (circular-list-lengths list))))))
+    (null  (values 0 0))
+    (t     (values 0 nil)))
+  #-(and)
   (labels ((proper (current slow)
              ;; (print (list 'proper current slow))
              (cond ((null current)       (values (list-length        list) 0))
