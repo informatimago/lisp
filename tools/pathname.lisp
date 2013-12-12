@@ -44,7 +44,7 @@
 
 (defparameter *case-common-is-not-downcased-on-posix-systems*
   #+(or allegro ccl emacs-cl) t
-  #+(or allegro ccl emacs-cl) nil)
+  #-(or allegro ccl emacs-cl) nil)
 
 
 (defun user-homedir-pathname ()
