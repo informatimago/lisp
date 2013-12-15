@@ -18,7 +18,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2012 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2012 - 2013
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -39,14 +39,15 @@
   (:export "SYMBOL-TYPE-OF-DECLARATIONS"
            "SYMBOL-DECLARATION-INFOS"
            "SYMBOL-INFO"
-           "MAP-SYMBOL-INFOS")
+           "MAP-SYMBOL-INFOS"
+           "*SYMBOL-CATEGORIES*")
   (:documentation "
 This file gives a description of all the standard symbols in
 the CL package.  These descriptions can be used to generate
 automatically various things.
 
 
-Copyright Pascal Bourguignon 2012 - 2012
+Copyright Pascal Bourguignon 2012 - 2013
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -126,9 +127,11 @@ FUN:            A function taking a symbol and an a-list
 (defmacro define-declare-macro (type-of-declaration parameter-lambda-list)
   `(defmacro ,(intern (concatenate 'string "DECLARE-" (string type-of-declaration)))
        ,parameter-lambda-list
-     `(enter ,',(first parameter-lambda-list) ,(intern (string type-of-declaration) :keyword)
-             ,',…)))
- 
+     `(enter ',,(first parameter-lambda-list)
+             ,,(intern (string type-of-declaration) :keyword)
+             ;; TODO.
+             ',',parameter-lambda-list)))
+
 (define-declare-macro declaration             (name declaration-lambda-list &key documentation))
 (define-declare-macro compound-type-specifier (name type-lambda-list kind &key documentation))
 (define-declare-macro type                    (name supertype    &key documentation definition))
@@ -136,8 +139,9 @@ FUN:            A function taking a symbol and an a-list
 (define-declare-macro system-class            (name superclasses &key documentation (slots ())))
 (define-declare-macro condition-type          (name superclasses &key documentation (slots ())))
 (define-declare-macro symbol                  (name &key documentation))
-(define-declare-macro variables               (name &key documentation))
-(define-declare-macro constant-variables      (name &key documentation))
+(define-declare-macro lambda-list-keyword     (name &key documentation))
+(define-declare-macro variable                (name &key documentation))
+(define-declare-macro constant-variable       (name &key documentation))
 (define-declare-macro generic-function          (name generic-lambda-list
                                                       &key documentation
                                                       (signals :unspecified)
@@ -155,6 +159,273 @@ FUN:            A function taking a symbol and an a-list
 (define-declare-macro special-operator (name macro-lambda-list      &key documentation (signals :unspecified) context))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; COMMON-LISP description.
+;;;
+
+(defparameter *symbol-categories*
+  '(
+
+    (declarations
+     DECLARATION DYNAMIC-EXTENT FTYPE IGNORABLE IGNORE INLINE NOTINLINE
+     OPTIMIZE SPECIAL TYPE)
+
+    (compound-type-specifier
+     and or not eql member array simple-array vector simple-vector
+     bit-vector simple-bit-vector string base-string simple-string
+     simple-base-string real complex float short-float single-float
+     double-float long-float rational integer signed-byte
+     unsigned-byte mod function cons values satisfies)
+
+    (type
+     EXTENDED-CHAR BASE-CHAR STANDARD-CHAR BASE-STRING SIMPLE-STRING
+     SIMPLE-BASE-STRING FIXNUM BIGNUM SIGNED-BYTE UNSIGNED-BYTE BIT
+     SHORT-FLOAT SINGLE-FLOAT DOUBLE-FLOAT LONG-FLOAT COMPILED-FUNCTION
+     SIMPLE-ARRAY SIMPLE-VECTOR SIMPLE-BIT-VECTOR NIL)
+
+    (class
+     STANDARD-OBJECT  STRUCTURE-OBJECT)
+
+    (system-class
+     t array method number stream symbol package restart function
+     pathname sequence character readtable hash-table random-state
+     method-combination vector string bit-vector list cons
+     built-in-class standard-class structure-class generic-function
+     standard-generic-function standard-method real complex float
+     rational ratio integer logical-pathname class echo-stream
+     file-stream string-stream synonym-stream two-way-stream
+     broadcast-stream concatenated-stream null)
+
+    (condition-type
+     condition serious-condition simple-condition warning
+     storage-condition error arithmetic-error cell-error control-error
+     file-error package-error parse-error print-not-readable
+     program-error stream-error type-error division-by-zero
+     floating-point-inexact floating-point-invalid-operation
+     floating-point-overflow floating-point-underflow unbound-slot
+     unbound-variable undefined-function reader-error simple-error
+     simple-type-error simple-warning end-of-file style-warning)
+
+
+    (symbol
+     declare lambda)
+
+    (lambda-list-keyword
+     &optional &rest &aux &key &allow-other-keys &body &environment
+     &whole)
+
+    (variable
+     *break-on-signals* *compile-file-pathname*
+     *compile-file-truename* *compile-print* *compile-verbose*
+     *debugger-hook* *debug-io* *default-pathname-defaults*
+     *error-output* *features* *gensym-counter* *load-pathname*
+     *load-print* *load-truename* *load-verbose* *macroexpand-hook*
+     *modules* *package* *print-array* *print-base* *print-case*
+     *print-circle* *print-escape* *print-gensym* *print-length*
+     *print-level* *print-lines* *print-miser-width*
+     *print-pprint-dispatch* *print-pretty* *print-radix*
+     *print-readably* *print-right-margin* *query-io* *random-state*
+     *read-base* *read-default-float-format* *read-eval*
+     *read-suppress* *readtable* *standard-input* *standard-output*
+     *terminal-io* *trace-output* - / // /// * ** *** + ++ +++ )
+
+    (constant-variable
+     nil t pi array-dimension-limit array-rank-limit
+     array-total-size-limit boole-1 boole-2 boole-andc1 boole-andc2
+     boole-and boole-c1 boole-c2 boole-clr boole-eqv boole-ior boole-nand
+     boole-nor boole-orc1 boole-orc2 boole-set boole-xor
+     call-arguments-limit char-code-limit double-float-epsilon
+     double-float-negative-epsilon internal-time-units-per-second
+     lambda-list-keywords lambda-parameters-limit
+     least-negative-double-float least-negative-long-float
+     least-negative-normalized-double-float
+     least-negative-normalized-long-float
+     least-negative-normalized-short-float
+     least-negative-normalized-single-float least-negative-short-float
+     least-negative-single-float least-positive-double-float
+     least-positive-long-float least-positive-normalized-double-float
+     least-positive-normalized-long-float
+     least-positive-normalized-short-float
+     least-positive-normalized-single-float least-positive-short-float
+     least-positive-single-float long-float-epsilon
+     long-float-negative-epsilon most-negative-double-float
+     most-negative-fixnum most-negative-long-float
+     most-negative-short-float most-negative-single-float
+     most-positive-double-float most-positive-fixnum
+     most-positive-long-float most-positive-short-float
+     most-positive-single-float multiple-values-limit short-float-epsilon
+     short-float-negative-epsilon single-float-epsilon
+     single-float-negative-epsilon)
+
+    (accessor
+     caaaar caaadr caaar caadar caaddr caadr caar cadaar cadadr cadar
+     caddar cadddr caddr cadr car cdaaar cdaadr cdaar cdadar cdaddr cdadr
+     cdar cddaar cddadr cddar cdddar cddddr cdddr cddr cdr first second
+     third fourth fifth sixth seventh eighth ninth tenth rest nth elt
+     subseq aref row-major-aref bit sbit svref char schar fill-pointer get
+     getf gethash ldb mask-field compiler-macro-function macro-function
+     fdefinition find-class logical-pathname-translations readtable-case
+     symbol-function symbol-plist symbol-value values)
+
+    (function
+     1- 1+ abort abs acons acos acosh adjoin adjustable-array-p
+     adjust-array alpha-char-p alphanumericp append apply apropos
+     apropos-list arithmetic-error-operands arithmetic-error-operation
+     array-dimension array-dimensions array-displacement
+     array-element-type array-has-fill-pointer-p array-in-bounds-p
+     arrayp array-rank array-row-major-index array-total-size ash asin
+     asinh assoc assoc-if assoc-if-not atan atanh atom bit-andc1
+     bit-andc2 bit-and bit-eqv bit-ior bit-nand bit-nor bit-not
+     bit-orc1 bit-orc2 bit-vector-p bit-xor boole both-case-p boundp
+     break broadcast-stream-streams butlast byte byte-position
+     byte-size ceiling cell-error-name cerror character characterp
+     char-code char-downcase char-equal char<= char< char= char>=
+     char> char/= char-greaterp char-int char-lessp char-name
+     char-not-equal char-not-greaterp char-not-lessp char-upcase cis
+     class-of clear-input clear-output close clrhash code-char coerce
+     compiled-function-p compile-file compile-file-pathname compile
+     complement complex complexp compute-restarts
+     concatenated-stream-streams concatenate conjugate cons consp
+     constantly constantp continue copy-alist copy-list
+     copy-pprint-dispatch copy-readtable copy-seq copy-structure
+     copy-symbol copy-tree cos cosh count count-if count-if-not
+     decode-float decode-universal-time delete-duplicates delete-file
+     delete delete-if delete-if-not delete-package denominator
+     deposit-field describe digit-char digit-char-p directory
+     directory-namestring disassemble dpb dribble
+     echo-stream-input-stream echo-stream-output-stream ed endp
+     enough-namestring ensure-directories-exist
+     ensure-generic-function eq eql equal equalp error eval evenp
+     every exp export expt fboundp fceiling ffloor file-author
+     file-error-pathname file-length file-namestring file-position
+     file-string-length file-write-date fill find-all-symbols find
+     find-if find-if-not find-package find-restart find-symbol
+     finish-output float-digits float floatp float-precision
+     float-radix float-sign floor fmakunbound force-output format
+     fresh-line fround ftruncate funcall <= < = >= > - /= / * +
+     function-lambda-expression functionp gcd gensym gentemp
+     get-decoded-time get-dispatch-macro-character
+     get-internal-real-time get-internal-run-time get-macro-character
+     get-output-stream-string get-properties get-setf-expansion
+     get-universal-time graphic-char-p hash-table-count hash-table-p
+     hash-table-rehash-size hash-table-rehash-threshold
+     hash-table-size hash-table-test host-namestring identity imagpart
+     import input-stream-p inspect integer-decode-float integer-length
+     integerp interactive-stream-p intern intersection
+     invalid-method-error invoke-debugger invoke-restart
+     invoke-restart-interactively isqrt keywordp last lcm ldb-test
+     ldiff length lisp-implementation-type lisp-implementation-version
+     list-all-packages listen list list* list-length listp load
+     load-logical-pathname-translations logandc1 logandc2 logand
+     logbitp logcount logeqv log logical-pathname logior lognand
+     lognor lognot logorc1 logorc2 logtest logxor long-site-name
+     lower-case-p machine-instance machine-type machine-version
+     macroexpand-1 macroexpand make-array make-broadcast-stream
+     make-concatenated-stream make-condition
+     make-dispatch-macro-character make-echo-stream make-hash-table
+     make-list make-load-form-saving-slots make-package make-pathname
+     make-random-state make-sequence make-string
+     make-string-input-stream make-string-output-stream make-symbol
+     make-synonym-stream make-two-way-stream makunbound mapcan mapcar
+     mapc mapcon map maphash map-into mapl maplist max member
+     member-if member-if-not merge merge-pathnames
+     method-combination-error min minusp mismatch mod muffle-warning
+     name-char namestring nbutlast nconc nintersection notany notevery
+     not nreconc nreverse nset-difference nset-exclusive-or
+     nstring-capitalize nstring-downcase nstring-upcase nsublis nsubst
+     nsubst-if nsubst-if-not nsubstitute nsubstitute-if
+     nsubstitute-if-not nthcdr null numberp numerator nunion oddp open
+     open-stream-p output-stream-p package-error-package package-name
+     package-nicknames packagep package-shadowing-symbols
+     package-used-by-list package-use-list pairlis parse-integer
+     parse-namestring pathname-device pathname-directory pathname
+     pathname-host pathname-match-p pathname-name pathnamep
+     pathname-type pathname-version peek-char phase plusp position
+     position-if position-if-not pprint-dispatch pprint-fill pprint
+     pprint-indent pprint-linear pprint-newline pprint-tab
+     pprint-tabular prin1 prin1-to-string princ princ-to-string print
+     print-not-readable-object probe-file proclaim provide random
+     random-state-p rassoc rassoc-if rassoc-if-not rational
+     rationalize rationalp read-byte read-char read-char-no-hang
+     read-delimited-list read-from-string read read-line
+     read-preserving-whitespace read-sequence readtablep realpart
+     realp reduce rem remhash remove-duplicates remove remove-if
+     remove-if-not remprop rename-file rename-package replace require
+     restart-name revappend reverse room round rplaca rplacd
+     scale-float search set-difference set-dispatch-macro-character
+     set-exclusive-or set set-macro-character set-pprint-dispatch
+     set-syntax-from-char shadow shadowing-import short-site-name
+     signal signum simple-bit-vector-p
+     simple-condition-format-arguments simple-condition-format-control
+     simple-string-p simple-vector-p sin sinh sleep slot-boundp
+     slot-exists-p slot-makunbound slot-value software-type
+     software-version some sort special-operator-p sqrt stable-sort
+     standard-char-p store-value stream-element-type
+     stream-error-stream stream-external-format streamp
+     string-capitalize string-downcase string-equal string<= string<
+     string= string>= string> string string/= string-greaterp
+     string-left-trim string-lessp string-not-equal
+     string-not-greaterp string-not-lessp stringp string-right-trim
+     string-trim string-upcase sublis subsetp subst subst-if
+     subst-if-not substitute substitute-if substitute-if-not subtypep
+     sxhash symbol-name symbol-package symbolp synonym-stream-symbol
+     tailp tan tanh terpri translate-logical-pathname
+     translate-pathname tree-equal truename truncate
+     two-way-stream-input-stream two-way-stream-output-stream
+     type-error-datum type-error-expected-type type-of typep
+     unbound-slot-instance unexport unintern union unread-char
+     unuse-package upgraded-array-element-type
+     upgraded-complex-part-type upper-case-p use-package
+     user-homedir-pathname use-value values-list vector vectorp
+     vector-pop vector-push-extend vector-push warn wild-pathname-p
+     write-byte write-char write write-line write-sequence
+     write-string write-to-string yes-or-no-p y-or-n-p zerop)
+
+    (local-function
+     CALL-NEXT-METHOD NEXT-METHOD-P)
+
+    (local-macro
+     CALL-METHOD LOOP-FINISH MAKE-METHOD PPRINT-EXIT-IF-LIST-EXHAUSTED
+     PPRINT-POP)
+
+    (macro
+     and assert case ccase check-type cond ctypecase decf declaim
+     defclass defconstant defgeneric define-compiler-macro
+     define-condition define-method-combination define-modify-macro
+     define-setf-expander define-symbol-macro defmacro defmethod
+     defpackage defparameter defsetf defstruct deftype defun defvar
+     destructuring-bind do-all-symbols do-external-symbols dolist do
+     do* do-symbols dotimes ecase etypecase formatter handler-bind
+     handler-case ignore-errors incf in-package lambda loop
+     multiple-value-bind multiple-value-list multiple-value-setq
+     nth-value or pop pprint-logical-block print-unreadable-object
+     prog1 prog2 prog prog* psetf psetq push pushnew remf
+     restart-bind restart-case return rotatef setf shiftf step time
+     trace typecase unless untrace when with-accessors
+     with-compilation-unit with-condition-restarts
+     with-hash-table-iterator with-input-from-string with-open-stream
+     with-output-to-string with-package-iterator with-simple-restart
+     with-slots with-standard-io-syntax)
+
+    (restart
+     ABORT CONTINUE MUFFLE-WARNING STORE-VALUE USE-VALUE)
+
+    (special-operator
+     block catch eval-when flet function go if labels let let*
+     load-time-value locally macrolet multiple-value-call
+     multiple-value-prog1 progn progv quote return-from setq
+     symbol-macrolet tagbody the throw unwind-protect)
+
+    (standard-generic-fucntion
+     add-method allocate-instance change-class class-name
+     compute-applicable-methods describe-object documentation
+     find-method function-keywords initialize-instance
+     make-instances-obsolete make-instance make-load-form
+     method-qualifiers no-applicable-method no-next-method print-object
+     reinitialize-instance remove-method shared-initialize slot-missing
+     slot-unbound update-instance-for-different-class
+     update-instance-for-redefined-class)))
 
 
 
@@ -390,14 +661,14 @@ Note: we cannot say :definition (satisfies keywordp)
 (declare-symbol DECLARE)
 (declare-symbol LAMBDA)
 
-(declare-symbol &OPTIONAL           :lambda-list-keyword)
-(declare-symbol &REST               :lambda-list-keyword)
-(declare-symbol &AUX                :lambda-list-keyword)
-(declare-symbol &KEY                :lambda-list-keyword)
-(declare-symbol &ALLOW-OTHER-KEYS   :lambda-list-keyword)
-(declare-symbol &BODY               :lambda-list-keyword)
-(declare-symbol &ENVIRONMENT        :lambda-list-keyword)
-(declare-symbol &WHOLE              :lambda-list-keyword)
+(declare-lambda-list-keyword &OPTIONAL)
+(declare-lambda-list-keyword &REST)
+(declare-lambda-list-keyword &AUX)
+(declare-lambda-list-keyword &KEY)
+(declare-lambda-list-keyword &ALLOW-OTHER-KEYS)
+(declare-lambda-list-keyword &BODY)
+(declare-lambda-list-keyword &ENVIRONMENT)
+(declare-lambda-list-keyword &WHOLE)
 
 
 
@@ -1164,157 +1435,158 @@ Note: we cannot say :definition (satisfies keywordp)
 (declare-function Y-OR-N-P ())
 (declare-function ZEROP ())
 
-(CALL-NEXT-METHOD                        "Local Function")
-(NEXT-METHOD-P                           "Local Function")
+(declare-local-function CALL-NEXT-METHOD (&rest arguments))
+(declare-local-function NEXT-METHOD-P    ())
 
-(CALL-METHOD                             "Local Macro")
-(LOOP-FINISH                             "Local Macro")
-(MAKE-METHOD                             "Local Macro")
-(PPRINT-EXIT-IF-LIST-EXHAUSTED           "Local Macro")
-(PPRINT-POP                              "Local Macro")
 
-(AND                                     "Macro")
-(ASSERT                                  "Macro")
-(CASE                                    "Macro")
-(CCASE                                   "Macro")
-(CHECK-TYPE                              "Macro")
-(COND                                    "Macro")
-(CTYPECASE                               "Macro")
-(DECF                                    "Macro")
-(DECLAIM                                 "Macro")
-(DEFCLASS                                "Macro")
-(DEFCONSTANT                             "Macro")
-(DEFGENERIC                              "Macro")
-(DEFINE-COMPILER-MACRO                   "Macro")
-(DEFINE-CONDITION                        "Macro")
-(DEFINE-METHOD-COMBINATION               "Macro")
-(DEFINE-MODIFY-MACRO                     "Macro")
-(DEFINE-SETF-EXPANDER                    "Macro")
-(DEFINE-SYMBOL-MACRO                     "Macro")
-(DEFMACRO                                "Macro")
-(DEFMETHOD                               "Macro")
-(DEFPACKAGE                              "Macro")
-(DEFPARAMETER                            "Macro")
-(DEFSETF                                 "Macro")
-(DEFSTRUCT                               "Macro")
-(DEFTYPE                                 "Macro")
-(DEFUN                                   "Macro")
-(DEFVAR                                  "Macro")
-(DESTRUCTURING-BIND                      "Macro")
-(DO-ALL-SYMBOLS                          "Macro")
-(DO-EXTERNAL-SYMBOLS                     "Macro")
-(DOLIST                                  "Macro")
-(DO                                      "Macro")
-(DO*                                     "Macro")
-(DO-SYMBOLS                              "Macro")
-(DOTIMES                                 "Macro")
-(ECASE                                   "Macro")
-(ETYPECASE                               "Macro")
-(FORMATTER                               "Macro")
-(HANDLER-BIND                            "Macro")
-(HANDLER-CASE                            "Macro")
-(IGNORE-ERRORS                           "Macro")
-(INCF                                    "Macro")
-(IN-PACKAGE                              "Macro")
-(LAMBDA                                  "Macro")
-(LOOP                                    "Macro")
-(MULTIPLE-VALUE-BIND                     "Macro")
-(MULTIPLE-VALUE-LIST                     "Macro")
-(MULTIPLE-VALUE-SETQ                     "Macro")
-(NTH-VALUE                               "Macro")
-(OR                                      "Macro")
-(POP                                     "Macro")
-(PPRINT-LOGICAL-BLOCK                    "Macro")
-(PRINT-UNREADABLE-OBJECT                 "Macro")
-(PROG1                                   "Macro")
-(PROG2                                   "Macro")
-(PROG                                    "Macro")
-(PROG*                                   "Macro")
-(PSETF                                   "Macro")
-(PSETQ                                   "Macro")
-(PUSH                                    "Macro")
-(PUSHNEW                                 "Macro")
-(REMF                                    "Macro")
-(RESTART-BIND                            "Macro")
-(RESTART-CASE                            "Macro")
-(RETURN                                  "Macro")
-(ROTATEF                                 "Macro")
-(SETF                                    "Macro")
-(SHIFTF                                  "Macro")
-(STEP                                    "Macro")
-(TIME                                    "Macro")
-(TRACE                                   "Macro")
-(TYPECASE                                "Macro")
-(UNLESS                                  "Macro")
-(UNTRACE                                 "Macro")
-(WHEN                                    "Macro")
-(WITH-ACCESSORS                          "Macro")
-(WITH-COMPILATION-UNIT                   "Macro")
-(WITH-CONDITION-RESTARTS                 "Macro")
-(WITH-HASH-TABLE-ITERATOR                "Macro")
-(WITH-INPUT-FROM-STRING                  "Macro")
-(WITH-OPEN-STREAM                        "Macro")
-(WITH-OUTPUT-TO-STRING                   "Macro")
-(WITH-PACKAGE-ITERATOR                   "Macro")
-(WITH-SIMPLE-RESTART                     "Macro")
-(WITH-SLOTS                              "Macro")
-(WITH-STANDARD-IO-SYNTAX                 "Macro")
+(declare-local-macro CALL-METHOD                             ())
+(declare-local-macro LOOP-FINISH                             ())
+(declare-local-macro MAKE-METHOD                             ())
+(declare-local-macro PPRINT-EXIT-IF-LIST-EXHAUSTED           ())
+(declare-local-macro PPRINT-POP                              ())
 
-(ABORT                                   "Restart")
-(CONTINUE                                "Restart")
-(MUFFLE-WARNING                          "Restart")
-(STORE-VALUE                             "Restart")
-(USE-VALUE                               "Restart")
+(declare-macro AND                                      ())
+(declare-macro ASSERT                                   ())
+(declare-macro CASE                                     ())
+(declare-macro CCASE                                    ())
+(declare-macro CHECK-TYPE                               ())
+(declare-macro COND                                     ())
+(declare-macro CTYPECASE                                ())
+(declare-macro DECF                                     ())
+(declare-macro DECLAIM                                  ())
+(declare-macro DEFCLASS                                 ())
+(declare-macro DEFCONSTANT                              ())
+(declare-macro DEFGENERIC                               ())
+(declare-macro DEFINE-COMPILER-MACRO                    ())
+(declare-macro DEFINE-CONDITION                         ())
+(declare-macro DEFINE-METHOD-COMBINATION                ())
+(declare-macro DEFINE-MODIFY-MACRO                      ())
+(declare-macro DEFINE-SETF-EXPANDER                     ())
+(declare-macro DEFINE-SYMBOL-MACRO                      ())
+(declare-macro DEFMACRO                                 ())
+(declare-macro DEFMETHOD                                ())
+(declare-macro DEFPACKAGE                               ())
+(declare-macro DEFPARAMETER                             ())
+(declare-macro DEFSETF                                  ())
+(declare-macro DEFSTRUCT                                ())
+(declare-macro DEFTYPE                                  ())
+(declare-macro DEFUN                                    ())
+(declare-macro DEFVAR                                   ())
+(declare-macro DESTRUCTURING-BIND                       ())
+(declare-macro DO-ALL-SYMBOLS                           ())
+(declare-macro DO-EXTERNAL-SYMBOLS                      ())
+(declare-macro DOLIST                                   ())
+(declare-macro DO                                       ())
+(declare-macro DO*                                      ())
+(declare-macro DO-SYMBOLS                               ())
+(declare-macro DOTIMES                                  ())
+(declare-macro ECASE                                    ())
+(declare-macro ETYPECASE                                ())
+(declare-macro FORMATTER                                ())
+(declare-macro HANDLER-BIND                             ())
+(declare-macro HANDLER-CASE                             ())
+(declare-macro IGNORE-ERRORS                            ())
+(declare-macro INCF                                     ())
+(declare-macro IN-PACKAGE                               ())
+(declare-macro LAMBDA                                   ())
+(declare-macro LOOP                                     ())
+(declare-macro MULTIPLE-VALUE-BIND                      ())
+(declare-macro MULTIPLE-VALUE-LIST                      ())
+(declare-macro MULTIPLE-VALUE-SETQ                      ())
+(declare-macro NTH-VALUE                                ())
+(declare-macro OR                                       ())
+(declare-macro POP                                      ())
+(declare-macro PPRINT-LOGICAL-BLOCK                     ())
+(declare-macro PRINT-UNREADABLE-OBJECT                  ())
+(declare-macro PROG1                                    ())
+(declare-macro PROG2                                    ())
+(declare-macro PROG                                     ())
+(declare-macro PROG*                                    ())
+(declare-macro PSETF                                    ())
+(declare-macro PSETQ                                    ())
+(declare-macro PUSH                                     ())
+(declare-macro PUSHNEW                                  ())
+(declare-macro REMF                                     ())
+(declare-macro RESTART-BIND                             ())
+(declare-macro RESTART-CASE                             ())
+(declare-macro RETURN                                   ())
+(declare-macro ROTATEF                                  ())
+(declare-macro SETF                                     ())
+(declare-macro SHIFTF                                   ())
+(declare-macro STEP                                     ())
+(declare-macro TIME                                     ())
+(declare-macro TRACE                                    ())
+(declare-macro TYPECASE                                 ())
+(declare-macro UNLESS                                   ())
+(declare-macro UNTRACE                                  ())
+(declare-macro WHEN                                     ())
+(declare-macro WITH-ACCESSORS                           ())
+(declare-macro WITH-COMPILATION-UNIT                    ())
+(declare-macro WITH-CONDITION-RESTARTS                  ())
+(declare-macro WITH-HASH-TABLE-ITERATOR                 ())
+(declare-macro WITH-INPUT-FROM-STRING                   ())
+(declare-macro WITH-OPEN-STREAM                         ())
+(declare-macro WITH-OUTPUT-TO-STRING                    ())
+(declare-macro WITH-PACKAGE-ITERATOR                    ())
+(declare-macro WITH-SIMPLE-RESTART                      ())
+(declare-macro WITH-SLOTS                               ())
+(declare-macro WITH-STANDARD-IO-SYNTAX                  ())
 
-(BLOCK                                   "Special Operator")
-(CATCH                                   "Special Operator")
-(EVAL-WHEN                               "Special Operator")
-(FLET                                    "Special Operator")
-(FUNCTION                                "Special Operator")
-(GO                                      "Special Operator")
-(IF                                      "Special Operator")
-(LABELS                                  "Special Operator")
-(LET                                     "Special Operator")
-(LET*                                    "Special Operator")
-(LOAD-TIME-VALUE                         "Special Operator")
-(LOCALLY                                 "Special Operator")
-(MACROLET                                "Special Operator")
-(MULTIPLE-VALUE-CALL                     "Special Operator")
-(MULTIPLE-VALUE-PROG1                    "Special Operator")
-(PROGN                                   "Special Operator")
-(PROGV                                   "Special Operator")
-(QUOTE                                   "Special Operator")
-(RETURN-FROM                             "Special Operator")
-(SETQ                                    "Special Operator")
-(SYMBOL-MACROLET                         "Special Operator")
-(TAGBODY                                 "Special Operator")
-(THE                                     "Special Operator")
-(THROW                                   "Special Operator")
-(UNWIND-PROTECT                          "Special Operator")
+(declare-restart ABORT                                    ())
+(declare-restart CONTINUE                                 ())
+(declare-restart MUFFLE-WARNING                           ())
+(declare-restart STORE-VALUE                              ())
+(declare-restart USE-VALUE                                ())
 
-(ADD-METHOD                              "Standard Generic Function")
-(ALLOCATE-INSTANCE                       "Standard Generic Function")
-(CHANGE-CLASS                            "Standard Generic Function")
-(CLASS-NAME                              "Standard Generic Function")
-(COMPUTE-APPLICABLE-METHODS              "Standard Generic Function")
-(DESCRIBE-OBJECT                         "Standard Generic Function")
-(DOCUMENTATION                           "Standard Generic Function")
-(FIND-METHOD                             "Standard Generic Function")
-(FUNCTION-KEYWORDS                       "Standard Generic Function")
-(INITIALIZE-INSTANCE                     "Standard Generic Function")
-(MAKE-INSTANCES-OBSOLETE                 "Standard Generic Function")
-(MAKE-INSTANCE                           "Standard Generic Function")
-(MAKE-LOAD-FORM                          "Standard Generic Function")
-(METHOD-QUALIFIERS                       "Standard Generic Function")
-(NO-APPLICABLE-METHOD                    "Standard Generic Function")
-(NO-NEXT-METHOD                          "Standard Generic Function")
-(PRINT-OBJECT                            "Standard Generic Function")
-(REINITIALIZE-INSTANCE                   "Standard Generic Function")
-(REMOVE-METHOD                           "Standard Generic Function")
-(SHARED-INITIALIZE                       "Standard Generic Function")
-(SLOT-MISSING                            "Standard Generic Function")
-(SLOT-UNBOUND                            "Standard Generic Function")
-(UPDATE-INSTANCE-FOR-DIFFERENT-CLASS     "Standard Generic Function")
-(UPDATE-INSTANCE-FOR-REDEFINED-CLASS     "Standard Generic Function")
+(declare-special-operator BLOCK                                    ())
+(declare-special-operator CATCH                                    ())
+(declare-special-operator EVAL-WHEN                                ())
+(declare-special-operator FLET                                     ())
+(declare-special-operator FUNCTION                                 ())
+(declare-special-operator GO                                       ())
+(declare-special-operator IF                                       ())
+(declare-special-operator LABELS                                   ())
+(declare-special-operator LET                                      ())
+(declare-special-operator LET*                                     ())
+(declare-special-operator LOAD-TIME-VALUE                          ())
+(declare-special-operator LOCALLY                                  ())
+(declare-special-operator MACROLET                                 ())
+(declare-special-operator MULTIPLE-VALUE-CALL                      ())
+(declare-special-operator MULTIPLE-VALUE-PROG1                     ())
+(declare-special-operator PROGN                                    ())
+(declare-special-operator PROGV                                    ())
+(declare-special-operator QUOTE                                    ())
+(declare-special-operator RETURN-FROM                              ())
+(declare-special-operator SETQ                                     ())
+(declare-special-operator SYMBOL-MACROLET                          ())
+(declare-special-operator TAGBODY                                  ())
+(declare-special-operator THE                                      ())
+(declare-special-operator THROW                                    ())
+(declare-special-operator UNWIND-PROTECT                           ())
+
+(declare-standard-generic-function ADD-METHOD                               ())
+(declare-standard-generic-function ALLOCATE-INSTANCE                        ())
+(declare-standard-generic-function CHANGE-CLASS                             ())
+(declare-standard-generic-function CLASS-NAME                               ())
+(declare-standard-generic-function COMPUTE-APPLICABLE-METHODS               ())
+(declare-standard-generic-function DESCRIBE-OBJECT                          ())
+(declare-standard-generic-function DOCUMENTATION                            ())
+(declare-standard-generic-function FIND-METHOD                              ())
+(declare-standard-generic-function FUNCTION-KEYWORDS                        ())
+(declare-standard-generic-function INITIALIZE-INSTANCE                      ())
+(declare-standard-generic-function MAKE-INSTANCES-OBSOLETE                  ())
+(declare-standard-generic-function MAKE-INSTANCE                            ())
+(declare-standard-generic-function MAKE-LOAD-FORM                           ())
+(declare-standard-generic-function METHOD-QUALIFIERS                        ())
+(declare-standard-generic-function NO-APPLICABLE-METHOD                     ())
+(declare-standard-generic-function NO-NEXT-METHOD                           ())
+(declare-standard-generic-function PRINT-OBJECT                             ())
+(declare-standard-generic-function REINITIALIZE-INSTANCE                    ())
+(declare-standard-generic-function REMOVE-METHOD                            ())
+(declare-standard-generic-function SHARED-INITIALIZE                        ())
+(declare-standard-generic-function SLOT-MISSING                             ())
+(declare-standard-generic-function SLOT-UNBOUND                             ())
+(declare-standard-generic-function UPDATE-INSTANCE-FOR-DIFFERENT-CLASS      ())
+(declare-standard-generic-function UPDATE-INSTANCE-FOR-REDEFINED-CLASS      ())
 
 ;;;; THE END ;;;;
