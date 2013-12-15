@@ -611,13 +611,13 @@ BUGS:    If there is an error in handling one association end, after
 
     `(progn
        ,@(let ((troles (mapcar (lambda (endpoint)
-                                 (destructuring-bind (role &key slot &allow-other-keys) endpoint
-                                   (list role slot)))
+                                 (destructuring-bind (role &key type &allow-other-keys) endpoint
+                                   (list type role)))
                                endpoints)))
               (append
-               (when (second (second troles))
+               (when (first (second troles))
                  (list `(ensure-class-slot ',(first (first troles)) ',(second (second troles)))))
-               (when (second (first troles))
+               (when (first (first troles))
                  (list `(ensure-class-slot ',(first (second troles)) ',(second (first troles))))))) 
        (defun ,link (&key ,@link-parameters)
          ,(generate-addset name
