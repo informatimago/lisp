@@ -39,12 +39,9 @@ HELPFORMAT="make %-20s \# %s\n"
 all::help
 
 help::
-	@echo "$(MAKE) generate                     # generates $(TARGETS)"
+	@printf $(HELPFORMAT) generate "Generate the index.html page."
 generate:$(TARGETS) access-rights clean
 
-help::
-	@printf $(HELPFORMAT) generate "Generate the index.html page."
-generate:index.html access-rights clean
 
 help::
 	@printf $(HELPFORMAT) access-rights "Sets the access-rights for publication."
@@ -69,7 +66,7 @@ install:install-what-implementation
 
 
 help::
-	@echo "$(MAKE) index                        # Generates index.html.in"
+	@printf $(HELPFORMAT) index "Generates index.html.in"
 index index.html.in:init.lisp index.lisp Makefile
 	clisp -norc -q -ansi  -E iso-8859-1  \
 		-x '(progn (setf *load-verbose* nil) (load "index.lisp") (values))' \
