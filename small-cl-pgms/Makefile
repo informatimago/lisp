@@ -74,7 +74,7 @@ index.html.in:init.lisp index.lisp Makefile
 	| sed -e 's/^;.*//' -e '/^NIL$$/d' \
 	> index.html.in
 index.html:index.html.in
-	cp index.html.in index.html
+	find . \( -name index.html.in -o -name aim-8.html.in \) -print | while read file ; do cp -v "$$file" "$$(echo $$file | sed -e 's/\.in$$//')" ; done
 
 
 #(with-open-file (*STANDARD-OUTPUT* "index.html" :direction :output :if-exists :supersede :if-does-not-exist :create)
