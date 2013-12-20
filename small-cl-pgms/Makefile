@@ -33,7 +33,7 @@
 ####****************************************************************************
 
 PREFIX=/usr/local
-TARGETS=index.html.in what-implementation
+TARGETS=index.html what-implementation
 HELPFORMAT="make %-20s \# %s\n"
 
 all::help
@@ -66,14 +66,15 @@ install:install-what-implementation
 
 
 help::
-	@printf $(HELPFORMAT) index "Generates index.html.in"
-index index.html.in:init.lisp index.lisp Makefile
+	@printf $(HELPFORMAT) index.html.in "Generates index.html.in"
+index.html.in:init.lisp index.lisp Makefile
 	clisp -norc -q -ansi  -E iso-8859-1  \
 		-x '(progn (setf *load-verbose* nil) (load "index.lisp") (values))' \
 	| tr -d '\015'\
 	| sed -e 's/^;.*//' -e '/^NIL$$/d' \
 	> index.html.in
-
+index.html:index.html.in
+	cp index.html.in index.html
 
 
 #(with-open-file (*STANDARD-OUTPUT* "index.html" :direction :output :if-exists :supersede :if-does-not-exist :create)
