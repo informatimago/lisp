@@ -72,8 +72,9 @@ different languages than lisp.
                  "com.informatimago.common-lisp.cesarum"
                  "com.informatimago.common-lisp.parser")
     
-    :components ((:file "rdp")
-                 (:file "rdp-lisp-boilerplate" :depends-on ("rdp"))
-                 (:file "rdp-macro"            :depends-on ("rdp"))))
+    :components ((:file "packages")
+                 (:file "rdp"                  :depends-on ("packages"))
+                 (:file "rdp-lisp-boilerplate" :depends-on ("packages" "rdp"))
+                 (:file "rdp-macro"            :depends-on ("packages" "rdp"))))
 
 ;;;; THE END ;;;;

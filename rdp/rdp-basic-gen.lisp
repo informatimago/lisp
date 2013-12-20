@@ -44,7 +44,7 @@
 
 
 (defmethod generate-boilerplate ((target (eql :basic)) grammar &key (trace nil))
-  (declare (ignore trace))
+  (declare (ignore grammar trace))
   `(progn
     (emit "SCANSRC$=\"\" : SCANFUN$=\"\" : SCANPOS=0")
     (emit "CURTOK$=\"\"  : CURTXT$=\"\"  : CURPOS=0")
@@ -124,7 +124,7 @@
                                      (alphanumericp (aref item (1- (length item))))))
                                (grammar-all-terminals grammar))
                               (function >) :key (function length)))
-         (nl-terminals (remove-if (function stringp) (grammar-terminals grammar)))
+         ;; (nl-terminals (remove-if (function stringp) (grammar-terminals grammar)))
          (lit-an-terminals-regexp
           (format nil "^(~{~A~^|~})([^A-Za-z0-9]|$)"
                   (mapcar (function regexp-quote-extended) an-terminals)))
@@ -180,13 +180,19 @@
 
 
 (defmethod gen-parse-function-name ((target (eql :basic)) grammar non-terminal)
-   (format nil "PARSE~A" non-terminal))
+  (declare (ignore grammar))
+  (format nil "PARSE~A" non-terminal))
 
 (defmethod gen-in-firsts ((target (eql :basic)) firsts)
   (format nil "(~{CURTOK$=\"~A\"~^ OR ~})"  firsts))
 
 
 (defparameter *lex* 0)
+
+(defun first-rhs (grammar item)
+  (print grammar)
+  (print item)
+  (first-set grammar item))
 
 (defmethod gen-parsing-statement ((target (eql :basic)) grammar item)
   (if (atom item)
@@ -206,7 +212,8 @@
                (emit "ENDIF"))))
       (ecase (car item)
         ((seq)
-         (destructuring-bind (seq items actions) item
+         (destructuring-bind (seq (&rest items) actions) item
+           (declare (ignore seq))
            (let ((index 0)
                  (lex (incf *lex*)))
              `(progn
@@ -233,12 +240,13 @@
               (emit "ENDWHILE")
               (emit "LIST=L~DRES:CALL REVERSE" ,lex))))
         ((opt)
+         (assert (null (rest (second item))))
          (let ((lex (incf *lex*)))
            `(progn
               (emit "L~DRES=NIL" ,lex)
               (emit "IF ~A THEN"
-                    ',(gen-in-firsts target (first-rhs grammar (second item))))
-              ,(gen-parsing-statement target grammar (second item))
+                    ',(gen-in-firsts target (first-rhs grammar (first (second item)))))
+              ,(gen-parsing-statement target grammar (first (second item)))
               (emit "ELSE")
               (emit "  RES=NIL")
               (emit "ENDIF"))))
@@ -250,13 +258,16 @@
                            (emit "STOP"))
                         `(progn
                            (emit "IF ~A THEN"
-                                 ',(gen-in-firsts target
-                                                  (first-rhs grammar (car items))))
+                                 ',(gen-in-firsts target (first-rhs grammar (car items))))
                            ,(gen-parsing-statement target grammar (car items))
                            (emit "ELSE")
                            ,(gen (cdr items))
                            (emit "ENDIF")))))
            (gen (second item)))))))
+
+
+
+
 
 
 (defmethod generate-nt-parser ((target (eql :basic)) grammar non-terminal &key (trace nil))

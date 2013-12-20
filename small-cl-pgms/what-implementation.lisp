@@ -939,11 +939,13 @@ CLASSIFIED
         (selection-loop)        
         (quit))
     (error (err)
-      (format *query-io* "~%It seems an error occured: ~A~%I'm disconnecting.~%" err)
+      (format *query-io* "~%It seems an error occurred: ~A~%I'm disconnecting.~%" err)
       (finish-output  *query-io*)
       (quit 1))
+    #+ccl (ccl:process-reset () ; signaled by (ccl:quit)…
+            nil)
     (condition (err)
-      (format *query-io* "~%It seems a condition occured: ~A~%I'm disconnecting.~%" err)
+      (format *query-io* "~%It seems a condition occurred: ~A~%I'm disconnecting.~%" err)
       (finish-output  *query-io*)
       (quit 2))))
 

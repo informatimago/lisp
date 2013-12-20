@@ -1,0 +1,5 @@
+;; -*- mode:lisp -*-
+
+(1 collecting-result
+   defenum)
+

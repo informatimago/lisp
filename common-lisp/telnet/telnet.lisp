@@ -283,7 +283,7 @@ specific options subnegotiations.
   (:report (lambda (condition stream)
              (format stream "Telnet Warning with NVT ~S, option ~A: ~?"
                      (telnet-warning-nvt condition)
-                     (telnet-protocol-warning-option condition)
+                     (telnet-option-warning-option condition)
                      (telnet-warning-format-control condition)
                      (telnet-warning-format-arguments condition)))))
 
@@ -834,14 +834,17 @@ accompanied by a TCP Urgent notification.")
   ((code :initarg :code
          :reader option-code)
    (name :initarg :name)
-   (us   :initform :no    :type side-option-state
-         :accessor opt-us)
+   (#-sbcl us #+sbcl sbcl-has-a-bug-so-we-cannot-name-our-slot-us-see-|https://bugs.launchpad.net/sbcl/+bug/539540|
+           :initform :no    :type side-option-state
+           :accessor opt-us)
    (usq  :initform :empty :type side-option-queue
          :accessor opt-usq)
    (him  :initform :no    :type side-option-state
          :accessor opt-him)
    (himq :initform :empty :type side-option-queue
          :accessor opt-himq)))
+
+(defgeneric option-name (option))
 
 (defmethod option-name ((opt option))
   "RETURN: The option name if it has one, otherwise the option code."
@@ -1211,6 +1214,9 @@ Bytes received from down, waiting to be parsed by the local NVT.")
 and are discarding text bytes till the next IAC DM."))
   (:documentation "Represents a telnet end-point (both 'client' and 'server')."))
 
+(defgeneric init-option-name (nvt option-name))
+(defgeneric init-option-code (nvt option-code &optional option-name))
+(defgeneric get-option (nvt option-name))
 
 (defmethod print-object ((self network-virtual-terminal) stream)
   (print-unreadable-object (self stream :identity t :type t)
@@ -1220,6 +1226,7 @@ and are discarding text bytes till the next IAC DM."))
             (nvt-send-wait-p self)))
   self)
 
+(defgeneric nvt-options (nvt))
 
 (defmethod nvt-options ((nvt network-virtual-terminal))
   "RETURN: A fresh list of the current OPTION instance in the NVT."
@@ -1253,6 +1260,8 @@ and are discarding text bytes till the next IAC DM."))
 ;; TODO: When LINE-MODE we should keep in a buffer until an end of
 ;;       record (CRLF, EOR, FORW1 FORW2, etc) is sent.  On the other
 ;;       hand, this may be done by the terminal layer itself?
+(defgeneric send-raw-bytes  (nvt  bytes))
+(defgeneric send-urgent-notification  (nvt))
 
 (defmethod send-raw-bytes  ((nvt network-virtual-terminal) bytes)
   "Send the binary bytes.
@@ -1332,6 +1341,8 @@ CONTROL: (member :synch :are-you-there :abort-output :interrupt-process :go-ahea
 
 
 ;; Down interface (from down):
+
+(defgeneric receive-urgent-notification (nvt))
 
 (defmethod receive-urgent-notification ((nvt network-virtual-terminal))
   (setf (urgent-mode-p nvt) t))
@@ -1580,7 +1591,7 @@ NEXT:   the index of the first unprocessed byte. (<= START NEXT END)
     (#.CR  :cr)
     (otherwise nil)))
 
-
+(defgeneric dispatch-message (nvt bytes start end))
 (defmethod dispatch-message ((nvt network-virtual-terminal) bytes start end)
   "
 RETURN: the length of bytes processed.
@@ -1728,10 +1739,10 @@ The returned sexp must start with (:SB option-name …).
 \(Used by RECEIVE-STATUS of class STATUS to decode the SB statuses.)
 ")
   (:method ((opt option) byte &key (start 0) (end (length byte)))
-    (declare (ignore byte start end))
+    (declare (ignorable byte start end)) ; for some implementation byte is not used …
     (cerror "Ignore the subnegotiation status."
             'telnet-option-error
-            :nvt nvt
+            ;; :nvt nvt ;; TODO: Do we need it? Should we keep the nvt in a dynamic variable?
             :option opt
             :format-control "Option STATUS received an unknown subnegotiation status for option ~:@(~A~)."
             :format-arguments (list (option-name opt)))
@@ -1789,7 +1800,6 @@ BUFFER: An adjustable vector with a fill-pointer.
       (t
        (setf (gethash option-code (slot-value nvt 'options))
              (make-option option-code option-name))))))
-
 
 (defmethod init-option-name ((nvt network-virtual-terminal) option-name)
   (let ((code (option-code-for-name option-name)))
@@ -1880,8 +1890,8 @@ OPTION-CLASS: a class designator."
      (if code
          (let ((opt (gethash code (slot-value nvt 'options))))
            (typecase opt
-             (option (change-class opt option-class))
-             (t (setf (gethash code (slot-value nvt 'options)) option-class))))
+             (option (change-class opt class))
+             (t (setf (gethash code (slot-value nvt 'options)) class))))
         (error 'telnet-invalid-option-name-error
                :nvt nvt
                :option-name option-name))))

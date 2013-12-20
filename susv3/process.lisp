@@ -1413,7 +1413,7 @@ with-lock-held (place &optional state) &body body
     "Return the major and minor of clisp version as a floating point number."
     (let* ((v (lisp-implementation-version))
            (p (position (character ".") v))
-           (p (position (character ".") v :start (1+ p))))
+           (p (position-if (complement (function digit-char-p)) v :start (1+ p))))
       (read-from-string v nil nil :end p))))
 
 
@@ -1430,10 +1430,9 @@ with-lock-held (place &optional state) &body body
                   :element-type element-type
                   :external-format external-format
                   :buffered buffered)
-                #+#.(cl:when
-                        (cl:<= 2.33
-                               (com.informatimago.susv3.process::clisp-version))
-                      :clisp)t))
+                #+#.(cl:when (cl:<= 2.33 (com.informatimago.susv3.process::clisp-version))
+                      :clisp)
+                t))
           (out (ext:make-stream (aref fds 1)
                                 :direction :output
                                 :element-type element-type
@@ -1623,23 +1622,16 @@ EXAMPLE: (list-insert-separator '(a b (d e f)  c) 'x)
   (or (characterp object) (stringp object)))
 
 
-(defun pjb-unsplit-string (string-list &rest separator)
+(defun pjb-unsplit-string (string-list &optional (separator " "))
   "Does the inverse than pjb-split-string. If no separator is provided
 then a simple space is used."
-  (cond
-    ((null separator)         (setq separator " "))
-    ((/= 1 (length separator))
-     (error "pjb-unsplit-string: Too many separator arguments."))
-    ((not (char-or-string-p (car separator)))
-     (error "pjb-unsplit-string: separator must be a string or a char."))
-    (t (setq separator (car separator))))
+  (check-type separator (or string char))
   (apply 'concatenate 'string
          (mapcar (lambda (object)
                    (if (stringp object)
                        object
                        (format nil "~A" object)))
-                 (list-insert-separator string-list separator)))
-  ) ;;PJB-UNSPLIT-STRING
+                 (list-insert-separator string-list separator))))
 
 
 (defun pjb-split-string (string &optional separators)

@@ -21,6 +21,8 @@
 ;;;;
 ;;;;    (READ-FROM-STRING "#1=(a b . #1#)") gives an error.
 ;;;;
+;;;;    `(,@x) is read as `(, @x) instead of `(,@ x)
+;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
@@ -563,9 +565,9 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_cp_rdt.htm>
                  token-length token-char token-char-traits
                  token-collect-character))
 (defun make-token ()
-  (declare (inline arr))
   (flet ((arr (type)
            (make-array 8 :adjustable t :fill-pointer 0 :element-type type)))
+    (declare (inline arr))
     (cons (arr 'character) (arr 'constituent-trait))))
 (defun token-text        (token)       (car token))
 (defun token-traits      (token)       (cdr token))
@@ -744,7 +746,7 @@ the token, and to describe the parsed syntax with ALT, ZERO-OR-MORE,
 ONE-OR-MORE and OPT-SIGN."
   (multiple-value-bind (docu decl body) (parse-body :lambda body)
     `(defun ,name ,arguments
-       ,@(when docu (list docu))
+       ,@docu
        ,@decl
        (macrolet ((reject (strongp &rest ctrlstring-and-args)
                           `(return-from ,',name

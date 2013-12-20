@@ -1,22 +1,22 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               linc.asd
+;;;;FILE:               com.informatimago.clext.association.asd
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    ASD file for the Linc project.
+;;;;    ASD file to load the com.informatimago.clext.association library.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2012-07-02 <PJB> Created.
+;;;;    2010-10-31 <PJB> Created this .asd file.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2012 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2010 - 2012
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -29,62 +29,49 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.linc
+(asdf:defsystem :com.informatimago.clext.association
 
     ;; system attributes:
     
-    :description "LINC Is Not C, but almost.  It allows writing C code as S-exps."
+    :description "Common Lisp Extensions: Associations."
 
     :long-description "
 
-LINC Is Not C, but almost.
-
-The purpose is to be able to use Common Lisp
-at the meta-programming level to generate C sources.
-Linc programs can also be executed and debugged in the
-Common Lisp environment.
-
-A linc file contains normal Common Lisp expressions,
-and linc expressions.  When compiling the linc file,
-the Common Lisp expressions are executed, which will  
-generate a corresponding C source.
+This system provides a Common-Lisp package exporting a macro to define
+CLOS associations.  It uses CLOSER-MOP.
 
 "
-    
-    
-    :author     "Pascal Bourguignon <pjb@informatimago.com>"
 
-    :maintainer "Pascal Bourguignon <pjb@informatimago.com>"
+    :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
 
+    :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
+    
     :licence "AGPL3"
 
+    
     ;; component attributes:
     
-    :name "LINC Is Not C, but almost."
+    :name "Informatimago Common Lisp Extensions Associations"
     
-    :version "0.0.0"
+    :version "1.0.0"
     
     :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "2007")
-                 ((#:albert #:output-dir)          . "../documentation/com.informatimago.linc/")
+                 (#:date                           . "Autumn 2010")
+                 ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.clext/")
                  ((#:albert #:formats)             . ("docbook"))
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
-    
+
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
 
-    :depends-on ("split-sequence"
-                 "closer-mop"
-                 "com.informatimago.common-lisp.cesarum")
-    
-    :components ((:file "packages")
-                 (:file "c-syntax"           :depends-on ("packages"))
-                 (:file "c-operators"       :depends-on ("packages" "c-syntax"))
-                 ;; Not yet (:file "c++-syntax"         :depends-on ("packages"))
-                 (:file "linc"               :depends-on ("packages" "c-syntax" "c-operators"))))
+    :depends-on ("closer-mop")
+
+    :components ((:file "association")))
+
 
 ;;;; THE END ;;;;
+ 

@@ -57,7 +57,7 @@ specifications, like GRAY or other portability libraries.
     
     :name "Informatimago Common Lisp Extensions"
     
-    :version "1.3.1"
+    :version "1.3.2"
     
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Autumn 2010")
@@ -69,11 +69,12 @@ specifications, like GRAY or other portability libraries.
 
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
 
-    :depends-on ("com.informatimago.common-lisp.cesarum")
+    :depends-on ("com.informatimago.common-lisp.cesarum"
+                 "com.informatimago.clext.association")
 
     :components (#+(or ccl clisp cmu ecl sbcl)
                    (:file "character-sets")
-                   #+(or allegro clisp sbcl cmu)
+                   #+(or allegro ccl clisp sbcl cmu)
                    (:file "closer-weak")))
 
 

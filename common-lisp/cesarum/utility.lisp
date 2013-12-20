@@ -9,6 +9,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2013-06-30 <PJB> Added FLOAT-{,C,E}TYPECASE; exported [-+]EPSILON.
 ;;;;    2008-06-24 <PJB> Added INCF-MOD and DECF-MOD.
 ;;;;    2007-12-01 <PJB> Removed PJB-ATTRIB macro (made it a flet of PJB-DEFCLASS).
 ;;;;    2007-07-07 <PJB> Added TRACING.
@@ -31,7 +32,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2003 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2003 - 2013
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -50,10 +51,12 @@
 (in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
   (:use "COMMON-LISP"
-        "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM" )
+        "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
   (:export
    ;; 3 - EVALUATION AND COMPILATION
-   "WITH-GENSYMS" "WSIOSBP" "COMPOSE" "COMPOSE-AND-CALL"
+   "WITH-GENSYMS" "WSIOSBP" "PROGN-CONCAT"
+   "CURRY" "COMPOSE" "COMPOSE-AND-CALL"
    "DEFINE-IF-UNDEFINED"  "INCLUDE" "FUNCTIONAL-PIPE"
    "FIRST-ARG" "SECOND-ARG" "THIRD-ARG" "FOURTH-ARG" "FIFTH-ARG"
    "SIXTH-ARG" "SEVENTH-ARG" "EIGHTH-ARG" "NINTH-ARG" "TENTH-ARG"
@@ -63,6 +66,7 @@
    "SAFE-APPLY" "WHILE" "UNTIL" "FOR"
    ;; 7 - OBJECTS
    "DEFINE-STRUCTURE-CLASS" "DEFINE-WITH-OBJECT" "PJB-DEFCLASS"
+   "PRINT-PARSEABLE-OBJECT"
    ;; 8 - STRUCTURES
    "DEFINE-WITH-STRUCTURE"
    ;; 9 - CONDITIONS
@@ -71,8 +75,11 @@
    "MAKE-KEYWORD" "CONC-SYMBOL"
    ;; 12 - NUMBERS
    "SIGN"
+   "DISTINCT-FLOAT-TYPES" "FLOAT-TYPECASE" "FLOAT-CTYPECASE" "FLOAT-ETYPECASE"
+   "+EPSILON" "-EPSILON"
    ;; 14 - CONSES
-   "MAXIMIZE" "COMPUTE-CLOSURE" "TOPOLOGICAL-SORT"
+   "MAXIMIZE" "TOPOLOGICAL-SORT" "TRANSITIVE-CLOSURE"
+   "COMPUTE-CLOSURE" ; deprecated, renamed to transitive-closure
    ;; 15 - ARRAYS
    "VECTOR-INIT" "UNDISPLACE-ARRAY" "DICHOTOMY-SEARCH"
    ;; 16 - STRINGS
@@ -82,13 +89,13 @@
    ;; 18 - HASH-TABLES
    "HASH-TABLE-KEYS" "HASH-TABLE-VALUES"
    "HASH-TABLE-ENTRIES" "HASH-TABLE-PATH"
-   "COPY-HASH-TABLE"
-   "HASHTABLE" "PRINT-HASHTABLE" 
+   "COPY-HASH-TABLE" "MAP-INTO-HASH-TABLE"
+   "HASHTABLE" "PRINT-HASHTABLE"
    ;;
    "DICHOTOMY"
    "TRACING" "TRACING-LET" "TRACING-LET*" "TRACING-LABELS"
    ;;
-   "XOR" "EQUIV" "IMPLY" "SET-EQUAL"
+   "XOR" "EQUIV" "IMPLY" ;; "SET-EQUAL"
    )
   (:documentation
    "
@@ -128,6 +135,7 @@ License:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+
 #-:with-debug-gensym
 (defmacro with-gensyms (syms &body body)
   "
@@ -146,6 +154,22 @@ NOTE:    This version by Paul Graham in On Lisp."
   `(let ,(mapcar
           (lambda (s) `(,s (intern (string (gensym ,(string s)))
                                    "COM.INFORMATIMAGO.GENSYMS"))) syms) ,@body))
+
+
+(defun progn-concat (forms)
+  "
+DO:       Wraps the forms in a PROGN.  If they're PROGN forms,
+          then their PROGN is unwrapped first.
+"
+  `(progn ,@(mapcan (lambda (form) (cond
+                                     ((null form)
+                                      '())
+                                     ((and (listp form) (eq 'progn (first form)))
+                                      (copy-list (rest form)))
+                                     (t
+                                      (list form))))
+                    forms)))
+
 
 
 (defmacro wsiosbp (&body body)
@@ -178,11 +202,23 @@ The *PACKAGE* is kept bound to the current package.
 (define-argument-selector tenth-arg   10)
 
 
-(defun compose-sexp (functions var)
-  (if (null functions)
-      var
-      (list (car functions) (compose-sexp (cdr functions) var))))
+(defun curry (function &rest left-arguments)
+  (lambda (&rest right-arguments)
+    (apply function (append left-arguments right-arguments))))
 
+;; (defmacro curry (function &rest left-arguments)
+;;   (let ((parameters (mapcar (lambda (arg) (gensym)) left-arguments))
+;;         (right-arguments (gensym)))
+;;     `(let ,(mapcar (function list) parameters left-arguments)
+;;        (lambda (&rest ,right-arguments)
+;;          (apply (function ,function) ,@parameters ,right-arguments)))))
+
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun compose-sexp (functions var)
+    (if (null functions)
+        var
+        (list (car functions) (compose-sexp (cdr functions) var)))))
 
 (defmacro compose (&rest functions)
   "
@@ -209,9 +245,9 @@ EXAMPLE:    (compose-and-call abs sin cos 0.234) --> 0.8264353
 
 (defmacro define-if-undefined (&rest definitions)
   "Use this to conditionally define functions, variables, or macros that
-  may or may not be pre-defined in this Lisp.  This can be used to provide
-  CLtL2 compatibility for older Lisps.
-  WHO'S THE AUTHOR?"
+may or may not be pre-defined in this Lisp.  This can be used to provide
+CLtL2 compatibility for older Lisps.
+WHO'S THE AUTHOR?"
   `(progn
      ,@(mapcar #'(lambda (def)
                    (let ((name (second def)))
@@ -286,13 +322,24 @@ Return the results of the last form.
 (defmacro defenum (name-and-options &rest constants)
   "
 Define an named enumeration type, a set of constants with integer
-values, and a lable function to produce the name of the constants from
+values, and a label function to produce the name of the constants from
 the numerical value.
+
+NAME-AND-OPTIONS:
+
+            The name of the enum type, or a list containing the name
+            of the enum type and options (no option defined so far).
+            The label function defined is named <enum-type-name>-LABEL
+
+CONSTANTS:  The first element of CONSTANTS may be an optional docstring.
+            Each constant is either a symbol naming the constant of the enum,
+            (the value is then the successor of the previous value),
+            or a list containing the constant name and the constant value.
 "
   (let ((name (if (consp name-and-options)
                   (first name-and-options)
                   name-and-options)))
-    (when (stringp (first constants))
+    (when (stringp (first constants)) ; docstring
       (pop constants))
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        ;; define a ({NAME}-LABEL value) function.
@@ -300,33 +347,32 @@ the numerical value.
          ,(format nil "Produce the name of the constant having the given VALUE.")
          (case value
            ,@(loop
-                for cname in constants
-                with val = -1
-                do (if (consp cname)
+               :with val = -1
+               :for cname :in constants
+               :do (if (consp cname)
                        (setf val (second cname))
                        (incf val))
-                collect `((,val) ',(if (consp cname)
+               :collect `((,val) ',(if (consp cname)
                                        (first cname)
                                        cname)))
            (otherwise (format nil "#<~A:~D>" ',name value))))
        ;; define the constants.
        ,@(loop
-            for cname in constants
-            with val = -1
-            do (when (consp cname)
+           :with val = -1
+           :for cname :in constants
+           :do (when (consp cname)
                  (setf val (1- (second cname)) cname (first cname)))
-            collect `(defconstant ,cname ,(incf val)
+           :collect `(defconstant ,cname ,(incf val)
                        ,(format nil "~A enumeration value." name)))
        ;; define the type.
        (deftype ,name ()
          "An enumeration type." ;; TODO: get a docstring from the parameters.
          '(member ,@(loop
-                       for cname in constants
-                       with val = -1
-                       do (if (consp cname)
-                              (setf val (second cname))
-                              (incf val))
-                       collect val))))))
+                      :with val = -1
+                      :for cname :in constants
+                      :collect (if (consp cname)
+                                   (setf val (second cname))
+                                   (incf val))))))))
 
 
 (defun op-type-of (symbol &optional env)
@@ -514,6 +560,7 @@ DO:     Define a class implementing the structure API.
              conc-name constructors copier
              include initial-offset predicate
              print-function print-object)
+    (declare (ignorable initial-offset))
     (if (symbolp name-and-options)
         (setf name    name-and-options
               options nil)
@@ -636,6 +683,113 @@ DO:       Define a macro: (WITH-{CLASS-NAME} object &body body)
 
 
 
+
+;;;
+;;;
+;;;
+
+
+(declaim (declaration stepper))
+
+(defun object-identity (object)
+  "
+RETURN:         A string containing the object identity as printed by
+                PRINT-UNREADABLE-OBJECT.
+"
+  (declare (stepper disable))
+  (let ((*step-mode* :run)
+        (*print-readably* nil))
+    (declare (special *step-mode*))
+    (let ((ident
+           (with-output-to-string (stream)
+             (print-unreadable-object (object stream :type nil :identity t)))))
+      (subseq ident 3 (1- (length ident))))))
+
+
+(defun call-print-parseable-object (object stream type identity thunk)
+  "
+SEE:            PRINT-PARSEABLE-OBJECT
+"
+  (declare (stepper disable))
+  (let ((*step-mode* :run))
+    (declare (special *step-mode*))
+    (if *print-readably*
+        (error 'print-not-readable :object object)
+        (progn
+          (format stream "~S"
+                  (append (when type
+                            (list (class-name (class-of object))))
+                          (funcall thunk object)
+                          (when identity
+                            (list (object-identity object))))) 
+          object))))
+
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun extract-slots (ovar slots)
+    "
+SEE:            PRINT-PARSEABLE-OBJECT
+RETURN:         A form building a plist of slot values.
+"
+    (cons 'list
+          (loop
+            :for slot :in slots
+            :collect  (if (symbolp slot)
+                          (intern (symbol-name slot) "KEYWORD")
+                          `(quote ,(first slot)))
+            :collect  (if (symbolp slot)
+                        `(ignore-errors (slot-value ,ovar ',slot))
+                        `(ignore-errors ,(second slot)))))))
+
+
+(defmacro print-parseable-object ((object stream &key (type t) identity) &rest slots)
+  "
+
+DO:             Prints on the STREAM the object as a list.  If all the
+                objects printed inside it are printed readably or with
+                PRINT-PARSEABLE-OBJECT, then that list should be
+                readable, at least with *READ-SUPPRESS* set to T.
+
+OBJECT:         Either a variable bound to the object to be printed,
+                or a binding list (VARNAME OBJECT-EXPRESSION), in
+                which case the VARNAME is bound to the
+                OBJECT-EXPRESSION during the evaluation of the SLOTS.
+
+STREAM:         The output stream where the object is printed to.
+
+TYPE:           If true, the class-name of the OBJECT is printed as
+                first element of the list.
+
+IDENTITY:       If true, the object identity is printed as a string in
+                the last position of the list.
+
+SLOTS:          A list of either a symbol naming the slot, or a list
+                (name expression), name being included quoted in the
+                list, and the expression being evalauted to obtain the
+                value.
+
+RETURN:         The object that bas been printed (so that you can use
+                it in tail position in PRINT-OBJECT conformingly).
+
+EXAMPLE:        (print-parseable-object (object stream :type t :identity t)
+                  slot-1
+                  (:slot-2 (thing-to-list (slot-2 object)))
+                  slot-3)
+"
+  `(locally (declare (stepper disable))
+     ,(if (symbolp object)
+         `(call-print-parseable-object ,object ,stream ,type ,identity
+                                       (lambda (,object)
+                                         (declare (ignorable ,object) (stepper disable))
+                                         ,(extract-slots object slots)))
+         (destructuring-bind (ovar oval) object
+           `(let ((,ovar ,oval))
+              (call-print-parseable-object ,ovar ,stream ,type ,identity
+                                           (lambda (,ovar)
+                                             (declare (ignorable ,ovar) (stepper disable))
+                                             ,(extract-slots object slots))))))))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 8 - STRUCTURES
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -745,16 +899,14 @@ DO:       Execute the BODY with a handler for CONDITION and
 "
   `(handler-case (progn ,@body)
      (simple-condition  (err) 
-       (format *error-output* "~&~A: ~%" (class-name (class-of err)))
-       (apply (function format) *error-output*
-              (simple-condition-format-control   err)
-              (simple-condition-format-arguments err))
-       (format *error-output* "~&")
-       (finish-output))
+       (format *error-output* "~&~A:~%~?~&"
+               (class-name (class-of err))
+               (simple-condition-format-control   err)
+               (simple-condition-format-arguments err))
+       (finish-output *error-output*))
      (condition (err) 
-       (format *error-output* "~&~A: ~%  ~S~%" (class-name (class-of err)) err)
-       (finish-output))))
-
+       (format *error-output* "~&~A:~%~A~%" (class-name (class-of err)) err)
+       (finish-output *error-output*))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -817,17 +969,209 @@ RETURN: -1 if N is negative,
          ,writer-form))))
 
 
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun type-equal-p (t1 t2)
+    (and (subtypep t1 t2) (subtypep t2 t1)))
+  (declaim (inline type-equal-p))
+
+  (defun distinct-float-types ()
+    "
+RETURN: a subset of (long-float double-float single-float short-float)
+that represents the partition of the float type for this
+implementation.
+
+There can be fewer than four internal representations for floats. If
+there are fewer distinct representations, the following rules apply:
+
+  • If there is only one, it is the type single-float. In this
+    representation, an object is simultaneously of types single-float,
+    double-float, short-float, and long-float.
+
+  • Two internal representations can be arranged in either of the
+    following ways:
+   
+      □ Two types are provided: single-float and short-float. An
+        object is simultaneously of types single-float,  double-float,
+        and long-float.
+
+      □ Two types are provided: single-float and double-float. An
+        object is simultaneously of types single-float and
+        short-float, or double-float and long-float.
+       
+  • Three internal representations can be arranged in either of the
+    following ways:
+   
+      □ Three types are provided: short-float, single-float, and
+        double-float. An object can simultaneously be of  type
+        double-float and long-float.
+
+      □ Three types are provided: single-float, double-float, and
+        long-float. An object can simultaneously be of  types
+        single-float and short-float.
+
+"
+
+    ;; #+emacs
+    ;; (insert
+    ;;  (karnaugh '(s=i s=d s=l i=d i=l d=l)
+    ;;            (list "1" "21" "22" "31" "32" "4"
+    ;;                  (cons "i" (lambda (s=i s=d s=l i=d i=l d=l)
+    ;;                              (and (==> (and s=i s=d) i=d)
+    ;;                                   (==> (and s=i s=l) i=l)
+    ;;                                   (==> (and s=i i=d) s=d)
+    ;;                                   (==> (and s=i i=l) s=l)
+    ;;                                   
+    ;;                                   (==> (and s=d s=l) d=l)
+    ;;                                   (==> (and s=d i=d) s=i)
+    ;;                                   (==> (and s=d i=l) s=l)
+    ;;                                   (==> (and s=d d=l) s=l)
+    ;;                                   
+    ;;                                   (==> (and s=l i=l) s=i)
+    ;;                                   (==> (and s=l d=l) s=d)
+    ;;                                   
+    ;;                                   (==> (and i=d i=l) d=l)
+    ;;                                   (==> (and i=d d=l) i=l)
+    ;; 
+    ;;                                   (==> (and s=i s=l) s=d)
+    ;;                                   (==> (and s=l s=d) s=i)
+    ;;                                   
+    ;;                                   (==> (not s=i) (not (or s=d s=l)))
+    ;;                                   (==> (not s=d) (not s=l))
+    ;;                                   (==> (not i=d) (not i=l))
+    ;;                                   (==> (not d=l) (not i=l))
+    ;; 
+    ;;                                   ))))))
+    ;;
+    ;; 1  short-float=single-float=double-float=long-float
+    ;; 21 short-float | single-float=double-float=long-float
+    ;; 22 short-float=single-float | double-float=long-float
+    ;; 31 short-float | single-float | double-float=long-float
+    ;; 32 short-float=single-float | double-float | long-float
+    ;; 4  short-float | single-float | double-float | long-float
+    ;; not conforming configuruations:
+    ;; n1 short-float=single-float=double-float | long-float
+    ;; n2 short-float | single-float=double-float | long-float
+    ;;
+    ;; +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+
+    ;; | s=i | s=d | s=l | i=d | i=l | d=l |  1  | 21  | 22  | 31  | 32  |  4  | n1  | n2  |
+    ;; +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+
+    ;; | YES | YES | YES | YES | YES | YES |  v  |     |     |     |     |     |     |     |
+    ;; | YES | YES |  NO | YES |  NO |  NO |     |     |     |     |     |     |  v  |     |
+    ;; |  NO |  NO |  NO | YES | YES | YES |     |  v  |     |     |     |     |     |     |
+    ;; |  NO |  NO |  NO | YES |  NO |  NO |     |     |     |     |     |     |     |  v  |
+    ;; | YES |  NO |  NO |  NO |  NO | YES |     |     |  v  |     |     |     |     |     |
+    ;; | YES |  NO |  NO |  NO |  NO |  NO |     |     |     |     |  v  |     |     |     |
+    ;; |  NO |  NO |  NO |  NO |  NO | YES |     |     |     |  v  |     |     |     |     |
+    ;; |  NO |  NO |  NO |  NO |  NO |  NO |     |     |     |     |     |  v  |     |     |
+    ;; +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+
+    (let ((s=i (type-equal-p 'short-float 'single-float))
+          (i=d (type-equal-p 'single-float 'double-float))
+          (d=l (type-equal-p 'double-float 'long-float)))
+      (if i=d
+          (if s=i
+              (if d=l
+                  '(single-float) #|1|#
+                  '(single-float long-float) #|n1|#)
+              (if d=l
+                  '(short-float single-float) #|21|#
+                  '(short-float single-float long-float) #|n2|#))
+          (if s=i
+              (if d=l
+                  '(single-float double-float) #|22|#
+                  '(single-float double-float long-float) #|32|#)
+              (if d=l
+                  '(short-float single-float double-float) #|31|#
+                  '(short-float single-float double-float long-float) #|4|#)))))
+
+
+  (defun generate-distinct-float-types-typecase (operator expression clauses)
+    (let ((types (distinct-float-types)))
+      `(,operator ,expression
+                  ,@(loop
+                      :for (type . body) :in clauses
+                      :when (member type types)
+                      :collect `(,type ,@body))))))
+
+
+(defmacro float-typecase (expression &rest clauses)
+  "
+EXPRESSION: an expression evaluate to some value.
+
+CLAUSES:    typecase clauses where the type is one of the standard
+            FLOAT direct subtypes, ie. one of (SHORT-FLOAT
+            SINGLE-FLOAT DOUBLE-FLOAT LONG-FLOAT).
+
+NOTE:      Implementations may conflate the various subtypes of FLOAT.
+           When two float types are conflated, some implementation
+           will signal a warning on any typecase that have them in
+           separate clauses.  Since they're the same type, we can as
+           well remove the duplicate clauses.
+
+SEE:       CLHS Type SHORT-FLOAT, SINGLE-FLOAT, DOUBLE-FLOAT, LONG-FLOAT
+
+DO:        Expands to a TYPECASE where only the clauses with unique
+           float types are present.
+"
+  (generate-distinct-float-types-typecase 'typecase expression clauses))
+
+
+(defmacro float-etypecase (expression &rest clauses)
+  "
+EXPRESSION: an expression evaluate to some value.
+
+CLAUSES:    etypecase clauses where the type is one of the standard
+            FLOAT direct subtypes, ie. one of (SHORT-FLOAT
+            SINGLE-FLOAT DOUBLE-FLOAT LONG-FLOAT).
+
+NOTE:      Implementations may conflate the various subtypes of FLOAT.
+           When two float types are conflated, some implementation
+           will signal a warning on any typecase that have them in
+           separate clauses.  Since they're the same type, we can as
+           well remove the duplicate clauses.
+
+SEE:       CLHS Type SHORT-FLOAT, SINGLE-FLOAT, DOUBLE-FLOAT, LONG-FLOAT
+
+DO:        Expands to a ETYPECASE where only the clauses with unique
+           float types are present.
+"
+  (generate-distinct-float-types-typecase 'etypecase expression clauses))
+
+
+(defmacro float-ctypecase (expression &rest clauses)
+    "
+EXPRESSION: an expression evaluate to some value.
+
+CLAUSES:    ctypecase clauses where the type is one of the standard
+            FLOAT direct subtypes, ie. one of (SHORT-FLOAT
+            SINGLE-FLOAT DOUBLE-FLOAT LONG-FLOAT).
+
+NOTE:      Implementations may conflate the various subtypes of FLOAT.
+           When two float types are conflated, some implementation
+           will signal a warning on any typecase that have them in
+           separate clauses.  Since they're the same type, we can as
+           well remove the duplicate clauses.
+
+SEE:       CLHS Type SHORT-FLOAT, SINGLE-FLOAT, DOUBLE-FLOAT, LONG-FLOAT
+
+DO:        Expands to a CTYPECASE where only the clauses with unique
+           float types are present.
+"
+  (generate-distinct-float-types-typecase 'ctypecase expression clauses))
+
+
+
 (defun +epsilon (float)
   "Returns the float incremented by the smallest increment possible."
   (multiple-value-bind (significand exponent sign) (decode-float float)
     (* sign (scale-float
              (if (minusp sign)
-                 (- significand (etypecase float
+                 (- significand (float-etypecase float
                                   (long-float   long-float-negative-epsilon)
                                   (double-float double-float-negative-epsilon)
                                   (single-float single-float-negative-epsilon)
                                   (short-float  short-float-negative-epsilon)))
-                 (+ significand (etypecase float
+                 (+ significand (float-etypecase float
                                   (long-float   long-float-epsilon)
                                   (double-float double-float-epsilon)
                                   (single-float single-float-epsilon)
@@ -839,12 +1183,12 @@ RETURN: -1 if N is negative,
    (multiple-value-bind (significand exponent sign) (decode-float float)
      (* sign (scale-float
               (if (minusp sign)
-                  (+ significand (etypecase float
+                  (+ significand (float-etypecase float
                                    (long-float   long-float-negative-epsilon)
                                    (double-float double-float-negative-epsilon)
                                    (single-float single-float-negative-epsilon)
                                    (short-float  short-float-negative-epsilon)))
-                  (- significand (etypecase float
+                  (- significand (float-etypecase float
                                    (long-float   long-float-epsilon)
                                    (double-float double-float-epsilon)
                                    (single-float single-float-epsilon)
@@ -889,6 +1233,11 @@ RETURN: The maximum value and the item in list for which predicate
 
 
 (defun compute-closure (fun set)
+  (warn "The function ~S has been renamed ~S, please update your programs."
+        'compute-closure 'transitive-closure)
+  (transitive-closure fun set))
+
+(defun transitive-closure (fun set)
   "
 FUN:     set --> P(set)
           x |--> { y }
@@ -916,39 +1265,42 @@ NOTE:    This version avoids calling FUN twice with the same argument.
 ;; (array->list array) --> (coerce array 'list)
 ;; (DEFUN ARRAY->LIST (A) (MAP 'LIST (FUNCTION IDENTITY) A));;ARRAY->LIST
 
-
 (defun topological-sort (nodes lessp)
-  "
+   "
 RETURN: A list of NODES sorted topologically according to 
         the partial order function LESSP.
         If there are cycles (discounting reflexivity), 
         then the list returned won't contain all the NODES.
 "
-  (loop
+   (loop
      :with sorted = '()
      :with incoming = (map 'vector (lambda (to)
                                      (loop
-                                        :for from :in nodes
-                                        :when (and (not (eq from to))
-                                                   (funcall lessp from to))
-                                        :sum 1))
+                                       :for from :in nodes
+                                       :when (and (not (eq from to))
+                                                  (funcall lessp from to))
+                                       :sum 1))
                            nodes)
      :with q = (loop
-                  :for node :in nodes
-                  :for inco :across incoming
-                  :when (zerop inco)
-                  :collect node) 
+                 :for node :in nodes
+                 :for inco :across incoming
+                 :when (zerop inco)
+                 :collect node) 
      :while q
      :do (let ((n (pop q)))
            (push n sorted)
            (loop
-              :for m :in nodes
-              :for i :from 0
-              :do (when (and (and (not (eq n m))
-                                  (funcall lessp n m))
-                             (zerop (decf (aref incoming i))))
-                    (push m q))))
+             :for m :in nodes
+             :for i :from 0
+             :do (when (and (and (not (eq n m))
+                                 (funcall lessp n m))
+                            (zerop (decf (aref incoming i))))
+                   (push m q))))
      :finally (return (nreverse sorted))))
+
+
+
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -960,7 +1312,7 @@ RETURN: A list of NODES sorted topologically according to
   "
 DO:      Sets all the slots in vector to the successive results of
          the function CONSTRUCTOR called with integers from 0 up
-         to the dimension of the VECTOR.
+s         to the dimension of the VECTOR.
 RETURN:  VECTOR
 "
   (do ((index 0 (1+ index)))
@@ -1044,28 +1396,30 @@ POST:	(<= start index end)
         | a[max] < x        |   FALSE  |  max  |  greater |      0         |
         +-------------------+----------+-------+----------+----------------+
 "
-  (let* ((curmin start)
-         (curmax end)
-         (index    (truncate (+ curmin curmax) 2))
-         (order  (funcall compare value (funcall key (aref vector index)))) )
-    (loop :while (and (/= 0 order) (/= curmin index)) :do
-       ;; (FORMAT T "~&min=~S  cur=~S  max=~S   key=~S <~S> [cur]=~S ~%" CURMIN INDEX CURMAX VALUE (FUNCALL COMPARE VALUE (FUNCALL KEY (AREF VECTOR INDEX))) (AREF VECTOR INDEX))
-       (if (< order 0)
-           (setf curmax index)
-           (setf curmin index))
-       (setf index (truncate (+ curmin curmax) 2))
-       (setf order  (funcall compare value (funcall key (aref vector index)))))
-    (when (and (< start index) (< order 0))
-      (setf order 1)
-      (decf index))
-    (assert
-     (or (< (funcall compare value (funcall key (aref vector index))) 0)
-         (and (> (funcall compare value (funcall key (aref vector index))) 0)
-              (or (>= (1+ index) end)
-                  (< (funcall compare value
-                              (funcall key (aref vector (1+  index)))) 0)))
-         (= (funcall compare value (funcall key (aref vector index))) 0)))
-    (values (= order 0) index order)))
+  (if (zerop (length vector))
+      (values nil 0 -1)
+      (let* ((curmin start)
+             (curmax end)
+             (index  (truncate (+ curmin curmax) 2))
+             (order  (funcall compare value (funcall key (aref vector index)))) )
+        (loop :while (and (/= 0 order) (/= curmin index)) :do
+          ;; (FORMAT T "~&min=~S  cur=~S  max=~S   key=~S <~S> [cur]=~S ~%" CURMIN INDEX CURMAX VALUE (FUNCALL COMPARE VALUE (FUNCALL KEY (AREF VECTOR INDEX))) (AREF VECTOR INDEX))
+          (if (< order 0)
+              (setf curmax index)
+              (setf curmin index))
+          (setf index (truncate (+ curmin curmax) 2))
+          (setf order  (funcall compare value (funcall key (aref vector index)))))
+        (when (and (< start index) (< order 0))
+          (setf order 1)
+          (decf index))
+        (assert
+         (or (< (funcall compare value (funcall key (aref vector index))) 0)
+             (and (> (funcall compare value (funcall key (aref vector index))) 0)
+                  (or (>= (1+ index) end)
+                      (< (funcall compare value
+                                  (funcall key (aref vector (1+  index)))) 0)))
+             (= (funcall compare value (funcall key (aref vector index))) 0)))
+        (values (= order 0) index order))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1197,6 +1551,33 @@ Note: we use the name HASHTABLE to avoid name collision."
                           (list :rehash-threshold rehash-threshold))))))
     (dolist (item elements table)
       (setf (gethash (first item) table) (second item)))))
+
+
+(defun map-into-hash-table (sequence &key
+                                       (key   (function identity))
+                                       (value (function identity))
+                                       (test  (function eql))
+                                       (size nil sizep)
+                                       (rehash-size nil rehash-size-p)
+                                       (rehash-threshold nil rehash-threshold-p))
+  "
+Creates a new hash-table, filled with the associations obtained by
+applying the function KEY and the function VALUE on each element of
+the SEQUENCE.
+The other key parameter are passed to MAKE-HASH-TABLE.
+"
+  (let ((table (apply (function make-hash-table)
+                      :test test
+                      (append (when sizep
+                                (list :size size))
+                              (when rehash-size-p
+                                (list :rehash-size rehash-size))
+                              (when rehash-threshold-p
+                                (list :rehash-threshold rehash-threshold))))))
+    (map nil (lambda (element)
+               (setf (gethash (funcall key element) table) (funcall value element)))
+         sequence)
+    table))
 
 
 (defun print-hashtable (table &optional (stream *standard-output*))
@@ -1415,9 +1796,9 @@ DO:       Evaluate the expression, which must be a real,
   "Return P ⇒ Q"
   (or (not p) q))
 
-(defun set-equal (a b)
-  "Return A ⊂ B ∧ A ⊃ B"
-  (and (subsetp a b) (subsetp b a)))
+;; (defun set-equal (a b)
+;;   "Return A ⊂ B ∧ A ⊃ B"
+;;   (and (subsetp a b) (subsetp b a)))
 
 
 ;;;; THE END ;;;;

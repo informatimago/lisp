@@ -136,6 +136,7 @@ License:
 
 ")
   (:use "COMMON-LISP")
+  (:use "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
   (:export "PACKAGE-EXPORTS" ;; missing from CL or not?
            "*PACKAGES*" "PACKAGE-PATHNAME" "LOAD-PACKAGE"
            "PACKAGE-SYSTEM-DEFINITION"
@@ -147,8 +148,36 @@ License:
            "CRACK-OPEN-PACKAGE"
            ;; Obsolete: define-package
            ;; "DEFINE-PACKAGE"
-           ))
+           "DELETE-PACKAGES"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PACKAGE")
+
+
+(defun all-users (package-designator)
+  (compute-closure (lambda (package-designator)
+                     (package-used-by-list package-designator))
+                   (list (find-package package-designator))))
+
+
+(defun delete-packages (root-package)
+  "Delete the package designated by the package designator
+ROOT-PACKAGE, and all the packages that depend on it (but CL-USER)."
+  (let ((packages (topological-sort (all-users root-package)
+                                    (lambda (p q)
+                                      (not (member (find-package q) (all-users p)))))))
+    (let ((cl-user (find-package "COMMON-LISP-USER")))
+      (when (or (member (find-package "COMMON-LISP") packages)
+                (member (find-package "KEYWORD") packages))
+        (error "COMMON-LISP or KEYWORD should not use ~A or a package that uses ~:*~A"
+               (package-name root-package)))
+      (if (member cl-user packages)
+          (let ((packages (remove cl-user packages)))
+            (loop
+              :for package :in packages
+              :do (ignore-errors (unuse-package package cl-user)))
+            (prog1 (mapcar (function package-name) packages)
+              (map nil 'delete-package packages)))
+          (prog1 (mapcar (function package-name) packages)
+            (map nil 'delete-package packages))))))
 
 
 (defun list-symbols (package &key (sorted t)
@@ -235,9 +264,6 @@ SEE ALSO:  REGISTER, LOAD-PACKAGE, ADD-NICKNAME.
 (defparameter *vout* t "Verbose output stream.")
 (defmacro verbose (fctrl &rest args)
   `(when *package-verbose* (format *vout* ,fctrl ,@args)))
-
-(defmacro while (condition &body body)  `(do () ((not ,condition))  ,@body))
-
 
 (defun package-exports (package)
   "
@@ -707,8 +733,5 @@ DO:         Declares a package.
        (defpackage ,name ,@defpack-args)
        (in-package ,name))))
 
-
-
-
-;;;; package.lisp                     --                     --          ;;;;
+;;;; THE END ;;;;
 

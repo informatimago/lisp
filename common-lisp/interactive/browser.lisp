@@ -184,10 +184,12 @@ calling the external program of same name thru the shell."
 (defvar *keep-dot-files* nil
   "Whether dot-files should be shown.")
 
+(defun update-default-pathname-default (working-directory)
+  (setf *default-pathname-defaults*
+        (merge-pathnames working-directory *default-pathname-defaults* nil)))
+
 (defvar *change-directory-hook*
-  (list (lambda (working-directory)
-          (setf *default-pathname-defaults*
-                (merge-pathnames working-directory *default-pathname-defaults* nil))))
+  (list 'update-default-pathname-default)
 
   "A list of unary functions called with the path of  the new current
 working directory.  The default list contains a hook to set the
@@ -212,6 +214,7 @@ three synchronized.
   (let* ((non-existent
           (find-if-not
            (lambda (dir)
+             #+ccl (declare (ignore dir))
              
              ;; We cannot use directory to check whether a directory
              ;; exists.  So we try a file pattern, and if not found

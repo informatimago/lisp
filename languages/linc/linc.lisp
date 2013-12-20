@@ -136,7 +136,10 @@
 ;; }
 
 
-
+;; (defgeneric generate (thing)) ; defined in c-syntax.lisp
+(defgeneric generate-expression (expression))
+(defgeneric generate-statement (expression &key same-line))
+(defgeneric generate-identifier (expression))
 
 ;; (defun generate-expression (expr &key (level 99 levelp) (naked t))
 ;;   ;;   (+ a (* b c))    (10 16 (11 16 16))
@@ -429,7 +432,7 @@
 
 
 (defmacro com.informatimago.linc.c::when   (condi &body body)
-  `(com.informatimago.linc.c::if mcondi          (com.informatimago.linc.c::block ,@body)))
+  `(com.informatimago.linc.c::if ,condi (com.informatimago.linc.c::block ,@body)))
 
 (defmacro com.informatimago.linc.c::unless (condi &body body)
   `(com.informatimago.linc.c::if (com.informatimago.linc.c::not ,condi) (com.informatimago.linc.c::block ,@body)))
@@ -483,23 +486,13 @@
                               :if-exists :supersede
                               :if-does-not-exist :create
                               :external-format external-format)
-        (let ((*c-out* output))
-          (load input))))))
+        (let ((*c-out* output)
+              (*h-out* header)) ;; TODO: not implemented yet.
+          (declare (special *c-out* *h-out*))
+          (warn "not implemented yet")
+          (load input :verbose verbose :print print))))))
 
 
-
-(defmacro handling-errors (&body body)
-  `(HANDLER-CASE (progn ,@body)
-     (simple-condition  (ERR) 
-       (format *error-output* "~&~A: ~%" (class-name (class-of err)))
-       (apply (function format) *error-output*
-              (simple-condition-format-control   err)
-              (simple-condition-format-arguments err))
-       (format *error-output* "~&")
-       (finish-output))
-     (condition (ERR) 
-       (format *error-output* "~&~A: ~%  ~S~%" (class-name (class-of err)) err)
-       (finish-output))))
 
 (defun repl ()
   (catch 'repl     ; allow for emergency exit with (throw 'com.informatimago.linc::repl)
@@ -771,27 +764,33 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
         (values var (list (cons var pattern)) nil))))))
 
 (defmacro pcond (expression &rest clauses)
+  ;; The pattern variable are declared ignorable since depending on
+  ;; the compiler, they may or may not used by potentially dead code.
   (let ((vexpression (gensym)))
     `(let ((,vexpression ,expression))
        (cond
          ,@(mapcar
             (lambda (clause)
-                (multiple-value-bind (dll sal val)
-                    (pcond-substitute-literals (first clause))
-                  `((let ,(mapcar (function cdr) val)
-                      (when (ignore-errors
-                              (destructuring-bind ,dll ,vexpression
-                                (when (and
-                                       ,@(mapcar
-                                          (lambda (binding)
+              (multiple-value-bind (docstrings declarations body) (parse-body :locally (rest clause))
+                (declare (ignore docstrings))
+                (multiple-value-bind (dll sal val) (pcond-substitute-literals (first clause))
+                  (let ((variables (mapcar (function cdr) val)))
+                    `((let ,variables
+                        (declare (ignorable ,@variables))
+                        ,@declarations
+                        (when (ignore-errors
+                                (destructuring-bind ,dll ,vexpression
+                                  (when (and
+                                         ,@(mapcar
+                                            (lambda (binding)
                                               `(equal ,(car binding) ',(cdr binding)))
-                                          sal))
-                                  (setf ,@(mapcan
-                                           (lambda (binding)
+                                            sal))
+                                    (setf ,@(mapcan
+                                             (lambda (binding)
                                                (list (cdr binding) (car binding)))
-                                           val))
-                                  t)))
-                        ,@(rest clause))))))
+                                             val))
+                                    t)))
+                          ,@body)))))))
             clauses)))))
 
 ;; ;;
@@ -829,26 +828,26 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
      (emit (format nil "~(~A~)" (first expression)))
      (cond
        ((listp (second expression))
-        ;; (class (superclass...) :public|:protected|:private member...)
-        ;; superclass ::= (classname [:virtual] [:public|:protected|:private])
-        ;; superclass ::= classname
-         
         (when name
           (emit " ")
           (generate name))
+        
+        ;; (class (superclass...) :public|:protected|:private member...)
+        ;; superclass ::= (classname [:virtual] [:public|:protected|:private])
+        ;; superclass ::= classname
+     
         (when (second expression)
           (emit ":")
           (generate-list ","
                          (lambda (superclass)
                              (if (listp superclass)
-                               (case (length item)
-                                 ((1) (generate (first item)))
+                               (case (length superclass)
+                                 ((1) (generate (first superclass)))
                                  ((2 3)
-                                  (emit (format nil "~(~{~A~^ ~}~)" (rest item)))
-                                  (generate (first item)))
+                                  (emit (format nil "~(~{~A~^ ~}~)" (rest superclass)))
+                                  (generate (first superclass)))
                                  (otherwise
-                                  (error "Invalid syntax for a superclass: ~S"
-                                         superclass)))
+                                  (error "Invalid syntax for a superclass: ~S" superclass)))
                                (generate superclass)))
                          (second expression)))
         (emit :fresh-line)
@@ -857,8 +856,8 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
             (if (member member '(:public :protected :private))
               (emit :fresh-line (format nil "~(~A~):" member) :newline)
               (generate member)))))
-       (progn
-         (emit ))))
+       (t
+        (error "Not implemented yet, generation of type ~S" expression))))
 
     ((com.informatimago.linc.c::enum)
      ;; (enum (blue 1) white red (yellow 10))
@@ -877,10 +876,7 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
              (otherwise
               (error "Invalid syntax for an enum constant: ~S" item)))
            (generate item))
-         (emit "," :newline))))
-
-    
-    ))
+         (emit "," :newline))))))
 
 
 (defun generate-declaration (?declaration)
@@ -953,7 +949,7 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
      (emit "extern" " ")
      (generate-expression ?string)
      (with-parens "{}"
-       (dolist (?declaration ?declartions)
+       (dolist (?declaration ?declarations)
          (generate-declaration ?declaration)))
      (emit :newline))
     
@@ -961,10 +957,11 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
      (error "Not a declaration: ~S" ?everything))))
 
 
+(defmethod generate ((expression t))
+  (generate-expression expression))
 
-(defmethod generate (expression)
-  (if (atom expression)
-    (generate-expression expression)
+(defmethod generate ((expression cons))
+  
     (let ((key (first expression)))
       (ecase key
 
@@ -1044,7 +1041,7 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
            com.informatimago.linc.c::scope
            com.informatimago.linc.c::literal
            com.informatimago.linc.c::identifier)
-         (generate-expression expression))))))
+         (generate-expression expression)))))
 
 ;; (class (scope Configuration Exception InvalidFieldException))
 
@@ -1070,16 +1067,18 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
       (case (first expression)
 
         ((\#cond)
-         (let ((op "#if"))
+         (let ((op "#if")
+               (clauses (rest expression)))
            (dolist (clause clauses)
-             (if (find (first clause) '(t (quote t)) :test (function equal))
-               (emit :fresh-line "#else" :newline)
-               (progn (emit :fresh-line op " ")
-                      (generate-expression (first clauses))
-                      (emit :newline)
-                      (setf op "#elif")))
-             (dolist (item (rest clauses))
-               (generate item)))))
+             (destructuring-bind (condi &rest body) clause
+               (if (find condi '(t (quote t)) :test (function equal))
+                   (emit :fresh-line "#else" :newline)
+                   (progn (emit :fresh-line op " ")
+                          (generate-expression condi)
+                          (emit :newline)
+                          (setf op "#elif")))
+               (dolist (item body)
+                 (generate item))))))
 
         ((\#if \#ifdef \#ifndef)
          (destructuring-bind (\#test ?condition ?then &optional ?else) expression
@@ -1093,7 +1092,8 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
            (emit :fresh-line "#endif" :newline)))
       
         ((\#define)
-         (destructuring-bind (?operator ?name &rest ?arguments)
+         (destructuring-bind (?operator ?name &rest ?arguments) expression
+           (declare (ignore ?operator))
              (if (listp ?name)
                (in-continuation-lines
                 (emit "#define" " " (first ?name))

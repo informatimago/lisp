@@ -633,9 +633,11 @@ argument lisp string."
                         :bytes (make-macroman-cstring string)
                         :num<b>ytes (length string))
       (multiple-value-bind (bytes bytelen) (make-utf8-cstring string)
+        (declare (ignore bytelen))
         (objc:send ns:ns-string
                    :string-with-c-string bytes
                    :encoding #$|NSUTF8StringEncoding|)))
+
   #+cocotron-objc
   (warn "Check the encoding used for NSConstantString in cocotron.")
   #+cocotron-objc
@@ -706,13 +708,15 @@ OBJECT:         A string designator, or another lisp object.
   "
 RETURN:         A Lisp STRING containing the characters of AN-OBJC-STRING.
 "
-  (typecase an-objc-string
-    (ns:ns-constant-string     (objc:lisp-string-from-nsstring an-objc-string))
-    (ns:ns-mutable-string      (objc:lisp-string-from-nsstring an-objc-string))
-    (ccl::objc-constant-string (ccl::objc-constant-string-string an-objc-string))
-    (objc-constant-string      (objc-constant-string-string an-objc-string))
-    (t                         (ccl::%get-utf-8-cstring
-                                (objc:send an-objc-string 'utf8-string)))))
+  (unless (oclo:nullp an-objc-string)
+    (typecase an-objc-string
+      (ns:ns-constant-string     (objc:lisp-string-from-nsstring an-objc-string))
+      (ns:ns-mutable-string      (objc:lisp-string-from-nsstring an-objc-string))
+      (ccl::objc-constant-string (ccl::objc-constant-string-string an-objc-string))
+      (objc-constant-string      (objc-constant-string-string an-objc-string))
+      (t                         (ccl::%get-utf-8-cstring
+                                  (objc:send an-objc-string 'utf8-string))))))
+
 #+testing
 (print (loop
           for str = (objc:send a-nsstring 'utf8-string)

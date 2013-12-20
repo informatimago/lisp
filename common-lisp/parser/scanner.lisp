@@ -18,7 +18,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2004 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2004 - 2013
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -60,9 +60,7 @@
    ;; SCANNER methods:
    "SKIP-SPACES" "SCAN-NEXT-TOKEN"
    ;; PEEK-STREAM methods specialized on SCANNER:
-   "NEXTCHAR" "UNGETCHAR" "GETCHAR" "READLINE"
-   ;; Internal
-   "CHAR-NAME-SUPPORTED-P")
+   "NEXTCHAR" "UNGETCHAR" "GETCHAR" "READLINE")
   (:documentation
    "
 An abstract scanner class.
@@ -74,7 +72,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2004 - 2012
+    Copyright Pascal J. Bourguignon 2004 - 2013
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -104,7 +102,7 @@ License:
 (defgeneric token-kind (token)
   (:documentation "Returns the kind of the token.")
   (:method ((token symbol)) token)
-  (:method ((token string)) nil))
+  (:method ((token string)) token))
 
 (defgeneric token-text (token)
   (:documentation "Returns the literal text the token.")
@@ -132,23 +130,17 @@ License:
    (column     :accessor token-column
                :initarg :column
                :initform 1
-               :type (integer 1))
+               :type (integer 0)) ; 0 is unknown.
    (line       :accessor token-line
                :initarg :line
                :initform 1
-               :type (integer 0)))
+               :type (integer 0))) ; 0 is unknown.
   (:documentation "A syntactic element."))
 
 
 (defmethod print-object ((token token) stream)
-  (print-unreadable-object (token stream :identity t :type t)
-    (prin1 (list (token-kind token)
-                 (token-text token)
-                 (token-column token)
-                 (token-line token)) stream))
-  token)
-
-
+  (print-parseable-object (token stream :type t :identity t)
+                          kind text column line))
 
 
 ;;----------------------------------------------------------------------
@@ -160,45 +152,15 @@ License:
      (ignore-errors (read-from-string (format nil "#\\~A" name)))))
 
 
-(defvar *spaces*
-  (let ((spaces '()))
-    (dolist (name '("Page" "Linefeed" "Return" "Tab" "Newline" "Space"))
-      (let ((ch (char-name-supported-p name)))
-        (when ch (push ch spaces))))
-    (coerce spaces 'string)))
-
-
-
-;; Some tools can't deal with #+#.(...) well, so we go thru *feature*
-;; instead.
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-
-  ;; Semi-standard character names:
-  
-  (when (let ((ch (char-name-supported-p "Linefeed")))
-          (and ch (char/= ch #\Newline)))
-    (pushnew :linefeed *features*))
-
-  (when  (char-name-supported-p "Page")
-    (pushnew :page *features*))
-
-  (when  (char-name-supported-p "Backspace")
-    (pushnew :backspace *features*))
-
-  (when  (char-name-supported-p "Tab")
-    (pushnew :tab *features*))
-
-  ;; Non-standard character names:
-  
-  (when  (char-name-supported-p "Bell")
-    (pushnew :bell *features*))
-
-  (when  (char-name-supported-p "Vt")
-    (pushnew :vt *features*))
-  
-  );;eval-when
-
+;; Note: the features are defined in .cesarum.characters
+(defvar *spaces*  (coerce (remove-duplicates
+                           '(#\Space
+                             #+has-newline #\Newline
+                             #+has-tab #\Tab
+                             #+(and has-return (not newline-is-return)) #\return
+                             #+(and has-linefeed (not newline-is-linefeed)) #\linefeed
+                             #+has-page #\page))
+                          'string))
 
 
 ;; Note we copy some fields in the condition from the scanner, so that
@@ -329,9 +291,9 @@ RETURN: line; column
     :do (case ch
           ((#\Space
             #\Newline
-            #+linefeed #\Linefeed
-            #+page     #\Page
-            #+tab      #\Tab))
+            #+has-linefeed #\Linefeed
+            #+has-page     #\Page
+            #+has-tab      #\Tab))
           (otherwise
            (loop-finish)))
     :finally (progn
@@ -369,13 +331,8 @@ RETURN:       (scanner-current-token scanner).
 
 
 (defmethod print-object ((self scanner) out)
-  (print-unreadable-object (self out :type t :identity t)
-    (format out "~{~S~^ ~}"
-            (list :line          (scanner-line          self)
-                  :column        (scanner-column        self)
-                  :current-token (scanner-current-token self)
-                  :source        (scanner-source        self))))
-  self)
+  (print-parseable-object (self out :type t :identity t)
+                          line column current-token source))
 
 
 
@@ -394,11 +351,11 @@ RETURN:       (scanner-current-token scanner).
       ((#\Newline)
        (incf (scanner-line scanner))
        (setf (scanner-column scanner) 1))
-      #+tab
+      #+has-tab
       ((#\Tab)
        (increment-column-to-next-tab-stop scanner))
       (otherwise
-       ;; including #\Return #+linefeed #\Linefeed #+page #\Page
+       ;; including #\Return #+has-linefeed #\Linefeed #+has-page #\Page
        (incf (scanner-column scanner))))
     ch))
 
@@ -412,13 +369,13 @@ RETURN:       (scanner-current-token scanner).
        ;; We don't know the length of the last line.
        (decf (scanner-line scanner))
        (setf (scanner-column scanner) 0))
-      #+tab
+      #+has-tab
       ((#\Tab)
        ;; We don't know how many characters there was in the last tab-width.
        (setf (scanner-column scanner)  (truncate (1- (scanner-column scanner))
                                                  (scanner-tab-width scanner))))
       (otherwise
-       ;; including #\Return #+linefeed #\Linefeed #+page #\Page
+       ;; including #\Return #+has-linefeed #\Linefeed #+has-page #\Page
        (decf (scanner-column scanner))))
     ch))
 
@@ -428,7 +385,7 @@ RETURN:       (scanner-current-token scanner).
   (with-output-to-string (out)
     (loop
       :for ch = (getchar scanner)
-      :until (find ch #(#\Newline #\Return #+linefeed #\Linefeed #+page #\Page))
+      :until (find ch #(#\Newline #\Return #+has-linefeed #\Linefeed #+has-page #\Page))
       :do (write-char ch out)))
   (prog1 (readline (scanner-stream scanner))
     (incf (scanner-line scanner))

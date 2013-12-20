@@ -77,7 +77,11 @@ should be made into implementation independant packages).
                  (:file "fifo-stream")
                  (:file "iotask")
                  (:file "rfc1413" :depends-on ("iotask"))
-                 (:file "raw-memory")
+                 ;; :shared-object is not known of asdf, but is defined by clg-tools…
+                 ;; (:shared-object "libraw-memory"
+                 ;;                 :components ((:c-source-file "raw-memory-lib"))
+                 ;;                 :depends-on ())
+                 ;; (:file "raw-memory" :depends-on ("libraw-memory"))
                  (:file "susv3")
                  (:file "susv3-mc3" :depends-on ("susv3"))
                  (:file "susv3-xsi" :depends-on ("susv3"))

@@ -1,0 +1,41 @@
+There are a lot of languages that are implemented in Common Lisp.
+
+Now, unfortunately, it's often only the early implementation of a language that is written in Lisp.  
+
+cl-python 
+http://common-lisp.net/project/clpython/
+
+There's a r4rs scheme implementation named Pseudo.
+http://www.cliki.net/PseudoScheme
+
+An early implementation of Yale Haskell.
+http://www.cliki.net/Yale%20Haskell
+
+"In ~2003, Mozilla's CVS tree still contains the original implementation of Javascript... written in Common Lisp."
+Well, the mozilla/js2/semantics/README that I just checked-out from mozilla CVS says:
+
+    js/semantics contains experimental code used to generate LR(1) and LALR(1)
+    grammars for JavaScript as well as compile and check formal semantics for
+    JavaScript.  The semantics can be executed directly or printed into either
+    HTML or Microsoft Word RTF formats.
+
+You may also be interested in Zeta-C although it's not written in Common Lisp http://www.cliki.net/Zeta-C.
+
+maxima (which implements a mathematical language similar to macsyma, ie. similar to mathematica, octave or mathlab).
+http://maxima.sourceforge.net/
+
+acl2 (which is a theorem prover) implements a lisp-like language in CL.
+http://www.cs.utexas.edu/~moore/acl2/
+
+Qi is implemented in Common Lisp.
+http://en.wikipedia.org/wiki/Qi_%28programming_language%29
+
+Here is a toy implementation of BASIC in CL:
+http://www.informatimago.com/develop/lisp/com/informatimago/small-cl-pgms/basic/
+
+And the implementation L.S.E (Langage Symbolique d'Enseignement, a French programming language of the 70's):
+http://nasium-lse.ogamita.com/
+http://fossil.nasium-lse.ogamita.com/nasium-lse/dir?ci=tip
+
+And a few more, see http://www.cliki.net/programming%20language
+

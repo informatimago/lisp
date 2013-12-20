@@ -369,7 +369,7 @@ EDGE-LIST:  specifies the pipe and input or output as:
                                 :if-does-not-exist :create)
             (format nil "~A" (nth 1 edge)))
           (prog1
-              (list :data (linux:|open| fpath linux:o_rdonly 0)
+              (list :data (linux:|open| fpath linux:|O_RDONLY| 0)
                     fpath (nth 2 edge))
             ;; close and delete the temporary file (we keep an input fd).
             (delete-file fpath)
@@ -420,7 +420,7 @@ DO:         open files, assign pipe descriptors, close file descriptors,
                (eq (car (nth 2 edge)) tag))
           (let* ((fname (cadr (nth 1 edge)))
                  (fdes  (cadr (nth 2 edge)))
-                 (odes  (linux:|open| fname linux:o_rdonly 0)) )
+                 (odes  (linux:|open| fname linux:|O_RDONLY| 0)) )
             (when (< odes 0)
               (error "Can't open ~S for reading." fname))
             (when (/= odes fdes)
@@ -434,8 +434,8 @@ DO:         open files, assign pipe descriptors, close file descriptors,
                  (fname  (cadr (nth 2 edge)))
                  (append (member :append (nth 2 edge) :test (function eq)))
                  (odes (linux:|open| fname
-                              (+ linux:o_wronly linux:o_creat
-                                 (if append linux:o_append linux:o_trunc))
+                              (+ linux:|O_WRONLY| linux:|O_CREAT|
+                                 (if append linux:|O_APPEND| linux:|O_TRUNC|))
                               438)) )
             (when (< odes 0)
               (error "Can't open ~S for writting." fname))

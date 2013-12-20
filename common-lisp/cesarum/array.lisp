@@ -43,8 +43,11 @@
   (:use "COMMON-LISP")
   (:export
    "POSITIONS" ; should go to a sequence package...
-   "VECTOR-DELETE"
+
+   "VECTOR-EMPTYP" "VECTOR-FIRST" "VECTOR-LAST" "VECTOR-REST"
+   "VECTOR-BUTLAST" "VECTOR-DELETE"
    "NUDGE-DISPLACED-VECTOR" "DISPLACED-VECTOR"
+   
    "ARRAY-TO-LIST" "COPY-ARRAY"
    "ARRAY-EQUAL-P")
   (:documentation
@@ -108,6 +111,60 @@ EXAMPLE:    (positions 'a #(a door a window a big hole and a bucket) :start 1)
                           args)
           :while (and p (or (null count) (<= 0 (decf count))))
           :collect p))))
+
+
+
+(defun vector-emptyp (vector)
+  "
+RETURN:  Whether the vector is empty.
+"
+  (zerop (length vector)))
+
+
+(defun vector-first (vector)
+  "
+RETURN: The first element of the vector, or 0 values if empty.
+"
+  (if (plusp (length vector))
+      (aref vector 0)
+      (values)))
+
+
+(defun vector-last (vector)
+  "
+RETURN: The last element of the vector, or 0 values if empty.
+"
+  (if (plusp (length vector))
+      (aref vector (1- (length vector)))
+      (values)))
+
+
+(defun vector-rest (vector)
+  "
+RETURN: A displaced, adjustable array, with fill-pointer,  covering all the elements of the VECTOR but the first.
+"
+  (let* ((emptyp (vector-emptyp vector))
+         (size   (if emptyp 0 (1- (length vector)))))
+    (make-array size
+                :element-type (array-element-type vector)
+                :displaced-to vector
+                :displaced-index-offset (if emptyp 0 1)
+                :adjustable t
+                :fill-pointer size)))
+
+
+(defun vector-butlast (vector)
+  "
+RETURN: A displaced, adjustable array, with fill-pointer, covering all the elements of the VECTOR but the last.
+"
+  (let* ((emptyp (vector-emptyp vector))
+         (size   (if emptyp 0 (1- (length vector)))))
+    (make-array size
+                :element-type (array-element-type vector)
+                :displaced-to vector
+                :displaced-index-offset 0
+                :adjustable t
+                :fill-pointer size)))
 
 
 (defun vector-delete (item vector &rest keys &key (from-end nil) (test 'eql) (test-not nil) (start 0) (end nil) (count nil) (key 'identity))
@@ -222,7 +279,7 @@ EXAMPLE:    (array-to-list #3A(((1 2 3) (4 5 6)) ((a b c) (d e f))))
                    (array-to-list subarray)))))
 
 
-(defun displaced-vector (vector start &optional end &key (fill-pointer nil))
+(defun displaced-vector (vector start &optional end fill-pointer)
   "
 DO:         Same as SUBSEQ but with a displaced array.
 RETURN:     A new displaced vector.
@@ -273,7 +330,7 @@ NOTES:          START, START+ and START- are mutually exclusive.
 RETURN:         The adjusted array.
 
 EXAMPLE:        (let* ((s #(a door a window a big hole and a bucket))
-                            (v (displaced-vector s 0 3 :fill-pointer t)))
+                            (v (displaced-vector s 0 3 t)))
                        (show v)
                        (show (nudge-displaced-vector v :end+   1))
                        (show (nudge-displaced-vector v :fill-pointer 2))

@@ -48,75 +48,7 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
 
-(in-package "COMMON-LISP-USER")
-
-(eval-when (:execute :compile-toplevel :load-toplevel)
-  (setf *features* (cons :use-ppcre (set-difference *features* '(:use-ppcre :use-regexp)))))
-
-
-(defpackage "COM.INFORMATIMAGO.RDP"
-  (:use "COMMON-LISP"
-        ;; "CL-STEPPER"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CONSTRAINTS"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PEEK-STREAM"
-        "COM.INFORMATIMAGO.COMMON-LISP.PARSER.SCANNER"
-        ;; "COM.INFORMATIMAGO.COMMON-LISP.PARSER.PARSER"
-        )
-  (:export "DEFGRAMMAR" "SEQ" "REP" "OPT" "ALT" "GRAMMAR-NAMED"
-           "GENERATE-GRAMMAR"
-           
-           "GRAMMAR" "MAKE-GRAMMAR" "COPY-GRAMMAR"
-           "GRAMMAR-NAME" "GRAMMAR-TERMINALS" "GRAMMAR-START" "GRAMMAR-RULES"
-           "GRAMMAR-ALL-TERMINALS" "GRAMMAR-ALL-NON-TERMINALS"
-           "GRAMMAR-SKIP-SPACES"
-           
-           "FIND-RULE" "TERMINALP" "NON-TERMINAL-P"
-           "FIRST-SET" "FOLLOW-SET" "NULLABLEP"
-
-           "CLEAN-RULES"
-           "NORMALIZE-GRAMMAR" "COMPUTE-FIRST-SETS" "COMPUTE-FOLLOW-SETS"
-           
-           "$0"
-
-           "*NON-TERMINAL-STACK*"
-           ;; Re-export form com.informatimago.common-lisp.parser.scanner:
-           "TOKEN" "TOKEN-KIND" "TOKEN-TEXT" "TOKEN-LINE" "TOKEN-COLUMN"
-           "*SPACE*" "WORD-EQUAL"
-           "RDP-SCANNER"
-           "SCANNER-LINE" "SCANNER-COLUMN" "SCANNER-STATE" "SCANNER-CURRENT-TOKEN"
-           "SCANNER-SPACES" "SCANNER-TAB-WIDTH"
-           "SKIP-SPACES" "SCAN-NEXT-TOKEN"
-           "SCANNER-BUFFER" "SCANNER-CURRENT-TEXT"
-           "SCANNER-END-OF-SOURCE-P" "ADVANCE-LINE" "ACCEPT"
-           "PARSER-ERROR"
-           "PARSER-ERROR-LINE"
-           "PARSER-ERROR-COLUMN"
-           "PARSER-ERROR-GRAMMAR"
-           "PARSER-ERROR-SCANNER"
-           "PARSER-ERROR-NON-TERMINAL-STACK"
-           "PARSER-ERROR-FORMAT-CONTROL"
-           "PARSER-ERROR-FORMAT-ARGUMENTS"
-           "PARSER-END-OF-SOURCE-NOT-REACHED"
-           ;; "PARSER-ERROR-UNEXPECTED-TOKEN"
-           ;; "PARSER-ERROR-EXPECTED-TOKEN"
-           "UNEXPECTED-TOKEN-ERROR"
-           "UNEXPECTED-TOKEN-ERROR-EXPECTED-TOKEN"
-           "UNEXPECTED-TOKEN-ERROR-NON-TERMINAL-STACK"
-           )
-  (:documentation "
-This package implements a simple recursive descent parser.
-
-Copyright Pascal Bourguignon 2006 - 2012
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as
-published by the Free Software Foundation, either version 3 of the
-License, or (at your option) any later version.
-"))
 (in-package "COM.INFORMATIMAGO.RDP")
-
-
 
 (defstruct (grammar
              (:print-function
@@ -428,7 +360,7 @@ PRE:    (non-terminal-p non-terminal)
 (defun compute-first-sets (grammar)
   "  
 PRE:    The GRAMMAR must be normalized.
-        (ie. containly only SEQ rules)
+        (ie. contains only SEQ rules)
 
 DO:     Signals an error if there are duplicates in the first set of a non-terminal.
 RETURN: A hash-table containing the first-set for each symbol of the
@@ -491,8 +423,8 @@ RETURN: The first-set function for the grammar symbols.
                                        item (grammar-name grammar)))))
                          (t (loop
                                :with result = '()
-                               :for item :in symbol-or-sequence
-                               :for first-set = (first-set item)
+                               :for itemus :in item
+                               :for first-set = (first-set itemus)
                                :do (prependf result first-set)
                                :while (member nil first-set)
                                :finally (return (delete-duplicates result :test (function equal))))))))
@@ -607,8 +539,7 @@ RETURN: The follow-set function for the grammar non-terminals.
 (defun compute-first-follow (grammar)
   (let ((ng (normalize-grammar grammar)))
     (setf (grammar-first-function  grammar) (compute-first-function ng)
-          (grammar-follow-function grammar)
-          (compute-follow-function ng (grammar-all-non-terminals grammar)))
+          (grammar-follow-function grammar) (compute-follow-function ng (grammar-all-non-terminals grammar)))
     grammar))
  
 (defun first-set (grammar symbol)
@@ -987,6 +918,12 @@ RETURN:  When the SEQUENCE is a vector, the SEQUENCE itself, or a dispaced
      ,@body))
 
 
+(defgeneric gen-scanner-function-name (target grammar))
+(defgeneric gen-scanner-class-name    (target grammar))
+(defgeneric gen-parse-function-name   (target grammar non-terminal))
+(defgeneric gen-in-firsts             (target firsts))
+(defgeneric gen-parsing-statement     (target grammar item))
+
 (defmethod gen-scanner-function-name ((target (eql :lisp)) (grammar grammar))
   (intern (format nil "~:@(SCAN-~A~)" (grammar-name grammar))))
 
@@ -1052,8 +989,9 @@ RETURN:  When the SEQUENCE is a vector, the SEQUENCE itself, or a dispaced
                         ())
 
                       (defmethod scan-next-token ((scanner ,scanner-class-name) &optional parser-data)
+                        "RETURN: (scanner-current-token scanner)" 
                         (declare (ignore parser-data))
-                        (let (match)
+                        (let (match) 
                           ,@(when (grammar-skip-spaces grammar)
                                   `((setf match (string-match *spaces*
                                                               (scanner-buffer scanner)
@@ -1065,13 +1003,14 @@ RETURN:  When the SEQUENCE is a vector, the SEQUENCE itself, or a dispaced
                               ;; end of source
                               ((scanner-end-of-source-p scanner)
                                (setf (scanner-column scanner)   (1+ (length (scanner-buffer scanner)))
-                                     (scanner-current-token scanner) '|<END OF SOURCE>|
-                                     (scanner-current-text scanner)   "<END OF SOURCE>"))
+                                     (scanner-current-text scanner)   "<END OF SOURCE>"
+                                     (scanner-current-token scanner) '|<END OF SOURCE>|))
                               ;; end of line
                               ((scanner-end-of-line-p scanner)
                                (advance-line scanner))
                               ;; Literal Alpha Numeric and Non Alpha Numeric Terminals:
                               ,@(when (or an-terminals nan-terminals)
+                                      ;; (print (list an-terminals nan-terminals))
                                       `(((or ,@(when an-terminals
                                                      `((setf match (string-match ',lit-an-terminals-regexp
                                                                                  (scanner-buffer scanner)
@@ -1082,11 +1021,12 @@ RETURN:  When the SEQUENCE is a vector, the SEQUENCE itself, or a dispaced
                                                                                  :start pos)))))
                                          (let ((text (match-string 1 (scanner-buffer scanner) match)))
                                            (setf (scanner-column scanner)        (1+ (match-end 1 match))
-                                                 (scanner-current-token scanner) text ;; (intern text) ;; TODO: See what package we intern in!
-                                                 (scanner-current-text scanner)  text)))))
+                                                 (scanner-current-text scanner)  text
+                                                 (scanner-current-token scanner) text)))))
                               ;; Non Literal Terminals: we have a regexp for each terminal.
                               ,@(mapcar
                                  (lambda (terminal)
+                                   ;; (print terminal)
                                    `(,(if (= 4 (length terminal))
                                           ;; (terminal-name match-regexp / exclude-regexp)
                                           `(and (setf match (string-match
@@ -1102,8 +1042,8 @@ RETURN:  When the SEQUENCE is a vector, the SEQUENCE itself, or a dispaced
                                                         (scanner-buffer scanner)
                                                         :start pos)))
                                       (setf (scanner-column scanner)        (1+ (match-end 1 match))
-                                            (scanner-current-token scanner) ',(first terminal)
-                                            (scanner-current-text scanner)  (match-string 1 (scanner-buffer scanner) match))))
+                                            (scanner-current-text scanner)  (match-string 1 (scanner-buffer scanner) match)
+                                            (scanner-current-token scanner) ',(first terminal))))
                                  nl-terminals)
                               ;; Else we have an error:
                               (t
@@ -1230,9 +1170,9 @@ RETURN:  When the SEQUENCE is a vector, the SEQUENCE itself, or a dispaced
                        ;; new:
                        ,@ (let ((increments (make-hash-table)))
                             (mapcan (lambda (dollar item)
-                                      (when (and (or (non-terminal-p grammar item)
-                                                     (terminalp grammar item))
-                                                 (token-kind item))
+                                      (when (and (symbolp item)
+                                                 (or (non-terminal-p grammar item)
+                                                     (terminalp grammar item)))
                                         (let* ((index  (incf (gethash item increments 0)))
                                                (igno   (intern (format nil "~:@(~A.~A~)" item index))))
                                           (pushnew item ignorables)
@@ -1266,7 +1206,7 @@ RETURN:  When the SEQUENCE is a vector, the SEQUENCE itself, or a dispaced
                    ,(format nil "~S" (assoc non-terminal (grammar-rules grammar)))
                    (with-non-terminal ,non-terminal
                        ,(gen-parsing-statement target grammar (find-rule grammar non-terminal))))))
-    (gen-trace fname form trace)))
+    (gen-trace fname `(progn (fmakunbound ',fname) ,form) trace)))
 
 
 (defmethod generate-parser ((target (eql :lisp)) grammar &key (trace nil))
@@ -1292,7 +1232,7 @@ SOURCE: When the grammar has a scanner generated, or a scanner class
                                    :grammar (grammar-named ',(grammar-name grammar))
                                    :scanner scanner
                                    :non-terminal-stack (copy-list *non-terminal-stack*)))))))))
-    (gen-trace fname form trace)))
+    (gen-trace fname `(progn (fmakunbound ',fname) ,form) trace)))
 
 
 

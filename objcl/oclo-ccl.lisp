@@ -17,7 +17,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2010 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2010 - 2013
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -36,7 +36,6 @@
 (in-package "COM.INFORMATIMAGO.OBJECTIVE-C.LOWER")
 
 (defun objc-to-lisp-classname-p (str &optional (package *package*))
-  (declare (ignore package))
   (let ((name (gethash str ccl::*lisp-classname-table*)))
     (typecase name
       (string (setf (gethash str ccl::*lisp-classname-table*)

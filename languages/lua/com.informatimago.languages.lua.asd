@@ -1,22 +1,22 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               com.informatimago.common-lisp.tools.make-depends.asd
+;;;;FILE:               com.informatimago.lua.asd
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    ASD file to load the com.informatimago.common-lisp.make-depends library.
+;;;;    Defines the com.informatimago.lua system.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2010-10-31 <PJB> Created this .asd file.
+;;;;    2012-02-24 <PJB> Added this header.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2010 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2012 - 2012
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -32,36 +32,34 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.common-lisp.tools.make-depends
+(asdf:defsystem :com.informatimago.languages.lua
 
     ;; system attributes:
-
-    :description "Make-depends for lisp sources."
     
-    :long-description  "
+    :description "LUA Scanner and Parser."
 
-This program generates dependencies (and ASD files) for lisp sources,
-based on \(require) sexps, a load-path, a set of logical pathname
-translations and ad-hoc processing.
-
+    :long-description "
+This system provides tools to manipulate LUA programs.
+- A LUA Scanner.
+- A LUA Parser.
+- (eventually, possibly a LUA interpreter or translator to CL).
 "
-
-    :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-
-    :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-
+    
+    :author     "Pascal Bourguignon <pjb@informatimago.com>"
+    
+    :maintainer "Pascal Bourguignon <pjb@informatimago.com>"
+    
     :licence "AGPL3"
 
-    
     ;; component attributes:
-
-    :name "Informatimago Common Lisp MAKE-DEPENDS Tools"
-
-    :version "1.2.1"
+    
+    :name "LUA Tools."
+    
+    :version "1.0.0"
 
     :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Autumn 2010")
-                 ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.make-depends/")
+                 (#:date                           . "Summer 2012")
+                 ((#:albert #:output-dir)          . "../documentation/com.informatimago.lua/")
                  ((#:albert #:formats)             . ("docbook"))
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
@@ -70,8 +68,11 @@ translations and ad-hoc processing.
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
 
     :depends-on ("com.informatimago.common-lisp.cesarum"
-                 "com.informatimago.common-lisp.html-generator")
+                 "com.informatimago.common-lisp.parser"
+                 "com.informatimago.rdp")
     
-    :components ((:file "make-depends" :depends-on ())))
+    :components ((:file "package")
+                 (:file "lua-scanner" :depends-on ("package"))
+                 (:file "lua-parser"  :depends-on ("package" "lua-scanner"))))
 
 ;;;; THE END ;;;;

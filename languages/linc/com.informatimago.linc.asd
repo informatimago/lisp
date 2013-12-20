@@ -1,17 +1,17 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               com.informatimago.lua.asd
+;;;;FILE:               linc.asd
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    Defines the com.informatimago.lua system.
+;;;;    ASD file for the Linc project.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2012-02-24 <PJB> Added this header.
+;;;;    2012-07-02 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
@@ -29,37 +29,47 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.lua
+(asdf:defsystem :com.informatimago.linc
 
     ;; system attributes:
     
-    :description "LUA Scanner and Parser."
+    :description "LINC Is Not C, but almost.  It allows writing C code as S-exps."
 
     :long-description "
-This system provides tools to manipulate LUA programs.
-- A LUA Scanner.
-- A LUA Parser.
-- (eventually, possibly a LUA interpreter or translator to CL).
+
+LINC Is Not C, but almost.
+
+The purpose is to be able to use Common Lisp
+at the meta-programming level to generate C sources.
+Linc programs can also be executed and debugged in the
+Common Lisp environment.
+
+A linc file contains normal Common Lisp expressions,
+and linc expressions.  When compiling the linc file,
+the Common Lisp expressions are executed, which will  
+generate a corresponding C source.
+
 "
     
+    
     :author     "Pascal Bourguignon <pjb@informatimago.com>"
-    
+
     :maintainer "Pascal Bourguignon <pjb@informatimago.com>"
-    
+
     :licence "AGPL3"
 
     ;; component attributes:
     
-    :name "LUA Tools."
+    :name "LINC Is Not C, but almost."
     
-    :version "1.0.0"
-
+    :version "0.0.0"
+    
     :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Summer 2012")
-                 ((#:albert #:output-dir)          . "../documentation/com.informatimago.lua/")
+                 (#:date                           . "2007")
+                 ((#:albert #:output-dir)          . "../documentation/com.informatimago.linc/")
                  ((#:albert #:formats)             . ("docbook"))
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
@@ -67,12 +77,14 @@ This system provides tools to manipulate LUA programs.
     
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
 
-    :depends-on ("com.informatimago.common-lisp.cesarum"
-                 "com.informatimago.common-lisp.parser"
-                 "com.informatimago.rdp")
+    :depends-on ("split-sequence"
+                 "closer-mop"
+                 "com.informatimago.common-lisp.cesarum")
     
-    :components ((:file "package")
-                 (:file "lua-scanner" :depends-on ("package"))
-                 (:file "lua-parser"  :depends-on ("package" "lua-scanner"))))
+    :components ((:file "packages")
+                 (:file "c-syntax"           :depends-on ("packages"))
+                 (:file "c-operators"        :depends-on ("packages" "c-syntax"))
+                 ;; Not yet (:file "c++-syntax"         :depends-on ("packages"))
+                 (:file "linc"               :depends-on ("packages" "c-syntax" "c-operators"))))
 
 ;;;; THE END ;;;;

@@ -2543,17 +2543,17 @@ DO:     Initialize the heap in *gc-memory*.
     (flet ((copy-cdr 
                (ltree ctree)
              (when-debug (:ct) (format t "~&PROCESSING CDR; LTREE: ~S~%" ltree))
-             (loop for lprev = ltree then lnode
-                for cprev = ctree then cnode
-                for lnode = (cdr ltree) then (cdr lnode)
-                with cnode
-                while (consp lnode)
-                do (with-generation ()
+             (loop
+               :with cnode
+               :for cprev = ctree :then cnode
+               :for lnode = (cdr ltree) :then (cdr lnode)
+               :while (consp lnode)
+               :do (with-generation ()
                      (setf cnode
                            (ld-put lnode (cvm-make-cons +cvm-nil+ +cvm-nil+)))
                      (cvm-setcdr cprev cnode)
                      (push lnode stack))
-                finally (unless (null lnode)
+               :finally (unless (null lnode)
                           (with-generation ()
                             (cvm-setcdr cprev (cfi-copy-to-common lnode)))))))
       ;; processing the root node ltree:

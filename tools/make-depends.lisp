@@ -58,7 +58,8 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CHARACTER-SETS"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE")
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE"
+        "COM.INFORMATIMAGO.CLEXT.CHARACTER-SETS")
   (:export
    "GENERATE-SUMMARY" "MAKE-COMPONENTS" "MAKE-ASD-SEXP" "GENERATE-ASD"
    "GET-CLOSED-DEPENDENCIES" "GET-DEPENDENCIES" "GET-PACKAGE" "GET-DEPENDS"
@@ -559,14 +560,15 @@ NOTE:   Reading stops as soon as a non-comment line is read.
                 (when cont (push (clean cont) asso))
                 (return (values (nreverse asso) line))))
         ;; cleanup:
-        #+clisp (setf custom:*misc-encoding* saved)))))
+        #+clisp (setf custom:*misc-encoding* saved)
+        #-clisp nil))))
 
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Reading the source files
 
-
+#+#:old
 (defmacro define-package (name &rest declarations)
   "
 DO:         Declares a package.
@@ -576,7 +578,7 @@ DO:         Declares a package.
 "
   (setq name (string name))
   (multiple-value-bind (dependencies renames defpack-args)
-      (package::parse-package-declarations declarations)
+      (com.informatimago.common-lisp.cesarum.package::parse-package-declarations declarations)
     (let* ((used-packages
             (nconc
              (reduce (function nconc)
@@ -589,7 +591,7 @@ DO:         Declares a package.
                                                :key (function first)))))
            (also-use-packages
             (set-difference
-             (remove-if (function package::built-in-p) dependencies)
+             (remove-if (function com.informatimago.common-lisp.cesarum.package::built-in-p) dependencies)
              used-packages :test (function string=))))
       `(progn
          ;; (in-package "COMMON-LISP-USER") ; this is useless here.
@@ -600,7 +602,7 @@ DO:         Declares a package.
          ,@(when renames
                  `((eval-when (:compile-toplevel :load-toplevel :execute)
                       ,@(mapcar
-                         (lambda (rename) `(package:add-nickname
+                         (lambda (rename) `(com.informatimago.common-lisp.cesarum.package:add-nickname
                                             ,(car rename) ,(cdr rename)))
                          renames))))
          (defpackage ,name ,@defpack-args)
@@ -613,7 +615,6 @@ DO:         Declares a package.
 ;; defpackage ...
 ;; in-package x
 
-;; define-package
 ;; added nicknames
 ;; defpackage
 ;; require
@@ -665,10 +666,8 @@ BUGS:   This should be rewritten using COM.INFORMATIMAGO.COMMON-LISP.SOURCE
                                              (process-sexp item)))
                  ((eval-when)              (dolist (item (cddr sexp))
                                              (process-sexp item)))
-                 ((package:add-nickname)   (push (cdr sexp) nicknames))
-                 ((package:define-package)
-                  (process-sexp
-                   (macroexpand-1 (cons 'define-package (cdr sexp))))))))
+                 ((com.informatimago.common-lisp.cesarum.package:add-nickname)
+                  (push (cdr sexp) nicknames)))))
       (loop
          :for sexp = (read-sexp-from-file stream eof)
          :until (eql sexp eof)
@@ -1040,16 +1039,16 @@ VERBOSE:        Prints information on *TRACE-OUTPUT*.
           ;; "DICTIONARY"
           ;; "PJB-STRING"
           ;; --> LOAD-PATHS
-          (unless (member pack-name package::*built-in-packages*
+          (unless (member pack-name com.informatimago.common-lisp.cesarum.package::*built-in-packages*
                           :test (function string=))
             (let* ((src-ext   (source-extensions extensions))
-                   (pack-path (package::package-pathname pack-name))
+                   (pack-path (com.informatimago.common-lisp.cesarum.package::package-pathname pack-name))
                    (path
                     (or (find-file-with-extension   pack-path  src-ext)
                         (find-file-in-directory pack-name load-paths src-ext))))
               (pdebug "~&#    source extensions are ~S~%" src-ext)
               (pdebug "~&#    path of package   is ~S~%"
-                      (package::package-pathname pack-name))
+                      (com.informatimago.common-lisp.cesarum.package::package-pathname pack-name))
               (pdebug "~&#    path              is ~S~%" path)
               (if path
                   (progn
@@ -1246,7 +1245,7 @@ IDF:            If NIL, write the dependencies on the standard output,
                         (html:b -
                           (html:a
                               (:href (funcall repository-url
-                                              (package:package-pathname
+                                              (com.informatimago.common-lisp.cesarum.package:package-pathname
                                                (source-package-name package))))
                             (html:pcdata "~A" (source-package-name package)))))
                       (html:pre -
@@ -1315,16 +1314,16 @@ LOAD:-PATHS     A list of directory paths where the sources are searched in.
            (description
             (unsplit-string 
              (or (ensure-list description)
-                 (flatten
-                  (mapcar
-                   (lambda (header)
-                     (list (format nil "~2%PACKAGE: ~A~2%"
-                                   (second
-                                    (get-package (header-slot header :path))))
-                           (mapcar (lambda (line) (format nil "~A~%" line))
-                                   (header-description header))
-                           (format nil "~%")))
-                   headers)))))
+                 (mapcan
+                  (lambda (header)
+                    (append (list (format nil "~2%PACKAGE: ~A~2%"
+                                          (second
+                                           (get-package (header-slot header :path)))))
+                            (mapcar (lambda (line) (format nil "~A~%" line))
+                                    (header-description header))
+                            (list (format nil "~%"))))
+                  headers))
+             " "))
            (components (make-components
                         paths
                         :component-class component-class
@@ -1457,9 +1456,9 @@ VANILLAP:  if true, then generate a simple, vanilla system.
 
   (mapcar (lambda  (path)  (with-open-file (in path :direction :input :if-does-not-exist :error) (cons path (header-description (read-source-header  in)))))  (directory "*.lisp"))
 
-  (package:load-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
+  (com.informatimago.common-lisp.cesarum.package:load-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
   (use-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
-  (package:load-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
+  (com.informatimago.common-lisp.cesarum.package:load-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
   (use-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
   (make-asd "COM.INFORMATIMAGO.COMMON-LISP" (directory "*.ilsp"))
   )

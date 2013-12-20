@@ -37,6 +37,8 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
 
+;; http://www.staff.science.uu.nl/~gent0113/calendar/isocalendar.htm
+
 ;; http://en.wikipedia.org/wiki/Julian_day#Calculation
 ;; - find inverse of (julian-day-number/gregorian d m y) --> j
 ;; - check the origin of julian-day

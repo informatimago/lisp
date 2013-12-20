@@ -1483,7 +1483,9 @@ DO:     complements the set.
   ;; code:
   (matchf   nil)
   (token    nil)
-  (children nil :type (or null (array rnode (*)))))
+  (children nil :type (or null (array #+lispworks t 
+                                      #-lispworks rnode
+                                      (*)))))
 ;; (equiv (null children) (not (< 0 (length children)))))
 
 

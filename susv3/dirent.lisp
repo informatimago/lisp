@@ -107,11 +107,13 @@
                                  :caller    'readdir)))
     ;; :no-error (list susv3:ENOENT))))
     (unless (zerop c-dirent)
-      (let* ((ino   (peek-uint32 c-dirent))
-             (name  (coerce (loop for i from 0 
-                               for a from (+ c-dirent 11)
-                               until (zerop (peek-uint8 a))
-                               collect (code-char (peek-uint8 a))) 'string)))
+      (let* ((ino   (deref (cast (foreign-value c-dirent) '(pointer uint32))))
+             (name  (coerce (loop
+                              :for dirent = (cast (foreign-value c-dirent) '(pointer uchar))
+                              :for i :from 11
+                              :for code = (element (foreign-value dirent) i)
+                              :until (zerop code)
+                              :collect (code-char code)) 'string)))
         (make-dirent :ino ino :name name)))))
 
 

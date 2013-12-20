@@ -33,7 +33,7 @@
 ;;;;**************************************************************************
 
 (in-package "COMMON-LISP-USER")
-(defpackage "COM.INFORMATIMAGO.COMMON-LISP.GENERIC-COMMON-LISP"
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.LISP.GENERIC-COMMON-LISP"
   (:nicknames "GENERIC-COMMON-LISP"
               "GENERIC-CL")
   (:use "COMMON-LISP")
@@ -47,14 +47,31 @@ Copyright Pascal J. Bourguignon 2006 - 2006
 This package is provided under the Afero General Public License 3.
 See the source file for details.
 
-"))
-(in-package "COM.INFORMATIMAGO.COMMON-LISP.GENERIC-COMMON-LISP")
+")
+  ;; export the same symbols as CL:
+  (:export . #.(let ((symbols '()))
+         (do-external-symbols (sym "COMMON-LISP")
+           (push (string sym) symbols))
+         symbols)))
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.LISP.GENERIC-COMMON-LISP")
 
 
 
 
 ;; export at the end.
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defparameter *not-implemented-yet* (make-hash-table :test (function equal))))
+
+(defmacro not-implemented-yet (what)
+  (unless (gethash what *not-implemented-yet*)
+    (setf (gethash what *not-implemented-yet*) t)
+    (warn "~S not implemented yet." what))
+  `(progn
+     (unless (gethash ',what *not-implemented-yet*)
+       (setf (gethash ',what *not-implemented-yet*) t)
+       (warn "~S not implemented yet." ',what))
+     nil))
 
 (defmacro define-forward (name arguments)
   ;; (let* ((lambda-list       (parse-lambda-list arguments :ordinary))
@@ -78,7 +95,16 @@ See the source file for details.
   ;;          ,(if (consp name)
   ;;               `(setf (,cl-name ,@(cdr arguments)) ,(car arguments))
   ;;               `(,cl-name ,@arguments))))))
-  `(error "Not implemented yet."))
+  (declare (ignore name arguments))
+  (not-implemented-yet define-forward))
+
+(defmacro defmethod-and-forward (name fname arguments)
+  (declare (ignore name fname arguments))
+  (not-implemented-yet defmethod-and-forward))
+
+(defmacro define-method (name qualifiers-or-lambda-list &body body)
+  (declare (ignore name qualifiers-or-lambda-list body))
+  (not-implemented-yet define-method))
 
 ;; t
 ;;    sequence
@@ -90,9 +116,6 @@ See the source file for details.
 ;;       direct-access-sequence
 ;;       sequential-access-sequence
 
-(defclass user-sequence ()
-  ()
-  (:documentation "Abstract class for user defined sequeneces."))
    
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -197,19 +220,17 @@ See the source file for details.
                          (test (function eql)) test-not))))
 
 (define-forward replace
-    (sequence-1 sequence-2 &key (start1 0) (end1 nil)(start2 0) (end2 nil)))
+    (sequence-1 sequence-2 &key (start1 0) (end1 nil) (start2 0) (end2 nil)))
 
 (defmethod-and-forward substitute    nsubstitute 
   (newitem olditem (self  sequential-access-sequence)
            &key (from-end nil) (test (function eql)) test-not
-           (start 0) (end nil) (count nil) (key nil))
-  )
+           (start 0) (end nil) (count nil) (key nil)))
  
 (defmethod-and-forward substitute-if nsubstitute-if 
   (newitem olditem (self  sequential-access-sequence)
            &key (from-end nil) (test (function eql)) test-not
-           (start 0) (end nil) (count nil) (key nil))
-  )
+           (start 0) (end nil) (count nil) (key nil)))
 
 (defmethod-and-forward substitute-if-not nsubstitute-if-not
   (newitem olditem (self  sequential-access-sequence)
@@ -232,32 +253,44 @@ See the source file for details.
                    (start 0) (end nil) (count nil) (key nil)))))
 
 
-;; We must pass the symbol in a list to export CL:NIL.
-(export (mapcar (lambda (name) (intern name "IBCL"))
-                (let ((symbols '()))
-                  (do-external-symbols (sym "COMMON-LISP")
-                    (push (string sym) symbols))
-                  symbols)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-(defmethod closer-mop:validate-superclass :before ((c class) (s class))
-  (call-next-method))
-    
-(defmethod closer-mop:validate-superclass :before
-    ((class class) (superclass class))
-  (or (and (eql (find-class 'user-sequence)) (eql #.(find-class 'sequence)))
-      (call-next-method)))
 
 
 ;;;---------------------------------------------------------------------
 ;;; So now, we can define our own subclasses of sequences.
 ;;;---------------------------------------------------------------------
 
-(defclass user-sequence (sequence)
+
+;; (define-method closer-mop:validate-superclass :before ((c class) (s class))
+;;   (call-next-method))
+
+
+;; (remove-method (function closer-mop:validate-superclass)
+;;                (find-method (function closer-mop:validate-superclass)
+;;                             ':before
+;;                             '(class  class)))
+
+;;; this doesn't work on ccl for built-in-class vs stanard-class
+;;; and not on clisp for find-class can't find the class pased in arguments.
+;; (define-method closer-mop:validate-superclass :before
+;;     ((class class) (superclass class))
+;;   (warn "~S check again this implementation!"'(closer-mop:validate-superclass :before
+;;                                                ((class class) (superclass class))))
+;;   (print class)
+;;   (print (list class  (eql class       (find-class 'user-sequence))
+;;                superclass (eql superclass  (load-time-value (find-class 'sequence)))))
+;;   (print (or (and #-clisp (eql class       (find-class 'user-sequence))
+;;                   #+clisp (eq 'user-sequence (class-name class))
+;;                   (eql superclass  (load-time-value (find-class 'sequence))))
+;;              (call-next-method))))
+
+(warn "TODO: implement user-sequence as subclass of sequence")
+(defclass user-sequence (#+not-yet sequence)
   ()
   (:documentation "Our own abstract sequence class."))
+
+
 
 
 ;;;---------------------------------------------------------------------
@@ -266,10 +299,10 @@ See the source file for details.
 
 
 (defclass direct-access-sequence (user-sequence)
-  ((length :reader length))
+  ((length #+not-yet :reader #+not-yet length))
   (:documentation "A class of vector-like sequences with direct access."))
 
-(defmethod copy-seq ((self direct-access-sequence))
+(define-method copy-seq ((self direct-access-sequence))
   (let ((copy (make-instance (class-of self) :size (length self))))
     (loop
        :for i :from 0 :below (length self)
@@ -277,8 +310,8 @@ See the source file for details.
        :finally (return copy))))
 
 ;;; primitives:
-;;; (defmethod elt ((self direct-access-sequence) index) )
-;;; (defmethod (setf elt) (value (self direct-access-sequence) index)   value)
+;;; (define-method elt ((self direct-access-sequence) index) )
+;;; (define-method (setf elt) (value (self direct-access-sequence) index)   value)
 
 
 ;;;---------------------------------------------------------------------
@@ -317,14 +350,14 @@ RETURN: the value at the cursor position in the sequence."))
 POST:   (not (sas-cursor-end-p self))"))
 
 
-(defmethod length ((self sequential-access-sequence))
+(define-method length ((self sequential-access-sequence))
   (loop
      :for cursor = (sas-head self) :then (sas-cursor-next cursor)
      :for length :from 0
      :until (sas-cursor-end-p cursor)
      :finally (return length)))
 
-(defmethod copy-seq ((self sequential-access-sequence))
+(define-method copy-seq ((self sequential-access-sequence))
   (let ((copy  (make-instance (class-of self))))
     (loop
        :for src = (sas-head self) :then (sas-cursor-next src)
@@ -333,7 +366,7 @@ POST:   (not (sas-cursor-end-p self))"))
        :do (setf (sas-cursor-value dst) (sas-cursor-value src))
        :finally (return copy))))
 
-(defmethod elt ((self sequential-access-sequence) index)
+(define-method elt ((self sequential-access-sequence) index)
   (check-type index (integer 0))
   (loop
      :for cursor = (sas-head self) :then (sas-cursor-next cursor)
@@ -342,7 +375,7 @@ POST:   (not (sas-cursor-end-p self))"))
              (check-type index `(integer 0 ,length))
              (return (sas-cursor-value cursor)))))
 
-(defmethod (setf elt) (value (self sequential-access-sequence) index)
+(define-method (setf elt) (value (self sequential-access-sequence) index)
   (check-type index (integer 0))
   (loop
      :for cursor = (sas-head self) :then (sas-cursor-next cursor)
@@ -352,29 +385,31 @@ POST:   (not (sas-cursor-end-p self))"))
              (return (setf  (sas-cursor-value cursor) value)))))
 
 
-(defmethod fill ((self sequential-access-sequence) item &key (start 0) (end nil))
+(define-method fill ((self sequential-access-sequence) item &key (start 0) (end nil))
   (loop
      :for cursor = (sas-head self) :then (sas-cursor-next cursor)
-     :for index :from 0 :below index
+     :for index :from start :below end
      :do (cond
            ((sas-cursor-end-p cursor) (return self))
            ((< index start))
            ((and end (<= end index))  (return self))
            (t                         (setf  (sas-cursor-value cursor) item)))))
 
-(defmethod subseq ((self sequential-access-sequence) start &optional (end nil))
+(define-method subseq ((self sequential-access-sequence) start &optional (end nil))
   (loop
      :with sub = (make-instance (class-of self))
      :with dst = (sas-head sub)
-     :for  src = (sas-head self) :then (sas-cursor-next cursor)
-     :for  index :from 0 :below index
+     :for  src = (sas-head self) :then (sas-cursor-next src)
+     :for  index :from start
      :do (cond
            ((sas-cursor-end-p src)    (return sub))
            ((< index start))
            ((and end (<= end index))  (return sub))
            (t  (setf (sas-cursor-value dst) (sas-cursor-value src))))))
 
-(defmethod (setf subseq) (value sequence start &optional (end nil)))
+(define-method (setf subseq) (value sequence start &optional (end nil))
+  (declare (ignore value sequence start end))
+  (not-implemented-yet  (setf subseq)))
 (define-forward map           (result-type function sequence &rest sequences))
 (define-forward map-into      (result-sequence function &rest sequences))
 (define-forward length        (sequence))
@@ -386,7 +421,9 @@ POST:   (not (sas-cursor-end-p self))"))
                                            &key (key nil)))
 
 
-(defmethod make-sequence ((result-type sequence) size &key initial-element))
+(define-method make-sequence ((result-type sequence) size &key initial-element)
+  (declare (ignore result-type size initial-element))
+  (not-implemented-yet  make-sequence))
 
 
 (dolist (name '(remove delete))
@@ -455,144 +492,6 @@ POST:   (not (sas-cursor-end-p self))"))
 
 
 
-
-
-
-;;;---------------------------------------------------------------------
-;;; So now, we can define our own subclasses of sequences.
-;;;---------------------------------------------------------------------
-
-(defclass sequence ()
-  ()
-  (:documentation "Our own abstract sequence class."))
-
-
-;;;---------------------------------------------------------------------
-;;; Abstract direct access sequence
-;;;---------------------------------------------------------------------
-
-(defclass direct-access-sequence (sequence)
-  ((length :reader length))
-  (:documentation "A class of vector-like sequences with direct access."))
-
-(defmethod copy-seq ((self direct-access-sequence))
-  (let ((copy (make-instance (class-of self) :size (length self))))
-    (loop
-       :for i :from 0 :below (length self)
-       :do (setf (elt copy i)  (elt self i))
-       :finally (return copy))))
-
-;;; primitives:
-;;; (defmethod elt ((self direct-access-sequence) index) )
-;;; (defmethod (setf elt) (value (self direct-access-sequence) index)   value)
-
-
-;;;---------------------------------------------------------------------
-;;; Abstract sequential access sequence
-;;;---------------------------------------------------------------------
-
-(defclass sequential-access-sequence (sequence)
-  ()
-  (:documentation "A class of list-like sequences with sequential access."))
-
-(defgeneric sas-head (self)
-  (:documentation "RETURN:  A cursor at the head of the sequence."))
-
-
-(defclass sas-cursor ()
-  ((sas :reader cursor-sas :initarg :sequence))
-  (:documentation "A cursor on a sequential access sequence."))
-(defgeneric sas-cursor-copy (self)
-  (:documentation
-   "RETURN: a copy of the cursor. 
-        Calling (sas-cursor-next self) won't change the copy."))
-(defgeneric sas-cursor-next (self)
-  (:documentation "RETURN:  the next cursor. 
-         May modify self, or may return a new object."))
-(defgeneric sas-cursor-end-p  (self)
-  (:documentation
-   "RETURN:  whether the cursor has reached the end of the sequence."))
-(defgeneric sas-cursor-value (self)
-  (:documentation
-   "PRE: (not (sas-cursor-end-p self))
-RETURN: the value at the cursor position in the sequence."))
-(defgeneric (setf sas-cursor-value) (value self)
-  (:documentation
-   "DO:     Sets the value at the cursor position in the sequence.
-        If the cursor is at the end, then append then new value.
-POST:   (not (sas-cursor-end-p self))"))
-
-
-(defmethod length ((self sequential-access-sequence))
-  (loop
-     :for cursor = (sas-head self) :then (sas-cursor-next cursor)
-     :for length :from 0
-     :until (sas-cursor-end-p cursor)
-     :finally (return length)))
-
-(defmethod copy-seq ((self sequential-access-sequence))
-  (let ((copy  (make-instance (class-of self))))
-    (loop
-       :for src = (sas-head self) :then (sas-cursor-next src)
-       :for dst = (sas-head self) :then (sas-cursor-next dst)
-       :until (sas-cursor-end-p src)
-       :do (setf (sas-cursor-value dst) (sas-cursor-value src))
-       :finally (return copy))))
-
-(defmethod elt ((self sequential-access-sequence) index)
-  (check-type index (integer 0))
-  (loop
-     :for cursor = (sas-head self) :then (sas-cursor-next cursor)
-     :for length :from 0 :below index
-     :do (if (sas-cursor-end-p cursor)
-             (check-type index `(integer 0 ,length))
-             (return (sas-cursor-value cursor)))))
-
-(defmethod (setf elt) (value (self sequential-access-sequence) index)
-  (check-type index (integer 0))
-  (loop
-     :for cursor = (sas-head self) :then (sas-cursor-next cursor)
-     :for length :from 0 :below index
-     :do (if (sas-cursor-end-p cursor)
-             (check-type index `(integer 0 ,length))
-             (return (setf  (sas-cursor-value cursor) value)))))
-
-
-(defmethod fill ((self sequential-access-sequence) item &key (start 0) (end nil))
-  (loop
-     :for cursor = (sas-head self) :then (sas-cursor-next cursor)
-     :for index :from 0 :below index
-     :do (cond
-           ((sas-cursor-end-p cursor) (return self))
-           ((< index start))
-           ((and end (<= end index))  (return self))
-           (t                         (setf  (sas-cursor-value cursor) item)))))
-
-(defmethod subseq ((self sequential-access-sequence) start &optional (end nil))
-  (loop
-     :with sub = (make-instance (class-of self))
-     :with dst = (sas-head sub)
-     :for  src = (sas-head self) :then (sas-cursor-next cursor)
-     :for  index :from 0 :below index
-     :do (cond
-           ((sas-cursor-end-p src)    (return sub))
-           ((< index start))
-           ((and end (<= end index))  (return sub))
-           (t  (setf (sas-cursor-value dst) (sas-cursor-value src))))))
-
-(defmethod (setf subseq) (value sequence start &optional (end nil)))
-(define-forward map           (result-type function sequence &rest sequences))
-(define-forward map-into      (result-sequence function &rest sequences))
-(define-forward length        (sequence))
-(define-forward nreverse      (sequence))
-(define-forward sort          (sequence predicate &key (key nil)))
-(define-forward stable-sort   (sequence predicate &key (key nil)))
-(define-forward concatenate   (result-type &rest sequences))
-(define-forward merge         (result-type sequence-1 sequence-2 predicate
-                                           &key (key nil)))
-
-
-(defmethod make-sequence ((result-type sequence) size &key initial-element))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; THE END ;;;;

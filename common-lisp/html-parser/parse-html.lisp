@@ -1797,8 +1797,7 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
                                         (advance parser)))
                         ((:open-tag)  (parse-open-tag parser))
                         ((:close-tag) (parse-close-tag parser))
-                        (otherwise   (report-error parser
-                                                   "Unexpected token")))
+                        (otherwise   (report-error parser "Unexpected token")))
      :while synthetic :do (push synthetic items)
      :finally (return (when items
                         (let ((result '()))

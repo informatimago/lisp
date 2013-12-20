@@ -27,7 +27,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2002 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2002 - 2013
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -46,17 +46,19 @@
 (in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
   (:use "COMMON-LISP")
-  (:export "DLL-NEXT" "DLL-PREVIOUS" "DLL-NODE" "LIST-TO-DOUBLE-LINKED-LIST"
-           "EQUIVALENCE-CLASSES" "SUBSETS" "COMBINE" "IOTA"
-           "MAKE-LIST-OF-RANDOM-NUMBERS" "LIST-INSERT-SEPARATOR"
-           "NSPLIT-LIST-ON-INDICATOR" "NSPLIT-LIST" "DEEPEST-REC" "DEEPEST" "DEPTH"
-           "FLATTEN" "LIST-TRIM" "TRANSPOSE" "AGET" "MEMQ"
-           "PLIST-KEYS" "PLIST-REMOVE" "PLIST-GET"
-           "PLIST-PUT" "PLIST-CLEANUP" "HASHED-INTERSECTION" 
-           ;; "HASHED-REMOVE-DUPLICATES" moved to COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE
-           "ENSURE-LIST" "PROPER-LIST-P" "LIST-LENGTHS" "LIST-ELEMENTS"
-           "ENSURE-CIRCULAR" "MAKE-CIRCULAR-LIST" "CIRCULAR-LENGTH"
-           "TREE-DIFFERENCE" "REPLACE-TREE" "MAPTREE")
+  (:export
+   "PREPENDF"  "PUSH*"
+   "DLL-NEXT" "DLL-PREVIOUS" "DLL-NODE" "LIST-TO-DOUBLE-LINKED-LIST"
+   "EQUIVALENCE-CLASSES" "SUBSETS" "COMBINE" "IOTA"
+   "MAKE-LIST-OF-RANDOM-NUMBERS" "LIST-INSERT-SEPARATOR"
+   "NSPLIT-LIST-ON-INDICATOR" "NSPLIT-LIST" "DEEPEST-REC" "DEEPEST" "DEPTH"
+   "FLATTEN" "LIST-TRIM" "TRANSPOSE" "AGET" "MEMQ"
+   "PLIST-KEYS" "PLIST-REMOVE" "PLIST-GET"
+   "PLIST-PUT" "PLIST-CLEANUP" "HASHED-INTERSECTION" 
+   ;; "HASHED-REMOVE-DUPLICATES" moved to COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE
+   "ENSURE-LIST" "PROPER-LIST-P" "LIST-LENGTHS" "LIST-ELEMENTS"
+   "ENSURE-CIRCULAR" "MAKE-CIRCULAR-LIST" "CIRCULAR-LENGTH"
+   "TREE-FIND" "TREE-DIFFERENCE" "REPLACE-TREE" "MAPTREE")
   (:documentation
    "
 This package exports list processing functions.
@@ -66,7 +68,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2003 - 2012
+    Copyright Pascal J. Bourguignon 2003 - 2013
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -86,6 +88,23 @@ License:
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
 
 
+(defun prepend (tail &rest lists)
+  (apply (function append) (append lists (list tail))))
+(define-modify-macro prependf (place &rest lists) prepend)
+
+(defmacro push* (&rest elements-and-place)
+  `(prependf ,(car (last elements-and-place))
+             (list ,@(butlast elements-and-place))))
+
+(assert (equal (let ((i -1)
+                     (v (vector nil)))
+                 (push* 5 6 7 8 (aref v (incf i)))
+                 (decf i)
+                 (push* 1 2 3 4 (aref v (incf i)))
+                 (aref v 0))
+               '(1 2 3 4 5 6 7 8)))
+
+
 (defun ensure-list (item)
   "
 RETURN: item if it's a list or (list item) otherwise.
@@ -95,9 +114,21 @@ RETURN: item if it's a list or (list item) otherwise.
 
 (defun proper-list-p (object)
   "
-RETURN: whether object is a proper list
+RETURN: whether OBJECT is a proper list
 NOTE:   terminates with any kind of list, dotted, circular, etc.
 "
+  (and (listp object)
+       (loop
+         :named proper
+         :for current = object :then (cddr current)
+         :for slow = (cons nil object) :then (cdr slow)
+         :do (cond
+               ((null current)       (return-from proper t))
+               ((atom current)       (return-from proper nil))
+               ((null (cdr current)) (return-from proper t))
+               ((atom (cdr current)) (return-from proper nil))
+               ((eq current slow)    (return-from proper nil)))))
+  #-(and)
   (labels ((proper (current slow)
              (cond ((null current)       t)
                    ((atom current)       nil)
@@ -144,6 +175,20 @@ RETURN: for a proper list, the length of the list and 0;
         for a dotted list, the number of cons cells, and nil;
         for an atom, 0, and nil.
 "
+  (typecase list
+    (cons  (loop
+             :named proper
+             :for current = list :then (cddr current)
+             :for slow = (cons nil list) :then (cdr slow)
+             :do (cond
+                   ((null current)       (return-from proper (values (list-length        list) 0)))
+                   ((atom current)       (return-from proper (values (dotted-list-length list) nil)))
+                   ((null (cdr current)) (return-from proper (values (list-length        list) 0)))
+                   ((atom (cdr current)) (return-from proper (values (dotted-list-length list) nil)))
+                   ((eq current slow)    (return-from proper (circular-list-lengths list))))))
+    (null  (values 0 0))
+    (t     (values 0 nil)))
+  #-(and)
   (labels ((proper (current slow)
              ;; (print (list 'proper current slow))
              (cond ((null current)       (values (list-length        list) 0))
@@ -759,6 +804,42 @@ RETURN:  The next dll-cons in the `dll-cons' double-linked-list node.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defun tree-find (object tree &key (key (function identity)) (test (function eql)))
+  "
+RETURN: The object in TREE that matches OBJECT (using the KEY and TEST functions.
+TREE:   A sexp.
+"
+  (if (atom tree)
+      (if (funcall test object (funcall key tree))
+          tree
+          nil)
+      (or (tree-find object (car tree) :key key :test test)
+          (tree-find object (cdr tree) :key key :test test))))
+
+(defun test/tree-find ()
+  (assert (equal 'x (tree-find 'x 'x)))
+  (assert (equal 'x (tree-find 'x '(x))))
+  (assert (equal 'x (tree-find 'x '(a b c x d e f))))
+  (assert (equal 'x (tree-find 'x '(a b c d . x))))
+  (assert (equal 'x (tree-find 'x '(() (a b c d . x)))))
+  (assert (equal 'x (tree-find 'x '((a b (a b c d . x) x)))))
+
+  (assert (equal 'x (tree-find "x" 'x :test (function string-equal))))
+  (assert (equal 'x (tree-find "x" '(x) :test (function string-equal))))
+  (assert (equal 'x (tree-find "x" '(a b c x d e f) :test (function string-equal))))
+  (assert (equal 'x (tree-find "x" '(a b c d . x) :test (function string-equal))))
+  (assert (equal 'x (tree-find "x" '(() (a b c d . x)) :test (function string-equal))))
+  (assert (equal 'x (tree-find "x" '((a b (a b c d . x) |x|)) :test (function string-equal))))
+
+  (assert (equal 'x (tree-find "x" 'x :test (function string=) :key (function string-downcase))))
+  (assert (equal 'x (tree-find "x" '(x) :test (function string=) :key (function string-downcase))))
+  (assert (equal 'x (tree-find "x" '(a b c x d e f) :test (function string=) :key (function string-downcase))))
+  (assert (equal 'x (tree-find "x" '(a b c d . x) :test (function string=) :key (function string-downcase))))
+  (assert (equal 'x (tree-find "x" '(() (a b c d . x)) :test (function string=) :key (function string-downcase))))
+  (assert (equal 'x (tree-find "x" '((a b (a b c d . x) |x|)) :test (function string=) :key (function string-downcase))))
+  :success)
+
+
 (defun tree-difference (a b &key (test (function eql)))
   "
 RETURN: A tree congruent to A and B where each node is = when the
@@ -774,6 +855,18 @@ EXAMPLE: (tree-difference '((a b c) 1 (d e f)) '((a b c) (1) (d x f)))
     (t (cons (tree-difference (car a) (car b) :test test)
              (tree-difference (cdr a) (cdr b) :test test)))))
 
+
+(defun tree-structure-and-leaf-difference (a b &key (test (function eql)))
+  (cond
+    ((and (null a) (null b)) '=)
+    ((or (null a) (null b)) `(/= ,a ,b))
+    ((and (atom a) (atom b))
+     (if (funcall test a b)
+         '=
+         `(/= ,a ,b)))
+    ((or (atom a) (atom b)) `(/= ,a ,b))
+    (t (cons (tree-structure-and-leaf-difference (car a) (car b) :test test)
+             (tree-structure-and-leaf-difference (cdr a) (cdr b) :test test)))))
 
 (defun replace-tree (dst src)
   "
@@ -909,6 +1002,8 @@ RETURN: dst
 
 (defun test ()
   (test/list-lengths)
-  (test/list-elements))
+  (test/list-elements)
+  (test/tree-find))
 
+(test)
 ;;;; THE END ;;;;

@@ -70,7 +70,7 @@ all written in 100% conforming Common Lisp.
     
     :name "com.informatimago.common-lisp.cesarum"
 
-    :version "1.3.2"
+    :version "1.3.3"
 
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Autumn 2010")
@@ -83,16 +83,21 @@ all written in 100% conforming Common Lisp.
     :depends-on (:com.informatimago.common-lisp.lisp-sexp)
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
     :components (
+                 ;; Simple Test Framework
+                 (:file "simple-test"     :depends-on ())
+
                  ;; Common Lisp addendum:
-                 (:file "utility"         :depends-on ())
                  (:file "array"           :depends-on ())
                  (:file "sequence"        :depends-on ())
                  (:file "list"            :depends-on ())
+                 (:file "utility"         :depends-on ("list"))
                  (:file "string"          :depends-on ("utility" "list" "ecma048"))
-                 (:file "package"         :depends-on ())
+                 (:file "package"         :depends-on ("utility"))
                  
                  ;; Data structures:
-                 (:file "bset"            :depends-on ("utility"))
+                 (:file "set"             :depends-on ("simple-test" "utility" "array"))
+                 (:file "index-set"       :depends-on ("simple-test" "utility" "array" "sequence" "set"))
+                 (:file "bset"            :depends-on ("utility" "set"))
                  (:file "brelation"       :depends-on ("utility" "bset"))
                  (:file "dictionary"      :depends-on ())
                  (:file "dll"             :depends-on ())
@@ -103,6 +108,7 @@ all written in 100% conforming Common Lisp.
 
                  ;; Standards:
                  (:file "ascii"           :depends-on ())
+                 (:file "character"       :depends-on ("ascii"))
                  (:file "character-sets"  :depends-on ("string"))
                  (:file "ecma048"         :depends-on ("utility"))
                  (:file "iso3166"         :depends-on ())

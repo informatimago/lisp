@@ -5,18 +5,8 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
-;;;;    Closer to Weak objects.
-;;;;    Implements the specification: http://clisp.cons.org/impnotes/weak.html
-;;;;    for Common Lisp implementations that have weak-pointers.
 ;;;;
-;;;;    WEAK-OR-RELATION is a primitive that cannot be implemented propertly
-;;;;    without implementation support.
-;;;;
-;;;;    Currently work on:
-;;;;           clisp      full support
-;;;;           cmucl      partial support (missing WEAK-OR-RELATION)
-;;;;           sbcl       partial support (missing WEAK-OR-RELATION)
+;;;;    See package docstring.
 ;;;;
 ;;;;    Read-time Features:
 ;;;;
@@ -29,12 +19,13 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2013-03-17 <PJB> Added implementation for ccl.
 ;;;;    2006-05-19 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal Bourguignon 2006 - 2012
+;;;;    Copyright Pascal Bourguignon 2006 - 2013
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -56,31 +47,30 @@
 
 (defpackage "COM.INFORMATIMAGO.CLEXT.CLOSER-WEAK"
   (:documentation "
-   Closer to Weak objects.
-   Implements the specification: <http://clisp.cons.org/impnotes/weak.html>
-   for Common Lisp implementations that have weak-pointers.
+Closer to Weak objects.
+Implements the specification: <http://clisp.cons.org/impnotes/weak.html>
+for Common Lisp implementations that have weak-pointers.
 
-   WEAK-OR-RELATION is a primitive that cannot be implemented propertly
-   without implementation support.
+WEAK-OR-RELATION is a primitive that cannot be implemented properly
+without implementation support.
 
-   Currently work on:
-          clisp      full support
-          cmucl      partial support (missing WEAK-OR-RELATION)
-          sbcl       partial support (missing WEAK-OR-RELATION)
+Currently works on:
 
-   Copyright Pascal Bourguignon 2006 - 2006
-   
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; either version
-   2 of the License, or (at your option) any later version.
-   ")
+             WP   WL   WAR WOR WM  WHT
+  allegro   
+  ccl         x    x    x       x   n   -- WHT native.
+  clisp       n    n    n   n   n   n   -- full support - native
+  cmucl       n    x    x       x   x   -- partial support (missing WEAK-OR-RELATION)
+  sbcl        n    x    x       x   x   -- partial support (missing WEAK-OR-RELATION)
+
+Copyright Pascal Bourguignon 2006 - 2013
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at
+your option) any later version.
+")
   (:use "COMMON-LISP")
-  #-(and clisp (not debug-weak))
-  (:shadow "HASH-TABLE" "MAKE-HASH-TABLE"
-           "HASH-TABLE-P" "HASH-TABLE-COUNT" "HASH-TABLE-REHASH-SIZE"
-           "HASH-TABLE-REHASH-THRESHOLD" "HASH-TABLE-SIZE" "HASH-TABLE-TEST"
-           "GETHASH" "REMHASH" "MAPHASH" "WITH-HASH-TABLE-ITERATOR" "CLRHASH")
   #+(and clisp debug-weak)
   (:import-from
    "EXT"
@@ -130,13 +120,21 @@
    "MAKE-WEAK-ALIST"        "WEAK-ALIST-P"        "WEAK-ALIST-TYPE"
    "WEAK-ALIST-CONTENTS"    "WEAK-ALIST-ASSOC"    "WEAK-ALIST-RASSOC"
    "WEAK-ALIST-VALUE"
-   "WEAK-MAPPING"           "HASH-TABLE-WEAK-P"
-   "HASH-TABLE" "MAKE-HASH-TABLE"
-   "HASH-TABLE-P" "HASH-TABLE-COUNT"
-   "HASH-TABLE-REHASH-SIZE"
-   "HASH-TABLE-REHASH-THRESHOLD" "HASH-TABLE-SIZE"
-   "HASH-TABLE-TEST" "GETHASH" "REMHASH"
-   "MAPHASH" "WITH-HASH-TABLE-ITERATOR" "CLRHASH"))
+   "WEAK-MAPPING"           "HASH-TABLE-WEAK-P")
+  #-(and (or ccl clisp) (not debug-weak))
+  (:shadow "HASH-TABLE" "MAKE-HASH-TABLE"
+           "HASH-TABLE-P" "HASH-TABLE-COUNT"
+           "HASH-TABLE-REHASH-SIZE"
+           "HASH-TABLE-REHASH-THRESHOLD" "HASH-TABLE-SIZE"
+           "HASH-TABLE-TEST" "GETHASH" "REMHASH"
+           "MAPHASH" "WITH-HASH-TABLE-ITERATOR" "CLRHASH")
+  #-(and (or ccl clisp) (not debug-weak))
+  (:export "HASH-TABLE" "MAKE-HASH-TABLE"
+           "HASH-TABLE-P" "HASH-TABLE-COUNT"
+           "HASH-TABLE-REHASH-SIZE"
+           "HASH-TABLE-REHASH-THRESHOLD" "HASH-TABLE-SIZE"
+           "HASH-TABLE-TEST" "GETHASH" "REMHASH"
+           "MAPHASH" "WITH-HASH-TABLE-ITERATOR" "CLRHASH"))
 
 (defpackage "COM.INFORMATIMAGO.CLEXT.CLOSER-WEAK-USER"
   (:nicknames "CLOSER-WEAK-USER" "C2WEAK-USER")
@@ -150,11 +148,14 @@
 
 (in-package "COM.INFORMATIMAGO.CLEXT.CLOSER-WEAK")
 
-;; When testing, we call the garbage collector soon to be more precisely weak.
-#+(and weak-test clisp)(import '(ext:gc))
-#+(and weak-test sbcl) (defun gc () (sb-ext:gc :full t))
-#+(and weak-test cmu)  (import '(extensions:gc))
 
+(defun gc ()
+  "Calls the garbage collector."
+  #-(or ccl clisp cmu sbcl) (error "~S: Missing a garbage collector call for ~S" 'gc (lisp-implementationt-type))
+  #+ccl   (ccl:gc)
+  #+clisp (ext:gc)
+  #+cmu   (extensions:gc)
+  #+sbcl  (sb-ext:gc :full t))
 
 
 
@@ -162,17 +163,32 @@
 ;;; Weak pointers
 
 
-#+cmu
+#+allegro
+(defstruct (weak-pointer
+             (:constructor %make-weak-pointer))
+  (%pointer (excl:weak-vector 1)))
+
+#+(or allegro ccl)
+(defun make-weak-pointer (object)
+  #+allegro (let ((wp (%make-weak-pointer)))
+              (setf (aref (weak-pointer-%pointer wp) 0) object))
+  ;; #+ccl (ccl:make-population :initial-contents (list object))
+  #+ccl (let ((h (cl:make-hash-table :test 'eq :weak :value)))
+          (setf (gethash '%weak-pointer% h) '%weak-pointer%
+                (gethash '%weak-object% h) object)
+          h))
+
+#+(not clisp)
 (defun weak-pointer-p (object)
   "Returns true if the object is of type WEAK-POINTER."
-  (typep object 'extensions:weak-pointer))
-
-
-#+sbcl
-(defun weak-pointer-p (object)
-  "Returns true if the object is of type WEAK-POINTER."
-  (typep object 'sb-ext:weak-pointer))
-
+  #+allegro                (typep object 'weak-pointer)
+  ;;#+ccl                    (typep object 'ccl:population)
+  #+ccl                    (and (hash-table-p object)
+                                (ccl:hash-table-weak-p object)
+                                (eq (hash-table-test object) 'eq)
+                                (eq (gethash '%weak-pointer% object) '%weak-pointer%))
+  #+cmu                    (typep object 'extensions:weak-pointer)
+  #+sbcl                   (typep object 'sb-ext:weak-pointer))
 
 #+(and clisp debug-weak)
 (defun weak-pointer-p (object)
@@ -180,31 +196,13 @@
   (ext:weak-pointer-p object))
 
 
-
-
-#+allegro
-(defstruct (weak-pointer
-             (:constructor %make-weak-pointer))
-  (%pointer (excl:weak-vector 1)))
-
-#+allegro
-(defun make-weak-pointer (object)
-  (let ((wp (%make-weak-pointer)))
-    (setf (aref (weak-pointer-%pointer wp) 0) object)))
-
-#+allegro
-(defun weak-pointer-p (object)
-  "Returns true if the object is of type WEAK-POINTER."
-  (typep object 'weak-pointer))
-
-#+allegro
+#+(or allegro ccl)
 (defun weak-pointer-value (wp)
-  (values (aref (weak-pointer-%pointer wp) 0)
-          (aref (weak-pointer-%pointer wp) 0)))
+  #+allegro (values (aref (weak-pointer-%pointer wp) 0)
+                    (aref (weak-pointer-%pointer wp) 0))
+  #+ccl (gethash '%weak-object% wp))
 
-
-
-#-(or allegro clisp sbcl cmu)
+#-(or allegro ccl clisp cmu sbcl)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (error "~A: Please implement WEAK-POINTER and WEAK-OR-RELATION for ~A"
          'closer-weak (lisp-implementation-type)))
@@ -213,7 +211,7 @@
 ;;;---------------------------------------------------------------------
 ;;; Weak lists
 
-#-(and clisp (not debug-weak))
+#-(and (or ccl clisp) (not debug-weak))
 (defstruct (weak-list (:constructor %make-weak-list))
   "A WEAK-LIST is an ordered collection of references to objects that
 does not keep the objects from being garbage-collected. It is
@@ -222,16 +220,14 @@ more efficient in-memory representation than a plain list of
 WEAK-POINTERs would be."
   head)
 
-#-(and clisp (not debug-weak))
-(setf (documentation 'weak-list-p 'function)
-      "Returns true if the object is of type WEAK-LIST.")
 
-#-(and clisp (not debug-weak))
+#-(and (or ccl clisp))
 (defun make-weak-list (list)
   "Creates a WEAK-LIST pointing to each of the elements in the given list."
-  (%make-weak-list :head (map 'list (function make-weak-pointer) list)))
+  (check-type list list)
+  (%make-weak-list :head (mapcar (function make-weak-pointer) list)))
 
-#-(and clisp (not debug-weak))
+#-(and (or ccl clisp) (not debug-weak))
 (defun weak-list-list (weak-list)
   "Returns a LIST of those objects from the weak-list that are still alive."
   (let ((alive (delete-if (lambda (item)
@@ -242,14 +238,23 @@ WEAK-POINTERs would be."
     (setf (weak-list-head weak-list) alive)
     (mapcar (function weak-pointer-value) alive)))
 
-
-#-(and clisp (not debug-weak))
+#-(and (or ccl clisp) (not debug-weak))
 (defun (setf weak-list-list) (value weak-list)
   "Replaces the list of objects stored by the weak-list."
   (setf (weak-list-head weak-list)
         (map 'list (function make-weak-pointer) value))
   value)
 
+#+ccl (deftype weak-list () 'ccl:population)
+#+ccl (defun make-weak-list (list) (check-type list list) (ccl:make-population :initial-contents list))
+#+ccl (defun weak-list-p (wl) (and (typep wl 'ccl:population) (eq :list (ccl:population-type wl))))
+#+ccl (defun weak-list-list (wl) (ccl:population-contents wl))
+#+ccl (defun (setf weak-list-list) (value wl) (setf (ccl:population-contents wl) value))
+
+
+#-(and (or ccl clisp) (not debug-weak))
+(setf (documentation 'weak-list-p 'function)
+      "Returns true if the object is of type WEAK-LIST.")
 
 ;;;---------------------------------------------------------------------
 ;;; Weak AND relations
@@ -298,11 +303,10 @@ The returned list must not be destructively modified."
 ;;; Unfortunately, it looks like this is a primitive operation that
 ;;; cannot be implemented with just weak pointers.  CMUCL & SBCL are weak.
 
-#+(or cmu sbcl)
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (format *error-output*
-    "~2%WARNING: ~A: WEAK-OR-RELATION should be implemented ~
-     as primitive in ~A~2%" 'closer-weak (lisp-implementation-type)))
+;; #+(or cmu sbcl)
+;; (eval-when (:compile-toplevel :load-toplevel :execute)
+;;   (warn "~A: ~A is lacking a primitive WEAK-OR-RELATION."
+;;         'closer-weak (lisp-implementation-type)))
 
 #-(and clisp (not debug-weak))
 (defstruct (weak-or-relation (:constructor %make-weak-or-relation)
@@ -698,6 +702,8 @@ It has no effect when some key has already been garbage-collected.")
          :finally (return-from :assoc nil))))
 
 #-(and clisp (not debug-weak))
+(defgeneric weak-alist-remove-assoc (item weak-alist &key test test-not key))
+#-(and clisp (not debug-weak))
 (defmethod weak-alist-remove-assoc (item (self weak-alist)
                                     &key (test (function eql))
                                     (test-not nil) (key (function identity)))
@@ -717,6 +723,8 @@ It has no effect when some key has already been garbage-collected.")
          :finally (return-from :assoc nil))))
 
 #-(and clisp (not debug-weak))
+(defgeneric weak-alist-rassoc (item weak-alist &key test test-not key))
+#-(and clisp (not debug-weak))
 (defmethod weak-alist-rassoc (item (self weak-alist) &key (test (function eql))
                               (test-not nil) (key (function identity)))
   (if test-not
@@ -732,10 +740,14 @@ It has no effect when some key has already been garbage-collected.")
          :finally (return-from :assoc nil))))
 
 #-(and clisp (not debug-weak))
+(defgeneric weak-alist-value (item weak-alist &key test test-not))
+#-(and clisp (not debug-weak))
 (defmethod weak-alist-value (item (self weak-alist)
                              &key (test (function eql)) (test-not nil))
   (cdr (weak-alist-assoc item self :test test :test-not test-not)))
 
+#-(and clisp (not debug-weak))
+(defgeneric (setf weak-alist-value) (value item weak-alist &key test test-not))
 #-(and clisp (not debug-weak))
 (defmethod (setf weak-alist-value) (value item (self weak-alist)
                                     &key (test (function eql)) (test-not nil))
@@ -754,7 +766,40 @@ It has no effect when some key has already been garbage-collected.")
 ;;;---------------------------------------------------------------------
 ;;; Weak Hash Tables
 
-#-(and clisp (not debug-weak))
+  
+#-(and (or ccl clisp) (not debug-weak)) 
+(defgeneric %gethash (key self &optional default)
+  (:method (key (self t) &optional default)
+    (common-lisp:gethash key self default)))
+#-(and (or ccl clisp) (not debug-weak)) 
+(defgeneric (setf %gethash) (value key self &optional default)
+  (:method (value key (self t) &optional default)
+    (setf (common-lisp:gethash key self default) value)))
+#-(and (or ccl clisp) (not debug-weak)) 
+(defgeneric %remhash (key self)
+  (:method (key (self t)) (common-lisp:remhash key self)))
+#-(and (or ccl clisp) (not debug-weak)) 
+(defgeneric %maphash (function self)
+  (:method (function (self t)) (common-lisp:maphash function self)))
+#-(and (or ccl clisp) (not debug-weak)) 
+(defgeneric %clrhash (self)
+  (:method ((self t)) (common-lisp:clrhash self)))
+
+
+(defmacro define-forward (name)
+  (let ((method-name (intern (with-standard-io-syntax (format nil "%~A" name))))
+        (cl-name     (intern (string name) "COMMON-LISP")))
+    `(progn
+       (defgeneric ,method-name (self) (:method ((self t)) (,cl-name self)))
+       (defun ,name (hash-table) (,method-name hash-table)))))
+
+#-(and (or ccl clisp) (not debug-weak)) (define-forward hash-table-count)
+#-(and (or ccl clisp) (not debug-weak)) (define-forward hash-table-rehash-size)
+#-(and (or ccl clisp) (not debug-weak)) (define-forward hash-table-rehash-threshold)
+#-(and (or ccl clisp) (not debug-weak)) (define-forward hash-table-size)
+#-(and (or ccl clisp) (not debug-weak)) (define-forward hash-table-test)
+
+#-(and (or ccl clisp) (not debug-weak))
 (defclass weak-hash-table ()
   ((rehash-size      :accessor %hash-table-rehash-size
                      :initarg :rehash-size
@@ -770,28 +815,15 @@ It has no effect when some key has already been garbage-collected.")
                      :initform :key)
    (buckets          :accessor wht-buckets)))
 
-
-(defmacro define-forward (name)
-  (let ((method-name (intern (with-standard-io-syntax (format nil "%~A" name))))
-        (cl-name     (intern (string name) "COMMON-LISP")))
-    `(progn
-       (defgeneric ,method-name (self) (:method ((self t)) (,cl-name self)))
-       (defun ,name (hash-table) (,method-name hash-table)))))
-
-#-(and clisp (not debug-weak)) (define-forward hash-table-count)
-#-(and clisp (not debug-weak)) (define-forward hash-table-rehash-size)
-#-(and clisp (not debug-weak)) (define-forward hash-table-rehash-threshold)
-#-(and clisp (not debug-weak)) (define-forward hash-table-size)
-#-(and clisp (not debug-weak)) (define-forward hash-table-test)
-
-#-(and clisp (not debug-weak))
+#-(and (or ccl clisp) (not debug-weak))
 (defmethod %hash-table-count ((self weak-hash-table))
   (let ((count 0))
     (maphash (lambda (k v) (declare (ignore k v)) (incf count)) self)
     count))
 
-
-#-(and clisp (not debug-weak))
+#-(and (or ccl clisp) (not debug-weak))
+(defgeneric dump-wht (weak-hash-table &optional out))
+#-(and (or ccl clisp) (not debug-weak))
 (defmethod dump-wht ((self weak-hash-table) &optional (out *standard-output*))
   (format out "~A~%" (class-name (class-of self)))
   ((lambda (items) 
@@ -821,15 +853,15 @@ It has no effect when some key has already been garbage-collected.")
           (format out "         (~S . ~S)~%" (car pair) (cdr pair))))))
   self)
 
-#-(and clisp (not debug-weak))
+#-(and (or ccl clisp) (not debug-weak))
 (defun hash-table-weak-p (object)
   "<http://clisp.cons.org/impnotes/hash-dict.html#make-hash>"
   (and (typep object 'weak-hash-table) (wht-pair-type object)))
 
-#-(and clisp (not debug-weak))
+#-(and (or ccl clisp) (not debug-weak))
 (defun equiv (a b) (or (and a b) (and (not a) (not b))))
 
-#-(and clisp (not debug-weak))
+#-(and (or ccl clisp) (not debug-weak))
 (defun (setf hash-table-weak-p) (value object)
   (unless (equiv (hash-table-weak-p object) value)
     (error "Changing a weak hash table to a normal hash table or ~
@@ -841,7 +873,7 @@ It has no effect when some key has already been garbage-collected.")
   value)
 
 
-#-(and clisp (not debug-weak))
+#-(and (or ccl clisp) (not debug-weak))
 (defmethod initialize-instance ((self weak-hash-table)
                                 &key (test (function eql) testp)
                                 (size 37)
@@ -857,11 +889,13 @@ It has no effect when some key has already been garbage-collected.")
     (setf (%gethash (car pair) self) (cdr pair)))
   self)
 
-#-(and clisp (not debug-weak))
+#-(and (or ccl clisp) (not debug-weak))
 (defmethod %hash-table-size ((self weak-hash-table))
   (array-dimension (wht-buckets self) 0))
 
-#-(and clisp (not debug-weak))
+#-(and (or ccl clisp) (not debug-weak))
+(defgeneric wht-iterator (weak-hash-table))
+#-(and (or ccl clisp) (not debug-weak))
 (defmethod wht-iterator ((self weak-hash-table))
   (let ((current-bucket 0)
         (current-pairs  nil))
@@ -885,7 +919,9 @@ It has no effect when some key has already been garbage-collected.")
                           (values t (car pair) (cdr pair)))
                         (values nil nil nil)))))))
 
-#-(and clisp (not debug-weak))
+#-(and (or ccl clisp) (not debug-weak))
+(defgeneric %rehash-table (weak-hash-table new-size))
+#-(and (or ccl clisp) (not debug-weak))
 (defmethod %rehash-table ((self weak-hash-table) new-size)
   (let ((new (make-hash-table
               :weak             (wht-pair-type self)
@@ -897,7 +933,9 @@ It has no effect when some key has already been garbage-collected.")
     (setf (wht-buckets self) (wht-buckets new))
     self))
 
-#-(and clisp (not debug-weak))
+#-(and (or ccl clisp) (not debug-weak))
+(defgeneric check-reduce-size (weak-hash-table result-values))
+#-(and (or ccl clisp) (not debug-weak))
 (defmethod check-reduce-size ((self weak-hash-table) result-values)
   (let ((threshold-count (truncate (hash-table-size self)
                                    (hash-table-rehash-threshold self))))
@@ -909,7 +947,9 @@ It has no effect when some key has already been garbage-collected.")
            (/ (hash-table-size self) (hash-table-rehash-size self))))))
   (values-list result-values))
 
-#-(and clisp (not debug-weak))
+#-(and (or ccl clisp) (not debug-weak))
+(defgeneric check-increase-size (table result-values))
+#-(and (or ccl clisp) (not debug-weak))
 (defmethod check-increase-size ((self weak-hash-table) result-values)
   (let ((threshold-count  (* (hash-table-size self)
                              (hash-table-rehash-threshold self))))
@@ -927,7 +967,7 @@ It has no effect when some key has already been garbage-collected.")
               (sxhash object))
   #-clisp (sxhash object))
 
-#-(and clisp (not debug-weak))
+#-(and (or ccl clisp) (not debug-weak))
 (defmethod %gethash (key (self weak-hash-table) &optional default)
   (declare (ignore default))
   (let* ((h (mod (%sxhash key) (length (wht-buckets self))))
@@ -952,7 +992,7 @@ It has no effect when some key has already been garbage-collected.")
 ;;; We probably need to use defsetf or define-setf-expander
 ;;; to process correctly the default value:
 
-#-(and clisp (not debug-weak))
+#-(and (or ccl clisp) (not debug-weak))
 (defmethod (setf %gethash) (value key (self weak-hash-table) &optional default)
   ;; Should check when the new count goes above a threshold and increase
   ;; hash size.
@@ -1003,7 +1043,7 @@ It has no effect when some key has already been garbage-collected.")
                      :key key :value value)))))
     value))
 
-#-(and clisp (not debug-weak))
+#-(and (or ccl clisp) (not debug-weak))
 (defmethod %remhash (key (self weak-hash-table))
   ;; Should check when the new count goes below a threshold and reduce
   ;; hash size.
@@ -1021,7 +1061,7 @@ It has no effect when some key has already been garbage-collected.")
          #+weak-test (gc)
          (check-reduce-size self '(t)))))))
 
-#-(and clisp (not debug-weak)) 
+#-(and (or ccl clisp) (not debug-weak)) 
 (defmacro with-hash-table-iterator ((name hash-table) &body body)
   (let ((vh (gensym)) (iterator (gensym)))
     `(let ((,vh ,hash-table))
@@ -1032,7 +1072,7 @@ It has no effect when some key has already been garbage-collected.")
            (common-lisp:with-hash-table-iterator (,name ,vh) ,@body)))))
 
 
-#-(and clisp (not debug-weak))
+#-(and (or ccl clisp) (not debug-weak))
 (defmethod %maphash (function (self weak-hash-table))
   (with-hash-table-iterator (next self)
     (loop
@@ -1040,7 +1080,7 @@ It has no effect when some key has already been garbage-collected.")
        :while gotit
        :do (funcall function key value))))
 
-#-(and clisp (not debug-weak))
+#-(and (or ccl clisp) (not debug-weak))
 (defmethod %clrhash ((self weak-hash-table))
   (with-slots ((buckets buckets)) self
     (loop :for i :from 0 :below (length buckets)
@@ -1048,53 +1088,36 @@ It has no effect when some key has already been garbage-collected.")
   #+weak-test (gc)
   self)
 
-#-(and clisp (not debug-weak))
+#-(and (or ccl clisp) (not debug-weak))
 (deftype hash-table () '(or common-lisp:hash-table weak-hash-table))
 
-#-(and clisp (not debug-weak))
+#-(and (or ccl clisp) (not debug-weak))
 (defun hash-table-p (object)
   (or (common-lisp:hash-table-p object) (typep object 'weak-hash-table)))
 
 
-#-(and clisp (not debug-weak)) 
-(defgeneric %gethash (key self &optional default)
-  (:method (key (self t) &optional default)
-    (common-lisp:gethash key self default)))
-#-(and clisp (not debug-weak)) 
+#-(and (or ccl clisp) (not debug-weak)) 
 (defun gethash (key hash-table &optional default)
   (%gethash key hash-table default))
 
-#-(and clisp (not debug-weak)) 
-(defgeneric (setf %gethash) (value key self &optional default)
-  (:method (value key (self t) &optional default)
-    (setf (common-lisp:gethash key self default) value)))
-#-(and clisp (not debug-weak)) 
+
+#-(and (or ccl clisp) (not debug-weak)) 
 (defun (setf gethash) (value key hash-table &optional default)
   (setf  (%gethash key hash-table default) value))
 
 
-#-(and clisp (not debug-weak)) 
-(defgeneric %remhash (key self)
-  (:method (key (self t)) (common-lisp:remhash key self)))
-#-(and clisp (not debug-weak)) 
+#-(and (or ccl clisp) (not debug-weak)) 
 (defun remhash (key hash-table) (%remhash key hash-table))
 
-#-(and clisp (not debug-weak)) 
-(defgeneric %maphash (function self)
-  (:method (function (self t)) (common-lisp:maphash function self)))
-#-(and clisp (not debug-weak)) 
+#-(and (or ccl clisp) (not debug-weak)) 
 (defun maphash (function hash-table) (%maphash function hash-table))
 
 
-  
-#-(and clisp (not debug-weak)) 
-(defgeneric %clrhash (self)
-  (:method ((self t)) (common-lisp:clrhash self)))
-#-(and clisp (not debug-weak)) 
+#-(and (or ccl clisp) (not debug-weak)) 
 (defun clrhash (hash-table) (%clrhash hash-table))
 
 
-#-(and clisp (not debug-weak))
+#-(and (or ccl clisp) (not debug-weak))
 (defun make-hash-table (&rest other-keys
                         &key (test (function eql) testp)
                         (size nil sizep)
@@ -1114,6 +1137,106 @@ It has no effect when some key has already been garbage-collected.")
           (when rehash-threshold-p (list :rehash-threshold rehash-threshold))
           other-keys)))
 
-  
-;;;; THE END ;;;;
 
+(defun test/wp ()
+  (let* ((v1 (cons 1 :one))
+         (v2 (cons 2 :two))
+         (p1 (make-weak-pointer v1))
+         (p2 (make-weak-pointer v2)))
+    (loop :for i :from 1 :to 2 :do
+      (assert (weak-pointer-p p1))
+      (assert (weak-pointer-p p2))
+      (assert (not (weak-pointer-p v1)))
+      (assert (not (weak-pointer-p v2)))
+      (multiple-value-bind (v p) (weak-pointer-value p1)
+        (assert p () "p1 should not be collected (iteration ~D)" i)
+        (assert (eq v v1)))
+      (multiple-value-bind (v p) (weak-pointer-value p2)
+        (assert p () "p2 should not be collected (iteration ~D)" i)
+        (assert (eq v v2)))
+      (gc))
+    (setf v1 nil)
+    (gc)
+    (loop :for i :from 1 :to 2 :do
+      (assert (weak-pointer-p p1))
+      (assert (weak-pointer-p p2))
+      (assert (not (weak-pointer-p v1)))
+      (assert (not (weak-pointer-p v2)))
+      (multiple-value-bind (v p) (weak-pointer-value p1)
+        (declare (ignore v))
+        (assert (not p) () "p1 should be collected (iteration ~D)" i))
+      (multiple-value-bind (v p) (weak-pointer-value p2)
+        (assert p () "p2 should not be collected (iteration ~D)" i)
+        (assert (eq v v2)))
+      (gc))
+    (setf v2 nil)
+    (gc)
+    (loop :for i :from 1 :to 2 :do
+      (assert (weak-pointer-p p1))
+      (assert (weak-pointer-p p2))
+      (assert (not (weak-pointer-p v1)))
+      (assert (not (weak-pointer-p v2)))
+      (multiple-value-bind (v p) (weak-pointer-value p1)
+        (declare (ignore v))
+        (assert (not p) () "p1 should be collected (iteration ~D)" i))
+      (multiple-value-bind (v p) (weak-pointer-value p2)
+        (declare (ignore v))
+        (assert (not p) () "p2 should be collected (iteration ~D)" i))
+      (gc)))
+  :success)
+
+
+(defun test/wl ()
+  (let* ((objects (loop
+                    :for i :below 10
+                    :collect (cons i (format nil "~@R" 10))))
+         (wl (make-weak-list objects)))
+    (assert (weak-list-p wl))
+    (assert (not (weak-list-p objects)))
+    (assert (equalp objects (weak-list-list wl)))
+    (gc)
+    (assert (equalp objects (weak-list-list wl)))
+    (pop objects)
+    (assert (equalp objects (rest (weak-list-list wl))))
+    (gc)
+    (assert (equalp objects (weak-list-list wl)))
+    (setf objects (loop
+                    :for objs :on objects :by (function cddr)
+                    :collect (car objs)))
+    (assert (not (equalp objects (weak-list-list wl))))
+    (gc)
+    (assert (equalp objects (weak-list-list wl)))
+    (setf objects nil)
+    (assert (not (equalp objects (weak-list-list wl))))
+    (gc)
+    (assert (equalp objects (weak-list-list wl))))
+  :success)
+
+
+(defun test/wht ()
+  (let ((h (make-hash-table :test 'eq :weak :value))
+        (v (cons 2 :two)))
+    (setf (gethash 1 h) (cons 1 :one))
+    (setf (gethash 2 h) v)
+    (assert (equalp '((1 . :one) t) (multiple-value-list (gethash 1 h))))
+    (assert (equalp '((2 . :two) t) (multiple-value-list (gethash 2 h))))
+    (gc)
+    (assert (equalp '(nil nil) (multiple-value-list (gethash 1 h))))
+    (assert (equalp '((2 . :two) t) (multiple-value-list (gethash 2 h))))
+    (setf v nil)
+    (gc)
+    (assert (equalp '(nil nil) (multiple-value-list (gethash 1 h))))
+    (assert (equalp '(nil nil) (multiple-value-list (gethash 2 h))))
+    :success))
+
+
+(defun test ()
+  (test/wp)
+  (test/wl)
+  (test/wht))
+
+#-sbcl (test)
+;; #+sbcl (warn "~A: ~A fails weak-pointer garbage collection tests. Testing is disabled."
+;;         'closer-weak (lisp-implementation-type))
+
+;;;; THE END ;;;;

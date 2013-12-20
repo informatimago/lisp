@@ -607,7 +607,7 @@ There must be at least one digit."
                    "1:b" "e" "e" "e"))
          (object (bdecode-from-string str))
          (obj    (maptree (lambda (node)
-                            (if (hashtablep node)
+                            (if (hash-table-p node)
                                 (cons 'dict (hash-table-entries node))
                                 node))
                           object)))
