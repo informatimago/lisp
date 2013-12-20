@@ -34,10 +34,11 @@
 
 PREFIX=/usr/local
 TARGETS=index.html.in what-implementation
+all:generate
 
 help::
 	@echo "$(MAKE) generate                     # generates $(TARGETS)"
-all:$(TARGETS) access-rights clean
+generate:$(TARGETS) access-rights clean
 
 help::
 	@echo "$(MAKE) install                      # Installs everything PREFIX=$(PREFIX)"
