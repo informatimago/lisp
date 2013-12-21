@@ -477,12 +477,15 @@ RETURN:        MIN; MAX"
 (defmacro define-association (name endpoints &rest options)
   "
 Define functions to manage the association:
+
     (name-LINK       a b ...)
     (name-UNLINK     a b ...)
     (name-CONTAINS-P a b ...) --> BOOLEAN
     (name-SIZE)  --> INTEGER
     (name-CLEAR) --> INTEGER
+
 taking &KEY arguments named for the ROLE names.
+
 There may be more than two endpoints, in case of ternary, etc associations.
 
 ENDPOINTS      a list of (ROLE &KEY TYPE ACCESSOR SLOT MULTIPLICITY MULTIPLE
@@ -493,7 +496,7 @@ TYPE           needed for ATTACH and DETACH.
                If all the types are present and different, then ATTACH and
                DETACH methods are created for the arguments in any order.
 
-    Note: we should review this macro for TYPE vs.CLASS.
+    Note: we should review this macro for TYPE vs. CLASS.
           Slots may be accessed only in instances of standard-class classes.
           Accessors may be used with any type.
 
@@ -610,15 +613,15 @@ BUGS:    If there is an error in handling one association end, after
          (contains-p      (scat name '-contains-p)))
 
     `(progn
-       ,@(let ((troles (mapcar (lambda (endpoint)
-                                 (destructuring-bind (role &key slot &allow-other-keys) endpoint
-                                   (list role slot)))
+       ,@(let ((tslots (mapcar (lambda (endpoint)
+                                 (destructuring-bind (role &key type slot &allow-other-keys) endpoint
+                                   (list type slot)))
                                endpoints)))
               (append
-               (when (second (second troles))
-                 (list `(ensure-class-slot ',(first (first troles)) ',(second (second troles)))))
-               (when (second (first troles))
-                 (list `(ensure-class-slot ',(first (second troles)) ',(second (first troles))))))) 
+               (when (second (second tslots))
+                 (list `(ensure-class-slot ',(first (first tslots)) ',(second (second tslots)))))
+               (when (second (first tslots))
+                 (list `(ensure-class-slot ',(first (second tslots)) ',(second (first tslots))))))) 
        (defun ,link (&key ,@link-parameters)
          ,(generate-addset name
                            (first link-parameters) (second link-parameters)
