@@ -114,31 +114,31 @@ are listed."
                  (format *trace-output* "~&~A ~A~%" system err))))
        (ql-dist:provided-systems t)))
 
-(defun quick-uninstall (&rest systems)
+(defun quick-uninstall (system &rest systems)
   "Uninstall the given systems releases from the quicklisp installation."
   (map 'list (lambda (system)
                (ql-dist:uninstall (ql-dist:release (string-downcase system))))
-       systems))
+       (cons system systems)))
 
 
-(defun quick-where-is (&rest systems)
+(defun quick-where-is (system &rest systems)
   "Says where the given systems are."
   #+#.(cl:if (cl:find-symbol "WHERE-IS-SYSTEM" "QUICKLISP-CLIENT") '(:and) '(:or))
   (map 'list (lambda (system) (ql:where-is-system (string-downcase system)))
-       systems)
+       (cons system systems))
   #-#.(cl:if (cl:find-symbol "WHERE-IS-SYSTEM" "QUICKLISP-CLIENT") '(:and) '(:or))
   (error "QUICKLISP-CLIENT:WHERE-IS-SYSTEM is not available."))
 
-(defun quick-where (&rest systems)
+(defun quick-where (system &rest systems)
   "Says where the given systems are."
-  (apply (function quick-where-is) systems))
+  (apply (function quick-where-is) (cons system systems)))
 
 
-(defun quick-delete (&rest systems)
+(defun quick-delete (system &rest systems)
   "Delete the ASDF systems so they'll be reloaded."
-  (map 'list (lambda (system) (asdf:clear-system system)) systems))
+  (map 'list (lambda (system) (asdf:clear-system system)) (cons system systems)))
 
-(defun quick-reload (&rest systems)
+(defun quick-reload (system &rest systems)
   "Delete and reload the ASDF systems."
   (map 'list (lambda (system)
                ;; (asdf-delete-system system)
@@ -146,7 +146,7 @@ are listed."
                (force-output  *trace-output*)
                (asdf:load-system system)
                (ql:quickload system))
-       systems))
+       (cons system systems)))
 
 (defun quick-local-projects ()
   "Rebuilds the local projects system index."

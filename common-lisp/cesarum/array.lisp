@@ -279,25 +279,35 @@ EXAMPLE:    (array-to-list #3A(((1 2 3) (4 5 6)) ((a b c) (d e f))))
                    (array-to-list subarray)))))
 
 
-(defun displaced-vector (vector start &optional end fill-pointer)
+(defun displaced-vector (array &optional start end fill-pointer)
   "
-DO:         Same as SUBSEQ but with a displaced array.
+DO:         When array is a vector, same as SUBSEQ but with a displaced array.
+
+            When the rank of array is different from 1, then creates
+            a displaced vector onto ARRAY.   In that case the optional
+            arguments are ignored.
+
 RETURN:     A new displaced vector.
 SEE ALSO:   COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY:NSUBSEQ
 "
-  (setf end (or end  (length vector)))
-  (assert (<= 0 start (length vector)) (start)
-          "START should be an integer between 0 and ~D, not ~D" 
-          (length vector) start)
-  (assert (<= start end (length vector)) (end)
-          "END should be an integer between ~D and ~D, not ~D"
-          start (length vector) end)
-  (make-array  (list (- end start)) 
-               :element-type (array-element-type vector)
-               :adjustable t
-               :fill-pointer fill-pointer
-               :displaced-to vector 
-               :displaced-index-offset start))
+  (if (= 1 (array-rank array))
+      (progn
+        (setf end (or end  (length array)))
+        (assert (<= 0 start (length array)) (start)
+                "START should be an integer between 0 and ~D, not ~D" 
+                (length array) start)
+        (assert (<= start end (length array)) (end)
+                "END should be an integer between ~D and ~D, not ~D"
+                start (length array) end)
+        (make-array  (list (- end start)) 
+                     :element-type (array-element-type array)
+                     :adjustable t
+                     :fill-pointer fill-pointer
+                     :displaced-to array 
+                     :displaced-index-offset start))
+      (make-array (array-total-size array)
+                  :element-type (array-element-type array)
+                  :displaced-to array)))
 
 
 (defun nudge-displaced-vector (displaced-vector

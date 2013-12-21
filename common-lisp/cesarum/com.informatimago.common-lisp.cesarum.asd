@@ -122,6 +122,7 @@ all written in 100% conforming Common Lisp.
                  (:file "raiden"          :depends-on ())
                  (:file "dfa"             :depends-on ())
                  (:file "tea"             :depends-on ())
+                 (:file "circular"        :depends-on ())
 
                  ;; Specific stuff:
                  (:file "activity"        :depends-on ())

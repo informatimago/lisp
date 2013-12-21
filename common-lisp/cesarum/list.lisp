@@ -88,8 +88,9 @@ License:
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
 
 
-(define-modify-macro prependf (place &rest lists)
-  (lambda (tail &rest lists) (apply (function append) (append lists (list tail)))))
+(defun prepend (tail &rest lists)
+  (apply (function append) (append lists (list tail))))
+(define-modify-macro prependf (place &rest lists) prepend)
 
 (defmacro push* (&rest elements-and-place)
   `(prependf ,(car (last elements-and-place))

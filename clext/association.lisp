@@ -613,15 +613,15 @@ BUGS:    If there is an error in handling one association end, after
          (contains-p      (scat name '-contains-p)))
 
     `(progn
-       ,@(let ((tslots (mapcar (lambda (endpoint)
-                                 (destructuring-bind (role &key type slot &allow-other-keys) endpoint
-                                   (list type slot)))
+       ,@(let ((troles (mapcar (lambda (endpoint)
+                                 (destructuring-bind (role &key type &allow-other-keys) endpoint
+                                   (list type role)))
                                endpoints)))
               (append
-               (when (second (second tslots))
-                 (list `(ensure-class-slot ',(first (first tslots)) ',(second (second tslots)))))
-               (when (second (first tslots))
-                 (list `(ensure-class-slot ',(first (second tslots)) ',(second (first tslots))))))) 
+               (when (first (second troles))
+                 (list `(ensure-class-slot ',(first (first troles)) ',(second (second troles)))))
+               (when (first (first troles))
+                 (list `(ensure-class-slot ',(first (second troles)) ',(second (first troles))))))) 
        (defun ,link (&key ,@link-parameters)
          ,(generate-addset name
                            (first link-parameters) (second link-parameters)
