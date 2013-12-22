@@ -404,7 +404,7 @@
                          (ns-log @\"Example %d %d\" a b)
                          [[NSNumber alloc]initWithInteger:(+ a b)]]")
            '(oclo:define-objc-class-method ((:id :multiple-arg (:int a) :complex-selector (:int b)) example)
-             (ns-log (@ "Example %d %d") a b)
+             (ns-log (\@ "Example %d %d") a b)
              (oclo:send (oclo:send ns:ns-number 'alloc) :init-with-integer (+ a b)))))))
 
 
@@ -421,7 +421,7 @@
                          (ns-log @\"Example %d %d\" a b)
                          [[NSNumber alloc]initWithInteger:(+ a b)]]")
            '(oclo:define-objc-method ((:id :multiple-arg (:int a) :complex-selector (:int b)) example)
-             (ns-log (@ "Example %d %d") a b)
+             (ns-log (\@ "Example %d %d") a b)
              (oclo:send (oclo:send ns:ns-number 'alloc) :init-with-integer (+ a b))))
      )))
 
