@@ -91,6 +91,118 @@ DO:     Define a class, with a slightly different syntax.
 ;;; associate, adding the needed slots.
 ;;;
 
+
+(defun add-new-element (list element &key (key (function identity)) lessp test)
+  "
+DO:     Modify the list, adding the element if it is not already in the list.
+        LESSP and TEST are mutually exclusive.
+        When LESSP is provided, the element is inserted in the middle of the list.
+        When TEST is provided, the element is inserted at the end.
+        If LIST is NIL, then a new list is returned.
+KEY:   a key function. Default IDENTITY.
+LESSP: a lessp function. Default NIL.
+TEST:  an equal function. Default EQL.
+"
+  (assert (or (null lessp) (null test)))
+  (cond
+   ((null list) (list element))
+   ((null lessp)
+    (let ((test (or test (function eql))))
+      (loop
+       :with element-key = (funcall key element)
+       :for cell :on (cons nil list)
+       :while (and (cdr cell)
+                   (not (funcall test
+                                 element-key
+                                 (funcall key (cadr cell)))))
+       :finally (progn
+                  (unless (cdr cell)
+                    (setf (cdr cell) (list element)))
+                  (return list)))))
+   (t
+    (loop
+     :with element-key = (funcall key element)
+     :with result = (cons nil list)
+     :for cell :on result
+     :while (and (cdr cell)
+                 (funcall lessp
+                          (funcall key (cadr cell))
+                          element-key))
+     :finally (progn
+                (cond
+                 ((null (cdr cell))
+                  (setf (cdr cell) (list element)))
+                 ((funcall lessp
+                           element-key
+                           (funcall key (cadr cell)))
+                  (push element (cdr cell))))
+                (return (cdr result)))))))
+
+(defun test/add-new-element ()
+  (assert (equal '(x) (add-new-element nil 'x)))
+  (assert (equal '(x) (add-new-element nil 'x :test (function equal))))
+  (assert (equal '(x) (add-new-element nil 'x :lessp (function string<))))
+  (assert (equal '(x) (add-new-element (list 'x) 'x)))
+  (assert (equal '(x) (add-new-element (list 'x) 'x :test (function equal))))
+  (assert (equal '(x) (add-new-element (list 'x) 'x :lessp (function string<))))
+  (progn (let* ((list (list 1 2 3))
+               (result (add-new-element list 0 :test #'=)))
+           (assert (equal result '(1 2 3 0)))
+           (assert (eql result list)))
+         (let* ((list (list 1 2 3)) (result (add-new-element list 0)))
+           (assert (equal result '(1 2 3 0)))
+           (assert (eql result list)))
+         (let* ((list (list 1 2 3))
+               (result (add-new-element list 4 :lessp #'<)))
+           (assert (equal result '(1 2 3 4)))
+           (assert (eql result list)))
+         (let* ((list (list 1 2 3))
+               (result (add-new-element list 1 :lessp #'<)))
+           (assert (equal result '(1 2 3)))
+           (assert (eql result list)))
+         (let* ((list (list 1 2 3)) (result (add-new-element list 1)))
+           (assert (equal result '(1 2 3)))
+           (assert (eql result list)))
+         (let* ((list (list 1 2 3))
+               (result (add-new-element list 1.0 :test #'=)))
+           (assert (equal result '(1 2 3)))
+           (assert (eql result list)))
+         (let* ((list (list 1 2 3)) (result (add-new-element list 2)))
+           (assert (equal result '(1 2 3)))
+           (assert (eql result list)))
+         (let* ((list (list 1 2 3))
+               (result (add-new-element list 2.0 :test #'=)))
+           (assert (equal result '(1 2 3)))
+           (assert (eql result list)))
+         (let* ((list (list 1 2 3)) (result (add-new-element list 3)))
+           (assert (equal result '(1 2 3)))
+           (assert (eql result list)))
+         (let* ((list (list 1 2 3))
+               (result (add-new-element list 3.0 :test #'=)))
+           (assert (equal result '(1 2 3)))
+           (assert (eql result list)))
+         (let* ((list (list 1 2 4))
+               (result (add-new-element list 3 :lessp #'<)))
+           (assert (equal result '(1 2 3 4)))
+           (assert (eql result list)))
+         (let* ((list (list 1 2 4))
+               (result (add-new-element list 2 :lessp #'<)))
+           (assert (equal result '(1 2 4)))
+           (assert (eql result list)))
+         (let* ((list (list 1 3 4))
+               (result (add-new-element list 2 :lessp #'<)))
+           (assert (equal result '(1 2 3 4)))
+           (assert (eql result list)))
+         (let* ((list (list 1 3 4))
+               (result (add-new-element list 3 :lessp #'<)))
+           (assert (equal result '(1 3 4)))
+           (assert (eql result list))))  
+  (let ((list (list 2 3 4))) (assert (equal '(1 2 3 4) (add-new-element list 1 :lessp (function <)))))
+  (let ((list (list 2 3 4))) (assert (equal '(1 2 3 4) (add-new-element list 1 :lessp (function <)))))
+  :success)
+(test/add-new-element)
+
+
 (eval-when (:load-toplevel :compile-toplevel :execute)
 
   (defun variations (item list)
@@ -268,16 +380,28 @@ RETURN:        MIN; MAX"
                                    ((:accessor this-accessor))
                                    ((:multiplicity this-multiplicity))
                                    ((:implementation this-implementation))
+                                   ((:ordered this-ordered))
                                    ((:test this-test) '(function eql))
+                                   ((:lessp this-lessp) nil this-lessp-givenp)
+                                   ((:key this-key) '(function identity))
                                    ((:copy this-copy) '(function identity))
                                    &allow-other-keys) this
       (multiple-value-bind (this-min this-max) (multiplicity this-multiplicity)
         (declare (ignore this-min))
         (let ((this-implementation (or this-implementation
-                                       (if (equal 1 this-max) 'reference 'list))))
+                                       (if (equal 1 this-max) 'reference 'list)))
+              (this-test (if this-lessp-givenp
+                           (let ((a (gensym))
+                                 (b (gensym))
+                                 (lessp (gensym)))
+                            `(lambda (,a ,b)
+                               (let ((,lessp ,this-lessp))
+                                 (and (not (funcall ,lessp ,a ,b))
+                                      (not (funcall ,lessp ,b ,a))))))
+                           this-test)))
           (assert (member this-implementation  '(list reference))
                   (this-implementation)
-                  "IMPLEMENTATION other than REFERENCE or LIST are ~
+                  "IMPLEMENTATION other than REFERENCE, LIST are ~
                    not implemented yet.")
           (assert (imply (eq this-implementation 'reference) (equal 1 this-max))
                   (this-implementation this-max)
@@ -304,19 +428,31 @@ RETURN:        MIN; MAX"
                        (setf ,(slot) ,(value))))
               ((list)
                (cond
-                 ((eql  1 this-max)
-                  `(progn (assert (null ,(slot)))
+                 ((eql 1 this-max)
+                  `(progn (assert null ,(slot))
                           (setf ,(slot) (list ,(value)))))
                  ((eql '* this-max)
-                  `(progn (assert (not (member ,value ,(slot) :test ,this-test)))
-                          (pushnew ,(value) ,(slot) :test ,this-test)))
+                  (if this-ordered
+                    `(progn (assert (not (find ,value ,(slot) :test ,this-test :key ,this-key)))
+                           (setf ,(slot) (add-new-element ,(slot) ,(value)
+                                                          ,@(if this-lessp-givenp
+                                                              `(:lessp ,this-lessp) 
+                                                              `(:test ,this-test))
+                                                          :key ,this-key)))
+                   `(progn (assert (not (find ,value ,(slot) :test ,this-test :key ,this-key)))
+                           (pushnew ,(value) ,(slot) :test ,this-test :key ,this-key))))
                  (t
                   (let ((vendpoint (gensym)))
                     `(let ((,vendpoint  ,(slot)))
                        (if (and (<  (length ,vendpoint) ,this-max)
-                                (not (member ,value ,vendpoint :test ,this-test)))
-                           (progn (assert (not (member ,value ,(slot) :test ,this-test)))
-                                  (push ,(value) ,(slot)))
+                                (not (find ,value ,vendpoint :test ,this-test :key ,this-key)))
+                         ,(if this-ordered
+                            `(setf ,(slot) (add-new-element ,(slot) ,(value)
+                                                            ,@(if this-lessp-givenp
+                                                                `(:lessp ,this-lessp) 
+                                                                `(:test ,this-test))
+                                                            :key ,this-key))
+                            `(push ,(value) ,(slot)))
                            (cerror "Endpoint ~A of association ~A is full, maximum multiplicity is ~A is reached."
                                    ',this-role ',association-name ',this-max)))))))))))))
 
@@ -327,13 +463,25 @@ RETURN:        MIN; MAX"
                                    ((:accessor this-accessor))
                                    ((:multiplicity this-multiplicity))
                                    ((:implementation this-implementation))
+                                   ;; ((:ordered this-ordered))
                                    ((:test this-test) '(function eql))
+                                   ((:lessp this-lessp) nil this-lessp-givenp)
+                                   ((:key this-key) '(function identity))
                                    ((:copy this-copy) '(function identity))
                                    &allow-other-keys) this
       (declare (ignore this-copy))
       (multiple-value-bind (this-min this-max) (multiplicity this-multiplicity)
         (let ((this-implementation (or this-implementation
-                                       (if (equal 1 this-max) 'reference 'list))))
+                                       (if (equal 1 this-max) 'reference 'list)))
+              (this-test (if this-lessp-givenp
+                           (let ((a (gensym))
+                                 (b (gensym))
+                                 (lessp (gensym)))
+                             `(lambda (,a ,b)
+                                (let ((,lessp ,this-lessp))
+                                  (and (not (funcall ,lessp ,a ,b))
+                                       (not (funcall ,lessp ,b ,a))))))
+                           this-test)))
           (assert (member this-implementation  '(list reference))
                   (this-implementation)
                   "IMPLEMENTATION other than REFERENCE or LIST ~
@@ -368,13 +516,13 @@ RETURN:        MIN; MAX"
               ((list)
                (let ((vendpoint (gensym)))
                  `(let ((,vendpoint ,(slot)))
-                    (when (member ,value ,vendpoint :test ,this-test)
+                    (when (find ,value ,vendpoint :test ,this-test :key ,this-key)
                       ,(if (zerop this-min)
                            `(setf ,(slot) (delete ,value ,vendpoint
-                                                  :test ,this-test :count 1))
+                                                  :test ,this-test :key ,this-key :count 1))
                            `(if  (< ,this-min (length ,vendpoint))
                                  (setf ,(slot) (delete ,value ,vendpoint
-                                                       :test ,this-test :count 1))
+                                                       :test ,this-test :key ,this-key :count 1))
                                  (error "The role ~A of the association ~A ~
                                          has reached its minimum multiplicity ~A."
                                         ',this-role ',association-name
@@ -474,6 +622,41 @@ RETURN:        MIN; MAX"
                  (mapcar (function string) string-designators))))
 
 
+;; (defmacro define-association (name ((role &key type slot accessor
+;;                                           multiplicity implementation
+;;                                           multiple ordered qualifier
+;;                                           test lessp key copy
+;;                                           &allow-other-keys)
+;;                                     &rest other-endpoints)
+;;                                    &key documentation)
+;;   "
+;; SLOT xor ACCESSOR
+;; QUALIFIER
+;; "
+;;   )
+;; 
+;; (defclass employer ()
+;;   ())
+;; 
+;; (defclass employee ()
+;;   ())
+;; 
+;; (define-association employs
+;;   (employers :type employer
+;;              :multiplicity 0-*
+;;              :multiple nil)
+;;   (employees :type employee
+;;              :qualifier emp-number
+;;              :multiplicity 1
+;;              :implementation hash-table))
+;; 
+;; (defclass employer ()
+;;   ((employees :initform (make-hash-table))))
+;; 
+;; (defclass employee ()
+;;   ((employers :initform '())))
+
+
 (defmacro define-association (name endpoints &rest options)
   "
 Define functions to manage the association:
@@ -489,7 +672,7 @@ taking &KEY arguments named for the ROLE names.
 There may be more than two endpoints, in case of ternary, etc associations.
 
 ENDPOINTS      a list of (ROLE &KEY TYPE ACCESSOR SLOT MULTIPLICITY MULTIPLE
-                          IMPLEMENTATION COPY TEST).
+                          IMPLEMENTATION COPY TEST ORDERED).
 
 
 TYPE           needed for ATTACH and DETACH.
@@ -531,16 +714,38 @@ MIN, MAX       an integer or * representing infinity; PRE: (< MIN MAX)
 MULTIPLE       boolean default NIL indicates whether the same objects may be
                in relation together several times.
 
-COPY           if not nil, a function used to copy the objects before storing
+COPY           if not NIL, a function used to copy the objects before storing
                or returning them.
 
-TEST           default is (FUNCTION EQL), the function used to compare object
-               put in relation.
-   Note: If you set COPY, you will probably want to set TEST too (default is EQL).
-         For strings, you may want to set TEST to EQUAL or EQUALP
-         For numbers, you may want to set TEST to =, etc.
-         COPY and TEST are evaluated, so you can pass 'fun, (function fun)
-         or (lambda (x) (fun x)).
+LESSP          default is NIL.  A function used to compare the objects
+               put into the relation.
+
+TEST           default is (FUNCTION EQL), the function used to compare
+               the objects put into the relation.
+
+   Note: If you set COPY, you will probably want to set TEST or LESSP too.
+         TEST and LESSP are mutually exclusive.
+
+         For strings, you may want to set TEST to EQUAL or EQUALP or
+         LESSP to STRING< or STRING-LESSP
+
+         For numbers, you may want to set TEST to =, or LESSP to <.
+
+         COPY, TEST and LESSP are evaluated, so you can pass 'fun,
+         (function fun) or (lambda (x) (fun x)).
+
+ORDERED        (only for REFERENCE, LIST, VECTOR and REIFIED).
+
+               NIL:  the objects are not ordered in the containers.
+
+               T:    If LESSP is not given, then the objects are kept
+                     in the order of association in the containers.
+                     The KEY of the objects are compared with the TEST
+                     function.
+
+                     If LESSP is given, then the objects are kept in
+                     the order specified by LESSP applied on the KEY
+                     of the objects.
 
 IMPLEMENTATION is (OR (MEMBER REFERENCE LIST VECTOR HASH-TABLE A-LIST P-LIST REIFIED)
                       (CONS (HASH-TABLE A-LIST P-LIST)
@@ -571,10 +776,6 @@ IMPLEMENTATION is (OR (MEMBER REFERENCE LIST VECTOR HASH-TABLE A-LIST P-LIST REI
     Currently implemented:  REFERENCE and LIST.
     MULTIPLE is not implemented yet.
 
-ORDERED        boolean indicating whether the objects are ordered in the containers
-               (only for REFERENCE, LIST, VECTOR and REIFIED).
-
-
 OPTIONS        a list of (:keyword ...) options.
    (:DOCUMENTATION string)
 
@@ -600,7 +801,7 @@ BUGS:    If there is an error in handling one association end, after
                                 (list* role :slot slot :accessor accessor :type type others)))
                             endpoints))
          (link-parameters (generate-link-parameters endpoints))
-         (link-arguments  (generate-link-arguments  endpoints))
+         ;; (link-arguments  (generate-link-arguments  endpoints))
          (types           (loop :for endpoint :in endpoints
                              :for type = (getf (rest endpoint) :type)
                              :when type :collect type))
