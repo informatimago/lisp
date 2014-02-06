@@ -830,11 +830,11 @@ BUGS:    If there is an error in handling one association end, after
          ,(generate-addset name
                            (second link-parameters) (first link-parameters)
                            (second endpoints))
-         (did-link  ',name ,(second link-parameters) ,(first link-parameters)))
+         (did-link ',name ,(first link-parameters) ,(second link-parameters)))
        (defun ,unlink (&key ,@link-parameters)
          (multiple-value-prog1 (will-unlink  ',name
-                                             ,(second link-parameters)
-                                             ,(first link-parameters))
+                                             ,(first link-parameters)
+                                             ,(second link-parameters))
            ,(generate-remove name
                              (first link-parameters) (second link-parameters)
                              (first endpoints))
