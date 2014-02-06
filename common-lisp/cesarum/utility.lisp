@@ -721,7 +721,7 @@ SEE:            PRINT-PARSEABLE-OBJECT
                             (list (class-name (class-of object))))
                           (funcall thunk object)
                           (when identity
-                            (list (object-identity object))))) 
+                            (list :id (object-identity object))))) 
           object))))
 
 
@@ -738,8 +738,10 @@ RETURN:         A form building a plist of slot values.
                           (intern (symbol-name slot) "KEYWORD")
                           `(quote ,(first slot)))
             :collect  (if (symbolp slot)
-                        `(ignore-errors (slot-value ,ovar ',slot))
-                        `(ignore-errors ,(second slot)))))))
+                          `(if (slot-boundp ,ovar ',slot)
+                               (slot-value ,ovar ',slot)
+                               '#:unbound)
+                          `(ignore-errors ,(second slot)))))))
 
 
 (defmacro print-parseable-object ((object stream &key (type t) identity) &rest slots)
