@@ -35,7 +35,8 @@
 
 (in-package "COM.INFORMATIMAGO.OBJECTIVE-CL")
 
-
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *read-default-float-format* 'double-float))
 
 ;; When reading expressions in the tests, we need to set the package
 ;; to ensure the symbols are read in the expected package.
