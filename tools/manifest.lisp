@@ -50,7 +50,6 @@
            "DISTRIBUTION" 
            "EXECUTABLE-NAME"
            "EXECUTABLE-FILENAME"
-           "DATE"
            "PRINT-MANIFEST"
            "WRITE-MANIFEST"))
 (in-package "COM.INFORMATIMAGO.TOOLS.MANIFEST")
