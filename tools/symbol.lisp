@@ -47,7 +47,7 @@ A tool to check duplicate/un-exported/imported symbols.
   (let ((*package* (find-package "KEYWORD")))
     (format t "~&~S~%" symbols)))
 
-(defun duplicate-symbols (&optional (packages (list-all-packages)))
+(defun duplicate-symbols (&key (packages (list-all-packages)) (exported nil))
   "Return: a list of list of symbols that have the same name."
   (let ((symbols (make-hash-table :test (function equal))) ; maps names to list of unique symbols
         (duplicates '()))
@@ -59,18 +59,18 @@ A tool to check duplicate/un-exported/imported symbols.
                (when (cdr symbols)
                  (push symbols duplicates)))
              symbols)
-    duplicates))
+    (if exported
+        (remove-if-not (lambda (symbols)
+                         (some (lambda (symbol)
+                                 (eq :external
+                                     (nth-value 1 (find-symbol (symbol-name symbol)
+                                                               (symbol-package symbol)))))
+                               symbols))
+                       duplicates)
+        duplicates)))
 
 (defun check-duplicate-symbols (&key (packages (list-all-packages)) (exported nil))
-  (report-duplicates (if exported
-                         (remove-if-not (lambda (symbols)
-                                          (some (lambda (symbol)
-                                                  (eq :external
-                                                      (nth-value 1 (find-symbol (symbol-name symbol)
-                                                                                (symbol-package symbol)))))
-                                                symbols))
-                                        (duplicate-symbols packages))
-                         (duplicate-symbols  packages)))
+  (report-duplicates (duplicate-symbols :packages packages :exported exported))
   (values))
 
 

@@ -58,4 +58,11 @@
     (sort result (function string<)
           :key (function symbol-name))))
 
+(defmacro packages-created-by (&body body)
+  (let ((vold (gensym)))
+    `(let ((,vold (copy-list (list-all-packages))))
+       (progn ,@body)
+       (set-difference  (list-all-packages) ,vold))))
+
 ;;;; THE END ;;;;
+
