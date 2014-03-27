@@ -49,7 +49,7 @@
 
   :name "Informatimago Common Lisp Tools Agregate"
   
-  :version "1.0.0"
+  :version "1.0.1"
 
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Spring 2014")

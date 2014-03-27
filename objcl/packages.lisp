@@ -40,8 +40,9 @@
 ;;        (let ((mainBundle (#/mainBundle ns:ns-bundle)))
 ;;          (#/initWithPath: mainBundle (namestring (truename ccl::*cocoa-ide-path*)))))))
 
-#+ccl (eval-when (:compile-toplevel :load-toplevel :execute)
-        (require :cocoa))
+#+(and ccl darwin)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (require :cocoa))
 
 
 (defpackage "COM.INFORMATIMAGO.SIMPLE-TEST"
@@ -58,7 +59,7 @@ This package defines a simple test tool.
               "OCLO")
   (:use "CL")
 
-  #+ccl
+  #+(and ccl cocoa)
   (:shadowing-import-from "OBJC"
                           "*OBJC-DESCRIPTION-MAX-LENGTH*"
                           "@CLASS"
@@ -87,7 +88,7 @@ This package defines a simple test tool.
                           "WITH-AUTORELEASE-POOL"
                           "WITH-AUTORELEASED-NSSTRINGS")
 
-  #+ccl
+  #+(and ccl cocoa)
   (:shadowing-import-from "CCL"
                           #-ccl-1.9 "*COCOA-APPLICATION-FRAMEWORKS*" 
                           "@"
