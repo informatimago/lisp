@@ -38,7 +38,7 @@
     :author "Pascal J. Bourguignon"
     :version "1.0.0"
     :license "GPL3"
-    :depends-on ("quicklisp"
+    :depends-on (;; assumed ;; "quicklisp"
                  "com.informatimago.tools.pathname") 
     :components ((:file "quicklisp")
                  (:file "asdf" :depends-on ("quicklisp"))))
