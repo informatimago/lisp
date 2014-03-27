@@ -34,11 +34,11 @@
 
 (asdf:defsystem :com.informatimago.rdp.basic.example
 
-    ;; system attributes 
-    
-    :description "An example of parser generated in BASIC with the Recursive Descent Parser Generator."
+  ;; system attributes 
+  
+  :description "An example of parser generated in BASIC with the Recursive Descent Parser Generator."
 
-    :long-description "
+  :long-description "
 
 The grammar of our simple expression programming language is
 attributed with actions written in BASIC, which, along with the BASIC
@@ -46,31 +46,34 @@ target-language method will let the RDPG generate a parser in BASIC.
 
 "
 
-    :author     "Pascal Bourguignon <pjb@informatimago.com>"
+  :author     "Pascal Bourguignon <pjb@informatimago.com>"
 
-    :maintainer "Pascal Bourguignon <pjb@informatimago.com>"
-    
-    :licence "AGPL3"
+  :maintainer "Pascal Bourguignon <pjb@informatimago.com>"
+  
+  :licence "AGPL3"
 
-    ;; component attributes:
-    
-    :name "Recursive Descent Parser Generator -- Example generated in BASIC"
+  ;; component attributes:
+  
+  :name "Recursive Descent Parser Generator -- Example generated in BASIC"
 
-    :version "1.0.1"
+  :version "1.0.1"
 
-    :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Summer 2011")
-                 ((#:albert #:output-dir)          . "../documentation/com.informatimago.rdp.basic.example/")
-                 ((#:albert #:formats)             . ("docbook"))
-                 ((#:albert #:docbook #:template)  . "book")
-                 ((#:albert #:docbook #:bgcolor)   . "white")
-                 ((#:albert #:docbook #:textcolor) . "black"))
-    
-    #+asdf-unicode :encoding #+asdf-unicode :utf-8
+  :properties ((#:author-email                   . "pjb@informatimago.com")
+               (#:date                           . "Summer 2011")
+               ((#:albert #:output-dir)          . "../documentation/com.informatimago.rdp.basic.example/")
+               ((#:albert #:formats)             . ("docbook"))
+               ((#:albert #:docbook #:template)  . "book")
+               ((#:albert #:docbook #:bgcolor)   . "white")
+               ((#:albert #:docbook #:textcolor) . "black"))
+  
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8
 
-    :depends-on ("com.informatimago.rdp"
-                 "com.informatimago.rdp.basic")
-    
-    :components ((:file "example-basic")))
+  :depends-on ("com.informatimago.rdp"
+               "com.informatimago.rdp.basic")
+  
+  :components
+  #-bit-rotten ((:file "example-basic"))
+  #+bit-rotten ())
+
 
 ;;;; THE END ;;;;
