@@ -332,10 +332,16 @@ DO:     write a {program-name}-{distribution}.manifest file for the given SYSTEM
 "
   (let ((base   (executable-name     program-name))
         (exec   (executable-filename program-name)))
-    (with-open-file (*standard-output*  (format nil "~A.manifest" base)
-                                        :direction :output
-                                        :if-does-not-exist :create
-                                        :if-exists :supersede)
+    (with-open-file (*standard-output*
+                     ;; Bug in ccl:
+                     ;; "Version 1.9-r15757  (LinuxX8664)"
+                     ;; "Version 1.9-r15759  (DarwinX8664)"
+                     ;; doesn't use *default-pathname-defaults* :-(
+                     (merge-pathnames (format nil "~A.manifest" base)
+                                      *default-pathname-defaults*)
+                     :direction :output
+                     :if-does-not-exist :create
+                     :if-exists :supersede)
       (format t "Manifest for ~A~%~V,,,'-<~>~2%" exec
               (+ (length "Manifest for ") (length exec)))
       (print-manifest system)
