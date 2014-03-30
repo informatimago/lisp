@@ -38,7 +38,7 @@
     :author "Pascal J. Bourguignon"
     :version "1.0.0"
     :license "GPL3"
-    :depends-on () 
+    :depends-on ("com.informatimago.common-lisp.cesarum") 
     :components ((:file "symbol")))
 
 ;;;; THE END ;;;;
