@@ -58,17 +58,18 @@
 (defparameter *system-licenses*
   '(("cl-ppcre"       . "BSD-2")
     ("split-sequence" . :unknown)
-    ("terminfo"       . "MIT")))
+    ("terminfo"       . "MIT")
+    ("closer-mop"     . "MIT")))
 
 (defun asdf-system-name (system)
   (slot-value system 'asdf::name))
 
 (defun asdf-system-license (system-name)
   (let ((system  (asdf:find-system system-name)))
-    (if (slot-boundp system 'asdf::licence)
-        (slot-value system 'asdf::licence)
-        (or (cdr (assoc system-name *system-licenses* :test 'string-equal))
-            :unknown))))
+    (or (cdr (assoc system-name *system-licenses* :test 'string-equal))
+        (and (slot-boundp system 'asdf::licence)
+             (slot-value system 'asdf::licence))
+        :unknown)))
 
 (defun system-depends-on (system)
   (delete (string-downcase system)
@@ -111,7 +112,8 @@
 (defun shell-command-to-string (command)
   "Execute the COMMAND with asdf:run-shell-command and returns its
 stdout in a string (going thru a file)."
-  (let ((path (format nil "out-~36,8,'0R.txt" (random (expt 2 32)))))
+  (let ((*default-pathname-defaults* #P"")
+        (path (format nil "~:@(out-~36,8,'0R.txt~)" (random (expt 2 32)))))
     (unwind-protect
          (when (zerop (asdf:run-shell-command (format nil "~A > ~S" command path)))
            (with-output-to-string (out)
@@ -120,6 +122,7 @@ stdout in a string (going thru a file)."
                  :for line = (read-line file nil nil)
                  :while line :do (write-line line out)))))
       (ignore-errors (delete-file path)))))
+
 
 
 (defun distribution ()
@@ -248,21 +251,44 @@ into the keyword package."
 
 
 
+(defun lisp-version ()
+  (let ((v (lisp-implementation-version)))
+    (when (prefixp "Version " v)
+      (setf v (subseq v (length "Version "))))
+    (with-output-to-string (out)
+      (with-input-from-string (inp v)
+        (loop
+          :with state = :normal
+          :for ch = (read-char inp nil nil)
+          :while ch
+          :do (if (char= ch #\space)
+                  (when (eq state :normal)
+                    (setf state :space)
+                    (write-char #\_ out))
+                  (progn
+                    (setf state :normal)
+                    (case ch
+                      ((#\( #\))) ; deleted characters
+                      ((#\-) ; substituted characters
+                       (write-char #\_ out))
+                      (otherwise ; plain characters
+                       (write-char ch out))))))))))
+
+;; (list (lisp-implementation-version) (lisp-version))
 
 (defun executable-name (base)
-  (format nil "~(~A-~A-~{~A-~A-~A~}-~A~)"
+  (format nil "~(~A-~A-~A-~{~A-~A-~A~}-~A~)"
           base
           (or (lisp-implementation-type-keyword) "unknown")
+          (lisp-version)
           (distribution)
           (or (machine-type-keyword) "unknown")))
-
 
 
 (defun executable-filename (base)
   (format nil "~A~A" (executable-name base)
           #+(or windows win32) ".exe"
           #-(or windows win32) ""))
-
 
 
 (defun date ()
@@ -300,7 +326,7 @@ into the keyword package."
     (format t "~V,,,'-<~>  ~V,,,'-<~>~%" system-width license-width)))
 
 
-(defun write-manifest-file (program-name system)
+(defun write-manifest (program-name system)
   "
 DO:     write a {program-name}-{distribution}.manifest file for the given SYSTEM.
 "
