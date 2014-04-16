@@ -28,7 +28,7 @@ all Lisp material from any time, thanks to the concensual approach of
 the Common Lisp standard.</p>
 
 <p>For example, here is how you can run a lisp program written in 1960
-in a Common Lisp of 2006.  Rendez-vous in 36 years to see how you can
+in a Common Lisp of 2014.  Rendez-vous in 28 years to see how you can
 run a 1996 perl program in perl 2042...</p>
 
 <p>This Wang's algorithm has been popularized by John McCarthy as an
@@ -233,7 +233,7 @@ T
 
 <p>Note, the output obviously differ in the form, but the semantics are
 the same, notably the result of the theorem function calls is "true"
-both in 2006 Common Lisp and in 1966 LISP 1.5. </p>
+both in 2014 Common Lisp and in 1966 LISP 1.5. </p>
 
 <p>You may also download the sources here:
 <ul>
