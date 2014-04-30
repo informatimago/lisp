@@ -833,7 +833,7 @@ C-w         Information on absence of warranty for GNU Emacs.
                (max-extend 65536))
           (loop
              (let ((end (read-sequence buffer in :start start)))
-               (when (or (< end busize) (and length (= length end)))
+               (when (< end busize)
                  ;; we got eof, or have read enough
                  (setf (fill-pointer buffer) end)
                  (return-from file-contents (copy-seq buffer)))
@@ -847,8 +847,6 @@ C-w         Information on absence of warranty for GNU Emacs.
                            :initial-element initel
                            :fill-pointer t)))
         "")))
-
-
 
 
 
@@ -1138,7 +1136,7 @@ est une fenêtre brute, sans ligne de status."))
       (multiple-value-bind (erow ecolumn eline) (buffer-line-of-point self end)
         (cond
           ((null sline))
-          ( (eq sline eline)
+          ((eq sline eline)
            ;; one line:
            (format out "~A" (nsubseq (dll-node-item sline) scolumn ecolumn)))
           (t
@@ -1290,7 +1288,7 @@ RETURN: row; column; the line containing point, or NIL if point is at end
       :then (if line (+ eol 1 (length (dll-node-item line))) eol)
       :for row :from 0
       :while (and line (<= eol point))
-      :finally (return (values row (- point bol) line)))))
+      :finally (return (values row (max 0 (- point bol)) line)))))
 
 
 (defgeneric buffer-size (buffer-designator)
