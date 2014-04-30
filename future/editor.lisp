@@ -62,7 +62,6 @@
 (when (find-package "COM.INFORMATIMAGO.EDITOR")
   (delete-package "COM.INFORMATIMAGO.EDITOR"))
 
-
 ;;;---------------------------------------------------------------------
 ;;;
 ;;; We put on *FEATURES* a keyword representing the language to use for
@@ -83,19 +82,20 @@ to language names (as keyword).")
 (setf *features* (set-difference *features* (mapcar (function cdr) *languages*)))
 
 ;; Push the new language.  By default we use :ENGLISH.
-(pushnew
- ;; In clisp, we use the custom:*current-language* variable:
- #+clisp (intern (string custom:*current-language*) "KEYWORD")
- ;; Otherwise if we have ASDF, we try to get the environment variable LANG:
- #+(and (not clisp) asdf)
- (let ((lang (ASDF:GETENV "LANG"))
-       (entry (assoc lang *languages* :test (function string-equal))))
-   (if entry
-       (cdr entry)
-       :english))
- ;; otherwise we use English:
- #-(or clisp asdf) :english
- *features*)
+(pushnew (progn
+           ;; In clisp, we use the custom:*current-language* variable:
+           #+clisp (intern (string custom:*current-language*) "KEYWORD")
+           ;; Otherwise if we have ASDF, we try to get the environment variable LANG:
+           #+(and (not clisp) asdf)
+           (let* ((lang #-asdf3 (ASDF:GETENV "LANG")
+                        #+asdf3 (uiop/os:getenv "LANG"))
+                  (entry (assoc lang *languages* :test (function string-equal))))
+             (if entry
+                 (cdr entry)
+                 :english))
+           ;; otherwise we use English:
+           #-(or clisp asdf) :english)
+         *features*)
 
 ;;; In any case, if we don't have the documentation in the selected
 ;;; language, we fall back to docstrings in English.
@@ -110,8 +110,30 @@ to language names (as keyword).")
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DLL"
         "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM")
   (:shadow "DEFUN" "LAMBDA" "ED")
-  (:export #+clisp "SCREEN-EDITOR"
-           "DEFUN" "LAMBDA" "ED"))
+  (:export "DEFUN" "LAMBDA" "ED")
+  (:export "SCREEN-EDITOR" "EDITOR")
+  (:documentation "
+
+An emacs editor written in Common Lisp.
+
+
+Copyright Pascal Bourguignon 2006 - 2014
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version
+2 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be
+useful, but WITHOUT ANY WARRANTY; without even the implied
+warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public
+License along with this program; if not, write to the Free
+Software Foundation, Inc., 59 Temple Place, Suite 330,
+Boston, MA 02111-1307 USA
+"))
 (in-package "COM.INFORMATIMAGO.EDITOR")
 
 
@@ -124,7 +146,7 @@ to language names (as keyword).")
 (defclass screen ()
   ((stream :reader screen-stream))
   (:documentation
-   #+french "Ces objets representent un écran.
+   #+french      "Cet objet represente un écran.
 Il y a des sous-classes spécifiques pour chaque type d'écran disponible.
 Il y a des méthodes spécialisées sur ces classes pour écrire sur l'écran."
    #-(or french) "This object represents the screen.
@@ -216,16 +238,14 @@ There are methods specialized on these subclasses to write on the screen."))
    #-(or french) "Hide the cursor."))
 
 
+
 #+clisp
 (progn
   (defclass clisp-screen (screen)
     ((stream :reader screen-stream :initform (screen:make-window)))
     (:documentation
-     #+french "
-Cette sous-classe de SCREEN utilise le package SCREEN de CLISP."
-     #-(or french) "
-This SCREEN subclass uses the CLISP SCREEN package."
-     ))
+     #+french "Cette sous-classe de SCREEN utilise le package SCREEN de CLISP."
+     #-(or french) "This SCREEN subclass uses the CLISP SCREEN package."))
   (defmethod screen-size ((self clisp-screen))
     (screen:window-size (screen-stream self)))
   (defmethod screen-cursor-position ((self clisp-screen))
@@ -251,15 +271,13 @@ This SCREEN subclass uses the CLISP SCREEN package."
   (defmethod screen-cursor-off ((self clisp-screen))
     (screen:window-cursor-off (screen-stream self))))
 
+
 (progn
   (defclass xterm-screen (screen)
     ()
     (:documentation
-     #+french "
-Cette sous-classe de SCREEN utilise un xterm via un pty."
-     #-(or french) "
-This SCREEN subclass uses an xterm thru a pty."
-     ))
+     #+french "Cette sous-classe de SCREEN utilise un xterm via un pty."
+     #-(or french) "This SCREEN subclass uses an xterm thru a pty."))
   (defmethod screen-size ((self xterm-screen))
     (values 25 80))
   (defmethod screen-cursor-position ((self xterm-screen))
@@ -292,6 +310,7 @@ one SCREEN instance, but a future version may be ''multitty'' (or
 il n'y a qu'une instance de SCREEN, mais une version future pourrait être
 ''multitty'' (ou ''multiframe''), comme GNU emacs.")
 
+
 (defmacro with-screen (screen-object &body body)
   #-(or french) "Executes the BODY with *CURRENT-SCREEN* bound to SCREEN-OBJECT,
 while displaying this screen on the terminal."
@@ -300,6 +319,7 @@ tout en affichant cet écran sur le terminal."
   `(let* ((*current-screen* ,screen-object)
           #+clisp(screen:*window*  (screen-stream *current-screen*)))
      ,@body))
+
 
 (defmacro with-open-screen (screen-object &body body)
   #-(or french) "Executes the BODY with *CURRENT-SCREEN* bound to SCREEN-OBJECT,
@@ -318,11 +338,11 @@ Ferme l'écran à la fin."
 ;;;---------------------------------------------------------------------
 ;;; Commands: interactive functions
 ;;;---------------------------------------------------------------------
-
+;;;
 ;;; #-(or french)
 ;;; We want to define commands, with a special INTERACTIVE
 ;;; declaration.  So we need to use our own DEFUN (and LAMBDA) macros.
-
+;;;
 ;;; #+french
 ;;; Nous voulons définir des commandes, avec une déclaration spéciale:
 ;;; INTERACTIVE.  Ainsi, nous devons utiliser nos propres macros DEFUN et LAMBDA.
@@ -332,13 +352,14 @@ Ferme l'écran à la fin."
 
 (defvar *interactive-decls* (make-hash-table #+clisp :weak #+clisp :key)
   #-(or french) "A map of commands name or functions to INTERACTIVE declarations."
-  #+french  "Une association des noms de commande ou fonction vers leur
+  #+french      "Une association des noms de commande ou fonction vers leur
 déclaration INTERACTIVE.")
 
 
 (defmacro defun (name arguments &body body)
   #-(or french) "
-Do additionnal book-keeping over CL:DEFUN, for INTERACTIVE commands."
+Do additionnal book-keeping over CL:DEFUN, for INTERACTIVE commands.
+"
   #+french "
 En plus du traitement de CL:DEFUN, maintient les informations nécessaires 
 pour les commandes interactives.
@@ -1826,8 +1847,8 @@ commande crée un tampon de ce nom."
 
 
 (defun scroll-up   (&optional n)
-  (declare (interactive "P"))
-  (message "n=~A" n)
+  (declare (interactive "p"))
+  (message "n=~S" n)
   (setf (window-top-row *current-window*)
         (min
          (mod (+ (window-top-row *current-window*)
@@ -1944,7 +1965,8 @@ commande crée un tampon de ce nom."
 
 
 (defun editor-terminate ()
-  )
+  (format t "~&Good bye!~%")
+  (values))
 
 
 (defvar *last-command-char* nil
@@ -2143,73 +2165,106 @@ These commands include C-@ and M-x start-kbd-macro."
      :unless (zerop (logand bit bits)) :collect modifier))
 
 
-
 (let ((keymap *keymap*)
       (sequence '()))
   (defun editor-reset-key ()
     (setf keymap *keymap*
           sequence '()))
   (defun editor-process-key (key)
-    (handler-bind
-        ((error (function invoke-debugger)))
-      (let ((binding (keymap-binding keymap key)))
-        (push key sequence)
-        (cond
-          ((keymapp binding)
-           (format *log* "~{~A ~}~%" (reverse sequence))
-           (setf keymap binding))
-          ((or (and (symbolp binding)
-                    (fboundp binding)
-                    (interactivep binding))
-               (and (functionp binding)
-                    (interactivep binding)))
-           (format *log* "~{~A ~} --> ~S~%" (reverse sequence) binding)
-           (setf *last-command-char*  (first sequence)
-                 *this-command*       binding
-                 *current-prefix-arg* *prefix-arg*
-                 *prefix-arg*         nil)
-           (call-interactively binding)
-           (setf *last-command* *this-command*)
-           (editor-reset-key))
-          (t (message "~{~A ~} is bound to a non-command: ~S~%"
-                      (reverse sequence) binding)
-             (editor-reset-key)))))))
+    (let ((binding (keymap-binding keymap key)))
+      (push key sequence)
+      (cond
+        ((keymapp binding)
+         (format *log* "~{~A ~}~%" (reverse sequence))
+         (setf keymap binding))
+        ((or (and (symbolp binding)
+                  (fboundp binding)
+                  (interactivep binding))
+             (and (functionp binding)
+                  (interactivep binding)))
+         (format *log* "~{~A ~} --> ~S~%" (reverse sequence) binding)
+         (setf *last-command-char*  (first sequence)
+               *this-command*       binding
+               *current-prefix-arg* *prefix-arg*
+               *prefix-arg*         nil)
+         (call-interactively binding)
+         (setf *last-command* *this-command*)
+         (editor-reset-key))
+        (t (message "~{~A ~} is bound to a non-command: ~S~%"
+                    (reverse sequence) binding)
+           (editor-reset-key))))))
 
 
+(defvar *condition*)
+
+(defun handle-editor-error (condition)
+  (let* ((restarts (compute-restarts condition))
+         (last-r   (1- (length restarts))))
+    (flet ((print-restart-list (stream)
+             (setf last-r (loop
+                            :for r :in restarts
+                            :for i :from 0
+                            :do (format stream "~&~D: (~10A) ~A~%" i (restart-name r) r)
+                            :until (eq (restart-name r) 'abort)
+                            :finally (return i)))))
+      (let ((restart (loop
+                       :for n = (progn (print-restart-list *query-io*)
+                                       (format *query-io* "~&Option: ")
+                                       (finish-output *query-io*)
+                                       (read *query-io*)
+                                       (fresh-line *query-io*))
+                       :until (and (typep n 'integer) (<= 0 n last-r))
+                       :finally (return (nth n restarts)))))
+        (print (list 'restart '= (restart-name restart)))
+        (print (list '*debugger-hook* '= *debugger-hook*))
+        (let ((*condition* condition))
+          (handler-bind ((error (function invoke-debugger)))
+            (invoke-restart-interactively restart)))))))
+
+
+(defun reportly (string)
+  (lambda (stream) (format stream "~A" string)))
 
 
 #+clisp
 (defun keyboard-loop ()
-  (EXT:WITH-KEYBOARD
+  (handler-bind ((error (function handle-editor-error)))
+    (restart-bind ((debug    (lambda () (invoke-debugger *condition*))
+                             :report-function (reportly "Invoke the debugger."))
+                   (continue (lambda () (throw 'keyboard-quit (values)))
+                             :report-function (reportly "Continue editing."))
+                   (abort    (lambda () (throw 'editor-quit (values)))
+                             :report-function (reportly "Quit the editor.")))
       (catch 'editor-quit
         (loop
-           (catch 'keyboard-quit
-             (LOOP
-                :with redisplayed = t
-                :with meta-seen-p = nil
-                :for ki = (READ-CHAR-NO-HANG EXT:*KEYBOARD-INPUT*)
-                :for modifiers = (and ki (keyboard-modifiers
-                                          (logior (ext:char-bits ki)
-                                                  (prog1 (if meta-seen-p EXT:CHAR-META-BIT 0)
-                                                    (setf meta-seen-p nil)))))
-                :for key = (and ki (funcall
-                                    (if (member :control modifiers)
-                                        (function char-downcase)
-                                        (function identity))
-                                         (or (ext:char-key ki) (character ki))))
-                :initially (editor-reset-key) (redisplay)
-                :do (if ki
-                        (if (eql #\escape key)
-                            (setf meta-seen-p t)
-                            (progn
-                              (editor-process-key
-                               (if modifiers
-                                   (append modifiers (list key))
-                                   key))
-                              (setf redisplayed nil)))
-                        (unless redisplayed
-                          (redisplay)
-                          (setf redisplayed t)))))))))
+          (catch 'keyboard-quit
+            
+                (LOOP
+                  :with redisplayed = t
+                  :with meta-seen-p = nil
+                  :for ki = (ext:with-keyboard (read-char-no-hang ext:*keyboard-input*))
+                  :for modifiers = (and ki (keyboard-modifiers
+                                            (logior (ext:char-bits ki)
+                                                    (prog1 (if meta-seen-p EXT:CHAR-META-BIT 0)
+                                                      (setf meta-seen-p nil)))))
+                  :for key = (and ki (funcall
+                                      (if (member :control modifiers)
+                                          (function char-downcase)
+                                          (function identity))
+                                      (or (ext:char-key ki) (character ki))))
+                  :initially (editor-reset-key) (redisplay)
+                  :do (if ki
+                          (if (eql #\escape key)
+                              (setf meta-seen-p t)
+                              (progn
+                                (editor-process-key
+                                 (if modifiers
+                                     (append modifiers (list key))
+                                     key))
+                                (setf redisplayed nil)))
+                          (unless redisplayed
+                            (redisplay)
+                            (setf redisplayed t))))))))))
 
 ;; EXT:CHAR-BITS-LIMIT                        constant
 ;; EXT:CHAR-CONTROL-BIT                       constant
@@ -2296,11 +2351,11 @@ These commands include C-@ and M-x start-kbd-macro."
                 (keyboard-loop)
              (set-screen-cursor-position *current-screen*
                                          0 (screen-size *current-screen*))
-             (clear-screen *current-screen*)))
+             (clear-screen *current-screen*))
+           (editor-terminate))
       (close *log*))))
 
-(defun editor () (screen-editor :log "/tmp/editor.log"))
-(export 'editor)
+
 #+clisp
 (defun keyboard-test ()
   (screen:with-window nil
@@ -2326,13 +2381,10 @@ These commands include C-@ and M-x start-kbd-macro."
                             (character ki)) #\q)))))
 
 
-(defun reload ()
-  (in-package "CL-USER")
-  (load "editor")
-  (in-package "EDITOR"))
 
 
-;; 
+
+
 ;; (DEFINE-PACKAGE "COM.INFORMATIMAGO.CLISP.TERMINAL"
 ;;   (:FROM "COMMON-LISP" :IMPORT :ALL)
 ;;   (:EXPORT "MAKE-WINDOW" "WITH-SCREEN" "WINDOW-SIZE" "WINDOW-CURSOR-POSITION"
@@ -2376,9 +2428,18 @@ These commands include C-@ and M-x start-kbd-macro."
 ;;       (screen:WITH-window (print 'hi))
 ;;     (print (read-char ext:*keyboard-input*))))
 
+(defun editor () (screen-editor :log "/tmp/editor.log"))
 (defun ed (&rest args) (apply (function screen-editor) args))
+
+(defun reload ()
+  (in-package "CL-USER")
+  (load "editor")
+  (in-package "EDITOR"))
+
 (in-package "COMMON-LISP-USER")
-(print '(emacs:SCREEN-EDITOR))
+
+(print '(e::reload))
+(print '(e:screen-editor))
 (print '(e:ed))
 
 ;;;; THE END ;;;;
