@@ -16,6 +16,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2014-04-30 <PJB> Corrected a couple of little bugs. Added BUGS entries.
 ;;;;    2007-09-11 <PJB> Added the language feature, and some docstrings.
 ;;;;    2006-07-10 <PJB> Created.
 ;;;;BUGS
@@ -25,10 +26,14 @@
 ;;;;    - redisplay: we can see the cursor moving over the terminal
 ;;;;    - redisplay: implement minimal updating.
 ;;;;    - implement pathname and buffer-name completion.
+;;;;    - doesn't take into account changes of terminal size (SIGWINCH).
+;;;;    - doesn't handle TAB completion (or at least ignore TAB).
+;;;;    - breaking into the debugger (eg. on C-x C-e) is not handled in the editor,
+;;;;      and some restart may exit from the editor.
 ;;;;LEGAL
 ;;;;    GPL
 ;;;;    
-;;;;    Copyright Pascal Bourguignon 2006 - 2007
+;;;;    Copyright Pascal Bourguignon 2006 - 2014
 ;;;;    
 ;;;;    This program is free software; you can redistribute it and/or
 ;;;;    modify it under the terms of the GNU General Public License
@@ -99,14 +104,14 @@ to language names (as keyword).")
 
 
 (defpackage "COM.INFORMATIMAGO.EDITOR"
-  (:nicknames "EDITOR" "EMACS")
+  (:nicknames "EDITOR" "EMACS" "E")
   (:use "COMMON-LISP"
         "SPLIT-SEQUENCE"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DLL"
         "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM")
-  (:shadow "DEFUN" "LAMBDA")
+  (:shadow "DEFUN" "LAMBDA" "ED")
   (:export #+clisp "SCREEN-EDITOR"
-           "DEFUN" "LAMBDA"))
+           "DEFUN" "LAMBDA" "ED"))
 (in-package "COM.INFORMATIMAGO.EDITOR")
 
 
@@ -2371,9 +2376,10 @@ These commands include C-@ and M-x start-kbd-macro."
 ;;       (screen:WITH-window (print 'hi))
 ;;     (print (read-char ext:*keyboard-input*))))
 
-
+(defun ed (&rest args) (apply (function screen-editor) args))
 (in-package "COMMON-LISP-USER")
 (print '(emacs:SCREEN-EDITOR))
+(print '(e:ed))
 
 ;;;; THE END ;;;;
 
