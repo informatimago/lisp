@@ -1,22 +1,22 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               package-symbols.lisp
+;;;;FILE:               pathname.asd
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    A few package functions.
+;;;;    Pathname tools.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2012-04-09 <PJB> Created.
+;;;;    2013-12-06 <PJB> Extracted from ~/rc/common.lisp
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2012 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2013 - 2013
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -32,37 +32,13 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-
-;; No in-package.
-
-(defun package-internal-symbols (pack)
-  (let ((result '()))
-    (do-symbols (s pack)
-      (when (eq (symbol-package s) pack)
-        (push s result)))
-    (sort result (function string<)
-          :key (function symbol-name))))
-
-(defun package-external-symbols (pack)
-  (let ((result '()))
-    (do-external-symbols (s pack)
-      (push s result))
-    (sort result (function string<)
-          :key (function symbol-name))))
-
-(defun package-imported-symbols (pack)
-  (let ((result '()))
-    (do-symbols (s pack)
-      (unless (eq (symbol-package s) pack)
-        (push s result)))
-    (sort result (function string<)
-          :key (function symbol-name))))
-
-(defmacro packages-created-by (&body body)
-  (let ((vold (gensym)))
-    `(let ((,vold (copy-list (list-all-packages))))
-       (progn ,@body)
-       (set-difference  (list-all-packages) ,vold))))
+(asdf:defsystem :com.informatimago.tools.pathname
+    :name "com.informatimago.tools.pathname"
+    :description "Pathname tools."
+    :author "Pascal J. Bourguignon"
+    :version "1.0.0"
+    :license "GPL3"
+    :depends-on () 
+    :components ((:file "pathname")))
 
 ;;;; THE END ;;;;
-

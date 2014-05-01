@@ -1,0 +1,315 @@
+#!/usr/bin/clisp -ansi -norc -q -E iso-8859-1
+;;;; -*- mode:lisp;coding:utf-8 -*-
+;;;;**************************************************************************
+;;;;FILE:               lispify-objc
+;;;;LANGUAGE:           Common-Lisp
+;;;;SYSTEM:             Common-Lisp
+;;;;USER-INTERFACE:     NONE
+;;;;DESCRIPTION
+;;;;    
+;;;;    Processes the output of swig -cffi objc.i to produce the
+;;;;    objc.lisp package source.
+;;;;    
+;;;;AUTHORS
+;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
+;;;;MODIFICATIONS
+;;;;    2013-01-25 <PJB> Created.
+;;;;BUGS
+;;;;LEGAL
+;;;;    AGPL3
+;;;;    
+;;;;    Copyright Pascal J. Bourguignon 2013 - 2013
+;;;;    
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
+;;;;    
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
+;;;;    
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;**************************************************************************
+
+(defparameter *objc-package-name* "COM.OGAMITA.OBJC")
+(make-package *objc-package-name* :use '())
+
+
+(setf *print-right-margin* 80
+      *print-pretty* t
+      *print-case* :upcase)
+
+(defun split-string (string &optional (separators " ") (remove-empty nil))
+  "
+STRING:         A sequence.
+
+SEPARATOR:      A sequence.
+
+RETURN:         A list of subsequence of STRING, split upon any element of SEPARATORS.
+                Separators are compared to elements of the STRING with EQL.
+
+NOTE:           It's actually a simple split-sequence now.
+
+EXAMPLES:       (split-string '(1 2 0 3 4 5 0 6 7 8 0 9) '(0))
+                --> ((1 2) (3 4 5) (6 7 8) (9))
+                (split-string #(1 2 0 3 4 5 0 6 7 8 0 9) #(0))
+                --> (#(1 2) #(3 4 5) #(6 7 8) #(9))
+                (split-string \"1 2 0 3 4 5 0 6 7 8\" '(#\space #\0))
+                --> (\"1\" \"2\" \"\" \"\" \"3\" \"4\" \"5\" \"\" \"\" \"6\" \"7\" \"8\")
+"
+  (loop
+    :with strlen = (length string)
+    :for position = 0 :then (1+ nextpos)
+    :for nextpos = (position-if (lambda (e) (find e separators)) string :start position)
+    :unless (and remove-empty
+                 (or (and (= position strlen) (null nextpos ))
+                     (eql position nextpos)))
+    :collect (subseq string position nextpos)
+    :while (and nextpos (< position strlen))))
+
+
+(defun maptree (fun &rest trees)
+  "
+DO:     Calls FUN on each non-null atom of the TREES.
+PRE:    The trees in TREES must be congruent, or else the result is
+        pruned like the smallest tree.
+RETURN: A tree congruent to the TREES, each node being the result of
+        FUN (it may be a subtree).
+"
+  (cond ((null trees) nil)
+        ((every (function null)  trees) nil)
+        ((every (function atom)  trees) (apply fun trees))
+        ((every (function consp) trees)
+         (cons (apply (function maptree) fun (mapcar (function car) trees))
+               (apply (function maptree) fun (mapcar (function cdr) trees))))
+        (t nil)))
+
+
+
+(defpackage "CFFI"
+  (:export
+   "*DARWIN-FRAMEWORK-DIRECTORIES*" "*DEFAULT-FOREIGN-ENCODING*"
+   "*FOREIGN-LIBRARY-DIRECTORIES*"  "CALLBACK" "CLOSE-FOREIGN-LIBRARY"
+   "CONVERT-FROM-FOREIGN" "CONVERT-TO-FOREIGN" "DEFBITFIELD"
+   "DEFCALLBACK" "DEFCENUM" "DEFCFUN" "DEFCSTRUCT" "DEFCTYPE"
+   "DEFCUNION" "DEFCVAR" "DEFINE-C-STRUCT-WRAPPER"
+   "DEFINE-FOREIGN-LIBRARY" "DEFINE-FOREIGN-TYPE"
+   "DEFINE-PARSE-METHOD" "EXPAND-FROM-FOREIGN"  "EXPAND-TO-FOREIGN"
+   "EXPAND-TO-FOREIGN-DYN" "FOREIGN-ALLOC"
+   "FOREIGN-BITFIELD-SYMBOL-LIST"  "FOREIGN-BITFIELD-SYMBOLS"
+   "FOREIGN-BITFIELD-VALUE" "FOREIGN-ENUM-KEYWORD"
+   "FOREIGN-ENUM-KEYWORD-LIST" "FOREIGN-ENUM-VALUE" "FOREIGN-FREE"
+   "FOREIGN-FUNCALL"  "FOREIGN-FUNCALL-POINTER" "FOREIGN-LIBRARY"
+   "FOREIGN-LIBRARY-LOADED-P" "FOREIGN-LIBRARY-NAME"
+   "FOREIGN-LIBRARY-PATHNAME" "FOREIGN-LIBRARY-TYPE" "FOREIGN-POINTER"
+   "FOREIGN-SLOT-NAMES"  "FOREIGN-SLOT-OFFSET" "FOREIGN-SLOT-POINTER"
+   "FOREIGN-SLOT-VALUE" "FOREIGN-STRING-ALLOC"  "FOREIGN-STRING-FREE"
+   "FOREIGN-STRING-TO-LISP" "FOREIGN-SYMBOL-POINTER"
+   "FOREIGN-TYPE-ALIGNMENT"  "FOREIGN-TYPE-SIZE"
+   "FREE-CONVERTED-OBJECT" "FREE-TRANSLATED-OBJECT" "GET-CALLBACK"
+   "GET-VAR-POINTER"  "INC-POINTER" "INCF-POINTER"
+   "LISP-STRING-TO-FOREIGN" "LIST-FOREIGN-LIBRARIES"
+   "LOAD-FOREIGN-LIBRARY"  "LOAD-FOREIGN-LIBRARY-ERROR" "MAKE-POINTER"
+   "MAKE-SHAREABLE-BYTE-VECTOR" "MEM-AREF" "MEM-REF"  "NULL-POINTER"
+   "NULL-POINTER-P" "POINTER-ADDRESS" "POINTER-EQ" "POINTERP"
+   "RELOAD-FOREIGN-LIBRARIES"  "TRANSLATE-CAMELCASE-NAME"
+   "TRANSLATE-FROM-FOREIGN" "TRANSLATE-NAME-FROM-FOREIGN"
+   "TRANSLATE-NAME-TO-FOREIGN" "TRANSLATE-TO-FOREIGN"
+   "TRANSLATE-UNDERSCORE-SEPARATED-NAME"  "USE-FOREIGN-LIBRARY"
+   "WITH-FOREIGN-OBJECT" "WITH-FOREIGN-OBJECTS" "WITH-FOREIGN-POINTER"
+   "WITH-FOREIGN-POINTER-AS-STRING" "WITH-FOREIGN-SLOTS"
+   "WITH-FOREIGN-STRING" "WITH-FOREIGN-STRINGS"
+   "WITH-POINTER-TO-VECTOR-DATA" ))
+
+
+
+
+
+
+(defparameter *lispified* (make-hash-table))
+
+
+
+
+(defun lispify-name (csym)
+  (flet ((lispify-name (cname)
+           (with-output-to-string (*standard-output*)
+             (loop
+               :with state = :out
+               :for ch :across cname
+               :do (if (alpha-char-p ch)
+                     (ecase state
+                       (:out
+                        (setf state (cond
+                                      ((upper-case-p ch) :upper)
+                                      ((lower-case-p ch) :lower)
+                                      (t                 state)))
+                        (princ (string-upcase ch)))
+                       (:upper
+                        (when (lower-case-p ch)
+                          (setf state :lower))
+                        (princ (string-upcase ch)))
+                       (:lower
+                        (when (upper-case-p ch)
+                          (setf state :upper)
+                          (princ "-"))
+                        (princ (string-upcase ch))))
+                     (progn
+                       (setf state :out)
+                       (case ch
+                         ((#\_)     (princ "-"))
+                         (otherwise (princ ch)))))))))
+    (let ((cname (symbol-name csym)))
+      (cond
+        ((and (< 6 (length cname))
+              (string= "objc_" cname :end2 6))
+         (lispify-name (subseq cname 6)))
+        ((and (< 2 (length cname))
+              (string= "CX" cname :end2 2))
+         (lispify-name (subseq cname 2)))
+        (t
+         (lispify-name cname))))))
+
+
+(defun lispify-objc-symbol (symbol)
+  (or (gethash symbol *lispified*)
+      (setf (gethash symbol *lispified*)
+            (intern (lispify-name symbol) *objc-package-name*))))
+
+
+
+(defparameter *sexps*
+  (unwind-protect
+      (loop
+        :with eof = '#:eof
+        :initially (setf (readtable-case *readtable*) :invert)
+        :for sexp = (read *standard-input* nil eof)
+        :until (eq sexp eof)
+        :collect sexp)
+    (setf (readtable-case *readtable*) :upcase)))
+
+
+
+
+(defun lispify (atom)
+  (gethash atom *lispified* atom))
+
+
+(defun lispify-sexp-1 (sexp)
+  (if (atom sexp)
+    sexp
+    (case (first sexp)
+      ((cffi:defcfun)
+       (destructuring-bind (op (cname lisp-name) res-type &rest parameters) sexp
+         `(,op (,cname ,(lispify-objc-symbol lisp-name)) ,(lispify res-type)
+               ,@(mapcar (lambda (param)
+                             `(,(first param) ,(lispify (second param))))
+                         parameters))))
+      ((cl:defconstant)
+       (destructuring-bind (op name expr) sexp
+         `(,op ,(lispify-objc-symbol name) ,(maptree (function lispify) expr))))
+      ((cffi:defcenum)
+       (destructuring-bind (op name &rest constants) sexp
+         `(,op ,(lispify-objc-symbol name)
+               ,@(mapcar (lambda (constant)
+                             (if (atom constant)
+                               (intern (lispify-name constant) "KEYWORD")
+                               `(,(intern (lispify-name (first constant)) "KEYWORD")
+                                  ,(second constant))))
+                         constants))))
+      ((cffi:defctype)
+       (destructuring-bind (op name ctype) sexp
+         `(,op ,(lispify-objc-symbol name) ,(lispify ctype))))
+      ((cffi:defcstruct)
+       (destructuring-bind (op name &rest slots) sexp 
+         `(,op ,(lispify-objc-symbol name)
+               ,@(mapcar (lambda (slot)
+                             `(,(lispify-objc-symbol (first slot))
+                               ,(lispify (second slot))))
+                         slots))))
+      (otherwise
+       sexp))))
+
+
+(defun lispify-sexp-2 (sexp)
+  (if (atom sexp)
+    (lispify sexp)
+    (case (first sexp)
+      ((cl:defconstant) sexp)
+      ((cffi:defcfun) sexp)
+      ((cffi:defcenum) sexp)
+      ((cffi:defctype) sexp)
+      ((cffi:defcstruct) sexp)
+      (otherwise
+       (maptree (function lispify) sexp)))))
+
+
+(setf *sexps* (mapcar (function lispify-sexp-1) *sexps*))
+(setf *sexps* (mapcar (function lispify-sexp-2) *sexps*))
+
+(defparameter *objc-exports*  (let ((syms '()))
+                                 (do-symbols (symbol *objc-package-name* syms)
+                                   (push symbol syms))))
+(export *objc-exports* *objc-package-name*)
+
+(princ ";;;; -*- mode:lisp;coding:utf-8 -*-
+;;;;**************************************************************************
+;;;;FILE:               objc.lisp
+;;;;LANGUAGE:           Common-Lisp
+;;;;SYSTEM:             Common-Lisp
+;;;;USER-INTERFACE:     NONE
+;;;;DESCRIPTION
+;;;;    
+;;;;    Defines a lisp API over objc cindex library.
+;;;;    Generated by swig -cffi and then postprocessed.
+;;;;    
+;;;;    DO NOT EDIT!  THE SOURCES ARE:
+;;;;    objc.i, lispify-objc, and Makefile.
+;;;;    
+;;;;AUTHORS
+;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
+;;;;MODIFICATIONS
+;;;;    2013-01-25 <PJB> Created.
+;;;;BUGS
+;;;;LEGAL
+;;;;    AGPL3
+;;;;    
+;;;;    Copyright Pascal J. Bourguignon 2013 - 2013
+;;;;    
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
+;;;;    
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
+;;;;    
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;**************************************************************************
+
+")
+
+(pprint `(in-package "COMMON-LISP-USER"))
+(pprint `(defpackage ,*objc-package-name*
+           (:use)
+           (:export ,@(mapcar (function symbol-name) *objc-exports*))))
+
+(princ "
+;;; This file was automatically generated by SWIG (http://www.swig.org).
+;;; Version 2.0.10
+;;;
+;;; Do not make changes to this file unless you know what you are doing--modify
+;;; the SWIG interface file instead.
+")
+
+(dolist (sexp *sexps*)
+  (pprint sexp))
+
+(ext:exit 0)
+;;;; THE END ;;;;

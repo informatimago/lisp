@@ -16,7 +16,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2010 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2010 - 2014
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -35,46 +35,51 @@
 
 (asdf:defsystem :com.informatimago.susv3
 
-    ;; system attributes:
+  ;; system attributes:
 
-    :description "A POSIX SUSv3 API for Common Lisp."
-    
-    :long-description "
+  :description "A POSIX SUSv3 API for Common Lisp."
+  
+  :long-description "
 
 Currently implemented: DIRENT, IPC and PROCESS APIs.
 
 "
 
-    :author     "Pascal Bourguignon <pjb@informatimago.com>"
-    
-    :maintainer "Pascal Bourguignon <pjb@informatimago.com>"
+  :author     "Pascal Bourguignon <pjb@informatimago.com>"
+  
+  :maintainer "Pascal Bourguignon <pjb@informatimago.com>"
 
-    :licence "AGPL3"
+  :licence "AGPL3"
 
-    
-    ;; component attributes:
+  
+  ;; component attributes:
 
-    :name "Informatimago Common Lisp POSIX SUSv3 API"
+  :name "Informatimago Common Lisp POSIX SUSv3 API"
 
-    :version "1.2.1"
+  :version "1.2.2"
 
-    :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Autumn 2010")
-                 ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.susv3/")
-                 ((#:albert #:formats)             . ("docbook"))
-                 ((#:albert #:docbook #:template)  . "book")
-                 ((#:albert #:docbook #:bgcolor)   . "white")
-                 ((#:albert #:docbook #:textcolor) . "black"))
+  :properties ((#:author-email                   . "pjb@informatimago.com")
+               (#:date                           . "Spring 2014")
+               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.susv3/")
+               ((#:albert #:formats)             . ("docbook"))
+               ((#:albert #:docbook #:template)  . "book")
+               ((#:albert #:docbook #:bgcolor)   . "white")
+               ((#:albert #:docbook #:textcolor) . "black"))
 
-    #+asdf-unicode :encoding #+asdf-unicode :utf-8
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8
 
-    :depends-on ("com.informatimago.common-lisp.cesarum"
-                 "com.informatimago.common-lisp.heap"
-                 "com.informatimago.clisp")
+  :depends-on ("com.informatimago.common-lisp.cesarum"
+               "com.informatimago.common-lisp.heap"
+               "com.informatimago.clisp")
 
-    :components ((:file "tools")
-                 (:file "dirent"  :depends-on ("tools"))
-                 (:file "ipc"     :depends-on ("tools"))
-                 (:file "process" :depends-on ("ipc")))) 
+  :components
+  #+(and clisp linux) ((:file "tools")
+             (:file "dirent"  :depends-on ("tools"))
+             (:file "ipc"     :depends-on ("tools"))
+             (:file "process" :depends-on ("ipc")))
+  #-(and clisp linux) ()) 
+
+#+(and clisp (not linux)) (warn "System ~A is incomplete without the LINUX package." :com.informatimago.sysv3)
+#-clisp (warn "System ~A is incomplete on ~A" :com.informatimago.sysv3 (lisp-implementation-type))
 
 ;;;; THE END ;;;;

@@ -35,7 +35,8 @@
 
 (in-package "COM.INFORMATIMAGO.OBJECTIVE-CL")
 
-
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *read-default-float-format* 'double-float))
 
 ;; When reading expressions in the tests, we need to set the package
 ;; to ensure the symbols are read in the expected package.
@@ -43,7 +44,9 @@
 
 (defmacro with-string-check ((readtable stream string) &body body)
   `(with-input-from-string (,stream ,string)
-     (let ((*readtable* ,readtable)) (locally ,@body))))
+     (let ((*readtable* ,readtable)
+           (*read-default-float-format* 'double-float))
+       (locally ,@body))))
 
 
 (define-test test/read-identifier ()
@@ -135,7 +138,7 @@
          (with-string-check (*objc-readtable*
                              stream "(integer)(+ 1 2) (float)(+ 1.0 2.0)]")
            (read-final-arguments stream))
-         '((:integer (+ 1 2)) (:float (+ 1.0 2.0))))
+         '((:integer (+ 1 2)) (:float (+ 1.0d0 2.0d0))))
    (test eql
          (handler-case
              (progn
@@ -202,7 +205,7 @@
                                complexSelectorWithFinalArgs:24
                                              (int)1 (float)2.0]")
            (read-message stream))
-         '("multipleArg:complexSelectorWithFinalArgs:" (42 24) ((:int 1) (:float 2.0))))))
+         '("multipleArg:complexSelectorWithFinalArgs:" (42 24) ((:int 1) (:float 2.0d0))))))
 
 
 (define-test test/read-message-send ()
@@ -252,7 +255,7 @@
                                complexSelectorWithFinalArgs:24
                                              (int)1 (float)2.0]")
             (read-message-send stream 'self (function read-message)))
-          '(self "multipleArg:complexSelectorWithFinalArgs:" (42 24) ((:int 1) (:float 2.0))))))
+          '(self "multipleArg:complexSelectorWithFinalArgs:" (42 24) ((:int 1) (:float 2.0d0))))))
 
 
 (define-test test/message-send ()
@@ -284,8 +287,8 @@
            (gen '(self "singleArgComplexSelectorWithFinalArgs:" (42) ((:int 1))))
            '(oclo:send self :single-arg-complex-selector-with-final-args 42 (:int 1)))
      (test equal
-           (gen '(self "multipleArg:complexSelectorWithFinalArgs:" (42 24) ((:int 1) (:float 2.0))))
-           '(oclo:send self :multiple-arg 42 :complex-selector-with-final-args 24 (:int 1 :float 2.0))))))
+           (gen '(self "multipleArg:complexSelectorWithFinalArgs:" (42 24) ((:int 1) (:float 2.0d0))))
+           '(oclo:send self :multiple-arg 42 :complex-selector-with-final-args 24 (:int 1 :float 2.0d0))))))
 
 
 (define-test test/read-objcl-message-send ()
@@ -352,7 +355,7 @@
            '(oclo:send self
              :multiple-arg 42
              :complex-selector-with-final-args 24
-             (:int 1 :float 2.0)))
+             (:int 1 :float 2.0d0)))
      (test equal
            (read-objc "(progn [self simpleSelector]
                              [self multipleArg:42 complexSelector:24])")
@@ -382,7 +385,7 @@
 (defun equal-modulo-constant-strings (a b)
   (cond
     ((typep a 'ns:ns-string)
-     (and (consp b) (eql '@ (car b))))
+     (and (consp b) (eql '\@ (car b))))
     ((and (consp a) (consp b))
      (and (equal-modulo-constant-strings (car a) (car b))
           (equal-modulo-constant-strings (cdr a) (cdr b))))
@@ -402,7 +405,7 @@
                          (ns-log @\"Example %d %d\" a b)
                          [[NSNumber alloc]initWithInteger:(+ a b)]]")
            '(oclo:define-objc-class-method ((:id :multiple-arg (:int a) :complex-selector (:int b)) example)
-             (ns-log (@ "Example %d %d") a b)
+             (ns-log (\@ "Example %d %d") a b)
              (oclo:send (oclo:send ns:ns-number 'alloc) :init-with-integer (+ a b)))))))
 
 
@@ -419,7 +422,7 @@
                          (ns-log @\"Example %d %d\" a b)
                          [[NSNumber alloc]initWithInteger:(+ a b)]]")
            '(oclo:define-objc-method ((:id :multiple-arg (:int a) :complex-selector (:int b)) example)
-             (ns-log (@ "Example %d %d") a b)
+             (ns-log (\@ "Example %d %d") a b)
              (oclo:send (oclo:send ns:ns-number 'alloc) :init-with-integer (+ a b))))
      )))
 

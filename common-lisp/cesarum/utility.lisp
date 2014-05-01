@@ -55,7 +55,7 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
   (:export
    ;; 3 - EVALUATION AND COMPILATION
-   "WITH-GENSYMS" "WSIOSBP"
+   "WITH-GENSYMS" "WSIOSBP" "PROGN-CONCAT"
    "CURRY" "COMPOSE" "COMPOSE-AND-CALL"
    "DEFINE-IF-UNDEFINED"  "INCLUDE" "FUNCTIONAL-PIPE"
    "FIRST-ARG" "SECOND-ARG" "THIRD-ARG" "FOURTH-ARG" "FIFTH-ARG"
@@ -135,6 +135,7 @@ License:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+
 #-:with-debug-gensym
 (defmacro with-gensyms (syms &body body)
   "
@@ -153,6 +154,22 @@ NOTE:    This version by Paul Graham in On Lisp."
   `(let ,(mapcar
           (lambda (s) `(,s (intern (string (gensym ,(string s)))
                                    "COM.INFORMATIMAGO.GENSYMS"))) syms) ,@body))
+
+
+(defun progn-concat (forms)
+  "
+DO:       Wraps the forms in a PROGN.  If they're PROGN forms,
+          then their PROGN is unwrapped first.
+"
+  `(progn ,@(mapcan (lambda (form) (cond
+                                     ((null form)
+                                      '())
+                                     ((and (listp form) (eq 'progn (first form)))
+                                      (copy-list (rest form)))
+                                     (t
+                                      (list form))))
+                    forms)))
+
 
 
 (defmacro wsiosbp (&body body)
@@ -353,10 +370,9 @@ CONSTANTS:  The first element of CONSTANTS may be an optional docstring.
          '(member ,@(loop
                       :with val = -1
                       :for cname :in constants
-                      :do (if (consp cname)
-                              (setf val (second cname))
-                              (incf val))
-                      :collect val))))))
+                      :collect (if (consp cname)
+                                   (setf val (second cname))
+                                   (incf val))))))))
 
 
 (defun op-type-of (symbol &optional env)
@@ -705,7 +721,7 @@ SEE:            PRINT-PARSEABLE-OBJECT
                             (list (class-name (class-of object))))
                           (funcall thunk object)
                           (when identity
-                            (list (object-identity object))))) 
+                            (list :id (object-identity object))))) 
           object))))
 
 
@@ -722,8 +738,10 @@ RETURN:         A form building a plist of slot values.
                           (intern (symbol-name slot) "KEYWORD")
                           `(quote ,(first slot)))
             :collect  (if (symbolp slot)
-                        `(ignore-errors (slot-value ,ovar ',slot))
-                        `(ignore-errors ,(second slot)))))))
+                          `(if (slot-boundp ,ovar ',slot)
+                               (slot-value ,ovar ',slot)
+                               '#:unbound)
+                          `(ignore-errors ,(second slot)))))))
 
 
 (defmacro print-parseable-object ((object stream &key (type t) identity) &rest slots)

@@ -49,7 +49,7 @@
   (:documentation 
    "An API over SUSV3 and SUSV3-XSI dirent API.")
   (:use "COMMON-LISP"
-        "COM.INFORMATIMAGO.CLISP.RAW-MEMORY"
+        ;; "COM.INFORMATIMAGO.CLISP.RAW-MEMORY"
         "COM.INFORMATIMAGO.SUSV3.TOOLS"
         "FFI")
   (:import-from "COM.INFORMATIMAGO.CLISP.SUSV3"

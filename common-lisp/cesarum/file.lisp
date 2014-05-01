@@ -94,12 +94,11 @@ License:
            "SAFE-TEXT-FILE-TO-STRING-LIST"
            "STRING-LIST-TEXT-FILE-CONTENTS" "TEXT-FILE-CONTENTS"
            "SEXP-FILE-CONTENTS" "SEXP-LIST-FILE-CONTENTS"
-           "COPY-FILE"))
+           "COPY-FILE" "COPY-DIRECTORY"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE")
 
 
-(defun copy-file (src dst &key (if-exists :error) (external-format :default)
-                  (element-type 'character))
+(defun copy-file (src dst &key (if-exists :error) (external-format :default) (element-type '(unsigned-byte 8)))
   "
 DO:     Copy the contents of the file at path SRC to the file at path DST.
 "
@@ -115,6 +114,56 @@ DO:     Copy the contents of the file at path SRC to the file at path DST.
                          :external-format external-format
                          :element-type element-type)
       (copy-stream inp out))))
+
+
+(defun copy-directory (src dst &key (recursively t) (verbose nil) (on-error :error)
+                                 (if-exists :error) (external-format :default) (element-type '(unsigned-byte 8)))
+  "
+DO:             Copy files from the directory SRC to the directory
+                DST, using the specified key parameters.
+
+RECURSIVELY:    When NIL, only the files directly under SRC are
+                copied.  Otherwise, subdirectories and all their files
+                are also copied.
+
+IF-ERROR:       Can be :ERROR, then the error is signaled,
+                :CONTINUE, then the error is ignored and copying continues,
+                :ABORT, then the error is ignored, and copying is aborted.
+
+RETURN:         list-of-destination-files-copied ; list-of-source-files-with-errors
+
+NOTE:           Files are scanned with CL:DIRECTORY, so only those
+                that are accessible from the CL implementation are
+                copied.
+
+NOTE:           Empty subdirectories are not copied.
+"
+  (let* ((src       (truename src))
+         (src-files (mapcar (lambda (path) (cons path (enough-namestring path src)))
+                            (remove-if (lambda (path) (not (or (pathname-name path) (pathname-type path))))
+                                       (remove-duplicates
+                                        (append (directory (merge-pathnames (if recursively "**/*.*" "*.*") src))
+                                                (directory (merge-pathnames (if recursively "**/*"   "*")   src)))))))
+         (copied-files '())
+         (error-files  '()))
+    (dolist (src-file src-files (values copied-files error-files))
+      (let ((dst-file (merge-pathnames (cdr src-file) dst)))
+        (when verbose (format *trace-output* "~&;; ~S -> ~S~%" (car src-file) dst-file))
+        (ensure-directories-exist dst-file)
+        (block :copy
+          (handler-bind ((error (lambda (err)
+                                  (push (cons (car src-file) err) error-files)
+                                  (case on-error
+                                    ((:error)
+                                     nil)
+                                    ((:continue)
+                                      (when verbose (format *error-output* "~&ERROR: ~A~%" err))
+                                      (return-from :copy))
+                                    ((:abort)
+                                     (when verbose (format *error-output* "~&ERROR: ~A~%" err))
+                                     (return-from copy-directory (values copied-files error-files)))))))
+            (copy-file (car src-file) dst-file :if-exists if-exists :external-format external-format :element-type element-type)
+            (push dst-file copied-files)))))))
 
 
 (defun sexp-file-contents (path &key (if-does-not-exist :error)

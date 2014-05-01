@@ -33,14 +33,15 @@
 ####****************************************************************************
 
 PREFIX=/usr/local
-TARGETS=index.html.in what-implementation
+TARGETS=index.html what-implementation
 HELPFORMAT="make %-20s \# %s\n"
 
 all::help
 
 help::
 	@printf $(HELPFORMAT) generate "Generate the index.html page."
-generate:index.html access-rights clean
+generate:$(TARGETS) access-rights clean
+
 
 help::
 	@printf $(HELPFORMAT) access-rights "Sets the access-rights for publication."
@@ -65,14 +66,15 @@ install:install-what-implementation
 
 
 help::
-	@echo "$(MAKE) index                        # Generates index.html.in"
-index index.html.in:init.lisp index.lisp Makefile
+	@printf $(HELPFORMAT) index.html.in "Generates index.html.in"
+index.html.in:init.lisp index.lisp Makefile
 	clisp -norc -q -ansi  -E iso-8859-1  \
 		-x '(progn (setf *load-verbose* nil) (load "index.lisp") (values))' \
 	| tr -d '\015'\
 	| sed -e 's/^;.*//' -e '/^NIL$$/d' \
 	> index.html.in
-
+index.html:index.html.in
+	find . \( -name index.html.in -o -name aim-8.html.in \) -print | while read file ; do cp -v "$$file" "$$(echo $$file | sed -e 's/\.in$$//')" ; done
 
 
 #(with-open-file (*STANDARD-OUTPUT* "index.html" :direction :output :if-exists :supersede :if-does-not-exist :create)
