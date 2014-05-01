@@ -86,8 +86,8 @@ wi what-implementation:what-implementation.lisp
 help::
 	@printf $(HELPFORMAT) install-what-implementation "Install the what-implementation executable."
 install-what-implementation:what-implementation
-	cp what-implementation $PREFIX/bin
-	chmod 755
+	chmod 755 what-implementation
+	cp -p what-implementation $(PREFIX)/bin 2> /dev/null || ( rm $(PREFIX)/bin/what-implementation && cp -p what-implementation $(PREFIX)/bin )
 
 
 #### THE END ####
