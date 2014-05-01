@@ -41,7 +41,7 @@
 ;;          (#/initWithPath: mainBundle (namestring (truename ccl::*cocoa-ide-path*)))))))
 
 #+ccl (eval-when (:compile-toplevel :load-toplevel :execute)
-        (require :cocoa))
+        (require :objc-support))
 
 
 (defpackage "COM.INFORMATIMAGO.SIMPLE-TEST"
