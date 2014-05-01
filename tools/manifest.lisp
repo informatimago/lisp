@@ -58,17 +58,18 @@
 (defparameter *system-licenses*
   '(("cl-ppcre"       . "BSD-2")
     ("split-sequence" . :unknown)
-    ("terminfo"       . "MIT")))
+    ("terminfo"       . "MIT")
+    ("closer-mop"     . "MIT")))
 
 (defun asdf-system-name (system)
   (slot-value system 'asdf::name))
 
 (defun asdf-system-license (system-name)
   (let ((system  (asdf:find-system system-name)))
-    (if (slot-boundp system 'asdf::licence)
-        (slot-value system 'asdf::licence)
-        (or (cdr (assoc system-name *system-licenses* :test 'string-equal))
-            :unknown))))
+    (or (cdr (assoc system-name *system-licenses* :test 'string-equal))
+        (and (slot-boundp system 'asdf::licence)
+             (slot-value system 'asdf::licence))
+        :unknown)))
 
 (defun system-depends-on (system)
   (delete (string-downcase system)
@@ -96,17 +97,23 @@
 
 
 
-;; kuiper          Linux kuiper 2.6.38-gentoo-r6-pjb-c9 #2 SMP Wed Jul 13 00:23:08 CEST 2011 x86_64 Intel(R) Core(TM) i7 CPU 950 @ 3.07GHz GenuineIntel GNU/Linux
-;; hubble          Linux hubble 2.6.34-gentoo-r1-d3 #5 SMP PREEMPT Mon Sep 6 13:17:41 CEST 2010 i686 QEMU Virtual CPU version 0.13.0 GenuineIntel GNU/Linux
-;; voyager         Linux voyager.informatimago.com 2.6.18-6-k7 #1 SMP Mon Oct 13 16:52:47 UTC 2008 i686 GNU/Linux
-;; galatea         Darwin galatea.lan.informatimago.com 11.3.0 Darwin Kernel Version 11.3.0: Thu Jan 12 18:48:32 PST 2012; root:xnu-1699.24.23~1/RELEASE_I386 i386
-;; neuron          Darwin neuron.intergruas.com 9.8.0 Darwin Kernel Version 9.8.0: Wed Jul 15 16:55:01 PDT 2009; root:xnu-1228.15.4~1/RELEASE_I386 i386
+;; kuiper                Linux kuiper 2.6.38-gentoo-r6-pjb-c9 #2 SMP Wed Jul 13 00:23:08 CEST 2011 x86_64 Intel(R) Core(TM) i7 CPU 950 @ 3.07GHz GenuineIntel GNU/Linux
+;; hubble                Linux hubble 2.6.34-gentoo-r1-d3 #5 SMP PREEMPT Mon Sep 6 13:17:41 CEST 2010 i686 QEMU Virtual CPU version 0.13.0 GenuineIntel GNU/Linux
+;; voyager               Linux voyager.informatimago.com 2.6.18-6-k7 #1 SMP Mon Oct 13 16:52:47 UTC 2008 i686 GNU/Linux
+;; triton   10.5.8       Darwin triton.lan.informatimago.com 9.8.0 Darwin Kernel Version 9.8.0: Wed Jul 15 16:57:01 PDT 2009; root:xnu-1228.15.4~1/RELEASE_PPC Power Macintosh powerpc PowerBook6,8 Darwin
+;; neuron   10.5.8       Darwin neuron.intergruas.com 9.8.0 Darwin Kernel Version 9.8.0: Wed Jul 15 16:55:01 PDT 2009; root:xnu-1228.15.4~1/RELEASE_I386 i386
+;; galatea               Darwin galatea.lan.informatimago.com 11.3.0 Darwin Kernel Version 11.3.0: Thu Jan 12 18:48:32 PST 2012; root:xnu-1699.24.23~1/RELEASE_I386 i386
+;; galatea  10.7.5       Darwin galatea.lan.informatimago.com 11.4.2 Darwin Kernel Version 11.4.2: Thu Aug 23 16:26:45 PDT 2012; root:xnu-1699.32.7~1/RELEASE_I386 i386
+;; despina  10.8         Darwin despina.home 12.5.0 Darwin Kernel Version 12.5.0: Sun Sep 29 13:33:47 PDT 2013; root:xnu-2050.48.12~1/RELEASE_X86_64 x86_64
+;; larissa  10.9.2       Darwin larissa.home 13.1.0 Darwin Kernel Version 13.1.0: Thu Jan 16 19:40:37 PST 2014; root:xnu-2422.90.20~2/RELEASE_X86_64 x86_64 i386 MacBookAir6,2 Darwin
+
 
 
 (defun shell-command-to-string (command)
   "Execute the COMMAND with asdf:run-shell-command and returns its
 stdout in a string (going thru a file)."
-  (let ((path (format nil "out-~36,8,'0R.txt" (random (expt 2 32)))))
+  (let ((*default-pathname-defaults* #P"")
+        (path (format nil "~:@(out-~36,8,'0R.txt~)" (random (expt 2 32)))))
     (unwind-protect
          (when (zerop (asdf:run-shell-command (format nil "~A > ~S" command path)))
            (with-output-to-string (out)
@@ -115,6 +122,7 @@ stdout in a string (going thru a file)."
                  :for line = (read-line file nil nil)
                  :while line :do (write-line line out)))))
       (ignore-errors (delete-file path)))))
+
 
 
 (defun distribution ()
@@ -131,12 +139,12 @@ System and distrib are keywords, release is a string."
                  #+darwin  :darwin
                  #+(and unix (not (or linux darwin)))
                  (let ((uname (shell-command-to-string "uname")))
-                   (if (and uname (plusp (length (trim uname)))
+                   (if (and uname (plusp (length (trim uname))))
                        (with-input-from-string (inp uname)
                          (let ((*package* (find-package "KEYWORD"))
                                (*read-eval* nil))
                            (read file inp)))
-                       :unknown))             
+                       :unknown)             
                  #-(or windows linux darwin unix)
                  :unknown))
          (distrib :unknown)
@@ -243,21 +251,44 @@ into the keyword package."
 
 
 
+(defun lisp-version ()
+  (let ((v (lisp-implementation-version)))
+    (when (prefixp "Version " v)
+      (setf v (subseq v (length "Version "))))
+    (with-output-to-string (out)
+      (with-input-from-string (inp v)
+        (loop
+          :with state = :normal
+          :for ch = (read-char inp nil nil)
+          :while ch
+          :do (if (char= ch #\space)
+                  (when (eq state :normal)
+                    (setf state :space)
+                    (write-char #\_ out))
+                  (progn
+                    (setf state :normal)
+                    (case ch
+                      ((#\( #\))) ; deleted characters
+                      ((#\-) ; substituted characters
+                       (write-char #\_ out))
+                      (otherwise ; plain characters
+                       (write-char ch out))))))))))
+
+;; (list (lisp-implementation-version) (lisp-version))
 
 (defun executable-name (base)
-  (format nil "~(~A-~A-~{~A-~A-~A~}-~A~)"
+  (format nil "~(~A-~A-~A-~{~A-~A-~A~}-~A~)"
           base
           (or (lisp-implementation-type-keyword) "unknown")
+          (lisp-version)
           (distribution)
           (or (machine-type-keyword) "unknown")))
-
 
 
 (defun executable-filename (base)
   (format nil "~A~A" (executable-name base)
           #+(or windows win32) ".exe"
           #-(or windows win32) ""))
-
 
 
 (defun date ()
@@ -295,16 +326,22 @@ into the keyword package."
     (format t "~V,,,'-<~>  ~V,,,'-<~>~%" system-width license-width)))
 
 
-(defun write-manifest-file (program-name system)
+(defun write-manifest (program-name system)
   "
 DO:     write a {program-name}-{distribution}.manifest file for the given SYSTEM.
 "
   (let ((base   (executable-name     program-name))
         (exec   (executable-filename program-name)))
-    (with-open-file (*standard-output*  (format nil "~A.manifest" base)
-                                        :direction :output
-                                        :if-does-not-exist :create
-                                        :if-exists :supersede)
+    (with-open-file (*standard-output*
+                     ;; Bug in ccl:
+                     ;; "Version 1.9-r15757  (LinuxX8664)"
+                     ;; "Version 1.9-r15759  (DarwinX8664)"
+                     ;; doesn't use *default-pathname-defaults* :-(
+                     (merge-pathnames (format nil "~A.manifest" base)
+                                      *default-pathname-defaults*)
+                     :direction :output
+                     :if-does-not-exist :create
+                     :if-exists :supersede)
       (format t "Manifest for ~A~%~V,,,'-<~>~2%" exec
               (+ (length "Manifest for ") (length exec)))
       (print-manifest system)
