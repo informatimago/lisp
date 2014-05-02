@@ -57,9 +57,11 @@
    ;; 3 - EVALUATION AND COMPILATION
    "WITH-GENSYMS" "WSIOSBP" "PROGN-CONCAT"
    "CURRY" "COMPOSE" "COMPOSE-AND-CALL"
+   "/NTH-ARG" "/APPLY"
    "DEFINE-IF-UNDEFINED"  "INCLUDE" "FUNCTIONAL-PIPE"
    "FIRST-ARG" "SECOND-ARG" "THIRD-ARG" "FOURTH-ARG" "FIFTH-ARG"
    "SIXTH-ARG" "SEVENTH-ARG" "EIGHTH-ARG" "NINTH-ARG" "TENTH-ARG"
+   "NTH-ARG"
    ;; 4 - TYPES AND CLASSES
    "DEFENUM" "OP-TYPE-OF"
    ;; 5 - DATA AND CONTROL FLOW
@@ -200,7 +202,9 @@ The *PACKAGE* is kept bound to the current package.
 (define-argument-selector eighth-arg  8)
 (define-argument-selector ninth-arg   9)
 (define-argument-selector tenth-arg   10)
-
+(defun nth-arg (n &rest arguments)
+  "RETURN: The Nth argument following N."
+  (nth n arguments))
 
 (defun curry (function &rest left-arguments)
   (lambda (&rest right-arguments)
@@ -241,6 +245,13 @@ EXAMPLE:    (compose-and-call abs sin cos 0.234) --> 0.8264353
 ;; (funcall (compose 1+ sin 1-) 0)
 ;; (compose-and-call 1+ sin 1- 0)
 
+
+(defun /nth-arg (n)
+  (lambda (&rest args) (nth n args)))
+
+(defun /apply (&rest funs)
+  (lambda (&rest args)
+    (mapcar (lambda (f) (apply f args)) funs)))
 
 
 (defmacro define-if-undefined (&rest definitions)
