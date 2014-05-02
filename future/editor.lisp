@@ -2209,6 +2209,7 @@ These commands include C-@ and M-x start-kbd-macro."
                             :finally (return i)))))
       (let ((restart (loop
                        :for n = (progn (print-restart-list *query-io*)
+                                       (print last-r)
                                        (format *query-io* "~&Option: ")
                                        (finish-output *query-io*)
                                        (read *query-io*)
@@ -2396,31 +2397,38 @@ These commands include C-@ and M-x start-kbd-macro."
 
 
 
-;; (defun shadow-synonym-stream (stream synonym)
-;;   (if (and (typep stream 'synonym-stream)
-;;            (eq synonym (synonym-stream-symbol stream)))
-;;       (symbol-value synonym)
-;;       stream))
-;; 
-;; (defun xeditor (&key (display ":0.0"))
-;;   (let* ((term              '*terminal-io*)
-;;          (*standard-output* (shadow-synonym-stream *standard-output* term))
-;;          (*standard-input*  (shadow-synonym-stream *standard-input*  term))
-;;          (*error-output*    (shadow-synonym-stream *error-output*    term))
-;;          (*query-io*        (shadow-synonym-stream *query-io*        term))
-;;          (*debug-io*        (shadow-synonym-stream *debug-io*        term))
-;;          (xterm-io      (make-xterm-io-stream :display display :geometry "+0+0"))
-;;          (*terminal-io* xterm-io)
-;;          (*standard-output*    xterm-io)
-;;          (old-term      (ext:getenv "TERM")))
-;;     (setf (ext:getenv "TERM") "xterm")
-;;     (unwind-protect
-;;          (editor)
-;;       (close xterm-io)
-;;       (setf (ext:getenv "TERM") old-term))))
-;; 
-;; (xeditor)
-;;
+(defun shadow-synonym-stream (stream synonym)
+  (if (and (typep stream 'synonym-stream)
+           (eq synonym (synonym-stream-symbol stream)))
+      (symbol-value synonym)
+      stream))
+
+;; Note: we cannot use EXT:*KEYBOARD-INPUT* in xeditor, since it uses
+;; the original *terminal-io* stream.
+
+(defun xexample (&key (display ":0.0"))
+  (let* ((old-terminal-io   *terminal-io*)
+         (xterm-io          (make-xterm-io-stream :display display :geometry "+0+0"))
+         (*terminal-io*     xterm-io)
+         (*standard-output* (make-synonym-stream '*terminal-io*))
+         (*standard-input*  (make-synonym-stream '*terminal-io*))
+         (*error-output*    (make-synonym-stream '*terminal-io*))
+         (*query-io*        (make-synonym-stream '*terminal-io*))
+         ;; (*debug-io*        (make-synonym-stream '*terminal-io*))
+         ;; (*trace-output*    (make-synonym-stream '*terminal-io*))
+         (old-term          (ext:getenv "TERM")))
+    (setf (ext:getenv "TERM") "xterm")
+    (unwind-protect
+         (progn (format *query-io* "~&Hello!~%") 
+                (format *query-io* "~&X = ")
+                (finish-output *query-io*)
+                (let ((x (read *query-io*)))
+                  (format *query-io* "~&~S = ~A~%" '(- (* 2 x) 3) (- (* 2 x) 3)))
+                (y-or-n-p "Happy?"))
+      (setf *terminal-io* old-terminal-io)
+      (close xterm-io)
+      (setf (ext:getenv "TERM") old-term))))
+
 ;; (let ((*terminal-io* (emacs::make-xterm-io-stream)))
 ;;   (print 'hi *terminal-io*)
 ;;   (print (read-char ext:*keyboard-input*))
