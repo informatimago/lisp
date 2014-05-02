@@ -689,12 +689,14 @@ argument lisp string."
 
 
 (defun objcl-string (object)
-  "
+  (warn "~S is obsolete, use ~S" 'objcl-string 'objc-string)
+  (objc-string object))
 
-RETURN:         Either a NSMutableString instance, containing the
-                character of the OBJECT.  If OBJECT is not a string
-                designator, then its PRINC-TO-STRING representation is
-                used.
+(defun objc-string (object)
+  "
+RETURN:         A NSMutableString instance, containing the character
+                of the OBJECT.  If OBJECT is not a string designator,
+                then its PRINC-TO-STRING representation is used.
 
 OBJECT:         A string designator, or another lisp object.
 "

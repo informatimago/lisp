@@ -40,9 +40,8 @@
 ;;        (let ((mainBundle (#/mainBundle ns:ns-bundle)))
 ;;          (#/initWithPath: mainBundle (namestring (truename ccl::*cocoa-ide-path*)))))))
 ;; #+(and ccl darwin)
-#+ccl
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (require :objc-support))
+
+
 
 
 (defpackage "COM.INFORMATIMAGO.SIMPLE-TEST"
@@ -59,7 +58,7 @@ This package defines a simple test tool.
               "OCLO")
   (:use "CL")
 
-  #+(and ccl cocoa)
+  #+(and ccl objc-support)
   (:shadowing-import-from "OBJC"
                           "*OBJC-DESCRIPTION-MAX-LENGTH*"
                           "@CLASS"
@@ -88,7 +87,7 @@ This package defines a simple test tool.
                           "WITH-AUTORELEASE-POOL"
                           "WITH-AUTORELEASED-NSSTRINGS")
 
-  #+(and ccl cocoa)
+  #+(and ccl objc-support)
   (:shadowing-import-from "CCL"
                           #-ccl-1.9 "*COCOA-APPLICATION-FRAMEWORKS*" 
                           "@"
@@ -172,7 +171,7 @@ single package exporting all these symbols.
    "OBJC-DEFINITION-READER-MACRO" ; #\@
    "OBJC-EXPRESSION-READER-MACRO" ; \#[
    "@" ; macro to make NSString literals with unicode.
-   "OBJCL-STRING" "LISP-STRING"
+   "OBJC-STRING" "LISP-STRING" #|deprecated:|# "OBJCL-STRING"
    "YES" "NO")
   (:documentation "
 This package exports a readtable with a couple of reader macros to
