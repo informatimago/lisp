@@ -268,7 +268,9 @@ DO:         Set the cs-lisp-encoding of the character-sets present in
           #+ccl
           (ccl:make-external-format :domain nil
                                     :character-encoding (intern encoding "KEYWORD")
-                                    :line-termination line-termination)
+                                    :line-termination (case line-termination
+                                                        ((:unix :dos) line-termination)
+                                                        ((:mac) :macos)))
           
           #+clisp
           (ext:make-encoding :charset (symbol-value (intern (first (cs-lisp-encoding cs)) "CHARSET"))
