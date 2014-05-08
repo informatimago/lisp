@@ -248,11 +248,6 @@ the main script  (setf script:*program-name* (script:pname))
   (file-namestring *program-name*))
 
 
-(defparameter *options*
-  (make-hash-table :test (function equal))
-  "The dictionary of options.")
-
-
 (defstruct option
   "An option structure."
   keys arguments documentation function)
@@ -382,7 +377,69 @@ BUG: when the optionals or keys have a present indicator,
        :documentation (split-string docstring (string #\newline))))))
 
 
-(defgeneric call-option-function (option arguments &optional undefined-argument)
+
+
+;;; ---
+
+;;; The public API is:
+;;; (register-option option warn-on-conflicts)
+;;; (get-option key case-sensitive)
+
+
+(defparameter *options* '()
+  "A list of all registered options.")
+
+(defparameter *case-sensitive-options-map* nil
+  "A cached dictionary of options.")
+(defparameter *case-insensitive-options-map* nil
+  "A cached dictionary of options.")
+
+(defun find-option (keys)
+  (let* ((options (loop
+                    :for option :in *options*
+                    :append (loop
+                              :for key :in keys
+                              :if (member key (option-keys option))
+                                :collect (list option "case sensitive" key)
+                              :else
+                                :if (member key (option-keys option) :test (function equalp))
+                                  :collect (list option "case insensitive" key))))
+         (option (remove-duplicates (mapcar (function first) options))))
+    (values option options)))
+
+(defun fill-option-map (table)
+  (loop
+    :for option :in *options*
+    :do (loop :for key :in (option-keys option)
+              :do (setf (gethash key table) option)))
+  table)
+
+(defun register-option (option warn-on-conflicts)
+  (when warn-on-conflicts
+    (multiple-value-bind (old-option conflicts) (find-option (option-keys option))
+      (when old-option
+        (let ((*print-circle* nil) (*print-escape* nil))
+         (warn "There are already options for ~:{the ~A key ~A~^, ~}."
+               (print (mapcar (function rest) conflicts)))))))
+  (push option *options*))
+
+(defun get-option (key case-sensitive)
+  (let ((table (if case-sensitive
+                   *case-sensitive-options-map*
+                   *case-insensitive-options-map*)))
+    (gethash key
+             (or table
+                 (fill-option-map 
+                  (if case-sensitive
+                      (setf *case-sensitive-options-map*   (make-hash-table :test (function equal)))
+                      (setf *case-insensitive-options-map* (make-hash-table :test (function equalp)))))))))
+
+
+
+
+;;; ---
+
+(defgeneric call-option-function (option arguments undefined-argument case-sensitive)
   (:documentation  "
 DO:                  Call the option function with the ARGUMENTS.
 RETURN:              The remaining list of arguments.
@@ -391,14 +448,14 @@ UNDEFINED-ARGUMENT:  A function taking an option key and the remaining
                      argument is found in ARGUMENTS.  It should return
                      the new remaining list of arguments.
 ")
-  (:method ((key string) arguments &optional undefined-argument)
-    (let* ((funopt  (gethash key *options*)))
+  (:method ((key string) arguments undefined-argument case-sensitive)
+    (let* ((funopt (get-option key case-sensitive)))
       (cond
-        (funopt             (call-option-function funopt arguments undefined-argument))
+        (funopt             (call-option-function funopt arguments undefined-argument case-sensitive))
         (undefined-argument (funcall undefined-argument key arguments))
         (t                  (error "Unknown option ~A ; try: ~A help" key (pname))))))
-  (:method ((option option) arguments &optional undefined-argument)
-    (declare (ignore undefined-argument))
+  (:method ((option option) arguments undefined-argument case-sensitive)
+    (declare (ignore undefined-argument case-sensitive))
     (funcall (option-function option) arguments)))
 
 
@@ -428,17 +485,14 @@ RETURN:     The lisp-name of the option (this is a symbol
                           (rest body)
                           body)))
     `(progn
-       (setf (gethash ',main-name *options*)
-             (wrap-option-function ',(cons main-name other-names)
-                                   ',parameters
-                                   ',docstring
-                                   (lambda ,(remove '&rest parameters)
-                                     ,docstring
-                                     (block ,lisp-name
-                                       ,@body))))
-       ,@(mapcar (lambda (other-name)
-                   `(setf (gethash ',other-name *options*) (gethash ',main-name *options*)))
-                 other-names)
+       (register-option (wrap-option-function ',(cons main-name other-names)
+                                              ',parameters
+                                              ',docstring
+                                              (lambda ,(remove '&rest parameters)
+                                                ,docstring
+                                                (block ,lisp-name
+                                                  ,@body)))
+                        t)
        ',lisp-name)))
 
 
@@ -451,12 +505,7 @@ RETURN:     The lisp-name of the option (this is a symbol
   "
 RETURN: The list of options defined.
 "
-  (let ((options '()))
-    (maphash (lambda (key option)
-               (declare (ignore key))
-               (pushnew option options))
-             *options*)
-    options))
+  (copy-list *options*))
 
 
 (define-option ("help" "-h" "--help") ()
@@ -537,7 +586,7 @@ complete -F completion_~:*~A ~:*~A~%"
 
 
 
-(defun parse-options (arguments &optional default undefined-argument)
+(defun parse-options (arguments &optional default undefined-argument (case-sensitive t))
   "
 DO:                 Parse the options in the ARGUMENTS list.
 DEFAULT:            Thunk called if ARGUMENTS is empty.
@@ -552,7 +601,8 @@ UNDEFINED-ARGUMENT: Thunk called if an undefined option is present in
                     :while arguments
                     :do (setf arguments (call-option-function (pop arguments)
                                                               arguments
-                                                              undefined-argument)))
+                                                              undefined-argument
+                                                              case-sensitive)))
                   nil)
                  (default
                   (funcall default)))))
