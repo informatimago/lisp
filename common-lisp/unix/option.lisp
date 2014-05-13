@@ -419,8 +419,8 @@ BUG: when the optionals or keys have a present indicator,
     (multiple-value-bind (old-option conflicts) (find-option (option-keys option))
       (when old-option
         (let ((*print-circle* nil) (*print-escape* nil))
-         (warn "There are already options for ~:{the ~A key ~A~^, ~}."
-               (print (mapcar (function rest) conflicts)))))))
+          (warn "There are already options for ~:{the ~A key ~A~^, ~}."
+                (mapcar (function rest) conflicts))))))
   (push option *options*))
 
 (defun get-option (key case-sensitive)
