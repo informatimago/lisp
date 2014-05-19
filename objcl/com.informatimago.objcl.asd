@@ -59,7 +59,7 @@ cover generic FFI to both Apple and GNUstep objc2 runtimes.
   
   :name "Reader macros to implement an Objective-CL syntax."
   
-  :version "0.10.1"
+  :version "0.10.2"
   
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Spring 2014")
@@ -75,7 +75,8 @@ cover generic FFI to both Apple and GNUstep objc2 runtimes.
   
   :components
   #+(and ccl darwin)
-  ((:file "packages")
+  ((:file "objc-support"       :depends-on ())
+   (:file "packages"           :depends-on ("objc-support"))
    (:file "simple-test"        :depends-on ("packages"))
    (:file "mac-roman"          :depends-on ("packages"))
    (:file "oclo-ccl"           :depends-on ("packages"))
