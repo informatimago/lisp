@@ -380,7 +380,7 @@ RETURN: VALUE
                 "Trace (t)" "Function (f)" "Run (r)"
                 "List (l)" "Eval (e)"  "Debugger (d)"
                 "Abort (a, q)")))
-  (let ((answer (string-trim " " (read-line *query-io*))))
+  (let ((answer (string-trim " " (progn (finish-output *query-io*) (read-line *query-io*)))))
     (cond
       ((member answer '("" "s" "si") :test (function string-equal))
        :step-into)
