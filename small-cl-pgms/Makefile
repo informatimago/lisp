@@ -33,7 +33,7 @@
 ####****************************************************************************
 
 PREFIX=/usr/local
-TARGETS=index.html what-implementation
+TARGETS=index.html wang.html what-implementation
 HELPFORMAT="make %-20s \# %s\n"
 
 all::help
@@ -76,6 +76,8 @@ index.html.in:init.lisp index.lisp Makefile
 index.html:index.html.in
 	find . \( -name index.html.in -o -name aim-8.html.in \) -print | while read file ; do cp -v "$$file" "$$(echo $$file | sed -e 's/\.in$$//')" ; done
 
+wang.html:wang.html.in
+	@cp -av wang.html.in wang.html
 
 #(with-open-file (*STANDARD-OUTPUT* "index.html" :direction :output :if-exists :supersede :if-does-not-exist :create)
 
