@@ -46,9 +46,9 @@ target-language method will let the RDPG generate a parser in BASIC.
 
 "
 
-  :author     "Pascal Bourguignon <pjb@informatimago.com>"
+  :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
 
-  :maintainer "Pascal Bourguignon <pjb@informatimago.com>"
+  :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   
   :licence "AGPL3"
 

@@ -9,7 +9,7 @@
 ;;;;    Generate the index.html for small-cl-pgms.
 ;;;;    
 ;;;;AUTHORS
-;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
+;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
 ;;;;    2013-01-12 <PJB> Switched to quicklisp to load dependencies.
 ;;;;    2004-03-14 <PJB> Created.
@@ -17,7 +17,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal Bourguignon 2004 - 2013
+;;;;    Copyright Pascal J. Bourguignon 2004 - 2013
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by

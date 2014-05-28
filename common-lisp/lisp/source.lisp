@@ -9,7 +9,7 @@
 ;;;;    See :documentation of package below.
 ;;;;
 ;;;;AUTHORS
-;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
+;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
 ;;;;    2012-08-07 <PJB> Extracted from ibcl.lisp and restructured.
 ;;;;    2006-07-01 <PJB> Added deftype, defclass.
@@ -18,7 +18,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal Bourguignon 2006 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2006 - 2012
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by

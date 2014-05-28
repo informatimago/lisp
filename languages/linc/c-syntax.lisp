@@ -9,14 +9,14 @@
 ;;;;    This file defines classes to generate C++ syntax.
 ;;;;    
 ;;;;AUTHORS
-;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
+;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
 ;;;;    2007-12-24 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal Bourguignon 2007 - 2007
+;;;;    Copyright Pascal J. Bourguignon 2007 - 2007
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by

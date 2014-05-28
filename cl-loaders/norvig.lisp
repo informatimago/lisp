@@ -27,7 +27,7 @@
 ;;;;
 ;;;;    
 ;;;;AUTHORS
-;;;;    <PJB> Pascal Bourguignon
+;;;;    <PJB> Pascal J. Bourguignon
 ;;;;MODIFICATIONS
 ;;;;    2012-06-20 <PJB> Made some corrections, added instructions.
 ;;;;    2003-05-14 <PJB> Created.
@@ -35,7 +35,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal Bourguignon 2003 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2003 - 2012
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by

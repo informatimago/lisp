@@ -13,7 +13,7 @@
 ;;;;    http://en.wikipedia.org/wiki/Parsing_expression_grammar
 ;;;;
 ;;;;AUTHORS
-;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
+;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
 ;;;;    2012-02-24 <PJB> Upgraded for use in com.informatimago.lse;
 ;;;;                     Changed to AGPL3 license.
@@ -32,7 +32,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal Bourguignon 2006 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2006 - 2012
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by

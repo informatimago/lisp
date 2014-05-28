@@ -10,14 +10,14 @@
 ;;;;    See: http://unix.dsu.edu/~johnsone/comp.html
 ;;;;    
 ;;;;AUTHORS
-;;;;    <PJB> Pascal Bourguignon
+;;;;    <PJB> Pascal J. Bourguignon
 ;;;;MODIFICATIONS
 ;;;;    2003-03-13 <PJB> Creation.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal Bourguignon 2003 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2003 - 2012
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -39,7 +39,7 @@
    "This program compute an \"author signature\" from a text.
     See: <http://unix.dsu.edu/~johnsone/comp.html>
     
-    Copyright Pascal Bourguignon 2003 - 2003
+    Copyright Pascal J. Bourguignon 2003 - 2003
     This package is provided under the GNU General Public License.
     See the source file for details.")
   (:use "COMMON-LISP")

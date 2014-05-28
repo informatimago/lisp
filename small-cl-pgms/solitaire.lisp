@@ -9,7 +9,7 @@
 ;;;;    Plays solitaire... alone.
 ;;;;    
 ;;;;AUTHORS
-;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
+;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
 ;;;;    2012-12-06 <PJB> Corrected a few bugs.
 ;;;;    2004-03-19 <PJB> Added a player.
@@ -18,7 +18,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal Bourguignon 2004 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2004 - 2012
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by

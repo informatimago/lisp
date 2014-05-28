@@ -10,14 +10,14 @@
 ;;;;    builds a dependency graph to be displayed by dot(1).
 ;;;;    
 ;;;;AUTHORS
-;;;;    <PJB> Pascal Bourguignon
+;;;;    <PJB> Pascal J. Bourguignon
 ;;;;MODIFICATIONS
 ;;;;    2003-05-16 <PJB>  Created.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal Bourguignon 2003 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2003 - 2012
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by

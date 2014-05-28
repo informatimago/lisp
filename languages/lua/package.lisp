@@ -59,7 +59,7 @@ The LUA-TOKEN is a subclass of
 COM.INFORMATIMAGO.COMMON-LISP.PARSER.SCANNER:TOKEN.
 
 
-Copyright Pascal Bourguignon 2012 - 2012
+Copyright Pascal J. Bourguignon 2012 - 2012
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -83,7 +83,7 @@ Implements a LUA parser.
 The parser is generated with COM.INFORMATIMAGO.RDP.
 
 
-Copyright Pascal Bourguignon 2012 - 2012
+Copyright Pascal J. Bourguignon 2012 - 2012
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as

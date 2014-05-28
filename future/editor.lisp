@@ -14,7 +14,7 @@
 ;;;;    http://www.emacswiki.org/emacs/EmacsCommonLisp
 ;;;;
 ;;;;AUTHORS
-;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
+;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
 ;;;;    2014-04-30 <PJB> Corrected a couple of little bugs. Added BUGS entries.
 ;;;;    2007-09-11 <PJB> Added the language feature, and some docstrings.
@@ -33,7 +33,7 @@
 ;;;;LEGAL
 ;;;;    GPL
 ;;;;    
-;;;;    Copyright Pascal Bourguignon 2006 - 2014
+;;;;    Copyright Pascal J. Bourguignon 2006 - 2014
 ;;;;    
 ;;;;    This program is free software; you can redistribute it and/or
 ;;;;    modify it under the terms of the GNU General Public License
@@ -117,7 +117,7 @@ to language names (as keyword).")
 An emacs editor written in Common Lisp.
 
 
-Copyright Pascal Bourguignon 2006 - 2014
+Copyright Pascal J. Bourguignon 2006 - 2014
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License

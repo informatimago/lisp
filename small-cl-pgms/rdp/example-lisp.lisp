@@ -10,7 +10,7 @@
 ;;;;    The actions are written in Lisp, to generate a lisp parser.
 ;;;;    
 ;;;;AUTHORS
-;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
+;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
 ;;;;    2011-07-19 <PJB> Updated regexps, now we use extended regexps.
 ;;;;    2011-07-19 <PJB> Added defpackage forms.  Added parsing example sources.
@@ -19,7 +19,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal Bourguignon 2006 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2006 - 2012
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by

@@ -16,7 +16,7 @@
 ;;;;    http://www.opengroup.org/onlinepubs/007904975/index.html
 ;;;;
 ;;;;AUTHORS
-;;;;    <PJB> Pascal Bourguignon
+;;;;    <PJB> Pascal J. Bourguignon
 ;;;;MODIFICATIONS
 ;;;;    2003-06-13 <PJB> Added dirent stuff.
 ;;;;    2003-05-13 <PJB> Created
@@ -30,7 +30,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal Bourguignon 2003 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2003 - 2012
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by

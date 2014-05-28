@@ -12,7 +12,7 @@
 ;;;;    interned (TODO: but perhaps keywords?)
 ;;;;    
 ;;;;AUTHORS
-;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
+;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
 ;;;;    2007-03-07 <PJB> Created.
 ;;;;BUGS
@@ -25,7 +25,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal Bourguignon 2007 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2007 - 2012
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by

@@ -22,7 +22,7 @@
 ;;;;    we only have fixnum, symbols, list and dotted lists.
 ;;;;
 ;;;;AUTHORS
-;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
+;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
 ;;;;    2008-07-12 <PJB> Restricted the reader.
 ;;;;    2008-05-20 <PJB> Implemented simple-reader.
@@ -31,7 +31,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal Bourguignon 2008 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2008 - 2012
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by

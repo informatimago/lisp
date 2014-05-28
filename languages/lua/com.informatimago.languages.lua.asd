@@ -45,9 +45,9 @@ This system provides tools to manipulate LUA programs.
 - (eventually, possibly a LUA interpreter or translator to CL).
 "
     
-    :author     "Pascal Bourguignon <pjb@informatimago.com>"
+    :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
     
-    :maintainer "Pascal Bourguignon <pjb@informatimago.com>"
+    :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
     
     :licence "AGPL3"
 

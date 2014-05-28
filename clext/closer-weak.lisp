@@ -17,7 +17,7 @@
 ;;;;                      instead of the native one.
 ;;;;
 ;;;;AUTHORS
-;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
+;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
 ;;;;    2013-03-17 <PJB> Added implementation for ccl.
 ;;;;    2006-05-19 <PJB> Created.
@@ -25,7 +25,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal Bourguignon 2006 - 2013
+;;;;    Copyright Pascal J. Bourguignon 2006 - 2013
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -63,7 +63,7 @@ Currently works on:
   cmucl       n    x    x       x   x   -- partial support (missing WEAK-OR-RELATION)
   sbcl        n    x    x       x   x   -- partial support (missing WEAK-OR-RELATION)
 
-Copyright Pascal Bourguignon 2006 - 2013
+Copyright Pascal J. Bourguignon 2006 - 2013
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by

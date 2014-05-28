@@ -42,7 +42,7 @@
     composed of 27 smaller cubes linked with a thread  must be
     recomposed.
     
-    Copyright Pascal Bourguignon 1995 - 2004
+    Copyright Pascal J. Bourguignon 1995 - 2004
     This package is provided under the GNU General Public License.
     See the source file for details.")
   (:use "COMMON-LISP")

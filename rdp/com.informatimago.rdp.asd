@@ -46,9 +46,9 @@ different languages than lisp.
 
 "
     
-    :author     "Pascal Bourguignon <pjb@informatimago.com>"
+    :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
     
-    :maintainer "Pascal Bourguignon <pjb@informatimago.com>"
+    :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
     
     :licence "AGPL3"
 

@@ -44,9 +44,9 @@ Provides methods specialized on the :basic target-language, to emit a generator 
 
 "
 
-    :author "Pascal Bourguignon <pjb@informatimago.com>"
+    :author "Pascal J. Bourguignon <pjb@informatimago.com>"
 
-    :maintainer "Pascal Bourguignon <pjb@informatimago.com>"
+    :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
     
 
     :licence "AGPL3"

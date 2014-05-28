@@ -54,7 +54,7 @@ See also:
 
 License:
 
-    Copyright Pascal Bourguignon 1994 - 2012
+    Copyright Pascal J. Bourguignon 1994 - 2012
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by

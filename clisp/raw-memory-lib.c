@@ -8,7 +8,7 @@ DESCRIPTION
     Peek and poke.
     
 AUTHORS
-    <PJB> Pascal Bourguignon <pjb@informatimago.com>
+    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 MODIFICATIONS
     2010-11-04 <PJB> Beautified.  Made use of uint*_t types from <stdint.h>.
     2004-12-05 <PJB> Created.
@@ -16,7 +16,7 @@ BUGS
 LEGAL
     GPL
     
-    Copyright Pascal Bourguignon 2004 - 2010
+    Copyright Pascal J. Bourguignon 2004 - 2010
     
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License

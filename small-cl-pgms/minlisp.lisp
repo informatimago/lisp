@@ -19,7 +19,7 @@
 ;;;;     ftp://publications.ai.mit.edu/ai-publications/pdf/AIM-008.pdf
 ;;;;
 ;;;;AUTHORS
-;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
+;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
 ;;;;    2013-08-11 <PJB> Created MINLISP out of AIM-8 LISP.
 ;;;;    2004-10-24 <PJB> Created.
@@ -27,7 +27,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal Bourguignon 2004 - 2013
+;;;;    Copyright Pascal J. Bourguignon 2004 - 2013
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by

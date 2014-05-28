@@ -45,9 +45,9 @@ Playground for Cocoa and ObjCL.
 
 "
     
-    :author    "Pascal Bourguignon <pjb@informatimago.com>"
+    :author    "Pascal J. Bourguignon <pjb@informatimago.com>"
     
-    :maitainer "Pascal Bourguignon <pjb@informatimago.com>"
+    :maitainer "Pascal J. Bourguignon <pjb@informatimago.com>"
     
     :licence "AGPL3"
 

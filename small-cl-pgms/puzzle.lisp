@@ -14,7 +14,7 @@
 ;;;;    (com.informatimago.common-lisp.puzzle:main)
 ;;;;
 ;;;;AUTHORS
-;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
+;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
 ;;;;    2004-03-13 <PJB> Corrected bugs signaled by
 ;;;;                     salma tariq <learningbug2004@yahoo.co.in>.

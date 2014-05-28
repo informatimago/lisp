@@ -20,7 +20,7 @@
 ;;;;    (COM.INFORMATIMAGO.COMMON-LISP.DOUZE:SIMULATE)
 ;;;;
 ;;;;AUTHORS
-;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
+;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
 ;;;;    2004-02-25 <PJB> Added this comment.
 ;;;;BUGS
@@ -53,7 +53,7 @@
     simulate the population growth during 80 years
     and draw the final age pyramid.
     
-    Copyright Pascal Bourguignon 2003 - 2004
+    Copyright Pascal J. Bourguignon 2003 - 2004
     This package is put in the Public Domain.
     ")
   (:use "COMMON-LISP")

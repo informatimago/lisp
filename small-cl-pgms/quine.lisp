@@ -10,7 +10,7 @@
 ;;;;    Three implementations in Common-Lisp.
 ;;;;    
 ;;;;AUTHORS
-;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
+;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
 ;;;;    2003-12-29 <PJB> Created.
 ;;;;BUGS

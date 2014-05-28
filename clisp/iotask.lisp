@@ -9,7 +9,7 @@
 ;;;;    Encapsulates clisp socket-status.
 ;;;;    
 ;;;;AUTHORS
-;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
+;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
 ;;;;    2005-08-31 <PJB> Created.
 ;;;;BUGS
@@ -18,7 +18,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal Bourguignon 2005 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2005 - 2012
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -39,7 +39,7 @@
    "This package exports a sheduler encapsulating clisp SOCKET:SOCKET-STATUS
     which itself encapsulate select(2)/poll(2).
 
-    Copyright Pascal Bourguignon 2005 - 2005
+    Copyright Pascal J. Bourguignon 2005 - 2005
     This package is provided under the GNU General Public License.
     See the source file for details.")
   (:use "COMMON-LISP"
