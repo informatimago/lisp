@@ -135,9 +135,10 @@ etags tags TAGS::
 
 
 WEBDOCDIR="$(HOME)/public_html/sites/com.informatimago.www"
+
 help::
-	@printf $(HELP_FMT)  'documentation' 'Generates the README.pdf file.'
 	@printf $(HELP_FMT)  'doc'           'Generates documentation lispdoc and upload.'
+	@printf $(HELP_FMT)  'documentation' 'Generates the README.pdf file.'
 	@printf $(HELP_FMT)  'lispdoc'       "Generates the lispdoc documentation (in $(WEBDOCDIR))."
 	@printf $(HELP_FMT)  'upload'        "Uploads $(WEBDOCDIR) to the web hosting server."
 
@@ -145,7 +146,9 @@ documentation: README.pdf README.html
 
 doc:documentation lispdoc upload
 
-lispdoc:
+lispdoc:$(WEBDOCDIR)/develop/lisp/doc
+
+$(WEBDOCDIR)/develop/lisp/doc:
 	$(MAKE) $(MFLAGS) -C lispdoc 
 
 upload:
@@ -162,4 +165,3 @@ showpdf show-pdfs:README.pdf
 
 
 #### THE END ####
-
