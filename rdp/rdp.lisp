@@ -349,14 +349,6 @@ PRE:    (non-terminal-p non-terminal)
         `(alt ,rules))))
 
 
-(define-modify-macro appendf (&rest args)  append "Append onto list")
-
-(defun prepend (old &rest new-lists)
-  (apply (function append) (append new-lists (list old))))
-(define-modify-macro prependf (&rest args) prepend "Prepend onto list")
-
-
-
 (defun compute-first-sets (grammar)
   "  
 PRE:    The GRAMMAR must be normalized.

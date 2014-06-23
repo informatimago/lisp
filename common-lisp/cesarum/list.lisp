@@ -27,7 +27,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2002 - 2013
+;;;;    Copyright Pascal J. Bourguignon 2002 - 2014
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -47,7 +47,7 @@
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
   (:use "COMMON-LISP")
   (:export
-   "PREPENDF"  "PUSH*"
+   "APPENDF" "PREPENDF" "PREPEND" "PUSH*"
    "DLL-NEXT" "DLL-PREVIOUS" "DLL-NODE" "LIST-TO-DOUBLE-LINKED-LIST"
    "EQUIVALENCE-CLASSES" "SUBSETS" "COMBINE" "IOTA"
    "MAKE-LIST-OF-RANDOM-NUMBERS" "LIST-INSERT-SEPARATOR"
@@ -68,7 +68,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2003 - 2013
+    Copyright Pascal J. Bourguignon 2003 - 2014
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -88,9 +88,11 @@ License:
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
 
 
+
 (defun prepend (tail &rest lists)
   (apply (function append) (append lists (list tail))))
-(define-modify-macro prependf (place &rest lists) prepend)
+(define-modify-macro prependf (&rest lists) prepend "Prepend the LISTS at the beginning of the PLACE.")
+(define-modify-macro appendf  (&rest lists)  append "Append the LISTS at the end of the PLACE.")
 
 (defmacro push* (&rest elements-and-place)
   `(prependf ,(car (last elements-and-place))

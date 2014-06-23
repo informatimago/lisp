@@ -17,7 +17,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2012 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2012 - 2014
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -39,7 +39,8 @@
   (:export "HASHED-SET-REMOVE-DUPLICATES"
            "HASHED-REMOVE-DUPLICATES" "HASHED-DELETE-DUPLICATES"
            "DUPLICATES"
-           "REPLACE-SUBSEQ")
+           "REPLACE-SUBSEQ"
+           "DELETEF")
   (:documentation
    "
 
@@ -50,7 +51,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2004 - 2012
+    Copyright Pascal J. Bourguignon 2004 - 2014
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -68,6 +69,14 @@ License:
 
 "))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE")
+
+
+(defun item-delete (sequence item &rest keys &key from-end test test-not start end count key)
+  (declare (ignore from-end test test-not start end count key))
+  (apply (function delete) item sequence keys))
+
+(define-modify-macro deletef (item &rest keys)
+  item-delete "Delete the item from the sequence in PLACE.")
 
 
 (defun duplicates (sequence &key (test 'eql) (key 'identity))

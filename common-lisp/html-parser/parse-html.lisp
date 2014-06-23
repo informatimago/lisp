@@ -18,7 +18,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2003 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2003 - 2014
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -66,7 +66,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2003 - 2012
+    Copyright Pascal J. Bourguignon 2003 - 2014
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -2263,10 +2263,6 @@ to a list of two elements:
 (defvar *row-kind* :body)
 (defstruct row   kind tag attributes cells)
 (defstruct cell           attributes lines)
-
-
-(define-modify-macro appendf (&rest args) 
-  append "Append onto list")
 
 
 (defun collect-table-cells (element)

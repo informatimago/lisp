@@ -123,6 +123,7 @@ all written in 100% conforming Common Lisp.
                  (:file "dfa"             :depends-on ())
                  (:file "tea"             :depends-on ())
                  (:file "circular"        :depends-on ())
+                 (:file "histogram"       :depends-on ())
 
                  ;; Specific stuff:
                  (:file "activity"        :depends-on ())
