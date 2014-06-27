@@ -409,7 +409,7 @@ BUG: when the optionals or keys have a present indicator,
 
 (defun fill-option-map (table)
   (loop
-    :for option :in *options*
+    :for option :in (reverse *options*)
     :do (loop :for key :in (option-keys option)
               :do (setf (gethash key table) option)))
   table)
