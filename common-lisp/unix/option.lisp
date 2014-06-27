@@ -35,7 +35,7 @@
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.UNIX.OPTION"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
-  (:export "PNAME" "*PROGRAM-NAME*" "*DEBUG*"
+  (:export "PNAME" "*PROGRAM-NAME*" "*DEBUG-OPTIONS*"
            "REDIRECTING-STDOUT-TO-STDERR"
            "DEFINE-OPTION"
            "CALL-OPTION-FUNCTION"
@@ -103,7 +103,7 @@ If available we use the actual command line program name,
 otherwise we fallback to *PROGRAM-NAME*.")
 
 
-(defvar *debug* nil
+(defvar *debug-options* nil
   "Errors break into the debugger.")
 
 ;;;
@@ -592,6 +592,7 @@ DO:                 Parse the options in the ARGUMENTS list.
 DEFAULT:            Thunk called if ARGUMENTS is empty.
 UNDEFINED-ARGUMENT: Thunk called if an undefined option is present in
                     the ARGUMENTS.
+RETURN:             NIL on success, status code when early exit is requested.
 "
   (handler-case
       (flet ((process-arguments ()
@@ -606,7 +607,7 @@ UNDEFINED-ARGUMENT: Thunk called if an undefined option is present in
                   nil)
                  (default
                   (funcall default)))))
-        (if *debug*
+        (if *debug-options*
             (process-arguments)
             (handler-case
                 (process-arguments)
