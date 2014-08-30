@@ -1,0 +1,15 @@
+The following table contains the mapping from card types to card number prefixes. This table is adapted from Wikipedia’s bank card number page, the most frequently updated public resource on this data.
+Card Type	Card Number Prefix
+American Express	34, 37
+China UnionPay	62, 88
+Diners ClubCarte Blanche	300-305
+Diners Club International	300-305, 309, 36, 38-39
+Diners Club US & Canada	54, 55
+Discover Card	6011, 622126-622925, 644-649, 65
+JCB	3528-3589
+Laser	6304, 6706, 6771, 6709
+Maestro	5018, 5020, 5038, 5612, 5893, 6304, 6759, 6761, 6762, 6763, 0604, 6390
+Dankort	5019
+MasterCard	50-55
+Visa	4
+Visa Electron	4026, 417500, 4405, 4508, 4844, 4913, 4917
