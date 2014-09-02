@@ -43,9 +43,16 @@ A tool to check duplicate/un-exported/imported symbols.
 (in-package "COM.INFORMATIMAGO.TOOLS.SYMBOL")
 
 
-(defun report-duplicates (symbols &optional (*standard-output* *standard-output*))
+(defun report-duplicates (duplicates &optional (*standard-output* *standard-output*))
   (let ((*package* (find-package "KEYWORD")))
-    (format t "~&~S~%" symbols)))
+    (dolist (symbols (sort duplicates
+                           (function string<)
+                           :key (lambda (syms) (symbol-name (first syms))))
+                     (values))
+      (format t "~20A ~{~A~^ ~}~%"
+              (symbol-name (first symbols))
+              (sort (mapcar (lambda (sym) (package-name (symbol-package sym))) symbols)
+                    (function string<))))))
 
 (defun duplicate-symbols (&key (packages (list-all-packages)) (exported nil))
   "Return: a list of list of symbols that have the same name."
@@ -70,10 +77,8 @@ A tool to check duplicate/un-exported/imported symbols.
         duplicates)))
 
 (defun check-duplicate-symbols (&key (packages (list-all-packages)) (exported nil))
-  (report-duplicates (duplicate-symbols :packages packages :exported exported))
-  (values))
+  (report-duplicates (duplicate-symbols :packages packages :exported exported)))
 
 
 
 ;;;; THE END ;;;;
-
