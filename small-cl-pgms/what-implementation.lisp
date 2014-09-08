@@ -149,7 +149,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
                   "Mac OS X" 
                   "Solaris"
                   "FreeBSD" "OpenBSD"
-                  "IRIS" "HPUX")
+                  "IRIS" "HPUX" "cygwin")
+     :processors ("x86" "arm64" "ppc64" "ppc64le" "solaris")
      :compiler ("native thru gcc")
      :threads ("native")
      :features ("integrates well with C programs"
