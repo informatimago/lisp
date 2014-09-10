@@ -14,11 +14,12 @@
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
 ;;;;    2012-07-12 <PJB> Created.
+;;;;    2014-08-30 <PJB> Added handling of parameters in define-declare-macro.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2012 - 2013
+;;;;    Copyright Pascal J. Bourguignon 2012 - 2014
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -35,7 +36,8 @@
 ;;;;**************************************************************************
 
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.LISP.CL-DEFINITIONS"
-  (:use "COMMON-LISP")
+  (:use "COMMON-LISP"
+        "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM")
   (:export "SYMBOL-TYPE-OF-DECLARATIONS"
            "SYMBOL-DECLARATION-INFOS"
            "SYMBOL-INFO"
@@ -47,7 +49,7 @@ the CL package.  These descriptions can be used to generate
 automatically various things.
 
 
-Copyright Pascal J. Bourguignon 2012 - 2013
+Copyright Pascal J. Bourguignon 2012 - 2014
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -123,14 +125,30 @@ FUN:            A function taking a symbol and an a-list
 ;; (symbol-type-of-declarations 'vector)(:system-class :compound-type-specifier)
 ;; (symbol-declaration-infos 'vector :system-class)
 
+(lambda-list-parameters  (parse-lambda-list '(name declaration-lambda-list &key documentation) :macro))
+;; (#<&mandatory name #x3020022DE0FD> #<&mandatory declaration-lambda-list #x3020022DE0AD> #<&key documentation #x3020022DE03D>)
+(make-lambda-list        (parse-lambda-list '(name declaration-lambda-list &key documentation) :macro))
+;; (name declaration-lambda-list &key documentation)
+(make-argument-list-form (parse-lambda-list '(name declaration-lambda-list &key documentation) :macro))
+;;(append (list name declaration-lambda-list) (list :documentation documentation))
+(make-argument-list      (parse-lambda-list '(name declaration-lambda-list &key documentation) :macro))
+;; (name declaration-lambda-list :documentation documentation nil)
+(make-help               (parse-lambda-list '(name declaration-lambda-list &key documentation) :macro))
+;; ((:mandatory . "name") (:mandatory . "declaration-lambda-list") (:key . "documentation"))
+
 
 (defmacro define-declare-macro (type-of-declaration parameter-lambda-list)
-  `(defmacro ,(intern (concatenate 'string "DECLARE-" (string type-of-declaration)))
+  (let* ((ll (parse-lambda-list parameter-lambda-list :macro))
+         (parameters (mapcan (lambda (parameter)
+                               (list (intern (string (parameter-name parameter)) :keyword)
+                                     (list 'list ''quote (parameter-name parameter))))
+                             (lambda-list-parameters ll))))
+    (print parameters)
+    `(defmacro ,(intern (concatenate 'string "DECLARE-" (string type-of-declaration)))
        ,parameter-lambda-list
-     `(enter ',,(first parameter-lambda-list)
-             ,,(intern (string type-of-declaration) :keyword)
-             ;; TODO.
-             ',',parameter-lambda-list)))
+       `(enter ',,(first parameter-lambda-list)
+               ,,(intern (string type-of-declaration) :keyword)
+               (list ,,@parameters)))))
 
 (define-declare-macro declaration             (name declaration-lambda-list &key documentation))
 (define-declare-macro compound-type-specifier (name type-lambda-list kind &key documentation))
@@ -888,11 +906,115 @@ Note: we cannot say :definition (satisfies keywordp)
 
 (declare-accessor VALUES (&rest object))
 
+;;; functions --  3. Evaluation and Compilation
+
+(declare-function COMPILE (name/function-name-or-nil &optional definition/lambda-expression-or-function)
+                  :result-type (values (or function-name compiled-function) t t))
+(declare-function EVAL ())
+(declare-function MACROEXPAND-1 ())
+(declare-function MACROEXPAND ())
+(declare-function PROCLAIM ())
+(declare-function SPECIAL-OPERATOR-P ())
+(declare-function CONSTANTP ())
+
+;;; functions --  4. Types and Classes
+;;; functions --  5. Data and Control Flow
+;;; functions --  6. Iteration
+;;; functions --  7. Objects
+;;; functions --  8. Structures
+;;; functions --  9. Conditions
+;;; functions -- 10. Symbols
+;;; functions -- 11. Packages
+;;; functions -- 12. Numbers
+;;; functions -- 13. Characters
+;;; functions -- 14. Conses
+;;; functions -- 15. Arrays
+;;; functions -- 16. Strings
+;;; functions -- 17. Sequences
+;;; functions -- 18. Hash Tables
+;;; functions -- 19. Filenames
+;;; functions -- 20. Files
+;;; functions -- 21. Streams
+;;; functions -- 22. Printer
+;;; functions -- 23. Reader
+;;; functions -- 24. System Construction
+;;; functions -- 25. Environment
+
+(declare-function 1- (argument/number) :result-type number :signals (type-error arithmetic-error)
+                  :documentation "1- returns a number that is one less than its argument number.")
+
+(declare-function 1+ (argument/number) :result-type number :signals (type-error arithmetic-error)
+                  :documentation "1+ returns a number that is one more than its argument number.")
 
 
-(declare-function 1- (number) :result-type number :signals (type-error arithmetic-error))
-(declare-function 1+ (number) :result-type number :signals (type-error arithmetic-error))
-(declare-function ABORT (&optional condition) :result-type (values))
+(declare-function ABORT (&optional condition/condition) :result-type (values) :signals (control-error)
+                  :documentation "
+Transfers control to the most recently established applicable restart
+named ABORT.  If no such restart exists, signals an error of type
+CONTROL-ERROR.
+
+When CONDITION is non-nil, only those restarts are considered that are
+either explicitly associated with that condition, or not associated
+with any condition; that is, the excluded restarts are those that are
+associated with a non-empty set of conditions of which the given
+condition is not an element. If CONDITION is nil, all restarts are
+considered.
+")
+
+(declare-function MUFFLE-WARNING (&optional condition/condition) :result-type (values)
+                  :documentation "
+Transfers control to the most recently established applicable restart
+named MUFFLE-WARNING.  If no such restart exists, signals an error of
+type CONTROL-ERROR.
+
+When CONDITION is non-nil, only those restarts are considered that are
+either explicitly associated with that condition, or not associated
+with any condition; that is, the excluded restarts are those that are
+associated with a non-empty set of conditions of which the given
+condition is not an element. If CONDITION is nil, all restarts are
+considered.
+")
+
+(declare-function CONTINUE (&optional condition/condition) :result-type null
+                  :documentation "
+Transfers control to the most recently established applicable restart
+named CONTINUE.  If no such restart exists, returns NIL.
+
+When CONDITION is non-nil, only those restarts are considered that are
+either explicitly associated with that condition, or not associated
+with any condition; that is, the excluded restarts are those that are
+associated with a non-empty set of conditions of which the given
+condition is not an element. If CONDITION is nil, all restarts are
+considered.
+")
+
+(declare-function STORE-VALUE (value &optional condition/condition) :result-type null
+                  :documentation "
+Transfers control to the most recently established applicable restart
+named STORE-VALUE.  If no such restart exists, returns NIL.
+
+When CONDITION is non-nil, only those restarts are considered that are
+either explicitly associated with that condition, or not associated
+with any condition; that is, the excluded restarts are those that are
+associated with a non-empty set of conditions of which the given
+condition is not an element. If CONDITION is nil, all restarts are
+considered.
+")
+
+(declare-function USE-VALUE (value  &optional condition/condition) :result-type null
+                  :documentation "
+Transfers control to the most recently established applicable restart
+named USE-VALUE.  If no such restart exists, returns NIL.
+
+When CONDITION is non-nil, only those restarts are considered that are
+either explicitly associated with that condition, or not associated
+with any condition; that is, the excluded restarts are those that are
+associated with a non-empty set of conditions of which the given
+condition is not an element. If CONDITION is nil, all restarts are
+considered.
+")
+
+
 (declare-function ABS (number) :result-type real :signals (type-error))
 (declare-function ACONS (key datum alist) :result-type list)
 (declare-function ACOS (number) :result-type real)
@@ -908,8 +1030,8 @@ Note: we cannot say :definition (satisfies keywordp)
 (declare-function APROPOS-LIST (string &optional package) :result-type list)
 (declare-function ARITHMETIC-ERROR-OPERANDS ())
 (declare-function ARITHMETIC-ERROR-OPERATION ())
-(declare-function ARRAY-DIMENSION ())
-(declare-function ARRAY-DIMENSIONS ())
+(declare-function ARRAY-DIMENSION (array integer) :result-type (integer 0))
+(declare-function ARRAY-DIMENSIONS (array) :result-type (list (integer 0)))
 (declare-function ARRAY-DISPLACEMENT ())
 (declare-function ARRAY-ELEMENT-TYPE ())
 (declare-function ARRAY-HAS-FILL-POINTER-P ())
@@ -981,7 +1103,6 @@ Note: we cannot say :definition (satisfies keywordp)
 (declare-function COMPILED-FUNCTION-P ())
 (declare-function COMPILE-FILE ())
 (declare-function COMPILE-FILE-PATHNAME ())
-(declare-function COMPILE ())
 (declare-function COMPLEMENT ())
 (declare-function COMPLEX ())
 (declare-function COMPLEXP ())
@@ -992,8 +1113,6 @@ Note: we cannot say :definition (satisfies keywordp)
 (declare-function CONS ())
 (declare-function CONSP ())
 (declare-function CONSTANTLY ())
-(declare-function CONSTANTP ())
-(declare-function CONTINUE (&optional condition) :result-type null)
 (declare-function COPY-ALIST ())
 (declare-function COPY-LIST ())
 (declare-function COPY-PPRINT-DISPATCH ())
@@ -1037,7 +1156,6 @@ Note: we cannot say :definition (satisfies keywordp)
 (declare-function EQUAL ())
 (declare-function EQUALP ())
 (declare-function ERROR ())
-(declare-function EVAL ())
 (declare-function EVENP ())
 (declare-function EVERY ())
 (declare-function EXP ())
@@ -1161,8 +1279,6 @@ Note: we cannot say :definition (satisfies keywordp)
 (declare-function MACHINE-INSTANCE ())
 (declare-function MACHINE-TYPE ())
 (declare-function MACHINE-VERSION ())
-(declare-function MACROEXPAND-1 ())
-(declare-function MACROEXPAND ())
 (declare-function MAKE-ARRAY ())
 (declare-function MAKE-BROADCAST-STREAM ())
 (declare-function MAKE-CONCATENATED-STREAM ())
@@ -1203,7 +1319,6 @@ Note: we cannot say :definition (satisfies keywordp)
 (declare-function MINUSP ())
 (declare-function MISMATCH ())
 (declare-function MOD ())
-(declare-function MUFFLE-WARNING (&optional condition) :result-type (values))
 (declare-function NAME-CHAR ())
 (declare-function NAMESTRING ())
 (declare-function NBUTLAST ())
@@ -1275,7 +1390,6 @@ Note: we cannot say :definition (satisfies keywordp)
 (declare-function PRINT ())
 (declare-function PRINT-NOT-READABLE-OBJECT ())
 (declare-function PROBE-FILE ())
-(declare-function PROCLAIM ())
 (declare-function PROVIDE ())
 (declare-function RANDOM ())
 (declare-function RANDOM-STATE-P ())
@@ -1346,11 +1460,9 @@ Note: we cannot say :definition (satisfies keywordp)
 (declare-function SOFTWARE-VERSION ())
 (declare-function SOME ())
 (declare-function SORT ())
-(declare-function SPECIAL-OPERATOR-P ())
 (declare-function SQRT ())
 (declare-function STABLE-SORT ())
 (declare-function STANDARD-CHAR-P ())
-(declare-function STORE-VALUE (value &optional condition) :result-type null)
 (declare-function STREAM-ELEMENT-TYPE ())
 (declare-function STREAM-ERROR-STREAM ())
 (declare-function STREAM-EXTERNAL-FORMAT ())
@@ -1415,7 +1527,6 @@ Note: we cannot say :definition (satisfies keywordp)
 (declare-function UPPER-CASE-P ())
 (declare-function USE-PACKAGE ())
 (declare-function USER-HOMEDIR-PATHNAME ())
-(declare-function USE-VALUE (value  &optional condition) :result-type null)
 (declare-function VALUES-LIST ())
 (declare-function VECTOR ())
 (declare-function VECTORP ())
@@ -1444,6 +1555,30 @@ Note: we cannot say :definition (satisfies keywordp)
 (declare-local-macro MAKE-METHOD                             ())
 (declare-local-macro PPRINT-EXIT-IF-LIST-EXHAUSTED           ())
 (declare-local-macro PPRINT-POP                              ())
+
+;;; macros --  3. Evaluation and Compilation
+;;; macros --  4. Types and Classes
+;;; macros --  5. Data and Control Flow
+;;; macros --  6. Iteration
+;;; macros --  7. Objects
+;;; macros --  8. Structures
+;;; macros --  9. Conditions
+;;; macros -- 10. Symbols
+;;; macros -- 11. Packages
+;;; macros -- 12. Numbers
+;;; macros -- 13. Characters
+;;; macros -- 14. Conses
+;;; macros -- 15. Arrays
+;;; macros -- 16. Strings
+;;; macros -- 17. Sequences
+;;; macros -- 18. Hash Tables
+;;; macros -- 19. Filenames
+;;; macros -- 20. Files
+;;; macros -- 21. Streams
+;;; macros -- 22. Printer
+;;; macros -- 23. Reader
+;;; macros -- 24. System Construction
+;;; macros -- 25. Environment
 
 (declare-macro AND                                      ())
 (declare-macro ASSERT                                   ())
@@ -1538,6 +1673,30 @@ Note: we cannot say :definition (satisfies keywordp)
 (declare-restart STORE-VALUE                              ())
 (declare-restart USE-VALUE                                ())
 
+;;; special operators --  3. Evaluation and Compilation
+;;; special operators --  4. Types and Classes
+;;; special operators --  5. Data and Control Flow
+;;; special operators --  6. Iteration
+;;; special operators --  7. Objects
+;;; special operators --  8. Structures
+;;; special operators --  9. Conditions
+;;; special operators -- 10. Symbols
+;;; special operators -- 11. Packages
+;;; special operators -- 12. Numbers
+;;; special operators -- 13. Characters
+;;; special operators -- 14. Conses
+;;; special operators -- 15. Arrays
+;;; special operators -- 16. Strings
+;;; special operators -- 17. Sequences
+;;; special operators -- 18. Hash Tables
+;;; special operators -- 19. Filenames
+;;; special operators -- 20. Files
+;;; special operators -- 21. Streams
+;;; special operators -- 22. Printer
+;;; special operators -- 23. Reader
+;;; special operators -- 24. System Construction
+;;; special operators -- 25. Environment
+
 (declare-special-operator BLOCK                                    ())
 (declare-special-operator CATCH                                    ())
 (declare-special-operator EVAL-WHEN                                ())
@@ -1563,6 +1722,30 @@ Note: we cannot say :definition (satisfies keywordp)
 (declare-special-operator THE                                      ())
 (declare-special-operator THROW                                    ())
 (declare-special-operator UNWIND-PROTECT                           ())
+
+;;; generic functions --  3. Evaluation and Compilation
+;;; generic functions --  4. Types and Classes
+;;; generic functions --  5. Data and Control Flow
+;;; generic functions --  6. Iteration
+;;; generic functions --  7. Objects
+;;; generic functions --  8. Structures
+;;; generic functions --  9. Conditions
+;;; generic functions -- 10. Symbols
+;;; generic functions -- 11. Packages
+;;; generic functions -- 12. Numbers
+;;; generic functions -- 13. Characters
+;;; generic functions -- 14. Conses
+;;; generic functions -- 15. Arrays
+;;; generic functions -- 16. Strings
+;;; generic functions -- 17. Sequences
+;;; generic functions -- 18. Hash Tables
+;;; generic functions -- 19. Filenames
+;;; generic functions -- 20. Files
+;;; generic functions -- 21. Streams
+;;; generic functions -- 22. Printer
+;;; generic functions -- 23. Reader
+;;; generic functions -- 24. System Construction
+;;; generic functions -- 25. Environment
 
 (declare-standard-generic-function ADD-METHOD                               ())
 (declare-standard-generic-function ALLOCATE-INSTANCE                        ())
