@@ -271,14 +271,14 @@ WHO'S THE AUTHOR?"
 
 #||
 (define-if-undefined
-           
-    (defmacro with-simple-restart (restart &rest body)
-      "Like PROGN, except provides control over restarts if there is an error."
-      (declare (ignore restart))
-      `(progn ,@body))
 
-    (defmacro done-mac () nil)
-  )
+(defmacro with-simple-restart (restart &rest body)
+"Like PROGN, except provides control over restarts if there is an error."
+(declare (ignore restart))
+`(progn ,@body))
+
+(defmacro done-mac () nil)
+)
 
 (defmacro uncond-mac () nil)
 
@@ -309,13 +309,13 @@ Return the results of the last form.
 "
   (let ((bindings (mapcar (lambda (form) (list (gensym) form)) forms)))
     `(let* ,(loop
-               for (*** ** * current) on (list* '(nil) '(nil) '(nil) bindings)
-               unless (null current)
-               collect (list (first current)
-                             (subst (first ***) '***
-                                    (subst (first **) '**
-                                           (subst (first *) '* 
-                                                  (second current))))))
+              for (*** ** * current) on (list* '(nil) '(nil) '(nil) bindings)
+              unless (null current)
+                collect (list (first current)
+                              (subst (first ***) '***
+                                     (subst (first **) '**
+                                            (subst (first *) '* 
+                                                   (second current))))))
        ,(first (first (last bindings))))))
 
 ;; (let ((*** nil) (** nil) (* nil))
@@ -420,8 +420,8 @@ NOTE:  No prefix argument are allowed for REDUCE!
 "
   (let ((arg-list (car (last args))))
     (if (< (+ (length args) (length arg-list)) call-arguments-limit)
-      (apply  fun (nconc (butlast args) arg-list))
-      (reduce fun (nconc (butlast args) arg-list)))))
+        (apply  fun (nconc (butlast args) arg-list))
+        (reduce fun (nconc (butlast args) arg-list)))))
 
 
 (defmacro while (condition &body body)
@@ -468,7 +468,7 @@ DO:    Repeat BODY with VAR bound to successive integer values from
 ;; 7 - OBJECTS
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  
+
 (defmacro pjb-defclass (name super &rest args)
   "
 This macro encapsulate DEFCLASS and allow the declaration of the attributes
@@ -500,10 +500,10 @@ The initarg an accessor are the same keyword built from the name.
                            doc  (cadr args)) )
                     ((= 1 (length args))
                      (if (stringp (car args))
-                       (setq init nil
-                             doc  (car args))
-                       (setq init (car args)
-                             doc  nil)) )
+                         (setq init nil
+                               doc  (car args))
+                         (setq init (car args)
+                               doc  nil)) )
                     (t (error "Invalid attribute ~S"
                               `(:att ,name ,type ,@args))))
              (when (and (symbolp type) (null init))
@@ -568,9 +568,9 @@ DO:     Define a class implementing the structure API.
         The DEFSTRUCT options: :TYPE and :INITIAL-OFFSET are not supported.
 "
   (let (name options documentation slots slot-names accessors
-             conc-name constructors copier
-             include initial-offset predicate
-             print-function print-object)
+        conc-name constructors copier
+        include initial-offset predicate
+        print-function print-object)
     (declare (ignorable initial-offset))
     (if (symbolp name-and-options)
         (setf name    name-and-options
@@ -662,21 +662,21 @@ DO:     Define a class implementing the structure API.
                      (error "pjb-defclass does not implement this yet.")))))
           constructors)
        ,@(when copier
-               (list `(defmethod ,copier ((self ,name))
-                        (make-instance ',name
-                          ,@(mapcan
-                             (lambda (slot accessor)
-                               (list (make-keyword slot) (list accessor 'self)))
-                             slot-names accessors)))))
+           (list `(defmethod ,copier ((self ,name))
+                    (make-instance ',name
+                                   ,@(mapcan
+                                      (lambda (slot accessor)
+                                        (list (make-keyword slot) (list accessor 'self)))
+                                      slot-names accessors)))))
        ,@(when predicate
-               (list `(defmethod ,predicate (object)
-                        (eq (type-of object) ',name))))
+           (list `(defmethod ,predicate (object)
+                    (eq (type-of object) ',name))))
        ,@(when print-function
-               (list `(defmethod print-object ((self ,name) stream)
-                        (,print-function self stream 0))))
+           (list `(defmethod print-object ((self ,name) stream)
+                    (,print-function self stream 0))))
        ,@(when print-object
-               (list `(defmethod print-object ((self ,name) stream)
-                        (,print-object self stream)))))))
+           (list `(defmethod print-object ((self ,name) stream)
+                    (,print-object self stream)))))))
 
 
 
@@ -712,8 +712,8 @@ RETURN:         A string containing the object identity as printed by
         (*print-readably* nil))
     (declare (special *step-mode*))
     (let ((ident
-           (with-output-to-string (stream)
-             (print-unreadable-object (object stream :type nil :identity t)))))
+            (with-output-to-string (stream)
+              (print-unreadable-object (object stream :type nil :identity t)))))
       (subseq ident 3 (1- (length ident))))))
 
 
@@ -791,16 +791,16 @@ EXAMPLE:        (print-parseable-object (object stream :type t :identity t)
 "
   `(locally (declare (stepper disable))
      ,(if (symbolp object)
-         `(call-print-parseable-object ,object ,stream ,type ,identity
-                                       (lambda (,object)
-                                         (declare (ignorable ,object) (stepper disable))
-                                         ,(extract-slots object slots)))
-         (destructuring-bind (ovar oval) object
-           `(let ((,ovar ,oval))
-              (call-print-parseable-object ,ovar ,stream ,type ,identity
-                                           (lambda (,ovar)
-                                             (declare (ignorable ,ovar) (stepper disable))
-                                             ,(extract-slots object slots))))))))
+          `(call-print-parseable-object ,object ,stream ,type ,identity
+                                        (lambda (,object)
+                                          (declare (ignorable ,object) (stepper disable))
+                                          ,(extract-slots object slots)))
+          (destructuring-bind (ovar oval) object
+            `(let ((,ovar ,oval))
+               (call-print-parseable-object ,ovar ,stream ,type ,identity
+                                            (lambda (,ovar)
+                                              (declare (ignorable ,ovar) (stepper disable))
+                                              ,(extract-slots object slots))))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -864,41 +864,41 @@ DO:       Define a macro: (WITH-{NAME} object &body body)
           symbol macros are defined to access the slots.
 "
   (let* ((name      (if (symbolp name-and-options)
-                      name-and-options (car name-and-options)))
+                        name-and-options (car name-and-options)))
          (conc-name (if (symbolp name-and-options)
-                      (concatenate 'string (string name) "-")
-                      (let ((conc-opt (car (member :conc-name
-                                                   (cdr name-and-options)
-                                                   :key (function car)))))
-                        (if conc-opt
-                          (second conc-opt)
-                          (concatenate 'string (string name) "-")))))
+                        (concatenate 'string (string name) "-")
+                        (let ((conc-opt (car (member :conc-name
+                                                     (cdr name-and-options)
+                                                     :key (function car)))))
+                          (if conc-opt
+                              (second conc-opt)
+                              (concatenate 'string (string name) "-")))))
          (slot-names (mapcar (lambda (slot) (if (listp slot) (car slot) slot)) 
                              slots)))
     `(progn
        (defstruct ,name-and-options ,@slots)
        (defmacro
-         ,(intern (with-standard-io-syntax (format nil "WITH-~A" name)))
-         (object &body body)
+           ,(intern (with-standard-io-syntax (format nil "WITH-~A" name)))
+           (object &body body)
          (if (symbolp object)
-           `(symbol-macrolet
-             ,(mapcar
-               (lambda (slot)
-                 (list slot
-                       (list
-                        (intern (concatenate 'string (string ',conc-name) (string slot)))
-                        object))) ',slot-names)
-             ,@body)
-           (let ((objv (gensym)))
-             `(let ((,objv ,object))
-                (symbol-macrolet
-                 ,(mapcar
-                   (lambda (slot)
-                     (list slot
-                           (list
-                            (intern (concatenate 'string (string ',conc-name) (string slot)))
-                            objv))) ',slot-names)
-                 ,@body))))))))
+             `(symbol-macrolet
+                  ,(mapcar
+                    (lambda (slot)
+                      (list slot
+                            (list
+                             (intern (concatenate 'string (string ',conc-name) (string slot)))
+                             object))) ',slot-names)
+                ,@body)
+             (let ((objv (gensym)))
+               `(let ((,objv ,object))
+                  (symbol-macrolet
+                      ,(mapcar
+                        (lambda (slot)
+                          (list slot
+                                (list
+                                 (intern (concatenate 'string (string ',conc-name) (string slot)))
+                                 objv))) ',slot-names)
+                    ,@body))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 9 - CONDITIONS
@@ -1104,7 +1104,7 @@ there are fewer distinct representations, the following rules apply:
                   ,@(loop
                       :for (type . body) :in clauses
                       :when (member type types)
-                      :collect `(,type ,@body))))))
+                        :collect `(,type ,@body))))))
 
 
 (defmacro float-typecase (expression &rest clauses)
@@ -1152,7 +1152,7 @@ DO:        Expands to a ETYPECASE where only the clauses with unique
 
 
 (defmacro float-ctypecase (expression &rest clauses)
-    "
+  "
 EXPRESSION: an expression evaluate to some value.
 
 CLAUSES:    ctypecase clauses where the type is one of the standard
@@ -1180,33 +1180,33 @@ DO:        Expands to a CTYPECASE where only the clauses with unique
     (* sign (scale-float
              (if (minusp sign)
                  (- significand (float-etypecase float
-                                  (long-float   long-float-negative-epsilon)
-                                  (double-float double-float-negative-epsilon)
-                                  (single-float single-float-negative-epsilon)
-                                  (short-float  short-float-negative-epsilon)))
+                                                 (long-float   long-float-negative-epsilon)
+                                                 (double-float double-float-negative-epsilon)
+                                                 (single-float single-float-negative-epsilon)
+                                                 (short-float  short-float-negative-epsilon)))
                  (+ significand (float-etypecase float
-                                  (long-float   long-float-epsilon)
-                                  (double-float double-float-epsilon)
-                                  (single-float single-float-epsilon)
-                                  (short-float  short-float-epsilon))))
+                                                 (long-float   long-float-epsilon)
+                                                 (double-float double-float-epsilon)
+                                                 (single-float single-float-epsilon)
+                                                 (short-float  short-float-epsilon))))
              exponent))))
 
 (defun -epsilon (float)
-   "Returns the float incremented by the smallest increment possible."
-   (multiple-value-bind (significand exponent sign) (decode-float float)
-     (* sign (scale-float
-              (if (minusp sign)
-                  (+ significand (float-etypecase float
-                                   (long-float   long-float-negative-epsilon)
-                                   (double-float double-float-negative-epsilon)
-                                   (single-float single-float-negative-epsilon)
-                                   (short-float  short-float-negative-epsilon)))
-                  (- significand (float-etypecase float
-                                   (long-float   long-float-epsilon)
-                                   (double-float double-float-epsilon)
-                                   (single-float single-float-epsilon)
-                                   (short-float  short-float-epsilon))))
-              exponent))))
+  "Returns the float incremented by the smallest increment possible."
+  (multiple-value-bind (significand exponent sign) (decode-float float)
+    (* sign (scale-float
+             (if (minusp sign)
+                 (+ significand (float-etypecase float
+                                                 (long-float   long-float-negative-epsilon)
+                                                 (double-float double-float-negative-epsilon)
+                                                 (single-float single-float-negative-epsilon)
+                                                 (short-float  short-float-negative-epsilon)))
+                 (- significand (float-etypecase float
+                                                 (long-float   long-float-epsilon)
+                                                 (double-float double-float-epsilon)
+                                                 (single-float single-float-epsilon)
+                                                 (short-float  short-float-epsilon))))
+             exponent))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1267,10 +1267,10 @@ NOTE:    This version avoids calling FUN twice with the same argument.
              :finally (return result))))
     (loop
       :for follows = (delete-duplicates (join (mapcar fun set)))
-      :then (delete-duplicates (join (cons follows (mapcar fun newbies))))
+        :then (delete-duplicates (join (cons follows (mapcar fun newbies))))
       :for newbies = (set-difference follows set)
       :while newbies
-       ;; :do (print (list 'newbies newbies))
+      ;; :do (print (list 'newbies newbies))
       :do (setf set (append newbies set))
       :finally (return set))))
 
@@ -1279,37 +1279,37 @@ NOTE:    This version avoids calling FUN twice with the same argument.
 ;; (DEFUN ARRAY->LIST (A) (MAP 'LIST (FUNCTION IDENTITY) A));;ARRAY->LIST
 
 (defun topological-sort (nodes lessp)
-   "
+  "
 RETURN: A list of NODES sorted topologically according to 
         the partial order function LESSP.
         If there are cycles (discounting reflexivity), 
         then the list returned won't contain all the NODES.
 "
-   (loop
-     :with sorted = '()
-     :with incoming = (map 'vector (lambda (to)
-                                     (loop
-                                       :for from :in nodes
-                                       :when (and (not (eq from to))
-                                                  (funcall lessp from to))
-                                       :sum 1))
-                           nodes)
-     :with q = (loop
-                 :for node :in nodes
-                 :for inco :across incoming
-                 :when (zerop inco)
-                 :collect node) 
-     :while q
-     :do (let ((n (pop q)))
-           (push n sorted)
-           (loop
-             :for m :in nodes
-             :for i :from 0
-             :do (when (and (and (not (eq n m))
-                                 (funcall lessp n m))
-                            (zerop (decf (aref incoming i))))
-                   (push m q))))
-     :finally (return (nreverse sorted))))
+  (loop
+    :with sorted = '()
+    :with incoming = (map 'vector (lambda (to)
+                                    (loop
+                                      :for from :in nodes
+                                      :when (and (not (eq from to))
+                                                 (funcall lessp from to))
+                                        :sum 1))
+                       nodes)
+    :with q = (loop
+                :for node :in nodes
+                :for inco :across incoming
+                :when (zerop inco)
+                  :collect node) 
+    :while q
+    :do (let ((n (pop q)))
+          (push n sorted)
+          (loop
+            :for m :in nodes
+            :for i :from 0
+            :do (when (and (and (not (eq n m))
+                                (funcall lessp n m))
+                           (zerop (decf (aref incoming i))))
+                  (push m q))))
+    :finally (return (nreverse sorted))))
 
 
 
@@ -1331,7 +1331,7 @@ RETURN:  VECTOR
   (do ((index 0 (1+ index)))
       ((>= index (array-dimension vector 0)))
     (setf (aref vector index) (funcall constructor index)))
-  vector) ;;VECTOR-INIT
+  vector)
 
 
 (defun undisplace-array (array)
@@ -1343,71 +1343,71 @@ AUTHOR:  Erik Naggum <erik@naggum.no>
   (let ((length (length array))
         (start 0))
     (loop
-       (multiple-value-bind (to offset) (array-displacement array)
-         (if to
-             (setq array to
-                   start (+ start offset))
-             (return (values array start (+ start length)))))))
-  ) ;;UNDISPLACE-ARRAY
+      (multiple-value-bind (to offset) (array-displacement array)
+        (if to
+            (setq array to
+                  start (+ start offset))
+            (return (values array start (+ start length))))))))
 
 
-(defun dichotomy (matchp min max)
-    "
+(defun dichotomy (matchp start end)
+  "
 
-MATCHP: A function taking an integer between START and END, and
+MATCHP: A function taking an integer between [START,END[, and
         returning an order (signed integer).
-MIN:    The minimum integer.
-MAX:    The maximum integer.
+START:  The minimum integer.
+END:    The maximum integer+1.
 RETURN: (values found index order)
-POST:	(<= min index max)
-        +-------------------+----------+-------+----------+----------------+
-        | Case              |  found   | index |  order   |     Error      |
-        +-------------------+----------+-------+----------+----------------+
-        | x < a[i]          |   FALSE  |  min  |  less    |      0         |
-        | a[i] < x < a[i+1] |   FALSE  |   i   |  greater |      0         |
-        | x = a[i]          |   TRUE   |   i   |  equal   |      0         |
-        | a[max] < x        |   FALSE  |  max  |  greater |      0         |
-        +-------------------+----------+-------+----------+----------------+
+POST:	(<= start index (1- end))
+        +-------------------+----------+-------+----------+
+        | Case              |  found   | index |  order   |
+        +-------------------+----------+-------+----------+
+        | x < a[i]          |   FALSE  | start |  less    |
+        | a[i] < x < a[i+1] |   FALSE  |   i   |  greater |
+        | x = a[i]          |   TRUE   |   i   |  equal   |
+        | a[max] < x        |   FALSE  | end-1 |  greater |
+        +-------------------+----------+-------+----------+
 "
-    (let* ((curmin min)
-           (curmax max)
-           (index  (truncate (+ curmin curmax) 2))
-           (order  (funcall matchp index)))
-      (loop :while (and (/= 0 order) (/= curmin index)) :do
-         ;; (FORMAT T "~&min=~S  cur=~S  max=~S   key=~S <~S> [cur]=~S ~%" CURMIN INDEX CURMAX VALUE (FUNCALL COMPARE VALUE (FUNCALL KEY (AREF VECTOR INDEX))) (AREF VECTOR INDEX))
-         (if (< order 0)
-             (setf curmax index)
-             (setf curmin index))
-         (setf index (truncate (+ curmin curmax) 2))
-         (setf order (funcall matchp index)))
-      (when (and (< min index) (< order 0))
-        (setf order 1)
-        (decf index))
-      (assert
-       (or (< (funcall matchp index) 0)
-           (and (> (funcall matchp index) 0)
-                (or (>= (1+ index) max)
-                    (< (funcall matchp (1+ index)) 0)))
-           (= (funcall matchp index) 0)))
-      (values (= order 0) index order)))
+  (let* ((curmin start)
+         (curmax end)
+         (index  (truncate (+ curmin curmax) 2))
+         (order  (funcall matchp index)))
+    (loop :while (and (/= 0 order) (/= curmin index)) :do
+      ;; (format t "~&min=~S  cur=~S  max=~S  <~S>~%" curmin index curmax (funcall matchp index))
+      (if (minusp order)
+          (setf curmax index)
+          (setf curmin index))
+      (setf index (truncate (+ curmin curmax) 2))
+      (setf order (funcall matchp index)))
+    ;; (format t "~&min=~S  cur=~S  max=~S  <~S> []~%" curmin index curmax (funcall matchp index))
+    (when (and (< start index) (minusp order))
+      (setf order 1)
+      (decf index))
+    (assert
+     (or (minusp (funcall matchp index))
+         (and (plusp (funcall matchp index))
+              (or (>= (1+ index) end)
+                  (minusp (funcall matchp (1+ index)))))
+         (= (funcall matchp index) 0)))
+    (values (zerop order) index order)))
 
 
 (defun dichotomy-search (vector value compare &key
-                         (start 0) (end (length vector))
-                         (key (function identity)))
+                                                (start 0) (end (length vector))
+                                                (key (function identity)))
   "
 PRE:	entry is the element to be searched in the table.
         (<= start end)
 RETURN: (values found index order)
 POST:	(<= start index end)
-        +-------------------+----------+-------+----------+----------------+
-        | Case              |  found   | index |  order   |     Error      |
-        +-------------------+----------+-------+----------+----------------+
-        | x < a[min]        |   FALSE  |  min  |  less    |      0         |
-        | a[i] < x < a[i+1] |   FALSE  |   i   |  greater |      0         |
-        | x = a[i]          |   TRUE   |   i   |  equal   |      0         |
-        | a[max] < x        |   FALSE  |  max  |  greater |      0         |
-        +-------------------+----------+-------+----------+----------------+
+        +-------------------+----------+-------+----------+
+        | Case              |  found   | index |  order   |
+        +-------------------+----------+-------+----------+
+        | x < a[min]        |   FALSE  |  min  |  less    |
+        | a[i] < x < a[i+1] |   FALSE  |   i   |  greater |
+        | x = a[i]          |   TRUE   |   i   |  equal   |
+        | a[max] < x        |   FALSE  |  max  |  greater |
+        +-------------------+----------+-------+----------+
 "
   (if (zerop (length vector))
       (values nil 0 -1)
@@ -1425,13 +1425,16 @@ POST:	(<= start index end)
         (when (and (< start index) (< order 0))
           (setf order 1)
           (decf index))
-        (assert
-         (or (< (funcall compare value (funcall key (aref vector index))) 0)
-             (and (> (funcall compare value (funcall key (aref vector index))) 0)
-                  (or (>= (1+ index) end)
-                      (< (funcall compare value
-                                  (funcall key (aref vector (1+  index)))) 0)))
-             (= (funcall compare value (funcall key (aref vector index))) 0)))
+        (assert (or (minusp (funcall compare value (funcall key (aref vector index))))
+                    (and (plusp (funcall compare value (funcall key (aref vector index))))
+                         (or (>= (1+ index) end)
+                             (minusp (funcall compare value
+                                              (funcall key (aref vector (1+  index)))))))
+                    (zerop (funcall compare value (funcall key (aref vector index)))))
+                
+                (index)
+                "The compare function is invalid: value<a[~D] or a[~:*~D]<value<a[~D] or a[~D]<value or a[~0@*~D]=value"
+                index (1+ index) end)
         (values (= order 0) index order))))
 
 
@@ -1547,21 +1550,21 @@ RETURN: If TABLE is NIL, then NIL,
 
 
 (defun hashtable (&key (test (function eql))
-                  (size nil sizep)
-                  (rehash-size nil rehash-size-p)
-                  (rehash-threshold nil rehash-threshold-p)
-                  elements)
+                    (size nil sizep)
+                    (rehash-size nil rehash-size-p)
+                    (rehash-threshold nil rehash-threshold-p)
+                    elements)
   "Creates a new hash-table, filled with the given ELEMENTS.
 ELEMENTS must be a list of lists of two items, the key and the value.
 Note: we use the name HASHTABLE to avoid name collision."
   (let ((table (apply (function make-hash-table)
-                :test test
-                (append (when sizep
-                          (list :size size))
-                        (when rehash-size-p
-                          (list :rehash-size rehash-size))
-                        (when rehash-threshold-p
-                          (list :rehash-threshold rehash-threshold))))))
+                      :test test
+                      (append (when sizep
+                                (list :size size))
+                              (when rehash-size-p
+                                (list :rehash-size rehash-size))
+                              (when rehash-threshold-p
+                                (list :rehash-threshold rehash-threshold))))))
     (dolist (item elements table)
       (setf (gethash (first item) table) (second item)))))
 
@@ -1589,7 +1592,7 @@ The other key parameter are passed to MAKE-HASH-TABLE.
                                 (list :rehash-threshold rehash-threshold))))))
     (map nil (lambda (element)
                (setf (gethash (funcall key element) table) (funcall value element)))
-         sequence)
+      sequence)
     table))
 
 
@@ -1669,7 +1672,7 @@ Like LET, but prints on the *trace-output* the value of the bindings.
 "
   (let ((vals (mapcar (lambda (clause)
                         (gensym (symbol-name
-                                  (if (symbolp clause) clause (first clause)))))
+                                 (if (symbolp clause) clause (first clause)))))
                       clauses))
         (res (gensym)))
     `(let ,(mapcar
@@ -1694,13 +1697,13 @@ Like LET, but prints on the *trace-output* the value of the bindings.
 
 
 (defmacro tracing-let* (clauses &body body)
-    "
+  "
 Like LET*, but prints on the *trace-output* the value of the bindings.
 "
   (if (null clauses)
       `(progn ,@body)
       `(tracing-let (,(first clauses))
-                    (tracing-let* ,(rest clauses) ,@body))))
+         (tracing-let* ,(rest clauses) ,@body))))
 
 
 (defmacro tracing-labels (defs &body body)
@@ -1713,20 +1716,20 @@ the local functions."
                              (parse-lambda-list (second def) :ordinary)))
                  (res (gensym "RESULTS")))
              `(,(first def) ,(second def)
-                ,@(when (stringp (third def))
-                        (list (third def)))
-                (format *trace-output*
-                  "~&Entering ~A (~@{:~A ~S~^ ~})~%" ',(first def)
-                  ,@(mapcan (lambda (arg) (list `',arg arg)) arguments))
-                (unwind-protect
-                     (progn (format *trace-output*
-                              "~&Exiting ~A --> ~{~S~^; ~}~%"
-                              ',(first def)
-                              (setf ,res (multiple-value-list
-                                          (progn ,@(cddr def)))))
-                            (values-list ,res))
-                  (format *trace-output*
-                    "~&Unwinding ~A~%" ',(first def))))))
+               ,@(when (stringp (third def))
+                   (list (third def)))
+               (format *trace-output*
+                       "~&Entering ~A (~@{:~A ~S~^ ~})~%" ',(first def)
+                       ,@(mapcan (lambda (arg) (list `',arg arg)) arguments))
+               (unwind-protect
+                    (progn (format *trace-output*
+                                   "~&Exiting ~A --> ~{~S~^; ~}~%"
+                                   ',(first def)
+                                   (setf ,res (multiple-value-list
+                                               (progn ,@(cddr def)))))
+                           (values-list ,res))
+                 (format *trace-output*
+                         "~&Unwinding ~A~%" ',(first def))))))
          defs)
      ,@body))
 
@@ -1749,7 +1752,7 @@ the local functions."
                             (itt items (1+ pivot) end)))))))
       (let ((vect (coerce sequence 'vector)))
         (itt vect 0 (length vect)))))
-    
+  
   (defun map-tree-postfix (fun tree)
     (if (null tree)
         nil 
@@ -1782,8 +1785,8 @@ DO:       Evaluate the expression, which must be a real,
            (flet ((gen-case ()
                     (incf index)
                     (if (zerop index)
-                       `(progn ,@(cdr less))
-                       `(progn ,@(cdr (aref clauses (1- index)))))))
+                        `(progn ,@(cdr less))
+                        `(progn ,@(cdr (aref clauses (1- index)))))))
              (lambda (node left right)
                (if (and (null left) (null right))
                    `(if (< ,vexpr ,(car node))
