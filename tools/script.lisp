@@ -99,7 +99,8 @@ otherwise we fallback to *PROGRAM-NAME*.")
         (princ ,verror *error-output*)
         (terpri *error-output*)
         (terpri *error-output*)
-        #-testing-script (ext:exit 1)))))
+        #+(and clisp (not testing-script)) (ext:exit 1)
+        #+(and (not clisp) (not testing-script)) (error "Missing EXIT for ~A" (lisp-implementation-type))))))
 
 
 

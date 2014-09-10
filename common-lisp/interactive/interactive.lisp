@@ -328,29 +328,31 @@ dumping all the exported symbols when :SHOW-EXPORTS is specified,
 and not dumping the used-by list when :HIDE-USED-BY is specified.
 The keywords are tested with STRING-EQUAL."
   (let ((options '((:show-exports :exports :export :t)
-                   (:hide-used-by :short           :s))))
+                   (:hide-used-by :short           :s)
+                   (:very-short                    :ss))))
     (flet ((list-package (name options)
              (let* ((show-exports (not (not (member :show-exports options))))
                     (show-used-by (not (member :hide-used-by options)))
+                    (very-short   (intersection '(:very-short :ss) options))
                     (packlist
-                     (sort (cond
-                             ((null name)  (copy-list (list-all-packages)))
-                             ((stringp name)
-                              ;; remove-if-not may return the argument!
-                              (delete-if-not
-                               (lambda (pack)
-                                 (some (lambda (pname)
-                                         (string-match-p name pname))
-                                       (cons (package-name pack)
-                                             (package-nicknames pack))))
-                               (copy-list (list-all-packages))))
-                             (t (list (find-package name))))
-                           (function string<) :key (function package-name)))
+                      (sort (cond
+                              ((null name)  (copy-list (list-all-packages)))
+                              ((stringp name)
+                               ;; remove-if-not may return the argument!
+                               (delete-if-not
+                                (lambda (pack)
+                                  (some (lambda (pname)
+                                          (string-match-p name pname))
+                                        (cons (package-name pack)
+                                              (package-nicknames pack))))
+                                (copy-list (list-all-packages))))
+                              (t (list (find-package name))))
+                            (function string<) :key (function package-name)))
                     #+(or)(name-width
-                           (loop for p in packlist
-                              maximize (length (package-name p))))
+                            (loop for p in packlist
+                                  maximize (length (package-name p))))
                     (numb-width
-                     (loop
+                      (loop
                         :for p :in packlist
                         :maximize (truncate
                                    (1+ (log
@@ -358,18 +360,21 @@ The keywords are tested with STRING-EQUAL."
                                              (length (list-all-symbols p)) 3)
                                         10))))))
                ;; (print `(,name show-exports ,show-exports show-used-by ,show-used-by))
-               (dolist (package packlist)
-                 (format t "~%~A~%   ~14A ~VD exported, ~VD total.~%"
-                         (package-name package)
-                         "Symbols:"
-                         numb-width (length (list-external-symbols package))
-                         numb-width (length (list-all-symbols package)))
-                 (flow-list "Nicknames:" (package-nicknames package))
-                 (flow-list "Uses:"      (package-use-list package))
-                 (when show-used-by
-                   (flow-list "Used by:"   (package-used-by-list package)))
-                 (when show-exports 
-                   (flow-list "Exported:" (list-external-symbols package))))
+               (if very-short
+                   (dolist (package packlist)
+                     (format t "~&~A~%" (package-name package)))
+                   (dolist (package packlist)
+                     (format t "~%~A~%   ~14A ~VD exported, ~VD total.~%"
+                             (package-name package)
+                             "Symbols:"
+                             numb-width (length (list-external-symbols package))
+                             numb-width (length (list-all-symbols package)))
+                     (flow-list "Nicknames:" (package-nicknames package))
+                     (flow-list "Uses:"      (package-use-list package))
+                     (when show-used-by
+                       (flow-list "Used by:"   (package-used-by-list package)))
+                     (when show-exports 
+                       (flow-list "Exported:" (list-external-symbols package)))))
                (values)))
            (eat-options (arguments)
              "

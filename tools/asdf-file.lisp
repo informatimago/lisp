@@ -11,13 +11,14 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2014-09-02 <PJB> Added generate-dot.
 ;;;;    2013-09-06 <PJB> Updated for publication.
 ;;;;    2012-04-09 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2012 - 2013
+;;;;    Copyright Pascal J. Bourguignon 2012 - 2014
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -36,15 +37,20 @@
 (defpackage "COM.INFORMATIMAGO.TOOLS.ASDF-FILE"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.GRAPH"
         "COM.INFORMATIMAGO.TOOLS.DEPENDENCY-CYCLES")
+  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.SCRIPT"
+                "SHELL")
   (:export "LOAD-SIMPLE-ASD-FILE"
 
            "ASDF-FILE" "ASDF-FILE-P" "MAKE-ASDF-FILE" "COPY-ASDF-FILE"
            "ASDF-FILE-PATH" "ASDF-FILE-DEPENDS-ON" "ASDF-FILE-REACHABLE"
            
            "ADJACENCY-LIST" "REACHABLE-LIST"
-           "DEPENDENCIES")
+           "DEPENDENCIES"
+
+           "GENERATE-DOT" "DOT")
   (:documentation "
 
 Reads simple .asd files, without instanciating ASDF objects.
@@ -59,7 +65,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2012 - 2013
+    Copyright Pascal J. Bourguignon 2012 - 2014
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -117,7 +123,7 @@ RETURN: A hash-table mapping file paths to ASDF-FILE structures.
           (maphash (lambda (path file)
                      (declare (ignore path))
                      (setf (asdf-file-reachable file)
-                           (compute-closure (function asdf-file-depends-on) (asdf-file-depends-on file))))
+                           (transitive-closure (function asdf-file-depends-on) (asdf-file-depends-on file))))
                    asdf-files)
           asdf-files)))
 
@@ -130,6 +136,73 @@ RETURN: A hash-table mapping file paths to ASDF-FILE structures.
   (asdf-file-reachable file))
 
 (defun dependencies  (p q) (member q (asdf-file-reachable p)))
+
+
+(defmethod generate-dot ((file asdf-file))
+  (let ((style     "filled")
+        (color     "black")
+        (fillcolor "LightYellow")
+        (label     (pathname-name (asdf-file-path file))))
+    (format nil "~S [ style=~A color=~A fillcolor=~A label=\"~A\" ];~%"
+            (pathname-name (asdf-file-path file)) style color fillcolor label)))
+
+(defmethod generate-dot ((edge cons))
+  (format nil "~S -> ~S [ weight=~D, style=~A, color=~A ];~%"
+          (pathname-name (asdf-file-path (car edge)))
+          (pathname-name (asdf-file-path (cdr edge)))
+          1
+          "solid" ; "dotted" "dashed" "bold"
+          "black"))
+
+(defmethod generate-dot ((path pathname))
+  "
+RETURN: A string containing the dot file data for this graph.
+"
+  (let ((files (load-simple-asd-file path)))
+    (with-output-to-string (*standard-output*)
+      (format t "digraph ~S~%" (pathname-name path))
+      (format t "{~%")
+      (format t "rankdir=~A;~%" "TB")
+      (format t "concentrate=~:[false~;true~];~%" t)
+      (mapc 'write-string '(
+                            "// attributes of graph:~%"
+                            "// page=8,11.4;    // page size (NeXTprinter:A4).~%"
+                            "// size=30,8;     // graph size (please edit to fit).~%"
+                            "// rotate=90;    // graph orientation (please edit to fit).~%"
+                            "// ratio=fill;  // fill the size (or compress, auto, aspect/ratio).~%"
+                            "nodesep=0.3;~%"
+                            "ranksep=0.3;~%"
+                            "center=1;~%"
+                            "// common attributes of NODES:~%"
+                            "node [height=0.2 width=0.5 shape=box fontsize=8 fontname=Times] ;~%"))
+      (maphash (lambda (key file)
+                 (declare (ignore key))
+                 (write-string (generate-dot file))) files)
+      (format t "// common attributes of edges:~%edge [style=solid];~%")
+      (maphash (lambda (key file)
+                 (declare (ignore key))
+                 (dolist (dependency (asdf-file-depends-on file))
+                   (write-string (generate-dot (cons file dependency)))))
+               files)
+      (format t "}~%"))))
+
+;; (COM.INFORMATIMAGO.TOOLS.ASDF-FILE:generate-dot #P"/Users/pjb/src/public/lisp/tools/com.informatimago.tools.check-asdf.asd")
+
+(defun dot (path)
+  (let ((path.dot (make-pathname :defaults path :type "dot"))
+        (path.pdf (make-pathname :defaults path :type "pdf")))
+    (with-open-file (dot path.dot
+                         :direction :output
+                         :if-does-not-exist :create
+                         :if-exists :supersede)
+      (write-string (generate-dot path) dot))
+    (shell "/opt/local/bin/dot -Tpdf -o ~S ~S"
+           (#+ccl ccl:native-translated-namestring #-ccl namestring path.pdf)
+           (#+ccl ccl:native-translated-namestring #-ccl namestring path.dot))
+    (shell "open ~S"
+           (#+ccl ccl:native-translated-namestring #-ccl namestring path.pdf))))
+
+;; (dot  #P"/Users/pjb/src/public/lisp/tools/com.informatimago.tools.check-asdf.asd")
 
 
 

@@ -36,12 +36,13 @@
     :name "com.informatimago.check-asdf"
     :description "Checks ASD Files and reports circular dependencies."
     :author "Pascal J. Bourguignon"
-    :version "1.0.1"
+    :version "1.0.4"
     :license "GPL3"
     :depends-on ("com.informatimago.common-lisp.cesarum"
                  "com.informatimago.clext") 
     :components ((:file "dependency-cycles")
-                 (:file "asdf-file"  :depends-on ("dependency-cycles"))
+                 (:file "asdf-file"  :depends-on ("dependency-cycles" "script"))
+                 (:file "script")
                  (:file "check-asdf" :depends-on ("dependency-cycles" "asdf-file"))))
 
 ;;;; THE END ;;;;

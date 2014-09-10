@@ -49,7 +49,7 @@
 
   :name "Informatimago Common Lisp Tools Agregate"
   
-  :version "1.0.1"
+  :version "1.0.2"
 
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Spring 2014")
@@ -61,12 +61,12 @@
   
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
 
-  :depends-on ("com.informatimago.tools.check-asdf"
-               "com.informatimago.tools.make-depends"
-               "com.informatimago.tools.manifest"
-               "com.informatimago.tools.pathname"
-               "com.informatimago.tools.symbol"
-               "com.informatimago.tools.quicklisp"))
+  :defsystem-depends-on ("com.informatimago.tools.check-asdf"
+                         "com.informatimago.tools.make-depends"
+                         "com.informatimago.tools.manifest"
+                         "com.informatimago.tools.pathname"
+                         "com.informatimago.tools.symbol"
+                         "com.informatimago.tools.quicklisp"))
 
 
 

@@ -105,7 +105,7 @@ Client code can rebind it to another universal date or set it to (now).")
 
 (defun parse-short-month (short-month-name)
   (let ((pos (position short-month-name *short-month-names*
-              :test (function string-equal))))
+                       :test (function string-equal))))
     (and pos (1+ pos))))
 
 
@@ -123,20 +123,20 @@ Client code can rebind it to another universal date or set it to (now).")
   (declare (ignore at arguments))
   (multiple-value-bind (se mi ho da mo ye) (decode-universal-time date)
     (if colon
-     (cond
-       ((< (- *today* date) (* 24 60 60))
-        (format stream  "~2,'0D:~2,'0D:~2,'0D   " ho mi se))
-       ((< (- *today* date) (* 6 30 24 60 60))
-        (format stream "~2,'0D-~2,'0D ~2,'0D:~2,'0D" mo da ho mi))
-       (t
-        (format stream "~4,'0D-~2,'0D-~2,'0D " ye mo da)))
-     (cond
-       ((< (- *today* date) (* 6 30 24 60 60))
-        (format stream "~3A ~2D ~2,'0D:~2,'0D"
-                (aref *short-month-names* (1- mo)) da ho mi))
-       (t
-        (format stream "~3A ~2D ~5D"
-                (aref *short-month-names* (1- mo)) da ye))))))
+        (cond
+          ((< (- *today* date) (* 24 60 60))
+           (format stream  "~2,'0D:~2,'0D:~2,'0D   " ho mi se))
+          ((< (- *today* date) (* 6 30 24 60 60))
+           (format stream "~2,'0D-~2,'0D ~2,'0D:~2,'0D" mo da ho mi))
+          (t
+           (format stream "~4,'0D-~2,'0D-~2,'0D " ye mo da)))
+        (cond
+          ((< (- *today* date) (* 6 30 24 60 60))
+           (format stream "~3A ~2D ~2,'0D:~2,'0D"
+                   (aref *short-month-names* (1- mo)) da ho mi))
+          (t
+           (format stream "~3A ~2D ~5D"
+                   (aref *short-month-names* (1- mo)) da ye))))))
 
 
 (defun shorter-date (universal-time)
@@ -167,7 +167,7 @@ Client code can rebind it to another universal date or set it to (now).")
                                     (symbol (string-downcase item))
                                     (otherwise item))) (cons name args)))))
       (error "Please assign a shell function to ~S" '*shell*)))
-  
+
 (defmacro defcommand (name &optional docstring)
   "Define a macro named NAME taking any number of arguments, and
 calling the external program of same name thru the shell."
@@ -212,30 +212,30 @@ three synchronized.
   "Return: whether all the directories in PATH exist;
            the path to the first directory that doesn't exist."
   (let* ((non-existent
-          (find-if-not
-           (lambda (dir)
-             #+ccl (declare (ignore dir))
-             
-             ;; We cannot use directory to check whether a directory
-             ;; exists.  So we try a file pattern, and if not found
-             ;; but no error is signaled, assume the directory exists.
-             
-             ;; Of course, this doesn't work on some implementations
-             ;; such as ccl.
+           (find-if-not
+            (lambda (dir)
+              #+ccl (declare (ignore dir))
+              
+              ;; We cannot use directory to check whether a directory
+              ;; exists.  So we try a file pattern, and if not found
+              ;; but no error is signaled, assume the directory exists.
+              
+              ;; Of course, this doesn't work on some implementations
+              ;; such as ccl.
 
-             ;; On ccl, if we try to create a file in an inexistant
-             ;; directory, it will create it!!!  But we can use
-             ;; probe-file to test directories in ccl…
+              ;; On ccl, if we try to create a file in an inexistant
+              ;; directory, it will create it!!!  But we can use
+              ;; probe-file to test directories in ccl…
 
 
-             (ignore-errors
+              (ignore-errors
                (or
                 #-ccl (directory (make-pathname :directory dir :name "RARE" :type "RARE" :defaults path))
                 #+ccl (probe-file path)
                 t))
-             )
-           (nreverse
-            (loop
+              )
+            (nreverse
+             (loop
                :for dir :on (reverse (pathname-directory path))
                :collect (reverse dir))))))
     (values (not non-existent)
@@ -261,7 +261,7 @@ RETURN: *WORKING-DIRECTORY*
   *working-directory*)
 
 
-  
+
 (defun parent-directory (dirpath)
   (make-pathname :directory (let ((dir (pathname-directory dirpath)))
                               (cons (car dir) (butlast (cdr dir))))
@@ -330,48 +330,48 @@ DO:         Displays the contents of the working directory and
             to load files.
 "
   (loop
-     (let* ((subdirs     (sort (subdirectories-names (working-directory))
-                               (function string<)))
-            (files       (sort (files (working-directory) :type "lisp")
-                               (lambda (a b) (string< (car a) (car b)))))
-            (item-count  (+ (length subdirs) (length files)))
-            (count-width (if (= 0 item-count) 1 (ceiling (log item-count 10)))))
-       (format t "~&")
-       (format t "--- current directory ----------------------------~%")
-       (format t "~V,A  ~A~%" count-width "" (working-directory))
-       (format t "--- parent directory ----------------------------~%")
-       (format t "~V,D) ~A~%"
-               count-width 0 (parent-directory (working-directory)))
-       (when subdirs
-         (format t "--- subdirectories -------------------------------~%")
-         (print-list t subdirs 1 :index-width count-width))
-       (when files
-         (format t "--- files ----------------------------------------~%")
-         (print-list t (mapcar (function car) files)
-                     (1+ (length subdirs)) :index-width count-width))
-       (format t "--------------------------------------------------~%")
-       (let ((answer
+    (let* ((subdirs     (sort (subdirectories-names (working-directory))
+                              (function string<)))
+           (files       (sort (files (working-directory) :type "lisp")
+                              (lambda (a b) (string< (car a) (car b)))))
+           (item-count  (+ (length subdirs) (length files)))
+           (count-width (if (= 0 item-count) 1 (ceiling (log item-count 10)))))
+      (format t "~&")
+      (format t "--- current directory ----------------------------~%")
+      (format t "~V,A  ~A~%" count-width "" (working-directory))
+      (format t "--- parent directory ----------------------------~%")
+      (format t "~V,D) ~A~%"
+              count-width 0 (parent-directory (working-directory)))
+      (when subdirs
+        (format t "--- subdirectories -------------------------------~%")
+        (print-list t subdirs 1 :index-width count-width))
+      (when files
+        (format t "--- files ----------------------------------------~%")
+        (print-list t (mapcar (function car) files)
+                    (1+ (length subdirs)) :index-width count-width))
+      (format t "--------------------------------------------------~%")
+      (let ((answer
               (block :answer
                 (loop
-                   (format t "~&Change directory number, ~
+                  (format t "~&Change directory number, ~
                             load file number, or -1 to quit: ")
-                   (finish-output)
-                   (let ((answer (read t nil nil)))
-                     (typecase answer
-                       (integer (if (<= -1 answer item-count)
-                                    (return-from :answer answer)
-                                    (format t "~&Input out of range.~%")))
-                       (otherwise (format t "~&Bad input type.~%"))))))))
-         (cond
-           ((= -1 answer) (return))
-           ((= 0 answer)
-            (change-working-directory (parent-directory (working-directory))))
-           ((<= answer (length subdirs))
-            (change-working-directory 
-             (child-directory (working-directory) (elt subdirs (1- answer)))))
-           (t (load (cdr (elt files (- answer (length subdirs) 1)))
-                    :verbose t)))))))
-    
+                  (finish-output)
+                  (let ((answer (read t nil nil)))
+                    (typecase answer
+                      (integer (if (<= -1 answer item-count)
+                                   (return-from :answer answer)
+                                   (format t "~&Input out of range.~%")))
+                      (otherwise (format t "~&Bad input type.~%"))))))))
+        (cond
+          ((= -1 answer) (return))
+          ((= 0 answer)
+           (change-working-directory (parent-directory (working-directory))))
+          ((<= answer (length subdirs))
+           (change-working-directory 
+            (child-directory (working-directory) (elt subdirs (1- answer)))))
+          (t (load (cdr (elt files (- answer (length subdirs) 1)))
+                   :verbose t)))))))
+
 
 (defun resolve (path &key (directory nil))
   (setf path (typecase path
@@ -422,8 +422,8 @@ RETURN: A list of options; a list of arguments
                      (otherwise (format nil "~A" (car args))))))
       (if (and (< 0 (length current))
                (char= (character "-") (char current 0)))
-           (push current options)
-           (push current arguments)))))
+          (push current options)
+          (push current arguments)))))
 
 
 (defun relativize (path default)
@@ -501,48 +501,58 @@ ARGUMENTS:  A list of paths. If name or type is not nil, then the file name
                :directory t))))
 
 
-
 (defun ls (&rest args)
   "COMMAND
 DO:         List the files or directories.
 OPTIONS:    -L long listing: item kind, size, date, name; otherwise only name.
+            -A all entries: list also entries whose name starts with a dot or ends with a tilde.
 ARGUMENTS:  A list of paths possibly containing wildcards.
             If none is given, then \"*\" is used.
 "
   (setf *today* (get-universal-time))
   (multiple-value-bind (opts args) (split-options args)
-    (let ((opt-long nil))
+    (let ((opt-long nil)
+          (opt-all  nil))
       (dolist (opt opts)
-        (cond ((string-equal  "-l" opt) (setf opt-long t))
-              (t (error "Invalid option ~A" opt))))
+        (cond ((or (eq :l opt) (string-equal  "-l" opt)) (setf opt-long t))
+              ((or (eq :a opt) (string-equal  "-a" opt)) (setf opt-all  t))
+              (t (error "Invalid option ~S" opt))))
       (dolist (entry
-                (sort
-                 (delete-duplicates
-                  ;; SBCL RETURNS DIRECTORIES FOR "*" AS WELL AS FOR "*/".
-                  (mapcan
-                   (lambda (path) (handler-case (directory path) (error () nil)))
-                   (mapcar
-                    (lambda (path) (resolve path :directory nil))
-                    (or (delete-duplicates
-                         (mapcan (function wilder-path) args)
-                         :key (function namestring)
-                         :test (function string=))
-                        '("*/" "*"))))
-                  :key (function namestring)
-                  :test (function string=))
-                 (function string<) :key (function namestring)))
-        (if opt-long
-            (format t "~1A ~10A ~11A ~A~%"
-                    (if (pathname-name entry) "-" "d")
-                    (handler-case
-                        (with-open-file (file entry :direction :input)
-                          (format nil "~10D" (file-length file)))
-                      (error () ""))
-                    (handler-case (shorter-date (file-write-date entry))
-                      (error () ""))
-                    (namestring (relativize entry (working-directory))))
-            (format t "~A~%"
-                    (namestring (relativize entry (working-directory))))))))
+               (sort
+                (delete-duplicates
+                 ;; SBCL RETURNS DIRECTORIES FOR "*" AS WELL AS FOR "*/".
+                 (mapcan
+                  (lambda (path) (handler-case (directory path) (error () nil)))
+                  (mapcar
+                   (lambda (path) (resolve path :directory nil))
+                   (or (delete-duplicates
+                        (mapcan (function wilder-path) args)
+                        :key (function namestring)
+                        :test (function string=))
+                       '("*/" "*" "*.*"))))
+                 :key (function namestring)
+                 :test (function string=))
+                (function string<) :key (function namestring)))
+        (when (or  opt-all
+                   (let* ((fns  (file-namestring entry))
+                          (name (if (string/= "" fns)
+                                    fns
+                                    (first (last (pathname-directory entry))))))
+                     (not (or (prefixp "."   name)
+                              #+ccl  (prefixp "\\." name)
+                              (suffixp "~"   name)))))
+          (if opt-long
+              (format t "~1A ~10A ~11A ~A~%"
+                      (if (pathname-name entry) "-" "d")
+                      (handler-case
+                          (with-open-file (file entry :direction :input)
+                            (format nil "~10D" (file-length file)))
+                        (error () ""))
+                      (handler-case (shorter-date (file-write-date entry))
+                        (error () ""))
+                      (namestring (relativize entry (working-directory))))
+              (format t "~A~%"
+                      (namestring (relativize entry (working-directory)))))))))
   (values))
 
 
@@ -593,7 +603,7 @@ SEE:        MORE
 DO:         Same as more, but force no pagination.
 "
   (apply (function more) :page nil paths))
-  
+
 
 (defvar *directory-stack* nil)
 
