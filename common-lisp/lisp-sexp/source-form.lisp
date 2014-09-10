@@ -20,7 +20,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2006 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2006 - 2014
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -89,7 +89,7 @@
 This package exports functions to parse and manipulate
 Common Lisp sources as lisp forms (such as in macros).
 
-Copyright Pascal J. Bourguignon 2003 - 2012
+Copyright Pascal J. Bourguignon 2003 - 2014
 This package is provided under the GNU General Public License.
 See the source file for details.
 "))
@@ -901,6 +901,9 @@ RETURN: A list describing the lambda-list for the user. Each item is a cons:
   "
 RETURN: A list of arguments taken from the parameters usable with apply
         to call a function with the same lambda-list.
+NOTE:   If no there is no &rest parameter in the lambda-list,
+        then a NIL is put at the end of the result, for APPLY.
+EXAMPLE: `(apply ,@(make-argument-list ll))
 "
   (let ((rest (lambda-list-rest-p self)))
     (append
@@ -1063,6 +1066,7 @@ RETURN:     A newly rebuilt lambda-list s-expr.
 
 
 (defmethod lambda-list-parameters ((self lambda-list))
+  "RETURN: a list of all the parameters in the lambda-list."
   (append
    (when (lambda-list-whole-parameter-p self)
      (list (lambda-list-whole-parameter self)))
