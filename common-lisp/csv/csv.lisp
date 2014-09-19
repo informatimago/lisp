@@ -15,6 +15,7 @@
 ;;;;    2005-09-01 <PJB> Made use of iso6429.
 ;;;;    2004-09-06 <PJB> Created.
 ;;;;BUGS
+;;;;    See also: http://www.faqs.org/rfcs/rfc4180.html#hsublogo
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
@@ -33,6 +34,7 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
+
 
 (in-package "COMMON-LISP-USER")
 (declaim (declaration also-use-packages))
