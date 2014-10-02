@@ -1075,7 +1075,7 @@
                          out (fourth x) (fourth x) 
                          (node-pos-x x) (node-pos-y x)
                          (node-size-x x) (node-size-y x)
-                         (apply  node-name (list (car x)))))
+                         (funcall node-name (car x))))
             lnij)
     (graf-diagram-generate-edges
      out leij (1+ (apply 'max (mapcar #'third leij))))
