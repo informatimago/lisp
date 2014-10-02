@@ -49,7 +49,8 @@
            "QUICK-WHERE"
            "QUICK-DELETE"
            "QUICK-RELOAD"
-           "QUICK-LOCAL-PROJECTS")
+           "QUICK-LOCAL-PROJECTS"
+           "QUICK-RESET")
   (:documentation "Quicklisp quick commands."))
 (in-package "COM.INFORMATIMAGO.TOOLS.QUICKLISP")
 
@@ -151,6 +152,9 @@ are listed."
 (defun quick-local-projects ()
   "Rebuilds the local projects system index."
   (ql:register-local-projects))
+
+(defun quick-reset ()
+  (quick-local-projects))
 
 
 ;;;; THE END ;;;;
