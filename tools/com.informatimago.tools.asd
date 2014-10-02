@@ -61,12 +61,13 @@
   
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
 
-  :defsystem-depends-on ("com.informatimago.tools.check-asdf"
-                         "com.informatimago.tools.make-depends"
-                         "com.informatimago.tools.manifest"
-                         "com.informatimago.tools.pathname"
-                         "com.informatimago.tools.symbol"
-                         "com.informatimago.tools.quicklisp"))
+  :depends-on ("com.informatimago.tools.check-asdf"
+               "com.informatimago.tools.make-depends"
+               "com.informatimago.tools.manifest"
+               "com.informatimago.tools.pathname"
+               "com.informatimago.tools.source"
+               "com.informatimago.tools.symbol"
+               "com.informatimago.tools.quicklisp"))
 
 
 
