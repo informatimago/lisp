@@ -107,11 +107,12 @@ License:
                '(1 2 3 4 5 6 7 8)))
 
 
-(defun ensure-list (item)
-  "
-RETURN: item if it's a list or (list item) otherwise.
+(defun ensure-list (object)
+                    "
+RETURN:         If OBJECT is a list then OBJECT, otherwise a fresh
+                list containing OBJECT.
 "
-  (if (listp item) item (list item)))
+  (if (listp object) object (list object)))
 
 
 (defun proper-list-p (object)
