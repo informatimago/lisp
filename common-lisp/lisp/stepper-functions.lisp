@@ -13,12 +13,13 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2014-10-08 <PJB> Corrected step-{break,unbreak}-{entry,exit}.
 ;;;;    2012-08-09 <PJB> Extracted from stepper.lisp
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2012 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2012 - 2014
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -227,8 +228,8 @@ NOTE:           The functions must have been compiled with the operators from
 
 RETURN:         The list of function names added.
 "
-  `(setf *break-entry-functions*
-         (delete-duplicates (union *break-entry-functions* ',fnames
+  `(setf *break-functions-entry*
+         (delete-duplicates (union *break-functions-entry* ',fnames
                                    :test (function equal))
                             :test (function equal))))
 
@@ -244,7 +245,7 @@ NOTE:           The functions must have been compiled with the operators from
 
 RETURN:         The list of step-break-entry functions remaining.
 "
-  `(setf *break-entry-functions* (set-difference *break-entry-functions* ',fnames
+  `(setf *break-functions-entry* (set-difference *break-functions-entry* ',fnames
                                                  :test (function equal))))
 
 
@@ -259,8 +260,8 @@ NOTE:           The functions must have been compiled with the operators from
 
 RETURN:         The list of function names added.
 "
-  `(setf *break-exit-functions*
-         (delete-duplicates (union *break-exit-functions* ',fnames
+  `(setf *break-functions-exit*
+         (delete-duplicates (union *break-functions-exit* ',fnames
                                    :test (function equal))
                             :test (function equal))))
 
@@ -276,7 +277,7 @@ NOTE:           The functions must have been compiled with the operators from
 
 RETURN:         The list of step-break-entry functions remaining.
 "
-  `(setf *break-exit-functions* (set-difference *break-exit-functions* ',fnames
+  `(setf *break-functions-exit* (set-difference *break-functions-exit* ',fnames
                                                 :test (function equal))))
 
 
