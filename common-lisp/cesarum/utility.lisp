@@ -9,6 +9,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2014-10-22 <PJB> Added hash-table-to-sexp and sexp-to-hash-table.
 ;;;;    2013-06-30 <PJB> Added FLOAT-{,C,E}TYPECASE; exported [-+]EPSILON.
 ;;;;    2008-06-24 <PJB> Added INCF-MOD and DECF-MOD.
 ;;;;    2007-12-01 <PJB> Removed PJB-ATTRIB macro (made it a flet of PJB-DEFCLASS).
@@ -32,7 +33,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2003 - 2013
+;;;;    Copyright Pascal J. Bourguignon 2003 - 2014
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -47,7 +48,6 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
-
 (in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
   (:use "COMMON-LISP"
@@ -93,11 +93,14 @@
    "HASH-TABLE-ENTRIES" "HASH-TABLE-PATH"
    "COPY-HASH-TABLE" "MAP-INTO-HASH-TABLE"
    "HASHTABLE" "PRINT-HASHTABLE"
+   "HASH-TABLE-TO-SEXP"
+   "SEXP-TO-HASH-TABLE"
    ;;
    "DICHOTOMY"
    "TRACING" "TRACING-LET" "TRACING-LET*" "TRACING-LABELS"
    ;;
-   "XOR" "EQUIV" "IMPLY" ;; "SET-EQUAL"
+   "XOR" "EQUIV" "IMPLY"
+   ;; "SET-EQUAL"
    )
   (:documentation
    "
@@ -110,7 +113,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2003 - 2012
+    Copyright Pascal J. Bourguignon 2003 - 2014
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -1595,6 +1598,36 @@ The other key parameter are passed to MAKE-HASH-TABLE.
       sequence)
     table))
 
+
+(defun hash-table-to-sexp (table)
+  "Returns a sexp containing the hash-table data."
+  (list 'hash-table
+        :test (hash-table-test table)
+        :size (hash-table-count table)
+        :rehash-size (hash-table-rehash-size table)
+        :rehash-threashold (hash-table-rehash-threshold table)
+        :elements (let ((entries '()))
+                    (maphash (lambda (k v) (push (cons k v) entries)) table)
+                    entries)))
+
+(defun sexp-to-hash-table (sexp)
+  "Create a new hash-table containing the data described in the sexp
+\(produced by HASH-TABLE-TO-SEXP."
+  (check-type sexp list)
+  (assert (eq 'hash-table (first sexp)))
+  (let* ((plist (rest sexp))
+         (test (getf plist :test 'eql))
+         (size (getf plist :size 8))
+         (rehash-size (getf plist :rehash-size 1.5))
+         (rehash-threshold (getf plist :rehash-threshold 0.85))
+         (elements (getf plist :elements))
+         (table (make-hash-table :test test
+                                 :size size
+                                 :rehash-size rehash-size
+                                 :rehash-threshold rehash-threshold)))
+    (loop :for (k . v) :in elements
+          :do (setf (gethash k table) v))
+    table))
 
 (defun print-hashtable (table &optional (stream *standard-output*))
   "Prints readably the hash-table, using #. and the HASHTABLE function."
