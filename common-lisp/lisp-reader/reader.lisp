@@ -2317,7 +2317,7 @@ RETURN: A list of all the macro and dispatch-macro characters in the readtable.
   (#s(s :a 1 :b 2 :c 3) 17)
   nil))
 
-
+#-clisp
 (tests "complex numbers"
        ((read-from-string "( #C(123 456) #c(-123 456)
                              #C(12.3f0 456) #c(-123 45.6f0)
