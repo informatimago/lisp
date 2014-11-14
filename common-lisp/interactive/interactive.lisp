@@ -226,25 +226,39 @@ If PACKAGE is NIL, the rotate *PACKAGE* and the top of the package stack."
     cluser))
 
 
-(defun mkupack (&optional name)
-  "Makes a new, temporary, user package like COMMON-LISP-USER."
-  (unless (find-package "COM.INFORMATIMAGO.PJB")
-    ;; Create a COM.INFORMATIMAGO.PJB package that reexports INTERACTIVE:
-    (let ((pjb (make-package
-                "COM.INFORMATIMAGO.PJB"
-                :use '("CL" "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.INTERACTIVE")))
-          (syms (list-external-symbols
-                 "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.INTERACTIVE")))
-      (import syms pjb)
-      (export syms pjb)))
-  (setf *package*
-        (make-package
-         (if name
-             (string name)
-             (loop
-                :for i :from 1 :for p = (format nil "USER~A" i)
-                :while (find-package p) :finally (return p)))
-         :use '("COMMON-LISP" "COM.INFORMATIMAGO.PJB"))))
+(defun mkupack (&key name stepper (use nil usep))
+  "
+DO:         Makes a new, temporary, user package like
+            COMMON-LISP-USER, and sets *PACKAGE* to it.
+
+NAME:       the name of the new package. By default, it's assigned the
+            name USERn with the first free n.
+
+STEPPER:    whether to use the CL-STEPPER package instead of COMMON-LISP.
+
+USE:        A package use list to use.  When given, STEPPER is ignored.
+            By default, it's (\"COMMON-LISP\" \"COM.INFORMATIMAGO.PJB\")
+            or (\"COM.INFORMATIMAGO.COMMON-LISP.LISP.STEPPER\" \"COM.INFORMATIMAGO.PJB\") depending
+            on STEPPER.
+"
+  (let ((cl          "COMMON-LISP")
+        (pjb         "COM.INFORMATIMAGO.PJB")
+        (cl-stepper  "COM.INFORMATIMAGO.COMMON-LISP.LISP.STEPPER")
+        (interactive "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.INTERACTIVE"))
+    (unless (find-package pjb)
+      ;; Create a COM.INFORMATIMAGO.PJB package that reexports INTERACTIVE:
+      (let ((pjb (make-package pjb :use (list cl interactive)))
+            (syms (list-external-symbols interactive)))
+        (import syms pjb)
+        (export syms pjb)))
+    (setf *package*
+          (make-package
+           (if name
+               (string name)
+               (loop
+                 :for i :from 1 :for p = (format nil "USER~A" i)
+                 :while (find-package p) :finally (return p)))
+           :use (if usep use (list (if stepper cl-stepper cl) pjb))))))
 
 
 (defmacro show (&body expressions)
