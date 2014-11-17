@@ -9,6 +9,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2014-11-18 <PJB> Added map-cartesian-product.
 ;;;;    2012-03-14 <PJB> Added plist-keys.
 ;;;;    2012-02-19 <PJB> Moved HASHED-* functions that work on sequence to
 ;;;;                     COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE.
@@ -53,6 +54,7 @@
    "MAKE-LIST-OF-RANDOM-NUMBERS" "LIST-INSERT-SEPARATOR"
    "NSPLIT-LIST-ON-INDICATOR" "NSPLIT-LIST" "DEEPEST-REC" "DEEPEST" "DEPTH"
    "FLATTEN" "LIST-TRIM" "TRANSPOSE" "AGET" "MEMQ"
+   "MAP-CARTESIAN-PRODUCT"
    "PLIST-KEYS" "PLIST-REMOVE" "PLIST-GET"
    "PLIST-PUT" "PLIST-CLEANUP" "HASHED-INTERSECTION" 
    ;; "HASHED-REMOVE-DUPLICATES" moved to COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE
@@ -361,6 +363,30 @@ RETURN: the total length ; the length of the stem ; the length of the circle.
                 (return (values i index (- i index)))
                 (setf (gethash current indexes) i)))
       :finally (return (values i i 0)))))
+
+
+
+
+
+(defun map-cartesian-product (fun &rest lists)
+"
+DO:         Call FUN with as arguments the elements of the cartesian
+            products of the lists in LISTS.
+RETURN:     A list of all the results of FUN.
+EXAMPLE:    (map-cartesian-product (function list) '(1 2 3) '(a b c) '(11 22))
+            --> ((1 a 11) (1 a 22) (1 b 11) (1 b 22) (1 c 11) (1 c 22)
+                 (2 a 11) (2 a 22) (2 b 11) (2 b 22) (2 c 11) (2 c 22)
+                 (3 a 11) (3 a 22) (3 b 11) (3 b 22) (3 c 11) (3 c 22))
+"
+  (unless (null lists)
+    (if (null (cdr lists))
+        (mapcar fun (car lists))
+        (mapcan (lambda (element)
+                  (apply (function map-cartesian-product)
+                         (lambda (&rest args)
+                           (apply fun element args))
+                         (cdr lists)))
+                (car lists)))))
 
 
 (defun plist-keys (plist)
