@@ -32,20 +32,18 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(cl:in-package :cl-user)
-(ql:quickload :com.informatimago.common-lisp.cesarum)
-(ql:quickload :com.informatimago.clext)
-(ql:quickload :closer-mop)
-
-(load "asdf-file.lisp")
+(in-package "COMMON-LISP-USER")
+(declaim (declaration also-use-packages))
+(declaim (also-use-packages "COM.INFORMATIMAGO.COMMON-LISP.PICTURE.TREE-TO-ASCII"))
 
 (defpackage "COM.INFORMATIMAGO.READ-SOURCES"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.GRAPH"
-        "COM.INFORMATIMAGO.DEPENDENCY-CYCLES"
-        "COM.INFORMATIMAGO.ASDF-FILE")
-  (:export "READ-SOURCES" "*CONTENTS*"))
+        "COM.INFORMATIMAGO.TOOLS.DEPENDENCY-CYCLES"
+        "COM.INFORMATIMAGO.TOOLS.ASDF-FILE")
+  (:export "READ-SOURCES" "*CONTENTS*")
+  (:shadow "CLASS" "CLASS-NAME" "FIND-CLASS"))
 (in-package "COM.INFORMATIMAGO.READ-SOURCES")
 
 (defun safe-find-package (designator)
@@ -169,7 +167,7 @@ common-lisp:package and common-lisp:symbol.
 
 
 
-(shadow '(class class-name find-class))
+
 (defstruct class
   name
   file
@@ -250,7 +248,9 @@ common-lisp:package and common-lisp:symbol.
                                                     (function dependencies)))
                      (tlee class)))
                  (or (gethash 'root nodes)
+                     #+#.(cl:if (cl:find-package "OBJC") '(:and) '(:or))
                      (gethash 'objc:objc-object nodes)
+                     #+#.(cl:if (cl:find-package "NS") '(:and) '(:or))
                      (gethash 'ns:ns-object nodes))))
         (*package* (or (cl:find-package :pw)
                        (safe-find-package :cl-user))))
@@ -307,6 +307,7 @@ common-lisp:package and common-lisp:symbol.
 
 (defun print-objc-class-hierarchy ()
   (setf *classes* (make-hash-table))
+  #+#.(cl:if (cl:find-package "NS") '(:and) '(:or))
   (convert-class-tree 'ns:ns-object)
   (classify-classes)
   (print-class-hierarchy))

@@ -17,6 +17,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2014-10-22 <PJB> Factorized out file reader functions, handle if-does-not-exist non-nil values.
 ;;;;    2009-07-27 <PJB> Renamed TEXT-FILE-TO-STRING-LIST to STRING-LIST-TEXT-FILE-CONTENTS,
 ;;;;                     Added missing setf functions.
 ;;;;    2007-07-07 <PJB> Made use of new CONTENTS-FROM-STREAM function.
@@ -27,7 +28,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2005 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2005 - 2014
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -69,7 +70,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2005 - 2012
+    Copyright Pascal J. Bourguignon 2005 - 2014
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -166,19 +167,42 @@ NOTE:           Empty subdirectories are not copied.
             (push dst-file copied-files)))))))
 
 
+
+
+(defun call-with-input-file (path element-type if-does-not-exist external-format thunk)
+  (let ((if-does-not-exist-action (if (member if-does-not-exist '(:error :create nil))
+                                      if-does-not-exist
+                                      nil))
+        (if-does-not-exist-value  (if (member if-does-not-exist '(:error :create nil))
+                                      nil
+                                      if-does-not-exist)))
+    (with-open-file (in path :direction :input
+                             :if-does-not-exist if-does-not-exist-action
+                             :element-type element-type
+                             :external-format external-format)
+      (typecase in
+        (null if-does-not-exist-value)
+        (stream (funcall thunk in))))))
+
+
+(defmacro with-input-file ((streamvar path element-type if-does-not-exist external-format) &body body)
+  `(call-with-input-file ,path ,element-type ,if-does-not-exist ,external-format (lambda (,streamvar) ,@body)))
+
+
 (defun sexp-file-contents (path &key (if-does-not-exist :error)
-                           (external-format :default))
+                                  (external-format :default))
   "
-RETURN: The first SEXP of the file at PATH,
-        or what is specified by IF-DOES-NOT-EXIST if it doesn't exist.
+IF-DOES-NOT-EXIST:  Can be :error, :create, nil, or another value that
+                    is returned instead of the content of the file if
+                    it doesn't exist.
+
+RETURN:             The first SEXP of the file at PATH, or the value
+                    of IF-DOES-NOT-EXIST when not :ERROR or :CREATE
+                    and the file doesn't exist.
 "
-  (with-open-file (in path :direction :input
-                      :if-does-not-exist if-does-not-exist
-                      :external-format external-format)
-    (if (and (streamp in) (not (eq in if-does-not-exist)))
-        (let ((*read-base* 10.))
-          (read in nil in))
-        in)))
+  (with-input-file (in path 'character if-does-not-exist external-format)
+    (let ((*read-base* 10.))
+      (read in nil in))))
 
 
 (defun (setf sexp-file-contents) (new-contents path
@@ -207,19 +231,20 @@ RETURN: The NEW-CONTENTS, or if-exists or if-does-not-exist in case of error.
 (defun sexp-list-file-contents (path &key (if-does-not-exist :error)
                                        (external-format :default))
   "
-RETURN: All the SEXPs of the file at PATH gathered in a list
-        or what is specified by IF-DOES-NOT-EXIST if it doesn't exist.
+IF-DOES-NOT-EXIST:  Can be :error, :create, nil, or another value that
+                    is returned instead of the content of the file if
+                    it doesn't exist.
+
+RETURN:             All the SEXPs of the file at PATH gathered in a
+                    list, or the value of IF-DOES-NOT-EXIST when not
+                    :ERROR or :CREATE and the file doesn't exist.
 "
-  (with-open-file (in path :direction :input
-                      :if-does-not-exist if-does-not-exist
-                      :external-format external-format)
-    (if (and (streamp in) (not (eq in if-does-not-exist)))
-        (let ((*read-base* 10.))
-          (loop
-            :for form = (read in nil in)
-            :until (eq form in)
-            :collect form))
-        in)))
+  (with-input-file (in path 'character if-does-not-exist external-format)
+    (let ((*read-base* 10.))
+      (loop
+        :for form = (read in nil in)
+        :until (eq form in)
+        :collect form))))
 
 (defun (setf sexp-list-file-contents) (new-contents path
                                        &key (if-does-not-exist :create)
@@ -255,14 +280,18 @@ RETURN:         The NEW-CONTENTS, or if-exists or if-does-not-exist in
 
 
 (defun string-list-text-file-contents (path &key (if-does-not-exist :error)
-                                      (external-format :default))
+                                              (external-format :default))
   "
-RETURN:  the list of lines collected from the file.
+IF-DOES-NOT-EXIST:  Can be :error, :create, nil, or another value that
+                    is returned instead of the content of the file if
+                    it doesn't exist.
+
+RETURN:             The list of lines collected from the file, or the
+                    value of IF-DOES-NOT-EXIST when not :ERROR or
+                    :CREATE and the file doesn't exist.
 "
-  (with-open-file (in path :direction :input
-                      :if-does-not-exist if-does-not-exist
-                      :external-format external-format)
-    (stream-to-string-list  in)))
+  (with-input-file (in path 'character if-does-not-exist external-format)
+     (stream-to-string-list in)))
 
 
 (defun (setf string-list-text-file-contents) (new-contents path
@@ -289,17 +318,19 @@ RETURN:         The NEW-CONTENTS or if-exists or if-does-not-exist in case of er
 
 
 (defun text-file-contents (path &key (if-does-not-exist :error)
-                           (external-format :default))
+                                  (external-format :default))
   "
-RETURN: The contents of the file at PATH as a LIST of STRING lines.
-        or what is specified by IF-DOES-NOT-EXIST if it doesn't exist.
+IF-DOES-NOT-EXIST:  Can be :error, :create, nil, or another value that
+                    is returned instead of the content of the file if
+                    it doesn't exist.
+
+RETURN:             The contents of the file at PATH as a LIST of
+                    STRING lines, or the value of IF-DOES-NOT-EXIST
+                    when not :ERROR or :CREATE and the file doesn't
+                    exist.
 "
-  (with-open-file (in path :direction :input
-                      :if-does-not-exist if-does-not-exist
-                      :external-format external-format)
-    (if (and (streamp in) (not (eq in if-does-not-exist)))
-        (contents-from-stream in :min-size 16384)
-        in)))
+  (with-input-file (in path 'character if-does-not-exist external-format)
+    (contents-from-stream in :min-size 16384)))
 
 
 (defun (setf text-file-contents) (new-contents path
@@ -322,19 +353,20 @@ DO:     Store the NEW-CONTENTS into the file at PATH.  By default,
 
 
 (defun binary-file-contents (path &key (if-does-not-exist :error)
-                             (element-type '(unsigned-byte 8))
-                             (external-format :default))
+                                    (element-type '(unsigned-byte 8))
+                                    (external-format :default))
   "
-RETURN: The contents of the file at PATH as a VECTOR of (UNSIGNED-BYTE 8),
-        or what is specified by IF-DOES-NOT-EXIST if it doesn't exist.
+IF-DOES-NOT-EXIST:  Can be :error, :create, nil, or another value that
+                    is returned instead of the content of the file if
+                    it doesn't exist.
+
+RETURN:             The contents of the file at PATH as a VECTOR of
+                    (UNSIGNED-BYTE 8), or the value of
+                    IF-DOES-NOT-EXIST when not :ERROR or :CREATE and
+                    the file doesn't exist.
 "
-  (with-open-file (in path :direction :input
-                      :if-does-not-exist if-does-not-exist
-                      :element-type element-type
-                      :external-format external-format)
-    (if (and (streamp in) (not (eq in if-does-not-exist)))
-        (contents-from-stream in :min-size 16384)
-        in)))
+  (with-input-file (in path element-type if-does-not-exist external-format)
+    (contents-from-stream in :min-size 16384)))
 
 
 (defun (setf binary-file-contents) (new-contents path

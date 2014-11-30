@@ -80,9 +80,9 @@ License:
 (deftype cardinal () '(integer 0))
 
 (defun copy-vector (vector &key (start 0) (end (length vector))
-                    (element-type nil))
-  (let ((result (apply (function make-array) (list (- end start))
-                       (when element-type (list :element-type element-type)))))
+                    (element-type t element-type-p))
+  (let ((result (multiple-value-call (function make-array) (list (- end start))
+                  (if element-type-p (values :element-type element-type) (values)))))
     (replace result vector :start2 start :end2 end)
     result))
 

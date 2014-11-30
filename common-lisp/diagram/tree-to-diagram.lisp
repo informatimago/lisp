@@ -96,8 +96,7 @@ RETURN:  a list (n' l' x' y') for the following brother node.
   (format t "	rtfText {\\rtf0\\ansi{\\fonttbl\\f0\\fswiss Helvetica;}\\margl40\\margr40\\pard\\tx960\\tx1920\\tx2880\\tx3840\\tx4800\\tx5760\\tx6720\\tx7680\\tx8640\\tx9600\\f0\\b\\i0\\ulnone\\qc\\fs20\\fc0\\cf0 ~s}~%" node)
   (format t "	textPlacement middle~%")
   (format t "end~%~%")
-  (list (1+ n) (1+ l) x (+ 27 y))
-  ) ;;TREE-DIAGRAM-GENERATE-NODE
+  (list (1+ n) (1+ l) x (+ 27 y)))
 
 
 (defun tree-diagram-generate-inherit (n l x y)
@@ -122,8 +121,7 @@ RETURN:  a list (n' l' x' y') for the first child node.
   (format t "	filled~%")
   (format t "	textPlacement top~%")
   (format t "end~%")
-  (list (1+ n) (1+ l) (+ 81 x) (+ 27 y))
-  ) ;;TREE-DIAGRAM-GENERATE-INHERIT
+  (list (1+ n) (1+ l) (+ 81 x) (+ 27 y)))
 
 
 (defun tree-diagram-generate-adjust-x (inc)
@@ -131,8 +129,7 @@ RETURN:  a list (n' l' x' y') for the first child node.
 inc:     a list (n l x y) corresponding to the after last brother.
 RETURN:  a list (n' l' x' y') for the next uncle node.
 "
-  (list (car inc) (cadr inc) (- (caddr inc) 81) (car (cdddr inc)))
-  ) ;;TREE-DIAGRAM-GENERATE-ADJUST-X
+  (list (car inc) (cadr inc) (- (caddr inc) 81) (car (cdddr inc))))
 
 
 (defun tree-diagram-generate-tree (n l x y tree)
@@ -142,14 +139,13 @@ DOES:    writes to the *standard-output* the Diagram text
 RETURN:  a list (n' l' x' y') for the next brother subtree.
 "
   (if (null (cdr tree))
-      (apply 'tree-diagram-generate-node (list n l x y (car tree)))
-      (let ((inc (apply 'tree-diagram-generate-inherit
-                        (apply 'tree-diagram-generate-node
-                               (list n l x y (car tree))))))
+      (tree-diagram-generate-node n l x y (car tree))
+      (let ((inc (apply (function tree-diagram-generate-inherit)
+                        (tree-diagram-generate-node n l x y (car tree)))))
         (do ((subtrees (cdr tree) (cdr subtrees)))	((null subtrees))
-          (setq inc (apply 'tree-diagram-generate-tree 
+          (setq inc (apply (function tree-diagram-generate-tree) 
                            (append inc (list (car subtrees))))))
-        (tree-diagram-generate-adjust-x inc)))) ;;TREE-DIAGRAM-GENERATE-TREE
+        (tree-diagram-generate-adjust-x inc))))
 
 
 (defun tree-to-diagram (tree)
@@ -157,9 +153,7 @@ RETURN:  a list (n' l' x' y') for the next brother subtree.
 PRE:    tree is a cons of the node and the list of children.
 DOES:   writes to the *standard-output* the Diagram file text.
 "
-  (tree-diagram-generate-tree 1000 60 45 27 tree)
-  ) ;;TREE-TO-DIAGRAM
-
+  (tree-diagram-generate-tree 1000 60 45 27 tree))
 
 
 (defun tree-depth (tree)
@@ -169,9 +163,8 @@ RETURN: the depth of the tree.
 "
   (if (null tree)
       0
-      (1+ (apply 'max (cons 0 (remove nil (mapcar 'tree-depth (cdr tree)))))))
-  ) ;;TREE-DEPTH
-
+      (1+ (reduce (function max) (cdr tree) :key (fnuction tree-depth)
+                                            :initial-value 0))))
 
 
 (defun tree-size (tree)
@@ -184,9 +177,7 @@ RETURN: The size of the tree (number of nodes)
      do (if (listp item)
             (setq count (+ count (tree-size item)))
             (setq count (1+ count)))
-     finally (return count))
-  ) ;;TREE-SIZE
-
+     finally (return count)))
 
 
 (defun tree-generate-random (depth width)
@@ -200,8 +191,7 @@ NOTE:    The result can easily be degenreate (a single node,
       (random most-positive-fixnum)
       (loop for i from 0 below (random (1+ width))
          collect (tree-generate-random (1- depth) width) into children
-         finally (return (cons (random most-positive-fixnum) children))))
-  ) ;;TREE-GENERATE-RANDOM
+         finally (return (cons (random most-positive-fixnum) children)))))
 
 
 ;; (insert (tree-to-ascii (generate-random-tree 7 3)))

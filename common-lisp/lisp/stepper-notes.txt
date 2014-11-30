@@ -7,6 +7,25 @@ Common Lisp Source Code Stepper
 
 Random notes.
 
+TODO
+===========
+
+- break on condition.
+
+- implement a cl-stepper:break to integrate with the stepper.
+
+- improve interactivity when entering the stepper upon a break (on
+  entry or exit).  
+
+     + We want to be able to continue to next break.
+
+     + See if we can add breakpoints without recompiling (and
+       therefore while debugging).
+       (ie. each step point can be a break-point).
+
+- extend into a full debugger.
+
+
 Terminology
 ===========
 

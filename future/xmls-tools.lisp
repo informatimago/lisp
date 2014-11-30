@@ -31,16 +31,11 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
-;;;;    
-
 (defpackage "XMLS-TOOLS"
   (:use "COMMON-LISP"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
         #+ccl "CCL" #-ccl "CLOS")
-  (:export "SCASE"
-           "CONC-SYMBOL" "MAKE-KEYWORD"
-           "COMPUTE-CLOSURE" "TOPOLOGICAL-SORT"
-
-           "DEFCLASS*" "*PRINT-OBJECT-READABLY*"
+  (:export "DEFCLASS*" "*PRINT-OBJECT-READABLY*"
            
            "DEFINE-CLASS-STRUCTURE"
            "DEFINE-LIST-STRUCTURE"
@@ -65,50 +60,6 @@
   (defvar *dump-exportable-symbols-p* nil
     "Set to T to get a message with the list of the symbols defined
 by define-class-structure and define-list-structure."))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Extracted from com.informatimago.common-lisp.utilities et al.:
-
-(defmacro scase (keyform &rest clauses)
-  "
-DO:         A CASE, but for string keys. That is, it uses STRING= as test
-            insteand of the ''being the same'' test.
-"
-  (let ((key (gensym "KEY")))
-    `(let ((,key ,keyform))
-       (cond
-         ,@(mapcar (lambda (clause)
-                     (if (or (eq (car clause) 'otherwise) (eq (car clause) 't))
-                         `(t ,@(cdr clause))
-                         `((member ,key ',(car clause) :test (function string=))
-                           ,@(cdr clause))))
-                   clauses)))))
-
-
-(defun make-keyword (sym)
-  "
-RETURN: A new keyword with SYM as name.
-"
-  (intern (string sym) (find-package "KEYWORD")))
-
-
-(defun conc-symbol (&rest args)
-  "
-DO:      Concatenate the arguments and INTERN the resulting string.
-NOTE:    The last two arguments maybe :PACKAGE <a-package>
-         in which case the symbol is interned into the given package
-         instead of *PACKAGE*.
-"
-  (let ((package *package*))
-    (when (and (<= 2 (length args))
-               (eq :package (car (last args 2))))
-      (setf package (car (last args))
-            args (butlast args 2)))
-    (intern (with-standard-io-syntax
-              (apply (function concatenate) 'string
-                     (mapcar (function string) args)))
-            package)))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -215,6 +166,7 @@ DO:     Define a class implementing the structure API.
              include initial-offset predicate
              print-function print-object unbound
              symbols)
+    (declare (ignorable initial-offset))
     (flet ((push1 (symbol) (push symbol symbols) symbol))
       (if (symbolp name-and-options)
           (setf name    name-and-options
@@ -514,73 +466,6 @@ FIELDS: A list of symbols.  The before the last one can be &REST in which case
   (if (null path)
       root
       (element-at-path (get-first-child-tagged root (first path)) (rest path))))
-
-;; (DEFUN COMPUTE-CLOSURE (FUN SET)
-;;   "
-;; FUN:     set --> P(set)
-;;           x |--> { y }
-;; RETURN:  The closure of fun on the set.
-;; NOTE:    Not a lisp closure!
-;; EXAMPLE: (compute-closure (lambda (x) (list (mod (* x 2) 5))) '(1)) --> (2 4 3 1)
-;; "
-;;   (LOOP
-;;      :FOR NEW-SET = (DELETE-DUPLICATES (UNION SET (MAPCAN FUN SET)))
-;;      :WHILE (SET-EXCLUSIVE-OR NEW-SET SET)
-;;      :DO (SETF SET NEW-SET)
-;;      :FINALLY (RETURN NEW-SET)))
-
-(defun compute-closure (fun set)
-  "
-FUN:     set --> P(set)
-          x |--> { y }
-RETURN:  The closure of fun on the set.
-NOTE:    Not a lisp closure!
-EXAMPLE: (compute-closure (lambda (x) (list (mod (* x 2) 5))) '(1)) --> (2 4 3 1)
-NOTE:    This version avoids calling FUN twice with the same argument.
-"
-  (loop
-     :for follows = (delete-duplicates (mapcan fun set))
-     :then (delete-duplicates (append (mapcan fun newbies) follows))
-     :for newbies = (set-difference follows set)
-     :while newbies
-     :do (setf set (append newbies set))
-     :finally (return set)))
-
-
-(defun topological-sort (nodes lessp)
-  "
-RETURN: A list of NODES sorted topologically according to 
-        the partial order function LESSP.
-        If there are cycles (discounting reflexivity), 
-        then the list returned won't contain all the NODES.
-"
-  (loop
-     :with sorted = '()
-     :with incoming = (map 'vector (lambda (to)
-                                     (loop
-                                        :for from :in nodes
-                                        :when (and (not (eq from to))
-                                                   (funcall lessp from to))
-                                        :sum 1))
-                           nodes)
-     :with q = (loop
-                  :for node :in nodes
-                  :for inco :across incoming
-                  :when (zerop inco)
-                  :collect node) 
-     :while q
-     :do (let ((n (pop q)))
-           (push n sorted)
-           (loop
-              :for m :in nodes
-              :for i :from 0
-              :do (when (and (and (not (eq n m))
-                                  (funcall lessp n m))
-                             (zerop (decf (aref incoming i))))
-                    (push m q))))
-     :finally (return (nreverse sorted))))
-
-
 
 
 ;;;; THE END ;;;;
