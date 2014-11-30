@@ -463,7 +463,7 @@ RETURN: The list of cut lines.
   ;;         the last line entered.
   (with-addresses (buffer (linum to 1))
     (buffer-save-undo buffer)
-    (do-insert buffer (1- linum))))
+    (do-insert buffer (max 0 (1- linum)))))
 
 
 (defun cmd-delete-lines (buffer from to arg)
@@ -564,7 +564,7 @@ RETURN: The list of cut lines.
   (with-addresses (buffer (curr from 1) (last to 1))
     (buffer-save-undo buffer)
     (setf (buffer-cut-lines buffer) (do-cut buffer curr last))
-    (do-paste buffer (1- curr)
+    (do-paste buffer (max 0 (1- curr))
               (apply (function concatenate) 'string
                      (buffer-cut-lines buffer)))))
 
