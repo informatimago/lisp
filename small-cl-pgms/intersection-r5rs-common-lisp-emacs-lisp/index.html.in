@@ -6,14 +6,14 @@
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"> 
     <link rel="stylesheet"    href="default.css"  type="text/css">
 
-    <TITLE>Brainfuck in Lisp -- Lisp in Brainfuck</TITLE>
+    <TITLE>Intersection Common Lisp, Emacs Lisp and R5RS Scheme</TITLE>
 
     <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
     <META HTTP-EQUIV="Description" 
           NAME="description" CONTENT="BASIC in Common Lisp">
     <META NAME="author"      CONTENT="Pascal J. Bourguignon">
 
-    <META NAME="keywords"    CONTENT="Brainfuck, Common Lisp, Lisp, virtual machine, compiler, emulator">
+    <META NAME="keywords"    CONTENT="Intersection, Common Lisp, Emacs Lisp, R5RS, Scheme, Lisp">
 
 
     <style type="text/css">

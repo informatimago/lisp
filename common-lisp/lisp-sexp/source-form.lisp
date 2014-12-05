@@ -12,11 +12,24 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2014-11-05 <PJB> make-parameter-list now returns also
+;;;;                     parameters from
+;;;;                     sub-destructuring-lambda-lists.
 ;;;;    2010-02-06 <PJB> Corrected the superclass of orakawbe-ll.
 ;;;;                     preqvars instanciated the wrong parameter class.
 ;;;;                     bodyvar poped the body parameter name.
 ;;;;    2006-05-25 <PJB> Created
 ;;;;BUGS
+;;;;
+;;;;     "3.4.4.1 Destructuring by Lambda Lists" seems to apply only
+;;;;     to macro lambda lists (therefore to destructuring lambda
+;;;;     lists only when used in a macro lambda list). Unless "and
+;;;;     supports destructuring in the same way." in "3.4.5
+;;;;     Destructuring Lambda Lists" means that 3.4.4.1 also applies
+;;;;     to destructuring lambda lists.
+;;;;
+;;;;     (parse-lambda-list '(a b . r) :destructuring) is not implemented yet.
+;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
@@ -74,7 +87,10 @@
    ;; Parsing lambda-lists:
    "PARSE-LAMBDA-LIST" "PARSE-ORIGINAL-LAMBDA-LIST"
    ;; Generating information from a lambda-list instance:
-   "MAKE-HELP" "MAKE-ARGUMENT-LIST" "MAKE-ARGUMENT-LIST-FORM" "MAKE-LAMBDA-LIST"
+   "MAKE-HELP"
+   "MAKE-ARGUMENT-LIST" "MAKE-ARGUMENT-LIST-FORM"
+   "MAKE-FLAT-ARGUMENT-LIST" "MAKE-FLAT-ARGUMENT-LIST-FORM"
+   "MAKE-LAMBDA-LIST"
    ;; Parsing sources:
    "EXTRACT-DOCUMENTATION" "EXTRACT-DECLARATIONS" "EXTRACT-BODY"
    "PARSE-BODY"
@@ -134,6 +150,9 @@ See the source file for details.
 (defgeneric parse-original-lambda-list (self))
 (defgeneric make-help (self))
 (defgeneric make-argument-list (self))
+(defgeneric make-argument-list-form (self))
+(defgeneric make-flat-argument-list (self))
+(defgeneric make-flat-argument-list-form (self))
 (defgeneric make-lambda-list (self))
 
 ;;;--------------------
@@ -896,7 +915,6 @@ RETURN: A list describing the lambda-list for the user. Each item is a cons:
    (when (lambda-list-allow-other-keys-p self)
      (list (cons :allow-other-keys "(other keys allowed)")))))
 
-
 (defmethod make-argument-list ((self lambda-list))
   "
 RETURN: A list of arguments taken from the parameters usable with apply
@@ -918,6 +936,57 @@ EXAMPLE: `(apply ,@(make-argument-list ll))
              '())))))
 
 
+(defgeneric parameters-by-category (ll)
+  (:method ((self lambda-list))
+    (flet ((destructp (parameter)
+             (typep parameter 'destructuring-lambda-list)))
+      (let* ((mandatories (lambda-list-mandatory-parameters self))
+             (destructs   (remove-if-not (function destructp) mandatories))
+             (desman      '())
+             (desopt      '())
+             (desres      '())
+             (deskey      '()))
+        (dolist (destruct destructs)
+          (multiple-value-bind (man opt res key) (parameters-by-category destruct)
+            (setf desman (nconc desman man)
+                  desopt (nconc desopt opt)
+                  desres (nconc desres res)
+                  deskey (nconc deskey key))))
+        (values (append (remove-if (function destructp) mandatories) desman)
+                (append (lambda-list-optional-parameters  self) desopt)
+                (append (when (lambda-list-rest-p self)
+                          (list (lambda-list-rest-parameter self))) desres)
+                (append (when (lambda-list-key-p self)
+                          (lambda-list-keyword-parameters  self)) deskey))))))
+
+
+(defmethod make-flat-argument-list ((self lambda-list))
+  "
+
+RETURN: A list of arguments taken from the parameters usable with apply
+        to call a function with the same lambda-list.
+
+NOTE:   If no there is no &rest parameter in the lambda-list,
+        then a NIL is put at the end of the result, for APPLY.
+
+NOTE:   If the lambda-list is a macro-lambda-list or a
+        destructuring-lambda-list, some of the mandatory parameters
+        may be sub- destructuring-lambda-lists (and recursively).  The
+        arguments collected from those sub- lambda lists are appended
+        after each sublist (mandatories, optionals, keywords, and
+        rests).
+"
+  (let ((rest (lambda-list-rest-p self)))
+    (multiple-value-bind (man opt res key) (parameters-by-category self)
+      (append
+       (mapcar (function parameter-name) man)
+       (mapcar (function parameter-name) opt)
+       (mapcan (lambda (par) (list (ensure-parameter-keyword par)
+                                   (parameter-name par)))
+               key)
+       (mapcar (function parameter-name) res)))))
+
+
 
 
 ;;;; MAKE-ARGUMENT-LIST-FORM
@@ -934,7 +1003,6 @@ EXAMPLE: `(apply ,@(make-argument-list ll))
 ;; |  yes |   yes  | yes | yes
 ;; +------+--------+-----+---------+
 
-(defgeneric make-argument-list-form (lambda-list))
 (defmethod make-argument-list-form ((self lambda-list))
   "
 RETURN: A form that will build a list of arguments passing the same arguments

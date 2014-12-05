@@ -590,17 +590,19 @@ DO:        Implements a minimalist CL Read-Eval-Print body.
                     body))))
 
 
-(defun call-step-function (name pnames pvals thunk)
+(defun call-step-function (name specializers pnames pvals thunk)
   (labels ((report-enter (out)
              (with-step-printing
-                 (format out "Entering ~:[anonymous ~;~]function ~:*~:[~;~:*~S~]"  name))
+                 (format out "Entering ~:[anonymous ~;~]function ~:*~:[~;~:*~S~]"
+                         (if specializers (cons name specializers) name)))
              (let ((*step-level* (1+ *step-level*)))
                (mapc (function did-bind) pnames pvals)))
            (report-exit (non-local-exit results out)
              (with-step-printing
                  (format out "~&~V<~> Exiting  ~:[anonymous ~;~]function ~:*~:[~;~:*~S ~]~
                           ~:[returned ~:[no result~;~R result~:P~]~;by non-local exit.~]"
-                         *step-level* name non-local-exit results (length results)))
+                         *step-level* (if specializers (cons name specializers) name)
+                         non-local-exit results (length results)))
              (if (= 1 (length results))
                  (format out " ==> ~S" (first results))
                  (print-step-results results out)))
@@ -703,9 +705,14 @@ BODY:           A list of forms, the body of the function.
 
 RETURN:         A stepping body.
 "
-  (let ((parameters (mapcar (function parameter-name)
-                            (lambda-list-parameters
-                             (parse-lambda-list lambda-list kind)))))
+  (let* ((lambda-list  (parse-lambda-list lambda-list kind))
+         (parameters   (mapcar (function parameter-name)
+                               (lambda-list-parameters lambda-list)))
+         (specializers (when (eq kind :specialized)
+                         (mapcar (lambda (parameter)
+                                   (when (parameter-specializer-p parameter)
+                                     (parameter-specializer parameter)))
+                                  (lambda-list-parameters lambda-list)))))
     (multiple-value-bind (docstring declarations real-body) (parse-body :lambda body)
       (if (stepper-declaration-p declarations 'disable)
           (append docstring
@@ -713,18 +720,19 @@ RETURN:         A stepping body.
                   (list (step-disabled `(progn ,@real-body))))
           (append docstring
                   (substitute-ignorable declarations)
-                  (let ((form `((call-step-function
-                                 ',name ',parameters (list ,@parameters)
-                                 (lambda ()
-                                   ,@(if name
-                                         `((block ,(if (consp name) (second name) name)
-                                             ;; inner block for non-local exit.
-                                             ,@(step-body :progn real-body env)))
-                                         (step-body :progn real-body env)))))))
-                    (if (stepper-declaration-p declarations 'trace)
-                        `(let ((*step-mode* :trace))
-                           ,form)
-                        form)))))))
+                  (let ((form `(call-step-function
+                                ',name ',specializers ',parameters (list ,@parameters)
+                                (lambda ()
+                                  ,@(if name
+                                        `((block ,(if (consp name) (second name) name)
+                                            ;; inner block for non-local exit.
+                                            ,@(step-body :progn real-body env)))
+                                        (step-body :progn real-body env))))))
+                    (list
+                     (if (stepper-declaration-p declarations 'trace)
+                         `(let ((*step-mode* :trace))
+                            ,form)
+                         form))))))))
 
 
 (defun step-lambda (lambda-form &key (kind :ordinary) name environment)

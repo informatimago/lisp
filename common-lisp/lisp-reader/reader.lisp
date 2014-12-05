@@ -26,7 +26,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2006 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2006 - 2014
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -251,17 +251,17 @@ shared by several characters, but with copy-on-write.
 ;;; The shared character descriptions:
 
 (defparameter *cd-invalid*                (make-instance 'character-description
-                                            :syntax +cs-invalid+
-                                            :traits +ct-invalid+))
+                                                         :syntax +cs-invalid+
+                                                         :traits +ct-invalid+))
 (defparameter *cd-whitespace*             (make-instance 'character-description
-                                            :syntax +cs-whitespace+
-                                            :traits +ct-invalid+))
+                                                         :syntax +cs-whitespace+
+                                                         :traits +ct-invalid+))
 (defparameter *cd-constituent-invalid*    (make-instance 'character-description
-                                            :syntax +cs-whitespace+
-                                            :traits +ct-invalid+))
+                                                         :syntax +cs-whitespace+
+                                                         :traits +ct-invalid+))
 (defparameter *cd-constituent-alphabetic* (make-instance 'character-description
-                                            :syntax +cs-constituent+
-                                            :traits +ct-alphabetic+))
+                                                         :syntax +cs-constituent+
+                                                         :traits +ct-alphabetic+))
 
 ;; ----------------------------------------
 
@@ -300,50 +300,50 @@ they're GRAPHIC-CHAR-P or not.
           (aref table (char-code #\Return))    *cd-whitespace*
           (aref table (char-code #\Space))     *cd-whitespace*)
     (loop
-       :for chdesc
-       :in '((#.+cs-terminating-macro-character+ "\"'(),;`"
-              #.+ct-alphabetic+)
-             (#.+cs-non-terminating-macro-character+ "#"
-              #.+ct-alphabetic+)
-             (#.+cs-single-escape+ "\\"
-              #.+ct-alphabetic+)
-             (#.+cs-multiple-escape+ "|"
-              #.+ct-alphabetic+)
-             (#.+cs-constituent+ "!$%&*<=>?@[]^_{}~"
-              #.+ct-alphabetic+)
-             (#.+cs-constituent+ ":"
-              #.+ct-package-marker+)
-             (#.+cs-constituent+ "+"
-              #.+ct-alphabetic+ #.+ct-plus-sign+)
-             (#.+cs-constituent+ "-"
-              #.+ct-alphabetic+ #.+ct-minus-sign+)
-             (#.+cs-constituent+ "."
-              #.+ct-alphabetic+ #.+ct-dot+ #.+ct-decimal-point+)
-             (#.+cs-constituent+ "/"
-              #.+ct-alphabetic+ #.+ct-ratio-marker+)
-             (#.+cs-constituent+ "0123456789"
-              #.+ct-alphadigit+)
-             (#.+cs-constituent+ "Dd"
-              #.+ct-alphadigit+ #.+ct-double-float-exponent-marker+)
-             (#.+cs-constituent+ "Ee"
-              #.+ct-alphadigit+ #.+ct-float-exponent-marker+)
-             (#.+cs-constituent+ "Ff"
-              #.+ct-alphadigit+ #.+ct-single-float-exponent-marker+)
-             (#.+cs-constituent+ "Ll"
-              #.+ct-alphadigit+ #.+ct-long-float-exponent-marker+)
-             (#.+cs-constituent+ "Ss"
-              #.+ct-alphadigit+ #.+ct-short-float-exponent-marker+)
-             (#.+cs-constituent+ "ABCGHIJKMNOPQRTUVWXYZabcghijkmnopqrtuvwxyz"
-              #.+ct-alphadigit+))
-       :do (loop
-              :with desc = (make-instance 'character-description
-                             :syntax (first chdesc)
-                             :traits (if (null (cdddr chdesc))
-                                         (third chdesc)
-                                         (apply (function logior)
-                                                (cddr chdesc))))
-              :for ch :across (second chdesc)
-              :do (setf (aref table (char-code ch)) desc)))
+      :for chdesc
+        :in '((#.+cs-terminating-macro-character+ "\"'(),;`"
+               #.+ct-alphabetic+)
+              (#.+cs-non-terminating-macro-character+ "#"
+               #.+ct-alphabetic+)
+              (#.+cs-single-escape+ "\\"
+               #.+ct-alphabetic+)
+              (#.+cs-multiple-escape+ "|"
+               #.+ct-alphabetic+)
+              (#.+cs-constituent+ "!$%&*<=>?@[]^_{}~"
+               #.+ct-alphabetic+)
+              (#.+cs-constituent+ ":"
+               #.+ct-package-marker+)
+              (#.+cs-constituent+ "+"
+               #.+ct-alphabetic+ #.+ct-plus-sign+)
+              (#.+cs-constituent+ "-"
+               #.+ct-alphabetic+ #.+ct-minus-sign+)
+              (#.+cs-constituent+ "."
+               #.+ct-alphabetic+ #.+ct-dot+ #.+ct-decimal-point+)
+              (#.+cs-constituent+ "/"
+               #.+ct-alphabetic+ #.+ct-ratio-marker+)
+              (#.+cs-constituent+ "0123456789"
+               #.+ct-alphadigit+)
+              (#.+cs-constituent+ "Dd"
+               #.+ct-alphadigit+ #.+ct-double-float-exponent-marker+)
+              (#.+cs-constituent+ "Ee"
+               #.+ct-alphadigit+ #.+ct-float-exponent-marker+)
+              (#.+cs-constituent+ "Ff"
+               #.+ct-alphadigit+ #.+ct-single-float-exponent-marker+)
+              (#.+cs-constituent+ "Ll"
+               #.+ct-alphadigit+ #.+ct-long-float-exponent-marker+)
+              (#.+cs-constituent+ "Ss"
+               #.+ct-alphadigit+ #.+ct-short-float-exponent-marker+)
+              (#.+cs-constituent+ "ABCGHIJKMNOPQRTUVWXYZabcghijkmnopqrtuvwxyz"
+               #.+ct-alphadigit+))
+      :do (loop
+            :with desc = (make-instance 'character-description
+                                        :syntax (first chdesc)
+                                        :traits (if (null (cdddr chdesc))
+                                                    (third chdesc)
+                                                    (apply (function logior)
+                                                           (cddr chdesc))))
+            :for ch :across (second chdesc)
+            :do (setf (aref table (char-code ch)) desc)))
     (setf (slot-value self 'standard-characters) table
           (slot-value self 'extended-characters) nil))
   self)
@@ -490,7 +490,7 @@ URL: <http://www.lispworks.com/documentation/HyperSpec/Body/t_rdtabl.htm>
 
 
 (defun copy-readtable (&optional (from-readtable *readtable*) (to-readtable nil))
-"
+  "
 DO:     Copy the readtable.
 URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_cp_rdt.htm>
 "
@@ -500,15 +500,15 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_cp_rdt.htm>
           (progn
             (setf (readtable-case to-readtable) :upcase
                   (readtable-syntax-table to-readtable) (make-instance
-                                                            'syntax-table)
+                                                         'syntax-table)
                   (readtable-parse-token to-readtable)  (function parse-token))
             to-readtable))
       (if (null to-readtable)
           (make-instance 'readtable
-            :case (readtable-case from-readtable)
-            :syntax-table (copy-syntax-table
-                           (readtable-syntax-table from-readtable))
-            :parse-token (readtable-parse-token from-readtable))
+                         :case (readtable-case from-readtable)
+                         :syntax-table (copy-syntax-table
+                                        (readtable-syntax-table from-readtable))
+                         :parse-token (readtable-parse-token from-readtable))
           (progn
             (setf (readtable-case to-readtable) (readtable-case from-readtable)
                   (readtable-syntax-table to-readtable) (copy-syntax-table
@@ -531,12 +531,12 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_cp_rdt.htm>
 
 (defun reader-macro-dispatch-function (stream ch)
   (let* ((arg  (loop
-                  :for ch = (read-char stream t nil t)
-                  :while (digit-char-p ch)
-                  :collect ch :into digits
-                  :finally (unread-char ch stream)
-                  (return (when digits
-                            (parse-integer (coerce digits 'string))))))
+                 :for ch = (read-char stream t nil t)
+                 :while (digit-char-p ch)
+                 :collect ch :into digits
+                 :finally (unread-char ch stream)
+                          (return (when digits
+                                    (parse-integer (coerce digits 'string))))))
          (sub-char (read-char stream t nil t))
          (cd (character-description (readtable-syntax-table *readtable*) ch))
          (fun (gethash (char-upcase sub-char) (character-dispatch cd))))
@@ -629,84 +629,84 @@ BUG:            The handling of readtable-case :invert is wrong.
              (syntax-table (readtable-syntax-table readtable))
              (procase (process-case-function (readtable-case readtable))))
        :begin
-       (setf x (or first-char (read-char input-stream nil nil t))
-             first-char nil)
-       (unless-eof x
-         (let ((cd (character-description syntax-table x)))
-           (ecase (character-syntax cd)
-             ((#.+cs-invalid+)
-              (error-invalid-character x))
-             ((#.+cs-whitespace+)
-              (go :begin))
-             ((#.+cs-single-escape+)
-              (let ((z (read-char input-stream nil nil t)))
-                (unless-eof z
-                  (token-collect-character token z +ct-alphabetic+)))
-              (go :collect-token))
-             ((#.+cs-multiple-escape+)
-              (go :collect-multiple-escape-token))
-             ((#.+cs-constituent+)
-              (token-collect-character token (funcall procase x)
-                                       (character-constituent-traits cd))
-              (go :collect-token))
-             ((#.+cs-terminating-macro-character+
-               #.+cs-non-terminating-macro-character+)
-              ;; If the macro returns no value, the caller will
-              ;; have to call us again, or not: (#-(and)x)
-              (return-from read-token
-                (values nil (multiple-value-list
-                             (funcall (get-macro-character x readtable)
-                                      input-stream x))))))))
+         (setf x (or first-char (read-char input-stream nil nil t))
+               first-char nil)
+         (unless-eof x
+                     (let ((cd (character-description syntax-table x)))
+                       (ecase (character-syntax cd)
+                         ((#.+cs-invalid+)
+                          (error-invalid-character x))
+                         ((#.+cs-whitespace+)
+                          (go :begin))
+                         ((#.+cs-single-escape+)
+                          (let ((z (read-char input-stream nil nil t)))
+                            (unless-eof z
+                                        (token-collect-character token z +ct-alphabetic+)))
+                          (go :collect-token))
+                         ((#.+cs-multiple-escape+)
+                          (go :collect-multiple-escape-token))
+                         ((#.+cs-constituent+)
+                          (token-collect-character token (funcall procase x)
+                                                   (character-constituent-traits cd))
+                          (go :collect-token))
+                         ((#.+cs-terminating-macro-character+
+                           #.+cs-non-terminating-macro-character+)
+                          ;; If the macro returns no value, the caller will
+                          ;; have to call us again, or not: (#-(and)x)
+                          (return-from read-token
+                            (values nil (multiple-value-list
+                                         (funcall (get-macro-character x readtable)
+                                                  input-stream x))))))))
        :collect-token
-       (setf y (read-char input-stream nil nil t))
-       (if y
-           (let ((cd (character-description syntax-table y)))
-             (ecase (character-syntax cd)
-               ((#.+cs-invalid+)
-                (error-invalid-character y))
-               ((#.+cs-whitespace+)
-                (when preserve-whitespace-p
-                  (unread-char y input-stream))
-                (go :parse-token))
-               ((#.+cs-single-escape+)
-                (let ((z (read-char input-stream nil nil t)))
-                  (unless-eof z
-                    (token-collect-character token z +ct-alphabetic+)))
-                (go :collect-token))
-               ((#.+cs-multiple-escape+)
-                (go :collect-multiple-escape-token))
-               ((#.+cs-constituent+
-                 #.+cs-non-terminating-macro-character+)
-                (token-collect-character token (funcall procase y)
-                                         (character-constituent-traits cd))
-                (go :collect-token))
-               ((#.+cs-terminating-macro-character+)
-                (unread-char y input-stream)
-                (go :parse-token))))
-           (go :parse-token))
+         (setf y (read-char input-stream nil nil t))
+         (if y
+             (let ((cd (character-description syntax-table y)))
+               (ecase (character-syntax cd)
+                 ((#.+cs-invalid+)
+                  (error-invalid-character y))
+                 ((#.+cs-whitespace+)
+                  (when preserve-whitespace-p
+                    (unread-char y input-stream))
+                  (go :parse-token))
+                 ((#.+cs-single-escape+)
+                  (let ((z (read-char input-stream nil nil t)))
+                    (unless-eof z
+                                (token-collect-character token z +ct-alphabetic+)))
+                  (go :collect-token))
+                 ((#.+cs-multiple-escape+)
+                  (go :collect-multiple-escape-token))
+                 ((#.+cs-constituent+
+                   #.+cs-non-terminating-macro-character+)
+                  (token-collect-character token (funcall procase y)
+                                           (character-constituent-traits cd))
+                  (go :collect-token))
+                 ((#.+cs-terminating-macro-character+)
+                  (unread-char y input-stream)
+                  (go :parse-token))))
+             (go :parse-token))
        :collect-multiple-escape-token
-       (setf y (read-char input-stream nil nil t))
-       (unless-eof y
-         (let ((cd (character-description syntax-table y)))
-           (ecase (character-syntax cd)
-             ((#.+cs-invalid+)
-              (error-invalid-character y))
-             ((#.+cs-single-escape+)
-              (let ((z (read-char input-stream nil nil t)))
-                (unless-eof z
-                  (token-collect-character token z +ct-alphabetic+)))
-              (go :collect-multiple-escape-token))
-             ((#.+cs-multiple-escape+)
-              (go :collect-token))
-             ((#.+cs-whitespace+
-               #.+cs-constituent+
-               #.+cs-non-terminating-macro-character+
-               #.+cs-terminating-macro-character+)
-              (token-collect-character token y +ct-alphabetic+)
-              (go :collect-multiple-escape-token)))))
+         (setf y (read-char input-stream nil nil t))
+         (unless-eof y
+                     (let ((cd (character-description syntax-table y)))
+                       (ecase (character-syntax cd)
+                         ((#.+cs-invalid+)
+                          (error-invalid-character y))
+                         ((#.+cs-single-escape+)
+                          (let ((z (read-char input-stream nil nil t)))
+                            (unless-eof z
+                                        (token-collect-character token z +ct-alphabetic+)))
+                          (go :collect-multiple-escape-token))
+                         ((#.+cs-multiple-escape+)
+                          (go :collect-token))
+                         ((#.+cs-whitespace+
+                           #.+cs-constituent+
+                           #.+cs-non-terminating-macro-character+
+                           #.+cs-terminating-macro-character+)
+                          (token-collect-character token y +ct-alphabetic+)
+                          (go :collect-multiple-escape-token)))))
        :parse-token
-       ;; token can be of zero length...
-       (return (values t token))))))
+         ;; token can be of zero length...
+         (return (values t token))))))
 
 
 
@@ -749,14 +749,14 @@ ONE-OR-MORE and OPT-SIGN."
        ,@docu
        ,@decl
        (macrolet ((reject (strongp &rest ctrlstring-and-args)
-                          `(return-from ,',name
-                             (values nil ,strongp
-                                     ,(when ctrlstring-and-args
-                                            `(format nil ,@ctrlstring-and-args)))))
+                    `(return-from ,',name
+                       (values nil ,strongp
+                               ,(when ctrlstring-and-args
+                                  `(format nil ,@ctrlstring-and-args)))))
                   (accept (type token)
-                          `(return-from ,',name (values t ,type ,token)))
+                    `(return-from ,',name (values t ,type ,token)))
                   (alt (&rest clauses)
-                       `(cond ,@clauses))
+                    `(cond ,@clauses))
                   (zero-or-more (test &body body)
                     `(loop :while ,test :do ,@body))
                   (one-or-more  (test &body body)
@@ -764,12 +764,12 @@ ONE-OR-MORE and OPT-SIGN."
                        (if ,test (progn ,@body) (reject nil))
                        (loop :while ,test :do ,@body)))
                   (opt-sign (sign token i)
-                            `(alt ((>= ,i (token-length ,token)))
-                                  ((traitp +ct-plus-sign+  (token-char-traits ,token ,i))
-                                   (setf ,sign +1 ,i (1+ ,i)))
-                                  ((traitp +ct-minus-sign+ (token-char-traits ,token ,i))
-                                   (setf ,sign -1 ,i (1+ ,i))))))
-           ,@body))))
+                    `(alt ((>= ,i (token-length ,token)))
+                          ((traitp +ct-plus-sign+  (token-char-traits ,token ,i))
+                           (setf ,sign +1 ,i (1+ ,i)))
+                          ((traitp +ct-minus-sign+ (token-char-traits ,token ,i))
+                           (setf ,sign -1 ,i (1+ ,i))))))
+         ,@body))))
 
 
 (defparser parse-decimal-integer-token (token)
@@ -817,19 +817,19 @@ ONE-OR-MORE and OPT-SIGN."
 (defun %parse-integer (string &key (start 0) (end nil) (radix 10.) (junk-allowed nil)
                        &aux (end (or end (length string))))
   (loop
-     :named parse
-     :with sign = (case (aref string start)
-                    (#\+ (incf start) +1)
-                    (#\- (incf start) -1)
-                    (otherwise        +1))
-     :with mant = 0
-     :for i :from start :below end
-     :do (let ((digit (digit-char-p (aref string i) radix)))
-           (cond
-             (digit         (setf mant (+ (* mant radix) digit)))
-             (junk-allowed  (return-from parse (values (* sign mant) i)))
-             (t             (error 'parse-error))) ())
-     :finally (return-from parse (values (* sign mant) i))))
+    :named parse
+    :with sign = (case (aref string start)
+                   (#\+ (incf start) +1)
+                   (#\- (incf start) -1)
+                   (otherwise        +1))
+    :with mant = 0
+    :for i :from start :below end
+    :do (let ((digit (digit-char-p (aref string i) radix)))
+          (cond
+            (digit         (setf mant (+ (* mant radix) digit)))
+            (junk-allowed  (return-from parse (values (* sign mant) i)))
+            (t             (error 'parse-error))) ())
+    :finally (return-from parse (values (* sign mant) i))))
 
 
 (defparser parse-ratio-token (token)
@@ -910,7 +910,7 @@ exponent ::=  exponent-marker [sign] {digit}+"
     (if (= i (token-length token))
         (accept type
                 (* (coerce (/ (* sign nume) denu) type)
-                   (expt 10.0 (* esgn expo))))
+                   (expt (coerce 10. type) (* esgn expo))))
         (reject t "Junk after floating point number ~S" (token-text token)))))
 
 
@@ -961,7 +961,7 @@ exponent ::=  exponent-marker [sign] {digit}+"
     (if (= i (token-length token))
         (accept type
                 (* (coerce (/ (* sign nume) denu) type)
-                   (expt 10.0 (* esgn expo))))
+                   (expt (coerce 10. type) (* esgn expo))))
         (reject t "Junk after floating point number ~S" (token-text token)))))
 
 
@@ -1125,7 +1125,7 @@ RETURN:         tokenp == t    ; an unparsed (alldots) token.  Or
 
 (defun read-1 (input-stream eof-error-p eof-value
                recursive-p preserve-whitespace-p first-char allowed-all-dots)
-   "
+  "
 DO:             Read exactly one token.  Use the *READTABLE*.
 
 INPUT-STREAM:   The stream that is read.
@@ -1146,29 +1146,29 @@ ALLOWED-ALL-DOTS:
 RETURN:         The token read, or
                 when EOF-ERROR-P is false and EOF occurs, EOF-VALUE.
 " (loop
-     :for (tokenp token) = (multiple-value-list
-                            (read-0/1 input-stream eof-error-p eof-value
-                                      recursive-p preserve-whitespace-p
-                                      first-char allowed-all-dots))
-     :until (or (eq :eof tokenp) token)
-     :finally (return (if (eq :eof tokenp)
-                          token
-                          (first token)))))
+    :for (tokenp token) = (multiple-value-list
+                           (read-0/1 input-stream eof-error-p eof-value
+                                     recursive-p preserve-whitespace-p
+                                     first-char allowed-all-dots))
+    :until (or (eq :eof tokenp) token)
+    :finally (return (if (eq :eof tokenp)
+                         token
+                         (first token)))))
 
 
 (defun read (&optional input-stream
-             (eof-error-p t) (eof-value nil)
-             (recursive-p nil))
+               (eof-error-p t) (eof-value nil)
+               (recursive-p nil))
   "
 RETURN: An object read.
 URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_rd_rd.htm>
 "
   (read-1 input-stream eof-error-p eof-value recursive-p  nil  nil '()))
 
-      
+
 (defun read-preserving-whitespace (&optional input-stream
-                                   (eof-error-p t) (eof-value nil)
-                                   (recursive-p nil))
+                                     (eof-error-p t) (eof-value nil)
+                                     (recursive-p nil))
   "
 RETURN: An object read.
 URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_rd_rd.htm>
@@ -1177,32 +1177,32 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_rd_rd.htm>
 
 
 (defun read-delimited-list (char &optional (input-stream *standard-input*)
-                            (recursive-p nil))
+                                   (recursive-p nil))
   "
 RETURN: A list of objects read.
 URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_rd_del.htm>
 "
   (loop
-     :with result = '()
-     :for peek = (peek-char t input-stream nil input-stream recursive-p)
-     :do (cond
-           ((eql peek input-stream)
-            (serror 'simple-end-of-file input-stream
-                    "input stream ~S has reached its end" input-stream))
-           ((char= peek char)
-            (read-char input-stream nil nil recursive-p)
-            (return-from read-delimited-list (nreverse result)))
-           (t
-            (multiple-value-bind (kind tokens)
-                (read-0/1 input-stream t nil recursive-p nil nil '())
-              (declare (ignore kind))
-              (when tokens
-                (push (first tokens) result)))))))
+    :with result = '()
+    :for peek = (peek-char t input-stream nil input-stream recursive-p)
+    :do (cond
+          ((eql peek input-stream)
+           (serror 'simple-end-of-file input-stream
+                   "input stream ~S has reached its end" input-stream))
+          ((char= peek char)
+           (read-char input-stream nil nil recursive-p)
+           (return-from read-delimited-list (nreverse result)))
+          (t
+           (multiple-value-bind (kind tokens)
+               (read-0/1 input-stream t nil recursive-p nil nil '())
+             (declare (ignore kind))
+             (when tokens
+               (push (first tokens) result)))))))
 
 
 (defun read-from-string (string &optional (eof-error-p t) (eof-value nil)
                          &key (start 0) (end nil) (preserve-whitespace nil))
-"
+  "
 RETURN: An object read from the string.
 URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_rd_fro.htm>
 "
@@ -1217,7 +1217,7 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_rd_fro.htm>
 
 
 (defun readtable-case (readtable)
-"
+  "
 RETURN: The case of the readtable.
 URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_rdtabl.htm>
 "
@@ -1242,25 +1242,25 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_rdta_1.htm>
 
 (defun make-dispatch-macro-character
     (char &optional (non-terminating-p nil) (readtable *readtable*))
-"
+  "
 DO:     Make the character a dispatch macro character in the readtable.
 URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_mk_dis.htm>
 "
   (let ((rst  (readtable-syntax-table readtable)))
     (setf (character-description rst char)
           (make-instance 'character-description
-            :syntax (if non-terminating-p
-                        +cs-non-terminating-macro-character+
-                        +cs-terminating-macro-character+)
-            :traits (character-constituent-traits
-                     (character-description rst char))
-            :macro (function reader-macro-dispatch-function)
-            :dispatch (make-hash-table)))))
+                         :syntax (if non-terminating-p
+                                     +cs-non-terminating-macro-character+
+                                     +cs-terminating-macro-character+)
+                         :traits (character-constituent-traits
+                                  (character-description rst char))
+                         :macro (function reader-macro-dispatch-function)
+                         :dispatch (make-hash-table)))))
 
 
 (defun get-dispatch-macro-character (disp-char sub-char
                                      &optional (readtable *readtable*))
-"
+  "
 RETURN: The dispatch macro character function.
 URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_set__1.htm>
 "
@@ -1274,7 +1274,7 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_set__1.htm>
 
 (defun set-dispatch-macro-character (disp-char sub-char new-function
                                      &optional (readtable *readtable*))
-"
+  "
 DO:     Set the dispatch macro character function.
 URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_set__1.htm>
 "
@@ -1288,7 +1288,7 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_set__1.htm>
 
 
 (defun get-macro-character (char &optional (readtable *readtable*))
-"
+  "
 RETURN: The macro character function.
 URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_set_ma.htm>
 "
@@ -1298,7 +1298,7 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_set_ma.htm>
             (= (character-syntax cd) +cs-non-terminating-macro-character+))))
 
 (defun set-macro-character (char new-function &optional (non-terminating-p nil)
-                            (readtable *readtable*))
+                                                (readtable *readtable*))
   "
 DO:     Set then macro character function. 
 URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_set_ma.htm>
@@ -1306,12 +1306,12 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_set_ma.htm>
   (let* ((rst  (readtable-syntax-table readtable)))
     (setf (character-description rst char)
           (make-instance 'character-description
-              :syntax (if non-terminating-p
-                          +cs-non-terminating-macro-character+
-                          +cs-terminating-macro-character+)
-              :traits (character-constituent-traits
-                       (character-description rst char))
-              :macro new-function)))
+                         :syntax (if non-terminating-p
+                                     +cs-non-terminating-macro-character+
+                                     +cs-terminating-macro-character+)
+                         :traits (character-constituent-traits
+                                  (character-description rst char))
+                         :macro new-function)))
   t)
 
 
@@ -1361,8 +1361,8 @@ RETURN: If TABLE is NIL, then NIL,
 
 (defun set-syntax-from-char (to-char from-char
                              &optional (to-readtable *readtable*)
-                             (from-readtable *standard-readtable*))
-"
+                               (from-readtable *standard-readtable*))
+  "
 DO:     Copy the syntax between characters in the readtable.
 URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_set_sy.htm>
 "
@@ -1372,14 +1372,14 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_set_sy.htm>
          (tcd   (character-description trst   to-char)))
     (setf (character-description trst to-char)
           (make-instance 'character-description
-              :syntax   (character-syntax fcd)
-              ;; constituent traits are not copied.
-              :traits   (character-constituent-traits tcd) 
-              ;; macros are copied only if from is a macro character.
-              :macro    (or (character-macro fcd) (character-macro tcd))
-              :dispatch (if (character-dispatch fcd)
-                            (copy-hash-table (character-dispatch fcd))
-                            (character-dispatch tcd)))))
+                         :syntax   (character-syntax fcd)
+                         ;; constituent traits are not copied.
+                         :traits   (character-constituent-traits tcd) 
+                         ;; macros are copied only if from is a macro character.
+                         :macro    (or (character-macro fcd) (character-macro tcd))
+                         :dispatch (if (character-dispatch fcd)
+                                       (copy-hash-table (character-dispatch fcd))
+                                       (character-dispatch tcd)))))
   t)
 
 
@@ -1397,24 +1397,24 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_set_sy.htm>
   "Standard \" macro reader."
   (flet ((error-eof ()
            (serror 'simple-end-of-file stream
-                    "input stream ~S ends within a string" stream)))
+                   "input stream ~S ends within a string" stream)))
     (loop
-       :with rst    = (readtable-syntax-table *readtable*)
-       :with string = (make-array 64 :element-type 'character
-                                  :adjustable t :fill-pointer 0)
-       :for ch      = (read-char stream nil nil t)
-       :do (cond
-             ((null ch)
-              (error-eof))
-             ((eql ch delim)
-              (return-from reader-macro-string (copy-seq string)))
-             ((= (character-syntax (character-description rst ch))
-                 +cs-single-escape+)
-              (let ((next (read-char stream nil nil)))
-                (when (null next)
-                  (error-eof))
-                (vector-push-extend next string)))
-             (t (vector-push-extend ch   string))))))
+      :with rst    = (readtable-syntax-table *readtable*)
+      :with string = (make-array 64 :element-type 'character
+                                    :adjustable t :fill-pointer 0)
+      :for ch      = (read-char stream nil nil t)
+      :do (cond
+            ((null ch)
+             (error-eof))
+            ((eql ch delim)
+             (return-from reader-macro-string (copy-seq string)))
+            ((= (character-syntax (character-description rst ch))
+                +cs-single-escape+)
+             (let ((next (read-char stream nil nil)))
+               (when (null next)
+                 (error-eof))
+               (vector-push-extend next string)))
+            (t (vector-push-extend ch   string))))))
 
 
 (defun reader-macro-quote (stream ch)
@@ -1433,52 +1433,52 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_set_sy.htm>
   "Standard , macro reader."
   (declare (ignore ch))
   `(,(if (char= #\@ (peek-char nil stream t nil t)) 'splice 'unquote)
-     ,(read stream t nil t)))
+    ,(read stream t nil t)))
 
 
 (defun reader-macro-left-parenthesis (stream ch)
   "Standard ( macro reader."
   (declare (ignore ch))
   (loop
-     :with result     = (cons nil nil)
-     :with last-cons  = result
-     :with last-cdr-p = nil
-     :for ch = (progn (peek-char t stream nil t) (read-char stream t nil t))
-     ;; :do (print `(:result ,result :last-cons ,last-cons
-     ;;                      :last-cdr-p ,last-cdr-p :ch ,ch))
-     :do (flet ((read-and-nconc (ch)
-                  (let ((objects
+    :with result     = (cons nil nil)
+    :with last-cons  = result
+    :with last-cdr-p = nil
+    :for ch = (progn (peek-char t stream nil t) (read-char stream t nil t))
+    ;; :do (print `(:result ,result :last-cons ,last-cons
+    ;;                      :last-cdr-p ,last-cdr-p :ch ,ch))
+    :do (flet ((read-and-nconc (ch)
+                 (let ((objects
                          (nth-value 1 (read-0/1 stream t nil t nil ch '()))))
-                    (when objects
-                      (case last-cdr-p
-                        ((nil)     (setf (cdr last-cons) objects
-                                         ;; (list (first objects))
-                                         last-cons       (cdr last-cons)))
-                        ((t)       (setf (cdr last-cons) (first objects)
-                                         last-cdr-p      :done))
-                        (otherwise (serror 'simple-reader-error stream
-                                           "illegal end of dotted list")))))))
-           (cond
-             ((char= #\) ch) (loop-finish))
-             ((char= #\. ch)
-              (if (token-delimiter-p (peek-char nil stream t nil t))
-                  (if (eq result last-cons)
-                      (serror 'simple-reader-error stream
-                              "missing an object before the \".\" in a cons cell")
-                      (case last-cdr-p
-                        ((nil)     (setf last-cdr-p t))
-                        ((t)       (serror 'simple-reader-error stream
-                                           "token \".\" not allowed here"))
-                        (otherwise (serror 'simple-reader-error stream
-                                           "illegal end of dotted list"))))
-                  (read-and-nconc ch)))
-             (t
-              (read-and-nconc ch))))
-     
-     :finally (if (eq last-cdr-p 't)
-                  (serror 'simple-reader-error stream
-                                         "illegal end of dotted list")
-                  (return (cdr result)))))
+                   (when objects
+                     (case last-cdr-p
+                       ((nil)     (setf (cdr last-cons) objects
+                                        ;; (list (first objects))
+                                        last-cons       (cdr last-cons)))
+                       ((t)       (setf (cdr last-cons) (first objects)
+                                        last-cdr-p      :done))
+                       (otherwise (serror 'simple-reader-error stream
+                                          "illegal end of dotted list")))))))
+          (cond
+            ((char= #\) ch) (loop-finish))
+            ((char= #\. ch)
+             (if (token-delimiter-p (peek-char nil stream t nil t))
+                 (if (eq result last-cons)
+                     (serror 'simple-reader-error stream
+                             "missing an object before the \".\" in a cons cell")
+                     (case last-cdr-p
+                       ((nil)     (setf last-cdr-p t))
+                       ((t)       (serror 'simple-reader-error stream
+                                          "token \".\" not allowed here"))
+                       (otherwise (serror 'simple-reader-error stream
+                                          "illegal end of dotted list"))))
+                 (read-and-nconc ch)))
+            (t
+             (read-and-nconc ch))))
+        
+    :finally (if (eq last-cdr-p 't)
+                 (serror 'simple-reader-error stream
+                         "illegal end of dotted list")
+                 (return (cdr result)))))
 
 
 (defun reader-macro-error-start (stream ch)
@@ -1609,21 +1609,21 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_set_sy.htm>
   ;; with respect to other occurrences of #| and |#, but otherwise may
   ;; contain any characters whatsoever.
   (loop
-     :with level = 1
-     :with state = :normal
-     :until (zerop level)
-     :do (case state
-           ((:normal) (case (read-char stream t nil t)
-                        ((#\#)              (setf state :sharp))
-                        ((#\|)              (setf state :pipe))))
-           ((:sharp)  (case (read-char stream t nil t)
-                        ((#\#))
-                        ((#\|) (incf level) (setf state :normal))
-                        (otherwise          (setf state :normal))))
-           ((:pipe)   (case (read-char stream t nil t)
-                        ((#\#) (decf level) (setf state :normal))
-                        ((#\|))
-                        (otherwise          (setf state :normal))))))
+    :with level = 1
+    :with state = :normal
+    :until (zerop level)
+    :do (case state
+          ((:normal) (case (read-char stream t nil t)
+                       ((#\#)              (setf state :sharp))
+                       ((#\|)              (setf state :pipe))))
+          ((:sharp)  (case (read-char stream t nil t)
+                       ((#\#))
+                       ((#\|) (incf level) (setf state :normal))
+                       (otherwise          (setf state :normal))))
+          ((:pipe)   (case (read-char stream t nil t)
+                       ((#\#) (decf level) (setf state :normal))
+                       ((#\|))
+                       (otherwise          (setf state :normal))))))
   (values))
 
 
@@ -1657,30 +1657,30 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_set_sy.htm>
                     ;; vector is longer than the explicitly given length
                     ;; We just eat the remaining stuff.
                     (loop
-                       :until (char= #\) (peek-char t stream t nil t))
-                       :do (let ((*read-suppress* t))
-                         (read-0/1 stream t nil t nil nil '()))
-                       :finally (read-char stream nil nil t)))
+                      :until (char= #\) (peek-char t stream t nil t))
+                      :do (let ((*read-suppress* t))
+                            (read-0/1 stream t nil t nil nil '()))
+                      :finally (read-char stream nil nil t)))
                    ;; vector is shorter.
                    ((plusp i)
                     ;; If we have at least one element in,
                     ;; we replicate it till the end. 
                     (loop
-                       :with last-item = (aref vector (1- i))
-                       :for j :from i :below arg
-                       :do (setf (aref vector j) last-item)))
+                      :with last-item = (aref vector (1- i))
+                      :for j :from i :below arg
+                      :do (setf (aref vector j) last-item)))
                    ;; Otherwise we will let it up to the implementation
                    ;; to do its implementation dependent thing.
                    )
                  vector)
                (copy-seq vector))))
     (loop
-       :with vector = (if arg
-                          (make-array arg)
-                          (make-array 1024 :adjustable t :fill-pointer 0))
-       :for i :from 0 :while (or (not arg) (< i arg))
-       :do (let ((peek (peek-char t stream nil stream t)))
-             (cond
+      :with vector = (if arg
+                         (make-array arg)
+                         (make-array 1024 :adjustable t :fill-pointer 0))
+      :for i :from 0 :while (or (not arg) (< i arg))
+      :do (let ((peek (peek-char t stream nil stream t)))
+            (cond
               ((eql peek stream)
                (serror 'simple-end-of-file stream
                        "input stream ~S has reached its end" stream))
@@ -1695,7 +1695,7 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_set_sy.htm>
                    (if arg
                        (setf (aref vector i) (first tokens))
                        (vector-push-extend (first tokens) vector)))))))
-       :finally (return-from reader-dispatch-macro-vector (finish-vector vector i)))))
+      :finally (return-from reader-dispatch-macro-vector (finish-vector vector i)))))
 
 
 
@@ -1730,32 +1730,32 @@ URL: <http://www.lispworks.com/documentation/HyperSpec/Body/02_dhd.htm>
   ;; permitted in this token.
   (if arg
       (loop
-         :with vector = (make-array arg :element-type 'bit :initial-element 0)
-         :for i :from 0 :below arg
-         :while (let ((ch (peek-char nil stream nil nil t)))
-                  (and ch (not (token-delimiter-p ch))))
-         :do (setf (aref vector i) (digit-char-p (read-char stream nil nil t)))
-         :finally (progn
-                    (cond
-                      ((>= i arg)
-                       (let ((*read-suppress* t))
-                         (loop
-                            :while (let ((ch (peek-char nil stream nil nil t)))
-                                     (and ch (not (token-delimiter-p ch))))
-                            :do (read-char stream nil nil t))))
-                      ((plusp (aref vector (1- i)))
-                       (loop
-                          :for j :from i :below arg
-                          :do (setf (aref vector j) 1))))
-                    (return vector)))
+        :with vector = (make-array arg :element-type 'bit :initial-element 0)
+        :for i :from 0 :below arg
+        :while (let ((ch (peek-char nil stream nil nil t)))
+                 (and ch (not (token-delimiter-p ch))))
+        :do (setf (aref vector i) (digit-char-p (read-char stream nil nil t)))
+        :finally (progn
+                   (cond
+                     ((>= i arg)
+                      (let ((*read-suppress* t))
+                        (loop
+                          :while (let ((ch (peek-char nil stream nil nil t)))
+                                   (and ch (not (token-delimiter-p ch))))
+                          :do (read-char stream nil nil t))))
+                     ((plusp (aref vector (1- i)))
+                      (loop
+                        :for j :from i :below arg
+                        :do (setf (aref vector j) 1))))
+                   (return vector)))
       (loop
-         :with vector = (make-array 1024 :adjustable t :fill-pointer 0
-                                    :element-type 'bit :initial-element 0)
-         :while (let ((ch (peek-char nil stream nil nil t)))
-                  (and ch (not (token-delimiter-p ch))))
-         ;; TODO: Check the behavior when the character is not a bit.
-         :do (vector-push-extend (digit-char-p (read-char stream nil nil t)) vector)
-         :finally (return (copy-seq vector)))))
+        :with vector = (make-array 1024 :adjustable t :fill-pointer 0
+                                        :element-type 'bit :initial-element 0)
+        :while (let ((ch (peek-char nil stream nil nil t)))
+                 (and ch (not (token-delimiter-p ch))))
+        ;; TODO: Check the behavior when the character is not a bit.
+        :do (vector-push-extend (digit-char-p (read-char stream nil nil t)) vector)
+        :finally (return (copy-seq vector)))))
 
 
 (defun reader-dispatch-macro-char              (stream arg sub-char)
@@ -1769,10 +1769,10 @@ URL: <http://www.lispworks.com/documentation/HyperSpec/Body/02_dhd.htm>
   (declare (ignore sub-char))
   (let ((initial-contents (read stream t nil t)))
     (labels ((collect-dimensions (n contents dimensions)
-             (if (zerop n)
-                 (nreverse dimensions)
-                 (collect-dimensions (1- n) (first contents)
-                                     (cons (length contents) dimensions)))))
+               (if (zerop n)
+                   (nreverse dimensions)
+                   (collect-dimensions (1- n) (first contents)
+                                       (cons (length contents) dimensions)))))
       ;; TODO: we rely on make-array to raise some errors that it may not raise...
       (make-array (collect-dimensions (or arg 1) initial-contents '())
                   :initial-contents initial-contents))))
@@ -1851,10 +1851,10 @@ NOTE:   terminates with any kind of list, dotted, circular, etc.
   (let* ((data (read stream t nil t))
          (constructor (intern (cl:with-standard-io-syntax (format nil "MAKE-~A" (first data)))))
          (arguments   (loop
-                         :with keyword-package = (find-package "KEYWORD")
-                         :for (k v) :on (rest data) :by (function cddr)
-                         :collect (intern (string k) keyword-package)
-                         :collect v)))
+                        :with keyword-package = (find-package "KEYWORD")
+                        :for (k v) :on (rest data) :by (function cddr)
+                        :collect (intern (string k) keyword-package)
+                        :collect v)))
     (apply constructor arguments)))
 
 
@@ -1980,23 +1980,23 @@ NOTE:   terminates with any kind of list, dotted, circular, etc.
 RETURN: A list of all the macro and dispatch-macro characters in the readtable.
 "
   (loop
-     :with results = '()
-     :for code :from 0 :below char-code-limit
-     :for ch = (code-char code)
-     :do (multiple-value-bind (fun ntp) (get-macro-character ch)
-           (when (or fun ntp)
-             (push (list ch fun ntp
-                         (when (handler-case
-                                   (progn (get-dispatch-macro-character ch #\a)
-                                          t)
-                                 (error () nil))
-                           (loop
-                              :for code :from 0 :below char-code-limit
-                              :for sub = (code-char code)
-                              :for fun = (get-dispatch-macro-character ch sub)
-                              :when fun
+    :with results = '()
+    :for code :from 0 :below char-code-limit
+    :for ch = (code-char code)
+    :do (multiple-value-bind (fun ntp) (get-macro-character ch)
+          (when (or fun ntp)
+            (push (list ch fun ntp
+                        (when (handler-case
+                                  (progn (get-dispatch-macro-character ch #\a)
+                                         t)
+                                (error () nil))
+                          (loop
+                            :for code :from 0 :below char-code-limit
+                            :for sub = (code-char code)
+                            :for fun = (get-dispatch-macro-character ch sub)
+                            :when fun
                               :collect (list sub fun)))) results)))
-     :finally (return results)))
+    :finally (return results)))
 
 
 
@@ -2011,154 +2011,154 @@ RETURN: A list of all the macro and dispatch-macro characters in the readtable.
         (*read-suppress* nil)
         (*read-default-float-format* 'single-float))
     (dolist (test
-              '(
-                ;; integer  ::= [sign] digit+      
-                (nil "0"  0.)
-                (nil "1"  1.)
-                (nil "2"  2.)
-                (nil "9"  9.)
-                (nil "10" 10.)
-                (nil "11" 11.)
-                (nil "12" 12.)
-                (nil "19" 19.)
-                (((*read-base* 3.)) "0"  0.)
-                (((*read-base* 3.)) "1"  1.)
-                (((*read-base* 3.)) "2"  2.)
-                (((*read-base* 3.)) "9"  |9|)
-                (((*read-base* 3.)) "10" 3.)
-                (((*read-base* 3.)) "11" 4.)
-                (((*read-base* 3.)) "13" |13|)
-                (nil "-0"  -0.)
-                (nil "-1"  -1.)
-                (nil "-2"  -2.)
-                (nil "-9"  -9.)
-                (nil "-10" -10.)
-                (nil "-11" -11.)
-                (nil "-12" -12.)
-                (nil "-19" -19.)
-                (((*read-base* 3.)) "-0"  -0.)
-                (((*read-base* 3.)) "-1"  -1.)
-                (((*read-base* 3.)) "-2"  -2.)
-                (((*read-base* 3.)) "-9"  |-9|)
-                (((*read-base* 3.)) "-10" -3.)
-                (((*read-base* 3.)) "-11" -4.)
-                (((*read-base* 3.)) "-13" |-13|)
-                (nil "+0"  +0.)
-                (nil "+1"  +1.)
-                (nil "+2"  +2.)
-                (nil "+9"  +9.)
-                (nil "+10" +10.)
-                (nil "+11" +11.)
-                (nil "+12" +12.)
-                (nil "+19" +19.)
-                (((*read-base* 3.)) "+0"  +0.)
-                (((*read-base* 3.)) "+1"  +1.)
-                (((*read-base* 3.)) "+2"  +2.)
-                (((*read-base* 3.)) "+9"  |+9|)
-                (((*read-base* 3.)) "+10" +3.)
-                (((*read-base* 3.)) "+11" +4.)
-                (((*read-base* 3.)) "+13" |+13|)
-                ;; integer  ::= [sign] decimal-digit+ decimal-point 
-                (nil "0."  0.)
-                (nil "1."  1.)
-                (nil "2."  2.)
-                (nil "9."  9.)
-                (nil "10." 10.)
-                (nil "11." 11.)
-                (nil "12." 12.)
-                (nil "19." 19.)
-                (((*read-base* 3.)) "0."  0.)
-                (((*read-base* 3.)) "1."  1.)
-                (((*read-base* 3.)) "2."  2.)
-                (((*read-base* 3.)) "9."  9.)
-                (((*read-base* 3.)) "10." 10.)
-                (((*read-base* 3.)) "11." 11.)
-                (((*read-base* 3.)) "13." 13.)
-                (nil "-0."  -0.)
-                (nil "-1."  -1.)
-                (nil "-2."  -2.)
-                (nil "-9."  -9.)
-                (nil "-10." -10.)
-                (nil "-11." -11.)
-                (nil "-12." -12.)
-                (nil "-19." -19.)
-                (((*read-base* 3.)) "-0."  -0.)
-                (((*read-base* 3.)) "-1."  -1.)
-                (((*read-base* 3.)) "-2."  -2.)
-                (((*read-base* 3.)) "-9."  -9.)
-                (((*read-base* 3.)) "-10." -10.)
-                (((*read-base* 3.)) "-11." -11.)
-                (((*read-base* 3.)) "-13." -13.)
-                (nil "+0."  +0.)
-                (nil "+1."  +1.)
-                (nil "+2."  +2.)
-                (nil "+9."  +9.)
-                (nil "+10." +10.)
-                (nil "+11." +11.)
-                (nil "+12." +12.)
-                (nil "+19." +19.)
-                (((*read-base* 3.)) "+0."  +0.)
-                (((*read-base* 3.)) "+1."  +1.)
-                (((*read-base* 3.)) "+2."  +2.)
-                (((*read-base* 3.)) "+9."  +9.)
-                (((*read-base* 3.)) "+10." +10.)
-                (((*read-base* 3.)) "+11." +11.)
-                (((*read-base* 3.)) "+13." +13.)
-                ;; ratio    ::= [sign] {digit}+ slash {digit}+
-                (nil "0/0"    nil division-by-zero)
-                (nil "1/0"    nil division-by-zero)
-                (nil "10/000" nil division-by-zero)
-                (nil "0/1" 0)
-                (nil "1/1" 1)
-                (nil "2/1" 2)
-                (nil "20/10" 2)
-                (nil "200/100" 2)
-                (nil "0/2" 0)
-                (nil "1/2" 1/2)
-                (nil "0/20" 0)
-                (nil "10/20" 1/2)
-                (nil "100/200" 1/2)
-                (nil "001/2" 1/2)
-                (nil "000/20" 0)
-                (nil "010/20" 1/2)
-                (nil "100/200" 1/2)
-                (nil "12345/54321" 12345/54321)
-                (nil "+0/0"    nil division-by-zero)
-                (nil "+1/0"    nil division-by-zero)
-                (nil "+10/000" nil division-by-zero)
-                (nil "+0/1" 0)
-                (nil "+1/1" 1)
-                (nil "+2/1" 2)
-                (nil "+20/10" 2)
-                (nil "+200/100" 2)
-                (nil "+0/2" 0)
-                (nil "+1/2" 1/2)
-                (nil "+0/20" 0)
-                (nil "+10/20" 1/2)
-                (nil "+100/200" 1/2)
-                (nil "+001/2" 1/2)
-                (nil "+000/20" 0)
-                (nil "+010/20" 1/2)
-                (nil "+100/200" 1/2)
-                (nil "+12345/54321" 12345/54321)
-                (nil "-0/0"    nil division-by-zero)
-                (nil "-1/0"    nil division-by-zero)
-                (nil "-10/000" nil division-by-zero)
-                (nil "-0/1" -0)
-                (nil "-1/1" -1)
-                (nil "-2/1" -2)
-                (nil "-20/10" -2)
-                (nil "-200/100" -2)
-                (nil "-0/2" -0)
-                (nil "-1/2" -1/2)
-                (nil "-0/20" -0)
-                (nil "-10/20" -1/2)
-                (nil "-100/200" -1/2)
-                (nil "-001/2" -1/2)
-                (nil "-000/20" -0)
-                (nil "-010/20" -1/2)
-                (nil "-100/200" -1/2)
-                (nil "-12345/54321" -12345/54321)
+             '(
+               ;; integer  ::= [sign] digit+      
+               (nil "0"  0.)
+               (nil "1"  1.)
+               (nil "2"  2.)
+               (nil "9"  9.)
+               (nil "10" 10.)
+               (nil "11" 11.)
+               (nil "12" 12.)
+               (nil "19" 19.)
+               (((*read-base* 3.)) "0"  0.)
+               (((*read-base* 3.)) "1"  1.)
+               (((*read-base* 3.)) "2"  2.)
+               (((*read-base* 3.)) "9"  |9|)
+               (((*read-base* 3.)) "10" 3.)
+               (((*read-base* 3.)) "11" 4.)
+               (((*read-base* 3.)) "13" |13|)
+               (nil "-0"  -0.)
+               (nil "-1"  -1.)
+               (nil "-2"  -2.)
+               (nil "-9"  -9.)
+               (nil "-10" -10.)
+               (nil "-11" -11.)
+               (nil "-12" -12.)
+               (nil "-19" -19.)
+               (((*read-base* 3.)) "-0"  -0.)
+               (((*read-base* 3.)) "-1"  -1.)
+               (((*read-base* 3.)) "-2"  -2.)
+               (((*read-base* 3.)) "-9"  |-9|)
+               (((*read-base* 3.)) "-10" -3.)
+               (((*read-base* 3.)) "-11" -4.)
+               (((*read-base* 3.)) "-13" |-13|)
+               (nil "+0"  +0.)
+               (nil "+1"  +1.)
+               (nil "+2"  +2.)
+               (nil "+9"  +9.)
+               (nil "+10" +10.)
+               (nil "+11" +11.)
+               (nil "+12" +12.)
+               (nil "+19" +19.)
+               (((*read-base* 3.)) "+0"  +0.)
+               (((*read-base* 3.)) "+1"  +1.)
+               (((*read-base* 3.)) "+2"  +2.)
+               (((*read-base* 3.)) "+9"  |+9|)
+               (((*read-base* 3.)) "+10" +3.)
+               (((*read-base* 3.)) "+11" +4.)
+               (((*read-base* 3.)) "+13" |+13|)
+               ;; integer  ::= [sign] decimal-digit+ decimal-point 
+               (nil "0."  0.)
+               (nil "1."  1.)
+               (nil "2."  2.)
+               (nil "9."  9.)
+               (nil "10." 10.)
+               (nil "11." 11.)
+               (nil "12." 12.)
+               (nil "19." 19.)
+               (((*read-base* 3.)) "0."  0.)
+               (((*read-base* 3.)) "1."  1.)
+               (((*read-base* 3.)) "2."  2.)
+               (((*read-base* 3.)) "9."  9.)
+               (((*read-base* 3.)) "10." 10.)
+               (((*read-base* 3.)) "11." 11.)
+               (((*read-base* 3.)) "13." 13.)
+               (nil "-0."  -0.)
+               (nil "-1."  -1.)
+               (nil "-2."  -2.)
+               (nil "-9."  -9.)
+               (nil "-10." -10.)
+               (nil "-11." -11.)
+               (nil "-12." -12.)
+               (nil "-19." -19.)
+               (((*read-base* 3.)) "-0."  -0.)
+               (((*read-base* 3.)) "-1."  -1.)
+               (((*read-base* 3.)) "-2."  -2.)
+               (((*read-base* 3.)) "-9."  -9.)
+               (((*read-base* 3.)) "-10." -10.)
+               (((*read-base* 3.)) "-11." -11.)
+               (((*read-base* 3.)) "-13." -13.)
+               (nil "+0."  +0.)
+               (nil "+1."  +1.)
+               (nil "+2."  +2.)
+               (nil "+9."  +9.)
+               (nil "+10." +10.)
+               (nil "+11." +11.)
+               (nil "+12." +12.)
+               (nil "+19." +19.)
+               (((*read-base* 3.)) "+0."  +0.)
+               (((*read-base* 3.)) "+1."  +1.)
+               (((*read-base* 3.)) "+2."  +2.)
+               (((*read-base* 3.)) "+9."  +9.)
+               (((*read-base* 3.)) "+10." +10.)
+               (((*read-base* 3.)) "+11." +11.)
+               (((*read-base* 3.)) "+13." +13.)
+               ;; ratio    ::= [sign] {digit}+ slash {digit}+
+               (nil "0/0"    nil division-by-zero)
+               (nil "1/0"    nil division-by-zero)
+               (nil "10/000" nil division-by-zero)
+               (nil "0/1" 0)
+               (nil "1/1" 1)
+               (nil "2/1" 2)
+               (nil "20/10" 2)
+               (nil "200/100" 2)
+               (nil "0/2" 0)
+               (nil "1/2" 1/2)
+               (nil "0/20" 0)
+               (nil "10/20" 1/2)
+               (nil "100/200" 1/2)
+               (nil "001/2" 1/2)
+               (nil "000/20" 0)
+               (nil "010/20" 1/2)
+               (nil "100/200" 1/2)
+               (nil "12345/54321" 12345/54321)
+               (nil "+0/0"    nil division-by-zero)
+               (nil "+1/0"    nil division-by-zero)
+               (nil "+10/000" nil division-by-zero)
+               (nil "+0/1" 0)
+               (nil "+1/1" 1)
+               (nil "+2/1" 2)
+               (nil "+20/10" 2)
+               (nil "+200/100" 2)
+               (nil "+0/2" 0)
+               (nil "+1/2" 1/2)
+               (nil "+0/20" 0)
+               (nil "+10/20" 1/2)
+               (nil "+100/200" 1/2)
+               (nil "+001/2" 1/2)
+               (nil "+000/20" 0)
+               (nil "+010/20" 1/2)
+               (nil "+100/200" 1/2)
+               (nil "+12345/54321" 12345/54321)
+               (nil "-0/0"    nil division-by-zero)
+               (nil "-1/0"    nil division-by-zero)
+               (nil "-10/000" nil division-by-zero)
+               (nil "-0/1" -0)
+               (nil "-1/1" -1)
+               (nil "-2/1" -2)
+               (nil "-20/10" -2)
+               (nil "-200/100" -2)
+               (nil "-0/2" -0)
+               (nil "-1/2" -1/2)
+               (nil "-0/20" -0)
+               (nil "-10/20" -1/2)
+               (nil "-100/200" -1/2)
+               (nil "-001/2" -1/2)
+               (nil "-000/20" -0)
+               (nil "-010/20" -1/2)
+               (nil "-100/200" -1/2)
+               (nil "-12345/54321" -12345/54321)
 ;;; float    ::= [sign] {decimal-digit}* decimal-point {decimal-digit}+ exponent
 ;;; float    ::= [sign] {decimal-digit}* decimal-point {decimal-digit}+ 
 ;;; float    ::= [sign] {decimal-digit}+ exponent
@@ -2172,14 +2172,14 @@ RETURN: A list of all the macro and dispatch-macro characters in the readtable.
 ;;;                 | package-marker package-marker symbol-name
 ;;;                 | package-name package-marker symbol-name
 ;;;                 | package-name package-marker package-marker symbol-name
-                )
+               )
              :success)
       (multiple-value-bind (val err)
           (ignore-errors
-            (eval `(progv
-                       ',(mapcar (function first)  (first test))
-                       ',(mapcar (function second) (first test))
-                     (read-from-string ,(second test)))))
+           (eval `(progv
+                      ',(mapcar (function first)  (first test))
+                      ',(mapcar (function second) (first test))
+                    (read-from-string ,(second test)))))
         (assert
          (if (fourth test)
              (typep err (fourth test))
@@ -2216,75 +2216,75 @@ RETURN: A list of all the macro and dispatch-macro characters in the readtable.
 (tests "symbols"
        ((read-from-string "( abc ab a || |a| |ab| |a b c| )")
         ((abc ab a || |a| |ab| |a b c|) ;
-         32)
+                                        32)
         nil))
 
 (let ((*features* '(:a :b :c)))
   (tests "*features*"
-   ((eval-feature ':a *standard-input*)           (t)   nil)
-   ((eval-feature ':z *standard-input*)           (nil) nil)
-   ((eval-feature '42 *standard-input*)           (nil) nil)
-   ((eval-feature '(:not :a)    *standard-input*) (nil) nil)
-   ((eval-feature '(:not :z)    *standard-input*) (t)   nil)
-   ((eval-feature '(:not :a :b) *standard-input*) ()    reader-error)
-   ((eval-feature '(:and)       *standard-input*) (t)   nil)
-   ((eval-feature '(:and :a)    *standard-input*) (t)   nil)
-   ((eval-feature '(:and :a :b) *standard-input*) (t)   nil)
-   ((eval-feature '(:and :a :c) *standard-input*) (t)   nil)
-   ((eval-feature '(:and :a :z) *standard-input*) (nil) nil)
-   ((eval-feature '(:and :y :z) *standard-input*) (nil) nil)
-   ((eval-feature '(:or)        *standard-input*) (nil) nil)
-   ((eval-feature '(:or :a)     *standard-input*) (t)   nil)
-   ((eval-feature '(:or :a :b)  *standard-input*) (t)   nil)
-   ((eval-feature '(:or :a :c)  *standard-input*) (t)   nil)
-   ((eval-feature '(:or :a :z)  *standard-input*) (t)   nil)
-   ((eval-feature '(:or :y :z)  *standard-input*) (nil) nil)
-   ((eval-feature '(:or (:and :a (:not :z)) (:and (:not :a) :z))
-                  *standard-input*)               (t)   nil)
-   ((eval-feature '(:and (:or :a (:not :z)) (:or (:not :a) :z))
-                  *standard-input*)               (nil) nil)
-   ((eval-feature '(:and :a :b (:or :y :z (:not :a)))
-                  *standard-input*)               (nil) nil)
-   ((eval-feature '(:and :a :b (:or :y :z (:not 42)))
-                  *standard-input*)               (t)   nil)))
+         ((eval-feature ':a *standard-input*)           (t)   nil)
+         ((eval-feature ':z *standard-input*)           (nil) nil)
+         ((eval-feature '42 *standard-input*)           (nil) nil)
+         ((eval-feature '(:not :a)    *standard-input*) (nil) nil)
+         ((eval-feature '(:not :z)    *standard-input*) (t)   nil)
+         ((eval-feature '(:not :a :b) *standard-input*) ()    reader-error)
+         ((eval-feature '(:and)       *standard-input*) (t)   nil)
+         ((eval-feature '(:and :a)    *standard-input*) (t)   nil)
+         ((eval-feature '(:and :a :b) *standard-input*) (t)   nil)
+         ((eval-feature '(:and :a :c) *standard-input*) (t)   nil)
+         ((eval-feature '(:and :a :z) *standard-input*) (nil) nil)
+         ((eval-feature '(:and :y :z) *standard-input*) (nil) nil)
+         ((eval-feature '(:or)        *standard-input*) (nil) nil)
+         ((eval-feature '(:or :a)     *standard-input*) (t)   nil)
+         ((eval-feature '(:or :a :b)  *standard-input*) (t)   nil)
+         ((eval-feature '(:or :a :c)  *standard-input*) (t)   nil)
+         ((eval-feature '(:or :a :z)  *standard-input*) (t)   nil)
+         ((eval-feature '(:or :y :z)  *standard-input*) (nil) nil)
+         ((eval-feature '(:or (:and :a (:not :z)) (:and (:not :a) :z))
+                        *standard-input*)               (t)   nil)
+         ((eval-feature '(:and (:or :a (:not :z)) (:or (:not :a) :z))
+                        *standard-input*)               (nil) nil)
+         ((eval-feature '(:and :a :b (:or :y :z (:not :a)))
+                        *standard-input*)               (nil) nil)
+         ((eval-feature '(:and :a :b (:or :y :z (:not 42)))
+                        *standard-input*)               (t)   nil)))
 
 
 
 (tests "lists"
- ((read-from-string "()")                       (() 2)           nil)
- ((read-from-string "(a)")                      ((a) 3)          nil)
- ((read-from-string "(a b)")                    ((a b) 5)        nil)
- ((read-from-string "(a b c)")                  ((a b c) 7)      nil)
- ((read-from-string "(a b c d)")                ((a b c d) 9)    nil)
- ((read-from-string "(a b c . d)")              ((a b c . d) 11)  nil)
- ((read-from-string "(a b c . d e)")            nil            reader-error)
- ((read-from-string "(a b c . . d)")            nil            reader-error)
- ((read-from-string "(a b c . d .)")            nil            reader-error)
- ((let ((*features* '(:test)))
-    (read-from-string "(a b c #+test d)"))      ((a b c d) 16)    nil)
- ((let ((*features* '(:test)))
-    (read-from-string "(a b c #-test d)"))      ((a b c) 16)      nil)
- ((let ((*features* '(:test)))
-    (read-from-string "(a b c . #+test d)"))    ((a b c . d) 18)  nil)
- ((let ((*features* '(:test)))
-    (read-from-string "(a b c . #-test d e)"))  ((a b c . e) 20)  nil)
- ((let ((*features* '(:test)))
-    (read-from-string "(a b c #+test . d)"))    ((a b c . d) 18)  nil)
- ((let ((*features* '(:test)))
-    (read-from-string "(a b c #-test . d)"))    ((a b c d) 18)    nil)
- ((read-from-string "(#+(or) #$foo       xyz)") nil               reader-error)
- ((read-from-string "(#+(or) abc:def:ghi xyz)") ((xyz) 24)        nil))
+       ((read-from-string "()")                       (() 2)           nil)
+       ((read-from-string "(a)")                      ((a) 3)          nil)
+       ((read-from-string "(a b)")                    ((a b) 5)        nil)
+       ((read-from-string "(a b c)")                  ((a b c) 7)      nil)
+       ((read-from-string "(a b c d)")                ((a b c d) 9)    nil)
+       ((read-from-string "(a b c . d)")              ((a b c . d) 11)  nil)
+       ((read-from-string "(a b c . d e)")            nil            reader-error)
+       ((read-from-string "(a b c . . d)")            nil            reader-error)
+       ((read-from-string "(a b c . d .)")            nil            reader-error)
+       ((let ((*features* '(:test)))
+          (read-from-string "(a b c #+test d)"))      ((a b c d) 16)    nil)
+       ((let ((*features* '(:test)))
+          (read-from-string "(a b c #-test d)"))      ((a b c) 16)      nil)
+       ((let ((*features* '(:test)))
+          (read-from-string "(a b c . #+test d)"))    ((a b c . d) 18)  nil)
+       ((let ((*features* '(:test)))
+          (read-from-string "(a b c . #-test d e)"))  ((a b c . e) 20)  nil)
+       ((let ((*features* '(:test)))
+          (read-from-string "(a b c #+test . d)"))    ((a b c . d) 18)  nil)
+       ((let ((*features* '(:test)))
+          (read-from-string "(a b c #-test . d)"))    ((a b c d) 18)    nil)
+       ((read-from-string "(#+(or) #$foo       xyz)") nil               reader-error)
+       ((read-from-string "(#+(or) abc:def:ghi xyz)") ((xyz) 24)        nil))
 
 
 (tests "#+ with #= and ##"
- ((let ((*features* (quote (:a :b))))
-    (read-from-string "(#+#1=(or a b) #1#)"))
-  (((:or :a :b)) 19)
-  nil)
- ((let ((*features* (quote (:a :b))))
-    (read-from-string "(#+#.(cl:if (cl:eq :a (cl:first cl:*features*)) '(:and) '(:or)) equal)"))
-  ((equal) 70)
-  nil))
+       ((let ((*features* (quote (:a :b))))
+          (read-from-string "(#+#1=(or a b) #1#)"))
+        (((:or :a :b)) 19)
+        nil)
+       ((let ((*features* (quote (:a :b))))
+          (read-from-string "(#+#.(cl:if (cl:eq :a (cl:first cl:*features*)) '(:and) '(:or)) equal)"))
+        ((equal) 70)
+        nil))
 
 
 #- (and)
@@ -2296,19 +2296,19 @@ RETURN: A list of all the macro and dispatch-macro characters in the readtable.
 
 
 (tests "bit vectors, numbers, and pathnames"
- ((read-from-string "(#*101111 #6*10111110101 #6*101111 #6*1010 #6*1011 #* #0*11010)")
-  ((#*101111 #*101111 #*101111 #*101000 #*101111 #* #*) 63)
-  nil)
- ((read-from-string "(#b10111101 #o275 #xbd #36r59)")
-  ((189 189 189 189) 30)
-  nil)
- ((read-from-string "#P\"/tmp/a.c\"")
-  (#.(make-pathname :directory '(:absolute "tmp")
-                     :name "a"
-                     :type "c"
-                     :version #+(or ecl sbcl) :newest #-(or ecl sbcl) nil
-                     :case :local) 12)
-  nil))
+       ((read-from-string "(#*101111 #6*10111110101 #6*101111 #6*1010 #6*1011 #* #0*11010)")
+        ((#*101111 #*101111 #*101111 #*101000 #*101111 #* #*) 63)
+        nil)
+       ((read-from-string "(#b10111101 #o275 #xbd #36r59)")
+        ((189 189 189 189) 30)
+        nil)
+       ((read-from-string "#P\"/tmp/a.c\"")
+        (#.(make-pathname :directory '(:absolute "tmp")
+                          :name "a"
+                          :type "c"
+                          :version #+(or ecl sbcl) :newest #-(or ecl sbcl) nil
+                          :case :local) 12)
+        nil))
 
 #- (and)
 (tests
@@ -2317,71 +2317,70 @@ RETURN: A list of all the macro and dispatch-macro characters in the readtable.
   (#s(s :a 1 :b 2 :c 3) 17)
   nil))
 
-
+#-clisp
 (tests "complex numbers"
- ((read-from-string "( #C(123 456) #c(-123 456)
-                       #C(12.3 456) #c(-123 45.6)
-                       #C(123/10 456/100) #c(-123/10 456/100) )")
-  (( #c(123 456) #c(-123 456)
-                       #c(12.3 456) #c(-123 45.6)
-                       #c(123/10 456/100) #c(-123/10 456/100) )
-   140)
-  nil))
-
+       ((read-from-string "( #C(123 456) #c(-123 456)
+                             #C(12.3f0 456) #c(-123 45.6f0)
+                             #C(123/10 456/100) #c(-123/10 456/100))")
+        (( #c(123 456) #c(-123 456)
+             #c(12.3f0 456) #c(-123 45.6f0)
+             #c(123/10 456/100) #c(-123/10 456/100) )
+         155)
+        nil))
 
 
 (tests "read-delimited-list with comments"
- ((with-input-from-string (src " \"!A\"
+       ((with-input-from-string (src " \"!A\"
 ) def)
 ")
-    (values (read-delimited-list #\) src)
-            (read-delimited-list #\) src)))
-  (("!A") (def))
-  nil)
+          (values (read-delimited-list #\) src)
+                  (read-delimited-list #\) src)))
+        (("!A") (def))
+        nil)
 
- ((with-input-from-string (src "#( \"!A\" 
+       ((with-input-from-string (src "#( \"!A\" 
 ) (def)
 ")
-    (values (read src)
-            (read src)))
-  (#("!A") (def))
-  nil)
+          (values (read src)
+                  (read src)))
+        (#("!A") (def))
+        nil)
 
- ((with-input-from-string (src "( \"!A\"
+       ((with-input-from-string (src "( \"!A\"
 ) (def)
 ")
-    (values (read src)
-            (read src)))
-  (("!A") (def))
-  nil)
+          (values (read src)
+                  (read src)))
+        (("!A") (def))
+        nil)
 
- ((with-input-from-string (src " \"!A\" ; comment
+       ((with-input-from-string (src " \"!A\" ; comment
 ) def)
 ")
-    (values (read-delimited-list #\) src)
-            (read-delimited-list #\) src)))
-  (("!A") (def))
-  nil)
- 
-  ((with-input-from-string (src "#( \"!A\"  ; comment
+          (values (read-delimited-list #\) src)
+                  (read-delimited-list #\) src)))
+        (("!A") (def))
+        nil)
+       
+       ((with-input-from-string (src "#( \"!A\"  ; comment
 ) (def)
 ")
-    (values (read src)
-            (read src)))
-  (#("!A") (def))
-  nil)
+          (values (read src)
+                  (read src)))
+        (#("!A") (def))
+        nil)
 
-  ((with-input-from-string (src "( \"!A\" ; comment
+       ((with-input-from-string (src "( \"!A\" ; comment
 ) (def)
 ")
-    (values (read src)
-            (read src)))
-  (("!A") (def))
-  nil))
+          (values (read src)
+                  (read src)))
+        (("!A") (def))
+        nil))
 
 
 (tests "lists with comments"
- ((read-from-string "( () (a) (a b) (a b c) (a . ()) (a . b) (a b . ()) (a b . c)
+       ((read-from-string "( () (a) (a b) (a b c) (a . ()) (a . b) (a b . ()) (a b . c)
                        ( ; comment
                     ) (a ; comment
                     ) (a ; comment
@@ -2394,10 +2393,10 @@ RETURN: A list of all the macro and dispatch-macro characters in the readtable.
                  ) (a b .; comment
              ()) (a b . c;comment
                       ))")
-  ((nil (a) (a b) (a b c) (a) (a . b) (a b) (a b . c) nil (a) (a b) (a b c) (a)
-   (a) (a . b) (a . b) (a . b) (a b) (a b . c)) 
-   469)
-  nil))
+        ((nil (a) (a b) (a b c) (a) (a . b) (a b) (a b . c) nil (a) (a b) (a b c) (a)
+              (a) (a . b) (a . b) (a . b) (a b) (a b . c)) 
+         469)
+        nil))
 
 
 (tests "vector with too much data"
@@ -2428,9 +2427,9 @@ RETURN: A list of all the macro and dispatch-macro characters in the readtable.
              #()) #(a b  c;comment
                       ))")
         ((#() #(a) #(a b) #(a b c) #(a #()) #(a b) #(a b #()) #(a b c)
-           #(a a) #(a b) #(a b) #(a #()) #(a b) #(a b) #(a b) #() #(a)
-           #(a b) #(a b c) #(a #()) #(a #()) #(a b) #(a b) #(a b) #(a b #())
-           #(a b c))
+              #(a a) #(a b) #(a b) #(a #()) #(a b) #(a b) #(a b) #() #(a)
+              #(a b) #(a b c) #(a #()) #(a #()) #(a b) #(a b) #(a b) #(a b #())
+              #(a b c))
          580)
         nil))
 
@@ -2449,7 +2448,7 @@ RETURN: A list of all the macro and dispatch-macro characters in the readtable.
                  "WITH-STANDARD-IO-SYNTAX"
                  "*READ-BASE*" "*READ-DEFAULT-FLOAT-FORMAT*" "*READ-EVAL*"
                  "*READ-SUPPRESS*" "*READTABLE*")
-           :success)
+               :success)
     (let ((s-here (find-symbol sym *package*))
           (s-cl   (find-symbol sym "COMMON-LISP")))
       (assert (not (eq s-here s-cl))
@@ -2462,8 +2461,8 @@ RETURN: A list of all the macro and dispatch-macro characters in the readtable.
 
 (defun potential-number-p (token
                            &optional
-                           (*read-base* *read-base*)
-                           (ratio-markers "/"))
+                             (*read-base* *read-base*)
+                             (ratio-markers "/"))
   "
 TOKEN:         A string containing the token to be tested.
 *READ-BASE*:   The current radix.
@@ -2501,13 +2500,13 @@ RETURN:        Whether the TOKEN is a potential number.
           ;;    markers, decimal points, extension characters, and
           ;;    number markers.
           (loop
-             :for prevch = #\0 :then ch
-             :for ch :across token
-             :always (or (digit-char-p ch *read-base*)
-                         (find ch "+-.^_")
-                         (find ch ratio-markers)
-                         (and (alpha-char-p ch)
-                              (not (alpha-char-p prevch)))))))))
+            :for prevch = #\0 :then ch
+            :for ch :across token
+            :always (or (digit-char-p ch *read-base*)
+                        (find ch "+-.^_")
+                        (find ch ratio-markers)
+                        (and (alpha-char-p ch)
+                             (not (alpha-char-p prevch)))))))))
 
 
 (defun test/potential-number-p ()
@@ -2526,16 +2525,16 @@ RETURN:        Whether the TOKEN is a potential number.
                    "-3.7+2.6i-6.17j+19.6k"
                    "+.e2")))
   (assert (notany (function potential-number-p)
-                 '("/"
-                   "/5"
-                   "+"
-                   "1+"
-                   "1-"   
-                   "foo+"
-                   "ab.cd"
-                   "_"
-                   "^"
-                   "^/-")))
+                  '("/"
+                    "/5"
+                    "+"
+                    "1+"
+                    "1-"   
+                    "foo+"
+                    "ab.cd"
+                    "_"
+                    "^"
+                    "^/-")))
   (let ((pns '("bad-face"
                "25-dec-83"
                "a/b"
