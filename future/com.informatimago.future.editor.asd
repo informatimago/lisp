@@ -11,12 +11,13 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2014-12-23 <PJB> Added system dependencies.
 ;;;;    2013-12-06 <PJB> Extracted from ~/rc/common.lisp
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2013 - 2013
+;;;;    Copyright Pascal J. Bourguignon 2013 - 2014
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -33,12 +34,14 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.future.editor
-    :name "com.informatimago.tools.editor"
-    :description "Editor tools."
-    :author "Pascal J. Bourguignon"
-    :version "1.0.0"
-    :license "GPL3"
-    :depends-on () 
-    :components ((:file "editor")))
+  :name "com.informatimago.tools.editor"
+  :description "Editor tools."
+  :author "Pascal J. Bourguignon"
+  :version "1.0.1"
+  :license "GPL3"
+  :depends-on ("com.informatimago.common-lisp.cesarum"
+               "com.informatimago.common-lisp.lisp-sexp"
+               "split-sequence") 
+  :components ((:file "editor")))
 
 ;;;; THE END ;;;;
