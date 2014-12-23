@@ -94,7 +94,13 @@ should be made into implementation independant packages).
            #+linux (:file "make-volumes" :depends-on ("susv3")))
   #-clisp ()) 
 
-#+(and clisp (not linux)) (warn "System ~A is incomplete without the LINUX package." :com.informatimago.clisp) 
-#-clisp (warn "System ~A is useless on ~A" :com.informatimago.clisp (lisp-implementation-type))
+
+#+(and clisp (not linux))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (warn "System ~A is incomplete without the LINUX package." :com.informatimago.clisp)) 
+
+#-clisp
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (warn "System ~A is useless on ~A" :com.informatimago.clisp (lisp-implementation-type)))
 
 ;;;; THE END ;;;;

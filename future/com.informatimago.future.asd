@@ -1,18 +1,18 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               editor.asd
+;;;;FILE:               com.informatimago.future.asd
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    Editor tools.
+;;;;    This system loads what can be loaded of future Informatimago projects and sketches.
+;;;;    !!! This code is clearly not ready for consumption !!!
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2014-12-23 <PJB> Added system dependencies.
-;;;;    2013-12-06 <PJB> Extracted from ~/rc/common.lisp
+;;;;    2014-12-23 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
@@ -33,19 +33,13 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.future.editor
-  :name "com.informatimago.future.editor"
-  :description "Editor tools."
+(asdf:defsystem :com.informatimago.future
+  :name "com.informatimago.future"
+  :description "Future Informatimago Projects - Not ready for consumption."
   :author "Pascal J. Bourguignon"
   :version "1.0.2"
   :license "GPL3"
-  :depends-on ("com.informatimago.common-lisp.cesarum"
-               "com.informatimago.common-lisp.lisp-sexp"
-               "split-sequence") 
-  :components (#+clisp (:file "editor"))) ; for now, only on clisp, will be ported soon.
-
-#-clisp (eval-when (:compile-toplevel :load-toplevel :execute)
-          (warn "System ~A is not available on ~A yet."
-                :com.informatimago.future.editor (lisp-implementation-type)))
+  :depends-on ("com.informatimago.future.editor") 
+  :components ())
 
 ;;;; THE END ;;;;

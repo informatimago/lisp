@@ -35,7 +35,8 @@
 
 #+clisp
 (unless custom:*ansi*
-  (warn "clisp should be used with -ansi or (setf custom:*ansi* t) in ~/.clisprc"))
+  (warn "System ~A: clisp should be used with -ansi or (setf custom:*ansi* t) in ~/.clisprc"
+        :com.informatimago.common-lisp.cesarum))
 
 (asdf:defsystem :com.informatimago.common-lisp.cesarum
 

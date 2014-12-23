@@ -108,7 +108,7 @@ common-lisp:package and common-lisp:symbol.
 (defun read-sources (&key (system-file #P"patchwork.asd")
                      (base #P"~/works/patchwork/patchwork/src/"))
   (setup)
-  (load-asdf-system (merge-pathnames system-file base))
+  (LOAD-SIMPLE-ASD-FILE (merge-pathnames system-file base))
   (setf *sorted-files* (reverse (topological-sort (hash-table-values *asdf-files*)
                                            (function dependencies))))
   ;; (defparameter *sources*

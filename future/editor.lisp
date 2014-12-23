@@ -53,12 +53,8 @@
 
 (in-package "COMMON-LISP-USER")
 
-;; Eventually, to be moved to an asd file:
-(ql:quickload :com.informatimago.common-lisp.cesarum)
-(ql:quickload :com.informatimago.common-lisp.lisp-sexp)
-(ql:quickload :split-sequence)
-
 ;; while debugging:
+#-(and)
 (when (find-package "COM.INFORMATIMAGO.EDITOR")
   (delete-package "COM.INFORMATIMAGO.EDITOR"))
 
@@ -103,7 +99,7 @@ to language names (as keyword).")
 ;;;---------------------------------------------------------------------
 
 
-(defpackage "COM.INFORMATIMAGO.EDITOR"
+(defpackage "COM.INFORMATIMAGO.FUTURE.EDITOR"
   (:nicknames "EDITOR" "EMACS" "E")
   (:use "COMMON-LISP"
         "SPLIT-SEQUENCE"
@@ -134,7 +130,7 @@ License along with this program; if not, write to the Free
 Software Foundation, Inc., 59 Temple Place, Suite 330,
 Boston, MA 02111-1307 USA
 "))
-(in-package "COM.INFORMATIMAGO.EDITOR")
+(in-package "COM.INFORMATIMAGO.FUTURE.EDITOR")
 
 
 
