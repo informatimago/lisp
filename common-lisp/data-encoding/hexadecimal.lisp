@@ -149,7 +149,6 @@ License:
 (defun encode (byte-vector padding byte-sex sex-width base case)
   (with-output-to-string (output)
     (loop
-      :with byte-type = (array-element-type byte-vector)
       :for byte :across byte-vector
       :do (encode-byte byte padding byte-sex sex-width base case output))))
 
@@ -257,6 +256,7 @@ BYTE-SEX:     When more than one octet are needed to store the bytes,
 RETURN:       A string containing the hexadecimal digits representing the vector.
 
 "
+  (declare (ignore case))
   (multiple-value-bind (bits signed) (parse-element-type (or element-type '(unsigned-byte 8)))
     (when signed (error "Not implemented yet"))
     (decode string
