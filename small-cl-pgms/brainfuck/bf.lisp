@@ -35,7 +35,12 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
 
-
+(defpackage "COM.INFORMATIMAGO.SMALL-CL-PGMS.BRAINFUCK"
+  (:use "COMMON-LISP")
+  (:export "BFVM" "MAKE-BFVM" "BFVM-MEM" "BFVM-MC" "BFVM-PGM" "BFVM-PC")
+  (:export "BFLOAD" "BFVM-RUN")
+  (:export "BFCOMPILE-FILE" "BFCOMPILE" "*BFCOMPILE*"))
+(in-package  "COM.INFORMATIMAGO.SMALL-CL-PGMS.BRAINFUCK")
 
 ;;;----------------------------------------------------------------------
 ;;; -1- A Brainfuck Virtual Machine
