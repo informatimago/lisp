@@ -163,7 +163,7 @@ RETURN: the depth of the tree.
 "
   (if (null tree)
       0
-      (1+ (reduce (function max) (cdr tree) :key (fnuction tree-depth)
+      (1+ (reduce (function max) (cdr tree) :key (function tree-depth)
                                             :initial-value 0))))
 
 
