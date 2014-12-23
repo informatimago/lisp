@@ -314,6 +314,8 @@ common-lisp:package and common-lisp:symbol.
   (classify-classes)
   (print-class-hierarchy))
 
+(defparameter *utf-8* #-clisp :utf-8 #+clisp charset:utf-8)
+
 (defun generate-classes-hierarchy ()
   (with-open-file (*standard-output* "classes-hierarchy.txt"
                                      :direction :output
