@@ -103,6 +103,7 @@ common-lisp:package and common-lisp:symbol.
 
 (defparameter *sorted-files* '())
 (defparameter *contents*     '())
+(defvar *asdf-files* (make-hash-table))
 
 (defun read-sources (&key (system-file #P"patchwork.asd")
                      (base #P"~/works/patchwork/patchwork/src/"))
@@ -237,6 +238,7 @@ common-lisp:package and common-lisp:symbol.
     :finally (classify-classes))
   (report-problems (hash-table-values *classes*)))
 
+(defvar *tlee* nil) ; for debugging.
 
 (defun print-class-hierarchy ()
   (let ((tlee  (let ((nodes (make-hash-table)))
