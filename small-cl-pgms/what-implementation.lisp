@@ -42,9 +42,10 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
 
-(defpackage "COM.INFORMATIMAGO.WHAT-IMPLEMENTATION"
+(defpackage "COM.INFORMATIMAGO.SMALL-CL-PGMS.WHAT-IMPLEMENTATION"
   (:use "COMMON-LISP")
-  (:export "CHOOSE-AN-IMPLEMENTATION")
+  (:export "CHOOSE-AN-IMPLEMENTATION" "SELECTION-LOOP"
+           "GENERATE-SERVER-EXECUTABLE")
   (:documentation "
 Helps a newbie choose a CL implementations by selecting criteria.
 Please contribute to the selection criteria and other implementation
@@ -53,9 +54,11 @@ attributes.
 Evaluate:
 
     (com.informatimago.what-implementation:choose-an-implementation)
+    (com.informatimago.what-implementation:selection-loop)
 
 and answer the questions.
 
+    (com.informatimago.what-implementation:generate-server-executable \"what-cl\")
 
 Copyright Pascal J. Bourguignon 2012 - 2012
 
@@ -72,7 +75,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 "))
-(in-package "COM.INFORMATIMAGO.WHAT-IMPLEMENTATION")
+(in-package "COM.INFORMATIMAGO.SMALL-CL-PGMS.WHAT-IMPLEMENTATION")
 
 
 (defparameter *version* "1.0.1")
@@ -954,10 +957,10 @@ CLASSIFIED
 
 
 (defun save-program-and-quit (&key
-                              (name          "unnamed-lisp-program")
-                              (toplevel      (lambda ()))
-                              (documentation "Undocumented program.")
-                              (start-package "COMMON-LISP-USER"))
+                                (name          "unnamed-lisp-program")
+                                (toplevel      (lambda ()))
+                                (documentation "Undocumented program.")
+                                (start-package "COMMON-LISP-USER"))
   (declare (ignorable documentation))
   
   #+ccl
@@ -1014,11 +1017,14 @@ CLASSIFIED
   (quit))
 
 
-#-testing
-(eval-when (:load-toplevel :execute)
-  (save-program-and-quit :name "what-implementation"
+(defun generate-server-executable (name)
+  (save-program-and-quit :name name
                          :toplevel (function main)
                          :documentation "Helps the user choose a Common Lisp implementation."))
+
+;; #-testing
+;; (eval-when (:load-toplevel :execute)
+;;   (generate-server-executable  "what-implementation"))
 
 
 ;;;; THE END ;;;;

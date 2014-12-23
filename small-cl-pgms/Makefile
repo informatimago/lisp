@@ -84,8 +84,8 @@ wang.html:wang.html.in
 help::
 	@printf $(HELPFORMAT) what-implementation "Builds the what-implementation executable."
 wi what-implementation:what-implementation.lisp
-	echo '(load (compile-file "what-implementation.lisp"))' | ccl -n 
-
+	( echo '(load (compile-file "what-implementation.lisp"))';\
+	  echo '(com.informatimago.small-cl-pgms.what-implementation:generate-server-executable  "what-implementation")' ) | ccl -n 
 
 help::
 	@printf $(HELPFORMAT) install-what-implementation "Install the what-implementation executable."
