@@ -32,7 +32,15 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
-
+(defpackage "COM.INFORMATIMAGO.SMALL-CL-PGMS.QUINES"
+  (:export #+clisp "QUINE-1"
+           "QUINE-2" "QUINE-2S" "QUINE-2E"
+           "QUINE-3"
+           #+clisp "TRY-QUINE-1"
+           "TRY-QUINE-2"
+           "TRY-QUINE-3"
+           "TRY-LAMBDA-QUINE"))
+(in-package "COM.INFORMATIMAGO.SMALL-CL-PGMS.QUINES")
 
 ;; -------------------------------------------------------------------
 ;; QUINE-1 cheats  a little:  it works only  on clisp and on a
@@ -112,22 +120,37 @@
 ;; QUINE-1 and QUINE-2, since they're outputing a string of character,
 ;; must be used as follow to effectively loop the quine:
 
-(read-from-string (with-output-to-string (*standard-output*) (quine-2)))
+#+clisp (defun try-quine-1 ()
+          (read-from-string (with-output-to-string (*standard-output*) (quine-1))))
+
+(defun try-quine-2 ()
+ (read-from-string (with-output-to-string (*standard-output*) (quine-2))))
 
 ;; while the result of QUINE-2S and QUINE-3 can be evalued directly:
+;;  (eval (quine-3))
 
-(eval (quine-3))
+(defun try-quine-3 ()
+  (quine-3))
 
+;; With packages, we have to either go into the package:
+#-(and) (in-package "COM.INFORMATIMAGO.SMALL-CL-PGMS.QUINES")
+;; or bind the *package* to it when printing the quines:
+#-(and)
+(with-standard-io-syntax
+  (let ((*package* (find-package "COM.INFORMATIMAGO.SMALL-CL-PGMS.QUINES")))
+    (pprint (COM.INFORMATIMAGO.SMALL-CL-PGMS.QUINES:try-quine-3))))
 
 ;; -------------------------------------------------------------------
 ;; LAMBDA QUINE:
 
-((lambda (x) `(,x ',x)) '(lambda (x) `(,x ',x)))
+(defun try-lambda-quine ()
+  ((lambda (x) `(,x ',x)) '(lambda (x) `(,x ',x))))
+
 
 ;; cmucl: ((LAMBDA (X) `(,X ',X)) '(LAMBDA (X) `(,X ',X)))
 ;; clisp: ((LAMBDA (X) `(,X ',X)) '(LAMBDA (X) `(,X ',X)))
 ;; emacs: (#1=(lambda (x) (\` ((\, x) (quote (\, x))))) (quote #1#))
 ;; sbcl:  ((LAMBDA (X) (SB-IMPL::BACKQ-LIST X (SB-IMPL::BACKQ-LIST (QUOTE QUOTE) X))) (QUOTE (LAMBDA (X) (SB-IMPL::BACKQ-LIST X (SB-IMPL::BACKQ-LIST (QUOTE QUOTE) X)))))
 
-;; 
-;;;; quine.lisp                       -- 2004-03-14 00:46:53 -- pascal   ;;;;
+;;;; THE END ;;;;
+
