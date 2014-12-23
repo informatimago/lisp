@@ -291,7 +291,8 @@ RETURN: line; column
     :do (case ch
           ((#\Space
             #\Newline
-            #+has-linefeed #\Linefeed
+            #+(and has-return (not newline-is-return)) #\Return
+            #+(and has-linefeed (not newline-is-linefeed)) #\Linefeed
             #+has-page     #\Page
             #+has-tab      #\Tab))
           (otherwise
@@ -300,7 +301,6 @@ RETURN: line; column
                (ungetchar scanner ch)
                (return (values (scanner-line   scanner)
                                (scanner-column scanner))))))
-
 
 
 (defgeneric scan-next-token (scanner &optional parser-data)
