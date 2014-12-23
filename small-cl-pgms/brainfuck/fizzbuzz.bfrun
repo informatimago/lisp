@@ -1,0 +1,4 @@
+;; -*- mode:lisp; coding:utf-8 -*-
+(ql:quickload :com.informatimago.small-cl-pgms.brainfuck)
+(funcall (com.informatimago.small-cl-pgms.brainfuck:bfcompile-file #P"~/fizzbuzz.brainfuck")
+         (com.informatimago.small-cl-pgms.brainfuck:make-bfvm))
