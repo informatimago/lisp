@@ -32,6 +32,13 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
 
+(defpackage "COM.INFORMATIMAGO.SMALL-CL-PGMS.LIFE"
+  (:use "COMMON-LISP")
+  (:export "RANDOM-GAME"
+           "MAKE-WORLD" "WORLD-CURRENT" "LIFE-STEP" "PRINT-WORLD"))
+(in-package "COM.INFORMATIMAGO.SMALL-CL-PGMS.LIFE")
+
+
 (defstruct (world (:constructor %make-world))
   current
   next)
@@ -61,16 +68,14 @@
        
 
 (defun simple-sum-neighbors (plane i j)
-  (let ((width  (array-dimension plane 0))
-        (height (array-dimension plane 1)))
-    (+ (aref plane (- i 1)  (- j 1))
-       (aref plane (- i 1)  j)
-       (aref plane (- i 1)  (+ j 1))
-       (aref plane i        (- j 1))
-       (aref plane i        (+ j 1))
-       (aref plane (+ i 1)  (- j 1))
-       (aref plane (+ i 1)  j)
-       (aref plane (+ i 1)  (+ j 1)))))
+  (+ (aref plane (- i 1)  (- j 1))
+     (aref plane (- i 1)  j)
+     (aref plane (- i 1)  (+ j 1))
+     (aref plane i        (- j 1))
+     (aref plane i        (+ j 1))
+     (aref plane (+ i 1)  (- j 1))
+     (aref plane (+ i 1)  j)
+     (aref plane (+ i 1)  (+ j 1))))
 
 
 (defun life-step (world)
@@ -142,13 +147,21 @@
             (nreverse (list (1- (read s)) (1- (read s)))))
   #-clisp (list 78 23))
 
+(defun terminal-name ()
+  #+ccl (ccl:getenv "TERM")
+  #+clisp (ext:getenv "TERM")
+  #-(or ccl clisp) "dumb")
 
 (defun random-game ()
-  (let ((world (apply (function make-world) (terminal-size))))
+  (let ((world (apply (function make-world) (terminal-size)))
+        (dumb (string= "dumb" (terminal-name))))
     (set-random world)
     (format t "~Cc" (code-char 27))
     (loop
-       (format t "~C[0;0H" (code-char 27)) ; CUP
-       (print-world (life-step world))
-       (finish-output))))
+      (if dumb
+          (format t "~2%")
+          (format t "~C[0;0H" (code-char 27))) ; CUP
+      (print-world (life-step world))
+      (finish-output))))
 
+;;;; THE END ;;;;
