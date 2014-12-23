@@ -220,7 +220,7 @@ RETURN:  a graph as defined by the nodes in the OBJECTS sequence and
 "
   (let ((graph (make-instance 'graph-class :edge-class 'directed-edge-class )))
     (add-nodes graph objects)
-    (map nil (lambda (form)
+    (map nil (lambda (from)
                (dolist (to (adjacency-list from))
                  (when (find to objects)
                    (add-edge-between-nodes graph from to))))
