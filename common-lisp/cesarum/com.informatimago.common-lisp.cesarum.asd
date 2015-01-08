@@ -40,11 +40,11 @@
 
 (asdf:defsystem :com.informatimago.common-lisp.cesarum
 
-    ;; system attributes:
-    
-    :description  "Various general data types, algorithms, utilities and standards."
+  ;; system attributes:
+  
+  :description  "Various general data types, algorithms, utilities and standards."
 
-    :long-description "
+  :long-description "
 
 This system provides various kinds of packages:
 
@@ -60,85 +60,86 @@ This system provides various kinds of packages:
 
 all written in 100% conforming Common Lisp.
 "
-    
-    :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-    
-    :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-    
-    :licence "AGPL3"
+  
+  :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
+  
+  :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
+  
+  :licence "AGPL3"
 
-    ;; component attributes:
-    
-    :name "com.informatimago.common-lisp.cesarum"
+  ;; component attributes:
+  
+  :name "com.informatimago.common-lisp.cesarum"
 
-    :version "1.3.3"
+  :version "1.3.3"
 
-    :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Autumn 2010")
-                 ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.cesarum/")
-                 ((#:albert #:formats)             . ("docbook"))
-                 ((#:albert #:docbook #:template)  . "book")
-                 ((#:albert #:docbook #:bgcolor)   . "white")
-                 ((#:albert #:docbook #:textcolor) . "black"))
-    
-    :depends-on (:com.informatimago.common-lisp.lisp-sexp)
-    #+asdf-unicode :encoding #+asdf-unicode :utf-8
-    :components (
-                 ;; Simple Test Framework
-                 (:file "simple-test"     :depends-on ())
+  :properties ((#:author-email                   . "pjb@informatimago.com")
+               (#:date                           . "Autumn 2010")
+               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.cesarum/")
+               ((#:albert #:formats)             . ("docbook"))
+               ((#:albert #:docbook #:template)  . "book")
+               ((#:albert #:docbook #:bgcolor)   . "white")
+               ((#:albert #:docbook #:textcolor) . "black"))
+  
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8
+  :depends-on ("com.informatimago.common-lisp.lisp-sexp")
+  :in-order-to ((test-op (test-op "com.informatimago.common-lisp.cesarum-test")))
+  :components (
+               ;; Simple Test Framework
+               (:file "simple-test"     :depends-on ())
 
-                 ;; Common Lisp addendum:
-                 (:file "array"           :depends-on ())
-                 (:file "sequence"        :depends-on ())
-                 (:file "list"            :depends-on ())
-                 (:file "utility"         :depends-on ("list"))
-                 (:file "string"          :depends-on ("utility" "list" "ecma048"))
-                 (:file "package"         :depends-on ("utility"))
-                 
-                 ;; Data structures:
-                 (:file "set"             :depends-on ("simple-test" "utility" "array"))
-                 (:file "index-set"       :depends-on ("simple-test" "utility" "array" "sequence" "set"))
-                 (:file "bset"            :depends-on ("utility" "set"))
-                 (:file "brelation"       :depends-on ("utility" "bset"))
-                 (:file "dictionary"      :depends-on ())
-                 (:file "dll"             :depends-on ())
-                 (:file "graph"           :depends-on ("utility" "list"))
-                 (:file "llrbtree"        :depends-on ())
-                 (:file "queue"           :depends-on ("utility"))
-                 (:file "message-queue"   :depends-on ("queue"))
+               ;; Common Lisp addendum:
+               (:file "array"           :depends-on ())
+               (:file "sequence"        :depends-on ())
+               (:file "list"            :depends-on ())
+               (:file "utility"         :depends-on ("list"))
+               (:file "string"          :depends-on ("utility" "list" "ecma048"))
+               (:file "package"         :depends-on ("utility"))
+               
+               ;; Data structures:
+               (:file "set"             :depends-on ("simple-test" "utility" "array"))
+               (:file "index-set"       :depends-on ("simple-test" "utility" "array" "sequence" "set"))
+               (:file "bset"            :depends-on ("utility" "set"))
+               (:file "brelation"       :depends-on ("utility" "bset"))
+               (:file "dictionary"      :depends-on ())
+               (:file "dll"             :depends-on ())
+               (:file "graph"           :depends-on ("utility" "list"))
+               (:file "llrbtree"        :depends-on ())
+               (:file "queue"           :depends-on ("utility"))
+               (:file "message-queue"   :depends-on ("queue"))
 
-                 ;; Standards:
-                 (:file "ascii"           :depends-on ())
-                 (:file "character"       :depends-on ("ascii"))
-                 (:file "character-sets"  :depends-on ("string"))
-                 (:file "ecma048"         :depends-on ("utility"))
-                 (:file "iso3166"         :depends-on ())
-                 (:file "iso4217"         :depends-on ())
-                 (:file "iso639a"         :depends-on ())
+               ;; Standards:
+               (:file "ascii"           :depends-on ())
+               (:file "character"       :depends-on ("ascii"))
+               (:file "character-sets"  :depends-on ("string"))
+               (:file "ecma048"         :depends-on ("utility"))
+               (:file "iso3166"         :depends-on ())
+               (:file "iso4217"         :depends-on ())
+               (:file "iso639a"         :depends-on ())
 
-                 ;; Algorithms:
-                 (:file "pmatch"          :depends-on ("utility"))
-                 (:file "combination"     :depends-on ())
-                 (:file "constraints"     :depends-on ("utility" "dictionary"))
-                 (:file "raiden"          :depends-on ())
-                 (:file "dfa"             :depends-on ())
-                 (:file "tea"             :depends-on ())
-                 (:file "circular"        :depends-on ())
-                 (:file "histogram"       :depends-on ())
+               ;; Algorithms:
+               (:file "pmatch"          :depends-on ("utility"))
+               (:file "combination"     :depends-on ())
+               (:file "constraints"     :depends-on ("utility" "dictionary"))
+               (:file "raiden"          :depends-on ())
+               (:file "dfa"             :depends-on ())
+               (:file "tea"             :depends-on ())
+               (:file "circular"        :depends-on ())
+               (:file "histogram"       :depends-on ())
 
-                 ;; Specific stuff:
-                 (:file "activity"        :depends-on ())
-                 (:file "date"            :depends-on ())
-                 (:file "version"         :depends-on ())
+               ;; Specific stuff:
+               (:file "activity"        :depends-on ())
+               (:file "date"            :depends-on ())
+               (:file "version"         :depends-on ())
 
-                 ;; Files:
-                 (:file "stream"          :depends-on ("string"))
-                 (:file "file"            :depends-on ("stream" "ascii"))
-                 (:file "peek-stream"     :depends-on ())
-                 (:file "cache"           :depends-on ())
-                 (:file "float-binio"     :depends-on ())
+               ;; Files:
+               (:file "stream"          :depends-on ("string"))
+               (:file "file"            :depends-on ("stream" "ascii"))
+               (:file "peek-stream"     :depends-on ())
+               (:file "cache"           :depends-on ())
+               (:file "float-binio"     :depends-on ())
 
-                 ))
+               ))
 
 
 ;; Would require a separate asd file...
