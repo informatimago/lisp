@@ -35,7 +35,7 @@
 #+clisp
 (unless custom:*ansi*
   (warn "System ~A: clisp should be used with -ansi or (setf custom:*ansi* t) in ~/.clisprc"
-        :com.informatimago.common-lisp.cesarum))
+        :com.informatimago.common-lisp.cesarum-test))
 
 (asdf:defsystem "com.informatimago.common-lisp.cesarum-test"
 
@@ -65,9 +65,10 @@
   
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ("com.informatimago.common-lisp.cesarum")
-  :perform (test-op (o s)
-                    (uiop:symbol-call "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SET" "TEST/ALL")
-                    (uiop:symbol-call "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.INDEX-SET" "TEST/ALL"))
+  :perform (test-op
+            (o s)
+            (uiop:symbol-call "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SET"       "TEST/ALL")
+            (uiop:symbol-call "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.INDEX-SET" "TEST/ALL"))
   :components ((:file "set-test"       :depends-on ())
                (:file "index-set-test" :depends-on ("set-test"))))
 
