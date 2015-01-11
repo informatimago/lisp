@@ -31,484 +31,26 @@
 ;;;;    - breaking into the debugger (eg. on C-x C-e) is not handled in the editor,
 ;;;;      and some restart may exit from the editor.
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
 ;;;;    Copyright Pascal J. Bourguignon 2006 - 2015
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(in-package "COMMON-LISP-USER")
+(in-package "COM.INFORMATIMAGO.EDITOR")
 
-;; while debugging:
-#-(and)
-(when (find-package "COM.INFORMATIMAGO.EDITOR")
-  (delete-package "COM.INFORMATIMAGO.EDITOR"))
-
-;;;---------------------------------------------------------------------
-;;;
-;;; We put on *FEATURES* a keyword representing the language to use for
-;;; documentation strings:
-;;;
-
-(defvar *languages* '((:DK . :DANSK)
-                      (:DE . :DEUTSCH)
-                      (:EN . :ENGLISH)
-                      (:ES . :ESPAÑOL)
-                      (:FR . :FRANÇAIS)
-                      (:NL . :NEDERLANDS)
-                      (:RU . :РУССКИЙ))
-  "Maps the language code (in keyword) as used in the LANG environment variable,
-to language names (as keyword).")
-
-;; Remove the old languages, if any.
-(setf *features* (set-difference *features* (mapcar (function cdr) *languages*)))
-
-;; Push the new language.  By default we use :ENGLISH.
-(pushnew (progn
-           ;; In clisp, we use the custom:*current-language* variable:
-           #+clisp (intern (string custom:*current-language*) "KEYWORD")
-           ;; Otherwise if we have ASDF, we try to get the environment variable LANG:
-           #+(and (not clisp) asdf)
-           (let* ((lang #-asdf3 (ASDF:GETENV "LANG")
-                        #+asdf3 (uiop/os:getenv "LANG"))
-                  (entry (assoc lang *languages* :test (function string-equal))))
-             (if entry
-                 (cdr entry)
-                 :english))
-           ;; otherwise we use English:
-           #-(or clisp asdf) :english)
-         *features*)
-
-;;; In any case, if we don't have the documentation in the selected
-;;; language, we fall back to docstrings in English.
-;;;
-;;;---------------------------------------------------------------------
-
-
-(defpackage "COM.INFORMATIMAGO.FUTURE.EDITOR"
-  (:nicknames "EDITOR" "EMACS" "E")
-  (:use "COMMON-LISP"
-        "SPLIT-SEQUENCE"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DLL"
-        "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM")
-  (:shadow "DEFUN" "LAMBDA" "ED")
-  (:export "DEFUN" "LAMBDA" "ED")
-  (:export "SCREEN-EDITOR" "EDITOR")
-  (:documentation "
-
-An emacs editor written in Common Lisp.
-
-
-Copyright Pascal J. Bourguignon 2006 - 2015
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version
-2 of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be
-useful, but WITHOUT ANY WARRANTY; without even the implied
-warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-PURPOSE.  See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public
-License along with this program; if not, write to the Free
-Software Foundation, Inc., 59 Temple Place, Suite 330,
-Boston, MA 02111-1307 USA
-"))
-(in-package "COM.INFORMATIMAGO.FUTURE.EDITOR")
-
-
-
-;;;---------------------------------------------------------------------
-;;; Screen interface
-;;;---------------------------------------------------------------------
-
-
-(defclass screen ()
-  ((stream :reader screen-stream))
-  (:documentation
-   #+french      "Cet objet represente un écran.
-Il y a des sous-classes spécifiques pour chaque type d'écran disponible.
-Il y a des méthodes spécialisées sur ces classes pour écrire sur l'écran."
-   #-(or french) "This object represents the screen.
-There are subclasses specific to each available screen device.
-There are methods specialized on these subclasses to write on the screen."))
-
-(defgeneric screen-size (screen)
-  (:documentation
-   #+french "
-"
-   #-(or french) "
-"))
-
-(defgeneric screen-cursor-position (screen)
-  (:documentation
-   #+french "
-"
-   #-(or french) "
-"))
-
-(defgeneric set-screen-cursor-position (screen line column)
-  (:documentation
-   #+french "
-"
-   #-(or french) "
-"))
-
-(defgeneric clear-screen (screen)
-  (:documentation
-   #+french "
-"
-   #-(or french) "
-"))
-
-(defmethod clear-screen ((self screen))
-  (set-screen-cursor-position self 0 0)
-  (clear-screen-to-eot self))
-
-(defgeneric clear-screen-to-eot (screen)
-  (:documentation
-   #+french "
-"
-   #-(or french) "
-"))
-
-(defgeneric clear-screen-to-eol (screen)
-  (:documentation
-   #+french "
-"
-   #-(or french) "
-"))
-
-(defgeneric delete-screen-line (screen)
-  (:documentation
-   #+french "
-"
-   #-(or french) "
-"))
-
-(defgeneric insert-screen-line (screen)
-  (:documentation
-   #+french "
-"
-   #-(or french) "
-"))
-
-(defgeneric screen-highlight-on (screen)
-  (:documentation
-   #+french "
-"
-   #-(or french) "
-"))
-
-(defgeneric screen-highlight-off (screen)
-  (:documentation
-   #+french "
-"
-   #-(or french) "
-"))
-
-(defgeneric screen-cursor-on (screen)
-  (:documentation
-   #+french "Allume le curseur."
-   #-(or french) "Show up the cursor."))
-
-(defgeneric screen-cursor-off (screen)
-  (:documentation
-   #+french "Éteint le curseur."
-   #-(or french) "Hide the cursor."))
-
-;; EXT:CHAR-BITS-LIMIT                        constant
-;; EXT:CHAR-CONTROL-BIT                       constant
-;; EXT:CHAR-FONT-LIMIT                        constant
-;; EXT:CHAR-HYPER-BIT                         constant
-;; EXT:CHAR-META-BIT                          constant
-;; EXT:CHAR-SUPER-BIT                         constant
-
-;; EXT:CHAR-BIT                               function
-;; EXT:CHAR-BITS                              function
-;; EXT:CHAR-FONT                              function
-;; EXT:CHAR-INVERTCASE                        function
-;; EXT:CHAR-KEY                               function
-;; EXT:CHAR-WIDTH                             function
-
-
-(defgeneric chord-character (chord))
-(defgeneric chord-modifiers (chord))
-
-(defgeneric chord-modifierp (chord modifier)
-  (:method (chord (modifier integer))
-    (logbitp modifier (chord-modifiers chord)))
-  (:method (chord (modifier symbol))
-    (chord-modifierp chord (ecase modifier
-                             (:shift +shift+)
-                             (:control +control+)
-                             (:meta +meta+)
-                             (:alt +alt+)
-                             (:super +super+)
-                             (:hyper +hyper+)
-                             (:command +command+)))))
-
-(defconstant +shift+   0)
-(defconstant +control+ 1)
-(defconstant +meta+    2)
-(defconstant +alt+     3)
-(defconstant +super+   4)
-(defconstant +hyper+   5)
-(defconstant +command+ 6)
-
-(defclass chord ()
-  ((character :initarg :character :reader chord-character)
-   (modifiers :initarg :modifiers :reader chord-modifiers)))
-
-(defgeneric keyboard-chord-no-hang (screen)
-  (:documentation
-   #+french "Retourne l'accord suivant, ou NIL."
-   #-(or french) "Returns the next keyboard chord, or NIL."))
-
-(defgeneric call-with-screen (screen body)
-  (:documentation
-   #+french "Appelle la fonction BODY avec comme argument l'écran SCREEN,
-en ayant activé cet écran pour le fonctionnement en mode bidimentionnel."
-   #-(or french) "Calls the BODY function with as argument, the SCREEN,
-while having activated this screen into the bidimentional mode."))
-
-
-#+clisp
-(progn
-  (defclass clisp-screen (screen)
-    ((stream :reader screen-stream :initform (screen:make-window)))
-    (:documentation
-     #+french "Cette sous-classe de SCREEN utilise le package SCREEN de CLISP."
-     #-(or french) "This SCREEN subclass uses the CLISP SCREEN package."))
-  (defmethod screen-size ((self clisp-screen))
-    (screen:window-size (screen-stream self)))
-  (defmethod screen-cursor-position ((self clisp-screen))
-    (screen:window-cursor-position (screen-stream self)))
-  (defmethod set-screen-cursor-position ((self clisp-screen) line column)
-    (screen:set-window-cursor-position (screen-stream self) line column))
-  (defmethod clear-screen ((self clisp-screen))
-    (screen:clear-window  (screen-stream self)))
-  (defmethod clear-screen-to-eot ((self clisp-screen))
-    (screen:clear-window-to-eot  (screen-stream self)))
-  (defmethod clear-screen-to-eol ((self clisp-screen))
-    (screen:clear-window-to-eol  (screen-stream self)))
-  (defmethod delete-screen-line ((self clisp-screen))
-    (screen:delete-window-line (screen-stream self)))
-  (defmethod insert-screen-line ((self clisp-screen))
-    (screen:insert-window-line (screen-stream self)))
-  (defmethod screen-highlight-on ((self clisp-screen))
-    (screen:highlight-on (screen-stream self)))
-  (defmethod screen-highlight-off ((self clisp-screen))
-    (screen:highlight-off (screen-stream self)))
-  (defmethod screen-cursor-on ((self clisp-screen))
-    (screen:window-cursor-on (screen-stream self)))
-  (defmethod screen-cursor-off ((self clisp-screen))
-    (screen:window-cursor-off (screen-stream self)))
-  (defmethod keyboard-chord-no-hang ((self clisp-screen))
-    (declare (ignorable self))
-    (ext:with-keyboard (read-char-no-hang ext:*keyboard-input*)))
-  (defmethod call-with-screen ((self clisp-screen) thunk)
-    (let ((screen:*window*  (screen-stream *current-screen*)))
-      (funcall thunk self))))
-
-#+xterm
-(progn
-  (defclass xterm-screen (screen)
-    ()
-    (:documentation
-     #+french "Cette sous-classe de SCREEN utilise un xterm via un pty."
-     #-(or french) "This SCREEN subclass uses an xterm thru a pty."))
-  (defmethod screen-size ((self xterm-screen))
-    (values 25 80))
-  (defmethod screen-cursor-position ((self xterm-screen))
-    )
-  (defmethod set-screen-cursor-position ((self xterm-screen) line column)
-    )
-  (defmethod clear-screen-to-eot ((self xterm-screen))
-    )
-  (defmethod clear-screen-to-eol ((self xterm-screen))
-    )
-  (defmethod delete-screen-line ((self xterm-screen))
-    )
-  (defmethod insert-screen-line ((self xterm-screen))
-    )
-  (defmethod screen-highlight-on ((self xterm-screen))
-    )
-  (defmethod screen-highlight-off ((self xterm-screen))
-    )
-  (defmethod screen-cursor-on ((self xterm-screen))
-    )
-  (defmethod screen-cursor-off ((self xterm-screen))
-    )
-  (defmethod keyboard-chord-no-hang ((self xterm-screen))
-    )
-  (defmethod call-with-screen ((self xterm-screen) thunk)
-    ;; todo before
-    (unwind-protect
-         (funcall thunk self)
-      ;; todo after
-      (progn))))
-
-#.(progn
-    (when (find-package :cl-charms)
-      (pushnew :cl-charms *features*))
-    nil)
-
-#+cl-charms
-(progn
-  (defclass charms-screen (screen)
-    ()
-    (:documentation
-     #+french "Cette sous-classe de SCREEN utilise cl-charms (ncurses)."
-     #-(or french) "This SCREEN subclass uses cl-charms (ncurses)."))
-  (defmethod screen-size ((self charms-screen))
-    (multiple-value-bind (width height)
-        (charms:window-dimensions charms:*standard-window*)
-      (values height width)))
-  (defmethod screen-cursor-position ((self charms-screen))
-    (charms:cursor-position charms:*standard-window*))
-  (defmethod set-screen-cursor-position ((self charms-screen) line column)
-    (charms:move-cursor charms:*standard-window* column line))
-  (defmethod clear-screen-to-eot ((self charms-screen))
-    (charms:clear-window-after-cursor charms:*standard-window*))
-  (defmethod clear-screen-to-eol ((self charms-screen))
-    (charms:clear-line-after-cursor charms:*standard-window*))
-  (defmethod delete-screen-line ((self charms-screen))
-    ;; (charms/ll:deleteln)
-    )
-  (defmethod insert-screen-line ((self charms-screen))
-    ;; (charms/ll:insertln)
-    )
-  (defmethod screen-highlight-on ((self charms-screen))
-    )
-  (defmethod screen-highlight-off ((self charms-screen))
-    )
-  (defmethod screen-cursor-on ((self charms-screen))
-    )
-  (defmethod screen-cursor-off ((self charms-screen))
-    )
-  (defmethod keyboard-chord-no-hang ((self charms-screen))
-    (charms:get-char charms:*standard-window* :ignore-errors t))
-  (defmethod call-with-screen ((self charms-screen) thunk)
-    (charms:with-curses ()
-      (charms:disable-echoing)
-      (charms:enable-raw-input :interpret-control-characters nil)
-      (charms:enable-non-blocking-mode charms:*standard-window*)
-      (funcall thunk self))))
-
-(defvar *current-screen* nil
-  #-(or french) "The current SCREEN instance. In this version, there's only
-one SCREEN instance, but a future version may be ''multitty'' (or
-''multiframe'') like GNU emacs."
-  #+french  "L'instance courrante de la classe SCREEN.  Dans cette version
-il n'y a qu'une instance de SCREEN, mais une version future pourrait être
-''multitty'' (ou ''multiframe''), comme GNU emacs.")
-
-
-(defmacro with-screen (screen-object &body body)
-  #-(or french) "Executes the BODY with *CURRENT-SCREEN* bound to SCREEN-OBJECT,
-while displaying this screen on the terminal."
-  #+french "Execute BODY avec *CURRENT-SCREEN* lié à SCREEN-OBJECT,
-tout en affichant cet écran sur le terminal."
-  `(call-with-screen ,screen-object (lambda (*current-screen*) ,@body)))
-
-
-(defmacro with-open-screen (screen-object &body body)
-  #-(or french) "Executes the BODY with *CURRENT-SCREEN* bound to SCREEN-OBJECT,
-while displaying this screen on the terminal.
-Close the screen when done."
-  #+french "Execute BODY avec *CURRENT-SCREEN* lié à SCREEN-OBJECT,
-tout en affichant cet écran sur le terminal.
-Ferme l'écran à la fin."
-  `(let* ((*current-screen* ,screen-object)
-          #+clisp(screen:*window* (screen-stream *current-screen*)))
-     (unwind-protect (progn ,@body)
-       #+clisp(close screen:*window*))))
-
-
-
-;;;---------------------------------------------------------------------
-;;; Commands: interactive functions
-;;;---------------------------------------------------------------------
-;;;
-;;; #-(or french)
-;;; We want to define commands, with a special INTERACTIVE
-;;; declaration.  So we need to use our own DEFUN (and LAMBDA) macros.
-;;;
-;;; #+french
-;;; Nous voulons définir des commandes, avec une déclaration spéciale:
-;;; INTERACTIVE.  Ainsi, nous devons utiliser nos propres macros DEFUN et LAMBDA.
-
-(declaim (declaration interactive))
-
-
-(defvar *interactive-decls* (make-hash-table #+clisp :weak #+clisp :key)
-  #-(or french) "A map of commands name or functions to INTERACTIVE declarations."
-  #+french      "Une association des noms de commande ou fonction vers leur
-déclaration INTERACTIVE.")
-
-
-(defmacro defun (name arguments &body body)
-  #-(or french) "
-Do additionnal book-keeping over CL:DEFUN, for INTERACTIVE commands.
-"
-  #+french "
-En plus du traitement de CL:DEFUN, maintient les informations nécessaires 
-pour les commandes interactives.
-"
-  (let* ((decls (mapcan (function rest) (extract-declarations body)))
-         (inter (find 'interactive decls :key (function first))))
-    (if inter
-        `(progn
-           (compile (cl:defun ,name ,arguments ,@body))
-           (setf (gethash ',name           *interactive-decls*) ',inter
-                 (gethash (function ,name) *interactive-decls*) ',inter)
-           ',name)
-        `(progn
-           (cl:defun ,name ,arguments ,@body)
-           (remhash ',name           *interactive-decls*)
-           (remhash (function ,name) *interactive-decls*)
-           ',name))))
-
-
-(defmacro lambda (arguments &body body)
-  #-(or french) "
-Do additionnal bookkeeping over CL:LAMBDA, for INTERACTIVE commands.
-"
-  #+french "
-En plus du traitement de CL:LAMBDA, maintient les informations nécessaires 
-pour les commandes interactives.
-"
-  (let* ((decls (mapcan (function rest) (extract-declarations body)))
-         (inter (find 'interactive decls :key (function first))))
-    (if inter
-        `(progn
-           (let ((fun (compile nil '(cl:lambda ,arguments ,@body))))
-             (setf (gethash fun *interactive-decls*) ',inter)
-             fun))
-        `(cl:lambda  ,arguments ,@body))))
-
-
-(defun interactivep (fundesc)
-  #-(or french) "Whether the function FUNCDESC is INTERACTIVE."
-  #+french  "Indique si la fonction  FUNCDESC est INTERACTIVE."
-  (gethash fundesc *interactive-decls*))
 
 
 (defun read-something (prompt other-args validatef postf)
@@ -539,14 +81,8 @@ pour les commandes interactives.
 
 
 (defun nsubseq (sequence start &optional (end nil))
-  #+french "
-Comme pour CL:SUBSEQ, mais pour les vecteurs, utilise un tableau déplacé
-au lieu de faire une copie du vecteur.
-"
-  #-(or french) "
-Same as CL:SUBSEQ, but with vectors, use a displaced array instead of
-copying the vector.
-"
+  "Same as CL:SUBSEQ, but with vectors, use a displaced array instead of
+copying the vector."
   (if (vectorp sequence)
       (if (and (zerop start) (or (null end) (= end (length sequence))))
           sequence
@@ -990,7 +526,7 @@ C-w         Information on absence of warranty for GNU Emacs.
 ;;; Buffers
 ;;;---------------------------------------------------------------------
 
-(defvar *log* nil "Debugging stream.")
+(defvar *log*            nil "Debugging stream.")
 
 (defvar *frame-list*     '() "The list of frames.")
 (defvar *current-frame*  nil "The current frame.")
@@ -1002,8 +538,7 @@ C-w         Information on absence of warranty for GNU Emacs.
 ;; then enter the text in that file's own buffer.
 
 "
-  #-(or french) "The default contents for the *scratch* buffer."
-  #+french "Le contenu par défaut du tampon *scratch*.")
+  "The default contents for the *scratch* buffer.")
 
 ;; *current-screen*
 ;; *current-frame*
@@ -1027,6 +562,7 @@ C-w         Information on absence of warranty for GNU Emacs.
 (defmacro with-current-window (window &body body)
   `(let ((*current-window* ,window))
      ,@body))
+
 
 (defmacro with-buffer (buffer &body body)
   `(with-current-window (make-instance 'context :buffer (get-buffer ,buffer))
@@ -1131,12 +667,9 @@ C-w         Information on absence of warranty for GNU Emacs.
 (defclass window-with-status-bar (window)
   ()
   (:documentation
-   #-(or french) "This is a normal window, which displays a status bar
+   "This is a normal window, which displays a status bar
 at the bottom.  Normally, only the bottom-most window, displaying the
-mini-buffer is a plain window without a status bar."
-   #+french "Ceci est une fenêtre normale, qui affiche une ligne de status
-en bas.  Normalement, seule la fenêtre du bas, qui affiche le mini-tampon
-est une fenêtre brute, sans ligne de status."))
+mini-buffer is a plain window without a status bar."))
 
 (defmethod window-bottom ((self window))
   (+ (window-top self) (window-height self)))
@@ -1693,13 +1226,9 @@ and displays it in the mini-window."
 
 
 (defun buffer-for-file (path)
-  #-(or french) "
+  "
 RETURN:   The buffer associated with the file at PATH,
           or NIL if it doesn't exist.
-"
-  #+french  "
-RETOURNE: Le tampon associé au fichier PATH,
-          ou NIL s'il n'existe pas.
 "
   (find-if (lambda (buffer)
              (and (buffer-file buffer)
@@ -1871,12 +1400,9 @@ RETOURNE: Le tampon associé au fichier PATH,
 
 
 (defun switch-to-buffer (buffer)
-  #-(or french) "Select BUFFER in the current window.
+  "Select BUFFER in the current window.
 If BUFFER does not identify an existing buffer,
 then this command creates a buffer with that name."
-  #+french "Sélectionne le BUFFER dans la fenêtre courrante.
-Si BUFFER n'identifie pas un tampon existant alors cette
-commande crée un tampon de ce nom."
   (declare (interactive "BSwitch to buffer: "))
   (context-save (window-context *current-window*))
   (setf (window-context *current-window*)
@@ -2354,20 +1880,14 @@ These commands include C-@ and M-x start-kbd-macro."
       (catch 'editor-quit
         (loop
           (catch 'keyboard-quit
-            
                 (LOOP
                   :with redisplayed = t
                   :with meta-seen-p = nil
-                  :for ki = (keyboard-chord-no-hang *current-screen*)
-                  :for modifiers = (and ki (keyboard-modifiers
-                                            (logior (ext:char-bits ki)
-                                                    (prog1 (if meta-seen-p EXT:CHAR-META-BIT 0)
-                                                      (setf meta-seen-p nil)))))
-                  :for key = (and ki (funcall
-                                      (if (member :control modifiers)
-                                          (function char-downcase)
-                                          (function identity))
-                                      (or (ext:char-key ki) (character ki))))
+                  :for chord = (keyboard-chord-no-hang *current-screen*)
+                  :for modifiers = (and chord
+                                        (append (when meta-seen-p '(:meta))
+                                                (symbolic-modifiers (chord-modifiers chord))))
+                  :for key = (and ki (chord-character chord))
                   :initially (editor-reset-key) (redisplay)
                   :do (if ki
                           (if (eql #\escape key)
@@ -2382,135 +1902,6 @@ These commands include C-@ and M-x start-kbd-macro."
                             (redisplay)
                             (setf redisplayed t))))))))))
 
-;; EXT:CHAR-BITS-LIMIT                        constant
-;; EXT:CHAR-CONTROL-BIT                       constant
-;; EXT:CHAR-FONT-LIMIT                        constant
-;; EXT:CHAR-HYPER-BIT                         constant
-;; EXT:CHAR-META-BIT                          constant
-;; EXT:CHAR-SUPER-BIT                         constant
-
-;; EXT:CHAR-BIT                               function
-;; EXT:CHAR-BITS                              function
-;; EXT:CHAR-FONT                              function
-;; EXT:CHAR-INVERTCASE                        function
-;; EXT:CHAR-KEY                               function
-;; EXT:CHAR-WIDTH                             function
-
-
-#-clisp
-(defun make-xterm-io-stream (&key display geometry)
-  (error "Not implemented on ~A (~S ~S ~S)"
-         (lisp-implementation-type)
-         'make-xterm-io-stream display geometry))
-
-#+clisp
-(defun make-xterm-io-stream (&key display geometry)
-  (let* ((pipe (with-open-stream (s (ext:make-pipe-input-stream
-                                     "mktemp /tmp/clisp-x-io-XXXXXX"))
-                 (read-line s)))
-         (title "CLISP I/O")
-         ;; (clos::*warn-if-gf-already-called* nil)
-         (font nil
-               #+(or) "-*-console-medium-r-normal-*-16-*-*-*-*-*-*-*"
-               #+(or)"-dec-terminal-bold-r-normal-*-14-*-*-*-*-*-dec-dectech"))
-    ;; xterm creates a pty, forks, hooks the pty to stdin/stdout
-    ;; and exec bash with the commands given in -e.
-    ;; We write this pty path to our pipe,
-    ;; and cat our pipe to wait for the end.
-    ;; Meanwhile, we'll be reading and writing this pty.
-    (ext:shell (format nil "rm -f ~S; mknod ~S p; xterm ~
-                            ~:[~;~:*-geometry ~S~] ~:[~;~:*-display ~S~] ~
-                            -fg green -bg black ~:[~;~:*-fn '~A'~] -n ~S -T ~S ~
-                            -e 'tty >> ~S ; cat ~S' &" 
-                       pipe pipe geometry display font title title pipe pipe))
-    (let* ((tty-name (with-open-file (s pipe) (read-line s)))
-           (xio (make-two-way-stream
-                 (open tty-name :direction :input  :buffered nil)
-                 (open tty-name :direction :output :buffered nil))))
-      (system::terminal-raw (two-way-stream-input-stream  xio) t t)
-      (defmethod close :after ((x (eql xio)) &rest junk)
-        (declare (ignore x junk))
-        (ignore-errors
-          (with-open-file (s pipe :direction :output)
-            (write-line "Bye." s)))
-        (delete-file pipe)
-        (close (two-way-stream-input-stream  xio))
-        (close (two-way-stream-output-stream xio))
-        (let () ;; ((clos::*warn-if-gf-already-called* nil))
-          (remove-method #'close (find-method #'close '(:after) `((eql ,xio))))))
-      xio)))
-
-
-#+clisp
-(defun screen-editor (&key log)
-  (cond
-    ((string= "xterm" (uiop/os:getenv "TERM"))
-     (setf custom:*terminal-encoding* (ext:make-encoding
-                                       :charset charset:iso-8859-1
-                                       :line-terminator :unix)))
-    ((string= "kterm" (uiop/os:getenv "TERM"))
-     (setf custom:*terminal-encoding* (ext:make-encoding
-                                       :charset charset:utf-8
-                                       :line-terminator :unix))))
-  (editor-reset)
-  (let ((*log* (typecase log
-                 ((member :xterm) (make-xterm-io-stream :geometry "100x24+0+0"))
-                 ((or string pathname)  (open log
-                                              :direction :output
-                                              :if-exists :append
-                                              :if-does-not-exist :create))
-                 (file  log)
-                 (otherwise (make-broadcast-stream)))))
-    (unwind-protect
-         (with-open-screen (make-instance 'clisp-screen)
-           (editor-initialize *current-screen*)
-           (unwind-protect
-                (keyboard-loop)
-             (set-screen-cursor-position *current-screen*
-                                         0 (screen-size *current-screen*))
-             (clear-screen *current-screen*))
-           (editor-terminate))
-      (close *log*))))
-
-
-#+clisp
-(defun keyboard-test ()
-  (screen:with-window nil
-    (screen:set-window-cursor-position screen:*window* 2 10)
-    (format t "Hi")
-    (EXT:WITH-KEYBOARD
-        (LOOP
-           :for ki = (READ-CHAR EXT:*KEYBOARD-INPUT*)
-           :do
-           (print ki)
-           (print `((ext:char-key ki) ,(ext:char-key ki)))
-           (print `((character ki)
-                    ,(and (not (ext:char-key ki))
-                          (zerop (ext:char-bits ki))
-                          (character ki))))
-           (print `((ext:char-font ki) ,(ext:char-font ki)))
-           (print `((ext:char-bits ki) ,(ext:char-bits ki)))
-           (dolist (modifier '(:control :meta :super :hyper))
-             (print `((ext:char-bit ki ,modifier) ,(ext:char-bit ki modifier))))
-           (finish-output)
-           :until (EQL (and (not (ext:char-key ki))
-                            (zerop (ext:char-bits ki))
-                            (character ki)) #\q)))))
-
-
-
-
-
-
-;; (DEFINE-PACKAGE "COM.INFORMATIMAGO.CLISP.TERMINAL"
-;;   (:FROM "COMMON-LISP" :IMPORT :ALL)
-;;   (:EXPORT "MAKE-WINDOW" "WITH-SCREEN" "WINDOW-SIZE" "WINDOW-CURSOR-POSITION"
-;;            "SET-WINDOW-CURSOR-POSITION" "CLEAR-WINDOW" "CLEARN-WINDOW-TO-EOT"
-;;            "CLEAR-WINDOW-TO-EOL" "DELETE-WINDOW-LINE" "INSERT-WINDOW-LINE"
-;;            "HIGHLIGHT-ON" "HIGHLIGHT-OFF"
-;;            "WINDOW-CURSOR-ON" "WINDOW-CURSOR-OFF"))
-
-
 
 
 (defun shadow-synonym-stream (stream synonym)
@@ -2519,38 +1910,36 @@ These commands include C-@ and M-x start-kbd-macro."
       (symbol-value synonym)
       stream))
 
-;; Note: we cannot use EXT:*KEYBOARD-INPUT* in xeditor, since it uses
-;; the original *terminal-io* stream.
 
-(defun xexample (&key (display ":0.0"))
-  (let* ((old-terminal-io   *terminal-io*)
-         (xterm-io          (make-xterm-io-stream :display display :geometry "+0+0"))
-         (*terminal-io*     xterm-io)
-         (*standard-output* (make-synonym-stream '*terminal-io*))
-         (*standard-input*  (make-synonym-stream '*terminal-io*))
-         (*error-output*    (make-synonym-stream '*terminal-io*))
-         (*query-io*        (make-synonym-stream '*terminal-io*))
-         ;; (*debug-io*        (make-synonym-stream '*terminal-io*))
-         ;; (*trace-output*    (make-synonym-stream '*terminal-io*))
-         (old-term          (uiop/os:getenv "TERM")))
-    (setf (uiop/os:getenv "TERM") "xterm")
+
+
+
+
+(defun screen-editor (&key log (screen-class 'charms-screen))
+  (let ((*log* (typecase log
+                 ((member :xterm) (make-xterm-io-stream :geometry "100x24+0+0"))
+                 ((or string pathname)  (open log
+                                              :direction :output
+                                              :if-exists :append
+                                              :if-does-not-exist :create))
+                 (file  log)
+                 (otherwise (make-broadcast-stream))))
+        (screen (make-instance screen-class)))
     (unwind-protect
-         (progn (format *query-io* "~&Hello!~%") 
-                (format *query-io* "~&X = ")
-                (finish-output *query-io*)
-                (let ((x (read *query-io*)))
-                  (format *query-io* "~&~S = ~A~%" '(- (* 2 x) 3) (- (* 2 x) 3)))
-                (y-or-n-p "Happy?"))
-      (setf *terminal-io* old-terminal-io)
-      (close xterm-io)
-      (setf (uiop/os:getenv "TERM") old-term))))
+         (progn
+           (screen-initialize-for-terminal screen (uiop/os:getenv "TERM"))
+           (editor-reset)
+           (with-screen screen
+             (editor-initialize *current-screen*)
+             (unwind-protect
+                  (keyboard-loop)
+               (set-screen-cursor-position *current-screen*
+                                           0 (screen-size *current-screen*))
+               (clear-screen *current-screen*))
+             (editor-terminate)))
+      (close *log*))))
 
-;; (let ((*terminal-io* (emacs::make-xterm-io-stream)))
-;;   (print 'hi *terminal-io*)
-;;   (print (read-char ext:*keyboard-input*))
-;;   (screen:with-window
-;;       (screen:WITH-window (print 'hi))
-;;     (print (read-char ext:*keyboard-input*))))
+
 
 (defun editor () (screen-editor :log "/tmp/editor.log"))
 (defun ed (&rest args) (apply (function screen-editor) args))

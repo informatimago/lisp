@@ -1,0 +1,130 @@
+;;;; -*- mode:lisp;coding:utf-8 -*-
+;;;;**************************************************************************
+;;;;FILE:               screen.lisp
+;;;;LANGUAGE:           Common-Lisp
+;;;;SYSTEM:             Common-Lisp
+;;;;USER-INTERFACE:     NONE
+;;;;DESCRIPTION
+;;;;    
+;;;;    Defines the SCREEN interface.
+;;;;    
+;;;;AUTHORS
+;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
+;;;;MODIFICATIONS
+;;;;    2015-01-11 <PJB> Extracted from editor.lisp
+;;;;BUGS
+;;;;LEGAL
+;;;;    AGPL3
+;;;;    
+;;;;    Copyright Pascal J. Bourguignon 2015 - 2015
+;;;;    
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
+;;;;    
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
+;;;;    
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;;;;**************************************************************************
+
+(in-package "COM.INFORMATIMAGO.EDITOR")
+
+;;;---------------------------------------------------------------------
+;;; Screen interface
+;;;---------------------------------------------------------------------
+
+
+(defclass screen ()
+  ((stream :reader screen-stream))
+  (:documentation "This object represents the screen.
+There are subclasses specific to each available screen device.
+There are methods specialized on these subclasses to write on the screen."))
+
+(defgeneric screen-open (screen))
+(defgeneric screen-close (screen))
+(defgeneric screen-initialize-for-terminal (screen terminal)
+  (:method ((screen screen) terminal) terminal))
+
+(defgeneric screen-size (screen))
+(defgeneric screen-cursor-position (screen))
+(defgeneric set-screen-cursor-position (screen line column))
+(defgeneric clear-screen (screen)
+  (:method ((screen screen))
+    (set-screen-cursor-position screen 0 0)
+    (clear-screen-to-eot screen)))
+(defgeneric clear-screen-to-eot (screen))
+(defgeneric clear-screen-to-eol (screen))
+(defgeneric delete-screen-line (screen))
+(defgeneric insert-screen-line (screen))
+(defgeneric screen-highlight-on (screen))
+(defgeneric screen-highlight-off (screen))
+(defgeneric screen-cursor-on (screen)
+  (:documentation "Show up the cursor."))
+(defgeneric screen-cursor-off (screen)
+  (:documentation "Hide the cursor."))
+
+
+(defgeneric chord-character (chord))
+(defgeneric chord-modifiers (chord))
+
+(defgeneric chord-modifierp (chord modifier)
+  (:method (chord (modifier integer))
+    (logbitp modifier (chord-modifiers chord)))
+  (:method (chord (modifier symbol))
+    (chord-modifierp chord (ecase modifier
+                             (:shift +shift+)
+                             (:control +control+)
+                             (:meta +meta+)
+                             (:alt +alt+)
+                             (:super +super+)
+                             (:hyper +hyper+)
+                             (:command +command+)))))
+
+(defconstant +shift+   0)
+(defconstant +control+ 1)
+(defconstant +meta+    2)
+(defconstant +alt+     3)
+(defconstant +super+   4)
+(defconstant +hyper+   5)
+(defconstant +command+ 6)
+
+(defun symbolic-modifiers (modifiers)
+  (loop
+     :for bit = 1  :then (* 2 bit)
+     :for modifier :in '(:shift :control :meta :alt :super :hyper :command)
+     :unless (zerop (logand bit modifiers)) :collect modifier))
+
+(defclass chord ()
+  ((character :initarg :character :reader chord-character)
+   (modifiers :initarg :modifiers :reader chord-modifiers)))
+
+
+
+
+(defgeneric keyboard-chord-no-hang (screen)
+  (:documentation "Returns the next keyboard chord, or NIL."))
+
+(defgeneric call-with-screen (screen body)
+  (:documentation "Calls the BODY function with as argument, the SCREEN,
+while having activated this screen into the bidimentional mode."))
+
+
+
+(defvar *current-screen* nil
+  "The current SCREEN instance.  In this version, there's only
+one SCREEN instance, but a future version may be ''multitty'' (or
+''multiframe'') like GNU emacs.")
+
+
+(defmacro with-screen (screen-object &body body)
+  "Executes the BODY with *CURRENT-SCREEN* bound to SCREEN-OBJECT,
+while displaying this screen on the terminal."
+  `(call-with-screen ,screen-object (lambda (*current-screen*) ,@body)))
+
+
+;;;; THE END ;;;;

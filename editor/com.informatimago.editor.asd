@@ -1,6 +1,6 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               editor.asd
+;;;;FILE:               com.informatimago.editor.asd
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
@@ -33,20 +33,30 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.future.editor
-  :name "com.informatimago.future.editor"
-  :description "Editor tools."
+(asdf:defsystem :com.informatimago.editor
+  :name "com.informatimago.editor"
+  :description "An emacs-like editor."
   :author "Pascal J. Bourguignon"
-  :version "1.0.3"
-  :license "GPL3"
+  :version "1.0.4"
+  :license "AGPL3"
   :depends-on ("com.informatimago.common-lisp.cesarum"
                "com.informatimago.common-lisp.lisp-sexp"
                "split-sequence"
                "cl-charms") 
-  :components ((:file "editor")))
-
-#-clisp (eval-when (:compile-toplevel :load-toplevel :execute)
-          (warn "System ~A is not available on ~A yet."
-                :com.informatimago.future.editor (lisp-implementation-type)))
+  :components ((:file "package")
+               (:file "macros"        :depends-on ("package"))
+               (:file "screen"        :depends-on ("package"
+                                                   "macros"))
+               #+clisp (:file "clisp-screen"  :depends-on ("package"
+                                                           "macros" "screen"))
+               #+clisp (:file "clisp"         :depends-on ("package"
+                                                           "macros" "screen"
+                                                           "clisp-screen"))
+               (:file "charms-screen" :depends-on ("package"
+                                                   "macros" "screen"))
+               (:file "editor"        :depends-on ("package"
+                                                   "macros" "screen"
+                                                   #+clisp "clisp"
+                                                   "charms-screen"))))
 
 ;;;; THE END ;;;;
