@@ -17,7 +17,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2013 - 2014
+;;;;    Copyright Pascal J. Bourguignon 2013 - 2015
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -37,12 +37,13 @@
   :name "com.informatimago.future.editor"
   :description "Editor tools."
   :author "Pascal J. Bourguignon"
-  :version "1.0.2"
+  :version "1.0.3"
   :license "GPL3"
   :depends-on ("com.informatimago.common-lisp.cesarum"
                "com.informatimago.common-lisp.lisp-sexp"
-               "split-sequence") 
-  :components (#+clisp (:file "editor"))) ; for now, only on clisp, will be ported soon.
+               "split-sequence"
+               "cl-charms") 
+  :components ((:file "editor")))
 
 #-clisp (eval-when (:compile-toplevel :load-toplevel :execute)
           (warn "System ~A is not available on ~A yet."

@@ -1,4 +1,4 @@
-;;;; -*- coding:utf-8 -*-
+;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
 ;;;;FILE:               editor.lisp
 ;;;;LANGUAGE:           Common-Lisp
@@ -33,7 +33,7 @@
 ;;;;LEGAL
 ;;;;    GPL
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2006 - 2014
+;;;;    Copyright Pascal J. Bourguignon 2006 - 2015
 ;;;;    
 ;;;;    This program is free software; you can redistribute it and/or
 ;;;;    modify it under the terms of the GNU General Public License
@@ -113,7 +113,7 @@ to language names (as keyword).")
 An emacs editor written in Common Lisp.
 
 
-Copyright Pascal J. Bourguignon 2006 - 2014
+Copyright Pascal J. Bourguignon 2006 - 2015
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -233,6 +233,60 @@ There are methods specialized on these subclasses to write on the screen."))
    #+french "Éteint le curseur."
    #-(or french) "Hide the cursor."))
 
+;; EXT:CHAR-BITS-LIMIT                        constant
+;; EXT:CHAR-CONTROL-BIT                       constant
+;; EXT:CHAR-FONT-LIMIT                        constant
+;; EXT:CHAR-HYPER-BIT                         constant
+;; EXT:CHAR-META-BIT                          constant
+;; EXT:CHAR-SUPER-BIT                         constant
+
+;; EXT:CHAR-BIT                               function
+;; EXT:CHAR-BITS                              function
+;; EXT:CHAR-FONT                              function
+;; EXT:CHAR-INVERTCASE                        function
+;; EXT:CHAR-KEY                               function
+;; EXT:CHAR-WIDTH                             function
+
+
+(defgeneric chord-character (chord))
+(defgeneric chord-modifiers (chord))
+
+(defgeneric chord-modifierp (chord modifier)
+  (:method (chord (modifier integer))
+    (logbitp modifier (chord-modifiers chord)))
+  (:method (chord (modifier symbol))
+    (chord-modifierp chord (ecase modifier
+                             (:shift +shift+)
+                             (:control +control+)
+                             (:meta +meta+)
+                             (:alt +alt+)
+                             (:super +super+)
+                             (:hyper +hyper+)
+                             (:command +command+)))))
+
+(defconstant +shift+   0)
+(defconstant +control+ 1)
+(defconstant +meta+    2)
+(defconstant +alt+     3)
+(defconstant +super+   4)
+(defconstant +hyper+   5)
+(defconstant +command+ 6)
+
+(defclass chord ()
+  ((character :initarg :character :reader chord-character)
+   (modifiers :initarg :modifiers :reader chord-modifiers)))
+
+(defgeneric keyboard-chord-no-hang (screen)
+  (:documentation
+   #+french "Retourne l'accord suivant, ou NIL."
+   #-(or french) "Returns the next keyboard chord, or NIL."))
+
+(defgeneric call-with-screen (screen body)
+  (:documentation
+   #+french "Appelle la fonction BODY avec comme argument l'écran SCREEN,
+en ayant activé cet écran pour le fonctionnement en mode bidimentionnel."
+   #-(or french) "Calls the BODY function with as argument, the SCREEN,
+while having activated this screen into the bidimentional mode."))
 
 
 #+clisp
@@ -265,9 +319,15 @@ There are methods specialized on these subclasses to write on the screen."))
   (defmethod screen-cursor-on ((self clisp-screen))
     (screen:window-cursor-on (screen-stream self)))
   (defmethod screen-cursor-off ((self clisp-screen))
-    (screen:window-cursor-off (screen-stream self))))
+    (screen:window-cursor-off (screen-stream self)))
+  (defmethod keyboard-chord-no-hang ((self clisp-screen))
+    (declare (ignorable self))
+    (ext:with-keyboard (read-char-no-hang ext:*keyboard-input*)))
+  (defmethod call-with-screen ((self clisp-screen) thunk)
+    (let ((screen:*window*  (screen-stream *current-screen*)))
+      (funcall thunk self))))
 
-
+#+xterm
 (progn
   (defclass xterm-screen (screen)
     ()
@@ -295,8 +355,62 @@ There are methods specialized on these subclasses to write on the screen."))
   (defmethod screen-cursor-on ((self xterm-screen))
     )
   (defmethod screen-cursor-off ((self xterm-screen))
-    ))
+    )
+  (defmethod keyboard-chord-no-hang ((self xterm-screen))
+    )
+  (defmethod call-with-screen ((self xterm-screen) thunk)
+    ;; todo before
+    (unwind-protect
+         (funcall thunk self)
+      ;; todo after
+      (progn))))
 
+#.(progn
+    (when (find-package :cl-charms)
+      (pushnew :cl-charms *features*))
+    nil)
+
+#+cl-charms
+(progn
+  (defclass charms-screen (screen)
+    ()
+    (:documentation
+     #+french "Cette sous-classe de SCREEN utilise cl-charms (ncurses)."
+     #-(or french) "This SCREEN subclass uses cl-charms (ncurses)."))
+  (defmethod screen-size ((self charms-screen))
+    (multiple-value-bind (width height)
+        (charms:window-dimensions charms:*standard-window*)
+      (values height width)))
+  (defmethod screen-cursor-position ((self charms-screen))
+    (charms:cursor-position charms:*standard-window*))
+  (defmethod set-screen-cursor-position ((self charms-screen) line column)
+    (charms:move-cursor charms:*standard-window* column line))
+  (defmethod clear-screen-to-eot ((self charms-screen))
+    (charms:clear-window-after-cursor charms:*standard-window*))
+  (defmethod clear-screen-to-eol ((self charms-screen))
+    (charms:clear-line-after-cursor charms:*standard-window*))
+  (defmethod delete-screen-line ((self charms-screen))
+    ;; (charms/ll:deleteln)
+    )
+  (defmethod insert-screen-line ((self charms-screen))
+    ;; (charms/ll:insertln)
+    )
+  (defmethod screen-highlight-on ((self charms-screen))
+    )
+  (defmethod screen-highlight-off ((self charms-screen))
+    )
+  (defmethod screen-cursor-on ((self charms-screen))
+    )
+  (defmethod screen-cursor-off ((self charms-screen))
+    )
+  (defmethod keyboard-chord-no-hang ((self charms-screen))
+    (charms:get-char charms:*standard-window* :ignore-errors t))
+  (defmethod call-with-screen ((self charms-screen) thunk)
+    (charms:with-curses ()
+      (charms:disable-echoing)
+      (charms:enable-raw-input :interpret-control-characters nil)
+      (charms:enable-non-blocking-mode charms:*standard-window*)
+      (funcall thunk self))))
 
 (defvar *current-screen* nil
   #-(or french) "The current SCREEN instance. In this version, there's only
@@ -312,9 +426,7 @@ il n'y a qu'une instance de SCREEN, mais une version future pourrait être
 while displaying this screen on the terminal."
   #+french "Execute BODY avec *CURRENT-SCREEN* lié à SCREEN-OBJECT,
 tout en affichant cet écran sur le terminal."
-  `(let* ((*current-screen* ,screen-object)
-          #+clisp(screen:*window*  (screen-stream *current-screen*)))
-     ,@body))
+  `(call-with-screen ,screen-object (lambda (*current-screen*) ,@body)))
 
 
 (defmacro with-open-screen (screen-object &body body)
@@ -494,7 +606,9 @@ copying the vector.
             (read-something prompt nil
                             (lambda (name)
                               #+clisp
-                              (ext:probe-directory name))
+                              (ext:probe-directory name)
+                              #-clisp
+                              (progn (warn "How to probe for directory ~S in ~S" name (lisp-implementation-type)) t))
                             (function identity)))
            ((#\e) ; Parametrized event (i.e., one that's a list) that invoked this command. If used more than once, the Nth `e' returns the Nth parameterized event. This skips events that are integers or symbols.
             )
@@ -570,7 +684,7 @@ copying the vector.
             )
            ((#\Z)               ; Coding system, nil if no prefix arg.
             )
-           (otherwise (error "Bad interactive specifier ~S" )))))))
+           (otherwise (error "Bad interactive specifier ~S" (aref item start))))))))
 
 
 
@@ -1155,7 +1269,9 @@ est une fenêtre brute, sans ligne de status."))
   (assert (<= start end))
   (with-output-to-string (out)
     (multiple-value-bind (srow scolumn sline) (buffer-line-of-point self start)
+      (declare (ignore srow))
       (multiple-value-bind (erow ecolumn eline) (buffer-line-of-point self end)
+        (declare (ignore erow))
         (cond
           ((null sline))
           ((eq sline eline)
@@ -1185,7 +1301,9 @@ est une fenêtre brute, sans ligne de status."))
   (assert (<= start end))
   (when (< start end)
     (multiple-value-bind (srow scolumn sline) (buffer-line-of-point self start)
+      (declare (ignore srow))
       (multiple-value-bind (erow ecolumn eline) (buffer-line-of-point self end)
+        (declare (ignore erow))
         (if (eq sline eline)
             ;; one line:
             (setf (dll-node-item sline)
@@ -1238,6 +1356,7 @@ est une fenêtre brute, sans ligne de status."))
         (format *log* "~{line: ~S~%~}" lines)
         (multiple-value-bind (row column current-line)
             (buffer-line-of-point self point)
+          (declare (ignore row))
           (cond
             ((null current-line)       ; adding at the end of the buffer
              (loop
@@ -1591,7 +1710,6 @@ RETOURNE: Le tampon associé au fichier PATH,
 
 (defun find-file (path)
   (declare (interactive  "FFind file: "))
-  (declare (ignore path))
   (let ((buffer (buffer-for-file path)))
     (if buffer
         (switch-to-buffer buffer)
@@ -1688,12 +1806,14 @@ RETOURNE: Le tampon associé au fichier PATH,
 
 
 (defun read-char-exclusive (&key PROMPT INHERIT-INPUT-METHOD)
-  (error "not implemented yet"))
+  (error "not implemented yet (~S ~S ~S)"
+         'read-char-exclusive PROMPT INHERIT-INPUT-METHOD))
 
 
 (defun read-from-minibuffer (prompt &key initial-contents read
                              keymap inherit-input-method
                              history keep-all default-value)
+  (declare (ignore default-value keep-all history inherit-input-method));TODO: handle them.
   (setf prompt (or prompt ""))
   (with-current-window (frame-mini-window *current-frame*)
     (let ((*keymap* (keymap-copy (or keymap *keymap*) :shallow t)))
@@ -2223,7 +2343,6 @@ These commands include C-@ and M-x start-kbd-macro."
   (lambda (stream) (format stream "~A" string)))
 
 
-#+clisp
 (defun keyboard-loop ()
   (handler-bind ((error (function handle-editor-error)))
     (restart-bind ((debug    (lambda () (invoke-debugger *condition*))
@@ -2239,7 +2358,7 @@ These commands include C-@ and M-x start-kbd-macro."
                 (LOOP
                   :with redisplayed = t
                   :with meta-seen-p = nil
-                  :for ki = (ext:with-keyboard (read-char-no-hang ext:*keyboard-input*))
+                  :for ki = (keyboard-chord-no-hang *current-screen*)
                   :for modifiers = (and ki (keyboard-modifiers
                                             (logior (ext:char-bits ki)
                                                     (prog1 (if meta-seen-p EXT:CHAR-META-BIT 0)
@@ -2280,7 +2399,9 @@ These commands include C-@ and M-x start-kbd-macro."
 
 #-clisp
 (defun make-xterm-io-stream (&key display geometry)
-  (error "Not implemented on ~A" (lisp-implementation-type)))
+  (error "Not implemented on ~A (~S ~S ~S)"
+         (lisp-implementation-type)
+         'make-xterm-io-stream display geometry))
 
 #+clisp
 (defun make-xterm-io-stream (&key display geometry)
@@ -2320,15 +2441,14 @@ These commands include C-@ and M-x start-kbd-macro."
       xio)))
 
 
-
 #+clisp
 (defun screen-editor (&key log)
   (cond
-    ((string= "xterm" (ext:getenv "TERM"))
+    ((string= "xterm" (uiop/os:getenv "TERM"))
      (setf custom:*terminal-encoding* (ext:make-encoding
                                        :charset charset:iso-8859-1
                                        :line-terminator :unix)))
-    ((string= "kterm" (ext:getenv "TERM"))
+    ((string= "kterm" (uiop/os:getenv "TERM"))
      (setf custom:*terminal-encoding* (ext:make-encoding
                                        :charset charset:utf-8
                                        :line-terminator :unix))))
@@ -2412,8 +2532,8 @@ These commands include C-@ and M-x start-kbd-macro."
          (*query-io*        (make-synonym-stream '*terminal-io*))
          ;; (*debug-io*        (make-synonym-stream '*terminal-io*))
          ;; (*trace-output*    (make-synonym-stream '*terminal-io*))
-         (old-term          (ext:getenv "TERM")))
-    (setf (ext:getenv "TERM") "xterm")
+         (old-term          (uiop/os:getenv "TERM")))
+    (setf (uiop/os:getenv "TERM") "xterm")
     (unwind-protect
          (progn (format *query-io* "~&Hello!~%") 
                 (format *query-io* "~&X = ")
@@ -2423,7 +2543,7 @@ These commands include C-@ and M-x start-kbd-macro."
                 (y-or-n-p "Happy?"))
       (setf *terminal-io* old-terminal-io)
       (close xterm-io)
-      (setf (ext:getenv "TERM") old-term))))
+      (setf (uiop/os:getenv "TERM") old-term))))
 
 ;; (let ((*terminal-io* (emacs::make-xterm-io-stream)))
 ;;   (print 'hi *terminal-io*)
