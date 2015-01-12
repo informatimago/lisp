@@ -161,66 +161,6 @@ License:
         (and (= (range-start r1) (range-start r2))
              (= (range-end   r1) (range-end   r2))))))
 
-;;----------------------------------------------------------------------
-;; RANGE TESTS
-
-(define-test test/range ()
-  (assert-true (range-emptyp (make-range :start 1 :count 0)))
-  (assert-true (range-emptyp (make-range :start 1 :last 0)))
-  (assert-true (range-emptyp (make-range :start 1 :end 1)))
-  (assert-true (not (range-emptyp (make-range :start 1 :count 1))))
-  (assert-true (not (range-emptyp (make-range :start 1 :last 1))))
-  (assert-true (not (range-emptyp (make-range :start 1 :end 2))))
-  (assert-true (equal-range (make-range :start 10 :end 21)
-                            (make-range :first 10 :last 20)))
-  (assert-true (equal-range (make-range :start 0 :end -1)
-                            (make-range :first 0 :last -1)))
-  
-  (test = (range-start (make-range :start 1 :count 3)) 1)
-  (test = (range-last  (make-range :start 1 :count 3)) 3)
-  (test = (range-end   (make-range :start 1 :count 3)) 4)
-  (test = (range-count (make-range :start 1 :count 3)) 3)
-  (test = (range-start (copy-range (make-range :start 1 :count 3))) 1)
-  (test = (range-last  (copy-range (make-range :start 1 :count 3))) 3)
-  (test = (range-end   (copy-range (make-range :start 1 :count 3))) 4)
-  (test = (range-count (copy-range (make-range :start 1 :count 3))) 3)
-
-  (test = (range-start (make-range :start 11 :last 13)) 11)
-  (test = (range-last  (make-range :start 11 :last 13)) 13)
-  (test = (range-end   (make-range :start 11 :last 13)) 14)
-  (test = (range-count (make-range :start 11 :last 13))  3)
-  (test = (range-start (copy-range (make-range :start 11 :last 13))) 11)
-  (test = (range-last  (copy-range (make-range :start 11 :last 13))) 13)
-  (test = (range-end   (copy-range (make-range :start 11 :last 13))) 14)
-  (test = (range-count (copy-range (make-range :start 11 :last 13)))  3)
-
-  (test = (range-start (make-range :start 11 :end 14)) 11)
-  (test = (range-last  (make-range :start 11 :end 14)) 13)
-  (test = (range-end   (make-range :start 11 :end 14)) 14)
-  (test = (range-count (make-range :start 11 :end 14))  3)
-  (test = (range-start (copy-range (make-range :start 11 :end 14))) 11)
-  (test = (range-last  (copy-range (make-range :start 11 :end 14))) 13)
-  (test = (range-end   (copy-range (make-range :start 11 :end 14))) 14)
-  (test = (range-count (copy-range (make-range :start 11 :end 14)))  3)
-
-  (test = (range-start (make-range :count 3 :last 13)) 11)
-  (test = (range-last  (make-range :count 3 :last 13)) 13)
-  (test = (range-end   (make-range :count 3 :last 13)) 14)
-  (test = (range-count (make-range :count 3 :last 13))  3)
-  (test = (range-start (copy-range (make-range :count 3 :last 13))) 11)
-  (test = (range-last  (copy-range (make-range :count 3 :last 13))) 13)
-  (test = (range-end   (copy-range (make-range :count 3 :last 13))) 14)
-  (test = (range-count (copy-range (make-range :count 3 :last 13)))  3)
-
-  (test = (range-start (make-range :count 3 :end 14)) 11)
-  (test = (range-last  (make-range :count 3 :end 14)) 13)
-  (test = (range-end   (make-range :count 3 :end 14)) 14)
-  (test = (range-count (make-range :count 3 :end 14))  3)
-  (test = (range-start (copy-range (make-range :count 3 :end 14))) 11)
-  (test = (range-last  (copy-range (make-range :count 3 :end 14))) 13)
-  (test = (range-end   (copy-range (make-range :count 3 :end 14))) 14)
-  (test = (range-count (copy-range (make-range :count 3 :end 14)))  3))
-
 
 ;;;=====================================================================
 ;;; INDEX-SET CLASS
@@ -505,32 +445,6 @@ License:
        (every (function equal-range) a b)))
 
 
-(define-test test/range/complement ()
-  
-  (test equal-ranges
-        (complement-ranges (vector) 0 100)
-        (vector (make-range :start 0 :end 100)))
-
-  (test equal-ranges
-        (complement-ranges (vector  (make-range :start 0 :end 100)) 0 100)
-        (vector))
-
-  (test equal-ranges
-        (complement-ranges (vector (make-range :start 0 :end 90)) 0 100)
-        (vector (make-range :start 90 :end 100)))
-  
-  (test equal-ranges
-        (complement-ranges (vector (make-range :start 10 :end 100)) 0 100)
-        (vector (make-range :start 0 :end 10)))
-
-  (test equal-ranges
-        (complement-ranges (vector (make-range :start 10 :end 90)) 0 100)
-        (vector (make-range :start 0 :end 10)  (make-range :start 90 :end 100)))
-
-  (expect-condition error
-                    (complement-ranges (vector  (make-range :start 0 :end 100)) 10 90)))
-
-
 ;;----------------------------------------------------------------------
 ;; Functional
 
@@ -683,16 +597,6 @@ License:
                            (slot-value source-set 'ranges)))
   destination-set)
 
-
-;;----------------------------------------------------------------------
-;; INDEX-SET TESTS
-
-(defun test/all ()
- (test/range)
- (test/range/complement)
- (com.informatimago.common-lisp.cesarum.set::test/all/class 'index-set))
-
-(test/all)
 
 ;; (copy 'index-set '(1 2 3 4))
 ;; (map-elements 'list 'identity  (copy 'index-set '(1 2 3 4)))

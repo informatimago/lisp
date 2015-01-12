@@ -224,7 +224,7 @@ RETURN:     A new list of name and aliases, with the ALIASES added, if
     (list (mapcar (lambda (x) (mapcar (function string-upcase) (first x)))
                   sb-impl::*external-formats*)))
   
-  #-(or ccl clisp cmu sbcl)
+  #-(or ccl clisp cmu ecl sbcl)
   (progn
     (warn "What are the available external formats in ~A ?"
           (lisp-implementation-type))
