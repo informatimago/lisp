@@ -41,7 +41,7 @@
 (defmethod screen-size ((screen charms-screen))
   (multiple-value-bind (width height)
       (charms:window-dimensions charms:*standard-window*)
-    (values height width)))
+    (values height (1- width))))
 
 (defmethod screen-cursor-position ((screen charms-screen))
   (charms:cursor-position charms:*standard-window*))
@@ -75,14 +75,48 @@
 (defmethod screen-cursor-off ((screen charms-screen))
   )
 
+(defmethod screen-write-string ((screen charms-screen) string)
+  (loop :for ch :across string
+        :do (charms:write-char-at-cursor charms:*standard-window* ch))
+  ;; (charms:write-string-at-cursor charms:*standard-window* string)
+  string)
+
+(defmethod screen-refresh ((screen charms-screen))
+  (charms:refresh-window charms:*standard-window*))
+
 (defmethod keyboard-chord-no-hang ((screen charms-screen))
-  (charms:get-char charms:*standard-window* :ignore-errors t))
+  (let ((ch       (charms:get-char charms:*standard-window* :ignore-error t)))
+    (when ch
+      (if (find ch #(#\newline #\tab #\esc #\return #\rubout))
+          (make-instance 'chord :character ch :modifiers 0)
+          (let* ((code     (char-code ch))
+                 (kode     (mod code 128))
+                 (controlp (< kode 32))
+                 (metap    (< 128 code)))
+            (make-instance 'chord
+                           :character (code-char (+ kode
+                                                    (if controlp
+                                                        (if (< 0 kode 27)
+                                                            (load-time-value (char-code #\`))
+                                                            (load-time-value (char-code #\@)))
+                                                        0)))
+                           :modifiers (+ (if controlp
+                                             (expt 2 +control+)
+                                             0)
+                                         (if metap
+                                             (expt 2 +meta+)
+                                             0))))))))
 
 (defmethod call-with-screen ((screen charms-screen) thunk)
   (charms:with-curses ()
     (charms:disable-echoing)
     (charms:enable-raw-input :interpret-control-characters nil)
     (charms:enable-non-blocking-mode charms:*standard-window*)
+    (charms:enable-extra-keys        charms:*standard-window*) ; keypad t
+    (charms::check-status (charms/ll:meta (charms::window-pointer charms:*standard-window*) charms/ll:TRUE))
     (funcall thunk screen)))
+
+;; (defmethod call-with-current-screen ((screen charms-screen) thunk)
+;;   )
 
 ;;;; THE END ;;;;

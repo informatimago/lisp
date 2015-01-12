@@ -45,6 +45,19 @@
 (defmethod screen-close ((screen clisp-screen))
   (close (screen-stream screen)))
 
+(defmethod screen-initialize-for-terminal ((screen clisp-screen) terminal)
+  (cond
+    ((string= "xterm" terminal)
+     (setf custom:*terminal-encoding* (ext:make-encoding
+                                       :charset charset:iso-8859-1
+                                       :line-terminator :unix)))
+    ((string= "kterm" terminal)
+     (setf custom:*terminal-encoding* (ext:make-encoding
+                                       :charset charset:utf-8
+                                       :line-terminator :unix)))
+    (t
+     (warn "Unexpected terminal ~S" terminal))))
+
 (defmethod screen-size ((screen clisp-screen))
   (screen:window-size (screen-stream screen)))
 
@@ -81,6 +94,14 @@
 (defmethod screen-cursor-off ((screen clisp-screen))
   (screen:window-cursor-off (screen-stream screen)))
 
+(defmethod screen-write-string ((screen clisp-screen) string)
+  (write-string string (screen-stream screen))
+  (finish-output (screen-stream screen))
+  string)
+
+(defmethod screen-refresh ((screen clisp-screen))
+  screen)
+
 (defmethod keyboard-chord-no-hang ((screen clisp-screen))
   (declare (ignorable screen))
   (let ((ki (ext:with-keyboard (read-char-no-hang ext:*keyboard-input*))))
@@ -103,20 +124,14 @@
                         ch))))))
 
 (defmethod call-with-screen ((screen clisp-screen) thunk)
-  (let ((screen:*window* (screen-stream screen)))
-    (funcall thunk screen)))
+  (unwind-protect (screen:with-window
+                      (setf (screen-stream screen) screen:*window*)
+                    (funcall thunk screen))
+    (setf (screen-stream screen) nil)))
 
-(defmethod screen-initialize-for-terminal ((screen clisp-screen) terminal)
-  (cond
-    ((string= "xterm" terminal)
-     (setf custom:*terminal-encoding* (ext:make-encoding
-                                       :charset charset:iso-8859-1
-                                       :line-terminator :unix)))
-    ((string= "kterm" terminal)
-     (setf custom:*terminal-encoding* (ext:make-encoding
-                                       :charset charset:utf-8
-                                       :line-terminator :unix)))
-    (t
-     (warn "Unexpected terminal ~S" terminal))))
+;; (defmethod call-with-current-screen ((screen clisp-screen) thunk)
+;;   (assert (and screen:*window* (eql screen:*window* (screen-stream screen))))
+;;   (funcall thunk screen))
+
 
 ;;;; THE END ;;;;

@@ -68,6 +68,14 @@ There are methods specialized on these subclasses to write on the screen."))
 (defgeneric screen-cursor-off (screen)
   (:documentation "Hide the cursor."))
 
+(defgeneric screen-write-string (screen string)
+  (:documentation "Write the STRING on the SCREEN at the current cursor position."))
+(defgeneric screen-format (screen format-control &rest arguments)
+  (:documentation "Format and write on the Screen at the current cursor position.")
+  (:method (screen format-control &rest arguments)
+    (screen-write-string screen (apply (function format) nil format-control arguments))))
+
+(defgeneric screen-refresh (screen))
 
 (defgeneric chord-character (chord))
 (defgeneric chord-modifiers (chord))
@@ -103,15 +111,8 @@ There are methods specialized on these subclasses to write on the screen."))
   ((character :initarg :character :reader chord-character)
    (modifiers :initarg :modifiers :reader chord-modifiers)))
 
-
-
-
 (defgeneric keyboard-chord-no-hang (screen)
   (:documentation "Returns the next keyboard chord, or NIL."))
-
-(defgeneric call-with-screen (screen body)
-  (:documentation "Calls the BODY function with as argument, the SCREEN,
-while having activated this screen into the bidimentional mode."))
 
 
 
@@ -120,11 +121,29 @@ while having activated this screen into the bidimentional mode."))
 one SCREEN instance, but a future version may be ''multitty'' (or
 ''multiframe'') like GNU emacs.")
 
+(defgeneric call-with-screen (screen body)
+  (:documentation "Calls the BODY function with as argument, the SCREEN,
+while having activated this screen into the bidimentional mode.
+This methods sets up and terminates the global state of the screen system."))
 
-(defmacro with-screen (screen-object &body body)
-  "Executes the BODY with *CURRENT-SCREEN* bound to SCREEN-OBJECT,
-while displaying this screen on the terminal."
-  `(call-with-screen ,screen-object (lambda (*current-screen*) ,@body)))
+(defmacro with-screen (SCREEN &body body)
+  "Executes the BODY with *CURRENT-SCREEN* bound to SCREEN,
+while displaying this screen on the terminal.
+No other WITH-SCREEN may be called in the BODY. This macros is used
+for global setup and termination of the screen system."
+  `(call-with-screen ,screen (lambda (*current-screen*) ,@body)))
+
+;; (defgeneric call-with-current-screen (screen body)
+;;   (:documentation "Calls the BODY function with as argument, the SCREEN,
+;; while having activated this screen into the bidimentional mode."))
+;; 
+;; (defmacro with-current-screen (SCREEN &body body)
+;;   "Executes the BODY with *CURRENT-SCREEN* bound to SCREEN,
+;; while displaying this screen on the terminal.
+;; The screen system must be currently activated with WITH-SCREEN.
+;; This macro may be used to switch between alternate subscreens.
+;; "
+;;   `(call-with-current-screen ,screen (lambda (*current-screen*) ,@body)))
 
 
 ;;;; THE END ;;;;

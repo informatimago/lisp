@@ -52,6 +52,10 @@
 (in-package "COM.INFORMATIMAGO.EDITOR")
 
 
+(defmacro with-current-window (window &body body)
+  `(let ((*current-window* ,window))
+     ,@body))
+
 
 (defun read-something (prompt other-args validatef postf)
   (loop
@@ -321,6 +325,7 @@ BINDING:    must be either a symbol (naming a command),
                             "àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ")
        :do (keymap-bind-key def-map key 'self-insert-command))
     (keymap-bind-key def-map #\return        'new-line)
+    (keymap-bind-key def-map #\newline       'new-line)
     (keymap-bind-key def-map #\tab           'not-implemented-yet)
     (keymap-bind-key def-map #\Rubout        'delete-backward-char)
     (keymap-bind-key def-map '(:control #\d) 'delete-char)
@@ -371,16 +376,19 @@ BINDING:    must be either a symbol (naming a command),
     
     def-map))
 
+#-clisp
+(defun make-xterm-io-stream (&key display geometry)
+  (error "(~S ~S ~S) Not implemented on ~A"
+         'make-xterm-io-stream display geometry (lisp-implementation-type)))
 
 (defvar *old-terminal-io*)
 (defun cl-debugger ()
   (declare (interactive))
-  (let* ((io (make-xterm-io-stream :geometry "100x24+0+0"))
+  (let* ((io                (make-xterm-io-stream :geometry "100x24+0+0"))
          (*old-terminal-io* *terminal-io*)
-         (*debug-io*    io)
-         (*terminal-io* io))
-    (unwind-protect
-         (invoke-debugger "Debugger invoked interactively")
+         (*debug-io*        io)
+         (*terminal-io*     io))
+    (unwind-protect (invoke-debugger "Debugger invoked interactively")
       (close io))))
 
 
@@ -495,11 +503,11 @@ C-w         Information on absence of warranty for GNU Emacs.
                       :if-does-not-exist nil)
     (if in
         (let* ((busize (or (ignore-errors (file-length in)) 4096))
-               (eltype (stream-ELEMENT-TYPE in))
+               (eltype (stream-element-type in))
                (initel (if (subtypep eltype 'integer) 0 #\Space))
-               (buffer (make-ARRAY busize 
-                                   :ELEMENT-TYPE eltype
-                                   :INITIAL-ELEMENT initel
+               (buffer (make-array busize 
+                                   :element-type eltype
+                                   :initial-element initel
                                    :adjustable t :fill-pointer t))
                (start 0)
                (max-extend 65536))
@@ -559,9 +567,6 @@ C-w         Information on absence of warranty for GNU Emacs.
 ;;                  (mapcar(function frame-window-list) *frame-list*))))
 
 
-(defmacro with-current-window (window &body body)
-  `(let ((*current-window* ,window))
-     ,@body))
 
 
 (defmacro with-buffer (buffer &body body)
@@ -1162,9 +1167,8 @@ and displays it in the mini-window."
     (with-current-window (frame-mini-window *current-frame*)
       (switch-to-buffer  (frame-mini-buffer *current-frame*))
       (erase-buffer)
-      (insert "~A" text))))
-
-
+      (insert "~A" text))
+    (when *log* (write-line text *log*))))
 
 
 
@@ -1345,15 +1349,16 @@ RETURN:   The buffer associated with the file at PATH,
   (declare (ignore default-value keep-all history inherit-input-method));TODO: handle them.
   (setf prompt (or prompt ""))
   (with-current-window (frame-mini-window *current-frame*)
-    (let ((*keymap* (keymap-copy (or keymap *keymap*) :shallow t)))
-      (keymap-bind-key *keymap* #\return
-                       (lambda ()
-                         (declare (interactive))
-                         (throw 'end-recursive-edit nil)))
-      (keymap-bind-key *keymap* '(:control #\g)
-                       (lambda ()
-                         (declare (interactive))
-                         (throw 'abort-recursive-edit nil)))
+    (let ((*keymap* (keymap-copy (or keymap *keymap*) :shallow t))
+          (done  (lambda ()
+                   (declare (interactive))
+                   (throw 'end-recursive-edit nil)))
+          (abort (lambda ()
+                   (declare (interactive))
+                   (throw 'abort-recursive-edit nil))))
+      (keymap-bind-key *keymap* #\return done)
+      (keymap-bind-key *keymap* #\newline done)
+      (keymap-bind-key *keymap* '(:control #\g) abort)
       (erase-buffer)
       (with-current-window (frame-prompt-window *current-frame*)
         (erase-buffer)
@@ -1470,7 +1475,6 @@ then this command creates a buffer with that name."
 (defmethod display ((self window))
   (loop
      :with screen = (frame-screen (window-frame self))
-     :with stream = (screen-stream screen)
      :with width  = (window-width self)
      :with buffer = (context-buffer (window-context self))
      :repeat (print (min (window-visible-line-count self)
@@ -1482,8 +1486,7 @@ then this command creates a buffer with that name."
      :then (dll-node-next line)
      :do (window-move-cursor-to self :line row)
      :do (let ((line (dll-node-item line)))
-           (format stream "~VA" width
-                   (nsubseq line 0 (min width (length line))))
+           (screen-format screen "~VA" width (nsubseq line 0 (min width (length line))))
            (clear-screen-to-eol screen))))
 
 
@@ -1519,18 +1522,18 @@ then this command creates a buffer with that name."
          (progn
            (screen-highlight-on screen)
            (window-move-cursor-to self :line (1- (window-height self)))
-           (format (screen-stream screen)
-                   "~VA" (window-width self)
-                   (let* ((lines (dll-length (buffer-lines (current-buffer))))
-                          (status (format nil "--:--  ~A  ~D% L~D (~:(~{~A~^ ~}~))"
-                                          (buffer-name (context-buffer self))
-                                          (truncate
-                                           (/ (window-top-row *current-window*)
-                                              (1+ lines))
-                                           1/100)
-                                          lines
-                                          '(lisp))))
-                     (subseq  status 0 (min (window-width self) (length status))))))
+           (screen-format screen
+                          "~VA" (window-width self)
+                          (let* ((lines (dll-length (buffer-lines (current-buffer))))
+                                 (status (format nil "--:--  ~A  ~D% L~D (~:(~{~A~^ ~}~))"
+                                                 (buffer-name (context-buffer self))
+                                                 (truncate
+                                                  (/ (window-top-row *current-window*)
+                                                     (1+ lines))
+                                                  1/100)
+                                                 lines
+                                                 '(lisp))))
+                            (subseq  status 0 (min (window-width self) (length status))))))
       (screen-highlight-off screen)))
   ;; 2- display the contents
   (call-next-method))
@@ -1538,30 +1541,30 @@ then this command creates a buffer with that name."
 
 (defun redisplay ()
   (declare (interactive))
-  (dolist (frame *frame-list*)
-    (with-screen (frame-screen frame)
-      (unwind-protect
-           (progn
-             (format *log* "redisplay: clear-screen~%")
-             (screen-cursor-off *current-screen*)
-             (clear-screen      *current-screen*)
-             (dolist (window (frame-window-list frame))
-               (format *log* "redisplay: display window ~A~%" (window-name window))
-               (display window))
-             (multiple-value-bind (row column)
-                 (buffer-line-of-point (context-buffer *current-window*)
-                                       (context-point  *current-window*))
-               (format *log* "redisplay: move cursor to x:~A, y:~A~%"
-                       column
-                       (- row (window-top-row *current-window*)))
-               (window-move-cursor-to
-                *current-window*
-                :line  (- row (window-top-row *current-window*))
-                :column column)))
-        (finish-output (screen-stream *current-screen*))
-        (screen-cursor-on *current-screen*)
-         (format *log* "redisplay: done~%")
-        (finish-output *log*)))))
+  ;; (dolist (frame *frame-list*)
+  ;;   (with-current-screen (frame-screen frame)))
+  (unwind-protect
+       (progn
+         (format *log* "redisplay: clear-screen~%")
+         (screen-cursor-off *current-screen*)
+         (clear-screen      *current-screen*)
+         (dolist (window (frame-window-list *current-frame*))
+           (format *log* "redisplay: display window ~A~%" (window-name window))
+           (display window))
+         (multiple-value-bind (row column)
+             (buffer-line-of-point (context-buffer *current-window*)
+                                   (context-point  *current-window*))
+           (format *log* "redisplay: move cursor to x:~A, y:~A~%"
+                   column
+                   (- row (window-top-row *current-window*)))
+           (window-move-cursor-to
+            *current-window*
+            :line  (- row (window-top-row *current-window*))
+            :column column)))
+    ;; (finish-output (screen-stream *current-screen*))
+    (screen-cursor-on *current-screen*)
+    (format *log* "redisplay: done~%")
+    (finish-output *log*)))
 
 
 
@@ -1850,12 +1853,17 @@ These commands include C-@ and M-x start-kbd-macro."
                             :until (eq (restart-name r) 'abort)
                             :finally (return i)))))
       (let ((restart (loop
-                       :for n = (progn (print-restart-list *query-io*)
-                                       (print last-r)
-                                       (format *query-io* "~&Option: ")
-                                       (finish-output *query-io*)
-                                       (read *query-io*)
-                                       (fresh-line *query-io*))
+                       :for n = (flet ((crlf (text)
+                                         (string-replace text
+                                                         (load-time-value (format nil "~%"))
+                                                         (load-time-value (format nil "~C~C" #\Return #\Linefeed)))))
+                                  (write-string (crlf (with-output-to-string (out)
+                                                        (format out "~&~A~%" condition)
+                                                        (print-restart-list out)
+                                                        (format out "~&Option: "))) *query-io*)
+                                  (finish-output *query-io*)
+                                  (read *query-io*)
+                                  (fresh-line *query-io*))
                        :until (and (typep n 'integer) (<= 0 n last-r))
                        :finally (return (nth n restarts)))))
         (print (list 'restart '= (restart-name restart)))
@@ -1880,27 +1888,30 @@ These commands include C-@ and M-x start-kbd-macro."
       (catch 'editor-quit
         (loop
           (catch 'keyboard-quit
-                (LOOP
-                  :with redisplayed = t
-                  :with meta-seen-p = nil
-                  :for chord = (keyboard-chord-no-hang *current-screen*)
-                  :for modifiers = (and chord
-                                        (append (when meta-seen-p '(:meta))
-                                                (symbolic-modifiers (chord-modifiers chord))))
-                  :for key = (and ki (chord-character chord))
-                  :initially (editor-reset-key) (redisplay)
-                  :do (if ki
-                          (if (eql #\escape key)
-                              (setf meta-seen-p t)
-                              (progn
-                                (editor-process-key
-                                 (if modifiers
-                                     (append modifiers (list key))
-                                     key))
-                                (setf redisplayed nil)))
-                          (unless redisplayed
-                            (redisplay)
-                            (setf redisplayed t))))))))))
+            (loop
+              :with redisplayed = t
+              :with meta-seen-p = nil
+              :for chord = (keyboard-chord-no-hang *current-screen*)
+                :initially (editor-reset-key) (redisplay)
+              :do (if chord
+                      (let ((key       (chord-character chord))
+                            (modifiers (append (when meta-seen-p
+                                                 (setf meta-seen-p nil)
+                                                 '(:meta))
+                                               (symbolic-modifiers (chord-modifiers chord)))))
+                        (if (eql #\escape key)
+                            (setf meta-seen-p t)
+                            (progn
+                              (editor-process-key
+                               (if modifiers
+                                   (append modifiers (list key))
+                                   key))
+                              (setf redisplayed nil)))
+                        ;; (message "key=~S modifiers=~S" key modifiers)
+                        )
+                      (unless redisplayed
+                        (redisplay)
+                        (setf redisplayed t))))))))))
 
 
 
@@ -1916,28 +1927,24 @@ These commands include C-@ and M-x start-kbd-macro."
 
 
 (defun screen-editor (&key log (screen-class 'charms-screen))
-  (let ((*log* (typecase log
-                 ((member :xterm) (make-xterm-io-stream :geometry "100x24+0+0"))
-                 ((or string pathname)  (open log
-                                              :direction :output
-                                              :if-exists :append
-                                              :if-does-not-exist :create))
-                 (file  log)
-                 (otherwise (make-broadcast-stream))))
-        (screen (make-instance screen-class)))
-    (unwind-protect
-         (progn
-           (screen-initialize-for-terminal screen (uiop/os:getenv "TERM"))
-           (editor-reset)
-           (with-screen screen
-             (editor-initialize *current-screen*)
-             (unwind-protect
-                  (keyboard-loop)
-               (set-screen-cursor-position *current-screen*
-                                           0 (screen-size *current-screen*))
-               (clear-screen *current-screen*))
-             (editor-terminate)))
-      (close *log*))))
+  (with-open-stream (*log* (typecase log
+                             ((member :xterm) (make-xterm-io-stream :geometry "100x24+0+0"))
+                             ((or string pathname)  (open log
+                                                          :direction :output
+                                                          :if-exists :append
+                                                          :if-does-not-exist :create))
+                             (file  log)
+                             (otherwise (make-broadcast-stream))))
+    (let ((screen (make-instance screen-class)))
+      (screen-initialize-for-terminal screen (uiop/os:getenv "TERM"))
+      (editor-reset)
+      (with-screen screen
+        (editor-initialize *current-screen*)
+        (unwind-protect (keyboard-loop)
+          (set-screen-cursor-position *current-screen*
+                                      0 (screen-size *current-screen*))
+          (clear-screen *current-screen*))
+        (editor-terminate)))))
 
 
 
@@ -1946,8 +1953,9 @@ These commands include C-@ and M-x start-kbd-macro."
 
 (defun reload ()
   (in-package "CL-USER")
-  (load "editor")
+  (ql:quickload :com.informatimago.editor)
   (in-package "EDITOR"))
+
 
 (in-package "COMMON-LISP-USER")
 
