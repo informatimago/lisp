@@ -1693,8 +1693,8 @@ NOTE:           UNIVERSAL-TIME when present gives a base date with
 #||
 
 (loop
-   :repeat 365
    :with day = (gregorian :year 2007 :month 1 :day 1 :hour 12) 
+   :repeat 365
    :do (princ day) (terpri) (increment-day day))
 
 (com.informatimago.common-lisp.cesarum.date.utility:as-list-of-numbers 

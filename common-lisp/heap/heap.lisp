@@ -824,26 +824,26 @@ but some types are used only for array cells (ie. unboxed values)."
 (defun test-ieee-read-double ()
   (with-open-file (in "value.ieee-754-double" 
                       :direction :input :element-type '(unsigned-byte 8))
-    (loop while (< (file-position in) (file-length in))
-       do (loop repeat 8 for i = 1 then (* i 256)
-             for v = (read-byte in) then (+ v (* i (read-byte in))) 
-             finally (progn
-                       (let ((*print-base* 16)) (princ v))
-                       (princ " ")
-                       (princ (ieee-754-to-float-64 v))
-                       (terpri))))))
+    (loop :while (< (file-position in) (file-length in))
+          :do (loop  :for i = 1 :then (* i 256)
+                     :for v = (read-byte in) :then (+ v (* i (read-byte in)))
+                     :repeat 8
+                     :finally (let ((*print-base* 16)) (princ v))
+                              (princ " ")
+                              (princ (ieee-754-to-float-64 v))
+                              (terpri)))))
 
 (defun test-ieee-read-single ()
   (with-open-file (in "value.ieee-754-single" 
                       :direction :input :element-type '(unsigned-byte 8))
-    (loop while (< (file-position in) (file-length in))
-       do (loop repeat 4 for i = 1 then (* i 256)
-             for v = (read-byte in) then (+ v (* i (read-byte in))) 
-             finally (progn
-                       (let ((*print-base* 16)) (princ v))
-                       (princ " ")
-                       (princ (ieee-754-to-float-32 v))
-                       (terpri))))))
+    (loop :while (< (file-position in) (file-length in))
+          :do (loop :for i = 1 :then (* i 256)
+                    :for v = (read-byte in) :then (+ v (* i (read-byte in)))
+                    :repeat 4
+                    :finally (let ((*print-base* 16)) (princ v))
+                             (princ " ")
+                             (princ (ieee-754-to-float-32 v))
+                             (terpri)))))
 
 (defun test-single-to-ieee (&rest args)
   (dolist (arg args)
@@ -973,15 +973,15 @@ CL-USER>
 
 
 (defun cvm-list-elt (list index)
-  (loop for curr = list then (cvm-cdr curr)
-        repeat index
-        finally (return (cvm-car curr))))
+  (loop :for curr = list :then (cvm-cdr curr)
+        :repeat index
+        :finally (return (cvm-car curr))))
 
 
 (defun cvm-member-eq (item list)
-  (loop for curr = list then (cvm-cdr curr)
-        until (or (cvm-null curr) (eql (cvm-car curr) item))
-        finally (return curr)))
+  (loop :for curr = list :then (cvm-cdr curr)
+        :until (or (cvm-null curr) (eql (cvm-car curr) item))
+        :finally (return curr)))
 
 
 (defun cvm-list-nreverse (list)
@@ -1014,26 +1014,24 @@ CL-USER>
   (cond
     ((zerop length) +cvm-nil+)
     (initial-contents
-     (loop with head = (cvm-make-cons (car initial-contents) +cvm-nil+)
-           with tail = head
-           with new = nil
-           for item in (cdr initial-contents)
-           repeat length
-           do (progn
-                (setf new (cvm-make-cons item +cvm-nil+))
-                (cvm-setcdr tail new)
-                (setf tail new))
-           finally (return head)))
+     (loop :with head = (cvm-make-cons (car initial-contents) +cvm-nil+)
+           :with tail = head
+           :with new = nil
+           :for item in (cdr initial-contents)
+           :repeat length
+           :do (setf new (cvm-make-cons item +cvm-nil+))
+               (cvm-setcdr tail new)
+               (setf tail new)
+           :finally (return head)))
     (t
-     (loop with head = (cvm-make-cons initial-element +cvm-nil+)
-           with tail = head
-           with new = nil
-           repeat length
-           do (progn
-                (setf new (cvm-make-cons initial-element +cvm-nil+))
-                (cvm-setcdr tail new)
-                (setf tail new))
-           finally (return head)))))
+     (loop :with head = (cvm-make-cons initial-element +cvm-nil+)
+           :with tail = head
+           :with new = nil
+           :repeat length
+           :do (setf new (cvm-make-cons initial-element +cvm-nil+))
+               (cvm-setcdr tail new)
+               (setf tail new)
+           :finally (return head)))))
 
 
 ;; TODO: implement cvm-push and cvm-pop properly!
@@ -1186,11 +1184,11 @@ CL-USER>
        (values  (cvm-fixnum-value (gc-load (incf address))) 
                 (incf address 2)))
       ((#.ct-array)
-       (values (loop repeat (cvm-fixnum-value (gc-load (incf address)))
-                  for row-dimension = 1 
-                  then (* row-dimension 
-                          (cvm-fixnum-value (gc-load (incf address))))
-                  finally (return row-dimension))
+       (values (loop :for row-dimension = 1 
+                       :then (* row-dimension 
+                                (cvm-fixnum-value (gc-load (incf address))))
+                     :repeat (cvm-fixnum-value (gc-load (incf address)))
+                     :finally (return row-dimension))
                (incf address)))
       (otherwise (error "CVM-ROWS: bad argument type ~A (~D)" 
                         (cell-type-label (cvm-type-code (gc-load address)))
@@ -1577,10 +1575,10 @@ RETURN:         When OPERATION is :peek, the value of the slot.
              (dump  (1+ address) (gc-load (1+ address)) "[el|dm]")
              (if (= ct-t (cvm-type-of (gc-load (1+  address))))
                  (when contents
-                   (loop for address from (+ 2 address)
-                      repeat (- (cvm-size-of object) 2) do
-                      (format stream "~A" margin)
-                      (gc-dump-cell address :stream stream :margin margin)))
+                   (loop :for address from (+ 2 address)
+                         :repeat (- (cvm-size-of object) 2)
+                         :do (format stream "~A" margin)
+                             (gc-dump-cell address :stream stream :margin margin)))
                  (gc-dump-block (+ 2 address) (- (cvm-size-of object) 2)
                                 stream :margin margin)))
             (otherwise
@@ -1642,20 +1640,20 @@ RETURN:         When OPERATION is :peek, the value of the slot.
   (setf (aref bitmap address) 2))
 
 (defun gc-bitmap-set-allocated-range (bitmap address size)
-  (loop repeat size
-     for i from address do
-     (assert (evenp (aref bitmap i)))   ; 0 or 2
-     (setf (aref bitmap i) 2)))
+  (loop :for i :from address
+        :repeat size
+        :do (assert (evenp (aref bitmap i)))   ; 0 or 2
+            (setf (aref bitmap i) 2)))
 
 (defun gc-bitmap-set-visited (bitmap address)
   (assert (= 2 (aref bitmap address)))
   (setf (aref bitmap address) 3))
 
 (defun gc-bitmap-set-visited-range (bitmap address size)
-  (loop repeat size
-     for i from address do
-     (assert (= 2 (aref bitmap i)))
-     (setf (aref bitmap i) 3)))
+  (loop :for i :from address
+        :repeat size
+        :do (assert (= 2 (aref bitmap i)))
+            (setf (aref bitmap i) 3)))
 
 (defun gc-bitmap-clear-p     (bitmap address) (=  0 (aref bitmap address)))
 (defun gc-bitmap-free-p      (bitmap address) (=  1 (aref bitmap address)))

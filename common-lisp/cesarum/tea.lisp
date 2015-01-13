@@ -87,7 +87,7 @@ License:
          (,sum  ,init-sum) (,delta  #x9e3779b9)
          (,a  (aref ,k 0)) (,b  (aref ,k 1))
          (,c  (aref ,k 2)) (,d  (aref ,k 3)))
-     (loop repeat +n+ do ,@body finally (setf (aref ,w 0) ,y (aref ,w 1) ,z))))
+     (loop :repeat +n+ :do (progn ,@body) :finally (setf (aref ,w 0) ,y (aref ,w 1) ,z))))
 (defmacro c-incf (var expr) `(setf ,var (mod (+ ,var ,expr) #x100000000)))
 (defmacro c-decf (var expr) `(setf ,var (mod (- ,var ,expr) #x100000000)))
 (defun tea-encipher (v w k)

@@ -29,5 +29,5 @@
   (values))
 
 
-;; (loop repeat 3 do (bt:make-thread (lambda () (sleep 2232))))
+;; (loop :repeat 3 :do (bt:make-thread (lambda () (sleep 2232))))
 ;; (kill-thread)

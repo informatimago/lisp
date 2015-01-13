@@ -478,8 +478,8 @@ with defbf, or strings containing brainfuck instructions.
 (defmacro repeat (repcnt &body body)
   (let ((vout (gensym)))
     `(with-output-to-string (,vout)
-       (loop repeat ,repcnt
-          do ,@(mapcar (lambda (item) `(princ ,item ,vout)) body)))))
+       (loop :repeat ,repcnt
+             :do ,@(mapcar (lambda (item) `(princ ,item ,vout)) body)))))
 
 (defmacro while-nz (&body body)
   (let ((vout (gensym)))
