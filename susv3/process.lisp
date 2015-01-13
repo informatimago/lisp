@@ -1491,7 +1491,7 @@ with-lock-held (place &optional state) &body body
 (loop for i from 0 to 10 do (print i *out*)(force-output *out*)(princ "."))
 
 
-(loop repeat 2 do
+(loop :repeat 2 :do
      (linux:set-signal-handler 
       linux:SIGUSR1
       (lambda (signal)  (princ " Got signal ") (throw :hot-potatoe signal)))
