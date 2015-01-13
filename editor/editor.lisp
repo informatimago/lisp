@@ -326,7 +326,7 @@ BINDING:    must be either a symbol (naming a command),
        :do (keymap-bind-key def-map key 'self-insert-command))
     (keymap-bind-key def-map #\return        'new-line)
     (keymap-bind-key def-map #\newline       'new-line)
-    (keymap-bind-key def-map #\tab           'not-implemented-yet)
+    (keymap-bind-key def-map #\tab           'self-insert-command)
     (keymap-bind-key def-map #\Rubout        'delete-backward-char)
     (keymap-bind-key def-map '(:control #\d) 'delete-char)
     (loop
@@ -1196,17 +1196,16 @@ and displays it in the mini-window."
                                      (current-buffer) (point)
                                      (buffer-size (current-buffer))))
                              (loop
-                                :repeat n
                                 :for sexp = (read src nil src)
+                                :repeat n
                                 :until (eq sexp src)
                                 :finally (return  (file-position src))))))))
 
 
 (defun show-results (results insert-in-buffer-p)
   (if insert-in-buffer-p
-      (insert "~%-->~{~S ~^;   ~}" results)
+      (insert "~%-->~{~S ~^;~%   ~}" results)
       (message "~{~S~^ ;~}" results)))
-
 
 (defun eval-expression (expression &optional insert-results-p)
   (declare (interactive "xEval: "))
@@ -1477,13 +1476,13 @@ then this command creates a buffer with that name."
      :with screen = (frame-screen (window-frame self))
      :with width  = (window-width self)
      :with buffer = (context-buffer (window-context self))
+     :for row :from (window-top-row self) 
+     :for line = (dll-node-nth (window-top-row self) (buffer-lines buffer))
+     :then (dll-node-next line)
      :repeat (print (min (window-visible-line-count self)
                          (- (buffer-line-count buffer)
                             (window-top-row self)))
                     *log*)
-     :for row :from (window-top-row self) 
-     :for line = (dll-node-nth (window-top-row self) (buffer-lines buffer))
-     :then (dll-node-next line)
      :do (window-move-cursor-to self :line row)
      :do (let ((line (dll-node-item line)))
            (screen-format screen "~VA" width (nsubseq line 0 (min width (length line))))
@@ -1840,36 +1839,95 @@ These commands include C-@ and M-x start-kbd-macro."
            (editor-reset-key))))))
 
 
+
+
+(defvar *handler-window-height* 10)
+(defvar *handler-window-current* 0)
+
+
+(defun handler-window-position ()
+  (multiple-value-bind (width height) (screen-size *current-screen*)
+    (declare (ignore width))
+    (truncate (- height *handler-window-height*) 2)))
+
+(defun handler-window-current-position ()
+  (+ *handler-window-current* (handler-window-position)))
+
+(defun handler-window-initialize ()
+  (loop :for y = (handler-window-position)
+        :repeat *handler-window-height*
+        :do (set-screen-cursor-position *current-screen* y 0)
+            (clear-screen-to-eol *current-screen*))
+  (setf *handler-window-current* 0))
+
+(defun handler-window-writeln (format-control &rest arguments)
+  (when (<= *handler-window-height* *handler-window-current*)
+    (setf *handler-window-current* 0))
+  (set-screen-cursor-position *current-screen* (handler-window-current-position) 0)
+  (ignore-errors
+   (screen-write-string *current-screen* (apply (function format) nil format-control arguments)))
+  (incf *handler-window-current*))
+
+(defun beep ())
+
+(defmethod screen-read-line ((screen screen))
+  (restart-bind ((continue-reading (lambda () (throw 'continue-read (values)))
+                                   :report-function (reportly "Continue reading line.")))
+    (let ((line (make-array 80 :element-type 'character :adjustable t :fill-pointer 0))
+          (meta-seen-p nil))
+      (loop
+        (catch 'continue-read
+          (let ((chord (keyboard-chord-no-hang *current-screen*)))
+            (when chord
+              (let ((key       (chord-character chord))
+                    (modifiers (append (when meta-seen-p
+                                         (setf meta-seen-p nil)
+                                         '(:meta))
+                                       (symbolic-modifiers (chord-modifiers chord)))))
+                (cond
+                  ((eql #\escape key) (setf meta-seen-p t))
+                  (modifiers (beep))
+                  ((eql #\rubout key)
+                   (when (plusp (fill-pointer line))
+                     (decf (fill-pointer line))
+                     (multiple-value-bind (column line) (screen-cursor-position *current-screen*)
+                       (set-screen-cursor-position *current-screen* (1- column) line)
+                       (screen-write-string *current-screen* " "))))
+                  ((find key #(#\Newline #\Return #\Linefeed))
+                   (return-from screen-read-line line))
+                  (t
+                   (screen-write-string *current-screen* (string key))
+                   (vector-push-extend key line)))))))))))
+
 (defvar *condition*)
 
 (defun handle-editor-error (condition)
   (let* ((restarts (compute-restarts condition))
          (last-r   (1- (length restarts))))
-    (flet ((print-restart-list (stream)
+    (flet ((print-restart-list ()
              (setf last-r (loop
                             :for r :in restarts
                             :for i :from 0
-                            :do (format stream "~&~D: (~10A) ~A~%" i (restart-name r) r)
+                            :do (handler-window-writeln "~D: (~10A) ~A" i (restart-name r) r)
                             :until (eq (restart-name r) 'abort)
                             :finally (return i)))))
-      (let ((restart (loop
-                       :for n = (flet ((crlf (text)
-                                         (string-replace text
-                                                         (load-time-value (format nil "~%"))
-                                                         (load-time-value (format nil "~C~C" #\Return #\Linefeed)))))
-                                  (write-string (crlf (with-output-to-string (out)
-                                                        (format out "~&~A~%" condition)
-                                                        (print-restart-list out)
-                                                        (format out "~&Option: "))) *query-io*)
-                                  (finish-output *query-io*)
-                                  (read *query-io*)
-                                  (fresh-line *query-io*))
-                       :until (and (typep n 'integer) (<= 0 n last-r))
-                       :finally (return (nth n restarts)))))
-        (print (list 'restart '= (restart-name restart)))
-        (print (list '*debugger-hook* '= *debugger-hook*))
+      (let ((restart
+              (loop
+                :for n = (progn
+                           (handler-window-initialize)
+                           (handler-window-writeln "~A" condition)
+                           (print-restart-list)
+                           (handler-window-writeln "Option: ")
+                           (prog1 (ignore-errors
+                                   (read-from-string (screen-read-line *current-screen*)))
+                             (handler-window-writeln "")))
+                :until (and (typep n 'integer) (<= 0 n last-r))
+                :finally (return (nth n restarts)))))
+        (handler-window-writeln "~S" (list 'restart '= (restart-name restart)))
+        (handler-window-writeln "~S" (list '*debugger-hook* '= *debugger-hook*))
         (let ((*condition* condition))
           (handler-bind ((error (function invoke-debugger)))
+            (redisplay)
             (invoke-restart-interactively restart)))))))
 
 
@@ -1935,7 +1993,9 @@ These commands include C-@ and M-x start-kbd-macro."
                                                           :if-does-not-exist :create))
                              (file  log)
                              (otherwise (make-broadcast-stream))))
-    (let ((screen (make-instance screen-class)))
+    (let ((*error-output* *log*)
+          (*trace-output* *log*)
+          (screen (make-instance screen-class)))
       (screen-initialize-for-terminal screen (uiop/os:getenv "TERM"))
       (editor-reset)
       (with-screen screen
