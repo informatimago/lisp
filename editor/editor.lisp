@@ -51,6 +51,85 @@
 
 (in-package "COM.INFORMATIMAGO.EDITOR")
 
+(defvar *debug-on-error*    nil
+  "Non-nil means enter debugger if a unhandled error is signaled.")
+
+(defvar *debug-on-quit*     nil
+  "Non-nil means enter debugger if a unhandled quit is signaled (C-g, for example).")
+
+(defvar *debug-on-message*  nil
+  "If non-nil, debug if a message matching this regexp is displayed.")
+
+(defvar *log*            nil "Debugging stream.")
+
+(defvar *frame-list*     '() "The list of frames.")
+(defvar *current-frame*  nil "The current frame.")
+(defvar *buffer-list*    '() "The list of buffers")
+(defvar *current-window* nil "The current window.")
+(defvar *scratch-buffer-default-contents*
+  ";; This buffer is for notes you don't want to save, and for Lisp evaluation.
+;; If you want to create a file, visit that file with C-x C-f,
+;; then enter the text in that file's own buffer.
+
+"
+  "The default contents for the *scratch* buffer.")
+
+(defvar *last-command-char* nil
+  "Last input event that was part of a command.")
+
+(defvar *this-command* nil
+  "The command now being executed.
+The command can set this variable; whatever is put here
+will be in `last-command' during the following command.")
+
+(defvar *last-command* nil
+  "The last command executed.
+Normally a symbol with a function definition, but can be whatever was found
+in the keymap, or whatever the variable `this-command' was set to by that
+command.
+
+The value `mode-exit' is special; it means that the previous command
+read an event that told it to exit, and it did so and unread that event.
+In other words, the present command is the event that made the previous
+command exit.
+
+The value `kill-region' is special; it means that the previous command
+was a kill command.")
+
+(defvar *prefix-arg* nil
+  "The value of the prefix argument for the next editing command.
+It may be a number, or the symbol `-' for just a minus sign as arg,
+or a list whose car is a number for just one or more C-u's
+or nil if no argument has been specified.
+
+You cannot examine this variable to find the argument for this command
+since it has been set to nil by the time you can look.
+Instead, you should use the variable `current-prefix-arg', although
+normally commands can get this prefix argument with (interactive \"P\").")
+
+(defvar *current-prefix-arg* nil
+  "The value of the prefix argument for this editing command.
+It may be a number, or the symbol `-' for just a minus sign as arg,
+or a list whose car is a number for just one or more C-u's
+or nil if no argument has been specified.
+This is what `(interactive \"P\")' returns.")
+
+
+
+(defvar *kill-whole-line* nil
+  "*If non-nil, `kill-line' with no arg at beg of line kills the whole line.")
+
+(defvar *yank* nil)
+
+
+
+(declaim (ftype function message))
+(defun error (datum &rest arguments)
+  (cond
+    (*debug-on-error* (apply (function cl:error) datum arguments))
+    ((stringp datum) (message datum))
+    (t (message "~A" (apply (function format) datum arguments)))))
+
 
 (defmacro with-current-window (window &body body)
   `(let ((*current-window* ,window))
@@ -99,6 +178,8 @@ copying the vector."
                       :displaced-index-offset start))
       (subseq sequence start end)))
 
+(defmacro in-order (start end)
+  `(unless (< ,start ,end) (rotatef ,start ,end)))
 
 (defun interactive-item (item)
   (loop
@@ -210,7 +291,7 @@ copying the vector."
                               ;; TODO: more sophisticated test (EOS).
                               (handler-case
                                   (progn (read-from-string something) t)
-                                (error () nil)))
+                                (cl:error () nil)))
                             (function read-from-string)))
            ((#\X)                ; Lisp expression read and evaluated.
             (read-something prompt nil
@@ -218,7 +299,7 @@ copying the vector."
                               ;; TODO: more sophisticated test (EOS).
                               (handler-case
                                   (progn (read-from-string something) t)
-                                (error () nil)))
+                                (cl:error () nil)))
                             (lambda (something) (eval (read-from-string something)))))
            ((#\z)                       ; Coding system.
             )
@@ -314,7 +395,8 @@ BINDING:    must be either a symbol (naming a command),
 (defparameter *default-keymap*
   (let ((def-map (make-keymap))
         (c-x-map (make-keymap))
-        (c-h-map (make-keymap)))
+        (c-h-map (make-keymap))
+        (fn-map  (make-keymap)))
     (loop
        :for key :across #.(concatenate 'string
                             " !\"#$%&'()*+,-./0123456789:;<=>?"
@@ -355,18 +437,18 @@ BINDING:    must be either a symbol (naming a command),
     (keymap-bind-key def-map '(:meta    #\v) 'scroll-down)
     
     (keymap-bind-key def-map '(:control #\h) c-h-map)
-    (keymap-bind-key c-x-map '#\h            'view-hello-file)
-    (keymap-bind-key c-x-map '(:control #\h) 'help-for-help)
-    (keymap-bind-key c-x-map '#\f            'describe-function)
-    (keymap-bind-key c-x-map '#\v            'describe-variable)
-    (keymap-bind-key c-x-map '#\k            'describe-key)
-    (keymap-bind-key c-x-map '#\w            'where-is)
-    
+    (keymap-bind-key c-h-map '#\h            'view-hello-file)
+    (keymap-bind-key c-h-map '(:control #\h) 'help-for-help)
+    (keymap-bind-key c-h-map '#\f            'describe-function)
+    (keymap-bind-key c-h-map '#\v            'describe-variable)
+    (keymap-bind-key c-h-map '#\k            'describe-key)
+    (keymap-bind-key c-h-map '#\w            'where-is)
+
     (keymap-bind-key def-map '(:control #\x) c-x-map)    
     (keymap-bind-key c-x-map '#\b            'switch-to-buffer)
     (keymap-bind-key c-x-map '#\f            'find-file)
     (keymap-bind-key c-x-map '#\k            'kill-buffer)
-    (keymap-bind-key c-x-map '#\s            'save-buffer)
+    (keymap-bind-key c-x-map '(:control #\s) 'save-buffer)
     (keymap-bind-key c-x-map '(:control #\b) 'list-buffers)
     (keymap-bind-key c-x-map '(:control #\c) 'editor-quit)
     (keymap-bind-key c-x-map '(:control #\d) 'my-debug)
@@ -374,7 +456,21 @@ BINDING:    must be either a symbol (naming a command),
     (keymap-bind-key c-x-map '(:control #\e) 'eval-last-sexp)
     (keymap-bind-key c-x-map '(:control #\f) 'find-file)
     
+    (keymap-bind-key def-map '(:control :meta #\[) fn-map) ; temporary kludge
+    (keymap-bind-key def-map '(:meta #\[)          fn-map)
+    (keymap-bind-key fn-map  '#\A            'previous-line)
+    (keymap-bind-key fn-map  '#\B            'next-line)
+    (keymap-bind-key fn-map  '#\C            'forward-char)
+    (keymap-bind-key fn-map  '#\D            'backward-char)
+
+    (keymap-bind-key fn-map  '#\c            'previous-line) ; ??
+    (keymap-bind-key fn-map  '#\e            'forward-char)  ; ??
+    (keymap-bind-key fn-map  '#\d            'backward-char) ; ??
+
     def-map))
+
+(defparameter *keymap* (keymap-copy *default-keymap*))
+
 
 #-clisp
 (defun make-xterm-io-stream (&key display geometry)
@@ -391,8 +487,6 @@ BINDING:    must be either a symbol (naming a command),
     (unwind-protect (invoke-debugger "Debugger invoked interactively")
       (close io))))
 
-
-(defparameter *keymap* (keymap-copy *default-keymap*))
 
 ;;;---------------------------------------------------------------------
 ;;; Help commands
@@ -496,6 +590,17 @@ C-w         Information on absence of warranty for GNU Emacs.
 (defmethod file-name ((self file))
   (file-namestring (file-pathname self)))
 
+
+(defmethod (setf file-contents) (new-contents (self file))
+  (ensure-directories-exist (file-pathname self))
+  (with-open-file (out (file-pathname self)
+                      :direction :output
+                      :external-format :default
+                      :if-does-not-exist :create
+                      :if-exists :supersede)
+    (write-sequence new-contents out)))
+
+
 (defmethod file-contents ((self file))
   (with-open-file (in (file-pathname self)
                       :direction :input
@@ -533,26 +638,6 @@ C-w         Information on absence of warranty for GNU Emacs.
 ;;;---------------------------------------------------------------------
 ;;; Buffers
 ;;;---------------------------------------------------------------------
-
-(defvar *log*            nil "Debugging stream.")
-
-(defvar *frame-list*     '() "The list of frames.")
-(defvar *current-frame*  nil "The current frame.")
-(defvar *buffer-list*    '() "The list of buffers")
-(defvar *current-window* nil "The current window.")
-(defvar *scratch-buffer-default-contents*
-  ";; This buffer is for notes you don't want to save, and for Lisp evaluation.
-;; If you want to create a file, visit that file with C-x C-f,
-;; then enter the text in that file's own buffer.
-
-"
-  "The default contents for the *scratch* buffer.")
-
-;; *current-screen*
-;; *current-frame*
-;; *current-window*
-;; (current-buffer) ; derived from *current-window*
-;; *current-prefix-arg*
 
 
 (defun compose (f &rest others)
@@ -797,8 +882,6 @@ mini-buffer is a plain window without a status bar."))
   (or (get-buffer buffer-or-name)
       (error "There is no buffer named ~S" buffer-or-name)))
 
-(defmacro in-order (start end)
-  `(unless (< ,start ,end) (rotatef ,start ,end)))
 
 (defmethod buffer-substring ((buffer-name string) start end)
   (buffer-substring (buffer-or-error buffer-name) start end))
@@ -961,10 +1044,10 @@ RETURN: row; column; the line containing point, or NIL if point is at end
       (setf point (marker-point point)))
     (loop
       :for line = (dll-first-node (buffer-lines self))
-      :then (dll-node-next line)
+        :then (dll-node-next line)
       :for bol = 0 :then eol
       :for eol = (if line (+ 1 (length (dll-node-item line))) 0)
-      :then (if line (+ eol 1 (length (dll-node-item line))) eol)
+        :then (if line (+ eol 1 (length (dll-node-item line))) eol)
       :for row :from 0
       :while (and line (<= eol point))
       :finally (return (values row (max 0 (- point bol)) line)))))
@@ -1100,35 +1183,33 @@ RETURN: row; column; the line containing point, or NIL if point is at end
                         (length (dll-node-item line))))))))
 
 
-(defun next-line (&optional n)
-  (declare (interactive "p"))
+(declaim (inline clip))
+(defun clip (min value max)
+  (cond ((< value min) min)
+        ((< max value) max)
+        (t value)))
+
+(defun increment-line (n successor-line)
   (let ((buffer  (context-buffer *current-window*)))
     (multiple-value-bind (row col line)
         (buffer-line-of-point buffer (context-point  *current-window*))
       (let ((line (or line (dll-last-node (buffer-lines buffer)))))
         (goto-char
-         (+ (buffer-point-of-line buffer (+ row n))
+         (+ (buffer-point-of-line buffer (clip 0 (+ row n) (buffer-line-count buffer)))
             (loop
+              :for next = (funcall successor-line line)
               :repeat n
-              :while (dll-node-next line)
-              :do (setf line (dll-node-next line))
+              :while next
+              :do (setf line next)
               :finally (return (min col (length (dll-node-item line)))))))))))
 
-
-(defun previous-line (&optional n)
+(defun next-line (&optional (n 1))
   (declare (interactive "p"))
-  (let ((buffer  (context-buffer *current-window*)))
-    (multiple-value-bind (row col line)
-        (buffer-line-of-point buffer (context-point  *current-window*))
-      (let ((line (or line (dll-last-node (buffer-lines buffer)))))
-        (goto-char
-         (+ (buffer-point-of-line buffer (max 0 (- row n)))
-            (loop
-              :repeat n
-              :while (dll-node-previous line)
-              :do (setf line (dll-node-previous line))
-              :finally (return (min col (length (dll-node-item line)))))))))))
+  (increment-line n (function dll-node-next)))
 
+(defun previous-line (&optional (n 1))
+  (declare (interactive "p"))
+  (increment-line (- n) (function dll-node-previous)))
 
 
 (defun erase-buffer ()
@@ -1177,14 +1258,19 @@ and displays it in the mini-window."
   (cond
     ((minusp n) (forward-sexp (- n)))
     ((plusp  n)
-     (goto-char (with-input-from-string
-                    (src (buffer-substring (current-buffer) 0 (point)))
-                  (loop
-                     :for previous = nil :then current
-                     :for current  = 0   :then (file-position src)
-                     :for sexp = (read src nil src)
-                     :until (eq sexp src)
-                     :finally (return previous)))))))
+     (let ((previous-text (buffer-substring (current-buffer) 0 (point))))
+       (if (plusp (length previous-text))
+           (with-input-from-string (src previous-text)
+             (loop
+               :for previous = nil :then current
+               :for current  = 0   :then (file-position src)
+               :for sexp = (handler-case (read src nil src)
+                             (cl:error () src))
+               :until (eq sexp src)
+               :finally (if previous
+                          (goto-char previous)
+                          (error "Cannot read previous S-expressions"))))
+           (error "Beginning of buffer"))))))
 
 
 (defun forward-sexp (n)
@@ -1235,8 +1321,8 @@ RETURN:   The buffer associated with the file at PATH,
 "
   (find-if (lambda (buffer)
              (and (buffer-file buffer)
-                  (equalp (truename path)
-                          (truename (file-pathname (buffer-file buffer))))))
+                  ;; we cannot use truename since that works only on existing files.
+                  (equalp path (file-pathname (buffer-file buffer)))))
            *buffer-list*))
 
 
@@ -1251,6 +1337,13 @@ RETURN:   The buffer associated with the file at PATH,
           (insert "~A" (file-contents file))
           (goto-char 0)))))
 
+
+(defun save-buffer ()
+  (declare (interactive))
+  (let* ((buffer (current-buffer))
+         (file   (buffer-file buffer)))
+    (setf (file-contents file) (buffer-contents  buffer))
+    (message "Wrote ~A" (file-pathname file))))
 
 
 ;;;---------------------------------------------------------------------
@@ -1414,9 +1507,10 @@ then this command creates a buffer with that name."
 
 
 
-(defun kill-buffer (buffer)
+(defun kill-buffer (&optional buffer)
   (declare (interactive "bKill buffer:"))
-  (setf buffer (get-buffer buffer))
+  ;; TODO: query buffer with current-buffer as default.
+  (setf buffer (get-buffer (or buffer (current-buffer))))
   (setf *buffer-list* (delete buffer *buffer-list*))
   (when (eq buffer (current-buffer))
     (switch-to-buffer (first *buffer-list*)))
@@ -1586,7 +1680,6 @@ then this command creates a buffer with that name."
 ;;; Editor
 ;;;---------------------------------------------------------------------
 
-
 (defun editor-reset ()
   (setf *current-screen*     nil
         *buffer-list*       '()
@@ -1613,57 +1706,11 @@ then this command creates a buffer with that name."
   (values))
 
 
-(defvar *last-command-char* nil
-  "Last input event that was part of a command.")
-
 (defun command-character (keyboard-event)
   (etypecase keyboard-event
       (character keyboard-event)
       (list      (car (last keyboard-event)))))
 
-(defvar *this-command* nil
-  "The command now being executed.
-The command can set this variable; whatever is put here
-will be in `last-command' during the following command.")
-
-(defvar *last-command* nil
-  "The last command executed.
-Normally a symbol with a function definition, but can be whatever was found
-in the keymap, or whatever the variable `this-command' was set to by that
-command.
-
-The value `mode-exit' is special; it means that the previous command
-read an event that told it to exit, and it did so and unread that event.
-In other words, the present command is the event that made the previous
-command exit.
-
-The value `kill-region' is special; it means that the previous command
-was a kill command.")
-
-(defvar *prefix-arg* nil
-  "The value of the prefix argument for the next editing command.
-It may be a number, or the symbol `-' for just a minus sign as arg,
-or a list whose car is a number for just one or more C-u's
-or nil if no argument has been specified.
-
-You cannot examine this variable to find the argument for this command
-since it has been set to nil by the time you can look.
-Instead, you should use the variable `current-prefix-arg', although
-normally commands can get this prefix argument with (interactive \"P\").")
-
-(defvar *current-prefix-arg* nil
-  "The value of the prefix argument for this editing command.
-It may be a number, or the symbol `-' for just a minus sign as arg,
-or a list whose car is a number for just one or more C-u's
-or nil if no argument has been specified.
-This is what `(interactive \"P\")' returns.")
-
-
-
-(defvar *kill-whole-line* nil
-  "*If non-nil, `kill-line' with no arg at beg of line kills the whole line.")
-
-(defvar *yank* nil)
 
 (defun yank (repeat-count)
   (declare (interactive "p"))
@@ -1819,14 +1866,14 @@ These commands include C-@ and M-x start-kbd-macro."
       (push key sequence)
       (cond
         ((keymapp binding)
-         (format *log* "~{~A ~}~%" (reverse sequence))
+         (format *log* "editor-process-key -> keymap ~{~A ~}~%" (reverse sequence))
          (setf keymap binding))
         ((or (and (symbolp binding)
                   (fboundp binding)
                   (interactivep binding))
              (and (functionp binding)
                   (interactivep binding)))
-         (format *log* "~{~A ~} --> ~S~%" (reverse sequence) binding)
+         (format *log* "editor-process-key -> binding ~{~A ~} --> ~S~%" (reverse sequence) binding)
          (setf *last-command-char*  (first sequence)
                *this-command*       binding
                *current-prefix-arg* *prefix-arg*
@@ -1834,10 +1881,11 @@ These commands include C-@ and M-x start-kbd-macro."
          (call-interactively binding)
          (setf *last-command* *this-command*)
          (editor-reset-key))
+        ((null binding)
+         (beep))
         (t (message "~{~A ~} is bound to a non-command: ~S~%"
                     (reverse sequence) binding)
            (editor-reset-key))))))
-
 
 
 
@@ -1926,7 +1974,7 @@ These commands include C-@ and M-x start-kbd-macro."
         (handler-window-writeln "~S" (list 'restart '= (restart-name restart)))
         (handler-window-writeln "~S" (list '*debugger-hook* '= *debugger-hook*))
         (let ((*condition* condition))
-          (handler-bind ((error (function invoke-debugger)))
+          (handler-bind ((cl:error (function invoke-debugger)))
             (redisplay)
             (invoke-restart-interactively restart)))))))
 
@@ -1936,7 +1984,7 @@ These commands include C-@ and M-x start-kbd-macro."
 
 
 (defun keyboard-loop ()
-  (handler-bind ((error (function handle-editor-error)))
+  (handler-bind ((cl:error (function handle-editor-error)))
     (restart-bind ((debug    (lambda () (invoke-debugger *condition*))
                              :report-function (reportly "Invoke the debugger."))
                    (continue (lambda () (throw 'keyboard-quit (values)))
@@ -1957,6 +2005,8 @@ These commands include C-@ and M-x start-kbd-macro."
                                                  (setf meta-seen-p nil)
                                                  '(:meta))
                                                (symbolic-modifiers (chord-modifiers chord)))))
+                        (format *log* "chord = ~S   meta-seen-p = ~S   key = ~S   modifiers = ~S~%"
+                                chord meta-seen-p key modifiers)
                         (if (eql #\escape key)
                             (setf meta-seen-p t)
                             (progn
