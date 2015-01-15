@@ -81,15 +81,20 @@ License:
 
 (defun print-bug-report-info ()
   "Prints information for a bug report."
-  (format t "~2%~{~28A ~S~%~}~2%"
-          (list "LISP-IMPLEMENTATION-TYPE"    (lisp-implementation-type)
-                "LISP-IMPLEMENTATION-VERSION" (lisp-implementation-version)
-                "SOFTWARE-TYPE"               (software-type)
-                "SOFTWARE-VERSION"            (software-version)
-                "MACHINE-INSTANCE"            (machine-instance)
-                "MACHINE-TYPE"                (machine-type)
-                "MACHINE-VERSION"             (machine-version)
-                "*FEATURES*"                  *features*))
+  (let ((report-format  "~2%~{~28A ~S~%~}~2%"))
+    (format t report-format
+            (list "LISP-IMPLEMENTATION-TYPE"    (lisp-implementation-type)
+                  "LISP-IMPLEMENTATION-VERSION" (lisp-implementation-version)
+                  "SOFTWARE-TYPE"               (software-type)
+                  "SOFTWARE-VERSION"            (software-version)
+                  "MACHINE-INSTANCE"            (machine-instance)
+                  "MACHINE-TYPE"                (machine-type)
+                  "MACHINE-VERSION"             (machine-version)
+                  "*FEATURES*"                  *features*))
+    (when (and (find-package "SWANK") (find-symbol "*SWANK-WIRE-PROTOCOL-VERSION*" "SWANK"))
+      (format t report-format
+              (list "*SWANK-WIRE-PROTOCOL-VERSION*"
+                    (symbol-value (find-symbol "*SWANK-WIRE-PROTOCOL-VERSION*" "SWANK"))))))
   #+clisp (with-open-stream (input (ext:run-program "uname" :arguments '("-a") :output :stream))
             (format t ";;; uname -a~%")
             (loop :for line = (read-line input nil nil) :while line :do (format t "~A~%" line)))
