@@ -39,7 +39,7 @@
   :author "Pascal J. Bourguignon"
   :version "1.0.2"
   :license "GPL3"
-  :depends-on ("com.informatimago.future.editor") 
+  :depends-on ("com.informatimago.editor") 
   :components ())
 
 ;;;; THE END ;;;;

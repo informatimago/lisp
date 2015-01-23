@@ -326,10 +326,12 @@ RETURN:  A whole line read from the peek-stream, or NIL in case of end of stream
     (with-input-from-string (in "ComMon-Lisp")
       (let* ((ps (make-instance 'peek-stream :stream in))
              (nc (loop
-                   :repeat n :for ch = (get-future-char ps)
+                   :for ch = (get-future-char ps)
+                   :repeat n
                    :collect ch :into result :finally (return result)))
              (gc (loop
-                   :repeat n :for ch = (getchar  ps)
+                   :for ch = (getchar  ps)
+                   :repeat n
                    :collect ch :into result :finally (return result))))
         (assert (equal nc gc)))))
   :success)

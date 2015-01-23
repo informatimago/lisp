@@ -1,4 +1,4 @@
-;;;; -*- coding:utf-8 -*-
+;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
 ;;;;FILE:               editor.lisp
 ;;;;LANGUAGE:           Common-Lisp
@@ -31,372 +31,109 @@
 ;;;;    - breaking into the debugger (eg. on C-x C-e) is not handled in the editor,
 ;;;;      and some restart may exit from the editor.
 ;;;;LEGAL
-;;;;    GPL
+;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2006 - 2014
+;;;;    Copyright Pascal J. Bourguignon 2006 - 2015
 ;;;;    
-;;;;    This program is free software; you can redistribute it and/or
-;;;;    modify it under the terms of the GNU General Public License
-;;;;    as published by the Free Software Foundation; either version
-;;;;    2 of the License, or (at your option) any later version.
+;;;;    This program is free software: you can redistribute it and/or modify
+;;;;    it under the terms of the GNU Affero General Public License as published by
+;;;;    the Free Software Foundation, either version 3 of the License, or
+;;;;    (at your option) any later version.
 ;;;;    
-;;;;    This program is distributed in the hope that it will be
-;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    This program is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;;    GNU Affero General Public License for more details.
 ;;;;    
-;;;;    You should have received a copy of the GNU General Public
-;;;;    License along with this program; if not, write to the Free
-;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;    Boston, MA 02111-1307 USA
+;;;;    You should have received a copy of the GNU Affero General Public License
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(in-package "COMMON-LISP-USER")
+(in-package "COM.INFORMATIMAGO.EDITOR")
 
-;; while debugging:
-#-(and)
-(when (find-package "COM.INFORMATIMAGO.EDITOR")
-  (delete-package "COM.INFORMATIMAGO.EDITOR"))
+(defvar *debug-on-error*    nil
+  "Non-nil means enter debugger if a unhandled error is signaled.")
 
-;;;---------------------------------------------------------------------
-;;;
-;;; We put on *FEATURES* a keyword representing the language to use for
-;;; documentation strings:
-;;;
+(defvar *debug-on-quit*     nil
+  "Non-nil means enter debugger if a unhandled quit is signaled (C-g, for example).")
 
-(defvar *languages* '((:DK . :DANSK)
-                      (:DE . :DEUTSCH)
-                      (:EN . :ENGLISH)
-                      (:ES . :ESPAÑOL)
-                      (:FR . :FRANÇAIS)
-                      (:NL . :NEDERLANDS)
-                      (:RU . :РУССКИЙ))
-  "Maps the language code (in keyword) as used in the LANG environment variable,
-to language names (as keyword).")
+(defvar *debug-on-message*  nil
+  "If non-nil, debug if a message matching this regexp is displayed.")
 
-;; Remove the old languages, if any.
-(setf *features* (set-difference *features* (mapcar (function cdr) *languages*)))
+(defvar *log*            nil "Debugging stream.")
 
-;; Push the new language.  By default we use :ENGLISH.
-(pushnew (progn
-           ;; In clisp, we use the custom:*current-language* variable:
-           #+clisp (intern (string custom:*current-language*) "KEYWORD")
-           ;; Otherwise if we have ASDF, we try to get the environment variable LANG:
-           #+(and (not clisp) asdf)
-           (let* ((lang #-asdf3 (ASDF:GETENV "LANG")
-                        #+asdf3 (uiop/os:getenv "LANG"))
-                  (entry (assoc lang *languages* :test (function string-equal))))
-             (if entry
-                 (cdr entry)
-                 :english))
-           ;; otherwise we use English:
-           #-(or clisp asdf) :english)
-         *features*)
+(defvar *frame-list*     '() "The list of frames.")
+(defvar *current-frame*  nil "The current frame.")
+(defvar *buffer-list*    '() "The list of buffers")
+(defvar *current-window* nil "The current window.")
+(defvar *scratch-buffer-default-contents*
+  ";; This buffer is for notes you don't want to save, and for Lisp evaluation.
+;; If you want to create a file, visit that file with C-x C-f,
+;; then enter the text in that file's own buffer.
 
-;;; In any case, if we don't have the documentation in the selected
-;;; language, we fall back to docstrings in English.
-;;;
-;;;---------------------------------------------------------------------
-
-
-(defpackage "COM.INFORMATIMAGO.FUTURE.EDITOR"
-  (:nicknames "EDITOR" "EMACS" "E")
-  (:use "COMMON-LISP"
-        "SPLIT-SEQUENCE"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DLL"
-        "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM")
-  (:shadow "DEFUN" "LAMBDA" "ED")
-  (:export "DEFUN" "LAMBDA" "ED")
-  (:export "SCREEN-EDITOR" "EDITOR")
-  (:documentation "
-
-An emacs editor written in Common Lisp.
-
-
-Copyright Pascal J. Bourguignon 2006 - 2014
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version
-2 of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be
-useful, but WITHOUT ANY WARRANTY; without even the implied
-warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-PURPOSE.  See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public
-License along with this program; if not, write to the Free
-Software Foundation, Inc., 59 Temple Place, Suite 330,
-Boston, MA 02111-1307 USA
-"))
-(in-package "COM.INFORMATIMAGO.FUTURE.EDITOR")
-
-
-
-;;;---------------------------------------------------------------------
-;;; Screen interface
-;;;---------------------------------------------------------------------
-
-
-(defclass screen ()
-  ((stream :reader screen-stream))
-  (:documentation
-   #+french      "Cet objet represente un écran.
-Il y a des sous-classes spécifiques pour chaque type d'écran disponible.
-Il y a des méthodes spécialisées sur ces classes pour écrire sur l'écran."
-   #-(or french) "This object represents the screen.
-There are subclasses specific to each available screen device.
-There are methods specialized on these subclasses to write on the screen."))
-
-(defgeneric screen-size (screen)
-  (:documentation
-   #+french "
 "
-   #-(or french) "
-"))
+  "The default contents for the *scratch* buffer.")
 
-(defgeneric screen-cursor-position (screen)
-  (:documentation
-   #+french "
-"
-   #-(or french) "
-"))
+(defvar *last-command-char* nil
+  "Last input event that was part of a command.")
 
-(defgeneric set-screen-cursor-position (screen line column)
-  (:documentation
-   #+french "
-"
-   #-(or french) "
-"))
+(defvar *this-command* nil
+  "The command now being executed.
+The command can set this variable; whatever is put here
+will be in `last-command' during the following command.")
 
-(defgeneric clear-screen (screen)
-  (:documentation
-   #+french "
-"
-   #-(or french) "
-"))
+(defvar *last-command* nil
+  "The last command executed.
+Normally a symbol with a function definition, but can be whatever was found
+in the keymap, or whatever the variable `this-command' was set to by that
+command.
 
-(defmethod clear-screen ((self screen))
-  (set-screen-cursor-position self 0 0)
-  (clear-screen-to-eot self))
+The value `mode-exit' is special; it means that the previous command
+read an event that told it to exit, and it did so and unread that event.
+In other words, the present command is the event that made the previous
+command exit.
 
-(defgeneric clear-screen-to-eot (screen)
-  (:documentation
-   #+french "
-"
-   #-(or french) "
-"))
+The value `kill-region' is special; it means that the previous command
+was a kill command.")
 
-(defgeneric clear-screen-to-eol (screen)
-  (:documentation
-   #+french "
-"
-   #-(or french) "
-"))
+(defvar *prefix-arg* nil
+  "The value of the prefix argument for the next editing command.
+It may be a number, or the symbol `-' for just a minus sign as arg,
+or a list whose car is a number for just one or more C-u's
+or nil if no argument has been specified.
 
-(defgeneric delete-screen-line (screen)
-  (:documentation
-   #+french "
-"
-   #-(or french) "
-"))
+You cannot examine this variable to find the argument for this command
+since it has been set to nil by the time you can look.
+Instead, you should use the variable `current-prefix-arg', although
+normally commands can get this prefix argument with (interactive \"P\").")
 
-(defgeneric insert-screen-line (screen)
-  (:documentation
-   #+french "
-"
-   #-(or french) "
-"))
-
-(defgeneric screen-highlight-on (screen)
-  (:documentation
-   #+french "
-"
-   #-(or french) "
-"))
-
-(defgeneric screen-highlight-off (screen)
-  (:documentation
-   #+french "
-"
-   #-(or french) "
-"))
-
-(defgeneric screen-cursor-on (screen)
-  (:documentation
-   #+french "Allume le curseur."
-   #-(or french) "Show up the cursor."))
-
-(defgeneric screen-cursor-off (screen)
-  (:documentation
-   #+french "Éteint le curseur."
-   #-(or french) "Hide the cursor."))
+(defvar *current-prefix-arg* nil
+  "The value of the prefix argument for this editing command.
+It may be a number, or the symbol `-' for just a minus sign as arg,
+or a list whose car is a number for just one or more C-u's
+or nil if no argument has been specified.
+This is what `(interactive \"P\")' returns.")
 
 
 
-#+clisp
-(progn
-  (defclass clisp-screen (screen)
-    ((stream :reader screen-stream :initform (screen:make-window)))
-    (:documentation
-     #+french "Cette sous-classe de SCREEN utilise le package SCREEN de CLISP."
-     #-(or french) "This SCREEN subclass uses the CLISP SCREEN package."))
-  (defmethod screen-size ((self clisp-screen))
-    (screen:window-size (screen-stream self)))
-  (defmethod screen-cursor-position ((self clisp-screen))
-    (screen:window-cursor-position (screen-stream self)))
-  (defmethod set-screen-cursor-position ((self clisp-screen) line column)
-    (screen:set-window-cursor-position (screen-stream self) line column))
-  (defmethod clear-screen ((self clisp-screen))
-    (screen:clear-window  (screen-stream self)))
-  (defmethod clear-screen-to-eot ((self clisp-screen))
-    (screen:clear-window-to-eot  (screen-stream self)))
-  (defmethod clear-screen-to-eol ((self clisp-screen))
-    (screen:clear-window-to-eol  (screen-stream self)))
-  (defmethod delete-screen-line ((self clisp-screen))
-    (screen:delete-window-line (screen-stream self)))
-  (defmethod insert-screen-line ((self clisp-screen))
-    (screen:insert-window-line (screen-stream self)))
-  (defmethod screen-highlight-on ((self clisp-screen))
-    (screen:highlight-on (screen-stream self)))
-  (defmethod screen-highlight-off ((self clisp-screen))
-    (screen:highlight-off (screen-stream self)))
-  (defmethod screen-cursor-on ((self clisp-screen))
-    (screen:window-cursor-on (screen-stream self)))
-  (defmethod screen-cursor-off ((self clisp-screen))
-    (screen:window-cursor-off (screen-stream self))))
+(defvar *kill-whole-line* nil
+  "*If non-nil, `kill-line' with no arg at beg of line kills the whole line.")
+
+(defvar *yank* nil)
 
 
-(progn
-  (defclass xterm-screen (screen)
-    ()
-    (:documentation
-     #+french "Cette sous-classe de SCREEN utilise un xterm via un pty."
-     #-(or french) "This SCREEN subclass uses an xterm thru a pty."))
-  (defmethod screen-size ((self xterm-screen))
-    (values 25 80))
-  (defmethod screen-cursor-position ((self xterm-screen))
-    )
-  (defmethod set-screen-cursor-position ((self xterm-screen) line column)
-    )
-  (defmethod clear-screen-to-eot ((self xterm-screen))
-    )
-  (defmethod clear-screen-to-eol ((self xterm-screen))
-    )
-  (defmethod delete-screen-line ((self xterm-screen))
-    )
-  (defmethod insert-screen-line ((self xterm-screen))
-    )
-  (defmethod screen-highlight-on ((self xterm-screen))
-    )
-  (defmethod screen-highlight-off ((self xterm-screen))
-    )
-  (defmethod screen-cursor-on ((self xterm-screen))
-    )
-  (defmethod screen-cursor-off ((self xterm-screen))
-    ))
+
+(declaim (ftype function message))
+(defun error (datum &rest arguments)
+  (cond
+    (*debug-on-error* (apply (function cl:error) datum arguments))
+    ((stringp datum) (message datum))
+    (t (message "~A" (apply (function format) datum arguments)))))
 
 
-(defvar *current-screen* nil
-  #-(or french) "The current SCREEN instance. In this version, there's only
-one SCREEN instance, but a future version may be ''multitty'' (or
-''multiframe'') like GNU emacs."
-  #+french  "L'instance courrante de la classe SCREEN.  Dans cette version
-il n'y a qu'une instance de SCREEN, mais une version future pourrait être
-''multitty'' (ou ''multiframe''), comme GNU emacs.")
-
-
-(defmacro with-screen (screen-object &body body)
-  #-(or french) "Executes the BODY with *CURRENT-SCREEN* bound to SCREEN-OBJECT,
-while displaying this screen on the terminal."
-  #+french "Execute BODY avec *CURRENT-SCREEN* lié à SCREEN-OBJECT,
-tout en affichant cet écran sur le terminal."
-  `(let* ((*current-screen* ,screen-object)
-          #+clisp(screen:*window*  (screen-stream *current-screen*)))
+(defmacro with-current-window (window &body body)
+  `(let ((*current-window* ,window))
      ,@body))
-
-
-(defmacro with-open-screen (screen-object &body body)
-  #-(or french) "Executes the BODY with *CURRENT-SCREEN* bound to SCREEN-OBJECT,
-while displaying this screen on the terminal.
-Close the screen when done."
-  #+french "Execute BODY avec *CURRENT-SCREEN* lié à SCREEN-OBJECT,
-tout en affichant cet écran sur le terminal.
-Ferme l'écran à la fin."
-  `(let* ((*current-screen* ,screen-object)
-          #+clisp(screen:*window* (screen-stream *current-screen*)))
-     (unwind-protect (progn ,@body)
-       #+clisp(close screen:*window*))))
-
-
-
-;;;---------------------------------------------------------------------
-;;; Commands: interactive functions
-;;;---------------------------------------------------------------------
-;;;
-;;; #-(or french)
-;;; We want to define commands, with a special INTERACTIVE
-;;; declaration.  So we need to use our own DEFUN (and LAMBDA) macros.
-;;;
-;;; #+french
-;;; Nous voulons définir des commandes, avec une déclaration spéciale:
-;;; INTERACTIVE.  Ainsi, nous devons utiliser nos propres macros DEFUN et LAMBDA.
-
-(declaim (declaration interactive))
-
-
-(defvar *interactive-decls* (make-hash-table #+clisp :weak #+clisp :key)
-  #-(or french) "A map of commands name or functions to INTERACTIVE declarations."
-  #+french      "Une association des noms de commande ou fonction vers leur
-déclaration INTERACTIVE.")
-
-
-(defmacro defun (name arguments &body body)
-  #-(or french) "
-Do additionnal book-keeping over CL:DEFUN, for INTERACTIVE commands.
-"
-  #+french "
-En plus du traitement de CL:DEFUN, maintient les informations nécessaires 
-pour les commandes interactives.
-"
-  (let* ((decls (mapcan (function rest) (extract-declarations body)))
-         (inter (find 'interactive decls :key (function first))))
-    (if inter
-        `(progn
-           (compile (cl:defun ,name ,arguments ,@body))
-           (setf (gethash ',name           *interactive-decls*) ',inter
-                 (gethash (function ,name) *interactive-decls*) ',inter)
-           ',name)
-        `(progn
-           (cl:defun ,name ,arguments ,@body)
-           (remhash ',name           *interactive-decls*)
-           (remhash (function ,name) *interactive-decls*)
-           ',name))))
-
-
-(defmacro lambda (arguments &body body)
-  #-(or french) "
-Do additionnal bookkeeping over CL:LAMBDA, for INTERACTIVE commands.
-"
-  #+french "
-En plus du traitement de CL:LAMBDA, maintient les informations nécessaires 
-pour les commandes interactives.
-"
-  (let* ((decls (mapcan (function rest) (extract-declarations body)))
-         (inter (find 'interactive decls :key (function first))))
-    (if inter
-        `(progn
-           (let ((fun (compile nil '(cl:lambda ,arguments ,@body))))
-             (setf (gethash fun *interactive-decls*) ',inter)
-             fun))
-        `(cl:lambda  ,arguments ,@body))))
-
-
-(defun interactivep (fundesc)
-  #-(or french) "Whether the function FUNCDESC is INTERACTIVE."
-  #+french  "Indique si la fonction  FUNCDESC est INTERACTIVE."
-  (gethash fundesc *interactive-decls*))
 
 
 (defun read-something (prompt other-args validatef postf)
@@ -427,14 +164,8 @@ pour les commandes interactives.
 
 
 (defun nsubseq (sequence start &optional (end nil))
-  #+french "
-Comme pour CL:SUBSEQ, mais pour les vecteurs, utilise un tableau déplacé
-au lieu de faire une copie du vecteur.
-"
-  #-(or french) "
-Same as CL:SUBSEQ, but with vectors, use a displaced array instead of
-copying the vector.
-"
+  "Same as CL:SUBSEQ, but with vectors, use a displaced array instead of
+copying the vector."
   (if (vectorp sequence)
       (if (and (zerop start) (or (null end) (= end (length sequence))))
           sequence
@@ -447,6 +178,8 @@ copying the vector.
                       :displaced-index-offset start))
       (subseq sequence start end)))
 
+(defmacro in-order (start end)
+  `(unless (< ,start ,end) (rotatef ,start ,end)))
 
 (defun interactive-item (item)
   (loop
@@ -494,7 +227,9 @@ copying the vector.
             (read-something prompt nil
                             (lambda (name)
                               #+clisp
-                              (ext:probe-directory name))
+                              (ext:probe-directory name)
+                              #-clisp
+                              (progn (warn "How to probe for directory ~S in ~S" name (lisp-implementation-type)) t))
                             (function identity)))
            ((#\e) ; Parametrized event (i.e., one that's a list) that invoked this command. If used more than once, the Nth `e' returns the Nth parameterized event. This skips events that are integers or symbols.
             )
@@ -556,7 +291,7 @@ copying the vector.
                               ;; TODO: more sophisticated test (EOS).
                               (handler-case
                                   (progn (read-from-string something) t)
-                                (error () nil)))
+                                (cl:error () nil)))
                             (function read-from-string)))
            ((#\X)                ; Lisp expression read and evaluated.
             (read-something prompt nil
@@ -564,13 +299,13 @@ copying the vector.
                               ;; TODO: more sophisticated test (EOS).
                               (handler-case
                                   (progn (read-from-string something) t)
-                                (error () nil)))
+                                (cl:error () nil)))
                             (lambda (something) (eval (read-from-string something)))))
            ((#\z)                       ; Coding system.
             )
            ((#\Z)               ; Coding system, nil if no prefix arg.
             )
-           (otherwise (error "Bad interactive specifier ~S" )))))))
+           (otherwise (error "Bad interactive specifier ~S" (aref item start))))))))
 
 
 
@@ -660,7 +395,8 @@ BINDING:    must be either a symbol (naming a command),
 (defparameter *default-keymap*
   (let ((def-map (make-keymap))
         (c-x-map (make-keymap))
-        (c-h-map (make-keymap)))
+        (c-h-map (make-keymap))
+        (fn-map  (make-keymap)))
     (loop
        :for key :across #.(concatenate 'string
                             " !\"#$%&'()*+,-./0123456789:;<=>?"
@@ -671,7 +407,8 @@ BINDING:    must be either a symbol (naming a command),
                             "àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ")
        :do (keymap-bind-key def-map key 'self-insert-command))
     (keymap-bind-key def-map #\return        'new-line)
-    (keymap-bind-key def-map #\tab           'not-implemented-yet)
+    (keymap-bind-key def-map #\newline       'new-line)
+    (keymap-bind-key def-map #\tab           'self-insert-command)
     (keymap-bind-key def-map #\Rubout        'delete-backward-char)
     (keymap-bind-key def-map '(:control #\d) 'delete-char)
     (loop
@@ -700,18 +437,18 @@ BINDING:    must be either a symbol (naming a command),
     (keymap-bind-key def-map '(:meta    #\v) 'scroll-down)
     
     (keymap-bind-key def-map '(:control #\h) c-h-map)
-    (keymap-bind-key c-x-map '#\h            'view-hello-file)
-    (keymap-bind-key c-x-map '(:control #\h) 'help-for-help)
-    (keymap-bind-key c-x-map '#\f            'describe-function)
-    (keymap-bind-key c-x-map '#\v            'describe-variable)
-    (keymap-bind-key c-x-map '#\k            'describe-key)
-    (keymap-bind-key c-x-map '#\w            'where-is)
-    
+    (keymap-bind-key c-h-map '#\h            'view-hello-file)
+    (keymap-bind-key c-h-map '(:control #\h) 'help-for-help)
+    (keymap-bind-key c-h-map '#\f            'describe-function)
+    (keymap-bind-key c-h-map '#\v            'describe-variable)
+    (keymap-bind-key c-h-map '#\k            'describe-key)
+    (keymap-bind-key c-h-map '#\w            'where-is)
+
     (keymap-bind-key def-map '(:control #\x) c-x-map)    
     (keymap-bind-key c-x-map '#\b            'switch-to-buffer)
     (keymap-bind-key c-x-map '#\f            'find-file)
     (keymap-bind-key c-x-map '#\k            'kill-buffer)
-    (keymap-bind-key c-x-map '#\s            'save-buffer)
+    (keymap-bind-key c-x-map '(:control #\s) 'save-buffer)
     (keymap-bind-key c-x-map '(:control #\b) 'list-buffers)
     (keymap-bind-key c-x-map '(:control #\c) 'editor-quit)
     (keymap-bind-key c-x-map '(:control #\d) 'my-debug)
@@ -719,22 +456,37 @@ BINDING:    must be either a symbol (naming a command),
     (keymap-bind-key c-x-map '(:control #\e) 'eval-last-sexp)
     (keymap-bind-key c-x-map '(:control #\f) 'find-file)
     
+    (keymap-bind-key def-map '(:control :meta #\[) fn-map) ; temporary kludge
+    (keymap-bind-key def-map '(:meta #\[)          fn-map)
+    (keymap-bind-key fn-map  '#\A            'previous-line)
+    (keymap-bind-key fn-map  '#\B            'next-line)
+    (keymap-bind-key fn-map  '#\C            'forward-char)
+    (keymap-bind-key fn-map  '#\D            'backward-char)
+
+    (keymap-bind-key fn-map  '#\c            'previous-line) ; ??
+    (keymap-bind-key fn-map  '#\e            'forward-char)  ; ??
+    (keymap-bind-key fn-map  '#\d            'backward-char) ; ??
+
     def-map))
 
+(defparameter *keymap* (keymap-copy *default-keymap*))
+
+
+#-clisp
+(defun make-xterm-io-stream (&key display geometry)
+  (error "(~S ~S ~S) Not implemented on ~A"
+         'make-xterm-io-stream display geometry (lisp-implementation-type)))
 
 (defvar *old-terminal-io*)
 (defun cl-debugger ()
   (declare (interactive))
-  (let* ((io (make-xterm-io-stream :geometry "100x24+0+0"))
+  (let* ((io                (make-xterm-io-stream :geometry "100x24+0+0"))
          (*old-terminal-io* *terminal-io*)
-         (*debug-io*    io)
-         (*terminal-io* io))
-    (unwind-protect
-         (invoke-debugger "Debugger invoked interactively")
+         (*debug-io*        io)
+         (*terminal-io*     io))
+    (unwind-protect (invoke-debugger "Debugger invoked interactively")
       (close io))))
 
-
-(defparameter *keymap* (keymap-copy *default-keymap*))
 
 ;;;---------------------------------------------------------------------
 ;;; Help commands
@@ -838,6 +590,17 @@ C-w         Information on absence of warranty for GNU Emacs.
 (defmethod file-name ((self file))
   (file-namestring (file-pathname self)))
 
+
+(defmethod (setf file-contents) (new-contents (self file))
+  (ensure-directories-exist (file-pathname self))
+  (with-open-file (out (file-pathname self)
+                      :direction :output
+                      :external-format :default
+                      :if-does-not-exist :create
+                      :if-exists :supersede)
+    (write-sequence new-contents out)))
+
+
 (defmethod file-contents ((self file))
   (with-open-file (in (file-pathname self)
                       :direction :input
@@ -845,11 +608,11 @@ C-w         Information on absence of warranty for GNU Emacs.
                       :if-does-not-exist nil)
     (if in
         (let* ((busize (or (ignore-errors (file-length in)) 4096))
-               (eltype (stream-ELEMENT-TYPE in))
+               (eltype (stream-element-type in))
                (initel (if (subtypep eltype 'integer) 0 #\Space))
-               (buffer (make-ARRAY busize 
-                                   :ELEMENT-TYPE eltype
-                                   :INITIAL-ELEMENT initel
+               (buffer (make-array busize 
+                                   :element-type eltype
+                                   :initial-element initel
                                    :adjustable t :fill-pointer t))
                (start 0)
                (max-extend 65536))
@@ -876,27 +639,6 @@ C-w         Information on absence of warranty for GNU Emacs.
 ;;; Buffers
 ;;;---------------------------------------------------------------------
 
-(defvar *log* nil "Debugging stream.")
-
-(defvar *frame-list*     '() "The list of frames.")
-(defvar *current-frame*  nil "The current frame.")
-(defvar *buffer-list*    '() "The list of buffers")
-(defvar *current-window* nil "The current window.")
-(defvar *scratch-buffer-default-contents*
-  ";; This buffer is for notes you don't want to save, and for Lisp evaluation.
-;; If you want to create a file, visit that file with C-x C-f,
-;; then enter the text in that file's own buffer.
-
-"
-  #-(or french) "The default contents for the *scratch* buffer."
-  #+french "Le contenu par défaut du tampon *scratch*.")
-
-;; *current-screen*
-;; *current-frame*
-;; *current-window*
-;; (current-buffer) ; derived from *current-window*
-;; *current-prefix-arg*
-
 
 (defun compose (f &rest others)
   (if (null others)
@@ -910,9 +652,7 @@ C-w         Information on absence of warranty for GNU Emacs.
 ;;                  (mapcar(function frame-window-list) *frame-list*))))
 
 
-(defmacro with-current-window (window &body body)
-  `(let ((*current-window* ,window))
-     ,@body))
+
 
 (defmacro with-buffer (buffer &body body)
   `(with-current-window (make-instance 'context :buffer (get-buffer ,buffer))
@@ -1017,12 +757,9 @@ C-w         Information on absence of warranty for GNU Emacs.
 (defclass window-with-status-bar (window)
   ()
   (:documentation
-   #-(or french) "This is a normal window, which displays a status bar
+   "This is a normal window, which displays a status bar
 at the bottom.  Normally, only the bottom-most window, displaying the
-mini-buffer is a plain window without a status bar."
-   #+french "Ceci est une fenêtre normale, qui affiche une ligne de status
-en bas.  Normalement, seule la fenêtre du bas, qui affiche le mini-tampon
-est une fenêtre brute, sans ligne de status."))
+mini-buffer is a plain window without a status bar."))
 
 (defmethod window-bottom ((self window))
   (+ (window-top self) (window-height self)))
@@ -1145,8 +882,6 @@ est une fenêtre brute, sans ligne de status."))
   (or (get-buffer buffer-or-name)
       (error "There is no buffer named ~S" buffer-or-name)))
 
-(defmacro in-order (start end)
-  `(unless (< ,start ,end) (rotatef ,start ,end)))
 
 (defmethod buffer-substring ((buffer-name string) start end)
   (buffer-substring (buffer-or-error buffer-name) start end))
@@ -1155,7 +890,9 @@ est une fenêtre brute, sans ligne de status."))
   (assert (<= start end))
   (with-output-to-string (out)
     (multiple-value-bind (srow scolumn sline) (buffer-line-of-point self start)
+      (declare (ignore srow))
       (multiple-value-bind (erow ecolumn eline) (buffer-line-of-point self end)
+        (declare (ignore erow))
         (cond
           ((null sline))
           ((eq sline eline)
@@ -1185,7 +922,9 @@ est une fenêtre brute, sans ligne de status."))
   (assert (<= start end))
   (when (< start end)
     (multiple-value-bind (srow scolumn sline) (buffer-line-of-point self start)
+      (declare (ignore srow))
       (multiple-value-bind (erow ecolumn eline) (buffer-line-of-point self end)
+        (declare (ignore erow))
         (if (eq sline eline)
             ;; one line:
             (setf (dll-node-item sline)
@@ -1238,6 +977,7 @@ est une fenêtre brute, sans ligne de status."))
         (format *log* "~{line: ~S~%~}" lines)
         (multiple-value-bind (row column current-line)
             (buffer-line-of-point self point)
+          (declare (ignore row))
           (cond
             ((null current-line)       ; adding at the end of the buffer
              (loop
@@ -1304,10 +1044,10 @@ RETURN: row; column; the line containing point, or NIL if point is at end
       (setf point (marker-point point)))
     (loop
       :for line = (dll-first-node (buffer-lines self))
-      :then (dll-node-next line)
+        :then (dll-node-next line)
       :for bol = 0 :then eol
       :for eol = (if line (+ 1 (length (dll-node-item line))) 0)
-      :then (if line (+ eol 1 (length (dll-node-item line))) eol)
+        :then (if line (+ eol 1 (length (dll-node-item line))) eol)
       :for row :from 0
       :while (and line (<= eol point))
       :finally (return (values row (max 0 (- point bol)) line)))))
@@ -1443,35 +1183,33 @@ RETURN: row; column; the line containing point, or NIL if point is at end
                         (length (dll-node-item line))))))))
 
 
-(defun next-line (&optional n)
-  (declare (interactive "p"))
+(declaim (inline clip))
+(defun clip (min value max)
+  (cond ((< value min) min)
+        ((< max value) max)
+        (t value)))
+
+(defun increment-line (n successor-line)
   (let ((buffer  (context-buffer *current-window*)))
     (multiple-value-bind (row col line)
         (buffer-line-of-point buffer (context-point  *current-window*))
       (let ((line (or line (dll-last-node (buffer-lines buffer)))))
         (goto-char
-         (+ (buffer-point-of-line buffer (+ row n))
+         (+ (buffer-point-of-line buffer (clip 0 (+ row n) (buffer-line-count buffer)))
             (loop
+              :for next = (funcall successor-line line)
               :repeat n
-              :while (dll-node-next line)
-              :do (setf line (dll-node-next line))
+              :while next
+              :do (setf line next)
               :finally (return (min col (length (dll-node-item line)))))))))))
 
-
-(defun previous-line (&optional n)
+(defun next-line (&optional (n 1))
   (declare (interactive "p"))
-  (let ((buffer  (context-buffer *current-window*)))
-    (multiple-value-bind (row col line)
-        (buffer-line-of-point buffer (context-point  *current-window*))
-      (let ((line (or line (dll-last-node (buffer-lines buffer)))))
-        (goto-char
-         (+ (buffer-point-of-line buffer (max 0 (- row n)))
-            (loop
-              :repeat n
-              :while (dll-node-previous line)
-              :do (setf line (dll-node-previous line))
-              :finally (return (min col (length (dll-node-item line)))))))))))
+  (increment-line n (function dll-node-next)))
 
+(defun previous-line (&optional (n 1))
+  (declare (interactive "p"))
+  (increment-line (- n) (function dll-node-previous)))
 
 
 (defun erase-buffer ()
@@ -1510,9 +1248,8 @@ and displays it in the mini-window."
     (with-current-window (frame-mini-window *current-frame*)
       (switch-to-buffer  (frame-mini-buffer *current-frame*))
       (erase-buffer)
-      (insert "~A" text))))
-
-
+      (insert "~A" text))
+    (when *log* (write-line text *log*))))
 
 
 
@@ -1521,14 +1258,19 @@ and displays it in the mini-window."
   (cond
     ((minusp n) (forward-sexp (- n)))
     ((plusp  n)
-     (goto-char (with-input-from-string
-                    (src (buffer-substring (current-buffer) 0 (point)))
-                  (loop
-                     :for previous = nil :then current
-                     :for current  = 0   :then (file-position src)
-                     :for sexp = (read src nil src)
-                     :until (eq sexp src)
-                     :finally (return previous)))))))
+     (let ((previous-text (buffer-substring (current-buffer) 0 (point))))
+       (if (plusp (length previous-text))
+           (with-input-from-string (src previous-text)
+             (loop
+               :for previous = nil :then current
+               :for current  = 0   :then (file-position src)
+               :for sexp = (handler-case (read src nil src)
+                             (cl:error () src))
+               :until (eq sexp src)
+               :finally (if previous
+                          (goto-char previous)
+                          (error "Cannot read previous S-expressions"))))
+           (error "Beginning of buffer"))))))
 
 
 (defun forward-sexp (n)
@@ -1540,17 +1282,16 @@ and displays it in the mini-window."
                                      (current-buffer) (point)
                                      (buffer-size (current-buffer))))
                              (loop
-                                :repeat n
                                 :for sexp = (read src nil src)
+                                :repeat n
                                 :until (eq sexp src)
                                 :finally (return  (file-position src))))))))
 
 
 (defun show-results (results insert-in-buffer-p)
   (if insert-in-buffer-p
-      (insert "~%-->~{~S ~^;   ~}" results)
+      (insert "~%-->~{~S ~^;~%   ~}" results)
       (message "~{~S~^ ;~}" results)))
-
 
 (defun eval-expression (expression &optional insert-results-p)
   (declare (interactive "xEval: "))
@@ -1574,24 +1315,19 @@ and displays it in the mini-window."
 
 
 (defun buffer-for-file (path)
-  #-(or french) "
+  "
 RETURN:   The buffer associated with the file at PATH,
           or NIL if it doesn't exist.
 "
-  #+french  "
-RETOURNE: Le tampon associé au fichier PATH,
-          ou NIL s'il n'existe pas.
-"
   (find-if (lambda (buffer)
              (and (buffer-file buffer)
-                  (equalp (truename path)
-                          (truename (file-pathname (buffer-file buffer))))))
+                  ;; we cannot use truename since that works only on existing files.
+                  (equalp path (file-pathname (buffer-file buffer)))))
            *buffer-list*))
 
 
 (defun find-file (path)
   (declare (interactive  "FFind file: "))
-  (declare (ignore path))
   (let ((buffer (buffer-for-file path)))
     (if buffer
         (switch-to-buffer buffer)
@@ -1601,6 +1337,13 @@ RETOURNE: Le tampon associé au fichier PATH,
           (insert "~A" (file-contents file))
           (goto-char 0)))))
 
+
+(defun save-buffer ()
+  (declare (interactive))
+  (let* ((buffer (current-buffer))
+         (file   (buffer-file buffer)))
+    (setf (file-contents file) (buffer-contents  buffer))
+    (message "Wrote ~A" (file-pathname file))))
 
 
 ;;;---------------------------------------------------------------------
@@ -1688,23 +1431,26 @@ RETOURNE: Le tampon associé au fichier PATH,
 
 
 (defun read-char-exclusive (&key PROMPT INHERIT-INPUT-METHOD)
-  (error "not implemented yet"))
+  (error "not implemented yet (~S ~S ~S)"
+         'read-char-exclusive PROMPT INHERIT-INPUT-METHOD))
 
 
 (defun read-from-minibuffer (prompt &key initial-contents read
                              keymap inherit-input-method
                              history keep-all default-value)
+  (declare (ignore default-value keep-all history inherit-input-method));TODO: handle them.
   (setf prompt (or prompt ""))
   (with-current-window (frame-mini-window *current-frame*)
-    (let ((*keymap* (keymap-copy (or keymap *keymap*) :shallow t)))
-      (keymap-bind-key *keymap* #\return
-                       (lambda ()
-                         (declare (interactive))
-                         (throw 'end-recursive-edit nil)))
-      (keymap-bind-key *keymap* '(:control #\g)
-                       (lambda ()
-                         (declare (interactive))
-                         (throw 'abort-recursive-edit nil)))
+    (let ((*keymap* (keymap-copy (or keymap *keymap*) :shallow t))
+          (done  (lambda ()
+                   (declare (interactive))
+                   (throw 'end-recursive-edit nil)))
+          (abort (lambda ()
+                   (declare (interactive))
+                   (throw 'abort-recursive-edit nil))))
+      (keymap-bind-key *keymap* #\return done)
+      (keymap-bind-key *keymap* #\newline done)
+      (keymap-bind-key *keymap* '(:control #\g) abort)
       (erase-buffer)
       (with-current-window (frame-prompt-window *current-frame*)
         (erase-buffer)
@@ -1751,12 +1497,9 @@ RETOURNE: Le tampon associé au fichier PATH,
 
 
 (defun switch-to-buffer (buffer)
-  #-(or french) "Select BUFFER in the current window.
+  "Select BUFFER in the current window.
 If BUFFER does not identify an existing buffer,
 then this command creates a buffer with that name."
-  #+french "Sélectionne le BUFFER dans la fenêtre courrante.
-Si BUFFER n'identifie pas un tampon existant alors cette
-commande crée un tampon de ce nom."
   (declare (interactive "BSwitch to buffer: "))
   (context-save (window-context *current-window*))
   (setf (window-context *current-window*)
@@ -1764,9 +1507,10 @@ commande crée un tampon de ce nom."
 
 
 
-(defun kill-buffer (buffer)
+(defun kill-buffer (&optional buffer)
   (declare (interactive "bKill buffer:"))
-  (setf buffer (get-buffer buffer))
+  ;; TODO: query buffer with current-buffer as default.
+  (setf buffer (get-buffer (or buffer (current-buffer))))
   (setf *buffer-list* (delete buffer *buffer-list*))
   (when (eq buffer (current-buffer))
     (switch-to-buffer (first *buffer-list*)))
@@ -1824,20 +1568,18 @@ commande crée un tampon de ce nom."
 (defmethod display ((self window))
   (loop
      :with screen = (frame-screen (window-frame self))
-     :with stream = (screen-stream screen)
      :with width  = (window-width self)
      :with buffer = (context-buffer (window-context self))
+     :for row :from (window-top-row self) 
+     :for line = (dll-node-nth (window-top-row self) (buffer-lines buffer))
+     :then (dll-node-next line)
      :repeat (print (min (window-visible-line-count self)
                          (- (buffer-line-count buffer)
                             (window-top-row self)))
                     *log*)
-     :for row :from (window-top-row self) 
-     :for line = (dll-node-nth (window-top-row self) (buffer-lines buffer))
-     :then (dll-node-next line)
      :do (window-move-cursor-to self :line row)
      :do (let ((line (dll-node-item line)))
-           (format stream "~VA" width
-                   (nsubseq line 0 (min width (length line))))
+           (screen-format screen "~VA" width (nsubseq line 0 (min width (length line))))
            (clear-screen-to-eol screen))))
 
 
@@ -1873,18 +1615,18 @@ commande crée un tampon de ce nom."
          (progn
            (screen-highlight-on screen)
            (window-move-cursor-to self :line (1- (window-height self)))
-           (format (screen-stream screen)
-                   "~VA" (window-width self)
-                   (let* ((lines (dll-length (buffer-lines (current-buffer))))
-                          (status (format nil "--:--  ~A  ~D% L~D (~:(~{~A~^ ~}~))"
-                                          (buffer-name (context-buffer self))
-                                          (truncate
-                                           (/ (window-top-row *current-window*)
-                                              (1+ lines))
-                                           1/100)
-                                          lines
-                                          '(lisp))))
-                     (subseq  status 0 (min (window-width self) (length status))))))
+           (screen-format screen
+                          "~VA" (window-width self)
+                          (let* ((lines (dll-length (buffer-lines (current-buffer))))
+                                 (status (format nil "--:--  ~A  ~D% L~D (~:(~{~A~^ ~}~))"
+                                                 (buffer-name (context-buffer self))
+                                                 (truncate
+                                                  (/ (window-top-row *current-window*)
+                                                     (1+ lines))
+                                                  1/100)
+                                                 lines
+                                                 '(lisp))))
+                            (subseq  status 0 (min (window-width self) (length status))))))
       (screen-highlight-off screen)))
   ;; 2- display the contents
   (call-next-method))
@@ -1892,30 +1634,30 @@ commande crée un tampon de ce nom."
 
 (defun redisplay ()
   (declare (interactive))
-  (dolist (frame *frame-list*)
-    (with-screen (frame-screen frame)
-      (unwind-protect
-           (progn
-             (format *log* "redisplay: clear-screen~%")
-             (screen-cursor-off *current-screen*)
-             (clear-screen      *current-screen*)
-             (dolist (window (frame-window-list frame))
-               (format *log* "redisplay: display window ~A~%" (window-name window))
-               (display window))
-             (multiple-value-bind (row column)
-                 (buffer-line-of-point (context-buffer *current-window*)
-                                       (context-point  *current-window*))
-               (format *log* "redisplay: move cursor to x:~A, y:~A~%"
-                       column
-                       (- row (window-top-row *current-window*)))
-               (window-move-cursor-to
-                *current-window*
-                :line  (- row (window-top-row *current-window*))
-                :column column)))
-        (finish-output (screen-stream *current-screen*))
-        (screen-cursor-on *current-screen*)
-         (format *log* "redisplay: done~%")
-        (finish-output *log*)))))
+  ;; (dolist (frame *frame-list*)
+  ;;   (with-current-screen (frame-screen frame)))
+  (unwind-protect
+       (progn
+         (format *log* "redisplay: clear-screen~%")
+         (screen-cursor-off *current-screen*)
+         (clear-screen      *current-screen*)
+         (dolist (window (frame-window-list *current-frame*))
+           (format *log* "redisplay: display window ~A~%" (window-name window))
+           (display window))
+         (multiple-value-bind (row column)
+             (buffer-line-of-point (context-buffer *current-window*)
+                                   (context-point  *current-window*))
+           (format *log* "redisplay: move cursor to x:~A, y:~A~%"
+                   column
+                   (- row (window-top-row *current-window*)))
+           (window-move-cursor-to
+            *current-window*
+            :line  (- row (window-top-row *current-window*))
+            :column column)))
+    ;; (finish-output (screen-stream *current-screen*))
+    (screen-cursor-on *current-screen*)
+    (format *log* "redisplay: done~%")
+    (finish-output *log*)))
 
 
 
@@ -1937,7 +1679,6 @@ commande crée un tampon de ce nom."
 ;;;---------------------------------------------------------------------
 ;;; Editor
 ;;;---------------------------------------------------------------------
-
 
 (defun editor-reset ()
   (setf *current-screen*     nil
@@ -1965,57 +1706,11 @@ commande crée un tampon de ce nom."
   (values))
 
 
-(defvar *last-command-char* nil
-  "Last input event that was part of a command.")
-
 (defun command-character (keyboard-event)
   (etypecase keyboard-event
       (character keyboard-event)
       (list      (car (last keyboard-event)))))
 
-(defvar *this-command* nil
-  "The command now being executed.
-The command can set this variable; whatever is put here
-will be in `last-command' during the following command.")
-
-(defvar *last-command* nil
-  "The last command executed.
-Normally a symbol with a function definition, but can be whatever was found
-in the keymap, or whatever the variable `this-command' was set to by that
-command.
-
-The value `mode-exit' is special; it means that the previous command
-read an event that told it to exit, and it did so and unread that event.
-In other words, the present command is the event that made the previous
-command exit.
-
-The value `kill-region' is special; it means that the previous command
-was a kill command.")
-
-(defvar *prefix-arg* nil
-  "The value of the prefix argument for the next editing command.
-It may be a number, or the symbol `-' for just a minus sign as arg,
-or a list whose car is a number for just one or more C-u's
-or nil if no argument has been specified.
-
-You cannot examine this variable to find the argument for this command
-since it has been set to nil by the time you can look.
-Instead, you should use the variable `current-prefix-arg', although
-normally commands can get this prefix argument with (interactive \"P\").")
-
-(defvar *current-prefix-arg* nil
-  "The value of the prefix argument for this editing command.
-It may be a number, or the symbol `-' for just a minus sign as arg,
-or a list whose car is a number for just one or more C-u's
-or nil if no argument has been specified.
-This is what `(interactive \"P\")' returns.")
-
-
-
-(defvar *kill-whole-line* nil
-  "*If non-nil, `kill-line' with no arg at beg of line kills the whole line.")
-
-(defvar *yank* nil)
 
 (defun yank (repeat-count)
   (declare (interactive "p"))
@@ -2171,14 +1866,14 @@ These commands include C-@ and M-x start-kbd-macro."
       (push key sequence)
       (cond
         ((keymapp binding)
-         (format *log* "~{~A ~}~%" (reverse sequence))
+         (format *log* "editor-process-key -> keymap ~{~A ~}~%" (reverse sequence))
          (setf keymap binding))
         ((or (and (symbolp binding)
                   (fboundp binding)
                   (interactivep binding))
              (and (functionp binding)
                   (interactivep binding)))
-         (format *log* "~{~A ~} --> ~S~%" (reverse sequence) binding)
+         (format *log* "editor-process-key -> binding ~{~A ~} --> ~S~%" (reverse sequence) binding)
          (setf *last-command-char*  (first sequence)
                *this-command*       binding
                *current-prefix-arg* *prefix-arg*
@@ -2186,36 +1881,101 @@ These commands include C-@ and M-x start-kbd-macro."
          (call-interactively binding)
          (setf *last-command* *this-command*)
          (editor-reset-key))
+        ((null binding)
+         (beep))
         (t (message "~{~A ~} is bound to a non-command: ~S~%"
                     (reverse sequence) binding)
            (editor-reset-key))))))
 
+
+
+(defvar *handler-window-height* 10)
+(defvar *handler-window-current* 0)
+
+
+(defun handler-window-position ()
+  (multiple-value-bind (width height) (screen-size *current-screen*)
+    (declare (ignore width))
+    (truncate (- height *handler-window-height*) 2)))
+
+(defun handler-window-current-position ()
+  (+ *handler-window-current* (handler-window-position)))
+
+(defun handler-window-initialize ()
+  (loop :for y = (handler-window-position)
+        :repeat *handler-window-height*
+        :do (set-screen-cursor-position *current-screen* y 0)
+            (clear-screen-to-eol *current-screen*))
+  (setf *handler-window-current* 0))
+
+(defun handler-window-writeln (format-control &rest arguments)
+  (when (<= *handler-window-height* *handler-window-current*)
+    (setf *handler-window-current* 0))
+  (set-screen-cursor-position *current-screen* (handler-window-current-position) 0)
+  (ignore-errors
+   (screen-write-string *current-screen* (apply (function format) nil format-control arguments)))
+  (incf *handler-window-current*))
+
+(defun beep ())
+
+(defmethod screen-read-line ((screen screen))
+  (restart-bind ((continue-reading (lambda () (throw 'continue-read (values)))
+                                   :report-function (reportly "Continue reading line.")))
+    (let ((line (make-array 80 :element-type 'character :adjustable t :fill-pointer 0))
+          (meta-seen-p nil))
+      (loop
+        (catch 'continue-read
+          (let ((chord (keyboard-chord-no-hang *current-screen*)))
+            (when chord
+              (let ((key       (chord-character chord))
+                    (modifiers (append (when meta-seen-p
+                                         (setf meta-seen-p nil)
+                                         '(:meta))
+                                       (symbolic-modifiers (chord-modifiers chord)))))
+                (cond
+                  ((eql #\escape key) (setf meta-seen-p t))
+                  (modifiers (beep))
+                  ((eql #\rubout key)
+                   (when (plusp (fill-pointer line))
+                     (decf (fill-pointer line))
+                     (multiple-value-bind (column line) (screen-cursor-position *current-screen*)
+                       (set-screen-cursor-position *current-screen* (1- column) line)
+                       (screen-write-string *current-screen* " "))))
+                  ((find key #(#\Newline #\Return #\Linefeed))
+                   (return-from screen-read-line line))
+                  (t
+                   (screen-write-string *current-screen* (string key))
+                   (vector-push-extend key line)))))))))))
 
 (defvar *condition*)
 
 (defun handle-editor-error (condition)
   (let* ((restarts (compute-restarts condition))
          (last-r   (1- (length restarts))))
-    (flet ((print-restart-list (stream)
+    (flet ((print-restart-list ()
              (setf last-r (loop
                             :for r :in restarts
                             :for i :from 0
-                            :do (format stream "~&~D: (~10A) ~A~%" i (restart-name r) r)
+                            :do (handler-window-writeln "~D: (~10A) ~A" i (restart-name r) r)
                             :until (eq (restart-name r) 'abort)
                             :finally (return i)))))
-      (let ((restart (loop
-                       :for n = (progn (print-restart-list *query-io*)
-                                       (print last-r)
-                                       (format *query-io* "~&Option: ")
-                                       (finish-output *query-io*)
-                                       (read *query-io*)
-                                       (fresh-line *query-io*))
-                       :until (and (typep n 'integer) (<= 0 n last-r))
-                       :finally (return (nth n restarts)))))
-        (print (list 'restart '= (restart-name restart)))
-        (print (list '*debugger-hook* '= *debugger-hook*))
+      (let ((restart
+              (loop
+                :for n = (progn
+                           (handler-window-initialize)
+                           (handler-window-writeln "~A" condition)
+                           (print-restart-list)
+                           (handler-window-writeln "Option: ")
+                           (prog1 (ignore-errors
+                                   (read-from-string (screen-read-line *current-screen*)))
+                             (handler-window-writeln "")))
+                :until (and (typep n 'integer) (<= 0 n last-r))
+                :finally (return (nth n restarts)))))
+        (handler-window-writeln "~S" (list 'restart '= (restart-name restart)))
+        (handler-window-writeln "~S" (list '*debugger-hook* '= *debugger-hook*))
         (let ((*condition* condition))
-          (handler-bind ((error (function invoke-debugger)))
+          (handler-bind ((cl:error (function invoke-debugger)))
+            (redisplay)
             (invoke-restart-interactively restart)))))))
 
 
@@ -2223,9 +1983,8 @@ These commands include C-@ and M-x start-kbd-macro."
   (lambda (stream) (format stream "~A" string)))
 
 
-#+clisp
 (defun keyboard-loop ()
-  (handler-bind ((error (function handle-editor-error)))
+  (handler-bind ((cl:error (function handle-editor-error)))
     (restart-bind ((debug    (lambda () (invoke-debugger *condition*))
                              :report-function (reportly "Invoke the debugger."))
                    (continue (lambda () (throw 'keyboard-quit (values)))
@@ -2235,161 +1994,32 @@ These commands include C-@ and M-x start-kbd-macro."
       (catch 'editor-quit
         (loop
           (catch 'keyboard-quit
-            
-                (LOOP
-                  :with redisplayed = t
-                  :with meta-seen-p = nil
-                  :for ki = (ext:with-keyboard (read-char-no-hang ext:*keyboard-input*))
-                  :for modifiers = (and ki (keyboard-modifiers
-                                            (logior (ext:char-bits ki)
-                                                    (prog1 (if meta-seen-p EXT:CHAR-META-BIT 0)
-                                                      (setf meta-seen-p nil)))))
-                  :for key = (and ki (funcall
-                                      (if (member :control modifiers)
-                                          (function char-downcase)
-                                          (function identity))
-                                      (or (ext:char-key ki) (character ki))))
-                  :initially (editor-reset-key) (redisplay)
-                  :do (if ki
-                          (if (eql #\escape key)
-                              (setf meta-seen-p t)
-                              (progn
-                                (editor-process-key
-                                 (if modifiers
-                                     (append modifiers (list key))
-                                     key))
-                                (setf redisplayed nil)))
-                          (unless redisplayed
-                            (redisplay)
-                            (setf redisplayed t))))))))))
-
-;; EXT:CHAR-BITS-LIMIT                        constant
-;; EXT:CHAR-CONTROL-BIT                       constant
-;; EXT:CHAR-FONT-LIMIT                        constant
-;; EXT:CHAR-HYPER-BIT                         constant
-;; EXT:CHAR-META-BIT                          constant
-;; EXT:CHAR-SUPER-BIT                         constant
-
-;; EXT:CHAR-BIT                               function
-;; EXT:CHAR-BITS                              function
-;; EXT:CHAR-FONT                              function
-;; EXT:CHAR-INVERTCASE                        function
-;; EXT:CHAR-KEY                               function
-;; EXT:CHAR-WIDTH                             function
-
-
-#-clisp
-(defun make-xterm-io-stream (&key display geometry)
-  (error "Not implemented on ~A" (lisp-implementation-type)))
-
-#+clisp
-(defun make-xterm-io-stream (&key display geometry)
-  (let* ((pipe (with-open-stream (s (ext:make-pipe-input-stream
-                                     "mktemp /tmp/clisp-x-io-XXXXXX"))
-                 (read-line s)))
-         (title "CLISP I/O")
-         ;; (clos::*warn-if-gf-already-called* nil)
-         (font nil
-               #+(or) "-*-console-medium-r-normal-*-16-*-*-*-*-*-*-*"
-               #+(or)"-dec-terminal-bold-r-normal-*-14-*-*-*-*-*-dec-dectech"))
-    ;; xterm creates a pty, forks, hooks the pty to stdin/stdout
-    ;; and exec bash with the commands given in -e.
-    ;; We write this pty path to our pipe,
-    ;; and cat our pipe to wait for the end.
-    ;; Meanwhile, we'll be reading and writing this pty.
-    (ext:shell (format nil "rm -f ~S; mknod ~S p; xterm ~
-                            ~:[~;~:*-geometry ~S~] ~:[~;~:*-display ~S~] ~
-                            -fg green -bg black ~:[~;~:*-fn '~A'~] -n ~S -T ~S ~
-                            -e 'tty >> ~S ; cat ~S' &" 
-                       pipe pipe geometry display font title title pipe pipe))
-    (let* ((tty-name (with-open-file (s pipe) (read-line s)))
-           (xio (make-two-way-stream
-                 (open tty-name :direction :input  :buffered nil)
-                 (open tty-name :direction :output :buffered nil))))
-      (system::terminal-raw (two-way-stream-input-stream  xio) t t)
-      (defmethod close :after ((x (eql xio)) &rest junk)
-        (declare (ignore x junk))
-        (ignore-errors
-          (with-open-file (s pipe :direction :output)
-            (write-line "Bye." s)))
-        (delete-file pipe)
-        (close (two-way-stream-input-stream  xio))
-        (close (two-way-stream-output-stream xio))
-        (let () ;; ((clos::*warn-if-gf-already-called* nil))
-          (remove-method #'close (find-method #'close '(:after) `((eql ,xio))))))
-      xio)))
-
-
-
-#+clisp
-(defun screen-editor (&key log)
-  (cond
-    ((string= "xterm" (ext:getenv "TERM"))
-     (setf custom:*terminal-encoding* (ext:make-encoding
-                                       :charset charset:iso-8859-1
-                                       :line-terminator :unix)))
-    ((string= "kterm" (ext:getenv "TERM"))
-     (setf custom:*terminal-encoding* (ext:make-encoding
-                                       :charset charset:utf-8
-                                       :line-terminator :unix))))
-  (editor-reset)
-  (let ((*log* (typecase log
-                 ((member :xterm) (make-xterm-io-stream :geometry "100x24+0+0"))
-                 ((or string pathname)  (open log
-                                              :direction :output
-                                              :if-exists :append
-                                              :if-does-not-exist :create))
-                 (file  log)
-                 (otherwise (make-broadcast-stream)))))
-    (unwind-protect
-         (with-open-screen (make-instance 'clisp-screen)
-           (editor-initialize *current-screen*)
-           (unwind-protect
-                (keyboard-loop)
-             (set-screen-cursor-position *current-screen*
-                                         0 (screen-size *current-screen*))
-             (clear-screen *current-screen*))
-           (editor-terminate))
-      (close *log*))))
-
-
-#+clisp
-(defun keyboard-test ()
-  (screen:with-window nil
-    (screen:set-window-cursor-position screen:*window* 2 10)
-    (format t "Hi")
-    (EXT:WITH-KEYBOARD
-        (LOOP
-           :for ki = (READ-CHAR EXT:*KEYBOARD-INPUT*)
-           :do
-           (print ki)
-           (print `((ext:char-key ki) ,(ext:char-key ki)))
-           (print `((character ki)
-                    ,(and (not (ext:char-key ki))
-                          (zerop (ext:char-bits ki))
-                          (character ki))))
-           (print `((ext:char-font ki) ,(ext:char-font ki)))
-           (print `((ext:char-bits ki) ,(ext:char-bits ki)))
-           (dolist (modifier '(:control :meta :super :hyper))
-             (print `((ext:char-bit ki ,modifier) ,(ext:char-bit ki modifier))))
-           (finish-output)
-           :until (EQL (and (not (ext:char-key ki))
-                            (zerop (ext:char-bits ki))
-                            (character ki)) #\q)))))
-
-
-
-
-
-
-;; (DEFINE-PACKAGE "COM.INFORMATIMAGO.CLISP.TERMINAL"
-;;   (:FROM "COMMON-LISP" :IMPORT :ALL)
-;;   (:EXPORT "MAKE-WINDOW" "WITH-SCREEN" "WINDOW-SIZE" "WINDOW-CURSOR-POSITION"
-;;            "SET-WINDOW-CURSOR-POSITION" "CLEAR-WINDOW" "CLEARN-WINDOW-TO-EOT"
-;;            "CLEAR-WINDOW-TO-EOL" "DELETE-WINDOW-LINE" "INSERT-WINDOW-LINE"
-;;            "HIGHLIGHT-ON" "HIGHLIGHT-OFF"
-;;            "WINDOW-CURSOR-ON" "WINDOW-CURSOR-OFF"))
-
+            (loop
+              :with redisplayed = t
+              :with meta-seen-p = nil
+              :for chord = (keyboard-chord-no-hang *current-screen*)
+                :initially (editor-reset-key) (redisplay)
+              :do (if chord
+                      (let ((key       (chord-character chord))
+                            (modifiers (append (when meta-seen-p
+                                                 (setf meta-seen-p nil)
+                                                 '(:meta))
+                                               (symbolic-modifiers (chord-modifiers chord)))))
+                        (format *log* "chord = ~S   meta-seen-p = ~S   key = ~S   modifiers = ~S~%"
+                                chord meta-seen-p key modifiers)
+                        (if (eql #\escape key)
+                            (setf meta-seen-p t)
+                            (progn
+                              (editor-process-key
+                               (if modifiers
+                                   (append modifiers (list key))
+                                   key))
+                              (setf redisplayed nil)))
+                        ;; (message "key=~S modifiers=~S" key modifiers)
+                        )
+                      (unless redisplayed
+                        (redisplay)
+                        (setf redisplayed t))))))))))
 
 
 
@@ -2399,46 +2029,43 @@ These commands include C-@ and M-x start-kbd-macro."
       (symbol-value synonym)
       stream))
 
-;; Note: we cannot use EXT:*KEYBOARD-INPUT* in xeditor, since it uses
-;; the original *terminal-io* stream.
 
-(defun xexample (&key (display ":0.0"))
-  (let* ((old-terminal-io   *terminal-io*)
-         (xterm-io          (make-xterm-io-stream :display display :geometry "+0+0"))
-         (*terminal-io*     xterm-io)
-         (*standard-output* (make-synonym-stream '*terminal-io*))
-         (*standard-input*  (make-synonym-stream '*terminal-io*))
-         (*error-output*    (make-synonym-stream '*terminal-io*))
-         (*query-io*        (make-synonym-stream '*terminal-io*))
-         ;; (*debug-io*        (make-synonym-stream '*terminal-io*))
-         ;; (*trace-output*    (make-synonym-stream '*terminal-io*))
-         (old-term          (ext:getenv "TERM")))
-    (setf (ext:getenv "TERM") "xterm")
-    (unwind-protect
-         (progn (format *query-io* "~&Hello!~%") 
-                (format *query-io* "~&X = ")
-                (finish-output *query-io*)
-                (let ((x (read *query-io*)))
-                  (format *query-io* "~&~S = ~A~%" '(- (* 2 x) 3) (- (* 2 x) 3)))
-                (y-or-n-p "Happy?"))
-      (setf *terminal-io* old-terminal-io)
-      (close xterm-io)
-      (setf (ext:getenv "TERM") old-term))))
 
-;; (let ((*terminal-io* (emacs::make-xterm-io-stream)))
-;;   (print 'hi *terminal-io*)
-;;   (print (read-char ext:*keyboard-input*))
-;;   (screen:with-window
-;;       (screen:WITH-window (print 'hi))
-;;     (print (read-char ext:*keyboard-input*))))
+
+
+
+(defun screen-editor (&key log (screen-class 'charms-screen))
+  (with-open-stream (*log* (typecase log
+                             ((member :xterm) (make-xterm-io-stream :geometry "100x24+0+0"))
+                             ((or string pathname)  (open log
+                                                          :direction :output
+                                                          :if-exists :append
+                                                          :if-does-not-exist :create))
+                             (file  log)
+                             (otherwise (make-broadcast-stream))))
+    (let ((*error-output* *log*)
+          (*trace-output* *log*)
+          (screen (make-instance screen-class)))
+      (screen-initialize-for-terminal screen (uiop/os:getenv "TERM"))
+      (editor-reset)
+      (with-screen screen
+        (editor-initialize *current-screen*)
+        (unwind-protect (keyboard-loop)
+          (set-screen-cursor-position *current-screen*
+                                      0 (screen-size *current-screen*))
+          (clear-screen *current-screen*))
+        (editor-terminate)))))
+
+
 
 (defun editor () (screen-editor :log "/tmp/editor.log"))
 (defun ed (&rest args) (apply (function screen-editor) args))
 
 (defun reload ()
   (in-package "CL-USER")
-  (load "editor")
+  (ql:quickload :com.informatimago.editor)
   (in-package "EDITOR"))
+
 
 (in-package "COMMON-LISP-USER")
 

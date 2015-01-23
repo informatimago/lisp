@@ -107,8 +107,8 @@
 (defun dump-machine (machine address length)
   "Dumps the MACHINE memory starting from ADDRESS, for LENGTH words."
   (loop
-    :repeat length
     :for a :from address
+    :repeat length
     :do (format t "~4,'0X: ~16,'0X  ~:*~D~%"
                 a (aref (machine-memory machine) a)))
   machine)
@@ -310,12 +310,12 @@ When step is true, executes only one step."
 
 (defun encode-ascii (string)
   (loop
-    :repeat +bytes-per-word+
     :with word = 0
     :for i :from 0
     :for byte = (if (< i (length string))
                     (char-code (aref string i))
                     0)
+    :repeat +bytes-per-word+
     :do (setf word (+ (* 256 word) byte))
     :finally (return word)))
 
@@ -394,8 +394,8 @@ and a bit-vector indicating instructions (vs. dcl) in the code vector.
                    (let* ((string (text (rest statement)))
                           (size   (ceiling (length string) +bytes-per-word+)))
                      (loop
-                       :repeat size
                        :for i :from 0 :by +bytes-per-word+
+                       :repeat size
                        :do (push (encode-ascii (subseq string i (min (length string) (+ i +bytes-per-word+)))) code))
                      (incf address size)))
                   (instruction
@@ -579,9 +579,9 @@ and a bit-vector indicating instructions (vs. dcl) in the code vector.
                              do (insert (format "%s-op (dcl #b%s)\n"
                                                 (first (second entry))
                                                 (mapconcat (lambda (bit) (format "%d" bit))
-                                                           (reverse (loop for n = (first entry) then (truncate n 2)
-                                                                          repeat 8
-                                                                          collect (mod n 2)))
+                                                           (reverse (loop :for n = (first entry) :then (truncate n 2)
+                                                                          :repeat 8
+                                                                          :collect (mod n 2)))
                                                            ""))))
     move-op (dcl #b00000000)
     load-op (dcl #b00010000)

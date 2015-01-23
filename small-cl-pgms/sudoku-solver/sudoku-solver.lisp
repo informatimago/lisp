@@ -85,12 +85,12 @@
   (loop
     :with bac = (* (truncate col 3) 3)
     :with bar = (* (truncate row 3) 3)
-    :repeat 3
     :for i :from bac
+    :repeat 3
     :nconc (loop
-             :repeat 3
              :for j :from bar
              :for item = (aref sudoku i j)
+             :repeat 3
              :unless (emptyp item)
              :collect item)))
 
@@ -190,12 +190,12 @@ RETURN:  If an extremum is found: the extremum value; the row; the column;
       :when (and (/= j row) (eql val (aref sudoku col j)))
       :do (return-from conflictp :col-conflict))
     (loop
-      :repeat 3
       :for i :from (* (truncate col 3) 3)
+      :repeat 3
       :when (/= i col)
       :do (loop
-            :repeat 3
             :for j :from (* (truncate row 3) 3)
+            :repeat 3
             :when (and (/= j row) (eql val (aref sudoku i j)))
             :do (return-from conflictp :reg-conflict)))
     nil))
@@ -264,11 +264,11 @@ RETURN:     A list of sudoku solutions boards.
                            (throw 'sudoku-backtrack nil))))
                   (loop
                     :named update-reg
-                    :repeat 3
                     :for col :from (* (truncate i 3) 3)
+                    :repeat 3
                     :do (loop
-                          :repeat 3
                           :for row :from (* (truncate j 3) 3)
+                          :repeat 3
                           :do (cond
                                 ((and (= col i) (= row j)))
                                 ((listp (aref sudoku col row))

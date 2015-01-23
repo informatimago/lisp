@@ -533,9 +533,9 @@ Prints an ASCII-art representation of the GAME onto the STREAM.
   (let* ((cells (game-cells game))
          (line  (with-output-to-string (out)
                   (loop
-                     :repeat (array-dimension cells 0)
-                     :initially (princ "+" out)
-                     :do (princ "---+" out)))))
+                    :initially (princ "+" out)
+                    :repeat (array-dimension cells 0)
+                    :do (princ "---+" out)))))
     (multiple-value-bind (direction stone-left stone-back stone-right stone-front)
         (stone-coverage  (game-stone game))
       (loop
