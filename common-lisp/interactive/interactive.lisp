@@ -12,13 +12,14 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2015-01-25 <PJB> Moved print-bug-report-info to com.informatimago.tools.manifest.
 ;;;;    2010-06-29 <PJB> Added :short option to LSPACK.
 ;;;;    2006-08-28 <PJB> Extracted from ~/.common.lisp
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2006 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2006 - 2015
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -43,7 +44,7 @@
   (:export "UPTIME" "DATE" "*EDITOR*" "EDIT" "MOZILLA-STRING" "LSCHAR" "LSPACK"
            "DIFF-PACKAGE" "PSWITCH" "SHOW" "MKUPACK" "RESET-CLUSER" "POPP" "PUSHP"
            "COMPARE-PATHNAMES" "PRINT-PATHNAME" "LSSYMBOLS" "REPL" 
-           "PRINT-BUG-REPORT-INFO" "MORE" "LESS" "CAT" "LS" "POPD" "PUSHD" "PWD" "CD"
+           "MORE" "LESS" "CAT" "LS" "POPD" "PUSHD" "PWD" "CD"
            "BROWSE" "LIST-EXTERNAL-SYMBOLS" "LIST-ALL-SYMBOLS" "DEFINE-PACKAGE")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PACKAGE"
                 "LIST-EXTERNAL-SYMBOLS" "LIST-ALL-SYMBOLS" "DEFINE-PACKAGE")
@@ -59,7 +60,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2006 - 2012
+    Copyright Pascal J. Bourguignon 2006 - 2015
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -76,37 +77,6 @@ License:
     If not, see <http://www.gnu.org/licenses/>
 "))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.INTERACTIVE")
-
-
-
-(defun print-bug-report-info ()
-  "Prints information for a bug report."
-  (format t "~2%~{~28A ~S~%~}~2%"
-          (list "LISP-IMPLEMENTATION-TYPE"    (lisp-implementation-type)
-                "LISP-IMPLEMENTATION-VERSION" (lisp-implementation-version)
-                "SOFTWARE-TYPE"               (software-type)
-                "SOFTWARE-VERSION"            (software-version)
-                "MACHINE-INSTANCE"            (machine-instance)
-                "MACHINE-TYPE"                (machine-type)
-                "MACHINE-VERSION"             (machine-version)
-                "*FEATURES*"                  *features*))
-  #+clisp (with-open-stream (input (ext:run-program "uname" :arguments '("-a") :output :stream))
-            (format t ";;; uname -a~%")
-            (loop :for line = (read-line input nil nil) :while line :do (format t "~A~%" line)))
-  #+clisp (format t ";;; (EXT:ARGV)~%~S~%" (ext:argv))
-  #+clisp (ignore-errors
-            (let ((path (make-pathname
-                         :type nil
-                         :defaults (merge-pathnames
-                                    (make-pathname
-                                     :directory '(:relative :up :up :up "bin")
-                                     :name "clisp"  :type nil :version nil)
-                                    (aref (ext:argv) 0) nil))))
-              (with-open-stream
-                  (input (ext:run-program path :arguments '("--version") :output :stream))
-                (format t ";;; ~A --version~%" path)
-                (loop :for line = (read-line input nil nil) :while line :do (format t "~A~%" line)))))
-  (values))
 
 
 

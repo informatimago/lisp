@@ -40,18 +40,21 @@
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.VERSION"
         "SPLIT-SEQUENCE")
   (:export "ASDF-SYSTEM-NAME"
            "ASDF-SYSTEM-LICENSE"
            "SYSTEM-DEPENDS-ON"
            "SYSTEM-DEPENDS-ON/RECURSIVE"
            "LISP-IMPLEMENTATION-TYPE-KEYWORD"
+           "VERSION"
            "MACHINE-TYPE-KEYWORD"
            "DISTRIBUTION" 
            "EXECUTABLE-NAME"
            "EXECUTABLE-FILENAME"
            "PRINT-MANIFEST"
-           "WRITE-MANIFEST"))
+           "WRITE-MANIFEST"
+           "PRINT-BUG-REPORT-INFO"))
 (in-package "COM.INFORMATIMAGO.TOOLS.MANIFEST")
 
 
@@ -346,6 +349,41 @@ DO:     write a {program-name}-{distribution}.manifest file for the given SYSTEM
               (+ (length "Manifest for ") (length exec)))
       (print-manifest system)
       (terpri)))
+  (values))
+
+
+
+
+(defun print-bug-report-info ()
+  "Prints information for a bug report."
+  (format t "~2%~{~28A ~S~%~}~2%"
+          (list "LISP-IMPLEMENTATION-TYPE"    (lisp-implementation-type)
+                "LISP-IMPLEMENTATION-VERSION" (lisp-implementation-version)
+                "SOFTWARE-TYPE"               (software-type)
+                "SOFTWARE-VERSION"            (software-version)
+                "MACHINE-INSTANCE"            (machine-instance)
+                "MACHINE-TYPE"                (machine-type)
+                "MACHINE-VERSION"             (machine-version)
+                "*FEATURES*"                  *features*))
+  #+clisp (with-open-stream (input (ext:run-program "uname" :arguments '("-a") :output :stream))
+            (format t ";;; uname -a~%")
+            (loop :for line = (read-line input nil nil) :while line :do (format t "~A~%" line)))
+  #+clisp (format t ";;; (EXT:ARGV)~%~S~%" (ext:argv))
+  #+clisp (ignore-errors
+           (let ((path (make-pathname
+                        :type nil
+                        :defaults (merge-pathnames
+                                   (make-pathname
+                                    :directory '(:relative :up :up :up "bin")
+                                    :name "clisp"  :type nil :version nil)
+                                   (aref (ext:argv) 0) nil))))
+             (with-open-stream (input (ext:run-program path
+                                                       :arguments '("--version")
+                                                       :output :stream))
+               (format t ";;; ~A --version~%" path)
+               (loop :for line = (read-line input nil nil)
+                     :while line
+                     :do (format t "~A~%" line)))))
   (values))
 
 
