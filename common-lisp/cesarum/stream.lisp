@@ -116,27 +116,37 @@ MAX-EXTEND: NIL ==> double the buffer size, or double the buffer size until
             it's greater than MAX-EXTEND, and then increment by MAX-EXTEND.
 RETURN:     A vector containing the elements read from the STREAM.
 "
-  (let* ((busize (or length (ignore-errors (file-length stream)) min-size))
-         (eltype (stream-element-type stream))
-         (initel (if (subtypep eltype 'integer) 0 #\space))
-         (buffer (make-array busize 
-                             :element-type eltype
-                             :initial-element initel
-                             :adjustable t :fill-pointer t))
-         (start 0))
-    (loop
-       (let ((end (read-sequence buffer stream :start start)))
-         (when (or (< end busize) (and length (= length end)))
-           ;; we got eof, or have read enough
-           (setf (fill-pointer buffer) end)
-           (return-from contents-from-stream buffer))
-         ;; no eof; extend the buffer
-         (setf busize
-               (if (or (null max-extend) (<= (* 2 busize) max-extend))
-                   (* 2 busize)
-                   (+ busize max-extend))
-               start end))
-       (adjust-array buffer busize :initial-element initel :fill-pointer t))))
+  (let ((dirs (pathname-directory (pathname stream))))
+    (if (and (eql :absolute (pop dirs))
+             (member (pop dirs) '("proc" "sys" "dev") :test (function string=)))
+        ;; some implementations have problem reading those file systems with read-sequence
+        ;; so we fallback to read-line:
+        (with-output-to-string (out)
+          (loop
+            :for line = (read-line stream nil nil)
+            :while line :do (write-line line out)))
+        ;; normal case:
+        (let* ((busize (or length (ignore-errors (file-length stream)) min-size))
+               (eltype (stream-element-type stream))
+               (initel (if (subtypep eltype 'integer) 0 #\space))
+               (buffer (make-array busize 
+                                   :element-type eltype
+                                   :initial-element initel
+                                   :adjustable t :fill-pointer t))
+               (start 0))
+          (loop
+            (let ((end (read-sequence buffer stream :start start)))
+              (when (or (< end busize) (and length (= length end)))
+                ;; we got eof, or have read enough
+                (setf (fill-pointer buffer) end)
+                (return-from contents-from-stream buffer))
+              ;; no eof; extend the buffer
+              (setf busize
+                    (if (or (null max-extend) (<= (* 2 busize) max-extend))
+                        (* 2 busize)
+                        (+ busize max-extend))
+                    start end))
+            (adjust-array buffer busize :initial-element initel :fill-pointer t))))))
   
 
 
@@ -374,4 +384,4 @@ RETURN: The last position.
      (get-position ,var)))
 
 
-;;;; stream.lisp                      --                     --          ;;;;
+;;;; THE END ;;;;
