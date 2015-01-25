@@ -144,6 +144,10 @@ License:
            ;; utility:
            "LIST-SYMBOLS" "LIST-ALL-SYMBOLS" "LIST-EXTERNAL-SYMBOLS"
            "COPY-PACKAGE"
+           "STRING-PREPARE-TOKEN"
+           "UNINTERNED-PREPARE-TOKEN"
+           "KEYWORD-PREPARE-TOKEN"
+           "SEXP-FOR-PACKAGE"
            ;; debugging help:
            "CRACK-OPEN-PACKAGE"
            ;; Obsolete: define-package
@@ -732,6 +736,86 @@ DO:         Declares a package.
        ;; (ignore-errors (delete-package ,name))
        (defpackage ,name ,@defpack-args)
        (in-package ,name))))
+
+
+(defun string-prepare-token     (kind name)
+  (declare (ignore kind))
+  (string name))
+
+(defun uninterned-prepare-token (kind name)
+  (declare (ignore kind))
+  (make-symbol (string name)))
+
+(defun keyword-prepare-token    (kind name)
+  (declare (ignore kind))
+  (intern (string name) (load-time-value (find-package "KEYWORD"))))
+
+(defun sexp-for-package (package-designator &optional (prepare-token (function string-prepare-token)))
+  "
+
+RETURN:        A defpackage form corresponding to the package given by
+               PACKAGE-DESIGNATOR.
+
+PREPARE-TOKEN: A function taking a kind (member :package :symbol) and
+               a package name or symbol, and returning a string
+               designator corresponding to that name.  The functions
+               STRING-PREPARE-TOKEN, UNINTERNED-PREPARE-TOKEN or
+               KEYWORD-PREPARE-TOKEN may be used, or other custom
+               functions if different kind of string designators are
+               required for package names than for symbol names.
+
+"
+  (let ((package (find-package package-designator)))
+    (assert package)
+    (let* ((used-packages     (package-use-list package))
+           (used-symbols      (mapcan (function com.informatimago.common-lisp.cesarum.package:package-exports)
+                                      used-packages))
+           (shadows           '())
+           (shadowing-imports (make-hash-table))
+           (exports           (com.informatimago.common-lisp.cesarum.package:package-exports package))
+           (shadowed-symbols  (package-shadowing-symbols package))
+           (imports           (make-hash-table)))
+      (do-symbols (sym package)
+        (unless (member sym exports)
+          (let ((home (symbol-package sym)))
+            (unless (or (eq home package)
+                        (member sym shadowed-symbols)
+                        (member sym used-symbols)
+                        (member home used-packages))
+              (push sym (gethash home imports '()))))))
+      (dolist (sym shadowed-symbols)
+        (let ((home (symbol-package sym)))
+          (if (eq home package)
+              (push sym shadows)
+              (push sym (gethash home shadowing-imports '())))))
+      (flet ((pname (x) (funcall prepare-token :package x))
+             (sname (x) (funcall prepare-token :symbol  x)))
+       `(defpackage ,(pname (package-name package))
+          ,@(when (package-nicknames package)
+              `((:nicknames ,@(mapcar (function pname) (package-nicknames package))))) 
+          (:use ,@(mapcar (lambda (p) (pname (package-name p))) used-packages))
+          ,@(when shadows
+              `((:shadow ,@(mapcar (function sname) shadows))))
+          ,@(when exports
+              `((:export  ,@(mapcar (function sname) exports))))
+          ,@(when (plusp (hash-table-count shadowing-imports))
+              (let ((forms '()))
+                (maphash (lambda (pack syms)
+                           (push `(:shadowing-import-from 
+                                   ,(pname (package-name pack))
+                                   ,@(mapcar (function sname) syms))
+                                 forms))
+                         shadowing-imports)
+                forms))
+          ,@(when (plusp (hash-table-count imports))
+              (let ((forms '()))
+                (maphash (lambda (pack syms)
+                           (push `(:import-from 
+                                   ,(pname (package-name pack))
+                                   ,@(mapcar (function sname) syms))
+                                 forms))
+                         imports)
+                forms)))))))
 
 ;;;; THE END ;;;;
 

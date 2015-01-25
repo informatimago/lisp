@@ -38,9 +38,11 @@
 (declaim (also-use-packages "ASDF"))
 (defpackage "COM.INFORMATIMAGO.TOOLS.MANIFEST"
   (:use "COMMON-LISP"
+        "COM.INFORMATIMAGO.COMMON-LISP.SCRIPT"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.VERSION"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE"
         "SPLIT-SEQUENCE")
   (:export "ASDF-SYSTEM-NAME"
            "ASDF-SYSTEM-LICENSE"
@@ -302,7 +304,7 @@ into the keyword package."
             ye mo da ho mi se (minusp tz) (abs (* 100 tz)))))
 
 
-(defun print-manifest (system)
+(defun print-manifest (&optional system)
   (let* ((entries '(date
                     lisp-implementation-type
                     lisp-implementation-version
@@ -314,19 +316,20 @@ into the keyword package."
     (dolist (fun entries)
       (format t "~(~VA~) : ~A~%" width fun (funcall fun))))
   (terpri)
-  (let* ((entries      (sort (mapcar (lambda (system)
-                                       (list system (asdf-system-license system)))
-                                     (system-depends-on/recursive system))
-                             'string< :key 'first))
-         (system-width  (reduce 'max entries :key (lambda (x) (length (first x)))))
-         (license-width (reduce 'max entries :key (lambda (x) (length (string (second x)))))))
-    (format t "~:(~VA~)  ~:(~A~)~%~V,,,'-<~>  ~V,,,'-<~>~%"
-            system-width 'system "license"
-            system-width license-width)
-    (loop
-      :for (system license) :in entries
-      :do (format t "~VA  ~A~%" system-width system license))
-    (format t "~V,,,'-<~>  ~V,,,'-<~>~%" system-width license-width)))
+  (when system
+    (let* ((entries      (sort (mapcar (lambda (system)
+                                         (list system (asdf-system-license system)))
+                                       (system-depends-on/recursive system))
+                               'string< :key 'first))
+           (system-width  (reduce 'max entries :key (lambda (x) (length (first x)))))
+           (license-width (reduce 'max entries :key (lambda (x) (length (string (second x)))))))
+      (format t "~:(~VA~)  ~:(~A~)~%~V,,,'-<~>  ~V,,,'-<~>~%"
+              system-width 'system "license"
+              system-width license-width)
+      (loop
+        :for (system license) :in entries
+        :do (format t "~VA  ~A~%" system-width system license))
+      (format t "~V,,,'-<~>  ~V,,,'-<~>~%" system-width license-width))))
 
 
 (defun write-manifest (program-name system)
@@ -353,18 +356,28 @@ DO:     write a {program-name}-{distribution}.manifest file for the given SYSTEM
 
 
 
+;; TODO: see if we couldn't merge print-bug-report-info and print-manifest.
 
 (defun print-bug-report-info ()
   "Prints information for a bug report."
-  (format t "~2%~{~28A ~S~%~}~2%"
-          (list "LISP-IMPLEMENTATION-TYPE"    (lisp-implementation-type)
-                "LISP-IMPLEMENTATION-VERSION" (lisp-implementation-version)
-                "SOFTWARE-TYPE"               (software-type)
-                "SOFTWARE-VERSION"            (software-version)
-                "MACHINE-INSTANCE"            (machine-instance)
-                "MACHINE-TYPE"                (machine-type)
-                "MACHINE-VERSION"             (machine-version)
-                "*FEATURES*"                  *features*))
+  (let ((*print-pretty* t)
+        (*print-right-margin* 80))
+   (format t "~2%~{~28A ~S~%~}~2%"
+           (list "LISP-IMPLEMENTATION-TYPE"    (lisp-implementation-type)
+                 "LISP-IMPLEMENTATION-VERSION" (lisp-implementation-version)
+                 "SOFTWARE-TYPE"               (software-type)
+                 "SOFTWARE-VERSION"            (software-version)
+                 "MACHINE-INSTANCE"            (machine-instance)
+                 "MACHINE-TYPE"                (machine-type)
+                 "MACHINE-VERSION"             (machine-version)
+                 "distribution"                (distribution)
+                 "uname -a"                    (ignore-errors (uname :a))
+                 "*FEATURES*"                  *features*)))
+  (let ((cpuinfo (text-file-contents "/proc/cpuinfo" :if-does-not-exist nil)))
+    (when cpuinfo
+      (format t "~2%/proc/cpuinfo~%-------------~2%")
+      (write-string cpuinfo)
+      (terpri)))
   #+clisp (with-open-stream (input (ext:run-program "uname" :arguments '("-a") :output :stream))
             (format t ";;; uname -a~%")
             (loop :for line = (read-line input nil nil) :while line :do (format t "~A~%" line)))

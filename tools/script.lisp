@@ -604,7 +604,7 @@ with standard output to *SHELL-OUTPUT*, and standard error to *SHELL-ERROR*.
 Returns the shell's exit code.
 "
   (let ((command (apply (function format) nil control-string arguments)))
-
+    (write-line command) (finish-output)
     #+abcl
     (ext:run-shell-command command :output *shell-output*)
 
@@ -675,7 +675,7 @@ Returns the shell's exit code.
 With options, returns the first line output by uname(1)."
   (flet ((first-line (text) (subseq text 0 (position #\newline text))))
     (let ((uname  (with-output-to-string (*shell-output*)
-                    (shell "uname ~A" (prepare-options options)))))
+                    (shell "uname ~{~A~^ ~}" (prepare-options options)))))
       (values (if options
                   (first-line uname)
                   (intern (string-upcase (first-line uname))
