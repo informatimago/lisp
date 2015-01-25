@@ -11,12 +11,13 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2015-01-25 <PJB> Improved parsing of lisp-implementation-version strings.
 ;;;;    2010-07-18 <PJB> Extracted from script.lisp (extracted from .clisprc).
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2010 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2010 - 2015
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -52,7 +53,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2010 - 2012
+    Copyright Pascal J. Bourguignon 2010 - 2015
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -72,22 +73,88 @@ License:
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.VERSION")
 
 
+
+
 (defun version (&optional (version-string (lisp-implementation-version)))
   "
 Parse the version in the version-string or (lisp-implementation-version)
 This is expected to be a sequence of integers separated by dots.
 Return it as a list of integers.
 "
-  (loop
-     :with r = '()
-     :with start = 0
-     :do (multiple-value-bind (n p)
-             (parse-integer version-string :start start :junk-allowed t)
-           (push n r)
-           (if (or (<= (length version-string) p)
-                   (char= #\space (aref version-string p)))
-               (return-from version (nreverse r))   
-            (setf start (1+ p))))))
+  ;; version ::= [a-z]* integer ('.' integer)* ('.' [a-z]+)? (+|[a-z]|'r' integer)? ('(' /.*/)?
+  (let ((pos 0)
+        (len (length version-string)))
+    (labels ((peek   (&optional (offset 0))
+               (when (< (+ pos offset) len)
+                 (aref version-string (+ pos offset))))
+             (eat    (&optional (n 1))
+               (when (<= (+ pos n) len)
+                 (prog1 (aref version-string pos)
+                   (incf pos n))))
+             (spacep (ch)
+               (and ch (char= #\space ch)))
+             (prefix ()
+               (loop :for ch = (peek)
+                     :while (and ch (or (spacep ch) (alpha-char-p ch)))
+                     :do (eat))
+               '())
+             (word ()
+               (loop :for ch = (peek)
+                     :while (and ch (alpha-char-p ch))
+                     :do (eat))
+               '())
+             (int ()
+               (let ((ch (peek)))
+                 (when (digit-char-p ch)
+                   (multiple-value-bind (n p)
+                       (parse-integer version-string
+                                      :start pos
+                                      :junk-allowed t)
+                     (setf pos p)
+                     n))))
+             (dot ()
+               (let ((ch (peek)))
+                 (when (and ch (char= #\. ch))
+                   (eat))))
+             (rel ()
+               (let ((ch (peek)))
+                 (cond
+                   ((null ch)
+                    '())
+                   ((char= #\+ ch)                     ; clisp 2.49+ --> 2.49.1
+                    (eat)
+                    (list 1))
+                   ((and (char= #\- ch) (char= #\r (peek 1))) ; ccl 1.10-r16196
+                    (eat 2)
+                    (list (int)))
+                   ((alpha-char-p ch)                       ; cmucl 20d -> 20.3
+                    (let ((p (position (eat) "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                       :test (function char-equal))))
+                      (when p (list p))))
+                   (t
+                    '())))))
+      (prefix)
+      (nconc (list (int))
+             (loop
+               :with vers = '()
+               :while (dot)
+               :do (let ((item (int)))
+                     (if item
+                         (push item vers)
+                         (word)))
+               :finally (return (nreverse vers)))
+             (rel)))))
+
+
+(assert (equal (mapcar (function version)
+                       '("1.3.1"
+                         "Version 1.10-r16196  (LinuxX8664)"
+                         "2.49+ (2010-07-17) (built 3603386203) (memory 3603386298)"
+                         "20d (20D Unicode)"
+                         "13.5.1"
+                         "1.0.57.0.debian"))
+               '((1 3 1) (1 10 16196) (2 49 1) (20 3) (13 5 1) (1 0 57 0))))
+
 
 (defun version= (a b)
   "Compare versions A and B, which may be either lists of integers, or a dotted string."
