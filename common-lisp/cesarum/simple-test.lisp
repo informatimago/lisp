@@ -11,12 +11,14 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2015-01-25 <PJB> Added format-control/arguments to
+;;;;                     progress-failure and macros callint it.
 ;;;;    2010-12-14 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2010 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2010 - 2015
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -129,33 +131,52 @@ License:
 
 (defun current-test-identification (&optional max-length)
   (let ((*print-circle* nil))
-   (if max-length
-       (let* ((items (mapcar (lambda (parameter)
-                               (let ((label (let ((*package* (if (and (symbolp parameter)
-                                                                      (symbol-package parameter))
-                                                                 (symbol-package parameter)
-                                                                 *package*)))
-                                              (format nil "~S" parameter))))
-                                 (list (length label) label)))
-                             (cons *current-test-name* *current-test-parameters*)))
-              (idlength (+ 1 (length items) (reduce (function +) items :key (function first))))
-              (candidates (sort (butlast (loop
-                                           :for cell :on items
-                                           :collect cell))
-                                (function >)
-                                :key (function caadr))))
-         (loop
-           :until (<= idlength max-length)
-           :do (progn
-                 (decf idlength (1- (caadar candidates)))
-                 (setf (car (cdadar candidates)) "…")
-                 (pop candidates))
-           :finally (return (format nil "(~{~A~^ ~})" (mapcar (function second) items)))))
-       (format nil "(~{~S~^ ~})" (cons *current-test-name* *current-test-parameters*)))))
+    (if (or (null max-length) (null *current-test-parameters*))
+        (format nil "(~{~S~^ ~})" (cons *current-test-name* *current-test-parameters*))
+        (let* ((items (mapcar (lambda (parameter)
+                                (let ((label (let ((*package* (if (and (symbolp parameter)
+                                                                       (symbol-package parameter))
+                                                                  (symbol-package parameter)
+                                                                  *package*)))
+                                               (format nil "~S" parameter))))
+                                  (list (length label) label)))
+                              (cons *current-test-name* *current-test-parameters*)))
+               (idlength (+ 1 (length items) (reduce (function +) items :key (function first))))
+               (candidates (sort (butlast (loop
+                                            :for cell :on items
+                                            :collect cell))
+                                 (function >)
+                                 :key (function caadr))))
+          (loop
+            :while (and candidates (< max-length idlength))
+            :do (progn
+                  (decf idlength (1- (caadar candidates)))
+                  (setf (car (cdadar candidates)) "…")
+                  (pop candidates))
+            :finally (return (format nil "(~{~A~^ ~})" (mapcar (function second) items))))))))
 
-;; (let ((*current-test-name* 'hello-world)
-;;       (*current-test-parameters* '((1 2 3 4) "howdy doo dabadaboo" #(a b c d e f))))
-;;   (current-test-identification  nil))
+
+(defun test/current-test-identification ()
+  (assert (equal (let ((*current-test-name* 'hello-world)
+                       (*current-test-parameters* '()))
+                   (current-test-identification  nil))
+                 "(hello-world)"))
+
+  (assert (equal (let ((*current-test-name* 'hello-world)
+                       (*current-test-parameters* '((1 2 3 4) "howdy doo dabadaboo" #(a b c d e f))))
+                   (current-test-identification  nil))
+                 "(hello-world (1 2 3 4) \"howdy doo dabadaboo\" #(a b c d e f))"))
+
+  (assert (equal (let ((*current-test-name* 'hello-world)
+                       (*current-test-parameters* '((1 2 3 4) "howdy doo dabadaboo" #(a b c d e f))))
+                   (current-test-identification  1))
+                 "(hello-world … … …)"))
+
+  (assert (equal (let ((*current-test-name*  'test/non-empty-vector-with-too-little-data)
+                       (*current-test-parameters* '()))
+                   (current-test-identification  20))
+                 "(test/non-empty-vector-with-too-little-data)"))
+  :success)
 
 
 
@@ -166,17 +187,21 @@ License:
     (setf  *current-test-printed-p* t)
     (format *test-output* "~&~A" (current-test-identification)))
   (format *test-output* "~&Failure:     expression: ~S~@
-             ~&~?~%"
+                         ~&~?~%"
           expression message arguments)
   (progress-report nil))
 
 
-(defun progress-failure (compare expression expected-result result &optional places)
+(defun progress-failure (compare expression expected-result result
+                         &optional places format-control &rest format-arguments)
   (progress-failure-message expression "~&           evaluates to: ~S~@
                                         ~&           which is not  ~A~@
                                         ~& to the expected result: ~S~@
-                                        ~{~&~23A: ~S~}"
-                            result compare expected-result places))
+                                        ~{~&~23A: ~S~}~@[~@
+                                        ~&~?~]"
+                            result compare expected-result places
+                            format-control format-arguments))
+
 
 
 (defun progress-tally (success-count failure-count)
@@ -206,7 +231,8 @@ License:
   (values))
 
 
-(defmacro assert-true (expression)
+
+(defmacro assert-true (expression &optional places format-control &rest format-arguments)
   "Evaluates a test EXPRESSION and check it returns true.
 EXAMPLE:  (assert-true (= 2 (+ 1 1))))
 "
@@ -220,7 +246,9 @@ EXAMPLE:  (assert-true (= 2 (+ 1 1))))
                              (error (err) (list 'error (princ-to-string err)))))))
        (if ,vresult
            (progress-success)
-           (progress-failure 'equivalent ',expression 't ,vresult)))))
+           (progress-failure 'equivalent ',expression 't ,vresult
+                             (list ,@(mapcan (lambda (place) `(',place ,place)) places))
+                             ,format-control ,@format-arguments)))))
 
 
 (defmacro expect-condition (condition-class expression)
@@ -254,7 +282,7 @@ EXAMPLE:  (expect-condition division-by-zero (/ 1 0))
 
 
 
-(defmacro test (compare expression expected &optional places)
+(defmacro test (compare expression expected &optional places format-control &rest format-arguments)
   "Evaluates a test EXPRESSION and compare the result with EXPECTED (evaluated) using the COMPARE operator.
 EXAMPLE:  (test equal (list 1 2 3) '(1 2 3))
 "
@@ -271,7 +299,9 @@ EXAMPLE:  (test equal (list 1 2 3) '(1 2 3))
        (if (,compare ,vresult ,vexpected)
            (progress-success)
            (progress-failure ',compare ',expression ,vexpected ,vresult
-                             (list ,@(mapcan (lambda (place) `(',place ,place)) places)))))))
+                             (list ,@(mapcan (lambda (place) `(',place ,place)) places))
+                             ,format-control
+                             ,@format-arguments)))))
 
 
 (defmacro define-test (name parameters &body body)

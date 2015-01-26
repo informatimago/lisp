@@ -125,8 +125,9 @@
 ;; INDEX-SET TESTS
 
 (defun test/all ()
-  (test/range)
-  (test/range/complement)
-  (com.informatimago.common-lisp.cesarum.set::test/all/class 'index-set))
+  (let ((*package* (find-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.INDEX-SET")))
+   (test/range)
+   (test/range/complement)
+   (com.informatimago.common-lisp.cesarum.set::test/all/class 'index-set)))
 
 

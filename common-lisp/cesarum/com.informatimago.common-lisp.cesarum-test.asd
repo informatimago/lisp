@@ -65,10 +65,12 @@
   
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ("com.informatimago.common-lisp.cesarum")
-  :perform (test-op
+  :perform (asdf:test-op
             (o s)
-            (uiop:symbol-call "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SET"       "TEST/ALL")
-            (uiop:symbol-call "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.INDEX-SET" "TEST/ALL"))
+            (let ((*package* (find-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SET")))
+              (uiop:symbol-call "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SET"       "TEST/ALL"))
+            (let ((*package* (find-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.INDEX-SET")))
+              (uiop:symbol-call "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.INDEX-SET" "TEST/ALL")))
   :components ((:file "set-test"       :depends-on ())
                (:file "index-set-test" :depends-on ("set-test"))))
 
