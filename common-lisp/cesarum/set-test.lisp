@@ -261,10 +261,11 @@
 
 (define-test test/all ()
   "All the set tests."
-  (test/all/nil)
-  (test/all/sequence 'list)
-  (test/all/sequence 'vector)
-  (test/all/class    'list-set))
+  (let ((*package* (find-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SET")))
+   (test/all/nil)
+   (test/all/sequence 'list)
+   (test/all/sequence 'vector)
+   (test/all/class    'list-set)))
 
 
 ;;;; THE END ;;;;

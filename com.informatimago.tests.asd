@@ -1,22 +1,22 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               com.informatimago.asd
+;;;;FILE:               com.informatimago.tests.asd
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    ASD file to load com.informatimago libraries.
+;;;;    This system runs all the tests systems of the com.informatimago library.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2014-12-23 <PJB> Created this .asd file.
+;;;;    2015-01-26 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2010 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2015 - 2015
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -29,53 +29,33 @@
 ;;;;    GNU Affero General Public License for more details.
 ;;;;    
 ;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
+;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-
-(asdf:defsystem :com.informatimago
+(asdf:defsystem :com.informatimago.test
 
   ;; system attributes:
   
-  :description  "This system gathers most of the Informatimago systems."
-  
-  :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-
-  :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-
-  :licence "AGPL3"
+  :description  "This system tests most of the Informatimago systems."
+  :author       "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :maintainer   "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :licence      "AGPL3"
 
   
   ;; component attributes:
-
-  :name "Informatimago Systems Agregate"
-  
+  :name "Informatimago Systems Agregate Tests"
   :version "1.0.0"
-
   :properties ((#:author-email                   . "pjb@informatimago.com")
-               (#:date                           . "Winter 2014")
-               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago/")
+               (#:date                           . "Winter 2015")
+               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.test/")
                ((#:albert #:formats)             . ("docbook"))
                ((#:albert #:docbook #:template)  . "book")
                ((#:albert #:docbook #:bgcolor)   . "white")
                ((#:albert #:docbook #:textcolor) . "black"))
-  
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
-  :depends-on ("com.informatimago.common-lisp"
-               "com.informatimago.clext"
-               "com.informatimago.clmisc"
-               "com.informatimago.rdp"
-               "com.informatimago.tools"
-               "com.informatimago.xcode"
-               "com.informatimago.lispdoc"
-               "com.informatimago.small-cl-pgms"
-               "com.informatimago.future"
-               "com.informatimago.objcl" ; empty shell on non-ccl darwin
-               "com.informatimago.susv3" ; empty shell on non-clisp.
-               "com.informatimago.clisp" ; empty shell on non-clisp linux
-               )
+  :depends-on ("com.informatimago"
+               "com.informatimago.common-lisp.cesarum-test"
+               "com.informatimago.common-lisp.lisp-reader-test")
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.cesarum-test")
+                              (asdf:test-op "com.informatimago.common-lisp.lisp-reader-test")))
   :components ())
-
-
-;;;; THE END ;;;;
