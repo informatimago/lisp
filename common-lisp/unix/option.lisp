@@ -248,7 +248,145 @@ the main script  (setf script:*program-name* (script:pname))
   (file-namestring *program-name*))
 
 
-(defstruct option
+(defmacro define-structure-class (name-and-options &rest doc-and-slots)
+  "
+DO:     Define a class implementing the structure API.
+        This macro presents the same API as DEFSTRUCT, but instead of
+        defining a structure, it defines a class, and the same functions
+        as would be defined by DEFSTRUCT.
+        The DEFSTRUCT options: :TYPE and :INITIAL-OFFSET are not supported.
+"
+  (labels ((get-option (key options &optional list)
+             (let ((opt (remove-if (lambda (x) (not (eq key (if (symbolp x) x (car x)))))
+                                   options)))
+               (cond
+                 (list opt)
+                 ((null opt) nil)
+                 ((null (cdr opt))
+                  (if (symbolp (car opt)) t (cdar opt)))
+                 (t (error "Expected only one ~A option."
+                           (if (symbolp (car opt)) (car opt) (caar opt)))))));;get-option
+           (make-name (option prefix name suffix)
+             (cond
+               ((or (null option) (and option (not (listp option))))
+                (with-standard-io-syntax (intern (format nil "~A~A~A" prefix name suffix))))
+               ((and option (listp option) (car option))
+                (car option))
+               (t nil)));;make-name
+           (get-name (option)
+             (if (and option (listp option))
+                 (car option)
+                 nil))
+           (make-keyword (sym) (intern (string sym) (find-package "KEYWORD"))))
+   (let (name options documentation slots slot-names accessors
+         conc-name constructors constructors-k copier
+         include initial-offset predicate
+         print-function print-object)
+     (if (symbolp name-and-options)
+         (setf name    name-and-options
+               options nil)
+         (setf name    (car name-and-options)
+               options (cdr name-and-options)))
+     (if (stringp (car doc-and-slots))
+         (setf documentation (car doc-and-slots)
+               slots         (cdr doc-and-slots))
+         (setf documentation nil
+               slots         doc-and-slots))
+     (setf conc-name      (get-option :conc-name      options)
+           constructors   (get-option :constructor    options :list)
+           copier         (get-option :copier         options)
+           predicate      (get-option :predicate      options)
+           include        (get-option :include        options)
+           initial-offset (get-option :initial-offset options)
+           print-function (get-option :print-function options)
+           print-object   (get-option :print-object   options))
+     (when (and print-object print-function)
+       (error "Cannot have :print-object and :print-function options."))
+     (when (cdr include)
+       (setf slots   (append (cddr include) slots)
+             include (list (car include))))
+     (setf conc-name (make-name conc-name ""      name "-")
+           copier    (make-name copier    "COPY-" name "")
+           predicate (make-name predicate ""      name "-P")
+           print-function (get-name print-function)
+           print-object   (get-name print-object))
+     (setf slot-names (mapcar (lambda (s) (if (symbolp s) s (car s))) slots))
+     (setf accessors  (mapcar
+                       (lambda (s) (make-name nil (or conc-name "")
+                                              (if (symbolp s) s (car s)) "")) slots))
+     (if (null constructors)
+         (setf constructors (list (make-name nil "MAKE-" name "")))
+         (setf constructors
+               (mapcan (lambda (x)
+                         (cond
+                           ((or (symbolp x) (= 1 (length x)))
+                            (list (make-name nil "MAKE-" name "")))
+                           ((null (second x))
+                            nil)
+                           ((= 2 (length x))
+                            (list (second x)))
+                           (t
+                            (list (list (second x) (third x)))))) constructors)))
+     `(progn
+        (defclass ,name ,include
+          ,(mapcar
+            (lambda (slot accessor)
+              (if (symbolp slot)
+                  `(,slot :accessor  ,accessor)
+                  (let* ((name        (first slot))
+                         (initform-p  (cdr slot))
+                         (initform    (car initform-p))
+                         (type-p      (member :type (cddr slot)))
+                         (type        (cadr type-p))
+                         (read-only-p (member :read-only (cddr slot)))
+                         (read-only   (cadr read-only-p)))
+                    `(,name
+                      ,(if (and read-only-p read-only) :reader :accessor)
+                      ,accessor
+                      ,@(when initform-p  (list :initform initform))
+                      ,@(when type-p      (list :type     type))))))
+            slots accessors)
+          ,@(when documentation (list `(:documentation ,documentation))))
+        ,@(mapcar
+           (lambda (constructor)
+             ;; generate a constructor.
+             (if (symbolp constructor)
+                 (let ((preds (mapcar (lambda (x) (gensym)) slot-names)))
+                   `(defun ,constructor
+                        (&key ,@(mapcar (lambda (s p) (list s nil p))
+                                        slot-names preds))
+                      (let ((args nil))
+                        ,@(mapcar
+                           (lambda (s p)
+                             `(when ,p
+                                (push ,s args)
+                                (push ,(make-keyword s) args)))
+                           slot-names preds)
+                        (apply (function make-instance) ',name args))))
+                 (let ((cname  (first  constructor))
+                       (pospar (second constructor)))
+                   `(defun ,cname
+                      ))))
+           constructors)
+        ,@(when copier
+            (list `(defmethod ,copier ((self ,name))
+                     (make-instance ',name
+                                    ,@(mapcan
+                                       (lambda (slot accessor)
+                                         (list (make-keyword slot) (list accessor 'self)))
+                                       slot-names accessors)))))
+        ,@(when predicate
+            (list `(defmethod ,predicate (object)
+                     (eq (type-of object) ',name))))
+       
+        ,@(when print-function
+            (list `(defmethod print-object ((self ,name) stream)
+                     (,print-function self stream 0))))
+        ,@(when print-object
+            (list `(defmethod print-object ((self ,name) stream)
+                     (,print-object self stream))))))))
+
+(define-structure-class option
   "An option structure."
   keys arguments documentation function)
 

@@ -223,8 +223,21 @@ RETURN:     A new list of name and aliases, with the ALIASES added, if
                           result)))
     (list (mapcar (lambda (x) (mapcar (function string-upcase) (first x)))
                   sb-impl::*external-formats*)))
+
+
+  ;; From Java7:
+  ;; Every implementation of the Java platform is required to support
+  ;; the following standard charsets. Consult the release
+  ;; documentation for your implementation to see if any other
+  ;; charsets are supported. The behavior of such optional charsets
+  ;; may differ between implementations.
+  ;;
+  ;; Other external formats are also possible with abcl.
+  #+abcl
+  '(("US-ASCII") ("ISO-8859-1") ("UTF-8") ("UTF-16BE") ("UTF-16LE") ("UTF-16"))
+
   
-  #-(or ccl clisp cmu ecl sbcl)
+  #-(or abcl ccl clisp cmu ecl sbcl)
   (progn
     (warn "What are the available external formats in ~A ?"
           (lisp-implementation-type))
@@ -305,7 +318,10 @@ DO:         Set the cs-lisp-encoding of the character-sets present in
           #+sbcl
           (intern (first (cs-lisp-encoding cs)) "KEYWORD")
 
-          #-(or ccl clisp cmu ecl sbcl)
+          #+abcl
+          (intern (first (cs-lisp-encoding cs)) "KEYWORD")
+
+          #-(or abcl ccl clisp cmu ecl sbcl)
           (values
            (find (lambda (cs) (member encoding (cs-lisp-encoding cs)
                                       :test (function string-equal)))
@@ -335,7 +351,8 @@ DO:         Set the cs-lisp-encoding of the character-sets present in
   #+cmu (string external-format)
   #+ecl (string external-format)
   #+sbcl (string external-format)
-  #-(or ccl (and clisp unicode) cmu ecl sbcl)
+  #+abcl (string external-format)
+  #-(or abcl ccl (and clisp unicode) cmu ecl sbcl)
   (error "~S: How to decode an external-format in ~A"
          'external-format-character-encoding
          (lisp-implementation-type)))
@@ -347,12 +364,11 @@ DO:         Set the cs-lisp-encoding of the character-sets present in
   #+cmu :unix
   #+ecl :unix
   #+sbcl :unix
-  #-(or ccl (and clisp unicode) cmu ecl sbcl)
+  #+abcl :unix ; TODO: ???
+  #-(or abcl ccl (and clisp unicode) cmu ecl sbcl)
   (error "~S: How to decode an external-format in ~A"
          'external-format-line-termination
          (lisp-implementation-type)))
-
-
 
 
 

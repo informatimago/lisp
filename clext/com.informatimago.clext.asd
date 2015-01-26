@@ -72,10 +72,9 @@ specifications, like GRAY or other portability libraries.
     :depends-on ("com.informatimago.common-lisp.cesarum"
                  "com.informatimago.clext.association")
 
-    :components (#+(or ccl clisp cmu ecl sbcl)
-                   (:file "character-sets")
-                   #+(or allegro ccl clisp sbcl cmu)
-                   (:file "closer-weak")))
+  :components ((:file "character-sets")
+               #+(or allegro ccl clisp sbcl cmu)
+               (:file "closer-weak")))
 
 
 ;;;; THE END ;;;;
