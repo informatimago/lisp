@@ -60,7 +60,8 @@
                           ;; Utilities:
                           "POTENTIAL-NUMBER-P")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.READER"
-                "EVAL-FEATURE")
+                "EVAL-FEATURE"
+                "PROPER-LIST-P")
   (:export "TEST/ALL"
            "TEST/READER"
            "TEST/SYMBOLS"
@@ -102,6 +103,40 @@ License:
 "))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.READER.TEST")
 
+
+(define-test test/proper-list-p ()
+  (map nil (lambda (test) (test eq (proper-list-p (second test)) (first test)
+                                ((first test) (second test))))
+    '((nil x)
+      (t ())
+      (t (a))
+      (t (a b))
+      (t (a b c))
+      (t (a b c d))
+      (nil (a . x))
+      (nil (a b . x))
+      (nil (a b c . x))
+      (nil (a b c d . x))
+      (nil #1=(a . #1#))
+      (nil #2=(a b . #2#))
+      (nil #3=(a b c . #3#))
+      (nil #4=(a b c d . #4#))
+      (nil (1 . #1#))
+      (nil (1 2 . #1#))
+      (nil (1 2 3 . #1#))
+      (nil (1 2 3 4 . #1#))
+      (nil (1 . #2#))
+      (nil (1 2 . #2#))
+      (nil (1 2 3 . #2#))
+      (nil (1 2 3 4 . #2#))
+      (nil (1 . #3#))
+      (nil (1 2 . #3#))
+      (nil (1 2 3 . #3#))
+      (nil (1 2 3 4 . #3#))
+      (nil (1 . #4#))
+      (nil (1 2 . #4#))
+      (nil (1 2 3 . #4#))
+      (nil (1 2 3 4 . #4#)))))
 
 (define-test test/reader ()
   (let ((*read-base* 10)
@@ -606,6 +641,7 @@ License:
 
 (define-test test/all ()
   (let ((*package* (find-package "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.READER.TEST")))
+    (test/proper-list-p)
     (test/reader)
     (test/symbols)
     (test/features)

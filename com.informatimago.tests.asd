@@ -32,7 +32,7 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.test
+(asdf:defsystem :com.informatimago.tests
 
   ;; system attributes:
   

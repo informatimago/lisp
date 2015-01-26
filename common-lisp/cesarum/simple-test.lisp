@@ -208,12 +208,13 @@ License:
   (when (verbose *verbose-tally*)
     (let ((name-max-length 40))
      (flet ((genline (name)
-              (format nil "~VA~3D ~9A~3D ~8A~5D ~A"
+              (format nil "~VA~5D ~A,~3D ~9A~:[,~3D ~8A~;~]."
                       name-max-length name
-                      success-count (format nil "success~[es~;~:;es~]," success-count)
-                      failure-count (format nil "failure~P," failure-count)
                       (+ success-count failure-count)
-                      (format nil "test~P." (+ success-count failure-count)))))
+                      (format nil "test~P" (+ success-count failure-count))
+                      success-count (format nil "success~[es~;~:;es~]" success-count)
+                      (zerop failure-count)
+                      failure-count (format nil "failure~P" failure-count))))
        (format *test-output* "~&~A~%"
                (genline  (current-test-identification name-max-length)))
        (finish-output *test-output*)
