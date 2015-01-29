@@ -1493,8 +1493,8 @@ DO:     complements the set.
 (defmacro with-rnode (node &body body)
   `(with-slots ((matchf   matchf)
                 (token    token)
-                (children children))
-       ,node ,@body))
+                (children children)) ,node
+     ,@body))
 
 
 (defmacro rnode-match (node state env)
@@ -1525,8 +1525,8 @@ DO:     complements the set.
 (defmacro with-rstate (state &body body)
   `(with-slots ((start    start)
                 (end      end)
-                (try      try))
-       ,state ,@body)) ;;WITH-RSTATE
+                (try      try)) ,state
+     ,@body))
 
 
 (defun rstate-retry (state position)
@@ -1592,8 +1592,7 @@ regexp matched, ie. rnode."
   (regexp   nil :type (or null rnode)) ;; renv-set-regexp sets subexps too.
   (bol      t   :type boolean)
   (eol      t   :type boolean)
-  (newline  t   :type boolean)
-  )
+  (newline  t   :type boolean))
 
 
 (defmacro with-renv (env &body body)
@@ -1606,8 +1605,8 @@ regexp matched, ie. rnode."
                 (regexp     regexp   )
                 (bol        bol      )
                 (eol        eol      )
-                (newline    newline  ))
-       ,env ,@body))
+                (newline    newline  )) ,env
+     ,@body))
 
 
 (defun subexp-filled-p (subexp)         subexp)
@@ -1659,32 +1658,32 @@ regexp matched, ie. rnode."
   "
 Beginning of string anchor.
 "
+  (declare (ignorable node))
   (with-rens env node state
-    (declare (ignorable node))
     (try-once
-      (if (= 0 position)
-          (progn (setf end position) t)
-          nil))))
+      (when (zerop position)
+        (setf end position)
+        t))))
 
 
 (defun rmatch-e-anchor (node state env)
   "
 End of string anchor.
 "
+  (declare (ignorable node))
   (with-rens env node state
-    (declare (ignorable node))
     (try-once
-      (if (= length position)
-          (progn (setf end position) t)
-          nil))))
+      (when (= length position)
+        (setf end position)
+        t))))
 
 
 (defun rmatch-l-anchor (node state env)
   "
 Beginning of line anchor.
 "
+  (declare (ignorable node))
   (with-rens env node state
-    (declare (ignorable node))
     (try-once
       (if (or (and bol (= 0 position))
               (and newline
@@ -1698,8 +1697,8 @@ Beginning of line anchor.
   "
 End of line anchor.
 "
+  (declare (ignorable node))
   (with-rens env node state
-    (declare (ignorable node))
     (try-once
       (if (or (and eol (= length position))
               (and newline
@@ -1710,8 +1709,8 @@ End of line anchor.
 
 
 (defun rmatch-any (node state env)
+  (declare (ignorable node))
   (with-rens env node state
-    (declare (ignorable node))
     (try-once
       (if (or (<= length position)
               (and newline ;; don't match newline
@@ -1724,8 +1723,8 @@ End of line anchor.
 
 
 (defun rmatch-item (node state env)
+  (declare (ignorable node))
   (with-rens env node state
-    (declare (ignorable node))
     (try-once
       (if (and (< position length)
                (funcall equalf token (aref sequence position)))
@@ -2174,8 +2173,7 @@ regexp --> (or character
            :children (when ,children
                        (make-array (list (length ,children))
                                    :initial-contents
-                                   (mapcar (function compile-regexp) ,children))))
-         ))
+                                   (mapcar (function compile-regexp) ,children))))))
     (if (listp regexp)
         (case (car regexp)
           ((rk:backref)

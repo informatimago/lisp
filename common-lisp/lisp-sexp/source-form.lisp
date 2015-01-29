@@ -976,15 +976,14 @@ NOTE:   If the lambda-list is a macro-lambda-list or a
         after each sublist (mandatories, optionals, keywords, and
         rests).
 "
-  (let ((rest (lambda-list-rest-p self)))
-    (multiple-value-bind (man opt res key) (parameters-by-category self)
-      (append
-       (mapcar (function parameter-name) man)
-       (mapcar (function parameter-name) opt)
-       (mapcan (lambda (par) (list (ensure-parameter-keyword par)
-                                   (parameter-name par)))
-               key)
-       (mapcar (function parameter-name) res)))))
+  (multiple-value-bind (man opt res key) (parameters-by-category self)
+    (append
+     (mapcar (function parameter-name) man)
+     (mapcar (function parameter-name) opt)
+     (mapcan (lambda (par) (list (ensure-parameter-keyword par)
+                                 (parameter-name par)))
+             key)
+     (mapcar (function parameter-name) res))))
 
 
 
