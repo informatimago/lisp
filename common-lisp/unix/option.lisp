@@ -11,6 +11,9 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2015-01-29 <PJB> Replaced wrap-option-function by generate-wrap-option-function
+;;;;                     to avoid calling COMPILE at compilation time, since abcl seems
+;;;;                     to be not liking it.
 ;;;;    2012-03-10 <PJB> Extracted from ~/bin/script.lisp
 ;;;;BUGS
 ;;;;LEGAL
@@ -133,21 +136,21 @@ redirected output is sent to *error-output*.
 "
   (let ((verror  (gensym))
         (voutput (gensym)))
-   `(let* ((,verror  nil)
-           (,voutput (with-output-to-string (stream)
-                       (let ((*standard-output* stream)
-                             (*error-output*    stream)
-                             (*trace-output*    stream))
-                         (handler-case (progn ,@body)
-                           (error (err) (setf ,verror err)))))))
-      (when ,verror
-        (terpri *error-output*)
-        (princ ,voutput *error-output*)
-        (terpri *error-output*)
-        (princ ,verror *error-output*)
-        (terpri *error-output*)
-        (terpri *error-output*)
-        #-testing-script (parse-options-finish ex-software)))))
+    `(let* ((,verror  nil)
+            (,voutput (with-output-to-string (stream)
+                        (let ((*standard-output* stream)
+                              (*error-output*    stream)
+                              (*trace-output*    stream))
+                          (handler-case (progn ,@body)
+                            (error (err) (setf ,verror err)))))))
+       (when ,verror
+         (terpri *error-output*)
+         (princ ,voutput *error-output*)
+         (terpri *error-output*)
+         (princ ,verror *error-output*)
+         (terpri *error-output*)
+         (terpri *error-output*)
+         #-testing-script (parse-options-finish ex-software)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -266,55 +269,55 @@ the main script  (setf script:*program-name* (script:pname))
 (defun q&d-parse-parameters (parameters)
   "Parses (mandatory &optional optionals... &rest rest &key key...)"
   (loop
-     :with mandatories = '()
-     :with optionals   = '()
-     :with rest        = nil
-     :with keys        = '()
-     :with state       = :mandatory
-     :with params      = parameters
-     :for param = (first params)
-     :while params
-     :do (ecase state
-           ((:mandatory)
-            (case param
-              ((&optional) (setf state :optional))
-              ((&rest)     (setf state :rest))
-              ((&key)      (setf state :key))
-              (otherwise (push param mandatories)))
-            (pop params))
-           ((:optional)
-            (case param
-              ((&optional) (error "&OPTIONAL given more than once in ~S" parameters))
-              ((&rest)     (setf state :rest))
-              ((&key)      (setf state :key))
-              (otherwise (push param optionals)))
-            (pop params))
-           ((:rest)
-            (case param
-              ((&optional) (error "&OPTIONAL given after &REST in ~S" parameters))
-              ((&rest)     (error "&REST given twice in ~S" parameters))
-              ((&key)      (setf state :key))
-              (otherwise   (setf state :after-rest
-                                 rest param)))
-            (pop params))
-           ((:after-rest)
-            (case param
-              ((&optional) (error "&OPTIONAL given after &REST in ~S" parameters))
-              ((&rest)     (error "&REST given after &REST in ~S" parameters))
-              ((&key)      (setf state :key))
-              (otherwise   (error "Several &REST parameters given in ~S" parameters)))
-            (pop params))
-           ((:key)
-            (case param
-              ((&optional) (error "&OPTIONAL given after &KEY in ~S" parameters))
-              ((&rest)     (error "&REST given after &KEY in ~S" parameters))
-              ((&key)      (setf state :key))
-              (otherwise   (push param keys)))
-            (pop params)))
-     :finally (return (values (nreverse mandatories)
-                              (nreverse optionals)
-                              rest
-                              (nreverse keys)))))
+    :with mandatories = '()
+    :with optionals   = '()
+    :with rest        = nil
+    :with keys        = '()
+    :with state       = :mandatory
+    :with params      = parameters
+    :for param = (first params)
+    :while params
+    :do (ecase state
+          ((:mandatory)
+           (case param
+             ((&optional) (setf state :optional))
+             ((&rest)     (setf state :rest))
+             ((&key)      (setf state :key))
+             (otherwise (push param mandatories)))
+           (pop params))
+          ((:optional)
+           (case param
+             ((&optional) (error "&OPTIONAL given more than once in ~S" parameters))
+             ((&rest)     (setf state :rest))
+             ((&key)      (setf state :key))
+             (otherwise (push param optionals)))
+           (pop params))
+          ((:rest)
+           (case param
+             ((&optional) (error "&OPTIONAL given after &REST in ~S" parameters))
+             ((&rest)     (error "&REST given twice in ~S" parameters))
+             ((&key)      (setf state :key))
+             (otherwise   (setf state :after-rest
+                                rest param)))
+           (pop params))
+          ((:after-rest)
+           (case param
+             ((&optional) (error "&OPTIONAL given after &REST in ~S" parameters))
+             ((&rest)     (error "&REST given after &REST in ~S" parameters))
+             ((&key)      (setf state :key))
+             (otherwise   (error "Several &REST parameters given in ~S" parameters)))
+           (pop params))
+          ((:key)
+           (case param
+             ((&optional) (error "&OPTIONAL given after &KEY in ~S" parameters))
+             ((&rest)     (error "&REST given after &KEY in ~S" parameters))
+             ((&key)      (setf state :key))
+             (otherwise   (push param keys)))
+           (pop params)))
+    :finally (return (values (nreverse mandatories)
+                             (nreverse optionals)
+                             rest
+                             (nreverse keys)))))
 
 
 (defun keywordize (string-designator)
@@ -344,39 +347,41 @@ BUG: when the optionals or keys have a present indicator,
                   keys)))
 
 
-(defun wrap-option-function (keys option-arguments docstring option-function)
+
+(defun generate-wrap-option-function (keys option-arguments docstring option-function-name)
   (let ((vargs (gensym)))
     (multiple-value-bind (mandatories optionals rest keys-args) (q&d-parse-parameters option-arguments)
-      (make-option
-       :keys keys
-       :arguments option-arguments
-       :function (compile (make-symbol (concatenate 'string (string-upcase (first keys)) "-WRAPPER"))
-                          `(lambda (,vargs)
-                             (if (<= ,(length mandatories) (length ,vargs))
-                                 ,(cond
-                                    (rest
-                                     `(destructuring-bind ,option-arguments ,vargs
-                                        (funcall ',option-function ,@(q&d-arguments mandatories
-                                                                                    optionals
-                                                                                    rest
-                                                                                    keys-args))
-                                        nil))
-                                    (keys-args
-                                     (error "An option cannot have &key parameters without a &rest parameter. ~@
+      `(make-option
+        :keys ',keys
+        :arguments ',option-arguments
+        :function (lambda (,vargs)
+                    ,(flet ((generate-body ()
+                              (cond
+                                (rest
+                                 `(destructuring-bind ,option-arguments ,vargs
+                                    (,option-function-name ,@(q&d-arguments mandatories
+                                                                            optionals
+                                                                            rest
+                                                                            keys-args))
+                                    nil))
+                                (keys-args
+                                 (error "An option cannot have &key parameters without a &rest parameter. ~@
                                             Invalid option parameters: ~S" option-arguments))
-                                    (t
-                                     (let ((vremaining (gensym)))
-                                       `(destructuring-bind (,@option-arguments &rest ,vremaining) ,vargs
-                                          (funcall ',option-function ,@(q&d-arguments mandatories
-                                                                                      optionals
-                                                                                      rest
-                                                                                      keys-args))
-                                          ,vremaining))))
-                                 (error "Missing arguments: ~{~A ~}"
-                                        (subseq ',option-arguments (length ,vargs))))))
-       :documentation (split-string docstring (string #\newline))))))
-
-
+                                (t
+                                 (let ((vremaining (gensym)))
+                                   `(destructuring-bind (,@option-arguments &rest ,vremaining) ,vargs
+                                      (,option-function-name ,@(q&d-arguments mandatories
+                                                                              optionals
+                                                                              rest
+                                                                              keys-args))
+                                      ,vremaining))))))
+                       (if (zerop (length mandatories))
+                           (generate-body)
+                           `(if (<= ,(length mandatories) (length ,vargs))
+                                ,(generate-body)
+                                (error "Missing arguments: ~{~A ~}"
+                                       (subseq ',option-arguments (length ,vargs)))))))
+        :documentation ',(split-string docstring (string #\newline))))))
 
 
 ;;; ---
@@ -485,13 +490,14 @@ RETURN:     The lisp-name of the option (this is a symbol
                           (rest body)
                           body)))
     `(progn
-       (register-option (wrap-option-function ',(cons main-name other-names)
-                                              ',parameters
-                                              ',docstring
-                                              (lambda ,(remove '&rest parameters)
-                                                ,docstring
-                                                (block ,lisp-name
-                                                  ,@body)))
+       (register-option ,(generate-wrap-option-function 
+                          (cons main-name other-names)
+                          parameters
+                          docstring
+                          `(lambda ,(remove '&rest parameters)
+                             ,docstring
+                             (block ,lisp-name
+                               ,@body)))
                         t)
        ',lisp-name)))
 
@@ -615,10 +621,10 @@ RETURN:             NIL on success, status code when early exit is requested.
               ;; linux sysexits:
               ((or arithmetic-error parse-error print-not-readable type-error) (err)
                 (format *error-output* "~%ERROR: ~A~%" err)
-               (parse-options-finish ex-dataerr))
+                (parse-options-finish ex-dataerr))
               ((or cell-error control-error package-error program-error) (err)
                 (format *error-output* "~%ERROR: ~A~%" err)
-               (parse-options-finish ex-software))
+                (parse-options-finish ex-software))
               (file-error (err)
                 (format *error-output* "~%ERROR: ~A~%" err)
                 (parse-options-finish ex-osfile))
