@@ -83,9 +83,11 @@ help::
 	@printf $(HELP_FMT) 'clean' 'Clean in each submodule directory.'
 clean::
 	@for module in $(MODULES) ; do \
-		printf $(LINE) ;\
-		printf ";;;;;; CLEANING $$module\n" ;\
-		$(MM) MODULE_PATH=$(PACKAGES)/$(PACKAGE_PATH)/$$module -C $$module $(CLEAN) ;\
+		if [ -r "$$module/Makefile" ] ; then \
+		  printf $(LINE) ;\
+		  printf ";;;;;; CLEANING $$module\n" ;\
+		  $(MM) MODULE_PATH=$(PACKAGES)/$(PACKAGE_PATH)/$$module -C $$module $(CLEAN) ;\
+		fi ;\
 	 done
 	@find . \( -name \*.abcl-tmp \) -exec rm {} \;
 	@printf $(LINE)
