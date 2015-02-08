@@ -38,14 +38,11 @@
 (declaim (also-use-packages "ASDF"))
 (defpackage "COM.INFORMATIMAGO.TOOLS.MANIFEST"
   (:use "COMMON-LISP"
-        "COM.INFORMATIMAGO.COMMON-LISP.SCRIPT"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.VERSION"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE"
         "SPLIT-SEQUENCE")
-  (:shadowing-import-from "COM.INFORMATIMAGO.COMMON-LISP.SCRIPT"
-                          "CONCAT")
   (:export "ASDF-SYSTEM-NAME"
            "ASDF-SYSTEM-LICENSE"
            "SYSTEM-DEPENDS-ON"
@@ -132,28 +129,47 @@ stdout in a string (going thru a file)."
 
 
 
+
+(defun prepare-options (options)
+  (mapcar (lambda (option)
+            (typecase option
+              (keyword (format nil "-~(~A~)" option))
+              (symbol  (string-downcase option))
+              (string  option)
+              (t       (prin1-to-string option))))
+          options))
+
+(declaim (inline trim))
+(defun trim  (string) (string-trim #(#\space #\tab #\newline) string))
+
+(defun uname (&rest options)
+  "Without OPTIONS, return a keyword naming the system (:LINUX, :DARWIN, etc).
+With options, returns the first line output by uname(1)."
+  (flet ((first-line (text) (subseq text 0 (position #\newline text))))
+    (let ((uname  (shell-command-to-string "uname ~{~A~^ ~}" (prepare-options options))))
+      (if (and uname (plusp (length (trim uname))))
+          (values (if options
+                      (first-line uname)
+                      (intern (string-upcase (first-line uname))
+                              "KEYWORD")))
+          :unknown))))
+
+
 (defun distribution ()
   "Return a list identifying the system, distribution and release.
 RETURN: (system distrib release)
 System and distrib are keywords, release is a string."
-  (flet ((trim  (string) (string-trim #(#\space #\tab #\newline) string))
-         (words (string) (split-sequence-if (lambda (ch) (find ch #(#\space #\tab)))
+  (flet ((words (string) (split-sequence-if (lambda (ch) (find ch #(#\space #\tab)))
                                             string :remove-empty-subseqs t)))
-   (let ((system #+windows :windows
-                 ;; #+(and ccl windows-target)
-                 ;; '(:cygwin :unknown "1.7.11,0.260,5,3")
-                 #+linux   :linux
-                 #+darwin  :darwin
-                 #+(and unix (not (or linux darwin)))
-                 (let ((uname (shell-command-to-string "uname")))
-                   (if (and uname (plusp (length (trim uname))))
-                       (with-input-from-string (inp uname)
-                         (let ((*package* (find-package "KEYWORD"))
-                               (*read-eval* nil))
-                           (read file inp)))
-                       :unknown)             
-                 #-(or windows linux darwin unix)
-                 :unknown))
+    (let ((system #+windows :windows
+                  ;; #+(and ccl windows-target)
+                  ;; '(:cygwin :unknown "1.7.11,0.260,5,3")
+                  #+linux   :linux
+                  #+darwin  :darwin
+                  #+(and unix (not (or linux darwin)))
+                  (uname)
+                  #-(or windows linux darwin unix)
+                  :unknown)
          (distrib :unknown)
          (release :unknown))
      (case system

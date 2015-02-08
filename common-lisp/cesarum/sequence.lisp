@@ -40,7 +40,8 @@
            "HASHED-REMOVE-DUPLICATES" "HASHED-DELETE-DUPLICATES"
            "DUPLICATES"
            "REPLACE-SUBSEQ"
-           "DELETEF")
+           "DELETEF"
+           "GROUP-BY")
   (:documentation
    "
 
@@ -51,7 +52,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2004 - 2014
+    Copyright Pascal J. Bourguignon 2004 - 2015
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -284,6 +285,26 @@ RETURN:         Either the modified SEQUENCE, or a fresh sequence of
          (replace sequence insert :start1 start))))))
 
 
+(defgeneric group-by (sequence n)
+  (:documentation "Returns a list of subsequences of SEQUENCE of length N,
+whose concatenation is equal to SEQUENCE.")
+  (:method ((sequence vector) n)
+    (check-type n (integer 1))
+    (loop
+      :with length := (length sequence)
+      :for i :from 0 :by n
+      :while (< i length)
+      :collect (subseq sequence i (min length (+ i n)))))
+  (:method ((sequence list) n)
+    (check-type n (integer 1))
+    (loop
+      :for sub  := sequence :then rest
+      :for rest := (nthcdr n sub)
+      :while sub
+      :collect (ldiff sub rest))))
+
+
+;;; TESTS
 
 (defun test/replace-subseq ()
   (let ((*standard-output* (make-broadcast-stream)))
@@ -319,7 +340,28 @@ RETURN:         Either the modified SEQUENCE, or a fresh sequence of
   (assert (nth-value 1 (ignore-errors (replace-subseq "abc" "def" -2 4))))
   :success)
 
+(defun test/group-by ()
+  (assert (equalp (group-by '() 3) '()))
+  (assert (equalp (group-by '(1) 3) '((1))))
+  (assert (equalp (group-by '(1 2) 3) '((1 2))))
+  (assert (equalp (group-by '(1 2 3) 3) '((1 2 3))))
+  (assert (equalp (group-by '(1 2 3 4) 3) '((1 2 3) (4))))
+  (assert (equalp (group-by '(1 2 3 4 5) 3) '((1 2 3) (4 5))))
+  (assert (equalp (group-by '(1 2 3 4 5 6) 3) '((1 2 3) (4 5 6))))
+  (assert (equalp (group-by '(1 2 3 4 5 6 7) 3) '((1 2 3) (4 5 6) (7))))
+  (assert (equalp (group-by '(1 2 3 4 5 6 7 8) 3) '((1 2 3) (4 5 6) (7 8))))
+  (assert (equalp (group-by #() 3) '()))
+  (assert (equalp (group-by #(1) 3) '(#(1))))
+  (assert (equalp (group-by #(1 2) 3) '(#(1 2))))
+  (assert (equalp (group-by #(1 2 3) 3) '(#(1 2 3))))
+  (assert (equalp (group-by #(1 2 3 4) 3) '(#(1 2 3) #(4))))
+  (assert (equalp (group-by #(1 2 3 4 5) 3) '(#(1 2 3) #(4 5))))
+  (assert (equalp (group-by #(1 2 3 4 5 6) 3) '(#(1 2 3) #(4 5 6))))
+  (assert (equalp (group-by #(1 2 3 4 5 6 7) 3) '(#(1 2 3) #(4 5 6) #(7))))
+  (assert (equalp (group-by #(1 2 3 4 5 6 7 8) 3) '(#(1 2 3) #(4 5 6) #(7 8))))
+  :success)
 
 (test/replace-subseq)
+(test/group-by)
 
 ;;;; THE END ;;;;

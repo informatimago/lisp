@@ -208,7 +208,8 @@ RETURN:             a path, ie. a list of nodes from START-NODE to
                  '(a f k l m n o t y)))
   :success)
 
-(test)
+;; (test)
+
 
 
 ;;;; THE END ;;;;
