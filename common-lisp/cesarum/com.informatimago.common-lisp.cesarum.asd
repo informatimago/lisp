@@ -126,6 +126,7 @@ all written in 100% conforming Common Lisp.
                (:file "tea"             :depends-on ())
                (:file "circular"        :depends-on ())
                (:file "histogram"       :depends-on ())
+               (:file "a-star"          :depends-on ())
 
                ;; Specific stuff:
                (:file "activity"        :depends-on ())
