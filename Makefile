@@ -87,6 +87,7 @@ clean::
 		printf ";;;;;; CLEANING $$module\n" ;\
 		$(MM) MODULE_PATH=$(PACKAGES)/$(PACKAGE_PATH)/$$module -C $$module $(CLEAN) ;\
 	 done
+	@find . \( -name \*.abcl-tmp \) -exec rm {} \;
 	@printf $(LINE)
 
 help::
