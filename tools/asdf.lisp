@@ -90,7 +90,7 @@
   "Cache file.")
 
 (defparameter *original-asdf-registry* asdf:*central-registry*)
-
+(defvar *asdf-install-location* #P"")
 (defun find-asdf-subdirectories (&optional (directories (list *asdf-install-location*)))
   "Return a list of all the subdirectories of DIRECTORIES that contain .asd files.
 It is sorted in ascending namestring length."
