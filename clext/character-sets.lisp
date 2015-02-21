@@ -234,7 +234,16 @@ RETURN:     A new list of name and aliases, with the ALIASES added, if
   ;;
   ;; Other external formats are also possible with abcl.
   #+abcl
-  '(("US-ASCII") ("ISO-8859-1") ("UTF-8") ("UTF-16BE") ("UTF-16LE") ("UTF-16"))
+  (remove-duplicates
+   (append '(("US-ASCII") ("ISO-8859-1") ("UTF-8") ("UTF-16BE") ("UTF-16LE") ("UTF-16"))
+           (mapcar (lambda (encoding)
+                     (let ((n (symbol-name encoding))
+                           (u (string-upcase encoding)))
+                       (if (string= n u)
+                           (list n)
+                           (list n u))))
+                   (system:available-encodings)))
+   :test (function equal))
 
   
   #-(or abcl ccl clisp cmu ecl sbcl)
@@ -286,13 +295,13 @@ DO:         Set the cs-lisp-encoding of the character-sets present in
                                                         ((:mac) :macos)))
           
           #+clisp
-          (ext:make-encoding :charset (symbol-value (intern (first (cs-lisp-encoding cs)) "CHARSET"))
+          (ext:make-encoding :charset (symbol-value (intern encoding "CHARSET"))
                              :line-terminator line-termination
                              :input-error-action :error
                              :output-error-action :error)
 
           #+cmu
-          (if (string-equal (first (cs-lisp-encoding cs)) "ISO-8859-1")
+          (if (string-equal encoding "ISO-8859-1")
               :iso-latin-1-unix
               (progn #|should not occur|#
                 (cerror 'character-set-error
@@ -316,10 +325,10 @@ DO:         Set the cs-lisp-encoding of the character-sets present in
              :default))
           
           #+sbcl
-          (intern (first (cs-lisp-encoding cs)) "KEYWORD")
+          (intern encoding "KEYWORD")
 
           #+abcl
-          (intern (first (cs-lisp-encoding cs)) "KEYWORD")
+          (intern encoding "KEYWORD")
 
           #-(or abcl ccl clisp cmu ecl sbcl)
           (values
@@ -359,6 +368,7 @@ DO:         Set the cs-lisp-encoding of the character-sets present in
 
 
 (defun external-format-line-termination (external-format)
+  #+(or cmu ecl sbcl abcl) (declare (ignore external-format))
   #+ccl (ccl:external-format-line-termination external-format)
   #+(and clisp unicode) (string (ext:encoding-line-terminator external-format))
   #+cmu :unix

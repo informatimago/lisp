@@ -1470,11 +1470,7 @@ DO:     complements the set.
     (t             obj))) ;;LIGHTEN
 
 
-(defun print-rnode (node stream level)
-  (declare (ignore level))
-  (format stream "<~A~{ ~S~}>"
-          (lighten (rnode-token node))
-          (map 'list (function identity) (rnode-children node))))
+
 
 
 (defstruct (rnode
@@ -1486,7 +1482,15 @@ DO:     complements the set.
   (children nil :type (or null (array #+lispworks t 
                                       #-lispworks rnode
                                       (*)))))
+
 ;; (equiv (null children) (not (< 0 (length children)))))
+
+
+(defun print-rnode (node stream level)
+  (declare (ignore level))
+  (format stream "<~A~{ ~S~}>"
+          (lighten (rnode-token node))
+          (map 'list (function identity) (rnode-children node))))
 
 
 
@@ -1708,7 +1712,7 @@ End of line anchor.
           nil))))
 
 
-(defun rmatch-any (node state env)
+ (defun rmatch-any (node state env)
   (declare (ignorable node))
   (with-rens env node state
     (try-once
@@ -1720,6 +1724,7 @@ End of line anchor.
             (incf position)
             (setf end position)
             t)))))
+
 
 
 (defun rmatch-item (node state env)

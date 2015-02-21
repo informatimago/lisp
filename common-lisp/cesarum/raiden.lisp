@@ -96,7 +96,7 @@ K:    (vector (unsigned-byte 32) 4), the key
   (macrolet ((ref (vector index)
                `(the (unsigned-byte 32) (aref ,vector ,index))))
     (flet ((32bit (x) (logand #xffffffff x)))
-      (declare (inline 32bit))
+      #-(or abcl eclxxx) (declare (inline 32bit))
       (loop
         :with b0 :of-type (unsigned-byte 32) = (ref v 0)
         :with b1 :of-type (unsigned-byte 32) = (ref v 1)
@@ -154,7 +154,7 @@ K:    (vector (unsigned-byte 32) 4), the key
                     (type (vector (unsigned-byte 32) 2) w)
                     (type (vector (unsigned-byte 32) 4) k))
   (flet ((32bit (x) (logand #xffffffff x)))
-    #-eclxxx (declare (inline 32bit))
+    #-(or abcl eclxxx) (declare (inline 32bit))
     (loop
       :with b0  :of-type (unsigned-byte 32) = (aref v 0)
       :with b1  :of-type (unsigned-byte 32) = (aref v 1)

@@ -42,7 +42,7 @@
                  "com.informatimago.clext") 
     :components ((:file "dependency-cycles")
                  (:file "asdf-file"  :depends-on ("dependency-cycles" "script"))
-                 (:file "script")
+                 #-abcl (:file "script")
                  (:file "check-asdf" :depends-on ("dependency-cycles" "asdf-file"))))
 
 ;;;; THE END ;;;;
