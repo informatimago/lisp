@@ -21,6 +21,8 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2015-02-22 <PJB> Moved MAKE-COMPONENTS MAKE-ASD-SEXP GENERATE-ASD to
+;;;;                     com.informatimago.tools.asdf-file.
 ;;;;    2005-08-10 <PJB> Completed MAKE-ASD.
 ;;;;    2003-05-04 <PJB> Converted to Common-Lisp from emacs.
 ;;;;    2002-11-16 <PJB> Created.
@@ -61,7 +63,7 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE"
         "COM.INFORMATIMAGO.CLEXT.CHARACTER-SETS")
   (:export
-   "GENERATE-SUMMARY" "MAKE-COMPONENTS" "MAKE-ASD-SEXP" "GENERATE-ASD"
+   "GENERATE-SUMMARY" 
    "GET-CLOSED-DEPENDENCIES" "GET-DEPENDENCIES" "GET-PACKAGE" "GET-DEPENDS"
    "MAKE-DEPENDS")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE"
@@ -1253,190 +1255,7 @@ IDF:            If NIL, write the dependencies on the standard output,
                           (html:cdata "~A~%" line))))))))))))))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; GENERATE-ASD
-;;;
 
-(unless (find-package :asdf) (defpackage :asdf (:use :cl) (:export "DEFSYSTEM")))
-
-(defun make-components (paths &key (predefined-packages '("COMMON-LISP"))
-                        (component-class :file)
-                        (implicit-dependencies '())
-                        (load-paths (list (make-pathname
-                                           :directory '(:relative)))))
-  (mapcar
-   (lambda (depend)
-     (let* ((depend (mapcar (lambda (path) (pathname-name path)) depend))
-            (target (first depend))
-            (depends  (delete (first depend)
-                              (append implicit-dependencies (rest depend))
-                              :test (function string=))))
-       (list* component-class target (when depends (list :depends-on depends)))))
-   (get-depends paths predefined-packages load-paths)))
-
-(defun gen-defsystem-form (name paths &key  description (version "0.0.0") 
-                      author licence license
-                      (component-class :file)
-                      (predefined-packages '("COMMON-LISP"))
-                      (implicit-dependencies '())
-                      (depends-on '())
-                      (load-paths (list (make-pathname
-                                         :directory '(:relative)))))
-  "
-DO:             Generate an ASD file for ASDF.
-NAME:           Name of the generated ASDF system.
-PATHS:          List of pathnames to the source files of this ASDF system.
-DESCRIPTION:    A description string for the ASDF system.
-VERSION:        A version string for the ASDF system.
-AUTHOR:         An author string for the ASDF system.
-LICENCE:        A licence string for the ASDF system.
-LICENSE:        A licence string for the ASDF system.
-PREDEFINED-PACKAGES:   A list of packages that are removed from the dependencies.
-IMPLICIT-DEPENDENCIES: A list of dependencies added to all targets.
-LOAD:-PATHS     A list of directory paths where the sources are searched in.
-"
-  (flet ((enumerate (list) (format nil "~{~A, ~}~:[none~;~1@*~{~A~^ and ~A~}~]"
-                                   (butlast list 2) (last  list 2))))
-    (let* ((headers (mapcar (lambda (path) (list* :path path
-                                             (with-open-file (stream path)
-                                               (read-source-header stream))))
-                            paths))
-           (authors (or author
-                        (enumerate (delete-duplicates 
-                                    (apply (function append)
-                                           (mapcar (function header-authors)
-                                                   headers))
-                                    :test (function string-equal)))))
-           (licence (or licence license
-                        (enumerate (delete-duplicates
-                                    (mapcar (function header-licence) headers)
-                                    :test (function string-equal)))))
-           (description
-            (unsplit-string 
-             (or (ensure-list description)
-                 (mapcan
-                  (lambda (header)
-                    (append (list (format nil "~2%PACKAGE: ~A~2%"
-                                          (second
-                                           (get-package (header-slot header :path)))))
-                            (mapcar (lambda (line) (format nil "~A~%" line))
-                                    (header-description header))
-                            (list (format nil "~%"))))
-                  headers))
-             " "))
-           (components (make-components
-                        paths
-                        :component-class component-class
-                        :predefined-packages (append depends-on
-                                                     predefined-packages)
-                        :implicit-dependencies implicit-dependencies
-                        :load-paths load-paths)))
-      `(asdf:defsystem ,name
-           :description ,description
-           :version     ,version
-           :author      ,authors
-           :licence     ,licence
-           :depends-on  ,depends-on
-           :components  ,components) )))
-
-
-(defun generate-asd (system-name sources source-type
-                     &key description (version "0.0.0")
-                     author licence license
-                     (predefined-packages '("COMMON-LISP"))
-                     (implicit-dependencies '())
-                     (depends-on '())
-                     (load-paths (list (make-pathname :directory '(:relative))))
-                     (vanillap nil))
-  "
-VANILLAP:  if true, then generate a simple, vanilla system.
-           Otherwise, decorate it with PJB output-files.
-"
-  (let ((*package* (find-package :com.informatimago.common-lisp.tools.make-depends.make-depends)))
-    (with-open-file (out (make-pathname :directory '(:relative)
-                                        :name "system"
-                                        ;;(string-downcase system-name)
-                                        :type "asd" :version nil)
-                         :direction :output
-                         :if-exists :supersede
-                         :if-does-not-exist :create)
-      #+(or)(push (truename (merge-pathnames
-                             (make-pathname :directory '(:relative)
-                                            :name nil :type nil :version nil)
-                             out)) asdf::*central-registry*)
-      (format out ";; -*- mode:lisp -*-~%")
-      (mapc
-       (lambda (sexp) (print sexp out) (terpri out))
-       ;; Out to the asd file:
-       (append
-        (unless vanillap
-          `((defpackage "COM.INFORMATIMAGO.ASDF" (:use "COMMON-LISP"))
-            (in-package "COM.INFORMATIMAGO.ASDF")
-            ;; ASDF imposes the file type classes to be
-            ;; in the same package as the defsystem.
-            (unless (handler-case (find-class 'pjb-cl-source-file) (t () nil))
-              (defclass pjb-cl-source-file (asdf::cl-source-file) ())
-              (flet ((output-files (c)
-                       (flet ((implementation-id ()
-                                (flet ((first-word (text)
-                                         (let ((pos (position (character " ")
-                                                              text)))
-                                           (remove (character ".")
-                                                   (if pos
-                                                       (subseq text 0 pos)
-                                                       text)))))
-                                  (format
-                                   nil "~A-~A-~A"
-                                   (cond 
-                                     ((string-equal
-                                       "International Allegro CL Enterprise Edition"
-                                       (lisp-implementation-type))
-                                      "ACL")
-                                     (t (first-word (lisp-implementation-type))))
-                                   (first-word (lisp-implementation-version))
-                                   (first-word (machine-type))))))
-                         (let* ((object (compile-file-pathname
-                                         (asdf::component-pathname c)))
-                                (path (merge-pathnames
-                                       (make-pathname
-                                        :directory
-                                        (list :relative
-                                              (format nil "OBJ-~:@(~A~)"
-                                                      (implementation-id)))
-                                        :name (pathname-name object)
-                                        :type (pathname-type object))
-                                       object)))
-                           (ensure-directories-exist path)
-                           (list path)))))
-                (defmethod asdf::output-files ((operation asdf::compile-op)
-                                               (c pjb-cl-source-file))
-                  (output-files c))
-                (defmethod asdf::output-files ((operation asdf::load-op)
-                                               (c pjb-cl-source-file))
-                  (output-files c))))))
-        
-        `(,(gen-defsystem-form
-            system-name
-            (mapcar
-             (lambda (source) (make-pathname :name (string-downcase (string source))
-                                             :type source-type))
-             sources)
-            :description (or description
-                             (format nil
-                                     "This ASDF system gathers all the ~A packages."
-                                     (string-upcase system-name)))
-            :version version
-            :author author
-            :licence (or licence license)
-            :component-class (if vanillap :cl-source-file :pjb-cl-source-file)
-            :predefined-packages predefined-packages
-            :implicit-dependencies implicit-dependencies
-            :depends-on depends-on
-            :load-paths load-paths)))))))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; THE END
 
 #+(or)
 (progn
@@ -1460,7 +1279,7 @@ VANILLAP:  if true, then generate a simple, vanilla system.
   (use-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
   (com.informatimago.common-lisp.cesarum.package:load-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
   (use-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
-  (make-asd "COM.INFORMATIMAGO.COMMON-LISP" (directory "*.ilsp"))
+  (make-asd "COM.INFORMATIMAGO.COMMON-LISP" (directory "*.lisp"))
   )
 
 ;;;; THE END ;;;;
