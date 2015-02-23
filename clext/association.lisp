@@ -1,39 +1,39 @@
 ;;;;  -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;; FILE:               metamodel-macros.lisp
-;;;; LANGUAGE:           Common-Lisp
-;;;; SYSTEM:             Common-Lisp
-;;;; USER-INTERFACE:     NONE
-;;;; DESCRIPTION
-;;;;     
-;;;;     Macros definitions for the objecteering metamodel.
-;;;;     
-;;;; AUTHORS
-;;;;     <PJB> Pascal J. Bourguignon <pjb@anevia.com>
-;;;; MODIFICATIONS
-;;;;     2009-05-20 <PJB> Adapted these macros for the objecteering metamodel.
-;;;;     2009-01-09 <PJB> Added this comment.
-;;;; BUGS
-;;;; LEGAL
-;;;;     GPL
-;;;;     
-;;;;     Copyright 
-;;;;     
-;;;;     This program is free software; you can redistribute it and/or
-;;;;     modify it under the terms of the GNU General Public License
-;;;;     as published by the Free Software Foundation; either version
-;;;;     2 of the License, or (at your option) any later version.
-;;;;     
-;;;;     This program is distributed in the hope that it will be
-;;;;     useful, but WITHOUT ANY WARRANTY; without even the implied
-;;;;     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;;;     PURPOSE.  See the GNU General Public License for more details.
-;;;;     
-;;;;     You should have received a copy of the GNU General Public
-;;;;     License along with this program; if not, write to the Free
-;;;;     Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;;;     Boston, MA 02111-1307 USA
-;;;; *************************************************************************
+;;;;FILE:               association.lisp
+;;;;LANGUAGE:           Common-Lisp
+;;;;SYSTEM:             Common-Lisp
+;;;;USER-INTERFACE:     NONE
+;;;;DESCRIPTION
+;;;;    
+;;;;    Macros definitions for the objecteering metamodel.
+;;;;    
+;;;;AUTHORS
+;;;;    <PJB> Pascal J. Bourguignon <pjb@anevia.com>
+;;;;MODIFICATIONS
+;;;;    2009-05-20 <PJB> Adapted these macros for the objecteering metamodel.
+;;;;    2009-01-09 <PJB> Added this comment.
+;;;;BUGS
+;;;;LEGAL
+;;;;    GPL
+;;;;    
+;;;;    Copyright 
+;;;;    
+;;;;    This program is free software; you can redistribute it and/or
+;;;;    modify it under the terms of the GNU General Public License
+;;;;    as published by the Free Software Foundation; either version
+;;;;    2 of the License, or (at your option) any later version.
+;;;;    
+;;;;    This program is distributed in the hope that it will be
+;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
+;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;    
+;;;;    You should have received a copy of the GNU General Public
+;;;;    License along with this program; if not, write to the Free
+;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
+;;;;    Boston, MA 02111-1307 USA
+;;;;*************************************************************************
 
 (defpackage "COM.INFORMATIMAGO.CLEXT.ASSOCIATION"
   (:use "COMMON-LISP" "CLOSER-MOP")
@@ -138,70 +138,6 @@ TEST:  an equal function. Default EQL.
                   (push element (cdr cell))))
                 (return (cdr result)))))))
 
-(defun test/add-new-element ()
-  (assert (equal '(x) (add-new-element nil 'x)))
-  (assert (equal '(x) (add-new-element nil 'x :test (function equal))))
-  (assert (equal '(x) (add-new-element nil 'x :lessp (function string<))))
-  (assert (equal '(x) (add-new-element (list 'x) 'x)))
-  (assert (equal '(x) (add-new-element (list 'x) 'x :test (function equal))))
-  (assert (equal '(x) (add-new-element (list 'x) 'x :lessp (function string<))))
-  (progn (let* ((list (list 1 2 3))
-               (result (add-new-element list 0 :test #'=)))
-           (assert (equal result '(1 2 3 0)))
-           (assert (eql result list)))
-         (let* ((list (list 1 2 3)) (result (add-new-element list 0)))
-           (assert (equal result '(1 2 3 0)))
-           (assert (eql result list)))
-         (let* ((list (list 1 2 3))
-               (result (add-new-element list 4 :lessp #'<)))
-           (assert (equal result '(1 2 3 4)))
-           (assert (eql result list)))
-         (let* ((list (list 1 2 3))
-               (result (add-new-element list 1 :lessp #'<)))
-           (assert (equal result '(1 2 3)))
-           (assert (eql result list)))
-         (let* ((list (list 1 2 3)) (result (add-new-element list 1)))
-           (assert (equal result '(1 2 3)))
-           (assert (eql result list)))
-         (let* ((list (list 1 2 3))
-               (result (add-new-element list 1.0 :test #'=)))
-           (assert (equal result '(1 2 3)))
-           (assert (eql result list)))
-         (let* ((list (list 1 2 3)) (result (add-new-element list 2)))
-           (assert (equal result '(1 2 3)))
-           (assert (eql result list)))
-         (let* ((list (list 1 2 3))
-               (result (add-new-element list 2.0 :test #'=)))
-           (assert (equal result '(1 2 3)))
-           (assert (eql result list)))
-         (let* ((list (list 1 2 3)) (result (add-new-element list 3)))
-           (assert (equal result '(1 2 3)))
-           (assert (eql result list)))
-         (let* ((list (list 1 2 3))
-               (result (add-new-element list 3.0 :test #'=)))
-           (assert (equal result '(1 2 3)))
-           (assert (eql result list)))
-         (let* ((list (list 1 2 4))
-               (result (add-new-element list 3 :lessp #'<)))
-           (assert (equal result '(1 2 3 4)))
-           (assert (eql result list)))
-         (let* ((list (list 1 2 4))
-               (result (add-new-element list 2 :lessp #'<)))
-           (assert (equal result '(1 2 4)))
-           (assert (eql result list)))
-         (let* ((list (list 1 3 4))
-               (result (add-new-element list 2 :lessp #'<)))
-           (assert (equal result '(1 2 3 4)))
-           (assert (eql result list)))
-         (let* ((list (list 1 3 4))
-               (result (add-new-element list 3 :lessp #'<)))
-           (assert (equal result '(1 3 4)))
-           (assert (eql result list))))  
-  (let ((list (list 2 3 4))) (assert (equal '(1 2 3 4) (add-new-element list 1 :lessp (function <)))))
-  (let ((list (list 2 3 4))) (assert (equal '(1 2 3 4) (add-new-element list 1 :lessp (function <)))))
-  :success)
-(test/add-new-element)
-
 
 (eval-when (:load-toplevel :compile-toplevel :execute)
 
@@ -257,22 +193,7 @@ RETURN:        MIN; MAX"
               (min max) "Invalid multiplicity ~A" multiplicity)
       (values min max)))
 
-  
-  (defun test/multiplicity ()
-    (assert (equal (mapcar (lambda (test) (multiple-value-list (multiplicity test)))
-                           '(0    1    2    3
-                             0-1  1-1  0-4  2-4
-                             *    0-*  1-*  4-* ; 34-2
-                             0..1 1..1 0..4 2..4
-                             *    0..* 1..* 4..* ; 34..2
-                             ))
-                   '((0 0) (1 1) (2 2) (3 3)
-                     (0 1) (1 1) (0 4) (2 4)
-                     (0 *) (0 *) (1 *) (4 *) ; (34 2)
-                     (0 1) (1 1) (0 4) (2 4)
-                     (0 *) (0 *) (1 *) (4 *) ; (34 2)
-                     ))))
-  
+   
 
   (defun xor   (a b) (if a (not b) b))
   (defun imply (p q) (or (not p) q))
@@ -574,11 +495,6 @@ RETURN:        MIN; MAX"
   '#:eval-when/functions-for-macro)
 
 
-(eval-when (:execute)
-  (test/multiplicity)
-  'tests) ;; eval-when
-
-
 (defun convert-to-direct-slot-definition (class canonicalized-slot)
   (apply (function make-instance)
          (apply (function closer-mop:direct-slot-definition-class) class canonicalized-slot)
@@ -872,7 +788,6 @@ BUGS:    If there is an error in handling one association end, after
 
 #-(and)
 (let* ((class-name type))
-  
   (let* ((class  (find-class class-name))
          (slots  (mop:compute-slots class)))
     (unless (find role slots :key (function mop:slot-description-name))
