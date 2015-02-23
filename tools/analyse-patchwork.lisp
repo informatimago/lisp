@@ -1,12 +1,12 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               read-sources.lisp
+;;;;FILE:               analyse-patchwork.lisp
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    Read the patchwork sources.
+;;;;    Read and analyse the patchwork sources.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
@@ -36,7 +36,7 @@
 (declaim (declaration also-use-packages))
 (declaim (also-use-packages "COM.INFORMATIMAGO.COMMON-LISP.PICTURE.TREE-TO-ASCII"))
 
-(defpackage "COM.INFORMATIMAGO.READ-SOURCES"
+(defpackage "COM.INFORMATIMAGO.TOOLS.ANALYSE-PATCHWORK"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.GRAPH"
@@ -44,7 +44,7 @@
         "COM.INFORMATIMAGO.TOOLS.ASDF-FILE")
   (:export "READ-SOURCES" "*CONTENTS*")
   (:shadow "CLASS" "CLASS-NAME" "FIND-CLASS"))
-(in-package "COM.INFORMATIMAGO.READ-SOURCES")
+(in-package "COM.INFORMATIMAGO.TOOLS.ANALYSE-PATCHWORK")
 
 (defun safe-find-package (designator)
   (or (cl:find-package designator)
@@ -378,3 +378,5 @@ common-lisp:package and common-lisp:symbol.
 ;; (find-all-forms 'import)
 ;; (("pw-lib/epw-1.0b/import" (import '(patch-work:new-menu patch-work:pw-addmenu))))
 ;; nil
+
+;;;; THE END ;;;;

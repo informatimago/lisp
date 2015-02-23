@@ -31,8 +31,6 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
-
-
 (in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.CLMISC.RESOURCE-UTILIZATION"
   (:use "COMMON-LISP")
