@@ -38,7 +38,7 @@
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM")
   (:export "*DEBUG-ON-ERROR*" "WITH-DEBUGGER-ON-ERROR"
-           "DEFINE-TEST" "TEST" "ASSERT-TRUE" "EXPECT-CONDITION"
+           "DEFINE-TEST" "TEST" "ASSERT-TRUE" "ASSERT-FALSE" "EXPECT-CONDITION"
 
            "*VERBOSE-TALLY*" "*VERBOSE-PROGRESS*")
   (:documentation "
@@ -48,7 +48,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2010 - 2012
+    Copyright Pascal J. Bourguignon 2010 - 2015
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -250,6 +250,13 @@ EXAMPLE:  (assert-true (= 2 (+ 1 1))))
            (progress-failure 'equivalent ',expression 't ,vresult
                              (list ,@(mapcan (lambda (place) `(',place ,place)) places))
                              ,format-control ,@format-arguments)))))
+
+
+(defmacro assert-false (expression &optional places format-control &rest format-arguments)
+  "Evaluates a test EXPRESSION and check it returns NIL
+EXAMPLE:  (assert-false (/= 2 (+ 1 1))))
+"
+  `(assert-true (not ,expression) ,places ,format-control ,@format-arguments))
 
 
 (defmacro expect-condition (condition-class expression)
