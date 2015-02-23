@@ -33,7 +33,6 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.tools.pathname
-    :name "com.informatimago.tools.pathname"
     :description "Pathname tools."
     :author "Pascal J. Bourguignon"
     :version "1.0.0"

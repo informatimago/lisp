@@ -33,7 +33,6 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.small-cl-pgms.brainfuck
-    :name "com.informatimago.small-cl-pgms.brainfuck"
     :description "Brainfuck Compiler."
     :author "Pascal J. Bourguignon"
     :version "1.0.0"

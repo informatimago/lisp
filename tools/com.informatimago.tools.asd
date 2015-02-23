@@ -33,24 +33,13 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.tools
-
   ;; system attributes:
-  
-  :description  "This system gathers Informatimago Common Lisp tools."
-  
+  :description  "This system aggregates Informatimago Common Lisp Tools."
   :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-
   :licence "AGPL3"
-
-  
   ;; component attributes:
-
-  :name "Informatimago Common Lisp Tools Agregate"
-  
   :version "1.0.2"
-
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Spring 2014")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.tools/")
@@ -58,14 +47,13 @@
                ((#:albert #:docbook #:template)  . "book")
                ((#:albert #:docbook #:bgcolor)   . "white")
                ((#:albert #:docbook #:textcolor) . "black"))
-  
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
   :depends-on ("com.informatimago.tools.check-asdf"
-               "com.informatimago.tools.make-depends"
                "com.informatimago.tools.manifest"
                "com.informatimago.tools.pathname"
                "com.informatimago.tools.source"
+               "com.informatimago.tools.summary"
+               "com.informatimago.tools.make-depends"
                "com.informatimago.tools.symbol"
                "com.informatimago.tools.quicklisp"))
 

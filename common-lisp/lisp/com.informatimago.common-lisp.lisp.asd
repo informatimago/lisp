@@ -33,11 +33,8 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.common-lisp.lisp
-
     ;; system attributes:
-    
-    :description  "Various Lisp Language Extensions."
-
+    :description  "Informatimago Common Lisp Lisp Language Utility and Extensions" 
     :long-description "
 
 Currently we provide a GENERIC-CL package exporting generic functions
@@ -45,20 +42,11 @@ that forward to the COMMON-LISP package when there's no
 specialization.
 
 "
-    
     :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-
     :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-
     :licence "AGPL3"
-
-    
     ;; component attributes
-    
-    :name "Informatimago Common Lisp Lisp Language Stuff"
-
     :version "1.2.2"
-    
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Autumn 2010")
                  ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.lisp/")
@@ -66,11 +54,8 @@ specialization.
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
-    
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
     :depends-on ("closer-mop")
-    
     :components ((:file "generic-cl" :depends-on ())))
 
 ;;;; THE END ;;;;

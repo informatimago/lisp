@@ -34,39 +34,26 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.common-lisp.unix
-
-    ;; system attributes:
-    
-    :description  "Access to a few unix administrative files (passwd, group, etc)."
-    
-    :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-
-    :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-
-    :licence "AGPL3"
-
-    
-    ;; component attributes:
-
-    :name "Informatimago Common Lisp Unix Utilities"
-
-    :version "1.2.2"
-
-    :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Winter 2012")
-                 ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.unix/")
-                 ((#:albert #:formats)             . ("docbook"))
-                 ((#:albert #:docbook #:template)  . "book")
-                 ((#:albert #:docbook #:bgcolor)   . "white")
-                 ((#:albert #:docbook #:textcolor) . "black"))
-    
-    #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
-    :depends-on ("com.informatimago.common-lisp.cesarum")
-    
-    :components ((:file "aliases" :depends-on ())
-                 (:file "group"   :depends-on ())
-                 (:file "passwd"  :depends-on ())
-                 (:file "option"  :depends-on ())))
+  ;; system attributes:
+  :description  "Informatimago Common Lisp Unix Utilities"
+  :long-description "Access to a few unix administrative files (passwd, group, etc)."
+  :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :licence "AGPL3"
+  ;; component attributes:
+  :version "1.2.2"
+  :properties ((#:author-email                   . "pjb@informatimago.com")
+               (#:date                           . "Winter 2012")
+               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.unix/")
+               ((#:albert #:formats)             . ("docbook"))
+               ((#:albert #:docbook #:template)  . "book")
+               ((#:albert #:docbook #:bgcolor)   . "white")
+               ((#:albert #:docbook #:textcolor) . "black"))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8
+  :depends-on ("com.informatimago.common-lisp.cesarum")
+  :components ((:file "aliases" :depends-on ())
+               (:file "group"   :depends-on ())
+               (:file "passwd"  :depends-on ())
+               (:file "option"  :depends-on ())))
 
 ;;;; THE END ;;;;

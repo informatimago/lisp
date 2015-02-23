@@ -33,11 +33,8 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.rdp.example
-
     ;; system attributes:
-    
-    :description "An example of parser generated with the Recursive Descent Parser Generator."
-
+    :description "Recursive Descent Parser Generator -- An example"
     :long-description "
 
 A couple of examples for a simple expression programm language, one
@@ -46,20 +43,11 @@ RDPG), and another with actions written in the lisp target-language,
 both producing parsers in Lips.
 
 "
-    
     :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-
     :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-    
     :licence "AGPL3"
-
-    
     ;; component attributes:
-    
-    :name "Recursive Descent Parser Generator -- Example"
-
     :version "1.0.1"
-    
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Summer 2011")
                  ((#:albert #:output-dir)          . "../documentation/com.informatimago.rdp.example/")
@@ -67,11 +55,8 @@ both producing parsers in Lips.
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
-    
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
     :depends-on ("com.informatimago.rdp")
-    
     :components ((:file "example-lisp")))
 
 ;;;; THE END ;;;;

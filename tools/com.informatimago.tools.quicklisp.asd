@@ -33,7 +33,6 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.tools.quicklisp
-    :name "com.informatimago.tools.quicklisp"
     :description "Quicklisp tools."
     :author "Pascal J. Bourguignon"
     :version "1.0.0"

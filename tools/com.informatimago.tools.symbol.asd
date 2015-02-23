@@ -33,7 +33,6 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.tools.symbol
-    :name "com.informatimago.tools.symbol"
     :description "Symbol tools."
     :author "Pascal J. Bourguignon"
     :version "1.0.0"

@@ -34,7 +34,6 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.future
-  :name "com.informatimago.future"
   :description "Future Informatimago Projects - Not ready for consumption."
   :author "Pascal J. Bourguignon"
   :version "1.0.2"

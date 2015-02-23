@@ -33,17 +33,12 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.tests
-
   ;; system attributes:
-  
-  :description  "This system tests most of the Informatimago systems."
+  :description  "Informatimago Systems Tests Agregate"
   :author       "Pascal J. Bourguignon <pjb@informatimago.com>"
   :maintainer   "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence      "AGPL3"
-
-  
   ;; component attributes:
-  :name "Informatimago Systems Agregate Tests"
   :version "1.0.0"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Winter 2015")
@@ -54,8 +49,8 @@
                ((#:albert #:docbook #:textcolor) . "black"))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ("com.informatimago"
-               "com.informatimago.common-lisp.cesarum-test"
-               "com.informatimago.common-lisp.lisp-reader-test")
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.cesarum-test")
-                              (asdf:test-op "com.informatimago.common-lisp.lisp-reader-test")))
+               "com.informatimago.common-lisp.cesarum.test"
+               "com.informatimago.common-lisp.lisp-reader.test")
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.cesarum.test")
+                              (asdf:test-op "com.informatimago.common-lisp.lisp-reader.test")))
   :components ())

@@ -33,12 +33,11 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.small-cl-pgms.life
-    :name "com.informatimago.small-cl-pgms.life"
-    :description "A simple Conway's Life game."
-    :author "Pascal J. Bourguignon"
-    :version "1.0.0"
-    :license "GPL3"
-    :depends-on () 
-    :components ((:file "life")))
+  :description "A simple Conway's Life game."
+  :author "Pascal J. Bourguignon"
+  :version "1.0.0"
+  :license "GPL3"
+  :depends-on () 
+  :components ((:file "life")))
 
 ;;;; THE END ;;;;

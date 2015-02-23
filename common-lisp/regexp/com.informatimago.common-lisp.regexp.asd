@@ -33,25 +33,14 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.common-lisp.regexp
-
     ;; system attributes:
-    
-    :description  "INCOMPLETE. Regular expressions with various syntaxes."
-    
+    :description "Informatimago Common Lisp Regular Expressions"
     :long-description "INCOMPLETE. Do not use yet."
-    
     :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-    
     :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-
     :licence "AGPL3"
-
     ;; component attributes:
-
-    :name "Informatimago Common Lisp Regular Expressions"
-
     :version "1.2.1"
-
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Autumn 2010")
                  ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.regexp/")
@@ -59,12 +48,9 @@
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
-
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
     :depends-on (:com.informatimago.common-lisp.cesarum
                  :com.informatimago.common-lisp.picture)
-
     :components ((:file "regexp-emacs"         :depends-on ())
                  (:file "regexp-posix"         :depends-on ())))
 

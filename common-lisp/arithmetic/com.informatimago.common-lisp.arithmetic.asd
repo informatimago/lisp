@@ -34,37 +34,24 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.common-lisp.arithmetic
-
-    ;; system attributes:
-    
-    :description  "Arithmetic tools, primes, factorization."
-
-    :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-
-    :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-
-    :licence "AGPL3"
-
-    
-    ;; component attributes:
-
-    :name "Informatimago Common Lisp Arithmetic"
-
-    :version "1.2.1"
-    
-    :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Autumn 2010")
-                 ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.arithmetic/")
-                 ((#:albert #:formats)             . ("docbook"))
-                 ((#:albert #:docbook #:template)  . "book")
-                 ((#:albert #:docbook #:bgcolor)   . "white")
-                 ((#:albert #:docbook #:textcolor) . "black"))
-    
-    #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
-    :depends-on ("com.informatimago.common-lisp.cesarum")
-    
-    :components ((:file "primes" :depends-on ())
-                 (:file "p127n2" :depends-on ())))
+  ;; system attributes:
+  :description  "Informatimago Common Lisp Arithmetic"
+  :long-description  "Arithmetic tools, primes, factorization."
+  :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :licence "AGPL3"
+  ;; component attributes:
+  :version "1.2.1"
+  :properties ((#:author-email                   . "pjb@informatimago.com")
+               (#:date                           . "Autumn 2010")
+               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.arithmetic/")
+               ((#:albert #:formats)             . ("docbook"))
+               ((#:albert #:docbook #:template)  . "book")
+               ((#:albert #:docbook #:bgcolor)   . "white")
+               ((#:albert #:docbook #:textcolor) . "black"))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8
+  :depends-on ("com.informatimago.common-lisp.cesarum")
+  :components ((:file "primes" :depends-on ())
+               (:file "p127n2" :depends-on ())))
 
 ;;;; THE END ;;;;

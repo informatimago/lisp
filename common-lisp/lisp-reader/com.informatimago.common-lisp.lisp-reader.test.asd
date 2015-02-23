@@ -1,22 +1,22 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               com.informatimago.common-lisp.bank.asd
+;;;;FILE:               com.informatimago.common-lisp.lisp-reader.test.asd
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    ASD file to load the com.informatimago.common-lisp.bank library.
+;;;;    ASD file to test the com.informatimago.common-lisp.lisp-reader library.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2010-10-31 <PJB> Created this .asd file.
+;;;;    2015-01-25 <PJB> Created this .asd file.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2010 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2015 - 2015
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -32,25 +32,28 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.common-lisp.bank
+(asdf:defsystem "com.informatimago.common-lisp.lisp-reader.test"
   ;; system attributes:
-  :description  "Informatimago Common Lisp Banking Utilities"
-  :long-description "Various bank data formats (IBAN, RIB)."
+  :description  "Tests the lisp-reader library."
   :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.2.1"
+  :version "1.0.0"
   :properties ((#:author-email                   . "pjb@informatimago.com")
-               (#:date                           . "Autumn 2010")
-               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.bank/")
+               (#:date                           . "Winter 2015")
+               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.lisp-reader-test/")
                ((#:albert #:formats)             . ("docbook"))
                ((#:albert #:docbook #:template)  . "book")
                ((#:albert #:docbook #:bgcolor)   . "white")
                ((#:albert #:docbook #:textcolor) . "black"))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
-  :depends-on ("com.informatimago.common-lisp.cesarum")
-  :components ((:file "iban" :depends-on ())
-               (:file "rib"  :depends-on ("iban"))))
+  :depends-on ("com.informatimago.common-lisp.lisp-reader")
+  :perform (asdf:test-op
+            (o s)
+            (let ((*package* (find-package "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.READER.TEST")))
+              (uiop:symbol-call "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.READER.TEST" "TEST/ALL")))
+  :components ((:file "reader-test"    :depends-on ())))
+
 
 ;;;; THE END ;;;;

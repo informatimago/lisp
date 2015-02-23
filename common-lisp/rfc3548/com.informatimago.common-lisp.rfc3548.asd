@@ -33,24 +33,13 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.common-lisp.rfc3548
-
     ;; system attributes:
-    
-    :description  "Implements the RFC3548 encodings: Base16, Base32, and Base64."
-    
+    :description  "Informatimago Common Lisp RFC3548 Implementation: Base16, Base32, and Base64."
     :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-
     :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-
     :licence "AGPL3"
-
-    
     ;; component attributes:
-
-    :name "Informatimago Common Lisp RFC3548 Implementation"
-    
     :version "1.2.2"
-
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Autumn 2010")
                  ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.rfc3548/")
@@ -58,11 +47,8 @@
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
-    
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
     :depends-on ("com.informatimago.common-lisp.cesarum")
-    
     :components ((:file "rfc3548" :depends-on ())))
 
 ;;;; THE END ;;;;

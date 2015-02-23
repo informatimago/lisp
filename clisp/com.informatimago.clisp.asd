@@ -32,34 +32,24 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-#+clisp (when (find-package "LINUX") (pushnew :linux *features*))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  #+clisp (when (find-package "LINUX") (pushnew :linux *features*)))
+
 
 (asdf:defsystem :com.informatimago.clisp
-
   ;; system attributes:
-
-  :description "Clisp specific packages."
-
+  :description "Informatimago Common Lisp Clisp Specific Packages"
   :long-description "
 
 Various packages using clisp specific features (some of them could or
 should be made into implementation independant packages).
 
 "
-
   :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-  
-  
   :licence "AGPL3"
-  
   ;; component attributes:
-
-  :name "Informatimago Common Lisp Clisp Specific Packages"
-
   :version "1.2.2"
-
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Spring 2014")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.clmisc/")
@@ -67,11 +57,8 @@ should be made into implementation independant packages).
                ((#:albert #:docbook #:template)  . "book")
                ((#:albert #:docbook #:bgcolor)   . "white")
                ((#:albert #:docbook #:textcolor) . "black"))
-
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
   :depends-on ("com.informatimago.common-lisp.cesarum")
-
   :components
   #+clisp ((:file "syslog")
            (:file "disk")
@@ -95,12 +82,11 @@ should be made into implementation independant packages).
   #-clisp ()) 
 
 
-#+(and clisp (not linux))
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (warn "System ~A is incomplete without the LINUX package." :com.informatimago.clisp)) 
+  #+(and clisp (not linux))
+  (warn "System ~A is incomplete without the LINUX package." :com.informatimago.clisp)
+  #-clisp
+  (warn "System ~A is useless on ~A" :com.informatimago.clisp (lisp-implementation-type))) 
 
-#-clisp
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (warn "System ~A is useless on ~A" :com.informatimago.clisp (lisp-implementation-type)))
 
 ;;;; THE END ;;;;

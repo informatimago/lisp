@@ -34,30 +34,18 @@
 
 
 (asdf:defsystem :com.informatimago.susv3
-
   ;; system attributes:
-
-  :description "A POSIX SUSv3 API for Common Lisp."
-  
+  :description "Informatimago Common Lisp POSIX SUSv3 API"
   :long-description "
 
 Currently implemented: DIRENT, IPC and PROCESS APIs.
 
 "
-
   :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-  
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-
   :licence "AGPL3"
-
-  
   ;; component attributes:
-
-  :name "Informatimago Common Lisp POSIX SUSv3 API"
-
   :version "1.2.2"
-
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Spring 2014")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.susv3/")
@@ -65,21 +53,19 @@ Currently implemented: DIRENT, IPC and PROCESS APIs.
                ((#:albert #:docbook #:template)  . "book")
                ((#:albert #:docbook #:bgcolor)   . "white")
                ((#:albert #:docbook #:textcolor) . "black"))
-
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
   :depends-on ("com.informatimago.common-lisp.cesarum"
                "com.informatimago.common-lisp.heap"
                "com.informatimago.clisp")
-
   :components
   #+(and clisp linux) ((:file "tools")
-             (:file "dirent"  :depends-on ("tools"))
-             (:file "ipc"     :depends-on ("tools"))
-             (:file "process" :depends-on ("ipc")))
-  #-(and clisp linux) ()) 
+                       (:file "dirent"  :depends-on ("tools"))
+                       (:file "ipc"     :depends-on ("tools"))
+                       (:file "process" :depends-on ("ipc")))
+  #-(and clisp linux) ())
 
-#+(and clisp (not linux)) (warn "System ~A is incomplete without the LINUX package." :com.informatimago.sysv3)
-#-clisp (warn "System ~A is incomplete on ~A" :com.informatimago.sysv3 (lisp-implementation-type))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  #+(and clisp (not linux)) (warn "System ~A is incomplete without the LINUX package." :com.informatimago.sysv3)
+  #-clisp (warn "System ~A is incomplete on ~A" :com.informatimago.sysv3 (lisp-implementation-type)))
 
 ;;;; THE END ;;;;

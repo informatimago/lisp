@@ -33,7 +33,6 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.tools.bad-system-with-cycles
-    :name "com.informatimago.tools.bad-system-with-cycles"
     :description "A bad system with cycles, to test check-asdf"
     :author "Pascal J. Bourguignon"
     :version "1.0.1"

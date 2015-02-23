@@ -33,30 +33,18 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.common-lisp.lisp.stepper
-
     ;; system attributes:
-    
-    :description  "Stepper and utilities."
-
+    :description  "Informatimago Common Lisp Stepper."
     :long-description "
 
 This system implements a portable stepper.
 
 "
-    
     :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-
     :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-
     :licence "AGPL3"
-
-    
     ;; component attributes
-    
-    :name "Informatimago Common Lisp Lisp Language Stuff"
-
     :version "1.0.0"
-    
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Summer 2012")
                  ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.lisp.stepper/")
@@ -64,12 +52,9 @@ This system implements a portable stepper.
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
-    
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
     :depends-on ("com.informatimago.common-lisp.cesarum"
                  "com.informatimago.common-lisp.lisp-sexp")
-    
     :components ((:file "stepper-packages")
                  (:file "stepper-functions" :depends-on ("stepper-packages"))
                  (:file "stepper"           :depends-on ("stepper-packages"

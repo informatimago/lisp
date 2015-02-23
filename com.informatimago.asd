@@ -34,24 +34,14 @@
 
 
 (asdf:defsystem :com.informatimago
-
   ;; system attributes:
-  
-  :description  "This system gathers most of the Informatimago systems."
-  
+  :description  "Informatimago Systems Agregate"
+  :long-description  "This system gathers most of the Informatimago systems."
   :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-
   :licence "AGPL3"
-
-  
   ;; component attributes:
-
-  :name "Informatimago Systems Agregate"
-  
   :version "1.0.0"
-
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Winter 2014")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago/")
@@ -59,9 +49,7 @@
                ((#:albert #:docbook #:template)  . "book")
                ((#:albert #:docbook #:bgcolor)   . "white")
                ((#:albert #:docbook #:textcolor) . "black"))
-  
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
   :depends-on ("com.informatimago.common-lisp"
                "com.informatimago.clext"
                "com.informatimago.clmisc"
@@ -75,6 +63,7 @@
                "com.informatimago.susv3" ; empty shell on non-clisp.
                "com.informatimago.clisp" ; empty shell on non-clisp linux
                )
+  :in-order-to ((test-op (test-op "com.informatimago.tests")))
   :components ())
 
 

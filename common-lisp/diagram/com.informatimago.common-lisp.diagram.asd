@@ -33,11 +33,8 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.common-lisp.diagram
-
     ;; system attributes:
-    
-    :description "(NeXTSTEP) Diagram! file generator."
-    
+    :description  "Informatimago Common Lisp (NeXTSTEP) Diagram! file generator."
     :long-description  "
 
 This package generates a Diagram text file drawing a tree.
@@ -45,20 +42,11 @@ The tree drawn is a list whose car is the node displayed, and
 whose cdr is the list of children.
 
 "
-
     :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-
     :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-
     :licence "AGPL3"
-
-    
     ;; component attributes:
-
-    :name "Informatimago Common Lisp Diagram"
-
     :version "1.2.1"
-
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Autumn 2010")
                  ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.diagram/")
@@ -66,11 +54,8 @@ whose cdr is the list of children.
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
-    
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
     :depends-on ("com.informatimago.common-lisp.cesarum")
-    
     :components ((:file "tree-to-diagram" :depends-on ())))
 
 ;;;; THE END ;;;;

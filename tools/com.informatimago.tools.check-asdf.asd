@@ -33,16 +33,14 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.tools.check-asdf
-    :name "com.informatimago.check-asdf"
     :description "Checks ASD Files and reports circular dependencies."
     :author "Pascal J. Bourguignon"
-    :version "1.0.4"
-    :license "GPL3"
+    :version "1.1.0"
+    :license "AGPL3"
     :depends-on ("com.informatimago.common-lisp.cesarum"
                  "com.informatimago.clext") 
     :components ((:file "dependency-cycles")
-                 (:file "asdf-file"  :depends-on ("dependency-cycles" "script"))
                  (:file "script")
-                 (:file "check-asdf" :depends-on ("dependency-cycles" "asdf-file"))))
+                 (:file "check-asdf" :depends-on ("dependency-cycles" "script"))))
 
 ;;;; THE END ;;;;

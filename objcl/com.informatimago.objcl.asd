@@ -33,11 +33,8 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.objcl
-
   ;; system attributes:
-  
-  :description "Reader macros and tools to program with Objective-C object libraries."
-
+  :description "Reader macros to implement an Objective-CL syntax."
   :long-description "
 
 Defines readers macros to provide an Objective-C -like syntax to wrap
@@ -47,20 +44,11 @@ Current implementation work only on ccl, but it should be extended to
 cover generic FFI to both Apple and GNUstep objc2 runtimes.
 
 "
-  
-  
   :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-
   :licence "AGPL3"
-
   ;; component attributes:
-  
-  :name "Reader macros to implement an Objective-CL syntax."
-  
   :version "0.10.2"
-  
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Spring 2014")
                ((#:albert #:output-dir)          . "../documentation/com.informatimago.objc/")
@@ -68,11 +56,8 @@ cover generic FFI to both Apple and GNUstep objc2 runtimes.
                ((#:albert #:docbook #:template)  . "book")
                ((#:albert #:docbook #:bgcolor)   . "white")
                ((#:albert #:docbook #:textcolor) . "black"))
-  
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
   :depends-on ()
-  
   :components
   #+(and ccl darwin)
   ((:file "objc-support"       :depends-on ())
@@ -86,5 +71,7 @@ cover generic FFI to both Apple and GNUstep objc2 runtimes.
   #-(and ccl darwin)
   ())
 
-#-(and ccl darwin) (warn "System ~A is incomplete on ~A" :com.informatimago.objcl (lisp-implementation-type))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  #-(and ccl darwin) (warn "System ~A is incomplete on ~A" :com.informatimago.objcl (lisp-implementation-type)))
+
 ;;;; THE END ;;;;

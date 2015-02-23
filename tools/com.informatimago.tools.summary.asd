@@ -1,22 +1,22 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               com.informatimago.rdp.basic.asd
+;;;;FILE:               com.informatimago.tools.summary.asd
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    Define the com.informatimago.rdp.basic system.
-;;;;   
+;;;;    ASD file to load the com.informatimago.tools.summary tool.
+;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2012-02-24 <PJB> Added this header.
+;;;;    2015-02-23 <PJB> Created this .asd file.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2012 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2010 - 2015
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -32,28 +32,31 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.rdp.basic
+(asdf:defsystem :com.informatimago.tools.summary
     ;; system attributes:
-    :description "Recursive Descent Parser Generator -- BASIC Generator"
-    :long-description "
+    :description "Informatimago Common Lisp Summary Tool"
+    :long-description  "
 
-Provides methods specialized on the :basic target-language, to emit a generator in BASIC.
+This program generates an HTML summary page for packages.
 
 "
-    :author "Pascal J. Bourguignon <pjb@informatimago.com>"
+    :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
     :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
     :licence "AGPL3"
     ;; component attributes:
-    :version "1.0.1"
+    :version "1.0.0"
     :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Summer 2011")
-                 ((#:albert #:output-dir)          . "../documentation/com.informatimago.rdp.basic/")
+                 (#:date                           . "Autumn 2010")
+                 ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.summary/")
                  ((#:albert #:formats)             . ("docbook"))
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
-    :depends-on ("com.informatimago.rdp")
-    :components ((:file "rdp-basic-gen")))
+    :depends-on ("com.informatimago.common-lisp.cesarum"
+                 "com.informatimago.common-lisp.html-generator"
+                 "com.informatimago.clext"
+                 "com.informatimago.tools.source")
+    :components ((:file "summary" :depends-on ())))
 
 ;;;; THE END ;;;;

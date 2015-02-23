@@ -34,7 +34,6 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.editor
-  :name "com.informatimago.editor"
   :description "An emacs-like editor."
   :author "Pascal J. Bourguignon"
   :version "1.0.4"

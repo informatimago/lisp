@@ -33,7 +33,6 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.small-cl-pgms.quine
-    :name "com.informatimago.small-cl-pgms.quine"
     :description "A few Quines."
     :author "Pascal J. Bourguignon"
     :version "1.0.0"

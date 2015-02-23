@@ -33,11 +33,8 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.common-lisp.ed
-
     ;; system attributes:
-    
-    :description  "Implementation of the ed(1) editor."
-
+    :description  "Informatimago Common Lisp Implementation of ED(1)"
     :long-description "
 
 This is the classic ed(1) editor implemented in Common Lisp.
@@ -47,20 +44,11 @@ com.informatimago.common-lisp.regexp (they could also be provided by
 cl-ppcre or #+clisp regexp).
 
 "
-
     :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-
     :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-
     :licence "AGPL3"
-    
-
     ;; component attributes:
-    
-    :name "Informatimago Common Lisp Implementation of ED(1)"
-    
     :version "1.2.1"
-    
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Autumn 2010")
                  ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.ed/")
@@ -68,12 +56,9 @@ cl-ppcre or #+clisp regexp).
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
-    
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
     :depends-on ("com.informatimago.common-lisp.cesarum"
                  "com.informatimago.common-lisp.regexp")
-                                        
     :components ((:file "ed" :depends-on ())))
 
 ;;;; THE END ;;;;

@@ -33,30 +33,18 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.common-lisp.apple-file
-
     ;; system attributes:
-    
-    :description "Read Apple-Single and Apple-Double file formats."
-
+    :description  "Apple-Single and Apple-Double File Formats."
     :long-description "
 
 Read Apple-Single and Apple-Double file formats.
 
 "
-
     :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-    
     :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-    
     :licence "AGPL3"
-
-
     ;; component attributes:
-
-    :name "Apple-Single and Apple-Double File Formats."
-    
     :version "1.0.0"
-    
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Spring 2013")
                  ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.apple-file/")
@@ -64,11 +52,8 @@ Read Apple-Single and Apple-Double file formats.
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
-    
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
     :depends-on ("com.informatimago.common-lisp.cesarum")
-    
     :components ((:file "apple-file" :depends-on ())))
 
 ;;;; THE END ;;;;

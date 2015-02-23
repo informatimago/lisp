@@ -33,24 +33,13 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.common-lisp.lisp-text
-
     ;; system attributes:
-    
-    :description  "Tools to read and manipulate Common Lisp sources."
-    
+    :description  "Informatimago Common Lisp Text Source Utilities"
     :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-
     :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-
     :licence "AGPL3"
-
-    
     ;; component attributes:
-
-    :name "Informatimago Common Lisp Text Source Utilities"
-
     :version "1.2.1"
-
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Autumn 2010")
                  ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.lisp-text/")
@@ -58,11 +47,8 @@
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
-    
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
     :depends-on ("com.informatimago.common-lisp.lisp-reader")
-    
     :components ((:file "source-text" :depends-on ())))
 
 ;;;; THE END ;;;;

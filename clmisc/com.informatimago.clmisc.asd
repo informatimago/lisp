@@ -33,32 +33,21 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.clmisc
-
     ;; system attributes:
-    
-    :description      "Various Common Lisp packages."
-
+    :description "Informatimago Common Lisp Miscellaneous"
     :long-description "
+Various Common Lisp packages.
 
 For now, only provides com.informatimago.clmisc.resource-utilization,
 a package to gather resource utilization statistics and report then in
 a format similar to what is used by LISTSERV.
 
 "
-    
     :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-    
     :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-    
     :licence "AGPL3"
-
-
     ;; component attributes:
-    
-    :name    "Informatimago Common Lisp Miscellaneous"
-    
     :version "1.2.1"
-
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Autumn 2010")
                  ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.clmisc/")
@@ -66,9 +55,8 @@ a format similar to what is used by LISTSERV.
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
-
-    :depends-on ()
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
+    :depends-on ()
     :components ((:file "resource-utilization")))
 
 

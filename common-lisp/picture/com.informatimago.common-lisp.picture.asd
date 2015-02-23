@@ -33,24 +33,13 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.common-lisp.picture
-
     ;; system attributes:
-    
-    :description  "ASCII-ART drawing."
-
+    :description  "Informatimago Common Lisp ASCII-Art Picture"
     :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-
     :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-
     :licence "AGPL3"
-
-    
     ;; component attributes:
-
-    :name "Informatimago Common Lisp ASCII-Art Picture"
-    
     :version "1.2.1"
-
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Autumn 2010")
                  ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.picture/")
@@ -58,11 +47,8 @@
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
-    
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
     :depends-on ("com.informatimago.common-lisp.cesarum")
-    
     :components ((:file "picture"       :depends-on ())
                  (:file "cons-to-ascii" :depends-on ("picture"))
                  (:file "tree-to-ascii" :depends-on ("picture"))))

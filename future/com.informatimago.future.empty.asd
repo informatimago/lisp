@@ -33,7 +33,6 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.future.empty
-    :name "com.informatimago.future.empty"
     :description "Empty system."
     :author "Pascal J. Bourguignon"
     :version "1.0.0"

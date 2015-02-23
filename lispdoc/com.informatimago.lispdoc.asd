@@ -32,26 +32,14 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-
 (asdf:defsystem :com.informatimago.lispdoc
-
     ;; system attributes:
-    
-    :description  "This system builds a derivative of lispdoc to generate the documentation of com.informatimago packages."
-    
+    :description "Informatimago Common Lisp Documentation Generator"
     :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-
     :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-
     :licence "LLGPL"
-
-    
     ;; component attributes:
-
-    :name "Informatimago Common Lisp Documentation"
-    
     :version "1.0.0"
-
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Spring 2012")
                  ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.lispdoc/")
@@ -59,9 +47,7 @@
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
-    
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
     :depends-on (
                  ;; Dependencies:
                  "cl-ppcre"
@@ -74,7 +60,6 @@
                  "com.informatimago.rdp"
                  #+(and ccl darwin) "com.informatimago.objcl"
                  )
-    
     :components ((:file "lispdoc")
                  (:file "lispdoc-run" :depends-on ("lispdoc"))))
 

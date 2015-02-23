@@ -33,29 +33,18 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.common-lisp.html-generator
-
     ;; system attributes:
-
-    :description  "HTML Generator."
-
+    :description  "Informatimago Common Lisp HTML 4.01 Generator"
     :long-description "
 
 Generation of HTML pages.
 
 "
-    
     :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-
     :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-    
     :licence "AGPL3"
-
     ;; component attributes:
-    
-    :name "Informatimago Common Lisp HTML Generator"
-    
     :version "1.2.1"
-    
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Autumn 2010")
                  ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.html-generator/")
@@ -63,11 +52,8 @@ Generation of HTML pages.
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
-    
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
     :depends-on ("com.informatimago.common-lisp.cesarum")
-    
     :components ((:file "html" :depends-on ())))
 
 ;;;; THE END ;;;;

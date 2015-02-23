@@ -33,7 +33,6 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.small-cl-pgms.what-implementation
-    :name "com.informatimago.small-cl-pgms.what-implementation"
     :description "A tool to help choosing a Common Lisp implementation."
     :author "Pascal J. Bourguignon"
     :version "1.0.0"

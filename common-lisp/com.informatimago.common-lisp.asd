@@ -32,26 +32,14 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-
 (asdf:defsystem :com.informatimago.common-lisp
-
     ;; system attributes:
-    
-    :description  "This system gathers most of the Informatimago Common Lisp systems."
-    
+    :description "Informatimago Common Lisp Systems Agregate"
     :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-
     :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-
     :licence "AGPL3"
-
-    
     ;; component attributes:
-
-    :name "Informatimago Common Lisp Systems Agregate"
-    
     :version "1.2.1"
-
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Autumn 2010")
                  ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp/")
@@ -59,9 +47,7 @@
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
-    
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
     :depends-on ("com.informatimago.common-lisp.lisp-sexp"
                  "com.informatimago.common-lisp.lisp-reader"
                  "com.informatimago.common-lisp.lisp-text"

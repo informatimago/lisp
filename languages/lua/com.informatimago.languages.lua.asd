@@ -33,30 +33,19 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.languages.lua
-
     ;; system attributes:
-    
     :description "LUA Scanner and Parser."
-
     :long-description "
 This system provides tools to manipulate LUA programs.
 - A LUA Scanner.
 - A LUA Parser.
 - (eventually, possibly a LUA interpreter or translator to CL).
 "
-    
     :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-    
     :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-    
     :licence "AGPL3"
-
     ;; component attributes:
-    
-    :name "LUA Tools."
-    
     :version "1.0.0"
-
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Summer 2012")
                  ((#:albert #:output-dir)          . "../documentation/com.informatimago.lua/")
@@ -64,13 +53,10 @@ This system provides tools to manipulate LUA programs.
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
-    
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
     :depends-on ("com.informatimago.common-lisp.cesarum"
                  "com.informatimago.common-lisp.parser"
                  "com.informatimago.rdp")
-    
     :components ((:file "package")
                  (:file "lua-scanner" :depends-on ("package"))
                  (:file "lua-parser"  :depends-on ("package" "lua-scanner"))))

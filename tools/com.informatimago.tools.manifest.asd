@@ -33,14 +33,13 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.tools.manifest
-    :name "com.informatimago.tools.manifest"
-    :description "Produces a manifest of asdf systems."
-    :author "Pascal J. Bourguignon"
-    :version "1.0.0"
-    :license "AGPL3"
-    :depends-on ("com.informatimago.common-lisp.cesarum"
-                 "split-sequence") 
-    :components ((:file "manifest")))
+  :description "Produces a manifest of asdf systems."
+  :author "Pascal J. Bourguignon"
+  :version "1.0.0"
+  :license "AGPL3"
+  :depends-on ("com.informatimago.common-lisp.cesarum"
+               "split-sequence") 
+  :components ((:file "manifest")))
 
 
 ;;;; THE END ;;;;

@@ -33,7 +33,6 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.small-cl-pgms
-  :name "com.informatimago.small-cl-pgms"
   :description "Small Common Lisp Programs"
   :author "Pascal J. Bourguignon"
   :version "1.0.0"
@@ -56,5 +55,9 @@
              (:file "solitaire")
              (:file "toy-byte-code")
              (:file "wang-cl")))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (warn "~S Components not included yet (need some cleaning)"
+        ':com.informatimago.small-cl-pgms))
 
 ;;;; THE END ;;;;

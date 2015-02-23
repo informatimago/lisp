@@ -33,11 +33,8 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.rdp
-
     ;; system attributes:
-    
-    :description "A simple Recursive Descent Parser generator."
-
+    :description "Recursive Descent Parser Generator"
     :long-description "
 
 A simple Recursive Descent Parser generator.
@@ -45,19 +42,11 @@ The client may define methods to generate the code of the parser in
 different languages than lisp.
 
 "
-    
     :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-    
     :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-    
     :licence "AGPL3"
-
     ;; component attributes:
-    
-    :name "Recursive Descent Parser Generator"
-    
     :version "1.0.2"
-
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Summer 2011")
                  ((#:albert #:output-dir)          . "../documentation/com.informatimago.rdp/")
@@ -65,13 +54,10 @@ different languages than lisp.
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
-    
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
     :depends-on ("cl-ppcre" 
                  "com.informatimago.common-lisp.cesarum"
                  "com.informatimago.common-lisp.parser")
-    
     :components ((:file "packages")
                  (:file "rdp"                  :depends-on ("packages"))
                  (:file "rdp-lisp-boilerplate" :depends-on ("packages" "rdp"))

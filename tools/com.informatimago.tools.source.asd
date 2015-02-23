@@ -33,8 +33,7 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.tools.source
-    :name "com.informatimago.tools.symbol"
-    :description "Symbol tools."
+    :description "Reads sources and headers to perform some analysis."
     :author "Pascal J. Bourguignon"
     :version "1.0.0"
     :license "GPL3"
@@ -43,7 +42,9 @@
                  "com.informatimago.clext"
                  "com.informatimago.tools.check-asdf"
                  "closer-mop") 
-    :components ((:file "read-sources")))
+    :components ((:file "source")
+                 (:file "asdf-file" :depends-on ("source"))
+                 #-(and) (:file "analyse-patchwork")))
 
 
 ;;;; THE END ;;;;
