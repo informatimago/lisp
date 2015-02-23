@@ -210,36 +210,6 @@
        (call-next-method))))
 
 
-(defun test/scan-stream (src)
-  (loop
-    :with scanner = (make-instance 'pbxproj-scanner :source src :state 0)
-    ;; :initially (progn
-    ;;              (advance-line scanner)
-    ;;              (format t "~2%;; ~A~%;; ~A~%"
-    ;;                      (scanner-buffer scanner)
-    ;;                      (scanner-current-token scanner)))
-    :do (progn
-          (scan-next-token scanner)
-          (format t "~&~3A ~20A ~20S ~3A ~3A ~20A ~A~%"
-                  (scanner-state scanner)
-                  (token-kind (scanner-current-token scanner))
-                  (token-text (scanner-current-token scanner))
-                  (eofp (scanner-current-token scanner))
-                  (eofp (scanner-current-token scanner))
-                  "-" ;; (scanner-previous-token-kind scanner) 
-                  (type-of (scanner-current-token scanner)))
-          (finish-output))
-    :while (scanner-current-token scanner)))
-
-(defun test/scan-file (path)
-  (with-open-file (src path)
-    (test/scan-stream src)))
-
-(defun test/scan-string (source)
-  (with-input-from-string (src source)
-    (test/scan-stream src)))
-
-
 
 ;;----------------------------------------------------------------------
 ;; pbxproj parser
@@ -277,22 +247,9 @@
 
 
 
-
-(defun test/parse-stream (src)
-  (let ((scanner (make-instance 'pbxproj-scanner :source src :state 0)))
-    (parse-pbxproj scanner)))
-
-
-(defun test/parse-string (source)
-  (with-input-from-string (src source)
-    (test/parse-stream src)))
-
-;; (test/scan-file  #P"~/works/abalone-macosx/Abalone-10.7/Abalone.xcodeproj/project.pbxproj")
-
 (defun read-pbxproj (path)
   (with-open-file (stream path)
     (parse-pbxproj  stream)))
 
-;; (read-pbxproj #P"~/works/abalone-macosx/Abalone-10.7/Abalone.xcodeproj/project.pbxproj")
 
 ;;;; THE END ;;;;

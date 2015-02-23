@@ -1,0 +1,832 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		2A27B8451270B4AC00193BDD /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A27B8401270B4AC00193BDD /* AppKit.framework */; };
+		2A27B8461270B4AC00193BDD /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A27B8411270B4AC00193BDD /* Cocoa.framework */; };
+		2A27B8471270B4AC00193BDD /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A27B8421270B4AC00193BDD /* CoreData.framework */; };
+		2A27B8481270B4AC00193BDD /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A27B8431270B4AC00193BDD /* CoreFoundation.framework */; };
+		2A27B8491270B4AC00193BDD /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A27B8441270B4AC00193BDD /* Foundation.framework */; };
+		2A5FB6D614C990CB00E1D422 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A27B8411270B4AC00193BDD /* Cocoa.framework */; };
+		2A5FB6E514C990CC00E1D422 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 2A5FB6E314C990CC00E1D422 /* Credits.rtf */; };
+		2A5FB6F314C990CD00E1D422 /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A5FB6F214C990CD00E1D422 /* SenTestingKit.framework */; };
+		2A5FB6F414C990CD00E1D422 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A27B8411270B4AC00193BDD /* Cocoa.framework */; };
+		2A5FB6FC14C990CD00E1D422 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 2A5FB6FA14C990CD00E1D422 /* InfoPlist.strings */; };
+		2A5FB6FF14C990CE00E1D422 /* Abalone2Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A5FB6FE14C990CE00E1D422 /* Abalone2Tests.m */; };
+		2A5FB70D14C9976700E1D422 /* NSArray-Functional.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A6A8F941275658200B03661 /* NSArray-Functional.m */; };
+		2A5FB71114C9976700E1D422 /* AbaloneApp.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AEFCCE90EAA393700BF9341 /* AbaloneApp.m */; };
+		2A5FB71314C9976700E1D422 /* AbaloneBoard.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AEFCCEB0EAA393700BF9341 /* AbaloneBoard.m */; };
+		2A5FB71514C9976700E1D422 /* AbaloneGame.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AEFCCED0EAA393700BF9341 /* AbaloneGame.m */; };
+		2A5FB71714C9976700E1D422 /* AbaloneMove.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AEFCCEF0EAA393700BF9341 /* AbaloneMove.m */; };
+		2A5FB71914C9976700E1D422 /* AbalonePlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AEFCCF10EAA393700BF9341 /* AbalonePlayer.m */; };
+		2A5FB71B14C9976700E1D422 /* AbaloneUserPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AEFCCF30EAA393700BF9341 /* AbaloneUserPlayer.m */; };
+		2A5FB71D14C9976700E1D422 /* AbaloneView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AEFCCF50EAA393700BF9341 /* AbaloneView.m */; };
+		2A5FB71F14C9976700E1D422 /* BallView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AEFCCF70EAA393700BF9341 /* BallView.m */; };
+		2A5FB72114C997B000E1D422 /* Abalone.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A6A8F4B1273F73F00B03661 /* Abalone.m */; };
+		2A5FB72214C997B000E1D422 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; };
+		2A5FB72814C9987200E1D422 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2AD3C61B12718C84005DEF2E /* MainMenu.xib */; };
+		2A5FB73014C99AA200E1D422 /* Abalone_About.rtf in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2A6A8F911274CADE00B03661 /* Abalone_About.rtf */; };
+		2A5FB73114C99AA200E1D422 /* Won.snd in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2AD3C6B5127357AB005DEF2E /* Won.snd */; };
+		2A5FB73214C99AA200E1D422 /* Move.snd in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2AD3C6B6127357AB005DEF2E /* Move.snd */; };
+		2A5FB73314C99AA200E1D422 /* Drop.snd in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2AD3C6B7127357AB005DEF2E /* Drop.snd */; };
+		2A5FB73414C99AA200E1D422 /* Lost.snd in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2AD3C6B8127357AB005DEF2E /* Lost.snd */; };
+		2A5FB73514C99AA200E1D422 /* Abalone.icon.png in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2AD3C69F1273577E005DEF2E /* Abalone.icon.png */; };
+		2A5FB73614C99AA200E1D422 /* Abalone_README.rtf in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2AEFCCE70EAA393700BF9341 /* Abalone_README.rtf */; };
+		2A6A8F4C1273F73F00B03661 /* Abalone.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A6A8F4B1273F73F00B03661 /* Abalone.m */; };
+		2A6A8F641274BFCD00B03661 /* AbaloneApp.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AEFCCE90EAA393700BF9341 /* AbaloneApp.m */; };
+		2A6A8F651274BFCD00B03661 /* AbaloneBoard.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AEFCCEB0EAA393700BF9341 /* AbaloneBoard.m */; };
+		2A6A8F661274BFCD00B03661 /* AbaloneGame.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AEFCCED0EAA393700BF9341 /* AbaloneGame.m */; };
+		2A6A8F671274BFCD00B03661 /* AbaloneMove.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AEFCCEF0EAA393700BF9341 /* AbaloneMove.m */; };
+		2A6A8F681274BFCD00B03661 /* AbalonePlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AEFCCF10EAA393700BF9341 /* AbalonePlayer.m */; };
+		2A6A8F691274BFCD00B03661 /* AbaloneUserPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AEFCCF30EAA393700BF9341 /* AbaloneUserPlayer.m */; };
+		2A6A8F6A1274BFCD00B03661 /* AbaloneView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AEFCCF50EAA393700BF9341 /* AbaloneView.m */; };
+		2A6A8F6B1274BFCD00B03661 /* BallView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AEFCCF70EAA393700BF9341 /* BallView.m */; };
+		2A6A8F921274CADE00B03661 /* Abalone_About.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 2A6A8F911274CADE00B03661 /* Abalone_About.rtf */; };
+		2A6A8F951275658200B03661 /* NSArray-Functional.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A6A8F941275658200B03661 /* NSArray-Functional.m */; };
+		2AD3C6A01273577E005DEF2E /* Abalone.icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 2AD3C69F1273577E005DEF2E /* Abalone.icon.png */; };
+		2AD3C6CD127357AB005DEF2E /* Won.snd in Resources */ = {isa = PBXBuildFile; fileRef = 2AD3C6B5127357AB005DEF2E /* Won.snd */; };
+		2AD3C6CE127357AB005DEF2E /* Move.snd in Resources */ = {isa = PBXBuildFile; fileRef = 2AD3C6B6127357AB005DEF2E /* Move.snd */; };
+		2AD3C6CF127357AB005DEF2E /* Drop.snd in Resources */ = {isa = PBXBuildFile; fileRef = 2AD3C6B7127357AB005DEF2E /* Drop.snd */; };
+		2AD3C6D0127357AB005DEF2E /* Lost.snd in Resources */ = {isa = PBXBuildFile; fileRef = 2AD3C6B8127357AB005DEF2E /* Lost.snd */; };
+		2AD3C72B1273E88A005DEF2E /* 2bit.abaloneset in Resources */ = {isa = PBXBuildFile; fileRef = 2AD3C7261273E88A005DEF2E /* 2bit.abaloneset */; };
+		2AD3C72C1273E88A005DEF2E /* glass.abaloneset in Resources */ = {isa = PBXBuildFile; fileRef = 2AD3C7271273E88A005DEF2E /* glass.abaloneset */; };
+		2AD3C72D1273E88A005DEF2E /* metal.abaloneset in Resources */ = {isa = PBXBuildFile; fileRef = 2AD3C7281273E88A005DEF2E /* metal.abaloneset */; };
+		2AD3C72E1273E88A005DEF2E /* plastic.abaloneset in Resources */ = {isa = PBXBuildFile; fileRef = 2AD3C7291273E88A005DEF2E /* plastic.abaloneset */; };
+		2AD3C72F1273E88A005DEF2E /* wood.abaloneset in Resources */ = {isa = PBXBuildFile; fileRef = 2AD3C72A1273E88A005DEF2E /* wood.abaloneset */; };
+		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
+		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		2A5FB6F514C990CD00E1D422 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2A5FB6D314C990CB00E1D422;
+			remoteInfo = Abalone2;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		2A5FB72014C9979700E1D422 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 7;
+			files = (
+				2A5FB73014C99AA200E1D422 /* Abalone_About.rtf in CopyFiles */,
+				2A5FB73114C99AA200E1D422 /* Won.snd in CopyFiles */,
+				2A5FB73214C99AA200E1D422 /* Move.snd in CopyFiles */,
+				2A5FB73314C99AA200E1D422 /* Drop.snd in CopyFiles */,
+				2A5FB73414C99AA200E1D422 /* Lost.snd in CopyFiles */,
+				2A5FB73514C99AA200E1D422 /* Abalone.icon.png in CopyFiles */,
+				2A5FB73614C99AA200E1D422 /* Abalone_README.rtf in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		2A27B8401270B4AC00193BDD /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
+		2A27B8411270B4AC00193BDD /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		2A27B8421270B4AC00193BDD /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
+		2A27B8431270B4AC00193BDD /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = /System/Library/Frameworks/CoreFoundation.framework; sourceTree = "<absolute>"; };
+		2A27B8441270B4AC00193BDD /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		2A3C44AA18134867003A85C3 /* System.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = System.h; sourceTree = "<group>"; };
+		2A5FB6D414C990CB00E1D422 /* Abalone2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Abalone2.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2A5FB6D714C990CB00E1D422 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		2A5FB6D814C990CB00E1D422 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		2A5FB6D914C990CB00E1D422 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		2A5FB6DC14C990CB00E1D422 /* Abalone2-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Abalone2-Info.plist"; sourceTree = "<group>"; };
+		2A5FB6DE14C990CC00E1D422 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		2A5FB6E014C990CC00E1D422 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		2A5FB6E214C990CC00E1D422 /* Abalone2-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Abalone2-Prefix.pch"; sourceTree = "<group>"; };
+		2A5FB6E414C990CC00E1D422 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = en; path = en.lproj/Credits.rtf; sourceTree = "<group>"; };
+		2A5FB6E614C990CC00E1D422 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		2A5FB6E714C990CC00E1D422 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		2A5FB6EA14C990CC00E1D422 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		2A5FB6F114C990CD00E1D422 /* Abalone2Tests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Abalone2Tests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2A5FB6F214C990CD00E1D422 /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
+		2A5FB6F914C990CD00E1D422 /* Abalone2Tests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Abalone2Tests-Info.plist"; sourceTree = "<group>"; };
+		2A5FB6FB14C990CD00E1D422 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		2A5FB6FD14C990CE00E1D422 /* Abalone2Tests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Abalone2Tests.h; sourceTree = "<group>"; };
+		2A5FB6FE14C990CE00E1D422 /* Abalone2Tests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Abalone2Tests.m; sourceTree = "<group>"; };
+		2A5FB70A14C9969700E1D422 /* Abalone.icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Abalone.icon.png; sourceTree = "<group>"; };
+		2A6A8F4B1273F73F00B03661 /* Abalone.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Abalone.m; sourceTree = "<group>"; };
+		2A6A8F911274CADE00B03661 /* Abalone_About.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Abalone_About.rtf; sourceTree = "<group>"; };
+		2A6A8F931275658200B03661 /* NSArray-Functional.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSArray-Functional.h"; sourceTree = "<group>"; };
+		2A6A8F941275658200B03661 /* NSArray-Functional.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSArray-Functional.m"; sourceTree = "<group>"; };
+		2AD3C61C12718C84005DEF2E /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		2AD3C69F1273577E005DEF2E /* Abalone.icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = Abalone.icon.png; path = Resources/Abalone.icon.png; sourceTree = "<group>"; };
+		2AD3C6B5127357AB005DEF2E /* Won.snd */ = {isa = PBXFileReference; lastKnownFileType = file; path = Won.snd; sourceTree = "<group>"; };
+		2AD3C6B6127357AB005DEF2E /* Move.snd */ = {isa = PBXFileReference; lastKnownFileType = file; path = Move.snd; sourceTree = "<group>"; };
+		2AD3C6B7127357AB005DEF2E /* Drop.snd */ = {isa = PBXFileReference; lastKnownFileType = file; path = Drop.snd; sourceTree = "<group>"; };
+		2AD3C6B8127357AB005DEF2E /* Lost.snd */ = {isa = PBXFileReference; lastKnownFileType = file; path = Lost.snd; sourceTree = "<group>"; };
+		2AD3C7261273E88A005DEF2E /* 2bit.abaloneset */ = {isa = PBXFileReference; lastKnownFileType = folder; name = 2bit.abaloneset; path = Resources/2bit.abaloneset; sourceTree = "<group>"; };
+		2AD3C7271273E88A005DEF2E /* glass.abaloneset */ = {isa = PBXFileReference; lastKnownFileType = folder; name = glass.abaloneset; path = Resources/glass.abaloneset; sourceTree = "<group>"; };
+		2AD3C7281273E88A005DEF2E /* metal.abaloneset */ = {isa = PBXFileReference; lastKnownFileType = folder; name = metal.abaloneset; path = Resources/metal.abaloneset; sourceTree = "<group>"; };
+		2AD3C7291273E88A005DEF2E /* plastic.abaloneset */ = {isa = PBXFileReference; lastKnownFileType = folder; name = plastic.abaloneset; path = Resources/plastic.abaloneset; sourceTree = "<group>"; };
+		2AD3C72A1273E88A005DEF2E /* wood.abaloneset */ = {isa = PBXFileReference; lastKnownFileType = folder; name = wood.abaloneset; path = Resources/wood.abaloneset; sourceTree = "<group>"; };
+		2AEFCCE00EAA393600BF9341 /* Abalone.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Abalone.h; sourceTree = "<group>"; };
+		2AEFCCE20EAA393600BF9341 /* Abalone.iconheader */ = {isa = PBXFileReference; lastKnownFileType = text; path = Abalone.iconheader; sourceTree = "<group>"; };
+		2AEFCCE30EAA393600BF9341 /* Abalone.info */ = {isa = PBXFileReference; lastKnownFileType = text; path = Abalone.info; sourceTree = "<group>"; };
+		2AEFCCE40EAA393600BF9341 /* Abalone.nosd.form */ = {isa = PBXFileReference; lastKnownFileType = text; path = Abalone.nosd.form; sourceTree = "<group>"; };
+		2AEFCCE50EAA393600BF9341 /* Abalone.nosd.README */ = {isa = PBXFileReference; lastKnownFileType = text; path = Abalone.nosd.README; sourceTree = "<group>"; };
+		2AEFCCE70EAA393700BF9341 /* Abalone_README.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Abalone_README.rtf; sourceTree = "<group>"; };
+		2AEFCCE80EAA393700BF9341 /* AbaloneApp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AbaloneApp.h; sourceTree = "<group>"; };
+		2AEFCCE90EAA393700BF9341 /* AbaloneApp.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AbaloneApp.m; sourceTree = "<group>"; };
+		2AEFCCEA0EAA393700BF9341 /* AbaloneBoard.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AbaloneBoard.h; sourceTree = "<group>"; };
+		2AEFCCEB0EAA393700BF9341 /* AbaloneBoard.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AbaloneBoard.m; sourceTree = "<group>"; };
+		2AEFCCEC0EAA393700BF9341 /* AbaloneGame.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AbaloneGame.h; sourceTree = "<group>"; };
+		2AEFCCED0EAA393700BF9341 /* AbaloneGame.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AbaloneGame.m; sourceTree = "<group>"; };
+		2AEFCCEE0EAA393700BF9341 /* AbaloneMove.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AbaloneMove.h; sourceTree = "<group>"; };
+		2AEFCCEF0EAA393700BF9341 /* AbaloneMove.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AbaloneMove.m; sourceTree = "<group>"; };
+		2AEFCCF00EAA393700BF9341 /* AbalonePlayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AbalonePlayer.h; sourceTree = "<group>"; };
+		2AEFCCF10EAA393700BF9341 /* AbalonePlayer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AbalonePlayer.m; sourceTree = "<group>"; };
+		2AEFCCF20EAA393700BF9341 /* AbaloneUserPlayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AbaloneUserPlayer.h; sourceTree = "<group>"; };
+		2AEFCCF30EAA393700BF9341 /* AbaloneUserPlayer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AbaloneUserPlayer.m; sourceTree = "<group>"; };
+		2AEFCCF40EAA393700BF9341 /* AbaloneView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AbaloneView.h; sourceTree = "<group>"; };
+		2AEFCCF50EAA393700BF9341 /* AbaloneView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AbaloneView.m; sourceTree = "<group>"; };
+		2AEFCCF60EAA393700BF9341 /* BallView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BallView.h; sourceTree = "<group>"; };
+		2AEFCCF70EAA393700BF9341 /* BallView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BallView.m; sourceTree = "<group>"; };
+		32CA4F630368D1EE00C91783 /* Abalone_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Abalone_Prefix.pch; sourceTree = "<group>"; };
+		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		8D1107320486CEB800E47090 /* Abalone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Abalone.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		2A5FB6D114C990CB00E1D422 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2A5FB6D614C990CB00E1D422 /* Cocoa.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2A5FB6ED14C990CD00E1D422 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2A5FB6F314C990CD00E1D422 /* SenTestingKit.framework in Frameworks */,
+				2A5FB6F414C990CD00E1D422 /* Cocoa.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8D11072E0486CEB800E47090 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2A27B8451270B4AC00193BDD /* AppKit.framework in Frameworks */,
+				2A27B8461270B4AC00193BDD /* Cocoa.framework in Frameworks */,
+				2A27B8471270B4AC00193BDD /* CoreData.framework in Frameworks */,
+				2A27B8481270B4AC00193BDD /* CoreFoundation.framework in Frameworks */,
+				2A27B8491270B4AC00193BDD /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		080E96DDFE201D6D7F000001 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				2A3C44AA18134867003A85C3 /* System.h */,
+				2A6A8F931275658200B03661 /* NSArray-Functional.h */,
+				2A6A8F941275658200B03661 /* NSArray-Functional.m */,
+				2AEFCCE80EAA393700BF9341 /* AbaloneApp.h */,
+				2AEFCCE90EAA393700BF9341 /* AbaloneApp.m */,
+				2AEFCCEA0EAA393700BF9341 /* AbaloneBoard.h */,
+				2AEFCCEB0EAA393700BF9341 /* AbaloneBoard.m */,
+				2AEFCCEC0EAA393700BF9341 /* AbaloneGame.h */,
+				2AEFCCED0EAA393700BF9341 /* AbaloneGame.m */,
+				2AEFCCEE0EAA393700BF9341 /* AbaloneMove.h */,
+				2AEFCCEF0EAA393700BF9341 /* AbaloneMove.m */,
+				2AEFCCF00EAA393700BF9341 /* AbalonePlayer.h */,
+				2AEFCCF10EAA393700BF9341 /* AbalonePlayer.m */,
+				2AEFCCF20EAA393700BF9341 /* AbaloneUserPlayer.h */,
+				2AEFCCF30EAA393700BF9341 /* AbaloneUserPlayer.m */,
+				2AEFCCF40EAA393700BF9341 /* AbaloneView.h */,
+				2AEFCCF50EAA393700BF9341 /* AbaloneView.m */,
+				2AEFCCF60EAA393700BF9341 /* BallView.h */,
+				2AEFCCF70EAA393700BF9341 /* BallView.m */,
+			);
+			name = Classes;
+			sourceTree = "<group>";
+		};
+		1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "Linked Frameworks";
+			sourceTree = "<group>";
+		};
+		1058C7A2FEA54F0111CA2CBB /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				2A5FB6D714C990CB00E1D422 /* AppKit.framework */,
+				2A5FB6D814C990CB00E1D422 /* CoreData.framework */,
+				2A5FB6D914C990CB00E1D422 /* Foundation.framework */,
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		19C28FACFE9D520D11CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8D1107320486CEB800E47090 /* Abalone.app */,
+				2A5FB6D414C990CB00E1D422 /* Abalone2.app */,
+				2A5FB6F114C990CD00E1D422 /* Abalone2Tests.octest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		29B97314FDCFA39411CA2CEA /* Abalone */ = {
+			isa = PBXGroup;
+			children = (
+				2A5FB70A14C9969700E1D422 /* Abalone.icon.png */,
+				080E96DDFE201D6D7F000001 /* Classes */,
+				29B97315FDCFA39411CA2CEA /* Other Sources */,
+				29B97317FDCFA39411CA2CEA /* Resources */,
+				2A5FB6DA14C990CB00E1D422 /* Abalone2 */,
+				2A5FB6F714C990CD00E1D422 /* Abalone2Tests */,
+				29B97323FDCFA39411CA2CEA /* Frameworks */,
+				19C28FACFE9D520D11CA2CBB /* Products */,
+			);
+			name = Abalone;
+			sourceTree = "<group>";
+		};
+		29B97315FDCFA39411CA2CEA /* Other Sources */ = {
+			isa = PBXGroup;
+			children = (
+				2A6A8F4B1273F73F00B03661 /* Abalone.m */,
+				2AEFCCE00EAA393600BF9341 /* Abalone.h */,
+				32CA4F630368D1EE00C91783 /* Abalone_Prefix.pch */,
+				29B97316FDCFA39411CA2CEA /* main.m */,
+			);
+			name = "Other Sources";
+			sourceTree = "<group>";
+		};
+		29B97317FDCFA39411CA2CEA /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				2AD3C61B12718C84005DEF2E /* MainMenu.xib */,
+				2A6A8F911274CADE00B03661 /* Abalone_About.rtf */,
+				2AD3C7261273E88A005DEF2E /* 2bit.abaloneset */,
+				2AD3C7271273E88A005DEF2E /* glass.abaloneset */,
+				2AD3C7281273E88A005DEF2E /* metal.abaloneset */,
+				2AD3C7291273E88A005DEF2E /* plastic.abaloneset */,
+				2AD3C72A1273E88A005DEF2E /* wood.abaloneset */,
+				2AD3C6B4127357AB005DEF2E /* sounds */,
+				2AD3C69F1273577E005DEF2E /* Abalone.icon.png */,
+				2AEFCCE20EAA393600BF9341 /* Abalone.iconheader */,
+				2AEFCCE30EAA393600BF9341 /* Abalone.info */,
+				2AEFCCE40EAA393600BF9341 /* Abalone.nosd.form */,
+				2AEFCCE50EAA393600BF9341 /* Abalone.nosd.README */,
+				2AEFCCE70EAA393700BF9341 /* Abalone_README.rtf */,
+				8D1107310486CEB800E47090 /* Info.plist */,
+				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				2A27B8401270B4AC00193BDD /* AppKit.framework */,
+				2A27B8411270B4AC00193BDD /* Cocoa.framework */,
+				2A27B8421270B4AC00193BDD /* CoreData.framework */,
+				2A27B8431270B4AC00193BDD /* CoreFoundation.framework */,
+				2A27B8441270B4AC00193BDD /* Foundation.framework */,
+				1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */,
+				2A5FB6F214C990CD00E1D422 /* SenTestingKit.framework */,
+				1058C7A2FEA54F0111CA2CBB /* Other Frameworks */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		2A5FB6DA14C990CB00E1D422 /* Abalone2 */ = {
+			isa = PBXGroup;
+			children = (
+				2A5FB6E614C990CC00E1D422 /* AppDelegate.h */,
+				2A5FB6E714C990CC00E1D422 /* AppDelegate.m */,
+				2A5FB6E914C990CC00E1D422 /* MainMenu.xib */,
+				2A5FB6DB14C990CB00E1D422 /* Supporting Files */,
+			);
+			path = Abalone2;
+			sourceTree = "<group>";
+		};
+		2A5FB6DB14C990CB00E1D422 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				2A5FB6DC14C990CB00E1D422 /* Abalone2-Info.plist */,
+				2A5FB6DD14C990CC00E1D422 /* InfoPlist.strings */,
+				2A5FB6E014C990CC00E1D422 /* main.m */,
+				2A5FB6E214C990CC00E1D422 /* Abalone2-Prefix.pch */,
+				2A5FB6E314C990CC00E1D422 /* Credits.rtf */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		2A5FB6F714C990CD00E1D422 /* Abalone2Tests */ = {
+			isa = PBXGroup;
+			children = (
+				2A5FB6FD14C990CE00E1D422 /* Abalone2Tests.h */,
+				2A5FB6FE14C990CE00E1D422 /* Abalone2Tests.m */,
+				2A5FB6F814C990CD00E1D422 /* Supporting Files */,
+			);
+			path = Abalone2Tests;
+			sourceTree = "<group>";
+		};
+		2A5FB6F814C990CD00E1D422 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				2A5FB6F914C990CD00E1D422 /* Abalone2Tests-Info.plist */,
+				2A5FB6FA14C990CD00E1D422 /* InfoPlist.strings */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		2AD3C6B4127357AB005DEF2E /* sounds */ = {
+			isa = PBXGroup;
+			children = (
+				2AD3C6B5127357AB005DEF2E /* Won.snd */,
+				2AD3C6B6127357AB005DEF2E /* Move.snd */,
+				2AD3C6B7127357AB005DEF2E /* Drop.snd */,
+				2AD3C6B8127357AB005DEF2E /* Lost.snd */,
+			);
+			name = sounds;
+			path = Resources/sounds;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		2A5FB6D314C990CB00E1D422 /* Abalone2 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2A5FB70014C990CE00E1D422 /* Build configuration list for PBXNativeTarget "Abalone2" */;
+			buildPhases = (
+				2A5FB6D014C990CB00E1D422 /* Sources */,
+				2A5FB6D114C990CB00E1D422 /* Frameworks */,
+				2A5FB6D214C990CB00E1D422 /* Resources */,
+				2A5FB72014C9979700E1D422 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Abalone2;
+			productName = Abalone2;
+			productReference = 2A5FB6D414C990CB00E1D422 /* Abalone2.app */;
+			productType = "com.apple.product-type.application";
+		};
+		2A5FB6F014C990CD00E1D422 /* Abalone2Tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2A5FB70314C990CE00E1D422 /* Build configuration list for PBXNativeTarget "Abalone2Tests" */;
+			buildPhases = (
+				2A5FB6EC14C990CD00E1D422 /* Sources */,
+				2A5FB6ED14C990CD00E1D422 /* Frameworks */,
+				2A5FB6EE14C990CD00E1D422 /* Resources */,
+				2A5FB6EF14C990CD00E1D422 /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				2A5FB6F614C990CD00E1D422 /* PBXTargetDependency */,
+			);
+			name = Abalone2Tests;
+			productName = Abalone2Tests;
+			productReference = 2A5FB6F114C990CD00E1D422 /* Abalone2Tests.octest */;
+			productType = "com.apple.product-type.bundle";
+		};
+		8D1107260486CEB800E47090 /* Abalone */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "Abalone" */;
+			buildPhases = (
+				8D1107290486CEB800E47090 /* Resources */,
+				8D11072C0486CEB800E47090 /* Sources */,
+				8D11072E0486CEB800E47090 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Abalone;
+			productInstallPath = "$(HOME)/Applications";
+			productName = Abalone;
+			productReference = 8D1107320486CEB800E47090 /* Abalone.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		29B97313FDCFA39411CA2CEA /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0500;
+			};
+			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "Abalone" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+				en,
+			);
+			mainGroup = 29B97314FDCFA39411CA2CEA /* Abalone */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8D1107260486CEB800E47090 /* Abalone */,
+				2A5FB6D314C990CB00E1D422 /* Abalone2 */,
+				2A5FB6F014C990CD00E1D422 /* Abalone2Tests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		2A5FB6D214C990CB00E1D422 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2A5FB72814C9987200E1D422 /* MainMenu.xib in Resources */,
+				2A5FB6E514C990CC00E1D422 /* Credits.rtf in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2A5FB6EE14C990CD00E1D422 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2A5FB6FC14C990CD00E1D422 /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8D1107290486CEB800E47090 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */,
+				2AD3C6A01273577E005DEF2E /* Abalone.icon.png in Resources */,
+				2AD3C6CD127357AB005DEF2E /* Won.snd in Resources */,
+				2AD3C6CE127357AB005DEF2E /* Move.snd in Resources */,
+				2AD3C6CF127357AB005DEF2E /* Drop.snd in Resources */,
+				2AD3C6D0127357AB005DEF2E /* Lost.snd in Resources */,
+				2AD3C72B1273E88A005DEF2E /* 2bit.abaloneset in Resources */,
+				2AD3C72C1273E88A005DEF2E /* glass.abaloneset in Resources */,
+				2AD3C72D1273E88A005DEF2E /* metal.abaloneset in Resources */,
+				2AD3C72E1273E88A005DEF2E /* plastic.abaloneset in Resources */,
+				2AD3C72F1273E88A005DEF2E /* wood.abaloneset in Resources */,
+				2A6A8F921274CADE00B03661 /* Abalone_About.rtf in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		2A5FB6EF14C990CD00E1D422 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Run the unit tests in this test bundle.\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		2A5FB6D014C990CB00E1D422 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2A5FB72114C997B000E1D422 /* Abalone.m in Sources */,
+				2A5FB72214C997B000E1D422 /* main.m in Sources */,
+				2A5FB70D14C9976700E1D422 /* NSArray-Functional.m in Sources */,
+				2A5FB71114C9976700E1D422 /* AbaloneApp.m in Sources */,
+				2A5FB71314C9976700E1D422 /* AbaloneBoard.m in Sources */,
+				2A5FB71514C9976700E1D422 /* AbaloneGame.m in Sources */,
+				2A5FB71714C9976700E1D422 /* AbaloneMove.m in Sources */,
+				2A5FB71914C9976700E1D422 /* AbalonePlayer.m in Sources */,
+				2A5FB71B14C9976700E1D422 /* AbaloneUserPlayer.m in Sources */,
+				2A5FB71D14C9976700E1D422 /* AbaloneView.m in Sources */,
+				2A5FB71F14C9976700E1D422 /* BallView.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2A5FB6EC14C990CD00E1D422 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2A5FB6FF14C990CE00E1D422 /* Abalone2Tests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8D11072C0486CEB800E47090 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2A6A8F641274BFCD00B03661 /* AbaloneApp.m in Sources */,
+				2A6A8F651274BFCD00B03661 /* AbaloneBoard.m in Sources */,
+				2A6A8F661274BFCD00B03661 /* AbaloneGame.m in Sources */,
+				2A6A8F671274BFCD00B03661 /* AbaloneMove.m in Sources */,
+				2A6A8F681274BFCD00B03661 /* AbalonePlayer.m in Sources */,
+				2A6A8F691274BFCD00B03661 /* AbaloneUserPlayer.m in Sources */,
+				2A6A8F6A1274BFCD00B03661 /* AbaloneView.m in Sources */,
+				2A6A8F6B1274BFCD00B03661 /* BallView.m in Sources */,
+				2A6A8F4C1273F73F00B03661 /* Abalone.m in Sources */,
+				8D11072D0486CEB800E47090 /* main.m in Sources */,
+				2A6A8F951275658200B03661 /* NSArray-Functional.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		2A5FB6F614C990CD00E1D422 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2A5FB6D314C990CB00E1D422 /* Abalone2 */;
+			targetProxy = 2A5FB6F514C990CD00E1D422 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		089C165CFE840E0CC02AAC07 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				089C165DFE840E0CC02AAC07 /* English */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		2A5FB6DD14C990CC00E1D422 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				2A5FB6DE14C990CC00E1D422 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		2A5FB6E314C990CC00E1D422 /* Credits.rtf */ = {
+			isa = PBXVariantGroup;
+			children = (
+				2A5FB6E414C990CC00E1D422 /* en */,
+			);
+			name = Credits.rtf;
+			sourceTree = "<group>";
+		};
+		2A5FB6E914C990CC00E1D422 /* MainMenu.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				2A5FB6EA14C990CC00E1D422 /* en */,
+			);
+			name = MainMenu.xib;
+			sourceTree = "<group>";
+		};
+		2A5FB6FA14C990CD00E1D422 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				2A5FB6FB14C990CD00E1D422 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		2AD3C61B12718C84005DEF2E /* MainMenu.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				2AD3C61C12718C84005DEF2E /* English */,
+			);
+			name = MainMenu.xib;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		2A5FB70114C990CE00E1D422 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Abalone2/Abalone2-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				INFOPLIST_FILE = Info.plist;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		2A5FB70214C990CE00E1D422 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Abalone2/Abalone2-Prefix.pch";
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				INFOPLIST_FILE = Info.plist;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+		2A5FB70414C990CE00E1D422 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Abalone2.app/Contents/MacOS/Abalone2";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				FRAMEWORK_SEARCH_PATHS = "$(DEVELOPER_LIBRARY_DIR)/Frameworks";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Abalone2/Abalone2-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				INFOPLIST_FILE = "Abalone2Tests/Abalone2Tests-Info.plist";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = octest;
+			};
+			name = Debug;
+		};
+		2A5FB70514C990CE00E1D422 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Abalone2.app/Contents/MacOS/Abalone2";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				FRAMEWORK_SEARCH_PATHS = "$(DEVELOPER_LIBRARY_DIR)/Frameworks";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Abalone2/Abalone2-Prefix.pch";
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				INFOPLIST_FILE = "Abalone2Tests/Abalone2Tests-Info.plist";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = octest;
+			};
+			name = Release;
+		};
+		C01FCF4B08A954540054247B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_GC = unsupported;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = Abalone_Prefix.pch;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				INFOPLIST_FILE = Info.plist;
+				INSTALL_PATH = "$(HOME)/Applications";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				PRODUCT_NAME = Abalone;
+				WRAPPER_EXTENSION = app;
+				ZERO_LINK = YES;
+			};
+			name = Debug;
+		};
+		C01FCF4C08A954540054247B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_OBJC_GC = unsupported;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = Abalone_Prefix.pch;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				INFOPLIST_FILE = Info.plist;
+				INSTALL_PATH = "$(HOME)/Applications";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				PRODUCT_NAME = Abalone;
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+		C01FCF4F08A954540054247B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.5.sdk";
+			};
+			name = Debug;
+		};
+		C01FCF5008A954540054247B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.5.sdk";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2A5FB70014C990CE00E1D422 /* Build configuration list for PBXNativeTarget "Abalone2" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2A5FB70114C990CE00E1D422 /* Debug */,
+				2A5FB70214C990CE00E1D422 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		2A5FB70314C990CE00E1D422 /* Build configuration list for PBXNativeTarget "Abalone2Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2A5FB70414C990CE00E1D422 /* Debug */,
+				2A5FB70514C990CE00E1D422 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "Abalone" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C01FCF4B08A954540054247B /* Debug */,
+				C01FCF4C08A954540054247B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "Abalone" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C01FCF4F08A954540054247B /* Debug */,
+				C01FCF5008A954540054247B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 29B97313FDCFA39411CA2CEA /* Project object */;
+}

@@ -33,31 +33,32 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem :com.informatimago.xcode
-    ;; system attributes:
-    :description "Xcode related tools."
-    :long-description "
+  ;; system attributes:
+  :description "Xcode related tools."
+  :long-description "
 
 Various Xcode related tools.  For now:
 
 - a .pbxproj project files parser.
 
 "
-    :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-    :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-    :licence "AGPL3"
-    ;; component attributes:
-    :version "1.0.0"
-    :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Winter 2012")
-                 ((#:albert #:output-dir)          . "../documentation/com.informatimago.xcode/")
-                 ((#:albert #:formats)             . ("docbook"))
-                 ((#:albert #:docbook #:template)  . "book")
-                 ((#:albert #:docbook #:bgcolor)   . "white")
-                 ((#:albert #:docbook #:textcolor) . "black"))
-    #+asdf-unicode :encoding #+asdf-unicode :utf-8
-    :depends-on ("com.informatimago.rdp"
-                 "com.informatimago.common-lisp.cesarum"
-                 "com.informatimago.common-lisp.parser")
-    :components ((:file "pbxproj")))
+  :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :licence "AGPL3"
+  ;; component attributes:
+  :version "1.0.0"
+  :properties ((#:author-email                   . "pjb@informatimago.com")
+               (#:date                           . "Winter 2012")
+               ((#:albert #:output-dir)          . "../documentation/com.informatimago.xcode/")
+               ((#:albert #:formats)             . ("docbook"))
+               ((#:albert #:docbook #:template)  . "book")
+               ((#:albert #:docbook #:bgcolor)   . "white")
+               ((#:albert #:docbook #:textcolor) . "black"))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8
+  :depends-on ("com.informatimago.rdp"
+               "com.informatimago.common-lisp.cesarum"
+               "com.informatimago.common-lisp.parser")
+  :components ((:file "pbxproj"))
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.xcode.test"))))
 
 ;;;; THE END ;;;;
