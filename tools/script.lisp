@@ -737,29 +737,6 @@ that are accessible by the user."
            "")))))
 
 
-(defun test/mapconcat ()
-  (loop :for (expression expected)
-     :in '(((mapconcat (lambda (x) (and x (string-downcase x))) '("one" two three nil "five") "-")
-            "one-two-three--five")
-           ((mapconcat (lambda (x) (and x (string-downcase x))) '("one") "-")
-            "one")
-           ((mapconcat (lambda (x) (and x (string-downcase x))) '(nil) "-")
-            "")
-           ((mapconcat (lambda (x) (and x (string-downcase x))) '() "-")
-            "")
-           ((mapconcat (lambda (x) (and x (string-downcase x))) #("one" two three nil "five") "-")
-            "one-two-three--five")
-           ((mapconcat (lambda (x) (and x (string-downcase x))) #("one") "-")
-            "one")
-           ((mapconcat (lambda (x) (and x (string-downcase x))) #(nil) "-")
-            "")
-           ((mapconcat (lambda (x) (and x (string-downcase x))) #() "-")
-            ""))
-     :do (assert (equal (eval expression) expected)
-                 ()
-                 "~%Expression: ~S~%Expected: ~S~%Got: ~S~%"
-                 expression expected (eval expression)))
-  :success)
 
 
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

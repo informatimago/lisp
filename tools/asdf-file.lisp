@@ -350,6 +350,12 @@ found.  DEFPACKAGE and IN-PACKAGE forms are evaluated.
   defsystem-form)
 
 
+(defun initials (name)
+  (coerce (loop
+            :for word :in (split-sequence #\space name :remove-empty-subseqs t)
+            :while (alpha-char-p (aref word 0))
+            :collect (aref word 0)) 'string))
+
 (defun default-headers-for-system (pathname defsystem-form
                                    &key
                                      (default-author "Pascal J. Bourguignon")
@@ -372,23 +378,27 @@ RETURN: A p-list containing a default source file header for the
        :system "None"
        :user-interface "None"
        :description (append
+                     (list (format nil "This file defines the ~A system." (ref :name)))
                      (ensure-list (ref :description))
-                     (or (and (ref :long-description)
-                              (split-sequence #\Newline (ref :long-description)))
-                         (list (format nil "This file defines the ~A system." (ref :name)))))
+                     (and (ref :long-description)
+                          (split-sequence #\Newline (ref :long-description))))
        :usage '()
-       :authors (if (ref :author)
-                    (if (ref :maintainer)
-                        (if (string-equal (ref :author) (ref :maintainer))
-                            (ensure-list (ref :author))
-                            (list (ref :author) (ref :maintainer)))
-                        (ensure-list (ref :author)))
-                    (if (ref :maintainer)
-                        (ensure-list (ref :maintainer))
-                        (list (format nil "<~A> ~A <~A>"
-                                      default-initials
-                                      default-author
-                                      default-email))))
+       :authors (flet ((add-initials (name)
+                         (format nil "<~A> ~A" (initials name) name)))
+                  (if (ref :author)
+                      (mapcar (function add-initials)
+                              (if (ref :maintainer)
+                                  (if (string-equal (ref :author) (ref :maintainer))
+                                      (ensure-list (ref :author))
+                                      (list (ref :author) (ref :maintainer)))
+                                  (ensure-list (ref :author))))
+                     (if (ref :maintainer)
+                         (mapcar (function add-initials)
+                                 (ensure-list (ref :maintainer)))
+                         (list (format nil "<~A> ~A <~A>"
+                                       default-initials
+                                       default-author
+                                       default-email)))))
        :modifications (list
                        (format nil "~4,'0D-~2,'0D-~2,'0D <~A> Created."
                                ye mo da default-initials))
@@ -468,9 +478,9 @@ RETURN: A defsystem form for a test system for the system defined by
              (tested-system-name (ref :name))
              (test-system-name   (format nil "~A.test" tested-system-name))
              (output-directory   (format nil "/tmp/documentation/~A/" test-system-name)))
-        `(asdf:defsystem ,(ref :name)
+        `(asdf:defsystem ,test-system-name
            ;; system attributes:
-           :description  ,(format nil "Test the ~A system." tested-system-name)
+           :description  ,(format nil "Tests the ~A system." tested-system-name)
            :long-description ,(or (ref :long-decription) (ref :decription))
            :author       ,(ref :author)
            :maintainer   ,(ref :maintainer)
@@ -488,6 +498,7 @@ RETURN: A defsystem form for a test system for the system defined by
            :depends-on (,(ref :name)
                         "com.informatimago.common-lisp.cesarum") ; simple-test
            :perform (asdf:test-op (cl-user::operation cl-user::system)
+                                  (declare (ignore cl-user::operation cl-user::system))
                                   ;; template:
                                   (let ((*package* (find-package "TESTED-PACKAGE")))
                                     (uiop:symbol-call "TESTED-PACKAGE" "TEST/ALL")))
@@ -501,20 +512,28 @@ Writes asd files defining test systems for each system found in the
 asdf file at ASDF-SYSTEM-PATHNAME, unless such a file already exists.
 "
   (with-open-file (stream asdf-system-pathname)
+    (when verbose
+      (format *trace-output* "~&;; Reading system asd file ~A~%" asdf-system-pathname))
     (dolist (defsys (read-asdf-system-definitions stream))
-      (unless (test-system-p defsys)
-        (let* ((test-defsys (test-system-for-system defsys))
-               (test-pathname (merge-pathnames (make-pathname :name (second test-defsys)
-                                                              :type "asd"
-                                                              :version nil
-                                                              :case :local)
-                                               asdf-system-pathname
-                                               nil)))
-          (unless (probe-file test-pathname)
-            (when verbose
-              (format *trace-output* "~&;; Generating test system asd file ~A~%" test-pathname))
-            (save-asdf-system-file test-pathname test-defsys
-                                   :headers (default-headers-for-system test-pathname test-defsys))))))))
+      (if (test-system-p defsys)
+          (when verbose
+            (format *trace-output* "~&;;     Already a test system.~%"))
+          (let* ((test-defsys (test-system-for-system defsys))
+                 (test-pathname (merge-pathnames
+                                 (make-pathname :name (string-downcase (second test-defsys))
+                                                :type "asd"
+                                                :version nil
+                                                :case :local)
+                                                 asdf-system-pathname
+                                                 nil)))
+            (if (probe-file test-pathname)
+                (when verbose
+                  (format *trace-output* "~&;;     Test system file ~A already exists.~%" test-pathname))
+                (progn
+                  (when verbose
+                    (format *trace-output* "~&;; Generating test system asd file ~A~%" test-pathname))
+                  (save-asdf-system-file test-pathname test-defsys
+                                         :headers (default-headers-for-system test-pathname test-defsys)))))))))
 
 
 
