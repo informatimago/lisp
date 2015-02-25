@@ -39,7 +39,7 @@
     (warn "System ~A: clisp should be used with -ansi or (setf custom:*ansi* t) in ~/.clisprc"
           :com.informatimago.common-lisp.cesarum)))
 
-(asdf:defsystem :com.informatimago.common-lisp.cesarum
+(asdf:defsystem "com.informatimago.common-lisp.cesarum"
   ;; system attributes:
   :description  "Various general data types, algorithms, utilities and standards."
   :long-description "
@@ -129,7 +129,8 @@ all written in 100% conforming Common Lisp.
                (:file "cache"           :depends-on ())
                (:file "float-binio"     :depends-on ())
 
-               ))
+               )
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.cesarum.test"))))
 
 
 ;; Would require a separate asd file...

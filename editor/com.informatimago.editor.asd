@@ -33,7 +33,7 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.editor
+(asdf:defsystem "com.informatimago.editor"
   :description "An emacs-like editor."
   :author "Pascal J. Bourguignon"
   :version "1.0.4"
@@ -56,6 +56,7 @@
                (:file "editor"        :depends-on ("package"
                                                    "macros" "screen"
                                                    #+clisp "clisp"
-                                                   "charms-screen"))))
+                                                   "charms-screen")))
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.editor.test"))))
 
 ;;;; THE END ;;;;

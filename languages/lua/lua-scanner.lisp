@@ -572,30 +572,5 @@ when NIL, comments are skipped as spaces."))
                        :text name)))
                  (invalid-char ch))))))))
 
-
-(defun test/scan-stream (src)
-  (loop
-    :with scanner = (make-instance 'lua-scanner :source src)
-    :for token = (scan-next-token scanner)
-    :while token
-    :do (progn
-          (format t "~&~20A ~32S ~32S ~A~%"
-                  (token-kind  (scanner-current-token scanner))
-                  (token-value (scanner-current-token scanner))
-                  (token-text  (scanner-current-token scanner))
-                  (type-of (scanner-current-token scanner)))
-          (finish-output))))
-
-(defun test/scan-file (path)
-  (with-open-file (src path)
-    (test/scan-stream src)))
-
-(defun test/scan-string (source)
-  (with-input-from-string (src source)
-    (test/scan-stream src)))
-
-;; (test/scan-file #P "~/mission.lua")
-
-
 ;;;; THE END ;;;;
 

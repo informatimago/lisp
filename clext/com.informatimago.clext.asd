@@ -32,7 +32,7 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.clext
+(asdf:defsystem "com.informatimago.clext"
   ;; system attributes:
   :description "Informatimago Common Lisp Extensions"
   :long-description "
@@ -59,8 +59,9 @@ specifications, like GRAY or other portability libraries.
                "com.informatimago.clext.association")
   :components ((:file "character-sets")
                #+(or allegro ccl clisp sbcl cmu)
-               (:file "closer-weak")))
+               (:file "closer-weak"))
+  :in-order-to ((test-op (test-op "com.informatimago.clext.test")
+                         (test-op "com.informatimago.clext.association.test"))))
 
 
 ;;;; THE END ;;;;
- 

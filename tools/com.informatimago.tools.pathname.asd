@@ -32,7 +32,7 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.tools.pathname
+(asdf:defsystem "com.informatimago.tools.pathname"
     :description "Pathname tools."
     :author "Pascal J. Bourguignon"
     :version "1.0.0"

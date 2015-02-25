@@ -33,7 +33,7 @@
 ;;;;**************************************************************************
 
 
-(asdf:defsystem :com.informatimago.susv3
+(asdf:defsystem "com.informatimago.susv3"
   ;; system attributes:
   :description "Informatimago Common Lisp POSIX SUSv3 API"
   :long-description "
@@ -62,7 +62,8 @@ Currently implemented: DIRENT, IPC and PROCESS APIs.
                        (:file "dirent"  :depends-on ("tools"))
                        (:file "ipc"     :depends-on ("tools"))
                        (:file "process" :depends-on ("ipc")))
-  #-(and clisp linux) ())
+  #-(and clisp linux) ()
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.susv3.test"))))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   #+(and clisp (not linux)) (warn "System ~A is incomplete without the LINUX package." :com.informatimago.sysv3)

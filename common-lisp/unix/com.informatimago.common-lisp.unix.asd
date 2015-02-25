@@ -33,7 +33,7 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.common-lisp.unix
+(asdf:defsystem "com.informatimago.common-lisp.unix"
   ;; system attributes:
   :description  "Informatimago Common Lisp Unix Utilities"
   :long-description "Access to a few unix administrative files (passwd, group, etc)."
@@ -54,6 +54,7 @@
   :components ((:file "aliases" :depends-on ())
                (:file "group"   :depends-on ())
                (:file "passwd"  :depends-on ())
-               (:file "option"  :depends-on ())))
+               (:file "option"  :depends-on ()))
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.unix.test"))))
 
 ;;;; THE END ;;;;

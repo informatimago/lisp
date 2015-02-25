@@ -1,4 +1,4 @@
-;;;; -*- coding:utf-8 -*-
+;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;****************************************************************************
 ;;;;FILE:               peek-stream.lisp
 ;;;;LANGUAGE:           Common-Lisp
@@ -42,7 +42,6 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
 
-(in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PEEK-STREAM"
   (:use "COMMON-LISP")
   (:export "PEEK-STREAM" "PEEK-STREAM-SPACES"
@@ -318,89 +317,5 @@ RETURN:  A whole line read from the peek-stream, or NIL in case of end of stream
               (loop-finish)
               (vector-push-extend ch line (length line)))
      :finally (return line))))
-
-
-
-(defun test/peek-stream/get-future-char ()
-  (dotimes (n 10)
-    (with-input-from-string (in "ComMon-Lisp")
-      (let* ((ps (make-instance 'peek-stream :stream in))
-             (nc (loop
-                   :for ch = (get-future-char ps)
-                   :repeat n
-                   :collect ch :into result :finally (return result)))
-             (gc (loop
-                   :for ch = (getchar  ps)
-                   :repeat n
-                   :collect ch :into result :finally (return result))))
-        (assert (equal nc gc)))))
-  :success)
-
-
-(defun test/peek-stream/nextchar/1 ()
-  (with-input-from-string (in "ComMon-Lisp")
-    (let ((ps (make-instance 'peek-stream :stream in))
-          c1 c2 c3)
-      (setf c1 (getchar ps) c2 (getchar ps) c3 (getchar ps))
-      (assert (equal (list c1 c2 c3)
-                     '(#\C #\o #\m)))
-      (setf c1 (getchar ps) c2 (getchar ps) c3 (getchar ps))
-      (assert (equal (list c1 c2 c3 (nextchar ps))
-                     '(#\M #\o #\n #\-)))
-      (ungetchar ps c3) (ungetchar ps c2) (ungetchar ps c1)
-      (setf c1 (getchar ps) c2 (getchar ps) c3 (getchar ps))
-      (assert (equal (list c1 c2 c3)
-                     '(#\M #\o #\n)))
-      (setf c1 (getchar ps) c2 (getchar ps) c3 (getchar ps))
-      (assert (equal (list c1 c2 c3)
-                     '(#\- #\L #\i)))))
-  :success)
-
-
-(defun test/peek-stream/nextchar/2 ()
-  (with-input-from-string (in "Common-Lisp")
-    (let ((ps (make-instance 'peek-stream :stream in))
-          c1 c2 c3)
-      (setf c1 (getchar ps) c2 (getchar ps) c3 (getchar ps))
-      (assert (equal (list c1 c2 c3)
-                     '(#\C #\o #\m)))
-      (setf c1 (getchar ps) c2 (getchar ps))
-      (assert (equal (list c1 c2 (nextchar ps))
-                     '(#\m #\o #\n)))
-      (setf c3 (getchar ps))
-      (assert (equal (list c3 (nextchar ps))
-                     '(#\n #\-)))
-      (ungetchar ps c3) (ungetchar ps c2) (ungetchar ps c1)
-      (setf c1 (getchar ps) c2 (getchar ps) c3 (getchar ps))
-      (assert (equal (list c1 c2 c3)
-                     '(#\m #\o #\n)))
-      (setf c1 (getchar ps) c2 (getchar ps) c3 (getchar ps))
-      (assert (equal (list c1 c2 c3)
-                     '(#\- #\L #\i)))))
-  :success)
-
-(defun test/peek-stream/nextchar/3 ()
-  (with-input-from-string (in "  Common   Lisp")
-    (let ((ps (make-instance 'peek-stream :stream in))
-          c1 c2 c3)
-      (setf c1 (getchar ps) c2 (getchar ps) c3 (nextchar ps))
-      (assert (equal (list c1 c2 c3) '(#\space #\space #\C)))
-      (setf c1 (getchar ps) c2 (getchar ps) c3 (nextchar ps #\n))
-      (assert (equal (list c1 c2 c3) '(#\C #\o #\n)))
-      (setf c1 (getchar ps) c2 (nextchar ps t) c3 (getchar ps))
-      (assert (equal (list c1 c2 c3) '(#\n #\L #\L)))))
-  :success)
-
-
-(defun test/peek-stream ()
-  (test/peek-stream/get-future-char)
-  (test/peek-stream/nextchar/1)
-  (test/peek-stream/nextchar/2)
-  (test/peek-stream/nextchar/3)
-  :success)
-
-
-(test/peek-stream)
-
 
 ;;;; THE END ;;;;

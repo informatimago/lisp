@@ -32,30 +32,31 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.common-lisp.http
-    ;; system attributes:
-    :description  "Informatimago Common Lisp HTML Utilities"
-    :long-description "
+(asdf:defsystem "com.informatimago.common-lisp.http"
+  ;; system attributes:
+  :description  "Informatimago Common Lisp HTML Utilities"
+  :long-description "
 
 Utilities to encode and decode HTTP queries.
 A transaction manager for HTTP CGI.
 "
-    :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-    :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-    :licence "AGPL3"
-    ;; component attributes
-    :version "1.2.0"
-    :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Autumn 2010")
-                 ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.http/")
-                 ((#:albert #:formats)             . ("docbook"))
-                 ((#:albert #:docbook #:template)  . "book")
-                 ((#:albert #:docbook #:bgcolor)   . "white")
-                 ((#:albert #:docbook #:textcolor) . "black"))
-    #+asdf-unicode :encoding #+asdf-unicode :utf-8
-    :depends-on (:com.informatimago.common-lisp.cesarum
-                 :com.informatimago.common-lisp.html-generator)
-    :components ((:file "hquery" :depends-on ())
-                 (:file "htrans" :depends-on ("hquery"))))
+  :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :licence "AGPL3"
+  ;; component attributes
+  :version "1.2.0"
+  :properties ((#:author-email                   . "pjb@informatimago.com")
+               (#:date                           . "Autumn 2010")
+               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.http/")
+               ((#:albert #:formats)             . ("docbook"))
+               ((#:albert #:docbook #:template)  . "book")
+               ((#:albert #:docbook #:bgcolor)   . "white")
+               ((#:albert #:docbook #:textcolor) . "black"))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8
+  :depends-on ("com.informatimago.common-lisp.cesarum"
+               "com.informatimago.common-lisp.html-generator")
+  :components ((:file "hquery" :depends-on ())
+               (:file "htrans" :depends-on ("hquery")))
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.http.test"))))
 
 ;;;; THE END ;;;;

@@ -32,7 +32,7 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.xcode
+(asdf:defsystem "com.informatimago.xcode"
   ;; system attributes:
   :description "Xcode related tools."
   :long-description "

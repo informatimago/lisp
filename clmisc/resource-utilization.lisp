@@ -163,31 +163,6 @@ NOTE:   Parentheses inside the string must be escaped by \ unless balanced.
                            (return eof-value))))))))
 
 
-(defun test/read-parenthesized-string ()
-  (loop
-     :with success = 0
-     :for tcount :from 0
-     :for (input . output)
-     :in '(("" :eof) ("  " :eof) ("(" :eof) (" ( " :eof)
-           (" (a(b)" :eof) (" (a(b)c" :eof) (" (a\\" :eof)  (" (a\\b" :eof)
-           ("  (howdy doo ?)" "howdy doo ?")
-           ("(howdy \\( doo ?)" "howdy ( doo ?")
-           ("(howdy \\) doo ?)" "howdy ) doo ?")
-           ("(a(b(c(d)e)f)g)h" "a(b(c(d)e)f)g")
-           )
-     :for result = (with-input-from-string (stream input)
-                     (multiple-value-list
-                      (ignore-errors
-                        (read-parenthesized-string stream nil :eof))))
-     :do (if (equal result output)
-             (incf success)
-             (format t "~2%Reading parenthesized string ~S~
-                         ~%     --> ~S~%expected ~S~%"
-                     input result output))
-     :finally  (format t "~&~30A ~4D cases, ~4D successful  (~6,1F %)~%"
-                       'read-parenthesized-string
-                       tcount success (/ success tcount 0.01))))
-
 
 (defun process-status (&optional (pid "self"))
   "
@@ -362,18 +337,6 @@ REPORT-TO:  If provided, it's a function with the same signature as
                 (/ (- ,vend-run ,vstart-run) internal-time-units-per-second)
                 (* *jiffy* (- (after :stime) (before :stime)))
                 devi-io page-io ,job-origin :stream ,stream)))))))
-
-
-
-#||
-
-(test/read-parenthesized-string)
-(reporting-sru ()
-  (with-open-file (input "/usr/share/dict/words")
-    (loop :for line = (read-line input nil nil) :while line))
-  (loop :repeat 5000 :collect (make-string 1000) :finally (terpri) (return  nil)))
-
-||#
 
 
 ;;;; THE END ;;;;

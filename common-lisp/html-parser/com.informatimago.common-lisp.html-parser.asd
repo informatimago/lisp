@@ -32,29 +32,30 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.common-lisp.html-parser
-    ;; system attributes:
-    :description  "Informatimago Common Lisp HTML 4.01 Parser"
-    :long-description "
+(asdf:defsystem "com.informatimago.common-lisp.html-parser"
+  ;; system attributes:
+  :description  "Informatimago Common Lisp HTML 4.01 Parser"
+  :long-description "
 
 A simple HTML 4.01 parser.
 
 "
-    :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-    :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-    :licence "AGPL3"
-    ;; component attributes:
-    :version "1.2.1"
-    :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Autumn 2010")
-                 ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.html-parser/")
-                 ((#:albert #:formats)             . ("docbook"))
-                 ((#:albert #:docbook #:template)  . "book")
-                 ((#:albert #:docbook #:bgcolor)   . "white")
-                 ((#:albert #:docbook #:textcolor) . "black"))
-    #+asdf-unicode :encoding #+asdf-unicode :utf-8
-    :depends-on ("com.informatimago.common-lisp.cesarum"
-                 "com.informatimago.common-lisp.html-base")
-    :components ((:file "parse-html" :depends-on ())))
+  :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :licence "AGPL3"
+  ;; component attributes:
+  :version "1.2.1"
+  :properties ((#:author-email                   . "pjb@informatimago.com")
+               (#:date                           . "Autumn 2010")
+               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.html-parser/")
+               ((#:albert #:formats)             . ("docbook"))
+               ((#:albert #:docbook #:template)  . "book")
+               ((#:albert #:docbook #:bgcolor)   . "white")
+               ((#:albert #:docbook #:textcolor) . "black"))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8
+  :depends-on ("com.informatimago.common-lisp.cesarum"
+               "com.informatimago.common-lisp.html-base")
+  :components ((:file "parse-html" :depends-on ()))
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.html-parser.test"))))
 
 ;;;; THE END ;;;;

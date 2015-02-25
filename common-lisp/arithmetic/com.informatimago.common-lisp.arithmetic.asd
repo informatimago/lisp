@@ -33,7 +33,7 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.common-lisp.arithmetic
+(asdf:defsystem "com.informatimago.common-lisp.arithmetic"
   ;; system attributes:
   :description  "Informatimago Common Lisp Arithmetic"
   :long-description  "Arithmetic tools, primes, factorization."
@@ -52,6 +52,7 @@
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ("com.informatimago.common-lisp.cesarum")
   :components ((:file "primes" :depends-on ())
-               (:file "p127n2" :depends-on ())))
+               (:file "p127n2" :depends-on ()))
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.arithmetic.test"))))
 
 ;;;; THE END ;;;;

@@ -32,7 +32,7 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.rdp
+(asdf:defsystem "com.informatimago.rdp"
     ;; system attributes:
     :description "Recursive Descent Parser Generator"
     :long-description "

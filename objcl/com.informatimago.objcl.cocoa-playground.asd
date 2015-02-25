@@ -32,7 +32,8 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.objcl.cocoa-playground
+#+not-yet
+(asdf:defsystem "com.informatimago.objcl.cocoa-playground"
     ;; system attribtues:
     :description  "Playground for Cocoa and ObjCL."
     :long-description "

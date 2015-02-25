@@ -32,7 +32,7 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.lispdoc
+(asdf:defsystem "com.informatimago.lispdoc"
     ;; system attributes:
     :description "Informatimago Common Lisp Documentation Generator"
     :author     "Pascal J. Bourguignon <pjb@informatimago.com>"

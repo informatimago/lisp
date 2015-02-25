@@ -35,8 +35,17 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   #+clisp (when (find-package "LINUX") (pushnew :linux *features*)))
 
+#-clisp
+(asdf:defsystem "com.informatimago.clisp"
+  :description "Informatimago Common Lisp Clisp Specific Packages"
+  :long-description "There's nothing here for non-clisp implementations."
+  :license "AGPL3"
+  :version "1.2.2"
+  :depends-on ()
+  :components ())
 
-(asdf:defsystem :com.informatimago.clisp
+#+clisp
+(asdf:defsystem "com.informatimago.clisp"
   ;; system attributes:
   :description "Informatimago Common Lisp Clisp Specific Packages"
   :long-description "
@@ -59,27 +68,26 @@ should be made into implementation independant packages).
                ((#:albert #:docbook #:textcolor) . "black"))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ("com.informatimago.common-lisp.cesarum")
-  :components
-  #+clisp ((:file "syslog")
-           (:file "disk")
-           ;; (:file "objc")
-           (:file "string")
-           (:file "fifo-stream")
-           (:file "iotask")
-           (:file "rfc1413" :depends-on ("iotask"))
-           ;; :shared-object is not known of asdf, but is defined by clg-tools…
-           ;; (:shared-object "libraw-memory"
-           ;;                 :components ((:c-source-file "raw-memory-lib"))
-           ;;                 :depends-on ())
-           ;; (:file "raw-memory" :depends-on ("libraw-memory"))
-           #+linux (:file "susv3")
-           #+linux (:file "susv3-mc3" :depends-on ("susv3"))
-           #+linux (:file "susv3-xsi" :depends-on ("susv3"))
-           #+linux (:file "script" :depends-on ("string"))
-           #+linux (:file "shell")
-           #+linux (:file "xterm" :depends-on ("susv3"))
-           #+linux (:file "make-volumes" :depends-on ("susv3")))
-  #-clisp ()) 
+  :components ((:file "syslog")
+               (:file "disk")
+               ;; (:file "objc")
+               (:file "string")
+               (:file "fifo-stream")
+               (:file "iotask")
+               (:file "rfc1413" :depends-on ("iotask"))
+               ;; :shared-object is not known of asdf, but is defined by clg-tools…
+               ;; (:shared-object "libraw-memory"
+               ;;                 :components ((:c-source-file "raw-memory-lib"))
+               ;;                 :depends-on ())
+               ;; (:file "raw-memory" :depends-on ("libraw-memory"))
+               #+linux (:file "susv3")
+               #+linux (:file "susv3-mc3" :depends-on ("susv3"))
+               #+linux (:file "susv3-xsi" :depends-on ("susv3"))
+               #+linux (:file "script" :depends-on ("string"))
+               #+linux (:file "shell")
+               #+linux (:file "xterm" :depends-on ("susv3"))
+               #+linux (:file "make-volumes" :depends-on ("susv3")))
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.clisp.test")))) 
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)

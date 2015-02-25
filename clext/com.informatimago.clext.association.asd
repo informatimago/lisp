@@ -32,7 +32,7 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.clext.association
+(asdf:defsystem "com.informatimago.clext.association"
   ;; system attributes:
   :description "Informatimago Common Lisp Extensions: Associations."
   :long-description "
@@ -55,8 +55,8 @@ CLOS associations.  It uses CLOSER-MOP.
                ((#:albert #:docbook #:textcolor) . "black"))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ("closer-mop")
-  :in-order-to ((test-op (test-op "com.informatimago.clext.association.test")))
-  :components ((:file "association")))
+  :components ((:file "association"))
+  :in-order-to ((test-op (test-op "com.informatimago.clext.association.test"))))
 
 
 ;;;; THE END ;;;;

@@ -32,7 +32,7 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.tools.summary
+(asdf:defsystem "com.informatimago.tools.summary"
     ;; system attributes:
     :description "Informatimago Common Lisp Summary Tool"
     :long-description  "

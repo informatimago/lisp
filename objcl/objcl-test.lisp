@@ -1,6 +1,6 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               test-objcl.lisp
+;;;;FILE:               objcl-test.lisp
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
@@ -439,9 +439,6 @@
   (test/read-objcl-class-method-definition)
   (test/read-objcl-instance-method-definition)
   (test/read-objcl-message-send))
-
-
-(test/all)
 
 
 

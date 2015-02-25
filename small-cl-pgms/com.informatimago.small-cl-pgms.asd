@@ -32,7 +32,7 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.small-cl-pgms
+(asdf:defsystem "com.informatimago.small-cl-pgms"
   :description "Small Common Lisp Programs"
   :author "Pascal J. Bourguignon"
   :version "1.0.0"
@@ -54,7 +54,8 @@
              (:file "puzzle")
              (:file "solitaire")
              (:file "toy-byte-code")
-             (:file "wang-cl")))
+             (:file "wang-cl"))
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.small-cl-pgms.test"))))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (warn "~S Components not included yet (need some cleaning)"

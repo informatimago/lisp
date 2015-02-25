@@ -33,7 +33,6 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
 
-(in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE"
   (:use "COMMON-LISP")
   (:export "HASHED-SET-REMOVE-DUPLICATES"
@@ -303,65 +302,5 @@ whose concatenation is equal to SEQUENCE.")
       :while sub
       :collect (ldiff sub rest))))
 
-
-;;; TESTS
-
-(defun test/replace-subseq ()
-  (let ((*standard-output* (make-broadcast-stream)))
-    (let ((str (make-array 10 :adjustable t :element-type 'character :initial-contents "abcdefghij")))
-      (print str)
-      (assert (string= "abc123ghij"   (print (replace-subseq "123" str 3 6))))
-      (assert (string= "abcABCij"     (print (replace-subseq "ABC" str 3 8))))
-      (assert (string= "abc12345ij"   (print (replace-subseq "12345" str 3 6))))
-      (assert (string= "78912345ij"   (print (replace-subseq "789" str 0 3))))
-      (assert (string= "7891234501"   (print (replace-subseq "01" str 8))))
-      (assert (string= "78912301"     (print (replace-subseq "" str 6 8))))
-      (assert (string= "7891230123"   (print (replace-subseq "23" str (length str)))))
-      (assert (string= "567891230123" (print (replace-subseq "56" str 0 0))))
-      (assert (string= "123"          (print (replace-subseq "123" str 0))))
-      (assert (string= "hello"        (print (replace-subseq "hello" "" 0))))
-      (assert (string= ""             (print (replace-subseq "" "hello" 0)))))
-    (let ((str (list 'a 'b 'c 'd 'e 'f 'g 'h 'i 'j)))
-      (print str)
-      (assert (equal '(a b c 1 2 3 g h i j)     (print (replace-subseq '(1 2 3) str 3 6))))
-      (assert (equal '(a b c A B C i j)         (print (replace-subseq '(a b c) str 3 8))))
-      (assert (equal '(a b c 1 2 3 4 5 i j)     (print (replace-subseq '(1 2 3 4 5) str 3 6))))
-      (assert (equal '(7 8 9 1 2 3 4 5 i j)     (print (replace-subseq #(7 8 9) str 0 3))))
-      (assert (equal '(7 8 9 1 2 3 4 5 0 1)     (print (replace-subseq #(0 1) str 8))))
-      (assert (equal '(7 8 9 1 2 3 0 1)         (print (replace-subseq "" str 6 8))))
-      (assert (equal '(7 8 9 1 2 3 0 1 2 3)     (print (replace-subseq #(2 3) str (length str)))))
-      (assert (equal '(5 6 7 8 9 1 2 3 0 1 2 3) (print (replace-subseq '(5 6) str 0 0))))
-      (assert (equal '(1 2 3)                   (print (replace-subseq '(1 2 3) str 0))))
-      (assert (equal (coerce "hello" 'list)     (print (replace-subseq "hello" '() 0))))
-      (assert (equal '()                        (print (replace-subseq "" '(1 2 3) 0))))))
-  (assert (nth-value 1 (ignore-errors (replace-subseq "abc" "def" -1 2))))
-  (assert (nth-value 1 (ignore-errors (replace-subseq "abc" "def" 1 4))))
-  (assert (nth-value 1 (ignore-errors (replace-subseq "abc" "def" 2 1))))
-  (assert (nth-value 1 (ignore-errors (replace-subseq "abc" "def" -2 4))))
-  :success)
-
-(defun test/group-by ()
-  (assert (equalp (group-by '() 3) '()))
-  (assert (equalp (group-by '(1) 3) '((1))))
-  (assert (equalp (group-by '(1 2) 3) '((1 2))))
-  (assert (equalp (group-by '(1 2 3) 3) '((1 2 3))))
-  (assert (equalp (group-by '(1 2 3 4) 3) '((1 2 3) (4))))
-  (assert (equalp (group-by '(1 2 3 4 5) 3) '((1 2 3) (4 5))))
-  (assert (equalp (group-by '(1 2 3 4 5 6) 3) '((1 2 3) (4 5 6))))
-  (assert (equalp (group-by '(1 2 3 4 5 6 7) 3) '((1 2 3) (4 5 6) (7))))
-  (assert (equalp (group-by '(1 2 3 4 5 6 7 8) 3) '((1 2 3) (4 5 6) (7 8))))
-  (assert (equalp (group-by #() 3) '()))
-  (assert (equalp (group-by #(1) 3) '(#(1))))
-  (assert (equalp (group-by #(1 2) 3) '(#(1 2))))
-  (assert (equalp (group-by #(1 2 3) 3) '(#(1 2 3))))
-  (assert (equalp (group-by #(1 2 3 4) 3) '(#(1 2 3) #(4))))
-  (assert (equalp (group-by #(1 2 3 4 5) 3) '(#(1 2 3) #(4 5))))
-  (assert (equalp (group-by #(1 2 3 4 5 6) 3) '(#(1 2 3) #(4 5 6))))
-  (assert (equalp (group-by #(1 2 3 4 5 6 7) 3) '(#(1 2 3) #(4 5 6) #(7))))
-  (assert (equalp (group-by #(1 2 3 4 5 6 7 8) 3) '(#(1 2 3) #(4 5 6) #(7 8))))
-  :success)
-
-(test/replace-subseq)
-(test/group-by)
 
 ;;;; THE END ;;;;

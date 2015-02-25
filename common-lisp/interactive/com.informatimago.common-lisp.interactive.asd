@@ -32,31 +32,32 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.common-lisp.interactive
-    ;; system attributes:
-    :description  "Informatimago Common Lisp Interactive Commands"
-    :long-description "
+(asdf:defsystem "com.informatimago.common-lisp.interactive"
+  ;; system attributes:
+  :description  "Informatimago Common Lisp Interactive Commands"
+  :long-description "
 
 Various interactive commands intended to be used at the REPL,
 including a file browser, a few unix-like commands (ls, cat, more),
 CL specific commands such as: mkupack, lspack, pushp, popp, etc.
 
 "
-    :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-    :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-    :licence "AGPL3"
-    ;; component attributes:
-    :version "1.2.1"
-    :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Autumn 2010")
-                 ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.interactive/")
-                 ((#:albert #:formats)             . ("docbook"))
-                 ((#:albert #:docbook #:template)  . "book")
-                 ((#:albert #:docbook #:bgcolor)   . "white")
-                 ((#:albert #:docbook #:textcolor) . "black"))
-    #+asdf-unicode :encoding #+asdf-unicode :utf-8
-    :depends-on ("com.informatimago.common-lisp.cesarum")
-    :components ((:file "browser"     :depends-on ())
-                 (:file "interactive" :depends-on ("browser"))))
+  :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :licence "AGPL3"
+  ;; component attributes:
+  :version "1.2.1"
+  :properties ((#:author-email                   . "pjb@informatimago.com")
+               (#:date                           . "Autumn 2010")
+               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.interactive/")
+               ((#:albert #:formats)             . ("docbook"))
+               ((#:albert #:docbook #:template)  . "book")
+               ((#:albert #:docbook #:bgcolor)   . "white")
+               ((#:albert #:docbook #:textcolor) . "black"))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8
+  :depends-on ("com.informatimago.common-lisp.cesarum")
+  :components ((:file "browser"     :depends-on ())
+               (:file "interactive" :depends-on ("browser")))
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.interactive.test"))))
 
 ;;;; THE END ;;;;

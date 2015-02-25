@@ -32,7 +32,7 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.rdp.basic.example
+(asdf:defsystem "com.informatimago.rdp.basic.example"
   ;; system attributes 
   :description  "Recursive Descent Parser Generator -- An example generated in BASIC"
   :long-description "
@@ -59,7 +59,8 @@ target-language method will let the RDPG generate a parser in BASIC.
                "com.informatimago.rdp.basic")
   :components
   #-bit-rotten ((:file "example-basic"))
-  #+bit-rotten ())
+  #+bit-rotten ()
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.rdp.basic.example.test"))))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (warn "~S is bit-rotten, it needs an update."

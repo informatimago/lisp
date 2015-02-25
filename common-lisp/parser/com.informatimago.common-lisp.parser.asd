@@ -32,7 +32,7 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.common-lisp.parser
+(asdf:defsystem "com.informatimago.common-lisp.parser"
   ;; system attributes:
   :description  "Informatimago Common Lisp Scanner and Parser Abstract Classes"
   :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
@@ -50,6 +50,7 @@
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ("com.informatimago.common-lisp.cesarum")
   :components ((:file "scanner" :depends-on ())
-               (:file "parser"  :depends-on ("scanner"))))
+               (:file "parser"  :depends-on ("scanner")))
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.parser.test"))))
 
 ;;;; THE END ;;;;

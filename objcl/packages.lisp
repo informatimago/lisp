@@ -42,17 +42,6 @@
 ;; #+(and ccl darwin)
 
 
-
-
-(defpackage "COM.INFORMATIMAGO.SIMPLE-TEST"
-  (:use "CL")
-  (:export "*DEBUG-ON-ERROR*" "WITH-DEBUGGER-ON-ERROR"
-           "DEFINE-TEST" "TEST")
-  (:documentation "
-This package defines a simple test tool.
-"))
-
-
 (defpackage "COM.INFORMATIMAGO.OBJECTIVE-C.LOWER"
   (:nicknames "COM.INFORMATIMAGO.OCLO"
               "OCLO")
@@ -160,7 +149,8 @@ single package exporting all these symbols.
 (defpackage "COM.INFORMATIMAGO.OBJECTIVE-CL"
   (:nicknames "COM.INFORMATIMAGO.OBJCL"
               "OBJCL")
-  (:use "CL" "COM.INFORMATIMAGO.SIMPLE-TEST")
+  (:use "COMMON-LISP"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SIMPLE-TEST")
   ;; also use "COM.INFORMATIMAGO.OBJECTIVE-C.LOWER" as "OCLO".
   (:export
    "*OBJECTIVE-CL-READTABLE*"

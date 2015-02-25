@@ -32,7 +32,7 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.tools.check-asdf
+(asdf:defsystem "com.informatimago.tools.check-asdf"
     :description "Checks ASD Files and reports circular dependencies."
     :author "Pascal J. Bourguignon"
     :version "1.1.0"

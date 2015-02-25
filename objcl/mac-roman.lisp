@@ -151,15 +151,4 @@ POST:	(<= start index end)
   (every (function mac-roman-char-p) string))
 
 
-#+developing
-(defun equiv (a b) (eq (not a) (not b)))
-
-#+developing
-(defun test/mac-roman-char-p ()
-  (loop
-     :for code :from 0 :to 65535
-     :always (equiv (member code *mac-roman-codes*)
-                    (mac-roman-char-p (code-char code)))
-     :finally (return :success)))
-
 ;;;; THE END ;;;;

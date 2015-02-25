@@ -32,7 +32,7 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.rdp.example
+(asdf:defsystem "com.informatimago.rdp.example"
     ;; system attributes:
     :description "Recursive Descent Parser Generator -- An example"
     :long-description "
@@ -57,6 +57,7 @@ both producing parsers in Lips.
                  ((#:albert #:docbook #:textcolor) . "black"))
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
     :depends-on ("com.informatimago.rdp")
-    :components ((:file "example-lisp")))
+    :components ((:file "example-lisp"))
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.rdp.example.test"))))
 
 ;;;; THE END ;;;;

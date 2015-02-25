@@ -105,8 +105,7 @@
   (let ((list (list 2 3 4)))
     (assert-true (equal '(1 2 3 4) (add-new-element list 1 :lessp (function <)))))
   (let ((list (list 2 3 4)))
-    (assert-true (equal '(1 2 3 4) (add-new-element list 1 :lessp (function <)))))
-  :success)
+    (assert-true (equal '(1 2 3 4) (add-new-element list 1 :lessp (function <))))))
 
 
 (defun test/multiplicity ()
@@ -122,8 +121,7 @@
                         (0 *) (0 *) (1 *) (4 *) ; (34 2)
                         (0 1) (1 1) (0 4) (2 4)
                         (0 *) (0 *) (1 *) (4 *) ; (34 2)
-                        )))
-  :success)
+                        ))))
 
 
 (define-test test/all ()

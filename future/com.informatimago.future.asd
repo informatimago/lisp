@@ -33,12 +33,14 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.future
+(asdf:defsystem "com.informatimago.future"
   :description "Future Informatimago Projects - Not ready for consumption."
   :author "Pascal J. Bourguignon"
   :version "1.0.2"
-  :license "GPL3"
+  :license "AGPL3"
   :depends-on ("com.informatimago.editor") 
-  :components ())
+  :components ()
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.editor.test")
+                              (asdf:test-op "com.informatimago.future.test"))))
 
 ;;;; THE END ;;;;

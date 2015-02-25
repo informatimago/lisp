@@ -32,7 +32,7 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.tools.make-depends
+(asdf:defsystem "com.informatimago.tools.make-depends"
     ;; system attributes:
     :description "Informatimago Common Lisp MAKE-DEPENDS for lisp sources Tools"
     :long-description  "

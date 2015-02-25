@@ -32,7 +32,7 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.common-lisp.graphviz
+(asdf:defsystem "com.informatimago.common-lisp.graphviz"
   ;; system attributes:
   :description  "Informatimago Common Lisp Grapviz Graph Generation Methods"
   :long-description "Methods on the GRAPH class to generate GraphViz dot(1) files."
@@ -50,6 +50,7 @@
                ((#:albert #:docbook #:textcolor) . "black"))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ("com.informatimago.common-lisp.cesarum")
-  :components ((:file "graph-dot" :depends-on ())))
+  :components ((:file "graph-dot" :depends-on ()))
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.graphviz.test"))))
 
 ;;;; THE END ;;;;

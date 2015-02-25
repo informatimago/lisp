@@ -32,7 +32,7 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.tools.source
+(asdf:defsystem "com.informatimago.tools.source"
     :description "Reads sources and headers to perform some analysis."
     :author "Pascal J. Bourguignon"
     :version "1.0.0"

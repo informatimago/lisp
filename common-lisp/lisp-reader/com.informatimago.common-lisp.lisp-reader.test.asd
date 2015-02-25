@@ -48,12 +48,14 @@
                ((#:albert #:docbook #:bgcolor)   . "white")
                ((#:albert #:docbook #:textcolor) . "black"))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
-  :depends-on ("com.informatimago.common-lisp.lisp-reader")
+  :depends-on ("com.informatimago.common-lisp.cesarum"
+               "com.informatimago.common-lisp.lisp-reader")
+  :components ((:file "reader-test"    :depends-on ()))
   :perform (asdf:test-op
             (o s)
             (let ((*package* (find-package "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.READER.TEST")))
-              (uiop:symbol-call "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.READER.TEST" "TEST/ALL")))
-  :components ((:file "reader-test"    :depends-on ())))
+              (uiop:symbol-call "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.READER.TEST"
+                                "TEST/ALL"))))
 
 
 ;;;; THE END ;;;;

@@ -36,12 +36,14 @@
 (defpackage "COM.INFORMATIMAGO.CLISP.STRING"
   (:documentation "This module exports string functions.")
   (:use "COMMON-LISP"
-        "REGEXP"
+        #+clisp "REGEXP"
+        #-clisp "CL-PPCRE"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
   (:export "SPLIT-STRING" "UNSPLIT-STRING"
            "STRING-MATCH" "STRING-TO-NUMBER"
-           "CAPITALIZATION" "REPLACE-REGEXP-IN-STRING"
+           "CAPITALIZATION"
+           "*CASE-FOLD-SEARCH*" "REPLACE-REGEXP-IN-STRING"
            "SUBSTRING"))
 (in-package "COM.INFORMATIMAGO.CLISP.STRING")
 
@@ -371,97 +373,6 @@ since only regular expressions have distinguished subexpressions.
           (setq done (<= (length string) start)) )
         (progn
           (setq done t) ))))
-
-
-
-
-;;; (defun rris-result (test-case res)
-;;;   "Emacs"
-;;;   (if (or (and (eq :error res) (eq res (car test-case)))
-;;;           (string= (car test-case) res))
-;;;     (insert (format "Ok  %-50S --> %S\n" (cdr test-case) res))
-;;;     (insert
-;;;      (format "Unexpected result for %S\n    expected %S\n    got      %S\n"
-;;;              (cdr test-case) (car test-case) res))))
-
-
-(defun rris-result (test-case res)
-  "Common-Lisp"
-  (if (or (and (eq :error res) (eq res (car test-case)))
-          (string= (car test-case) res))
-      (format t "Ok  ~50W --> ~W~%" (cdr test-case) res)
-      (format t "Unexpected result for ~W~%    expected ~W~%    got      ~W~%"
-              (cdr test-case) (car test-case) res)))
-
-
-
-(defun rris-test ()
-  "
-Test cases for REPLACE-REGEXP-IN-STRING
-"
-  (let ((*case-fold-search* t))
-    (do* ((test-cases
-           ;; We use basic POSIX regexps, so no 're+'.
-           ;;  result      regexp      replac      string      fix lit sub start
-           '( ("xy"        ""          "x"         "y"         t   t)
-             ("xyxyxyxy"  ""          "x"         "yyyy"      t   t)
-             (""          "."         "x"         ""          t   t)
-             ("x"         "."         "x"         "y"         t   t)
-             ("xxxx"      "."         "x"         "yyyy"      t   t)
-             ("xxxx"      "."         "x"         "yaya"      t   t)
-             ("good"      "a"         "bad"       "good"      t   t)
-             ("good"      "bad"       "good"      "bad"       t   t)
-             ("good rest" "bad"       "good"      "bad rest"  t   t)
-             ("rest good" "bad"       "good"      "rest bad"  t   t)
-             ("good"      "bad"  (lambda (x) "good") "bad"    t   t)
-             ("good rest" "bad"  (lambda (x) "good") "bad rest" t   t)
-             ("rest good" "bad"  (lambda (x) "good") "rest bad" t   t)
-             ("test"      "r\\(e\\)g" "good"      "test"     nil nil 2)
-             (:error      "r\\(e\\)g" "good"      "reg"      nil nil 2)
-             ("rgoodg"    "r\\(e\\)g" "good"      "reg"      nil nil 1)
-             ("BOC NEW VALUE hoc" "pattern"   "nEW VAlue" "BOC PATTERN hoc")
-             ("BOC nEW VAlue hoc" "pattern"   "nEW VAlue" "BOC pattern hoc")
-             ("BOC new value hoc" "pattern"   "new value" "BOC pattern hoc")
-             ("BOC NEW VAlue hoc" "pattern"   "nEW VAlue" "BOC Pattern hoc")
-             ("BOC New Value hoc" "pattern"   "new value" "BOC Pattern hoc")
-             ("BOC nEW VAlue hoc" "pattern"   "nEW VAlue" "BOC pATteRN hoc")
-             ("BOC New1value hoc" "pattern"   "new1value" "BOC Pattern hoc")
-             ("BOC New-Value hoc" "pattern"   "new-value" "BOC Pattern hoc")
-             ("rrrr-www-bb rr-w-bbb"
-              "\\(bb*\\) \\(ww*\\) \\(rr*\\)"
-              "\\3-\\2-\\1" "bb www rrrr bbb w rr")
-             ("\\4-www-bb \\4-w-bbb"
-              "\\(bb*\\) \\(ww*\\) \\(rr*\\)"
-              "\\4-\\2-\\1" "bb www rrrr bbb w rr")
-             (:error "blue" "\\\\b\\l\\&" "blue box and bluetooth")
-             ("\\bblue box and \\bbluetooth"
-              "blue" "\\\\b\\&" "blue box and bluetooth")
-             )
-           (cdr test-cases))
-          (test-case (car test-cases) (car test-cases))
-          (tc test-case test-case)
-          (all-ok t))
-         ((null test-cases) all-ok)
-      (when (listp (nth 2 tc))
-        (setq tc (copy-seq tc))
-        (setf (nth 2 tc) (coerce (nth 2 tc) 'function)))
-      (let ((res (handler-case
-                     (apply (function replace-regexp-in-string) (cdr tc))
-                   (error () :error))) )
-        (if (eq :error res)
-            (unless (eq res (car test-case)) (setq all-ok nil))
-            (unless (string= (car test-case) res) (setq all-ok nil)))
-        (rris-result  test-case res)))))
-
-
-
-;;  (rris-test)
-;;; (let ((start 0) (case-sensitive nil) (extended nil) (newline nil) (nosub nil))
-;;;       (REGEXP:MATCH "blue" "blue box and bluetooth"
-;;;                     :START START :IGNORE-CASE (NOT CASE-SENSITIVE)
-;;;                     :EXTENDED EXTENDED  :NEWLINE NEWLINE :NOSUB NOSUB) )
-
-;; (replace-regexp-in-string "blue" "\\\\b\\X\\&" "blue box and bluetooth")
 
 
 (defun string-to-number (string &key (base 10) (start 0) (end nil))

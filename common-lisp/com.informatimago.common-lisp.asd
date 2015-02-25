@@ -32,53 +32,54 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.common-lisp
-    ;; system attributes:
-    :description "Informatimago Common Lisp Systems Agregate"
-    :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-    :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-    :licence "AGPL3"
-    ;; component attributes:
-    :version "1.2.1"
-    :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Autumn 2010")
-                 ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp/")
-                 ((#:albert #:formats)             . ("docbook"))
-                 ((#:albert #:docbook #:template)  . "book")
-                 ((#:albert #:docbook #:bgcolor)   . "white")
-                 ((#:albert #:docbook #:textcolor) . "black"))
-    #+asdf-unicode :encoding #+asdf-unicode :utf-8
-    :depends-on ("com.informatimago.common-lisp.lisp-sexp"
-                 "com.informatimago.common-lisp.lisp-reader"
-                 "com.informatimago.common-lisp.lisp-text"
-                 
-                 ;; not yet  "com.informatimago.common-lisp.lisp"
+(asdf:defsystem "com.informatimago.common-lisp"
+  ;; system attributes:
+  :description "Informatimago Common Lisp Systems Agregate"
+  :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :licence "AGPL3"
+  ;; component attributes:
+  :version "1.2.1"
+  :properties ((#:author-email                   . "pjb@informatimago.com")
+               (#:date                           . "Autumn 2010")
+               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp/")
+               ((#:albert #:formats)             . ("docbook"))
+               ((#:albert #:docbook #:template)  . "book")
+               ((#:albert #:docbook #:bgcolor)   . "white")
+               ((#:albert #:docbook #:textcolor) . "black"))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8
+  :depends-on ("com.informatimago.common-lisp.lisp-sexp"
+               "com.informatimago.common-lisp.lisp-reader"
+               "com.informatimago.common-lisp.lisp-text"
+               
+               ;; not yet  "com.informatimago.common-lisp.lisp"
 
-                 "com.informatimago.common-lisp.cesarum"
-                 "com.informatimago.common-lisp.picture"
-                 "com.informatimago.common-lisp.arithmetic"
-                 "com.informatimago.common-lisp.data-encoding"
-                 "com.informatimago.common-lisp.heap"
-                 
-                 "com.informatimago.common-lisp.html-base"
-                 "com.informatimago.common-lisp.html-generator"
-                 "com.informatimago.common-lisp.html-parser"
-                 "com.informatimago.common-lisp.http"
+               "com.informatimago.common-lisp.cesarum"
+               "com.informatimago.common-lisp.picture"
+               "com.informatimago.common-lisp.arithmetic"
+               "com.informatimago.common-lisp.data-encoding"
+               "com.informatimago.common-lisp.heap"
+               
+               "com.informatimago.common-lisp.html-base"
+               "com.informatimago.common-lisp.html-generator"
+               "com.informatimago.common-lisp.html-parser"
+               "com.informatimago.common-lisp.http"
 
-                 "com.informatimago.common-lisp.bank"
-                 "com.informatimago.common-lisp.csv"
-                 "com.informatimago.common-lisp.diagram"
-                 "com.informatimago.common-lisp.regexp"
-                 "com.informatimago.common-lisp.ed"
-                 "com.informatimago.common-lisp.graphviz"
-                 "com.informatimago.common-lisp.invoice"
-                 "com.informatimago.common-lisp.interactive"
-                 "com.informatimago.common-lisp.parser"
-                 
-                 "com.informatimago.common-lisp.rfc2822"
-                 "com.informatimago.common-lisp.rfc3548"
-                 ;; not yet "com.informatimago.common-lisp.telnet"
-                 "com.informatimago.common-lisp.unix"))
+               "com.informatimago.common-lisp.bank"
+               "com.informatimago.common-lisp.csv"
+               "com.informatimago.common-lisp.diagram"
+               "com.informatimago.common-lisp.regexp"
+               "com.informatimago.common-lisp.ed"
+               "com.informatimago.common-lisp.graphviz"
+               "com.informatimago.common-lisp.invoice"
+               "com.informatimago.common-lisp.interactive"
+               "com.informatimago.common-lisp.parser"
+               
+               "com.informatimago.common-lisp.rfc2822"
+               "com.informatimago.common-lisp.rfc3548"
+               ;; not yet "com.informatimago.common-lisp.telnet"
+               "com.informatimago.common-lisp.unix")
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.test"))))
 
 
 ;;;; THE END ;;;;

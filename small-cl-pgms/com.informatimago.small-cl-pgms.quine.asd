@@ -32,12 +32,13 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.small-cl-pgms.quine
-    :description "A few Quines."
-    :author "Pascal J. Bourguignon"
-    :version "1.0.0"
-    :license "GPL3"
-    :depends-on () 
-    :components ((:file "quine")))
+(asdf:defsystem "com.informatimago.small-cl-pgms.quine"
+  :description "A few Quines."
+  :author "Pascal J. Bourguignon"
+  :version "1.0.0"
+  :license "GPL3"
+  :depends-on () 
+  :components ((:file "quine"))
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.small-cl-pgms.quine.test"))))
 
 ;;;; THE END ;;;;

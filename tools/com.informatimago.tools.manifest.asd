@@ -32,7 +32,7 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.tools.manifest
+(asdf:defsystem "com.informatimago.tools.manifest"
   :description "Produces a manifest of asdf systems."
   :author "Pascal J. Bourguignon"
   :version "1.0.0"

@@ -38,7 +38,6 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
 
-(in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.PICTURE.PICTURE"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
@@ -538,31 +537,6 @@ NOTE:    A future implementation won't use DRAW-POINT for performance.
   self) ;;FRAME-RECT
 
   
-(defun test-picture-object ()
-  "
-DO:      Creates a test picture.
-RETURN:  the picture string.
-"
-  (let ((p (make-instance 'picture :width 40 :height 20 :background ".")))
-    (frame-rect p 0 0 39 19)
-
-    (draw-string p 21 10 "East")
-    (draw-string p 19 10 "West"  :direction :w)
-    (draw-string p 20 11 "North" :direction :n)
-    (draw-string p 20  9 "South" :direction :s)
-    (draw-string p 21 11 "North-East" :direction :ene)
-    (draw-string p 19 11 "North-West" :direction :wnw)
-    (draw-string p 21  9 "South-East" :direction :ese)
-    (draw-string p 19  9 "South-West" :direction :wsw)
-
-    (erase-rect p 2 10 5 3)
-    (fill-rect p 30 10 6 4 :foreground ":")
-    (frame-rect p 30 10 6 4 :top-left "/" :top-right "\\" 
-                :bottom-left "\\" :bottom-right "/" 
-                :left "<" :top "^" :bottom "v" :right ">")
-    (draw-line p 0 0 40 20 :foreground "$")
-    (draw-point  p 20 10 "*")
-    (print p))) ;;TEST-PICTURE-OBJECT
 
 
 ;; ------------------------------------------------------------------------

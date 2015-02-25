@@ -32,7 +32,7 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.common-lisp.bank
+(asdf:defsystem "com.informatimago.common-lisp.bank"
   ;; system attributes:
   :description  "Informatimago Common Lisp Banking Utilities"
   :long-description "Various bank data formats (IBAN, RIB)."
@@ -51,6 +51,7 @@
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ("com.informatimago.common-lisp.cesarum")
   :components ((:file "iban" :depends-on ())
-               (:file "rib"  :depends-on ("iban"))))
+               (:file "rib"  :depends-on ("iban")))
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.bank.test"))))
 
 ;;;; THE END ;;;;

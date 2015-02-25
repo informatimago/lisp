@@ -32,29 +32,30 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.common-lisp.html-base
-    ;; system attributes:
-    :description  "Informatimago Common Lisp HTML 4.01 standard and entities" 
-    :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-    :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-    :licence "AGPL3"
-    ;; component attributes:
-    :version "1.2.1"
-    :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Autumn 2010")
-                 ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.html-base/")
-                 ((#:albert #:formats)             . ("docbook"))
-                 ((#:albert #:docbook #:template)  . "book")
-                 ((#:albert #:docbook #:bgcolor)   . "white")
-                 ((#:albert #:docbook #:textcolor) . "black"))
-    #+asdf-unicode :encoding #+asdf-unicode :utf-8
-    :depends-on ("com.informatimago.common-lisp.cesarum"
-                 "com.informatimago.common-lisp.lisp-sexp")
-    :components ((:file "html-entities"  :depends-on ())
-                 ;; The html401.lisp file is designed to be loaded in various packages
-                 ;; where different definitions of the DEFELEMENT and DEFATTRIBUTE macros
-                 ;; will process it.
-                 ;; (:file "html401"        :depends-on ())
-                 ))
+(asdf:defsystem "com.informatimago.common-lisp.html-base"
+  ;; system attributes:
+  :description  "Informatimago Common Lisp HTML 4.01 standard and entities" 
+  :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :licence "AGPL3"
+  ;; component attributes:
+  :version "1.2.1"
+  :properties ((#:author-email                   . "pjb@informatimago.com")
+               (#:date                           . "Autumn 2010")
+               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.html-base/")
+               ((#:albert #:formats)             . ("docbook"))
+               ((#:albert #:docbook #:template)  . "book")
+               ((#:albert #:docbook #:bgcolor)   . "white")
+               ((#:albert #:docbook #:textcolor) . "black"))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8
+  :depends-on ("com.informatimago.common-lisp.cesarum"
+               "com.informatimago.common-lisp.lisp-sexp")
+  :components ((:file "html-entities"  :depends-on ())
+               ;; The html401.lisp file is designed to be loaded in various packages
+               ;; where different definitions of the DEFELEMENT and DEFATTRIBUTE macros
+               ;; will process it.
+               ;; (:file "html401"        :depends-on ())
+               )
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.html-base.test"))))
 
 ;;;; THE END ;;;;

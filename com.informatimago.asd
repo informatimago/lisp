@@ -33,7 +33,7 @@
 ;;;;**************************************************************************
 
 
-(asdf:defsystem :com.informatimago
+(asdf:defsystem "com.informatimago"
   ;; system attributes:
   :description  "Informatimago Systems Agregate"
   :long-description  "This system gathers most of the Informatimago systems."
@@ -63,8 +63,8 @@
                "com.informatimago.susv3" ; empty shell on non-clisp.
                "com.informatimago.clisp" ; empty shell on non-clisp linux
                )
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.tests")))
-  :components ())
+  :components ()
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.tests"))))
 
 
 ;;;; THE END ;;;;

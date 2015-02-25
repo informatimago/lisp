@@ -33,33 +33,34 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.common-lisp.lisp-reader
-    :description  "Informatimago Common Lisp Reader -- A standard portable Common Lisp reader."
-    :long-description "
+(asdf:defsystem "com.informatimago.common-lisp.lisp-reader"
+  :description  "Informatimago Common Lisp Reader -- A standard portable Common Lisp reader."
+  :long-description "
 
 A customizable standard Common Lisp reader.  We provide also an
 implementation of the Common Lisp package system (based on Xach
 Beane's zpack.lisp).
 
 "
-    :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-    :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-    :licence "AGPL3"
-    ;; component attributes
-    :version "1.2.1"
-    :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Spring 2012")
-                 ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.lisp-reader/")
-                 ((#:albert #:formats)             . ("docbook"))
-                 ((#:albert #:docbook #:template)  . "book")
-                 ((#:albert #:docbook #:bgcolor)   . "white")
-                 ((#:albert #:docbook #:textcolor) . "black"))
-    #+asdf-unicode :encoding #+asdf-unicode :utf-8
-    :depends-on ("com.informatimago.common-lisp.lisp-sexp")
-    :components ((:file "reader"          :depends-on ())
-                 (:file "package-pac"     :depends-on ())
-                 (:file "package-mac"     :depends-on ("package-pac"))
-                 (:file "package-fun"     :depends-on ("package-pac" "package-mac"))
-                 (:file "package-def"     :depends-on ("package-pac" "package-mac" "package-fun"))))
+  :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :licence "AGPL3"
+  ;; component attributes
+  :version "1.2.1"
+  :properties ((#:author-email                   . "pjb@informatimago.com")
+               (#:date                           . "Spring 2012")
+               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.lisp-reader/")
+               ((#:albert #:formats)             . ("docbook"))
+               ((#:albert #:docbook #:template)  . "book")
+               ((#:albert #:docbook #:bgcolor)   . "white")
+               ((#:albert #:docbook #:textcolor) . "black"))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8
+  :depends-on ("com.informatimago.common-lisp.lisp-sexp")
+  :components ((:file "reader"          :depends-on ())
+               (:file "package-pac"     :depends-on ())
+               (:file "package-mac"     :depends-on ("package-pac"))
+               (:file "package-fun"     :depends-on ("package-pac" "package-mac"))
+               (:file "package-def"     :depends-on ("package-pac" "package-mac" "package-fun")))
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.lisp-reader.test"))))
 
 ;;;; THE END ;;;;

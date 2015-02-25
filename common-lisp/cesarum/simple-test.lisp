@@ -40,9 +40,19 @@
   (:export "*DEBUG-ON-ERROR*" "WITH-DEBUGGER-ON-ERROR"
            "DEFINE-TEST" "TEST" "ASSERT-TRUE" "ASSERT-FALSE" "EXPECT-CONDITION"
 
-           "*VERBOSE-TALLY*" "*VERBOSE-PROGRESS*")
+           "*VERBOSE-TALLY*"  "*VERBOSE-PROGRESS*"
+           "PROGRESS-START"
+           "PROGRESS-SUCCESS" "PROGRESS-FAILURE-MESSAGE" "PROGRESS-FAILURE"
+           "PROGRESS-TALLY")
   (:documentation "
 This package defines a simple test tool.
+
+   (define-test <test-name> (<test-arguments>)
+     (assert-true   <expr> (<place>…) \"message ~A\" <arguments>…)
+     (assert-false  <expr> (<place>…) \"message ~A\" <arguments>…)
+     (if <test>
+        (progress-success)
+        (progress-failure-message '<expr> \"message ~A\" <arguments>…)))
 
 License:
 

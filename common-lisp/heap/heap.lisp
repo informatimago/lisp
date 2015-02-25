@@ -90,7 +90,8 @@
 (in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.HEAP.HEAP"
   (:use "COMMON-LISP"
-        "COM.INFORMATIMAGO.COMMON-LISP.HEAP.MEMORY")
+        "COM.INFORMATIMAGO.COMMON-LISP.HEAP.MEMORY"
+        "COM.INFORMATIMAGO.COMMON-LISP.DATA-ENCODING.IEEE-754")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "WSIOSBP" "DEFENUM")
   (:export "SET-COMMON" "GET-COMMON" "WITH-COMMON-LOCK" "*COMMON-VARIABLES*"
            "DEFCOMMON" "COMMON-INITIALIZE")
@@ -782,111 +783,6 @@ but some types are used only for array cells (ie. unboxed values)."
         (- value #.(expt 2 56)))))
 
 
-;;--------------------
-;; floats
-;;--------------------
-
-;; [floatx[0,6]  v6 v5 v4 | v3 v2 v1 v0]
-
-(defmacro gen-ieee-encoding (name type exponent-bits mantissa-bits)
-  ;; Thanks to ivan4th (~ivan_iv@nat-msk-01.ti.ru) for correcting an off-by-1
-  `(progn
-     (defun ,(intern (with-standard-io-syntax (format nil "~A-TO-IEEE-754" name))
-                     (symbol-package name))  (float)
-       (multiple-value-bind (mantissa exponent sign) 
-           (integer-decode-float float)
-         (dpb (if (minusp sign) 1 0)
-              (byte 1 ,(1- (+ exponent-bits mantissa-bits)))
-              (dpb (+ ,(+ (- (expt 2 (1- exponent-bits)) 2) mantissa-bits)
-                      exponent)
-                   (byte ,exponent-bits ,(1- mantissa-bits))
-                   (ldb (byte ,(1- mantissa-bits) 0) mantissa)))))
-     (defun ,(intern (with-standard-io-syntax (format nil "IEEE-754-TO-~A" name))
-                     (symbol-package name))  (ieee)
-       (let ((aval (scale-float
-                    (coerce
-                     (dpb 1 (byte 1 ,(1- mantissa-bits))
-                          (ldb (byte ,(1- mantissa-bits) 0) ieee))
-                     ,type)
-                    (- (ldb (byte ,exponent-bits ,(1- mantissa-bits))
-                            ieee) 
-                       ,(1- (expt 2 (1- exponent-bits)))
-                       ,(1- mantissa-bits)))))
-         (if (zerop (ldb (byte 1 ,(1- (+ exponent-bits mantissa-bits))) ieee))
-             aval
-             (- aval))))))
-
-
-(gen-ieee-encoding float-32 'single-float  8 24)
-(gen-ieee-encoding float-64 'double-float 11 53)
-
-
-(defun test-ieee-read-double ()
-  (with-open-file (in "value.ieee-754-double" 
-                      :direction :input :element-type '(unsigned-byte 8))
-    (loop :while (< (file-position in) (file-length in))
-          :do (loop  :for i = 1 :then (* i 256)
-                     :for v = (read-byte in) :then (+ v (* i (read-byte in)))
-                     :repeat 8
-                     :finally (let ((*print-base* 16)) (princ v))
-                              (princ " ")
-                              (princ (ieee-754-to-float-64 v))
-                              (terpri)))))
-
-(defun test-ieee-read-single ()
-  (with-open-file (in "value.ieee-754-single" 
-                      :direction :input :element-type '(unsigned-byte 8))
-    (loop :while (< (file-position in) (file-length in))
-          :do (loop :for i = 1 :then (* i 256)
-                    :for v = (read-byte in) :then (+ v (* i (read-byte in)))
-                    :repeat 4
-                    :finally (let ((*print-base* 16)) (princ v))
-                             (princ " ")
-                             (princ (ieee-754-to-float-32 v))
-                             (terpri)))))
-
-(defun test-single-to-ieee (&rest args)
-  (dolist (arg args)
-    (format t "~16,8R ~A~%" 
-            (float-32-to-ieee-754 (coerce arg 'single-float)) arg)))
-
-(defun test-double-to-ieee (&rest args)
-  (dolist (arg args)
-    (format t "~16,16R ~A~%" 
-            (float-64-to-ieee-754 (coerce arg 'double-float)) arg)))
-
-
-#|
-CL-USER> (test-double-to-ieee 1.2d0 12.0d0 120.0d0 1200.0d0 1234.567d0)
-3FF3333333333333 1.2d0
-4028000000000000 12.0d0
-405E000000000000 120.0d0
-4092C00000000000 1200.0d0
-40934A449BA5E354 1234.567d0
-NIL
-CL-USER> (test-ieee-read-double)
-3FF3333333333333 1.2d0
-4028000000000000 12.0d0
-405E000000000000 120.0d0
-4092C00000000000 1200.0d0
-40934A449BA5E354 1234.567d0
-NIL
-CL-USER> (test-ieee-read-single)
-3F99999A 1.2
-41400000 12.0
-42F00000 120.0
-44960000 1200.0
-449A5225 1234.567
-NIL
-CL-USER> (test-single-to-ieee 1.2 12.0 120.0 1200.0 1234.567)
-3F99999A 1.2
-41400000 12.0
-42F00000 120.0
-44960000 1200.0
-449A5225 1234.567
-NIL
-CL-USER> 
-|#
 
 
 (defun cvm-single-float-p (object)
