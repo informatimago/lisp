@@ -1,22 +1,22 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               pathname-test.lisp
+;;;;FILE:               com.informatimago.tools.script.asd
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    Test pathname.lisp
+;;;;    System to load the script package.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2015-02-23 <PJB> Created.
+;;;;    2015-02-25 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2015 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2013 - 2015
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -31,18 +31,14 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
-(defpackage "COM.INFORMATIMAGO.TOOLS.PATHNAME.TEST"
-  (:use "COMMON-LISP"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SIMPLE-TEST"
-        "COM.INFORMATIMAGO.TOOLS.PATHNAME")
-  (:shadowing-import-from "COM.INFORMATIMAGO.TOOLS.PATHNAME"
-                          "MAKE-PATHNAME"
-                          "USER-HOMEDIR-PATHNAME"
-                          "TRANSLATE-LOGICAL-PATHNAME")
-  (:export "TEST/ALL"))
-(in-package "COM.INFORMATIMAGO.TOOLS.PATHNAME.TEST")
- 
-(define-test test/all ()
-  :success)
+
+(asdf:defsystem "com.informatimago.tools.script"
+  :description "Utilities for scripts."
+  :author "Pascal J. Bourguignon"
+  :version "1.0.0"
+  :license "AGPL3"
+  :depends-on () 
+  :components ((:file "script" :depends-on ()))
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.tools.script.test"))))
 
 ;;;; THE END ;;;;

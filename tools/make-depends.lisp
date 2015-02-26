@@ -46,7 +46,7 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
 
-(defpackage "COM.INFORMATIMAGO.COMMON-LISP.TOOLS.MAKE-DEPENDS"
+(defpackage "COM.INFORMATIMAGO.TOOLS.MAKE-DEPENDS"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
@@ -54,7 +54,7 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CHARACTER-SETS"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE"
         "COM.INFORMATIMAGO.CLEXT.CHARACTER-SETS"
-        "COM.INFORMATIMAGO.COMMON-LISP.TOOLS.READ-SOURCE")
+        "COM.INFORMATIMAGO.TOOLS.SOURCE")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE"
                 "SAFE-TEXT-FILE-TO-STRING-LIST")
   (:export "MAKE-DEPENDS")
@@ -85,7 +85,7 @@ LICENSE:
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 "))
-(in-package "COM.INFORMATIMAGO.COMMON-LISP.TOOLS.MAKE-DEPENDS")
+(in-package "COM.INFORMATIMAGO.TOOLS.MAKE-DEPENDS")
 
 
 (defun make-depends (object-files packages translations load-paths

@@ -47,7 +47,7 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
 
-(defpackage "COM.INFORMATIMAGO.COMMON-LISP.TOOLS.SOURCE"
+(defpackage "COM.INFORMATIMAGO.TOOLS.SOURCE"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
@@ -112,13 +112,13 @@ Source files can be either elisp (.el) or Common Lisp (.lisp,
 
 USAGE:
 
-    (file-emacs-variables \"read-source.lisp\")
+    (file-emacs-variables \"source.lisp\")
      --> (:|mode| "lisp" :|coding| "utf-8")
 
-    (scan-source-file \"read-source.lisp\" :external-format :utf-8)
+    (scan-source-file \"source.lisp\" :external-format :utf-8)
     --> #<source-file …>
 
-    (get-package \"read-source.lisp\")
+    (get-package \"source.lisp\")
     --> #<source-package …>
 
 LICENSE:
@@ -140,7 +140,7 @@ LICENSE:
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 "))
-(in-package "COM.INFORMATIMAGO.COMMON-LISP.TOOLS.SOURCE")
+(in-package "COM.INFORMATIMAGO.TOOLS.SOURCE")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1119,7 +1119,7 @@ VERBOSE:        Prints information on *TRACE-OUTPUT*.
           (pdebug "~&;;    processing ~S~%" pack-name)
           (when verbose
             (format *trace-output* "~&;;    processing ~S~%" pack-name))
-          ;; "COM.INFORMATIMAGO.COMMON-LISP.TOOLS.MAKE-DEPENDS.MAKE-DEPENDS"
+          ;; "COM.INFORMATIMAGO.TOOLS.MAKE-DEPENDS.MAKE-DEPENDS"
           ;; --> PACKAGE::PACKAGE-PATHNAME
           ;; "DICTIONARY"
           ;; "PJB-STRING"

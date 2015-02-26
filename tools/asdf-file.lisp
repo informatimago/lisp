@@ -46,7 +46,7 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
         "COM.INFORMATIMAGO.TOOLS.DEPENDENCY-CYCLES"
-        "COM.INFORMATIMAGO.COMMON-LISP.TOOLS.SOURCE")
+        "COM.INFORMATIMAGO.TOOLS.SOURCE")
   (:shadow "DEPENDENCIES")
   (:export
    ;; Generating simple ASD files:
@@ -210,7 +210,7 @@ LOAD:-PATHS     A list of directory paths where the sources are searched in.
 VANILLAP:  if true, then generate a simple, vanilla system.
            Otherwise, decorate it with PJB output-files.
 "
-  (let ((*package* (find-package :com.informatimago.common-lisp.tools.make-depends.make-depends)))
+  (let ((*package* (find-package :com.informatimago.tools.make-depends.make-depends)))
     (with-open-file (out (make-pathname :directory '(:relative)
                                         :name "system"
                                         ;;(string-downcase system-name)

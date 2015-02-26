@@ -35,7 +35,8 @@
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST.TEST"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SIMPLE-TEST"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"))
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
+  (:export "TEST/ALL"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST.TEST")
 
 
@@ -151,7 +152,7 @@
   (assert-true (equal 'x (tree-find "x" '((a b (a b c d . x) |x|)) :test (function string=) :key (function string-downcase)))))
 
 
-(define/test test/all ()
+(define-test test/all ()
   (test/list-lengths)
   (test/list-elements)
   (test/tree-find))

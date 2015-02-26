@@ -58,11 +58,11 @@
   :depends-on     ("com.informatimago.common-lisp.cesarum"
                    "com.informatimago.tools.make-depends")
   :components     ((:file "make-depends-test" :depends-on nil))
-  :perform        (asdf/lisp-action:test-op
+  :perform        (asdf:test-op
                    (operation system)
                    (declare (ignore operation system))
-                   (let ((*package* (find-package "COM.INFORMATIMAGO.TOOLS.MAKE-DEPENDS.TEST")))
-                     (uiop/package:symbol-call "COM.INFORMATIMAGO.TOOLS.MAKE-DEPENDS.TEST"
-                                               "TEST/ALL"))))
+                   (dolist (p '("COM.INFORMATIMAGO.TOOLS.MAKE-DEPENDS.TEST"))
+                     (let ((*package* (find-package p)))
+                       (uiop/package:symbol-call p "TEST/ALL")))))
 
 ;;;; THE END ;;;;

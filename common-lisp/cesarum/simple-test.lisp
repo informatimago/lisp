@@ -15,6 +15,9 @@
 ;;;;                     progress-failure and macros callint it.
 ;;;;    2010-12-14 <PJB> Created.
 ;;;;BUGS
+;;;;
+;;;;    - we should use source-form to parse lambda-list for define-test.
+;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
@@ -326,7 +329,7 @@ EXAMPLE:  (test equal (list 1 2 3) '(1 2 3))
   "Like DEFUN, but wraps the body in test reporting boilerplate."
   (let ((mandatory (loop
                      :for param :in parameters
-                     :while (symbolp param)
+                     :until (member param lambda-list-keywords)
                      :collect param)))
     (multiple-value-bind (docstrings declarations forms) (parse-body :lambda body)
       `(defun ,name ,parameters

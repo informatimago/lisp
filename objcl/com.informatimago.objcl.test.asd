@@ -57,16 +57,14 @@
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on     ("com.informatimago.common-lisp.cesarum"
                    "com.informatimago.objcl")
-  :components     ((:file "objc-test" :depends-on ())
+  :components     ((:file "objcl-test" :depends-on ())
                    (:file "mac-roman-test" :depends-on ()))
   :perform        (asdf/lisp-action:test-op
                    (operation system)
                    (declare (ignore operation system))
-                   (let ((*package* (find-package "COM.INFORMATIMAGO.TOOLS.MAC-ROMAN.TEST")))
-                     (uiop/package:symbol-call "COM.INFORMATIMAGO.TOOLS.MAC-ROMAN.TEST"
-                                               "TEST/ALL"))
-                   (let ((*package* (find-package "COM.INFORMATIMAGO.OBJECTIVE-CL")))
-                     (uiop/package:symbol-call "COM.INFORMATIMAGO.OBJECTIVE-CL"
-                                               "TEST/ALL"))))
+                   (dolist (p '("COM.INFORMATIMAGO.OBJCL.MAC-ROMAN.TEST"
+                                "COM.INFORMATIMAGO.OBJCL.TEST"))
+                     (let ((*package* (find-package p)))
+                       (uiop/package:symbol-call p "TEST/ALL")))))
 
 ;;;; THE END ;;;;

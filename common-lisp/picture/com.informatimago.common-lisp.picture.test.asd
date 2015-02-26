@@ -57,12 +57,12 @@
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on     ("com.informatimago.common-lisp.cesarum"
                    "com.informatimago.common-lisp.picture")
-  :components     ((:file "source-test" :depends-on nil))
+  :components     ((:file "picture-test" :depends-on nil))
   :perform        (asdf/lisp-action:test-op
                    (operation system)
                    (declare (ignore operation system))
-                   (let ((*package* (find-package "COM.INFORMATIMAGO.COMMON-LISP.PICTURE.PICTURE.TEST")))
-                     (uiop/package:symbol-call "COM.INFORMATIMAGO.COMMON-LISP.PICTURE.PICTURE.TEST"
-                                               "TEST/ALL"))))
+                   (dolist (p '("COM.INFORMATIMAGO.COMMON-LISP.PICTURE.PICTURE.TEST"))
+                     (let ((*package* (find-package p)))
+                       (uiop/package:symbol-call p "TEST/ALL")))))
 
 ;;;; THE END ;;;;

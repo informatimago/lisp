@@ -33,22 +33,8 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
 
-;; (defpackage "COM.INFORMATIMAGO.MAC-ROMAN"
-;;   (:use "COMMON-LISP")
-;;   (:export "MAC-ROMAN-CHAR-P" "MAC-ROMAN-STRING-P)
-;;   (:documentation "
-;; This package exports a function to check if a character is in the
-;; Mac-Roman repertoire.
-;; 
-;; Copyright Pascal J. Bourguignon 2011 - 2011
-;; 
-;; This package is licensed under the GPL.
-;; See source file for details.
-;; "))
-;; (in-package "COM.INFORMATIMAGO.MAC-ROMAN")
-
-
-(in-package "COM.INFORMATIMAGO.OBJECTIVE-CL")
+(in-package "COM.INFORMATIMAGO.OBJCL.MAC-ROMAN")
+;; or we could depend on "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CHARACTER-SETS"
 
 
 #+(and developing clisp)

@@ -33,7 +33,21 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
 
-(in-package "COM.INFORMATIMAGO.OBJECTIVE-CL")
+(defpackage "COM.INFORMATIMAGO.OBJECTIVE-CL.TEST"
+  (:nicknames "COM.INFORMATIMAGO.OBJCL.TEST")
+  (:use "COMMON-LISP"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SIMPLE-TEST"
+        "COM.INFORMATIMAGO.OBJECTIVE-CL")
+  (:import-from "COM.INFORMATIMAGO.OBJECTIVE-CL"
+                "*OBJC-READTABLE*"
+                "READ-TYPE-SPECIFIER"
+                "READ-METHOD-SIGNATURE"
+                "READ-FINAL-ARGUMENTS"
+                "READ-MESSAGE" "READ-IDENTIFIER"
+                "GENERATE-MESSAGE-SEND"
+                "READ-MESSAGE-SEND")
+  (:export "TEST/ALL"))
+(in-package "COM.INFORMATIMAGO.OBJECTIVE-CL.TEST")
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setf *read-default-float-format* 'double-float))
@@ -50,7 +64,7 @@
 
 
 (define-test test/read-identifier ()
-  (let ((*package* (find-package "COM.INFORMATIMAGO.OBJECTIVE-CL")))
+  (let ((*package* (find-package "COM.INFORMATIMAGO.OBJECTIVE-CL.TEST")))
    (test string=
          (with-string-check (*objc-readtable*
                              stream "hello42World:")
@@ -62,7 +76,7 @@
   "
     type-specifier :='(' type-identifier ')' .
 "
-  (let ((*package* (find-package "COM.INFORMATIMAGO.OBJECTIVE-CL")))
+  (let ((*package* (find-package "COM.INFORMATIMAGO.OBJECTIVE-CL.TEST")))
    (test equal
          (with-string-check (*objc-readtable*
                              stream "(int)arg")
@@ -78,7 +92,7 @@
     compound-signature := [objcl-identifier] ':' '(' type-identifier ')' objcl-identifier compound-signature
                         | [objcl-identifier] ':' '(' type-identifier ')' objcl-identifier .
 "
-  (let ((*package* (find-package "COM.INFORMATIMAGO.OBJECTIVE-CL")))
+  (let ((*package* (find-package "COM.INFORMATIMAGO.OBJECTIVE-CL.TEST")))
    (test equal
          (with-string-check (*objc-readtable*
                              stream "simpleSelector)")
@@ -123,7 +137,7 @@
     final-arguments    := | '(' type-identifier ')' objcl-expression  final-arguments .
     type-identifier    := symbol .
 "
-  (let ((*package* (find-package "COM.INFORMATIMAGO.OBJECTIVE-CL")))
+  (let ((*package* (find-package "COM.INFORMATIMAGO.OBJECTIVE-CL.TEST")))
    (test equal
          (with-string-check (*objc-readtable*
                              stream "]")
@@ -159,7 +173,7 @@
     compound-selector  := [objcl-identifier] ':' objcl-expression compound-selector
                         | [objcl-identifier] ':' objcl-expression .
 "
-  (let ((*package* (find-package "COM.INFORMATIMAGO.OBJECTIVE-CL")))
+  (let ((*package* (find-package "COM.INFORMATIMAGO.OBJECTIVE-CL.TEST")))
    (test equal
          (with-string-check (*objc-readtable*
                              stream "simpleSelector]")
@@ -209,7 +223,7 @@
 
 
 (define-test test/read-message-send ()
-  (let ((*package* (find-package "COM.INFORMATIMAGO.OBJECTIVE-CL")))
+  (let ((*package* (find-package "COM.INFORMATIMAGO.OBJECTIVE-CL.TEST")))
     (test equal
           (with-string-check (*objc-readtable*
                               stream "simpleSelector]")
@@ -259,7 +273,7 @@
 
 
 (define-test test/message-send ()
-  (let ((*package* (find-package "COM.INFORMATIMAGO.OBJECTIVE-CL")))                  
+  (let ((*package* (find-package "COM.INFORMATIMAGO.OBJECTIVE-CL.TEST")))                  
    (flet ((gen (args) (apply (function generate-message-send) args)))
      (declare (inline gen))
      (test equal
@@ -292,7 +306,7 @@
 
 
 (define-test test/read-objcl-message-send ()
-  (let ((*package* (find-package "COM.INFORMATIMAGO.OBJECTIVE-CL")))
+  (let ((*package* (find-package "COM.INFORMATIMAGO.OBJECTIVE-CL.TEST")))
    (flet ((read-objc (source)
             (let ((*readtable* *objective-cl-readtable*))
               (read-from-string source))))
@@ -363,8 +377,9 @@
              (oclo:send self 'simple-selector)
              (oclo:send self :multiple-arg 42 :complex-selector 24))))))
 
+
 (define-test test/read-objcl-class-definition ()
-  (let ((*package* (find-package "COM.INFORMATIMAGO.OBJECTIVE-CL")))
+  (let ((*package* (find-package "COM.INFORMATIMAGO.OBJECTIVE-CL.TEST")))
    (flet ((read-objc (source)
             (let ((*readtable* *objective-cl-readtable*))
               (read-from-string source))))
@@ -392,8 +407,9 @@
     (t
      (equal a b))))
 
+
 (define-test test/read-objcl-class-method-definition ()
-  (let ((*package* (find-package "COM.INFORMATIMAGO.OBJECTIVE-CL")))
+  (let ((*package* (find-package "COM.INFORMATIMAGO.OBJECTIVE-CL.TEST")))
     (flet ((read-objc (source)
             (let ((*readtable* *objective-cl-readtable*))
               (read-from-string source))))
@@ -410,7 +426,7 @@
 
 
 (define-test test/read-objcl-instance-method-definition ()
-  (let ((*package* (find-package "COM.INFORMATIMAGO.OBJECTIVE-CL")))
+  (let ((*package* (find-package "COM.INFORMATIMAGO.OBJECTIVE-CL.TEST")))
    (flet ((read-objc (source)
             (let ((*readtable* *objective-cl-readtable*))
               (read-from-string source))))

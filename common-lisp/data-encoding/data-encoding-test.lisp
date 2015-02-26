@@ -39,7 +39,7 @@
         "COM.INFORMATIMAGO.COMMON-LISP.DATA-ENCODING.DATA-ENCODING"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.DATA-ENCODING.DATA-ENCODING.TEST")
 
-(progn
+(eval-when (:compile-toplevel :load-toplevel :execute)
   (def-enctype buint8        ()    (number unsigned       1 big-endian))
   (def-enctype buint16       ()    (number unsigned       2 big-endian))
   (def-enctype buint24       ()    (number unsigned       3 big-endian))
@@ -62,7 +62,7 @@
   (def-enctype cobol-string  (len) (string len space :padded :strip))
   (def-enctype pascal-string (len) (string len :green-length (number unsigned 1)))
   (def-enctype c-string      (len) (string len null  :terminated))
-  );;progn
+  ) ;;progn
 
 
 (def-encrecord test-rec

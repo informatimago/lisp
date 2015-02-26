@@ -64,7 +64,7 @@
                "com.informatimago.clisp" ; empty shell on non-clisp linux
                )
   :components ()
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.tests"))))
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.test"))))
 
 
 ;;;; THE END ;;;;

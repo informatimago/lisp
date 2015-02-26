@@ -47,11 +47,11 @@
         "COM.INFORMATIMAGO.CLEXT.CLOSER-WEAK")
   #+clisp (:import-from "EXT" "GC")
   #+cmu   (:import-from "EXTENSIONS" "GC")
+  #+ccl   (:import-from "CCL" "GC")
   (:export "TEST/ALL"))
 (in-package "COM.INFORMATIMAGO.CLEXT.CLOSER-WEAK.TEST")
 
 #+sbcl (defun gc () (sb-ext:gc :full t))
-
 
 
 
@@ -198,13 +198,17 @@ NIL: sacla-style: forms should evaluate to non-NIL.")
            (setq out (and *eval-out* (get-output-stream-string *eval-out*))
                  err (and *eval-err* (get-output-stream-string *eval-err*)))
            (cond ((eql result my-result)
-                  (format t "~&EQL-OK: ~S~%" result))
+                  (format t "~&EQL-OK: ~S~%" result)
+                  (progress-success))
                  ((equal result my-result)
-                  (format t "~&EQUAL-OK: ~S~%" result))
+                  (format t "~&EQUAL-OK: ~S~%" result)
+                  (progress-success))
                  ((equalp result my-result)
-                  (format t "~&EQUALP-OK: ~S~%" result))
+                  (format t "~&EQUALP-OK: ~S~%" result)
+                  (progress-success))
                  (t
                   (incf error-count)
+                  (progress-failure-message form "~&ERROR!! ~S should be ~S !~%" my-result result)
                   (format t "~&ERROR!! ~S should be ~S !~%" my-result result)
                   (format log "~&Form: ~S~%CORRECT: ~S~%~7A: ~S~%~@[~A~%~]"
                           form result lisp-implementation
@@ -256,15 +260,27 @@ NIL: sacla-style: forms should evaluate to non-NIL.")
            (multiple-value-bind (typep-result typep-error)
                (ignore-errors (typep my-result errtype))
              (cond ((and (not typep-error) typep-result)
-                    (format t "~&OK: ~S~%" errtype))
+                    (format t "~&OK: ~S~%" errtype)
+                    (progress-success))
                    (t
                     (incf error-count)
+                    (progress-failure-message form  "~&ERROR!! ~S instead of ~S !~%" my-result errtype)
                     (format t "~&ERROR!! ~S instead of ~S !~%" my-result errtype)
                     (format log "~&Form: ~S~%CORRECT: ~S~%~7A: ~S~%~
                                 ~[~*~:;OUT:~%~S~%~]~[~*~:;ERR:~%~S~]~2%"
                             form errtype lisp-implementation my-result
                             (length out) out (length err) err)))))))
     (values total-count error-count)))
+
+
+(defvar *dirpath* nil)
+(eval-when (:compile-toplevel)
+  (defparameter *dirpath* #.(make-pathname :name nil :type nil :version nil
+                                           :defaults *compile-file-pathname*)))
+(eval-when (:load-toplevel :execute)
+  (defparameter *dirpath* (or *dirpath* (make-pathname :name nil :type nil :version nil
+                                                       :defaults *load-pathname*))))
+
 
 (defvar *run-test-tester* #'do-test)
 (defvar *run-test-type* "tst")
@@ -278,23 +294,27 @@ NIL: sacla-style: forms should evaluate to non-NIL.")
                  (logname testname)
                  &aux (logfile (merge-extension *run-test-erg* logname))
                  error-count total-count *run-test-truename*)
-  (with-open-file (s (merge-extension *run-test-type* testname)
+  (let ((*default-pathname-defaults* *dirpath*))
+   (with-open-file (s (merge-pathnames
+                       (merge-extension *run-test-type* testname)
+                       *dirpath* nil)
                      :direction :input)
-    (setq *run-test-truename* (truename s))
-    (format t "~&~s: started ~s~%" 'run-test s)
-    (with-open-file (log logfile :direction :output
-                         #+(or cmu sbcl) :if-exists
-                         #+(or cmu sbcl) :supersede
-                         #+ansi-cl :if-exists #+ansi-cl :new-version)
-      (setq logfile (truename log))
-      (let* ((*package* *package*) (*print-circle* t) (*print-pretty* nil)
-             (*eval-err* (make-string-output-stream))
-             (*error-output* (make-broadcast-stream *error-output* *eval-err*))
-             (*eval-out* (make-string-output-stream))
-             (*standard-output* (make-broadcast-stream *standard-output*
-                                                       *eval-out*)))
-        (setf (values total-count error-count)
-              (funcall *run-test-tester* s log)))))
+     (setq *run-test-truename* (truename s))
+     (format t "~&~s: started ~s~%" 'run-test s)
+     (with-open-file (log (merge-pathnames logfile *dirpath* nil)
+                          :direction :output
+                          #+(or cmu sbcl) :if-exists
+                          #+(or cmu sbcl) :supersede
+                          #+ansi-cl :if-exists #+ansi-cl :new-version)
+       (setq logfile (truename log))
+       (let* ((*package* *package*) (*print-circle* t) (*print-pretty* nil)
+              (*eval-err* (make-string-output-stream))
+              (*error-output* (make-broadcast-stream *error-output* *eval-err*))
+              (*eval-out* (make-string-output-stream))
+              (*standard-output* (make-broadcast-stream *standard-output*
+                                                        *eval-out*)))
+         (setf (values total-count error-count)
+               (funcall *run-test-tester* s log))))))
   (format t "~&~s: finished ~s (~:d error~:p out of ~:d test~:p)~%"
           'run-test testname error-count total-count)
   (if (zerop error-count)
@@ -325,11 +345,15 @@ NIL: sacla-style: forms should evaluate to non-NIL.")
         (warn "no ~S files in directories ~S" *run-test-type* dirlist))))
 
 (defun run-all-tests (&key (disable-risky t)
+                           (verbose t)
                       ((:eval-method *eval-method*) *eval-method*))
   (let ((res ())
         #+clisp (custom:*load-paths* nil)
         (*features* (if disable-risky *features*
-                        (cons :enable-risky-tests *features*))))
+                        (cons :enable-risky-tests *features*)))
+        (*standard-output* (if verbose
+                               *standard-output*
+                               (make-broadcast-stream))))
     ;; Since weakptr can run on #+cmu, we should run
     ;; the other too with CLOSER-WEAK.
     (dolist (ff '(#+(or clisp cmu sbcl)                           "weak-oid"
@@ -347,8 +371,9 @@ NIL: sacla-style: forms should evaluate to non-NIL.")
           (incf (third tmp) (third weak-res)))))
     (report-results (nreverse res))))
 
+
 (define-test test/all ()
-  (run-all-tests))
+  (run-all-tests :verbose nil))
 
 
 #-(and) (progn

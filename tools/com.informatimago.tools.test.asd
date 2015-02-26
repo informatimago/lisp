@@ -63,6 +63,7 @@
                    "com.informatimago.tools.source.test"
                    "com.informatimago.tools.summary.test"
                    "com.informatimago.tools.symbol.test"
+                   "com.informatimago.tools.script.test"
                    "com.informatimago.tools.undefmethod.test")
   :components     ()
   :in-order-to ((asdf:test-op
@@ -73,7 +74,8 @@
                  (asdf:test-op "com.informatimago.tools.quicklisp.test") 
                  (asdf:test-op "com.informatimago.tools.source.test") 
                  (asdf:test-op "com.informatimago.tools.summary.test") 
-                 (asdf:test-op "com.informatimago.tools.symbol.test") 
+                 (asdf:test-op "com.informatimago.tools.symbol.test")
+                 (asdf:test-op "com.informatimago.tools.script.test") 
                  (asdf:test-op "com.informatimago.tools.undefmethod.test"))))
 
 ;;;; THE END ;;;;

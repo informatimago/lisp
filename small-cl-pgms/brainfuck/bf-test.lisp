@@ -31,12 +31,12 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
-(defpackage "COM.INFORMATIMAGO.TOOLS.BF.TEST"
+(defpackage "COM.INFORMATIMAGO.SMALL-CL-PGMS.BRAINFUCK.TEST"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SIMPLE-TEST"
-        "COM.INFORMATIMAGO.TOOLS.BF")
+        "COM.INFORMATIMAGO.SMALL-CL-PGMS.BRAINFUCK")
   (:export "TEST/ALL"))
-(in-package "COM.INFORMATIMAGO.TOOLS.BF.TEST")
+(in-package "COM.INFORMATIMAGO.SMALL-CL-PGMS.BRAINFUCK.TEST")
  
 (define-test test/all ()
   :success)

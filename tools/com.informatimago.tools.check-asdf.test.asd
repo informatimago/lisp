@@ -56,20 +56,16 @@
                    ((#:albert #:docbook #:textcolor) . "black"))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on     ("com.informatimago.common-lisp.cesarum"
-                   "com.informatimago.tools.check-asdf")
-  :components     ((:file "script-test" :depends-on nil)
+                   "com.informatimago.tools.check-asdf"
+                   "com.informatimago.tools.script")
+  :components     ((:file "check-asdf-test" :depends-on nil)
                    (:file "dependency-cycles-test" :depends-on nil))
-  :perform        (asdf/lisp-action:test-op
+  :perform        (asdf:test-op
                    (operation system)
                    (declare (ignore operation system))
-                   (let ((*package* (find-package "COM.INFORMATIMAGO.TOOLS.DEPENDENCY-CYCLES.TEST")))
-                     (uiop/package:symbol-call "COM.INFORMATIMAGO.TOOLS.DEPENDENCY-CYCLES.TEST"
-                                               "TEST/ALL"))
-                   (let ((*package* (find-package "COM.INFORMATIMAGO.TOOLS.CHECK-ASDF.TEST")))
-                     (uiop/package:symbol-call "COM.INFORMATIMAGO.TOOLS.CHECK-ASDF.TEST"
-                                               "TEST/ALL"))
-                   (let ((*package* (find-package "COM.INFORMATIMAGO.TOOLS.SCRIPT.TEST")))
-                     (uiop/package:symbol-call "COM.INFORMATIMAGO.TOOLS.SCRIPT.TEST"
-                                               "TEST/ALL"))))
+                   (dolist (p '("COM.INFORMATIMAGO.TOOLS.DEPENDENCY-CYCLES.TEST"
+                                "COM.INFORMATIMAGO.TOOLS.CHECK-ASDF.TEST"))
+                     (let ((*package* (find-package p)))
+                       (uiop/package:symbol-call p "TEST/ALL")))))
 
 ;;;; THE END ;;;;

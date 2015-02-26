@@ -619,6 +619,7 @@ with defbf, or strings containing brainfuck instructions.
   "+")                                  ; set mark
 
 
+#-(and)
 (defbf goto-indirect (reg)
   ;; move to address pointed to by (car reg)
   (copy-reg reg +cn+)
@@ -756,7 +757,7 @@ with defbf, or strings containing brainfuck instructions.
   )
 
 
-(defbf test1 (&rest args)
+(defbf test2 (&rest args)
   (format-memory)
   (goto +ac+)
   (store-imm-to-car #x0030)
@@ -812,23 +813,23 @@ with defbf, or strings containing brainfuck instructions.
 
 ||#
 
-
+(defvar *vm* nil)
 (defun test-lisp/bf-vm ()
-  (progn (setf vm  (make-bfvm :pgm (format-memory)))
-         (bfvm-run  vm :verbose nil)
-         (dump-memory vm)
-         (setf (bfvm-pc vm) 0
-               (bfvm-pgm vm) (progbf
-                              (goto +ac+)
-                              (store-imm-to-car #xdead)
-                              (store-imm-to-cdr #xbeef)
-                              (push-ac)
-                              (goto +ac+)
-                              (store-imm-to-car #xcafe)
-                              (store-imm-to-cdr #xbabe)
-                              (push-ac)))
-         (bfvm-run  vm :verbose nil)
-         (dump-memory vm)))
+  (progn (setf *vm*  (make-bfvm :pgm (format-memory)))
+         (bfvm-run  *vm* :verbose nil)
+         (dump-memory *vm*)
+         (setf (bfvm-pc *vm*) 0
+               (bfvm-pgm *vm*) (progbf
+                                 (goto +ac+)
+                                 (store-imm-to-car #xdead)
+                                 (store-imm-to-cdr #xbeef)
+                                 (push-ac)
+                                 (goto +ac+)
+                                 (store-imm-to-car #xcafe)
+                                 (store-imm-to-cdr #xbabe)
+                                 (push-ac)))
+         (bfvm-run  *vm* :verbose nil)
+         (dump-memory *vm*)))
 
 
 ;; (defun bfeval (sexp env)

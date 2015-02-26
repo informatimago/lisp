@@ -31,12 +31,12 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
-(defpackage "COM.INFORMATIMAGO.TOOLS.MAC-ROMAN.TEST"
+(defpackage "COM.INFORMATIMAGO.OBJCL.MAC-ROMAN.TEST"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SIMPLE-TEST"
-        "COM.INFORMATIMAGO.TOOLS.MAC-ROMAN")
+        "COM.INFORMATIMAGO.OBJCL.MAC-ROMAN")
   (:export "TEST/ALL"))
-(in-package "COM.INFORMATIMAGO.TOOLS.MAC-ROMAN.TEST")
+(in-package "COM.INFORMATIMAGO.OBJCL.MAC-ROMAN.TEST")
 
 
 (defun equiv (a b) (eq (not a) (not b)))

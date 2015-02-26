@@ -81,6 +81,14 @@ There are methods specialized on these subclasses to write on the screen."))
 (defgeneric chord-character (chord))
 (defgeneric chord-modifiers (chord))
 
+(defconstant +shift+   0)
+(defconstant +control+ 1)
+(defconstant +meta+    2)
+(defconstant +alt+     3)
+(defconstant +super+   4)
+(defconstant +hyper+   5)
+(defconstant +command+ 6)
+
 (defgeneric chord-modifierp (chord modifier)
   (:method (chord (modifier integer))
     (logbitp modifier (chord-modifiers chord)))
@@ -94,13 +102,6 @@ There are methods specialized on these subclasses to write on the screen."))
                              (:hyper +hyper+)
                              (:command +command+)))))
 
-(defconstant +shift+   0)
-(defconstant +control+ 1)
-(defconstant +meta+    2)
-(defconstant +alt+     3)
-(defconstant +super+   4)
-(defconstant +hyper+   5)
-(defconstant +command+ 6)
 
 (defun symbolic-modifiers (modifiers)
   (loop

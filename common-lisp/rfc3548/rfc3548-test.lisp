@@ -102,14 +102,12 @@ publié en 1962 par MIT Press, un des maîtres­livres de l'Informatique.
       (setf data (subseq data 0 (1- (length data)))))))
 
 
-(define-test test ()
+(define-test test/all-encodings ()
   (dolist (enc '(:base16 :base32 :base64 :filebase64)) 
     (dolist (line '(nil t))
       (format t "~&TESTING ~A ~:[~;with lines~]" enc line)
       (finish-output)
-      (test-encoding enc :line-width (when line 40) :ignore-crlf line)
-      (format t "~40TPASSED.~%")
-      (finish-output))))
+      (test/encoding enc :line-width (when line 40) :ignore-crlf line))))
 
 
 (defun interactive-test/base16-encode ()
@@ -124,6 +122,6 @@ publié en 1962 par MIT Press, un des maîtres­livres de l'Informatique.
    (lambda (byte) (write-char (code-char byte)))))
 
 (define-test test/all ()
-  (test))
+  (test/all-encodings))
 
 ;;;; THE END ;;;;

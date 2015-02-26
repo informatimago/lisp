@@ -122,7 +122,7 @@
                        #-abcl
                        (directory "**/*.asd")
                        #+abcl
-                       '(#p"/home/pjb/src/git/public/lisp/tools/com.informatimago.common-lisp.tools.make-depends.asd"
+                       '(#p"/home/pjb/src/git/public/lisp/tools/com.informatimago.tools.make-depends.asd"
                          #p"/home/pjb/src/git/public/lisp/common-lisp/diagram/com.informatimago.common-lisp.diagram.asd"
                          #p"/home/pjb/src/git/public/lisp/common-lisp/html-base/com.informatimago.common-lisp.html-base.asd"
                          #p"/home/pjb/src/git/public/lisp/common-lisp/invoice/com.informatimago.common-lisp.invoice.asd"

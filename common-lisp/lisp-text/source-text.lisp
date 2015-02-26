@@ -42,7 +42,6 @@
 ;;;;**************************************************************************
 
 
-(in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.LISP-TEXT.SOURCE-TEXT"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.READER")

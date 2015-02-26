@@ -38,6 +38,31 @@
 ;;;;
 ;;;;***************************************************************************
 
+#-clisp
+(asdf:defsystem "com.informatimago.clisp.test"
+  ;; system attributes:
+  :description    "Dummy tests the com.informatimago.clisp system."
+  :author         "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :maintainer     "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :licence        "AGPL3"
+  ;; component attributes:
+  :version        "1.0.0"
+  :properties     ((#:author-email . "pjb@informatimago.com")
+                   (#:date . "Winter 2015")
+                   ((#:albert #:output-dir)
+                    . "/tmp/documentation/com.informatimago.clisp.test/")
+                   ((#:albert #:formats) "docbook")
+                   ((#:albert #:docbook #:template) . "book")
+                   ((#:albert #:docbook #:bgcolor) . "white")
+                   ((#:albert #:docbook #:textcolor) . "black"))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8
+  :depends-on     ()
+  :components     ()
+  :perform        (asdf:test-op
+                   (operation system)
+                   (declare (ignore operation system))))
+
+#+clisp
 (asdf:defsystem "com.informatimago.clisp.test"
   ;; system attributes:
   :description    "Tests the com.informatimago.clisp system."
@@ -58,11 +83,11 @@
   :depends-on     ("com.informatimago.common-lisp.cesarum"
                    "com.informatimago.clisp")
   :components     ((:file "string-test" :depends-on ()))
-  :perform        (asdf/lisp-action:test-op
+  :perform        (asdf:test-op
                    (operation system)
                    (declare (ignore operation system))
-                   (let ((*package* (find-package "COM.INFORMATIMAGO.CLISP.STRING.TEST")))
-                     (uiop/package:symbol-call "COM.INFORMATIMAGO.CLISP.STRING.TEST"
-                                               "TEST/ALL"))))
+                   (dolist (p '("COM.INFORMATIMAGO.CLISP.STRING.TEST"))
+                     (let ((*package* (find-package p)))
+                       (uiop/package:symbol-call p "TEST/ALL")))))
 
 ;;;; THE END ;;;;

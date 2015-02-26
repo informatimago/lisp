@@ -53,6 +53,6 @@
                :com.informatimago.common-lisp.picture)
   :components ((:file "regexp-emacs"         :depends-on ())
                (:file "regexp-posix"         :depends-on ()))
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.regexp"))))
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.regexp.test"))))
 
 ;;;; THE END ;;;;

@@ -83,10 +83,22 @@
 
 ;; (test-scan-file  #P"~/works/abalone-macosx/Abalone-10.7/Abalone.xcodeproj/project.pbxproj")
 
+(defvar *dirpath* nil)
+(eval-when (:compile-toplevel)
+  (defparameter *dirpath* (make-pathname :name nil :type nil :version nil
+                                         :defaults *compile-file-pathname*)))
+(eval-when (:load-toplevel :execute)
+  (defparameter *dirpath* (or *dirpath* (make-pathname :name nil :type nil :version nil
+                                                       :defaults *load-pathname*))))
+
+
 (define-test test/parse-file ()
-  (let ((pbxproj-path (merge-pathnames #P"test.pbxproj" (load-time-value *load-truename*) nil)))
+  (let ((pbxproj-path (merge-pathnames #P"test.pbxproj" *dirpath* nil)))
     (assert-true (with-output-to-string (*standard-output*) (test-scan-file  pbxproj-path)))
     (assert-true (with-output-to-string (*standard-output*) (test-parse-file pbxproj-path)))))
+
+
+
 
 
 (define-test test/all ()

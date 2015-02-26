@@ -1,13 +1,13 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;***************************************************************************
-;;;;FILE:                com.informatimago.small-cl-pgms.brainfuck.test.asd
+;;;;FILE:                com.informatimago.tools.script.test.asd
 ;;;;LANGUAGE:            Common-Lisp
 ;;;;SYSTEM:              None
 ;;;;USER-INTERFACE:      None
 ;;;;DESCRIPTION:
 ;;;;
-;;;;    This file defines the com.informatimago.small-cl-pgms.brainfuck.test system.
-;;;;    Tests the com.informatimago.small-cl-pgms.brainfuck system.
+;;;;    This file defines the com.informatimago.tools.script.test system.
+;;;;    Tests the com.informatimago.tools.script system.
 ;;;;
 ;;;;USAGE:
 ;;;;
@@ -38,30 +38,29 @@
 ;;;;
 ;;;;***************************************************************************
 
-(asdf:defsystem "com.informatimago.small-cl-pgms.brainfuck.test"
+(asdf:defsystem "com.informatimago.tools.script.test"
   ;; system attributes:
-  :description    "Tests the com.informatimago.small-cl-pgms.brainfuck system."
+  :description    "Tests the com.informatimago.tools.script system."
   :author         "Pascal J. Bourguignon"
   :maintainer     "Pascal J. Bourguignon"
-  :licence        "GPL3"
+  :licence        "AGPL3"
   ;; component attributes:
   :version        "1.0.0"
   :properties     ((#:author-email . "pjb@informatimago.com")
                    (#:date . "Winter 2015")
                    ((#:albert #:output-dir)
-                    . "/tmp/documentation/com.informatimago.small-cl-pgms.brainfuck.test/")
+                    . "/tmp/documentation/com.informatimago.tools.script.test/")
                    ((#:albert #:formats) "docbook")
                    ((#:albert #:docbook #:template) . "book")
                    ((#:albert #:docbook #:bgcolor) . "white")
                    ((#:albert #:docbook #:textcolor) . "black"))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
-  :depends-on     ("com.informatimago.common-lisp.cesarum"
-                   "com.informatimago.small-cl-pgms.brainfuck")
-  :components     ((:file "bf-test" :depends-on ()))
+  :depends-on     ()
+  :components     ((:file "script-test" :depends-on nil))
   :perform        (asdf/lisp-action:test-op
                    (operation system)
                    (declare (ignore operation system))
-                   (dolist (p '("COM.INFORMATIMAGO.SMALL-CL-PGMS.BRAINFUCK.TEST"))
+                   (dolist (p '("COM.INFORMATIMAGO.TOOLS.SCRIPT.TEST"))
                      (let ((*package* (find-package p)))
                        (uiop/package:symbol-call p "TEST/ALL")))))
 

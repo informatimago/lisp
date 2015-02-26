@@ -36,6 +36,8 @@
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SIMPLE-TEST"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CACHE")
+  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CACHE"
+                "CACHE-MAP-ENTRIES")
   (:export "TEST/ALL"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CACHE.TEST")
 
@@ -43,55 +45,59 @@
 (defvar *test-cache*   nil)
 (defvar *test-cache-2* nil)
 
-(define-test test/cache ()
-  (ignore-errors (map nil (function delete-file) (directory "/tmp/cache/**/*.*")))
-  (setf *test-counter* 0)
-  (let ((delay 7))
-    (flet ((producer (key) (values (format nil "~A-~A" key 
-                                           (incf *test-counter* ))
-                                   (+ delay (get-universal-time))))
-           (print-files ()
-             (dolist (file (sort (mapcar (function namestring) (directory "/tmp/cache/**/*.*"))
-                                 (function string<)))
-               (princ file) (terpri))))
-      (setf *test-cache* (make-cache #p"/tmp/cache/" (function producer) 
-                                     :value-file-type "SYM"))
-      (assert-true (string= (cache-get *test-cache* :one)   "ONE-1"))
-      (assert-true (string= (cache-get *test-cache* :two)   "TWO-2"))
-      (assert-true (string= (cache-get *test-cache* :three) "THREE-3"))
-      (assert-true (string= (cache-get *test-cache* :one)   "ONE-1"))
-      (assert-true (string= (cache-get *test-cache* :two)   "TWO-2"))
-      (assert-true (string= (cache-get *test-cache* :three) "THREE-3"))
-      (setf *test-cache-2* (make-cache #p"/tmp/cache/" (function producer)))
-      (assert-true (string= (cache-get *test-cache-2* :one)   "ONE-1"))
-      (assert-true (string= "SYM" (cache-value-file-type *test-cache-2*)))
-      (format t "~2&filled:~%")(finish-output)
-      (print-files)
-      (cache-expire *test-cache* :one)
-      (cache-expire *test-cache* :two :keep-file t)
-      (format t "~2&expired :one and :two:~%")(finish-output)
-      (print-files)
-      (assert-true (string= (cache-get *test-cache* :one)   "ONE-4"))
-      (format t "~2&expirations~%~:{~15A in ~4D seconds~%~}"
-              (cache-map-entries *test-cache*
-                                 'list (lambda (entry)
-                                         (list
-                                          (entry-key entry)
-                                          (- (entry-expire-date entry)
-                                             (get-universal-time))))))
-      (format t "~2&waiting ~D s expiration of :one and :three:~%" delay)
-      (finish-output)
-      (sleep (1+ delay))
-      (assert-true (string= (cache-get *test-cache* :one)   "ONE-5"))
-      (assert-true (string= (cache-get *test-cache* :three) "THREE-6"))
-      (cache-expire-all *test-cache*)
-      (format t "~2&expired all~%")(finish-output)
-      (print-files)
-      (assert-true (string= (cache-get *test-cache* :one)   "ONE-7"))
-      (assert-true (string= (cache-get *test-cache* :three) "THREE-8"))
-      (assert-true (string= (cache-get *test-cache-2* :one)   "ONE-7"))
-      (assert-true (string= (cache-get *test-cache-2* :three) "THREE-8"))
-      (cache-map-entries *test-cache* nil (function print)))))
+(define-test test/cache (&key (verbose t))
+  (let ((*standard-output* (if verbose
+                               *standard-output*
+                               (make-broadcast-stream))))
+   (ignore-errors (map nil (function delete-file)
+                    (directory "/tmp/cache/**/*.*")))
+   (setf *test-counter* 0)
+   (let ((delay 7))
+     (flet ((producer (key) (values (format nil "~A-~A" key 
+                                            (incf *test-counter* ))
+                                    (+ delay (get-universal-time))))
+            (print-files ()
+              (dolist (file (sort (mapcar (function namestring) (directory "/tmp/cache/**/*.*"))
+                                  (function string<)))
+                (princ file) (terpri))))
+       (setf *test-cache* (make-cache #p"/tmp/cache/" (function producer) 
+                                      :value-file-type "SYM"))
+       (assert-true (string= (cache-get *test-cache* :one)   "ONE-1"))
+       (assert-true (string= (cache-get *test-cache* :two)   "TWO-2"))
+       (assert-true (string= (cache-get *test-cache* :three) "THREE-3"))
+       (assert-true (string= (cache-get *test-cache* :one)   "ONE-1"))
+       (assert-true (string= (cache-get *test-cache* :two)   "TWO-2"))
+       (assert-true (string= (cache-get *test-cache* :three) "THREE-3"))
+       (setf *test-cache-2* (make-cache #p"/tmp/cache/" (function producer)))
+       (assert-true (string= (cache-get *test-cache-2* :one)   "ONE-1"))
+       (assert-true (string= "SYM" (cache-value-file-type *test-cache-2*)))
+       (format t "~2&filled:~%")(finish-output)
+       (print-files)
+       (cache-expire *test-cache* :one)
+       (cache-expire *test-cache* :two :keep-file t)
+       (format t "~2&expired :one and :two:~%")(finish-output)
+       (print-files)
+       (assert-true (string= (cache-get *test-cache* :one)   "ONE-4"))
+       (format t "~2&expirations~%~:{~15A in ~4D seconds~%~}"
+               (cache-map-entries *test-cache*
+                                  'list (lambda (entry)
+                                          (list
+                                           (entry-key entry)
+                                           (- (entry-expire-date entry)
+                                              (get-universal-time))))))
+       (format t "~2&waiting ~D s expiration of :one and :three:~%" delay)
+       (finish-output)
+       (sleep (1+ delay))
+       (assert-true (string= (cache-get *test-cache* :one)   "ONE-5"))
+       (assert-true (string= (cache-get *test-cache* :three) "THREE-6"))
+       (cache-expire-all *test-cache*)
+       (format t "~2&expired all~%")(finish-output)
+       (print-files)
+       (assert-true (string= (cache-get *test-cache* :one)   "ONE-7"))
+       (assert-true (string= (cache-get *test-cache* :three) "THREE-8"))
+       (assert-true (string= (cache-get *test-cache-2* :one)   "ONE-7"))
+       (assert-true (string= (cache-get *test-cache-2* :three) "THREE-8"))
+       (cache-map-entries *test-cache* nil (function print))))))
 
 
 
@@ -132,6 +138,6 @@
 ||#
 
 (define-test test/all ()
-  (test/cache))
+  (test/cache :verbose nil))
 
 ;;;; THE END ;;;;

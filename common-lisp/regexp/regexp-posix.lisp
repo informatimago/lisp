@@ -1215,11 +1215,24 @@ DO:     complements the set.
 ;;
 ;; A range = an integer n for [n,n]  or a cons (min . max) for [min,max].
 
-(defstruct range min max)
+(defstruct range %min %max)
 ;; (DEFMACRO MAKE-RANGE (MIN MAX) `(CONS ,MIN ,MAX))
 ;; (DEFMACRO RANGE-MIN  (RANGE)   `(IF (INTEGERP ,RANGE) ,RANGE (CAR ,RANGE)))
 ;; (DEFMACRO RANGE-MAX  (RANGE)   `(IF (INTEGERP ,RANGE) ,RANGE (CDR ,RANGE)))
-
+(defgeneric range-min (range)
+  (:method ((range range))  (range-%min range))
+  (:method ((range cons))   (car range))
+  (:method ((range number)) range))
+(defgeneric range-max (range)
+  (:method ((range range))  (range-%max range))
+  (:method ((range cons))   (cdr range))
+  (:method ((range number)) range))
+(defgeneric (setf range-min) (new-value range)
+  (:method (new-value (range range)) (setf (range-%min range) new-value))
+  (:method (new-value (range cons))  (setf (car range)        new-value)))
+(defgeneric (setf range-max) (new-value range)
+  (:method (new-value (range range)) (setf (range-%max range) new-value))
+  (:method (new-value (range cons))  (setf (car range)        new-value)))
 
 (defun range-after-last (range)
   (1+ (if (numberp range) range (range-max range))))

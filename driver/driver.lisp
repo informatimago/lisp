@@ -228,8 +228,7 @@ no -fsingle-precision-constant ==> (setf *read-default-float-format* 'double-flo
 
 (in-package "COMMON-LISP-USER")
 
-(defpackage "COM.INFORMATIMAGO.COMMON-LISP.SCRIPT"
-  (:nicknames "SCRIPT")
+(defpackage "COM.INFORMATIMAGO.DRIVER.SCRIPT"
   (:use "COMMON-LISP")
   (:export "*VERBOSE*" "*DEBUG*"
            "*DEFAULT-PROGRAM-NAME*" "*PROGRAM-NAME*" "*PROGRAM-PATH*" "*ARGUMENTS*"
@@ -263,7 +262,7 @@ no -fsingle-precision-constant ==> (setf *read-default-float-format* 'double-flo
            "EX-USAGE"
            
            "EXIT"))
-(in-package "COM.INFORMATIMAGO.COMMON-LISP.SCRIPT")
+(in-package "COM.INFORMATIMAGO.DRIVER.SCRIPT")
 
 
 

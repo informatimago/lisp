@@ -36,6 +36,8 @@
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SIMPLE-TEST"
         "COM.INFORMATIMAGO.CLMISC.RESOURCE-UTILIZATION")
+  (:import-from "COM.INFORMATIMAGO.CLMISC.RESOURCE-UTILIZATION"
+                "READ-PARENTHESIZED-STRING")
   (:export "TEST/ALL"))
 (in-package "COM.INFORMATIMAGO.CLMISC.RESOURCE-UTILIZATION.TEST")
 
@@ -45,13 +47,18 @@
      :with success = 0
      :for tcount :from 0
      :for (input . output)
-     :in '(("" :eof) ("  " :eof) ("(" :eof) (" ( " :eof)
-           (" (a(b)" :eof) (" (a(b)c" :eof) (" (a\\" :eof)  (" (a\\b" :eof)
+     :in '(("" :eof)
+           ("  " :eof)
+           ("(" :eof)
+           (" ( " :eof)
+           (" (a(b)" :eof)
+           (" (a(b)c" :eof)
+           (" (a\\" :eof)
+           (" (a\\b" :eof)
            ("  (howdy doo ?)" "howdy doo ?")
            ("(howdy \\( doo ?)" "howdy ( doo ?")
            ("(howdy \\) doo ?)" "howdy ) doo ?")
-           ("(a(b(c(d)e)f)g)h" "a(b(c(d)e)f)g")
-           )
+           ("(a(b(c(d)e)f)g)h" "a(b(c(d)e)f)g"))
      :for result = (with-input-from-string (stream input)
                      (multiple-value-list
                       (ignore-errors
@@ -60,17 +67,19 @@
              (progn
                (incf success)
                (progress-success))
-             (progress-failure input "~2%Reading parenthesized string ~S~
-                                       ~%     --> ~S~%expected ~S~%"
-                               input result output))
-     :finally  (format t "~&~30A ~4D cases, ~4D successful  (~6,1F %)~%"
-                       'read-parenthesized-string
-                       tcount success (/ success tcount 0.01))))
+             (progress-failure-message input
+                                       "~2%Reading parenthesized string ~S~
+                                        ~%     --> ~S~%expected ~S~%"
+                                       input result output))
+     :finally (format t "~&~30A ~4D cases, ~4D successful  (~6,1F %)~%"
+                      'read-parenthesized-string
+                      tcount success (/ success tcount 0.01))))
+
+
 
 
 (define-test test/all ()
   (test/read-parenthesized-string))
-
 
 
 #||

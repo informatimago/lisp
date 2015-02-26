@@ -57,7 +57,7 @@
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on     ("com.informatimago.common-lisp.cesarum"
                    "com.informatimago.common-lisp.parser")
-  :components     ((:file "source-test" :depends-on nil))
+  :components     ()
   :perform        (asdf/lisp-action:test-op
                    (operation system)
                    (declare (ignore operation system))

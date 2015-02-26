@@ -96,6 +96,8 @@ all written in 100% conforming Common Lisp.
                (:file "llrbtree"        :depends-on ())
                (:file "queue"           :depends-on ("utility"))
                (:file "message-queue"   :depends-on ("queue"))
+               (:file "priority-queue"  :depends-on ())
+
 
                ;; Standards:
                (:file "ascii"           :depends-on ())

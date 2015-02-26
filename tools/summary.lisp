@@ -44,7 +44,7 @@
   (com.informatimago.common-lisp.cesarum.package:add-nickname
    "COM.INFORMATIMAGO.COMMON-LISP.HTML-GENERATOR.HTML" "HTML"))
 
-(defpackage "COM.INFORMATIMAGO.COMMON-LISP.TOOLS.SUMMARY"
+(defpackage "COM.INFORMATIMAGO.TOOLS.SUMMARY"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
@@ -52,7 +52,7 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CHARACTER-SETS"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE"
         "COM.INFORMATIMAGO.CLEXT.CHARACTER-SETS"
-        "COM.INFORMATIMAGO.COMMON-LISP.TOOLS.READ-SOURCE")
+        "COM.INFORMATIMAGO.TOOLS.SOURCE")
   (:export "GENERATE-SUMMARY")
   (:documentation "
 
@@ -84,7 +84,7 @@ LICENSE
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 "))
-(in-package "COM.INFORMATIMAGO.COMMON-LISP.TOOLS.SUMMARY")
+(in-package "COM.INFORMATIMAGO.TOOLS.SUMMARY")
 
 
 (defun generate-summary (sources &key (summary-path #p"SUMMARY.HTML")

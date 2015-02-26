@@ -55,7 +55,9 @@
                "com.informatimago.tools.summary"
                "com.informatimago.tools.make-depends"
                "com.informatimago.tools.symbol"
-               "com.informatimago.tools.quicklisp"))
+               "com.informatimago.tools.script"
+               "com.informatimago.tools.quicklisp")
+  :in-order-to ((asdf:test-op (asdf:test-op  "com.informatimago.tools.test"))))
 
 
 

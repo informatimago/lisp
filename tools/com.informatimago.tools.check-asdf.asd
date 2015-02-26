@@ -38,9 +38,9 @@
     :version "1.1.0"
     :license "AGPL3"
     :depends-on ("com.informatimago.common-lisp.cesarum"
-                 "com.informatimago.clext") 
+                 "com.informatimago.clext"
+                  "com.informatimago.tools.script") 
     :components ((:file "dependency-cycles")
-                 (:file "script")
-                 (:file "check-asdf" :depends-on ("dependency-cycles" "script"))))
+                 (:file "check-asdf" :depends-on ("dependency-cycles"))))
 
 ;;;; THE END ;;;;

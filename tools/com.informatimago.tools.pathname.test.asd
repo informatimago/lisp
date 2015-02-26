@@ -58,11 +58,11 @@
   :depends-on     ("com.informatimago.common-lisp.cesarum"
                    "com.informatimago.tools.pathname")
   :components     ((:file "pathname-test" :depends-on nil))
-  :perform        (asdf/test-op
+  :perform        (asdf:test-op
                    (operation system)
                    (declare (ignore operation system))
-                   (let ((*package* (find-package "COM.INFORMATIMAGO.TOOLS.PATHNAME.TEST")))
-                     (uiop/package:symbol-call "COM.INFORMATIMAGO.TOOLS.PATHNAME.TEST"
-                                               "TEST/ALL"))))
+                   (dolist (p '("COM.INFORMATIMAGO.TOOLS.PATHNAME.TEST"))
+                     (let ((*package* (find-package p)))
+                       (uiop/package:symbol-call p "TEST/ALL")))))
 
 ;;;; THE END ;;;;
