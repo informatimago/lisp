@@ -56,6 +56,11 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
 
+(defpackage "COM.INFORMATIMAGO.SMALL-CL-PGMS.SEDIT"
+  (:use "COMMON-LISP")
+  (:export "SEDIT"))
+(in-package "COM.INFORMATIMAGO.SMALL-CL-PGMS.SEDIT")
+
 (defstruct selection
   parent-list
   sexp)
