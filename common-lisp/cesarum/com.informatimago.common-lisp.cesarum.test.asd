@@ -66,6 +66,7 @@
                (:file "peek-stream-test"    :depends-on ())
                (:file "priority-queue-test" :depends-on ())
                (:file "sequence-test"       :depends-on ())
+               (:file "ascii-test"          :depends-on ())
                (:file "string-test"         :depends-on ())
                (:file "set-test"            :depends-on ())
                (:file "index-set-test"      :depends-on ("set-test")))
@@ -83,7 +84,8 @@
                          "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE.TEST"
                          "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING.TEST"
                          "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SET.TEST"
-                         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.INDEX-SET.TEST"))
+                         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.INDEX-SET.TEST"
+                         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ASCII.TEST"))
               (let ((*package* (find-package p)))
                 (uiop:symbol-call p "TEST/ALL")))))
 

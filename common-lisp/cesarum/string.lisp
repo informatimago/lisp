@@ -88,11 +88,6 @@ License:
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
 
 
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (let ((*compile-verbose* nil))
-    (com.informatimago.common-lisp.cesarum.ecma048:generate-all-functions-in-ecma048)))
-
 (eval-when (:compile-toplevel :load-toplevel :execute)
   
   (defun symbol-of-name-of-length=n (n)

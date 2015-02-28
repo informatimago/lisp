@@ -33,6 +33,7 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
 (defpackage "COM.INFORMATIMAGO.SMALL-CL-PGMS.QUINES"
+  (:use "COMMON-LISP")
   (:export #+clisp "QUINE-1"
            "QUINE-2" "QUINE-2S" "QUINE-2E"
            "QUINE-3"

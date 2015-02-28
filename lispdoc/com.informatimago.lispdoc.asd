@@ -32,6 +32,32 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
+#+mocl
+(asdf:defsystem "com.informatimago.lispdoc"
+    ;; system attributes:
+    :description "Dummy Informatimago Common Lisp Documentation Generator"
+  :long-description "
+
+This system would use closer-mop which is not available for MOCL.
+
+"
+    :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
+    :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
+    :licence "LLGPL"
+    ;; component attributes:
+    :version "1.0.0"
+    :properties ((#:author-email                   . "pjb@informatimago.com")
+                 (#:date                           . "Spring 2012")
+                 ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.lispdoc/")
+                 ((#:albert #:formats)             . ("docbook"))
+                 ((#:albert #:docbook #:template)  . "book")
+                 ((#:albert #:docbook #:bgcolor)   . "white")
+                 ((#:albert #:docbook #:textcolor) . "black"))
+    #+asdf-unicode :encoding #+asdf-unicode :utf-8
+    :depends-on ()
+    :components ())
+
+#-mocl
 (asdf:defsystem "com.informatimago.lispdoc"
     ;; system attributes:
     :description "Informatimago Common Lisp Documentation Generator"

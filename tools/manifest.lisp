@@ -113,20 +113,19 @@
 
 
 
-(defun shell-command-to-string (command)
+(defun shell-command-to-string (command &rest arguments)
   "Execute the COMMAND with asdf:run-shell-command and returns its
 stdout in a string (going thru a file)."
   (let ((*default-pathname-defaults* #P"")
         (path (format nil "~:@(out-~36,8,'0R.txt~)" (random (expt 2 32)))))
     (unwind-protect
-         (when (zerop (asdf:run-shell-command (format nil "~A > ~S" command path)))
+         (when (zerop (asdf:run-shell-command (format nil "~? > ~S" command arguments path)))
            (with-output-to-string (out)
              (with-open-file (file path)
                (loop
                  :for line = (read-line file nil nil)
                  :while line :do (write-line line out)))))
       (ignore-errors (delete-file path)))))
-
 
 
 

@@ -570,7 +570,7 @@ some constraints may be different from one lambda-list to the other."))
 (defclass type-lambda-list               (lambda-list orakawbe-ll) ())
 (defclass destructuring-lambda-list      (lambda-list orakawb-ll)  ())
 (defclass setf-lambda-list               (lambda-list orake-ll)    ())
-(defclass method-combination-lambda-list (lambda-list orakaw-ll)   ())
+(defclass method-combination-lambda-list (lambda-list oraka-ll)    ())
 
 (defgeneric lambda-list-kind (lambda-list)
   (:method ((self ordinary-lambda-list))           (declare (ignorable self)) :ordinary)

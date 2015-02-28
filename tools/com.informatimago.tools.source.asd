@@ -32,19 +32,34 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
+#+mocl
 (asdf:defsystem "com.informatimago.tools.source"
-    :description "Reads sources and headers to perform some analysis."
-    :author "Pascal J. Bourguignon"
-    :version "1.0.0"
-    :license "GPL3"
-    :depends-on ("com.informatimago.common-lisp.cesarum"
-                 "com.informatimago.common-lisp.picture"
-                 "com.informatimago.clext"
-                 "com.informatimago.tools.check-asdf"
-                 "closer-mop") 
-    :components ((:file "source")
-                 (:file "asdf-file" :depends-on ("source"))
-                 #-(and) (:file "analyse-patchwork")))
+  :description "Dummy Reads sources and headers to perform some analysis."
+  :long-description "
+
+This system would use closer-mop which is not available on MOCL.
+
+"
+  :author "Pascal J. Bourguignon"
+  :version "1.0.0"
+  :license "GPL3"
+  :depends-on () 
+  :components ())
+
+#-mocl
+(asdf:defsystem "com.informatimago.tools.source"
+  :description "Reads sources and headers to perform some analysis."
+  :author "Pascal J. Bourguignon"
+  :version "1.0.0"
+  :license "GPL3"
+  :depends-on ("com.informatimago.common-lisp.cesarum"
+               "com.informatimago.common-lisp.picture"
+               "com.informatimago.clext"
+               "com.informatimago.tools.check-asdf"
+               "closer-mop") 
+  :components ((:file "source")
+               (:file "asdf-file" :depends-on ("source"))
+               #-(and) (:file "analyse-patchwork")))
 
 
 ;;;; THE END ;;;;

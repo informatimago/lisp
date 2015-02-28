@@ -32,6 +32,32 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
+#+mocl
+(asdf:defsystem "com.informatimago.clext.association"
+  ;; system attributes:
+  :description "Dummy Informatimago Common Lisp Extensions: Associations."
+  :long-description "
+
+This system would use CLOSER-MOP, which is not available on MOCL.
+
+"
+  :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :licence "AGPL3"
+  ;; component attributes:
+  :version "1.0.0"
+  :properties ((#:author-email                   . "pjb@informatimago.com")
+               (#:date                           . "Autumn 2010")
+               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.clext/")
+               ((#:albert #:formats)             . ("docbook"))
+               ((#:albert #:docbook #:template)  . "book")
+               ((#:albert #:docbook #:bgcolor)   . "white")
+               ((#:albert #:docbook #:textcolor) . "black"))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8
+  :depends-on ()
+  :components ())
+
+#-mocl
 (asdf:defsystem "com.informatimago.clext.association"
   ;; system attributes:
   :description "Informatimago Common Lisp Extensions: Associations."

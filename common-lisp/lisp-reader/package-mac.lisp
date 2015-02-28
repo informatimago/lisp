@@ -109,20 +109,6 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/m_w_pkg_.htm>
       :while (and (listp item) (eql 'declare (car item)))
       :finally (return items)))
 
-  (assert (equal (mapcar (lambda (body) (list (declarations body) (body body)))
-                         '(()
-                           ((declare (ignore x)))
-                           ((declare (ignore x)) (declare (ignore y)))
-                           ((print w) (print z))
-                           ((declare (ignore x)) (print w) (print z))
-                           ((declare (ignore x)) (declare (ignore y)) (print w) (print z))))
-                 '((nil nil)
-                   (((declare (ignore x))) nil)
-                   (((declare (ignore x)) (declare (ignore y))) nil)
-                   (nil ((print w) (print z)))
-                   (((declare (ignore x))) ((print w) (print z)))
-                   (((declare (ignore x)) (declare (ignore y))) ((print w) (print z))))))
-
 
   (defun generate-do-symbols-loop (var package result-form body symbol-types)
     (let ((iter   (gensym "ITERATOR"))
@@ -259,7 +245,7 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/m_defpkg.htm>
            (interns           (extract-strings    :intern))
            (exports           (extract-strings    :export)))
       (check-disjoints shadows shadowing-imports import-froms interns exports)
-      `(eval-when (:execute :compile-toplevel :load-toplevel)
+      `(eval-when (:execute :load-toplevel #-mocl :compile-toplevel)
          (%define-package ',(normalize-string-designator defined-package-name :if-not-a-string-designator :replace)
                           ',shadows
                           ',shadowing-imports
@@ -269,5 +255,6 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/m_defpkg.htm>
                           ',exports
                           ',(extract-one-string :documentation)
                           ',(extract-strings    :nicknames))))))
+
 
 ;;;; THE END ;;;;

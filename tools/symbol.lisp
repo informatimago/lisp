@@ -33,8 +33,8 @@
 ;;;;**************************************************************************
 
 (defpackage "COM.INFORMATIMAGO.TOOLS.SYMBOL"
-  (:use "COMMON-LISP")
-  (:use "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PACKAGE")
+  (:use "COMMON-LISP"
+         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PACKAGE")
   (:export "CHECK-DUPLICATE-SYMBOLS"
            "DUPLICATE-SYMBOLS")
   (:documentation "

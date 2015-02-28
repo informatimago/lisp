@@ -87,10 +87,6 @@ License:
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.RFC2822.RFC2822")
 
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (let ((*compile-verbose* nil)) (com.informatimago.common-lisp.cesarum.ecma048:generate-all-functions-in-ecma048)))
-
-
 (defparameter +space+  (character " ")        "An ASCII SPACE character.")
 (defparameter +tab+    (code-char com.informatimago.common-lisp.cesarum.ecma048:ht) "An ASCII TABULATION character.")
 (defparameter +cr+     (code-char com.informatimago.common-lisp.cesarum.ecma048:cr) "An ASCII CARRIAGE-RETURN.")

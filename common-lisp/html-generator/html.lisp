@@ -38,8 +38,8 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
 
-(in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.HTML-GENERATOR.HTML"
+  #+mocl (:nicknames "HTML" "<")
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
@@ -252,7 +252,7 @@ RETURN: The DOCTYPE tag.
 
 
   (defmacro doctype (kind &body body)
-        "
+    "
 KIND:   one of :STRICT, :TRANSITIONAL, :LOOSE or :FRAMESET.
 RETURN: The DOCTYPE tag.
 "
@@ -306,25 +306,25 @@ STREAM:     An output stream.
 "
     (if (cs-ranges *html-character-set*)
         (loop
-           :for ch :across string
-           :for as = (assoc ch escapes)
-           :do (cond
-                 (as
-                  (princ (cdr as) stream))
-                 ((character-in-character-set-p ch *html-character-set*)
-                  (princ ch stream))
-                 (t
-                  (format stream "&#~D;" (char-code ch)))))
+          :for ch :across string
+          :for as = (assoc ch escapes)
+          :do (cond
+                (as
+                 (princ (cdr as) stream))
+                ((character-in-character-set-p ch *html-character-set*)
+                 (princ ch stream))
+                (t
+                 (format stream "&#~D;" (char-code ch)))))
         (loop
-           :for ch :across string
-           :for as = (assoc ch escapes)
-           :do (cond
-                 (as
-                  (princ (cdr as) stream))
-                 ((<= (char-code ch) 127)
-                  (princ ch stream))
-                 (t
-                  (format stream "&#~D;" (char-code ch)))))))
+          :for ch :across string
+          :for as = (assoc ch escapes)
+          :do (cond
+                (as
+                 (princ (cdr as) stream))
+                ((<= (char-code ch) 127)
+                 (princ ch stream))
+                (t
+                 (format stream "&#~D;" (char-code ch)))))))
 
 
 
@@ -352,7 +352,7 @@ RETURN:  An element storing the result of formating the CONTROL string
 EXAMPLE: (HTML-STRING \"<P>Some paragraph</P>\") --> #<element>
 "
     (make-instance 'html-string
-        :text (apply (function format) nil control arguments)))
+                   :text (apply (function format) nil control arguments)))
 
 
   (defun html-string (control &rest arguments)
@@ -460,14 +460,14 @@ RETURN:  An element storing the result of formating the CONTROL string
     self)
   (defmethod write-element ((self element-with-tag) stream)
     (loop
-       :for (k v) :on (element-attributes self) :by (function cddr)
-       :initially (format stream "~:[~;~%~]<~A"
-                          (member (element-tag self) *newline-elements* :test (function string-equal))
-                          (element-tag self))
-       :do (format stream " ~A=\"" k)
-       :do (write-element v stream)
-       :do (princ "\"" stream)
-       :finally (princ ">" stream)))
+      :for (k v) :on (element-attributes self) :by (function cddr)
+        :initially (format stream "~:[~;~%~]<~A"
+                           (member (element-tag self) *newline-elements* :test (function string-equal))
+                           (element-tag self))
+      :do (format stream " ~A=\"" k)
+      :do (write-element v stream)
+      :do (princ "\"" stream)
+      :finally (princ ">" stream)))
 
   (defclass element-without-end (element-with-tag)
     ()
@@ -528,8 +528,8 @@ DO:    Write the HTML encoded in the ELEMENT to the output STREAM.
 
 
   (defmacro with-html-output ((&optional (stream *html-output-stream*)
-                                         &key (kind :html kindp)
-                                         (encoding "US-ASCII" encodingp))
+                               &key (kind :html kindp)
+                                 (encoding "US-ASCII" encodingp))
                               &body body)
     "
 DO:       Execute body (collecting *HTML-TAGS*), and finally writes to
@@ -681,15 +681,15 @@ RETURN:     A string containing the normalized attribute name, ie: downcased.
     (let ((vresults (gensym)))
       `(let ((,vresults))
          (collect-element (,fname ,(cond
-                                    ((or (null vattr) (eq '- vattr)) '())
-                                    ((or (keywordp (first vattr))
-                                         (not (symbolp (first vattr)))
-                                         (and (evenp (length vattr))
-                                              (loop
-                                                :for (k) :on vattr :by (function cddr)
-                                                :always (keywordp k))))
-                                     `(list ,@vattr))
-                                    (t vattr))
+                                     ((or (null vattr) (eq '- vattr)) '())
+                                     ((or (keywordp (first vattr))
+                                          (not (symbolp (first vattr)))
+                                          (and (evenp (length vattr))
+                                               (loop
+                                                 :for (k) :on vattr :by (function cddr)
+                                                 :always (keywordp k))))
+                                      `(list ,@vattr))
+                                     (t vattr))
                                   (let ((*html-output-elements* (make-queue)))
                                     (setf ,vresults (multiple-value-list
                                                      (progn ,@vbody)))
@@ -735,18 +735,18 @@ RETURN:      The generated HTML.
                               (string= (el-documentation element) "A HTML element.")
                               (el-documentation element)))
                ,@(when (member :deprecated (el-options element))
-                       `((warn ,(format nil "HTML element ~A is deprecated."
-                                        name))))
+                   `((warn ,(format nil "HTML element ~A is deprecated."
+                                    name))))
                ,@(cond
-                  ((member :loose-dtd    (el-options element))
-                   `((check-loose    ',name)))
-                  ((member :frameset-dtd (el-options element))
-                   `((check-frameset ',name))))
+                   ((member :loose-dtd    (el-options element))
+                    `((check-loose    ',name)))
+                   ((member :frameset-dtd (el-options element))
+                    `((check-frameset ',name))))
                ,@(when (member :empty (el-options element))
-                       `((when ,vbody
-                           (error "HTML element ~A doesn't take ~
+                   `((when ,vbody
+                       (error "HTML element ~A doesn't take ~
                                    any content; ~S was given"
-                                  ',name ,vbody))))
+                              ',name ,vbody))))
                ;; html-string :text
                ;; cdata :data
                ;; pcdata :data
@@ -754,46 +754,42 @@ RETURN:      The generated HTML.
                ;; element-with-body :tag :attributes :body
                ,(if (member :empty (el-options element))
                     `(make-instance 'element-without-end
-                         :tag ',(el-name element)
-                         :attributes
-                         (loop
-                            :for (k v) :on ,vattr :by (function cddr)
-                            :nconc (list
-                                    (normalize-attribute-name k)
-                                    (if (typep v 'cdata)
-                                        v
-                                        (make-instance 'cdata
-                                            :data (format nil "~A" v))))))
+                                    :tag ',(el-name element)
+                                    :attributes
+                                    (loop
+                                      :for (k v) :on ,vattr :by (function cddr)
+                                      :nconc (list
+                                              (normalize-attribute-name k)
+                                              (if (typep v 'cdata)
+                                                  v
+                                                  (make-instance 'cdata
+                                                                 :data (format nil "~A" v))))))
                     `(make-instance 'element-with-body
-                         :tag ',(el-name element)
-                         :attributes
-                         (loop
-                            :for (k v) :on ,vattr :by (function cddr)
-                            :nconc (list
-                                    (normalize-attribute-name k)
-                                    (if (typep v 'cdata)
-                                        v
-                                        (make-instance 'cdata
-                                            :data (format nil "~A" v)))))
-                         :body (mapcar (lambda (item)
-                                         (if (stringp item)
-                                             (make-instance 'pcdata :data item)
-                                             item))
-                                       ,vbody))))
+                                    :tag ',(el-name element)
+                                    :attributes
+                                    (loop
+                                      :for (k v) :on ,vattr :by (function cddr)
+                                      :nconc (list
+                                              (normalize-attribute-name k)
+                                              (if (typep v 'cdata)
+                                                  v
+                                                  (make-instance 'cdata
+                                                                 :data (format nil "~A" v)))))
+                                    :body (mapcar (lambda (item)
+                                                    (if (stringp item)
+                                                        (make-instance 'pcdata :data item)
+                                                        item))
+                                                  ,vbody))))
             forms)))
        elements)
       (cons 'progn (nreverse forms))))
 
-
-
-  (defmacro generate ()
-    (append (generate-elements *elements*)
-            '('done)))
-
   );;eval-when
 
 
-
+(defmacro generate ()
+  (append (generate-elements *elements*)
+          '('done)))
 
 ;; (eval-when (:compile-toplevel :load-toplevel)
 ;;   

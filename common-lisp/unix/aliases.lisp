@@ -96,10 +96,6 @@ License:
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.UNIX.ALIASES")
 
 
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (let ((*compile-verbose* nil)) (com.informatimago.common-lisp.cesarum.ecma048:generate-all-functions-in-ecma048)))
-
 (defvar +ht+ (or (ignore-errors (read-from-string "#\\TAB"))
                  (code-char com.informatimago.common-lisp.cesarum.ecma048:ht)))
 ;; How can we define a HT character portably?

@@ -34,7 +34,6 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
 
-(in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ASCII"
   (:use "COMMON-LISP")
   (:export
@@ -475,40 +474,6 @@ like string>=, but for byte vectors.
 like string<, but for byte vectors.
 "
   (not (bytes<= v1 v2 :start1 start1 :end1 end1 :start2 start2 :end2 end2)))
-
-
-(defun test ()
-  "
-DO:     test the ascii package; signal an error if something is wrong.
-RETURN: :success
-"
-  (loop
-     :for ch :across *ascii-characters*
-     :for code :from sp
-     :do (assert (= code (ascii-code ch)))
-     :do (assert (char= ch (code-ascii code))))
-  (loop
-     :for code :from (ascii-code #\0) :to (ascii-code #\9)
-     :for n :from 0
-     :do (assert (eql n (code-ascii-digit-p code))))
-  (assert (typep (nth-value 1 (ignore-errors (ascii-string #(65 66 8 67 69)))) 'decoding-error))
-  (assert (typep (nth-value 1 (ignore-errors (ascii-bytes "En été, il fait chaud."))) 'encoding-error))
-  (assert (string= "ABCD" (ascii-string #(65 66 67 68))))
-  (assert (string= "ABCD" (ascii-string #(0 0 65 66 67 68 0 0 0 0) :start 2 :end 6)))
-  (assert (bytes=  #(65 66 67 68)  (ascii-bytes "ABCD")))
-  (assert (bytes=  #(65 66 67 68)  (ascii-bytes "00ABCD0000" :start 2 :end 6)))
-  (let ((*readtable* (copy-readtable nil)))
-    (set-dispatch-macro-character #\# #\Y (function ascii-dispatch-macro)
-                                  *readtable*)
-    (set-dispatch-macro-character #\# #\" (function ascii-dispatch-macro)
-                                  *readtable*)
-    (assert (bytes= #(65 66 67 68) (read-from-string "#\"ABCD\"")))
-    (assert (bytes= #(65 66 67 68) (read-from-string "#Y\"ABCD\""))))
-  ;; TODO: Added more testing of bytes comparisons.
-  :success)
-
-
-(test)
 
 
 ;;;; THE END ;;;;

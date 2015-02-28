@@ -50,12 +50,14 @@
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ("com.informatimago.common-lisp.cesarum"
                "com.informatimago.common-lisp.lisp-reader")
-  :components ((:file "reader-test"    :depends-on ()))
+  :components ((:file "reader-test"    :depends-on ())
+               (:file "package-test"   :depends-on ()))
   :perform (asdf:test-op
             (o s)
-            (let ((*package* (find-package "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.READER.TEST")))
-              (uiop:symbol-call "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.READER.TEST"
-                                "TEST/ALL"))))
+            (dolist (p '("COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.READER.TEST"
+                         "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.PACKAGE.TEST"))
+              (let ((*package* (find-package p)))
+                (uiop:symbol-call p "TEST/ALL")))))
 
 
 ;;;; THE END ;;;;

@@ -265,6 +265,17 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/v_pkg.htm>
 (define-condition simple-type-error (simple-error-mixin type-error)
   ())
 
+(define-condition print-not-readable (error)
+  ((object :initarg :object :reader print-not-readable-object
+     :initform (error "Missing :object initarg.")))
+  (:report (lambda (condition stream)
+             (let ((*print-readably* nil)
+                   (*print-circle* t)
+                   (*print-length* 4)
+                   (*print-level*  4))
+               (format stream "The object ~S is not printable readably."
+                       (print-not-readable-object condition))))))
+
 
 (defgeneric package-error-package (package-error)
   (:documentation "
@@ -1517,37 +1528,6 @@ IF-PACKAGE-EXISTS           The default is :PACKAGE
   nil)
 
 
-(assert (null (check-disjoints (list "S1" "S2" "S3")
-                               (list (list "P1" (list "P1A" "P1B" "P1C"))
-                                     (list "P2" (list "P2A" "P2B" "P2C")))
-                               (list (list "P3" (list "I1A" "I1B" "I1C"))
-                                     (list "P4" (list "I2A" "I2B" "I2C")))
-                               (list "I1" "I2" "I3")
-                               (list "E1" "E2" "E3"))))
-
-(assert (null (check-disjoints (list "S1" "S2" "S3")
-                               '()
-                               (list (list "P3" (list "I1A" "I1B" "I1C"))
-                                     (list "P4" (list "I2A" "I2B" "I2C")))
-                               '()
-                               (list "E1" "E2" "E3"))))
-
-(assert (nth-value 1 (ignore-errors (check-disjoints (list "S1" "S2" "S3")
-                                                     (list (list "P1" (list "P1A" "P1B" "P1C"))
-                                                           (list "P2" (list "P2A" "P2B" "P2C" "S3")))
-                                                     (list (list "P3" (list "I1A" "I1B" "I1C"))
-                                                           (list "P4" (list "I2A" "I2B" "I2C")))
-                                                     (list "I1" "I2" "I3")
-                                                     (list "E1" "E2" "E3")))))
-
-(assert (null (check-disjoints (list "S1" "S2" "S3")
-                               (list (list "P1" (list "P1A" "P1B" "P1C"))
-                                     (list "P2" (list "P2A" "P2B" "P2C")))
-                               (list (list "P3" (list "I1A" "I1B" "I1C"))
-                                     (list "P4" (list "I2A" "I2B" "I2C")))
-                               (list "I1" "I2" "I3")
-                               (list "E1" "E2" "E3" "S2"))))
-
 
 (defun %define-package (name shadows shadowing-imports
                         uses imports interns exports
@@ -1592,11 +1572,6 @@ IF-PACKAGE-EXISTS           The default is :PACKAGE
       ;; 4. :export.
       (export (mapcar (lambda (name) (intern name package)) exports) package)
       package)))
-
-
-
-
-
 
 
 

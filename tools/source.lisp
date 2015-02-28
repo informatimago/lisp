@@ -1124,7 +1124,7 @@ VERBOSE:        Prints information on *TRACE-OUTPUT*.
           ;; "DICTIONARY"
           ;; "PJB-STRING"
           ;; --> LOAD-PATHS
-          (unless (member pack-name com.informatimago.common-lisp.cesarum.package::*built-in-packages*
+          (unless (member pack-name com.informatimago.common-lisp.cesarum.package::*built-in-package-names*
                           :test (function string=))
             (let* ((src-ext   (source-extensions extensions))
                    (pack-path (com.informatimago.common-lisp.cesarum.package::package-pathname pack-name))

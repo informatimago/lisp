@@ -104,7 +104,6 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
 
-(in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PACKAGE"
   (:documentation
    "
@@ -329,15 +328,24 @@ to the package path: PACKAGE:COM;INFORMATIMAGO;COMMON-LISP;SYSTEM.ASD
         (values (when (probe-file file) file) file)))))
 
 
-(defvar *built-in-packages*
-  (mapcan (lambda (pack)
-            (cons (package-name pack)
-                  (copy-list (package-nicknames pack))))
-          (list-all-packages)))
 
+(defvar *built-in-package-names*
+  '("COMMON-LISP" "CL" "COMMON-LISP-USER" "CL-USER" "KEYWORD"))
 
 (defun built-in-p (package)
-  (member package *built-in-packages* :test (function string=)))
+  #-(and) (unless *built-in-package-names*
+            (setf *built-in-package-names*
+                  (mapcan (lambda (pname)
+                            (let ((pack (find-package pname)))
+                              (when pack
+                                (cons (package-name pack)
+                                      (copy-list (package-nicknames pack))))))
+                          '("COMMON-LISP" "COMMON-LISP-USER" "KEYWORD"))))  
+  (member (etypecase package
+            (string package)
+            (package (package-name package)))
+          *built-in-package-names*
+          :test (function string=)))
 
 
 (defvar *packages* nil
@@ -426,6 +434,9 @@ DO:         Force registering the PACKAGE into the loaded *PACKAGES*.
     :defaults path)
    path))
 
+
+#+mocl (defvar *load-verbose* nil)
+#+mocl (defvar *load-print*   nil)
 
 (defun load-package (package-name
                      &key (verbose *load-verbose*) (print *load-print*)
@@ -672,7 +683,7 @@ RETURN:     The package designated by PACKAGE.
            (rename-package pack temp     nicks)
            (rename-package pack packname nicks))
          (when (built-in-p packname)
-           (pushnew nickname *built-in-packages* :test (function string=))))
+           (pushnew nickname *built-in-package-names* :test (function string=))))
         ((and force (string= nickname (package-name nickpack)))
          (let ((nicks (or (package-nicknames nickpack)
                           (list (gen-old-name nickname)))))

@@ -223,7 +223,7 @@
                 (write-char ch))))))
 
 
-
+#-mocl
 (com.informatimago.common-lisp.cesarum.package:add-nickname
  "COM.INFORMATIMAGO.COMMON-LISP.HTML-GENERATOR.HTML" "<")
 

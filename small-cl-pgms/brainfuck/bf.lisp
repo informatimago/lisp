@@ -757,7 +757,7 @@ with defbf, or strings containing brainfuck instructions.
   )
 
 
-(defbf test2 (&rest args)
+(defbf test2 ()
   (format-memory)
   (goto +ac+)
   (store-imm-to-car #x0030)

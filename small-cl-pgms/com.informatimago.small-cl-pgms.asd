@@ -58,7 +58,7 @@
   :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.small-cl-pgms.test"))))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (warn "~S Components not included yet (need some cleaning)"
+  (warn "~S not ready yet (need some cleaning)"
         ':com.informatimago.small-cl-pgms))
 
 ;;;; THE END ;;;;

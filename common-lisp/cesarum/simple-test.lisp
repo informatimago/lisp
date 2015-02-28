@@ -114,6 +114,9 @@ License:
   (values))
 
 
+#+mocl (defvar *load-verbose* nil)
+#+mocl (defvar *load-print*   nil)
+
 (defun verbose (default)
   (and default
        (or (not *load-pathname*)

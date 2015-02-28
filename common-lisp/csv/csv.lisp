@@ -74,11 +74,6 @@ License:
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CSV.CSV")
 
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (let ((*compile-verbose* nil))
-    (com.informatimago.common-lisp.cesarum.ecma048:generate-all-functions-in-ecma048)))
-
-
 ;; http://planet.plt-scheme.org/docs/neil/csv.plt/1/0/doc.txt
 
 
