@@ -152,7 +152,12 @@ NOTE:   Parentheses inside the string must be escaped by \ unless balanced.
                 (escape          (vector-push-extend ch buffer) (setf escape nil))
                 ((char= #\( ch)  (vector-push-extend ch buffer) (incf level))
                 ((char= #\) ch)  (decf level) (if (minusp level)
-                                                  (loop-finish)
+                                                  #-mocl (loop-finish)
+                                                  #+moc (if ch
+                                                            (return buffer)
+                                                            (if eof-error-p
+                                                                (error 'end-of-file :stream stream)
+                                                                (return eof-value)))
                                                   (vector-push-extend ch buffer)))
                 ((char= #\\ ch)  (setf escape t))
                 (t               (vector-push-extend ch buffer)))

@@ -635,13 +635,17 @@ RETURN: *character-sets*
     (when (cs-lisp-encoding cs)
       (let ((charset (find-symbol (first (cs-lisp-encoding cs)) "CHARSET")))
         (setf (cs-ranges cs)
-              #+#.(cl:if (cl:ignore-errors
-                          (cl:find-symbol "GET-CHARSET-RANGE" "SYSTEM"))
+              #+#.(cl:if #+mocl (cl:and (cl:find-package "SYSTEM")
+                                        (cl:find-symbol "GET-CHARSET-RANGE" "SYSTEM"))
+                         #-mocl (cl:ignore-errors
+                                 (cl:find-symbol "GET-CHARSET-RANGE" "SYSTEM"))
                          '(:and) '(:or))
               (map 'vector (function char-code)
                    (system::get-charset-range charset))
-              #-#.(cl:if (cl:ignore-errors
-                          (cl:find-symbol "GET-CHARSET-RANGE" "SYSTEM"))
+              #-#.(cl:if #+mocl (cl:and (cl:find-package "SYSTEM")
+                                        (cl:find-symbol "GET-CHARSET-RANGE" "SYSTEM"))
+                         #-mocl (cl:ignore-errors
+                                 (cl:find-symbol "GET-CHARSET-RANGE" "SYSTEM"))
                          '(:and) '(:or))
               (coerce
                (loop

@@ -296,7 +296,11 @@ RETURN: line; column
             #+has-page     #\Page
             #+has-tab      #\Tab))
           (otherwise
-           (loop-finish)))
+           #-mocl (loop-finish)
+           #+moc (progn
+                   (ungetchar scanner ch)
+                   (return (values (scanner-line   scanner)
+                                   (scanner-column scanner))))))
     :finally (progn
                (ungetchar scanner ch)
                (return (values (scanner-line   scanner)

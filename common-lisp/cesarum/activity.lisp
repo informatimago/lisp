@@ -49,8 +49,6 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
 
-
-(in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ACTIVITY"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
@@ -173,12 +171,12 @@ NOTE:   exactp => dropablep
      ;; (assert (<= scheduled-time current-time))
      (let ((next-scheduled-time (+ scheduled-time period)))
        (if (< current-time next-scheduled-time)
-         (values t   (* next-scheduled-time precision))
-         (values nil
-                 (* (+ current-time
-                       (- period
-                          (mod (- current-time scheduled-time) period)))
-                    precision)))))
+           (values t   (* next-scheduled-time precision))
+           (values nil
+                   (* (+ current-time
+                         (- period
+                            (mod (- current-time scheduled-time) period)))
+                      precision)))))
     (t
      ;; (possible (< (+ scheduled-time period) current-time))
      ;; We increment by period to keep the exact count.
@@ -277,7 +275,7 @@ If zero, then the activity is run as often as possible.")
 
 (defmethod initialize-instance :after ((self activity) &rest args
                                        &key (start-in 0 start-in-p)
-                                       (start-at 0 start-at-p)
+                                         (start-at 0 start-at-p)
                                        &allow-other-keys)
   (declare (ignore args))
   (when (and start-in-p start-at-p)
@@ -316,10 +314,10 @@ If zero, then the activity is run as often as possible.")
 
 (defparameter *precise-real-time-offset*
   (loop
-     :with now = (get-universal-time)
-     :while (= now (get-universal-time))
-     :finally (return
-                (- now (* (get-internal-real-time) *internal-time-unit*))))
+    :with now = (get-universal-time)
+    :while (= now (get-universal-time))
+    :finally (return
+               (- now (* (get-internal-real-time) *internal-time-unit*))))
   "Contains the number of seconds that must be added to:
       (/ (GET-INTERNAL-REAL-TIME) INTERNAL-TIME-UNITS-PER-SECOND)
 to get the current universal-time with the higher internal time precision.")
@@ -403,24 +401,25 @@ and restart the scheduling then.")
 ;;; SCHEDULER
 ;;;
 
-(defvar *debug* nil)
 
 #+debug-com.informatimago.common-lisp.cesarum.activity
 (defvar *in-terminal-p*
   (and (string/= "dumb" (ext:getenv "TERM"))
        (intersection
-        (com.informatimago.common-lisp.cesarum.list:ensure-list
+        (ensure-list
          (com.informatimago.common-lisp.cesarum.stream:bare-stream
           *terminal-io*))
-        (com.informatimago.common-lisp.cesarum.list:ensure-list
+        (ensure-list
          (com.informatimago.common-lisp.cesarum.stream:bare-stream
           *standard-output*)))))
 
+
+#+debug-com.informatimago.common-lisp.cesarum.activity
 (defun formatalot (control-string &rest arguments)
   (let ((*print-pretty* nil))
-    #-debug-com.informatimago.common-lisp.cesarum.activity
-    (apply (function format) *trace-output* control-string arguments)
-    #+debug-com.informatimago.common-lisp.cesarum.activity
+    ;; #-debug-com.informatimago.common-lisp.cesarum.activity
+    ;; (apply (function format) *trace-output* control-string arguments)
+    ;; #+debug-com.informatimago.common-lisp.cesarum.activity
     (dolist (line (com.informatimago.common-lisp.cesarum.string:split-string
                    (apply (function format) nil control-string arguments)
                    #(#\newline)))
@@ -428,26 +427,26 @@ and restart the scheduling then.")
           (format *trace-output*
                   "~A~A~A~A"
                   (map 'string (function code-char)
-                       (com.informatimago.common-lisp.cesarum.ecma048:cr))
+                    (com.informatimago.common-lisp.cesarum.ecma048:cr))
                   (map 'string (function code-char)
-                       (com.informatimago.common-lisp.cesarum.ecma048:el 3))
+                    (com.informatimago.common-lisp.cesarum.ecma048:el 3))
                   (map 'string (function code-char)
-                       (com.informatimago.common-lisp.cesarum.ecma048:cr))
+                    (com.informatimago.common-lisp.cesarum.ecma048:cr))
                   line)
           (format *trace-output* "~A~%" line)))))
 
 
-(defmacro with-debug (debug &body body)
-  (if debug
-      `(macrolet
-           ((debug-format (control-string &rest arguments)
-              `(formatalot "ACTIVITY: ~A"
-                                   (format nil ,control-string ,@arguments))))
-         ,@body)
-      `(macrolet ((debug-format (control-string &rest arguments)
-                                (declare (ignore control-string arguments))
-                    `(progn)))
-         ,@body)))
+(defmacro with-debug (&body body)
+  #+debug-com.informatimago.common-lisp.cesarum.activity
+  `(macrolet ((debug-format (control-string &rest arguments)
+                `(formatalot "ACTIVITY: ~A"
+                             (format nil ,control-string ,@arguments))))
+     ,@body)
+  #-debug-com.informatimago.common-lisp.cesarum.activity
+  `(macrolet ((debug-format (control-string &rest arguments)
+                (declare (ignore control-string arguments))
+                `(progn)))
+     ,@body))
 
 
 (defclass scheduler ()
@@ -521,92 +520,69 @@ in round-robin fashion for "))
          (setf queue nil
                (activity-scheduler activity) nil)))
       (t (loop
-            :for cur :on (cdr queue)
-            :until (or (eq (car cur) activity)
-                       (eq cur queue))
-            :finally (when (eq (car cur) activity)
-                       (setf (cdr cur) (cddr cur)
-                             (activity-scheduler activity) nil)))))
+           :for cur :on (cdr queue)
+           :until (or (eq (car cur) activity)
+                      (eq cur queue))
+           :finally (when (eq (car cur) activity)
+                      (setf (cdr cur) (cddr cur)
+                            (activity-scheduler activity) nil)))))
     (setf (scheduler-activities scheduler) queue))
   scheduler)
+
 
 (defmethod run ((self idle-scheduler) &key one-step until)
   "
 DO:         Run idle activities.
 ONE-STEP:   If true, runs only one activity (or don't sleep).
-UNTIL:  Time until which activities must be run.
-*DEBUG*:    Print debugging information.
+UNTIL:      Time until which activities must be run.
 "
-  (let ((*rescheduled* nil))
-    (macrolet ((run-step (debug)
-                 `(with-debug ,debug
-                    (let ((activity (pop (scheduler-activities self))))
-                      (debug-format "Will run idle activity ~S.~%"
-                                    (activity-name activity))
-                      (let ((*current-activity* activity))
-                        (catch 'activity-yield
-                          (funcall (activity-closure activity))))
-                      (debug-format "Did  run idle activity ~S.~%"
-                                    (activity-name activity))
-                      (when (and (activity-scheduler activity)
-                                 (plusp (activity-period activity)))
-                        ;; becomes a periodic activity.
-                        (debug-format "Activity ~S changed to periodic.~%"
-                                      (activity-name activity))
-                        (unschedule-activity self activity)
-                        (schedule-activity self activity))))))
-      (if one-step
-          (cond
-            ((or (null until)
-                 (< (get-time (scheduler-time-base self)) until))
-             (if *debug*
-                 (with-debug t
-                   (if (scheduler-activities self)
-                       (run-step t)
-                       (debug-format "No idle activity.~%")))
-                 (when (scheduler-activities self)
-                   (run-step nil))))
-            (t
-             (when *debug*
-               (with-debug t
-                 (debug-format "No time to run idle activities.~%")))))
-          (cond
-            ((null until)
-             (if *debug*
+  (with-debug
+      (let ((*rescheduled* nil))
+        (flet ((run-step ()
+                 (let ((activity (pop (scheduler-activities self))))
+                   (debug-format "Will run idle activity ~S.~%"
+                                 (activity-name activity))
+                   (let ((*current-activity* activity))
+                     (catch 'activity-yield
+                       (funcall (activity-closure activity))))
+                   (debug-format "Did  run idle activity ~S.~%"
+                                 (activity-name activity))
+                   (when (and (activity-scheduler activity)
+                              (plusp (activity-period activity)))
+                     ;; becomes a periodic activity.
+                     (debug-format "Activity ~S changed to periodic.~%"
+                                   (activity-name activity))
+                     (unschedule-activity self activity)
+                     (schedule-activity self activity)))))
+          (if one-step
+              (cond
+                ((or (null until)
+                     (< (get-time (scheduler-time-base self)) until))
+                 (if (scheduler-activities self)
+                     (run-step)
+                     (debug-format "No idle activity.~%")))
+                (t
+                 (debug-format "No time to run idle activities.~%")))
+              (cond
+                ((null until)
                  ;; idle tasks don't loop
                  (if (scheduler-activities self)
-                     (run-step t)
-                     (with-debug t (debug-format "No idle activity.~%")))
-                 (run-step nil)))
-            ((< (get-time (scheduler-time-base self)) until)
-             (if *debug*
-                 (with-debug t
-                   (loop
-                      :while (and (scheduler-activities self)
-                                  (< (get-time (scheduler-time-base self)) until)
-                                  (not *rescheduled*))
-                      :do (run-step t)
-                      :finally
-                      (when (< (get-time (scheduler-time-base self)) until)
-                        (debug-format
-                         "No idle activity, will sleep ~A seconds, until ~A.~%"
-                         (- until (get-time (scheduler-time-base self)))
-                         until)
-                        (wait-delay (scheduler-time-base self)
-                                    (- until (get-time (scheduler-time-base self)))))))
+                     (run-step)
+                     (debug-format "No idle activity.~%")))
+                ((< (get-time (scheduler-time-base self)) until)
                  (loop
-                    :while (and (scheduler-activities self)
-                                (< (get-time (scheduler-time-base self)) until)
-                                (not *rescheduled*))
-                    :do (run-step nil)
-                    :finally
-                    (when (< (get-time (scheduler-time-base self)) until)
-                      (wait-delay (scheduler-time-base self)
-                                  (- until (get-time (scheduler-time-base self))))))))
-            (t
-             (when *debug*
-               (with-debug t
-                 (debug-format "No time to run idle activities.~%")))))))))
+                   :while (and (scheduler-activities self)
+                               (< (get-time (scheduler-time-base self)) until)
+                               (not *rescheduled*))
+                   :do (run-step)
+                   :finally (when (< (get-time (scheduler-time-base self)) until)
+                              (debug-format "No idle activity, will sleep ~A seconds, until ~A.~%"
+                                            (- until (get-time (scheduler-time-base self)))
+                                            until)
+                              (wait-delay (scheduler-time-base self)
+                                          (- until (get-time (scheduler-time-base self)))))))
+                (t
+                 (debug-format "No time to run idle activities.~%"))))))))
 
 
 
@@ -663,95 +639,74 @@ POST:           (MAX NOW (= (NEXT-TIME SELF) (+ LAST (activity-PERIOD SELF))))
 DO:         Run timed activities.
 ONE-STEP:   If true, runs only one activity (or don't sleep).
 UNTIL:  Time until which activities must be run.
-*DEBUG*:    Print debugging information.
 "
-  (let ((*rescheduled* nil))
-    ;; with-slots (idle-activities scheduled-activities time-base) self
-    (macrolet
-        ((run-step (debug)
-           `(with-debug ,debug
-              (let* ((activity       (car (scheduler-activities self)))
-                     (scheduled-time (activity-scheduled-time activity))
-                     (current-time   (get-time (scheduler-time-base self))))
-                (debug-format "Now is ~D, current activity is ~S~%"
-                              current-time (activity-name activity))
-                (if (< current-time scheduled-time)
-                    (progn
-                      (debug-format "Running idle scheduler for ~A seconds.~%"
-                                    (- scheduled-time current-time))
-                      (run (time-scheduler-idle-scheduler self)
-                           :until scheduled-time))
-                    (multiple-value-bind (runp next-scheduled-time)
-                        (schedule current-time
-                                  scheduled-time
-                                  (activity-period activity)
-                                  (activity-dropable-p activity)
-                                  (activity-exact-p activity)
-                                  (zerop (activity-period activity))
-                                  (precision (scheduler-time-base self)))
-                      (setf (activity-scheduled-time activity) next-scheduled-time)
-                      (when runp
-                        (setf (scheduler-activities self)
-                              (cdr (scheduler-activities self)))
-                        (debug-format "Will run periodic activity ~S.~%"
-                                      (activity-name activity))
-                        (let ((*current-activity* activity))
-                          (catch 'activity-yield
-                            (funcall (activity-closure activity))))
-                        (debug-format "Did  run periodic activity ~S.~%"
-                                      (activity-name activity))
-                        (when (activity-scheduler activity)
-                          (schedule-activity (activity-scheduler activity) activity))
-                        (debug-format "Queue after rescheduling:~%")
-                        ,(when debug
-                               `(print-scheduler-activities self *trace-output*)))))))))
-      (if one-step
-          (if *debug*
-              (run-step t)
-              (run-step nil))
-          (cond
-            ((null until)
-             (if *debug*
+  (with-debug
+      (let ((*rescheduled* nil))
+        ;; with-slots (idle-activities scheduled-activities time-base) self
+        (flet ((run-step ()
+                 (let* ((activity       (car (scheduler-activities self)))
+                        (scheduled-time (activity-scheduled-time activity))
+                        (current-time   (get-time (scheduler-time-base self))))
+                   (debug-format "Now is ~D, current activity is ~S~%"
+                                 current-time (activity-name activity))
+                   (if (< current-time scheduled-time)
+                       (progn
+                         (debug-format "Running idle scheduler for ~A seconds.~%"
+                                       (- scheduled-time current-time))
+                         (run (time-scheduler-idle-scheduler self)
+                              :until scheduled-time))
+                       (multiple-value-bind (runp next-scheduled-time)
+                           (schedule current-time
+                                     scheduled-time
+                                     (activity-period activity)
+                                     (activity-dropable-p activity)
+                                     (activity-exact-p activity)
+                                     (zerop (activity-period activity))
+                                     (precision (scheduler-time-base self)))
+                         (setf (activity-scheduled-time activity) next-scheduled-time)
+                         (when runp
+                           (setf (scheduler-activities self)
+                                 (cdr (scheduler-activities self)))
+                           (debug-format "Will run periodic activity ~S.~%"
+                                         (activity-name activity))
+                           (let ((*current-activity* activity))
+                             (catch 'activity-yield
+                               (funcall (activity-closure activity))))
+                           (debug-format "Did  run periodic activity ~S.~%"
+                                         (activity-name activity))
+                           (when (activity-scheduler activity)
+                             (schedule-activity (activity-scheduler activity) activity))
+                           (debug-format "Queue after rescheduling:~%")
+                           #+debug-com.informatimago.common-lisp.cesarum.activity
+                           (print-scheduler-activities self *trace-output*)))))))
+          (if one-step
+              (run-step)
+              (cond
+                ((null until)
                  (loop
-                    :while (or (scheduler-activities self)
-                               (scheduler-activities
-                                (time-scheduler-idle-scheduler self)))
-                    :do (run-step t))
+                   :while (or (scheduler-activities self)
+                              (scheduler-activities
+                               (time-scheduler-idle-scheduler self)))
+                   :do (run-step)))
+                ((< (get-time (scheduler-time-base self)) until)
                  (loop
-                    :while (or (scheduler-activities self)
-                               (scheduler-activities
-                                (time-scheduler-idle-scheduler self)))
-                    :do (run-step nil))))
-            ((< (get-time (scheduler-time-base self)) until)
-             (if *debug*
-                 (loop
-                    :while (and (< (get-time (scheduler-time-base self))
-                                   until)
-                                (or (scheduler-activities self)
-                                    (scheduler-activities
-                                     (time-scheduler-idle-scheduler self))))
-                    :do (run-step t))
-                 (loop
-                    :while (and (< (get-time (scheduler-time-base self))
-                                   until)
-                                (or (scheduler-activities self)
-                                    (scheduler-activities
-                                     (time-scheduler-idle-scheduler self))))
-                    :do (run-step nil))))
-            (t
-             (when *debug*
-               (with-debug t
-                 (debug-format "No more time to run activities.~%")))))))))
-
+                   :while (and (< (get-time (scheduler-time-base self))
+                                  until)
+                               (or (scheduler-activities self)
+                                   (scheduler-activities
+                                    (time-scheduler-idle-scheduler self))))
+                   :do (run-step)))
+                (t
+                 (debug-format "No more time to run activities.~%"))))))))
 
 
 
 (defun make-scheduler (time-base)
   (check-type time-base time-base)
   (make-instance 'time-scheduler
-      :time-base time-base
-      :idle-scheduler (make-instance 'idle-scheduler
-                          :time-base time-base)))
+                 :time-base time-base
+                 :idle-scheduler (make-instance 'idle-scheduler
+                                                :time-base time-base)))
 
 (defparameter *scheduler* (make-scheduler :real-time #|:universal-time|#))
 
@@ -769,29 +724,29 @@ UNTIL:      Time (in universal-time seconds) until which activities
 
 (defun format-for-field (activities field width precision)
   (if (some (lambda (act) (floatp (funcall field act))) activities)
-    ;; ~V,VF
-    (format nil "~~~D,~DF" width (truncate (- (log precision 10))))
-    (format nil "~~~DD" width)))
+      ;; ~V,VF
+      (format nil "~~~D,~DF" width (truncate (- (log precision 10))))
+      (format nil "~~~DD" width)))
 
 (defmethod print-scheduler-activities ((scheduler time-scheduler)
                                        &optional (stream *standard-output*))
   (let ((now (get-time (scheduler-time-base scheduler)))
         (line-cs
-         (let ((precision      (precision (scheduler-time-base scheduler)))
-               (all-activities (scheduler-all-activities scheduler)))
-           (print (list 'all-activities all-activities)) (finish-output)
-           (format nil "~~&~~4D ~~8A ~A ~A ~~:[.~~;D~~]~~:[.~~;E~~] ~~S~~%"
-                   (format-for-field all-activities
-                                     (function activity-scheduled-time)
-                                     16 precision)
-                   (format-for-field all-activities
-                                     (function activity-period)
-                                     16 precision))))
+          (let ((precision      (precision (scheduler-time-base scheduler)))
+                (all-activities (scheduler-all-activities scheduler)))
+            (print (list 'all-activities all-activities)) (finish-output)
+            (format nil "~~&~~4D ~~8A ~A ~A ~~:[.~~;D~~]~~:[.~~;E~~] ~~S~~%"
+                    (format-for-field all-activities
+                                      (function activity-scheduled-time)
+                                      16 precision)
+                    (format-for-field all-activities
+                                      (function activity-period)
+                                      16 precision))))
         (title-cs  "~&~4A ~8A ~16A ~16A ~:[.~;D~]~:[.~;E~] ~S~%"))
     #+debug-com.informatimago.common-lisp.cesarum.activity
     (when *in-terminal-p*
       (format stream "~A" (map 'string (function code-char)
-                               (com.informatimago.common-lisp.cesarum.ecma048:ris))))
+                            (com.informatimago.common-lisp.cesarum.ecma048:ris))))
     (flet ((line ()
              (format stream
                      "~&~4,,,'-A ~8,,,'-A ~16,,,'-A ~16,,,'-A -- ~32,,,'-A~%"
@@ -812,24 +767,24 @@ UNTIL:      Time (in universal-time seconds) until which activities
                        (activity-exact-p act)
                        (activity-name act))))
         (loop
-           :with queue = (if *current-activity*
-                             (if (member *current-activity*
-                                         (scheduler-activities scheduler))
-                                 (scheduler-activities scheduler)
-                                 (cons *current-activity*
-                                       (scheduler-activities scheduler)))
-                             (scheduler-activities scheduler))
-           :for acts :on queue
-           :for act = (car acts)
-           :do (print-activity act)
-           :until (eq (cdr acts) queue))
+          :with queue = (if *current-activity*
+                            (if (member *current-activity*
+                                        (scheduler-activities scheduler))
+                                (scheduler-activities scheduler)
+                                (cons *current-activity*
+                                      (scheduler-activities scheduler)))
+                            (scheduler-activities scheduler))
+          :for acts :on queue
+          :for act = (car acts)
+          :do (print-activity act)
+          :until (eq (cdr acts) queue))
         (loop
-           :with queue =  (scheduler-activities
-                           (time-scheduler-idle-scheduler scheduler))
-           :for acts :on queue
-           :for act = (car acts)
-           :do (print-activity act "IDLE")
-           :until (eq (cdr acts) queue)))
+          :with queue =  (scheduler-activities
+                          (time-scheduler-idle-scheduler scheduler))
+          :for acts :on queue
+          :for act = (car acts)
+          :do (print-activity act "IDLE")
+          :until (eq (cdr acts) queue)))
       (line)))
   (values))
 
@@ -844,13 +799,13 @@ STREAM:     An output stream to which the list of activities is
 
 
 (defun make-activity (function &key (name "Unnamed activity")
-                      (start-at 0 start-at-p)
-                      (start-in 0 start-in-p)
-                      (period 1)
-                      (dropable nil)
-                      (exact nil)
-                      (idle nil)
-                      ((:scheduler *scheduler*) *scheduler*))
+                                 (start-at 0 start-at-p)
+                                 (start-in 0 start-in-p)
+                                 (period 1)
+                                 (dropable nil)
+                                 (exact nil)
+                                 (idle nil)
+                                 ((:scheduler *scheduler*) *scheduler*))
   "
 FUNCTION:   A closure, that will be repeatitively called at specified times.
 NAME:       A string, naming the activity.
@@ -868,22 +823,22 @@ START-IN:   (mutually exclusive with START-AT)
   (when (and start-in-p start-at-p)
     (error ":START-IN and :START-AT are mutually exclusive."))
   (let ((activity
-         (make-instance 'activity
-             :name name
-             :closure function
-             :scheduler (if idle
-                            (time-scheduler-idle-scheduler *scheduler*)
-                            *scheduler*)
-             :scheduled-time (cond
-                               (start-in-p (+ (get-time (scheduler-time-base
-                                                         *scheduler*))
-                                              start-in))
-                               (start-at-p start-at)
-                               (t          (get-time (scheduler-time-base
-                                                      *scheduler*))))
-             :period period
-             :dropable dropable
-             :exact exact)))
+          (make-instance 'activity
+                         :name name
+                         :closure function
+                         :scheduler (if idle
+                                        (time-scheduler-idle-scheduler *scheduler*)
+                                        *scheduler*)
+                         :scheduled-time (cond
+                                           (start-in-p (+ (get-time (scheduler-time-base
+                                                                     *scheduler*))
+                                                          start-in))
+                                           (start-at-p start-at)
+                                           (t          (get-time (scheduler-time-base
+                                                                  *scheduler*))))
+                         :period period
+                         :dropable dropable
+                         :exact exact)))
     (schedule-activity (activity-scheduler activity) activity)
     activity))
 
@@ -939,145 +894,6 @@ DO: Remove the activity from the scheduling queue.
         (unschedule-activity scheduler (find-activity-by-id scheduler activity))
         (unschedule-activity scheduler activity)))
   (values))
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Testing and Debugging
-
-(define-condition debugger-invocation (condition)
-  ((format-control :accessor debugger-invocation-format-control
-                   :initarg :format-control
-                   :initform "Debugger invocation"
-                   :type string)
-   (format-arguments :accessor debugger-invocation-format-arguments
-                     :initarg :format-arguments
-                     :initform '()
-                     :type list))
-  (:documentation
-   "SBCL expects for INVOKE-DEBUGGER, objects of type CL:CONDITION,
-not mere 'condition' objects.")
-  (:report (lambda (condition stream)
-             (apply (function format) stream
-                    (debugger-invocation-format-control condition)
-                    (debugger-invocation-format-arguments condition)))))
-
-(defun cdebugger (&optional (reason "User request"))
-  (restart-case
-      (invoke-debugger (make-condition 'debugger-invocation
-                                       :format-control "~A"
-                                       :forma-arguments (list reason)))
-    (continue ()
-      :report "Continue"
-      (return-from cdebugger))))
-
-
-(defmacro define-menu (name title &rest items)
-  `(defun ,name ()
-     (loop
-        (flet ((exit-menu-loop (&optional result)
-                 (return-from ,name result)))
-          (block try-again
-            (format *query-io* "~2%Menu ~A~2%" ,title)
-            (format *query-io* "~:{   ~A) ~A~%~}" ',items)
-            (format *query-io* "~%Your choice: ")
-            (let ((choice (string-trim " " (read-line *query-io*))))
-              (format *query-io* "~%")
-              (case (or (and (string= "" choice)
-                             (let ((item (find :default ',items
-                                               :key (function fourth))))
-                               (if item
-                                   (first item)
-                                   (progn
-                                     (format *query-io* "~%Invalid choice~%")
-                                     (return-from try-again)))))
-                        (aref choice 0))
-                ,@(mapcar (lambda (item) `((,(first item)) ,(third item))) items)
-                (otherwise (format *query-io* "~%Invalid choice~%") ))))))))
-
-(define-menu act-created-menu
-    "Activity Created"
-  (#\g "Go on"               (exit-menu-loop)                  :default)
-  (#\d "Invoke the debugger" (block debugger
-                               (restart-case
-                                 (invoke-debugger
-                                  (make-condition 'debugger-invocation
-                                                  :format-control "User request"))
-                                 (menu ()
-                                       :report "Back to the menu"
-                                       (return-from debugger))
-                                 (goon ()
-                                   :report "Go on"
-                                   (exit-menu-loop)))))
-  (#\p "Print activities"    (print-scheduler-activities *scheduler*)))
-
-
-(defun test (&key debug)
-  (let ((start (get-universal-time)))
-    (macrolet
-        ((run (&body body)
-           `(lambda ()
-              (formatalot "~12D :name ~30S :period ~3D~%"
-                          (- (get-universal-time) start)
-                          (activity-name   (current-activity))
-                          (activity-period (current-activity)))
-              ,@body))
-         (mkact (&rest args)
-           `(progn
-              (when debug
-                (formatalot "Before creating a new ")
-                (print-scheduler-activities *scheduler*)
-                (formatalot "Let's create the new activity."))
-              (prog1 (make-activity ,@args)
-                (when debug
-                  (print-scheduler-activities *scheduler*)
-                  (act-created-menu))))))
-      (format t "~%")
-      (mkact (run (return-from test))
-             :name "stopper"
-             :start-in 60)
-      (mkact (run
-              ;; (cdebugger "Check increment period...")
-              (incf (activity-period (current-activity))))
-             :name "period increasing from 0"
-             :period 0)
-      (mkact (let ((times 11))
-               (run
-                (let ((act (current-activity)))
-                  (case (decf times)
-                    ((10)
-                     (setf (activity-period act) 30))
-                    ((9)
-                     (setf (activity-period act) 2)
-                     (setf (activity-scheduled-time act)
-                           (+ (get-time act) 2)))
-                    ((0)
-                     (destroy-activity act))))))
-             :name "period 2 between 30 and 50"
-             :period 30)
-      (mkact (run)
-             :name "period 10"
-             :period 10)
-      (mkact (run)
-             :name "period 7"
-             :period 7)
-      (mkact (run)
-             :name "period 5"
-             :period 5)
-      (mkact (run)
-             :name "period 5'"
-             :period 5)
-      (let ((activity (mkact (run)
-                             :name "period 5\", to be destroyed in 15s"
-                             :period 5)))
-        (mkact (run (if (activity-scheduler activity)
-                        (destroy-activity activity)
-                        (destroy-activity (current-activity))))
-               :name "Destroyer of [period 5\", to be destroyed in 15s]"
-               :start-in 15)))
-    (print-scheduler-activities *scheduler*)
-    (let ((*debug* debug)) (activity-run))
-    (values)))
 
 
 

@@ -201,7 +201,7 @@ same directory, so that the *default-pathname-defaults*, the
 three synchronized.
 ")
 
-(defvar *working-directory* (truename (user-homedir-pathname))
+(defvar *working-directory* #+mocl (user-homedir-pathname) #-mocl (truename (user-homedir-pathname)) 
   "The current working directory")
 
 (defun working-directory ()

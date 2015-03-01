@@ -91,14 +91,20 @@ License:
 
 
 
+#+mocl
+(setf *features* (append '(:newline-is-linefeed :has-ascii-code
+                           :has-vt :has-bell :has-escape :has-linefeed
+                           :has-return :has-backspace :has-tab
+                           :has-page :has-rubout) *features*))
+
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   
   (defparameter *standard-characters*
     #.(concatenate 'string
-        " !\"#$%&'()*+,-./0123456789:;<=>?"
-        "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
-        "`abcdefghijklmnopqrstuvwxyz{|}~")
+                   " !\"#$%&'()*+,-./0123456789:;<=>?"
+                   "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
+                   "`abcdefghijklmnopqrstuvwxyz{|}~")
     "A string containing all the STANDARD-CHARACTER.
 Notice: it's the same character set as
 COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ASCII:*ASCII-CHARACTERS*.")
@@ -144,17 +150,20 @@ DO:         If the implementation has the semi standard character
 
 "
     (when (has-character-named-p name)
-      (pushnew  (intern (format nil "~:@(HAS-~A~)" name)
-                        (load-time-value (find-package"KEYWORD")))
-                *features*)))
+      (pushnew (intern (format nil "~:@(HAS-~A~)" name)
+                       (load-time-value (find-package"KEYWORD")))
+               *features*)))
 
 
+  #-mocl
   (dolist (name '("Rubout" "Page" "Tab" "Backspace" "Return" "Linefeed"
                   ;; Non standard character names:
                   "Escape" "Bell" "Vt"))
     (push-feature-for-character-named name))
 
   );;eval-when
+
+
 
 
 ;; Must be a separate form:
@@ -185,15 +194,17 @@ DO:         If the implementation has the semi standard character
            #+has-escape    (=  27 (char-code #\escape))
            #+has-bell      (=   7 (char-code #\bell))
            #+has-vt        (=  11 (char-code #\vt)))))
+  #-mocl
+  (progn
+    (when (has-ascii-code-p)
+      (pushnew :has-ascii-code *features*))
+    
+    #+has-return   (when (char= #\newline #\return)
+                     (pushnew :newline-is-return *features*))
+    
+    #+has-linefeed (when (char= #\newline #\linefeed)
+                     (pushnew :newline-is-linefeed *features*)))
 
-  (when (has-ascii-code-p)
-    (pushnew :has-ascii-code *features*))
-  
-  #+has-return   (when (char= #\newline #\return)
-                   (pushnew :newline-is-return *features*))
-  
-  #+has-linefeed (when (char= #\newline #\linefeed)
-                   (pushnew :newline-is-linefeed *features*))
   );;eval-when
 
 

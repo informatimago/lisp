@@ -59,9 +59,10 @@
                "com.informatimago.lispdoc"
                "com.informatimago.small-cl-pgms"
                "com.informatimago.future"
-               "com.informatimago.objcl" ; empty shell on non-ccl darwin
-               "com.informatimago.susv3" ; empty shell on non-clisp.
-               "com.informatimago.clisp" ; empty shell on non-clisp linux
+               "com.informatimago.editor" ; future
+               "com.informatimago.objcl"  ; empty shell on non-ccl darwin
+               "com.informatimago.susv3"  ; empty shell on non-clisp.
+               "com.informatimago.clisp"  ; empty shell on non-clisp linux
                )
   :components ()
   :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.test"))))

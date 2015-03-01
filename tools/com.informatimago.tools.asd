@@ -48,15 +48,18 @@
                ((#:albert #:docbook #:bgcolor)   . "white")
                ((#:albert #:docbook #:textcolor) . "black"))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
-  :depends-on ("com.informatimago.tools.check-asdf"
-               "com.informatimago.tools.manifest"
-               "com.informatimago.tools.pathname"
-               "com.informatimago.tools.source"
-               "com.informatimago.tools.summary"
-               "com.informatimago.tools.make-depends"
-               "com.informatimago.tools.symbol"
-               "com.informatimago.tools.script"
-               "com.informatimago.tools.quicklisp")
+  :depends-on #-mocl ("com.informatimago.tools.check-asdf"
+                      "com.informatimago.tools.manifest"
+                      "com.informatimago.tools.pathname"
+                      "com.informatimago.tools.source"
+                      "com.informatimago.tools.summary"
+                      "com.informatimago.tools.make-depends"
+                      "com.informatimago.tools.symbol"
+                      "com.informatimago.tools.script"
+                      "com.informatimago.tools.quicklisp")
+  #+mocl ("com.informatimago.tools.manifest"
+          "com.informatimago.tools.pathname"
+          "com.informatimago.tools.symbol")
   :in-order-to ((asdf:test-op (asdf:test-op  "com.informatimago.tools.test"))))
 
 

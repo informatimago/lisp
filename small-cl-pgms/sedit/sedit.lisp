@@ -232,27 +232,27 @@
     (select selection root 0)
     (setf (first root) selection)
     (unwind-protect
-         (loop :do
-            (sedit-print-list root selection)
-            (terpri) (princ "> " *query-io*)
-            (let ((command (read *query-io*)))
-              (case command
-                ((q quit)      (loop-finish))
-                ((i in)        (sedit-in root selection))
-                ((o out)       (sedit-out root selection))
-                ((f forward n next)   (sedit-forward root selection))
-                ((b backward p previous)  (sedit-backward root selection))
-                ((s insert)    (sedit-insert root selection)) ; before
-                ((r replace)   (sedit-replace root selection)) ; in place
-                ((a add)       (sedit-add root selection)) ; after
-                ((x cut)       (sedit-cut root selection))
-                ((c copy)      (sedit-copy root selection))
-                ((y paste)     (sedit-paste root selection))
-                (otherwise
-                 (princ "Please use one of these commands:")
-                 (terpri)
-                 (princ "quit, in, out, forward, backward, insert, replace, add, cut, copy, paste.")
-                 (terpri)))))
+         (loop 
+           (sedit-print-list root selection)
+           (terpri) (princ "> " *query-io*)
+           (let ((command (read *query-io*)))
+             (case command
+               ((q quit)      (return))
+               ((i in)        (sedit-in root selection))
+               ((o out)       (sedit-out root selection))
+               ((f forward n next)   (sedit-forward root selection))
+               ((b backward p previous)  (sedit-backward root selection))
+               ((s insert)    (sedit-insert root selection)) ; before
+               ((r replace)   (sedit-replace root selection)) ; in place
+               ((a add)       (sedit-add root selection)) ; after
+               ((x cut)       (sedit-cut root selection))
+               ((c copy)      (sedit-copy root selection))
+               ((y paste)     (sedit-paste root selection))
+               (otherwise
+                (princ "Please use one of these commands:")
+                (terpri)
+                (princ "quit, in, out, forward, backward, insert, replace, add, cut, copy, paste.")
+                (terpri)))))
       (unselect selection))
     (first root)))
 

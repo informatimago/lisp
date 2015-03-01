@@ -250,6 +250,7 @@ the main script  (setf script:*program-name* (script:pname))
 "
   (file-namestring *program-name*))
 
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
   (defstruct option
@@ -619,7 +620,7 @@ RETURN:             NIL on success, status code when early exit is requested.
                 (process-arguments)
               ;; Somewhat arbitrary dispatching of lisp conditions to
               ;; linux sysexits:
-              ((or arithmetic-error parse-error print-not-readable type-error) (err)
+              ((or arithmetic-error parse-error #-mocl print-not-readable type-error) (err)
                 (format *error-output* "~%ERROR: ~A~%" err)
                 (parse-options-finish ex-dataerr))
               ((or cell-error control-error package-error program-error) (err)

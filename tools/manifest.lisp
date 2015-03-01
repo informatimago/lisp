@@ -75,6 +75,11 @@
              (slot-value system 'asdf::licence))
         :unknown)))
 
+#+mocl
+(defun system-depends-on (system)
+  '())
+
+#-mocl
 (defun system-depends-on (system)
   (delete (string-downcase system)
           (let ((system (asdf:find-system system)))

@@ -56,11 +56,11 @@ Beane's zpack.lisp).
                ((#:albert #:docbook #:textcolor) . "black"))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ("com.informatimago.common-lisp.lisp-sexp")
-  :components (;; (:file "reader"          :depends-on ())
+  :components ((:file "reader"          :depends-on ())
                (:file "package-pac"     :depends-on ())
                (:file "package-mac"     :depends-on ("package-pac"))
                (:file "package-fun"     :depends-on ("package-pac" "package-mac"))
-               (:file "package-def"     :depends-on ("package-pac" "package-mac" "package-fun"))
+               #-mocl (:file "package-def"     :depends-on ("package-pac" "package-mac" "package-fun"))
                )
   :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.lisp-reader.test"))))
 

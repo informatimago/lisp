@@ -123,6 +123,7 @@ This is what `(interactive \"P\")' returns.")
 
 
 
+#-mocl
 (declaim (ftype function message))
 (defun error (datum &rest arguments)
   (cond
@@ -2022,7 +2023,12 @@ These commands include C-@ and M-x start-kbd-macro."
                         (setf redisplayed t))))))))))
 
 
+#+mocl
+(defun shadow-synonym-stream (stream synonym)
+  (declare (ignore synonym))
+  stream)
 
+#-mocl
 (defun shadow-synonym-stream (stream synonym)
   (if (and (typep stream 'synonym-stream)
            (eq synonym (synonym-stream-symbol stream)))
@@ -2031,7 +2037,9 @@ These commands include C-@ and M-x start-kbd-macro."
 
 
 
-
+(defun getenv (var)
+  #-asdf3 (ASDF:GETENV var)
+  #+asdf3 (uiop/os:getenv var))
 
 
 (defun screen-editor (&key log (screen-class 'charms-screen))
@@ -2046,7 +2054,7 @@ These commands include C-@ and M-x start-kbd-macro."
     (let ((*error-output* *log*)
           (*trace-output* *log*)
           (screen (make-instance screen-class)))
-      (screen-initialize-for-terminal screen (uiop/os:getenv "TERM"))
+      (screen-initialize-for-terminal screen (getenv "TERM"))
       (editor-reset)
       (with-screen screen
         (editor-initialize *current-screen*)
@@ -2061,6 +2069,7 @@ These commands include C-@ and M-x start-kbd-macro."
 (defun editor () (screen-editor :log "/tmp/editor.log"))
 (defun ed (&rest args) (apply (function screen-editor) args))
 
+#-mocl
 (defun reload ()
   (in-package "CL-USER")
   (ql:quickload :com.informatimago.editor)
@@ -2069,9 +2078,11 @@ These commands include C-@ and M-x start-kbd-macro."
 
 (in-package "COMMON-LISP-USER")
 
-(print '(e::reload))
-(print '(e:screen-editor))
-(print '(e:ed))
+#-mocl
+(progn
+ (print '(e::reload))
+ (print '(e:screen-editor))
+ (print '(e:ed)))
 
 ;;;; THE END ;;;;
 

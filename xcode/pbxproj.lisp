@@ -215,12 +215,13 @@
 ;; pbxproj parser
 ;;----------------------------------------------------------------------
 
+#-mocl
 (when (and (find-package "COM.INFORMATIMAGO.RDP")
            (find-symbol "*BOILERPLATE-GENERATED*" "COM.INFORMATIMAGO.RDP")
            (boundp (find-symbol "*BOILERPLATE-GENERATED*" "COM.INFORMATIMAGO.RDP")))
   (setf (symbol-value (find-symbol "*BOILERPLATE-GENERATED*" "COM.INFORMATIMAGO.RDP")) nil))
 
-
+#-mocl
 (defgrammar pbxproj
     :scanner pbxproj-scanner
     :terminals ((string "…")
@@ -244,6 +245,258 @@
                               (seq list   :action $1)))
             (--> list    left-paren (rep data comma :action (second $1)) right-paren
                  :action (cons 'list $2))))
+
+#+mocl
+(let ((com.informatimago.rdp::*linenum* 0)
+      (#2=#:|grammar148137|
+       (make-grammar :name
+                     'pbxproj
+                     :terminals
+                     '((string "…") (equal "=") (left-brace "{") (semi-colon ";") (right-brace "}")
+                       (left-paren "(") (comma ",") (right-paren ")"))
+                     :start
+                     'file
+                     :rules
+                     '((file (seq (object) #28=((list* 'file . #1=($0)))))
+                       #5=(object (seq (left-brace slots right-brace) #23=($2)))
+                       (slots (seq ((rep ((seq (slot semi-colon) #26=($1))))) #27=((cons 'object $1))))
+                       #25=(slot (seq (string equal data) #24=((list (second $1) (second $3)))))
+                       #20=(data
+                            (seq
+                             ((alt
+                               ((seq (string) #3=((second $1))) (seq (object) #6=($1))
+                                (seq (list) #15=($1)))))
+                             #16=((list* 'data . #1#))))
+                       #14=(list (seq (left-paren (rep ((seq (data comma) #21=((second $1))))) right-paren)
+                                  #22=((cons 'list $2)))))
+                     :scanner
+                     'pbxproj-scanner
+                     :skip-spaces
+                     't)))
+  (setf (gethash (grammar-name #2#) com.informatimago.rdp::*grammars*) #2#)
+  (com.informatimago.rdp::compute-all-terminals #2#)
+  (com.informatimago.rdp::compute-all-non-terminals #2#)
+  (com.informatimago.rdp::compute-first-follow #2#)
+  nil
+  'pbxproj-scanner
+  (progn (defun pbxproj/parse-data #17=(scanner)
+           "(data (seq ((alt ((seq (string) ((second $1))) (seq (object) ($1)) (seq (list) ($1))))) ((list* 'data $0))))"
+           (com.informatimago.rdp::with-non-terminal
+             data
+             (let (($1
+                    (cond ((word-equal #4=(scanner-current-token scanner) 'string)
+                           (let (($1 (accept scanner 'string)))
+                             (let (($0 (list $1)) (string $1) (string.1 $1))
+                               (declare (ignorable $0 string.1 string))
+                               . #3#)))
+                          ((word-equal #4# 'left-brace)
+                           (let (($1
+                                  (if (word-equal #4# 'left-brace)
+                                      (pbxproj/parse-object . #7=(scanner))
+                                      (error #8='unexpected-token-error
+                                             :line
+                                             #9=(scanner-line scanner)
+                                             :column
+                                             #10=(scanner-column scanner)
+                                             :scanner
+                                             scanner
+                                             :non-terminal-stack
+                                             #11=(copy-list *non-terminal-stack*)
+                                             :format-control
+                                             #12="Unexpected token ~S~%~S~%~{~A --> ~S~}"
+                                             :format-arguments
+                                             (list #13=(scanner-current-token scanner)
+                                                   *non-terminal-stack*
+                                                   '#5#)))))
+                             (let (($0 (list $1)) (object $1) (object.1 $1))
+                               (declare (ignorable $0 object.1 object))
+                               . #6#)))
+                          ((word-equal #4# 'left-paren)
+                           (let (($1
+                                  (if (word-equal #4# 'left-paren)
+                                      (pbxproj/parse-list . #7#)
+                                      (error #8#
+                                             :line
+                                             #9#
+                                             :column
+                                             #10#
+                                             :scanner
+                                             scanner
+                                             :non-terminal-stack
+                                             #11#
+                                             :format-control
+                                             #12#
+                                             :format-arguments
+                                             (list #13# *non-terminal-stack* '#14#)))))
+                             (let (($0 (list $1)) (list $1) (list.1 $1))
+                               (declare (ignorable $0 list.1 list))
+                               . #15#))))))
+               (let (($0 (list $1))) (declare (ignorable $0)) . #16#)))))
+  (progn (defun pbxproj/parse-list #17#
+           "(list (seq (left-paren (rep ((seq (data comma) ((second $1))))) right-paren) ((cons 'list $2))))"
+           (com.informatimago.rdp::with-non-terminal
+             list
+             (let (($1 (accept scanner 'left-paren))
+                   ($2
+                    (loop :while (member #18=(scanner-current-token scanner)
+                                         '(left-brace left-paren string)
+                                         . #19=(:test #'word-equal))
+                          :collect (let (($1
+                                          (if (member #18# '(string left-paren left-brace) . #19#)
+                                              (pbxproj/parse-data . #7#)
+                                              (error #8#
+                                                     :line
+                                                     #9#
+                                                     :column
+                                                     #10#
+                                                     :scanner
+                                                     scanner
+                                                     :non-terminal-stack
+                                                     #11#
+                                                     :format-control
+                                                     #12#
+                                                     :format-arguments
+                                                     (list #13# *non-terminal-stack* '#20#))))
+                                         ($2 (accept scanner 'comma)))
+                                     (let (($0 (list $1 $2)) (data $1) (data.1 $1) (comma $2) (comma.1 $2))
+                                       (declare (ignorable $0 comma.1 comma data.1 data))
+                                       . #21#))))
+                    ($3 (accept scanner 'right-paren)))
+                   (let (($0 (list $1 $2 $3))
+                         (left-paren $1)
+                         (left-paren.1 $1)
+                         (right-paren $3)
+                         (right-paren.1 $3))
+                     (declare (ignorable $0 right-paren.1 right-paren left-paren.1 left-paren))
+                     . #22#)))))
+         (progn (defun pbxproj/parse-object #17#
+                  "(object (seq (left-brace slots right-brace) ($2)))"
+                  (com.informatimago.rdp::with-non-terminal
+                    object
+                    (let (($1 (accept scanner 'left-brace))
+                          ($2 (when (word-equal #4# 'string) (pbxproj/parse-slots scanner)))
+                          ($3 (accept scanner 'right-brace)))
+                      (let (($0 (list $1 $2 $3))
+                            (left-brace $1)
+                            (left-brace.1 $1)
+                            (slots $2)
+                            (slots.1 $2)
+                            (right-brace $3)
+                            (right-brace.1 $3))
+                        (declare
+                         (ignorable $0 right-brace.1 right-brace slots.1 slots left-brace.1 left-brace))
+                        . #23#)))))
+         (progn (defun pbxproj/parse-slot #17#
+                  "(slot (seq (string equal data) ((list (second $1) (second $3)))))"
+                  (com.informatimago.rdp::with-non-terminal
+                    slot
+                    (let (($1 (accept scanner 'string))
+                          ($2 (accept scanner 'equal))
+                          ($3
+                           (if (member #18# '(string left-paren left-brace) . #19#)
+                               (pbxproj/parse-data . #7#)
+                               (error #8#
+                                      :line
+                                      #9#
+                                      :column
+                                      #10#
+                                      :scanner
+                                      scanner
+                                      :non-terminal-stack
+                                      #11#
+                                      :format-control
+                                      #12#
+                                      :format-arguments
+                                      (list #13# *non-terminal-stack* '#20#)))))
+                      (let (($0 (list $1 $2 $3))
+                            (string $1)
+                            (string.1 $1)
+                            (equal $2)
+                            (equal.1 $2)
+                            (data $3)
+                            (data.1 $3))
+                        (declare (ignorable $0 data.1 data equal.1 equal string.1 string))
+                        . #24#)))))
+         (progn (defun pbxproj/parse-slots #17#
+                  "(slots (seq ((rep ((seq (slot semi-colon) ($1))))) ((cons 'object $1))))"
+                  (com.informatimago.rdp::with-non-terminal
+                    slots
+                    (let (($1
+                           (loop :while (word-equal #4# 'string)
+                                 :collect (let (($1
+                                                 (if (word-equal #4# 'string)
+                                                     (pbxproj/parse-slot . #7#)
+                                                     (error #8#
+                                                            :line
+                                                            #9#
+                                                            :column
+                                                            #10#
+                                                            :scanner
+                                                            scanner
+                                                            :non-terminal-stack
+                                                            #11#
+                                                            :format-control
+                                                            #12#
+                                                            :format-arguments
+                                                            (list #13# *non-terminal-stack* '#25#))))
+                                                ($2 (accept scanner 'semi-colon)))
+                                            (let (($0 (list $1 $2))
+                                                  (slot $1)
+                                                  (slot.1 $1)
+                                                  (semi-colon $2)
+                                                  (semi-colon.1 $2))
+                                              (declare (ignorable $0 semi-colon.1 semi-colon slot.1 slot))
+                                              . #26#)))))
+                          (let (($0 (list $1))) (declare (ignorable $0)) . #27#)))))
+                (progn (defun pbxproj/parse-file #17#
+                         "(file (seq (object) ((list* 'file $0))))"
+                         (com.informatimago.rdp::with-non-terminal
+                           file
+                           (let (($1
+                                  (if (word-equal #4# 'left-brace)
+                                      (pbxproj/parse-object . #7#)
+                                      (error #8#
+                                             :line
+                                             #9#
+                                             :column
+                                             #10#
+                                             :scanner
+                                             scanner
+                                             :non-terminal-stack
+                                             #11#
+                                             :format-control
+                                             #12#
+                                             :format-arguments
+                                             (list #13# *non-terminal-stack* '#5#)))))
+                             (let (($0 (list $1)) (object $1) (object.1 $1))
+                               (declare (ignorable $0 object.1 object))
+                               . #28#)))))
+                (progn (defun parse-pbxproj (com.informatimago.rdp::source)
+                         "
+SOURCE: When the grammar has a scanner generated, or a scanner class
+        name, SOURCE can be either a string, or a stream that will be
+        scanned with the generated scanner.  Otherwise, it should be a
+        SCANNER instance.
+"
+                         (com.informatimago.rdp::with-non-terminal
+                           pbxproj
+                           (let ((scanner
+                                  (make-instance 'pbxproj-scanner :source com.informatimago.rdp::source)))
+                             (advance-line scanner)
+                             (prog1 (pbxproj/parse-file scanner)
+                                    (unless (scanner-end-of-source-p scanner)
+                                      (error 'parser-end-of-source-not-reached
+                                             :line
+                                             (scanner-line scanner)
+                                             :column
+                                             (scanner-column scanner)
+                                             :grammar
+                                             (grammar-named 'pbxproj)
+                                             :scanner
+                                             scanner
+                                             :non-terminal-stack
+                                             (copy-list *non-terminal-stack*))))))))
+                'pbxproj)
 
 
 

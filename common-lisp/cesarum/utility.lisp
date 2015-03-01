@@ -728,7 +728,8 @@ SEE:            PRINT-PARSEABLE-OBJECT
   (let ((*step-mode* :run))
     (declare (special *step-mode*))
     (if *print-readably*
-        (error 'print-not-readable :object object)
+        #+mocl (error "not printable readably ~S"object)
+        #-mocl (error 'print-not-readable :object object)
         (progn
           (format stream "~S"
                   (append (when type

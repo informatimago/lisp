@@ -55,7 +55,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2011 - 2012
+    Copyright Pascal J. Bourguignon 2011 - 2015
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -101,24 +101,6 @@ License:
 (defun graph-adjacency-list (graph node)
   "RETURN:   The list of successors of NODE in the GRAPH."
   (dictionary-get graph node))
-
-
-
-
-(defparameter *germany*
-  (make-graph (mapcan (lambda (edge) (list edge (reverse edge)))
-                     '((frankfurt mannheim)
-                       (frankfurt wuerzburg)
-                       (frankfurt kassel)
-                       (stuttgart nuemberg)
-                       (mannheim karlsruhe)
-                       (wuerzburg erfurt)
-                       (wuerzburg nuemberg)
-                       (kassel muenchen)
-                       (karlsruhe augsburg)
-                       (augsburg muenchen)
-                       (nuemberg muenchen)))))
-
 
 
 (defun breadth-first-search (graph root goal &key (test 'eql) key)

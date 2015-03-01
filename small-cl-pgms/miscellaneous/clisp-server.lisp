@@ -1135,7 +1135,7 @@ No reader macro is processed.  #2A(a b c) is parsed as two tokens:
                     ((:close) 
                      (rerror t "READ from ~S: an object cannot start with #\\)"
                              stream))
-                    (otherwise (loop-finish))))
+                    (otherwise #-mocl (loop-finish) #+mocl (return))))
                 (shift (new-state) (setf state new-state))
                 (spop () (funcall (pop stack))))
              (macrolet ((spush (return new-state)

@@ -261,6 +261,7 @@ DO:         Prints each expression and their values.
                                      alternate))))
 
 
+#-mocl
 (defmethod documentation ((package t) (doc-type (eql 'exports)))
   (declare (ignore doc-type))
   (format t "~:{----------------------------------------~%~A~2%~A~2%~}"

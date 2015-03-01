@@ -164,6 +164,8 @@ License:
      ")))
 (defvar *debug* nil)
 
+#+mocl (defvar *trace-output* *standard-output*)
+
 (defmacro when-debug (what &body body)
   (cond
     ((intersection what +debug+)
@@ -2402,6 +2404,7 @@ DO:     Initialize the heap in *gc-memory*.
     (or (ld-get value)
     (ld-put value (cvm-make-array value)))
     ||#(error "not implemented yet"))
+  #-mocl
   (:method ((value structure-object))
     (declare (ignorable value))
     ;; TODO: avoid circles

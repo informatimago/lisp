@@ -63,7 +63,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2004 - 2012
+    Copyright Pascal J. Bourguignon 2004 - 2015
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -163,6 +163,9 @@ SEE ALSO:       NEXTCHAR.
   (defun char-name-supported-p (name)
      (ignore-errors (read-from-string (format nil "#\\~A" name)))))
 
+#+mocl
+(defvar *spaces* " ")
+#-mocl
 (defvar *spaces*
   (let ((spaces '()))
     (dolist (name '("Vt" "Page" "Linefeed" "Return" "Tab" "Newline" "Space"))
@@ -314,7 +317,7 @@ RETURN:  A whole line read from the peek-stream, or NIL in case of end of stream
      :for ch = (getchar self)
      :while ch
      :do (if  (char= ch #\Newline)
-              (loop-finish)
+              (return line)
               (vector-push-extend ch line (length line)))
      :finally (return line))))
 

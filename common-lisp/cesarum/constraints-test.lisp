@@ -1,23 +1,25 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               com.informatimago.future.asd
+;;;;FILE:               constraints-test.lisp
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    This system loads what can be loaded of future Informatimago projects and sketches.
-;;;;    !!! This code is clearly not ready for consumption !!!
+;;;;    Tests constraints.lisp.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2014-12-23 <PJB> Created.
+;;;;    2015-02-28 <PJB> Extracted from constraints.lisp.
 ;;;;BUGS
+;;;;
+;;;;    - test not implemented yet.
+;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2013 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2015 - 2015
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -33,13 +35,28 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(asdf:defsystem "com.informatimago.future"
-  :description "Future Informatimago Projects - Not ready for consumption."
-  :author "Pascal J. Bourguignon"
-  :version "1.0.2"
-  :license "AGPL3"
-  :depends-on () 
-  :components ()
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.future.test"))))
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CONSTRAINTS"
+  (:use "COMMON-LISP"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SIMPLE-TEST"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CONSTRAINTS")
+  (:export "TEST/ALL"))
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CONSTRAINTS")
+
+(defparameter *germany*
+  (make-graph (mapcan (lambda (edge) (list edge (reverse edge)))
+                     '((frankfurt mannheim)
+                       (frankfurt wuerzburg)
+                       (frankfurt kassel)
+                       (stuttgart nuemberg)
+                       (mannheim karlsruhe)
+                       (wuerzburg erfurt)
+                       (wuerzburg nuemberg)
+                       (kassel muenchen)
+                       (karlsruhe augsburg)
+                       (augsburg muenchen)
+                       (nuemberg muenchen)))))
+
+(define-test test/all ()
+  )
 
 ;;;; THE END ;;;;

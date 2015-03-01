@@ -656,7 +656,7 @@ implementation~P ~:[is~;are~]: ~%"
   #+(and cmu (not unix)) (extensions:quit #|recklesslyp|# nil)
   #+ecl                  (ext:quit status)
   #+sbcl                 (sb-ext:quit status)
-  #-(or ccl clisp cmu ecl sbcl) (throw 'quit))
+  #-(or ccl clisp cmu ecl sbcl) (throw 'quit status))
 
 
 (defun getenv (var)
@@ -673,7 +673,9 @@ implementation~P ~:[is~;are~]: ~%"
         ecl
         sbcl
         allegro
-        lispworks) (iolib.syscalls:getenv var))
+        lispworks) (progn #-asdf3 (ASDF:GETENV var)
+                     #+asdf3 (uiop/os:getenv var)
+                     #|(iolib.syscalls:getenv var)|#))
 
 
 (defun prefixp (prefix string &key (start 0) (end nil) (test (function char=)))

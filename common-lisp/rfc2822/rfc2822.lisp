@@ -66,7 +66,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2004 - 2012
+    Copyright Pascal J. Bourguignon 2004 - 2015
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -88,9 +88,9 @@ License:
 
 
 (defparameter +space+  (character " ")        "An ASCII SPACE character.")
-(defparameter +tab+    (code-char com.informatimago.common-lisp.cesarum.ecma048:ht) "An ASCII TABULATION character.")
-(defparameter +cr+     (code-char com.informatimago.common-lisp.cesarum.ecma048:cr) "An ASCII CARRIAGE-RETURN.")
-(defparameter +lf+     (code-char com.informatimago.common-lisp.cesarum.ecma048:lf) "An ASCII LINE-FEED.")
+(defparameter +tab+    (code-char #+mocl  9 #-mocl com.informatimago.common-lisp.cesarum.ecma048:ht) "An ASCII TABULATION character.")
+(defparameter +cr+     (code-char #+mocl 13 #-mocl com.informatimago.common-lisp.cesarum.ecma048:cr) "An ASCII CARRIAGE-RETURN.")
+(defparameter +lf+     (code-char #+mocl 10 #-mocl com.informatimago.common-lisp.cesarum.ecma048:lf) "An ASCII LINE-FEED.")
 
 
 (defun unquote (value)
