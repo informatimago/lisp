@@ -32,9 +32,29 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
 
-(in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CACHE"
   (:use "COMMON-LISP")
+  #+mocl (:shadowing-import-from "COM.INFORMATIMAGO.MOCL.KLUDGES.MISSING"
+                                 "*TRACE-OUTPUT*"
+                                 "*LOAD-VERBOSE*"
+                                 "*LOAD-PRINT*"
+                                 "ARRAY-DISPLACEMENT"
+                                 "CHANGE-CLASS"
+                                 "COMPILE"
+                                 "COMPLEX"
+                                 "ENSURE-DIRECTORIES-EXIST"
+                                 "FILE-WRITE-DATE"
+                                 "INVOKE-DEBUGGER" "*DEBUGGER-HOOK*"
+                                 "LOAD"
+                                 "LOGICAL-PATHNAME-TRANSLATIONS"
+                                 "MACHINE-INSTANCE"
+                                 "MACHINE-VERSION"
+                                 "NSET-DIFFERENCE"
+                                 "RENAME-FILE"
+                                 "SUBSTITUTE-IF"
+                                 "TRANSLATE-LOGICAL-PATHNAME"
+                                 "PRINT-NOT-READABLE"
+                                 "PRINT-NOT-READABLE-OBJECT")
   (:export "CACHE-EXPIRE-ALL" "CACHE-EXPIRE" "CACHE-EXPIRATION" "CACHE-GET"
            "SYNCHRONIZE-CACHE" "MAKE-CACHE" "CACHE-PRODUCER" "CACHE-VALUE-FILE-TYPE"
            "CACHE-INDEX-FILE-PATH" "CACHE-DIRECTORY-PATH" "CACHE"

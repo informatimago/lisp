@@ -1560,7 +1560,7 @@ regexp matched, ie. rnode."
   (equalf   (function equal)) ;; use equalp for case insensitive.
   ;; equalf must take two sequence arguments
   ;; and accept :start1 :end1 :start2 :end2 keys.
-  (newlinepf (compile nil (lambda (ch) (eql #\NEWLINE ch))))
+  (newlinepf (lambda (ch) (eql #\NEWLINE ch)))
   (sequence ""  :type vector) ;; renv-set-sequence sets length and position too.
   (length   0   :type (integer 0))
   (position 0   :type (integer 0))

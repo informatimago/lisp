@@ -102,6 +102,10 @@ LEGAL
 "))
 (in-package "COM.INFORMATIMAGO.MOCL.KLUDGES.MISSING")
 
+;; CHANGE-CLASS       ;; CLOS!
+;; COMPLEX           ;; all complex is missing.
+
+
 (defvar *load-verbose* nil)
 (defvar *load-print*   nil)
 (defvar *trace-output* *standard-output*)
@@ -113,12 +117,17 @@ LEGAL
                (format stream "Object to printable readably ~S"
                        (print-not-readable-object condition))))))
 
-;; ARRAY-DISPLACEMENT ;; we cannot really do anything bar re-implementing arrays.
-;; CHANGE-CLASS       ;; CLOS!
+(defun ARRAY-DISPLACEMENT (array)
+  ;; if not provided, then displaced array don't exist!
+  (declare (ignore array))
+  (values nil 0))
+
 
 ;; COMPILE           ;; required to implement minimal compilation.
 
-;; COMPLEX           ;; all complex is missing.
+(defun LOAD (filespec &key verbose print if-does-not-exist external-format)
+  )
+
 
 (defun ENSURE-DIRECTORIES-EXIST (pathspec &key verbose)
   (error "~S not implemented yet" 'ENSURE-DIRECTORIES-EXIST)
@@ -144,15 +153,22 @@ LEGAL
   (rt:formatd "Debugger invoked on condition ~A; aborting." condition)
   (rt:quit))
 
-(defun LOAD (filespec &key verbose print if-does-not-exist external-format)
-  )
+(defvar *hosts* '())
 
 (defun LOGICAL-PATHNAME-TRANSLATIONS (host)
-  )
+  (cdr (assoc host *hosts* :test (function equalp))))
+
 (defun (setf LOGICAL-PATHNAME-TRANSLATIONS) (new-translations host)
-  )
+  (let ((entry (assoc host *hosts* :test (function equalp))))
+    (if entry
+        (setf (cdr entry) (copy-tree new-translations))
+        (push (cons (nstring-upcase (copy-seq host))
+                    (copy-tree new-translations))
+              *hosts*))))
+
 (defun TRANSLATE-LOGICAL-PATHNAME (pathname &key &allow-other-keys)
-  )
+  (error "~S not implemented yet" 'TRANSLATE-LOGICAL-PATHNAME)
+  pathname)
 
 (defun MACHINE-INSTANCE ()
   ;; TODO: find the hostname of the machine, or some other machine identification.
@@ -174,8 +190,73 @@ LEGAL
   (declare (ignore key test test-not))
   (apply (function set-difference) list-1 list-2 rest))
 
+(defun nsubstitute-if (new-item predicate sequence &key from-end start end count key)
+  (let* ((length (length sequence))
+         (start  (or start 0))
+         (end    (or end lengh))
+         (key    (or key (function identity))))
+    (assert (<= 0 start end length))
+    (etypecase sequence
+      (list   (cond
+                (from-end
+                 (nreverse (nsubstitute-if new-item predicate (nreverse sequence)
+                                           :start (- length end) :end (- length start)
+                                           :count count :key key)))
+                (count
+                 (when (plusp count)
+                   (loop
+                     :repeat (- end start)
+                     :for current :on (nthcdr start sequence)
+                     :do (when (funcall predicate (funcall key (car current)))
+                           (setf (car current) new-item)
+                           (decf count)
+                           (when (zerop count)
+                             (return))))))
+                (t
+                 (loop
+                   :repeat (- end start)
+                   :for current :on (nthcdr start sequence)
+                   :do (when (funcall predicate (funcall key (car current)))
+                         (setf (car current) new-item))))))
+      (vector (if from-end
+                  (if count
+                      (when (plusp count)
+                        (loop
+                          :for i :from (1- end) :downto start
+                          :do (when (funcall predicate (funcall key (aref sequence i)))
+                                (setf (aref sequence i) new-item)
+                                (decf count)
+                                (when (zerop count)
+                                  (return)))))
+                      (loop
+                        :for i :from (1- end) :downto start
+                        :do (when (funcall predicate (funcall key (aref sequence i)))
+                              (setf (aref sequence i) new-item))))
+                  (if count
+                      (when (plusp count)
+                        (loop
+                          :for i :from start :below end
+                          :do (when (funcall predicate (funcall key (aref sequence i)))
+                                (setf (aref sequence i) new-item)
+                                (decf count)
+                                (when (zerop count)
+                                  (return)))))
+                      (loop
+                        :for i :from start :below end
+                        :do (when (funcall predicate (funcall key (aref sequence i)))
+                              (setf (aref sequence i) new-item)))))))
+    sequence))
+
 (defun SUBSTITUTE-IF (new-item predicate sequence &rest rest &key from-end start end count key)
   (apply (function nsubstitute-if) new-item predicate (copy-seq sequence) rest))
+
+(defun NSUBSTITUTE-IF-NOT (new-item predicate sequence &rest rest &key from-end start end count key)
+  (apply (function nsubstitute-if) new-item (complement predicate) sequence rest))
+
+(defun SUBSTITUTE-IF-NOT (new-item predicate sequence &rest rest &key from-end start end count key)
+  (apply (function nsubstitute-if) new-item (complement predicate) (copy-seq sequence) rest))
+
+
 
 
 
@@ -186,4 +267,3 @@ LEGAL
 
 
 ;;;; THE END ;;;;
-

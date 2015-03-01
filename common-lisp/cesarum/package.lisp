@@ -474,12 +474,14 @@ RETURN:     The package named PACKAGE-NAME if found, or NIL.
         (unless (registeredp package-name)
           (prog1
               (or
-               (common-lisp:load (object-dir path)
+               (#+mocl COM.INFORMATIMAGO.MOCL.KLUDGES.MISSING:load
+                #-mocl common-lisp:load (object-dir path)
                                  :verbose verbose
                                  :print print
                                  :if-does-not-exist nil
                                  :external-format external-format)
-               (common-lisp:load path
+               (#+mocl COM.INFORMATIMAGO.MOCL.KLUDGES.MISSING:load
+                #-mocl common-lisp:load path
                                  :verbose verbose
                                  :print print
                                  :if-does-not-exist if-does-not-exist

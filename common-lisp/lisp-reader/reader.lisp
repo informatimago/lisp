@@ -1320,9 +1320,10 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_set_ma.htm>
 to enable TRACE and redefinitions of the dispatch macro character function."
   (set-dispatch-macro-character
    disp-char sub-char
-   (compile nil
-            (let ((s (gensym)) (c (gensym)) (a (gensym)))
-              `(lambda (,s ,c ,a) (,function-name ,s ,c ,a))))
+   #+mocl (lambda (s c a) (funcall function-name s c a))
+   #-mocl (compile nil
+                   (let ((s (gensym)) (c (gensym)) (a (gensym)))
+                     `(lambda (,s ,c ,a) (,function-name ,s ,c ,a))))
    readtable))
 
 (defun set-indirect-macro-character (char function-name
@@ -1331,9 +1332,10 @@ to enable TRACE and redefinitions of the dispatch macro character function."
 to enable TRACE and redefinitions of the macro character function."
   (set-macro-character
    char
-   (compile nil
-            (let ((s (gensym)) (a (gensym)))
-              `(lambda (,s ,a) (,function-name ,s ,a))))
+   #+mocl (lambda (s c) (funcall function-name s c))
+   #-mocl (compile nil
+                   (let ((s (gensym)) (a (gensym)))
+                     `(lambda (,s ,a) (,function-name ,s ,a))))
    readtable))
 
 

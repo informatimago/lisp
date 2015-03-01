@@ -391,7 +391,7 @@ DO:         Displays the contents of the working directory and
            (change-working-directory 
             (child-directory (working-directory) (elt subdirs (1- answer)))))
           (t (load (cdr (elt files (- answer (length subdirs) 1)))
-                   :verbose t)))))))
+              :verbose t)))))))
 
 
 (defun resolve (path &key (directory nil))

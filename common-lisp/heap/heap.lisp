@@ -392,8 +392,8 @@ but some types are used only for array cells (ie. unboxed values)."
                                        (cvm-find-package ,(cdr type)))))
                 (cvm-structure-ref self 0))))
       ,@(loop
-           :for field :in fields
-           :for index :from 1
+          :for field :in fields
+          :for index :from 1
           :append (let ((cst (intern (format nil "+~A-~A+" name field)))
                         (get (intern (format nil "CVM-~A-~A" name field)))
                         (set (intern (format nil "CVM-~A-SET-~A" name field))))
@@ -423,13 +423,13 @@ but some types are used only for array cells (ie. unboxed values)."
 ;;--------------------------
 
 (cvm-define-structure hh
-    ;; the only instance of this structure is stored in the common heap. 
-    ("HEAP-HEADER" . "SYSTEM")
-  size                                  ; ct-fixnum
-  free-blocks                           ; ct-vector of ct-free-block
-  root                             ; ct-nil or ct-address to a ct-cons
-  new-generation              ; ct-nil or ct-address to a ct-vector-fp
-  reserved)
+                      ;; the only instance of this structure is stored in the common heap. 
+                      ("HEAP-HEADER" . "SYSTEM")
+                      size       ; ct-fixnum
+                      free-blocks     ; ct-vector of ct-free-block
+                      root       ; ct-nil or ct-address to a ct-cons
+                      new-generation ; ct-nil or ct-address to a ct-vector-fp
+                      reserved)
 
 
 ;; We need to keep a new-generation list for partially allocated objects

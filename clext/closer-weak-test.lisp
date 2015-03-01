@@ -126,6 +126,10 @@
 (defun my-eval (form)
   (when *eval-out* (get-output-stream-string *eval-out*))
   (when *eval-err* (get-output-stream-string *eval-err*))
+  #+mocl
+  (ecase *eval-method*
+    (:eval (eval form)))
+  #-mocl
   (ecase *eval-method*
     (:eval (eval form))
     (:compile (funcall (compile nil `(lambda () ,form))))

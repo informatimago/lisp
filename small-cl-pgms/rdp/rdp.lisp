@@ -275,7 +275,8 @@ NOTE:       The grammar is not added to the *grammars* map.
                               (grammar-all-non-terminals grammar))
                     ,(generate-parser target-language grammar))))
      (if compile
-         (funcall (compile nil `(lambda () ,code)))
+         (funcall #+mocl (coerce `(lambda () ,code) 'function)
+                  #-mocl (compile nil `(lambda () ,code)))
          (eval code)))
     grammar))
 
