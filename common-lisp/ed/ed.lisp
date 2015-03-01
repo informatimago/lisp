@@ -43,6 +43,30 @@
 
 (in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.ED.ED"
+  (:use "COMMON-LISP")
+  #+mocl (:shadowing-import-from "COM.INFORMATIMAGO.MOCL.KLUDGES.MISSING"
+                                 "*TRACE-OUTPUT*"
+                                 "*LOAD-VERBOSE*"
+                                 "*LOAD-PRINT*"
+                                 "ARRAY-DISPLACEMENT"
+                                 "CHANGE-CLASS"
+                                 "COMPILE"
+                                 "COMPLEX"
+                                 "ENSURE-DIRECTORIES-EXIST"
+                                 "FILE-WRITE-DATE"
+                                 "INVOKE-DEBUGGER" "*DEBUGGER-HOOK*"
+                                 "LOAD"
+                                 "LOGICAL-PATHNAME-TRANSLATIONS"
+                                 "MACHINE-INSTANCE"
+                                 "MACHINE-VERSION"
+                                 "NSET-DIFFERENCE"
+                                 "RENAME-FILE"
+                                 "SUBSTITUTE-IF"
+                                 "TRANSLATE-LOGICAL-PATHNAME"
+                                 "PRINT-NOT-READABLE"
+                                 "PRINT-NOT-READABLE-OBJECT")
+  (:shadow "ED")
+  (:export "ED")
   (:documentation
    "
 This package exports an implementation of the COMMON-LISP ED function
@@ -78,8 +102,8 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2003 - 2012
-    
+    Copyright Pascal J. Bourguignon 2003 - 2015
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -94,10 +118,7 @@ License:
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
 
-")
-  (:use "COMMON-LISP")
-  (:shadow "ED")
-  (:export "ED"))
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.ED.ED")
 
 

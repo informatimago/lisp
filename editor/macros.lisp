@@ -54,7 +54,7 @@
          (inter (find 'interactive decls :key (function first))))
     (if inter
         `(progn
-           (compile (cl:defun ,name ,arguments ,@body))
+           (cl:defun ,name ,arguments ,@body)
            (setf (gethash ',name           *interactive-decls*) ',inter
                  (gethash (function ,name) *interactive-decls*) ',inter)
            ',name)
@@ -70,10 +70,9 @@
   (let* ((decls (mapcan (function rest) (extract-declarations body)))
          (inter (find 'interactive decls :key (function first))))
     (if inter
-        `(progn
-           (let ((fun (compile nil '(cl:lambda ,arguments ,@body))))
-             (setf (gethash fun *interactive-decls*) ',inter)
-             fun))
+        `(flet ((anonymous-function ,arguments ,@body))
+           (setf (gethash (function anonymous-function) *interactive-decls*) ',inter)
+           (function anonymous-function))
         `(cl:lambda  ,arguments ,@body))))
 
 

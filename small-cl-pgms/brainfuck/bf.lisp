@@ -37,6 +37,27 @@
 
 (defpackage "COM.INFORMATIMAGO.SMALL-CL-PGMS.BRAINFUCK"
   (:use "COMMON-LISP")
+  #+mocl (:shadowing-import-from "COM.INFORMATIMAGO.MOCL.KLUDGES.MISSING"
+                                 "*TRACE-OUTPUT*"
+                                 "*LOAD-VERBOSE*"
+                                 "*LOAD-PRINT*"
+                                 "ARRAY-DISPLACEMENT"
+                                 "CHANGE-CLASS"
+                                 "COMPILE"
+                                 "COMPLEX"
+                                 "ENSURE-DIRECTORIES-EXIST"
+                                 "FILE-WRITE-DATE"
+                                 "INVOKE-DEBUGGER" "*DEBUGGER-HOOK*"
+                                 "LOAD"
+                                 "LOGICAL-PATHNAME-TRANSLATIONS"
+                                 "MACHINE-INSTANCE"
+                                 "MACHINE-VERSION"
+                                 "NSET-DIFFERENCE"
+                                 "RENAME-FILE"
+                                 "SUBSTITUTE-IF"
+                                 "TRANSLATE-LOGICAL-PATHNAME"
+                                 "PRINT-NOT-READABLE"
+                                 "PRINT-NOT-READABLE-OBJECT")
   (:export "BFVM" "MAKE-BFVM" "BFVM-MEM" "BFVM-MC" "BFVM-PGM" "BFVM-PC")
   (:export "BFLOAD" "BFVM-RUN")
   (:export "BFCOMPILE-FILE" "BFCOMPILE" "*BFCOMPILE*"))

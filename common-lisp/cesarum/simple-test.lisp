@@ -40,6 +40,25 @@
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SIMPLE-TEST"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM")
+  #+mocl (:shadowing-import-from "COM.INFORMATIMAGO.MOCL.KLUDGES.MISSING"
+                          "*TRACE-OUTPUT*"
+                          "*LOAD-VERBOSE*"
+                          "*LOAD-PRINT*"
+                          "ARRAY-DISPLACEMENT"
+                          "CHANGE-CLASS"
+                          "COMPILE"
+                          "COMPLEX"
+                          "ENSURE-DIRECTORIES-EXIST"
+                          "FILE-WRITE-DATE"
+                          "INVOKE-DEBUGGER" "*DEBUGGER-HOOK*"
+                          "LOAD"
+                          "LOGICAL-PATHNAME-TRANSLATIONS"
+                          "MACHINE-INSTANCE"
+                          "MACHINE-VERSION"
+                          "NSET-DIFFERENCE"
+                          "RENAME-FILE"
+                          "SUBSTITUTE-IF"
+                          "TRANSLATE-LOGICAL-PATHNAME")
   (:export "*DEBUG-ON-ERROR*" "WITH-DEBUGGER-ON-ERROR"
            "DEFINE-TEST" "TEST" "ASSERT-TRUE" "ASSERT-FALSE" "EXPECT-CONDITION"
 
@@ -113,9 +132,6 @@ License:
                                      :fill-pointer 0))
   (values))
 
-
-#+mocl (defvar *load-verbose* nil)
-#+mocl (defvar *load-print*   nil)
 
 (defun verbose (default)
   (and default

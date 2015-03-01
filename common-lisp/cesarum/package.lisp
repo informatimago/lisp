@@ -134,8 +134,27 @@ License:
 
 
 ")
-  (:use "COMMON-LISP")
-  (:use "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
+  (:use "COMMON-LISP"
+         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
+  (:shadowing-import-from "COM.INFORMATIMAGO.MOCL.KLUDGES.MISSING"
+                          "*TRACE-OUTPUT*"
+                          "*LOAD-VERBOSE*"
+                          "*LOAD-PRINT*"
+                          "ARRAY-DISPLACEMENT"
+                          "CHANGE-CLASS"
+                          "COMPILE"
+                          "COMPLEX"
+                          "ENSURE-DIRECTORIES-EXIST"
+                          "FILE-WRITE-DATE"
+                          "INVOKE-DEBUGGER" "*DEBUGGER-HOOK*"
+                          "LOAD"
+                          "LOGICAL-PATHNAME-TRANSLATIONS"
+                          "MACHINE-INSTANCE"
+                          "MACHINE-VERSION"
+                          "NSET-DIFFERENCE"
+                          "RENAME-FILE"
+                          "SUBSTITUTE-IF"
+                          "TRANSLATE-LOGICAL-PATHNAME")
   (:export "PACKAGE-EXPORTS" ;; missing from CL or not?
            "*PACKAGES*" "PACKAGE-PATHNAME" "LOAD-PACKAGE"
            "PACKAGE-SYSTEM-DEFINITION"
@@ -434,9 +453,6 @@ DO:         Force registering the PACKAGE into the loaded *PACKAGES*.
     :defaults path)
    path))
 
-
-#+mocl (defvar *load-verbose* nil)
-#+mocl (defvar *load-print*   nil)
 
 (defun load-package (package-name
                      &key (verbose *load-verbose*) (print *load-print*)

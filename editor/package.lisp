@@ -39,6 +39,23 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DLL"
         "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
+  #+mocl (:shadowing-import-from "COM.INFORMATIMAGO.MOCL.KLUDGES.MISSING"
+                                 "*TRACE-OUTPUT*"
+                                 "ARRAY-DISPLACEMENT"
+                                 "CHANGE-CLASS"
+                                 "COMPILE"
+                                 "COMPLEX"
+                                 "ENSURE-DIRECTORIES-EXIST"
+                                 "FILE-WRITE-DATE"
+                                 "INVOKE-DEBUGGER" "*DEBUGGER-HOOK*"
+                                 "LOAD"
+                                 "LOGICAL-PATHNAME-TRANSLATIONS"
+                                 "MACHINE-INSTANCE"
+                                 "MACHINE-VERSION"
+                                 "NSET-DIFFERENCE"
+                                 "RENAME-FILE"
+                                 "SUBSTITUTE-IF"
+                                 "TRANSLATE-LOGICAL-PATHNAME")
   (:shadow "DEFUN" "LAMBDA" "ED" "ERROR")
   (:export "DEFUN" "LAMBDA" "ED")
   (:export "SCREEN-EDITOR" "EDITOR")

@@ -92,6 +92,27 @@
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.HEAP.MEMORY"
         "COM.INFORMATIMAGO.COMMON-LISP.DATA-ENCODING.IEEE-754")
+  #+mocl (:shadowing-import-from "COM.INFORMATIMAGO.MOCL.KLUDGES.MISSING"
+                                 "*TRACE-OUTPUT*"
+                                 "*LOAD-VERBOSE*"
+                                 "*LOAD-PRINT*"
+                                 "ARRAY-DISPLACEMENT"
+                                 "CHANGE-CLASS"
+                                 "COMPILE"
+                                 ;; "COMPLEX"
+                                 "ENSURE-DIRECTORIES-EXIST"
+                                 "FILE-WRITE-DATE"
+                                 "INVOKE-DEBUGGER" "*DEBUGGER-HOOK*"
+                                 "LOAD"
+                                 "LOGICAL-PATHNAME-TRANSLATIONS"
+                                 "MACHINE-INSTANCE"
+                                 "MACHINE-VERSION"
+                                 "NSET-DIFFERENCE"
+                                 "RENAME-FILE"
+                                 "SUBSTITUTE-IF"
+                                 "TRANSLATE-LOGICAL-PATHNAME"
+                                 "PRINT-NOT-READABLE"
+                                 "PRINT-NOT-READABLE-OBJECT")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "WSIOSBP" "DEFENUM")
   (:export "SET-COMMON" "GET-COMMON" "WITH-COMMON-LOCK" "*COMMON-VARIABLES*"
            "DEFCOMMON" "COMMON-INITIALIZE")
@@ -164,7 +185,6 @@ License:
      ")))
 (defvar *debug* nil)
 
-#+mocl (defvar *trace-output* *standard-output*)
 
 (defmacro when-debug (what &body body)
   (cond
@@ -2356,6 +2376,7 @@ DO:     Initialize the heap in *gc-memory*.
       ((typep value 'single-float) (cvm-form-single-float     value))
       (t (error "double-float and long-float unsupported yet."))))
   (:method ((value ratio))         (declare (ignorable value)) (error "No ratio yet."))
+  #-mocl
   (:method ((value complex))       (declare (ignorable value)) (error "No complex yet."))
   ;; 1- allocate the current node and store it to the ld hash before
   ;; 2- allocating the sub-nodes.

@@ -48,6 +48,23 @@
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ASCII"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM")
+    #+mocl (:shadowing-import-from "COM.INFORMATIMAGO.MOCL.KLUDGES.MISSING"
+                                 "*TRACE-OUTPUT*"
+                                 "ARRAY-DISPLACEMENT"
+                                 "CHANGE-CLASS"
+                                 "COMPILE"
+                                 "COMPLEX"
+                                 "ENSURE-DIRECTORIES-EXIST"
+                                 "FILE-WRITE-DATE"
+                                 "INVOKE-DEBUGGER" "*DEBUGGER-HOOK*"
+                                 "LOAD"
+                                 "LOGICAL-PATHNAME-TRANSLATIONS"
+                                 "MACHINE-INSTANCE"
+                                 "MACHINE-VERSION"
+                                 "NSET-DIFFERENCE"
+                                 "RENAME-FILE"
+                                 "SUBSTITUTE-IF"
+                                 "TRANSLATE-LOGICAL-PATHNAME")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM"
                 "CONTENTS-FROM-STREAM"
                 "STREAM-TO-STRING-LIST" "COPY-STREAM" "COPY-OVER")

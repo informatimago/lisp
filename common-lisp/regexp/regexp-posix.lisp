@@ -1446,7 +1446,7 @@ DO:     complements the set.
 
 
 (defstruct (rnode
-             (:print-function print-rnode))
+            (:print-function print-rnode))
   "A rnode represent a compiled regexp node"
   ;; code:
   (matchf   nil)

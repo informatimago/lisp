@@ -47,7 +47,23 @@
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
-
+  #+mocl (:shadowing-import-from "COM.INFORMATIMAGO.MOCL.KLUDGES.MISSING"
+                                 "*TRACE-OUTPUT*"
+                                 "ARRAY-DISPLACEMENT"
+                                 "CHANGE-CLASS"
+                                 "COMPILE"
+                                 "COMPLEX"
+                                 "ENSURE-DIRECTORIES-EXIST"
+                                 "FILE-WRITE-DATE"
+                                 "INVOKE-DEBUGGER" "*DEBUGGER-HOOK*"
+                                 "LOAD"
+                                 "LOGICAL-PATHNAME-TRANSLATIONS"
+                                 "MACHINE-INSTANCE"
+                                 "MACHINE-VERSION"
+                                 "NSET-DIFFERENCE"
+                                 "RENAME-FILE"
+                                 "SUBSTITUTE-IF"
+                                 "TRANSLATE-LOGICAL-PATHNAME")
   (:export
    "*STEP-PACKAGE*"
    "*STEP-PRINT-READABLY*" 
@@ -90,7 +106,7 @@ COM.INFORMATIMAGO.COMMON-LISP.LISP.STEPPER.
 BUGS: we should probably design it with hooks so that clients may
       define the stepping/tracing user interface.
 
-Copyright Pascal J. Bourguignon 2012 - 2012
+Copyright Pascal J. Bourguignon 2012 - 2015
 This package is provided under the Afero General Public License 3.
 See the source file for details.
 
@@ -106,7 +122,24 @@ See the source file for details.
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM"
         "COM.INFORMATIMAGO.COMMON-LISP.LISP.STEPPER.INTERNAL")
-
+  
+  #+mocl (:shadowing-import-from "COM.INFORMATIMAGO.MOCL.KLUDGES.MISSING"
+                                 "*TRACE-OUTPUT*"
+                                 "ARRAY-DISPLACEMENT"
+                                 "CHANGE-CLASS"
+                                 "COMPILE"
+                                 "COMPLEX"
+                                 "ENSURE-DIRECTORIES-EXIST"
+                                 "FILE-WRITE-DATE"
+                                 "INVOKE-DEBUGGER" "*DEBUGGER-HOOK*"
+                                 "LOAD"
+                                 "LOGICAL-PATHNAME-TRANSLATIONS"
+                                 "MACHINE-INSTANCE"
+                                 "MACHINE-VERSION"
+                                 "NSET-DIFFERENCE"
+                                 "RENAME-FILE"
+                                 "SUBSTITUTE-IF"
+                                 "TRANSLATE-LOGICAL-PATHNAME")
   (:shadow ;; macros
    "DEFUN" "DEFGENERIC" "DEFMETHOD" "LAMBDA"
    "DEFINE-CONDITION"
@@ -232,7 +265,7 @@ use the (declare (stepper trace)) declaration.
 
 
 
-Copyright Pascal J. Bourguignon 2012 - 2012
+Copyright Pascal J. Bourguignon 2012 - 2015
 This package is provided under the Afero General Public License 3.
 See the source file for details.
 

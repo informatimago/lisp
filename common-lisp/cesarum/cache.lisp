@@ -386,6 +386,7 @@ RETURN: If the file (cache-index-file-path self) exists
   "
 DO:     Load the cache index from the file (cache-index-file-path self).
 "
+  #+debug-COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CACHE
   (format *trace-output* "~&Loading cache ~S~%" (cache-index-file-path self))
   (with-open-file (file (cache-index-file-path self)
                         :direction :input :if-does-not-exist :error)
@@ -433,6 +434,7 @@ DO:     Load the cache index from the file (cache-index-file-path self).
   "
 DO:     Save the cache index to the file (cache-index-file-path self).
 "
+  #+debug-COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CACHE
   (format *trace-output* "~&Saving cache ~S~%" (cache-index-file-path self))
   (ensure-directories-exist (cache-index-file-path self))
   (let ((tmp-name (make-pathname :type "NEW"
@@ -519,12 +521,11 @@ RETURN:  the value stored in the CACHE for the KEY;
     (cond
       ((or (null entry)                 ; no entry ==> fetch
            (< (entry-expire-date entry) (get-universal-time)))
+       #+debug-COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CACHE
        (if (null entry)
-           (format *trace-output*
-             "~&(cache-get ~S): No cache entry ==> fetch~%" key)
-           (format *trace-output*
-             "~&(cache-get ~S): expired (~A<~A) ==> fetch~%"
-             key (entry-expire-date entry) (get-universal-time)))
+           (format *trace-output* "~&(cache-get ~S): No cache entry ==> fetch~%" key)
+           (format *trace-output* "~&(cache-get ~S): expired (~A<~A) ==> fetch~%"
+                   key (entry-expire-date entry) (get-universal-time)))
        #+(or)(invoke-debugger (make-condition 'simple-error
                                               :format-control "~&~S not in ~S~%"
                                               :format-arguments (list key (slot-value self 'index) self)))
@@ -548,6 +549,7 @@ RETURN:  the value stored in the CACHE for the KEY;
            (synchronize-cache self)
            (values value :fetched))))
       ((entry-value-p entry)            ; ==> in core
+       #+debug-COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CACHE
        (format *trace-output* "~&(cache-get ~S): got it in core~%" key)
        (values (entry-value entry) :in-core))
       (t                                ; ==> read from disk
@@ -558,6 +560,7 @@ RETURN:  the value stored in the CACHE for the KEY;
                         (let ((*read-eval* nil)) (read in)))))
            (setf (entry-value entry) value
                  (entry-value-p entry) t)
+           #+debug-COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CACHE
            (format *trace-output* "~&(cache-get ~S): read from disk~%" key)
            (values value :on-disk)))))))
 
