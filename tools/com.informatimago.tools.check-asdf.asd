@@ -42,5 +42,8 @@
                   "com.informatimago.tools.script") 
     :components ((:file "dependency-cycles")
                  (:file "check-asdf" :depends-on ("dependency-cycles"))))
+                 (:file "asdf-file"  :depends-on ("dependency-cycles" "script"))
+                 #-abcl (:file "script")
+                 (:file "check-asdf" :depends-on ("dependency-cycles" "asdf-file"))))
 
 ;;;; THE END ;;;;

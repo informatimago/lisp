@@ -390,7 +390,6 @@ RETURN:        MIN; MAX"
                                    ((:key this-key) '(function identity))
                                    ((:copy this-copy) '(function identity))
                                    &allow-other-keys) this
-      (declare (ignore this-copy))
       (multiple-value-bind (this-min this-max) (multiplicity this-multiplicity)
         (let ((this-implementation (or this-implementation
                                        (if (equal 1 this-max) 'reference 'list)))
@@ -460,7 +459,7 @@ RETURN:        MIN; MAX"
                                    ((:test this-test) '(function eql))
                                    ((:copy this-copy) '(function identity))
                                    &allow-other-keys) this
-      (declare (ignore this-role this-copy))
+      (declare (ignore this-role))
       (multiple-value-bind (this-min this-max) (multiplicity this-multiplicity)
         (declare (ignore this-min))
         (let ((this-implementation (or this-implementation

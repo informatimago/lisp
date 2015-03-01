@@ -506,7 +506,6 @@ some constraints may be different from one lambda-list to the other."))
   (:method ((self or-ll)) (not (not (lambda-list-keyword-parameters self)))))
 
 
-
 (defclass orake-ll (orak-ll)
   ((environment      :accessor lambda-list-environment-parameter
                      :initarg :environment-parameter
