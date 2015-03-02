@@ -31,11 +31,11 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
-(defpackage "COM.INFORMATIMAGO.TOOLS.THREADS"
+(defpackage "COM.INFORMATIMAGO.TOOLS.THREAD"
   (:use "COMMON-LISP"
         "BORDEAUX-THREADS")
   (:export "LIST-THREADS" "KILL-THREAD"))
-(in-package "COM.INFORMATIMAGO.TOOLS.THREADS")
+(in-package "COM.INFORMATIMAGO.TOOLS.THREAD")
 
 (defun list-threads (&optional (threads (bt:all-threads)) (*standard-output* *standard-output*))
   (loop

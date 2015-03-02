@@ -1,12 +1,12 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               kill-thread-test.lisp
+;;;;FILE:               thread-test.lisp
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    Test kill-thread.lisp
+;;;;    Test thread.lisp
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
@@ -31,12 +31,12 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
-(defpackage "COM.INFORMATIMAGO.TOOLS.KILL-THREAD.TEST"
+(defpackage "COM.INFORMATIMAGO.TOOLS.THREAD.TEST"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SIMPLE-TEST"
         "COM.INFORMATIMAGO.TOOLS.KILL-THREAD")
   (:export "TEST/ALL"))
-(in-package "COM.INFORMATIMAGO.TOOLS.KILL-THREAD.TEST")
+(in-package "COM.INFORMATIMAGO.TOOLS.THREAD.TEST")
  
 (define-test test/all ()
   :success)
