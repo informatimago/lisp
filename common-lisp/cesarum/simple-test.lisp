@@ -239,28 +239,29 @@ License:
 (defun progress-tally (success-count failure-count)
   (when (verbose *verbose-tally*)
     (let ((name-max-length 40))
-     (flet ((genline (name)
-              (format nil "~VA~5D ~A,~3D ~9A~:[,~3D ~8A~;~]."
-                      name-max-length name
-                      (+ success-count failure-count)
-                      (format nil "test~P" (+ success-count failure-count))
-                      success-count (format nil "success~[es~;~:;es~]" success-count)
-                      (zerop failure-count)
-                      failure-count (format nil "failure~P" failure-count))))
-       (format *test-output* "~&~A~%"
-               (genline  (current-test-identification name-max-length)))
-       (finish-output *test-output*)
-       ;; (let* ((test-name (current-test-identification name-max-length))
-       ;;        (data (genline ""))
-       ;;        (nlen (length test-name)))
-       ;;   (format *test-output* "~&~A~%" 
-       ;;           (if (and (< nlen (+ name-max-length 4)) (char= #\space (aref data nlen)))
-       ;;               (progn
-       ;;                 (replace data test-name)
-       ;;                 data)
-       ;;               (genline (concatenate 'string (subseq test-name 0 43) "…"))))
-       ;;   (finish-output *test-output*))
-       )))
+      (flet ((write-tally (name)
+               (format *test-output* "~&~VA~
+                       ~5D test~:*~P,~:*~[~; ~;~]~
+                       ~4D success~:*~[es~;~:;es~]~
+                       ~:[,~2:*~[~;  ~;~]~*~4D failure~:*~P~;~].~%"
+                       name-max-length name
+                       (+ success-count failure-count) 
+                       success-count
+                       (zerop failure-count)
+                       failure-count)))
+        (write-tally (current-test-identification name-max-length))
+        (force-output *test-output*)
+        ;; (let* ((test-name (current-test-identification name-max-length))
+        ;;        (data (genline ""))
+        ;;        (nlen (length test-name)))
+        ;;   (format *test-output* "~&~A~%" 
+        ;;           (if (and (< nlen (+ name-max-length 4)) (char= #\space (aref data nlen)))
+        ;;               (progn
+        ;;                 (replace data test-name)
+        ;;                 data)
+        ;;               (genline (concatenate 'string (subseq test-name 0 43) "…"))))
+        ;;   (finish-output *test-output*))
+        )))
   (values))
 
 
