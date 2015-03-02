@@ -55,10 +55,10 @@ This system would use closer-mop which is not available on MOCL.
   :depends-on ("com.informatimago.common-lisp.cesarum"
                "com.informatimago.common-lisp.picture"
                "com.informatimago.clext"
-               "com.informatimago.tools.check-asdf"
                "closer-mop") 
   :components ((:file "source")
-               (:file "asdf-file" :depends-on ("source"))
+               (:file "dependency-cycles")
+               (:file "asdf-file"  :depends-on ("dependency-cycles" "source"))
                #-(and) (:file "analyse-patchwork")))
 
 

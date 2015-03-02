@@ -80,4 +80,14 @@
   "Whether the function FUNCDESC is INTERACTIVE."
   (gethash fundesc *interactive-decls*))
 
+
+(defun getenv (var)
+  #+asdf3 (uiop/os:getenv var)
+  #-asdf3 (asdf:getenv    var))
+
+(defun (setf getenv) (new-val var)
+  #+asdf3 (setf (uiop/os:getenv var) new-val)
+  #-asdf3 (setf (asdf:getenv    var) new-val))
+
+
 ;;;; THE END ;;;;

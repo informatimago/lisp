@@ -2041,10 +2041,6 @@ These commands include C-@ and M-x start-kbd-macro."
 
 
 
-(defun getenv (var)
-  #-asdf3 (ASDF:GETENV var)
-  #+asdf3 (uiop/os:getenv var))
-
 
 (defun screen-editor (&key log (screen-class 'charms-screen))
   (with-open-stream (*log* (typecase log

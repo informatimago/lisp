@@ -13,6 +13,9 @@
 ;;;;MODIFICATIONS
 ;;;;    2013-03-25 <PJB> Created.
 ;;;;BUGS
+;;;;
+;;;;    - remove dependency on script (use uiop instead).
+;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    

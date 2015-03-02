@@ -35,8 +35,10 @@
 ;;;;**************************************************************************
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (unless (find-package :asdf)
-    (defpackage :asdf (:use :cl) (:export "DEFSYSTEM"))))
+  (unless (find-package "ASDF")
+    (defpackage "ASDF" (:use "COMMON-LISP") (:export "DEFSYSTEM")))
+  (unless (find-package "UIOP")
+    (defpackage "UIOP" (:use "COMMON-LISP") (:export "SYMBOL-CALL"))))
 
 
 (defpackage "COM.INFORMATIMAGO.TOOLS.ASDF-FILE"

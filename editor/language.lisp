@@ -32,8 +32,7 @@ to language names (as keyword).")
            #+clisp (intern (string custom:*current-language*) "KEYWORD")
            ;; Otherwise if we have ASDF, we try to get the environment variable LANG:
            #+(and (not clisp) asdf)
-           (let* ((lang #-asdf3 (ASDF:GETENV "LANG")
-                        #+asdf3 (uiop/os:getenv "LANG"))
+           (let* ((lang (getenv "LANG"))
                   (entry (assoc lang *languages* :test (function string-equal))))
              (if entry
                  (cdr entry)
