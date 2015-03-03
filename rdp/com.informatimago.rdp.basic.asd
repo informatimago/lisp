@@ -32,43 +32,29 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.rdp.basic
-
-    ;; system attributes:
-    
-    :description "Methods to generate the parsers in BASIC using the Recursive Descent Parser Generator."
-
-    :long-description "
+(asdf:defsystem "com.informatimago.rdp.basic"
+  ;; system attributes:
+  :description "Recursive Descent Parser Generator -- BASIC Generator"
+  :long-description "
 
 Provides methods specialized on the :basic target-language, to emit a generator in BASIC.
 
 "
-
-    :author "Pascal J. Bourguignon <pjb@informatimago.com>"
-
-    :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-    
-
-    :licence "AGPL3"
-
-    ;; component attributes:
-    
-    :name "Recursive Descent Parser Generator -- BASIC generator"
-
-    :version "1.0.1"
-    
-    :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Summer 2011")
-                 ((#:albert #:output-dir)          . "../documentation/com.informatimago.rdp.basic/")
-                 ((#:albert #:formats)             . ("docbook"))
-                 ((#:albert #:docbook #:template)  . "book")
-                 ((#:albert #:docbook #:bgcolor)   . "white")
-                 ((#:albert #:docbook #:textcolor) . "black"))
-    
-    #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
-    :depends-on ("com.informatimago.rdp")
-    
-    :components ((:file "rdp-basic-gen")))
+  :author "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :licence "AGPL3"
+  ;; component attributes:
+  :version "1.0.1"
+  :properties ((#:author-email                   . "pjb@informatimago.com")
+               (#:date                           . "Summer 2011")
+               ((#:albert #:output-dir)          . "../documentation/com.informatimago.rdp.basic/")
+               ((#:albert #:formats)             . ("docbook"))
+               ((#:albert #:docbook #:template)  . "book")
+               ((#:albert #:docbook #:bgcolor)   . "white")
+               ((#:albert #:docbook #:textcolor) . "black"))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8
+  :depends-on ("com.informatimago.rdp")
+  :components ((:file "rdp-basic-gen"))
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.rdp.basic.test"))))
 
 ;;;; THE END ;;;;

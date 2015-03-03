@@ -44,10 +44,35 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
 
-(in-package "COMMON-LISP-USER")
-(declaim (declaration also-use-packages))
-(declaim (also-use-packages "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ASCII"))
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE"
+  (:use "COMMON-LISP"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ASCII"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM")
+    #+mocl (:shadowing-import-from "COM.INFORMATIMAGO.MOCL.KLUDGES.MISSING"
+                                 "*TRACE-OUTPUT*"
+                                 "ARRAY-DISPLACEMENT"
+                                 "CHANGE-CLASS"
+                                 "COMPILE"
+                                 "COMPLEX"
+                                 "ENSURE-DIRECTORIES-EXIST"
+                                 "FILE-WRITE-DATE"
+                                 "INVOKE-DEBUGGER" "*DEBUGGER-HOOK*"
+                                 "LOAD"
+                                 "LOGICAL-PATHNAME-TRANSLATIONS"
+                                 "MACHINE-INSTANCE"
+                                 "MACHINE-VERSION"
+                                 "NSET-DIFFERENCE"
+                                 "RENAME-FILE"
+                                 "SUBSTITUTE-IF"
+                                 "TRANSLATE-LOGICAL-PATHNAME")
+  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM"
+                "CONTENTS-FROM-STREAM"
+                "STREAM-TO-STRING-LIST" "COPY-STREAM" "COPY-OVER")
+  (:export "REMOVE-FIRST-LINES" "BINARY-FILE-CONTENTS"
+           "SAFE-TEXT-FILE-TO-STRING-LIST"
+           "STRING-LIST-TEXT-FILE-CONTENTS" "TEXT-FILE-CONTENTS"
+           "SEXP-FILE-CONTENTS" "SEXP-LIST-FILE-CONTENTS"
+           "COPY-FILE" "COPY-DIRECTORY")
   (:documentation
    "
 
@@ -85,17 +110,7 @@ License:
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
-")
-  (:use "COMMON-LISP"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM")
-  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM"
-                "CONTENTS-FROM-STREAM"
-                "STREAM-TO-STRING-LIST" "COPY-STREAM" "COPY-OVER")
-  (:export "REMOVE-FIRST-LINES" "BINARY-FILE-CONTENTS"
-           "SAFE-TEXT-FILE-TO-STRING-LIST"
-           "STRING-LIST-TEXT-FILE-CONTENTS" "TEXT-FILE-CONTENTS"
-           "SEXP-FILE-CONTENTS" "SEXP-LIST-FILE-CONTENTS"
-           "COPY-FILE" "COPY-DIRECTORY"))
+"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE")
 
 
@@ -415,9 +430,8 @@ RETURN: The contents of the file as a list of base-string lines.
                     (length data))
      :collect (map 'string
                    (lambda (code)
-                     (if (<= com.informatimago.common-lisp.cesarum.ascii:sp code 126)
-                         (aref com.informatimago.common-lisp.cesarum.ascii:*ascii-characters*
-                               (- code com.informatimago.common-lisp.cesarum.ascii:sp))
+                     (if (<= sp code 126)
+                         (aref *ascii-characters* (- code sp))
                          #\?))
                     (adjust-array cursor (- eol bol)
                                         :displaced-to data
@@ -451,43 +465,5 @@ WARNING:    There's no backup: if the COPY-OVER fails, the file will be left
     (copy-over file (file-position file) 0)))
 
 
-(defun test/accessors (path)
-  (let ((data '(a b c 1 2 3 #(a 1))))
-    (setf (sexp-file-contents path) data)
-    (assert (equalp data (sexp-file-contents path)))
-    (push 0 (sexp-file-contents path))
-    (assert (equalp (cons 0 data) (sexp-file-contents path))))
-  (delete-file path)
-  (let ((data   "
-DO:         Modifies the file at path FILE-NAME, 
-            removing the LINE-COUNT first lines.
-WARNING:    There's no backup: if the COPY-OVER fails, the file will be left
-            in an unspecified state.
-"))
-    (setf (text-file-contents path) data)
-    (assert (string= data (text-file-contents path)))
-    (setf (text-file-contents path :if-exists :append) "A new line")
-    (assert (string= (concatenate 'string data "A new line") (text-file-contents path))))
-  (delete-file path)
-  (let ((data   '(""
-                  "DO:         Modifies the file at path FILE-NAME, "
-                  "            removing the LINE-COUNT first lines."
-                  "WARNING:    There's no backup: if the COPY-OVER fails, the file will be left"
-                  "            in an unspecified state."
-                  "")))
-    (setf (string-list-text-file-contents path) data)
-    (assert (equal data (string-list-text-file-contents path)))
-    (setf (string-list-text-file-contents path :if-exists :append)
-          '("A new line" "And another one"))
-    (assert (equal (append data '("A new line" "And another one"))
-                   (string-list-text-file-contents path))))
-  (delete-file path)
-  (let ((data #(1 2 3 4 5 6 9 0 11 12 13)))
-    (setf (binary-file-contents path) data)
-    (assert (equalp data (binary-file-contents path)))
-    (setf (binary-file-contents path :if-exists :append) data)
-    (assert (equalp (concatenate 'vector data data) (binary-file-contents path))))
-  (delete-file path)
-  :success)
 
 ;;;; THE END ;;;;

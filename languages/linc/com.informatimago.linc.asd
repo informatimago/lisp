@@ -32,13 +32,10 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.linc
-
-    ;; system attributes:
-    
-    :description "LINC Is Not C, but almost.  It allows writing C code as S-exps."
-
-    :long-description "
+(asdf:defsystem "com.informatimago.linc"
+  ;; system attributes:
+  :description "LINC Is Not C, but almost.  It allows writing C code as S-exps."
+  :long-description "
 
 LINC Is Not C, but almost.
 
@@ -53,38 +50,27 @@ the Common Lisp expressions are executed, which will
 generate a corresponding C source.
 
 "
-    
-    
-    :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-
-    :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-
-    :licence "AGPL3"
-
-    ;; component attributes:
-    
-    :name "LINC Is Not C, but almost."
-    
-    :version "0.0.0"
-    
-    :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "2007")
-                 ((#:albert #:output-dir)          . "../documentation/com.informatimago.linc/")
-                 ((#:albert #:formats)             . ("docbook"))
-                 ((#:albert #:docbook #:template)  . "book")
-                 ((#:albert #:docbook #:bgcolor)   . "white")
-                 ((#:albert #:docbook #:textcolor) . "black"))
-    
-    #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
-    :depends-on ("split-sequence"
-                 "closer-mop"
-                 "com.informatimago.common-lisp.cesarum")
-    
-    :components ((:file "packages")
-                 (:file "c-syntax"           :depends-on ("packages"))
-                 (:file "c-operators"        :depends-on ("packages" "c-syntax"))
-                 ;; Not yet (:file "c++-syntax"         :depends-on ("packages"))
-                 (:file "linc"               :depends-on ("packages" "c-syntax" "c-operators"))))
+  :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :licence "AGPL3"
+  ;; component attributes:
+  :version "0.0.0"
+  :properties ((#:author-email                   . "pjb@informatimago.com")
+               (#:date                           . "2007")
+               ((#:albert #:output-dir)          . "../documentation/com.informatimago.linc/")
+               ((#:albert #:formats)             . ("docbook"))
+               ((#:albert #:docbook #:template)  . "book")
+               ((#:albert #:docbook #:bgcolor)   . "white")
+               ((#:albert #:docbook #:textcolor) . "black"))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8
+  :depends-on ("split-sequence"
+               "closer-mop"
+               "com.informatimago.common-lisp.cesarum")
+  :components ((:file "packages")
+               (:file "c-syntax"           :depends-on ("packages"))
+               (:file "c-operators"        :depends-on ("packages" "c-syntax"))
+               ;; Not yet (:file "c++-syntax"         :depends-on ("packages"))
+               (:file "linc"               :depends-on ("packages" "c-syntax" "c-operators")))
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.linc.test"))))
 
 ;;;; THE END ;;;;

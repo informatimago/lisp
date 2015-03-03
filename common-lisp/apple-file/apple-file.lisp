@@ -33,7 +33,6 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.APPLE-FILE.APPLE-FILE"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
@@ -594,7 +593,9 @@
 ;;     #S(resource :type 1179796804 :id 3 :name nil :attributes nil :data #(0 0 6 77 111 110 97 99 111)))
 ;;  (#S(resource :type 1297109842 :id 1005 :name nil :attributes nil :data #(0 9 77 111 110 97 99 111 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 6 0 8 0 44 0 6 1 240 2 168 0 44 0 6 1 240 2 168 0 0 0 0 0 0 0 188 0 0 0 188 0 0 0 0 1 0))))
 ;; 
-;;  (map 'string 'code-char #(0 0 6 77 111 110 97 99 111))"  Monaco"
+;;  (map 'string 'code-char #(0 0 6 77 111 110 97 99 111))
+
+
 
 ;;----------------------------------------------------------------------
 ;; APPLE-FILE
@@ -605,8 +606,6 @@
 
 (define-condition file-type-error (simple-error)
   ())
-
-
 
 
 
@@ -658,30 +657,6 @@ FORK:   (member :info :data :resource)
     ((or (atom a) (atom b)) `(/= ,a ,b))
     (t (cons (tree-structure-and-leaf-difference (car a) (car b) :test test)
              (tree-structure-and-leaf-difference (cdr a) (cdr b) :test test)))))
-
-(defun test/apple-file-fork-pathname ()
-  #+unix
-  (let ((*default-pathname-defaults* #P"/"))
-    (assert
-     (tree-structure-and-leaf-difference 
-      (mapcar (lambda (format)
-                (mapcar (lambda (fork)
-                          (apple-file-fork-pathname (make-pathname :name "test" :type "single" :case :local)
-                                                    format fork))
-                        '(:info :data :resource)))
-              '(:apple-single :apple-double :apple-triple))
-      (list (list (make-pathname :name "test" :type "single" :case :local)
-                  (make-pathname :name "test" :type "single" :case :local)
-                  (make-pathname :name "test" :type "single" :case :local))
-            (list (make-pathname :name "._test" :type "single" :case :local)
-                  (make-pathname :name "test" :type "single" :case :local)
-                  (make-pathname :name "._test" :type "single" :case :local))
-            (list (make-pathname :name "test" :type "info" :case :local)
-                  (make-pathname :name "test" :type "data" :case :local)
-                  (make-pathname :name "test" :type "rsrc" :case :local)))
-      :test 'pathname-match-p)))
-  :success)
-
 
 
 
@@ -886,11 +861,6 @@ FORK:   (member :info :data :resource)
 ;;                       
 ;;                       #S(entry :kind :resource-fork-id :id 2 :offset 3810 :length 286
 ;;                                :decoded #(0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 30 84 104 105 115 32 114 101 115 111 117 114 99 101 32 102 111 114 107 32 105 110 116 101 110 116 105 111 110 97 108 108 121 32 108 101 102 116 32 98 108 97 110 107 32 32 32 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 30 0 0 0 0 0 0 0 0 0 28 0 30 255 255))))
-
-(defun test/all ()
- (test/apple-file-fork-pathname))
-
-(test/all)
 
 
 ;;;; THE END ;;;;

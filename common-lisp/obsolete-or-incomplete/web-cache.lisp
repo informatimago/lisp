@@ -42,9 +42,30 @@
 (declaim (also-use-packages "COM.INFORMATIMAGO.COMMON-LISP.HTML-PARSER.PARSE-HTML"))
 
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.OBSOLETE-OR-INCOMPLEPTE.WEB-CACHE"
-  (:use "COM.INFORMATIMAGO.PA.PROCESS-HTML"
-        "COM.INFORMATIMAGO.PA.HTTP-CLIENT"
-        "COMMON-LISP")
+  (:use "COMMON-LISP"
+        "COM.INFORMATIMAGO.PA.PROCESS-HTML"
+        "COM.INFORMATIMAGO.PA.HTTP-CLIENT")
+  #+mocl (:shadowing-import-from "COM.INFORMATIMAGO.MOCL.KLUDGES.MISSING"
+                                 "*TRACE-OUTPUT*"
+                                 "*LOAD-VERBOSE*"
+                                 "*LOAD-PRINT*"
+                                 "ARRAY-DISPLACEMENT"
+                                 "CHANGE-CLASS"
+                                 "COMPILE"
+                                 "COMPLEX"
+                                 "ENSURE-DIRECTORIES-EXIST"
+                                 "FILE-WRITE-DATE"
+                                 "INVOKE-DEBUGGER" "*DEBUGGER-HOOK*"
+                                 "LOAD"
+                                 "LOGICAL-PATHNAME-TRANSLATIONS"
+                                 "MACHINE-INSTANCE"
+                                 "MACHINE-VERSION"
+                                 "NSET-DIFFERENCE"
+                                 "RENAME-FILE"
+                                 "SUBSTITUTE-IF"
+                                 "TRANSLATE-LOGICAL-PATHNAME"
+                                 "PRINT-NOT-READABLE"
+                                 "PRINT-NOT-READABLE-OBJECT")
   (:export "*CACHE-DIRECTORY-PATH*" "SYNCHRONIZE-CACHE" "FORGET-ALL"
            "FORGET-URI" "FREE-PARSED-HTML-AT-URI" "FREE-RESOURCE-AT-URI"
            "GET-PARSED-HTML-AT-URI" "GET-RESOURCE-AT-URI")

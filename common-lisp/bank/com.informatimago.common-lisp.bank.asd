@@ -32,38 +32,26 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.common-lisp.bank
-
-    ;; system attributes:
-    
-    :description  "Various bank data formats (IBAN, RIB)."
-    
-    :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-
-    :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-
-    :licence "AGPL3"
-
-    
-    ;; component attributes:
-
-    :name "Informatimago Common Lisp Banking Utilities"
-
-    :version "1.2.1"
-
-    :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Autumn 2010")
-                 ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.bank/")
-                 ((#:albert #:formats)             . ("docbook"))
-                 ((#:albert #:docbook #:template)  . "book")
-                 ((#:albert #:docbook #:bgcolor)   . "white")
-                 ((#:albert #:docbook #:textcolor) . "black"))
-    
-    #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
-    :depends-on ("com.informatimago.common-lisp.cesarum")
-    
-    :components ((:file "iban" :depends-on ())
-                 (:file "rib"  :depends-on ("iban"))))
+(asdf:defsystem "com.informatimago.common-lisp.bank"
+  ;; system attributes:
+  :description  "Informatimago Common Lisp Banking Utilities"
+  :long-description "Various bank data formats (IBAN, RIB)."
+  :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :licence "AGPL3"
+  ;; component attributes:
+  :version "1.2.1"
+  :properties ((#:author-email                   . "pjb@informatimago.com")
+               (#:date                           . "Autumn 2010")
+               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.bank/")
+               ((#:albert #:formats)             . ("docbook"))
+               ((#:albert #:docbook #:template)  . "book")
+               ((#:albert #:docbook #:bgcolor)   . "white")
+               ((#:albert #:docbook #:textcolor) . "black"))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8
+  :depends-on ("com.informatimago.common-lisp.cesarum")
+  :components ((:file "iban" :depends-on ())
+               (:file "rib"  :depends-on ("iban")))
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.bank.test"))))
 
 ;;;; THE END ;;;;

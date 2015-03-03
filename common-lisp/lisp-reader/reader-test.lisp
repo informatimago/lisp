@@ -31,7 +31,7 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
-(in-package "COMMON-LISP-USER")
+
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.READER.TEST"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SIMPLE-TEST")
@@ -635,8 +635,7 @@ License:
     (let ((*read-base* 16.))
       (assert-true (every (function potential-number-p) pns)))
     (let ((*read-base* 10.))
-      (assert-true (notany (function potential-number-p) pns))))
-  :success)
+      (assert-true (notany (function potential-number-p) pns)))))
 
 
 (define-test test/all ()
@@ -655,8 +654,7 @@ License:
     (test/vector-with-too-little-data)
     (test/vectors)
     (test/check-symbols)
-    (test/potential-number-p)
-    :success))
+    (test/potential-number-p)))
 
 ;;;; THE END ;;;;
 

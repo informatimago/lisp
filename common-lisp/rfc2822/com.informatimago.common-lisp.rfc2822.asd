@@ -32,40 +32,28 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.common-lisp.rfc2822
-
-    :description  "RFC0822/RFC2822 support funtions."
-
-    :long-description "
+(asdf:defsystem "com.informatimago.common-lisp.rfc2822"
+  :description  "Informatimago Common Lisp RFC0822/RFC2822 Utilities"
+  :long-description "
 
 A few RFC0822/RFC2822 utility fucntions.
 
 "
-        
-    :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-
-    :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-    
-    :licence "AGPL3"
-
-    ;; component attributes:
-    
-    :name "Informatimago Common Lisp RFC2822 Utilities"
-    
-    :version "1.2.1"
-    
-    :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Autumn 2010")
-                 ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.rfc2822/")
-                 ((#:albert #:formats)             . ("docbook"))
-                 ((#:albert #:docbook #:template)  . "book")
-                 ((#:albert #:docbook #:bgcolor)   . "white")
-                 ((#:albert #:docbook #:textcolor) . "black"))
-    
-    #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
-    :depends-on ("com.informatimago.common-lisp.cesarum")
-    
-    :components ((:file "rfc2822" :depends-on ()))) 
+  :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :licence "AGPL3"
+  ;; component attributes:
+  :version "1.2.1"
+  :properties ((#:author-email                   . "pjb@informatimago.com")
+               (#:date                           . "Autumn 2010")
+               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.rfc2822/")
+               ((#:albert #:formats)             . ("docbook"))
+               ((#:albert #:docbook #:template)  . "book")
+               ((#:albert #:docbook #:bgcolor)   . "white")
+               ((#:albert #:docbook #:textcolor) . "black"))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8
+  :depends-on ("com.informatimago.common-lisp.cesarum")
+  :components ((:file "rfc2822" :depends-on ()))
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.rfc2822.test")))) 
 
 ;;;; THE END ;;;;

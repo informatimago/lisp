@@ -329,30 +329,6 @@ RETURN: The lexicographical order of the two lists of numbers.
     (t                   +1)))
 
 
-(defun test/compare-lists-of-numbers ()
-  (dolist (test '((()  ()  0)
-                  ((1) ()  +1)
-                  (()  (1) -1)
-                  ((1) (1) 0)
-                  ((2) (1) +1)
-                  ((1) (2) -1)
-                  ((1 1 1)     (1 1 1)   0)
-                  ((1 1 1 1)   (1 1 1)   +1)
-                  ((1 1 1)     (1 1 1 1) -1)
-                  ((2 1 1)     (1 1 1)   +1)
-                  ((2 1 1 1)   (1 1 1)   +1)
-                  ((2 1 1)     (1 1 1 1) +1)
-                  ((0 1 1)     (1 1 1)   -1)
-                  ((0 1 1 1)   (1 1 1)   -1)
-                  ((0 1 1)     (1 1 1 1) -1)
-                  ((1 2 1 1)   (1 1 1)   +1)
-                  ((1 2 1 1 1) (1 1 1)   +1)
-                  ((1 2 1 1)   (1 1 1 1) +1)
-                  ((1 0 1 1)   (1 1 1)   -1)
-                  ((1 0 1 1 1) (1 1 1)   -1)
-                  ((1 0 1 1)   (1 1 1 1) -1)))
-    (assert (= (compare-lists-of-numbers (first test) (second test))
-               (third test)))))
 
 (defun hms60-to-secondes (seconde minute hour)
   "
@@ -371,23 +347,6 @@ POST:   (or (not (integerp secondes))
   (multiple-value-bind (minutes seconde) (floor secondes 60)
     (multiple-value-bind (hour minute) (floor minutes 60)
       (values seconde minute hour))))
-
-
-(defun test/hms60 ()
-  #||
-  (loop
-     :for secondes :from 0.0 :below 600.0  :by 13.1
-     :do (assert (= secondes
-                    (multiple-value-call (function hms60-to-secondes)
-                      (hms60-from-secondes secondes)))
-                 (secondes)))
-  ||#
-  (loop
-     :for secondes :from 0 :below 4000
-     :do (assert (= secondes
-                    (multiple-value-call (function hms60-to-secondes)
-                      (hms60-from-secondes secondes)))
-                 (secondes))))
 
 
 (defun current-timezone ()
@@ -1316,10 +1275,6 @@ NOTE:           UNIVERSAL-TIME when present gives a base date with
         (adopted-calendar
          ("British Empire")
          (gregorian :year 1752 :month ))
-
-
-    
-    
 
 |#
 

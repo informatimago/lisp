@@ -33,17 +33,15 @@
 ;;;;**************************************************************************
 
 
-#+clisp
-(unless custom:*ansi*
-  (warn "System ~A: clisp should be used with -ansi or (setf custom:*ansi* t) in ~/.clisprc"
-        :com.informatimago.common-lisp.cesarum))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  #+clisp
+  (unless custom:*ansi*
+    (warn "System ~A: clisp should be used with -ansi or (setf custom:*ansi* t) in ~/.clisprc"
+          :com.informatimago.common-lisp.cesarum)))
 
-(asdf:defsystem :com.informatimago.common-lisp.cesarum
-
+(asdf:defsystem "com.informatimago.common-lisp.cesarum"
   ;; system attributes:
-  
   :description  "Various general data types, algorithms, utilities and standards."
-
   :long-description "
 
 This system provides various kinds of packages:
@@ -60,19 +58,11 @@ This system provides various kinds of packages:
 
 all written in 100% conforming Common Lisp.
 "
-  
   :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-  
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-  
   :licence "AGPL3"
-
   ;; component attributes:
-  
-  :name "com.informatimago.common-lisp.cesarum"
-
   :version "1.3.3"
-
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Autumn 2010")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.cesarum/")
@@ -80,10 +70,9 @@ all written in 100% conforming Common Lisp.
                ((#:albert #:docbook #:template)  . "book")
                ((#:albert #:docbook #:bgcolor)   . "white")
                ((#:albert #:docbook #:textcolor) . "black"))
-  
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ("com.informatimago.common-lisp.lisp-sexp")
-  :in-order-to ((test-op (test-op "com.informatimago.common-lisp.cesarum-test")))
+  :in-order-to ((test-op (test-op "com.informatimago.common-lisp.cesarum.test")))
   :components (
                ;; Simple Test Framework
                (:file "simple-test"     :depends-on ())
@@ -107,6 +96,8 @@ all written in 100% conforming Common Lisp.
                (:file "llrbtree"        :depends-on ())
                (:file "queue"           :depends-on ("utility"))
                (:file "message-queue"   :depends-on ("queue"))
+               (:file "priority-queue"  :depends-on ())
+
 
                ;; Standards:
                (:file "ascii"           :depends-on ())
@@ -140,7 +131,8 @@ all written in 100% conforming Common Lisp.
                (:file "cache"           :depends-on ())
                (:file "float-binio"     :depends-on ())
 
-               ))
+               )
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.cesarum.test"))))
 
 
 ;; Would require a separate asd file...

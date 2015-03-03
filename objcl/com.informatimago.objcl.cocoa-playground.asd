@@ -32,32 +32,20 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.objcl.cocoa-playground
-    
-
+#+not-yet
+(asdf:defsystem "com.informatimago.objcl.cocoa-playground"
     ;; system attribtues:
-    
     :description  "Playground for Cocoa and ObjCL."
-
     :long-description "
 
 Playground for Cocoa and ObjCL.
 
 "
-    
     :author    "Pascal J. Bourguignon <pjb@informatimago.com>"
-    
     :maitainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-    
     :licence "AGPL3"
-
-    
     ;; component attributes:
-    
-    :name "Playground for Cocoa and ObjCL"
-
     :version "0.7.1"
-
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Spring 2011")
                  ((#:albert #:output-dir)          . "../documentation/com.informatimago.cocoa-playground/")
@@ -65,11 +53,8 @@ Playground for Cocoa and ObjCL.
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
-    
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
     :depends-on (:com.informatimago.objcl)
-    
     :components ((:file "layout"             :depends-on ())
                  (:file "cocoa"              :depends-on ("layout"))))
 

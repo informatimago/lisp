@@ -42,7 +42,6 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
 
-(in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.READER"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM")
@@ -1321,9 +1320,10 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_set_ma.htm>
 to enable TRACE and redefinitions of the dispatch macro character function."
   (set-dispatch-macro-character
    disp-char sub-char
-   (compile nil
-            (let ((s (gensym)) (c (gensym)) (a (gensym)))
-              `(lambda (,s ,c ,a) (,function-name ,s ,c ,a))))
+   #+mocl (lambda (s c a) (funcall function-name s c a))
+   #-mocl (compile nil
+                   (let ((s (gensym)) (c (gensym)) (a (gensym)))
+                     `(lambda (,s ,c ,a) (,function-name ,s ,c ,a))))
    readtable))
 
 (defun set-indirect-macro-character (char function-name
@@ -1332,9 +1332,10 @@ to enable TRACE and redefinitions of the dispatch macro character function."
 to enable TRACE and redefinitions of the macro character function."
   (set-macro-character
    char
-   (compile nil
-            (let ((s (gensym)) (a (gensym)))
-              `(lambda (,s ,a) (,function-name ,s ,a))))
+   #+mocl (lambda (s c) (funcall function-name s c))
+   #-mocl (compile nil
+                   (let ((s (gensym)) (a (gensym)))
+                     `(lambda (,s ,a) (,function-name ,s ,a))))
    readtable))
 
 
@@ -1447,8 +1448,7 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_set_sy.htm>
     ;; :do (print `(:result ,result :last-cons ,last-cons
     ;;                      :last-cdr-p ,last-cdr-p :ch ,ch))
     :do (flet ((read-and-nconc (ch)
-                 (let ((objects
-                         (nth-value 1 (read-0/1 stream t nil t nil ch '()))))
+                 (let ((objects (nth-value 1 (read-0/1 stream t nil t nil ch '()))))
                    (when objects
                      (case last-cdr-p
                        ((nil)     (setf (cdr last-cons) objects
@@ -1459,7 +1459,12 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_set_sy.htm>
                        (otherwise (serror 'simple-reader-error stream
                                           "illegal end of dotted list")))))))
           (cond
-            ((char= #\) ch) (loop-finish))
+            ((char= #\) ch)
+             #-mocl (loop-finish)
+             #+mocl (if (eq last-cdr-p 't)
+                        (serror 'simple-reader-error stream
+                                "illegal end of dotted list")
+                        (return (cdr result))))
             ((char= #\. ch)
              (if (token-delimiter-p (peek-char nil stream t nil t))
                  (if (eq result last-cons)
@@ -1473,8 +1478,8 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_set_sy.htm>
                                           "illegal end of dotted list"))))
                  (read-and-nconc ch)))
             (t
-             (read-and-nconc ch))))
-        
+             (read-and-nconc ch))
+            ))
     :finally (if (eq last-cdr-p 't)
                  (serror 'simple-reader-error stream
                          "illegal end of dotted list")

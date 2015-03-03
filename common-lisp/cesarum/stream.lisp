@@ -81,7 +81,7 @@ License:
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM")
 
 
-  
+
 
 (defun stream-to-string-list (stream)
   "
@@ -89,8 +89,8 @@ RETURN:  the list of lines collected from stream.
 "
   (typecase stream
     (stream    (loop
-                  :for line = (read-line stream nil nil)
-                  :while line :collect line))
+                 :for line = (read-line stream nil nil)
+                 :while line :collect line))
     (string    (split-string stream (format nil "~C" #\newline)))
     (otherwise nil)))
 
@@ -162,7 +162,7 @@ RETURN:     A vector containing the elements read from the STREAM.
                         (+ busize max-extend))
                     start end))
             (adjust-array buffer busize :initial-element initel :fill-pointer t))))))
-  
+
 
 
 (defun copy-over (stream from-pos to-pos &key (element-type 'character))
@@ -194,12 +194,16 @@ NOTE:       The file is not truncated.
   (:documentation "RETURN: A simple INPUT-STREAM.")
   (:method ((stream stream))
     stream)
+  #-mocl
   (:method ((stream concatenated-stream))
     (stream-input-stream (first (concatenated-stream-streams stream))))
+  #-mocl
   (:method ((stream echo-stream))
     (stream-input-stream (echo-stream-input-stream stream)))
+  #-mocl
   (:method ((stream synonym-stream))
     (stream-input-stream (symbol-value (synonym-stream-symbol stream))))
+  #-mocl
   (:method ((stream two-way-stream))
     (stream-input-stream (two-way-stream-input-stream stream))))
 
@@ -208,12 +212,16 @@ NOTE:       The file is not truncated.
   (:documentation "RETURN: A simple OUTPUT-STREAM.")
   (:method ((stream stream))
     stream)
+  #-mocl
   (:method ((stream broadcast-stream))
     (stream-output-stream (first (broadcast-stream-streams stream))))
+  #-mocl
   (:method ((stream echo-stream))
     (stream-input-stream (echo-stream-output-stream stream)))
+  #-mocl
   (:method ((stream synonym-stream))
     (stream-input-stream (symbol-value (synonym-stream-symbol stream))))
+  #-mocl
   (:method ((stream two-way-stream))
     (stream-input-stream (two-way-stream-output-stream stream))))
 
@@ -257,21 +265,27 @@ RETURN: A stream or a list of streams that are not compound streams
 "
   (etypecase stream
 
+    #-mocl
     (echo-stream
      (ecase direction
        (:output (bare-stream (echo-stream-output-stream stream)
                              :direction direction))
        (:input  (bare-stream (echo-stream-input-stream  stream)
                              :direction direction))))
+    #-mocl
     (two-way-stream
      (ecase direction
        (:output (bare-stream (two-way-stream-output-stream stream)
                              :direction direction))
        (:input  (bare-stream (two-way-stream-input-stream stream)
                              :direction direction))))
+
+    #-mocl
     (synonym-stream
      (bare-stream (symbol-value (synonym-stream-symbol stream))
-                             :direction direction))
+                  :direction direction))
+
+    #-mocl
     (broadcast-stream
      (remove-if-not
       (lambda (stream)
@@ -323,8 +337,8 @@ RETURN: A stream or a list of streams that are not compound streams
 
 
 (defmacro with-output-to-byte-vector ((var &optional byte-vector-form 
-                                           &key element-type) &body body)
-    "
+                                        &key element-type) &body body)
+  "
 
 DO:             Execute the BODY with VAR bound to an output byte vector
                 stream.  If BYTE-VECTOR-FORM is given it should produce a byte
@@ -334,15 +348,15 @@ ELEMENT-TYPE:   The type of bytes. If BYTE-VECTOR-FORM is nil, one can
                 choose a different element-type for the byte vector.
 RETURN:         The byte vector written.
 "
-    `(let ((,var (make-instance 'bvstream-out
-                     ,@(cond
-                        (byte-vector-form
-                         `(:bytes ,byte-vector-form))
-                        (element-type
-                         `(:bytes (make-array '(1024)
-                                              :element-type ,element-type
-                                              :adjustable t
-                                              :fill-pointer 0)))))))
+  `(let ((,var (make-instance 'bvstream-out
+                              ,@(cond
+                                  (byte-vector-form
+                                   `(:bytes ,byte-vector-form))
+                                  (element-type
+                                   `(:bytes (make-array '(1024)
+                                                        :element-type ,element-type
+                                                        :adjustable t
+                                                        :fill-pointer 0)))))))
      (let ((,var ,var)) ,@body)
      (get-bytes ,var)))
 
@@ -367,7 +381,7 @@ RETURN:         The byte vector written.
                                      (min (slot-value self 'end) len) len)
           (bis-position self) (max 0 (min (bis-position self) len))))
   self)
-                                                
+
 
 (defmethod bvstream-position ((self bvstream-in) position)
   (if position

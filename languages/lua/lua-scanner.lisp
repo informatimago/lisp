@@ -377,7 +377,11 @@ when NIL, comments are skipped as spaces."))
                                    (when (and ch (alphanumericp ch))
                                      (invalid-char ch "integer"
                                                    (get-output-stream-string number)))
-                                   (loop-finish))))
+                                   #-mocl (loop-finish)
+                                   #+mocl (case state
+                                            ((:after-dot :after-exponent :after-exponent-sign)
+                                             (incomplete-floating-point-number
+                                              (get-output-stream-string number)))))))
                                (:after-dot
                                 (case ch
                                   ((#\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9)
@@ -385,8 +389,8 @@ when NIL, comments are skipped as spaces."))
                                    (write-char (getchar scanner) number))
                                   (otherwise
                                    (invalid-char ch (if (char-equal ch #\e)
-                                                      "floating-point (missing a 0 before the exponent?)"
-                                                      "floating-point")
+                                                        "floating-point (missing a 0 before the exponent?)"
+                                                        "floating-point")
                                                  (get-output-stream-string number)))))
                                (:in-fraction
                                 (case ch
@@ -399,7 +403,11 @@ when NIL, comments are skipped as spaces."))
                                    (when (and ch (alphanumericp ch))
                                      (invalid-char ch "floating-point"
                                                    (get-output-stream-string number)))
-                                   (loop-finish))))
+                                   #-mocl (loop-finish)
+                                   #+mocl (case state
+                                            ((:after-dot :after-exponent :after-exponent-sign)
+                                             (incomplete-floating-point-number
+                                              (get-output-stream-string number)))))))
                                (:after-exponent
                                 (case ch
                                   ((#\- #\+)
@@ -412,7 +420,11 @@ when NIL, comments are skipped as spaces."))
                                    (when (and ch (alphanumericp ch))
                                      (invalid-char ch "floating-point exponent"
                                                    (get-output-stream-string number)))
-                                   (loop-finish))))
+                                   #-mocl (loop-finish)
+                                   #+mocl (case state
+                                            ((:after-dot :after-exponent :after-exponent-sign)
+                                             (incomplete-floating-point-number
+                                              (get-output-stream-string number)))))))
                                (:after-exponent-sign
                                 (case ch
                                   ((#\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9)
@@ -422,7 +434,11 @@ when NIL, comments are skipped as spaces."))
                                    (when (alphanumericp ch)
                                      (invalid-char ch "floating-point exponent"
                                                    (get-output-stream-string number)))
-                                   (loop-finish))))
+                                   #-mocl (loop-finish)
+                                   #+mocl (case state
+                                            ((:after-dot :after-exponent :after-exponent-sign)
+                                             (incomplete-floating-point-number
+                                              (get-output-stream-string number)))))))
                                (:in-exponent
                                 (case ch
                                   ((#\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9)
@@ -431,7 +447,11 @@ when NIL, comments are skipped as spaces."))
                                    (when (alphanumericp ch)
                                      (invalid-char ch "floating-point exponent"
                                                    (get-output-stream-string number)))
-                                   (loop-finish)))))
+                                   #-mocl (loop-finish)
+                                   #+mocl (case state
+                                            ((:after-dot :after-exponent :after-exponent-sign)
+                                             (incomplete-floating-point-number
+                                              (get-output-stream-string number))))))))
                          :finally (case state
                                     ((:after-dot :after-exponent :after-exponent-sign)
                                      (incomplete-floating-point-number
@@ -571,31 +591,6 @@ when NIL, comments are skipped as spaces."))
                        :kind (or kw :identifier)
                        :text name)))
                  (invalid-char ch))))))))
-
-
-(defun test/scan-stream (src)
-  (loop
-    :with scanner = (make-instance 'lua-scanner :source src)
-    :for token = (scan-next-token scanner)
-    :while token
-    :do (progn
-          (format t "~&~20A ~32S ~32S ~A~%"
-                  (token-kind  (scanner-current-token scanner))
-                  (token-value (scanner-current-token scanner))
-                  (token-text  (scanner-current-token scanner))
-                  (type-of (scanner-current-token scanner)))
-          (finish-output))))
-
-(defun test/scan-file (path)
-  (with-open-file (src path)
-    (test/scan-stream src)))
-
-(defun test/scan-string (source)
-  (with-input-from-string (src source)
-    (test/scan-stream src)))
-
-;; (test/scan-file #P "~/mission.lua")
-
 
 ;;;; THE END ;;;;
 

@@ -32,13 +32,13 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.small-cl-pgms.brainfuck
-    :name "com.informatimago.small-cl-pgms.brainfuck"
-    :description "Brainfuck Compiler."
-    :author "Pascal J. Bourguignon"
-    :version "1.0.0"
-    :license "GPL3"
-    :depends-on () 
-    :components ((:file "bf")))
+(asdf:defsystem "com.informatimago.small-cl-pgms.brainfuck"
+  :description "Brainfuck Compiler."
+  :author "Pascal J. Bourguignon"
+  :version "1.0.0"
+  :license "GPL3"
+  :depends-on () 
+  :components ((:file "bf"))
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.small-cl-pgms.bf.test"))))
 
 ;;;; THE END ;;;;

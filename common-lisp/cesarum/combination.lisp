@@ -32,7 +32,6 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
 
-(in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.COMBINATION"
   (:use "COMMON-LISP")
   (:export "DONE-P" "GET-NEXT-ELEMENT" "GET-CURRENT-ELEMENT" "RESET"
@@ -204,7 +203,7 @@ RETURN:     !atBegining()
                    :documentation "The cardinal of the functor set.")
    (index          :type cardinal :initform 0 :reader index)
    (element-size   :type cardinal :initform 0 :reader element-size)
-   (choice         :type vector   :initform nil)
+   (choice         :type vector   :initform #())
    (at-beginning-p :type boolean  :initform nil :reader at-beginning-p))
   (:documentation "Representation of an enumerable set."))
 
@@ -461,43 +460,4 @@ RETURN: a list of all the combinations of N elements from the LIST.
                     (combinations (rest list) (1- n)))
             (combinations (rest list) n)))))
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defun test ()
-  (terpri)(terpri)
-  (let ((awr (make-instance 'arrangement-with-repeat)))
-    (setf (base-cardinal awr) 5
-          (element-size  awr) 3)
-    (reset awr)
-    (princ "Take 3 of 5. ")
-    (princ (cardinal awr))
-    (loop named awr do
-         (multiple-value-bind (arrangement done) (get-next-element awr)
-           (when done (loop-finish))
-           (print arrangement)))
-    (terpri))
-  (let ((asr (make-instance 'arrangement-sans-repeat)))
-    (setf (base-cardinal asr) 5
-          (element-size  asr) 3)
-    (reset asr)
-    (princ "Take 3 of 5 distinct. ")
-    (princ (cardinal asr))
-    (loop named asr do
-         (multiple-value-bind (arrangement done) (get-next-element asr)
-           (when done (loop-finish))
-           (print arrangement)))
-    (terpri))
-  (let ((com (make-instance 'combination)))
-    (setf (base-cardinal com) 5
-          (element-size  com) 3)
-    (reset com)
-    (princ "Combination of 3 from 5. ")
-    (princ (cardinal com))
-    (loop named com do
-         (multiple-value-bind (arrangement done) (get-next-element com)
-           (when done (loop-finish))
-           (print arrangement)))
-    (terpri)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; THE END ;;;;

@@ -32,17 +32,15 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.tools.check-asdf
-    :name "com.informatimago.check-asdf"
-    :description "Checks ASD Files and reports circular dependencies."
-    :author "Pascal J. Bourguignon"
-    :version "1.0.4"
-    :license "GPL3"
-    :depends-on ("com.informatimago.common-lisp.cesarum"
-                 "com.informatimago.clext") 
-    :components ((:file "dependency-cycles")
-                 (:file "asdf-file"  :depends-on ("dependency-cycles" "script"))
-                 #-abcl (:file "script")
-                 (:file "check-asdf" :depends-on ("dependency-cycles" "asdf-file"))))
+(asdf:defsystem "com.informatimago.tools.check-asdf"
+  :description "Checks ASD Files and reports circular dependencies."
+  :author "Pascal J. Bourguignon"
+  :version "1.1.1"
+  :license "AGPL3"
+  :depends-on ("com.informatimago.common-lisp.cesarum"
+               "com.informatimago.clext"
+               "com.informatimago.tools.source"
+               #-abcl "com.informatimago.tools.script") 
+  :components (#-abcl (:file "check-asdf" :depends-on ("script"))))
 
 ;;;; THE END ;;;;

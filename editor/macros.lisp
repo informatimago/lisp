@@ -54,7 +54,7 @@
          (inter (find 'interactive decls :key (function first))))
     (if inter
         `(progn
-           (compile (cl:defun ,name ,arguments ,@body))
+           (cl:defun ,name ,arguments ,@body)
            (setf (gethash ',name           *interactive-decls*) ',inter
                  (gethash (function ,name) *interactive-decls*) ',inter)
            ',name)
@@ -70,15 +70,24 @@
   (let* ((decls (mapcan (function rest) (extract-declarations body)))
          (inter (find 'interactive decls :key (function first))))
     (if inter
-        `(progn
-           (let ((fun (compile nil '(cl:lambda ,arguments ,@body))))
-             (setf (gethash fun *interactive-decls*) ',inter)
-             fun))
+        `(flet ((anonymous-function ,arguments ,@body))
+           (setf (gethash (function anonymous-function) *interactive-decls*) ',inter)
+           (function anonymous-function))
         `(cl:lambda  ,arguments ,@body))))
 
 
 (defun interactivep (fundesc)
   "Whether the function FUNCDESC is INTERACTIVE."
   (gethash fundesc *interactive-decls*))
+
+
+(defun getenv (var)
+  #+asdf3 (uiop/os:getenv var)
+  #-asdf3 (asdf:getenv    var))
+
+(defun (setf getenv) (new-val var)
+  #+asdf3 (setf (uiop/os:getenv var) new-val)
+  #-asdf3 (setf (asdf:getenv    var) new-val))
+
 
 ;;;; THE END ;;;;

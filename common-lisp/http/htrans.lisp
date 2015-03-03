@@ -39,6 +39,7 @@
 (declaim (also-use-packages "COM.INFORMATIMAGO.COMMON-LISP.HTML-GENERATOR.HTML"
                             "COM.INFORMATIMAGO.COMMON-LISP.HTTP.HQUERY"))
 
+#-mocl
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (com.informatimago.common-lisp.cesarum.package:add-nickname
    "COM.INFORMATIMAGO.COMMON-LISP.HTML-GENERATOR.HTML" "HTML"))

@@ -32,37 +32,24 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.common-lisp.csv
-
-    ;; system attributes:
-    
-    :description  "This library implements the CSV file format."
-    
-    :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-
-    :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-
-    :licence "AGPL3"
-
-    
-    ;; component attributes:
-
-    :name "Informatimago Common Lisp CSV File Format"
-
-    :version "1.2.1"
-
-    :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Autumn 2010")
-                 ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.csv/")
-                 ((#:albert #:formats)             . ("docbook"))
-                 ((#:albert #:docbook #:template)  . "book")
-                 ((#:albert #:docbook #:bgcolor)   . "white")
-                 ((#:albert #:docbook #:textcolor) . "black"))
-    
-    #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
-    :depends-on ("com.informatimago.common-lisp.cesarum")
-    
-    :components ((:file "csv" :depends-on ())))
+(asdf:defsystem "com.informatimago.common-lisp.csv"
+  ;; system attributes:
+  :description  "Informatimago Common Lisp CSV File Format"
+  :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :licence "AGPL3"
+  ;; component attributes:
+  :version "1.2.1"
+  :properties ((#:author-email                   . "pjb@informatimago.com")
+               (#:date                           . "Autumn 2010")
+               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.csv/")
+               ((#:albert #:formats)             . ("docbook"))
+               ((#:albert #:docbook #:template)  . "book")
+               ((#:albert #:docbook #:bgcolor)   . "white")
+               ((#:albert #:docbook #:textcolor) . "black"))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8
+  :depends-on ("com.informatimago.common-lisp.cesarum")
+  :components ((:file "csv" :depends-on ()))
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.csv.test"))))
 
 ;;;; THE END ;;;;

@@ -32,43 +32,29 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.common-lisp.apple-file
-
-    ;; system attributes:
-    
-    :description "Read Apple-Single and Apple-Double file formats."
-
-    :long-description "
+(asdf:defsystem "com.informatimago.common-lisp.apple-file"
+  ;; system attributes:
+  :description  "Apple-Single and Apple-Double File Formats."
+  :long-description "
 
 Read Apple-Single and Apple-Double file formats.
 
 "
-
-    :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-    
-    :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-    
-    :licence "AGPL3"
-
-
-    ;; component attributes:
-
-    :name "Apple-Single and Apple-Double File Formats."
-    
-    :version "1.0.0"
-    
-    :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Spring 2013")
-                 ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.apple-file/")
-                 ((#:albert #:formats)             . ("docbook"))
-                 ((#:albert #:docbook #:template)  . "book")
-                 ((#:albert #:docbook #:bgcolor)   . "white")
-                 ((#:albert #:docbook #:textcolor) . "black"))
-    
-    #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
-    :depends-on ("com.informatimago.common-lisp.cesarum")
-    
-    :components ((:file "apple-file" :depends-on ())))
+  :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :licence "AGPL3"
+  ;; component attributes:
+  :version "1.0.0"
+  :properties ((#:author-email                   . "pjb@informatimago.com")
+               (#:date                           . "Spring 2013")
+               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.apple-file/")
+               ((#:albert #:formats)             . ("docbook"))
+               ((#:albert #:docbook #:template)  . "book")
+               ((#:albert #:docbook #:bgcolor)   . "white")
+               ((#:albert #:docbook #:textcolor) . "black"))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8
+  :depends-on ("com.informatimago.common-lisp.cesarum")
+  :components ((:file "apple-file" :depends-on ()))
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.apple-file.test"))))
 
 ;;;; THE END ;;;;

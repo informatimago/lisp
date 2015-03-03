@@ -32,7 +32,6 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
 
-
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DICTIONARY"
   (:use "COMMON-LISP")
   (:export "DICTIONARY" 
@@ -53,7 +52,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2010 - 2012
+    Copyright Pascal J. Bourguignon 2010 - 2015
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -320,87 +319,6 @@ switches to hash-tables, and below which it switches to A-lists."))
     (dictionary-count dictionary)))
 
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defun test/dictionary (type)
-  (let ((d (make-dictionary type
-                            :test (function equal)
-                            :contents '(a 1
-                                        b 2
-                                        c 3))))
-    (assert (= 3 (dictionary-count d)))
-    (assert (equalp (list (dictionary-get d 'a 0)
-                          (dictionary-get d 'b 0)
-                          (dictionary-get d 'c 0)
-                          (dictionary-get d 'd 0))
-                    '(1 2 3 0)))
-
-    (dictionary-set d 'a 11)
-    (dictionary-set d 'd 4)
-    (dictionary-set d 'c 33)
-    (assert (= 4 (dictionary-count d)))
-    (assert (equalp (list (dictionary-get d 'a 0)
-                          (dictionary-get d 'b 0)
-                          (dictionary-get d 'c 0)
-                          (dictionary-get d 'd 0)
-                          (dictionary-get d 'e 0))
-                    '(11 2 33 4 0)))
-
-    (setf (dictionary-get d 'a 0) 111)
-    (setf (dictionary-get d 'd 0) 444)
-    (setf (dictionary-get d 'c 0) 333)
-    (assert (= 4 (dictionary-count d)))
-    (assert (equalp (list (dictionary-get d 'a 0)
-                          (dictionary-get d 'b 0)
-                          (dictionary-get d 'c 0)
-                          (dictionary-get d 'd 0)
-                          (dictionary-get d 'e 0))
-                    '(111 2 333 444 0)))
-
-    (dictionary-delete d 'b)
-    (assert (= 3 (dictionary-count d)))
-    (assert (equalp (list (dictionary-get d 'a 0)
-                          (dictionary-get d 'b 0)
-                          (dictionary-get d 'c 0)
-                          (dictionary-get d 'd 0)
-                          (dictionary-get d 'e 0))
-                    '(111 0 333 444 0)))
-
-    (let ((res (dictionary-map (function cons) d)))
-      (assert (and (subsetp res '((a . 111) (c . 333) (d . 444))
-                            :test (function equalp))
-                   (subsetp '((a . 111) (c . 333) (d . 444)) res
-                            :test (function equalp)))))
-
-    (dictionary-map (lambda (key value) (declare (ignore value)) (dictionary-delete d key)) d)
-    (assert (= 0 (dictionary-count d)))
-
-    (loop
-       :for i :from 1 :to 100
-       :do (dictionary-set d i (* 1000 i)))
-    (assert (= 100 (dictionary-count d)))
-    (assert (loop
-               :for i :from 1 :to 100
-               :always (= (dictionary-get d i 0) (* 1000 i))))
-    (loop
-       :for i :from 1 :to 96
-       :do (dictionary-delete d i))
-    (assert (= 4 (dictionary-count d)))
-    (assert (loop
-               :for i :from 1 :to 96
-               :always (null (nth-value 1 (dictionary-get d i 0)))))
-    (assert (loop
-               :for i :from 97 :to 100
-               :always (= (dictionary-get d i 0) (* 1000 i))))
-    
-    :success))
-
-
-(defun test ()
-  "Tests all the kinds of dictionary defined in this package."
-  (print (mapcar (function test/dictionary)
-                 '(hash-table p-list a-list adaptating-dictionary))))
 
 
 ;;;; THE END ;;;;

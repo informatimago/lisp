@@ -32,7 +32,12 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
 
-
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PRIORITY-QUEUE"
+  (:use "COMMON-LISP")
+  (:export "PQ" "MAKE-PQ" "PQ-P" "COPY-PQ" "PQ-LESSP" "PQ-EMPTYP"
+           "PQ-LENGTH" "PQ-ELEMENTS" "PQ-ELEMENTS" "PQ-FIRST" "PQ-POP"
+           "PQ-POP*" "PQ-INSERT" "PQ-INSERT*" "PQ-REMOVE" "PQ-KEY"))
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PRIORITY-QUEUE")
 
 (defstruct pq
   "Defines a priority queue data structure.
@@ -125,38 +130,5 @@ Returns the ELEMENT."
                 (setf (rest current) (rest (rest current)))))
   element)
 
-(defun test/pq ()
-  (let ((p (make-pq)))
-    (pq-insert p 4)
-    (pq-insert p 8)
-    (pq-insert p 2)
-    (pq-remove p 4)
-    (pq-insert p 16)
-    (assert (= 2 (pq-first p)))
-    (pq-insert p 1)
-    (pq-insert p 5)
-    (assert (= 1 (pq-first p)))
-    (assert (= 1 (pq-pop p)))
-    (assert (= 2 (pq-first p)))
-    (assert (equal (pq-elements p) '(2 5 8 16))))
-  (let ((p (make-pq :lessp (function >) :key (function length)))
-        (bye "Bye!"))
-    (pq-insert p bye)
-    (pq-insert p "Au revoir")
-    (pq-insert p "Ah")
-    (pq-remove p bye)
-    (let ((long  "Comment ça va?"))
-      (pq-insert p long)
-      (assert (eql long (pq-first p)))
-      (let ((long "Moi ça va, et toi comment ça va?"))
-        (pq-insert p long)
-        (let ((long "Viens chez moi j'habite chez une copine."))
-          (pq-insert p long)
-          (assert (eql long (pq-first p)))
-          (assert (eql long (pq-pop p))))
-        (assert (eql long (pq-first p)))))
-    (assert (equal '("Moi ça va, et toi comment ça va?" "Comment ça va?" "Au revoir" "Ah")
-                   (pq-elements p))))
-  :success)
 
 ;;;; THE END ;;;;

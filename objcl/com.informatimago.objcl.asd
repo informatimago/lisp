@@ -32,12 +32,9 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.objcl
-
+(asdf:defsystem "com.informatimago.objcl"
   ;; system attributes:
-  
-  :description "Reader macros and tools to program with Objective-C object libraries."
-
+  :description "Reader macros to implement an Objective-CL syntax."
   :long-description "
 
 Defines readers macros to provide an Objective-C -like syntax to wrap
@@ -47,20 +44,11 @@ Current implementation work only on ccl, but it should be extended to
 cover generic FFI to both Apple and GNUstep objc2 runtimes.
 
 "
-  
-  
   :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-
-  :licence "AGPL3"
-
+  :licence    "AGPL3"
   ;; component attributes:
-  
-  :name "Reader macros to implement an Objective-CL syntax."
-  
-  :version "0.10.2"
-  
+  :version    "0.10.3"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Spring 2014")
                ((#:albert #:output-dir)          . "../documentation/com.informatimago.objc/")
@@ -68,23 +56,20 @@ cover generic FFI to both Apple and GNUstep objc2 runtimes.
                ((#:albert #:docbook #:template)  . "book")
                ((#:albert #:docbook #:bgcolor)   . "white")
                ((#:albert #:docbook #:textcolor) . "black"))
-  
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
+  :depends-on ("com.informatimago.common-lisp.cesarum")
 
-  :depends-on ()
-  
-  :components
   #+(and ccl darwin)
-  ((:file "objc-support"       :depends-on ())
-   (:file "packages"           :depends-on ("objc-support"))
-   (:file "simple-test"        :depends-on ("packages"))
-   (:file "mac-roman"          :depends-on ("packages"))
-   (:file "oclo-ccl"           :depends-on ("packages"))
-   (:file "oclo"               :depends-on ("packages" "oclo-ccl"))
-   (:file "objcl"              :depends-on ("packages" "oclo")) ; needs the NS package
-   (:file "test-objcl"         :depends-on ("packages" "objcl" "simple-test")))
-  #-(and ccl darwin)
-  ())
+  :components #+(and ccl darwin) ((:file "objc-support"       :depends-on ())
+                                  (:file "packages"           :depends-on ("objc-support"))
+                                  (:file "mac-roman"          :depends-on ("packages"))
+                                  (:file "oclo-ccl"           :depends-on ("packages"))
+                                  (:file "oclo"               :depends-on ("packages" "oclo-ccl"))
+                                  (:file "objcl"              :depends-on ("packages" "oclo" "mac-roman"))) ; needs the NS package.
+  :in-order-to ((asdf:test-op
+                 (asdf:test-op "com.informatimago.objcl.test"))))
 
-#-(and ccl darwin) (warn "System ~A is incomplete on ~A" :com.informatimago.objcl (lisp-implementation-type))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  #-(and ccl darwin) (warn "System ~A is incomplete on ~A" :com.informatimago.objcl (lisp-implementation-type)))
+
 ;;;; THE END ;;;;

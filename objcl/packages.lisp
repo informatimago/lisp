@@ -41,15 +41,17 @@
 ;;          (#/initWithPath: mainBundle (namestring (truename ccl::*cocoa-ide-path*)))))))
 ;; #+(and ccl darwin)
 
-
-
-
-(defpackage "COM.INFORMATIMAGO.SIMPLE-TEST"
-  (:use "CL")
-  (:export "*DEBUG-ON-ERROR*" "WITH-DEBUGGER-ON-ERROR"
-           "DEFINE-TEST" "TEST")
+(defpackage "COM.INFORMATIMAGO.OBJCL.MAC-ROMAN"
+  (:use "COMMON-LISP")
+  (:export "MAC-ROMAN-CHAR-P" "MAC-ROMAN-STRING-P")
   (:documentation "
-This package defines a simple test tool.
+This package exports a function to check if a character is in the
+Mac-Roman repertoire.
+
+Copyright Pascal J. Bourguignon 2011 - 2011
+
+This package is licensed under the GPL.
+See source file for details.
 "))
 
 
@@ -160,7 +162,8 @@ single package exporting all these symbols.
 (defpackage "COM.INFORMATIMAGO.OBJECTIVE-CL"
   (:nicknames "COM.INFORMATIMAGO.OBJCL"
               "OBJCL")
-  (:use "CL" "COM.INFORMATIMAGO.SIMPLE-TEST")
+  (:use "COMMON-LISP"
+        "COM.INFORMATIMAGO.OBJCL.MAC-ROMAN")
   ;; also use "COM.INFORMATIMAGO.OBJECTIVE-C.LOWER" as "OCLO".
   (:export
    "*OBJECTIVE-CL-READTABLE*"

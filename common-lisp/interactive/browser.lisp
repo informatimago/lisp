@@ -44,6 +44,27 @@
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.BROWSER"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
+  #+mocl (:shadowing-import-from "COM.INFORMATIMAGO.MOCL.KLUDGES.MISSING"
+                                 "*TRACE-OUTPUT*"
+                                 "*LOAD-VERBOSE*"
+                                 "*LOAD-PRINT*"
+                                 "ARRAY-DISPLACEMENT"
+                                 "CHANGE-CLASS"
+                                 "COMPILE"
+                                 "COMPLEX"
+                                 "ENSURE-DIRECTORIES-EXIST"
+                                 "FILE-WRITE-DATE"
+                                 "INVOKE-DEBUGGER" "*DEBUGGER-HOOK*"
+                                 "LOAD"
+                                 "LOGICAL-PATHNAME-TRANSLATIONS"
+                                 "MACHINE-INSTANCE"
+                                 "MACHINE-VERSION"
+                                 "NSET-DIFFERENCE"
+                                 "RENAME-FILE"
+                                 "SUBSTITUTE-IF"
+                                 "TRANSLATE-LOGICAL-PATHNAME"
+                                 "PRINT-NOT-READABLE"
+                                 "PRINT-NOT-READABLE-OBJECT")
   (:export "MAKE" "MV" "CP" "DEFCOMMAND" "*SHELL*" "LESS" "MORE" "CAT" "LS"
            "MKDIR" "POPD" "PUSHD" "PWD" "CD" "BROWSE" "*TERMINAL-HEIGHT*"
            "CHANGE-WORKING-DIRECTORY" "WORKING-DIRECTORY" "*CHANGE-DIRECTORY-HOOK*"
@@ -62,7 +83,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2002 - 2012
+    Copyright Pascal J. Bourguignon 2002 - 2015
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -201,7 +222,7 @@ same directory, so that the *default-pathname-defaults*, the
 three synchronized.
 ")
 
-(defvar *working-directory* (truename (user-homedir-pathname))
+(defvar *working-directory* #+mocl (user-homedir-pathname) #-mocl (truename (user-homedir-pathname)) 
   "The current working directory")
 
 (defun working-directory ()
@@ -370,7 +391,7 @@ DO:         Displays the contents of the working directory and
            (change-working-directory 
             (child-directory (working-directory) (elt subdirs (1- answer)))))
           (t (load (cdr (elt files (- answer (length subdirs) 1)))
-                   :verbose t)))))))
+              :verbose t)))))))
 
 
 (defun resolve (path &key (directory nil))

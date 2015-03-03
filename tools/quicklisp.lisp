@@ -54,41 +54,50 @@
   (:documentation "Quicklisp quick commands."))
 (in-package "COM.INFORMATIMAGO.TOOLS.QUICKLISP")
 
-(defun print-systems (systems pattern)
-  (if pattern
-      (let ((spattern (string pattern)))
-        (dolist (system systems)
-          (when (search spattern (slot-value system 'ql-dist:name)
-                        :test (function char-equal))
-            (print system))))
-      (dolist (system systems)
-        (print system)))
+(defun print-systems (systems pattern &key sort)
+  (let ((sorted-systems (make-array (length systems) :fill-pointer 0)))
+    (if pattern
+        (let ((spattern (string pattern)))
+          (dolist (system systems)
+            (when (search spattern (slot-value system 'ql-dist:name)
+                          :test (function char-equal))
+              (vector-push system sorted-systems))))
+        (progn
+          (setf (fill-pointer sorted-systems) (length systems))
+          (replace sorted-systems systems)))
+    (map nil (function print)
+      (if sort
+          (sort sorted-systems
+                (function string<)
+                :key (lambda (system) (slot-value system 'ql-dist:project-name)))
+          sorted-systems))
+    (terpri))
    (values))
 
 
 (defun quick-installed-systems (&optional pattern)
   "Print the system installed by quicklisp."
   (print-systems (ql-dist:installed-releases (ql-dist:dist "quicklisp"))
-                 pattern))
+                 pattern :sort t))
 
 (defun quick-list-systems (&optional pattern)
   "List the quicklisp systems.  If the string designator PATTERN is
 given, then only the systems containing it in their name are listed."
   (print-systems (ql-dist:provided-systems t)
-                 pattern))
+                 pattern :sort t))
 
 (defun quick-list-projects (&optional pattern)
   "List the quicklisp projects (releases).  If the string designator
 PATTERN is given, then only the projects containing it in their name
 are listed."
   (print-systems (ql-dist:provided-releases t)
-                 pattern))
+                 pattern :sort t))
 
 
 (defun quick-apropos (pattern)
   "Search the quicklisp system matching the pattern and print them."
   ;; For now, we just list the systems:
-  (print-systems (ql-dist:provided-systems t) pattern))
+  (print-systems (ql-dist:provided-systems t) pattern :sort t))
 
 
 (defun quick-update ()

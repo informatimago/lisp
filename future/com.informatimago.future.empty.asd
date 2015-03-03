@@ -32,14 +32,14 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.future.empty
-    :name "com.informatimago.future.empty"
-    :description "Empty system."
-    :author "Pascal J. Bourguignon"
-    :version "1.0.0"
-    :license "AGPL3"
-    :depends-on () 
-    :components ())
+(asdf:defsystem "com.informatimago.future.empty"
+  :description "Empty system."
+  :author "Pascal J. Bourguignon"
+  :version "1.0.0"
+  :license "AGPL3"
+  :depends-on () 
+  :components ()
+  "com.informatimago.future.empty.test")
 
 
 ;;;; THE END ;;;;

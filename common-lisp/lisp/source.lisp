@@ -1,6 +1,6 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               ibcl-source.lisp
+;;;;FILE:               source.lisp
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
@@ -50,7 +50,7 @@ This package manages the book-keeping of source forms for the CL
 defining macros.
 
 The source forms are kept in the property list of the symbol naming
-the object defined by it.  On defpackage source forms are kept in a
+the object defined by it.  Defpackage source forms are kept in a
 separate hash-table.
 
 The function SOURCE returns the source form of the given symbol for
@@ -190,40 +190,6 @@ NOTE:           The returned source type can be changed to
          (if (symbolp object)
            (values object source-type)
            (err)))))))
-
-
-(defun test/normalize-object-and-source-type ()
-  (assert (equal (list
-                 (multiple-value-list
-                  (normalize-object-and-source-type 'f 'function))
-                 (multiple-value-list
-                  (normalize-object-and-source-type '(setf f) 'function))
-                 (multiple-value-list
-                  (normalize-object-and-source-type 'f 'setf-function))
-                 (ignore-errors
-                   (multiple-value-list
-                    (normalize-object-and-source-type '(setf f) 'setf-function))))
-                '((f :function)
-                  (f :setf-function)
-                  (f :setf-function)
-                  nil)))
-  (assert (equal (list
-                 (multiple-value-list
-                  (normalize-object-and-source-type '(m () (t t)) :method))
-                 (multiple-value-list
-                  (normalize-object-and-source-type '((setf m) () (t t)) ':method))
-                 (multiple-value-list
-                  (normalize-object-and-source-type '(m () (t t)) 'setf-method))
-                 (ignore-errors
-                   (multiple-value-list
-                    (normalize-object-and-source-type '((setf m) () (t t)) :setf-method))))
-                '((m :method (() (t t)))
-                  (m :setf-method (() (t t)))
-                  (m :setf-method (() (t t)))
-                  nil)))
- :success)
-
-(test/normalize-object-and-source-type)
 
 
 

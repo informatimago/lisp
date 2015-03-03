@@ -32,7 +32,16 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SET")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SET.TEST"
+  (:use "COMMON-LISP"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SIMPLE-TEST"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SET")
+  (:shadowing-import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SET"
+                          "UNION" "INTERSECTION" "MERGE" "INCLUDE")
+  (:export "TEST/ALL"
+           "TEST/ALL/CLASS"))
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SET.TEST")
 
 ;;;-----------------------------------------------------------------------
 ;;; TESTS

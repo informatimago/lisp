@@ -32,9 +32,29 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
 
-(in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CACHE"
   (:use "COMMON-LISP")
+  #+mocl (:shadowing-import-from "COM.INFORMATIMAGO.MOCL.KLUDGES.MISSING"
+                                 "*TRACE-OUTPUT*"
+                                 "*LOAD-VERBOSE*"
+                                 "*LOAD-PRINT*"
+                                 "ARRAY-DISPLACEMENT"
+                                 "CHANGE-CLASS"
+                                 "COMPILE"
+                                 "COMPLEX"
+                                 "ENSURE-DIRECTORIES-EXIST"
+                                 "FILE-WRITE-DATE"
+                                 "INVOKE-DEBUGGER" "*DEBUGGER-HOOK*"
+                                 "LOAD"
+                                 "LOGICAL-PATHNAME-TRANSLATIONS"
+                                 "MACHINE-INSTANCE"
+                                 "MACHINE-VERSION"
+                                 "NSET-DIFFERENCE"
+                                 "RENAME-FILE"
+                                 "SUBSTITUTE-IF"
+                                 "TRANSLATE-LOGICAL-PATHNAME"
+                                 "PRINT-NOT-READABLE"
+                                 "PRINT-NOT-READABLE-OBJECT")
   (:export "CACHE-EXPIRE-ALL" "CACHE-EXPIRE" "CACHE-EXPIRATION" "CACHE-GET"
            "SYNCHRONIZE-CACHE" "MAKE-CACHE" "CACHE-PRODUCER" "CACHE-VALUE-FILE-TYPE"
            "CACHE-INDEX-FILE-PATH" "CACHE-DIRECTORY-PATH" "CACHE"
@@ -60,7 +80,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2005 - 2012
+    Copyright Pascal J. Bourguignon 2005 - 2015
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -386,6 +406,7 @@ RETURN: If the file (cache-index-file-path self) exists
   "
 DO:     Load the cache index from the file (cache-index-file-path self).
 "
+  #+debug-COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CACHE
   (format *trace-output* "~&Loading cache ~S~%" (cache-index-file-path self))
   (with-open-file (file (cache-index-file-path self)
                         :direction :input :if-does-not-exist :error)
@@ -433,6 +454,7 @@ DO:     Load the cache index from the file (cache-index-file-path self).
   "
 DO:     Save the cache index to the file (cache-index-file-path self).
 "
+  #+debug-COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CACHE
   (format *trace-output* "~&Saving cache ~S~%" (cache-index-file-path self))
   (ensure-directories-exist (cache-index-file-path self))
   (let ((tmp-name (make-pathname :type "NEW"
@@ -519,12 +541,11 @@ RETURN:  the value stored in the CACHE for the KEY;
     (cond
       ((or (null entry)                 ; no entry ==> fetch
            (< (entry-expire-date entry) (get-universal-time)))
+       #+debug-COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CACHE
        (if (null entry)
-           (format *trace-output*
-             "~&(cache-get ~S): No cache entry ==> fetch~%" key)
-           (format *trace-output*
-             "~&(cache-get ~S): expired (~A<~A) ==> fetch~%"
-             key (entry-expire-date entry) (get-universal-time)))
+           (format *trace-output* "~&(cache-get ~S): No cache entry ==> fetch~%" key)
+           (format *trace-output* "~&(cache-get ~S): expired (~A<~A) ==> fetch~%"
+                   key (entry-expire-date entry) (get-universal-time)))
        #+(or)(invoke-debugger (make-condition 'simple-error
                                               :format-control "~&~S not in ~S~%"
                                               :format-arguments (list key (slot-value self 'index) self)))
@@ -548,6 +569,7 @@ RETURN:  the value stored in the CACHE for the KEY;
            (synchronize-cache self)
            (values value :fetched))))
       ((entry-value-p entry)            ; ==> in core
+       #+debug-COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CACHE
        (format *trace-output* "~&(cache-get ~S): got it in core~%" key)
        (values (entry-value entry) :in-core))
       (t                                ; ==> read from disk
@@ -558,6 +580,7 @@ RETURN:  the value stored in the CACHE for the KEY;
                         (let ((*read-eval* nil)) (read in)))))
            (setf (entry-value entry) value
                  (entry-value-p entry) t)
+           #+debug-COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CACHE
            (format *trace-output* "~&(cache-get ~S): read from disk~%" key)
            (values value :on-disk)))))))
 
@@ -596,102 +619,4 @@ RETURN:  the value stored in the CACHE for the KEY;
 (defmethod cache-map-entries ((self cache) result-type function)
   (index-map-entries result-type function (slot-value self 'index)))
 
-
-
-
-
-(defvar *test-counter* 0)
-(defvar *test-cache*   nil)
-(defvar *test-cache-2* nil)
-
-(defun cache-test ()
-  (ignore-errors (map nil (function delete-file) (directory "/tmp/cache/**/*.*")))
-  (setf *test-counter* 0)
-  (let ((delay 7))
-    (flet ((producer (key) (values (format nil "~A-~A" key 
-                                           (incf *test-counter* ))
-                                   (+ delay (get-universal-time))))
-           (print-files ()
-             (dolist (file (sort (mapcar (function namestring) (directory "/tmp/cache/**/*.*"))
-                                 (function string<)))
-               (princ file) (terpri))))
-      (setf *test-cache* (make-cache #p"/tmp/cache/" (function producer) 
-                                     :value-file-type "SYM"))
-      (assert (string= (cache-get *test-cache* :one)   "ONE-1"))
-      (assert (string= (cache-get *test-cache* :two)   "TWO-2"))
-      (assert (string= (cache-get *test-cache* :three) "THREE-3"))
-      (assert (string= (cache-get *test-cache* :one)   "ONE-1"))
-      (assert (string= (cache-get *test-cache* :two)   "TWO-2"))
-      (assert (string= (cache-get *test-cache* :three) "THREE-3"))
-      (setf *test-cache-2* (make-cache #p"/tmp/cache/" (function producer)))
-      (assert (string= (cache-get *test-cache-2* :one)   "ONE-1"))
-      (assert (string= "SYM" (cache-value-file-type *test-cache-2*)))
-      (format t "~2&filled:~%")(finish-output)
-      (print-files)
-      (cache-expire *test-cache* :one)
-      (cache-expire *test-cache* :two :keep-file t)
-      (format t "~2&expired :one and :two:~%")(finish-output)
-      (print-files)
-      (assert (string= (cache-get *test-cache* :one)   "ONE-4"))
-      (format t "~2&expirations~%~:{~15A in ~4D seconds~%~}"
-              (cache-map-entries *test-cache*
-                                 'list (lambda (entry)
-                                         (list
-                                          (entry-key entry)
-                                          (- (entry-expire-date entry)
-                                             (get-universal-time))))))
-      (format t "~2&waiting ~D s expiration of :one and :three:~%" delay)
-      (finish-output)
-      (sleep (1+ delay))
-      (assert (string= (cache-get *test-cache* :one)   "ONE-5"))
-      (assert (string= (cache-get *test-cache* :three) "THREE-6"))
-      (cache-expire-all *test-cache*)
-      (format t "~2&expired all~%")(finish-output)
-      (print-files)
-      (assert (string= (cache-get *test-cache* :one)   "ONE-7"))
-      (assert (string= (cache-get *test-cache* :three) "THREE-8"))
-      (assert (string= (cache-get *test-cache-2* :one)   "ONE-7"))
-      (assert (string= (cache-get *test-cache-2* :three) "THREE-8"))
-      (cache-map-entries *test-cache* nil (function print))))
-  (values))
-
-
-
-
-#||
-
-(define-message html-page-req (sender uri))
-(define-message html-page-rep (sender page-ref))
-(define-message html-tree-req (sender uri))
-(define-message html-tree-rep (sender tree-ref))
-
-
-(send (make-instance 'html-page-req :sender myself :uri uri))
-
-(loop for mesg = (message-receive-sexp queue +cache-message-type+)
-     (case (car mesg)
-       ((:get-html-page)
-        (let* ((sender (first mesg))
-               (uri    (second mesg))
-               (page   (get-resource-at-uri uri)))
-          (if page 
-           ;; TODO: actually copy page to shared memory and send only a reference.
-              (message-send-sexp queue sender (list :html-page uri page))
-              (progn
-            ;; if the request is already in the queue, then forget it.
-            ;; if it comes from somebody else, then keep it
-            ;; keep the request in a queue:
-                (save-request mesg)
-            ;; only proceed if the uri is not in the request queue.
-                (message-send-sexp queue *fetcher* (list :fetch-uri uri))))))
-       ((:get-html-tree)
-    ;; about the same, but if the tree is not in the cache, check first for
-    ;; the page and skip fetching: just request processing
-        )
-       ((:fetched-resource)
-        )))
-
-||#
-
-
-;;;; cache.lisp                   --                     --          ;;;;
+;;;; THE END ;;;;

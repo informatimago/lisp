@@ -39,6 +39,7 @@
          (also-use-packages "FFI"))
 
 ;; TODO: This nicknaming should be done outside of the sources.
+#-mocl
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (com.informatimago.common-lisp.cesarum.package:add-nickname
    "COM.INFORMATIMAGO.CLISP.SUSV3"   "SUSV3")

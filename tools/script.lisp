@@ -34,8 +34,7 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
 
-(in-package "COMMON-LISP-USER")
-(defpackage "COM.INFORMATIMAGO.COMMON-LISP.SCRIPT"
+(defpackage "COM.INFORMATIMAGO.TOOLS.SCRIPT"
   (:nicknames "SCRIPT")
   (:use "COMMON-LISP")
   (:export "PROGRAM-NAME" "*PROGRAM-NAME*" "*VERBOSE*"
@@ -55,9 +54,8 @@
            "EX-IOERR" "EX-TEMPFAIL" "EX-PROTOCOL" "EX-NOPERM"
            "EX-CONFIG" "EX--MAX"
            ;;
-           "*SHELL-OUTPUT*" "*SHELL-ERROR*" "SHELL" "UNAME" "PARSE-OPTIONS"
-           ))
-(in-package "COM.INFORMATIMAGO.COMMON-LISP.SCRIPT")
+           "*SHELL-OUTPUT*" "*SHELL-ERROR*" "SHELL" "UNAME" "PARSE-OPTIONS"))
+(in-package "COM.INFORMATIMAGO.TOOLS.SCRIPT")
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -737,29 +735,6 @@ that are accessible by the user."
            "")))))
 
 
-(defun test/mapconcat ()
-  (loop :for (expression expected)
-     :in '(((mapconcat (lambda (x) (and x (string-downcase x))) '("one" two three nil "five") "-")
-            "one-two-three--five")
-           ((mapconcat (lambda (x) (and x (string-downcase x))) '("one") "-")
-            "one")
-           ((mapconcat (lambda (x) (and x (string-downcase x))) '(nil) "-")
-            "")
-           ((mapconcat (lambda (x) (and x (string-downcase x))) '() "-")
-            "")
-           ((mapconcat (lambda (x) (and x (string-downcase x))) #("one" two three nil "five") "-")
-            "one-two-three--five")
-           ((mapconcat (lambda (x) (and x (string-downcase x))) #("one") "-")
-            "one")
-           ((mapconcat (lambda (x) (and x (string-downcase x))) #(nil) "-")
-            "")
-           ((mapconcat (lambda (x) (and x (string-downcase x))) #() "-")
-            ""))
-     :do (assert (equal (eval expression) expected)
-                 ()
-                 "~%Expression: ~S~%Expected: ~S~%Got: ~S~%"
-                 expression expected (eval expression)))
-  :success)
 
 
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

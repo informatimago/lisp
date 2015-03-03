@@ -32,13 +32,10 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.common-lisp.lisp.ibcl
-
-    ;; system attributes:
-    
-    :description  "IBCL and utilities."
-
-    :long-description "
+(asdf:defsystem "com.informatimago.common-lisp.lisp.ibcl"
+  ;; system attributes:
+  :description  "Informatimago Image Based Common Lisp Utility."
+  :long-description "
 
 This system provides three packages:
 
@@ -47,34 +44,23 @@ COM.INFORMATIMAGO.COMMON-LISP.LISP.CL-SAVING-DEFINES   def* macro saving sources
 COM.INFORMATIMAGO.COMMON-LISP.LISP.IBCL                IBCL package.
 
 "
-    
-    :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-
-    :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-
-    :licence "AGPL3"
-
-    
-    ;; component attributes
-    
-    :name "Informatimago Common Lisp Lisp Language Stuff"
-
-    :version "1.0.0"
-    
-    :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Summer 2012")
-                 ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.lisp.ibcl/")
-                 ((#:albert #:formats)             . ("docbook"))
-                 ((#:albert #:docbook #:template)  . "book")
-                 ((#:albert #:docbook #:bgcolor)   . "white")
-                 ((#:albert #:docbook #:textcolor) . "black"))
-    
-    #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
-    :depends-on ("com.informatimago.common-lisp.lisp-sexp")
-    
-    :components ((:file "source")
-                 (:file "cl-saving-defines" :depends-on ("source"))
-                 (:file "ibcl"              :depends-on ("source" "cl-saving-defines"))))
+  :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :licence "AGPL3"
+  ;; component attributes
+  :version "1.0.0"
+  :properties ((#:author-email                   . "pjb@informatimago.com")
+               (#:date                           . "Summer 2012")
+               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.lisp.ibcl/")
+               ((#:albert #:formats)             . ("docbook"))
+               ((#:albert #:docbook #:template)  . "book")
+               ((#:albert #:docbook #:bgcolor)   . "white")
+               ((#:albert #:docbook #:textcolor) . "black"))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8
+  :depends-on ("com.informatimago.common-lisp.lisp-sexp")
+  :components ((:file "source"            :depends-on ())
+               (:file "cl-saving-defines" :depends-on ("source"))
+               (:file "ibcl"              :depends-on ("source" "cl-saving-defines")))
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.lisp.ibcl.test"))))
 
 ;;;; THE END ;;;;

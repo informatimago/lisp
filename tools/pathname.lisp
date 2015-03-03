@@ -53,7 +53,8 @@
   (let ((home (ccl::getenv "HOME")))
     (if home
         (pathname (format nil "~A\\" home))
-        #P"C:\\cygwin\\home\\pjb\\"))
+        ;; Fucking MoCL can't handle #+#P!!!
+        (pathname "C:\\cygwin\\home\\pjb\\")))
   #-(and ccl windows-target)
   (cl:user-homedir-pathname))
 
@@ -62,7 +63,6 @@
                         (name nil namep) (type nil typep) (version nil versionp)
                         (defaults nil defaultsp) (case :local casep))
   (declare (ignorable casep))
-
   (if *case-common-is-not-downcased-on-posix-systems*
       (labels ((localize (object)
                  (typecase object
@@ -99,6 +99,7 @@
   (cl:translate-logical-pathname
    (etypecase pathname
      (string             (translate-logical-pathname (pathname pathname)))
+     #-mocl ; !!!!
      (logical-pathname   (make-pathname :host      (pathname-host pathname)
                                         :device    (pathname-device pathname)
                                         :directory (pathname-directory pathname)

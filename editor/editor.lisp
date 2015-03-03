@@ -123,6 +123,7 @@ This is what `(interactive \"P\")' returns.")
 
 
 
+#-mocl
 (declaim (ftype function message))
 (defun error (datum &rest arguments)
   (cond
@@ -469,7 +470,7 @@ BINDING:    must be either a symbol (naming a command),
 
     def-map))
 
-(defparameter *keymap* (keymap-copy *default-keymap*))
+(defvar *keymap* nil)
 
 
 #-clisp
@@ -1856,36 +1857,40 @@ These commands include C-@ and M-x start-kbd-macro."
      :unless (zerop (logand bit bits)) :collect modifier))
 
 
-(let ((keymap *keymap*)
-      (sequence '()))
-  (defun editor-reset-key ()
-    (setf keymap *keymap*
-          sequence '()))
-  (defun editor-process-key (key)
-    (let ((binding (keymap-binding keymap key)))
-      (push key sequence)
-      (cond
-        ((keymapp binding)
-         (format *log* "editor-process-key -> keymap ~{~A ~}~%" (reverse sequence))
-         (setf keymap binding))
-        ((or (and (symbolp binding)
-                  (fboundp binding)
-                  (interactivep binding))
-             (and (functionp binding)
-                  (interactivep binding)))
-         (format *log* "editor-process-key -> binding ~{~A ~} --> ~S~%" (reverse sequence) binding)
-         (setf *last-command-char*  (first sequence)
-               *this-command*       binding
-               *current-prefix-arg* *prefix-arg*
-               *prefix-arg*         nil)
-         (call-interactively binding)
-         (setf *last-command* *this-command*)
-         (editor-reset-key))
-        ((null binding)
-         (beep))
-        (t (message "~{~A ~} is bound to a non-command: ~S~%"
-                    (reverse sequence) binding)
-           (editor-reset-key))))))
+(defvar *current-keymap*   nil)
+(defvar *current-sequence* '())
+
+(defun editor-reset-key ()
+  (setf *current-keymap*   *keymap*
+        *current-sequence* '()))
+
+(defun editor-process-key (key)
+  (let ((binding (keymap-binding *current-keymap* key)))
+    (push key *current-sequence*)
+    (cond
+      ((keymapp binding)
+       (format *log* "editor-process-key -> keymap ~{~A ~}~%"
+               (reverse *current-sequence*))
+       (setf *current-keymap* binding))
+      ((or (and (symbolp binding)
+                (fboundp binding)
+                (interactivep binding))
+           (and (functionp binding)
+                (interactivep binding)))
+       (format *log* "editor-process-key -> binding ~{~A ~} --> ~S~%"
+               (reverse *current-sequence*) binding)
+       (setf *last-command-char*  (first *current-sequence*)
+             *this-command*       binding
+             *current-prefix-arg* *prefix-arg*
+             *prefix-arg*         nil)
+       (call-interactively binding)
+       (setf *last-command* *this-command*)
+       (editor-reset-key))
+      ((null binding)
+       (beep))
+      (t (message "~{~A ~} is bound to a non-command: ~S~%"
+                  (reverse *current-sequence*) binding)
+         (editor-reset-key)))))
 
 
 
@@ -2022,14 +2027,17 @@ These commands include C-@ and M-x start-kbd-macro."
                         (setf redisplayed t))))))))))
 
 
+#+mocl
+(defun shadow-synonym-stream (stream synonym)
+  (declare (ignore synonym))
+  stream)
 
+#-mocl
 (defun shadow-synonym-stream (stream synonym)
   (if (and (typep stream 'synonym-stream)
            (eq synonym (synonym-stream-symbol stream)))
       (symbol-value synonym)
       stream))
-
-
 
 
 
@@ -2046,7 +2054,7 @@ These commands include C-@ and M-x start-kbd-macro."
     (let ((*error-output* *log*)
           (*trace-output* *log*)
           (screen (make-instance screen-class)))
-      (screen-initialize-for-terminal screen (uiop/os:getenv "TERM"))
+      (screen-initialize-for-terminal screen (getenv "TERM"))
       (editor-reset)
       (with-screen screen
         (editor-initialize *current-screen*)
@@ -2061,6 +2069,7 @@ These commands include C-@ and M-x start-kbd-macro."
 (defun editor () (screen-editor :log "/tmp/editor.log"))
 (defun ed (&rest args) (apply (function screen-editor) args))
 
+#-mocl
 (defun reload ()
   (in-package "CL-USER")
   (ql:quickload :com.informatimago.editor)
@@ -2069,9 +2078,11 @@ These commands include C-@ and M-x start-kbd-macro."
 
 (in-package "COMMON-LISP-USER")
 
-(print '(e::reload))
-(print '(e:screen-editor))
-(print '(e:ed))
+#-mocl
+(progn
+ (print '(e::reload))
+ (print '(e:screen-editor))
+ (print '(e:ed)))
 
 ;;;; THE END ;;;;
 

@@ -32,8 +32,7 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.tools.undefmethod
-    :name "com.informatimago.tools.undefmethod"
+(asdf:defsystem "com.informatimago.tools.undefmethod"
     :description "A macro that undefines the method instead of defining it."
     :author "irc://Shinmera@irc.freenode.org"
     :version "1.0.0"

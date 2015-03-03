@@ -32,8 +32,7 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.tools.quicklisp
-    :name "com.informatimago.tools.quicklisp"
+(asdf:defsystem "com.informatimago.tools.quicklisp"
     :description "Quicklisp tools."
     :author "Pascal J. Bourguignon"
     :version "1.0.0"

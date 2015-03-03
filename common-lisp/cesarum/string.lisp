@@ -88,11 +88,6 @@ License:
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
 
 
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (let ((*compile-verbose* nil))
-    (com.informatimago.common-lisp.cesarum.ecma048:generate-all-functions-in-ecma048)))
-
 (eval-when (:compile-toplevel :load-toplevel :execute)
   
   (defun symbol-of-name-of-length=n (n)
@@ -139,26 +134,6 @@ NOTE:    characters are all designators of strings of length 1,
     (otherwise `(or (string ,length) (satisfies ,(symbol-of-name-of-length=n length))))))
 
 
-(defun test/string-designator ()
-  (assert (typep "toto" 'string-designator))
-  (assert (typep 'toto  'string-designator))
-  (assert (typep #\t    'string-designator))
-  (assert (not (typep 42 'string-designator)))
-  (assert (not (typep #(#\a #\b) 'string-designator)))
-  (assert (not (typep '(#\a #\b) 'string-designator)))
-  (assert (typep "t"    '(string-designator 1)))
-  (assert (typep 't     '(string-designator 1)))
-  (assert (typep #\t    '(string-designator 1)))
-  (assert (typep "toto" '(string-designator 4)))
-  (assert (typep 'toto  '(string-designator 4)))
-  (assert (not (typep "toto" '(string-designator 2))))
-  (assert (not (typep 'toto  '(string-designator 2))))
-  (assert (not (typep #\t    '(string-designator 2))))
-  (assert (not (typep 42 '(string-designator 1))))
-  (assert (not (typep #(#\a #\b) '(string-designator 2))))
-  (assert (not (typep '(#\a #\b) '(string-designator 2))))
-  :success)
-
 
 (deftype character-designator ()
   "
@@ -170,18 +145,6 @@ CHARACTER-DESIGNATOR is the type of character or designators of
   
   '(or character (string-designator 1)))
 
-
-
-(defun test/character-designator ()
-  (assert (typep "t"    'character-designator))
-  (assert (typep 't     'character-designator))
-  (assert (typep #\t    'character-designator))
-  (assert (not (typep "toto" 'character-designator)))
-  (assert (not (typep 'toto  'character-designator)))
-  (assert (not (typep 42     'character-designator)))
-  (assert (not (typep #(#\a) 'character-designator)))
-  (assert (not (typep '(#\a) 'character-designator)))
-  :success)
 
 
 
@@ -217,24 +180,6 @@ RETURN:          A string containing the concatenation of the strings
               (replace result (first string) :start1 pos
                        :start2 (second string) :end2 (third string)))
       :finally (return result))))
-
-
-(defun test/concatenate-strings ()
-  (assert (equal "" (concatenate-strings '())))
-  (assert (equal "" (concatenate-strings '(""))))
-  (assert (equal "" (concatenate-strings '("" "" ""))))
-  (assert (equal "" (concatenate-strings '(("" 0 0) ("abc" 0 0) ("abc" 1 1) (#\a 0 0)))))
-  (assert (equal "abc" (concatenate-strings '("abc"))))
-  (assert (equal "abc" (concatenate-strings '("a" "b" "c"))))
-  (assert (equal "abc" (concatenate-strings '(#\a #\b #\c))))
-  (assert (equal "abc" (concatenate-strings '(|a| |b| |c|))))
-  (assert (equal "abc" (concatenate-strings '(|a| "b" #\c))))
-  (assert (equal "abcdef" (concatenate-strings '("ab" "cd" "ef"))))
-  (assert (equal "abcdef" (concatenate-strings '(("abcdef" 0 2) ("abcdef" 2 4) ("abcdef" 4 6)))))
-  (assert (equal "abcdef" (concatenate-strings '(#\a #\b #\c "def"))))
-  :succes)
-
-
 
 
 
@@ -281,67 +226,6 @@ NOTE:    Unfortunately some implementations don't take into account
                        (setf (char result i) (character (aref ,seq i)))))) )))
 
 
-(defun test/implode-explode ()
-  ;; implode-string
-  (assert (string= "" (implode-string "")))
-  (assert (string= "" (implode-string #())))
-  (assert (string= "" (implode-string '())))
-  #-sbcl (assert (null (ignore-errors (implode-string 42))))
-  (assert (string= "ABC" (implode-string "ABC")))
-  (assert (string= "ABC" (implode-string #(#\A #\B #\C))))
-  (assert (string= "ABC" (implode-string '(#\A #\B #\C))))
-  (assert (null (ignore-errors (implode-string '(42)))))
-  ;; explode-string
-  (assert (eq      (explode-string "")         nil))
-  (assert (eq      (explode-string "" 'list)   nil))
-  (assert (string= (explode-string "" 'string) ""))
-  (assert (equalp  (explode-string "" 'vector) #()))
-  (assert (equal  (explode-string "ABC")       '(#\A #\B #\C)))
-  (assert (equal  (explode-string "ABC" 'list) '(#\A #\B #\C)))
-  (assert (and  (every 'char= (explode-string "ABC" 'vector) #(#\A #\B #\C))
-                (= (length (explode-string "ABC" 'vector)) (length  #(#\A #\B #\C)))))
-  (assert (string= (explode-string "ABC" 'string) "ABC"))
-  ;; implode a string
-  (assert (eq      (implode "" 'symbol "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING") '||))
-  (assert (eq      (implode "ABC" 'symbol "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING") 'ABC))
-  (assert (eq      (implode "ABC" 'symbol :keyword) ':ABC))
-  (assert (string= (implode "" 'string) ""))
-  (assert (string= (implode "ABC" 'string) "ABC"))
-  (assert (equal   (implode "(1 2 3)" 'list) '(1 2 3))) 
-  (assert (equal   (implode "NIL" 'list) '()))
-  (assert (equalp  (implode "#(1 2 3)" 'vector) #(1 2 3))) 
-  ;; implode a vector
-  (assert (eq      (implode #() 'symbol "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING") '||))
-  (assert (eq      (implode #(#\A #\B #\C) 'symbol "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING") 'ABC))
-  (assert (eq      (implode #(#\A #\B #\C) 'symbol :keyword) ':ABC))
-  (assert (string= (implode #() 'string) ""))
-  (assert (string= (implode #(#\A #\B #\C) 'string) "ABC"))
-  (assert (equal   (implode #(#\( #\1 #\space #\2  #\space #\3 #\)) 'list) '(1 2 3))) 
-  (assert (equal   (implode #(#\N #\I #\L) 'list) '()))
-  (assert (equalp  (implode #(#\# #\( #\1 #\space #\2  #\space #\3 #\)) 'vector) #(1 2 3))) 
-  ;; implode a list
-  (assert (eq      (implode '() 'symbol "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING") '||))
-  (assert (eq      (implode '(#\A #\B #\C) 'symbol "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING") 'ABC))
-  (assert (eq      (implode '(#\A #\B #\C) 'symbol :keyword) ':ABC))
-  (assert (string= (implode '() 'string) ""))
-  (assert (string= (implode '(#\A #\B #\C) 'string) "ABC"))
-  (assert (equal   (implode '(#\( #\1 #\space #\2  #\space #\3 #\)) 'list) '(1 2 3))) 
-  (assert (equal   (implode '(#\N #\I #\L) 'list) '()))
-  (assert (equalp  (implode '(#\# #\( #\1 #\space #\2  #\space #\3 #\)) 'vector) #(1 2 3)))
-  ;; explode
-  (assert (equal  (explode 'hello) '(#\H #\E #\L #\L #\O)))
-  (assert (equal  (explode 'hello 'list) '(#\H #\E #\L #\L #\O)))
-  (assert (equalp (explode 'hello 'vector) #(#\H #\E #\L #\L #\O)))
-  (assert (equalp (explode 'hello 'string) "HELLO"))
-  (assert (equal  (explode "HELLO") '(#\H #\E #\L #\L #\O)))
-  (assert (equal  (explode "HELLO" 'list) '(#\H #\E #\L #\L #\O)))
-  (assert (equalp (explode "HELLO" 'vector) #(#\H #\E #\L #\L #\O)))
-  (assert (equalp (explode "HELLO" 'string) "HELLO"))
-  (assert (equalp (explode #(#\H #\E #\L #\L #\O)) '(#\H #\E #\L #\L #\O)))
-  (assert (equalp (explode #(#\H #\E #\L #\L #\O) 'list) '(#\H #\E #\L #\L #\O)))
-  (assert (equalp (explode #(#\H #\E #\L #\L #\O) 'vector) #(#\H #\E #\L #\L #\O)))
-  (assert (equalp (explode #(#\H #\E #\L #\L #\O) 'string) "HELLO"))
-  :success)
 
 
 (defgeneric explode (object &optional result-type)
@@ -683,15 +567,6 @@ SEE ALSO:   DEFTRANSLATION
   (or (gethash (cons text language) table)
       (gethash (cons text :en) table)
       text))
-
-
-(defun test ()
-  #-sbcl (test/string-designator)
-  (test/character-designator)
-  (test/concatenate-strings)
-  (test/implode-explode))
-
-(test)
 
 
 ;;;; THE END ;;;;

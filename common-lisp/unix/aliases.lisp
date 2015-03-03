@@ -57,7 +57,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2003 - 2012
+    Copyright Pascal J. Bourguignon 2003 - 2015
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -74,6 +74,7 @@ License:
     If not, see <http://www.gnu.org/licenses/>
 
 "))
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.UNIX.ALIASES")
 
    ;; (setf db (load-aliases [file]))
    ;; (save-aliases db [file])
@@ -93,15 +94,12 @@ License:
    ;; (insert-alias db name type value [:before record] [:after record])
    ;; (delete-alias db name)
 
-(in-package "COM.INFORMATIMAGO.COMMON-LISP.UNIX.ALIASES")
 
 
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (let ((*compile-verbose* nil)) (com.informatimago.common-lisp.cesarum.ecma048:generate-all-functions-in-ecma048)))
-
-(defvar +ht+ (or (ignore-errors (read-from-string "#\\TAB"))
-                 (code-char com.informatimago.common-lisp.cesarum.ecma048:ht)))
+(defvar +ht+
+  #+mocl (code-char 9)
+  #-mocl (or (ignore-errors (read-from-string "#\\TAB"))
+             (code-char com.informatimago.common-lisp.cesarum.ecma048:ht)))
 ;; How can we define a HT character portably?
 ;; Even (code-char 9) may not work...
 ;; If the TAB code doesn't exist on the host,
@@ -109,22 +107,27 @@ License:
 
 (defvar +sphtcrlf+
   (format nil " ~C~C~C"
-          (code-char com.informatimago.common-lisp.cesarum.ecma048:ht) (code-char com.informatimago.common-lisp.cesarum.ecma048:cr) (code-char com.informatimago.common-lisp.cesarum.ecma048:lf))
+          (code-char #+mocl  9 #-mocl com.informatimago.common-lisp.cesarum.ecma048:ht)
+          (code-char #+mocl 13 #-mocl com.informatimago.common-lisp.cesarum.ecma048:cr)
+          (code-char #+mocl 10 #-mocl com.informatimago.common-lisp.cesarum.ecma048:lf))
   "A string containing space, tabulation, carriage return and line feed.")
 
 
 (defvar +spht+
-  (format nil " ~C" (code-char com.informatimago.common-lisp.cesarum.ecma048:ht))
+  (format nil " ~C" (code-char #+mocl  9 #-mocl com.informatimago.common-lisp.cesarum.ecma048:ht))
   "A string containing space and tabulation.")
 
 
 (defvar +crlf+
-  (format nil "~C~C" (code-char com.informatimago.common-lisp.cesarum.ecma048:cr) (code-char com.informatimago.common-lisp.cesarum.ecma048:lf))
+  (format nil "~C~C"
+          (code-char #+mocl 13 #-mocl com.informatimago.common-lisp.cesarum.ecma048:cr)
+          (code-char #+mocl 10 #-mocl com.informatimago.common-lisp.cesarum.ecma048:lf))
   "A string containing a carriage return and a line feed.")
 
 
 (defvar +cr+
-  (format nil "~C" (code-char com.informatimago.common-lisp.cesarum.ecma048:cr))
+  (format nil "~C"
+          (code-char #+mocl 13 #-mocl com.informatimago.common-lisp.cesarum.ecma048:cr))
   "A string containing a carriage return.")
 
 
@@ -541,3 +544,4 @@ RETURN:  A list of ( address...).
 ;;; (ext:shell "diff -twb afaa.alias afaa-new.alias") 
 ;;;  postalias -f -q file2 hash:test.alias
 
+;;;; THE END ;;;;

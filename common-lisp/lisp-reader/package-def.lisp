@@ -66,12 +66,12 @@
 
 (cl:in-package "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.PACKAGE")
 
-
+;; with COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.PACKAGE
 (defpackage "KEYWORD"
   (:use)
   (:documentation "The KEYWORD package."))
 
-
+;; with COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.PACKAGE
 (defpackage "COMMON-LISP"
   (:use)
   (:nicknames "CL")
@@ -307,17 +307,17 @@
    "WRITE-STRING" "WRITE-TO-STRING" "Y-OR-N-P" "YES-OR-NO-P" "ZEROP")
   (:documentation "The COMMON-LISP package."))
 
-
+;; with COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.PACKAGE
 (defpackage "COMMON-LISP-USER"
   (:use "COMMON-LISP")
   (:nicknames "CL-USER")
   (:documentation "The COMMON-LISP-USER package."))
 
-
-(setf *keyword-package*          (find-package "KEYWORD")
-      *common-lisp-package*      (find-package "COMMON-LISP")
-      *common-lisp-user-package* (find-package "COMMON-LISP-USER")
-      *package* *common-lisp-user-package*)
+(eval-when (:execute :load-toplevel #-mocl :compile-toplevel)
+  (setf *keyword-package*          (find-package "KEYWORD")
+        *common-lisp-package*      (find-package "COMMON-LISP")
+        *common-lisp-user-package* (find-package "COMMON-LISP-USER")
+        *package*                  *common-lisp-user-package*))
 
 
 ;;;; THE END ;;;;

@@ -34,13 +34,10 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.common-lisp.data-encoding
-
-    ;; system attributes:
-    
-    :description  "Various Data Encoding/Decoding Algorithms."
-
-    :long-description "
+(asdf:defsystem "com.informatimago.common-lisp.data-encoding"
+  ;; system attributes:
+  :description  "Informatimago Common Lisp Various Data Encoding/Decoding Algorithms."
+  :long-description "
 
 Various Data Encoding/Decoding Algorithms:
 
@@ -52,37 +49,27 @@ Various Data Encoding/Decoding Algorithms:
 - ecp: Minitel-1b Error Correction Procedure;
 
 "
-    
-    :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-    
-    :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-    
-    :licence "AGPL3"
-
-    ;; component attributes:
-    
-    :name "Informatimago Common Lisp Data Encoding"
-    
-    :version "1.2.1"
-    
-    :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Autumn 2010")
-                 ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.data-encoding/")
-                 ((#:albert #:formats)             . ("docbook"))
-                 ((#:albert #:docbook #:template)  . "book")
-                 ((#:albert #:docbook #:bgcolor)   . "white")
-                 ((#:albert #:docbook #:textcolor) . "black"))
-    
-    #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
-    :depends-on ("com.informatimago.common-lisp.cesarum"
-                 "com.informatimago.common-lisp.arithmetic")
-    
-    :components ((:file "data-encoding" :depends-on ())
-                 ;; (:file "data-encoding-test" :depends-on ())
-                 (:file "bencode"     :depends-on ())
-                 (:file "hexadecimal" :depends-on ())
-                 (:file "ecp"         :depends-on ())))
+  :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :licence "AGPL3"
+  ;; component attributes:
+  :version "1.2.1"
+  :properties ((#:author-email                   . "pjb@informatimago.com")
+               (#:date                           . "Autumn 2010")
+               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.data-encoding/")
+               ((#:albert #:formats)             . ("docbook"))
+               ((#:albert #:docbook #:template)  . "book")
+               ((#:albert #:docbook #:bgcolor)   . "white")
+               ((#:albert #:docbook #:textcolor) . "black"))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8
+  :depends-on ("com.informatimago.common-lisp.cesarum"
+               "com.informatimago.common-lisp.arithmetic")
+  :components ((:file "data-encoding" :depends-on ())
+               (:file "bencode"       :depends-on ())
+               (:file "hexadecimal"   :depends-on ())
+               (:file "ecp"           :depends-on ())
+               (:file "ieee-754"      :depends-on ()))
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.data-encoding.test"))))
 
 
 ;;;; THE END ;;;;

@@ -338,17 +338,16 @@ License:
                      (progn
                        (setf current (copy-range (aref b j)))
                        (incf j)))
-                 (loop-finish)))
-       :finally (progn
-                  (loop
-                    :while (< i lena)
-                    :do (progn (vector-push-extend (copy-range (aref a i)) result (length result))
-                               (incf i)))
-                  (loop
-                    :while (< j lenb)
-                    :do (progn (vector-push-extend (copy-range (aref b j)) result (length result))
-                               (incf j)))
-                  (return result))))))
+                 (progn
+                   (loop
+                     :while (< i lena)
+                     :do (progn (vector-push-extend (copy-range (aref a i)) result (length result))
+                                (incf i)))
+                   (loop
+                     :while (< j lenb)
+                     :do (progn (vector-push-extend (copy-range (aref b j)) result (length result))
+                                (incf j)))
+                   (return result))))))))
 
 
 (defun intersect-ranges (a b)
@@ -370,7 +369,7 @@ License:
                :do (progn
                      (incf i)
                      (setf current-a (when (< i lena) (aref a i)))))
-             (unless current-a (loop-finish))
+             (unless current-a (return result))
 
              (loop
                :while (and (< j lenb)
@@ -378,7 +377,7 @@ License:
                :do (progn
                      (incf j)
                      (setf current-b (when (< j lenb) (aref b j)))))
-             (unless current-b (loop-finish))
+             (unless current-b (return result))
 
              (unless (or (<= (range-end current-a) (range-start current-b))
                          (<= (range-end current-b) (range-start current-a)))
@@ -392,22 +391,21 @@ License:
                   (incf i)
                   (if (< i lena)
                       (setf current-a (aref a i))
-                      (loop-finish)) 
+                      (return result)) 
                   (incf j)
                   (if (< j lenb)
                       (setf current-b (aref b j))
-                      (loop-finish)))
+                      (return result)))
                  ((< (range-end current-a) (range-end current-b))
                   (incf i)
                   (if (< i lena)
                       (setf current-a (aref a i))
-                      (loop-finish)))
+                      (return result)))
                  (t
                   (incf j)
                   (if (< j lenb)
                       (setf current-b (aref b j))
-                      (loop-finish))))))
-       :finally (return result)))))
+                      (return result))))))))))
 
 
 (defun difference-ranges (r1 r2)

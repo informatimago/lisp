@@ -32,12 +32,9 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.tools.make-depends
-
+(asdf:defsystem "com.informatimago.tools.make-depends"
     ;; system attributes:
-
-    :description "Make-depends for lisp sources."
-    
+    :description "Informatimago Common Lisp MAKE-DEPENDS for lisp sources Tools"
     :long-description  "
 
 This program generates dependencies (and ASD files) for lisp sources,
@@ -45,20 +42,11 @@ based on \(require) sexps, a load-path, a set of logical pathname
 translations and ad-hoc processing.
 
 "
-
     :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-
     :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-
     :licence "AGPL3"
-
-    
     ;; component attributes:
-
-    :name "Informatimago Common Lisp MAKE-DEPENDS Tools"
-
     :version "1.2.1"
-
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Autumn 2010")
                  ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.make-depends/")
@@ -66,13 +54,11 @@ translations and ad-hoc processing.
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
-    
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
-
     :depends-on ("com.informatimago.common-lisp.cesarum"
                  "com.informatimago.common-lisp.html-generator"
-                 "com.informatimago.clext")
-    
+                 "com.informatimago.clext"
+                 "com.informatimago.tools.source")
     :components ((:file "make-depends" :depends-on ())))
 
 ;;;; THE END ;;;;

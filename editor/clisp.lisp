@@ -74,11 +74,11 @@
 
 (defun screen-editor (&key log)
   (cond
-    ((string= "xterm" (uiop/os:getenv "TERM"))
+    ((string= "xterm" (getenv "TERM"))
      (setf custom:*terminal-encoding* (ext:make-encoding
                                        :charset charset:iso-8859-1
                                        :line-terminator :unix)))
-    ((string= "kterm" (uiop/os:getenv "TERM"))
+    ((string= "kterm" (getenv "TERM"))
      (setf custom:*terminal-encoding* (ext:make-encoding
                                        :charset charset:utf-8
                                        :line-terminator :unix))))
@@ -140,8 +140,8 @@
          (*query-io*        (make-synonym-stream '*terminal-io*))
          ;; (*debug-io*        (make-synonym-stream '*terminal-io*))
          ;; (*trace-output*    (make-synonym-stream '*terminal-io*))
-         (old-term          (uiop/os:getenv "TERM")))
-    (setf (uiop/os:getenv "TERM") "xterm")
+         (old-term          (getenv "TERM")))
+    (setf (getenv "TERM") "xterm")
     (unwind-protect
          (progn (format *query-io* "~&Hello!~%") 
                 (format *query-io* "~&X = ")
@@ -151,7 +151,7 @@
                 (y-or-n-p "Happy?"))
       (setf *terminal-io* old-terminal-io)
       (close xterm-io)
-      (setf (uiop/os:getenv "TERM") old-term))))
+      (setf (getenv "TERM") old-term))))
 
 
 ;;;; THE END ;;;;

@@ -42,6 +42,27 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PEEK-STREAM"
         "COM.INFORMATIMAGO.COMMON-LISP.HTML-GENERATOR.HTML-ENTITIES")
+  #+mocl (:shadowing-import-from "COM.INFORMATIMAGO.MOCL.KLUDGES.MISSING"
+                                 "*TRACE-OUTPUT*"
+                                 "*LOAD-VERBOSE*"
+                                 "*LOAD-PRINT*"
+                                 "ARRAY-DISPLACEMENT"
+                                 "CHANGE-CLASS"
+                                 "COMPILE"
+                                 "COMPLEX"
+                                 "ENSURE-DIRECTORIES-EXIST"
+                                 "FILE-WRITE-DATE"
+                                 "INVOKE-DEBUGGER" "*DEBUGGER-HOOK*"
+                                 "LOAD"
+                                 "LOGICAL-PATHNAME-TRANSLATIONS"
+                                 "MACHINE-INSTANCE"
+                                 "MACHINE-VERSION"
+                                 "NSET-DIFFERENCE"
+                                 "RENAME-FILE"
+                                 "SUBSTITUTE-IF"
+                                 "TRANSLATE-LOGICAL-PATHNAME"
+                                 "PRINT-NOT-READABLE"
+                                 "PRINT-NOT-READABLE-OBJECT")
   (:export "HTML-ATTRIBUTE" "HTML-CONTENTS" "HTML-ATTRIBUTES" "HTML-TAG"
            "UNPARSE-HTML" "WRITE-HTML-TEXT"
            "PARSE-HTML-STRING" "PARSE-HTML-FILE")
@@ -66,7 +87,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2003 - 2014
+    Copyright Pascal J. Bourguignon 2003 - 2015
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -152,10 +173,10 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
 "
     (with-gensyms (gname)
       `(let ((,gname (intern ,(string name) +tag-package+)))
-            (push (make-element :name ,gname
-                                :options ',options
-                                :documentation ',documentation) *elements*)
-            (push ,gname *elements*))))
+         (push (make-element :name ,gname
+                             :options ',options
+                             :documentation ',documentation) *elements*)
+         (push ,gname *elements*))))
   );;eval-when
 
 ;; (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -223,17 +244,17 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
 (defelement b          ()                        "bold text style")
 (defelement base       (:end-forbidden :empty)   "document base URI")
 (defelement basefont   (:end-forbidden :empty :deprecated :loose-dtd)
-  "base font size")
+    "base font size")
 (defelement bdo        ()                        "I18N BiDi over-ride")
 (defelement big        ()                        "large text style")
 (defelement blockquote ()                        "long quotation")
 (defelement body       (:start-optional :end-optional)
-  "document body")
+    "document body")
 (defelement br         (:end-forbidden :empty)   "forced line break")
 (defelement button     ()                        "push button")
 (defelement caption    ()                        "table caption")
 (defelement center     (:deprecated :loose-dtd)
-  "shorthand for DIV align=center")
+    "shorthand for DIV align=center")
 (defelement cite       ()                        "citation")
 (defelement code       ()                        "computer code fragment")
 (defelement col        (:end-forbidden :empty)   "table column")
@@ -260,14 +281,14 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
 (defelement head       (:start-optional :end-optional)  "document head")
 (defelement hr         (:end-forbidden :empty)   "horizontal rule")
 (defelement html       (:start-optional :end-optional)
-  "document root element")
+    "document root element")
 (defelement i          ()                        "italic text style")
 (defelement iframe     (:loose-dtd)              "inline subwindow")
 (defelement img        (:end-forbidden :empty)   "embedded image")
 (defelement input      (:end-forbidden :empty)   "form control")
 (defelement ins        ()                        "inserted text")
 (defelement isindex    (:end-forbidden :empty :deprecated :loose-dtd)
-  "single line prompt")
+    "single line prompt")
 (defelement kbd        ()  "text to be entered by the user")
 (defelement label      ()                        "form field label text")
 (defelement legend     ()                        "fieldset legend")
@@ -277,9 +298,9 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
 (defelement menu       (:deprecated :loose-dtd)  "menu list")
 (defelement meta       (:end-forbidden :empty)   "generic metainformation")
 (defelement noframes   (:frameset-dtd)
-  "alternate content container for non frame-based rendering")
+    "alternate content container for non frame-based rendering")
 (defelement noscript   ()
-  "alternate content container for non script-based rendering")
+    "alternate content container for non script-based rendering")
 (defelement object     ()               "generic embedded object")
 (defelement ol         ()               "ordered list")
 (defelement optgroup   ()               "option group")
@@ -289,7 +310,7 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
 (defelement pre        ()               "preformatted text")
 (defelement q          ()               "short inline quotation")
 (defelement s          (:deprecated :loose-dtd)
-  "strike-through text style")
+    "strike-through text style")
 (defelement samp       ()               "sample program output, scripts, etc.")
 (defelement script     ()               "script statements")
 (defelement select     ()               "option selector")
@@ -317,27 +338,27 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
 
 
 (defattribute abbr 
-  (td th)
+    (td th)
   (%text)  :implied
   ()  "abbreviation for header cell")
 
 (defattribute accept-charset
-  (form)
+    (form)
   (%charsets)  :implied
   ()  "list of supported charsets")
 
 (defattribute accept 
-  (form input)
+    (form input)
   (%contenttypes)  :implied
   ()  "list of MIME types for file upload")
 
 (defattribute accesskey
-  (a area button input label legend textarea)
+    (a area button input label legend textarea)
   (%character)  :implied
   ()  "accessibility key character")
 
 (defattribute action 
-  (form)
+    (form)
   (%uri)  :required
   ()  "server-side form handler")
 
@@ -346,921 +367,921 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
 ;;
 
 (defattribute align
-  (caption)
+    (caption)
   (%calign)  :implied
   (:deprecated  :loose-dtd)  "relative to table")
 
 (defattribute align 
-  (applet iframe img input object)
+    (applet iframe img input object)
   (%ialign)  :implied
   (:deprecated  :loose-dtd)  "vertical or horizontal alignment")
 
 (defattribute align
-  (legend)
+    (legend)
   (%lalign)  :implied
   (:deprecated  :loose-dtd)  "relative to fieldset")
 
 (defattribute align
-  (table)
+    (table)
   (%talign)  :implied
   (:deprecated  :loose-dtd)  "table position relative to window")
 
 (defattribute align
-  (hr)
+    (hr)
   (or  "LEFT" "CENTER" "RIGHT")  :implied
   (:deprecated  :loose-dtd)  "")
 
 (defattribute align 
-  (div h1 h2 h3 h4 h5 h6 p)
+    (div h1 h2 h3 h4 h5 h6 p)
   (or  "LEFT" "CENTER" "RIGHT" "JUSTIFY")  :implied
   (:deprecated  :loose-dtd)  "align, text alignment")
 
 (defattribute align 
-  (col colgroup tbody td tfoot th thead tr)
+    (col colgroup tbody td tfoot th thead tr)
   (or  "LEFT" "CENTER" "RIGHT" "JUSTIFY" "CHAR")  :implied
   ()  "")
 
 (defattribute alink 
-  (body)
+    (body)
   (%color)  :implied
   (:deprecated  :loose-dtd)  "color of selected links")
 
 (defattribute alt 
-  (applet)
+    (applet)
   (%text)  :implied
   (:deprecated  :loose-dtd)  "short description")
 
 (defattribute alt 
-  (area img)
+    (area img)
   (%text)  :required
   ()  "short description")
 
 (defattribute alt 
-  (input)
+    (input)
   (cdata)  :implied
   ()  "short description")
 
 (defattribute archive
-  (applet)
+    (applet)
   (cdata)  :implied
   (:deprecated  :loose-dtd)  "comma-separated archive list")
 
 (defattribute archive
-  (object)
+    (object)
   (cdata)  :implied
   ()  "space-separated list of URIs")
 
 (defattribute axis 
-  (td th)
+    (td th)
   (cdata)  :implied
   ()  "comma-separated list of related headers")
 
 (defattribute background
-  (body)
+    (body)
   (%uri)  :implied
   (:deprecated  :loose-dtd)  "texture tile for document background")
 
 (defattribute bgcolor
-  (table)
+    (table)
   (%color)  :implied
   (:deprecated  :loose-dtd)  "background color for cells")
 
 (defattribute bgcolor
-  (tr)
+    (tr)
   (%color)  :implied
   (:deprecated  :loose-dtd)  "background color for row")
 
 (defattribute bgcolor
-  (td th)
+    (td th)
   (%color)  :implied
   (:deprecated  :loose-dtd)  "cell background color")
 
 (defattribute bgcolor
-  (body)
+    (body)
   (%color)  :implied
   (:deprecated  :loose-dtd)  "document background color")
 
 (defattribute border
-  (table)
+    (table)
   (%pixels)  :implied
   ()  "controls frame width around table")
 
 (defattribute border
-  (img object)
+    (img object)
   (%pixels)  :implied
   (:deprecated  :loose-dtd)  "link border width")
 
 (defattribute cellpadding
-  (table)
+    (table)
   (%length)  :implied
   ()  "spacing within cells")
 
 (defattribute cellspacing
-  (table)
+    (table)
   (%length)  :implied
   ()  "spacing between cells")
 
 (defattribute char 
-  (col colgroup tbody td tfoot th thead tr)
+    (col colgroup tbody td tfoot th thead tr)
   (%character)  :implied
   ()  "alignment char, e.g. char=':'")
 
 (defattribute charoff 
-  (col colgroup tbody td tfoot th thead tr)
+    (col colgroup tbody td tfoot th thead tr)
   (%length)  :implied
   ()  "offset for alignment char")
 
 (defattribute charset 
-  (a link script)
+    (a link script)
   (%charset)  :implied
   ()  "char encoding of linked resource")
 
 (defattribute checked 
-  (input)
+    (input)
   (checked)  :implied
   ()  "for radio buttons and check boxes")
 
 (defattribute cite 
-  (blockquote q)
+    (blockquote q)
   (%uri)  :implied
   ()  "URI for source document or msg")
 
 (defattribute cite 
-  (del ins)
+    (del ins)
   (%uri)  :implied
   ()  "info on reason for change")
 
 (defattribute class 
-  (:all-elements-but base basefont head html meta param script style title)
+    (:all-elements-but base basefont head html meta param script style title)
   (cdata)  :implied
   ()  "space-separated list of classes")
 
 (defattribute classid 
-  (object)
+    (object)
   (%uri)  :implied
   ()  "identifies an implementation")
 
 (defattribute clear 
-  (br)
+    (br)
   (or  "LEFT" "ALL" "RIGHT" "NONE")  "NONE"
   (:deprecated  :loose-dtd)  "control of text flow")
 
 (defattribute code 
-  (applet)
+    (applet)
   (cdata)  :implied
   (:deprecated  :loose-dtd)  "applet class file")
 
 (defattribute codebase
-  (object)
+    (object)
   (%uri)  :implied
   ()  "base URI for classid, data, archive")
 
 (defattribute codebase
-  (applet)
+    (applet)
   (%uri)  :implied
   (:deprecated  :loose-dtd)  "optional base URI for applet")
 
 (defattribute codetype
-  (object)
+    (object)
   (%contenttype)  :implied
   ()  "content type for code")
 
 (defattribute color
-  (basefont font)
+    (basefont font)
   (%color)  :implied
   (:deprecated  :loose-dtd)  "text color")
 
 (defattribute cols
-  (frameset)
+    (frameset)
   (%multilengths)  :implied
   (:frameset-dtd)  "list of lengths, default: 100% (1 col)")
 
 (defattribute cols
-  (textarea)
+    (textarea)
   (number)  :required
   ()  "")
 
 (defattribute colspan 
-  (td th)
+    (td th)
   (number) "1"
   ()  "number of cols spanned by cell")
 
 (defattribute compact 
-  (dir dl menu ol ul)
+    (dir dl menu ol ul)
   (compact)  :implied
   (:deprecated  :loose-dtd)  "reduced interitem spacing")
 
 (defattribute content 
-  (meta)
+    (meta)
   (cdata)  :required
   ()  "associated information")
 
 (defattribute coords 
-  (area)
+    (area)
   (%coords)  :implied
   ()  "comma-separated list of lengths")
 
 (defattribute coords 
-  (a)
+    (a)
   (%coords)  :implied
   ()  "for use with client-side image maps")
 
 (defattribute data 
-  (object)
+    (object)
   (%uri)  :implied
   ()  "reference to object's data")
 
 (defattribute datetime 
-  (del ins)
+    (del ins)
   (%datetime)  :implied
   ()  "date and time of change")
 
 (defattribute declare 
-  (object)
+    (object)
   (declare)  :implied
   ()  "declare but don't instantiate flag")
 
 (defattribute defer 
-  (script)
+    (script)
   (defer)  :implied
   ()  "UA may defer execution of script")
 
 (defattribute dir 
-  (:all-elements-but applet base basefont bdo br frame frameset iframe param script)
+    (:all-elements-but applet base basefont bdo br frame frameset iframe param script)
   (or  "LTR" "RTL")  :implied
   ()  "direction for weak/neutral text")
 
 (defattribute dir 
-  (bdo)
+    (bdo)
   (or  "LTR" "RTL")  :required
   ()  "directionality")
 
 (defattribute disabled
-  (button input optgroup option select textarea)
+    (button input optgroup option select textarea)
   (disabled)  :implied
   ()  "unavailable in this context")
 
 (defattribute enctype 
-  (form)
+    (form)
   (%contenttype)
   "application/x-www-form-urlencoded"
   ()  "")
 
 (defattribute face
-  (basefont font)
+    (basefont font)
   (cdata)  :implied
   (:deprecated  :loose-dtd)  "comma-separated list of font names")
 
 (defattribute for 
-  (label)
+    (label)
   (idref)  :implied
   ()  "matches field ID value")
 
 (defattribute frame 
-  (table)
+    (table)
   (%tframe)  :implied
   ()  "which parts of frame to render")
 
 (defattribute frameborder
-  (frame iframe)
+    (frame iframe)
   (or  "1" "0")  "1"
 
   :frameset-dtd
   "request frame borders?")
 
 (defattribute headers 
-  (td th)
+    (td th)
   (idrefs)  :implied
   ()  "list of id's for header cells")
 
 (defattribute height
-  (iframe)
+    (iframe)
   (%length)  :implied
   (:loose-dtd)  "frame height")
 
 (defattribute height 
-  (td th)
+    (td th)
   (%length)  :implied
   (:deprecated  :loose-dtd)  "height for cell")
 
 (defattribute height
-  (img object)
+    (img object)
   (%length)  :implied
   ()  "override height")
 
 (defattribute height
-  (applet)
+    (applet)
   (%length)  :required
   (:deprecated  :loose-dtd)  "initial height")
 
 (defattribute href 
-  (a area link)
+    (a area link)
   (%uri)  :implied
   ()  "URI for linked resource")
 
 (defattribute href 
-  (base)
+    (base)
   (%uri)  :implied
   ()  "URI that acts as base URI")
 
 (defattribute hreflang 
-  (a link)
+    (a link)
   (%languagecode)  :implied
   ()  "language code")
 
 (defattribute hspace 
-  (applet img object)
+    (applet img object)
   (%pixels)  :implied
   (:deprecated  :loose-dtd)  "horizontal gutter")
 
 (defattribute http-equiv
-  (meta)
+    (meta)
   (name)  :implied
   ()  "HTTP response header name")
 
 (defattribute id 
-  (:all-elements-but base head html meta script style title)
+    (:all-elements-but base head html meta script style title)
   (id)  :implied
   ()  "document-wide unique id")
 
 (defattribute ismap 
-  (img input)
+    (img input)
   (ismap)  :implied
   ()  "use server-side image map")
 
 (defattribute label
-  (option)
+    (option)
   (%text)  :implied
   ()  "for use in hierarchical menus")
 
 (defattribute label
-  (optgroup)
+    (optgroup)
   (%text)  :required
   ()  "for use in hierarchical menus")
 
 (defattribute lang 
-  (:all-elements-but applet base basefont br frame frameset iframe param script)
+    (:all-elements-but applet base basefont br frame frameset iframe param script)
   (%languagecode)  :implied
   ()  "language code")
 
 (defattribute language
-  (script)
+    (script)
   (cdata)  :implied
   (:deprecated  :loose-dtd)  "predefined script language name")
 
 (defattribute link 
-  (body)
+    (body)
   (%color)  :implied
   (:deprecated  :loose-dtd)  "color of links")
 
 (defattribute longdesc
-  (img)
+    (img)
   (%uri)  :implied
   ()  "link to long description (complements alt)")
 
 (defattribute longdesc
-  (frame iframe)
+    (frame iframe)
   (%uri)  :implied
   (:frameset-dtd)  "link to long description (complements title)")
 
 (defattribute marginheight
-  (frame iframe)
+    (frame iframe)
   (%pixels)  :implied
   (:frameset-dtd)  "margin height in pixels")
 
 (defattribute marginwidth
-  (frame iframe)
+    (frame iframe)
   (%pixels)  :implied
   (:frameset-dtd)  "margin widths in pixels")
 
 (defattribute maxlength
-  (input)
+    (input)
   (number)  :implied
   ()  "max chars for text fields")
 
 (defattribute media 
-  (style)
+    (style)
   (%mediadesc)  :implied
   ()  "designed for use with these media")
 
 (defattribute media 
-  (link)
+    (link)
   (%mediadesc)  :implied
   ()  "for rendering on these media")
 
 (defattribute method 
-  (form)
+    (form)
   (or  "GET" "POST")  "GET"
   ()  "HTTP method used to submit the form")
 
 (defattribute multiple
-  (select)
+    (select)
   (multiple)  :implied
   ()  "default is single selection")
 
 (defattribute name
-  (button textarea)
+    (button textarea)
   (cdata)  :implied
   ()  "")
 
 (defattribute name
-  (applet)
+    (applet)
   (cdata)  :implied
   (:deprecated  :loose-dtd)  "allows applets to find each other")
 
 (defattribute name
-  (select)
+    (select)
   (cdata)  :implied
   ()  "field name")
 
 (defattribute name 
-  (form)
+    (form)
   (cdata)  :implied
   ()  "name of form for scripting")
 
 (defattribute name 
-  (frame iframe)
+    (frame iframe)
   (cdata)  :implied
   (:frameset-dtd)  "name of frame for targetting")
 
 (defattribute name 
-  (img)
+    (img)
   (cdata)  :implied
   ()  "name of image for scripting")
 
 (defattribute name 
-  (a)
+    (a)
   (cdata)  :implied
   ()  "named link end")
 
 (defattribute name 
-  (input object)
+    (input object)
   (cdata)  :implied
   ()  "submit as part of form")
 
 (defattribute name 
-  (map)
+    (map)
   (cdata)  :required
   ()  "for reference by usemap")
 
 (defattribute name 
-  (param)
+    (param)
   (cdata)  :required
   ()  "property name")
 
 (defattribute name 
-  (meta)
+    (meta)
   (name)  :implied
   ()  "metainformation name")
 
 (defattribute nohref 
-  (area)
+    (area)
   (nohref)  :implied
   ()  "this region has no action")
 
 (defattribute noresize
-  (frame)
+    (frame)
   (noresize)  :implied
   (:frameset-dtd)  "allow users to resize frames?")
 
 (defattribute noshade
-  (hr)
+    (hr)
   (noshade)  :implied
   (:deprecated  :loose-dtd)  "")
 
 (defattribute nowrap 
-  (td th)
+    (td th)
   (nowrap)  :implied
   (:deprecated  :loose-dtd)  "suppress word wrap")
 
 (defattribute object 
-  (applet)
+    (applet)
   (cdata)  :implied
   (:deprecated  :loose-dtd)  "serialized applet file")
 
 (defattribute onblur 
-  (a area button input label select textarea)
+    (a area button input label select textarea)
   (%script)  :implied
   ()  "the element lost the focus")
 
 (defattribute onchange
-  (input select textarea)
+    (input select textarea)
   (%script)  :implied
   ()  "the element value was changed")
 
 (defattribute onclick
-  (:all-elements-but applet base basefont bdo br font frame frameset head html iframe isindex meta param script style title)
+    (:all-elements-but applet base basefont bdo br font frame frameset head html iframe isindex meta param script style title)
   (%script)  :implied
   ()  "a pointer button was clicked")
 
 (defattribute ondblclick
-  (:all-elements-but applet base basefont bdo br font frame frameset head html iframe isindex meta param script style title)
+    (:all-elements-but applet base basefont bdo br font frame frameset head html iframe isindex meta param script style title)
   (%script)  :implied
   ()  "a pointer button was double clicked")
 
 (defattribute onfocus
-  (a area button input label select textarea)
+    (a area button input label select textarea)
   (%script)  :implied
   ()  "the element got the focus")
 
 (defattribute onkeydown
-  (:all-elements-but applet base basefont bdo br font frame frameset head html iframe isindex meta param script style title)
+    (:all-elements-but applet base basefont bdo br font frame frameset head html iframe isindex meta param script style title)
   (%script)  :implied
   ()  "a key was pressed down")
 
 (defattribute onkeypress
-  (:all-elements-but applet base basefont bdo br font frame frameset head html iframe isindex meta param script style title)
+    (:all-elements-but applet base basefont bdo br font frame frameset head html iframe isindex meta param script style title)
   (%script)  :implied
   ()  "a key was pressed and released")
 
 (defattribute onkeyup
-  (:all-elements-but applet base basefont bdo br font frame frameset head html iframe isindex meta param script style title)
+    (:all-elements-but applet base basefont bdo br font frame frameset head html iframe isindex meta param script style title)
   (%script)  :implied
   ()  "a key was released")
 
 (defattribute onload 
-  (frameset)
+    (frameset)
   (%script)  :implied
   (:frameset-dtd)  "all the frames have been loaded")
 
 (defattribute onload 
-  (body)
+    (body)
   (%script)  :implied
   ()  "the document has been loaded")
 
 (defattribute onmousedown
-  (:all-elements-but applet base basefont bdo br font frame frameset head html iframe isindex meta param script style title)
+    (:all-elements-but applet base basefont bdo br font frame frameset head html iframe isindex meta param script style title)
   (%script)  :implied
   ()  "a pointer button was pressed down")
 
 (defattribute onmousemove
-  (:all-elements-but applet base basefont bdo br font frame frameset head html iframe isindex meta param script style title)
+    (:all-elements-but applet base basefont bdo br font frame frameset head html iframe isindex meta param script style title)
   (%script)  :implied
   ()  "a pointer was moved within")
 
 (defattribute onmouseout
-  (:all-elements-but applet base basefont bdo br font frame frameset head html iframe isindex meta param script style title)
+    (:all-elements-but applet base basefont bdo br font frame frameset head html iframe isindex meta param script style title)
   (%script)  :implied
   ()  "a pointer was moved away")
 
 (defattribute onmouseover
-  (:all-elements-but applet base basefont bdo br font frame frameset head html iframe isindex meta param script style title)
+    (:all-elements-but applet base basefont bdo br font frame frameset head html iframe isindex meta param script style title)
   (%script)  :implied
   ()  "a pointer was moved onto")
 
 (defattribute onmouseup
-  (:all-elements-but applet base basefont bdo br font frame frameset head html iframe isindex meta param script style title)
+    (:all-elements-but applet base basefont bdo br font frame frameset head html iframe isindex meta param script style title)
   (%script)  :implied
   ()  "a pointer button was released")
 
 (defattribute onreset
-  (form)
+    (form)
   (%script)  :implied
   ()  "the form was reset")
 
 (defattribute onselect
-  (input textarea)
+    (input textarea)
   (%script)  :implied
   ()  "some text was selected")
 
 (defattribute onsubmit
-  (form)
+    (form)
   (%script)  :implied
   ()  "the form was submitted")
 
 (defattribute onunload
-  (frameset)
+    (frameset)
   (%script)  :implied
   (:frameset-dtd)  "all the frames have been removed")
 
 (defattribute onunload
-  (body)
+    (body)
   (%script)  :implied
   ()  "the document has been removed")
 
 (defattribute profile 
-  (head)
+    (head)
   (%uri)  :implied
   ()  "named dictionary of meta info")
 
 (defattribute prompt 
-  (isindex)
+    (isindex)
   (%text)  :implied
   (:deprecated  :loose-dtd)  "prompt message")
 
 (defattribute readonly
-  (textarea)
+    (textarea)
   (readonly)  :implied
   ()  "")
 
 (defattribute readonly
-  (input)
+    (input)
   (readonly)  :implied
   ()  "for text and passwd")
 
 (defattribute rel 
-  (a link)
+    (a link)
   (%linktypes)  :implied
   ()  "forward link types")
 
 (defattribute rev 
-  (a link)
+    (a link)
   (%linktypes)  :implied
   ()  "reverse link types")
 
 (defattribute rows
-  (frameset)
+    (frameset)
   (%multilengths)  :implied
   (:frameset-dtd)  "list of lengths, default: 100% (1 row)")
 
 (defattribute rows
-  (textarea)
+    (textarea)
   (number)  :required
   ()  "")
 
 (defattribute rowspan 
-  (td th)
+    (td th)
   (number) "1"
   ()  "number of rows spanned by cell")
 
 (defattribute rules 
-  (table)
+    (table)
   (%trules)  :implied
   ()  "rulings between rows and cols")
 
 (defattribute scheme 
-  (meta)
+    (meta)
   (cdata)  :implied
   ()  "select form of content")
 
 (defattribute scope 
-  (td th)
+    (td th)
   (%scope)  :implied
   ()  "scope covered by header cells")
 
 (defattribute scrolling
-  (frame iframe)
+    (frame iframe)
   (or  "YES" "NO" "AUTO")  "AUTO"
   (:frameset-dtd)  "scrollbar or none")
 
 (defattribute selected
-  (option)
+    (option)
   (selected)  :implied
   ()  "")
 
 (defattribute shape 
-  (area)
+    (area)
   (%shape)
   "rect"
   ()  "controls interpretation of coords")
 
 (defattribute shape 
-  (a)
+    (a)
   (%shape) "RECT"
   ()  "for use with client-side image maps")
 
 (defattribute size 
-  (hr)
+    (hr)
   (%pixels)  :implied
   (:deprecated  :loose-dtd)  "")
 
 (defattribute size
-  (font)
+    (font)
   (cdata)  :implied
   (:deprecated  :loose-dtd)  "[+ -]nn e.g. size=\"+1\", size=\"4\"")
 
 (defattribute size 
-  (input)
+    (input)
   (cdata)  :implied
   ()  "specific to each type of field")
 
 (defattribute size
-  (basefont)
+    (basefont)
   (cdata)  :required
   (:deprecated  :loose-dtd)  "base font size for FONT elements")
 
 (defattribute size
-  (select)
+    (select)
   (number)  :implied
   ()  "rows visible")
 
 (defattribute span 
-  (col)
+    (col)
   (number) "1"
   ()  "COL attributes affect N columns")
 
 (defattribute span
-  (colgroup)
+    (colgroup)
   (number) "1"
   ()  "default number of columns in group")
 
 (defattribute src
-  (script)
+    (script)
   (%uri)  :implied
   ()  "URI for an external script")
 
 (defattribute src 
-  (input)
+    (input)
   (%uri)  :implied
   ()  "for fields with images")
 
 (defattribute src 
-  (frame iframe)
+    (frame iframe)
   (%uri)  :implied
   (:frameset-dtd)  "source of frame content")
 
 (defattribute src 
-  (img)
+    (img)
   (%uri)  :required
   ()  "URI of image to embed")
 
 (defattribute standby 
-  (object)
+    (object)
   (%text)  :implied
   ()  "message to show while loading")
 
 (defattribute start 
-  (ol)
+    (ol)
   (number)  :implied
   (:deprecated  :loose-dtd)  "starting sequence number")
 
 (defattribute style 
-  (:all-elements-but base basefont head html meta param script style title)
+    (:all-elements-but base basefont head html meta param script style title)
   (%stylesheet)  :implied
   ()  "associated style info")
 
 (defattribute summary 
-  (table)
+    (table)
   (%text)  :implied
   ()  "purpose/structure for speech output")
 
 (defattribute tabindex
-  (a area button input object select textarea)
+    (a area button input object select textarea)
   (number)  :implied
   ()  "position in tabbing order")
 
 (defattribute target 
-  (a area base form link)
+    (a area base form link)
   (%frametarget)  :implied
   (:loose-dtd)  "render in this frame")
 
 (defattribute text 
-  (body)
+    (body)
   (%color)  :implied
   (:deprecated  :loose-dtd)  "document text color")
 
 (defattribute title 
-  (:all-elements-but base basefont head html meta param script title)
+    (:all-elements-but base basefont head html meta param script title)
   (%text)  :implied
   ()  "advisory title")
 
 (defattribute type 
-  (a link)
+    (a link)
   (%contenttype)  :implied
   ()  "advisory content type")
 
 (defattribute type
-  (object)
+    (object)
   (%contenttype)  :implied
   ()  "content type for data")
 
 (defattribute type 
-  (param)
+    (param)
   (%contenttype)  :implied
   ()  "content type for value when valuetype=ref")
 
 (defattribute type
-  (script)
+    (script)
   (%contenttype)  :required
   ()  "content type of script language")
 
 (defattribute type 
-  (style)
+    (style)
   (%contenttype)  :required
   ()  "content type of style language")
 
 (defattribute type 
-  (input)
+    (input)
   (%inputtype) "TEXT"
   ()  "what kind of widget is needed")
 
 (defattribute type 
-  (li)
+    (li)
   (%listyle)  :implied
   (:deprecated  :loose-dtd)  "list item style")
 
 (defattribute type 
-  (ol)
+    (ol)
   (%olstyle)  :implied
   (:deprecated  :loose-dtd)  "numbering style")
 
 (defattribute type 
-  (ul)
+    (ul)
   (%ulstyle)  :implied
   (:deprecated  :loose-dtd)  "bullet style")
 
 (defattribute type
-  (button)
+    (button)
   (or  "BUTTON" "SUBMIT" "RESET")  "SUBMIT"
   ()  "for use as form button")
 
 (defattribute usemap 
-  (img input object)
+    (img input object)
   (%uri)  :implied
   ()  "use client-side image map")
 
 (defattribute valign 
-  (col colgroup tbody td tfoot th thead tr)
+    (col colgroup tbody td tfoot th thead tr)
   (or  "TOP" "MIDDLE" "BOTTOM" "BASELINE")  :implied
   ()  "vertical alignment in cells")
 
 (defattribute value
-  (input)
+    (input)
   (cdata)  :implied
   ()  "Specify for radio buttons and checkboxes")
 
 (defattribute value
-  (option)
+    (option)
   (cdata)  :implied
   ()  "defaults to element content")
 
 (defattribute value
-  (param)
+    (param)
   (cdata)  :implied
   ()  "property value")
 
 (defattribute value
-  (button)
+    (button)
   (cdata)  :implied
   ()  "sent to server when submitted")
 
 (defattribute value 
-  (li)
+    (li)
   (number)  :implied
   (:deprecated  :loose-dtd)  "reset sequence number")
 
 (defattribute valuetype
-  (param)
+    (param)
   (or  "DATA" "REF" "OBJECT")  "DATA"
   ()  "How to interpret value")
 
 (defattribute version 
-  (html)
+    (html)
   (cdata) :%html.version
   (:deprecated  :loose-dtd)  "Constant")
 
 (defattribute vlink 
-  (body)
+    (body)
   (%color)  :implied
   (:deprecated  :loose-dtd)  "color of visited links")
 
 (defattribute vspace 
-  (applet img object)
+    (applet img object)
   (%pixels)  :implied
   (:deprecated  :loose-dtd)  "vertical gutter")
 
 (defattribute width
-  (hr)
+    (hr)
   (%length)  :implied
   (:deprecated  :loose-dtd)  "")
 
 (defattribute width
-  (iframe)
+    (iframe)
   (%length)  :implied
   (:loose-dtd)  "frame width")
 
 (defattribute width 
-  (img object)
+    (img object)
   (%length)  :implied
   ()  "override width")
 
 (defattribute width
-  (table)
+    (table)
   (%length)  :implied
   ()  "table width")
 
 (defattribute width 
-  (td th)
+    (td th)
   (%length)  :implied
   (:deprecated  :loose-dtd)  "width for cell")
 
 (defattribute width
-  (applet)
+    (applet)
   (%length)  :required
   (:deprecated  :loose-dtd)  "initial width")
 
 (defattribute width 
-  (col)
+    (col)
   (%multilength)  :implied
   ()  "column width specification")
 
 (defattribute width
-  (colgroup)
+    (colgroup)
   (%multilength)  :implied
   ()  "default width for enclosed COLs")
 
 (defattribute width 
-  (pre)
+    (pre)
   (number)  :implied
   (:deprecated  :loose-dtd)  "")
 
@@ -1423,7 +1444,7 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
   (state      :normal           :type symbol)
   (next-state nil               :type symbol)
   (source (make-instance 'peek-stream :stream *standard-input*)
-          :type peek-stream))
+   :type peek-stream))
 
 
 (defun make-html-scanner (&key (source *standard-input*) (state :normal))
@@ -1434,7 +1455,7 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
 (defmacro defcharset (name characters &key complement)
   (let ((characters (eval characters))
         (table (make-array '(256) :element-type 'bit
-                           :initial-element (if complement 1 0))))
+                                  :initial-element (if complement 1 0))))
     (dotimes (i (length characters))
       (setf (aref table (char-code (aref characters i))) (if complement 0 1)))
     `(let ((table ,table))
@@ -1444,7 +1465,7 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
                (/= 0 (aref table code))
                ,complement))))))
 
-    
+
 (defcharset cs-space-p
     (format nil "~{~C~}" (mapcar (function code-char) '(32 10 13 9 11 12))))
 
@@ -1470,10 +1491,10 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
 
 
 (defcharset cs-alpha-char-p
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZZabcdefghijklmnopqrstuvwxyz")
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZZabcdefghijklmnopqrstuvwxyz")
 
 (defcharset cs-ident-char-p
-    "0123456789-ABCDEFGHIJKLMNOPQRSTUVWXYZZ_abcdefghijklmnopqrstuvwxyz:")
+  "0123456789-ABCDEFGHIJKLMNOPQRSTUVWXYZZ_abcdefghijklmnopqrstuvwxyz:")
 
 ;; xmlns:rdf
 (defparameter +crlf+ (format nil "~C~C" (code-char 10) (code-char 13)))
@@ -1489,7 +1510,7 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
   "( *[a-z]+ *= *{string})/?>"
   (let* ((next-quote (position end-of-string   string :start (1+ start)))
          (equal-sign (position (character "=") string :start (1+ start)
-                               :end next-quote)))
+                                                      :end next-quote)))
     ;; (format t "next-quote=~S equal-sign=~S~%" next-quote equal-sign)
     (if next-quote
         (if (and equal-sign (< equal-sign next-quote))
@@ -1500,26 +1521,26 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
 
 #||
 
-    (defun f (p goon)
-      (terpri)
-      (princ #\") (princ string)
-      (list (subseq string 0 p) (subseq string p) goon))
+(defun f (p goon)
+(terpri)
+(princ #\") (princ string)
+(list (subseq string 0 p) (subseq string p) goon))
 
-    (multiple-value-call #'f (heuristic-quote-in-string (setf string "Pol. Industrial, 2 \"E\"\">")  
-                                                        (position #\" string)  #\"))
-    (multiple-value-call #'f (heuristic-quote-in-string (setf string"test \"name=\"titi\">" ) 
-                                                        (position #\" string)  #\"))
-    (multiple-value-call #'f (heuristic-quote-in-string (setf string"test \"name=\", all.\">")  
-                                                        (position #\" string)  #\"))
-    (multiple-value-call #'f (heuristic-quote-in-string (setf string"test \"name\", all.\">")  
-                                                        (position #\" string)  #\"))
-    (multiple-value-call #'f (heuristic-quote-in-string (setf string"test \"name\", all")  
-                                                        (position #\" string)  #\"))
+(multiple-value-call #'f (heuristic-quote-in-string (setf string "Pol. Industrial, 2 \"E\"\">")  
+(position #\" string)  #\"))
+(multiple-value-call #'f (heuristic-quote-in-string (setf string"test \"name=\"titi\">" ) 
+(position #\" string)  #\"))
+(multiple-value-call #'f (heuristic-quote-in-string (setf string"test \"name=\", all.\">")  
+(position #\" string)  #\"))
+(multiple-value-call #'f (heuristic-quote-in-string (setf string"test \"name\", all.\">")  
+(position #\" string)  #\"))
+(multiple-value-call #'f (heuristic-quote-in-string (setf string"test \"name\", all")  
+(position #\" string)  #\"))
 ||#
 
 (defun get-token (scanner)
   (let ((value (make-array '(16) :fill-pointer 0 :adjustable t 
-                           :element-type 'character)))
+                                 :element-type 'character)))
     (labels
         ((get-char-and-keep ()
            "Get the next character from the source, advance, and append it to value."
@@ -1563,17 +1584,17 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
                 ;; <?
                 ((char= ch (character "?"))
                  (loop
-                    :named :foreign
-                    :with state = :foreign
-                    :for ch = (get-char-and-keep)
-                    :while ch
-                    :do (ecase state
-                          ((:foreign) (when (char= ch (character "?"))
-                                        (setf state :end)))
-                          ((:end)     (if (char= ch (character ">"))
-                                          (return-from :foreign
-                                            (values :foreign value))
-                                          (setf state :foreign))))))
+                   :named :foreign
+                   :with state = :foreign
+                   :for ch = (get-char-and-keep)
+                   :while ch
+                   :do (ecase state
+                         ((:foreign) (when (char= ch (character "?"))
+                                       (setf state :end)))
+                         ((:end)     (if (char= ch (character ">"))
+                                         (return-from :foreign
+                                           (values :foreign value))
+                                         (setf state :foreign))))))
                 ;; <!
                 ((char= ch (character "!"))
                  (setf ch (get-char-and-keep))
@@ -1583,21 +1604,21 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
                    ;; <!- comment
                    ((char= ch (character "-"))
                     (loop named :comment
-                       with state = :comment
-                       for ch = (get-char-and-keep)
-                       while ch 
-                       do (case state
-                            ((:comment) (when (char= ch (character "-"))
-                                          (setf state :dash)))
-                            ((:dash) (if (char= ch (character "-"))
-                                         (setf state :dash-dash)
-                                         (setf state :comment)))
-                            ((:dash-dash) (cond
-                                            ((char= ch (character " ")))
-                                            ((char= ch (character ">"))
-                                             (return-from :comment
-                                               (values :comment value)))
-                                            (t (setf state :comment)))))))
+                          with state = :comment
+                          for ch = (get-char-and-keep)
+                          while ch 
+                          do (case state
+                               ((:comment) (when (char= ch (character "-"))
+                                             (setf state :dash)))
+                               ((:dash) (if (char= ch (character "-"))
+                                            (setf state :dash-dash)
+                                            (setf state :comment)))
+                               ((:dash-dash) (cond
+                                               ((char= ch (character " ")))
+                                               ((char= ch (character ">"))
+                                                (return-from :comment
+                                                  (values :comment value)))
+                                               (t (setf state :comment)))))))
                    ;; <! open definition
                    (t (unget-char ch)
                       (setf (html-scanner-state scanner) :tag)
@@ -1613,8 +1634,8 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
                  (values :open-tag value))))
              ;; outside of a tag: pcdata
              (t (loop for ch = (get-char-and-keep)
-                   while (and ch (char/= ch (character "<")))
-                   finally (when ch (unget-char ch)))
+                      while (and ch (char/= ch (character "<")))
+                      finally (when ch (unget-char ch)))
                 (values :pcdata value)))))
         ((:script :style)
          (setf (html-scanner-state scanner) :normal)
@@ -1651,8 +1672,8 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
              ;; identifier
              ((cs-alpha-char-p ch) ;;ident
               (loop for ch = (get-char-and-keep)
-                 while (and ch (cs-ident-char-p ch))
-                 finally (when ch (unget-char ch)))
+                    while (and ch (cs-ident-char-p ch))
+                    finally (when ch (unget-char ch)))
               (when (eq (html-scanner-state scanner) :tag-ident)
                 (setf (html-scanner-state scanner) :tag)
                 (cond
@@ -1672,14 +1693,14 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
                 (tagbody
                  :go-on
                    (loop
-                      :for ch = (get-char-and-keep)
-                      :while (and ch (or (funcall char-set ch)
-                                         (find ch +crlf+)))
-                      :when (find ch +crlf+)
-                      :do  (warn "Newline inside a string: ~S" value)
-                      :finally (if (or (null ch) (char/= ch end-of-string))
-                                   (error "Newline inside a string: ~S" value)
-                                   (vector-pop value))) ; remove the string closing character
+                     :for ch = (get-char-and-keep)
+                     :while (and ch (or (funcall char-set ch)
+                                        (find ch +crlf+)))
+                     :when (find ch +crlf+)
+                       :do  (warn "Newline inside a string: ~S" value)
+                     :finally (if (or (null ch) (char/= ch end-of-string))
+                                  (error "Newline inside a string: ~S" value)
+                                  (vector-pop value))) ; remove the string closing character
                    ;; There are two common syntax error found in web pages
                    ;; (both hand-written and generated automatically):
                    ;; 1- A closing attribute double quote is duplicated at
@@ -1717,8 +1738,8 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
              ;; unquoted attribute: cdata
              ((cs-string-n-char-p ch) ;; string-n
               (loop for ch = (get-char-and-keep)
-                 while (and ch (cs-string-n-char-p ch))
-                 finally (unget-char ch))
+                    while (and ch (cs-string-n-char-p ch))
+                    finally (unget-char ch))
               (values :string value))
              ((char= ch (character "="))
               (values :equal value))
@@ -1765,8 +1786,8 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
 
 
 ;; Productions
- 
- 
+
+
 (defun report-error (parser message)
   (error "~A; (~S ~S) (~S ~S)" message
          (html-parser-token parser)
@@ -1781,30 +1802,30 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
   ;;        | tag  file  { html-seq: [(first tag)  (rest file)] }
   ;;        | data file  { html-seq: [(first data) (rest file)] } ;
   (loop
-     :with items = '()
-     :for synthetic = (case (html-parser-token parser)
-                        ((:eof)       nil)
-                        ((:pcdata)    (prog1 (html-parser-value parser) 
-                                        (advance parser)))
-                        ((:cdata)     (prog1 (html-parser-value parser) 
-                                        (advance parser)))
-                        ((:open-def)  (parse-definition parser))
-                        ((:foreign)   (prog1 (make-foreign
-                                              :data (html-parser-value parser))
-                                        (advance parser)))
-                        ((:comment)   (prog1 (make-comment 
-                                              :data (html-parser-value parser))
-                                        (advance parser)))
-                        ((:open-tag)  (parse-open-tag parser))
-                        ((:close-tag) (parse-close-tag parser))
-                        (otherwise   (report-error parser "Unexpected token")))
-     :while synthetic :do (push synthetic items)
-     :finally (return (when items
-                        (let ((result '()))
-                          (dolist (item items result)
-                            (setf result (make-html-seq
-                                          :first item
-                                          :rest result))))))))
+    :with items = '()
+    :for synthetic = (case (html-parser-token parser)
+                       ((:eof)       nil)
+                       ((:pcdata)    (prog1 (html-parser-value parser) 
+                                       (advance parser)))
+                       ((:cdata)     (prog1 (html-parser-value parser) 
+                                       (advance parser)))
+                       ((:open-def)  (parse-definition parser))
+                       ((:foreign)   (prog1 (make-foreign
+                                             :data (html-parser-value parser))
+                                       (advance parser)))
+                       ((:comment)   (prog1 (make-comment 
+                                             :data (html-parser-value parser))
+                                       (advance parser)))
+                       ((:open-tag)  (parse-open-tag parser))
+                       ((:close-tag) (parse-close-tag parser))
+                       (otherwise   (report-error parser "Unexpected token")))
+    :while synthetic :do (push synthetic items)
+    :finally (return (when items
+                       (let ((result '()))
+                         (dolist (item items result)
+                           (setf result (make-html-seq
+                                         :first item
+                                         :rest result))))))))
 
 
 (defun parse-definition (parser)
@@ -1871,7 +1892,7 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
       (report-error parser "Expected a \">\""))
     (advance parser)))
 
-  
+
 (defun parse-attributes (parser)
   ;; attributes -->   attribute
   ;;                  { html-seq: [(first attribute) (rest nil) ] }
@@ -1898,7 +1919,7 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
                        (report-error parser "Expected an attribute value"))
                      (prog1 (html-parser-value parser) (advance parser)))
               nil)))
-             
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -1993,8 +2014,8 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
                                                                  (consp (car item)) 
                                                                  (caar item)))))
        (until (and (consp (caar stack)) (eq (cadr tag) (caaar stack)))
-              (let ((attributes (nreverse (pop stack))))
-                (setf (caar stack) (append (caar stack) attributes))))))))
+         (let ((attributes (nreverse (pop stack))))
+           (setf (caar stack) (append (caar stack) attributes))))))))
 ;; (eq (car tag) :close) and no corresponding open )))
 
 
@@ -2011,8 +2032,8 @@ SEE ALSO:           HTML-TAG, HTML-ATTRIBUTES, HTML-ATTRIBUTE, HTML-CONTENTS.
     (when verbose
       (format *trace-output* "~&starting parsing of file ~S~%" name))
     (setf synthetic (with-open-file (src pathname :direction :input 
-                                         :if-does-not-exist :error
-                                         :external-format external-format)
+                                                  :if-does-not-exist :error
+                                                  :external-format external-format)
                       (let ((parser (make-html-parser 
                                      :scanner (make-html-scanner :source src))))
                         (advance parser)
@@ -2027,7 +2048,7 @@ SEE ALSO:           HTML-TAG, HTML-ATTRIBUTES, HTML-ATTRIBUTE, HTML-CONTENTS.
 
 
 (defun parse-html-string (string &key (start 0) (end (length string)) (verbose nil))
-   "
+  "
 DO:                 Parse the HTML in the STRING (between START and END)
 VERBOSE:            When true, writes some information in the *TRACE-OUTPUT*.
 RETURN:             A list of html elements.
@@ -2125,13 +2146,13 @@ to a list of two elements:
 (defmacro define-element-writer (tag nls &body body)
   `(progn
      (setf (gethash (intern (string-upcase ,(symbol-name tag)) +tag-package+) *nl*)
-          (list ',nls
-                ,(case (first body)
-                       ((:children) `(function write-children-text))
-                       ((:skip)     `(function write-nothing))
-                       (otherwise   `(lambda (self)
-                                       (block ,tag
-                                         ,@body))))))
+           (list ',nls
+                 ,(case (first body)
+                    ((:children) `(function write-children-text))
+                    ((:skip)     `(function write-nothing))
+                    (otherwise   `(lambda (self)
+                                    (block ,tag
+                                      ,@body))))))
      ',tag))
 
 ;; ^  <a>^  x^  </a>^
@@ -2295,24 +2316,24 @@ to a list of two elements:
                                                         (write-children-text element))
                                                       #(#\newline))))
       (otherwise (warn "Stray element in table: ~S" element)
-                 nil))))
+       nil))))
 
 (defun compute-max-widths (rows)
   (reduce
    (lambda (widths cells)
      (loop
-        :for width :in widths
-        :for current-cells = cells :then (cdr current-cells)
-        :for cell = (car current-cells)
-        :collect (if cell
-                     (reduce (function max)
-                                  (mapcar (function length) (cell-lines cell))
-                                  :initial-value width)
-                     width)))
+       :for width :in widths
+       :for current-cells = cells :then (cdr current-cells)
+       :for cell = (car current-cells)
+       :collect (if cell
+                    (reduce (function max)
+                            (mapcar (function length) (cell-lines cell))
+                            :initial-value width)
+                    width)))
    rows
    :key (function row-cells)
    :initial-value (make-list (reduce (function max) (mapcar (compose length row-cells) rows))
-                              :initial-element 0)))
+                             :initial-element 0)))
 
 (defun generate-line (widths)
   (with-output-to-string (*standard-output*)
@@ -2337,12 +2358,12 @@ to a list of two elements:
     (terpri)
     (princ line)
     (loop
-       :for cells :in (mapcar (lambda (row) (mapcar (function cell-lines) (row-cells row))) rows)
-       :unless (null cells)
-       :do (loop
+      :for cells :in (mapcar (lambda (row) (mapcar (function cell-lines) (row-cells row))) rows)
+      :unless (null cells)
+        :do (loop
               :for data = (loop
-                             :for current :on cells
-                             :collect (pop (car current)))
+                            :for current :on cells
+                            :collect (pop (car current)))
               :do (format t cstr data)
               :while (some (function identity) cells)
               :finally (princ line)))))

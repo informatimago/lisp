@@ -32,13 +32,13 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(asdf:defsystem :com.informatimago.small-cl-pgms.life
-    :name "com.informatimago.small-cl-pgms.life"
-    :description "A simple Conway's Life game."
-    :author "Pascal J. Bourguignon"
-    :version "1.0.0"
-    :license "GPL3"
-    :depends-on () 
-    :components ((:file "life")))
+(asdf:defsystem "com.informatimago.small-cl-pgms.life"
+  :description "A simple Conway's Life game."
+  :author "Pascal J. Bourguignon"
+  :version "1.0.0"
+  :license "GPL3"
+  :depends-on () 
+  :components ((:file "life"))
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.small-cl-pgms.life.test"))))
 
 ;;;; THE END ;;;;

@@ -15,6 +15,9 @@
 ;;;;                     progress-failure and macros callint it.
 ;;;;    2010-12-14 <PJB> Created.
 ;;;;BUGS
+;;;;
+;;;;    - we should use source-form to parse lambda-list for define-test.
+;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
@@ -37,18 +40,47 @@
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SIMPLE-TEST"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM")
+  #+mocl (:shadowing-import-from "COM.INFORMATIMAGO.MOCL.KLUDGES.MISSING"
+                          "*TRACE-OUTPUT*"
+                          "*LOAD-VERBOSE*"
+                          "*LOAD-PRINT*"
+                          "ARRAY-DISPLACEMENT"
+                          "CHANGE-CLASS"
+                          "COMPILE"
+                          "COMPLEX"
+                          "ENSURE-DIRECTORIES-EXIST"
+                          "FILE-WRITE-DATE"
+                          "INVOKE-DEBUGGER" "*DEBUGGER-HOOK*"
+                          "LOAD"
+                          "LOGICAL-PATHNAME-TRANSLATIONS"
+                          "MACHINE-INSTANCE"
+                          "MACHINE-VERSION"
+                          "NSET-DIFFERENCE"
+                          "RENAME-FILE"
+                          "SUBSTITUTE-IF"
+                          "TRANSLATE-LOGICAL-PATHNAME")
   (:export "*DEBUG-ON-ERROR*" "WITH-DEBUGGER-ON-ERROR"
-           "DEFINE-TEST" "TEST" "ASSERT-TRUE" "EXPECT-CONDITION"
+           "DEFINE-TEST" "TEST" "ASSERT-TRUE" "ASSERT-FALSE" "EXPECT-CONDITION"
 
-           "*VERBOSE-TALLY*" "*VERBOSE-PROGRESS*")
+           "*VERBOSE-TALLY*"  "*VERBOSE-PROGRESS*"
+           "PROGRESS-START"
+           "PROGRESS-SUCCESS" "PROGRESS-FAILURE-MESSAGE" "PROGRESS-FAILURE"
+           "PROGRESS-TALLY")
   (:documentation "
 This package defines a simple test tool.
+
+   (define-test <test-name> (<test-arguments>)
+     (assert-true   <expr> (<place>…) \"message ~A\" <arguments>…)
+     (assert-false  <expr> (<place>…) \"message ~A\" <arguments>…)
+     (if <test>
+        (progress-success)
+        (progress-failure-message '<expr> \"message ~A\" <arguments>…)))
 
 License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2010 - 2012
+    Copyright Pascal J. Bourguignon 2010 - 2015
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -207,28 +239,29 @@ License:
 (defun progress-tally (success-count failure-count)
   (when (verbose *verbose-tally*)
     (let ((name-max-length 40))
-     (flet ((genline (name)
-              (format nil "~VA~5D ~A,~3D ~9A~:[,~3D ~8A~;~]."
-                      name-max-length name
-                      (+ success-count failure-count)
-                      (format nil "test~P" (+ success-count failure-count))
-                      success-count (format nil "success~[es~;~:;es~]" success-count)
-                      (zerop failure-count)
-                      failure-count (format nil "failure~P" failure-count))))
-       (format *test-output* "~&~A~%"
-               (genline  (current-test-identification name-max-length)))
-       (finish-output *test-output*)
-       ;; (let* ((test-name (current-test-identification name-max-length))
-       ;;        (data (genline ""))
-       ;;        (nlen (length test-name)))
-       ;;   (format *test-output* "~&~A~%" 
-       ;;           (if (and (< nlen (+ name-max-length 4)) (char= #\space (aref data nlen)))
-       ;;               (progn
-       ;;                 (replace data test-name)
-       ;;                 data)
-       ;;               (genline (concatenate 'string (subseq test-name 0 43) "…"))))
-       ;;   (finish-output *test-output*))
-       )))
+      (flet ((write-tally (name)
+               (format *test-output* "~&~VA~
+                       ~5D test~:*~P,~:*~[~; ~;~]~
+                       ~4D success~:*~[es~;~:;es~]~
+                       ~:[,~2:*~[~;  ~;~]~*~4D failure~:*~P~;~].~%"
+                       name-max-length name
+                       (+ success-count failure-count) 
+                       success-count
+                       (zerop failure-count)
+                       failure-count)))
+        (write-tally (current-test-identification name-max-length))
+        (force-output *test-output*)
+        ;; (let* ((test-name (current-test-identification name-max-length))
+        ;;        (data (genline ""))
+        ;;        (nlen (length test-name)))
+        ;;   (format *test-output* "~&~A~%" 
+        ;;           (if (and (< nlen (+ name-max-length 4)) (char= #\space (aref data nlen)))
+        ;;               (progn
+        ;;                 (replace data test-name)
+        ;;                 data)
+        ;;               (genline (concatenate 'string (subseq test-name 0 43) "…"))))
+        ;;   (finish-output *test-output*))
+        )))
   (values))
 
 
@@ -250,6 +283,13 @@ EXAMPLE:  (assert-true (= 2 (+ 1 1))))
            (progress-failure 'equivalent ',expression 't ,vresult
                              (list ,@(mapcan (lambda (place) `(',place ,place)) places))
                              ,format-control ,@format-arguments)))))
+
+
+(defmacro assert-false (expression &optional places format-control &rest format-arguments)
+  "Evaluates a test EXPRESSION and check it returns NIL
+EXAMPLE:  (assert-false (/= 2 (+ 1 1))))
+"
+  `(assert-true (not ,expression) ,places ,format-control ,@format-arguments))
 
 
 (defmacro expect-condition (condition-class expression)
@@ -309,7 +349,7 @@ EXAMPLE:  (test equal (list 1 2 3) '(1 2 3))
   "Like DEFUN, but wraps the body in test reporting boilerplate."
   (let ((mandatory (loop
                      :for param :in parameters
-                     :while (symbolp param)
+                     :until (member param lambda-list-keywords)
                      :collect param)))
     (multiple-value-bind (docstrings declarations forms) (parse-body :lambda body)
       `(defun ,name ,parameters

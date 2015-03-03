@@ -32,7 +32,17 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.INDEX-SET")
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.INDEX-SET.TEST"
+  (:use "COMMON-LISP"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SIMPLE-TEST"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.INDEX-SET")
+  (:shadowing-import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SET"
+                          "UNION" "INTERSECTION" "MERGE" "INCLUDE")
+  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.INDEX-SET"
+                "EQUAL-RANGES" "COMPLEMENT-RANGES")
+  (:export "TEST/ALL"))
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.INDEX-SET.TEST")
 
 
 ;;----------------------------------------------------------------------
@@ -124,10 +134,14 @@
 ;;----------------------------------------------------------------------
 ;; INDEX-SET TESTS
 
-(defun test/all ()
+(define-test test/all ()
   (let ((*package* (find-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.INDEX-SET")))
    (test/range)
    (test/range/complement)
-   (com.informatimago.common-lisp.cesarum.set::test/all/class 'index-set)))
+   (com.informatimago.common-lisp.cesarum.set.test:test/all/class 'index-set)))
+
+;;;; THE END ;;;;
+
+
 
 

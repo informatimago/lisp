@@ -36,7 +36,7 @@
   (:use "COMMON-LISP")
   (:export "+INFINITY+" "FIND-PATH")
   (:documentation "The A* algorithm."))
-(in-package  "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.A-STAR")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.A-STAR")
 
 
 (defmacro with-functions ((&rest fnames) &body body)
@@ -126,91 +126,6 @@ RETURN:             a path, ie. a list of nodes from START-NODE to
                     (when (< new-cost (cost adjacent))
                       (set-previous node adjacent)
                       (set-cost new-cost adjacent))))))))))
-
-
-
-(defun g1-successors (node)
-  "Represents the graph http://gabrielgambetta.com/path1.html"
-  (ecase node
-    (a '(b f))
-    (b '(a c))
-    (c '(b))
-    (d '())
-    (e '(j))
-    (f '(a k))
-    (g '())
-    (h '())
-    (j '(e o))
-    (k '(f l))
-    (l '(k m q))
-    (m '(l n))
-    (n '(m o))
-    (o '(n j t))
-    (p '())
-    (q '(l v))
-    (r '())
-    (s '())
-    (t '(o y))
-    (u '())
-    (v '(q w))
-    (w '(v x))
-    (x '(w y))
-    (y '(x t))))
-
-(defun g1-coordinates (node)
-  (ecase node
-    (a #c(0 0))
-    (b #c(1 0))
-    (c #c(2 0))
-    (d #c(3 0))
-    (e #c(4 0))
-    (f #c(0 1))
-    (g #c(1 1))
-    (h #c(2 1))
-    (i #c(3 1))
-    (j #c(4 1))
-    (k #c(0 2))
-    (l #c(1 2))
-    (m #c(2 2))
-    (n #c(3 2))
-    (o #c(4 2))
-    (p #c(0 3))
-    (q #c(1 3))
-    (r #c(2 3))
-    (s #c(3 3))
-    (t #c(4 3))
-    (u #c(0 4))
-    (v #c(1 4))
-    (w #c(2 4))
-    (x #c(3 4))
-    (y #c(4 4))))
-
-(defun g1-distance (a b)
-  (abs (- (g1-coordinates a) (g1-coordinates b))))
-
-(defun test/g1 (&key (start 'a) (goal 't))
-  (multiple-value-call (function find-path)
-    (function g1-successors)
-    (let ((p (make-hash-table)))
-      (values (lambda (node) (gethash node p))
-              (lambda (new-previous node) (setf (gethash node p) new-previous))))
-    (let ((c (make-hash-table)))
-      (values (lambda (node) (gethash node c +infinity+))
-              (lambda (new-cost node) (setf (gethash node c) new-cost))))
-    (function g1-distance)
-    (lambda (node) (eql node goal))
-    start goal))
-
-(defun test ()
-  (assert (equal (test/g1 :start 'a :goal 'x)
-                 '(a f k l q v w x)))
-  (assert (equal (test/g1 :start 'a :goal 'y)
-                 '(a f k l m n o t y)))
-  :success)
-
-;; (test)
-
-
 
 ;;;; THE END ;;;;
 

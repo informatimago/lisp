@@ -54,7 +54,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2003 - 2012
+    Copyright Pascal J. Bourguignon 2003 - 2015
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -72,11 +72,6 @@ License:
 
 "))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CSV.CSV")
-
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (let ((*compile-verbose* nil))
-    (com.informatimago.common-lisp.cesarum.ecma048:generate-all-functions-in-ecma048)))
 
 
 ;; http://planet.plt-scheme.org/docs/neil/csv.plt/1/0/doc.txt
@@ -221,13 +216,13 @@ DO:        write the record FIELDS to the stream OUT (default
 ;; new-line (cr, lf, cr-lf)
 
 
-(defparameter +c+cr+      (code-char com.informatimago.common-lisp.cesarum.ecma048:cr))
-(defparameter +c+lf+      (code-char com.informatimago.common-lisp.cesarum.ecma048:lf))
+(defparameter +c+cr+      (code-char #+mocl 13 #-mocl com.informatimago.common-lisp.cesarum.ecma048:cr))
+(defparameter +c+lf+      (code-char #+mocl 10 #-mocl com.informatimago.common-lisp.cesarum.ecma048:lf))
 (defparameter +newline+   (format nil "~%"))
 (defparameter +crlf+      (format nil "~C~C" +c+cr+ +c+lf+))
 (defparameter +cr+        (format nil "~C"   +c+cr+))
 (defparameter +lf+        (format nil "~C"   +c+lf+))
-(defparameter +spaces+    (format nil " ~C" (code-char com.informatimago.common-lisp.cesarum.ecma048:ht)))
+(defparameter +spaces+    (format nil " ~C" (code-char #+mocl 9 #-mocl com.informatimago.common-lisp.cesarum.ecma048:ht)))
 
 
 

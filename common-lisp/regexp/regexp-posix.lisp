@@ -36,9 +36,9 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
 
-(in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.REGEXP.REGEXP-POSIX"
-  (:use "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "COMMON-LISP")
+  (:use "COMMON-LISP"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
   (:export
    ;; CLISP REGEXP API:
    "REGEXP-MATCH" "REGEXP-QUOTE" "MATCH-STRING" "MATCH-END"
@@ -1215,11 +1215,24 @@ DO:     complements the set.
 ;;
 ;; A range = an integer n for [n,n]  or a cons (min . max) for [min,max].
 
-(defstruct range min max)
+(defstruct range %min %max)
 ;; (DEFMACRO MAKE-RANGE (MIN MAX) `(CONS ,MIN ,MAX))
 ;; (DEFMACRO RANGE-MIN  (RANGE)   `(IF (INTEGERP ,RANGE) ,RANGE (CAR ,RANGE)))
 ;; (DEFMACRO RANGE-MAX  (RANGE)   `(IF (INTEGERP ,RANGE) ,RANGE (CDR ,RANGE)))
-
+(defgeneric range-min (range)
+  (:method ((range range))  (range-%min range))
+  (:method ((range cons))   (car range))
+  (:method ((range number)) range))
+(defgeneric range-max (range)
+  (:method ((range range))  (range-%max range))
+  (:method ((range cons))   (cdr range))
+  (:method ((range number)) range))
+(defgeneric (setf range-min) (new-value range)
+  (:method (new-value (range range)) (setf (range-%min range) new-value))
+  (:method (new-value (range cons))  (setf (car range)        new-value)))
+(defgeneric (setf range-max) (new-value range)
+  (:method (new-value (range range)) (setf (range-%max range) new-value))
+  (:method (new-value (range cons))  (setf (car range)        new-value)))
 
 (defun range-after-last (range)
   (1+ (if (numberp range) range (range-max range))))
@@ -1328,47 +1341,6 @@ RETURN: The last cons whose cdr+1 is >= n.
        (range-set-union rsa rsb  min min union)))))
 
 
-(defun test-range-set-union ()
-  (map nil (lambda (test)
-             (let ((u (range-set-union (first test)  (second test)))
-                   (v (range-set-union (second test) (first test))))
-               (unless (and (equal u v) (equal u (third test)))
-                 (format t "ERROR:~%a=  ~S~%b=  ~S~%e=  ~S~%u=  ~S~%v=  ~S~2%"
-                         (first test)  (second test) (third test) u v))))
-       '(
-         ( (1 (nil))
-          (3 (nil))
-          (1 3 (nil)) )
-         ( (1 (nil))
-          (2 (nil))
-          ((1 . 2) (nil)) )
-         ( ((1 . 3) (nil))
-          ((5 . 7) (nil))
-          ((1 . 3) (5 . 7) (nil)) )
-         ( ((1 . 3) (nil))
-          ((4 . 6) (nil))
-          ((1 . 6) (nil)) )
-         ( ((1 . 4) (nil))
-          ((4 . 6) (nil))
-          ((1 . 6) (nil)) )
-         ( ((1 . 4) (nil))
-          ((3 . 6) (nil))
-          ((1 . 6) (nil)) )
-         ( ((1 . 4) (nil))
-          ((1 . 6) (nil))
-          ((1 . 6) (nil)) )
-         ( ((1 . 4) (nil))
-          ((0 . 6) (nil))
-          ((0 . 6) (nil)) )
-         ( ((1 . 3) (5 . 7) (9 . 11) (nil))
-          ((3 . 5) (7 . 9) (11 . 13) (nil))
-          ((1 . 13) (nil)) )
-         ( ((1 . 3) (5 . 7) (9 . 11) (nil))
-          (4 8 12 (nil))
-          ((1 . 12) (nil)) )
-         ( ((2 . 6) (10 . 14) (18 . 22) (nil))
-          (0  8 16 34 (nil))
-          (0 (2 . 6) 8 (10 . 14) 16 (18 . 22) 34 (nil)) ))))
 
 
 (defun range-set-contains-p (rs n)
@@ -1474,7 +1446,7 @@ DO:     complements the set.
 
 
 (defstruct (rnode
-             (:print-function print-rnode))
+            (:print-function print-rnode))
   "A rnode represent a compiled regexp node"
   ;; code:
   (matchf   nil)
@@ -1588,7 +1560,7 @@ regexp matched, ie. rnode."
   (equalf   (function equal)) ;; use equalp for case insensitive.
   ;; equalf must take two sequence arguments
   ;; and accept :start1 :end1 :start2 :end2 keys.
-  (newlinepf (compile nil (lambda (ch) (eql #\NEWLINE ch))))
+  (newlinepf (lambda (ch) (eql #\NEWLINE ch)))
   (sequence ""  :type vector) ;; renv-set-sequence sets length and position too.
   (length   0   :type (integer 0))
   (position 0   :type (integer 0))
