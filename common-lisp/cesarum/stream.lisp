@@ -121,10 +121,25 @@ RETURN:     A vector containing the elements read from the STREAM.
              (member (pop dirs) '("proc" "sys" "dev") :test (function string=)))
         ;; some implementations have problem reading those file systems with read-sequence
         ;; so we fallback to read-line:
-        (with-output-to-string (out)
-          (loop
-            :for line = (read-line stream nil nil)
-            :while line :do (write-line line out)))
+        (if (subtypep (stream-element-type stream) 'character)
+            (with-output-to-string (out)
+              (loop
+                :for line = (read-line stream nil nil)
+                :while line :do (write-line line out)))
+            (let* ((busize (or length (max (handler-case (file-length stream)
+                                             (error () 0))
+                                           min-size)))
+                   (eltype (stream-element-type stream))
+                   (initel (if (subtypep eltype 'integer) 0 #\space))
+                   (buffer (make-array busize 
+                                       :element-type eltype
+                                       :initial-element initel
+                                       :adjustable t :fill-pointer 0)))
+              (loop
+                :for byte = (read-byte stream nil nil)
+                :while byte
+                :do (vector-push-extend byte buffer))
+              (return-from contents-from-stream buffer)))
         ;; normal case:
         (let* ((busize (or length (ignore-errors (file-length stream)) min-size))
                (eltype (stream-element-type stream))
