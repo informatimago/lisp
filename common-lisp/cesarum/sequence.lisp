@@ -40,7 +40,9 @@
            "DUPLICATES"
            "REPLACE-SUBSEQ"
            "DELETEF"
-           "GROUP-BY")
+           "GROUP-BY"
+           "PARSE-SEQUENCE-TYPE"
+           "CONCATENATE-SEQUENCES")
   (:documentation
    "
 
@@ -301,6 +303,96 @@ whose concatenation is equal to SEQUENCE.")
       :for rest := (nthcdr n sub)
       :while sub
       :collect (ldiff sub rest))))
+
+
+(defun parse-sequence-type (type)
+  "Parses the type which is expected to be a sequence subtype
+RETURN:  the base type (list or vector), the element-type and the length (or nil).
+"
+  (cond
+    ((eq type 'list)   (values 'list   t nil))
+    ((eq type 'vector) (values 'vector t nil))
+    ((atom type)       (error "Unrecognized sequence type ~S" type))
+    ((eq (first type) 'vector)
+     ;; vector [{element-type | *} [{size | *}]
+     (destructuring-bind (vector &optional element-type size) type
+       (declare (ignore vector))
+       (values 'vector
+               (if (member element-type '(nil *))
+                   t
+                   element-type)
+               (if (eq size '*)
+                   nil
+                   size))))
+    ((eq (first type) 'array)
+     ;; array [{element-type | *} [dimension-spec]]
+     ;; dimension-spec::= rank | * | ({dimension | *}*) 
+     (destructuring-bind (array &optional element-type dimension-spec) type
+       (declare (ignore array))
+       (when (member dimension-spec '(nil * (*)) :test (function equal))
+         (error "Not a sequence subtype: ~S" type))
+       (values 'array
+               (if (member element-type '(nil *))
+                   t
+                   element-type)
+               (cond
+                 ((eql 1 dimension-spec)  nil)
+                 ((and (listp dimension-spec)
+                       (= 1 (length dimension-spec))
+                       (integerp (first dimension-spec)))
+                  (first dimension-spec))
+                 (t (error "Not a sequence subtype: ~S" type))))))
+    (t                 (error "Unrecognized sequence type ~S" type))))
+
+
+(defun concatenate-sequences (result-type sequence-of-sequences &key (adjustable nil) (fill-pointer nil))
+  "
+RESULT-TYPE:     Indicates the type of resulting sequence.
+                 If LIST, then ADJUSTABLE and FILL-POINTER are ignored.
+
+SEQUENCE-OF-SEQUENCES:
+                 EACH element may be either a string-designator,
+                 or a list containing a string-designator, and a start and end position
+                 denoting a substring.
+
+ADJUSTABLE:      Whether the result must be adjustable.
+
+FILL-POINTER:    The result fill pointer.
+
+RETURN:          A vector containing all the elements of the vectors
+                 in sequence-of-vectors, in order.
+"
+  (cond
+    ((eq result-type 'list)
+     (let* ((result (cons nil nil))
+            (tail result))
+       (map nil (lambda (seq)
+                  (map nil (lambda (item)
+                             (setf (cdr tail) (cons item nil)
+                                   tail (cdr tail)))
+                    seq))
+         sequence-of-sequences)
+       (cdr result)))
+    (t
+     (multiple-value-bind (base-type element-type size) (parse-sequence-type result-type)
+       (declare (ignore base-type))
+       (let* ((lengths    (map 'list (function length) sequence-of-sequences))
+              (total-size (reduce (function +) lengths))
+              (result     (make-array (if (and size (< total-size size))
+                                          size
+                                          total-size)
+                                      :element-type element-type
+                                      :adjustable adjustable
+                                      :fill-pointer (if fill-pointer t nil)))
+              (start      0))
+         (map nil (lambda (seq length)
+                    (replace result seq :start1 start)
+                    (incf start length))
+           sequence-of-sequences lengths)
+         (when (integerp fill-pointer)
+           (setf (fill-pointer result) fill-pointer))
+         result)))))
+
 
 
 ;;;; THE END ;;;;

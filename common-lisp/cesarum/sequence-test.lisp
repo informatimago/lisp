@@ -93,9 +93,47 @@
   (assert-true (equalp (group-by #(1 2 3 4 5 6 7) 3) '(#(1 2 3) #(4 5 6) #(7))))
   (assert-true (equalp (group-by #(1 2 3 4 5 6 7 8) 3) '(#(1 2 3) #(4 5 6) #(7 8)))))
 
+(define-test test/parse-sequence-type ()
+  (test equal (multiple-value-list (parse-sequence-type 'list)) '(list t nil))
+  (test equal (multiple-value-list (parse-sequence-type 'vector)) '(vector t nil))
+  (test equal (multiple-value-list (parse-sequence-type '(vector))) '(vector t nil))
+  (test equal (multiple-value-list (parse-sequence-type '(vector *))) '(vector t nil))
+  (test equal (multiple-value-list (parse-sequence-type '(vector * 42))) '(vector t 42))
+  (test equal (multiple-value-list (parse-sequence-type '(vector integer))) '(vector integer nil))
+  (test equal (multiple-value-list (parse-sequence-type '(vector integer 42))) '(vector integer 42))
+  (expect-condition 'error  (parse-sequence-type 'array))
+  (expect-condition 'error  (parse-sequence-type '(array)))
+  (expect-condition 'error  (parse-sequence-type '(array *)))
+  (expect-condition 'error  (parse-sequence-type '(array * 42)))
+  (expect-condition 'error  (parse-sequence-type '(array * 42)))
+  (test equal (multiple-value-list (parse-sequence-type '(array * 1))) '(array t nil))
+  (test equal (multiple-value-list (parse-sequence-type '(array integer 1))) '(array integer nil))
+  (test equal (multiple-value-list (parse-sequence-type '(array * (42)))) '(array t 42))
+  (test equal (multiple-value-list (parse-sequence-type '(array integer (42)))) '(array integer 42))
+  (expect-condition 'error  (parse-sequence-type '(array integer (1 2)))))
+
+
+(define-test test/concatenate-sequences ()
+ (equalp (concatenate-sequences 'list   '((1 2 3) (4 5 6) (7 8 9))) '(1 2 3 4 5 6 7 8 9))
+ (equalp (concatenate-sequences 'list   #((1 2 3) (4 5 6) (7 8 9))) '(1 2 3 4 5 6 7 8 9))
+ (equalp (concatenate-sequences 'vector '((1 2 3) (4 5 6) (7 8 9))) #(1 2 3 4 5 6 7 8 9))
+ (equalp (concatenate-sequences 'vector #((1 2 3) (4 5 6) (7 8 9))) #(1 2 3 4 5 6 7 8 9))
+ (equalp (concatenate-sequences '(array * 1) '((1 2 3) (4 5 6) (7 8 9))) #(1 2 3 4 5 6 7 8 9))
+ (equalp (concatenate-sequences '(array * 1) #((1 2 3) (4 5 6) (7 8 9))) #(1 2 3 4 5 6 7 8 9))
+ (equalp (concatenate-sequences 'list   '(#(1 2 3) (4 5 6) #(7 8 9))) '(1 2 3 4 5 6 7 8 9))
+ (equalp (concatenate-sequences 'list   #(#(1 2 3) (4 5 6) #(7 8 9))) '(1 2 3 4 5 6 7 8 9))
+ (equalp (concatenate-sequences 'vector '(#(1 2 3) (4 5 6) #(7 8 9))) #(1 2 3 4 5 6 7 8 9))
+ (equalp (concatenate-sequences 'vector #(#(1 2 3) (4 5 6) #(7 8 9))) #(1 2 3 4 5 6 7 8 9))
+ (equalp (concatenate-sequences '(array * 1) '(#(1 2 3) (4 5 6) #(7 8 9))) #(1 2 3 4 5 6 7 8 9))
+ (equalp (concatenate-sequences '(array * 1) #(#(1 2 3) (4 5 6) #(7 8 9))) #(1 2 3 4 5 6 7 8 9))
+ (expect-condition 'error (concatenate-sequences '(array *) #(#(1 2 3) (4 5 6) #(7 8 9)))))
+
 
 (define-test test/all ()
   (test/replace-subseq)
-  (test/group-by))
+  (test/group-by)
+  (test/parse-sequence-type)
+  (test/concatenate-sequences))
+
 
 ;;;; THE END ;;;;

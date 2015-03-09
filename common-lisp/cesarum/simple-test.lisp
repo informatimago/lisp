@@ -11,6 +11,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2015-03-08 <PJB> Added with-debugger-on-failure.
 ;;;;    2015-01-25 <PJB> Added format-control/arguments to
 ;;;;                     progress-failure and macros callint it.
 ;;;;    2010-12-14 <PJB> Created.
@@ -60,8 +61,8 @@
                           "SUBSTITUTE-IF"
                           "TRANSLATE-LOGICAL-PATHNAME")
   (:export "*DEBUG-ON-ERROR*" "WITH-DEBUGGER-ON-ERROR"
+           "*DEBUG-ON-FAILURE*" "WITH-DEBUGGER-ON-FAILURE"
            "DEFINE-TEST" "TEST" "ASSERT-TRUE" "ASSERT-FALSE" "EXPECT-CONDITION"
-
            "*VERBOSE-TALLY*"  "*VERBOSE-PROGRESS*"
            "PROGRESS-START"
            "PROGRESS-SUCCESS" "PROGRESS-FAILURE-MESSAGE" "PROGRESS-FAILURE"
@@ -75,6 +76,16 @@ This package defines a simple test tool.
      (if <test>
         (progress-success)
         (progress-failure-message '<expr> \"message ~A\" <arguments>…)))
+
+
+Tests can be run in the scope of a WITH-DEBUGGER-ON-ERROR or a
+WITH-DEBUGGER-ON-FAILURE macro, to enter the debugger when an error is
+signaled during the test, or if a test fails.  This may be useful to
+debug the test or the failure.
+
+    (with-debugger-on-failure
+       (test/all))
+
 
 License:
 
@@ -101,6 +112,8 @@ License:
 
 (defvar *debug-on-error*          nil
   "Whether an error in a test should go to the debugger.")
+(defvar *debug-on-failure*        nil
+  "Whether a failure in a test should go to the debugger.")
 (defvar *success-count*           0
   "The total number of successful tests.")
 (defvar *failure-count*           0
@@ -212,6 +225,24 @@ License:
 
 
 
+(define-condition test-failure ()
+  ((expression :initarg :expression
+               :reader test-failure-expression)
+   (message    :initarg :message
+               :initform ""
+               :reader test-failure-message)
+   (arguments  :initarg :arguments
+               :initform '()
+               :reader test-failure-arguments))
+  (:report (lambda (condition stream)
+             (format stream "Failure on expression: ~S~%~?"
+                     (test-failure-expression condition)
+                     (test-failure-message condition)
+                     (test-failure-arguments condition)))))
+
+
+
+
 (defun progress-failure-message (expression message &rest arguments)
   (incf *failure-count*)
   (vector-push-extend #\! *report-string*)
@@ -221,7 +252,12 @@ License:
   (format *test-output* "~&Failure:     expression: ~S~@
                          ~&~?~%"
           expression message arguments)
-  (progress-report nil))
+  (progress-report nil)
+  (when *debug-on-failure*
+    (invoke-debugger (make-condition 'test-failure
+                                     :expression expression
+                                     :message message
+                                     :arguments arguments))))
 
 
 (defun progress-failure (compare expression expected-result result
@@ -294,32 +330,37 @@ EXAMPLE:  (assert-false (/= 2 (+ 1 1))))
 
 (defmacro expect-condition (condition-class expression)
   "Evaluates a test EXPRESSION and check that it signals a condition of the specified CONDITION-CLASS.
-EXAMPLE:  (expect-condition division-by-zero (/ 1 0))
+CONDITION-CLASS: evaluated to a class name.
+EXAMPLE:        (expect-condition 'division-by-zero (/ 1 0))
 "
-  (let ((body (gensym)))
-    `(flet ((,body ()
-                   ,expression
-                   (progress-failure-message ',expression
-                                             "Didn't signal the expected ~S condition."
-                                             ',condition-class)))
-       (if *debug-on-error*
-           (block expect
-             (handler-bind
-                 ((,condition-class (lambda (condition)
-                                      (declare (ignore condition))
-                                      (progress-success)
-                                      (return-from expect)))
-                  (t (function invoke-debugger)))
-               (,body)))
-           (handler-case
-               (,body)
-             (,condition-class ()
-               (progress-success))
-             (t (condition)
-               (progress-failure-message ',expression
-                                         "Signaled an unexpected ~S condition instead of ~S."
-                                         condition
-                                         ',condition-class)))))))
+  (let ((body (gensym))
+        (vcondition-class (gensym)))
+    `(let ((,vcondition-class ,condition-class))
+       (flet ((,body ()
+                ,expression
+                (progress-failure-message ',expression
+                                          "Didn't signal the expected ~S condition."
+                                          ,vcondition-class)))
+         (if *debug-on-error*
+             (block expect
+               (handler-bind
+                   ((error (lambda (condition)
+                             (if (typep condition ,vcondition-class)
+                                 (progn
+                                   (progress-success)
+                                   (return-from expect))
+                                 (invoke-debugger condition)))))
+                 (,body)))
+             (handler-case 
+                 (,body)
+               (error (condition)
+                 (if (typep condition ,vcondition-class)
+                     (progress-success)
+                     (progress-failure-message
+                      ',expression
+                      "Signaled an unexpected ~S condition instead of ~S."
+                      condition
+                      ,vcondition-class)))))))))
 
 
 
@@ -373,6 +414,10 @@ EXAMPLE:  (test equal (list 1 2 3) '(1 2 3))
 
 (defmacro with-debugger-on-error (&body body)
   `(let ((*debug-on-error* t))
+     ,@body))
+
+(defmacro with-debugger-on-failure (&body body)
+  `(let ((*debug-on-failure* t))
      ,@body))
 
 ;;;; THE END ;;;;
