@@ -85,7 +85,8 @@
   (charms:refresh-window charms:*standard-window*))
 
 (defmethod keyboard-chord-no-hang ((screen charms-screen))
-  (let ((ch       (charms:get-char charms:*standard-window* :ignore-error t)))
+  (let ((ch (charms:get-char charms:*standard-window* :ignore-error t)))
+    (format *trace-output* "got char ~A~%" ch) (force-output *trace-output*)
     (when ch
       (if (find ch #(#\newline #\tab #\esc #\return #\rubout))
           (make-instance 'chord :character ch :modifiers 0)
