@@ -9,18 +9,16 @@
 ;;;;    This package exports a stand alone RUN-PROGRAM function that
 ;;;;    runs on various implementations.
 ;;;;
-;;;;    <Fare> I find inferior-shell and xcvb-driver pretty full-featured.
-;;;;    + Nowadays asdf does hostname.
-;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2015-03-15 <PJB> Updated.
 ;;;;    2012-03-24 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2012 - 2012
+;;;;    Copyright Pascal J. Bourguignon 2012 - 2015
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -168,6 +166,10 @@
 ;;;---------------------------------------------------------------------
 
 (defun run-program (program arguments &key (wait t) (input nil) (output nil) (error nil)
+                                        (input-element-type 'character)
+                                        (input-external-format :default)
+                                        (output-element-type 'character)
+                                        (output-external-format :default)
                                         (environment nil environmentp))
   "Runs the program with the given list of arguments.
 
@@ -186,6 +188,8 @@ ENVIRONMENT is an alist of STRINGs (name . value) describing the new
 environment. The default is to copy the environment of the current
 process.
 "
+  (declare (ignorable input-element-type  input-external-format
+                      output-element-type output-external-format))
   (check-type input  (or null (member :stream) string pathname stream))
   (check-type output (or null (member :stream) string pathname stream))
   (check-type error  (or null (member :stream) string pathname stream))
@@ -234,8 +238,8 @@ process.
                                       :OUTPUT output-stream
                                       :ERROR error-stream
                                       :BUFFERED t
-                                      :ELEMENT-TYPE 'character
-                                      :EXTERNAL-FORMAT CUSTOM:*DEFAULT-FILE-ENCODING*)
+                                      :ELEMENT-TYPE output-element-type
+                                      :EXTERNAL-FORMAT output-external-format)
                (make-process :input inp :output out :error err
                              (if wait :%exit-status :pid) pid-or-status
                              :program program
@@ -343,10 +347,10 @@ process.
                                                                               'ccl::basic-file-character-output-stream))
                                                               :stream-device (ccl::stream-device stream direction)
                                                               :direction direction
-                                                              :element-type 'character
-                                                              :sharing :lock
-                                                              :encoding *default-file-character-encoding*
+                                                              :element-type output-element-type
+                                                              :encoding output-external-format 
                                                               :line-termination #+windows :windows #-windows :unix
+                                                              :sharing :lock
                                                               :auto-close t))
                                                  (otherwise  stream))))
     (make-process
@@ -356,11 +360,11 @@ process.
                      :input  (wrap-stream :input  input)  :if-input-does-not-exist :error
                      :output (wrap-stream :output output) :if-output-exists :supersede
                      :error  (wrap-stream :error  error)  :if-error-exists  :supersede
-                     :element-type 'character
-                     :sharing :lock
+                     :element-type output-element-type 
                      :external-format (list :domain nil
-                                            :character-encoding *default-file-character-encoding*
+                                            :character-encoding output-external-format
                                             :line-termination #+windows :windows #-windows :unix)
+                     :sharing :lock
                      (when environmentp
                        (list :env environment)))
      :program program
@@ -387,7 +391,7 @@ process.
                           :input  input  :if-input-does-not-exist :error
                           :output output :if-output-exists :supersede
                           :error  error  :if-error-exists  :supersede
-                          :external-format SB-IMPL::*DEFAULT-EXTERNAL-FORMAT*
+                          :external-format output-external-format
                           :search #+win32 t #-win32 nil)
                 :program program
                 :arguments arguments
