@@ -1561,8 +1561,7 @@ IF-PACKAGE-EXISTS           The default is :PACKAGE
                                             :shadowing-import-from)
                               package))
       ;; 2. :use.
-      (dolist (upack uses)
-        (use-package upack package))
+      (use-package uses package)
       ;; 3. :import-from and :intern.
       (loop
         :for (import-package symbols) :in imports
