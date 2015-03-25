@@ -554,7 +554,7 @@ EXAMPLE: (list-insert-separator '(a b (d e f)  c) 'x)
 
 
 
-(defun iota (count &optional (start 0)(step 1))
+(defun iota (count &optional (start 0) (step 1))
   "
 RETURN:   A list containing the elements 
           (start start+step ... start+(count-1)*step)
@@ -563,11 +563,11 @@ RETURN:   A list containing the elements
 EXAMPLE:  (iota 5) => (0 1 2 3 4)
           (iota 5 0 -0.1) => (0 -0.1 -0.2 -0.3 -0.4)
 "
-  (when (< 0 count)
-    (do ((result '())
-         (item (+ start (* step (1- count))) (- item step)))
-        ((< item start) result)
-      (push item result)))) ;;iota
+  (loop
+    :repeat count
+    :for item = start :then (+ item step)
+    :collect item))
+
 
 
 (defun make-list-of-random-numbers (length &key (modulo most-positive-fixnum))
