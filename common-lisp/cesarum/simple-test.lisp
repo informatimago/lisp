@@ -62,15 +62,18 @@
                           "TRANSLATE-LOGICAL-PATHNAME")
   (:export "*DEBUG-ON-ERROR*" "WITH-DEBUGGER-ON-ERROR"
            "*DEBUG-ON-FAILURE*" "WITH-DEBUGGER-ON-FAILURE"
-           "DEFINE-TEST" "TEST" "ASSERT-TRUE" "ASSERT-FALSE" "EXPECT-CONDITION"
+           "DEFINE-TEST" "CHECK" "ASSERT-TRUE" "ASSERT-FALSE" "EXPECT-CONDITION"
            "*VERBOSE-TALLY*"  "*VERBOSE-PROGRESS*"
            "PROGRESS-START"
            "PROGRESS-SUCCESS" "PROGRESS-FAILURE-MESSAGE" "PROGRESS-FAILURE"
-           "PROGRESS-TALLY")
+           "PROGRESS-TALLY"
+           ;; deprecated:
+           "TEST")
   (:documentation "
 This package defines a simple test tool.
 
    (define-test <test-name> (<test-arguments>)
+     (check = (fact 3) 6)
      (assert-true   <expr> (<place>…) \"message ~A\" <arguments>…)
      (assert-false  <expr> (<place>…) \"message ~A\" <arguments>…)
      (if <test>
@@ -363,8 +366,11 @@ EXAMPLE:        (expect-condition 'division-by-zero (/ 1 0))
                       ,vcondition-class)))))))))
 
 
-
 (defmacro test (compare expression expected &optional places format-control &rest format-arguments)
+  (warn "~S is deprecated, use CHECK instead." 'test)
+  `(check ,compare ,expression ,expected ,places ,format-control ,@format-arguments))
+
+(defmacro check (compare expression expected &optional places format-control &rest format-arguments)
   "Evaluates a test EXPRESSION and compare the result with EXPECTED (evaluated) using the COMPARE operator.
 EXAMPLE:  (test equal (list 1 2 3) '(1 2 3))
 "
