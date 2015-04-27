@@ -35,7 +35,18 @@
 (defpackage "COM.INFORMATIMAGO.SMALL-CL-PGMS.BOTIHN"
   (:use "COMMON-LISP" "CL-IRC" "CL-JSON" "DRAKMA" 
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
-  (:export "MAIN"))
+  (:export "MAIN")
+  (:documentation "
+Botihn is a simple IRC bot monitoring Hacker News, and writing to
+irc://irc.freenode.org/#hn the title and url of each new news.
+
+It is run with:
+
+   (com.informatimago.small-cl-pgms.botihn:main)
+
+Copyright Pascal J. Bourguignon 2015 - 2015
+Licensed under the AGPL3.
+"))
 (in-package "COM.INFORMATIMAGO.SMALL-CL-PGMS.BOTIHN")
 
 
@@ -43,35 +54,50 @@
 
 ;;; cf. https://github.com/HackerNews/API
 
-(defvar *period* 10 #|seconds|#)
-(defvar *last-story* nil)
+(defvar *period* 10 #|seconds|#
+  "The minimum period for fetching new news from Hacker News.")
+(defvar *last-story* nil
+  "The id of the last story sent to the IRC channel.")
 
 (defun monitor-initialize ()
+  "Initialize the Hacker News monitor.
+Resets the *LAST-STORY*."
   (unless (find '("application" . "json") *text-content-types*
                 :test (function equalp))
     (push '("application" . "json") *text-content-types*))
   (setf *last-story* nil))
 
 (defun new-stories ()
-  (multiple-value-bind (value status) (http-request "https://hacker-news.firebaseio.com/v0/newstories.json")
+  "Fetch and return the list of new stories from the HackerNews API
+server."
+  (multiple-value-bind (value status)
+      (http-request "https://hacker-news.firebaseio.com/v0/newstories.json")
     (when (= 200 status)
       (decode-json-from-string value))))
 
 (defun story (id)
-  (multiple-value-bind (value status) (http-request (format nil "https://hacker-news.firebaseio.com/v0/item/~A.json" id))
+  "Fetch and return an a-list containing the data of the story
+identified by number ID."
+  (multiple-value-bind (value status)
+      (http-request (format nil "https://hacker-news.firebaseio.com/v0/item/~A.json" id))
     (when (= 200 status)
       (decode-json-from-string value))))
 
 (defun get-new-stories ()
+  "Return the list of the new stories IDs that haven't been sent to
+the IRC server yet, in chronological order."
   (let ((news (new-stories)))
     (if *last-story*
          (reverse (subseq news 0 (or (position *last-story* news) 1)))
         (list (first news)))))
 
-(defun hn-url (story)
-  (format nil "https://news.ycombinator.com/item?id=~A" story))
+(defun hn-url (story-id)
+  "Return the URL to the HackerNews story page for the given STORY-ID."
+  (format nil "https://news.ycombinator.com/item?id=~A" story-id))
 
 (defun format-story (story)
+  "Returns a single line message containing the story title and the story URL,
+extracted from the give STORY a-list."
   (let ((title  (aget story :title))
         (url    (aget story :url))
         (id     (aget story :id)))
@@ -81,6 +107,8 @@
                                       url)))))
 
 (defun monitor-hacker-news (send)
+  "Sends the new news message lines by calling the SEND function.
+Updates the *LAST-STORY* ID."
   (dolist (story (get-new-stories))
     (let ((message (format-story (story story))))
       (when message
@@ -91,13 +119,20 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defvar *server*   "irc.freenode.org")
-(defvar *nickname* "botihn")
-(defvar *channel*  "#hn")
-(defvar *sources-url* "https://gitlab.com/com-informatimago/com-informatimago/tree/master/small-cl-pgms/botihn/")
-(defvar *connection* nil)
+(defvar *server*   "irc.freenode.org"
+  "The fqdn of the IRC server.")
+(defvar *nickname* "botihn"
+  "The nickname of the botihn user.")
+(defvar *channel*  "#hn"
+  "The channel were the HackerNews stories are sent to.")
+(defvar *sources-url*
+  "https://gitlab.com/com-informatimago/com-informatimago/tree/master/small-cl-pgms/botihn/"
+  "The URL where the sources of this ircbot can be found.")
+(defvar *connection* nil
+  "The current IRC server connection.")
 
 (defun msg-hook (message)
+  "Answers to PRIVMSG sent directly to this bot."
   (when (string= *nickname* (first (arguments message)))
     (privmsg *connection* (source message)
              (format nil "I'm an IRC bot forwarding HackerNews news to ~A; ~
@@ -107,16 +142,23 @@
 
 
 (defun call-with-retry (delay thunk)
+  "Calls THUNK repeatitively, reporting any error signaled,
+and calling the DELAY-ing thunk between each."
   (loop
     (handler-case (funcall thunk)
       (error (err) (format *error-output* "~A~%" err)))
     (funcall delay)))
 
 (defmacro with-retry (delay-expression &body body)
+  "Evaluates BODY repeatitively, reporting any error signaled,
+and evaluating DELAY-EXPRESSIONS between each iteration."
   `(call-with-retry (lambda () ,delay-expression)
                     (lambda () ,@body)))
 
 (defun main ()
+  "The main program of the botihn IRC bot.
+We connect and reconnect to the *SERVER* under the *NICKNAME*,
+and join to the *CHANNEL* where HackerNews are published."
   (catch :gazongues
     (with-retry (sleep (+ 10 (random 30)))
       (unwind-protect
