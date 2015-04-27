@@ -155,29 +155,38 @@ and evaluating DELAY-EXPRESSIONS between each iteration."
   `(call-with-retry (lambda () ,delay-expression)
                     (lambda () ,@body)))
 
+(defun quit ()
+  "Breaks the main loop and exit."
+  (throw :gazongues nil))
+
+(defun reconnect ()
+  "Disconnect and reconnect to the IRC server."
+  (throw :petites-gazongues nil))
+
 (defun main ()
   "The main program of the botihn IRC bot.
 We connect and reconnect to the *SERVER* under the *NICKNAME*,
 and join to the *CHANNEL* where HackerNews are published."
   (catch :gazongues
     (with-retry (sleep (+ 10 (random 30)))
-      (unwind-protect
-           (progn
-             (setf *connection* (connect :nickname *nickname* :server *server*))
-             (add-hook *connection* 'irc::irc-privmsg-message 'msg-hook)
-             (join *connection* *channel*)
-             (monitor-initialize)
-             (loop
-               :with next-time = (+ *period* (get-universal-time))
-               :for time = (get-universal-time)
-               :do (if (<= next-time time)
-                       (progn
-                         (monitor-hacker-news (lambda (message) (privmsg *connection* *channel* message)))
-                         (incf next-time *period*))
-                       (read-message *connection*) #|there's a 10 s timeout in here.|#)))
-        (when *connection*
-          (quit *connection*)
-          (setf *connection* nil))))))
+      (catch :petites-gazongues
+        (unwind-protect
+             (progn
+               (setf *connection* (connect :nickname *nickname* :server *server*))
+               (add-hook *connection* 'irc::irc-privmsg-message 'msg-hook)
+               (join *connection* *channel*)
+               (monitor-initialize)
+               (loop
+                 :with next-time = (+ *period* (get-universal-time))
+                 :for time = (get-universal-time)
+                 :do (if (<= next-time time)
+                         (progn
+                           (monitor-hacker-news (lambda (message) (privmsg *connection* *channel* message)))
+                           (incf next-time *period*))
+                         (read-message *connection*) #|there's a 10 s timeout in here.|#)))
+          (when *connection*
+            (quit *connection*)
+            (setf *connection* nil)))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
