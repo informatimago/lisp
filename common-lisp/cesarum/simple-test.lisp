@@ -64,6 +64,7 @@
            "*DEBUG-ON-FAILURE*" "WITH-DEBUGGER-ON-FAILURE"
            "DEFINE-TEST" "CHECK" "ASSERT-TRUE" "ASSERT-FALSE" "EXPECT-CONDITION"
            "*VERBOSE-TALLY*"  "*VERBOSE-PROGRESS*"
+           "TESTING"
            "PROGRESS-START"
            "PROGRESS-SUCCESS" "PROGRESS-FAILURE-MESSAGE" "PROGRESS-FAILURE"
            "PROGRESS-TALLY"
@@ -89,6 +90,9 @@ debug the test or the failure.
     (with-debugger-on-failure
        (test/all))
 
+    ;; single shot testing:
+    (testing
+       (check = (fact 3) 6))
 
 License:
 
@@ -167,7 +171,7 @@ License:
     (if *last-success-p*
         (format *test-output* "~A" (aref *report-string* (1- (length *report-string*))))
         (format *test-output* "~&~A" *report-string*))
-    (finish-output *test-output*))
+    (force-output *test-output*))
   (values))
 
 
@@ -299,7 +303,7 @@ License:
         ;;                 (replace data test-name)
         ;;                 data)
         ;;               (genline (concatenate 'string (subseq test-name 0 43) "…"))))
-        ;;   (finish-output *test-output*))
+        ;;   (force-output *test-output*))
         )))
   (values))
 
@@ -392,6 +396,23 @@ EXAMPLE:  (test equal (list 1 2 3) '(1 2 3))
                              ,@format-arguments)))))
 
 
+
+(defmacro testing (&body body)
+  `(multiple-value-bind (successes failures)
+       (let ((*success-count* 0)
+             (*failure-count* 0)
+             (*current-test-printed-p*  nil))
+         (progress-start)
+         (progn ,@body)
+         (progress-tally *success-count* *failure-count*)
+         (values *success-count* *failure-count*))
+     (incf *success-count* successes)
+     (incf *failure-count* failures)
+     (if (zerop failures)
+         :success
+         :failure)))
+
+
 (defmacro define-test (name parameters &body body)
   "Like DEFUN, but wraps the body in test reporting boilerplate."
   (let ((mandatory (loop
@@ -402,21 +423,9 @@ EXAMPLE:  (test equal (list 1 2 3) '(1 2 3))
       `(defun ,name ,parameters
          ,@docstrings
          ,@declarations
-         (multiple-value-bind (successes failures)
-             (let ((*success-count* 0)
-                   (*failure-count* 0)
-                   (*current-test-name*        ',name)
-                   (*current-test-parameters* (list ,@mandatory))
-                   (*current-test-printed-p*  nil))
-               (progress-start)
-               (progn ,@forms)
-               (progress-tally *success-count* *failure-count*)
-               (values *success-count* *failure-count*))
-           (incf *success-count* successes)
-           (incf *failure-count* failures)
-           (if (zerop failures)
-               :success
-               :failure))))))
+         (let ((*current-test-name*        ',name)
+               (*current-test-parameters* (list ,@mandatory)))
+           (testing ,@forms))))))
 
 (defmacro with-debugger-on-error (&body body)
   `(let ((*debug-on-error* t))
