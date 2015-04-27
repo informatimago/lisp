@@ -112,6 +112,18 @@ identifiée : ::
         (when (= 200 status)
           (decode-json-from-string value))))
 
+          
+    (story 9446577)
+    --> ((:by . "antjanus")
+         (:descendants . 0)
+         (:id . 9446577)
+         (:score . 1)
+         (:text . "")
+         (:time . 1430145589)
+         (:title . "Ask HN: Where do you look for a job? Why do you pick those places to apply?")
+         (:type . "story")
+         (:url . ""))
+
 
 Nous allons quérir cette liste périodiquement, et nous ne devons
 afficher que les nouvelles nouvelles.  Nous conserverons
