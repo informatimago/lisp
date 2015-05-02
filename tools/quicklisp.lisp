@@ -69,7 +69,8 @@
       (if sort
           (sort sorted-systems
                 (function string<)
-                :key (lambda (system) (slot-value system 'ql-dist:project-name)))
+                :key (lambda (system)
+                       (ignore-errors (slot-value system 'ql-dist:project-name))))
           sorted-systems))
     (terpri))
    (values))

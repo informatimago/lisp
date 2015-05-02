@@ -152,10 +152,18 @@
   (assert-true (equal 'x (tree-find "x" '((a b (a b c d . x) |x|)) :test (function string=) :key (function string-downcase)))))
 
 
+(define-test test/iota ()
+  (test equalp (iota 5) '(0 1 2 3 4))
+  (test equalp (iota 5 0 -0.10) '(0 -0.1 -0.2 -0.3 -0.4))
+  (test equalp (iota (/ 30 4)) '(0 1 2 3 4 5 6))
+  (test equalp (iota (/ 30 4) 0 4) '(0 4 8 12 16 20 24)))
+
 (define-test test/all ()
   (test/list-lengths)
   (test/list-elements)
-  (test/tree-find))
+  (test/tree-find)
+  (test/iota))
+
 
 
 ;;;; THE END ;;;;

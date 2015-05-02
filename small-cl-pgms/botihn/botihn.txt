@@ -1,0 +1,355 @@
+.. comment: -*- mode:rst; coding:utf-8 -*-
+
+Écriture d'un robot IRC simple
+============================================================
+
+Pour soulager notre dépendence à *Hacker News*
+(_`http://news.ycombinator.com/newest`), qui nous incite à cliquer sur
+*Reload* toutes les dix secondes, on va écrire un `ircbot`, un petit
+programme qui va aller chercher périodiquement les nouveaux articles
+sur *Hacker News*, et en transmettre le titre et l'`URL` sur un canal `IRC`.
+
+Dependences - Système `ASDF`
+------------------------------------------------------------
+
+Ce programme est écrit en `Common Lisp` (cf. _`http://cliki.net/`), en
+utilisant quelques bibliothèques:
+
+- *drakma*, client `HTTP`, va nous permettre d'obtenir les données voulues;
+
+- *cl-json* va nous permettre de décoder ces données au format `JSON`,
+  et d'obtenir des structures Lisp;
+
+- *cl-irc* va nous permettre de communiquer avec le serveur `IRC`.
+
+- je vais aussi utiliser une fonctions de ma bibliothèque
+  *com.informatimago.common-lisp.cesarum*.
+  
+Ces bibliothèques sont obtenues, installées et compilées avec
+*quicklisp* et *asdf*.  Nous allons donc commencer par écrire un
+système ASDF indiquant les dépendences de notre programme `botihn` sur
+ces bibliothèques `com.informatimago.small-cl-pgms.botihn.asd` : ::
+
+  (asdf:defsystem "com.informatimago.small-cl-pgms.botihn"
+      :description "An IRC bot monitoring Hacker News."
+      :author "Pascal J. Bourguignon"
+      :version "1.0.0"
+      :license "AGPL3"
+      :depends-on ("com.informatimago.common-lisp.cesarum"
+                   "cl-irc" "cl-json" "drakma")
+      :components ((:file "botihn")))
+                     
+
+Paquetage
+------------------------------------------------------------
+
+Nous pouvons alors commencer à programmer notre robot.  Définissons
+d'abord le paquetage lisp.  Comme ce sera un petit programme, nous
+mettrons tout le code dans un seul fichier, `botihn.lisp` : ::
+  
+    (defpackage "COM.INFORMATIMAGO.SMALL-CL-PGMS.BOTIHN"
+      (:use "COMMON-LISP" "CL-IRC" "CL-JSON" "DRAKMA" 
+            "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
+      (:export "MAIN"))
+    (in-package "COM.INFORMATIMAGO.SMALL-CL-PGMS.BOTIHN")
+
+
+Obtenir les informations d'*Hacker News* 
+------------------------------------------------------------
+
+La première chose à faire, est d'obtenir les données.  Pour celà, nous
+consultons l'`API` indiqué en bas de la page d'Hacker News, 
+_`https://github.com/HackerNews/API`.
+
+Nous allons utiliser l'`URL`:
+`https://hacker-news.firebaseio.com/v0/newstories.json` pour obtenir
+les `ID` des dernières nouvelles, et
+`https://hacker-news.firebaseio.com/v0/item/ID.json` pour obtenir les
+informations sur une nouvelle identifiée par son ID.
+
+Afin que les données envoyées par le serveur soient considérées comme
+du texte par drakma, nous devrons lui indiquer que c'est le cas pour
+un `Content-Type` `application/json` : ::
+  
+   (push '("application" . "json") *text-content-types*)
+
+
+`DRAKMA:HTTP-REQUEST` retourne plusieurs valeurs; la première est la
+resource obtenue; la deuxième est le code status.  Nous ignorerons les
+autres valeurs. ::
+  
+    (http-request "https://hacker-news.firebaseio.com/v0/newstories.json")
+    --> "[9446519,9446509,9446505,…,9443212]"
+        200
+        ((:content-length . "4001")
+         (:strict-transport-security . "max-age=31556926; includeSubDomains; preload")
+         (:content-type . "application/json; charset=utf-8")
+         (:cache-control . "no-cache"))
+        #<uri https://hacker-news.firebaseio.com/v0/newstories.json>
+        #<flexi-streams:flexi-io-stream #x302006213FED>
+        t
+        "OK"
+
+Utilisons `CL-JSON:DECODE-JSON-FROM-STRING` pour décoder le vecteur
+`JSON` : ::
+  
+    (defun new-stories ()
+      (multiple-value-bind (value status)
+           (http-request "https://hacker-news.firebaseio.com/v0/newstories.json")
+        (when (= 200 status)
+          (decode-json-from-string value))))
+
+    (subseq (new-stories) 0 8)
+    --> (9446577 9446573 9446563 9446561 9446559 9446558 9446541 9446519)
+
+    
+De façon similaire, nous obtiendrons les informations sur une nouvelle
+identifiée : ::
+  
+    (defun story (id)
+      (multiple-value-bind (value status)
+          (http-request (format nil "https://hacker-news.firebaseio.com/v0/item/~A.json" id))
+        (when (= 200 status)
+          (decode-json-from-string value))))
+
+          
+    (story 9446577)
+    --> ((:by . "antjanus")
+         (:descendants . 0)
+         (:id . 9446577)
+         (:score . 1)
+         (:text . "")
+         (:time . 1430145589)
+         (:title . "Ask HN: Where do you look for a job? Why do you pick those places to apply?")
+         (:type . "story")
+         (:url . ""))
+
+
+Nous allons quérir cette liste périodiquement, et nous ne devons
+afficher que les nouvelles nouvelles.  Nous conserverons
+l'identification de la dernière nouvelle dans une variable globale
+*\*LAST-STORY\** : ::
+
+    (defvar *last-story* nil)
+
+Lorsque le programme démarre, *\*LAST-STORY\** sera `NIL`, et alors
+nous n'afficherons que la toute dernière nouvelle (tant pis pour les
+nouvelles manquées pendant que le programme était arrêté).  Sinon,
+nous prenons toutes les nouvelles qui se trouvent dans la liste avant
+cette dernière nouvelle affichée, et nous renversons la liste pour
+l'avoir dans l'ordre chronologique. ::
+
+    (defun get-new-stories ()
+      (let ((news (new-stories)))
+        (if *last-story*
+            (reverse (subseq news 0 (or (position *last-story* news) 1)))
+            (list (first news)))))
+
+Certaines de ces nouvelles n'ont pas d'`URL`, mais contienent un texte
+sur leur page web sur *Hacker News*.  Nous construisons l'`URL` de
+cette page avec la fonction suivante : ::
+
+    (defun hn-url (story)
+      (format nil "https://news.ycombinator.com/item?id=~A" story))
+
+Et formattons le message pour une nouvelle ainsi : ::
+  
+    (defun format-story (story)
+      (let ((title  (aget story :title))
+            (url    (aget story :url))
+            (id     (aget story :id)))
+        (when (and title url)
+          (format nil "~A <~A>" title (if (zerop (length url))
+                                          (hn-url id)
+                                          url)))))
+
+Nous pouvons alors effectuer le traitement périodique, consistant à
+obtenir les dernières nouvelles, à les formatter et à les envoyer : ::
+
+    (defun monitor-hacker-news (send)
+      (dolist (story (get-new-stories))
+        (let ((message (format-story (story story))))
+          (when message
+            (funcall send message))
+          (setf *last-story* story))))
+
+Nous rassemblons l'initialisations dans une fonction : ::
+    
+    (defun monitor-initialize ()
+      (unless (find '("application" . "json") *text-content-types*
+                    :test (function equalp))
+        (push '("application" . "json") *text-content-types*))
+      (setf *last-story* nil))
+
+
+
+Écriture du client `IRC`
+------------------------------------------------------------
+
+Se connecter au serveur `IRC` avec `cl-irc` et joindre un canal est
+trés simple : ::
+
+    (defvar *connection* nil)
+    (defvar *server*   "irc.freenode.org")
+    (defvar *nickname* "botihn")
+    (defvar *channel*  "#hn")
+    (defvar *period* 10 #|seconds|#)
+    
+    (setf *connection* (connect :nickname *nickname* :server *server*))
+    (join *connection* *channel*)
+
+Nous pouvons alors transmettre les nouvelles *Hacker news*
+periodiquement : ::
+    
+    (monitor-initialize)
+    (loop
+       (monitor-hacker-news (lambda (message) (privmsg *connection* *channel* message)))
+       (sleep *period*))
+
+Cependant, ceci n'est pas satisfaisant, car nous ne recevons ni ne
+traitons aucun message provenant du serveur `IRC`.  Pour celà, il faut
+appeler la fonction `(read-message \*connection\*)`.  Cette fonction
+contient un temps mort de 10 secondes: si aucun message n'est reçu au
+bout de 10 secondes, elle retourne `NIL` au lieu de `T`.  Comme notre
+période de travail n'est pas inférieur à 10 secondes, nous pouvons
+nous accomoder de ce temps mort. ::
+
+    (monitor-initialize)
+    (loop
+      :with next-time = (+ *period* (get-universal-time))
+      :for time = (get-universal-time)
+      :do (if (<= next-time time)
+              (progn
+                (monitor-hacker-news (lambda (message) (privmsg *connection* *channel* message)))
+                (incf next-time *period*))
+              (read-message *connection*) #|there's a 10 s timeout in here.|#))
+
+Nous pouvons maintenant ajouter une fonction de traitement des
+messages privés, afin de fournir sur demande, une information à propos
+du robot `botihn` : ::
+
+    (add-hook *connection* 'irc::irc-privmsg-message 'msg-hook)
+
+Avec : ::
+  
+    (defvar *sources-url* "https://gitlab.com/com-informatimago/com-informatimago/tree/master/small-cl-pgms/botihn/")
+
+    (defun msg-hook (message)
+      (when (string= *nickname* (first (arguments message)))
+        (privmsg *connection* (source message)
+                 (format nil "I'm an IRC bot forwarding HackerNews news to ~A; ~
+                              under AGPL3 license, my sources are available at <~A>."
+                         *channel*
+                         *sources-url*))))
+
+Avec `IRC`, les messages sont envoyés à un canal ou à un utilisateur
+donné en utilisant le même message de protocole, un `PRIVMSG`.  Le
+client peut distinguer à qui le message était envoyé en observant le
+premier argument du message, qui sera le nom du canal ou le nom de
+l'utilisateur.  Notre robot ne réagit pas aux messages envoyés sur le
+canal, mais répond seulement aux messages qui lui sont directement
+adressés, avec `/msg` : ::
+
+    /msg botihn heho!
+
+    <botihn> I'm an IRC bot forwarding HackerNews news to #hn; under AGPL3 license, my sources
+    are available at
+    <https://gitlab.com/com-informatimago/com-informatimago/tree/master/small-cl-pgms/botihn/>.
+   
+
+
+Jusqu'à présent, nous ne nous sommes pas occupé des cas d'erreur.
+Principalement, si une erreur survient, c'est pour cause de
+déconnexion du serveur `IRC`.  Si une erreur survient avec le serveur
+de nouvelles, nous obtenons des listes de nouvelles vides, et nous
+n'envoyons simplement aucun message.
+
+Ainsi, si nous détectons une sortie non-locale (avec
+`UNWIND-PROTECT`), nous quittons simplement la connexion, et nous
+essayons de nous reconnecter après un délai aléatoire. ::
+
+
+    (defun call-with-retry (delay thunk)
+      (loop
+        (handler-case (funcall thunk)
+          (error (err) (format *error-output* "~A~%" err)))
+        (funcall delay)))
+
+    (defmacro with-retry (delay-expression &body body)
+      `(call-with-retry (lambda () ,delay-expression)
+                        (lambda () ,@body)))
+
+    (defun main ()
+      (catch :gazongues
+        (with-retry (sleep (+ 10 (random 30)))
+          (unwind-protect
+               (progn
+                 (setf *connection* (connect :nickname *nickname* :server *server*))
+                 (add-hook *connection* 'irc::irc-privmsg-message 'msg-hook)
+                 (join *connection* *channel*)
+                 (monitor-initialize)
+                 (loop
+                   :with next-time = (+ *period* (get-universal-time))
+                   :for time = (get-universal-time)
+                   :do (if (<= next-time time)
+                           (progn
+                             (monitor-hacker-news (lambda (message) (privmsg *connection* *channel* message)))
+                             (incf next-time *period*))
+                           (read-message *connection*) #|there's a 10 s timeout in here.|#)))
+            (when *connection*
+              (quit *connection*)
+              (setf *connection* nil))))))
+              
+
+Génération d'un exécutable indépendant
+------------------------------------------------------------
+
+Afin de générer un exécutable indépendant, nous écrivons un petit
+script `generate-application.lisp` qui sera exécuté dans un
+environnement vierge.  Ce script charge `quicklisp`, charge botihn, et
+enregistre une image exécutable, en indiquant la fonction `main` comme
+point d'entrée du programme (`toplevel-function`) :  ::
+
+    (in-package "COMMON-LISP-USER")  
+    (progn (format t "~%;;; Loading quicklisp.~%") (finish-output) (values))
+    (load #P"~/quicklisp/setup.lisp")
+
+    (progn (format t "~%;;; Loading botihn.~%") (finish-output) (values))
+    (push (make-pathname :name nil :type nil :version nil
+                         :defaults *load-truename*) asdf:*central-registry*)
+
+    (ql:quickload :com.informatimago.small-cl-pgms.botihn)
+
+    (progn (format t "~%;;; Saving hotihn.~%") (finish-output) (values))
+    ;; This doesn't return.
+    #+ccl (ccl::save-application
+           "botihn"
+           :mode #o755 :prepend-kernel t
+           :toplevel-function (function com.informatimago.small-cl-pgms.botihn:main)
+           :init-file nil
+           :error-handler :quit)
+
+
+Un petit `Makefile` permet d'exécuter ce script facilement à partir du
+shell `unix` : ::
+
+    all:botihn
+    botihn: com.informatimago.small-cl-pgms.botihn.asd  botihn.lisp generate-application.lisp
+        ccl -norc < generate-application.lisp
+
+
+
+
+Conclusion
+------------------------------------------------------------
+
+Vous pouvez obtenir les sources complets de ce petit exemple à:
+_`https://gitlab.com/com-informatimago/com-informatimago/tree/master/small-cl-pgms/botihn/` : ::
+
+  git clone https://gitlab.com/com-informatimago/com-informatimago.git
+  cd com-informatimago/small-cl-pgms/botihn/
+
+.. comment: THE END
+
+  
+

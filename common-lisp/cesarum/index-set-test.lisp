@@ -128,7 +128,7 @@
         (complement-ranges (vector (make-range :start 10 :end 90)) 0 100)
         (vector (make-range :start 0 :end 10)  (make-range :start 90 :end 100)))
 
-  (expect-condition error
+  (expect-condition 'error
                     (complement-ranges (vector  (make-range :start 0 :end 100)) 10 90)))
 
 ;;----------------------------------------------------------------------

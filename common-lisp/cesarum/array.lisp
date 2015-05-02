@@ -436,4 +436,5 @@ numbers, or equal otherwise."
                :for i :below (array-total-size a1)
                :always (same i))))))
 
+
 ;;;; THE END ;;;;

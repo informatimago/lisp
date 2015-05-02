@@ -1546,7 +1546,9 @@ IF-PACKAGE-EXISTS           The default is :PACKAGE
                    names)))
     (let ((package (find-package name)))
       (if package
-          (let ((unuse-list (set-difference (package-use-list package) uses)))
+          (let ((unuse-list (set-difference (mapcar (lambda (np) (if (stringp np) np (package-name np)))
+                                                    (package-use-list package))
+                                            uses :test (function string=))))
             (rename-package package name nicknames)
             (unuse-package unuse-list package))
           (setf package (make-package name :nicknames nicknames :use '())))
@@ -1559,8 +1561,7 @@ IF-PACKAGE-EXISTS           The default is :PACKAGE
                                             :shadowing-import-from)
                               package))
       ;; 2. :use.
-      (dolist (upack uses)
-        (use-package upack package))
+      (use-package uses package)
       ;; 3. :import-from and :intern.
       (loop
         :for (import-package symbols) :in imports

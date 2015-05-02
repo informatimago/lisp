@@ -40,6 +40,7 @@
   :license "AGPL3"
   :depends-on ("com.informatimago.common-lisp.cesarum"
                "com.informatimago.common-lisp.lisp-sexp"
+               "com.informatimago.clext.run-program"
                "split-sequence"
                #-mocl "cl-charms") 
   :components ((:file "package")
