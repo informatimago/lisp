@@ -351,6 +351,33 @@ HTOUT:
   Similar to NET.HTML.GENERATOR
 
 
+cl-durian:
+
+    https://github.com/GordianNaught/cl-durian
+
+    cl-durian creates human legible, indented HTML from simple list structures.
+
+    (cl-durian:html `(html ((cl-durian:script ((type "text/javascript"))
+                              "var x = 1;")
+                            (h1 "This is the title")
+                            (b ((p "line1")
+                                (p "line2"))))))
+
+
+    "<html>
+        <script TYPE=\"text/javascript\">var x = 1;</script>
+        <h1>This&nbsp;is&nbsp;the&nbsp;title</h1>
+        <b>
+            <p>line1</p>
+            <p>line2</p>
+        </b>
+    </html>
+    "
+
+    Dynamism is accomplished with list interpolation (`,' and `,@').
+    Internally uses with-output-to-string for linear-time string construction.
+
+
 LML:
 
   HTML tags are keywords.
