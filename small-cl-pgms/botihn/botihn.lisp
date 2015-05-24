@@ -155,7 +155,7 @@ and evaluating DELAY-EXPRESSIONS between each iteration."
   `(call-with-retry (lambda () ,delay-expression)
                     (lambda () ,@body)))
 
-(defun quit ()
+(defun exit ()
   "Breaks the main loop and exit."
   (throw :gazongues nil))
 
