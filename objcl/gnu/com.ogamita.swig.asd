@@ -17,12 +17,12 @@
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
     :depends-on ("cffi")
-    :components ((:file "packages")
-                 #-(and)
-                 (:file "xcb"              :depends-on ("packages"))
-                 #+macosx
-                 (:file "coregraphics"     :depends-on ("packages"))
-                 (:file "packages-exports" :depends-on (#-(and)  "xcb"
-                                                        #+macosx "coregraphics"))))
+    :components (#-(and)  (:file "packages")
+                 #-(and)  (:file "xcb"              :depends-on ("packages"))
+                 #+macosx (:file "coregraphics"     :depends-on ("packages"))
+                 #-(and)  (:file "packages-exports" :depends-on (#-(and)  "xcb"
+                                                                   #+macosx "coregraphics"))
+                 #-(and #|not yet|#) (:file "gnu")
+                 #-(and #|not yet|#) (:file "objc" :depends-on ("gnu"))))
 
 ;;;; THE END ;;;;

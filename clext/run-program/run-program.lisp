@@ -45,6 +45,7 @@
   (:shadow "MAKE-PROCESS"
            . #1=("RUN-PROGRAM"
                  "PROCESS"
+                 "PROCESS-P"
                  "PROCESS-ALIVE-P"
                  "PROCESS-INPUT"
                  "PROCESS-OUTPUT"

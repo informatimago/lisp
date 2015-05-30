@@ -39,6 +39,8 @@
 (asdf:defsystem "com.informatimago.clisp"
   :description "Informatimago Common Lisp Clisp Specific Packages"
   :long-description "There's nothing here for non-clisp implementations."
+  :author "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :license "AGPL3"
   :version "1.2.2"
   :depends-on ()
