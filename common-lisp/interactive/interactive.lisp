@@ -43,9 +43,16 @@
         "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.BROWSER")  
   (:export "UPTIME" "DATE" "*EDITOR*" "EDIT" "MOZILLA-STRING" "LSCHAR" "LSPACK"
            "DIFF-PACKAGE" "PSWITCH" "SHOW" "MKUPACK" "RESET-CLUSER" "POPP" "PUSHP"
-           "COMPARE-PATHNAMES" "PRINT-PATHNAME" "LSSYMBOLS" "REPL" 
+           "COMPARE-PATHNAMES" "PRINT-PATHNAME" "LSSYMBOLS"
+           "REPL" "REPL-EXIT"
+           "REPL-HISTORY-RESET"
+           "REPL-HISTORY-SIZE"
+           "REPL-HISTORY-ADD"
+           "REPL-HISTORY-REF"
+           "REPL-HISTORY-READER-MACRO"
            "MORE" "LESS" "CAT" "LS" "POPD" "PUSHD" "PWD" "CD"
-           "BROWSE" "LIST-EXTERNAL-SYMBOLS" "LIST-ALL-SYMBOLS" "DEFINE-PACKAGE")
+           "BROWSE" "LIST-EXTERNAL-SYMBOLS" "LIST-ALL-SYMBOLS"
+           "DEFINE-PACKAGE")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PACKAGE"
                 "LIST-EXTERNAL-SYMBOLS" "LIST-ALL-SYMBOLS" "DEFINE-PACKAGE")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
@@ -79,31 +86,94 @@ License:
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.INTERACTIVE")
 
 
+(defvar *repl-history* (make-array 1000 :adjustable t :fill-pointer 0))
 
-(defun repl ()
+(defun repl-history-reset ()
+  (fill *repl-history* nil)
+  (setf (fill-pointer *repl-history*) 0))
+
+(defun repl-history-size ()
+  (length *repl-history*))
+
+(defun repl-history-add (item)
+  (vector-push-extend item *repl-history* (length *repl-history*)))
+
+(defun repl-history-ref (n)
+  (unless (zerop n)
+    (if (minusp n)
+        (when (<= (abs n) (length *repl-history*))
+          (values (aref *repl-history* (+ (length *repl-history*) n)) t))
+        (when (<= n (length *repl-history*))
+          (values (aref *repl-history* (1- n)) t)))))
+
+(defun repl-history-reader-macro (stream ch)
+  (declare (ignore ch))
+  (let ((history-index (if (equal #\! (peek-char nil stream t nil nil))
+                           (progn
+                             (read-char stream t nil nil)
+                             '!!)
+                           (read stream t nil nil))))
+    (check-type history-index (or integer (member !!)))
+    (multiple-value-bind (expr got-it)
+        (repl-history-ref (if (eq '!! history-index)
+                              -1
+                              history-index))
+      (if got-it
+          expr
+          (error "History reference out of bounds ~A" history-index)))))
+
+(defun repl-exit (&optional result)
+  (throw 'repl result))
+
+(defun repl (&key (reset-history t))
   "
-DO:        Implements a minimalist CL REPL.
+
+DO:         Implements a CL REPL.  The user may exit the REPL by
+            calling:
+            (com.informatimago.common-lisp.interactive.interactive:repl-exit).
+
+NOTE:       Keeps a history of the expressions evaluated in
+            *REPL-HISTORY*.  One may refer old expressions
+            using the ! reader macro:
+
+               !!   previous expression (same as + or !-1).
+               !n   expressions number n.
+               !-n  previous nth expression.
+              
+RESET-HISTORY:
+
+            Whether the history is reset. If NIL, then the history is
+            not reset and the user may refer to previous history
+            expressions.
+
 "
   (catch 'repl
-    (do ((+eof+ (gensym))
-         (hist 1 (1+ hist)))
-        (nil)
-      (format t "~%~A[~D]> " (package-name *package*) hist)
-      (finish-output)
-      (handling-errors
-       (setf - (read *standard-input* nil +eof+))
-       (when (or (eq - +eof+)
-                 (and (listp -)
-                      (null (rest -))
-                      (member (first -) '(quit  exit continue)
-                              :test (function string-equal))))
-         (return-from repl))
-       (let ((results (multiple-value-list (eval -))))
-         (setf +++ ++   ++ +   + -
-               /// //   // /   / results
-               *** **   ** *   * (first /)))
-       (format t "~& --> ~{~S~^ ;~%     ~}~%" /)
-       (finish-output)))))
+    (let ((+eof+   (gensym))
+          (hist    (if reset-history
+                       (progn
+                         (repl-history-reset)
+                         1)
+                       (repl-history-size)))
+          (saved-! (multiple-value-list (get-macro-character #\!))))
+      (unwind-protect
+           (progn
+             (set-macro-character #\! (function repl-history-reader-macro) t)
+             (loop
+               (format t "~%~A[~D]> " (package-name *package*) hist)
+               (finish-output)
+               (handling-errors
+                 (setf - (read *standard-input* nil +eof+))
+                 (when (eq - +eof+)
+                   (return-from repl))
+                 (repl-history-add -)
+                 (let ((results (multiple-value-list (eval -))))
+                   (setf +++ ++   ++ +   + -
+                         /// //   // /   / results
+                         *** **   ** *   * (first /)))
+                 (format t "~& --> ~{~S~^ ;~%     ~}~%" /)
+                 (finish-output)
+                 (incf hist))))
+        (apply (function set-macro-character) #\! saved-!)))))
 
 
 (defun lssymbols (&optional (package *package*))
