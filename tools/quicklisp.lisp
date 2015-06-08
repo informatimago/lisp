@@ -32,6 +32,13 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
+#-quicklisp
+(defpackage "QUICKLISP"
+  (:nickname "QL-DIST" "QL")
+  (:export "NAME" "PROJECT-NAME" "DIST" "PROVIDED-SYSTEMS"
+           "PROVIDED-RELEASES" "UPDATE-CLIENT" "UPDATE-ALL-DISTS"
+           "CLEAN" "WHERE-IS-SYSTEM" "QUICKLOAD" "REGISTER-LOCAL-PROJECTS"))
+
 (defpackage "COM.INFORMATIMAGO.TOOLS.QUICKLISP"
   (:use "COMMON-LISP"
         "QUICKLISP"
@@ -55,24 +62,25 @@
 (in-package "COM.INFORMATIMAGO.TOOLS.QUICKLISP")
 
 (defun print-systems (systems pattern &key sort)
-  (let ((sorted-systems (make-array (length systems) :fill-pointer 0)))
-    (if pattern
-        (let ((spattern (string pattern)))
-          (dolist (system systems)
-            (when (search spattern (slot-value system 'ql-dist:name)
-                          :test (function char-equal))
-              (vector-push system sorted-systems))))
-        (progn
-          (setf (fill-pointer sorted-systems) (length systems))
-          (replace sorted-systems systems)))
-    (map nil (function print)
-      (if sort
-          (sort sorted-systems
-                (function string<)
-                :key (lambda (system)
-                       (ignore-errors (slot-value system 'ql-dist:project-name))))
-          sorted-systems))
-    (terpri))
+  (flet ((name (thing)
+           (cond ((ignore-errors (slot-boundp thing  'ql-dist:name))
+                  (slot-value thing 'ql-dist:name))
+                 ((ignore-errors (slot-boundp thing 'ql-dist:project-name))
+                  (slot-value thing 'ql-dist:project-name)))))
+   (let ((sorted-systems (make-array (length systems) :fill-pointer 0)))
+     (if pattern
+         (let ((spattern (string pattern)))
+           (dolist (system systems)
+             (when (search spattern (name system) :test (function char-equal))
+               (vector-push system sorted-systems))))
+         (progn
+           (setf (fill-pointer sorted-systems) (length systems))
+           (replace sorted-systems systems)))
+     (map nil (function print)
+       (if sort
+           (sort sorted-systems (function string<) :key (function name))
+           sorted-systems))
+     (terpri)))
    (values))
 
 
