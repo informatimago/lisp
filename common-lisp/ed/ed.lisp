@@ -1030,7 +1030,7 @@ LINUM:  NIL ==> Edit, NUMBERP ==> Read
             arg))
   (do-command buffer))
 
-
+;; remaining free commands: "@%()_[]{};:'\"<>ABCDFIJKLMNORSTUXYZbo"
 
 (defparameter *commands*
   '( ;;cmd from   to    argument     p   function
