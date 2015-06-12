@@ -57,7 +57,8 @@
    "SPLIT-NAME-VALUE" "STRING-REPLACE" "UNSPLIT-STRING" "SPLIT-STRING"
    "SPLIT-ESCAPED-STRING" "IMPLODE-STRING" "EXPLODE-STRING"
    "IMPLODE" "EXPLODE"
-   "CONCATENATE-STRINGS")
+   "CONCATENATE-STRINGS"
+   "MAPCONCAT")
   (:documentation
    "
 
@@ -147,6 +148,41 @@ CHARACTER-DESIGNATOR is the type of character or designators of
 
 
 
+(defun mapconcat (function sequence separator)
+    "
+
+FUNCTION:   This function is applied on each element of sequence and
+            shall return a string designator.
+
+SEQUENCE:   A sequence.
+
+SEPARATOR:  A string designator.
+
+RETURN:     A string containing the concatenation of the strings
+            designated by the results of FUNCTION applied on each
+            element of SEQUENCE, with SEPARATOR inserted between each
+            of them.
+
+"
+  (let* ((strings   (map (if (vectorp sequence)
+                             'vector
+                             'list)
+                      (lambda (item) (string (funcall function item)))
+                      sequence))
+         (separator (string separator))
+         (seplen (length separator))
+         (totlen (+ (reduce (function +) strings :key (function length) :initial-value 0)
+                    (* seplen (1- (length strings)))))
+         (result (make-string totlen)))
+    (loop
+      :for string :in strings
+      :with start = 0 
+      :do (replace result string :start1 start)
+          (incf start (length string))
+          (unless (<= totlen start)
+            (replace result separator :start1 start)
+            (incf start seplen)))
+    result))
 
 (defun concatenate-strings (list-of-string-designators)
   "
