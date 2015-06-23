@@ -772,7 +772,8 @@ RETURN:         A Lisp STRING containing the characters of AN-OBJC-STRING.
 (defmacro disable-objcl-reader-macros ()
   "Reset in the *READTABLE* the reader macros for #\[ and #\@."
   '(eval-when (:compile-toplevel :load-toplevel :execute)
-    (reset-objc-reader-macros)))
+    ;; (reset-objc-reader-macros)
+    (setf *readtable* (copy-readtable nil))))
 
 
 (defmacro set-objective-cl-syntax ()
