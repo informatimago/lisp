@@ -9,6 +9,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2015-06-13 <PJB> Added CHRONO.
 ;;;;    2014-10-22 <PJB> Added hash-table-to-sexp and sexp-to-hash-table.
 ;;;;    2013-06-30 <PJB> Added FLOAT-{,C,E}TYPECASE; exported [-+]EPSILON.
 ;;;;    2008-06-24 <PJB> Added INCF-MOD and DECF-MOD.
@@ -48,6 +49,7 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
+
 (in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
   (:use "COMMON-LISP"
@@ -122,6 +124,8 @@
    ;;
    "XOR" "EQUIV" "IMPLY"
    ;; "SET-EQUAL"
+   ;; Miscellaneous
+   "CHRONO"
    )
   (:documentation
    "
@@ -160,7 +164,19 @@ License:
 ;; 3 - EVALUATION AND COMPILATION
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defun chrono* (thunk)
+  "
+Call the THUNK and return the run-time spent on it.
+The results of THUNK are ignored.
+"
+  (let ((start (get-internal-run-time)))
+    (funcall thunk)
+    (let ((end (get-internal-run-time)))
+      (float (/ (- end start) internal-time-units-per-second)
+             1.0d0))))
 
+(defmacro chrono (&body body)
+  `(chrono* (lambda () ,@body)))
 
 #-:with-debug-gensym
 (defmacro with-gensyms (syms &body body)
