@@ -54,7 +54,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2009 - 2012
+    Copyright Pascal J. Bourguignon 2009 - 2015
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -403,26 +403,28 @@ NOTE:   SETF may be used with TREE-GET to modify the value associated
                  split-four-node move-red-left move-red-right))
 
 (defun rotate-left (h)
+  (assert (and h (node-red-p (node-right h))))
   (let ((x (node-right h)))
     (setf (node-right h) (node-left x)
           (node-left x) h)
     x))
 
 
-(defun rotate-right (h)
-  (let ((x (node-left h)))
-    (setf (node-left h) (node-right x)
-          (node-right x) h)
-    x))
-
-
 (defun lean-left (h)
-  "Samre as rotate-left, plus update colors."
+  "Same as rotate-left, plus update colors."
   (let ((x (node-right h)))
     (setf (node-right h) (node-left x)
           (node-left x) h
           (node-color x) (node-color h)
           (node-color h) :red)
+    x))
+
+
+(defun rotate-right (h)
+  (assert (and h (node-red-p (node-left h))))
+  (let ((x (node-left h)))
+    (setf (node-left h) (node-right x)
+          (node-right x) h)
     x))
 
 
@@ -481,9 +483,11 @@ NOTE:   SETF may be used with TREE-GET to modify the value associated
         (incf (tree-count tree))
         (make-node :key key :value value :color :red))
       (progn
+        
         (when (and (node-red-p (node-left h))
                    (node-red-p (node-left (node-left h))))
           (setf h (split-four-node h)))
+
         (cond
           ((funcall lessp key (node-key h))
            (setf (node-left  h) (insert-node (node-left  h) key value tree lessp)))
@@ -491,6 +495,7 @@ NOTE:   SETF may be used with TREE-GET to modify the value associated
            (setf (node-right h) (insert-node (node-right h) key value tree lessp)))
           (t
            (setf (node-value h) value)))
+        
         (when (node-red-p (node-right h))
           (setf h (lean-left h)))
         h)))
@@ -706,14 +711,14 @@ RETURN: true if there was such an entry, or false otherwise.
   (format t "~A~A~A+---- NIL~A~%" indentation bar *black* *normal*))
 
 (defmethod dump ((self node) &optional (indentation "") (bar " "))
+  (dump (node-left  self) (concat indentation bar "    ") "|")
+  (format t "~A~A    |~%" indentation bar)
   (format t "~A~A~A+---- ~A: ~A~A~%" indentation bar
           (if (node-red-p self) *red* *black*) 
           (node-key self) (node-value self)
           *normal*)
   (format t "~A~A    |~%" indentation bar)
-  (dump (node-left  self) (concat indentation bar "    ") "|")
-  (format t "~A~A    |~%" indentation bar)
-  (dump (node-right self) (concat indentation bar "    ") " "))
+  (dump (node-right self) (concat indentation bar "    ") "|"))
 
 
 (defmethod dump ((self tree) &optional (indentation "") (bar " "))
