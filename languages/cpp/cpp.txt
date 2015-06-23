@@ -1,0 +1,347 @@
+C Preprocessor
+################
+
+C Preprocessor Overview
+=======================
+
+Charsets
+--------
+
+encoding -finput-charset=
+source character set = unicode
+
+execution character set is specified by user, for strings and
+character constants, but octal and hexadecimal escape sequences aren't
+converted (they're directly expressed in execution character set
+encoding). '\x45' and 'e' can be different.
+
+In identifier, non ascii character must be specified with \u or \U
+escapes, unless strict conformance -std=c90 or
+-fno-extended-identifiers is used to disable them.
+
+Initial Processing
+------------------
+
+1. split input into lines (CR, CRLF or LF).  If the last line lacks a
+   newline, then it's added with a warning.
+
+2. if trigraphs are enabled, they are replaced (also inside string and
+   character literals). The nine trigraphs and their replacements are:
+
+        Trigraph:       ??(  ??)  ??<  ??>  ??=  ??/  ??'  ??!  ??-
+        Replacement:      [    ]    {    }    #    \    ^    |    ~
+    
+3. continued lines are merged. (no space inserted!)
+   warnings on "\\ +$".
+
+4. Comments are replaced by single spaces. /* … */ and // … \n
+   (not inside string literals).
+   // comments are not C standard, but an extension.
+
+   Notice: 3. + 4. => you can split comments:
+   
+          /\
+          *
+          */ # /*
+          */ defi\
+          ne FO\
+          O 10\
+          20
+          int x=FOO; 
+          
+   
+
+Tokenization
+------------
+
+The preprocessor is greedy: a+++++b --> a ++ ++ + b
+even when a ++ + ++ b could be legal c but not a ++ ++ + b.
+
+
+The compiler doesn't retokenize: the pre-processor provides a token
+stream to the compiler.
+
+Tokens:
+
+- identifiers,          /[_$a-zA-Z][_$a-zA-Z0-9]*/
+   $ is a gcc extension.
+   \u and \U accepted here
+   (the 1999 C standard would allow extended characters too).
+   
+- preprocessing number,    /.[0-9]\([a0zA0Z0-9_.]\|[EepP][-+]\)+/
+  all normal integer and floating point constants.
+  0xE+12 is a preprocessing number, not 0xE + 12.
+   
+- string literals, and character literals "…" '…' with \ escapes.
+  + "…" and <…> for header file names, where \ is a normal character.
+  NUL is preserved.
+  
+- punctuators,
+   all ascii punctuation but `@’, ‘$’, and ‘`’.
+   and 2 and 3 character opeartors, including digraphs:
+   
+     Digraph:        <%  %>  <:  :>  %:  %:%:
+     Punctuator:      {   }   [   ]   #    ##
+
+- others: `@’, ‘$’, and ‘`’.
+  control characters but NUL, 127<code, 
+
+Outside of strings, NUL is considered a whitespace.
+
+
+The preprocessing language
+--------------------------
+
+Lines starting with '#'.
+Spaces allowed before and after '#'.
+
+'#' cannot come from a macro, and the directive name is not macro
+expanded either.
+
+
+Header Files
+============
+
+#include "…"
+#include <…>
+#import "…"
+#import <…>
+optimization if #ifndef / #define / #endif
+#pragma once
+
+computed include:
+#define SYSTEM_H "system-1.h"
+#include SYSTEM_H
+not " or < ==> macroexpand the whole running line
+#include concatenate tokens when macroexpansion starts with < and contains >.
+
+
+#include_next gcc extension(fixincludes)
+
+Macros
+======
+
+Object-like macros
+------------------
+
+#define
+#undef
+
+When the preprocessor expands a macro name, the macro's expansion
+replaces the macro invocation, then the expansion is examined for more
+macros to expand.
+
+If the expansion of a macro contains its own name, either directly or
+via intermediate macros, it is not expanded again when the expansion
+is examined for more macros. This prevents infinite recursion.
+
+Function-like macros
+--------------------
+
+the parenthesis touches the name:
+#define f( … ) …
+not
+#define f ( … ) …
+
+Stringification
+---------------
+
+#define s(x) #x
+
+s(42) --> "42"
+
+Concatenation
+-------------
+
+#define c(a,b) a ## b
+
+c(<,=) --> <=
+
+but c(x,+) --> x +   and warning!
+can produce only valid token (preprocessor tokens).
+
+
+Variadic Macros
+---------------
+
+#define eprintf(...) fprintf(stderr,__VA_ARGS__)
+
+gcc extensions:
+
+   #define eprintf(args...) fprintf(stderr,args)
+   
+   #define oprintf(format,args...) fprintf(stderr /* space needed*/ ,format,args)
+   oprintf("format") // is valid
+
+   #define qprintf(format,...) fprintf(stderr /* space needed*/ ,##__VA_ARGS__)
+   qprintf("format") // is valid
+
+__VA_ARGS__ is reserved for this usage.
+
+Predefined macros
+------------------
+
+__FILE__ -> "/path/to/current/file.h"
+__LINE__ -> 42
+__DATE__ -> "Feb 12 1996"
+__TIME__ -> "23:49:01"
+__STDC__ -> 1
+__STDC_VERSION__ --> yyyymmL
+__STDC_HOSTED__ --> 1 in hosted environment
+__cplusplus --> 1 for c++
+__OBJC__ --> 1 for Objective-C
+__ASSEMBLER__ --> 1 for gas
+
+Common Predefined Macros
+------------------------
+
+__COUNTER__ from 0 autoincrementing.
+__GFORTRAN__ --> 1 for Fortran
+__GNUC__
+__GNUC_MINOR__
+__GNUC_PATCHLEVEL__
+
+__GNUG__
+__STRICT_ANSI__
+__BASE_FILE__
+__INCLUDE_LEVEL__
+__ELF__
+__VERSION__
+__OPTIMIZE__
+__OPTIMIZE_SIZE__
+__NO_INLINE__
+__GNUC_GNU_INLINE__
+__GNUC_STDC_INLINE__
+etc…
+
+System-specific Predefined Macros
+---------------------------------
+
+
+
+C++ Named Operators (iso646.h in C)
+-----------------------------------
+Cannot be defined as macro, available in #if
+
+    Named Operator                Punctuator
+    and                           &&
+    and_eq                        &=
+    bitand                        &
+    bitor                         |
+    compl                         ~
+    not                           !
+    not_eq                        !=
+    or                            ||
+    or_eq                         |=
+    xor                           ^
+    xor_eq                        ^= 
+
+Undefining and Redefining Macros
+--------------------------------
+
+Redefinitions to different expansion --> warning.
+
+
+Directives Within Macro Arguments
+---------------------------------
+
+Undefined in the standard, but gcc:
+
+     #define f(x) x x
+     f (1
+     #undef f
+     #define f 2
+     f)
+
+which expands to
+
+     1 2 1 2
+
+Argument Prescan
+----------------
+
+Newlines in Arguments
+---------------------
+
+Conditionals
+============
+
+#ifdef MACRO
+#else
+#endif
+
+#ifndef MACRO
+#else
+#endif
+
+#if expression
+#elif expression
+#else
+#endif
+
+expression: C expression of type integer,
+- integer constants
+- character constants
+- arithmetic operator + - * / & | ~ <<  >> < <= > >= = != && ||
+- macros
+- defined
+- non macro identifiers = 0 and function-like macro without arguments = 0
+  unless -Wundef
+
+Computations in the widest integer type known to the compiler.
+
+
+defined(macro)
+C standard: not defined if result of macroexpansion,
+gcc: processes it when result of macroexpansion, unless -pedantic.
+
+Diagnostics
+===========
+
+#error tokens+
+#warning tokens+
+no macroexpansion of arguments.
+ 
+
+
+Line Control
+============
+
+#line linumum
+#line linumum filename
+#line anything else is macroexpanded.
+
+Pragmas
+=======
+
+_Pragma("…") operator for macro expansion.
+<=> #pragma …
+
+#pragma GCC dependency …
+#pragma GCC poison …
+#pragma GCC system_header …
+#pragma GCC warning …
+#pragma GCC error …
+
+
+Others
+=======
+
+#ident "…"
+#sccs = #ident
+
+null directive:
+#
+
+
+Preprocessor Output
+====================
+
+# linum filename flags
+
+Traditional mode
+================
+
+
+
+
