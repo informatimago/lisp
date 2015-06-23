@@ -33,8 +33,20 @@
 ;;;;**************************************************************************
 (defpackage "COM.INFORMATIMAGO.TOOLS.RAEDER-MACRO"
   (:use "COMMON-LISP")
-  (:export "ALL-MACRO-CHARACTERS"))
+  (:export "ALL-MACRO-CHARACTERS"
+           "REMOVE-ALL-MACRO-CHARACTERS"))
 (in-package  "COM.INFORMATIMAGO.TOOLS.RAEDER-MACRO")
+
+(defun remove-all-macro-characters (readtable)
+  "DO: Removes all the reader macros and dispatching reader macros from the READTABLE.
+RETURN: READTABLE."
+  (loop
+    :for code :below char-code-limit
+    :for ch = (code-char code)
+    :when (and ch (get-macro-character ch readtable))
+      :do (set-macro-character  ch nil t readtable)
+          (set-syntax-from-char ch #\a   readtable))
+  readtable)
 
 (defun all-macro-characters (&optional (*readtable* *readtable*))
   (loop
