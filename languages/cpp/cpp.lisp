@@ -31,44 +31,12 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
-
-(defpackage "COM.INFORMATIMAGO.COMMON-LISP.LANGUAGES.CPP"
-  (:use "COMMON-LISP"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
-  (:shadow "IMPORT" "INCLUDE")
-  (:shadowing-import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
-                          "STRING-DESIGNATOR")
-  (:shadowing-import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM"
-                          "COPY-STREAM")
-  (:export "TOKEN" "TOKEN-LINE" "TOKEN-COLUMN" "TOKEN-FILE"
-           "TOKEN-TEXT" "IDENTIFIER-TOKEN" "NUMBER-TOKEN" "PUNCTUATION-TOKEN"
-           "OTHER-TOKEN"
-
-           "READ-CPP-TOKENS"
-           "ENVIRONMENT-MACRO-DEFINITION"
-   "ENVIRONMENT-MACRO-DEFINEDP"
-   "ENVIRONMENT-MACRO-UNDEFINE"
-           "PROCESS"))
-
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.LANGUAGES.CPP")
 
 
-(defun number-lines (lines file-name &key (start 1))
-  (loop
-    :for lino :from start
-    :for line :in lines
-    :collect (list line lino file-name)))
-
-(defstruct (numbered-line
-            (:type list)
-            (:conc-name line-))
-  (text "")
-  (lino 1)
-  (file "-"))
 
 
+;;; --------------------
 
 (declaim (inline trigraph-character))
 (defun trigraph-character (char)
@@ -99,8 +67,7 @@
                  (char= #\? (aref text (1+ i)))
                  (setf tri (trigraph-character (aref text (+ 2 i)))))
           :do (when warn-on-trigraph
-                (warn "~A:~A: found trigraph ??~A converted to ~A"
-                      (line-file line) (line-lino line) (aref text (+ 2 i)) tri))
+                (cpp-warning line "found trigraph ??~A converted to ~A" (aref text (+ 2 i)) tri))
               (setf (aref text j) tri)
               (incf j)
               (incf i 3)
@@ -111,6 +78,8 @@
         :finally (setf (line-text line) (subseq text 0 j)))))
   line)
 
+
+;;; --------------------
 
 (defun continued-line-p (line)
   (let ((len (length line)))
@@ -135,13 +104,12 @@
                                (loop :with result = '()
                                      :while continuedp
                                      :do (when (and spacesp warn-spaces-in-continued-lines)
-                                           (warn "~A:~A: spaces after line continuation character." file lino))
+                                           (cpp-warning (pseudo-token file lino) "spaces after line continuation character"))
                                          (push (subseq (line-text line) 0 continuedp) result)
                                          (setf line (pop lines))
                                          (if (null line)
                                              (progn
-                                               (warn "~A:~A: last line is a continued line"
-                                                     file lino)
+                                               (cpp-warning (pseudo-token file lino) "last line is a continued line")
                                                (setf continuedp nil))
                                              (multiple-value-setq (continuedp spacesp) (continued-line-p (line-text line))))
                                      :finally (push (line-text line) result)
@@ -151,6 +119,7 @@
                      line)))))
 
 
+;;; --------------------
 
 (defun remove-comments-in-line (comment-start-line current-line state single-line-comments)
   (destructuring-bind (text lino file) current-line
@@ -211,7 +180,7 @@
                     (incf i)
                     (if (< i (length text))
                         (incf i)
-                        (progn (cerror "Continue" "~A:~A: backslash in string literal at the end of the line" file lino)
+                        (progn (cpp-error (pseudo-token file lino) "backslash in string literal at the end of the line")
                                (setf state :top))))
                    ((#\")
                     (incf i)
@@ -223,7 +192,7 @@
                     (incf i)
                     (if (< i (length text))
                         (incf i)
-                        (progn (cerror "Continue" "~A:~A: backslash in character literal at the end of the line" file lino)
+                        (progn (cpp-error (pseudo-token file lino) "backslash in character literal at the end of the line")
                                (setf state :top))))
                    ((#\')
                     (incf i)
@@ -231,10 +200,10 @@
                    (otherwise (incf i))))))
         :finally (return (case state
                            (:in-string
-                            (cerror "Continue" "~A:~A: unterminated string literal at the end of the line" file lino)
+                            (cpp-error (pseudo-token file lino) "unterminated string literal at the end of the line")
                             (values (concatenate-chunks (nreverse chunks)) :top))
                            (:in-character
-                            (cerror "Continue" "~A:~A: unterminated character literal at the end of the line" file lino)
+                            (cpp-error (pseudo-token file lino) "unterminated character literal at the end of the line")
                             (values (concatenate-chunks (nreverse chunks)) :top))
                            (:top
                             (values (concatenate-chunks (nreverse (if (< start (length text))
@@ -259,38 +228,12 @@
                    :do (multiple-value-setq (new-line new-state)
                          (remove-comments-in-line new-line (pop lines) new-state single-line-comments)))
                  (when (eql new-state :in-multiline-comment)
-                   (cerror "Continue" "~A:~A: end of file before end of multiline comment" file lino)
+                   (cpp-error (pseudo-token file lino) "end of file before end of multiline comment")
                    (setf new-state :top))
                  (setf state new-state)
                  new-line))))
 
-
-
-(defclass token ()
-  ((line   :initform 0   :initarg :line   :accessor token-line)
-   (column :initform 0   :initarg :column :accessor token-column)
-   (file   :initform "-" :initarg :file   :accessor token-file)
-   (text                 :initarg :text   :accessor token-text)))
-
-(defmacro define-token-class (name)
-  (let ((class-name (intern (concatenate 'string (string name) (string '-token)))))
-    `(progn
-       (defclass ,class-name   (token) ())
-       (defmethod print-object ((self ,class-name) stream)
-         (print-unreadable-object (self stream :identity nil :type t)
-           (format stream "~A:~A:~A: ~S"
-                   (token-file self) (token-line self) (token-column self) (token-text self)))
-         self)
-       (defun ,(intern (concatenate 'string (string 'make-) (string name))) (text column line file)
-         (make-instance ',class-name :text text :column column :line line :file file)))))
-
-(define-token-class identifier)
-(define-token-class number)
-(define-token-class string-literal)
-(define-token-class character-literal)
-(define-token-class punctuation)
-(define-token-class other)
-
+;;; --------------------
 
 (defparameter *whitespaces* #(#\space #\tab #\vt #\page #\nul #\newline #\return #\linefeed))
 
@@ -300,6 +243,13 @@
                 (find (aref text start) *whitespaces*))
     :do (incf start))
   start)
+
+(defun skip-spaces-but-one (text start)
+  (let ((start (skip-spaces text start)))
+    (when (and (plusp start)
+               (find (aref text (1- start)) *whitespaces*))
+      (decf start))
+    start))
 
 (defun small-unicode-escape-p (text start)
   (and (<= (+ start 6) (length text))
@@ -389,9 +339,8 @@ RETURN: the token text; the end position."
             ((char= #\\ ch)
              (if (< (1+ end) (length text))
                  (incf end 2)
-                 (cerror "Continue" "~A:~A: unterminated ~:[string~;character~] literal ending with incomplete escape"
-                       (line-file line) (line-lino line)
-                       (char= terminator #\'))))
+                 (cpp-error line "unterminated ~:[string~;character~] literal ending with incomplete escape"
+                            (char= terminator #\'))))
             (t
              (incf end))))
     :finally (return (values (subseq text start end) end))))
@@ -432,8 +381,7 @@ RETURN: the token text; the end position."
         ((#\>)                  (greedy3 "=>"   ">>="))
         ((#\%)                  (greedy3 "=>:"  "%:%:"))
         (otherwise
-         (cerror "Continue" "~A:~A: invalid punctuation: ~S"
-                 (line-file line) (line-lino line) ch)
+         (cpp-error line "invalid punctuation: ~S" ch)
          (values "?" (1+ start)))))))
 
 
@@ -444,65 +392,82 @@ RETURN: the token text; the end position."
 (defun tokenize-line (line &key (accept-unicode-escapes nil)
                              (dollar-is-punctuation nil))
   (destructuring-bind (text lino file) line
-    (let ((start 0)
-          (first-identifier (if dollar-is-punctuation
-                                "_"
-                                "_$")))
-      (loop
-        :with header = 1
-        :do (setf start (skip-spaces text start))
-        :while (< start (length text))
-        :collect (let ((ch (aref text start)))
-                   (cond
-                     ((or (find ch first-identifier)
-                          (alpha-char-p ch)
-                          (and accept-unicode-escapes
-                               (char= #\\ ch)
-                               (< (1+ start) (length text))
-                               (char-equal #\u (aref text (1+ start)))))
-                      (multiple-value-bind (token end) (scan-identifier line start first-identifier
-                                                                        :accept-unicode-escapes accept-unicode-escapes)
-                        (if (and (eql 2 header) (or (string= "include" token)
-                                                    (string= "import" token)))
-                            (setf header t)
-                            (setf header nil))
-                        (prog1 (make-identifier token start lino file)
-                          (setf start end))))
-                     ((or (and (char= ch #\.)
-                               (< (1+ start) (length text))
-                               (digit-char-p (aref text (1+ start))))
-                          (digit-char-p ch))
-                      (multiple-value-bind (token end) (scan-number line start)
-                        (setf header nil)
-                        (prog1 (make-number token start lino file)
-                          (setf start end))))
-                     ((char= #\" ch)
-                      (multiple-value-bind (token end) (scan-delimited-literal line start)
-                        (setf header nil)
-                        (prog1 (make-string-literal token start lino file)
-                          (setf start end))))
-                     ((char= #\' ch)
-                      (multiple-value-bind (token end) (scan-delimited-literal line start)
-                        (setf header nil)
-                        (prog1 (make-character-literal token start lino file)
-                          (setf start end))))
-                     ((and (eq header t) (char= #\< ch))
-                      (multiple-value-bind (token end) (scan-delimited-literal line start)
-                        (setf header nil)
-                        (prog1 (make-string-literal token start lino file)
-                          (setf start end))))
-                     ((punctuatorp ch)
-                      (multiple-value-bind (token end) (scan-punctuation line start)
-                        (if (and (eql 1 header) (string= "#" token))
-                            (setf header 2)
-                            (setf header nil))
-                        (prog1 (make-punctuation token start lino file)
-                          (setf start end))))
-                     (t ;; others
+    (loop
+      :with first-identifier   := (if dollar-is-punctuation
+                                      "_"
+                                      "_$")
+      :with start              := 0
+      :with header             := 1 ; we track #import and #include to allow <header.h> delimited literals.
+      :with record-space-token := nil ; we track #define to detect the same in NAME ( vs. NAME(
+      :do (setf start (ecase record-space-token
+                        ((nil)
+                         (skip-spaces text start))
+                        ((:before-name)
+                         (setf record-space-token :after-name)
+                         (skip-spaces text start))
+                        (:after-name
+                         (setf record-space-token nil)
+                         (skip-spaces-but-one text start))))
+      :while (< start (length text))
+      :collect (let ((ch (aref text start)))
+                 (cond
+                   ((or (find ch first-identifier)
+                        (alpha-char-p ch)
+                        (and accept-unicode-escapes
+                             (char= #\\ ch)
+                             (< (1+ start) (length text))
+                             (char-equal #\u (aref text (1+ start)))))
+                    (multiple-value-bind (token end) (scan-identifier line start first-identifier
+                                                                      :accept-unicode-escapes accept-unicode-escapes)
+                      (when (eql 2 header)
+                        (when (and (null record-space-token)
+                                   (string= "define" token))
+                          (setf record-space-token :before-name))
+                        (setf header (if (or (string= "include" token)
+                                             (string= "import" token))
+                                         3
+                                         nil)))
+                      (prog1 (make-identifier token start lino file)
+                        (setf start end))))
+                   ((char= ch #\space)
+                    (prog1 (make-punctuation " " start lino file)
+                      (incf start)))
+                   ((or (and (char= ch #\.)
+                             (< (1+ start) (length text))
+                             (digit-char-p (aref text (1+ start))))
+                        (digit-char-p ch))
+                    (multiple-value-bind (token end) (scan-number line start)
                       (setf header nil)
-                      (prog1 (make-other (subseq text start (1+ start)) start lino file)
-                        (incf start)))))))))
+                      (prog1 (make-number token start lino file)
+                        (setf start end))))
+                   ((char= #\" ch)
+                    (multiple-value-bind (token end) (scan-delimited-literal line start)
+                      (setf header nil)
+                      (prog1 (make-string-literal token start lino file)
+                        (setf start end))))
+                   ((char= #\' ch)
+                    (multiple-value-bind (token end) (scan-delimited-literal line start)
+                      (setf header nil)
+                      (prog1 (make-character-literal token start lino file)
+                        (setf start end))))
+                   ((and (eql 3 header) (char= #\< ch))
+                    (multiple-value-bind (token end) (scan-delimited-literal line start)
+                      (setf header nil)
+                      (prog1 (make-string-literal token start lino file)
+                        (setf start end))))
+                   ((punctuatorp ch)
+                    (multiple-value-bind (token end) (scan-punctuation line start)
+                      (if (and (eql 1 header) (string= "#" token))
+                          (setf header 2)
+                          (setf header nil))
+                      (prog1 (make-punctuation token start lino file)
+                        (setf start end))))
+                   (t ;; others
+                    (setf header nil)
+                    (prog1 (make-other (subseq text start (1+ start)) start lino file)
+                      (incf start))))))))
 
+;;; --------------------
 
 
 ;; The preprocessor is greedy: a+++++b --> a ++ ++ + b
@@ -564,57 +529,23 @@ RETURN: the token text; the end position."
                              :single-line-comments single-line-comments))))
 
 
-(defun sharpp (token)
-  (and (typep token 'punctuation-token)
-       (or (string= "#"  (token-text token)))))
+;;;; --------------------
+;;;; Processing directives
+;;;; --------------------
 
-(defun sharpsharpp (token)
-  (and (typep token 'punctuation-token)
-       (or (string= "##"  (token-text token)))))
+(defmacro with-cpp-line (line &body body)
+  (let ((vtoken (gensym)))
+    `(let* ((,vtoken (first ,line))
+            (file (token-file ,vtoken))
+            (lino (token-line ,vtoken))
+            (*context* (updated-context :file file :line lino :column (token-column ,vtoken) :token ,vtoken)))
+      (pop ,line) (pop ,line)
+      (locally
+          ,@body))))
 
-(defun openp (token)
-  (and (typep token 'punctuation-token)
-       (or (string= "("  (token-text token)))))
-
-(defun closep (token)
-  (and (typep token 'punctuation-token)
-       (or (string= ")"  (token-text token)))))
-
-(defun commap (token)
-  (and (typep token 'punctuation-token)
-       (or (string= ","  (token-text token)))))
-
-(defun ellipsisp (token)
-  (and (typep token 'punctuation-token)
-       (or (string= "..."  (token-text token)))))
-
-
-(defun identifierp (token)
-  (typep token 'identifier-token))
-
-
-(defgeneric environment-macro-definedp (environment macro-name))
-(defgeneric environment-macro-undefine (environment macro-name))
-(defgeneric environment-macro-definition (environment macro-name))
-(defgeneric (setf environment-macro-definition) (definition environment macro-name))
-
-(defmethod environment-macro-definedp ((environment hash-table) (macro-name string))
-  (assert (eq 'equal (hash-table-test environment)))
-  (nth-value 1 (gethash macro-name environment)))
-
-(defmethod environment-macro-undefine ((environment hash-table) (macro-name string))
-  (assert (eq 'equal (hash-table-test environment)))
-  (remhash macro-name environment))
-
-(defmethod environment-macro-definition ((environment hash-table) (macro-name string))
-  (assert (eq 'equal (hash-table-test environment)))
-  (gethash macro-name environment))
-
-(defmethod (setf environment-macro-definition) (definition (environment hash-table) (macro-name string))
-  (assert (eq 'equal (hash-table-test environment)))
-  (setf (gethash macro-name environment) definition))
-
-
+;;; --------------------
+;;; #define
+;;; --------------------
 
 (defun parse-stringifies (line parameters)
   (loop
@@ -629,7 +560,7 @@ RETURN: the token text; the end position."
                                         :key (function token-text)
                                         :test (function string=))))
                        (progn
-                         (cerror "Continue" "~A:~A: '#' is not followed by a macro parameter" file lino)
+                         (cpp-error (pseudo-token file lino) "'#' is not followed by a macro parameter")
                          (if (null parameter)
                              sharp
                              parameter))
@@ -640,8 +571,7 @@ RETURN: the token text; the end position."
 (defun parse-concatenates (line)
   (if (sharpsharpp (first line))
       (progn
-        (cerror "Continue" "~A:~A: '##' cannot appear at either end of a macro expansion"
-                (token-file (first line)) (token-line (first line)))
+        (cpp-error (first line) "'##' cannot appear at either end of a macro expansion")
         line)
       (loop
         :with result = ()
@@ -655,7 +585,7 @@ RETURN: the token text; the end position."
                             :while (sharpsharpp (first line))
                             :do (pop line)
                                 (unless line
-                                  (cerror "Continue" "~A:~A: '##' cannot appear at either end of a macro expansion" file lino))
+                                  (cpp-error (pseudo-token file lino) "'##' cannot appear at either end of a macro expansion"))
                                 (unless (sharpsharpp (first line)) 
                                   (push (pop line) concat))
                             :finally (return `(:concatenate ,@(nreverse concat)))) result))
@@ -670,11 +600,12 @@ RETURN: the token text; the end position."
   (when line
     (parse-concatenates line)))
 
-
-(defun parse-macro-definition (line)
+(defun parse-macro-definition (name line)
   (cond
     ((null line)
-     '())
+     (make-instance 'macro-definition/object
+                    :name name
+                    :expansion '()))
     ((openp (first line))
      (let ((file (token-file (first line)))
            (lino (token-line (first line))))
@@ -687,89 +618,262 @@ RETURN: the token text; the end position."
                                              (progn
                                                (pop line)
                                                (unless (and line (closep (first line)))
-                                                 (cerror "Continue" "~A:~A: ellipsis should be the last macro parameter"
-                                                        (token-file parameter) (token-line parameter)))
+                                                 (cpp-error parameter "ellipsis should be the last macro parameter"))
                                                (list ':ellipsis parameter))
                                              (progn
                                                (unless (and line (or (commap (first line)) (closep (first line))))
-                                                 (cerror "Continue" "~A:~A: Missing a comma after parameter ~A" 
-                                                        (token-file parameter) (token-line parameter) (token-text parameter)))
+                                                 (cpp-error "Missing a comma after parameter ~A"  (token-text parameter)))
                                                parameter)))
                                         ((ellipsisp parameter)
                                          (unless (and line (closep (first line)))
-                                           (cerror "Continue" "~A:~A: ellipsis should be the last macro parameter"
-                                                  (token-file parameter) (token-line parameter)))
+                                           (cpp-error parameter "ellipsis should be the last macro parameter"))
                                          '(:ellipsis))
                                         (t
-                                         (cerror "Continue" "~A:~A: Expected a macro parameter name, not ~S"
-                                                 (token-file parameter) (token-line parameter) (token-text parameter))
+                                         (cpp-error parameter "Expected a macro parameter name, not ~S" (token-text parameter))
                                          parameter)))
                            :while (and line (commap (first line)))
                            :do (pop line)
                            :finally (if (and line (closep (first line)))
                                         (pop line)
-                                        (cerror "Continue" "~A:~A: Expected a closing parentheses after the parameter list" file lino)))))
-         (list :function parameters (parse-function-macro-definition-body line parameters)))))
+                                        (cpp-error (pseudo-token file lino) "Expected a closing parentheses after the parameter list")))))
+         (make-instance 'macro-definition/function
+                        :name name
+                        :parameters parameters
+                        :expansion (parse-function-macro-definition-body line parameters)))))
+    ((spacep (first line))
+     (pop line)
+     (make-instance 'macro-definition/object
+                    :name name
+                    :expansion (parse-object-macro-definition-body line)))
     (t
-     (list :object (parse-object-macro-definition-body line)))))
-
+     (make-instance 'macro-definition/object
+                    :name name
+                    :expansion (parse-object-macro-definition-body line)))))
 
 (defun define (line environment)
-  (let ((file (token-file (first line)))
-        (lino (token-file (first line))))
-    (pop line) (pop line)
+  (with-cpp-line line
     (if line
         (let ((name (pop line)))
           (if (identifierp name)
               (let ((old-definition (environment-macro-definition environment (token-text name)))
-                    (new-definition (parse-macro-definition line)))
+                    (new-definition (parse-macro-definition name line)))
                 (when (environment-macro-definedp environment (token-text name))
                   (unless (equal old-definition new-definition)
-                    (warn "~A:~A: Redefiniting the macro ~A with a different definition"
-                          (line-file name) (line-lino name) (token-text name))))
+                    (cpp-warning name "Redefiniting the macro ~A with a different definition" (token-text name))))
                 (setf (environment-macro-definition environment (token-text name)) new-definition))
-              (cerror "Continue" "~A:~A: Expected an identifier as macro name after #define, not ~S"
-                      (line-file line) (line-lino line) (token-text name))))
-        (cerror "Continue" "~A:~A: Missing macro name after #define" file lino))))
+              (cpp-error line "Expected an identifier as macro name after #define, not ~S" (token-text name))))
+        (cpp-error (pseudo-token file lino) "Missing macro name after #define"))))
+
+;;; --------------------
+;;; #undef
+;;; --------------------
 
 (defun undef (line environment)
-  (let ((file (token-file (first line)))
-        (lino (token-file (first line))))
-    (pop line) (pop line)
-    (if line
-        (progn
-          (let ((name (pop line)))
-            (if (identifierp name)
-                (environment-macro-undefine environment-macro-undefine (token-text name))
-                (cerror "Continue" "~A:~A: Expected an identifier as macro name after #undef, not ~S"
-                        (line-file name) (line-lino name) (token-text name))))
-          (when line
-            (cerror "Continue" "~A:~A: Didn't expect anything after the macro name after #undef, not ~S"
-                    (line-file (first line)) (line-lino (first line)) (token-text (first line)))))
-        (cerror "Continue" "~A:~A: Missing macro name after #undef" file lino))))
+  (with-cpp-line line
+   (if line
+       (progn
+         (let ((name (pop line)))
+           (if (identifierp name)
+               (environment-macro-undefine environment (token-text name))
+               (cpp-error name "Expected an identifier as macro name after #undef, not ~S" (token-text name))))
+         (when line
+           (cpp-error (first line) "Didn't expect anything after the macro name after #undef, not ~S" (token-text (first line)))))
+       (cpp-error (pseudo-token file lino) "Missing macro name after #undef"))))
 
+
+
+;;; --------------------
+;;; #include & #import
+;;; --------------------
+
+;; TODO: implement caching of already included files with #ifndef/#define and #import.
+
+;; #include <> searches files only in *include-bracket-directories*
+;;
+;; #include "" searches files
+;; in the current directory unless *include-disable-current-directory* is true,
+;; then in *include-quote-directories*
+;; and finally in *include-bracket-directories*.
+
+(defun search-file-in-directories (include-file directories kind directive)
+  (loop
+    :with include-search-functions := (option *context* :include-search-functions)
+    :for directory :in directories
+    :for path := (if (keywordp directory)
+                     (let ((search-function (cdr (assoc directory include-search-functions))))
+                       (if search-function
+                           (funcall search-function include-file kind directive)
+                           (progn
+                             (cpp-warning "No search function for key ~S" directory)
+                             nil)))
+                     (merge-pathnames include-file directory))
+    :when (and path (or (eq t path) (probe-file path)))
+      :do (return path)
+    :finally (return nil)))
+
+(defun include-directories (kind)
+  (let ((include-disable-current-directory (option *context* :include-disable-current-directory))
+        (include-quote-directories         (option *context* :include-quote-directories))
+        (include-bracket-directories       (option *context* :include-bracket-directories)))
+    (append (if (eq kind :quote)
+                (remove-duplicates
+                 (append (unless include-disable-current-directory
+                           (list (make-pathname :name nil :type nil :version nil)))
+                         include-quote-directories)
+                 :test (function equal))
+                '())
+            (remove-duplicates include-bracket-directories :test (function equal)))))
+
+(defun perform-include (include-file kind directive)
+  (flet ((include (path)
+           (let ((*context* (updated-context :file path :include-level (1+ (context-include-level *context*)))))
+             (read-and-process-file path))))
+    (let* ((include-directories (include-directories kind))
+           (path                (search-file-in-directories include-file include-directories kind directive)))
+      (cond ((eq t path) #|done|#)
+            (path        (include path))
+            (t           (cpp-error *context*
+                                    "Cannot find a file ~C~A~C in the include directories ~S"
+                                    (if (eq kind :quote) #\" #\<)
+                                    include-file
+                                    (if (eq kind :quote) #\" #\>)
+                                    include-directories))))))
+
+
+
+(defgeneric token-string (token)
+  (:method ((token token)) (token-text token))
+  (:method ((token string-literal-token))
+    (with-input-from-string (in (token-text token))
+      (read-c-string in (read-char in))))
+  (:method ((token character-literal-token))
+    (with-input-from-string (in (token-text token))
+      (read-c-string in (read-char in)))))
+
+;; (princ (token-string (make-instance 'string-literal-token :text "\"abc\\ndef\\t\\xe9t\\xe9\\a\"")))
+
+(defun extract-path (directive line)
+  (let ((token (first line)))
+    (cond
+      ((string-literal-p token)
+       (let ((text (token-text token)))
+         (cond ((zerop (length text))
+                (cpp-error token "Invalid empty path")
+                (values "" :quote (rest line)))
+               ((char= #\< (aref text 0))
+                (values (subseq text 1 (1- (length text))) :bracket (rest line)))
+               (t
+                (values (token-string token) :quote (rest line))))))
+      ((open-bracket-p token)
+       (pop line)
+       (values (mapconcat (function token-text) (loop
+                                                  :with item
+                                                  :while line
+                                                  :do (setf item (pop line))
+                                                  :until (close-bracket-p item)
+                                                  :collect item) "") :bracket line))
+      (t
+       (cpp-error (first line) "In directive ~A, invalid path ~S"
+                  directive (mapconcat (function token-text) line ""))
+       (values nil nil nil)))))
+
+
+
+(defun include-common (directive line include-level environment)
+  (with-cpp-line line
+    (if line
+        (let ((line (cpp-macro-expand line environment))) ; macro-functions must stand on a single line after #include/#import.
+          (multiple-value-bind (path kind line) (extract-path directive line)
+            (when path
+              (perform-include path kind directive))
+            (when line
+              (cpp-error (first line) "Didn't expect anything after the path after #~(~A~), not ~S"
+                         directive (token-text (first line))))))
+        (cpp-error (pseudo-token file lino) "Missing path after #~(~A~)" directive))))
 
 (defun include (line include-level environment)
-  )
+  (include-common :include line include-level environment))
+
 (defun import (line include-level environment)
-  )
+  (include-common :import line include-level environment))
+
+;;; --------------------
+;;; #ifdef
+;;; --------------------
+
+(defun parse-single-macro-name (line where)
+  (cond
+    ((null line)
+     (cpp-error *context* "Missing a macro name after ~A" where)
+     nil)
+    ((cddr line)
+     (cpp-error (first line) "Unexpected tokens after macro name ~A after ~A" (token-text (first line)) where)
+     nil)
+    ((identifierp (first line))
+     (first line))
+    (t
+     (cpp-error (first line) "Invalid macro name ~A after ~A" (token-text (first line)) where)
+     nil)))
+
+(defun ifdef-common (line lines if-level environment flip directive)
+  (let ((name (parse-single-macro-name line directive)))
+    (cond
+      ((null name)
+       (skip-ifdef-branch lines if-level)
+       (skip-else-branch lines if-level))
+      ((funcall flip (environment-macro-definedp environment (token-text name)))
+       (process-ifdef-branch lines if-level)
+       (skip-else-branch lines if-level))
+      (t
+       (skip-ifdef-branch lines if-level)))))
+
 (defun ifdef (line lines if-level environment)
-  )
+  (ifdef-common line lines if-level environment (function identity) "#ifdef"))
+
 (defun ifndef (line lines if-level environment)
-  )
+  (ifdef-common line lines if-level environment (function not) "#ifndef"))
+
 (defun cpp-if (line lines if-level environment)
   )
+
+;;; --------------------
+;;; #line
+;;; --------------------
+
 (defun cpp-line (line lines if-level environment)
-  )
+  (print line)
+  (print (first lines)))
+
+;;; --------------------
+;;; #pragma
+;;; --------------------
+
 (defun pragma (line environment)
   )
-(defun cpp-error (line environment)
-  )
-(defun cpp-warning (line environment)
+
+;;; --------------------
+;;; #error
+;;; --------------------
+
+(defun cpp-error-line (line environment)
   )
 
-(defun cpp-macro-expand)
-(defun process (tokenized-lines environment &key (if-level 0) (include-level 0))
+;;; --------------------
+;;; #warning
+;;; --------------------
+
+(defun cpp-warning-line (line environment)
+  )
+
+;;; --------------------
+;;; pre-processing files
+;;; --------------------
+
+(defun cpp-macro-expand (line tokenized-lines output environment)
+  ;; TODO
+  (values tokenized-lines (cons line output)))
+
+(defun process-file (tokenized-lines environment &key (if-level 0) (include-level 0))
   "
 TOKENIZED-LINES: a list of list of tokens (one sublist per input line).
 ENVIRONMENT:     an object with the ENVIRONMENT-MACRO-DEFINITION accessor,
@@ -781,40 +885,90 @@ RETURN:          the C-pre-processed source in form of list of list of tokens
     :with output = '()
     :while tokenized-lines
     :do (let ((line (pop tokenized-lines)))
-          (if (and (sharpp (first line))
-                   (identifierp (second line)))
-              (scase (token-text (second line))
-                (("define")  (define line environment))
-                (("undef")   (undef  line environment))
-                (("include") (nreconc (include line include-level environment) output))
-                (("import")  (nreconc (import  line include-level environment) output))
-                (("ifdef")   (setf tokenized-lines (ifdef  line tokenized-lines if-level environment)))
-                (("ifndef")  (setf tokenized-lines (ifndef line tokenized-lines if-level environment)))
-                (("if")      (setf tokenized-lines (cpp-if line tokenized-lines if-level environment)))
-                (("elif" "else" "endif"))
-                (("line")    (setf tokenized-lines (cpp-line line tokenized-lines environment)))
-                (("pragma")  (pragma      line environment))
-                (("error")   (cpp-error   line environment))
-                (("warning") (cpp-warning line environment))
-                (("ident" "sccs"))
-                (otherwise (cerror "Continue" "~A:~A: invalid directive ~A"
-                                   (line-file line) (line-lino line) (token-text (second line)))))
-              ;; (multiple-value-setq (tokenized-lines output) (cpp-macro-expand line tokenized-lines output environment))
-              (push line output)))
+          (print line)
+          (if (sharpp (first line))
+              (cond
+                ((identifierp (second line))
+                 (scase (token-text (second line))
+                   (("define")  (define line environment))
+                   (("undef")   (undef  line environment))
+                   (("include") (nreconc (include line include-level environment) output))
+                   (("import")  (nreconc (import  line include-level environment) output))
+                   (("ifdef")   (setf tokenized-lines (ifdef  line tokenized-lines if-level environment)))
+                   (("ifndef")  (setf tokenized-lines (ifndef line tokenized-lines if-level environment)))
+                   (("if")      (setf tokenized-lines (cpp-if line tokenized-lines if-level environment)))
+                   (("elif" "else" "endif"))
+                   (("line")    (setf tokenized-lines (cpp-line line tokenized-lines environment)))
+                   (("pragma")  (pragma           line environment))
+                   (("error")   (cpp-error-line   line environment))
+                   (("warning") (cpp-warning-line line environment))
+                   (("ident" "sccs"))
+                   (otherwise (cpp-error line "invalid directive ~A" (token-text (second line))))))
+                ((number-token-p (second line)) ;; skip # 1 "file"
+                 (push line output))
+                ((rest line)
+                 (cpp-error line "invalid directive #~A" (token-text (second line))))
+                (t ;; skip # alone.
+                 ))
+              (multiple-value-setq (tokenized-lines output) (cpp-macro-expand line tokenized-lines output environment))))
     :finally (return (nreverse output))))
 
+(defun read-and-process-file (path)
+  (with-open-file (input path :external-format (option *context* :external-format))
+    (process-file (read-cpp-tokens
+                   input
+                   :file-name (namestring path)
+                   :substitute-trigraphs            (option *context* :substitute-trigraphs)
+                   :warn-on-trigraph                (option *context* :warn-on-trigraph)
+                   :warn-spaces-in-continued-lines  (option *context* :warn-spaces-in-continued-lines)
+                   :single-line-comments            (option *context* :single-line-comments)
+                   :accept-unicode-escapes          (option *context* :accept-unicode-escapes)
+                   :dollar-is-punctuation           (option *context* :dollar-is-punctuation))
+                  (context-environment *context*))))
 
+(defun process-toplevel-file (path &key (options *default-options*))
+  (let ((*context* (make-instance 'context :base-file path :file path :options options)))
+    (read-and-process-file path)))
+
+(defun write-processed-lines (lines &optional (*standard-output* *standard-output*))
+  (when lines
+    (loop
+      :with file := nil
+      :with lino := nil
+      :for line :in lines
+      :when line
+        :do (if (and (equal file (token-file (first line)))
+                     lino
+                     (= (1+ lino) (token-line (first line))))
+                (incf lino)
+                (format t "#line ~D ~S~%"
+                        (setf lino (token-line (first line)))
+                        (setf file (token-file (first line)))))
+            (format t "~{~A~^ ~}~%" (mapcar (function token-text) line)))))
+
+;;; --------------------
 
 #-(and) (progn
 
+          (write-processed-lines
+           (process-toplevel-file "tests/test.c"
+                                  :options (acons :include-quote-directories '("tests/")
+                                                  *default-options*)))
+          
+          (write-processed-lines
+           (process-toplevel-file "tests/priority.h"
+                                  :options (acons :include-quote-directories '("tests/")
+                                                  *default-options*)))
+
+          
           (let ((file "tests/define.h"))
             (with-open-file (in file)
               (let ((environment (make-hash-table :test 'equal)))
-                (process (read-cpp-tokens in
-                                          :file-name file
-                                          :substitute-trigraphs t
-                                          :warn-on-trigraph nil)
-                         environment)
+                (process-file (read-cpp-tokens in
+                                               :file-name file
+                                               :substitute-trigraphs t
+                                               :warn-on-trigraph nil)
+                              environment)
                 (print-hashtable environment))))
           
           
@@ -998,7 +1152,37 @@ RETURN:          the C-pre-processed source in form of list of list of tokens
                  '("..." 12)))
   :success)
 
+(defun text/skip-spaces ()
+  (assert (equal (skip-spaces "    xyz()" 0) 4))
+  (assert (equal (skip-spaces "    xyz()" 7) 7))
+  (assert (equal (skip-spaces "    xyz ()" 7) 8))
+  (assert (equal (skip-spaces-but-one "    xyz()" 0) 3))
+  (assert (equal (skip-spaces-but-one "    xyz()" 7) 7))
+  (assert (equal (skip-spaces-but-one "    xyz ()" 7) 7))
+  :success)
+
+(defun test/extract-path ()
+  (assert (equal (multiple-value-list (extract-path "#include"
+                                                    (list (make-instance 'string-literal-token
+                                                                         :text "\"/usr/local/include/\\xe9t\\xe9.h\""))))
+                 '("/usr/local/include/été.h" :quote nil)))
+  (assert (equal (multiple-value-list (extract-path "#include"
+                                                    (list (make-instance 'string-literal-token
+                                                                         :text "</usr/local/include/\\xe9t\\xe9.h>"))))
+                 '("/usr/local/include/\\xe9t\\xe9.h" :bracket nil)))
+  (assert (equal (multiple-value-list (extract-path "#include"
+                                                    (list (make-instance 'punctuation-token :text "<")
+                                                          (make-instance 'string-literal-token
+                                                                         :text "/usr/local/include")
+                                                          (make-instance 'string-literal-token
+                                                                         :text "/file.h")
+                                                          (make-instance 'punctuation-token :text ">"))))
+                 '("/usr/local/include/file.h" :bracket nil)))
+  :success)
+
+
 (defun test/all ()
+  (test/read-c-string)
   (test/number-lines)
   (test/substitute-trigraphs)
   (test/merge-continued-lines)
@@ -1006,8 +1190,12 @@ RETURN:          the C-pre-processed source in form of list of list of tokens
   (test/remove-comments)
   (test/scan-identifier)
   (test/scan-number)
-  (test/scan-punctuation))
+  (test/scan-punctuation)
+  (text/skip-spaces)
+  (test/extract-path))
 
 (test/all)
+
+
 
 ;;;; THE END ;;;;

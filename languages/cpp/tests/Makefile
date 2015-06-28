@@ -5,4 +5,6 @@ priority:
 	gcc -E -o - priority.h
 concat:
 	gcc -E -o - concat.h
+include-macro:
+	gcc -I.. -E -o - include-macro.h
 
