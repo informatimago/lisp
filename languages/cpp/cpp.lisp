@@ -535,13 +535,13 @@ RETURN: the token text; the end position."
 
 (defmacro with-cpp-line (line &body body)
   (let ((vtoken (gensym)))
-    `(let* ((,vtoken (first ,line))
+    `(let* ((,vtoken (pop ,line))
             (file (token-file ,vtoken))
-            (lino (token-line ,vtoken))
-            (*context* (updated-context :file file :line lino :column (token-column ,vtoken) :token ,vtoken))
-            (,line (cddr ,line)))
-      (locally
-          ,@body))))
+            (lino (token-line ,vtoken)))
+       (update-context *context* :file file :line lino :column (token-column ,vtoken) :token ,vtoken)
+       (pop ,line)
+       (locally
+           ,@body))))
 
 ;;; --------------------
 ;;; #define
@@ -571,8 +571,6 @@ RETURN: the token text; the end position."
                        `(:stringify ,parameter))))
     :else
       :collect (pop line)))
-
-
 
 (defun check-concatenates (line)
   ;; ^ ## A and A ## $ are invalid.
@@ -637,7 +635,8 @@ RETURN: the token text; the end position."
                            :do (pop line) ; comma
                            :finally (if (and line (closep (first line)))
                                         (pop line)
-                                        (cpp-error (pseudo-token file lino) "Expected a closing parentheses after the parameter list")))))
+                                        (cpp-error (pseudo-token file lino) "Expected a closing parentheses after the parameter list"))
+                                    (return (nreverse result)))))
          (make-instance 'macro-definition/function
                         :name name
                         :parameters parameters
@@ -652,35 +651,38 @@ RETURN: the token text; the end position."
                     :name name
                     :expansion (parse-object-macro-definition-body line)))))
 
-(defun define (line environment)
-  (with-cpp-line line
-    (if line
-        (let ((name (pop line)))
+(defmethod define ((context context))
+  (with-cpp-line (context-current-line context)
+    (if (context-current-line context)
+        (let ((name (pop (context-current-line context))))
           (if (identifierp name)
-              (let ((old-definition (environment-macro-definition environment (token-text name)))
-                    (new-definition (parse-macro-definition name line)))
-                (when (environment-macro-definedp environment (token-text name))
+              (let ((old-definition (environment-macro-definition (context-environment context) (token-text name)))
+                    (new-definition (parse-macro-definition name (context-current-line context))))
+                (when (environment-macro-definedp (context-environment context) (token-text name))
                   (unless (equal old-definition new-definition)
                     (cpp-warning name "Redefiniting the macro ~A with a different definition" (token-text name))))
-                (setf (environment-macro-definition environment (token-text name)) new-definition))
-              (cpp-error line "Expected an identifier as macro name after #define, not ~S" (token-text name))))
-        (cpp-error (pseudo-token file lino) "Missing macro name after #define"))))
+                (setf (environment-macro-definition (context-environment context) (token-text name)) new-definition))
+              (cpp-error (first (context-current-line context))
+                         "Didn't expect anything after the macro name after #define, not ~S"
+                         (token-text (first (context-current-line context))))))
+        (cpp-error context "Missing macro name after #define"))))
 
 ;;; --------------------
 ;;; #undef
 ;;; --------------------
 
-(defun undef (line environment)
-  (with-cpp-line line
-   (if line
-       (progn
-         (let ((name (pop line)))
-           (if (identifierp name)
-               (environment-macro-undefine environment (token-text name))
-               (cpp-error name "Expected an identifier as macro name after #undef, not ~S" (token-text name))))
-         (when line
-           (cpp-error (first line) "Didn't expect anything after the macro name after #undef, not ~S" (token-text (first line)))))
-       (cpp-error (pseudo-token file lino) "Missing macro name after #undef"))))
+(defmethod undef ((context context))
+  (with-cpp-line (context-current-line context)
+   (if (context-current-line context)
+       (let ((name (pop (context-current-line context))))
+         (if (identifierp name)
+             (environment-macro-undefine (context-environment context) (token-text name))
+             (cpp-error name "Expected an identifier as macro name after #undef, not ~S" (token-text name)))
+         (when (context-current-line context)
+           (cpp-error (first (context-current-line context))
+                      "Didn't expect anything after the macro name after #undef, not ~S"
+                      (token-text (first (context-current-line context))))))
+       (cpp-error context "Missing macro name after #undef"))))
 
 
 
@@ -726,22 +728,19 @@ RETURN: the token text; the end position."
                 '())
             (remove-duplicates include-bracket-directories :test (function equal)))))
 
-(defun perform-include (include-file kind directive)
+(defmethod perform-include ((context context) include-file kind directive)
   (flet ((include (path)
-           (let ((*context* (updated-context :file path :include-level (1+ (context-include-level *context*)))))
-             (read-and-process-file path))))
+           (read-and-process-file context path)))
     (let* ((include-directories (include-directories kind))
            (path                (search-file-in-directories include-file include-directories kind directive)))
       (cond ((eq t path) #|done|#)
             (path        (include path))
-            (t           (cpp-error *context*
+            (t           (cpp-error context
                                     "Cannot find a file ~C~A~C in the include directories ~S"
                                     (if (eq kind :quote) #\" #\<)
                                     include-file
                                     (if (eq kind :quote) #\" #\>)
                                     include-directories))))))
-
-
 
 (defgeneric token-string (token)
   (:method ((token token)) (token-text token))
@@ -781,23 +780,28 @@ RETURN: the token text; the end position."
 
 
 
-(defun include-common (directive line include-level environment)
-  (with-cpp-line line
-    (if line
-        (let ((line (first (cpp-macro-expand line '() '() environment)))) ; macro-functions must stand on a single line after #include/#import.
+
+(defmethod include-common ((context context) directive)
+  (with-cpp-line (context-current-line context)
+    (if (context-current-line context)
+        (let ((line (first (macro-expand-macros (context-current-line context)
+                                                '() '() '()
+                                                (context-environment context))))) ; macro-functions must stand on a single line after #include/#import.
           (multiple-value-bind (path kind line) (extract-path directive line)
             (when path
-              (perform-include path kind directive))
+              (perform-include context path kind directive))
             (when line
               (cpp-error (first line) "Didn't expect anything after the path after #~(~A~), not ~S"
-                         directive (token-text (first line))))))
-        (cpp-error (pseudo-token file lino) "Missing path after #~(~A~)" directive))))
+                         directive (token-text (first line))))))        
+        (cpp-error context "Missing path after #~(~A~)" directive)))
+  context)
 
-(defun include (line include-level environment)
-  (include-common :include line include-level environment))
+(defmethod include ((context context))
+  (include-common context :include))
 
-(defun import (line include-level environment)
-  (include-common :import line include-level environment))
+(defmethod import ((context context))
+  (include-common context :import))
+
 
 ;;; --------------------
 ;;; #ifdef
@@ -817,70 +821,76 @@ RETURN: the token text; the end position."
      (cpp-error (first line) "Invalid macro name ~A after ~A" (token-text (first line)) where)
      nil)))
 
-(defun ifdef-common (line lines if-level environment flip directive)
-  (let ((name (parse-single-macro-name line directive)))
+
+(defmethod process-then-branch ((context context))
+  (incf (context-if-level context))
+  (process-file context))
+(defmethod process-else-branch ((context context))
+  context)
+(defmethod skip-then-branch ((context context))
+  context)
+(defmethod skip-else-branch ((context context))
+  context)
+
+(defmethod ifdef-common ((context context) flip directive)
+  (let ((name (parse-single-macro-name (context-current-line context) directive)))
     (cond
       ((null name)
-       (skip-ifdef-branch lines if-level)
-       (skip-else-branch lines if-level))
-      ((funcall flip (environment-macro-definedp environment (token-text name)))
-       (process-ifdef-branch lines if-level)
-       (skip-else-branch lines if-level))
+       (skip-else-branch (skip-then-branch context)))
+      ((funcall flip (environment-macro-definedp (context-environment context) (token-text name)))
+       (skip-else-branch (process-then-branch context)))
       (t
-       (skip-ifdef-branch lines if-level)))))
+       (process-else-branch (skip-then-branch context))))))
 
-(defun ifdef (line lines if-level environment)
-  (ifdef-common line lines if-level environment (function identity) "#ifdef"))
+(defmethod ifdef ((context context))
+  (ifdef-common context (function identity) "#ifdef"))
 
-(defun ifndef (line lines if-level environment)
-  (ifdef-common line lines if-level environment (function not) "#ifndef"))
+(defmethod ifndef ((context context))
+  (ifdef-common context (function not) "#ifndef"))
 
-(defun cpp-if (line lines if-level environment)
+(defmethod cpp-if ((context context))
+  
   )
 
 ;;; --------------------
 ;;; #line
 ;;; --------------------
 
-(defun cpp-line (line lines if-level environment)
-  (print line)
-  (print (first lines)))
+(defmethod cpp-line ((context context))
+  ;; TODO:
+  context)
 
 ;;; --------------------
 ;;; #pragma
 ;;; --------------------
 
-(defun pragma (line environment)
-  (with-cpp-line line
-    (if line
-        
-        (cpp-error (pseudo-token file lino) "Missing a pragma expression after #~(~A~)" "pragma"))))
-
-
-;; #pragma GCC dependency path &rest and-stuff
-;; #pragma GCC poison &rest identifiers
-;; #pragma GCC system_header
-;; #pragma GCC warning message
-;; #pragma GCC error message
-;; // message must be a single string literal.
-
-
+(defmethod pragma ((context context))
+  ;; TODO: unrecognized pragmas could be passed along on the output for the compiler.
+  (with-cpp-line (context-current-line context)
+    (when (context-current-line context)
+      (let ((key (pop (context-current-line context))))
+        (when (identifierp key)
+          (let ((interpreter (gethash (token-text key) (context-pragma-interpreters context))))
+            (when interpreter
+              (funcall interpreter context (context-current-line context)))))))))
 
 ;;; --------------------
 ;;; #error
 ;;; --------------------
 
-(defun cpp-error-line (line environment)
-  (cpp-message 'cpp-error line environment))
+(defmethod cpp-error-line ((context context))
+  (cpp-message 'cpp-error (context-current-line context)))
 
 ;;; --------------------
 ;;; #warning
 ;;; --------------------
 
-(defun cpp-warning-line (line environment)
-  (cpp-message 'cpp-warning line environment))
+(defmethod cpp-warning-line ((context context))
+  (cpp-message 'cpp-warning (context-current-line context)))
 
-(defun cpp-message (operation line environment)
+;;; --------------------
+
+(defun cpp-message (operation line)
   (let ((directive (second line)))
     (with-cpp-line line
       (if line
@@ -1185,67 +1195,72 @@ concatenation
     :finally (push (nreverse out-line) output-lines))
   (values output-lines tokenized-lines))
 
-(defun cpp-macro-expand (line tokenized-lines output environment)
-  (macro-expand-macros line tokenized-lines output
-                       (context-macros-being-expanded *context*)
-                       environment))
+(defmethod cpp-macro-expand ((context context))
+  (multiple-value-bind (output input) (macro-expand-macros (context-current-line context)
+                                                           (context-input-lines context)
+                                                           (context-output-lines context)
+                                                           (context-macros-being-expanded context)
+                                                           (context-environment context))
+    (setf (context-output-lines context) output
+          (context-input-lines context) input)
+    context))
 
-(defun process-file (tokenized-lines environment &key (if-level 0) (include-level 0))
-  "
-TOKENIZED-LINES: a list of list of tokens (one sublist per input line).
-ENVIRONMENT:     an object with the ENVIRONMENT-MACRO-DEFINITION accessor,
-                 where the macros, keyed by their name (string), are stored.
-RETURN:          the C-pre-processed source in form of list of list of tokens
-                 (one sublist per output line).
-"
+(defmethod process-file ((context context))
+  "Processes all the INPUT-LINES, pushing onto the OUTPUT-LINES."
   (loop
-    :with output = '()
-    :while tokenized-lines
-    :do (let ((line (pop tokenized-lines)))
+    :while (context-input-lines context)
+    :do (let ((line (pop (context-input-lines context))))
+          (setf (context-current-line context) line)
           ;;DEBUG;; (print line)
           (if (sharpp (first line))
               (cond
                 ((identifierp (second line))
                  (scase (token-text (second line))
-                   (("define")  (define line environment))
-                   (("undef")   (undef  line environment))
-                   (("include") (nreconc (include line include-level environment) output))
-                   (("import")  (nreconc (import  line include-level environment) output))
-                   (("ifdef")   (setf tokenized-lines (ifdef  line tokenized-lines if-level environment)))
-                   (("ifndef")  (setf tokenized-lines (ifndef line tokenized-lines if-level environment)))
-                   (("if")      (setf tokenized-lines (cpp-if line tokenized-lines if-level environment)))
-                   (("elif" "else" "endif"))
-                   (("line")    (setf tokenized-lines (cpp-line line tokenized-lines if-level environment)))
-                   (("pragma")  (pragma           line environment))
-                   (("error")   (cpp-error-line   line environment))
-                   (("warning") (cpp-warning-line line environment))
+                   (("define")  (define  context))
+                   (("undef")   (undef   context))
+                   (("include") (include context))
+                   (("import")  (import  context))
+                   (("ifdef")   (ifdef   context))
+                   (("ifndef")  (ifndef  context))
+                   (("if")      (cpp-if  context))
+                   (("elif" "else" "endif")
+                    (when (plusp (context-if-level context))
+                      (push line (context-input-lines context))
+                      (loop-finish))
+                    (cpp-error (second line) "#~A without #if" (token-text (second line))))
+                   (("line")    (cpp-line context))
+                   (("pragma")  (pragma           context))
+                   (("error")   (cpp-error-line   context))
+                   (("warning") (cpp-warning-line context))
                    (("ident" "sccs"))
                    (otherwise (cpp-error line "invalid directive ~A" (token-text (second line))))))
                 ((number-token-p (second line)) ;; skip # 1 "file"
-                 (push line output))
+                 (push line (context-output-lines context)))
                 ((rest line)
                  (cpp-error line "invalid directive #~A" (token-text (second line))))
                 (t ;; skip # alone.
                  ))
-              (multiple-value-setq (output tokenized-lines) (cpp-macro-expand line tokenized-lines output environment))))
-    :finally (return (nreverse output))))
+              (cpp-macro-expand context))))
+  context)
 
-(defun read-and-process-file (path)
+(defmethod read-and-process-file ((context context) path)
   (with-open-file (input path :external-format (option *context* :external-format))
-    (process-file (read-cpp-tokens
-                   input
-                   :file-name (namestring path)
-                   :substitute-trigraphs            (option *context* :substitute-trigraphs)
-                   :warn-on-trigraph                (option *context* :warn-on-trigraph)
-                   :warn-spaces-in-continued-lines  (option *context* :warn-spaces-in-continued-lines)
-                   :single-line-comments            (option *context* :single-line-comments)
-                   :accept-unicode-escapes          (option *context* :accept-unicode-escapes)
-                   :dollar-is-punctuation           (option *context* :dollar-is-punctuation))
-                  (context-environment *context*))))
+    (context-push-file context path (read-cpp-tokens
+                                     input
+                                     :file-name (namestring path)
+                                     :substitute-trigraphs            (option *context* :substitute-trigraphs)
+                                     :warn-on-trigraph                (option *context* :warn-on-trigraph)
+                                     :warn-spaces-in-continued-lines  (option *context* :warn-spaces-in-continued-lines)
+                                     :single-line-comments            (option *context* :single-line-comments)
+                                     :accept-unicode-escapes          (option *context* :accept-unicode-escapes)
+                                     :dollar-is-punctuation           (option *context* :dollar-is-punctuation)))
+    (process-file context)
+    (context-pop-file context)))
 
 (defun process-toplevel-file (path &key (options *default-options*))
   (let ((*context* (make-instance 'context :base-file path :file path :options options)))
-    (values (read-and-process-file path) *context*)))
+    (read-and-process-file *context* path)
+    (values (reverse (context-output-lines *context*)) *context*)))
 
 (defun write-processed-lines (lines &optional (*standard-output* *standard-output*))
   (when lines

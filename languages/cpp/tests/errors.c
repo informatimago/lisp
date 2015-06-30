@@ -7,5 +7,8 @@
 #define E() _Pragma("GCC error \"I told you, there's a snafu\"")
 W()
 E()
+#pragma GCC poison toto
 
-
+#else
+toto
+#endif

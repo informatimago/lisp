@@ -159,10 +159,10 @@
 (defun cpp-error (token format-control &rest format-arguments)
   (let ((*context* (if (typep token 'context)
                        token
-                       (updated-context :token token
-                                        :line (token-line token)
-                                        :column (token-column token)
-                                        :file (token-file token)))))
+                       (update-context *context* :token token
+                                                 :line (token-line token)
+                                                 :column (token-column token)
+                                                 :file (token-file token)))))
     (cerror "Continue" 'cpp-error
             :format-control "~A:~A: error: ~?"
             :format-arguments (list (context-file *context*)
@@ -172,10 +172,10 @@
 (defun cpp-warning (token format-control &rest format-arguments)
   (let ((*context* (if (typep token 'context)
                        token
-                       (updated-context :token token
-                                        :line (token-line token)
-                                        :column (token-column token)
-                                        :file (token-file token)))))
+                       (update-context *context* :token token
+                                                 :line (token-line token)
+                                                 :column (token-column token)
+                                                 :file (token-file token)))))
     (warn 'cpp-warning
           :format-control "~A:~A: warning: ~?"
           :format-arguments (list (context-file *context*)

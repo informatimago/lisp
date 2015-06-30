@@ -55,9 +55,11 @@
                (:file "cpp-macro"       :depends-on  ("packages"))
                (:file "token"           :depends-on  ("packages" "cpp-macro"))
                (:file "built-in-macros" :depends-on  ("packages" "cpp-macro" "token"))
+               (:file "pragma-gcc"      :depends-on  ("packages" "cpp-macro" "token"))
                (:file "cpp"             :depends-on  ("packages"
                                                       "cpp-macro" "token"
                                                       "built-in-macros"
+                                                      "pragma-gcc"
                                                       "c-string-reader")))
   :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.languages.cpp.test"))))
 

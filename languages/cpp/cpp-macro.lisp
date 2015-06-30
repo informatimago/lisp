@@ -209,24 +209,28 @@
 (defun macro-bind (name parameters arguments)
   (loop
     :with bindings := '()
-    :with no-parameters = (null parameters)
-    :while parameters
-    :do (let ((par (pop parameters)))
+    :with args := arguments
+    :with pars := parameters
+    :with no-pars = (null pars)
+    :while pars
+    :do (let ((par (pop pars)))
           (cond
             ((ellipsis-parameter-p par)
-             (push (list* (second par) :ellipsis arguments) bindings)
-             (setf arguments nil))
-            ((null arguments)
+             (push (list* (second par) :ellipsis args) bindings)
+             (setf args nil))
+            ((null args)
              (cpp-error *context* "Missing argument to function-like macro call ~S" (token-text name))
              (return :error))
             (t
-             (let ((arg (pop arguments)))
+             (let ((arg (pop args)))
                (push (cons par arg) bindings)))))
-    :finally (when (and arguments
-                        (not (and no-parameters
-                                  (null (cdr arguments))
-                                  (null (car arguments)))))
-               (cpp-error *context* "Too many arguments for function-like macro call ~S" (token-text name))
+    :finally (when (and args
+                        (not (and no-pars
+                                  (null (cdr args))
+                                  (null (car args)))))
+               (cpp-error *context*
+                          "Too many args for function-like macro call ~S, parameters = ~S, arguments = ~S"
+                          (token-text name) parameters arguments)
                (return :error))
              (return bindings)))
 
@@ -396,36 +400,110 @@
     (:include-search-functions . ())
     (:external-format . :default)))
 
-(defvar *default-environment* (make-environment))
+(defvar *default-environment*         (make-environment))
+(defvar *default-pragma-interpreters* (make-hash-table :test 'equal))
 
 (defclass context ()
-  ((base-file             :initarg :base-file             :initform "-"                                     :accessor context-base-file)
-   (file                  :initarg :file                  :initform "-"                                     :accessor context-file)
-   (line                  :initarg :line                  :initform 1                                       :accessor context-line)
-   (column                :initarg :column                :initform 1                                       :accessor context-column)
-   (token                 :initarg :token                 :initform nil                                     :accessor context-token)
-   (counter               :initarg :counter               :initform 0                                       :accessor context-counter)
-   (include-level         :initarg :include-level         :initform 0                                       :accessor context-include-level)
-   (if-level              :initarg :if-level              :initform 0                                       :accessor context-if-level)
-   (macros-being-expanded :initarg :macros-being-expanded :initform '()                                     :accessor context-macros-being-expanded)
-   (options               :initarg :options               :initform (copy-tree       *default-options*)     :accessor context-options)
-   (environment           :initarg :environment           :initform (copy-hash-table *default-environment*) :accessor context-environment)))
+  ((base-file             :initarg :base-file             
+                          :initform "-"                                     
+                          :accessor context-base-file)
+   (file                  :initarg :file                  
+                          :initform "-"                                     
+                          :accessor context-file)
+   (line                  :initarg :line                  
+                          :initform 1                                       
+                          :accessor context-line)
+   (column                :initarg :column                
+                          :initform 1                                       
+                          :accessor context-column)
+   (token                 :initarg :token                 
+                          :initform nil                                     
+                          :accessor context-token)
+   (if-level              :initarg :if-level              
+                          :initform 0                                       
+                          :accessor context-if-level)
+   (file-stack            :initarg :file-stack
+                          :initform '()
+                          :accessor context-file-stack)
+   ;; file-stack saves (list file line column token if-level input-lines current-line)
+   (input-lines           :initarg :input-lines
+                          :initform '()
+                          :accessor context-input-lines)
+   (current-line          :initarg :current-line
+                          :initform '()
+                          :accessor context-current-line)
+   (output-lines          :initarg :output
+                          :initform '()
+                          :accessor context-output-lines)
+
+   (counter               :initarg :counter               
+                          :initform 0                                       
+                          :accessor context-counter)
+   (macros-being-expanded :initarg :macros-being-expanded 
+                          :initform '()                                     
+                          :accessor context-macros-being-expanded)
+   (options               :initarg :options               
+                          :initform (copy-tree       *default-options*)     
+                          :accessor context-options)
+   (environment           :initarg :environment           
+                          :initform (copy-hash-table *default-environment*) 
+                          :accessor context-environment)
+   (pragma-interpreters   :initarg :pragma-interpreters   
+                          :initform (copy-hash-table *default-pragma-interpreters*)                                     
+                          :accessor context-pragma-interpreters
+                          :documentation "An a-list mapping module name string to a function taking two arguments: the context and a list of tokens.")
+   (pragmas               :initarg :pragmas               
+                          :initform (make-hash-table :test 'equal)          
+                          :accessor context-pragmas
+                          :documentation "An equal hash-table for pragmas defined by the program. Keys may be symbols or lists of symbols.")))
    
+(defmethod context-include-level ((context context))
+  (length (context-file-stack context)))
+
+(defmethod context-push-file ((context context) path input-lines)
+  (push (list (context-file context)
+              (context-line context)
+              (context-column context)
+              (context-token context)
+              (context-if-level context)
+              (context-input-lines context)
+              (context-current-line context))
+        (context-file-stack context))
+  (setf (context-file context) path
+        (context-line context) 1
+        (context-column context) 1
+        (context-token context) nil
+        (context-if-level context) 0
+        (context-input-lines context) input-lines
+        (context-current-line context) nil)
+  context)
+
+(defmethod context-pop-file ((context context))
+  (let ((data (pop (context-file-stack context))))
+    (setf (context-file context) (pop data)
+          (context-line context) (pop data)
+          (context-column context) (pop data)
+          (context-token context) (pop data)
+          (context-if-level context) (pop data)
+          (context-input-lines context) (pop data)
+          (context-current-line context) (pop data)))
+  context)
+
 
 (defvar *context* nil)
 
-(defun updated-context (&key
+(defmethod update-context ((context context) &key
                           (token         nil tokenp)
                           (line          nil linep)
                           (column        nil columnp)
                           (file          nil filep)
                           (include-level nil include-level-p))
-  (when tokenp          (setf (context-token         *context*) token))
-  (when linep           (setf (context-line          *context*) line))
-  (when columnp         (setf (context-column        *context*) column))
-  (when filep           (setf (context-file          *context*) file))
-  (when include-level-p (setf (context-include-level *context*) include-level))
-  *context*)
+  (when tokenp          (setf (context-token         context) token))
+  (when linep           (setf (context-line          context) line))
+  (when columnp         (setf (context-column        context) column))
+  (when filep           (setf (context-file          context) file))
+  (when include-level-p (setf (context-include-level context) include-level))
+  context)
 
 (defun option (context option)
   (cdr (assoc option (context-options context))))

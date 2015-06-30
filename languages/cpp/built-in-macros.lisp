@@ -62,8 +62,9 @@
                                                 ,@body)
                                              `(lambda (macro-definition arguments)
                                                 (declare (ignorable macro-definition arguments))
-                                                ;;DEBUG;;(print ',name)
-                                                ,@body))))))
+                                                (destructuring-bind ,lambda-list arguments
+                                                  ;;DEBUG;;(print ',name)
+                                                  ,@body)))))))
 
 (define-built-in-macro "__TIMESTAMP__" :object
   (when (option *context* :warn-date-time)
@@ -89,7 +90,8 @@
   (when (option *context* :warn-date-time)
     (cpp-warning *context* "macro ~A might prevent reproducible builds"  "__DATE__"))
   (let ((date (get-universal-time)))
-    (multiple-value-bind (se mi ho da mo ye dow) (decode-universal-time date 0)
+    (multiple-value-bind (se mi ho da mo ye) (decode-universal-time date 0)
+      (declare (ignore se mi ho))
       (list (string-literal (format nil "~[~;Jan~;Feb~;Mar~;Apr~;May~;Jun~;Jul~;Aug~;Sep~;Oct~;Nov~;Dec~] ~2,'0D ~4,'0D"
                                     mo da ye))))))
 
@@ -97,17 +99,15 @@
   (when (option *context* :warn-date-time)
     (cpp-warning *context* "macro ~A might prevent reproducible builds"  "__DATE__"))
   (let ((date (get-universal-time)))
-    (multiple-value-bind (se mi ho da mo ye dow) (decode-universal-time date 0)
+    (multiple-value-bind (se mi ho) (decode-universal-time date 0)
       (list (string-literal (format nil "~2,'0D:~2,'0D:~2,'0D" ho mi se))))))
 
 
 (define-built-in-macro "__COUNTER__" :object
   (when (option *context* :directives-only)
     (cpp-error *context* "__COUNTER__ expanded inside directive with -fdirectives-only"))
-  (let ((date (get-universal-time)))
-    (multiple-value-bind (se mi ho da mo ye dow) (decode-universal-time date 0)
-      (list (number-literal (prog1 (context-counter *context*)
-                              (incf (context-counter *context*))))))))
+  (list (number-literal (prog1 (context-counter *context*)
+                          (incf (context-counter *context*))))))
 
 
 

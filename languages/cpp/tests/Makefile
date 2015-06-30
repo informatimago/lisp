@@ -25,4 +25,6 @@ trigraphs:
 	gcc -E -o - -trigraphs trigraphs.c
 errors:
 	gcc -E -o - errors.c
+line:
+	gcc -E -o - line.c
 
