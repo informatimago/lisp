@@ -74,8 +74,9 @@
          (typep object ',class-name))
        (defmethod print-object ((self ,class-name) stream)
          (print-unreadable-object (self stream :identity nil :type t)
-           (format stream "~A:~A:~A: ~S"
-                   (token-file self) (token-line self) (token-column self) (token-text self)))
+           (let ((*print-circle* nil))
+            (format stream "~A:~A:~A: ~S"
+                    (token-file self) (token-line self) (token-column self) (token-text self))))
          self)
        (defun ,(intern (concatenate 'string (string 'make-) (string name))) (text column line file)
          (make-instance ',class-name :text text :column column :line line :file file)))))
@@ -90,6 +91,20 @@
 (defun pseudo-token (file lino)
   (make-other "" 0 lino file))
 
+(defun token-predicate-label (predicate-name)
+  (case predicate-name
+    (sharpp          "« # »")
+    (sharpsharpp     "« ## »")
+    (spacep          "a space")
+    (openp           "« ( »") 
+    (closep          "« ) »")
+    (open-bracket-p  "« < »")
+    (close-bracket-p "« > »")
+    (commap          "« , »")
+    (ellipsisp       "« ... »")
+    (identifierp     "an identifier")
+    (number-token-p  "a number")
+    (otherwise (format nil "a ~(~A~)"  predicate-name))))
 
 (defun sharpp (token)
   (and (typep token 'punctuation-token)

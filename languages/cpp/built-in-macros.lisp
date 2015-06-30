@@ -38,8 +38,8 @@
   (make-string-literal (format nil "~S" string)
                        (context-column *context*) (context-line *context*) (context-file *context*)))
 (defun number-literal (value)
-  (make-number-literal (format nil "~A" value)
-                       (context-column *context*) (context-line *context*) (context-file *context*)))
+  (make-number (format nil "~A" value)
+               (context-column *context*) (context-line *context*) (context-file *context*)))
 
 
 (defmacro define-built-in-macro (name kind &body lambda-list-and-body)
@@ -48,63 +48,66 @@
                          nil))
         (body        (if (eql :function kind)
                          (rest lambda-list-and-body)
-                         nil)))
+                         lambda-list-and-body)))
     `(setf (environment-macro-definition *default-environment* ',name)
            (make-instance
             ',(ecase kind
-               (:object   'macro-definition/object/computed)
-               (:function 'macro-definition/function/computed))
+                (:object   'macro-definition/object/computed)
+                (:function 'macro-definition/function/computed))
             :name ',name
             :compute-expansion-function ,(if (eq kind :object)
                                              `(lambda (macro-definition)
-                                               (declare (ignorable macro-definition))
-                                               ,@body)
+                                                (declare (ignorable macro-definition))
+                                                ;;DEBUG;;(print ',name)
+                                                ,@body)
                                              `(lambda (macro-definition arguments)
-                                               (declare (ignorable macro-definition arguments))
-                                               ,@body))))))
+                                                (declare (ignorable macro-definition arguments))
+                                                ;;DEBUG;;(print ',name)
+                                                ,@body))))))
 
 (define-built-in-macro "__TIMESTAMP__" :object
   (when (option *context* :warn-date-time)
     (cpp-warning *context* "macro ~A might prevent reproducible builds"  "__TIMESTAMP__"))
   (let ((date (or (file-write-date (context-file *context*)) (get-universal-time))))
     (multiple-value-bind (se mi ho da mo ye dow) (decode-universal-time date 0)
-      (string-literal (format nil "~[Mon~;Tue~;Wed~;Thi~;Fri~;Sat~;Sun~] ~[~;Jan~;Feb~;Mar~;Apr~;May~;Jun~;Jul~;Aug~;Sep~;Oct~;Nov~;Dec~] ~2,'0D ~2,'0D:~2,'0D:~2,'0D ~4,'0D"
-                                   dow mo da ho mi se ye)))))
+      (list (string-literal (format nil "~[Mon~;Tue~;Wed~;Thi~;Fri~;Sat~;Sun~] ~[~;Jan~;Feb~;Mar~;Apr~;May~;Jun~;Jul~;Aug~;Sep~;Oct~;Nov~;Dec~] ~2,'0D ~2,'0D:~2,'0D:~2,'0D ~4,'0D"
+                                    dow mo da ho mi se ye))))))
 
 (define-built-in-macro "__FILE__" :object
-  (string-literal (file-namestring (context-file *context*))))
+  (list (string-literal (file-namestring (context-file *context*)))))
 
 (define-built-in-macro "__BASE_FILE__" :object
-  (string-literal (file-namestring (context-base-file *context*))))
+  (list (string-literal (file-namestring (context-base-file *context*)))))
 
 (define-built-in-macro "__INCLUDE_LEVEL__" :object
-  (number-literal (format nil "~D" (context-include-level *context*))))
+  (list (number-literal (format nil "~D" (context-include-level *context*)))))
 
 (define-built-in-macro "__STDC__" :object
-  (number-literal 0 #|are we?|#))
+  (list (number-literal 0 #|are we?|#)))
 
 (define-built-in-macro "__DATE__" :object
   (when (option *context* :warn-date-time)
     (cpp-warning *context* "macro ~A might prevent reproducible builds"  "__DATE__"))
   (let ((date (get-universal-time)))
     (multiple-value-bind (se mi ho da mo ye dow) (decode-universal-time date 0)
-      (string-literal (format nil "~[~;Jan~;Feb~;Mar~;Apr~;May~;Jun~;Jul~;Aug~;Sep~;Oct~;Nov~;Dec~] ~2,'0D ~4,'0D"
-                                   mo da ye)))))
+      (list (string-literal (format nil "~[~;Jan~;Feb~;Mar~;Apr~;May~;Jun~;Jul~;Aug~;Sep~;Oct~;Nov~;Dec~] ~2,'0D ~4,'0D"
+                                    mo da ye))))))
 
 (define-built-in-macro "__TIME__" :object
   (when (option *context* :warn-date-time)
     (cpp-warning *context* "macro ~A might prevent reproducible builds"  "__DATE__"))
   (let ((date (get-universal-time)))
     (multiple-value-bind (se mi ho da mo ye dow) (decode-universal-time date 0)
-      (string-literal (format nil "~2,'0D:~2,'0D:~2,'0D" ho mi se)))))
+      (list (string-literal (format nil "~2,'0D:~2,'0D:~2,'0D" ho mi se))))))
+
 
 (define-built-in-macro "__COUNTER__" :object
   (when (option *context* :directives-only)
     (cpp-error *context* "__COUNTER__ expanded inside directive with -fdirectives-only"))
   (let ((date (get-universal-time)))
     (multiple-value-bind (se mi ho da mo ye dow) (decode-universal-time date 0)
-      (number-literal (prog1 (context-counter *context*)
-                        (incf (context-counter *context*)))))))
+      (list (number-literal (prog1 (context-counter *context*)
+                              (incf (context-counter *context*))))))))
 
 
 

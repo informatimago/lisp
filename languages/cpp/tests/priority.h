@@ -7,6 +7,14 @@ char* a=M(HELLO,KITTY);
 
 #
 
+#define VOO 42
+#define F(X) #X[X]
+
+F(33)
+F(VOO)
+F(C(VOO,VOO))
+
+
 # 1 "hello"
 
 

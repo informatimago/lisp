@@ -538,8 +538,8 @@ RETURN: the token text; the end position."
     `(let* ((,vtoken (first ,line))
             (file (token-file ,vtoken))
             (lino (token-line ,vtoken))
-            (*context* (updated-context :file file :line lino :column (token-column ,vtoken) :token ,vtoken)))
-      (pop ,line) (pop ,line)
+            (*context* (updated-context :file file :line lino :column (token-column ,vtoken) :token ,vtoken))
+            (,line (cddr ,line)))
       (locally
           ,@body))))
 
@@ -556,9 +556,13 @@ RETURN: the token text; the end position."
                       (lino  (token-line sharp)))
                  (let ((parameter (pop line)))
                    (if (or (null parameter)
-                           (not (member (token-text parameter) parameters
-                                        :key (function token-text)
-                                        :test (function string=))))
+                           (not (find-if (lambda (par)
+                                           (string= (token-text parameter)
+                                                    (token-text (if (and (listp par)
+                                                                         (eq :ellipsis (first par)))
+                                                                    (second par)
+                                                                    par))))
+                                         parameters)))
                        (progn
                          (cpp-error (pseudo-token file lino) "'#' is not followed by a macro parameter")
                          (if (null parameter)
@@ -568,37 +572,28 @@ RETURN: the token text; the end position."
     :else
       :collect (pop line)))
 
-(defun parse-concatenates (line)
-  (if (sharpsharpp (first line))
-      (progn
-        (cpp-error (first line) "'##' cannot appear at either end of a macro expansion")
-        line)
-      (loop
-        :with result = ()
-        :while line
-        :do (let ((curr (pop line)))
-              (if (sharpsharpp (first line))
-                  (let ((file (token-file (first line)))
-                        (lino (token-line (first line))))
-                    (push (loop
-                            :with concat = (list curr)
-                            :while (sharpsharpp (first line))
-                            :do (pop line)
-                                (unless line
-                                  (cpp-error (pseudo-token file lino) "'##' cannot appear at either end of a macro expansion"))
-                                (unless (sharpsharpp (first line)) 
-                                  (push (pop line) concat))
-                            :finally (return `(:concatenate ,@(nreverse concat)))) result))
-                  (push curr result)))
-        :finally (return (nreverse result)))))
+
+
+(defun check-concatenates (line)
+  ;; ^ ## A and A ## $ are invalid.
+  ;; A ## ## B // valid because A ## empty = A
+  (loop
+    :while (and line (sharpsharpp (first line)))
+    :do (cpp-error (first line) "'##' cannot appear at either end of a macro expansion")
+        (pop line))
+  (loop
+    :while (and line (sharpsharpp (first (last line))))
+    :do (cpp-error (first line) "'##' cannot appear at either end of a macro expansion")
+        (setf line (butlast line)))
+  line)
 
 (defun parse-function-macro-definition-body (line parameters)
   (when line
-    (parse-concatenates (parse-stringifies line parameters))))
+    (check-concatenates (parse-stringifies line parameters))))
 
 (defun parse-object-macro-definition-body (line)
   (when line
-    (parse-concatenates line)))
+    (check-concatenates line)))
 
 (defun parse-macro-definition (name line)
   (cond
@@ -619,7 +614,7 @@ RETURN: the token text; the end position."
                                                (pop line)
                                                (unless (and line (closep (first line)))
                                                  (cpp-error parameter "ellipsis should be the last macro parameter"))
-                                               (list ':ellipsis parameter))
+                                               (list :ellipsis parameter))
                                              (progn
                                                (unless (and line (or (commap (first line)) (closep (first line))))
                                                  (cpp-error "Missing a comma after parameter ~A"  (token-text parameter)))
@@ -627,7 +622,7 @@ RETURN: the token text; the end position."
                                         ((ellipsisp parameter)
                                          (unless (and line (closep (first line)))
                                            (cpp-error parameter "ellipsis should be the last macro parameter"))
-                                         '(:ellipsis))
+                                         (list :ellipsis (make-identifier "__VA_ARGS__" 0 0 "-")))
                                         (t
                                          (cpp-error parameter "Expected a macro parameter name, not ~S" (token-text parameter))
                                          parameter)))
@@ -782,7 +777,7 @@ RETURN: the token text; the end position."
 (defun include-common (directive line include-level environment)
   (with-cpp-line line
     (if line
-        (let ((line (cpp-macro-expand line environment))) ; macro-functions must stand on a single line after #include/#import.
+        (let ((line (first (cpp-macro-expand line '() '() environment)))) ; macro-functions must stand on a single line after #include/#import.
           (multiple-value-bind (path kind line) (extract-path directive line)
             (when path
               (perform-include path kind directive))
@@ -869,9 +864,305 @@ RETURN: the token text; the end position."
 ;;; pre-processing files
 ;;; --------------------
 
+#|
+
+
+object-like macros
+------------------
+
+- The macro definition is a single line of token.
+
+- When the macro is expanded, the expansion is macroexpanded:
+
+       #undef FOO
+       #undef BAR
+       #define FOO BAR
+       int i[]={ FOO,
+       #undef BAR
+       #define BAR 1
+                 FOO,
+       #undef BAR
+       #define BAR 2
+                 FOO };
+    -->
+        int i[]={ BAR,
+
+
+                  1,
+
+
+                  2 };
+
+- But happily, an object-like macro cannot expand to a partial
+  function-like macro invocation:
+
+        #define LEFT F("l",
+        #define RIGHT ,"r")
+        #define FOO LEFT "foo" RIGHT
+        1: FOO; /* ok, FOO expands to F("l","foo","r") */
+        #define F(a,b,c) a##b##c
+        // 2: FOO; /* good: error: unterminated argument list invoking macro "F" (in expanding LEFT from FOO)*/
+
+- Recursive expansion is detected and prevented.
+
+Therefore we can process object-like macro expansions independently.
+
+
+
+function-like macros
+--------------------
+
+This is crazy.
+
+- macro arguments are macro-expanded before they are substituted in the macro body,
+  but not for their stringify and token concatenation use:
+
+        #define VOO 42
+        #define F(X) #X[X]
+
+        F(33)
+        F(VOO)
+        F(C(VOO,VOO))
+    -->
+        "33"[33]
+        "VOO"[42]
+        "C(VOO,VOO)"[VOOVOO]
+
+   So basically, we need to pass the arguments under two forms.
+
+
+   "If an argument is stringified or concatenated, the prescan does
+    not occur. If you want to expand a macro, then stringify or
+    concatenate its expansion, you can do that by causing one macro to
+    call another macro that does the stringification or
+    concatenation."
+  This doesn't sound right, from the above test.
+
+
+- after substitution the entire macro expansion is again scanned for
+  macros to be expanded.
+
+- The self-references that do not expand in the first scan are marked
+  so that they will not expand in the second scan either. !!!
+
+- but happily again, a function-like macro cannot expand to a partial
+  function-like macro invocation, so we can also perform this later
+  expansion independently.
+
+  But "toplevel" function-like macro calls can span several lines,
+  including pre-processor directives (#ifs, #defines, #includes, etc).
+  So parsing function-like macros calls must take into account several
+  lines, and may have to perform recursive directive processing 
+
+  
+        #undef LEFT
+        #undef RIGHT
+        #undef FOO
+        #undef F
+        #define FOO(E) F(l,E,r)
+        1: FOO(foo); /* ok */
+        #define F(a,b,c) a##b##c
+        2: FOO(bar); /* ok since FOO(E) contains the whole F() call. */
+        3: FOO(
+        #define F(a,b,c) a##a
+               baz
+        #undef F
+        #define F(a,b,c) c##c
+               ); 
+        4: FOO(
+        #undef F 
+        #define F(a,b,c) a##a
+               FOO(baz)
+        #undef F
+        #define F(a,b,c) c##c
+               ); 
+    -->
+        1: F(l,foo,r);
+
+        2: lbarr;
+
+        3: rr
+
+
+
+
+                ;
+        4: rr
+
+
+
+
+
+                ;
+
+    Note: the result 4!  The arguments are macro expanded only when
+    the macro call F() is being computed, ie. after we've seen the
+    closing parenthesis.
+
+
+- macro arguments must be parenthesis-balanced (only (), not {} or []).
+  Within (), commas don't split arguments:
+
+        #define F(X) ((X)+(X))
+        F((1,2))
+    -->
+        ((1,2)+(1,2)) /* == 4 */
+
+- unshielded commas in macro arguments are used as argument separators:
+
+      #define foo a,b
+      #define bar(x) lose(x)
+      #define lose(x) (1+(x))
+      bar(foo) --> lose(a,b) /* wrong argument count */
+
+- arguments may be empty.
+
+      #define foo(a,b) {(0,a),(1,b)}
+    -->
+      foo(,) --> {(0,),(1,)}
+
+
+- cf. variadic parameters.
+
+ambiguity, with:
+    #define f() foo
+    #define g(x) bar
+then
+    f() g()
+have different argument counts :-)
+
+concatenation
+-------------
+
+    However, two tokens that don't together form a valid token cannot
+    be pasted together. For example, you cannot concatenate x with +
+    in either order. If you try, the preprocessor issues a warning and
+    emits the two tokens.
+
+    Also, ## concatenates only the first or last token of the argument:
+        #define CONCAT(A,B) A ## B
+        CONCAT(a b,c d)
+    -->
+        a bc d /* 3 tokens */
+
+    If the argument is empty, that ‘##’ has no effect. 
+
+|#
+
+
+(defmacro skip-nil (block-name macro-name-token-var line-var tokenized-lines-var)
+  `(loop :while (null ,line-var)
+         :do (if (null ,tokenized-lines-var)
+                 (progn
+                   (cpp-error *context* "Reached end of file in function-like macro call ~A"
+                              (token-text ,macro-name-token-var))
+                   (return-from ,block-name nil))
+                 (setf ,line-var (pop ,tokenized-lines-var)))))
+
+(defmacro expect (macro-name-token-var token-predicate-name line-var tokenized-lines-var)
+  `(block expect
+     (skip-nil expect ,macro-name-token-var ,line-var ,tokenized-lines-var)
+     (if (,token-predicate-name (first ,line-var))
+         (return-from expect (pop ,line-var))
+         (progn
+           (cpp-error (first ,line-var) "Expected a ~A in function-like macro call ~A, not ~A"
+                      (token-predicate-label ',token-predicate-name)
+                      (token-text ,macro-name-token-var)
+                      (token-text (first ,line-var)))
+           (return-from expect nil)))))
+
+(defun parse-function-macro-call-arguments (macro-name-token line tokenized-lines)
+  ;; function-macro-call     ::= macro-name '(' arglist  ')' .
+  ;; arglist                 ::= argument | argument ',' arglist .
+  ;; argument                ::= | argument-item argument .
+  ;; argument-item           ::= non-parenthesis-or-comma-token | parenthesized-item-list .
+  ;; parenthesized-item-list ::= '(' item-list ')' .
+  ;; item-list               ::= | non-parenthesis-or-comma-token | ',' | parenthesized-item-list .
+  (labels ((skip-nil-not-eof-p ()
+             (block skip
+               (skip-nil skip macro-name-token line tokenized-lines)
+               t))
+           (arglist ()
+             (loop
+               :collect (parse-argument)
+               :while (and (skip-nil-not-eof-p)
+                           (commap (first line)))
+               :do (pop line)))
+           (parenthesized-item-list ()
+             (let ((left  (expect macro-name-token openp line tokenized-lines))
+                   (items (item-list))
+                   (right (or (expect macro-name-token closep line tokenized-lines)
+                              (list (make-punctuation ")" 1 1 "-")))))
+               (nconc (list left) items (list right))))
+           (item-list ()
+             (loop
+               :while (and (skip-nil-not-eof-p)
+                           (not (closep (first line))))
+               :if (openp (first line))
+                 :append (parenthesized-item-list)
+               :else
+                 :collect (pop line)))
+           (parse-argument-item ()
+             (cond
+               ((openp (first line))
+                (parenthesized-item-list))
+               ((commap (first line))
+                '())
+               (t
+                (list (pop line)))))
+           (parse-argument ()
+             (when (skip-nil-not-eof-p)
+               (if (commap (first line))
+                   '()
+                   (loop
+                     :while (and (skip-nil-not-eof-p)
+                                 (not (commap (first line)))
+                                 (not (closep (first line))))
+                     :nconc (parse-argument-item))))))
+    (if (expect macro-name-token openp line tokenized-lines)
+        (values (let ((arglist (arglist)))
+                  (unless (expect macro-name-token closep line tokenized-lines)
+                    (setf line nil))
+                  arglist)
+                line
+                tokenized-lines)
+        (values '() line tokenized-lines))))
+
+
+(defun macro-expand-macros (line tokenized-lines output-lines already-expanded environment)
+  (loop
+    :with out-line := '()
+    :while line
+    :do (let* ((token (pop line))
+               (name  (and token (token-text token))))
+          (if (and (identifierp token)
+                   (environment-macro-definedp environment name))
+              (let ((definition (environment-macro-definition environment name)))
+                (etypecase definition
+                  (macro-definition/object
+                   (setf out-line (nreconc (first (macro-expand-macros (expand-macro-definition definition)
+                                                                       '() '()
+                                                                       (cons name already-expanded)
+                                                                       environment))
+                                           out-line)))
+                  (macro-definition/function
+                   (if (and line (openp (first line)))
+                       (let (arguments)
+                         (multiple-value-setq (arguments line tokenized-lines) (parse-function-macro-call-arguments token line tokenized-lines))
+                         (setf out-line (nreconc (first (macro-expand-macros (expand-macro-definition definition arguments)
+                                                                             '() '()
+                                                                             (cons name already-expanded)
+                                                                             environment))
+                                                 out-line)))
+                       (push token out-line)))))
+              (push token out-line)))
+    :finally (push (nreverse out-line) output-lines))
+  (values output-lines tokenized-lines))
+
 (defun cpp-macro-expand (line tokenized-lines output environment)
-  ;; TODO
-  (values tokenized-lines (cons line output)))
+  (macro-expand-macros line tokenized-lines output
+                       (context-macros-being-expanded *context*)
+                       environment))
 
 (defun process-file (tokenized-lines environment &key (if-level 0) (include-level 0))
   "
@@ -885,7 +1176,7 @@ RETURN:          the C-pre-processed source in form of list of list of tokens
     :with output = '()
     :while tokenized-lines
     :do (let ((line (pop tokenized-lines)))
-          (print line)
+          ;;DEBUG;; (print line)
           (if (sharpp (first line))
               (cond
                 ((identifierp (second line))
@@ -898,7 +1189,7 @@ RETURN:          the C-pre-processed source in form of list of list of tokens
                    (("ifndef")  (setf tokenized-lines (ifndef line tokenized-lines if-level environment)))
                    (("if")      (setf tokenized-lines (cpp-if line tokenized-lines if-level environment)))
                    (("elif" "else" "endif"))
-                   (("line")    (setf tokenized-lines (cpp-line line tokenized-lines environment)))
+                   (("line")    (setf tokenized-lines (cpp-line line tokenized-lines if-level environment)))
                    (("pragma")  (pragma           line environment))
                    (("error")   (cpp-error-line   line environment))
                    (("warning") (cpp-warning-line line environment))
@@ -910,7 +1201,7 @@ RETURN:          the C-pre-processed source in form of list of list of tokens
                  (cpp-error line "invalid directive #~A" (token-text (second line))))
                 (t ;; skip # alone.
                  ))
-              (multiple-value-setq (tokenized-lines output) (cpp-macro-expand line tokenized-lines output environment))))
+              (multiple-value-setq (output tokenized-lines) (cpp-macro-expand line tokenized-lines output environment))))
     :finally (return (nreverse output))))
 
 (defun read-and-process-file (path)
@@ -928,51 +1219,64 @@ RETURN:          the C-pre-processed source in form of list of list of tokens
 
 (defun process-toplevel-file (path &key (options *default-options*))
   (let ((*context* (make-instance 'context :base-file path :file path :options options)))
-    (read-and-process-file path)))
+    (values (read-and-process-file path) *context*)))
 
 (defun write-processed-lines (lines &optional (*standard-output* *standard-output*))
   (when lines
-    (loop
-      :with file := nil
-      :with lino := nil
-      :for line :in lines
-      :when line
-        :do (if (and (equal file (token-file (first line)))
-                     lino
-                     (= (1+ lino) (token-line (first line))))
-                (incf lino)
-                (format t "#line ~D ~S~%"
-                        (setf lino (token-line (first line)))
-                        (setf file (token-file (first line)))))
-            (format t "~{~A~^ ~}~%" (mapcar (function token-text) line)))))
+    (let ((*print-circle* nil))
+     (loop
+       :with file := nil
+       :with lino := nil
+       :for line :in lines
+       :when line
+         :do (if (and (equal file (token-file (first line)))
+                      lino
+                      (= (1+ lino) (token-line (first line))))
+                 (incf lino)
+                 (format t "#line ~D ~S~%"
+                         (setf lino (token-line (first line)))
+                         (setf file (token-file (first line)))))
+             (format t "~{~A~^ ~}~%" (mapcar (function token-text) line))))))
+
+
+(defun cpp-e (path &optional includes)
+  (multiple-value-bind (lines context)
+      (process-toplevel-file path :options (acons :include-quote-directories includes *default-options*))
+    (terpri)
+    (write-processed-lines lines)
+    ;; (print-hashtable (context-environment context))
+    context))
 
 ;;; --------------------
 
 #-(and) (progn
 
-          (write-processed-lines
-           (process-toplevel-file "tests/test.c"
-                                  :options (acons :include-quote-directories '("tests/")
-                                                  *default-options*)))
-          
-          (write-processed-lines
-           (process-toplevel-file "tests/priority.h"
-                                  :options (acons :include-quote-directories '("tests/")
-                                                  *default-options*)))
+          (cpp-e "tests/test.c" '("tests/"))
+          (cpp-e "tests/variadic.c" '("tests/"))
+          (cpp-e "tests/built-ins.c" '("tests/"))
+          (cpp-e "tests/comment.c" '("tests/"))
+          (cpp-e "tests/concat.c" '("tests/"))
+          (cpp-e "tests/interface.c" '("tests/"))
+          (cpp-e "tests/shadow.c" '("tests/"))
+          (cpp-e "tests/stringify.c" '("tests/"))
+          (cpp-e "tests/substitute.c" '("tests/"))
+          (cpp-e "tests/trigraphs.c" '("tests/"))
 
+
+          ;; bugged
+          (cpp-e "tests/recursive.c" '("tests/"))
+          (cpp-e "tests/empty-macro.c" '("tests/"))
+          
           
           (let ((file "tests/define.h"))
             (with-open-file (in file)
-              (let ((environment (make-hash-table :test 'equal)))
+              (let ((environment (make-environment)))
                 (process-file (read-cpp-tokens in
                                                :file-name file
                                                :substitute-trigraphs t
                                                :warn-on-trigraph nil)
                               environment)
                 (print-hashtable environment))))
-          
-          
-          
           
           (let ((file "tests/trigraphs.c"))
             (with-open-file (in file)
@@ -1180,6 +1484,80 @@ RETURN:          the C-pre-processed source in form of list of list of tokens
                  '("/usr/local/include/file.h" :bracket nil)))
   :success)
 
+(defun test/parse-function-macro-call-arguments ()
+  (let ((*context*       (make-instance 'context :base-file "test.c" :file "test.c"))
+        (tokenized-lines (list (list (make-instance 'identifier-token :text "next_line"))))
+        (after           (make-instance 'identifier-token :text "same_line"))
+        (foo             (make-instance 'identifier-token :text "FOO"))
+        (arg1            (make-instance 'identifier-token :text "arg1"))
+        (arg2            (make-instance 'identifier-token :text "arg2"))
+        (plus            (make-instance 'punctuation-token :text "+"))
+        (minus           (make-instance 'punctuation-token :text "-"))
+        (comma           (make-instance 'punctuation-token :text ","))
+        (left            (make-instance 'punctuation-token :text "("))
+        (right           (make-instance 'punctuation-token :text ")")))
+    (flet ((check (result expected)
+             (assert (equal result expected)
+                     () "Assertion failed: equal ~%   result   = ~S~%   expected = ~S~%"
+                     result expected)))
+      (check (multiple-value-list
+              (parse-function-macro-call-arguments foo (list left right after)
+                                                   tokenized-lines))
+             (list '(())
+                   (list after)
+                   tokenized-lines))
+
+      (check (multiple-value-list
+              (parse-function-macro-call-arguments foo (list left comma right after)
+                                                   tokenized-lines))
+             (list '(() ())
+                   (list after)
+                   tokenized-lines))
+
+      (check (multiple-value-list
+              (parse-function-macro-call-arguments foo (list left arg1 right after)
+                                                   tokenized-lines))
+             `(((,arg1))
+               (,after)
+               ,tokenized-lines))
+      
+      (check (multiple-value-list
+              (parse-function-macro-call-arguments foo (list left arg1 comma arg2 right after)
+                                                   tokenized-lines))
+             `(((,arg1) (,arg2))
+               (,after)
+               ,tokenized-lines))
+      
+      (check (multiple-value-list
+              (parse-function-macro-call-arguments foo (list left arg1 comma right after)
+                                                   tokenized-lines))
+             `(((,arg1) ())
+               (,after)
+               ,tokenized-lines))
+      
+      (check (multiple-value-list
+              (parse-function-macro-call-arguments foo (list left arg1 plus arg2 comma arg1 minus arg2 right after)
+                                                   tokenized-lines))
+             `(((,arg1 ,plus ,arg2) (,arg1 ,minus ,arg2))
+               (,after)
+               ,tokenized-lines))
+      
+      (check (multiple-value-list
+              (parse-function-macro-call-arguments foo (list left arg1 left arg2 right comma arg1 minus arg2 right after)
+                                                   tokenized-lines))
+             `(((,arg1 ,left ,arg2 ,right) (,arg1 ,minus ,arg2))
+               (,after)
+               ,tokenized-lines))
+      
+      (check (multiple-value-list
+              (parse-function-macro-call-arguments foo (list left arg1 left  comma arg2  comma right
+                                                             comma arg1 minus arg2 right after)
+                                                   tokenized-lines))
+             `(((,arg1 ,left ,comma ,arg2 ,comma ,right) (,arg1 ,minus ,arg2))
+               (,after)
+               ,tokenized-lines))))
+  :success)
+
 
 (defun test/all ()
   (test/read-c-string)
@@ -1192,7 +1570,8 @@ RETURN:          the C-pre-processed source in form of list of list of tokens
   (test/scan-number)
   (test/scan-punctuation)
   (text/skip-spaces)
-  (test/extract-path))
+  (test/extract-path)
+  (test/parse-function-macro-call-arguments))
 
 (test/all)
 
