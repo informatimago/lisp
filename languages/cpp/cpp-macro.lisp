@@ -209,6 +209,7 @@
 (defun macro-bind (name parameters arguments)
   (loop
     :with bindings := '()
+    :with no-parameters = (null parameters)
     :while parameters
     :do (let ((par (pop parameters)))
           (cond
@@ -221,7 +222,10 @@
             (t
              (let ((arg (pop arguments)))
                (push (cons par arg) bindings)))))
-    :finally (when arguments
+    :finally (when (and arguments
+                        (not (and no-parameters
+                                  (null (cdr arguments))
+                                  (null (car arguments)))))
                (cpp-error *context* "Too many arguments for function-like macro call ~S" (token-text name))
                (return :error))
              (return bindings)))

@@ -606,28 +606,35 @@ RETURN: the token text; the end position."
            (lino (token-line (first line))))
        (pop line)
        (let ((parameters (loop
-                           :collect (let ((parameter (pop line)))
-                                      (cond
-                                        ((identifierp parameter)
-                                         (if (and line (ellipsisp (first line)))
-                                             (progn
+                           :with result := '()
+                           :for parameter := (first line)
+                           :unless (closep parameter)
+                             :do (let ((par (cond
+                                              ((identifierp parameter)
+                                               (pop line)
+                                               (if (and line (ellipsisp (first line)))
+                                                   (progn
+                                                     (pop line)
+                                                     (unless (and line (closep (first line)))
+                                                       (cpp-error parameter "ellipsis should be the last macro parameter"))
+                                                     (list :ellipsis parameter))
+                                                   (progn
+                                                     (unless (and line (or (commap (first line)) (closep (first line))))
+                                                       (cpp-error "Missing a comma after parameter ~A"  (token-text parameter)))
+                                                     parameter)))
+                                              ((ellipsisp parameter)
                                                (pop line)
                                                (unless (and line (closep (first line)))
                                                  (cpp-error parameter "ellipsis should be the last macro parameter"))
-                                               (list :ellipsis parameter))
-                                             (progn
-                                               (unless (and line (or (commap (first line)) (closep (first line))))
-                                                 (cpp-error "Missing a comma after parameter ~A"  (token-text parameter)))
-                                               parameter)))
-                                        ((ellipsisp parameter)
-                                         (unless (and line (closep (first line)))
-                                           (cpp-error parameter "ellipsis should be the last macro parameter"))
-                                         (list :ellipsis (make-identifier "__VA_ARGS__" 0 0 "-")))
-                                        (t
-                                         (cpp-error parameter "Expected a macro parameter name, not ~S" (token-text parameter))
-                                         parameter)))
+                                               (list :ellipsis (make-identifier "__VA_ARGS__" 0 0 "-")))
+                                              (t
+                                               (cpp-error parameter "Expected a macro parameter name, not ~S" (token-text parameter))
+                                               (unless (commap parameter)
+                                                 (pop line))
+                                               nil))))
+                                   (when par (push par result)))
                            :while (and line (commap (first line)))
-                           :do (pop line)
+                           :do (pop line) ; comma
                            :finally (if (and line (closep (first line)))
                                         (pop line)
                                         (cpp-error (pseudo-token file lino) "Expected a closing parentheses after the parameter list")))))
@@ -844,28 +851,47 @@ RETURN: the token text; the end position."
 ;;; --------------------
 
 (defun pragma (line environment)
-  )
+  (with-cpp-line line
+    (if line
+        
+        (cpp-error (pseudo-token file lino) "Missing a pragma expression after #~(~A~)" "pragma"))))
+
+
+;; #pragma GCC dependency path &rest and-stuff
+;; #pragma GCC poison &rest identifiers
+;; #pragma GCC system_header
+;; #pragma GCC warning message
+;; #pragma GCC error message
+;; // message must be a single string literal.
+
+
 
 ;;; --------------------
 ;;; #error
 ;;; --------------------
 
 (defun cpp-error-line (line environment)
-  )
+  (cpp-message 'cpp-error line environment))
 
 ;;; --------------------
 ;;; #warning
 ;;; --------------------
 
 (defun cpp-warning-line (line environment)
-  )
+  (cpp-message 'cpp-warning line environment))
+
+(defun cpp-message (operation line environment)
+  (let ((directive (second line)))
+    (with-cpp-line line
+      (if line
+          (funcall operation directive "~{~A~^ ~}" (mapcar (function token-text) line))
+          (cpp-error directive "Missing an expression after #~(~A~)" directive)))))
 
 ;;; --------------------
 ;;; pre-processing files
 ;;; --------------------
 
 #|
-
 
 object-like macros
 ------------------
@@ -1238,14 +1264,25 @@ RETURN:          the C-pre-processed source in form of list of list of tokens
                          (setf file (token-file (first line)))))
              (format t "~{~A~^ ~}~%" (mapcar (function token-text) line))))))
 
+(defmacro with-cpp-error-logging (&body body)
+  `(handler-bind ((cpp-error (lambda (condition) 
+                              (princ condition *error-output*) (terpri *error-output*)
+                              (let ((restart (find-restart 'continue condition)))
+                                (when restart (invoke-restart restart)))))
+                 (cpp-warning (lambda (condition) 
+                                (princ condition *error-output*) (terpri *error-output*)
+                                (let ((restart (find-restart 'muffle-warning condition)))
+                                  (when restart (invoke-restart restart))))))
+    ,@body))
 
 (defun cpp-e (path &optional includes)
-  (multiple-value-bind (lines context)
-      (process-toplevel-file path :options (acons :include-quote-directories includes *default-options*))
-    (terpri)
-    (write-processed-lines lines)
-    ;; (print-hashtable (context-environment context))
-    context))
+  (with-cpp-error-logging
+    (multiple-value-bind (lines context)
+        (process-toplevel-file path :options (acons :include-quote-directories includes *default-options*))
+      (terpri)
+      (write-processed-lines lines)
+      ;; (print-hashtable (context-environment context))
+      context)))
 
 ;;; --------------------
 
@@ -1261,6 +1298,7 @@ RETURN:          the C-pre-processed source in form of list of list of tokens
           (cpp-e "tests/stringify.c" '("tests/"))
           (cpp-e "tests/substitute.c" '("tests/"))
           (cpp-e "tests/trigraphs.c" '("tests/"))
+          (cpp-e "tests/errors.c" '("tests/"))
 
 
           ;; bugged

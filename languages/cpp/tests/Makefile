@@ -23,3 +23,6 @@ test:
 	gcc -E -o - test.c
 trigraphs:
 	gcc -E -o - -trigraphs trigraphs.c
+errors:
+	gcc -E -o - errors.c
+
