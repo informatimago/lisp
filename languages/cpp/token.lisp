@@ -78,7 +78,7 @@
             (format stream "~A:~A:~A: ~S"
                     (token-file self) (token-line self) (token-column self) (token-text self))))
          self)
-       (defun ,(intern (concatenate 'string (string 'make-) (string name))) (text column line file)
+       (defun ,(intern (concatenate 'string (string 'make-) (string name))) (text &optional (column 0) (line 0) (file "-"))
          (make-instance ',class-name :text text :column column :line line :file file)))))
 
 (define-token-class identifier)
@@ -106,41 +106,41 @@
     (number-token-p  "a number")
     (otherwise (format nil "a ~(~A~)"  predicate-name))))
 
-(defun sharpp (token)
-  (and (typep token 'punctuation-token)
-       (or (string= "#"  (token-text token)))))
+(defmacro define-punctuation-predicate (name value)
+  `(defun ,name (token)
+     (and (typep token 'punctuation-token)
+          (or (string= ,value  (token-text token))))))
 
-(defun sharpsharpp (token)
-  (and (typep token 'punctuation-token)
-       (or (string= "##"  (token-text token)))))
+(define-punctuation-predicate sharpp           "#")
+(define-punctuation-predicate sharpsharpp      "##")
+(define-punctuation-predicate spacep           " ")
+(define-punctuation-predicate openp            "(")
+(define-punctuation-predicate closep           ")") 
+(define-punctuation-predicate open-bracket-p   "<")
+(define-punctuation-predicate close-bracket-p  ">")
+(define-punctuation-predicate commap           ",")
+(define-punctuation-predicate ellipsisp        "...")
 
-(defun spacep (token)
-  (and (typep token 'punctuation-token)
-       (or (string= " "  (token-text token)))))
-
-(defun openp (token)
-  (and (typep token 'punctuation-token)
-       (or (string= "("  (token-text token)))))
-
-(defun closep (token)
-  (and (typep token 'punctuation-token)
-       (or (string= ")"  (token-text token)))))
-
-(defun open-bracket-p (token)
-  (and (typep token 'punctuation-token)
-       (or (string= "<"  (token-text token)))))
-
-(defun close-bracket-p (token)
-  (and (typep token 'punctuation-token)
-       (or (string= ">"  (token-text token)))))
-
-(defun commap (token)
-  (and (typep token 'punctuation-token)
-       (or (string= ","  (token-text token)))))
-
-(defun ellipsisp (token)
-  (and (typep token 'punctuation-token)
-       (or (string= "..."  (token-text token)))))
+(define-punctuation-predicate op-plus-p        "+")
+(define-punctuation-predicate op-minus-p       "-")
+(define-punctuation-predicate op-lognot-p      "!")
+(define-punctuation-predicate op-bitnot-p      "~")
+(define-punctuation-predicate op-times-p       "*")
+(define-punctuation-predicate op-divides-p     "/")
+(define-punctuation-predicate op-remainder-p   "%")
+(define-punctuation-predicate op-left-shift-p  "<<")
+(define-punctuation-predicate op-right-shift-p ">>")
+(define-punctuation-predicate op-lt-p          "<")
+(define-punctuation-predicate op-le-p          "<=")
+(define-punctuation-predicate op-gt-p          ">")
+(define-punctuation-predicate op-ge-p          ">=")
+(define-punctuation-predicate op-eq-p          "==")
+(define-punctuation-predicate op-ne-p          "!=")
+(define-punctuation-predicate op-bitand-p      "&")
+(define-punctuation-predicate op-bitior-p      "|")
+(define-punctuation-predicate op-bitxor-p      "^")
+(define-punctuation-predicate op-logand-p      "&&")
+(define-punctuation-predicate op-logior-p      "||")
 
 
 (defun identifierp (token)
@@ -156,31 +156,48 @@
 (define-condition cpp-warning (simple-warning)
   ())
 
-(defun cpp-error (token format-control &rest format-arguments)
-  (let ((*context* (if (typep token 'context)
-                       token
-                       (update-context *context* :token token
-                                                 :line (token-line token)
-                                                 :column (token-column token)
-                                                 :file (token-file token)))))
+(defgeneric cpp-error (token format-control &rest format-arguments)
+  (:method ((context context) format-control &rest format-arguments)
     (cerror "Continue" 'cpp-error
             :format-control "~A:~A: error: ~?"
             :format-arguments (list (context-file *context*)
                                     (context-line *context*)
-                                    format-control format-arguments))))
+                                    format-control format-arguments)))
+  (:method ((token token) format-control &rest format-arguments)
+    (apply (function cpp-error)
+           (update-context *context* :token token
+                                     :line (token-line token)
+                                     :column (token-column token)
+                                     :file (token-file token))
+           format-control format-arguments))
+  (:method ((line cons) format-control &rest format-arguments)
+    (apply (function cpp-error) (first line) format-control format-arguments))
+  (:method ((line null) format-control &rest format-arguments)
+    (error 'cpp-error
+           :format-control format-control
+           :format-arguments  format-arguments)))
 
-(defun cpp-warning (token format-control &rest format-arguments)
-  (let ((*context* (if (typep token 'context)
-                       token
-                       (update-context *context* :token token
-                                                 :line (token-line token)
-                                                 :column (token-column token)
-                                                 :file (token-file token)))))
+
+(defgeneric cpp-warning (token format-control &rest format-arguments)
+  (:method ((context context) format-control &rest format-arguments)
     (warn 'cpp-warning
           :format-control "~A:~A: warning: ~?"
           :format-arguments (list (context-file *context*)
                                   (context-line *context*)
-                                  format-control format-arguments))))
+                                  format-control format-arguments)))
+  (:method ((token token) format-control &rest format-arguments)
+    (apply (function cpp-warning)
+           (update-context *context* :token token
+                                     :line (token-line token)
+                                     :column (token-column token)
+                                     :file (token-file token))
+           format-control format-arguments))
+  (:method ((line cons) format-control &rest format-arguments)
+    (apply (function cpp-warning) (first line) format-control format-arguments))
+  (:method ((line null) format-control &rest format-arguments)
+    (warn 'cpp-warning
+          :format-control format-control
+          :format-arguments  format-arguments)))
 
 
 

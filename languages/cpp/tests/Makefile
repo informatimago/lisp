@@ -27,4 +27,8 @@ errors:
 	gcc -E -o - errors.c
 line:
 	gcc -E -o - line.c
+ifdef:
+	gcc -E -o - ifdef.c | cat -s
+if:
+	gcc -E -o - -Wundef if.c | cat -s
 

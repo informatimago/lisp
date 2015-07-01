@@ -784,9 +784,9 @@ RETURN: the token text; the end position."
 (defmethod include-common ((context context) directive)
   (with-cpp-line (context-current-line context)
     (if (context-current-line context)
-        (let ((line (first (macro-expand-macros (context-current-line context)
-                                                '() '() '()
-                                                (context-environment context))))) ; macro-functions must stand on a single line after #include/#import.
+        ;; macro-functions must stand on a single line after #include/#import.
+        (let ((line (first (macro-expand-macros context (context-current-line context)
+                                                '() '() nil '()))))
           (multiple-value-bind (path kind line) (extract-path directive line)
             (when path
               (perform-include context path kind directive))
@@ -821,26 +821,174 @@ RETURN: the token text; the end position."
      (cpp-error (first line) "Invalid macro name ~A after ~A" (token-text (first line)) where)
      nil)))
 
+(defmacro define-cpp-line-predicate (name key)
+  `(defun ,name (line)
+     (and (cdr line)
+          (sharpp (car line))
+          (string= ,key (token-text (cadr line))))))
+(define-cpp-line-predicate if-line-p     "if")
+(define-cpp-line-predicate ifdef-line-p  "ifdef")
+(define-cpp-line-predicate ifndef-line-p "ifndef")
+(define-cpp-line-predicate elif-line-p   "elif")
+(define-cpp-line-predicate else-line-p   "else")
+(define-cpp-line-predicate endif-line-p  "endif")
 
-(defmethod process-then-branch ((context context))
-  (incf (context-if-level context))
-  (process-file context))
-(defmethod process-else-branch ((context context))
-  context)
-(defmethod skip-then-branch ((context context))
-  context)
-(defmethod skip-else-branch ((context context))
-  context)
+(defmethod skip-if ((context context))
+  ;; PRE: current line is #if #ifdef #ifndef #elif or #else
+  ;; POST: current line is nil or #endif
+  ;; skips until the matching #endif
+  (let ((if-line (context-current-line context)))
+    (setf (context-current-line context) nil)
+    (incf (context-if-level context))
+    (unwind-protect
+         (loop
+           :while (context-input-lines context)
+           :do (let ((line (pop (context-input-lines context))))
+                 (cond ((or (if-line-p line)
+                            (ifdef-line-p line)
+                            (ifndef-line-p line))
+                        (skip-if context))
+                       ((endif-line-p line)
+                        (setf (context-current-line context) line)
+                        (return t))))
+           :finally (cpp-error if-line "End of file reached before a balanced #endif for #~A"
+                               (token-text (second if-line)))
+                    (return nil))
+      (decf (context-if-level context)))))
+
+(defmethod skip-branch ((context context))
+  ;; skips a single branch
+  ;; PRE:  current line is #if #ifdef #ifndef or #elif
+  ;; POST: current line is nil, #elif #else or #endif
+  (let ((if-line (context-current-line context)))
+    (setf (context-current-line context) nil)
+    (loop
+      :while (context-input-lines context)
+      :do (let ((line (pop (context-input-lines context))))
+            (cond ((or (if-line-p line)
+                       (ifdef-line-p line)
+                       (ifndef-line-p line))
+                   (skip-if context))
+                  ((or (elif-line-p line)
+                       (else-line-p line)
+                       (endif-line-p line))
+                   (setf (context-current-line context) line)
+                   (return t))))
+      :finally (cpp-error if-line "End of file reached before a balanced #endif for #~A"
+                          (token-text (second if-line)))
+               (return nil))))
+
+(defmethod process-branch-and-skip ((context context) &optional no-else)
+  ;; current line is #if #ifdef #ifndef or #elif
+  ;; processes the branch,
+  ;; and then skip the branches until #endif
+  ;; if no-else, the signals an error if a #else or #elif is found.
+  ;; (there should be no-else after an #else).
+  (flet ((check-no-else ()
+           (when no-else
+             (cpp-error (context-current-line context) "Found a #~A line after a #else"
+                        (token-text (second (context-current-line context)))))))
+    (process-file context) ; shall read the input-lines till the #elif #else or #endif
+    (loop
+      :while (elif-line-p (context-current-line context))
+      :do (check-no-else)
+          (skip-branch context))
+    (when (else-line-p (context-current-line context))
+      (check-no-else)
+      (skip-branch context))
+    (unless (or (null (context-current-line context))
+                (endif-line-p (context-current-line context)))
+      (check-no-else))
+    (loop
+      :until (or (null (context-current-line context))
+                 (endif-line-p (context-current-line context)))
+      :do (skip-branch context))))
+
+#-(and) (
+         
+         (let ((*context*  (make-instance 'context
+                                          :current-line (list (make-punctuation "#") (make-identifier "ifdef") (make-identifier "YES"))
+                                          :input-lines  (list (list (make-number "1"))
+                                                              (list (make-punctuation "#") (make-identifier "else"))
+                                                              (list (make-number "2"))
+                                                              (list (make-punctuation "#") (make-identifier "endif")))
+                                          :if-level 1)))
+           (process-branch-and-skip *context*)
+           (write-processed-lines (reverse (context-output-lines *context*))))
+
+                  
+         (let ((*context*  (make-instance 'context
+                                          :input-lines  (list (list (make-punctuation "#") (make-identifier "define") (make-identifier "YES")  (make-number "1"))
+                                                              (list (make-punctuation "#") (make-identifier "ifdef") (make-identifier "YES"))
+                                                              (list (make-number "1"))
+                                                              (list (make-punctuation "#") (make-identifier "else"))
+                                                              (list (make-number "2"))
+                                                              (list (make-punctuation "#") (make-identifier "endif"))))))
+           (process-file *context*)
+           (write-processed-lines (reverse (context-output-lines *context*))))
+
+         (let ((*context*  (make-instance 'context
+                                          :input-lines  (list (list (make-punctuation "#") (make-identifier "define") (make-identifier "YES")  (make-number "1"))
+                                                              (list (make-punctuation "#") (make-identifier "ifdef") (make-identifier "NO"))
+                                                              (list (make-number "1"))
+                                                              (list (make-punctuation "#") (make-identifier "else"))
+                                                              (list (make-number "2"))
+                                                              (list (make-punctuation "#") (make-identifier "endif"))))))
+           (process-file *context*)
+           (write-processed-lines (reverse (context-output-lines *context*))))
+
+         (let ((*context*  (make-instance 'context
+                                          :input-lines  (list (list (make-punctuation "#") (make-identifier "define") (make-identifier "YES")  (make-number "1"))
+                                                              (list (make-punctuation "#") (make-identifier "ifdef") (make-identifier "NO"))
+                                                              (list (make-number "1"))
+                                                              (list (make-punctuation "#") (make-identifier "elif") (make-identifier "defined") (make-identifier "YES"))
+                                                              (list (make-number "2"))
+                                                              (list (make-punctuation "#") (make-identifier "else"))
+                                                              (list (make-number "3"))
+                                                              (list (make-punctuation "#") (make-identifier "endif"))))))
+           (process-file *context*)
+           (write-processed-lines (reverse (context-output-lines *context*))))
+         
+
+
+         
+         
+         )
+
+
+(defmethod skip-branch-and-process ((context context))
+  ;; line is #if #ifdef #ifndef #elif
+  ;; skip the branches,
+  ;; and then process the next #elif or #else branch.
+  ;; and then skip the end.
+  ;; Note: #ifdef … #elif … #else … #endif is valid.
+  (skip-branch context)
+  (loop
+    :while (and (elif-line-p (context-current-line context))
+                (not (cpp-evaluate-expression context (cddr (context-current-line context)))))
+    :do (skip-branch context))
+  (if (elif-line-p (context-current-line context))
+      (process-branch-and-skip context)
+      (progn
+        (loop
+          :until (or (else-line-p (context-current-line context))
+                     (endif-line-p (context-current-line context)))
+          :do (skip-branch context))
+        (when (else-line-p (context-current-line context))
+          (process-branch-and-skip context :no-else)))))
 
 (defmethod ifdef-common ((context context) flip directive)
-  (let ((name (parse-single-macro-name (context-current-line context) directive)))
-    (cond
-      ((null name)
-       (skip-else-branch (skip-then-branch context)))
-      ((funcall flip (environment-macro-definedp (context-environment context) (token-text name)))
-       (skip-else-branch (process-then-branch context)))
-      (t
-       (process-else-branch (skip-then-branch context))))))
+  (incf (context-if-level context))
+  (unwind-protect
+       (let ((name (parse-single-macro-name (cddr (context-current-line context)) directive)))
+         (cond
+           ((null name)
+            (skip-if context))
+           ((funcall flip (environment-macro-definedp (context-environment context) (token-text name)))
+            (process-branch-and-skip context))
+           (t
+            (skip-branch-and-process context))))
+    (decf (context-if-level context))))
 
 (defmethod ifdef ((context context))
   (ifdef-common context (function identity) "#ifdef"))
@@ -848,9 +996,16 @@ RETURN: the token text; the end position."
 (defmethod ifndef ((context context))
   (ifdef-common context (function not) "#ifndef"))
 
+(defun cpp-evaluate-expression (context line)
+  (not (zerop (eval (parse-expression context
+                                      (first (macro-expand-macros context line
+                                                                  '() '() :allow-defined '())))))))
+
 (defmethod cpp-if ((context context))
-  
-  )
+  (if (cpp-evaluate-expression context (cddr (context-current-line context)))
+      (process-branch-and-skip context)
+      (skip-branch-and-process context)))
+
 
 ;;; --------------------
 ;;; #line
@@ -901,306 +1056,14 @@ RETURN: the token text; the end position."
 ;;; pre-processing files
 ;;; --------------------
 
-#|
-
-object-like macros
-------------------
-
-- The macro definition is a single line of token.
-
-- When the macro is expanded, the expansion is macroexpanded:
-
-       #undef FOO
-       #undef BAR
-       #define FOO BAR
-       int i[]={ FOO,
-       #undef BAR
-       #define BAR 1
-                 FOO,
-       #undef BAR
-       #define BAR 2
-                 FOO };
-    -->
-        int i[]={ BAR,
-
-
-                  1,
-
-
-                  2 };
-
-- But happily, an object-like macro cannot expand to a partial
-  function-like macro invocation:
-
-        #define LEFT F("l",
-        #define RIGHT ,"r")
-        #define FOO LEFT "foo" RIGHT
-        1: FOO; /* ok, FOO expands to F("l","foo","r") */
-        #define F(a,b,c) a##b##c
-        // 2: FOO; /* good: error: unterminated argument list invoking macro "F" (in expanding LEFT from FOO)*/
-
-- Recursive expansion is detected and prevented.
-
-Therefore we can process object-like macro expansions independently.
-
-
-
-function-like macros
---------------------
-
-This is crazy.
-
-- macro arguments are macro-expanded before they are substituted in the macro body,
-  but not for their stringify and token concatenation use:
-
-        #define VOO 42
-        #define F(X) #X[X]
-
-        F(33)
-        F(VOO)
-        F(C(VOO,VOO))
-    -->
-        "33"[33]
-        "VOO"[42]
-        "C(VOO,VOO)"[VOOVOO]
-
-   So basically, we need to pass the arguments under two forms.
-
-
-   "If an argument is stringified or concatenated, the prescan does
-    not occur. If you want to expand a macro, then stringify or
-    concatenate its expansion, you can do that by causing one macro to
-    call another macro that does the stringification or
-    concatenation."
-  This doesn't sound right, from the above test.
-
-
-- after substitution the entire macro expansion is again scanned for
-  macros to be expanded.
-
-- The self-references that do not expand in the first scan are marked
-  so that they will not expand in the second scan either. !!!
-
-- but happily again, a function-like macro cannot expand to a partial
-  function-like macro invocation, so we can also perform this later
-  expansion independently.
-
-  But "toplevel" function-like macro calls can span several lines,
-  including pre-processor directives (#ifs, #defines, #includes, etc).
-  So parsing function-like macros calls must take into account several
-  lines, and may have to perform recursive directive processing 
-
-  
-        #undef LEFT
-        #undef RIGHT
-        #undef FOO
-        #undef F
-        #define FOO(E) F(l,E,r)
-        1: FOO(foo); /* ok */
-        #define F(a,b,c) a##b##c
-        2: FOO(bar); /* ok since FOO(E) contains the whole F() call. */
-        3: FOO(
-        #define F(a,b,c) a##a
-               baz
-        #undef F
-        #define F(a,b,c) c##c
-               ); 
-        4: FOO(
-        #undef F 
-        #define F(a,b,c) a##a
-               FOO(baz)
-        #undef F
-        #define F(a,b,c) c##c
-               ); 
-    -->
-        1: F(l,foo,r);
-
-        2: lbarr;
-
-        3: rr
-
-
-
-
-                ;
-        4: rr
-
-
-
-
-
-                ;
-
-    Note: the result 4!  The arguments are macro expanded only when
-    the macro call F() is being computed, ie. after we've seen the
-    closing parenthesis.
-
-
-- macro arguments must be parenthesis-balanced (only (), not {} or []).
-  Within (), commas don't split arguments:
-
-        #define F(X) ((X)+(X))
-        F((1,2))
-    -->
-        ((1,2)+(1,2)) /* == 4 */
-
-- unshielded commas in macro arguments are used as argument separators:
-
-      #define foo a,b
-      #define bar(x) lose(x)
-      #define lose(x) (1+(x))
-      bar(foo) --> lose(a,b) /* wrong argument count */
-
-- arguments may be empty.
-
-      #define foo(a,b) {(0,a),(1,b)}
-    -->
-      foo(,) --> {(0,),(1,)}
-
-
-- cf. variadic parameters.
-
-ambiguity, with:
-    #define f() foo
-    #define g(x) bar
-then
-    f() g()
-have different argument counts :-)
-
-concatenation
--------------
-
-    However, two tokens that don't together form a valid token cannot
-    be pasted together. For example, you cannot concatenate x with +
-    in either order. If you try, the preprocessor issues a warning and
-    emits the two tokens.
-
-    Also, ## concatenates only the first or last token of the argument:
-        #define CONCAT(A,B) A ## B
-        CONCAT(a b,c d)
-    -->
-        a bc d /* 3 tokens */
-
-    If the argument is empty, that ‘##’ has no effect. 
-
-|#
-
-
-(defmacro skip-nil (block-name macro-name-token-var line-var tokenized-lines-var)
-  `(loop :while (null ,line-var)
-         :do (if (null ,tokenized-lines-var)
-                 (progn
-                   (cpp-error *context* "Reached end of file in function-like macro call ~A"
-                              (token-text ,macro-name-token-var))
-                   (return-from ,block-name nil))
-                 (setf ,line-var (pop ,tokenized-lines-var)))))
-
-(defmacro expect (macro-name-token-var token-predicate-name line-var tokenized-lines-var)
-  `(block expect
-     (skip-nil expect ,macro-name-token-var ,line-var ,tokenized-lines-var)
-     (if (,token-predicate-name (first ,line-var))
-         (return-from expect (pop ,line-var))
-         (progn
-           (cpp-error (first ,line-var) "Expected a ~A in function-like macro call ~A, not ~A"
-                      (token-predicate-label ',token-predicate-name)
-                      (token-text ,macro-name-token-var)
-                      (token-text (first ,line-var)))
-           (return-from expect nil)))))
-
-(defun parse-function-macro-call-arguments (macro-name-token line tokenized-lines)
-  ;; function-macro-call     ::= macro-name '(' arglist  ')' .
-  ;; arglist                 ::= argument | argument ',' arglist .
-  ;; argument                ::= | argument-item argument .
-  ;; argument-item           ::= non-parenthesis-or-comma-token | parenthesized-item-list .
-  ;; parenthesized-item-list ::= '(' item-list ')' .
-  ;; item-list               ::= | non-parenthesis-or-comma-token | ',' | parenthesized-item-list .
-  (labels ((skip-nil-not-eof-p ()
-             (block skip
-               (skip-nil skip macro-name-token line tokenized-lines)
-               t))
-           (arglist ()
-             (loop
-               :collect (parse-argument)
-               :while (and (skip-nil-not-eof-p)
-                           (commap (first line)))
-               :do (pop line)))
-           (parenthesized-item-list ()
-             (let ((left  (expect macro-name-token openp line tokenized-lines))
-                   (items (item-list))
-                   (right (or (expect macro-name-token closep line tokenized-lines)
-                              (list (make-punctuation ")" 1 1 "-")))))
-               (nconc (list left) items (list right))))
-           (item-list ()
-             (loop
-               :while (and (skip-nil-not-eof-p)
-                           (not (closep (first line))))
-               :if (openp (first line))
-                 :append (parenthesized-item-list)
-               :else
-                 :collect (pop line)))
-           (parse-argument-item ()
-             (cond
-               ((openp (first line))
-                (parenthesized-item-list))
-               ((commap (first line))
-                '())
-               (t
-                (list (pop line)))))
-           (parse-argument ()
-             (when (skip-nil-not-eof-p)
-               (if (commap (first line))
-                   '()
-                   (loop
-                     :while (and (skip-nil-not-eof-p)
-                                 (not (commap (first line)))
-                                 (not (closep (first line))))
-                     :nconc (parse-argument-item))))))
-    (if (expect macro-name-token openp line tokenized-lines)
-        (values (let ((arglist (arglist)))
-                  (unless (expect macro-name-token closep line tokenized-lines)
-                    (setf line nil))
-                  arglist)
-                line
-                tokenized-lines)
-        (values '() line tokenized-lines))))
-
-
-(defun macro-expand-macros (line tokenized-lines output-lines already-expanded environment)
-  (loop
-    :with out-line := '()
-    :while line
-    :do (let* ((token (pop line))
-               (name  (and token (token-text token))))
-          (if (and (identifierp token)
-                   (environment-macro-definedp environment name))
-              (let ((definition (environment-macro-definition environment name)))
-                (etypecase definition
-                  (macro-definition/object
-                   (setf out-line (nreconc (first (macro-expand-macros (expand-macro-definition definition)
-                                                                       '() '()
-                                                                       (cons name already-expanded)
-                                                                       environment))
-                                           out-line)))
-                  (macro-definition/function
-                   (if (and line (openp (first line)))
-                       (let (arguments)
-                         (multiple-value-setq (arguments line tokenized-lines) (parse-function-macro-call-arguments token line tokenized-lines))
-                         (setf out-line (nreconc (first (macro-expand-macros (expand-macro-definition definition arguments)
-                                                                             '() '()
-                                                                             (cons name already-expanded)
-                                                                             environment))
-                                                 out-line)))
-                       (push token out-line)))))
-              (push token out-line)))
-    :finally (push (nreverse out-line) output-lines))
-  (values output-lines tokenized-lines))
 
 (defmethod cpp-macro-expand ((context context))
-  (multiple-value-bind (output input) (macro-expand-macros (context-current-line context)
+  (multiple-value-bind (output input) (macro-expand-macros context
+                                                           (context-current-line context)
                                                            (context-input-lines context)
                                                            (context-output-lines context)
-                                                           (context-macros-being-expanded context)
-                                                           (context-environment context))
+                                                           nil
+                                                           (context-macros-being-expanded context))
     (setf (context-output-lines context) output
           (context-input-lines context) input)
     context))
@@ -1224,10 +1087,9 @@ concatenation
                    (("ifndef")  (ifndef  context))
                    (("if")      (cpp-if  context))
                    (("elif" "else" "endif")
-                    (when (plusp (context-if-level context))
-                      (push line (context-input-lines context))
-                      (loop-finish))
-                    (cpp-error (second line) "#~A without #if" (token-text (second line))))
+                    (if (plusp (context-if-level context))
+                        (return)
+                        (cpp-error (second line) "#~A without #if" (token-text (second line)))))
                    (("line")    (cpp-line context))
                    (("pragma")  (pragma           context))
                    (("error")   (cpp-error-line   context))
@@ -1240,7 +1102,8 @@ concatenation
                  (cpp-error line "invalid directive #~A" (token-text (second line))))
                 (t ;; skip # alone.
                  ))
-              (cpp-macro-expand context))))
+              (cpp-macro-expand context)))
+    :finally (setf (context-current-line context) nil))
   context)
 
 (defmethod read-and-process-file ((context context) path)
@@ -1509,6 +1372,13 @@ concatenation
                  '("..." 12)))
   :success)
 
+(defun test/scan-delimited-literal ()
+  (assert (equal (multiple-value-list (scan-delimited-literal '("'e'" 42 "test.c") 0))
+                 '("'e'" 3)))
+  (assert (equal (multiple-value-list (scan-delimited-literal '("'\\x41'" 42 "test.c") 0))
+                 '("'\\x41'" 6)))
+  :success)
+
 (defun text/skip-spaces ()
   (assert (equal (skip-spaces "    xyz()" 0) 4))
   (assert (equal (skip-spaces "    xyz()" 7) 7))
@@ -1622,9 +1492,12 @@ concatenation
   (test/scan-identifier)
   (test/scan-number)
   (test/scan-punctuation)
+  (test/scan-delimited-literal)
   (text/skip-spaces)
   (test/extract-path)
-  (test/parse-function-macro-call-arguments))
+  (test/parse-function-macro-call-arguments)
+  (test/character-value)
+  (test/integer-value))
 
 (test/all)
 

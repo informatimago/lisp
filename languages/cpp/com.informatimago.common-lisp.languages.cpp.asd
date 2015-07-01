@@ -32,14 +32,14 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem "com.informatimago.languages.cpp"
+(asdf:defsystem "com.informatimago.common-lisp.languages.cpp"
   ;; system attributes:
   :description "An implementation of the C Pre Processor with some GNU cpp extensions."
   :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component  attributes:
-  :version "0.0.0"
+  :version "0.0.2"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Summer 2015")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.languages.cpp/")
@@ -56,11 +56,15 @@
                (:file "token"           :depends-on  ("packages" "cpp-macro"))
                (:file "built-in-macros" :depends-on  ("packages" "cpp-macro" "token"))
                (:file "pragma-gcc"      :depends-on  ("packages" "cpp-macro" "token"))
+               (:file "expression"      :depends-on  ("packages"
+                                                      "cpp-macro" "token"
+                                                      "c-string-reader"))
                (:file "cpp"             :depends-on  ("packages"
                                                       "cpp-macro" "token"
                                                       "built-in-macros"
                                                       "pragma-gcc"
-                                                      "c-string-reader")))
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.languages.cpp.test"))))
+                                                      "c-string-reader"
+                                                      "expression")))
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.languages.cpp.test"))))
 
 ;;;; THE END ;;;;

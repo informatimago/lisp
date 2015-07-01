@@ -2,11 +2,19 @@
 #define BAR VOO - 1
 
 #define f(x,y,z) x,f(y,z,x)
+#define G(x,y,z) g(y,z,x)
+#define g(x,y,z) x,G(x,y,z)
 
 int x=VOO;
 int[] y={f(1,2,3)};
+int[] z={g(1,2,3)};
 
 
+#define SUCC(X) (1+(X))
+int f2=SUCC(SUCC(0));
+
+#define TWO SUCC(SUCC(0))
+int f3=SUCC(TWO);
 
 #undef FOO
 #undef BAR

@@ -33,6 +33,11 @@
 ;;;;**************************************************************************
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.LANGUAGES.CPP")
 
+(defvar *context* nil) ; the current instance of context.
+
+
+;; Cpp macro definitions are kept in the environment hash-table, keyed
+;; by the macro name (string).
 
 (defgeneric environment-macro-definedp (environment macro-name))
 (defgeneric environment-macro-undefine (environment macro-name))
@@ -59,37 +64,27 @@
   (assert (eq 'equal (hash-table-test environment)))
   (setf (gethash macro-name environment) definition))
 
-
-;; Only one level of embedded lexical scope, for function-like macro parameters is possible.
-
-(defstruct lexical-environment
-  global
-  bindings)
-
-(defmethod environment-macro-definedp ((environment lexical-environment) (macro-name string))
-  (or (assoc macro-name (lexical-environment-bindings environment)
-             :test (function string=)
-             :key (function token-text))
-      (environment-macro-definedp (lexical-environment-global environment) macro-name)))
-
-(defmethod environment-macro-definition ((environment lexical-environment) (macro-name string))
-  (let ((entry (assoc macro-name (lexical-environment-bindings environment)
-                      :test (function string=)
-                      :key (function token-text))))
-    (if entry
-        (cdr entry)
-        (environment-macro-definition (lexical-environment-global environment) macro-name))))
-
-
+;; The values kept in the environment are instances of subclasses of macro-definition.
 
 (defclass macro-definition ()
   ((name :initarg :name :accessor macro-definition-name)))
 
-(defgeneric expand-macro-definition (macro-definition &optional arguments))
+(defgeneric expand-macro-definition (macro-definition &optional arguments)
+  (:documentation
+   "Binds the arguments (list of list of tokens) to the macro
+parameters if any, and expands the macro.
 
+object-like macros don't take arguments.
+
+function-like macros take an argument list, possibly empty, but if it
+contains a single empty list of tokens and the function-like macro
+takes no parameters, then it's still a match (at this stage, we don't
+distinguish f() from f( ) anymore.
+"))
 
 (defclass macro-definition/object (macro-definition)
-  ((expansion :initarg :expansion :accessor macro-definition-expansion)))
+  ((expansion :initarg :expansion :accessor macro-definition-expansion))
+  (:documentation "Normal object-like macro."))
 
 (defmethod print-object ((macro macro-definition/object) stream)
   (let ((*print-circle* nil))
@@ -107,7 +102,8 @@
 
 (defclass macro-definition/function (macro-definition)
   ((parameters :initarg :parameters :initform '() :accessor macro-definition-parameters)
-   (expansion :initarg :expansion :accessor macro-definition-expansion)))
+   (expansion :initarg :expansion :accessor macro-definition-expansion))
+  (:documentation "Normal function-like macro."))
 
 (defmethod print-object ((macro macro-definition/function) stream)
   (let ((*print-circle* nil))
@@ -122,7 +118,200 @@
   (and (consp parameter)
        (eq :ellipsis (first parameter))))
 
+;;; ------------------------------------------------------------
+;;; The expand-macro-definition method for normal macros.
+;;; ------------------------------------------------------------
 
+#|
+
+object-like macros
+------------------
+
+- The macro definition is a single line of token.
+
+- When the macro is expanded, the expansion is macroexpanded:
+
+       #undef FOO
+       #undef BAR
+       #define FOO BAR
+       int i[]={ FOO,
+       #undef BAR
+       #define BAR 1
+                 FOO,
+       #undef BAR
+       #define BAR 2
+                 FOO };
+    -->
+        int i[]={ BAR,
+
+
+                  1,
+
+
+                  2 };
+
+- But happily, an object-like macro cannot expand to a partial
+  function-like macro invocation:
+
+        #define LEFT F("l",
+        #define RIGHT ,"r")
+        #define FOO LEFT "foo" RIGHT
+        1: FOO; /* ok, FOO expands to F("l","foo","r") */
+        #define F(a,b,c) a##b##c
+        // 2: FOO; /* good: error: unterminated argument list invoking macro "F" (in expanding LEFT from FOO)*/
+
+- Recursive expansion is detected and prevented.
+
+Therefore we can process object-like macro expansions independently.
+
+
+
+function-like macros
+--------------------
+
+This is crazy.
+
+- macro arguments are macro-expanded before they are substituted in the macro body,
+  but not for their stringify and token concatenation use:
+
+        #define VOO 42
+        #define F(X) #X[X]
+
+        F(33)
+        F(VOO)
+        F(C(VOO,VOO))
+    -->
+        "33"[33]
+        "VOO"[42]
+        "C(VOO,VOO)"[VOOVOO]
+
+   So basically, we need to pass the arguments under two forms.
+
+
+   "If an argument is stringified or concatenated, the prescan does
+    not occur. If you want to expand a macro, then stringify or
+    concatenate its expansion, you can do that by causing one macro to
+    call another macro that does the stringification or
+    concatenation."
+  This doesn't sound right, from the above test.
+
+
+- after substitution the entire macro expansion is again scanned for
+  macros to be expanded.
+
+- The self-references that do not expand in the first scan are marked
+  so that they will not expand in the second scan either. !!!
+
+- but happily again, a function-like macro cannot expand to a partial
+  function-like macro invocation, so we can also perform this later
+  expansion independently.
+
+  But "toplevel" function-like macro calls can span several lines,
+  including pre-processor directives (#ifs, #defines, #includes, etc).
+  So parsing function-like macros calls must take into account several
+  lines, and may have to perform recursive directive processing 
+
+  
+        #undef LEFT
+        #undef RIGHT
+        #undef FOO
+        #undef F
+        #define FOO(E) F(l,E,r)
+        1: FOO(foo); /* ok */
+        #define F(a,b,c) a##b##c
+        2: FOO(bar); /* ok since FOO(E) contains the whole F() call. */
+        3: FOO(
+        #define F(a,b,c) a##a
+               baz
+        #undef F
+        #define F(a,b,c) c##c
+               ); 
+        4: FOO(
+        #undef F 
+        #define F(a,b,c) a##a
+               FOO(baz)
+        #undef F
+        #define F(a,b,c) c##c
+               ); 
+    -->
+        1: F(l,foo,r);
+
+        2: lbarr;
+
+        3: rr
+
+
+
+
+                ;
+        4: rr
+
+
+
+
+
+                ;
+
+    Note: the result 4!  The arguments are macro expanded only when
+    the macro call F() is being computed, ie. after we've seen the
+    closing parenthesis.
+
+
+- macro arguments must be parenthesis-balanced (only (), not {} or []).
+  Within (), commas don't split arguments:
+
+        #define F(X) ((X)+(X))
+        F((1,2))
+    -->
+        ((1,2)+(1,2)) /* == 4 */
+
+- unshielded commas in macro arguments are used as argument separators:
+
+      #define foo a,b
+      #define bar(x) lose(x)
+      #define lose(x) (1+(x))
+      bar(foo) --> lose(a,b) /* wrong argument count */
+
+- arguments may be empty.
+
+      #define foo(a,b) {(0,a),(1,b)}
+    -->
+      foo(,) --> {(0,),(1,)}
+
+
+- cf. variadic parameters.
+
+ambiguity, with:
+    #define f() foo
+    #define g(x) bar
+then
+    f() g()
+have different argument counts :-)
+
+concatenation
+-------------
+
+    However, two tokens that don't together form a valid token cannot
+    be pasted together. For example, you cannot concatenate x with +
+    in either order. If you try, the preprocessor issues a warning and
+    emits the two tokens.
+
+    Also, ## concatenates only the first or last token of the argument:
+        #define CONCAT(A,B) A ## B
+        CONCAT(a b,c d)
+    -->
+        a bc d /* 3 tokens */
+
+    If the argument is empty, that ‘##’ has no effect. 
+
+|#
+
+
+;; While macroexpanding function-like macros, we need to bind
+;; arguments to parameters.  Arguments are reified in this argument
+;; structure, keeping both the tokens of the arguments, and their
+;; macro-expanded form, and with lazy initialization of the
+;; stringified version.
 
 (defstruct argument
   tokens
@@ -234,13 +423,21 @@
                (return :error))
              (return bindings)))
 
+(defmacro skip-nil (block-name macro-name-token-var line-var tokenized-lines-var)
+  `(loop :while (null ,line-var)
+         :do (if (null ,tokenized-lines-var)
+                 (progn
+                   (cpp-error *context* "Reached end of file in function-like macro call ~A"
+                              (token-text ,macro-name-token-var))
+                   (return-from ,block-name nil))
+                 (setf ,line-var (pop ,tokenized-lines-var)))))
+
 (defun macro-bindings-expand-arguments (bindings)
   (flet ((marg (tokens)
            (make-argument
             :tokens tokens
-            :expanded (reduce (function nconc) (macro-expand-macros tokens '() '()
-                                                                    (context-macros-being-expanded *context*)
-                                                                    (context-environment *context*))))))
+            :expanded (reduce (function nconc) (macro-expand-macros *context* tokens '() '() nil
+                                                                    (context-macros-being-expanded *context*))))))
     (dolist (binding bindings bindings)
       (if (and (listp (cdr binding))
                (eq :ellipsis (second binding)))
@@ -312,13 +509,17 @@
     ;; substitute parameters in definition.
     (remove nil (substitute-concatenates (substitute-parameters definition bindings)))))
 
+;;; ------------------------------------------------------------
+;;; built-ins, computed macros.
+;;; ------------------------------------------------------------
 
 (defclass macro-definition/computed-mixin ()
   ((compute-expansion-function :initarg :compute-expansion-function
                                :accessor macro-definition-compute-expansion-function)))
 
 (defclass macro-definition/object/computed (macro-definition/object macro-definition/computed-mixin)
-  ())
+  ()
+  (:documentation "Built-in, computed object-like macro."))
 
 (defmethod print-object ((macro macro-definition/object/computed) stream)
   (let ((*print-circle* nil))
@@ -333,9 +534,9 @@
     (error "~S cannot take arguments for object-like macro ~A" 'expand-macro-definition (macro-definition-name macro-definition)))
   (funcall (macro-definition-compute-expansion-function macro-definition) macro-definition))
 
-
 (defclass macro-definition/function/computed (macro-definition/function macro-definition/computed-mixin)
-  ())
+  ()
+  (:documentation "Built-in, computed function-like macro."))
 
 (defmethod print-object ((macro macro-definition/function/computed) stream)
   (let ((*print-circle* nil))
@@ -350,18 +551,37 @@
     (error "~S needs arguments for function-like macro ~A()" 'expand-macro-definition (macro-definition-name macro-definition)))
   (funcall (macro-definition-compute-expansion-function macro-definition) macro-definition arguments))
 
-
-
+;;; ------------------------------------------------------------
+;;; context
+;;; ------------------------------------------------------------
 
 (deftype option-key ()
   `(member :warn-date-time
+           ;; Warns when using built-in __DATE__ __TIME__ and __TIMESTAMP__
+           ;; as them may produce artificially different executables.
+           
            :directives-only
+           
            :substitute-trigraphs
-           :warn-on-trigraph 
-           :warn-spaces-in-continued-lines 
+           ;; allow trigraph substitutions.
+           
+           :warn-on-trigraph
+           ;; when trigraphs are substituted, warn about it.
+           
+           :warn-spaces-in-continued-lines
+
            :single-line-comments
-           :accept-unicode-escapes 
+           ;; allow // comments.
+           
+           :accept-unicode-escapes
+           ;;
+           
            :dollar-is-punctuation
+           ;; when true, $ is considered punctuation.
+           ;; when NIL, $ is considered a letter for identifiers.
+           
+           :warn-on-undefined-identifier
+           ;; in #if expressions warns about undefined identifiers
            
            :include-disable-current-directory
            ;; When true, files are not searched in the current directory.
@@ -394,6 +614,7 @@
     (:single-line-comments . t)
     (:accept-unicode-escapes . t) 
     (:dollar-is-punctuation . nil)
+    (:warn-on-undefined-identifier . nil)
     (:include-disable-current-directory . nil)
     (:include-quote-directories . ())
     (:include-bracket-directories . ())
@@ -456,6 +677,9 @@
                           :initform (make-hash-table :test 'equal)          
                           :accessor context-pragmas
                           :documentation "An equal hash-table for pragmas defined by the program. Keys may be symbols or lists of symbols.")))
+
+(defun option (context option)
+  (cdr (assoc option (context-options context))))
    
 (defmethod context-include-level ((context context))
   (length (context-file-stack context)))
@@ -489,23 +713,146 @@
           (context-current-line context) (pop data)))
   context)
 
-
-(defvar *context* nil)
-
 (defmethod update-context ((context context) &key
                           (token         nil tokenp)
                           (line          nil linep)
                           (column        nil columnp)
-                          (file          nil filep)
-                          (include-level nil include-level-p))
+                          (file          nil filep))
   (when tokenp          (setf (context-token         context) token))
   (when linep           (setf (context-line          context) line))
   (when columnp         (setf (context-column        context) column))
   (when filep           (setf (context-file          context) file))
-  (when include-level-p (setf (context-include-level context) include-level))
   context)
 
-(defun option (context option)
-  (cdr (assoc option (context-options context))))
+;;; ------------------------------------------------------------
+;;; macro-expand-macros, expands macro on one or more tokenized lines.
+;;; ------------------------------------------------------------
+
+(defmacro expect (macro-name-token-var token-predicate-name line-var tokenized-lines-var)
+  `(block expect
+     (skip-nil expect ,macro-name-token-var ,line-var ,tokenized-lines-var)
+     (if (,token-predicate-name (first ,line-var))
+         (return-from expect (pop ,line-var))
+         (progn
+           (cpp-error (first ,line-var) "Expected a ~A in function-like macro call ~A, not ~A"
+                      (token-predicate-label ',token-predicate-name)
+                      (token-text ,macro-name-token-var)
+                      (token-text (first ,line-var)))
+           (return-from expect nil)))))
+
+(defun parse-function-macro-call-arguments (macro-name-token line tokenized-lines)
+  ;; function-macro-call     ::= macro-name '(' arglist  ')' .
+  ;; arglist                 ::= argument | argument ',' arglist .
+  ;; argument                ::= | argument-item argument .
+  ;; argument-item           ::= non-parenthesis-or-comma-token | parenthesized-item-list .
+  ;; parenthesized-item-list ::= '(' item-list ')' .
+  ;; item-list               ::= | non-parenthesis-or-comma-token | ',' | parenthesized-item-list .
+  (labels ((skip-nil-not-eof-p ()
+             (block skip
+               (skip-nil skip macro-name-token line tokenized-lines)
+               t))
+           (arglist ()
+             (loop
+               :collect (parse-argument)
+               :while (and (skip-nil-not-eof-p)
+                           (commap (first line)))
+               :do (pop line)))
+           (parenthesized-item-list ()
+             (let ((left  (expect macro-name-token openp line tokenized-lines))
+                   (items (item-list))
+                   (right (or (expect macro-name-token closep line tokenized-lines)
+                              (list (make-punctuation ")" 1 1 "-")))))
+               (nconc (list left) items (list right))))
+           (item-list ()
+             (loop
+               :while (and (skip-nil-not-eof-p)
+                           (not (closep (first line))))
+               :if (openp (first line))
+                 :append (parenthesized-item-list)
+               :else
+                 :collect (pop line)))
+           (parse-argument-item ()
+             (cond
+               ((openp (first line))
+                (parenthesized-item-list))
+               ((commap (first line))
+                '())
+               (t
+                (list (pop line)))))
+           (parse-argument ()
+             (when (skip-nil-not-eof-p)
+               (if (commap (first line))
+                   '()
+                   (loop
+                     :while (and (skip-nil-not-eof-p)
+                                 (not (commap (first line)))
+                                 (not (closep (first line))))
+                     :nconc (parse-argument-item))))))
+    (if (expect macro-name-token openp line tokenized-lines)
+        (values (let ((arglist (arglist)))
+                  (unless (expect macro-name-token closep line tokenized-lines)
+                    (setf line nil))
+                  arglist)
+                line
+                tokenized-lines)
+        (values '() line tokenized-lines))))
+
+(defmethod macro-expand-macros ((context context) line tokenized-lines output-lines allow-defined already-expanded)
+  (loop
+    :with environment = (context-environment context)
+    :with out-line := '()
+    :while line
+    :do (flet ((definedp (identifier)
+                 (make-number (if (environment-macro-definedp (context-environment context) (token-text identifier))
+                                  "1" "0"))))
+          (let* ((token (pop line))
+                 (name  (and token (token-text token))))
+            (if (identifierp token)
+                (cond ((and allow-defined (string= "defined" name))
+                       (let ((next (first line)))
+                         (cond ((openp next)
+                                (pop line)
+                                (let ((name (pop line)))
+                                  (if (identifierp name)
+                                      (progn
+                                        (if (closep (first line))
+                                            (pop line)
+                                            (cpp-error name "Missing a closing parenthesis after defined(~A" (token-text name)))
+                                        (push (definedp name) out-line))
+                                      (progn
+                                        (cpp-error (or next context) "operator \"defined\" requires an identifier")
+                                        (push (make-number "0") out-line)))))
+                               ((identifierp next)
+                                (pop line)
+                                (push (definedp next) out-line))
+                               (t
+                                (cpp-error (or next context) "operator \"defined\" requires an identifier")
+                                (push (make-number "0") out-line)))))
+                      ((environment-macro-definedp environment name)
+                       (let ((definition (environment-macro-definition environment name)))
+                         (etypecase definition
+                           (macro-definition/object
+                            (if (member name already-expanded :test (function string=))
+                                (push token out-line)
+                                (setf out-line (nreconc (first (macro-expand-macros context (expand-macro-definition definition)
+                                                                                    '() '() allow-defined
+                                                                                    (cons name already-expanded)))
+                                                        out-line))))
+                           (macro-definition/function
+                            (if (and line (openp (first line)))
+                                (if (member name already-expanded :test (function string=))
+                                    (push token out-line)
+                                    (let (arguments)
+                                      (multiple-value-setq (arguments line tokenized-lines) (parse-function-macro-call-arguments token line tokenized-lines))
+                                      (setf out-line (nreconc (first (macro-expand-macros context (expand-macro-definition definition arguments)
+                                                                                          '() '() allow-defined
+                                                                                          (cons name already-expanded)))
+                                                              out-line))))
+                                (push token out-line))))))
+                      (t
+                       (push token out-line)))
+                (push token out-line))))
+    :finally (push (nreverse out-line) output-lines))
+  (values output-lines tokenized-lines))
 
 ;;;; THE END ;;;;
