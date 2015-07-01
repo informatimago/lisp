@@ -1002,9 +1002,12 @@ RETURN: the token text; the end position."
                                                                   '() '() :allow-defined '())))))))
 
 (defmethod cpp-if ((context context))
-  (if (cpp-evaluate-expression context (cddr (context-current-line context)))
-      (process-branch-and-skip context)
-      (skip-branch-and-process context)))
+  (incf (context-if-level context))
+  (unwind-protect
+       (if (cpp-evaluate-expression context (cddr (context-current-line context)))
+           (process-branch-and-skip context)
+           (skip-branch-and-process context))
+    (decf (context-if-level context))))
 
 
 ;;; --------------------
@@ -1089,7 +1092,8 @@ RETURN: the token text; the end position."
                    (("elif" "else" "endif")
                     (if (plusp (context-if-level context))
                         (return)
-                        (cpp-error (second line) "#~A without #if" (token-text (second line)))))
+                        (cpp-error (second line) "#~A without #if" (token-text (second line))))
+                    (uiop/image:print-backtrace))
                    (("line")    (cpp-line context))
                    (("pragma")  (pragma           context))
                    (("error")   (cpp-error-line   context))
@@ -1177,11 +1181,12 @@ RETURN: the token text; the end position."
           (cpp-e "tests/substitute.c" '("tests/"))
           (cpp-e "tests/trigraphs.c" '("tests/"))
           (cpp-e "tests/errors.c" '("tests/"))
-
+          (cpp-e "tests/empty-macro.c" '("tests/"))
+          (cpp-e "tests/if.c" '("tests/"))
+          (cpp-e "tests/ifdef.c" '("tests/"))
 
           ;; bugged
           (cpp-e "tests/recursive.c" '("tests/"))
-          (cpp-e "tests/empty-macro.c" '("tests/"))
           
           
           (let ((file "tests/define.h"))
