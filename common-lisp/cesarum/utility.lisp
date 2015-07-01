@@ -1792,12 +1792,13 @@ the local functions."
                        "~&Entering ~A (~@{:~A ~S~^ ~})~%" ',(first def)
                        ,@(mapcan (lambda (arg) (list `',arg arg)) arguments))
                (unwind-protect
-                    (progn (format *trace-output*
-                                   "~&Exiting ~A --> ~{~S~^; ~}~%"
-                                   ',(first def)
-                                   (setf ,res (multiple-value-list
-                                               (progn ,@(cddr def)))))
-                           (values-list ,res))
+                    (let (,res)
+                      (format *trace-output*
+                              "~&Exiting ~A --> ~{~S~^; ~}~%"
+                              ',(first def)
+                              (setf ,res (multiple-value-list
+                                          (progn ,@(cddr def)))))
+                      (values-list ,res))
                  (format *trace-output*
                          "~&Unwinding ~A~%" ',(first def))))))
          defs)
