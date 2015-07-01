@@ -1785,12 +1785,15 @@ the local functions."
            (let ((arguments (make-argument-list
                              (parse-lambda-list (second def) :ordinary)))
                  (res (gensym "RESULTS")))
+             (when (null (first (last arguments)))
+               (setf arguments (butlast arguments)))
              `(,(first def) ,(second def)
                ,@(when (stringp (third def))
                    (list (third def)))
                (format *trace-output*
-                       "~&Entering ~A (~@{:~A ~S~^ ~})~%" ',(first def)
-                       ,@(mapcan (lambda (arg) (list `',arg arg)) arguments))
+                       "~&Entering ~A (~{~{:~A ~S~}~^ ~})~%" ',(first def)
+                       (list ,@(mapcar (lambda (arg) `(list ',arg ,arg))
+                                arguments)))
                (unwind-protect
                     (let (,res)
                       (format *trace-output*
