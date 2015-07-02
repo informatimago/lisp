@@ -32,7 +32,7 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(defpackage "COM.INFORMATIMAGO.COMMON-LISP.LANGUAGES.CPP"
+(defpackage "COM.INFORMATIMAGO.LANGUAGES.CPP"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
@@ -42,6 +42,7 @@
                           "STRING-DESIGNATOR")
   (:shadowing-import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM"
                           "COPY-STREAM")
+  (:import-from "ALEXANDRIA" "PLIST-ALIST")
   (:export "PROCESS-TOPLEVEL-FILE"
            "TOKEN" "TOKEN-LINE" "TOKEN-COLUMN" "TOKEN-FILE"
            "TOKEN-TEXT" "IDENTIFIER-TOKEN" "NUMBER-TOKEN" "PUNCTUATION-TOKEN"
@@ -51,6 +52,7 @@
            "ENVIRONMENT-MACRO-UNDEFINE"
            ;;;
            "READ-CPP-TOKENS"
+           "CPP-E"
            ))
 
 ;;;; THE END ;;;;

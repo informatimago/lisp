@@ -31,7 +31,7 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
-(in-package "COM.INFORMATIMAGO.COMMON-LISP.LANGUAGES.CPP")
+(in-package "COM.INFORMATIMAGO.LANGUAGES.CPP")
 
 
 
@@ -235,19 +235,18 @@
 
 ;;; --------------------
 
-(defparameter *whitespaces* #(#\space #\tab #\vt #\page #\nul #\newline #\return #\linefeed))
 
 (defun skip-spaces (text start)
   (loop
     :while (and (< start (length text))
-                (find (aref text start) *whitespaces*))
+                (whitespacep (aref text start)))
     :do (incf start))
   start)
 
 (defun skip-spaces-but-one (text start)
   (let ((start (skip-spaces text start)))
     (when (and (plusp start)
-               (find (aref text (1- start)) *whitespaces*))
+               (whitespacep (aref text (1- start))))
       (decf start))
     start))
 
@@ -429,7 +428,7 @@ RETURN: the token text; the end position."
                                          nil)))
                       (prog1 (make-identifier token start lino file)
                         (setf start end))))
-                   ((char= ch #\space)
+                   ((whitespacep ch)
                     (prog1 (make-punctuation " " start lino file)
                       (incf start)))
                    ((or (and (char= ch #\.)
@@ -660,7 +659,7 @@ RETURN: the token text; the end position."
                     (new-definition (parse-macro-definition name (context-current-line context))))
                 (when (environment-macro-definedp (context-environment context) (token-text name))
                   (unless (equal old-definition new-definition)
-                    (cpp-warning name "Redefiniting the macro ~A with a different definition" (token-text name))))
+                    (cpp-warning name "Redefining the macro ~A with a different definition" (token-text name))))
                 (setf (environment-macro-definition (context-environment context) (token-text name)) new-definition))
               (cpp-error (first (context-current-line context))
                          "Didn't expect anything after the macro name after #define, not ~S"
@@ -712,7 +711,7 @@ RETURN: the token text; the end position."
                              nil)))
                      (merge-pathnames include-file directory))
     :when (and path (or (eq t path) (probe-file path)))
-      :do (return path)
+      :do (return (values path directory))
     :finally (return nil)))
 
 (defun include-directories (kind)
@@ -729,18 +728,26 @@ RETURN: the token text; the end position."
             (remove-duplicates include-bracket-directories :test (function equal)))))
 
 (defmethod perform-include ((context context) include-file kind directive)
-  (flet ((include (path)
-           (read-and-process-file context path)))
-    (let* ((include-directories (include-directories kind))
-           (path                (search-file-in-directories include-file include-directories kind directive)))
-      (cond ((eq t path) #|done|#)
-            (path        (include path))
-            (t           (cpp-error context
-                                    "Cannot find a file ~C~A~C in the include directories ~S"
-                                    (if (eq kind :quote) #\" #\<)
-                                    include-file
-                                    (if (eq kind :quote) #\" #\>)
-                                    include-directories))))))
+  ;; TODO: skip duplicate #import and #ifndef/#define #include
+  (flet ((include (path directory)
+           (when (option context :trace-includes)
+             (format *trace-output* "Including ~S~%" path))
+           (read-and-process-file context path directory)))
+    (let ((include-directories (include-directories kind)))
+      (when (eq directive :include-next)
+        (setf include-directories (cdr (member (context-directory context)
+                                               include-directories
+                                               :test (function equal)))))
+      (multiple-value-bind (path directory)
+          (search-file-in-directories include-file include-directories kind directive)
+        (cond ((eq t path) #|done|#)
+              (path        (include path directory))
+              (t           (cpp-error context
+                                      "Cannot find a file ~C~A~C in the include directories ~S"
+                                      (if (eq kind :quote) #\" #\<)
+                                      include-file
+                                      (if (eq kind :quote) #\" #\>)
+                                      include-directories)))))))
 
 (defgeneric token-string (token)
   (:method ((token token)) (token-text token))
@@ -778,9 +785,6 @@ RETURN: the token text; the end position."
                   directive (mapconcat (function token-text) line ""))
        (values nil nil nil)))))
 
-
-
-
 (defmethod include-common ((context context) directive)
   (with-cpp-line (context-current-line context)
     (if (context-current-line context)
@@ -795,6 +799,9 @@ RETURN: the token text; the end position."
                          directive (token-text (first line))))))        
         (cpp-error context "Missing path after #~(~A~)" directive)))
   context)
+
+(defmethod include-next ((context context))
+  (include-common context :include-next))
 
 (defmethod include ((context context))
   (include-common context :include))
@@ -1009,13 +1016,41 @@ RETURN: the token text; the end position."
            (skip-branch-and-process context))
     (decf (context-if-level context))))
 
-
 ;;; --------------------
 ;;; #line
 ;;; --------------------
 
 (defmethod cpp-line ((context context))
-  ;; TODO:
+  (with-cpp-line (context-current-line context)
+    (labels ((generate (n file)
+               (let ((f (string-value file)))
+                 (when (option context :generate-sharp-line)
+                   (push (list (make-punctuation "#" 1 lino f)
+                               (make-number (prin1-to-string n) 3 lino f)
+                               file)
+                         (context-output-lines context)))
+                 (loop
+                  :for line :in (context-input-lines context)
+                  :do (loop :for token :in line
+                            :do (setf (token-line token) n
+                                      (token-file token) f))
+                      (incf n))))
+             (process-line (line)
+               (cond
+                 ((null line)
+                  (cpp-error context "Missing arguments after #line"))
+                 ((and line (null (cdr line))
+                       (number-token-p (first line)))
+                  ;; #line N
+                  (generate (integer-value (first line)) (make-string-literal (format nil "~S" file) 10 lino file)))
+                 ((and line (null (cddr line))
+                       (number-token-p (first line))
+                       (string-literal-p (second line)))
+                  ;; #line N "file"
+                  (generate (integer-value (first line))  (second line)))
+                 (t
+                  (process-line (first (macro-expand-macros context line '() '() nil '())))))))
+      (process-line (context-current-line context))))
   context)
 
 ;;; --------------------
@@ -1059,7 +1094,6 @@ RETURN: the token text; the end position."
 ;;; pre-processing files
 ;;; --------------------
 
-
 (defmethod cpp-macro-expand ((context context))
   (multiple-value-bind (output input) (macro-expand-macros context
                                                            (context-current-line context)
@@ -1071,6 +1105,36 @@ RETURN: the token text; the end position."
           (context-input-lines context) input)
     context))
 
+(defmethod process-directive ((context context) line)
+  (cond
+    ((identifierp (second line))
+     (scase (token-text (second line))
+       (("define")         (define           context))
+       (("undef")          (undef            context))
+       (("include")        (include          context))
+       (("include_next")   (include-next     context))
+       (("import")         (import           context))
+       (("ifdef")          (ifdef            context))
+       (("ifndef")         (ifndef           context))
+       (("if")             (cpp-if           context))
+       (("elif" "else" "endif")
+        (if (plusp (context-if-level context))
+            (return-from process-directive nil)
+            (cpp-error (second line) "#~A without #if" (token-text (second line)))))
+       (("line")           (cpp-line         context))
+       (("pragma")         (pragma           context))
+       (("error")          (cpp-error-line   context))
+       (("warning")        (cpp-warning-line context))
+       (("ident" "sccs")) 
+       (otherwise          (cpp-error line "invalid directive ~A" (token-text (second line))))))
+    ((number-token-p (second line)) ;; skip # 1 "file"
+     (push line (context-output-lines context)))
+    ((rest line)
+     (cpp-error line "invalid directive #~A" (token-text (second line))))
+    (t ;; skip # alone.
+     ))
+  t)
+
 (defmethod process-file ((context context))
   "Processes all the INPUT-LINES, pushing onto the OUTPUT-LINES."
   (loop
@@ -1079,71 +1143,53 @@ RETURN: the token text; the end position."
           (setf (context-current-line context) line)
           ;;DEBUG;; (print line)
           (if (sharpp (first line))
-              (cond
-                ((identifierp (second line))
-                 (scase (token-text (second line))
-                   (("define")  (define  context))
-                   (("undef")   (undef   context))
-                   (("include") (include context))
-                   (("import")  (import  context))
-                   (("ifdef")   (ifdef   context))
-                   (("ifndef")  (ifndef  context))
-                   (("if")      (cpp-if  context))
-                   (("elif" "else" "endif")
-                    (if (plusp (context-if-level context))
-                        (return)
-                        (cpp-error (second line) "#~A without #if" (token-text (second line))))
-                    (uiop/image:print-backtrace))
-                   (("line")    (cpp-line context))
-                   (("pragma")  (pragma           context))
-                   (("error")   (cpp-error-line   context))
-                   (("warning") (cpp-warning-line context))
-                   (("ident" "sccs"))
-                   (otherwise (cpp-error line "invalid directive ~A" (token-text (second line))))))
-                ((number-token-p (second line)) ;; skip # 1 "file"
-                 (push line (context-output-lines context)))
-                ((rest line)
-                 (cpp-error line "invalid directive #~A" (token-text (second line))))
-                (t ;; skip # alone.
-                 ))
+              (unless (process-directive context line)
+                (return))
               (cpp-macro-expand context)))
     :finally (setf (context-current-line context) nil))
   context)
 
-(defmethod read-and-process-file ((context context) path)
-  (with-open-file (input path :external-format (option *context* :external-format))
-    (context-push-file context path (read-cpp-tokens
-                                     input
-                                     :file-name (namestring path)
-                                     :substitute-trigraphs            (option *context* :substitute-trigraphs)
-                                     :warn-on-trigraph                (option *context* :warn-on-trigraph)
-                                     :warn-spaces-in-continued-lines  (option *context* :warn-spaces-in-continued-lines)
-                                     :single-line-comments            (option *context* :single-line-comments)
-                                     :accept-unicode-escapes          (option *context* :accept-unicode-escapes)
-                                     :dollar-is-punctuation           (option *context* :dollar-is-punctuation)))
-    (process-file context)
+(defmethod read-and-process-stream ((context context) stream &optional (path (pathname stream)) directory)
+  (context-push-file context path directory
+                     (read-cpp-tokens
+                      stream
+                      :file-name (namestring path)
+                      :substitute-trigraphs            (option *context* :substitute-trigraphs)
+                      :warn-on-trigraph                (option *context* :warn-on-trigraph)
+                      :warn-spaces-in-continued-lines  (option *context* :warn-spaces-in-continued-lines)
+                      :single-line-comments            (option *context* :single-line-comments)
+                      :accept-unicode-escapes          (option *context* :accept-unicode-escapes)
+                      :dollar-is-punctuation           (option *context* :dollar-is-punctuation)))
+  (unwind-protect (process-file context)
     (context-pop-file context)))
 
-(defun process-toplevel-file (path &key (options *default-options*))
-  (let ((*context* (make-instance 'context :base-file path :file path :options options)))
+(defmethod read-and-process-file ((context context) path &optional directory)
+  (with-open-file (input path :external-format (option *context* :external-format))
+    (read-and-process-stream context input path directory)))
+
+(defun process-toplevel-file (path &key (options *default-options*) (environment (copy-hash-table *default-environment*)))
+  (let ((*context* (make-instance 'context :base-file path :file path :options options :environment environment)))
     (read-and-process-file *context* path)
     (values (reverse (context-output-lines *context*)) *context*)))
 
-(defun write-processed-lines (lines &optional (*standard-output* *standard-output*))
+(defun write-processed-lines (lines &key (stream *standard-output*)
+                                      write-sharp-line)
   (when lines
-    (let ((*print-circle* nil))
+    (let ((*print-circle* nil)
+          (*standard-output* stream))
      (loop
        :with file := nil
        :with lino := nil
        :for line :in lines
        :when line
-         :do (if (and (equal file (token-file (first line)))
-                      lino
-                      (= (1+ lino) (token-line (first line))))
-                 (incf lino)
-                 (format t "#line ~D ~S~%"
-                         (setf lino (token-line (first line)))
-                         (setf file (token-file (first line)))))
+         :do (when write-sharp-line
+               (if (and (equal file (token-file (first line)))
+                        lino
+                        (= (1+ lino) (token-line (first line))))
+                   (incf lino)
+                   (format t "#line ~D ~S~%"
+                           (setf lino (token-line (first line)))
+                           (setf file (token-file (first line))))))
              (format t "~{~A~^ ~}~%" (mapcar (function token-text) line))))))
 
 (defmacro with-cpp-error-logging (&body body)
@@ -1157,36 +1203,66 @@ RETURN: the token text; the end position."
                                   (when restart (invoke-restart restart))))))
     ,@body))
 
-(defun cpp-e (path &optional includes)
-  (with-cpp-error-logging
-    (multiple-value-bind (lines context)
-        (process-toplevel-file path :options (acons :include-quote-directories includes *default-options*))
-      (terpri)
-      (write-processed-lines lines)
-      ;; (print-hashtable (context-environment context))
-      context)))
+(defun cpp-e (path &rest options &key defines includes write-sharp-line &allow-other-keys)
+  "
+DEFINE:     a plist of object-like macro definitions: (macro-name macro-value)
+            macro-name is a string designator.
+            macro-values can be any string that is parsed into tokens.
+
+INCLUDES:   This is a shortcut for :include-quote-directories.
+            If both are given, :include-quote-directories takes precedence.
+
+WRITE-SHARP-LINE:
+            produces #line N \"file\" lines, in the output listing.
+
+Other keys shall be context option keys.
+"
+  (let ((environment (copy-hash-table *default-environment*)))
+    (loop :for (name definition) :on defines :by (function cddr)
+          :do (let ((name (string name))
+                    (new-definition (parse-macro-definition
+                                     name
+                                     (with-input-from-string (input definition)
+                                       (first (read-cpp-tokens input :file-name "-"))))))
+                (when (prefixp "__" name)
+                  (cpp-warning nil "Definining a system macro named ~S" name))
+                (setf (environment-macro-definition environment name) new-definition)))
+    (with-cpp-error-logging
+      (multiple-value-bind (lines context)
+          (process-toplevel-file path
+                                 :options (append (plist-alist options)
+                                                  (acons :include-quote-directories includes
+                                                         *default-options*))
+                                 :environment environment)
+        (terpri)
+        (write-processed-lines lines :write-sharp-line write-sharp-line)
+        ;; (print-hashtable (context-environment context))
+        context))))
 
 ;;; --------------------
 
 #-(and) (progn
+          (cpp-e "tests/test.c"          :includes '("tests/") :write-sharp-line t
+                                         :define '("FOO" "1" "BAR" "FOO"))
+          
 
-          (cpp-e "tests/test.c" '("tests/"))
-          (cpp-e "tests/variadic.c" '("tests/"))
-          (cpp-e "tests/built-ins.c" '("tests/"))
-          (cpp-e "tests/comment.c" '("tests/"))
-          (cpp-e "tests/concat.c" '("tests/"))
-          (cpp-e "tests/interface.c" '("tests/"))
-          (cpp-e "tests/shadow.c" '("tests/"))
-          (cpp-e "tests/stringify.c" '("tests/"))
-          (cpp-e "tests/substitute.c" '("tests/"))
-          (cpp-e "tests/trigraphs.c" '("tests/"))
-          (cpp-e "tests/errors.c" '("tests/"))
-          (cpp-e "tests/empty-macro.c" '("tests/"))
-          (cpp-e "tests/if.c" '("tests/"))
-          (cpp-e "tests/ifdef.c" '("tests/"))
 
-          ;; bugged
-          (cpp-e "tests/recursive.c" '("tests/"))
+          (cpp-e "tests/test.c"          :includes '("tests/") :write-sharp-line t)
+          (cpp-e "tests/variadic.c"      :includes '("tests/") :write-sharp-line t)
+          (cpp-e "tests/built-ins.c"     :includes '("tests/") :write-sharp-line t)
+          (cpp-e "tests/comment.c"       :includes '("tests/") :write-sharp-line t)
+          (cpp-e "tests/concat.c"        :includes '("tests/") :write-sharp-line t)
+          (cpp-e "tests/interface.c"     :includes '("tests/") :write-sharp-line t)
+          (cpp-e "tests/shadow.c"        :includes '("tests/") :write-sharp-line t)
+          (cpp-e "tests/stringify.c"     :includes '("tests/") :write-sharp-line t)
+          (cpp-e "tests/substitute.c"    :includes '("tests/") :write-sharp-line t)
+          (cpp-e "tests/trigraphs.c"     :includes '("tests/") :write-sharp-line t)
+          (cpp-e "tests/errors.c"        :includes '("tests/") :write-sharp-line t)
+          (cpp-e "tests/empty-macro.c"   :includes '("tests/") :write-sharp-line t)
+          (cpp-e "tests/if.c"            :includes '("tests/") :write-sharp-line t)
+          (cpp-e "tests/ifdef.c"         :includes '("tests/") :write-sharp-line t)
+          (cpp-e "tests/recursive.c"     :includes '("tests/") :write-sharp-line t)
+          (cpp-e "tests/if-embedded.c"   :includes '("tests/") :write-sharp-line t) 
           
           
           (let ((file "tests/define.h"))

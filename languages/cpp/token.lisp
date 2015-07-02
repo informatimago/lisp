@@ -31,7 +31,7 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
-(in-package "COM.INFORMATIMAGO.COMMON-LISP.LANGUAGES.CPP")
+(in-package "COM.INFORMATIMAGO.LANGUAGES.CPP")
 
 
 (defclass token ()
@@ -111,9 +111,16 @@
      (and (typep token 'punctuation-token)
           (or (string= ,value  (token-text token))))))
 
+(defparameter *whitespaces* #(#\space #\tab #\vt #\page #\nul #\newline #\return #\linefeed))
+(defun  whitespacep (character)
+  (find character *whitespaces*))
+(defun spacep (token)
+  (and (typep token 'punctuation-token)
+       (= 1 (length (token-text token)))
+       (whitespacep (aref (token-text token) 0))))
+
 (define-punctuation-predicate sharpp           "#")
 (define-punctuation-predicate sharpsharpp      "##")
-(define-punctuation-predicate spacep           " ")
 (define-punctuation-predicate openp            "(")
 (define-punctuation-predicate closep           ")") 
 (define-punctuation-predicate open-bracket-p   "<")
@@ -141,6 +148,8 @@
 (define-punctuation-predicate op-bitxor-p      "^")
 (define-punctuation-predicate op-logand-p      "&&")
 (define-punctuation-predicate op-logior-p      "||")
+(define-punctuation-predicate op-question-p    "?")
+(define-punctuation-predicate op-colon-p       ":")
 
 
 (defun identifierp (token)

@@ -31,31 +31,34 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
-(in-package "COM.INFORMATIMAGO.COMMON-LISP.LANGUAGES.CPP")
+(in-package "COM.INFORMATIMAGO.LANGUAGES.CPP")
 
 (defun integer-value (integer-token)
-  (let ((integer-text (token-text integer-token)))
+  (let* ((integer-text (token-text integer-token))
+         (end          (length integer-text)))
+    (loop :while (and (< 1 end) (find (aref integer-text (1- end)) "UL" :test (function char-equal)))
+          :do (decf end))
     (cond
       ((and (< 2 (length integer-text))
             (string= "0x" integer-text :start2 0 :end2 2))
-       (or (ignore-errors (parse-integer integer-text :start 2 :radix 16 :junk-allowed nil))
+       (or (ignore-errors (parse-integer integer-text :start 2 :end end :radix 16 :junk-allowed nil))
            (progn
              (cpp-error integer-token "Invalid hexadecimal integer syntax in ~S" integer-text)
              0)))
       ((and (< 2 (length integer-text))
             (string= "0b" integer-text :start2 0 :end2 2))
-       (or (ignore-errors (parse-integer integer-text :start 2 :radix 2 :junk-allowed nil))
+       (or (ignore-errors (parse-integer integer-text :start 2  :end end :radix 2 :junk-allowed nil))
            (progn
              (cpp-error integer-token "Invalid binary integer syntax in ~S" integer-text)
              0)))
       ((and (< 1 (length integer-text))
             (string= "0" integer-text :start2 0 :end2 1))
-       (or (ignore-errors (parse-integer integer-text :start 1 :radix 8 :junk-allowed nil))
+       (or (ignore-errors (parse-integer integer-text :start 1  :end end :radix 8 :junk-allowed nil))
            (progn
              (cpp-error integer-token "Invalid octal integer syntax in ~S" integer-text)
              0)))
       (t
-       (or (ignore-errors (parse-integer integer-text :junk-allowed nil))
+       (or (ignore-errors (parse-integer integer-text  :end end :junk-allowed nil))
            (progn
              (cpp-error integer-token "Invalid decimal integer syntax in ~S" integer-text)
              0))))))
@@ -70,6 +73,10 @@
       (when (zerop (length character-string))
         (setf character-string #(#\nul))))
     (char-code (aref character-string 0))))
+
+(defun string-value (string-token)
+  (with-input-from-string (in (token-text string-token) :start 1)
+    (read-c-string in #\")))
 
 (defmacro with-binary-op-parsers ((&rest definitions) (&rest functions) &body body)
   `(labels (,@(mapcar (lambda (definition)
@@ -172,7 +179,19 @@
                            (expr5  expr4  (op-left-shift-p left-shift) (op-right-shift-p right-shift))
                            (expr4  expr3  (op-plus-p +) (op-minus-p -))
                            (expr3  expr2  (op-times-p *) (op-divides-p truncate)  (op-remainder-p mod)))
-      ((expr2 ()
+      ((expr13 ()
+               (let ((test (expr12)))
+                 (if (op-question-p (peek))
+                     (progn
+                       (eat)
+                       (let ((then (expr12)))
+                         (if (op-colon-p (peek))
+                             (progn
+                               (eat)
+                               `(if (zerop ,test) ,(expr12) ,then))
+                             (cpp-error (peek) "Expected a colon in ternary if expression, got ~S instead" (token-text (eat))))))
+                     test)))
+       (expr2 ()
               (let ((op (peek)))
                 (cond ((op-plus-p op)   (eat) (expr1))
                       ((op-minus-p op)  (eat) `(- ,(expr1)))
@@ -190,7 +209,7 @@
                 (cond
                   ((openp next)
                    (eat)
-                   (prog1 (expr12)
+                   (prog1 (expr13)
                      (if (closep (peek))
                          (eat)
                          (progn (cpp-error next "Missing close parenthesis in #if expression, got ~S instead" (token-text (eat)))
@@ -215,7 +234,7 @@
                      (return-from parse-expression 0)))))
        (eat  () (pop   line))
        (peek () (first line)))
-    (prog1 (expr12)
+    (prog1 (expr13)
       (unless (null (peek))
         (cpp-error (peek) "missing binary operator before token ~S" (eat))))))
 

@@ -31,7 +31,7 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
-(in-package "COM.INFORMATIMAGO.COMMON-LISP.LANGUAGES.CPP")
+(in-package "COM.INFORMATIMAGO.LANGUAGES.CPP")
 
 (defvar *context* nil) ; the current instance of context.
 
@@ -430,7 +430,15 @@ concatenation
                    (cpp-error *context* "Reached end of file in function-like macro call ~A"
                               (token-text ,macro-name-token-var))
                    (return-from ,block-name nil))
-                 (setf ,line-var (pop ,tokenized-lines-var)))))
+                 (progn
+                   (setf (context-input-lines *context*)  ,tokenized-lines-var)
+                   (unwind-protect
+                        (loop
+                          :do (setf (context-current-line *context*)  (pop (context-input-lines *context*)))
+                          :while (sharpp (first (context-current-line *context*)))
+                          :do (process-directive *context* (context-current-line *context*)))
+                     (setf ,line-var (context-current-line *context*)
+                           ,tokenized-lines-var  (context-input-lines *context*)))))))
 
 (defun macro-bindings-expand-arguments (bindings)
   (flet ((marg (tokens)
@@ -582,6 +590,9 @@ concatenation
            
            :warn-on-undefined-identifier
            ;; in #if expressions warns about undefined identifiers
+
+           :generate-sharp-line
+           ;; #line generates '# NN "file"' token lines.
            
            :include-disable-current-directory
            ;; When true, files are not searched in the current directory.
@@ -615,11 +626,13 @@ concatenation
     (:accept-unicode-escapes . t) 
     (:dollar-is-punctuation . nil)
     (:warn-on-undefined-identifier . nil)
+    (:trace-includes . nil)
     (:include-disable-current-directory . nil)
     (:include-quote-directories . ())
     (:include-bracket-directories . ())
     (:include-search-functions . ())
-    (:external-format . :default)))
+    (:external-format . :default)
+    (:generate-sharp-line . nil)))
 
 (defvar *default-environment*         (make-environment))
 (defvar *default-pragma-interpreters* (make-hash-table :test 'equal))
@@ -628,6 +641,10 @@ concatenation
   ((base-file             :initarg :base-file             
                           :initform "-"                                     
                           :accessor context-base-file)
+   (directory             :initarg :directory
+                          :initform nil
+                          :accessor context-directory
+                          :documentation "Include directory of the currently included/imported file, for #include_next.")
    (file                  :initarg :file                  
                           :initform "-"                                     
                           :accessor context-file)
@@ -684,8 +701,9 @@ concatenation
 (defmethod context-include-level ((context context))
   (length (context-file-stack context)))
 
-(defmethod context-push-file ((context context) path input-lines)
-  (push (list (context-file context)
+(defmethod context-push-file ((context context) path directory input-lines)
+  (push (list (context-directory context)
+              (context-file context)
               (context-line context)
               (context-column context)
               (context-token context)
@@ -693,7 +711,8 @@ concatenation
               (context-input-lines context)
               (context-current-line context))
         (context-file-stack context))
-  (setf (context-file context) path
+  (setf (context-directory context) directory
+        (context-file context) path
         (context-line context) 1
         (context-column context) 1
         (context-token context) nil
@@ -704,7 +723,8 @@ concatenation
 
 (defmethod context-pop-file ((context context))
   (let ((data (pop (context-file-stack context))))
-    (setf (context-file context) (pop data)
+    (setf (context-directory context) (pop data)
+          (context-file context) (pop data)
           (context-line context) (pop data)
           (context-column context) (pop data)
           (context-token context) (pop data)
