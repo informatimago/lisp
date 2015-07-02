@@ -54,6 +54,7 @@ present semi-standard character names and other ASCII features.
    #+has-escape    can read #\escape
    #+has-bell      can read #\bell
    #+has-vt        can read #\vt
+   #+has-null      can read #\null
 
    #+has-ascii-code  The characters in the STANDARD-CHARACTER
                      set are encoded with the ASCII code by
@@ -158,7 +159,7 @@ DO:         If the implementation has the semi standard character
   #-mocl
   (dolist (name '("Rubout" "Page" "Tab" "Backspace" "Return" "Linefeed"
                   ;; Non standard character names:
-                  "Escape" "Bell" "Vt"))
+                  "Escape" "Bell" "Vt" "Null"))
     (push-feature-for-character-named name))
 
   );;eval-when
