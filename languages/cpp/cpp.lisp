@@ -235,19 +235,18 @@
 
 ;;; --------------------
 
-(defparameter *whitespaces* #(#\space #\tab #\vt #\page #\nul #\newline #\return #\linefeed))
 
 (defun skip-spaces (text start)
   (loop
     :while (and (< start (length text))
-                (find (aref text start) *whitespaces*))
+                (whitespacep (aref text start)))
     :do (incf start))
   start)
 
 (defun skip-spaces-but-one (text start)
   (let ((start (skip-spaces text start)))
     (when (and (plusp start)
-               (find (aref text (1- start)) *whitespaces*))
+               (whitespacep (aref text (1- start))))
       (decf start))
     start))
 
@@ -429,7 +428,7 @@ RETURN: the token text; the end position."
                                          nil)))
                       (prog1 (make-identifier token start lino file)
                         (setf start end))))
-                   ((char= ch #\space)
+                   ((whitespacep ch)
                     (prog1 (make-punctuation " " start lino file)
                       (incf start)))
                    ((or (and (char= ch #\.)

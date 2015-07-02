@@ -111,9 +111,16 @@
      (and (typep token 'punctuation-token)
           (or (string= ,value  (token-text token))))))
 
+(defparameter *whitespaces* #(#\space #\tab #\vt #\page #\nul #\newline #\return #\linefeed))
+(defun  whitespacep (character)
+  (find character *whitespaces*))
+(defun spacep (token)
+  (and (typep token 'punctuation-token)
+       (= 1 (length (token-text token)))
+       (whitespacep (aref (token-text token) 0))))
+
 (define-punctuation-predicate sharpp           "#")
 (define-punctuation-predicate sharpsharpp      "##")
-(define-punctuation-predicate spacep           " ")
 (define-punctuation-predicate openp            "(")
 (define-punctuation-predicate closep           ")") 
 (define-punctuation-predicate open-bracket-p   "<")
