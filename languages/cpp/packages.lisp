@@ -53,6 +53,7 @@
            ;;;
            "READ-CPP-TOKENS"
            "CPP-E"
+           "*WHITESPACES*" "WHITESPACEP"
            ))
 
 ;;;; THE END ;;;;
