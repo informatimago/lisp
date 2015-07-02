@@ -31,7 +31,7 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
-(in-package "COM.INFORMATIMAGO.COMMON-LISP.LANGUAGES.CPP")
+(in-package "COM.INFORMATIMAGO.LANGUAGES.CPP")
 
 
 
@@ -659,7 +659,7 @@ RETURN: the token text; the end position."
                     (new-definition (parse-macro-definition name (context-current-line context))))
                 (when (environment-macro-definedp (context-environment context) (token-text name))
                   (unless (equal old-definition new-definition)
-                    (cpp-warning name "Redefiniting the macro ~A with a different definition" (token-text name))))
+                    (cpp-warning name "Redefining the macro ~A with a different definition" (token-text name))))
                 (setf (environment-macro-definition (context-environment context) (token-text name)) new-definition))
               (cpp-error (first (context-current-line context))
                          "Didn't expect anything after the macro name after #define, not ~S"
@@ -1225,7 +1225,7 @@ Other keys shall be context option keys.
                                      (with-input-from-string (input definition)
                                        (first (read-cpp-tokens input :file-name "-"))))))
                 (when (prefixp "__" name)
-                  (cpp-warning nil "Definiting a system macro named ~S" name))
+                  (cpp-warning nil "Definining a system macro named ~S" name))
                 (setf (environment-macro-definition environment name) new-definition)))
     (with-cpp-error-logging
       (multiple-value-bind (lines context)

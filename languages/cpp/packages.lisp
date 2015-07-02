@@ -32,7 +32,7 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(defpackage "COM.INFORMATIMAGO.COMMON-LISP.LANGUAGES.CPP"
+(defpackage "COM.INFORMATIMAGO.LANGUAGES.CPP"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
@@ -52,6 +52,7 @@
            "ENVIRONMENT-MACRO-UNDEFINE"
            ;;;
            "READ-CPP-TOKENS"
+           "CPP-E"
            ))
 
 ;;;; THE END ;;;;
