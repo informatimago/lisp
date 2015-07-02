@@ -55,6 +55,7 @@ to define CLOS associations.  It uses CLOSER-MOP.
                ((#:albert #:docbook #:textcolor) . "black"))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ("closer-mop"
+               "com.informatimago.common-lisp.cesarum"
                "com.informatimago.clext.association")
   :components ((:file "association-test"))
   :perform (asdf:test-op
