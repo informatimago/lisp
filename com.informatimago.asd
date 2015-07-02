@@ -58,6 +58,7 @@
                "com.informatimago.xcode"
                "com.informatimago.lispdoc"
                "com.informatimago.small-cl-pgms"
+               "com.informatimago.language.cpp"
                "com.informatimago.future"
                "com.informatimago.editor" ; future
                "com.informatimago.objcl"  ; empty shell on non-ccl darwin
