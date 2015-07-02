@@ -148,6 +148,8 @@
 (define-punctuation-predicate op-bitxor-p      "^")
 (define-punctuation-predicate op-logand-p      "&&")
 (define-punctuation-predicate op-logior-p      "||")
+(define-punctuation-predicate op-question-p    "?")
+(define-punctuation-predicate op-colon-p       ":")
 
 
 (defun identifierp (token)

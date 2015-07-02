@@ -626,6 +626,7 @@ concatenation
     (:accept-unicode-escapes . t) 
     (:dollar-is-punctuation . nil)
     (:warn-on-undefined-identifier . nil)
+    (:trace-includes . nil)
     (:include-disable-current-directory . nil)
     (:include-quote-directories . ())
     (:include-bracket-directories . ())
@@ -640,6 +641,10 @@ concatenation
   ((base-file             :initarg :base-file             
                           :initform "-"                                     
                           :accessor context-base-file)
+   (directory             :initarg :directory
+                          :initform nil
+                          :accessor context-directory
+                          :documentation "Include directory of the currently included/imported file, for #include_next.")
    (file                  :initarg :file                  
                           :initform "-"                                     
                           :accessor context-file)
@@ -696,8 +701,9 @@ concatenation
 (defmethod context-include-level ((context context))
   (length (context-file-stack context)))
 
-(defmethod context-push-file ((context context) path input-lines)
-  (push (list (context-file context)
+(defmethod context-push-file ((context context) path directory input-lines)
+  (push (list (context-directory context)
+              (context-file context)
               (context-line context)
               (context-column context)
               (context-token context)
@@ -705,7 +711,8 @@ concatenation
               (context-input-lines context)
               (context-current-line context))
         (context-file-stack context))
-  (setf (context-file context) path
+  (setf (context-directory context) directory
+        (context-file context) path
         (context-line context) 1
         (context-column context) 1
         (context-token context) nil
@@ -716,7 +723,8 @@ concatenation
 
 (defmethod context-pop-file ((context context))
   (let ((data (pop (context-file-stack context))))
-    (setf (context-file context) (pop data)
+    (setf (context-directory context) (pop data)
+          (context-file context) (pop data)
           (context-line context) (pop data)
           (context-column context) (pop data)
           (context-token context) (pop data)

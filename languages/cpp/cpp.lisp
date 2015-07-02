@@ -711,7 +711,7 @@ RETURN: the token text; the end position."
                              nil)))
                      (merge-pathnames include-file directory))
     :when (and path (or (eq t path) (probe-file path)))
-      :do (return path)
+      :do (return (values path directory))
     :finally (return nil)))
 
 (defun include-directories (kind)
@@ -728,18 +728,26 @@ RETURN: the token text; the end position."
             (remove-duplicates include-bracket-directories :test (function equal)))))
 
 (defmethod perform-include ((context context) include-file kind directive)
-  (flet ((include (path)
-           (read-and-process-file context path)))
-    (let* ((include-directories (include-directories kind))
-           (path                (search-file-in-directories include-file include-directories kind directive)))
-      (cond ((eq t path) #|done|#)
-            (path        (include path))
-            (t           (cpp-error context
-                                    "Cannot find a file ~C~A~C in the include directories ~S"
-                                    (if (eq kind :quote) #\" #\<)
-                                    include-file
-                                    (if (eq kind :quote) #\" #\>)
-                                    include-directories))))))
+  ;; TODO: skip duplicate #import and #ifndef/#define #include
+  (flet ((include (path directory)
+           (when (option context :trace-includes)
+             (format *trace-output* "Including ~S~%" path))
+           (read-and-process-file context path directory)))
+    (let ((include-directories (include-directories kind)))
+      (when (eq directive :include-next)
+        (setf include-directories (cdr (member (context-directory context)
+                                               include-directories
+                                               :test (function equal)))))
+      (multiple-value-bind (path directory)
+          (search-file-in-directories include-file include-directories kind directive)
+        (cond ((eq t path) #|done|#)
+              (path        (include path directory))
+              (t           (cpp-error context
+                                      "Cannot find a file ~C~A~C in the include directories ~S"
+                                      (if (eq kind :quote) #\" #\<)
+                                      include-file
+                                      (if (eq kind :quote) #\" #\>)
+                                      include-directories)))))))
 
 (defgeneric token-string (token)
   (:method ((token token)) (token-text token))
@@ -777,9 +785,6 @@ RETURN: the token text; the end position."
                   directive (mapconcat (function token-text) line ""))
        (values nil nil nil)))))
 
-
-
-
 (defmethod include-common ((context context) directive)
   (with-cpp-line (context-current-line context)
     (if (context-current-line context)
@@ -794,6 +799,9 @@ RETURN: the token text; the end position."
                          directive (token-text (first line))))))        
         (cpp-error context "Missing path after #~(~A~)" directive)))
   context)
+
+(defmethod include-next ((context context))
+  (include-common context :include-next))
 
 (defmethod include ((context context))
   (include-common context :include))
@@ -1101,23 +1109,24 @@ RETURN: the token text; the end position."
   (cond
     ((identifierp (second line))
      (scase (token-text (second line))
-       (("define")  (define  context))
-       (("undef")   (undef   context))
-       (("include") (include context))
-       (("import")  (import  context))
-       (("ifdef")   (ifdef   context))
-       (("ifndef")  (ifndef  context))
-       (("if")      (cpp-if  context))
+       (("define")         (define           context))
+       (("undef")          (undef            context))
+       (("include")        (include          context))
+       (("include_next")   (include-next     context))
+       (("import")         (import           context))
+       (("ifdef")          (ifdef            context))
+       (("ifndef")         (ifndef           context))
+       (("if")             (cpp-if           context))
        (("elif" "else" "endif")
         (if (plusp (context-if-level context))
             (return-from process-directive nil)
             (cpp-error (second line) "#~A without #if" (token-text (second line)))))
-       (("line")    (cpp-line         context))
-       (("pragma")  (pragma           context))
-       (("error")   (cpp-error-line   context))
-       (("warning") (cpp-warning-line context))
-       (("ident" "sccs"))
-       (otherwise (cpp-error line "invalid directive ~A" (token-text (second line))))))
+       (("line")           (cpp-line         context))
+       (("pragma")         (pragma           context))
+       (("error")          (cpp-error-line   context))
+       (("warning")        (cpp-warning-line context))
+       (("ident" "sccs")) 
+       (otherwise          (cpp-error line "invalid directive ~A" (token-text (second line))))))
     ((number-token-p (second line)) ;; skip # 1 "file"
      (push line (context-output-lines context)))
     ((rest line)
@@ -1140,22 +1149,26 @@ RETURN: the token text; the end position."
     :finally (setf (context-current-line context) nil))
   context)
 
-(defmethod read-and-process-file ((context context) path)
-  (with-open-file (input path :external-format (option *context* :external-format))
-    (context-push-file context path (read-cpp-tokens
-                                     input
-                                     :file-name (namestring path)
-                                     :substitute-trigraphs            (option *context* :substitute-trigraphs)
-                                     :warn-on-trigraph                (option *context* :warn-on-trigraph)
-                                     :warn-spaces-in-continued-lines  (option *context* :warn-spaces-in-continued-lines)
-                                     :single-line-comments            (option *context* :single-line-comments)
-                                     :accept-unicode-escapes          (option *context* :accept-unicode-escapes)
-                                     :dollar-is-punctuation           (option *context* :dollar-is-punctuation)))
-    (process-file context)
+(defmethod read-and-process-stream ((context context) stream &optional (path (pathname stream)) directory)
+  (context-push-file context path directory
+                     (read-cpp-tokens
+                      stream
+                      :file-name (namestring path)
+                      :substitute-trigraphs            (option *context* :substitute-trigraphs)
+                      :warn-on-trigraph                (option *context* :warn-on-trigraph)
+                      :warn-spaces-in-continued-lines  (option *context* :warn-spaces-in-continued-lines)
+                      :single-line-comments            (option *context* :single-line-comments)
+                      :accept-unicode-escapes          (option *context* :accept-unicode-escapes)
+                      :dollar-is-punctuation           (option *context* :dollar-is-punctuation)))
+  (unwind-protect (process-file context)
     (context-pop-file context)))
 
-(defun process-toplevel-file (path &key (options *default-options*))
-  (let ((*context* (make-instance 'context :base-file path :file path :options options)))
+(defmethod read-and-process-file ((context context) path &optional directory)
+  (with-open-file (input path :external-format (option *context* :external-format))
+    (read-and-process-stream context input path directory)))
+
+(defun process-toplevel-file (path &key (options *default-options*) (environment (copy-hash-table *default-environment*)))
+  (let ((*context* (make-instance 'context :base-file path :file path :options options :environment environment)))
     (read-and-process-file *context* path)
     (values (reverse (context-output-lines *context*)) *context*)))
 
@@ -1190,19 +1203,49 @@ RETURN: the token text; the end position."
                                   (when restart (invoke-restart restart))))))
     ,@body))
 
-(defun cpp-e (path &rest options &key includes write-sharp-line &allow-other-keys)
-  (with-cpp-error-logging
-    (multiple-value-bind (lines context)
-        (process-toplevel-file path :options (append (plist-alist options)
-                                                     (acons :include-quote-directories includes *default-options*)))
-      (terpri)
-      (write-processed-lines lines :write-sharp-line write-sharp-line)
-      ;; (print-hashtable (context-environment context))
-      context)))
+(defun cpp-e (path &rest options &key defines includes write-sharp-line &allow-other-keys)
+  "
+DEFINE:     a plist of object-like macro definitions: (macro-name macro-value)
+            macro-name is a string designator.
+            macro-values can be any string that is parsed into tokens.
+
+INCLUDES:   This is a shortcut for :include-quote-directories.
+            If both are given, :include-quote-directories takes precedence.
+
+WRITE-SHARP-LINE:
+            produces #line N \"file\" lines, in the output listing.
+
+Other keys shall be context option keys.
+"
+  (let ((environment (copy-hash-table *default-environment*)))
+    (loop :for (name definition) :on defines :by (function cddr)
+          :do (let ((name (string name))
+                    (new-definition (parse-macro-definition
+                                     name
+                                     (with-input-from-string (input definition)
+                                       (first (read-cpp-tokens input :file-name "-"))))))
+                (when (prefixp "__" name)
+                  (cpp-warning nil "Definiting a system macro named ~S" name))
+                (setf (environment-macro-definition environment name) new-definition)))
+    (with-cpp-error-logging
+      (multiple-value-bind (lines context)
+          (process-toplevel-file path
+                                 :options (append (plist-alist options)
+                                                  (acons :include-quote-directories includes
+                                                         *default-options*))
+                                 :environment environment)
+        (terpri)
+        (write-processed-lines lines :write-sharp-line write-sharp-line)
+        ;; (print-hashtable (context-environment context))
+        context))))
 
 ;;; --------------------
 
 #-(and) (progn
+          (cpp-e "tests/test.c"          :includes '("tests/") :write-sharp-line t
+                                         :define '("FOO" "1" "BAR" "FOO"))
+          
+
 
           (cpp-e "tests/test.c"          :includes '("tests/") :write-sharp-line t)
           (cpp-e "tests/variadic.c"      :includes '("tests/") :write-sharp-line t)
