@@ -36,7 +36,7 @@ int i[]={ FOO,
 #define LEFT F("l",
 #define RIGHT ,"r")
 #define FOO LEFT "foo" RIGHT
-1: FOO; /* ok */
+0: FOO; /* ok */
 #define F(a,b,c) a##b##c
 // 2: FOO; /* good: error: unterminated argument list invoking macro "F" */
 
@@ -62,3 +62,9 @@ int i[]={ FOO,
 #undef F
 #define F(a,b,c) c##c
        ); 
+ 
+#undef F
+#define F(a,b,c) int z[]={a,b,c}
+5:F(
+      # include "data.h"
+      );

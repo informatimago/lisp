@@ -71,6 +71,10 @@
         (setf character-string #(#\nul))))
     (char-code (aref character-string 0))))
 
+(defun string-value (string-token)
+  (with-input-from-string (in (token-text string-token) :start 1)
+    (read-c-string in #\")))
+
 (defmacro with-binary-op-parsers ((&rest definitions) (&rest functions) &body body)
   `(labels (,@(mapcar (lambda (definition)
                         (destructuring-bind (name subexpr &rest ops) definition

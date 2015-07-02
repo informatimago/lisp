@@ -430,7 +430,15 @@ concatenation
                    (cpp-error *context* "Reached end of file in function-like macro call ~A"
                               (token-text ,macro-name-token-var))
                    (return-from ,block-name nil))
-                 (setf ,line-var (pop ,tokenized-lines-var)))))
+                 (progn
+                   (setf (context-input-lines *context*)  ,tokenized-lines-var)
+                   (unwind-protect
+                        (loop
+                          :do (setf (context-current-line *context*)  (pop (context-input-lines *context*)))
+                          :while (sharpp (first (context-current-line *context*)))
+                          :do (process-directive *context* (context-current-line *context*)))
+                     (setf ,line-var (context-current-line *context*)
+                           ,tokenized-lines-var  (context-input-lines *context*)))))))
 
 (defun macro-bindings-expand-arguments (bindings)
   (flet ((marg (tokens)
@@ -582,6 +590,9 @@ concatenation
            
            :warn-on-undefined-identifier
            ;; in #if expressions warns about undefined identifiers
+
+           :generate-sharp-line
+           ;; #line generates '# NN "file"' token lines.
            
            :include-disable-current-directory
            ;; When true, files are not searched in the current directory.
@@ -619,7 +630,8 @@ concatenation
     (:include-quote-directories . ())
     (:include-bracket-directories . ())
     (:include-search-functions . ())
-    (:external-format . :default)))
+    (:external-format . :default)
+    (:generate-sharp-line . nil)))
 
 (defvar *default-environment*         (make-environment))
 (defvar *default-pragma-interpreters* (make-hash-table :test 'equal))

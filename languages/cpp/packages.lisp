@@ -42,6 +42,7 @@
                           "STRING-DESIGNATOR")
   (:shadowing-import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM"
                           "COPY-STREAM")
+  (:import-from "ALEXANDRIA" "PLIST-ALIST")
   (:export "PROCESS-TOPLEVEL-FILE"
            "TOKEN" "TOKEN-LINE" "TOKEN-COLUMN" "TOKEN-FILE"
            "TOKEN-TEXT" "IDENTIFIER-TOKEN" "NUMBER-TOKEN" "PUNCTUATION-TOKEN"

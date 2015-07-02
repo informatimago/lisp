@@ -31,4 +31,8 @@ ifdef:
 	gcc -E -o - ifdef.c | cat -s
 if:
 	gcc -E -o - -Wundef if.c | cat -s
+if-embedded:
+	gcc -E -o - if-embedded.c | cat -s
+line:
+	gcc -E -o - line.c | cat -s
 
