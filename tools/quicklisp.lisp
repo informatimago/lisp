@@ -34,7 +34,7 @@
 
 #-quicklisp
 (defpackage "QUICKLISP"
-  (:nickname "QL-DIST" "QL")
+  (:nicknames "QL-DIST" "QL")
   (:export "NAME" "PROJECT-NAME" "DIST" "PROVIDED-SYSTEMS"
            "PROVIDED-RELEASES" "UPDATE-CLIENT" "UPDATE-ALL-DISTS"
            "CLEAN" "WHERE-IS-SYSTEM" "QUICKLOAD" "REGISTER-LOCAL-PROJECTS"))
