@@ -116,8 +116,10 @@ MAX-EXTEND: NIL ==> double the buffer size, or double the buffer size until
             it's greater than MAX-EXTEND, and then increment by MAX-EXTEND.
 RETURN:     A vector containing the elements read from the STREAM.
 "
-  (let ((dirs (pathname-directory (pathname stream))))
-    (if (and (eql :absolute (pop dirs))
+  (let ((dirs (and (typep stream 'file-stream)
+                   (pathname-directory (pathname stream)))))
+    (if (and dirs
+             (eql :absolute (pop dirs))
              (member (pop dirs) '("proc" "sys" "dev") :test (function string=)))
         ;; some implementations have problem reading those file systems with read-sequence
         ;; so we fallback to read-line:
