@@ -56,7 +56,8 @@ This system would use closer-mop which is not available on MOCL.
                "com.informatimago.common-lisp.picture"
                "com.informatimago.common-lisp.graphviz" ; used by dependency-cycles
                "com.informatimago.clext"
-               "closer-mop") 
+               "closer-mop"
+               "split-sequence") 
   :components ((:file "source")
                (:file "dependency-cycles")
                (:file "asdf-file"  :depends-on ("dependency-cycles" "source"))

@@ -329,6 +329,7 @@ concatenation
                      (context-line *context*)
                      (context-file *context*))))))
 
+(defgeneric argument-stringified (argument))
 (defmethod argument-stringified ((argument argument))
   (or (argument-%stringified argument)
       (setf (argument-%stringified argument) (stringify (argument-tokens argument)))))
@@ -698,9 +699,11 @@ concatenation
 (defun option (context option)
   (cdr (assoc option (context-options context))))
    
+(defgeneric context-include-level (context))
 (defmethod context-include-level ((context context))
   (length (context-file-stack context)))
 
+(defgeneric context-push-file (context) path directory input-lines)
 (defmethod context-push-file ((context context) path directory input-lines)
   (push (list (context-directory context)
               (context-file context)
@@ -721,6 +724,7 @@ concatenation
         (context-current-line context) nil)
   context)
 
+(defgeneric context-pop-file (context))
 (defmethod context-pop-file ((context context))
   (let ((data (pop (context-file-stack context))))
     (setf (context-directory context) (pop data)
@@ -733,11 +737,13 @@ concatenation
           (context-current-line context) (pop data)))
   context)
 
+
+(defgeneric update-context (context &key token line column file))
 (defmethod update-context ((context context) &key
-                          (token         nil tokenp)
-                          (line          nil linep)
-                          (column        nil columnp)
-                          (file          nil filep))
+                                               (token         nil tokenp)
+                                               (line          nil linep)
+                                               (column        nil columnp)
+                                               (file          nil filep))
   (when tokenp          (setf (context-token         context) token))
   (when linep           (setf (context-line          context) line))
   (when columnp         (setf (context-column        context) column))
@@ -817,6 +823,7 @@ concatenation
                 tokenized-lines)
         (values '() line tokenized-lines))))
 
+(defgeneric macro-expand-macros (context line tokenized-lines output-lines allow-defined already-expanded))
 (defmethod macro-expand-macros ((context context) line tokenized-lines output-lines allow-defined already-expanded)
   (loop
     :with environment = (context-environment context)

@@ -2072,7 +2072,10 @@ These commands include C-@ and M-x start-kbd-macro."
 #-mocl
 (defun reload ()
   (in-package "CL-USER")
-  (ql:quickload :com.informatimago.editor)
+  (funcall (when (find-package "QL")
+             (intern "QUICKLOAD" (find-package "QL"))
+             (function identity))
+           :com.informatimago.editor)
   (in-package "EDITOR"))
 
 

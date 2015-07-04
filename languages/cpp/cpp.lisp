@@ -650,6 +650,7 @@ RETURN: the token text; the end position."
                     :name name
                     :expansion (parse-object-macro-definition-body line)))))
 
+(defgeneric define (context))
 (defmethod define ((context context))
   (with-cpp-line (context-current-line context)
     (if (context-current-line context)
@@ -670,18 +671,19 @@ RETURN: the token text; the end position."
 ;;; #undef
 ;;; --------------------
 
+(defgeneric undef (context))
 (defmethod undef ((context context))
   (with-cpp-line (context-current-line context)
-   (if (context-current-line context)
-       (let ((name (pop (context-current-line context))))
-         (if (identifierp name)
-             (environment-macro-undefine (context-environment context) (token-text name))
-             (cpp-error name "Expected an identifier as macro name after #undef, not ~S" (token-text name)))
-         (when (context-current-line context)
-           (cpp-error (first (context-current-line context))
-                      "Didn't expect anything after the macro name after #undef, not ~S"
-                      (token-text (first (context-current-line context))))))
-       (cpp-error context "Missing macro name after #undef"))))
+    (if (context-current-line context)
+        (let ((name (pop (context-current-line context))))
+          (if (identifierp name)
+              (environment-macro-undefine (context-environment context) (token-text name))
+              (cpp-error name "Expected an identifier as macro name after #undef, not ~S" (token-text name)))
+          (when (context-current-line context)
+            (cpp-error (first (context-current-line context))
+                       "Didn't expect anything after the macro name after #undef, not ~S"
+                       (token-text (first (context-current-line context))))))
+        (cpp-error context "Missing macro name after #undef"))))
 
 
 
@@ -727,6 +729,7 @@ RETURN: the token text; the end position."
                 '())
             (remove-duplicates include-bracket-directories :test (function equal)))))
 
+(defgeneric perform-include (context include-file kind directive))
 (defmethod perform-include ((context context) include-file kind directive)
   ;; TODO: skip duplicate #import and #ifndef/#define #include
   (flet ((include (path directory)
@@ -785,6 +788,7 @@ RETURN: the token text; the end position."
                   directive (mapconcat (function token-text) line ""))
        (values nil nil nil)))))
 
+(defgeneric include-common (context directive))
 (defmethod include-common ((context context) directive)
   (with-cpp-line (context-current-line context)
     (if (context-current-line context)
@@ -800,12 +804,15 @@ RETURN: the token text; the end position."
         (cpp-error context "Missing path after #~(~A~)" directive)))
   context)
 
+(defgeneric include-next (context))
 (defmethod include-next ((context context))
   (include-common context :include-next))
 
+(defgeneric include (context))
 (defmethod include ((context context))
   (include-common context :include))
 
+(defgeneric import (context))
 (defmethod import ((context context))
   (include-common context :import))
 
@@ -840,6 +847,7 @@ RETURN: the token text; the end position."
 (define-cpp-line-predicate else-line-p   "else")
 (define-cpp-line-predicate endif-line-p  "endif")
 
+(defgeneric skip-if (context))
 (defmethod skip-if ((context context))
   ;; PRE: current line is #if #ifdef #ifndef #elif or #else
   ;; POST: current line is nil or #endif
@@ -863,6 +871,7 @@ RETURN: the token text; the end position."
                     (return nil))
       (decf (context-if-level context)))))
 
+(defgeneric skip-branch (context))
 (defmethod skip-branch ((context context))
   ;; skips a single branch
   ;; PRE:  current line is #if #ifdef #ifndef or #elif
@@ -885,6 +894,7 @@ RETURN: the token text; the end position."
                           (token-text (second if-line)))
                (return nil))))
 
+(defgeneric process-branch-and-skip (context &optional no-else))
 (defmethod process-branch-and-skip ((context context) &optional no-else)
   ;; current line is #if #ifdef #ifndef or #elif
   ;; processes the branch,
@@ -963,6 +973,7 @@ RETURN: the token text; the end position."
          )
 
 
+(defgeneric skip-branch-and-process (context))
 (defmethod skip-branch-and-process ((context context))
   ;; line is #if #ifdef #ifndef #elif
   ;; skip the branches,
@@ -984,6 +995,7 @@ RETURN: the token text; the end position."
         (when (else-line-p (context-current-line context))
           (process-branch-and-skip context :no-else)))))
 
+(defgeneric ifdef-common (context flip directive))
 (defmethod ifdef-common ((context context) flip directive)
   (incf (context-if-level context))
   (unwind-protect
@@ -997,9 +1009,11 @@ RETURN: the token text; the end position."
             (skip-branch-and-process context))))
     (decf (context-if-level context))))
 
+(defgeneric ifdef (context))
 (defmethod ifdef ((context context))
   (ifdef-common context (function identity) "#ifdef"))
 
+(defgeneric ifndef (context))
 (defmethod ifndef ((context context))
   (ifdef-common context (function not) "#ifndef"))
 
@@ -1008,6 +1022,7 @@ RETURN: the token text; the end position."
                                       (first (macro-expand-macros context line
                                                                   '() '() :allow-defined '())))))))
 
+(defgeneric cpp-if (context))
 (defmethod cpp-if ((context context))
   (incf (context-if-level context))
   (unwind-protect
@@ -1020,6 +1035,7 @@ RETURN: the token text; the end position."
 ;;; #line
 ;;; --------------------
 
+(defgeneric cpp-line (context))
 (defmethod cpp-line ((context context))
   (with-cpp-line (context-current-line context)
     (labels ((generate (n file)
@@ -1030,11 +1046,11 @@ RETURN: the token text; the end position."
                                file)
                          (context-output-lines context)))
                  (loop
-                  :for line :in (context-input-lines context)
-                  :do (loop :for token :in line
-                            :do (setf (token-line token) n
-                                      (token-file token) f))
-                      (incf n))))
+                   :for line :in (context-input-lines context)
+                   :do (loop :for token :in line
+                             :do (setf (token-line token) n
+                                       (token-file token) f))
+                       (incf n))))
              (process-line (line)
                (cond
                  ((null line)
@@ -1057,6 +1073,7 @@ RETURN: the token text; the end position."
 ;;; #pragma
 ;;; --------------------
 
+(defgeneric pragma (context))
 (defmethod pragma ((context context))
   ;; TODO: unrecognized pragmas could be passed along on the output for the compiler.
   (with-cpp-line (context-current-line context)
@@ -1071,6 +1088,7 @@ RETURN: the token text; the end position."
 ;;; #error
 ;;; --------------------
 
+(defgeneric cpp-error-line (context))
 (defmethod cpp-error-line ((context context))
   (cpp-message 'cpp-error (context-current-line context)))
 
@@ -1078,6 +1096,7 @@ RETURN: the token text; the end position."
 ;;; #warning
 ;;; --------------------
 
+(defgeneric cpp-warning-line (context))
 (defmethod cpp-warning-line ((context context))
   (cpp-message 'cpp-warning (context-current-line context)))
 
@@ -1105,28 +1124,29 @@ RETURN: the token text; the end position."
           (context-input-lines context) input)
     context))
 
+(defgeneric process-directive (context line))
 (defmethod process-directive ((context context) line)
   (cond
     ((identifierp (second line))
      (scase (token-text (second line))
-       (("define")         (define           context))
-       (("undef")          (undef            context))
-       (("include")        (include          context))
-       (("include_next")   (include-next     context))
-       (("import")         (import           context))
-       (("ifdef")          (ifdef            context))
-       (("ifndef")         (ifndef           context))
-       (("if")             (cpp-if           context))
-       (("elif" "else" "endif")
-        (if (plusp (context-if-level context))
-            (return-from process-directive nil)
-            (cpp-error (second line) "#~A without #if" (token-text (second line)))))
-       (("line")           (cpp-line         context))
-       (("pragma")         (pragma           context))
-       (("error")          (cpp-error-line   context))
-       (("warning")        (cpp-warning-line context))
-       (("ident" "sccs")) 
-       (otherwise          (cpp-error line "invalid directive ~A" (token-text (second line))))))
+            (("define")         (define           context))
+            (("undef")          (undef            context))
+            (("include")        (include          context))
+            (("include_next")   (include-next     context))
+            (("import")         (import           context))
+            (("ifdef")          (ifdef            context))
+            (("ifndef")         (ifndef           context))
+            (("if")             (cpp-if           context))
+            (("elif" "else" "endif")
+             (if (plusp (context-if-level context))
+                 (return-from process-directive nil)
+                 (cpp-error (second line) "#~A without #if" (token-text (second line)))))
+            (("line")           (cpp-line         context))
+            (("pragma")         (pragma           context))
+            (("error")          (cpp-error-line   context))
+            (("warning")        (cpp-warning-line context))
+            (("ident" "sccs")) 
+            (otherwise          (cpp-error line "invalid directive ~A" (token-text (second line))))))
     ((number-token-p (second line)) ;; skip # 1 "file"
      (push line (context-output-lines context)))
     ((rest line)
@@ -1135,6 +1155,7 @@ RETURN: the token text; the end position."
      ))
   t)
 
+(defgeneric process-file (context))
 (defmethod process-file ((context context))
   "Processes all the INPUT-LINES, pushing onto the OUTPUT-LINES."
   (loop
@@ -1149,6 +1170,7 @@ RETURN: the token text; the end position."
     :finally (setf (context-current-line context) nil))
   context)
 
+(defgeneric read-and-process-stream (context stream &optional path directory))
 (defmethod read-and-process-stream ((context context) stream &optional (path (pathname stream)) directory)
   (context-push-file context path directory
                      (read-cpp-tokens
@@ -1163,6 +1185,7 @@ RETURN: the token text; the end position."
   (unwind-protect (process-file context)
     (context-pop-file context)))
 
+(defgeneric read-and-process-file (context path &optional directory))
 (defmethod read-and-process-file ((context context) path &optional directory)
   (with-open-file (input path :external-format (option *context* :external-format))
     (read-and-process-stream context input path directory)))
