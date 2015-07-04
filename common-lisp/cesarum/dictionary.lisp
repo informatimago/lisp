@@ -263,7 +263,7 @@ switches to hash-tables, and below which it switches to A-lists."))
                :accessor adaptating-dictionary-limit))
   (:documentation "A dictionary that changes between an A-list implementation and a hash-table implementation depending on the number of entries."))
 
-
+(defgeneric  adaptating-dictionary-adapt (dictionary))
 (defmethod adaptating-dictionary-adapt ((dictionary adaptating-dictionary))
   (flet ((copy-dictionary (dictionary type)
            (make-dictionary type

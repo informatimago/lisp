@@ -153,10 +153,10 @@
 
 
 (define-test test/iota ()
-  (test equalp (iota 5) '(0 1 2 3 4))
-  (test equalp (iota 5 0 -0.10) '(0 -0.1 -0.2 -0.3 -0.4))
-  (test equalp (iota (/ 30 4)) '(0 1 2 3 4 5 6))
-  (test equalp (iota (/ 30 4) 0 4) '(0 4 8 12 16 20 24)))
+  (check equalp (iota 5) '(0 1 2 3 4) ())
+  (check equalp (iota 5 0 -0.10) '(0 -0.1 -0.2 -0.3 -0.4))
+  (check equalp (iota (/ 30 4)) '(0 1 2 3 4 5 6))
+  (check equalp (iota (/ 30 4) 0 4) '(0 4 8 12 16 20 24)))
 
 (define-test test/all ()
   (test/list-lengths)

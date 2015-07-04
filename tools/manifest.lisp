@@ -144,7 +144,8 @@ stdout in a string (going thru a file)."
           options))
 
 (declaim (inline trim))
-(defun trim  (string) (string-trim #(#\space #\tab #\newline) string))
+(defun trim  (string)
+  (and string (string-trim #(#\space #\tab #\newline) string)))
 
 (defun uname (&rest options)
   "Without OPTIONS, return a keyword naming the system (:LINUX, :DARWIN, etc).
@@ -225,14 +226,17 @@ System and distrib are keywords, release is a string."
        (:darwin
         (when (probe-file "/System/Library/Frameworks/AppKit.framework/AppKit")
           (setf distrib :apple))
-        (setf release (with-input-from-string (inp (shell-command-to-string "hostinfo"))
-                        (loop
-                          :for line = (read-line inp nil nil)
-                          :while line
-                          :when (search "Darwin Kernel Version" line)
-                          :return (let ((release (fourth (words line))))
-                                    (subseq release 0 (position #\: release)))
-                          :finally (return :unknown)))))
+        (let ((hostinfo (shell-command-to-string "hostinfo")))
+          (when hostinfo
+           (setf release (with-input-from-string (inp hostinfo)
+                           (loop
+                             :for line = (read-line inp nil nil)
+                             :while line
+                             :when (search "Darwin Kernel Version" line)
+                               :return (let ((release (fourth (words line))))
+                                         (subseq release 0 (position #\: release)))
+                             :finally (return :unknown))))
+           (setf release :unknown))))
        (:unknown
         (let ((host (trim (shell-command-to-string "hostinfo"))))
           (cond

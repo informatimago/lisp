@@ -223,6 +223,8 @@ DO:      Draws the frame FRAME of the SPRITE on the picture PICT,
 (defgeneric background (picture)
   (:documentation "The background character of the picture."))
 
+(defgeneric data (picture))
+
 (pjb-defclass picture nil
   (:att data        (array character 2)       "Picture data.")
   (:att background  character (character " ") "The background character.")
@@ -545,8 +547,6 @@ NOTE:    A future implementation won't use DRAW-POINT for performance.
 
 (defgeneric name (sprite)
   (:documentation "Name of this sprite."))
-(defgeneric data (sprite)
-  (:documentation "Sprite data."))
 (defgeneric spot-x (sprite)
   (:documentation "X coordinate of the spot of the sprite."))
 (defgeneric spot-y (sprite)

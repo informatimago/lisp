@@ -815,7 +815,7 @@ RETURN:      The generated HTML.
   );;eval-when
 
 
-(defmacro generate (&body body)
+(defmacro generate ()
   (append (generate-elements *elements*)
           '('done)))
 

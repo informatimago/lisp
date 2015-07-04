@@ -586,18 +586,18 @@ NOTE:    Only the keywords listed in *DURATION-KEYWORDS* are really allowed.
              `(progn
                 (defgeneric ,name (duration)
                   (:documentation ,(let ((*print-circle* nil))
-                                        (format nil "RETURN: The ~A of the duration.
+                                     (format nil "RETURN: The ~A of the duration.
 NOTE:   This is not the duration expressed in ~:*~A, just the ~:*~A
         component of the duration." (string-downcase name))))
                   (:method ((self duration))
                     (getf (slot-value self 'expression)
                           ',(intern (string name) "KEYWORD") 0)))
-                ,@(unless
-                   no-writer-p
-                   `((defmethod (setf ,name) (value (self duration))
-                       (setf (getf (slot-value self 'expression)
-                                   ',(intern (string name) "KEYWORD"))
-                             value))))
+                ,@(unless no-writer-p
+                    `((defgeneric (setf ,name) (value duration))
+                      (defmethod (setf ,name) (value (self duration))
+                        (setf (getf (slot-value self 'expression)
+                                    ',(intern (string name) "KEYWORD"))
+                              value))))
                 ',name)))
   (define-accessor seconde)
   (define-accessor minute)
@@ -1001,6 +1001,7 @@ NOTE:           UNIVERSAL-TIME when present gives a base date with
   (with-slots (year month day hour minute seconde) (to-timezone self 0)
      (list year month day hour minute seconde)))
 
+(defgeneric units-of-list-of-numbers (date))
 (defmethod units-of-list-of-numbers  ((self gregorian-calendar-date))
   (declare (ignorable self))
   (list :year :month :day :hour :minute :seconde))
