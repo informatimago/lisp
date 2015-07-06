@@ -85,6 +85,7 @@
                  (asdf:test-op "com.informatimago.editor.test")
                  (asdf:test-op "com.informatimago.objcl.test")
                  (asdf:test-op "com.informatimago.susv3.test")
-                 (asdf:test-op "com.informatimago.clisp.test"))))
+                 (asdf:test-op "com.informatimago.clisp.test")
+                 (asdf:test-op "com.informatimago.languages.cpp.test"))))
 
 ;;;; THE END ;;;;

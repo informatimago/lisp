@@ -32,7 +32,7 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-#+ccl
+#+(and ccl darwin); for now, not on non-darwin
 (eval-when (:compile-toplevel :load-toplevel :execute)
   ;; When we (require :objc-support) before (require :cocoa), ccl
   ;; can't find the main bundle.  So we must require :cocoa for the

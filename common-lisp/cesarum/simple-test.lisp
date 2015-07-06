@@ -283,11 +283,11 @@ License:
   (when (verbose *verbose-tally*)
     (let ((name-max-length 40))
       (flet ((write-tally (name)
-               (format *test-output* "~&~VA~
+               (format *test-output* "~&~VA~@[~%~0@*~V<~>~3@*~]~
                        ~5D test~:*~P,~:*~[~; ~;~]~
                        ~4D success~:*~[es~;~:;es~]~
                        ~:[,~2:*~[~;  ~;~]~*~4D failure~:*~P~;~].~%"
-                       name-max-length name
+                       name-max-length name (< name-max-length (length name))
                        (+ success-count failure-count) 
                        success-count
                        (zerop failure-count)
@@ -306,8 +306,6 @@ License:
         ;;   (force-output *test-output*))
         )))
   (values))
-
-
 
 (defmacro assert-true (expression &optional places format-control &rest format-arguments)
   "Evaluates a test EXPRESSION and check it returns true.

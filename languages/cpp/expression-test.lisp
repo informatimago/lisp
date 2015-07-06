@@ -1,17 +1,17 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               packages.lisp
+;;;;FILE:               expression-test.lisp
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    Defines the C Preprocessor packages.
+;;;;    Tests expressions.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2015-06-27 <PJB> Created.
+;;;;    2015-07-06 <PJB> Extracted from expression.lisp
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
@@ -31,30 +31,25 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
+(in-package "COM.INFORMATIMAGO.LANGUAGES.CPP")
 
-(defpackage "COM.INFORMATIMAGO.LANGUAGES.CPP"
-  (:use "COMMON-LISP"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SIMPLE-TEST")
-  (:shadow "IMPORT" "INCLUDE")
-  (:shadowing-import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
-                          "STRING-DESIGNATOR")
-  (:shadowing-import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM"
-                          "COPY-STREAM")
-  (:import-from "ALEXANDRIA" "PLIST-ALIST")
-  (:export "PROCESS-TOPLEVEL-FILE"
-           "TOKEN" "TOKEN-LINE" "TOKEN-COLUMN" "TOKEN-FILE"
-           "TOKEN-TEXT" "IDENTIFIER-TOKEN" "NUMBER-TOKEN" "PUNCTUATION-TOKEN"
-           "OTHER-TOKEN"
-           "ENVIRONMENT-MACRO-DEFINITION"
-           "ENVIRONMENT-MACRO-DEFINEDP"
-           "ENVIRONMENT-MACRO-UNDEFINE"
-           ;;;
-           "READ-CPP-TOKENS"
-           "CPP-E"
-           ))
+(define-test test/integer-value ()
+  (check equal (mapcar (function integer-value)
+                       (list (make-number "42"          0 0 "-")
+                             (make-number "0x42"        0 0 "-")
+                             (make-number "0b101010"    0 0 "-")
+                             (make-number "042"         0 0 "-")))
+         '(42 66 42 34))
+  :success)
+
+(define-test test/character-value ()
+  (check equal (mapcar (function character-value)
+                       (list (make-character-literal "'A'"      0 0 "-")
+                             (make-character-literal "'\\x41'"  0 0 "-")
+                             (make-character-literal "'\\n'"    0 0 "-")
+                             (make-character-literal "'λ'"      0 0 "-")))
+         
+         '(65 65 10 955))
+  :success)
 
 ;;;; THE END ;;;;
-

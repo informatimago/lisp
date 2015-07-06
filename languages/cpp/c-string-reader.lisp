@@ -196,21 +196,4 @@ The initial delimited must have been read already."
      :finally (princ "\"" stream)))
 
 
-
-(defun test/read-c-string ()
- (let ((*readtable*
-        (let ((rt (copy-readtable nil)))
-          (set-macro-character #\" 'read-c-string nil rt)
-          (set-macro-character #\' 'read-c-string nil rt)
-          rt)))
-   (assert (equal  (read-from-string "(\"Hello, bell=\\a, backspace=\\b, page=\\f, newline=\\n, return=\\r, tab=\\t, vt=\\v, \\
-\\\"double-quotes\\\", \\'single-quotes\\', question\\?, backslash=\\\\, \\
-hexa=\\x3BB, octal=\\101, \\7\\77\\107\\3071\" 'a' '\\xe9' '\\\\' '\\'' '\\n')")
-                  '("Hello, bell=, backspace=, page=, newline=
-, return=, tab=	, vt=, \"double-quotes\", 'single-quotes', question?, backslash=\\, hexa=λ, octal=A, ?GÇ1"
-                    "a" "é" "\\" "'" "
-")))
-   :success))
-
-
 ;;;; THE END ;;;;
