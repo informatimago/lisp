@@ -168,6 +168,7 @@
 (defun right-shift (value offset)
   (ash value (- offset)))
 
+(defgeneric parse-expression (context line))
 (defmethod parse-expression ((context context) line)
   (with-binary-op-parsers ((expr12 expr11 (op-logior-p cpp-or))
                            (expr11 expr10 (op-logand-p cpp-and))
@@ -179,61 +180,61 @@
                            (expr5  expr4  (op-left-shift-p left-shift) (op-right-shift-p right-shift))
                            (expr4  expr3  (op-plus-p +) (op-minus-p -))
                            (expr3  expr2  (op-times-p *) (op-divides-p truncate)  (op-remainder-p mod)))
-      ((expr13 ()
-               (let ((test (expr12)))
-                 (if (op-question-p (peek))
-                     (progn
+    ((expr13 ()
+             (let ((test (expr12)))
+               (if (op-question-p (peek))
+                   (progn
+                     (eat)
+                     (let ((then (expr12)))
+                       (if (op-colon-p (peek))
+                           (progn
+                             (eat)
+                             `(if (zerop ,test) ,(expr12) ,then))
+                           (cpp-error (peek) "Expected a colon in ternary if expression, got ~S instead" (token-text (eat))))))
+                   test)))
+     (expr2 ()
+            (let ((op (peek)))
+              (cond ((op-plus-p op)   (eat) (expr1))
+                    ((op-minus-p op)  (eat) `(- ,(expr1)))
+                    ((op-lognot-p op) (eat) `(cpp-not ,(expr1)))
+                    ((op-bitnot-p op) (eat) `(lognot ,(expr1)))
+                    (t                      (expr1)))))
+     (expr1 ()
+            ;; expr2 ::= '_Pragma' '(' string ')'
+            ;;         | 'defined' '(' identifier ')'
+            ;;         | '(' expr12 ')'
+            ;;         | identifier [ '(' arguments… ')' ]
+            ;;         | integer
+            ;;         | character .
+            (let ((next (peek)))
+              (cond
+                ((openp next)
+                 (eat)
+                 (prog1 (expr13)
+                   (if (closep (peek))
                        (eat)
-                       (let ((then (expr12)))
-                         (if (op-colon-p (peek))
-                             (progn
-                               (eat)
-                               `(if (zerop ,test) ,(expr12) ,then))
-                             (cpp-error (peek) "Expected a colon in ternary if expression, got ~S instead" (token-text (eat))))))
-                     test)))
-       (expr2 ()
-              (let ((op (peek)))
-                (cond ((op-plus-p op)   (eat) (expr1))
-                      ((op-minus-p op)  (eat) `(- ,(expr1)))
-                      ((op-lognot-p op) (eat) `(cpp-not ,(expr1)))
-                      ((op-bitnot-p op) (eat) `(lognot ,(expr1)))
-                      (t                      (expr1)))))
-       (expr1 ()
-              ;; expr2 ::= '_Pragma' '(' string ')'
-              ;;         | 'defined' '(' identifier ')'
-              ;;         | '(' expr12 ')'
-              ;;         | identifier [ '(' arguments… ')' ]
-              ;;         | integer
-              ;;         | character .
-              (let ((next (peek)))
-                (cond
-                  ((openp next)
-                   (eat)
-                   (prog1 (expr13)
-                     (if (closep (peek))
-                         (eat)
-                         (progn (cpp-error next "Missing close parenthesis in #if expression, got ~S instead" (token-text (eat)))
-                                (return-from parse-expression 0)))))
-                  ((number-p next)
-                   (integer-value (eat)))
-                  ((character-literal-p next)
-                   (character-value (token-text (eat))))
-                  ((identifierp next)
-                   (let ((identifier (eat)))
-                     (scase (token-text identifier)
-                       (("_Pragma")
-                        (cpp-error identifier "_Pragma is forbidden in #if expressions")
-                        0)
-                       (otherwise ;; we've already macroexpanded
-                        (when (option context :warn-on-undefined-identifier)
-                          (cpp-warning identifier "~S is not defined" (token-text identifier)))
-                        0))))
-                  (t (if next
-                         (cpp-error next "token ~S is not valid in preprocessor expressions" (token-text next))
-                         (cpp-error context "end of line reached before the end of the preprocessor expressions"))
-                     (return-from parse-expression 0)))))
-       (eat  () (pop   line))
-       (peek () (first line)))
+                       (progn (cpp-error next "Missing close parenthesis in #if expression, got ~S instead" (token-text (eat)))
+                              (return-from parse-expression 0)))))
+                ((number-p next)
+                 (integer-value (eat)))
+                ((character-literal-p next)
+                 (character-value (token-text (eat))))
+                ((identifierp next)
+                 (let ((identifier (eat)))
+                   (scase (token-text identifier)
+                          (("_Pragma")
+                           (cpp-error identifier "_Pragma is forbidden in #if expressions")
+                           0)
+                          (otherwise ;; we've already macroexpanded
+                           (when (option context :warn-on-undefined-identifier)
+                             (cpp-warning identifier "~S is not defined" (token-text identifier)))
+                           0))))
+                (t (if next
+                       (cpp-error next "token ~S is not valid in preprocessor expressions" (token-text next))
+                       (cpp-error context "end of line reached before the end of the preprocessor expressions"))
+                   (return-from parse-expression 0)))))
+     (eat  () (pop   line))
+     (peek () (first line)))
     (prog1 (expr13)
       (unless (null (peek))
         (cpp-error (peek) "missing binary operator before token ~S" (eat))))))

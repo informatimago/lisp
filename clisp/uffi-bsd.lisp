@@ -354,7 +354,7 @@ LEGAL:  Copyright Pascal J. Bourguignon 2003 - 2004
   ) ;;+TYPE-CONVERSION-HASH+
 
 
-(proclaim '(inline get-type-conversion-record))
+(declaim (inline get-type-conversion-record))
 (defun get-type-conversion-record (uffi-type)
   "
 PRIVATE

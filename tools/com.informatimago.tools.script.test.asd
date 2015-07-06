@@ -45,7 +45,7 @@
   :maintainer     "Pascal J. Bourguignon"
   :licence        "AGPL3"
   ;; component attributes:
-  :version        "1.0.0"
+  :version        "1.0.2"
   :properties     ((#:author-email . "pjb@informatimago.com")
                    (#:date . "Winter 2015")
                    ((#:albert #:output-dir)
@@ -55,13 +55,14 @@
                    ((#:albert #:docbook #:bgcolor) . "white")
                    ((#:albert #:docbook #:textcolor) . "black"))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
-  :depends-on     ("com.informatimago.common-lisp.cesarum") ; simple-test
+  :depends-on     ("com.informatimago.common-lisp.cesarum" ; simple-test
+                   "com.informatimago.tools.script")
   :components     ((:file "script-test" :depends-on nil))
-  :perform        (asdf/lisp-action:test-op
-                   (operation system)
-                   (declare (ignore operation system))
-                   (dolist (p '("COM.INFORMATIMAGO.TOOLS.SCRIPT.TEST"))
-                     (let ((*package* (find-package p)))
-                       (uiop/package:symbol-call p "TEST/ALL")))))
+  #+asdf3 :perform #+asdf3 (asdf:test-op
+                            (operation system)
+                            (declare (ignore operation system))
+                            (dolist (p '("COM.INFORMATIMAGO.TOOLS.SCRIPT.TEST"))
+                              (let ((*package* (find-package p)))
+                                (uiop/package:symbol-call p "TEST/ALL")))))
 
 ;;;; THE END ;;;;

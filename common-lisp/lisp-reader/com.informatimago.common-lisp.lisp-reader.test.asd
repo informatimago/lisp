@@ -39,7 +39,7 @@
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.0.0"
+  :version "1.0.2"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Winter 2015")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.lisp-reader-test/")
@@ -52,12 +52,12 @@
                "com.informatimago.common-lisp.lisp-reader")
   :components ((:file "reader-test"    :depends-on ())
                (:file "package-test"   :depends-on ()))
-  :perform (asdf:test-op
-            (o s)
-            (dolist (p '("COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.READER.TEST"
-                         "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.PACKAGE.TEST"))
-              (let ((*package* (find-package p)))
-                (uiop:symbol-call p "TEST/ALL")))))
+  #+asdf3 :perform #+asdf3 (asdf:test-op
+                            (o s)
+                            (dolist (p '("COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.READER.TEST"
+                                         "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.PACKAGE.TEST"))
+                              (let ((*package* (find-package p)))
+                                (uiop:symbol-call p "TEST/ALL")))))
 
 
 ;;;; THE END ;;;;

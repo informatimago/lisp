@@ -31,13 +31,39 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
+(in-package "COMMON-LISP-USER")
 
 #-quicklisp
 (defpackage "QUICKLISP"
-  (:nickname "QL-DIST" "QL")
-  (:export "NAME" "PROJECT-NAME" "DIST" "PROVIDED-SYSTEMS"
-           "PROVIDED-RELEASES" "UPDATE-CLIENT" "UPDATE-ALL-DISTS"
-           "CLEAN" "WHERE-IS-SYSTEM" "QUICKLOAD" "REGISTER-LOCAL-PROJECTS"))
+  (:nicknames "QL-DIST" "QL" "QUICKLISP-CLIENT")
+  (:export "CLEAN" "DIST" "ENABLED-DISTS" "ENSURE-INSTALLED"
+           "INSTALLED-RELEASES" "NAME" "PROJECT-NAME"
+           "PROVIDED-RELEASES" "PROVIDED-SYSTEMS" "QUICKLOAD"
+           "REGISTER-LOCAL-PROJECTS" "RELEASE" "UNINSTALL"
+           "UPDATE-ALL-DISTS" "UPDATE-CLIENT" "WHERE-IS-SYSTEM"))
+
+#-quicklisp
+(defmacro generate-dummy-functions (&rest funames)
+  `(progn ,@(mapcar (lambda (funame)
+                      `(defun ,funame (&rest args) (declare (ignore args)) nil))
+                    funames)))
+
+#-quicklisp
+(generate-dummy-functions
+ QUICKLISP:DIST
+ QUICKLISP:ENABLED-DISTS
+ QUICKLISP:ENSURE-INSTALLED
+ QUICKLISP:INSTALLED-RELEASES
+ QUICKLISP:PROVIDED-RELEASES
+ QUICKLISP:PROVIDED-SYSTEMS
+ QUICKLISP:QUICKLOAD
+ QUICKLISP:REGISTER-LOCAL-PROJECTS
+ QUICKLISP:RELEASE
+ QUICKLISP:UNINSTALL
+ QUICKLISP:UPDATE-ALL-DISTS
+ QUICKLISP:UPDATE-CLIENT
+ QUICKLISP:WHERE-IS-SYSTEM)
+
 
 (defpackage "COM.INFORMATIMAGO.TOOLS.QUICKLISP"
   (:use "COMMON-LISP"

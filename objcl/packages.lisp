@@ -167,6 +167,7 @@ single package exporting all these symbols.
   ;; also use "COM.INFORMATIMAGO.OBJECTIVE-C.LOWER" as "OCLO".
   (:export
    "*OBJECTIVE-CL-READTABLE*"
+   "*OBJC-READTABLE*"
    "DISABLE-OBJCL-READER-MACROS"
    "ENABLE-OBJCL-READER-MACROS"
    "SET-OBJECTIVE-CL-SYNTAX" ; deprecated; use (enable-objc-reader-macros).

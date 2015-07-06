@@ -58,12 +58,12 @@
   :depends-on     ("com.informatimago.common-lisp.cesarum"
                    "com.informatimago.rdp")
   :components     ()
-  :perform        (asdf/lisp-action:test-op
-                   (operation system)
-                   (declare (ignore operation system))
-                   ;; (let ((*package* (find-package "TESTED-PACKAGE")))
-                   ;;   (uiop/package:symbol-call "TESTED-PACKAGE"
-                   ;;                             "TEST/ALL"))
-                   ))
+  #+asdf3 :perform #+asdf3 (asdf:test-op
+                            (operation system)
+                            (declare (ignore operation system))
+                            ;; (let ((*package* (find-package "TESTED-PACKAGE")))
+                            ;;   (uiop/package:symbol-call "TESTED-PACKAGE"
+                            ;;                             "TEST/ALL"))
+                            ))
 
 ;;;; THE END ;;;;

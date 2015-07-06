@@ -32,10 +32,11 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
+#+testing
 (asdf:defsystem "com.informatimago.tools.bad-system-with-cycles"
     :description "A bad system with cycles, to test check-asdf"
     :author "Pascal J. Bourguignon"
-    :version "1.0.1"
+    :version "1.0.3"
     :license "GPL3"
     :depends-on ("com.informatimago.common-lisp.cesarum"
                  "com.informatimago.clext") 

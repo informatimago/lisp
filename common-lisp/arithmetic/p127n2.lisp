@@ -205,6 +205,7 @@ RETURN:  A string containing a human readable representation of the polynom POLY
                                   ))
   "A vector with all legal odd-parity bytes, in 7-bit order.")
 
+(declaim (inline even-parity odd-parity))
 
 (defun even-parity (byte)
   "
@@ -220,7 +221,7 @@ RETURN: The BYTE with the parity bit set to odd parity.
 "
     (aref *odd-parity*  (logand byte #x7f)))
 
-(declaim (inline even-parity odd-parity))
+
 
 
 (defun remove-bit7 (poly)

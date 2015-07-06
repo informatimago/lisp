@@ -152,7 +152,7 @@ RETURN: A hash-table mapping file paths to ASDF-FILE structures.
 
 (defun dependencies  (p q) (member q (asdf-file-reachable p)))
 
-
+(defgeneric generate-dot (object))
 (defmethod generate-dot ((file asdf-file))
   (let ((style     "filled")
         (color     "black")

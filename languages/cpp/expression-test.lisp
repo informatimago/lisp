@@ -1,22 +1,22 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               com.informatimago.clext.run-program.asd
+;;;;FILE:               expression-test.lisp
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    RUN-PROGRAM.
+;;;;    Tests expressions.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2015-03-15 <PJB> Created.
+;;;;    2015-07-06 <PJB> Extracted from expression.lisp
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2013 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2015 - 2015
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -31,14 +31,25 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
+(in-package "COM.INFORMATIMAGO.LANGUAGES.CPP")
 
-(asdf:defsystem "com.informatimago.clext.run-program"
-  :description "An portable run-program function."
-  :author "Pascal J. Bourguignon"
-  :version "1.0.2"
-  :license "AGPL3"
-  :depends-on ("com.informatimago.common-lisp.cesarum") 
-  :components ((:file "run-program"))
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.clext.run-program.test"))))
+(define-test test/integer-value ()
+  (check equal (mapcar (function integer-value)
+                       (list (make-number "42"          0 0 "-")
+                             (make-number "0x42"        0 0 "-")
+                             (make-number "0b101010"    0 0 "-")
+                             (make-number "042"         0 0 "-")))
+         '(42 66 42 34))
+  :success)
+
+(define-test test/character-value ()
+  (check equal (mapcar (function character-value)
+                       (list (make-character-literal "'A'"      0 0 "-")
+                             (make-character-literal "'\\x41'"  0 0 "-")
+                             (make-character-literal "'\\n'"    0 0 "-")
+                             (make-character-literal "'λ'"      0 0 "-")))
+         
+         '(65 65 10 955))
+  :success)
 
 ;;;; THE END ;;;;

@@ -1,22 +1,22 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               com.informatimago.common-lisp.lisp.asd
+;;;;FILE:               com.informatimago.languages.cpp.test.asd
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    ASD file to load the com.informatimago.common-lisp.lisp library.
+;;;;    ASD file to test the com.informatimago.languages.cpp library.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2010-10-31 <PJB> Created this .asd file.
+;;;;    2015-06-28 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2010 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2015 - 2015
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -32,36 +32,31 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem "com.informatimago.common-lisp.lisp"
+(asdf:defsystem "com.informatimago.languages.cpp.test"
   ;; system attributes:
-  :description  "Informatimago Common Lisp Lisp Language Utility and Extensions" 
-  :long-description "
-
-Currently we provide a GENERIC-CL package exporting generic functions
-that forward to the COMMON-LISP package when there's no
-specialization.
-
-"
+  :description "Tests of the implementation of the C Pre Processor with some GNU cpp extensions."
   :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
-  ;; component attributes
-  :version "1.2.4"
+  ;; component  attributes:
+  :version "0.9.2"
   :properties ((#:author-email                   . "pjb@informatimago.com")
-               (#:date                           . "Autumn 2010")
-               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.lisp/")
+               (#:date                           . "Summer 2015")
+               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.languages.cpp/")
                ((#:albert #:formats)             . ("docbook"))
                ((#:albert #:docbook #:template)  . "book")
                ((#:albert #:docbook #:bgcolor)   . "white")
                ((#:albert #:docbook #:textcolor) . "black"))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
-  :depends-on ("closer-mop"
-               "com.informatimago.common-lisp.lisp.ibcl"
-               "com.informatimago.common-lisp.lisp.stepper")
-  :components ((:file "generic-cl" :depends-on ()))
-  :in-order-to ((asdf:test-op
-                 (asdf:test-op "com.informatimago.common-lisp.lisp.ibcl.test")
-                 (asdf:test-op "com.informatimago.common-lisp.lisp.stepper.test")
-                 (asdf:test-op "com.informatimago.common-lisp.lisp.test"))))
+  :depends-on ("com.informatimago.common-lisp.cesarum"
+               "com.informatimago.languages.cpp")
+  :components ((:file "packages"             :depends-on  ())
+               (:file "c-string-reader-test" :depends-on  ("packages"))
+               (:file "cpp-test"             :depends-on  ("packages")))
+  #+asdf3 :perform #+asdf3 (asdf:test-op (o s)
+                                         (declare (ignore o s))
+                                         (dolist (p '("COM.INFORMATIMAGO.LANGUAGES.CPP"))
+                                           (let ((*package* (find-package p)))
+                                             (uiop:symbol-call p "TEST/ALL")))))
 
 ;;;; THE END ;;;;

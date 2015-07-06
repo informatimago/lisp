@@ -245,7 +245,7 @@ RETURN: The type used for value files in the cache directory.
    (cache-producer
     :reader   cache-producer
     :initarg :producer
-    :type     '(function (t) (values t (integer 0)))
+    :type     (function (t) (values t (integer 0)))
     ;; (producer key) --> value ; expiration
     :documentation "The function used to get fresh data. 
      Returns two values: the data and the expiration universal time.")

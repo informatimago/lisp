@@ -45,7 +45,7 @@ This system provides tools to manipulate LUA programs.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.0.0"
+  :version "1.0.2"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Summer 2012")
                ((#:albert #:output-dir)          . "../documentation/com.informatimago.lua/")

@@ -37,6 +37,7 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;
 ;;;;***************************************************************************
+(in-package "COMMON-LISP-USER")
 
 #-clisp
 (asdf:defsystem "com.informatimago.clisp.test"
@@ -46,7 +47,7 @@
   :maintainer     "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence        "AGPL3"
   ;; component attributes:
-  :version        "1.0.0"
+  :version        "1.0.2"
   :properties     ((#:author-email . "pjb@informatimago.com")
                    (#:date . "Winter 2015")
                    ((#:albert #:output-dir)
@@ -58,9 +59,8 @@
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on     ()
   :components     ()
-  :perform        (asdf:test-op
-                   (operation system)
-                   (declare (ignore operation system))))
+  #+asdf3 :perform #+asdf3 (asdf:test-op (o s) (declare (ignore o s))))
+
 
 #+clisp
 (asdf:defsystem "com.informatimago.clisp.test"
@@ -70,7 +70,7 @@
   :maintainer     "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence        "AGPL3"
   ;; component attributes:
-  :version        "1.0.0"
+  :version        "1.0.2"
   :properties     ((#:author-email . "pjb@informatimago.com")
                    (#:date . "Winter 2015")
                    ((#:albert #:output-dir)
@@ -83,11 +83,10 @@
   :depends-on     ("com.informatimago.common-lisp.cesarum"
                    "com.informatimago.clisp")
   :components     ((:file "string-test" :depends-on ()))
-  :perform        (asdf:test-op
-                   (operation system)
-                   (declare (ignore operation system))
-                   (dolist (p '("COM.INFORMATIMAGO.CLISP.STRING.TEST"))
-                     (let ((*package* (find-package p)))
-                       (uiop/package:symbol-call p "TEST/ALL")))))
+  #+asdf3 :perform #+asdf3 (asdf:test-op (operation system)
+                                         (declare (ignore operation system))
+                                         (dolist (p '("COM.INFORMATIMAGO.CLISP.STRING.TEST"))
+                                           (let ((*package* (find-package p)))
+                                             (uiop/package:symbol-call p "TEST/ALL")))))
 
 ;;;; THE END ;;;;

@@ -180,6 +180,7 @@ License:
 (defun index-set (&rest elements)
   (copy 'index-set elements))
 
+(defgeneric check-invariant (object))
 (defmethod check-invariant ((set index-set))
   (assert (slot-boundp set 'ranges))
   (let ((ranges (slot-value set 'ranges)))

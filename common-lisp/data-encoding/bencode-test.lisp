@@ -63,10 +63,9 @@
       (print obj))
     (assert-true (equal obj
                         '(43 "spam" ("spam" "eggs")
-                          (dict ("cow" . "moo") ("spam" . "eggs"))
-                          (dict ("spam" "a" "b")))))
+                          (dict (:cow . "moo") (:spam . "eggs"))
+                          (dict (:spam "a" "b")))))
     (assert-true (string= (bencode-to-string object) str))))
-
 
 
 ;; (defun dictp (dict)

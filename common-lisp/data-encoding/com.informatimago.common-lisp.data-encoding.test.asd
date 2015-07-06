@@ -45,7 +45,7 @@
   :maintainer     "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence        "AGPL3"
   ;; component attributes:
-  :version        "1.0.0"
+  :version        "1.0.2"
   :properties     ((#:author-email . "pjb@informatimago.com")
                    (#:date . "Winter 2015")
                    ((#:albert #:output-dir)
@@ -60,13 +60,13 @@
   :components     ((:file "bencode-test"       :depends-on ())
                    (:file "data-encoding-test" :depends-on ())
                    (:file "ieee-754-test"      :depends-on ()))
-  :perform        (asdf/lisp-action:test-op
-                   (operation system)
-                   (declare (ignore operation system))
-                   (dolist (p '("COM.INFORMATIMAGO.COMMON-LISP.DATA-ENCODING.BENCODE.TEST"
-                                "COM.INFORMATIMAGO.COMMON-LISP.DATA-ENCODING.DATA-ENCODING.TEST"
-                                "COM.INFORMATIMAGO.COMMON-LISP.DATA-ENCODING.IEEE-754.TEST"))
-                     (let ((*package* (find-package p)))
-                       (uiop/package:symbol-call p "TEST/ALL")))))
+  #+asdf3 :perform #+asdf3 (asdf:test-op
+                            (operation system)
+                            (declare (ignore operation system))
+                            (dolist (p '("COM.INFORMATIMAGO.COMMON-LISP.DATA-ENCODING.BENCODE.TEST"
+                                         "COM.INFORMATIMAGO.COMMON-LISP.DATA-ENCODING.DATA-ENCODING.TEST"
+                                         "COM.INFORMATIMAGO.COMMON-LISP.DATA-ENCODING.IEEE-754.TEST"))
+                              (let ((*package* (find-package p)))
+                                (uiop/package:symbol-call p "TEST/ALL")))))
 
 ;;;; THE END ;;;;

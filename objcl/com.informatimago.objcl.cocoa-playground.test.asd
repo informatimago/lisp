@@ -46,7 +46,7 @@
   :maintainer     "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence        "AGPL3"
   ;; component attributes:
-  :version        "1.0.0"
+  :version        "1.0.2"
   :properties     ((#:author-email . "pjb@informatimago.com")
                    (#:date . "Winter 2015")
                    ((#:albert #:output-dir)
@@ -59,11 +59,11 @@
   :depends-on     ("com.informatimago.objcl.cocoa-playground"
                    "com.informatimago.common-lisp.cesarum")
   :components     ((:file "source-test" :depends-on nil))
-  :perform        (asdf/lisp-action:test-op
-                   (operation system)
-                   (declare (ignore operation system))
-                   (let ((*package* (find-package "TESTED-PACKAGE")))
-                     (uiop/package:symbol-call "TESTED-PACKAGE"
-                                               "TEST/ALL"))))
+  #+asdf3 :perform #+asdf3 (asdf:test-op
+                            (operation system)
+                            (declare (ignore operation system))
+                            (let ((*package* (find-package "TESTED-PACKAGE")))
+                              (uiop/package:symbol-call "TESTED-PACKAGE"
+                                                        "TEST/ALL"))))
 
 ;;;; THE END ;;;;

@@ -650,6 +650,7 @@ RETURN: the token text; the end position."
                     :name name
                     :expansion (parse-object-macro-definition-body line)))))
 
+(defgeneric define (context))
 (defmethod define ((context context))
   (with-cpp-line (context-current-line context)
     (if (context-current-line context)
@@ -670,18 +671,19 @@ RETURN: the token text; the end position."
 ;;; #undef
 ;;; --------------------
 
+(defgeneric undef (context))
 (defmethod undef ((context context))
   (with-cpp-line (context-current-line context)
-   (if (context-current-line context)
-       (let ((name (pop (context-current-line context))))
-         (if (identifierp name)
-             (environment-macro-undefine (context-environment context) (token-text name))
-             (cpp-error name "Expected an identifier as macro name after #undef, not ~S" (token-text name)))
-         (when (context-current-line context)
-           (cpp-error (first (context-current-line context))
-                      "Didn't expect anything after the macro name after #undef, not ~S"
-                      (token-text (first (context-current-line context))))))
-       (cpp-error context "Missing macro name after #undef"))))
+    (if (context-current-line context)
+        (let ((name (pop (context-current-line context))))
+          (if (identifierp name)
+              (environment-macro-undefine (context-environment context) (token-text name))
+              (cpp-error name "Expected an identifier as macro name after #undef, not ~S" (token-text name)))
+          (when (context-current-line context)
+            (cpp-error (first (context-current-line context))
+                       "Didn't expect anything after the macro name after #undef, not ~S"
+                       (token-text (first (context-current-line context))))))
+        (cpp-error context "Missing macro name after #undef"))))
 
 
 
@@ -727,6 +729,7 @@ RETURN: the token text; the end position."
                 '())
             (remove-duplicates include-bracket-directories :test (function equal)))))
 
+(defgeneric perform-include (context include-file kind directive))
 (defmethod perform-include ((context context) include-file kind directive)
   ;; TODO: skip duplicate #import and #ifndef/#define #include
   (flet ((include (path directory)
@@ -785,6 +788,7 @@ RETURN: the token text; the end position."
                   directive (mapconcat (function token-text) line ""))
        (values nil nil nil)))))
 
+(defgeneric include-common (context directive))
 (defmethod include-common ((context context) directive)
   (with-cpp-line (context-current-line context)
     (if (context-current-line context)
@@ -800,12 +804,15 @@ RETURN: the token text; the end position."
         (cpp-error context "Missing path after #~(~A~)" directive)))
   context)
 
+(defgeneric include-next (context))
 (defmethod include-next ((context context))
   (include-common context :include-next))
 
+(defgeneric include (context))
 (defmethod include ((context context))
   (include-common context :include))
 
+(defgeneric import (context))
 (defmethod import ((context context))
   (include-common context :import))
 
@@ -840,6 +847,7 @@ RETURN: the token text; the end position."
 (define-cpp-line-predicate else-line-p   "else")
 (define-cpp-line-predicate endif-line-p  "endif")
 
+(defgeneric skip-if (context))
 (defmethod skip-if ((context context))
   ;; PRE: current line is #if #ifdef #ifndef #elif or #else
   ;; POST: current line is nil or #endif
@@ -863,6 +871,7 @@ RETURN: the token text; the end position."
                     (return nil))
       (decf (context-if-level context)))))
 
+(defgeneric skip-branch (context))
 (defmethod skip-branch ((context context))
   ;; skips a single branch
   ;; PRE:  current line is #if #ifdef #ifndef or #elif
@@ -885,6 +894,7 @@ RETURN: the token text; the end position."
                           (token-text (second if-line)))
                (return nil))))
 
+(defgeneric process-branch-and-skip (context &optional no-else))
 (defmethod process-branch-and-skip ((context context) &optional no-else)
   ;; current line is #if #ifdef #ifndef or #elif
   ;; processes the branch,
@@ -963,6 +973,7 @@ RETURN: the token text; the end position."
          )
 
 
+(defgeneric skip-branch-and-process (context))
 (defmethod skip-branch-and-process ((context context))
   ;; line is #if #ifdef #ifndef #elif
   ;; skip the branches,
@@ -984,6 +995,7 @@ RETURN: the token text; the end position."
         (when (else-line-p (context-current-line context))
           (process-branch-and-skip context :no-else)))))
 
+(defgeneric ifdef-common (context flip directive))
 (defmethod ifdef-common ((context context) flip directive)
   (incf (context-if-level context))
   (unwind-protect
@@ -997,9 +1009,11 @@ RETURN: the token text; the end position."
             (skip-branch-and-process context))))
     (decf (context-if-level context))))
 
+(defgeneric ifdef (context))
 (defmethod ifdef ((context context))
   (ifdef-common context (function identity) "#ifdef"))
 
+(defgeneric ifndef (context))
 (defmethod ifndef ((context context))
   (ifdef-common context (function not) "#ifndef"))
 
@@ -1008,6 +1022,7 @@ RETURN: the token text; the end position."
                                       (first (macro-expand-macros context line
                                                                   '() '() :allow-defined '())))))))
 
+(defgeneric cpp-if (context))
 (defmethod cpp-if ((context context))
   (incf (context-if-level context))
   (unwind-protect
@@ -1020,6 +1035,7 @@ RETURN: the token text; the end position."
 ;;; #line
 ;;; --------------------
 
+(defgeneric cpp-line (context))
 (defmethod cpp-line ((context context))
   (with-cpp-line (context-current-line context)
     (labels ((generate (n file)
@@ -1030,11 +1046,11 @@ RETURN: the token text; the end position."
                                file)
                          (context-output-lines context)))
                  (loop
-                  :for line :in (context-input-lines context)
-                  :do (loop :for token :in line
-                            :do (setf (token-line token) n
-                                      (token-file token) f))
-                      (incf n))))
+                   :for line :in (context-input-lines context)
+                   :do (loop :for token :in line
+                             :do (setf (token-line token) n
+                                       (token-file token) f))
+                       (incf n))))
              (process-line (line)
                (cond
                  ((null line)
@@ -1057,6 +1073,7 @@ RETURN: the token text; the end position."
 ;;; #pragma
 ;;; --------------------
 
+(defgeneric pragma (context))
 (defmethod pragma ((context context))
   ;; TODO: unrecognized pragmas could be passed along on the output for the compiler.
   (with-cpp-line (context-current-line context)
@@ -1071,6 +1088,7 @@ RETURN: the token text; the end position."
 ;;; #error
 ;;; --------------------
 
+(defgeneric cpp-error-line (context))
 (defmethod cpp-error-line ((context context))
   (cpp-message 'cpp-error (context-current-line context)))
 
@@ -1078,6 +1096,7 @@ RETURN: the token text; the end position."
 ;;; #warning
 ;;; --------------------
 
+(defgeneric cpp-warning-line (context))
 (defmethod cpp-warning-line ((context context))
   (cpp-message 'cpp-warning (context-current-line context)))
 
@@ -1105,28 +1124,29 @@ RETURN: the token text; the end position."
           (context-input-lines context) input)
     context))
 
+(defgeneric process-directive (context line))
 (defmethod process-directive ((context context) line)
   (cond
     ((identifierp (second line))
      (scase (token-text (second line))
-       (("define")         (define           context))
-       (("undef")          (undef            context))
-       (("include")        (include          context))
-       (("include_next")   (include-next     context))
-       (("import")         (import           context))
-       (("ifdef")          (ifdef            context))
-       (("ifndef")         (ifndef           context))
-       (("if")             (cpp-if           context))
-       (("elif" "else" "endif")
-        (if (plusp (context-if-level context))
-            (return-from process-directive nil)
-            (cpp-error (second line) "#~A without #if" (token-text (second line)))))
-       (("line")           (cpp-line         context))
-       (("pragma")         (pragma           context))
-       (("error")          (cpp-error-line   context))
-       (("warning")        (cpp-warning-line context))
-       (("ident" "sccs")) 
-       (otherwise          (cpp-error line "invalid directive ~A" (token-text (second line))))))
+            (("define")         (define           context))
+            (("undef")          (undef            context))
+            (("include")        (include          context))
+            (("include_next")   (include-next     context))
+            (("import")         (import           context))
+            (("ifdef")          (ifdef            context))
+            (("ifndef")         (ifndef           context))
+            (("if")             (cpp-if           context))
+            (("elif" "else" "endif")
+             (if (plusp (context-if-level context))
+                 (return-from process-directive nil)
+                 (cpp-error (second line) "#~A without #if" (token-text (second line)))))
+            (("line")           (cpp-line         context))
+            (("pragma")         (pragma           context))
+            (("error")          (cpp-error-line   context))
+            (("warning")        (cpp-warning-line context))
+            (("ident" "sccs")) 
+            (otherwise          (cpp-error line "invalid directive ~A" (token-text (second line))))))
     ((number-token-p (second line)) ;; skip # 1 "file"
      (push line (context-output-lines context)))
     ((rest line)
@@ -1135,6 +1155,7 @@ RETURN: the token text; the end position."
      ))
   t)
 
+(defgeneric process-file (context))
 (defmethod process-file ((context context))
   "Processes all the INPUT-LINES, pushing onto the OUTPUT-LINES."
   (loop
@@ -1149,6 +1170,7 @@ RETURN: the token text; the end position."
     :finally (setf (context-current-line context) nil))
   context)
 
+(defgeneric read-and-process-stream (context stream &optional path directory))
 (defmethod read-and-process-stream ((context context) stream &optional (path (pathname stream)) directory)
   (context-push-file context path directory
                      (read-cpp-tokens
@@ -1163,6 +1185,7 @@ RETURN: the token text; the end position."
   (unwind-protect (process-file context)
     (context-pop-file context)))
 
+(defgeneric read-and-process-file (context path &optional directory))
 (defmethod read-and-process-file ((context context) path &optional directory)
   (with-open-file (input path :external-format (option *context* :external-format))
     (read-and-process-stream context input path directory)))
@@ -1302,287 +1325,9 @@ Other keys shall be context option keys.
               (read-cpp-tokens in
                                :file-name file
                                :substitute-trigraphs t
-                               :warn-on-trigraph nil)))
-          )
-
-
-
-
-
+                               :warn-on-trigraph nil))))
 
 ;;; ---
-
-(defun test/substitute-trigraphs ()
-  (assert (equal (substitute-trigraphs (make-numbered-line :text (copy-seq "hello world")))
-                 '("hello world" 1 "-")))
-  (assert (equal (substitute-trigraphs (make-numbered-line :text (copy-seq "??( brackets ??)???<braces??>??=??'a??!??-; (??\\?) (a==b???-c:'??/n')")))
-                 '("[ brackets ]?{braces}#^a|~; (??\\?) (a==b?~c:'\\n')" 1 "-")))
-  :success)
-
-(defun test/number-lines ()
-  (assert (equal (number-lines '("a" "b" "c") "file.c" :start 2)
-                 '(("a" 2 #1="file.c") ("b" 3 #1#) ("c" 4 #1#))))
-  :success)
-
-(defun test/merge-continued-lines ()
-  (assert (equal (merge-continued-lines '(("first line" 1 #1="file.c")
-                                   ("abc\\" 2 #1#)
-                                   ("def\\" 3 #1#)
-                                   ("ghi" 4 #1#)
-                                   ("middle line" 5 #1#)
-                                   ("abc \\" 6 #1#)
-                                   ("def \\  " 7 #1#)
-                                   ("ghi" 8 #1#)
-                                   ("last line" 9 #1#))
-                                 :warn-spaces-in-continued-lines nil)
-                 '(("first line" 1 #2="file.c") ("abcdefghi" 2 #2#) ("middle line" 5 #2#) ("abc def ghi" 6 #2#) ("last line" 9 #2#))))
-  :success)
-
-(defun test/remove-comments-in-line ()
-  (flet ((check (text &optional (state :top) comment-start)
-           (multiple-value-list (remove-comments-in-line comment-start
-                                                         (make-numbered-line :text text
-                                                                             :lino 42 :file "hw.c")
-                                                         state t))))
-    (assert (equal (check "Hello world")
-                   '(("Hello world" 42 "hw.c") :top)))
-    ;; comment in string
-    (assert (equal (check "Hello \"salut /* le */ monde\" world")
-                   '(("Hello \"salut /* le */ monde\" world" 42 "hw.c") :top)))
-    (assert (equal (check "Hello \"salut \\\"/* le */\\\" monde\" world")
-                   '(("Hello \"salut \\\"/* le */\\\" monde\" world" 42 "hw.c") :top)))
-    (assert (typep (nth-value 1 (ignore-errors (check "Hello \"salut"))) 'error))
-    (assert (typep (nth-value 1 (ignore-errors (check "Hello \"salut\\"))) 'error))
-    ;; comment in characters
-    (assert (equal (check "Hello 'salut /* le */ monde' world")
-                   '(("Hello 'salut /* le */ monde' world" 42 "hw.c") :top)))
-    (assert (equal (check "Hello 'salut \\'/* le */\\' monde' world")
-                   '(("Hello 'salut \\'/* le */\\' monde' world" 42 "hw.c") :top)))
-    (assert (typep (nth-value 1 (ignore-errors (check "Hello 'salut"))) 'error))
-    (assert (typep (nth-value 1 (ignore-errors (check "Hello 'salut\\"))) 'error))
-    ;; single line comment
-    (assert (equal (check "Hello//monde*/world")   '(("Hello" 42 "hw.c") :top)))
-    ;; monoline block comment
-    (assert (equal (check "Hello/*monde*/world")   '(("Hello world" 42 "hw.c") :top)))
-    (assert (equal (check "Hello/*mon//de*/world") '(("Hello world" 42 "hw.c") :top)))
-    (assert (equal (check "Hello/*mon/*de*/world") '(("Hello world" 42 "hw.c") :top)))
-    ;; multiline block comment first line
-    (assert (equal (check "Hello world/*salut") '(("Hello world" 42 "hw.c") :in-multiline-comment)))
-    (assert (equal (check "Hello/*monde*/world/*salut") '(("Hello world" 42 "hw.c") :in-multiline-comment)))
-    ;; multiline block comment in the middle lines
-    (assert (equal (check "in the middle comment" :in-multiline-comment '("Hello world" 42 "hw.c"))
-                   '(("Hello world" 42 "hw.c") :in-multiline-comment)))
-    (assert (equal (check "in /* the // middle comment" :in-multiline-comment '("Hello world" 42 "hw.c"))
-                   '(("Hello world" 42 "hw.c") :in-multiline-comment)))
-    ;; multiline block comment in the end line
-    (assert (equal (check "end comment */end line" :in-multiline-comment '("Hello world" 42 "hw.c"))
-                   '(("Hello world end line" 42 "hw.c") :top)))
-    (assert (equal (check "end comment */end/*fin*/line" :in-multiline-comment '("Hello world" 42 "hw.c"))
-                   '(("Hello world end line" 42 "hw.c") :top)))
-    (assert (equal (check "end // comment */end/*fin*/line" :in-multiline-comment '("Hello world" 42 "hw.c"))
-                   '(("Hello world end line" 42 "hw.c") :top)))
-    (assert (equal (check "end // comment */end/*fin*/line// c'est fini" :in-multiline-comment '("Hello world" 42 "hw.c"))
-                   '(("Hello world end line" 42 "hw.c") :top)))
-    :success))
-
-(defun test/remove-comments ()
-  (assert (equal (remove-comments '(("Line one" 1 #1="test.c")
-                                    ("Line/**/two" 2 #1#)
-                                    ("Line/*three*/3" 3 #1#)
-                                    ("Line/*4*/four/*and*/some" 4 #1#)
-                                    ("Line/*-*/five/*a//nd*/some" 5 #1#)
-                                    ("Line/*/five/*a//nd some" 6 #1#)
-                                    ("Line//6 */seven" 7 #1#)
-                                    ("Line/*/eight/*a//nd some" 8 #1#)
-                                    ("Line nine" 9 #1#)
-                                    ("Line//9 */ten" 10 #1#)
-                                    ("Line \"ele/*v*/en\"--" 11 #1#)
-                                    ("Line 'tw//elv/*e*/'--" 12 #1#)))
-                 '(("Line one" 1 #2="test.c")
-                   ("Line two" 2 #2#)
-                   ("Line 3" 3 #2#)
-                   ("Line four some" 4 #2#)
-                   ("Line five some" 5 #2#)
-                   ("Line seven" 6 #2#)
-                   ("Line ten" 8 #2#)
-                   ("Line \"ele/*v*/en\"--" 11 #2#)
-                   ("Line 'tw//elv/*e*/'--" 12 #2#))))
-  :success)
-
-(defun test/scan-identifier ()
-  (assert (equal (multiple-value-list (scan-identifier '("   Hello world " 42 "t.c") 3 "_$" :accept-unicode-escapes t))
-                 '("Hello" 8)))
-  (assert (equal (multiple-value-list (scan-identifier '("   Hello _wo$rl42d "  42 "t.c") 9 "_$" :accept-unicode-escapes t))
-                 '("_wo$rl42d" 18)))
-  (assert (equal (multiple-value-list (scan-identifier '("   Hello _\\u0145teve "  42 "t.c") 9 "_$" :accept-unicode-escapes t))
-                 '("_\\u0145teve" 20)))
-  (assert (equal (multiple-value-list (scan-identifier '("   Hello _\\U0145BABEteve "  42 "t.c") 9 "_$" :accept-unicode-escapes t))
-                 '("_\\U0145BABEteve" 24)))
-  (assert (equal (multiple-value-list (scan-identifier '("   Hello _world\\u014 "  42 "t.c") 9 "_$" :accept-unicode-escapes t))
-                 '("_world" 15)))
-  (assert (equal (multiple-value-list (scan-identifier '("   Hello _world\\U0145BABXteve " 42 "t.c") 9 "_$" :accept-unicode-escapes t))
-                 '("_world" 15)))
-  :success)
-
-(defun test/scan-number ()
-  (assert (equal (multiple-value-list (scan-number '("   123 " 42 "t.c") 3))
-                 '("123" 6)))
-  (assert (equal (multiple-value-list (scan-number '("   0xBABE42 _wo$rl42d " 42 "t.c") 3))
-                 '("0xBABE42" 11)))
-  (assert (equal (multiple-value-list (scan-number '("   0xBABE42+42 " 42 "t.c") 3))
-                 '("0xBABE42" 11)))
-  (assert (equal (multiple-value-list (scan-number '("   0xE+12/42 " 42 "t.c") 3))
-                 '("0xE+12" 9)))
-  (assert (equal (multiple-value-list (scan-number '("   0.123_4e-56*32 " 42 "t.c") 3))
-                 '("0.123_4e-56" 14)))
-  (assert (equal (multiple-value-list (scan-number '("   .9999+.1111 " 42 "t.c") 3))
-                 '(".9999" 8)))
-  :success)
-
-(defun test/scan-punctuation ()
-  (assert (equal (multiple-value-list (scan-punctuation '("{&===>>==..." 42 "test.c") 0))
-                 '("{" 1)))
-  (assert (equal (multiple-value-list (scan-punctuation '("{&===>>==..." 42 "test.c") 1))
-                 '("&=" 3)))
-  (assert (equal (multiple-value-list (scan-punctuation '("{&===>>==..." 42 "test.c") 3))
-                 '("==" 5)))
-  (assert (equal (multiple-value-list (scan-punctuation '("{&===>>==..." 42 "test.c") 5))
-                 '(">>=" 8)))
-  (assert (equal (multiple-value-list (scan-punctuation '("{&===>>==..." 42 "test.c") 8))
-                 '("=" 9)))
-  (assert (equal (multiple-value-list (scan-punctuation '("{&===>>==..." 42 "test.c") 9))
-                 '("..." 12)))
-  :success)
-
-(defun test/scan-delimited-literal ()
-  (assert (equal (multiple-value-list (scan-delimited-literal '("'e'" 42 "test.c") 0))
-                 '("'e'" 3)))
-  (assert (equal (multiple-value-list (scan-delimited-literal '("'\\x41'" 42 "test.c") 0))
-                 '("'\\x41'" 6)))
-  :success)
-
-(defun text/skip-spaces ()
-  (assert (equal (skip-spaces "    xyz()" 0) 4))
-  (assert (equal (skip-spaces "    xyz()" 7) 7))
-  (assert (equal (skip-spaces "    xyz ()" 7) 8))
-  (assert (equal (skip-spaces-but-one "    xyz()" 0) 3))
-  (assert (equal (skip-spaces-but-one "    xyz()" 7) 7))
-  (assert (equal (skip-spaces-but-one "    xyz ()" 7) 7))
-  :success)
-
-(defun test/extract-path ()
-  (assert (equal (multiple-value-list (extract-path "#include"
-                                                    (list (make-instance 'string-literal-token
-                                                                         :text "\"/usr/local/include/\\xe9t\\xe9.h\""))))
-                 '("/usr/local/include/été.h" :quote nil)))
-  (assert (equal (multiple-value-list (extract-path "#include"
-                                                    (list (make-instance 'string-literal-token
-                                                                         :text "</usr/local/include/\\xe9t\\xe9.h>"))))
-                 '("/usr/local/include/\\xe9t\\xe9.h" :bracket nil)))
-  (assert (equal (multiple-value-list (extract-path "#include"
-                                                    (list (make-instance 'punctuation-token :text "<")
-                                                          (make-instance 'string-literal-token
-                                                                         :text "/usr/local/include")
-                                                          (make-instance 'string-literal-token
-                                                                         :text "/file.h")
-                                                          (make-instance 'punctuation-token :text ">"))))
-                 '("/usr/local/include/file.h" :bracket nil)))
-  :success)
-
-(defun test/parse-function-macro-call-arguments ()
-  (let ((*context*       (make-instance 'context :base-file "test.c" :file "test.c"))
-        (tokenized-lines (list (list (make-instance 'identifier-token :text "next_line"))))
-        (after           (make-instance 'identifier-token :text "same_line"))
-        (foo             (make-instance 'identifier-token :text "FOO"))
-        (arg1            (make-instance 'identifier-token :text "arg1"))
-        (arg2            (make-instance 'identifier-token :text "arg2"))
-        (plus            (make-instance 'punctuation-token :text "+"))
-        (minus           (make-instance 'punctuation-token :text "-"))
-        (comma           (make-instance 'punctuation-token :text ","))
-        (left            (make-instance 'punctuation-token :text "("))
-        (right           (make-instance 'punctuation-token :text ")")))
-    (flet ((check (result expected)
-             (assert (equal result expected)
-                     () "Assertion failed: equal ~%   result   = ~S~%   expected = ~S~%"
-                     result expected)))
-      (check (multiple-value-list
-              (parse-function-macro-call-arguments foo (list left right after)
-                                                   tokenized-lines))
-             (list '(())
-                   (list after)
-                   tokenized-lines))
-
-      (check (multiple-value-list
-              (parse-function-macro-call-arguments foo (list left comma right after)
-                                                   tokenized-lines))
-             (list '(() ())
-                   (list after)
-                   tokenized-lines))
-
-      (check (multiple-value-list
-              (parse-function-macro-call-arguments foo (list left arg1 right after)
-                                                   tokenized-lines))
-             `(((,arg1))
-               (,after)
-               ,tokenized-lines))
-      
-      (check (multiple-value-list
-              (parse-function-macro-call-arguments foo (list left arg1 comma arg2 right after)
-                                                   tokenized-lines))
-             `(((,arg1) (,arg2))
-               (,after)
-               ,tokenized-lines))
-      
-      (check (multiple-value-list
-              (parse-function-macro-call-arguments foo (list left arg1 comma right after)
-                                                   tokenized-lines))
-             `(((,arg1) ())
-               (,after)
-               ,tokenized-lines))
-      
-      (check (multiple-value-list
-              (parse-function-macro-call-arguments foo (list left arg1 plus arg2 comma arg1 minus arg2 right after)
-                                                   tokenized-lines))
-             `(((,arg1 ,plus ,arg2) (,arg1 ,minus ,arg2))
-               (,after)
-               ,tokenized-lines))
-      
-      (check (multiple-value-list
-              (parse-function-macro-call-arguments foo (list left arg1 left arg2 right comma arg1 minus arg2 right after)
-                                                   tokenized-lines))
-             `(((,arg1 ,left ,arg2 ,right) (,arg1 ,minus ,arg2))
-               (,after)
-               ,tokenized-lines))
-      
-      (check (multiple-value-list
-              (parse-function-macro-call-arguments foo (list left arg1 left  comma arg2  comma right
-                                                             comma arg1 minus arg2 right after)
-                                                   tokenized-lines))
-             `(((,arg1 ,left ,comma ,arg2 ,comma ,right) (,arg1 ,minus ,arg2))
-               (,after)
-               ,tokenized-lines))))
-  :success)
-
-
-(defun test/all ()
-  (test/read-c-string)
-  (test/number-lines)
-  (test/substitute-trigraphs)
-  (test/merge-continued-lines)
-  (test/remove-comments-in-line)
-  (test/remove-comments)
-  (test/scan-identifier)
-  (test/scan-number)
-  (test/scan-punctuation)
-  (test/scan-delimited-literal)
-  (text/skip-spaces)
-  (test/extract-path)
-  (test/parse-function-macro-call-arguments)
-  (test/character-value)
-  (test/integer-value))
-
-(test/all)
-
 
 
 ;;;; THE END ;;;;

@@ -48,7 +48,7 @@ cover generic FFI to both Apple and GNUstep objc2 runtimes.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence    "AGPL3"
   ;; component attributes:
-  :version    "0.10.3"
+  :version    "0.10.5"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Spring 2014")
                ((#:albert #:output-dir)          . "../documentation/com.informatimago.objc/")
@@ -58,14 +58,15 @@ cover generic FFI to both Apple and GNUstep objc2 runtimes.
                ((#:albert #:docbook #:textcolor) . "black"))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ("com.informatimago.common-lisp.cesarum")
-
-  #+(and ccl darwin)
-  :components #+(and ccl darwin) ((:file "objc-support"       :depends-on ())
-                                  (:file "packages"           :depends-on ("objc-support"))
-                                  (:file "mac-roman"          :depends-on ("packages"))
-                                  (:file "oclo-ccl"           :depends-on ("packages"))
-                                  (:file "oclo"               :depends-on ("packages" "oclo-ccl"))
-                                  (:file "objcl"              :depends-on ("packages" "oclo" "mac-roman"))) ; needs the NS package.
+  :components ((:file "objc-support"       :depends-on ())
+               (:file "packages"           :depends-on ("objc-support"))
+               (:file "mac-roman"          :depends-on ("packages"))
+               . #+(and ccl darwin)
+               ((:file "oclo-ccl"           :depends-on ("packages"))
+                (:file "oclo"               :depends-on ("packages" "oclo-ccl"))
+                (:file "objcl"              :depends-on ("packages" "oclo" "mac-roman")))
+               #-(and ccl darwin)
+               ())
   :in-order-to ((asdf:test-op
                  (asdf:test-op "com.informatimago.objcl.test"))))
 

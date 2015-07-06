@@ -272,6 +272,7 @@ inconsistent, a default newline = LF is used. This imports for \ escapes."))
           (scanner-source self))
   self)
 
+(defgeneric text-term (scanner))
 (defmethod text-term ((scanner scanner))
   (format nil "~A~A" (field-separator scanner) +crlf+))
 

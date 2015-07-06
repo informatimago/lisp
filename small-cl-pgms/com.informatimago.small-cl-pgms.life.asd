@@ -35,7 +35,7 @@
 (asdf:defsystem "com.informatimago.small-cl-pgms.life"
   :description "A simple Conway's Life game."
   :author "Pascal J. Bourguignon"
-  :version "1.0.0"
+  :version "1.0.2"
   :license "GPL3"
   :depends-on () 
   :components ((:file "life"))

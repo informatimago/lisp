@@ -45,7 +45,7 @@
   :maintainer     "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence        "AGPL3"
   ;; component attributes:
-  :version        "1.0.0"
+  :version        "1.0.2"
   :properties     ((#:author-email . "pjb@informatimago.com")
                    (#:date . "Winter 2015")
                    ((#:albert #:output-dir)
@@ -58,11 +58,11 @@
   :depends-on     ("com.informatimago.common-lisp.cesarum"
                    "com.informatimago.languages.lua")
   :components     ((:file "lua-scanner-test" :depends-on nil))
-  :perform        (asdf/lisp-action:test-op
-                   (operation system)
-                   (declare (ignore operation system))
-                   (let ((*package* (find-package "COM.INFORMATIMAGO.LANGUAGES.LUA.SCANNER.TEST")))
-                     (uiop/package:symbol-call "COM.INFORMATIMAGO.LANGUAGES.LUA.SCANNER.TEST"
-                                               "TEST/ALL"))))
+  #+asdf3 :perform #+asdf3 (asdf:test-op
+                            (operation system)
+                            (declare (ignore operation system))
+                            (let ((*package* (find-package "COM.INFORMATIMAGO.LANGUAGES.LUA.SCANNER.TEST")))
+                              (uiop/package:symbol-call "COM.INFORMATIMAGO.LANGUAGES.LUA.SCANNER.TEST"
+                                                        "TEST/ALL"))))
 
 ;;;; THE END ;;;;

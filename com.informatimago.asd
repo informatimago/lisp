@@ -31,7 +31,7 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
-
+(in-package "COMMON-LISP-USER")
 
 (asdf:defsystem "com.informatimago"
   ;; system attributes:
@@ -41,7 +41,7 @@
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.0.0"
+  :version "1.0.2"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Winter 2014")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago/")
@@ -68,5 +68,13 @@
   :components ()
   :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.test"))))
 
+
+(defun test-all-com.informatimago ()
+  (asdf:oos 'asdf:load-op :com.informatimago.test)
+  (eval (read-from-string "
+         (let ((com.informatimago.common-lisp.cesarum.simple-test::*current-test-name*       'test-all-com.informatimago)
+               (com.informatimago.common-lisp.cesarum.simple-test::*current-test-parameters* '()))
+           (com.informatimago.common-lisp.cesarum.simple-test:testing
+             (asdf:oos 'asdf:test-op :com.informatimago.test)))")))
 
 ;;;; THE END ;;;;

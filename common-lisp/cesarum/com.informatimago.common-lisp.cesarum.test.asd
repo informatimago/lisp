@@ -46,7 +46,7 @@
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.3.3"
+  :version "1.3.5"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Winter 2015")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.cesarum-test/")
@@ -70,24 +70,24 @@
                (:file "string-test"         :depends-on ())
                (:file "set-test"            :depends-on ())
                (:file "index-set-test"      :depends-on ("set-test")))
-  :perform (asdf:test-op
-            (operation system)
-            (dolist (p '("COM.INFORMATIMAGO.COMMON-LISP.CESARUM.A-STAR.TEST"
-                         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CACHE.TEST"
-                         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE.TEST"
-                         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DICTIONARY.TEST"
-                         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE.TEST"
-                         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST.TEST"
-                         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LLRBTREE.TEST"
-                         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PEEK-STREAM.TEST"
-                         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PRIORITY-QUEUE.TEST"
-                         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE.TEST"
-                         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING.TEST"
-                         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SET.TEST"
-                         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.INDEX-SET.TEST"
-                         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ASCII.TEST"))
-              (let ((*package* (find-package p)))
-                (uiop:symbol-call p "TEST/ALL")))))
+  #+asdf3 :perform #+asdf3 (asdf:test-op
+                            (operation system)
+                            (dolist (p '("COM.INFORMATIMAGO.COMMON-LISP.CESARUM.A-STAR.TEST"
+                                         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CACHE.TEST"
+                                         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE.TEST"
+                                         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DICTIONARY.TEST"
+                                         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE.TEST"
+                                         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST.TEST"
+                                         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LLRBTREE.TEST"
+                                         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PEEK-STREAM.TEST"
+                                         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PRIORITY-QUEUE.TEST"
+                                         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE.TEST"
+                                         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING.TEST"
+                                         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SET.TEST"
+                                         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.INDEX-SET.TEST"
+                                         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ASCII.TEST"))
+                              (let ((*package* (find-package p)))
+                                (uiop:symbol-call p "TEST/ALL")))))
 
 
 ;;;; THE END ;;;;

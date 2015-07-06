@@ -45,7 +45,7 @@
   :maintainer     "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence        "AGPL3"
   ;; component attributes:
-  :version        "1.0.0"
+  :version        "1.0.2"
   :properties     ((#:author-email . "pjb@informatimago.com")
                    (#:date . "Winter 2015")
                    ((#:albert #:output-dir)
@@ -85,6 +85,7 @@
                  (asdf:test-op "com.informatimago.editor.test")
                  (asdf:test-op "com.informatimago.objcl.test")
                  (asdf:test-op "com.informatimago.susv3.test")
-                 (asdf:test-op "com.informatimago.clisp.test"))))
+                 (asdf:test-op "com.informatimago.clisp.test")
+                 (asdf:test-op "com.informatimago.languages.cpp.test"))))
 
 ;;;; THE END ;;;;

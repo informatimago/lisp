@@ -45,7 +45,7 @@
   :maintainer     "Pascal J. Bourguignon"
   :licence        "AGPL3"
   ;; component attributes:
-  :version        "1.0.1"
+  :version        "1.0.3"
   :properties     ((#:author-email . "pjb@informatimago.com")
                    (#:date . "Winter 2015")
                    ((#:albert #:output-dir)
@@ -60,12 +60,12 @@
                    "com.informatimago.tools.script")
   :components     ((:file "check-asdf-test" :depends-on nil)
                    (:file "dependency-cycles-test" :depends-on nil))
-  :perform        (asdf:test-op
-                   (operation system)
-                   (declare (ignore operation system))
-                   (dolist (p '("COM.INFORMATIMAGO.TOOLS.DEPENDENCY-CYCLES.TEST"
-                                "COM.INFORMATIMAGO.TOOLS.CHECK-ASDF.TEST"))
-                     (let ((*package* (find-package p)))
-                       (uiop/package:symbol-call p "TEST/ALL")))))
+  #+asdf3 :perform #+asdf3 (asdf:test-op
+                            (operation system)
+                            (declare (ignore operation system))
+                            (dolist (p '("COM.INFORMATIMAGO.TOOLS.DEPENDENCY-CYCLES.TEST"
+                                         "COM.INFORMATIMAGO.TOOLS.CHECK-ASDF.TEST"))
+                              (let ((*package* (find-package p)))
+                                (uiop/package:symbol-call p "TEST/ALL")))))
 
 ;;;; THE END ;;;;

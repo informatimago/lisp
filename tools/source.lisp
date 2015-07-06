@@ -560,6 +560,7 @@ Any other will go to the tail file variables.")
 (defvar *line-length* 79
   "Maximum number of character per line.")
 
+#-sbcl
 (defun write-source-header (headers stream
                             &key (comment-start ";;;;") (comment-end) (line-char #\*))
   "Write a source header in a comment.
@@ -619,6 +620,76 @@ Possible keys are:
            (string
             (format-line "~:@(~A~):~V<~>~A" key (max 1 (- 20 (length (string key)))) val)))))
      (line))))
+
+#+sbcl
+(defun wsb-line (stream comment-start line-char comment-end)
+  (format stream "~@[~A~]~V,,,V<~>~@[~A~]~%"
+          comment-start
+          (- *line-length* (length comment-start) (length comment-end))
+          line-char
+          comment-end))
+#+sbcl
+(defun wsb-format-line (stream comment-start comment-end control-string &rest arguments)
+  (format stream "~@[~A~]~?~@[ ~A~]~%" comment-start control-string arguments comment-end))
+
+#+sbcl
+(defun wsb-indent-non-date-line (line)
+  (if (and (< 16 (length line))
+           (char= #\- (aref line 4))
+           (char= #\- (aref line 7))
+           (let ((s (subseq line 0 4)))  (loop for ch across s always (digit-char-p ch)))
+           (let ((s (subseq line 5 7)))  (loop for ch across s always (digit-char-p ch)))
+           (let ((s (subseq line 8 10))) (loop for ch across s always (digit-char-p ch))))
+      line
+      (concatenate 'string "                 " line)))
+
+#+sbcl
+(defun wsb (headers stream comment-start comment-end line-char)
+  (let ((sections-with-spacer '(:description :usage :bugs :legal)))
+    (wsb-line stream comment-start line-char comment-end)
+    (dolist (key *file-headers*)
+      (let ((val (header-slot headers key)))
+        (etypecase val
+          (list
+           (wsb-format-line stream comment-start comment-end "~:@(~A~):" key)
+           (when (member key sections-with-spacer)
+             (wsb-format-line stream comment-start comment-end ""))
+           (if (eql key :modifications)
+               (dolist (line val)
+                 (wsb-format-line stream comment-start comment-end "    ~A" (indent-non-date-line line)))
+               (dolist (line val)
+                 (wsb-format-line stream comment-start comment-end "    ~A" line)))
+           (when (and val (member key sections-with-spacer))
+             (wsb-format-line stream comment-start comment-end "")))
+          (string
+           (wsb-format-line stream comment-start comment-end "~:@(~A~):~V<~>~A" key (max 1 (- 20 (length (string key)))) val)))))
+    (wsb-line stream comment-start line-char comment-end)))
+
+#+sbcl
+(defun write-source-header (headers stream
+                            &key (comment-start ";;;;") (comment-end) (line-char #\*))
+  "Write a source header in a comment.
+
+HEADERS:           A P-list containing the header data.
+COMMENT-START:     NIL or a string containing the start of comment lines.
+COMMENT-END:       NIL or a string containing the end of comment lines.
+LINE-CHAR:         A filler character used to draw a line in a comment.
+*LINE-LENGTH*      The length of the line comment lines generated.
+ 
+The values may be strings or list of strings (lines).
+Possible keys are:
+- :file            name of the file.
+- :language        the programming language in the file.
+- :system          the operating system this source runs on.
+- :user-interface  the user interface framework this source uses.
+- :description     a multi-line description of this source file.
+- :usage           usage indications.
+- :authors         a list of authors.
+- :modifications   a changelog list.
+- :bugs            a list of bugs.
+- :legal           the license section.
+"
+  (wsb headers stream comment-start comment-end line-char))
 
 
 (defun read-source-header (stream

@@ -60,71 +60,71 @@
   (assert-true (equal-range (make-range :start 0 :end -1)
                             (make-range :first 0 :last -1)))
   
-  (test = (range-start (make-range :start 1 :count 3)) 1)
-  (test = (range-last  (make-range :start 1 :count 3)) 3)
-  (test = (range-end   (make-range :start 1 :count 3)) 4)
-  (test = (range-count (make-range :start 1 :count 3)) 3)
-  (test = (range-start (copy-range (make-range :start 1 :count 3))) 1)
-  (test = (range-last  (copy-range (make-range :start 1 :count 3))) 3)
-  (test = (range-end   (copy-range (make-range :start 1 :count 3))) 4)
-  (test = (range-count (copy-range (make-range :start 1 :count 3))) 3)
+  (check = (range-start (make-range :start 1 :count 3)) 1)
+  (check = (range-last  (make-range :start 1 :count 3)) 3)
+  (check = (range-end   (make-range :start 1 :count 3)) 4)
+  (check = (range-count (make-range :start 1 :count 3)) 3)
+  (check = (range-start (copy-range (make-range :start 1 :count 3))) 1)
+  (check = (range-last  (copy-range (make-range :start 1 :count 3))) 3)
+  (check = (range-end   (copy-range (make-range :start 1 :count 3))) 4)
+  (check = (range-count (copy-range (make-range :start 1 :count 3))) 3)
 
-  (test = (range-start (make-range :start 11 :last 13)) 11)
-  (test = (range-last  (make-range :start 11 :last 13)) 13)
-  (test = (range-end   (make-range :start 11 :last 13)) 14)
-  (test = (range-count (make-range :start 11 :last 13))  3)
-  (test = (range-start (copy-range (make-range :start 11 :last 13))) 11)
-  (test = (range-last  (copy-range (make-range :start 11 :last 13))) 13)
-  (test = (range-end   (copy-range (make-range :start 11 :last 13))) 14)
-  (test = (range-count (copy-range (make-range :start 11 :last 13)))  3)
+  (check = (range-start (make-range :start 11 :last 13)) 11)
+  (check = (range-last  (make-range :start 11 :last 13)) 13)
+  (check = (range-end   (make-range :start 11 :last 13)) 14)
+  (check = (range-count (make-range :start 11 :last 13))  3)
+  (check = (range-start (copy-range (make-range :start 11 :last 13))) 11)
+  (check = (range-last  (copy-range (make-range :start 11 :last 13))) 13)
+  (check = (range-end   (copy-range (make-range :start 11 :last 13))) 14)
+  (check = (range-count (copy-range (make-range :start 11 :last 13)))  3)
 
-  (test = (range-start (make-range :start 11 :end 14)) 11)
-  (test = (range-last  (make-range :start 11 :end 14)) 13)
-  (test = (range-end   (make-range :start 11 :end 14)) 14)
-  (test = (range-count (make-range :start 11 :end 14))  3)
-  (test = (range-start (copy-range (make-range :start 11 :end 14))) 11)
-  (test = (range-last  (copy-range (make-range :start 11 :end 14))) 13)
-  (test = (range-end   (copy-range (make-range :start 11 :end 14))) 14)
-  (test = (range-count (copy-range (make-range :start 11 :end 14)))  3)
+  (check = (range-start (make-range :start 11 :end 14)) 11)
+  (check = (range-last  (make-range :start 11 :end 14)) 13)
+  (check = (range-end   (make-range :start 11 :end 14)) 14)
+  (check = (range-count (make-range :start 11 :end 14))  3)
+  (check = (range-start (copy-range (make-range :start 11 :end 14))) 11)
+  (check = (range-last  (copy-range (make-range :start 11 :end 14))) 13)
+  (check = (range-end   (copy-range (make-range :start 11 :end 14))) 14)
+  (check = (range-count (copy-range (make-range :start 11 :end 14)))  3)
 
-  (test = (range-start (make-range :count 3 :last 13)) 11)
-  (test = (range-last  (make-range :count 3 :last 13)) 13)
-  (test = (range-end   (make-range :count 3 :last 13)) 14)
-  (test = (range-count (make-range :count 3 :last 13))  3)
-  (test = (range-start (copy-range (make-range :count 3 :last 13))) 11)
-  (test = (range-last  (copy-range (make-range :count 3 :last 13))) 13)
-  (test = (range-end   (copy-range (make-range :count 3 :last 13))) 14)
-  (test = (range-count (copy-range (make-range :count 3 :last 13)))  3)
+  (check = (range-start (make-range :count 3 :last 13)) 11)
+  (check = (range-last  (make-range :count 3 :last 13)) 13)
+  (check = (range-end   (make-range :count 3 :last 13)) 14)
+  (check = (range-count (make-range :count 3 :last 13))  3)
+  (check = (range-start (copy-range (make-range :count 3 :last 13))) 11)
+  (check = (range-last  (copy-range (make-range :count 3 :last 13))) 13)
+  (check = (range-end   (copy-range (make-range :count 3 :last 13))) 14)
+  (check = (range-count (copy-range (make-range :count 3 :last 13)))  3)
 
-  (test = (range-start (make-range :count 3 :end 14)) 11)
-  (test = (range-last  (make-range :count 3 :end 14)) 13)
-  (test = (range-end   (make-range :count 3 :end 14)) 14)
-  (test = (range-count (make-range :count 3 :end 14))  3)
-  (test = (range-start (copy-range (make-range :count 3 :end 14))) 11)
-  (test = (range-last  (copy-range (make-range :count 3 :end 14))) 13)
-  (test = (range-end   (copy-range (make-range :count 3 :end 14))) 14)
-  (test = (range-count (copy-range (make-range :count 3 :end 14)))  3))
+  (check = (range-start (make-range :count 3 :end 14)) 11)
+  (check = (range-last  (make-range :count 3 :end 14)) 13)
+  (check = (range-end   (make-range :count 3 :end 14)) 14)
+  (check = (range-count (make-range :count 3 :end 14))  3)
+  (check = (range-start (copy-range (make-range :count 3 :end 14))) 11)
+  (check = (range-last  (copy-range (make-range :count 3 :end 14))) 13)
+  (check = (range-end   (copy-range (make-range :count 3 :end 14))) 14)
+  (check = (range-count (copy-range (make-range :count 3 :end 14)))  3))
 
 
 (define-test test/range/complement ()
   
-  (test equal-ranges
+  (check equal-ranges
         (complement-ranges (vector) 0 100)
         (vector (make-range :start 0 :end 100)))
 
-  (test equal-ranges
+  (check equal-ranges
         (complement-ranges (vector  (make-range :start 0 :end 100)) 0 100)
         (vector))
 
-  (test equal-ranges
+  (check equal-ranges
         (complement-ranges (vector (make-range :start 0 :end 90)) 0 100)
         (vector (make-range :start 90 :end 100)))
   
-  (test equal-ranges
+  (check equal-ranges
         (complement-ranges (vector (make-range :start 10 :end 100)) 0 100)
         (vector (make-range :start 0 :end 10)))
 
-  (test equal-ranges
+  (check equal-ranges
         (complement-ranges (vector (make-range :start 10 :end 90)) 0 100)
         (vector (make-range :start 0 :end 10)  (make-range :start 90 :end 100)))
 

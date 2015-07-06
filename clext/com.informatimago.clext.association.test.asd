@@ -45,7 +45,7 @@ to define CLOS associations.  It uses CLOSER-MOP.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.0.0"
+  :version "1.0.2"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Autumn 2010")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.clext/")
@@ -55,12 +55,13 @@ to define CLOS associations.  It uses CLOSER-MOP.
                ((#:albert #:docbook #:textcolor) . "black"))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ("closer-mop"
+               "com.informatimago.common-lisp.cesarum"
                "com.informatimago.clext.association")
   :components ((:file "association-test"))
-  :perform (asdf:test-op
-            (o s)
-            (let ((*package* (find-package "COM.INFORMATIMAGO.CLEXT.ASSOCIATION")))
-              (uiop:symbol-call "COM.INFORMATIMAGO.CLEXT.ASSOCIATION.TEST"  "TEST/ALL"))))
+  #+asdf3 :perform #+asdf3 (asdf:test-op
+                            (o s)
+                            (let ((*package* (find-package "COM.INFORMATIMAGO.CLEXT.ASSOCIATION")))
+                              (uiop:symbol-call "COM.INFORMATIMAGO.CLEXT.ASSOCIATION.TEST"  "TEST/ALL"))))
 
 
 ;;;; THE END ;;;;

@@ -68,7 +68,11 @@
                  (test/scan-file (load-time-value
                                   (merge-pathnames #P"test-1.lua"
                                                    *load-truename* nil))))))
-(define-test test/all ()
+
+(define-test test/all/lua-scanner ()
   (test/lua-scanner))
+
+(defun test/all ()
+  test/all/lua-scanner)
 
 ;;;; THE END ;;;;

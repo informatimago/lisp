@@ -286,8 +286,7 @@ they're GRAPHIC-CHAR-P or not.
 (defconstant +standard-characters-limit+ 128)
 
 
-(defmethod initialize-instance
-    :after ((self syntax-table) &key &allow-other-keys)
+(defmethod initialize-instance :after ((self syntax-table) &key &allow-other-keys)
   (let ((table        (make-array +standard-characters-limit+
                                   :initial-element *cd-invalid*)))
     (setf (aref table (char-code #\Backspace)) *cd-constituent-invalid*
@@ -1863,7 +1862,7 @@ NOTE:   terminates with any kind of list, dotted, circular, etc.
     (apply constructor arguments)))
 
 
-
+#-sbcl
 (defmethod initialize-instance :after ((self readtable) &rest rest &key &allow-other-keys)
   (unless (getf rest :syntax-table)
     (macrolet ((smc (&rest clauses)
@@ -1922,6 +1921,71 @@ NOTE:   terminates with any kind of list, dotted, circular, etc.
        ;; (#\# #\, reader-dispatch-macro-load-eval)
        ;; (#\# #\Y SYSTEM::CLOSURE-READER)
        ))))
+
+;; Working around sbcl bugs is always a pleasure…
+#+sbcl
+(defun init (self rest)
+  (unless (getf rest :syntax-table)
+    (macrolet ((smc (&rest clauses)
+                 `(progn
+                    ,@(mapcar (lambda (clause)
+                                `(set-macro-character
+                                  ,(first clause)
+                                  (function ,(second clause))
+                                  ,(third clause)
+                                  self))
+                              clauses))))
+      (smc
+       (#\; reader-macro-line-comment     nil)
+       (#\" reader-macro-string           nil)
+       (#\' reader-macro-quote            nil)
+       (#\` reader-macro-backquote        nil)
+       (#\, reader-macro-comma            nil)
+       (#\( reader-macro-left-parenthesis nil)
+       (#\) reader-macro-error-start      nil)))
+    (macrolet ((dmc (&rest clauses)
+                 `(progn
+                    ,@(mapcar (lambda (clause)
+                                `(set-dispatch-macro-character
+                                  ,(first  clause)
+                                  ,(second clause)
+                                  (function ,(third clause))
+                                  self))
+                              clauses))))
+      (make-dispatch-macro-character #\# t self)
+      (dmc
+       (#\# #\SPACE   reader-dispatch-macro-error-invalid)
+       (#\# #\NEWLINE reader-dispatch-macro-error-invalid)
+       (#\# #\# reader-dispatch-macro-label-reference)
+       (#\# #\' reader-dispatch-macro-function)
+       (#\# #\( reader-dispatch-macro-vector)
+       (#\# #\* reader-dispatch-macro-bit-vector)
+       (#\# #\+ reader-dispatch-macro-feature)
+       (#\# #\- reader-dispatch-macro-not-feature)
+       (#\# #\. reader-dispatch-macro-read-eval)
+       (#\# #\: reader-dispatch-macro-uninterned)
+       (#\# #\< reader-dispatch-macro-unreadable)
+       (#\# #\= reader-dispatch-macro-label-definition)
+       (#\# #\A reader-dispatch-macro-array)
+       (#\# #\B reader-dispatch-macro-binary)
+       (#\# #\C reader-dispatch-macro-complex)
+       (#\# #\O reader-dispatch-macro-octal)
+       (#\# #\P reader-dispatch-macro-pathname)
+       (#\# #\R reader-dispatch-macro-radix)
+       (#\# #\S reader-dispatch-macro-structure)
+       (#\# #\X reader-dispatch-macro-hexadecimal)
+       (#\# #\\ reader-dispatch-macro-char)
+       (#\# #\| reader-dispatch-macro-comment)
+       ;; clisp extensions:
+       ;; (#\# #\! reader-dispatch-macro-executable)
+       ;; (#\# #\" reader-dispatch-macro-clisp-pathname)
+       ;; (#\# #\, reader-dispatch-macro-load-eval)
+       ;; (#\# #\Y SYSTEM::CLOSURE-READER)
+       ))))
+
+#+sbcl
+(defmethod initialize-instance :after ((self readtable) &rest rest &key &allow-other-keys)
+  (init self rest))
 
 
 (setf *standard-readtable* (copy-readtable nil)
