@@ -35,7 +35,7 @@
 (asdf:defsystem "com.informatimago.tools.quicklisp"
     :description "Quicklisp tools."
     :author "Pascal J. Bourguignon"
-    :version "1.0.1"
+    :version "1.0.2"
     :license "GPL3"
     :depends-on (;; assumed ;; "quicklisp"
                  "com.informatimago.tools.pathname") 

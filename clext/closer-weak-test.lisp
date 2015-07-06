@@ -48,13 +48,21 @@
   #+clisp (:import-from "EXT" "GC")
   #+cmu   (:import-from "EXTENSIONS" "GC")
   #+ccl   (:import-from "CCL" "GC")
-  (:shadowing-import-from "COM.INFORMATIMAGO.CLEXT.CLOSER-WEAK" "GETHASH")
+  (:shadowing-import-from
+   "COM.INFORMATIMAGO.CLEXT.CLOSER-WEAK"
+   "HASH-TABLE" "MAKE-HASH-TABLE"
+   "HASH-TABLE-P" "HASH-TABLE-COUNT" "HASH-TABLE-REHASH-SIZE"
+   "HASH-TABLE-REHASH-THRESHOLD" "HASH-TABLE-SIZE" "HASH-TABLE-TEST"
+   "GETHASH" "REMHASH" "MAPHASH" "WITH-HASH-TABLE-ITERATOR" "CLRHASH")
   (:export "TEST/ALL"))
 (in-package "COM.INFORMATIMAGO.CLEXT.CLOSER-WEAK.TEST")
 
 #+sbcl (defun gc () (sb-ext:gc :full t))
 
-
+(defvar co)
+(defvar tab)
+(defvar wp)
+(defvar wpp)
 
 ;;;
 ;;; This tests.lisp is taken from clisp-2.38/tests/tests.lisp

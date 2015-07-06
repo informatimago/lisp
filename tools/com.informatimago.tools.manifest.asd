@@ -35,7 +35,7 @@
 (asdf:defsystem "com.informatimago.tools.manifest"
   :description "Produces a manifest of asdf systems."
   :author "Pascal J. Bourguignon"
-  :version "1.0.1"
+  :version "1.0.2"
   :license "AGPL3"
   :depends-on ("com.informatimago.common-lisp.cesarum"
                "split-sequence") 

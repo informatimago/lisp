@@ -45,7 +45,7 @@
   :maintainer     "Pascal J. Bourguignon"
   :licence        "AGPL3"
   ;; component attributes:
-  :version        "1.0.1"
+  :version        "1.0.2"
   :properties     ((#:author-email . "pjb@informatimago.com")
                    (#:date . "Winter 2015")
                    ((#:albert #:output-dir)
@@ -56,7 +56,7 @@
                    ((#:albert #:docbook #:textcolor) . "black"))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on     ("com.informatimago.common-lisp.cesarum" ; simple-test
-                   "com.informatimago.tools.script.")
+                   "com.informatimago.tools.script")
   :components     ((:file "script-test" :depends-on nil))
   #+asdf3 :perform #+asdf3 (asdf:test-op
                             (operation system)

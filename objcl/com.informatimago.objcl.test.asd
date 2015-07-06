@@ -45,7 +45,7 @@
   :maintainer     "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence        "AGPL3"
   ;; component attributes:
-  :version        "1.0.1"
+  :version        "1.0.2"
   :properties     ((#:author-email . "pjb@informatimago.com")
                    (#:date . "Winter 2015")
                    ((#:albert #:output-dir)
@@ -57,24 +57,14 @@
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on     ("com.informatimago.common-lisp.cesarum"
                    "com.informatimago.objcl")
-  :components     ((:file "objcl-test" :depends-on ())
-                   (:file "mac-roman-test" :depends-on ()))
-<<<<<<< HEAD
+  :components     ((:file "mac-roman-test" :depends-on ())
+                   #+(and ccl darwin) (:file "objcl-test" :depends-on ()))
   #+asdf3 :perform #+asdf3 (asdf:test-op
                             (operation system)
                             (declare (ignore operation system))
                             (dolist (p '("COM.INFORMATIMAGO.OBJCL.MAC-ROMAN.TEST"
-                                         "COM.INFORMATIMAGO.OBJCL.TEST"))
+                                         #+(and ccl darwin) "COM.INFORMATIMAGO.OBJCL.TEST"))
                               (let ((*package* (find-package p)))
                                 (uiop/package:symbol-call p "TEST/ALL")))))
-=======
-  :perform        (asdf/lisp-action:test-op
-                   (operation system)
-                   (declare (ignore operation system))
-                   (dolist (p '("COM.INFORMATIMAGO.OBJCL.MAC-ROMAN.TEST"
-                                #+(and ccl darwin) "COM.INFORMATIMAGO.OBJCL.TEST"))
-                     (let ((*package* (find-package p)))
-                       (uiop/package:symbol-call p "TEST/ALL")))))
->>>>>>> ac5cbbbdfbc1b0a19892f7a6e7d643f8563dc8c7
 
 ;;;; THE END ;;;;

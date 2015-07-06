@@ -36,7 +36,7 @@
 (asdf:defsystem "com.informatimago.editor"
   :description "An emacs-like editor."
   :author "Pascal J. Bourguignon"
-  :version "1.0.5"
+  :version "1.0.6"
   :license "AGPL3"
   :depends-on ("com.informatimago.common-lisp.cesarum"
                "com.informatimago.common-lisp.lisp-sexp"

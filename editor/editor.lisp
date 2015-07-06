@@ -485,7 +485,10 @@ BINDING:    must be either a symbol (naming a command),
          (*old-terminal-io* *terminal-io*)
          (*debug-io*        io)
          (*terminal-io*     io))
-    (unwind-protect (invoke-debugger "Debugger invoked interactively")
+    (unwind-protect
+         (invoke-debugger
+          (make-condition 'simple-error
+                          :format-control "Debugger invoked interactively"))
       (close io))))
 
 

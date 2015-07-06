@@ -49,7 +49,7 @@ with a TCP/IP socket or other communication service.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "0.9.2"
+  :version "0.9.3"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Spring 2012")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.telnet/")

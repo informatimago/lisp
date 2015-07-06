@@ -39,6 +39,7 @@
 (in-package "COM.INFORMATIMAGO.TOOLS.UNDEFMETHOD.TEST")
 
 (defclass c () ())
+(defgeneric m (o))
 
 (define-test test/undefmethod ()
   (eval `(defmethod m ((self c)) 'hi))

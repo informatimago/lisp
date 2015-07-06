@@ -35,7 +35,7 @@
 (asdf:defsystem "com.informatimago.tools.check-asdf"
   :description "Checks ASD Files and reports circular dependencies."
   :author "Pascal J. Bourguignon"
-  :version "1.1.3"
+  :version "1.1.4"
   :license "AGPL3"
   :depends-on ("com.informatimago.common-lisp.cesarum"
                "com.informatimago.clext"

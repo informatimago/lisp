@@ -34,6 +34,7 @@
 ;;;;**************************************************************************
 
 (in-package "COM.INFORMATIMAGO.OBJCL.MAC-ROMAN")
+
 ;; or we could depend on "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CHARACTER-SETS"
 
 
