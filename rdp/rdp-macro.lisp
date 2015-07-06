@@ -39,7 +39,7 @@
                       start rules 
                       (target-language :lisp) (trace nil))
   "
-DO:     This macros generates a simple scanner and recursive decent parser 
+DO:     This macro generates a simple scanner and recursive decent parser 
         for the language described by this grammar.
         For each <non-terminal> in the grammar, a function named
         <name>/PARSE-<non-terminal> is generated, in addition to 

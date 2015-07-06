@@ -33,61 +33,6 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
-
-(in-package "COMMON-LISP-USER")
-
-(declaim (declaration also-use-packages))
-(declaim (also-use-packages "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ECMA048"))
-
-(defpackage "COM.INFORMATIMAGO.COMMON-LISP.PARSER.SCANNER"
-  (:use "COMMON-LISP"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PEEK-STREAM")
-  (:export
-   ;; TOKEN:
-   "TOKEN" "TOKEN-KIND" "TOKEN-TEXT" "TOKEN-LINE" "TOKEN-COLUMN"
-   "*SPACE*"
-   ;; SCANNER:
-   "SCANNER" "SCANNER-CURRENT-TOKEN" 
-   "SCANNER-SOURCE" "SCANNER-LINE" "SCANNER-COLUMN" "SCANNER-STATE"
-   "SCANNER-SPACES" "SCANNER-TAB-WIDTH"
-   ;; SCANNER-ERROR condition:
-   "SCANNER-ERROR" "SCANNER-ERROR-LINE" "SCANNER-ERROR-COLUMN"
-   "SCANNER-ERROR-STATE" "SCANNER-ERROR-CURRENT-TOKEN"
-   "SCANNER-ERROR-SCANNER"
-   "SCANNER-ERROR-FORMAT-CONTROL" "SCANNER-ERROR-FORMAT-ARGUMENTS"
-   "SCANNER-ERROR-INVALID-CHARACTER"
-   ;; SCANNER methods:
-   "SKIP-SPACES" "SCAN-NEXT-TOKEN"
-   ;; PEEK-STREAM methods specialized on SCANNER:
-   "NEXTCHAR" "UNGETCHAR" "GETCHAR" "READLINE")
-  (:documentation
-   "
-An abstract scanner class.
-
-A method to the SCAN-NEXT-TOKEN generic function needs to be provided.
-
-
-License:
-
-    AGPL3
-    
-    Copyright Pascal J. Bourguignon 2004 - 2013
-    
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-    
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-    
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.
-    If not, see <http://www.gnu.org/licenses/>
-"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.PARSER.SCANNER")
 
 
@@ -230,7 +175,7 @@ Subclasses may use scanner-stream to read from the source.")
    (line          :initarg :line
                   :accessor scanner-line
                   :type integer
-                  :initform 1
+                  :initform 0
                   :documentation "The number of the current line. First line is line number 1.")
    (column        :initarg :column
                   :accessor scanner-column
@@ -287,24 +232,11 @@ RETURN: line; column
 "
   (loop
     :for ch = (getchar scanner)
-    :while ch
-    :do (case ch
-          ((#\Space
-            #\Newline
-            #+(and has-return (not newline-is-return)) #\Return
-            #+(and has-linefeed (not newline-is-linefeed)) #\Linefeed
-            #+has-page     #\Page
-            #+has-tab      #\Tab))
-          (otherwise
-           #-mocl (loop-finish)
-           #+moc (progn
-                   (ungetchar scanner ch)
-                   (return (values (scanner-line   scanner)
-                                   (scanner-column scanner))))))
-    :finally (progn
-               (ungetchar scanner ch)
-               (return (values (scanner-line   scanner)
-                               (scanner-column scanner))))))
+    :while (and ch (find ch (scanner-spaces scanner)))
+    :finally (when ch
+               (ungetchar scanner ch))
+             (return (values (scanner-line   scanner)
+                             (scanner-column scanner)))))
 
 
 (defgeneric scan-next-token (scanner &optional parser-data)

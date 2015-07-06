@@ -31,7 +31,6 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
-
 (in-package "COM.INFORMATIMAGO.RDP")
 
 (declaim (declaration stepper))
@@ -173,7 +172,5 @@
                                 ;;        ',(grammar-rules grammar))
                                 ))))
 
-(defparameter *spaces*
-  (format nil "^([~{~C~}]+)" '(#\space #\newline #\tab)))
 
 ;;;; THE END ;;;;

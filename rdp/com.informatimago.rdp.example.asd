@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Defines the com.informatimago.rdp.example system.
 ;;;;    
 ;;;;AUTHORS
@@ -47,7 +47,7 @@ both producing parsers in Lips.
     :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
     :licence "AGPL3"
     ;; component attributes:
-    :version "1.0.1"
+    :version "1.0.2"
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Summer 2011")
                  ((#:albert #:output-dir)          . "../documentation/com.informatimago.rdp.example/")

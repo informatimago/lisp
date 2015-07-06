@@ -11,6 +11,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2015-07-02 <PJB> Removed direct dependency on ppcre (still use it thru parser->regexp).
 ;;;;    2012-02-24 <PJB> Added this header.
 ;;;;BUGS
 ;;;;LEGAL
@@ -46,18 +47,17 @@ different languages than lisp.
     :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
     :licence "AGPL3"
     ;; component attributes:
-    :version "1.0.2"
+    :version "1.0.7"
     :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Summer 2011")
+                 (#:date                           . "Summer 2015")
                  ((#:albert #:output-dir)          . "../documentation/com.informatimago.rdp/")
                  ((#:albert #:formats)             . ("docbook"))
                  ((#:albert #:docbook #:template)  . "book")
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
-    :depends-on ("cl-ppcre" 
-                 "com.informatimago.common-lisp.cesarum"
-                 "com.informatimago.common-lisp.parser")
+    :depends-on ("com.informatimago.common-lisp.cesarum"
+                 "com.informatimago.common-lisp.scanner")
     :components ((:file "packages")
                  (:file "rdp"                  :depends-on ("packages"))
                  (:file "rdp-lisp-boilerplate" :depends-on ("packages" "rdp"))

@@ -111,7 +111,7 @@
    (format nil "SCAN~A" grammar-name))
 
 
-(defmethod generate-scanner ((target (eql :basic)) grammar &key (trace nil))
+(defmethod generate-scanner-for-grammar ((target (eql :basic)) grammar &key (trace nil))
   (let* ((an-terminals  (sort (remove-if-not
                                (lambda (item)
                                  (and (stringp item)

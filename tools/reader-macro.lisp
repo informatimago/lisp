@@ -31,11 +31,11 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
-(defpackage "COM.INFORMATIMAGO.TOOLS.RAEDER-MACRO"
+(defpackage "COM.INFORMATIMAGO.TOOLS.READER-MACRO"
   (:use "COMMON-LISP")
   (:export "ALL-MACRO-CHARACTERS"
            "REMOVE-ALL-MACRO-CHARACTERS"))
-(in-package  "COM.INFORMATIMAGO.TOOLS.RAEDER-MACRO")
+(in-package "COM.INFORMATIMAGO.TOOLS.READER-MACRO")
 
 (defun remove-all-macro-characters (readtable)
   "DO: Removes all the reader macros and dispatching reader macros from the READTABLE.

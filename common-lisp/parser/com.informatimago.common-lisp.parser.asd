@@ -49,8 +49,10 @@
                ((#:albert #:docbook #:textcolor) . "black"))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ("com.informatimago.common-lisp.cesarum")
-  :components ((:file "scanner" :depends-on ())
-               (:file "parser"  :depends-on ("scanner")))
+  :components ((:file "packages"         :depends-on ())
+               (:file "scanner"          :depends-on ("packages"))
+               (:file "generate-scanner" :depends-on ("packages" "scanner"))
+               (:file "parser"           :depends-on ("packages" "scanner")))
   :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.parser.test"))))
 
 ;;;; THE END ;;;;

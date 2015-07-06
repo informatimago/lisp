@@ -92,7 +92,7 @@ language boilerplate.")
     nil))
 
 
-(defgeneric generate-scanner     (target-language grammar &key trace)
+(defgeneric generate-scanner-for-grammar     (target-language grammar &key trace)
     (:documentation "Generate the scanner code,
 when (grammar-scanner grammar) is T.  (grammar-scanner grammar) may
 be the class-name of a scanner to use.
@@ -162,8 +162,8 @@ RETURN:     A form that defines the grammar object and its parser functions.
          (compute-all-non-terminals ,g)
          (compute-first-follow      ,g)
          
-         ,(generate-boilerplate target-language grammar :trace trace)         
-         ,(generate-scanner     target-language grammar :trace trace)
+         ,(generate-boilerplate          target-language grammar :trace trace)         
+         ,(generate-scanner-for-grammar  target-language grammar :trace trace)
          ,@(mapcar (lambda (non-terminal)
                      (generate-nt-parser target-language grammar non-terminal  :trace trace))
                    (grammar-all-non-terminals grammar))
@@ -769,7 +769,6 @@ rules and new produtions.  Returns the new production set.
 (defmethod gen-scanner-class-name ((target (eql :lisp)) (grammar grammar))
   (intern (format nil "~:@(~A-SCANNER~)" (grammar-name grammar))))
 
-
 (defun gen-trace (fname form trace)
   (if trace
       `(progn
@@ -782,7 +781,35 @@ rules and new produtions.  Returns the new production set.
       (and (listp trace) (member keyword trace))))
 
 
-(defmethod generate-scanner ((target (eql :lisp)) grammar &key (trace nil))
+(defparameter *spaces*
+  (format nil "^([~{~C~}]+)" '(#\space #\newline #\tab)))
+
+(defparameter *alphanumerics*
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789")
+
+(defmethod generate-scanner-for-grammar ((target (eql :lisp)) grammar &key (trace nil))
+  (case (grammar-scanner grammar)
+    ((t)
+     (let* ((scanner-class-name (gen-scanner-class-name target grammar))
+            (form               (generate-scanner scanner-class-name
+                                                  'buffered-scanner
+                                                  (grammar-all-terminals grammar)
+                                                  (grammar-skip-spaces grammar)
+                                                  *alphanumerics*
+                                                  *spaces*)))
+       `(progn
+          ,form
+          (setf (grammar-scanner (grammar-named ',(grammar-name grammar))) ',scanner-class-name)
+          ,@(when trace
+              `((trace scan-next-token)))
+          ',scanner-class-name)))
+    (otherwise
+     ;; Don't do anything
+     `',(grammar-scanner grammar))))
+
+
+#-(and)
+(defmethod generate-scanner-for-grammar ((target (eql :lisp)) grammar &key (trace nil))
   ;;
   ;; an-terminals  = literal terminals (given as string in rules), ending with an alphanumeric.
   ;; nan-terminals = literal terminals ending with something else than an alphanumeric.

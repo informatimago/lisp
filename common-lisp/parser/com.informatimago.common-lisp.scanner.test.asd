@@ -1,20 +1,20 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;***************************************************************************
-;;;;FILE:                com.informatimago.rdp.test.asd
+;;;;FILE:                com.informatimago.common-lisp.scanner.test.asd
 ;;;;LANGUAGE:            Common-Lisp
 ;;;;SYSTEM:              None
 ;;;;USER-INTERFACE:      None
 ;;;;DESCRIPTION:
 ;;;;
-;;;;    This file defines the com.informatimago.rdp.test system.
-;;;;    Tests the com.informatimago.rdp system.
+;;;;    This file defines the com.informatimago.common-lisp.scanner.test system.
+;;;;    Tests the com.informatimago.common-lisp.scanner system.
 ;;;;
 ;;;;USAGE:
 ;;;;
 ;;;;AUTHORS:
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
-;;;;MODIFICATIONS:
-;;;;    2015-02-23 <PJB> Created.
+;;;;MODIFICATIONS
+;;;;    2015-07-05 <PJB> Created.
 ;;;;BUGS:
 ;;;;
 ;;;;LEGAL:
@@ -38,25 +38,25 @@
 ;;;;
 ;;;;***************************************************************************
 
-(asdf:defsystem "com.informatimago.rdp.test"
+(asdf:defsystem "com.informatimago.common-lisp.scanner.test"
   ;; system attributes:
-  :description    "Tests the com.informatimago.rdp system."
+  :description    "Tests the com.informatimago.common-lisp.scanner system."
   :author         "Pascal J. Bourguignon <pjb@informatimago.com>"
   :maintainer     "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence        "AGPL3"
   ;; component attributes:
-  :version        "1.0.2"
+  :version        "1.0.0"
   :properties     ((#:author-email . "pjb@informatimago.com")
-                   (#:date . "Winter 2015")
+                   (#:date . "Summer 2015")
                    ((#:albert #:output-dir)
-                    . "/tmp/documentation/com.informatimago.rdp.test/")
+                    . "/tmp/documentation/com.informatimago.common-lisp.parser.test/")
                    ((#:albert #:formats) "docbook")
                    ((#:albert #:docbook #:template) . "book")
                    ((#:albert #:docbook #:bgcolor) . "white")
                    ((#:albert #:docbook #:textcolor) . "black"))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on     ("com.informatimago.common-lisp.cesarum"
-                   "com.informatimago.rdp")
+                   "com.informatimago.common-lisp.scanner")
   :components     ()
   :perform        (asdf/lisp-action:test-op
                    (operation system)

@@ -32,9 +32,6 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(eval-when (:execute :compile-toplevel :load-toplevel)
-  (setf *features* (cons :use-ppcre (set-difference *features* '(:use-ppcre :use-regexp)))))
-
 (defpackage "COM.INFORMATIMAGO.RDP"
   (:use "COMMON-LISP"
         ;; "CL-STEPPER"
@@ -42,8 +39,8 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CONSTRAINTS"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PEEK-STREAM"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
+        "COM.INFORMATIMAGO.COMMON-LISP.REGEXP.REGEXP"
         "COM.INFORMATIMAGO.COMMON-LISP.PARSER.SCANNER"
-        ;; "COM.INFORMATIMAGO.COMMON-LISP.PARSER.PARSER"
         )
   (:export "DEFGRAMMAR" "SEQ" "REP" "OPT" "ALT" "GRAMMAR-NAMED"
            "GENERATE-GRAMMAR"
@@ -89,7 +86,7 @@
   (:documentation "
 This package implements a simple recursive descent parser.
 
-Copyright Pascal J. Bourguignon 2006 - 2012
+Copyright Pascal J. Bourguignon 2006 - 2015
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as

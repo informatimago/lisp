@@ -211,7 +211,6 @@ begin
     b:=30.0;
     call gcd
 end.")
-
                
                '(program
                  (block
