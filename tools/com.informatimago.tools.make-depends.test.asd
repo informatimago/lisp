@@ -45,7 +45,7 @@
   :maintainer     "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence        "AGPL3"
   ;; component attributes:
-  :version        "1.0.0"
+  :version        "1.0.1"
   :properties     ((#:author-email . "pjb@informatimago.com")
                    (#:date . "Winter 2015")
                    ((#:albert #:output-dir)
@@ -58,11 +58,11 @@
   :depends-on     ("com.informatimago.common-lisp.cesarum"
                    "com.informatimago.tools.make-depends")
   :components     ((:file "make-depends-test" :depends-on nil))
-  :perform        (asdf:test-op
-                   (operation system)
-                   (declare (ignore operation system))
-                   (dolist (p '("COM.INFORMATIMAGO.TOOLS.MAKE-DEPENDS.TEST"))
-                     (let ((*package* (find-package p)))
-                       (uiop/package:symbol-call p "TEST/ALL")))))
+  #+asdf3 :perform #+asdf3 (asdf:test-op
+                            (operation system)
+                            (declare (ignore operation system))
+                            (dolist (p '("COM.INFORMATIMAGO.TOOLS.MAKE-DEPENDS.TEST"))
+                              (let ((*package* (find-package p)))
+                                (uiop/package:symbol-call p "TEST/ALL")))))
 
 ;;;; THE END ;;;;

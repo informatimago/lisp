@@ -127,7 +127,7 @@ RETURN: A new copy of the ORIGINAL bset.
 (defmacro bsref (bsa i) `(aref ,bsa ,i))
 
 
-(proclaim '(inline last-bitset))
+(declaim (inline last-bitset))
 (defun last-bitset (bitsets)
   "
 RETURN:  The index of the last bitset in the BITSETS array.
@@ -135,7 +135,7 @@ RETURN:  The index of the last bitset in the BITSETS array.
   (1- (array-dimension bitsets 0)))
 
 
-(proclaim '(inline elem-to-bitset))
+(declaim (inline elem-to-bitset))
 (defun elem-to-bitset (element)
   "
 RETURN:  The index of the bitset where element is stored.
@@ -148,12 +148,12 @@ NOTE:     0 --> 0
   (truncate element +bit-per-bitset+))
 
 
-(proclaim '(inline elem-to-bit))
+(declaim (inline elem-to-bit))
 (defun elem-to-bit (element)
   (mod element +bit-per-bitset+))
 
 
-(proclaim '(inline bitset-to-elem))
+(declaim (inline bitset-to-elem))
 (defun bitset-to-elem (index)
   "
 RETURN:  The maximum element + 1 that can be stored in the bitset at INDEX.

@@ -35,7 +35,7 @@
 (asdf:defsystem "com.informatimago.tools.undefmethod"
     :description "A macro that undefines the method instead of defining it."
     :author "irc://Shinmera@irc.freenode.org"
-    :version "1.0.0"
+    :version "1.0.1"
     :license "GPL3"
     :depends-on () 
     :components ((:file "undefmethod")))

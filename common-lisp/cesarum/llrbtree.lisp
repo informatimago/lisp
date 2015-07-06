@@ -638,7 +638,7 @@ RETURN: true if there was such an entry, or false otherwise.
 ;;;
 
 (defparameter *dot-counter* 0)
-
+(defgeneric generate-dot (object))
 (defmethod generate-dot ((self tree))
   (let ((id (incf *dot-counter*)))
     (with-open-file (dot (format nil "tree-~5,'0D.dot" id)
@@ -706,6 +706,7 @@ RETURN: true if there was such an entry, or false otherwise.
   (map 'string (function code-char)
        #(#x1b #x5b #x30 #x6d)))
 
+(defgeneric dump (object &optional indentation bar))
 (defmethod dump ((self null) &optional (indentation "") (bar " "))
   (declare (ignorable self))
   (format t "~A~A~A+---- NIL~A~%" indentation bar *black* *normal*))

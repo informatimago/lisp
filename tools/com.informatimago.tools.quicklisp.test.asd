@@ -45,7 +45,7 @@
   :maintainer     "Pascal J. Bourguignon"
   :licence        "GPL3"
   ;; component attributes:
-  :version        "1.0.0"
+  :version        "1.0.1"
   :properties     ((#:author-email . "pjb@informatimago.com")
                    (#:date . "Winter 2015")
                    ((#:albert #:output-dir)
@@ -59,14 +59,14 @@
                    "com.informatimago.tools.quicklisp")
   :components     ((:file "quicklisp-test" :depends-on ())
                    (:file "asdf-test" :depends-on ()))
-  :perform        (asdf:test-op
-                   (operation system)
-                   (declare (ignore operation system))
-                   (let ((*package* (find-package "COM.INFORMATIMAGO.TOOLS.QUICKLISP.TEST")))
-                     (uiop/package:symbol-call "COM.INFORMATIMAGO.TOOLS.QUICKLISP.TEST"
-                                               "TEST/ALL"))
-                   (let ((*package* (find-package "COM.INFORMATIMAGO.TOOLS.ASDF.TEST")))
-                     (uiop/package:symbol-call "COM.INFORMATIMAGO.TOOLS.ASDF.TEST"
-                                               "TEST/ALL"))))
+  #+asdf3 :perform #+asdf3 (asdf:test-op
+                            (operation system)
+                            (declare (ignore operation system))
+                            (let ((*package* (find-package "COM.INFORMATIMAGO.TOOLS.QUICKLISP.TEST")))
+                              (uiop/package:symbol-call "COM.INFORMATIMAGO.TOOLS.QUICKLISP.TEST"
+                                                        "TEST/ALL"))
+                            (let ((*package* (find-package "COM.INFORMATIMAGO.TOOLS.ASDF.TEST")))
+                              (uiop/package:symbol-call "COM.INFORMATIMAGO.TOOLS.ASDF.TEST"
+                                                        "TEST/ALL"))))
 
 ;;;; THE END ;;;;

@@ -35,7 +35,7 @@
 (asdf:defsystem "com.informatimago.tools.script"
   :description "Utilities for scripts."
   :author "Pascal J. Bourguignon"
-  :version "1.0.0"
+  :version "1.0.1"
   :license "AGPL3"
   :depends-on () 
   :components ((:file "script" :depends-on ()))

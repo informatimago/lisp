@@ -1589,12 +1589,14 @@ IF-PACKAGE-EXISTS           The default is :PACKAGE
 ;;            (reduce 'union (cons (package-shadow-list p)
 ;;                                 (mapcar 'rest (package-shadowing-import-list p)))))
 
+(defgeneric package-shadow-list (package))
 (defmethod package-shadow-list (package)
   "Return the list of shadowed symbols (but not shadowing-imported ones)"
   (remove package (package-shadowing-symbols package)
           :test-not (function eql)
           :key (function symbol-package)))
 
+(defgeneric package-shadowing-import-list (package))
 (defmethod package-shadowing-import-list (package)
   "Return a list of lists of shadowing-imports.
 Each sublist contains the package followed by its imported symbols."
@@ -1608,6 +1610,7 @@ Each sublist contains the package followed by its imported symbols."
 ;;       remember it, and will import them directly from their home.
 ;;       This is probably not good.
 
+(defgeneric package-import-from-list (package))
 (defmethod package-import-from-list (package)
   (let ((symbols '()))
     (with-package-iterator (it package :present)
@@ -1618,6 +1621,7 @@ Each sublist contains the package followed by its imported symbols."
               (unless (eq home package)  (push symbol symbols))
               (return (classify-per-package symbols))))))))
 
+(defgeneric package-symbols (package))
 (defmethod package-symbols (package)
   (let ((result '()))
     (with-package-iterator (it package :present)
@@ -1628,6 +1632,7 @@ Each sublist contains the package followed by its imported symbols."
               (when (eq home package) (push symbol result))
               (return result)))))))
 
+(defgeneric package-export-list (package))
 (defmethod package-export-list (package)
   (let ((result '()))
     (with-package-iterator (it package :external)

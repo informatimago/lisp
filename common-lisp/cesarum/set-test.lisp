@@ -56,8 +56,8 @@
   (loop
     :for seq :in (test-sets 'list-set)
     :do
-    (test eql (map-elements nil (function identity) seq) nil)
-    (test set-equal (let ((result '()))
+    (check eql (map-elements nil (function identity) seq) nil)
+    (check set-equal (let ((result '()))
                       (map-elements nil (lambda (element) (push element result)) seq)
                       result)
           seq)))
@@ -67,7 +67,7 @@
     :for set :in (test-sets test-class)
     :do (loop
           :for class :in (list 'list 'vector test-class)
-          :do (test set-equal (map-elements class (function identity) set)
+          :do (check set-equal (map-elements class (function identity) set)
                     (ecase (cardinal set)
                       (0 '())
                       (1 '(1))
@@ -81,9 +81,9 @@
               (list '(1 2 3 4) 'vector    '(1 2 3 4))
               (list '(1 2 3 4) test-class '(1 2 3 4)))
     :do
-    (test set-equal               (copy type original)  expected (type original))
-    (test set-equal (copy 'list   (copy type original)) expected (type original))
-    (test set-equal (copy 'vector (copy type original)) expected (type original))))
+    (check set-equal               (copy type original)  expected (type original))
+    (check set-equal (copy 'list   (copy type original)) expected (type original))
+    (check set-equal (copy 'vector (copy type original)) expected (type original))))
 
 
 (define-test test/is-subseq (test-class1 test-class2)
@@ -138,52 +138,52 @@
 (define-test test/union (operator test-class)
   (flet ((test-set (&rest elements)
            (copy test-class elements))) 
-    (test set-equal (funcall operator 
+    (check set-equal (funcall operator 
                              (test-set 1 2 3 7 8 10 11 12)
                              (test-set 1 2 3 7 8 10 11 12))
           (test-set 1 2 3 7 8 10 11 12))
 
-    (test set-equal (funcall operator 
+    (check set-equal (funcall operator 
                              (test-set)
                              (test-set 1 2 3 7 8 10 11 12))
           (test-set 1 2 3 7 8 10 11 12))
 
-    (test set-equal (funcall operator 
+    (check set-equal (funcall operator 
                              (test-set 1 2 3 7 8 10 11 12)
                              (test-set))
           (test-set 1 2 3 7 8 10 11 12))
 
-    (test set-equal (funcall operator 
+    (check set-equal (funcall operator 
                              (test-set 1 2 3 7 8 10 11 12)
                              (test-set 0 4 5 6 9 10))
           (test-set 0 1 2 3 4 5 6 7 8 9 10 11 12))
 
-    (test set-equal (funcall operator 
+    (check set-equal (funcall operator 
                              (test-set 10 11 12)
                              (test-set 1 2 3 7 8))
           (test-set 1 2 3 7 8 10 11 12))
 
-    (test set-equal (funcall operator 
+    (check set-equal (funcall operator 
                              (test-set 1 2 3 7 8)
                              (test-set 10 11 12))
           (test-set 1 2 3 7 8 10 11 12))
 
-    (test set-equal (funcall operator 
+    (check set-equal (funcall operator 
                              (test-set 1 2 3 5 6 7)
                              (test-set 3 4 5 7 8 9  12 13))
           (test-set 1 2 3 4 5 6 7 8 9 12 13))
 
-    (test set-equal (funcall operator 
+    (check set-equal (funcall operator 
                              (test-set 1 2 3 5 6 7  12 13)
                              (test-set 3 4 5 7 8 9))
           (test-set 1 2 3 4 5 6 7 8 9 12 13))
 
-    (test set-equal (funcall operator 
+    (check set-equal (funcall operator 
                              (test-set 1 2 3  11 12 13)
                              (test-set 3 4 5  13 14 15))
           (test-set 1 2 3 4 5 11 12 13 14 15))
     
-    (test set-equal (funcall operator 
+    (check set-equal (funcall operator 
                              (test-set 3 4 5  13 14 15)
                              (test-set 1 2 3  11 12 13))
           (test-set 1 2 3 4 5 11 12 13 14 15))))
@@ -195,52 +195,52 @@
 (define-test test/intersection (operator test-class)
   (flet ((test-set (&rest elements)
            (copy test-class elements)))
-    (test set-equal (funcall operator
+    (check set-equal (funcall operator
                              (test-set 1 2 3 7 8 10 11 12)
                              (test-set 1 2 3 7 8 10 11 12))
           (test-set 1 2 3 7 8 10 11 12))
 
-    (test set-equal (funcall operator
+    (check set-equal (funcall operator
                              (test-set)
                              (test-set 1 2 3 7 8 10 11 12))
           (test-set))
 
-    (test set-equal (funcall operator
+    (check set-equal (funcall operator
                              (test-set 1 2 3 7 8 10 11 12)
                              (test-set))
           (test-set))
 
-    (test set-equal (funcall operator
+    (check set-equal (funcall operator
                              (test-set 1 2 3 7 8 10 11 12)
                              (test-set 0 4 5 6 9 10))
           (test-set 10))
 
-    (test set-equal (funcall operator
+    (check set-equal (funcall operator
                              (test-set 10 11 12)
                              (test-set 1 2 3 7 8))
           (test-set))
 
-    (test set-equal (funcall operator
+    (check set-equal (funcall operator
                              (test-set 1 2 3 7 8)
                              (test-set 10 11 12))
           (test-set))
 
-    (test set-equal (funcall operator
+    (check set-equal (funcall operator
                              (test-set 1 2 3 5 6 7)
                              (test-set 3 4 5 7 8 9  12 13))
           (test-set 3 5 7))
 
-    (test set-equal (funcall operator
+    (check set-equal (funcall operator
                              (test-set 1 2 3 5 6 7  12 13)
                              (test-set 3 4 5 7 8 9))
           (test-set 3 5 7))
 
-    (test set-equal (funcall operator
+    (check set-equal (funcall operator
                              (test-set 1 2 3  11 12 13)
                              (test-set 3 4 5  13 14 15))
           (test-set 3 13))
     
-    (test set-equal (funcall operator
+    (check set-equal (funcall operator
                              (test-set 3 4 5  13 14 15)
                              (test-set 1 2 3  11 12 13))
           (test-set 3 13))))

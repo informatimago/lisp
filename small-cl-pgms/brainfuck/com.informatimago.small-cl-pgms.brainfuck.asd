@@ -35,7 +35,7 @@
 (asdf:defsystem "com.informatimago.small-cl-pgms.brainfuck"
   :description "Brainfuck Compiler."
   :author "Pascal J. Bourguignon"
-  :version "1.0.0"
+  :version "1.0.1"
   :license "GPL3"
   :depends-on () 
   :components ((:file "bf"))

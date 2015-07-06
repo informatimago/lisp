@@ -91,7 +91,7 @@ Journal
                                        "algorithme" "en" "question" "a" "ete" "publie"
                                        "en" "1960" "dans" "IBM" "Journal"))
                            (function string<))))
-    (test equal sorted-list stream-contents
+    (check equal sorted-list stream-contents
            () "~%~20A=~S~%~20A=~S~%"
            "sorted-list" sorted-list
            "stream-contents" stream-contents)))
@@ -120,16 +120,16 @@ Journal
 
   (run-program "true" '() :wait nil :error "TESTERR.TXT")
   (sleep 1)
-  (test equal '() (text-file-contents "TESTERR.TXT"))
+  (check equal '() (text-file-contents "TESTERR.TXT"))
 
   (run-program "true" '() :wait t :error "TESTERR.TXT")
-  (test equal '() (text-file-contents "TESTERR.TXT"))
+  (check equal '() (text-file-contents "TESTERR.TXT"))
 
 
 
   (let ((process (run-program "sh" '("-c" "echo error 1>&2")
                               :wait nil :input nil :output nil :error :stream)))
-    (test equal '("error")
+    (check equal '("error")
           (unwind-protect
                (text-stream-contents (process-error process))
             (close (process-error process)))))
@@ -138,7 +138,7 @@ Journal
   (ignore-errors (delete-file "TESTERR.TXT"))
   (run-program "sh" '("-c" "echo error 1>&2")
                :wait t :input nil :output nil :error "TESTERR.TXT")
-  (test equal '("error") (text-file-contents "TESTERR.TXT"))
+  (check equal '("error") (text-file-contents "TESTERR.TXT"))
 
   
   (with-open-file (err "TESTERR.TXT"
@@ -147,7 +147,7 @@ Journal
                        )
     (run-program "sh" '("-c" "echo error 1>&2")
                  :wait t :input nil :output nil :error err))
-  (test equal '("error") (text-file-contents "TESTERR.TXT"))
+  (check equal '("error") (text-file-contents "TESTERR.TXT"))
 
 
   (run-program "printf" '("Hello\\nWorld\\n") :wait t)
@@ -155,7 +155,7 @@ Journal
   (run-program "printf" '("Hello\\nWorld\\n") :wait nil)
 
   (let ((process (run-program "printf" '("Hello\\nWorld\\n") :wait nil :output :stream)))
-    (test equal '("Hello" "World")
+    (check equal '("Hello" "World")
           (unwind-protect
                (loop
                  :for line = (read-line (process-output process) nil nil)
@@ -168,14 +168,14 @@ Journal
                        #+ccl :sharing #+ccl :lock)
      (run-program "printf" '("Hello\\nWorld\\n") :wait nil :output out)
      (sleep 1))
-  (test equal '("Hello" "World") (text-file-contents "TESTOUT.TXT"))
+  (check equal '("Hello" "World") (text-file-contents "TESTOUT.TXT"))
 
 
   (with-open-file (out  "TESTOUT.TXT"
                         :direction :output :if-does-not-exist :create :if-exists :supersede
                        #+ccl :sharing #+ccl :lock)
     (run-program "printf" '("Hello\\nWorld\\n") :wait t :output out))
-  (test equal '("Hello" "World") (text-file-contents "TESTOUT.TXT"))
+  (check equal '("Hello" "World") (text-file-contents "TESTOUT.TXT"))
 
 
   (run-program "sort" '() :environment '(("LC_CTYPE"   . "C") ("LC_COLLATE" . "C"))

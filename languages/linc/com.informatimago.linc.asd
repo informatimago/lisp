@@ -54,7 +54,7 @@ generate a corresponding C source.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "0.0.0"
+  :version "0.0.1"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "2007")
                ((#:albert #:output-dir)          . "../documentation/com.informatimago.linc/")

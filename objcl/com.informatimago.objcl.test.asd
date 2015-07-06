@@ -45,7 +45,7 @@
   :maintainer     "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence        "AGPL3"
   ;; component attributes:
-  :version        "1.0.0"
+  :version        "1.0.1"
   :properties     ((#:author-email . "pjb@informatimago.com")
                    (#:date . "Winter 2015")
                    ((#:albert #:output-dir)
@@ -59,12 +59,12 @@
                    "com.informatimago.objcl")
   :components     ((:file "objcl-test" :depends-on ())
                    (:file "mac-roman-test" :depends-on ()))
-  :perform        (asdf/lisp-action:test-op
-                   (operation system)
-                   (declare (ignore operation system))
-                   (dolist (p '("COM.INFORMATIMAGO.OBJCL.MAC-ROMAN.TEST"
-                                "COM.INFORMATIMAGO.OBJCL.TEST"))
-                     (let ((*package* (find-package p)))
-                       (uiop/package:symbol-call p "TEST/ALL")))))
+  #+asdf3 :perform #+asdf3 (asdf:test-op
+                            (operation system)
+                            (declare (ignore operation system))
+                            (dolist (p '("COM.INFORMATIMAGO.OBJCL.MAC-ROMAN.TEST"
+                                         "COM.INFORMATIMAGO.OBJCL.TEST"))
+                              (let ((*package* (find-package p)))
+                                (uiop/package:symbol-call p "TEST/ALL")))))
 
 ;;;; THE END ;;;;

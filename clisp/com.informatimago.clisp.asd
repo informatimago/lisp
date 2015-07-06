@@ -42,7 +42,7 @@
   :author "Pascal J. Bourguignon <pjb@informatimago.com>"
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :license "AGPL3"
-  :version "1.2.2"
+  :version "1.2.3"
   :depends-on ()
   :components ())
 
@@ -60,7 +60,7 @@ should be made into implementation independant packages).
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.2.2"
+  :version "1.2.3"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Spring 2014")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.clmisc/")
