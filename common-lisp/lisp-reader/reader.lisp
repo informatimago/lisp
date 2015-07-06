@@ -1922,6 +1922,7 @@ NOTE:   terminates with any kind of list, dotted, circular, etc.
        ;; (#\# #\Y SYSTEM::CLOSURE-READER)
        ))))
 
+;; Working around sbcl bugs is always a pleasure…
 #+sbcl
 (defun init (self rest)
   (unless (getf rest :syntax-table)

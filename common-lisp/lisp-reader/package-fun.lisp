@@ -1609,7 +1609,6 @@ Each sublist contains the package followed by its imported symbols."
 ;;       package that used them, or that imported them, then we won't
 ;;       remember it, and will import them directly from their home.
 ;;       This is probably not good.
-
 (defgeneric package-import-from-list (package))
 (defmethod package-import-from-list (package)
   (let ((symbols '()))

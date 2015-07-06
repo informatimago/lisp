@@ -39,7 +39,7 @@
   :license "AGPL3"
   :depends-on () 
   :components ()
-  "com.informatimago.future.empty.test")
+  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.future.empty.test"))))
 
 
 ;;;; THE END ;;;;

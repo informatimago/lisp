@@ -55,7 +55,8 @@
                    ((#:albert #:docbook #:bgcolor) . "white")
                    ((#:albert #:docbook #:textcolor) . "black"))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
-  :depends-on     ("com.informatimago.common-lisp.cesarum") ; simple-test
+  :depends-on     ("com.informatimago.common-lisp.cesarum" ; simple-test
+                   "com.informatimago.tools.script.")
   :components     ((:file "script-test" :depends-on nil))
   #+asdf3 :perform #+asdf3 (asdf:test-op
                             (operation system)

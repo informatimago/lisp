@@ -315,6 +315,7 @@ RETURN:       (scanner-current-token scanner).
 "))
 
 
+(defgeneric (setf scanner-source) (new-source scanner))
 (defmethod (setf scanner-source) (new-source (scanner scanner))
   (setf (slot-value scanner 'stream)
         (etypecase (setf (slot-value scanner 'source) new-source)

@@ -48,6 +48,7 @@
   #+clisp (:import-from "EXT" "GC")
   #+cmu   (:import-from "EXTENSIONS" "GC")
   #+ccl   (:import-from "CCL" "GC")
+  (:shadowing-import-from "COM.INFORMATIMAGO.CLEXT.CLOSER-WEAK" "GETHASH")
   (:export "TEST/ALL"))
 (in-package "COM.INFORMATIMAGO.CLEXT.CLOSER-WEAK.TEST")
 

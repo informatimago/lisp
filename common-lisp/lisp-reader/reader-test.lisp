@@ -105,8 +105,9 @@ License:
 
 
 (define-test test/proper-list-p ()
-  (map nil (lambda (test) (test eq (proper-list-p (second test)) (first test)
-                                ((first test) (second test))))
+  (map nil (lambda (test)
+             (check eq (proper-list-p (second test)) (first test)
+                    ((first test) (second test))))
     '((nil x)
       (t ())
       (t (a))
