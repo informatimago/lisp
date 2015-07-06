@@ -1203,7 +1203,7 @@ RETURN: the token text; the end position."
                                   (when restart (invoke-restart restart))))))
     ,@body))
 
-(defun cpp-e (path &rest options &key defines includes write-sharp-line &allow-other-keys)
+(defun cpp-e (path &rest options &key (write-processed-lines t) defines includes write-sharp-line &allow-other-keys)
   "
 DEFINE:     a plist of object-like macro definitions: (macro-name macro-value)
             macro-name is a string designator.
@@ -1234,8 +1234,9 @@ Other keys shall be context option keys.
                                                   (acons :include-quote-directories includes
                                                          *default-options*))
                                  :environment environment)
-        (terpri)
-        (write-processed-lines lines :write-sharp-line write-sharp-line)
+        (when write-processed-lines 
+          (terpri)
+          (write-processed-lines lines :write-sharp-line write-sharp-line))
         ;; (print-hashtable (context-environment context))
         context))))
 
