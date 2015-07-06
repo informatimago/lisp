@@ -703,7 +703,7 @@ concatenation
 (defmethod context-include-level ((context context))
   (length (context-file-stack context)))
 
-(defgeneric context-push-file (context) path directory input-lines)
+(defgeneric context-push-file (context path directory input-lines))
 (defmethod context-push-file ((context context) path directory input-lines)
   (push (list (context-directory context)
               (context-file context)
