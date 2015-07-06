@@ -34,11 +34,8 @@
 (in-package "COM.INFORMATIMAGO.LANGUAGES.CPP")
 
 
-(defclass token ()
-  ((line   :initform 0   :initarg :line   :accessor token-line)
-   (column :initform 0   :initarg :column :accessor token-column)
-   (file   :initform "-" :initarg :file   :accessor token-file)
-   (text                 :initarg :text   :accessor token-text)))
+(defclass cpp-token (token)
+  ((file   :initform "-" :initarg :file   :accessor token-file)))
 
 
 
@@ -69,7 +66,7 @@
 (defmacro define-token-class (name)
   (let ((class-name (intern (concatenate 'string (string name) (string '-token)))))
     `(progn
-       (defclass ,class-name   (token) ())
+       (defclass ,class-name   (cpp-token) ())
        (defun ,(intern (concatenate 'string (string name) (string '-p))) (object)
          (typep object ',class-name))
        (defmethod print-object ((self ,class-name) stream)
@@ -87,6 +84,7 @@
 (define-token-class character-literal)
 (define-token-class punctuation)
 (define-token-class other)
+
 
 (defun pseudo-token (file lino)
   (make-other "" 0 lino file))
