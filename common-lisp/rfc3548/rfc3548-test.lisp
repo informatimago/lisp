@@ -105,8 +105,6 @@ publié en 1962 par MIT Press, un des maîtres­livres de l'Informatique.
 (define-test test/all-encodings ()
   (dolist (enc '(:base16 :base32 :base64 :filebase64)) 
     (dolist (line '(nil t))
-      (format t "~&TESTING ~A ~:[~;with lines~]" enc line)
-      (finish-output)
       (test/encoding enc :line-width (when line 40) :ignore-crlf line))))
 
 
