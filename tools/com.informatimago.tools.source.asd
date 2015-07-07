@@ -60,7 +60,11 @@ This system would use closer-mop which is not available on MOCL.
                "split-sequence") 
   :components ((:file "source")
                (:file "dependency-cycles")
-               (:file "asdf-file"  :depends-on ("dependency-cycles" "source"))
+               (:file "dummy-asdf")
+               (:file "dummy-uiop")
+               (:file "asdf-file"  :depends-on ("dependency-cycles"
+                                                "source"
+                                                "dummy-asdf" "dummy-uiop"))
                #-(and) (:file "analyse-patchwork")))
 
 

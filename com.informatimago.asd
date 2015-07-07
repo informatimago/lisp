@@ -43,7 +43,7 @@
   ;; component attributes:
   :version "1.0.2"
   :properties ((#:author-email                   . "pjb@informatimago.com")
-               (#:date                           . "Winter 2014")
+               (#:date                           . "Summer 2015")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago/")
                ((#:albert #:formats)             . ("docbook"))
                ((#:albert #:docbook #:template)  . "book")
@@ -58,7 +58,8 @@
                "com.informatimago.xcode"
                "com.informatimago.lispdoc"
                "com.informatimago.small-cl-pgms"
-               "com.informatimago.language.cpp"
+               "com.informatimago.languages.cpp"
+               ;; "com.informatimago.languages.c11" ; future
                "com.informatimago.future"
                "com.informatimago.editor" ; future
                "com.informatimago.objcl"  ; empty shell on non-ccl darwin

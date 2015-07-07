@@ -33,13 +33,7 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (unless (find-package "ASDF")
-    (defpackage "ASDF" (:use "COMMON-LISP") (:export "DEFSYSTEM")))
-  (unless (find-package "UIOP")
-    (defpackage "UIOP" (:use "COMMON-LISP") (:export "SYMBOL-CALL"))))
-
+(in-package "COMMON-LISP-USER")
 
 (defpackage "COM.INFORMATIMAGO.TOOLS.ASDF-FILE"
   (:use "COMMON-LISP"

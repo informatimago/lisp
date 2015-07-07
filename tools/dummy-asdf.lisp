@@ -1,22 +1,23 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               quicklisp.asd
+;;;;FILE:               dummy-asdf.lisp
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    Quicklisp tools.
+;;;;    Defines a dummy ASDF package to be able to compile packages
+;;;;    depending on ASDF even when ASDF is missing.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2013-12-06 <PJB> Extracted from ~/rc/common.lisp
+;;;;    2015-07-07 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2013 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2015 - 2015
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -31,18 +32,27 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
+(in-package "COMMON-LISP-USER")
 
-(asdf:defsystem "com.informatimago.tools.quicklisp"
-  :description "Quicklisp tools."
-  :author "Pascal J. Bourguignon"
-  :version "1.0.2"
-  :license "GPL3"
-  :depends-on ( ;; assumed ;; "quicklisp"
-               "com.informatimago.tools.pathname") 
+#-asdf
+(defpackage "ASDF"
+  (:use "COMMON-LISP")
+  (:export "DEFSYSTEM" "LOAD-OP" "TEST-OP" "OOS" "OPERATE"
+           "*COMPILE-FILE-WARNINGS-BEHAVIOUR*"
+           "*SYSTEM-DEFINITION-SEARCH-FUNCTIONS*"
+           "*CENTRAL-REGISTRY*"
+           "FIND-SYSTEM" "SYSTEM"
+           "COMPONENT-NAME" "COMPONENT-DEPENDS-ON"
+           "RUN-SHELL-COMMAND")
+  (:intern "*VERBOSE-OUT*"
+           "NAME" "LICENCE"))
 
-  :components ((:file "dummy-quicklisp" :depends-on ())
-               (:file "dummy-asdf"      :depends-on ())
-               (:file "quicklisp"       :depends-on ("dummy-quicklisp"))
-               (:file "asdf"            :depends-on ("quicklisp" "dummy-asdf"))))
+#-asdf
+(progn
+  (defvar asdf:*compile-file-warnings-behaviour*    nil)
+  (defvar asdf:*system-definition-search-functions* nil)
+  (defvar asdf:*verbose-out*                        nil)
+  (defvar asdf:*central-registry*                   nil))
+
 
 ;;;; THE END ;;;;
