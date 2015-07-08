@@ -32,7 +32,8 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 (in-package "COM.INFORMATIMAGO.LANGUAGES.C11.PARSER")
-
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 
 #|
 (defmethod accept ((scanner buffered-scanner) token)
@@ -56,7 +57,7 @@
 
 |#
 
-
+#-(and) ; not yet.
 (DEFINE-PARSER *C11-PARSER*
   (:START-SYMBOL |translation_unit|)
   (:TERMINALS (
@@ -81,7 +82,7 @@
   (|generic_association| (|type_name| \: |assignment_expression|)
                          (DEFAULT \: |assignment_expression|))
   (|postfix_expression| |primary_expression|
-                        (|postfix_expression| [ |expression| ]) (|postfix_expression| \( \))
+                        (|postfix_expression| \[ |expression| \]) (|postfix_expression| \( \))
                         (|postfix_expression| \( |argument_expression_list| \))
                         (|postfix_expression| |.| IDENTIFIER)
                         (|postfix_expression| PTR_OP IDENTIFIER) (|postfix_expression| INC_OP)
@@ -179,16 +180,16 @@
                          (ALIGNAS \( |constant_expression| \)))
   (|declarator| (|pointer| |direct_declarator|) |direct_declarator|)
   (|direct_declarator| IDENTIFIER (\( |declarator| \))
-                       (|direct_declarator| [ ]) (|direct_declarator| [ * ])
-                       (|direct_declarator| [ STATIC |type_qualifier_list| |assignment_expression|
-                                                     ])
-                       (|direct_declarator| [ STATIC |assignment_expression| ])
-                       (|direct_declarator| [ |type_qualifier_list| * ])
-                       (|direct_declarator| [ |type_qualifier_list| STATIC |assignment_expression|
-                                                                    ])
-                       (|direct_declarator| [ |type_qualifier_list| |assignment_expression| ])
-                       (|direct_declarator| [ |type_qualifier_list| ])
-                       (|direct_declarator| [ |assignment_expression| ])
+                       (|direct_declarator| \[ \]) (|direct_declarator| \[ * \])
+                       (|direct_declarator| \[ STATIC |type_qualifier_list| |assignment_expression|
+                                                     \])
+                       (|direct_declarator| \[ STATIC |assignment_expression| \])
+                       (|direct_declarator| \[ |type_qualifier_list| * \])
+                       (|direct_declarator| \[ |type_qualifier_list| STATIC |assignment_expression|
+                                                                    \])
+                       (|direct_declarator| \[ |type_qualifier_list| |assignment_expression| \])
+                       (|direct_declarator| \[ |type_qualifier_list| \])
+                       (|direct_declarator| \[ |assignment_expression| \])
                        (|direct_declarator| \( |parameter_type_list| \))
                        (|direct_declarator| \( \)) (|direct_declarator| \( |identifier_list| \)))
   (|pointer| (* |type_qualifier_list| |pointer|) (* |type_qualifier_list|)
@@ -205,22 +206,22 @@
                |specifier_qualifier_list|)
   (|abstract_declarator| (|pointer| |direct_abstract_declarator|) |pointer|
                          |direct_abstract_declarator|)
-  (|direct_abstract_declarator| (\( |abstract_declarator| \)) ([ ]) ([ * ])
-                                ([ STATIC |type_qualifier_list| |assignment_expression| ])
-                                ([ STATIC |assignment_expression| ])
-                                ([ |type_qualifier_list| STATIC |assignment_expression| ])
-                                ([ |type_qualifier_list| |assignment_expression| ])
-                                ([ |type_qualifier_list| ]) ([ |assignment_expression| ])
-                                (|direct_abstract_declarator| [ ]) (|direct_abstract_declarator| [ * ])
-                                (|direct_abstract_declarator| [ STATIC |type_qualifier_list|
-                                                                       |assignment_expression| ])
-                                (|direct_abstract_declarator| [ STATIC |assignment_expression| ])
-                                (|direct_abstract_declarator| [ |type_qualifier_list|
-                                                                |assignment_expression| ])
-                                (|direct_abstract_declarator| [ |type_qualifier_list| STATIC
-                                                                                      |assignment_expression| ])
-                                (|direct_abstract_declarator| [ |type_qualifier_list| ])
-                                (|direct_abstract_declarator| [ |assignment_expression| ]) (\( \))
+  (|direct_abstract_declarator| (\( |abstract_declarator| \)) (\[ \]) (\[ * \])
+                                (\[ STATIC |type_qualifier_list| |assignment_expression| \])
+                                (\[ STATIC |assignment_expression| \])
+                                (\[ |type_qualifier_list| STATIC |assignment_expression| \])
+                                (\[ |type_qualifier_list| |assignment_expression| \])
+                                (\[ |type_qualifier_list| \]) (\[ |assignment_expression| \])
+                                (|direct_abstract_declarator| \[ \]) (|direct_abstract_declarator| \[ * \])
+                                (|direct_abstract_declarator| \[ STATIC |type_qualifier_list|
+                                                                       |assignment_expression| \])
+                                (|direct_abstract_declarator| \[ STATIC |assignment_expression| \])
+                                (|direct_abstract_declarator| \[ |type_qualifier_list|
+                                                                |assignment_expression| \])
+                                (|direct_abstract_declarator| \[ |type_qualifier_list| STATIC
+                                                                                      |assignment_expression| \])
+                                (|direct_abstract_declarator| \[ |type_qualifier_list| \])
+                                (|direct_abstract_declarator| \[ |assignment_expression| \]) (\( \))
                                 (\( |parameter_type_list| \)) (|direct_abstract_declarator| \( \))
                                 (|direct_abstract_declarator| \( |parameter_type_list| \)))
   (|initializer| ({ |initializer_list| }) ({ |initializer_list| \, })
@@ -230,7 +231,7 @@
                       (|initializer_list| \, |initializer|))
   (|designation| (|designator_list| =))
   (|designator_list| |designator| (|designator_list| |designator|))
-  (|designator| ([ |constant_expression| ]) (|.| IDENTIFIER))
+  (|designator| (\[ |constant_expression| \]) (|.| IDENTIFIER))
   (|static_assert_declaration|
    (STATIC_ASSERT \( |constant_expression| \, STRING_LITERAL \) \;))
   (|statement| |labeled_statement| |compound_statement| |expression_statement|
