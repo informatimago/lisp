@@ -49,6 +49,7 @@
                ((#:albert #:docbook #:textcolor) . "black"))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ("com.informatimago.common-lisp.cesarum"
+               "com.informatimago.common-lisp.scanner"
                "babel")
   :components ((:file "packages"        :depends-on  ())
                (:file "c-string-reader" :depends-on  ("packages"))
