@@ -129,27 +129,27 @@ language boilerplate."))
 (defvar *linenum* 0)
 
 (defun generate-grammar (name &key terminals (scanner t) (skip-spaces t)
-                           start rules
-                           (target-language :lisp) (trace nil))
-    "
+                                start rules
+                                (target-language :lisp) (trace nil))
+  "
 SEE ALSO:   The docstring of DEFGRAMMAR.
 RETURN:     A form that defines the grammar object and its parser functions.
 "
-    (let* ((clean-rules (clean-rules rules))
-           (grammar (make-grammar :name name
-                                  :terminals terminals
-                                  :start start
-                                  :rules clean-rules
-                                  :scanner scanner
-                                  :skip-spaces skip-spaces))
-           (*linenum* 0)
-           (g (gensym "grammar")))
-      (setf (gethash (grammar-name grammar) *grammars*) grammar)
-      (compute-all-terminals     grammar)
-      (compute-all-non-terminals grammar)
-      (compute-first-follow      grammar)
-
-      `(let ((*linenum* 0)
+  (let* ((clean-rules (clean-rules rules))
+         (grammar (make-grammar :name name
+                                :terminals terminals
+                                :start start
+                                :rules clean-rules
+                                :scanner scanner
+                                :skip-spaces skip-spaces))
+         (*linenum* 0)
+         (g (gensym "grammar")))
+    (setf (gethash (grammar-name grammar) *grammars*) grammar)
+    (compute-all-terminals     grammar)
+    (compute-all-non-terminals grammar)
+    (compute-first-follow      grammar)
+    `(progn
+       (let ((*linenum* 0)
              (,g (make-grammar
                   :name ',name
                   :terminals ',terminals
@@ -160,15 +160,14 @@ RETURN:     A form that defines the grammar object and its parser functions.
          (setf (gethash (grammar-name ,g) *grammars*) ,g)
          (compute-all-terminals     ,g)
          (compute-all-non-terminals ,g)
-         (compute-first-follow      ,g)
-         
-         ,(generate-boilerplate          target-language grammar :trace trace)         
-         ,(generate-scanner-for-grammar  target-language grammar :trace trace)
-         ,@(mapcar (lambda (non-terminal)
-                     (generate-nt-parser target-language grammar non-terminal  :trace trace))
-                   (grammar-all-non-terminals grammar))
-         ,(generate-parser target-language grammar :trace trace)
-         ',name)))
+         (compute-first-follow      ,g))
+       ,(generate-boilerplate          target-language grammar :trace trace)         
+       ,(generate-scanner-for-grammar  target-language grammar :trace trace)
+       ,@(mapcar (lambda (non-terminal)
+                   (generate-nt-parser target-language grammar non-terminal  :trace trace))
+                 (grammar-all-non-terminals grammar))
+       ,(generate-parser target-language grammar :trace trace)
+       ',name)))
 
 
 
@@ -271,10 +270,6 @@ RETURN:     A form that defines the grammar object and its parser functions.
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defgeneric word-equal (a b)
-  (:method ((a t) (b t))           (eql a b))
-  (:method ((a string) (b string)) (string= a b)))
 
 (defun compute-all-terminals (grammar)
   (labels  ((find-strings (items)
@@ -751,8 +746,6 @@ rules and new produtions.  Returns the new production set.
 ;;                                            (assoc (first *non-terminal-stack*)
 ;;                                                   ',(grammar-rules grammar))))))
 ;; 
-;;            (defparameter *spaces*
-;;              (format nil "^([~{~C~}]+)" '(#\space #\newline #\tab)))))))
 
 
 
@@ -782,7 +775,7 @@ rules and new produtions.  Returns the new production set.
 
 
 (defparameter *spaces*
-  (format nil "^([~{~C~}]+)" '(#\space #\newline #\tab)))
+  (coerce '(#\space #\newline #\tab) 'string))
 
 (defparameter *alphanumerics*
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789")
@@ -791,12 +784,22 @@ rules and new produtions.  Returns the new production set.
   (case (grammar-scanner grammar)
     ((t)
      (let* ((scanner-class-name (gen-scanner-class-name target grammar))
+            (terminals          (mapcar (lambda (terminal)
+                                          (etypecase terminal
+                                            (string terminal)
+                                            (symbol (let ((entry (find terminal (grammar-terminals grammar)
+                                                                       :key (function first))))
+                                                      (if entry
+                                                          entry
+                                                          (error "Undefined terminal ~S" terminal))))))
+                                        (grammar-all-terminals grammar)))
             (form               (generate-scanner scanner-class-name
                                                   'buffered-scanner
-                                                  (grammar-all-terminals grammar)
+                                                  terminals
                                                   (grammar-skip-spaces grammar)
                                                   *alphanumerics*
                                                   *spaces*)))
+       (setf (grammar-scanner grammar) scanner-class-name)
        `(progn
           ,form
           (setf (grammar-scanner (grammar-named ',(grammar-name grammar))) ',scanner-class-name)
@@ -806,133 +809,6 @@ rules and new produtions.  Returns the new production set.
     (otherwise
      ;; Don't do anything
      `',(grammar-scanner grammar))))
-
-
-#-(and)
-(defmethod generate-scanner-for-grammar ((target (eql :lisp)) grammar &key (trace nil))
-  ;;
-  ;; an-terminals  = literal terminals (given as string in rules), ending with an alphanumeric.
-  ;; nan-terminals = literal terminals ending with something else than an alphanumeric.
-  ;; nl-terminals  = non-literal terminals (specified in :terminals clauses).
-  ;;
-  ;; an-terminals are scanned by excluding alphanumerics directly after them.
-  ;; "while" --> "(while)([^A-Za-z0-9]|$)"  so that "while whilemin" scans as <while> <identifier>.
-  ;;
-  ;; nl-terminals are processed in the order they're given in the :terminals clauses.
-  ;;
-  (case (grammar-scanner grammar)
-    ((t)
-     (let* ((scanner-class-name (gen-scanner-class-name target grammar))
-            ;; Literal Alpha Numeric Terminals
-            (an-terminals  (sort (remove-if-not
-                                  (lambda (item)
-                                    (and (stringp item)
-                                         (alphanumericp (aref item (1- (length item))))))
-                                  (grammar-all-terminals grammar))
-                                 (function >) :key (function length)))
-            ;; Literal Non Alpha Numeric Terminals
-            (nan-terminals (sort (remove-if
-                                  (lambda (item)
-                                    (or (not (stringp item))
-                                        (alphanumericp (aref item (1- (length item))))))
-                                  (grammar-all-terminals grammar))
-                                 (function >) :key (function length)))
-            ;; Non Literal Terminals
-            (nl-terminals (remove-if (function stringp) (grammar-terminals grammar)))
-            ;; Regexps for all the Literal Alpha Numeric Terminals
-            (lit-an-terminals-regexp
-             (format nil "^(~{~A~^|~})([^A-Za-z0-9]|$)"
-                     (mapcar (function regexp-quote-extended) an-terminals)))
-            ;; Regexps for all the Literal Non Alpha Numeric Terminals
-            (lit-nan-terminals-regexp
-             (format nil "^(~{~A~^|~})"
-                     (mapcar (function regexp-quote-extended)  nan-terminals)))
-            (form  `(progn
-
-                      (setf (grammar-scanner (gethash  ',(grammar-name grammar) *grammars*)) ',scanner-class-name)
-                      
-                      (defclass ,scanner-class-name  (rdp-scanner)
-                        ())
-
-                      (defmethod scan-next-token ((scanner ,scanner-class-name) &optional parser-data)
-                        "RETURN: (scanner-current-token scanner)" 
-                        (declare (ignore parser-data))
-                        (let (match) 
-                          ,@(when (grammar-skip-spaces grammar)
-                                  `((setf match (string-match *spaces*
-                                                              (scanner-buffer scanner)
-                                                              :start (1- (scanner-column scanner))))
-                                    (when match
-                                      (setf (scanner-column scanner) (1+ (match-end 1 match))))))
-                          (let ((pos (1- (scanner-column scanner))))
-                            (cond
-                              ;; end of source
-                              ((scanner-end-of-source-p scanner)
-                               (setf (scanner-column scanner)   (1+ (length (scanner-buffer scanner)))
-                                     (scanner-current-text scanner)   "<END OF SOURCE>"
-                                     (scanner-current-token scanner) '|<END OF SOURCE>|))
-                              ;; end of line
-                              ((scanner-end-of-line-p scanner)
-                               (advance-line scanner))
-                              ;; Literal Alpha Numeric and Non Alpha Numeric Terminals:
-                              ,@(when (or an-terminals nan-terminals)
-                                      ;; (print (list an-terminals nan-terminals))
-                                      `(((or ,@(when an-terminals
-                                                     `((setf match (string-match ',lit-an-terminals-regexp
-                                                                                 (scanner-buffer scanner)
-                                                                                 :start pos))))
-                                             ,@(when nan-terminals
-                                                     `((setf match (string-match ',lit-nan-terminals-regexp
-                                                                                 (scanner-buffer scanner)
-                                                                                 :start pos)))))
-                                         (let ((text (match-string 1 (scanner-buffer scanner) match)))
-                                           (setf (scanner-column scanner)        (1+ (match-end 1 match))
-                                                 (scanner-current-text scanner)  text
-                                                 (scanner-current-token scanner) text)))))
-                              ;; Non Literal Terminals: we have a regexp for each terminal.
-                              ,@(mapcar
-                                 (lambda (terminal)
-                                   ;; (print terminal)
-                                   `(,(if (= 4 (length terminal))
-                                          ;; (terminal-name match-regexp / exclude-regexp)
-                                          `(and (setf match (string-match
-                                                             ',(format nil "^(~A)" (second terminal))
-                                                             (scanner-buffer scanner)
-                                                             :start pos))
-                                                (not (string-match ,(format nil "^(~A)" (fourth terminal))
-                                                                   (scanner-buffer scanner)
-                                                                   :start (match-end 1 match))))
-                                          ;; (terminal-name match-regexp)
-                                          `(setf match (string-match
-                                                        ',(format nil "^(~A)" (second terminal))
-                                                        (scanner-buffer scanner)
-                                                        :start pos)))
-                                      (setf (scanner-column scanner)        (1+ (match-end 1 match))
-                                            (scanner-current-text scanner)  (match-string 1 (scanner-buffer scanner) match)
-                                            (scanner-current-token scanner) ',(first terminal))))
-                                 nl-terminals)
-                              ;; Else we have an error:
-                              (t
-                               (error 'scanner-error-invalid-character
-                                      :line   (scanner-line   scanner)
-                                      :column (scanner-column scanner)
-                                      :state  (scanner-state  scanner)
-                                      :current-token (scanner-current-token scanner)
-                                      :scanner scanner
-                                      :invalid-character (aref (scanner-buffer scanner) pos)
-                                      :format-control "Invalid character ~S at position: ~D~%~S~%~{~A --> ~S~}"
-                                      :format-arguments (list
-                                                         (aref (scanner-buffer scanner) pos)
-                                                         (scanner-column scanner)
-                                                         *non-terminal-stack*
-                                                         (assoc (first *non-terminal-stack*)
-                                                                ',(grammar-rules grammar))))))))))))
-       (setf (grammar-scanner (grammar-named (grammar-name grammar))) scanner-class-name)
-       (gen-trace 'scan-next-token form trace)))
-    (otherwise
-     #|Dont do anything|#
-     `',(grammar-scanner grammar))))
-
 
 
 ;; (com.informatimago.rdp::find-rules (grammar-named 'normalized-encoding) 'request)

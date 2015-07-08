@@ -40,7 +40,8 @@
   (:use
    "COMMON-LISP"
    ;;"CL-STEPPER"
-   "COM.INFORMATIMAGO.RDP")
+   "COM.INFORMATIMAGO.RDP"
+   "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SIMPLE-TEST")
   (:export "PARSE-EXAMPLE"))
 (in-package "COM.INFORMATIMAGO.RDP.EXAMPLE")
 
@@ -110,10 +111,8 @@
                  block "." :action $1)))
 
 
-
-(assert (equal
-         (com.informatimago.rdp.example:parse-example
-          "
+(define-test test/rdp-example-lisp ()
+  (check equal (parse-example "
     const abc = 123,
           pi=3.141592e+0; 
     var a,b,c; 
@@ -130,26 +129,32 @@ begin
     b:=30.0;
     call gcd
 end.")
-
-
-         '(block (((ident "abc" 14) (integer "123" 20)) ((ident "pi" 13) (real "3.141592e+0" 25)))
+         '(block (((ident "abc" 14) (integer "123" 20))
+                  ((ident "pi" 13) (real "3.141592e+0" 25)))
            ((ident "a" 10) (ident "b" 12) (ident "c" 14))
            ((procedure (ident "gcd" 18)
              (block nil
                nil
                nil
-               ((((while ((#1="#" #1# 18) (+ ((ident "a" 16))) (+ ((ident "b" 20))))
-                    ((((if ((#2="<" #2# 19) (+ ((ident "a" 18))) (+ ((ident "b" 20))))
-                           ((setf (ident "b" 27) (+ ((ident "b" 30)) ((#3="-" #3# 31) ((ident "a" 32))))))))
-                      ((if ((#4=">" #4# 19) (+ ((ident "a" 18))) (+ ((ident "b" 20))))
-                           ((setf (ident "a" 27) (+ ((ident "a" 30)) ((#5="-" #5# 31) ((ident "b" 32)))))))))))))))))
-           ((((setf (ident "a" 6) (+ ((integer "42" 10))))) ((setf (ident "b" 6) (+ ((real "30.0" 12)))))
-             ((call (ident "gcd" 13))))))))
+               ((((while ((\# "#" 18) (+ ((ident "a" 16))) (+ ((ident "b" 20))))
+                    ((((if ((< "<" 19) (+ ((ident "a" 18))) (+ ((ident "b" 20))))
+                           ((setf (ident "b" 27)
+                                  (+ ((ident "b" 30)) ((- "-" 31) ((ident "a" 32))))))))
+                      ((if ((> ">" 19) (+ ((ident "a" 18))) (+ ((ident "b" 20))))
+                           ((setf (ident "a" 27)
+                                  (+ ((ident "a" 30))
+                                     ((- "-" 31) ((ident "b" 32)))))))))))))))))
+           ((((setf (ident "a" 6) (+ ((integer "42" 10)))))
+             ((setf (ident "b" 6) (+ ((real "30.0" 12))))) ((call (ident "gcd" 13))))))
+         )
+  :success)
 
 
 
 (defpackage "COM.INFORMATIMAGO.RDP.EXAMPLE-WITHOUT-ACTION"
-  (:use "COMMON-LISP" "COM.INFORMATIMAGO.RDP")
+  (:use "COMMON-LISP"
+        "COM.INFORMATIMAGO.RDP"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SIMPLE-TEST")
   (:export "PARSE-EXAMPLE-WITHOUT-ACTION"))
 (in-package "COM.INFORMATIMAGO.RDP.EXAMPLE-WITHOUT-ACTION")
 
@@ -192,9 +197,8 @@ end.")
             (--> program
                  block ".")))
 
-
-(assert (equal (com.informatimago.rdp.example-without-action:parse-example-without-action
-                "
+(define-test test/rdp-example-lisp-without-action ()
+  (check equal (parse-example-without-action "
     const abc = 123,
           pi=3.141592e+0; 
     var a,b,c; 
@@ -211,63 +215,79 @@ begin
     b:=30.0;
     call gcd
 end.")
-               
-               '(program
-                 (block
-                     ((#1="const" #1# 10) (ident "abc" 14) (#2="=" #2# 16) (number (integer "123" 20))
-                      (((#3="," #3# 21) (ident "pi" 13) (#4="=" #4# 14) (number (real "3.141592e+0" 25)))) (#5=";" #5# 26))
-                   ((#6="var" #6# 8) (ident "a" 10) (((#7="," #7# 11) (ident "b" 12)) ((#8="," #8# 13) (ident "c" 14)))
-                    (#9=";" #9# 15))
-                   (((#10="procedure" #10# 14) (ident "gcd" 18) (#11=";" #11# 19)
-                     (block nil
-                       nil
-                       nil
+         '(program
+           (block ((|const| "const" 10) (ident "abc" 14) (= "=" 16)
+                   (number (integer "123" 20))
+                   (((\, "," 21) (ident "pi" 13) (= "=" 14)
+                     (number (real "3.141592e+0" 25))))
+                   (\; ";" 26))
+             ((|var| "var" 8) (ident "a" 10)
+              (((\, "," 11) (ident "b" 12)) ((\, "," 13) (ident "c" 14))) (\; ";" 15))
+             (((|procedure| "procedure" 14) (ident "gcd" 18) (\; ";" 19)
+               (block nil
+                 nil
+                 nil
+                 (statement
+                  (((|begin| "begin" 10)
+                    (statement
+                     (((|while| "while" 14)
+                       (condition
+                        ((expression nil (term (factor (ident "a" 16)) nil) nil)
+                         (\# "#" 18)
+                         (expression nil (term (factor (ident "b" 20)) nil) nil)))
+                       (|do| "do" 23)
                        (statement
-                        (((#12="begin" #12# 10)
+                        (((|begin| "begin" 14)
                           (statement
-                           (((#13="while" #13# 14)
+                           (((|if| "if" 16)
                              (condition
-                              ((expression nil (term (factor (ident "a" 16)) nil) nil) (#14="#" #14# 18)
+                              ((expression nil (term (factor (ident "a" 18)) nil) nil)
+                               (< "<" 19)
                                (expression nil (term (factor (ident "b" 20)) nil) nil)))
-                             (#15="do" #15# 23)
+                             (|then| "then" 25)
                              (statement
-                              (((#16="begin" #16# 14)
-                                (statement
-                                 (((#17="if" #17# 16)
-                                   (condition
-                                    ((expression nil (term (factor (ident "a" 18)) nil) nil) (#18="<" #18# 19)
-                                     (expression nil (term (factor (ident "b" 20)) nil) nil)))
-                                   (#19="then" #19# 25)
-                                   (statement
-                                    (((ident "b" 27) (#20=":=" #20# 29)
-                                      (expression nil (term (factor (ident "b" 30)) nil)
-                                                  (((#21="-" #21# 31) (term (factor (ident "a" 32)) nil))))))))))
-                                (((#22=";" #22# 34)
-                                  (statement
-                                   (((#23="if" #23# 16)
-                                     (condition
-                                      ((expression nil (term (factor (ident "a" 18)) nil) nil) (#24=">" #24# 19)
-                                       (expression nil (term (factor (ident "b" 20)) nil) nil)))
-                                     (#25="then" #25# 25)
-                                     (statement
-                                      (((ident "a" 27) (#26=":=" #26# 29)
-                                        (expression nil (term (factor (ident "a" 30)) nil)
-                                                    (((#27="-" #27# 31) (term (factor (ident "b" 32)) nil))))))))))))
-                                (#28="end" #28# 12)))))))
-                          nil (#29="end" #29# 8)))))
-                     (#30=";" #30# 9)))
-                   (statement
-                    (((#31="begin" #31# 6)
-                      (statement
-                       (((ident "a" 6) (#32=":=" #32# 8)
-                         (expression nil (term (factor (number (integer "42" 10))) nil) nil))))
-                      (((#33=";" #33# 11)
-                        (statement
-                         (((ident "b" 6) (#34=":=" #34# 8)
-                           (expression nil (term (factor (number (real "30.0" 12))) nil) nil)))))
-                       ((#35=";" #35# 13) (statement (((#36="call" #36# 9) (ident "gcd" 13))))))
-                      (#37="end" #37# 4)))))
-                 (#38="." #38# 5))))
+                              (((ident "b" 27) (\:= ":=" 29)
+                                               (expression nil (term (factor (ident "b" 30)) nil)
+                                                           (((- "-" 31) (term (factor (ident "a" 32)) nil))))))))))
+                          (((\; ";" 34)
+                            (statement
+                             (((|if| "if" 16)
+                               (condition
+                                ((expression nil (term (factor (ident "a" 18)) nil) nil)
+                                 (> ">" 19)
+                                 (expression nil (term (factor (ident "b" 20)) nil)
+                                             nil)))
+                               (|then| "then" 25)
+                               (statement
+                                (((ident "a" 27) (\:= ":=" 29)
+                                                 (expression nil (term (factor (ident "a" 30)) nil)
+                                                             (((- "-" 31)
+                                                               (term (factor (ident "b" 32)) nil))))))))))))
+                          (|end| "end" 12)))))))
+                    nil (|end| "end" 8)))))
+               (\; ";" 9)))
+             (statement
+              (((|begin| "begin" 6)
+                (statement
+                 (((ident "a" 6) (\:= ":=" 8)
+                                 (expression nil (term (factor (number (integer "42" 10))) nil) nil))))
+                (((\; ";" 11)
+                  (statement
+                   (((ident "b" 6) (\:= ":=" 8)
+                                   (expression nil (term (factor (number (real "30.0" 12))) nil)
+                                               nil)))))
+                 ((\; ";" 13) (statement (((|call| "call" 9) (ident "gcd" 13))))))
+                (|end| "end" 4)))))
+           (|.| "." 5)))
+  :success)
+
+
+(in-package "COM.INFORMATIMAGO.RDP.EXAMPLE")
+
+(defun test/all ()
+  (com.informatimago.rdp.example::test/rdp-example-lisp)
+  (com.informatimago.rdp.example-without-action::test/rdp-example-lisp-without-action))
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

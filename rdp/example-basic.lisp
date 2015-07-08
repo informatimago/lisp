@@ -37,9 +37,11 @@
 
 
 (defpackage "COM.INFORMATIMAGO.RDP.BASIC.EXAMPLE"
-  (:use "COMMON-LISP" "COM.INFORMATIMAGO.RDP")
+  (:use "COMMON-LISP"
+        "COM.INFORMATIMAGO.RDP")
   (:export "PARSE-EXAMPLE"))
 (in-package "COM.INFORMATIMAGO.RDP.BASIC.EXAMPLE")
+
 
 
 (defgrammar example

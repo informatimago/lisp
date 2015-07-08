@@ -50,7 +50,18 @@ DO:     This macro generates a simple scanner and recursive decent parser
 
 TERMINALS:
 
-        A liste of couples (name-of-terminals regexp-of-terminal).
+        A list describing the terminal, of form either:
+             (terminal-name match-regexp) 
+             (terminal-name match-regexp / exclude-regexp) 
+
+        In the first form, if the match-regexp matches, left-anchored
+        to the current position, then the corresponding terminal is
+        recognized.
+
+        In the second form, if the match-regexp matches, left-anchored
+        to the current position, and the exclude-regexp DOES NOT
+        match, left-anchored to the first position following the
+        match, then the corresponding terminal is recognized.
 
         Note that terminals don't necessarily have a name since they
         may be written directly in the grammar rules as strings.

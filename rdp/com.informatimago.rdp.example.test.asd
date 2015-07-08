@@ -61,9 +61,8 @@
   #+asdf3 :perform #+asdf3 (asdf:test-op
                             (operation system)
                             (declare (ignore operation system))
-                            ;; (let ((*package* (find-package "TESTED-PACKAGE")))
-                            ;;   (uiop/package:symbol-call "TESTED-PACKAGE"
-                            ;;                             "TEST/ALL"))
-                            ))
+                            (dolist (p '("COM.INFORMATIMAGO.RDP.EXAMPLE"))
+                              (let ((*package* (find-package p)))
+                                (uiop/package:symbol-call p "TEST/ALL")))))
 
 ;;;; THE END ;;;;

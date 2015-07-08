@@ -126,11 +126,11 @@
                               (function >) :key (function length)))
          ;; (nl-terminals (remove-if (function stringp) (grammar-terminals grammar)))
          (lit-an-terminals-regexp
-          (format nil "^(~{~A~^|~})([^A-Za-z0-9]|$)"
-                  (mapcar (function regexp-quote-extended) an-terminals)))
+           (format nil "^(~{~A~^|~})([^A-Za-z0-9]|$)"
+                   (mapcar (function regexp-quote-extended) an-terminals)))
          (lit-nan-terminals-regexp
-          (format nil "^(~{~A~^|~})"
-                  (mapcar (function regexp-quote-extended)  nan-terminals)))
+           (format nil "^(~{~A~^|~})"
+                   (mapcar (function regexp-quote-extended)  nan-terminals)))
          (fname (gen-scanner-function-name target (grammar-name grammar))))
     `(progn
        (emit "SUB ~A" ',fname)
@@ -143,37 +143,37 @@
        (emit "    SCANTOK$=\"\"")
        (emit "  ELSE")
        (emit "    REM *** ASSUMING THERE IS SOME WAY TO MATCH REGEXPS IN BASIC...")
-       (when an-terminals
-         (emit "    MATCHREGEXP  \"~A\" SCANSRC$,SCANPOS INTO START,END" ',lit-an-terminals-regexp)
-         (emit "    IF START>0 THEN")
-         (emit "      SCANPOS=END")
-         (emit "      SCANTXT$=MID$(SCANSRC$,START,END-1)")
-         (emit "      SCANTOK$=SCANTXT$")
-         (emit "    ELSE"))
-       (when nan-terminals
-         (emit "      MATCHREGEXP  \"~A\" SCANSRC$,SCANPOS INTO START,END" ',lit-nan-terminals-regexp)
-         (emit "      IF START>0 THEN")
-         (emit "        SCANPOS=END")
-         (emit "        SCANTXT$=MID$(SCANSRC$,START,END)")
-         (emit "        SCANTOK$=SCANTXT$")
-         (emit "      ELSE"))
+       ,@(when an-terminals
+           `((emit "    MATCHREGEXP  \"~A\" SCANSRC$,SCANPOS INTO START,END" ',lit-an-terminals-regexp)
+              (emit "    IF START>0 THEN")
+              (emit "      SCANPOS=END")
+              (emit "      SCANTXT$=MID$(SCANSRC$,START,END-1)")
+              (emit "      SCANTOK$=SCANTXT$")
+              (emit "    ELSE")))
+       ,@(when nan-terminals
+           `((emit "      MATCHREGEXP  \"~A\" SCANSRC$,SCANPOS INTO START,END" ',lit-nan-terminals-regexp)
+              (emit "      IF START>0 THEN")
+              (emit "        SCANPOS=END")
+              (emit "        SCANTXT$=MID$(SCANSRC$,START,END)")
+              (emit "        SCANTOK$=SCANTXT$")
+              (emit "      ELSE")))
        ,@(labels ((gen (terminals)
-                       (if (null terminals)
-                           `( (emit "       PRINT \"ERROR: AT POSITION\",CURPOS,\"EXPECTED \",TOKEN$,\" NOT \",CURTOK$")
-                              (emit "       STOP"))
-                           (let ((terminal (car terminals)))
-                             `(
-                               (emit "   MATCHREGEXP \"^(~A)\" SCANSRC$,SCANPOS INTO START,END" ',(second terminal))
-                               (emit "   IF START>0 THEN")
-                               (emit "        SCANPOS=END")
-                               (emit "        SCANTXT$=MID$(SCANSRC$,START,END)")
-                               (emit "        SCANTOK$=\"~A\"" ',(first terminal))
-                               (emit "   ELSE")
-                               ,@(gen (cdr terminals))
-                               (emit "   ENDIF"))))))
-                 (gen  (grammar-terminals grammar)))
-       (when nan-terminals (emit "      ENDIF"))
-       (when an-terminals  (emit "    ENDIF"))
+                    (if (null terminals)
+                        `( (emit "       PRINT \"ERROR: AT POSITION\",CURPOS,\"EXPECTED \",TOKEN$,\" NOT \",CURTOK$")
+                           (emit "       STOP"))
+                        (let ((terminal (car terminals)))
+                          `(
+                            (emit "   MATCHREGEXP \"^(~A)\" SCANSRC$,SCANPOS INTO START,END" ',(second terminal))
+                            (emit "   IF START>0 THEN")
+                            (emit "        SCANPOS=END")
+                            (emit "        SCANTXT$=MID$(SCANSRC$,START,END)")
+                            (emit "        SCANTOK$=\"~A\"" ',(first terminal))
+                            (emit "   ELSE")
+                            ,@(gen (cdr terminals))
+                            (emit "   ENDIF"))))))
+           (gen  (grammar-terminals grammar)))
+       ,@(when nan-terminals '((emit "      ENDIF")))
+       ,@(when an-terminals  '((emit "    ENDIF")))
        (emit "  ENDIF")
        ,@(when trace `((emit "PRINT \"< ~A\"" ',(symbol-name fname))))
        (emit "ENDSUB"))))
@@ -190,84 +190,93 @@
 (defparameter *lex* 0)
 
 (defun first-rhs (grammar item)
-  (print grammar)
-  (print item)
   (first-set grammar item))
 
 (defmethod gen-parsing-statement ((target (eql :basic)) grammar item)
-  (if (atom item)
-      (if (terminalp grammar item)
-          `(emit "TOKEN$=~S : CALL ACCEPT" ',(string item))
-          (let* ((firsts (first-rhs grammar item))
-                 (emptyp (member nil firsts)))
-            `(progn
-               (emit "IF ~A THEN" ',(gen-in-firsts target (remove nil firsts)))
-               (emit "  CALL ~A" ',(gen-parse-function-name target grammar item))
-               (emit "ELSE")
-               ,(if emptyp
-                    `(emit "  RET=NIL")
-                    `(progn
-                       (emit "  PRINT \"ERROR: UNEXPECTED TOKEN \",SCANTOK$")
-                       (emit "  STOP")))
-               (emit "ENDIF"))))
-      (ecase (car item)
-        ((seq)
-         (destructuring-bind (seq (&rest items) actions) item
-           (declare (ignore seq))
-           (let ((index 0)
-                 (lex (incf *lex*)))
+  (labels ((es-first-set (extended-sentence)
+             (if (atom extended-sentence)
+                 (first-set grammar extended-sentence)
+                 (ecase (car extended-sentence)
+                   ((seq) (loop
+                            :with all-firsts = '()
+                            :for item :in (second extended-sentence)
+                            :for firsts = (es-first-set item)
+                            :do (setf all-firsts (union firsts (delete nil all-firsts)))
+                            :while (member nil firsts)
+                            :finally (return all-firsts)))
+                   ((rep) (es-first-set (first (second extended-sentence))))
+                   ((opt) (union '(nil) (es-first-set (first (second extended-sentence)))))
+                   ((alt) (reduce (function union) (second extended-sentence)
+                                  :key (function es-first-set)))))))
+    (if (atom item)
+        (if (terminalp grammar item)
+            `(emit "TOKEN$=~S : CALL ACCEPT" ',(string item))
+            (let* ((firsts (first-rhs grammar item))
+                   (emptyp (member nil firsts)))
+              `(progn
+                 (emit "IF ~A THEN" ',(gen-in-firsts target (remove nil firsts)))
+                 (emit "  CALL ~A" ',(gen-parse-function-name target grammar item))
+                 (emit "ELSE")
+                 ,(if emptyp
+                      `(emit "  RET=NIL")
+                      `(progn
+                         (emit "  PRINT \"ERROR: UNEXPECTED TOKEN \",SCANTOK$")
+                         (emit "  STOP")))
+                 (emit "ENDIF"))))
+        (ecase (car item)
+          ((seq)
+           (destructuring-bind (seq (&rest items) actions) item
+             (declare (ignore seq))
+             (let ((index 0)
+                   (lex (incf *lex*)))
+               `(progn
+                  ,@(mapcar (lambda (item)
+                              `(progn
+                                 ,(gen-parsing-statement target grammar item)
+                                 (emit "L~DA~D=RES" ,lex ,(incf index))))
+                            items)
+                  ,@(loop
+                      :for prev = "NIL" :then "A0"
+                      :for i :from index :downto 1
+                      :collect
+                      `(emit "A~D=L~DA~D:NCAR=A~D:NCDR=~A:CALL CONS:A0=RES"
+                             ,i ,lex ,i ,i ,prev))
+                  ,@(mapcar (lambda (act) `(emit "~A" ',act)) actions)))))
+          ((rep)
+           (let ((lex (incf *lex*)))
              `(progn
-                ,@(mapcar (lambda (item)
-                            `(progn
-                               ,(gen-parsing-statement target grammar item)
-                               (emit "L~DA~D=RES" ,lex ,(incf index))))
-                          items)
-                ,@(loop
-                     :for prev = "NIL" :then "A0"
-                     :for i :from index :downto 1
-                     :collect
-                     `(emit "A~D=L~DA~D:NCAR=A~D:NCDR=~A:CALL CONS:A0=RES"
-                            ,i ,lex ,i ,i ,prev))
-                ,@(mapcar (lambda (act) `(emit "~A" ',act)) actions)))))
-        ((rep)
-         (let ((lex (incf *lex*)))
-           `(progn
-              (emit "L~DRES=NIL" ,lex)
-              (emit "WHILE ~A"
-                    ',(gen-in-firsts target (first-rhs grammar (second item))))
-              ,(gen-parsing-statement target grammar (second item))
-              (emit "NCAR=RET:NCDR=L~DRES:CALL CONS:L~DRES=RES" ,lex ,lex)
-              (emit "ENDWHILE")
-              (emit "LIST=L~DRES:CALL REVERSE" ,lex))))
-        ((opt)
-         (assert (null (rest (second item))))
-         (let ((lex (incf *lex*)))
-           `(progn
-              (emit "L~DRES=NIL" ,lex)
-              (emit "IF ~A THEN"
-                    ',(gen-in-firsts target (first-rhs grammar (first (second item)))))
-              ,(gen-parsing-statement target grammar (first (second item)))
-              (emit "ELSE")
-              (emit "  RES=NIL")
-              (emit "ENDIF"))))
-        ((alt)
-         (labels ((gen (items)
-                    (if (null items)
-                        `(progn
-                           (emit "PRINT \"ERROR: DID NOT EXPECT \",CURTOK$")
-                           (emit "STOP"))
-                        `(progn
-                           (emit "IF ~A THEN"
-                                 ',(gen-in-firsts target (first-rhs grammar (car items))))
-                           ,(gen-parsing-statement target grammar (car items))
-                           (emit "ELSE")
-                           ,(gen (cdr items))
-                           (emit "ENDIF")))))
-           (gen (second item)))))))
-
-
-
-
+                (emit "L~DRES=NIL" ,lex)
+                (emit "WHILE ~A"
+                      ',(gen-in-firsts target (es-first-set (first (second item)))))
+                ,(gen-parsing-statement target grammar (first (second item)))
+                (emit "NCAR=RET:NCDR=L~DRES:CALL CONS:L~DRES=RES" ,lex ,lex)
+                (emit "ENDWHILE")
+                (emit "LIST=L~DRES:CALL REVERSE" ,lex))))
+          ((opt)
+           (assert (null (rest (second item))))
+           (let ((lex (incf *lex*)))
+             `(progn
+                (emit "L~DRES=NIL" ,lex)
+                (emit "IF ~A THEN"
+                      ',(gen-in-firsts target (es-first-set (first (second item)))))
+                ,(gen-parsing-statement target grammar (first (second item)))
+                (emit "ELSE")
+                (emit "  RES=NIL")
+                (emit "ENDIF"))))
+          ((alt)
+           (labels ((gen (items)
+                      (if (null items)
+                          `(progn
+                             (emit "PRINT \"ERROR: DID NOT EXPECT \",CURTOK$")
+                             (emit "STOP"))
+                          `(progn
+                             (emit "IF ~A THEN"
+                                   ',(gen-in-firsts target (es-first-set (car items))))
+                             ,(gen-parsing-statement target grammar (car items))
+                             (emit "ELSE")
+                             ,(gen (cdr items))
+                             (emit "ENDIF")))))
+             (gen (second item))))))))
 
 
 (defmethod generate-nt-parser ((target (eql :basic)) grammar non-terminal &key (trace nil))

@@ -103,12 +103,8 @@
   err)
 
 
-(defclass rdp-scanner (scanner)
-  ((buffer       :accessor scanner-buffer
-                 :type     (or null string)
-                 :initform nil)
-   (current-text :accessor scanner-current-text
-                 :initform ""))
+(defclass rdp-scanner (buffered-scanner)
+  ()
   (:default-initargs :line 0))
 
 (defmethod scanner-current-token ((scanner rdp-scanner))

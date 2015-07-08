@@ -70,15 +70,13 @@
              (progress-failure-message input
                                        "~2%Reading parenthesized string ~S~
                                         ~%     --> ~S~%expected ~S~%"
-                                       input result output))
-     :finally (format t "~&~30A ~4D cases, ~4D successful  (~6,1F %)~%"
-                      'read-parenthesized-string
-                      tcount success (/ success tcount 0.01))))
+                                       input result output)))
+  :success)
 
 
 
 
-(define-test test/all ()
+(defun test/all ()
   (test/read-parenthesized-string))
 
 

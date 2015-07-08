@@ -198,7 +198,11 @@ Subclasses may use scanner-stream to read from the source.")
                   :documentation "TAB aligns to column number modulo TAB-WIDTH.")
    (current-token :accessor scanner-current-token
                   :initform nil
-                  :documentation "The last token read."))
+                  :documentation "The last token read.")
+   (token-package :accessor scanner-token-package
+                  :initform (load-time-value (find-package "COM.INFORMATIMAGO.COMMON-LISP.PARSER.SCANNER"))
+                  :initarg :token-package
+                  :documentation "The package where the token-kind symbols are interned in."))
   (:documentation "An abstract scanner."))
 
 

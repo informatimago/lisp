@@ -62,7 +62,6 @@
 
 
 
-
 (defclass buffered-scanner (scanner)
   ((buffer       :accessor scanner-buffer
                  :type     (or null string)
@@ -70,6 +69,10 @@
    (current-text :accessor scanner-current-text
                  :initform ""))
   (:default-initargs :line 0))
+
+(defmethod print-object ((self buffered-scanner) out)
+  (print-parseable-object (self out :type t :identity t)
+                          line column current-token buffer current-text source))
 
 (defmethod scanner-current-token ((scanner buffered-scanner))
   (token-kind (call-next-method)))
@@ -107,6 +110,28 @@
      (setf (scanner-current-text  scanner) "<END OF FILE>"
            (scanner-current-token scanner) '|<END OF FILE>|))))
 
+
+(defgeneric word-equal (a b)
+  (:method ((a t) (b t))           (eql a b))
+  (:method ((a string) (b string)) (string= a b))
+  (:method ((a symbol) (b string)) (string= a b))
+  (:method ((a string) (b symbol)) (string= a b)))
+
+(defmethod accept ((scanner buffered-scanner) token)
+  (if (word-equal token (scanner-current-token scanner))
+      (prog1 (list (token-kind (scanner-current-token scanner))
+                   (scanner-current-text scanner)
+                   (scanner-column scanner))
+        (scan-next-token scanner))
+      (error 'unexpected-token-error
+             :line   (scanner-line scanner)
+             :column (scanner-column scanner)
+             :scanner scanner
+             :expected-token token
+             :format-control "Expected ~S, not ~A (~S)"
+             :format-arguments (list token
+                                     (scanner-current-token scanner)
+                                     (scanner-current-text scanner)))))
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -148,12 +173,15 @@
            ;; Regexps for all the Literal Non Alpha Numeric Terminals
            (lit-nan-terminals-regexp
              (format nil "^(~{~A~^|~})"
-                     (mapcar (function regexp-quote-extended)  nan-terminals))))
+                     (mapcar (function regexp-quote-extended)  nan-terminals)))
+           (pname (package-name *package*)))
 
       `(progn
 
          (defclass ,name  (,superclass)
-           ((spaces :initform ,spaces)))
+           ()
+           (:default-initargs :spaces ,spaces
+                              :token-package (load-time-value (find-package ,pname))))
 
          (defmethod scan-next-token ((scanner ,name) &optional parser-data)
            "RETURN: (scanner-current-token scanner)" 
@@ -189,7 +217,7 @@
                         (let ((text (match-string 1 (scanner-buffer scanner) match)))
                           (setf (scanner-column scanner)        (1+ (match-end 1 match))
                                 (scanner-current-text scanner)  text
-                                (scanner-current-token scanner) text)))))
+                                (scanner-current-token scanner) text))))) 
                  ;; Non Literal Terminals: we have a regexp for each terminal.
                  ,@(mapcar
                     (lambda (terminal)
@@ -230,7 +258,8 @@
                                 :column (scanner-column scanner)
                                 :text (scanner-current-text scanner)
                                 :kind (etypecase (scanner-current-token scanner)
-                                        (string (intern (scanner-current-token scanner)))
+                                        (string (intern (scanner-current-token scanner)
+                                                        (scanner-token-package scanner)))
                                         (symbol (scanner-current-token scanner))))))))))
 
 
