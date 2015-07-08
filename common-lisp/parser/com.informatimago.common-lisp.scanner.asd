@@ -49,7 +49,8 @@
                ((#:albert #:docbook #:bgcolor)   . "white")
                ((#:albert #:docbook #:textcolor) . "black"))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
-  :depends-on ("com.informatimago.common-lisp.cesarum")
+  :depends-on ("com.informatimago.common-lisp.cesarum"
+               "com.informatimago.common-lisp.regexp")
   :components ((:file "packages"         :depends-on ())
                (:file "scanner"          :depends-on ("packages"))
                (:file "generate-scanner" :depends-on ("packages" "scanner")))
