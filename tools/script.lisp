@@ -54,7 +54,8 @@
            "EX-IOERR" "EX-TEMPFAIL" "EX-PROTOCOL" "EX-NOPERM"
            "EX-CONFIG" "EX--MAX"
            ;;
-           "*SHELL-OUTPUT*" "*SHELL-ERROR*" "SHELL" "UNAME" "PARSE-OPTIONS"))
+           "*SHELL-OUTPUT*" "*SHELL-ERROR*" "SHELL" "UNAME"
+           "SHELL-QUOTE-ARGUMENT" "PARSE-OPTIONS"))
 (in-package "COM.INFORMATIMAGO.TOOLS.SCRIPT")
 
 
@@ -466,6 +467,26 @@ RETURN:     The lisp-name of the option (this is a symbol
 
 (defvar *shell-error*  (make-synonym-stream '*error-output*)
   "The stream where the error  stream of the shell commands is set to.")
+
+
+(defun shell-quote-argument (argument)
+  "
+DO:      Quote an argument for passing as argument to an inferior shell.
+RETURN:  A string containing the quoted argument.
+"
+  (do ((i 0 (1+ i))
+       (ch)
+       (result '()))
+      ((<= (length argument) i) (coerce (nreverse result) 'string))
+    (setq ch (char argument i))
+    (unless (or (char= (character "-") ch)
+                (char= (character ".") ch)
+                (char= (character "/") ch)
+                (and (char<= (character "A") ch) (char<= ch (character "Z")))
+                (and (char<= (character "a") ch) (char<= ch (character "z")))
+                (and (char<= (character "0") ch) (char<= ch (character "9"))))
+      (push (character "\\") result))
+    (push ch result)))
 
 
 

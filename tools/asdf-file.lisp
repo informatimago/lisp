@@ -49,6 +49,8 @@
    "MAKE-COMPONENTS" 
    "GENERATE-ASD"
    ;; Reading and writing asd files:
+   "FIND-ASD-FILES"
+   "ASD-SYSTEMS-IN-ASD-FILE"
    "READ-ASDF-SYSTEM-DEFINITIONS"
    "WRITE-ASDF-SYSTEM-DEFINITION"
    "SAVE-ASDF-SYSTEM-FILE"
@@ -298,13 +300,43 @@ VANILLAP:  if true, then generate a simple, vanilla system.
 (defun read-asdf-system-definitions (stream)
   "
 Reads an ASD file stream and return a list of asdf:defsystem forms
-found.  DEFPACKAGE and IN-PACKAGE forms are evaluated.
+found.
+
+DEFPACKAGE and IN-PACKAGE forms are evaluated, but IN-PACKAGE forms
+are neutralized with a local dynamic binding of *PACKAGE*.
 "
-  (let ((forms (read-source-code stream
+  (let ((*package* *package*)
+        (forms (read-source-code stream
                                  :test (lambda (sexp)
                                          (and (consp sexp)
                                               (eql (first sexp) 'asdf:defsystem))))))
     (cdr (assoc :test forms))))
+
+
+(defun find-asd-files (root-directory)
+  "Returns a list of pathnames to asd files found recursively in the ROOT-DIRECTORY."
+  (directory (merge-pathnames (make-pathname :directory '(:relative :wild-inferiors)
+                                             :name :wild
+                                             :type "asd"
+                                             :case :local
+                                             :defaults root-directory)
+                              root-directory nil)))
+
+
+(defun asd-systems-in-asd-file (asd-file-pathname)
+  "
+Returns a list of system names found in the asd file ASD-FILE-PATHNAME.
+
+DEFPACKAGE and IN-PACKAGE forms are evaluated, but IN-PACKAGE forms
+are neutralized with a local dynamic binding of *PACKAGE*.
+"
+  (with-open-file (stream asd-file-pathname)
+    (mapcan (lambda (defsystem-form)
+              (ignore-errors
+               (destructuring-bind (defsystem name &rest ignored) defsystem-form
+                 (declare (ignore defsystem ignored))
+                 (list (string-downcase name)))))
+            (read-asdf-system-definitions stream))))
 
 
 (defun write-asdf-system-definition (stream defsystem-form)

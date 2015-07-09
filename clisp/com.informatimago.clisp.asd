@@ -43,6 +43,7 @@
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :license "AGPL3"
   :version "1.2.4"
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ()
   :components ())
 
