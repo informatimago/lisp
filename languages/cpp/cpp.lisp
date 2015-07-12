@@ -236,7 +236,7 @@
 ;;; --------------------
 
 
-(defun skip-spaces (text start)
+(defun skip-spaces-in-text (text start)
   (loop
     :while (and (< start (length text))
                 (whitespacep (aref text start)))
@@ -244,7 +244,7 @@
   start)
 
 (defun skip-spaces-but-one (text start)
-  (let ((start (skip-spaces text start)))
+  (let ((start (skip-spaces-in-text text start)))
     (when (and (plusp start)
                (whitespacep (aref text (1- start))))
       (decf start))
@@ -400,10 +400,10 @@ RETURN: the token text; the end position."
       :with record-space-token := nil ; we track #define to detect the same in NAME ( vs. NAME(
       :do (setf start (ecase record-space-token
                         ((nil)
-                         (skip-spaces text start))
+                         (skip-spaces-in-text text start))
                         ((:before-name)
                          (setf record-space-token :after-name)
-                         (skip-spaces text start))
+                         (skip-spaces-in-text text start))
                         (:after-name
                          (setf record-space-token nil)
                          (skip-spaces-but-one text start))))

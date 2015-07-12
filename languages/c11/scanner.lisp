@@ -33,6 +33,8 @@
 ;;;;**************************************************************************
 (in-package "COM.INFORMATIMAGO.LANGUAGES.C11.PARSER")
 
+
+#-(and) ; we use the cpp-scanner.
 (define-scanner c11-scanner
   :terminals  (
                "!" "!=" "%" "%=" "%>" "&" "&&" "&=" "(" ")"
@@ -89,22 +91,57 @@
 
 (defparameter *c11-regexp-tokens*
   ;; order matters
-  '((lchar      "L?'(\\.|[^\\'])+'")
-    (str        "L?\"(\\.|[^\\\"])*\"")
-    (identifier "[a-zA-Z_$][a-zA-Z_$0-9]*")
-    (flt1       "[0-9]+[Ee][-+]?[0-9]+[fFlL]?")
-    (flt2       "[0-9]*\\.[0-9]+([Ee][-+]?[0-9]+)?[fFlL]?")
-    (flt3       "[0-9]+\\.[0-9]*([Ee][-+]?[0-9]+)?[fFlL]?")
-    (hex        "0[xX][0-9A-Fa-f]+[uUlL]*")
-    (oct        "0[0-7]+[uUlL]*")
-    (dec        "[0-9]+[uUlL]*")))
+  '((|string_literal|
+     (str        "L?\"(\\.|[^\\\"])*\""))
+    (|i_constant|
+     (lchar      "L?'(\\.|[^\\'])+'"))
+    (|identifier|
+     (identifier "[a-zA-Z_$][a-zA-Z_$0-9]*"))
+    (|f_constant|
+     (flt1       "[0-9]+[Ee][-+]?[0-9]+[fFlL]?")
+     (flt2       "[0-9]*\\.[0-9]+([Ee][-+]?[0-9]+)?[fFlL]?")
+     (flt3       "[0-9]+\\.[0-9]*([Ee][-+]?[0-9]+)?[fFlL]?"))
+    (|i_constant|
+     (hex        "0[xX][0-9A-Fa-f]+[uUlL]*")
+     (oct        "0[0-7]+[uUlL]*")
+     (dec        "[0-9]+[uUlL]*"))))
 
 (defun compute-token-kind (token)
   (let ((text  (token-text token)))
     (or (gethash text *c11-literal-tokens-map*)
-        (first (find-if (lambda (entry)
-                          (string-match (format nil "^~A$" (second entry)) text))
-                        *c11-regexp-tokens*)))))
+        (let ((kind (first (find-if (lambda (entry)
+                                 (some (lambda (regexp)
+                                         (string-match (format nil "^~A$" (second regexp)) text))
+                                       (rest entry)))
+                                    *c11-regexp-tokens*))))
+          (if (eq kind '|identifier|)
+              (cond
+                ((typedef-name-p              *context* token) '|typedef_name|)
+                ((function-name-p             *context* token) '|func_name|)
+                ((enumeration-constant-name-p *context* token) '|enumeration_constant|)
+                (t kind))
+              kind)))))
+
+;; (untrace compute-token-kind)
+#-(and)
+(defparameter *tc*
+  (mapcar (lambda (token)
+            (setf (token-kind token) (compute-token-kind token))
+            token)
+          (reduce (function append)
+                  (reverse (com.informatimago.languages.cpp::context-output-lines
+                            (let ((*identifier-package*
+                                    (load-time-value (find-package "COM.INFORMATIMAGO.LANGUAGES.C11.C"))))
+                              (cpp-e "/Users/pjb/src/public/lisp/languages/cpp/tests/emacs.c"
+                                     :trace-includes t
+                                     :defines '("__GNUC__" "4" "__STDC__" "1" "__x86_64__" "1")
+                                     :includes '("/Users/pjb/src/macosx/emacs-24.5/src/")
+                                     :include-bracket-directories '("/Users/pjb/src/macosx/emacs-24.5/src/"
+                                                                    "/Users/pjb/src/macosx/emacs-24.5/lib/"
+                                                                    "/Users/pjb/src/macosx/gcc-4.9.2/gcc/ginclude/" 
+                                                                    "/usr/include/")
+                                     :write-processed-lines nil))))
+                  :initial-value '())))
 
 
 #-(and) (
@@ -130,18 +167,23 @@
                    collect (print token))))
 
          (defparameter *tc*
-           (reduce (function append)
-                   (reverse (com.informatimago.languages.cpp::context-output-lines
-                             (cpp-e "/Users/pjb/src/public/lisp/languages/cpp/tests/emacs.c"
-                                    :trace-includes t
-                                    :defines '("__GNUC__" "4" "__STDC__" "1" "__x86_64__" "1")
-                                    :includes '("/Users/pjb/src/macosx/emacs-24.5/src/")
-                                    :include-bracket-directories '("/Users/pjb/src/macosx/emacs-24.5/src/"
-                                                                   "/Users/pjb/src/macosx/emacs-24.5/lib/"
-                                                                   "/Users/pjb/src/macosx/gcc-4.9.2/gcc/ginclude/" 
-                                                                   "/usr/include/")
-                                    :write-processed-lines nil)))
-                   :initial-value '()))
+           (mapcar (lambda (token)
+                     (setf (token-kind token) (compute-token-kind token))
+                     token)
+                   (reduce (function append)
+                           (reverse (com.informatimago.languages.cpp::context-output-lines
+                                     (let ((*identifier-package*
+                                             (load-time-value (find-package "COM.INFORMATIMAGO.LANGUAGES.C11.C"))))
+                                       (cpp-e "/Users/pjb/src/public/lisp/languages/cpp/tests/emacs.c"
+                                              :trace-includes t
+                                              :defines '("__GNUC__" "4" "__STDC__" "1" "__x86_64__" "1")
+                                              :includes '("/Users/pjb/src/macosx/emacs-24.5/src/")
+                                              :include-bracket-directories '("/Users/pjb/src/macosx/emacs-24.5/src/"
+                                                                             "/Users/pjb/src/macosx/emacs-24.5/lib/"
+                                                                             "/Users/pjb/src/macosx/gcc-4.9.2/gcc/ginclude/" 
+                                                                             "/usr/include/")
+                                              :write-processed-lines nil))))
+                           :initial-value '())))
 
          (dolist (token *tc*)
            (setf (token-kind token) (compute-token-kind token)))

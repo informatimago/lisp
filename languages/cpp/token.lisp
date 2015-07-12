@@ -33,11 +33,7 @@
 ;;;;**************************************************************************
 (in-package "COM.INFORMATIMAGO.LANGUAGES.CPP")
 
-
-(defclass cpp-token (token)
-  ((file   :initform "-" :initarg :file   :accessor token-file)))
-
-
+;;; ------------------------------------------------------------
 
 (defstruct (numbered-line
             (:type list)
@@ -61,29 +57,64 @@
 (defmethod token-text ((numbered-line cons))
   (line-text numbered-line))
 
+;;; ------------------------------------------------------------
 
+(defclass cpp-token (token)
+  ((file   :initform "-" :initarg :file   :accessor token-file)))
 
-(defmacro define-token-class (name)
+(defmacro define-token-class (name &optional slots)
   (let ((class-name (intern (concatenate 'string (string name) (string '-token)))))
     `(progn
-       (defclass ,class-name   (cpp-token) ())
+       (defclass ,class-name (cpp-token) ,slots)
        (defun ,(intern (concatenate 'string (string name) (string '-p))) (object)
          (typep object ',class-name))
        (defmethod print-object ((self ,class-name) stream)
          (print-unreadable-object (self stream :identity nil :type t)
            (let ((*print-circle* nil))
-            (format stream "~A:~A:~A: ~S"
-                    (token-file self) (token-line self) (token-column self) (token-text self))))
+             (format stream "~A:~A:~A: ~S"
+                     (token-file self) (token-line self) (token-column self) (token-text self))))
          self)
        (defun ,(intern (concatenate 'string (string 'make-) (string name))) (text &optional (column 0) (line 0) (file "-"))
          (make-instance ',class-name :text text :column column :line line :file file)))))
 
-(define-token-class identifier)
+(defgeneric token-symbol (token)
+  (:method ((token token))
+    (token-kind token)))
+
+(define-token-class identifier
+    ((symbol :initarg :symbol
+             :initform nil
+             :accessor token-symbol)))
 (define-token-class number)
 (define-token-class string-literal)
 (define-token-class character-literal)
 (define-token-class punctuation)
 (define-token-class other)
+
+(defvar *identifier-package* (load-time-value (find-package #.(package-name *package*)))
+  "Package where to intern token-symbol of identifiers.")
+
+(defmethod initialize-instance :after ((token identifier-token) &key &allow-other-keys)
+  (setf (slot-value token 'kind)   'identifier
+        (slot-value token 'symbol) (intern (slot-value token 'text) *identifier-package*)
+        (slot-value token 'text) nil))
+(defmethod token-text ((token identifier-token))
+  (symbol-name (token-symbol token)))
+
+(defmethod initialize-instance :after ((token punctuation-token) &key &allow-other-keys)
+  (setf (slot-value token 'kind) 'punctuation))
+(defmethod initialize-instance :after ((token number-token) &key &allow-other-keys)
+  (setf (slot-value token 'kind) 'number))
+(defmethod initialize-instance :after ((token string-literal-token) &key &allow-other-keys)
+  (setf (slot-value token 'kind) 'string-literal))
+(defmethod initialize-instance :after ((token character-literal-token) &key &allow-other-keys)
+  (setf (slot-value token 'kind) 'character-literal))
+
+(defun identifierp (token)
+  (typep token 'identifier-token))
+
+(defun number-token-p (token)
+  (typep token 'number-token))
 
 
 (defun pseudo-token (file lino)
@@ -150,12 +181,6 @@
 (define-punctuation-predicate op-colon-p       ":")
 
 
-(defun identifierp (token)
-  (typep token 'identifier-token))
-
-(defun number-token-p (token)
-  (typep token 'number-token))
-
 
 (define-condition cpp-error (simple-error)
   ())
@@ -205,9 +230,5 @@
     (warn 'cpp-warning
           :format-control format-control
           :format-arguments  format-arguments)))
-
-
-
-
 
 ;;;; THE END ;;;;
