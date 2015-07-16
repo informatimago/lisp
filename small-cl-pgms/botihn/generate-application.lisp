@@ -41,6 +41,9 @@
 
 (ql:quickload :com.informatimago.small-cl-pgms.botihn)
 
+#+ccl (pushnew 'com.informatimago.common-lisp.interactive.interactive:initialize
+               ccl:*restore-lisp-functions*)
+
 (progn (format t "~%;;; Saving hotihn.~%") (finish-output) (values))
 ;; This doesn't return.
 #+ccl (ccl::save-application

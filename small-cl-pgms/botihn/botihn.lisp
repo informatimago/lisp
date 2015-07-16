@@ -11,6 +11,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2015-07-17 <PJB> Added commands: help uptime version sources; added restarts.
 ;;;;    2015-04-27 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
@@ -51,6 +52,7 @@ Licensed under the AGPL3.
 "))
 (in-package "COM.INFORMATIMAGO.SMALL-CL-PGMS.BOTIHN")
 
+(defparameter *version* "1.1.1")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -135,6 +137,11 @@ Updates the *LAST-STORY* ID."
 (defvar *botpass*  "1234")
 
 ;; (setf *nickname* "botihn-test" *channel* "#botihn-test")
+(defun configure ()
+  (setf *server*   (or (uiop:getenv "BOTIHN_SERVER")    *server*)
+        *nickname* (or (uiop:getenv "BOTIHN_NICKNAME")  *nickname*)
+        *channel*  (or (uiop:getenv "BOTIHN_CHANNEL")   *channel*)
+        *botpass*  (or (uiop:getenv "BOTIHN_BOTPASS")   *botpass*)))
 
 (defun msg-hook (message)
   "Answers to PRIVMSG sent directly to this bot."
@@ -151,7 +158,9 @@ Updates the *LAST-STORY* ID."
         (let ((words (split-sequence #\space (second arguments) :remove-empty-subseqs t)))
           (scase (first words)
                  (("help")
-                  (answer "Available commands: help uptime sources"))
+                  (answer "Available commands: help version uptime sources"))
+                 (("version")
+                  (answer "Version: ~A" *version*))
                  (("uptime")
                   (answer "~A" (substitute #\space #\newline
                                            (with-output-to-string (*standard-output*)
@@ -196,28 +205,30 @@ and evaluating DELAY-EXPRESSIONS between each iteration."
   "The main program of the botihn IRC bot.
 We connect and reconnect to the *SERVER* under the *NICKNAME*,
 and join to the *CHANNEL* where HackerNews are published."
-  (with-simple-restart (quit "Quit")
-    (catch :gazongues
-      (with-retry (sleep (+ 10 (random 30)))
-        (with-simple-restart (reconnect "Reconnect")
-          (catch :petites-gazongues
-            (unwind-protect
-                 (progn
-                   (setf *connection* (connect :nickname *nickname* :server *server*))
-                   (add-hook *connection* 'irc::irc-privmsg-message 'msg-hook)
-                   (join *connection* *channel*)
-                   (monitor-initialize)
-                   (loop
-                     :with next-time = (+ *period* (get-universal-time))
-                     :for time = (get-universal-time)
-                     :do (if (<= next-time time)
-                             (progn
-                               (monitor-hacker-news (lambda (message) (privmsg *connection* *channel* message)))
-                               (incf next-time *period*))
-                             (read-message *connection*) #|there's a 10 s timeout in here.|#)))
-              (when *connection*
-                (quit *connection*)
-                (setf *connection* nil)))))))))
+  (let ((*package* (load-time-value (find-package "COM.INFORMATIMAGO.SMALL-CL-PGMS.BOTIHN"))))
+    (configure)
+    (with-simple-restart (quit "Quit")
+      (catch :gazongues
+        (with-retry (sleep (+ 10 (random 30)))
+          (with-simple-restart (reconnect "Reconnect")
+            (catch :petites-gazongues
+              (unwind-protect
+                   (progn
+                     (setf *connection* (connect :nickname *nickname* :server *server*))
+                     (add-hook *connection* 'irc::irc-privmsg-message 'msg-hook)
+                     (join *connection* *channel*)
+                     (monitor-initialize)
+                     (loop
+                       :with next-time = (+ *period* (get-universal-time))
+                       :for time = (get-universal-time)
+                       :do (if (<= next-time time)
+                               (progn
+                                 (monitor-hacker-news (lambda (message) (privmsg *connection* *channel* message)))
+                                 (incf next-time *period*))
+                               (read-message *connection*) #|there's a 10 s timeout in here.|#)))
+                (when *connection*
+                  (quit *connection*)
+                  (setf *connection* nil))))))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

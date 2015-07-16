@@ -35,10 +35,11 @@
 (asdf:defsystem "com.informatimago.small-cl-pgms.botihn"
   :description "An IRC bot monitoring Hacker News."
   :author "Pascal J. Bourguignon"
-  :version "1.0.2"
+  :version "1.1.1"
   :license "AGPL3"
   :depends-on ("com.informatimago.common-lisp.cesarum"
-               "cl-irc" "cl-json" "drakma")
+               "com.informatimago.common-lisp.interactive" ; date uptime
+               "cl-irc" "cl-json" "drakma" "split-sequence")
   :components ((:file "botihn")))
 
 ;;;; THE END ;;;;
