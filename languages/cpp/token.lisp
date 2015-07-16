@@ -71,8 +71,9 @@
        (defmethod print-object ((self ,class-name) stream)
          (print-unreadable-object (self stream :identity nil :type t)
            (let ((*print-circle* nil))
-             (format stream "~A:~A:~A: ~S"
-                     (token-file self) (token-line self) (token-column self) (token-text self))))
+             (format stream "~A:~A:~A: ~A ~S"
+                     (token-file self) (token-line self) (token-column self)
+                     (token-kind self) (token-text self))))
          self)
        (defun ,(intern (concatenate 'string (string 'make-) (string name))) (text &optional (column 0) (line 0) (file "-"))
          (make-instance ',class-name :text text :column column :line line :file file)))))
