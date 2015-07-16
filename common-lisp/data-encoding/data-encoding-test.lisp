@@ -66,7 +66,7 @@
 
 
 (def-encrecord test-rec
-    (buint8   buint8)
+  (buint8   buint8)
   (buint24  buint24)
   (luint8   luint8)
   (luint24  luint24)
@@ -212,13 +212,14 @@
 (define-test test/data ()
   (assert-true
    (equalp
-    (with-open-file (file "/tmp/test.data"
-                          :direction :input
-                          :if-does-not-exist :error
-                          :element-type '(unsigned-byte 8))
-      (let ((buffer  (make-array '(304) :element-type '(unsigned-byte 8))))
-        (assert-true (= 304 (read-sequence buffer file)))
-        buffer))
+    (print
+     (with-open-file (file "/tmp/test.data"
+                           :direction :input
+                           :if-does-not-exist :error
+                           :element-type '(unsigned-byte 8))
+       (let ((buffer  (make-array '(304) :element-type '(unsigned-byte 8))))
+         (assert-true (= 304 (read-sequence buffer file)))
+         buffer)))
     #(18 18 52 86 18 86 52 18 18 52 52 18 18 52 86 120 120 86 52 18 254
       254 220 186 254 186 220 254 254 220 220 254 254 220 186 152 152 186
       220 254 125 124 86 52 18 0 0 0 125 0 0 0 18 52 86 124 0 0 0 0 0 0 0 0
