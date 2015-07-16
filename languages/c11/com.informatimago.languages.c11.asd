@@ -57,11 +57,13 @@
   :components ((:file "packages"        :depends-on  ())
                (:file "context"         :depends-on  ("packages"))
                (:file "scanner"         :depends-on  ("packages" "context"))
-               (:file "read-yacc"       :depends-on  ("packages" ))
+               (:file "read-yacc"       :depends-on  ("packages"))
+               (:file "actions"         :depends-on  ("packages"))
                (:file "parser"          :depends-on  ("packages"
                                                       "read-yacc"
                                                       "context"
-                                                      "scanner")))
+                                                      "scanner"
+                                                      "actions")))
   :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.languages.c11.test"))))
 
 ;;;; THE END ;;;;

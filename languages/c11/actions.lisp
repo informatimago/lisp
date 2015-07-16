@@ -39,4 +39,12 @@
 (defun c-declaration (specifiers init-declarators semicolon)
   (print (list 'specifiers  specifiers))
   (print (list 'init-declarators init-declarators))
+  (finish-output)
   (list specifiers init-declarators semicolon))
+
+(defun c-trace (&rest sentence)
+  (print sentence)
+  (finish-output)
+  sentence)
+
+;;;; THE END ;;;;

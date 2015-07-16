@@ -58,12 +58,17 @@ token
 |#
 
 
-(defun c-declaration (specifiers init-declarators semicolon)
-  (print (list 'specifiers  specifiers))
-  (print (list 'init-declarators init-declarators))
-  (list specifiers init-declarators semicolon))
+(defun make-list-lexer (tokens)
+  (lambda ()
+    (if tokens
+        (let ((token (pop tokens)))
+          (values (setf (token-kind token) (compute-token-kind token))
+                  token))
+        (values nil nil))))
 
-;; #-(and) ; not yet.
+
+
+#-(and) ; not yet.
 (DEFINE-PARSER *C11-PARSER*
 
   (:START-SYMBOL |translation_unit|)
@@ -290,32 +295,30 @@ token
    |conditional_expression|)
 
   (|declaration|
-   (|declaration_specifiers| \;)
-   (|declaration_specifiers| |init_declarator_list| \; #'c-declaration)
-   |static_assert_declaration|)
+   (|declaration_specifiers| |init_declarator_list| \;  #|#'c-trace|#) ; #'c-declaration
+   (|declaration_specifiers| \;                         #|#'c-trace|#)
+   (|static_assert_declaration|                         #|#'c-trace|#))
 
-  (|declaration_specifiers|
-   (|storage_class_specifier| |declaration_specifiers|)
+  (|declaration_specifier|
    |storage_class_specifier|
-   (|type_specifier| |declaration_specifiers|)
-   |type_specifier|
-   (|type_qualifier| |declaration_specifiers|)
-   |type_qualifier|
-   (|function_specifier| |declaration_specifiers|)
-   |function_specifier|
-   (|alignment_specifier| |declaration_specifiers|)
+   |type_specifier|         
+   |type_qualifier|         
+   |function_specifier|     
    |alignment_specifier|)
+  
+  (|declaration_specifiers|
+   (|declaration_specifier|)
+   (|declaration_specifiers| |declaration_specifier|  #|#'c-trace|#))
 
   (|init_declarator_list|
-   |init_declarator|
+   (|init_declarator|)
    (|init_declarator_list| \, |init_declarator|))
 
   (|init_declarator|
-   (|declarator| = |initializer|)
-   |declarator|)
+   (|declarator| = |initializer| #|#'c-trace|#)
+   (|declarator|                 #|#'c-trace|#))
 
   (|storage_class_specifier| TYPEDEF EXTERN STATIC THREAD_LOCAL AUTO REGISTER)
-
   (|type_specifier| VOID CHAR SHORT INT LONG FLOAT DOUBLE SIGNED UNSIGNED BOOL
                     COMPLEX IMAGINARY |atomic_type_specifier| |struct_or_union_specifier|
                     |enum_specifier| TYPEDEF_NAME)
@@ -378,11 +381,11 @@ token
    (ALIGNAS \( |constant_expression| \)))
 
   (|declarator|
-   (|pointer| |direct_declarator|)
-   |direct_declarator|)
+   (|pointer| |direct_declarator|    #|#'c-trace|#)
+   (|direct_declarator|              #|#'c-trace|#))
 
   (|direct_declarator|
-   IDENTIFIER
+   (IDENTIFIER                       #|#'c-trace|#)
    (\( |declarator| \))
    (|direct_declarator| \[ \])
    (|direct_declarator| \[ * \])
@@ -546,13 +549,6 @@ token
    (|declaration_list| |declaration|)))
 
 
-(defun make-list-lexer (tokens)
-  (lambda ()
-    (if tokens
-        (let ((token (pop tokens)))
-          (values (setf (token-kind token) (compute-token-kind token))
-                  token))
-        (values nil nil))))
 
 #-(and)
 (let ((*context* (make-instance 'context)))
