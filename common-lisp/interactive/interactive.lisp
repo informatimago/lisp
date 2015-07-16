@@ -52,7 +52,8 @@
            "REPL-HISTORY-READER-MACRO"
            "MORE" "LESS" "CAT" "LS" "POPD" "PUSHD" "PWD" "CD"
            "BROWSE" "LIST-EXTERNAL-SYMBOLS" "LIST-ALL-SYMBOLS"
-           "DEFINE-PACKAGE")
+           "DEFINE-PACKAGE"
+           "INITIALIZE")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PACKAGE"
                 "LIST-EXTERNAL-SYMBOLS" "LIST-ALL-SYMBOLS" "DEFINE-PACKAGE")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
@@ -593,6 +594,10 @@ DO:         Create FILE if it doesn't exist, and
 
 (defvar *start-time* (get-universal-time)
   "Records the time at which this Common Lisp instance was started.")
+
+(defun initialize ()
+  "This function should be called upon launching a lisp image."
+  (setf *start-time* (get-universal-time)))
 
 (defun uptime ()
   "Prints the uptime of this Common Lisp instance."
