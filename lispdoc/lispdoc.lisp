@@ -85,7 +85,7 @@ License:
 
     LLGPL
 
-    Copyright Pascal J. Bourguignon 2012 - 2012
+    Copyright Pascal J. Bourguignon 2012 - 2015
     Copyright (C) 2003 Sven Van Caekenberghe.
 
     You are granted the rights to distribute and use this software
@@ -781,8 +781,9 @@ div.kind {
                             (format nil "|~A|" sexp)))
         ((numberp sexp) (princ-to-string sexp))
         ((consp sexp) (cons (right-case (car sexp)) (right-case (cdr sexp))))
-        (t (error "Unexpected atom in right-cased sexp: ~S of type ~S"
-                  sexp (type-of sexp)))))
+        (t (warn "Unexpected atom in right-cased sexp: ~S of type ~S"
+                  sexp (type-of sexp))
+           (format nil "|~A|" (string-replace (format nil "~S" sexp) "|" "\\|")))))
 
 
 (defun doc-title (name arglist kind)

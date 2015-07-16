@@ -1,0 +1,52 @@
+Rivest sexps are either byte-strings ("octet-strings") or lists of
+simpler S-expressions.  Optionnaly, octet-strings may be qualified
+with a mime-type.
+
+
+We want to be able to store typed data for exchange, and display,
+between various programming languages, using Common Lisp default
+syntax.
+
+    integer                         [-+]?[0-9]+
+    rational                        [-+]?[0-9]+/[1-9][0-9]*
+    floating-point                  [-+]?[0-9]+.[0-9]*([sSeEdDlL][-+]?[0-9]+)?
+    complex integer                 #C( integer integer )
+    complex rational                #C( rational rational ) #C( rational integer ) #C( integer rational )
+    complex floating-point          #C( floating-point floating-point ) #C( floating-point integer ) #C( integer floating-point )
+    character                       #\c  #\newline #\space ...
+    string                          "abc\\def\"ghi"
+    symbol                          abc package:symbol  more:package::and::packages:and:symbol
+    list                            ( element ... element [ . last-cdr ] )
+    vector                          #( element ... element )
+    arrays                          #nA( row ... row )
+    hash-table                      #S(HASH-TABLE :TEST EQL pairs...)
+    structures                      #S(struct-type :key value ...)
+
+    #1=(circular structures . #1#)
+    #| comment |#
+
+Some programming languages don't distinguish between some of these
+types.  For example, vectors and lists (Ruby, Perl), or various
+numbers (idem).  Or characters and integers (emacs lisp, C, C++).
+
+Some programming languages may discriminate more types, like short,
+int, long (C, C++), or fixnum, bignums (Common Lisp).
+
+
+(defstruct integer-box          value)
+(defstruct rational-box         nominator denominator)
+(defstruct float-box            magnitude exponent)
+(defstruct complex-integer-box  real-part imag-part)
+(defstruct complex-rational-box real-part imag-part)
+(defstruct complex-float-box    real-part imag-part)
+(defstruct character-box        unicode)
+(defstruct string-box           characters)
+(defstruct symbol-box           package-name symbol-name)
+(defstruct list-box             first rest)
+(defstruct vector-box           elements)
+(defstruct array-box            rank elements)
+(defstruct hash-table-box       test pairs)
+(defstruct structure-box        type pairs)
+
+
+==> Check the format used by Configuration::ManagerConfig::Tool::toString...
