@@ -886,7 +886,7 @@ RETURN: A COPY of this edge (only with same NODES).
 RETURN: A list containing the two NODES of the edge in no particular order.
 NOTE:   Use the accessor methods `from' and `to' to get the wanted node.
 "
-  (list (from self) (to self)))
+  (cons (from self) (to self)))
 
 
 ;; (defmethod identicalTo ((self DIRECTED-EDGE-CLASS) (other PjBElement))
