@@ -31,10 +31,12 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
-
 (defpackage "COM.INFORMATIMAGO.SMALL-CL-PGMS.BOTIHN"
-  (:use "COMMON-LISP" "CL-IRC" "CL-JSON" "DRAKMA" 
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
+  (:use "COMMON-LISP" "CL-IRC" "CL-JSON" "DRAKMA"  "SPLIT-SEQUENCE"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
+  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.INTERACTIVE"
+                "DATE" "UPTIME")
   (:export "MAIN")
   (:documentation "
 Botihn is a simple IRC bot monitoring Hacker News, and writing to
@@ -130,15 +132,42 @@ Updates the *LAST-STORY* ID."
   "The URL where the sources of this ircbot can be found.")
 (defvar *connection* nil
   "The current IRC server connection.")
+(defvar *botpass*  "1234")
+
+;; (setf *nickname* "botihn-test" *channel* "#botihn-test")
 
 (defun msg-hook (message)
   "Answers to PRIVMSG sent directly to this bot."
-  (when (string= *nickname* (first (arguments message)))
-    (privmsg *connection* (source message)
-             (format nil "I'm an IRC bot forwarding HackerNews news to ~A; ~
+  (labels ((say (&rest args)
+             (format t "~&~{~A~^ ~}~%" args)
+             (force-output))
+           (answer (format-control &rest format-arguments)
+             (let ((text (apply (function format) nil format-control format-arguments)))
+               (say text)
+               (privmsg *connection* (source message) text))))
+    (let ((arguments  (arguments message)))
+      (say arguments)
+      (when (string= *nickname* (first arguments))
+        (let ((words (split-sequence #\space (second arguments) :remove-empty-subseqs t)))
+          (scase (first words)
+                 (("help")
+                  (answer "Available commands: help uptime sources"))
+                 (("uptime")
+                  (answer "~A" (substitute #\space #\newline
+                                           (with-output-to-string (*standard-output*)
+                                             (date) (uptime)))))
+                 (("reconnect")
+                  (if (string= (second words) *botpass*)
+                      (progn (answer "Reconnecting…")
+                             (reconnect))
+                      (answer "I'm not in the mood.")))
+                 (otherwise ; ("sources")
+                  (answer "I'm an IRC bot forwarding HackerNews news to ~A; ~
                           under AGPL3 license, my sources are available at <~A>."
-                     *channel*
-                     *sources-url*))))
+                          *channel*
+                          *sources-url*)
+                  ))))))
+  t)
 
 
 (defun call-with-retry (delay thunk)
@@ -167,26 +196,28 @@ and evaluating DELAY-EXPRESSIONS between each iteration."
   "The main program of the botihn IRC bot.
 We connect and reconnect to the *SERVER* under the *NICKNAME*,
 and join to the *CHANNEL* where HackerNews are published."
-  (catch :gazongues
-    (with-retry (sleep (+ 10 (random 30)))
-      (catch :petites-gazongues
-        (unwind-protect
-             (progn
-               (setf *connection* (connect :nickname *nickname* :server *server*))
-               (add-hook *connection* 'irc::irc-privmsg-message 'msg-hook)
-               (join *connection* *channel*)
-               (monitor-initialize)
-               (loop
-                 :with next-time = (+ *period* (get-universal-time))
-                 :for time = (get-universal-time)
-                 :do (if (<= next-time time)
-                         (progn
-                           (monitor-hacker-news (lambda (message) (privmsg *connection* *channel* message)))
-                           (incf next-time *period*))
-                         (read-message *connection*) #|there's a 10 s timeout in here.|#)))
-          (when *connection*
-            (quit *connection*)
-            (setf *connection* nil)))))))
+  (with-simple-restart (quit "Quit")
+    (catch :gazongues
+      (with-retry (sleep (+ 10 (random 30)))
+        (with-simple-restart (reconnect "Reconnect")
+          (catch :petites-gazongues
+            (unwind-protect
+                 (progn
+                   (setf *connection* (connect :nickname *nickname* :server *server*))
+                   (add-hook *connection* 'irc::irc-privmsg-message 'msg-hook)
+                   (join *connection* *channel*)
+                   (monitor-initialize)
+                   (loop
+                     :with next-time = (+ *period* (get-universal-time))
+                     :for time = (get-universal-time)
+                     :do (if (<= next-time time)
+                             (progn
+                               (monitor-hacker-news (lambda (message) (privmsg *connection* *channel* message)))
+                               (incf next-time *period*))
+                             (read-message *connection*) #|there's a 10 s timeout in here.|#)))
+              (when *connection*
+                (quit *connection*)
+                (setf *connection* nil)))))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
