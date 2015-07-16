@@ -6,7 +6,7 @@
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    Defines the packages.
+;;;;    Defines the packages for the abstract scanner and parsers.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
@@ -16,7 +16,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2015 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2004 - 2015
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -45,11 +45,15 @@
    "DEFINE-SCANNER"
    ;; TOKEN:
    "TOKEN" "TOKEN-KIND" "TOKEN-TEXT" "TOKEN-LINE" "TOKEN-COLUMN"
+   "KIND" "TEXT" "LINE" "COLUMN"
+   "WORD-EQUAL"
    "*SPACE*"
    ;; SCANNER:
    "SCANNER" "SCANNER-CURRENT-TOKEN" 
    "SCANNER-SOURCE" "SCANNER-LINE" "SCANNER-COLUMN" "SCANNER-STATE"
    "SCANNER-SPACES" "SCANNER-TAB-WIDTH"
+   "SCANNER-TOKEN-KIND-PACKAGE"
+   "SCANNER-CURRENT-TOKEN"
    ;; SCANNER-ERROR condition:
    "SCANNER-ERROR" "SCANNER-ERROR-LINE" "SCANNER-ERROR-COLUMN"
    "SCANNER-ERROR-STATE" "SCANNER-ERROR-CURRENT-TOKEN"
@@ -57,18 +61,14 @@
    "SCANNER-ERROR-FORMAT-CONTROL" "SCANNER-ERROR-FORMAT-ARGUMENTS"
    "SCANNER-ERROR-INVALID-CHARACTER"
    ;; SCANNER methods:
-   "SKIP-SPACES" "SCAN-NEXT-TOKEN"
+   "SKIP-SPACES" "SCAN-NEXT-TOKEN" "MAKE-CURRENT-TOKEN"
    ;; PEEK-STREAM methods specialized on SCANNER:
    "NEXTCHAR" "UNGETCHAR" "GETCHAR"
+   ;; BUFFERED-SCANNER methods:
    "BUFFERED-SCANNER" "SCANNER-BUFFER" "SCANNER-CURRENT-TEXT"
-   "ADVANCE-LINE"
-   "SCANNER-END-OF-SOURCE-P"
-   "SCANNER-END-OF-LINE-P"
-   "SCANNER-CURRENT-TOKEN"
-   "ACCEPT"
-   "WORD-EQUAL"
-   "GENERATE-SCANNER" "READLINE"
-   "SCANNER-TOKEN-PACKAGE" "ADVANCE-LINE")
+   "ADVANCE-LINE"  "READLINE"
+   "SCANNER-END-OF-SOURCE-P" "SCANNER-END-OF-LINE-P"
+   "ACCEPT" "GENERATE-SCANNER")
   (:documentation
    "
 An abstract scanner class.
@@ -80,7 +80,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2004 - 2013
+    Copyright Pascal J. Bourguignon 2004 - 2015
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -96,6 +96,7 @@ License:
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
 "))
+
 
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.PARSER.PARSER"
   (:use "COMMON-LISP"
@@ -120,7 +121,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2004 - 2012
+    Copyright Pascal J. Bourguignon 2004 - 2015
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -135,8 +136,6 @@ License:
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
-
-
 
 "))
 

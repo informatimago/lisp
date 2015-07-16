@@ -174,14 +174,16 @@
            (lit-nan-terminals-regexp
              (format nil "^(~{~A~^|~})"
                      (mapcar (function regexp-quote-extended)  nan-terminals)))
-           (pname (package-name *package*)))
+           (kind-pname   (package-name *package*))
+           (symbol-pname (package-name *package*)))
 
       `(progn
 
          (defclass ,name  (,superclass)
            ()
            (:default-initargs :spaces ,spaces
-                              :token-package (load-time-value (find-package ,pname))))
+                              :token-kind-package   (load-time-value (find-package ,kind-pname))
+                              :token-symbol-package (load-time-value (find-package ,symbol-pname))))
 
          (defmethod scan-next-token ((scanner ,name) &optional parser-data)
            "RETURN: (scanner-current-token scanner)" 
@@ -252,15 +254,7 @@
                          :format-control "Invalid character ~S at position: ~D~%"
                          :format-arguments (list (aref (scanner-buffer scanner) pos)
                                                  (scanner-column scanner)))))))
-           (setf (scanner-current-token scanner)
-                 (make-instance 'token
-                                :line  (scanner-line scanner)
-                                :column (scanner-column scanner)
-                                :text (scanner-current-text scanner)
-                                :kind (etypecase (scanner-current-token scanner)
-                                        (string (intern (scanner-current-token scanner)
-                                                        (scanner-token-package scanner)))
-                                        (symbol (scanner-current-token scanner))))))))))
+           (setf (scanner-current-token scanner) (make-current-token scanner)))))))
 
 
 (defmacro define-scanner (name &key
@@ -278,6 +272,10 @@ RETURN:         NAME
 
 SUPERCLASS:     The name of the superclass of the class NAME. Should
                 be a subclass of SCANNER.
+
+TOKEN-CLASS-NAME:
+                The name of the class of tokens. Should TOKEN or a
+                subclass of TOKEN.
 
 TERMINALS:      A list of couples (name-of-terminals
                 regexp-of-terminal) or strings containing the literal terminal..

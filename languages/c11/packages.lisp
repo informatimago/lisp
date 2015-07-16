@@ -32,9 +32,6 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(defpackage "COM.INFORMATIMAGO.LANGUAGES.C11"
-  (:use "COMMON-LISP"))
-
 (defpackage "COM.INFORMATIMAGO.LANGUAGES.C11.PARSER"
   (:use "COMMON-LISP"
         "YACC"
@@ -48,5 +45,9 @@
         "COM.INFORMATIMAGO.TOOLS.READER-MACRO")
   (:shadowing-import-from "COM.INFORMATIMAGO.COMMON-LISP.REGEXP.REGEXP"
                           "SPLIT-STRING"))
+
+(defpackage "COM.INFORMATIMAGO.LANGUAGES.C11.C"
+  (:use)
+  (:documentation "Default package where the C identifiers are interned."))
 
 ;;;; THE END ;;;;

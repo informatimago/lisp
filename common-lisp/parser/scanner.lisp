@@ -71,7 +71,7 @@
    (text       :accessor token-text
                :initarg :text
                :initform ""
-               :type     string)
+               :type     (or null string))
    (column     :accessor token-column
                :initarg :column
                :initform 1
@@ -165,44 +165,44 @@
 
 
 (defclass scanner ()
-  ((source        :initarg :source
-                  :reader scanner-source
-                  :documentation "The source can be a PEEK-STREAM, a STREAM, or a STRING.")
-   (stream        :type peek-stream
-                  :reader scanner-stream
-                  :documentation "The source is wrapped into this PEEK-STREAM.
+  ((source               :initarg       :source
+                         :reader        scanner-source
+                         :documentation "The source can be a PEEK-STREAM, a STREAM, or a STRING.")
+   (stream               :type          peek-stream
+                         :reader        scanner-stream
+                         :documentation "The source is wrapped into this PEEK-STREAM.
 Subclasses may use scanner-stream to read from the source.")
-   (line          :initarg :line
-                  :accessor scanner-line
-                  :type integer
-                  :initform 0
-                  :documentation "The number of the current line. First line is line number 1.")
-   (column        :initarg :column
-                  :accessor scanner-column
-                  :type integer
-                  :initform 1
-                  :documentation "The number of the current column. First column is column number 1.")
-   (state         :initarg :state
-                  :accessor scanner-state
-                  :initform nil
-                  :documentation "The state of the scanner.")
-   (spaces        :initarg :spaces
-                  :accessor scanner-spaces
-                  :type string
-                  :initform *spaces*
-                  :documentation "A string containing the characters considered space by SKIP-SPACES.")
-   (tab-width     :initarg :tab-width
-                  :accessor scanner-tab-width
-                  :type fixnum
-                  :initform 8
-                  :documentation "TAB aligns to column number modulo TAB-WIDTH.")
-   (current-token :accessor scanner-current-token
-                  :initform nil
-                  :documentation "The last token read.")
-   (token-package :accessor scanner-token-package
-                  :initform (load-time-value (find-package "COM.INFORMATIMAGO.COMMON-LISP.PARSER.SCANNER"))
-                  :initarg :token-package
-                  :documentation "The package where the token-kind symbols are interned in."))
+   (line                 :initarg       :line
+                         :accessor      scanner-line
+                         :type          integer
+                         :initform      0
+                         :documentation "The number of the current line. First line is line number 1.")
+   (column               :initarg       :column
+                         :accessor      scanner-column
+                         :type          integer
+                         :initform      1
+                         :documentation "The number of the current column. First column is column number 1.")
+   (state                :initarg       :state
+                         :accessor      scanner-state
+                         :initform      nil
+                         :documentation "The state of the scanner.")
+   (spaces               :initarg       :spaces
+                         :accessor      scanner-spaces
+                         :type          string
+                         :initform      *spaces*
+                         :documentation "A string containing the characters considered space by SKIP-SPACES.")
+   (tab-width            :initarg       :tab-width
+                         :accessor      scanner-tab-width
+                         :type          fixnum
+                         :initform      8
+                         :documentation "TAB aligns to column number modulo TAB-WIDTH.")
+   (current-token        :accessor      scanner-current-token
+                         :initform      nil
+                         :documentation "The last token read.")
+   (token-kind-package   :accessor      scanner-token-kind-package
+                         :initform      (load-time-value (find-package "COM.INFORMATIMAGO.COMMON-LISP.PARSER.SCANNER"))
+                         :initarg       :token-kind-package
+                         :documentation "The package where the token-kind symbols are interned in."))
   (:documentation "An abstract scanner."))
 
 
@@ -227,20 +227,17 @@ RETURN:         SCANNER
   (:documentation   "
 DO: Skips over the spaces in the input stream. Updates line and column slots.
 RETURN: line; column
-"))
+")
+  (:method ((scanner scanner))
+    (loop
+      :for ch = (getchar scanner)
+      :while (and ch (find ch (scanner-spaces scanner)))
+      :finally (when ch
+                 (ungetchar scanner ch))
+               (return (values (scanner-line   scanner)
+                               (scanner-column scanner))))))
 
-(defmethod skip-spaces ((scanner scanner))
-  "
-DO: Skips over the spaces in the input stream. Updates line and column slots.
-RETURN: line; column
-"
-  (loop
-    :for ch = (getchar scanner)
-    :while (and ch (find ch (scanner-spaces scanner)))
-    :finally (when ch
-               (ungetchar scanner ch))
-             (return (values (scanner-line   scanner)
-                             (scanner-column scanner)))))
+
 
 
 (defgeneric scan-next-token (scanner &optional parser-data)
@@ -331,5 +328,19 @@ RETURN:       (scanner-current-token scanner).
   (prog1 (readline (scanner-stream scanner))
     (incf (scanner-line scanner))
     (setf (scanner-column scanner) 1)))
+
+
+(defgeneric make-current-token (scanner)
+  (:documentation "Makes an instance of the TOKEN class or a subclass
+thereof, filled with the current information in the scanner object.")
+  (:method ((scanner scanner))
+    (make-instance 'token
+                   :line  (scanner-line scanner)
+                   :column (scanner-column scanner)
+                   :text (scanner-current-text scanner)
+                   :kind (etypecase (scanner-current-token scanner)
+                           (string (intern (scanner-current-token scanner)
+                                           (scanner-token-kind-package scanner)))
+                           (symbol (scanner-current-token scanner))))))
 
 ;;;; THE END ;;;;
