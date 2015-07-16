@@ -185,17 +185,20 @@ NOTE:   dot graphs are directed.
          "// page=8,11.4;    // page size (NeXTprinter:A4).~%"
          "// size=30,8;     // graph size (please edit to fit).~%"
          "// rotate=90;    // graph orientation (please edit to fit).~%"
+         "page=300;~%"
+         "size=300;~%"
+         "rotate=90;~%"
          "// ratio=fill;  // fill the size (or compress, auto, aspect/ratio).~%"
          "nodesep=0.3;~%"
          "ranksep=0.3;~%"
          "center=1;~%"
+         "splines=true;~%"
          "// common attributes of NODES:~%"
-         "node [height=0.2 width=0.5 shape=box fontsize=8 fontname=Times] ;~%"))
+         "node [height=0.2 width=0.5 shape=box fontsize=8 fontname=Futura] ;~%"))
      (map-elements (nodes self) (lambda (node) (generate-dot node)))
      (format nil "// common attributes of edges:~%edge [style=solid];~%")
      (map-elements (edges self) (lambda (edge) (generate-dot edge)))
      (format nil "}~%")))))
 
 
-
-;;;; graph-dot.lisp                   --                     --          ;;;;
+;;;; THE END ;;;;
