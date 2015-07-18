@@ -287,18 +287,19 @@ PAGING-I/O: Number of Swap I/O.
 JOB-ORIGIN: Label of the originator of the job.
 STREAM:     Output stream (the default T means *standard-output*).
 "
-  (format stream
-    "Summary of resource utilization
+  (let ((*print-circle* nil))
+   (format stream
+           "Summary of resource utilization
 -------------------------------
  CPU time:    ~8,3F sec                Device I/O: ~8D
  Overhead CPU:~8,3F sec                Paging I/O: ~8D
  CPU model:   ~A
  Job origin:  ~A
 "
-    cpu-time device-i/o
-    sys-time paging-i/o
-    (cpu-short-description)
-    job-origin))
+           cpu-time device-i/o
+           sys-time paging-i/o
+           (cpu-short-description)
+           job-origin)))
 
 
 (defmacro reporting-sru ((&key (job-origin '(short-site-name)) (stream t)
