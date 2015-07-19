@@ -164,7 +164,8 @@ README.md:README
 	pandoc -f rst -t markdown_github  -o README.md README
 
 README.html:README
-	rst2html.py README > README.html
+	( rst2html.py README > out.html && mv out.html README.html ) \
+	|| ( rst2html README > out.html && mv out.html README.html )
 
 README.pdf:README
 	rst2pdf README

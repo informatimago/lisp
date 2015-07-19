@@ -68,7 +68,7 @@ You may [browse the documentation](doc/), or you may also [browse the sources at
 Bug Reports & Patches
 =====================
 
-Bug reports may be posted on gitlab issues: [](https://gitlab.com/com-informatimago/com-informatimago/issues), and merge requests for patches: [](https://gitlab.com/com-informatimago/com-informatimago/merge_requests). Alternatively, they may be sent to [](mailto:pjb@informatimago.com).
+Bug reports may be [posted on gitlab issues](https://gitlab.com/com-informatimago/com-informatimago/issues), and [merge requests for patches on gitlab](https://gitlab.com/com-informatimago/com-informatimago/merge_requests). Alternatively, they may be sent to [the author](mailto:pjb@informatimago.com).
 
 Authors & License
 =================
@@ -88,12 +88,12 @@ All this code is released under the [GNU AFFERO GENERAL PUBLIC LICENSE](http://w
 References
 ==========
 
--   AGPL: [](http://www.gnu.org/licenses/agpl-3.0.html)
--   Common Lisp: [](http://en.wikipedia.org/wiki/Common_lisp)
--   Common Lisp Wiki: [](http://cliki.net)
--   Pascal J. Bourguignon: [](mailto:pjb@informatimago.com) [](http://www.informatimago.com/)
--   Quicklisp: [](http://quicklisp.org/)
--   Zach Beane: [](http://xach.com/)
+-   AGPL: [<http://www.gnu.org/licenses/agpl-3.0.html>](http://www.gnu.org/licenses/agpl-3.0.html)
+-   Common Lisp: [<http://en.wikipedia.org/wiki/Common_lisp>](http://en.wikipedia.org/wiki/Common_lisp)
+-   Common Lisp Wiki: [<http://cliki.net>](http://cliki.net)
+-   Pascal J. Bourguignon: [[mailto:pjb@informatimago.com](mailto:pjb@informatimago.com)](mailto:pjb@informatimago.com) [<http://www.informatimago.com/>](http://www.informatimago.com/)
+-   Quicklisp: [<http://quicklisp.org/>](http://quicklisp.org/)
+-   Zach Beane: [<http://xach.com/>](http://xach.com/)
 
 TODO
 ====
