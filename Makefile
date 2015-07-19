@@ -173,5 +173,14 @@ README.pdf:README
 showpdf show-pdfs:README.pdf
 	open README.pdf
 
+quicklisp-tag:
+	git tag -d quicklisp
+	git push origin :refs/tags/quicklisp
+	git push github :refs/tags/quicklisp
+	git push gitlab :refs/tags/quicklisp
+	git tag -f -s quicklisp -m 'current version for quicklisp'
+	git push --tags gitlab
+	git push --tags github
+	git push --tags origin
 
 #### THE END ####
