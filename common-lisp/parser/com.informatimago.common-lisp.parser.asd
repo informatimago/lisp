@@ -39,21 +39,21 @@
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.2.3"
+  :version "1.2.4"
   :properties ((#:author-email                   . "pjb@informatimago.com")
-               (#:date                           . "Autumn 2010")
+               (#:date                           . "Summer 2015")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.parser/")
                ((#:albert #:formats)             . ("docbook"))
                ((#:albert #:docbook #:template)  . "book")
                ((#:albert #:docbook #:bgcolor)   . "white")
                ((#:albert #:docbook #:textcolor) . "black"))
-  #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ("com.informatimago.common-lisp.cesarum"
                "com.informatimago.common-lisp.regexp")
   :components ((:file "packages"         :depends-on ())
                (:file "scanner"          :depends-on ("packages"))
                (:file "generate-scanner" :depends-on ("packages" "scanner"))
                (:file "parser"           :depends-on ("packages" "scanner")))
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.parser.test"))))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.parser.test"))))
 
 ;;;; THE END ;;;;

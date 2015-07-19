@@ -45,7 +45,7 @@
   :maintainer     "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence        "AGPL3"
   ;; component attributes:
-  :version        "1.0.2"
+  :version        "1.0.3"
   :properties     ((#:author-email . "pjb@informatimago.com")
                    (#:date . "Winter 2015")
                    ((#:albert #:output-dir)
@@ -54,15 +54,15 @@
                    ((#:albert #:docbook #:template) . "book")
                    ((#:albert #:docbook #:bgcolor) . "white")
                    ((#:albert #:docbook #:textcolor) . "black"))
-  #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on     ("com.informatimago.common-lisp.cesarum"
                    "com.informatimago.tools.summary")
   :components     ((:file "summary-test" :depends-on nil))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8
   #+asdf3 :perform #+asdf3 (asdf:test-op
                             (operation system)
                             (declare (ignore operation system))
                             (let ((*package* (find-package "COM.INFORMATIMAGO.TOOLS.SUMMARY.TEST")))
-                              (uiop/package:symbol-call "COM.INFORMATIMAGO.TOOLS.SUMMARY.TEST"
-                                                        "TEST/ALL"))))
+                              (uiop:symbol-call "COM.INFORMATIMAGO.TOOLS.SUMMARY.TEST"
+                                                "TEST/ALL"))))
 
 ;;;; THE END ;;;;

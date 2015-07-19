@@ -35,7 +35,7 @@
 (asdf:defsystem "com.informatimago.small-cl-pgms"
   :description "Small Common Lisp Programs"
   :author "Pascal J. Bourguignon"
-  :version "1.0.2"
+  :version "1.0.3"
   :license "GPL3"
   :depends-on ("com.informatimago.small-cl-pgms.brainfuck"
                "com.informatimago.small-cl-pgms.what-implementation"
@@ -55,7 +55,7 @@
              (:file "solitaire")
              (:file "toy-byte-code")
              (:file "wang-cl"))
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.small-cl-pgms.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.small-cl-pgms.test"))))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (warn "~S not ready yet (need some cleaning)"

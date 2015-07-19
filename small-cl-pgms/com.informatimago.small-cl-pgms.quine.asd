@@ -35,10 +35,10 @@
 (asdf:defsystem "com.informatimago.small-cl-pgms.quine"
   :description "A few Quines."
   :author "Pascal J. Bourguignon"
-  :version "1.0.2"
+  :version "1.0.3"
   :license "GPL3"
   :depends-on () 
   :components ((:file "quine"))
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.small-cl-pgms.quine.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.small-cl-pgms.quine.test"))))
 
 ;;;; THE END ;;;;

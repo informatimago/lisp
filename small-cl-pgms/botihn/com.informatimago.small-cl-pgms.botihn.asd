@@ -35,7 +35,7 @@
 (asdf:defsystem "com.informatimago.small-cl-pgms.botihn"
   :description "An IRC bot monitoring Hacker News."
   :author "Pascal J. Bourguignon"
-  :version "1.1.1"
+  :version "1.1.2"
   :license "AGPL3"
   :depends-on ("com.informatimago.common-lisp.cesarum"
                "com.informatimago.common-lisp.interactive" ; date uptime

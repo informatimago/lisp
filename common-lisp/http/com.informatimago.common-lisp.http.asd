@@ -44,7 +44,7 @@ A transaction manager for HTTP CGI.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes
-  :version "1.2.2"
+  :version "1.2.3"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Autumn 2010")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.http/")
@@ -57,6 +57,6 @@ A transaction manager for HTTP CGI.
                "com.informatimago.common-lisp.html-generator")
   :components ((:file "hquery" :depends-on ())
                (:file "htrans" :depends-on ("hquery")))
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.http.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.http.test"))))
 
 ;;;; THE END ;;;;

@@ -45,7 +45,7 @@
   :maintainer     "Pascal J. Bourguignon"
   :licence        "GPL3"
   ;; component attributes:
-  :version        "1.0.2"
+  :version        "1.0.3"
   :properties     ((#:author-email . "pjb@informatimago.com")
                    (#:date . "Winter 2015")
                    ((#:albert #:output-dir)
@@ -63,10 +63,10 @@
                             (operation system)
                             (declare (ignore operation system))
                             (let ((*package* (find-package "COM.INFORMATIMAGO.TOOLS.QUICKLISP.TEST")))
-                              (uiop/package:symbol-call "COM.INFORMATIMAGO.TOOLS.QUICKLISP.TEST"
-                                                        "TEST/ALL"))
+                              (uiop:symbol-call "COM.INFORMATIMAGO.TOOLS.QUICKLISP.TEST"
+                                                "TEST/ALL"))
                             (let ((*package* (find-package "COM.INFORMATIMAGO.TOOLS.ASDF.TEST")))
-                              (uiop/package:symbol-call "COM.INFORMATIMAGO.TOOLS.ASDF.TEST"
-                                                        "TEST/ALL"))))
+                              (uiop:symbol-call "COM.INFORMATIMAGO.TOOLS.ASDF.TEST"
+                                                "TEST/ALL"))))
 
 ;;;; THE END ;;;;

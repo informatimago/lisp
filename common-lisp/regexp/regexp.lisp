@@ -218,18 +218,18 @@ RETURN:  When the SEQUENCE is a vector, the SEQUENCE itself, or a dispaced
     (if groupsp "(.*)" ".*")))
 
 (defun regexp-match-any (groupsp)
-  (-regexp-match-any *engine* groupsps))
+  (-regexp-match-any *engine* groupsp))
 
 
 (defgeneric -regexp-compile (engine regexp)
-  (:method ((engine (eql :ppcre)) groupsp)
+  (:method ((engine (eql :ppcre)) regexp)
     (cl-ppcre:create-scanner regexp
                              :case-insensitive-mode nil
                              :multi-line-mode nil
                              :extended-mode nil
                              :destructive nil))
   #+use-regexp
-  (:method ((engine (eql :regexp)) groupsp)
+  (:method ((engine (eql :regexp)) regexp)
     (regexp:regexp-compile regexp
                            :extended t
                            :ignore-case nil

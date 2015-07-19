@@ -43,7 +43,7 @@ A few RFC0822/RFC2822 utility fucntions.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.2.3"
+  :version "1.2.4"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Autumn 2010")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.rfc2822/")
@@ -54,6 +54,6 @@ A few RFC0822/RFC2822 utility fucntions.
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ("com.informatimago.common-lisp.cesarum")
   :components ((:file "rfc2822" :depends-on ()))
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.rfc2822.test")))) 
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.rfc2822.test")))) 
 
 ;;;; THE END ;;;;

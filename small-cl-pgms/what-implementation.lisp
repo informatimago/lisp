@@ -655,7 +655,7 @@ implementation~P ~:[is~;are~]: ~%"
   #+(and cmu unix)       (UNIX:UNIX-EXIT status)
   #+(and cmu (not unix)) (extensions:quit #|recklesslyp|# nil)
   #+ecl                  (ext:quit status)
-  #+sbcl                 (sb-ext:quit status)
+  #+sbcl                 (sb-ext:exit :code status)
   #-(or ccl clisp cmu ecl sbcl) (throw 'quit status))
 
 
@@ -963,7 +963,7 @@ CLASSIFIED
                                 (toplevel      (lambda ()))
                                 (documentation "Undocumented program.")
                                 (start-package "COMMON-LISP-USER"))
-  (declare (ignorable documentation))
+  (declare (ignorable name toplevel documentation start-package))
   
   #+ccl
   (ccl:save-application
@@ -1016,6 +1016,11 @@ CLASSIFIED
 
   ;; Some implementations quit automatically in their save-application
   ;; or save-lisp-and-die function…
+
+  #-(or ccl clisp lispworks)
+  (cerror "Quit" "~S is not implemented on ~A yet."
+          'save-program-and-quit
+          (lisp-implementation-type))
   (quit))
 
 

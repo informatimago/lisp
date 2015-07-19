@@ -46,7 +46,7 @@ target-language method will let the RDPG generate a parser in BASIC.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.0.3"
+  :version "1.0.4"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Summer 2011")
                ((#:albert #:output-dir)          . "../documentation/com.informatimago.rdp.basic.example/")
@@ -60,7 +60,7 @@ target-language method will let the RDPG generate a parser in BASIC.
   :components
   #-bit-rotten ((:file "example-basic"))
   #+bit-rotten ()
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.rdp.basic.example.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.rdp.basic.example.test"))))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (warn "~S is bit-rotten, it needs an update."

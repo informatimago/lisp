@@ -656,7 +656,7 @@ Possible keys are:
              (wsb-format-line stream comment-start comment-end ""))
            (if (eql key :modifications)
                (dolist (line val)
-                 (wsb-format-line stream comment-start comment-end "    ~A" (indent-non-date-line line)))
+                 (wsb-format-line stream comment-start comment-end "    ~A" (wsb-indent-non-date-line line)))
                (dolist (line val)
                  (wsb-format-line stream comment-start comment-end "    ~A" line)))
            (when (and val (member key sections-with-spacer))

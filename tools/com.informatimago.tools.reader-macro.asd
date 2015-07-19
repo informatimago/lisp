@@ -33,11 +33,12 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem "com.informatimago.tools.reader-macro"
-    :description "Reader-macro tools."
-    :author "Pascal J. Bourguignon"
-    :version "1.0.0"
-    :license "GPL3"
-    :depends-on () 
-    :components ((:file "reader-macro")))
+  :description "Reader-macro tools."
+  :author "Pascal J. Bourguignon"
+  :version "1.0.1"
+  :license "GPL3"
+  :depends-on () 
+  :components ((:file "reader-macro"))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8)
 
 ;;;; THE END ;;;;

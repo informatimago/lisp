@@ -35,10 +35,10 @@
 (asdf:defsystem "com.informatimago.small-cl-pgms.brainfuck"
   :description "Brainfuck Compiler."
   :author "Pascal J. Bourguignon"
-  :version "1.0.2"
+  :version "1.0.3"
   :license "GPL3"
   :depends-on () 
   :components ((:file "bf"))
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.small-cl-pgms.bf.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.small-cl-pgms.bf.test"))))
 
 ;;;; THE END ;;;;

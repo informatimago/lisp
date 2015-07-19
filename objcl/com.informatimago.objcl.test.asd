@@ -45,7 +45,7 @@
   :maintainer     "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence        "AGPL3"
   ;; component attributes:
-  :version        "1.0.2"
+  :version        "1.0.3"
   :properties     ((#:author-email . "pjb@informatimago.com")
                    (#:date . "Winter 2015")
                    ((#:albert #:output-dir)
@@ -65,6 +65,6 @@
                             (dolist (p '("COM.INFORMATIMAGO.OBJCL.MAC-ROMAN.TEST"
                                          #+(and ccl darwin) "COM.INFORMATIMAGO.OBJCL.TEST"))
                               (let ((*package* (find-package p)))
-                                (uiop/package:symbol-call p "TEST/ALL")))))
+                                (uiop:symbol-call p "TEST/ALL")))))
 
 ;;;; THE END ;;;;

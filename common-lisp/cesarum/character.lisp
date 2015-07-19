@@ -178,7 +178,7 @@ DO:         If the implementation has the semi standard character
               *standard-characters*))))
 
   (defun has-ascii-code-p ()
-    "Whether it looks ASCII is implemented by char-code and code-char."
+    "Whether it looks like ASCII is implemented by char-code and code-char."
     (let ((codes (cons 127 (loop :for code :from 0 :to 31 :collect code))))
       (and (standard-character-is-ascii-coded-p)
            (ignore-errors
@@ -186,15 +186,16 @@ DO:         If the implementation has the semi standard character
                     codes))
            (= 33 (length (delete-duplicates (mapcar (function code-char) codes)
                                             :test (function char=))))
-           #+has-rubout    (= 127 (char-code #\rubout))
-           #+has-page      (=  12 (char-code #\page))
-           #+has-tab       (=   9 (char-code #\tab))
-           #+has-backspace (=   8 (char-code #\backspace))
-           #+has-return    (=  13 (char-code #\return))
-           #+has-linefeed  (=  10 (char-code #\linefeed))
-           #+has-escape    (=  27 (char-code #\escape))
            #+has-bell      (=   7 (char-code #\bell))
-           #+has-vt        (=  11 (char-code #\vt)))))
+           #+has-backspace (=   8 (char-code #\backspace))
+           #+has-tab       (=   9 (char-code #\tab))
+           #+has-linefeed  (=  10 (char-code #\linefeed))
+           #+has-vt        (=  11 (char-code #\vt))
+           #+has-page      (=  12 (char-code #\page))
+           #+has-return    (=  13 (char-code #\return))
+           #+has-escape    (=  27 (char-code #\escape))
+           #+has-rubout    (= 127 (char-code #\rubout)))))
+  
   #-mocl
   (progn
     (when (has-ascii-code-p)

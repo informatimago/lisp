@@ -34,10 +34,53 @@
 ;;;;**************************************************************************
 (in-package "COMMON-LISP-USER")
 
-(unless (find-package "UIOP")
-  (defpackage "UIOP"
-    (:use "COMMON-LISP")
-    (:export "SYMBOL-CALL")))
+#-(and)
+(progn
+  (eval-when (:compile-toplevel)
+    (print (list :compile-toplevel
+                 :asdf-version asdf::*asdf-version*
+                 :features (find :uiop *features*)
+                 :uiop-size (when (find-package "UIOP")
+                              (let ((n 0)) (do-external-symbols (s "UIOP") (incf n)) n))
+                 :packages (sort (mapcar (function package-name) (list-all-packages))
+                                 (function string<))))
+    (terpri))
+  (eval-when (:load-toplevel)
+    (print (list :load-toplevel
+                 :asdf-version asdf::*asdf-version*
+                 :features (find :uiop *features*)
+                 :uiop-size (when (find-package "UIOP")
+                              (let ((n 0)) (do-external-symbols (s "UIOP") (incf n)) n))
+                 :packages (sort (mapcar (function package-name) (list-all-packages))
+                                 (function string<))))
+    (terpri))
+  (eval-when (:execute)
+    (print (list :execute
+                 :asdf-version asdf::*asdf-version*
+                 :features (find :uiop *features*)
+                 :uiop-size (when (find-package "UIOP")
+                              (let ((n 0)) (do-external-symbols (s "UIOP") (incf n)) n))
+                 :packages (sort (mapcar (function package-name) (list-all-packages))
+                                 (function string<))))
+    (terpri)))
+
+#-uiop
+(defpackage "UIOP"
+  (:use "COMMON-LISP")
+  (:export "SYMBOL-CALL" "RUN-PROGRAM" "GETENV"))
+
+
+#-uiop  
+(defmacro uiop::generate-dummy-functions (&rest funames)
+  `(progn ,@(mapcar (lambda (funame)
+                      `(defun ,funame (&rest args) (declare (ignore args)) nil))
+                    funames)))
+
+#-uiop
+(uiop::generate-dummy-functions
+ UIOP:SYMBOL-CALL
+ UIOP:RUN-PROGRAM
+ uiop:getenv)
 
 ;;;; THE END ;;;;
 

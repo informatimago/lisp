@@ -183,9 +183,9 @@
   :success)
 
 (define-test text/skip-spaces ()
-  (check equal (skip-spaces "    xyz()" 0) 4)
-  (check equal (skip-spaces "    xyz()" 7) 7)
-  (check equal (skip-spaces "    xyz ()" 7) 8)
+  (check equal (skip-spaces-in-text "    xyz()" 0) 4)
+  (check equal (skip-spaces-in-text "    xyz()" 7) 7)
+  (check equal (skip-spaces-in-text "    xyz ()" 7) 8)
   (check equal (skip-spaces-but-one "    xyz()" 0) 3)
   (check equal (skip-spaces-but-one "    xyz()" 7) 7)
   (check equal (skip-spaces-but-one "    xyz ()" 7) 7)

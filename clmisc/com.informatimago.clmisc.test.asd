@@ -45,7 +45,7 @@
   :maintainer     "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence        "AGPL3"
   ;; component attributes:
-  :version        "1.0.2"
+  :version        "1.0.3"
   :properties     ((#:author-email . "pjb@informatimago.com")
                    (#:date . "Winter 2015")
                    ((#:albert #:output-dir)
@@ -62,7 +62,7 @@
                             (operation system)
                             (declare (ignore operation system))
                             (let ((*package* (find-package "COM.INFORMATIMAGO.CLMISC.RESOURCE-UTILIZATION.TEST")))
-                              (uiop/package:symbol-call "COM.INFORMATIMAGO.CLMISC.RESOURCE-UTILIZATION.TEST"
+                              (uiop:symbol-call "COM.INFORMATIMAGO.CLMISC.RESOURCE-UTILIZATION.TEST"
                                                         "TEST/ALL"))))
 
 ;;;; THE END ;;;;

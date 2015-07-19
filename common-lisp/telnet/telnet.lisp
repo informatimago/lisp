@@ -1123,6 +1123,9 @@ WHO:         (member nil :us :him).")
 ;;; assumption reveals itself false, then another implementation,
 ;;; could be written.  
 
+(declaim (inline make-buffer buffer-length buffer-ref buffer-subseq
+                 buffer-search buffer-clear))
+
 (defun make-buffer (initial-size)
   (make-array initial-size
               :element-type '(unsigned-byte 8)
@@ -1144,8 +1147,6 @@ WHO:         (member nil :us :him).")
 (defun buffer-clear (buffer)
   (setf (fill-pointer buffer) 0))
 
-(declaim (inline make-buffer buffer-length buffer-ref buffer-subseq
-                 buffer-search buffer-clear))
 
 (defun buffer-delete-from-head (buffer size-to-remove)
   (replace buffer buffer :start2 size-to-remove)

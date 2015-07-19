@@ -476,7 +476,7 @@ NOTE:  No prefix argument are allowed for REDUCE!
 
 
 
-(defmacro for ((var first last . rest) &body body)
+(defmacro for ((var first last &optional (step nil stepp)) &body body)
   "For loop.
 DO:    Repeat BODY with VAR bound to successive integer values from 
        FIRST to LAST inclusive.
@@ -485,23 +485,51 @@ DO:    Repeat BODY with VAR bound to successive integer values from
        VAR is incremented by STEP and it stops when VAR goes above
        or below LAST depending on the sign of STEP.
 "
-  (let ((firstvar (gensym "FIRST"))
-        (lastvar  (gensym "LAST"))
-        (stepvar  (gensym "STEP"))
-        (step     (and rest (car rest))))
-    (when (cdr rest) (error "Too many forms in FOR parameters."))
-    `(let ((,firstvar ,first)
-           (,lastvar ,last)
-           (,stepvar ,step))
-       (if (if ,stepvar (< 0 ,stepvar) (<= ,firstvar ,lastvar))
-           (progn  (setf ,stepvar (or ,stepvar 1))
-                   (do ((,var ,firstvar (incf ,var ,stepvar)))
-                       ((> ,var ,lastvar))
-                     ,@body))
-           (progn  (setf ,stepvar (or ,stepvar -1))
-                   (do ((,var ,firstvar (incf ,var ,stepvar)))
-                       ((< ,var ,lastvar))
-                     ,@body))))))
+  (when (and (not stepp) (numberp first) (numberp last))
+    (setf step (if (<= first last) 1 -1)
+          stepp t))
+  (cond
+    ((and stepp (numberp step))
+     ;; Hardwired step and comparison:
+     (check-type step real)
+     (let ((firstvar (gensym "FIRST"))
+           (lastvar  (gensym "LAST"))
+           (cmp      (if (minusp step) '< '>)))        
+       `(let ((,firstvar ,first)
+              (,lastvar ,last))
+          (do ((,var ,firstvar (incf ,var ,step)))
+              ((,cmp ,var ,lastvar))
+            ,@body))))
+    (stepp
+     ;; Runtime evaluation of step and comparison:
+     (let ((firstvar (gensym "FIRST"))
+           (lastvar  (gensym "LAST"))
+           (stepvar  (gensym "STEP"))
+           (cmp      (gensym "CMP")))
+       `(let* ((,firstvar ,first)
+               (,lastvar  ,last)
+               (,stepvar  ,step)
+               (,cmp     (if (minusp ,stepvar)
+                             (function <)
+                             (function >))))
+          (do ((,var ,firstvar (incf ,var ,stepvar)))
+              ((funcall ,cmp ,var ,lastvar))
+            ,@body))))
+    (t
+     ;; Runtime determination of step and comparison:
+     (let ((firstvar (gensym "FIRST"))
+           (lastvar  (gensym "LAST"))
+           (stepvar  (gensym "STEP"))
+           (cmp      (gensym "CMP")))
+       `(let* ((,firstvar ,first)
+               (,lastvar  ,last)
+               (,stepvar  (if (<= ,firstvar ,lastvar) 1 -1))
+               (,cmp      (if (minusp ,stepvar)
+                              (function <)
+                              (function >))))
+          (do ((,var ,firstvar (incf ,var ,stepvar)))
+              ((funcall ,cmp ,var ,lastvar))
+            ,@body))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1024,9 +1052,9 @@ RETURN: -1 if N is negative,
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
+  (declaim (inline type-equal-p))
   (defun type-equal-p (t1 t2)
     (and (subtypep t1 t2) (subtypep t2 t1)))
-  (declaim (inline type-equal-p))
 
   (defun distinct-float-types ()
     "

@@ -48,7 +48,7 @@ cl-ppcre or #+clisp regexp).
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.2.3"
+  :version "1.2.4"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Autumn 2010")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.ed/")
@@ -60,6 +60,6 @@ cl-ppcre or #+clisp regexp).
   :depends-on ("com.informatimago.common-lisp.cesarum"
                "com.informatimago.common-lisp.regexp")
   :components ((:file "ed" :depends-on ()))
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.ed.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.ed.test"))))
 
 ;;;; THE END ;;;;

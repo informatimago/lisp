@@ -35,10 +35,11 @@
 (asdf:defsystem "com.informatimago.tools.script"
   :description "Utilities for scripts."
   :author "Pascal J. Bourguignon"
-  :version "1.0.2"
+  :version "1.0.3"
   :license "AGPL3"
   :depends-on () 
   :components ((:file "script" :depends-on ()))
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.tools.script.test"))))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.tools.script.test"))))
 
 ;;;; THE END ;;;;

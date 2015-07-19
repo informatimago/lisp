@@ -41,7 +41,7 @@
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.0.2"
+  :version "1.0.3"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Summer 2015")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago/")
@@ -67,7 +67,7 @@
                "com.informatimago.clisp"  ; empty shell on non-clisp linux
                )
   :components ()
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.test"))))
 
 
 (defun test-all-com.informatimago ()

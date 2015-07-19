@@ -33,11 +33,12 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem "com.informatimago.tools.symbol"
-    :description "Symbol tools."
-    :author "Pascal J. Bourguignon"
-    :version "1.0.2"
-    :license "GPL3"
-    :depends-on ("com.informatimago.common-lisp.cesarum") 
-    :components ((:file "symbol")))
+  :description "Symbol tools."
+  :author "Pascal J. Bourguignon"
+  :version "1.0.3"
+  :license "GPL3"
+  :depends-on ("com.informatimago.common-lisp.cesarum") 
+  :components ((:file "symbol"))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8)
 
 ;;;; THE END ;;;;

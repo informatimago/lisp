@@ -38,13 +38,6 @@
 (defvar *non-terminal-stack* '()
   "For error reporting.")
 
-(defgeneric print-parser-error  (error stream))
-(defgeneric print-scanner-error (error stream))
-(defgeneric scanner-end-of-line-p   (scanner))
-(defgeneric scanner-end-of-source-p (scanner))
-(defgeneric advance-line            (scanner))
-(defgeneric accept                  (scanner token))
-
 
 (define-condition parser-error (error)
   ((line    :initarg :line    :initform 1   :reader parser-error-line)
@@ -87,20 +80,12 @@
                        :reader unexpected-token-error-non-terminal-stack))
   (:report print-scanner-error))
 
-(defmethod print-scanner-error ((err scanner-error) stream)
+(defmethod print-scanner-error ((err unexpected-token-error) stream)
   (declare (stepper disable))
-  (format stream
-          "~&~@[~A:~]~D:~D: ~?~%"
-          (let ((source (scanner-source (scanner-error-scanner err))))
-            (unless (stringp source) (ignore-errors (pathname source))))
-          (scanner-error-line err)
-          (scanner-error-column err)
-          (scanner-error-format-control err)
-          (scanner-error-format-arguments err)))
-
-(defmethod print-object ((err scanner-error) stream)
-  (print-scanner-error err stream)
-  err)
+  (when (next-method-p) (call-next-method))
+  (format stream "~&Expected token: ~S~%Non-terminal stack: ~S~%"
+          (unexpected-token-error-expected-token err)
+          (unexpected-token-error-non-terminal-stack err)))
 
 
 (defclass rdp-scanner (buffered-scanner)

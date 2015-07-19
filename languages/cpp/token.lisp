@@ -48,6 +48,8 @@
     :for line :in lines
     :collect (make-numbered-line :text line :lino lino :file file-name)))
 
+(defgeneric token-file (token))
+
 (defmethod token-file ((numbered-line cons))
   (line-file numbered-line))
 (defmethod token-line ((numbered-line cons))

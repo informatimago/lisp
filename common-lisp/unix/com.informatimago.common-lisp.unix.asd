@@ -41,7 +41,7 @@
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.2.4"
+  :version "1.2.5"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Winter 2012")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.unix/")
@@ -55,6 +55,6 @@
                (:file "group"   :depends-on ())
                (:file "passwd"  :depends-on ())
                (:file "option"  :depends-on ()))
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.unix.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.unix.test"))))
 
 ;;;; THE END ;;;;

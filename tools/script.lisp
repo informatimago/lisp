@@ -243,26 +243,27 @@ BUG: when the optionals or keys have a present indicator,
                           `(lambda (,vargs)
                              (if (<= ,(length mandatories) (length ,vargs))
                                  ,(cond
-                                   (rest
-                                    `(destructuring-bind ,option-arguments ,vargs
-                                       (funcall ',option-function ,@(q&d-arguments mandatories
-                                                                                   optionals
-                                                                                   rest
-                                                                                   keys-args))
-                                       nil))
-                                   (keys-args
-                                    (error "An option cannot have &key parameters without a &rest parameter. ~@
+                                    (rest
+                                     `(destructuring-bind ,option-arguments ,vargs
+                                        (funcall ',option-function ,@(q&d-arguments mandatories
+                                                                                    optionals
+                                                                                    rest
+                                                                                    keys-args))
+                                        nil))
+                                    (keys-args
+                                     (error "An option cannot have &key parameters without a &rest parameter. ~@
                                             Invalid option parameters: ~S" option-arguments))
-                                   (t
-                                    (let ((vremaining (gensym)))
-                                      `(destructuring-bind (,@option-arguments &rest ,vremaining) ,vargs
-                                         (funcall ',option-function ,@(q&d-arguments mandatories
-                                                                                     optionals
-                                                                                     rest
-                                                                                     keys-args))
-                                         ,vremaining))))
-                                 (error "Missing arguments: ~{~A ~}"
-                                        (subseq ',option-arguments (length ,vargs))))))
+                                    (t
+                                     (let ((vremaining (gensym)))
+                                       `(destructuring-bind (,@option-arguments &rest ,vremaining) ,vargs
+                                          (funcall ',option-function ,@(q&d-arguments mandatories
+                                                                                      optionals
+                                                                                      rest
+                                                                                      keys-args))
+                                          ,vremaining))))
+                                 ,@(when option-arguments
+                                     `((error "Missing arguments: ~{~A ~}"
+                                              (subseq ',option-arguments (length ,vargs))))))))
        :documentation (split-string docstring (string #\newline))))))
 
 

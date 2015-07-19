@@ -48,7 +48,7 @@ COM.INFORMATIMAGO.COMMON-LISP.LISP.IBCL                IBCL package.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes
-  :version "1.0.2"
+  :version "1.0.3"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Summer 2012")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.lisp.ibcl/")
@@ -61,6 +61,6 @@ COM.INFORMATIMAGO.COMMON-LISP.LISP.IBCL                IBCL package.
   :components ((:file "source"            :depends-on ())
                (:file "cl-saving-defines" :depends-on ("source"))
                (:file "ibcl"              :depends-on ("source" "cl-saving-defines")))
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.lisp.ibcl.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.lisp.ibcl.test"))))
 
 ;;;; THE END ;;;;

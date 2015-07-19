@@ -215,7 +215,7 @@ RETURN:     A new list of name and aliases, with the ALIASES added, if
   #+sbcl
   (etypecase sb-impl::*external-formats*
     (hash-table (let ((result '()))
-                  (maphash (lambda (name encoding) (pushnew encoding result))
+                  (maphash (lambda (name encoding) (declare (ignore name)) (pushnew encoding result))
                            sb-impl::*external-formats*)
                   (mapcar (lambda (encoding)
                             (mapcar (function string-upcase)

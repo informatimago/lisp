@@ -39,7 +39,7 @@
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.2.4"
+  :version "1.2.5"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Autumn 2010")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.rfc3548/")
@@ -50,7 +50,7 @@
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ("com.informatimago.common-lisp.cesarum")
   :components ((:file "rfc3548" :depends-on ()))
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.rfc3548.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.rfc3548.test"))))
 
 
 ;;;; THE END ;;;;

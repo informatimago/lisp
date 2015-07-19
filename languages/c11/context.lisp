@@ -71,10 +71,12 @@ The scanner uses it to detect enumeration_constant tokens."
     nil))
 
 (defun identifier-in-table-p (context table name)
+  (declare (ignore context))
   (and (eq '|identifier| (token-kind name))
        (gethash (token-symbol name) table)))
 
 (defun enter-into-table (context table kind name definition)
+  (declare (ignore context))
   (assert (eq kind (token-kind name)) (name))
   (setf (gethash (token-symbol name) table) definition))
 

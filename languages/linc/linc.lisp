@@ -46,7 +46,7 @@
 
 ;; file:///home/pjb/library/informatique/protocols_and_standards/ISO-IEC-14882/www.kuzbass.ru:8086/docs/isocpp/index.html
 
-(in-package "COM.INFORMATIMAGO.LINC")  
+(in-package "COM.INFORMATIMAGO.LANGUAGES.LINC")  
 
 
 
@@ -58,8 +58,8 @@
 ;;   :arguments '(2 3))
 
 
-;;  (in-package :com.informatimago.linc)
-;;  (in-package :com.informatimago.linc.c)
+;;  (in-package :com.informatimago.languages.linc)
+;;  (in-package :com.informatimago.languages.linc.c)
 
 ;; c1::c2::m1(a,b,c);
 ;; ((:: c1 c2 m1) (a b c))
@@ -411,7 +411,7 @@
 
 (defun generate-definition (def)
   (ecase (first def)
-    ((com.informatimago.linc.c::defun)
+    ((com.informatimago.languages.linc.c::defun)
      (destructuring-bind (name arguments result-type &rest body) (rest def)
        (emit :newline)
        (generate-expression result-type)
@@ -426,31 +426,31 @@
        (emit ")")
        (generate-statement
         (if (and (null (cdr body))
-                 (member (caar body) '(com.informatimago.linc.c::let com.informatimago.linc.c::block)))
+                 (member (caar body) '(com.informatimago.languages.linc.c::let com.informatimago.languages.linc.c::block)))
             (first body)
-            `(com.informatimago.linc.c::block ,@body)))))))
+            `(com.informatimago.languages.linc.c::block ,@body)))))))
 
 
-(defmacro com.informatimago.linc.c::when   (condi &body body)
-  `(com.informatimago.linc.c::if ,condi (com.informatimago.linc.c::block ,@body)))
+(defmacro com.informatimago.languages.linc.c::when   (condi &body body)
+  `(com.informatimago.languages.linc.c::if ,condi (com.informatimago.languages.linc.c::block ,@body)))
 
-(defmacro com.informatimago.linc.c::unless (condi &body body)
-  `(com.informatimago.linc.c::if (com.informatimago.linc.c::not ,condi) (com.informatimago.linc.c::block ,@body)))
+(defmacro com.informatimago.languages.linc.c::unless (condi &body body)
+  `(com.informatimago.languages.linc.c::if (com.informatimago.languages.linc.c::not ,condi) (com.informatimago.languages.linc.c::block ,@body)))
 
-(defmacro com.informatimago.linc.c::setf (place expression &rest others)
+(defmacro com.informatimago.languages.linc.c::setf (place expression &rest others)
   (if others
-      `(com.informatimago.linc.c::block
-         (com.informatimago.linc.c::= ,place ,expression)
-         (com.informatimago.linc.c::setf ,@others))
-      `(com.informatimago.linc.c::= ,place ,expression)))
+      `(com.informatimago.languages.linc.c::block
+         (com.informatimago.languages.linc.c::= ,place ,expression)
+         (com.informatimago.languages.linc.c::setf ,@others))
+      `(com.informatimago.languages.linc.c::= ,place ,expression)))
 
-(defmacro com.informatimago.linc.c::let* (bindings &body body)
+(defmacro com.informatimago.languages.linc.c::let* (bindings &body body)
   (if (null bindings)
-      `(com.informatimago.linc.c::block ,@body)
-      `(com.informatimago.linc.c::let (,(first bindings))
-         (com.informatimago.linc.c::let* (rest bindings) ,@body))))
+      `(com.informatimago.languages.linc.c::block ,@body)
+      `(com.informatimago.languages.linc.c::let (,(first bindings))
+         (com.informatimago.languages.linc.c::let* (rest bindings) ,@body))))
 
-(defmacro com.informatimago.linc.c::comment (&rest items)
+(defmacro com.informatimago.languages.linc.c::comment (&rest items)
   `(progn
      (emit :newline)
      (with-parens ("/*" "*/")
@@ -458,9 +458,9 @@
                  items)
        (emit :newline))))
 
-(defmacro com.informatimago.linc.c::define-function (name arguments result-type &body body)
-  (com.informatimago.linc::generate-definition
-   `(com.informatimago.linc.c::defun ,name ,arguments ,result-type (com.informatimago.linc.c::block ,@body))))
+(defmacro com.informatimago.languages.linc.c::define-function (name arguments result-type &body body)
+  (com.informatimago.languages.linc::generate-definition
+   `(com.informatimago.languages.linc.c::defun ,name ,arguments ,result-type (com.informatimago.languages.linc.c::block ,@body))))
 
 
 (defun compile-linc-file (input-file &key verbose print
@@ -495,7 +495,7 @@
 
 
 (defun repl ()
-  (catch 'repl     ; allow for emergency exit with (throw 'com.informatimago.linc::repl)
+  (catch 'repl     ; allow for emergency exit with (throw 'com.informatimago.languages.linc::repl)
     (let ((*package* (find-package "C"))
           (*print-pretty* nil)
           (eof *standard-input*)
@@ -590,13 +590,13 @@
 ;;   ())
 ;; 
 ;; 
-;; (com.informatimago.linc:compile-file "example.linc")
+;; (com.informatimago.languages.linc:compile-file "example.linc")
 ;; 
 ;; LINC "compiles" the example.linc program, that is, generate C header
 ;; and source files.
 ;; 
 ;; 
-;; (com.informatimago.linc:compile-file "example.linc"
+;; (com.informatimago.languages.linc:compile-file "example.linc"
 ;;                    :external-format charset:utf-8
 ;;                    :verbose t
 ;;                    :print   t
@@ -728,9 +728,9 @@
 ;;     (defmacro defspec (name arguments &body body)
 ;;       (define-special-operator ',name `(lambda ,arguments ,@body)))
 
-(defmacro com.informatimago.linc.c::c (&rest declarations)
+(defmacro com.informatimago.languages.linc.c::c (&rest declarations)
   `(cl:block
-     ,@(mapcar (function com.informatimago.linc::generate-declaration) declarations)))
+     ,@(mapcar (function com.informatimago.languages.linc::generate-declaration) declarations)))
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -824,7 +824,7 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
 
   (ecase (first expression)
     
-    ((com.informatimago.linc.c::class com.informatimago.linc.c::struct com.informatimago.linc.c::union)
+    ((com.informatimago.languages.linc.c::class com.informatimago.languages.linc.c::struct com.informatimago.languages.linc.c::union)
      (emit (format nil "~(~A~)" (first expression)))
      (cond
        ((listp (second expression))
@@ -859,7 +859,7 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
        (t
         (error "Not implemented yet, generation of type ~S" expression))))
 
-    ((com.informatimago.linc.c::enum)
+    ((com.informatimago.languages.linc.c::enum)
      ;; (enum (blue 1) white red (yellow 10))
      (emit "enum")
      (when name
@@ -916,7 +916,7 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
 
     ((USING (SCOPE ?name))
      (emit "using" " ")
-     (generate-expression `(com.informatimago.linc.c::scope ,?name))
+     (generate-expression `(com.informatimago.languages.linc.c::scope ,?name))
      (emit ";" :newline))
      
     ((TEMPLATE (&rest ?template-parameter-list) ?declaration)
@@ -972,80 +972,80 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
                  \#define \#undef \#line \#error \#pragma \#)
          (generate-preprocessor expression))
 
-        ((com.informatimago.linc.c::block
-             com.informatimago.linc.c::let
-           com.informatimago.linc.c::if
-           com.informatimago.linc.c::case
-           com.informatimago.linc.c::while
-           com.informatimago.linc.c::do
-           com.informatimago.linc.c::for
-           com.informatimago.linc.c::break
-           com.informatimago.linc.c::continue
-           com.informatimago.linc.c::return
-           com.informatimago.linc.c::goto)
+        ((com.informatimago.languages.linc.c::block
+             com.informatimago.languages.linc.c::let
+           com.informatimago.languages.linc.c::if
+           com.informatimago.languages.linc.c::case
+           com.informatimago.languages.linc.c::while
+           com.informatimago.languages.linc.c::do
+           com.informatimago.languages.linc.c::for
+           com.informatimago.languages.linc.c::break
+           com.informatimago.languages.linc.c::continue
+           com.informatimago.languages.linc.c::return
+           com.informatimago.languages.linc.c::goto)
          (generate-statement expression))
 
-        ((com.informatimago.linc.c::progn
-           com.informatimago.linc.c::callargs
-           com.informatimago.linc.c::?
-           com.informatimago.linc.c::=
-           com.informatimago.linc.c::*=
-           com.informatimago.linc.c::/=
-           com.informatimago.linc.c::%=
-           com.informatimago.linc.c::+=
-           com.informatimago.linc.c::-=
-           com.informatimago.linc.c::>>=
-           com.informatimago.linc.c::<<=
-           com.informatimago.linc.c::&=
-           com.informatimago.linc.c::^=
-           com.informatimago.linc.c::\|=
-           com.informatimago.linc.c::\|\|
-           com.informatimago.linc.c::&&
-           com.informatimago.linc.c::\|
-           com.informatimago.linc.c::^
-           com.informatimago.linc.c::&
-           com.informatimago.linc.c::==
-           com.informatimago.linc.c::!=
-           com.informatimago.linc.c::<
-           com.informatimago.linc.c::>
-           com.informatimago.linc.c::<=
-           com.informatimago.linc.c::>=
-           com.informatimago.linc.c::<<
-           com.informatimago.linc.c::>>
-           com.informatimago.linc.c::+
-           com.informatimago.linc.c::-
-           com.informatimago.linc.c::*
-           com.informatimago.linc.c::/
-           com.informatimago.linc.c::%
-           com.informatimago.linc.c::.*
-           com.informatimago.linc.c::->*
-           com.informatimago.linc.c::cast
-           com.informatimago.linc.c::++
-           com.informatimago.linc.c::--
-           com.informatimago.linc.c::!
-           com.informatimago.linc.c::~
-           com.informatimago.linc.c::deref
-           com.informatimago.linc.c::pointer
-           com.informatimago.linc.c::address
-           com.informatimago.linc.c::pos
-           com.informatimago.linc.c::neg
-           com.informatimago.linc.c::sizeof
-           com.informatimago.linc.c::new
-           com.informatimago.linc.c::delete
-           com.informatimago.linc.c::++post
-           com.informatimago.linc.c::--post
-           com.informatimago.linc.c::\.
-           com.informatimago.linc.c::->
-           com.informatimago.linc.c::aref
-           com.informatimago.linc.c::call
-           com.informatimago.linc.c::scope
-           com.informatimago.linc.c::literal
-           com.informatimago.linc.c::identifier)
+        ((com.informatimago.languages.linc.c::progn
+           com.informatimago.languages.linc.c::callargs
+           com.informatimago.languages.linc.c::?
+           com.informatimago.languages.linc.c::=
+           com.informatimago.languages.linc.c::*=
+           com.informatimago.languages.linc.c::/=
+           com.informatimago.languages.linc.c::%=
+           com.informatimago.languages.linc.c::+=
+           com.informatimago.languages.linc.c::-=
+           com.informatimago.languages.linc.c::>>=
+           com.informatimago.languages.linc.c::<<=
+           com.informatimago.languages.linc.c::&=
+           com.informatimago.languages.linc.c::^=
+           com.informatimago.languages.linc.c::\|=
+           com.informatimago.languages.linc.c::\|\|
+           com.informatimago.languages.linc.c::&&
+           com.informatimago.languages.linc.c::\|
+           com.informatimago.languages.linc.c::^
+           com.informatimago.languages.linc.c::&
+           com.informatimago.languages.linc.c::==
+           com.informatimago.languages.linc.c::!=
+           com.informatimago.languages.linc.c::<
+           com.informatimago.languages.linc.c::>
+           com.informatimago.languages.linc.c::<=
+           com.informatimago.languages.linc.c::>=
+           com.informatimago.languages.linc.c::<<
+           com.informatimago.languages.linc.c::>>
+           com.informatimago.languages.linc.c::+
+           com.informatimago.languages.linc.c::-
+           com.informatimago.languages.linc.c::*
+           com.informatimago.languages.linc.c::/
+           com.informatimago.languages.linc.c::%
+           com.informatimago.languages.linc.c::.*
+           com.informatimago.languages.linc.c::->*
+           com.informatimago.languages.linc.c::cast
+           com.informatimago.languages.linc.c::++
+           com.informatimago.languages.linc.c::--
+           com.informatimago.languages.linc.c::!
+           com.informatimago.languages.linc.c::~
+           com.informatimago.languages.linc.c::deref
+           com.informatimago.languages.linc.c::pointer
+           com.informatimago.languages.linc.c::address
+           com.informatimago.languages.linc.c::pos
+           com.informatimago.languages.linc.c::neg
+           com.informatimago.languages.linc.c::sizeof
+           com.informatimago.languages.linc.c::new
+           com.informatimago.languages.linc.c::delete
+           com.informatimago.languages.linc.c::++post
+           com.informatimago.languages.linc.c::--post
+           com.informatimago.languages.linc.c::\.
+           com.informatimago.languages.linc.c::->
+           com.informatimago.languages.linc.c::aref
+           com.informatimago.languages.linc.c::call
+           com.informatimago.languages.linc.c::scope
+           com.informatimago.languages.linc.c::literal
+           com.informatimago.languages.linc.c::identifier)
          (generate-expression expression)))))
 
 ;; (class (scope Configuration Exception InvalidFieldException))
 
-;;                          (scope c d)              com.informatimago.linc.c::d
+;;                          (scope c d)              com.informatimago.languages.linc.c::d
 ;;                 (scope b (scope c d))          b::c::d
 ;;        (scope a (scope b (scope c d)))      a::b::c::d
 ;; (scope (scope a (scope b (scope c d))))   ::a::b::c::d

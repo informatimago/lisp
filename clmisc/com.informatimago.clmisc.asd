@@ -47,7 +47,7 @@ a format similar to what is used by LISTSERV.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.2.3"
+  :version "1.2.4"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Autumn 2010")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.clmisc/")
@@ -58,7 +58,7 @@ a format similar to what is used by LISTSERV.
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ()
   :components ((:file "resource-utilization"))
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.clmisc.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.clmisc.test"))))
 
 
 ;;;; THE END ;;;;

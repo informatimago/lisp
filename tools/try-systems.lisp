@@ -53,7 +53,11 @@
   "Pathname of the directory where to store reports.")
 
 (defvar *asdf*
-  (in-home #P"quicklisp/asdf.lisp")
+  ;; We cannot use quicklisp/asdf.lisp since it's too old an asdf.
+  ;;   (in-home #P"quicklisp/asdf.lisp")
+  (let ((dir #.(or *compile-file-truename* *load-truename* #P"./")))
+    (merge-pathnames (make-pathname :name "asdf" :type "lisp" :version nil :defaults dir)
+                     dir nil))
   "Pathname of the asdf.lisp source file.")
 
 (defvar *releases-file*
@@ -136,6 +140,7 @@
                                  &key
                                    (asdf *asdf*)
                                    ((:reports-directory *reports-directory*) *reports-directory*))
+  (setf (uiop:getenv "LC_CTYPE") "en_US.UTF-8")
   (loop
     :with results  := '()
     :with date     := (date)
@@ -175,7 +180,7 @@
                               ;; We cannot use prin1-to-string in case we don't have the same asdf version.
                               "--eval" (format nil "(let ((asdf:*compile-file-warnings-behaviour* :warn) (asdf:*compile-file-failure-behaviour* :error)) (asdf:oos 'asdf:test-op ~S))" asd-system)))))
 
-;; (try-systems-in-directory #P"~/src/public/lisp/")
+
 
 ;; asdf:*compile-file-warnings-behaviour*
 ;; asdf:*compile-file-errors-behaviour*
@@ -195,3 +200,9 @@
                                            (user-homedir-pathname) nil))
      "--eval" (prin1-to-string `(push ,asd-directory asdf:*central-registry*))
      "--eval" (prin1-to-string `(asdf:oos 'asdf:load-op ,asd-system)))
+
+(let ((*package* (load-time-value (find-package "KEYWORD"))))
+  (format t "~2%;; Usage:~2%~S~2%"
+          '(try-systems-in-directory #P"~/src/public/lisp/")))
+
+;;;; THE END ;;;;

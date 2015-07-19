@@ -45,7 +45,7 @@
   :maintainer     "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence        "AGPL3"
   ;; component attributes:
-  :version        "1.0.2"
+  :version        "1.0.3"
   :properties     ((#:author-email . "pjb@informatimago.com")
                    (#:date . "Winter 2015")
                    ((#:albert #:output-dir)
@@ -54,7 +54,6 @@
                    ((#:albert #:docbook #:template) . "book")
                    ((#:albert #:docbook #:bgcolor) . "white")
                    ((#:albert #:docbook #:textcolor) . "black"))
-  #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on     ("com.informatimago.tools.check-asdf.test"
                    "com.informatimago.tools.make-depends.test"
                    "com.informatimago.tools.manifest.test"
@@ -66,7 +65,8 @@
                    "com.informatimago.tools.script.test"
                    "com.informatimago.tools.undefmethod.test")
   :components     ()
-  :in-order-to ((asdf:test-op
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op
                  (asdf:test-op "com.informatimago.tools.check-asdf.test") 
                  (asdf:test-op "com.informatimago.tools.make-depends.test") 
                  (asdf:test-op "com.informatimago.tools.manifest.test") 

@@ -40,7 +40,7 @@
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.2.3"
+  :version "1.2.4"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Autumn 2010")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.bank/")
@@ -52,6 +52,6 @@
   :depends-on ("com.informatimago.common-lisp.cesarum")
   :components ((:file "iban" :depends-on ())
                (:file "rib"  :depends-on ("iban")))
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.bank.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.bank.test"))))
 
 ;;;; THE END ;;;;

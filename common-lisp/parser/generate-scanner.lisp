@@ -34,6 +34,12 @@
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.PARSER.SCANNER")
 (declaim (declaration stepper))
 
+(defgeneric print-parser-error  (error stream))
+(defgeneric print-scanner-error (error stream))
+(defgeneric scanner-end-of-line-p   (scanner))
+(defgeneric scanner-end-of-source-p (scanner))
+(defgeneric advance-line            (scanner))
+(defgeneric accept                  (scanner token))
 
 
 (define-condition unexpected-token-error (scanner-error)
@@ -56,7 +62,7 @@
           (scanner-error-format-control err)
           (scanner-error-format-arguments err)))
 
-(defmethod print-object ((err scanner-error) stream)
+(defmethod print-object ((err unexpected-token-error) stream)
   (print-scanner-error err stream)
   err)
 

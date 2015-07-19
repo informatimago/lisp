@@ -32,7 +32,7 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(in-package "COM.INFORMATIMAGO.LINC")  
+(in-package "COM.INFORMATIMAGO.LANGUAGES.LINC")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -185,6 +185,8 @@ Defines two functions for each KIND:
                   (mapcar (function string-capitalize) (rest chunks))))))
 
 
+(defgeneric generate (node))
+
 (defmethod generate ((self symbol))
   (let* ((packname (package-name (symbol-package self)))
          (symbname (symbol-name self)))
@@ -192,14 +194,14 @@ Defines two functions for each KIND:
       (emit (camel-case packname :capitalize-initial t) "_"))
     (emit
      (cond
-       ((or (com.informatimago.linc.c::classp    self)
-            (com.informatimago.linc.c::structp   self)
-            (com.informatimago.linc.c::unionp    self)
-            (com.informatimago.linc.c::typep     self)
-            (com.informatimago.linc.c::enump     self)
-            (com.informatimago.linc.c::functionp self))
+       ((or (com.informatimago.languages.linc.c::classp    self)
+            (com.informatimago.languages.linc.c::structp   self)
+            (com.informatimago.languages.linc.c::unionp    self)
+            (com.informatimago.languages.linc.c::typep     self)
+            (com.informatimago.languages.linc.c::enump     self)
+            (com.informatimago.languages.linc.c::functionp self))
         (camel-case symbname :capitalize-initial t))
-       ((com.informatimago.linc.c::macrop self)
+       ((com.informatimago.languages.linc.c::macrop self)
         (substitute #\_ #\- (string-upcase symbname)))
        (t
         (camel-case symbname :capitalize-initial nil))))))
@@ -285,7 +287,7 @@ BUG: Correct C number syntax!
   self)
 
 (defmethod c-sexp ((self expression))
-  `(,(intern (c-name self) "COM.INFORMATIMAGO.LINC.C")
+  `(,(intern (c-name self) "COM.INFORMATIMAGO.LANGUAGES.LINC.C")
      ,@(mapcar (function c-sexp) (arguments self))))
 
 
@@ -446,12 +448,12 @@ exclusive, but one must be given when :arguments is not given.")
 ;;                    (emit "*")))
 
 
-;; (com.informatimago.linc.c::literal    1 ,(lambda (level token)
+;; (com.informatimago.languages.linc.c::literal    1 ,(lambda (level token)
 ;;                      (declare (ignore level))
 ;;                      (emit (if (stringp token)
 ;;                              (lisp->c-string token)
 ;;                              token))))
-;; (com.informatimago.linc.c::identifier 1 ,(lambda (level token)
+;; (com.informatimago.languages.linc.c::identifier 1 ,(lambda (level token)
 ;;                      (declare (ignore level))
 ;;                      (generate-identifier token)))
 
@@ -493,7 +495,7 @@ exclusive, but one must be given when :arguments is not given.")
                                     ((1)   '(list one))
                                     ((2)   '(list one two))
                                     ((3)   '(list one two three)))))
-          `(setf (symbol-function ',(intern c-name "COM.INFORMATIMAGO.LINC.C"))
+          `(setf (symbol-function ',(intern c-name "COM.INFORMATIMAGO.LANGUAGES.LINC.C"))
                  (symbol-function ',cl-name))
           `(defmethod generate ((self ,cl-name))
              ,(if (stringp c-name-or-generator)
@@ -747,7 +749,7 @@ exclusive, but one must be given when :arguments is not given.")
 
      (defmethod c-sexp ((self ,cl-name))
        ,(or c-sexp
-            `(cons ',(intern c-keyword "COM.INFORMATIMAGO.LINC.C")
+            `(cons ',(intern c-keyword "COM.INFORMATIMAGO.LANGUAGES.LINC.C")
                    (mapcar (function c-sexp) (arguments self)))))
 
      (defmethod generate ((self ,cl-name))
@@ -778,7 +780,7 @@ exclusive, but one must be given when :arguments is not given.")
   ;; `(,(class-name (class-of self)) ,(identifier self)
   ;;    ,@(when (sub-statement self) (list (sub-statement self))))
   ;;                                       ; c-sexp
-  ;; `(,(intern (c-keyword self) "COM.INFORMATIMAGO.LINC.C") ,(c-sexp (identifier self))
+  ;; `(,(intern (c-keyword self) "COM.INFORMATIMAGO.LANGUAGES.LINC.C") ,(c-sexp (identifier self))
   ;;    ,@(when (sub-statement self) (list (c-sexp (sub-statement self)))))
   ;;                                       ; generate
   :generate (progn                                 
@@ -792,7 +794,7 @@ exclusive, but one must be given when :arguments is not given.")
   ;; `(,(class-name (class-of self)) ,(case-value self)
   ;;    ,@(when (sub-statement self) (list (sub-statement self))))
   ;;                                       ; c-sexp
-  ;; `(,(intern (c-keyword self) "COM.INFORMATIMAGO.LINC.C") ,(c-sexp (case-value self))
+  ;; `(,(intern (c-keyword self) "COM.INFORMATIMAGO.LANGUAGES.LINC.C") ,(c-sexp (case-value self))
   ;;    ,@(when (sub-statement self) (list (c-sexp (sub-statement self)))))
   ;;                                       ; generate
   :generate (progn                                 
@@ -808,7 +810,7 @@ exclusive, but one must be given when :arguments is not given.")
   ;; `(,(class-name (class-of self)) 
   ;;    ,@(when (sub-statement self) (list (sub-statement self))))
   ;;                                       ; c-sexp
-  ;; `(,(intern (c-keyword self) "COM.INFORMATIMAGO.LINC.C")
+  ;; `(,(intern (c-keyword self) "COM.INFORMATIMAGO.LANGUAGES.LINC.C")
   ;;    ,@(when (sub-statement self) (list (c-sexp (sub-statement self)))))
   ;;                                       ; generate
   :generate (progn                                 
@@ -822,7 +824,7 @@ exclusive, but one must be given when :arguments is not given.")
   ;;                                       ; print-object
   ;; `(,(class-name (class-of self))  ,@(block-statements self))
   ;;                                       ; c-sexp
-  ;; `(,(intern (c-keyword self) "COM.INFORMATIMAGO.LINC.C")
+  ;; `(,(intern (c-keyword self) "COM.INFORMATIMAGO.LANGUAGES.LINC.C")
   ;;    ,@(mapcar (function c-sexp) (block-statements self)))
   ;;                                       ; generate
   :generate (progn
@@ -841,7 +843,7 @@ exclusive, but one must be given when :arguments is not given.")
   ;; `(,(class-name (class-of self))
   ;;    ,(let-bindings  self) ,@(let-statements self))
   ;;                                       ; c-sexp
-  ;; `(,(intern (c-keyword self) "COM.INFORMATIMAGO.LINC.C")
+  ;; `(,(intern (c-keyword self) "COM.INFORMATIMAGO.LANGUAGES.LINC.C")
   ;;    ,(mapcar (function c-sexp) (let-bindings  self))
   ;;    ,@(mapcar (function c-sexp) (let-statements self)))
   ;;                                       ; generate
@@ -867,7 +869,7 @@ exclusive, but one must be given when :arguments is not given.")
   ;;    ,(then self)
   ;;    ,@(when (else self) (list (else self))))
   ;;                                       ; c-sexp
-  ;; `(,(intern (c-keyword self) "COM.INFORMATIMAGO.LINC.C")
+  ;; `(,(intern (c-keyword self) "COM.INFORMATIMAGO.LANGUAGES.LINC.C")
   ;;    ,(c-sexp (condition-expression  self))
   ;;    ,(c-sexp (then self))
   ;;    ,@(when (else self) (list (c-sexp (else self)))))
@@ -889,7 +891,7 @@ exclusive, but one must be given when :arguments is not given.")
   ;;    ,(condition-expression  self)
   ;;    ,@(when (sub-statement self) (list (sub-statement self))))
   ;;                                       ; c-sexp
-  ;; `(,(intern (c-keyword self) "COM.INFORMATIMAGO.LINC.C")
+  ;; `(,(intern (c-keyword self) "COM.INFORMATIMAGO.LANGUAGES.LINC.C")
   ;;    ,(c-sexp (condition-expression  self))
   ;;    ,@(when (sub-statement self) (list (c-sexp (sub-statement self)))))
   ;;                                       ; generate
@@ -907,7 +909,7 @@ exclusive, but one must be given when :arguments is not given.")
   ;;    ,(condition-expression  self)
   ;;    ,@(when (sub-statement self) (list (sub-statement self))))
   ;;                                       ; c-sexp
-  ;; `(,(intern (c-keyword self) "COM.INFORMATIMAGO.LINC.C")
+  ;; `(,(intern (c-keyword self) "COM.INFORMATIMAGO.LANGUAGES.LINC.C")
   ;;    ,(c-sexp (condition-expression  self))
   ;;    ,@(when (sub-statement self) (list (c-sexp (sub-statement self)))))
   ;;                                       ; generate
@@ -925,7 +927,7 @@ exclusive, but one must be given when :arguments is not given.")
   ;;    ,(condition-expression  self)
   ;;    ,@(when (sub-statement self) (list (sub-statement self))))
   ;;                                       ; c-sexp
-  ;; `(,(intern (c-keyword self) "COM.INFORMATIMAGO.LINC.C")
+  ;; `(,(intern (c-keyword self) "COM.INFORMATIMAGO.LANGUAGES.LINC.C")
   ;;    ,(c-sexp (condition-expression  self))
   ;;    ,@(when (sub-statement self) (list (c-sexp (sub-statement self)))))
   ;;                                       ; generate
@@ -950,7 +952,7 @@ exclusive, but one must be given when :arguments is not given.")
   ;;    ,(step-expression     self)
   ;;    ,@(when (sub-statement self) (list (sub-statement self))))
   ;;                                       ; c-sexp
-  ;; `(,(intern (c-keyword self) "COM.INFORMATIMAGO.LINC.C")
+  ;; `(,(intern (c-keyword self) "COM.INFORMATIMAGO.LANGUAGES.LINC.C")
   ;;    ,(c-step (for-init-statement  self))
   ;;    ,(c-step (go-on-condition     self))
   ;;    ,(c-step (step-expression     self))
@@ -1041,7 +1043,7 @@ exclusive, but one must be given when :arguments is not given.")
 
      (defmethod c-sexp ((self ,name))
        (cons
-         ',(intern (substitute #\_ #\- (string-downcase name)) "COM.INFORMATIMAGO.LINC.C")
+         ',(intern (substitute #\_ #\- (string-downcase name)) "COM.INFORMATIMAGO.LANGUAGES.LINC.C")
          (mapcar (function c-sexp) (arguments self))))
 
      (defmethod generate ((self ,name))
@@ -1174,12 +1176,13 @@ exclusive, but one must be given when :arguments is not given.")
   ())
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
- (defmethod parameters ((self ordinary-lambda-list))
-   (append (lambda-list-mandatory-parameters self)
-           (lambda-list-optional-parameters self)
-           (and (lambda-list-rest-parameter-p self)
-                (lambda-list-rest-parameter self))
-           (lambda-list-keyword-parameters self))))
+  (defgeneric parameters (lambda-list))
+  (defmethod parameters ((self ordinary-lambda-list))
+    (append (lambda-list-mandatory-parameters self)
+            (lambda-list-optional-parameters self)
+            (and (lambda-list-rest-parameter-p self)
+                 (lambda-list-rest-parameter self))
+            (lambda-list-keyword-parameters self))))
 
 (defmacro define-declarator (name lambda-list &key generate)
   (let ((fields
@@ -1213,7 +1216,7 @@ exclusive, but one must be given when :arguments is not given.")
 
        (defmethod c-sexp ((self ,name))
          (cons
-          ',(intern (substitute #\_ #\- (string-downcase name)) "COM.INFORMATIMAGO.LINC.C")
+          ',(intern (substitute #\_ #\- (string-downcase name)) "COM.INFORMATIMAGO.LANGUAGES.LINC.C")
           (mapcar (function c-sexp) (arguments self))))
 
        (defmethod generate ((self ,name))

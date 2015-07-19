@@ -203,9 +203,9 @@ Note: are direly missing DEFINE, LETREC, NULL? and other predicates,
 (defstruct true)  (defvar +true+  (make-true))
 (defstruct eof)   (defvar +eof+   (make-eof))
 
+(declaim (inline clbool scbool))
 (defun clbool (scheme-boolean) (cl:not (eq +false+ scheme-boolean)))
 (defun scbool (lisp-boolean)   (cl:if lisp-boolean +true+ +false+))
-(declaim (inline clbool scbool))
 
 ;; This is not correct, the value of the last expression must be returned, not its clbool:
 (defmacro and (&rest arguments)

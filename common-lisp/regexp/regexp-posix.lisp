@@ -1215,7 +1215,9 @@ DO:     complements the set.
 ;;
 ;; A range = an integer n for [n,n]  or a cons (min . max) for [min,max].
 
-(defstruct range %min %max)
+(defstruct (range
+            (:constructor make-range (%min %max)))
+  %min %max)
 ;; (DEFMACRO MAKE-RANGE (MIN MAX) `(CONS ,MIN ,MAX))
 ;; (DEFMACRO RANGE-MIN  (RANGE)   `(IF (INTEGERP ,RANGE) ,RANGE (CAR ,RANGE)))
 ;; (DEFMACRO RANGE-MAX  (RANGE)   `(IF (INTEGERP ,RANGE) ,RANGE (CDR ,RANGE)))
@@ -2369,8 +2371,8 @@ WARNING: Entry #0 of the result vector is always the start and end of the
                     (let* ((size (if (numberp nmatch)
                                      nmatch ;;(min nmatch(length(renv-subexps env)))
                                      (length (renv-subexps env))))
-                           (result (make-array (list size)
-                                               :element-type 'regmatch-t)))
+                           (result (make-array (list size) :element-type 'regmatch-t
+                                                           :initial-element (make-regmatch-t))))
                       (dotimes (i size)
                         (setf (aref result i)
                               (if (< i (length (renv-subexps env)))

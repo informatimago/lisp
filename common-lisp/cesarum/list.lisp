@@ -298,6 +298,7 @@ EXAMPLE:    (map-cartesian-product (function list) '(1 2 3) '(a b c) '(11 22))
                          (cdr lists)))
                 (car lists)))))
 
+(declaim (inline plist-put plist-get plist-remove memq))
 
 (defun plist-keys (plist)
   "Returns a list of the properties in PLIST."
@@ -361,7 +362,6 @@ RETURN:   (MEMBER ITEM LIST :TEST (FUNCTION EQ))
 "
   (member item list :test (function eq)))
 
-(declaim (inline plist-put plist-get plist-remove memq))
 
 
 (defun transpose (tree)

@@ -36,14 +36,16 @@
 (defun remove-comments (text &key (single-line-comments t))
   (flet ((concatenate-chunks (chunks)
            (mapconcat (function identity) chunks " ")))
+    (declare (inline concatenate-chunks))
     (loop
-      :with state := :top
+      :with length := (length text)
+      :with state  := :top
       :with chunks := '()
-      :with start := (ecase state
-                       (:top 0)
-                       (:in-multiline-comment (length text)))
+      :with start  := (ecase state
+                        (:top 0)
+                        (:in-multiline-comment length))
       :with i := 0
-      :while (< i (length text))
+      :while (< i length)
       :do (let ((ch (aref text i)))
             (ecase state
               (:top
@@ -52,7 +54,7 @@
                  ((#\')     (incf i) (setf state :in-character))
                  ((#\/)
                   (incf i)
-                  (when (< i (length text))
+                  (when (< i length)
                     (let ((ch (aref text i)))
                       (case ch
                         ((#\/) ;;single line comment
@@ -64,13 +66,13 @@
                          (incf i)
                          (push (subseq text start (- i 2)) chunks)
                          (setf state :in-multiline-comment
-                               start (length text)))))))
+                               start length))))))
                  (otherwise (incf i))))
               (:in-multiline-comment
                (case ch
                  ((#\*)
                   (incf i)
-                  (when (< i (length text))
+                  (when (< i length)
                     (let ((ch (aref text i)))
                       (when (char= ch #\/)
                         (incf i)
@@ -82,9 +84,9 @@
                (case ch
                  ((#\\)
                   (incf i)
-                  (if (< i (length text))
+                  (if (< i length)
                       (incf i)
-                      (progn (error "backslash in string literal at the end of the line")
+                      (progn (cerror "Continue" "backslash in string literal at the end of the line")
                              (setf state :top))))
                  ((#\")
                   (incf i)
@@ -94,9 +96,9 @@
                (case ch
                  ((#\\)
                   (incf i)
-                  (if (< i (length text))
+                  (if (< i length)
                       (incf i)
-                      (progn (error "backslash in character literal at the end of the line")
+                      (progn (cerror "Continue" "backslash in character literal at the end of the line")
                              (setf state :top))))
                  ((#\')
                   (incf i)
@@ -104,13 +106,13 @@
                  (otherwise (incf i))))))
       :finally (return (case state
                          (:in-string
-                          (error "unterminated string literal at the end of the line")
+                          (cerror "Continue" "unterminated string literal at the end of the line")
                           (values (concatenate-chunks (nreverse chunks)) :top))
                          (:in-character
-                          (error "unterminated character literal at the end of the line")
+                          (cerror "Continue" "unterminated character literal at the end of the line")
                           (values (concatenate-chunks (nreverse chunks)) :top))
                          (:top
-                          (values (concatenate-chunks (nreverse (if (< start (length text))
+                          (values (concatenate-chunks (nreverse (if (< start length)
                                                                     (cons (subseq text start) chunks)
                                                                     chunks)))
                                   state))
@@ -231,7 +233,8 @@
              (print (parse-with-lexer lexer *yacc-parser*)))))
 
 (defun read-footer (stream)
-  )
+  (declare (ignore stream))
+  (values))
 
 (defun read-yacc (stream name)
   (let* ((header (read-header stream))

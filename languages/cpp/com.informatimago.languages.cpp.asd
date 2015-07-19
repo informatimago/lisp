@@ -39,7 +39,7 @@
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component  attributes:
-  :version "0.9.2"
+  :version "0.9.3"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Summer 2015")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.languages.cpp/")
@@ -66,6 +66,6 @@
                                                       "pragma-gcc"
                                                       "c-string-reader"
                                                       "expression")))
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.languages.cpp.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.languages.cpp.test"))))
 
 ;;;; THE END ;;;;

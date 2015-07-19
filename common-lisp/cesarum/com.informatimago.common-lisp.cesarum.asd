@@ -62,7 +62,7 @@ all written in 100% conforming Common Lisp.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.3.5"
+  :version "1.3.6"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Autumn 2010")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.cesarum/")
@@ -72,7 +72,7 @@ all written in 100% conforming Common Lisp.
                ((#:albert #:docbook #:textcolor) . "black"))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ("com.informatimago.common-lisp.lisp-sexp")
-  :in-order-to ((test-op (test-op "com.informatimago.common-lisp.cesarum.test")))
+  #+adsf3 :in-order-to #+adsf3 ((test-op (test-op "com.informatimago.common-lisp.cesarum.test")))
   :components (
                ;; Simple Test Framework
                (:file "simple-test"     :depends-on ())
@@ -132,7 +132,7 @@ all written in 100% conforming Common Lisp.
                (:file "float-binio"     :depends-on ())
 
                )
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.cesarum.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.cesarum.test"))))
 
 
 ;; Would require a separate asd file...

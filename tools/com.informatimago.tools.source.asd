@@ -32,6 +32,11 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (if (find-package "UIOP")
+      (push :uiop *features*)
+      (setf *features* (remove :uiop *features*))))
+
 #+mocl
 (asdf:defsystem "com.informatimago.tools.source"
   :description "Dummy Reads sources and headers to perform some analysis."
@@ -41,16 +46,17 @@ This system would use closer-mop which is not available on MOCL.
 
 "
   :author "Pascal J. Bourguignon"
-  :version "1.0.2"
+  :version "1.0.3"
   :license "GPL3"
   :depends-on () 
-  :components ())
+  :components ()
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8)
 
 #-mocl
 (asdf:defsystem "com.informatimago.tools.source"
   :description "Reads sources and headers to perform some analysis."
   :author "Pascal J. Bourguignon"
-  :version "1.0.3"
+  :version "1.0.4"
   :license "GPL3"
   :depends-on ("com.informatimago.common-lisp.cesarum"
                "com.informatimago.common-lisp.picture"
@@ -62,10 +68,12 @@ This system would use closer-mop which is not available on MOCL.
                (:file "dependency-cycles")
                (:file "dummy-asdf")
                (:file "dummy-uiop")
-               (:file "asdf-file"  :depends-on ("dependency-cycles"
-                                                "source"
-                                                "dummy-asdf" "dummy-uiop"))
-               #-(and) (:file "analyse-patchwork")))
+               (:file "asdf-file"  :depends-on ("dummy-asdf"
+                                                "dummy-uiop"
+                                                "dependency-cycles"
+                                                "source"))
+               #-(and) (:file "analyse-patchwork"))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8)
 
 
 ;;;; THE END ;;;;

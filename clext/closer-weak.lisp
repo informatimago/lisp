@@ -882,6 +882,7 @@ It has no effect when some key has already been garbage-collected.")
                                 (weak :key)
                                 (initial-contents nil)
                                 &allow-other-keys)
+  (declare (ignorable test testp size rehash-size rehash-threshold))
   (check-type weak (member :key :value :key-and-value :key-or-value))
   (call-next-method)
   (setf (wht-buckets self) (make-array size :initial-element nil))
@@ -969,7 +970,7 @@ It has no effect when some key has already been garbage-collected.")
 
 #-(and (or ccl clisp) (not debug-weak))
 (defmethod %gethash (key (self weak-hash-table) &optional default)
-  (declare (ignore default))
+  (declare (ignorable default))
   (let* ((h (mod (%sxhash key) (length (wht-buckets self))))
          (bucket (aref (wht-buckets self) h)))
     (cond
@@ -996,6 +997,7 @@ It has no effect when some key has already been garbage-collected.")
 (defmethod (setf %gethash) (value key (self weak-hash-table) &optional default)
   ;; Should check when the new count goes above a threshold and increase
   ;; hash size.
+  (declare (ignore default))
   (let* ((h (mod (%sxhash key) (length (wht-buckets self))))
          (bucket (aref (wht-buckets self) h)))
     (cond

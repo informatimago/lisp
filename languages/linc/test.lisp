@@ -35,12 +35,12 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(in-package "COM.INFORMATIMAGO.LINC")
+(in-package "COM.INFORMATIMAGO.LANGUAGES.LINC")
 (setf *c-out* (open "test.c" :direction :output
                     :if-exists :supersede
                     :if-does-not-exist :create))
 
-(in-package "COM.INFORMATIMAGO.LINC")
+(in-package "COM.INFORMATIMAGO.LANGUAGES.LINC")
 
 (defpackage "BC-MEM"
   (:documentation "A package corresponding to a C module with prefixed function names.")
@@ -48,7 +48,7 @@
   (:export "COPY" "ALLOCATE" "DEALLOCATE"))
 
 
-(in-package "COM.INFORMATIMAGO.LINC.C")
+(in-package "COM.INFORMATIMAGO.LANGUAGES.LINC.C")
 
 (declare-variable '(n-allocation n-data copy n-length))
 (declare-function '(bc-mem:allocate bc-mem:deallocate bc-mem:copy))
@@ -65,12 +65,12 @@
 
 
 ;; (in-package :c)
-;; (com.informatimago.linc::generate-expression '(+ 1 2))
-;; (com.informatimago.linc::generate-expression
+;; (com.informatimago.languages.linc::generate-expression '(+ 1 2))
+;; (com.informatimago.languages.linc::generate-expression
 ;;  '(* (+ 1 2 3 4) (/ 5 4 3 2) (- 5 4 3 2)
 ;;    (pos a) (neg b) (deref c) (~ d) (! e)
 ;;    (pos (+ 1 a)) (neg (+ 2 b)) (deref (+ c 3)) (~ (+ 4 d)) (! (< e 0))))
-;; (com.informatimago.linc::generate-expression
+;; (com.informatimago.languages.linc::generate-expression
 ;;  '(neg a))
 
 (comment "Here is a little function")
@@ -115,7 +115,7 @@
 
 #||
 (cl:map cl:nil (cl:lambda (x)
-                 (com.informatimago.linc::generate-expression x)
+                 (com.informatimago.languages.linc::generate-expression x)
                  (cl:terpri))
         '((+ 1 2 3 4)
           (/ 5 4 3 2)
@@ -138,21 +138,21 @@
           (? (== a 0) 42 (- a 2))))
 
 
-(com.informatimago.linc::generate-expression
+(com.informatimago.languages.linc::generate-expression
  '(* (+ 1 2 3 4) (/ 5 4 3 2) (- 5 4 3 2)
    (pos a) (neg b) (deref c) (~ d) (! e)
    (pos (+ 1 a)) (neg (+ 2 b)) (deref (+ c 3)) (~ (+ 4 d)) (! (< e 0))))
 
-;; (in-package :com.informatimago.linc) 
+;; (in-package :com.informatimago.languages.linc) 
 
 (setf *c-out* (open "test.c" :direction :output
                     :if-exists :supersede
                     :if-does-not-exist :create))
 
 (cl:progn
-  (cl:close       com.informatimago.linc::*c-out*)
-  (cl-user::edit (cl:pathname com.informatimago.linc::*c-out*) :wait cl:nil)
-  (cl:setf com.informatimago.linc::*c-out* cl:t))
+  (cl:close       com.informatimago.languages.linc::*c-out*)
+  (cl-user::edit (cl:pathname com.informatimago.languages.linc::*c-out*) :wait cl:nil)
+  (cl:setf com.informatimago.languages.linc::*c-out* cl:t))
 
 ||#
 

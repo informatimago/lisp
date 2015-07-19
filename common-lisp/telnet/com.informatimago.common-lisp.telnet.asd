@@ -49,7 +49,7 @@ with a TCP/IP socket or other communication service.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "0.9.3"
+  :version "0.9.4"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Spring 2012")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.telnet/")
@@ -62,7 +62,7 @@ with a TCP/IP socket or other communication service.
   :components ((:file "package" :depends-on ())
                (:file "telnet"  :depends-on ("package"))
                (:file "status"  :depends-on ("package" "telnet")))
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.telnet.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.telnet.test"))))
 
 
 ;;;; THE END ;;;;

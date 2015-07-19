@@ -34,56 +34,56 @@
 
 #+mocl
 (asdf:defsystem "com.informatimago.tools.summary"
-    ;; system attributes:
-    :description "Dummy Informatimago Common Lisp Summary Tool"
-    :long-description  "
+  ;; system attributes:
+  :description "Dummy Informatimago Common Lisp Summary Tool"
+  :long-description  "
 
 Since summary depends on source which is disabled on MoCL, we are therefore disabled on MoCL.
 
 "
-    :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-    :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-    :licence "AGPL3"
-    ;; component attributes:
-    :version "1.0.2"
-    :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Autumn 2010")
-                 ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.summary/")
-                 ((#:albert #:formats)             . ("docbook"))
-                 ((#:albert #:docbook #:template)  . "book")
-                 ((#:albert #:docbook #:bgcolor)   . "white")
-                 ((#:albert #:docbook #:textcolor) . "black"))
-    #+asdf-unicode :encoding #+asdf-unicode :utf-8
-    :depends-on ()
-    :components ())
+  :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :licence "AGPL3"
+  ;; component attributes:
+  :version "1.0.3"
+  :properties ((#:author-email                   . "pjb@informatimago.com")
+               (#:date                           . "Autumn 2010")
+               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.summary/")
+               ((#:albert #:formats)             . ("docbook"))
+               ((#:albert #:docbook #:template)  . "book")
+               ((#:albert #:docbook #:bgcolor)   . "white")
+               ((#:albert #:docbook #:textcolor) . "black"))
+  :depends-on ()
+  :components ()
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8)
 
 
 #-mocl
 (asdf:defsystem "com.informatimago.tools.summary"
-    ;; system attributes:
-    :description "Informatimago Common Lisp Summary Tool"
-    :long-description  "
+  ;; system attributes:
+  :description "Informatimago Common Lisp Summary Tool"
+  :long-description  "
 
 This program generates an HTML summary page for packages.
 
 "
-    :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-    :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-    :licence "AGPL3"
-    ;; component attributes:
-    :version "1.0.2"
-    :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Autumn 2010")
-                 ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.summary/")
-                 ((#:albert #:formats)             . ("docbook"))
-                 ((#:albert #:docbook #:template)  . "book")
-                 ((#:albert #:docbook #:bgcolor)   . "white")
-                 ((#:albert #:docbook #:textcolor) . "black"))
-    #+asdf-unicode :encoding #+asdf-unicode :utf-8
-    :depends-on ("com.informatimago.common-lisp.cesarum"
-                 "com.informatimago.common-lisp.html-generator"
-                 "com.informatimago.clext"
-                 "com.informatimago.tools.source")
-    :components ((:file "summary" :depends-on ())))
+  :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :licence "AGPL3"
+  ;; component attributes:
+  :version "1.0.3"
+  :properties ((#:author-email                   . "pjb@informatimago.com")
+               (#:date                           . "Autumn 2010")
+               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.summary/")
+               ((#:albert #:formats)             . ("docbook"))
+               ((#:albert #:docbook #:template)  . "book")
+               ((#:albert #:docbook #:bgcolor)   . "white")
+               ((#:albert #:docbook #:textcolor) . "black"))
+  :depends-on ("com.informatimago.common-lisp.cesarum"
+               "com.informatimago.common-lisp.html-generator"
+               "com.informatimago.clext"
+               "com.informatimago.tools.source")
+  :components ((:file "summary" :depends-on ()))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8)
 
 ;;;; THE END ;;;;

@@ -41,7 +41,7 @@
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.2.3"
+  :version "1.2.4"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Autumn 2010")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.arithmetic/")
@@ -53,6 +53,6 @@
   :depends-on ("com.informatimago.common-lisp.cesarum")
   :components ((:file "primes" :depends-on ())
                (:file "p127n2" :depends-on ()))
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.arithmetic.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.arithmetic.test"))))
 
 ;;;; THE END ;;;;

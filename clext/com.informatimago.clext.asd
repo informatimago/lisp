@@ -46,7 +46,7 @@ specifications, like GRAY or other portability libraries.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.3.4"
+  :version "1.3.5"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Autumn 2010")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.clext/")
@@ -60,7 +60,7 @@ specifications, like GRAY or other portability libraries.
   :components ((:file "character-sets")
                #+(or allegro ccl clisp sbcl cmu)
                (:file "closer-weak"))
-  :in-order-to ((test-op (test-op "com.informatimago.clext.test")
+  #+adsf3 :in-order-to #+adsf3 ((test-op (test-op "com.informatimago.clext.test")
                          (test-op "com.informatimago.clext.association.test"))))
 
 

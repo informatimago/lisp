@@ -35,10 +35,11 @@
 (asdf:defsystem "com.informatimago.small-cl-pgms.what-implementation"
   :description "A tool to help choosing a Common Lisp implementation."
   :author "Pascal J. Bourguignon"
-  :version "1.0.2"
+  :version "1.0.3"
   :license "GPL3"
   :depends-on () 
   :components ((:file "what-implementation"))
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.small-cl-pgms.what-implementation.test"))))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.small-cl-pgms.what-implementation.test"))))
 
 ;;;; THE END ;;;;

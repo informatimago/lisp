@@ -44,7 +44,7 @@ Generation of HTML pages.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.2.3"
+  :version "1.2.4"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Autumn 2010")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.html-generator/")
@@ -55,6 +55,6 @@ Generation of HTML pages.
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ("com.informatimago.common-lisp.cesarum")
   :components ((:file "html" :depends-on ()))
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.html-generator.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.html-generator.test"))))
 
 ;;;; THE END ;;;;

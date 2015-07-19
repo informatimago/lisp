@@ -105,11 +105,11 @@ License:
   (tail nil :type list))
 
 
+(declaim (inline queue-elements))
 (defun queue-elements (queue)
   "RETURN: The list of elements in the queue."
   (queue-head queue))
 
-(declaim (inline queue-elements))
 
 (defun queue-invariant (queue)
   "

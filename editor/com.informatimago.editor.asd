@@ -36,7 +36,7 @@
 (asdf:defsystem "com.informatimago.editor"
   :description "An emacs-like editor."
   :author "Pascal J. Bourguignon"
-  :version "1.0.6"
+  :version "1.0.7"
   :license "AGPL3"
   :depends-on ("com.informatimago.common-lisp.cesarum"
                "com.informatimago.common-lisp.lisp-sexp"
@@ -58,6 +58,6 @@
                                                    "macros" "screen"
                                                    #+clisp "clisp"
                                                    #-mocl  "charms-screen")))
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.editor.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.editor.test"))))
 
 ;;;; THE END ;;;;

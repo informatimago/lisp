@@ -40,7 +40,7 @@
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.3.0"
+  :version "1.3.1"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Autumn 2015")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.regexp/")
@@ -55,6 +55,6 @@
   :components ((:file "regexp-emacs"         :depends-on ())
                (:file "regexp-posix"         :depends-on ())
                (:file "regexp"               :depends-on ()))
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.regexp.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.regexp.test"))))
 
 ;;;; THE END ;;;;

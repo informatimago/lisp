@@ -42,7 +42,7 @@
   :author "Pascal J. Bourguignon <pjb@informatimago.com>"
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :license "AGPL3"
-  :version "1.2.4"
+  :version "1.2.5"
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ()
   :components ())
@@ -61,7 +61,7 @@ should be made into implementation independant packages).
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.2.4"
+  :version "1.2.5"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Spring 2014")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.clmisc/")
@@ -78,7 +78,7 @@ should be made into implementation independant packages).
                (:file "fifo-stream")
                (:file "iotask")
                (:file "rfc1413" :depends-on ("iotask"))
-               ;; :shared-object is not known of asdf, but is defined by clg-tools…
+               ;; :shared-object is not known of asdf, but is defined by clg-tools...
                ;; (:shared-object "libraw-memory"
                ;;                 :components ((:c-source-file "raw-memory-lib"))
                ;;                 :depends-on ())
@@ -90,7 +90,7 @@ should be made into implementation independant packages).
                #+linux (:file "shell")
                #+linux (:file "xterm" :depends-on ("susv3"))
                #+linux (:file "make-volumes" :depends-on ("susv3")))
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.clisp.test")))) 
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.clisp.test")))) 
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)

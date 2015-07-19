@@ -54,7 +54,7 @@ generate a corresponding C source.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "0.0.2"
+  :version "0.0.3"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "2007")
                ((#:albert #:output-dir)          . "../documentation/com.informatimago.linc/")
@@ -71,6 +71,6 @@ generate a corresponding C source.
                (:file "c-operators"        :depends-on ("packages" "c-syntax"))
                ;; Not yet (:file "c++-syntax"         :depends-on ("packages"))
                (:file "linc"               :depends-on ("packages" "c-syntax" "c-operators")))
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.linc.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.linc.test"))))
 
 ;;;; THE END ;;;;

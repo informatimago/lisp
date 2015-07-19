@@ -39,7 +39,7 @@
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.0.5"
+  :version "1.0.6"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Spring 2014")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.tools/")
@@ -60,7 +60,7 @@
   #+mocl ("com.informatimago.tools.manifest"
           "com.informatimago.tools.pathname"
           "com.informatimago.tools.symbol")
-  :in-order-to ((asdf:test-op (asdf:test-op  "com.informatimago.tools.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op  "com.informatimago.tools.test"))))
 
 
 

@@ -40,7 +40,7 @@
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.3.0"
+  :version "1.3.1"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Autumn 2015")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.parser/")
@@ -54,6 +54,6 @@
   :components ((:file "packages"         :depends-on ())
                (:file "scanner"          :depends-on ("packages"))
                (:file "generate-scanner" :depends-on ("packages" "scanner")))
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.scanner.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.scanner.test"))))
 
 ;;;; THE END ;;;;

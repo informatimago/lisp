@@ -48,7 +48,7 @@ cover generic FFI to both Apple and GNUstep objc2 runtimes.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence    "AGPL3"
   ;; component attributes:
-  :version    "0.10.5"
+  :version    "0.10.6"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Spring 2014")
                ((#:albert #:output-dir)          . "../documentation/com.informatimago.objc/")
@@ -67,7 +67,7 @@ cover generic FFI to both Apple and GNUstep objc2 runtimes.
                 (:file "objcl"              :depends-on ("packages" "oclo" "mac-roman")))
                #-(and ccl darwin)
                ())
-  :in-order-to ((asdf:test-op
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op
                  (asdf:test-op "com.informatimago.objcl.test"))))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)

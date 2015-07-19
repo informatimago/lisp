@@ -45,7 +45,7 @@
   :maintainer     "Pascal J. Bourguignon"
   :licence        "GPL3"
   ;; component attributes:
-  :version        "1.0.2"
+  :version        "1.0.3"
   :properties     ((#:author-email . "pjb@informatimago.com")
                    (#:date . "Winter 2015")
                    ((#:albert #:output-dir)
@@ -62,7 +62,7 @@
                    "com.informatimago.small-cl-pgms.quine"
                    "com.informatimago.small-cl-pgms.what-implementation")
   :components     ()
-  :in-order-to ((asdf:test-op
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op
                  (asdf:test-op "com.informatimago.small-cl-pgms.brainfuck.test")
                  (asdf:test-op "com.informatimago.small-cl-pgms.life.test")
                  (asdf:test-op "com.informatimago.small-cl-pgms.quine.test")

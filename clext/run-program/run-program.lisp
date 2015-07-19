@@ -150,7 +150,7 @@
 #+(or abcl cmu clozure sbcl)                                                         
 (defun process-pid (process)
   #+abcl            (declare (ignore process))
-  #+abcl            -1 ; no process-pid in abcl…
+  #+abcl            -1 ; no process-pid in abcl
   #+(or cmu sbcl)   (process-pid                (process-process process)) 
   #+clozure         (ccl::external-process-pid  (process-process process)))
 

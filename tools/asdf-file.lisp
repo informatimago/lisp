@@ -522,15 +522,15 @@ RETURN: A defsystem form for a test system for the system defined by
                         ((#:albert #:docbook #:template)  . "book")
                         ((#:albert #:docbook #:bgcolor)   . "white")
                         ((#:albert #:docbook #:textcolor) . "black"))
-           :encoding :utf-8
            :depends-on (,(ref :name)
                         "com.informatimago.common-lisp.cesarum") ; simple-test
-           :perform (asdf:test-op (cl-user::operation cl-user::system)
+           :components ((:file "source-test"   :depends-on ()))
+           #+asdf-unicode :encoding #+asdf-unicode :utf-8
+           #+asdf3 :perform #+asdf3 (asdf:test-op (cl-user::operation cl-user::system)
                                   (declare (ignore cl-user::operation cl-user::system))
                                   ;; template:
                                   (let ((*package* (find-package "TESTED-PACKAGE")))
-                                    (uiop:symbol-call "TESTED-PACKAGE" "TEST/ALL")))
-           :components ((:file "source-test"   :depends-on ())))))))
+                                    (uiop:symbol-call "TESTED-PACKAGE" "TEST/ALL"))))))))
 
 
 (defun generate-test-system-for-system-at-path (asdf-system-pathname
@@ -584,19 +584,19 @@ asdf file at ASDF-SYSTEM-PATHNAME, unless such a file already exists.
                           ((#:albert #:docbook #:template)  . "book")
                           ((#:albert #:docbook #:bgcolor)   . "white")
                           ((#:albert #:docbook #:textcolor) . "black"))
-             #+asdf-unicode :encoding #+asdf-unicode :utf-8
              :depends-on ("com.informatimago.common-lisp.cesarum")
-             :perform (asdf:test-op (cl-user::o cl-user::s)
-                       (let ((*package* (find-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SET")))
-                         (uiop:symbol-call "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SET"       "TEST/ALL"))
-                       (let ((*package* (find-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.INDEX-SET")))
-                         (uiop:symbol-call "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.INDEX-SET" "TEST/ALL")))
              :components ((:file "set-test"       :depends-on ())
-                          (:file "index-set-test" :depends-on ("set-test")))))
+                          (:file "index-set-test" :depends-on ("set-test")))
+             #+asdf-unicode :encoding #+asdf-unicode :utf-8
+             #+asdf3 :perform #+asdf3 (asdf:test-op (cl-user::o cl-user::s)
+                                       (let ((*package* (find-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SET")))
+                                         (uiop:symbol-call "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SET"       "TEST/ALL"))
+                                       (let ((*package* (find-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.INDEX-SET")))
+                                         (uiop:symbol-call "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.INDEX-SET" "TEST/ALL")))))
 
           (map nil (function generate-test-system-for-system-at-path)
             (directory #P "~/src/public/lisp/**/*.asd"))
           
-          );;progn
+          ) ;;progn
 
 ;;;; THE END ;;;;

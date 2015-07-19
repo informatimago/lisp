@@ -286,8 +286,8 @@ NOTE:       The grammar is not added to the *grammars* map.
 ;;; Normalization of  the grammar rules:
 ;;;
 
+(declaim (inline split-action))
 (defun split-action (rhs)
-  (declare (inline))
   (let ((separator (position :action rhs)))
     (if separator
         (values (subseq rhs 0 separator) (subseq rhs (1+ separator)))

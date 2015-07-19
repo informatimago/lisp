@@ -45,7 +45,7 @@ This system provides tools to manipulate LUA programs.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.0.2"
+  :version "1.0.3"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Summer 2012")
                ((#:albert #:output-dir)          . "../documentation/com.informatimago.lua/")
@@ -60,6 +60,6 @@ This system provides tools to manipulate LUA programs.
   :components ((:file "package")
                (:file "lua-scanner" :depends-on ("package"))
                (:file "lua-parser"  :depends-on ("package" "lua-scanner")))
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.languages.lua.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.languages.lua.test"))))
 
 ;;;; THE END ;;;;

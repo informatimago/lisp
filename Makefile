@@ -79,6 +79,9 @@ show-variables::
 
 MM=$(MAKE) $(MFLAGS) PREFIX=$(PREFIX)
 
+clean::
+	find . \( -name \*.fasl  -o -name \*.o \) -exec rm {} \;
+
 help::
 	@printf $(HELP_FMT) 'clean' 'Clean in each submodule directory.'
 clean::

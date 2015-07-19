@@ -44,7 +44,7 @@ This system implements a portable stepper.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes
-  :version "1.0.2"
+  :version "1.0.3"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Summer 2012")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.lisp.stepper/")
@@ -59,6 +59,6 @@ This system implements a portable stepper.
                (:file "stepper-functions" :depends-on ("stepper-packages"))
                (:file "stepper"           :depends-on ("stepper-packages"
                                                        "stepper-functions")))
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.lisp.stepper.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.lisp.stepper.test"))))
 
 ;;;; THE END ;;;;

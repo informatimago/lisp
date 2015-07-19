@@ -45,7 +45,7 @@
   :maintainer     "Pascal J. Bourguignon"
   :licence        "GPL3"
   ;; component attributes:
-  :version        "1.0.2"
+  :version        "1.0.3"
   :properties     ((#:author-email . "pjb@informatimago.com")
                    (#:date . "Winter 2015")
                    ((#:albert #:output-dir)
@@ -62,7 +62,7 @@
                             (operation system)
                             (declare (ignore operation system))
                             ;; (let ((*package* (find-package "COM.INFORMATIMAGO.SMALL-CL-PGMS.WHAT-IMPLEMENTATION.TEST")))
-                            ;;   (uiop/package:symbol-call "COM.INFORMATIMAGO.SMALL-CL-PGMS.WHAT-IMPLEMENTATION.TEST"
+                            ;;   (uiop:symbol-call "COM.INFORMATIMAGO.SMALL-CL-PGMS.WHAT-IMPLEMENTATION.TEST"
                             ;;                             "TEST/ALL"))
                             ))
 

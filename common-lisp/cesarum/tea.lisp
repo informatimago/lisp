@@ -80,8 +80,8 @@ License:
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute) (defconstant +n+ 32))
-(defun op (x a b sum) (logxor (+ (ash x 4) a) (+ x sum) (+ (ash x -5) b)))
 (declaim (inline op))
+(defun op (x a b sum) (logxor (+ (ash x 4) a) (+ x sum) (+ (ash x -5) b)))
 (defmacro ciploop ((v w k y z a b c d (sum init-sum) delta) &body body)
   `(let ((,y  (aref ,v 0)) (,z  (aref ,v 1))
          (,sum  ,init-sum) (,delta  #x9e3779b9)

@@ -591,6 +591,10 @@ C-w         Information on absence of warranty for GNU Emacs.
 (defclass file ()
   ((pathname :initarg :pathname :accessor file-pathname)))
 
+(defgeneric file-name (file))
+(defgeneric file-contents (file))
+(defgeneric (setf file-contents) (new-contents file))
+
 (defmethod file-name ((self file))
   (file-namestring (file-pathname self)))
 
@@ -737,6 +741,13 @@ C-w         Information on absence of warranty for GNU Emacs.
    (height        :accessor frame-height :initarg :height)
    (screen        :accessor frame-screen :initarg :screen)))
 
+(defgeneric context-buffer (window))
+(defgeneric context-point (window))
+(defgeneric context-mark (window))
+(defgeneric context-save (window))
+(defgeneric (setf context-point) (value window))
+(defgeneric (setf context-mark) (value window))
+
 (defclass context ()
   ((buffer    :accessor context-buffer     :initarg :buffer)
    (mark      :accessor context-mark       :initarg :mark   :initform nil
@@ -764,6 +775,12 @@ C-w         Information on absence of warranty for GNU Emacs.
    "This is a normal window, which displays a status bar
 at the bottom.  Normally, only the bottom-most window, displaying the
 mini-buffer is a plain window without a status bar."))
+
+(defgeneric window-bottom (window))
+(defgeneric window-right (window))
+(defgeneric window-visible-line-count (self))
+(defgeneric window-visible-line-count (self))
+(defgeneric window-move-cursor-to (self &key line column))
 
 (defmethod window-bottom ((self window))
   (+ (window-top self) (window-height self)))
@@ -810,6 +827,7 @@ mini-buffer is a plain window without a status bar."))
 
 
 ;; Forward context methods:
+
 (defmethod context-buffer ((self window))
   (and (window-context self) (context-buffer (window-context self))))
 (defmethod context-point  ((self window))
@@ -868,6 +886,8 @@ mini-buffer is a plain window without a status bar."))
         (buffer-saved-point (context-buffer self)) (context-point self)))
 
 
+(defgeneric marker-delete (marker))
+
 (defmethod marker-delete ((self marker))
   (when (marker-valid-p self)
     (buffer-remove-marker (marker-buffer self) self))
@@ -886,6 +906,10 @@ mini-buffer is a plain window without a status bar."))
   (or (get-buffer buffer-or-name)
       (error "There is no buffer named ~S" buffer-or-name)))
 
+
+(defgeneric buffer-substring (buffer-designator start end))
+(defgeneric buffer-contents (buffer))
+(defgeneric buffer-delete-region (buffer-name start end))
 
 (defmethod buffer-substring ((buffer-name string) start end)
   (buffer-substring (buffer-or-error buffer-name) start end))
@@ -951,7 +975,6 @@ mini-buffer is a plain window without a status bar."))
                                   (nsubseq (dll-node-item sline) ecolumn))))))))
     (setf (buffer-changed-p self) t)
     (buffer-move-markers-down self start (- end start))))
-
 
 
 (defgeneric buffer-will-insert (buffer-designator)
@@ -1069,6 +1092,12 @@ RETURN: row; column; the line containing point, or NIL if point is at end
 
 
 
+(defgeneric buffer-add-marker (self marker))
+(defgeneric buffer-remove-marker (self marker))
+(defgeneric buffer-move-markers-up (self start offset))
+(defgeneric buffer-move-markers-down (self start offset))
+
+
 (defmethod buffer-add-marker    ((self buffer) (marker marker))
   (push marker (buffer-markers self))
   (setf (marker-buffer marker) self)
@@ -1079,7 +1108,6 @@ RETURN: row; column; the line containing point, or NIL if point is at end
   (setf (buffer-markers self) (delete marker (buffer-markers self))
         (marker-buffer marker) nil)
   self)
-
 
 (defmethod buffer-move-markers-up ((self buffer) start offset)
   (dolist (marker (buffer-markers self))
@@ -1563,6 +1591,9 @@ then this command creates a buffer with that name."
 ;;; Display Engine
 ;;;---------------------------------------------------------------------
 
+(defgeneric display-line (window line))
+(defgeneric display (window))
+
 (defmethod display-line ((self window) line)
   (format (screen-stream (frame-screen (window-frame self))) "~VA"
           (window-width self)
@@ -1571,20 +1602,20 @@ then this command creates a buffer with that name."
 
 (defmethod display ((self window))
   (loop
-     :with screen = (frame-screen (window-frame self))
-     :with width  = (window-width self)
-     :with buffer = (context-buffer (window-context self))
-     :for row :from (window-top-row self) 
-     :for line = (dll-node-nth (window-top-row self) (buffer-lines buffer))
-     :then (dll-node-next line)
-     :repeat (print (min (window-visible-line-count self)
-                         (- (buffer-line-count buffer)
-                            (window-top-row self)))
-                    *log*)
-     :do (window-move-cursor-to self :line row)
-     :do (let ((line (dll-node-item line)))
-           (screen-format screen "~VA" width (nsubseq line 0 (min width (length line))))
-           (clear-screen-to-eol screen))))
+    :with screen = (frame-screen (window-frame self))
+    :with width  = (window-width self)
+    :with buffer = (context-buffer (window-context self))
+    :for row :from (window-top-row self) 
+    :for line = (dll-node-nth (window-top-row self) (buffer-lines buffer))
+      :then (dll-node-next line)
+    :repeat (print (min (window-visible-line-count self)
+                        (- (buffer-line-count buffer)
+                           (window-top-row self)))
+                   *log*)
+    :do (window-move-cursor-to self :line row)
+    :do (let ((line (dll-node-item line)))
+          (screen-format screen "~VA" width (nsubseq line 0 (min width (length line))))
+          (clear-screen-to-eol screen))))
 
 
 
@@ -1925,6 +1956,8 @@ These commands include C-@ and M-x start-kbd-macro."
   (incf *handler-window-current*))
 
 (defun beep ())
+
+(defgeneric screen-read-line (screen))
 
 (defmethod screen-read-line ((screen screen))
   (restart-bind ((continue-reading (lambda () (throw 'continue-read (values)))

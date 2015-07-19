@@ -45,7 +45,7 @@ This system would use CLOSER-MOP, which is not available on MOCL.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.0.2"
+  :version "1.0.3"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Autumn 2010")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.clext/")
@@ -71,7 +71,7 @@ CLOS associations.  It uses CLOSER-MOP.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.0.2"
+  :version "1.0.3"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Autumn 2010")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.clext/")
@@ -82,7 +82,7 @@ CLOS associations.  It uses CLOSER-MOP.
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ("closer-mop")
   :components ((:file "association"))
-  :in-order-to ((test-op (test-op "com.informatimago.clext.association.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((test-op (test-op "com.informatimago.clext.association.test"))))
 
 
 ;;;; THE END ;;;;

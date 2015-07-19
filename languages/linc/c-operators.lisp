@@ -32,16 +32,16 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(in-package "COM.INFORMATIMAGO.LINC")
+(in-package "COM.INFORMATIMAGO.LANGUAGES.LINC")
 
-(make-declare com.informatimago.linc.c::variable  "A variable.")
-(make-declare com.informatimago.linc.c::class     "A class.")
-(make-declare com.informatimago.linc.c::struct    "A struct.")
-(make-declare com.informatimago.linc.c::union     "A union.")
-(make-declare com.informatimago.linc.c::type      "A type.")
-(make-declare com.informatimago.linc.c::enum      "An enum.")
-(make-declare com.informatimago.linc.c::function  "A function.")
-(make-declare com.informatimago.linc.c::macro     "A preprocessor macro.")
+(make-declare com.informatimago.languages.linc.c::variable  "A variable.")
+(make-declare com.informatimago.languages.linc.c::class     "A class.")
+(make-declare com.informatimago.languages.linc.c::struct    "A struct.")
+(make-declare com.informatimago.languages.linc.c::union     "A union.")
+(make-declare com.informatimago.languages.linc.c::type      "A type.")
+(make-declare com.informatimago.languages.linc.c::enum      "An enum.")
+(make-declare com.informatimago.languages.linc.c::function  "A function.")
+(make-declare com.informatimago.languages.linc.c::macro     "A preprocessor macro.")
 
 (gen-operators)
 

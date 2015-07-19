@@ -45,7 +45,7 @@
   :maintainer     "Pascal J. Bourguignon"
   :licence        "AGPL3"
   ;; component attributes:
-  :version        "1.0.3"
+  :version        "1.0.4"
   :properties     ((#:author-email . "pjb@informatimago.com")
                    (#:date . "Winter 2015")
                    ((#:albert #:output-dir)
@@ -66,6 +66,6 @@
                             (dolist (p '("COM.INFORMATIMAGO.TOOLS.DEPENDENCY-CYCLES.TEST"
                                          "COM.INFORMATIMAGO.TOOLS.CHECK-ASDF.TEST"))
                               (let ((*package* (find-package p)))
-                                (uiop/package:symbol-call p "TEST/ALL")))))
+                                (uiop:symbol-call p "TEST/ALL")))))
 
 ;;;; THE END ;;;;

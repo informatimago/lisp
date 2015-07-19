@@ -35,11 +35,11 @@
 (asdf:defsystem "com.informatimago.future.empty"
   :description "Empty system."
   :author "Pascal J. Bourguignon"
-  :version "1.0.2"
+  :version "1.0.3"
   :license "AGPL3"
   :depends-on () 
   :components ()
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.future.empty.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.future.empty.test"))))
 
 
 ;;;; THE END ;;;;

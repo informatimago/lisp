@@ -36,10 +36,10 @@
 (asdf:defsystem "com.informatimago.future"
   :description "Future Informatimago Projects - Not ready for consumption."
   :author "Pascal J. Bourguignon"
-  :version "1.0.4"
+  :version "1.0.5"
   :license "AGPL3"
   :depends-on () 
   :components ()
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.future.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.future.test"))))
 
 ;;;; THE END ;;;;

@@ -44,7 +44,7 @@ A simple HTML 4.01 parser.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.2.3"
+  :version "1.2.4"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Autumn 2010")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.html-parser/")
@@ -56,6 +56,6 @@ A simple HTML 4.01 parser.
   :depends-on ("com.informatimago.common-lisp.cesarum"
                "com.informatimago.common-lisp.html-base")
   :components ((:file "parse-html" :depends-on ()))
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.html-parser.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.html-parser.test"))))
 
 ;;;; THE END ;;;;

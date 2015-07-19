@@ -46,7 +46,7 @@ Beane's zpack.lisp).
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes
-  :version "1.2.3"
+  :version "1.2.4"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Spring 2012")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.lisp-reader/")
@@ -62,6 +62,6 @@ Beane's zpack.lisp).
                (:file "package-fun"     :depends-on ("package-pac" "package-mac"))
                #-mocl (:file "package-def"     :depends-on ("package-pac" "package-mac" "package-fun"))
                )
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.lisp-reader.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.lisp-reader.test"))))
 
 ;;;; THE END ;;;;

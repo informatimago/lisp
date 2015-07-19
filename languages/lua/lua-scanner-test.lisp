@@ -34,6 +34,7 @@
 (defpackage "COM.INFORMATIMAGO.LANGUAGES.LUA.SCANNER.TEST"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SIMPLE-TEST"
+        "COM.INFORMATIMAGO.COMMON-LISP.PARSER.SCANNER"
         "COM.INFORMATIMAGO.LANGUAGES.LUA.SCANNER")
   (:export "TEST/ALL"))
 (in-package "COM.INFORMATIMAGO.LANGUAGES.LUA.SCANNER.TEST")
@@ -73,6 +74,6 @@
   (test/lua-scanner))
 
 (defun test/all ()
-  test/all/lua-scanner)
+  (test/all/lua-scanner))
 
 ;;;; THE END ;;;;

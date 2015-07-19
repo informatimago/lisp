@@ -32,7 +32,7 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(defpackage "COM.INFORMATIMAGO.LINC"
+(defpackage "COM.INFORMATIMAGO.LANGUAGES.LINC"            
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
@@ -43,8 +43,8 @@
    "COMPILE-LINC-FILE"
    ))
 
-(defpackage "COM.INFORMATIMAGO.LINC.C"
-  (:nicknames "COM.INFORMATIMAGO.LINC.C++")
+(defpackage "COM.INFORMATIMAGO.LANGUAGES.LINC.C"
+  (:nicknames "COM.INFORMATIMAGO.LANGUAGES.LINC.C++")
   (:use))
 
 ;;;; THE END ;;;;

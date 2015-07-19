@@ -44,7 +44,7 @@ Provides methods specialized on the :basic target-language, to emit a generator 
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.0.3"
+  :version "1.0.4"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Summer 2011")
                ((#:albert #:output-dir)          . "../documentation/com.informatimago.rdp.basic/")
@@ -55,6 +55,6 @@ Provides methods specialized on the :basic target-language, to emit a generator 
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ("com.informatimago.rdp")
   :components ((:file "rdp-basic-gen"))
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.rdp.basic.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.rdp.basic.test"))))
 
 ;;;; THE END ;;;;

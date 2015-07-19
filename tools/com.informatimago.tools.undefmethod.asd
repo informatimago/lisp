@@ -33,11 +33,12 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem "com.informatimago.tools.undefmethod"
-    :description "A macro that undefines the method instead of defining it."
-    :author "irc://Shinmera@irc.freenode.org"
-    :version "1.0.2"
-    :license "GPL3"
-    :depends-on () 
-    :components ((:file "undefmethod")))
+  :description "A macro that undefines the method instead of defining it."
+  :author "irc://Shinmera@irc.freenode.org"
+  :version "1.0.3"
+  :license "GPL3"
+  :depends-on () 
+  :components ((:file "undefmethod"))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8)
 
 ;;;; THE END ;;;;

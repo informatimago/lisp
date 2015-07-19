@@ -46,7 +46,7 @@ Various Xcode related tools.  For now:
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.0.2"
+  :version "1.0.3"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Winter 2012")
                ((#:albert #:output-dir)          . "../documentation/com.informatimago.xcode/")
@@ -59,6 +59,6 @@ Various Xcode related tools.  For now:
                "com.informatimago.common-lisp.cesarum"
                "com.informatimago.common-lisp.parser")
   :components ((:file "pbxproj"))
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.xcode.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.xcode.test"))))
 
 ;;;; THE END ;;;;

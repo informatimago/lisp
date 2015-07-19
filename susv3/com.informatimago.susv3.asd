@@ -45,7 +45,7 @@ Currently implemented: DIRENT, IPC and PROCESS APIs.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.2.4"
+  :version "1.2.5"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Spring 2014")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.susv3/")
@@ -63,7 +63,7 @@ Currently implemented: DIRENT, IPC and PROCESS APIs.
                        (:file "ipc"     :depends-on ("tools"))
                        (:file "process" :depends-on ("ipc")))
   #-(and clisp linux) ()
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.susv3.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.susv3.test"))))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   #+(and clisp (not linux)) (warn "System ~A is incomplete without the LINUX package." :com.informatimago.sysv3)

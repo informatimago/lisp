@@ -33,11 +33,12 @@
 ;;;;**************************************************************************
 
 (asdf:defsystem "com.informatimago.tools.pathname"
-    :description "Pathname tools."
-    :author "Pascal J. Bourguignon"
-    :version "1.0.2"
-    :license "GPL3"
-    :depends-on () 
-    :components ((:file "pathname")))
+  :description "Pathname tools."
+  :author "Pascal J. Bourguignon"
+  :version "1.0.3"
+  :license "GPL3"
+  :depends-on () 
+  :components ((:file "pathname"))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8)
 
 ;;;; THE END ;;;;

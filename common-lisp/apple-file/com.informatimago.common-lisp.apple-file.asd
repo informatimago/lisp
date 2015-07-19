@@ -44,7 +44,7 @@ Read Apple-Single and Apple-Double file formats.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.0.2"
+  :version "1.0.3"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Spring 2013")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.apple-file/")
@@ -55,6 +55,6 @@ Read Apple-Single and Apple-Double file formats.
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ("com.informatimago.common-lisp.cesarum")
   :components ((:file "apple-file" :depends-on ()))
-  :in-order-to ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.apple-file.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.apple-file.test"))))
 
 ;;;; THE END ;;;;

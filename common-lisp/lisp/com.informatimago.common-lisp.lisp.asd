@@ -46,7 +46,7 @@ specialization.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes
-  :version "1.2.4"
+  :version "1.2.5"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Autumn 2010")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.lisp/")
@@ -59,7 +59,7 @@ specialization.
                "com.informatimago.common-lisp.lisp.ibcl"
                "com.informatimago.common-lisp.lisp.stepper")
   :components ((:file "generic-cl" :depends-on ()))
-  :in-order-to ((asdf:test-op
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op
                  (asdf:test-op "com.informatimago.common-lisp.lisp.ibcl.test")
                  (asdf:test-op "com.informatimago.common-lisp.lisp.stepper.test")
                  (asdf:test-op "com.informatimago.common-lisp.lisp.test"))))

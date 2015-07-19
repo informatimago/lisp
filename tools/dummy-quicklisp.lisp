@@ -44,13 +44,13 @@
            "UPDATE-ALL-DISTS" "UPDATE-CLIENT" "WHERE-IS-SYSTEM"))
 
 #-quicklisp
-(defmacro generate-dummy-functions (&rest funames)
+(defmacro quicklisp::generate-dummy-functions (&rest funames)
   `(progn ,@(mapcar (lambda (funame)
                       `(defun ,funame (&rest args) (declare (ignore args)) nil))
                     funames)))
 
 #-quicklisp
-(generate-dummy-functions
+(quicklisp::generate-dummy-functions
  QUICKLISP:DIST
  QUICKLISP:ENABLED-DISTS
  QUICKLISP:ENSURE-INSTALLED

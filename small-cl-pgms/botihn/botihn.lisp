@@ -63,6 +63,8 @@ Licensed under the AGPL3.
 (defvar *last-story* nil
   "The id of the last story sent to the IRC channel.")
 
+(declaim (notinline monitor-initialize monitor-hacker-news))
+
 (defun monitor-initialize ()
   "Initialize the Hacker News monitor.
 Resets the *LAST-STORY*."
@@ -119,7 +121,6 @@ Updates the *LAST-STORY* ID."
         (funcall send message))
       (setf *last-story* story))))
 
-(declaim (notinline monitor-initialize monitor-hacker-news))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

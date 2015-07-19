@@ -1113,6 +1113,7 @@ RETURN: the token text; the end position."
 ;;; pre-processing files
 ;;; --------------------
 
+(defgeneric cpp-macro-expand (context))
 (defmethod cpp-macro-expand ((context context))
   (multiple-value-bind (output input) (macro-expand-macros context
                                                            (context-current-line context)
