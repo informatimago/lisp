@@ -1,331 +1,125 @@
 %PDF-1.4
 %“Œ‹ž ReportLab Generated PDF document http://www.reportlab.com
-% 'BasicFonts': class PDFDictionary 
 1 0 obj
-% The standard fonts dictionary
-<< /F1 2 0 R
- /F2 3 0 R
- /F3 4 0 R
- /F4 6 0 R >>
+<< /F1 2 0 R /F2 3 0 R /F3 4 0 R /F4 6 0 R >>
 endobj
-% 'F1': class PDFType1Font 
 2 0 obj
-% Font Helvetica
-<< /BaseFont /Helvetica
- /Encoding /WinAnsiEncoding
- /Name /F1
- /Subtype /Type1
- /Type /Font >>
+<< /BaseFont /Helvetica /Encoding /WinAnsiEncoding /Name /F1 /Subtype /Type1 /Type /Font >>
 endobj
-% 'F2': class PDFType1Font 
 3 0 obj
-% Font Helvetica-Bold
-<< /BaseFont /Helvetica-Bold
- /Encoding /WinAnsiEncoding
- /Name /F2
- /Subtype /Type1
- /Type /Font >>
+<< /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding /Name /F2 /Subtype /Type1 /Type /Font >>
 endobj
-% 'F3': class PDFType1Font 
 4 0 obj
-% Font Helvetica-Oblique
-<< /BaseFont /Helvetica-Oblique
- /Encoding /WinAnsiEncoding
- /Name /F3
- /Subtype /Type1
- /Type /Font >>
+<< /BaseFont /Helvetica-Oblique /Encoding /WinAnsiEncoding /Name /F3 /Subtype /Type1 /Type /Font >>
 endobj
-% 'Annot.NUMBER1': class PDFDictionary 
 5 0 obj
-<< /A << /S /URI
- /Type /Action
- /URI (https://gitorious.org/com-informatimago/) >>
- /Border [ 0
- 0
- 0 ]
- /Rect [ 315.5829
- 237.7736
- 491.7529
- 249.7736 ]
- /Subtype /Link
- /Type /Annot >>
+<< /A << /S /URI /Type /Action /URI (https://gitlab.com/com-informatimago/com-informatimago/) >> /Border [ 0 0 0 ] /Rect [ 62.69291 225.0236 317.7629 237.0236 ] /Subtype /Link /Type /Annot >>
 endobj
-% 'F4': class PDFType1Font 
 6 0 obj
-% Font Courier
-<< /BaseFont /Courier
- /Encoding /WinAnsiEncoding
- /Name /F4
- /Subtype /Type1
- /Type /Font >>
+<< /BaseFont /Courier /Encoding /WinAnsiEncoding /Name /F4 /Subtype /Type1 /Type /Font >>
 endobj
-% 'Annot.NUMBER2': class PDFDictionary 
 7 0 obj
-<< /A << /S /URI
- /Type /Action
- /URI (http://quicklisp.org/) >>
- /Border [ 0
- 0
- 0 ]
- /Rect [ 181.8729
- 188.134
- 220.2129
- 200.134 ]
- /Subtype /Link
- /Type /Annot >>
+<< /A << /S /URI /Type /Action /URI (http://quicklisp.org/) >> /Border [ 0 0 0 ] /Rect [ 181.8729 171.8236 220.2129 183.8236 ] /Subtype /Link /Type /Annot >>
 endobj
-% 'Page1': class PDFPage 
 8 0 obj
-% Page dictionary
-<< /Annots [ 5 0 R
- 7 0 R ]
- /Contents 26 0 R
- /MediaBox [ 0
- 0
- 595.2756
- 841.8898 ]
- /Parent 25 0 R
- /Resources << /Font 1 0 R
- /ProcSet [ /PDF
- /Text
- /ImageB
- /ImageC
- /ImageI ] >>
- /Rotate 0
- /Trans <<  >>
- /Type /Page >>
+<< /Annots [ 5 0 R 7 0 R ] /Contents 39 0 R /MediaBox [ 0 0 595.2756 841.8898 ] /Parent 38 0 R /Resources << /Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ] >> /Rotate 0 
+  /Trans <<  >> /Type /Page >>
 endobj
-% 'Annot.NUMBER3': class PDFDictionary 
 9 0 obj
-<< /A << /S /URI
- /Type /Action
- /URI (http://www.gnu.org/licenses/agpl-3.0.html) >>
- /Border [ 0
- 0
- 0 ]
- /Rect [ 250.7097
- 696.7736
- 471.405
- 708.7736 ]
- /Subtype /Link
- /Type /Annot >>
+<< /A << /S /URI /Type /Action /URI (file:///Users/pjb/src/public/lisp/doc/) >> /Border [ 0 0 0 ] /Rect [ 104.9329 664.8236 222.2129 676.8236 ] /Subtype /Link /Type /Annot >>
 endobj
-% 'Annot.NUMBER4': class PDFDictionary 
 10 0 obj
-<< /A << /S /URI
- /Type /Action
- /URI (http://www.gnu.org/licenses/agpl-3.0.html) >>
- /Border [ 0
- 0
- 0 ]
- /Rect [ 117.9329
- 624.7736
- 300.7829
- 636.7736 ]
- /Subtype /Link
- /Type /Annot >>
+<< /A << /S /URI /Type /Action /URI (https://gitlab.com/com-informatimago/com-informatimago/tree/master) >> /Border [ 0 0 0 ] /Rect [ 301.1329 664.8236 425.6329 676.8236 ] /Subtype /Link /Type /Annot >>
 endobj
-% 'Annot.NUMBER5': class PDFDictionary 
 11 0 obj
-<< /A << /S /URI
- /Type /Action
- /URI (http://en.wikipedia.org/wiki/Common_lisp) >>
- /Border [ 0
- 0
- 0 ]
- /Rect [ 152.9329
- 606.7736
- 333.5429
- 618.7736 ]
- /Subtype /Link
- /Type /Annot >>
+<< /A << /S /URI /Type /Action /URI (https://gitlab.com/com-informatimago/com-informatimago/issues) >> /Border [ 0 0 0 ] /Rect [ 62.69291 601.8236 346.1029 613.8236 ] /Subtype /Link /Type /Annot >>
 endobj
-% 'Annot.NUMBER6': class PDFDictionary 
 12 0 obj
-<< /A << /S /URI
- /Type /Action
- /URI (http://cliki.net) >>
- /Border [ 0
- 0
- 0 ]
- /Rect [ 174.5929
- 588.7736
- 232.9529
- 600.7736 ]
- /Subtype /Link
- /Type /Annot >>
+<< /A << /S /URI /Type /Action /URI (https://gitlab.com/com-informatimago/com-informatimago/merge_requests) >> /Border [ 0 0 0 ] /Rect [ 62.69291 589.8236 390.0129 601.8236 ] /Subtype /Link /Type /Annot >>
 endobj
-% 'Annot.NUMBER7': class PDFDictionary 
 13 0 obj
-<< /A << /S /URI
- /Type /Action
- /URI (mailto:pjb@informatimago.com) >>
- /Border [ 0
- 0
- 0 ]
- /Rect [ 191.3029
- 570.7736
- 329.2629
- 582.7736 ]
- /Subtype /Link
- /Type /Annot >>
+<< /A << /S /URI /Type /Action /URI (mailto:pjb@informatimago.com) >> /Border [ 0 0 0 ] /Rect [ 73.81291 577.8236 211.7729 589.8236 ] /Subtype /Link /Type /Annot >>
 endobj
-% 'Annot.NUMBER8': class PDFDictionary 
 14 0 obj
-<< /A << /S /URI
- /Type /Action
- /URI (http://www.informatimago.com/) >>
- /Border [ 0
- 0
- 0 ]
- /Rect [ 332.0429
- 570.7736
- 469.3029
- 582.7736 ]
- /Subtype /Link
- /Type /Annot >>
+<< /A << /S /URI /Type /Action /URI (http://www.gnu.org/licenses/agpl-3.0.html) >> /Border [ 0 0 0 ] /Rect [ 215.5429 448.8236 418.9229 460.8236 ] /Subtype /Link /Type /Annot >>
 endobj
-% 'Annot.NUMBER9': class PDFDictionary 
 15 0 obj
-<< /A << /S /URI
- /Type /Action
- /URI (http://quicklisp.org/) >>
- /Border [ 0
- 0
- 0 ]
- /Rect [ 131.8129
- 552.7736
- 215.1829
- 564.7736 ]
- /Subtype /Link
- /Type /Annot >>
+<< /A << /S /URI /Type /Action /URI (https://tldrlegal.com/license/bsd-2-clause-license-%28freebsd%29#fulltext) >> /Border [ 0 0 0 ] /Rect [ 467.926 427.8236 529.056 439.8236 ] /Subtype /Link /Type /Annot >>
 endobj
-% 'Annot.NUMBER10': class PDFDictionary 
 16 0 obj
-<< /A << /S /URI
- /Type /Action
- /URI (http://xach.com/) >>
- /Border [ 0
- 0
- 0 ]
- /Rect [ 145.1729
- 534.7736
- 215.7629
- 546.7736 ]
- /Subtype /Link
- /Type /Annot >>
+<< /A << /S /URI /Type /Action /URI (https://tldrlegal.com/license/bsd-2-clause-license-%28freebsd%29#fulltext) >> /Border [ 0 0 0 ] /Rect [ 85.69291 415.8236 116.8129 427.8236 ] /Subtype /Link /Type /Annot >>
 endobj
-% 'Page2': class PDFPage 
 17 0 obj
-% Page dictionary
-<< /Annots [ 9 0 R
- 10 0 R
- 11 0 R
- 12 0 R
- 13 0 R
- 14 0 R
- 15 0 R
- 16 0 R ]
- /Contents 27 0 R
- /MediaBox [ 0
- 0
- 595.2756
- 841.8898 ]
- /Parent 25 0 R
- /Resources << /Font 1 0 R
- /ProcSet [ /PDF
- /Text
- /ImageB
- /ImageC
- /ImageI ] >>
- /Rotate 0
- /Trans <<  >>
- /Type /Page >>
+<< /A << /S /URI /Type /Action /URI (mailto:xach@xach.com) >> /Border [ 0 0 0 ] /Rect [ 187.1429 403.8236 261.2029 415.8236 ] /Subtype /Link /Type /Annot >>
 endobj
-% 'R18': class PDFCatalog 
 18 0 obj
-% Document Root
-<< /Outlines 20 0 R
- /PageLabels 28 0 R
- /PageMode /UseNone
- /Pages 25 0 R
- /Type /Catalog >>
+<< /A << /S /URI /Type /Action /URI (https://tldrlegal.com/license/lisp-lesser-general-public-license#fulltext) >> /Border [ 0 0 0 ] /Rect [ 383.0229 385.8236 448.0529 397.8236 ] /Subtype /Link /Type /Annot >>
 endobj
-% 'R19': class PDFInfo 
 19 0 obj
-<< /Author ()
- /CreationDate (D:20120415034521-01'00')
- /Creator (\(unspecified\))
- /Keywords ()
- /Producer (ReportLab PDF Library - www.reportlab.com)
- /Subject (\(unspecified\))
- /Title () >>
+<< /A << /S /URI /Type /Action /URI (http://www.cliki.net/LispDoc) >> /Border [ 0 0 0 ] /Rect [ 265.0928 370.8236 286.9595 382.8236 ] /Subtype /Link /Type /Annot >>
 endobj
-% 'R20': class PDFOutlines 
 20 0 obj
-<< /Count 4
- /First 21 0 R
- /Last 24 0 R
- /Type /Outlines >>
+<< /A << /S /URI /Type /Action /URI (http://www.gnu.org/licenses/agpl-3.0.html) >> /Border [ 0 0 0 ] /Rect [ 117.9329 298.8236 300.7829 310.8236 ] /Subtype /Link /Type /Annot >>
 endobj
-% 'Outline.0': class OutlineEntryObject 
 21 0 obj
-<< /Dest [ 8 0 R
- /XYZ
- 62.69291
- 765.0236
- 0 ]
- /Next 22 0 R
- /Parent 20 0 R
- /Title (Informatimago Public Common Lisp Libraries) >>
+<< /A << /S /URI /Type /Action /URI (http://en.wikipedia.org/wiki/Common_lisp) >> /Border [ 0 0 0 ] /Rect [ 152.9329 280.8236 333.5429 292.8236 ] /Subtype /Link /Type /Annot >>
 endobj
-% 'Outline.1': class OutlineEntryObject 
 22 0 obj
-<< /Dest [ 8 0 R
- /XYZ
- 62.69291
- 276.0236
- 0 ]
- /Next 23 0 R
- /Parent 20 0 R
- /Prev 21 0 R
- /Title (Repository) >>
+<< /A << /S /URI /Type /Action /URI (http://cliki.net) >> /Border [ 0 0 0 ] /Rect [ 174.5929 262.8236 232.9529 274.8236 ] /Subtype /Link /Type /Annot >>
 endobj
-% 'Outline.2': class OutlineEntryObject 
 23 0 obj
-<< /Dest [ 17 0 R
- /XYZ
- 62.69291
- 765.0236
- 0 ]
- /Next 24 0 R
- /Parent 20 0 R
- /Prev 22 0 R
- /Title (Authors & License) >>
+<< /A << /S /URI /Type /Action /URI (mailto:pjb@informatimago.com) >> /Border [ 0 0 0 ] /Rect [ 191.3029 244.8236 329.2629 256.8236 ] /Subtype /Link /Type /Annot >>
 endobj
-% 'Outline.3': class OutlineEntryObject 
 24 0 obj
-<< /Dest [ 17 0 R
- /XYZ
- 62.69291
- 672.0236
- 0 ]
- /Parent 20 0 R
- /Prev 23 0 R
- /Title (References) >>
+<< /A << /S /URI /Type /Action /URI (http://www.informatimago.com/) >> /Border [ 0 0 0 ] /Rect [ 332.0429 244.8236 469.3029 256.8236 ] /Subtype /Link /Type /Annot >>
 endobj
-% 'R25': class PDFPages 
 25 0 obj
-% page tree
-<< /Count 2
- /Kids [ 8 0 R
- 17 0 R ]
- /Type /Pages >>
+<< /A << /S /URI /Type /Action /URI (http://quicklisp.org/) >> /Border [ 0 0 0 ] /Rect [ 131.8129 226.8236 215.1829 238.8236 ] /Subtype /Link /Type /Annot >>
 endobj
-% 'R26': class PDFStream 
 26 0 obj
-% page stream
-<< /Length 6473 >>
+<< /A << /S /URI /Type /Action /URI (http://xach.com/) >> /Border [ 0 0 0 ] /Rect [ 145.1729 208.8236 215.7629 220.8236 ] /Subtype /Link /Type /Annot >>
+endobj
+27 0 obj
+<< /Annots [ 9 0 R 10 0 R 11 0 R 12 0 R 13 0 R 14 0 R 15 0 R 16 0 R 17 0 R 18 0 R 
+  19 0 R 20 0 R 21 0 R 22 0 R 23 0 R 24 0 R 25 0 R 26 0 R ] /Contents 40 0 R /MediaBox [ 0 0 595.2756 841.8898 ] /Parent 38 0 R /Resources << /Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ] >> /Rotate 0 
+  /Trans <<  >> /Type /Page >>
+endobj
+28 0 obj
+<< /Outlines 30 0 R /PageLabels 41 0 R /PageMode /UseNone /Pages 38 0 R /Type /Catalog >>
+endobj
+29 0 obj
+<< /Author () /CreationDate (D:20150719054829-01'00') /Creator (\(unspecified\)) /Keywords () /Producer (ReportLab PDF Library - www.reportlab.com) /Subject (\(unspecified\)) 
+  /Title () >>
+endobj
+30 0 obj
+<< /Count 7 /First 31 0 R /Last 37 0 R /Type /Outlines >>
+endobj
+31 0 obj
+<< /Dest [ 8 0 R /XYZ 62.69291 765.0236 0 ] /Next 32 0 R /Parent 30 0 R /Title (Informatimago Public Common Lisp Libraries) >>
+endobj
+32 0 obj
+<< /Dest [ 8 0 R /XYZ 62.69291 276.0236 0 ] /Next 33 0 R /Parent 30 0 R /Prev 31 0 R /Title (Repository) >>
+endobj
+33 0 obj
+<< /Dest [ 27 0 R /XYZ 62.69291 703.8236 0 ] /Next 34 0 R /Parent 30 0 R /Prev 32 0 R /Title (Documentation) >>
+endobj
+34 0 obj
+<< /Dest [ 27 0 R /XYZ 62.69291 652.8236 0 ] /Next 35 0 R /Parent 30 0 R /Prev 33 0 R /Title (Bug Reports & Patches) >>
+endobj
+35 0 obj
+<< /Dest [ 27 0 R /XYZ 62.69291 565.8236 0 ] /Next 36 0 R /Parent 30 0 R /Prev 34 0 R /Title (Authors & License) >>
+endobj
+36 0 obj
+<< /Dest [ 27 0 R /XYZ 62.69291 346.8236 0 ] /Next 37 0 R /Parent 30 0 R /Prev 35 0 R /Title (References) >>
+endobj
+37 0 obj
+<< /Dest [ 27 0 R /XYZ 62.69291 199.8236 0 ] /Parent 30 0 R /Prev 36 0 R /Title (TODO) >>
+endobj
+38 0 obj
+<< /Count 2 /Kids [ 8 0 R 27 0 R ] /Type /Pages >>
+endobj
+39 0 obj
+<< /Length 6454 >>
 stream
 1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
 q
@@ -607,40 +401,13 @@ BT 1 0 0 1 0 3.5 Tm 21 TL /F2 17.5 Tf 0 0 0 rg (Repository) Tj T* ET
 Q
 Q
 q
-1 0 0 1 62.69291 237.0236 cm
+1 0 0 1 62.69291 225.0236 cm
 q
-BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (These libraries can be obtained from the ) Tj /F3 10 Tf (git ) Tj /F1 10 Tf (repository at ) Tj 0 0 .501961 rg (https://gitorious.org/com-informatimago/) Tj T* ET
+BT 1 0 0 1 0 14 Tm 24.41997 Tw 12 TL /F1 10 Tf 0 0 0 rg (These libraries can be obtained from the ) Tj /F3 10 Tf 0 0 0 rg (git ) Tj /F1 10 Tf 0 0 0 rg (repository at) Tj T* 0 Tw 0 0 .501961 rg (https://gitlab.com/com-informatimago/com-informatimago/) Tj T* ET
 Q
 Q
 q
-1 0 0 1 62.69291 207.384 cm
-q
-q
-.858717 0 0 .858717 0 0 cm
-q
-1 0 0 1 6.6 7.685888 cm
-q
-.662745 .662745 .662745 RG
-.5 w
-.960784 .960784 .862745 rg
-n -6 -6 546 24 re B*
-Q
-q
-0 0 0 rg
-BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL (git clone https://git.gitorious.org/com-informatimago/com-informatimago.git informatimago) Tj T* ET
-Q
-Q
-Q
-Q
-Q
-q
-1 0 0 1 62.69291 187.384 cm
-q
-BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (They're also available thru ) Tj 0 0 .501961 rg (quicklisp) Tj 0 0 0 rg (:) Tj T* ET
-Q
-Q
-q
-1 0 0 1 62.69291 82.18396 cm
+1 0 0 1 62.69291 191.8236 cm
 q
 q
 1 0 0 1 0 0 cm
@@ -650,11 +417,38 @@ q
 .662745 .662745 .662745 RG
 .5 w
 .960784 .960784 .862745 rg
-n -6 -6 468.6898 96 re B*
+n -6 -6 504 24 re B*
 Q
 q
 0 0 0 rg
-BT 1 0 0 1 0 74 Tm /F4 10 Tf 12 TL (\(ql:quickload :com.informatimago.common-lisp\)) Tj T* (\(ql:quickload :com.informatimago.clext\)) Tj T* (\(ql:quickload :com.informatimago.clmisc\)) Tj T* (#+clisp \(ql:quickload :com.informatimago.clisp\)) Tj T* (#+clisp \(ql:quickload :com.informatimago.susv3\)) Tj T* (\(ql:quickload :com.informatimago.rdp\)) Tj T* (\(ql:quickload :com.informatimago.objcl\)) Tj T* ET
+BT 1 0 0 1 0 2 Tm /F4 10 Tf 12 TL (git clone https://gitlab.com/com-informatimago/com-informatimago.git informatimago) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 171.8236 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (They're also available thru ) Tj 0 0 .501961 rg (quicklisp) Tj 0 0 0 rg (:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 78.62362 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 6.6 6.6 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.960784 .960784 .862745 rg
+n -6 -6 468.6898 84 re B*
+Q
+q
+0 0 0 rg
+BT 1 0 0 1 0 62 Tm /F4 10 Tf 12 TL (\(ql:quickload :com.informatimago.common-lisp\)) Tj T* (\(ql:quickload :com.informatimago.clext\)) Tj T* (\(ql:quickload :com.informatimago.clmisc\)) Tj T* (#+clisp \(ql:quickload :com.informatimago.clisp\)) Tj T* (#+clisp \(ql:quickload :com.informatimago.susv3\)) Tj T* (\(ql:quickload :com.informatimago.rdp\)) Tj T* ET
 Q
 Q
 Q
@@ -663,44 +457,212 @@ Q
  
 endstream
 endobj
-% 'R27': class PDFStream 
-27 0 obj
-% page stream
-<< /Length 3299 >>
+40 0 obj
+<< /Length 7939 >>
 stream
 1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
 q
-1 0 0 1 62.69291 744.0236 cm
+1 0 0 1 62.69291 715.8236 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 6.6 6.6 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.960784 .960784 .862745 rg
+n -6 -6 468.6898 48 re B*
+Q
+q
+0 0 0 rg
+BT 1 0 0 1 0 26 Tm /F4 10 Tf 12 TL (#+\(and ccl darwin\) \(ql:quickload :com.informatimago.objcl\)) Tj T*  T* (\(ql:quickload :com.informatimago\)) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 682.8236 cm
+q
+BT 1 0 0 1 0 3.5 Tm 21 TL /F2 17.5 Tf 0 0 0 rg (Documentation) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 664.8236 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (You may ) Tj 0 0 .501961 rg (browse the documentation) Tj 0 0 0 rg (, or you may also ) Tj 0 0 .501961 rg (browse the sources at gitlab) Tj 0 0 0 rg (.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 631.8236 cm
+q
+BT 1 0 0 1 0 3.5 Tm 21 TL /F2 17.5 Tf 0 0 0 rg (Bug Reports & Patches) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 577.8236 cm
+q
+BT 1 0 0 1 0 38 Tm 39.33568 Tw 12 TL /F1 10 Tf 0 0 0 rg (Bug reports may be posted on gitlab issues:) Tj T* 0 Tw 7.391953 Tw 0 0 .501961 rg (https://gitlab.com/com-informatimago/com-informatimago/issues) Tj 0 0 0 rg (, and merge requests for patches:) Tj T* 0 Tw .167953 Tw 0 0 .501961 rg (https://gitlab.com/com-informatimago/com-informatimago/merge_requests) Tj 0 0 0 rg (. Alternatively, they may be sent) Tj T* 0 Tw (to ) Tj 0 0 .501961 rg (mailto:pjb@informatimago.com) Tj 0 0 0 rg (.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 544.8236 cm
 q
 BT 1 0 0 1 0 3.5 Tm 21 TL /F2 17.5 Tf 0 0 0 rg (Authors & License) Tj T* ET
 Q
 Q
 q
-1 0 0 1 62.69291 714.0236 cm
+1 0 0 1 62.69291 526.8236 cm
 q
-BT 1 0 0 1 0 14 Tm 1.639979 Tw 12 TL /F1 10 Tf 0 0 0 rg (All this code is authored by Pascal J. Bourguignon, apart from ) Tj /F3 10 Tf (com.informatimago.lisp-reader.package) Tj T* 0 Tw /F1 10 Tf (which is authored by Zach Beane and modified by Pascal J. Bourguignon.) Tj T* ET
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (All this code is authored by Pascal J. Bourguignon, apart from:) Tj T* ET
 Q
 Q
 q
-1 0 0 1 62.69291 684.0236 cm
+1 0 0 1 62.69291 520.8236 cm
+Q
 q
-BT 1 0 0 1 0 14 Tm 5.023828 Tw 12 TL /F1 10 Tf 0 0 0 rg (All this code is released under the ) Tj 0 0 .501961 rg (GNU AFFERO GENERAL PUBLIC LICENSE) Tj 0 0 0 rg (, apart from) Tj T* 0 Tw /F3 10 Tf (com.informatimago.lisp-reader.package ) Tj /F1 10 Tf (which is released under the BSD license.) Tj T* ET
+1 0 0 1 62.69291 520.8236 cm
+Q
+q
+1 0 0 1 62.69291 496.8236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 9 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
 Q
 Q
 q
-1 0 0 1 62.69291 651.0236 cm
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 14 Tm .948976 Tw 12 TL /F1 10 Tf 0 0 0 rg (the system ) Tj /F3 10 Tf 0 0 0 rg (com.informatimago.lisp-reader.package ) Tj /F1 10 Tf 0 0 0 rg (which is authored by Zach Beane and modified) Tj T* 0 Tw (by Pascal J. Bourguignon.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 490.8236 cm
+Q
+q
+1 0 0 1 62.69291 466.8236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 9 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 14 Tm .760888 Tw 12 TL /F1 10 Tf 0 0 0 rg (the system ) Tj /F3 10 Tf 0 0 0 rg (com.informatimago.lispdoc ) Tj /F1 10 Tf 0 0 0 rg (which is authored by Sven Van Caekenberghe and modified) Tj T* 0 Tw (by Pascal J. Bourguignon.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 466.8236 cm
+Q
+q
+1 0 0 1 62.69291 448.8236 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (All this code is released under the ) Tj 0 0 .501961 rg (GNU AFFERO GENERAL PUBLIC LICENSE ) Tj 0 0 0 rg (apart from:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 442.8236 cm
+Q
+q
+1 0 0 1 62.69291 442.8236 cm
+Q
+q
+1 0 0 1 62.69291 406.8236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 21 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 26 Tm 3.52664 Tw 12 TL /F1 10 Tf 0 0 0 rg (the system ) Tj /F3 10 Tf 0 0 0 rg (com.informatimago.lisp-reader.package ) Tj /F1 10 Tf 0 0 0 rg (which is released under the ) Tj 0 0 .501961 rg (BSD 2-clause) Tj T* 0 Tw 1.229976 Tw (license) Tj 0 0 0 rg (. The original parts of the ) Tj /F3 10 Tf 0 0 0 rg (com.informatimago.lisp-reader.package ) Tj /F1 10 Tf 0 0 0 rg (system are: Copyright \(c\)) Tj T* 0 Tw (2012 Zachary Beane <) Tj 0 0 .501961 rg (xach@xach.com) Tj 0 0 0 rg (>) Tj (, All Rights Reserved) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 400.8236 cm
+Q
+q
+1 0 0 1 62.69291 388.8236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (the ) Tj /F3 10 Tf 0 0 0 rg (system com.informatimago.lispdoc ) Tj /F1 10 Tf 0 0 0 rg (which is released under the ) Tj 0 0 .501961 rg (LLGPL license) Tj 0 0 0 rg (.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 388.8236 cm
+Q
+q
+1 0 0 1 62.69291 382.8236 cm
+Q
+q
+1 0 0 1 62.69291 358.8236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+BT 1 0 0 1 0 14 Tm 2.426651 Tw 12 TL /F1 10 Tf 0 0 0 rg (The original web site referenced from ) Tj 0 0 .501961 rg (cliki ) Tj 0 0 0 rg (seems to have disappared \(dead links\), so a tarball) Tj T* 0 Tw (containing a copy of the original sources is included in the git repository.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 358.8236 cm
+Q
+q
+1 0 0 1 62.69291 325.8236 cm
 q
 BT 1 0 0 1 0 3.5 Tm 21 TL /F2 17.5 Tf 0 0 0 rg (References) Tj T* ET
 Q
 Q
 q
-1 0 0 1 62.69291 639.0236 cm
+1 0 0 1 62.69291 313.8236 cm
 Q
 q
-1 0 0 1 62.69291 639.0236 cm
+1 0 0 1 62.69291 313.8236 cm
 Q
 q
-1 0 0 1 62.69291 627.0236 cm
+1 0 0 1 62.69291 301.8236 cm
 0 0 0 rg
 BT /F1 10 Tf 12 TL ET
 q
@@ -713,17 +675,17 @@ Q
 q
 1 0 0 1 23 -3 cm
 q
-BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (AGPL: ) Tj 0 0 .501961 rg (http://www.gnu.org/licenses/agpl-3.0.html) Tj T* ET
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (AGPL: ) Tj 0 0 .501961 rg (http://www.gnu.org/licenses/agpl-3.0.html) Tj  T* ET
 Q
 Q
 q
 Q
 Q
 q
-1 0 0 1 62.69291 621.0236 cm
+1 0 0 1 62.69291 295.8236 cm
 Q
 q
-1 0 0 1 62.69291 609.0236 cm
+1 0 0 1 62.69291 283.8236 cm
 0 0 0 rg
 BT /F1 10 Tf 12 TL ET
 q
@@ -736,17 +698,17 @@ Q
 q
 1 0 0 1 23 -3 cm
 q
-BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Common Lisp: ) Tj 0 0 .501961 rg (http://en.wikipedia.org/wiki/Common_lisp) Tj T* ET
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Common Lisp: ) Tj 0 0 .501961 rg (http://en.wikipedia.org/wiki/Common_lisp) Tj  T* ET
 Q
 Q
 q
 Q
 Q
 q
-1 0 0 1 62.69291 603.0236 cm
+1 0 0 1 62.69291 277.8236 cm
 Q
 q
-1 0 0 1 62.69291 591.0236 cm
+1 0 0 1 62.69291 265.8236 cm
 0 0 0 rg
 BT /F1 10 Tf 12 TL ET
 q
@@ -759,17 +721,17 @@ Q
 q
 1 0 0 1 23 -3 cm
 q
-BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Common Lisp Wiki: ) Tj 0 0 .501961 rg (http://cliki.net) Tj T* ET
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Common Lisp Wiki: ) Tj 0 0 .501961 rg (http://cliki.net) Tj  T* ET
 Q
 Q
 q
 Q
 Q
 q
-1 0 0 1 62.69291 585.0236 cm
+1 0 0 1 62.69291 259.8236 cm
 Q
 q
-1 0 0 1 62.69291 573.0236 cm
+1 0 0 1 62.69291 247.8236 cm
 0 0 0 rg
 BT /F1 10 Tf 12 TL ET
 q
@@ -782,17 +744,17 @@ Q
 q
 1 0 0 1 23 -3 cm
 q
-BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Pascal J. Bourguignon: ) Tj 0 0 .501961 rg (mailto:pjb@informatimago.com) Tj 0 0 0 rg ( ) Tj 0 0 .501961 rg (http://www.informatimago.com/) Tj T* ET
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Pascal J. Bourguignon: ) Tj 0 0 .501961 rg (mailto:pjb@informatimago.com) Tj 0 0 0 rg ( ) Tj 0 0 .501961 rg (http://www.informatimago.com/) Tj  T* ET
 Q
 Q
 q
 Q
 Q
 q
-1 0 0 1 62.69291 567.0236 cm
+1 0 0 1 62.69291 241.8236 cm
 Q
 q
-1 0 0 1 62.69291 555.0236 cm
+1 0 0 1 62.69291 229.8236 cm
 0 0 0 rg
 BT /F1 10 Tf 12 TL ET
 q
@@ -805,17 +767,17 @@ Q
 q
 1 0 0 1 23 -3 cm
 q
-BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Quicklisp: ) Tj 0 0 .501961 rg (http://quicklisp.org/) Tj T* ET
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Quicklisp: ) Tj 0 0 .501961 rg (http://quicklisp.org/) Tj  T* ET
 Q
 Q
 q
 Q
 Q
 q
-1 0 0 1 62.69291 549.0236 cm
+1 0 0 1 62.69291 223.8236 cm
 Q
 q
-1 0 0 1 62.69291 537.0236 cm
+1 0 0 1 62.69291 211.8236 cm
 0 0 0 rg
 BT /F1 10 Tf 12 TL ET
 q
@@ -828,79 +790,114 @@ Q
 q
 1 0 0 1 23 -3 cm
 q
-BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Zach Beane: ) Tj 0 0 .501961 rg (http://xach.com/) Tj T* ET
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Zach Beane: ) Tj 0 0 .501961 rg (http://xach.com/) Tj  T* ET
 Q
 Q
 q
 Q
 Q
 q
-1 0 0 1 62.69291 537.0236 cm
+1 0 0 1 62.69291 211.8236 cm
+Q
+q
+1 0 0 1 62.69291 178.8236 cm
+q
+BT 1 0 0 1 0 3.5 Tm 21 TL /F2 17.5 Tf 0 0 0 rg (TODO) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 166.8236 cm
+Q
+q
+1 0 0 1 62.69291 166.8236 cm
+Q
+q
+1 0 0 1 62.69291 142.8236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 9 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 14 Tm /F1 10 Tf 12 TL 1.637485 Tw (create a library for low level utilities \(eg. proper-list-p\) that are used by several libraries to break) Tj T* 0 Tw (circular dependencies.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 142.8236 cm
 Q
  
 endstream
 endobj
-% 'R28': class PDFPageLabels 
-28 0 obj
-% Document Root
-<< /Nums [ 0
- 29 0 R
- 1
- 30 0 R ] >>
+41 0 obj
+<< /Nums [ 0 42 0 R 1 43 0 R ] >>
 endobj
-% 'R29': class PDFPageLabel 
-29 0 obj
-% None
-<< /S /D
- /St 1 >>
+42 0 obj
+<< /S /D /St 1 >>
 endobj
-% 'R30': class PDFPageLabel 
-30 0 obj
-% None
-<< /S /D
- /St 2 >>
+43 0 obj
+<< /S /D /St 2 >>
 endobj
 xref
-0 31
+0 44
 0000000000 65535 f
-0000000113 00000 n
-0000000245 00000 n
-0000000410 00000 n
-0000000585 00000 n
-0000000778 00000 n
-0000001024 00000 n
-0000001197 00000 n
-0000001420 00000 n
-0000001741 00000 n
-0000001999 00000 n
-0000002259 00000 n
-0000002518 00000 n
-0000002753 00000 n
-0000003000 00000 n
-0000003248 00000 n
-0000003489 00000 n
-0000003710 00000 n
-0000004074 00000 n
-0000004233 00000 n
-0000004481 00000 n
-0000004606 00000 n
-0000004808 00000 n
-0000004993 00000 n
-0000005186 00000 n
-0000005341 00000 n
-0000005457 00000 n
-0000012029 00000 n
-0000015431 00000 n
-0000015537 00000 n
-0000015614 00000 n
+0000000075 00000 n
+0000000139 00000 n
+0000000249 00000 n
+0000000364 00000 n
+0000000482 00000 n
+0000000692 00000 n
+0000000800 00000 n
+0000000976 00000 n
+0000001209 00000 n
+0000001402 00000 n
+0000001624 00000 n
+0000001841 00000 n
+0000002066 00000 n
+0000002250 00000 n
+0000002447 00000 n
+0000002674 00000 n
+0000002903 00000 n
+0000003079 00000 n
+0000003308 00000 n
+0000003492 00000 n
+0000003689 00000 n
+0000003885 00000 n
+0000004057 00000 n
+0000004241 00000 n
+0000004426 00000 n
+0000004603 00000 n
+0000004775 00000 n
+0000005126 00000 n
+0000005235 00000 n
+0000005446 00000 n
+0000005523 00000 n
+0000005669 00000 n
+0000005796 00000 n
+0000005927 00000 n
+0000006066 00000 n
+0000006201 00000 n
+0000006329 00000 n
+0000006438 00000 n
+0000006508 00000 n
+0000013019 00000 n
+0000021015 00000 n
+0000021068 00000 n
+0000021105 00000 n
 trailer
 << /ID 
- % ReportLab generated PDF document -- digest (http://www.reportlab.com) 
- [(\304?ta0\014\013~4`w:\355<.\204) (\304?ta0\014\013~4`w:\355<.\204)] 
-
- /Info 19 0 R
- /Root 18 0 R
- /Size 31 >>
+ % ReportLab generated PDF document -- digest (http://www.reportlab.com)
+ [(fw\023\350\365iq_\217\314\323\034\320A\347n) (fw\023\350\365iq_\217\314\323\034\320A\347n)]
+ /Info 29 0 R /Root 28 0 R /Size 44 >>
 startxref
-15661
+21142
 %%EOF

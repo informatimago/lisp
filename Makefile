@@ -148,9 +148,9 @@ help::
 	@printf $(HELP_FMT)  'lispdoc'       "Generates the lispdoc documentation (in $(WEBDOCDIR))."
 	@printf $(HELP_FMT)  'upload'        "Uploads $(WEBDOCDIR) to the web hosting server."
 
-documentation: README.pdf README.html
+readme: README.pdf README.html
 
-doc:documentation lispdoc upload
+doc-upload:readme lispdoc upload
 
 lispdoc:$(WEBDOCDIR)/develop/lisp/doc
 

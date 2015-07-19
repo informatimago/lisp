@@ -2,7 +2,7 @@
 
 
 Informatimago Public Common Lisp Libraries
-==========================================
+============================================================
 
 
 common-lisp/
@@ -67,12 +67,12 @@ small-cl-pgms/
 
 
 Repository
-==========
+============================================================
 
 These libraries can be obtained from the `git` repository at
-https://gitorious.org/com-informatimago/ ::
+https://gitlab.com/com-informatimago/com-informatimago/ ::
  
-    git clone https://git.gitorious.org/com-informatimago/com-informatimago.git informatimago
+    git clone https://gitlab.com/com-informatimago/com-informatimago.git informatimago
 
 They're also available thru `quicklisp <http://quicklisp.org/>`_: ::
 
@@ -82,56 +82,71 @@ They're also available thru `quicklisp <http://quicklisp.org/>`_: ::
     #+clisp (ql:quickload :com.informatimago.clisp)
     #+clisp (ql:quickload :com.informatimago.susv3)
     (ql:quickload :com.informatimago.rdp)
-    (ql:quickload :com.informatimago.objcl)
+    #+(and ccl darwin) (ql:quickload :com.informatimago.objcl)
+
+    (ql:quickload :com.informatimago)
+
+    
+Documentation
+============================================================
+
+You may `browse the documentation <doc/>`_, or you may also
+`browse the sources at gitlab <https://gitlab.com/com-informatimago/com-informatimago/tree/master>`_.
+
 
 Bug Reports & Patches
-==========
+============================================================
 
-Bug reports and patches can be sent to _`mailto:pjb@informatimago.com`.
-
+Bug reports may be posted on gitlab issues:
+`<https://gitlab.com/com-informatimago/com-informatimago/issues>`_,
+and merge requests for patches:
+`<https://gitlab.com/com-informatimago/com-informatimago/merge_requests>`_.
+Alternatively, they may be sent to `<mailto:pjb@informatimago.com>`_.
 
 
 Authors & License
-=================
+============================================================
 
-All this code is authored by Pascal J. Bourguignon,  apart from
-`com.informatimago.lisp-reader.package` which is authored by Zach
-Beane and modified by Pascal J. Bourguignon.
+All this code is authored by Pascal J. Bourguignon, apart from:
 
-All this code is released under the `GNU AFFERO GENERAL PUBLIC LICENSE 
-<http://www.gnu.org/licenses/agpl-3.0.html>`_,
-apart from `com.informatimago.lisp-reader.package` which is released
-under the BSD license.
+- the system `com.informatimago.lisp-reader.package` which is authored
+  by Zach Beane and modified by Pascal J. Bourguignon.
+  
+- the system `com.informatimago.lispdoc` which is authored by Sven Van
+  Caekenberghe and modified by Pascal J. Bourguignon.
+
+All this code is released under the `GNU AFFERO GENERAL PUBLIC LICENSE <http://www.gnu.org/licenses/agpl-3.0.html>`_ apart from:
+
+- the system `com.informatimago.lisp-reader.package` which is released
+  under the `BSD 2-clause license <https://tldrlegal.com/license/bsd-2-clause-license-%28freebsd%29#fulltext>`_. The original parts of the
+  `com.informatimago.lisp-reader.package` system are: Copyright (c) 2012
+  Zachary Beane <xach@xach.com>, All Rights Reserved
+
+- the `system com.informatimago.lispdoc` which is released under the `LLGPL license <https://tldrlegal.com/license/lisp-lesser-general-public-license#fulltext>`_.
+
+ The original web site referenced from `cliki <http://www.cliki.net/LispDoc>`_
+ seems to have disappared (dead
+ links), so a tarball containing a copy of the original sources is
+ included in the git repository.
 
 
 References
-==========
+============================================================
 
-- AGPL: _`http://www.gnu.org/licenses/agpl-3.0.html`
-- Common Lisp: _`http://en.wikipedia.org/wiki/Common_lisp`
-- Common Lisp Wiki: _`http://cliki.net`
-- Pascal J. Bourguignon: _`mailto:pjb@informatimago.com`  _`http://www.informatimago.com/`
-- Quicklisp: _`http://quicklisp.org/`
-- Zach Beane: _`http://xach.com/`
-
-
-.. comment:
-    To push to gitorious:
-        git push gitorious master
+- AGPL: `<http://www.gnu.org/licenses/agpl-3.0.html>`_
+- Common Lisp: `<http://en.wikipedia.org/wiki/Common_lisp>`_
+- Common Lisp Wiki: `<http://cliki.net>`_
+- Pascal J. Bourguignon: `<mailto:pjb@informatimago.com>`_  `<http://www.informatimago.com/>`_
+- Quicklisp: `<http://quicklisp.org/>`_
+- Zach Beane: `<http://xach.com/>`_
 
 
 TODO
-==================
+============================================================
 
 - create a library for low level utilities (eg. proper-list-p) that
   are used by several libraries to break circular dependencies.
 
-- do we need a bug tracker?  so far the number of bug reports per year
-  doesn't really justify it.
 
-
-          -------------------------------------------------
-                           ---------------
-                                  -
-                                  .
+.. comment : THE END
 
