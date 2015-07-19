@@ -63,7 +63,7 @@ They're also available thru [quicklisp](http://quicklisp.org/): :
 Documentation
 =============
 
-You may [browse the documentation](doc/), or you may also [browse the sources at gitlab](https://gitlab.com/com-informatimago/com-informatimago/tree/master).
+You may [browse the documentation](http://www.informatimago.com/develop/lisp/doc/), or you may also [browse the sources at gitlab](https://gitlab.com/com-informatimago/com-informatimago/tree/master).
 
 Bug Reports & Patches
 =====================
