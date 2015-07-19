@@ -148,7 +148,7 @@ help::
 	@printf $(HELP_FMT)  'lispdoc'       "Generates the lispdoc documentation (in $(WEBDOCDIR))."
 	@printf $(HELP_FMT)  'upload'        "Uploads $(WEBDOCDIR) to the web hosting server."
 
-readme: README.pdf README.html
+readme: README.pdf README.html README.md
 
 doc-upload:readme lispdoc upload
 
@@ -159,6 +159,9 @@ $(WEBDOCDIR)/develop/lisp/doc:
 
 upload:
 	$(MAKE) $(MFLAGS) -C $(WEBDOCDIR) update upload
+
+README.md:README
+	pandoc -f rst -t markdown_github  -o README.md README
 
 README.html:README
 	rst2html.py README > README.html
