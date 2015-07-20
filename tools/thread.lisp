@@ -34,8 +34,30 @@
 (defpackage "COM.INFORMATIMAGO.TOOLS.THREAD"
   (:use "COMMON-LISP"
         "BORDEAUX-THREADS")
-  (:export "LIST-THREADS" "KILL-THREAD"))
+  (:export "LIST-THREADS" "KILL-THREAD"
+            "PERIODICALLY" "DO-PERIODICALLY" "DONE"))
 (in-package "COM.INFORMATIMAGO.TOOLS.THREAD")
+
+(defun periodically (period thunk &key (name "Peridic Task") initially finally)
+  (bt:make-thread (lambda ()
+                    (when initially (funcall initially))
+                    (catch :exit-periodically
+                      (loop (sleep period) (funcall thunk)))
+                    (when finally (funcall finally)))
+                  :name name
+                  :initial-bindings (list (cons '*standard-output* *standard-output*)
+                                          (cons '*standard-input* *standard-input*)
+                                          (cons '*error-output* *error-output*)
+                                          (cons '*trace-output* *trace-output*)
+                                          (cons '*terminal-io* *terminal-io*))))
+
+(defmacro do-periodically ((period &key (name "Periodic Task") initially finally)
+                           &body body)
+  `(periodically ,period (flet ((done () (throw :exit-periodically nil)))
+                           (lambda () ,@body))
+                 :name ,name
+                 :initially (lambda () ,initially)
+                 :finally (lambda () ,finally)))
 
 (defun list-threads (&optional (threads (bt:all-threads)) (*standard-output* *standard-output*))
   (loop
