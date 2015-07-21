@@ -167,6 +167,7 @@ are listed."
   (ql:register-local-projects))
 
 (defun quick-reset ()
+  "Rebuilds the local projects system index."
   (quick-local-projects))
 
 
