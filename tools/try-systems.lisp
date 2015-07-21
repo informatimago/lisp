@@ -201,6 +201,7 @@
      "--eval" (prin1-to-string `(push ,asd-directory asdf:*central-registry*))
      "--eval" (prin1-to-string `(asdf:oos 'asdf:load-op ,asd-system)))
 
+#-(and)
 (let ((*package* (load-time-value (find-package "KEYWORD"))))
   (format t "~2%;; Usage:~2%~S~2%"
           '(try-systems-in-directory #P"~/src/public/lisp/")))
