@@ -1,22 +1,22 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               com.informatimago.asd
+;;;;FILE:               com.informatimago.languages.asd
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    ASD file to load com.informatimago libraries.
+;;;;    ASD file to load the com.informatimago.languages libraries.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2014-12-23 <PJB> Created this .asd file.
+;;;;    2015-07-21 <PJB> Created this .asd file.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2010 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2015 - 2015
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -31,50 +31,30 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
-(in-package "COMMON-LISP-USER")
 
-(asdf:defsystem "com.informatimago"
+(asdf:defsystem "com.informatimago.languages"
   ;; system attributes:
-  :description  "Informatimago Systems Agregate"
-  :long-description  "This system gathers most of the Informatimago systems."
+  :description  "This system aggregates Informatimago Common Lisp Languages systems."
   :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.0.6"
+  :version "1.0.0"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Summer 2015")
-               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago/")
+               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.languages/")
                ((#:albert #:formats)             . ("docbook"))
                ((#:albert #:docbook #:template)  . "book")
                ((#:albert #:docbook #:bgcolor)   . "white")
                ((#:albert #:docbook #:textcolor) . "black"))
+  :depends-on #-mocl ("com.informatimago.languages.cxx"
+                      "com.informatimago.languages.cpp"
+                      "com.informatimago.languages.c11"
+                      "com.informatimago.languages.lua"
+                      "com.informatimago.languages.linc")
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
-  :depends-on ("com.informatimago.common-lisp"
-               "com.informatimago.clext"
-               "com.informatimago.clmisc"
-               "com.informatimago.rdp"
-               "com.informatimago.tools"
-               "com.informatimago.xcode"
-               "com.informatimago.lispdoc"
-               "com.informatimago.small-cl-pgms"
-               "com.informatimago.languages"
-               "com.informatimago.future"
-               "com.informatimago.editor" ; future
-               "com.informatimago.objcl"  ; empty shell on non-ccl darwin
-               "com.informatimago.susv3"  ; empty shell on non-clisp.
-               "com.informatimago.clisp"  ; empty shell on non-clisp linux
-               )
-  :components ()
-  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.test"))))
+  ;; #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op  "com.informatimago.languages.test")))
+  )
 
-
-(defun test-all-com.informatimago ()
-  (asdf:oos 'asdf:load-op :com.informatimago.test)
-  (eval (read-from-string "
-         (let ((com.informatimago.common-lisp.cesarum.simple-test::*current-test-name*       'test-all-com.informatimago)
-               (com.informatimago.common-lisp.cesarum.simple-test::*current-test-parameters* '()))
-           (com.informatimago.common-lisp.cesarum.simple-test:testing
-             (asdf:oos 'asdf:test-op :com.informatimago.test)))")))
 
 ;;;; THE END ;;;;
