@@ -39,7 +39,7 @@
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.0.6"
+  :version "1.0.7"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Spring 2014")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.tools/")
@@ -48,15 +48,21 @@
                ((#:albert #:docbook #:bgcolor)   . "white")
                ((#:albert #:docbook #:textcolor) . "black"))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
-  :depends-on #-mocl ("com.informatimago.tools.pathname"
+  :depends-on #-mocl ("com.informatimago.tools.check-asdf"
+                      "com.informatimago.tools.make-depends"
                       "com.informatimago.tools.manifest"
-                      "com.informatimago.tools.symbol"
+                      "com.informatimago.tools.pathname"
+                      "com.informatimago.tools.quicklisp"
+                      "com.informatimago.tools.reader-macro"
+                      "com.informatimago.tools.script"
                       "com.informatimago.tools.source"
                       "com.informatimago.tools.summary"
-                      "com.informatimago.tools.quicklisp"
-                      "com.informatimago.tools.make-depends"
-                      "com.informatimago.tools.script"
-                      "com.informatimago.tools.check-asdf")
+                      "com.informatimago.tools.symbol"
+                      "com.informatimago.tools.thread"
+                      "com.informatimago.tools.try-systems"
+                      "com.informatimago.tools.undefmethod")
+
+
   #+mocl ("com.informatimago.tools.manifest"
           "com.informatimago.tools.pathname"
           "com.informatimago.tools.symbol")
@@ -107,5 +113,6 @@
   (use-package :com.informatimago.tools.symbol)
   (use-package :com.informatimago.tools.quicklisp)
   (values))
+
 
 ;;;; THE END ;;;;

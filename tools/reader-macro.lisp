@@ -11,6 +11,8 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2015-07-21 <PJB> Renamed all-macro-characters -> list-all-macro-characters.
+;;;;                     changed the tag symbols into keywords.
 ;;;;    2015-04-03 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
@@ -33,7 +35,7 @@
 ;;;;**************************************************************************
 (defpackage "COM.INFORMATIMAGO.TOOLS.READER-MACRO"
   (:use "COMMON-LISP")
-  (:export "ALL-MACRO-CHARACTERS"
+  (:export "LIST-ALL-MACRO-CHARACTERS"
            "REMOVE-ALL-MACRO-CHARACTERS"))
 (in-package "COM.INFORMATIMAGO.TOOLS.READER-MACRO")
 
@@ -48,7 +50,14 @@ RETURN: READTABLE."
           (set-syntax-from-char ch #\a   readtable))
   readtable)
 
-(defun all-macro-characters (&optional (*readtable* *readtable*))
+(defun list-all-macro-characters (&optional (*readtable* *readtable*))
+  "
+RETURN: A list of all the macro and dispatch-macro characters in the readtable.
+NOTE:   We have the same function in the com.informatimago.common-lisp.lisp-reader.reader
+        package, working on com.informatimago.common-lisp.lisp-reader.reader:readtable
+        instead of cl:readtable.
+"
+  (check-type *readtable* readtable)
   (loop
     :with result = '()
     :for code :below char-code-limit
@@ -59,59 +68,63 @@ RETURN: READTABLE."
               (if (ignore-errors (progn (get-dispatch-macro-character ch #\a) t))
                   (loop :for code :below char-code-limit
                         :for sub = (code-char code)
-                        :when (and sub (not (and (alpha-char-p sub) (lower-case-p sub))))
-                          :do (when (get-dispatch-macro-character ch sub)
-                                (push (list 'dispatch-macro-character nt ch sub #-(and) (format nil "~C~C" ch sub)) result)))
-                  (push (list 'macro-character nt ch #-(and) (string ch)) result))))
+                        :when (and sub
+                                   (not (and (alpha-char-p sub) (lower-case-p sub)))
+                                   (get-dispatch-macro-character ch sub))
+                          :do (push (list :dispatch-macro-character nt ch sub
+                                          #-(and) (format nil "~C~C" ch sub))
+                                    result))
+                  (push (list :macro-character nt ch
+                              #-(and) (string ch))
+                        result))))
     :finally (return (nreverse result))))
-
 
 
 #-(and) (
          
          ;; (length (all-macro-characters)
 
-         (map nil 'print (all-macro-characters))
+         (map nil 'print (list-all-macro-characters))
 
-         (macro-character nil #\") 
-         (dispatch-macro-character t #\# #\Null) 
-         (dispatch-macro-character t #\# #\Tab) 
-         (dispatch-macro-character t #\# #\Newline) 
-         (dispatch-macro-character t #\# #\Page) 
-         (dispatch-macro-character t #\# #\Return) 
-         (dispatch-macro-character t #\# #\ ) 
-         (dispatch-macro-character t #\# #\#) 
-         (dispatch-macro-character t #\# #\$) 
-         (dispatch-macro-character t #\# #\&) 
-         (dispatch-macro-character t #\# #\') 
-         (dispatch-macro-character t #\# #\() 
-         (dispatch-macro-character t #\# #\)) 
-         (dispatch-macro-character t #\# #\*) 
-         (dispatch-macro-character t #\# #\+) 
-         (dispatch-macro-character t #\# #\-) 
-         (dispatch-macro-character t #\# #\.) 
-         (dispatch-macro-character t #\# #\:) 
-         (dispatch-macro-character t #\# #\<) 
-         (dispatch-macro-character t #\# #\=) 
-         (dispatch-macro-character t #\# #\>) 
-         (dispatch-macro-character t #\# #\A) 
-         (dispatch-macro-character t #\# #\B) 
-         (dispatch-macro-character t #\# #\C) 
-         (dispatch-macro-character t #\# #\O) 
-         (dispatch-macro-character t #\# #\P) 
-         (dispatch-macro-character t #\# #\R) 
-         (dispatch-macro-character t #\# #\S) 
-         (dispatch-macro-character t #\# #\X) 
-         (dispatch-macro-character t #\# #\\) 
-         (dispatch-macro-character t #\# #\_) 
-         (dispatch-macro-character t #\# #\|) 
-         (dispatch-macro-character t #\# #\Latin_Capital_Letter_E_With_Circumflex) 
-         (macro-character nil #\') 
-         (macro-character nil #\() 
-         (macro-character nil #\)) 
-         (macro-character nil #\,) 
-         (macro-character nil #\;) 
-         (macro-character nil #\`) 
+         (:macro-character nil #\") 
+         (:dispatch-macro-character t #\# #\Null) 
+         (:dispatch-macro-character t #\# #\Tab) 
+         (:dispatch-macro-character t #\# #\Newline) 
+         (:dispatch-macro-character t #\# #\Page) 
+         (:dispatch-macro-character t #\# #\Return) 
+         (:dispatch-macro-character t #\# #\ ) 
+         (:dispatch-macro-character t #\# #\#) 
+         (:dispatch-macro-character t #\# #\$) 
+         (:dispatch-macro-character t #\# #\&) 
+         (:dispatch-macro-character t #\# #\') 
+         (:dispatch-macro-character t #\# #\() 
+         (:dispatch-macro-character t #\# #\)) 
+         (:dispatch-macro-character t #\# #\*) 
+         (:dispatch-macro-character t #\# #\+) 
+         (:dispatch-macro-character t #\# #\-) 
+         (:dispatch-macro-character t #\# #\.) 
+         (:dispatch-macro-character t #\# #\:) 
+         (:dispatch-macro-character t #\# #\<) 
+         (:dispatch-macro-character t #\# #\=) 
+         (:dispatch-macro-character t #\# #\>) 
+         (:dispatch-macro-character t #\# #\A) 
+         (:dispatch-macro-character t #\# #\B) 
+         (:dispatch-macro-character t #\# #\C) 
+         (:dispatch-macro-character t #\# #\O) 
+         (:dispatch-macro-character t #\# #\P) 
+         (:dispatch-macro-character t #\# #\R) 
+         (:dispatch-macro-character t #\# #\S) 
+         (:dispatch-macro-character t #\# #\X) 
+         (:dispatch-macro-character t #\# #\\) 
+         (:dispatch-macro-character t #\# #\_) 
+         (:dispatch-macro-character t #\# #\|) 
+         (:dispatch-macro-character t #\# #\Latin_Capital_Letter_E_With_Circumflex) 
+         (:macro-character nil #\') 
+         (:macro-character nil #\() 
+         (:macro-character nil #\)) 
+         (:macro-character nil #\,) 
+         (:macro-character nil #\;) 
+         (:macro-character nil #\`)          
 
 
          )

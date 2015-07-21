@@ -10,6 +10,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2015-07-21 <PJB> Synchronized list-all-macro-characters with the one in com.informatimago.tools.
 ;;;;    2012-05-14 <PJB> Corrected set-syntax-from-char.
 ;;;;    2011-04-29 <PJB> Added potential-number-p.
 ;;;;    2009-08-26 <PJB> Corrected bugs reading "||", "( ;comment )" and "#C(123 456)".
@@ -1992,32 +1993,34 @@ NOTE:   terminates with any kind of list, dotted, circular, etc.
       *readtable*          (copy-readtable nil))
 
 
-
-;; or could go to UTILITIES, but this version will run on our own readtables...
 (defun list-all-macro-characters (&optional (*readtable* *readtable*))
   "
 RETURN: A list of all the macro and dispatch-macro characters in the readtable.
+NOTE:   We have the same function in the com.informatimago.tools.reader-macro
+        package, working on cl:readtable
+        instead of com.informatimago.common-lisp.lisp-reader.reader:readtable.
 "
+  (check-type *readtable* readtable)
   (loop
-    :with results = '()
-    :for code :from 0 :below char-code-limit
+    :with result = '()
+    :for code :below char-code-limit
     :for ch = (code-char code)
-    :do (multiple-value-bind (fun ntp) (get-macro-character ch)
-          (when (or fun ntp)
-            (push (list ch fun ntp
-                        (when (handler-case
-                                  (progn (get-dispatch-macro-character ch #\a)
-                                         t)
-                                (error () nil))
-                          (loop
-                            :for code :from 0 :below char-code-limit
-                            :for sub = (code-char code)
-                            :for fun = (get-dispatch-macro-character ch sub)
-                            :when fun
-                              :collect (list sub fun)))) results)))
-    :finally (return results)))
-
-
+    :when ch
+      :do (multiple-value-bind (mc nt) (get-macro-character ch)
+            (when mc
+              (if (ignore-errors (progn (get-dispatch-macro-character ch #\a) t))
+                  (loop :for code :below char-code-limit
+                        :for sub = (code-char code)
+                        :when (and sub
+                                   (not (and (alpha-char-p sub) (lower-case-p sub)))
+                                   (get-dispatch-macro-character ch sub))
+                          :do (push (list :dispatch-macro-character nt ch sub
+                                          #-(and) (format nil "~C~C" ch sub))
+                                    result))
+                  (push (list :macro-character nt ch
+                              #-(and) (string ch))
+                        result))))
+    :finally (return (nreverse result))))
 
 
 (defun potential-number-p (token
