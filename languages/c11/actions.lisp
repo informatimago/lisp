@@ -32,8 +32,6 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 (in-package "COM.INFORMATIMAGO.LANGUAGES.C11.PARSER")
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (setf *readtable* (copy-readtable nil)))
 
 
 (defun c-declaration (specifiers init-declarators semicolon)

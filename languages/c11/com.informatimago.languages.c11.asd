@@ -56,13 +56,13 @@
                "yacc")
   :components ((:file "packages"        :depends-on  ())
                (:file "context"         :depends-on  ("packages"))
-               (:file "scanner"         :depends-on  ("packages" "context"))
+               (:file "c11-scanner"     :depends-on  ("packages" "context"))
                (:file "read-yacc"       :depends-on  ("packages"))
                (:file "actions"         :depends-on  ("packages"))
-               (:file "parser"          :depends-on  ("packages"
+               (:file "c11-parser"      :depends-on  ("packages"
                                                       "read-yacc"
                                                       "context"
-                                                      "scanner"
+                                                      "c11-scanner"
                                                       "actions")))
   #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.languages.c11.test"))))
 

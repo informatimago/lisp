@@ -31,7 +31,7 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
-(in-package "COM.INFORMATIMAGO.LANGUAGES.C11.PARSER")
+(in-package "COM.INFORMATIMAGO.LANGUAGES.YACC.PARSER")
 
 (defun remove-comments (text &key (single-line-comments t))
   (flet ((concatenate-chunks (chunks)
@@ -244,10 +244,12 @@
                (:terminals ,(getf header :tokens))
                ,@rules))))
 
-#-(and) (
+#-(and) (progn
          
- (with-open-file (stream #P"~/src/public/lisp/languages/c11/parser.yacc")
-   (read-yacc stream))
-         )
+          (in-package "COM.INFORMATIMAGO.LANGUAGES.YACC.PARSER")
+          (with-open-file (stream #P"~/src/public/lisp/languages/c11/c11-parser.yacc")
+            (read-yacc stream "c11"))
+         
+          )
 
 ;;;; THE END ;;;;

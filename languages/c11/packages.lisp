@@ -32,9 +32,61 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(defpackage "COM.INFORMATIMAGO.LANGUAGES.C11.PARSER"
+(defpackage "COM.INFORMATIMAGO.LANGUAGES.C11.TOKENS"
+  (:use)
+  (:import-from "COMMON-LISP"
+                "*" ">=" "/" "-" "++" "+" ">" "=" "<" "<=" "/=")
+  (:export "identifier" "typedef_name" "func_name" "string_literal"
+           "i_constant" "f_constant" "enum_name" "alignas" "alignof"
+           "atomic" "generic" "noreturn" "static_assert"
+           "thread_local" "case" "default" "if" "else" "switch"
+           "while" "do" "for" "goto" "continue" "break" "return"
+           "struct" "union" "enum" "..." "complex" "imaginary" "bool"
+           "char" "short" "int" "long" "signed" "unsigned" "float"
+           "double" "void" "const" "restrict" "volatile" "typedef"
+           "extern" "static" "auto" "register" "inline" "sizeof" "^="
+           "|=" "-=" "<<=" ">>=" "&=" "&&" "||" "*=" "/=" "%=" "+="
+           "->" "++" "--" "<<" ">>" "<=" ">=" "==" "!=" "(" ")" ","
+           ":" ";" "." "[" "]" "{" "}" "&" "*" "/" "+" "-" "~" "!" "%"
+           "<" ">" "=" "^" "|" "?" "STAR")
+  (:documentation "This package exports the token-kinds of the C11 terminal symbols."))
+
+(defpackage "COM.INFORMATIMAGO.LANGUAGES.C11.SCANNER"
+  (:use "COMMON-LISP"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
+        "COM.INFORMATIMAGO.COMMON-LISP.PARSER.SCANNER"
+        "COM.INFORMATIMAGO.COMMON-LISP.REGEXP.REGEXP"
+        "COM.INFORMATIMAGO.LANGUAGES.C11.TOKENS")
+  (:shadowing-import-from "COM.INFORMATIMAGO.COMMON-LISP.REGEXP.REGEXP"
+                          "SPLIT-STRING")
+  (:export "C11-SCANNER"
+           "COMPUTE-TOKEN-KIND"))
+
+(defpackage "COM.INFORMATIMAGO.LANGUAGES.YACC.PARSER"
   (:use "COMMON-LISP"
         "YACC"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
+        "COM.INFORMATIMAGO.COMMON-LISP.PARSER.SCANNER"
+        "COM.INFORMATIMAGO.COMMON-LISP.REGEXP.REGEXP"
+        "COM.INFORMATIMAGO.LANGUAGES.CPP"
+        "COM.INFORMATIMAGO.TOOLS.READER-MACRO"
+        "COM.INFORMATIMAGO.LANGUAGES.C11.TOKENS")
+  (:shadowing-import-from "COM.INFORMATIMAGO.COMMON-LISP.REGEXP.REGEXP"
+                          "SPLIT-STRING")
+  (:export "C11-SCANNER" "READ-YACC")
+  (:documentation "
+This package exports a function to read yacc grammars,
+returning a yacc:defgrammar form.
+"))
+
+
+(defpackage "COM.INFORMATIMAGO.LANGUAGES.C11.PARSER"
+  (:use "COMMON-LISP"
+        "COM.INFORMATIMAGO.RDP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
@@ -42,9 +94,12 @@
         "COM.INFORMATIMAGO.COMMON-LISP.PARSER.SCANNER"
         "COM.INFORMATIMAGO.COMMON-LISP.REGEXP.REGEXP"
         "COM.INFORMATIMAGO.LANGUAGES.CPP"
-        "COM.INFORMATIMAGO.TOOLS.READER-MACRO")
+        "COM.INFORMATIMAGO.TOOLS.READER-MACRO"
+        "COM.INFORMATIMAGO.LANGUAGES.C11.TOKENS")
   (:shadowing-import-from "COM.INFORMATIMAGO.COMMON-LISP.REGEXP.REGEXP"
-                          "SPLIT-STRING"))
+                          "SPLIT-STRING")
+  (:export "C11-PARSER"))
+
 
 (defpackage "COM.INFORMATIMAGO.LANGUAGES.C11.C"
   (:use)

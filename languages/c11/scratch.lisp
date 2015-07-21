@@ -1,34 +1,44 @@
 (in-package "COM.INFORMATIMAGO.LANGUAGES.C11.PARSER")
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (setf *readtable* (copy-readtable nil)))
-
 
 ;; (untrace compute-token-kind)
 ;; 7 seconds.
 (defparameter *tc*
-  (mapcar (lambda (token)
-            (setf (token-kind token) (compute-token-kind token))
-            token)
-          (reduce (function append)
-                  (reverse (com.informatimago.languages.cpp::context-output-lines
-                            (let ((*identifier-package*
-                                    (load-time-value (find-package "COM.INFORMATIMAGO.LANGUAGES.C11.C"))))
-                              (cpp-e "/Users/pjb/src/public/lisp/languages/cpp/tests/emacs.c"
-                                     :trace-includes t
-                                     :defines '("__GNUC__" "4" "__STDC__" "1" "__x86_64__" "1")
-                                     :includes '("/Users/pjb/src/macosx/emacs-24.5/src/")
-                                     :include-bracket-directories '("/Users/pjb/src/macosx/emacs-24.5/src/"
-                                                                    "/Users/pjb/src/macosx/emacs-24.5/lib/"
-                                                                    "/Users/pjb/src/macosx/gcc-4.9.2/gcc/ginclude/" 
-                                                                    "/usr/include/")
-                                     :write-processed-lines nil))))
-                  :initial-value '())))
+  (let ((tokens (reduce (function append)
+                        (reverse (com.informatimago.languages.cpp::context-output-lines
+                                  (let ((*identifier-package*
+                                          (load-time-value (find-package "COM.INFORMATIMAGO.LANGUAGES.C11.C"))))
+                                    (cpp-e "/Users/pjb/src/public/lisp/languages/cpp/tests/emacs.c"
+                                           :trace-includes t
+                                           :defines '("__GNUC__" "4" "__STDC__" "1" "__x86_64__" "1")
+                                           :includes '("/Users/pjb/src/macosx/emacs-24.5/src/")
+                                           :include-bracket-directories '("/Users/pjb/src/macosx/emacs-24.5/src/"
+                                                                          "/Users/pjb/src/macosx/emacs-24.5/lib/"
+                                                                          "/Users/pjb/src/macosx/gcc-4.9.2/gcc/ginclude/" 
+                                                                          "/usr/include/")
+                                           :write-processed-lines nil))))
+                        :initial-value '())))
+    (dolist (token tokens tokens)
+      (setf (token-kind token) (compute-token-kind token)))))
 
+;; yacc
+
+(defun make-list-lexer (tokens)
+  (lambda ()
+    (if tokens
+        (let ((token (pop tokens)))
+          (values (token-kind token) token))
+        (values nil nil))))
 
 (let ((*context* (make-instance 'context)))
   (values (parse-with-lexer (make-list-lexer *tc*) *c11-parser*)
           *context*))
 
+;; rdp:
+(defun test/parse-stream (src)
+  (let ((*scanner* (make-instance '-scanner :source src)))
+   (loop
+     :until (typep (scanner-current-token *scanner*) 'tok-eof)
+     :collect  (lse-parser *scanner*))))
 
 
 #-(and) (

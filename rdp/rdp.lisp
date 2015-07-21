@@ -66,8 +66,19 @@
   first-function
   follow-function)
 
-
-
+(defun dump-grammar (grammar)
+  (format t "(defgrammar ~S~%" (grammar-name grammar))
+  (format t "  :terminals ~S~%" (grammar-terminals grammar))
+  (format t "  :start ~S~%" (grammar-start grammar))
+  (format t "  :rules ~S~%" (grammar-rules grammar))
+  (format t "  :all-terminals ~S~%" (grammar-all-terminals grammar))
+  (format t "  :all-non-terminals ~S~%" (grammar-all-non-terminals grammar))
+  (format t "  :scanner ~S~%" (grammar-scanner grammar))
+  (format t "  :skip-spaces ~S~%" (grammar-skip-spaces grammar))
+  (format t "  :first-function ~S~%" (grammar-first-function grammar))
+  (format t "  :follow-function ~S~%" (grammar-follow-function grammar))
+  (format t ")~%")
+  grammar)
 
 (defvar *grammars* (make-hash-table)
   "Records the variables defined with DEFGRAMMAR.

@@ -32,8 +32,6 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 (in-package "COM.INFORMATIMAGO.LANGUAGES.C11.PARSER")
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (setf *readtable* (copy-readtable nil)))
 
 (defclass context ()
   ((c-identifiers-package :initarg :c-identifiers-package
@@ -99,6 +97,6 @@ The scanner uses it to detect enumeration_constant tokens."
 
 (defgeneric enter-enumeration-constant (context name &optional definition)
   (:method ((context context) name &optional (definition t))
-    (enter-into-table context (context-enumeration-constants context) '|enumeration_constant| name definition)))
+    (enter-into-table context (context-enumeration-constants context) '|enum_name| name definition)))
 
 ;;;; THE END ;;;;

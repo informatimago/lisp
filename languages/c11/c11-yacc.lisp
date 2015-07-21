@@ -1,94 +1,21 @@
-;;;; -*- mode:lisp;coding:utf-8 -*-
-;;;;**************************************************************************
-;;;;FILE:               parser.lisp
-;;;;LANGUAGE:           Common-Lisp
-;;;;SYSTEM:             Common-Lisp
-;;;;USER-INTERFACE:     NONE
-;;;;DESCRIPTION
-;;;;    
-;;;;    C11 parser.
-;;;;    
-;;;;AUTHORS
-;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
-;;;;MODIFICATIONS
-;;;;    2015-07-02 <PJB> Created.
-;;;;BUGS
-;;;;LEGAL
-;;;;    AGPL3
-;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2015 - 2015
-;;;;    
-;;;;    This program is free software: you can redistribute it and/or modify
-;;;;    it under the terms of the GNU Affero General Public License as published by
-;;;;    the Free Software Foundation, either version 3 of the License, or
-;;;;    (at your option) any later version.
-;;;;    
-;;;;    This program is distributed in the hope that it will be useful,
-;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
-;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;;;;    GNU Affero General Public License for more details.
-;;;;    
-;;;;    You should have received a copy of the GNU Affero General Public License
-;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-;;;;**************************************************************************
-(in-package "COM.INFORMATIMAGO.LANGUAGES.C11.PARSER")
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (setf *readtable* (copy-readtable nil)))
-
-#|
-(defmethod accept ((scanner buffered-scanner) token)
-(if (word-equal token (scanner-current-token scanner))
-(prog1 (list (token-kind (scanner-current-token scanner))
-(scanner-current-text scanner)
-(scanner-column scanner))
-(scan-next-token scanner))
-(error 'unexpected-token-error
-:line   (scanner-line   scanner)
-:column (scanner-column scanner)
-:state  (scanner-state  scanner)
-:current-token (scanner-current-token scanner)
-:scanner scanner
-:expected-token token
-:format-control "Expected ~S, not ~A (~S)~%"
-:format-arguments (list
-token
-(scanner-current-token scanner)
-(scanner-current-text scanner)))))
-
-|#
-
-
-(defun make-list-lexer (tokens)
-  (lambda ()
-    (if tokens
-        (let ((token (pop tokens)))
-          (values (setf (token-kind token) (compute-token-kind token))
-                  token))
-        (values nil nil))))
-
-
-
-#-(and) ; not yet.
 (DEFINE-PARSER *C11-PARSER*
 
   (:START-SYMBOL |translation_unit|)
 
-  (:TERMINALS
-   (
-    |identifier| |typedef_name| |func_name| |string_literal|
-                 |i_constant| |f_constant|
-                 |enumeration_constant|
+  (:TERMINALS (
+               |identifier| |typedef_name| |func_name| |string_literal|
+               |i_constant| |f_constant| |enum_name|
                  
-                 |alignas| |alignof| |atomic| |generic| |noreturn| |static_assert|
-                 |thread_local| |case| |default| |if| |else| |switch| |while| |do|
-                 |for| |goto| |continue| |break| |return| |struct| |union| |enum|
-                 |...| |complex| |imaginary| |bool| |char| |short| |int| |long|
-                 |signed| |unsigned| |float| |double| |void| |const| |restrict|
-                 |volatile| |typedef| |extern| |static| |auto| |register| |inline|
-                 |sizeof|
+               |alignas| |alignof| |atomic| |generic| |noreturn| |static_assert|
+               |thread_local| |case| |default| |if| |else| |switch| |while| |do|
+               |for| |goto| |continue| |break| |return| |struct| |union| |enum|
+               |...| |complex| |imaginary| |bool| |char| |short| |int| |long|
+               |signed| |unsigned| |float| |double| |void| |const| |restrict|
+               |volatile| |typedef| |extern| |static| |auto| |register| |inline|
+               |sizeof|
 
-                 ^= \|= -= <<= >>= &= && |\|\|| *= /= %= += -> ++ -- << >>
-                 <= >= == !=))
+               ^= \|= -= <<= >>= &= && |\|\|| *= /= %= += -> ++ -- << >>
+               <= >= == !=))
   
 
   ;; renaming terminals:
@@ -96,13 +23,12 @@ token
   (IDENTIFIER |identifier|) 
   (TYPEDEF_NAME |typedef_name|)
   (FUNC_NAME |func_name|) 
-  (ENUMERATION_CONSTANT |enumeration_constant|)
-
+  
   (STRING_LITERAL |string_literal|) 
   (I_CONSTANT     |i_constant|) 
   (F_CONSTANT     |f_constant|) 
   
-  (|constant| I_CONSTANT F_CONSTANT ENUMERATION_CONSTANT)
+  (|constant| I_CONSTANT F_CONSTANT ) ;ENUMERATION_CONSTANT
   (|string| STRING_LITERAL FUNC_NAME)
 
 
@@ -198,7 +124,7 @@ token
 
   (|postfix_expression|
    |primary_expression|
-   (|postfix_expression| \[ |expression| \])
+   (|postfix_expression| [ |expression| ])
    (|postfix_expression| \( \))
    (|postfix_expression| \( |argument_expression_list| \))
    (|postfix_expression| |.| IDENTIFIER)
@@ -221,7 +147,13 @@ token
    (SIZEOF \( |type_name| \))
    (ALIGNOF \( |type_name| \)))
 
-  (|unary_operator| & * + - ~ !)
+  (|unary_operator|
+   &
+   *
+   +
+   -
+   ~
+   !)
 
   (|cast_expression|
    |unary_expression|
@@ -283,9 +215,18 @@ token
    |conditional_expression|
    (|unary_expression| |assignment_operator| |assignment_expression|))
 
-  (|assignment_operator| = MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN ADD_ASSIGN
-                         SUB_ASSIGN LEFT_ASSIGN RIGHT_ASSIGN AND_ASSIGN
-                         XOR_ASSIGN OR_ASSIGN)
+  (|assignment_operator|
+   =
+   MUL_ASSIGN
+   DIV_ASSIGN
+   MOD_ASSIGN
+   ADD_ASSIGN
+   SUB_ASSIGN
+   LEFT_ASSIGN
+   RIGHT_ASSIGN
+   AND_ASSIGN
+   XOR_ASSIGN
+   OR_ASSIGN)
 
   (|expression|
    |assignment_expression|
@@ -295,40 +236,64 @@ token
    |conditional_expression|)
 
   (|declaration|
-   (|declaration_specifiers| |init_declarator_list| \;  #|#'c-trace|#) ; #'c-declaration
-   (|declaration_specifiers| \;                         #|#'c-trace|#)
-   (|static_assert_declaration|                         #|#'c-trace|#))
+   (|declaration_specifiers| \;)
+   (|declaration_specifiers| |init_declarator_list| \;)
+   |static_assert_declaration|)
 
-  (|declaration_specifier|
-   |storage_class_specifier|
-   |type_specifier|         
-   |type_qualifier|         
-   |function_specifier|     
-   |alignment_specifier|)
-  
   (|declaration_specifiers|
-   (|declaration_specifier|)
-   (|declaration_specifiers| |declaration_specifier|  #|#'c-trace|#))
+   (|storage_class_specifier| |declaration_specifiers|)
+   |storage_class_specifier|
+   (|type_specifier| |declaration_specifiers|)
+   |type_specifier|
+   (|type_qualifier| |declaration_specifiers|)
+   |type_qualifier|
+   (|function_specifier| |declaration_specifiers|)
+   |function_specifier|
+   (|alignment_specifier| |declaration_specifiers|)
+   |alignment_specifier|)
 
   (|init_declarator_list|
-   (|init_declarator|)
+   |init_declarator|
    (|init_declarator_list| \, |init_declarator|))
 
   (|init_declarator|
-   (|declarator| = |initializer| #|#'c-trace|#)
-   (|declarator|                 #|#'c-trace|#))
+   (|declarator| = |initializer|)
+   |declarator|)
 
-  (|storage_class_specifier| TYPEDEF EXTERN STATIC THREAD_LOCAL AUTO REGISTER)
-  (|type_specifier| VOID CHAR SHORT INT LONG FLOAT DOUBLE SIGNED UNSIGNED BOOL
-                    COMPLEX IMAGINARY |atomic_type_specifier| |struct_or_union_specifier|
-                    |enum_specifier| TYPEDEF_NAME)
+  (|storage_class_specifier|
+   TYPEDEF
+   EXTERN
+   STATIC
+   THREAD_LOCAL
+   AUTO
+   REGISTER)
+
+  (|type_specifier|
+   VOID
+   CHAR
+   SHORT
+   INT
+   LONG
+   FLOAT
+   DOUBLE
+   SIGNED
+   UNSIGNED
+   BOOL
+   COMPLEX
+   IMAGINARY
+   |atomic_type_specifier|
+   |struct_or_union_specifier|
+   |enum_specifier|
+   TYPEDEF_NAME)
 
   (|struct_or_union_specifier|
    (|struct_or_union| { |struct_declaration_list| })
    (|struct_or_union| IDENTIFIER { |struct_declaration_list| })
    (|struct_or_union| IDENTIFIER))
 
-  (|struct_or_union| STRUCT UNION)
+  (|struct_or_union|
+   STRUCT
+   UNION)
 
   (|struct_declaration_list|
    |struct_declaration|
@@ -365,36 +330,29 @@ token
    |enumerator|
    (|enumerator_list| \, |enumerator|))
 
+  (|enumeration_constant|
+   IDENTIFIER)
+
   (|enumerator|
    (|enumeration_constant| = |constant_expression|)
    |enumeration_constant|)
 
-  (|atomic_type_specifier|
-   (ATOMIC \( |type_name| \)))
-
-  (|type_qualifier| CONST RESTRICT VOLATILE ATOMIC)
-
-  (|function_specifier| INLINE NORETURN)
-
-  (|alignment_specifier|
-   (ALIGNAS \( |type_name| \))
-   (ALIGNAS \( |constant_expression| \)))
-
-  (|declarator|
-   (|pointer| |direct_declarator|    #|#'c-trace|#)
-   (|direct_declarator|              #|#'c-trace|#))
+    (|declarator|
+   (|pointer| |direct_declarator|)
+   |direct_declarator|)
 
   (|direct_declarator|
-   (IDENTIFIER                       #|#'c-trace|#)
+   IDENTIFIER
    (\( |declarator| \))
-   (|direct_declarator| \[ \])
-   (|direct_declarator| \[ * \])
-   (|direct_declarator| \[ STATIC |assignment_expression| \])
-   (|direct_declarator| \[ |type_qualifier_list| * \])
-   (|direct_declarator| \[ |type_qualifier_list| STATIC |assignment_expression| \])
-   (|direct_declarator| \[ |type_qualifier_list| |assignment_expression| \])
-   (|direct_declarator| \[ |type_qualifier_list| \])
-   (|direct_declarator| \[ |assignment_expression| \])
+   (|direct_declarator| [ ])
+   (|direct_declarator| [ * ])
+   (|direct_declarator| [ STATIC |type_qualifier_list| |assignment_expression| ])
+   (|direct_declarator| [ STATIC |assignment_expression| ])
+   (|direct_declarator| [ |type_qualifier_list| * ])
+   (|direct_declarator| [ |type_qualifier_list| STATIC |assignment_expression| ])
+   (|direct_declarator| [ |type_qualifier_list| |assignment_expression| ])
+   (|direct_declarator| [ |type_qualifier_list| ])
+   (|direct_declarator| [ |assignment_expression| ])
    (|direct_declarator| \( |parameter_type_list| \))
    (|direct_declarator| \( \))
    (|direct_declarator| \( |identifier_list| \)))
@@ -437,22 +395,22 @@ token
 
   (|direct_abstract_declarator|
    (\( |abstract_declarator| \))
-   (\[ \])
-   (\[ * \])
-   (\[ STATIC |type_qualifier_list| |assignment_expression| \])
-   (\[ STATIC |assignment_expression| \])
-   (\[ |type_qualifier_list| STATIC |assignment_expression| \])
-   (\[ |type_qualifier_list| |assignment_expression| \])
-   (\[ |type_qualifier_list| \])
-   (\[ |assignment_expression| \])
-   (|direct_abstract_declarator| \[ \])
-   (|direct_abstract_declarator| \[ * \])
-   (|direct_abstract_declarator| \[ STATIC |type_qualifier_list| |assignment_expression| \])
-   (|direct_abstract_declarator| \[ STATIC |assignment_expression| \])
-   (|direct_abstract_declarator| \[ |type_qualifier_list| |assignment_expression| \])
-   (|direct_abstract_declarator| \[ |type_qualifier_list| STATIC |assignment_expression| \])
-   (|direct_abstract_declarator| \[ |type_qualifier_list| \])
-   (|direct_abstract_declarator| \[ |assignment_expression| \])
+   ([ ])
+   ([ * ])
+   ([ STATIC |type_qualifier_list| |assignment_expression| ])
+   ([ STATIC |assignment_expression| ])
+   ([ |type_qualifier_list| STATIC |assignment_expression| ])
+   ([ |type_qualifier_list| |assignment_expression| ])
+   ([ |type_qualifier_list| ])
+   ([ |assignment_expression| ])
+   (|direct_abstract_declarator| [ ])
+   (|direct_abstract_declarator| [ * ])
+   (|direct_abstract_declarator| [ STATIC |type_qualifier_list| |assignment_expression| ])
+   (|direct_abstract_declarator| [ STATIC |assignment_expression| ])
+   (|direct_abstract_declarator| [ |type_qualifier_list| |assignment_expression| ])
+   (|direct_abstract_declarator| [ |type_qualifier_list| STATIC |assignment_expression| ])
+   (|direct_abstract_declarator| [ |type_qualifier_list| ])
+   (|direct_abstract_declarator| [ |assignment_expression| ])
    (\( \))
    (\( |parameter_type_list| \))
    (|direct_abstract_declarator| \( \))
@@ -477,12 +435,12 @@ token
    (|designator_list| |designator|))
 
   (|designator|
-   (\[ |constant_expression| \])
+   ([ |constant_expression| ])
    (|.| IDENTIFIER))
 
   (|static_assert_declaration|
    (STATIC_ASSERT \( |constant_expression| \, STRING_LITERAL \) \;))
-  
+
   (|statement|
    |labeled_statement|
    |compound_statement|
@@ -519,10 +477,10 @@ token
 
   (|iteration_statement|
    (WHILE \( |expression| \) |statement|)
-   (DO |statement| WHILE  \( |expression| \) \;)
-   (FOR \( |expression_statement| |expression_statement| \) |statement|)
+   (DO |statement| WHILE \( |expression| \) \;)
+   (FOR \( |expression_statement| |expression_statement|              \) |statement|)
    (FOR \( |expression_statement| |expression_statement| |expression| \) |statement|)
-   (FOR \( |declaration| |expression_statement| \) |statement|)
+   (FOR \( |declaration| |expression_statement|              \) |statement|)
    (FOR \( |declaration| |expression_statement| |expression| \) |statement|))
 
   (|jump_statement|
@@ -542,18 +500,42 @@ token
 
   (|function_definition|
    (|declaration_specifiers| |declarator| |declaration_list| |compound_statement|)
-   (|declaration_specifiers| |declarator| |compound_statement|))
+   (|declaration_specifiers| |declarator|                    |compound_statement|))
 
   (|declaration_list|
    |declaration|
-   (|declaration_list| |declaration|)))
+   (|declaration_list| |declaration|))
 
+  
+  )
 
 
 #-(and)
-(let ((*context* (make-instance 'context)))
-  (values (parse-with-lexer (make-list-lexer *tc*) *c11-parser*)
-          *context*))
-
-
-;;;; THE END ;;;;
+(let ((*PRINT-PRETTY*   nil)
+      (*PRINT-LEVEL*   nil)
+      (*PRINT-LENGTH*   nil)
+      (*PRINT-CIRCLE*   nil)
+      (*PRINT-CASE*   :upcase)
+      (*PRINT-READABLY*)
+      (*PRINT-GENSYM*   T)
+      (*PRINT-BASE*   10 )
+      (*PRINT-RADIX*   nil)
+      (*PRINT-ARRAY*   T)
+      (*PRINT-LINES*   nil)
+      (*PRINT-ESCAPE*   T)
+      (*PRINT-RIGHT-MARGIN*   110))
+ (pprint
+  (mapcar (lambda (prod)
+            `(--> ,(first prod)
+                  ,(case (length (rest prod))
+                     ((0) '(seq))
+                     ((1) (if (listp (second prod))
+                              `(seq ,@(second prod))
+                              (second prod)))
+                     (otherwise
+                      `(alt ,@(mapcar (lambda (rhs)
+                                        (if (listp rhs)
+                                            `(seq ,@rhs)
+                                            rhs))
+                                      (rest prod)))))))
+          '())))
