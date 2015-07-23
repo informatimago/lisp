@@ -40,19 +40,14 @@
 
 
 (define-condition parser-error (error)
-  ((line    :initarg :line    :initform 1   :reader parser-error-line)
-   (column  :initarg :column  :initform 0   :reader parser-error-column)
-   (grammar :initarg :grammar :initform nil :reader parser-error-grammar)
-   (scanner :initarg :scanner :initform nil :reader parser-error-scanner)
-   (non-terminal-stack :initarg :non-terminal-stack
-                       :initform '()
-                       :reader parser-error-non-terminal-stack)
-   (format-control     :initarg :format-control
-                       :initform ""
-                       :reader parser-error-format-control)
-   (format-arguments   :initarg :format-arguments
-                       :initform '()
-                       :reader parser-error-format-arguments))
+  ((file               :initarg :file                :initform nil :reader parser-error-file)
+   (line               :initarg :line                :initform 1   :reader parser-error-line)
+   (column             :initarg :column              :initform 0   :reader parser-error-column)
+   (grammar            :initarg :grammar             :initform nil :reader parser-error-grammar)
+   (scanner            :initarg :scanner             :initform nil :reader parser-error-scanner)
+   (non-terminal-stack :initarg :non-terminal-stack  :initform '() :reader parser-error-non-terminal-stack)
+   (format-control     :initarg :format-control      :initform ""  :reader parser-error-format-control)
+   (format-arguments   :initarg :format-arguments    :initform '() :reader parser-error-format-arguments))
   (:report print-parser-error))
 
 (defmethod print-parser-error ((err parser-error) stream)
@@ -60,14 +55,19 @@
   (format stream
           "~&~@[~A:~]~D:~D: ~?~%"
           (let ((source (scanner-source (parser-error-scanner err))))
-            (unless (stringp source) (ignore-errors (pathname source))))
+            (typecase source
+              ((or string file-stream) (or (ignore-errors (pathname source))
+                                           (parser-error-file err)))
+              (t                       (parser-error-file err))))
           (parser-error-line err)
           (parser-error-column err)
           (parser-error-format-control err)
           (parser-error-format-arguments err)))
 
 (define-condition parser-end-of-source-not-reached (parser-error)
-  ())
+  ()
+  (:default-initargs
+   :format-control "Parsing finished before end-of-source."))
 
 
 
@@ -130,28 +130,12 @@
 
 
 (defmethod accept ((scanner rdp-scanner) token)
-  (if (word-equal token (scanner-current-token scanner))
-      (prog1 (list (token-kind (scanner-current-token scanner))
-                   (scanner-current-text scanner)
-                   (scanner-column scanner))
-        (scan-next-token scanner))
-      (error 'unexpected-token-error
-             :line   (scanner-line   scanner)
-             :column (scanner-column scanner)
-             :state  (scanner-state  scanner)
-             :current-token (scanner-current-token scanner)
-             :scanner scanner
-             :non-terminal-stack (copy-list *non-terminal-stack*)
-             :expected-token token
-             :format-control "Expected ~S, not ~A (~S)~%~S~%" ;; "~{~A --> ~S~}"
-             :format-arguments (list
-                                token
-                                (scanner-current-token scanner)
-                                (scanner-current-text scanner)
-                                *non-terminal-stack*
-                                ;; (assoc (first *non-terminal-stack*)
-                                ;;        ',(grammar-rules grammar))
-                                ))))
+  (unless (word-equal token (scanner-current-token scanner))
+    (error-unexpected-token scanner token nil))
+  (prog1 (list (token-kind (scanner-current-token scanner))
+               (scanner-current-text scanner)
+               (scanner-column scanner))
+    (scan-next-token scanner)))
 
 
 ;;;; THE END ;;;;

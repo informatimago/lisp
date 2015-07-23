@@ -650,117 +650,6 @@ rules and new produtions.  Returns the new production set.
 ;;; Generator -- LISP
 ;;;
 
-;; (defvar *boilerplate-generated* nil)
-;; ;; (setf *boilerplate-generated* nil)
-;; 
-;; 
-;; (defmethod generate-boilerplate ((target (eql :lisp)) (grammar grammar) &key (trace nil))
-;;   (declare (ignore trace))
-;;   (if *boilerplate-generated*
-;;       nil
-;;       (progn
-;;         (setf *boilerplate-generated* t)
-;;         `(progn
-;; 
-;;            (defvar *non-terminal-stack* '()
-;;              "For error reporting.")
-;; 
-;;            (define-condition parser-error (error)
-;;              ((line    :initarg :line    :initform 1   :reader parser-error-line)
-;;               (column  :initarg :column  :initform 0   :reader parser-error-column)
-;;               (grammar :initarg :grammar :initform nil :reader parser-error-grammar)
-;;               (scanner :initarg :scanner :initform nil :reader parser-error-scanner)
-;;               (non-terminal-stack :initarg :non-terminal-stack
-;;                                   :initform '()
-;;                                   :reader parser-error-non-terminal-stack)
-;;               (format-control     :initarg :format-control
-;;                                   :initform ""
-;;                                   :reader parser-error-format-control)
-;;               (format-arguments   :initarg :format-arguments
-;;                                   :initform '()
-;;                                   :reader parser-error-format-arguments))
-;;              (:report print-parser-error))
-;; 
-;;            (defmethod print-parser-error ((err parser-error) stream)
-;;              (format stream
-;;                      "~&~@[~A:~]~D:~D: ~?~%"
-;;                      (let ((source (scanner-source (parser-error-scanner err))))
-;;                        (unless (stringp source) (ignore-errors (pathname source))))
-;;                      (parser-error-line err)
-;;                      (parser-error-column err)
-;;                      (parser-error-format-control err)
-;;                      (parser-error-format-arguments err)))
-;; 
-;;            (define-condition parser-end-of-source-not-reached (parser-error)
-;;              ())
-;; 
-;;            (define-condition parser-error-unexpected-token (parser-error)
-;;              ((expected-token :initarg :expected-token
-;;                               :initform nil
-;;                               :reader parser-error-expected-token)))
-;; 
-;; 
-;;            (defclass rdp-scanner (scanner)
-;;              ((buffer       :accessor scanner-buffer
-;;                             :type     (or null string)
-;;                             :initform nil)
-;;               (current-text :accessor scanner-current-text
-;;                             :initform "")))
-;; 
-;;            (defmethod scanner-current-token ((scanner rdp-scanner))
-;;              (token-kind (call-next-method)))
-;; 
-;;            (defmethod scanner-end-of-source-p ((scanner rdp-scanner))
-;;              (and (or (null (scanner-buffer scanner))
-;;                       (<= (length (scanner-buffer scanner))
-;;                           (scanner-column scanner)))
-;;                   (let ((ps  (slot-value scanner 'stream)))
-;;                    (not (ungetchar ps (getchar ps))))))
-;; 
-;;            (defmethod advance-line ((scanner rdp-scanner))
-;;              "RETURN: The new current token, old next token"
-;;              (cond
-;;                ((scanner-end-of-source-p scanner)
-;;                 #|End of File -- don't move.|#)
-;;                ((setf (scanner-buffer scanner) (readline (slot-value scanner 'stream)))
-;;                 ;; got a line -- advance a token.
-;;                 (setf (scanner-column scanner) 0)
-;;                 (incf (scanner-line   scanner))
-;;                 (setf (scanner-current-token scanner) nil
-;;                       (scanner-current-text  scanner) "")
-;;                 (scan-next-token scanner))
-;;                (t
-;;                 ;; Just got EOF
-;;                 (setf (scanner-current-token scanner) '|<END OF FILE>|
-;;                       (scanner-current-text  scanner) "<END OF FILE>")))
-;;              (scanner-current-token scanner))
-;; 
-;;            (defmethod accept ((scanner rdp-scanner) token)
-;;              (if (word-equal token (scanner-current-token scanner))
-;;                  (prog1 (list (token-kind (scanner-current-token scanner))
-;;                               (scanner-current-text scanner)
-;;                               (scanner-column scanner))
-;;                    (scan-next-token scanner))
-;;                  (error 'parser-error-unexpected-token
-;;                         :line   (scanner-line scanner)
-;;                         :column (scanner-column scanner)
-;;                         :grammar (grammar-named ',(grammar-name grammar))
-;;                         :scanner scanner
-;;                         :non-terminal-stack (copy-list *non-terminal-stack*)
-;;                         :expected-token token
-;;                         :format-control "Expected ~S, not ~A (~S)~%~S~%~{~A --> ~S~}"
-;;                         :format-arguments (list
-;;                                            token
-;;                                            (scanner-current-token scanner)
-;;                                            (scanner-current-text scanner)
-;;                                            *non-terminal-stack*
-;;                                            (assoc (first *non-terminal-stack*)
-;;                                                   ',(grammar-rules grammar))))))
-;; 
-
-
-
-
 (defgeneric gen-scanner-function-name (target grammar))
 (defgeneric gen-scanner-class-name    (target grammar))
 (defgeneric gen-parse-function-name   (target grammar non-terminal))
@@ -870,6 +759,46 @@ rules and new produtions.  Returns the new production set.
      ;; (print *non-terminal-stack*)
      ,@body))
 
+(defun error-unexpected-token (scanner expected-tokens production)
+  (restart-case
+      (error 'unexpected-token-error
+             :file    (scanner-file scanner)
+             :line    (scanner-line scanner)
+             :column  (scanner-column scanner)
+             :state   (scanner-state  scanner)
+             ;; :grammar (grammar-named ',(grammar-name grammar))
+             :scanner scanner
+             :non-terminal-stack (copy-list *non-terminal-stack*)
+             :expected-token expected-tokens
+             :format-control "Unexpected token ~S (~S)~@[~%Expected ~S~]~%~S~@[~%~{~A --> ~S~}~]"
+             :format-arguments (list
+                                (scanner-current-token scanner)
+                                (scanner-current-text scanner)
+                                expected-tokens
+                                *non-terminal-stack*
+                                production))
+    (skip-token-and-continue ()
+      :report (lambda (stream)
+                (format stream "Skip token ~:[~A ~A~;~*<~A>~], and continue"
+                        (string= (scanner-current-token scanner)
+                                 (scanner-current-text scanner))
+                        (scanner-current-token scanner)
+                        (scanner-current-text scanner)))
+      (scan-next-token scanner)
+      (return-from error-unexpected-token :continue))
+    (skip-tokens-until-expected-and-retry ()
+      :report (lambda (stream)
+                (format stream "Skip tokens until one expected ~A is found, and retry"
+                        expected-tokens))
+      (loop
+        :for token := (scan-next-token scanner)
+        :while (and token (if (listp expected-tokens)
+                              (member token expected-tokens
+                                      :test (function word-equal))
+                              (word-equal token expected-tokens))))
+      (return-from error-unexpected-token :retry))))
+
+
 (defmethod gen-parse-function-name ((target (eql :lisp)) (grammar grammar) non-terminal)
   (intern (format nil "~:@(~A/PARSE-~A~)" (grammar-name grammar) non-terminal)))
 
@@ -888,80 +817,82 @@ rules and new produtions.  Returns the new production set.
                  (first-set grammar extended-sentence)
                  (ecase (car extended-sentence)
                    ((seq) (loop
-                             :with all-firsts = '()
-                             :for item :in (second extended-sentence)
-                             :for firsts = (es-first-set item)
-                             :do (setf all-firsts (union firsts (delete nil all-firsts)))
-                             :while (member nil firsts)
-                             :finally (return all-firsts)))
+                            :with all-firsts = '()
+                            :for item :in (second extended-sentence)
+                            :for firsts = (es-first-set item)
+                            :do (setf all-firsts (union firsts (delete nil all-firsts)))
+                            :while (member nil firsts)
+                            :finally (return all-firsts)))
                    ((rep) (es-first-set (first (second extended-sentence))))
                    ((opt) (union '(nil) (es-first-set (first (second extended-sentence)))))
                    ((alt) (reduce (function union) (second extended-sentence)
                                   :key (function es-first-set)))))))
-   (if (atom item)
-       (if (terminalp grammar item)
-           `(accept scanner ',item)
-           (let* ((firsts (es-first-set item))
-                  (emptyp (member nil firsts)))
-             (if emptyp
-                 `(when ,(gen-in-firsts target (remove nil firsts))
-                    (,(gen-parse-function-name target grammar item) scanner))
-                 `(if ,(gen-in-firsts target (remove nil firsts))
-                      (,(gen-parse-function-name target grammar item) scanner)
-                      (error 'unexpected-token-error
-                             :line    (scanner-line scanner)
-                             :column  (scanner-column scanner)
-                             ;; :grammar (grammar-named ',(grammar-name grammar))
-                             :scanner scanner
-                             :non-terminal-stack (copy-list *non-terminal-stack*)
-                             :format-control "Unexpected token ~S~%~S~%~{~A --> ~S~}"
-                             :format-arguments (list
-                                                (scanner-current-token scanner)
-                                                *non-terminal-stack*
-                                                ',(assoc item (grammar-rules grammar))))))))
-       (ecase (car item)
-         ((seq)
-          (destructuring-bind (seq items actions) item
-            (declare (ignore seq))
-            (let ((dollars (loop
-                             :for i :from 1 :to (length items)
-                             :collect (intern (format nil "$~D" i))))
-                  (ignorables '()))
-              `(let ,(mapcar (lambda (dollar item)
-                               `(,dollar ,(gen-parsing-statement target grammar item)))
-                             dollars items)
-                 (let (($0 (list ,@dollars))
-                       ;; new:
-                       ,@ (let ((increments (make-hash-table)))
-                            (mapcan (lambda (dollar item)
-                                      (when (and (symbolp item)
-                                                 (or (non-terminal-p grammar item)
-                                                     (terminalp grammar item)))
-                                        (let* ((index  (incf (gethash item increments 0)))
-                                               (igno   (intern (format nil "~:@(~A.~A~)" item index))))
-                                          (pushnew item ignorables)
-                                          (push    igno ignorables)
-                                          (append (when (= 1 index)
-                                                    (list (list item dollar)))
-                                                  (list (list igno dollar))))))
-                                    dollars items))
-                       ;; ---
-                       )
-                   (declare (ignorable $0 ,@ignorables))
-                   ,@actions)))))
-         ((rep)
-          `(loop
+    (if (atom item)
+        (if (terminalp grammar item)
+            `(accept scanner ',item)
+            (let* ((firsts          (es-first-set item))
+                   (emptyp          (member nil firsts))
+                   (expected-tokens (remove nil firsts)))
+              (if emptyp
+                  `(when ,(gen-in-firsts target expected-tokens)
+                     (,(gen-parse-function-name target grammar item) scanner))
+                  `(loop                ; retrying
+                                        :until ,(gen-in-firsts target expected-tokens)
+                                        :do (ecase (error-unexpected-token scanner
+                                                                           ',expected-tokens
+                                                                           ',(assoc item (grammar-rules grammar)))
+                                              (:retry)
+                                              (:continue (loop-finish)))
+                                        :finally (return (,(gen-parse-function-name target grammar item) scanner))))))
+        (ecase (car item)
+          ((seq)
+           (destructuring-bind (seq items actions) item
+             (declare (ignore seq))
+             (let ((dollars (loop
+                              :for i :from 1 :to (length items)
+                              :collect (intern (format nil "$~D" i))))
+                   (ignorables '()))
+               `(let ,(mapcar (lambda (dollar item)
+                                `(,dollar ,(gen-parsing-statement target grammar item)))
+                       dollars items)
+                  (let (($0 (list ,@dollars))
+                        ;; new:
+                        ,@ (let ((increments (make-hash-table)))
+                             (mapcan (lambda (dollar item)
+                                       (when (and (symbolp item)
+                                                  (or (non-terminal-p grammar item)
+                                                      (terminalp grammar item)))
+                                         (let* ((index  (incf (gethash item increments 0)))
+                                                (igno   (intern (format nil "~:@(~A.~A~)" item index))))
+                                           (pushnew item ignorables)
+                                           (push    igno ignorables)
+                                           (append (when (= 1 index)
+                                                     (list (list item dollar)))
+                                                   (list (list igno dollar))))))
+                                     dollars items))
+                        ;; ---
+                        )
+                    (declare (ignorable $0 ,@ignorables))
+                    ,@actions)))))
+          ((rep)
+           `(loop
               :while ,(gen-in-firsts target (es-first-set (first (second item))))
               :collect ,(gen-parsing-statement target grammar (first (second item)))))
-         ((opt)
-          `(when ,(gen-in-firsts target (es-first-set (first (second item))))
-             ,(gen-parsing-statement target grammar (first (second item)))))
-         ((alt)
-          `(cond
-             ,@(mapcar (lambda (item)
-                         `(,(gen-in-firsts target (es-first-set item))
+          ((opt)
+           `(when ,(gen-in-firsts target (es-first-set (first (second item))))
+              ,(gen-parsing-statement target grammar (first (second item)))))
+          ((alt)
+           `(cond
+              ,@(mapcar (lambda (item)
+                          `(,(gen-in-firsts target (es-first-set item))
                             ,(gen-parsing-statement target grammar item)))
-                       (second item))))))))
+                        (second item))
+              (t
+               (error-unexpected-token scanner
+                                       ',(mapcan (lambda (item)
+                                                   (copy-list (es-first-set item)))
+                                                 (second item))
+                                       ',(assoc item (grammar-rules grammar))))))))))
 
 
 (defmethod generate-nt-parser ((target (eql :lisp)) (grammar grammar) non-terminal &key (trace nil))
@@ -988,14 +919,16 @@ SOURCE: When the grammar has a scanner generated, or a scanner class
                                           'source)))
                         (advance-line scanner)
                         (prog1 (,(gen-parse-function-name target grammar (grammar-start grammar))
-                                  scanner)
+                                scanner)
                           (unless (scanner-end-of-source-p scanner)
-                            (error 'parser-end-of-source-not-reached
-                                   :line (scanner-line scanner)
-                                   :column (scanner-column scanner)
-                                   :grammar (grammar-named ',(grammar-name grammar))
-                                   :scanner scanner
-                                   :non-terminal-stack (copy-list *non-terminal-stack*)))))))))
+                            (cerror "Continue"
+                                    'parser-end-of-source-not-reached
+                                    :file (scanner-file scanner)
+                                    :line (scanner-line scanner)
+                                    :column (scanner-column scanner)
+                                    :grammar (grammar-named ',(grammar-name grammar))
+                                    :scanner scanner
+                                    :non-terminal-stack (copy-list *non-terminal-stack*)))))))))
     (gen-trace fname `(progn (fmakunbound ',fname) ,form) trace)))
 
 
