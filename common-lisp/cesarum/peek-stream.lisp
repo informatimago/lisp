@@ -46,7 +46,8 @@
   (:use "COMMON-LISP")
   (:export "PEEK-STREAM" "PEEK-STREAM-SPACES"
            "NEXTCHAR" "UNGETCHAR" "GETCHAR" "READLINE"
-           "GET-FUTURE-CHAR")
+           "GET-FUTURE-CHAR"
+           "PEEK-STREAM-STREAM")
   (:documentation
    "
 
@@ -175,7 +176,8 @@ SEE ALSO:       NEXTCHAR.
 
 
 (defclass peek-stream ()
-  ((instre :reader   instre :initarg :stream  :type stream)
+  ((instre :reader   instre :initarg :stream  :type stream
+           :reader peek-stream-stream)
    (next   :accessor next   :initform  8 :type fixnum)
    (head   :accessor head   :initform  8 :type fixnum)
    (tail   :accessor tail   :initform  8 :type fixnum)
