@@ -51,21 +51,26 @@ The scanner uses it to detect func_name tokens."
                           :initform (make-hash-table :test (function equal))
                           :documentation "Maps identifier symbols to enumeration constant declarations.
 The scanner uses it to detect enumeration_constant tokens."
-                          :reader context-enumeration-constants)))
+                          :reader context-enumeration-constants)
+   (declaration-specifiers :initform '()
+                           :accessor context-declaration-specifiers)))
 
 (defvar *context* nil
   "The C11 parser context.")
 
 (defgeneric typedef-name-p (context token)
   (:method ((context null) token)
+    (declare (ignorable context token))
     nil))
 
 (defgeneric function-name-p (context token)
   (:method ((context null) token)
+    (declare (ignorable context token))
     nil))
 
 (defgeneric enumeration-constant-name-p (context token)
   (:method ((context null) token)
+    (declare (ignorable context token))
     nil))
 
 (defun identifier-in-table-p (context table name)
@@ -75,7 +80,7 @@ The scanner uses it to detect enumeration_constant tokens."
 
 (defun enter-into-table (context table kind name definition)
   (declare (ignore context))
-  (assert (eq kind (token-kind name)) (name))
+  (assert (eq '|identifier| (token-kind name)) (name))
   (setf (gethash (token-symbol name) table) definition))
 
 (defmethod typedef-name-p ((context context) token)
