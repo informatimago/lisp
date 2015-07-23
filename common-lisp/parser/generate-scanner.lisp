@@ -53,10 +53,14 @@
 
 (defmethod print-scanner-error ((err scanner-error) stream)
   (declare (stepper disable))
-  (format stream
-          "~&~@[~A:~]~D:~D: ~?~%"
+  (format stream "~&~@[~A:~]~D:~D: ~?~%"
           (let ((source (scanner-source (scanner-error-scanner err))))
-            (unless (stringp source) (ignore-errors (pathname source))))
+            (typecase source
+              (file-stream  (or (ignore-errors (pathname source))
+                                (scanner-error-file err)))
+              (peek-stream  (or (ignore-errors (pathname (peek-stream-stream source)))
+                                (scanner-error-file err)))
+              (otherwise    (scanner-error-file err))))
           (scanner-error-line err)
           (scanner-error-column err)
           (scanner-error-format-control err)
@@ -130,6 +134,7 @@
                    (scanner-column scanner))
         (scan-next-token scanner))
       (error 'unexpected-token-error
+             :file   (scanner-file scanner)
              :line   (scanner-line scanner)
              :column (scanner-column scanner)
              :scanner scanner
@@ -251,6 +256,7 @@
                  ;; Else we have an error:
                  (t
                   (error 'scanner-error-invalid-character
+                         :file   (scanner-file   scanner)
                          :line   (scanner-line   scanner)
                          :column (scanner-column scanner)
                          :state  (scanner-state  scanner)

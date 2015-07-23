@@ -111,6 +111,8 @@
 ;; they can change in the scanner object between the condition
 ;; creation and its handling.
 
+(defgeneric scanner-error-file (error)
+  (:documentation "The file in which the scanner error was detected."))
 (defgeneric scanner-error-line (error)
   (:documentation "The line on which the scanner error was detected."))
 (defgeneric scanner-error-column (error)
@@ -130,15 +132,17 @@
   (:documentation "The invalid character that made the scanner error."))
 
 (define-condition scanner-error (simple-error)
-  ((line             :initarg :line             :initform 1   :reader scanner-error-line
+  ((file             :initarg :file             :initform "<stdin>"             :reader scanner-error-file
+                     :documentation "The path of the file.")
+   (line             :initarg :line             :initform 1                     :reader scanner-error-line
                      :documentation "The number of the line. First line is line number 1.")
-   (column           :initarg :column           :initform 1   :reader scanner-error-column
+   (column           :initarg :column           :initform 1                     :reader scanner-error-column
                      :documentation "The number of the column.  First column is column number 1.")
-   (state            :initarg :state            :initform 0   :reader scanner-error-state)
-   (current-token    :initarg :current-token    :initform nil :reader scanner-error-current-token)
-   (scanner          :initarg :scanner                        :reader scanner-error-scanner)
-   (format-control   :initarg :format-control   :initform ""  :reader scanner-error-format-control)
-   (format-arguments :initarg :format-arguments :initform '() :reader scanner-error-format-arguments))
+   (state            :initarg :state            :initform 0                     :reader scanner-error-state)
+   (current-token    :initarg :current-token    :initform nil                   :reader scanner-error-current-token)
+   (scanner          :initarg :scanner                                          :reader scanner-error-scanner)
+   (format-control   :initarg :format-control   :initform ""                    :reader scanner-error-format-control)
+   (format-arguments :initarg :format-arguments :initform '()                   :reader scanner-error-format-arguments))
   (:documentation "A scanner error."))
 
 
@@ -149,6 +153,8 @@
 
 (defgeneric scanner-source (scanner)
   (:documentation "The source can be a PEEK-STREAM, a STREAM, or a STRING."))
+(defgeneric scanner-file (scanner)
+  (:documentation "The namestring of the current file being scanned."))
 (defgeneric scanner-line (scanner)
   (:documentation "The number of the current line."))
 (defgeneric scanner-column (scanner)
@@ -171,6 +177,11 @@
                          :reader        scanner-stream
                          :documentation "The source is wrapped into this PEEK-STREAM.
 Subclasses may use scanner-stream to read from the source.")
+   (file                 :initarg       :file
+                         :accessor      scanner-file
+                         :type          string
+                         :initform      "<stdin>"
+                         :documentation "The namestring of the current file.")
    (line                 :initarg       :line
                          :accessor      scanner-line
                          :type          integer
