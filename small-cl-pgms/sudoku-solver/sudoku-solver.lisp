@@ -85,12 +85,10 @@
   (loop
     :with bac = (* (truncate col 3) 3)
     :with bar = (* (truncate row 3) 3)
-    :for i :from bac
-    :repeat 3
+    :for i :from bac :below (+ bac 3)
     :nconc (loop
-             :for j :from bar
+             :for j :from bar :below (+ bar 3)
              :for item = (aref sudoku i j)
-             :repeat 3
              :unless (emptyp item)
              :collect item)))
 
@@ -184,20 +182,20 @@ RETURN:  If an extremum is found: the extremum value; the row; the column;
     (loop
       :for i :below (array-dimension sudoku 0)
       :when (and (/= i col) (eql val (aref sudoku i row)))
-      :do (return-from conflictp :row-conflict))
+        :do (return-from conflictp :row-conflict))
     (loop
       :for j :below (array-dimension sudoku 1)
       :when (and (/= j row) (eql val (aref sudoku col j)))
-      :do (return-from conflictp :col-conflict))
+        :do (return-from conflictp :col-conflict))
     (loop
-      :for i :from (* (truncate col 3) 3)
-      :repeat 3
+      :with from := (* (truncate col 3) 3)
+      :for i :from from :below (+ from 3)
       :when (/= i col)
-      :do (loop
-            :for j :from (* (truncate row 3) 3)
-            :repeat 3
-            :when (and (/= j row) (eql val (aref sudoku i j)))
-            :do (return-from conflictp :reg-conflict)))
+        :do (loop
+              :with from := (* (truncate row 3) 3)
+              :for j :from from :below (+ from 3)
+              :when (and (/= j row) (eql val (aref sudoku i j)))
+                :do (return-from conflictp :reg-conflict)))
     nil))
 
 
@@ -264,11 +262,11 @@ RETURN:     A list of sudoku solutions boards.
                            (throw 'sudoku-backtrack nil))))
                   (loop
                     :named update-reg
-                    :for col :from (* (truncate i 3) 3)
-                    :repeat 3
+                    :with from := (* (truncate i 3) 3)
+                    :for col :from from :below (+ from 3)
                     :do (loop
-                          :for row :from (* (truncate j 3) 3)
-                          :repeat 3
+                          :with from := (* (truncate j 3) 3)
+                          :for row :from from :below (+ from 3)
                           :do (cond
                                 ((and (= col i) (= row j)))
                                 ((listp (aref sudoku col row))
