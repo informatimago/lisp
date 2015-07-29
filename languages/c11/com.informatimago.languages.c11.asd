@@ -53,6 +53,7 @@
                "com.informatimago.common-lisp.scanner"
                "com.informatimago.tools.reader-macro"
                "com.informatimago.languages.cpp"
+               "com.informatimago.rdp"
                "yacc")
   :components ((:file "packages"        :depends-on  ())
                (:file "context"         :depends-on  ("packages"))
