@@ -31,7 +31,7 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
-(in-package "COM.INFORMATIMAGO.LANGUAGES.C11.PARSER")
+(in-package "COM.INFORMATIMAGO.LANGUAGES.C11.CONTEXT")
 
 (defclass context ()
   ((c-identifiers-package :initarg :c-identifiers-package
@@ -79,7 +79,7 @@ The scanner uses it to detect enumeration_constant tokens."
        (gethash (token-symbol name) table)))
 
 (defun enter-into-table (context table kind name definition)
-  (declare (ignore context))
+  (declare (ignore context kind))
   (assert (eq '|identifier| (token-kind name)) (name))
   (setf (gethash (token-symbol name) table) definition))
 
@@ -105,3 +105,4 @@ The scanner uses it to detect enumeration_constant tokens."
     (enter-into-table context (context-enumeration-constants context) '|enum_name| name definition)))
 
 ;;;; THE END ;;;;
+

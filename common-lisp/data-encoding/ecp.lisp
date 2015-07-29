@@ -269,18 +269,18 @@ RETURN:     NIL;         next; NIL;          STATS -- in case of incomplete or e
     (flet ((process-block ()
              ;; (print `(process-block :ecp ,ecp :start ,start :end ,end :b ,b :c ,c :count ,count :stats ,stats)) (finish-output)
              (loop :named accumulates-until-end-of-block
-                :while (and (plusp c) (< (ecp-count ecp) +ecp-block-size+))
-                :do                       ;; check parity errors
-                (when (/= (aref buffer b) (even-parity (aref buffer b)))
-                  (when (< (ecp-parity-errors ecp) 2)
-                    (when (zerop (ecp-parity-errors ecp))
-                      (setf (ecp-parity-index ecp) (ecp-count ecp)))
-                    (incf (ecp-parity-errors ecp)))
-                  (incf (statistics-parity-errors stats)))
-                (setf (aref (ecp-block ecp) (ecp-count ecp)) (aref buffer b))
-                (incf (ecp-count ecp))
-                (incf b)
-                (decf c))
+                   :while (and (plusp c) (< (ecp-count ecp) +ecp-block-size+))
+                   :do ;; check parity errors
+                       (when (/= (aref buffer b) (even-parity (aref buffer b)))
+                         (when (< (ecp-parity-errors ecp) 2)
+                           (when (zerop (ecp-parity-errors ecp))
+                             (setf (ecp-parity-index ecp) (ecp-count ecp)))
+                           (incf (ecp-parity-errors ecp)))
+                         (incf (statistics-parity-errors stats)))
+                       (setf (aref (ecp-block ecp) (ecp-count ecp)) (aref buffer b))
+                       (incf (ecp-count ecp))
+                       (incf b)
+                       (decf c))
              (incf (statistics-bytes-received stats) (- count c))
              (setf count c)
              (cond
@@ -328,7 +328,7 @@ RETURN:     NIL;         next; NIL;          STATS -- in case of incomplete or e
                            ;; 	but we don't care and don't correct the CRC byte when rank<7 because 
                            ;; 	the CRC byte is not used thereafter.
                            (if (= index (ecp-parity-index ecp))
-                               (progn     ; corrected block
+                               (progn   ; corrected block
                                  (incf (statistics-corrected-count stats))
                                  (setf (aref (ecp-block ecp) index) (logxor (aref (ecp-block ecp) index)
                                                                             (ash 1 (mod (1+ rank) 8))))
@@ -339,7 +339,7 @@ RETURN:     NIL;         next; NIL;          STATS -- in case of incomplete or e
                                          (ecp-state ecp) :ecp-start)
                                    (return-from process-input-buffer
                                      (values (subseq (ecp-block ecp) 0 cnt) b bn stats))))
-                               (progn     ; uncorrected block
+                               (progn   ; uncorrected block
                                  (incf (statistics-uncorrected-count stats))
                                  (setf (ecp-state ecp) :ecp-start)
                                  (when send-nak (funcall send-nak))))))
@@ -354,54 +354,54 @@ RETURN:     NIL;         next; NIL;          STATS -- in case of incomplete or e
                 ;; (print 'else) (finish-output)
                 ))))
       (loop :while (plusp c) :do
-         (ecase (ecp-state ecp)
-           (:ecp-start
-            (loop :named skip-nuls
-               :while (and (plusp c) (zerop (aref buffer b)))
-               :do (decf c) (incf b))
-            (setf (ecp-state ecp) :ecp-block
-                  (ecp-parity-errors ecp) 0
-                  (ecp-count ecp) 0)
-            (incf (statistics-bytes-received stats) (- count c))
-            (setf count c)
-            (process-block))
-           (:ecp-block
-            (process-block))
-           (:ecp-syn
-            ;; wait for a SYN SYN 4x sequence
-            (loop :while (and (plusp c) (eql :ecl-syn (ecp-state ecp))) :do
-               (let ((byte (logand (aref buffer b) #x7f)))
-                 (if (= (ecp-count ecp) 2) ; get the 4x
-                     (progn
-                       (when cancel-nak (funcall cancel-nak))
-                       (if (and (= (aref buffer b) (even-parity byte))
-                                (= byte (+ #x40 (ecp-block-number ecp))))
-                           (progn
-                             (incf (statistics-valid-syn-count stats))
-                             (setf (ecp-state ecp) :ecp-start
-                                   (ecp-parity-errors ecp) 0
-                                   (ecp-count ecp) 0))
-                           (progn
-                             (incf (statistics-invalid-syn-count stats))
-                             (when send-nak (funcall send-nak)))))
-                     (progn
-                       (if (= (aref buffer b) (even-parity byte))
-                           (if (= byte #x16) 
-                               (incf (ecp-count ecp)) ; one more SYN
-                               (progn                 ; Not SYN
-                                 (incf (statistics-invalid-syn-count stats) (ecp-count ecp))
-                                 (setf (ecp-count ecp) 0)))
+        (ecase (ecp-state ecp)
+          (:ecp-start
+           (loop :named skip-nuls
+                 :while (and (plusp c) (zerop (aref buffer b)))
+                 :do (decf c) (incf b))
+           (setf (ecp-state ecp) :ecp-block
+                 (ecp-parity-errors ecp) 0
+                 (ecp-count ecp) 0)
+           (incf (statistics-bytes-received stats) (- count c))
+           (setf count c)
+           (process-block))
+          (:ecp-block
+           (process-block))
+          (:ecp-syn
+           ;; wait for a SYN SYN 4x sequence
+           (loop :while (and (plusp c) (eql :ecl-syn (ecp-state ecp))) :do
+             (let ((byte (logand (aref buffer b) #x7f)))
+               (if (= (ecp-count ecp) 2) ; get the 4x
+                   (progn
+                     (when cancel-nak (funcall cancel-nak))
+                     (if (and (= (aref buffer b) (even-parity byte))
+                              (= byte (+ #x40 (ecp-block-number ecp))))
+                         (progn
+                           (incf (statistics-valid-syn-count stats))
+                           (setf (ecp-state ecp) :ecp-start
+                                 (ecp-parity-errors ecp) 0
+                                 (ecp-count ecp) 0))
+                         (progn
+                           (incf (statistics-invalid-syn-count stats))
+                           (when send-nak (funcall send-nak)))))
+                   (progn
+                     (if (= (aref buffer b) (even-parity byte))
+                         (if (= byte #x16) 
+                             (incf (ecp-count ecp)) ; one more SYN
+                             (progn                 ; Not SYN
+                               (incf (statistics-invalid-syn-count stats) (ecp-count ecp))
+                               (setf (ecp-count ecp) 0)))
                                         ; parity error
-                           (progn
-                             (incf (statistics-parity-errors stats))
-                             (when (= byte #x16)
-                               (incf (statistics-invalid-syn-count stats))
-                               (when send-nak (funcall send-nak)))
-                             (setf (ecp-count ecp) 0)))))
-                 (incf b)
-                 (decf c)))
-            (incf (statistics-bytes-received stats) (- count c))
-            (setf count c)))))
+                         (progn
+                           (incf (statistics-parity-errors stats))
+                           (when (= byte #x16)
+                             (incf (statistics-invalid-syn-count stats))
+                             (when send-nak (funcall send-nak)))
+                           (setf (ecp-count ecp) 0)))))
+               (incf b)
+               (decf c)))
+           (incf (statistics-bytes-received stats) (- count c))
+           (setf count c)))))
     (values nil b nil stats)))
 
 

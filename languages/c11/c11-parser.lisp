@@ -815,6 +815,7 @@
   (dolist (form (cdr (macroexpand-1 *c*)))
     (pprint form out)))
 
+(defvar *scanner* nil)
 (defun test/parse-stream (tokens)
   (let ((*scanner* (make-instance 'pre-scanned-scanner :tokens tokens)))
     (loop

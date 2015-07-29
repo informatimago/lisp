@@ -41,9 +41,7 @@
       :with length := (length text)
       :with state  := :top
       :with chunks := '()
-      :with start  := (ecase state
-                        (:top 0)
-                        (:in-multiline-comment length))
+      :with start  := 0
       :with i := 0
       :while (< i length)
       :do (let ((ch (aref text i)))

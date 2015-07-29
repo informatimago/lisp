@@ -104,6 +104,7 @@
      (oct        "0[0-7]+[uUlL]*")
      (dec        "[0-9]+[uUlL]*"))))
 
+(defvar *context*)
 (defun compute-token-kind (token)
   (let ((text  (token-text token)))
     (or (gethash text *c11-literal-tokens-map*)
