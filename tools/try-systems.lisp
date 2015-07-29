@@ -155,6 +155,7 @@
                                                :if-exists :supersede)
                    (let ((*print-pretty*   t)
                          (*print-readably* t))
+                     (format src "(setf *print-right-margin* 160)~%")
                      (format src "(setf asdf:*central-registry* '~S)~%" (quicklisp-registry))))
     :do (loop
           :for asd-system :in systems
