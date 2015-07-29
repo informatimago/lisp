@@ -166,85 +166,100 @@ RETURN: (system distrib release)
 System and distrib are keywords, release is a string."
   (flet ((words (string) (split-sequence-if (lambda (ch) (find ch #(#\space #\tab)))
                                             string :remove-empty-subseqs t)))
-    (let ((system #+windows :windows
-                  ;; #+(and ccl windows-target)
-                  ;; '(:cygwin :unknown "1.7.11,0.260,5,3")
-                  #+linux   :linux
-                  #+darwin  :darwin
-                  #+(and unix (not (or linux darwin)))
-                  (uname)
-                  #-(or windows linux darwin unix)
-                  :unknown)
-         (distrib :unknown)
-         (release :unknown))
-     (case system
-       (:linux
-        (cond
-          ((probe-file "/etc/mandrake-release")
+    (let ((system (or #+windows                            :windows
+                      ;; #+(and ccl windows-target)
+                      ;; '(:cygwin :unknown "1.7.11,0.260,5,3")
+                      #+linux                              :linux
+                      #+darwin                             :darwin
+                      #+(and unix (not (or linux darwin))) (uname)
+                                                           :unknown))
+          (distrib :unknown)
+          (release :unknown))
+      (case system
+        #+(or unix linux)
+        (:linux
+         (cond
            ;; Checked with Linux Mandrake 6.1
-           (setf distrib :mandrake)
-           (setf release (fourth (words (with-open-file (inp "/etc/mandrake-release")
-                                          (read-line inp))))))
-          ((probe-file "/etc/redhat-release")
+           ((with-open-file (inp "/etc/mandrake-release"
+                                 :if-does-not-exist nil)
+              (when inp
+                (setf release (fourth (words (read-line inp)))
+                      distrib :mandrake))))
+
            ;; Checked with Linux RedHat 6.1, 6.2, 7.0
            ;; Checked with Linux Immunix 6.2.
            ;; There seems to be no way to differenciate 
            ;; a RedHat 6.2 from an Immunix 6.2.
-           (setf distrib :redhat)
-           (setf release (fourth (words (with-open-file (inp "/etc/redhat-release")
-                                          (read-line inp))))))
-          ((probe-file "/etc/conectiva-release")
+           ((with-open-file (inp "/etc/redhat-release"
+                                 :if-does-not-exist nil)
+              (when inp
+                (setf release (fourth (words (read-line inp)))
+                      distrib :redhat))))
+
            ;; Checked with Linux Conectiva 6.5
-           (setf distrib :conectiva)
-           (setf release (third (words (with-open-file (inp "/etc/conectiva-release")
-                                         (read-line inp))))))
-          ((probe-file "/etc/SuSE-release")
+           ((with-open-file (inp "/etc/conectiva-release"
+                                 :if-does-not-exist nil)
+              (when inp
+                (setf release (third (words (read-line inp)))
+                      distrib :conectiva))))
+
            ;; Checked with Linux SuSE 7.0, 7.1
-           (setf distrib :suse)
-           (setf release (with-open-file (inp "/etc/SuSE-release")
-                           (loop
-                             :for line = (read-line inp nil nil)
-                             :while line
-                             :when (search "VERSION" line)
-                             :return (subseq line (let ((p (position #\= line)))
-                                                    (if p (1+ p) 0)))
-                             :finally (return :unknown)))))
-          ((probe-file "/etc/debian_version")
+           ((with-open-file (inp  "/etc/SuSE-release"
+                                  :if-does-not-exist nil)
+              (when inp
+                (setf release (loop
+                                :for line = (read-line inp nil nil)
+                                :while line
+                                :when (search "VERSION" line)
+                                  :return (subseq line (let ((p (position #\= line)))
+                                                         (if p (1+ p) 0)))
+                                :finally (return :unknown))
+                      distrib :suse))))
+
            ;; Checked with Linux DebIan 5.0.4
-           (setf distrib :debian)
-           (setf release (with-open-file (inp "/etc/debian_version")
-                           (read-line inp))))
-          ((probe-file "/etc/gentoo-release")
+           ((with-open-file (inp "/etc/debian_version"
+                                 :if-does-not-exist nil)
+              (when inp
+                (setf release (read-line inp)
+                      distrib :debian))))
+
            ;; Checked with Linux gentoo 1.12.9, 1.12.13, 2.0.3
-           (setf distrib :gentoo)
-           (setf release (first (last (words (with-open-file (inp "/etc/gentoo-release")
-                                               (read-line inp)))))))))
-       (:nextstep
-        (setf distrib :next)
-        (setf release (trim (shell-command-to-string "uname -r")))
-        (setf release (or release :unknown)))
-       (:darwin
-        (when (probe-file "/System/Library/Frameworks/AppKit.framework/AppKit")
-          (setf distrib :apple))
-        (let ((hostinfo (shell-command-to-string "hostinfo")))
-          (when hostinfo
-           (setf release (with-input-from-string (inp hostinfo)
-                           (loop
-                             :for line = (read-line inp nil nil)
-                             :while line
-                             :when (search "Darwin Kernel Version" line)
-                               :return (let ((release (fourth (words line))))
-                                         (subseq release 0 (position #\: release)))
-                             :finally (return :unknown))))
-           (setf release :unknown))))
-       (:unknown
-        (let ((host (trim (shell-command-to-string "hostinfo"))))
-          (cond
-            ((prefixp "Mach" host)
-             (let ((words (words host)))
-               (setf distrib (fourth words)
-                     release (sixth words))))))))
-     (list system distrib release))))
+           ((with-open-file (inp "/etc/gentoo-release"
+                                 :if-does-not-exist nil)
+              (when inp
+                (setf release (first (last (words (read-line inp))))
+                      distrib :gentoo))))))
+        #+(or unix)
+        (:nextstep
+         (setf distrib :next)
+         (setf release (trim (shell-command-to-string "uname -r")))
+         (setf release (or release :unknown)))
+        #+(or unix darwin)
+        (:darwin
+         (when (probe-file "/System/Library/Frameworks/AppKit.framework/AppKit")
+           (setf distrib :apple))
+         (let ((hostinfo (shell-command-to-string "hostinfo")))
+           (when hostinfo
+             (setf release (with-input-from-string (inp hostinfo)
+                             (loop
+                               :for line = (read-line inp nil nil)
+                               :while line
+                               :when (search "Darwin Kernel Version" line)
+                                 :return (let ((release (fourth (words line))))
+                                           (subseq release 0 (position #\: release)))
+                               :finally (return :unknown))))
+             (setf release :unknown))))
+        #-(or linux darwin windowd)
+        (:unknown
+         (let ((host (trim (shell-command-to-string "hostinfo"))))
+           (cond
+             ((prefixp "Mach" host)
+              (let ((words (words host)))
+                (setf distrib (fourth words)
+                      release (sixth words))))))))
+      (list system distrib release))))
+
+
 
 
 
