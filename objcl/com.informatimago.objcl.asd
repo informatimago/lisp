@@ -48,7 +48,7 @@ cover generic FFI to both Apple and GNUstep objc2 runtimes.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence    "AGPL3"
   ;; component attributes:
-  :version    "0.10.6"
+  :version    "0.10.7"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Spring 2014")
                ((#:albert #:output-dir)          . "../documentation/com.informatimago.objc/")

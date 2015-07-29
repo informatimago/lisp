@@ -47,7 +47,7 @@ different languages than lisp.
     :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
     :licence "AGPL3"
     ;; component attributes:
-    :version "1.0.8"
+    :version "1.0.9"
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Summer 2015")
                  ((#:albert #:output-dir)          . "../documentation/com.informatimago.rdp/")

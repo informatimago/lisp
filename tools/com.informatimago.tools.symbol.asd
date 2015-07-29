@@ -35,7 +35,7 @@
 (asdf:defsystem "com.informatimago.tools.symbol"
   :description "Symbol tools."
   :author "Pascal J. Bourguignon"
-  :version "1.0.3"
+  :version "1.0.4"
   :license "GPL3"
   :depends-on ("com.informatimago.common-lisp.cesarum") 
   :components ((:file "symbol"))

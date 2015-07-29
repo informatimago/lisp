@@ -46,7 +46,7 @@ This system would use closer-mop which is not available on MOCL.
 
 "
   :author "Pascal J. Bourguignon"
-  :version "1.0.3"
+  :version "1.0.4"
   :license "GPL3"
   :depends-on () 
   :components ()
@@ -56,7 +56,7 @@ This system would use closer-mop which is not available on MOCL.
 (asdf:defsystem "com.informatimago.tools.source"
   :description "Reads sources and headers to perform some analysis."
   :author "Pascal J. Bourguignon"
-  :version "1.0.4"
+  :version "1.0.5"
   :license "GPL3"
   :depends-on ("com.informatimago.common-lisp.cesarum"
                "com.informatimago.common-lisp.picture"

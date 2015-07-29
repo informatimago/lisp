@@ -45,7 +45,7 @@ Playground for Cocoa and ObjCL.
     :maitainer "Pascal J. Bourguignon <pjb@informatimago.com>"
     :licence "AGPL3"
     ;; component attributes:
-    :version "0.7.4"
+    :version "0.7.5"
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Spring 2011")
                  ((#:albert #:output-dir)          . "../documentation/com.informatimago.cocoa-playground/")

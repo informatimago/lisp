@@ -45,7 +45,7 @@ This system would use closer-mop which is not available for MOCL.
     :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
     :licence "LLGPL"
     ;; component attributes:
-    :version "1.0.3"
+    :version "1.0.4"
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Spring 2012")
                  ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.lispdoc/")
@@ -65,7 +65,7 @@ This system would use closer-mop which is not available for MOCL.
     :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
     :licence "LLGPL"
     ;; component attributes:
-    :version "1.0.3"
+    :version "1.0.4"
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Spring 2012")
                  ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.lispdoc/")

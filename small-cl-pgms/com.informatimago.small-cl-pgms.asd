@@ -35,7 +35,7 @@
 (asdf:defsystem "com.informatimago.small-cl-pgms"
   :description "Small Common Lisp Programs"
   :author "Pascal J. Bourguignon"
-  :version "1.0.3"
+  :version "1.0.4"
   :license "GPL3"
   :depends-on ("com.informatimago.small-cl-pgms.brainfuck"
                "com.informatimago.small-cl-pgms.what-implementation"

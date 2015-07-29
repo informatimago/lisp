@@ -36,7 +36,7 @@
 (asdf:defsystem "com.informatimago.future"
   :description "Future Informatimago Projects - Not ready for consumption."
   :author "Pascal J. Bourguignon"
-  :version "1.0.5"
+  :version "1.0.6"
   :license "AGPL3"
   :depends-on () 
   :components ()

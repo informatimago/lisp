@@ -35,7 +35,7 @@
 (asdf:defsystem "com.informatimago.small-cl-pgms.what-implementation"
   :description "A tool to help choosing a Common Lisp implementation."
   :author "Pascal J. Bourguignon"
-  :version "1.0.3"
+  :version "1.0.4"
   :license "GPL3"
   :depends-on () 
   :components ((:file "what-implementation"))

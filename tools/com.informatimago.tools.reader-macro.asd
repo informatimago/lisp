@@ -35,7 +35,7 @@
 (asdf:defsystem "com.informatimago.tools.reader-macro"
   :description "Reader-macro tools."
   :author "Pascal J. Bourguignon"
-  :version "1.0.2"
+  :version "1.0.3"
   :license "GPL3"
   :depends-on () 
   :components ((:file "reader-macro"))

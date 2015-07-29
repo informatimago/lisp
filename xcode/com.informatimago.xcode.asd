@@ -46,7 +46,7 @@ Various Xcode related tools.  For now:
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.0.3"
+  :version "1.0.4"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Winter 2012")
                ((#:albert #:output-dir)          . "../documentation/com.informatimago.xcode/")

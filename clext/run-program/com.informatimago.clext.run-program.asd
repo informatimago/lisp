@@ -35,7 +35,7 @@
 (asdf:defsystem "com.informatimago.clext.run-program"
   :description "An portable run-program function."
   :author "Pascal J. Bourguignon"
-  :version "1.0.4"
+  :version "1.0.5"
   :license "AGPL3"
   :depends-on ("com.informatimago.common-lisp.cesarum") 
   :components ((:file "run-program"))

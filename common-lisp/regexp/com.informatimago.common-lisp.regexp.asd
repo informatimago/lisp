@@ -40,7 +40,7 @@
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.3.1"
+  :version "1.3.2"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Autumn 2015")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.regexp/")
