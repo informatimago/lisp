@@ -62,6 +62,7 @@
 
 (defmacro with-doc-output (target &body body)
   `(let ((*standard-output* (or (documentation-file ,target) t))
+         ;; TODO: add a line-width slot to text-documentation.
          (*line-width*      *print-right-margin*))
      ,@body))
 
