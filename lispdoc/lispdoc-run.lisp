@@ -33,13 +33,16 @@
 ;;;;**************************************************************************
 (in-package "COM.INFORMATIMAGO.LISPDOC.RUN")
 
-(defun doc (&optional (doc-directory (merge-pathnames #P"public_html/sites/com.informatimago.www/develop/lisp/doc/"
-                                                      (user-homedir-pathname)))) 
+(defun doc (&key
+              (target-class 'html-documentation)
+              (doc-directory (merge-pathnames #P"public_html/sites/com.informatimago.www/develop/lisp/doc/"
+                                              (user-homedir-pathname)))) 
   (let ((*print-length* 10)
-        (*print-level* 4))
+        (*print-level* 4)
+        (*print-right-margin* 80))
     (mapc 'delete-file (directory (merge-pathnames #P"*.html" doc-directory)))
     (com.informatimago.lispdoc.generate:generate-lispdoc
-     'html-documentation
+     target-class
      doc-directory
      (remove-if-not (lambda (p)
                       (and (search "COM.INFORMATIMAGO" (package-name p))

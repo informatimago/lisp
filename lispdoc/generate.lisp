@@ -286,6 +286,23 @@ RETURN: the initial letter of the name of the object, upcased, or
                    (char-upcase object)
                    :other))))
 
+
+(defun right-case (sexp)
+  (cond ((null sexp)    nil)
+        ((symbolp sexp) (if (and (null (symbol-package sexp))
+                                 (char= #\G (char (symbol-name sexp) 0)))
+                            "x"
+                            (right-case (symbol-name sexp))))
+        ((stringp sexp) (if (notany (function lower-case-p) sexp)
+                            (string-downcase sexp)
+                            (format nil "|~A|" sexp)))
+        ((numberp sexp) (princ-to-string sexp))
+        ((consp sexp) (cons (right-case (car sexp)) (right-case (cdr sexp))))
+        (t (warn "Unexpected atom in right-cased sexp: ~S of type ~S"
+                  sexp (type-of sexp))
+           (format nil "|~A|" (string-replace (format nil "~S" sexp) "|" "\\|")))))
+
+
 (defgeneric generate-package-documentation-pages (target)
   (:documentation "
 
