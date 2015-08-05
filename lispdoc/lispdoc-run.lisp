@@ -31,21 +31,25 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
-;;;;    
+(in-package "COM.INFORMATIMAGO.LISPDOC.RUN")
 
-(in-package :cl-user)
-
-(defun doc () 
+(defun doc (&optional (doc-directory (merge-pathnames #P"public_html/sites/com.informatimago.www/develop/lisp/doc/"
+                                                      (user-homedir-pathname)))) 
   (let ((*print-length* 10)
         (*print-level* 4))
-    (mapc 'delete-file (directory #P"/home/pjb/public_html/sites/com.informatimago.www/develop/lisp/doc/*.html"))
-    (com.informatimago.lispdoc:lispdoc-html
-     "/home/pjb/public_html/sites/com.informatimago.www/develop/lisp/doc/"
+    (mapc 'delete-file (directory (merge-pathnames #P"*.html" doc-directory)))
+    (com.informatimago.lispdoc.generate:generate-lispdoc
+     'html-documentation
+     doc-directory
      (remove-if-not (lambda (p)
                       (and (search "COM.INFORMATIMAGO" (package-name p))
                            (not (search "COM.INFORMATIMAGO.PJB" (package-name p)))))
                     (list-all-packages))
-     :title  "Informatimago Common Lisp Packages Documentation")))
+     :title "Informatimago CL Software" ; "Informatimago Common Lisp Packages Documentation"
+     :copyright "Copyright Pascal J. Bourguignon 2012 - 2015"
+     :author "Pascal J. Bourguignon"
+     :email "pjb@informatimago.com"
+     :keywords "Informatimago, Common Lisp, Lisp, Library")))
 
 
 ;;;; THE END ;;;;

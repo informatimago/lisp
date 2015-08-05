@@ -59,35 +59,45 @@ This system would use closer-mop which is not available for MOCL.
 
 #-mocl
 (asdf:defsystem "com.informatimago.lispdoc"
-    ;; system attributes:
-    :description "Informatimago Common Lisp Documentation Generator"
-    :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-    :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-    :licence "LLGPL"
-    ;; component attributes:
-    :version "1.0.4"
-    :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Spring 2012")
-                 ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.lispdoc/")
-                 ((#:albert #:formats)             . ("docbook"))
-                 ((#:albert #:docbook #:template)  . "book")
-                 ((#:albert #:docbook #:bgcolor)   . "white")
-                 ((#:albert #:docbook #:textcolor) . "black"))
-    #+asdf-unicode :encoding #+asdf-unicode :utf-8
-    :depends-on (
-                 ;; Dependencies:
-                 "cl-ppcre"
-                 "closer-mop"
-                 "split-sequence"
-                 ;; The documented systems:
-                 "com.informatimago.common-lisp"
-                 "com.informatimago.clext"
-                 "com.informatimago.clmisc"
-                 "com.informatimago.rdp"
-                 #+(and ccl darwin) "com.informatimago.objcl"
-                 )
-    :components ((:file "lispdoc")
-                 (:file "lispdoc-run" :depends-on ("lispdoc"))))
+  ;; system attributes:
+  :description "Informatimago Common Lisp Documentation Generator"
+  :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :licence "LLGPL"
+  ;; component attributes:
+  :version "1.0.4"
+  :properties ((#:author-email                   . "pjb@informatimago.com")
+               (#:date                           . "Spring 2012")
+               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.lispdoc/")
+               ((#:albert #:formats)             . ("docbook"))
+               ((#:albert #:docbook #:template)  . "book")
+               ((#:albert #:docbook #:bgcolor)   . "white")
+               ((#:albert #:docbook #:textcolor) . "black"))
+  :depends-on (
+               ;; Dependencies:
+               "cl-ppcre"
+               "closer-mop"
+               "split-sequence"
+               "com.informatimago.common-lisp.cesarum"
+               "com.informatimago.common-lisp.html-generator"
+               ;; The documented systems: TODO: we shouldn't depend on them.
+               "com.informatimago.common-lisp"
+               "com.informatimago.clext"
+               "com.informatimago.clmisc"
+               "com.informatimago.rdp"
+               #+(and ccl darwin) "com.informatimago.objcl")
+  :components ((:file "package")
+               (:file "utility"     :depends-on ("package"))
+               (:file "uri"         :depends-on ("package"))
+               (:file "doc"         :depends-on ("package"))
+               (:file "tree"        :depends-on ("package" "utility"))
+               (:file "lispdoc"     :depends-on ("package" "doc"))
+               (:file "generate"    :depends-on ("package" "doc" "lispdoc" "utility" "tree"))
+               (:file "gentext"     :depends-on ("package" "doc" "generate" "utility" "tree" "uri"))
+               (:file "genrst"      :depends-on ("package" "doc" "generate" "utility" "tree" "uri"))
+               (:file "genhtml"     :depends-on ("package" "doc" "generate" "utility" "tree" "uri"))
+               (:file "lispdoc-run" :depends-on ("package" "lispdoc" "genhtml" "genrst" "gentext")))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8)
 
 
 ;;;; THE END ;;;;
