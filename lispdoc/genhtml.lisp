@@ -206,6 +206,7 @@ div.kind {
   ())
 
 (defmethod initialize-instance :after ((target html-documentation) &key &allow-other-keys)
+  ;; TODO: this ../index link is specific to informatimago; it should be moved to .lispdoc.run
   (setf (navigation target) `(("../index"                   ,(documentation-title target))
                               ("index"                      "Documentation Index")
                               ("hierarchical-package-index" "Hierarchical Package Index")
