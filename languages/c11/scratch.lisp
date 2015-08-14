@@ -1,3 +1,7 @@
+
+(setf *readtable* (copy-readtable nil))
+(ql:quickload :com.informatimago.languages.c11)
+
 (in-package "COM.INFORMATIMAGO.LANGUAGES.C11.PARSER")
 
 ;; (untrace compute-token-kind)
@@ -18,7 +22,62 @@
                                            :write-processed-lines nil))))
                         :initial-value '())))
     (dolist (token tokens tokens)
-      (setf (token-kind token) (compute-token-kind token)))))
+      (setf (token-kind token) (com.informatimago.languages.c11.scanner:compute-token-kind token)))))
+
+
+(with-open-file (out "p.lisp" :direction :output :if-exists :supersede :if-does-not-exist :create)
+  (pprint '(in-package "COM.INFORMATIMAGO.LANGUAGES.C11.PARSER") out)
+  (destructuring-bind (grammar &rest rest) (cdr (macroexpand-1 *c*))
+    (let ((*print-circle* t))
+      (pprint grammar out))
+    (dolist (form rest)
+      (pprint form out))))
+
+
+(defvar *scanner* nil)
+(defun test/parse-stream (tokens)
+  (declare (stepper disable))
+  (let ((*scanner* (make-instance 'pre-scanned-scanner :tokens tokens))
+        (*context* (make-instance 'context)))
+    (loop
+      :until (scanner-end-of-source-p *scanner*)
+      :collect (handler-bind ((parser-end-of-source-not-reached #'continue))
+                 (parse-c11 *scanner*)))))
+
+(step (test/parse-stream *tc*) :trace)
+
+(apropos "PRINT-HASH")
+(com.informatimago.common-lisp.cesarum.utility:print-hashtable  com.informatimago.languages.c11.parser::*context*)
+
+
+
+#-(and) (progn
+          (defparameter *c* (quote
+                             
+                             ))
+
+          #.*c*
+
+          (pprint (macroexpand-1 *c*))
+
+          (with-open-file (out "p.lisp" :direction :output :if-exists :supersede :if-does-not-exist :create)
+            (dolist (form (cdr (macroexpand-1 *c*)))
+              (pprint form out)))
+          )
+
+
+#-(and) (progn
+          
+          (map nil 'print (subseq *tc* 0 30))
+
+          (let ((*context* (make-instance 'context)))
+            (values (parse-with-lexer (make-list-lexer *tc*) *c11-parser*)
+                    *context*))
+
+
+          
+          )
+
 
 ;; yacc
 

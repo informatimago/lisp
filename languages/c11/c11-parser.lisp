@@ -52,6 +52,7 @@
   (token-column (pre-scanner-actual-current-token scanner)))
 
 (defmethod scan-next-token ((scanner pre-scanned-scanner) &optional parser-data)
+  (declare (stepper disable))
   (declare (ignore parser-data))
   (let* ((token (pop (pre-scanned-tokens scanner)))
          (kind  (token-kind token)))
@@ -72,6 +73,7 @@
           (scanner-current-token scanner) kind)))
 
 (defmethod scanner-end-of-source-p ((scanner pre-scanned-scanner))
+  (declare (stepper disable))
   (null (pre-scanned-tokens scanner)))
 
 (defmethod scanner-end-of-line-p ((scanner pre-scanned-scanner))
@@ -101,19 +103,19 @@
                                      (scanner-current-text scanner)))))
 
 ;;;---------------------------------------------------------------------
-
+(declaim (declaration stepper))
 (progn
- (defmethod print-object ((self (eql '\()) stream) (princ "\\( " stream) self)
- (defmethod print-object ((self (eql '\))) stream) (princ "\\) " stream) self)
- (defmethod print-object ((self (eql '\,)) stream) (princ "\\, " stream) self)
- (defmethod print-object ((self (eql '\:)) stream) (princ "\\: " stream) self)
- (defmethod print-object ((self (eql '\;)) stream) (princ "\\; " stream) self)
- (defmethod print-object ((self (eql '|.|)) stream) (princ "\\. " stream) self)
- (defmethod print-object ((self (eql '\[)) stream) (princ "\\[ " stream) self)
- (defmethod print-object ((self (eql '\])) stream) (princ "\\] " stream) self)
- (defmethod print-object ((self (eql '\{)) stream) (princ "\\{ " stream) self)
- (defmethod print-object ((self (eql '\})) stream) (princ "\\} " stream) self)
- (defmethod print-object ((self (eql '\|)) stream) (princ "\\| " stream) self))
+ (defmethod print-object ((self (eql '\()) stream) (declare (stepper disable)) (princ "\\( " stream) self)
+ (defmethod print-object ((self (eql '\))) stream) (declare (stepper disable)) (princ "\\) " stream) self)
+ (defmethod print-object ((self (eql '\,)) stream) (declare (stepper disable)) (princ "\\, " stream) self)
+ (defmethod print-object ((self (eql '\:)) stream) (declare (stepper disable)) (princ "\\: " stream) self)
+ (defmethod print-object ((self (eql '\;)) stream) (declare (stepper disable)) (princ "\\; " stream) self)
+ (defmethod print-object ((self (eql '|.|)) stream) (declare (stepper disable)) (princ "\\. " stream) self)
+ (defmethod print-object ((self (eql '\[)) stream) (declare (stepper disable)) (princ "\\[ " stream) self)
+ (defmethod print-object ((self (eql '\])) stream) (declare (stepper disable)) (princ "\\] " stream) self)
+ (defmethod print-object ((self (eql '\{)) stream) (declare (stepper disable)) (princ "\\{ " stream) self)
+ (defmethod print-object ((self (eql '\})) stream) (declare (stepper disable)) (princ "\\} " stream) self)
+ (defmethod print-object ((self (eql '\|)) stream) (declare (stepper disable)) (princ "\\| " stream) self))
 
 (progn
   #1=(defgrammar c11
@@ -547,18 +549,36 @@
 
 
                (--> |declarator|
-                    (seq (opt |pointer|) |direct_declarator|))
+                    (seq (opt |pointer|) |direct_declarator|
+                         :action (if $1
+                                     `(:pointer $2)
+                                     $2))
+                    :action $1)
 
                (--> |direct_declarator|
-                    (seq |simple_direct_declarator| (rep |direct_declarator_item| :action $1) :action (cons $1 $2)))
+                    (seq |simple_direct_declarator| (rep |direct_declarator_item| :action $1)
+                         :action (cons $1 $2))
+                    :action $1)
 
                (--> |simple_direct_declarator|
-                    (alt (seq IDENTIFIER )
-                         (seq \( (opt (alt (seq |declarator| (rep \, IDENTIFIER)
-                                                :action (progn #|check declarator is identifier
-                                                          if we have rep identifiers.|#))
-                                      (seq |parameter_type_list|)))
-                              \))))
+                    (alt (seq IDENTIFIER :action $1)
+                         (seq \(
+                              (opt (alt (seq |declarator| (rep \, IDENTIFIER :action $2)
+                                             :action (progn
+                                                       #|check declarator is identifier
+                                                       if we have rep identifiers.|#
+                                                       (if $2
+                                                           (progn
+                                                             (unless (eq '|identifier| (car $1))
+                                                               (error "Invalid simple direct declarator: identifier list ~A following ~A"
+                                                                      $2 $1))
+                                                             (cons $1 $2))
+                                                           $1)))
+                                        (seq |parameter_type_list|
+                                             :action `(:parameters ,$1))))
+                              \)
+                              :action $2))                    
+                    :action $1)
 
           (--> |direct_declarator_item|
                (alt (seq \( (opt |direct_declarator_in_parentheses|) \))
@@ -613,7 +633,7 @@
                     (seq \( (opt (alt (seq |declarator__or__abstract_declarator|
                                            (rep \, IDENTIFIER)
                                            :action (progn #|check declarator is identifier
-                                                          if we have rep identifiers.|#))
+                                                       if we have rep identifiers.|#))
                                       (seq |parameter_type_list|)))
                          \))
                     |bracket_direct_abstract_declarator|
@@ -693,7 +713,7 @@
                |designator| (rep |designator| :action $1) :action (cons $1 $2))
 
           (--> |designator|
-               (alt (seq [ |constant_expression| ]) 
+               (alt (seq \[ |constant_expression| \]) 
                     (seq |.| IDENTIFIER)))
 
           (--> |static_assert_declaration|
@@ -772,8 +792,11 @@
                                               (cons (declarator $1 (second $2)) (third $2)))
                                              (:function-declarator
                                               (list :declarator $1 $2)))))
-                         :action (progn (pop-declaration-specifiers)
-                                        $2))))
+                         :action (progn
+                                   (print `(declaration-specifiers ,$1))
+                                   (print `(declarator ,$2))
+                                   (pop-declaration-specifiers)
+                                   $2))))
 
           (--> |declaration_list|
                (seq  |declaration| (rep |declaration| :action $1) :action (cons $1 $2)))))
@@ -798,7 +821,7 @@
 
 (defun declarator ($1 $2)
   (let ((name (declarator-name $1)))
-    (case (first (context-declaration-specifiers *context*))
+    (case (first (print (context-declaration-specifiers *context*)))
       (:typedef
        (when $2
          (cerror "Continue" "Invalid initializer in a typedef"))
@@ -809,34 +832,6 @@
        ;; TODO: ???
        (enter-enumeration-constant *context* name (second (context-declaration-specifiers *context*)))))
     `(:declarator ,name ,$1 ,$2)))
-
-
-(with-open-file (out "p.lisp" :direction :output :if-exists :supersede :if-does-not-exist :create)
-  (dolist (form (cdr (macroexpand-1 *c*)))
-    (pprint form out)))
-
-(defvar *scanner* nil)
-(defun test/parse-stream (tokens)
-  (let ((*scanner* (make-instance 'pre-scanned-scanner :tokens tokens)))
-    (loop
-      :until (scanner-end-of-source-p *scanner*)
-      :collect (handler-bind ((parser-end-of-source-not-reached #'continue))
-                 (parse-c11 *scanner*)))))
-
-
-#-(and) (progn
-          (defparameter *c* (quote
-                             
-                             ))
-
-          #.*c*
-
-          (pprint (macroexpand-1 *c*))
-
-          (with-open-file (out "p.lisp" :direction :output :if-exists :supersede :if-does-not-exist :create)
-            (dolist (form (cdr (macroexpand-1 *c*)))
-              (pprint form out)))
-          )
 
 
 ;;;; THE END ;;;;
