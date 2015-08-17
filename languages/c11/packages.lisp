@@ -36,19 +36,30 @@
   (:use)
   (:import-from "COMMON-LISP"
                 "*" ">=" "/" "-" "++" "+" ">" "=" "<" "<=" "/=")
-  (:export "identifier" "typedef_name" "func_name" "string_literal"
-           "i_constant" "f_constant" "enum_name" "alignas" "alignof"
-           "atomic" "generic" "noreturn" "static_assert"
-           "thread_local" "case" "default" "if" "else" "switch"
-           "while" "do" "for" "goto" "continue" "break" "return"
-           "struct" "union" "enum" "..." "complex" "imaginary" "bool"
-           "char" "short" "int" "long" "signed" "unsigned" "float"
-           "double" "void" "const" "restrict" "volatile" "typedef"
-           "extern" "static" "auto" "register" "inline" "sizeof" "^="
-           "|=" "-=" "<<=" ">>=" "&=" "&&" "||" "*=" "/=" "%=" "+="
-           "->" "++" "--" "<<" ">>" "<=" ">=" "==" "!=" "(" ")" ","
-           ":" ";" "." "[" "]" "{" "}" "&" "*" "/" "+" "-" "~" "!" "%"
-           "<" ">" "=" "^" "|" "?" "STAR")
+  (:import-from "COM.INFORMATIMAGO.LANGUAGES.CPP"
+                "IDENTIFIER" "STRING-LITERAL"
+                ;; "TYPEDEF-NAME" "FUNC-NAME" 
+                ;; "I-CONSTANT" "F-CONSTANT" "ENUM-NAME"
+                )
+  (:export "IDENTIFIER" "TYPEDEF-NAME" "FUNC-NAME" "STRING-LITERAL"
+           "I-CONSTANT" "F-CONSTANT" "ENUM-NAME" 
+           "STAR"
+           ;; -
+
+           "_Alignas" "_Alignof" "_Atomic" "_Bool" "_Complex"
+           "_Generic" "_Imaginary" "_Noreturn" "_Static_assert"
+           "_Thread_local" "auto" "break" "case" "char" "const"
+           "continue" "default" "do" "double" "else" "enum" "extern"
+           "float" "for" "goto" "if" "inline" "int" "long" "register"
+           "restrict" "return" "short" "signed" "sizeof" "static"
+           "struct" "switch" "typedef" "union" "unsigned" "void"
+           "volatile" "while"
+
+           "^=" "|=" "-=" "<<=" ">>=" "&=" "&&" "||" "*=" "/=" "%="
+           "+=" "->" "++" "--" "<<" ">>" "<=" ">=" "==" "!=" "(" ")"
+           "," ":" ";" "." "..." "[" "]" "{" "}" "&" "*" "/" "+" "-" "~" "!"
+           "%" "<" ">" "=" "^" "|" "?")
+  
   (:documentation "This package exports the token-kinds of the C11 terminal symbols."))
 
 (defpackage "COM.INFORMATIMAGO.LANGUAGES.C11.CONTEXT"
@@ -71,11 +82,12 @@
         "COM.INFORMATIMAGO.COMMON-LISP.PARSER.SCANNER"
         "COM.INFORMATIMAGO.COMMON-LISP.REGEXP.REGEXP"
         "COM.INFORMATIMAGO.LANGUAGES.C11.TOKENS"
-        "COM.INFORMATIMAGO.LANGUAGES.C11.CONTEXT")
+        "COM.INFORMATIMAGO.LANGUAGES.C11.CONTEXT"
+        "COM.INFORMATIMAGO.LANGUAGES.CPP")
   (:shadowing-import-from "COM.INFORMATIMAGO.COMMON-LISP.REGEXP.REGEXP"
                           "SPLIT-STRING")
   (:export "C11-SCANNER"
-           "COMPUTE-TOKEN-KIND"))
+           "UPGRADE-C11-TOKEN"))
 
 (defpackage "COM.INFORMATIMAGO.LANGUAGES.YACC.PARSER"
   (:use "COMMON-LISP"
@@ -99,7 +111,8 @@ returning a yacc:defgrammar form.
 
 
 (defpackage "COM.INFORMATIMAGO.LANGUAGES.C11.PARSER"
-  (:use "CL-STEPPER"; "COMMON-LISP"
+  (:use ;; "CL-STEPPER"
+        "COMMON-LISP"
         "COM.INFORMATIMAGO.RDP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM"
@@ -110,7 +123,8 @@ returning a yacc:defgrammar form.
         "COM.INFORMATIMAGO.LANGUAGES.CPP"
         "COM.INFORMATIMAGO.TOOLS.READER-MACRO"
         "COM.INFORMATIMAGO.LANGUAGES.C11.TOKENS"
-        "COM.INFORMATIMAGO.LANGUAGES.C11.CONTEXT")
+        "COM.INFORMATIMAGO.LANGUAGES.C11.CONTEXT"
+        "COM.INFORMATIMAGO.LANGUAGES.C11.SCANNER")
   (:shadowing-import-from "COM.INFORMATIMAGO.COMMON-LISP.REGEXP.REGEXP"
                           "SPLIT-STRING")
   (:export "C11-PARSER"))

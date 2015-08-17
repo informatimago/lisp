@@ -75,12 +75,12 @@ The scanner uses it to detect enumeration_constant tokens."
 
 (defun identifier-in-table-p (context table name)
   (declare (ignore context))
-  (and (eq '|identifier| (token-kind name))
+  (and (eq 'identifier (token-kind name))
        (gethash (token-symbol name) table)))
 
 (defun enter-into-table (context table kind name definition)
   (declare (ignore context kind))
-  (assert (eq '|identifier| (token-kind name)) (name))
+  (assert (eq 'identifier (token-kind name)) (name))
   (setf (gethash (token-symbol name) table) definition))
 
 (defmethod typedef-name-p ((context context) token)
@@ -94,15 +94,15 @@ The scanner uses it to detect enumeration_constant tokens."
 
 (defgeneric enter-typedef (context name &optional definition)
   (:method ((context context) name &optional (definition t))
-    (enter-into-table context (context-typedefs context) '|typedef_name| name definition)))
+    (enter-into-table context (context-typedefs context) 'typedef-name name definition)))
 
 (defgeneric enter-function (context name &optional definition)
   (:method ((context context) name &optional (definition t))
-    (enter-into-table context (context-functions context) '|func_name| name definition)))
+    (enter-into-table context (context-functions context) 'func-name name definition)))
 
 (defgeneric enter-enumeration-constant (context name &optional definition)
   (:method ((context context) name &optional (definition t))
-    (enter-into-table context (context-enumeration-constants context) '|enum_name| name definition)))
+    (enter-into-table context (context-enumeration-constants context) 'enum-name name definition)))
 
 ;;;; THE END ;;;;
 

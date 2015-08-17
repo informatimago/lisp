@@ -6,23 +6,22 @@
 
 ;; (untrace compute-token-kind)
 ;; 7 seconds.
-(defparameter *tc*
-  (let ((tokens (reduce (function append)
+(defparameter *tc* (reduce (function append)
                         (reverse (com.informatimago.languages.cpp::context-output-lines
                                   (let ((*identifier-package*
                                           (load-time-value (find-package "COM.INFORMATIMAGO.LANGUAGES.C11.C"))))
                                     (cpp-e "/Users/pjb/src/public/lisp/languages/cpp/tests/emacs.c"
                                            :trace-includes t
-                                           :defines '("__GNUC__" "4" "__STDC__" "1" "__x86_64__" "1")
+                                           :defines '(;; "__GNUC__" "4"
+                                                      "__STDC__" "1"
+                                                      "__x86_64__" "1")
                                            :includes '("/Users/pjb/src/macosx/emacs-24.5/src/")
                                            :include-bracket-directories '("/Users/pjb/src/macosx/emacs-24.5/src/"
                                                                           "/Users/pjb/src/macosx/emacs-24.5/lib/"
                                                                           "/Users/pjb/src/macosx/gcc-4.9.2/gcc/ginclude/" 
                                                                           "/usr/include/")
                                            :write-processed-lines nil))))
-                        :initial-value '())))
-    (dolist (token tokens tokens)
-      (setf (token-kind token) (com.informatimago.languages.c11.scanner:compute-token-kind token)))))
+                        :initial-value '()))
 
 
 (with-open-file (out "p.lisp" :direction :output :if-exists :supersede :if-does-not-exist :create)
@@ -32,17 +31,38 @@
       (pprint grammar out))
     (dolist (form rest)
       (pprint form out))))
+(load "p.lisp")
 
 
 (defvar *scanner* nil)
-(defun test/parse-stream (tokens)
+(defun test/parse-stream (&optional tokens)
   (declare (stepper disable))
-  (let ((*scanner* (make-instance 'pre-scanned-scanner :tokens tokens))
-        (*context* (make-instance 'context)))
-    (loop
-      :until (scanner-end-of-source-p *scanner*)
-      :collect (handler-bind ((parser-end-of-source-not-reached #'continue))
-                 (parse-c11 *scanner*)))))
+  (let ((tokens (or tokens
+                    (reduce (function append)
+                            (reverse (com.informatimago.languages.cpp::context-output-lines
+                                      (let ((*identifier-package*
+                                              (load-time-value (find-package "COM.INFORMATIMAGO.LANGUAGES.C11.C"))))
+                                        (cpp-e "/Users/pjb/src/public/lisp/languages/cpp/tests/emacs.c"
+                                               :trace-includes t
+                                               :defines '(;; "__GNUC__" "4"
+                                                          "__STDC__" "1"
+                                                          "__x86_64__" "1")
+                                               :includes '("/Users/pjb/src/macosx/emacs-24.5/src/")
+                                               :include-bracket-directories '("/Users/pjb/src/macosx/emacs-24.5/src/"
+                                                                              "/Users/pjb/src/macosx/emacs-24.5/lib/"
+                                                                              "/Users/pjb/src/macosx/gcc-4.9.2/gcc/ginclude/" 
+                                                                              "/usr/include/")
+                                               :write-processed-lines nil))))
+                            :initial-value '()))))
+    (setf *tc* tokens)
+    (let ((*scanner* (make-instance 'pre-scanned-scanner :tokens tokens))
+          (*context* (make-instance 'context)))
+      (loop
+        :until (scanner-end-of-source-p *scanner*)
+        :collect (handler-bind ((parser-end-of-source-not-reached #'continue))
+                   (parse-c11 *scanner*))))))
+
+
 
 (step (test/parse-stream *tc*) :trace)
 

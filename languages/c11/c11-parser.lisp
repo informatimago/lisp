@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    C11 parser.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2015 - 2015
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -54,23 +54,14 @@
 (defmethod scan-next-token ((scanner pre-scanned-scanner) &optional parser-data)
   (declare (stepper disable))
   (declare (ignore parser-data))
-  (let* ((token (pop (pre-scanned-tokens scanner)))
-         (kind  (token-kind token)))
-    (case kind
-      (|identifier|
-       (cond
-         ((typedef-name-p *context* token)
-          (setf (token-kind token) (setf kind '|typedef_name|)))
-         ((function-name-p *context* token)
-          (setf (token-kind token) (setf kind '|func_name|)))
-         ((enumeration-constant-name-p *context* token)
-          (setf (token-kind token) (setf kind '|enum_name|)))))
-      #| TODO: handle [*] -> [ STAR ] |#)
-    (format *trace-output* "~A~%" token)
+  (let ((token (pop (pre-scanned-tokens scanner))))
+    (upgrade-c11-token token)
+    #| TODO: handle [*] -> [ STAR ] |#
+    (format *trace-output* "~&scan-next-token -> ~A~%" token)
     (setf (pre-scanner-actual-current-token scanner) token
           (scanner-current-text  scanner) (token-text token)
           ;; result:
-          (scanner-current-token scanner) kind)))
+          (scanner-current-token scanner) (token-kind token))))
 
 (defmethod scanner-end-of-source-p ((scanner pre-scanned-scanner))
   (declare (stepper disable))
@@ -86,11 +77,11 @@
       nil
       (scan-next-token scanner)))
 
-(defmethod accept ((scanner scanner) token)
+(defmethod accept ((scanner pre-scanned-scanner) token)
   (if (word-equal token (scanner-current-token scanner))
       (prog1 (list (scanner-current-token scanner)
                    (scanner-current-text scanner)
-                   (scanner-column scanner))
+                   (pre-scanner-actual-current-token scanner))
         (scan-next-token scanner))
       (error 'unexpected-token-error
              :line   (scanner-line scanner)
@@ -105,365 +96,413 @@
 ;;;---------------------------------------------------------------------
 (declaim (declaration stepper))
 (progn
- (defmethod print-object ((self (eql '\()) stream) (declare (stepper disable)) (princ "\\( " stream) self)
- (defmethod print-object ((self (eql '\))) stream) (declare (stepper disable)) (princ "\\) " stream) self)
- (defmethod print-object ((self (eql '\,)) stream) (declare (stepper disable)) (princ "\\, " stream) self)
- (defmethod print-object ((self (eql '\:)) stream) (declare (stepper disable)) (princ "\\: " stream) self)
- (defmethod print-object ((self (eql '\;)) stream) (declare (stepper disable)) (princ "\\; " stream) self)
- (defmethod print-object ((self (eql '|.|)) stream) (declare (stepper disable)) (princ "\\. " stream) self)
- (defmethod print-object ((self (eql '\[)) stream) (declare (stepper disable)) (princ "\\[ " stream) self)
- (defmethod print-object ((self (eql '\])) stream) (declare (stepper disable)) (princ "\\] " stream) self)
- (defmethod print-object ((self (eql '\{)) stream) (declare (stepper disable)) (princ "\\{ " stream) self)
- (defmethod print-object ((self (eql '\})) stream) (declare (stepper disable)) (princ "\\} " stream) self)
- (defmethod print-object ((self (eql '\|)) stream) (declare (stepper disable)) (princ "\\| " stream) self))
+  (defmethod print-object ((self (eql '\()) stream) (declare (stepper disable)) (princ "\\(" stream) self)
+  (defmethod print-object ((self (eql '\))) stream) (declare (stepper disable)) (princ "\\)" stream) self)
+  (defmethod print-object ((self (eql '\,)) stream) (declare (stepper disable)) (princ "\\," stream) self)
+  (defmethod print-object ((self (eql '\:)) stream) (declare (stepper disable)) (princ "\\:" stream) self)
+  (defmethod print-object ((self (eql '\;)) stream) (declare (stepper disable)) (princ "\\;" stream) self)
+  (defmethod print-object ((self (eql '|.|)) stream) (declare (stepper disable)) (princ "\\." stream) self)
+  (defmethod print-object ((self (eql '\[)) stream) (declare (stepper disable)) (princ "\\[" stream) self)
+  (defmethod print-object ((self (eql '\])) stream) (declare (stepper disable)) (princ "\\]" stream) self)
+  (defmethod print-object ((self (eql '\{)) stream) (declare (stepper disable)) (princ "\\{" stream) self)
+  (defmethod print-object ((self (eql '\})) stream) (declare (stepper disable)) (princ "\\}" stream) self)
+  (defmethod print-object ((self (eql '\|)) stream) (declare (stepper disable)) (princ "\\|" stream) self))
+
 
 (progn
   #1=(defgrammar c11
        ;; rdp
-       :scanner nil
-       :terminals ((|identifier| "identifier")
-                   (|typedef_name| "typedef_name")
-                   (|func_name| "func_name")
-                   (|string_literal| "string_literal")
-                   (|i_constant| "i_constant")
-                   (|f_constant| "f_constant")
-                   (|enum_name| "enum_name")
-                   (|alignas| "alignas")
-                   (|alignof| "alignof")
-                   (|atomic| "atomic")
-                   (|generic| "generic")
-                   (|noreturn| "noreturn")
-                   (|static_assert| "static_assert")
-                   (|thread_local| "thread_local")
-                   (|case| "case")
-                   (|default| "default")
-                   (|if| "if")
-                   (|else| "else")
-                   (|switch| "switch")
-                   (|while| "while")
-                   (|do| "do")
-                   (|for| "for")
-                   (|goto| "goto")
-                   (|continue| "continue")
-                   (|break| "break")
-                   (|return| "return")
-                   (|struct| "struct")
-                   (|union| "union")
-                   (|enum| "enum")
-                   (|...| "...")
-                   (|complex| "complex")
-                   (|imaginary| "imaginary")
-                   (|bool| "bool")
-                   (|char| "char")
-                   (|short| "short")
-                   (|int| "int")
-                   (|long| "long")
-                   (|signed| "signed")
-                   (|unsigned| "unsigned")
-                   (|float| "float")
-                   (|double| "double")
-                   (|void| "void")
-                   (|const| "const")
-                   (|restrict| "restrict")
-                   (|volatile| "volatile")
-                   (|typedef| "typedef")
-                   (|extern| "extern")
-                   (|static| "static")
-                   (|auto| "auto")
-                   (|register| "register")
-                   (|inline| "inline")
-                   (|sizeof| "sizeof")
-                   (^= "^=")
-                   (\|= "|=")
-                   (-= "-=")
-                   (<<= "<<=")
-                   (>>= ">>=")
-                   (&= "&=")
-                   (&& "&&")
-                   (|\|\|| "||")
-                   (*= "*=")
-                   (/= "/=")
-                   (%= "%=")
-                   (+= "+=")
-                   (-> "->")
-                   (++ "++")
-                   (-- "--")
-                   (<< "<<")
-                   (>> ">>")
-                   (<= "<=")
-                   (>= ">=")
-                   (== "==")
-                   (!= "!=")
-                   (\( "(")
-                   (\) ")")
-                   (\, ",")
-                   (\: ":")
-                   (\; ";")
-                   (\. ".")
-                   (\[ "[")
-                   (\] "]")
-                   (\{ "{")
-                   (\} "}")
-                   (\& "&")
-                   (\* "*")
-                   (\/ "/")
-                   (\+ "+")
-                   (\- "-")
-                   (\~ "~")
-                   (\! "!")
-                   (\% "%")
-                   (\< "<")
-                   (\> ">")
-                   (\= "=")
-                   (\^ "^")
-                   (\| "|")
-                   (\? "?")
-                   (STAR "*") ;; (seq [ (opt type_qualifier_list) * ])
+       :scanner nil    ; we use the pre-scanned-scanner defined above.
+       :trace t
+
+       ;; Note: since we don't generate a scanner, the following terminals are not used,
+       ;;       but they are what is expected from the cpp scanner.
+       :terminals ((identifier     "identifier")
+                   (typedef-name   "typedef_name")
+                   (func-name      "func_name")
+                   (string-literal "string_literal")
+                   (i-constant     "i_constant")
+                   (f-constant     "f_constant")
+                   (enum-name      "enum_name")
+                   (alignas        "_Alignas")
+                   (alignof        "_Alignof")
+                   (atomic         "_Atomic")
+                   (complex        "_Complex")
+                   (imaginary      "_Imaginary")
+                   (generic        "_Generic")
+                   (noreturn       "_Noreturn")
+                   (static-assert  "_Static_assert")
+                   (thread-local   "_Thread_local")
+                   (auto           "auto")
+                   (bool           "bool")
+                   (break          "break")
+                   (case           "case")
+                   (char           "char")
+                   (const          "const")
+                   (continue       "continue")
+                   (default        "default")
+                   (do             "do")
+                   (double         "double")
+                   (else           "else")
+                   (enum           "enum")
+                   (extern         "extern")
+                   (float          "float")
+                   (for            "for")
+                   (goto           "goto")
+                   (if             "if")
+                   (inline         "inline")
+                   (int            "int")
+                   (long           "long")
+                   (register       "register")
+                   (restrict       "restrict")
+                   (return         "return")
+                   (short          "short")
+                   (signed         "signed")
+                   (sizeof         "sizeof")
+                   (static         "static")
+                   (struct         "struct")
+                   (switch         "switch")
+                   (typedef        "typedef")
+                   (union          "union")
+                   (unsigned       "unsigned")
+                   (void           "void")
+                   (volatile       "volatile")
+                   (while          "while")
+                   
+                   (ellipsis "...")
+                   (^=       "^=")
+                   (\|=      "|=")
+                   (-=       "-=")
+                   (<<=      "<<=")
+                   (>>=      ">>=")
+                   (&=       "&=")
+                   (&&       "&&")
+                   (|\|\||   "||")
+                   (*=       "*=")
+                   (/=       "/=")
+                   (%=       "%=")
+                   (+=       "+=")
+                   (->       "->")
+                   (++       "++")
+                   (--       "--")
+                   (<<       "<<")
+                   (>>       ">>")
+                   (<=       "<=")
+                   (>=       ">=")
+                   (==       "==")
+                   (!=       "!=")
+                   (\(       "(")
+                   (\)       ")")
+                   (\,       ",")
+                   (\:       ":")
+                   (\;       ";")
+                   (\.       ".")
+                   (\[       "[")
+                   (\]       "]")
+                   (\{       "{")
+                   (\}       "}")
+                   (\&       "&")
+                   (\*       "*")
+                   (\/       "/")
+                   (\+       "+")
+                   (\-       "-")
+                   (\~       "~")
+                   (\!       "!")
+                   (\%       "%")
+                   (\<       "<")
+                   (\>       ">")
+                   (\=       "=")
+                   (\^       "^")
+                   (\|       "|")
+                   (\?       "?")
+                   
+                   (STAR     "*") ;; (seq [ (opt type_qualifier_list) * ])
                    )
-  
-       :start |translation_unit|
+
+       :start translation-unit
+
        :rules (
 
-               (--> IDENTIFIER     (seq |identifier| :action $1))     
-               (--> TYPEDEF_NAME   (seq |typedef_name| :action $1))   
-               (--> FUNC_NAME      (seq |func_name| :action $1))
-               (--> STRING_LITERAL (seq |string_literal| :action $1)) 
-               (--> I_CONSTANT     (seq |i_constant| :action $1))     
-               (--> F_CONSTANT     (seq |f_constant| :action $1))
-               (--> ALIGNAS        (seq |alignas| :action $1))        
-               (--> ALIGNOF        (seq |alignof| :action $1))        
-               (--> ATOMIC         (seq |atomic| :action $1))         
-               (--> GENERIC        (seq |generic| :action $1))
-               (--> NORETURN       (seq |noreturn| :action $1))       
-               (--> STATIC_ASSERT  (seq |static_assert| :action $1))  
-               (--> THREAD_LOCAL   (seq |thread_local| :action $1))
-               (--> CASE           (seq |case| :action $1))           
-               (--> DEFAULT        (seq |default| :action $1))        
-               (--> IF             (seq |if| :action $1))             
-               (--> ELSE           (seq |else| :action $1))           
-               (--> SWITCH         (seq |switch| :action $1))
-               (--> WHILE          (seq |while| :action $1))          
-               (--> DO             (seq |do| :action $1))             
-               (--> FOR            (seq |for| :action $1))            
-               (--> GOTO           (seq |goto| :action $1))           
-               (--> CONTINUE       (seq |continue| :action $1))
-               (--> BREAK          (seq |break| :action $1))          
-               (--> RETURN         (seq |return| :action $1))         
-               (--> STRUCT         (seq |struct| :action $1))         
-               (--> UNION          (seq |union| :action $1))          
-               (--> ENUM           (seq |enum| :action $1))
-               (--> ELLIPSIS       (SEQ |...| :ACTION $1))            
-               (--> COMPLEX        (seq |complex| :action $1))        
-               (--> IMAGINARY      (seq |imaginary| :action $1))      
-               (--> BOOL           (seq |bool| :action $1))           
-               (--> CHAR           (seq |char| :action $1))
-               (--> SHORT          (seq |short| :action $1))          
-               (--> INT            (seq |int| :action $1))            
-               (--> LONG           (seq |long| :action $1))           
-               (--> SIGNED         (seq |signed| :action $1))         
-               (--> UNSIGNED       (seq |unsigned| :action $1))
-               (--> FLOAT          (seq |float| :action $1))          
-               (--> DOUBLE         (seq |double| :action $1))         
-               (--> VOID           (seq |void| :action $1))           
-               (--> CONST          (seq |const| :action $1))          
-               (--> RESTRICT       (seq |restrict| :action $1))
-               (--> VOLATILE       (seq |volatile| :action $1))       
-               (--> TYPEDEF        (seq |typedef| :action $1))        
-               (--> EXTERN         (seq |extern| :action $1))         
-               (--> STATIC         (seq |static| :action $1))
-               (--> AUTO           (seq |auto| :action $1))           
-               (--> REGISTER       (seq |register| :action $1))       
-               (--> INLINE         (seq |inline| :action $1))         
-               (--> SIZEOF         (seq |sizeof| :action $1))         
-               (--> XOR_ASSIGN     (seq ^= :action $1))
-               (--> OR_ASSIGN      (seq \|= :action $1))              
-               (--> SUB_ASSIGN     (seq -= :action $1))               
-               (--> LEFT_ASSIGN    (seq <<= :action $1))              
-               (--> RIGHT_ASSIGN   (seq >>= :action $1))              
-               (--> AND_ASSIGN     (seq &= :action $1))
-               (--> AND_OP         (seq && :action $1))               
-               (--> OR_OP          (seq |\|\|| :action $1))           
-               (--> MUL_ASSIGN     (seq *= :action $1))               
-               (--> DIV_ASSIGN     (seq /= :action $1))               
-               (--> MOD_ASSIGN     (seq %= :action $1))
-               (--> ADD_ASSIGN     (seq += :action $1))               
-               (--> PTR_OP         (seq -> :action $1))               
-               (--> INC_OP         (seq ++ :action $1))               
-               (--> DEC_OP         (seq -- :action $1))               
-               (--> LEFT_OP        (seq << :action $1))               
-               (--> RIGHT_OP       (seq >> :action $1))
-               (--> LE_OP          (seq <= :action $1))               
-               (--> GE_OP          (seq >= :action $1))               
-               (--> EQ_OP          (seq == :action $1))               
-               (--> NE_OP          (seq != :action $1))
-          
-          
-               (--> |constant|     (alt I_CONSTANT     F_CONSTANT)) 
-               (--> |string|       (alt STRING_LITERAL FUNC_NAME))
+               (--> XOR-ASSIGN     (seq ^=     :action $1) :action $1)
+               (--> OR-ASSIGN      (seq \|=    :action $1) :action $1)
+               (--> SUB-ASSIGN     (seq -=     :action $1) :action $1)
+               (--> LEFT-ASSIGN    (seq <<=    :action $1) :action $1)
+               (--> RIGHT-ASSIGN   (seq >>=    :action $1) :action $1)
+               (--> AND-ASSIGN     (seq &=     :action $1) :action $1)
+               (--> AND-OP         (seq &&     :action $1) :action $1)
+               (--> OR-OP          (seq |\|\|| :action $1) :action $1)
+               (--> MUL-ASSIGN     (seq *=     :action $1) :action $1)
+               (--> DIV-ASSIGN     (seq /=     :action $1) :action $1)
+               (--> MOD-ASSIGN     (seq %=     :action $1) :action $1)
+               (--> ADD-ASSIGN     (seq +=     :action $1) :action $1)
+               (--> PTR-OP         (seq ->     :action $1) :action $1)
+               (--> INC-OP         (seq ++     :action $1) :action $1)
+               (--> DEC-OP         (seq --     :action $1) :action $1)
+               (--> LEFT-OP        (seq <<     :action $1) :action $1)
+               (--> RIGHT-OP       (seq >>     :action $1) :action $1)
+               (--> LE-OP          (seq <=     :action $1) :action $1)
+               (--> GE-OP          (seq >=     :action $1) :action $1)
+               (--> EQ-OP          (seq ==     :action $1) :action $1)
+               (--> NE-OP          (seq !=     :action $1) :action $1)
 
 
-               (--> |simple_primary_expression|
+               (--> constant       (alt I-CONSTANT     F-CONSTANT) :action $1)
+               (--> string         (alt STRING-LITERAL FUNC-NAME)  :action $1)
+
+
+               (--> simple-primary-expression
                     (alt IDENTIFIER
-                         |constant|
-                         |string|
-                         |generic_selection|))
-          
-               (--> |primary_expression|
-                    (alt |simple_primary_expression|
-                         (seq \( |expression| \))))
+                         constant
+                         string
+                         generic-selection)
+                    :action $1)
 
-               (--> |generic_selection|
-                    (seq GENERIC \( |assignment_expression| \, |generic_assoc_list| \)))
+               (--> primary-expression
+                    (alt simple-primary-expression
+                         (seq \( expression \) :action expression))
+                    :action $1)
 
-               (--> |generic_assoc_list|
-                    (seq |generic_association| (rep \, |generic_association| :action $2) :action (cons $1 $2)))
+               (--> generic-selection
+                    (seq GENERIC \( assignment-expression \, generic-assoc-list \)
+                         :action (list 'generic assignment-expression generic-assoc-list))
+                    :action $1)
 
-               (--> |generic_association|
-                    (alt (seq |type_name| \: |assignment_expression|) 
-                         (seq DEFAULT \: |assignment_expression|)))
+               (--> generic-assoc-list
+                    (seq generic-association (rep \, generic-association :action $2)
+                         :action (cons $1 $2))
+                    :action $1)
 
-               (--> |postfix_expression|
-                    (seq |postfix_expression_head| (rep |postfix_expression_item| :action $1) :action (cons $1 $2)))
+               (--> generic-association
+                    (alt (seq type-name \: assignment-expression :action (list type-name assignment-expression))
+                         (seq DEFAULT   \: assignment-expression :action (list 'default  assignment-expression)))
+                    :action $1)
 
-               (--> |postfix_expression_head|
-                    (alt |simple_primary_expression|
-                         (seq \( (alt (seq |expression| \))
-                                      (seq |type_name|  \)
-                                           { |initializer_list| (opt \,)})
-                                      \)))))
-          
-               (--> |postfix_expression_item|
-                    (alt (seq [ |expression| ]) 
-                         (seq \( (opt |argument_expression_list|) \)) 
-                         (seq |.| IDENTIFIER)
-                         (seq PTR_OP IDENTIFIER) 
-                         (seq INC_OP)
-                         (seq DEC_OP)))
+               ;; postfix is left-to-right:
 
-               (--> |argument_expression_list|
-                    (seq |assignment_expression| (rep \, |assignment_expression| :action $2) :action (cons $1 $2)))
+               (--> postfix-expression
+                    (seq postfix-expression-head (rep postfix-expression-item :action $1)
+                         :action (wrap-left-to-right $1 $2))
+                    :action $1)
 
-               (--> |simple_unary_expression|
-                    (alt (seq INC_OP |unary_expression|) 
-                         (seq DEC_OP |unary_expression|)
-                         (seq |unary_operator| |cast_expression|) 
-                         (seq SIZEOF |sizeof_argument|) 
-                         (seq ALIGNOF \( |type_name| \))))
+               (--> postfix-expression-head
+                    (alt simple-primary-expression
+                         (seq \( (alt (seq expression \) ; = primary-expression
+                                           :action expression)
+                                      (seq type-name  \) { initializer-list (opt \,)}
+                                           :action `(compound-literal ,type-name ,initializer-list))
+                                      (seq \) :action nil #|TODO: WHAT IS THIS?|#))
+                              :action $2))
+                    :action $1)
 
-               (--> |sizeof_argument|
-                    (alt (seq |simple_unary_expression|)
-                         (seq (alt |simple_primary_expression|
-                                   (seq \( (alt (seq |expression| \))
-                                                (seq |type_name| \) (opt { |initializer_list| (opt \,)}))
-                                                \))))
-                              (rep |postfix_expression_item|))))
-          
-               (--> |unary_expression|
-                    (alt |postfix_expression|
-                         |simple_unary_expression|))
+               (--> postfix-expression-item
+                    (alt (seq [ expression ]                       :action `(aref ,expression))
+                         (seq \( (opt argument-expression-list) \) :action `(call ,$2))
+                         (seq |.| IDENTIFIER                       :action `(dot ,identifier))
+                         (seq PTR-OP IDENTIFIER                    :action `(ptr-op ,identifier))
+                         (seq INC-OP                               :action '(post-increment))
+                         (seq DEC-OP                               :action '(post-decrement)))
+                    :action $1)
 
-               (--> |unary_operator|
-                    (alt & * + - ~ !))
 
-               (--> |cast_expression|
-                    (alt |simple_unary_expression|
-                         |simple_primary_expression|
-                         (seq \( (alt (seq |expression|)
-                                      (seq |type_name| \) (alt (seq  { |initializer_list| (opt \,) })
-                                                               |cast_expression|))\)))))
+               (--> argument-expression-list
+                    (seq assignment-expression (rep \, assignment-expression :action $2)
+                         :action (cons $1 $2))
+                    :action $1)
 
-               (--> |multiplicative_expression|
-                    (seq |cast_expression| (rep (alt * / %) |cast_expression|)))
 
-               (--> |additive_expression|
-                    (seq |multiplicative_expression| (rep (alt + -) |multiplicative_expression|)))
+               ;; unary is right-to-left:
 
-               (--> |shift_expression|
-                    (seq |additive_expression| (rep (alt LEFT_OP RIGHT_OP) |additive_expression|)))
+               (--> simple-unary-expression
+                    (alt (seq INC-OP unary-expression          :action `(,inc-op ,unary-expression))
+                         (seq DEC-OP unary-expression          :action `(,dec-op ,unary-expression))
+                         (seq unary-operator cast-expression   :action `(,unary-operator ,cast-expression))
+                         (seq SIZEOF sizeof-argument           :action `(size-of  ,sizeof-argument))
+                         (seq ALIGNOF \( type-name \)          :action `(align-of ,type-name)))
+                    :action $1)
 
-               (--> |relational_expression|
-                    (seq |shift_expression| (rep (alt < > LE_OP GE_OP)  |shift_expression|)))
+               (--> sizeof-argument
+                    (alt simple-unary-expression
+                         (seq (alt simple-primary-expression
+                                   (seq \( (alt (seq expression \)
+                                                     :action expression)
+                                                (seq type-name  \) (opt { initializer-list (opt \,) }
+                                                                        :action initializer-list)
+                                                     :action `(compound-literal ,type-name ,$3) )
+                                                (seq \) :action nil #|TODO: WHAT IS THIS?|#))))
+                              (rep postfix-expression-item)
+                              :action (wrap-left-to-right $1 $2))))
 
-               (--> |equality_expression|
-                    (seq |relational_expression| (rep (alt EQ_OP NE_OP) |relational_expression|)))
+               (--> unary-expression
+                    (alt postfix-expression
+                         simple-unary-expression)
+                    :action `(unary ,$1))
 
-               (--> |and_expression|
-                    (seq |equality_expression| (rep & |equality_expression|)))
+               (--> unary-operator
+                    (alt & * + - ~ !)
+                    :action $1)
 
-               (--> |exclusive_or_expression|
-                    (seq |and_expression| (rep ^ |and_expression|)))
+               (--> cast-expression
+                    (alt (seq simple-unary-expression    :action `(unary ,$1))
+                         (seq simple-primary-expression  :action `(unary ,$1))
+                         (seq \( (alt (seq expression \)
+                                           :action expression)
+                                      (seq type-name  \)
+                                           (alt (seq  { initializer-list (opt \,) }
+                                                      :action `(compound-literal ,initializer-list))
+                                                (seq cast-expression
+                                                     :action `(cast ,cast-expression)))
+                                           :action `(,(first $2) ,type-name ,@(rest $2)))
+                                      (seq \) :action nil #|TODO: WHAT IS THIS?|#))))
+                    :action $1)
 
-               (--> |inclusive_or_expression|
-                    (seq |exclusive_or_expression| (rep \| |exclusive_or_expression|)))
+               ;; left-to-right:
 
-               (--> |logical_and_expression|
-                    (seq |inclusive_or_expression| (rep AND_OP |inclusive_or_expression|)))
+               (--> multiplicative-expression
+                    (seq cast-expression (rep (alt * / %) cast-expression :action (list $1 $2))
+                         :action (wrap-left-to-right $1 $2))
+                    :action $1)
 
-               (--> |logical_or_expression|
-                    (seq |logical_and_expression| (rep OR_OP |logical_and_expression|)))
+               (--> additive-expression
+                    (seq multiplicative-expression (rep (alt + -) multiplicative-expression :action (list $1 $2))
+                         :action (wrap-left-to-right $1 $2))
+                    :action $1)
 
-               (--> |conditional_expression|
-                    (seq |logical_or_expression| (opt ? |expression| \: |conditional_expression|)))
+               (--> shift-expression
+                    (seq additive-expression (rep (alt LEFT-OP RIGHT-OP) additive-expression :action (list $1 $2))
+                         :action (wrap-left-to-right $1 $2))
+                    :action $1)
+
+               (--> relational-expression
+                    (seq shift-expression (rep (alt < > LE-OP GE-OP) shift-expression :action (list $1 $2))
+                         :action (wrap-left-to-right $1 $2))
+                    :action $1)
+
+               (--> equality-expression
+                    (seq relational-expression (rep (alt EQ-OP NE-OP) relational-expression :action (list $1 $2))
+                         :action (wrap-left-to-right $1 $2))
+                    :action $1)
+
+               (--> and-expression
+                    (seq equality-expression (rep & equality-expression :action $2)
+                         :action (wrap-left-to-right $1 $2))
+                    :action $1)
+
+               (--> exclusive-or-expression
+                    (seq and-expression (rep ^ and-expression :action $2)
+                         :action (wrap-left-to-right $1 $2))
+                    :action $1)
+
+               (--> inclusive-or-expression
+                    (seq exclusive-or-expression (rep \| exclusive-or-expression :action $2)
+                         :action (wrap-left-to-right $1 $2))
+                    :action $1)
+
+               (--> logical-and-expression
+                    (seq inclusive-or-expression (rep AND-OP inclusive-or-expression :action $2)
+                         :action (wrap-left-to-right $1 $2))
+                    :action $1)
+
+               (--> logical-or-expression
+                    (seq logical-and-expression (rep OR-OP logical-and-expression :action $2)
+                         :action (wrap-left-to-right $1 $2))
+                    :action $1)
+
+               ;; ternary if is right-to-left:
+
+               (--> conditional-expression
+                    (seq logical-or-expression (opt ? expression \: conditional-expression
+                                                    :action (list expression conditional-expression))
+                         :action (if $2 `(if ,$1 ,@$2) $1))
+                    :action $1)
+
+               ;; right-to-left:
 
                #-(and)
-               (--> |assignment_expression|
-                    (alt |conditional_expression|
-                         (seq |unary_expression| |assignment_operator| |assignment_expression|)))
+               (--> assignment-expression
+                    (alt conditional-expression
+                         (seq unary-expression assignment-operator assignment-expression)))
 
-               (--> |assignment_expression|
-                    (seq |conditional_expression|
-                         (opt (seq |assignment_operator| |assignment_expression|))
-                         :action (progn #|check the conditional_expression is actually unary_expression|#)))
+               (--> assignment-expression
+                    (seq conditional-expression
+                         (opt (seq assignment-operator assignment-expression :action (list $1 $2)))
+                         :action (progn
+                                   (check-unary $1)
+                                   (if $2
+                                       `(,(first $2) $1 ,@(rest $2))
+                                       $1)))
+                    :action (progn (print `(assignment-expression -> ,$1))
+                                   $1))
 
-               (--> |assignment_operator|
-                    (alt = MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN ADD_ASSIGN SUB_ASSIGN LEFT_ASSIGN RIGHT_ASSIGN AND_ASSIGN
-                         XOR_ASSIGN OR_ASSIGN
-                         ))
+               (--> assignment-operator
+                    (alt (seq = :action 'setf)
+                         MUL-ASSIGN DIV-ASSIGN MOD-ASSIGN ADD-ASSIGN SUB-ASSIGN LEFT-ASSIGN RIGHT-ASSIGN AND-ASSIGN
+                         XOR-ASSIGN OR-ASSIGN))
 
-               (--> |expression|
-                    (seq |assignment_expression| (rep \, |assignment_expression| :action $2) :action (cons $1 $2)))
+               ;; comma is left-to-right:
 
-               (--> |constant_expression|
-                    |conditional_expression|)
+               (--> expression
+                    (seq assignment-expression (rep \, assignment-expression :action $2)
+                         :action `(progn ,$1 ,@$2))
+                    :action $1)
 
-               (--> |declaration|
-                    (alt (seq |declaration_specifiers| (opt |init_declarator_list|) \;)
-                         |static_assert_declaration|))
-          
+               (--> constant-expression
+                    conditional-expression
+                    :action (progn (check-constant-expression conditional-expression)
+                                   conditional-expression))
 
-               (--> |alignment_specifier|
-                    (seq ALIGNAS \( (opt |type_name| |constant_expression|) \)))
+               ;; ---
 
-               (--> |function_specifier|
+               (--> declaration
+                    (alt (seq declaration-specifiers (opt init-declarator-list) \;
+                              :action (if $2
+                                          (mapcar (lambda (declarator)
+                                                    (destructuring-bind (op declarator initializer) declarator
+                                                      `(,op ,(unwrap-declarator declarator $1) ,initializer)))
+                                                  init-declarator-list)
+                                          declaration-specifiers))
+                         static-assert-declaration)
+                    :action $1)
+
+
+               (--> alignment-specifier
+                    (seq ALIGNAS \( (opt type-name constant-expression) \)))
+
+               (--> function-specifier
                     (alt (seq INLINE   :action 'inline)
-                         (seq NORETURN :action 'noreturn)))
+                         (seq NORETURN :action 'noreturn))
+                    :action $1)
 
-               (--> |storage_class_specifier|
+               (--> storage-class-specifier
                     (alt (seq TYPEDEF      :action 'typedef)
                          (seq EXTERN       :action 'extern)
                          (seq STATIC       :action 'static)
-                         (seq THREAD_LOCAL :action 'thread-load)
+                         (seq THREAD-LOCAL :action 'thread-load)
                          (seq AUTO         :action 'auto)
-                         (seq REGISTER     :action 'register)))
+                         (seq REGISTER     :action 'register))
+                    :action $1)
 
-               (--> |type_qualifier|
-                    (alt |simple_type_qualifier|
-                         (seq ATOMIC :action (list :type-qualifier :atomic))))
-               
-               (--> |simple_type_qualifier|
+               (--> type-qualifier
+                    (alt simple-type-qualifier
+                         (seq ATOMIC :action '(:type-qualifier :atomic)))
+                    :action $1)
+
+               (--> simple-type-qualifier
                     (seq (alt (seq CONST    :action 'const)
                               (seq RESTRICT :action 'restrict)
                               (seq VOLATILE :action 'volatile))
-                         :action (list :type-qualifier $1))) 
-               
-               (--> |type_specifier|
-                    (alt |simple_type_specifier|
-                         |atomic_type_specifier|))
+                         :action (list :type-qualifier $1))
+                    :action $1)
 
-               (--> |atomic_type_specifier|
-                    (seq ATOMIC \( |type_name| \) :action (list :type-specifier $1 $3)))
+               (--> type-specifier
+                    (alt simple-type-specifier
+                         atomic-type-specifier)
+                    :action $1)
 
-               (--> |simple_type_specifier|
+               (--> atomic-type-specifier
+                    (seq ATOMIC \( type-name \) :action (list :type-specifier $1 $3))
+                    :action $1)
+
+               (--> simple-type-specifier
                     (seq (alt (seq VOID      :action 'void)
                               (seq CHAR      :action 'char)
                               (seq SHORT     :action 'short)
@@ -476,352 +515,394 @@
                               (seq BOOL      :action 'bool)
                               (seq COMPLEX   :action 'complex)
                               (seq IMAGINARY :action 'imaginary)
-                              |struct_or_union_specifier|
-                              |enum_specifier|
-                              TYPEDEF_NAME)
-                         :action (list :type-specifier $1)))
-
-               (--> |specifier_qualifier|
-                    (alt (seq ATOMIC (opt \( |type_name| \) :action $2)
-                              :action
-                              (if $2
-                                  (list :type-specifier $1 $2)
-                                  (list :type-qualifier $1)))
-                         |simple_type_qualifier|
-                         |simple_type_specifier|))
-          
-               (--> |declaration_specifier|
-                    (alt |alignment_specifier|
-                         |function_specifier|
-                         |storage_class_specifier|
-                         |specifier_qualifier|))
-          
-               (--> |declaration_specifiers|
-                    (seq |declaration_specifier| (rep |declaration_specifier| :action $1) :action (cons $1 $2)))
-
-               (--> |init_declarator_list|
-                    (seq |init_declarator| (rep \, |init_declarator| :action $2) :action (cons $1 $2)))
-
-               (--> |init_declarator|
-                    (seq |declarator| (opt = |initializer| :action $2)
-                         :action (declarator $1 $2)))
-
-               (--> |struct_or_union_specifier|
-                    (seq |struct_or_union| (alt (seq { |struct_declaration_list| })
-                                                (seq IDENTIFIER (opt { |struct_declaration_list| })))))
-
-               (--> |struct_or_union|
-                    (alt STRUCT UNION
-                         ))
-
-               (--> |struct_declaration_list|
-                    (seq |struct_declaration| (rep |struct_declaration| :action $1) :action (cons $1 $2)))
-
-               (--> |struct_declaration|
-                    (alt (seq |specifier_qualifier_list| (opt |struct_declarator_list|) \;) 
-                         |static_assert_declaration|
-                         ))
-
-               (--> |specifier_qualifier_list|
-                    (seq |specifier_qualifier| (rep |specifier_qualifier| :action $1) :action (cons $1 $2)))
-
-               (--> |struct_declarator_list|
-                    (seq |struct_declarator| (rep \, |struct_declarator| :action $2) :action (cons $1 $2)))
-
-               (--> |struct_declarator|
-                    (alt (seq \: |constant_expression|) 
-                         (seq |declarator| (opt \: |constant_expression|))))
-
-               (--> |enum_specifier|
-                    ENUM (alt (seq { |enumerator_list| (opt \,)}) 
-                              (seq IDENTIFIER (opt { |enumerator_list| (opt \,)}))))
-
-               (--> |enumerator_list|
-                    (seq |enumerator| (rep \, |enumerator| :action $2) :action (cons $1 $2)))
-
-               (--> |enumeration_constant|
-                    IDENTIFIER)
-
-               (--> |enumerator|
-                    (seq |enumeration_constant| (opt = |constant_expression|)))
-
-
-
-
-               (--> |declarator|
-                    (seq (opt |pointer|) |direct_declarator|
-                         :action (if $1
-                                     `(:pointer $2)
-                                     $2))
+                              struct-or-union-specifier
+                              enum-specifier
+                              TYPEDEF-NAME)
+                         :action (list :type-specifier $1))
                     :action $1)
 
-               (--> |direct_declarator|
-                    (seq |simple_direct_declarator| (rep |direct_declarator_item| :action $1)
+               (--> specifier-qualifier
+                    (alt (seq ATOMIC (opt \( type-name \) :action $2)
+                              :action (if $2
+                                          (list :type-specifier $1 $2)
+                                          (list :type-qualifier $1)))
+                         simple-type-qualifier
+                         simple-type-specifier)
+                    :action $1)
+
+               (--> declaration-specifier
+                    (alt alignment-specifier
+                         function-specifier
+                         storage-class-specifier
+                         specifier-qualifier)
+                    :action $1)
+
+               (--> declaration-specifiers
+                    (seq declaration-specifier (rep declaration-specifier :action $1)
                          :action (cons $1 $2))
                     :action $1)
 
-               (--> |simple_direct_declarator|
-                    (alt (seq IDENTIFIER :action $1)
-                         (seq \(
-                              (opt (alt (seq |declarator| (rep \, IDENTIFIER :action $2)
-                                             :action (progn
-                                                       #|check declarator is identifier
-                                                       if we have rep identifiers.|#
-                                                       (if $2
-                                                           (progn
-                                                             (unless (eq '|identifier| (car $1))
-                                                               (error "Invalid simple direct declarator: identifier list ~A following ~A"
-                                                                      $2 $1))
-                                                             (cons $1 $2))
-                                                           $1)))
-                                        (seq |parameter_type_list|
-                                             :action `(:parameters ,$1))))
-                              \)
-                              :action $2))                    
+               (--> init-declarator-list
+                    (seq init-declarator (rep \, init-declarator :action $2)
+                         :action (cons $1 $2))
                     :action $1)
 
-          (--> |direct_declarator_item|
-               (alt (seq \( (opt |direct_declarator_in_parentheses|) \))
-                    (seq \[ (opt (alt STAR
-                                      |direct_declarator_in_brackets|)) \])))
+               (--> init-declarator
+                    (seq declarator (opt = initializer :action $2)
+                         :action (declarator $1 $2))
+                    :action $1)
 
-          (--> |direct_declarator_in_parentheses|
-               (alt (seq |identifier_list|)
-                    (seq |parameter_type_list|)))
+               (--> struct-or-union-specifier
+                    (seq struct-or-union (alt (seq { struct-declaration-list }
+                                                   :action (list nil struct-declaration-list))
+                                              (seq IDENTIFIER (opt { struct-declaration-list }
+                                                                   :action struct-declaration-list)
+                                                   :action (list $1 $2)))
+                         :action (cons (first struct-or-union) $2)))
 
-          (--> |direct_declarator_in_brackets|
-               (alt (seq |assignment_expression|)
-                    (seq STATIC (opt |type_qualifier_list|) |assignment_expression|)
-                    (seq |type_qualifier_list| (opt (alt ;; * ;; TODO
-                                                         (seq (opt STATIC) |assignment_expression|))))))
+               (--> struct-or-union
+                    (alt STRUCT UNION)
+                    :action $1)
 
-          
+               (--> struct-declaration-list
+                    (seq struct-declaration (rep struct-declaration :action $1)
+                         :action (cons $1 $2))
+                    :action $1)
 
-          (--> |parameter_type_list|
-               (seq |parameter_list| (opt \, ELLIPSIS)))
+               (--> struct-declaration
+                    (alt (seq specifier-qualifier-list (opt struct-declarator-list) \;
+                              :action )
+                         static-assert-declaration)
+                    :action $1)
 
-          (--> |parameter_list|
-               |parameter_declaration| (rep \, |parameter_declaration| :action $2) :action (cons $1 $2))
+               (--> specifier-qualifier-list
+                    (seq specifier-qualifier (rep specifier-qualifier :action $1) :action (cons $1 $2)))
 
-          (--> |identifier_list|
-               (seq IDENTIFIER (rep \, IDENTIFIER :action $2) :action (cons $1 $2)))
+               (--> struct-declarator-list
+                    (seq struct-declarator (rep \, struct-declarator :action $2)
+                         :action (cons $1 $2))
+                    :action $1)
 
-          (--> |type_qualifier_list|
-               |type_qualifier| (rep |type_qualifier| :action $1) :action (cons $1 $2))
+               (--> struct-declarator
+                    (alt (seq \: constant-expression
+                              :action (list 'struct-declarator nil $2))
+                         (seq declarator (opt \: constant-expression :action $2)
+                              :action (list 'struct-declarator $1 $2)))
+                    :action $1)
 
-          
+               (--> enum-specifier
+                    ENUM (alt (seq { enumerator-list (opt \,)})
+                              (seq IDENTIFIER (opt { enumerator-list (opt \,)}))))
 
+               (--> enumerator-list
+                    (seq enumerator (rep \, enumerator :action $2) :action (cons $1 $2)))
 
+               (--> enumeration-constant
+                    IDENTIFIER)
 
-
-          (--> |parameter_declaration|
-               (seq |declaration_specifiers|
-                    (opt |declarator__or__abstract_declarator|)))
-
-          (--> |declarator__or__abstract_declarator|
-               (alt |direct_declarator__or__direct_abstract_declarator|
-                    (seq |pointer| (opt |direct_declarator__or__direct_abstract_declarator|))))
-
-          (--> |direct_declarator__or__direct_abstract_declarator|
-               (seq |simple_direct_declarator__or__simple_direct_abstract_declarator|
-                    (rep |direct_declarator_item__or__direct_abstract_declarator_item|
-                         :action $1) :action (cons $1 $2)))
-               
-          
-          (--> |simple_direct_declarator__or__simple_direct_abstract_declarator|
-               (alt (seq IDENTIFIER)
-                    (seq \( (opt (alt (seq |declarator__or__abstract_declarator|
-                                           (rep \, IDENTIFIER)
-                                           :action (progn #|check declarator is identifier
-                                                       if we have rep identifiers.|#))
-                                      (seq |parameter_type_list|)))
-                         \))
-                    |bracket_direct_abstract_declarator|
-                   ))
-          
-          (--> |direct_declarator_item__or__direct_abstract_declarator_item|
-               (alt (seq \( (opt |direct_declarator_in_parentheses|) \))
-                    |bracket_direct_abstract_declarator|
-                   ))
-
-          (--> |bracket_direct_abstract_declarator|
-               (seq \[
-                    (opt (alt (seq STAR)
-                              (seq |direct_declarator_in_brackets|
-                                   :action (progn #| check no [*] |#))))
-                    \]))
+               (--> enumerator
+                    (seq enumeration-constant (opt = constant-expression)))
 
 
 
 
-          
-          (--> |pointer|
-               (seq * (opt (alt (seq |type_qualifier_list| (opt |pointer|))
-                                |pointer|
-                               ))))
-          
-          
-          (--> |type_name|
-               (seq |specifier_qualifier_list| (opt |abstract_declarator|)))
+               (--> declarator
+                    (alt (seq pointer direct-declarator
+                              :action (wrap-pointers $2 $1))
+                         (seq direct-declarator
+                              :action $1))
+                    :action $1)
+
+               ;; const int *ptc;      (const int) ((pointer) ptc) -> (declarator ((pointer) (const int)) ptc)
+               ;; int* const cp;       (int) ((pointer const) cp)  -> (declarator ((pointer const) (int)) cp)
+               ;; typedef int *ip;     (int) ((pointer) ip)        -> (typedef    ((pointer) (int))       ip)
+               ;; const ip cp;         (const ip)  cp              -> (declarator (const ip)              cp)
+
+               ;; int      *a   [2]  [3]       (int) (pointer (array 3 (array 2 a))) --> (declarator  (array 2 (array 3 (pointer int))) a)
+               ;; a = array [2] of array [3] of pointer to int
+
+               (--> direct-declarator
+                    (seq simple-direct-declarator (rep direct-declarator-item :action $1)
+                         :action (wrap-declarator $1 $2))
+                    :action $1)
+
+               (--> simple-direct-declarator
+                    (alt (seq identifier        :action $1)
+                         (seq \( declarator \)  :action $2))
+                    :action $1)
+
+               (--> direct-declarator-item
+                    (alt (seq \( (opt direct-declarator-in-parentheses) \)
+                              :action `(parameters ,$2))
+                         (seq \[ (alt (seq (opt STAR) :action `(array nil (if $1 '* nil)))
+                                      direct-declarator-in-brackets) \]
+                              :action $2))
+                    :action $1)
+
+               (--> direct-declarator-in-parentheses
+                    (alt (seq identifier-list     :action $1)
+                         (seq parameter-type-list :action $1))
+                    :action $1)
+
+               (--> direct-declarator-in-brackets
+                    (alt (seq assignment-expression
+                              :action `(array nil ,assignment-expression))
+                         (seq STATIC (opt type-qualifier-list) assignment-expression
+                              :action `(array ,(cons 'static $2) ,assignment-expression))
+                         (seq type-qualifier-list (opt (alt ;; * ;; TODO
+                                                            (seq (opt STATIC :action '(static)) assignment-expression
+                                                                 :action (list $1 $2))))
+                              :action `(array ,(append type-qualifier-list (first $2)) ,(second $2))))
+                    :action $1)
+
+               (--> parameter-type-list
+                    (seq parameter-list (opt \, ELLIPSIS)
+                         :action (if $2
+                                     (append parameter-list '(ellipsis))
+                                     parameter-list))
+                    :action $1)
+
+               (--> parameter-list
+                    (seq parameter-declaration (rep \, parameter-declaration :action $2)
+                         :action (cons $1 $2))
+                    :action $1)
+
+               (--> parameter-declaration
+                    (seq declaration-specifiers
+                         (opt declarator--or--abstract-declarator)
+                         :action (if $2
+                                     `(parameter ,$1 ,$2)
+                                     `(parameter ,$1)))
+                    :action $1)
+
+               (--> identifier-list
+                    (seq IDENTIFIER (rep \, IDENTIFIER :action $2)
+                         :action (cons $1 $2))
+                    :action $1)
+
+               (--> type-qualifier-list
+                    (seq type-qualifier (rep type-qualifier :action $1)
+                         :action (cons $1 $2))
+                    :action $1)
 
 
-          
 
 
-          (--> |abstract_declarator|
-               (alt (seq |pointer| (opt |direct_abstract_declarator|))
-                    (seq |direct_abstract_declarator|)))
+               (--> declarator--or--abstract-declarator
+                    (alt direct-declarator--or--direct-abstract-declarator
+                         (seq pointer (opt direct-declarator--or--direct-abstract-declarator)
+                              :action (if $1
+                                          (wrap-pointers $2 $1)
+                                          $2)))
+                    :action $1)
 
-          (--> |direct_abstract_declarator|
-               (seq |simple_direct_abstract_declarator|
-                    (rep |direct_abstract_declarator_item|
-                         :action $1) :action (cons $1 $2)))
-          
-          (--> |simple_direct_abstract_declarator|
-               (alt (seq \( (opt |direct_abstract_declarator_in_parentheses|) \))
-                    |bracket_direct_abstract_declarator|
-                   ))
-
-          (--> |direct_abstract_declarator_in_parentheses|
-               (alt (seq |abstract_declarator|)
-                    (seq |parameter_type_list|)))
-
-          (--> |direct_abstract_declarator_item|
-               (alt (seq \( (opt |parameter_type_list|) \))
-                    |bracket_direct_abstract_declarator|
-                   ))
-
-          
-          
-          
-          
-
-          (--> |initializer|
-               (alt (seq { |initializer_list| (opt \,)}) 
-                    |assignment_expression|
-                   ))
-
-          (--> |initializer_list|
-               (seq (alt (seq |designation| |initializer|)
-                         (seq |initializer|))
-                    (rep \, |initializer_list|)))
-
-          (--> |designation|
-               (seq |designator_list| =))
-
-          (--> |designator_list|
-               |designator| (rep |designator| :action $1) :action (cons $1 $2))
-
-          (--> |designator|
-               (alt (seq \[ |constant_expression| \]) 
-                    (seq |.| IDENTIFIER)))
-
-          (--> |static_assert_declaration|
-               (seq STATIC_ASSERT \( |constant_expression| \, STRING_LITERAL \) \;))
-
-          (--> |statement|
-               (alt |simple_labeled_statement|
-                    |expression_statement_or_label|
-                    |compound_statement|
-                    |selection_statement|
-                    |iteration_statement|
-                    |jump_statement|
-                   ))
+               (--> direct-declarator--or--direct-abstract-declarator
+                    (seq simple-direct-declarator--or--simple-direct-abstract-declarator
+                         (rep direct-declarator-item--or--direct-abstract-declarator-item :action $1)
+                         :action (cons $1 $2))
+                    :action $1)
 
 
-          (--> |expression_statement_or_label|
-               (alt \;
-                    (seq |expression| (alt (seq \;) ; expression_statement
-                                           (seq \: |statement|))) ; label
-                   ))
-          
-          (--> |expression_statement|
-               (alt \;
-                    (seq |expression| \;)))
-          
-          (--> |simple_labeled_statement|
-               (alt (seq CASE |constant_expression| \: |statement|)
-                    (seq DEFAULT \: |statement|)))
+               (--> simple-direct-declarator--or--simple-direct-abstract-declarator
+                    (alt (seq IDENTIFIER)
+                         (seq \( (opt (alt (seq declarator--or--abstract-declarator
+                                                (rep \, IDENTIFIER)
+                                                :action (progn #|check declarator is identifier
+                                                          if we have rep identifiers.|#))
+                                           (seq parameter-type-list)))
+                              \))
+                         bracket-direct-abstract-declarator
+                         ))
 
-          (--> |compound_statement|
-               (seq { (opt |block_item_list|) }))
+               (--> direct-declarator-item--or--direct-abstract-declarator-item
+                    (alt (seq \( (opt direct-declarator-in-parentheses) \))
+                         bracket-direct-abstract-declarator
+                         ))
 
-          (--> |block_item_list|
-               |block_item| (rep |block_item|  :action $1) :action (cons $1 $2))
+               (--> bracket-direct-abstract-declarator
+                    (seq \[
+                         (opt (alt (seq STAR)
+                                   (seq direct-declarator-in-brackets
+                                        :action (progn #| check no [*] |#))))
+                         \]))
 
-          (--> |block_item|
-               (alt |declaration|
-                    |statement|))
 
 
-          (--> |selection_statement|
-               (alt (seq IF \( |expression| \) |statement| (opt ELSE |statement|)) 
-                    (seq SWITCH \( |expression| \) |statement|)))
 
-          (--> |iteration_statement|
-               (alt (seq WHILE \( |expression| \) |statement|) 
-                    (seq DO |statement| WHILE \( |expression| \) \;)
-                    (seq FOR \( (alt (seq |expression_statement|  |expression_statement|  (opt  |expression|)  \) |statement|)
-                                     (seq |declaration| |expression_statement| (opt |expression|) \) |statement|)))))
 
-          (--> |jump_statement|
-               (alt (seq GOTO IDENTIFIER \;) 
-                    (seq CONTINUE \;) 
-                    (seq BREAK \;) 
-                    (seq RETURN (opt  |expression|) \;)))
+               (--> pointer
+                    (seq *
+                         (opt type-qualifier-list)
+                         (rep * (opt type-qualifier-list) :action $2)
+                         :action (cons $2 $3)))
 
-          (--> |translation_unit|
-               (seq |external_declaration| (rep |external_declaration| :action $1) :action (cons $1 $2)))
 
-          (--> |external_declaration|
-               (alt (seq |static_assert_declaration|)
+               (--> type-name
+                    (seq specifier-qualifier-list (opt abstract-declarator)))
 
-                    (seq (seq |declaration_specifiers| :action (push-declaration-specifiers $1))
-                         (alt (seq \; )
-                              (seq |declarator|
-                                   (alt (seq = |initializer| (rep \, |init_declarator| :action $2) \;
-                                             :action (list :initializer $2 $3))
-                                        (seq (opt |declaration_list|) |compound_statement|
-                                             :action (list :function-declarator $1 $2))
-                                        (seq \;
-                                             :action '(:simple)))
-                                   :action (ecase (first $2)
-                                             (:simple
-                                              (declarator $1 nil))
-                                             (:initializer
-                                              (cons (declarator $1 (second $2)) (third $2)))
-                                             (:function-declarator
-                                              (list :declarator $1 $2)))))
-                         :action (progn
-                                   (print `(declaration-specifiers ,$1))
-                                   (print `(declarator ,$2))
-                                   (pop-declaration-specifiers)
-                                   $2))))
 
-          (--> |declaration_list|
-               (seq  |declaration| (rep |declaration| :action $1) :action (cons $1 $2)))))
+
+
+
+               (--> abstract-declarator
+                    (alt (seq pointer (opt direct-abstract-declarator)
+                              :action (wrap-pointers $2 $1))
+                         (seq direct-abstract-declarator
+                              :action $1))
+                    :action $1)
+
+               (--> direct-abstract-declarator
+                    (seq simple-direct-abstract-declarator
+                         (rep direct-abstract-declarator-item
+                              :action $1) :action (cons $1 $2)))
+
+               (--> simple-direct-abstract-declarator
+                    (alt (seq \( (opt direct-abstract-declarator-in-parentheses) \))
+                         bracket-direct-abstract-declarator
+                         ))
+
+               (--> direct-abstract-declarator-in-parentheses
+                    (alt (seq abstract-declarator)
+                         (seq parameter-type-list)))
+
+               (--> direct-abstract-declarator-item
+                    (alt (seq \( (opt parameter-type-list) \))
+                         bracket-direct-abstract-declarator
+                         ))
+
+
+
+
+
+
+               (--> initializer
+                    (alt (seq { initializer-list (opt \,) }
+                              :action `(compound-literal nil ,initializer-list))
+                         assignment-expression)
+                    :action $1)
+
+               (--> initializer-list
+                    (seq (alt (seq designation initializer)
+                              (seq initializer))
+                         (rep \, initializer-list :action $2)
+                         :action (cons $1 $2))
+                    :action $1)
+
+               (--> designation
+                    (seq designator-list =))
+
+               (--> designator-list
+                    designator (rep designator :action $1) :action (cons $1 $2))
+
+               (--> designator
+                    (alt (seq \[ constant-expression \])
+                         (seq |.| IDENTIFIER)))
+
+               (--> static-assert-declaration
+                    (seq STATIC-ASSERT \( constant-expression \, STRING-LITERAL \) \;))
+
+               (--> statement
+                    (alt simple-labeled-statement
+                         expression-statement-or-label
+                         compound-statement
+                         selection-statement
+                         iteration-statement
+                         jump-statement
+                         ))
+
+
+               (--> expression-statement-or-label
+                    (alt \;
+                         (seq expression (alt (seq \;) ; expression-statement
+                                              (seq \: statement))) ; label
+                         ))
+
+               (--> expression-statement
+                    (alt \;
+                         (seq expression \;)))
+
+               (--> simple-labeled-statement
+                    (alt (seq CASE constant-expression \: statement)
+                         (seq DEFAULT \: statement)))
+
+               (--> compound-statement
+                    (seq { (opt block-item-list) }))
+
+               (--> block-item-list
+                    block-item (rep block-item  :action $1) :action (cons $1 $2))
+
+               (--> block-item
+                    (alt declaration
+                         statement))
+
+
+               (--> selection-statement
+                    (alt (seq IF \( expression \) statement (opt ELSE statement))
+                         (seq SWITCH \( expression \) statement)))
+
+               (--> iteration-statement
+                    (alt (seq WHILE \( expression \) statement)
+                         (seq DO statement WHILE \( expression \) \;)
+                         (seq FOR \( (alt (seq expression-statement  expression-statement  (opt  expression)  \) statement)
+                                          (seq declaration expression-statement (opt expression) \) statement)))))
+
+               (--> jump-statement
+                    (alt (seq GOTO IDENTIFIER \;)
+                         (seq CONTINUE \;)
+                         (seq BREAK \;)
+                         (seq RETURN (opt  expression) \;)))
+
+               (--> translation-unit
+                    (seq external-declaration (rep external-declaration :action $1) :action (cons $1 $2)))
+
+               (--> external-declaration
+                    (alt (seq static-assert-declaration)
+
+                         (seq (seq declaration-specifiers :action (push-declaration-specifiers $1))
+                              (alt (seq \; )
+                                   (seq declarator
+                                        (alt (seq = initializer (rep \, init-declarator :action $2) \;
+                                                  :action (list :initializer $2 $3))
+                                             (seq (opt declaration-list) compound-statement
+                                                  :action (list :function-declarator $1 $2))
+                                             (seq \;
+                                                  :action '(:simple)))
+                                        :action (ecase (first $2)
+                                                  (:simple
+                                                   (declarator $1 nil))
+                                                  (:initializer
+                                                   (cons (declarator $1 (second $2)) (third $2)))
+                                                  (:function-declarator
+                                                   (list :declarator $1 $2)))))
+                              :action (progn
+                                        (print `(declaration-specifiers ,$1))
+                                        (print `(declarator ,$2))
+                                        (pop-declaration-specifiers)
+                                        $2)))
+                    :action (print `(external-declaration ,$1)))
+
+               (--> declaration-list
+                    (seq declaration (rep declaration :action $1) :action (cons $1 $2)))))
   (defparameter *c* '#1#))
 
 
 (defun push-declaration-specifiers (specifiers)
   (push specifiers (context-declaration-specifiers *context*))
-  (when (some (lambda (specifier)
-                (and (eq '|storage-class-specifier| (caadr specifier))
-                     (eq 'typedef (cadar specifier))))
-              (second specifiers))
+  (when (member 'typedef specifiers)
     (push :typedef (context-declaration-specifiers *context*)))
-  (print specifiers) (terpri))
+  (print `(specifiers --> ,specifiers)) (terpri))
 
 (defun pop-declaration-specifiers ()
   (when (eq :typedef (pop (context-declaration-specifiers *context*)))
     (pop (context-declaration-specifiers *context*))))
 
 (defun declarator-name (declarator)
-  (print declarator) (terpri))
+  (print `(declarator --> ,declarator)) (terpri)
+  (third (unwrap-declarator nil declarator)))
 
 (defun declarator ($1 $2)
   (let ((name (declarator-name $1)))
-    (case (first (print (context-declaration-specifiers *context*)))
+    (case (first (context-declaration-specifiers *context*))
       (:typedef
        (when $2
          (cerror "Continue" "Invalid initializer in a typedef"))
@@ -832,6 +913,52 @@
        ;; TODO: ???
        (enter-enumeration-constant *context* name (second (context-declaration-specifiers *context*)))))
     `(:declarator ,name ,$1 ,$2)))
+
+(defun check-constant-expression (expression)
+  (values))
+
+(defun check-unary (expression)
+  (unless (and (listp expression)
+               (eq 'unary (first expression)))
+    (error "Expected an unary expression as left-hand-side of an assignment, instead of ~S"
+           expression)))
+
+(defun wrap-left-to-right (expression partial-expressions)
+  (loop
+    :for (op . arguments) :in partial-expressions
+    :do (setf expression `(,op ,expression ,@arguments))
+    :finally (return expression)))
+
+(defun wrap-pointers (expression pointers)
+  (loop
+    :for pointer :in (reverse pointers)
+    :do (setf expression `(pointer ,pointer ,expression))
+    :finally (return expression)))
+
+;; (wrap-pointers 'a '(() (const) (volatile const)))
+;; (pointer nil (pointer (const) (pointer (volatile const) a)))
+
+(defun wrap-declarator (declarator items)
+  (loop
+    :for item :in items
+    :do (setf declarator (ecase (first item)
+                           (parameters `(function ,(second item) ,declarator))
+                           (array      `(array ,(second item) ,(third item) ,declarator))))
+    :finally (return declarator)))
+
+(defun unwrap-declarator (type declarator)
+  (loop
+    :while (listp declarator)
+    :do (let ((type (first declarator)))
+          (case type
+            (pointer  (setf type `(pointer ,(second declarator) ,type)
+                            declarator (third declarator)))
+            (array    (setf type `(array ,(second declarator) ,(third declarator) ,type)
+                            declarator (fourth declarator)))
+            (function (setf type `(function ,(second declarator) ,type)
+                            declarator (third declarator)))
+            (otherwise (return-from unwrap-declarator (values declarator type)))))))
+
 
 
 ;;;; THE END ;;;;
