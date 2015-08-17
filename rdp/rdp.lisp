@@ -578,16 +578,20 @@ RETURN: The follow-set function for the grammar non-terminals.
          (if non-terminals
              (let ((follow-sets (make-hash-table :size (length non-terminals)))
                    (normalized-follow-sets (compute-follow-sets grammar)))
+               #-(and)
                (dolist (non-terminal non-terminals follow-sets)
                  (setf (gethash non-terminal follow-sets)
-                       (gethash non-terminal normalized-follow-sets))))
+                       (gethash non-terminal normalized-follow-sets)))
+               normalized-follow-sets)
              (compute-follow-sets grammar))))
     ;; build the resulting function.
     (setf (grammar-follow-function grammar)
           (lambda (non-terminal)
-            (or (gethash non-terminal follow-sets)
-                (error "~S is not a non-terminal of the grammar ~A"
-                       non-terminal (grammar-name grammar)))))))
+            (if (eql non-terminal :get-table)
+                follow-sets
+                (or (gethash non-terminal follow-sets)
+                    (error "~S is not a non-terminal of the grammar ~A"
+                           non-terminal (grammar-name grammar))))))))
 
 
 
@@ -829,7 +833,7 @@ rules and new produtions.  Returns the new production set.
              :scanner scanner
              :non-terminal-stack (copy-list *non-terminal-stack*)
              :expected-token expected-tokens
-             :format-control "Unexpected token ~S (~S)~@[~%Expected ~S~]~%~S~@[~%~{~A --> ~S~}~]"
+             :format-control "Unexpected token ~A (~S)~@[~%Expected ~A~]~%~S~@[~%~{~A --> ~S~}~]"
              :format-arguments (list
                                 (scanner-current-token scanner)
                                 (scanner-current-text scanner)
@@ -864,7 +868,7 @@ rules and new produtions.  Returns the new production set.
 (defmethod gen-in-firsts ((target (eql :lisp)) firsts)
   (if (null (cdr firsts))
       `(word-equal (scanner-current-token scanner) ',(car firsts))
-      `(member  (scanner-current-token scanner) ',firsts
+      `(member (scanner-current-token scanner) ',firsts
                 :test (function word-equal))))
 
 (defmethod gen-parsing-statement ((target (eql :lisp)) (grammar grammar) item)
@@ -895,14 +899,14 @@ rules and new produtions.  Returns the new production set.
               (if emptyp
                   `(when ,(gen-in-firsts target expected-tokens)
                      (,(gen-parse-function-name target grammar item) scanner))
-                  `(loop                ; retrying
-                                        :until ,(gen-in-firsts target expected-tokens)
-                                        :do (ecase (error-unexpected-token scanner
-                                                                           ',expected-tokens
-                                                                           ',(assoc item (grammar-rules grammar)))
-                                              (:retry)
-                                              (:continue (loop-finish)))
-                                        :finally (return (,(gen-parse-function-name target grammar item) scanner))))))
+                  `(loop ; retrying
+                         :until ,(gen-in-firsts target expected-tokens)
+                         :do (ecase (error-unexpected-token scanner
+                                                            ',expected-tokens
+                                                            ',(assoc item (grammar-rules grammar)))
+                               (:retry)
+                               (:continue (loop-finish)))
+                         :finally (return (,(gen-parse-function-name target grammar item) scanner))))))
         (ecase (car item)
           ((seq)
            (destructuring-bind (seq items actions) item
