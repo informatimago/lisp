@@ -52,17 +52,20 @@
 
 (defmethod print-parser-error ((err parser-error) stream)
   (declare (stepper disable))
-  (format stream
-          "~&~@[~A:~]~D:~D: ~?~%"
-          (let ((source (scanner-source (parser-error-scanner err))))
-            (typecase source
-              ((or string file-stream) (or (ignore-errors (pathname source))
-                                           (parser-error-file err)))
-              (t                       (parser-error-file err))))
-          (parser-error-line err)
-          (parser-error-column err)
-          (parser-error-format-control err)
-          (parser-error-format-arguments err)))
+  (let ((*print-circle* nil)
+        (*print-pretty* nil))
+   (format stream
+           "~&~@[~A:~]~D:~D: ~?~%"
+           (let ((source (scanner-source (parser-error-scanner err))))
+             (typecase source
+               ((or string file-stream) (or (ignore-errors (pathname source))
+                                            (parser-error-file err)))
+               (t                       (parser-error-file err))))
+           (parser-error-line err)
+           (parser-error-column err)
+           (parser-error-format-control err)
+           (parser-error-format-arguments err))
+    err))
 
 (define-condition parser-end-of-source-not-reached (parser-error)
   ()
@@ -83,9 +86,12 @@
 (defmethod print-scanner-error ((err unexpected-token-error) stream)
   (declare (stepper disable))
   (when (next-method-p) (call-next-method))
-  (format stream "~&Expected token: ~S~%Non-terminal stack: ~S~%"
-          (unexpected-token-error-expected-token err)
-          (unexpected-token-error-non-terminal-stack err)))
+  (let ((*print-circle* nil)
+        (*print-pretty* nil))
+    (format stream "~&Expected token: ~S~%Non-terminal stack: ~S~%"
+            (unexpected-token-error-expected-token err)
+            (unexpected-token-error-non-terminal-stack err)))
+  err)
 
 
 (defclass rdp-scanner (buffered-scanner)
