@@ -130,7 +130,7 @@
 (defmethod accept ((scanner buffered-scanner) token)
   (if (word-equal token (scanner-current-token scanner))
       (prog1 (list (token-kind (scanner-current-token scanner))
-                   (scanner-current-text scanner)
+                   (scanner-current-text scanner)                   
                    (scanner-column scanner))
         (scan-next-token scanner))
       (error 'unexpected-token-error
