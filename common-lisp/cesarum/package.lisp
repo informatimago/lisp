@@ -175,9 +175,9 @@ License:
 
 
 (defun all-users (package-designator)
-  (compute-closure (lambda (package-designator)
-                     (package-used-by-list package-designator))
-                   (list (find-package package-designator))))
+  (transitive-closure (lambda (package-designator)
+                        (package-used-by-list package-designator))
+                      (list (find-package package-designator))))
 
 
 (defun delete-packages (root-package)
