@@ -89,6 +89,63 @@ Use (GRAMMAR-NAMED name) to look up a grammar.")
   (gethash name *grammars*))
 
 
+(setf (documentation 'seq t) "
+
+Grammar rule syntax:
+
+    (SEQ term... [:action form...])
+
+Parses if each of the term parse in sequence, once.
+
+In the scope of the action, the terms are bound to variables named $1
+$2 to $n, and for non-terminals, to variables named by the
+non-terminal (suffixed by .1, .2, etc) if several occurence of the
+same non-terminal are present in the sequence.
+
+The default action returns all the parsed terms in a list.
+
+"
+       (documentation 'req t) "
+
+Grammar rule syntax:
+
+    (REQ term... [:action form...])
+
+is equivalent to:
+
+    (REQ (SEQ term... [:action form...]))
+
+Parses if each of the term parse in sequence, 0 or more times.
+
+Returns a list of the parsed sequences.
+
+"
+      (documentation 'opt t) "
+
+Grammar rule syntax:
+
+    (OPT term... [:action form...])
+
+is equivalent to:
+
+    (OPT (SEQ term... [:action form...]))
+
+Parses if each of the term parse in sequence, 0 or 1 time.
+
+Returns NIL or the the parsed sequence.
+
+"
+      (documentation 'alt t) "
+
+Grammar rule syntax:
+
+    (ALT term...)
+
+Parses one of the terms (the first set of all the terms must be disjoint).
+
+Returns parsed term.
+
+")
 
 
 (defgeneric generate-boilerplate (target-language grammar &key trace)
@@ -563,6 +620,8 @@ RETURN: The follow-set function for the grammar non-terminals.
      :for new-nt = (intern (format nil "~A-~A" base-nt i))
      :while (member new-nt non-terminals)
      :finally (return new-nt)))
+
+
 
 
 (defun normalize-grammar-rules (rules non-terminals)
