@@ -24,17 +24,28 @@
                         :initial-value '()))
 
 
-(with-open-file (out "p.lisp" :direction :output :if-exists :supersede :if-does-not-exist :create)
-  (pprint '(in-package "COM.INFORMATIMAGO.LANGUAGES.C11.PARSER") out)
-  (destructuring-bind (grammar &rest rest) (cdr (macroexpand-1 *c*))
-    (let ((*print-circle* t))
-      (pprint grammar out))
-    (dolist (form rest)
-      (pprint form out))))
-(load "p.lisp")
+(progn
+  (with-open-file (out "p.lisp" :direction :output :if-exists :supersede :if-does-not-exist :create)
+    (pprint '(in-package "COM.INFORMATIMAGO.LANGUAGES.C11.PARSER") out)
+    (destructuring-bind (grammar &rest rest) (cdr (macroexpand-1 *c*))
+      (let ((*print-circle*       t)
+            (*print-right-margin* 200))
+        (pprint grammar out))
+      (let ((*print-circle*       nil)
+            (*print-right-margin* 200))
+        (dolist (form rest)
+          (pprint form out)))))
+  (load "p.lisp"))
 
+(untrace typedef-name-p function-name-p enumeration-constant-name-p
+         enter-typedef enter-function enter-enumeration-constant
+         push-declaration-specifiers pop-declaration-specifiers register-declarator
+         scan-next-token)
 
+(defvar *tokens*  nil)
 (defvar *scanner* nil)
+(defvar *context* nil)
+
 (defun test/parse-stream (&optional tokens)
   (declare (stepper disable))
   (let ((tokens (or tokens
@@ -54,22 +65,72 @@
                                                                               "/usr/include/")
                                                :write-processed-lines nil))))
                             :initial-value '()))))
-    (setf *tc* tokens)
-    (let ((*scanner* (make-instance 'pre-scanned-scanner :tokens tokens))
-          (*context* (make-instance 'context)))
-      (loop
-        :until (scanner-end-of-source-p *scanner*)
-        :collect (handler-bind ((parser-end-of-source-not-reached #'continue))
-                   (parse-c11 *scanner*))))))
+    (setf *tokens*  tokens)
+    (setf *scanner* (make-instance 'pre-scanned-scanner :tokens tokens))
+    (setf *context* (make-instance 'context))
+    (loop
+      :until (scanner-end-of-source-p *scanner*)
+      :collect (handler-bind ((parser-end-of-source-not-reached 
+                                ;; #'continue
+                                #'invoke-debugger))
+                 (parse-c11 *scanner*)))))
 
 
 
-(step (test/parse-stream *tc*) :trace)
 
-(apropos "PRINT-HASH")
-(com.informatimago.common-lisp.cesarum.utility:print-hashtable  com.informatimago.languages.c11.parser::*context*)
+(defun print-tokens (tokens &key (start 0) (end nil))
+  (dolist (token (subseq tokens start end) (values))
+    (princ (token-text token))
+    (if (find (token-text token) '("{" "}" ";") :test (function string=))
+        (terpri)
+        (princ " ")))) 
+
+(defun print-typedefs (&optional (context *context*))
+  (com.informatimago.common-lisp.cesarum.utility:print-hashtable (context-typedefs context)))
+(defun print-enum-constants (&optional (context *context*))
+  (com.informatimago.common-lisp.cesarum.utility:print-hashtable (context-enumeration-constants context)))
+(defun print-func-names (&optional (context *context*))
+  (com.informatimago.common-lisp.cesarum.utility:print-hashtable (context-functions context)))
 
 
+
+
+#-(and) (progn
+
+          (external-declaration (seq ((alt ((seq (static-assert-declaration) ($0))
+                                            (seq ((seq (declaration-specifiers) ((push-declaration-specifiers $1)))
+                                                  (alt ((seq (\;) (:specifier))
+                                                        (seq (declarator (alt ((seq ((opt ((seq (= initializer) ($2)))) (rep ((seq (\, init-declarator) ($2)))) \;)
+                                                                                    ((if $1 '(:initializer $1 $2) '(:simple $2))))
+                                                                               (seq ((opt ((seq (declaration-list) ($0)))) compound-statement)
+                                                                                    ((list :function-declarator $1 $2))))))
+                                                             ((ecase (first $2)
+                                                                (:simple (declarator $1 (second $2)))
+                                                                (:initializer (cons (declarator $1 (second $2)) (third $2)))
+                                                                (:function-declarator (list :declarator $1 $2))))))))
+                                                 ((progn (print (list* 'declaration-specifiers (list $1)))
+                                                         (print (list* 'declarator (list $2)))
+                                                         (pop-declaration-specifiers)
+                                                         (if (eql $2 :specifier) $1 $2)))))))
+                                     ((print (list* 'external-declaration (list $1))))))
+
+          
+          (progn
+            (print-typedefs)       (terpri)
+            (print-enum-constants) (terpri)
+            (print-func-names)     (terpri))
+
+ 
+          (print-tokens *tokens* :start (- (length (pre-scanned-tokens *scanner*)) 40) :end (length (pre-scanned-tokens *scanner*)))
+
+          void unblock_tty_out_signal ( void )             ;
+          extern void init_sys_modes ( struct tty_display_info * ) ;
+          extern void reset_sys_modes ( struct tty_display_info * ) ;
+          extern void init_all_sys_modes ( void )                   ;
+          extern void reset_all_sys_modes ( void )                  ;
+          extern void 
+
+          )
 
 #-(and) (progn
           (defparameter *c* (quote

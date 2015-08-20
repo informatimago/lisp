@@ -58,6 +58,7 @@ The scanner uses it to detect enumeration_constant tokens."
 (defvar *context* nil
   "The C11 parser context.")
 
+
 (defgeneric typedef-name-p (context token)
   (:method ((context null) token)
     (declare (ignorable context token))
@@ -91,6 +92,7 @@ The scanner uses it to detect enumeration_constant tokens."
 
 (defmethod enumeration-constant-name-p ((context context) token)
   (identifier-in-table-p context (context-enumeration-constants context) token))
+
 
 (defgeneric enter-typedef (context name &optional definition)
   (:method ((context context) name &optional (definition t))
