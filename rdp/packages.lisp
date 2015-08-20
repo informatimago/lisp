@@ -53,11 +53,10 @@
            
            "FIND-RULE" "TERMINALP" "NON-TERMINAL-P"
            "FIRST-SET" "FOLLOW-SET" "NULLABLEP"
+           "SENTENCE-FIRST-SET"
 
            "CLEAN-RULES"
            "NORMALIZE-GRAMMAR" "COMPUTE-FIRST-SETS" "COMPUTE-FOLLOW-SETS"
-           
-           "$0"
 
            "*NON-TERMINAL-STACK*"
            ;; Re-export form com.informatimago.common-lisp.parser.scanner:

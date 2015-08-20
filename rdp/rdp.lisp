@@ -204,41 +204,39 @@ SEE ALSO:   The docstring of DEFGRAMMAR.
 RETURN:     A form that defines the grammar object and its parser functions.
 "
   (let* ((clean-rules (clean-rules rules))
-         (grammar (make-grammar :name name
-                                :terminals terminals
-                                :start start
-                                :rules clean-rules
-                                :scanner scanner
-                                :skip-spaces skip-spaces))
+         (grammar     (make-normalized-grammar
+                       :name name
+                       :terminals terminals
+                       :start start
+                       :rules clean-rules
+                       :scanner scanner
+                       :skip-spaces skip-spaces))
          (*linenum* 0)
-         (g (gensym "grammar")))
-    (setf (gethash (grammar-name grammar) *grammars*) grammar)
-    (compute-all-terminals     grammar)
-    (compute-all-non-terminals grammar)
-    (compute-first-follow      grammar)
+         (ng (gensym "ng")))
+    (setf (gethash (setf (grammar-name grammar) name) *grammars*) grammar)
+    (compute-first-function  grammar)
+    (compute-follow-function grammar)
+    
     `(progn
-       (let ((*linenum* 0)
-             (,g (make-grammar
-                  :name ',name
-                  :terminals ',terminals
-                  :start ',start
-                  :rules ',clean-rules
-                  :scanner ',scanner
-                  :skip-spaces ',skip-spaces)))
-         (setf (gethash (grammar-name ,g) *grammars*) ,g)
-         (compute-all-terminals     ,g)
-         (compute-all-non-terminals ,g)
-         (compute-first-follow      ,g))
+
+       (make-normalized-grammar
+        :name ',name
+        :terminals ',terminals
+        :start ',start
+        :rules ',clean-rules
+        :scanner ',scanner
+        :skip-spaces ',skip-spaces)
+       
        ,(generate-boilerplate          target-language grammar :trace trace)         
        ,(generate-scanner-for-grammar  target-language grammar :trace trace)
+
        ,@(mapcar (lambda (non-terminal)
-                   (generate-nt-parser target-language grammar non-terminal  :trace trace))
+                   ;; (generate-nt-parser target-language grammar non-terminal  :trace trace)
+                   (generate-normalized-nt-parser target-language grammar non-terminal :trace trace))
                  (grammar-all-non-terminals grammar))
+       
        ,(generate-parser target-language grammar :trace trace)
        ',name)))
-
-
-
   
 
 
@@ -285,9 +283,11 @@ RETURN:     A form that defines the grammar object and its parser functions.
         (values (subseq rhs 0 separator) (subseq rhs (1+ separator)))
         (values rhs                      nil))))
 
+(defun dollar (n) (intern (format nil "$~D" n)))
+
 (defun clean-seq (expr)
   (multiple-value-bind (rhs actions) (split-action (cdr expr))
-    (setf actions (or actions '($0)))
+    (setf actions (or actions `(,(dollar 0))))
     (let ((items (mapcar (lambda (item) (clean item)) rhs)))
       (if (and (null actions) (or (null items) (null (cdr items))))
           (car items)
@@ -329,11 +329,12 @@ RETURN:     A form that defines the grammar object and its parser functions.
 (defun clean-rules (rules)
   (mapcar (lambda (rule)
             (destructuring-bind (--> non-term &rest items) rule
-               (assert (string= --> '-->) () "Rules should be written as (--> <non-terminal> <rhs>)~%Invalid rule: ~S" rule)
-               `(,non-term ,(clean
-                             (if (find :action items)
-                                 `(seq ,@items)
-                                 `(seq ,@items :action `(,',non-term ,@$0)))))))
+              (assert (string= --> '-->) () "Rules should be written as (--> <non-terminal> <rhs> [:action <form>...])~%~
+                                            Invalid rule: ~S" rule)
+              `(,non-term ,(clean
+                            (if (find :action items)
+                                `(seq ,@items)
+                                `(seq ,@items :action `(,',non-term ,@,(dollar 0))))))))
           rules))
 
 
@@ -595,11 +596,10 @@ RETURN: The follow-set function for the grammar non-terminals.
 
 
 
-(defun compute-first-follow (grammar)
-  (let ((ng (normalize-grammar grammar)))
-    (setf (grammar-first-function  grammar) (compute-first-function ng)
-          (grammar-follow-function grammar) (compute-follow-function ng (grammar-all-non-terminals grammar)))
-    grammar))
+(defun compute-first-follow (grammar &optional (ng (normalize-grammar grammar)))
+  (setf (grammar-first-function  grammar) (compute-first-function ng)
+        (grammar-follow-function grammar) (compute-follow-function ng (grammar-all-non-terminals grammar)))
+  grammar)
  
 (defun first-set (grammar symbol)
   (unless (grammar-first-function grammar)
@@ -612,6 +612,15 @@ RETURN: The follow-set function for the grammar non-terminals.
   (funcall (grammar-follow-function grammar) non-terminal))
 
 
+(defun sentence-first-set (grammar non-terminal sentence)
+  (let ((fs (first-set grammar (first sentence))))
+    (if (member nil fs)
+        (remove-duplicates
+         (union (if sentence
+                    (sentence-first-set grammar non-terminal (rest sentence))
+                    (follow-set grammar non-terminal))
+                (remove nil fs)))
+        fs)))
 
 ;;; Follow set.
 ;;; Normalization of the grammar.
@@ -627,6 +636,8 @@ RETURN: The follow-set function for the grammar non-terminals.
 
 
 
+
+(defparameter *empty-rule* '(seq () ('())))
 
 (defun normalize-grammar-rules (rules non-terminals)
   "
@@ -661,9 +672,9 @@ rules and new produtions.  Returns the new production set.
                           ;; a --> e a :action (cons $1 $2)
                           (destructuring-bind (op items) rhs
                             (declare (ignore op))
-                            (new-rule (list nt '(seq () ('()))))
+                            (new-rule (list nt *empty-rule*))
                             (list nt `(seq (,(process-item (first items)) ,nt)
-                                           ((cons $1 $2))))))
+                                           ((cons ,(dollar 1) ,(dollar 2)))))))
                          ((opt)
                           ;; a --> (opt e)
                           ;; -------------
@@ -671,9 +682,9 @@ rules and new produtions.  Returns the new production set.
                           ;; a --> e :action (list $1)
                           (destructuring-bind (op items) rhs
                             (declare (ignore op))
-                            (new-rule (list nt '(seq () ('()))))
+                            (new-rule (list nt *empty-rule*))
                             (list nt `(seq (,(process-item (first items)))
-                                           ((list $1))))))
+                                           ((list ,(dollar 1)))))))
                          ((alt)
                           ;; a --> (alt e₁ ... eν)
                           ;; -------------
@@ -684,11 +695,29 @@ rules and new produtions.  Returns the new production set.
                             (declare (ignore op))
                             (let ((new-items  (mapcar (function process-item) items)))
                               (dolist (new-item (rest new-items)
-                                       (list nt `(seq (,(first new-items)) (($0)))))
-                                (new-rule (list nt `(seq (,new-item) (($0)))))))))))))))
+                                                (list nt `(seq (,(first new-items)) (,(dollar 1)))))
+                                (new-rule (list nt `(seq (,new-item) (,(dollar 1)))))))))))))))
    non-terminals))
 
 
+
+(defun make-normalized-grammar (&key name terminals start (scanner t) rules (skip-spaces t))
+  "Return a new normalized grammar parsing the same language as GRAMMAR."
+  (let ((new-grammar (make-grammar
+                      :name name
+                      :terminals terminals
+                      :start start
+                      :scanner scanner
+                      :rules rules
+                      :skip-spaces skip-spaces)))
+    (setf (gethash (grammar-name new-grammar) *grammars*) new-grammar)
+    (compute-all-terminals     new-grammar)
+    (compute-all-non-terminals new-grammar)
+    (setf (grammar-rules new-grammar) (normalize-grammar-rules rules (grammar-all-non-terminals new-grammar)))
+    (compute-all-non-terminals new-grammar)
+    (compute-first-function    new-grammar)
+    (compute-follow-function   new-grammar)
+    new-grammar))
 
 
 (defun normalize-grammar (grammar)
@@ -698,6 +727,7 @@ rules and new produtions.  Returns the new production set.
                                             (grammar-name grammar)))
                       :terminals (grammar-terminals grammar)
                       :start (grammar-start grammar)
+                      :scanner (grammar-scanner gramar)
                       :rules (normalize-grammar-rules (grammar-rules grammar)
                                                       (grammar-all-non-terminals grammar))
                       :skip-spaces (grammar-skip-spaces grammar))))
@@ -871,6 +901,14 @@ rules and new produtions.  Returns the new production set.
       `(member (scanner-current-token scanner) ',firsts
                 :test (function word-equal))))
 
+(defmacro retrying-until (until result expected-tokens production)
+  `(loop
+     :until ,until
+     :do (ecase (error-unexpected-token scanner ',expected-tokens ',production)
+           (:retry)
+           (:continue (loop-finish)))
+     :finally (return ,result)))
+
 (defmethod gen-parsing-statement ((target (eql :lisp)) (grammar grammar) item)
   ;; If we want to generate the parser directly from the grammar with
   ;; seq/rep/opt/alt, then we need to replicate the algorithm for the
@@ -899,26 +937,21 @@ rules and new produtions.  Returns the new production set.
               (if emptyp
                   `(when ,(gen-in-firsts target expected-tokens)
                      (,(gen-parse-function-name target grammar item) scanner))
-                  `(loop ; retrying
-                         :until ,(gen-in-firsts target expected-tokens)
-                         :do (ecase (error-unexpected-token scanner
-                                                            ',expected-tokens
-                                                            ',(assoc item (grammar-rules grammar)))
-                               (:retry)
-                               (:continue (loop-finish)))
-                         :finally (return (,(gen-parse-function-name target grammar item) scanner))))))
+                  `(retrying-until ,(gen-in-firsts target expected-tokens)
+                                   (,(gen-parse-function-name target grammar item) scanner)
+                                   ',expected-tokens
+                                   ',(assoc item (grammar-rules grammar))))))
         (ecase (car item)
           ((seq)
            (destructuring-bind (seq items actions) item
              (declare (ignore seq))
-             (let ((dollars (loop
-                              :for i :from 1 :to (length items)
-                              :collect (intern (format nil "$~D" i))))
+             (let ((dollars (loop :for i :from 1 :to (length items)
+                                  :collect (dollar i)))
                    (ignorables '()))
                `(let ,(mapcar (lambda (dollar item)
                                 `(,dollar ,(gen-parsing-statement target grammar item)))
                        dollars items)
-                  (let (($0 (list ,@dollars))
+                  (let ((,(dollar 0) (list ,@dollars))
                         ;; new:
                         ,@ (let ((increments (make-hash-table)))
                              (mapcan (lambda (dollar item)
@@ -935,7 +968,7 @@ rules and new produtions.  Returns the new production set.
                                      dollars items))
                         ;; ---
                         )
-                    (declare (ignorable $0 ,@ignorables))
+                    (declare (ignorable ,(dollar 0) ,@ignorables))
                     ,@actions)))))
           ((rep)
            `(loop
@@ -943,12 +976,14 @@ rules and new produtions.  Returns the new production set.
               :collect ,(gen-parsing-statement target grammar (first (second item)))))
           ((opt)
            `(when ,(gen-in-firsts target (es-first-set (first (second item))))
-              ,(gen-parsing-statement target grammar (first (second item)))))
+              ;;  ,(gen-parsing-statement target grammar (first (second item)))
+              (,(gen-parse-function-name target grammar (first (second item))) scanner)))
           ((alt)
            `(cond
               ,@(mapcar (lambda (item)
                           `(,(gen-in-firsts target (es-first-set item))
-                            ,(gen-parsing-statement target grammar item)))
+                            ;; ,(gen-parsing-statement target grammar item)
+                            (,(gen-parse-function-name target grammar item) scanner)))
                         (second item))
               (t
                (error-unexpected-token scanner
@@ -995,6 +1030,48 @@ SOURCE: When the grammar has a scanner generated, or a scanner class
     (gen-trace fname `(progn (fmakunbound ',fname) ,form) trace)))
 
 
+(defun empty-rule-p (rule)
+  (equalp rule *empty-rule*))
+
+(defun right-recursive-rule-p (rule non-terminal)
+  (and (listp rule)
+       (eql 'seq (first rule))
+       (eql non-terminal (first (last (second rule))))))
+
+(defmethod generate-normalized-nt-parser ((target (eql :lisp)) (grammar grammar) non-terminal &key (trace nil))
+  (let* ((fname (gen-parse-function-name target grammar non-terminal))
+         (rules (find-rules grammar non-terminal)))
+    (flet ((generic ()
+             `(cond ,@(mapcar (lambda (rule)
+                                (let ((fs (sentence-first-set grammar non-terminal (second rule))))
+                                  `(,(gen-in-firsts target fs)
+                                    ,(gen-parsing-statement target grammar rule))))
+                              rules)))
+           (generate-parse-loop (rule)
+             (destructuring-bind (non-terminal sentence actions) rule
+               (let ((item (first sentence))
+                     (fs (sentence-first-set grammar non-terminal (second rule))))
+                 `(loop :while ,(gen-in-firsts target fs)
+                        :collect ,(gen-parsing-statement target grammar item))))))
+      (let* ((body  (case (length rules)
+                      ((0) (error "Non-terminal ~S has no rule in grammar ~S" non-terminal (grammar-name grammar)))
+                      ((1) (gen-parsing-statement target grammar (first rules)))
+                      ((2) (cond
+                             ((and (empty-rule-p (first rules))
+                                   (right-recursive-rule-p (second rules) non-terminal))
+                              (generate-parse-loop (second rules)))
+                             ((and (empty-rule-p (second rules))
+                                   (right-recursive-rule-p (first  rules) non-terminal))
+                              (generate-parse-loop (first rules)))
+                             (t
+                              (generic))))
+                      (otherwise
+                       (generic))))
+             (form  `(defun ,fname (scanner)
+                       ,(format nil "~S" (assoc non-terminal (grammar-rules grammar)))
+                       (with-non-terminal ,non-terminal
+                         ,body))))
+        (gen-trace fname `(progn (fmakunbound ',fname) ,form) trace)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
