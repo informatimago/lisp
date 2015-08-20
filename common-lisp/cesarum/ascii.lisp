@@ -35,7 +35,9 @@
 ;;;;**************************************************************************
 
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ASCII"
-  (:use "COMMON-LISP")
+  (:use "COMMON-LISP"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ECMA048")
+  (:shadow "ED")
   (:export
    "NUL" "SOH" "STX" "ETX" "EOT" "ENQ" "ACK" "BEL" "BS" "HT" "LF" "VT"
    "FF" "CR" "SO" "SI" "DLE" "DC1" "DC2" "DC3" "DC4" "NAK" "SYN" "ETB"
@@ -64,7 +66,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2006 - 2012
+    Copyright Pascal J. Bourguignon 2006 - 2015
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -84,42 +86,46 @@ License:
 
 ;;; http://en.wikipedia.org/wiki/Ascii
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
 
-  ;; Control codes:
-  (defconstant nul       #x00  "^@  ASCII Control Code Null character ")
-  (defconstant soh       #x01  "^A  ASCII Control Code Start of Header")
-  (defconstant stx       #x02  "^B  ASCII Control Code Start of Text")
-  (defconstant etx       #x03  "^C  ASCII Control Code End of Text")
-  (defconstant eot       #x04  "^D  ASCII Control Code End of Transmission")
-  (defconstant enq       #x05  "^E  ASCII Control Code Enquiry")
-  (defconstant ack       #x06  "^F  ASCII Control Code Acknowledgement")
-  (defconstant bel       #x07  "^G  ASCII Control Code Bell")
-  (defconstant bs        #x08  "^H  ASCII Control Code Backspace")
-  (defconstant ht        #x09  "^I  ASCII Control Code Horizontal Tab")
-  (defconstant lf        #x0a  "^J  ASCII Control Code Line feed")
-  (defconstant vt        #x0b  "^K  ASCII Control Code Vectical Tab")
-  (defconstant ff        #x0c  "^L  ASCII Control Code Form feed")
-  (defconstant cr        #x0d  "^M  ASCII Control Code Carriage return")
-  (defconstant so        #x0e  "^N  ASCII Control Code Shift Out")
-  (defconstant si        #x0f  "^O  ASCII Control Code Shift In")
-  (defconstant dle       #x10  "^P  ASCII Control Code Data Link Escape")
-  (defconstant dc1       #x11  "^Q  ASCII Control Code Device Control 1 (X-ON)")
-  (defconstant dc2       #x12  "^R  ASCII Control Code Device Control 2")
-  (defconstant dc3       #x13  "^S  ASCII Control Code Device Control 3 (X-OFF)")
-  (defconstant dc4       #x14  "^T  ASCII Control Code Device Control 4")
-  (defconstant nak       #x15  "^U  ASCII Control Code Negative Acknowledge")
-  (defconstant syn       #x16  "^V  ASCII Control Code Synchronous Idle")
-  (defconstant etb       #x17  "^W  ASCII Control Code End of Transmision Block")
-  (defconstant can       #x18  "^X  ASCII Control Code Cancel")
-  (defconstant em        #x19  "^Y  ASCII Control Code End of Medium")
-  (defconstant sub       #x1a  "^Z  ASCII Control Code Substitute")
-  (defconstant esc       #x1b  "^[  ASCII Control Code Escape")
-  (defconstant fs        #x1c  "^\  ASCII Control Code File Separator")
-  (defconstant gs        #x1d  "^]  ASCII Control Code Group Separator")
-  (defconstant rs        #x1e  "^^  ASCII Control Code Record Separator")
-  (defconstant us        #x1f  "^_  ASCII Control Code Unit Separator")
-  (defconstant del       #x7f  "^?  ASCII Control Code Delete ")
+
+#-(and) (eval-when (:compile-toplevel :load-toplevel :execute) ;; defined in ecma048
+          ;; Control codes:
+          (defconstant nul       #x00  "^@  ASCII Control Code Null character ")
+          (defconstant soh       #x01  "^A  ASCII Control Code Start of Header")
+          (defconstant stx       #x02  "^B  ASCII Control Code Start of Text")
+          (defconstant etx       #x03  "^C  ASCII Control Code End of Text")
+          (defconstant eot       #x04  "^D  ASCII Control Code End of Transmission")
+          (defconstant enq       #x05  "^E  ASCII Control Code Enquiry")
+          (defconstant ack       #x06  "^F  ASCII Control Code Acknowledgement")
+          (defconstant bel       #x07  "^G  ASCII Control Code Bell")
+          (defconstant bs        #x08  "^H  ASCII Control Code Backspace")
+          (defconstant ht        #x09  "^I  ASCII Control Code Horizontal Tab")
+          (defconstant lf        #x0a  "^J  ASCII Control Code Line feed")
+          (defconstant vt        #x0b  "^K  ASCII Control Code Vectical Tab")
+          (defconstant ff        #x0c  "^L  ASCII Control Code Form feed")
+          (defconstant cr        #x0d  "^M  ASCII Control Code Carriage return")
+          (defconstant so        #x0e  "^N  ASCII Control Code Shift Out")
+          (defconstant si        #x0f  "^O  ASCII Control Code Shift In")
+          (defconstant dle       #x10  "^P  ASCII Control Code Data Link Escape")
+          (defconstant dc1       #x11  "^Q  ASCII Control Code Device Control 1 (X-ON)")
+          (defconstant dc2       #x12  "^R  ASCII Control Code Device Control 2")
+          (defconstant dc3       #x13  "^S  ASCII Control Code Device Control 3 (X-OFF)")
+          (defconstant dc4       #x14  "^T  ASCII Control Code Device Control 4")
+          (defconstant nak       #x15  "^U  ASCII Control Code Negative Acknowledge")
+          (defconstant syn       #x16  "^V  ASCII Control Code Synchronous Idle")
+          (defconstant etb       #x17  "^W  ASCII Control Code End of Transmision Block")
+          (defconstant can       #x18  "^X  ASCII Control Code Cancel")
+          (defconstant em        #x19  "^Y  ASCII Control Code End of Medium")
+          (defconstant sub       #x1a  "^Z  ASCII Control Code Substitute")
+          (defconstant esc       #x1b  "^[  ASCII Control Code Escape")
+          (defconstant fs        #x1c  "^\  ASCII Control Code File Separator")
+          (defconstant gs        #x1d  "^]  ASCII Control Code Group Separator")
+          (defconstant rs        #x1e  "^^  ASCII Control Code Record Separator")
+          (defconstant us        #x1f  "^_  ASCII Control Code Unit Separator")
+          (defconstant del       #x7f  "^?  ASCII Control Code Delete "))
+
+(eval-when (:compile-toplevel :load-toplevel :execute) 
+
   ;; Printable character:
   (defconstant sp        #x20 "     Code of ASCII Character SPACE") 
 
@@ -165,9 +171,9 @@ License:
 
   (defparameter *ascii-characters*
     #.(concatenate 'string
-        " !\"#$%&'()*+,-./0123456789:;<=>?"
-        "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
-        "`abcdefghijklmnopqrstuvwxyz{|}~")
+                   " !\"#$%&'()*+,-./0123456789:;<=>?"
+                   "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
+                   "`abcdefghijklmnopqrstuvwxyz{|}~")
     "A string containing all the ASCII characters in lexical order.")
 
   (defparameter *hexadecimal-digits* "0123456789abcdef"

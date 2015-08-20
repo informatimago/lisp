@@ -42,15 +42,6 @@
 (defgeneric accept                  (scanner token))
 
 
-(define-condition unexpected-token-error (scanner-error)
-  ((expected-token     :initarg :expected-token
-                       :initform nil
-                       :reader unexpected-token-error-expected-token)
-   (non-terminal-stack :initarg :non-terminal-stack
-                       :initform '()
-                       :reader unexpected-token-error-non-terminal-stack))
-  (:report print-scanner-error))
-
 (defmethod print-scanner-error ((err scanner-error) stream)
   (declare (stepper disable))
   (format stream "~&~@[~A:~]~D:~D: ~?~%"
@@ -64,11 +55,18 @@
           (scanner-error-line err)
           (scanner-error-column err)
           (scanner-error-format-control err)
-          (scanner-error-format-arguments err)))
-
-(defmethod print-object ((err unexpected-token-error) stream)
-  (print-scanner-error err stream)
+          (scanner-error-format-arguments err))
   err)
+
+
+(define-condition unexpected-token-error (scanner-error)
+  ((expected-token     :initarg :expected-token
+                       :initform nil
+                       :reader unexpected-token-error-expected-token)
+   (non-terminal-stack :initarg :non-terminal-stack
+                       :initform '()
+                       :reader unexpected-token-error-non-terminal-stack))
+  (:report print-scanner-error))
 
 
 

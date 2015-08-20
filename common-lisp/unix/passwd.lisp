@@ -11,6 +11,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2015-08-19 <PJB> Renamed ENTRY -> USER.
 ;;;;    2004-03-31 <PJB> Created
 ;;;;BUGS
 ;;;;LEGAL
@@ -37,8 +38,8 @@
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM")
-  (:export "ENTRY-NAME" "ENTRY-SHELL" "ENTRY-HOME" "ENTRY-GECOS" "ENTRY-GID"
-           "ENTRY-UID" "ENTRY-PASSWD" "ENTRY-LOGIN" "ENTRY" "READ-PASSWD")
+  (:export "USER-SHELL" "USER-HOME" "USER-GECOS" "USER-GID"
+           "USER-UID" "USER-PASSWD" "USER-LOGIN" "USER" "READ-PASSWD")
   (:documentation
    "
 This package exports a function to read unix passwd files.
@@ -48,7 +49,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2004 - 2012
+    Copyright Pascal J. Bourguignon 2004 - 2015
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -71,8 +72,8 @@ License:
 ;; pwent ::= login ':' passwd ':' uid ':' gid ':' gecos ':' home ':' shell
 
 
-(defstruct entry
-  "A unix /etc/passwd entry."
+(defstruct user
+  "A unix /etc/passwd USER."
   (login  "" :type string)
   (passwd "" :type string)
   (uid    0  :type integer)
@@ -81,25 +82,21 @@ License:
   (home   "" :type string)
   (shell  "" :type string))
 
-(setf (documentation 'entry-login 'function)
+(setf (documentation 'user-login 'function)
       "The login of the user (string)."
-      (documentation 'entry-passwd 'function)
+      (documentation 'user-passwd 'function)
       "The password of the user (string)."
-      (documentation 'entry-uid 'function)
-      "The User ID (integer)."
-      (documentation 'entry-gid 'function)
+      (documentation 'user-uid 'function)
+      "The user ID (integer)."
+      (documentation 'user-gid 'function)
       "The user Group ID (integer)."
-      (documentation 'entry-gecos 'function)
+      (documentation 'user-gecos 'function)
       "The user GECOS field (a list of strings)."
-      (documentation 'entry-home 'function)
+      (documentation 'user-home 'function)
       "The user home directory (string)."
-      (documentation 'entry-shell 'function)
+      (documentation 'user-shell 'function)
       "The user shell (string).")
 
-
-(defmacro entry-name (entry)
-  (warn "ENTRY-NAME is deprecated, use ENTRY-LOGIN")
-  `(entry-login ,entry))
 
 
 (defun parse-passwd (line)
@@ -108,7 +105,7 @@ License:
         (let ((uid   (parse-integer (third fields) :junk-allowed nil))
               (gid   (parse-integer (fourth fields) :junk-allowed nil))
               (gecos (split-escaped-string (fifth fields) "\\" ",")))
-          (make-entry :login (first fields)
+          (make-user :login (first fields)
                       :passwd (second fields)
                       :uid uid
                       :gid gid
@@ -122,7 +119,7 @@ License:
   "
 DO:                 Read a passwd file.
 PASSWD-FILE-PATH:   The pathname of the passwd file. Default: \"/etc/passwd\".
-RETURN:             A list of passwd ENTRY structures.
+RETURN:             A list of passwd USER structures.
 "
   (mapcar (function parse-passwd)
           (with-open-file (in passwd-file-path

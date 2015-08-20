@@ -9,6 +9,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2015-08-19 <PJB> Renamed INCLUDE -> INCLUDE-FILE.
 ;;;;    2015-06-13 <PJB> Added CHRONO.
 ;;;;    2014-10-22 <PJB> Added hash-table-to-sexp and sexp-to-hash-table.
 ;;;;    2013-06-30 <PJB> Added FLOAT-{,C,E}TYPECASE; exported [-+]EPSILON.
@@ -81,7 +82,7 @@
    "WITH-GENSYMS" "WSIOSBP" "PROGN-CONCAT"
    "CURRY" "COMPOSE" "COMPOSE-AND-CALL"
    "/NTH-ARG" "/APPLY"
-   "DEFINE-IF-UNDEFINED"  "INCLUDE" "FUNCTIONAL-PIPE"
+   "DEFINE-IF-UNDEFINED"  "INCLUDE-FILE" "FUNCTIONAL-PIPE"
    "FIRST-ARG" "SECOND-ARG" "THIRD-ARG" "FOURTH-ARG" "FIFTH-ARG"
    "SIXTH-ARG" "SEVENTH-ARG" "EIGHTH-ARG" "NINTH-ARG" "TENTH-ARG"
    "NTH-ARG"
@@ -325,12 +326,12 @@ WHO'S THE AUTHOR?"
 ||#
 
 
-(defun include (path)
+(defun include-file (path)
   "
 NOTE:    Untasty, but sometimes useful.
 DO:      Read from the file at PATH all the sexps and returns a list of them
          prefixed with 'progn.
-USAGE:   #.(include \"source.lisp\")
+USAGE:   #.(include-file \"source.lisp\")
 "
   (cons 'progn
         (with-open-file (file path :direction :input :if-does-not-exist :error)

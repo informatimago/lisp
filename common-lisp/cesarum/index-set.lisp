@@ -176,9 +176,8 @@ License:
     (format stream "~{~S~^ ~}" (coerce (slot-value set 'ranges) 'list)))
   set)
 
-
 (defun index-set (&rest elements)
-  (copy 'index-set elements))
+  (assign (make-instance 'index-set) elements))
 
 (defgeneric check-invariant (object))
 (defmethod check-invariant ((set index-set))
@@ -272,10 +271,6 @@ License:
 (defmethod is-strict-subset      ((set1 index-set) (set2 index-set))
   (and (< (cardinal set1) (cardinal set2))
        (is-subset set1 set2)))
-
-(defmethod copy                  ((result-type (eql 'index-set)) source-set)
-  (assign (make-instance 'index-set) source-set))
-
 
 ;;-----------------------------------------------------------------------
 ;; Algorithms

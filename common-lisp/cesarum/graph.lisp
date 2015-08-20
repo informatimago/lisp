@@ -45,7 +45,10 @@
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.GRAPH"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" 
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SET")
+  (:shadowing-import-from "COMMON-LISP"
+                          "UNION" "INTERSECTION" "MERGE")
   (:export "EDGE-CLASS" "EDGES" "NODES" "TO" "FROM" "WEIGHT" "INDEX"
            "ELEMENTS" "PROPERTIES" "IDENT" "SHOW-GRAPH" "FIND-NODES-WITH-PROPERTY"
            "COPY" "WALK-EDGES-FROM-NODE" "WALK-FROM-NODE" "FLOW-DISTANCE-FROM-NODE"
@@ -123,7 +126,7 @@ License:
 ;; METHOD ADD-ELEMENTS ((SELF SET-CLASS) NEWELEMENTLIST)
 ;; METHOD REMOVE-ELEMENT ((SELF SET-CLASS) (OLDELEMENT ELEMENT-CLASS))
 ;; METHOD PERFORM-WITH-ELEMENTS ((SELF SET-CLASS) LAMBDA-BODY)
-;; METHOD MAP-ELEMENTS ((SELF SET-CLASS) LAMBDA-BODY)
+;; METHOD MAP-ELEMENTS (result-type (SELF SET-CLASS) LAMBDA-BODY)
 ;; METHOD SELECT-ELEMENTS ((SELF SET-CLASS) SELECT-LAMBDA)
 ;; METHOD ELEMENT-LIST ((SELF SET-CLASS))
 ;; METHOD FIND-ELEMENTS-WITH-PROPERTY
@@ -241,7 +244,7 @@ NOTE:   lambda-body must not change this set.
 "))
 
 
-(defgeneric map-elements (self lambda-body)
+(defgeneric map-elements (result-type self lambda-body)
   (:documentation   "
 RETURN: the list of results returned by lambda-body called with each element.
 NOTE:   lambda-body must not change this set.
@@ -601,12 +604,12 @@ NOTE:   lambda-body must not change this set.
   (mapc lambda-body (elements self)))
 
 
-(defmethod map-elements ((self set-class) lambda-body)
+(defmethod map-elements (result-type (self set-class) lambda-body)
   "
 RETURN: the list of results returned by lambda-body called with each element.
 NOTE:   lambda-body must not change this set.
 "
-  (mapcar lambda-body (elements self)))
+  (map result-type lambda-body (elements self)))
 
 
 (defmethod select-elements ((self set-class) select-lambda)
@@ -1299,32 +1302,33 @@ NOTE:   By default, the NODES are the same, but the edges are duplicated.
                                          :size (cardinal (nodes self)))
             
               new-nodes (make-instance 'set-class 
-                          :elements (map-elements 
-                                     (nodes self)
-                                     (lambda (node)
-                                       (let ((new-node (copy node)))
-                                         (setf (gethash node node-hash) new-node)
-                                         new-node)))))
+                                       :elements (map-elements
+                                                  'list
+                                                  (nodes self)
+                                                  (lambda (node)
+                                                    (let ((new-node (copy node)))
+                                                      (setf (gethash node node-hash) new-node)
+                                                      new-node)))))
         (setf new-nodes  (nodes self)))
     (if copy-edges
         (setf new-edges 
               (make-instance 'set-class 
-                :elements (map-elements
-                           (edges self)
-                           (lambda (edge)
-                             (let ((new-edge (copy edge))
-                                   nodes)
-                               (when copy-nodes
-                                 (setq nodes (nodes new-edge))
-                                 (set-nodes new-edge 
-                                            (gethash (car nodes) node-hash)
-                                            (gethash (cdr nodes) node-hash)))
-                               new-edge)))))
+                             :elements (map-elements 'list
+                                                     (edges self)
+                                                     (lambda (edge)
+                                                       (let ((new-edge (copy edge))
+                                                             nodes)
+                                                         (when copy-nodes
+                                                           (setq nodes (nodes new-edge))
+                                                           (set-nodes new-edge 
+                                                                      (gethash (car nodes) node-hash)
+                                                                      (gethash (cdr nodes) node-hash)))
+                                                         new-edge)))))
         (setf new-edges (edges self)))
     (make-instance (class-of self) 
-      :nodes new-nodes
-      :edges new-edges
-      :edge-class (edge-class self))))
+                   :nodes new-nodes
+                   :edges new-edges
+                   :edge-class (edge-class self))))
 
 
 (defmethod find-nodes-with-property ((self graph-class)

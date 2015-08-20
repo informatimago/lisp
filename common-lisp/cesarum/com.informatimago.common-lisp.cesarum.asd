@@ -62,7 +62,8 @@ all written in 100% conforming Common Lisp.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.3.7"
+
+  :version "1.4.0"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Autumn 2010")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.cesarum/")
@@ -100,10 +101,10 @@ all written in 100% conforming Common Lisp.
 
 
                ;; Standards:
-               (:file "ascii"           :depends-on ())
+               (:file "ecma048"         :depends-on ("utility"))
+               (:file "ascii"           :depends-on ("ecma048"))
                (:file "character"       :depends-on ("ascii"))
                (:file "character-sets"  :depends-on ("string"))
-               (:file "ecma048"         :depends-on ("utility"))
                (:file "iso3166"         :depends-on ())
                (:file "iso4217"         :depends-on ())
                (:file "iso639a"         :depends-on ())

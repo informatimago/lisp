@@ -42,7 +42,7 @@
 ;; http://en.wikipedia.org/wiki/Julian_day#Calculation
 ;; - find inverse of (julian-day-number/gregorian d m y) --> j
 ;; - check the origin of julian-day
-;;     (com.informatimago.common-lisp.gregorian-calendar:date-from-day-number (- 733314 2454374)) 
+;;     (com.informatimago.common-lisp.cesarum.gregorian-calendar:date-from-day-number (- 733314 2454374)) 
 ;;     24 ;
 ;;     11 ;
 ;;     -4713
@@ -84,15 +84,15 @@
 ;;       similar functions for different calendars.
 ;;       grep -i defpackage date.lisp |awk '{printf ";;%7s%s\n","",$2}'
 ;;       "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE.UTILITY"
-;;       "COM.INFORMATIMAGO.COMMON-LISP.JULIAN-CALENDAR"
-;;       "COM.INFORMATIMAGO.COMMON-LISP.GREGORIAN-CALENDAR"
+;;       "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.JULIAN-CALENDAR"
+;;       "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.GREGORIAN-CALENDAR"
 ;;       "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE"
 
 
 
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE.UTILITY"
   (:use "COMMON-LISP")
-  (:export "DATE" "DATE<" "DATE>" "DATE<=" "DATE>=" "DATE=" "DATE/="
+  (:export "DATE<" "DATE>" "DATE<=" "DATE>=" "DATE=" "DATE/="
            "DURATION"
            "*DURATION-KEYWORDS*"
            "SECONDE" "MINUTE" "HOUR" "DAY" "WEEK" "MONTH" "YEAR"
@@ -119,8 +119,8 @@ Defines utilities to process dates.
 
 
 See also: COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE
-          COM.INFORMATIMAGO.COMMON-LISP.GREGORIAN-CALENDAR
-          COM.INFORMATIMAGO.COMMON-LISP.JULIAN-CALENDAR
+          COM.INFORMATIMAGO.COMMON-LISP.CESARUM.GREGORIAN-CALENDAR
+          COM.INFORMATIMAGO.COMMON-LISP.CESARUM.JULIAN-CALENDAR
 
 License:
 
@@ -144,7 +144,7 @@ License:
 
 "))
 
-(defpackage "COM.INFORMATIMAGO.COMMON-LISP.JULIAN-CALENDAR"
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.JULIAN-CALENDAR"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE.UTILITY")
   (:export "LEAP-YEAR-P" "DATE-FROM-DAY-NUMBER" "DATE-TO-DAY-NUMBER")
@@ -155,7 +155,7 @@ Defines the Julian calendar.
 
 See also: COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE
           COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE.UTILITY
-          COM.INFORMATIMAGO.COMMON-LISP.GREGORIAN-CALENDAR
+          COM.INFORMATIMAGO.COMMON-LISP.CESARUM.GREGORIAN-CALENDAR
 
 License:
 
@@ -180,7 +180,7 @@ License:
 "))
 
 
-(defpackage "COM.INFORMATIMAGO.COMMON-LISP.GREGORIAN-CALENDAR"
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.GREGORIAN-CALENDAR"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE.UTILITY")
   (:export "GREGORIAN-CALENDAR-DATE" "GREGORIAN"
@@ -205,7 +205,7 @@ Defines the Gregorian calendar.
 
 See also: COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE
           COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE.UTILITY
-          COM.INFORMATIMAGO.COMMON-LISP.JULIAN-CALENDAR
+          COM.INFORMATIMAGO.COMMON-LISP.CESARUM.JULIAN-CALENDAR
 
 License:
 
@@ -233,8 +233,8 @@ License:
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE.UTILITY")
-  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.JULIAN-CALENDAR")
-  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.GREGORIAN-CALENDAR"
+  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.JULIAN-CALENDAR")
+  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.GREGORIAN-CALENDAR"
                 "GREGORIAN-CALENDAR-DATE" "GREGORIAN"
                 "SECONDE" "MINUTE" "HOUR" "DAY" "WEEK" "MONTH" "YEAR"
                 "WEEKDAY"
@@ -247,7 +247,7 @@ License:
                 "PREVIOUS-DAY" "NEXT-DAY"
                 "INCREMENT-DAY" "DECREMENT-DAY"
                 "DURATION-BETWEEN" "DATE-AFTER" "DATE-BEFORE")
-  (:export "DATE" "DATE<" "DATE>" "DATE<=" "DATE>=" "DATE=" "DATE/="
+  (:export "DATE<" "DATE>" "DATE<=" "DATE>=" "DATE=" "DATE/="
            "DURATION"
            "*DURATION-KEYWORDS*"
            "SECONDE" "MINUTE" "HOUR" "DAY" "WEEK" "MONTH" "YEAR"
@@ -270,8 +270,8 @@ Calendars, dates and times.
 
 See also: COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE
           COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE.UTILITY
-          COM.INFORMATIMAGO.COMMON-LISP.GREGORIAN-CALENDAR
-          COM.INFORMATIMAGO.COMMON-LISP.JULIAN-CALENDAR
+          COM.INFORMATIMAGO.COMMON-LISP.CESARUM.GREGORIAN-CALENDAR
+          COM.INFORMATIMAGO.COMMON-LISP.CESARUM.JULIAN-CALENDAR
 
 License:
 
@@ -691,7 +691,7 @@ BUG:    This uses the undetermined  local timezone, we don't know
      :nconc (loop
                :for d :from 1
                :below (aref
-                       (if (com.informatimago.common-lisp.gregorian-calendar:leap-year-p year)
+                       (if (com.informatimago.common-lisp.cesarum.gregorian-calendar:leap-year-p year)
                            #(31 29 31 30 31 30 31 31 30 31 30 31)
                            #(31 28 31 30 31 30 31 31 30 31 30 31))
                        (1- m))
@@ -705,10 +705,10 @@ BUG:    This uses the undetermined  local timezone, we don't know
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; COM.INFORMATIMAGO.COMMON-LISP.JULIAN-CALENDAR
+;;; COM.INFORMATIMAGO.COMMON-LISP.CESARUM.JULIAN-CALENDAR
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(in-package "COM.INFORMATIMAGO.COMMON-LISP.JULIAN-CALENDAR")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.JULIAN-CALENDAR")
 
 (defconstant +days-in-fouryears+    (+ (* 3 365) 366))
 (defconstant +days-in-fourcentury+  (* 25 +days-in-fouryears+)
@@ -728,10 +728,10 @@ NOTE:   We don't implement here the actual leap years (they started with
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; COM.INFORMATIMAGO.COMMON-LISP.GREGORIAN-CALENDAR
+;;; COM.INFORMATIMAGO.COMMON-LISP.CESARUM.GREGORIAN-CALENDAR
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(in-package "COM.INFORMATIMAGO.COMMON-LISP.GREGORIAN-CALENDAR")
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.GREGORIAN-CALENDAR")
 
 
 (defconstant +days-in-fouryears+    (+ (* 3 365) 366))
@@ -1044,7 +1044,7 @@ NOTE:           UNIVERSAL-TIME when present gives a base date with
   (with-slots (year month day weekday) self
     (multiple-value-bind (da mo ye)
         (date-from-day-number
-         (com.informatimago.common-lisp.gregorian-calendar:date-to-day-number
+         (com.informatimago.common-lisp.cesarum.gregorian-calendar:date-to-day-number
           (+ day increment) month year))
       (setf year ye month mo day da weekday nil)
       self)))
@@ -1664,7 +1664,7 @@ NOTE:           UNIVERSAL-TIME when present gives a base date with
   (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE.UTILITY:JULIAN-DAY-NUMBER/GREGORIAN
   30 9 2007)
 
- (COM.INFORMATIMAGO.COMMON-LISP.GREGORIAN-CALENDAR:DATE-TO-DAY-NUMBER
+ (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.GREGORIAN-CALENDAR:DATE-TO-DAY-NUMBER
   30 9 2007)
 )
 

@@ -9,6 +9,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2015-08-19 <PJB> Removed dll from this package. cf. the dll package.
 ;;;;    2014-11-18 <PJB> Added map-cartesian-product.
 ;;;;    2012-03-14 <PJB> Added plist-keys.
 ;;;;    2012-02-19 <PJB> Moved HASHED-* functions that work on sequence to
@@ -48,7 +49,6 @@
   (:use "COMMON-LISP")
   (:export
    "APPENDF" "PREPENDF" "PREPEND" "PUSH*"
-   "DLL-NEXT" "DLL-PREVIOUS" "DLL-NODE" "LIST-TO-DOUBLE-LINKED-LIST"
    "EQUIVALENCE-CLASSES" "SUBSETS" "COMBINE" "IOTA"
    "MAKE-LIST-OF-RANDOM-NUMBERS" "LIST-INSERT-SEPARATOR"
    "NSPLIT-LIST-ON-INDICATOR" "NSPLIT-LIST" "DEEPEST-REC" "DEEPEST" "DEPTH"
@@ -692,52 +692,6 @@ RETURN:   The value of the entry INDICATOR of the a-list PLACE, or DEFAULT.
                        ,writer-form))
                  ,vvalue)
               `(assoc ,vindicator ,reader-form)))))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Double-Linked Lists
-
-(defun list-to-double-linked-list (single)
-  "
-RETURN:  A double-linked-list.
-NOTE:    Use dll-node, dll-next and dll-previous to walk the double-linked-list.
-EXAMPLE: (setq d (list-to-double-linked-list '( a b c)))
-         ==> (a nil b #0 c (b #0 c #1))
-         (dll-node d)
-         ==> a
-         (dll-next d)
-         ==> (b (a nil b #1 c #0) c #0)
-         (dll-previous (dll-next d))
-         ==> (a nil b #0 c (b #0 c #1))
-"
-  (loop with head = nil
-     for previous = nil then current
-     for element in single
-     for current = (list element previous)
-     unless head do (setq head current)
-     when previous do (setf (cdr (cdr previous))  current)
-     finally (return head)))
-
-
-(defun dll-node     (dll-cons)
-  "
-RETURN:  The node in the `dll-cons' double-linked-list node.
-"
-  (car  dll-cons))
-
-
-(defun dll-previous (dll-cons)
-  "
-RETURN:  The previous dll-cons in the `dll-cons' double-linked-list node.
-"
-  (cadr dll-cons))
-
-
-(defun dll-next     (dll-cons)
-  "
-RETURN:  The next dll-cons in the `dll-cons' double-linked-list node.
-"
-  (cddr dll-cons))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -38,7 +38,6 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ARRAY"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
   (:shadow "MERGE" "INTERSECTION" "UNION")
-  (:shadow "INCLUDE")
   (:export
    "CONTAINS" "CARDINAL" "EMPTYP" "MINIMUM" "MAXIMUM"
    "COLLECTING-RESULT" "MAKE-COLLECTOR" "MAP-ELEMENTS" "THEREIS"
@@ -315,14 +314,13 @@ RETURN:         A new set containing only the elements of SET that
                     set))))
 
 
-(defgeneric copy                  (result-type set)
+(defgeneric copy                  (set)
   (:documentation "
-RETURN:         A new set of type RESULT-TYPE containing the same
+RETURN:         A new set of same class as SET, containing the same
                 elements as SET.
 ")
-  (:method (result-type set)
-    (map-elements result-type 'identity set)))
-
+  (:method (set)
+    (assign (make-instance (class-of set)) set)))
 
 (defgeneric union                 (result-type set1 set2)
   (:documentation "

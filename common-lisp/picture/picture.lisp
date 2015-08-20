@@ -43,10 +43,10 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
   (:export
-   "DRAW-ON-PICTURE" "SET-DATA" "FRAMES" "HEIGHT" "WIDTH" "TRANSPARENT"
-   "SPOT-Y" "SPOT-X" "DATA" "NAME" "SPRITE" "TO-STRING" "FRAME-RECT"
+   "DRAW-ON-PICTURE" "SET-SPRITE-DATA" "FRAMES" "HEIGHT" "WIDTH" "SPRITE-TRANSPARENT-CHARACTER"
+   "SPRITE-SPOT-Y" "SPRITE-SPOT-X" "SPRITE-DATA" "SPRITE-NAME" "SPRITE" "TO-STRING" "FRAME-RECT"
    "ERASE-RECT" "FILL-RECT" "DRAW-ARROW" "DRAW-LINE" "DRAW-STRING" "SIZE-STRING"
-   "DRAW-POINT" "POINT-AT" "HEIGHT" "WIDTH" "BACKGROUND" "PICTURE")
+   "DRAW-POINT" "POINT-AT" "HEIGHT" "WIDTH" "PICTURE" "PICTURE-DATA" "PICTURE-BACKGROUND")
   (:documentation
    "
 This package exports functions to draw ASCII-ART pictures.
@@ -88,7 +88,7 @@ License:
 
 (defgeneric to-string (pict)
   (:documentation
-     "
+   "
 RETURN:  A string containing the picture characters, (pict height) lines
          of (pict width) characters.
 "))
@@ -98,7 +98,7 @@ RETURN:  A string containing the picture characters, (pict height) lines
   (:documentation  "
 PRE:     inside = (AND (<= 0 X) (< X (WIDTH PICT)) (<= 0 Y) (< Y (HEIGHT PICT)))
 RETURN:  inside       ==> The character at coordinate (X,Y).
-         (NOT inside) ==> (BACKGROUND PICT)
+         (NOT inside) ==> (PICTURE-BACKGROUND PICT)
 "))
 
 
@@ -127,7 +127,7 @@ PRE:     (MEMBER DIRECTION '(:E :W :N :S :NE :NW :SE :SW
                            :LEFT :RIGHT :UP :DOWN NIL) :TEST (FUNCTION 'EQ))
 DO:      Draws the STRING in the given DIRECTION (default :RIGHT = :E).
          STRING may be anything, it will be formated with ~A.
-         If it contains +NEW-LINE+ characters then it's split and
+         If it contains *NEW-LINE* characters then it's split and
          each line is written ''under'' the other, according to the DIRECTION.
 RETURN:  PICT
 "))
@@ -159,7 +159,7 @@ RETURN:  PICT
 
 (defgeneric erase-rect (pict x y w h)
   (:documentation   "
-DO:      Fills the specified rectangle with (BACKGROUND PICT).
+DO:      Fills the specified rectangle with (PICTURE-BACKGROUND PICT).
 RETURN:  PICT
 "))
 
@@ -190,7 +190,7 @@ RETURN:  The number of frames in the SPRITE.
 "))
 
 
-(defgeneric set-data (sprite data)
+(defgeneric set-sprite-data (sprite data)
   (:documentation   "
 DATA may be either:
        - a single string with frames separated by FF and lines separated by LF,
@@ -202,6 +202,9 @@ DATA may be either:
 RETURN: SPRITE
 "))
 
+(defgeneric (setf sprite-data) (data sprite)
+  (:method (data sprite) (set-sprite-data sprite data)))
+
 (defgeneric draw-on-picture (sprite pict x y &optional frame)
   (:documentation   "
 DO:      Draws the frame FRAME of the SPRITE on the picture PICT,
@@ -210,25 +213,25 @@ DO:      Draws the frame FRAME of the SPRITE on the picture PICT,
 "))
 
 
-(defvar +form-feed+ (make-string 1 :initial-element (code-char 12))
-  "A string containing a single +form-feed+ character.")
+(defvar *form-feed* (string #\Page)
+  "A string containing a single *form-feed* character.")
 
-(defvar +new-line+  (make-string 1 :initial-element (code-char 10))
-  "A string containing a single +new-line+ character.")
+(defvar *new-line*  (string #\Newline)
+  "A string containing a single *new-line* character.")
 
 ;; ------------------------------------------------------------------------
 ;; PICTURE
 ;; ------------------------------------------------------------------------
 
-(defgeneric background (picture)
+(defgeneric picture-background (picture)
   (:documentation "The background character of the picture."))
 
-(defgeneric data (picture))
+(defgeneric picture-data (picture))
 
 (pjb-defclass picture nil
-  (:att data        (array character 2)       "Picture data.")
-  (:att background  character (character " ") "The background character.")
-  (:doc "A picture is a bi-dimentional (y,x) array of characters."))
+              (:att picture-data        (array character 2)       "Picture data.")
+              (:att picture-background  character (character " ") "The background character.")
+              (:doc "A picture is a bi-dimentional (y,x) array of characters."))
 
 
 (defun to-char (stuff)
@@ -248,33 +251,33 @@ POST:    for all X in [0..WIDTH-1], for all Y in [0..HEIGHT-1],
 "
   (setf width  (truncate width)
         height (truncate height)
-        (background self)  (to-char background)
-        (data self) (make-array (list (truncate height)
-                                      (truncate width))
-                                :element-type 'character
-                                :initial-element (background self)))
+        (picture-background self)  (to-char background)
+        (picture-data self) (make-array (list (truncate height)
+                                              (truncate width))
+                                        :element-type 'character
+                                        :initial-element (picture-background self)))
   self)
 
 
 (defmethod to-string ((self picture))
   "
 RETURN:  A string containing the picture character (pict height) lines
-         of (pict width) characters, separated by a +new-line+.
+         of (pict width) characters, separated by a *new-line*.
 "
   (loop
-     :with str = (make-string (* (height self) (1+ (width self))))
-     :with data = (data self)
-     :with i = 0
-     :with nl = (to-char +new-line+)
-     :for y :from (1- (height self)) :downto 0
-     :do (progn
+    :with str = (make-string (* (height self) (1+ (width self))))
+    :with data = (picture-data self)
+    :with i = 0
+    :with nl = (to-char *new-line*)
+    :for y :from (1- (height self)) :downto 0
+    :do (progn
           (loop for x from 0 below (width self)
-             do
-             (setf (aref str i) (aref data y x))
-             (setf i (1+ i)))
+                do
+                   (setf (aref str i) (aref data y x))
+                   (setf i (1+ i)))
           (setf (aref str i) nl)
           (setf i (1+ i)))
-     :finally (return str)))
+    :finally (return str)))
 
 
 
@@ -287,26 +290,26 @@ RETURN:  A string containing the picture character (pict height) lines
   "
 RETURN:  The width of the picture.
 "
-  (array-dimension (data self) 1))
+  (array-dimension (picture-data self) 1))
 
 
 (defmethod height ((self picture))
   "
 RETURN:  The height of the picture.
 "
-  (array-dimension (data self) 0))
+  (array-dimension (picture-data self) 0))
 
 
 (defmethod point-at ((self picture) (x number) (y number))
   "
 PRE:     inside = (AND (<= 0 X) (< X (WIDTH SELF)) (<= 0 Y) (< Y (HEIGHT SELF)))
 RETURN:  inside       ==> The character at coordinate (X,Y).
-         (NOT inside) ==> (BACKGROUND SELF)
+         (NOT inside) ==> (PICTURE-BACKGROUND SELF)
 "
   (setq x (truncate x) y (truncate y))
   (if (and (<= 0 x) (<= 0 y) (< y (height self)) (< x (width self)))
-      (aref (data self) y x)
-      (background self)))
+      (aref (picture-data self) y x)
+      (picture-background self)))
 
 
 (defmethod draw-point ((self picture) (x number) (y number) foreground)
@@ -320,7 +323,7 @@ RETURN: SELF
   (setq x (truncate x) y (truncate y))
   (setq foreground (to-char foreground))
   (when (and (<= 0 x) (<= 0 y) (< y (height self)) (< x (width self)))
-    (setf (aref (data self) y x) foreground))
+    (setf (aref (picture-data self) y x) foreground))
   self)
 
 
@@ -369,9 +372,9 @@ RETURN:  left bottom width height of the rectangle in which the
   (labels ( ;; (sign (mag)     (cond ((= 0 mag) 0) ((< mag 0) -1) (t +1)))
            (off  (amp dep) (* (1- amp) dep)))
     (let* ((depl   (assoc direction +deplacements+))
-           (lines  (string-cache-split string +new-line+))
+           (lines  (string-cache-split string *new-line*))
            (width  (reduce (function max) lines :key (function length) 
-                           :initial-value 0))
+                                                :initial-value 0))
            (height (length lines))
            (lb-x   0)
            (lb-y   0)
@@ -386,8 +389,8 @@ RETURN:  left bottom width height of the rectangle in which the
            (right  (max lb-x lt-x rb-x rt-x))
            (top    (max lb-y lt-y rb-y rt-y)))
       (values left bottom (- right left -1) (- top bottom -1)))))
-         
-    
+
+
 (defmethod draw-string ((self picture) (x number) (y number)
                         string &key (direction :e))
   "
@@ -396,14 +399,14 @@ PRE:     (MEMBER DIRECTION '(:E :W :N :S :NE :NW :SE :SW
                            :LEFT :RIGHT :UP :DOWN NIL) :TEST (FUNCTION 'EQ))
 DO:      Draws the STRING in the given DIRECTION (default :RIGHT = :E).
          STRING may be anything, it will be formated with ~A.
-         If it contains +NEW-LINE+ characters then it's split and
+         If it contains *NEW-LINE* characters then it's split and
          each line is written ''under'' the other, according to the DIRECTION.
 RETURN:  SELF
 NOTE:    A future implementation won't use DRAW-POINT for performance.
 "
   (setq x (truncate x) y (truncate y))
   (unless (stringp string) (setq string    (format nil "~A" string)))
-  (let ((lines (string-cache-split string +new-line+))
+  (let ((lines (string-cache-split string *new-line*))
         (depl  (assoc direction +deplacements+)))
     (if (cdr lines)
         (do ((dlx (deplacement-line-dx depl))
@@ -446,23 +449,23 @@ NOTE:    A future implementation won't use DRAW-POINT for performance.
         (progn
           (setq cumul (floor (/ dx 2)))
           (loop for i from 1 to dx
-             do
-             (setq x     (+ x xinc)
-                   cumul (+ cumul dy))
-             (when (>= cumul dx)
-               (setq cumul (- cumul dx)
-                     y     (+ y yinc)))
-             (draw-point self x y foreground) ))
+                do
+                   (setq x     (+ x xinc)
+                         cumul (+ cumul dy))
+                   (when (>= cumul dx)
+                     (setq cumul (- cumul dx)
+                           y     (+ y yinc)))
+                   (draw-point self x y foreground) ))
         (progn
           (setq cumul (floor (/ dy 2)))
           (loop for i from 1 to dy
-             do
-             (setq y     (+ y yinc)
-                   cumul (+ cumul dx))
-             (when (>= cumul dy)
-               (setq cumul (- cumul dy)
-                     x     (+ x xinc)))
-             (draw-point self x y foreground) ))))
+                do
+                   (setq y     (+ y yinc)
+                         cumul (+ cumul dx))
+                   (when (>= cumul dy)
+                     (setq cumul (- cumul dy)
+                           x     (+ x xinc)))
+                   (draw-point self x y foreground) ))))
   self)
 
 
@@ -475,7 +478,7 @@ NOTE:    A future implementation won't use DRAW-POINT for performance.
                                        (if (< 0 w) ">" "<")))
   (when tail (draw-point pict x y tail))
   pict)
-  
+
 
 
 (defmethod fill-rect  ((self picture)
@@ -493,23 +496,23 @@ RETURN:  SELF
   (dotimes (i (1- h))
     (draw-line self x y w 0 :foreground foreground)
     (incf y))
-  self) ;;FILL-RECT
+  self)
 
 
 (defmethod erase-rect ((self picture)
                        (x number) (y number) (w number) (h number))
   "
-DO:      Fills the specified rectangle with (BACKGROUND SELF).
+DO:      Fills the specified rectangle with (PICTURE-BACKGROUND SELF).
 RETURN:  SELF
 "
-  (fill-rect self x y w h :foreground (background self))) ;;ERASE-RECT
+  (fill-rect self x y w h :foreground (picture-background self)))
 
 
 (defmethod frame-rect ((self picture)
                        (x number) (y number) (w number) (h number)
                        &key (top-left "+") (top-right "+") 
-                       (bottom-left "+")  (bottom-right "+")
-                       (top "-") (bottom "-")  (left "|") (right "|"))
+                         (bottom-left "+")  (bottom-right "+")
+                         (top "-") (bottom "-")  (left "|") (right "|"))
   "
 DO:      Draws the frame of a rect parallel to the axis
          whose diagonal is [(x,y),(x+w-1,y+h-1)].
@@ -538,55 +541,55 @@ NOTE:    A future implementation won't use DRAW-POINT for performance.
   (draw-point self (+ x w) (+ y h)     top-right)
   self) ;;FRAME-RECT
 
-  
+
 
 
 ;; ------------------------------------------------------------------------
 ;; SPRITE
 ;; ------------------------------------------------------------------------
 
-(defgeneric name (sprite)
+(defgeneric sprite-name (sprite)
   (:documentation "Name of this sprite."))
-(defgeneric spot-x (sprite)
+(defgeneric sprite-spot-x (sprite)
   (:documentation "X coordinate of the spot of the sprite."))
-(defgeneric spot-y (sprite)
+(defgeneric sprite-spot-y (sprite)
   (:documentation "Y coordinate of the spot of the sprite"))
-(defgeneric transparent (sprite)
+(defgeneric sprite-transparent-character (sprite)
   (:documentation "The transparent character of the sprite."))
 
 (pjb-defclass sprite nil
-  (:att name        string    "sprite"   "Name of this sprite.")
-  (:att data        (array character 3)  "Sprite data.")
-  (:att spot-x      fixnum    0          "X coordinate of spot.")
-  (:att spot-y      fixnum    0          "Y coordinate of spot.")
-  (:att transparent character (character " ") "The transparent character.")
-  (:doc "A sprite is a tri-dimentional (time,y,x) array of characters."))
+              (:att sprite-name                  string    "sprite"   "Name of this sprite.")
+              (:att sprite-data                  (array character 3)  "Sprite data.")
+              (:att sprite-spot-x                fixnum    0          "X coordinate of spot.")
+              (:att sprite-spot-y                fixnum    0          "Y coordinate of spot.")
+              (:att sprite-transparent-character character (character " ") "The transparent character.")
+              (:doc "A sprite is a tri-dimentional (time,y,x) array of characters."))
 
 
 (defmethod width ((self sprite))
   "
 RETURN:  The width of the sprite.
 "
-  (array-dimension (data self) 2))
+  (array-dimension (sprite-data self) 2))
 
 
 (defmethod height ((self sprite))
   "
 RETURN:  The height of the sprite.
 "
-  (array-dimension (data self) 1))
+  (array-dimension (sprite-data self) 1))
 
 
 (defmethod frames ((self sprite))
   "
 RETURN:  The number of frames of the sprite.
 "
-  (array-dimension (data self) 0))
+  (array-dimension (sprite-data self) 0))
 
 
-(defmethod set-data ((self sprite) data)
+(defmethod set-sprite-data ((self sprite) sprite-data)
   "
-DATA may be either:
+SPRITE-DATA may be either:
        - a single string with frames separated by FF and lines separated by LF,
        - a list of string frames with lines separated by LF,
        - a list of list of string lines.
@@ -596,88 +599,90 @@ DATA may be either:
 RETURN: SELF
 "
   (cond
-    ((stringp data)
-     (set-data self
-               (mapcar (lambda (frame) (split-string frame +new-line+))
-                       (split-string data +form-feed+))))
-    ((and (consp data) (stringp (car data)))
-     (set-data self
-               (mapcar (lambda (frame) (split-string frame +new-line+))
-                       data)))
-    ((and (consp data) (consp (car data)) (or (stringp (caar data))
-                                              (consp (caar data))))
-     (let ((adata
-            (make-array
-             (list (length data)
-                   (apply (function max)
-                          (mapcar (function length) data))
-                   (apply (function max)
-                          (apply (function append)
-                                 (mapcar (lambda (l)
-                                           (mapcar (function length) l))
-                                         data))))
-             :element-type 'character))
-           (transparent (transparent self)))
+    ((stringp sprite-data)
+     (set-sprite-data self
+                      (mapcar (lambda (frame) (split-string frame *new-line*))
+                              (split-string sprite-data *form-feed*))))
+    ((and (consp sprite-data) (stringp (car sprite-data)))
+     (set-sprite-data self
+                      (mapcar (lambda (frame) (split-string frame *new-line*))
+                              sprite-data)))
+    ((and (consp sprite-data) (consp (car sprite-data)) (or (stringp (caar sprite-data))
+                                                            (consp (caar sprite-data))))
+     (let ((new-data
+             (make-array
+              (list (length sprite-data)
+                    (apply (function max)
+                           (mapcar (function length) sprite-data))
+                    (apply (function max)
+                           (apply (function append)
+                                  (mapcar (lambda (l)
+                                            (mapcar (function length) l))
+                                          sprite-data))))
+              :element-type 'character))
+           (transparent (sprite-transparent-character self)))
        (loop
-          for f from 0 below (array-dimension adata 0)
-          for frames = data then (cdr frames)
-          do (loop
-                for y from (1- (array-dimension adata 1)) downto 0
-                for lines = (car frames) then (cdr lines)
-                do (if (stringp (car lines))
-                       (loop
-                          for x from 0 below (array-dimension adata 2)
-                          for cur-char = (if (< x (length (car lines)))
-                                             (aref (car lines) x)
-                                             transparent)
-                          do (setf (aref adata f y x)
-                                   (cond
-                                     ((null cur-char) transparent)
-                                     ((characterp cur-char) cur-char)
-                                     ((stringp cur-char) (aref cur-char 0))
-                                     ((numberp cur-char) (code-char cur-char))
-                                     ((symbolp cur-char)
-                                      (aref (symbol-name cur-char) 0))
-                                     (t (error "~S is not a character!" cur-char))
-                                     )))
-                       (loop for x from 0 below (array-dimension adata 2)
-                          for characters = (car lines) then (cdr characters)
-                          for cur-char = (car characters) then (car characters)
-                          do (setf (aref adata f y x)
-                                   (cond
-                                     ((null cur-char) transparent)
-                                     ((characterp cur-char) cur-char)
-                                     ((stringp cur-char) (aref cur-char 0))
-                                     ((numberp cur-char) (code-char cur-char))
-                                     ((symbolp cur-char)
-                                      (aref (symbol-name cur-char) 0))
-                                     (t (error "~S is not a character!"
-                                               cur-char))
-                                     ))))))
-       (setf (data self) adata)))
-    ((arrayp data)
-     (setf (data self) data)))
+         for f from 0 below (array-dimension new-data 0)
+         for frames = sprite-data then (cdr frames)
+         do (loop
+              for y from (1- (array-dimension new-data 1)) downto 0
+              for lines = (car frames) then (cdr lines)
+              do (if (stringp (car lines))
+                     (loop
+                       for x from 0 below (array-dimension new-data 2)
+                       for cur-char = (if (< x (length (car lines)))
+                                          (aref (car lines) x)
+                                          transparent)
+                       do (setf (aref new-data f y x)
+                                (cond
+                                  ((null cur-char) transparent)
+                                  ((characterp cur-char) cur-char)
+                                  ((stringp cur-char) (aref cur-char 0))
+                                  ((numberp cur-char) (code-char cur-char))
+                                  ((symbolp cur-char)
+                                   (aref (symbol-sprite-name cur-char) 0))
+                                  (t (error "~S is not a character!" cur-char))
+                                  )))
+                     (loop for x from 0 below (array-dimension new-data 2)
+                           for characters = (car lines) then (cdr characters)
+                           for cur-char = (car characters) then (car characters)
+                           do (setf (aref new-data f y x)
+                                    (cond
+                                      ((null cur-char) transparent)
+                                      ((characterp cur-char) cur-char)
+                                      ((stringp cur-char) (aref cur-char 0))
+                                      ((numberp cur-char) (code-char cur-char))
+                                      ((symbolp cur-char)
+                                       (aref (symbol-sprite-name cur-char) 0))
+                                      (t (error "~S is not a character!"
+                                                cur-char))
+                                      ))))))
+       (setf (sprite-data self) new-data)))
+    ((arrayp sprite-data)
+     (setf (sprite-data self) sprite-data)))
   self)
 
 
 (defmethod draw-on-picture ((self sprite) (pict picture) (x number) (y number)
-                            &optional frame)
+                            &optional (frame 0))
   "
 DO:      Draws the frame FRAME of the sprite on the picture PICT,
          placing the spot of the sprite at coordinates (X,Y).
-         Transparent pixels are not drawn.
+         Sprite-Transparent pixels are not drawn.
 "
-  (unless frame (setq frame 0))
-  (setq x (truncate x) y (truncate y) frame (truncate frame))
-  (setq x (- x (spot-x self)) y (- y (spot-y self)))
-  (loop with data = (data self)
-     with transparent = (transparent self)
-     for j from 0 below (height self)
-     for yj = (+ y j) then (+ y j)
-     do (loop for i from 0 below (width self)
-           for pixel = (aref data frame j i) then (aref data frame j i)
-           unless (eq pixel transparent)
-           do (draw-point pict (+ x i) yj pixel)))
+  (setf x (truncate x)
+        y (truncate y)
+        frame (truncate frame))
+  (setf x (- x (sprite-spot-x self))
+        y (- y (sprite-spot-y self)))
+  (loop :with sprite-data := (sprite-data self)
+        :with transparent := (sprite-transparent-character self)
+        :for j :from 0 :below (height self)
+        :for yj = (+ y j) :then (+ y j)
+        :do (loop :for i :from 0 :below (width self)
+                  :for pixel := (aref sprite-data frame j i) then (aref sprite-data frame j i)
+                  :unless (eq pixel transparent)
+                    :do (draw-point pict (+ x i) yj pixel)))
   self)
 
 

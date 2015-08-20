@@ -17,6 +17,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2015-08-19 <PJB> Renamed split-string to regexp-split
 ;;;;    2015-07-02 <PJB> Extracted from rdp.lisp
 ;;;;BUGS
 ;;;;LEGAL
@@ -42,12 +43,12 @@
   (:use "COMMON-LISP")
   (:export "*ENGINE*" "ENGINES" "SELECT")
   ;; The function API, dispatches on *ENGINE*:
-  (:export "SPLIT-STRING" "STRING-MATCH" "MATCH-STRING"
+  (:export "REGEXP-SPLIT" "STRING-MATCH" "MATCH-STRING"
            "MATCH-BEGINNING" "MATCH-END" "REGEXP-MATCH-ANY"
            "REGEXP-COMPILE" "REGEXP-QUOTE-EXTENDED")
   ;; The generic function API, first argument must be an engine designator.
   ;; (Users may implement methods for their own engines)
-  (:export "-SPLIT-STRING" "-STRING-MATCH" "-MATCH-STRING"
+  (:export "-REGEXP-SPLIT" "-STRING-MATCH" "-MATCH-STRING"
            "-MATCH-BEGINNING" "-MATCH-END" "-REGEXP-MATCH-ANY"
            "-REGEXP-COMPILE" "-REGEXP-QUOTE-EXTENDED")
   (:documentation
@@ -107,15 +108,15 @@ dynamically bind this variable temporarily to switch the engine.")
 
 
 
-(defgeneric -split-string (engine string regexp)
+(defgeneric -regexp-split (engine string regexp)
   (:method ((engine (eql :ppcre)) string regexp)
     (cl-ppcre:split regexp string))
   #+use-regexp
   (:method ((engine (eql :regexp)) string regexp)
     (regexp:regexp-split regexp string)))
 
-(defun split-string (string regexp)
-  (-split-string *engine* string regexp))
+(defun regexp-split (string regexp)
+  (-regexp-split *engine* string regexp))
 
 
 (defvar *string-match-results* '())

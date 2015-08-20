@@ -11,6 +11,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2015-08-19 <PJB> Renamed ENTRY -> GROUP.
 ;;;;    2004-08-09 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
@@ -38,8 +39,8 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM")
 
-  (:export "ENTRY" "ENTRY-GID" "ENTRY-PASSWD"
-           "ENTRY-USERS" "READ-GROUP")
+  (:export "GROUP" "GROUP-GID" "GROUP-PASSWD"
+           "GROUP-USERS" "READ-GROUP")
   
   (:documentation
    "
@@ -51,7 +52,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2004 - 2012
+    Copyright Pascal J. Bourguignon 2004 - 2015
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -73,20 +74,20 @@ License:
 
 ;;  group_name:passwd:GID:user_list
 
-(defstruct entry
-  "A unix /etc/group entry."
+(defstruct group
+  "A unix /etc/group group."
   (name   "" :type string)
   (passwd "" :type string)
   (gid    0  :type integer)
   (users  () :type list)) ;;of string: the user names
 
-(setf (documentation 'entry-name 'function)
+(setf (documentation 'group-name 'function)
       "The name of the group."
-      (documentation 'entry-passwd 'function)
+      (documentation 'group-passwd 'function)
       "The password of the group."
-      (documentation 'entry-gid 'function)
+      (documentation 'group-gid 'function)
       "The group ID."
-      (documentation 'entry-users 'function)
+      (documentation 'group-users 'function)
       "The list of user logins (strings).")
 
 (defun parse-group (line)
@@ -94,7 +95,7 @@ License:
     (if (= (length fields) 4)
         (let ((gid   (parse-integer (third fields) :junk-allowed nil))
               (users (split-escaped-string (fourth fields) "\\" ",")))
-          (make-entry :name (first fields)
+          (make-group :name (first fields)
                       :passwd (second fields)
                       :gid gid
                       :users users))
@@ -105,7 +106,7 @@ License:
   "
 DO:                 Read the group file.
 GROUP-FILE-PATH:    The pathname to the group file; default: \"/etc/group\"
-RETURN:             A list of group ENTRY structures.
+RETURN:             A list of group GROUP structures.
 "
   (mapcar (function parse-group)
           (with-open-file (in group-file-path
