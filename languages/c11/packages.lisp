@@ -84,8 +84,6 @@
         "COM.INFORMATIMAGO.LANGUAGES.C11.TOKENS"
         "COM.INFORMATIMAGO.LANGUAGES.C11.CONTEXT"
         "COM.INFORMATIMAGO.LANGUAGES.CPP")
-  (:shadowing-import-from "COM.INFORMATIMAGO.COMMON-LISP.REGEXP.REGEXP"
-                          "SPLIT-STRING")
   (:export "C11-SCANNER"
            "UPGRADE-C11-TOKEN"))
 
@@ -101,8 +99,6 @@
         "COM.INFORMATIMAGO.TOOLS.READER-MACRO"
         "COM.INFORMATIMAGO.LANGUAGES.C11.TOKENS"
         "COM.INFORMATIMAGO.LANGUAGES.C11.CONTEXT")
-  (:shadowing-import-from "COM.INFORMATIMAGO.COMMON-LISP.REGEXP.REGEXP"
-                          "SPLIT-STRING")
   (:export "C11-SCANNER" "READ-YACC")
   (:documentation "
 This package exports a function to read yacc grammars,
@@ -125,8 +121,6 @@ returning a yacc:defgrammar form.
         "COM.INFORMATIMAGO.LANGUAGES.C11.TOKENS"
         "COM.INFORMATIMAGO.LANGUAGES.C11.CONTEXT"
         "COM.INFORMATIMAGO.LANGUAGES.C11.SCANNER")
-  (:shadowing-import-from "COM.INFORMATIMAGO.COMMON-LISP.REGEXP.REGEXP"
-                          "SPLIT-STRING")
   (:export "C11-PARSER"))
 
 

@@ -117,7 +117,7 @@
   #1=(defgrammar c11
        ;; rdp
        :scanner nil    ; we use the pre-scanned-scanner defined above.
-       :trace nil
+       :trace t
 
        ;; Note: since we don't generate a scanner, the following terminals are not used,
        ;;       but they are what is expected from the cpp scanner.
