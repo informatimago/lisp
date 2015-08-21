@@ -73,11 +73,17 @@ Resets the *LAST-STORY*."
     (push '("application" . "json") *text-content-types*))
   (setf *last-story* nil))
 
+(defun compute-deadline (timeout)
+  (+ (get-internal-real-time)
+     (* timeout internal-time-units-per-second)))
+
 (defun new-stories ()
   "Fetch and return the list of new stories from the HackerNews API
 server."
   (multiple-value-bind (value status)
-      (http-request "https://hacker-news.firebaseio.com/v0/newstories.json")
+      (http-request "https://hacker-news.firebaseio.com/v0/newstories.json"
+                    :connection-timeout 10
+                    #+openmcl :deadline #+openmcl (compute-deadline 3))
     (when (= 200 status)
       (decode-json-from-string value))))
 
@@ -85,7 +91,9 @@ server."
   "Fetch and return an a-list containing the data of the story
 identified by number ID."
   (multiple-value-bind (value status)
-      (http-request (format nil "https://hacker-news.firebaseio.com/v0/item/~A.json" id))
+      (http-request (format nil "https://hacker-news.firebaseio.com/v0/item/~A.json" id)
+                    :connection-timeout 10
+                    #+openmcl :deadline #+openmcl (compute-deadline 3))
     (when (= 200 status)
       (decode-json-from-string value))))
 
