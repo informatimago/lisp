@@ -51,7 +51,7 @@
                         :initial-value '()))
 
 
-(progn
+(defun gen-p ()
   (with-open-file (out "p.lisp" :direction :output :if-exists :supersede :if-does-not-exist :create)
     (pprint '(in-package "COM.INFORMATIMAGO.LANGUAGES.C11.PARSER") out)
     (destructuring-bind (grammar &rest rest) (cdr (macroexpand-1 *c*))

@@ -75,3 +75,45 @@ cast_expression_tail
 : '{' initializer_list ','? '}'  postfix_expression_item*
 |  cast_expression
 ;
+
+
+
+;;; external_declaration
+;;;     : function_definition
+;;;     | declaration
+;;;     ;
+;;; 
+;;; function_definition
+;;;     : declaration_specifiers declarator declaration_list compound_statement
+;;;     | declaration_specifiers declarator                  compound_statement
+;;;     ;
+;;;
+;;; declaration
+;;;     : declaration_specifiers ';'
+;;;     | declaration_specifiers init_declarator_list ';'
+;;;     | static_assert_declaration
+;;;     ;
+                         
+
+;;; init_declarator_list
+;;;     : init_declarator
+;;;     | init_declarator_list ',' init_declarator
+;;;     ;
+;;; 
+;;; init_declarator
+;;;     : declarator '=' initializer
+;;;     | declarator
+;;;     ;
+
+;;; init_declarator_list
+;;;     :
+;;;     | ',' init_declarator init_declarator_list
+;;;     ;
+
+;;; external_declaration
+;;;     : static_assert_declaration
+;;;     | declaration_specifiers                                                 ';'
+;;;     | declaration_specifiers declarator '=' initializer init_declarator_list ';'
+;;;     | declaration_specifiers declarator                  compound_statement
+;;;     | declaration_specifiers declarator declaration_list compound_statement
+;;;     ;               
