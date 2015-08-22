@@ -593,6 +593,7 @@ RETURN: the token text; the end position."
     (check-concatenates line)))
 
 (defun parse-macro-definition (name line)
+  ;; (format t "(parse-macro-definition ~3A ~A ~S)~%" (openp (first line)) name line)
   (cond
     ((null line)
      (make-instance 'macro-definition/object

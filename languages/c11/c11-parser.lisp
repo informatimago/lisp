@@ -58,13 +58,14 @@
   (declare (stepper disable))
   (declare (ignore parser-data))
   (let ((token (pop (pre-scanned-tokens scanner))))
-    (upgrade-c11-token token)
-    #| TODO: handle [*] -> [ STAR ] |#
-    (format *trace-output* "~&scan-next-token -> ~A~%" token)
-    (setf (pre-scanner-actual-current-token scanner) token
-          (scanner-current-text  scanner) (token-text token)
-          ;; result:
-          (scanner-current-token scanner) (token-kind token))))
+    (when token
+      (upgrade-c11-token token)
+      #| TODO: handle [*] -> [ STAR ] |#
+      (format *trace-output* "~&scan-next-token -> ~A~%" token)
+      (setf (pre-scanner-actual-current-token scanner) token
+            (scanner-current-text  scanner) (token-text token)
+            ;; result:
+            (scanner-current-token scanner) (token-kind token)))))
 
 (defmethod scanner-end-of-source-p ((scanner pre-scanned-scanner))
   (declare (stepper disable))
@@ -324,6 +325,10 @@
                          (seq ALIGNOF \( type-name \)          :action `(align-of ,type-name)))
                     :action $1)
 
+               (--> unary-operator
+                    (alt & * + - ~ !)
+                    :action $1)
+
                (--> sizeof-argument
                     (alt simple-unary-expression
                          (seq (alt simple-primary-expression
@@ -341,22 +346,23 @@
                          simple-unary-expression)
                     :action `(unary ,$1))
 
-               (--> unary-operator
-                    (alt & * + - ~ !)
-                    :action $1)
-
                (--> cast-expression
-                    (alt (seq simple-unary-expression    :action `(unary ,$1))
-                         (seq simple-primary-expression  :action `(unary ,$1))
-                         (seq \( (alt (seq expression \)
-                                           :action expression)
-                                      (seq type-name  \)
-                                           (alt (seq  { initializer-list (opt \,) }
-                                                      :action `(compound-literal ,initializer-list))
-                                                (seq cast-expression
-                                                     :action `(cast ,cast-expression)))
-                                           :action `(,(first $2) ,type-name ,@(rest $2)))
-                                      (seq \) :action nil #|TODO: WHAT IS THIS?|#))))
+                    (alt (seq simple-unary-expression
+                              :action `(unary ,$1))
+                         (seq simple-primary-expression (rep postfix-expression-item :action $1)
+                              :action (wrap-left-to-right `(unary ,$1) $2))
+                         (seq \( (alt (seq expression \) (rep postfix-expression-item :action $1)
+                                           :action (wrap-left-to-right expression $3))
+                                      (seq type-name  \) (alt (seq  { initializer-list (opt \,) } (rep postfix-expression-item :action $1)
+                                                                    :action `(compound-literal ,initializer-list ,$5))
+                                                              (seq cast-expression
+                                                                   :action `(cast ,cast-expression)))
+                                           :action (if (and (eq 'compound-literal (first $2))
+                                                            (third $2))
+                                                       (wrap-left-to-right `(,(first $2) ,type-name ,(second $2)) (third $2))
+                                                       `(,(first $2) ,type-name ,@(rest $2))))
+                                      ;; (seq \) :action '|()| #|WHAT IS THIS?|#)
+                                      )))
                     :action $1)
 
                ;; left-to-right:
@@ -975,7 +981,7 @@ NOTE:   if the top-of-stack is :typedef then pop it as well as the specifiers.
 (defun declarator (declarator initializer)
   (let ((name (declarator-name declarator))
         (kind       (first  (context-declaration-specifiers *context*))))
-    (when initializer
+    #-(and) (when initializer
       (cerror "Continue" "Invalid initializer in a ~A ~S" kind initializer))
     `(:declarator ,name ,declarator ,initializer)))
 
