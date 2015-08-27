@@ -22,7 +22,7 @@ int f(int argument)
     ivar=42;
     svar="hello";
     ivar=(1+2);
-    svar=("Hello" " " "World");
+    svar=("Hello World");
     // TODO: generic_selection
 
     int unary_expressions;
@@ -156,9 +156,9 @@ int f(int argument)
     int sequence_expressions;
     ivar=a,b,c;
     
-    ivar=(a++),
-            f(b),
-            a*x*x+b*x+c,
+    ivar=((a++),
+          f(b),
+          a*x*x+b*x+c),
             (a*x+b)*x+c;
 
     int z=1+2*3/4;

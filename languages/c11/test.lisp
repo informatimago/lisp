@@ -1,4 +1,21 @@
-(in-package "COM.INFORMATIMAGO.LANGUAGES.C11.PARSER")
+;; (in-package "COM.INFORMATIMAGO.LANGUAGES.C11.PARSER")
+
+(defpackage "TEST"
+  (:use "COMMON-LISP"
+        "COM.INFORMATIMAGO.RDP"))
+(in-package "TEST")
+
+(defgrammar simple-ex
+  :scanner t
+  :terminals ((identifier "[A-Za-z][A-Za-z0-9]*")
+              (integer    "[0-9]+"))
+  :start expression
+  :rules  ((--> expression
+                (alt 
+                 (seq "+" integer)
+                 (seq "-" integer)
+                 (seq "*" integer)
+                 (seq "/" integer)))))
 
 
 (defgrammar ex
@@ -50,7 +67,7 @@
 
           (--> rep-with-action
                "rep-with-action" (rep identifier integer) ;  :action `(,identifier ,integer)
-               :action `(rep-no-action ,@(reduce 'append $2)))
+               :action `(rep-with-action ,@(reduce 'append $2)))
 
           
           (--> opt-no-action
@@ -65,6 +82,9 @@
 
           (--> alt-with-action
                "alt-with-action" (alt (seq "with" :action 'with) (seq "without" :action 'without)) identifier)))
+
+
+
 
 
 #-(and) (progn
@@ -95,9 +115,10 @@
           (list (parse-ex "rep-with-action")
                 (parse-ex "rep-with-action hello 42")
                 (parse-ex "rep-with-action hello 42 world 33"))
-          ((expression (rep-no-action))
-           (expression (rep-no-action (identifier "hello" 22) (integer "42" 25)))
-           (expression (rep-no-action (identifier "hello" 22) (integer "42" 25) (identifier "world" 31) (integer "33" 34))))
+
+          ((expression (rep-with-action))
+           (expression (rep-with-action (identifier "hello" 22) (integer "42" 25)))
+           (expression (rep-with-action (identifier "hello" 22) (integer "42" 25) (identifier "world" 31) (integer "33" 34))))
 
           (parse-ex "opt-no-action")
           (expression (opt-no-action (|opt-no-action| "opt-no-action" 14) nil))
