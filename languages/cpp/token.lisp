@@ -94,6 +94,12 @@
 (define-token-class punctuation)
 (define-token-class other)
 
+(defgeneric token-value (token)
+  (:method ((token token))                    (token-symbol     token))
+  (:method ((token number-token))             (integer-value    token))
+  (:method ((token character-literal-token))  (character-value  token))
+  (:method ((token string-literal-token))     (string-value     token)))
+
 (defvar *identifier-package* (load-time-value (find-package #.(package-name *package*)))
   "Package where to intern token-symbol of identifiers.")
 

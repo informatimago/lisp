@@ -34,8 +34,6 @@
 (in-package "COM.INFORMATIMAGO.LANGUAGES.CPP")
 
 
-
-
 ;;; --------------------
 
 (declaim (inline trigraph-character))
@@ -754,7 +752,8 @@ RETURN: the token text; the end position."
                                       include-directories)))))))
 
 (defgeneric token-string (token)
-  (:method ((token token)) (token-text token))
+  (:method ((token token))
+    (token-text token))
   (:method ((token string-literal-token))
     (with-input-from-string (in (token-text token))
       (read-c-string in (read-char in))))

@@ -96,6 +96,12 @@
 
 #-(and) (progn
 
+          (ql:quickload :com.informatimago.rdp)
+          (ql:quickload :com.informatimago.languages.c11)
+          (gen-p)
+          (pprint (remove-unary (test/parse-stream :source-file "tests/expressions.c")))
+
+
           (untrace compute-token-kind)
 
           (untrace typedef-name-p function-name-p enumeration-constant-name-p
@@ -103,26 +109,6 @@
                    push-declaration-specifiers pop-declaration-specifiers register-declarator
                    scan-next-token)
 
-
-
-
-
-          (external-declaration (seq ((alt ((seq (static-assert-declaration) ($0))
-                                            (seq ((seq (declaration-specifiers) ((push-declaration-specifiers $1)))
-                                                  (alt ((seq (\;) (:specifier))
-                                                        (seq (declarator (alt ((seq ((opt ((seq (= initializer) ($2)))) (rep ((seq (\, init-declarator) ($2)))) \;)
-                                                                                    ((if $1 '(:initializer $1 $2) '(:simple $2))))
-                                                                               (seq ((opt ((seq (declaration-list) ($0)))) compound-statement)
-                                                                                    ((list :function-declarator $1 $2))))))
-                                                             ((ecase (first $2)
-                                                                (:simple (declarator $1 (second $2)))
-                                                                (:initializer (cons (declarator $1 (second $2)) (third $2)))
-                                                                (:function-declarator (list :declarator $1 $2))))))))
-                                                 ((progn (print (list* 'declaration-specifiers (list $1)))
-                                                         (print (list* 'declarator (list $2)))
-                                                         (pop-declaration-specifiers)
-                                                         (if (eql $2 :specifier) $1 $2)))))))
-                                     ((print (list* 'external-declaration (list $1))))))
 
           
           (progn
