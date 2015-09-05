@@ -72,7 +72,7 @@
                "com.informatimago.clisp.test"  ; empty shell on non-clisp linux
                )
   :components  ()
-  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op
+  #+asdf3 :in-order-to #+asdf3 ((asdf:test-op
                  (asdf:test-op "com.informatimago.common-lisp.test")
                  (asdf:test-op "com.informatimago.clext.test")
                  (asdf:test-op "com.informatimago.clmisc.test")
