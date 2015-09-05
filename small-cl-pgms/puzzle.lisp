@@ -46,23 +46,26 @@
     This software is in Public Domain.
     You're free to do with it as you please.")
   (:use "COMMON-LISP")
-  (:export  "MAIN")
-  );;COM.INFORMATIMAGO.COMMON-LISP.PUZZLE
+  (:export  "MAIN"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.PUZZLE")
-
 
 (defclass square ()
   ;; What? A class for a mere integer?  No. We just leave to the reader
   ;; the pleasure to implement an picture-square subclass that would
   ;; display a picture part like on the real puzzle games.
-  ((label :accessor label  :initform 0 :initarg :label :type integer)));;square
+  ((label :accessor label  :initform 0 :initarg :label :type integer)))
+
+(defmethod print-object ((self square) stream)
+  (prin1 (label self) stream)
+  self)
+
 
 
 (defclass puzzle ()
   ((size   :accessor size   :initform 4 :initarg :size :type (integer 2))
    (places :accessor places :initform nil
-           :type (simple-array (or null square) (* *)))
-   (empty  :accessor empty  :initform nil :type cons)));;puzzle
+           :type (or null (simple-array (or null square) (* *))))
+   (empty  :accessor empty  :initform nil :type list)))
 
 
 (defgeneric get-coordinates  (puzzle relative-move))
@@ -71,23 +74,30 @@
 (defgeneric play             (puzzle))
 
 
+(defun shuffle (list)
+  (let ((vector (coerce list 'vector)))
+    (loop :for i :from (1- (length vector)) :downto 2
+          :do (rotatef (aref vector i) (aref vector (random i))))
+    (coerce vector 'list)))
 
 (defmethod initialize-instance ((self puzzle) &rest args)
   (declare (ignore args))
   (call-next-method)
   (let ((places (make-array (list (size self) (size self))
                             :element-type '(or null square)
-                            :initial-element nil)))
+                            :initial-element nil))
+        (squares (shuffle (loop :for i :below (* (size self) (size self)) :collect i))))
     (declare (type (simple-array (or null square) (* *)) places))
-    (loop with size = (size self)
-          for i from 0 below size do
-          (loop for j from 0 below size do
-                (unless (and (= i (1- size)) (= j (1- size)))
-                  (setf (aref places i j)
-                        (make-instance 'square :label (1+ (+ (* i size) j)))))))
+    (loop :with size = (size self)
+          :for i :from 0 :below size
+          :do (loop :for j :from 0 :below size
+                    :for square := (pop squares)
+                    :if (zerop square)
+                      :do (setf (empty self) (cons i j))
+                    :else
+                      :do (setf (aref places i j) (make-instance 'square :label square))))
     (setf (places self) places)
-    (setf (empty  self) (cons (1- (size self)) (1- (size self))))
-    self));;initialize-instance
+    self))
 
 
 (defmethod print-object ((self puzzle) (out stream))
@@ -95,13 +105,13 @@
     (format out "~&")
     (loop with size = (size self)
           for i from 0 below size do
-          (loop for j from 0 below size do
-                (if (aref (places self) i j)
+            (loop for j from 0 below size do
+              (if (aref (places self) i j)
                   (format out " ~VD " width (label (aref (places self) i j)))
                   (format out " ~VA " width "")))
-          (format out "~%")))
+            (format out "~%")))
   (format out "~%")
-  self);;print-object
+  self)
 
 
 (defmethod get-coordinates ((self puzzle) relative-move)
@@ -114,17 +124,17 @@
         ((:r) (when (< y (1- (size self))) (return (values x (1+ y)))))
         (otherwise
          (error "Invalid relative move, must be (member :l :r :u :d).")))
-      (error "Cannot move empty toward this direction."))));;get-coordinates
+      (error "Cannot move empty toward this direction."))))
 
-    
+
 
 (defmethod get-movable-list ((self puzzle))
   (mapcan
    (lambda (d) (handler-case
-              (multiple-value-bind (x y) (get-coordinates self d)
-                (list (list d (aref (places self) x y))))
-            (error () nil)))
-   '(:l :r :u :d)));;get-movable-list
+                   (multiple-value-bind (x y) (get-coordinates self d)
+                     (list (list d (aref (places self) x y))))
+                 (error () nil)))
+   '(:l :r :u :d)))
 
 
 
@@ -133,38 +143,47 @@
     (destructuring-bind (ex . ey) (empty self)
       (psetf (aref (places self) x y)   (aref (places self) ex ey)
              (aref (places self) ex ey) (aref (places self) x y))
-      (setf (empty self) (cons x y)))));;move-square
+      (setf (empty self) (cons x y)))))
 
 
 (defmethod play ((self puzzle))
   (loop
-   (tagbody
-    :loop
-    (format t "~&----------------------------------------~%")
-     (format t "~A" self)
-     (format t "square to move: ")
-     (let ((input (let ((*package*
-                         (find-package "COM.INFORMATIMAGO.COMMON-LISP.PUZZLE")))
-                    ;; To be able to read mere symbols (instead of keywords).
-                    (read)))
-           (movable (get-movable-list self))
-           square x y)
-       (typecase input
-         (integer
-          (let ((m (member input movable
-                           :key (lambda (x) (label (second x))) :test (function =))))
-            (if m
-              (progn
-                (setf square (second (car m)))
-                (multiple-value-setq (x y)
-                    (get-coordinates self (first (car m)))))
-              (progn
-                (format t "Cannot move square ~D.~%" input)
-                (go :loop)))))
-         (symbol
-          (handler-case
-              (progn
-                (multiple-value-setq (x y)
+    (tagbody
+     :loop
+       (format t "~&----------------------------------------~%")
+       (format t "~A" self)
+       
+       (let ((input (let ((*package* (load-time-value (find-package "COM.INFORMATIMAGO.COMMON-LISP.PUZZLE"))))
+                      ;; To be able to read mere symbols (instead of keywords).
+                      (loop
+                        (format *query-io* "Number of square to move, or :help? ")
+                        (finish-output *query-io*)
+                        (let ((input (read *query-io*)))
+                          (case input
+                            ((:h :help h help)
+                             (format *query-io*
+                                     "Enter the number of the square to move, or one of: ~%~{~S~^ ~}~%"
+                                     '(l left r right u up d down q quit exit abort)))
+                            (otherwise (return input)))))))
+             (movable (get-movable-list self))
+             ;;square
+             x y)
+         (typecase input
+           (integer
+            (let ((m (member input movable
+                             :key (lambda (x) (label (second x))) :test (function =))))
+              (if m
+                  (progn
+                    ;; (setf square (second (car m)))
+                    (multiple-value-setq (x y)
+                      (get-coordinates self (first (car m)))))
+                  (progn
+                    (format t "Cannot move square ~D.~%" input)
+                    (go :loop)))))
+           (symbol
+            (handler-case
+                (progn
+                  (multiple-value-setq (x y)
                     (get-coordinates
                      self (case input
                             ((:l :left l left)   :l)
@@ -172,13 +191,15 @@
                             ((:u :up u up)       :u)
                             ((:d :down d down)   :d)
                             ((:q :quit q quit :exit exit
-                              :abort abort :break break)
+                               :abort abort :break break)
                              (return-from play))
                             (otherwise input))))
-                (setf square (aref (places self) x y)))
-            (error (err) (format t "~A~%" err) (go :loop))))
-         (otherwise (format t "Invalid input.~%") (go :loop)))
-       (move-square self x y)))));;play
+                  ;; (setf square (aref (places self) x y))
+                  )
+              (error (err) (format t "~A~%" err) (go :loop))))
+           (otherwise (format t "Invalid input.~%") (go :loop)))
+         ;; (format t "Moving square ~S~%" square)
+         (move-square self x y)))))
 
 
 (defun main ()
@@ -189,8 +210,7 @@
        (unless (<= 2 input 16)  (error "Cannot display such a puzzle.")))
       (otherwise
        (error "Please choose an integer size between 2 and 16 inclusive.")))
-    (play (make-instance 'com.informatimago.common-lisp.puzzle
-            :size input))));;main
+    (play (make-instance 'puzzle :size input))))
 
 
-;;;; puzzle.lisp                      -- 2004-03-17 20:09:19 -- pascal   ;;;;
+;;;; THE END ;;;;
