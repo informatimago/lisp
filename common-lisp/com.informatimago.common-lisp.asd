@@ -78,7 +78,8 @@
                "com.informatimago.common-lisp.rfc2822"
                "com.informatimago.common-lisp.rfc3548"
                ;; not yet "com.informatimago.common-lisp.telnet"
-               "com.informatimago.common-lisp.unix")
+               "com.informatimago.common-lisp.unix"
+               "com.informatimago.common-lisp.data")
   #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.test"))))
 
 
