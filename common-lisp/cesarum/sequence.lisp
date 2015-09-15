@@ -42,7 +42,9 @@
            "DELETEF"
            "GROUP-BY"
            "PARSE-SEQUENCE-TYPE"
-           "CONCATENATE-SEQUENCES")
+           "CONCATENATE-SEQUENCES"
+           "PREFIXP"
+           "SUFFIXP")
   (:documentation
    "
 
@@ -392,6 +394,41 @@ RETURN:          A vector containing all the elements of the vectors
          (when (integerp fill-pointer)
            (setf (fill-pointer result) fill-pointer))
          result)))))
+
+
+(defgeneric prefixp (prefix sequence &key start end test)
+  (:documentation   "
+PREFIX:  A sequence designator.
+STRING:  A sequence designator.
+START:   The start of the subsequence of SEQUENCE to consider. Default: 0.
+END:     The end   of the subsequence of SEQUENCE to consider. Default: NIL.
+TEST:    A function to compare the elements of the SEQUENCE.
+RETURN:  Whether PREFIX is a prefix of the (subseq SEQUENCE START END).
+"))
+
+
+
+(defgeneric suffixp (suffix string &key start end test)
+  (:documentation   "
+SUFFIX:  A sequence designator.
+STRING:  A sequence designator.
+START:   The start of the subsequence of SEQUENCE to consider. Default: 0.
+END:     The end   of the subsequence of SEQUENCE to consider. Default: NIL.
+TEST:    A function to compare the elements of the SEQUENCE.
+RETURN:  Whether SUFFIX is a suffix of the (subseq SEQUENCE START END).
+"))
+
+
+
+(defmethod prefixp ((prefix sequence) (sequence sequence) &key (start 0) (end nil) (test (function eql)))
+  (let ((mis (mismatch  prefix sequence :start2 start :end2 end :test test)))
+    (or (null mis) (<= (length prefix) mis))))
+
+
+(defmethod suffixp ((suffix sequence) (sequence sequence) &key (start 0) (end nil) (test (function eql)))
+  (zerop (or (mismatch  suffix  sequence :start2 start :end2 end :test test
+                                         :from-end t)
+             0)))
 
 
 

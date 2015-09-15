@@ -11,6 +11,9 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2015-09-15 <PJB> prefixp and suffixp moved to sequence,
+;;;;                     became generic functions; added methods for
+;;;;                     string designators.
 ;;;;    2013-07-02 <PJB> Added designator types, upgraded some
 ;;;;                     functions to take more specifically string or
 ;;;;                     character designators. Added some tests.
@@ -48,7 +51,8 @@
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE")
   (:export
    "STRING-DESIGNATOR" "CHARACTER-DESIGNATOR"
    "NO-LOWER-CASE-P" "NO-UPPER-CASE-P" "MIXED-CASE-P"
@@ -69,7 +73,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2002 - 2013
+    Copyright Pascal J. Bourguignon 2002 - 2015
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -441,30 +445,50 @@ RETURN:  a cons with two substrings of string such as:
         nil)))
 
 
-(defun prefixp (prefix string &key (start 0) (end nil) (test (function char=)))
-  "
-PREFIX:  A sequence.
-STRING:  A sequence.
-START:   The start of the substring of STRING to consider. Default: 0.
-END:     The end   of the substring of STRING to consider. Default: NIL.
-TEST:    A function to compare the elements of the strings.
-RETURN:  Whether PREFIX is a prefix of the (substring STRING START END).
-"
-  (let ((mis (mismatch prefix string :start2 start :end2 end :test test)))
-    (or (null mis) (<= (length prefix) mis))))
+;; Methods for strings provide a different default test.
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun combinations (n elements)
+    (if (zerop n)
+        '(())
+        (mapcan (lambda (subcombs)
+                  (mapcar (lambda (element)
+                            (cons element subcombs))
+                          elements))
+                (combinations (1- n) elements)))))
+
+(defmacro define-string-designator-methods (name (&rest lambda-list) (&rest string-designator-parameters)
+                                            &body body)
+  (flet ((substitute-parameters (lambda-list parameters)
+           (mapcar (lambda (formal-parameter)
+                     (if (atom formal-parameter)
+                         (let ((typed-parameter (assoc formal-parameter parameters)))
+                           (or typed-parameter formal-parameter))
+                         formal-parameter))
+                   lambda-list)))
+    `(progn
+       ,@(loop
+           :for comb :in (combinations (length string-designator-parameters)
+                                       '(character symbol string))
+           :unless (every (lambda (class) (eql class 'string)) comb)
+             :collect `(defmethod ,name
+                           ,(substitute-parameters lambda-list
+                             (mapcar (function list) string-designator-parameters comb))
+                         ,@body))
+       (defmethod ,name ,(substitute-parameters lambda-list
+                          (mapcar (lambda (parameter) (list parameter 'string))
+                           string-designator-parameters))
+         (call-next-method)))))
+
+(define-string-designator-methods prefixp (prefix sequence &key (start 0) (end nil) (test (function char=)))
+    (prefix sequence)
+  (prefixp (string prefix) (string sequence) :start start :end end :test test))
+
+(define-string-designator-methods suffixp (suffix sequence &key (start 0) (end nil) (test (function char=)))
+    (suffix sequence)
+  (suffixp (string suffix) (string sequence) :start start :end end :test test))
 
 
-(defun suffixp (suffix string &key (start 0) (end nil) (test (function char=)))
-  "
-SUFFIX:  A sequence.
-STRING:  A sequence.
-START:   The start of the substring of STRING to consider. Default: 0.
-END:     The end   of the substring of STRING to consider. Default: NIL.
-TEST:    A function to compare the elements of the strings.
-RETURN:  Whether SUFFIX is a suffix of the (substring STRING START END).
-"
-  (zerop (or (mismatch suffix string :start2 start :end2 end :test test
-                       :from-end t) 0)))
 
 
 (defun string-pad (string length &key (padchar " ") (justification :left))
