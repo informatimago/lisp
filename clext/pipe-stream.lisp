@@ -46,13 +46,27 @@
 (defpackage "COM.INFORMATIMAGO.CLEXT.PIPE"
   (:use "COMMON-LISP"
         "TRIVIAL-GRAY-STREAMS"
-        "BORDEAUX-THREADS")
+        "BORDEAUX-THREADS"
+        "COM.INFORMATIMAGO.CLEXT.GATE")
   (:export "MAKE-PIPE" "PIPE" "PIPE-INPUT-STREAM" "PIPE-OUTPUT-STREAM" "PIPE-ELEMENT-TYPE"
            "PIPE-CHARACTER-INPUT-STREAM"
            "PIPE-CHARACTER-OUTPUT-STREAM"
            "PIPE-BINARY-INPUT-STREAM"
-           "PIPE-BINARY-OUTPUT-STREAM"))
+           "PIPE-BINARY-OUTPUT-STREAM")
+  (:import-from "COM.INFORMATIMAGO.CLEXT.GATE" "TR")
+  (:shadow "WITH-LOCK-HELD"))
 (in-package "COM.INFORMATIMAGO.CLEXT.PIPE")
+
+
+(defmacro with-lock-held ((place) &body body)
+  (let ((lock (gensym)))
+    `(let ((,lock ,place))
+       (tr "will acquire lock ~A" (ccl:lock-name ,lock))
+       (unwind-protect
+            (bt:with-lock-held (,lock)
+              (tr "acquired lock ~A" (ccl:lock-name ,lock))
+              ,@body)
+         (tr "released lock ~A" (ccl:lock-name ,lock))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -82,20 +96,6 @@ from an input stream and an output stream."))
              'pipe 'make-pipe)
       (call-next-method)))
 
-#-(and)
-(define-condition pipe-error (error)
-  ((pipe             :initarg :pipe                           :reader pipe-error-pipe)
-   (sequence         :initarg :sequence         :initform nil :reader pipe-error-sequence)
-   (start            :initarg :start            :initform nil :reader pipe-error-start)
-   (end              :initarg :end              :initform nil :reader pipe-error-end)
-   (format-control   :initarg :format-control   :initform ""  :reader pipe-error-format-control)
-   (format-arguments :initarg :format-arguments :initform nil :reader pipe-error-format-arguments))
-  (:report (lambda (condition stream)
-             (format stream "~?"
-                     (pipe-error-format-control   condition)
-                     (pipe-error-format-arguments condition)))))
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Private implementation:
@@ -103,30 +103,50 @@ from an input stream and an output stream."))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defclass generic-pipe (pipe)
-  ((lock          :reader   lock      :initform (bt:make-lock "pipe"))
-   (not-empty     :reader   not-empty :initform (bt:make-condition-variable :name "pipe/not-empty"))
+  ((name          :reader   pipe-name :initform "")
+   (lock          :reader   lock)
+   (not-empty     :reader   not-empty)
    (head          :accessor head      :initarg :head)
    (tail          :accessor tail      :initarg :tail)))
 
-(defmethod initialize-instance ((pipe generic-pipe) &key &allow-other-keys)
-  (if (eql (class-of pipe) (find-class 'generic-pipe))
+(defmethod initialize-instance :before ((pipe generic-pipe) &key &allow-other-keys)
+  (when (eql (class-of pipe) (find-class 'generic-pipe))
       (error "~S is an abstract class, use ~S to create pipes."
-             'generic-pipe 'make-pipe)
-      (call-next-method)))
+             'generic-pipe 'make-pipe)))
+
+(defmethod initialize-instance :after ((pipe generic-pipe) &key &allow-other-keys)
+  (setf (slot-value pipe 'lock)      (bt:make-lock (format nil "~A/pipe/lock" (pipe-name pipe)))
+        (slot-value pipe 'not-empty) (make-gate :name (format nil "~A/gate/not-empty" (pipe-name pipe)))))
+
 
 
 (defclass buffered-pipe (generic-pipe)
-  ((not-full      :reader   not-full  :initform (bt:make-condition-variable :name "pipe/not-full"))
+  ((not-full      :reader   not-full)
    (buffer        :reader   buffer    :initarg :buffer))
 
   ;; Otherwise buffer is a vector of element-type, and head
   ;; and tail are indices in that vector.  In that case, not-full
-  ;; is a condition.
+  ;; is a gate.
   
   ;; New elements are enqueued on tail; old elements are dequeued
   ;; from head.
   
   (:documentation "A pipe with a fixed-size circular buffer."))
+
+
+(defmethod print-object ((pipe buffered-pipe) stream)
+  (print-unreadable-object (pipe stream :type t :identity t)
+    (let ((bufsize (length (buffer pipe))))
+      (format stream ":input ~:[:closed~;:open~] :output ~:[:closed~;:open~] :buffer (~A / ~A) :name ~S"
+              (open-stream-p (pipe-input-stream  pipe))
+              (open-stream-p (pipe-output-stream pipe))
+              (mod (- (tail pipe) (head pipe)) bufsize)
+              bufsize
+              (pipe-name pipe))))
+  pipe)
+
+(defmethod initialize-instance :after ((pipe buffered-pipe) &key &allow-other-keys)
+  (setf (slot-value pipe 'not-full) (make-gate :name (format nil "~A/pipe/not-full" (pipe-name pipe)))))
 
 
 (defclass queued-pipe (generic-pipe)
@@ -141,11 +161,30 @@ from an input stream and an output stream."))
   
   (:documentation "A pipe with a variable length queue of blocks."))
 
+(defmethod print-object ((pipe queued-pipe) stream)
+  (print-unreadable-object (pipe stream :type t :identity t)
+    (let ((queue-size (length (head pipe))))
+      (format stream ":input ~:[:closed~;:open~] :output ~:[:closed~;:open~] :queued ~A :name ~S"
+              (open-stream-p (pipe-input-stream  pipe))
+              (open-stream-p (pipe-output-stream pipe))
+              queue-size
+              (pipe-name pipe))))
+  pipe)
+
+
 
 
 (defclass pipe-stream ()
-  ((pipe :initarg :pipe :reader pipe-stream-pipe)))
+  ((pipe         :reader pipe-stream-pipe         :initarg :pipe )
+   (element-type :reader pipe-stream-element-type :initarg :element-type)
+   (open         :reader open-stream-p            :initform t)))
 
+(defmethod print-object ((stream pipe-stream) output)
+  (print-unreadable-object (stream output :type t :identity t)
+    (format output "~:[:closed~;:open~] :element-type ~S"
+            (open-stream-p stream)
+            (pipe-stream-element-type stream)))
+  stream)
 
 (defclass pipe-character-input-stream (pipe-stream fundamental-character-input-stream)
   ((column :initform 0 :accessor column)))
@@ -164,15 +203,17 @@ from an input stream and an output stream."))
 
 
 
-(defun make-pipe (&key (element-type 'character) buffer-size)
+(defun make-pipe (&key (element-type 'character) buffer-size (name ""))
   "
 RETURN:  A new PIPE.
 "
   (let ((pipe (if buffer-size
-                  (make-instance 'buffered-pipe :element-type element-type
+                  (make-instance 'buffered-pipe :name name
+                                                :element-type element-type
                                                 :buffer (make-array (1+ buffer-size) :element-type element-type)
                                                 :head 0 :tail 0)
-                  (make-instance 'queued-pipe   :element-type element-type
+                  (make-instance 'queued-pipe   :name name
+                                                :element-type element-type
                                                 :head nil :tail nil))))
     (multiple-value-bind (input-class output-class)
         (if (subtypep element-type 'character)
@@ -245,6 +286,9 @@ If (- end start) is more than the buffer-size then signal an error
 else if there's more than (- end start) elements  in the buffer, 
 then dequeues them into the subseq of SEQUENCE between START and END,
 else blocks until there's enough data available.
+
+RETURN: The index of the first slot in SEQUENCE not modified.
+        May be less than END when EOF is reached.
 "))
 
 (defgeneric pipe-dequeue-until-element (pipe element)
@@ -321,26 +365,26 @@ when it's the case, end-of-file is detected upon reading on an empty pipe.")
   (loop :while (%pipe-emptyp pipe)
         :do (if (closed-pipe-p pipe)
                 (return :eof)
-                (condition-wait (not-empty pipe) (lock pipe)))
+                (gate-wait (not-empty pipe) (lock pipe)))
         :finally (return nil)))
 
 
 (defmethod pipe-enqueue-element ((pipe buffered-pipe) element)
   (with-lock-held ((lock pipe))
     (loop :while (%pipe-fullp pipe)
-          :do (condition-wait (not-full pipe) (lock pipe)))
+          :do (gate-wait (not-full pipe) (lock pipe)))
     (setf (aref (buffer pipe) (tail pipe)) element)
-    (mod-incf (tail pipe) (length (buffer pipe)))
-    (condition-notify (not-empty pipe))))
+    (mod-incf (tail pipe) (length (buffer pipe))))
+  (gate-signal (not-empty pipe)))
 
 (defmethod pipe-enqueue-sequence ((pipe buffered-pipe) sequence start end)
   (assert (<= 0 start end (length sequence)))
   (let ((buflen (length (buffer pipe))))
-    (with-lock-held ((lock pipe))
-      (loop
-        :while (< start end)
-        :do (loop :while (%pipe-fullp pipe)
-                  :do (condition-wait (not-full pipe) (lock pipe)))
+    (loop
+      :while (< start end)
+      :do (with-lock-held ((lock pipe))
+            (loop :while (%pipe-fullp pipe)
+                  :do (gate-wait (not-full pipe) (lock pipe)))
             ;; [_____head-------tail__________]
             ;; [-------tail_______head--------]
             ;; write what we can:
@@ -353,18 +397,18 @@ when it's the case, end-of-file is detected upon reading on an empty pipe.")
                    (len   (- dste dsts)))
               (replace (buffer pipe) sequence :start1 dsts :end1 dste :start2 start)
               (incf start len)
-              (mod-incf (tail pipe) buflen len)
-              (condition-notify (not-empty pipe))))))
+              (mod-incf (tail pipe) buflen len))
+            (gate-signal (not-empty pipe)))))
   sequence)
 
 (defmethod pipe-dequeue-sequence ((pipe buffered-pipe) sequence start end)
   (assert (<= 0 start end (length sequence)))
   (let ((buflen (length (buffer pipe))))
-    (with-lock-held ((lock pipe))
-      (loop
-        :while (< start end)
-        :do (when (%wait-not-empty-or-closed pipe)
-              (return (values sequence start)))
+    (loop
+      :while (< start end)
+      :do (with-lock-held ((lock pipe))
+            (when (%wait-not-empty-or-closed pipe)
+              (return start))
             ;; [_____head-------tail__________]
             ;; [-------tail_______head--------]
             ;; read what we can:
@@ -377,9 +421,9 @@ when it's the case, end-of-file is detected upon reading on an empty pipe.")
                    (len    (- srce srcs)))
               (replace sequence (buffer pipe) :start2 srcs :end2 srce :start1 start)
               (incf start len)
-              (mod-incf (head pipe) buflen len)
-              (condition-notify (not-full pipe)))
-        :finally (return (values sequence start))))))
+              (mod-incf (head pipe) buflen len)))
+          (gate-signal (not-full pipe))
+      :finally (return start))))
 
 (defmethod pipe-dequeue-until-element ((pipe buffered-pipe) element)
   (let ((buflen (length (buffer pipe)))
@@ -388,28 +432,30 @@ when it's the case, end-of-file is detected upon reading on an empty pipe.")
              (with-output-to-string (out)
                (dolist (chunk (nreverse chunks))
                  (write-string chunk out)))))
-      (with-lock-held ((lock pipe))
-        (loop
-          (when (%wait-not-empty-or-closed pipe)
-            (return (values (concatenate-chunks) nil)))
-          ;; [_____head-------tail__________]
-          ;; [-------tail_______head--------]
-          ;; read what we can:
-          (let* ((srcs   (head pipe))
-                 (srce   (if (< (head pipe) (tail pipe))
-                             (tail pipe)
-                             buflen))
-                 (pos    (position element (buffer pipe) :start srcs :end srce)))
-            (if pos
-                (progn
-                  (push (subseq (buffer pipe) srcs pos) chunks)
-                  (mod-incf (head pipe) buflen (- (1+ pos) srcs))
-                  (condition-notify (not-full pipe))
-                  (return (values (concatenate-chunks) t)))
-                (progn
-                  (push (subseq (buffer pipe) srcs srce) chunks)
-                  (mod-incf (head pipe) buflen (- srce srcs))
-                  (condition-notify (not-full pipe))))))))))
+      (values (concatenate-chunks)
+              (loop :named collect
+                    :do (with-lock-held ((lock pipe))
+                          (when (%wait-not-empty-or-closed pipe)
+                            (return-from collect nil))
+                          ;; [_____head-------tail__________]
+                          ;; [-------tail_______head--------]
+                          ;; read what we can:
+                          (let* ((srcs   (head pipe))
+                                 (srce   (if (< (head pipe) (tail pipe))
+                                             (tail pipe)
+                                             buflen))
+                                 (pos    (position element (buffer pipe) :start srcs :end srce)))
+                            (if pos
+                                (progn
+                                  (push (subseq (buffer pipe) srcs pos) chunks)
+                                  (mod-incf (head pipe) buflen (- (1+ pos) srcs))
+                                  (return-from collect t))
+                                (progn
+                                  (push (subseq (buffer pipe) srcs srce) chunks)
+                                  (mod-incf (head pipe) buflen (- srce srcs))))))
+                        
+                        (gate-signal (not-full pipe))
+                    :finally (gate-signal (not-full pipe)))))))
 
 
 
@@ -423,8 +469,8 @@ when it's the case, end-of-file is detected upon reading on an empty pipe.")
           (setf (cdr (tail pipe)) blkl
                 (tail pipe) (cdr (tail pipe)))
           (setf (head pipe)
-                (setf (tail pipe) blkl)))
-      (condition-notify (not-empty pipe)))))
+                (setf (tail pipe) blkl))))
+    (gate-signal (not-empty pipe))))
 
 (defmethod pipe-dequeue-sequence ((pipe queued-pipe) sequence start end)
   (assert (<= 0 start end (length sequence)))
@@ -432,7 +478,7 @@ when it's the case, end-of-file is detected upon reading on an empty pipe.")
     (loop
       :while (< start end)
       :do (when (%wait-not-empty-or-closed pipe)
-            (return (values sequence start)))
+            (return start))
           ;; read what we can:
           (let ((blk (car (head pipe))))
             (if (block-empty-p blk)
@@ -449,7 +495,7 @@ when it's the case, end-of-file is detected upon reading on an empty pipe.")
                            :start1 start :start2 (block-start blk) :end2 srce)
                   (incf start len)
                   (incf (block-start blk) len))))
-      :finally (return (values sequence start)))))
+      :finally (return start))))
 
 (defmethod pipe-dequeue-until-element ((pipe queued-pipe) element)
   (let ((chunks '()))
@@ -484,8 +530,8 @@ when it's the case, end-of-file is detected upon reading on an empty pipe.")
 (defmethod %pipe-peek-or-dequeue ((pipe buffered-pipe) peek)
   (values t (prog1 (aref (buffer pipe) (head pipe))
               (unless peek
-                (mod-incf (head pipe) (length (buffer pipe)))
-                (condition-notify (not-full pipe))))))
+                (mod-incf (head pipe) (length (buffer pipe)))))
+          (not peek)))
 
 (defmethod %pipe-peek-or-dequeue ((pipe queued-pipe) peek)
   (let ((blk (car (head pipe))))
@@ -501,23 +547,26 @@ when it's the case, end-of-file is detected upon reading on an empty pipe.")
                       (block-pop-char  blk))))))
 
 (defun %peek-or-dequeue (pipe peek no-hang)
-  (with-lock-held ((lock pipe))
-    (loop
-      (if (%pipe-emptyp pipe)
-          (if (closed-pipe-p pipe)
-              (return :eof)
-              (if no-hang
-                  (return nil)
-                  (condition-wait (not-empty pipe) (lock pipe))))
-          (multiple-value-bind (returnp result) (%pipe-peek-or-dequeue pipe peek)
-            (when returnp
-              (return result)))))))
+  (let ((signal-not-full nil))
+    (prog1 (loop
+             (with-lock-held ((lock pipe))
+               (if (%pipe-emptyp pipe)
+                   (if (closed-pipe-p pipe)
+                       (return :eof)
+                       (if no-hang
+                           (return nil)
+                           (gate-wait (not-empty pipe) (lock pipe))))
+                   (multiple-value-bind (returnp result signal) (%pipe-peek-or-dequeue pipe peek)
+                     (setf signal-not-full signal)
+                     (when returnp
+                       (return result))))))
+      (when signal-not-full (gate-signal (not-full pipe))))))
 
 
-(defmethod pipe-dequeue-element ((pipe actual-pipe))
+(defmethod pipe-dequeue-element ((pipe generic-pipe))
   (%peek-or-dequeue pipe nil nil))
 
-(defmethod pipe-peek-element ((pipe actual-pipe))
+(defmethod pipe-peek-element ((pipe generic-pipe))
   (%peek-or-dequeue pipe :peek nil))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -526,6 +575,10 @@ when it's the case, end-of-file is detected upon reading on an empty pipe.")
 ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defun check-stream-open (stream where)
+  (unless (open-stream-p stream)
+    (error "~S cannot deal with closed stream ~S"
+           where stream)))
 
 ;;; character input
 
@@ -538,24 +591,30 @@ when it's the case, end-of-file is detected upon reading on an empty pipe.")
   ch)
 
 (defmethod stream-read-char ((stream pipe-character-input-stream))
+  (check-stream-open stream 'stream-read-char)
   (update-column stream (pipe-dequeue-element (pipe-stream-pipe stream))))
 
 (defmethod stream-read-char-no-hang ((stream pipe-character-input-stream))
+  (check-stream-open stream 'stream-read-char-no-hang)
   (update-column stream (%peek-or-dequeue (pipe-stream-pipe stream) nil :no-hang)))
 
  (defmethod stream-peek-char ((stream pipe-character-input-stream))
+  (check-stream-open stream 'stream-peek-char)
   (pipe-peek-element (pipe-stream-pipe stream)))
 
 (defmethod stream-read-line ((stream pipe-character-input-stream))
+  (check-stream-open stream 'stream-read-line)
   (let ((line (pipe-dequeue-until-element (pipe-stream-pipe stream) #\newline)))
     (setf (column stream) 0)
     line))
 
 (defmethod stream-listen ((stream pipe-character-input-stream))
+  (check-stream-open stream 'stream-listen)
   (%peek-or-dequeue (pipe-stream-pipe stream) :peek :no-hang))
 
 (defmethod stream-unread-char ((stream pipe-character-input-stream) ch)
-  (bt:with-lock-held ((lock stream))
+  (check-stream-open stream 'stream-unread-char)
+  (with-lock-held ((lock stream))
     (let ((head (head stream)))
       (if head
           (let ((blk (car head)))
@@ -563,8 +622,8 @@ when it's the case, end-of-file is detected upon reading on an empty pipe.")
                 (push (make-block (string ch)) (head stream))
                 (block-push-char blk ch)))
           (setf (tail stream)
-                (setf (head stream) (list (make-block (string ch))))))
-      (bt:condition-notify (not-empty stream))))
+                (setf (head stream) (list (make-block (string ch))))))))
+  (gate-signal (not-empty stream))
   (setf (column stream) (max 0 (1- (column stream))))
   ch)
 
@@ -573,6 +632,7 @@ when it's the case, end-of-file is detected upon reading on an empty pipe.")
 ;;; character output
 
 (defmethod stream-write-char ((stream pipe-character-output-stream) ch)
+  (check-stream-open stream 'stream-write-char)
   (let ((pipe (pipe-stream-pipe stream)))
     (unless (sunk-pipe-p pipe)
       (pipe-enqueue-element pipe ch)))
@@ -582,15 +642,17 @@ when it's the case, end-of-file is detected upon reading on an empty pipe.")
   ch)
 
 (defmethod stream-terpri ((stream pipe-character-output-stream))
+  (check-stream-open stream 'stream-terpri)
   (stream-write-char stream #\newline)
   nil)
 
 (defmethod stream-write-string ((stream pipe-character-output-stream) string &optional (start 0) end)
+  (check-stream-open stream 'stream-write-string)
   (let* ((pipe (pipe-stream-pipe stream))
          (end  (or end (length string)))
          (nlp  (position #\newline string :start start :end end :from-end t)))
     (unless (sunk-pipe-p pipe)
-      (bt:with-lock-held ((lock pipe))
+      (with-lock-held ((lock pipe))
         (let ((tail (tail pipe))
               (str  (cond
                       (end (subseq string start end))
@@ -600,8 +662,8 @@ when it's the case, end-of-file is detected upon reading on an empty pipe.")
               (setf (cdr (tail pipe)) (list (make-block str)) 
                     (tail pipe) (cdr (tail pipe)))
               (setf (head pipe)
-                    (setf (tail pipe) (list (make-block str))))))
-        (bt:condition-notify (not-empty pipe))))
+                    (setf (tail pipe) (list (make-block str)))))))
+      (gate-signal (not-empty pipe)))
     (if nlp
         (setf (column stream) (- end nlp))
         (incf (column stream) (- end start))))
@@ -614,25 +676,53 @@ when it's the case, end-of-file is detected upon reading on an empty pipe.")
   (zerop (column stream)))
 
 (defmethod stream-advance-to-column ((stream pipe-character-output-stream) column)
+  (check-stream-open stream 'stream-advance-to-column)
   (let ((delta (- column (column stream))))
     (when (plusp delta)
       (stream-write-string stream (make-string delta :initial-element #\space))
       delta)))
 
-(defmethod close :after ((stream pipe-character-output-stream) &key abort)
+(defun close-pipe (pipe)
+  (with-lock-held ((lock pipe))
+    (setf (slot-value (pipe-output-stream pipe) 'open) nil))
+  (gate-signal (not-empty pipe)))
+
+(defun sink-pipe (pipe)
+  (with-lock-held ((lock pipe))
+    (setf (slot-value (pipe-input-stream pipe) 'open) nil)))
+
+(defmethod close ((stream pipe-character-output-stream) &key abort)
   (declare (ignore abort))
-  (condition-notify (not-empty stream)))
+  (tr "pipe-character-input-stream closed")
+  (close-pipe (pipe-stream-pipe stream)))
+
+(defmethod close ((stream pipe-binary-output-stream) &key abort)
+  (declare (ignore abort))
+  (tr "pipe-binary-output-stream closed")
+  (close-pipe (pipe-stream-pipe stream)))
+
+(defmethod close ((stream pipe-character-input-stream) &key abort)
+  (declare (ignore abort))
+  (tr "pipe-character-input-stream closed")
+  (sink-pipe (pipe-stream-pipe stream)))
+
+(defmethod close ((stream pipe-binary-input-stream) &key abort)
+  (declare (ignore abort))
+  (tr "pipe-binary-input-stream closed")
+  (sink-pipe (pipe-stream-pipe stream)))
 
 
 
 ;; binary input
 
 (defmethod stream-read-byte ((stream pipe-binary-input-stream))
+  (check-stream-open stream 'stream-read-byte)
   (%peek-or-dequeue (pipe-stream-pipe stream) nil nil))
 
 ;; binary output
 
-(defmethod stream-write-byte ((stream pipe-binary-input-stream) byte)
+(defmethod stream-write-byte ((stream pipe-binary-output-stream) byte)
+  (check-stream-open stream 'stream-write-byte)
   (let ((pipe (pipe-stream-pipe stream)))
     (unless (sunk-pipe-p pipe)
       (pipe-enqueue-element pipe byte)))
@@ -676,16 +766,20 @@ when it's the case, end-of-file is detected upon reading on an empty pipe.")
     sequence))
  
 (defmethod stream-read-sequence ((stream pipe-character-input-stream) sequence start end &key &allow-other-keys)
+  (check-stream-open stream 'stream-read-sequence)
   (%stream-read-sequence stream sequence start end))
 
 (defmethod stream-read-sequence ((stream pipe-binary-input-stream) sequence start end &key &allow-other-keys)
+  (check-stream-open stream 'stream-read-sequence)
   (%stream-read-sequence stream sequence start end))
 
 (defmethod stream-write-sequence ((stream pipe-character-output-stream) sequence start end &key &allow-other-keys)
-  (%stream-read-sequence stream sequence start end))
+  (check-stream-open stream 'stream-write-sequence)
+  (%stream-write-sequence stream sequence start end))
 
 (defmethod stream-write-sequence ((stream pipe-binary-output-stream) sequence start end &key &allow-other-keys)
-  (%stream-read-sequence stream sequence start end))
+  (check-stream-open stream 'stream-write-sequence)
+  (%stream-write-sequence stream sequence start end))
 
 
 

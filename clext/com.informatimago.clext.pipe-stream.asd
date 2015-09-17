@@ -80,8 +80,10 @@ with a synchronized queue in the middle.
                ((#:albert #:docbook #:bgcolor)   . "white")
                ((#:albert #:docbook #:textcolor) . "black"))
   :depends-on ("trivial-gray-streams"
-               "bordeaux-threads")
-  :components ((:file "pipe-stream"))
+               "bordeaux-threads"
+               "com.informatimago.clext.closer-weak") ; weak hash-tables are needed for gate.
+  :components ((:file "gate")
+               (:file "pipe-stream" :depends-on ("gate")))
   #+adsf3 :in-order-to #+adsf3 ((test-op (test-op "com.informatimago.clext.pipe-stream.test")))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8)
 

@@ -428,7 +428,7 @@ RETURN:  Whether SUFFIX is a suffix of the (subseq SEQUENCE START END).
 (defmethod suffixp ((suffix sequence) (sequence sequence) &key (start 0) (end nil) (test (function eql)))
   (zerop (or (mismatch  suffix  sequence :start2 start :end2 end :test test
                                          :from-end t)
-             0)))
+             0)) )
 
 
 
