@@ -82,13 +82,15 @@ publie en 1962 par MIT Press, un des maitres-livres de l'Informatique.
 
 ")
 
+
+
 (defparameter *binary-data*
   (make-array (length *text-data*)
               :element-type 'octet
               :initial-contents (map 'vector (function char-code) *text-data*)))
 
-
 (defun make-binary-input     (stream buffer-size)
+  (declare (ignore buffer-size))
   (lambda ()
     (let ((i 0)
           (expected-byte 0)
@@ -108,6 +110,7 @@ publie en 1962 par MIT Press, un des maitres-livres de l'Informatique.
        (close stream)))))
 
 (defun make-binary-output    (stream buffer-size)
+  (declare (ignore buffer-size))
   (lambda ()
     (unwind-protect
          (loop :for byte :across *binary-data*
@@ -219,36 +222,102 @@ publie en 1962 par MIT Press, un des maitres-livres de l'Informatique.
           (close stream))))))
 
 
+
+(defun make-character-buffer (size)
+  (make-array size :element-type 'character :initial-element #\space))
+
 (defun make-character-input  (stream buffer-size)
-  (lambda () 
-    ))
+  (declare (ignore buffer-size))
+  (lambda ()
+    (let ((i 0)
+          (expected-char 0)
+          (read-char 0))
+      (unwind-protect
+           (loop
+             :do (setf expected-char (and (< i (length *text-data*))
+                                          (aref *text-data* i))
+                       read-char     (read-char stream nil nil))
+             :while read-char
+             :do (incf i)
+             :do (check char= read-char expected-char))
+        (check = i (length *text-data*))
+        (assert-true (and (null expected-char)
+                          (null read-char)))
+        (expect-condition 'end-of-file (read-char stream))
+        (close stream)))))
+
 (defun make-character-output (stream buffer-size)
-  (lambda () 
-    ))
+  (declare (ignore buffer-size))
+  (lambda ()
+    (unwind-protect
+         (loop :for char :across *text-data*
+               :do (write-char char stream))
+      (close stream))))
+
 (defun make-line-input       (stream buffer-size)
-  (lambda () 
-    ))
+  (declare (ignore buffer-size))
+  (lambda ()
+    (unwind-protect
+         (with-input-from-string (inp *text-data*)
+           (loop :for expected-line := (read-line inp nil nil)
+                 :for read-line := (read-line stream nil nil)
+                 :do (check equal read-line expected-line)
+                 :while expected-line
+                 :finally (assert-true (null read-line))))
+      (close stream))))
+
 (defun make-line-output      (stream buffer-size)
-  (lambda () 
-    ))
+  (declare (ignore buffer-size))
+  (lambda ()
+    (unwind-protect
+         (with-input-from-string (inp *text-data*)
+           (loop :for line := (read-line inp nil nil)
+                 :while line
+                 :do (write-line line stream)))
+      (close stream))))
+
 (defun make-string-input     (stream buffer-size)
-  (lambda () 
-    ))
+  (let ((expected-buffer (make-character-buffer (or buffer-size 128)))
+        (read-buffer     (make-character-buffer (or buffer-size 128))))
+    (lambda ()
+      (unwind-protect
+           (with-input-from-string (inp *text-data*)
+             (loop :for i :from 0
+                   :for expected-size := (read-sequence expected-buffer inp)
+                   :for read-size     := (read-sequence read-buffer  stream)
+                   :while (plusp read-size)
+                   :do (check equal read-size expected-size)
+                       (assert-true (string= read-buffer expected-buffer
+                                             :end1 read-size
+                                             :end2 expected-size))
+                   :finally (assert-true (zerop read-size))))
+        (close stream)))))
+
 (defun make-string-output    (stream buffer-size)
-  (lambda () 
-    ))
+  (let ((buffer (make-character-buffer (or buffer-size 128))))
+    (lambda ()
+      (unwind-protect
+           (with-input-from-string (inp *text-data*)
+             (loop :for i :from 0
+                   :for size := (read-sequence buffer inp)
+                   :while (plusp size)
+                   :do (write-string buffer stream :end size)
+                       (when (zerop (mod i 10))
+                         (finish-output stream))))
+        (close stream)))))
 
 
 (defvar *last-pipe* nil)
 
-(define-test test/character-io (pipe-kind out-kind in-kind &key debug)
+(defun test/io (pipe-kind out-kind in-kind debug element-type stem makers)
   (check-type debug (or null (member :producer :consumer)))
   (let* ((buffer-size (ecase pipe-kind
                         (:queued   nil)
                         (:buffered 133)))
-         (pipe        (make-pipe :element-type 'character
+         (pipe        (make-pipe :element-type element-type
                                  :buffer-size buffer-size
-                                 :name (format nil "binary/~A/~A/~A" pipe-kind out-kind in-kind)))
+                                 :name (format nil "~A/~A/~A/~A"
+                                               stem pipe-kind out-kind in-kind)))
          (output      (pipe-output-stream pipe))
          (input       (pipe-input-stream  pipe))
          (bindings    `((*standard-output* . ,*standard-output*)
@@ -258,23 +327,23 @@ publie en 1962 par MIT Press, un des maitres-livres de l'Informatique.
                         (*debug-io* . ,*debug-io*)
                         (*query-io* . ,*query-io*)
                         #+debug-gate (*tr-output* . ,*trace-output*)))
-         (producer    (ecase out-kind
-                        (:char     (make-character-output output buffer-size))
-                        (:line     (make-line-output      output buffer-size))
-                        (:sequence (make-string-output    output buffer-size))))
-         (consumer    (ecase in-kind
-                        (:char     (make-character-input input buffer-size))
-                        (:line     (make-line-input      input buffer-size))
-                        (:sequence (make-string-input    input buffer-size))))
+         (producer    (funcall (or (third (assoc out-kind makers))
+                                   (error "Invalid out-kind ~S, expected one of ~{~S~^ ~}"
+                                          out-kind (mapcar (function first) makers)))
+                               output buffer-size))
+         (consumer    (funcall (or (second (assoc out-kind makers))
+                                   (error "Invalid in-kind ~S, expected one of ~{~S~^ ~}"
+                                          in-kind (mapcar (function first) makers)))
+                               input buffer-size))
          producer-thread consumer-thread)
-    (setf *last-pipe* pipe)
+    (setf *last-pipe* pipe) ; for debugging the test.
     (when (member debug '(nil :consumer))
       (setf producer-thread (make-thread producer
-                                         :name "test/character-io/producer"
+                                         :name (format nil "test/~A-io/producer" stem)
                                          :initial-bindings bindings)))
     (when (member debug '(nil :producer))
       (setf consumer-thread (make-thread consumer
-                                         :name "test/character-io/consumer"
+                                         :name (format nil "test/~A-io/consumer" stem)
                                          :initial-bindings bindings)))
     (case debug
       ((:consumer) (funcall consumer))
@@ -282,45 +351,17 @@ publie en 1962 par MIT Press, un des maitres-livres de l'Informatique.
     (when producer-thread (join-thread producer-thread))
     (when consumer-thread (join-thread consumer-thread))))
 
+
+(define-test test/character-io (pipe-kind out-kind in-kind &key debug)
+  (test/io pipe-kind out-kind in-kind debug 'character "character"
+           '((:char     make-character-input  make-character-output)
+             (:line     make-line-input       make-line-output     )
+             (:sequence make-string-input     make-string-output   ))))
 
 (define-test test/binary-io (pipe-kind out-kind in-kind &key debug)
-  (check-type debug (or null (member :producer :consumer)))
-  (let* ((buffer-size (ecase pipe-kind
-                        (:queued   nil)
-                        (:buffered 133)))
-         (pipe        (make-pipe :element-type 'octet
-                                 :buffer-size buffer-size
-                                 :name (format nil "binary/~A/~A/~A" pipe-kind out-kind in-kind)))
-         (output      (pipe-output-stream pipe))
-         (input       (pipe-input-stream  pipe))
-         (bindings    (print `((*standard-output* . ,*standard-output*)
-                               (*standard-input* . ,*standard-input*)
-                               (*error-output* . ,*error-output*)
-                               (*trace-output* . ,*trace-output*)
-                               (*debug-io* . ,*debug-io*)
-                               (*query-io* . ,*query-io*)
-                               #+debug-gate (*tr-output* . ,*trace-output*))))
-         (producer    (ecase out-kind
-                        (:byte     (make-binary-output   output buffer-size))
-                        (:sequence (make-sequence-output output buffer-size))))
-         (consumer    (ecase in-kind
-                        (:byte     (make-binary-input    input buffer-size))
-                        (:sequence (make-sequence-input  input buffer-size))))
-         producer-thread consumer-thread)
-    (setf *last-pipe* pipe)
-    (when (member debug '(nil :consumer))
-      (setf producer-thread (make-thread producer
-                                         :name "test/binary-io/producer"
-                                         :initial-bindings bindings)))
-    (when (member debug '(nil :producer))
-      (setf consumer-thread (make-thread consumer
-                                         :name "test/binary-io/consumer"
-                                         :initial-bindings bindings)))
-    (case debug
-      ((:consumer) (funcall consumer))
-      ((:producer) (funcall producer)))
-    (when producer-thread (join-thread producer-thread))
-    (when consumer-thread (join-thread consumer-thread))))
+  (test/io pipe-kind out-kind in-kind debug 'octet "binary"
+           '((:byte     make-binary-input    make-binary-output  )
+             (:sequence make-sequence-input  make-sequence-output))))
 
 (define-test test/all ()
   (loop

@@ -462,8 +462,14 @@ when it's the case, end-of-file is detected upon reading on an empty pipe.")
 (defmethod pipe-enqueue-element ((pipe queued-pipe) element)
   (pipe-enqueue-sequence pipe (vector element) 0 1))
 
+(declaim (inline subsequence))
+(defun subsequence (element-type sequence start end)
+  (make-array (- end start)
+              :element-type element-type
+              :initial-contents sequence))
+
 (defmethod pipe-enqueue-sequence ((pipe queued-pipe) sequence start end)
-  (let ((blkl (list (make-block (subseq sequence start end)))))
+  (let ((blkl (list (make-block (subsequence (pipe-element-type pipe) sequence start end)))))
     (with-lock-held ((lock pipe))
       (if (tail pipe)
           (setf (cdr (tail pipe)) blkl
