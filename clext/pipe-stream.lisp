@@ -49,6 +49,7 @@
         "BORDEAUX-THREADS"
         "COM.INFORMATIMAGO.CLEXT.GATE")
   (:export "MAKE-PIPE" "PIPE" "PIPE-INPUT-STREAM" "PIPE-OUTPUT-STREAM" "PIPE-ELEMENT-TYPE"
+           "REOPEN-PIPE"
            "PIPE-CHARACTER-INPUT-STREAM"
            "PIPE-CHARACTER-OUTPUT-STREAM"
            "PIPE-BINARY-INPUT-STREAM"
@@ -137,7 +138,8 @@ from an input stream and an output stream."))
 (defmethod print-object ((pipe buffered-pipe) stream)
   (print-unreadable-object (pipe stream :type t :identity t)
     (let ((bufsize (length (buffer pipe))))
-      (format stream ":input ~:[:closed~;:open~] :output ~:[:closed~;:open~] :buffer (~A / ~A) :name ~S"
+      (format stream ":element-type ~S :input ~:[:closed~;:open~] :output ~:[:closed~;:open~] :buffer (~A / ~A) :name ~S"
+              (pipe-element-type pipe)
               (open-stream-p (pipe-input-stream  pipe))
               (open-stream-p (pipe-output-stream pipe))
               (mod (- (tail pipe) (head pipe)) bufsize)
@@ -164,7 +166,8 @@ from an input stream and an output stream."))
 (defmethod print-object ((pipe queued-pipe) stream)
   (print-unreadable-object (pipe stream :type t :identity t)
     (let ((queue-size (length (head pipe))))
-      (format stream ":input ~:[:closed~;:open~] :output ~:[:closed~;:open~] :queued ~A :name ~S"
+      (format stream ":element-type ~S :input ~:[:closed~;:open~] :output ~:[:closed~;:open~] :queued ~A :name ~S"
+              (pipe-element-type pipe)
               (open-stream-p (pipe-input-stream  pipe))
               (open-stream-p (pipe-output-stream pipe))
               queue-size
@@ -688,7 +691,15 @@ when it's the case, end-of-file is detected upon reading on an empty pipe.")
       (stream-write-string stream (make-string delta :initial-element #\space))
       delta)))
 
-(defun close-pipe (pipe)
+(defgeneric reopen-pipe (pipe)
+  (:documentation "Reopens the streams of the PIPE."))
+(defmethod reopen-pipe ((pipe generic-pipe))
+  (with-lock-held ((lock pipe))
+    (setf (slot-value (pipe-input-stream pipe)  'open) t
+          (slot-value (pipe-output-stream pipe) 'open) t))
+  (gate-signal (not-empty pipe)))
+
+(defmethod close-pipe ((pipe generic-pipe))
   (with-lock-held ((lock pipe))
     (setf (slot-value (pipe-output-stream pipe) 'open) nil))
   (gate-signal (not-empty pipe)))
