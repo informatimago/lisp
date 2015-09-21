@@ -239,7 +239,7 @@ publie en 1962 par MIT Press, un des maitres-livres de l'Informatique.
                        read-char     (read-char stream nil nil))
              :while read-char
              :do (incf i)
-             :do (check char= read-char expected-char))
+                 (check char= read-char expected-char))
         (check = i (length *text-data*))
         (assert-true (and (null expected-char)
                           (null read-char)))
