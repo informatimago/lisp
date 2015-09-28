@@ -198,7 +198,7 @@ Subclasses may use scanner-stream to read from the source.")
                          :documentation "The state of the scanner.")
    (spaces               :initarg       :spaces
                          :accessor      scanner-spaces
-                         :type          string
+                         :type          sequence
                          :initform      *spaces*
                          :documentation "A string containing the characters considered space by SKIP-SPACES.")
    (tab-width            :initarg       :tab-width
