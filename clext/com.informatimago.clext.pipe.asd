@@ -1,12 +1,12 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               com.informatimago.clext.pipe-stream.asd
+;;;;FILE:               com.informatimago.clext.pipe.asd
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    ASD file to load the com.informatimago.clext.pipe-stream library.
+;;;;    ASD file to load the com.informatimago.clext.pipe library.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
@@ -33,9 +33,9 @@
 ;;;;**************************************************************************
 
 #+mocl
-(asdf:defsystem "com.informatimago.clext.pipe-stream"
+(asdf:defsystem "com.informatimago.clext.pipe"
   ;; system attributes:
-  :description "Dummy Informatimago Common Lisp Extensions: Pipe-Streams."
+  :description "Dummy Informatimago Common Lisp Extensions: Pipes."
   :long-description "
 
 This system would use TRIVIAL-GRAY-STREAMS, which is not available on MOCL.
@@ -58,12 +58,12 @@ This system would use TRIVIAL-GRAY-STREAMS, which is not available on MOCL.
   :components ())
 
 #-mocl
-(asdf:defsystem "com.informatimago.clext.pipe-stream"
+(asdf:defsystem "com.informatimago.clext.pipe"
   ;; system attributes:
-  :description "Informatimago Common Lisp Extensions: Pipe-Streams."
+  :description "Informatimago Common Lisp Extensions: Pipes."
   :long-description "
 
-This system provides PIPE-STREAMS, a pair of input and output stream
+This system provides PIPES, a pair of input and output stream
 with a synchronized queue in the middle.
 
 "
@@ -84,8 +84,8 @@ with a synchronized queue in the middle.
                "com.informatimago.clext.closer-weak") ; weak hash-tables are needed for gate.
   :components ((:file "gate")
                (:file "debug")
-               (:file "pipe-stream" :depends-on ("gate" "debug")))
-  #+adsf3 :in-order-to #+adsf3 ((test-op (test-op "com.informatimago.clext.pipe-stream.test")))
+               (:file "pipe" :depends-on ("gate" "debug")))
+  #+adsf3 :in-order-to #+adsf3 ((test-op (test-op "com.informatimago.clext.pipe.test")))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8)
 
 

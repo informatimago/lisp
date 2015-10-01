@@ -1,12 +1,12 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               com.informatimago.clext.pipe-stream.test.asd
+;;;;FILE:               com.informatimago.clext.pipe.test.asd
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    ASD file to test the com.informatimago.clext.pipe-stream library.
+;;;;    ASD file to test the com.informatimago.clext.pipe library.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
@@ -32,12 +32,12 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(asdf:defsystem "com.informatimago.clext.pipe-stream.test"
+(asdf:defsystem "com.informatimago.clext.pipe.test"
   ;; system attributes:
-  :description "Informatimago Common Lisp Extensions: Pipe-Streams - Tests."
+  :description "Informatimago Common Lisp Extensions: Pipes - Tests."
   :long-description "
 
-Tests the pipe-streams.
+Tests the pipes.
 
 "
   :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
@@ -54,11 +54,11 @@ Tests the pipe-streams.
                ((#:albert #:docbook #:textcolor) . "black"))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ("com.informatimago.common-lisp.cesarum"
-               "com.informatimago.clext.pipe-stream")
-  :components ((:file "pipe-stream-test"))
+               "com.informatimago.clext.pipe")
+  :components ((:file "pipe-test"))
   #+asdf3 :perform #+asdf3 (asdf:test-op
                             (o s)
-                            (let ((*package* (find-package "COM.INFORMATIMAGO.CLEXT.PIPE-STREAM")))
-                              (uiop:symbol-call "COM.INFORMATIMAGO.CLEXT.PIPE-STREAM.TEST"  "TEST/ALL"))))
+                            (let ((*package* (find-package "COM.INFORMATIMAGO.CLEXT.PIPE")))
+                              (uiop:symbol-call "COM.INFORMATIMAGO.CLEXT.PIPE.TEST"  "TEST/ALL"))))
 
 ;;;; THE END ;;;;

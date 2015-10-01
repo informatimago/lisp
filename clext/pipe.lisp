@@ -1,18 +1,18 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               pipe-stream.lisp
+;;;;FILE:               pipe.lisp
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    Implements a pipe stream using Gray streams and bordeaux-threads.
+;;;;    Implements a pipe using Gray streams and bordeaux-threads.
 ;;;;
-;;;;    The data written to the pipe-stream is queued (if a maximum
+;;;;    The data written to the pipe-output-stream is queued (if a maximum
 ;;;;    queue-size is specified for the stream, then the writing
 ;;;;    thread may block if the buffer is full).
 ;;;;
-;;;;    The data queued can be read from the pipe-stream.  If the
+;;;;    The data queued can be read from the pipe-input-stream.  If the
 ;;;;    queue is empty, then the reading stream may block (unless it
 ;;;;    used listen, read-char-no-hang, etc).
 ;;;;
