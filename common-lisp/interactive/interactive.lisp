@@ -288,7 +288,7 @@ USE:        A package use list to use.  When given, STEPPER is ignored.
         (interactive "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.INTERACTIVE"))
     (unless (find-package pjb)
       ;; Create a COM.INFORMATIMAGO.PJB package that reexports INTERACTIVE:
-      (let ((pjb (make-package pjb :use (list cl interactive)))
+      (let ((pjb  (make-package pjb :use (list cl interactive)))
             (syms (list-external-symbols interactive)))
         (import syms pjb)
         (export syms pjb)))
