@@ -193,55 +193,24 @@ the gate signal is forgotten.
               (make-condition-variable
                :name (format nil "~A/gate" (thread-name thread)))))))
 
-#+debug-gate
-(progn
-  (defvar *tr-lock*   (make-lock "trace"))
-  (defvar *tr-output* *standard-output*)
-  (defun tr (fc &rest a)
-    (with-lock-held (*tr-lock*)
-      (format *tr-output* "~&~30A: ~?~&" (thread-name (current-thread))  fc a))))
-#-debug-gate
-(defmacro tr (&rest ignored)
-  (declare (ignore ignored))
-  'nil)
-
 
 (defun condition-variable-name (x) x)
 
 (defun gate-wait (gate lock)
-                                                              (tr "(gate-wait ~A enter" (gate-name gate))
   (let ((my-var (%get-thread-condition-variable (current-thread))))
-                                                                (tr " gate-wait ~A will acquire lock ~A" (gate-name gate) (ccl:lock-name (gate-lock gate)))
     (with-lock-held ((gate-lock gate))
-                                                                  (tr " gate-wait ~A has lock ~A" (gate-name gate) (ccl:lock-name (gate-lock gate)))
       (push my-var (gate-waiting-threads gate))
-                                                                  (tr " gate-wait ~A releases lock ~A" (gate-name gate) (ccl:lock-name lock))
       (release-lock lock)
-                                                                  (tr " gate-wait ~A will wait condition ~A" (gate-name gate) (condition-variable-name my-var))
       (unwind-protect
            (condition-wait my-var (gate-lock gate))
-                                                                    (tr " gate-wait ~A got notified" (gate-name gate))
-                                                                    (tr " gate-wait ~A will acquire lock ~A" (gate-name gate) (ccl:lock-name lock))
-        (acquire-lock lock)
-                                                                    (tr " gate-wait ~A acquired lock ~A" (gate-name gate) (ccl:lock-name lock)))))
-                                                              (tr " gate-wait ~A released lock ~A" (gate-name gate) (ccl:lock-name (gate-lock gate)))
-                                                              (tr " gate-wait ~A exits)" (gate-name gate)))
+        (acquire-lock lock)))))
 
 (defun gate-signal (gate)
-                                                              (tr "(gate-signal ~A enter" (gate-name gate))
-                                                              (tr " gate-signal ~A will acquire lock ~A" (gate-name gate) (ccl:lock-name (gate-lock gate)))
   (loop :until (acquire-lock (gate-lock gate) nil))
   (unwind-protect
        (progn
-                                                                     (tr " gate-signal ~A acquired lock ~A" (gate-name gate) (ccl:lock-name (gate-lock gate)))
-         ;; (mapc (function condition-notify) (gate-waiting-threads gate))
-         (mapc (lambda (var)
-                                                                             (tr " gate-signal will notify condition ~A" (condition-variable-name var))
-                 (condition-notify var))
-               (gate-waiting-threads gate))
+         (mapc (function condition-notify) (gate-waiting-threads gate))
          (setf (gate-waiting-threads gate) '()))
-    (release-lock (gate-lock gate)))
-                                                              (tr " gate-signal ~A released lock ~A" (gate-name gate) (ccl:lock-name (gate-lock gate)))
-                                                              (tr " gate-signal ~A exits)" (gate-name gate)))
+    (release-lock (gate-lock gate))))
 
 ;;;; THE END ;;;;

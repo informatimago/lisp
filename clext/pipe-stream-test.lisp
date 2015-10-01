@@ -327,11 +327,11 @@ publie en 1962 par MIT Press, un des maitres-livres de l'Informatique.
                         (*debug-io* . ,*debug-io*)
                         (*query-io* . ,*query-io*)
                         #+debug-gate (*tr-output* . ,*trace-output*)))
-         (producer    (funcall (or (third (assoc out-kind makers))
+         (producer    (funcall (or (second (assoc out-kind makers))
                                    (error "Invalid out-kind ~S, expected one of ~{~S~^ ~}"
                                           out-kind (mapcar (function first) makers)))
                                output buffer-size))
-         (consumer    (funcall (or (second (assoc out-kind makers))
+         (consumer    (funcall (or (third (assoc in-kind makers))
                                    (error "Invalid in-kind ~S, expected one of ~{~S~^ ~}"
                                           in-kind (mapcar (function first) makers)))
                                input buffer-size))
@@ -354,14 +354,14 @@ publie en 1962 par MIT Press, un des maitres-livres de l'Informatique.
 
 (define-test test/character-io (pipe-kind out-kind in-kind &key debug)
   (test/io pipe-kind out-kind in-kind debug 'character "character"
-           '((:char     make-character-input  make-character-output)
-             (:line     make-line-input       make-line-output     )
-             (:sequence make-string-input     make-string-output   ))))
+           '((:char     make-character-output  make-character-input  )
+             (:line     make-line-output       make-line-input       )
+             (:sequence make-string-output     make-string-input     ))))
 
 (define-test test/binary-io (pipe-kind out-kind in-kind &key debug)
   (test/io pipe-kind out-kind in-kind debug 'octet "binary"
-           '((:byte     make-binary-input    make-binary-output  )
-             (:sequence make-sequence-input  make-sequence-output))))
+           '((:byte     make-binary-output    make-binary-input    )
+             (:sequence make-sequence-output  make-sequence-input  ))))
 
 (define-test test/all ()
   (loop
