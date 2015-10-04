@@ -54,7 +54,6 @@
                    ((#:albert #:docbook #:template) . "book")
                    ((#:albert #:docbook #:bgcolor) . "white")
                    ((#:albert #:docbook #:textcolor) . "black"))
-  #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on     ("com.informatimago.common-lisp.cesarum"
                    "com.informatimago.clext")
   :components     ((:file "closer-weak-test" :depends-on nil))
@@ -62,7 +61,7 @@
                             (operation system)
                             (declare (ignore operation system))
                             (let ((*package* (find-package "COM.INFORMATIMAGO.CLEXT.CLOSER-WEAK.TEST")))
-                              (uiop:symbol-call "COM.INFORMATIMAGO.CLEXT.CLOSER-WEAK.TEST"
-                                                        "TEST/ALL"))))
+                              (uiop:symbol-call "COM.INFORMATIMAGO.CLEXT.CLOSER-WEAK.TEST" "TEST/ALL")))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8)
 
 ;;;; THE END ;;;;

@@ -83,9 +83,8 @@ with a synchronized queue in the middle.
                "bordeaux-threads"
                "com.informatimago.clext.closer-weak") ; weak hash-tables are needed for gate.
   :components ((:file "gate")
-               (:file "debug")
-               (:file "pipe" :depends-on ("gate" "debug")))
-  #+adsf3 :in-order-to #+adsf3 ((test-op (test-op "com.informatimago.clext.pipe.test")))
+               (:file "pipe" :depends-on ("gate")))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.clext.pipe.test")))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8)
 
 

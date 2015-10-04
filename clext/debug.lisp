@@ -7,7 +7,7 @@
 
 
 (defvar *tr-lock*   (make-lock "trace"))
-(defvar *tr-output* *standard-output*)
+(defvar *tr-output* (make-synonym-stream '*trace-output*))
 (defun tr (fc &rest a)
   (bt:with-lock-held (*tr-lock*)
     (format *tr-output* "~&~30A: ~?~&" (thread-name (current-thread))  fc a)))
@@ -22,5 +22,6 @@
               (tr "acquired lock ~A" (ccl:lock-name ,lock))
               ,@body)
          (tr "released lock ~A" (ccl:lock-name ,lock))))))
+
 
 ;;;; THE END ;;;;

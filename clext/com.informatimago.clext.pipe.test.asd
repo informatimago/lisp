@@ -52,13 +52,14 @@ Tests the pipes.
                ((#:albert #:docbook #:template)  . "book")
                ((#:albert #:docbook #:bgcolor)   . "white")
                ((#:albert #:docbook #:textcolor) . "black"))
-  #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ("com.informatimago.common-lisp.cesarum"
                "com.informatimago.clext.pipe")
   :components ((:file "pipe-test"))
   #+asdf3 :perform #+asdf3 (asdf:test-op
-                            (o s)
+                            (operation system)
+                            (declare (ignore operation system))
                             (let ((*package* (find-package "COM.INFORMATIMAGO.CLEXT.PIPE")))
-                              (uiop:symbol-call "COM.INFORMATIMAGO.CLEXT.PIPE.TEST"  "TEST/ALL"))))
+                              (uiop:symbol-call "COM.INFORMATIMAGO.CLEXT.PIPE.TEST"  "TEST/ALL")))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8)
 
 ;;;; THE END ;;;;
