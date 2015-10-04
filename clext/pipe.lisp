@@ -43,8 +43,6 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-
-
 (defpackage "COM.INFORMATIMAGO.CLEXT.PIPE"
   (:use "COMMON-LISP"
         ;; "CL-STEPPER"
@@ -56,7 +54,35 @@
            "PIPE-CHARACTER-INPUT-STREAM"
            "PIPE-CHARACTER-OUTPUT-STREAM"
            "PIPE-BINARY-INPUT-STREAM"
-           "PIPE-BINARY-OUTPUT-STREAM"))
+           "PIPE-BINARY-OUTPUT-STREAM")
+  (:documentation "
+
+This package exports a pipe abstraction, that is, a pair of streams.
+
+One thread writes to the pipe-output-stream, another thread reads from
+the pipe-input-stream.
+
+
+LEGAL
+
+License AGPL3
+
+Copyright Pascal J. Bourguignon 2015 - 2015
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"))
 (in-package "COM.INFORMATIMAGO.CLEXT.PIPE")
 
 (declaim (declaration stepper))
@@ -206,10 +232,27 @@ from an input stream and an output stream."))
   ())
 
 
-
 (defun make-pipe (&key (element-type 'character) buffer-size (name ""))
   "
-RETURN:  A new PIPE.
+
+ELEMENT-TYPE:   The element-type of the pipe and the pipe streams.
+                Since the pipe streams are streams, this should be a
+                valid stream element type.
+
+BUFFER-SIZE:    NIL or a FIXNUM; If NIL then an unbound queue is used,
+                therefore the writer thread will never block.  If a
+                fixnum, then it's the size of the allocated circular
+                buffer for the pipe, and when this buffer is full, the
+                writer thread will block until the reader thread
+                empties some.
+
+NAME:           A string, the name of the pipe.  It's used to build
+                the name of the various internal structures such as
+                lock and condition-variables, which is useful for
+                debugging.
+
+RETURN:         The new PIPE.
+
 "
   (let ((pipe (if buffer-size
                   (make-instance 'buffered-pipe :name name
