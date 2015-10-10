@@ -1,3 +1,5 @@
+.. comment: -*- mode:rst; coding:utf-8 -*-
+
 Voici un nouveau paquetage, ``"COM.INFORMATIMAGO.CLEXT.PIPE"`` qui
 implémente un tube unidirectionel («pipe») basé sur
 ``"BORDEAUX-THREADS"`` et ``"TRIVIAL-GRAY-STREAM"``.
@@ -19,7 +21,7 @@ Plusieurs fils peuvent lire ou écrire sur le même tuyau.
 
 
 Pour démontrer l'utilisation de ces tuyaux, le paquetage
-``"COM.INFORMATIMAGO.CLEXT.FILTER"`` exporte un fonction ``GREP`` qui
+``"COM.INFORMATIMAGO.CLEXT.FILTER"`` exporte une fonction ``GREP`` qui
 lit ``*STANDARD-INPUT*`` et écrit sur ``*STANDARD-OUTPUT*``, et une
 macro ``FILTER`` qui construit une chaîne de tuyau contenant n'importe
 quel nombre de formes, chacune tournant dans son fil propre (sauf la
@@ -153,4 +155,11 @@ Exemple: ::
     25:1960), et il a ete repris dans le celebre "LISP 1.5 Programmer's Manual"
     ; No value
     user1>
+
+
+Ces nouveaux paquetages sont disponibles sur gitlab ou github; et seront
+distribué dans une prochaine mise à jour de quicklisp. 
+
+`git clone https://gitlab.com/com-informatimago/com-informatimago.git informatimago`_
+`http://www.informatimago.com/develop/lisp/index.html`_
 
