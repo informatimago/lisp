@@ -13,20 +13,9 @@
 ;;;;
 ;;;;     (sedit (copy-tree '(an example)))
 ;;;;
-;;;;    At each interaction loop, it prints the whole sexp, showing the selected
-;;;;    sub-sexp, and query a command. The list of commands are:
-;;;;
-;;;;     q quit                to return the modified sexp from sedit.
-;;;;     i in                  to enter inside the selected list.
-;;;;     o out                 to select the list containing the selection.
-;;;;     f forward n next      to select the sexp following the selection (or out).
-;;;;     b backward p previous to select the sexp preceding the selection (or out).
-;;;;     s insert              to insert a new sexp before the selection.
-;;;;     r replace             to replace the selection with a new sexp.
-;;;;     a add                 to add a new sexp after the selection.
-;;;;     x cut                 to cut the selection into a *clipboard*.
-;;;;     c copy                to copy the selection into a *clipboard*.
-;;;;     y paste               to paste the *clipboard* replacing the selection.
+;;;;    At each interaction loop, it prints the whole sexp, showing
+;;;;    the selected sub-sexp, and query a command. Use the help
+;;;;    command to get the list of commands.
 ;;;;
 ;;;;    Notice: it uses the unicode characters LEFT_BLACK_LENTICULAR_BRACKET
 ;;;;    and RIGHT_BLACK_LENTICULAR_BRACKET to show the selected sub-sexp.
@@ -35,8 +24,15 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2015-10-15 <PJB> Abstracted away BUFFER.  Added bindings, loading and saving.
 ;;;;    2010-09-08 <PJB> Created.
 ;;;;BUGS
+;;;;
+;;;;    Command table and bindings is implemented quick & dirty.
+;;;;
+;;;;    There's some new code in sedit2.lisp; a diff3 should be done
+;;;;    with the previous version and new commands merged in.
+;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
@@ -61,11 +57,44 @@
   (:export "SEDIT"))
 (in-package "COM.INFORMATIMAGO.SMALL-CL-PGMS.SEDIT")
 
+
+#|
+
+The buffer is represented by two objects: a root cell, and a selection
+structure.
+
+The root cell is a list containing the edited sexp as single element.
+
+The selection structure is present inside the root sexp, and contain a
+reference to the list where it is present in, and the sub-sexp that is
+selected.  (Note when the whole sexp is selected, then the selection
+structure is the element of the root cell).
+
+|#
+
+
 (defstruct selection
   parent-list
   sexp)
 
+(defstruct (buffer (:constructor %make-buffer))
+  root selection)
+
 (defvar *clipboard* nil)
+
+(defun make-buffer (contents)
+  (let* ((root      (list contents))
+         (selection (make-selection)))
+    (select selection root 0)
+    (setf (first root) selection)
+    (%make-buffer :root root
+                  :selection selection)))
+
+(defmacro with-buffer ((buffer rootvar selectionvar) &body body)
+  `(with-accessors ((,rootvar buffer-root)
+                    (,selectionvar buffer-selection))
+       ,buffer
+     ,@body))
 
 
 (defun find-cell (object list)
@@ -116,84 +145,118 @@
     (t (or (sedit-find-object (car sexp) object)
            (sedit-find-object (cdr sexp) object)))))
 
-(declaim (ftype (function (t t)) sedit-print))
+(defmethod print-object ((selection selection) stream)
+  (princ "【" stream)
+  (prin1 (selection-sexp selection) stream)
+  (princ "】" stream)
+  selection)
 
-(defun sedit-print-selection (selection)
-  (princ "【")
-  (sedit-print (selection-sexp selection) selection)
-  (princ "】"))
+(defun sedit-print (buffer)
+  (pprint (first (buffer-root buffer)))
+  (finish-output))
 
-(defun sedit-print-list (list selection)
-  (sedit-print (car list) selection)
-  (unless (null (cdr list))
-    (princ " ")
-    (sedit-print-list (cdr list) selection)))
 
-(defun sedit-print (sexp selection)
+(defun unselected-sexp (list selection)
+  "Return a copy of the lisp sexp with the selection removed."
   (cond
-    ((eq sexp selection) (sedit-print-selection selection))
-    ((atom sexp) (prin1 sexp))
-    (t (princ "(")
-       (unless (null sexp)
-         (sedit-print-list sexp selection))
-       (princ ")"))))
+    ((consp list)
+     (cons (unselected-sexp (car list) selection)
+           (unselected-sexp (cdr list) selection)))
+    ((eq list selection)
+     (unselected-sexp (selection-sexp selection) selection))
+    (t
+     list)))
 
-(defun sedit-in (root selection)
-  (declare (ignore root))
-  (if (atom (selection-sexp selection))
-      (progn (princ "Cannot enter an atom.") (terpri))
-      (progn
+(defmacro reporting-errors (&body body)
+  `(handler-case
+       (progn ,@body)
+     (simple-condition  (err) 
+       (format *error-output* "~&~A:~%~?~&"
+               (class-name (class-of err))
+               (simple-condition-format-control   err)
+               (simple-condition-format-arguments err))
+       (finish-output *error-output*))
+     (condition (err) 
+       (format *error-output* "~&~A:~%~A~%"
+               (class-name (class-of err))
+               err)
+       (finish-output *error-output*))))
+
+(defun sedit-eval (buffer)
+  (with-buffer (buffer root selection)
+    (let ((sexp (selection-sexp selection)))
+      (reporting-errors
+        (format *query-io* "~& --> ~{~S~^ ;~%     ~}~%"
+                (let ((*package*   *package*)
+                      (*readtable* *readtable*))
+                  (multiple-value-list (eval sexp)))))
+      (finish-output *query-io*)
+      (finish-output))))
+
+(defun sedit-down (buffer)
+  (with-buffer (buffer root selection)  
+    (if (atom (selection-sexp selection))
+        (progn (princ "Cannot enter an atom.") (terpri))
+        (progn
+          (unselect selection)
+          (select selection (selection-sexp selection) 0)))))
+
+(defun sedit-up (buffer)
+  (with-buffer (buffer root selection)  
+    (let ((gparent (sedit-find-object root (selection-parent-list selection))))
+      (when gparent
         (unselect selection)
-        (select selection (selection-sexp selection) 0))))
+        (select selection gparent 0)))))
 
-(defun sedit-out (root selection)
-  (let ((gparent (sedit-find-object root (selection-parent-list selection))))
-    (when gparent
-     (unselect selection)
-     (select selection gparent 0))))
+(defun sedit-forward (buffer)
+  (with-buffer (buffer root selection)
+    (let ((index (position selection (selection-parent-list selection))))
+      (if (or (null index)
+              (<= (length (selection-parent-list selection))  (1+ index)))
+          (sedit-up buffer)
+          (progn (unselect selection)
+                 (select selection (selection-parent-list selection) (1+ index)))))))
 
-(defun sedit-forward (root selection)
-  (let ((index (position selection (selection-parent-list selection))))
-    (if (or (null index)
-            (<= (length (selection-parent-list selection))  (1+ index)))
-        (sedit-out root selection)
-        (progn (unselect selection)
-               (select selection (selection-parent-list selection) (1+ index))))))
+(defun sedit-backward (buffer)
+  (with-buffer (buffer root selection)
+    (let ((index (position selection (selection-parent-list selection))))
+      (if (or (null index) (<= index 0))
+          (sedit-up buffer)
+          (progn (unselect selection)
+                 (select selection (selection-parent-list selection) (1- index)))))))
 
-(defun sedit-backward (root selection)
-  (let ((index (position selection (selection-parent-list selection))))
-    (if (or (null index) (<= index 0))
-        (sedit-out root selection)
-        (progn (unselect selection)
-               (select selection (selection-parent-list selection) (1- index))))))
+(defun sedit-cut (buffer)
+  (with-buffer (buffer root selection)
+    (setf *clipboard* (selection-sexp selection))
+    (let ((gparent (sedit-find-object root (selection-parent-list selection))))
+      (if (eq (car gparent) (selection-parent-list selection))
+          (setf (car gparent) (delete selection (selection-parent-list selection)))
+          (setf (cdr gparent) (delete selection (selection-parent-list selection))))
+      (select selection gparent 0))))
 
-(defun sedit-cut (root selection)
-  (setf *clipboard* (selection-sexp selection))
-  (let ((gparent (sedit-find-object root (selection-parent-list selection))))
-    (if (eq (car gparent) (selection-parent-list selection))
-        (setf (car gparent) (delete selection (selection-parent-list selection)))
-        (setf (cdr gparent) (delete selection (selection-parent-list selection))))
-    (select selection gparent 0)))
+(defun sedit-copy (buffer)
+  (with-buffer (buffer root selection)
+    (declare (ignore root))
+    (setf *clipboard* (copy-tree (selection-sexp selection)))))
 
-(defun sedit-copy (root selection)
-  (declare (ignore root))
-  (setf *clipboard* (copy-tree (selection-sexp selection))))
+(defun sedit-paste (buffer)
+  (with-buffer (buffer root selection)
+    (declare (ignore root))
+    (setf (selection-sexp selection) (copy-tree *clipboard*))))
 
-(defun sedit-paste (root selection)
-  (declare (ignore root))
-  (setf (selection-sexp selection) (copy-tree *clipboard*)))
-
-(defun sedit-replace (root selection)
-  (declare (ignore root))
-  (princ "replacement sexp: " *query-io*)
-  (setf (selection-sexp selection) (read *query-io*)))
+(defun sedit-replace (buffer)
+  (with-buffer (buffer root selection)
+    (declare (ignore root))
+    (princ "replacement sexp: " *query-io*)
+    (finish-output *query-io*)
+    (setf (selection-sexp selection) (read *query-io*))))
 
 (defun insert (object list where reference)
   (ecase where
     ((:before)
      (cond
        ((null list) (error "Cannot insert in an empty list."))
-       ((eq (cadr list) reference)
+       ((eq reference (car list))
         (setf (cdr list) (cons (car list) (cdr list))
               (car list) object))
        (t (insert object (cdr list) where reference))))
@@ -204,56 +267,152 @@
         (push object (cdr list)))
        (t (insert object (cdr list) where reference))))))
 
-(defun sedit-insert (root selection)
-  (princ "sexp to be inserted before: " *query-io*)
-  (let ((new-sexp (read *query-io*)))
-    (if (eq (first (selection-parent-list selection)) selection)
-        (let ((gparent (sedit-find-object root (selection-parent-list selection))))
-          (setf (selection-parent-list selection)
-                (if (eq (car gparent) (selection-parent-list selection))
-                    (setf (car gparent) (cons new-sexp (selection-parent-list selection)))
-                    (setf (cdr gparent) (cons new-sexp (selection-parent-list selection))))))
-        (insert new-sexp (selection-parent-list selection) :before selection))))
+(defun sedit-insert (buffer)
+  (with-buffer (buffer root selection)
+    (princ "sexp to be inserted before: " *query-io*)
+    (finish-output *query-io*)
+    (let ((new-sexp (read *query-io*)))
+      (cond
+        ((eq selection (first root))
+         ;; The whole expression is selected. To insert before it we
+         ;; need to wrap it in a new list.
+         (setf (car root) (list new-sexp selection)
+               (selection-parent-list selection) (car root)))
+        ((eq selection (first (selection-parent-list selection)))
+         (let ((gparent (sedit-find-object root (selection-parent-list selection))))
+           (setf (selection-parent-list selection)
+                 (if (eq (car gparent) (selection-parent-list selection))
+                     (setf (car gparent) (cons new-sexp (selection-parent-list selection)))
+                     (setf (cdr gparent) (cons new-sexp (selection-parent-list selection)))))))
+        (t
+         (insert new-sexp (selection-parent-list selection) :before selection))))))
 
-(defun sedit-add (root selection)
-  (declare (ignore root))
-  (princ "sexp to be inserted after: " *query-io*)
-  (let ((new-sexp (read *query-io*)))
-    (insert new-sexp (selection-parent-list selection) :after selection)))
+(defun sedit-add (buffer)
+  (with-buffer (buffer root selection)
+    (princ "sexp to be inserted after: " *query-io*)
+    (finish-output *query-io*)
+    (let ((new-sexp (read *query-io*)))
+      (if (eq selection (first root))
+          ;; The whole expression is selected. To insert after it we
+          ;; need to wrap it in a new list.
+          (setf (car root) (list selection new-sexp)
+                (selection-parent-list selection) (car root))
+          (insert new-sexp (selection-parent-list selection) :after selection)))))
+
+(defun sedit-replace (buffer)
+  (with-buffer (buffer root selection)
+    (declare (ignore root))
+    (princ "replacement sexp: " *query-io*)
+    (finish-output *query-io*)
+    (setf (selection-sexp selection) (read *query-io*))))
 
 
+(defun sedit-save (buffer)
+  (with-buffer (buffer root selection) 
+    (princ "Save buffer to file: " *query-io*)
+    (finish-output *query-io*)
+    (let ((path (read-line *query-io*)))
+      (with-open-file (out path :direction :output
+                                :if-does-not-exist :create
+                                :if-exists :supersede)
+        (pprint (unselected-sexp (first root) selection) out)
+        (terpri out)))))
 
-(defun sedit (sexp)
+(defun sedit-load (buffer)
+  (with-buffer (buffer root selection) 
+    (princ "Load file: " *query-io*)
+    (finish-output *query-io*)
+    (let* ((path (read-line *query-io*))
+           (new (make-buffer (with-open-file (inp path :direction :input)
+                               (read inp)))))
+      (setf root (buffer-root new)
+            selection (buffer-selection new)))))
+
+(defun sedit-quit (buffer)
+  (throw 'gazongue buffer))
+
+
+;;; Quick and dirty command table and bindings:
+;;; TODO: make it better.
+
+(defparameter *command-map*
+  '((q quit sedit-quit "return the modified sexp from sedit.")
+    (d down sedit-down "enter inside the selected list.")
+    (u up sedit-up "select the list containing the selection.")
+    (f forward sedit-forward "select the sexp following the selection (or up).")
+    (n next sedit-forward "select the sexp following the selection (or up).")
+    (b backward sedit-backward "select the sexp preceding the selection (or up).")
+    (p previous sedit-backward "select the sexp preceding the selection (or up).")
+    (i insert sedit-insert "insert a new sexp before the selection.")
+    (r replace sedit-replace "replace the selection with a new sexp.")
+    (a add sedit-add "add a new sexp after the selection.")
+    (x cut sedit-cut "cut the selection into a *clipboard*.")
+    (c copy sedit-copy "copy the selection into a *clipboard*.")
+    (y paste sedit-paste "paste the *clipboard* replacing the selection.")
+    (e eval sedit-eval "evaluate the selection")
+    (s save sedit-save "save the buffer to a file.")
+    (l load sedit-load "load a file into the buffer.")
+    (h help sedit-help "print this help.")))
+
+(defvar *bindings* (make-hash-table))
+
+(defun bind (command function)
+  (setf (gethash command *bindings*) function))
+
+(defun unbind (command)
+  (remhash command *bindings*))
+
+(defun binding (command)
+  (gethash command *bindings*))
+
+(defun add-command (short long function help)
+  (setf *command-map* (append *command-map*
+                              (list (list short long function help))))
+  (bind short function)
+  (bind long function))
+
+(defun sedit-help (buffer)
+  (declare (ignore buffer))
+  (format t "~:{~A) ~10A ~*~A~%~}" *command-map*))
+
+(defun initialize-bindings ()
+  (loop :for (short long function) :in *command-map*
+        :do (bind short function)
+            (bind long  function)))
+
+
+;;; The core:
+
+(declaim (notinline sedit-core))
+(defun sedit-core (buffer)
+  (with-buffer (buffer root selection)
+    (sedit-print buffer)
+    (terpri *query-io*)
+    (princ "> " *query-io*)
+    (finish-output *query-io*)
+    (let* ((command (let ((*package*
+                            (load-time-value
+                             (find-package
+                              "COM.INFORMATIMAGO.SMALL-CL-PGMS.SEDIT"))))
+                      (read *query-io*)))
+           (function (binding command)))
+      (if function
+          (funcall function buffer)
+          (format *query-io* "~%Please use one of these commands:~%~
+                                    ~{~<~%~1,40:;~*~A (~2:*~A~*)~>~^, ~}.~2%"
+                  *command-map*)))))
+
+(defun sedit (&optional sexp)
   (terpri)
   (princ "Sexp Editor:")
   (terpri)
-  (let* ((root (list sexp))
-         (selection (make-selection)))
-    (select selection root 0)
-    (setf (first root) selection)
+  (initialize-bindings)
+  (let ((buffer (make-buffer sexp)))
     (unwind-protect
-         (loop 
-           (sedit-print-list root selection)
-           (terpri) (princ "> " *query-io*)
-           (let ((command (read *query-io*)))
-             (case command
-               ((q quit)      (return))
-               ((i in)        (sedit-in root selection))
-               ((o out)       (sedit-out root selection))
-               ((f forward n next)   (sedit-forward root selection))
-               ((b backward p previous)  (sedit-backward root selection))
-               ((s insert)    (sedit-insert root selection)) ; before
-               ((r replace)   (sedit-replace root selection)) ; in place
-               ((a add)       (sedit-add root selection)) ; after
-               ((x cut)       (sedit-cut root selection))
-               ((c copy)      (sedit-copy root selection))
-               ((y paste)     (sedit-paste root selection))
-               (otherwise
-                (princ "Please use one of these commands:")
-                (terpri)
-                (princ "quit, in, out, forward, backward, insert, replace, add, cut, copy, paste.")
-                (terpri)))))
-      (unselect selection))
-    (first root)))
+         (catch 'gazongue (loop (reporting-errors
+                                  (sedit-core buffer))))
+      (unselect (buffer-selection buffer)))
+    (first (buffer-root buffer))))
+
 
 ;;;; THE END ;;;;
