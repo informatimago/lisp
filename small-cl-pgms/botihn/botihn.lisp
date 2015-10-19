@@ -55,6 +55,23 @@ Licensed under the AGPL3.
 (defparameter *version* "1.1.1")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Configuration:
+;;;
+
+(defvar *server*   "irc.freenode.org"
+  "The fqdn of the IRC server.")
+(defvar *nickname* "botihn"
+  "The nickname of the botihn user.")
+(defvar *channel*  "#hn"
+  "The channel were the HackerNews stories are sent to.")
+(defvar *sources-url*
+  "https://gitlab.com/com-informatimago/com-informatimago/tree/master/small-cl-pgms/botihn/"
+  "The URL where the sources of this ircbot can be found.")
+(defvar *connection* nil
+  "The current IRC server connection.")
+(defvar *botpass*  "1234")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;; cf. https://github.com/HackerNews/API
 
@@ -130,20 +147,7 @@ Updates the *LAST-STORY* ID."
       (setf *last-story* story))))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defvar *server*   "irc.freenode.org"
-  "The fqdn of the IRC server.")
-(defvar *nickname* "botihn"
-  "The nickname of the botihn user.")
-(defvar *channel*  "#hn"
-  "The channel were the HackerNews stories are sent to.")
-(defvar *sources-url*
-  "https://gitlab.com/com-informatimago/com-informatimago/tree/master/small-cl-pgms/botihn/"
-  "The URL where the sources of this ircbot can be found.")
-(defvar *connection* nil
-  "The current IRC server connection.")
-(defvar *botpass*  "1234")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; (setf *nickname* "botihn-test" *channel* "#botihn-test")
 (defun configure ()
