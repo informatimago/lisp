@@ -1,5 +1,12 @@
 .. comment: -*- mode:rst; coding:utf-8 -*-
 
++-------------+--------------+
+| `Home </>`_ | `Up <../>`_  |
++-------------+--------------+
+
+Stream Pipe
+================================================================================
+
 Here is a new package, ``"COM.INFORMATIMAGO.CLEXT.PIPE"`` that implements
 a unidirectional pipe using ``"BORDEAUX-THREADS"`` and ``"TRIVIAL-GRAY-STREAM"``.
 
@@ -54,7 +61,10 @@ given, thus working as filters.
     user1>
 
     
-Example: ::
+Example
+--------------------------------------------------------------------------------
+
+::
    
     cl-user> (mkupack :use '("COMMON-LISP" 
                              "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.BROWSER"
@@ -150,3 +160,17 @@ Example: ::
     25:1960), et il a ete repris dans le celebre "LISP 1.5 Programmer's Manual"
     ; No value
     user1>
+
+Sources
+--------------------------------------------------------------------------------
+
+These new packages are available on gitlab and github; and they'll be
+distributed in `quicklisp`.
+
+::
+
+    git clone https://gitlab.com/com-informatimago/com-informatimago.git informatimago
+
+`Informatimago Public Common Lisp Libraries <http://www.informatimago.com/develop/lisp/index.html>`_
+
+.. comment: the end.

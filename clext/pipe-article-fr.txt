@@ -1,5 +1,13 @@
 .. comment: -*- mode:rst; coding:utf-8 -*-
 
++--------------------+----------------------------+
+| `Case départ </>`_ | `Niveau supérieur <../>`_  |
++--------------------+----------------------------+
+
+
+Tuyau de flux
+================================================================================
+
 Voici un nouveau paquetage, ``"COM.INFORMATIMAGO.CLEXT.PIPE"`` qui
 implémente un tube unidirectionel («pipe») basé sur
 ``"BORDEAUX-THREADS"`` et ``"TRIVIAL-GRAY-STREAM"``.
@@ -59,7 +67,10 @@ quand aucun fichier n'est donné, et fonctionnant ainsi comme filtres.
     user1>
 
     
-Exemple: ::
+Exemple
+--------------------------------------------------------------------------------
+
+::
    
     cl-user> (mkupack :use '("COMMON-LISP" 
                              "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.BROWSER"
@@ -157,9 +168,16 @@ Exemple: ::
     user1>
 
 
+Sources
+--------------------------------------------------------------------------------
+
 Ces nouveaux paquetages sont disponibles sur gitlab ou github; et seront
-distribué dans une prochaine mise à jour de quicklisp. 
+distribué dans une prochaine mise à jour de `quicklisp`. 
 
-`git clone https://gitlab.com/com-informatimago/com-informatimago.git informatimago`_
-`http://www.informatimago.com/develop/lisp/index.html`_
+::
 
+    git clone https://gitlab.com/com-informatimago/com-informatimago.git informatimago
+
+`Informatimago Public Common Lisp Libraries <http://www.informatimago.com/develop/lisp/index.html>`_
+
+.. comment: the end.
