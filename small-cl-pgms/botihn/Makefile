@@ -4,7 +4,9 @@ doc::
 install::
 
 CSS="/default.css"
-STYLE=--link-stylesheet --stylesheet=$(CSS)
+RSTHTMLOPT=\
+	--leave-comments \
+	--link-stylesheet --stylesheet=$(CSS)
 
 
 all::botihn
@@ -13,6 +15,6 @@ botihn: com.informatimago.small-cl-pgms.botihn.asd  botihn.lisp generate-applica
 
 doc::
 	pandoc -f rst -t asciidoc < botihn.txt >botihn-fr.asc
-	rst2html $(STYLE) < botihn.txt > botihn-fr.html
+	rst2html $(RSTHTMLOPT) < botihn.txt > botihn-fr.html
 
 #### THE END ####

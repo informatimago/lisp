@@ -1,9 +1,20 @@
 .. comment: -*- mode:rst; coding:utf-8 -*-
 
 
-+-------------+--------------+
-| `Home </>`_ | `Up <../>`_  |
-+-------------+--------------+
+.. comment: TOP-BEGIN
+.. comment: TOP-END
+.. comment: MENU-BEGIN
+.. comment: MENU-END
+
+============================================================
+Écriture d'un robot IRC simple
+============================================================
+
+.. meta::
+   :description: Un robot IRC simple pour suivre Hacker News
+   :keywords: common lisp,lisp,irc,bot,hacker news,drakma,cl-json,cl-irc,cesarum
+
+❡
 
 Écriture d'un robot IRC simple
 ============================================================
@@ -354,7 +365,10 @@ _`https://gitlab.com/com-informatimago/com-informatimago/tree/master/small-cl-pg
   git clone https://gitlab.com/com-informatimago/com-informatimago.git
   cd com-informatimago/small-cl-pgms/botihn/
 
-.. comment: THE END
+.. comment: MENU-BEGIN
+.. comment: MENU-END
+.. comment: BOTTOM-BEGIN
+.. comment: BOTTOM-END
 
   
 

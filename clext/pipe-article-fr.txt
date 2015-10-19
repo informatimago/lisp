@@ -1,8 +1,20 @@
 .. comment: -*- mode:rst; coding:utf-8 -*-
 
-+--------------------+----------------------------+
-| `Case départ </>`_ | `Niveau supérieur <../>`_  |
-+--------------------+----------------------------+
+.. comment: TOP-BEGIN
+.. comment: TOP-END
+.. comment: MENU-BEGIN
+.. comment: MENU-END
+
+================================================================================
+Tuyau de flux
+================================================================================
+
+.. meta::
+   :description: Un paquetage Common Lisp fournissant un tuyau tamponé avec un flux d'entrée et un flux de sortie.
+   :keywords: common lisp,lisp,stream,pipe,gray streams,bordeaux-threads
+
+
+❡
 
 
 Tuyau de flux
@@ -180,4 +192,7 @@ distribué dans une prochaine mise à jour de `quicklisp`.
 
 `Informatimago Public Common Lisp Libraries <http://www.informatimago.com/develop/lisp/index.html>`_
 
-.. comment: the end.
+.. comment: MENU-BEGIN
+.. comment: MENU-END
+.. comment: BOTTOM-BEGIN
+.. comment: BOTTOM-END
