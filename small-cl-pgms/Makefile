@@ -38,29 +38,29 @@ HELPFORMAT="make %-20s \# %s\n"
 
 all::help
 
-.PHONY: clean cleanall wi install-what-implementation botihn-page
 
 help::
 	@printf $(HELPFORMAT) generate "Generate the index.html page."
 generate:$(TARGETS) access-rights clean botihn-page
+.PHONY:: generate
 
 
 help::
 	@printf $(HELPFORMAT) access-rights "Sets the access-rights for publication."
 access-rights:
 	publish .
+.PHONY:: access-rights
 
 help::
 	@printf $(HELPFORMAT) clean "Erase backup and fasl files."
-
 clean:
-	-rm -rf  *~ *.lx*fsl
+	-rm -rf  *~ *.[ld]x*fsl
 
 help::
 	@printf $(HELPFORMAT) cleanall "make clean and erase targets."
 cleanall:clean
-	-rm -rf $(TARGETS)
-
+	-rm -rf $(TARGETS) 
+.PHONY:: cleanall
 
 help::
 	@printf $(HELPFORMAT) install "Installs everything in PREFIX=$(PREFIX)"
@@ -88,15 +88,18 @@ help::
 wi what-implementation:what-implementation.lisp
 	( echo '(load (compile-file "what-implementation.lisp"))';\
 	  echo '(com.informatimago.small-cl-pgms.what-implementation:generate-server-executable  "what-implementation")' ) | ccl -n 
+.PHONY:: wi
 
 help::
 	@printf $(HELPFORMAT) install-what-implementation "Install the what-implementation executable."
 install-what-implementation:what-implementation
 	chmod 755 what-implementation
 	cp -p what-implementation $(PREFIX)/bin 2> /dev/null || ( rm $(PREFIX)/bin/what-implementation && cp -p what-implementation $(PREFIX)/bin )
+.PHONY:: install-what-implementation
 
 botihn-page:
 	$(MAKE) $(MFLAGS) -C botihn doc
+.PHONY:: botihn-page
 
 #### THE END ####
 
