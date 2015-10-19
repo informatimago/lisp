@@ -38,9 +38,11 @@ HELPFORMAT="make %-20s \# %s\n"
 
 all::help
 
+.PHONY: clean cleanall wi install-what-implementation botihn-page
+
 help::
 	@printf $(HELPFORMAT) generate "Generate the index.html page."
-generate:$(TARGETS) access-rights clean
+generate:$(TARGETS) access-rights clean botihn-page
 
 
 help::
@@ -93,6 +95,8 @@ install-what-implementation:what-implementation
 	chmod 755 what-implementation
 	cp -p what-implementation $(PREFIX)/bin 2> /dev/null || ( rm $(PREFIX)/bin/what-implementation && cp -p what-implementation $(PREFIX)/bin )
 
+botihn-page:
+	$(MAKE) $(MFLAGS) -C botihn doc
 
 #### THE END ####
 
