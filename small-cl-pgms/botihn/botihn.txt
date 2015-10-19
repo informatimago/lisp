@@ -364,7 +364,7 @@ Vous pouvez obtenir les sources complets de ce petit exemple à:
 
   git clone https://gitlab.com/com-informatimago/com-informatimago.git
   cd com-informatimago/small-cl-pgms/botihn/
-  emacs 
+  emacs # edit configuration
   make
 
 .. comment: MENU-BEGIN
