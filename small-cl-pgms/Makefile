@@ -33,7 +33,7 @@
 ####****************************************************************************
 
 PREFIX=/usr/local
-TARGETS=index.html wang.html what-implementation
+TARGETS=index.html wang.html 
 HELPFORMAT="make %-20s \# %s\n"
 
 all::help
@@ -54,7 +54,7 @@ access-rights:
 help::
 	@printf $(HELPFORMAT) clean "Erase backup and fasl files."
 clean:
-	-rm -rf  *~ *.[ld]x*fsl
+	-rm -rf  *~ *.[ld]x*fsl what-implementation
 
 help::
 	@printf $(HELPFORMAT) cleanall "make clean and erase targets."
