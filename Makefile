@@ -55,8 +55,6 @@ all::  compile-with-$(CLISP) compile-with-$(ECL) compile-with-$(SBCL) compile-wi
 # compile-with-$(ABCL)     chokes on unicode!
 # compile-with-$(CCL)      doesn't run from Makefile (it runs well from the shell!).
 
-
-
 #PREFIX=/usr/local
 #PACKAGES:=$(shell get-directory SHARE_LISP | sed -e 's-/$$--')/packages
 PREFIX=$(HOME)/quicklisp/local-projects
@@ -75,6 +73,7 @@ show-variables::
 	@printf $(VAR_FMT) 'Where lisp packages are installed.'       PACKAGES       "$(PACKAGES)"
 	@printf $(VAR_FMT) 'Subpath for this library.'                PACKAGE_PATH   "$(PACKAGE_PATH)"
 	@printf $(VAR_FMT) 'List of sub-modules of this project.'     MODULES        "$(MODULES)"
+.PHONY::show-variables
 
 
 MM=$(MAKE) $(MFLAGS) PREFIX=$(PREFIX)
@@ -122,7 +121,7 @@ help::
 systems system system.asd summaries summary summary.html:
 	@echo not implemented yet
 	@false
-
+.PHONY::systems system summaries summary 
 
 
 help::
@@ -136,6 +135,7 @@ etags tags TAGS::
 	| tee -a /dev/stderr -a /dev/stdout \
 	| etags -
 	@printf ';; Done.\n'
+.PHONY::etags tags TAGS
 
 
 
@@ -148,17 +148,18 @@ help::
 	@printf $(HELP_FMT)  'lispdoc'       "Generates the lispdoc documentation (in $(WEBDOCDIR))."
 	@printf $(HELP_FMT)  'upload'        "Uploads $(WEBDOCDIR) to the web hosting server."
 
+documentation:readme
 readme: README.pdf README.html README.md
-
 doc-upload:readme lispdoc upload
-
 lispdoc:$(WEBDOCDIR)/develop/lisp/doc
+.PHONY::documentation readme doc-upload lispdoc
 
 $(WEBDOCDIR)/develop/lisp/doc:
 	$(MAKE) $(MFLAGS) -C lispdoc 
 
 upload:
 	$(MAKE) $(MFLAGS) -C $(WEBDOCDIR) update upload
+.PHONY::upload
 
 README.md:README
 	pandoc -f rst -t markdown_github  -o README.md README
@@ -172,6 +173,7 @@ README.pdf:README
 
 showpdf show-pdfs:README.pdf
 	open README.pdf
+.PHONY::showpdf show
 
 quicklisp-tag:
 	git tag -d quicklisp
@@ -182,5 +184,6 @@ quicklisp-tag:
 	git push --tags gitlab
 	git push --tags github
 	git push --tags origin
+.PHONY::quicklisp-tag
 
 #### THE END ####
