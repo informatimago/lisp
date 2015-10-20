@@ -11,6 +11,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2015-10-20 <PJB> Added PARSE-HTML-STREAM.
 ;;;;    2012-03-13 <PJB> Renamed package to match its position in the hierarchy.
 ;;;;    2005-02-22 <PJB> Optimized WALK for HTML-SEQ.
 ;;;;    2003-11-12 <PJB> Created.
@@ -34,7 +35,6 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
 
-(in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.HTML-PARSER.PARSE-HTML"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
@@ -63,11 +63,11 @@
                                  "TRANSLATE-LOGICAL-PATHNAME"
                                  "PRINT-NOT-READABLE"
                                  "PRINT-NOT-READABLE-OBJECT")
-  (:export "HTML-ATTRIBUTE" "HTML-CONTENTS" "HTML-ATTRIBUTES" "HTML-TAG"
-           "UNPARSE-HTML" "WRITE-HTML-TEXT"
-           "PARSE-HTML-STRING" "PARSE-HTML-FILE")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING" "UNSPLIT-STRING"
                 "SPLIT-STRING" "STRING-REPLACE")
+  (:export "HTML-ATTRIBUTE" "HTML-CONTENTS" "HTML-ATTRIBUTES" "HTML-TAG"
+           "UNPARSE-HTML" "WRITE-HTML-TEXT"
+           "PARSE-HTML-STREAM" "PARSE-HTML-STRING" "PARSE-HTML-FILE")
   (:documentation "
 
 This package implements a simple HTML parser.
@@ -2018,6 +2018,30 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
            (setf (caar stack) (append (caar stack) attributes))))))))
 ;; (eq (car tag) :close) and no corresponding open )))
 
+(defun parse-html-stream (stream &key (verbose nil))
+  "
+DO:                 Parse the HTML stream STREAM.
+VERBOSE:            When true, writes some information in the *TRACE-OUTPUT*.
+RETURN:             A list of html elements.
+SEE ALSO:           HTML-TAG, HTML-ATTRIBUTES, HTML-ATTRIBUTE, HTML-CONTENTS.
+"
+  (let ((name (in (typep stream 'file-stream)
+                  (namestring stream)
+                  (princ-to-string stream)))
+        synthetic walked encased)
+    (when verbose
+      (format *trace-output* "~&starting parsing of file ~S~%" name))
+    (setf synthetic (let ((parser (make-html-parser :scanner (make-html-scanner :source stream))))
+                      (advance parser)
+                      (advance parser)
+                      (parse-file parser)))
+    (when verbose (format *trace-output* "~&file ~S parsed~%" name))
+    (setf walked (walk synthetic))
+    (when verbose (format *trace-output* "~&file ~S walked~%" name))
+    (setf encased (encase walked))
+    (when verbose (format *trace-output* "~&file ~S encased -- done.~%" name))
+    encased))
+
 
 (defun parse-html-file (pathname &key (verbose nil) (external-format :default))
   "
@@ -2027,24 +2051,10 @@ EXTERNAL-FORMAT:    The external-format to use to open the HTML file.
 RETURN:             A list of html elements.
 SEE ALSO:           HTML-TAG, HTML-ATTRIBUTES, HTML-ATTRIBUTE, HTML-CONTENTS.
 "
-  (let ((name (namestring pathname))
-        synthetic walked encased)
-    (when verbose
-      (format *trace-output* "~&starting parsing of file ~S~%" name))
-    (setf synthetic (with-open-file (src pathname :direction :input 
-                                                  :if-does-not-exist :error
-                                                  :external-format external-format)
-                      (let ((parser (make-html-parser 
-                                     :scanner (make-html-scanner :source src))))
-                        (advance parser)
-                        (advance parser)
-                        (parse-file parser))))
-    (when verbose (format *trace-output* "~&file ~S parsed~%" name))
-    (setf walked (walk synthetic))
-    (when verbose (format *trace-output* "~&file ~S walked~%" name))
-    (setf encased (encase walked))
-    (when verbose (format *trace-output* "~&file ~S encased -- done.~%" name))
-    encased))
+  (with-open-file (src pathname :direction :input 
+                                :if-does-not-exist :error
+                                :external-format external-format)
+    (parse-html-stream src :verbose verbose)))
 
 
 (defun parse-html-string (string &key (start 0) (end (length string)) (verbose nil))
@@ -2056,19 +2066,8 @@ SEE ALSO:           HTML-TAG, HTML-ATTRIBUTES, HTML-ATTRIBUTE, HTML-CONTENTS.
 " 
   (when verbose
     (format *trace-output* "~&starting string parsing from ~D~%" start))
-  (let ((synthetic  (with-input-from-string (src string :start start :end end)
-                      (let ((parser (make-html-parser
-                                     :scanner (make-html-scanner :source src))))
-                        (advance parser)
-                        (advance parser)
-                        (parse-file parser))))
-        walked encased)
-    (when verbose (format *trace-output* "~&string parsed~%"))
-    (setf walked (walk synthetic))
-    (when verbose (format *trace-output* "~&string walked~%"))
-    (setf encased (encase walked))
-    (when verbose (format *trace-output* "~&string encased -- done.~%"))
-    encased))
+  (with-input-from-string (src string :start start :end end)
+    (parse-html-stream src :verbose verbose)))
 
 
 
