@@ -2025,7 +2025,6 @@ VERBOSE:            When true, writes some information in the *TRACE-OUTPUT*.
 RETURN:             A list of html elements.
 SEE ALSO:           HTML-TAG, HTML-ATTRIBUTES, HTML-ATTRIBUTE, HTML-CONTENTS.
 "
-  (print (list stream (type-of stream))) (terpri) (finish-output)
   (let ((name (or (ignore-errors (namestring stream))
                   (princ-to-string stream)))
         synthetic walked encased)
