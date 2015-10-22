@@ -12,6 +12,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2015-10-22 <PJB> Added &quot; and &apo; Added *PRE* for MELT-ENTITIES.
 ;;;;    2010-10-16 <PJB> Renamed HTML-ENTITIES.
 ;;;;                     Added handling of numerical &#...; and &#x...; entities.
 ;;;;    2003-11-14 <PJB> Created.
@@ -50,7 +51,7 @@
            "Aacute" "Agrave" "iquest" "frac34" "frac12" "frac14" "raquo" "ordm" "sup1"
            "cedil" "middot" "para" "micro" "acute" "sup3" "sup2" "plusmn" "deg" "macr"
            "reg" "shy" "not" "laquo" "ordf" "copy" "uml" "sect" "brvbar" "yen" "curren"
-           "pound" "cent" "iexcl" "nbsp" "MELT-ENTITIES")
+           "pound" "cent" "iexcl" "nbsp" "MELT-ENTITIES" "*PRE*")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ARRAY" "DISPLACED-VECTOR")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING" "STRING-REPLACE")
   (:documentation
@@ -92,12 +93,14 @@ License:
 to a string containing their corresponding characters.")
 
 
+(defvar *pre* nil
+  "When true, MELT-ENTITIES will keep spaces and newlines.")
 
 (defun melt-entities (text)
   "
 RETURN: A string with any HTML ISO-Latin-1 entity occurence replaced by
         the corresponding character.
-BUG:    We don't manage the encodings, assuming that ISO-Latin-1 is active.
+BUG:    We don't manage the encodings, assuming CODE-CHAR gives ISO-Latin-1.
 "
   (with-output-to-string (*standard-output*)
     (loop
@@ -113,12 +116,16 @@ BUG:    We don't manage the encodings, assuming that ISO-Latin-1 is active.
                           ((#\&)
                            (setf state :ampersand))
                           ((#\newline  #\space)
-                           (princ " ")
+                           (if *pre*
+                               (princ ch)
+                               (princ " "))
                            (setf state :space))
                           (otherwise
                            (princ ch))))
              ((:space) (case ch
-                         ((#\newline #\space))
+                         ((#\newline #\space)
+                          (when *pre*
+                            (princ ch)))
                          ((#\&)
                           (setf state :ampersand))
                          (otherwise
@@ -187,39 +194,11 @@ BUG:    We don't manage the encodings, assuming that ISO-Latin-1 is active.
                  (format t "&#x~A~C" buffer ch)
                  (setf state :normal)))))
        :finally (case state
-                  ((:normal))
-                  (otherwise (princ buffer)))))
+                  ((:normal :space))
+                  (otherwise (princ buffer))))))
 
-  ;; (let ((chunks (list string)))
-  ;;   (DOLIST (SUBSTITUTION *ENTITIES*
-  ;;            (apply (function concatenate) 'string chunks))
-  ;;     (when (some (lambda (chunk) (search (car substitution) chunk
-  ;;                                         :test (function string=))) chunks)
-  ;;       (setf chunks
-  ;;             (mapcan
-  ;;              (lambda (chunk) 
-  ;;                (do* ((start 0 (+ pos (length (car substitution))))
-  ;;                      (pos (search (car substitution) chunk 
-  ;;                                   :start2 start
-  ;;                                   :test (function string=))
-  ;;                           (search (car substitution) chunk 
-  ;;                                   :start2 start
-  ;;                                   :test (function string=)))
-  ;;                      (result '()))
-  ;;                     ((null pos)
-  ;;                      (cond
-  ;;                        ((= 0 start) 
-  ;;                         (push chunk result))
-  ;;                        ((< start (length chunk)) 
-  ;;                         (push (displaced-vector chunk start) result)))
-  ;;                      (nreverse result))
-  ;;                  (when (< start pos)
-  ;;                    (push (displaced-vector chunk start pos) result))
-  ;;                  (push (cdr substitution) result)))
-  ;;              chunks)))))
-  )
 
-                                
+
 
 (defmacro defentity (name code &optional documentation)
   `(progn
@@ -231,6 +210,8 @@ BUG:    We don't manage the encodings, assuming that ISO-Latin-1 is active.
 (defentity |amp|         38  "ampersand")
 (defentity |gt|          62  "greater than")
 (defentity |lt|          60  "less than")
+(defentity |quot|        34  "double quote")
+(defentity |apo|         39  "quote")
 
 
 ;; The meat:
