@@ -33,22 +33,11 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.A-STAR"
-  (:use "COMMON-LISP")
+  (:use "COMMON-LISP"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
   (:export "+INFINITY+" "FIND-PATH")
   (:documentation "The A* algorithm."))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.A-STAR")
-
-
-(defmacro with-functions ((&rest fnames) &body body)
-  `(flet ,(mapcar (lambda (fname)
-                    (if (listp fname)
-                        (destructuring-bind (name &rest parameters) fname
-                          `(,name ,parameters (funcall ,name ,@parameters)))
-                        `(,fname (&rest arguments) (apply ,fname arguments))))
-           fnames)
-     (declare (inline ,@(mapcar (lambda (fname) (if (listp fname) (first fname) fname)) fnames)))
-     ,@body))
-
 
 
 (defconstant +infinity+ most-positive-long-float)

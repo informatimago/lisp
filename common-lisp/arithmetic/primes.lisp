@@ -38,7 +38,8 @@
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.ARITHMETIC.PRIMES"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
-  (:export "STR-DECODE" "STR-ENCODE" "PRINT-FACTORIZATION" "FACTORIZE"
+  (:export "STR-DECODE" "STR-ENCODE" "PRINT-FACTORIZATION"
+           "FACTORIZE" "DIVISORS"
            "COMPUTE-PRIMES-TO")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "WHILE")
   (:documentation
@@ -227,4 +228,35 @@ RETURN:  A string decoding the integer NUM factorized with the PRIMES.
          primes (subseq (factorize-vector num primes) 1))))
 
 
+(defun exponent-combinations (exponents)
+  (if (null exponents)
+      '(())
+      (let ((e (first exponents))
+            (c (exponent-combinations (rest exponents))))
+        (loop
+          :for i :to e
+          :append (mapcar (lambda (r) (cons i r)) c)))))
+
+(defun divisors (n)
+  "
+RETURN: a list of divisors of N from 1 to N.
+"
+  (let* ((prime-factors (rest (factorize n)))
+         (exponents (mapcar (lambda (term)
+                              (if (atom term)
+                                  1
+                                  (third term)))
+                            prime-factors))
+         (primes (mapcar (lambda (term)
+                           (if (atom term)
+                               term
+                               (second term)))
+                         prime-factors)))
+    (mapcar (lambda (exponents)
+              (reduce (function *) (mapcar (function expt) primes exponents)
+                      :initial-value 1))
+            (exponent-combinations exponents))))
+
+
 ;;;; THE END ;;;;
+

@@ -11,6 +11,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2015-10-20 <PJB> Added PARSE-HTML-STREAM.
 ;;;;    2012-03-13 <PJB> Renamed package to match its position in the hierarchy.
 ;;;;    2005-02-22 <PJB> Optimized WALK for HTML-SEQ.
 ;;;;    2003-11-12 <PJB> Created.
@@ -34,7 +35,6 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
 
-(in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.HTML-PARSER.PARSE-HTML"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
@@ -63,11 +63,11 @@
                                  "TRANSLATE-LOGICAL-PATHNAME"
                                  "PRINT-NOT-READABLE"
                                  "PRINT-NOT-READABLE-OBJECT")
-  (:export "HTML-ATTRIBUTE" "HTML-CONTENTS" "HTML-ATTRIBUTES" "HTML-TAG"
-           "UNPARSE-HTML" "WRITE-HTML-TEXT"
-           "PARSE-HTML-STRING" "PARSE-HTML-FILE")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING" "UNSPLIT-STRING"
                 "SPLIT-STRING" "STRING-REPLACE")
+  (:export "HTML-ATTRIBUTE" "HTML-CONTENTS" "HTML-ATTRIBUTES" "HTML-TAG"
+           "UNPARSE-HTML" "WRITE-HTML-TEXT"
+           "PARSE-HTML-STREAM" "PARSE-HTML-STRING" "PARSE-HTML-FILE")
   (:documentation "
 
 This package implements a simple HTML parser.
@@ -110,9 +110,9 @@ License:
 ;; ------------------------------------------------------------------------
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defparameter +tag-package+ (find-package "KEYWORD"))
-  (defvar *attributes* () "List of symbols of all attributes defined.")
-  (defvar *elements*   () "List of symbols of all elements defined."))
+  (defvar *tag-package* (load-time-value (find-package "KEYWORD")))
+  (defvar *attributes*  () "List of symbols of all attributes defined.")
+  (defvar *elements*    () "List of symbols of all elements defined."))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
@@ -172,7 +172,7 @@ OPTIONS:    A list of keywords: :START-OPTIONAL :END-FORBIDDEN :EMPTY
 DOCUMENTATION:  A string used as documentation string for the macro NAME.
 "
     (with-gensyms (gname)
-      `(let ((,gname (intern ,(string name) +tag-package+)))
+      `(let ((,gname (intern ,(string name) *tag-package*)))
          (push (make-element :name ,gname
                              :options ',options
                              :documentation ',documentation) *elements*)
@@ -1296,7 +1296,7 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
 ;;;   "
 ;;; DO:    Set the package where the tags will be interned.
 ;;; "
-;;;   (setf +tag-package+ package)
+;;;   (setf *tag-package* package)
 ;;;   (setf *elements* nil)
 ;;;   (LOAD "PACKAGES:COM;INFORMATIMAGO;COMMON-LISP;HTML401.LISP")
 ;;;   );;set-tag-package
@@ -1814,7 +1814,8 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
                                              :data (html-parser-value parser))
                                        (advance parser)))
                        ((:comment)   (prog1 (make-comment 
-                                             :data (html-parser-value parser))
+                                             :data (let ((text (html-parser-value parser)))
+                                                     (subseq text 4 (- (length text) 3))))
                                        (advance parser)))
                        ((:open-tag)  (parse-open-tag parser))
                        ((:close-tag) (parse-close-tag parser))
@@ -1847,6 +1848,7 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
           (make-definition :name ident :attributes attributes)))))
 
 
+#-(and)
 (defun parse-aivs (parser)
   ;; aivs -->   aiv      { html-seq: [(first aiv) (rest nil) ] }
   ;;          | aiv aivs { html-seq: [(first aiv) (rest aivs)] } ;
@@ -1857,6 +1859,15 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
                  :rest  (when (member (html-parser-token parser)
                                       '(:string :identifier))
                           (parse-aivs parser))))
+
+
+(defun parse-aivs (parser)
+  ;; aivs -->   aiv      { html-seq: [(first aiv) (rest nil) ] }
+  ;;          | aiv aivs { html-seq: [(first aiv) (rest aivs)] } ;
+  ;; aiv  --> attribute | ident | value ;
+  (when (member (html-parser-token parser) '(:string :identifier))
+    (make-html-seq :first (prog1 (html-parser-value parser) (advance parser))
+                   :rest  (parse-aivs parser))))
 
 (defun parse-open-tag (parser)
   ;;         | "<" ident ">"
@@ -1925,54 +1936,57 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
 ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defgeneric walk (html))
 
-(defmethod walk ((self html-seq))
-  (do ((current self (html-seq-rest current))
-       (result '()))
-      ((not (typep current 'html-seq))
-       (assert (null current))
-       (nreverse result))
-    (push (walk (html-seq-first current)) result)))
+(defgeneric parse-tree-to-sexp (html)
+
+  (:documentation "
+Transforms the sequence of HTML tokens, HTML-SEQ structure defined above,
+into a list of tag forms and contents strings.
+")
+  
+  (:method ((self t))  self)
+
+  (:method ((self html-seq))
+    (do ((current self (html-seq-rest current))
+         (result '()))
+        ((not (typep current 'html-seq))
+         (assert (null current))
+         (nreverse result))
+      (push (parse-tree-to-sexp (html-seq-first current)) result)))
+
+  (:method ((self comment))
+    (list :comment
+          '() (parse-tree-to-sexp (comment-data self))))
+
+  (:method ((self foreign))
+    (list :foreign
+          '() (parse-tree-to-sexp (foreign-data self))))
+
+  (:method ((self attribute))
+    (list (intern (string-upcase (attribute-name self)) *tag-package*)
+          (or (attribute-value self) t)))
+
+  (:method ((self open-tag))
+    (list :open
+          (intern (string-upcase (open-tag-name self)) *tag-package*)      
+          (parse-tree-to-sexp (open-tag-attributes self))))
+
+  (:method ((self close-tag))
+    (list :close
+          (intern (string-upcase (close-tag-name self)) *tag-package*)
+          (parse-tree-to-sexp (close-tag-attributes self))))
+
+  (:method ((self definition))
+    (list* :definition
+          '()
+          (intern (string-upcase (definition-name self)) *tag-package*)      
+          (parse-tree-to-sexp (definition-attributes self)))))
 
 
-(defmethod walk ((self comment))
-  (list :comment
-        '() (walk (comment-data self))))
-
-
-(defmethod walk ((self foreign))
-  (list :foreign
-        '() (walk (foreign-data self))))
-
-
-(defmethod walk ((self attribute))
-  (list (intern (string-upcase (attribute-name self)) +tag-package+)
-        (or (attribute-value self) t)))
-
-
-(defmethod walk ((self open-tag))
-  (list :open
-        (intern (string-upcase (open-tag-name self)) +tag-package+)      
-        (walk (open-tag-attributes self))))
-
-
-(defmethod walk ((self close-tag))
-  (list :close
-        (intern (string-upcase (close-tag-name self)) +tag-package+)
-        (walk (close-tag-attributes self))))
-
-
-(defmethod walk ((self definition))
-  (list :definition
-        (intern (string-upcase (definition-name self)) +tag-package+)      
-        (walk (definition-attributes self))))
-
-
-(defmethod walk ((self t))  self)
 
 
 (defun clean-attribute (attr)
+  "If the attribute name is quoted or double-quoted, then remove those quotes."
   (cond ((not (stringp attr)) attr)
         ((or (and (<= 2 (length attr))
                   (char= (character "'") (char attr 0))
@@ -1985,6 +1999,10 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
 
 
 (defun encase (tag-list)
+  "
+Transform a list of tags and content strings, into a :document sexp tree
+according to the :open and (optional) :close elements.
+"
   ;;     content-list-reversed
   ;;     ( (tag (attributes)) content-list-reversed)
   ;;     ( (tag (attributes)) content-list-reversed)
@@ -1993,13 +2011,10 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
   (do* ((stack    (list nil))
         (tag-list tag-list       (cdr tag-list))
         (tag      (car tag-list) (car tag-list)))
-       ((null tag-list)      (nreverse (pop stack)))
+       ((null tag-list)      `(:document () ,@(nreverse (pop stack))))
     (cond
-      ((or (atom tag) (eq (car tag) :comment))
+      ((or (atom tag) (member (car tag) '(:comment :foreign :definition)))
        (push tag (car stack)))
-      ((eq (car tag) :definition)
-       ;; ignore
-       )
       ((eq (car tag) :open)
        (push (cons (second tag)
                    (list
@@ -2018,6 +2033,31 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
            (setf (caar stack) (append (caar stack) attributes))))))))
 ;; (eq (car tag) :close) and no corresponding open )))
 
+(defparameter *newline* (string #\newline) "A string containing only a newline.")
+
+(defun parse-html-stream (stream &key (verbose nil))
+  "
+DO:                 Parse the HTML stream STREAM.
+VERBOSE:            When true, writes some information in the *TRACE-OUTPUT*.
+RETURN:             A list of html elements.
+SEE ALSO:           HTML-TAG, HTML-ATTRIBUTES, HTML-ATTRIBUTE, HTML-CONTENTS.
+"
+  (let ((name (or (ignore-errors (namestring stream))
+                  (princ-to-string stream)))
+        synthetic walked encased)
+    (when verbose
+      (format *trace-output* "~&starting parsing of file ~S~%" name))
+    (setf synthetic (let ((parser (make-html-parser :scanner (make-html-scanner :source stream))))
+                      (advance parser)
+                      (advance parser)
+                      (parse-file parser)))
+    (when verbose (format *trace-output* "~&file ~S parsed~%" name))
+    (setf walked  (remove *newline* (parse-tree-to-sexp synthetic) :test (function equal)))
+    (when verbose (format *trace-output* "~&file ~S walked~%" name))
+    (setf encased (encase walked))
+    (when verbose (format *trace-output* "~&file ~S encased -- done.~%" name))
+    encased))
+
 
 (defun parse-html-file (pathname &key (verbose nil) (external-format :default))
   "
@@ -2027,24 +2067,10 @@ EXTERNAL-FORMAT:    The external-format to use to open the HTML file.
 RETURN:             A list of html elements.
 SEE ALSO:           HTML-TAG, HTML-ATTRIBUTES, HTML-ATTRIBUTE, HTML-CONTENTS.
 "
-  (let ((name (namestring pathname))
-        synthetic walked encased)
-    (when verbose
-      (format *trace-output* "~&starting parsing of file ~S~%" name))
-    (setf synthetic (with-open-file (src pathname :direction :input 
-                                                  :if-does-not-exist :error
-                                                  :external-format external-format)
-                      (let ((parser (make-html-parser 
-                                     :scanner (make-html-scanner :source src))))
-                        (advance parser)
-                        (advance parser)
-                        (parse-file parser))))
-    (when verbose (format *trace-output* "~&file ~S parsed~%" name))
-    (setf walked (walk synthetic))
-    (when verbose (format *trace-output* "~&file ~S walked~%" name))
-    (setf encased (encase walked))
-    (when verbose (format *trace-output* "~&file ~S encased -- done.~%" name))
-    encased))
+  (with-open-file (src pathname :direction :input 
+                                :if-does-not-exist :error
+                                :external-format external-format)
+    (parse-html-stream src :verbose verbose)))
 
 
 (defun parse-html-string (string &key (start 0) (end (length string)) (verbose nil))
@@ -2056,19 +2082,8 @@ SEE ALSO:           HTML-TAG, HTML-ATTRIBUTES, HTML-ATTRIBUTE, HTML-CONTENTS.
 " 
   (when verbose
     (format *trace-output* "~&starting string parsing from ~D~%" start))
-  (let ((synthetic  (with-input-from-string (src string :start start :end end)
-                      (let ((parser (make-html-parser
-                                     :scanner (make-html-scanner :source src))))
-                        (advance parser)
-                        (advance parser)
-                        (parse-file parser))))
-        walked encased)
-    (when verbose (format *trace-output* "~&string parsed~%"))
-    (setf walked (walk synthetic))
-    (when verbose (format *trace-output* "~&string walked~%"))
-    (setf encased (encase walked))
-    (when verbose (format *trace-output* "~&string encased -- done.~%"))
-    encased))
+  (with-input-from-string (src string :start start :end end)
+    (parse-html-stream src :verbose verbose)))
 
 
 
@@ -2088,7 +2103,7 @@ SEE ALSO:           HTML-TAG, HTML-ATTRIBUTES, HTML-ATTRIBUTE, HTML-CONTENTS.
 
 (defparameter *nl* (make-hash-table)
   "
-This hash-table maps tag symbols (interned in this package)
+This hash-table maps tag symbols (interned in *TAG-PACKAGE*)
 to a list of two elements:
 
 - a list of keywords indicating the newlines that should be written
@@ -2099,9 +2114,14 @@ to a list of two elements:
        :ac  after open tag.
 
 - a function taking the element as parameted (named SELF), used
-  to format the element as text.
+  to format the element as (reStructured)text.
 ")
 
+(defun html-tag-key (html)
+  (intern (string (html-tag html)) *tag-package*))
+
+(defun must-new-line (html where)
+  (member where (first (gethash (html-tag-key html) *nl*))))
 
 
 (defun write-text (element)
@@ -2109,10 +2129,26 @@ to a list of two elements:
     (string (princ (melt-entities element)))
     (atom   (princ element))
     (otherwise
-     (let ((entry (gethash (html-tag element) *nl*)))
-       (if entry
-           (funcall (second entry) element)
-           (princ element))))))
+     (flet ((write-it ()
+              (let ((entry (gethash (html-tag element) *nl*)))
+                (if (second entry)
+                    (funcall (second entry) element)
+                    (progn
+                      (when (intersection '(:bo :ao) (first entry))
+                        (terpri))
+                      (print element *trace-output*)
+                      (princ element)
+                      (when (intersection '(:bc :ac) (first entry))
+                        (terpri)))))))
+       (cond ((member (html-tag element) '(:foreign :definition :comment)
+                      :test (function string-equal))
+              #|ignore|#)
+             ((member (html-tag element) '(:pre :quote :address)
+                      :test (function string-equal))
+              (let ((*pre* t))
+                (write-it)))
+             (t
+              (write-it)))))))
 
 (defun write-children-text (self)
   (dolist (child (html-contents self))
@@ -2135,7 +2171,8 @@ to a list of two elements:
 
 (defun write-indented-children (self)
   (dolist (line (split-string (with-output-to-string (*standard-output*)
-                                (write-children-text self)) #(#\newline)))
+                                (write-children-text self))
+                              #(#\newline)))
     (princ "   ") (princ line) (terpri)))
 
 (defun write-parenthesized-children (self left right)
@@ -2145,7 +2182,7 @@ to a list of two elements:
 
 (defmacro define-element-writer (tag nls &body body)
   `(progn
-     (setf (gethash (intern (string-upcase ,(symbol-name tag)) +tag-package+) *nl*)
+     (setf (gethash (intern (string-upcase ,(symbol-name tag)) *tag-package*) *nl*)
            (list ',nls
                  ,(case (first body)
                     ((:children) `(function write-children-text))
@@ -2158,7 +2195,7 @@ to a list of two elements:
 ;; ^  <a>^  x^  </a>^
 ;; :bo   :ao :bc    :ac
 
-(define-element-writer a                (:bo :ac)          :children)
+(define-element-writer a                ()                 :children)
 (define-element-writer abbr             ()                 :children)
 (define-element-writer acronym          ()                 :children)
 (define-element-writer address          (:bo :ac)          :children)
@@ -2176,7 +2213,7 @@ to a list of two elements:
   (write-children-text self))
 (define-element-writer button           (:bo :ac)          :children)
 (define-element-writer center           (:bo :ac)          :children)
-(define-element-writer cite             (:bo :ac)          :children)
+(define-element-writer cite             ()                 :children)
 (define-element-writer code             ()                 (write-parenthesized-children self "`" "`"))
 (define-element-writer del              ()                 :children)
 (define-element-writer dfn              ()                 :children)
@@ -2238,7 +2275,7 @@ to a list of two elements:
 (define-element-writer script           (:bo :ao :bc :ac)  :skip)
 (define-element-writer select           (:bo :ao :bc :ac)  :children)
 (define-element-writer small            ()                 :children)
-(define-element-writer span             (:bo :ac)          :children)
+(define-element-writer span             ()                 :children)
 (define-element-writer strike           ()                 :children)
 (define-element-writer strong           ()                 (write-parenthesized-children self "**" "**"))
 (define-element-writer style            (:bo :ac)          :children)
@@ -2378,23 +2415,52 @@ to a list of two elements:
 (define-element-writer td               (:bo :ac)          :children)
 
 
+(defun tag-case (tag)
+  (let ((stag (string tag)))
+    (if (every (lambda (ch)
+                 (if (alpha-char-p ch)
+                     (upper-case-p ch)
+                     t))
+               stag)
+        (string-downcase stag)
+        stag)))
 
 (defun unparse-html (html &optional (stream *standard-output*))
   "Writes back on STREAM the reconstituted HTML source."
-  (if (atom html)
-      (format stream "~A" html)
-      (let ((nl (gethash (html-tag html) *nl*)))
-        (format stream "~:[~;~&~]<~A~{ ~A=~S~}>~:[~;~&~]" 
-                (member :bo nl)
-                (string-downcase (html-tag html))
-                (html-attributes html)
-                (member :ao nl))
-        (dolist (item (html-contents html))
-          (unparse-html item stream))
-        (format stream "~:[~;~&~]</~A>~:[~;~&~]"
-                (member :bc nl)
-                (string-downcase (html-tag html))
-                (member :ac nl)))))
+  (let ((package *package*))
+    (with-standard-io-syntax
+      (let ((*package* package))
+        (cond
+          ((atom html)
+           (format stream "~A" html))
+          ((string-equal (html-tag html) :document)
+           ;; (:document nil …)
+           (dolist (item (html-contents html))
+             (unparse-html item stream)))
+          ((string-equal (html-tag html) :foreign)
+           ;; (:foreign nil "<?xml version=\"1.0\" encoding=\"utf-8\" ?>")
+           (format stream "~&~{~A~}~%" (html-contents html)))
+          ((string-equal (html-tag html) :comment)
+           ;; (:foreign nil "<?xml version=\"1.0\" encoding=\"utf-8\" ?>")
+           (format stream "~&<!--~{~A~}-->~%" (html-contents html)))
+          ((string-equal (html-tag html) :definition)
+           ;; (:definition () :doctype "html" "PUBLIC" "-//W3C//DTD XHTML 1.0 Transitional//EN"
+           ;;                        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd")
+           (format stream "~&<!~{~A~^ ~}>~%" (cddr html)))
+          (t
+           (let ((nl (first (gethash (html-tag-key html) *nl*))))
+             (format stream "~:[~;~&~]<~A~{ ~A=~S~}>~:[~;~&~]" 
+                     (member :bo nl)
+                     (tag-case (html-tag html))
+                     (loop :for (attr val) :on (html-attributes html) :by (function cddr)
+                           :nconc (list (tag-case attr) val))
+                     (member :ao nl))
+             (dolist (item (html-contents html))
+               (unparse-html item stream))
+             (format stream "~:[~;~&~]</~A>~:[~;~&~]"
+                     (member :bc nl)
+                     (tag-case (html-tag html))
+                     (member :ac nl)))))))))
 
 
 
@@ -2404,7 +2470,10 @@ Some reStructuredText formating is used.
 Simple tables are rendered, but colspan and rowspan are ignored.
 "
   (let ((*standard-output* stream))
-    (write-text html)))
+    (if (string-equal (html-tag html) :document)
+        (dolist (item (html-contents html))
+          (write-text item))
+        (write-text html))))
 
 
 ;;;; THE END ;;;;
