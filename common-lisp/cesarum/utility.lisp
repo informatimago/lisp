@@ -79,7 +79,7 @@
                                  "PRINT-NOT-READABLE-OBJECT")
   (:export
    ;; 3 - EVALUATION AND COMPILATION
-   "WITH-GENSYMS" "WSIOSBP" "PROGN-CONCAT"
+   "WITH-FUNCTIONS" "WITH-GENSYMS" "WSIOSBP" "PROGN-CONCAT"
    "CURRY" "COMPOSE" "COMPOSE-AND-CALL"
    "/NTH-ARG" "/APPLY"
    "DEFINE-IF-UNDEFINED"  "INCLUDE-FILE" "FUNCTIONAL-PIPE"
@@ -178,6 +178,17 @@ The results of THUNK are ignored.
 
 (defmacro chrono (&body body)
   `(chrono* (lambda () ,@body)))
+
+
+(defmacro with-functions ((&rest fnames) &body body)
+  `(flet ,(mapcar (lambda (fname)
+                    (if (listp fname)
+                        (destructuring-bind (name &rest parameters) fname
+                          `(,name ,parameters (funcall ,name ,@parameters)))
+                        `(,fname (&rest arguments) (apply ,fname arguments))))
+           fnames)
+     (declare (inline ,@(mapcar (lambda (fname) (if (listp fname) (first fname) fname)) fnames)))
+     ,@body))
 
 #-:with-debug-gensym
 (defmacro with-gensyms (syms &body body)
