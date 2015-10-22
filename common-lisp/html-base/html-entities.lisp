@@ -51,7 +51,9 @@
            "Aacute" "Agrave" "iquest" "frac34" "frac12" "frac14" "raquo" "ordm" "sup1"
            "cedil" "middot" "para" "micro" "acute" "sup3" "sup2" "plusmn" "deg" "macr"
            "reg" "shy" "not" "laquo" "ordf" "copy" "uml" "sect" "brvbar" "yen" "curren"
-           "pound" "cent" "iexcl" "nbsp" "MELT-ENTITIES" "*PRE*")
+           "pound" "cent" "iexcl" "nbsp"
+           "lt" "gt" "amp" "quot" "apo"
+           "MELT-ENTITIES" "*PRE*")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ARRAY" "DISPLACED-VECTOR")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING" "STRING-REPLACE")
   (:documentation
@@ -64,7 +66,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2003 - 2012
+    Copyright Pascal J. Bourguignon 2003 - 2015
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
