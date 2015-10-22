@@ -63,6 +63,7 @@ Copyright Pascal J. Bourguignon 2015 - 2015
 "))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.HTML-BASE.ML-SEXP")
 
+
 #|
 
 Principles:
@@ -142,17 +143,25 @@ In addition to normal elements, there are sgml directives
          children))
 
 (defmethod element-name       ((entity cons))
-  (html-tag entity))
+  (car entity))
 
 (defmethod element-attributes ((entity cons))
-  (loop :for (k v) :on (html-attributes entity)
+  (loop :for (k v) :on (cadr entity)
         :collect (list k v)))
 
 (defmethod element-children   ((entity cons))
-  (html-contents entity))
+  (cddr entity))
 
 
-(defstruct (attribute (:type list)) name value)
+(defun make-attribute (name value)
+  (list name value))
+
+(defmethod attribute-name  ((attribute cons))
+  (first attribute))
+
+(defmethod attribute-value ((attribute cons))
+  (second attribute))
+
 
 
 ;;; xmls entity name may go in namespaces in which case they're lists: (name namespace).
@@ -224,7 +233,7 @@ In addition to normal elements, there are sgml directives
 
 (defmethod string-single-child-p ((element cons))
   (and (= 1 (length (element-children element)))
-       (stringp (first-child element))))
+       (stringp (element-child element))))
 
 
 
@@ -280,8 +289,8 @@ In addition to normal elements, there are sgml directives
 
 
 (defmethod element-at-path ((element cons) tag-path)
-  (if (null path)
-      root
+  (if (null tag-path)
+      element
       (element-at-path (child-tagged element (first tag-path))
                        (rest tag-path))))
 
