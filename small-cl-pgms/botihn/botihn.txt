@@ -7,7 +7,8 @@
 .. meta::
    :description: Un robot IRC simple pour suivre Hacker News
    :keywords: common lisp,lisp,irc,bot,hacker news,drakma,cl-json,cl-irc,cesarum
-
+   :author: Pascal Bourguignon
+              
 ❡
 
 Écriture d'un robot IRC simple
