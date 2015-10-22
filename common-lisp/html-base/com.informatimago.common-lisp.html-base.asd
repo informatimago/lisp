@@ -55,7 +55,7 @@
                ;; where different definitions of the DEFELEMENT and DEFATTRIBUTE macros
                ;; will process it.
                ;; (:file "html401"        :depends-on ())
-               )
+               (:file "ml-sexp" :depends-on ()))
   #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.html-base.test"))))
 
 ;;;; THE END ;;;;

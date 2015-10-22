@@ -48,9 +48,10 @@
    
    "CHILD-TAGGED"            "CHILDREN-TAGGED"            "GRANDCHILDREN-TAGGED"
    "CHILD-VALUED"            "CHILDREN-VALUED"            "GRANDCHILDREN-VALUED"
-   "CHILD-TAGGED-AND-VALUED" "CHILDREN-TAGGED-AND-VALUED" "GRANDCHILD-TAGGED-AND-VALUED"
+   "CHILD-TAGGED-AND-VALUED" "CHILDREN-TAGGED-AND-VALUED" "GRANDCHILDREN-TAGGED-AND-VALUED"
    
    "ELEMENT-AT-PATH"
+
    "VALUE-TO-BOOLEAN")
   (:documentation "
 
@@ -220,75 +221,75 @@ In addition to normal elements, there are sgml directives
 (defgeneric element-at-path (element tag-path))
 
 
-(defmethod attribute-named ((element cons) attribute-name)
+(defmethod attribute-named (element attribute-name)
   (find attribute-name (element-attributes element)
         :test (function attribute-name-equal-p)
         :key (function attribute-name)))
 
-(defmethod value-of-attribute-named ((element cons) attribute-name)
+(defmethod value-of-attribute-named (element attribute-name)
   (attribute-value (attribute-named element attribute-name)))
 
-(defmethod element-child ((element cons))
+(defmethod element-child (element)
   (first (element-children element)))
 
-(defmethod string-single-child-p ((element cons))
+(defmethod string-single-child-p (element)
   (and (= 1 (length (element-children element)))
        (stringp (element-child element))))
 
 
 
-(defmethod child-tagged ((element cons) tag)
+(defmethod child-tagged (element tag)
   (find tag (element-children element)
         :test (function element-tag-equal-p)
         :key (function element-tag)))
 
-(defmethod children-tagged ((element cons) tag)
+(defmethod children-tagged (element tag)
   (remove tag (element-children element)
           :test-not (function element-tag-equal-p)
           :key (function element-tag)))
 
-(defmethod grandchildren-tagged ((element cons) tag)
+(defmethod grandchildren-tagged (element tag)
   (append (children-tagged element tag)
           (mapcan (lambda (child) (grandchildren-tagged child tag))
                   (element-children element))))
 
 
-(defmethod child-valued ((element cons) attribute value)
+(defmethod child-valued (element attribute value)
   (find-if (lambda (child) (string-equal value (value-of-attribute-named child attribute)))
            (element-children element)))
 
-(defmethod children-valued ((element cons) attribute value)
+(defmethod children-valued (element attribute value)
   (remove-if-not (lambda (child) (string-equal value (value-of-attribute-named child attribute)))
                  (element-children element)))
 
-(defmethod grandchildren-valued ((element cons) attribute value)
+(defmethod grandchildren-valued (element attribute value)
   (append (children-valued element attribute value)
           (mapcan (lambda (child) (grandchildren-valued child attribute value))
                   (element-children element))))
 
 
-(defmethod child-tagged-and-valued ((element cons) tag attribute value)
+(defmethod child-tagged-and-valued (element tag attribute value)
   (find-if (lambda (child)
              (and (consp child)
                   (element-tag-equal-p (element-tag child) tag)
                   (string-equal (value-of-attribute-named child attribute) value)))
            (element-children element)))
 
-(defmethod children-tagged-and-valued ((element cons) tag attribute value)
+(defmethod children-tagged-and-valued (element tag attribute value)
   (remove-if-not (lambda (child)
                    (and (consp child)
                         (element-tag-equal-p (element-tag child) tag)
                         (string-equal (value-of-attribute-named child attribute) value)))
                  (element-children element)))
 
-(defmethod grandchildren-tagged-and-valued ((element cons) tag attribute value)
+(defmethod grandchildren-tagged-and-valued (element tag attribute value)
   (append (children-tagged-and-valued element tag attribute value)
           (mapcan (lambda (child) (grandchildren-tagged-and-valued child tag attribute value))
                   (element-children element))))
 
 
 
-(defmethod element-at-path ((element cons) tag-path)
+(defmethod element-at-path (element tag-path)
   (if (null tag-path)
       element
       (element-at-path (child-tagged element (first tag-path))
