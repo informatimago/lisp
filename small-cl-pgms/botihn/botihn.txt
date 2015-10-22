@@ -1,11 +1,5 @@
 .. comment: -*- mode:rst; coding:utf-8 -*-
 
-
-.. comment: TOP-BEGIN
-.. comment: TOP-END
-.. comment: MENU-BEGIN
-.. comment: MENU-END
-
 ============================================================
 Écriture d'un robot IRC simple
 ============================================================
@@ -367,10 +361,6 @@ Vous pouvez obtenir les sources complets de ce petit exemple à:
   emacs # edit configuration
   make
 
-.. comment: MENU-BEGIN
-.. comment: MENU-END
-.. comment: BOTTOM-BEGIN
-.. comment: BOTTOM-END
-
+.. comment: THE END
   
 

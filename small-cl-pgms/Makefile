@@ -68,20 +68,20 @@ install:install-what-implementation
 
 
 help::
-	@printf $(HELPFORMAT) index.html.in "Generates index.html.in"
+	@printf $(HELPFORMAT) html "Generates html files from .html.in documents."
 index.html.in:init.lisp index.lisp Makefile
-	clisp -norc -q -ansi  -E iso-8859-1  \
+	clisp -norc -q -ansi  -E utf-8  \
 		-x '(progn (setf *load-verbose* nil) (load "index.lisp") (values))' \
 	| tr -d '\015'\
 	| sed -e 's/^;.*//' -e '/^NIL$$/d' \
 	> index.html.in
-index.html:index.html.in
-	find . \( -name index.html.in -o -name aim-8.html.in \) -print | while read file ; do cp -v "$$file" "$$(echo $$file | sed -e 's/\.in$$//')" ; done
-
-wang.html:wang.html.in
-	@cp -av wang.html.in wang.html
-
-#(with-open-file (*STANDARD-OUTPUT* "index.html" :direction :output :if-exists :supersede :if-does-not-exist :create)
+html:index.html.in
+	find . -name \*.html.in -print \
+	| while read file ; do \
+		echo bin/html-wrap-document.lisp \< "$$file" \> "$$(echo $$file | sed -e 's/\.in$$//')" ;\
+		bin/html-wrap-document.lisp < "$$file" > "$$(echo $$file | sed -e 's/\.in$$//')" ;\
+	  done
+.PHONY::html
 
 help::
 	@printf $(HELPFORMAT) what-implementation "Builds the what-implementation executable."
