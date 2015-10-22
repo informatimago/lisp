@@ -78,8 +78,8 @@ index.html.in:init.lisp index.lisp Makefile
 html:index.html.in
 	find . -name \*.html.in -print \
 	| while read file ; do \
-		echo bin/html-wrap-document.lisp \< "$$file" \> "$$(echo $$file | sed -e 's/\.in$$//')" ;\
-		bin/html-wrap-document.lisp < "$$file" > "$$(echo $$file | sed -e 's/\.in$$//')" ;\
+		echo ../tools/html-wrap-document.lisp \< "$$file" \> "$$(echo $$file | sed -e 's/\.in$$//')" ;\
+		../tools/html-wrap-document.lisp < "$$file" > "$$(echo $$file | sed -e 's/\.in$$//')" ;\
 	  done
 .PHONY::html
 

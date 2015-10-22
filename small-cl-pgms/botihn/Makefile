@@ -15,6 +15,7 @@ botihn: com.informatimago.small-cl-pgms.botihn.asd  botihn.lisp generate-applica
 
 doc::
 	pandoc -f rst -t asciidoc < botihn.txt >botihn-fr.asc
-	rst2html $(RSTHTMLOPT) < botihn.txt | ../bin/html-unwrap-document.lisp > botihn-fr.html
+	rst2html $(RSTHTMLOPT) < botihn.txt | ../../tools/html-unwrap-document.lisp > botihn-fr.html.in
+
 
 #### THE END ####
