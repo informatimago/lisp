@@ -33,16 +33,32 @@
 ####****************************************************************************
 
 PREFIX=/usr/local
-TARGETS=index.html wang.html 
 HELPFORMAT="make %-20s \# %s\n"
 
 all::help
 
+# html target is one of the main target: it prepares the files needed
+# for the web site.
 
 help::
-	@printf $(HELPFORMAT) generate "Generate the index.html page."
-generate:$(TARGETS) access-rights clean botihn-page
-.PHONY:: generate
+	@printf $(HELPFORMAT) html "Generates html files from .html.in documents."
+
+index.html.in:init.lisp index.lisp Makefile
+	clisp -norc -q -ansi  -E utf-8  \
+		-x '(progn (setf *load-verbose* nil) (load "index.lisp") (values))' \
+	| tr -d '\015'\
+	| sed -e 's/^;.*//' -e '/^NIL$$/d' \
+	> index.html.in
+
+html-files:index.html.in
+	$(MAKE) $(MFLAGS) -C botihn html
+	find . -name \*.html.in -print \
+	| while read file ; do \
+		echo ../tools/html-wrap-document.lisp \< "$$file" \> "$$(echo $$file | sed -e 's/\.in$$//')" ;\
+		../tools/html-wrap-document.lisp < "$$file" > "$$(echo $$file | sed -e 's/\.in$$//')" ;\
+	  done
+html: html-files access-rights
+.PHONY::html html-files
 
 
 help::
@@ -68,22 +84,6 @@ install:install-what-implementation
 
 
 help::
-	@printf $(HELPFORMAT) html "Generates html files from .html.in documents."
-index.html.in:init.lisp index.lisp Makefile
-	clisp -norc -q -ansi  -E utf-8  \
-		-x '(progn (setf *load-verbose* nil) (load "index.lisp") (values))' \
-	| tr -d '\015'\
-	| sed -e 's/^;.*//' -e '/^NIL$$/d' \
-	> index.html.in
-html:index.html.in
-	find . -name \*.html.in -print \
-	| while read file ; do \
-		echo ../tools/html-wrap-document.lisp \< "$$file" \> "$$(echo $$file | sed -e 's/\.in$$//')" ;\
-		../tools/html-wrap-document.lisp < "$$file" > "$$(echo $$file | sed -e 's/\.in$$//')" ;\
-	  done
-.PHONY::html
-
-help::
 	@printf $(HELPFORMAT) what-implementation "Builds the what-implementation executable."
 wi what-implementation:what-implementation.lisp
 	( echo '(load (compile-file "what-implementation.lisp"))';\
@@ -97,9 +97,6 @@ install-what-implementation:what-implementation
 	cp -p what-implementation $(PREFIX)/bin 2> /dev/null || ( rm $(PREFIX)/bin/what-implementation && cp -p what-implementation $(PREFIX)/bin )
 .PHONY:: install-what-implementation
 
-botihn-page:
-	$(MAKE) $(MFLAGS) -C botihn doc
-.PHONY:: botihn-page
 
 #### THE END ####
 

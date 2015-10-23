@@ -10,12 +10,15 @@ RSTHTMLOPT=\
 
 
 all::botihn
+
 botihn: com.informatimago.small-cl-pgms.botihn.asd  botihn.lisp generate-application.lisp
 	ccl -norc < generate-application.lisp
 
-doc::
+doc::html
 	pandoc -f rst -t asciidoc < botihn.txt >botihn-fr.asc
+
+html::
 	rst2html $(RSTHTMLOPT) < botihn.txt | ../../tools/html-unwrap-document.lisp > botihn-fr.html.in
 
-
+.PHONY:doc html
 #### THE END ####

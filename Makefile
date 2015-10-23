@@ -67,7 +67,6 @@ MODULES= common-lisp clext clmisc  clisp  susv3  rdp
 
 help::
 	@printf $(HELP_FMT) 'show-variables' 'Shows the variables'
-	@printf $(HELP_FMT_2) 'then copy the whole library to '"$(PACKAGES)/$(PACKAGE_PATH)"
 show-variables::
 	@printf $(VAR_FMT) 'Where non-lisp stuff will be installed:'  PREFIX         "$(PREFIX)"
 	@printf $(VAR_FMT) 'Where lisp packages are installed.'       PACKAGES       "$(PACKAGES)"
@@ -116,8 +115,8 @@ install::
 
 
 help::
-	@printf $(HELP_FMT)  'make systems'   'Analyses the sources and generates the ASDF systems.'
-	@printf $(HELP_FMT)  'make summaries' 'Analyses the sources and generates the summary.html files.'
+	@printf $(HELP_FMT)  'systems'   'Analyses the sources and generates the ASDF systems.'
+	@printf $(HELP_FMT)  'summaries' 'Analyses the sources and generates the summary.html files.'
 systems system system.asd summaries summary summary.html:
 	@echo not implemented yet
 	@false
@@ -145,14 +144,20 @@ WEBDOCDIR="$(HOME)/public_html/sites/com.informatimago.www"
 help::
 	@printf $(HELP_FMT)  'doc'           'Generates documentation lispdoc and upload.'
 	@printf $(HELP_FMT)  'documentation' 'Generates the README.pdf file.'
+	@printf $(HELP_FMT)  'html'          'Generates the html files.'
 	@printf $(HELP_FMT)  'lispdoc'       "Generates the lispdoc documentation (in $(WEBDOCDIR))."
 	@printf $(HELP_FMT)  'upload'        "Uploads $(WEBDOCDIR) to the web hosting server."
 
+doc:documentation
 documentation:readme
 readme: README.pdf README.html README.md
-doc-upload:readme lispdoc upload
+doc-upload:documentation lispdoc upload
 lispdoc:$(WEBDOCDIR)/develop/lisp/doc
-.PHONY::documentation readme doc-upload lispdoc
+html:: README.html
+	$(MAKE) $(MFLAGS) -C clext/           html
+	$(MAKE) $(MFLAGS) -C small-cl-pgms/   html
+
+.PHONY::doc documentation readme doc-upload lispdoc html
 
 $(WEBDOCDIR)/develop/lisp/doc:
 	$(MAKE) $(MFLAGS) -C lispdoc 

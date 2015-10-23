@@ -33,7 +33,7 @@
 #*****************************************************************************
 PREFIX=/usr/local
 
-all:: documents
+all:: doc
 
 help::
 	@echo "make iana-character-sets.data # downloads the IANA character sets data file."
@@ -51,12 +51,17 @@ system-graph.eps:system-graph.ps
 
 README.pdf:README system-graph.eps
 	rst2pdf < README > README.pdf
+README.html:README system-graph.eps
+	rst2html < README > README.html
 
-documents:: README.pdf
+doc::documentation
+documentation:: README.pdf
+html:: README.html
 
 compile::
 	./compile.sh
 
 install::
+.PHONY:doc documentation html compile
 
 #### THE END ####
