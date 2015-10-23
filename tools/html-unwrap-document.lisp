@@ -52,7 +52,7 @@
          (princ ,verror *error-output*)
          (terpri *error-output*)
          (terpri *error-output*)
-         #-testing-script (ext:exit 1)))))
+         #+(and clisp (not testing-script)) (ext:exit 1)))))
 
 (redirecting-stdout-to-stderr
   (load (merge-pathnames "quicklisp/setup.lisp" (user-homedir-pathname))))
@@ -67,14 +67,14 @@
  "COM.INFORMATIMAGO.COMMON-LISP.HTML-GENERATOR.HTML" "<")
 
 
-
 (defun unwrap (output class id title description author keywords language document)
-  (unparse-html `(:div (:class ,class
-                        :id ,id
-                        :title ,(or title "")
+  (unparse-html `(:div (:class       ,class
+                        :id          ,id
+                        :title       ,(or title "")
+                        :author      ,(or author "")
                         :description ,(or description "")
-                        :author ,(or author "")
-                        :language ,(or language "en"))
+                        :keywords    ,(or keywords "")
+                        :language    ,(or language "en"))
                    ,@(element-children document))
                 output)
   (values))
@@ -97,12 +97,10 @@
     (unwrap *standard-output* class id title description author keywords language document)))
 
 
-#-testing-script
+#+(and clisp (not testing-script))
 (progn
   (main ext:*args*)
   (ext:exit 0))
 
 (pushnew :testing-script *features*)
 ;;;; THE END ;;;;
-
-
