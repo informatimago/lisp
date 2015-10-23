@@ -1771,6 +1771,9 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
 (defstruct close-tag name attributes)
 
 
+(defun normalize-tag (tag)
+  (intern (string-upcase tag) *tag-package*))
+
 (defstruct html-parser  
   scanner
   token value
@@ -1802,7 +1805,6 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
   ;;        | tag  file  { html-seq: [(first tag)  (rest file)] }
   ;;        | data file  { html-seq: [(first data) (rest file)] } ;
   (loop
-    :with items = '()
     :for synthetic = (case (html-parser-token parser)
                        ((:eof)       nil)
                        ((:pcdata)    (prog1 (html-parser-value parser) 
@@ -1820,13 +1822,8 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
                        ((:open-tag)  (parse-open-tag parser))
                        ((:close-tag) (parse-close-tag parser))
                        (otherwise   (report-error parser "Unexpected token")))
-    :while synthetic :do (push synthetic items)
-    :finally (return (when items
-                       (let ((result '()))
-                         (dolist (item items result)
-                           (setf result (make-html-seq
-                                         :first item
-                                         :rest result))))))))
+    :while synthetic
+    :collect synthetic))
 
 
 (defun parse-definition (parser)
@@ -1837,37 +1834,19 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
   (advance parser)
   (unless (eq :identifier (html-parser-token parser))
     (report-error parser "Expected an identifier"))
-  (let ((ident (html-parser-value parser)))
+  (let ((ident (normalize-tag (html-parser-value parser))))
     (advance parser)
     (if (eq :end-tag (html-parser-token parser))
-        (progn (advance parser) (make-definition :name ident :attributes nil))
-        (let ((attributes (parse-aivs parser)))
+        (progn (advance parser)
+               (make-definition :name ident :attributes nil))
+        (let ((attributes (loop :while (member (html-parser-token parser) '(:string :identifier))
+                                :collect (html-parser-value parser)
+                                :do (advance parser))))
           (if (eq :end-tag (html-parser-token parser))
               (advance parser)
               (report-error parser "Expected a \">\""))
           (make-definition :name ident :attributes attributes)))))
 
-
-#-(and)
-(defun parse-aivs (parser)
-  ;; aivs -->   aiv      { html-seq: [(first aiv) (rest nil) ] }
-  ;;          | aiv aivs { html-seq: [(first aiv) (rest aivs)] } ;
-  ;; aiv  --> attribute | ident | value ;
-  (make-html-seq :first (if (eq :string (html-parser-token parser))
-                            (prog1 (html-parser-value parser) (advance parser))
-                            (parse-attribute parser))
-                 :rest  (when (member (html-parser-token parser)
-                                      '(:string :identifier))
-                          (parse-aivs parser))))
-
-
-(defun parse-aivs (parser)
-  ;; aivs -->   aiv      { html-seq: [(first aiv) (rest nil) ] }
-  ;;          | aiv aivs { html-seq: [(first aiv) (rest aivs)] } ;
-  ;; aiv  --> attribute | ident | value ;
-  (when (member (html-parser-token parser) '(:string :identifier))
-    (make-html-seq :first (prog1 (html-parser-value parser) (advance parser))
-                   :rest  (parse-aivs parser))))
 
 (defun parse-open-tag (parser)
   ;;         | "<" ident ">"
@@ -1878,10 +1857,9 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
   (unless (eq :identifier (html-parser-token parser))
     (report-error parser "Expected a tag identifier"))
   (let ((tag (prog1 (make-open-tag 
-                     :name (prog1 (html-parser-value parser) (advance parser))
-                     :attributes (unless (member (html-parser-token parser) 
-                                                 '(:end-tag :close-end-tag))
-                                   (parse-attributes parser))
+                     :name (prog1 (normalize-tag (html-parser-value parser))
+                             (advance parser))
+                     :attributes (parse-attributes parser)
                      :closed (eq (html-parser-token parser) :close-end-tag))
                (unless (member (html-parser-token parser)
                                '(:end-tag :close-end-tag))
@@ -1896,9 +1874,9 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
   (unless (eq :identifier (html-parser-token parser))
     (report-error parser "Expected a tag identifier")) 
   (prog1 (make-close-tag 
-          :name (prog1 (html-parser-value parser) (advance parser))
-          :attributes (unless (eq :end-tag (html-parser-token parser))
-                        (parse-attributes parser)))
+          :name (prog1 (normalize-tag (html-parser-value parser))
+                  (advance parser))
+          :attributes (parse-attributes parser))
     (unless (eq :end-tag (html-parser-token parser))
       (report-error parser "Expected a \">\""))
     (advance parser)))
@@ -1909,9 +1887,9 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
   ;;                  { html-seq: [(first attribute) (rest nil) ] }
   ;;                | attribute attributes 
   ;;                  { html-seq: [(first attribute) (rest attributes)] };
-  (make-html-seq :first (parse-attribute parser)
-                 :rest  (when (eq (html-parser-token parser) :identifier)
-                          (parse-attributes parser))))
+  (loop
+    :while (member (html-parser-token parser) '(:identifier :string))
+    :collect (parse-attribute parser)))
 
 
 (defun parse-attribute (parser)
@@ -1919,70 +1897,19 @@ DOCUMENTATION:  A string used as documentation string for the macro NAME.
   ;;                  { attribute: [(name ident) (value nil)  ] }
   ;;               | ident "=" value 
   ;;                  { attribute: [(name ident) (value value)] } ;
-  (unless (member (html-parser-token parser) '(eq :identifier :string))
+  (unless (member (html-parser-token parser) '(:identifier :string))
     (report-error parser "Expected an attribute identifier or a string."))
   (make-attribute 
-   :name (prog1 (html-parser-value parser) (advance parser))
-   :value (if (eq :equal (html-parser-token parser))
-              (progn (advance parser)
-                     (unless (member (html-parser-token parser)
-                                     '(:string :identifier))
-                       (report-error parser "Expected an attribute value"))
-                     (prog1 (html-parser-value parser) (advance parser)))
-              nil)))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-(defgeneric parse-tree-to-sexp (html)
-
-  (:documentation "
-Transforms the sequence of HTML tokens, HTML-SEQ structure defined above,
-into a list of tag forms and contents strings.
-")
-  
-  (:method ((self t))  self)
-
-  (:method ((self html-seq))
-    (do ((current self (html-seq-rest current))
-         (result '()))
-        ((not (typep current 'html-seq))
-         (assert (null current))
-         (nreverse result))
-      (push (parse-tree-to-sexp (html-seq-first current)) result)))
-
-  (:method ((self comment))
-    (list :comment
-          '() (parse-tree-to-sexp (comment-data self))))
-
-  (:method ((self foreign))
-    (list :foreign
-          '() (parse-tree-to-sexp (foreign-data self))))
-
-  (:method ((self attribute))
-    (list (intern (string-upcase (attribute-name self)) *tag-package*)
-          (or (attribute-value self) t)))
-
-  (:method ((self open-tag))
-    (list :open
-          (intern (string-upcase (open-tag-name self)) *tag-package*)      
-          (parse-tree-to-sexp (open-tag-attributes self))))
-
-  (:method ((self close-tag))
-    (list :close
-          (intern (string-upcase (close-tag-name self)) *tag-package*)
-          (parse-tree-to-sexp (close-tag-attributes self))))
-
-  (:method ((self definition))
-    (list* :definition
-          '()
-          (intern (string-upcase (definition-name self)) *tag-package*)      
-          (parse-tree-to-sexp (definition-attributes self)))))
-
-
+   :name (prog1 (normalize-tag (html-parser-value parser))
+           (advance parser))
+   :value (clean-attribute (if (eq :equal (html-parser-token parser))
+                               (progn (advance parser)
+                                      (unless (member (html-parser-token parser)
+                                                      '(:string :identifier))
+                                        (report-error parser "Expected an attribute value"))
+                                      (prog1 (string (html-parser-value parser))
+                                        (advance parser)))
+                               (html-parser-value parser)))))
 
 
 (defun clean-attribute (attr)
@@ -1998,42 +1925,76 @@ into a list of tag forms and contents strings.
         (t    attr)))
 
 
-(defun encase (tag-list)
-  "
-Transform a list of tags and content strings, into a :document sexp tree
-according to the :open and (optional) :close elements.
-"
-  ;;     content-list-reversed
-  ;;     ( (tag (attributes)) content-list-reversed)
-  ;;     ( (tag (attributes)) content-list-reversed)
-  ;;     ( (tag (attributes)) content-list-reversed)
-  ;;     ( (tag (attributes)) )
-  (do* ((stack    (list nil))
-        (tag-list tag-list       (cdr tag-list))
-        (tag      (car tag-list) (car tag-list)))
-       ((null tag-list)      `(:document () ,@(nreverse (pop stack))))
-    (cond
-      ((or (atom tag) (member (car tag) '(:comment :foreign :definition)))
-       (push tag (car stack)))
-      ((eq (car tag) :open)
-       (push (cons (second tag)
-                   (list
-                    (mapcan (lambda (kv)
-                              (list (first kv)
-                                    (clean-attribute (second kv))))
-                            (third tag)))) (car stack))
-       (unless (element-end-forbidden-p (second tag))
-         (push nil stack)))
-      ((and (eq (car tag) :close)
-            (position (cadr tag) stack :key (lambda (item)  (and (consp item) 
-                                                                 (consp (car item)) 
-                                                                 (caar item)))))
-       (until (and (consp (caar stack)) (eq (cadr tag) (caaar stack)))
-         (let ((attributes (nreverse (pop stack))))
-           (setf (caar stack) (append (caar stack) attributes))))))))
-;; (eq (car tag) :close) and no corresponding open )))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; (defstruct comment data)
+;; (defstruct foreign data)
+;; (defstruct attribute name value)
+;; (defstruct definition name attributes)
+;; (defstruct open-tag name attributes closed)
+;; (defstruct close-tag name attributes)
+
+(defstruct element name attributes contents closed)
 (defparameter *newline* (string #\newline) "A string containing only a newline.")
+
+(defgeneric unwrap-attribute (attribute)
+  (:method ((attribute attribute))
+    (list (attribute-name attribute) (attribute-value attribute))))
+
+(defgeneric unwrap-element (element)
+  (:method ((element t))
+    element)
+  (:method ((element foreign))
+    (list :foreign () (foreign-data element)))
+  (:method ((element comment))
+    (list :comment () (comment-data element)))
+  (:method ((element definition))
+    (list* :definition ()  (definition-attributes element)))
+  (:method ((element element))
+    (list* (element-name element)
+           (mapcar (function unwrap-attribute) (element-attributes element))
+           (remove *newline* (mapcar (function unwrap-element) (element-contents element))
+                   :test (function equal)))))
+
+
+(defun encase (tok-list)
+  "
+Transform a list of tokens and content strings, into a :document sexp tree
+structured according to the OPEN-TAG and (optional) CLOSE-TAG tokens.
+"
+  (loop
+    :with stack := (list (make-element :name :document))
+    :for tok :in tok-list
+    :do (etypecase tok
+          ((or string comment foreign definition)
+           (push tok (element-contents (car stack))))
+          (open-tag
+           (let ((element (make-element :name (open-tag-name tok)
+                                        :attributes (open-tag-attributes tok)
+                                        :closed (open-tag-closed tok))))
+            (if (element-closed element)
+                (push element (element-contents (car stack)))
+                (push element stack))))
+          (close-tag
+           (if (position (close-tag-name tok) stack :key (function element-name))
+               (loop
+                 :for top := (pop stack)
+                 :do (setf (element-closed top) t
+                           (element-contents top) (nreverse (element-contents top)))
+                     (push top (element-contents (car stack)))
+                 :until (eq (close-tag-name tok) (element-name top)))
+               #|else ignore the unbalanced close tag|#)))
+    :finally (return (loop
+                       :for top := (pop stack)
+                       :do (setf (element-closed top) t
+                                 (element-contents top) (nreverse (element-contents top)))
+                       :while stack
+                       :do (push top (element-contents (car stack)))
+                       :finally (return top)))))
+
+
 
 (defun parse-html-stream (stream &key (verbose nil))
   "
@@ -2044,7 +2005,7 @@ SEE ALSO:           HTML-TAG, HTML-ATTRIBUTES, HTML-ATTRIBUTE, HTML-CONTENTS.
 "
   (let ((name (or (ignore-errors (namestring stream))
                   (princ-to-string stream)))
-        synthetic walked encased)
+        synthetic encased)
     (when verbose
       (format *trace-output* "~&starting parsing of file ~S~%" name))
     (setf synthetic (let ((parser (make-html-parser :scanner (make-html-scanner :source stream))))
@@ -2052,9 +2013,7 @@ SEE ALSO:           HTML-TAG, HTML-ATTRIBUTES, HTML-ATTRIBUTE, HTML-CONTENTS.
                       (advance parser)
                       (parse-file parser)))
     (when verbose (format *trace-output* "~&file ~S parsed~%" name))
-    (setf walked  (remove *newline* (parse-tree-to-sexp synthetic) :test (function equal)))
-    (when verbose (format *trace-output* "~&file ~S walked~%" name))
-    (setf encased (encase walked))
+    (setf encased (unwrap-element (encase  synthetic)))
     (when verbose (format *trace-output* "~&file ~S encased -- done.~%" name))
     encased))
 
