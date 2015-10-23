@@ -52,7 +52,7 @@
          (princ ,verror *error-output*)
          (terpri *error-output*)
          (terpri *error-output*)
-         #-testing-script (ext:exit 1)))))
+         #+(and clisp (not testing-script)) (ext:exit 1)))))
 
 (redirecting-stdout-to-stderr
   (load (merge-pathnames "quicklisp/setup.lisp" (user-homedir-pathname))))
@@ -61,76 +61,7 @@
   (ql:quickload :com.informatimago.common-lisp))
 
 (use-package "COM.INFORMATIMAGO.COMMON-LISP.HTML-PARSER.PARSE-HTML")
-
-(com.informatimago.common-lisp.cesarum.package:add-nickname
- "COM.INFORMATIMAGO.COMMON-LISP.HTML-GENERATOR.HTML" "<")
-
-
-
-(defun clean-text (text)
-  (with-output-to-string (*standard-output*)
-    (with-input-from-string (*standard-input* text)
-      (loop
-        :for last-was-space = nil :then (or ch-is-space (char= ch #\newline))
-        :for ch = (read-char *standard-input* nil nil)
-        :for ch-is-space = (and ch (char= ch #\space))
-        :while ch
-        :do (if ch-is-space
-                (unless last-was-space
-                  (write-char ch))
-                (write-char ch))))))
-
-
-#-(and)
-(<:with-html-output (*standard-output* :kind :html :encoding :utf-8)
-  (<:div (:class "document"
-          :id "small-cl-pgms"
-          :title       "Common-Lisp Small Programs and Tidbits"
-          :author      "Pascal J. Bourguignon"
-          :description "Small Common-Lisp Programs and Tidbits"
-          :keywords    "software,logiciel,programas,GPL,LGPL,Lisp,Common-Lisp")
-
-    (<:h1 () (<:pcdata "Common-Lisp Small Programs and Tidbits"))
-    (<:h2 () (<:pcdata "Downloading the sources"))
-    (<:p ()
-      (<:pcdata (clean-text "The sources of these small Common-Lisp programs can be downloaded via "))
-      (<:a (:href "http://git-scm.com/") (<:pcdata "git"))
-      (<:pcdata ". Use the following command to fetch them:"))
-    (<:pre ()
-      (<:pcdata "
-mkdir com
-git clone https://git.gitorious.org/com-informatimago/com-informatimago.git com/informatimago
-ls com/informatimago/small-cl-pgms
-"))
-
-    (dolist (section  *sections*)
-      (<:h2 () (<:pcdata (clean-text (first section))))
-      (<:p  () (<:pcdata (clean-text (second section))))
-      (dolist (soft (cddr section))
-        (<:h3 () (<:pcdata (clean-text (first soft))))
-        (<:p  () (<:pcdata (clean-text (third soft))))
-        (when (second soft)
-          (<:ul ()
-            (dolist (file (second soft))
-              (<:li ()
-                (if (stringp file)
-                    (<:a (:href file)
-                      (<:pcdata (clean-text file)))
-                    (<:a (:href (first file))
-                      (<:pcdata (clean-text (second file)))))))))))))
-
-
-(defparameter *newline* (format nil "~%"))
-
-(defun remove-newlines (entity)
-  (if (atom entity)
-      entity
-      `(,(html-tag entity)
-        ,(html-attributes entity)
-        ,@(mapcan (lambda (child)
-                    (unless (equal child *newline*)
-                      (list (remove-newlines child))))
-                  (html-contents entity)))))
+(use-package "COM.INFORMATIMAGO.COMMON-LISP.HTML-BASE.ML-SEXP")
 
 
 (defun wrap (output title author description keywords language
@@ -171,31 +102,35 @@ ls com/informatimago/small-cl-pgms
 
 (defun main (&optional arguments)
   (declare (ignore arguments))
-  (let* ((document    (remove-newlines
-                       (find-if (function consp)
-                                (parse-html-stream *standard-input*))))
-         (class       (html-attribute document :class       )))
-    (if (and (eq :div (html-tag document))
-             (equal class "document"))
-        (let ((id          (html-attribute document :id          ))
-              (title       (html-attribute document :title       ))
-              (author      (html-attribute document :author      ))
-              (description (html-attribute document :description ))
-              (keywords    (html-attribute document :keywords    ))
-              (language    (html-attribute document :language    )))
+  (let ((document (child-tagged-and-valued (parse-html-stream *standard-input*) :div "class" "document")))
+    (if document
+        (let ((class       (value-of-attribute-named document :class       ))
+              (id          (value-of-attribute-named document :id          ))
+              (title       (value-of-attribute-named document :title       ))
+              (author      (value-of-attribute-named document :author      ))
+              (description (value-of-attribute-named document :description ))
+              (keywords    (value-of-attribute-named document :keywords    ))
+              (language    (value-of-attribute-named document :language    )))
           (wrap *standard-output*
                 title author description keywords language
                 class id
-                (html-contents document)))
+                (element-children document)))
         (error "Not a <div class=\"document\">…</div> input file."))))
 
 
-#-testing-script
+#+(and clisp (not testing-script))
 (progn
   (main ext:*args*)
   (ext:exit 0))
 
+
 (pushnew :testing-script *features*)
-(with-open-file (*standard-input* #P"aim-8/aim-8.html.in")
-  (parse-html-stream *standard-input*))
+#-(and) (progn
+         (with-open-file (*standard-input* #P"/Users/pjb/public_html/sites/com.informatimago.www/develop/lisp/com/informatimago/small-cl-pgms/botihn/botihn-fr.html.in")
+           (parse-html-stream *standard-input*))
+
+         (with-open-file (*standard-input* #P"/Users/pjb/public_html/sites/com.informatimago.www/develop/lisp/com/informatimago/small-cl-pgms/aim-8/aim-8.html.in")
+           (parse-html-stream *standard-input*)))
+
+
 ;;;; THE END ;;;;
