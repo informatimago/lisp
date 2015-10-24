@@ -1,6 +1,7 @@
 PREFIX=/usr/local
 all::
 doc::
+clean::
 install::
 
 CSS="/default.css"
@@ -17,8 +18,17 @@ botihn: com.informatimago.small-cl-pgms.botihn.asd  botihn.lisp generate-applica
 doc::html
 	pandoc -f rst -t asciidoc < botihn.txt >botihn-fr.asc
 
-html::
+clean::
+	- rm -f botihn-fr.html botihn-fr.html.in
+
+html::botihn-fr.html
+
+html.in::botihn-fr.html.in
+
+botihn-fr.html.in:botihn.txt
 	rst2html $(RSTHTMLOPT) < botihn.txt | ../../tools/html-unwrap-document.lisp > botihn-fr.html.in
+botihn-fr.html:botihn-fr.html.in
+	../../tools/html-wrap-document.lisp < $< > $@ || rm $@
 
 .PHONY:doc html
 #### THE END ####
