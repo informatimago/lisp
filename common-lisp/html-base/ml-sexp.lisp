@@ -144,8 +144,7 @@ In addition to normal elements, there are sgml directives
   (car entity))
 
 (defmethod element-attributes ((entity cons))
-  (loop :for (k v) :on (cadr entity)
-        :collect (list k v)))
+  (cadr entity))
 
 (defmethod element-children   ((entity cons))
   (cddr entity))
@@ -219,9 +218,10 @@ In addition to normal elements, there are sgml directives
 
 
 (defmethod attribute-named (element attribute-name)
-  (find attribute-name (element-attributes element)
-        :test (function attribute-name-equal-p)
-        :key (function attribute-name)))
+  (loop
+    :for (k v) :on (element-attributes element) :by (function cddr)
+    :until (attribute-name-equal-p attribute-name k)
+    :finally (return (list k v))))
 
 (defmethod value-of-attribute-named (element attribute-name)
   (attribute-value (attribute-named element attribute-name)))
