@@ -1,9 +1,5 @@
 .. comment: -*- mode:rst; coding:utf-8 -*-
 
-.. comment: TOP-BEGIN
-.. comment: TOP-END
-.. comment: MENU-BEGIN
-.. comment: MENU-END
 
 ================================================================================
 Stream Pipe
@@ -12,6 +8,7 @@ Stream Pipe
 .. meta::
    :description: A Common Lisp package providing a buffered pipe with input and output streams.
    :keywords: common lisp,lisp,stream,pipe,gray streams,bordeaux-threads
+   :author: Pascal Bourguignon
 
 ❡
 
@@ -185,7 +182,5 @@ distributed in `quicklisp`.
 
 `Informatimago Public Common Lisp Libraries <http://www.informatimago.com/develop/lisp/index.html>`_
 
-.. comment: MENU-BEGIN
-.. comment: MENU-END
-.. comment: BOTTOM-BEGIN
-.. comment: BOTTOM-END
+.. comment: THE END
+   
