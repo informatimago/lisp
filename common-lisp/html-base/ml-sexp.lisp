@@ -138,10 +138,7 @@ In addition to normal elements, there are sgml directives
 (defgeneric attribute-value    (attribute) (:method ((attribute t)) nil))
 
 (defun make-element (tag attributes children)
-  (list* tag
-         (loop :for (k v) :in attributes
-               :collect k :collect v)
-         children))
+  (list* tag attributes children))
 
 (defmethod element-name       ((entity cons))
   (car entity))
