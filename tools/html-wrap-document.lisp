@@ -97,7 +97,7 @@
 <!-- MENU-END -->
 " output)
       (unparse-html  `(:div (:class ,class :id ,id)
-                        ,@contents)
+                        ,@(element-children document))
                      output)
       (write-string "
 <!-- MENU-BEGIN -->
