@@ -128,6 +128,7 @@
 #-(and) (progn
          (with-open-file (*standard-input* #P"/Users/pjb/public_html/sites/com.informatimago.www/develop/lisp/com/informatimago/small-cl-pgms/botihn/botihn-fr.html.in")
            (parse-html-stream *standard-input*))
+         
 
          (with-open-file (*standard-input* #P"/Users/pjb/public_html/sites/com.informatimago.www/develop/lisp/com/informatimago/small-cl-pgms/aim-8/aim-8.html.in")
            (parse-html-stream *standard-input*)))
