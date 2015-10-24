@@ -33,7 +33,7 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
-
+(in-package "COMMON-LISP-USER")
 
 (defmacro redirecting-stdout-to-stderr (&body body)
   (let ((verror  (gensym))
@@ -67,22 +67,8 @@
  "COM.INFORMATIMAGO.COMMON-LISP.HTML-GENERATOR.HTML" "<")
 
 
-(defun unwrap (output class id title description author keywords language document)
-  (unparse-html `(:div (:class       ,class
-                        :id          ,id
-                        :title       ,(or title "")
-                        :author      ,(or author "")
-                        :description ,(or description "")
-                        :keywords    ,(or keywords "")
-                        :language    ,(or language "en"))
-                   ,@(element-children document))
-                output)
-  (values))
-
-
-(defun main (&optional arguments)
-  (declare (ignore arguments))
-  (let* ((html        (child-tagged (parse-html-stream *standard-input*) :html))
+(defun unwrap (input output)
+  (let* ((html        (child-tagged (parse-html-stream input) :html))
          (head        (child-tagged html :head))
          (title       (element-child (child-tagged head :title)))
          (author      (value-of-attribute-named (child-tagged-and-valued head :meta :name "author")      :content))
@@ -94,7 +80,21 @@
          (class       "document")
          (document    (first (grandchildren-tagged-and-valued html :div :class class)))
          (id          (value-of-attribute-named document :id)))
-    (unwrap *standard-output* class id title description author keywords language document)))
+    (unparse-html `(:div (:class       ,class
+                          :id          ,id
+                          :title       ,(or title "")
+                          :author      ,(or author "")
+                          :description ,(or description "")
+                          :keywords    ,(or keywords "")
+                          :language    ,(or language "en"))
+                     ,@(element-children document))
+                  output))
+  (values))
+
+
+(defun main (&optional arguments)
+  (declare (ignore arguments))
+  (unwrap *standard-input* *standard-output*))
 
 
 #+(and clisp (not testing-script))
