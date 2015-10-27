@@ -267,7 +267,7 @@ If PACKAGE is NIL, the rotate *PACKAGE* and the top of the package stack."
     cluser))
 
 
-(defun mkupack (&key name stepper (use nil usep))
+(defun mkupack (&key name stepper (use nil usep) (shadow nil shadowp))
   "
 DO:         Makes a new, temporary, user package like
             COMMON-LISP-USER, and sets *PACKAGE* to it.
@@ -285,21 +285,28 @@ USE:        A package use list to use.  When given, STEPPER is ignored.
   (let ((cl          "COMMON-LISP")
         (pjb         "COM.INFORMATIMAGO.PJB")
         (cl-stepper  "COM.INFORMATIMAGO.COMMON-LISP.LISP.STEPPER")
-        (interactive "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.INTERACTIVE"))
+        (interactive "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.INTERACTIVE")
+        (name        (if name
+                         (string name)
+                         (loop
+                           :for i :from 1 :for p = (format nil "USER~A" i)
+                           :while (find-package p) :finally (return p)))))
     (unless (find-package pjb)
       ;; Create a COM.INFORMATIMAGO.PJB package that reexports INTERACTIVE:
       (let ((pjb  (make-package pjb :use (list cl interactive)))
             (syms (list-external-symbols interactive)))
         (import syms pjb)
         (export syms pjb)))
-    (setf *package*
-          (make-package
-           (if name
-               (string name)
-               (loop
-                 :for i :from 1 :for p = (format nil "USER~A" i)
-                 :while (find-package p) :finally (return p)))
-           :use (if usep use (list (if stepper cl-stepper cl) pjb))))))
+    (setf *package* (make-package name :use '()))
+    (when shadowp
+      (shadow shadow *package*))
+    (if usep
+        (use-package use *package*)
+        (progn
+          (use-package (list (if stepper cl-stepper cl)) *package*)
+          (shadow "ED" *package*)
+          (use-package pjb *package*)))
+    *package*))
 
 
 (defmacro show (&body expressions)
