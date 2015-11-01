@@ -125,7 +125,8 @@
    "STX"  "SU"   "SUB"  "SVS"  "SYN"
    "TAC"  "TALE" "TATE" "TBC"  "TCC"
    "TSR"  "TSS"  "VPA"  "VPB"  "VPR"
-   "VT"   "VTS"  "SPD"  "EL"))
+   "VT"   "VTS"  "SPD"  "EL"
+   "FS" "GS" "RS" "US" "DEL" "PAD" "HOP" "IND" "SGCI"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ECMA048")
 
 

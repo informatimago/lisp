@@ -78,6 +78,7 @@
                          name
                          dummy2 type dummy3 version) 
         (re-exec *logical-pathname-regexp* string :start start :end end)
+      (declare (ignore dummy0 dummy1 dummy2 dummy3))
       (if all
           (list (and host        (re-match-string string host))
                 (if relative :relative :absolute)
@@ -100,37 +101,37 @@
                          (t (parse-integer version :junk-allowed nil))))))
           (error "Syntax error parsing pathname ~S" string)))))
 
+(defun concat* (type list)
+  (let* ((totlen  (reduce (lambda (length item) (+ (length item) length))
+                          list :initial-value 0))
+         (result  (cond
+                    ((or (eq type 'string)
+                         (and (consp type) (eq 'string (first type))))
+                     (make-string totlen))
+                    ((or (eq type 'vector)
+                         (and (consp type) (eq 'vector (first type)))
+                         (eq type 'array)
+                         (and (consp type) (eq 'array (first type))))
+                     (make-array totlen))
+                    ((eq type 'list)
+                     (make-list totlen))
+                    (t (error "Invalid sequence type: ~S" type)))))
+    (loop 
+      :for item :in list
+      :and start = 0 :then (+ start (length item))
+      :do (replace result item :start1 start)
+      :finally (return result))))
 
 (defun match-wild-word-p (item wild)
-  (flet ((concat (type list)
-           (let* ((totlen  (reduce (lambda (length item) (+ (length item) length))
-                                   list :initial-value 0))
-                  (result  (cond
-                             ((or (eq type 'string)
-                                  (and (consp type) (eq 'string (first type))))
-                              (make-string totlen))
-                             ((or (eq type 'vector)
-                                  (and (consp type) (eq 'vector (first type)))
-                                  (eq type 'array)
-                                  (and (consp type) (eq 'array (first type))))
-                              (make-array totlen))
-                             ((eq type 'list)
-                              (make-list totlen))
-                             (t (error "Invalid sequence type: ~S" type)))))
-             (loop 
-               :for item :in list
-               :and start = 0 :then (+ start (length item))
-               :do (replace result item :start1 start)
-               :finally (return result)))))
-    (re-match 
-     (concat 'string
-             (cons "^"
-                   (nconc
-                    (loop 
-                      :for chunks :on (split-sequence #\* wild) 
-                      :collect (car chunks) :when (cdr chunks) :collect ".*")
-                    (list "$"))))
-     item)))
+  (re-match 
+   (concat* 'string
+            (cons "^"
+                  (nconc
+                   (loop 
+                     :for chunks :on (split-sequence #\* wild) 
+                     :collect (car chunks) :when (cdr chunks) :collect ".*")
+                   (list "$"))))
+   item))
 
 
 ;;;---------------------------------------------------------------------
@@ -187,6 +188,7 @@
 #+emacs (put 'define-pathname-attribute 'lisp-indent-function 1)
 (defmacro define-pathname-attribute (name &optional docstring)
   `(defun ,(intern (format nil "PATHNAME-~A" name)) (pathname &key (case :local))
+     (declare (ignore case))
      ,@(when docstring (list docstring))
      (,(intern (format nil "%PATHNAME-~A" name)) (pathname pathname))))
 
@@ -278,8 +280,8 @@ file). Implementations can define other special version symbols.")
                      ((eql :wild host)       'pathname)
                      ((logical-host-p host)  'logical-pathname)
                      (t                      'pathname))
-        :host host :directory (cons relative directory)
-        :name name :type type :version version)))
+                   :host host :directory (cons relative directory)
+                   :name name :type type :version version)))
 
 
 
@@ -325,6 +327,7 @@ file). Implementations can define other special version symbols.")
 
 
 (defun enough-namestring (pathname &optional defaults)
+  (declare (ignore pathname defaults))
   (error "enough-namestring not implemented yet"))
 
 
@@ -341,6 +344,7 @@ file). Implementations can define other special version symbols.")
 
 (defun make-pathname (&key host device directory name type version (case :local)
                         (defaults nil defaults-p))
+  (declare (ignore case))
   (cond ((stringp directory)  (setf directory (list :absolute directory)))
         ((eq :wild directory) (setf directory (list :absolute :wild-inferiors))))
   (let ((host (check-host (or host (if defaults-p
@@ -350,12 +354,12 @@ file). Implementations can define other special version symbols.")
                      ((eql :wild host)       'pathname)
                      ((logical-host-p host)  'logical-pathname)
                      (t                      'pathname))
-        :host        host
-        :device      (or device    (and defaults (pathname-device    defaults)))
-        :directory   (or directory (and defaults (pathname-directory defaults)))
-        :name        (or name      (and defaults (pathname-name      defaults)))
-        :type        (or type      (and defaults (pathname-type      defaults)))
-        :version     (or version   (and defaults (pathname-version   defaults))))))
+                   :host        host
+                   :device      (or device    (and defaults (pathname-device    defaults)))
+                   :directory   (or directory (and defaults (pathname-directory defaults)))
+                   :name        (or name      (and defaults (pathname-name      defaults)))
+                   :type        (or type      (and defaults (pathname-type      defaults)))
+                   :version     (or version   (and defaults (pathname-version   defaults))))))
 
 
 
@@ -400,7 +404,7 @@ RETURN: The logical pathname translations for the HOST.
                                             :name host
                                             :type "TRANSLATIONS"
                                             :version :newest)
-                             :if-does-not-exist nil)
+                        :if-does-not-exist nil)
         (if input
             (setf (logical-pathname-translations host) (read input nil nil))
             (error "No logical pathname translation file found for host ~S"
@@ -432,7 +436,7 @@ RETURN: The logical pathname translations for the HOST.
                                           (pathname-host thing :case :common)
                                           default-host))))
       (string
-       (if (string= thing "" :start start :end end)
+       (if (string= thing "" :start1 start :end1 end)
            (values (make-instance 'pathname :host nil :directory nil :name nil :type nil :version nil)
                    start)
            ;; TODO: implement junk-allowed
@@ -450,8 +454,8 @@ RETURN: The logical pathname translations for the HOST.
                                        ((eql :wild host)       'pathname)
                                        ((logical-host-p host)  'logical-pathname)
                                        (t                      'pathname))
-                          :host host :directory (cons relative directory)
-                          :name name :type type :version version)
+                                     :host host :directory (cons relative directory)
+                                     :name name :type type :version version)
                       (or end (length thing)))))
                  (values nil start))))))))
 
@@ -493,11 +497,12 @@ RETURN: The logical pathname translations for the HOST.
       (and (stringp item) (stringp wild) (string= item wild))))
 
 (defun match-directory-items-p (item wild)
-  (or (null item wild)
+  (or (null item)
+      (null wild) 
       (if (eq (first wild) :wild-inferiors) 
           (loop
             :for rest :on item
-            :thereis (match-directory-items-p rest (rest wild)))
+              :thereis (match-directory-items-p rest (rest wild)))
           (and (match-item-p (first item) (first wild) t)
                (match-directory-items-p (rest item) (rest wild))))))
 
@@ -546,6 +551,8 @@ RETURN: The logical pathname translations for the HOST.
   (assert-type source        '(or string pathname file-stream))
   (assert-type from-wildcard '(or string pathname file-stream))
   (assert-type to-wildcard   '(or string pathname file-stream))
+  (error "NOT IMPLEMENTED YET")
+  #-(and)
   (let ((source        (pathname-components (pathname source)))
         (from-wildcard (pathname-components (pathname from-wildcard)))
         (to-wildcard   (pathname-components (pathname to-wildcard))))
@@ -554,10 +561,7 @@ RETURN: The logical pathname translations for the HOST.
       :for s-compo :in source
       :for f-compo :in from-wildcard
       :for t-compo :in to-wildcard
-      :collect (if dirp
-                   
-                   
-                   ))))
+      :collect :to-be-done)))
 
 
 
@@ -571,7 +575,7 @@ RETURN: The logical pathname translations for the HOST.
       ""))
 
 (defun test ()
-  (let* ((source "CRACKBOOMHUH")
+  (let* (;; (source "CRACKBOOMHUH")
          (source "FOOZIMBAR")
          (from      (split-sequence #\* "FOO*BAR"))
          (to        (split-sequence #\* "Z(O)OM*ZOOM"))
@@ -593,16 +597,16 @@ RETURN: The logical pathname translations for the HOST.
 
 (defun delete-back (dir)
   (loop
-    :with changed = t
+    :with changed := t
     :while changed
     :do (loop 
-          :for cur = dir :then (cdr cur)
-          :initially (setf changed nil)
+          :for cur := dir :then (cdr cur)
+            :initially (setf changed nil)
           :do (when (and (or (stringp (cadr cur)) (eq :wild (cadr cur)))
                          (eq :back (caddr cur)))
                 (setf (cdr cur) (cdddr cur)
-                      changed t)))
-    :finally (return dir)))
+                      changed t))))
+  dir)
 
 
 (defun merge-pathnames (pathname 

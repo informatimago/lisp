@@ -142,6 +142,7 @@ Use (GRAMMAR-NAMED name) to look up a grammar.")
   (setf (gethash (grammar-name grammar) *grammars*) grammar))
 
 
+#-sbcl
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setf (documentation 'seq t) "
 
@@ -200,8 +201,6 @@ Parses one of the terms (the first set of all the terms must be disjoint).
 Returns parsed term.
 
 "))
-
-
 
 
 (defgeneric generate-boilerplate (target-language grammar &key trace)
@@ -904,6 +903,12 @@ RETURN: the new production set; the new non-terminal set
 ;;; actions := ( <form>* ) .
 ;;; ε is represented as (seq () ('nil))
 
+
+(defgeneric add-production (grammar non-terminal rhs))
+(defgeneric remove-production (grammar non-terminal rhs))
+(defgeneric eliminate-left-recursion (grammar))
+(defgeneric eliminate-left-recursive-p (grammar))
+
 (defmethod add-production ((grammar grammar) non-terminal rhs)
   (assert (not (terminalp grammar non-terminal)))
   (push (list non-terminal rhs) (grammar-rules grammar))
@@ -945,7 +950,6 @@ RETURN: the new production set; the new non-terminal set
     :finally (compute-all-non-terminals grammar))
   grammar)
 
-
 (defmethod eliminate-left-recursive-p ((grammar normalized-grammar))
   (error "Not implemented yet."))
 
@@ -961,6 +965,8 @@ RETURN: the new production set; the new non-terminal set
 (defgeneric gen-scanner-class-name      (target grammar))
 (defgeneric gen-parse-function-name     (target grammar non-terminal))
 (defgeneric generate-parsing-expression (target grammar non-terminal item))
+(defgeneric generate-parsing-sequence (target grammar non-terminal rhs))
+(defgeneric generate-non-terminal-parsing-expression (target grammar non-terminal))
 
 ;;;------------------------------------------------------------
 ;;; Scanner generator
@@ -1285,7 +1291,6 @@ should be bound for actions.
     ((eql 'seq (rhs-operator rhs))
      (generate-parsing-sequence target grammar non-terminal rhs))
     (t (error "Invalid item ~S found in rule for ~S" rhs non-terminal))))
-
 
 (defmethod generate-non-terminal-parsing-expression ((target (eql :lisp)) (grammar normalized-grammar) non-terminal)
   (let* ((rhses   (find-rhses grammar non-terminal))

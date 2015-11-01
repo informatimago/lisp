@@ -102,6 +102,7 @@
              (dump v stream (concatenate 'string level *dump-indent*)))
            (entries self)))
 
+(defgeneric select-entries (self predicate))
 (defmethod select-entries ((self t) predicate)
   (declare (ignorable self predicate))
   '())
@@ -114,9 +115,11 @@
                (when (funcall predicate v) (push v result))) (entries self))
     result))
 
+(defgeneric entry-name (self))
 (defmethod entry-name ((self fs-directory)) 
   (name self))
 
+(defgeneric entry-named (self name))
 (defmethod entry-named ((self t) (name string))
   (error "~A is not a directory" (pathname self)))
 
@@ -124,6 +127,7 @@
   (gethash name (entries self)))
 
 
+(defgeneric entry-at-path (self path))
 (defmethod entry-at-path ((self t) path)
   (declare (ignorable path))
   (error "~S is not a directory" self))
@@ -137,6 +141,7 @@
             (entry-at-path entry (cdr path))))))
 
 
+(defgeneric add-entry (self entry))
 (defmethod add-entry ((self fs-directory) (entry fs-item))
   (let ((name (entry-name entry)))
     (if (entry-named self name)
@@ -144,6 +149,7 @@
         (setf (parent entry)                self
               (gethash name (entries self)) entry))))
 
+(defgeneric remove-entry-named (self name))
 (defmethod remove-entry-named ((self fs-directory) (name string))
   (if (entry-named self name)
       (remhash name (entries self))
@@ -195,10 +201,15 @@
 (defmethod entry-name ((self fs-file)) 
   (format nil "~A.~A" (name self) (type self)))
 
+(defgeneric author (self))
+(defgeneric write-date (self))
+(defgeneric element-type (self))
+
 (defmethod author       ((self fs-file)) (author       (newest self)))
 (defmethod write-date   ((self fs-file)) (write-date   (newest self)))
 (defmethod element-type ((self fs-file)) (element-type (newest self)))
 
+(defgeneric select-versions (self predicate))
 (defmethod select-versions ((self fs-file) predicate)
   (let ((result '()))
     (maphash (lambda (k v) 
@@ -281,6 +292,7 @@ DO: Delete only the specified version.
   "The name or identification of the user.")
 
 
+(defgeneric create-new-version (self &key element-type))
 (defmethod create-new-version ((self fs-file) &key (element-type 'character))
   "
 DO:     Add a new version to the file.
@@ -288,13 +300,13 @@ RETURN: The FS-FILE.
 "
   (setf (newest self)
         (make-instance 'file-contents
-            :version (1+ (if (null (newest self)) 0 (version (newest self))))
-            :author *author*
-            :write-date (get-universal-time)
-            :element-type element-type
-            :contents (make-array 0 :fill-pointer 0 :adjustable t
-                                  :element-type element-type)
-            :file self))
+                       :version (1+ (if (null (newest self)) 0 (version (newest self))))
+                       :author *author*
+                       :write-date (get-universal-time)
+                       :element-type element-type
+                       :contents (make-array 0 :fill-pointer 0 :adjustable t
+                                               :element-type element-type)
+                       :file self))
   (setf (gethash (version (newest self)) (versions self)) (newest self))
   self)
 
@@ -352,6 +364,7 @@ RETURN: The FS-FILE.
         (error "There's no file system named ~S" (pathname-host fspath)))))
 
 
+(defgeneric create-directories-at-path (self path &optional created))
 (defmethod create-directories-at-path ((self fs-directory) path
                                        &optional created)
   (if (null path)

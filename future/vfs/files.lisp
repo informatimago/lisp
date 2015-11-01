@@ -166,6 +166,7 @@ COMMON-LISP: probe-file tests whether a file exists.
 (defun file-write-date   (path) (write-date   (file-entry (truename path))))
 (defun file-element-type (path) (element-type (file-entry (truename path))))
 
+(defgeneric rename-entry (self newpath))
 (defmethod rename-entry ((self fs-file) newpath)
   ;; rename the whole file
   (when (ignore-errors (probe-file newpath))
@@ -189,10 +190,12 @@ COMMON-LISP: probe-file tests whether a file exists.
           (gethash (version self) (versions file)) self)
     self))
 
+(defgeneric delete-entry (self))
 (defmethod delete-entry ((self fs-file))
   ;; delete the whole file
   (remove-entry-named (parent self) (pathname-entry-name self)))
 
+(defgeneric remove-version (self version))
 (defmethod remove-version ((self fs-file) version)
   (remhash version (versions self))
   (when (= version (version (newest self)))

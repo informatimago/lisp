@@ -36,7 +36,7 @@
 ;;;;****************************************************************************
 
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.HTML-PARSER.PARSE-HTML"
-   (:use "COMMON-LISP"
+  (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
@@ -66,8 +66,7 @@
                                  "PRINT-NOT-READABLE-OBJECT")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING" "UNSPLIT-STRING"
                 "SPLIT-STRING" "STRING-REPLACE")
-  (:export "HTML-ATTRIBUTE" "HTML-CONTENTS" "HTML-ATTRIBUTES" "HTML-TAG"
-           "UNPARSE-HTML" "WRITE-HTML-TEXT"
+  (:export "UNPARSE-HTML" "WRITE-HTML-TEXT"
            "PARSE-HTML-STREAM" "PARSE-HTML-STRING" "PARSE-HTML-FILE")
   (:documentation "
 
@@ -641,7 +640,7 @@ structured according to the OPEN-TAG and (optional) CLOSE-TAG tokens.
 DO:                 Parse the HTML stream STREAM.
 VERBOSE:            When true, writes some information in the *TRACE-OUTPUT*.
 RETURN:             A list of html elements.
-SEE ALSO:           HTML-TAG, HTML-ATTRIBUTES, HTML-PATTRIBUTE, HTML-CONTENTS.
+SEE ALSO:           ELEMENT-TAG, ELEMENT-ATTRIBUTES, ATTRIBUTE-NAMED, ELEMENT-CHILDREN.
 "
   (let ((name (or (ignore-errors (namestring stream))
                   (princ-to-string stream)))
@@ -664,7 +663,7 @@ DO:                 Parse the HTML file PATHNAME.
 VERBOSE:            When true, writes some information in the *TRACE-OUTPUT*.
 EXTERNAL-FORMAT:    The external-format to use to open the HTML file.
 RETURN:             A list of html elements.
-SEE ALSO:           HTML-TAG, HTML-ATTRIBUTES, HTML-PATTRIBUTE, HTML-CONTENTS.
+SEE ALSO:           ELEMENT-TAG, ELEMENT-ATTRIBUTES, ATTRIBUTE-NAMED, ELEMENT-CHILDREN.
 "
   (with-open-file (src pathname :direction :input 
                                 :if-does-not-exist :error
@@ -677,7 +676,7 @@ SEE ALSO:           HTML-TAG, HTML-ATTRIBUTES, HTML-PATTRIBUTE, HTML-CONTENTS.
 DO:                 Parse the HTML in the STRING (between START and END)
 VERBOSE:            When true, writes some information in the *TRACE-OUTPUT*.
 RETURN:             A list of html elements.
-SEE ALSO:           HTML-TAG, HTML-ATTRIBUTES, HTML-PATTRIBUTE, HTML-CONTENTS.
+SEE ALSO:           ELEMENT-TAG, ELEMENT-ATTRIBUTES, ATTRIBUTE-NAMED, ELEMENT-CHILDREN.
 " 
   (when verbose
     (format *trace-output* "~&starting string parsing from ~D~%" start))
@@ -685,19 +684,6 @@ SEE ALSO:           HTML-TAG, HTML-ATTRIBUTES, HTML-PATTRIBUTE, HTML-CONTENTS.
     (parse-html-stream src :verbose verbose)))
 
 
-
-(defun html-tag        (html)
-  "RETURN: The TAG of the HTML element."
-  (first  html))
-(defun html-attributes (html)
-  "RETURN: The PATTRIBUTES of the HTML element."
-  (second html))
-(defun html-contents   (html)
-  "RETURN: The CONTENTS of the HTML element."
-  (cddr   html))
-(defun html-pattribute  (html key)
-  "RETURN: The PATTRIBUTE named KEY in the HTML element."
-  (cadr (member key (second html))))
 
 
 (defparameter *nl* (make-hash-table)
@@ -716,11 +702,11 @@ to a list of two elements:
   to format the element as (reStructured)text.
 ")
 
-(defun html-tag-key (html)
-  (intern (string (html-tag html)) *tag-package*))
+(defun element-key (html)
+  (intern (string (element-tag html)) *tag-package*))
 
 (defun must-new-line (html where)
-  (member where (first (gethash (html-tag-key html) *nl*))))
+  (member where (first (gethash (element-key html) *nl*))))
 
 
 (defun write-text (element)
@@ -729,7 +715,7 @@ to a list of two elements:
     (atom   (princ element))
     (otherwise
      (flet ((write-it ()
-              (let ((entry (gethash (html-tag element) *nl*)))
+              (let ((entry (gethash (element-tag element) *nl*)))
                 (if (second entry)
                     (funcall (second entry) element)
                     (progn
@@ -739,10 +725,10 @@ to a list of two elements:
                       (princ element)
                       (when (intersection '(:bc :ac) (first entry))
                         (terpri)))))))
-       (cond ((member (html-tag element) '(:foreign :definition :comment)
+       (cond ((member (element-tag element) '(:foreign :definition :comment)
                       :test (function string-equal))
               #|ignore|#)
-             ((member (html-tag element) '(:pre :quote :address)
+             ((member (element-tag element) '(:pre :quote :address)
                       :test (function string-equal))
               (let ((*pre* t))
                 (write-it)))
@@ -750,7 +736,7 @@ to a list of two elements:
               (write-it)))))))
 
 (defun write-children-text (self)
-  (dolist (child (html-contents self))
+  (dolist (child (element-children self))
     (write-text child)))
 
 (defun write-nothing (self)
@@ -841,7 +827,7 @@ to a list of two elements:
 (define-element-writer i                ()                 (write-parenthesized-children self "/" "/"))
 (define-element-writer iframe           (:bo :ao :bc :ac)  :children)
 (define-element-writer img              (:bo :ac)
-  (let ((alt (html-pattribute self :alt)))
+  (let ((alt (attribute-named self :alt)))
     (when alt (princ alt))))
 (define-element-writer input            (:bo :ac)          :children)
 (define-element-writer ins              ()                 :children)
@@ -918,18 +904,18 @@ to a list of two elements:
 
 
 (defvar *row-kind* :body)
-(defstruct row   kind tag pattributes cells)
-(defstruct cell           pattributes lines)
+(defstruct row   kind tag attributes cells)
+(defstruct cell           attributes lines)
 
 
 (defun collect-table-cells (element)
   (when (listp element)
-    (case (html-tag element)
+    (case (element-tag element)
       ((:table)  (let ((*row-kind* :body)
                        (rows       '()))
-                   (dolist (child (html-contents element) rows)
+                   (dolist (child (element-children element) rows)
                      (when (listp child)
-                       (case (html-tag child)
+                       (case (element-tag child)
                          ((:thead :tbody) (appendf rows (collect-table-cells child)))
                          ((:th :tr)       (appendf rows (list (collect-table-cells child))))
                          ((:caption :col :colgroup) #| ignore for now |#)
@@ -940,14 +926,14 @@ to a list of two elements:
                    (collect-table-cells element)))
       ((:th :tr) (make-row
                   :kind       *row-kind*
-                  :tag        (html-tag element)
-                  :attributes (html-attributes element)
+                  :tag        (element-tag element)
+                  :attributes (element-attributes element)
                   :cells      (mapcar (function collect-table-cells)
                                       (remove-if-not (lambda (element)
                                                        (and (listp element)
-                                                            (eql :td (html-tag element))))
-                                                     (html-contents element)))))
-      ((:td)     (make-cell :attributes (html-attributes element)
+                                                            (eql :td (element-tag element))))
+                                                     (element-children element)))))
+      ((:td)     (make-cell :attributes (element-attributes element)
                             :lines      (split-string (with-output-to-string (*standard-output*)
                                                         (write-children-text element))
                                                       #(#\newline))))
@@ -1019,9 +1005,9 @@ Some reStructuredText formating is used.
 Simple tables are rendered, but colspan and rowspan are ignored.
 "
   (let ((*standard-output* stream))
-    (if (string-equal (html-tag html) :document)
-        (dolist (item (html-contents html))
-          (write-text item))
+    (if (string-equal (element-tag html) :document)
+        (dolist (child (element-children html))
+          (write-text child))
         (write-text html))))
 
 
@@ -1043,33 +1029,33 @@ Simple tables are rendered, but colspan and rowspan are ignored.
         (cond
           ((atom html)
            (format stream "~A" html))
-          ((string-equal (html-tag html) :document)
+          ((string-equal (element-tag html) :document)
            ;; (:document nil …)
-           (dolist (item (html-contents html))
-             (unparse-html item stream)))
-          ((string-equal (html-tag html) :foreign)
+           (dolist (child (element-children html))
+             (unparse-html child stream)))
+          ((string-equal (element-tag html) :foreign)
            ;; (:foreign nil "<?xml version=\"1.0\" encoding=\"utf-8\" ?>")
            (format stream "~&~{~A~}~%" (element-children html)))
-          ((string-equal (html-tag html) :comment)
+          ((string-equal (element-tag html) :comment)
            ;; (:foreign nil "<?xml version=\"1.0\" encoding=\"utf-8\" ?>")
            (format stream "~&<!--~{~A~}-->~%" (element-children html)))
-          ((string-equal (html-tag html) :definition)
+          ((string-equal (element-tag html) :definition)
            ;; (:definition () :doctype "html" "PUBLIC" "-//W3C//DTD XHTML 1.0 Transitional//EN"
            ;;                        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd")
            (format stream "~&<!~{~A~^ ~}>~%" (cddr html)))
           (t
-           (let ((nl (first (gethash (html-tag-key html) *nl*))))
+           (let ((nl (first (gethash (element-key html) *nl*))))
              (format stream "~:[~;~&~]<~A~{ ~A=~S~}>~:[~;~&~]" 
                      (member :bo nl)
-                     (tag-case (html-tag html))
+                     (tag-case (element-tag html))
                      (loop :for (attr val) :on (element-attributes html) :by (function cddr)
                            :nconc (list (tag-case attr) val))
                      (member :ao nl))
-             (dolist (item (html-contents html))
-               (unparse-html item stream))
+             (dolist (child (element-children html))
+               (unparse-html child stream))
              (format stream "~:[~;~&~]</~A>~:[~;~&~]"
                      (member :bc nl)
-                     (tag-case (html-tag html))
+                     (tag-case (element-tag html))
                      (member :ac nl)))))))))
 
 ;;;; THE END ;;;;

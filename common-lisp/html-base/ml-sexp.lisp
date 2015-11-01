@@ -46,12 +46,12 @@
    "ELEMENT-CHILD"
    "STRING-SINGLE-CHILD-P"
    
-   "CHILD-TAGGED"            "CHILDREN-TAGGED"            "GRANDCHILDREN-TAGGED"
-   "CHILD-VALUED"            "CHILDREN-VALUED"            "GRANDCHILDREN-VALUED"
-   "CHILD-TAGGED-AND-VALUED" "CHILDREN-TAGGED-AND-VALUED" "GRANDCHILDREN-TAGGED-AND-VALUED"
+   "CHILD-TAGGED"         "CHILD-VALUED"         "CHILD-TAGGED-AND-VALUED"
+   "CHILDREN-TAGGED"      "CHILDREN-VALUED"      "CHILDREN-TAGGED-AND-VALUED"
+   "GRANDCHILD-TAGGED"    "GRANDCHILD-VALUED"    "GRANDCHILD-TAGGED-AND-VALUED"
+   "GRANDCHILDREN-TAGGED" "GRANDCHILDREN-VALUED" "GRANDCHILDREN-TAGGED-AND-VALUED"
    
    "ELEMENT-AT-PATH"
-
    "VALUE-TO-BOOLEAN")
   (:documentation "
 
@@ -206,13 +206,25 @@ In addition to normal elements, there are sgml directives
 (defgeneric children-tagged (element tag))
 (defgeneric grandchildren-tagged (element tag))
 
+(defgeneric grandchild-tagged (element tag)
+  (:method (element tag)
+    (first (grandchildren-tagged element tag))))
+
 (defgeneric child-valued (element attribute value))
 (defgeneric children-valued (element attribute value))
 (defgeneric grandchildren-valued (element attribute value))
 
+(defgeneric grandchild-valued (element attribute value)
+  (:method (element attribute value)
+    (first (grandchildren-valued element attribute value))))
+
 (defgeneric child-tagged-and-valued (element tag attribute value))
 (defgeneric children-tagged-and-valued (element tag attribute value))
-(defgeneric grandchild-tagged-and-valued (element tag attribute value))
+(defgeneric grandchildren-tagged-and-valued (element tag attribute value))
+
+(defgeneric grandchild-tagged-and-valued (element tag attribute value)
+  (:method (element tag attribute value)
+    (first (grandchildren-tagged-and-valued element tag attribute value))))
 
 (defgeneric element-at-path (element tag-path))
 

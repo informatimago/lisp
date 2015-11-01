@@ -161,6 +161,7 @@
                  (alt (seq prefixexp args)
                       (seq prefixexp ":" Name args)))
 
+            #-(and)
             (--> callpart
                  (seq (opt (seq ":" name)) args))
 

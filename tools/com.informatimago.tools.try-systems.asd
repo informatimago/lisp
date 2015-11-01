@@ -32,11 +32,6 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (if (find-package "UIOP")
-      (push :uiop *features*)
-      (setf *features* (remove :uiop *features*))))
-
 #+mocl
 (asdf:defsystem "com.informatimago.tools.try-systems"
   :description "Tries to compile systems like in quicklisp validation compilations."
@@ -70,9 +65,11 @@ by forking an sbcl instance per system.
   :depends-on ("com.informatimago.common-lisp.cesarum"
                "com.informatimago.tools.source"
                "com.informatimago.tools.script"
-               "split-sequence") 
-  :components ((:file "dummy-uiop")
-               (:file "try-systems" :depends-on ("dummy-uiop")))
+               "split-sequence"
+               "uiop")
+  :components (;; (:file "dummy-uiop")
+               (:file "try-systems" :depends-on (;; "dummy-uiop"
+                                                 )))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8)
 
 

@@ -69,19 +69,9 @@
 
 
 ;; Macros are taken from clisp sources, and adapted.
-(eval-when (:execute :compile-toplevel :load-toplevel)
- (defun parse-body (body)
-   (values (extract-body body) 
-           (let ((decls '()))
-             (maphash 
-              (lambda (k v) 
-                (setf decls (nconc (mapcar (lambda (d) (cons k v)) v) decls)))
-              (declarations-hash-table (extract-declarations body)))
-             decls))))
-
  
 (defmacro with-open-file ((stream &rest options) &body body)
-  (multiple-value-bind (body-rest declarations)  (parse-body body)
+  (multiple-value-bind (body-rest declarations)  (parse-body :locally body)
     `(let ((,stream (open ,@options)))
        (declare (read-only ,stream) ,@declarations)
        (unwind-protect
@@ -91,7 +81,7 @@
 
 
 (defmacro with-open-stream ((var stream) &body body)
-  (multiple-value-bind (body-rest declarations) (parse-body body)
+  (multiple-value-bind (body-rest declarations) (parse-body :locally body)
     `(let ((,var ,stream))
        (declare (read-only ,var) ,@declarations)
        (unwind-protect
@@ -102,7 +92,7 @@
 (defmacro with-input-from-string ((var string  &key (index nil sindex) 
                                        (start '0 sstart) (end 'nil send))
                                   &body body)
-  (multiple-value-bind (body-rest declarations) (parse-body body)
+  (multiple-value-bind (body-rest declarations) (parse-body :loally body)
     `(let ((,var (make-string-input-stream 
                   ,string
                   ,@(if (or sstart send)
@@ -118,7 +108,7 @@
 (defmacro with-output-to-string ((var &optional (string nil)
                                       &key (element-type ''character))
                                  &body body)
-  (multiple-value-bind (body-rest declarations) (parse-body body)
+  (multiple-value-bind (body-rest declarations) (parse-body :locally body)
     (if string
         (let ((ignored-var (gensym)))
           `(let ((,var (make-instance 'string-output-stream :string ,string))

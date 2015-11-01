@@ -607,8 +607,10 @@ RETURN: SELF
      (set-sprite-data self
                       (mapcar (lambda (frame) (split-string frame *new-line*))
                               sprite-data)))
-    ((and (consp sprite-data) (consp (car sprite-data)) (or (stringp (caar sprite-data))
-                                                            (consp (caar sprite-data))))
+    ((and (consp sprite-data)
+          (consp (car sprite-data))
+          (or (stringp (caar sprite-data))
+              (consp (caar sprite-data))))
      (let ((new-data
              (make-array
               (list (length sprite-data)
@@ -640,7 +642,7 @@ RETURN: SELF
                                   ((stringp cur-char) (aref cur-char 0))
                                   ((numberp cur-char) (code-char cur-char))
                                   ((symbolp cur-char)
-                                   (aref (symbol-sprite-name cur-char) 0))
+                                   (aref (sprite-name cur-char) 0))
                                   (t (error "~S is not a character!" cur-char))
                                   )))
                      (loop for x from 0 below (array-dimension new-data 2)
@@ -653,7 +655,7 @@ RETURN: SELF
                                       ((stringp cur-char) (aref cur-char 0))
                                       ((numberp cur-char) (code-char cur-char))
                                       ((symbolp cur-char)
-                                       (aref (symbol-sprite-name cur-char) 0))
+                                       (aref (sprite-name cur-char) 0))
                                       (t (error "~S is not a character!"
                                                 cur-char))
                                       ))))))

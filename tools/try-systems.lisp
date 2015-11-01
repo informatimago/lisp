@@ -40,7 +40,10 @@
         "SPLIT-SEQUENCE"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE"
         "COM.INFORMATIMAGO.TOOLS.ASDF-FILE"
-        "COM.INFORMATIMAGO.TOOLS.SCRIPT"))
+        "COM.INFORMATIMAGO.TOOLS.SCRIPT")
+  (:export
+   "TRY-SYSTEMS-IN-DIRECTORY"
+   "TRY-SYSTEMS"))
 (in-package "COM.INFORMATIMAGO.TOOLS.TRY-SYSTEMS")
 
 (defmacro in-home (relative-path)
@@ -206,5 +209,8 @@
 (let ((*package* (load-time-value (find-package "KEYWORD"))))
   (format t "~2%;; Usage:~2%~S~2%"
           '(try-systems-in-directory #P"~/src/public/lisp/")))
+
+(defun try-systems ()
+  (try-systems-in-directory #P"~/src/public/lisp/"))
 
 ;;;; THE END ;;;;

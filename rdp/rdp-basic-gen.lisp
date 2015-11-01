@@ -190,12 +190,14 @@
 (defparameter *lex* 0)
 
 (defun first-rhs (grammar item)
-  (first-set grammar item))
+  (firsts-set grammar item))
+
+(defgeneric gen-parsing-statement (target grammar item))
 
 (defmethod gen-parsing-statement ((target (eql :basic)) grammar item)
   (labels ((es-first-set (extended-sentence)
              (if (atom extended-sentence)
-                 (first-set grammar extended-sentence)
+                 (firsts-set grammar extended-sentence)
                  (ecase (car extended-sentence)
                    ((seq) (loop
                             :with all-firsts = '()
@@ -278,13 +280,12 @@
                              (emit "ENDIF")))))
              (gen (second item))))))))
 
-
-(defmethod generate-nt-parser ((target (eql :basic)) grammar non-terminal &key (trace nil))
+(defmethod generate-non-terminal-parser-function ((target (eql :basic)) grammar non-terminal &key (trace nil))
   (let ((fname (gen-parse-function-name target grammar non-terminal)))
     `(progn
        (emit "SUB ~A" ',fname)
        ,@(when trace `((emit "PRINT \"> ~A\"" ',(symbol-name fname))))
-       ,(gen-parsing-statement target grammar (find-rule grammar non-terminal))
+       ,(gen-parsing-statement target grammar (find-rhs grammar non-terminal))
        ,@(when trace `((emit "PRINT \"< ~A\"" ',(symbol-name fname))))
        (emit "ENDSUB"))))
 
