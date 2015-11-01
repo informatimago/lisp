@@ -184,17 +184,22 @@ showpdf show-pdfs:README.pdf
 
 help::
 	@printf $(HELP_FMT)  'quicklisp-tag'    'Update the quicklisp tag on the remote repositories.'
-quicklisp-tag:
-	git tag -d quicklisp
-	git push origin    :refs/tags/quicklisp
-	git push github    :refs/tags/quicklisp
-	git push gitlab    :refs/tags/quicklisp
-	git push framasoft :refs/tags/quicklisp
-	git tag -f -s quicklisp -m 'current version for quicklisp'
-	git push --tags framasoft
-	git push --tags gitlab
-	git push --tags github
-	git push --tags origin
-.PHONY::quicklisp-tag
+
+# quicklisp-tag: quicklisp-tag-remove quicklisp-tag-add
+# 
+# quicklisp-tag-remove:
+# 	git tag -d quicklisp
+# 	git push origin    :refs/tags/quicklisp
+# 	git push github    :refs/tags/quicklisp
+# 	git push gitlab    :refs/tags/quicklisp
+# 	git push framasoft :refs/tags/quicklisp
+# 
+# quicklisp-tag-add:
+# 	git tag -f -s quicklisp -m 'current version for quicklisp'
+# 	git push --tags framasoft
+# 	git push --tags gitlab
+# 	git push --tags github
+# 	git push --tags origin
+# .PHONY::quicklisp-tag quicklisp-tag-remove quicklisp-tag-add
 
 #### THE END ####
