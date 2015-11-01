@@ -32,7 +32,7 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 (in-package "COM.INFORMATIMAGO.LANGUAGES.C11.PARSER")
-
+(declaim (declaration stepper))
 
 (defclass pre-scanned-scanner (buffered-scanner)
   ((tokens :initform '() :initarg :tokens :accessor pre-scanned-tokens)
@@ -1031,6 +1031,8 @@ NOTE:   if the top-of-stack is :typedef then pop it as well as the specifiers.
 
 
 (defun check-constant-expression (expression)
+  (declare (ignore expression))
+  #|TODO|#
   (values))
 
 (defun check-unary (expression)

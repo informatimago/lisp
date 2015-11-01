@@ -731,6 +731,7 @@ when it's the case, end-of-file is detected upon reading on an empty pipe.")
           (slot-value (pipe-output-stream pipe) 'open) t))
   (gate-signal (not-empty pipe)))
 
+(defgeneric close-pipe (pipe))
 (defmethod close-pipe ((pipe generic-pipe))
   (with-lock-held ((lock pipe))
     (setf (slot-value (pipe-output-stream pipe) 'open) nil))

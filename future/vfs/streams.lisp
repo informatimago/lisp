@@ -247,39 +247,45 @@ DO:     Specifies the name and parameter list of methods.
        (defun ,name ,arguments
          ,@(when documentation (list documentation))
          ,@(when stream-designator
-                 `((setf ,stream-name (stream-designator 
-                                       ,stream-name
-                                       ,(if (listp stream-designator)
-                                            (ecase (second stream-designator)
-                                              ((:input)  '*standard-input*)
-                                              ((:output) '*standard-output*))
-                                            '*standard-input*)))))
+             `((setf ,stream-name (stream-designator 
+                                   ,stream-name
+                                   ,(if (listp stream-designator)
+                                        (ecase (second stream-designator)
+                                          ((:input)  '*standard-input*)
+                                          ((:output) '*standard-output*))
+                                        '*standard-input*)))))
          ,(if (lambda-list-rest-p lambda-list)
               `(apply (function ,m-name) ,@(make-argument-list lambda-list))
               `(,m-name         ,@(butlast (make-argument-list lambda-list)))))
        ,@(when cl-forward
-               `((defmethod ,m-name 
-                     ,(make-method-lambda-list lambda-list stream-name 'cl-stream)
-                   ,(let ((arguments (mapcar
-                                      (lambda (arg)
-                                        (if (eq arg stream-name)
-                                            `(cl-stream-stream ,stream-name)
-                                            arg))
-                                      (make-argument-list lambda-list))))
-                         (if (lambda-list-rest-p lambda-list)
-                             `(apply (function ,cl-name) ,@arguments)
-                             `(,cl-name ,@(butlast arguments)))))
-                 ;; We don't want to allow access to CL:STREAM from a sandbox.
-                 ;; (defmethod ,m-name 
-                 ;;     ,(make-method-lambda-list lambda-list stream-name 'cl:stream)
-                 ;;   ,(let ((arguments (make-argument-list lambda-list)))
-                 ;;         (if (lambda-list-rest-p lambda-list)
-                 ;;             `(apply (function ,cl-name) ,@arguments)
-                 ;;             `(,cl-name ,@(butlast arguments)))))
-                 ))
+           ;; TODO: review the generation of generic function lambda list:
+           (let ((method-lambda-list (make-method-lambda-list lambda-list stream-name 'cl-stream)))
+             `((defgeneric ,m-name ,(mapcar (lambda (parameter)
+                                              (if (listp parameter)
+                                                  (first parameter)
+                                                  parameter))
+                                     method-lambda-list))
+               (defmethod ,m-name ,method-lambda-list
+                 ,(let ((arguments (mapcar
+                                    (lambda (arg)
+                                      (if (eq arg stream-name)
+                                          `(cl-stream-stream ,stream-name)
+                                          arg))
+                                    (make-argument-list lambda-list))))
+                    (if (lambda-list-rest-p lambda-list)
+                        `(apply (function ,cl-name) ,@arguments)
+                        `(,cl-name ,@(butlast arguments)))))
+               ;; We don't want to allow access to CL:STREAM from a sandbox.
+               ;; (defmethod ,m-name 
+               ;;     ,(make-method-lambda-list lambda-list stream-name 'cl:stream)
+               ;;   ,(let ((arguments (make-argument-list lambda-list)))
+               ;;         (if (lambda-list-rest-p lambda-list)
+               ;;             `(apply (function ,cl-name) ,@arguments)
+               ;;             `(,cl-name ,@(butlast arguments)))))
+               )))
        ,@(when check-stream-type
-               `((defmethod ,m-name ,(make-method-lambda-list lambda-list stream-name 't)
-                   (signal-type-error ,stream-name ',check-stream-type))))
+           `((defmethod ,m-name ,(make-method-lambda-list lambda-list stream-name 't)
+               (signal-type-error ,stream-name ',check-stream-type))))
        ,@(mapcar
           (lambda (method)
             (when (and (listp method) (eq :method (car method)))
@@ -346,7 +352,6 @@ DO:     Expands to a bunch of defmethod forms, with the parameter
   (if eof-error-p
       (error (make-condition 'eof-error :stream stream))
       eof-value))
-
 
 
 (define-forward read-byte (stream &optional (eof-error-p t) (eof-value nil))

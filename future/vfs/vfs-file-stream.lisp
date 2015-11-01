@@ -64,6 +64,7 @@
   ())
 
 
+(defgeneric print-object-fields (self stream))
 (defmethod print-object-fields ((self file-stream) stream)
   (call-next-method)
   (format stream " :PATHNAME ~S :POSITION ~A"
