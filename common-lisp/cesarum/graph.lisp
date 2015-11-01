@@ -49,6 +49,8 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SET")
   (:shadowing-import-from "COMMON-LISP"
                           "UNION" "INTERSECTION" "MERGE")
+  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
+                "WHILE")
   (:export "EDGE-CLASS" "EDGES" "NODES" "TO" "FROM" "WEIGHT" "INDEX"
            "ELEMENTS" "PROPERTIES" "IDENT" "SHOW-GRAPH" "FIND-NODES-WITH-PROPERTY"
            "COPY" "WALK-EDGES-FROM-NODE" "WALK-FROM-NODE" "FLOW-DISTANCE-FROM-NODE"
@@ -65,7 +67,7 @@
            "SELECT-ELEMENTS" "MAP-ELEMENTS" "PERFORM-WITH-ELEMENTS" "REMOVE-ELEMENT"
            "ADD-ELEMENTS" "CARDINAL" "SET-CLASS" "DELETE-PROPERTY" "GET-PROPERTY"
            "SET-PROPERTY" "PROPERTY-NAMES" "ELEMENT-CLASS")
-  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "WHILE")
+
   (:documentation
    "
 
@@ -215,11 +217,6 @@ DO:     Remove the property named `prop-name' from the property list of
 "))
 
 
-(defgeneric cardinal (self)
-  (:documentation   "
-RETURN: The number of elements in this set.
-"))
-
 
 (defgeneric add-elements (self newelementlist)
   (:documentation   "
@@ -240,13 +237,6 @@ POST:   already_in       ==> (CARDINAL self) == (1- old_CARDINAL),
 (defgeneric perform-with-elements (self lambda-body)
   (:documentation   "
 DO:     calls lambda-body with each element in the set.
-NOTE:   lambda-body must not change this set.
-"))
-
-
-(defgeneric map-elements (result-type self lambda-body)
-  (:documentation   "
-RETURN: the list of results returned by lambda-body called with each element.
 NOTE:   lambda-body must not change this set.
 "))
 
@@ -520,8 +510,7 @@ DO:     Remove the property named `prop-name' from the property list of
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defgeneric elements (set)
-  (:documentation "The elements in the set."))
+
 
 (defclass set-class (element-class)
   ((elements
@@ -694,13 +683,6 @@ RETURN: A string describing this element.
             (class-name (class-of self)) 
             (description (car  nodes)) 
             (description (cdr nodes)))))
-
-
-(defgeneric copy (self &key &allow-other-keys)
-  (:documentation "
-RETURN: A COPY of this edge.
-        The COPY has the same  NODES than this edge.
-        Other attributes are normally copied."))
 
 
 (defgeneric nodes (self)

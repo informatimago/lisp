@@ -314,12 +314,12 @@ RETURN:         A new set containing only the elements of SET that
                     set))))
 
 
-(defgeneric copy                  (set)
+(defgeneric copy (set &key &allow-other-keys)
   (:documentation "
 RETURN:         A new set of same class as SET, containing the same
                 elements as SET.
 ")
-  (:method (set)
+  (:method (set &key &allow-other-keys)
     (assign (make-instance (class-of set)) set)))
 
 (defgeneric union                 (result-type set1 set2)
@@ -495,6 +495,9 @@ RETURN: SET.
 ;;;
 ;;; A simple implementation to test the default methods.
 ;;;
+
+(defgeneric elements (set)
+  (:documentation "The elements in the set."))
 
 (defclass list-set ()
   ((elements :initform '() :initarg :elements :reader elements)))
