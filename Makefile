@@ -176,16 +176,22 @@ README.html:README
 README.pdf:README
 	rst2pdf README
 
+help::
+	@printf $(HELP_FMT)  'show-pdfs'         'Opens README.pdf'
 showpdf show-pdfs:README.pdf
 	open README.pdf
 .PHONY::showpdf show
 
+help::
+	@printf $(HELP_FMT)  'quicklisp-tag'    'Update the quicklisp tag on the remote repositories.'
 quicklisp-tag:
 	git tag -d quicklisp
-	git push origin :refs/tags/quicklisp
-	git push github :refs/tags/quicklisp
-	git push gitlab :refs/tags/quicklisp
+	git push origin    :refs/tags/quicklisp
+	git push github    :refs/tags/quicklisp
+	git push gitlab    :refs/tags/quicklisp
+	git push framasoft :refs/tags/quicklisp
 	git tag -f -s quicklisp -m 'current version for quicklisp'
+	git push --tags framasoft
 	git push --tags gitlab
 	git push --tags github
 	git push --tags origin
