@@ -40,19 +40,18 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
 
-
-(in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET"
   (:use "COMMON-LISP")
   (:shadow "COMPLEMENT" "INTERSECTION" "UNION" "SET" "SUBSETP")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "VECTOR-INIT" "FOR")
   (:export "BSET-TO-LIST" "LIST-TO-BSET" "WRITE-BSET" "READ-BSET" "FOR-ALL-DO"
            "ASSIGN-EMPTY" "ASSIGN-ELEMENT" "ASSIGN" "EXISTS-1" "EXISTS" "FOR-ALL"
-           "IS-EMPTY" "IS-ELEMENT" "IS-EQUAL" "IS-STRICT-SUBSET" "IS-SUBSET" "EXTRACT"
-           "SELECT" "MAXIMUM" "MINIMUM" "SIZE" "CARDINAL" "EXCLUDE" "INCLUDE"
+           "IS-EMPTY" "IS-ELEMENT" "IS-EQUAL" "IS-NOT-EQUAL"
+           "IS-STRICT-SUBSET" "IS-SUBSET"
+           "EXTRACT" "SELECT" "MAXIMUM" "MINIMUM" "SIZE" "CARDINAL" "EXCLUDE" "INCLUDE"
            "COMPLEMENT" "SYM-DIFF" "INTERSECTION" "DIFFERENCE" "UNION" "RESIZE-BSET"
            "COPY-BSET" "MAKE-BSET" "BSET"
-           "SUBSETP" "STRICT-SUBSETP" )
+           "ELEMENT" "EMPTYP" "SUBSETP" "STRICT-SUBSETP")
   (:documentation
    "
 
@@ -89,6 +88,7 @@ License:
   (defconstant +bit-per-bitset+ 32))
 
 (deftype bitset () `(unsigned-byte ,+bit-per-bitset+))
+(deftype element () '(integer 0))
 
 (defstruct (bset
              (:constructor %make-bset)
@@ -105,9 +105,9 @@ License:
            :type (array bitset *))
   ;; max-element == (* +bit-per-bitset+ (array-dimension bitsets 0))
   ;; last-bitset == (1- (array-dimension bitsets 0))
-  (cardinal      nil :type (or null (integer 0)))
-  (first-element 0   :type (integer 0)) ; approximate
-  (last-element  0   :type (integer 0)) ; approximate
+  (cardinal      nil :type (or null element))
+  (first-element 0   :type element) ; approximate
+  (last-element  0   :type element) ; approximate
   ;; (for all i (==> (< i (bset-first-element bset)) (not (is-element i bset))))
   ;; (for all i (==> (> i (bset-last-element  bset)) (not (is-element i bset))))
   )
@@ -171,7 +171,7 @@ PRE:    (<= 0 max-size)
 POST:   (<= max-size (size (make-bset max-size)))
 RETURN: A new bset allocated to hold at least elements from 0 to max-size.
 "
-  (declare (type (integer 0) max-size))
+  (check-type max-size element)
   (%make-bset :bitsets (make-array (list (1+ (elem-to-bitset max-size)))
                                    :element-type 'bitset
                                    :initial-element 0
@@ -192,7 +192,8 @@ DO:      Reallocate bset to have it able to hold at least elements
          from 0 to max-size.
 RETURN:  bset
 "
-  (declare (type bset bset) (type (integer 0) max-size))
+  (check-type bset bset)
+  (check-type max-size element)
   (let ((old-count (array-dimension (bset-bitsets bset) 0))
         (new-count (1+ (elem-to-bitset max-size))))
     (setf (bset-bitsets bset) (adjust-array (bset-bitsets bset)
@@ -323,7 +324,7 @@ PRE:    (<= 0 element (size bset))
 POST:   (is-element element bset)
 RETURN: BSET
 "
-  (declare (type (integer 0) element))
+  (check-type element element)
   (let ((bits (bset-bitsets bset)))
     (setf (bsref bits (elem-to-bitset element))
           (dpb 1 (byte 1 (elem-to-bit element))
@@ -341,7 +342,7 @@ PRE:    (<= 0 element (size bset))
 POST:   (not (is-element element bset))
 RETURN: BSET
 "
-  (declare (type (integer 0) element))
+  (check-type element element)
   (let ((bits (bset-bitsets bset)))
     (setf (bsref bits (elem-to-bitset element))
           (dpb 0 (byte 1 (elem-to-bit element))
@@ -380,7 +381,7 @@ RETURN:  The maximum element BSET can hold.
 (defgeneric minimum (bset))
 (defmethod minimum ((bset bset))
   "
-PRE:     (not (is-empty bset))
+PRE:     (not (emptyp bset))
 RETURN:  The smallest element of BSET.
 "
   (for (i (bset-first-element bset)  (bset-last-element bset))
@@ -393,7 +394,7 @@ RETURN:  The smallest element of BSET.
 (defgeneric maximum (bset))
 (defmethod maximum ((bset bset))
   "
-PRE:     (not (is-empty bset))
+PRE:     (not (emptyp bset))
 RETURN:  The greatest element of BSET.
 "
   (for (i (bset-last-element bset)  (bset-first-element bset))
@@ -407,7 +408,7 @@ RETURN:  The greatest element of BSET.
 (defgeneric select (bset))
 (defmethod select ((bset bset))
   "
-PRE:      (not (is-empty bset))
+PRE:      (not (emptyp bset))
 RETURN:   An element of BSET.
 WARNING:  May return always the same element if it's not removed from the BSET.
 "
@@ -417,7 +418,7 @@ WARNING:  May return always the same element if it's not removed from the BSET.
 (defgeneric extract (bset))
 (defmethod extract ((bset bset))
   "
-PRE:      (not (is-empty bset))
+PRE:      (not (emptyp bset))
 POST:     (not (is-element (extract bset) bset))
 DO:       Select an element from the BSET and removes it from the BSET.
 RETURN:   An element that was in BSET.
@@ -519,7 +520,7 @@ RETURN:  (not (is-equal set1 set2))
   "
 RETURN:  Whether element is in BSET.
 "
-  (declare (type (integer 0) element))
+  (check-type element element)
   (let ((bits (bset-bitsets bset)))
     (and (< element (bitset-to-elem (last-bitset bits)))
          (/= 0 (logand (bsref bits (elem-to-bitset element)) 
@@ -536,7 +537,7 @@ RETURN: (= 0 (cardinal bset))
   (or (and (bset-cardinal bset) (= 0 (bset-cardinal bset)))
       (let ((bits (bset-bitsets bset)))
         (for (i 0 (last-bitset bits))
-          (when (/= 0 (bsref bits i)) (return-from is-empty nil)))
+          (when (/= 0 (bsref bits i)) (return-from emptyp nil)))
         (setf (bset-cardinal bset) 0)
         t)))
 
@@ -611,7 +612,7 @@ POST:   (and (exists bset (lambda (x) (= x element)))
              (for-all bset (lambda (x) (= x element))))
 RETURN:  BSET
 "
-  (declare (type (integer 0) element))
+  (check-type element element)
   (assign-empty bset)
   (include bset element)
   (setf (bset-cardinal bset) 1
@@ -623,7 +624,7 @@ RETURN:  BSET
 (defgeneric assign-empty (bset))
 (defmethod assign-empty ((bset bset))
   "
-POST:    (is-empty bset)
+POST:    (emptyp bset)
 RETURN:  BSET.
 "
   (let ((bits (bset-bitsets bset)))

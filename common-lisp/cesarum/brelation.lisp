@@ -47,7 +47,8 @@
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BRELATION"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET")
-  (:shadow "COMPLEMENT" "INTERSECTION" "UNION" "SUBSETP")
+  (:shadowing-import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET"
+                          "COMPLEMENT" "INTERSECTION" "UNION" "SUBSETP")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
                 "VECTOR-INIT" "FOR" "UNTIL")
   (:export "PROJECT-2" "PROJECT-1" "WRITE-BRELATION" "READ-BRELATION" 
@@ -92,8 +93,6 @@ License:
 "))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BRELATION")
 
-(deftype element () '(integer 0))
-
 (defstruct (brelation (:constructor %make-brelation))
   "The Binary Relation Class."
   (adjsets (make-array '(0) :element-type 'bset
@@ -108,7 +107,8 @@ License:
   "
 RETURN: A new BRELATION between sets of sizes SIZE-1 and SIZE-2.
 "
-  (declare (type element size-1 size-2))
+  (check-type size-1 element)
+  (check-type size-2 element)
   (%make-brelation
    :adjsets (vector-init (make-array (list (1+ size-1))
                                      :element-type 'bset
@@ -328,17 +328,18 @@ RETURN: REL1
        (assign-empty (adjref rel2 i)))
   rel1)
 
+(defgeneric closure (rel))
 (defmethod closure ((rel brelation))
-    "
+  "
 POST:   REL is the transitive closure of the old REL.
 RETURN: REL
 "
   (for (j 0 (brelation-size-1 rel))
-       (unless (emptyp (adjref rel j))
-         (for (i 0 (brelation-size-1 rel))
-              (when (related rel i j)
-                (union (adjref rel i)
-                            (adjref rel j))))))
+    (unless (emptyp (adjref rel j))
+      (for (i 0 (brelation-size-1 rel))
+        (when (related rel i j)
+          (union (adjref rel i)
+                 (adjref rel j))))))
   rel)
            
 (defmethod union ((rel1 brelation) (rel2 brelation))
@@ -411,7 +412,7 @@ RETURN: Whether REL1 is equal to REL2.
   t)
 
 (defmethod is-not-equal ((rel1 brelation) (rel2 brelation))
-        "
+  "
 RETURN: Whether REL1 is not equal to REL2.
 "
   (not (is-equal rel1 rel2)))
