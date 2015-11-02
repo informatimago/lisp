@@ -320,7 +320,7 @@ NOTE:   The current implementation uses a prefix filter on the name of
       designator))
 
 (defmacro define-normalize-and-forward-package-methods (name &key (type-error nil))
-  (let ((cl-name (cl:intern (string name) (load-time-value (find-package "COMMON-LISP")))))
+  (let ((cl-name (cl:intern (string name) (load-time-value (cl:find-package "COMMON-LISP")))))
     `(progn
        ,@ (if type-error
               `((defmethod ,name ((name t))  (error 'simple-type-error
