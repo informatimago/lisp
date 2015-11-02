@@ -57,6 +57,11 @@ Allegro CL relative packages.
   :depends-on ("com.informatimago.common-lisp.lisp-reader"
                "com.informatimago.common-lisp.cesarum")
   :components ((:file "relative-package"  :depends-on ()))
-  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.common-lisp.lisp.relative-package.test"))))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op
+                                 (asdf:load-op "com.informatimago.common-lisp.lisp.relative-package.test")))
+  #+asdf3 :perform #+asdf3 (asdf:test-op
+                            (operation system)
+                            (declare (ignore operation system))
+                            (asdf:oos 'asdf:test-op "com.informatimago.common-lisp.lisp.relative-package.test")))
 
 ;;;; THE END ;;;;
