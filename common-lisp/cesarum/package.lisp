@@ -160,17 +160,12 @@ License:
            "PACKAGE-SYSTEM-DEFINITION"
            "ADD-TRANSLATIONS" "ADD-NICKNAME" "*PACKAGE-VERBOSE*"
            ;; utility:
-           "LIST-SYMBOLS" "LIST-ALL-SYMBOLS" "LIST-EXTERNAL-SYMBOLS"
            "COPY-PACKAGE"
-           "STRING-PREPARE-TOKEN"
-           "UNINTERNED-PREPARE-TOKEN"
-           "KEYWORD-PREPARE-TOKEN"
+           "LIST-SYMBOLS" "LIST-ALL-SYMBOLS" "LIST-EXTERNAL-SYMBOLS"
            "SEXP-FOR-PACKAGE"
+           "STRING-PREPARE-TOKEN" "UNINTERNED-PREPARE-TOKEN" "KEYWORD-PREPARE-TOKEN"
            ;; debugging help:
-           "CRACK-OPEN-PACKAGE"
-           ;; Obsolete: define-package
-           ;; "DEFINE-PACKAGE"
-           "DELETE-PACKAGES"))
+           "CRACK-OPEN-PACKAGE" "DELETE-PACKAGES"))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PACKAGE")
 
 

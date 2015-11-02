@@ -78,7 +78,17 @@
            "SIMPLE-READER-ERROR" "SIMPLE-END-OF-FILE"
            "MISSING-PACKAGE-ERROR" "SYMBOL-IN-MISSING-PACKAGE-ERROR"
            "MISSING-SYMBOL-ERROR" "SYMBOL-MISSING-IN-PACKAGE-ERROR"
+           "UNEXPORTED-SYMBOL-ERROR"
            "INTERN-HERE" "RETURN-UNINTERNED"
+           
+           "INVALID-SYMBOL-COMPONENT-LIST"
+           "INTERNAL-SYMBOL"
+           "MISSING-SYMBOL"
+           "MISSING-PACKAGE"
+           "SYMBOL-FROM-SPLIT-TOKEN"
+           "MAKE-SYMBOL-PARSER-FUNCTION"
+           "MAKE-TOKEN-PARSER"
+           
            ;; Utilities:
            "POTENTIAL-NUMBER-P")
   (:documentation
@@ -136,7 +146,11 @@ License:
 
 (define-condition symbol-in-missing-package-error (missing-package-error)
   ((symbol-name :initarg :symbol-name))
-  (:documentation "The error condition signaled when trying to read a symbol in an inexistant package."))
+  (:documentation "The error condition signaled when trying to read a symbol in an inexistant package.")
+  (:report (lambda (condition stream)
+             (format stream "Tried to read a symbol named ~S in an inexistant package named ~S."
+                     (slot-value condition 'symbol-name)
+                     (slot-value condition 'package-name)))))
 
 (define-condition missing-symbol-error (reader-error)
   ((symbol-name :initarg :symbol-name))
@@ -144,7 +158,19 @@ License:
 
 (define-condition symbol-missing-in-package-error (missing-symbol-error)
   ((package-name :initarg :package-name))
-  (:documentation "The error condition signaled when trying to read a symbol not exported from a package."))
+  (:documentation "The error condition signaled when trying to read a symbol not exported from a package.")
+  (:report (lambda (condition stream)
+             (format stream "Tried to read an inexistant external symbol named ~S the package ~S."
+                     (slot-value condition 'symbol-name)
+                     (slot-value condition 'package-name)))))
+
+(define-condition unexported-symbol-error (missing-symbol-error)
+  ((package-name :initarg :package-name))
+  (:documentation "The error condition signaled when trying to read a symbol not exported from a package.")
+  (:report (lambda (condition stream)
+             (format stream "Tried to read an unexported symbol named ~S the package ~S."
+                     (slot-value condition 'symbol-name)
+                     (slot-value condition 'package-name)))))
 
 (defun serror (condition stream control-string &rest arguments)
   (error condition
@@ -460,6 +486,7 @@ attempted on this stream.
   (:documentation "DO:     Set the function used to parse a token that has been read."))
 (defgeneric readtable-syntax-table (readtable)
   (:documentation "RETURN: The syntax-table of the readtable."))
+(declaim (function make-token-parser))
 
 (defclass readtable ()
   ((case          :initarg :case
@@ -470,7 +497,7 @@ attempted on this stream.
                   :initform (make-instance 'syntax-table))
    (parse-token   :accessor readtable-parse-token
                   :initarg :parse-token
-                  :initform (function parse-token)))
+                  :initform (make-token-parser)))
   (:documentation
    "
 A READTABLE maps characters into syntax types for the Lisp reader; see
@@ -972,94 +999,218 @@ exponent ::=  exponent-marker [sign] {digit}+"
 ;;       (reject nil)))
 
 
-(defparser parse-symbol-token (token)
-  "symbol ::= symbol-name
-symbol ::= package-marker symbol-name
-symbol ::= package-marker package-marker symbol-name
-symbol ::= package-name package-marker symbol-name
-symbol ::= package-name package-marker package-marker symbol-name
-symbol-name   ::= {alphabetic}+ 
-package-name  ::= {alphabetic}+ "
-  (let ((colon (position-if
-                (lambda (traits) (traitp +ct-package-marker+ traits))
-                (token-traits token))))
-    (if colon
-        (let* ((double-colon (and (< (1+ colon) (token-length token))
-                                  (traitp +ct-package-marker+
-                                          (token-char-traits token (1+ colon)))))
-               (pname (subseq (token-text token) 0 colon))
-               (sname (subseq (token-text token)
-                              (+ colon (if double-colon 2 1)))))
-          (when (position-if
-                 (lambda (traits) (traitp +ct-package-marker+ traits))
-                 (token-traits token) :start (+ colon (if double-colon 2 1)))
-            (reject t "Too many package markers in token ~S" (token-text token)))
-          (when (zerop colon)
-            ;; Keywords always exist, so let's intern them before finding them.
-            (setf pname "KEYWORD")
-            (intern sname pname))
-          ;; The following form thanks to Andrew Philpot <philpot@ISI.EDU>
-          ;; corrects a bug when reading with double-colon uninterned symbols:
-          (if (find-package pname)
-              (if double-colon
-                  (accept 'symbol (intern sname pname))
-                  (multiple-value-bind (sym where) (find-symbol sname pname)
-                    (if (eq where :external) 
-                        (accept 'symbol sym)
-                        (accept 'symbol
-                                (restart-case (error 'symbol-missing-in-package-error
-                                                     :stream *input-stream* :package-name pname :symbol-name sname)
-                                  (make-symbol (&rest rest)
-                                    :report "Make the missing symbol in the specified package"
-                                    (declare (ignore rest))
-                                    (intern sname pname)))))))
-              (accept 'symbol
-                      (restart-case (error 'symbol-in-missing-package-error
-                                           :stream *input-stream* :package-name pname :symbol-name sname)
-                        (intern-here (&rest rest)
-                          :report "Intern the symbol in the current package, instead"
-                          (declare (ignore rest))
-                          (intern sname))
-                        (return-uninterned (&rest rest)
-                          :report "Return an uninterned symbol, instead"
-                          (declare (ignore rest))
-                          (make-symbol sname))))))
-        ;; no colon in token, let's just intern the symbol in the current package :
-        (accept 'symbol (intern (token-text token) *package*)))))
-
-
-(defun parse-token (token)
-  "
-RETURN:  okp ; the parsed lisp object if okp, or an error message if (not okp)
+(defun invalid-symbol-component-list (components)
+   "
+COMPONENTS:  Parsed symbol components.
+DO:          Handles invalid components lists.
 "
-  (let ((message nil))
-    (macrolet
-        ((rom (&body body)
-           "Result Or Message"
-           (if (null body)
-               'nil
-               (let ((vals (gensym)))
-                 `(let ((,vals (multiple-value-list ,(car body))))
-                    ;; (format *trace-output* "~S --> ~S~%" ',(car body) ,vals)
-                    (if (first ,vals)
-                        (values-list ,vals)
-                        (progn
-                          (when (second ,vals)
-                            (setf message  (third ,vals)))
-                          (rom ,@(cdr body)))))))))
-      (multiple-value-bind (ok type object)
-          (rom (parse-decimal-integer-token token)
-               (parse-integer-token         token)
-               (parse-ratio-token           token)
-               (parse-float-1-token         token)
-               (parse-float-2-token         token)
-               ;; (parse-consing-dot-token     token)
-               (parse-symbol-token          token))
-        (declare (ignorable type))
-        ;; (format *trace-output* "ok = ~S ; type = ~S ; object = ~S~%"
-        ;;         ok type object)
-        (values ok (if ok object message))))))
+  (error "Invalid symbol component list ~S" components))
 
+(defun internal-symbol (package sname sym)
+  "
+We tried to read PNAME:SNAME but the symbol is not exported.
+
+PACKAGE:    the package specified for the symbol.
+
+SNAME:      symbol name.
+
+DO:         Handles the internal symbol error with restarts to export
+            it or return it unexported.
+
+NOTE:       We could also find symbols with the same name in other
+            packages.
+
+"
+  (restart-case (error 'unexported-symbol-error
+                       :stream *input-stream*
+                       :package-name (package-name package)
+                       :symbol-name sname)
+    (export (&rest rest)
+      :report "Export the unexported symbol."
+      (declare (ignore rest))
+      (export sym package)
+      sym)
+    (return-unexported (&rest rest)
+      :report "Return the symbol unexported."
+      (declare (ignore rest))
+      sym)))
+
+(defun missing-symbol (package sname)
+  "
+We tried to read PNAME:SNAME but no symbol found with this name.
+
+PACKAGE:    the package specified for the symbol.
+
+SNAME:      symbol name.
+
+DO:         Handles the symbol missing error with restarts to intern
+            in the package (and possibly export it)
+            or return an uninterned symbol.
+
+NOTE:       We could also find symbols with the same name in other
+            packages.
+
+"
+  (restart-case (error 'symbol-missing-in-package-error
+                       :stream *input-stream*
+                       :package-name (package-name package)
+                       :symbol-name sname)
+    (intern-and-export (&rest rest)
+      :report "Intern the missing symbol and export it"
+      (declare (ignore rest))
+      (let ((sym (intern sname package)))
+        (export (list sym) package)
+        sym))
+    (intern (&rest rest)
+      :report "Intern the missing symbol without exporting it"
+      (declare (ignore rest))
+      (intern sname package))
+    (return-uninterned (&rest rest)
+      :report "Return an uninterned symbol."
+      (declare (ignore rest))
+      (make-symbol sname))))
+
+(defun missing-package (pname sname)
+  "
+We tried to read PNAME:SNAME, but there's no package named PNAME.
+
+PNAME:  package name
+
+SNAME:  symbol name
+
+DO:     Handles the missing package error with restarts to intern in
+        the current package or return an uninterned symbol.
+
+NOTE:   We could also find other packages with a similar name to
+        correct typoes.
+
+"
+  (restart-case (error 'symbol-in-missing-package-error
+                       :stream *input-stream*
+                       :package-name pname
+                       :symbol-name sname)
+    #|TODO: add a restart to create the missing package.|#
+    (intern-here (&rest rest)
+      :report "Intern the symbol in the current package instead."
+      (declare (ignore rest))
+      (intern sname))
+    (return-uninterned (&rest rest)
+      :report "Return an uninterned symbol."
+      (declare (ignore rest))
+      (make-symbol sname))))
+
+(defun symbol-from-split-token (components)
+  "
+
+COMPONENTS:  a list of strings separated by integers specifying the
+             number of colons.
+
+EXAMPLES:    X         (\"X\")
+             :Y        (1 \"Y\")
+             X:Y       (\"X\" 1 \"Y\")
+             X::Y      (\"X\" 2 \"Y\")
+             X:::Y     (\"X\" 3 \"Y\")
+             X::       (\"X\" 2)
+             X:Y:Z     (\"X\" 1 \"Y\" 1 \"Z\")
+
+RETURN:      A symbol designated by the components,
+             or signal an error.
+
+NOTE:        This function implements the standard semantics,
+             where only one occurence of : or :: is allowed,
+             and depending on : or ::, an exported symbol is expected
+             or not.
+
+"
+  (values
+   (case (length components)
+     (1
+      (if (stringp (first components))
+          (intern (first components) *package*)
+          (invalid-symbol-component-list components)))
+     (2 (case (first components)
+          ((1 2)
+           (intern (second components)
+                   (load-time-value (find-package "KEYWORD"))))
+          (otherwise
+           (invalid-symbol-component-list components))))
+     (3 (destructuring-bind (pname colons sname) components
+          (assert (stringp pname) (pname) "Symbol component was expected to be a string.")
+          (assert (stringp sname) (sname) "Symbol component was expected to be a string.")
+          (let ((package (find-package pname))) ; *** this is the critical call for relative packages.
+            (if package
+                (case colons
+                  (1 (multiple-value-bind (sym where) (find-symbol sname package)
+                       (case where
+                         ((nil)       (missing-symbol  package sname))
+                         ((:internal) (internal-symbol package sname sym))
+                         ((:external) sym))))
+                  (2 (intern sname package))
+                  (otherwise
+                   (invalid-symbol-component-list components)))
+                (missing-package pname sname)))))
+     (otherwise
+      (invalid-symbol-component-list components)))))
+
+(defun make-symbol-parser-function (symbol-internalize-function)
+  (lambda (token)
+    (flet ((package-marker-p (traits) (traitp +ct-package-marker+ traits)))
+      (handler-case
+          (let ((symbol (funcall symbol-internalize-function
+                                 (loop
+                                   :with components := '()
+                                   :for start := 0 :then after-colons
+                                   :for colon := (position-if (function package-marker-p) (token-traits token)
+                                                              :start start)
+                                   :for after-colons := (when colon
+                                                          (position-if-not (function package-marker-p) (token-traits token)
+                                                                           :start (1+ colon)))
+                                   :while colon
+                                   :do (when (plusp colon)
+                                         (push (subseq (token-text token) start colon) components))
+                                       (push (- after-colons colon) components)
+                                   :finally (push (subseq (token-text token) start colon) components)
+                                            (return (nreverse components))))))
+            (values t 'symbol symbol))
+        (error (err)
+          (values nil t (princ-to-string err)))))))
+
+(defun make-token-parser (&key
+                            (parse-decimal-integer-token (function parse-decimal-integer-token))
+                            (parse-integer-token         (function parse-integer-token))
+                            (parse-ratio-token           (function parse-ratio-token))
+                            (parse-float-1-token         (function parse-float-1-token))
+                            (parse-float-2-token         (function parse-float-2-token))
+                            (parse-symbol-token          (make-symbol-parser-function (function symbol-from-split-token))))
+  (lambda (token)
+    "RETURN:  okp ; the parsed lisp object if okp, or an error message if (not okp)"
+    (let ((message nil))
+      (macrolet
+          ((rom (&body body)
+             "Result Or Message"
+             (if (null body)
+                 'nil
+                 (let ((vals (gensym)))
+                   `(let ((,vals (multiple-value-list ,(car body))))
+                      ;; (format *trace-output* "~S --> ~S~%" ',(car body) ,vals)
+                      (if (first ,vals)
+                          (values-list ,vals)
+                          (progn
+                            (when (second ,vals)
+                              (setf message  (third ,vals)))
+                            (rom ,@(cdr body)))))))))
+        (multiple-value-bind (ok type object)
+            (rom (funcall parse-decimal-integer-token token)
+                 (funcall parse-integer-token         token)
+                 (funcall parse-ratio-token           token)
+                 (funcall parse-float-1-token         token)
+                 (funcall parse-float-2-token         token)
+                 ;; (parse-consing-dot-token     token)
+                 (funcall parse-symbol-token          token))
+          (declare (ignorable type))
+          ;; (format *trace-output* "ok = ~S ; type = ~S ; object = ~S~%"
+          ;;         ok type object)
+          (values ok (if ok object message)))))))
 
 
 (defun all-dots-p (token)
