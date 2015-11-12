@@ -612,7 +612,7 @@ If the backend is not open, nothing is done.
     (ecase (event-type event)
       ((#.+window-closed+)      :window-closed)             
       ((#.+window-resized+)     :window-resized)            
-      ((#.+last-window-closed+) :last-window-closed)        
+      ((#.+last-window-closed+) :last-window-closed) 
       ((#.+action-performed+)   :action-performed)          
       ((#.+mouse-clicked+)      :mouse-clicked)             
       ((#.+mouse-pressed+)      :mouse-pressed)             
@@ -706,6 +706,12 @@ If the backend is not open, nothing is done.
            (("windowResized")           (parse-window-event parameters +WINDOW-RESIZED+))
            (("lastWindowClosed")        (parse-window-event parameters +LAST-WINDOW-CLOSED+)))))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; The JavaBackEnd Protocol.
+;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmacro generate-JBE-functions (&rest definitions)
   `(progn
@@ -829,19 +835,41 @@ If the backend is not open, nothing is done.
  (sound.play                    "Sound.play"                   ((id id))))
 
 
-(defgeneric object-slots (object)
-  (:method-combination append))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; CLOS API
+;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defclass timer ()
+
+;;;----------------------------------------------------------------------------------------
+
+(defclass sloted-object ()
+  ())
+
+(defgeneric object-slots (object)
+  (:method-combination append)
+  (:documentation "
+This generic function collects a p-list of all the slots that should
+be displayed by PRINT-OBJECT.  The APPEND method combination
+automatically appends the lists provided by the OBJECT-SLOT methods on
+the various subclasses.
+")
+  (:method ((self sloted-object))
+    '()))
+
+(defmethod print-object ((self sloted-object) stream)
+  (print-unreadable-object (self stream :identity t :type t)
+    (format stream "~{~S~^ ~}" (object-slots self)))
+  self)
+
+;;;----------------------------------------------------------------------------------------
+
+(defclass timer (sloted-object)
   ((duration-ms :initarg :duration-ms :initform 0.0d0 :type 'double :reader timer-duration-ms)))
 
 (defmethod object-slots append ((self timer))
   (list :duration-ms (timer-duration-ms self)))
-
-(defmethod print-object ((self timer) stream)
-  (print-unreadable-object (self stream :identity t :type t)
-    (format stream "~{~S~^ ~}" (object-slots self)))
-  self)
 
 (defmethod initialize-instance :before ((self timer) &key &allow-other-keys)
   (open-backend))
@@ -863,9 +891,11 @@ If the backend is not open, nothing is done.
     (unregister self)))
 
 
+;;;----------------------------------------------------------------------------------------
+
 (defvar *last-object-id* 0)
 
-(defclass object ()
+(defclass object (sloted-object)
   ((id         :initform (incf *last-object-id*)      :type integer          :reader object-id)
    (x          :initarg :x          :initform 0.0d0   :type double           :reader object-x)
    (y          :initarg :y          :initform 0.0d0   :type double           :reader object-y)
@@ -978,6 +1008,7 @@ If the backend is not open, nothing is done.
 
 
 
+;;;----------------------------------------------------------------------------------------
 
 (defvar *default-label-font* "Dialog-13")
 (defvar *default-corner* 10)
@@ -991,6 +1022,8 @@ If the backend is not open, nothing is done.
 (defun cos-degree (angle) (cos (degree-to-radian angle)))
 (defun sin-degree (angle) (sin (degree-to-radian angle)))
 
+;;;----------------------------------------------------------------------------------------
+
 (defclass rect (object)
   ())
 
@@ -1000,6 +1033,8 @@ If the backend is not open, nothing is done.
 
 ;; 3drect and round-rect are not subclasses of rect to avoid creating
 ;; a rect when we create a 3drect or round-rect.
+
+;;;----------------------------------------------------------------------------------------
 
 (defclass 3drect (object) 
   ((raised :initarg :raised :type boolean   :reader 3drect-raisedp)))
@@ -1016,6 +1051,8 @@ If the backend is not open, nothing is done.
   (setf (slot-value self 'raised) new-value)
   (3drect.set-raised self new-value))
 
+;;;----------------------------------------------------------------------------------------
+
 (defclass round-rect (object)
   ((corner :initarg :corner :initform *default-corner* :type double :reader round-rect-corner)))
 
@@ -1025,6 +1062,8 @@ If the backend is not open, nothing is done.
 (defmethod initialize-instance :after ((self round-rect) &key &allow-other-keys)
   (round-rect.create self (object-width self) (object-height self) (round-rect-corner self))
   (object.set-location self (object-x self) (object-y self)))
+
+;;;----------------------------------------------------------------------------------------
 
 (defclass oval (object)
   ())
@@ -1043,6 +1082,8 @@ If the backend is not open, nothing is done.
           (<= (+ (/ (square dx) (square rx))
                  (/ (square dy) (square ry)))
               1.0d0)))))
+
+;;;----------------------------------------------------------------------------------------
 
 (defclass line (object)
   ())
@@ -1114,6 +1155,8 @@ If the backend is not open, nothing is done.
                         (* (- y y0) (- y1 y0)))
                      (dsq x0 y0 x1 y1))))
            (< (dsq x y (+ x0 (* u (- x1 x0))) (+ y0 (* u (- y1 y0)))) tsq))))))
+
+;;;----------------------------------------------------------------------------------------
 
 (defclass arc (object)
   ((start :initarg :start :type double :reader arc-start)
@@ -1197,6 +1240,8 @@ If the backend is not open, nothing is done.
 (defun adjustable-vector ()
   (make-array 8 :fill-pointer 0 :adjustable t))
 
+;;;----------------------------------------------------------------------------------------
+
 (defclass polygon (object)
   ((vertices :initform (adjustable-vector)
              :type vector  :reader polygon-vertices)
@@ -1271,25 +1316,23 @@ If the backend is not open, nothing is done.
           (= 1 (mod crossings 2))))))
 
 
+;;;----------------------------------------------------------------------------------------
+
 (defclass compound-mixin ()
   ((components :initform (adjustable-vector)
-               :type vector   :reader compound-components)))
+               :type vector   :reader compound-components))
+  (:documentatin "
+
+The TOP-COMPOUND must be initialized by a different JBE message than
+normal COMPOUND.  THEREFORE those classes mustn't share an
+INITIALIZE-INSTANCE in a common superclass.  Hence we implement them
+in teh compound-mixin and have both TOP-COMPOUND and COMPOUND inherit
+from OBJECT and COMPOUND-MIXIN.
+
+"))
 
 (defmethod object-slots append ((self compound-mixin))
   (list :components (compound-components self)))
-
-(defclass compound (object compound-mixin)
-  ())
-
-(defmethod initialize-instance :after ((self compound) &key &allow-other-keys)
-  (compound.create self))
-
-(defclass top-compound (object compound-mixin)
-  ())
-
-(defmethod initialize-instance :after ((self top-compound) &key &allow-other-keys)
-  (top-compound.create self))
-
 
 (defgeneric compound-add (self other)
   (:method   ((self compound-mixin) other)
@@ -1307,6 +1350,23 @@ If the backend is not open, nothing is done.
   (find-if (lambda (object) (object-contains object x y))
            (compound-components self)))
 
+;;;----------------------------------------------------------------------------------------
+
+(defclass compound (object compound-mixin)
+  ())
+
+(defmethod initialize-instance :after ((self compound) &key &allow-other-keys)
+  (compound.create self))
+
+;;;----------------------------------------------------------------------------------------
+
+(defclass top-compound (object compound-mixin)
+  ())
+
+(defmethod initialize-instance :after ((self top-compound) &key &allow-other-keys)
+  (top-compound.create self))
+
+;;;----------------------------------------------------------------------------------------
 
 (defclass label (object)
   ((font    :initarg :font    :initform *default-label-font* :type string :reader label-font)
@@ -1353,6 +1413,7 @@ If the backend is not open, nothing is done.
 (defmethod (setf label-text) (new-text (self label))
   (set-label-text self new-text))
 
+;;;----------------------------------------------------------------------------------------
 
 (defclass image (object)
   ((file-name :initarg :file-name :type string :reader image-file-name)))
@@ -1365,6 +1426,7 @@ If the backend is not open, nothing is done.
     (setf (slot-value self 'width)  (dimension-width size)
           (slot-value self 'height) (dimension-height size))))
 
+;;;----------------------------------------------------------------------------------------
 
 (defclass interactor (object)
   ((action-command :initarg :action-command :initform "" :type string   :reader interactor-action-command)
@@ -1390,12 +1452,16 @@ If the backend is not open, nothing is done.
   (:method   ((self interactor))
     (interactor.get-size self)))
 
+;;;----------------------------------------------------------------------------------------
+
 (defclass button (interactor)
   ())
 
 (defmethod initialize-instance :after ((self button) &key &allow-other-keys)
   (button.create self (interactor-label self))
   (setf (interactor-action-command self) (interactor-action-command self)))
+
+;;;----------------------------------------------------------------------------------------
 
 (defclass check-box (interactor)
   ())
@@ -1412,6 +1478,8 @@ If the backend is not open, nothing is done.
 
 (defmethod (setf check-box-selectedp) (selected (self check-box))
   (set-check-box-selected self selected))
+
+;;;----------------------------------------------------------------------------------------
 
 (defclass slider (interactor)
   ((min   :initarg :min   :type int :reader slider-min)
@@ -1437,6 +1505,8 @@ If the backend is not open, nothing is done.
 (defmethod slider-value ((self slider))
   (slider.get-value self))
 
+;;;----------------------------------------------------------------------------------------
+
 (defclass text-field (interactor)
   ((nchars :initarg :nchars :type int :reader text-field-nchars)))
 
@@ -1456,6 +1526,8 @@ If the backend is not open, nothing is done.
 (defmethod (setf text-field-text) (str (self text-field))
   (set-text-field-text self str))
 
+
+;;;----------------------------------------------------------------------------------------
 
 (defclass chooser (interactor)
   ((items         :initarg :items    :initform (adjustable-vector)  :type vector   :reader chooser-items)
@@ -1483,6 +1555,8 @@ If the backend is not open, nothing is done.
 
 
 
+
+;;;----------------------------------------------------------------------------------------
 
 (defclass window (object)
   ((color :initarg :color :initform "BLACK"    :type string :accessor object-color)
@@ -1651,6 +1725,7 @@ Example:
   (console.clear))
 
 
+;;;----------------------------------------------------------------------------------------
 
 (defclass console-stream (fundamental-character-input-stream
                           fundamental-character-output-stream)
@@ -1800,6 +1875,7 @@ Example:
     (compound-add *w* (make-instance 'button  :label "OK" :action-command "OK"
                                               :x 10 :y 60 :width 60 :height 20)))
   
+  
   (compound-remove *w* (aref (compound-components *w*) 2))
   (defparameter *l1* (aref (compound-components *w*) 0))
   (defparameter *t1* (aref (compound-components *w*) 1))
@@ -1819,3 +1895,4 @@ Example:
   )
 
 
+;;;; THE END ;;;;
