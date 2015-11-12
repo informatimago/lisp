@@ -220,8 +220,17 @@ Quits the JavaBackEnd GUI.
 If the backend is not open, nothing is done.
 "
   (when *backend*
-    #+ccl (ignore-errors (ccl:signal-external-process *backend* 9 :error-if-exited nil))
-    (setf *backend* nil)))
+    (unwind-protect
+         (ignore-errors
+           (window.exit-graphics)
+           ;; #+ccl (ignore-errors (ccl:signal-external-process *backend* 9 :error-if-exited nil))
+           )
+      (setf *backend* nil))))
+
+(defun screen-width    () (window.get-screen-width))
+(defun screen-height   () (window.get-screen-height))
+(defun repaint-windows () (window.repaint))
+(defun pause (milliseconds) (timer.pause milliseconds))
 
 (defun send (command &rest arguments)
   (let ((stream (if *backend*
@@ -648,7 +657,7 @@ If the backend is not open, nothing is done.
 (defun parse-action-event (parameters type)
   (destructuring-bind (id action time) parameters
     (make-instance 'event :type type
-                          :window (get-source (decode-id id))
+                          :window (get-window (decode-id id))
                           :time time
                           :action-command action)))
 
@@ -756,7 +765,7 @@ If the backend is not open, nothing is done.
  (line.create                   "GLine.create"                 ((id id) (x1 double) (y1 double) (x2 double) (y2 double)))
  (line.set-end-point            "GLine.setEndPoint"            ((id id) (x double) (y double)))
  (line.set-start-point          "GLine.setStartPoint"          ((id id) (x double) (y double)))
- (object.contains               "GObject.contains"             ((id id) (x double) (y double)))
+ (object.contains               "GObject.contains"             ((id id) (x double) (y double)) boolean)
  (object.delete                 "GObject.delete"               ((id id)))
  (object.get-bounds             "GObject.getBounds"            ((id id))                                                   rectangle)
  (object.remove                 "GObject.remove"               ((id id) (object id)))
@@ -803,9 +812,9 @@ If the backend is not open, nothing is done.
  (window.exit-graphics          "GWindow.exitGraphics"         ())
  (window.get-screen-height      "GWindow.getScreenHeight"      ()                                                                     double)
  (window.get-screen-width       "GWindow.getScreenWidth"       ()                                                                     double)
- (window.repaint                "GWindow.repaint"              ((id id)))
+ (window.repaint                "GWindow.repaint"              ())
  (window.request-focus          "GWindow.requestFocus"         ((id id)))
- (window.set-resizable          "GWindow.setResizable"         ((id id)))
+ (window.set-resizable          "GWindow.setResizable"         ((id id) (resizable boolean)))
  (window.set-title              "GWindow.setTitle"             ((id id) (title string)))
  (window.set-visible            "GWindow.setVisible"           ((id id) (visible boolean)))
  (top-compound.create           "TopCompound.create"           ((id id)))
@@ -1262,28 +1271,39 @@ If the backend is not open, nothing is done.
           (= 1 (mod crossings 2))))))
 
 
-(defclass compound (object)
+(defclass compound-mixin ()
   ((components :initform (adjustable-vector)
                :type vector   :reader compound-components)))
 
-(defmethod object-slots append ((self compound))
+(defmethod object-slots append ((self compound-mixin))
   (list :components (compound-components self)))
+
+(defclass compound (object compound-mixin)
+  ())
 
 (defmethod initialize-instance :after ((self compound) &key &allow-other-keys)
   (compound.create self))
 
+(defclass top-compound (object compound-mixin)
+  ())
+
+(defmethod initialize-instance :after ((self top-compound) &key &allow-other-keys)
+  (top-compound.create self))
+
+
 (defgeneric compound-add (self other)
-  (:method   ((self compound) other)
+  (:method   ((self compound-mixin) other)
     (vector-push-extend other (compound-components self))
-    (compound.add self other)))
+    (compound.add self other)
+    (set-object-location other (object-x other) (object-y other))))
 
 (defgeneric compound-remove (self other)
-  (:method   ((self compound) other)
-    (setf (slot-value self 'components) (delete (compound-components self) other :count 1))
+  (:method   ((self compound-mixin) other)
+    (setf (slot-value self 'components) (delete other (compound-components self) :count 1))
     (object.remove self other)))
 
 (defgeneric get-object-at (self x y))
-(defmethod get-object-at ((self compound) x y)
+(defmethod get-object-at ((self compound-mixin) x y)
   (find-if (lambda (object) (object-contains object x y))
            (compound-components self)))
 
@@ -1305,6 +1325,12 @@ If the backend is not open, nothing is done.
   (set-label-font self (label-font self))
   (set-label-text self (label-text self)))
 
+(defmethod bounds ((self label))
+  (make-rectangle :x (object-x self)
+                  :y (- (object-y self) (label-ascent self))
+                  :width (object-width self)
+                  :height (object-height self)))
+
 (defmethod set-label-font ((self label) font)
   (setf (slot-value self 'font) font)
   (label.set-font self font)
@@ -1317,7 +1343,6 @@ If the backend is not open, nothing is done.
 (defmethod (setf label-font) (new-font (self label))
   (set-label-font self new-font))
 
-
 (defmethod set-label-text ((self label) text)
   (setf (slot-value self 'text) text)
   (label.set-label self text)
@@ -1328,11 +1353,6 @@ If the backend is not open, nothing is done.
 (defmethod (setf label-text) (new-text (self label))
   (set-label-text self new-text))
 
-(defmethod bounds ((self label))
-  (make-rectangle :x (object-x self)
-                  :y (- (object-y self) (label-ascent self))
-                  :width (object-width self)
-                  :height (object-height self)))
 
 (defclass image (object)
   ((file-name :initarg :file-name :type string :reader image-file-name)))
@@ -1347,8 +1367,11 @@ If the backend is not open, nothing is done.
 
 
 (defclass interactor (object)
-  ((action-command :initarg :action-command :type string   :reader interactor-action-command)
-   (label          :initarg :label          :type string   :reader interactor-label)))
+  ((action-command :initarg :action-command :initform "" :type string   :reader interactor-action-command)
+   (label          :initarg :label          :initform "" :type string   :reader interactor-label)))
+
+(defmethod initialize-instance :after ((self interactor) &key &allow-other-keys)
+  (register self))
 
 (defmethod object-slots append ((self interactor))
   (list :action-command (interactor-action-command self)
@@ -1359,7 +1382,7 @@ If the backend is not open, nothing is done.
     (setf (slot-value self 'action-command) command)
     (interactor.set-action-command self command)))
 
-(defgeneric (setf action-command) (new-command self)
+(defgeneric (setf interactor-action-command) (new-command self)
   (:method   (new-command (self interactor))
     (set-action-command self new-command)))
 
@@ -1372,13 +1395,14 @@ If the backend is not open, nothing is done.
 
 (defmethod initialize-instance :after ((self button) &key &allow-other-keys)
   (button.create self (interactor-label self))
-  (setf (action-command self) (interactor-action-command self)))
+  (setf (interactor-action-command self) (interactor-action-command self)))
 
 (defclass check-box (interactor)
   ())
 
-(defmethod initialize-instance :after ((self button) &key &allow-other-keys)
-  (check-box.create self (interactor-label self)))
+(defmethod initialize-instance :after ((self check-box) &key &allow-other-keys)
+  (check-box.create self (interactor-label self))
+  (setf (interactor-action-command self) (interactor-action-command self)))
 
 (defmethod check-box-selectedp ((self check-box))
   (check-box.is-selected self))
@@ -1400,7 +1424,8 @@ If the backend is not open, nothing is done.
         :max (slider-max self)))
 
 (defmethod initialize-instance :after ((self slider) &key &allow-other-keys)
-  (slider.create self (slider-min self) (slider-max self) (slot-value self 'value)))
+  (slider.create self (slider-min self) (slider-max self) (slot-value self 'value))
+  (setf (interactor-action-command self) (interactor-action-command self)))
 
 (defmethod set-slider-value ((self slider) value)
   (setf (slot-value self 'value) value)
@@ -1419,7 +1444,8 @@ If the backend is not open, nothing is done.
   (list :nchars (text-field-nchars self)))
 
 (defmethod initialize-instance :after ((self text-field) &key &allow-other-keys)
-  (text-field.create self (text-field-nchars self)))
+  (text-field.create self (text-field-nchars self))
+  (setf (interactor-action-command self) (interactor-action-command self)))
 
 (defmethod text-field-text ((self text-field))
   (text-field.get-text self))
@@ -1440,7 +1466,8 @@ If the backend is not open, nothing is done.
         :selected-item (slot-value self 'selected-item)))
 
 (defmethod initialize-instance :after ((self chooser) &key &allow-other-keys)
-  (chooser.create self))
+  (chooser.create self)
+  (setf (interactor-action-command self) (interactor-action-command self)))
 
 (defmethod chooser-add-item ((self chooser) item)
   (chooser.add-item self item))
@@ -1467,11 +1494,10 @@ If the backend is not open, nothing is done.
         :top (window-top self)))
 
 (defmethod initialize-instance :after ((self window) &key &allow-other-keys)
-  (setf (slot-value self 'top) (make-instance 'compound))
-  (top-compound.create (window-top self))
+  (setf (slot-value self 'top) (make-instance 'top-compound))
   (window.create self (object-width self) (object-height self) (window-top self))
   (register self)
-  (window.set-title (window-title self)))
+  (window.set-title self (window-title self)))
 
 (defgeneric close-window (self)
   (:method   ((self window))
@@ -1486,16 +1512,12 @@ If the backend is not open, nothing is done.
   (:method   ((self window))
     (window.clear self)))
 
-(defgeneric repaint-window (self)
-  (:method   ((self window))
-    (window.repaint self)))
-
 (defmethod set-object-visible ((self window) visible)
   (setf (slot-value self 'visible) visible)
   (window.set-visible self visible))
 
-(defmethod set-window-resizable ((self window))
-  (window.set-resizable self))
+(defmethod set-window-resizable ((self window) &optional (resizable t))
+  (window.set-resizable self resizable))
 
 (defmethod set-window-title ((self window) title)
   (setf (slot-value self 'title) title)
@@ -1553,6 +1575,9 @@ If the backend is not open, nothing is done.
   (set-object-location obj (double x) (double y))
   (window.draw self obj))
 
+(defmethod compound-components ((self window))
+  (compound-components (window-top self)))
+
 (defmethod compound-add ((self window) (obj object))
   (compound-add (window-top self) obj))
 
@@ -1568,9 +1593,6 @@ If the backend is not open, nothing is done.
 
 (defmethod get-object-at ((self window) x y)
   (get-object-at (window-top self) (double x) (double y)))
-
-(defun screen-width  () (window.get-screen-width))
-(defun screen-height () (window.get-screen-height))
 
 
 (defmethod register   ((self window))
@@ -1755,14 +1777,45 @@ Example:
 #-(and)
 (progn
 
+  (ccl:setenv "JBETRACE" "true" t)
+  
+  (close-backend)
   (open-backend :program-name "Test Program")
+  
   (defparameter *w* (make-instance 'window :title "Test Window"
-                                           :height 100.0d0
-                                           :width 200.0d0
+                                           :width 512.0d0
+                                           :height 342.0d0
                                            :x 50.0d0
                                            :y 50.0d0))
-  (compound-add *w* (make-instance 'label :text "Label:"
-                                          :x 10 :y 10 :width 100 :height 20))
+  (progn
+    
+    (compound-add *w* (make-instance 'label :text "Text:"
+                                            :x 10 :y 10 :width 100 :height 20))
+    
+    (let ((tf (make-instance 'text-field :nchars 20  :action-command "TEXT"
+                                         :x 10 :y 30 :width 100 :height 20)))
+      (compound-add *w* tf)
+      (set-text-field-text tf "Doctor Who"))
+
+    (compound-add *w* (make-instance 'button  :label "OK" :action-command "OK"
+                                              :x 10 :y 60 :width 60 :height 20)))
+  
+  (compound-remove *w* (aref (compound-components *w*) 2))
+  (defparameter *l1* (aref (compound-components *w*) 0))
+  (defparameter *t1* (aref (compound-components *w*) 1))
+  (defparameter *l2* (aref (compound-components *w*) 2))
+  (defparameter *t2* (aref (compound-components *w*) 3))
+  (progn
+    (set-window-resizable *w*)
+    (progn (set-object-size *w* 512 342)
+           (repaint-windows)
+           (set-object-location *w* 30 30))
+    (progn (set-object-location *l1* 10 40) (set-object-location *t1* 50 20))
+    (set-object-location *l2* 10 70) (set-object-location *t2* 50 50)
+    (set-object-location (aref (compound-components *w*) 2) 60 60)    
+    (compound-components *w*)
+    (text-field-text *t1*)"Doctor Who and the Daleks")
+  (object.contains *w* 11.0d0 61.0d0)
   )
 
 
