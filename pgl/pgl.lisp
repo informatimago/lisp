@@ -446,6 +446,7 @@ If the backend is not open, nothing is done.
         (cmd (format nil "~A(~{~A~^,~})" command arguments))
         (jbetrace (decode-boolean (getenv "JBETRACE"))))
     (when jbetrace (format *trace-output* "~&-> ~A~%" cmd))
+    (clear-input (backend-input *backend*))
     (write-line cmd stream)
     (force-output stream)))
 
@@ -704,7 +705,7 @@ If the backend is not open, nothing is done.
          #\w #\X #\x #\Y #\y #\Z #\z)
          (let ((start pos))
            (loop
-             :while (or (alphanumericp ch) (find ch "_."))
+             :while (and ch (or (alphanumericp ch) (find ch "_.")))
              :do (eat-char scanner)
                  (setf ch (next-char scanner)))
            (let ((token (nsubseq src start pos)))
@@ -865,7 +866,8 @@ If the backend is not open, nothing is done.
                  (destructuring-bind (name jbe-name lambda-list &rest options)
                      definition
                    (let ((nolock      (find :nolock options))
-                         (result-type (first (remove :nolock options)))
+                         (errorp      (find :error  options))
+                         (result-type (first (remove :error (remove :nolock options))))
                          (parameters  (mapcar (function first) lambda-list)))
                      `(defun ,name ,parameters
                         (let ,(mapcar (lambda (parameter)
@@ -880,6 +882,8 @@ If the backend is not open, nothing is done.
                                lambda-list)
                           (with-jbe-pipe-error-handler
                             ,@(let ((body `((send ,jbe-name ,@parameters)
+                                            ,@(when errorp
+                                                '((get-error)))
                                             ,@(ecase result-type
                                                 ((nil)       '((values)))
                                                 ((string)    '((get-result)))
@@ -887,8 +891,7 @@ If the backend is not open, nothing is done.
                                                 ((int)       '((get-int)))
                                                 ((double)    '((get-double)))
                                                 ((dimension) '((get-dimension)))
-                                                ((rectangle) '((get-rectangle)))
-                                                ((:error)    '((get-error)))))))
+                                                ((rectangle) '((get-rectangle)))))))
                                 (if nolock
                                     body
                                     `((with-backend-locked *backend*
@@ -1737,7 +1740,7 @@ from OBJECT and COMPOUND-MIXIN.
 ;;;----------------------------------------------------------------------------------------
 
 (defclass image (object)
-  ((filename :initarg :file-name :type string :reader filename)))
+  ((filename :initarg :filename :type string :reader filename)))
 
 (defmethod slots append ((self image))
   (list :filename (filename self)))
@@ -1746,7 +1749,7 @@ from OBJECT and COMPOUND-MIXIN.
   (let ((size (image.create self (filename self))))
     (setf (slot-value self 'width)  (dimension-width size)
           (slot-value self 'height) (dimension-height size))
-    (%set-fillable-attributes self)))
+    (%set-object-attributes self)))
 
 ;;;----------------------------------------------------------------------------------------
 
