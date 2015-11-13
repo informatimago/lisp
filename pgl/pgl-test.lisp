@@ -165,10 +165,6 @@
   (object.contains *w* 11.0d0 61.0d0)
 
 
-
-
-
-
   )
 
 ;;;; THE END ;;;;

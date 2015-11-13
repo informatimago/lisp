@@ -1,6 +1,6 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               pgl-ball.lisp
+;;;;FILE:               ball.lisp
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
@@ -32,11 +32,11 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(defpackage "COM.INFORMATIMAGO.PORTABLE-GRAPHICS-LIBRARY.TEST.BALL"
+(defpackage "COM.INFORMATIMAGO.PORTABLE-GRAPHICS-LIBRARY.EXAMPLE.BALL"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.PORTABLE-GRAPHICS-LIBRARY")
   (:export "RUN"))
-(in-package "COM.INFORMATIMAGO.PORTABLE-GRAPHICS-LIBRARY.TEST.BALL")
+(in-package "COM.INFORMATIMAGO.PORTABLE-GRAPHICS-LIBRARY.EXAMPLE.BALL")
 
 
 (defclass ball (compound)
