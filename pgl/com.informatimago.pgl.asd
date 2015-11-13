@@ -1,12 +1,12 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               com.informatimago.clext.pgl.asd
+;;;;FILE:               com.informatimago.pgl.asd
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    ASD file to load the com.informatimago.clext.pgl library.
+;;;;    ASD file to load the com.informatimago.pgl library.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
@@ -33,7 +33,7 @@
 ;;;;**************************************************************************
 
 
-(asdf:defsystem "com.informatimago.clext.pgl"
+(asdf:defsystem "com.informatimago.pgl"
   ;; system attributes:
   :description "Portable Graphics Library (Stanford Portable Library)"
   :long-description "
@@ -51,7 +51,7 @@ https://github.com/cs50/spl
   :version "1.0.0"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Automn 2015")
-               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.clext/")
+               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago/")
                ((#:albert #:formats)             . ("docbook"))
                ((#:albert #:docbook #:template)  . "book")
                ((#:albert #:docbook #:bgcolor)   . "white")
@@ -60,7 +60,7 @@ https://github.com/cs50/spl
                "parse-number"
                "com.informatimago.common-lisp.cesarum")
   :components ((:file "pgl" :depends-on ()))
-  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.clext.pgl.test")))
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.pgl.test")))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8)
 
 #-ccl (warn "Not yet completed on ~A" (lisp-implementation-type))

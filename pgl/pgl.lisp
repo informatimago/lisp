@@ -50,7 +50,7 @@
 ;;;;**************************************************************************
 
 
-(defpackage "COM.INFORMATIMAGO.CLEXT.PORTABLE-GRAPHICS-LIBRARY.LOW-LEVEL"
+(defpackage "COM.INFORMATIMAGO.PORTABLE-GRAPHICS-LIBRARY.LOW-LEVEL"
   (:nicknames "PGL.LOW-LEVEL")
   (:use)
   (:documentation "
@@ -63,46 +63,41 @@ Copyright Pascal J. Bourguignon 2015 - 2015
 Licensed under the AGPL3.
 
 ")
-  (:export "FILE.OPEN-FILE-DIALOG" "3D-RECT.CREATE" "3D-RECT.SET-RAISED"
-           "ARC.CREATE" "ARC.SET-FRAME-RECTANGLE" "ARC.SET-START-ANGLE"
-           "ARC.SET-SWEEP-ANGLE" "BUTTON.CREATE" "CHECK-BOX.CREATE"
-           "CHECK-BOX.IS-SELECTED" "CHECK-BOX.SET-SELECTED" "COMPOUND.ADD"
-           "COMPOUND.CREATE" "EVENT.GET-NEXT-EVENT" "EVENT.WAIT-FOR-EVENT"
-           "IMAGE.CREATE" "INTERACTOR.SET-ACTION-COMMAND" "INTERACTOR.GET-SIZE"
-           "LABEL.CREATE" "LABEL.GET-FONT-ASCENT" "LABEL.GET-FONT-DESCENT"
-           "LABEL.GET-SIZE" "LABEL.SET-FONT" "LABEL.SET-LABEL" "LINE.CREATE"
-           "LINE.SET-END-POINT" "LINE.SET-START-POINT" "OBJECT.CONTAINS"
-           "OBJECT.DELETE" "OBJECT.GET-BOUNDS" "OBJECT.REMOVE" "OBJECT.ROTATE"
-           "OBJECT.SCALE" "OBJECT.SEND-BACKWARD" "OBJECT.SEND-FORWARD"
-           "OBJECT.SEND-TO-BACK" "OBJECT.SEND-TO-FRONT" "OBJECT.SET-COLOR"
-           "OBJECT.SET-FILL-COLOR" "OBJECT.SET-FILLED" "OBJECT.SET-LINE-WIDTH"
-           "OBJECT.SET-LOCATION" "OBJECT.SET-SIZE" "OBJECT.SET-VISIBLE"
-           "OVAL.CREATE" "POLYGON.ADD-VERTEX" "POLYGON.CREATE" "RECT.CREATE"
-           "ROUND-RECT.CREATE" "SLIDER.CREATE" "SLIDER.GET-VALUE"
-           "SLIDER.SET-VALUE" "TEXT-FIELD.CREATE" "TEXT-FIELD.GET-TEXT"
-           "TEXT-FIELD.SET-TEXT" "CHOOSER.CREATE" "CHOOSER.ADD-ITEM"
-           "CHOOSER.GET-SELECTED-ITEM" "CHOOSER.SET-SELECTED-ITEM" "TIMER.CREATE"
-           "TIMER.DELETE" "TIMER.PAUSE" "TIMER.START" "TIMER.STOP"
-           "WINDOW.ADD-TO-REGION" "WINDOW.SET-REGION-ALIGNMENT" "WINDOW.CLEAR"
-           "WINDOW.CLOSE" "WINDOW.CREATE" "WINDOW.DELETE" "WINDOW.DRAW"
-           "WINDOW.EXIT-GRAPHICS" "WINDOW.GET-SCREEN-HEIGHT"
-           "WINDOW.GET-SCREEN-WIDTH" "WINDOW.REPAINT" "WINDOW.REQUEST-FOCUS"
-           "WINDOW.SET-RESIZABLE" "WINDOW.SET-TITLE" "WINDOW.SET-VISIBLE"
-           "TOP-COMPOUND.CREATE" "CONSOLE.CLEAR" "CONSOLE.GET-LINE"
-           "CONSOLE.PRINT" "CONSOLE.PRINTLN" "CONSOLE.SET-FONT"
-           "CONSOLE.SET-SIZE" "SOUND.CREATE" "SOUND.DELETE" "SOUND.PLAY")
   (:export
-   ;; The base types and structures:
-   "INT" "DOUBLE" "DIMENSION" "MAKE-DIMENSION" "COPY-DIMENSION"
-   "DIMENSION-P" "DIMENSION-WIDTH" "DIMENSION-HEIGHT" "POINT"
-   "MAKE-POINT" "COPY-POINT" "POINT-P" "POINT-X" "POINT-Y"
-   "RECTANGLE" "MAKE-RECTANGLE" "COPY-RECTANGLE" "RECTANGLE-P"
-   "RECTANGLE-X" "RECTANGLE-Y" "RECTANGLE-WIDTH"
-   "RECTANGLE-HEIGHT"))
+   ;; The JavaBackEnd API functions.
+   "FILE.OPEN-FILE-DIALOG" "3D-RECT.CREATE" "3D-RECT.SET-RAISED"
+   "ARC.CREATE" "ARC.SET-FRAME-RECTANGLE" "ARC.SET-START-ANGLE"
+   "ARC.SET-SWEEP-ANGLE" "BUTTON.CREATE" "CHECK-BOX.CREATE"
+   "CHECK-BOX.IS-SELECTED" "CHECK-BOX.SET-SELECTED" "COMPOUND.ADD"
+   "COMPOUND.CREATE" "EVENT.GET-NEXT-EVENT" "EVENT.WAIT-FOR-EVENT"
+   "IMAGE.CREATE" "INTERACTOR.SET-ACTION-COMMAND" "INTERACTOR.GET-SIZE"
+   "LABEL.CREATE" "LABEL.GET-FONT-ASCENT" "LABEL.GET-FONT-DESCENT"
+   "LABEL.GET-SIZE" "LABEL.SET-FONT" "LABEL.SET-LABEL" "LINE.CREATE"
+   "LINE.SET-END-POINT" "LINE.SET-START-POINT" "OBJECT.CONTAINS"
+   "OBJECT.DELETE" "OBJECT.GET-BOUNDS" "OBJECT.REMOVE" "OBJECT.ROTATE"
+   "OBJECT.SCALE" "OBJECT.SEND-BACKWARD" "OBJECT.SEND-FORWARD"
+   "OBJECT.SEND-TO-BACK" "OBJECT.SEND-TO-FRONT" "OBJECT.SET-COLOR"
+   "OBJECT.SET-FILL-COLOR" "OBJECT.SET-FILLED" "OBJECT.SET-LINE-WIDTH"
+   "OBJECT.SET-LOCATION" "OBJECT.SET-SIZE" "OBJECT.SET-VISIBLE"
+   "OVAL.CREATE" "POLYGON.ADD-VERTEX" "POLYGON.CREATE" "RECT.CREATE"
+   "ROUND-RECT.CREATE" "SLIDER.CREATE" "SLIDER.GET-VALUE"
+   "SLIDER.SET-VALUE" "TEXT-FIELD.CREATE" "TEXT-FIELD.GET-TEXT"
+   "TEXT-FIELD.SET-TEXT" "CHOOSER.CREATE" "CHOOSER.ADD-ITEM"
+   "CHOOSER.GET-SELECTED-ITEM" "CHOOSER.SET-SELECTED-ITEM" "TIMER.CREATE"
+   "TIMER.DELETE" "TIMER.PAUSE" "TIMER.START" "TIMER.STOP"
+   "WINDOW.ADD-TO-REGION" "WINDOW.SET-REGION-ALIGNMENT" "WINDOW.CLEAR"
+   "WINDOW.CLOSE" "WINDOW.CREATE" "WINDOW.DELETE" "WINDOW.DRAW"
+   "WINDOW.EXIT-GRAPHICS" "WINDOW.GET-SCREEN-HEIGHT"
+   "WINDOW.GET-SCREEN-WIDTH" "WINDOW.REPAINT" "WINDOW.REQUEST-FOCUS"
+   "WINDOW.SET-RESIZABLE" "WINDOW.SET-TITLE" "WINDOW.SET-VISIBLE"
+   "TOP-COMPOUND.CREATE" "CONSOLE.CLEAR" "CONSOLE.GET-LINE"
+   "CONSOLE.PRINT" "CONSOLE.PRINTLN" "CONSOLE.SET-FONT"
+   "CONSOLE.SET-SIZE" "SOUND.CREATE" "SOUND.DELETE" "SOUND.PLAY"))
 
+(defpackage "COM.INFORMATIMAGO.PORTABLE-GRAPHICS-LIBRARY"
 
-(defpackage "COM.INFORMATIMAGO.CLEXT.PORTABLE-GRAPHICS-LIBRARY"
   (:nicknames "PGL")
+  
   (:documentation "
 
 This package implements a Portable Graphics Library using the
@@ -114,32 +109,40 @@ It defines and export a set of CLOS classes to represent the GUI
 objects of the JavaBackEnd, along with methods to send the requests
 and process the results.
 
+The access to the JavaBackEnd is guarded by a mutex, so it should be
+possible to accessed from multiple threads.  However, the objects
+defined in this library are not thread-safe, so care should be taken
+when mutating the same object from several threads.  It is assumed
+that distinct threads will work with different objects.
+
 Copyright Pascal J. Bourguignon 2015 - 2015
 Licensed under the AGPL3.
 
 ")
+
   (:use "COMMON-LISP"
         "TRIVIAL-GRAY-STREAMS"
+        "BORDEAUX-THREADS"
         "ORG.MAPCAR.PARSE-NUMBER"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.QUEUE"
-        "COM.INFORMATIMAGO.CLEXT.PORTABLE-GRAPHICS-LIBRARY.LOW-LEVEL")
+        "COM.INFORMATIMAGO.PORTABLE-GRAPHICS-LIBRARY.LOW-LEVEL")
+
   (:import-from "UIOP" "GETENV")
 
   (:export
-
-
-   )
-  
-  (:export
    ;; The base types and structures:
-   "INT" "DOUBLE" "DIMENSION" "MAKE-DIMENSION" "COPY-DIMENSION"
-   "DIMENSION-P" "DIMENSION-WIDTH" "DIMENSION-HEIGHT" "POINT"
-   "MAKE-POINT" "COPY-POINT" "POINT-P" "POINT-X" "POINT-Y"
+   "INT" "DOUBLE"
+
+   "DIMENSION" "MAKE-DIMENSION" "COPY-DIMENSION" "DIMENSION-P"
+   "DIMENSION-WIDTH" "DIMENSION-HEIGHT"
+
+   "POINT" "MAKE-POINT" "COPY-POINT" "POINT-P" "X" "Y"
+   
    "RECTANGLE" "MAKE-RECTANGLE" "COPY-RECTANGLE" "RECTANGLE-P"
-   "RECTANGLE-X" "RECTANGLE-Y" "RECTANGLE-WIDTH"
-   "RECTANGLE-HEIGHT")
+   "X" "Y" "WIDTH" "HEIGHT"
+   "RECTANGLE-EMPTYP" "RECTANGLE-CONTAINS-POINT-P")
 
   (:export
    ;; Event Masks:
@@ -149,38 +152,245 @@ Licensed under the AGPL3.
    "+WINDOW-CLOSED+" "+WINDOW-RESIZED+" "+ACTION-PERFORMED+"
    "+MOUSE-CLICKED+" "+MOUSE-PRESSED+" "+MOUSE-RELEASED+" "+MOUSE-MOVED+"
    "+MOUSE-DRAGGED+" "+KEY-PRESSED+" "+KEY-RELEASED+" "+KEY-TYPED+"
-   "+TIMER-TICKED+")
-  
-  (:export "OPEN-BACKEND" "CLOSE-BACKEND"
+   "+TIMER-TICKED+"
+   ;; Event class:
+   "EVENT" "EVENT-TYPE" "EVENT-MODIFIERS" "EVENT-TIME" "EVENT-WINDOW"
+   "EVENT-SOURCE" "EVENT-ACTION-COMMAND" "EVENT-X" "EVENT-Y"
+   "EVENT-KEY-CHAR" "EVENT-KEY-CODE" "EVENT-TIMER"
+   "EVENT-TYPE-KEYWORD"
+   ;; Event functions:
+   "WAIT-FOR-CLICK" "WAIT-FOR-EVENT" "GET-NEXT-EVENT")
 
-           )
+  (:export
+   "*DEFAULT-LABEL-FONT*" "*DEFAULT-CORNER*" "*ARC-TOLERANCE*"
+   "*LINE-TOLERANCE*"
+   "SQUARE" "DEGREE-TO-RADIAN" "RADIAN-TO-DEGREE" "COS-DEGREE" "SIN-DEGREE"
+   "SCREEN-WIDTH" "SCREEN-HEIGHT" "PAUSE")
+  
+  (:export
+   ;; Portable Graphic Library classes and methods:
+   "TIMER" "DURATION-MS" "START-TIMER" "STOP-TIMER"
+   "OBJECT" "ID" "X" "Y" "WIDTH" "HEIGHT" "COLOR" "FILL-COLOR"
+   "LINE-WIDTH" "FILLED" "VISIBLE"  "SET-LOCATION" "SET-SIZE"
+   "SET-COLOR" "SET-FILL-COLOR" "SET-LINE-WIDTH" "SET-FILLED"
+   "SET-VISIBLE" "ROTATE" "SCALE" "SEND-BACKWARD" "SEND-FORWARD"
+   "SEND-TO-BACK" "SEND-TO-FRONT"
+   "RECT" "3DRECT" "RAISED" "ROUND-RECT" "CORNER" "OVAL" "CONTAINS"
+   "LINE" "START-POINT" "END-POINT" "SET-START-POINT" "SET-END-POINT"
+   "ARC" "START" "SWEEP" "SET-FRAME-RECTANGLE" "CONTAINS-ANGLE"
+   "BOUNDS" "POLYGON" "VERTICES" "CX" "CY" "ADD-VERTEX" "ADD-VERTICES"
+   "ADD-EDGE" "ADD-POLAR-EDGE" "COMPONENTS" "COMPOUND-ADD"
+   "COMPOUND-REMOVE" "GET-OBJECT-AT" "COMPOUND" "TOP-COMPOUND" "LABEL"
+   "FONT" "TEXT" "ASCENT" "DESCENT" "SET-FONT" "SET-TEXT" "IMAGE"
+   "FILENAME" "INTERACTOR" "ACTION-COMMAND" "LABEL"
+   "SET-ACTION-COMMAND" "GET-SIZE" "BUTTON" "CHECK-BOX" "SELECTED"
+   "SELECTED" "SET-SELECTED" "SLIDER" "MINIMUM" "MAXIMUM" "VALUE"
+   "SET-VALUE" "TEXT-FIELD" "NCHARS" "CHOOSER" "ITEMS" "SELECTED-ITEM"
+   "ADD-ITEM" "SET-SELECTED-ITEM" "WINDOW" "COLOR" "TITLE" "RESIZABLE"
+   "TOP-COMPOUND" "CLOSE-WINDOW" "REQUEST-FOCUS" "REPAINT-WINDOW" "CLEAR-WINDOW"
+   "SET-VISIBLE" "SET-RESIZABLE" "SET-TITLE" "DRAW-LINE"
+   "DRAW-POLAR-LINE" "DRAW-OVAL" "FILL-OVAL" "DRAW-RECT" "FILL-RECT"
+   "DRAW" "DRAW-AT" "COMPOUND-ADD-AT" "COMPOUND-ADD-TO-REGION" "FREE")
+  
   (:export
    ;; The *console-io* stream:
-   "*CONSOLE-IO*" "CONSOLE-STREAM"
-   "CONSOLE-SET-SIZE" "CONSOLE-SET-FONT" "CONSOLE-CLEAR"))
-(in-package "COM.INFORMATIMAGO.CLEXT.PORTABLE-GRAPHICS-LIBRARY")
+   "*CONSOLE-IO*" "CONSOLE-STREAM" "CONSOLE-SET-SIZE"
+   "CONSOLE-SET-FONT" "CONSOLE-CLEAR")
+
+  (:export
+   "*COLORS*" "*BLACK*" "*DARK-GRAY*" "*GRAY*" "*LIGHT-GRAY*"
+   "*WHITE*" "*RED*" "*YELLOW*" "*GREEN*" "*CYAN*" "*BLUE*"
+   "*MAGENTA*" "*ORANGE*" "*PINK*")
+
+  (:export
+   ;; Backend.
+   "OPEN-BACKEND" "CLOSE-BACKEND" "*PROGRAM-NAME*"
+   "*SPL-PATH*" "JBE-ERROR" "JBE-SYNTAX-ERROR")
+
+  (:export
+   ;; Extensions
+   "WINDOWS" "INTERACTORS" "TIMERS"))
+
+(in-package "COM.INFORMATIMAGO.PORTABLE-GRAPHICS-LIBRARY")
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Basic types and geometric structures
+;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 (deftype int    () `(integer ,(- (expt 2 31)) ,(- (expt 2 31) 1)))
 (deftype double () 'double-float)
+(defun int (real) (round real))
+(defun double (real) (coerce real 'double))
 (defstruct point     (x 0.0d0) (y 0.0d0))
 (defstruct dimension (width 0.0d0) (height 0.0d0))
 (defstruct rectangle (x 0.0d0) (y 0.0d0) (width 0.0d0) (height 0.0d0))
-(defun int (real) (round real))
-(defun double (real) (coerce real 'double))
+
+(defgeneric x (object)
+  (:method ((p point)) (x p))
+  (:method ((r rectangle)) (x r)))
+(defgeneric y (object)
+  (:method ((p point)) (y p))
+  (:method ((r rectangle)) (y r)))
+(defgeneric width (object)
+  (:method ((p point)) 0)
+  (:method ((r rectangle)) (width r))
+  (:method ((d dimension)) (dimension-width d)))
+(defgeneric height (object)
+  (:method ((p point)) 0)
+  (:method ((r rectangle)) (height r))
+  (:method ((d dimension)) (dimension-height d)))
 
 (defun rectangle-emptyp (r)
-  (or (not (plusp (rectangle-width r)))
-      (not (plusp (rectangle-height r)))))
+  "Whether the rectangle R is empty (null area)."
+  (or (not (plusp (width r)))
+      (not (plusp (height r)))))
 
 (defun rectangle-contains-point-p (r p)
-  (and (<= (rectangle-x r) (point-x p) (+ (rectangle-x r) (rectangle-width r)))
-       (<= (rectangle-y r) (point-y p) (+ (rectangle-y r) (rectangle-height r)))))
+  "Whether the point P is inside the rectangle R (inclusive of the perimeter."
+  (and (<= (x r) (x p) (+ (x r) (width r)))
+       (<= (y r) (y p) (+ (y r) (height r)))))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Events
+;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+ (defconstant +action-event+        #x010)
+ (defconstant +key-event+           #x020)
+ (defconstant +timer-event+         #x040)
+ (defconstant +window-event+        #x080)
+ (defconstant +mouse-event+         #x100)
+ (defconstant +click-event+         #x200)
+ (defconstant +any-event+           #x3f0)
+ (defconstant +window-closed+       (+ +window-event+ 1))
+ (defconstant +window-resized+      (+ +window-event+ 2))
+ (defconstant +last-window-closed+  (+ +window-event+ 15))
+ (defconstant +action-performed+    (+ +action-event+ 1))
+ (defconstant +mouse-clicked+       (+ +mouse-event+ 1))
+ (defconstant +mouse-pressed+       (+ +mouse-event+ 2))
+ (defconstant +mouse-released+      (+ +mouse-event+ 3))
+ (defconstant +mouse-moved+         (+ +mouse-event+ 4))
+ (defconstant +mouse-dragged+       (+ +mouse-event+ 5))
+ (defconstant +key-pressed+         (+ +key-event+ 1))
+ (defconstant +key-released+        (+ +key-event+ 2))
+ (defconstant +key-typed+           (+ +key-event+ 3))
+ (defconstant +timer-ticked+        (+ +timer-event+ 1)))
+
+(defclass event ()
+  ((type           :initarg :type           :initform 0     :type int                 :reader event-type)
+   (modifiers      :initarg :modifiers      :initform 0     :type int                 :reader event-modifiers)
+   (time           :initarg :time           :initform 0.0d0 :type double              :reader event-time)
+   (window         :initarg :window         :initform nil   :type (or null window)    :reader event-window)
+   (source         :initarg :source         :initform nil   :type (or null object)    :reader event-source)
+   (action-command :initarg :action-command :initform nil   :type (or null string)    :reader event-action-command)
+   (x              :initarg :x              :initform 0.0d0 :type double              :reader event-x)
+   (y              :initarg :y              :initform 0.0d0 :type double              :reader event-y)
+   (key-char       :initarg :key-char       :initform nil   :type (or null character) :reader event-key-char)
+   (key-code       :initarg :key-code       :initform 0     :type int                 :reader event-key-code)
+   (timer          :initarg :timer          :initform nil   :type (or null timer)     :reader event-timer)))
+
+(defmethod print-object ((self event) stream)
+  (print-unreadable-object (self stream :identity t :type t)
+    (format stream "~{~S~^ ~}" (list :type (event-type-keyword self)
+                                     :modifiers (event-modifiers self)
+                                     :time (event-time self)
+                                     :window (event-window self)))
+    (case (logand +any-event+ (event-type self))
+      ((#.+action-event+)
+       (format stream "~{ ~S~}" (list :source (event-source self)
+                                      :action-command (event-action-command self))))
+      ((#.+key-event+)
+       (format stream "~{ ~S~}" (list :key-char (event-key-char self)
+                                      :key-code (event-key-code self))))           
+      ((#.+timer-event+)
+       (format stream "~{ ~S~}" (list :timer (event-timer self))))         
+      ((#.+window-event+))        
+      ((#.+mouse-event+ #.+click-event+)
+       (format stream "~{ ~S~}" (list :x (event-x self)
+                                      :y (event-y self))))))
+  self)
+
+(defmethod event-type ((self null)) 0)
+
+(defgeneric event-type-keyword (event)
+  (:documentation "
+RETURN: the event type as a lisp keyword, one of:
+        :WINDOW-CLOSED :WINDOW-RESIZED :LAST-WINDOW-CLOSED
+        :ACTION-PERFORMED :MOUSE-CLICKED :MOUSE-PRESSED
+        :MOUSE-RELEASED :MOUSE-MOVED :MOUSE-DRAGGED :KEY-PRESSED
+        :KEY-RELEASED :KEY-TYPED :TIMER-TICKED 
+")
+  (:method ((event null))
+    nil)
+  (:method ((event event))
+    (ecase (event-type event)
+      ((#.+window-closed+)      :window-closed)             
+      ((#.+window-resized+)     :window-resized)            
+      ((#.+last-window-closed+) :last-window-closed) 
+      ((#.+action-performed+)   :action-performed)          
+      ((#.+mouse-clicked+)      :mouse-clicked)             
+      ((#.+mouse-pressed+)      :mouse-pressed)             
+      ((#.+mouse-released+)     :mouse-released)            
+      ((#.+mouse-moved+)        :mouse-moved)               
+      ((#.+mouse-dragged+)      :mouse-dragged)             
+      ((#.+key-pressed+)        :key-pressed)               
+      ((#.+key-released+)       :key-released)              
+      ((#.+key-typed+)          :key-typed)                 
+      ((#.+timer-ticked+)       :timer-ticked))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Backend
+;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defvar *backend-lock* (bt:make-lock "*BACKEND*"))
 (defvar *backend* nil)
 
-(defvar *spl-path* "/usr/local/lib/spl.jar")
+(defstruct backend
+  output
+  input
+  process
+  lock)
+
+(defun make-backend-pipe (command arguments)
+  (let ((process (progn
+                   #+ccl (ccl:run-program command arguments
+                                          :wait nil :pty t
+                                          :input :stream
+                                          :output :stream
+                                          :error *error-output*
+                                          :sharing :lock)
+                   #-ccl (warn "~S not implemented yet." 'make-backend-pipe)
+                   #-ccl t)))
+    (make-backend
+     :process process
+     :output (progn #+ccl (ccl::external-process-input process)
+                    #-ccl (warn "~S not implemented yet." 'backend-output)
+                    #-ccl *standard-output*)
+     :input (progn
+              #+ccl (ccl::external-process-output process)
+              #-ccl (warn "~S not implemented yet." 'backend-input)
+              #-ccl *standard-output*)
+     :lock (bt:make-lock "JBEBackend"))))
+
+(defmacro with-backend-locked (backend &body body)
+  `(bt:with-lock-held ((backend-lock ,backend))
+     ,@body))
+
+
+
+(defvar *spl-path*     "/usr/local/lib/spl.jar"
+  "The path to the spl.jar; used unless OPEN-BACKEND :CLASSPATH
+argument or the CLASSPATH environment variable says otherwise.")
 
 (defvar *program-name* "Untitled"
   "The default program name, displayed in the back-end GUI menubar.")
@@ -199,42 +409,39 @@ CLASSPATH:    If given, then it should be the path to the spl.jar file.
 PROGRAM-NAME: (defaults to *PROGRAM-NAME*) gives the name of
               the program to be displayed in the GUI menubar.
 "
-  (unless *backend*
-    (setf *program-name* program-name)
-    (let ((classpath (or classpath (getenv "CLASSPATH") *spl-path*)))
-      #+ccl
-      (setf *backend* (ccl:run-program "java" (list (format nil "-Xdock:name=~A" program-name)
-                                                    "-classpath"
-                                                    classpath
-                                                    "stanford/spl/JavaBackEnd"
-                                                    program-name)  
-                                       :wait nil :pty t
-                                       :input :stream
-                                       :output :stream
-                                       :error *error-output*
-                                       :sharing :lock)))))
+  (bt:with-lock-held (*backend-lock*)
+    (unless *backend*
+      (setf *program-name* program-name)
+      (let ((classpath (or classpath (getenv "CLASSPATH") *spl-path*)))
+        (setf *backend* (make-backend-pipe "java" (list (format nil "-Xdock:name=~A" program-name)
+                                                        "-classpath"
+                                                        classpath
+                                                        "stanford/spl/JavaBackEnd"
+                                                        program-name)))))))
 
+(defvar *closing* nil)
 (defun close-backend ()
   "
 Quits the JavaBackEnd GUI.
 If the backend is not open, nothing is done.
 "
-  (when *backend*
-    (unwind-protect
-         (ignore-errors
-           (window.exit-graphics)
-           ;; #+ccl (ignore-errors (ccl:signal-external-process *backend* 9 :error-if-exited nil))
-           )
-      (setf *backend* nil))))
+  (unless *closing*
+    (let ((*closing* t))
+      (bt:with-lock-held (*backend-lock*)
+        (when *backend*
+          (unwind-protect
+               (ignore-errors
+                (window.exit-graphics)
+                ;; #+ccl (ignore-errors (ccl:signal-external-process (backend-process *backend*) 9 :error-if-exited nil))
+                )
+            (clear-registers)
+            (setf *backend* nil)))))))
 
-(defun screen-width    () (window.get-screen-width))
-(defun screen-height   () (window.get-screen-height))
-(defun repaint-windows () (window.repaint))
-(defun pause (milliseconds) (timer.pause milliseconds))
 
 (defun send (command &rest arguments)
+  "Sends a Java Back End command to the Java Back End."
   (let ((stream (if *backend*
-                    (ccl::external-process-input *backend*)
+                    (backend-output *backend*)
                     *standard-output*))
         (cmd (format nil "~A(~{~A~^,~})" command arguments))
         (jbetrace (decode-boolean (getenv "JBETRACE"))))
@@ -244,29 +451,37 @@ If the backend is not open, nothing is done.
 
 
 (define-condition jbe-error (simple-error)
-  ())
+  ()
+  (:documentation "Condition for Java Back End errors."))
 
 (define-condition jbe-syntax-error (jbe-error)
-  ())
+  ()
+  (:documentation "Condition for Java Back End errors in parsing responses."))
 
+(defvar *event-queue*         (make-queue))
 
-(defvar *sources*     (make-hash-table))
-(defvar *windows*     (make-hash-table))
-(defvar *timers*      (make-hash-table))
-(defvar *event-queue* (make-queue))
+(defvar *source-registry*     (make-hash-table))
+(defvar *window-registry*     (make-hash-table))
+(defvar *timer-registry*      (make-hash-table))
 
-(defun gid (id) (format nil "\"0x~X\"" id))
+(defun clear-registers ()
+  (clrhash *source-registry*)
+  (clrhash *window-registry*)
+  (clrhash *timer-registry*)
+  (setf *event-queue* (make-queue)))
 
-(defun decode-id (id)
-  (assert (prefixp "0x" id))
-  (parse-integer id :start 2 :radix 16))
+(defun get-source (id) (gethash id *source-registry*))
+(defun get-window (id) (gethash id *window-registry*))
+(defun get-timer  (id) (gethash id *timer-registry*))
 
-(defun get-source (id) (gethash id *sources*))
-(defun get-window (id) (gethash id *windows*))
-(defun get-timer  (id) (gethash id *timers*))
+(defun windows     ()  (hash-table-values *window-registry*))
+(defun interactors ()  (hash-table-values *source-registry*))
+(defun timers      ()  (hash-table-values *timer-registry*))
 
 (defgeneric register (self)) 
 (defgeneric unregister (self)) 
+
+
 
 
 (defun string-unescape (string)
@@ -332,19 +547,14 @@ If the backend is not open, nothing is done.
                    (format t "\\~3,'0o" (logand #xff (char-code ch)))))))
       (princ "\""))))
 
-(defun test/string-escape ()
-  (assert (string= (string-escape (coerce #(#\bel #\bs #\page #\newline #\return #\tab #\vt #\" #\\) 'string))
-                   "\"\\a\\b\\f\\n\\r\\t\\v\\042\\\\\""))
-  (assert (string= (string-unescape "\"\\a\\b\\f\\n\\r\\t\\v\\042\\\\\"")        
-                   (coerce #(#\bel #\bs #\page #\newline #\return #\tab #\vt #\" #\\) 'string)))
-  (assert (string= (string-escape "Hello\\ World\"!")
-                   "\"Hello\\\\ World\\042!\""))
-  (assert (string= (string-unescape "\"Hello\\\\ World\\042!\"")
-                   "Hello\\ World\"!"))
-  :success)
+(defun gid (id) (format nil "\"0x~X\"" id))
 
+(defun decode-id (id)
+  (assert (prefixp "0x" id))
+  (parse-integer id :start 2 :radix 16))
 
 (defun encode-double (value)
+  ;; We must generate Java floating points.
   (substitute #\e #\D (format nil "~:@(~,,,,,,'dE~)" value)
               :test (function char-equal)))
 
@@ -353,9 +563,8 @@ If the backend is not open, nothing is done.
        (plusp (length value))
        (char-equal #\t (aref value 0))))
 
-
 (defun get-result ()
-  (let ((stream   (ccl::external-process-output *backend*))
+  (let ((stream   (backend-input *backend*))
         (jbetrace (decode-boolean (getenv "JBETRACE"))))
     (handler-case
         (loop
@@ -365,12 +574,12 @@ If the backend is not open, nothing is done.
                    (return-from get-result (subseq line 7)))
                   ((prefixp "event:" line)
                    (queue-enqueue *event-queue* (parse-event (subseq line 6)))))))
-      (error ()
-        nil))))
+      (error (err)
+        (princ-to-string err)))))
 
 (defun get-error ()
   (let ((result (get-result)))
-    (unless (string-equal result "ok")
+    (unless (or (string-equal result "ok") (string-equal result "ack"))
       (error 'jbe-error :format-control "~A" :format-arguments (list result)))))
 
 (defun get-int ()
@@ -397,7 +606,6 @@ If the backend is not open, nothing is done.
     (eat-token scanner #\))
     (make-dimension :width width :height height)))
 
-
 (defun get-rectangle ()
   (let ((scanner (make-scanner (get-result)))
         x y width height)
@@ -416,9 +624,11 @@ If the backend is not open, nothing is done.
                               :width (double width)
                               :height (double height))))
 
-;;; --------------------
-;;; scanner
-;;; --------------------
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Scanner
+;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun make-scanner (string)
   (cons 0 string))
@@ -431,8 +641,10 @@ If the backend is not open, nothing is done.
   (with-accessors ((pos car) (src cdr)) scanner
     (when (< pos (length src)) (incf pos))))
 
+(declaim (inline whitespacep))
 (defun whitespacep (ch)
   (find ch #(#\space #\tab #\newline #\return #\page #\vt)))
+
 (defun skip-spaces (scanner)
   (loop :while (whitespacep (next-char scanner))
         :do (eat-char scanner)))
@@ -512,15 +724,6 @@ If the backend is not open, nothing is done.
                :format-control "Unexpected token ~S found in reponse ~S; expected ~S"
                :format-arguments (list token src expected))))))
 
-(defun test/scanner ()
-  (assert (equal (let ((s (make-scanner " hello(\"Howdy\", 42,-123.456e+78,false,true,foo)")))
-                   (loop
-                     :for token := (next-token s)
-                     :while token :collect token))
-                 '((symbol . "hello")
-                   #\( "Howdy" #\, 42 #\, -1.2345600000000003D+80 #\,
-                   (boolean) #\, (boolean . t) #\, (symbol . "foo") #\))))
-  :success)
 
 (defun ensure-token (token expected)
   (flet ((e1 () (error 'jbe-syntax-error
@@ -548,82 +751,6 @@ If the backend is not open, nothing is done.
   (let ((token (next-token scanner)))
     (ensure-token token expected)))
 
-;;; --------------------
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
- (defconstant +action-event+        #x010)
- (defconstant +key-event+           #x020)
- (defconstant +timer-event+         #x040)
- (defconstant +window-event+        #x080)
- (defconstant +mouse-event+         #x100)
- (defconstant +click-event+         #x200)
- (defconstant +any-event+           #x3f0)
- (defconstant +window-closed+       (+ +window-event+ 1))
- (defconstant +window-resized+      (+ +window-event+ 2))
- (defconstant +last-window-closed+  (+ +window-event+ 15))
- (defconstant +action-performed+    (+ +action-event+ 1))
- (defconstant +mouse-clicked+       (+ +mouse-event+ 1))
- (defconstant +mouse-pressed+       (+ +mouse-event+ 2))
- (defconstant +mouse-released+      (+ +mouse-event+ 3))
- (defconstant +mouse-moved+         (+ +mouse-event+ 4))
- (defconstant +mouse-dragged+       (+ +mouse-event+ 5))
- (defconstant +key-pressed+         (+ +key-event+ 1))
- (defconstant +key-released+        (+ +key-event+ 2))
- (defconstant +key-typed+           (+ +key-event+ 3))
- (defconstant +timer-ticked+        (+ +timer-event+ 1)))
-
-              
-(defclass event ()
-  ((type           :initarg :type           :initform 0     :type int                 :reader event-type)
-   (modifiers      :initarg :modifiers      :initform 0     :type int                 :reader event-modifiers)
-   (time           :initarg :time           :initform 0.0d0 :type double              :reader event-time)
-   (window         :initarg :window         :initform nil   :type (or null window)    :reader event-window)
-   (source         :initarg :source         :initform nil   :type (or null object)    :reader event-source)
-   (action-command :initarg :action-command :initform nil   :type (or null string)    :reader event-action-command)
-   (x              :initarg :x              :initform 0.0d0 :type double              :reader event-x)
-   (y              :initarg :y              :initform 0.0d0 :type double              :reader event-y)
-   (key-char       :initarg :key-char       :initform nil   :type (or null character) :reader event-key-char)
-   (key-code       :initarg :key-code       :initform 0     :type int                 :reader event-key-code)
-   (timer          :initarg :timer          :initform nil   :type (or null timer)     :reader event-timer)))
-
-(defmethod print-object ((self event) stream)
-  (print-unreadable-object (self stream :identity t :type t)
-    (format stream "~{~S~^ ~}" (list :type (event-type-keyword self)
-                                     :modifiers (event-modifiers self)
-                                     :time (event-time self)
-                                     :window (event-window self)))
-    (case (logand +any-event+ (event-type self))
-      ((#.+action-event+)
-       (format stream "~{ ~S~}" (list :source (event-source self)
-                                      :action-command (event-action-command self))))
-      ((#.+key-event+)
-       (format stream "~{ ~S~}" (list :key-char (event-key-char self)
-                                      :key-code (event-key-code self))))           
-      ((#.+timer-event+)
-       (format stream "~{ ~S~}" (list :timer (event-timer self))))         
-      ((#.+window-event+))        
-      ((#.+mouse-event+ #.+click-event+)
-       (format stream "~{ ~S~}" (list :x (event-x self)
-                                      :y (event-y self))))))
-  self)
-
-(defgeneric event-type-keyword (event)
-  (:method ((event event))
-    (ecase (event-type event)
-      ((#.+window-closed+)      :window-closed)             
-      ((#.+window-resized+)     :window-resized)            
-      ((#.+last-window-closed+) :last-window-closed) 
-      ((#.+action-performed+)   :action-performed)          
-      ((#.+mouse-clicked+)      :mouse-clicked)             
-      ((#.+mouse-pressed+)      :mouse-pressed)             
-      ((#.+mouse-released+)     :mouse-released)            
-      ((#.+mouse-moved+)        :mouse-moved)               
-      ((#.+mouse-dragged+)      :mouse-dragged)             
-      ((#.+key-pressed+)        :key-pressed)               
-      ((#.+key-released+)       :key-released)              
-      ((#.+key-typed+)          :key-typed)                 
-      ((#.+timer-ticked+)       :timer-ticked))))
-
 (defun parse-mouse-event (parameters type)
   (destructuring-bind (id time modifiers x y) parameters
     (make-instance 'event :type      type
@@ -645,7 +772,7 @@ If the backend is not open, nothing is done.
 (defun parse-timer-event (parameters type)
   (destructuring-bind (id time) parameters
     (make-instance 'event :type type
-                          :window (get-timer (decode-id id))
+                          :timer (get-timer (decode-id id))
                           :time time)))
 
 (defun parse-window-event (parameters type)
@@ -713,38 +840,63 @@ If the backend is not open, nothing is done.
 ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defun handle-pipe-error (err)
+  (if (and *backend*
+           (or (eql (stream-error-stream err) (backend-output *backend*))
+               (eql (stream-error-stream err) (backend-input *backend*)))
+           (find-restart 'retry err))
+      (invoke-restart 'retry)
+      (error err)))
+
+(defmacro with-jbe-pipe-error-handler (&body forms)
+  (let ((continue (gensym)))
+    `(block ,continue
+       (handler-bind
+           (#+ccl (ccl::simple-stream-error (function handle-pipe-error)))
+         (loop
+           (with-simple-restart (retry "Retry after closing and re-opening the backend")
+             (return-from ,continue (progn ,@forms)))
+           (close-backend)
+           (open-backend))))))
+
 (defmacro generate-JBE-functions (&rest definitions)
   `(progn
      ,@(mapcar (lambda (definition)
-                 (destructuring-bind (name jbe-name lambda-list &optional result-type)
+                 (destructuring-bind (name jbe-name lambda-list &rest options)
                      definition
-                   (let ((parameters (mapcar (function first) lambda-list)))
+                   (let ((nolock      (find :nolock options))
+                         (result-type (first (remove :nolock options)))
+                         (parameters  (mapcar (function first) lambda-list)))
                      `(defun ,name ,parameters
                         (let ,(mapcar (lambda (parameter)
                                         (destructuring-bind (name type) parameter
                                           `(,name ,(ecase type
-                                                     (id         `(gid (object-id ,name)))
+                                                     (id         `(gid (id ,name)))
                                                      (string     `(string-escape (string ,name)))
                                                      (boolean    `(cond (,name "true")
                                                                         (t "false")))
                                                      (int        `(round ,name))
                                                      (double     `(encode-double (coerce ,name 'double)))))))
                                lambda-list)
-                          (send ,jbe-name ,@parameters))
-                        ,@(ecase result-type
-                            ((nil)       '((values)))
-                            ((string)    '((get-result)))
-                            ((boolean)   '((get-boolean)))
-                            ((int)       '((get-int)))
-                            ((double)    '((get-double)))
-                            ((dimension) '((get-dimension)))
-                            ((rectangle) '((get-rectangle)))
-                            ((:error)    '((get-error))))))))
+                          (with-jbe-pipe-error-handler
+                            ,@(let ((body `((send ,jbe-name ,@parameters)
+                                            ,@(ecase result-type
+                                                ((nil)       '((values)))
+                                                ((string)    '((get-result)))
+                                                ((boolean)   '((get-boolean)))
+                                                ((int)       '((get-int)))
+                                                ((double)    '((get-double)))
+                                                ((dimension) '((get-dimension)))
+                                                ((rectangle) '((get-rectangle)))
+                                                ((:error)    '((get-error)))))))
+                                (if nolock
+                                    body
+                                    `((with-backend-locked *backend*
+                                        ,@body))))))))))
                definitions)))
 
-
 (generate-JBE-functions
- (file.open-file-dialog         "File.openFileDialog"          ((title string) (mode string) (path string))                             string)
+ (file.open-file-dialog         "File.openFileDialog"          ((title string) (mode string) (path string))              string)
  (3drect.create                 "G3DRect.create"               ((id id) (width double) (height double) (raised boolean)))
  (3drect.set-raised             "G3DRect.setRaised"            ((id id) (raised boolean)))
  (arc.create                    "GArc.create"                  ((id id) (width double) (height double) (start double) (sweep double)))
@@ -753,19 +905,19 @@ If the backend is not open, nothing is done.
  (arc.set-sweep-angle           "GArc.setSweepAngle"           ((id id) (angle double)))
  (button.create                 "GButton.create"               ((id id) (label string)))
  (check-box.create              "GCheckBox.create"             ((id id) (label string)))
- (check-box.is-selected         "GCheckBox.isSelected"         ((id id))                                                                boolean)
+ (check-box.is-selected         "GCheckBox.isSelected"         ((id id))                                                 boolean)
  (check-box.set-selected        "GCheckBox.setSelected"        ((id id) (selected boolean)))
  (compound.add                  "GCompound.add"                ((top-compound id) (compound id)))
  (compound.create               "GCompound.create"             ((id id)))
- (event.get-next-event          "GEvent.getNextEvent"          ((mask int)))
- (event.wait-for-event          "GEvent.waitForEvent"          ((mask int)))
- (image.create                  "GImage.create"                ((id id) (filename string))                                              dimension)
+ (event.get-next-event          "GEvent.getNextEvent"          ((mask int))                                              :nolock)
+ (event.wait-for-event          "GEvent.waitForEvent"          ((mask int))                                              :nolock)
+ (image.create                  "GImage.create"                ((id id) (filename string))                               dimension)
  (interactor.set-action-command "GInteractor.setActionCommand" ((id id) (cmd string)))
- (interactor.get-size           "GInteractor.getSize"          ((id id))                                                                dimension)
+ (interactor.get-size           "GInteractor.getSize"          ((id id))                                                 dimension)
  (label.create                  "GLabel.create"                ((id id) (str string)))
- (label.get-font-ascent         "GLabel.getFontAscent"         ((id id))                                                                double)
- (label.get-font-descent        "GLabel.getFontDescent"        ((id id))                                                                double)
- (label.get-size                "GLabel.getGLabelSize"         ((id id))                                                                dimension)
+ (label.get-font-ascent         "GLabel.getFontAscent"         ((id id))                                                 double)
+ (label.get-font-descent        "GLabel.getFontDescent"        ((id id))                                                 double)
+ (label.get-size                "GLabel.getGLabelSize"         ((id id))                                                 dimension)
  (label.set-font                "GLabel.setFont"               ((id id) (font string)))
  (label.set-label               "GLabel.setLabel"              ((id id) (str string)))
  (line.create                   "GLine.create"                 ((id id) (x1 double) (y1 double) (x2 double) (y2 double)))
@@ -773,7 +925,7 @@ If the backend is not open, nothing is done.
  (line.set-start-point          "GLine.setStartPoint"          ((id id) (x double) (y double)))
  (object.contains               "GObject.contains"             ((id id) (x double) (y double)) boolean)
  (object.delete                 "GObject.delete"               ((id id)))
- (object.get-bounds             "GObject.getBounds"            ((id id))                                                   rectangle)
+ (object.get-bounds             "GObject.getBounds"            ((id id))                                                 rectangle)
  (object.remove                 "GObject.remove"               ((id id) (object id)))
  (object.rotate                 "GObject.rotate"               ((id id) (theta double)))
  (object.scale                  "GObject.scale"                ((id id) (sx double) (sy double)))
@@ -794,43 +946,43 @@ If the backend is not open, nothing is done.
  (rect.create                   "GRect.create"                 ((id id) (width double) (height double)))
  (round-rect.create             "GRoundRect.create"            ((id id) (width double) (height double) (arc double)))
  (slider.create                 "GSlider.create"               ((id id) (min int) (max int) (value int)))
- (slider.get-value              "GSlider.getValue"             ((id id))                                                   int)
+ (slider.get-value              "GSlider.getValue"             ((id id))                                                 int)
  (slider.set-value              "GSlider.setValue"             ((id id) (value int)))
  (text-field.create             "GTextField.create"            ((id id) (nchars int)))
- (text-field.get-text           "GTextField.getText"           ((id id))                                                              string)
+ (text-field.get-text           "GTextField.getText"           ((id id))                                                 string)
  (text-field.set-text           "GTextField.setText"           ((id id) (str string)))
  (chooser.create                "GChooser.create"              ((id id)))
  (chooser.add-item              "GChooser.addItem"             ((id id) (item string)))
- (chooser.get-selected-item     "GChooser.getSelectedItem"     ((id id))                                                              string)
+ (chooser.get-selected-item     "GChooser.getSelectedItem"     ((id id))                                                 string)
  (chooser.set-selected-item     "GChooser.setSelectedItem"     ((id id) (item string)))
  (timer.create                  "GTimer.create"                ((id id) (msec double)))
  (timer.delete                  "GTimer.deleteTimer"           ((id id)))
- (timer.pause                   "GTimer.pause"                 ((milliseconds double))                                         :error)
+ (timer.pause                   "GTimer.pause"                 ((milliseconds double))                                   :error)
  (timer.start                   "GTimer.startTimer"            ((id id)))
  (timer.stop                    "GTimer.stopTimer"             ((id id)))
  (window.add-to-region          "GWindow.addToRegion"          ((window id) (object id) (region id)))
  (window.set-region-alignment   "GWindow.setRegionAlignment"   ((id id) (region string) (align string)))
  (window.clear                  "GWindow.clear"                ((id id)))
  (window.close                  "GWindow.close"                ((id id)))
- (window.create                 "GWindow.create"               ((id id) (width int) (height int) (top id))                            :error)
+ (window.create                 "GWindow.create"               ((id id) (width int) (height int) (top id))               :error)
  (window.delete                 "GWindow.delete"               ((id id)))
  (window.draw                   "GWindow.draw"                 ((id id) (object id)))
- (window.exit-graphics          "GWindow.exitGraphics"         ())
- (window.get-screen-height      "GWindow.getScreenHeight"      ()                                                                     double)
- (window.get-screen-width       "GWindow.getScreenWidth"       ()                                                                     double)
- (window.repaint                "GWindow.repaint"              ())
+ (window.exit-graphics          "GWindow.exitGraphics"         () :nolock)
+ (window.get-screen-height      "GWindow.getScreenHeight"      ()                                                        double)
+ (window.get-screen-width       "GWindow.getScreenWidth"       ()                                                        double)
+ (window.repaint                "GWindow.repaint"              ((id id)))
  (window.request-focus          "GWindow.requestFocus"         ((id id)))
  (window.set-resizable          "GWindow.setResizable"         ((id id) (resizable boolean)))
  (window.set-title              "GWindow.setTitle"             ((id id) (title string)))
  (window.set-visible            "GWindow.setVisible"           ((id id) (visible boolean)))
  (top-compound.create           "TopCompound.create"           ((id id)))
  (console.clear                 "JBEConsole.clear"             ())
- (console.get-line              "JBEConsole.getLine"           ()                                                                     string)
+ (console.get-line              "JBEConsole.getLine"           ()                                                        string)
  (console.print                 "JBEConsole.print"             ((str string)))
  (console.println               "JBEConsole.println"           ())
  (console.set-font              "JBEConsole.setFont"           ((font string)))
  (console.set-size              "JBEConsole.setSize"           ((width int) (height int)))
- (sound.create                  "Sound.create"                 ((id id) (filename string))                                            :error)
+ (sound.create                  "Sound.create"                 ((id id) (filename string))                               :error)
  (sound.delete                  "Sound.delete"                 ((id id)))
  (sound.play                    "Sound.play"                   ((id id))))
 
@@ -841,41 +993,84 @@ If the backend is not open, nothing is done.
 ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defparameter *colors*
+  '("BLACK" "DARK_GRAY" "GRAY" "LIGHT_GRAY" "WHITE" "RED" "YELLOW"
+    "GREEN" "CYAN" "BLUE" "MAGENTA" "ORANGE" "PINK")
+  "The list of possible colors.")
+
+(defparameter *black*      "BLACK")      
+(defparameter *dark-gray*  "DARK_GRAY")  
+(defparameter *gray*       "GRAY")       
+(defparameter *light-gray* "LIGHT_GRAY") 
+(defparameter *white*      "WHITE")      
+(defparameter *red*        "RED")        
+(defparameter *yellow*     "YELLOW")     
+(defparameter *green*      "GREEN")      
+(defparameter *cyan*       "CYAN")       
+(defparameter *blue*       "BLUE")       
+(defparameter *magenta*    "MAGENTA")    
+(defparameter *orange*     "ORANGE")     
+(defparameter *pink*       "PINK")       
+
+(defun screen-width ()
+  "The width of the screen in pixels."
+  (window.get-screen-width))
+
+(defun screen-height ()
+  "The height of the screen in pixels."
+  (window.get-screen-height))
+
+(defun pause (milliseconds)
+  "Suspends execution for the time given in MILLISECONDS."
+  (timer.pause milliseconds))
+
 
 ;;;----------------------------------------------------------------------------------------
 
 (defclass sloted-object ()
-  ())
+  ()
+  (:documentation "
+This is a mixin class providing generic SLOTS and PRINT-OBJECT
+methods.
+"))
 
-(defgeneric object-slots (object)
+(defgeneric slots (object)
   (:method-combination append)
   (:documentation "
 This generic function collects a p-list of all the slots that should
 be displayed by PRINT-OBJECT.  The APPEND method combination
-automatically appends the lists provided by the OBJECT-SLOT methods on
+automatically appends the lists provided by the SLOTS methods on
 the various subclasses.
 ")
-  (:method ((self sloted-object))
+  (:method append ((self sloted-object))
     '()))
 
 (defmethod print-object ((self sloted-object) stream)
   (print-unreadable-object (self stream :identity t :type t)
-    (format stream "~{~S~^ ~}" (object-slots self)))
+    (format stream "~{~S~^ ~}" (slots self)))
   self)
 
 ;;;----------------------------------------------------------------------------------------
 
-(defclass timer (sloted-object)
-  ((duration-ms :initarg :duration-ms :initform 0.0d0 :type 'double :reader timer-duration-ms)))
+(defvar *last-object-id* 0)
 
-(defmethod object-slots append ((self timer))
-  (list :duration-ms (timer-duration-ms self)))
+(defclass timer (sloted-object)
+  ((id          :initform (incf *last-object-id*)
+                :type integer
+                :reader id)
+   (duration-ms :initarg :duration-ms
+                :initform 0.0d0
+                :type 'double
+                :reader duration-ms)))
+
+(defmethod slots append ((self timer))
+  (list :duration-ms (duration-ms self)))
 
 (defmethod initialize-instance :before ((self timer) &key &allow-other-keys)
   (open-backend))
 
 (defmethod initialize-instance :after ((self timer) &key &allow-other-keys)
-  (timer.create self (timer-duration-ms self))
+  (timer.create self (duration-ms self))
   (register self))
 
 (defgeneric start-timer (self)
@@ -886,43 +1081,51 @@ the various subclasses.
   (:method   ((self timer))
     (timer.stop self)))
 
-(defgeneric free-timer (self)
-  (:method  ((self timer))
-    (unregister self)))
-
-
 ;;;----------------------------------------------------------------------------------------
 
-(defvar *last-object-id* 0)
 
 (defclass object (sloted-object)
-  ((id         :initform (incf *last-object-id*)      :type integer          :reader object-id)
-   (x          :initarg :x          :initform 0.0d0   :type double           :reader object-x)
-   (y          :initarg :y          :initform 0.0d0   :type double           :reader object-y)
-   (width      :initarg :width      :initform 0.0d0   :type double           :reader object-width)
-   (height     :initarg :height     :initform 0.0d0   :type double           :reader object-height)
-   (color      :initarg :color      :initform "BLACK" :type string           :reader object-color)
-   (fill-color :initarg :fill-color :initform nil     :type (or string null) :reader object-fill-color)
-   (filled     :initarg :filled     :initform nil     :type boolean          :reader object-filledp)
-   (visible    :initarg :visible    :initform t       :type boolean          :reader object-visiblep)
-   (parent     :initarg :parent     :initform nil     :type (or null object) :reader object-parent)))
+  ((id         :initform (incf *last-object-id*)      :type integer          :reader id)
+   (x          :initarg :x          :initform 0.0d0   :type double           :reader x)
+   (y          :initarg :y          :initform 0.0d0   :type double           :reader y)
+   (width      :initarg :width      :initform 0.0d0   :type double           :reader width)
+   (height     :initarg :height     :initform 0.0d0   :type double           :reader height)
+   (color      :initarg :color      :initform *black* :type string           :reader color)
+   (fill-color :initarg :fill-color :initform *black* :type string           :reader fill-color)
+   (line-width :initarg :line-width :initform 1.0d0   :type double           :reader line-width)
+   (filled     :initarg :filled     :initform nil     :type boolean          :reader filled)
+   (visible    :initarg :visible    :initform t       :type boolean          :reader visible)))
 
-(defmethod object-slots append ((self object))
-  (list :id (object-id self)
-        :x (object-x self)
-        :y (object-y self)
-        :width (object-width self)
-        :height (object-height self)
-        :color (object-color self)
-        :fill-color (object-fill-color self)
-        :filled (object-filledp self)
-        :visible (object-visiblep self)
-        :parent (when (object-parent self)
-                  (class-of (object-parent self)))))
+(defun %set-fillable-attributes (object)
+  "To be called by subclasses."
+  (object.set-location   object (x object) (y object))
+  (object.set-color      object (color      object))
+  (object.set-fill-color object (fill-color object))
+  (object.set-filled     object (filled     object))
+  (object.set-line-width object (line-width object))
+  (object.set-visible    object (visible    object)))
+
+(defun %set-object-attributes (object)
+  "To be called by subclasses."
+  (object.set-location   object (x object) (y object))
+  (object.set-color      object (color      object))
+  (object.set-line-width object (line-width object))
+  (object.set-visible    object (visible    object)))
+  
+(defmethod slots append ((self object))
+  (list :id (id self)
+        :x (x self)
+        :y (y self)
+        :width (width self)
+        :height (height self)
+        :color (color self)
+        :fill-color (fill-color self)
+        :filled (filled self)
+        :visible (visible self)))
 
 (defmethod print-object ((self object) stream)
   (print-unreadable-object (self stream :identity t :type t)
-    (format stream "~{~S~^ ~}" (object-slots self)))
+    (format stream "~{~S~^ ~}" (slots self)))
   self)
 
 (defmethod initialize-instance :before ((self object) &key &allow-other-keys)
@@ -936,43 +1139,84 @@ the various subclasses.
                  (when height (list :height (double height)))
                  keys)))
 
-(defmethod set-object-location ((self object) x y)
+
+(defmethod set-location ((self object) x y)
   (setf (slot-value self 'x) (double x)
         (slot-value self 'y) (double y))
   (object.set-location self (double x) (double y)))
-(defmethod object-location ((self object))
-  (make-point :x (object-x self) :y (object-y self)))
-(defmethod (setf object-location) (point (self object))
-  (set-object-location self (point-x point) (point-y point)))
+(defmethod location ((self object))
+  (make-point :x (x self) :y (y self)))
+(defmethod (setf location) (point (self object))
+  (set-location self (x point) (y point)))
 
-(defmethod set-object-size ((self object) width height)
+(defmethod set-size ((self object) width height)
   (setf (slot-value self 'width)  (double width)
         (slot-value self 'height) (double height))
   (object.set-size self (double width) (double height)))
-(defmethod object-size ((self object))
-  (make-dimension :width (object-width self)
-                  :height (object-height self)))
-(defmethod (setf object-size) ((size dimension) (self object))
-  (set-object-size self (dimension-width size) (dimension-height size)))
+(defmethod size ((self object))
+  (make-dimension :width (width self)
+                  :height (height self)))
+(defmethod (setf size) ((size dimension) (self object))
+  (set-size self (dimension-width size) (dimension-height size)))
 
-(defmethod set-object-color ((self object) color)
+(defmethod set-color ((self object) color)
   (setf (slot-value self 'color) (string color))
   (object.set-color self  (slot-value self 'color)))
-(defmethod (setf object-color) (color (self object))
-  (set-object-color self color))
+(defmethod (setf color) (color (self object))
+  (set-color self color))
 
-(defmethod set-object-fill-color ((self object) color)
+(defmethod set-fill-color ((self object) color)
   (setf (slot-value self 'fill-color) (string color))
   (object.set-fill-color self  (slot-value self 'fill-color)))
-(defmethod (setf object-fill-color) (color (self object))
-  (set-object-fill-color self color))
+(defmethod (setf fill-color) (color (self object))
+  (set-fill-color self color))
 
-(defgeneric object-contains (object x y)
+(defmethod set-line-width ((self object) line-width)
+  (setf (slot-value self 'line-width) line-width)
+  (object.set-line-width self line-width))
+(defmethod (setf line-width) (line-width (self object))
+  (set-line-width self line-width))
+
+(defmethod set-visible ((self object) visible)
+  (setf (slot-value self 'visible) visible)
+  (object.set-visible self visible))
+(defmethod (setf visible) (visible (self object))
+  (set-visible self visible))
+
+(defmethod set-filled ((self object) filled)
+  (setf (slot-value self 'filled) filled)
+  (object.set-filled self filled))
+(defmethod (setf filled) (filled (self object))
+  (set-filled self filled))
+
+(defgeneric rotate (self theta)
+  (:method ((self object) theta)
+    (object.rotate self (double theta))))
+
+(defgeneric scale (self sx sy)
+  (:method ((self object) sx sy)
+    (object.scale self (double sx) (double sy))))
+
+(defgeneric send-backward (self)
+  (:method ((self object))
+    (object.send-backward self)))
+(defgeneric send-forward (self)
+  (:method ((self object))
+    (object.send-forward self)))
+(defgeneric send-to-back (self)
+  (:method ((self object))
+    (object.send-to-back self)))
+(defgeneric send-to-front (self)
+  (:method ((self object))
+    (object.send-to-front self)))
+
+
+(defgeneric contains (object x y)
   (:method ((self object) x y)
-    (let* ((x0 (object-x self))
-           (y0 (object-y self))
-           (x1 (+ x0 (object-width  self)))
-           (y1 (+ y0 (object-height self))))
+    (let* ((x0 (x self))
+           (y0 (y self))
+           (x1 (+ x0 (width  self)))
+           (y1 (+ y0 (height self))))
       (and (<= x0 x x1) (<= y0 y y1)))))
 
 (defgeneric bounds (self)
@@ -981,10 +1225,10 @@ the various subclasses.
 
 (defgeneric frame-rectangle (self)
   (:method ((self object))
-    (make-rectangle :x (object-x self)
-                    :y (object-y self)
-                    :width  (object-width  self)
-                    :height (object-height self))))
+    (make-rectangle :x (x self)
+                    :y (y self)
+                    :width  (width  self)
+                    :height (height self))))
 
 (defgeneric set-frame-rectangle (self x y width height)
   (:method ((self object) x y width height)
@@ -994,33 +1238,55 @@ the various subclasses.
 (defgeneric (setf frame-rectangle) (new-rect self)
   (:method (new-rect (self object))
     (set-frame-rectangle self
-                         (rectangle-x new-rect)
-                         (rectangle-y new-rect)
-                         (rectangle-width new-rect)
-                         (rectangle-height new-rect))))
-
-(defmethod set-object-visible ((self object) visible)
-  (setf (slot-value self 'visible) visible)
-  (object.set-visible self visible))
-
-(defmethod (setf object-visible) (visible (self object))
-  (set-object-visible self visible))
-
-
+                         (x new-rect)
+                         (y new-rect)
+                         (width new-rect)
+                         (height new-rect))))
 
 ;;;----------------------------------------------------------------------------------------
 
-(defvar *default-label-font* "Dialog-13")
-(defvar *default-corner* 10)
-(defvar *arc-tolerance*  2.5d0)
-(defvar *line-tolerance* 1.5d0)
+(defvar *default-label-font* "Dialog-13" "The default font for labels.")
+(defvar *default-corner* 10.0d0 "The default corner radius for round-rects.")
+(defvar *arc-tolerance*  2.5d0  "The tolerance in pixel to detect points on arcs.")
+(defvar *line-tolerance* 1.5d0  "The tolerance in pixel to detect points on lines.")
 
 (declaim (inline square degree-to-radian radian-to-degree cos-degree sin-degree))
-(defun square (x) (* x x))
-(defun degree-to-radian (angle) (/ (* angle pi) 180.0d0))
-(defun radian-to-degree (angle) (/ (* angle 180.0d0) pi))
-(defun cos-degree (angle) (cos (degree-to-radian angle)))
-(defun sin-degree (angle) (sin (degree-to-radian angle)))
+(defun square (x)
+  "Returns the square of the argument."
+  (* x x))
+(defun degree-to-radian (angle)
+  "Convert the ANGLE given in degrees to radians."
+  (/ (* angle pi) 180.0d0))
+(defun radian-to-degree (angle)
+  "Converts the ANGLE given in radians to degrees."
+  (/ (* angle 180.0d0) pi))
+(defun cos-degree (angle)
+  "Computes the cosinus of the ANGLE given in degrees."
+  (cos (degree-to-radian angle)))
+(defun sin-degree (angle)
+  "Computes the sinus of the ANGLE given in degrees."
+  (sin (degree-to-radian angle)))
+
+
+(defun adjustable-vector (&key size initial-contents key)
+  (when (and size initial-contents)
+    (assert (<= (length initial-contents) size)))
+  (if initial-contents
+      (let* ((len (length initial-contents))
+             (size (or size len)))
+        (if (or (null key)
+                (eql key 'identity)
+                (eql key #'identity))
+            (make-array size :fill-pointer len
+                             :initial-contents initial-contents
+                             :adjustable t)
+            (map-into (make-array size :fill-pointer len
+                                       :initial-element nil
+                                       :adjustable t)
+                      key initial-contents)))
+      (make-array (or size 8) :fill-pointer 0
+                              :initial-element nil
+                              :adjustable t)))
 
 ;;;----------------------------------------------------------------------------------------
 
@@ -1028,8 +1294,8 @@ the various subclasses.
   ())
 
 (defmethod initialize-instance :after ((self rect) &key &allow-other-keys)
-  (rect.create self (object-width self) (object-height self))
-  (object.set-location self (object-x self) (object-y self)))
+  (rect.create self (width self) (height self))
+  (%set-fillable-attributes self))
 
 ;; 3drect and round-rect are not subclasses of rect to avoid creating
 ;; a rect when we create a 3drect or round-rect.
@@ -1037,31 +1303,30 @@ the various subclasses.
 ;;;----------------------------------------------------------------------------------------
 
 (defclass 3drect (object) 
-  ((raised :initarg :raised :type boolean   :reader 3drect-raisedp)))
+  ((raised :initarg :raised :type boolean   :reader raised)))
 
-(defmethod object-slots append ((self 3drect))
-  (list :raisedp (3drect-raisedp self)))
+(defmethod slots append ((self 3drect))
+  (list :raised (raised self)))
 
 (defmethod initialize-instance :after ((self 3drect) &key &allow-other-keys)
-  (3drect.create self (object-width self) (object-height self)
-                 (3drect-raisedp self))
-  (object.set-location self (object-x self) (object-y self)))
+  (3drect.create self (width self) (height self) (raised self))
+  (%set-fillable-attributes self))
 
-(defmethod (setf 3drect-raisedp) (new-value (self 3drect))
+(defmethod (setf raised) (new-value (self 3drect))
   (setf (slot-value self 'raised) new-value)
   (3drect.set-raised self new-value))
 
 ;;;----------------------------------------------------------------------------------------
 
 (defclass round-rect (object)
-  ((corner :initarg :corner :initform *default-corner* :type double :reader round-rect-corner)))
+  ((corner :initarg :corner :initform *default-corner* :type double :reader corner)))
 
-(defmethod object-slots append ((self round-rect))
-  (list :corner (round-rect-corner self)))
+(defmethod slots append ((self round-rect))
+  (list :corner (corner self)))
 
 (defmethod initialize-instance :after ((self round-rect) &key &allow-other-keys)
-  (round-rect.create self (object-width self) (object-height self) (round-rect-corner self))
-  (object.set-location self (object-x self) (object-y self)))
+  (round-rect.create self (width self) (height self) (corner self))
+  (%set-fillable-attributes self))
 
 ;;;----------------------------------------------------------------------------------------
 
@@ -1069,16 +1334,16 @@ the various subclasses.
   ())
 
 (defmethod initialize-instance :after ((self oval) &key &allow-other-keys)
-  (oval.create self (object-width self) (object-height self))
-  (object.set-location self (object-x self) (object-y self)))
+  (oval.create self (width self) (height self))
+  (%set-fillable-attributes self))
 
-(defmethod object-contains ((self oval) x y)
-  (let ((rx (/ (object-width self) 2))
-        (ry (/ (object-height self) 2)))
+(defmethod contains ((self oval) x y)
+  (let ((rx (/ (width self) 2))
+        (ry (/ (height self) 2)))
     (if (or (zerop rx) (zerop ry))
         nil
-        (let ((dx (- x (object-x self) rx))
-              (dy (- y (object-y self) ry)))
+        (let ((dx (- x (x self) rx))
+              (dy (- y (y self) ry)))
           (<= (+ (/ (square dx) (square rx))
                  (/ (square dy) (square ry)))
               1.0d0)))))
@@ -1089,24 +1354,25 @@ the various subclasses.
   ())
 
 (defmethod initialize-instance :after ((self line) &key &allow-other-keys)
-  (let* ((x0 (object-x self))
-         (y0 (object-y self))
-         (x1 (+ x0 (object-width  self)))
-         (y1 (+ y0 (object-height self))))
-    (line.create self x0 y0 x1 y1)))
+  (let* ((x0 (x self))
+         (y0 (y self))
+         (x1 (+ x0 (width  self)))
+         (y1 (+ y0 (height self))))
+    (line.create self x0 y0 x1 y1)
+    (%set-object-attributes self)))
 
 (defgeneric start-point (self)
   (:method ((self line))
-    (let* ((x0 (object-x self))
-           (y0 (object-y self)))
+    (let* ((x0 (x self))
+           (y0 (y self)))
       (make-point :x x0 :y y0))))
 
 (defgeneric end-point (self)
   (:method ((self line))
-    (let* ((x0 (object-x self))
-           (y0 (object-y self))
-           (x1 (+ x0 (object-width  self)))
-           (y1 (+ y0 (object-height self))))
+    (let* ((x0 (x self))
+           (y0 (y self))
+           (x1 (+ x0 (width  self)))
+           (y1 (+ y0 (height self))))
       (make-point :x x1 :y y1))))
 
 (defgeneric set-start-point (self x y)
@@ -1119,29 +1385,29 @@ the various subclasses.
 
 (defgeneric set-end-point (self x y)
   (:method ((self line) x y)
-    (setf (slot-value self 'width)  (double (- x (object-x self)))
-          (slot-value self 'height) (double (- y (object-y self))))
+    (setf (slot-value self 'width)  (double (- x (x self)))
+          (slot-value self 'height) (double (- y (y self))))
     (line.set-end-point self (double x) (double y))))
 
 (defgeneric (setf start-point) (new-point self)
   (:method (new-point (self line))
-    (set-start-point self (point-x new-point) (point-y new-point))))
+    (set-start-point self (x new-point) (y new-point))))
 
 (defgeneric (setf end-point) (new-point self)
   (:method (new-point (self line))
-    (set-end-point self (point-x new-point) (point-y new-point))))
+    (set-end-point self (x new-point) (y new-point))))
 
 (declaim (inline dsq))
 (defun dsq (x0 y0 x1 y1)
   (+ (square (- x0 x1)) (square (- y0 y1))))
 
-(defmethod object-contains ((self line) x y)
+(defmethod contains ((self line) x y)
   (let* ((x  (double x))
          (y  (double y))
-         (x0 (object-x self))
-         (y0 (object-y self))
-         (x1 (+ x0 (object-width  self)))
-         (y1 (+ y0 (object-height self)))
+         (x0 (x self))
+         (y0 (y self))
+         (x1 (+ x0 (width  self)))
+         (y1 (+ y0 (height self)))
          (tsq (square *line-tolerance*)))
     (cond
       ((< (dsq x y x0 y0) tsq) t)
@@ -1159,23 +1425,29 @@ the various subclasses.
 ;;;----------------------------------------------------------------------------------------
 
 (defclass arc (object)
-  ((start :initarg :start :type double :reader arc-start)
-   (sweep :initarg :sweep :type double :reader arc-sweep)))
+  ((start :initarg :start :type double :reader start)
+   (sweep :initarg :sweep :type double :reader sweep)))
 
-(defmethod object-slots append ((self arc))
-  (list :start (arc-start self)
-        :sweep (arc-sweep self)))
+(defmethod slots append ((self arc))
+  (list :start (start self)
+        :sweep (sweep self)))
 
 (defmethod initialize-instance :after ((self arc) &key &allow-other-keys)
-  (arc.create self (object-width self) (object-height self)
-              (arc-start self) (arc-sweep self))
-  (object.set-location self (object-x self) (object-y self)))
+  (arc.create self (width self) (height self)
+              (start self) (sweep self))
+  (%set-fillable-attributes self))
 
-(defgeneric (setf arc-start) (start self)
+(defmethod initialize-instance ((self arc) &rest keys &key start sweep &allow-other-keys)
+  (apply (function call-next-method) self
+         (append (when start (list :start (double start)))
+                 (when sweep (list :sweep (double sweep)))
+                 keys)))
+
+(defgeneric (setf start) (start self)
   (:method (start (self arc))
     (arc.set-start-angle self start)))
 
-(defgeneric (setf arc-sweep) (sweep self)
+(defgeneric (setf sweep) (sweep self)
   (:method (sweep (self arc))
     (arc.set-sweep-angle self sweep)))
 
@@ -1183,9 +1455,9 @@ the various subclasses.
   (arc.set-frame-rectangle self (double x) (double y) (double width) (double height)))
 
 (defmethod contains-angle ((self arc) theta)
-  (let ((start (min (arc-start self)
-                    (+ (arc-start self) (arc-sweep self))))
-        (sweep (abs (arc-sweep self)))
+  (let ((start (min (start self)
+                    (+ (start self) (sweep self))))
+        (sweep (abs (sweep self)))
         (turn  360.0d0))
     (or (<= turn sweep)
         (let ((theta (if (minusp theta)
@@ -1198,30 +1470,30 @@ the various subclasses.
               (or (<= start theta) (<= theta (+ start sweep (- turn))))
               (and (<= start theta) (<= theta (+ start sweep))))))))
 
-(defmethod object-contains ((self arc) x y)
-  (let ((rx (/ (object-width self) 2))
-        (ry (/ (object-height self) 2)))
+(defmethod contains ((self arc) x y)
+  (let ((rx (/ (width self) 2))
+        (ry (/ (height self) 2)))
     (if (or (zerop rx) (zerop ry))
         nil
-        (let* ((dx (- x (object-x self) rx))
-               (dy (- y (object-y self) ry))
+        (let* ((dx (- x (x self) rx))
+               (dy (- y (y self) ry))
                (r  (+ (/ (square dx) (square rx))
                       (/ (square dy) (square ry)))))
-          (when (if (object-filledp self)
+          (when (if (filled self)
                     (< 1.0d0 r)
                     (let ((tt (/ *arc-tolerance* (/ (+ rx ry) 2))))
                       (< tt (abs (- 1.0d0 r)))))
             (contains-angle self (radian-to-degree (atan (- dy) dx))))))))
 
 (defmethod bounds ((self arc))
-  (let* ((rx (/ (object-width  self) 2))
-         (ry (/ (object-height self) 2))
-         (cx (+ (object-x self) rx))
-         (cy (+ (object-y self) ry))
-         (p1x (+ cx (* rx (cos-degree (arc-start self)))))
-         (p1y (+ cy (* ry (sin-degree (arc-start self)))))
-         (p2x (+ cx (* rx (cos-degree (+ (arc-start self) (arc-sweep self))))))
-         (p2y (+ cy (* ry (sin-degree (+ (arc-start self) (arc-sweep self))))))
+  (let* ((rx (/ (width  self) 2))
+         (ry (/ (height self) 2))
+         (cx (+ (x self) rx))
+         (cy (+ (y self) ry))
+         (p1x (+ cx (* rx (cos-degree (start self)))))
+         (p1y (+ cy (* ry (sin-degree (start self)))))
+         (p2x (+ cx (* rx (cos-degree (+ (start self) (sweep self))))))
+         (p2y (+ cy (* ry (sin-degree (+ (start self) (sweep self))))))
          (xmin (min p1x p2x))
          (xmax (max p1x p2x))
          (ymin (min p1y p2y))
@@ -1230,57 +1502,87 @@ the various subclasses.
     (when (contains-angle self  90.0d0) (setf ymin (- cy ry)))
     (when (contains-angle self 180.0d0) (setf xmin (- cx rx)))
     (when (contains-angle self 270.0d0) (setf ymax (+ cy ry)))
-    (when (object-filledp self)
+    (when (filled self)
       (setf xmin (min xmin cx)
             ymin (min ymin cy)
             xmax (max xmax cx)
             ymax (max ymax cy)))
     (make-rectangle :x xmin :y ymin :width (- xmax xmin) :height (- ymax ymin))))
 
-(defun adjustable-vector ()
-  (make-array 8 :fill-pointer 0 :adjustable t))
-
 ;;;----------------------------------------------------------------------------------------
 
 (defclass polygon (object)
-  ((vertices :initform (adjustable-vector)
-             :type vector  :reader polygon-vertices)
-   (cx       :initform 0.0d0       :type double :reader polygon-cx)
-   (cy       :initform 0.0d0       :type double :reader polygon-cy)))
+  ((vertices :initform (adjustable-vector) :type vector :reader vertices)
+   (cx       :initform 0.0d0               :type double :reader cx)
+   (cy       :initform 0.0d0               :type double :reader cy)))
 
-(defmethod object-slots append ((self polygon))
-  (list :cx (polygon-cx self)
-        :cy (polygon-cy self)
-        :vertices (polygon-vertices self)))
+(defmethod slots append ((self polygon))
+  (list :cx (cx self)
+        :cy (cy self)
+        :vertices (vertices self)))
 
-(defmethod initialize-instance :after ((self polygon) &key &allow-other-keys)
-  (polygon.create self))
+(defmethod initialize-instance :after ((self polygon) &key vertices &allow-other-keys)
+  (polygon.create self)
+  (when vertices (%set-vertices self vertices))
+  (%set-fillable-attributes self))
+
+(defun %set-vertices (poly vertices)
+  (setf (slot-value poly 'vertices)
+        (if (and (every (function realp) vertices)
+                 (evenp (length vertices)))
+            (adjustable-vector :initial-contents
+                               (if (listp vertices)
+                                   (loop :for (x y) :on vertices :by (function cddr)
+                                         :collect (make-point :x (double x)
+                                                              :y (double y)))
+                                   (loop :for x :from 0
+                                         :for y :from 1 :below (length vertices)
+                                         :collect (make-point :x (double x)
+                                                              :y (double y)))))
+            (adjustable-vector :initial-contents vertices
+                               :key (lambda (item)
+                                      (etypecase item
+                                        (point item)
+                                        (sequence (make-point :x (double (elt item 0))
+                                                              :y (double (elt item 1)))))))))
+  (let ((vertices (slot-value poly 'vertices)))
+    (loop :for p :across vertices
+          :do (polygon.add-vertex poly (x p) (y p)) )
+    (let ((maxi (1- (length vertices))))
+      (if (minusp maxi)
+          (setf (slot-value poly 'cx) 0.0d0
+                (slot-value poly 'cy) 0.0d0)
+          (setf (slot-value poly 'cx) (x (aref vertices maxi))
+                (slot-value poly 'cy) (y (aref vertices maxi)))))))
 
 (defmethod add-vertex ((self polygon) x y)
   (setf (slot-value self 'cx) x
         (slot-value self 'cy) y)
   (vector-push-extend (make-point :x (double x) :y (double y))
-                      (polygon-vertices self))
+                      (vertices self))
   (polygon.add-vertex self (double x) (double y)))
 
+(defmethod add-vertices ((self polygon) vertices)
+  (map nil (lambda (vertex) (add-vertex self (x vertex) (y vertex))) vertices))
+
 (defmethod add-edge ((self polygon) dx dy)
-  (add-vertex self (+ dx (polygon-cx self))  (+ dy (polygon-cy self))))
+  (add-vertex self (+ dx (cx self))  (+ dy (cy self))))
 
 (defmethod add-polar-edge ((self polygon) r theta)
   (add-vertex self (* r (cos-degree theta)) (* r (sin-degree theta))))
 
 (defmethod bounds ((self polygon))
-  (let* ((vertices (polygon-vertices self))
+  (let* ((vertices (vertices self))
          (n (length vertices)))
     (if (zerop n)
         (make-rectangle)        
-        (let ((xmin (point-x (aref vertices 0)))
-              (ymin (point-y (aref vertices 0)))
-              (xmax (point-x (aref vertices 0)))
-              (ymax (point-y (aref vertices 0))))
+        (let ((xmin (x (aref vertices 0)))
+              (ymin (y (aref vertices 0)))
+              (xmax (x (aref vertices 0)))
+              (ymax (y (aref vertices 0))))
           (loop :for pt :across vertices
-                :for x := (point-x pt)
-                :for y := (point-y pt)
+                :for x := (x pt)
+                :for y := (y pt)
                 :do (setf xmin (min x xmin)
                           xmax (max x xmax)
                           ymin (min y ymin)
@@ -1289,23 +1591,23 @@ the various subclasses.
                           :width (- xmax xmin)
                           :height (- ymax ymin))))))
 
-(defmethod object-contains ((self polygon) x y)
-  (let* ((vertices (polygon-vertices self))
+(defmethod contains ((self polygon) x y)
+  (let* ((vertices (vertices self))
          (n (length vertices))
          (crossings 0))
     (if (< n 2)
         nil        
         (let* ((p0 (aref vertices 0))
-               (x0 (point-x p0))
-               (y0 (point-y p0))
+               (x0 (x p0))
+               (y0 (y p0))
                (p1 (aref vertices (1- n)))
-               (x1 (point-x p1))
-               (y1 (point-y p1)))
+               (x1 (x p1))
+               (y1 (y p1)))
           (when (and (= x0 x1) (= y0 y1)) (decf n))
           (loop :for i :from 1 :to n
                 :for p1 := (aref vertices (mod i n))
-                :for x1 := (point-x p1)
-                :for y1 := (point-y p1)
+                :for x1 := (x p1)
+                :for y1 := (y p1)
                 :do (when (and (not (eq (not (< y y0)) (not (< y y1))))
                                (< (- x x0)
                                   (/ (* (- x1 x0) (- y y0))
@@ -1320,78 +1622,93 @@ the various subclasses.
 
 (defclass compound-mixin ()
   ((components :initform (adjustable-vector)
-               :type vector   :reader compound-components))
-  (:documentatin "
-
+               :type vector
+               :reader components))
+  (:documentation "
 The TOP-COMPOUND must be initialized by a different JBE message than
 normal COMPOUND.  THEREFORE those classes mustn't share an
 INITIALIZE-INSTANCE in a common superclass.  Hence we implement them
 in teh compound-mixin and have both TOP-COMPOUND and COMPOUND inherit
 from OBJECT and COMPOUND-MIXIN.
-
 "))
 
-(defmethod object-slots append ((self compound-mixin))
-  (list :components (compound-components self)))
+(defmethod slots append ((self compound-mixin))
+  (list :components (components self)))
 
 (defgeneric compound-add (self other)
   (:method   ((self compound-mixin) other)
-    (vector-push-extend other (compound-components self))
+    (vector-push-extend other (components self))
     (compound.add self other)
-    (set-object-location other (object-x other) (object-y other))))
+    (set-location other (x other) (y other))))
 
 (defgeneric compound-remove (self other)
   (:method   ((self compound-mixin) other)
-    (setf (slot-value self 'components) (delete other (compound-components self) :count 1))
+    (setf (slot-value self 'components) (delete other (components self) :count 1))
     (object.remove self other)))
 
 (defgeneric get-object-at (self x y))
 (defmethod get-object-at ((self compound-mixin) x y)
-  (find-if (lambda (object) (object-contains object x y))
-           (compound-components self)))
+  (find-if (lambda (object) (contains object x y))
+           (components self)))
+
+(defun %set-components (compound components)
+  (setf (slot-value compound 'components) (adjustable-vector :initial-contents components))
+  (loop :for component :across (slot-value compound 'components)
+        :do (compound.add compound component)
+            (set-location component (x component) (y component))))
 
 ;;;----------------------------------------------------------------------------------------
 
 (defclass compound (object compound-mixin)
   ())
 
-(defmethod initialize-instance :after ((self compound) &key &allow-other-keys)
-  (compound.create self))
+(defmethod initialize-instance :after ((self compound) &key components &allow-other-keys)
+  (compound.create self)
+  (%set-object-attributes self)
+  (when components (%set-components self components)))
 
 ;;;----------------------------------------------------------------------------------------
 
 (defclass top-compound (object compound-mixin)
   ())
 
-(defmethod initialize-instance :after ((self top-compound) &key &allow-other-keys)
-  (top-compound.create self))
+(defmethod print-object ((self top-compound) stream)
+  (print-unreadable-object (self stream :identity t :type t)
+    (format stream "~{~S~^ ~}" (list :components (length (components self)))))
+  self)
+
+(defmethod initialize-instance :after ((self top-compound) &key components &allow-other-keys)
+  (top-compound.create self)
+  (%set-object-attributes self)
+  (when components (%set-components self components)))
 
 ;;;----------------------------------------------------------------------------------------
 
 (defclass label (object)
-  ((font    :initarg :font    :initform *default-label-font* :type string :reader label-font)
-   (text    :initarg :text    :type string :reader label-text)
-   (ascent  :initarg :ascent  :type double :reader label-ascent)
-   (descent :initarg :descent :type double :reader label-descent)))
+  ((font    :initarg :font    :initform *default-label-font* :type string :reader font)
+   (text    :initarg :text    :type string :reader text)
+   (ascent  :initarg :ascent  :type double :reader ascent)
+   (descent :initarg :descent :type double :reader descent)))
 
-(defmethod object-slots append ((self label))
-  (list :font (label-font self)
-        :ascent (label-ascent self)
-        :descent (label-descent self)
-        :text (label-text self)))
+(defmethod slots append ((self label))
+  (list :font (font self)
+        :ascent (ascent self)
+        :descent (descent self)
+        :text (text self)))
 
 (defmethod initialize-instance :after ((self label) &key &allow-other-keys)
-  (label.create self (label-text self))
-  (set-label-font self (label-font self))
-  (set-label-text self (label-text self)))
+  (label.create self (text self))
+  (%set-fillable-attributes self)
+  (set-font self (font self))
+  (set-text self (text self)))
 
 (defmethod bounds ((self label))
-  (make-rectangle :x (object-x self)
-                  :y (- (object-y self) (label-ascent self))
-                  :width (object-width self)
-                  :height (object-height self)))
+  (make-rectangle :x (x self)
+                  :y (- (y self) (ascent self))
+                  :width (width self)
+                  :height (height self)))
 
-(defmethod set-label-font ((self label) font)
+(defmethod set-font ((self label) font)
   (setf (slot-value self 'font) font)
   (label.set-font self font)
   (let ((size (label.get-size self)))
@@ -1400,51 +1717,52 @@ from OBJECT and COMPOUND-MIXIN.
           (slot-value self 'width)  (dimension-width size)
           (slot-value self 'height) (dimension-height size))))
 
-(defmethod (setf label-font) (new-font (self label))
-  (set-label-font self new-font))
+(defmethod (setf font) (new-font (self label))
+  (set-font self new-font))
 
-(defmethod set-label-text ((self label) text)
+(defmethod set-text ((self label) text)
   (setf (slot-value self 'text) text)
   (label.set-label self text)
   (let ((size (label.get-size self)))
     (setf (slot-value self 'width)  (dimension-width size)
           (slot-value self 'height) (dimension-height size))))
 
-(defmethod (setf label-text) (new-text (self label))
-  (set-label-text self new-text))
+(defmethod (setf text) (new-text (self label))
+  (set-text self new-text))
 
 ;;;----------------------------------------------------------------------------------------
 
 (defclass image (object)
-  ((file-name :initarg :file-name :type string :reader image-file-name)))
+  ((filename :initarg :file-name :type string :reader filename)))
 
-(defmethod object-slots append ((self image))
-  (list :file-name (image-file-name self)))
+(defmethod slots append ((self image))
+  (list :filename (filename self)))
 
 (defmethod initialize-instance :after ((self image) &key &allow-other-keys)
-  (let ((size (image.create self (image-file-name self))))
+  (let ((size (image.create self (filename self))))
     (setf (slot-value self 'width)  (dimension-width size)
-          (slot-value self 'height) (dimension-height size))))
+          (slot-value self 'height) (dimension-height size))
+    (%set-fillable-attributes self)))
 
 ;;;----------------------------------------------------------------------------------------
 
 (defclass interactor (object)
-  ((action-command :initarg :action-command :initform "" :type string   :reader interactor-action-command)
-   (label          :initarg :label          :initform "" :type string   :reader interactor-label)))
+  ((action-command :initarg :action-command :initform "" :type string :reader action-command)
+   (label          :initarg :label          :initform "" :type string :reader label)))
 
 (defmethod initialize-instance :after ((self interactor) &key &allow-other-keys)
   (register self))
 
-(defmethod object-slots append ((self interactor))
-  (list :action-command (interactor-action-command self)
-        :label (interactor-label self)))
+(defmethod slots append ((self interactor))
+  (list :action-command (action-command self)
+        :label (label self)))
 
 (defgeneric set-action-command (self command)
   (:method   ((self interactor) command)
     (setf (slot-value self 'action-command) command)
     (interactor.set-action-command self command)))
 
-(defgeneric (setf interactor-action-command) (new-command self)
+(defgeneric (setf action-command) (new-command self)
   (:method   (new-command (self interactor))
     (set-action-command self new-command)))
 
@@ -1458,8 +1776,9 @@ from OBJECT and COMPOUND-MIXIN.
   ())
 
 (defmethod initialize-instance :after ((self button) &key &allow-other-keys)
-  (button.create self (interactor-label self))
-  (setf (interactor-action-command self) (interactor-action-command self)))
+  (button.create self (label self))
+  (setf (action-command self) (action-command self))
+  (%set-fillable-attributes self))
 
 ;;;----------------------------------------------------------------------------------------
 
@@ -1467,135 +1786,157 @@ from OBJECT and COMPOUND-MIXIN.
   ())
 
 (defmethod initialize-instance :after ((self check-box) &key &allow-other-keys)
-  (check-box.create self (interactor-label self))
-  (setf (interactor-action-command self) (interactor-action-command self)))
+  (check-box.create self (label self))
+  (setf (action-command self) (action-command self))
+  (%set-fillable-attributes self))
 
-(defmethod check-box-selectedp ((self check-box))
+(defmethod selected ((self check-box))
   (check-box.is-selected self))
-
-(defmethod set-check-box-selected ((self check-box) selected)
+(defmethod set-selected ((self check-box) selected)
   (check-box.set-selected self selected))
-
-(defmethod (setf check-box-selectedp) (selected (self check-box))
-  (set-check-box-selected self selected))
+(defmethod (setf selected) (selected (self check-box))
+  (set-selected self selected))
 
 ;;;----------------------------------------------------------------------------------------
 
 (defclass slider (interactor)
-  ((min   :initarg :min   :type int :reader slider-min)
-   (max   :initarg :max   :type int :reader slider-max)
-   (value :initarg :value :type int)))
+  ((minimum :initarg :min   :type int :reader minimum)
+   (maximum :initarg :max   :type int :reader maximum)
+   (value   :initarg :value :type int)))
 
-(defmethod object-slots append ((self slider))
-  (list :min (slider-min self)
-        :value (slider-value self)
-        :max (slider-max self)))
+(defmethod slots append ((self slider))
+  (list :min (minimum self)
+        :value (slot-value self 'value)
+        :max (maximum self)))
 
 (defmethod initialize-instance :after ((self slider) &key &allow-other-keys)
-  (slider.create self (slider-min self) (slider-max self) (slot-value self 'value))
-  (setf (interactor-action-command self) (interactor-action-command self)))
+  (slider.create self (minimum self) (maximum self) (slot-value self 'value))
+  ;; Side effect: sends action-command to the backend slider.
+  (setf (action-command self) (action-command self))
+  (%set-fillable-attributes self))
 
-(defmethod set-slider-value ((self slider) value)
+(defmethod value ((self slider))
+  (setf (slot-value self 'value) (slider.get-value self)))
+(defmethod set-value ((self slider) value)
   (setf (slot-value self 'value) value)
   (slider.set-value self value))
-
-(defmethod (setf slider-value) (value (self slider))
-  (set-slider-value self value))
-
-(defmethod slider-value ((self slider))
-  (slider.get-value self))
+(defmethod (setf value) (value (self slider))
+  (set-value self value))
 
 ;;;----------------------------------------------------------------------------------------
 
 (defclass text-field (interactor)
-  ((nchars :initarg :nchars :type int :reader text-field-nchars)))
+  ((nchars :initarg :nchars :type int :reader nchars)))
 
-(defmethod object-slots append ((self text-field))
-  (list :nchars (text-field-nchars self)))
+(defmethod slots append ((self text-field))
+  (list :nchars (nchars self)))
 
 (defmethod initialize-instance :after ((self text-field) &key &allow-other-keys)
-  (text-field.create self (text-field-nchars self))
-  (setf (interactor-action-command self) (interactor-action-command self)))
+  (text-field.create self (nchars self))
+  ;; Side effect: sends action-command to the backend slider.
+  (setf (action-command self) (action-command self))
+  (%set-fillable-attributes self))
 
-(defmethod text-field-text ((self text-field))
+(defmethod text ((self text-field))
   (text-field.get-text self))
-
-(defmethod set-text-field-text ((self text-field) str)
+(defmethod set-text ((self text-field) str)
   (text-field.set-text self str))
-
-(defmethod (setf text-field-text) (str (self text-field))
-  (set-text-field-text self str))
+(defmethod (setf text) (str (self text-field))
+  (set-text self str))
 
 
 ;;;----------------------------------------------------------------------------------------
 
 (defclass chooser (interactor)
-  ((items         :initarg :items    :initform (adjustable-vector)  :type vector   :reader chooser-items)
-   (selected-item :initarg :selected :type string :reader chooser-selected-item)))
+  ((items         :initarg :items
+                  :initform (adjustable-vector)
+                  :type vector
+                  :reader items)
+   (selected-item :initarg :selected
+                  :type string
+                  :reader selected-item)))
 
-(defmethod object-slots append ((self chooser))
-  (list :items (chooser-items self)
+(defmethod slots append ((self chooser))
+  (list :items (items self)
         :selected-item (slot-value self 'selected-item)))
 
-(defmethod initialize-instance :after ((self chooser) &key &allow-other-keys)
+(defmethod initialize-instance :after ((self chooser) &key items &allow-other-keys)
   (chooser.create self)
-  (setf (interactor-action-command self) (interactor-action-command self)))
+  (setf (action-command self) (action-command self))
+  (when items
+    (assert (every (function stringp) items))
+    (setf (slot-value self 'items) (adjustable-vector :initial-contents items))
+    (loop :for item :across (slot-value self 'items)
+          :do (chooser.add-item self item)))
+  (%set-fillable-attributes self))
 
-(defmethod chooser-add-item ((self chooser) item)
+(defmethod add-item ((self chooser) item)
+  (vector-push-extend item (slot-value self 'items))
   (chooser.add-item self item))
 
-(defmethod chooser-selected-item ((self chooser))
+(defmethod selected-item ((self chooser))
   (setf (slot-value self 'selected-item) (chooser.get-selected-item self)))
-
-(defmethod set-chooser-selected-item ((self chooser) item)
+(defmethod set-selected-item ((self chooser) item)
   (chooser.set-selected-item self item))
-
-(defmethod (setf chooser-selected-item) (selected  (self chooser))
-  (set-chooser-selected-item self selected))
-
-
+(defmethod (setf selected-item) (selected  (self chooser))
+  (set-selected-item self selected))
 
 
 ;;;----------------------------------------------------------------------------------------
 
 (defclass window (object)
-  ((color :initarg :color :initform "BLACK"    :type string :accessor object-color)
-   (title :initarg :title :initform "Untitled" :type string :reader   window-title)
-   (top   :reader  window-top)))
+  ((color :initarg :color :initform *black*    :type string :accessor color)
+   (title :initarg :title :initform "Untitled" :type string :reader   title)
+   (resizable :initarg :resizable :initform nil :type boolean :reader resizable)
+   (top-compound :reader  top-compound)))
 
-(defmethod object-slots append ((self window))
-  (list :title (window-title self)
-        :top (window-top self)))
+(defmethod slots append ((self window))
+  (list :title (title self)
+        :top (top-compound self)))
 
-(defmethod initialize-instance :after ((self window) &key &allow-other-keys)
-  (setf (slot-value self 'top) (make-instance 'top-compound))
-  (window.create self (object-width self) (object-height self) (window-top self))
+(defmethod initialize-instance :after ((self window) &key components resizable &allow-other-keys)
+  (setf (slot-value self 'top-compound)
+        (apply (function make-instance) 'top-compound
+               (when components (list :components components))))
+  (window.create self (width self) (height self) (top-compound self))
   (register self)
-  (window.set-title self (window-title self)))
+  (set-title self (title self))
+  (when resizable (set-resizable self resizable))
+  (%set-object-attributes self))
 
 (defgeneric close-window (self)
-  (:method   ((self window))
+  (:method ((self window))
     (window.close self)
     (unregister self)))
 
+(defgeneric repaint-window (self)
+  (:method ((self window))
+    (window.repaint self)))
+
 (defgeneric request-focus (self)
-  (:method   ((self window))
+  (:method ((self window))
     (window.request-focus self)))
 
 (defgeneric clear-window (self)
-  (:method   ((self window))
+  (:method ((self window))
     (window.clear self)))
 
-(defmethod set-object-visible ((self window) visible)
+(defmethod set-visible ((self window) visible)
   (setf (slot-value self 'visible) visible)
   (window.set-visible self visible))
+(defmethod (setf visible) (visible (self window))
+  (set-visible self visible))
 
-(defmethod set-window-resizable ((self window) &optional (resizable t))
+(defmethod set-resizable ((self window) &optional (resizable t))
   (window.set-resizable self resizable))
+(defmethod (setf resizable) (resizable (self window))
+  (set-resizable self resizable))
 
-(defmethod set-window-title ((self window) title)
+(defmethod set-title ((self window) (title string))
   (setf (slot-value self 'title) title)
   (window.set-title self title))
+(defmethod (setf title) ((title string) (self window))
+  (set-title self title))
 
 (defmethod draw-line ((self window) x0 y0 x1 y1)
   (window.draw self (make-instance 'line :x (double x0)
@@ -1613,7 +1954,7 @@ from OBJECT and COMPOUND-MIXIN.
                                   :y (double y)
                                   :width (double width)
                                   :height (double height))))
-    (setf (object-color obj) (object-color self))
+    (setf (color obj) (color self))
     (window.draw self obj)))
 
 (defmethod fill-oval ((self window) x y width height)
@@ -1621,8 +1962,8 @@ from OBJECT and COMPOUND-MIXIN.
                                   :y (double y)
                                   :width (double width)
                                   :height (double height))))
-    (setf (slot-value obj 'filledp) t)
-    (setf (object-color obj) (object-color self))
+    (setf (slot-value obj 'filled) t)
+    (setf (color obj) (color self))
     (window.draw self obj)))
 
 (defmethod draw-rect ((self window) x y width height)
@@ -1630,7 +1971,7 @@ from OBJECT and COMPOUND-MIXIN.
                                   :y (double y)
                                   :width (double width)
                                   :height (double height))))
-    (setf (object-color obj) (object-color self))
+    (setf (color obj) (color self))
     (window.draw self obj)))
 
 (defmethod fill-rect ((self window) x y width height)
@@ -1638,67 +1979,93 @@ from OBJECT and COMPOUND-MIXIN.
                                   :y (double y)
                                   :width (double width)
                                   :height (double height))))
-    (setf (slot-value obj 'filledp) t)
-    (setf (object-color obj) (object-color self))
+    (setf (slot-value obj 'filled) t)
+    (setf (color obj) (color self))
     (window.draw self obj)))
 
 (defmethod draw ((self window) (obj object))
   (window.draw self obj))
 
 (defmethod draw-at ((self window) (obj object) x y)
-  (set-object-location obj (double x) (double y))
+  (set-location obj (double x) (double y))
   (window.draw self obj))
 
-(defmethod compound-components ((self window))
-  (compound-components (window-top self)))
+(defmethod components ((self window))
+  (components (top-compound self)))
 
 (defmethod compound-add ((self window) (obj object))
-  (compound-add (window-top self) obj))
+  (compound-add (top-compound self) obj))
 
 (defmethod compound-add-at ((self window) (obj object) x y)
-  (set-object-location obj (double x) (double y))
-  (compound-add (window-top self) obj))
+  (set-location obj (double x) (double y))
+  (compound-add (top-compound self) obj))
 
 (defmethod compound-add-to-region ((self window) (obj object) region)
   (window.add-to-region self obj region))
 
 (defmethod compound-remove ((self window) (obj object))
-  (compound-remove (window-top self) obj))
+  (compound-remove (top-compound self) obj))
 
 (defmethod get-object-at ((self window) x y)
-  (get-object-at (window-top self) (double x) (double y)))
+  (get-object-at (top-compound self) (double x) (double y)))
 
-
-(defmethod register   ((self window))
-  (setf (gethash (object-id self) *windows*) self))
-(defmethod register   ((self interactor))
-  (setf (gethash (object-id self) *sources*) self))
-(defmethod register   ((self timer))
-  (setf (gethash (object-id self) *timers*) self))
-
-(defmethod unregister   ((self window))
-  (remhash (object-id self) *windows*))
-(defmethod unregister   ((self interactor))
-  (remhash (object-id self) *sources*))
-(defmethod unregister   ((self timer))
-  (remhash (object-id self) *timers*))
-
+;;;-----------------------------------------------------------------------------
 
 (defun wait-for-click ()
   (wait-for-event +click-event+))
 
 (defun wait-for-event (mask)
   (loop :while (queue-empty-p *event-queue*)
-        :do (event.wait-for-event mask)
-            (get-result))
-  (queue-dequeue *event-queue*))
+        :do (with-jbe-pipe-error-handler
+              (with-backend-locked *backend*
+                (event.wait-for-event mask)
+                (get-result))))
+  (with-backend-locked *backend*
+    (queue-dequeue *event-queue*)))
 
 (defun get-next-event (mask)
   (when (queue-empty-p *event-queue*)
-    (event.get-next-event mask)
-    (get-result))
-  (unless (queue-empty-p *event-queue*)
-    (queue-dequeue *event-queue*)))
+    (with-jbe-pipe-error-handler
+      (with-backend-locked *backend*
+        (event.get-next-event mask)
+        (get-result))))
+  (with-backend-locked *backend*
+    (unless (queue-empty-p *event-queue*)
+      (queue-dequeue *event-queue*))))
+
+;;;-----------------------------------------------------------------------------
+
+(defmethod register   ((self window))
+  (setf (gethash (id self) *window-registry*) self))
+(defmethod register   ((self interactor))
+  (setf (gethash (id self) *source-registry*) self))
+(defmethod register   ((self timer))
+  (setf (gethash (id self) *timer-registry*) self))
+
+(defmethod unregister   ((self window))
+  (remhash (id self) *window-registry*))
+(defmethod unregister   ((self interactor))
+  (remhash (id self) *source-registry*))
+(defmethod unregister   ((self timer))
+  (remhash (id self) *timer-registry*))
+
+;; We would use directly unregister, but let's say "free" is a better
+;; name for a public API for the target audience.
+
+(defgeneric free (self)
+  (:documentation "")
+  (:method ((self t))
+    (declare (ignorable self))
+    (values))
+  (:method ((self timer))
+    (unregister self)
+    (values))
+  (:method ((self interactor))
+    (unregister self)
+    (values))
+  (:method ((self window))
+    (unregister self)
+    (values)))
 
 
 
@@ -1839,60 +2206,5 @@ Example:
 
 ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-(defun test/all ()
-  (test/string-escape)
-  (test/scanner))
-
-(test/all)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-#-(and)
-(progn
-
-  (ccl:setenv "JBETRACE" "true" t)
-  
-  (close-backend)
-  (open-backend :program-name "Test Program")
-  
-  (defparameter *w* (make-instance 'window :title "Test Window"
-                                           :width 512.0d0
-                                           :height 342.0d0
-                                           :x 50.0d0
-                                           :y 50.0d0))
-  (progn
-    
-    (compound-add *w* (make-instance 'label :text "Text:"
-                                            :x 10 :y 10 :width 100 :height 20))
-    
-    (let ((tf (make-instance 'text-field :nchars 20  :action-command "TEXT"
-                                         :x 10 :y 30 :width 100 :height 20)))
-      (compound-add *w* tf)
-      (set-text-field-text tf "Doctor Who"))
-
-    (compound-add *w* (make-instance 'button  :label "OK" :action-command "OK"
-                                              :x 10 :y 60 :width 60 :height 20)))
-  
-  
-  (compound-remove *w* (aref (compound-components *w*) 2))
-  (defparameter *l1* (aref (compound-components *w*) 0))
-  (defparameter *t1* (aref (compound-components *w*) 1))
-  (defparameter *l2* (aref (compound-components *w*) 2))
-  (defparameter *t2* (aref (compound-components *w*) 3))
-  (progn
-    (set-window-resizable *w*)
-    (progn (set-object-size *w* 512 342)
-           (repaint-windows)
-           (set-object-location *w* 30 30))
-    (progn (set-object-location *l1* 10 40) (set-object-location *t1* 50 20))
-    (set-object-location *l2* 10 70) (set-object-location *t2* 50 50)
-    (set-object-location (aref (compound-components *w*) 2) 60 60)    
-    (compound-components *w*)
-    (text-field-text *t1*)"Doctor Who and the Daleks")
-  (object.contains *w* 11.0d0 61.0d0)
-  )
-
 
 ;;;; THE END ;;;;
