@@ -1563,8 +1563,8 @@ the various subclasses.
                 (slot-value poly 'cy) (y (aref vertices maxi)))))))
 
 (defmethod add-vertex ((self polygon) x y)
-  (setf (slot-value self 'cx) x
-        (slot-value self 'cy) y)
+  (setf (slot-value self 'cx) (double x)
+        (slot-value self 'cy) (double y))
   (vector-push-extend (make-point :x (double x) :y (double y))
                       (vertices self))
   (polygon.add-vertex self (double x) (double y)))
