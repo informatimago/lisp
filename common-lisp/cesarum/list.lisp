@@ -59,7 +59,8 @@
    ;; "HASHED-REMOVE-DUPLICATES" moved to COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE
    "ENSURE-LIST" "PROPER-LIST-P" "LIST-LENGTHS" "LIST-ELEMENTS"
    "ENSURE-CIRCULAR" "MAKE-CIRCULAR-LIST" "CIRCULAR-LENGTH"
-   "TREE-FIND" "TREE-DIFFERENCE" "REPLACE-TREE" "MAPTREE")
+   "TREE-FIND" "TREE-DIFFERENCE" "REPLACE-TREE"
+   "META-LIST" "MAPTREE")
   (:documentation
    "
 This package exports list processing functions.
@@ -106,6 +107,14 @@ License:
                  (push* 1 2 3 4 (aref v (incf i)))
                  (aref v 0))
                '(1 2 3 4 5 6 7 8)))
+
+
+(defun meta-list (list)
+  "
+Returns a list whose CARs are the CONS cells of the LIST.
+LIST must be a proper list.
+"
+  (loop :for meta :on list :collect meta))
 
 
 (defun ensure-list (object)
