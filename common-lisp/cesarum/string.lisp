@@ -193,9 +193,9 @@ RETURN:     A string containing the concatenation of the strings
 (defun concatenate-strings (list-of-string-designators)
   "
 LIST-OF-STRING-DESIGNATORS:
-                 EACH element may be either a string-designator,
-                 or a list containing a string-designator, and a start and end position
-                 denoting a substring.
+                 EACH element may be either a string-designator or a list of characters,
+                 or a list containing a string-designator or a list of character,
+                 and a start and end position denoting a substring.
 
 RETURN:          A string containing the concatenation of the strings
                  of the LIST-OF-STRINGS.
@@ -206,24 +206,29 @@ RETURN:          A string containing the concatenation of the strings
                (- (or (third string) (length (first string)))
                   (second string)))))
     (loop
-      :with strings = (mapcar (lambda (item)
-                                (if (consp item)
-                                    (list (string (first item))
-                                          (second item)
-                                          (third item))
-                                    (string item)))
-                              list-of-string-designators)
+      :with strings = (mapcar
+                       (lambda (item)
+                         (etypecase string
+                           ((or string symbol character) (string string))
+                           (null                         "")
+                           (cons (if (every (function characterp) string)
+                                     (coerce string 'string)
+                                     (list (etypecase (first item)
+                                             ((or string symbol character) (string (first item)))
+                                             (null "")
+                                             (cons (coerce (first item) 'string)))
+                                           (second item)
+                                           (third item))))))
+                       list-of-string-designators)
       :with result = (make-string (reduce (function +) strings :key (function slength)))
       :for pos = 0
-      :then (+ pos (slength string))
+        :then (+ pos (slength string))
       :for string :in strings
       :do (if (stringp string)
               (replace result string :start1 pos)
               (replace result (first string) :start1 pos
-                       :start2 (second string) :end2 (third string)))
+                                             :start2 (second string) :end2 (third string)))
       :finally (return result))))
-
-
 
 
 (defun explode-string (character-designators &optional (result-type 'list))
