@@ -683,3 +683,24 @@ not a CL:READTABLE.
      (set-macro-character +relative-prefix+ nil t *readtable*)))
 
 ;;;; THE END ;;;;
+
+#|
+
+1- The aforementioned package-inferred-system extension to ASDF, which
+is standard since ASDF 3.1 (from May 2014, now included with all
+modern maintained CL implementations, which includes ABCL, Allegro,
+CCL, CMUCL, ECL, LispWorks, MKCL, SBCL, but not the also supported
+CLISP, CormanCL, GCL, Genera, MCL, MOCL, SCL, XCL).
+https://common-lisp.net/project/asdf/asdf/The-package_002dinferred_002dsystem-extension.html#The-package_002dinferred_002dsystem-extension
+It works well, is actually used in production by several systems, and
+does actually provide a more maintainable package discipline than the
+traditional "everything in one big package".
+
+2- My experimental system package-renaming, which allows you to
+portably rename packages around some files, though it comes with some
+practical limitations.
+https://git.common-lisp.net/frideau/package-renaming
+I haven't actually used it, but it can portably implement local
+package nicknames, if you really want them.
+
+|#
