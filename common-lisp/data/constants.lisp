@@ -144,7 +144,7 @@
 
 ;; http://lx50.fmridc.org/dmt/units_j.dat
 
-(eval-when (:compile-topleve :load-toplevel :execute)
+(eval-when (:compile-toplevel :load-toplevel :execute)
   (defvar *constantes* '()
     "List of constantes definies par def-phys-const."))
 

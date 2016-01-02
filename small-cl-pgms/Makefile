@@ -33,32 +33,50 @@
 ####****************************************************************************
 
 PREFIX=/usr/local
-TARGETS=index.html wang.html what-implementation
 HELPFORMAT="make %-20s \# %s\n"
 
 all::help
 
+# html target is one of the main target: it prepares the files needed
+# for the web site.
+
 help::
-	@printf $(HELPFORMAT) generate "Generate the index.html page."
-generate:$(TARGETS) access-rights clean
+	@printf $(HELPFORMAT) html "Generates html files from .html.in documents."
+
+index.html.in:init.lisp index.lisp Makefile
+	clisp -norc -q -ansi  -E utf-8  \
+		-x '(progn (setf *load-verbose* nil) (load "index.lisp") (values))' \
+	| tr -d '\015'\
+	| sed -e 's/^;.*//' -e '/^NIL$$/d' \
+	> index.html.in
+
+html-files:index.html.in
+	$(MAKE) $(MFLAGS) -C botihn html
+	find . -name \*.html.in -print \
+	| while read file ; do \
+		echo ../tools/html-wrap-document.lisp \< "$$file" \> "$$(echo $$file | sed -e 's/\.in$$//')" ;\
+		../tools/html-wrap-document.lisp < "$$file" > "$$(echo $$file | sed -e 's/\.in$$//')" ;\
+	  done
+html: html-files access-rights
+.PHONY::html html-files
 
 
 help::
 	@printf $(HELPFORMAT) access-rights "Sets the access-rights for publication."
 access-rights:
 	publish .
+.PHONY:: access-rights
 
 help::
 	@printf $(HELPFORMAT) clean "Erase backup and fasl files."
-
 clean:
-	-rm -rf  *~ *.lx*fsl
+	-rm -rf  *~ *.[ld]x*fsl what-implementation
 
 help::
 	@printf $(HELPFORMAT) cleanall "make clean and erase targets."
 cleanall:clean
-	-rm -rf $(TARGETS)
-
+	-rm -rf $(TARGETS) 
+.PHONY:: cleanall
 
 help::
 	@printf $(HELPFORMAT) install "Installs everything in PREFIX=$(PREFIX)"
@@ -66,32 +84,18 @@ install:install-what-implementation
 
 
 help::
-	@printf $(HELPFORMAT) index.html.in "Generates index.html.in"
-index.html.in:init.lisp index.lisp Makefile
-	clisp -norc -q -ansi  -E iso-8859-1  \
-		-x '(progn (setf *load-verbose* nil) (load "index.lisp") (values))' \
-	| tr -d '\015'\
-	| sed -e 's/^;.*//' -e '/^NIL$$/d' \
-	> index.html.in
-index.html:index.html.in
-	find . \( -name index.html.in -o -name aim-8.html.in \) -print | while read file ; do cp -v "$$file" "$$(echo $$file | sed -e 's/\.in$$//')" ; done
-
-wang.html:wang.html.in
-	@cp -av wang.html.in wang.html
-
-#(with-open-file (*STANDARD-OUTPUT* "index.html" :direction :output :if-exists :supersede :if-does-not-exist :create)
-
-help::
 	@printf $(HELPFORMAT) what-implementation "Builds the what-implementation executable."
 wi what-implementation:what-implementation.lisp
 	( echo '(load (compile-file "what-implementation.lisp"))';\
 	  echo '(com.informatimago.small-cl-pgms.what-implementation:generate-server-executable  "what-implementation")' ) | ccl -n 
+.PHONY:: wi
 
 help::
 	@printf $(HELPFORMAT) install-what-implementation "Install the what-implementation executable."
 install-what-implementation:what-implementation
 	chmod 755 what-implementation
 	cp -p what-implementation $(PREFIX)/bin 2> /dev/null || ( rm $(PREFIX)/bin/what-implementation && cp -p what-implementation $(PREFIX)/bin )
+.PHONY:: install-what-implementation
 
 
 #### THE END ####

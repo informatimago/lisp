@@ -38,7 +38,8 @@
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.ARITHMETIC.PRIMES"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
-  (:export "STR-DECODE" "STR-ENCODE" "PRINT-FACTORIZATION" "FACTORIZE"
+  (:export "STR-DECODE" "STR-ENCODE" "PRINT-FACTORIZATION"
+           "FACTORIZE" "DIVISORS"
            "COMPUTE-PRIMES-TO")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "WHILE")
   (:documentation
@@ -68,6 +69,20 @@ License:
 "))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.ARITHMETIC.PRIMES")
 
+
+;;; Sundaram Sieve:
+
+;; In 1934, an Indian math student, S. P. Sundaram, invented a new method
+;; of sieving primes:
+;; 
+;;     From a list of integers from 1 to n, remove all integers of the
+;;     form i + j + 2ij where integers i and j range from 1 ≤ i ≤ j and
+;;     i + j + 2ij ≤ n. For each remaining integer k, the integer 2k+1 is
+;;     prime, and the list gives all the odd primes (thus excluding the
+;;     prime 2).
+
+
+;;; Eratostene Sieve:
 
 (defun compute-primes-to (n)
   "
@@ -213,4 +228,35 @@ RETURN:  A string decoding the integer NUM factorized with the PRIMES.
          primes (subseq (factorize-vector num primes) 1))))
 
 
+(defun exponent-combinations (exponents)
+  (if (null exponents)
+      '(())
+      (let ((e (first exponents))
+            (c (exponent-combinations (rest exponents))))
+        (loop
+          :for i :to e
+          :append (mapcar (lambda (r) (cons i r)) c)))))
+
+(defun divisors (n)
+  "
+RETURN: a list of divisors of N from 1 to N.
+"
+  (let* ((prime-factors (rest (factorize n)))
+         (exponents (mapcar (lambda (term)
+                              (if (atom term)
+                                  1
+                                  (third term)))
+                            prime-factors))
+         (primes (mapcar (lambda (term)
+                           (if (atom term)
+                               term
+                               (second term)))
+                         prime-factors)))
+    (mapcar (lambda (exponents)
+              (reduce (function *) (mapcar (function expt) primes exponents)
+                      :initial-value 1))
+            (exponent-combinations exponents))))
+
+
 ;;;; THE END ;;;;
+

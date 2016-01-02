@@ -1,10 +1,21 @@
 .. comment: -*- mode:rst; coding:utf-8 -*-
 
+============================================================
+Écriture d'un robot IRC simple
+============================================================
+
+.. meta::
+   :description: Un robot IRC simple pour suivre Hacker News
+   :keywords: common lisp,lisp,irc,bot,hacker news,drakma,cl-json,cl-irc,cesarum
+   :author: Pascal Bourguignon
+              
+❡
+
 Écriture d'un robot IRC simple
 ============================================================
 
 Pour soulager notre dépendence à *Hacker News*
-(_`http://news.ycombinator.com/newest`), qui nous incite à cliquer sur
+(`<http://news.ycombinator.com/newest>`_), qui nous incite à cliquer sur
 *Reload* toutes les dix secondes, on va écrire un `ircbot`, un petit
 programme qui va aller chercher périodiquement les nouveaux articles
 sur *Hacker News*, et en transmettre le titre et l'`URL` sur un canal `IRC`.
@@ -12,7 +23,7 @@ sur *Hacker News*, et en transmettre le titre et l'`URL` sur un canal `IRC`.
 Dependences - Système `ASDF`
 ------------------------------------------------------------
 
-Ce programme est écrit en `Common Lisp` (cf. _`http://cliki.net/`), en
+Ce programme est écrit en `Common Lisp` (cf. `<http://cliki.net/>`_), en
 utilisant quelques bibliothèques:
 
 - *drakma*, client `HTTP`, va nous permettre d'obtenir les données voulues;
@@ -59,12 +70,12 @@ Obtenir les informations d'*Hacker News*
 
 La première chose à faire, est d'obtenir les données.  Pour celà, nous
 consultons l'`API` indiqué en bas de la page d'Hacker News, 
-_`https://github.com/HackerNews/API`.
+`<https://github.com/HackerNews/API>`_.
 
 Nous allons utiliser l'`URL`:
-`https://hacker-news.firebaseio.com/v0/newstories.json` pour obtenir
+``https://hacker-news.firebaseio.com/v0/newstories.json`` pour obtenir
 les `ID` des dernières nouvelles, et
-`https://hacker-news.firebaseio.com/v0/item/ID.json` pour obtenir les
+``https://hacker-news.firebaseio.com/v0/item/ID.json`` pour obtenir les
 informations sur une nouvelle identifiée par son ID.
 
 Afin que les données envoyées par le serveur soient considérées comme
@@ -344,12 +355,13 @@ Conclusion
 ------------------------------------------------------------
 
 Vous pouvez obtenir les sources complets de ce petit exemple à:
-_`https://gitlab.com/com-informatimago/com-informatimago/tree/master/small-cl-pgms/botihn/` : ::
+`<https://gitlab.com/com-informatimago/com-informatimago/tree/master/small-cl-pgms/botihn/>`_ : ::
 
   git clone https://gitlab.com/com-informatimago/com-informatimago.git
   cd com-informatimago/small-cl-pgms/botihn/
+  emacs # edit configuration
+  make
 
 .. comment: THE END
-
   
 

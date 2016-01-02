@@ -1344,7 +1344,6 @@ IF-PACKAGE-EXISTS           The default is :PACKAGE
            (values nil nil)))))
 
 
-
 (defmethod import (symbols &optional (pack *package*))
   (let ((pack (normalize-package-designator
                pack :if-package-does-not-exist :error)))
@@ -1451,21 +1450,22 @@ IF-PACKAGE-EXISTS           The default is :PACKAGE
 
 
 (defmethod use-package (packs &optional (using-pack *package*))
-  (dolist (pack (ensure-list packs) t)
-    (let* ((pack       (normalize-package-designator pack :if-package-does-not-exist :error))
-           (using-pack (normalize-package-designator using-pack :if-package-does-not-exist :error))
-           (use-list   (package-use-list using-pack)))
-      (unless (member pack use-list)
-        (check-inherit-conflict pack using-pack)
-        (setf (used-packs using-pack) (cons pack use-list))
-        (setf (used-by-packs    pack) (cons using-pack (package-used-by-list pack)))))))
+  (let ((using-pack (normalize-package-designator using-pack :if-package-does-not-exist :error)))
+    (dolist (pack (ensure-list packs) t)
+      (let* ((pack       (normalize-package-designator pack :if-package-does-not-exist :error))
+             (use-list   (package-use-list using-pack)))
+        (unless (member pack use-list)
+          (check-inherit-conflict pack using-pack)
+          (setf (used-packs using-pack) (cons pack use-list))
+          (setf (used-by-packs    pack) (cons using-pack (package-used-by-list pack))))))))
+
 
 (defmethod unuse-package (packs &optional (using-pack *package*))
-  (dolist (pack (ensure-list packs) t)
-    (let ((pack       (normalize-package-designator pack :if-package-does-not-exist :error))
-          (using-pack (normalize-package-designator using-pack :if-package-does-not-exist :error)))
-      (setf (used-packs using-pack) (remove pack (package-use-list using-pack)))
-      (setf (used-by-packs pack)    (remove using-pack (package-used-by-list pack))))))
+  (let ((using-pack (normalize-package-designator using-pack :if-package-does-not-exist :error)))
+    (dolist (pack (ensure-list packs) t)
+      (let ((pack       (normalize-package-designator pack :if-package-does-not-exist :error)))
+        (setf (used-packs using-pack) (remove pack (package-use-list using-pack)))
+        (setf (used-by-packs pack)    (remove using-pack (package-used-by-list pack)))))))
 
 
 (defmethod find-all-symbols (name)

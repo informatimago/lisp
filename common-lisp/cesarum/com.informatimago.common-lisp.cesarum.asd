@@ -83,9 +83,9 @@ all written in 100% conforming Common Lisp.
                (:file "sequence"        :depends-on ())
                (:file "list"            :depends-on ())
                (:file "utility"         :depends-on ("list"))
-               (:file "string"          :depends-on ("utility" "list" "ecma048"))
+               (:file "string"          :depends-on ("utility" "list" "sequence" "ecma048"))
                (:file "package"         :depends-on ("utility"))
-               
+                             
                ;; Data structures:
                (:file "set"             :depends-on ("simple-test" "utility" "array"))
                (:file "index-set"       :depends-on ("simple-test" "utility" "array" "sequence" "set"))

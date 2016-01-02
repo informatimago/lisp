@@ -11,6 +11,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2015-10-10 <PJB> CAT/MORE/LESS can process *STANDARD-INPUT*.
 ;;;;    2004-11-23 <PJB> Generalized ls formating.
 ;;;;    2004-09-24 <PJB> Added ls.
 ;;;;    2004-08-07 <PJB> Added cat, more, and less.
@@ -581,6 +582,21 @@ ARGUMENTS:  A list of paths possibly containing wildcards.
   "The number of line displayed on the terminal.
 Used by functions like MORE.")
 
+(defun more-stream (page *standard-input* *standard-output*)
+  (do* ((+eof+ (list '+eof+))
+        (lnum  0 (1+ lnum))
+        (line (read-line *standard-input* nil +eof+)
+              (read-line *standard-input* nil +eof+)))
+       ((eq line +eof+))
+    (write-line line *standard-output*)
+    (when (and page (>= lnum page))
+      (setf lnum 0)
+      (princ "Type RETURN for next page:" *query-io*)
+      (finish-output *query-io*)
+      (clear-input *query-io*)
+      (read-line *query-io* nil))))
+
+
 (defun more (&rest args)
   "COMMAND
 DO:         concatenate and paginate a list of files.
@@ -590,24 +606,24 @@ ARGUMENTS:  If the first argument is :PAGE,
             or NIL indicating that no pagination must be done;
             else the page height is *TERMINAL-HEGIHT*.
             The other arguments are paths of files to be dumped
-            on *STANDARD-OUTPUT*.
+            on *STANDARD-OUTPUT*; a string-designator for \"-\"
+            represents *STANDARD-INPUT*.
+            If no path is given, only *STANDARD-INPUT* is processed.
 "
-  (let* (page paths)
+  (let (page paths)
     (if (eq :page (first args)) 
         (setf page (second args)      paths (cddr args))
         (setf page  *terminal-height* paths args))
-    (dolist (path paths)
-      (with-open-file (in (resolve path  :directory nil)
-                          :direction :input :if-does-not-exist :error)
-        (do* ((+eof+ (gensym))
-              (lnum  0 (1+ lnum))
-              (line (read-line in nil +eof+)(read-line in nil +eof+)))
-             ((eq line +eof+))
-          (princ line)(terpri)
-          (when (and page (>= lnum page))
-            (setf lnum 0)
-            (princ "Type RETURN for next page:")
-            (read-line t nil))))))
+    (if paths
+        (dolist (path paths)
+          (if (and (typep path 'string-designator)
+                   (string= path "-"))
+              (more-stream page *standard-input* *standard-output*)
+              (with-open-file (in (resolve path :directory nil)
+                                  :direction :input
+                                  :if-does-not-exist :error)
+                (more-stream page in *standard-output*))))
+        (more-stream page *standard-input* *standard-output*)))
   (values))
 
 

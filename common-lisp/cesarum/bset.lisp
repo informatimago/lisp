@@ -40,18 +40,18 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
 
-
-(in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET"
   (:use "COMMON-LISP")
+  (:shadow "COMPLEMENT" "INTERSECTION" "UNION" "SET" "SUBSETP")
+  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "VECTOR-INIT" "FOR")
   (:export "BSET-TO-LIST" "LIST-TO-BSET" "WRITE-BSET" "READ-BSET" "FOR-ALL-DO"
            "ASSIGN-EMPTY" "ASSIGN-ELEMENT" "ASSIGN" "EXISTS-1" "EXISTS" "FOR-ALL"
-           "IS-EMPTY" "IS-ELEMENT" "IS-EQUAL" "IS-STRICT-SUBSET" "IS-SUBSET" "EXTRACT"
-           "SELECT" "MAXIMUM" "MINIMUM" "SIZE" "CARDINAL" "EXCLUDE" "INCLUDE"
+           "IS-EMPTY" "IS-ELEMENT" "IS-EQUAL" "IS-NOT-EQUAL"
+           "IS-STRICT-SUBSET" "IS-SUBSET"
+           "EXTRACT" "SELECT" "MAXIMUM" "MINIMUM" "SIZE" "CARDINAL" "EXCLUDE" "INCLUDE"
            "COMPLEMENT" "SYM-DIFF" "INTERSECTION" "DIFFERENCE" "UNION" "RESIZE-BSET"
-           "COPY-BSET" "MAKE-BSET" "BSET")
-  (:shadow "COMPLEMENT" "INTERSECTION" "UNION" "SET")
-  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "VECTOR-INIT" "FOR")
+           "COPY-BSET" "MAKE-BSET" "BSET"
+           "ELEMENT" "EMPTYP" "SUBSETP" "STRICT-SUBSETP")
   (:documentation
    "
 
@@ -64,7 +64,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2004 - 2012
+    Copyright Pascal J. Bourguignon 2004 - 2015
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -88,6 +88,7 @@ License:
   (defconstant +bit-per-bitset+ 32))
 
 (deftype bitset () `(unsigned-byte ,+bit-per-bitset+))
+(deftype element () '(integer 0))
 
 (defstruct (bset
              (:constructor %make-bset)
@@ -104,9 +105,9 @@ License:
            :type (array bitset *))
   ;; max-element == (* +bit-per-bitset+ (array-dimension bitsets 0))
   ;; last-bitset == (1- (array-dimension bitsets 0))
-  (cardinal      nil :type (or null (integer 0)))
-  (first-element 0   :type (integer 0)) ; approximate
-  (last-element  0   :type (integer 0)) ; approximate
+  (cardinal      nil :type (or null element))
+  (first-element 0   :type element) ; approximate
+  (last-element  0   :type element) ; approximate
   ;; (for all i (==> (< i (bset-first-element bset)) (not (is-element i bset))))
   ;; (for all i (==> (> i (bset-last-element  bset)) (not (is-element i bset))))
   )
@@ -170,7 +171,7 @@ PRE:    (<= 0 max-size)
 POST:   (<= max-size (size (make-bset max-size)))
 RETURN: A new bset allocated to hold at least elements from 0 to max-size.
 "
-  (declare (type (integer 0) max-size))
+  (check-type max-size element)
   (%make-bset :bitsets (make-array (list (1+ (elem-to-bitset max-size)))
                                    :element-type 'bitset
                                    :initial-element 0
@@ -191,7 +192,8 @@ DO:      Reallocate bset to have it able to hold at least elements
          from 0 to max-size.
 RETURN:  bset
 "
-  (declare (type bset bset) (type (integer 0) max-size))
+  (check-type bset bset)
+  (check-type max-size element)
   (let ((old-count (array-dimension (bset-bitsets bset) 0))
         (new-count (1+ (elem-to-bitset max-size))))
     (setf (bset-bitsets bset) (adjust-array (bset-bitsets bset)
@@ -204,8 +206,8 @@ RETURN:  bset
     bset))
 
 
-       
-(defun union (set1 set2)
+(defgeneric union (s1 s2))       
+(defmethod union ((set1 bset) (set2 bset))
   "
 DO:      set1 := set1 U ( set2 inter (complement (make-bset (size set1))) )
          Accumulate in set1 the union of set1 and set2
@@ -226,8 +228,8 @@ RETURN:  SET1
                                        (bset-last-element set2)))
   set1)
          
-
-(defun difference (set1 set2)
+(defgeneric difference (s1 s2))
+(defmethod difference ((set1 bset) (set2 bset))
   "
 DO:      set1 := set1 - ( set2 inter (complement (make-bset (size set1))) )
          Accumulate in set1 the difference of set1 and set2
@@ -247,8 +249,8 @@ RETURN:  SET1
   (setf (bset-cardinal set1) nil)
   set1)
          
-
-(defun intersection (set1 set2)
+(defgeneric intersection (s1 s2))
+(defmethod intersection ((set1 bset) (set2 bset))
   "
 DO:      set1 := set1 inter set2 inter
          Accumulate in set1 the intersection of set1 and set2
@@ -270,9 +272,8 @@ RETURN:  SET1
                                        (bset-last-element set2)))
   set1)
          
-
-
-(defun sym-diff (set1 set2)
+(defgeneric sym-diff (s1 s2))
+(defmethod sym-diff ((set1 bset) (set2 bset))
   "
 DO:      set1 := set1 delta ( set2 inter (complement (make-bset (size set1))) )
          Accumulate in set1 the symetrical difference of set1 and set2
@@ -296,8 +297,8 @@ RETURN:  SET1
                                        (bset-last-element set2)))
   set1)
 
-
-(defun complement (bset)
+(defgeneric complement (s))
+(defmethod complement ((bset bset))
   "
 DO:      set1 := (complement (make-bset (size set1))) - set1
          Accumulate in set1 the complement of set1
@@ -316,14 +317,14 @@ RETURN:  SET1
           (bset-last-element  bset) (1- (bitset-to-elem (last-bitset bits)))))
   bset)
 
-
-(defun include (bset element)
+(defgeneric include (set element))
+(defmethod include ((bset bset) element)
   "
 PRE:    (<= 0 element (size bset))
 POST:   (is-element element bset)
 RETURN: BSET
 "
-  (declare (type (integer 0) element))
+  (check-type element element)
   (let ((bits (bset-bitsets bset)))
     (setf (bsref bits (elem-to-bitset element))
           (dpb 1 (byte 1 (elem-to-bit element))
@@ -334,14 +335,14 @@ RETURN: BSET
   bset)
 
 
-
-(defun exclude (bset element)
+(defgeneric exclude (set element))
+(defmethod exclude ((bset bset) element)
   "
 PRE:    (<= 0 element (size bset))
 POST:   (not (is-element element bset))
 RETURN: BSET
 "
-  (declare (type (integer 0) element))
+  (check-type element element)
   (let ((bits (bset-bitsets bset)))
     (setf (bsref bits (elem-to-bitset element))
           (dpb 0 (byte 1 (elem-to-bit element))
@@ -355,8 +356,8 @@ RETURN: BSET
       (decf (bset-last-element bset))))
   bset)
 
-
-(defun cardinal (bset)
+(defgeneric cardinal (set))
+(defmethod cardinal ((bset bset))
   "
 RETURN:  The number of elements in BSET.
 "
@@ -368,7 +369,8 @@ RETURN:  The number of elements in BSET.
   (bset-cardinal bset))
 
 
-(defun size (bset)
+(defgeneric size (bset))
+(defmethod size ((bset bset))
   "
 RETURN:  The maximum element BSET can hold.
 "
@@ -376,43 +378,47 @@ RETURN:  The maximum element BSET can hold.
     (1- (bitset-to-elem (last-bitset bits)))))
 
 
-(defun minimum (bset)
+(defgeneric minimum (bset))
+(defmethod minimum ((bset bset))
   "
-PRE:     (not (is-empty bset))
+PRE:     (not (emptyp bset))
 RETURN:  The smallest element of BSET.
 "
   (for (i (bset-first-element bset)  (bset-last-element bset))
-       (when (is-element i bset)
-         (setf (bset-first-element bset) i)
-         (return-from minimum i)))
+    (when (is-element i bset)
+      (setf (bset-first-element bset) i)
+      (return-from minimum i)))
   0)
 
 
-(defun maximum (bset)
+(defgeneric maximum (bset))
+(defmethod maximum ((bset bset))
   "
-PRE:     (not (is-empty bset))
+PRE:     (not (emptyp bset))
 RETURN:  The greatest element of BSET.
 "
   (for (i (bset-last-element bset)  (bset-first-element bset))
-       (when (is-element i bset)
-         (setf (bset-last-element bset) i)
-         (return-from maximum i)))
+    (when (is-element i bset)
+      (setf (bset-last-element bset) i)
+      (return-from maximum i)))
   0)
 
 
 
-(defun select (bset)
+(defgeneric select (bset))
+(defmethod select ((bset bset))
   "
-PRE:      (not (is-empty bset))
+PRE:      (not (emptyp bset))
 RETURN:   An element of BSET.
 WARNING:  May return always the same element if it's not removed from the BSET.
 "
   (minimum bset))
 
 
-(defun extract (bset)
+(defgeneric extract (bset))
+(defmethod extract ((bset bset))
   "
-PRE:      (not (is-empty bset))
+PRE:      (not (emptyp bset))
 POST:     (not (is-element (extract bset) bset))
 DO:       Select an element from the BSET and removes it from the BSET.
 RETURN:   An element that was in BSET.
@@ -420,7 +426,12 @@ RETURN:   An element that was in BSET.
   (let ((i (minimum bset))) (exclude bset i) i))
 
 
-(defun is-subset (set1 set2)
+(defgeneric is-subset (set1 set2)
+  (:method (set1 set2)
+    (subsetp set1 set2)))
+
+(defgeneric subsetp (set1 set2))
+(defmethod subsetp ((set1 bset) (set2 bset))
   "
 RETURN:  Whether  SET1 is a subset of SET2.
 "
@@ -433,30 +444,35 @@ RETURN:  Whether  SET1 is a subset of SET2.
   (let ((bits1 (bset-bitsets set1))
         (bits2 (bset-bitsets set2)))
     (for (i (elem-to-bitset (bset-first-element set1))
-            (elem-to-bitset (min (bset-last-element set1)
-                                 (bset-last-element set2))))
-         (cond
-           ((= 0 (bsref bits1 i)))
-           ((= 0 (bsref bits2 i))
-            (return-from is-subset nil))
-           ((/= 0 (logandc2 (bsref bits1 i) (bsref bits2 i)))
-            (return-from is-subset nil)))
-         (when (> (bset-last-element set1) (bset-last-element set2))
-           (for (i (1+ (elem-to-bitset (bset-last-element set1)))
-                   (elem-to-bitset (bset-last-element set2)))
-                (when (/= 0 (bsref bits1 i))
-                  (return-from is-subset nil))))))
+           (elem-to-bitset (min (bset-last-element set1)
+                                (bset-last-element set2))))
+      (cond
+        ((= 0 (bsref bits1 i)))
+        ((= 0 (bsref bits2 i))
+         (return-from subsetp nil))
+        ((/= 0 (logandc2 (bsref bits1 i) (bsref bits2 i)))
+         (return-from subsetp nil)))
+      (when (> (bset-last-element set1) (bset-last-element set2))
+        (for (i (1+ (elem-to-bitset (bset-last-element set1)))
+               (elem-to-bitset (bset-last-element set2)))
+          (when (/= 0 (bsref bits1 i))
+            (return-from subsetp nil))))))
   t)
 
+(defgeneric is-strict-subset (set1 set2)
+  (:method (set1 set2)
+    (strict-subsetp set1 set2)))
 
-(defun is-strict-subset (set1 set2)
+(defgeneric strict-subsetp (set1 set2))
+(defmethod strict-subsetp ((set1 bset) (set2 bset))
   "
 RETURN:  Whether SET1 is a strict subset of SET2.
 "
-  (and (is-subset set1 set2) (not (is-equal set1 set2))))
+  (and (subsetp set1 set2) (not (is-equal set1 set2))))
 
 
-(defun is-equal (set1 set2)
+(defgeneric is-equal (set1 set2))
+(defmethod is-equal ((set1 bset) (set2 bset))
   "
 RETURN:  Whether SET1 and SET2 contain the same elements.
   "
@@ -464,99 +480,108 @@ RETURN:  Whether SET1 and SET2 contain the same elements.
       (let ((bits1 (bset-bitsets set1))
             (bits2 (bset-bitsets set2)))
         (for (i
-               (elem-to-bitset (min (bset-first-element set1)
-                                    (bset-first-element set2)))
+                 (elem-to-bitset (min (bset-first-element set1)
+                                      (bset-first-element set2)))
                (elem-to-bitset (min (bset-last-element set1)
                                     (bset-last-element set2))))
-             (unless (= (bsref bits1 i) (bsref bits2 i))
-               (return-from is-equal nil)))
+          (unless (= (bsref bits1 i) (bsref bits2 i))
+            (return-from is-equal nil)))
         (when (> (elem-to-bitset (size set1))
                  (elem-to-bitset (bset-last-element set1))
                  (elem-to-bitset (bset-last-element set2)))
           (for (i
-                 (1+ (elem-to-bitset (min (bset-last-element set1)
-                                          (bset-last-element set2))))
+                   (1+ (elem-to-bitset (min (bset-last-element set1)
+                                            (bset-last-element set2))))
                  (elem-to-bitset (size set1)))
-               (when (/= 0 (bsref bits1 i))
-                 (return-from is-equal nil))))
+            (when (/= 0 (bsref bits1 i))
+              (return-from is-equal nil))))
         (when (> (elem-to-bitset (size set2))
                  (elem-to-bitset (bset-last-element set2))
                  (elem-to-bitset (bset-last-element set1)))
           (for (i
-                 (1+ (elem-to-bitset (min (bset-last-element set1)
-                                          (bset-last-element set2))))
+                   (1+ (elem-to-bitset (min (bset-last-element set1)
+                                            (bset-last-element set2))))
                  (elem-to-bitset (size set2)))
-               (when (/= 0 (bsref bits2 i))
-                 (return-from is-equal nil))))
+            (when (/= 0 (bsref bits2 i))
+              (return-from is-equal nil))))
         t)))
 
 
-(defun is-not-equal (set1 set2)
+(defgeneric is-not-equal (set1 set2))
+(defmethod is-not-equal ((set1 bset) (set2 bset))
   "
 RETURN:  (not (is-equal set1 set2))
 "
   (not (is-equal set1 set2)))
 
 
-(defun is-element (element bset)
+(defgeneric is-element (element bset))
+(defmethod is-element (element (bset bset))
   "
 RETURN:  Whether element is in BSET.
 "
-  (declare (type (integer 0) element))
+  (check-type element element)
   (let ((bits (bset-bitsets bset)))
     (and (< element (bitset-to-elem (last-bitset bits)))
          (/= 0 (logand (bsref bits (elem-to-bitset element)) 
                        (ash 1 (elem-to-bit element)))))))
 
+(defgeneric is-empty (set)
+  (:method (set) (emptyp set)))
 
-(defun is-empty (bset)
+(defgeneric emptyp (set))
+(defmethod emptyp ((bset bset))
   "
 RETURN: (= 0 (cardinal bset))
 "
   (or (and (bset-cardinal bset) (= 0 (bset-cardinal bset)))
       (let ((bits (bset-bitsets bset)))
         (for (i 0 (last-bitset bits))
-             (when (/= 0 (bsref bits i)) (return-from is-empty nil)))
+          (when (/= 0 (bsref bits i)) (return-from emptyp nil)))
         (setf (bset-cardinal bset) 0)
         t)))
 
 
-(defun for-all (bset proc)
+(defgeneric for-all (bset proc))
+(defmethod for-all ((bset bset) proc)
   "
 DO:     Call function PROC for each element in the BSET until PROC returns NIL.
 RETURN: Whether no call to PROC returned NIL.
 "
   (for (i (bset-first-element bset) (bset-last-element bset))
-       (when (and (is-element i bset) (not (funcall proc i)))
-         (return-from for-all nil)))
+    (when (and (is-element i bset) (not (funcall proc i)))
+      (return-from for-all nil)))
   t)
 
 
-(defun exists (bset proc)
+(defgeneric exists (bset proc))
+(defmethod exists ((bset bset) proc)
   "
 DO:      Call function PROC for each element in the BSET
          until PROC returns non nil.
 RETURN:  Whether PROC returned non nil.
 "
   (for (i (bset-first-element bset) (bset-last-element bset))
-       (when (and (is-element i bset) (funcall proc i))
-         (return-from exists t)))
+    (when (and (is-element i bset) (funcall proc i))
+      (return-from exists t)))
   nil)
 
 
-(defun exists-1 (bset proc)
+(defgeneric exists-1 (bset proc))
+(defmethod exists-1 ((bset bset) proc)
   "
 DO:       Call function PROC on all elements in the BSET.
 RETURN:   Whether PROC returned non nil for exactly one element.
 "
   (let ((n 0))
     (for (i (bset-first-element bset) (bset-last-element bset))
-         (when (and (is-element i bset) (funcall proc i))
-           (incf n)))
+      (when (and (is-element i bset) (funcall proc i))
+        (incf n)))
     (= n 1)))
 
 
-(defun assign (set1 set2)
+(defgeneric assign (set1 set2))
+(defmethod assign ((set1 bset) (set2 bset))
   "
 DO:      Accumulate in set1 the elements of set2 that are less than (size set1).
 POST:    (is-equal set1 (intersection (complement (make-bset (size set1)))set2))
@@ -565,11 +590,11 @@ RETURN:  SET1
   (let ((bits1 (bset-bitsets set1))
         (bits2 (bset-bitsets set2)))
     (for (i 0 (min (last-bitset bits1) (last-bitset bits2)))
-         (setf (bsref bits1 i) (bsref bits2 i)))
+      (setf (bsref bits1 i) (bsref bits2 i)))
     (when (< (min (last-bitset bits1) (last-bitset bits2)) (last-bitset bits1))
       (for (i (1+ (min (last-bitset bits1) (last-bitset bits2)))
-              (last-bitset bits1))
-           (setf (bsref bits1 i) 0)))
+             (last-bitset bits1))
+        (setf (bsref bits1 i) 0)))
     (setf (bset-cardinal set1) (bset-cardinal set2)
           (bset-first-element set1) (min (bset-first-element set2)
                                          (bitset-to-elem (last-bitset bits1)))
@@ -578,7 +603,8 @@ RETURN:  SET1
   set1)
 
 
-(defun assign-element (bset element)
+(defgeneric assign-element (bset element))
+(defmethod assign-element ((bset bset) element)
   "
 DO:     Empties BSET and include element.
 PRE:    (<= 0 element (size bset))
@@ -586,7 +612,7 @@ POST:   (and (exists bset (lambda (x) (= x element)))
              (for-all bset (lambda (x) (= x element))))
 RETURN:  BSET
 "
-  (declare (type (integer 0) element))
+  (check-type element element)
   (assign-empty bset)
   (include bset element)
   (setf (bset-cardinal bset) 1
@@ -595,9 +621,10 @@ RETURN:  BSET
   bset)
 
 
-(defun assign-empty (bset)
+(defgeneric assign-empty (bset))
+(defmethod assign-empty ((bset bset))
   "
-POST:    (is-empty bset)
+POST:    (emptyp bset)
 RETURN:  BSET.
 "
   (let ((bits (bset-bitsets bset)))
@@ -608,25 +635,27 @@ RETURN:  BSET.
   bset)
 
 
-(defun for-all-do (bset proc)
+(defgeneric for-all-do (bset proc))
+(defmethod for-all-do ((bset bset) proc)
   "
 DO:      Call PROC on all elements in BSET.
 RETURN:  BSET.
 "
   (for (i (bset-first-element bset) (bset-last-element bset))
-       (when (is-element i bset)
-         (funcall proc i)))
+    (when (is-element i bset)
+      (funcall proc i)))
   bset)
 
  
-(defun bset-to-list (bset)
+(defgeneric bset-to-list (bset))
+(defmethod bset-to-list ((bset bset))
   "
 RETURN:  A list of all elements of BSET, sorted in increasing order.
 "
   (let ((elements '()))
     (for (i (bset-last-element bset) (bset-first-element bset))
-         (when (is-element i bset)
-           (push i elements)))
+      (when (is-element i bset)
+        (push i elements)))
     elements))
 
 

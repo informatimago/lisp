@@ -1,0 +1,138 @@
+.. comment: -*- mode:rst;coding:utf-8 -*-
+
+Announce
+================================================================================
+
+A conforming implementation of Allegro CL hierarchical packages.
+--------------------------------------------------------------------------------
+
+The package com.informatimago.common-lisp.lisp.relative-package
+implements hierarchical packages / package-names.
+
+cf. `<http://franz.com/support/documentation/8.1/doc/packages.htm#relative-2>`_
+
+A better system might be: `Advanced Readtable <http://quickdocs.org/advanced-readtable/>`_
+
+
+Package structure vs. name structure
+--------------------------------------------------------------------------------
+
+The hierarchial packages as implemented by `Allegro CL`, introduce an
+inconsistency in the children-parent relationship between *packages*.
+
+On one one hand, ``RELATIVE-PACKAGE-NAME-TO-PACKAGE`` and
+``PACKAGE-PARENT`` enforce that the parent of a package be an existing
+package, and therefore when we have two packages: ``"R.A1.A2.A3.X"``
+and ``"R.B1.B2.B3.Y"``, then cannot refer one to the other using the
+relative package *name* ``....B1.B2.B3.Y`` or ``....A1.A2.A3.X`` if
+there are no package named ``"R.A1.A2.A3"`` ``"R.A1.A2"`` ``"R.A1"``
+or ``"R.B1.B2.B3"`` ``"R.B1.B2"`` ``"R.B1"``.
+
+On the other hand, ``PACKAGE-CHILDREN`` ``:RECURSE`` ``T`` will
+gladly return in its result, packages selected on the only basis of
+their package *name* having a given prefix, regardless whether *they* have
+a parent.  So with only the two packages ``"R.A1.A2.A3.X"`` and
+``"R.B1.B2.B3.Y"``, ``(package-children "R")`` will return
+``(#<package "R.A1.A2.A3.X"> #<package "R.B1.B2.B3.Y">)``, but
+``(mapcar 'package-parent (package-children "R"))`` will signal an
+error.
+
+Furthermore, if packages where "hierarchical", and really "have"
+children, shouldn't ``DELETE-PACKAGE`` also delete the children of a
+package bar leaving them parentless?
+
+A parent-children relationship would be a run-time entity, while
+refering to another package using a relative *name* would be a
+read-time operation.  Do we need the former?  
+
+
+
+This package implements `Allegro`\'s "hierarchical" packages, but IMO, it
+would be better to base the operations on package NAMES rather than on
+an implied or effective parent-children relationship between *packages*.
+(But I've added a ``*disable-useless-parent-package-check*`` variable
+that can be set to true to disable the error on missing parents).
+
+For example, in Allegro's reference implementation it's indicated that
+``RELATIVE-PACKAGE-NAME-TO-PACKAGE`` should be fast because used at
+read-time.  Well, it would be faster if we didn't test for the
+existence of all the intermediary parent packages!
+
+Another advantage of basing a design of relative package names only on
+NAMES, is that it would be a smaller extension on the `CL` standard, and
+therefore risking fewer unseen consequences (such as ``DELETE-PACKAGE``
+having to delete the children packages).
+
+
+On the other hand, one advantage on insisting on the existence of
+intermediary packages, is that it allows to create a border around
+relative package pathnames, to effectively prevent refering packages
+outside of a sub-hierarchy (cf. in ``relative-package-test.lisp`` how
+it's done by avoiding the creation of the ``".TEST.NONE"`` package).
+
+
+Relative package names are insufficient
+--------------------------------------------------------------------------------
+
+Relative packages are useful to provide short names to packages that
+are related.  However, when using library packages with structured
+names, they are not useful, since we are actually crossing to other
+package name trees: ::
+
+    (in-package :com.ogamita.nasium-lse.os)
+    (com.informatimago.common-lisp.cesarum.string:prefixp "Insu" "Insufficient!")
+
+For this, we need local nicknames.
+(such as in `Advanced Readtable <http://quickdocs.org/advanced-readtable/>`_).
+
+Local nicknames could also be merged with relative package names to
+imply local nicknames for all children and grand children of the local
+nicknamed packages. ::
+
+    (in-package :com.ogamita.nasium-lse.os)
+    (add-local-nickname :com.informatimago.common-lisp.cesarum :cesarum)
+    (cesarum.string:prefixp "Su" "Sufficient!")
+
+
+Example
+--------------------------------------------------------------------------------
+
+Note: funny thing, `ccl` ignores ``*print-case*`` and escapes the
+dots in package names when there's a reader macro on ``#\.``.
+
+::
+   
+    cl-user> (ql:quickload :com.informatimago.common-lisp.lisp.relative-package)
+    To load "com.informatimago.common-lisp.lisp.relative-package":
+      Load 1 ASDF system:
+        com.informatimago.common-lisp.lisp.relative-package
+    ; Loading "com.informatimago.common-lisp.lisp.relative-package"
+
+    (:com.informatimago.common-lisp.lisp.relative-package)
+    cl-user> (asdf:oos 'asdf:test-op :com.informatimago.common-lisp.lisp.relative-package)
+    (test/package-children)                     9 tests,   9 successes.
+    (test/package-parent)                      19 tests,  19 successes.
+    (test/find-package)                        19 tests,  19 successes.
+    (test/symbol-from-split-token)             12 tests,  12 successes.
+    (test/all)                                 59 tests,  59 successes.
+    #<test-op >
+    #<asdf/plan:sequential-plan #x3020024E0CDD>
+    cl-user> (in-package :com.informatimago.common-lisp.lisp.relative-package)
+    #<Package "COM.INFORMATIMAGO.COMMON-LISP.LISP.RELATIVE-PACKAGE">
+    relative-package> (enable-relative-package-names)
+    t
+    relative-package> (setf *disable-useless-parent-package-check* t)
+    t
+    relative-package> ...lisp-reader.reader:*readtable*
+    #<COM\.INFORMATIMAGO\.COMMON-LISP\.LISP-READER\.READER:readtable #x3020009364BD>
+    relative-package> (...cesarum.string:prefixp "suf" "sufficient")
+    t
+    relative-package> ...cesarum.ascii:US
+    31
+    relative-package> (in-package :cl-user)
+    #<Package "COMMON-LISP-USER">
+    cl-user> 
+
+
+.. comment: THE END
+

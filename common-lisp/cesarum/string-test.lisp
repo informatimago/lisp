@@ -77,11 +77,13 @@
   (assert-true (equal "" (concatenate-strings '(("" 0 0) ("abc" 0 0) ("abc" 1 1) (#\a 0 0)))))
   (assert-true (equal "abc" (concatenate-strings '("abc"))))
   (assert-true (equal "abc" (concatenate-strings '("a" "b" "c"))))
+  (assert-true (equal "abc" (concatenate-strings '((#\a #\b) "c"))))
   (assert-true (equal "abc" (concatenate-strings '(#\a #\b #\c))))
   (assert-true (equal "abc" (concatenate-strings '(|a| |b| |c|))))
   (assert-true (equal "abc" (concatenate-strings '(|a| "b" #\c))))
   (assert-true (equal "abcdef" (concatenate-strings '("ab" "cd" "ef"))))
   (assert-true (equal "abcdef" (concatenate-strings '(("abcdef" 0 2) ("abcdef" 2 4) ("abcdef" 4 6)))))
+  (assert-true (equal "abcdef" (concatenate-strings '(((#\a #\b #\c #\d #\e #\f) 0 2) ("abcdef" 2 4) ("abcdef" 4 6)))))
   (assert-true (equal "abcdef" (concatenate-strings '(#\a #\b #\c "def")))))
 
 
@@ -153,12 +155,64 @@
   (assert-true (equalp (explode #(#\H #\E #\L #\L #\O) 'string) "HELLO")))
 
 
+(defun as-symbol (string)
+  (make-symbol string))
+
+(define-test test/prefixp ()
+  (loop :for pf :in '(identity as-symbol)
+        :do (loop :for sf  :in '(identity as-symbol)
+                  :do (loop
+                        :for (p s) :in '(("" #\H)
+                                         (#\H #\H)
+                                         (#\H "H")
+                                         ("H" #\H)
+                                         (#\H "HELLO")
+                                         ("" "")
+                                         ("" "HELLO")
+                                         ("HELLO" "HELLO")
+                                         ("HELLO" "HELLO WORLD"))
+                        :do (assert-true (prefixp (funcall pf p) (funcall sf s))))
+                      (loop
+                        :for (p s) :in '((#\H "")
+                                         (#\H #\A)
+                                         (#\A #\H)
+                                         ("HELLO" #\H)
+                                         ("HELLO" "")
+                                         ("HELLO" "HELL")
+                                         ("HELLO" "SAY HELLO WORLD")
+                                         ("HELLO" "SAY HELLO"))
+                        :do (assert-false (prefixp (funcall pf p) (funcall sf s)))))))
+
+(define-test test/suffixp ()
+  (loop :for pf :in '(identity as-symbol )
+        :do (loop :for sf  :in '(identity as-symbol)
+                  :do (loop
+                        :for (p s) :in '(("" #\H)
+                                         (#\H #\H)
+                                         (#\H "H")
+                                         ("H" #\H)
+                                         (#\O "HELLO")
+                                         ("" "")
+                                         ("" "HELLO")
+                                         ("HELLO" "HELLO")
+                                         ("WORLD" "HELLO WORLD"))
+                        :do (assert-true (suffixp (funcall pf p) (funcall sf s))))
+                      (loop
+                        :for (p s) :in '((#\H "")
+                                         (#\H #\A)
+                                         (#\A #\H)
+                                         ("HELLO" #\H)
+                                         ("HELLO" "ELLO")
+                                         ("HELLO" "SAY HELLO WORLD")
+                                         ("HELLO" "SAY WORLD"))
+                        :do (assert-false (suffixp (funcall pf p) (funcall sf s)))))))
 
 (define-test test/all ()
   (test/string-designator)
   (test/character-designator)
   (test/concatenate-strings)
-  (test/implode-explode))
-
+  (test/implode-explode)
+  (test/prefixp)
+  (test/suffixp))
 
 ;;;; THE END ;;;;

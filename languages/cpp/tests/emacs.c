@@ -14,5 +14,7 @@ extern builtin_va_copy(d,s);
 #define __builtin_va_arg(v,l)    builtin_va_arg(v,l)  
 #define __builtin_va_copy(d,s)   builtin_va_copy(d,s) 
 
+#define __builtin_offsetof(TYPE, MEMBER) ((size_t)(&((TYPE*)0)->MEMBER))
+
 #include <config.h>
 #include <lisp.h>

@@ -7,7 +7,22 @@ This directory contains Common-Lisp packages that are mostly portable,
 but that use some extensions, packages out of the Common-Lisp
 specifications, like GRAY or other portability libraries.
 
+com.informatimago.clext.association
+    This system defines a package exporting macros to define classes
+    and associations separately.
 
+com.informatimago.clext.character-sets
+    This system defines a package to manage character-sets and
+    external-formats portably.
+
+com.informatimago.clext.closer-weak
+    This system defines a package providing a portability layer for
+    weak pointers and related structures on ccl, clisp, sbcl and cmu.
+    
+com.informatimago.clext.pipe
+    This system defines a package exporting a pipe abstraction
+    connecting an output stream to an input stream thru a queue or a
+    buffer.  The threads writing or reading are synchronized.
 
 .. comment:
 

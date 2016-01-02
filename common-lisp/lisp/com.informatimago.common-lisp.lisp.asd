@@ -57,11 +57,13 @@ specialization.
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ("closer-mop"
                "com.informatimago.common-lisp.lisp.ibcl"
-               "com.informatimago.common-lisp.lisp.stepper")
+               "com.informatimago.common-lisp.lisp.stepper"
+               "com.informatimago.common-lisp.lisp.relative-package")
   :components ((:file "generic-cl" :depends-on ()))
   #+adsf3 :in-order-to #+adsf3 ((asdf:test-op
                  (asdf:test-op "com.informatimago.common-lisp.lisp.ibcl.test")
                  (asdf:test-op "com.informatimago.common-lisp.lisp.stepper.test")
+                 (asdf:test-op "com.informatimago.common-lisp.lisp.relative-package.test")
                  (asdf:test-op "com.informatimago.common-lisp.lisp.test"))))
 
 ;;;; THE END ;;;;

@@ -129,11 +129,52 @@
  (expect-condition 'error (concatenate-sequences '(array *) #(#(1 2 3) (4 5 6) #(7 8 9)))))
 
 
+(defun as-vector (sequence)
+  (make-array (length sequence) :initial-contents sequence))
+
+(defun as-list (sequence)
+  (replace (make-list (length sequence)) sequence))
+
+
+(define-test test/prefixp ()
+  (loop :for pf :in '(identity as-vector as-list)
+        :do (loop :for sf  :in '(identity as-vector as-list)
+                  :do (loop
+                        :for (p s) :in '(("" "")
+                                         ("" "HELLO")
+                                         ("HELLO" "HELLO")
+                                         ("HELLO" "HELLO WORLD"))
+                        :do (assert-true (prefixp (funcall pf p) (funcall sf s))))
+                      (loop
+                        :for (p s) :in '(("HELLO" "HELL")
+                                         ("HELLO" "SAY HELLO WORLD")
+                                         ("HELLO" "SAY HELLO"))
+                        :do (assert-false (prefixp (funcall pf p) (funcall sf s)))))))
+
+(define-test test/suffixp ()
+  (loop :for pf :in '(identity as-vector as-list)
+        :do (loop :for sf  :in '(identity as-vector as-list)
+                  :do (loop
+                        :for (p s) :in '(("" "")
+                                         ("" "HELLO")
+                                         ("HELLO" "HELLO")
+                                         ("WORLD" "HELLO WORLD"))
+                        :do (assert-true (suffixp (funcall pf p) (funcall sf s))))
+                      (loop
+                        :for (p s) :in '(("HELLO" "ELLO")
+                                         ("HELLO" "SAY HELLO WORLD")
+                                         ("HELLO" "SAY WORLD"))
+                        :do (assert-false (suffixp (funcall pf p) (funcall sf s)))))))
+
+
+
 (define-test test/all ()
   (test/replace-subseq)
   (test/group-by)
   (test/parse-sequence-type)
-  (test/concatenate-sequences))
+  (test/concatenate-sequences)
+  (test/prefixp)
+  (test/suffixp))
 
 
 ;;;; THE END ;;;;

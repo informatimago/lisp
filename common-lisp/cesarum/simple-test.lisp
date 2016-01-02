@@ -131,7 +131,7 @@ License:
 (defvar *verbose-progress* nil
   "Whether to display dots or exclamation points while testing.")
 
-(defvar *test-output* *standard-output*)
+(defvar *test-output* (make-synonym-stream '*standard-output*))
 
 ;; Private:
 (defvar *last-success-p*          nil)

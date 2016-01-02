@@ -1,30 +1,32 @@
-
 (setf *readtable* (copy-readtable nil))
 (ql:quickload :com.informatimago.languages.c11)
 
 (in-package "COM.INFORMATIMAGO.LANGUAGES.C11.PARSER")
 
-;; (untrace compute-token-kind)
+
+(defun emacs-c-tokens ()
+  (reduce (function append)
+          (reverse (com.informatimago.languages.cpp::context-output-lines
+                    (let ((*identifier-package*
+                            (load-time-value (find-package "COM.INFORMATIMAGO.LANGUAGES.C11.C"))))
+                      (cpp-e "/Users/pjb/src/public/lisp/languages/cpp/tests/emacs.c"
+                             :trace-includes t
+                             :defines '( ;; "__GNUC__" "4"
+                                        "__STDC__" "1"
+                                        "__x86_64__" "1")
+                             :includes '("/Users/pjb/src/macosx/emacs-24.5/src/")
+                             :include-bracket-directories '("/Users/pjb/src/macosx/emacs-24.5/src/"
+                                                            "/Users/pjb/src/macosx/emacs-24.5/lib/"
+                                                            "/Users/pjb/src/macosx/gcc-4.9.2/gcc/ginclude/" 
+                                                            "/usr/include/")
+                             :write-processed-lines nil))))
+          :initial-value '()))
+
 ;; 7 seconds.
-(defparameter *tc* (reduce (function append)
-                        (reverse (com.informatimago.languages.cpp::context-output-lines
-                                  (let ((*identifier-package*
-                                          (load-time-value (find-package "COM.INFORMATIMAGO.LANGUAGES.C11.C"))))
-                                    (cpp-e "/Users/pjb/src/public/lisp/languages/cpp/tests/emacs.c"
-                                           :trace-includes t
-                                           :defines '(;; "__GNUC__" "4"
-                                                      "__STDC__" "1"
-                                                      "__x86_64__" "1")
-                                           :includes '("/Users/pjb/src/macosx/emacs-24.5/src/")
-                                           :include-bracket-directories '("/Users/pjb/src/macosx/emacs-24.5/src/"
-                                                                          "/Users/pjb/src/macosx/emacs-24.5/lib/"
-                                                                          "/Users/pjb/src/macosx/gcc-4.9.2/gcc/ginclude/" 
-                                                                          "/usr/include/")
-                                           :write-processed-lines nil))))
-                        :initial-value '()))
+#-(and) (defparameter *tc* (emacs-c-tokens))
 
 
-(progn
+(defun gen-p ()
   (with-open-file (out "p.lisp" :direction :output :if-exists :supersede :if-does-not-exist :create)
     (pprint '(in-package "COM.INFORMATIMAGO.LANGUAGES.C11.PARSER") out)
     (destructuring-bind (grammar &rest rest) (cdr (macroexpand-1 *c*))
@@ -37,17 +39,12 @@
           (pprint form out)))))
   (load "p.lisp"))
 
-(untrace typedef-name-p function-name-p enumeration-constant-name-p
-         enter-typedef enter-function enter-enumeration-constant
-         push-declaration-specifiers pop-declaration-specifiers register-declarator
-         scan-next-token)
-
 (defvar *tokens*  nil)
 (defvar *scanner* nil)
 (defvar *context* nil)
 (defvar *cpp-context* nil)
 
-(defun test/parse-stream (&optional tokens)
+(defun test/parse-stream (&key tokens source-file)
   (declare (stepper disable))
   (let ((tokens (or tokens
                     (reduce (function append)
@@ -55,17 +52,17 @@
                                       (let ((*identifier-package*
                                               (load-time-value (find-package "COM.INFORMATIMAGO.LANGUAGES.C11.C"))))
                                         (setf *cpp-context*
-                                              (cpp-e "/Users/pjb/src/public/lisp/languages/cpp/tests/emacs.c"
-                                                :trace-includes t
-                                                :defines '( ;; "__GNUC__" "4"
-                                                           "__STDC__" "1"
-                                                           "__x86_64__" "1")
-                                                :includes '("/Users/pjb/src/macosx/emacs-24.5/src/")
-                                                :include-bracket-directories '("/Users/pjb/src/macosx/emacs-24.5/src/"
-                                                                               "/Users/pjb/src/macosx/emacs-24.5/lib/"
-                                                                               "/Users/pjb/src/macosx/gcc-4.9.2/gcc/ginclude/" 
-                                                                               "/usr/include/")
-                                                :write-processed-lines nil)))))
+                                              (cpp-e (or source-file "/Users/pjb/src/public/lisp/languages/cpp/tests/emacs.c")
+                                                     :trace-includes t
+                                                     :defines '( ;; "__GNUC__" "4"
+                                                                "__STDC__" "1"
+                                                                "__x86_64__" "1")
+                                                     :includes '("/Users/pjb/src/macosx/emacs-24.5/src/")
+                                                     :include-bracket-directories '("/Users/pjb/src/macosx/emacs-24.5/src/"
+                                                                                    "/Users/pjb/src/macosx/emacs-24.5/lib/"
+                                                                                    "/Users/pjb/src/macosx/gcc-4.9.2/gcc/ginclude/" 
+                                                                                    "/usr/include/")
+                                                     :write-processed-lines nil)))))
                             :initial-value '()))))
     (setf *tokens*  tokens)
     (setf *scanner* (make-instance 'pre-scanned-scanner :tokens tokens))
@@ -99,22 +96,19 @@
 
 #-(and) (progn
 
-          (external-declaration (seq ((alt ((seq (static-assert-declaration) ($0))
-                                            (seq ((seq (declaration-specifiers) ((push-declaration-specifiers $1)))
-                                                  (alt ((seq (\;) (:specifier))
-                                                        (seq (declarator (alt ((seq ((opt ((seq (= initializer) ($2)))) (rep ((seq (\, init-declarator) ($2)))) \;)
-                                                                                    ((if $1 '(:initializer $1 $2) '(:simple $2))))
-                                                                               (seq ((opt ((seq (declaration-list) ($0)))) compound-statement)
-                                                                                    ((list :function-declarator $1 $2))))))
-                                                             ((ecase (first $2)
-                                                                (:simple (declarator $1 (second $2)))
-                                                                (:initializer (cons (declarator $1 (second $2)) (third $2)))
-                                                                (:function-declarator (list :declarator $1 $2))))))))
-                                                 ((progn (print (list* 'declaration-specifiers (list $1)))
-                                                         (print (list* 'declarator (list $2)))
-                                                         (pop-declaration-specifiers)
-                                                         (if (eql $2 :specifier) $1 $2)))))))
-                                     ((print (list* 'external-declaration (list $1))))))
+          (ql:quickload :com.informatimago.rdp)
+          (ql:quickload :com.informatimago.languages.c11)
+          (gen-p)
+          (pprint (remove-unary (test/parse-stream :source-file "tests/expressions.c")))
+
+
+          (untrace compute-token-kind)
+
+          (untrace typedef-name-p function-name-p enumeration-constant-name-p
+                   enter-typedef enter-function enter-enumeration-constant
+                   push-declaration-specifiers pop-declaration-specifiers register-declarator
+                   scan-next-token)
+
 
           
           (progn
@@ -122,7 +116,7 @@
             (print-enum-constants) (terpri)
             (print-func-names)     (terpri))
 
- 
+          
           (print-tokens *tokens* :start (- (length (pre-scanned-tokens *scanner*)) 40) :end (length (pre-scanned-tokens *scanner*)))
 
           void unblock_tty_out_signal ( void )             ;
@@ -133,6 +127,7 @@
           extern void 
 
           )
+
 
 #-(and) (progn
           (defparameter *c* (quote
@@ -149,6 +144,7 @@
           )
 
 
+
 #-(and) (progn
           
           (map nil 'print (subseq *tc* 0 30))
@@ -162,26 +158,31 @@
           )
 
 
-;; yacc
 
-(defun make-list-lexer (tokens)
-  (lambda ()
-    (if tokens
-        (let ((token (pop tokens)))
-          (values (token-kind token) token))
-        (values nil nil))))
+#-(and) (
+         ;; yacc
 
-(let ((*context* (make-instance 'context)))
-  (values (parse-with-lexer (make-list-lexer *tc*) *c11-parser*)
-          *context*))
+         (defun make-list-lexer (tokens)
+           (lambda ()
+             (if tokens
+                 (let ((token (pop tokens)))
+                   (values (token-kind token) token))
+                 (values nil nil))))
 
-;; rdp:
-(defun test/parse-stream (src)
-  (let ((*scanner* (make-instance '-scanner :source src)))
-   (loop
-     :until (typep (scanner-current-token *scanner*) 'tok-eof)
-     :collect  (lse-parser *scanner*))))
+         (let ((*context* (make-instance 'context)))
+           (values (parse-with-lexer (make-list-lexer *tc*) *c11-parser*)
+                   *context*))
+         )
 
+
+#-(and) (
+         ;; rdp:
+         (defun test/parse-stream (src)
+           (let ((*scanner* (make-instance '-scanner :source src)))
+             (loop
+               :until (typep (scanner-current-token *scanner*) 'tok-eof)
+               :collect  (lse-parser *scanner*))))
+         )
 
 #-(and) (
          (mapcar 'compute-token-kind (subseq *tc* 0 100))
@@ -235,3 +236,14 @@
                    collect (print token))))
 
          )
+
+
+
+#-(and)
+(let (ss)
+  (do-symbols (s "COM.INFORMATIMAGO.LANGUAGES.C11.PARSER" ss)
+    (when (prefixp "C11/PARSE-" (string s)) (push s ss))))
+
+#-(and) (untrace c11/parse-alignment-specifier-1-1 c11/parse-static-assert-declaration-1 c11/parse-exclusive-or-expression-1-1-1 c11/parse-compound-statement c11/parse-external-declaration-1 c11/parse-right-assign c11/parse-external-declaration-1-2-1 c11/parse-declaration-specifiers-1 c11/parse-enum-specifier c11/parse-struct-declaration-1-1 c11/parse-simple-type-specifier-1-1-1 c11/parse-sizeof-argument-1-1-2 c11/parse-sizeof-argument-1-1-1 c11/parse-postfix-expression-item-1 c11/parse-external-declaration-1-2 c11/parse-parameter-declaration-1-1 c11/parse-iteration-statement-1-1 c11/parse-block-item-1 c11/parse-sizeof-argument-1-1 c11/parse-cast-expression-1-3-1-2-1-2 c11/parse-struct-declarator c11/parse-simple-type-specifier-1-1-8 c11/parse-initializer-1-1-1 c11/parse-simple-type-specifier-1-1-3 c11/parse-struct-or-union-specifier-1-1-1 c11/parse-mul-assign-1 c11/parse-iteration-statement-1-2 c11/parse-eq-op c11/parse-simple-unary-expression-1-1 c11/parse-storage-class-specifier-1-2 c11/parse-parameter-declaration-1-2 c11/parse-abstract-declarator-1 c11/parse-inc-op-1 c11/parse-le-op-1 c11/parse-and-expression-1 c11/parse-simple-direct-declarator--or--simple-direct-abstract-declarator-1-2-1-1-1-1-1 c11/parse-initializer-list-1-1 c11/parse-cast-expression-1-1 c11/parse-identifier-list-1-1-1 c11/parse-bracket-direct-abstract-declarator c11/parse-initializer-1-1 c11/parse-simple-type-specifier c11/parse-enum-specifier-1-2-1 c11/parse-or-assign-1 c11/parse-expression-1 c11/parse-simple-unary-expression c11/parse-inclusive-or-expression-1-1-1 c11/parse-declaration c11/parse-jump-statement-1-3 c11/parse-direct-declarator--or--direct-abstract-declarator c11/parse-add-assign c11/parse-specifier-qualifier-1 c11/parse-type-name-1-1 c11/parse-selection-statement-1 c11/parse-equality-expression-1-1 c11/parse-simple-direct-declarator c11/parse-pointer c11/parse-simple-type-specifier-1-1-2 c11/parse-declaration-specifier-1 c11/parse-exclusive-or-expression-1 c11/parse-argument-expression-list-1-1-1 c11/parse-struct-declaration-1-1-1 c11/parse-struct-declaration-1 c11/parse-simple-labeled-statement c11/parse-relational-expression-1-1-1 c11/parse-initializer-list-1 c11/parse-mod-assign-1 c11/parse-struct-declaration-list-1-1 c11/parse-storage-class-specifier-1-1 c11/parse-alignment-specifier-1-1-1 c11/parse-cast-expression-1-3-1 c11/parse-ge-op c11/parse-generic-assoc-list-1 c11/parse-pointer-1-2-1 c11/parse-direct-declarator-in-brackets-1-3 c11/parse-multiplicative-expression-1-1-1-1 c11/parse-direct-declarator-item c11/parse-simple-unary-expression-1-2 c11/parse-unary-expression-1 c11/parse-right-op c11/parse-enum-specifier-1-1 c11/parse-pointer-1-2-1-1 c11/parse-sizeof-argument c11/parse-postfix-expression-head-1 c11/parse-direct-declarator-item-1-1 c11/parse-direct-declarator-item-1-1-1 c11/parse-enumerator c11/parse-direct-declarator-in-brackets-1-2-1 c11/parse-generic-association c11/parse-declarator-1-2 c11/parse-designator-1 c11/parse-direct-abstract-declarator c11/parse-selection-statement-1-1 c11/parse-exclusive-or-expression-1-1 c11/parse-cast-expression-1-3-1-2-1-1 c11/parse-type-qualifier-list-1-1 c11/parse-declaration-1-1 c11/parse-postfix-expression-item-1-2-1 c11/parse-multiplicative-expression-1 c11/parse-parameter-list c11/parse-simple-direct-abstract-declarator c11/parse-expression-statement-or-label-1-1 c11/parse-string c11/parse-simple-type-specifier-1-1-7 c11/parse-expression-1-1-1 c11/parse-external-declaration-1-2-2 c11/parse-div-assign c11/parse-parameter-type-list-1-1 c11/parse-external-declaration-1-2-2-2-1-2-1 c11/parse-direct-abstract-declarator-item-1 c11/parse-storage-class-specifier-1-3 c11/parse-simple-type-specifier-1-1-6 c11/parse-block-item-list c11/parse-type-qualifier c11/parse-simple-unary-expression-1 c11/parse-external-declaration-1-2-2-2-1-1-1 c11/parse-ne-op c11/parse-designator-list c11/parse-function-specifier-1-1 c11/parse-logical-or-expression c11/parse-simple-type-specifier-1-1-5 c11/parse-expression-statement-or-label-1-1-1-2 c11/parse-initializer-list-1-1-2 c11/parse-primary-expression-1-1 c11/parse-equality-expression c11/parse-init-declarator-list c11/parse-external-declaration-1-2-2-2-1-1-2-1 c11/parse-sizeof-argument-1-1-1-1 c11/parse-struct-declarator-1-2-1 c11/parse-direct-abstract-declarator-in-parentheses-1 c11/parse-simple-direct-declarator--or--simple-direct-abstract-declarator c11/parse-primary-expression-1 c11/parse-simple-type-specifier-1 c11/parse-enumerator-list-1 c11/parse-alignment-specifier c11/parse-postfix-expression-head c11/parse-equality-expression-1-1-1-1 c11/parse-function-specifier-1 c11/parse-selection-statement c11/parse-identifier-list-1-1 c11/parse-init-declarator-1-1 c11/parse-specifier-qualifier-list-1 c11/parse-constant c11/parse-generic-selection c11/parse-enum-specifier-1-2 c11/parse-struct-declarator-list-1-1 c11/parse-constant-expression c11/parse-type-qualifier-list c11/parse-cast-expression-1-3-1-2 c11/parse-relational-expression-1-1-1-1 c11/parse-abstract-declarator-1-1-1 c11/parse-expression-statement c11/parse-storage-class-specifier c11/parse-argument-expression-list-1-1 c11/parse-initializer c11/parse-direct-declarator-in-brackets-1-3-1-1-1 c11/parse-inclusive-or-expression-1-1 c11/parse-direct-abstract-declarator-in-parentheses-1-1 c11/parse-bracket-direct-abstract-declarator-1-1-1-2 c11/parse-exclusive-or-expression c11/parse-mul-assign c11/parse-direct-abstract-declarator-1 c11/parse-assignment-operator-1 c11/parse-assignment-expression-1 c11/parse-simple-direct-declarator-1-2 c11/parse-simple-primary-expression c11/parse-specifier-qualifier-1-1 c11/parse-cast-expression-1 c11/parse-enumerator-list c11/parse-init-declarator c11/parse-simple-type-qualifier-1-1 c11/parse-logical-or-expression-1-1 c11/parse-struct-or-union c11/parse-multiplicative-expression-1-1-1 c11/parse-storage-class-specifier-1 c11/parse-sizeof-argument-1-1-1-1-1-2 c11/parse-declaration-specifier c11/parse-simple-type-qualifier-1-1-3 c11/parse-specifier-qualifier-list-1-1 c11/parse-postfix-expression-head-1-1-1-2 c11/parse-direct-declarator-in-parentheses c11/parse-specifier-qualifier c11/parse-direct-abstract-declarator-in-parentheses-1-2 c11/parse-abstract-declarator-1-2 c11/parse-and-expression c11/parse-additive-expression-1-1 c11/parse-simple-direct-declarator--or--simple-direct-abstract-declarator-1-2-1-1-2 c11/parse-direct-declarator-in-brackets-1-1 c11/parse-selection-statement-1-2 c11/parse-enum-specifier-1-2-1-1 c11/parse-direct-abstract-declarator-item-1-1 c11/parse-cast-expression-1-3-1-2-1-1-1 c11/parse-conditional-expression-1-1-1 c11/parse-struct-or-union-specifier-1 c11/parse-generic-selection-1 c11/parse-external-declaration-1-2-2-2 c11/parse-string-1 c11/parse-logical-and-expression c11/parse-inclusive-or-expression c11/parse-bracket-direct-abstract-declarator-1-1-1-1 c11/parse-assignment-operator c11/parse-initializer-list-1-2 c11/parse-block-item-list-1 c11/parse-bracket-direct-abstract-declarator-1-1-1 c11/parse-struct-declaration-list c11/parse-external-declaration-1-2-2-2-1-2 c11/parse-additive-expression c11/parse-simple-type-specifier-1-1-10 c11/parse-storage-class-specifier-1-4 c11/parse-postfix-expression-item-1-6 c11/parse-designator-1-1 c11/parse-direct-declarator-item--or--direct-abstract-declarator-item-1-1-1 c11/parse-direct-declarator-item-1 c11/parse-struct-declaration-list-1 c11/parse-abstract-declarator c11/parse-direct-declarator-1 c11/parse-function-specifier-1-2 c11/parse-pointer-1-1 c11/parse-struct-or-union-specifier-1-1-2 c11/parse-inc-op c11/parse-cast-expression c11/parse-cast-expression-1-3 c11/parse-initializer-list c11/parse-generic-association-1 c11/parse-iteration-statement-1-3-1 c11/parse-and-op c11/parse-initializer-list-1-2-1 c11/parse-init-declarator-list-1 c11/parse-div-assign-1 c11/parse-declarator--or--abstract-declarator c11/parse-direct-declarator-in-parentheses-1-2 c11/parse-struct-or-union-specifier c11/parse-jump-statement-1-4-1 c11/parse-unary-expression c11/parse-specifier-qualifier-1-1-1-1 c11/parse-inclusive-or-expression-1 c11/parse-postfix-expression-1 c11/parse-simple-primary-expression-1 c11/parse-left-assign c11/parse-enumeration-constant c11/parse-equality-expression-1-1-1 c11/parse-external-declaration-1-2-2-2-1-1 c11/parse-declaration-specifiers c11/parse-init-declarator-list-1-1-1 c11/parse-simple-direct-declarator--or--simple-direct-abstract-declarator-1-2-1-1 c11/parse-relational-expression-1 c11/parse-type-specifier c11/parse-simple-direct-declarator--or--simple-direct-abstract-declarator-1-2-1-1-1 c11/parse-iteration-statement-1-3-1-2-1 c11/parse-additive-expression-1 c11/parse-cast-expression-1-3-1-3 c11/parse-simple-type-specifier-1-1-4 c11/parse-logical-and-expression-1-1 c11/parse-bracket-direct-abstract-declarator-1 c11/parse-type-qualifier-list-1 c11/parse-simple-type-qualifier-1 c11/parse-postfix-expression-item-1-2 c11/parse-external-declaration-1-2-2-1 c11/parse-simple-direct-declarator--or--simple-direct-abstract-declarator-1-1 c11/parse-external-declaration-1-2-2-2-1-1-1-1 c11/parse-struct-declarator-list c11/parse-jump-statement-1 c11/parse-type-qualifier-1-1 c11/parse-jump-statement-1-2 c11/parse-specifier-qualifier-list c11/parse-shift-expression-1-1-1-1 c11/parse-initializer-1 c11/parse-simple-labeled-statement-1-2 c11/parse-dec-op-1 c11/parse-sub-assign-1 c11/parse-expression c11/parse-direct-declarator-in-brackets-1-3-1 c11/parse-declarator-1-1 c11/parse-shift-expression-1-1-1 c11/parse-translation-unit c11/parse-struct-declarator-list-1-1-1 c11/parse-declaration-1-1-1 c11/parse-logical-and-expression-1 c11/parse-direct-declarator-in-parentheses-1-1 c11/parse-simple-labeled-statement-1 c11/parse-type-specifier-1 c11/parse-sizeof-argument-1-1-1-1-1-2-1 c11/parse-storage-class-specifier-1-6 c11/parse-direct-declarator c11/parse-parameter-list-1-1 c11/parse-relational-expression-1-1 c11/parse-left-op-1 c11/parse-declaration-1 c11/parse-jump-statement c11/parse-type-name-1 c11/parse-expression-statement-1 c11/parse-type-name c11/parse-init-declarator-list-1-1 c11/parse-postfix-expression-item-1-1 c11/parse-storage-class-specifier-1-5 c11/parse-external-declaration-1-2-2-2-1-1-2 c11/parse-expression-1-1 c11/parse-iteration-statement-1-3 c11/parse-struct-or-union-specifier-1-1-2-1-1 c11/parse-direct-declarator--or--direct-abstract-declarator-1-1 c11/parse-declarator--or--abstract-declarator-1-1-1 c11/parse-generic-assoc-list c11/parse-generic-association-1-1 c11/parse-direct-abstract-declarator-in-parentheses c11/parse-declarator-1 c11/parse-simple-direct-abstract-declarator-1-1-1 c11/parse-simple-direct-declarator--or--simple-direct-abstract-declarator-1-2 c11/parse-iteration-statement-1-3-1-2 c11/parse-assignment-operator-1-1 c11/parse-and-expression-1-1-1 c11/parse-multiplicative-expression c11/parse-relational-expression c11/parse-sizeof-argument-1-1-1-1-1-1 c11/parse-simple-direct-declarator--or--simple-direct-abstract-declarator-1-2-1 c11/parse-simple-direct-abstract-declarator-1-1 c11/parse-multiplicative-expression-1-1 c11/parse-jump-statement-1-1 c11/parse-simple-direct-declarator-1 c11/parse-additive-expression-1-1-1 c11/parse-struct-or-union-specifier-1-1 c11/parse-designation c11/parse-jump-statement-1-4 c11/parse-simple-type-specifier-1-1 c11/parse-assignment-expression c11/parse-pointer-1 c11/parse-simple-direct-declarator--or--simple-direct-abstract-declarator-1 c11/parse-struct-declarator-1-2-1-1 c11/parse-struct-declaration c11/parse-cast-expression-1-3-1-2-1 c11/parse-direct-declarator-in-brackets-1 c11/parse-argument-expression-list c11/parse-declaration-specifiers-1-1 c11/parse-ge-op-1 c11/parse-postfix-expression-item c11/parse-declaration-1-1-2 c11/parse-sizeof-argument-1-1-1-1-1 c11/parse-struct-or-union-1 c11/parse-direct-abstract-declarator-item-1-1-1 c11/parse-direct-abstract-declarator-item c11/parse-right-op-1 c11/parse-eq-op-1 c11/parse-iteration-statement-1-3-1-1-1 c11/parse-direct-declarator-item-1-2-1-1-1 c11/parse-statement-1 c11/parse-postfix-expression-head-1-1 c11/parse-direct-declarator--or--direct-abstract-declarator-1 c11/parse-dec-op c11/parse-ne-op-1 c11/parse-block-item c11/parse-parameter-list-1-1-1 c11/parse-sub-assign c11/parse-iteration-statement-1 c11/parse-and-assign-1 c11/parse-simple-type-specifier-1-1-11 c11/parse-simple-type-qualifier-1-1-2 c11/parse-specifier-qualifier-1-1-1 c11/parse-right-assign-1 c11/parse-simple-type-qualifier-1-1-1 c11/parse-translation-unit-1-1 c11/parse-struct-declarator-1-2 c11/parse-atomic-type-specifier-1 c11/parse-iteration-statement-1-3-1-1 c11/parse-direct-declarator-in-parentheses-1 c11/parse-enumerator-1-1 c11/parse-assignment-expression-1-1 c11/parse-init-declarator-1-1-1 c11/parse-generic-assoc-list-1-1-1 c11/parse-shift-expression-1 c11/parse-direct-declarator-item--or--direct-abstract-declarator-item-1-1 c11/parse-external-declaration-1-1 c11/parse-identifier-list c11/parse-function-specifier c11/parse-le-op c11/parse-sizeof-argument-1-1-1-1-1-2-1-1-1 c11/parse-and-assign c11/parse-simple-type-specifier-1-1-9 c11/parse-direct-declarator-item--or--direct-abstract-declarator-item-1 c11/parse-sizeof-argument-1-1-1-1-1-2-1-1 c11/parse-alignment-specifier-1 c11/parse-postfix-expression-head-1-1-1 c11/parse-or-assign c11/parse-parameter-declaration c11/parse-logical-or-expression-1-1-1 c11/parse-enum-specifier-1-2-1-1-1 c11/parse-designator-list-1 c11/parse-designator-1-2 c11/parse-designator c11/parse-constant-1 c11/parse-direct-declarator-in-brackets-1-2 c11/parse-statement c11/parse-argument-expression-list-1 c11/parse-shift-expression-1-1 c11/parse-postfix-expression-1-1 c11/parse-expression-statement-or-label c11/parse-external-declaration c11/parse-init-declarator-1 c11/parse-primary-expression c11/parse-assignment-expression-1-1-1 c11/parse-selection-statement-1-1-1 c11/parse-postfix-expression-head-1-1-1-3 c11/parse-unary-operator c11/parse-static-assert-declaration c11/parse-simple-labeled-statement-1-1 c11/parse-enum-specifier-1 c11/parse-conditional-expression-1 c11/parse-postfix-expression-item-1-4 c11/parse-postfix-expression-head-1-1-1-1 c11/parse-generic-assoc-list-1-1 c11/parse-parameter-list-1 c11/parse-conditional-expression c11/parse-direct-declarator-1-1 c11/parse-expression-statement-or-label-1-1-1 c11/parse-xor-assign c11/parse-type-qualifier-1 c11/parse-postfix-expression-head-1-1-1-2-1 c11/parse-pointer-1-2 c11/parse-additive-expression-1-1-1-1 c11/parse-simple-unary-expression-1-4 c11/parse-unary-operator-1 c11/parse-logical-and-expression-1-1-1 c11/parse-mod-assign c11/parse-sizeof-argument-1-1-1-1-1-3 c11/parse-conditional-expression-1-1 c11/parse-simple-unary-expression-1-5 c11/parse-compound-statement-1-1 c11/parse-enumerator-list-1-1 c11/parse-generic-association-1-2 c11/parse-iteration-statement c11/parse-struct-declarator-1 c11/parse-direct-declarator-in-brackets-1-3-1-1 c11/parse-cast-expression-1-2 c11/parse-parameter-type-list c11/parse-simple-direct-declarator-1-1 c11/parse-direct-declarator-in-brackets c11/parse-initializer-list-1-1-1 c11/parse-designation-1 c11/parse-struct-or-union-specifier-1-1-2-1 c11/parse-simple-type-qualifier c11/parse-shift-expression c11/parse-simple-unary-expression-1-3 c11/parse-direct-declarator-item--or--direct-abstract-declarator-item c11/parse-postfix-expression-item-1-5 c11/parse-simple-direct-declarator--or--simple-direct-abstract-declarator-1-2-1-1-1-1 c11/parse-translation-unit-1 c11/parse-left-op c11/parse-direct-declarator-item-1-2-1 c11/parse-expression-statement-or-label-1 c11/parse-direct-declarator-item-1-2-1-1 c11/parse-atomic-type-specifier c11/parse-simple-direct-abstract-declarator-1 c11/parse-struct-declarator-list-1 c11/parse-left-assign-1 c11/parse-postfix-expression c11/parse-cast-expression-1-3-1-1 c11/parse-ptr-op c11/parse-postfix-expression-item-1-3 c11/parse-external-declaration-1-2-2-2-1 c11/parse-or-op-1 c11/parse-or-op c11/parse-simple-type-specifier-1-1-12 c11/parse-ptr-op-1 c11/parse-parameter-type-list-1-1-1 c11/parse-parameter-declaration-1 c11/parse-add-assign-1 c11/parse-identifier-list-1 c11/parse-sizeof-argument-1 c11/parse-declarator c11/parse-enumerator-1-1-1 c11/parse-direct-declarator-item-1-2 c11/parse-compound-statement-1 c11/parse-bracket-direct-abstract-declarator-1-1 c11/parse-and-expression-1-1 c11/parse-expression-statement-or-label-1-1-1-1 c11/parse-equality-expression-1 c11/parse-struct-declarator-1-1 c11/parse-enum-specifier-1-1-1 c11/parse-direct-abstract-declarator-1-1 c11/parse-xor-assign-1 c11/parse-expression-statement-1-1 c11/parse-abstract-declarator-1-1 c11/parse-and-op-1 c11/parse-declarator--or--abstract-declarator-1-1 c11/parse-selection-statement-1-1-1-1 c11/parse-logical-or-expression-1 c11/parse-enumerator-1 c11/parse-enumerator-list-1-1-1 c11/parse-declarator--or--abstract-declarator-1 c11/parse-parameter-type-list-1)
+
+;;;; THE END ;;;;

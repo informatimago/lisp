@@ -1,0 +1,186 @@
+.. comment: -*- mode:rst; coding:utf-8 -*-
+
+
+================================================================================
+Stream Pipe
+================================================================================
+
+.. meta::
+   :description: A Common Lisp package providing a buffered pipe with input and output streams.
+   :keywords: common lisp,lisp,stream,pipe,gray streams,bordeaux-threads
+   :author: Pascal Bourguignon
+
+❡
+
+
+Stream Pipe
+================================================================================
+
+Here is a new package, ``"COM.INFORMATIMAGO.CLEXT.PIPE"`` that implements
+a unidirectional pipe using ``"BORDEAUX-THREADS"`` and ``"TRIVIAL-GRAY-STREAM"``.
+
+The data written to the ``PIPE-OUTPUT-STREAM`` is queued (if a maximum
+queue-size is specified for the stream, then the writing
+thread may block if the buffer is full).
+
+The data queued can be read from the ``PIPE-INPUT-STREAM``.  If the
+queue is empty, then the reading stream may block (unless it
+used ``LISTEN``, ``READ-CHAR-NO-HANG``, etc).
+
+When the stream is closed, one can still read from it until
+the end of file is reached.
+
+Multiple threads may read or write to the same pipe.
+
+To demonstrate the use of pipes, the ``"COM.INFORMATIMAGO.CLEXT.FILTER"``
+package exports a GREP function that processes ``*STANDARD-INPUT*`` and
+writes to ``*STANDARD-OUTPUT*``, and a FILTER macro that builds a pipe
+chain of any number of forms, each running in its own thread (but the
+last one which runs in the calling thread).
+
+It also provides a function IN that reads a text file and writes it to
+``*STANDARD-OUTPUT*``, and a function OUT that reads ``*STANDARD-INPUT*`` and
+writes it to a file. (They correspond to the unix redirections ``<`` ``>``
+and ``>>``).
+
+``COM.INFORMATIAMGO.COMMON-LISP.INTERACTIVE.BROWSER:MORE`` and ``CAT``
+have been updated to read from ``*STANDARD-INPUT*`` when no file is
+given, thus working as filters.
+
+::
+   
+    user1> (pprint (macroexpand-1 '(filter (in #P"~/tmp/misc/wang")
+                                           (grep "LISP" :line-number t)
+                                           (out "/tmp/wl.txt"))))
+
+    (let ((#1=#:|pipe77885| (com.informatimago.clext.pipe:make-pipe
+                             :buffer-size com.informatimago.clext.filter::*buffer-size*)))
+      (bordeaux-threads:make-thread
+       (lambda nil
+         (unwind-protect
+              (filter (in #P"/Users/pjb/tmp/misc/wang") (grep "LISP" :line-number t))
+           (close *standard-output*)))
+       :initial-bindings
+       (list (cons '*standard-output* (com.informatimago.clext.pipe:pipe-output-stream #1#))
+             (cons '*standard-input* *standard-input*)))
+      (let ((*standard-input* (com.informatimago.clext.pipe:pipe-input-stream #1#)))
+        (out "/tmp/wl.txt")))
+
+    ; No value
+    user1>
+
+    
+Example
+--------------------------------------------------------------------------------
+
+::
+   
+    cl-user> (mkupack :use '("COMMON-LISP" 
+                             "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.BROWSER"
+                             "COM.INFORMATIMAGO.CLEXT.FILTER"))
+    #<Package "USER1">
+    user1> (filter (in #P"~/tmp/misc/wang"))
+    Hao Wang, logicien americain.
+
+    L'algorithme en  question  a  ete  publie  en  1960  dans l'IBM Journal,
+    article intitule "Toward  Mechanical Mathematics", avec des variantes et
+    une  extension au calcul  des  predicats.  Il  s'agit  ici  du  "premier
+    programme" de Wang, systeme "P".
+
+    L'article a ete ecrit en 1958, et les experiences effectuees sur IBM 704
+    - machine a lampes, 32 k  mots  de 36 bits, celle-la meme qui vit naitre
+    LISP a la meme epoque. Le programme  a  ete ecrit en assembleur (Fortran
+    existait, mais il ne s'etait pas encore impose)  et  l'auteur estime que
+    "there is very little in the program that is not straightforward".
+
+    Il observe que les preuves engendrees sont "essentiellement des arbres",
+    et  annonce  que  la  machine  a  demontre 220 theoremes du  calcul  des
+    propositions  (tautologies)  en  3  minutes. Il en tire argument pour la
+    superiorite  d'une  approche  algorithmique  par  rapport a une approche
+    heuristique comme celle du "Logic Theorist" de Newell, Shaw et  Simon (a
+    partir de 1956 sur la machine JOHNNIAC de la Rand Corporation): un debat
+    qui dure encore...
+
+    Cet  algorithme  a  ete popularise par J. McCarthy, comme exemple-fanion
+    d'application  de LISP. Il figure dans le manuel de la premiere  version
+    de  LISP  (LISP  1,  sur IBM 704 justement, le manuel est date  de  Mars
+    1960), et il a ete repris dans le celebre "LISP 1.5 Programmer's Manual"
+    publie en 1962 par MIT Press, un des maitres-livres de l'Informatique.
+
+
+
+    nil
+    user1> (filter (in #P"~/tmp/misc/wang") (grep "LISP"))
+    LISP a la meme epoque. Le programme  a  ete ecrit en assembleur (Fortran
+    d'application  de LISP. Il figure dans le manuel de la premiere  version
+    de  LISP  (LISP  1,  sur IBM 704 justement, le manuel est date  de  Mars
+    1960), et il a ete repris dans le celebre "LISP 1.5 Programmer's Manual"
+    nil
+    user1> (filter (in #P"~/tmp/misc/wang") (grep "program" :case-insensitive t))
+    programme" de Wang, systeme "P".
+    LISP a la meme epoque. Le programme  a  ete ecrit en assembleur (Fortran
+    "there is very little in the program that is not straightforward".
+    1960), et il a ete repris dans le celebre "LISP 1.5 Programmer's Manual"
+    nil
+    user1> (filter (in #P"~/tmp/misc/wang")
+                   (grep " " :line-number t)
+                   (let ((*terminal-height* 7)) (more)))
+    1:Hao Wang, logicien americain.
+    2:
+    3:L'algorithme en  question  a  ete  publie  en  1960  dans l'IBM Journal,
+    4:article intitule "Toward  Mechanical Mathematics", avec des variantes et
+    5:une  extension au calcul  des  predicats.  Il  s'agit  ici  du  "premier
+    6:programme" de Wang, systeme "P".
+    7:
+    8:L'article a ete ecrit en 1958, et les experiences effectuees sur IBM 704
+    Type RETURN for next page:
+    9:- machine a lampes, 32 k  mots  de 36 bits, celle-la meme qui vit naitre
+    10:LISP a la meme epoque. Le programme  a  ete ecrit en assembleur (Fortran
+    11:existait, mais il ne s'etait pas encore impose)  et  l'auteur estime que
+    12:"there is very little in the program that is not straightforward".
+    13:
+    14:Il observe que les preuves engendrees sont "essentiellement des arbres",
+    15:et  annonce  que  la  machine  a  demontre 220 theoremes du  calcul  des
+    Type RETURN for next page:
+    16:propositions  (tautologies)  en  3  minutes. Il en tire argument pour la
+    17:superiorite  d'une  approche  algorithmique  par  rapport a une approche
+    18:heuristique comme celle du "Logic Theorist" de Newell, Shaw et  Simon (a
+    19:partir de 1956 sur la machine JOHNNIAC de la Rand Corporation): un debat
+    20:qui dure encore...
+    21:
+    22:Cet  algorithme  a  ete popularise par J. McCarthy, comme exemple-fanion
+    Type RETURN for next page:
+    23:d'application  de LISP. Il figure dans le manuel de la premiere  version
+    24:de  LISP  (LISP  1,  sur IBM 704 justement, le manuel est date  de  Mars
+    25:1960), et il a ete repris dans le celebre "LISP 1.5 Programmer's Manual"
+    26:publie en 1962 par MIT Press, un des maitres-livres de l'Informatique.
+    27:
+    28:
+    29:
+    Type RETURN for next page:
+
+    ; No value
+    user1> (filter (in #P"~/tmp/misc/wang") (grep "LISP" :line-number t) (out "/tmp/wl.txt"))
+    nil
+    user1> (cat "/tmp/wl.txt")
+    10:LISP a la meme epoque. Le programme  a  ete ecrit en assembleur (Fortran
+    23:d'application  de LISP. Il figure dans le manuel de la premiere  version
+    24:de  LISP  (LISP  1,  sur IBM 704 justement, le manuel est date  de  Mars
+    25:1960), et il a ete repris dans le celebre "LISP 1.5 Programmer's Manual"
+    ; No value
+    user1>
+
+Sources
+--------------------------------------------------------------------------------
+
+These new packages are available on gitlab and github; and they'll be
+distributed in `quicklisp`.
+
+::
+
+    git clone https://gitlab.com/com-informatimago/com-informatimago.git informatimago
+
+`Informatimago Public Common Lisp Libraries <http://www.informatimago.com/develop/lisp/index.html>`_
+
+.. comment: THE END
+   

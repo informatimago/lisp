@@ -54,14 +54,15 @@ specifications, like GRAY or other portability libraries.
                ((#:albert #:docbook #:template)  . "book")
                ((#:albert #:docbook #:bgcolor)   . "white")
                ((#:albert #:docbook #:textcolor) . "black"))
-  #+asdf-unicode :encoding #+asdf-unicode :utf-8
-  :depends-on ("com.informatimago.common-lisp.cesarum"
-               "com.informatimago.clext.association")
-  :components ((:file "character-sets")
-               #+(or allegro ccl clisp sbcl cmu)
-               (:file "closer-weak"))
-  #+adsf3 :in-order-to #+adsf3 ((test-op (test-op "com.informatimago.clext.test")
-                         (test-op "com.informatimago.clext.association.test"))))
+  :depends-on ("com.informatimago.clext.association"
+               "com.informatimago.clext.character-sets"
+               #+(or ccl clisp sbcl cmu) "com.informatimago.clext.closer-weak"
+               #+(or ccl clisp sbcl cmu) "com.informatimago.clext.pipe")
+  :components ()
+  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.clext.test")
+                                              (asdf:test-op "com.informatimago.clext.association.test")
+                                              (asdf:test-op "com.informatimago.clext.pipe.test")))
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8)
 
 
 ;;;; THE END ;;;;
