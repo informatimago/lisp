@@ -120,7 +120,8 @@ the bad thing is that it's a PPCRE regexp. :-(
                                   (string< a b)))))))
          (names (mapcar (function prin1-to-string) syms))
          (width (reduce (function max) names :key (function length)
-                                             :initial-value 0)))
+                                             :initial-value 0))
+         (*print-right-margin* (or *print-right-margin* 72)))
     (loop :for sym :in syms
           :for nam :in names
           :do (format t "~VA~A ~:[ ~;V~]~[ ~;F~;M~;S~] ~A~%"
