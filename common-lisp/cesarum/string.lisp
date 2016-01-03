@@ -208,11 +208,11 @@ RETURN:          A string containing the concatenation of the strings
     (loop
       :with strings = (mapcar
                        (lambda (item)
-                         (etypecase string
-                           ((or string symbol character) (string string))
+                         (etypecase item
+                           ((or string symbol character) (string item))
                            (null                         "")
-                           (cons (if (every (function characterp) string)
-                                     (coerce string 'string)
+                           (cons (if (every (function characterp) item)
+                                     (coerce item 'string)
                                      (list (etypecase (first item)
                                              ((or string symbol character) (string (first item)))
                                              (null "")
