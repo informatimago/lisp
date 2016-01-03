@@ -63,9 +63,9 @@ all written in 100% conforming Common Lisp.
   :licence "AGPL3"
   ;; component attributes:
 
-  :version "1.4.0"
+  :version "1.4.1"
   :properties ((#:author-email                   . "pjb@informatimago.com")
-               (#:date                           . "Autumn 2010")
+               (#:date                           . "Autumn 2015")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.cesarum/")
                ((#:albert #:formats)             . ("docbook"))
                ((#:albert #:docbook #:template)  . "book")
@@ -121,7 +121,8 @@ all written in 100% conforming Common Lisp.
                (:file "a-star"          :depends-on ())
 
                ;; Specific stuff:
-               (:file "activity"        :depends-on ())
+               (:file "time"            :depends-on ())
+               (:file "activity"        :depends-on ("time"))
                (:file "date"            :depends-on ())
                (:file "version"         :depends-on ())
 
