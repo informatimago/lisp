@@ -51,7 +51,6 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
 
-(in-package "COMMON-LISP-USER")
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM"
@@ -104,8 +103,9 @@
    "DISTINCT-FLOAT-TYPES" "FLOAT-TYPECASE" "FLOAT-CTYPECASE" "FLOAT-ETYPECASE"
    "+EPSILON" "-EPSILON"
    ;; 14 - CONSES
-   "MAXIMIZE" "TOPOLOGICAL-SORT" "TRANSITIVE-CLOSURE"
+   "MAXIMIZE" "TOPOLOGICAL-SORT" "TRANSITIVE-CLOSURE" 
    "COMPUTE-CLOSURE" ; deprecated, renamed to transitive-closure
+   "FIND-CYCLES" "FIND-SHORTEST-PATH"
    ;; 15 - ARRAYS
    "VECTOR-INIT" "UNDISPLACE-ARRAY" "DICHOTOMY-SEARCH"
    ;; 16 - STRINGS
@@ -1393,6 +1393,38 @@ RETURN: A list of NODES sorted topologically according to
 
 
 
+(defun find-shortest-path (from to successors)
+  "
+RETURN: The shortest path of length>0 from FROM to TO if it exists, or NIL.
+"
+  ;; breadth first search
+  (loop
+     :with processed = '()
+     :for paths = (list (list from)) :then new-paths
+     :for new-paths = (remove-if (lambda (head) (member head processed))
+                                 (mapcan (lambda (path)
+                                           (mapcar (lambda (new-node) (cons new-node path))
+                                                   (funcall successors (first path))))
+                                         paths)
+                                 :key (function first))
+     :for shortest-path = (find to new-paths :key (function first))
+     :do (setf paths     (nconc paths new-paths)
+               processed (nconc (delete-duplicates (mapcar (function first) new-paths)) processed))
+     :until (or shortest-path (endp new-paths))
+     :finally (return (reverse shortest-path))))
+
+
+(defun find-cycles (objects successors)
+  (remove nil (mapcar (lambda (cycle) (find-shortest-path cycle cycle successors)) objects)))
+
+(defun print-cycle (path)
+  (format t "~%There is a cycle going ~%from ~A"  (first path))
+  (dolist (node (rest path))
+    (format t "~%  to ~A" node))
+  (format t " !!!~%"))
+
+;; (mapc (function print-cycle) (find-cycles (list-all-packages)
+;;                                           (function package-use-list)))
 
 
 
@@ -1412,6 +1444,7 @@ RETURN:  VECTOR
       ((>= index (array-dimension vector 0)))
     (setf (aref vector index) (funcall constructor index)))
   vector)
+
 
 
 (defun undisplace-array (array)
