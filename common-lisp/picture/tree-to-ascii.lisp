@@ -222,7 +222,7 @@ NOTE:                     TO-LENGTH   FROM-LENGTH
                        (tree-to-ascii-box-height children-box) (1- height)
                        (tree-to-ascii-box-base   children-box)
                        (ecase base
-                         (:top      (- height (tree-to-ascii-box-height node-box)))
+                         (:top      (- height 1 (tree-to-ascii-box-height node-box)))
                          (:centered (floor (/ (1- height) 2)))
                          (:bottom   (tree-to-ascii-box-base node-box)))))
       (setf (tree-to-ascii-box-width node-box)
