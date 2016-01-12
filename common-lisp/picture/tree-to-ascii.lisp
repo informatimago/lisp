@@ -168,22 +168,23 @@ RETURN:  The decorated node.
 
 
 (defun tree-to-ascii-compute-boxes (tree &key boxed format-fun
-                                    from-length to-length)
+                                           from-length to-length base)
   "
 DO:             Compute the boxes and formated strings and store them in the
                 decorated tree.
 FROM-LENGTH:    The length of the stem from the child box (default = 2).
 TO-LENGTH:      The length of the stem to the parent box (default = 2).
+BASE:           (member :top :centered :bottom)
 RETURN:         (tree-to-ascii-box tree)
 
 
 NOTE:                     TO-LENGTH   FROM-LENGTH
                         |<--------->|<----------->|
-                                                  +---------+
-                                    +-------------| Child 3 |
-                                    |             +---------+
-                                    |
-               +--------+           |             +---------+
+          ---                                     +---------+
+           ^                        +-------------| Child 3 |
+           | base                   |             +---------+
+           v                        |
+          ---  +--------+           |             +---------+
                | Parent |-----------+-------------| Child 2 |
                +--------+           |             +---------+
                                     |
@@ -191,38 +192,39 @@ NOTE:                     TO-LENGTH   FROM-LENGTH
                                     +-------------| Child 3 |
                                                   +---------+
 "
-  (declare (type (or null (function (cons) string)) format-fun))
+  (check-type format-fun (or null function))
   (let ((children     (tree-to-ascii-children tree))
         (children-box (make-tree-to-ascii-box))
-        (node-box     (make-tree-to-ascii-box)) )
+        (node-box     (make-tree-to-ascii-box)))
     (setf (tree-to-ascii-formated tree)
           (if format-fun
               (funcall format-fun (tree-to-ascii-node tree))
               (format nil "~S" (tree-to-ascii-node tree))))
     (if boxed
-        (progn
-          (setf (tree-to-ascii-box-width node-box)
-                (+ 2 (length (tree-to-ascii-formated tree))))
-          (setf (tree-to-ascii-box-height node-box) 3)
-          (setf (tree-to-ascii-box-base node-box)   1) )
-        (progn
-          (setf (tree-to-ascii-box-width node-box)
-                (length (tree-to-ascii-formated tree)))
-          (setf (tree-to-ascii-box-height node-box) 1)
-          (setf (tree-to-ascii-box-base node-box)   0) ))
+        (setf (tree-to-ascii-box-width node-box)
+              (+ 2 (length (tree-to-ascii-formated tree)))
+              (tree-to-ascii-box-height node-box) 3
+              (tree-to-ascii-box-base node-box)   1)
+        (setf (tree-to-ascii-box-width node-box)
+              (length (tree-to-ascii-formated tree))
+              (tree-to-ascii-box-height node-box) 1
+              (tree-to-ascii-box-base node-box)   0))
     (when children
-      (loop for child in children
-         for child-box = (tree-to-ascii-compute-boxes
-                          child  :boxed boxed  :format-fun format-fun
-                          :to-length to-length :from-length from-length)
-         maximize (tree-to-ascii-box-width child-box)  into width
-         sum (1+ (tree-to-ascii-box-height child-box)) into height
-         finally
-         (setf (tree-to-ascii-box-width  children-box) width)
-         (setf (tree-to-ascii-box-height children-box) (1- height))
-         (setf (tree-to-ascii-box-base   children-box)
-               (floor (/ (1- height) 2)))
-         ) ;;loop
+      (loop
+        :for child :in children
+        :for child-box := (tree-to-ascii-compute-boxes
+                           child  :boxed boxed  :format-fun format-fun
+                                  :to-length to-length :from-length from-length
+                                  :base base)
+        :maximize (tree-to-ascii-box-width child-box)  :into width
+        :sum (1+ (tree-to-ascii-box-height child-box)) :into height
+        :finally (setf (tree-to-ascii-box-width  children-box) width
+                       (tree-to-ascii-box-height children-box) (1- height)
+                       (tree-to-ascii-box-base   children-box)
+                       (ecase base
+                         (:top      (- height (tree-to-ascii-box-height node-box)))
+                         (:centered (floor (/ (1- height) 2)))
+                         (:bottom   (tree-to-ascii-box-base node-box)))))
       (setf (tree-to-ascii-box-width node-box)
             (+ (tree-to-ascii-box-width node-box)
                ;; TODO: WE COULD USE (MAX TO-LENGTH FROM-LENGTH) WITH 1 CHILD
@@ -232,8 +234,7 @@ NOTE:                     TO-LENGTH   FROM-LENGTH
             (max (tree-to-ascii-box-height node-box)
                  (tree-to-ascii-box-height children-box)))
       (setf (tree-to-ascii-box-base node-box)
-            (tree-to-ascii-box-base children-box))
-      ) ;;when
+            (tree-to-ascii-box-base children-box)))
     (setf (tree-to-ascii-box tree) node-box)
     node-box))
 
@@ -245,10 +246,9 @@ NOTE:                     TO-LENGTH   FROM-LENGTH
   "
 DO:      Draw the decorated TREE into the PICT.
 "
-  (let ((box (tree-to-ascii-box      tree))
-        (str (tree-to-ascii-formated tree))
-        (children  (reverse (tree-to-ascii-children tree)))
-        )
+  (let ((box       (tree-to-ascii-box      tree))
+        (str       (tree-to-ascii-formated tree))
+        (children  (reverse (tree-to-ascii-children tree))))
     ;; draw the node:
     (if boxed
         (progn
@@ -310,7 +310,7 @@ DO:      Draw the decorated TREE into the PICT.
 
 
 (defun tree-to-ascii (tlee &key boxed format-fun background
-                      to-length from-length)
+                      to-length from-length base)
   "
 tlee:        is a list-based tree, whose car is a \"node\",
              and whose cdr is the list of children.
@@ -345,7 +345,8 @@ EXAMPLE:     (tree-to-ascii '(if (= a b) (decf b a) (decf a b)))
                                            :boxed boxed
                                            :format-fun format-fun
                                            :to-length  to-length
-                                           :from-length from-length))
+                                           :from-length from-length
+                                           :base base))
          (pict (make-instance 'picture
                  :width (tree-to-ascii-box-width box) 
                  :height (tree-to-ascii-box-height box)
