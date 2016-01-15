@@ -12,6 +12,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2016-01-16 <PJB> Added parameter-parameter-list and make-parameter-list.
 ;;;;    2014-11-05 <PJB> make-parameter-list now returns also
 ;;;;                     parameters from
 ;;;;                     sub-destructuring-lambda-lists.
@@ -33,7 +34,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2006 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2006 - 2016
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -65,6 +66,7 @@
    "PARAMETER-INITFORM" "PARAMETER-INITFORM-P" "PARAMETER-KEYWORD"
    "PARAMETER-KEYWORD-P" "ENSURE-PARAMETER-KEYWORD"
    "PARAMETER-SPECIALIZER" "PARAMETER-SPECIALIZER-P"
+   "PARAMETER-PARAMETER-LIST"
    ;; Lambda-List Classes:
    "LAMBDA-LIST" "ORDINARY-LAMBDA-LIST" "BOA-LAMBDA-LIST"
    "SPECIALIZED-LAMBDA-LIST" "MODIFY-MACRO-LAMBDA-LIST" "GENERIC-LAMBDA-LIST"
@@ -90,7 +92,7 @@
    "MAKE-HELP"
    "MAKE-ARGUMENT-LIST" "MAKE-ARGUMENT-LIST-FORM"
    "MAKE-FLAT-ARGUMENT-LIST" "MAKE-FLAT-ARGUMENT-LIST-FORM"
-   "MAKE-LAMBDA-LIST"
+   "MAKE-LAMBDA-LIST"  "MAKE-PARAMETER-LIST"
    ;; Parsing sources:
    "EXTRACT-DOCUMENTATION" "EXTRACT-DECLARATIONS" "EXTRACT-BODY"
    "PARSE-BODY"
@@ -105,8 +107,8 @@
 This package exports functions to parse and manipulate
 Common Lisp sources as lisp forms (such as in macros).
 
-Copyright Pascal J. Bourguignon 2003 - 2014
-This package is provided under the GNU General Public License.
+Copyright Pascal J. Bourguignon 2003 - 2016
+This package is provided under the GNU Affero General Public License.
 See the source file for details.
 "))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM")
@@ -154,7 +156,12 @@ See the source file for details.
 (defgeneric make-flat-argument-list (self))
 (defgeneric make-flat-argument-list-form (self))
 (defgeneric make-lambda-list (self))
-
+(defgeneric make-parameter-list (ll)
+  (:documentation "Return a list of all the symbols naming parameters in the lambda list."))
+(defgeneric parameter-parameter-list (parameter)
+  (:documentation "Return a list of symbols naming parameters for a parameter object.
+In the case of &optional or &key parameters, the result may contain two symbols:
+one for the parameter and one for the indicator."))
 ;;;--------------------
 
 (defclass parameter ()
@@ -167,6 +174,11 @@ See the source file for details.
 (defmethod parameter-name-p ((self parameter))
   (slot-boundp self 'name))
 
+(defmethod parameter-parameter-list ((parameter parameter))
+  (if (parameter-indicator-p parameter)
+      (list (parameter-name parameter)
+            (parameter-indicator parameter))
+      (list (parameter-name parameter))))
 
 (define-default-generic parameter-indicator     parameter nil)
 (define-default-generic parameter-indicator-p   parameter nil)
@@ -300,6 +312,7 @@ See the source file for details.
 
 (defmethod parameter-indicator-p ((self optional-parameter))
   (slot-boundp self 'indicator))
+
 
 (defmethod parse-parameter ((self optional-parameter) form)
   (etypecase form
@@ -472,8 +485,6 @@ some constraints may be different from one lambda-list to the other."))
 (defgeneric lambda-list-rest-parameter-p (self)
   (:method ((self or-ll)) (slot-boundp self 'rest))
   (:method ((self t))     (declare (ignorable self)) nil))
-
-
 
 
 (define-default-generic lambda-list-allow-other-keys-p    or-ll nil)
@@ -934,7 +945,6 @@ EXAMPLE: `(apply ,@(make-argument-list ll))
              (parameter-name (lambda-list-rest-parameter self))
              '())))))
 
-
 (defgeneric parameters-by-category (ll)
   (:method ((self lambda-list))
     (flet ((destructp (parameter)
@@ -1150,7 +1160,9 @@ RETURN:     A newly rebuilt lambda-list s-expr.
    (when (lambda-list-auxiliary-parameters self)
      (lambda-list-auxiliary-parameters self))))
 
-
+(defmethod make-parameter-list ((self lambda-list))
+  (loop :for parameter :in (lambda-list-parameters self)
+        :nconc (parameter-parameter-list parameter)))
 
 
 
