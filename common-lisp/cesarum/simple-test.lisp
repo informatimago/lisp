@@ -64,6 +64,7 @@
            "*DEBUG-ON-FAILURE*" "WITH-DEBUGGER-ON-FAILURE"
            "DEFINE-TEST" "CHECK" "ASSERT-TRUE" "ASSERT-FALSE" "EXPECT-CONDITION"
            "*VERBOSE-TALLY*"  "*VERBOSE-PROGRESS*"
+           "*TEST-OUTPUT*"
            "TESTING"
            "PROGRESS-START"
            "PROGRESS-SUCCESS" "PROGRESS-FAILURE-MESSAGE" "PROGRESS-FAILURE"
@@ -259,6 +260,7 @@ License:
   (format *test-output* "~&Failure:     expression: ~S~@
                          ~&~?~%"
           expression message arguments)
+  (force-output *test-output*)
   (progress-report nil)
   (when *debug-on-failure*
     (invoke-debugger (make-condition 'test-failure
