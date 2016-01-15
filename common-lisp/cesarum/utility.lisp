@@ -1426,7 +1426,7 @@ RETURN: The shortest path of length>0 from FROM to TO if it exists, or NIL.
 ;; (mapc (function print-cycle) (find-cycles (list-all-packages)
 ;;                                           (function package-use-list)))
 
-
+;; (find-cycles (list-all-packages) (function package-use-list))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 15 - ARRAYS
