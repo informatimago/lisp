@@ -63,6 +63,7 @@
   (:export "*DEBUG-ON-ERROR*" "WITH-DEBUGGER-ON-ERROR"
            "*DEBUG-ON-FAILURE*" "WITH-DEBUGGER-ON-FAILURE"
            "DEFINE-TEST" "CHECK" "ASSERT-TRUE" "ASSERT-FALSE" "EXPECT-CONDITION"
+           "MESSAGE"
            "*VERBOSE-TALLY*"  "*VERBOSE-PROGRESS*"
            "*TEST-OUTPUT*"
            "TESTING"
@@ -144,6 +145,7 @@ License:
 
 
 (defun progress-start ()
+  "Resets the progress counters (success/failure counts)."
   (setf *success-count*  0
         *failure-count*  0
         *last-success-p* nil
@@ -155,6 +157,9 @@ License:
 
 
 (defun verbose (default)
+  "Returns whether the test must be verbose.
+We conjoin the DEFAULT parameter with *LOAD-VERBOSE*, ASDF-VERBOSE*
+and QUICKLOAD-VERBOSE* when available."
   (and default
        (or (not *load-pathname*)
            *load-verbose*
@@ -165,8 +170,15 @@ License:
                 (find-symbol "*QUICKLOAD-VERBOSE*" "QUICKLISP-CLIENT")
                 (symbol-value (find-symbol "*QUICKLOAD-VERBOSE*" "QUICKLISP-CLIENT"))))))
 
+(defun message (format-control &rest format-arguments)
+  "Formats the parameters on the *TEST-OUTPUT* when running the test verbosely
+cf. VERBOSE, *VERBOSE-PROGRESS*"
+  (when (verbose *verbose-progress*)
+    (format *test-output* "~&~:?~%" format-control format-arguments)
+    (force-output *test-output*)))
 
 (defun progress-report (new-last-succcess-p)
+  "Prints on *TEST-OUTPUT* the current progress report."
   (setf *last-success-p* new-last-succcess-p)
   (when (verbose *verbose-progress*)
     (if *last-success-p*
@@ -177,12 +189,14 @@ License:
 
 
 (defun progress-success ()
+  "Indicate one more successful test."
   (incf *success-count*)
   (vector-push-extend #\. *report-string*)
   (progress-report t))
 
 
 (defun current-test-identification (&optional max-length)
+  "Returns the identification of the current test (over a maximum length of MAX-LENGTH)"
   (let ((*print-circle* nil))
     (if (or (null max-length) (null *current-test-parameters*))
         (format nil "(~{~S~^ ~})" (cons *current-test-name* *current-test-parameters*))
@@ -252,6 +266,7 @@ License:
 
 
 (defun progress-failure-message (expression message &rest arguments)
+  "Indicates one more failed test, with a formatted MESSAGE and ARGUMENTS."
   (incf *failure-count*)
   (vector-push-extend #\! *report-string*)
   (unless *current-test-printed-p*
@@ -271,6 +286,9 @@ License:
 
 (defun progress-failure (compare expression expected-result result
                          &optional places format-control &rest format-arguments)
+  "Indicates one more failed test, reporting the expression, the
+expected and actual results, and the relevant places, in addition to a
+formatted message."
   (progress-failure-message expression "~&           evaluates to: ~S~@
                                         ~&           which is not  ~A~@
                                         ~& to the expected result: ~S~@
@@ -282,6 +300,8 @@ License:
 
 
 (defun progress-tally (success-count failure-count)
+  "When testing verbosely, prints the test tally, SUCCESS-COUNT and
+FAILURE-COUNT."
   (when (verbose *verbose-tally*)
     (let ((name-max-length 40))
       (flet ((write-tally (name)
@@ -371,6 +391,7 @@ EXAMPLE:        (expect-condition 'division-by-zero (/ 1 0))
 
 
 (defmacro test (compare expression expected &optional places format-control &rest format-arguments)
+  "Deprecated, use CHECK instead."
   (warn "~S is deprecated, use CHECK instead." 'test)
   `(check ,compare ,expression ,expected ,places ,format-control ,@format-arguments))
 
@@ -398,6 +419,15 @@ EXAMPLE:  (test equal (list 1 2 3) '(1 2 3))
 
 
 (defmacro testing (&body body)
+  "Evaluates the body while tallying test successes and failures.
+
+The functions PROGRESS-SUCCESS, PROGRESS-FAILURE and
+PROGRESS-FAILURE-MESSAGE (eg. thru the macros ASSERT-TRUE,
+ASSERT-FALSE, EXPECT-CONDITION and TEST), should only be called in the
+dynamic context established by this TESTING macro.
+
+cf. DEFINE-TEST.
+"
   `(multiple-value-bind (successes failures)
        (let ((*success-count* 0)
              (*failure-count* 0)
@@ -414,7 +444,8 @@ EXAMPLE:  (test equal (list 1 2 3) '(1 2 3))
 
 
 (defmacro define-test (name parameters &body body)
-  "Like DEFUN, but wraps the body in test reporting boilerplate."
+  "Like DEFUN, but wraps the body in test reporting boilerplate.
+cf. TESTING."
   (let ((mandatory (loop
                      :for param :in parameters
                      :until (member param lambda-list-keywords)
@@ -428,10 +459,14 @@ EXAMPLE:  (test equal (list 1 2 3) '(1 2 3))
            (testing ,@forms))))))
 
 (defmacro with-debugger-on-error (&body body)
+  "When running tests in the dynamic context established by this macro,
+errors will invoke the debugger instead of failing the test immediately."
   `(let ((*debug-on-error* t))
      ,@body))
 
 (defmacro with-debugger-on-failure (&body body)
+    "When running tests in the dynamic context established by this macro,
+failures will invoke the debugger instead of failing the test immediately."
   `(let ((*debug-on-failure* t))
      ,@body))
 
