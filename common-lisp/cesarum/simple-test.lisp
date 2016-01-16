@@ -63,7 +63,7 @@
   (:export "*DEBUG-ON-ERROR*" "WITH-DEBUGGER-ON-ERROR"
            "*DEBUG-ON-FAILURE*" "WITH-DEBUGGER-ON-FAILURE"
            "DEFINE-TEST" "CHECK" "ASSERT-TRUE" "ASSERT-FALSE" "EXPECT-CONDITION"
-           "MESSAGE"
+           "TEST-MESSAGE"
            "*VERBOSE-TALLY*"  "*VERBOSE-PROGRESS*"
            "*TEST-OUTPUT*"
            "TESTING"
@@ -170,7 +170,7 @@ and QUICKLOAD-VERBOSE* when available."
                 (find-symbol "*QUICKLOAD-VERBOSE*" "QUICKLISP-CLIENT")
                 (symbol-value (find-symbol "*QUICKLOAD-VERBOSE*" "QUICKLISP-CLIENT"))))))
 
-(defun message (format-control &rest format-arguments)
+(defun test-message (format-control &rest format-arguments)
   "Formats the parameters on the *TEST-OUTPUT* when running the test verbosely
 cf. VERBOSE, *VERBOSE-PROGRESS*"
   (when (verbose *verbose-progress*)
