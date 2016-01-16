@@ -22,7 +22,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2010 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2010 - 2016
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -40,7 +40,8 @@
 
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SIMPLE-TEST"
   (:use "COMMON-LISP"
-        "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM")
+        "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.TIME")
   #+mocl (:shadowing-import-from "COM.INFORMATIMAGO.MOCL.KLUDGES.MISSING"
                           "*TRACE-OUTPUT*"
                           "*LOAD-VERBOSE*"
@@ -63,9 +64,7 @@
   (:export "*DEBUG-ON-ERROR*" "WITH-DEBUGGER-ON-ERROR"
            "*DEBUG-ON-FAILURE*" "WITH-DEBUGGER-ON-FAILURE"
            "DEFINE-TEST" "CHECK" "ASSERT-TRUE" "ASSERT-FALSE" "EXPECT-CONDITION"
-           "TEST-MESSAGE"
-           "*VERBOSE-TALLY*"  "*VERBOSE-PROGRESS*"
-           "*TEST-OUTPUT*"
+           "TEST-MESSAGE" "*TEST-OUTPUT*" "*VERBOSE-TALLY*"  "*VERBOSE-PROGRESS*"
            "TESTING"
            "PROGRESS-START"
            "PROGRESS-SUCCESS" "PROGRESS-FAILURE-MESSAGE" "PROGRESS-FAILURE"
@@ -173,8 +172,8 @@ and QUICKLOAD-VERBOSE* when available."
 (defun test-message (format-control &rest format-arguments)
   "Formats the parameters on the *TEST-OUTPUT* when running the test verbosely
 cf. VERBOSE, *VERBOSE-PROGRESS*"
-  (when (verbose *verbose-progress*)
-    (format *test-output* "~&~@?~%" format-control format-arguments)
+  (when (verbose t)
+    (format *test-output* "~&~?~%" format-control format-arguments)
     (force-output *test-output*)))
 
 (defun progress-report (new-last-succcess-p)
@@ -293,7 +292,7 @@ formatted message."
                                         ~&           which is not  ~A~@
                                         ~& to the expected result: ~S~@
                                         ~{~&~23A: ~S~}~@[~@
-                                        ~&~?~]"
+                                        ~&~?~]~&"
                             result compare expected-result places
                             format-control format-arguments))
 

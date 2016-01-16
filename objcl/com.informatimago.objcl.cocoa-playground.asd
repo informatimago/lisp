@@ -16,7 +16,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2012 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -45,7 +45,7 @@ Playground for Cocoa and ObjCL.
     :maitainer "Pascal J. Bourguignon <pjb@informatimago.com>"
     :licence "AGPL3"
     ;; component attributes:
-    :version "0.7.5"
+    :version "1.9.0"
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Spring 2011")
                  ((#:albert #:output-dir)          . "../documentation/com.informatimago.cocoa-playground/")

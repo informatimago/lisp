@@ -16,7 +16,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2010 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2010 - 2016
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -63,7 +63,7 @@ all written in 100% conforming Common Lisp.
   :licence "AGPL3"
   ;; component attributes:
 
-  :version "1.5.0"
+  :version "1.7.0"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Autumn 2015")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.cesarum/")

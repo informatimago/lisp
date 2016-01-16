@@ -16,7 +16,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2005 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2005 - 2016
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -35,7 +35,7 @@
 (asdf:defsystem "com.informatimago.small-cl-pgms.life"
   :description "A simple Conway's Life game."
   :author "Pascal J. Bourguignon"
-  :version "1.0.4"
+  :version "1.2.0"
   :license "GPL3"
   :depends-on () 
   :components ((:file "life"))

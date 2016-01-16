@@ -38,7 +38,7 @@
 ;;;;LEGAL
 ;;;;    LLGPL
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2012 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
 ;;;;    Copyright (C) 2003 Sven Van Caekenberghe.
 ;;;;    
 ;;;;    This library is licenced under the Lisp Lesser General Public
