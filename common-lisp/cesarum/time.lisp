@@ -16,7 +16,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2015 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -38,6 +38,8 @@
    "INITIALIZE-REAL-TIME-OFFSET"
    "GET-REAL-TIME"
    "GET-RUN-TIME"
+   "CHRONO-REAL-TIME"
+   "CHRONO-RUN-TIME"
    "*INTERNAL-TIME-UNIT*")
   (:documentation "
 
@@ -85,5 +87,32 @@ RETURN: The run-time (in seconds).
 "
   (* (get-internal-run-time) *internal-time-unit*))
 
-;;;; THE END ;;;;
 
+
+(defun chrono-real-time* (thunk)
+  "
+Call the THUNK and return the run-time spent on it.
+The results of THUNK are ignored.
+"
+  (let ((start (get-real-time)))
+    (funcall thunk)
+    (- (get-real-time) start)))
+
+(defmacro chrono-real-time (&body body)
+  `(chrono-real-time* (lambda () ,@body)))
+
+
+(defun chrono-run-time* (thunk)
+  "
+Call the THUNK and return the run-time spent on it.
+The results of THUNK are ignored.
+"
+  (let ((start (get-run-time)))
+    (funcall thunk)
+    (- (get-run-time) start)))
+
+(defmacro chrono-run-time (&body body)
+  `(chrono-run-time* (lambda () ,@body)))
+
+
+;;;; THE END ;;;;

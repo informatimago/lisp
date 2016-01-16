@@ -9,6 +9,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2016-01-16 <PJB> Removed CHRONO. Use ...time:chrono-run-time instead.
 ;;;;    2015-08-19 <PJB> Renamed INCLUDE -> INCLUDE-FILE.
 ;;;;    2015-06-13 <PJB> Added CHRONO.
 ;;;;    2014-10-22 <PJB> Added hash-table-to-sexp and sexp-to-hash-table.
@@ -35,7 +36,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2003 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2003 - 2016
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -125,8 +126,6 @@
    ;;
    "XOR" "EQUIV" "IMPLY"
    ;; "SET-EQUAL"
-   ;; Miscellaneous
-   "CHRONO"
    )
   (:documentation
    "
@@ -139,7 +138,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2003 - 2014
+    Copyright Pascal J. Bourguignon 2003 - 2016
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -164,21 +163,6 @@ License:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 3 - EVALUATION AND COMPILATION
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defun chrono* (thunk)
-  "
-Call the THUNK and return the run-time spent on it.
-The results of THUNK are ignored.
-"
-  (let ((start (get-internal-run-time)))
-    (funcall thunk)
-    (let ((end (get-internal-run-time)))
-      (float (/ (- end start) internal-time-units-per-second)
-             1.0d0))))
-
-(defmacro chrono (&body body)
-  `(chrono* (lambda () ,@body)))
-
 
 (defmacro with-functions ((&rest fnames) &body body)
   `(flet ,(mapcar (lambda (fname)
