@@ -174,7 +174,7 @@ and QUICKLOAD-VERBOSE* when available."
   "Formats the parameters on the *TEST-OUTPUT* when running the test verbosely
 cf. VERBOSE, *VERBOSE-PROGRESS*"
   (when (verbose *verbose-progress*)
-    (format *test-output* "~&~:?~%" format-control format-arguments)
+    (format *test-output* "~&~@?~%" format-control format-arguments)
     (force-output *test-output*)))
 
 (defun progress-report (new-last-succcess-p)
