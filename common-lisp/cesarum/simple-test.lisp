@@ -38,6 +38,7 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
 
+
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SIMPLE-TEST"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM"
@@ -65,10 +66,10 @@
            "*DEBUG-ON-FAILURE*" "WITH-DEBUGGER-ON-FAILURE"
            "DEFINE-TEST" "CHECK" "ASSERT-TRUE" "ASSERT-FALSE" "EXPECT-CONDITION"
            "TEST-MESSAGE" "*TEST-OUTPUT*" "*VERBOSE-TALLY*"  "*VERBOSE-PROGRESS*"
-           "TESTING"
+           "TESTING" "SLOW-TEST"
            "PROGRESS-START"
            "PROGRESS-SUCCESS" "PROGRESS-FAILURE-MESSAGE" "PROGRESS-FAILURE"
-           "PROGRESS-TALLY"
+           "PROGRESS-TALLY" 
            ;; deprecated:
            "TEST")
   (:documentation "
@@ -468,5 +469,15 @@ errors will invoke the debugger instead of failing the test immediately."
 failures will invoke the debugger instead of failing the test immediately."
   `(let ((*debug-on-failure* t))
      ,@body))
+
+(defun slow-test* (expected-time thunk)
+  (let ((result))
+    (test-message "Next test should take about ~A." (format-time expected-time))
+    (let ((time (chrono-real-time (setf result (funcall thunk)))))
+      (test-message "Test took ~A" (format-time time)))
+    result))
+
+(defmacro slow-test (expected-time &body body)
+  `(slow-test* ,expected-time (lambda () ,@body)))
 
 ;;;; THE END ;;;;

@@ -40,10 +40,11 @@
    "GET-RUN-TIME"
    "CHRONO-REAL-TIME"
    "CHRONO-RUN-TIME"
+   "FORMAT-TIME"
    "*INTERNAL-TIME-UNIT*")
   (:documentation "
 
-This package provides two clock more precise than GET-UNIVERSAL-TIME
+This package provides two clocks more precise than GET-UNIVERSAL-TIME
 which has a 1 second resolution, using the
 INTERNAL-TIME-UNITS-PER-SECOND.
 
@@ -114,5 +115,9 @@ The results of THUNK are ignored.
 (defmacro chrono-run-time (&body body)
   `(chrono-run-time* (lambda () ,@body)))
 
+
+(defun format-time (time)
+  (multiple-value-bind (se mi ho) (decode-universal-time time 0)
+    (format nil "~2,'0D:~2,'0D:~2,'0D" ho mi (truncate se))))
 
 ;;;; THE END ;;;;
