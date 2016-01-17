@@ -76,7 +76,7 @@ all written in 100% conforming Common Lisp.
   #+adsf3 :in-order-to #+adsf3 ((test-op (test-op "com.informatimago.common-lisp.cesarum.test")))
   :components (
                ;; Simple Test Framework
-               (:file "simple-test"     :depends-on ())
+               (:file "simple-test"     :depends-on ("time"))
 
                ;; Common Lisp addendum:
                (:file "array"           :depends-on ())
