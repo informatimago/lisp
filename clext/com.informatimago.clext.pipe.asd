@@ -35,7 +35,7 @@
 #+mocl
 (asdf:defsystem "com.informatimago.clext.pipe"
   ;; system attributes:
-  :description "Dummy Informatimago Common Lisp Extensions: Pipes."
+  :description "Informatimago Common Lisp Extensions: Pipes."
   :long-description "
 
 This system would use TRIVIAL-GRAY-STREAMS, which is not available on MOCL.

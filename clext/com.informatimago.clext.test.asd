@@ -57,11 +57,12 @@
   :depends-on     ("com.informatimago.common-lisp.cesarum"
                    "com.informatimago.clext")
   :components     ((:file "closer-weak-test" :depends-on nil))
-  #+asdf3 :perform #+asdf3 (asdf:test-op
-                            (operation system)
-                            (declare (ignore operation system))
-                            (let ((*package* (find-package "COM.INFORMATIMAGO.CLEXT.CLOSER-WEAK.TEST")))
-                              (uiop:symbol-call "COM.INFORMATIMAGO.CLEXT.CLOSER-WEAK.TEST" "TEST/ALL")))
+  #+asdf3 :perform
+  #+asdf3 (asdf:test-op
+           (operation system)
+           (declare (ignore operation system))
+           (let ((*package* (find-package "COM.INFORMATIMAGO.CLEXT.CLOSER-WEAK.TEST")))
+             (uiop:symbol-call "COM.INFORMATIMAGO.CLEXT.CLOSER-WEAK.TEST" "TEST/ALL")))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8)
 
 ;;;; THE END ;;;;

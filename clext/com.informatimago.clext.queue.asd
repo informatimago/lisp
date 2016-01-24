@@ -1,22 +1,22 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               com.informatimago.clext.asd
+;;;;FILE:               com.informatimago.clext.queue.asd
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    ASD file to load the com.informatimago.clext library.
+;;;;    ASD file to load the com.informatimago.clext.queue library.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2010-10-31 <PJB> Created this .asd file.
+;;;;    2015-09-12 <PJB> Created this .asd file.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2010 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -32,40 +32,59 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem "com.informatimago.clext"
+#+mocl
+(asdf:defsystem "com.informatimago.clext.queue"
   ;; system attributes:
-  :description "Informatimago Common Lisp Extensions"
+  :description "Informatimago Common Lisp Extensions: Queues."
   :long-description "
 
-This system provides Common-Lisp packages that are mostly portable,
-but that use some extensions, packages out of the Common-Lisp
-specifications, like GRAY or other portability libraries.
+This system would use TRIVIAL-GRAY-STREAMS, which is not available on MOCL.
 
 "
   :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.5.0"
-  :properties ((#:author-email                   . "pjb@informatimago.com")
-               (#:date                           . "Autumn 2010")
+  :version "1.2.0"
+  :properties ((#:author-email                   . "pjb@informatimago.com")"$HOME"/rc
+               (#:date                           . "Summer 2015")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.clext/")
                ((#:albert #:formats)             . ("docbook"))
                ((#:albert #:docbook #:template)  . "book")
                ((#:albert #:docbook #:bgcolor)   . "white")
                ((#:albert #:docbook #:textcolor) . "black"))
-  :depends-on ("com.informatimago.clext.association"
-               "com.informatimago.clext.character-sets"
-               #+(or ccl clisp sbcl cmu) "com.informatimago.clext.closer-weak"
-               #+(or ccl clisp sbcl cmu) "com.informatimago.clext.pipe"
-               "com.informatimago.clext.queue")
-  :components ()
+  #+asdf-unicode :encoding #+asdf-unicode :utf-8
+  :depends-on ()
+  :components ())
+
+#-mocl
+(asdf:defsystem "com.informatimago.clext.queue"
+  ;; system attributes:
+  :description "Informatimago Common Lisp Extensions: Queues."
+  :long-description "
+
+This system provides QUEUES, a pair of input and output stream
+with a synchronized queue in the middle.
+
+"
+  :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
+  :licence "AGPL3"
+  ;; component attributes:
+  :version "1.2.0"
+  :properties ((#:author-email                   . "pjb@informatimago.com")
+               (#:date                           . "Summer 2015")
+               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.clext/")
+               ((#:albert #:formats)             . ("docbook"))
+               ((#:albert #:docbook #:template)  . "book")
+               ((#:albert #:docbook #:bgcolor)   . "white")
+               ((#:albert #:docbook #:textcolor) . "black"))
+  :depends-on ("bordeaux-threads")
+  :components ((:file "queue"))
   #+adsf3 :in-order-to
-  #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.clext.test")
-                         (asdf:test-op "com.informatimago.clext.association.test")
-                         (asdf:test-op "com.informatimago.clext.pipe.test")
-                         (asdf:test-op "com.informatimago.clext.queue.test")))
+  #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.clext.queue.test")))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8)
 
 
 ;;;; THE END ;;;;
+ 
