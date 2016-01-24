@@ -46,6 +46,7 @@
            "QUICK-UPDATE"
            "QUICK-CLEAN"
            "QUICK-INSTALL-ALL"
+           "QUICK-LOAD-ALL"
            "QUICK-UNINSTALL"
            "QUICK-WHERE-IS"
            "QUICK-WHERE"
@@ -126,7 +127,18 @@ are listed."
                    (ql-dist:ensure-installed system))
                (error (err)
                  (format *trace-output* "~&~A ~A~%" system err))))
-       (ql-dist:provided-systems t)))
+    (ql-dist:provided-systems t)))
+
+
+(defun quick-load-all (&key verbose)
+  "Loads all the quicklisp systems, skipping over the errors."
+  (map nil (lambda (system)
+             (handler-case
+                 (ql:quickload (ql-dist:name system) :verbose verbose)
+               (error (err)
+                 (format *trace-output* "~&~A ~A~%" system err))))
+    (ql-dist:provided-systems t)))
+
 
 (defun quick-uninstall (system &rest systems)
   "Uninstall the given systems releases from the quicklisp installation."
