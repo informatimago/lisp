@@ -33,7 +33,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2003 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2003 - 2016
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -51,7 +51,8 @@
 
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ACTIVITY"
   (:use "COMMON-LISP"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.TIME")
   (:export
    "MAKE-ACTIVITY" "CURRENT-ACTIVITY" "ACTIVITYP" "ACTIVITY-YIELD"
    "ALL-ACTIVITIES" "DESTROY-ACTIVITY" "ACTIVITY-RUN"
@@ -297,7 +298,6 @@ If zero, then the activity is run as often as possible.")
   self)
 
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; TIME BASES
 ;;;
@@ -306,36 +306,6 @@ If zero, then the activity is run as often as possible.")
 ;;; being just the universal-time, but with more precision).
 ;;; Times are expressed in seconds as double-float.
 ;;;
-
-(defparameter *internal-time-unit*
-  (coerce (/ internal-time-units-per-second) 'double-float)
-  "The internal time slice, in seconds, as a DOUBLE-FLOAT.")
-
-
-(defparameter *precise-real-time-offset*
-  (loop
-    :with now = (get-universal-time)
-    :while (= now (get-universal-time))
-    :finally (return
-               (- now (* (get-internal-real-time) *internal-time-unit*))))
-  "Contains the number of seconds that must be added to:
-      (/ (GET-INTERNAL-REAL-TIME) INTERNAL-TIME-UNITS-PER-SECOND)
-to get the current universal-time with the higher internal time precision.")
-
-
-(defun get-real-time ()
-  "
-RETURN: The universal-time (in seconds), offset by the
-        internal-real-time fraction.
-"
-  (+ *precise-real-time-offset*
-     (* (get-internal-real-time) *internal-time-unit*)))
-
-
-(defun get-run-time ()
-  (* (get-internal-run-time) *internal-time-unit*))
-
-
 
 (deftype time-base ()
   "A value that designates one of the timebases."

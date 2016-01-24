@@ -16,7 +16,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2015 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -77,11 +77,13 @@
   (assert-true (equal "" (concatenate-strings '(("" 0 0) ("abc" 0 0) ("abc" 1 1) (#\a 0 0)))))
   (assert-true (equal "abc" (concatenate-strings '("abc"))))
   (assert-true (equal "abc" (concatenate-strings '("a" "b" "c"))))
+  (assert-true (equal "abc" (concatenate-strings '((#\a #\b) "c"))))
   (assert-true (equal "abc" (concatenate-strings '(#\a #\b #\c))))
   (assert-true (equal "abc" (concatenate-strings '(|a| |b| |c|))))
   (assert-true (equal "abc" (concatenate-strings '(|a| "b" #\c))))
   (assert-true (equal "abcdef" (concatenate-strings '("ab" "cd" "ef"))))
   (assert-true (equal "abcdef" (concatenate-strings '(("abcdef" 0 2) ("abcdef" 2 4) ("abcdef" 4 6)))))
+  (assert-true (equal "abcdef" (concatenate-strings '(((#\a #\b #\c #\d #\e #\f) 0 2) ("abcdef" 2 4) ("abcdef" 4 6)))))
   (assert-true (equal "abcdef" (concatenate-strings '(#\a #\b #\c "def")))))
 
 
@@ -212,7 +214,5 @@
   (test/implode-explode)
   (test/prefixp)
   (test/suffixp))
-
-
 
 ;;;; THE END ;;;;

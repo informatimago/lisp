@@ -16,7 +16,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2010 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2010 - 2016
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -42,7 +42,7 @@
   :author "Pascal J. Bourguignon <pjb@informatimago.com>"
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :license "AGPL3"
-  :version "1.2.6"
+  :version "1.4.0"
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ()
   :components ())
@@ -61,7 +61,7 @@ should be made into implementation independant packages).
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.2.6"
+  :version "1.4.0"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Spring 2014")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.clmisc/")

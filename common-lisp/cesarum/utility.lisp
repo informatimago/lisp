@@ -9,10 +9,11 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2016-01-04 <PJB> Added hash-table-select.
+;;;;    2016-01-16 <PJB> Removed CHRONO. Use ...TIME:CHRONO-RUN-TIME instead.
+;;;;    2016-01-04 <PJB> Added HASH-TABLE-SELECT.
 ;;;;    2015-08-19 <PJB> Renamed INCLUDE -> INCLUDE-FILE.
 ;;;;    2015-06-13 <PJB> Added CHRONO.
-;;;;    2014-10-22 <PJB> Added hash-table-to-sexp and sexp-to-hash-table.
+;;;;    2014-10-22 <PJB> Added HASH-TABLE-TO-SEXP and SEXP-TO-HASH-TABLE.
 ;;;;    2013-06-30 <PJB> Added FLOAT-{,C,E}TYPECASE; exported [-+]EPSILON.
 ;;;;    2008-06-24 <PJB> Added INCF-MOD and DECF-MOD.
 ;;;;    2007-12-01 <PJB> Removed PJB-ATTRIB macro (made it a flet of PJB-DEFCLASS).
@@ -104,8 +105,9 @@
    "DISTINCT-FLOAT-TYPES" "FLOAT-TYPECASE" "FLOAT-CTYPECASE" "FLOAT-ETYPECASE"
    "+EPSILON" "-EPSILON"
    ;; 14 - CONSES
-   "MAXIMIZE" "TOPOLOGICAL-SORT" "TRANSITIVE-CLOSURE"
+   "MAXIMIZE" "TOPOLOGICAL-SORT" "TRANSITIVE-CLOSURE" 
    "COMPUTE-CLOSURE" ; deprecated, renamed to transitive-closure
+   "FIND-CYCLES" "FIND-SHORTEST-PATH"
    ;; 15 - ARRAYS
    "VECTOR-INIT" "UNDISPLACE-ARRAY" "DICHOTOMY-SEARCH"
    ;; 16 - STRINGS
@@ -126,8 +128,6 @@
    ;;
    "XOR" "EQUIV" "IMPLY"
    ;; "SET-EQUAL"
-   ;; Miscellaneous
-   "CHRONO"
    )
   (:documentation
    "
@@ -140,7 +140,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2003 - 2014
+    Copyright Pascal J. Bourguignon 2003 - 2016
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -165,21 +165,6 @@ License:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 3 - EVALUATION AND COMPILATION
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defun chrono* (thunk)
-  "
-Call the THUNK and return the run-time spent on it.
-The results of THUNK are ignored.
-"
-  (let ((start (get-internal-run-time)))
-    (funcall thunk)
-    (let ((end (get-internal-run-time)))
-      (float (/ (- end start) internal-time-units-per-second)
-             1.0d0))))
-
-(defmacro chrono (&body body)
-  `(chrono* (lambda () ,@body)))
-
 
 (defmacro with-functions ((&rest fnames) &body body)
   `(flet ,(mapcar (lambda (fname)
@@ -1394,8 +1379,40 @@ RETURN: A list of NODES sorted topologically according to
 
 
 
+(defun find-shortest-path (from to successors)
+  "
+RETURN: The shortest path of length>0 from FROM to TO if it exists, or NIL.
+"
+  ;; breadth first search
+  (loop
+     :with processed = '()
+     :for paths = (list (list from)) :then new-paths
+     :for new-paths = (remove-if (lambda (head) (member head processed))
+                                 (mapcan (lambda (path)
+                                           (mapcar (lambda (new-node) (cons new-node path))
+                                                   (funcall successors (first path))))
+                                         paths)
+                                 :key (function first))
+     :for shortest-path = (find to new-paths :key (function first))
+     :do (setf paths     (nconc paths new-paths)
+               processed (nconc (delete-duplicates (mapcar (function first) new-paths)) processed))
+     :until (or shortest-path (endp new-paths))
+     :finally (return (reverse shortest-path))))
 
 
+(defun find-cycles (objects successors)
+  (remove nil (mapcar (lambda (cycle) (find-shortest-path cycle cycle successors)) objects)))
+
+(defun print-cycle (path)
+  (format t "~%There is a cycle going ~%from ~A"  (first path))
+  (dolist (node (rest path))
+    (format t "~%  to ~A" node))
+  (format t " !!!~%"))
+
+;; (mapc (function print-cycle) (find-cycles (list-all-packages)
+;;                                           (function package-use-list)))
+
+;; (find-cycles (list-all-packages) (function package-use-list))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 15 - ARRAYS
@@ -1413,6 +1430,7 @@ RETURN:  VECTOR
       ((>= index (array-dimension vector 0)))
     (setf (aref vector index) (funcall constructor index)))
   vector)
+
 
 
 (defun undisplace-array (array)

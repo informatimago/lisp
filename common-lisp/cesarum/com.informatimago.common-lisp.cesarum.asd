@@ -16,7 +16,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2010 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2010 - 2016
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -63,9 +63,9 @@ all written in 100% conforming Common Lisp.
   :licence "AGPL3"
   ;; component attributes:
 
-  :version "1.4.0"
+  :version "1.7.0"
   :properties ((#:author-email                   . "pjb@informatimago.com")
-               (#:date                           . "Autumn 2010")
+               (#:date                           . "Autumn 2015")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.cesarum/")
                ((#:albert #:formats)             . ("docbook"))
                ((#:albert #:docbook #:template)  . "book")
@@ -76,7 +76,7 @@ all written in 100% conforming Common Lisp.
   #+adsf3 :in-order-to #+adsf3 ((test-op (test-op "com.informatimago.common-lisp.cesarum.test")))
   :components (
                ;; Simple Test Framework
-               (:file "simple-test"     :depends-on ())
+               (:file "simple-test"     :depends-on ("time"))
 
                ;; Common Lisp addendum:
                (:file "array"           :depends-on ())
@@ -121,7 +121,8 @@ all written in 100% conforming Common Lisp.
                (:file "a-star"          :depends-on ())
 
                ;; Specific stuff:
-               (:file "activity"        :depends-on ())
+               (:file "time"            :depends-on ())
+               (:file "activity"        :depends-on ("time"))
                (:file "date"            :depends-on ())
                (:file "version"         :depends-on ())
 
