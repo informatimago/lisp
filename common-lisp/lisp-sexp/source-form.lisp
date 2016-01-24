@@ -180,6 +180,9 @@ one for the parameter and one for the indicator."))
             (parameter-indicator parameter))
       (list (parameter-name parameter))))
 
+(defmethod parameter-parameter-list ((parameter destructuring-lambda-list))
+  (make-parameter-list parameter))
+
 (define-default-generic parameter-indicator     parameter nil)
 (define-default-generic parameter-indicator-p   parameter nil)
 (define-default-generic parameter-initform      parameter nil)
