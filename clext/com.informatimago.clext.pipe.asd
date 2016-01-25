@@ -16,7 +16,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2015 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -35,7 +35,7 @@
 #+mocl
 (asdf:defsystem "com.informatimago.clext.pipe"
   ;; system attributes:
-  :description "Dummy Informatimago Common Lisp Extensions: Pipes."
+  :description "Informatimago Common Lisp Extensions: Pipes."
   :long-description "
 
 This system would use TRIVIAL-GRAY-STREAMS, which is not available on MOCL.
@@ -45,7 +45,7 @@ This system would use TRIVIAL-GRAY-STREAMS, which is not available on MOCL.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.0.4"
+  :version "1.2.0"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Summer 2015")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.clext/")
@@ -71,7 +71,7 @@ with a synchronized queue in the middle.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.0.0"
+  :version "1.2.0"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Summer 2015")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.clext/")

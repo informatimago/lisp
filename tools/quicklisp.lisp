@@ -16,7 +16,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2013 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2013 - 2016
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -46,6 +46,7 @@
            "QUICK-UPDATE"
            "QUICK-CLEAN"
            "QUICK-INSTALL-ALL"
+           "QUICK-LOAD-ALL"
            "QUICK-UNINSTALL"
            "QUICK-WHERE-IS"
            "QUICK-WHERE"
@@ -126,7 +127,18 @@ are listed."
                    (ql-dist:ensure-installed system))
                (error (err)
                  (format *trace-output* "~&~A ~A~%" system err))))
-       (ql-dist:provided-systems t)))
+    (ql-dist:provided-systems t)))
+
+
+(defun quick-load-all (&key verbose)
+  "Loads all the quicklisp systems, skipping over the errors."
+  (map nil (lambda (system)
+             (handler-case
+                 (ql:quickload (ql-dist:name system) :verbose verbose)
+               (error (err)
+                 (format *trace-output* "~&~A ~A~%" system err))))
+    (ql-dist:provided-systems t)))
+
 
 (defun quick-uninstall (system &rest systems)
   "Uninstall the given systems releases from the quicklisp installation."

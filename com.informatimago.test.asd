@@ -21,7 +21,7 @@
 ;;;;
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2015 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -45,7 +45,7 @@
   :maintainer     "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence        "AGPL3"
   ;; component attributes:
-  :version        "1.0.4"
+  :version        "1.2.0"
   :properties     ((#:author-email . "pjb@informatimago.com")
                    (#:date . "Winter 2015")
                    ((#:albert #:output-dir)
@@ -67,25 +67,26 @@
                "com.informatimago.small-cl-pgms.test"
                "com.informatimago.future.test"
                "com.informatimago.editor.test" ; future
-               "com.informatimago.objcl.test"  ; empty shell on non-ccl darwin
-               "com.informatimago.susv3.test"  ; empty shell on non-clisp.
-               "com.informatimago.clisp.test"  ; empty shell on non-clisp linux
+               "com.informatimago.objcl.test" ; empty shell on non-ccl darwin
+               "com.informatimago.susv3.test" ; empty shell on non-clisp.
+               "com.informatimago.clisp.test" ; empty shell on non-clisp linux
                )
   :components  ()
-  #+asdf3 :in-order-to #+asdf3 ((asdf:test-op
-                 (asdf:test-op "com.informatimago.common-lisp.test")
-                 (asdf:test-op "com.informatimago.clext.test")
-                 (asdf:test-op "com.informatimago.clmisc.test")
-                 (asdf:test-op "com.informatimago.rdp.test")
-                 (asdf:test-op "com.informatimago.tools.test")
-                 (asdf:test-op "com.informatimago.xcode.test")
-                 (asdf:test-op "com.informatimago.lispdoc.test")
-                 (asdf:test-op "com.informatimago.small-cl-pgms.test")
-                 (asdf:test-op "com.informatimago.future.test")
-                 (asdf:test-op "com.informatimago.editor.test")
-                 (asdf:test-op "com.informatimago.objcl.test")
-                 (asdf:test-op "com.informatimago.susv3.test")
-                 (asdf:test-op "com.informatimago.clisp.test")
-                 (asdf:test-op "com.informatimago.languages.cpp.test"))))
+  #+asdf3 :in-order-to
+  #+asdf3 ((asdf:test-op
+            (asdf:test-op "com.informatimago.common-lisp.test")
+            (asdf:test-op "com.informatimago.clext.test")
+            (asdf:test-op "com.informatimago.clmisc.test")
+            (asdf:test-op "com.informatimago.rdp.test")
+            (asdf:test-op "com.informatimago.tools.test")
+            (asdf:test-op "com.informatimago.xcode.test")
+            (asdf:test-op "com.informatimago.lispdoc.test")
+            (asdf:test-op "com.informatimago.small-cl-pgms.test")
+            (asdf:test-op "com.informatimago.future.test")
+            (asdf:test-op "com.informatimago.editor.test")
+            (asdf:test-op "com.informatimago.objcl.test")
+            (asdf:test-op "com.informatimago.susv3.test")
+            (asdf:test-op "com.informatimago.clisp.test")
+            (asdf:test-op "com.informatimago.languages.cpp.test"))))
 
 ;;;; THE END ;;;;

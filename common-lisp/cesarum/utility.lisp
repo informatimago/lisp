@@ -9,9 +9,11 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2016-01-16 <PJB> Removed CHRONO. Use ...TIME:CHRONO-RUN-TIME instead.
+;;;;    2016-01-04 <PJB> Added HASH-TABLE-SELECT.
 ;;;;    2015-08-19 <PJB> Renamed INCLUDE -> INCLUDE-FILE.
 ;;;;    2015-06-13 <PJB> Added CHRONO.
-;;;;    2014-10-22 <PJB> Added hash-table-to-sexp and sexp-to-hash-table.
+;;;;    2014-10-22 <PJB> Added HASH-TABLE-TO-SEXP and SEXP-TO-HASH-TABLE.
 ;;;;    2013-06-30 <PJB> Added FLOAT-{,C,E}TYPECASE; exported [-+]EPSILON.
 ;;;;    2008-06-24 <PJB> Added INCF-MOD and DECF-MOD.
 ;;;;    2007-12-01 <PJB> Removed PJB-ATTRIB macro (made it a flet of PJB-DEFCLASS).
@@ -35,7 +37,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2003 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2003 - 2016
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -114,7 +116,8 @@
    "NSUBSEQ"
    ;; 18 - HASH-TABLES
    "HASH-TABLE-KEYS" "HASH-TABLE-VALUES"
-   "HASH-TABLE-ENTRIES" "HASH-TABLE-PATH"
+   "HASH-TABLE-ENTRIES" "HASH-TABLE-SELECT"
+   "HASH-TABLE-PATH"
    "COPY-HASH-TABLE" "MAP-INTO-HASH-TABLE"
    "HASHTABLE" "PRINT-HASHTABLE"
    "HASH-TABLE-TO-SEXP"
@@ -125,8 +128,6 @@
    ;;
    "XOR" "EQUIV" "IMPLY"
    ;; "SET-EQUAL"
-   ;; Miscellaneous
-   "CHRONO"
    )
   (:documentation
    "
@@ -139,7 +140,7 @@ License:
 
     AGPL3
     
-    Copyright Pascal J. Bourguignon 2003 - 2014
+    Copyright Pascal J. Bourguignon 2003 - 2016
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -164,21 +165,6 @@ License:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 3 - EVALUATION AND COMPILATION
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defun chrono* (thunk)
-  "
-Call the THUNK and return the run-time spent on it.
-The results of THUNK are ignored.
-"
-  (let ((start (get-internal-run-time)))
-    (funcall thunk)
-    (let ((end (get-internal-run-time)))
-      (float (/ (- end start) internal-time-units-per-second)
-             1.0d0))))
-
-(defmacro chrono (&body body)
-  `(chrono* (lambda () ,@body)))
-
 
 (defmacro with-functions ((&rest fnames) &body body)
   `(flet ,(mapcar (lambda (fname)
@@ -1426,7 +1412,7 @@ RETURN: The shortest path of length>0 from FROM to TO if it exists, or NIL.
 ;; (mapc (function print-cycle) (find-cycles (list-all-packages)
 ;;                                           (function package-use-list)))
 
-
+;; (find-cycles (list-all-packages) (function package-use-list))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 15 - ARRAYS
@@ -1618,30 +1604,41 @@ RETURN:  When the SEQUENCE is a vector, the SEQUENCE itself, or a dispaced
 ;; 18 - HASH-TABLES
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun hash-table-keys (hash)
-  "Returns a list of the keys in the hash-table."
+(defun hash-table-keys (table)
+  "Returns a list of the keys in the TABLE."
   (let ((result '()))
-    (maphash (lambda (k v) (declare (ignore v)) (push k result)) hash)
+    (maphash (lambda (k v) (declare (ignore v)) (push k result)) table)
     result))
 
 (defun hash-table-values (table)
-  "Returns a list of the values in the hash-table."
+  "Returns a list of the values in the TABLE."
   (let ((result '()))
     (maphash (lambda (k v) (declare (ignore k)) (push v result)) table)
     result))
 
-(defun hash-table-entries (hash)
-  "Returns an a-list of the entries (key . val) in the hash-table."
+(defun hash-table-entries (table)
+  "Returns an a-list of the entries (key . val) in the TABLE."
   (let ((result '()))
-    (maphash (lambda (k v) (push (cons k v) result)) hash)
+    (maphash (lambda (k v) (push (cons k v) result)) table)
     result))
 
-(defun hash-table-path (htable &rest keys)
+(defun hash-table-select (predicate table)
+  "
+RETURN: An a-list of  (k . v) from the TABLE
+        such as (funcall PREDICATE k v) is true.
+"
+  (let ((result '()))
+    (maphash (lambda (k v) (when (funcall predicate k v)
+                             (push (cons k v) result)))
+             table)
+    result))
+
+(defun hash-table-path (table &rest keys)
   "Given a hash-table that may contain other hash-table, walks down
 the path of KEYS, returning the ultimate value"
   (if (null keys)
-      htable
-      (apply (function hash-table-path) (gethash (first keys) htable) (rest keys))))
+      table
+      (apply (function hash-table-path) (gethash (first keys) table) (rest keys))))
 
 (defun copy-hash-table (table)
   "

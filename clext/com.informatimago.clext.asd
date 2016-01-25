@@ -16,7 +16,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2010 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2010 - 2016
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -46,7 +46,7 @@ specifications, like GRAY or other portability libraries.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.3.6"
+  :version "1.5.0"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Autumn 2010")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.clext/")
@@ -57,11 +57,14 @@ specifications, like GRAY or other portability libraries.
   :depends-on ("com.informatimago.clext.association"
                "com.informatimago.clext.character-sets"
                #+(or ccl clisp sbcl cmu) "com.informatimago.clext.closer-weak"
-               #+(or ccl clisp sbcl cmu) "com.informatimago.clext.pipe")
+               #+(or ccl clisp sbcl cmu) "com.informatimago.clext.pipe"
+               "com.informatimago.clext.queue")
   :components ()
-  #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.clext.test")
-                                              (asdf:test-op "com.informatimago.clext.association.test")
-                                              (asdf:test-op "com.informatimago.clext.pipe.test")))
+  #+adsf3 :in-order-to
+  #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.clext.test")
+                         (asdf:test-op "com.informatimago.clext.association.test")
+                         (asdf:test-op "com.informatimago.clext.pipe.test")
+                         (asdf:test-op "com.informatimago.clext.queue.test")))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8)
 
 

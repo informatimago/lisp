@@ -16,7 +16,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2012 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -45,7 +45,7 @@ This system would use closer-mop which is not available for MOCL.
     :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
     :licence "LLGPL"
     ;; component attributes:
-    :version "1.0.4"
+    :version "1.2.0"
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Spring 2012")
                  ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.lispdoc/")
@@ -65,7 +65,7 @@ This system would use closer-mop which is not available for MOCL.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "LLGPL"
   ;; component attributes:
-  :version "1.0.4"
+  :version "1.2.0"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Spring 2012")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.lispdoc/")

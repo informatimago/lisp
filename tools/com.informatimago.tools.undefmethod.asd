@@ -16,7 +16,7 @@
 ;;;;LEGAL
 ;;;;    GPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2014 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2014 - 2016
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -35,7 +35,7 @@
 (asdf:defsystem "com.informatimago.tools.undefmethod"
   :description "A macro that undefines the method instead of defining it."
   :author "irc://Shinmera@irc.freenode.org"
-  :version "1.0.4"
+  :version "1.2.0"
   :license "GPL3"
   :depends-on () 
   :components ((:file "undefmethod"))

@@ -16,7 +16,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2012 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -48,7 +48,7 @@ cover generic FFI to both Apple and GNUstep objc2 runtimes.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence    "AGPL3"
   ;; component attributes:
-  :version    "0.10.7"
+  :version    "1.12.0"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Spring 2014")
                ((#:albert #:output-dir)          . "../documentation/com.informatimago.objc/")

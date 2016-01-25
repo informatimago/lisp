@@ -16,7 +16,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2013 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2013 - 2016
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -35,7 +35,7 @@
 (asdf:defsystem "com.informatimago.tools.check-asdf"
   :description "Checks ASD Files and reports circular dependencies."
   :author "Pascal J. Bourguignon"
-  :version "1.1.6"
+  :version "1.3.0"
   :license "AGPL3"
   :depends-on ("com.informatimago.common-lisp.cesarum"
                "com.informatimago.clext"

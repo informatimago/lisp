@@ -16,7 +16,7 @@
 ;;;;LEGAL
 ;;;;    LLGPL
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2015 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
 ;;;;    
 ;;;;    This library is licenced under the Lisp Lesser General Public
 ;;;;    License.

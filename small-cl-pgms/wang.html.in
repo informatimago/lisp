@@ -5,6 +5,8 @@
      keywords="LISP 1.5, Common Lisp, Lisp, Wang algorithm"
      language="en">
 
+<!-- elizagen https://groups.google.com/forum/message/raw?msg=comp.lang.lisp/D8sCCn1WZO4/Ciu6tqCgOvUJ -->
+
   <h1>Old LISP programs still run in Common Lisp</h1>
 
   <p>Actually, any Common Lisp implementation can be applied with

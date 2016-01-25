@@ -17,7 +17,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2013 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2013 - 2016
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -36,7 +36,7 @@
 (asdf:defsystem "com.informatimago.future"
   :description "Future Informatimago Projects - Not ready for consumption."
   :author "Pascal J. Bourguignon"
-  :version "1.0.6"
+  :version "1.2.0"
   :license "AGPL3"
   :depends-on () 
   :components ()

@@ -16,7 +16,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2012 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -46,7 +46,7 @@ target-language method will let the RDPG generate a parser in BASIC.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.0.5"
+  :version "1.2.0"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Summer 2011")
                ((#:albert #:output-dir)          . "../documentation/com.informatimago.rdp.basic.example/")

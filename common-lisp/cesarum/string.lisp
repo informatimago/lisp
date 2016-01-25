@@ -11,6 +11,8 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2016-01-16 <PJB> Added an ignorable declaration to prefixp and suffixp
+;;;;                     to avoid a warning.
 ;;;;    2015-09-15 <PJB> prefixp and suffixp moved to sequence,
 ;;;;                     became generic functions; added methods for
 ;;;;                     string designators.
@@ -29,7 +31,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2002 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2002 - 2016
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -52,7 +54,8 @@
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE")
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE"
+        "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM")
   (:export
    "STRING-DESIGNATOR" "CHARACTER-DESIGNATOR"
    "NO-LOWER-CASE-P" "NO-UPPER-CASE-P" "MIXED-CASE-P"
@@ -209,14 +212,14 @@ RETURN:          A string containing the concatenation of the strings
       :with strings = (mapcar
                        (lambda (item)
                          (etypecase item
-                           ((or string symbol character) (string item))
                            (null                         "")
+                           ((or string symbol character) (string item))
                            (cons (if (every (function characterp) item)
                                      (coerce item 'string)
                                      (list (etypecase (first item)
+                                             (null                         "")
                                              ((or string symbol character) (string (first item)))
-                                             (null "")
-                                             (cons (coerce (first item) 'string)))
+                                             (cons                         (coerce (first item) 'string)))
                                            (second item)
                                            (third item))))))
                        list-of-string-designators)
@@ -464,26 +467,29 @@ RETURN:  a cons with two substrings of string such as:
 
 (defmacro define-string-designator-methods (name (&rest lambda-list) (&rest string-designator-parameters)
                                             &body body)
-  (flet ((substitute-parameters (lambda-list parameters)
-           (mapcar (lambda (formal-parameter)
-                     (if (atom formal-parameter)
-                         (let ((typed-parameter (assoc formal-parameter parameters)))
-                           (or typed-parameter formal-parameter))
-                         formal-parameter))
-                   lambda-list)))
-    `(progn
-       ,@(loop
-           :for comb :in (combinations (length string-designator-parameters)
-                                       '(character symbol string))
-           :unless (every (lambda (class) (eql class 'string)) comb)
-             :collect `(defmethod ,name
-                           ,(substitute-parameters lambda-list
-                             (mapcar (function list) string-designator-parameters comb))
-                         ,@body))
-       (defmethod ,name ,(substitute-parameters lambda-list
-                          (mapcar (lambda (parameter) (list parameter 'string))
-                           string-designator-parameters))
-         (call-next-method)))))
+  (let ((ll (parse-lambda-list lambda-list :ORDINARY)))  ;or :SPECIALIZED ?
+    (flet ((substitute-parameters (lambda-list parameters)
+             (mapcar (lambda (formal-parameter)
+                       (if (atom formal-parameter)
+                           (let ((typed-parameter (assoc formal-parameter parameters)))
+                             (or typed-parameter formal-parameter))
+                           formal-parameter))
+                     lambda-list)))
+      `(progn
+         ,@(loop
+             :for comb :in (combinations (length string-designator-parameters)
+                                         '(character symbol string))
+             :unless (every (lambda (class) (eql class 'string)) comb)
+               :collect `(defmethod ,name
+                             ,(substitute-parameters lambda-list
+                               (mapcar (function list) string-designator-parameters comb))
+                           ,@body))
+         (defmethod ,name ,(substitute-parameters lambda-list
+                            (mapcar (lambda (parameter) (list parameter 'string))
+                             string-designator-parameters))
+           (declare (ignorable ,@(make-parameter-list ll)))
+           (call-next-method))))))
+
 
 (define-string-designator-methods prefixp (prefix sequence &key (start 0) (end nil) (test (function char=)))
     (prefix sequence)
@@ -492,8 +498,6 @@ RETURN:  a cons with two substrings of string such as:
 (define-string-designator-methods suffixp (suffix sequence &key (start 0) (end nil) (test (function char=)))
     (suffix sequence)
   (suffixp (string suffix) (string sequence) :start start :end end :test test))
-
-
 
 
 (defun string-pad (string length &key (padchar " ") (justification :left))

@@ -16,7 +16,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;    
-;;;;    Copyright Pascal J. Bourguignon 2014 - 2015
+;;;;    Copyright Pascal J. Bourguignon 2014 - 2016
 ;;;;    
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -43,7 +43,7 @@ by forking an sbcl instance per system.
 
 "
   :author "Pascal J. Bourguignon"
-  :version "1.0.2"
+  :version "1.2.0"
   :license "AGPL3"
   :depends-on () 
   :components ()
@@ -60,7 +60,7 @@ by forking an sbcl instance per system.
 
 "
   :author "Pascal J. Bourguignon"
-  :version "1.0.2"
+  :version "1.2.0"
   :license "AGPL3"
   :depends-on ("com.informatimago.common-lisp.cesarum"
                "com.informatimago.tools.source"

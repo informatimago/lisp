@@ -4,7 +4,7 @@
     :name "Virtual File System"
     :description  "Implements a RAM-based Virtual File System."
     :author "<PJB> Pascal Bourguignon <pjb@informatimago.com>"
-    :version "0.0.4"
+    :version "1.2.0"
     :licence "GPL"
     :properties ((#:author-email                   . "pjb@informatimago.com")
                  (#:date                           . "Spring 2011")
