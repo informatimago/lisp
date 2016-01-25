@@ -120,7 +120,7 @@ Licensed under the AGPL3.
                      :do (handler-case
                              (flet ((terminate-worker () (loop-finish)))
                                (block ,name
-                                 (destructuring-bind ,message-lambda-list ,vmessage
+                                 (destructuring-bind ,message-lambda-list ,vmessage
                                    (declare (ignorable ,@pl))
                                    ,@body)))
                            (error (err)
@@ -129,7 +129,6 @@ Licensed under the AGPL3.
                  :name ,sname)))))
 
 (defvar *botil*)
-(defvar *dispatch*)
 (defvar *command-processor*)
 (defvar *query-processor*)
 (defvar *sender*)
@@ -170,8 +169,7 @@ Licensed under the AGPL3.
   )
 
 (defun logger (message)
-  (declare (ignore message))
-  )
+  (format t "~&Logged: ~A~%" message))
 
 (defun command-processor (sender command)
   (let ((words (split-sequence #\space command :remove-empty-subseqs t)))
@@ -193,19 +191,6 @@ Licensed under the AGPL3.
             (answer sender "I'm an IRC bot forwarding HackerNews news; ~
                           under AGPL3 license, my sources are available at <~A>."
                     *sources-url*)))))
-
-(defun dispatch (message)
-  (with-accessors ((source source)
-                   (user user)
-                   (host host)
-                   (command command)
-                   (arguments arguments)) message
-    (format t "~&~S~%" (list :source source :user user :host host :command command :arguments arguments))
-    (let ((recipient (first arguments)))
-      (say arguments)
-      (if (string= *nickname* recipient)
-          (send *command-processor* user (second arguments))
-          (send *logger* message)))))
 
 (defun botil (command)
   (ecase command
@@ -231,9 +216,6 @@ Licensed under the AGPL3.
         *command-processor* (make-worker-thread command-processor (sender message)
                               (format *trace-output* "~&~A -> ~A~%" sender message)
                               (command-processor sender message))
-        *dispatch*          (make-worker-thread dispatch (message)
-                              (format *trace-output* "~&~A -> ~A~%" (source message) message)
-                              (dispatch message))
         *botil*             (make-worker-thread botil (command)
                               (format *trace-output* "~&BOTIL <- ~A~%" command)
                               (botil command))))
@@ -247,10 +229,46 @@ Licensed under the AGPL3.
         *nickname* (or (uiop:getenv "BOTIL_NICKNAME")  *nickname*)
         *botpass*  (or (uiop:getenv "BOTIL_BOTPASS")   *botpass*)))
 
+;; source = "nickname" or "#channel"
+;; user = "~t" "identified-user@host" etc
+;; host = fqdn of user's host
+;; command = "PRIVMSG"
+;; arguments = ("command" "arguments"); for /msg botil hello world --> ("botil" "hello world")
+
+;; #test-botil <test-botil> /msg botil hello how do you do?
+;; (:sender "test-botil" :recipient "botil"       :arguments ("botil" "hello how do you do?"))
+;; #test-botil <test-botil> How do you do? 
+;; (:sender "test-botil" :recipient "#test-botil" :arguments ("#test-botil" "How do you do?"))
+
+
 (defun msg-hook (message)
-  "Answers to PRIVMSG sent directly to this bot."
-  (send *dispatch* message)
+  "Answers to PRIVMSG."
+  (with-accessors ((sender source)
+                   (arguments arguments)) message
+    (let ((recipient (first arguments)))
+      (format t "~&msg-hook message = ~S~%" (list :sender sender
+                                                  :recipient recipient
+                                                  :arguments arguments))
+      (say arguments)
+      (if (string= *nickname* recipient)
+          (send *command-processor* sender (second arguments))
+          (send *logger* message))))
   t)
+
+
+(defun svc-hook (message)
+  "Answers to service messages."
+  (with-accessors ((sender source)
+                   (arguments arguments)) message
+    (let ((recipient (first arguments)))
+      (format t "~&svc-hook message = ~S~%" (list :sender sender
+                                                  :recipient recipient
+                                                  :command (command message)
+                                                  :arguments arguments))))
+  (send *logger* message)
+  t)
+
+;; (join *connection* "#test-botil")
 
 
 (defun call-with-retry (delay thunk)
@@ -292,7 +310,16 @@ and answer to search queries in those logs."
               (unwind-protect
                    (progn
                      (setf *connection* (connect :nickname *nickname* :server *server*))
-                     (add-hook *connection* 'irc::irc-privmsg-message 'msg-hook)
+                     (add-hook *connection* 'irc-privmsg-message 'msg-hook)
+                     (mapc (lambda (class) (add-hook *connection* class 'svc-hook)) 
+                           '(irc-notice-message 
+                             irc-topic-message irc-error-message
+                             irc-mode-message
+                             ;; -
+                             irc-nick-message irc-join-message
+                             irc-part-message irc-quit-message
+                             irc-kill-message irc-kick-message
+                             irc-invite-message))
                      (send *botil* 'reconnect)
                      (loop :while (read-message *connection*)
                            #|there's a 10 s timeout in here.|#))
