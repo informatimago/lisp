@@ -39,6 +39,7 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
         "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM"
         "COM.INFORMATIMAGO.CLEXT.QUEUE")
+  (:shadow "LOG")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.INTERACTIVE"
                 "DATE" "UPTIME")
   (:export "MAIN")
@@ -89,6 +90,283 @@ Licensed under the AGPL3.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defclass server ()
+  ((hostname :initarg  :hostname
+             :initform (error "A server needs a :hostname")
+             :reader   hostname
+             :type     string)
+   (channels :initarg  :channels
+             :initform '()
+             :accessor channels
+             :type     list)))
+
+(defclass channel ()
+  ((server     :initarg  :server
+               :initform (error "A channel needs a :server")
+               :reader   server
+               :type     server)
+   (name       :initarg  :name
+               :initform (error "A channel needs a :name")
+               :reader   name
+               :type     string)
+   (log-stream :initform nil
+               :accessor log-stream
+               :type     (or null file-stream))
+   (log-month  :initform nil
+               :accessor log-month
+               :type     (or null integer))))
+
+(defmethod initialize-instance :after ((channel channel) &key &allow-other-keys)
+  (push channel (channels (server channel))))
+
+(defmethod print-object ((server server) stream)
+  (print-unreadable-object (server stream :identity nil :type t)
+    (format stream "~S ~S" (hostname server) (channels server)))
+  server)
+
+(defmethod print-object ((channel channel) stream)
+  (print-unreadable-object (channel stream :identity nil :type t)
+    (format stream "~A" (name channel)))
+  channel)
+
+
+(defclass user ()
+  ((server   :initarg  :server
+             :initform (error "A channel needs a :server")
+             :reader   server
+             :type     server)
+   (name     :initarg  :name
+             :initarg  :nickname
+             :initform (error "A user needs a :name")
+             :reader   name
+             :type     string)
+   (password :initarg  :password
+             :initform nil
+             :accessor password
+             :type     (or null string))
+   (email    :initarg  :email
+             :initform nil
+             :accessor email
+             :type     (or null email))))
+
+(defmethod print-object ((user user) stream)
+  (print-unreadable-object (user stream :identity nil :type t)
+    (format stream "~a@~a" (name user) (hostname server)))
+  user)
+
+
+(defclass message ()
+  ((source             :accessor source
+                       :initarg  :source
+                       :type     (or null string))
+   (user               :accessor user
+                       :initarg  :user
+                       :type     (or null string))
+   (host               :accessor host
+                       :initarg  :host
+                       :type     (or null string))
+   (command            :accessor command
+                       :initarg  :command
+                       :type     (or null string))
+   (arguments          :accessor arguments
+                       :initarg  :arguments
+                       :type     list)
+   (received-time      :accessor received-time
+                       :initarg  :received-time)
+   (raw-message-string :accessor raw-message-string
+                       :initarg  :raw-message-string
+                       :type     string)))
+
+(defclass request ()
+  ((channel    :initarg  :channel
+               :initform (error "A log needs a :channel")
+               :reader   channel
+               :type     channel)
+   (owner      :initarg  :owner
+               :initform (error "A request-request needs a :owner")
+               :reader   owner
+               :type     user)
+   (start-date :initarg  :start-date
+               :initform (get-universal-time)
+               :reader   start-date
+               :type     integer)
+   (end-date   :initarg  :end-date
+               :initform nil
+               :reader   end-date
+               :type     (or null integer))))
+
+
+
+(defclass query ()
+  ((owner      :initarg  :owner
+               :initform (error "A query needs a :owner")
+               :reader   owner
+               :type     user
+               :documentation "Who made the request and will receive the results.")
+   (sender     :initarg  :sender
+               :initform nil
+               :reader   sender
+               :type     (or null string))
+   (channel    :initarg  :channel
+               :initform nil
+               :reader   channel
+               :type     (or null channel))
+   (start-date :initarg  :start-date
+               :initform nil
+               :reader   start-date
+               :type     (or null integer))
+   (end-date   :initarg  :end-date
+               :initform nil
+               :reader   end-date
+               :type     (or null integer))
+   (criteria   :initarg  :criteria
+               :initform nil
+               :accessor criteria)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defvar *servers* '())
+(defvar *database* #P"/data/databases/irc/")
+(defvar *external-format* :utf-8)
+;; /data/databases/irc
+;; `-- servers
+;;     `-- irc.freenode.org
+;;         |-- channels
+;;         |   `-- #lisp
+;;         |       `-- 201601.log
+;;         `-- users
+;;             `-- pjb.sexp
+
+(defun load-servers ()
+  (mapcar (lambda (pathname)
+            (make-instance 'server :hostname (first (last (pathname-directory pathname)))))
+          (directory (merge-pathnames (make-pathname :directory '(:relative "servers" :wild)
+                                                     :name nil :type nil :version nil
+                                                     :defaults *database*)
+
+                                      *database*))))
+
+(defun load-channels-of-server (server)
+  (dolist (pathname
+           (directory (merge-pathnames (make-pathname :directory (list :relative
+                                                                       "servers" (hostname server)
+                                                                       "channels" :wild)
+                                                      :name nil :type nil :version nil
+                                                      :defaults *database*)
+                                       *database*)))
+    (make-instance 'channel
+                   :server server
+                   :name (first (last (pathname-directory pathname))))))
+
+(defun load-server-database ()
+  (setf *servers* (load-servers))
+  (dolist (server *servers*)
+    (load-channels-of-server server)))
+
+(defun create-server (hostname)
+  (check-type hostname string)
+  (ensure-directories-exist
+   (merge-pathnames (make-pathname :directory (list :relative
+                                                    "servers" hostname
+                                                    "channels")
+                                   :name "dummy" :type "dummy" :version nil
+                                   :defaults *database*)
+                    *database*))
+  (make-instance 'server :hostname hostname))
+
+(defmethod create-channel ((server server) (name string))
+  (assert (char= #\# (aref name 0)))
+  (ensure-directories-exist
+   (merge-pathnames (make-pathname :directory (list :relative
+                                                    "servers" hostname
+                                                    "channels" name)
+                                   :name "dummy" :type "dummy" :version nil
+                                   :defaults *database*)
+                    *database*))
+  (make-instance 'channel :server server :name name))
+
+(defmethod save-user ((user user))
+  (let ((pathname (merge-pathnames (make-pathname :directory (list :relative
+                                                                   "servers" (hostname (server user))
+                                                                   "users")
+                                                  :name (name user) :type "sexp" :version nil
+                                                  :defaults *database*)
+                                   *database*)))
+    (with-open-file (out pathname
+                         :direction :output
+                         :if-does-not-exist :create
+                         :if-exists :supersede)
+      (print (list :name (name user) :password (password user)) out)
+      (terpri out)))
+  user)
+
+(defmethod create-user ((server server) (name string))
+  (assert (char/= #\# (aref name 0)))
+  (let ((pathname (merge-pathnames (make-pathname :directory (list :relative
+                                                           "servers" hostname
+                                                           "users")
+                                          :name name :type "sexp" :version nil
+                                          :defaults *database*)
+                                   *database*)))
+    (ensure-directories-exist pathname)
+    (let ((user (make-instance 'user :server sever :name name)))
+      (save-user user))))
+
+(defmethod log-file ((channel channel))
+  (merge-pathnames (make-pathname :directory (list :relative
+                                                   "servers" (hostname (server channel))
+                                                   "channels" (name channel))
+                                  :name (format nil "~6,'0D" (log-month channel)) :type "log" :version nil
+                                  :defaults *database*)
+                   *database*))
+
+(defmethod ensure-log-stream ((channel channel) time)
+  (multiple-value-bind (se mi ho da mo ye) (decode-universal-time time 0)
+    (let ((month (+ (* ye 100) mo)))
+      (when (/= month (log-month channel))
+        (when (log-stream channel)
+          (close (log-stream channel))
+          (setf (log-stream channel) nil))
+        (setf (log-month channel) month))
+      (unless (log-stream channel)
+        (setf (log-stream channel) (open (log-file channel)
+                                         :external-format *external-format*
+                                         :direction :output
+                                         :if-does-not-exist :create
+                                         :if-exists :append)))))
+  (log-stream channel))
+
+
+(defmethod write-message ((channel channel) (message message))
+  (ensure-log-stream (received-time message))
+  (prin1 (list :source (source message)
+               :user (user message)
+               :host (host message)
+               :command (command message)
+               :arguments (arguments message)
+               :received-time (received-time message)
+               :raw-message-string (raw-message-string message))
+         (log-stream channel))
+  (terpri (log-stream channel))
+  message)
+
+(defmethod create-message ((channel channel) (ircmsg irc-message))
+  (write-message channel
+                 (make-instance 'message
+                                :source (source ircmsg)
+                                :user (user ircmsg)
+                                :host (host ircmsg)
+                                :command (command ircmsg)
+                                :arguments (arguments ircmsg)
+                                :received-time (received-time ircmsg)
+                                :raw-message-string (raw-message-string ircmsg))))
+
+;; (setf (log-month  (first (channels (first *servers*)))) 201601)
+;; (log-file (first (channels (first *servers*))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defstruct worker
   input-queue
   send
@@ -134,7 +412,7 @@ Licensed under the AGPL3.
 (defvar *sender*)
 (defvar *logger*)
 
-(defun sender (recipient text)
+(defun send (recipient text)
   (privmsg *connection* recipient text))
 
 (defun say (&rest args)
@@ -171,11 +449,31 @@ Licensed under the AGPL3.
 (defun logger (message)
   (format t "~&Logged: ~A~%" message))
 
+#-(and) ((rights
+          
+          (query criterial)
+          (create-log server #name)
+          (create-server hostname)
+          )
+         (commands
+
+          (register password email) ; -> (create-user server name password email)
+          (identify password)       ; -> (validate-user user password)
+          (send-pass [nickname]) ; -> (send-password-change-key user) ; NY
+          (set-pass nickname key password) ; -> (set-password user key password) ; NY
+          (list-logs)                      ; -> (list-logs user)
+
+          (query criteria)              
+          (create-log #name [start-date [end-date]])  ; -> (create-channel server #name) (create-log-request channel user start-date end-date)
+          (create-server hostname [botil-nick]) ; (create-server hostname botil-nick) --> actual-botil-nick
+
+          ))
 (defun command-processor (sender command)
-  (let ((words (split-sequence #\space command :remove-empty-subseqs t)))
+  (let ((words (split-sequence #\space command :remove-empty-subseqs t))
+        (commands '(help version uptime sources)))
     (scase (first words)
            (("help")
-            (answer sender "Available commands: help version uptime sources"))
+            (answer sender "Available commands: ~(~{~A~^, ~}~)." commands))
            (("version")
             (answer sender "Version: ~A" *version*))
            (("uptime")
@@ -188,8 +486,7 @@ Licensed under the AGPL3.
                        (reconnect))
                 (answer sender "I'm not in the mood.")))
            (otherwise                   ; ("sources")
-            (answer sender "I'm an IRC bot forwarding HackerNews news; ~
-                          under AGPL3 license, my sources are available at <~A>."
+            (answer sender "I'm an IRC log bot, under AGPL3 license, my sources are available at <~A>."
                     *sources-url*)))))
 
 (defun botil (command)
