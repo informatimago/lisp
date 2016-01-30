@@ -1173,7 +1173,7 @@ there are fewer distinct representations, the following rules apply:
                         :collect `(,type ,@body))))))
 
 
-(defmacro float-typecase (expression &rest clauses)
+(defmacro float-typecase (expression &body clauses)
   "
 EXPRESSION: an expression evaluate to some value.
 
@@ -1195,7 +1195,7 @@ DO:        Expands to a TYPECASE where only the clauses with unique
   (generate-distinct-float-types-typecase 'typecase expression clauses))
 
 
-(defmacro float-etypecase (expression &rest clauses)
+(defmacro float-etypecase (expression &body clauses)
   "
 EXPRESSION: an expression evaluate to some value.
 
@@ -1217,7 +1217,7 @@ DO:        Expands to a ETYPECASE where only the clauses with unique
   (generate-distinct-float-types-typecase 'etypecase expression clauses))
 
 
-(defmacro float-ctypecase (expression &rest clauses)
+(defmacro float-ctypecase (expression &body clauses)
   "
 EXPRESSION: an expression evaluate to some value.
 
