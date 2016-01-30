@@ -725,7 +725,7 @@ exclusive, but one must be given when :arguments is not given.")
   `(progn
      (defclass ,cl-name (,@optional-superclasses statement)
        (,@(mapcar (lambda (field)
-                      `(,field :initarg ,(make-keyword field) :accessor ,field))
+                      `(,field :initarg ,(keywordize field) :accessor ,field))
                   fields)
         (c-keyword :reader c-keyword :allocation :class :initform ,c-keyword)))
 
@@ -1020,7 +1020,7 @@ exclusive, but one must be given when :arguments is not given.")
      (defclass ,name (declaration)
        (,@(mapcar (lambda (field)
                       `(,field
-                        :initarg ,(make-keyword field)
+                        :initarg ,(keywordize field)
                         :accessor ,field))
                   fields)))
      
@@ -1193,7 +1193,7 @@ exclusive, but one must be given when :arguments is not given.")
        (defclass ,name (declarator)
          (,@(mapcar (lambda (field)
                         `(,field
-                          :initarg ,(make-keyword field)
+                          :initarg ,(keywordize field)
                           :accessor ,field))
                     fields)))
      
@@ -1226,7 +1226,7 @@ exclusive, but one must be given when :arguments is not given.")
        (defun ,name  ,lambda-list
          (make-instance ',name
            ,@(loop :for field :in fields
-                :nconc (list (make-keyword field) field))))
+                :nconc (list (keywordize field) field))))
     
        ',name)))
 

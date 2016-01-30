@@ -78,9 +78,8 @@
                  :initform ""))
   (:default-initargs :line 0))
 
-(defmethod print-object ((self buffered-scanner) out)
-  (print-parseable-object (self out :type t :identity t)
-                          line column current-token buffer current-text source))
+(defmethod slots-for-print :append ((self token))
+  (extract-slots self '(buffer current-text)))
 
 (defmethod scanner-current-token ((scanner buffered-scanner))
   (token-kind (call-next-method)))

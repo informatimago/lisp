@@ -11,6 +11,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2016-01-30 <PJB> SCANNER and TOKEN now inherit from SLOTED-OBJECT.
 ;;;;    2012-02-07 <PJB> Added a TOKEN class.
 ;;;;    2005-09-01 <PJB> Made use of iso6429.
 ;;;;    2004-10-10 <PJB> Created.
@@ -62,7 +63,7 @@
   (:method ((token t)) 0))
 
 
-(defclass token ()
+(defclass token (sloted-object)
   ((kind       :initarg :kind
                :accessor token-kind
                :initform nil
@@ -82,9 +83,9 @@
   (:documentation "A syntactic element."))
 
 
-(defmethod print-object ((token token) stream)
-  (print-parseable-object (token stream :type t :identity t)
-                          kind text column line))
+(defmethod slots-for-print :append ((self token))
+  (extract-slots self '(kind text column line)))
+
 
 
 ;;----------------------------------------------------------------------
@@ -169,7 +170,7 @@
   (:documentation "The last token read."))
 
 
-(defclass scanner ()
+(defclass scanner (sloted-object)
   ((source               :initarg       :source
                          :reader        scanner-source
                          :documentation "The source can be a PEEK-STREAM, a STREAM, or a STRING.")
@@ -277,10 +278,9 @@ RETURN:       (scanner-current-token scanner).
   (declare (ignore args))
   (setf (scanner-source scanner) (slot-value scanner 'source)))
 
+(defmethod slots-for-print :append ((self scanner))
+  (extract-slots self '(line column current-token source)))
 
-(defmethod print-object ((self scanner) out)
-  (print-parseable-object (self out :type t :identity t)
-                          line column current-token source))
 
 
 

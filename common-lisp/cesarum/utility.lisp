@@ -93,13 +93,14 @@
    "SAFE-APPLY" "WHILE" "UNTIL" "FOR"
    ;; 7 - OBJECTS
    "DEFINE-STRUCTURE-CLASS" "DEFINE-WITH-OBJECT" "PJB-DEFCLASS"
-   "PRINT-PARSEABLE-OBJECT"
+   "PRINT-PARSEABLE-OBJECT" "OBJECT-IDENTITY"
+   "SLOTED-OBJECT" "SLOTS-FOR-PRINT" "EXTRACT-SLOTS"
    ;; 8 - STRUCTURES
    "DEFINE-WITH-STRUCTURE"
    ;; 9 - CONDITIONS
    "HANDLING-ERRORS"
    ;; 10 - SYMBOLS
-   "MAKE-KEYWORD" "CONC-SYMBOL"
+   "KEYWORDIZE" "CONC-SYMBOL"
    ;; 12 - NUMBERS
    "SIGN"
    "DISTINCT-FLOAT-TYPES" "FLOAT-TYPECASE" "FLOAT-CTYPECASE" "FLOAT-ETYPECASE"
@@ -623,7 +624,6 @@ The initarg an accessor are the same keyword built from the name.
       (car option)
       nil))
 
-(declaim (ftype (function ((or string symbol character)) symbol) make-keyword))
 
 (defmacro define-structure-class (name-and-options &rest doc-and-slots)
   "
@@ -716,7 +716,7 @@ DO:     Define a class implementing the structure API.
                           (lambda (s p)
                             `(when ,p
                                (push ,s args)
-                               (push ,(make-keyword s) args)))
+                               (push ,(keywordize s) args)))
                           slot-names preds)
                        (apply (function make-instance) ',name args))))
                 (let ((cname  (first  constructor))
@@ -732,7 +732,7 @@ DO:     Define a class implementing the structure API.
                     (make-instance ',name
                                    ,@(mapcan
                                       (lambda (slot accessor)
-                                        (list (make-keyword slot) (list accessor 'self)))
+                                        (list (keywordize slot) (list accessor 'self)))
                                       slot-names accessors)))))
        ,@(when predicate
            (list `(defmethod ,predicate (object)
@@ -760,13 +760,65 @@ DO:       Define a macro: (WITH-{CLASS-NAME} object &body body)
 
 
 
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Printing objects.
 ;;;
-;;;
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (declaim (declaration stepper))
+(declaim (ftype (function ((or string symbol character)) symbol) keywordize))
+
+;;;
+;;; We have two way to print easily objects:
+;;;
+;;; 1- inherit from the SLOTED-OBJECT mixin class, and define a
+;;;    SLOTS-FOR-PRINT method on your classes.
+;;;
+;;; 2- define a PRINT-OBJECT method on your classes using the macro
+;;;    PRINT-PARSEABLE-OBJECT.
+;;;
+
+(defclass sloted-object ()
+  ()
+  (:documentation "
+This is a mixin class providing generic SLOTS and PRINT-OBJECT
+methods.
+"))
+
+(defgeneric extract-slots (object slots)
+  (:documentation "
+RETURN:         A plist slot values.
+OBJECT:         A lisp object.
+SLOTS:          A list of slot names.
+")
+  (:method (object slots)
+    (assert (every (function symbolp) slots) (slots))
+    (loop
+      :for slot :in slots
+      :collect (keywordize slot)
+      :collect (if (slot-boundp object slot)
+                   (slot-value object slot)
+                   '#:unbound))))
+
+(defgeneric slots-for-print (object)
+  (:method-combination append)
+  (:documentation "
+This generic function collects a p-list describing the slots of the OBJECT.
+The generic function EXTRACT-SLOTS can be used to build this p-list.
+The APPEND method combination automatically appends the lists provided
+by the SLOTS-FOR-PRINT methods on the various subclasses.
+")
+  (:method append ((object sloted-object))
+    '()))
+
+(defmethod print-object ((self sloted-object) stream)
+  (declare (stepper disable))
+  (print-unreadable-object (self stream :identity t :type t)
+    (format stream "~{~S~^ ~}" (slots-for-print self)))
+  self)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun object-identity (object)
   "
@@ -781,7 +833,6 @@ RETURN:         A string containing the object identity as printed by
             (with-output-to-string (stream)
               (print-unreadable-object (object stream :type nil :identity t)))))
       (subseq ident 3 (1- (length ident))))))
-
 
 (defun call-print-parseable-object (object stream type identity thunk)
   "
@@ -801,25 +852,22 @@ SEE:            PRINT-PARSEABLE-OBJECT
                             (list :id (object-identity object))))) 
           object))))
 
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defun extract-slots (ovar slots)
-    "
+(defun gen-extract-slots (ovar slots)
+  "
 SEE:            PRINT-PARSEABLE-OBJECT
 RETURN:         A form building a plist of slot values.
 "
-    (cons 'list
-          (loop
-            :for slot :in slots
-            :collect  (if (symbolp slot)
-                          (intern (symbol-name slot) "KEYWORD")
-                          `(quote ,(first slot)))
-            :collect  (if (symbolp slot)
-                          `(if (slot-boundp ,ovar ',slot)
-                               (slot-value ,ovar ',slot)
-                               '#:unbound)
-                          `(ignore-errors ,(second slot)))))))
-
+  (cons 'list
+        (loop
+          :for slot :in slots
+          :collect  (if (symbolp slot)
+                        (keywordize slot)
+                        `(quote ,(first slot)))
+          :collect  (if (symbolp slot)
+                        `(if (slot-boundp ,ovar ',slot)
+                             (slot-value ,ovar ',slot)
+                             '#:unbound)
+                        `(ignore-errors ,(second slot))))))
 
 (defmacro print-parseable-object ((object stream &key (type t) identity) &rest slots)
   "
@@ -844,7 +892,7 @@ IDENTITY:       If true, the object identity is printed as a string in
 
 SLOTS:          A list of either a symbol naming the slot, or a list
                 (name expression), name being included quoted in the
-                list, and the expression being evalauted to obtain the
+                list, and the expression being evaluated to obtain the
                 value.
 
 RETURN:         The object that bas been printed (so that you can use
@@ -860,13 +908,13 @@ EXAMPLE:        (print-parseable-object (object stream :type t :identity t)
           `(call-print-parseable-object ,object ,stream ,type ,identity
                                         (lambda (,object)
                                           (declare (ignorable ,object) (stepper disable))
-                                          ,(extract-slots object slots)))
+                                          ,(gen-extract-slots object slots)))
           (destructuring-bind (ovar oval) object
             `(let ((,ovar ,oval))
                (call-print-parseable-object ,ovar ,stream ,type ,identity
                                             (lambda (,ovar)
                                               (declare (ignorable ,ovar) (stepper disable))
-                                              ,(extract-slots object slots))))))))
+                                              ,(gen-extract-slots object slots))))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -992,11 +1040,12 @@ DO:       Execute the BODY with a handler for CONDITION and
 ;; 10 - SYMBOLS
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun make-keyword (sym)
+(defun keywordize (string-designator)
   "
 RETURN: A new keyword with SYM as name.
 "
-  (intern (string sym) (find-package "KEYWORD")))
+  (intern (string string-designator)
+          (load-time-value (find-package "KEYWORD"))))
 
 
 (defun conc-symbol (&rest args)

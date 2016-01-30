@@ -63,7 +63,7 @@ all written in 100% conforming Common Lisp.
   :licence "AGPL3"
   ;; component attributes:
 
-  :version "1.7.0"
+  :version "1.8.0"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Autumn 2015")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.cesarum/")

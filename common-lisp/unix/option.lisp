@@ -35,9 +35,11 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
 
+
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.UNIX.OPTION"
   (:use "COMMON-LISP"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
   (:export "PNAME" "*PROGRAM-NAME*" "*DEBUG-OPTIONS*"
            "REDIRECTING-STDOUT-TO-STDERR"
            "DEFINE-OPTION"
@@ -321,9 +323,6 @@ the main script  (setf script:*program-name* (script:pname))
                                rest
                                (nreverse keys)))))
 
-
-  (defun keywordize (string-designator)
-    (intern (string string-designator) (load-time-value (find-package "KEYWORD"))))
 
 
   (defun q&d-arguments (mandatories optionals rest keys)

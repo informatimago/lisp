@@ -220,12 +220,12 @@ DO:     Define a class implementing the structure API.
                ,(mapcar
                  (lambda (slot accessor)
                    (if (symbolp slot)
-                       `(,slot :initarg   ,(make-keyword slot)
+                       `(,slot :initarg   ,(keywordize slot)
                                :accessor  ,(push1 accessor)
                                ,@ (unless unbound 
                                     `(:initform  nil)))
                        (let* ((name        (first slot))
-                              (initarg     (make-keyword name))
+                              (initarg     (keywordize name))
                               (initform-p  (cdr slot))
                               (initform    (car initform-p))
                               (type-p      (member :type (cddr slot)))
@@ -283,7 +283,7 @@ DO:     Define a class implementing the structure API.
                               (make-instance ',name
                                   ,@(mapcan
                                      (lambda (slot accessor)
-                                       (list (make-keyword slot) (list accessor 'self)))
+                                       (list (keywordize slot) (list accessor 'self)))
                                      slot-names accessors)))))
              ,@(when predicate
                      (list `(defmethod ,(push1 predicate) (object)

@@ -27,6 +27,8 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2016-01-30 <PJB> Moved SLOTED-OBJECT to UTLITY; renamed SLOTS to
+;;;;                     SLOTS-FOR-PRINT, use EXTRACT-SLOTS.
 ;;;;    2015-11-12 <PJB> Created.
 ;;;;BUGS
 ;;;;    Currently only implemented on CCL using CCL:RUN-PROGRAM.
@@ -1031,31 +1033,6 @@ If the backend is not open, nothing is done.
 
 ;;;----------------------------------------------------------------------------------------
 
-(defclass sloted-object ()
-  ()
-  (:documentation "
-This is a mixin class providing generic SLOTS and PRINT-OBJECT
-methods.
-"))
-
-(defgeneric slots (object)
-  (:method-combination append)
-  (:documentation "
-This generic function collects a p-list of all the slots that should
-be displayed by PRINT-OBJECT.  The APPEND method combination
-automatically appends the lists provided by the SLOTS methods on
-the various subclasses.
-")
-  (:method append ((self sloted-object))
-    '()))
-
-(defmethod print-object ((self sloted-object) stream)
-  (print-unreadable-object (self stream :identity t :type t)
-    (format stream "~{~S~^ ~}" (slots self)))
-  self)
-
-;;;----------------------------------------------------------------------------------------
-
 (defvar *last-object-id* 0)
 
 (defclass timer (sloted-object)
@@ -1067,8 +1044,8 @@ the various subclasses.
                 :type 'double
                 :reader duration-ms)))
 
-(defmethod slots append ((self timer))
-  (list :duration-ms (duration-ms self)))
+(defmethod slots-for-print append ((self timer))
+  (extract-slots '(duration-ms)))
 
 (defmethod initialize-instance :before ((self timer) &key &allow-other-keys)
   (open-backend))
@@ -1116,16 +1093,8 @@ the various subclasses.
   (object.set-line-width object (line-width object))
   (object.set-visible    object (visible    object)))
   
-(defmethod slots append ((self object))
-  (list :id (id self)
-        :x (x self)
-        :y (y self)
-        :width (width self)
-        :height (height self)
-        :color (color self)
-        :fill-color (fill-color self)
-        :filled (filled self)
-        :visible (visible self)))
+(defmethod slots-for-print append ((self object))
+  (extract-slots '(id x y width height color fill-color filled visible)))
 
 (defmethod print-object ((self object) stream)
   (print-unreadable-object (self stream :identity t :type t)
@@ -1309,8 +1278,8 @@ the various subclasses.
 (defclass 3drect (object) 
   ((raised :initarg :raised :type boolean   :reader raised)))
 
-(defmethod slots append ((self 3drect))
-  (list :raised (raised self)))
+(defmethod slots-for-print append ((self 3drect))
+  (extract-slots '(raised)))
 
 (defmethod initialize-instance :after ((self 3drect) &key &allow-other-keys)
   (3drect.create self (width self) (height self) (raised self))
@@ -1325,8 +1294,8 @@ the various subclasses.
 (defclass round-rect (object)
   ((corner :initarg :corner :initform *default-corner* :type double :reader corner)))
 
-(defmethod slots append ((self round-rect))
-  (list :corner (corner self)))
+(defmethod slots-for-print append ((self round-rect))
+  (extract-slots '(corner)))
 
 (defmethod initialize-instance :after ((self round-rect) &key &allow-other-keys)
   (round-rect.create self (width self) (height self) (corner self))
@@ -1436,9 +1405,8 @@ the various subclasses.
   ((start :initarg :start :type double :reader start)
    (sweep :initarg :sweep :type double :reader sweep)))
 
-(defmethod slots append ((self arc))
-  (list :start (start self)
-        :sweep (sweep self)))
+(defmethod slots-for-print append ((self arc))
+  (extract-slots '(start sweep)))
 
 (defmethod initialize-instance :after ((self arc) &key &allow-other-keys)
   (arc.create self (width self) (height self)
@@ -1524,10 +1492,8 @@ the various subclasses.
    (cx       :initform 0.0d0               :type double :reader cx)
    (cy       :initform 0.0d0               :type double :reader cy)))
 
-(defmethod slots append ((self polygon))
-  (list :cx (cx self)
-        :cy (cy self)
-        :vertices (vertices self)))
+(defmethod slots-for-print append ((self polygon))
+  (extract-slots '(cx cy vertices)))
 
 (defmethod initialize-instance :after ((self polygon) &key vertices &allow-other-keys)
   (polygon.create self)
@@ -1640,8 +1606,8 @@ in teh compound-mixin and have both TOP-COMPOUND and COMPOUND inherit
 from OBJECT and COMPOUND-MIXIN.
 "))
 
-(defmethod slots append ((self compound-mixin))
-  (list :components (components self)))
+(defmethod slots-for-print append ((self compound-mixin))
+  (extract-slots '(components)))
 
 (defgeneric compound-add (self other)
   (:method   ((self compound-mixin) other)
@@ -1698,11 +1664,8 @@ from OBJECT and COMPOUND-MIXIN.
    (ascent  :initarg :ascent  :type double :reader ascent)
    (descent :initarg :descent :type double :reader descent)))
 
-(defmethod slots append ((self label))
-  (list :font (font self)
-        :ascent (ascent self)
-        :descent (descent self)
-        :text (text self)))
+(defmethod slots-for-print append ((self label))
+  (extract-slots '(font ascent descent text)))
 
 (defmethod initialize-instance :after ((self label) &key &allow-other-keys)
   (label.create self (text self))
@@ -1743,8 +1706,8 @@ from OBJECT and COMPOUND-MIXIN.
 (defclass image (object)
   ((filename :initarg :filename :type string :reader filename)))
 
-(defmethod slots append ((self image))
-  (list :filename (filename self)))
+(defmethod slots-for-print append ((self image))
+  (extract-slots '(filename)))
 
 (defmethod initialize-instance :after ((self image) &key &allow-other-keys)
   (let ((size (image.create self (filename self))))
@@ -1761,9 +1724,8 @@ from OBJECT and COMPOUND-MIXIN.
 (defmethod initialize-instance :after ((self interactor) &key &allow-other-keys)
   (register self))
 
-(defmethod slots append ((self interactor))
-  (list :action-command (action-command self)
-        :label (label self)))
+(defmethod slots-for-print append ((self interactor))
+  (extract-slots '(action-command label)))
 
 (defgeneric set-action-command (self command)
   (:method   ((self interactor) command)
@@ -1812,10 +1774,8 @@ from OBJECT and COMPOUND-MIXIN.
    (maximum :initarg :max   :type int :reader maximum)
    (value   :initarg :value :type int)))
 
-(defmethod slots append ((self slider))
-  (list :min (minimum self)
-        :value (slot-value self 'value)
-        :max (maximum self)))
+(defmethod slots-for-print append ((self slider))
+  (extract-slots '(minimum value maximum)))
 
 (defmethod initialize-instance :after ((self slider) &key &allow-other-keys)
   (slider.create self (minimum self) (maximum self) (slot-value self 'value))
@@ -1836,8 +1796,8 @@ from OBJECT and COMPOUND-MIXIN.
 (defclass text-field (interactor)
   ((nchars :initarg :nchars :type int :reader nchars)))
 
-(defmethod slots append ((self text-field))
-  (list :nchars (nchars self)))
+(defmethod slots-for-print append ((self text-field))
+  (extract-slots '(nchars)))
 
 (defmethod initialize-instance :after ((self text-field) &key &allow-other-keys)
   (text-field.create self (nchars self))
@@ -1864,9 +1824,8 @@ from OBJECT and COMPOUND-MIXIN.
                   :type string
                   :reader selected-item)))
 
-(defmethod slots append ((self chooser))
-  (list :items (items self)
-        :selected-item (slot-value self 'selected-item)))
+(defmethod slots-for-print append ((self chooser))
+  (extract-slots '(items selected-item)))
 
 (defmethod initialize-instance :after ((self chooser) &key items &allow-other-keys)
   (chooser.create self)
@@ -1898,9 +1857,8 @@ from OBJECT and COMPOUND-MIXIN.
    (resizable :initarg :resizable :initform nil :type boolean :reader resizable)
    (top-compound :reader  top-compound)))
 
-(defmethod slots append ((self window))
-  (list :title (title self)
-        :top (top-compound self)))
+(defmethod slots-for-print append ((self window))
+  (extract-slots '(title top-compound)))
 
 (defmethod initialize-instance :after ((self window) &key components resizable &allow-other-keys)
   (setf (slot-value self 'top-compound)
