@@ -31,7 +31,8 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
-
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 
 ;; We define an internal package that uses COMMON-LISP to easily
 ;; define functions and macros, since the CL-STEPPER package shadows
@@ -40,7 +41,6 @@
 ;;
 ;; The CL-STEPPER package only contains those shadowed macro
 ;; definitions.
-
 
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.LISP.STEPPER.INTERNAL"
   

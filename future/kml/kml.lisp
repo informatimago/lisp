@@ -1,3 +1,5 @@
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 (ql:quickload :xmls)
 (ql:quickload :split-sequence)
 (load #P"/home/pjb/src/public/lisp/future/xmls-tools.lisp")

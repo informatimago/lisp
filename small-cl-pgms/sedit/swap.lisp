@@ -1,3 +1,5 @@
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 
 (progn   (defmacro comment (&rest ignore)
            (declare (ignore ignore))

@@ -1,49 +1,53 @@
-;;****************************************************************************
-;;FILE:              geek-day.lisp
-;;LANGUAGE:          Common-Lisp
-;;SYSTEM:            UNIX
-;;USER-INTERFACE:    UNIX
-;;DESCRIPTION
-;;    This programs plays geek-day
-;;    http://ars.userfriendly.org/cartoons/?id=20021215
-;;USAGE
-;;    
-;;AUTHORS
-;;    <PJB> Pascal J. Bourguignon
-;;MODIFICATIONS
-;;    2002-12-15 <PJB> Created.
-;;BUGS
-;;LEGAL
-;;    Copyright Pascal J. Bourguignon 2002 - 2002
-;;
-;;    This script is free software; you can redistribute it and/or
-;;    modify it under the terms of the GNU  General Public
-;;    License as published by the Free Software Foundation; either
-;;    version 2 of the License, or (at your option) any later version.
-;;
-;;    This script is distributed in the hope that it will be useful,
-;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
-;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;;    General Public License for more details.
-;;
-;;    You should have received a copy of the GNU General Public
-;;    License along with this library; see the file COPYING.LIB.
-;;    If not, write to the Free Software Foundation,
-;;    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-;;****************************************************************************
+;;;;****************************************************************************
+;;;;FILE:              geek-day.lisp
+;;;;LANGUAGE:          Common-Lisp
+;;;;SYSTEM:            UNIX
+;;;;USER-INTERFACE:    UNIX
+;;;;DESCRIPTION
+;;;;    This programs plays geek-day
+;;;;    http://ars.userfriendly.org/cartoons/?id=20021215
+;;;;USAGE
+;;;;    
+;;;;AUTHORS
+;;;;    <PJB> Pascal J. Bourguignon
+;;;;MODIFICATIONS
+;;;;    2002-12-15 <PJB> Created.
+;;;;BUGS
+;;;;LEGAL
+;;;;    Copyright Pascal J. Bourguignon 2002 - 2002
+;;;;
+;;;;    This script is free software; you can redistribute it and/or
+;;;;    modify it under the terms of the GNU  General Public
+;;;;    License as published by the Free Software Foundation; either
+;;;;    version 2 of the License, or (at your option) any later version.
+;;;;
+;;;;    This script is distributed in the hope that it will be useful,
+;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;;;;    General Public License for more details.
+;;;;
+;;;;    You should have received a copy of the GNU General Public
+;;;;    License along with this library; see the file COPYING.LIB.
+;;;;    If not, write to the Free Software Foundation,
+;;;;    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+;;;;****************************************************************************
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 
-(define-package com.informatimago.common-lisp.geek-day
-  (:nicknames geek-day)
+(ql:quickload "split-sequence")
+
+(defpackage "COM.INFORMATIMAGO.COMMON-LISP.GEEK-DAY"
+  (:nicknames "GEEK-DAY")
+  (:use "COMMON-LISP" "SPLIT-SEQUENCE")
   (:documentation "This programs plays geek-day.
     <http://ars.userfriendly.org/cartoons/?id=20021215>")
-  (:from common-lisp :import :all)
   (:export
-   play-geek-day main
+   "PLAY-GEEK-DAY" "MAIN"
    ;; low-level:
-   player lost update-sanity update-popularity have-breakfast
-   have-shower choose-backward-or-forward randomizer square-list
-   geek-day  initialize play )
-  );;COM.INFORMATIMAGO.COMMON-LISP.GEEK-DAY
+   "PLAYER" "LOST" "UPDATE-SANITY" "UPDATE-POPULARITY" "HAVE-BREAKFAST"
+   "HAVE-SHOWER" "CHOOSE-BACKWARD-OR-FORWARD" "RANDOMIZER" "*SQUARE-LIST*"
+   "GEEK-DAY"  "INITIALIZE" "PLAY"))
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.GEEK-DAY")
 
 
 (defgeneric lost (a))
@@ -58,9 +62,8 @@
 (defgeneric initialize (a))
 
 
-(defclass player nil
-  (
-   (name
+(defclass player ()
+  ((name
     :initform "Unnamed Player"
     :initarg :name
     :accessor name
@@ -89,15 +92,13 @@
     :initarg :have-had-shower
     :accessor have-had-shower
     :type (or nil t)
-    :documentation "This player have had a shower.")
-   )
-  (:documentation "A Player at Geek-Day."));;PLAYER
+    :documentation "This player have had a shower."))
+  (:documentation "A Player at Geek-Day."))
 
 
 (defmethod lost ((self player))
   (or (<= (popularity self) 0)
-      (<= (sanity     self) 0))
-  );;LOST
+      (<= (sanity     self) 0)))
 
 
 (defmethod update-sanity ((self player) increment)
@@ -105,8 +106,7 @@
   (format t "    Your sanity is ~[increased~;decreased~] by ~A.~%"
           (if (< increment 0) 1 0) (abs increment))
   (if (<=  (sanity self) 0)
-      (format t "    YOU GO POSTAL AND LOSE!~%~%"))
-  );;UPDATE-SANITY
+      (format t "    YOU GO POSTAL AND LOSE!~%~%")))
 
 
 (defmethod update-popularity ((self player) increment)
@@ -114,18 +114,15 @@
   (format t "    Your popularity is ~[increased~;decreased~] by ~A.~%"
           (if (< increment 0) 1 0) (abs increment))
   (if (<= (popularity self) 0)
-      (format t "    YOU'RE FIRED!~%~%"))
-  );;UPDATE-POPULARITY
+      (format t "    YOU'RE FIRED!~%~%")))
 
 
 (defmethod have-breakfast ((self player))
-  (setf (have-had-breakfast self) t)
-  );;HAVE-BREAKFAST
+  (setf (have-had-breakfast self) t))
 
 
 (defmethod have-shower ((self player))
-  (setf (have-had-shower self) t)
-  );;HAVE-SHOWER
+  (setf (have-had-shower self) t))
 
 
 (defmethod choose-backward-or-forward ((self player))
@@ -137,48 +134,46 @@
        (string-equal rep "backward"))
     (format t "~%Becareful! Next time, pop-1!~&~A, ~
                please choose backward or forward? "
-            (name self)))
-  );;CHOOSE-BACKWARD-OR-FORWARD
-
+            (name self))))
 
   
 (defvar random-state (make-random-state t))
 
 (defun randomizer ()
-  (1+ (random 6 random-state))
-  );;RANDOMIZER
+  (1+ (random 6 random-state)))
 
 
 
 
 ;;("title" (before) (after))
 
-(defvar square-list
+(defparameter *square-list*
   '(
     ("Starting blocks."
      nil
      (lambda (square dice player)
+       (declare (ignore player))
        (format t "~&    Therefore ~A."
                (if (<= 5 dice) "get out of bed" "keep sleeping"))
        (if (<= 5 dice)
            (+ dice square)
-         square)))
+           square)))
 
     ("Ungum your eyes."            ( (popularity +1) ) nil)
     ("Get a hot shower."           ( (popularity +3)
-                                     (lambda (player)
-                                       (have-shower player)) ) nil)
+                                    (lambda (player)
+                                      (have-shower player)) ) nil)
     ("Depilate."                   ( (popularity +1) ) nil)
     ("Get a breakfast."            ( (sanity +3)
-                                     (lambda (player)
-                                       (have-breakfast player)) ) nil)
+                                    (lambda (player)
+                                      (have-breakfast player)) ) nil)
     ("Catch the bus."              ( (sanity -1) (popularity -1) ) nil)
     ("Oooh... Brain Engages."
      nil
      (lambda (square dice player)
        (if (choose-backward-or-forward player)
            (- square dice)
-         (+ square dice))))
+           (+ square dice))))
     ("Arrive \"late\"."            ( (popularity +1) (sanity -1) ) nil)
     ("First problem of the day."   ( (popularity -2) (sanity -3) ) nil)
     ("Called into meeting."        ( (sanity -4) ) nil)
@@ -191,15 +186,15 @@
     ("Co-worker gives you the blame."
      ( (popularity +2) ) nil)
     ("Nap."                        ( (sanity +4) (popularity -2) ) nil)
-    ("Wooo! A thouht!"
+    ("Wooo! A thought!"
      nil
      (lambda (square dice player)
        (if (choose-backward-or-forward player)
            (- square dice)
-         (+ square dice))))
+           (+ square dice))))
     ("Chair breaks."               ( (popularity +2) (sanity -1) ) nil)
     ("Machine locks up."           ( (sanity -2) ) nil)
-    ("Power outage."                   ( "It's okay, you're safe here." ) nil)
+    ("Power outage."               ( "It's okay, you're safe here." ) nil)
     ("Munchies!"                   ( (lambda (player)
                                        (unless (have-had-breakfast player)
                                          (update-sanity player -2))) ) nil)
@@ -210,14 +205,13 @@
     ("Collapse on the couch at home."
      ("It's over. Start again tomorrow.")
      (lambda (square dice player)
-       0))
-    ));;SQUARE-LIST
+       (declare (ignore square dice player))
+       0))))
 
 
 (defclass geek-day  nil
-  (
-   (board
-    :initform (make-array (length square-list) :initial-contents square-list)
+  ((board
+    :initform (make-array (length *square-list*) :initial-contents *square-list*)
     :initarg :board
     :accessor board
     :documentation "The array of square compounding the game.")
@@ -229,9 +223,8 @@
    (markers
     :initform nil
     :accessor markers
-    :documentation "A list of cons (player . square-index).")
-   )
-  (:documentation "A Geek-Day game."));;GEEK-DAY
+    :documentation "A list of cons (player . square-index)."))
+  (:documentation "A Geek-Day game."))
 
 
 
@@ -266,10 +259,7 @@
                 (if (lost player) "Lost" (cdr (assoc player (markers self)))))
         ) ;;dolist
       (format t lineform  "--------------------"
-              "----------------"  "----------------"  "----------------")
-      ) ;;let
-    ) ;;do
-  );;PLAY
+              "----------------"  "----------------"  "----------------"))))
 
 
 
@@ -279,10 +269,10 @@
 
 
 (defun lambdap (item)
-  (and (consp item) (eq 'lambda (car item))));;LAMBDAP
+  (and (consp item) (eq 'lambda (car item))))
 
 (defmacro lamcall (lambda-expr &rest arguments)
-  `(funcall  (coerce ,lambda-expr 'function) ,@arguments));;LAMCALL
+  `(funcall (coerce ,lambda-expr 'function) ,@arguments))
 
 
 (defmethod landing ((self geek-day) player square square-data)
@@ -296,20 +286,20 @@
      ((lambdap action)              (lamcall action player) )
      ((eq 'popularity (car action)) (update-popularity player (cadr action)) )
      ((eq 'sanity (car action))     (update-sanity player (cadr action)) )
-     (t (error "Invalid action in square-in ~W." action)))
-    );;dolist
-  );;LANDING
+     (t (error "Invalid action in square-in ~W." action)))))
 
 
 (defmethod take-off ((self geek-day) player square square-data)
   (let ((dice        (randomizer))
-        (out         (square-out square-data))
-        )
-    (format t "~%~%~:(~A~), you roll and get ~A.~%" (name player) dice)
+        (out         (square-out square-data)))
+    (format t "~%~%~:(~A~), you roll"  (name player))
+    (finish-output)
+    (sleep 2)
+    (format t " and get ~A.~%" dice)
+    (finish-output)
     (min (1- (length (board self)))
                (if out (lamcall out square dice player)
-                 (+ square dice)))
-    ));;TAKE-OFF
+                 (+ square dice)))))
 
 
 
@@ -322,11 +312,8 @@
     ;; let's run a player.
     (let* ((player      (car marker))
            (square      (cdr marker))
-           (square-data (aref (board self) square))
-           )
-      (landing self player square square-data)
-      )) ;;DOLIST
-  );;INITIALIZE
+           (square-data (aref (board self) square)))
+      (landing self player square square-data))))
 
 
 (defun play-geek-day (&rest player-names)
@@ -336,8 +323,7 @@
                                    player-names))) )
     (declare (type geek-day game)) 
     (initialize game)
-    (play game))
-  );;PLAY-GEEK-DAY
+    (play game)))
 
 
 
@@ -353,9 +339,8 @@ DO:     Ask for the names of the players from the terminal
              ~4%~
              Please enter the names of the players, ~
              or an empty line to abort: ~&")
-  (let* ((names-str (read-line))
-         (names (read-from-string (format nil "(~A)" names-str) t '())))
+  (let ((names (split-sequence #\space (read-line) :remove-empty-subseqs t)))
     (when names
-      (apply (function play-geek-day) names))));;MAIN
+      (apply (function play-geek-day) names))))
 
-;;;; geek-day.lisp                    --                     --          ;;;;
+;;;; THE END ;;;;

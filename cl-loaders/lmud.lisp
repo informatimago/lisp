@@ -1,4 +1,6 @@
 ;;;; -*- coding:utf-8 -*-
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 
 (dolist (file  '(split-sequence
                  defpkg

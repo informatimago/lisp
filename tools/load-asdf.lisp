@@ -50,8 +50,9 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
-
-(in-package :cl-user)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
+(in-package "COMMON-LISP-USER")
 
 (defvar *asdf-source*
   #p"/data/lisp/packages/net/common-lisp/projects/asdf/asdf/asdf.lisp")

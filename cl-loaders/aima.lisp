@@ -3,6 +3,8 @@
 ;; ----------------------------------------------------------------------
 ;; -- CMU-AI -- AIMA: Artificial Inteligence - A Modern Approach --
 ;; ----------------------------------------------------------------
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 
 (load "cmu-ai:bookcode;aima;aima")
 (aima-load 'all)

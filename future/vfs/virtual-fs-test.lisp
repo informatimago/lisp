@@ -1,3 +1,5 @@
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 
 (print
  (mapcar (lambda (path) (cons path (parse-logical-pathname path)))

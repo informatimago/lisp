@@ -1,3 +1,5 @@
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 
 (defvar *modules* '(common-lisp clext clmisc sbcl clisp susv3))
 

@@ -1,6 +1,4 @@
 
-
-
 (define-special-operator (function name)
     (cl:function name))
 

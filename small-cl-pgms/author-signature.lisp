@@ -32,8 +32,8 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
-
-
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.AUTHOR-SIGNATURE"
   (:documentation
    "This program compute an \"author signature\" from a text.

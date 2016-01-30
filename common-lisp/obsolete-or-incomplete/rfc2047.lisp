@@ -31,13 +31,11 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
-
-
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 (in-package "COMMON-LISP-USER")
-
 (declaim (declaration also-use-packages))
 ;; (declaim (ALSO-USE-PACKAGES "COM.INFORMATIMAGO.COMMON-LISP.???"))
-
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.OBSOLETE-OR-INCOMPLEPTE.RFC2047"
   (:use "COMMON-LISP")
   (:export)

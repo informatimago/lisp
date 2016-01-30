@@ -62,9 +62,9 @@
 ;;;;    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 ;;;;    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;;;;**************************************************************************
-
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 (cl:in-package "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.PACKAGE")
-
 (define-modify-macro appendf (&rest args) append "Append onto list")
 
 

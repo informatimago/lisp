@@ -61,6 +61,8 @@
 ;;;;    Free Software Foundation, Inc., 59 Temple Place, Suite 330,
 ;;;;    Boston, MA 02111-1307 USA
 ;;;;**************************************************************************
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 (in-package "COM.INFORMATIMAGO.LISPDOC")
 
 

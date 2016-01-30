@@ -42,6 +42,8 @@
 #| This is bad practice.  Instead we will work in our own package,
    that will use the objcl, oclo and ns packages.  |#
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 (defpackage "COCOA-HOWTO"
   (:use "CL"))
 (in-package "COCOA-HOWTO")

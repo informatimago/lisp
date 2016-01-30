@@ -1,3 +1,5 @@
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 
 (push (setf (ccl:current-directory)
             (setf *default-pathname-defaults* #p"/home/pjb/works/abalone-macosx/objcl/"))

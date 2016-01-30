@@ -7,6 +7,8 @@
 ;;;; 
 ;;;; 
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 (defpackage "CHECK-USES"
   (:use "CL"
         "COM.INFORMATIMAGO.COMMON-LISP.GRAPH"

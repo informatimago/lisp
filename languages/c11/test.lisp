@@ -1,3 +1,5 @@
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 ;; (in-package "COM.INFORMATIMAGO.LANGUAGES.C11.PARSER")
 
 (defpackage "TEST"

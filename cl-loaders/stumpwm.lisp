@@ -1,5 +1,6 @@
 ;;;; -*- coding:utf-8 -*-
-
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 (load "loaders:clocc")
 (load "port:shell")
 (load "loaders:cclan")

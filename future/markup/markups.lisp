@@ -32,6 +32,8 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 
 (defparameter *contents*
   '((no-markup   "A string without newlines or markup.")

@@ -1,4 +1,5 @@
-(setf *readtable* (copy-readtable nil))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 (ql:quickload :com.informatimago.languages.c11)
 
 (in-package "COM.INFORMATIMAGO.LANGUAGES.C11.PARSER")

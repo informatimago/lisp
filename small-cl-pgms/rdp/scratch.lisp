@@ -1,3 +1,6 @@
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
+
 (com.informatimago.rdp.example:parse-example
   "
     const abc = 123,

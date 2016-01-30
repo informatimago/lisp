@@ -1,125 +1,126 @@
-;;****************************************************************************
-;;FILE:               basic.lisp
-;;LANGUAGE:           Common-Lisp
-;;SYSTEM:             Common-Lisp
-;;USER-INTERFACE:     standard i/o
-;;DESCRIPTION
-;;
-;;    Quick, Dirty and Ugly BASIC.
-;;
-;;    This is a silly BASIC interpreter.  The lines are tokenized and stored
-;;    as-is in an array indexed by the line number.  When interpreting the
-;;    program, the instructions are parsed directly from there ; the
-;;    expressions are parsed into trees which are then evaluated.
-;;    The variables are stored into a hash table indexed by their
-;;    identifier (symbol). Undefined variables are taken as 0 or "".
-;;    We distinguish number and string variables depending on the presence
-;;    of a '$' character in the last position of the variable identifier.
-;;    Variables are reset by the command RUN. (A program can be restarted
-;;    without losing the variable using the GOTO or GOSUB statements).
-;;
-;;    Commands are not distinguished from statements and may occur in a
-;;    program. In particular, LOAD could be used to load a subprogram
-;;    overlay, and takes a line number where to jump to. 
-;;
-;;    Programs are loaded and saved in source form.
-;;
-;;SYNOPSIS
-;;
-;;    (LOAD (COMPILE-FILE "BASIC.LISP"))
-;;    (COM.INFORMATIMAGO.COMMON-LISP.BASIC:MAIN)
-;;
-;;
-;;    command ::= number statements | statements .
-;;    statements ::= statement { ':' statement } .
-;;    statement ::=
-;;            PRINT [ expression { ( ',' | ';' ) expression }
-;;          | INPUT string identifier { ',' identifier }
-;;          | READ  identifier { ',' identifier }
-;;          | DATA  ( string | number ) { ',' ( string | number ) }
-;;          | RESTORE [ expression ]
-;;          | GOTO      expression
-;;          | GOSUB expression
-;;          | RETURN
-;;          | STOP
-;;          | REM whatever-up-to-the-end-of-line
-;;          | identifier '=' expression
-;;          | FOR identifier '=' expression TO expression [ STEP expression ]
-;;          | NEXT [ identifier ]
-;;          | IF condition THEN statements [ ':' ELSE statements ]
-;;          | LIST
-;;          | DIR [name.type]
-;;          | SAVE string
-;;          | LOAD string [ number ]
-;;          | ERASE ( ALL | number { number } )
-;;          | RUN
-;;          | BYE
-;;          .
-;;    expression  ::= expression ( '+' | '-' ) term .
-;;    term        ::= term       ( '*' | '/' | 'mod' ) fact .
-;;    fact        ::= fact       ( '^' ) simp .
-;;    simp        ::= number | string | identifier | '(' expression ')'
-;;                  | ( '+' | '-' ) simp .
-;;    condition   ::= disjonction .
-;;    disjonction ::= disjonction { 'OR' conjonction }  | conjonction .
-;;    conjonction ::= conjonction { 'AND' logicalnot }  | logicalnot .
-;;    logicalnot  ::= comparaison | 'NOT' logicalnot | '(' disjonction ')'
-;;    comparaison ::= expression ( '<' | '<=' | '>' | '>=' | '=' | '<>' )
-;;                                 expression .
-;;    identifier  ::= alpha { alphanum } [ '$' ].
-;;    string      ::= '"' { any-character-but-double-quote } '"' .
-;;    number      ::= digit { digit } .
-;;
-;;    The '+' operator can be used to concatenate strings.
-;;
-;;AUTHORS
-;;    <PJB> Pascal J. Bourguignon
-;;MODIFICATIONS
-;;    2005-09-26 <PJB> Added missing :NICKNAMES.
-;;    2003-05-19 <PJB> Created (in 2 days).
-;;BUGS
-;;    NOT IMPLEMENTED YET: scanning floating point.
-;;                         scanning parenthesis (we have them in parser).
-;;                         built-in functions: SIN COS ATAN EXP LOG
-;;                                             LEFT$ MID$ RIGHT$ ...
-;;                         arrays
-;;
-;;    This code would be happier with some factoring (basic-eval).
-;;
-;;    Some more testing could be used.
-;;
-;;    The program is stored in a fixed-size array (1000).
-;;    Perhaps we should provide either for a bigger array
-;;    or for a sparse structure (hash?).
-;;
-;;    Missing as a test case: a LISP interpreter implemented in BASIC.
-;;    (Of course, this BASIC interpreter implemented in LISP should then
-;;    be tested over the LISP interpreter implemented in BASIC :-).
-;;
-;;    Two-letter operators are not parsed correctly ("<>" --> "<>" and ">").
-;;
-;;LEGAL
-;;    GPL
-;;
-;;    Copyright Pascal J. Bourguignon 2003 - 2003
-;;    mailto:pjb@informatimago.com
-;;
-;;    This program is free software; you can redistribute it and/or
-;;    modify it under the terms of the GNU General Public License
-;;    as published by the Free Software Foundation; either version
-;;    2 of the License, or (at your option) any later version.
-;;
-;;    This program is distributed in the hope that it will be
-;;    useful, but WITHOUT ANY WARRANTY; without even the implied
-;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;;    PURPOSE.  See the GNU General Public License for more details.
-;;
-;;    You should have received a copy of the GNU General Public
-;;    License along with this program; if not, write to the Free
-;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
-;;    Boston, MA 02111-1307 USA
-;;****************************************************************************
-
+;;;;****************************************************************************
+;;;;FILE:               basic.lisp
+;;;;LANGUAGE:           Common-Lisp
+;;;;SYSTEM:             Common-Lisp
+;;;;USER-INTERFACE:     standard i/o
+;;;;DESCRIPTION
+;;;;
+;;;;    Quick, Dirty and Ugly BASIC.
+;;;;
+;;;;    This is a silly BASIC interpreter.  The lines are tokenized and stored
+;;;;    as-is in an array indexed by the line number.  When interpreting the
+;;;;    program, the instructions are parsed directly from there ; the
+;;;;    expressions are parsed into trees which are then evaluated.
+;;;;    The variables are stored into a hash table indexed by their
+;;;;    identifier (symbol). Undefined variables are taken as 0 or "".
+;;;;    We distinguish number and string variables depending on the presence
+;;;;    of a '$' character in the last position of the variable identifier.
+;;;;    Variables are reset by the command RUN. (A program can be restarted
+;;;;    without losing the variable using the GOTO or GOSUB statements).
+;;;;
+;;;;    Commands are not distinguished from statements and may occur in a
+;;;;    program. In particular, LOAD could be used to load a subprogram
+;;;;    overlay, and takes a line number where to jump to. 
+;;;;
+;;;;    Programs are loaded and saved in source form.
+;;;;
+;;;;SYNOPSIS
+;;;;
+;;;;    (LOAD (COMPILE-FILE "BASIC.LISP"))
+;;;;    (COM.INFORMATIMAGO.COMMON-LISP.BASIC:MAIN)
+;;;;
+;;;;
+;;;;    command ::= number statements | statements .
+;;;;    statements ::= statement { ':' statement } .
+;;;;    statement ::=
+;;;;            PRINT [ expression { ( ',' | ';' ) expression }
+;;;;          | INPUT string identifier { ',' identifier }
+;;;;          | READ  identifier { ',' identifier }
+;;;;          | DATA  ( string | number ) { ',' ( string | number ) }
+;;;;          | RESTORE [ expression ]
+;;;;          | GOTO      expression
+;;;;          | GOSUB expression
+;;;;          | RETURN
+;;;;          | STOP
+;;;;          | REM whatever-up-to-the-end-of-line
+;;;;          | identifier '=' expression
+;;;;          | FOR identifier '=' expression TO expression [ STEP expression ]
+;;;;          | NEXT [ identifier ]
+;;;;          | IF condition THEN statements [ ':' ELSE statements ]
+;;;;          | LIST
+;;;;          | DIR [name.type]
+;;;;          | SAVE string
+;;;;          | LOAD string [ number ]
+;;;;          | ERASE ( ALL | number { number } )
+;;;;          | RUN
+;;;;          | BYE
+;;;;          .
+;;;;    expression  ::= expression ( '+' | '-' ) term .
+;;;;    term        ::= term       ( '*' | '/' | 'mod' ) fact .
+;;;;    fact        ::= fact       ( '^' ) simp .
+;;;;    simp        ::= number | string | identifier | '(' expression ')'
+;;;;                  | ( '+' | '-' ) simp .
+;;;;    condition   ::= disjonction .
+;;;;    disjonction ::= disjonction { 'OR' conjonction }  | conjonction .
+;;;;    conjonction ::= conjonction { 'AND' logicalnot }  | logicalnot .
+;;;;    logicalnot  ::= comparaison | 'NOT' logicalnot | '(' disjonction ')'
+;;;;    comparaison ::= expression ( '<' | '<=' | '>' | '>=' | '=' | '<>' )
+;;;;                                 expression .
+;;;;    identifier  ::= alpha { alphanum } [ '$' ].
+;;;;    string      ::= '"' { any-character-but-double-quote } '"' .
+;;;;    number      ::= digit { digit } .
+;;;;
+;;;;    The '+' operator can be used to concatenate strings.
+;;;;
+;;;;AUTHORS
+;;;;    <PJB> Pascal J. Bourguignon
+;;;;MODIFICATIONS
+;;;;    2005-09-26 <PJB> Added missing :NICKNAMES.
+;;;;    2003-05-19 <PJB> Created (in 2 days).
+;;;;BUGS
+;;;;    NOT IMPLEMENTED YET: scanning floating point.
+;;;;                         scanning parenthesis (we have them in parser).
+;;;;                         built-in functions: SIN COS ATAN EXP LOG
+;;;;                                             LEFT$ MID$ RIGHT$ ...
+;;;;                         arrays
+;;;;
+;;;;    This code would be happier with some factoring (basic-eval).
+;;;;
+;;;;    Some more testing could be used.
+;;;;
+;;;;    The program is stored in a fixed-size array (1000).
+;;;;    Perhaps we should provide either for a bigger array
+;;;;    or for a sparse structure (hash?).
+;;;;
+;;;;    Missing as a test case: a LISP interpreter implemented in BASIC.
+;;;;    (Of course, this BASIC interpreter implemented in LISP should then
+;;;;    be tested over the LISP interpreter implemented in BASIC :-).
+;;;;
+;;;;    Two-letter operators are not parsed correctly ("<>" --> "<>" and ">").
+;;;;
+;;;;LEGAL
+;;;;    GPL
+;;;;
+;;;;    Copyright Pascal J. Bourguignon 2003 - 2003
+;;;;    mailto:pjb@informatimago.com
+;;;;
+;;;;    This program is free software; you can redistribute it and/or
+;;;;    modify it under the terms of the GNU General Public License
+;;;;    as published by the Free Software Foundation; either version
+;;;;    2 of the License, or (at your option) any later version.
+;;;;
+;;;;    This program is distributed in the hope that it will be
+;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
+;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+;;;;    PURPOSE.  See the GNU General Public License for more details.
+;;;;
+;;;;    You should have received a copy of the GNU General Public
+;;;;    License along with this program; if not, write to the Free
+;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
+;;;;    Boston, MA 02111-1307 USA
+;;;;****************************************************************************
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.BASIC"
   (:nicknames "BASIC")
   (:use "COMMON-LISP")

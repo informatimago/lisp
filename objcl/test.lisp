@@ -1,4 +1,6 @@
 ;; -*- mode:lisp; coding:utf-8 -*-
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 
 
 (eval-when (:compile-toplevel)

@@ -42,7 +42,8 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
-
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 (in-package "COMMON-LISP-USER")
 (load (merge-pathnames #p"ibcl.lisp" *load-pathname*))
 (in-package "COMMON-LISP")

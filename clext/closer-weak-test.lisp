@@ -34,13 +34,12 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
-
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 ;; #+clisp (pushnew :weak-test *features*)
 ;; #+#.#+(and clisp (not debug-weak))
 ;; (cl:if (cl:y-or-n-p "Are we debugging it on clisp?") '(and) '(or))
 ;; #-(and clisp (not debug-weak))'(or)  (pushnew :debug-weak *features*)
-
-
 (defpackage "COM.INFORMATIMAGO.CLEXT.CLOSER-WEAK.TEST"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SIMPLE-TEST"

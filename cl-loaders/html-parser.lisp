@@ -1,4 +1,6 @@
 ;;;; -*- coding:utf-8 -*-
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 
 (let ((path
        "/local/share/lisp/packages/edu/mit/ai/cl-http-70-23/html-parser/v10/"))

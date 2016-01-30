@@ -1,3 +1,5 @@
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 
 (shadow '(trace untrace))
 (defun trace   (functions) (eval `(cl:trace   ,@functions)))

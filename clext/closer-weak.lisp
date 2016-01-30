@@ -40,11 +40,9 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
-
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 ;;; (push :debug-weak *features*) in clisp to have it on clisp for debugging...
-
-(in-package "COMMON-LISP-USER")
-
 (defpackage "COM.INFORMATIMAGO.CLEXT.CLOSER-WEAK"
   (:documentation "
 Closer to Weak objects.

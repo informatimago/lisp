@@ -31,7 +31,8 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
-
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 (defpackage "COM.INFORMATIMAGO.LANGUAGES.LINC"            
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
@@ -40,9 +41,7 @@
         "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM")
   (:shadow "DECLARATION" "THROW")
   (:export
-   "COMPILE-LINC-FILE"
-   ))
-
+   "COMPILE-LINC-FILE"))
 (defpackage "COM.INFORMATIMAGO.LANGUAGES.LINC.C"
   (:nicknames "COM.INFORMATIMAGO.LANGUAGES.LINC.C++")
   (:use))

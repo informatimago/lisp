@@ -1,4 +1,4 @@
-erm;;;; -*- mode:lisp;coding:utf-8 -*-
+;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
 ;;;;FILE:               clisp.lisp
 ;;;;LANGUAGE:           Common-Lisp
@@ -31,6 +31,8 @@ erm;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 (in-package "COM.INFORMATIMAGO.EDITOR")
 
 

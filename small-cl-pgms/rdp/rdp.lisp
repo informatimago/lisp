@@ -45,11 +45,10 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
-
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (setf *features* (cons :use-ppcre (set-difference *features* '(:use-ppcre :use-regexp)))))
-
-
 (defpackage "COM.INFORMATIMAGO.RDP"
   (:use "COMMON-LISP")
   (:export "DEFGRAMMAR" "SEQ" "REP" "OPT" "ALT" "GRAMMAR-NAMED"

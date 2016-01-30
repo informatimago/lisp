@@ -45,8 +45,8 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
-
-
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 (defpackage "COM.INFORMATIMAGO.CLISP.SUSV3"
   (:documentation "This packages exports SUSV3 functions.
     This is the CLISP specific implementation of the SUSV3 API.")
