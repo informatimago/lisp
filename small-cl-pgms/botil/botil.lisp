@@ -61,16 +61,14 @@ Licensed under the AGPL3.
 ;;; Configuration:
 ;;;
 
-(defvar *server*   "irc.freenode.org"
-  "The fqdn of the IRC server.")
-(defvar *nickname* "botil"
-  "The nickname of the botil user.")
 (defvar *sources-url*
   "https://gitlab.com/com-informatimago/com-informatimago/tree/master/small-cl-pgms/botil/"
   "The URL where the sources of this ircbot can be found.")
-(defvar *connection* nil
-  "The current IRC server connection.")
+
+(defvar *nickname* "botil"
+  "The nickname of the botil user.")
 (defvar *botpass*  "1234")
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -98,7 +96,11 @@ Licensed under the AGPL3.
    (channels :initarg  :channels
              :initform '()
              :accessor channels
-             :type     list)))
+             :type     list)
+   (connection :initarg :connection
+               :initform nil
+               :accessor connection
+               :type connection)))
 
 (defclass channel ()
   ((server     :initarg  :server
@@ -130,7 +132,7 @@ Licensed under the AGPL3.
   channel)
 
 
-(defclass user ()
+(defclass botil-user ()
   ((server   :initarg  :server
              :initform (error "A channel needs a :server")
              :reader   server
@@ -149,7 +151,7 @@ Licensed under the AGPL3.
              :accessor email
              :type     (or null email))))
 
-(defmethod print-object ((user user) stream)
+(defmethod print-object ((user botil-user) stream)
   (print-unreadable-object (user stream :identity nil :type t)
     (format stream "~a@~a" (name user) (hostname server)))
   user)
@@ -185,7 +187,7 @@ Licensed under the AGPL3.
    (owner      :initarg  :owner
                :initform (error "A request-request needs a :owner")
                :reader   owner
-               :type     user)
+               :type     botil-user)
    (start-date :initarg  :start-date
                :initform (get-universal-time)
                :reader   start-date
@@ -201,7 +203,7 @@ Licensed under the AGPL3.
   ((owner      :initarg  :owner
                :initform (error "A query needs a :owner")
                :reader   owner
-               :type     user
+               :type     botil-user
                :documentation "Who made the request and will receive the results.")
    (sender     :initarg  :sender
                :initform nil
@@ -285,7 +287,7 @@ Licensed under the AGPL3.
                     *database*))
   (make-instance 'channel :server server :name name))
 
-(defmethod save-user ((user user))
+(defmethod save-user ((user botil-user))
   (let ((pathname (merge-pathnames (make-pathname :directory (list :relative
                                                                    "servers" (hostname (server user))
                                                                    "users")
@@ -309,7 +311,7 @@ Licensed under the AGPL3.
                                           :defaults *database*)
                                    *database*)))
     (ensure-directories-exist pathname)
-    (let ((user (make-instance 'user :server sever :name name)))
+    (let ((user (make-instance 'botil-user :server sever :name name)))
       (save-user user))))
 
 (defmethod log-file ((channel channel))
@@ -372,7 +374,7 @@ Licensed under the AGPL3.
   send
   thread)
 
-(defun send (worker &rest message)
+(defun send-worker (worker &rest message)
   (apply (worker-send worker) message))
 
 (defmacro make-worker-thread (name message-lambda-list
@@ -412,7 +414,7 @@ Licensed under the AGPL3.
 (defvar *sender*)
 (defvar *logger*)
 
-(defun send (recipient text)
+(defun send-irc (recipient text)
   (privmsg *connection* recipient text))
 
 (defun say (&rest args)
@@ -422,7 +424,7 @@ Licensed under the AGPL3.
 (defun answer (recipient format-control &rest format-arguments)
   (let ((text (apply (function format) nil format-control format-arguments)))
     (say text)
-    (apply (function send) *sender* recipient format-control format-arguments)))
+    (apply (function send-irc) *sender* recipient format-control format-arguments)))
 
 (defun query-processor (sender query)
   (declare (ignore sender query))
@@ -452,19 +454,19 @@ Licensed under the AGPL3.
 #-(and) ((rights
           
           (query criterial)
-          (create-log server #name)
+          (create-log server "#name")
           (create-server hostname)
           )
          (commands
 
           (register password email) ; -> (create-user server name password email)
           (identify password)       ; -> (validate-user user password)
-          (send-pass [nickname]) ; -> (send-password-change-key user) ; NY
+          (send-irc-pass [nickname]) ; -> (send-irc-password-change-key user) ; NY
           (set-pass nickname key password) ; -> (set-password user key password) ; NY
           (list-logs)                      ; -> (list-logs user)
 
           (query criteria)              
-          (create-log #name [start-date [end-date]])  ; -> (create-channel server #name) (create-log-request channel user start-date end-date)
+          (create-log "#name" [start-date [end-date]])  ; -> (create-channel server "#name") (create-log-request channel user start-date end-date)
           (create-server hostname [botil-nick]) ; (create-server hostname botil-nick) --> actual-botil-nick
 
           ))
@@ -515,7 +517,13 @@ Licensed under the AGPL3.
                               (command-processor sender message))
         *botil*             (make-worker-thread botil (command)
                               (format *trace-output* "~&BOTIL <- ~A~%" command)
-                              (botil command))))
+                              (botil command)))
+  (load-server-database)
+  (mapcar (lambda (server)
+            (server *servers*))
+    
+    ))
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -548,8 +556,8 @@ Licensed under the AGPL3.
                                                   :arguments arguments))
       (say arguments)
       (if (string= *nickname* recipient)
-          (send *command-processor* sender (second arguments))
-          (send *logger* message))))
+          (send-worker *command-processor* sender (second arguments))
+          (send-worker *logger* message))))
   t)
 
 
@@ -562,7 +570,7 @@ Licensed under the AGPL3.
                                                   :recipient recipient
                                                   :command (command message)
                                                   :arguments arguments))))
-  (send *logger* message)
+  (send-worker *logger* message)
   t)
 
 ;; (join *connection* "#test-botil")
@@ -617,7 +625,7 @@ and answer to search queries in those logs."
                              irc-part-message irc-quit-message
                              irc-kill-message irc-kick-message
                              irc-invite-message))
-                     (send *botil* 'reconnect)
+                     (send-worker *botil* 'reconnect)
                      (loop :while (read-message *connection*)
                            #|there's a 10 s timeout in here.|#))
                 (when *connection*
