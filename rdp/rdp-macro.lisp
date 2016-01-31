@@ -36,9 +36,15 @@
 (in-package "COM.INFORMATIMAGO.RDP")
 
 
-(defmacro defgrammar (name &key terminals (scanner t) (skip-spaces t)
-                      start rules 
-                      (target-language :lisp) (trace nil))
+(defmacro defgrammar (name &key
+                             terminals
+                             start
+                             rules 
+                             (scanner t)
+                             (skip-spaces t)
+                             (eof-symbol *eof-symbol*)
+                             (target-language :lisp)
+                             (trace nil))
   "
 DO:     This macro generates a simple scanner and recursive decent parser 
         for the language described by this grammar.
@@ -90,6 +96,10 @@ RULES:
 
         A list of grammar rules.
 
+EOF-SYMBOL:
+
+        The end-of-file symbol (terminal). Default is the value bound
+        to *EOF-SYMBOL* at macroexpansion-time.
 
 TARGET-LANGUAGE:
 
@@ -215,6 +225,7 @@ TODO:   We could also flatten sequences without action, or even sequences with
                     :skip-spaces skip-spaces
                     :start start
                     :rules rules
+                    :eof-symbol eof-symbol
                     :target-language target-language
                     :trace trace))
 

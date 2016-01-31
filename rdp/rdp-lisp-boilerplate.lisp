@@ -77,9 +77,9 @@
 
 
 (define-condition unexpected-token-error (scanner-error)
-  ((expected-token     :initarg :expected-token
-                       :initform nil
-                       :reader unexpected-token-error-expected-token)
+  ((expected-tokens    :initarg :expected-tokens
+                       :initform '()
+                       :reader unexpected-token-error-expected-tokens)
    (non-terminal-stack :initarg :non-terminal-stack
                        :initform '()
                        :reader unexpected-token-error-non-terminal-stack))
@@ -91,7 +91,7 @@
   (let ((*print-circle* nil)
         (*print-pretty* nil))
     (format stream "~&Expected token: ~S~%Non-terminal stack: ~S~%"
-            (unexpected-token-error-expected-token err)
+            (unexpected-token-error-expected-tokens err)
             (unexpected-token-error-non-terminal-stack err)))
   err)
 

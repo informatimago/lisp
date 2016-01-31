@@ -188,7 +188,7 @@ is equivalent to:
 
 Parses if each of the term parse in sequence, 0 or 1 time.
 
-Returns NIL or the the parsed sequence.
+Returns NIL or the result of the parsed sequence.
 
 "
         (documentation 'alt t) "
@@ -257,6 +257,7 @@ language boilerplate."))
 (defun generate-grammar (name &key
                                 terminals (scanner t) (skip-spaces t)
                                 start rules
+                                ((:eof-symbol *eof-symbol*) *eof-symbol*)
                                 (target-language :lisp) (trace nil))
   "
 SEE ALSO:   The docstring of DEFGRAMMAR.
@@ -807,7 +808,7 @@ RETURN: the new production set; the new non-terminal set
                          ;; a --> (opt e)
                          ;; -------------
                          ;; a --> ε :action '()
-                         ;; a --> e :action (list $1)
+                         ;; a --> e :action  $1
                          (destructuring-bind (op items) rhs
                            (declare (ignore op))
                            (assert (null (rest items)))
@@ -816,7 +817,7 @@ RETURN: the new production set; the new non-terminal set
                                               `(seq (,(process-item (first (second item))))
                                                     (,@(third item)))
                                               `(seq (,(process-item item))
-                                                    ((list ,(dollar 1)))))))
+                                                    (,(dollar 1))))))
                            (list  nt *empty-rhs*)))
                         ((alt)
                          ;; a --> (alt e₁ ... eν)
@@ -1053,11 +1054,12 @@ RETURN: the new production set; the new non-terminal set
              ;; :grammar (grammar-named ',(grammar-name grammar))
              :scanner scanner
              :non-terminal-stack (copy-list *non-terminal-stack*)
-             :expected-token expected-tokens
-             :format-control "Unexpected token ~A (~S)~@[~%Expected ~A~]~%~S~@[~%~{~A --> ~S~}~]"
+             :expected-tokens expected-tokens
+             :format-control "Unexpected token ~A (~S)~:[~@[~%Expected ~{~A~}~]~;~%Expected one of ~{~A~^, ~}~]~%~S~@[~%~{~A --> ~S~}~]"
              :format-arguments (list
                                 (scanner-current-token scanner)
                                 (scanner-current-text scanner)
+                                (cdr expected-tokens)
                                 expected-tokens
                                 *non-terminal-stack*
                                 production))
