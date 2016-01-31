@@ -80,11 +80,8 @@
                  :initform ""))
   (:default-initargs :line 0))
 
-(defmethod slots-for-print :append ((self token))
+(defmethod slots-for-print append ((self token))
   (extract-slots self '(buffer current-text)))
-
-(defmethod scanner-current-token ((scanner buffered-scanner))
-  (token-kind (call-next-method)))
 
 (defmethod scanner-end-of-line-p ((scanner buffered-scanner))
   (or (null (scanner-buffer scanner))
@@ -124,7 +121,9 @@
   (:method ((a t) (b t))           (eql a b))
   (:method ((a string) (b string)) (string= a b))
   (:method ((a symbol) (b string)) (string= a b))
-  (:method ((a string) (b symbol)) (string= a b)))
+  (:method ((a string) (b symbol)) (string= a b))
+  (:method ((token token) (kind symbol)) (eql (token-kind token) kind))
+  (:method ((kind symbol) (token token)) (eql (token-kind token) kind)))
 
 (defmethod accept ((scanner buffered-scanner) token)
   (if (word-equal token (scanner-current-token scanner))

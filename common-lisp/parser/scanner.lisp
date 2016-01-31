@@ -85,7 +85,7 @@
   (:documentation "A syntactic element."))
 
 
-(defmethod slots-for-print :append ((self token))
+(defmethod slots-for-print append ((self token))
   (extract-slots self '(kind text column line)))
 
 
@@ -280,9 +280,8 @@ RETURN:       (scanner-current-token scanner).
   (declare (ignore args))
   (setf (scanner-source scanner) (slot-value scanner 'source)))
 
-(defmethod slots-for-print :append ((self scanner))
+(defmethod slots-for-print append ((self scanner))
   (extract-slots self '(line column current-token source)))
-
 
 
 
