@@ -131,7 +131,6 @@
 (defgeneric scanner-error-format-arguments (error)
   (:documentation "The error message format control arguments."))
 (defgeneric scanner-error-invalid-character (error)
-
   (:documentation "The invalid character that made the scanner error."))
 
 (define-condition scanner-error (simple-error)
