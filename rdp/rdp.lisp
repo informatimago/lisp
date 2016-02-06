@@ -275,7 +275,7 @@ RETURN:     A form that defines the grammar object and its parser functions.
     (setf (grammar-name grammar) name)
     (register-grammar grammar)
     
-    `(progn
+    `(let ((*eof-symbol* ',*eof-symbol*))
 
        (register-grammar
         (make-normalized-grammar
