@@ -80,7 +80,7 @@
                  :initform ""))
   (:default-initargs :line 0))
 
-(defmethod slots-for-print append ((self token))
+(defmethod slots-for-print append ((self buffered-scanner))
   (extract-slots self '(buffer current-text)))
 
 (defmethod scanner-end-of-line-p ((scanner buffered-scanner))
