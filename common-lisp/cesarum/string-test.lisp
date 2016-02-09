@@ -208,12 +208,47 @@
                                          ("HELLO" "SAY WORLD"))
                         :do (assert-false (suffixp (funcall pf p) (funcall sf s)))))))
 
+
+(define-test test/split-string ()
+  (check equalp
+         (split-string '(1 2 0 3 4 5 0 6 7 8 0 9) '(0))
+         '((1 2) (3 4 5) (6 7 8) (9)))
+  (check equalp
+         (split-string #(1 2 0 3 4 5 0 6 7 8 0 9) #(0))
+         '(#(1 2) #(3 4 5) #(6 7 8) #(9)))
+  (check equalp (split-string "1 2 0 3 4 5 0 6 7 8" '(#\space #\0))
+         '("1" "2" "" "" "3" "4" "5" "" "" "6" "7" "8"))
+  (check equalp (split-string "hello world" "*")
+         '("hello world"))
+  (check equalp (split-string "hello world*" "*")
+         '("hello world" ""))
+  (check equalp (split-string "hello world*" "*" :remove-empty)
+         '("hello world"))
+  (check equalp (split-string "hello world***" "*" :remove-empty)
+         '("hello world"))
+  (check equalp (split-string "hello world*x" "*")
+         '("hello world" "x"))
+  (check equalp (split-string "hello*world" "*")
+         '("hello" "world"))
+  (check equalp (split-string "hello*world*" "*")
+         '("hello" "world" ""))
+  (check equalp (split-string "hello*world*" "*" :remove-empty)
+         '("hello" "world"))
+  (check equalp (split-string "hello*world***" "*" :remove-empty)
+         '("hello" "world"))
+  (check equalp (split-string "hello*world*x" "*")
+         '("hello" "world" "x")))
+
+
+
+
 (define-test test/all ()
   (test/string-designator)
   (test/character-designator)
   (test/concatenate-strings)
   (test/implode-explode)
   (test/prefixp)
-  (test/suffixp))
+  (test/suffixp)
+  (test/split-string))
 
 ;;;; THE END ;;;;
