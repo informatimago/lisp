@@ -376,10 +376,10 @@ EXAMPLES:       (split-string '(1 2 0 3 4 5 0 6 7 8 0 9) '(0))
     :for position = 0 :then (1+ nextpos)
     :for nextpos = (position-if (lambda (e) (find e separators)) string :start position)
     :unless (and remove-empty
-                 (or (and (= position strlen) (null nextpos ))
+                 (or (and (= position strlen) (null nextpos))
                      (eql position nextpos)))
     :collect (subseq string position nextpos)
-    :while (and nextpos (< position strlen))))
+    :while nextpos))
 
 
 (defun unsplit-string (string-list separator &key (adjustable nil) (fill-pointer nil) (size-increment 0))
