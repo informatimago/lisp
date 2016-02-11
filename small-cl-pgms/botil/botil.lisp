@@ -38,13 +38,18 @@
   (:use "COMMON-LISP"
         "CL-IRC" "CL-JSON" "DRAKMA"  "SPLIT-SEQUENCE" "BORDEAUX-THREADS"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
         "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM"
         "COM.INFORMATIMAGO.CLEXT.QUEUE")
   (:shadow "LOG")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.INTERACTIVE"
                 "DATE" "UPTIME")
-  (:export "MAIN")
+  (:export
+   "MAIN"
+
+   ;; -- admin commands
+   "*INITIAL-SERVER*" "INITIALIZE-DATABASE")
   (:documentation "
 Botil is a simple IRC logging and log querying bot.
 
@@ -63,13 +68,31 @@ Licensed under the AGPL3.
 ;;; Configuration:
 ;;;
 
+(defvar *external-format* :utf-8
+  "External format used for all files (database files, log files).")
+
+(defvar *initial-server* "irc.freenode.org"
+  "Only used when creating the database the first time.")
+
+(defvar *default-nickname* "botil"
+  "The nickname of the botil user.")
+
+(defvar *default-password* "1234"
+  "The nickname of the botil user.")
+
+(defvar *database*
+  (find-if (lambda (dir)
+             (probe-file (merge-pathnames #P"botil.database" dir nil)))
+           #(#P"/data/databases/irc/"
+             #P"/mnt/data/databases/irc/"
+             #P"/Users/pjb/Documents/irc/"))
+  "The pathname to the botil database.")
+
 (defvar *sources-url*
   "https://gitlab.com/com-informatimago/com-informatimago/tree/master/small-cl-pgms/botil/"
   "The URL where the sources of this ircbot can be found.")
 
-(defvar *nickname* "botil"
-  "The nickname of the botil user.")
-(defvar *botpass*  "1234")
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -91,18 +114,28 @@ Licensed under the AGPL3.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defclass server ()
-  ((hostname :initarg  :hostname
-             :initform (error "A server needs a :hostname")
-             :reader   hostname
-             :type     string)
-   (channels :initarg  :channels
-             :initform '()
-             :accessor channels
-             :type     list)
-   (connection :initarg :connection
+  ((hostname   :initarg  :hostname
+               :initform (error "A server needs a :hostname")
+               :reader   hostname
+               :type     string)
+   (botnick    :initarg  :botnick
+               :initform *default-nickname* 
+               :accessor botnick
+               :type     string
+               :documentation "The nick of the bot on this server.")
+   (botpass    :initarg  :botpass
+               :initform *default-password* 
+               :accessor botpass
+               :type     (or null string)
+               :documentation "The password of the bot on this server.")
+   (channels   :initarg  :channels
+               :initform '()
+               :accessor channels
+               :type     list)
+   (connection :initarg  :connection
                :initform nil
                :accessor connection
-               :type connection)))
+               :type (or null connection))))
 
 (defclass channel ()
   ((server     :initarg  :server
@@ -125,7 +158,10 @@ Licensed under the AGPL3.
 
 (defmethod print-object ((server server) stream)
   (print-unreadable-object (server stream :identity nil :type t)
-    (format stream "~S ~S" (hostname server) (channels server)))
+    (format stream "~S :nick ~S :channels ~S"
+            (hostname server)
+            (botnick server)
+            (channels server)))
   server)
 
 (defmethod print-object ((channel channel) stream)
@@ -155,7 +191,7 @@ Licensed under the AGPL3.
 
 (defmethod print-object ((user botil-user) stream)
   (print-unreadable-object (user stream :identity nil :type t)
-    (format stream "~a@~a" (name user) (hostname server)))
+    (format stream "~a@~a" (name user) (hostname (server user))))
   user)
 
 
@@ -230,25 +266,54 @@ Licensed under the AGPL3.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defvar *servers* '())
-(defvar *database* #P"/data/databases/irc/")
-(defvar *external-format* :utf-8)
-;; /data/databases/irc
-;; `-- servers
-;;     `-- irc.freenode.org
-;;         |-- channels
-;;         |   `-- #lisp
-;;         |       `-- 201601.log
-;;         `-- users
-;;             `-- pjb.sexp
+;; (setf *servers* nil)
+;;
+;; /data/databases/irc/
+;;        |-- botil.database
+;;        `-- servers
+;;            `-- irc.freenode.org
+;;                |-- server.plist
+;;                |-- channels
+;;                |   `-- #lisp
+;;                |       `-- 201601.log
+;;                `-- users
+;;                    `-- pjb.sexp
+
+(defgeneric save (object)
+  (:method (object) object))
+
+(defun server-pathname (server-name)
+  (merge-pathnames (make-pathname :directory (list :relative "servers" server-name)
+                                  :name nil :type nil :version nil
+                                  :defaults *database*)
+                   *database*))
+
+(defun server-datafile-pathname (server-name)
+  (merge-pathnames "server.plist"
+                   (server-pathname server-name)
+                   nil))
+
+(defun server-data (pathname)
+  (sexp-file-contents (server-datafile-pathname pathname)
+                      :external-format *external-format*
+                      :if-does-not-exist nil))
+
+(defmethod save ((server server))
+  (setf (sexp-file-contents (server-datafile-pathname (hostname server))
+                            :external-format *external-format*
+                            :if-does-not-exist :create
+                            :if-exists :supersede)
+        (list :botnick (botnick server) :botpassword (botpass server))))
 
 (defun load-servers ()
   (mapcar (lambda (pathname)
-            (make-instance 'server :hostname (first (last (pathname-directory pathname)))))
-          (directory (merge-pathnames (make-pathname :directory '(:relative "servers" :wild)
-                                                     :name nil :type nil :version nil
-                                                     :defaults *database*)
-
-                                      *database*))))
+            (let* ((hostname (first (last (pathname-directory pathname))))
+                   (data (server-data hostname)))
+              (make-instance 'server
+                             :hostname hostname
+                             :botnick  (getf data :botnick)
+                             :botpass  (getf data :botpass))))
+          (directory (server-pathname :wild))))
 
 (defun load-channels-of-server (server)
   (dolist (pathname
@@ -267,8 +332,9 @@ Licensed under the AGPL3.
   (dolist (server *servers*)
     (load-channels-of-server server)))
 
-(defun create-server (hostname)
-  (check-type hostname string)
+
+(defun create-server (hostname &optional (nick "botil") (password nil))
+    (check-type hostname string)
   (ensure-directories-exist
    (merge-pathnames (make-pathname :directory (list :relative
                                                     "servers" hostname
@@ -276,7 +342,14 @@ Licensed under the AGPL3.
                                    :name "dummy" :type "dummy" :version nil
                                    :defaults *database*)
                     *database*))
-  (make-instance 'server :hostname hostname))
+  (let ((server (make-instance 'server
+                               :hostname hostname
+                               :botnick nick
+                               :botpass password)))
+    (save server)
+    (push server *servers*)
+    server))
+
 
 (defmethod create-channel ((server server) (name string))
   (assert (char= #\# (aref name 0)))
@@ -289,7 +362,7 @@ Licensed under the AGPL3.
                     *database*))
   (make-instance 'channel :server server :name name))
 
-(defmethod save-user ((user botil-user))
+(defmethod save ((user botil-user))
   (let ((pathname (merge-pathnames (make-pathname :directory (list :relative
                                                                    "servers" (hostname (server user))
                                                                    "users")
@@ -299,7 +372,8 @@ Licensed under the AGPL3.
     (with-open-file (out pathname
                          :direction :output
                          :if-does-not-exist :create
-                         :if-exists :supersede)
+                         :if-exists :supersede
+                         :external-format *external-format*)
       (print (list :name (name user) :password (password user)) out)
       (terpri out)))
   user)
@@ -314,7 +388,7 @@ Licensed under the AGPL3.
                                    *database*)))
     (ensure-directories-exist pathname)
     (let ((user (make-instance 'botil-user :server sever :name name)))
-      (save-user user))))
+      (save user))))
 
 (defmethod log-file ((channel channel))
   (merge-pathnames (make-pathname :directory (list :relative
@@ -368,6 +442,25 @@ Licensed under the AGPL3.
 ;; (setf (log-month  (first (channels (first *servers*)))) 201601)
 ;; (log-file (first (channels (first *servers*))))
 
+(defun initialize-database (dbdir-pathname)
+  "This initialize the empty directory at pathname DBDIR-PATHNAME as a
+botil database, and creates the initial server named
+*INITIAL-SERVER*.
+
+This should be used only once to create a virgin empty database, and
+configure an initial IRC server to which to connect to receive
+commands."
+  (let ((dbfile (merge-pathnames #P"botil.database" dbdir-pathname nil)))
+    (ensure-directories-exist dbfile)
+    (when (probe-file dbfile)
+      (error "A botil database already exists at ~S" dbdir-pathname))
+    (setf *database* dbdir-pathname)
+    (with-open-file (out dbfile
+                         :if-does-not-exist :create                         
+                         :external-format *external-format*)
+      (write-line ";; -*- mode:lisp -*-" out)
+      (write-line ";; This is the local botil database." out))
+    (create-server *initial-server* *default-nickname* *default-password*)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -410,6 +503,8 @@ Licensed under the AGPL3.
                                      ',sname err)))))
                  :name ,sname)))))
 
+
+;;; workers:
 (defvar *botil*)
 (defvar *command-processor*)
 (defvar *query-processor*)
@@ -493,7 +588,7 @@ Licensed under the AGPL3.
             (answer sender "I'm an IRC log bot, under AGPL3 license, my sources are available at <~A>."
                     *sources-url*)))))
 
-(defun botil (command)
+(defun botil (command server)
   (ecase command
     ((reconnect)
      (dolist (channel (logged-channels))
@@ -522,19 +617,14 @@ Licensed under the AGPL3.
                               (botil command)))
   (load-server-database)
   (mapcar (lambda (server)
-            (server *servers*))
-    
-    ))
+            (hostname server)
+            (botnick server)
+            (botpass server))
+          *servers*))
 
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; (setf *nickname* "botil-test"  "#botil-test")
-(defun configure ()
-  (setf *server*   (or (uiop:getenv "BOTIL_SERVER")    *server*)
-        *nickname* (or (uiop:getenv "BOTIL_NICKNAME")  *nickname*)
-        *botpass*  (or (uiop:getenv "BOTIL_BOTPASS")   *botpass*)))
 
 ;; source = "nickname" or "#channel"
 ;; user = "~t" "identified-user@host" etc
@@ -596,9 +686,21 @@ and evaluating DELAY-EXPRESSIONS between each iteration."
   "Breaks the main loop and exit."
   (throw :gazongues nil))
 
-(defun reconnect ()
-  "Disconnect and reconnect to the IRC server."
-  (throw :petites-gazongues nil))
+
+(defmethod connect-to-server ((server server))
+  (setf (connection server) (connect :nickname (botnick server)
+                                     :server (hostname server)))
+  (add-hook (connection server) 'irc-privmsg-message 'msg-hook)
+  (mapc (lambda (class) (add-hook (connection server) class 'svc-hook)) 
+        '(irc-notice-message 
+          irc-topic-message irc-error-message
+          irc-mode-message
+          ;; -
+          irc-nick-message irc-join-message
+          irc-part-message irc-quit-message
+          irc-kill-message irc-kick-message
+          irc-invite-message))
+  (send-worker *botil* 'reconnect server))
 
 (defun main ()
   "The main program of the botil IRC bot.
@@ -607,34 +709,19 @@ log the channels we're instructed to log,
 and answer to search queries in those logs."
   (let ((*package* (load-time-value
                     (find-package "COM.INFORMATIMAGO.SMALL-CL-PGMS.BOTIL"))))
-    (configure)
     (botil-initialize)
     (with-simple-restart (quit "Quit")
       (catch :gazongues
-        (with-retry (sleep (+ 10 (random 30)))
-          (with-simple-restart (reconnect "Reconnect")
-            (catch :petites-gazongues
-              (unwind-protect
-                   (progn
-                     (setf *connection* (connect :nickname *nickname* :server *server*))
-                     (add-hook *connection* 'irc-privmsg-message 'msg-hook)
-                     (mapc (lambda (class) (add-hook *connection* class 'svc-hook)) 
-                           '(irc-notice-message 
-                             irc-topic-message irc-error-message
-                             irc-mode-message
-                             ;; -
-                             irc-nick-message irc-join-message
-                             irc-part-message irc-quit-message
-                             irc-kill-message irc-kick-message
-                             irc-invite-message))
-                     (send-worker *botil* 'reconnect)
-                     (loop :while (read-message *connection*)
-                           #|there's a 10 s timeout in here.|#))
-                (when *connection*
-                  (quit *connection*)
-                  (setf *connection* nil))))))))))
+        (loop
+          :for server :in *servers*
+          :for connection := (connection server)
+          :if connection
+            :do (with-simple-restart (reconnect "Reconnect")
+                  (catch :petites-gazongues
+                    (read-message connection)))
+          :else
+            :do (connect-to-server server))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 ;;;; THE END ;;;;
