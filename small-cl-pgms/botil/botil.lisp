@@ -279,19 +279,62 @@ Licensed under the AGPL3.
 ;;                `-- users
 ;;                    `-- pjb.sexp
 
+;;; --------
+
+(defgeneric server-pathname (object)
+  (:method ((server-name string))
+    (merge-pathnames (make-pathname :directory (list :relative "servers" server-name)
+                                    :name nil :type nil :version nil
+                                    :defaults *database*)
+                     *database*))
+  (:method ((server server))
+    (server-pathname (hostname server))))
+
+(defgeneric server-datafile-pathname (object)
+  (:method ((server-name string))
+    (make-pathname :name "server" :type "plist" :version nil
+                   :defaults (server-pathname server-name)))
+  (:method ((server server))
+    (server-datafile-pathname server)))
+
+(defgeneric user-pathname (object &optional server)
+  (:method ((name t) &optional server)
+    (check-type name (or string (member :wild)))
+    (assert server (server) "SERVER is needed when calling USER-PATHNAME with a string.")
+    (let ((serverdir (server-pathname server)))
+      (merge-pathnames (make-pathname :directory '(:relative "users")
+                                      :name name :type "sexp" :version nil
+                                      :defaults serverdir)
+                       serverdir nil)))
+  (:method ((user user) &optional server)
+    (when server
+      (assert (eq server (server user))))
+    (user-pathname (name user) (server user))))
+
+(defgeneric channel-pathname (channel &optional server)
+  (:method ((channel t) &optional server)
+    (check-type channel (or string (member :wild)))
+    (assert server (server) "SERVER is needed when calling USER-PATHNAME with a string.")
+    (let ((serverdir (server-pathname server)))
+      (merge-pathnames (make-pathname :directory (list :relative "channels" channel)
+                                      :name nil :type nil :version nil
+                                      :defaults serverdir)
+                       serverdir)))
+  (:method ((channel channel) &optional server)
+    (when server
+      (assert (eq server (server channel))))
+    (channel-pathname (name channel) (server channel))))
+
+(defgeneric log-file-pathname (channel)
+  (:method ((channel channel))
+    (make-pathname :name (format nil "~6,'0D" (log-month channel)) :type "log" :version nil
+                   :defaults (channel-pathname channel))))
+
+;;; --------
+
 (defgeneric save (object)
   (:method (object) object))
 
-(defun server-pathname (server-name)
-  (merge-pathnames (make-pathname :directory (list :relative "servers" server-name)
-                                  :name nil :type nil :version nil
-                                  :defaults *database*)
-                   *database*))
-
-(defun server-datafile-pathname (server-name)
-  (merge-pathnames "server.plist"
-                   (server-pathname server-name)
-                   nil))
 
 (defun server-data (pathname)
   (sexp-file-contents (server-datafile-pathname pathname)
@@ -315,14 +358,10 @@ Licensed under the AGPL3.
                              :botpass  (getf data :botpass))))
           (directory (server-pathname :wild))))
 
+
+                      
 (defun load-channels-of-server (server)
-  (dolist (pathname
-           (directory (merge-pathnames (make-pathname :directory (list :relative
-                                                                       "servers" (hostname server)
-                                                                       "channels" :wild)
-                                                      :name nil :type nil :version nil
-                                                      :defaults *database*)
-                                       *database*)))
+  (dolist (pathname (directory (channel-pathname :wild server)))
     (make-instance 'channel
                    :server server
                    :name (first (last (pathname-directory pathname))))))
@@ -334,14 +373,10 @@ Licensed under the AGPL3.
 
 
 (defun create-server (hostname &optional (nick "botil") (password nil))
-    (check-type hostname string)
+  (check-type hostname string)
   (ensure-directories-exist
-   (merge-pathnames (make-pathname :directory (list :relative
-                                                    "servers" hostname
-                                                    "channels")
-                                   :name "dummy" :type "dummy" :version nil
-                                   :defaults *database*)
-                    *database*))
+   (make-pathname :name "dummy" :type "dummy" :version nil
+                  :defaults (server-pathname hostname)))
   (let ((server (make-instance 'server
                                :hostname hostname
                                :botnick nick
@@ -354,21 +389,12 @@ Licensed under the AGPL3.
 (defmethod create-channel ((server server) (name string))
   (assert (char= #\# (aref name 0)))
   (ensure-directories-exist
-   (merge-pathnames (make-pathname :directory (list :relative
-                                                    "servers" hostname
-                                                    "channels" name)
-                                   :name "dummy" :type "dummy" :version nil
-                                   :defaults *database*)
-                    *database*))
+   (make-pathname :name "dummy" :type "dummy" :version nil
+                  :defaults (channel-pathname name server)))
   (make-instance 'channel :server server :name name))
 
 (defmethod save ((user botil-user))
-  (let ((pathname (merge-pathnames (make-pathname :directory (list :relative
-                                                                   "servers" (hostname (server user))
-                                                                   "users")
-                                                  :name (name user) :type "sexp" :version nil
-                                                  :defaults *database*)
-                                   *database*)))
+  (let ((pathname (user-pathname user)))
     (with-open-file (out pathname
                          :direction :output
                          :if-does-not-exist :create
@@ -380,26 +406,14 @@ Licensed under the AGPL3.
 
 (defmethod create-user ((server server) (name string))
   (assert (char/= #\# (aref name 0)))
-  (let ((pathname (merge-pathnames (make-pathname :directory (list :relative
-                                                           "servers" hostname
-                                                           "users")
-                                          :name name :type "sexp" :version nil
-                                          :defaults *database*)
-                                   *database*)))
+  (let ((pathname (user-pathname name server)))
     (ensure-directories-exist pathname)
-    (let ((user (make-instance 'botil-user :server sever :name name)))
+    (let ((user (make-instance 'botil-user :server server :name name)))
       (save user))))
-
-(defmethod log-file ((channel channel))
-  (merge-pathnames (make-pathname :directory (list :relative
-                                                   "servers" (hostname (server channel))
-                                                   "channels" (name channel))
-                                  :name (format nil "~6,'0D" (log-month channel)) :type "log" :version nil
-                                  :defaults *database*)
-                   *database*))
 
 (defmethod ensure-log-stream ((channel channel) time)
   (multiple-value-bind (se mi ho da mo ye) (decode-universal-time time 0)
+    (declare (ignore se mi ho da))
     (let ((month (+ (* ye 100) mo)))
       (when (/= month (log-month channel))
         (when (log-stream channel)
@@ -407,7 +421,7 @@ Licensed under the AGPL3.
           (setf (log-stream channel) nil))
         (setf (log-month channel) month))
       (unless (log-stream channel)
-        (setf (log-stream channel) (open (log-file channel)
+        (setf (log-stream channel) (open (log-file-pathname channel)
                                          :external-format *external-format*
                                          :direction :output
                                          :if-does-not-exist :create
@@ -416,7 +430,7 @@ Licensed under the AGPL3.
 
 
 (defmethod write-message ((channel channel) (message message))
-  (ensure-log-stream (received-time message))
+  (ensure-log-stream channel (received-time message))
   (prin1 (list :source (source message)
                :user (user message)
                :host (host message)
@@ -440,7 +454,7 @@ Licensed under the AGPL3.
                                 :raw-message-string (raw-message-string ircmsg))))
 
 ;; (setf (log-month  (first (channels (first *servers*)))) 201601)
-;; (log-file (first (channels (first *servers*))))
+;; (log-file-pathname (first (channels (first *servers*))))
 
 (defun initialize-database (dbdir-pathname)
   "This initialize the empty directory at pathname DBDIR-PATHNAME as a
@@ -512,7 +526,7 @@ commands."
 (defvar *logger*)
 
 (defun send-irc (recipient text)
-  (privmsg *connection* recipient text))
+  (privmsg (connection (server recipient)) recipient text))
 
 (defun say (&rest args)
   (format t "~&~{~A~^ ~}~%" args)
@@ -521,7 +535,7 @@ commands."
 (defun answer (recipient format-control &rest format-arguments)
   (let ((text (apply (function format) nil format-control format-arguments)))
     (say text)
-    (apply (function send-irc) *sender* recipient format-control format-arguments)))
+    (apply (function send-irc) *sender* recipient text)))
 
 (defun query-processor (sender query)
   (declare (ignore sender query))
@@ -532,9 +546,10 @@ commands."
   )
 
 (defun join-channel (channel)
-  (join *connection* channel))
+  (join (connection (server channel)) channel))
 
-(defun logged-channels () ;; TIME!
+(defun logged-channels (server) ;; TIME!
+  (declare (ignore server))
   )
 
 (defun start-logging-channel (channel)
@@ -591,7 +606,7 @@ commands."
 (defun botil (command server)
   (ecase command
     ((reconnect)
-     (dolist (channel (logged-channels))
+     (dolist (channel (logged-channels server))
        (start-logging-channel channel)))
     ((quit)
      (exit))))
@@ -602,7 +617,7 @@ commands."
                               (let ((message (format nil "~?" message arguments)))
                                 
                                 (format *trace-output* "~&~A <- ~A~%" recipient message)
-                                (sender recipient message)))
+                                (send-irc recipient message)))
         *query-processor*   (make-worker-thread query-processor (sender message)
                               (format *trace-output* "~&~A -> ~A~%" sender message)
                               (query-processor sender message))
@@ -612,9 +627,9 @@ commands."
         *command-processor* (make-worker-thread command-processor (sender message)
                               (format *trace-output* "~&~A -> ~A~%" sender message)
                               (command-processor sender message))
-        *botil*             (make-worker-thread botil (command)
+        *botil*             (make-worker-thread botil (command server)
                               (format *trace-output* "~&BOTIL <- ~A~%" command)
-                              (botil command)))
+                              (botil command server)))
   (load-server-database)
   (mapcar (lambda (server)
             (hostname server)
