@@ -38,7 +38,8 @@
   :author "Pascal J. Bourguignon"
   :version "1.0.0"
   :license "AGPL3"
-  :depends-on ("com.informatimago.common-lisp.cesarum"
+  :depends-on ("com.informatimago.rdp"
+               "com.informatimago.common-lisp.cesarum"
                "com.informatimago.common-lisp.interactive" ; date uptime
                "cl-irc" "cl-json" "drakma" "split-sequence")
   :components ((:file "botil")))
