@@ -439,15 +439,18 @@ RETURN: an equivalent, cleaned list of rules.
               (assert (string= --> '-->)
                       () "Rules should be written as (--> <non-terminal> <rhs> [:action <form>...])~%~
                           Invalid rule: ~S" rule)
-              `(,non-terminal ,(clean
-                                (cond
-                                  ((find :action items)
-                                   `(seq ,@items))
-                                  ((and (= 1 (length items))
-                                        (listp (first items)))
-                                   (first items))
-                                  (t
-                                   `(seq ,@items :action `(,',non-terminal ,@,(dollar 0)))))))))
+              (handler-case
+               `(,non-terminal ,(clean
+                                 (cond
+                                   ((find :action items)
+                                    `(seq ,@items))
+                                   ((and (= 1 (length items))
+                                         (listp (first items)))
+                                    (first items))
+                                   (t
+                                    `(seq ,@items :action `(,',non-terminal ,@,(dollar 0)))))))
+                (error (err)
+                  (error "While cleaning rule ~S~%~A" rule err)))))
           rules))
 
 ;;;
@@ -579,8 +582,20 @@ RETURN: A hash-table containing the firsts-set for each symbol of the
                            () "There are duplicates in the first sets of the rules for the non-terminal ~S: ~S"
                            non-terminal (duplicates firsts-set))
                    (setf (gethash non-terminal firsts-sets) unique-firsts-set)))))
-      (map nil (function firsts-set) (grammar-all-terminals grammar))
-      (map nil (function firsts-set) (grammar-all-non-terminals grammar)))
+      (map nil  (lambda (terminal)
+                  (handler-case
+                      (firsts-set terminal)
+                    (error (err)
+                      (error "While computing the firsts set of terminal ~S~%~A"
+                             terminal err))))
+        (grammar-all-terminals grammar))
+      (map nil (lambda (non-terminal)
+                 (handler-case
+                     (firsts-set non-terminal)
+                   (error (err)
+                     (error "While computing the firsts set of non-terminal ~S~%~A"
+                            non-terminal err))))
+        (grammar-all-non-terminals grammar)))
     firsts-sets))
 
 
@@ -1044,25 +1059,28 @@ RETURN: the new production set; the new non-terminal set
      ;;              :non-terminals *non-terminal-stack*))
      ,@body))
 
+
+
 (defun error-unexpected-token (scanner expected-tokens production)
   (restart-case
-      (error 'unexpected-token-error
-             :file    (scanner-file scanner)
-             :line    (scanner-line scanner)
-             :column  (scanner-column scanner)
-             :state   (scanner-state  scanner)
-             ;; :grammar (grammar-named ',(grammar-name grammar))
-             :scanner scanner
-             :non-terminal-stack (copy-list *non-terminal-stack*)
-             :expected-tokens expected-tokens
-             :format-control "Unexpected token ~A (~S)~:[~@[~%Expected ~{~A~}~]~;~%Expected one of ~{~A~^, ~}~]~%~S~@[~%~{~A --> ~S~}~]"
-             :format-arguments (list
-                                (scanner-current-token scanner)
-                                (scanner-current-text scanner)
-                                (cdr expected-tokens)
-                                expected-tokens
-                                *non-terminal-stack*
-                                production))
+      (let ((err (make-condition 'unexpected-token-error
+                                 :file    (scanner-file scanner)
+                                 :line    (scanner-line scanner)
+                                 :column  (scanner-column scanner)
+                                 :state   (scanner-state  scanner)
+                                 ;; :grammar (grammar-named ',(grammar-name grammar))
+                                 :scanner scanner
+                                 :non-terminal-stack (copy-list *non-terminal-stack*)
+                                 :expected-tokens expected-tokens
+                                 :format-control "Unexpected token ~A (~S)~:[~@[~%Expected ~{~A~}~]~;~%Expected one of ~{~A~^, ~}~]~%~S~@[~%~S~]" 
+                                 :format-arguments (list
+                                                    (scanner-current-token scanner)
+                                                    (scanner-current-text scanner)
+                                                    (cdr expected-tokens)
+                                                    expected-tokens
+                                                    *non-terminal-stack*
+                                                    production))))
+        (error err))
     (skip-token-and-continue ()
       :report (lambda (stream)
                 (format stream "Skip token ~:[~A ~A~;~*<~A>~], and continue"

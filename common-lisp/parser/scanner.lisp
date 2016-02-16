@@ -169,7 +169,10 @@
   (:documentation "TAB aligns to column number modulo TAB-WIDTH."))
 (defgeneric scanner-current-token (scanner)
   (:documentation "The last token read."))
-
+(defgeneric scanner-current-text (scanner)
+  (:documentation "Text of the current token")
+  (:method ((scanner scanner))
+    (prin1-to-string (scanner-current-token scanner))))
 
 (defclass scanner (sloted-object)
   ((source               :initarg       :source
