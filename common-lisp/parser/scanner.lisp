@@ -170,9 +170,7 @@
 (defgeneric scanner-current-token (scanner)
   (:documentation "The last token read."))
 (defgeneric scanner-current-text (scanner)
-  (:documentation "Text of the current token")
-  (:method ((scanner scanner))
-    (prin1-to-string (scanner-current-token scanner))))
+  (:documentation "Text of the current token"))
 
 (defclass scanner (sloted-object)
   ((source               :initarg       :source
@@ -219,6 +217,10 @@ Subclasses may use scanner-stream to read from the source.")
                          :initarg       :token-kind-package
                          :documentation "The package where the token-kind symbols are interned in."))
   (:documentation "An abstract scanner."))
+
+
+(defmethod scanner-current-text ((scanner scanner))
+  (prin1-to-string (scanner-current-token scanner)))
 
 
 
