@@ -72,6 +72,8 @@ Licensed under the AGPL3.
 ;;; Configuration:
 ;;;
 
+(defvar *botil-email* "botil@informatimago.com")
+
 (defvar *external-format* :utf-8
   "External format used for all files (database files, log files).")
 
@@ -136,6 +138,11 @@ Licensed under the AGPL3.
                :initform '()
                :accessor channels
                :type     list)
+   (enabled    :type     boolean
+               :initarg  :enabled
+               :initform t
+               :accessor enabled
+               :documentation "Set to false to prevent this server to connect.")
    (connection :initarg  :connection
                :initform nil
                :accessor connection
@@ -191,7 +198,21 @@ Licensed under the AGPL3.
    (email    :initarg  :email
              :initform nil
              :accessor email
-             :type     (or null email))))
+             :type     (or null email))
+   (verified :initarg :verified
+             :initform nil
+             :accessor verified
+             :type boolean)
+   (key      :initarg :key
+             :initform nil
+             :accessor key
+             :type (or null string)
+             :documentation "Verification key when verified is false;
+password setting token when verified is true.")
+   (identified :initarg :identified
+               :initform nil
+               :accessor identified
+               :type boolean)))
 
 (defmethod print-object ((user user) stream)
   (print-unreadable-object (user stream :identity nil :type t)
@@ -397,7 +418,9 @@ Licensed under the AGPL3.
   (dolist (server *servers*)
     (load-channels-of-server server)))
 
-
+(defmethod find-server ((name string))
+  (find name *servers* :key (function hostname)
+                       :test (function string-equal)))
 
 ;;; --------------------
 ;;; channel
@@ -469,7 +492,12 @@ Licensed under the AGPL3.
                          :if-does-not-exist :create
                          :if-exists :supersede
                          :external-format *external-format*)
-      (print (list :name (name user) :password (password user)) out)
+      (print (list :name     (name user)
+                   :password (password user)
+                   :email    (email user)
+                   :key      (key user)
+                   :verified (verified user))
+             out)
       (terpri out)))
   user)
 
@@ -578,9 +606,16 @@ commands."
   (check-type text string)
   (irc:privmsg (connection (server recipient)) (name recipient) text))
 
+;; TODO: change answer to queue the message thru the *sender* worker.
 (defun answer (recipient format-control &rest format-arguments)
   (let ((text (apply (function format) nil format-control format-arguments)))
     (send-irc recipient text)))
+
+(defun disconnect (sender server)
+  ;; TODO: queue a message for the (server sender) thru the *sender*
+  ;; worker, to disconnect the server when it processes it.
+  )
+
 
 (defun query-processor (server sender query)
   (check-type server server)
@@ -625,155 +660,131 @@ commands."
   ;;                  (arguments irc:arguments)) message)
   (todo 'logger))
 
+;;;----------------------------------------------------------------------------------------
 
-#-(and) ((rights
-          
-          (query criteria)
-          (create-log server "#name")
-          (create-server hostname)
-          )
-         (commands
-
-          (register password email) ; -> (create-user server name password email)
-          (identify password)       ; -> (validate-user user password)
-          (send-irc-pass [nickname]) ; -> (send-irc-password-change-key user) ; NY
-          (set-pass nickname key password) ; -> (set-password user key password) ; NY
-          (list-logs)                      ; -> (list-logs user)
-
-          (query criteria)              
-          (create-log "#name" [start-date [end-date]])  ; -> (create-channel server "#name") (create-log-request channel user start-date end-date)
-          (create-server hostname [botil-nick]) ; (create-server hostname botil-nick) --> actual-botil-nick
-
-          ))
-
-
-(defmethod word-equal ((a string) (b token))
-  (word-equal b a))
-(defmethod word-equal ((a token) (b string))
-  (string= (token-text a) b))
 
 #|
 
-    message    =  [ ":" prefix SPACE ] command [ params ] crlf
-    prefix     =  servername / ( nickname [ [ "!" user ] "@" host ] )
-    command    =  1*letter / 3digit
-    params     =  *14( SPACE middle ) [ SPACE ":" trailing ]
-               =/ 14( SPACE middle ) [ SPACE [ ":" ] trailing ]
+message    =  [ ":" prefix SPACE ] command [ params ] crlf
+prefix     =  servername / ( nickname [ [ "!" user ] "@" host ] )
+command    =  1*letter / 3digit
+params     =  *14( SPACE middle ) [ SPACE ":" trailing ]
+=/ 14( SPACE middle ) [ SPACE [ ":" ] trailing ]
 
-    nospcrlfcl =  %x01-09 / %x0B-0C / %x0E-1F / %x21-39 / %x3B-FF
-                    ; any octet except NUL, CR, LF, " " and ":"
-    middle     =  nospcrlfcl *( ":" / nospcrlfcl )
-    trailing   =  *( ":" / " " / nospcrlfcl )
+nospcrlfcl =  %x01-09 / %x0B-0C / %x0E-1F / %x21-39 / %x3B-FF
+                    ; any octet except NUL, CR, LF, " " and ":" ;
+middle     =  nospcrlfcl *( ":" / nospcrlfcl )
+trailing   =  *( ":" / " " / nospcrlfcl )
 
-    SPACE      =  %x20        ; space character
-    crlf       =  %x0D %x0A   ; "carriage return" "linefeed"
+SPACE      =  %x20        ; space character
+crlf       =  %x0D %x0A   ; "carriage return" "linefeed"
 
 
 
 
 Kalt                         Informational                      [Page 6]
 
- 
+
 RFC 2812          Internet Relay Chat: Client Protocol        April 2000
 
 
-   NOTES:
-      1) After extracting the parameter list, all parameters are equal
-         whether matched by <middle> or <trailing>. <trailing> is just a
-         syntactic trick to allow SPACE within the parameter.
+NOTES:
+1) After extracting the parameter list, all parameters are equal
+whether matched by <middle> or <trailing>. <trailing> is just a
+syntactic trick to allow SPACE within the parameter.
 
-      2) The NUL (%x00) character is not special in message framing, and
-         basically could end up inside a parameter, but it would cause
-         extra complexities in normal C string handling. Therefore, NUL
-         is not allowed within messages.
+2) The NUL (%x00) character is not special in message framing, and
+basically could end up inside a parameter, but it would cause
+extra complexities in normal C string handling. Therefore, NUL
+is not allowed within messages.
 
-   Most protocol messages specify additional semantics and syntax for
-   the extracted parameter strings dictated by their position in the
-   list.  For example, many server commands will assume that the first
-   parameter after the command is the list of targets, which can be
-   described with:
+Most protocol messages specify additional semantics and syntax for
+the extracted parameter strings dictated by their position in the
+list.  For example, many server commands will assume that the first
+parameter after the command is the list of targets, which can be
+described with:
 
-  target     =  nickname / server
-  msgtarget  =  msgto *( "," msgto )
-  msgto      =  channel / ( user [ "%" host ] "@" servername )
-  msgto      =/ ( user "%" host ) / targetmask
-  msgto      =/ nickname / ( nickname "!" user "@" host )
-  channel    =  ( "#" / "+" / ( "!" channelid ) / "&" ) chanstring
-                [ ":" chanstring ]
-  servername =  hostname
-  host       =  hostname / hostaddr
-  hostname   =  shortname *( "." shortname )
-  shortname  =  ( letter / digit ) *( letter / digit / "-" )
-                *( letter / digit )
-                  ; as specified in RFC 1123 [HNAME]
-  hostaddr   =  ip4addr / ip6addr
-  ip4addr    =  1*3digit "." 1*3digit "." 1*3digit "." 1*3digit
-  ip6addr    =  1*hexdigit 7( ":" 1*hexdigit )
-  ip6addr    =/ "0:0:0:0:0:" ( "0" / "FFFF" ) ":" ip4addr
-  nickname   =  ( letter / special ) *8( letter / digit / special / "-" )
-  targetmask =  ( "$" / "#" ) mask
-                  ; see details on allowed masks in section 3.3.1
-  chanstring =  %x01-07 / %x08-09 / %x0B-0C / %x0E-1F / %x21-2B
-  chanstring =/ %x2D-39 / %x3B-FF
-                  ; any octet except NUL, BELL, CR, LF, " ", "," and ":"
-  channelid  = 5( %x41-5A / digit )   ; 5( A-Z / 0-9 )
+target     =  nickname / server
+msgtarget  =  msgto *( "," msgto )
+msgto      =  channel / ( user [ "%" host ] "@" servername )
+msgto      =/ ( user "%" host ) / targetmask
+msgto      =/ nickname / ( nickname "!" user "@" host )
+channel    =  ( "#" / "+" / ( "!" channelid ) / "&" ) chanstring
+[ ":" chanstring ]
+servername =  hostname
+host       =  hostname / hostaddr
+hostname   =  shortname *( "." shortname )
+shortname  =  ( letter / digit ) *( letter / digit / "-" )
+*( letter / digit )
+                  ; as specified in RFC 1123 [HNAME] ;
+hostaddr   =  ip4addr / ip6addr
+ip4addr    =  1*3digit "." 1*3digit "." 1*3digit "." 1*3digit
+ip6addr    =  1*hexdigit 7( ":" 1*hexdigit )
+ip6addr    =/ "0:0:0:0:0:" ( "0" / "FFFF" ) ":" ip4addr
+nickname   =  ( letter / special ) *8( letter / digit / special / "-" )
+targetmask =  ( "$" / "#" ) mask
+                  ; see details on allowed masks in section 3.3.1 ;
+chanstring =  %x01-07 / %x08-09 / %x0B-0C / %x0E-1F / %x21-2B
+chanstring =/ %x2D-39 / %x3B-FF
+                  ; any octet except NUL, BELL, CR, LF, " ", "," and ":" ;
+channelid  = 5( %x41-5A / digit )   ; 5( A-Z / 0-9 )
 
-  Other parameter syntaxes are:
+Other parameter syntaxes are:
 
-  user       =  1*( %x01-09 / %x0B-0C / %x0E-1F / %x21-3F / %x41-FF )
-                  ; any octet except NUL, CR, LF, " " and "@"
-  key        =  1*23( %x01-05 / %x07-08 / %x0C / %x0E-1F / %x21-7F )
-                  ; any 7-bit US_ASCII character,
-                  ; except NUL, CR, LF, FF, h/v TABs, and " "
-  letter     =  %x41-5A / %x61-7A       ; A-Z / a-z
-  digit      =  %x30-39                 ; 0-9
-  hexdigit   =  digit / "A" / "B" / "C" / "D" / "E" / "F"
-  special    =  %x5B-60 / %x7B-7D
-                   ; "[", "]", "\", "`", "_", "^", "{", "|", "}"
+user       =  1*( %x01-09 / %x0B-0C / %x0E-1F / %x21-3F / %x41-FF )
+                  ; any octet except NUL, CR, LF, " " and "@" ;
+key        =  1*23( %x01-05 / %x07-08 / %x0C / %x0E-1F / %x21-7F )
+                  ; any 7-bit US_ASCII character, ;
+                  ; except NUL, CR, LF, FF, h/v TABs, and " " ;
+letter     =  %x41-5A / %x61-7A       ; A-Z / a-z
+digit      =  %x30-39                 ; 0-9
+hexdigit   =  digit / "A" / "B" / "C" / "D" / "E" / "F"
+special    =  %x5B-60 / %x7B-7D
+                   ; "[", "]", "\", "`", "_", "^", "{", "|", "}" ;
 
-  NOTES:
-      1) The <hostaddr> syntax is given here for the sole purpose of
-         indicating the format to follow for IP addresses.  This
-         reflects the fact that the only available implementations of
-         this protocol uses TCP/IP as underlying network protocol but is
-         not meant to prevent other protocols to be used.
+NOTES:
+1) The <hostaddr> syntax is given here for the sole purpose of
+indicating the format to follow for IP addresses.  This
+reflects the fact that the only available implementations of
+this protocol uses TCP/IP as underlying network protocol but is
+not meant to prevent other protocols to be used.
 
-      2) <hostname> has a maximum length of 63 characters.  This is a
-         limitation of the protocol as internet hostnames (in
-         particular) can be longer.  Such restriction is necessary
-         because IRC messages are limited to 512 characters in length.
-         Clients connecting from a host which name is longer than 63
-         characters are registered using the host (numeric) address
-         instead of the host name.
+2) <hostname> has a maximum length of 63 characters.  This is a
+limitation of the protocol as internet hostnames (in
+particular) can be longer.  Such restriction is necessary
+because IRC messages are limited to 512 characters in length.
+Clients connecting from a host which name is longer than 63
+characters are registered using the host (numeric) address
+instead of the host name.
 
-      3) Some parameters used in the following sections of this
-         documents are not defined here as there is nothing specific
-         about them besides the name that is used for convenience.
-         These parameters follow the general syntax defined for
-         <params>.
+3) Some parameters used in the following sections of this
+documents are not defined here as there is nothing specific
+about them besides the name that is used for convenience.
+These parameters follow the general syntax defined for
+<params>.
 |#
 
 #|
 
-   Each user is distinguished from other users by a unique nickname
-   having a maximum length of nine (9) characters.  See the protocol
-   grammar rules (section 2.3.1) for what may and may not be used in a
-   nickname.
+Each user is distinguished from other users by a unique nickname
+having a maximum length of nine (9) characters.  See the protocol
+grammar rules (section 2.3.1) for what may and may not be used in a
+nickname.
 
-   While the maximum length is limited to nine characters, clients
-   SHOULD accept longer strings as they may become used in future
-   evolutions of the protocol.
+While the maximum length is limited to nine characters, clients
+SHOULD accept longer strings as they may become used in future
+evolutions of the protocol.
 
 
 
-   Channels names are strings (beginning with a '&', '#', '+' or '!'
-   character) of length up to fifty (50) characters.  Apart from the
-   requirement that the first character is either '&', '#', '+' or '!',
-   the only restriction on a channel name is that it SHALL NOT contain
-   any spaces (' '), a control G (^G or ASCII 7), a comma (',').  Space
-   is used as parameter separator and command is used as a list item
-   separator by the protocol).  A colon (':') can also be used as a
-   delimiter for the channel mask.  Channel names are case insensitive.
+Channels names are strings (beginning with a '&', '#', '+' or '!'
+character) of length up to fifty (50) characters.  Apart from the
+requirement that the first character is either '&', '#', '+' or '!',
+the only restriction on a channel name is that it SHALL NOT contain
+any spaces (' '), a control G (^G or ASCII 7), a comma (',').  Space
+is used as parameter separator and command is used as a list item
+separator by the protocol).  A colon (':') can also be used as a
+delimiter for the channel mask.  Channel names are case insensitive.
 
 (coerce (loop for i from 32 to 126 collect (code-char i)) 'string)
 
@@ -789,6 +800,21 @@ RFC 2812          Internet Relay Chat: Client Protocol        April 2000
 
 |#
 
+
+
+(defmethod word-equal ((a string) (b token))
+  (word-equal b a))
+(defmethod word-equal ((a token) (b string))
+  (string= (token-text a) b))
+
+;; TODO: We need a command to create a new server before connecting it:
+;;       create server hostname nick botil password secret
+;;       (create-server hostname [botil-nick])
+;;
+;; TODO: A command to manage users right.
+;; - server creation
+;; - server enable/disable
+;; - user banishment
 
 (defgrammar botil
   :terminals ((word     "[^ ]+")
@@ -806,7 +832,8 @@ RFC 2812          Internet Relay Chat: Client Protocol        April 2000
                     list
                     set
                     server-commands
-                    register identify reset)
+                    register identify reset
+                    help version uptime sources)
                :action $1)
 
           (--> server   word :action `(server   ,(second word)))
@@ -844,7 +871,7 @@ RFC 2812          Internet Relay Chat: Client Protocol        April 2000
                 (seq (rep string) :action `(keywords ,@$1))
                 (seq (opt "channel") channel :action channel)
                 (seq (alt "nick" "user" "mr" "mrs" "miss" "dr" "pr") nick :action nick)))
-         
+          
           (--> query
                "query" criteria
                :action `(query ,criteria))
@@ -1014,12 +1041,14 @@ RFC 2812          Internet Relay Chat: Client Protocol        April 2000
       ("cancel log 42"
        (cancel-log-id (id "42"))))))
 
-(test/botil-grammar)
-
 
 (defun reconnect (server)
   (irc:quit (connection server) "Will reconnect...")
   (setf (connection server) nil))
+
+;;;-----------------------------------------------------------------------------
+;;; Miscellaenous commands
+;;;
 
 (defparameter *disses*
   #(
@@ -1060,99 +1089,291 @@ RFC 2812          Internet Relay Chat: Client Protocol        April 2000
                             my sources are available at <~A>."
           *sources-url*))
 
+
+;;; -----------------------------------------------------------------------------
+
+(defun argument-server (sender server)
+  (cond
+    ((null server) (server sender))
+    ((and (consp server)
+          (consp (cdr server))
+          (null (cddr server))
+          (eq 'server (car server))
+          (stringp (cadr server)))
+     (or (find-server (cadr server))
+         (error "Unknown server: ~S" (cadr server))))
+    (t (error "Invalid server argument: ~S" server))))
+
+(defun argument-user (sender nick)
+  (cond
+    ((null nick) sender)
+    ((and (consp nick)
+          (consp (cdr nick))
+          (null (cddr nick))
+          (eq 'nick (car nick))
+          (stringp (cadr nick)))
+     (or (find-user (server sender) (cadr nick))
+         (error "Unknown user: ~S" (cadr nick))))
+    (t (error "Invalid nick argument: ~S" nick))))
+
+(defun argument-key (key)
+  (cond
+    ((null key) sender)
+    ((and (consp key)
+          (consp (cdr key))
+          (null (cddr key))
+          (eq 'key (car key))
+          (stringp (cadr key)))
+     (cadr key))
+    (t (error "Invalid key argument: ~S" key))))
+
+(defun argument-email (email)
+  (cond
+    ((null email) sender)
+    ((and (consp email)
+          (consp (cdr email))
+          (null (cddr email))
+          (eq 'email (car email))
+          (stringp (cadr email)))
+     (cadr email))
+    (t (error "Invalid email argument: ~S" email))))
+
+(defun argument-password (password)
+  (cond
+    ((null password) sender)
+    ((and (consp password)
+          (consp (cdr password))
+          (null (cddr password))
+          (eq 'password (car password))
+          (stringp (cadr password)))
+     (cadr password))
+    (t (error "Invalid password argument: ~S" password))))
+
+;;; -----------------------------------------------------------------------------
+;;; server commands
+;;;;
+
+(defmacro with-server ((sender server) &body body)
+  `(let ((,server (argument-server ,sender ,server)))
+     ,@body))
+
+(defun connect   (sender server)
+  ;; (connect (server "irc.freenode.org"))
+  (with-server (sender server)
+    ;; TODO: perhaps not useful…
+    ))
+
+(defun reconnect (sender server)
+  ;; (reconnect (server "irc.freenode.org"))
+  (with-server (sender server)
+    ;; TODO: perhaps not useful…
+    ))
+
+(defun enable    (sender server)
+  ;; (enable (server "irc.freenode.org"))
+  (with-server (sender server)
+    (setf (enabled server) t)
+    (answer sender "~A is enabled, will connect." (hostname server))))
+
+(defun disable   (sender server)
+  ;; (disable (server "irc.freenode.org"))
+  (with-server (sender server)
+    (setf (enabled server) nil)
+    (if (eq server (server sender))
+        (answer sender "This server is disabled, will disconnect.")
+        (answer sender "~A is disabled, will disconnect." (hostname server)))
+    (disconnect sender server)))
+
+;;; -----------------------------------------------------------------------------
+;;; list commands
+;;;
+
+(defun list-servers  (sender)
+  (dolist (server *servers*)
+    (answer sender "~A (~A) ~:[disabled~;~:[~;connected~]~] ~:[~;(this server)~]"
+            (hostname server) (botnick server)
+            (enabled server) (connection server)
+            (eq server (server sender)))))
+
+(defun list-channels (sender server)
+  ;; (list-channels (server "irc.freenode.org")) 
+  ;; (list-channels nil)
+  (with-server (sender server)
+    (answer sender "~{~A~^ ~}"  (mapcar (function pathname-name)
+                                        (directory (channel-pathname :wild server))))))
+
+(defun list-users    (sender server)
+  ;; (list-users (server "irc.freenode.org")) 
+  ;; (list-users nil)
+  (with-server (sender server)
+    (answer sender "~{~A~^ ~}"  (mapcar (function pathname-name)
+                                        (directory (user-pathname :wild server))))))
+
+;;; -----------------------------------------------------------------------------
+;;; User identification commands
+;;;
+
+(defun send-email (from to subject body)
+  ;; signals an error if email cannot be sent.
+  ;; TODO
+  (format *trace-output* "~%From: ~A~%To: ~A~%Subject: ~A~2%~A~2%"
+          from to subject body))
+
+(defun generate-key ()
+  (substitute #\I #\1
+              (substitute-if #\O (lambda (ch) (find ch "0Q"))
+                             (with-output-to-string (out)
+                               (loop :repeat 4
+                                     :for sep = "" :then "-"
+                                     :do (format out "~A~36,4R" sep (random (expt 36 4))))))))
+
+(defun send-verification-email (sender user)
+  (if (email user)
+      (progn
+        (setf (verified user) nil
+              (key user) (generate-key))
+        (save user)
+        (send-email *botil-email*
+                    (email user)
+                    "Verify your email with botil"
+                    (format nil "Please let botil verify your email ~%~
+                                 by giving the following command ~%~
+                                 to irc://~A@~A :~%~
+                                 set password ~A ~A ~A~%"
+                            (botnick (server sender))
+                            (hostname (server sender))
+                            (name user) (key user) "{your-new-password}")))
+      (answer sender "User has no email yet. Use the register command!")))
+
+(defun send-password-change-email (sender user)
+  (if (email user)
+      (progn
+        (setf (verified user) nil
+              (key user) (generate-key))
+        (save user)
+        (send-email *botil-email*
+                    (email user)
+                    "Password change with botil"
+                    (format nil "You may change your password ~%~
+                                 by giving the following command ~%~
+                                 to irc://~A@~A :~%~
+                                 set password ~A ~A ~A~%"
+                            (botnick (server sender))
+                            (hostname (server sender))
+                            (name user) (key user) "{your-new-password}")))
+      (answer sender "User has no email yet. Use the register command!")))
+
+(defun identify (sender password)
+  ;; (identify (password "secret-password"))
+  (let ((password (argument-password password)))
+    (if (and (password sender)
+             (string= (password sender) password))
+        (progn
+          (setf (identified sender) t)
+          (answer sender "You're identified."))
+        (answer sender "Failed."))))
+
+(defun register (sender email password)
+  ;; TODO: register doesn't need the password.
+  ;; (register (email "pjb@informatimago.com") (password "secret-password"))
+  (let ((email    (argument-email email))
+        (password (argument-password password)))
+    (if (and (null (email sender))
+             (null (password sender)))
+        (progn
+          (setf (email sender) email
+                (password sender) password
+                (verified sender) nil)
+          (send-verification-email sender sender)
+          (answer sender "You're registered."))
+        (answer sender "You are already registered.  Use reset and set password to change your password."))))
+
+(defun reset (sender nick)
+  ;; (reset (nick "pjb")) 
+  ;; (reset nil)
+  (send-password-change-email sender (argument-user sender nick)))
+
+(defun set-password (sender nick key password)
+  ;; (set-password (nick "pjb") (key "321545623f") (password "new-secret-password"))
+  (let ((user     (argument-user sender nick))
+        (key      (argument-key key))
+        (password (argument-password password)))
+    (cond
+      ((string/= key (key user)) (answer sender "Invalid key, use the reset command and try with the new key."))
+      (t (setf (password user)   password
+               (verified user)   t
+               (key user)        nil
+               (identified user) nil)
+         (save user)
+         (answer sender "Password set. Identify again!")))))
+
+;;; -----------------------------------------------------------------------------
+;;; Log commands
+;;;
+
+(defun start-log (sender channel server)
+  ;; (start-log (channel "#lisp") (server "irc.freenode.org")) 
+  ;; (start-log (channel "#lisp") nil)
+  (with-server (sender server)
+    ))
+(defun stop-log (sender channel server)
+  ;; (stop-log (channel "#lisp") (server "irc.freenode.org")) 
+  ;; (stop-log (channel "#lisp") nil) 
+  (with-server (sender server)
+    ))
+(defun cancel-log-channel (sender channel server)
+  ;; (cancel-log-channel (channel "#lisp") (server "irc.freenode.org")) 
+  ;; (cancel-log-channel (channel "#lisp") nil)
+  (with-server (sender server)
+    ))
+(defun cancel-log-id (sender id)
+  ;; (cancel-log-id (id "42"))
+  )
+(defun delimited-log (sender channel server from-date to-date)
+  ;; (delimited-log (channel "#lisp") (server "irc.freenode.org") (date "2016-03-01") (date "2016-03-31")) 
+  ;; (delimited-log (channel "#lisp") (server "irc.freenode.org") (date "2016-06-01") nil) 
+  ;; (delimited-log (channel "#lisp") (server "irc.freenode.org") nil (date "2016-02-28")) 
+  ;; (delimited-log (channel "#lisp") nil (date "20160301T000000") (date "2016-03-31T00:00:00")) 
+  ;; (delimited-log (channel "#lisp") nil (date "20160601T000000") nil) 
+  ;; (delimited-log (channel "#lisp") nil nil (date "2016-02-28T00:00:00")) 
+  (with-server (sender server)
+    ))
+
+;;; -----------------------------------------------------------------------------
+;;; log querying
+;;;
+
 (defun query (sender criteria)
+  ;; (query (criteria (and (channel "#lisp") (and (nick "pjb") (keywords "cl-all"))))) 
+  ;; (query (criteria (and (keywords "\"cl\"") (and (or (keywords "all") (or (keywords "some") (keywords "any"))) (channel "#lisp"))))) 
   (answer sender "Queries are not implemented yet, sorry."))
 
-(defun connect   (sender server))
-(defun reconnect (sender server))
-(defun enable    (sender server))
-(defun disable   (sender server))
-(defun list-servers  (sender))
-(defun list-channels (sender server))
-(defun list-users    (sender server))
-(defun identify (sender password))
-(defun register (sender email password))
-(defun reset (sender nick))
-(defun set-password (sender nick key password))
-(defun start-log (sender channel server))
-(defun stop-log (sender channel server))
-(defun cancel-log-channel (sender channel server))
-(defun cancel-log-id (sender id))
-(defun delimited-log (sender channel server from-date to-date))
+;;; -----------------------------------------------------------------------------
+;;; Command interpreter.
 
-(defun interpret (server sender expression)
+(defun interpret (sender expression)
   (ecase (first expression)
-    ((help)    (help       sender (rest expression)))
-    ((version) (version    sender))
-    ((uptime)  (uptime-cmd sender))
-    ((sources) (source     sender))
-    ((query)
-     ;; (query (criteria (and (channel "#lisp") (and (nick "pjb") (keywords "cl-all"))))) 
-     ;; (query (criteria (and (keywords "\"cl\"") (and (or (keywords "all") (or (keywords "some") (keywords "any"))) (channel "#lisp"))))) 
-     )
-    ((connect) 
-     ;; (connect (server "irc.freenode.org"))
-     (connect sender (second expression)))
-    ((reconnect)
-     ;; (reconnect (server "irc.freenode.org"))
-     (reconnect sender (second expression)))
-    ((disable)
-     ;; (disable (server "irc.freenode.org"))
-     (disable sender (second expression)))
-    ((enable)
-     ;; (enable (server "irc.freenode.org"))
-     (enable sender (second expression)))
-    ((list-servers)
-     (list-servers sender))
-    ((list-channels)
-     ;; (list-channels (server "irc.freenode.org")) 
-     ;; (list-channels nil)
-     (list-channels sender (second expression)))
-    ((list-users)
-     ;; (list-users (server "irc.freenode.org")) 
-     ;; (list-users nil)
-     (list-users sender (second expression)))
-    ((identify)
-     ;; (identify (password "secret-password"))
-     (identify sender (second expression)))
-    ((register)
-     ;; (register (email "pjb@informatimago.com") (password "secret-password"))
-     (register sender (second expression) (third expression)))
-    ((reset)
-     ;; (reset (nick "pjb")) 
-     ;; (reset nil) 
-     (reset sender (second expression)))
-    ((set-password)
-     ;; (set-password (nick "pjb") (key "321545623f") (password "new-secret-password"))
-     (set-password sender (second expression)
-                   (third expression)
-                   (fourth expression)))
-    ((start-log)
-     ;; (start-log (channel "#lisp") (server "irc.freenode.org")) 
-     ;; (start-log (channel "#lisp") nil)
-     (start-log sender (second expression) (third expression)))
-    ((stop-log)
-     ;; (stop-log (channel "#lisp") (server "irc.freenode.org")) 
-     ;; (stop-log (channel "#lisp") nil) 
-     (stop-log sender (second expression) (third expression)))
-    ((cancel-log-channel)
-     ;; (cancel-log-channel (channel "#lisp") (server "irc.freenode.org")) 
-     ;; (cancel-log-channel (channel "#lisp") nil)
-     (cancel-log-channel sender (second expression) (third expression)))
-    ((cancel-log-id)
-     ;; (cancel-log-id (id "42"))
-     (cancel-log-id sender (second expression)))
-    ((delimited-log)
-     ;; (delimited-log (channel "#lisp") (server "irc.freenode.org") (date "2016-03-01") (date "2016-03-31")) 
-     ;; (delimited-log (channel "#lisp") (server "irc.freenode.org") (date "2016-06-01") nil) 
-     ;; (delimited-log (channel "#lisp") (server "irc.freenode.org") nil (date "2016-02-28")) 
-     ;; (delimited-log (channel "#lisp") nil (date "20160301T000000") (date "2016-03-31T00:00:00")) 
-     ;; (delimited-log (channel "#lisp") nil (date "20160601T000000") nil) 
-     ;; (delimited-log (channel "#lisp") nil nil (date "2016-02-28T00:00:00")) 
-     (delimited-log sender (second expression)
-                    (third expression)
-                    (fourth expression)
-                    (fifth expression)))))
+    ((help)                (help               sender (rest   expression)))
+    ((version)             (version            sender))
+    ((uptime)              (uptime-cmd         sender))
+    ((sources)             (sources            sender))
+    ((query)               (query              sender (second expression)))
+    ((connect)             (connect            sender (second expression)))
+    ((reconnect)           (reconnect          sender (second expression)))
+    ((disable)             (disable            sender (second expression)))
+    ((enable)              (enable             sender (second expression)))
+    ((list-servers)        (list-servers       sender))
+    ((list-channels)       (list-channels      sender (second expression)))
+    ((list-users)          (list-users         sender (second expression)))
+    ((identify)            (identify           sender (second expression)))
+    ((register)            (register           sender (second expression) (third expression)))
+    ((reset)               (reset              sender (second expression)))
+    ((set-password)        (set-password       sender (second expression) (third expression) (fourth expression)))
+    ((start-log)           (start-log          sender (second expression) (third expression)))
+    ((stop-log)            (stop-log           sender (second expression) (third expression)))
+    ((cancel-log-channel)  (cancel-log-channel sender (second expression) (third expression)))
+    ((cancel-log-id)       (cancel-log-id      sender (second expression)))
+    ((delimited-log)       (delimited-log      sender (second expression) (third expression) (fourth expression) (fifth expression)))))
 
 
 (defun command-processor (server sender command)
@@ -1163,10 +1384,9 @@ RFC 2812          Internet Relay Chat: Client Protocol        April 2000
           'command-processor server sender command)
   (handler-case
       (let ((expression (parse-botil command)))
-        (interpret server sender expression))
+        (interpret sender expression))
     (error (err)
-      (answer sender "~A" (princ-to-string err)))))
-
+      (answer sender "~A" (substitute #\space #\newline (princ-to-string err))))))
 
 
 (defun botil (server command)
@@ -1182,6 +1402,7 @@ RFC 2812          Internet Relay Chat: Client Protocol        April 2000
   (setf *sender*            (make-worker-thread sender (server recipient message &rest arguments)
                               (let ((message (format nil "~?" message arguments)))
                                 (format *trace-output* "~&~A <- ~A~%" recipient message)
+                                ;; TODO: we may want to add some throttling.
                                 (send-irc recipient message)))
         *query-processor*   (make-worker-thread query-processor (server sender message)
                               (format *trace-output* "~&~A -> ~A~%" sender message)
@@ -1199,7 +1420,7 @@ RFC 2812          Internet Relay Chat: Client Protocol        April 2000
 
 
 
-;; Connect and 
+;;;-----------------------------------------------------------------------------
 
 ;; source = "nickname" or "#channel"
 ;; user = "~t" "identified-user@host" etc
@@ -1248,7 +1469,7 @@ RFC 2812          Internet Relay Chat: Client Protocol        April 2000
       (send-worker *logger* server message)
       t)))
 
-  
+
 (defmethod connect-to-server ((server server))
   (setf (connection server) (irc:connect :server   (hostname server)
                                          :nickname (botnick server)
@@ -1303,19 +1524,24 @@ and answer to search queries in those logs."
     (with-simple-restart (quit "Quit")
       (catch :gazongues
         (loop
-          (loop
-            :for server :in *servers*
-            :for connection := (connection server)
-            :if connection
-              :do (with-simple-restart (reconnect "Reconnect")
-                    (catch :petites-gazongues
-                      (irc:read-message connection) #|  goes to msg-hook or svc-hook.|#))
-            :else
-              :do (connect-to-server server)))))))
+          (dolist (server *servers*)
+            (when (enabled server)
+              (let ((connection (connection server)))
+                (if connection
+                    (with-simple-restart (reconnect "Reconnect")
+                      (catch :petites-gazongues
+                        (irc:read-message connection) #|  goes to msg-hook or svc-hook.|#))
+                    (connect-to-server server))))))))))
 
+
+
+(test/botil-grammar)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; THE END ;;;;
 ;; (untrace ensure-user)
 ;; (reconnect (first *servers*))
 ;; (ql:quickload :com.informatimago.small-cl-pgms.botil)
+;; (find-user (first *servers*) "ogam")
+;; (mapcar (lambda (f) (funcall f (find-user (first *servers*) "ogam"))) '(name email password key verified))
+;; (reset  (find-user (first *servers*) "ogam") nil)
