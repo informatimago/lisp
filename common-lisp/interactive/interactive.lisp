@@ -594,9 +594,8 @@ DO:         Create FILE if it doesn't exist, and
 
 (defun date (&optional (date (get-universal-time)))
   "Prints the date."
-  (format t
-    "~{~5*~4,'0D-~2:*~2,'0D-~2:*~2,'0D ~2:*~2,'0D:~2:*~2,'0D:~2:*~2,'0D~%~8*~}"
-    (multiple-value-list (decode-universal-time date)))
+  (format t "~{~5*~4,'0D-~2:*~2,'0D-~2:*~2,'0D ~2:*~2,'0D:~2:*~2,'0D:~2:*~2,'0D~8*~}~%"
+          (multiple-value-list (decode-universal-time date)))
   date)
 
 (defvar *start-time* (get-universal-time)
