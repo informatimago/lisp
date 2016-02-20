@@ -1,4 +1,4 @@
-
+(cd #P"/Users/pjb/src/public/lisp/small-cl-pgms/botil/")
 (push (pwd) asdf:*central-registry*)
 (ql:quickload :com.informatimago.small-cl-pgms.botil)
 (in-package :com.informatimago.small-cl-pgms.botil)

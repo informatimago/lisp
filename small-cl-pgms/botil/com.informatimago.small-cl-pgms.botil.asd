@@ -41,7 +41,8 @@
   :depends-on ("com.informatimago.rdp"
                "com.informatimago.common-lisp.cesarum"
                "com.informatimago.common-lisp.interactive" ; date uptime
-               "cl-irc" "cl-json" "drakma" "split-sequence")
+               "cl-irc" "cl-json" "drakma" "split-sequence"
+               "cl-date-time-parser")
   :components ((:file "botil")))
 
 ;;;; THE END ;;;;
