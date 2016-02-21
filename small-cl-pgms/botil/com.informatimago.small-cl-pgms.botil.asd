@@ -42,7 +42,7 @@
                "com.informatimago.common-lisp.cesarum"
                "com.informatimago.common-lisp.interactive" ; date uptime
                "cl-irc" "cl-json" "drakma" "split-sequence"
-               "cl-date-time-parser")
+               "cl-date-time-parser" "cl-ppcre" "cl-smtp")
   :components ((:file "botil")))
 
 ;;;; THE END ;;;;

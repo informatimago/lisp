@@ -40,7 +40,7 @@
 (defpackage "COM.INFORMATIMAGO.SMALL-CL-PGMS.BOTIL"
   (:use "COMMON-LISP"
         "CL-JSON" "DRAKMA"  "SPLIT-SEQUENCE" "BORDEAUX-THREADS"
-        "CL-DATE-TIME-PARSER"
+        "CL-DATE-TIME-PARSER" "CL-PPCRE" "CL-SMTP"
         "COM.INFORMATIMAGO.RDP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE"
@@ -73,6 +73,9 @@ Licensed under the AGPL3.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Configuration:
 ;;;
+
+(defvar *smtp-server* "hubble.informatimago.com")
+(defvar *smtp-port*   2526)
 
 (defvar *botil-email* "botil@informatimago.com")
 
@@ -351,7 +354,7 @@ cf. command: cancel log $ID")
 ;;         |-- channels
 ;;         |   `-- #lisp
 ;;         |       |-- logs
-;;         |-- server.plist
+;;         |-- server.sexp
 ;;         |-- requests.sexp
 ;;         `-- users
 ;;             |-- ogam.sexp
@@ -376,7 +379,7 @@ cf. command: cancel log $ID")
 
 (defgeneric server-datafile-pathname (object)
   (:method ((server-name string))
-    (make-pathname :name "server" :type "plist" :version nil
+    (make-pathname :name "server" :type "sexp" :version nil
                    :defaults (server-pathname server-name)))
   (:method ((server server))
     (server-datafile-pathname (hostname server))))
@@ -629,9 +632,18 @@ cf. command: cancel log $ID")
   (:method ((hostname string) (name string))
     (find-user (find-server hostname) name))
   (:method ((server server) (name string))
-    (find name (users server)
-          :key (function name)
-          :test (function string-equal))))
+    (or (find name (users server)
+              :key (function name)
+              :test (function string-equal))
+        (let ((data (sexp-file-contents (user-pathname name server)
+                                        :if-does-not-exist nil
+                                        :external-format *external-format*)))
+          (when data
+            (let ((user (apply (function make-instance) 'user
+                               :server server :name name
+                               data)))
+              (push user (users server))
+              user))))))
 
 (defgeneric ensure-user (server name)
   (:method ((hostname string) (name string))
@@ -784,7 +796,7 @@ commands."
   (apply (worker-send worker) message))
 
 (defun kill-worker (worker)
-  (apply (worker-send worker) 'die))
+  (funcall (worker-send worker) 'die))
 
 (defmacro make-worker-thread (name message-lambda-list &body body)
   (check-type name symbol)
@@ -805,7 +817,7 @@ commands."
                  (lambda ()
                    (loop
                      :for ,vmessage := (dequeue ,vinput-queue)
-                     :until (eq ,vmessage 'die)
+                     :until (eql ,vmessage 'die)
                      :do (handler-case
                              (flet ((terminate-worker () (loop-finish)))
                                (block ,name
@@ -940,8 +952,6 @@ msgtarget  =  msgto *( "," msgto )
 msgto      =  channel / ( user [ "%" host ] "@" servername )
 msgto      =/ ( user "%" host ) / targetmask
 msgto      =/ nickname / ( nickname "!" user "@" host )
-channel    =  ( "#" / "+" / ( "!" channelid ) / "&" ) chanstring
-[ ":" chanstring ]
 servername =  hostname
 host       =  hostname / hostaddr
 hostname   =  shortname *( "." shortname )
@@ -952,13 +962,21 @@ hostaddr   =  ip4addr / ip6addr
 ip4addr    =  1*3digit "." 1*3digit "." 1*3digit "." 1*3digit
 ip6addr    =  1*hexdigit 7( ":" 1*hexdigit )
 ip6addr    =/ "0:0:0:0:0:" ( "0" / "FFFF" ) ":" ip4addr
-nickname   =  ( letter / special ) *8( letter / digit / special / "-" )
 targetmask =  ( "$" / "#" ) mask
                   ; see details on allowed masks in section 3.3.1 ;
+
+
+nickname   =  ( letter / special ) *8( letter / digit / special / "-" )
+letter     =  %x41-5A / %x61-7A       ; A-Z / a-z
+digit      =  %x30-39                 ; 0-9
+hexdigit   =  digit / "A" / "B" / "C" / "D" / "E" / "F"
+special    =  %x5B-60 / %x7B-7D ; "[", "]", "\", "`", "_", "^", "{", "|", "}" ;
+
+channel    =  ( "#" / "+" / ( "!" channelid ) / "&" ) chanstring [ ":" chanstring ]
 chanstring =  %x01-07 / %x08-09 / %x0B-0C / %x0E-1F / %x21-2B
-chanstring =/ %x2D-39 / %x3B-FF
-                  ; any octet except NUL, BELL, CR, LF, " ", "," and ":" ;
+chanstring =/ %x2D-39 / %x3B-FF ; any octet except NUL, BELL, CR, LF, " ", "," and ":" ;
 channelid  = 5( %x41-5A / digit )   ; 5( A-Z / 0-9 )
+
 
 Other parameter syntaxes are:
 
@@ -967,11 +985,6 @@ user       =  1*( %x01-09 / %x0B-0C / %x0E-1F / %x21-3F / %x41-FF )
 key        =  1*23( %x01-05 / %x07-08 / %x0C / %x0E-1F / %x21-7F )
                   ; any 7-bit US_ASCII character, ;
                   ; except NUL, CR, LF, FF, h/v TABs, and " " ;
-letter     =  %x41-5A / %x61-7A       ; A-Z / a-z
-digit      =  %x30-39                 ; 0-9
-hexdigit   =  digit / "A" / "B" / "C" / "D" / "E" / "F"
-special    =  %x5B-60 / %x7B-7D
-                   ; "[", "]", "\", "`", "_", "^", "{", "|", "}" ;
 
 NOTES:
 1) The <hostaddr> syntax is given here for the sole purpose of
@@ -1032,6 +1045,42 @@ delimiter for the channel mask.  Channel names are case insensitive.
 |#
 
 
+;; nickname   =  ( letter / special ) *8( letter / digit / special / "-" )
+;; letter     =  %x41-5A / %x61-7A       ; A-Z / a-z
+;; digit      =  %x30-39                 ; 0-9
+;; hexdigit   =  digit / "A" / "B" / "C" / "D" / "E" / "F"
+;; special    =  %x5B-60 / %x7B-7D ; "[", "]", "\", "`", "_", "^", "{", "|", "}" ;
+;; 
+;; channel    =  ( "#" / "+" / ( "!" channelid ) / "&" ) chanstring [ ":" chanstring ]
+;; chanstring =  %x01-07 / %x08-09 / %x0B-0C / %x0E-1F / %x21-2B
+;; chanstring =/ %x2D-39 / %x3B-FF ; any octet except NUL, BELL, CR, LF, " ", "," and ":" ;
+;; channelid  = 5( %x41-5A / digit )   ; 5( A-Z / 0-9 )
+
+;; servername =  hostname
+;; hostname   =  shortname *( "." shortname )
+;; shortname  =  ( letter / digit ) *( letter / digit / "-" ) *( letter / digit ) ; as specified in RFC 1123 [HNAME] ;
+
+
+(defun nicknamep (word)
+  (and (stringp word)
+       (scan "^[][\\`_^{|}A-Za-z][][\\`_^{|}A-Za-z0-9-]{0,8}$" word)))
+
+(defun channel-name-p (word)
+  (and (stringp word)
+       (scan "^([#+&][!-+--9;-~]+|![0-9A-Z]{5})(:[!-+--9;-~]+)?$" word)))
+
+(defun server-name-p (word)
+  (and (stringp word)
+       (scan "^([A-Za-z0-9][-A-Za-z0-9]*)(\\.([A-Za-z0-9][-A-Za-z0-9]*))*$" word)))
+
+(defun emailp (word)
+  (and (stringp word)
+       (position #\@ word)
+       (< 0 (position #\@ word) (1- (length word)))))
+
+
+
+
 
 (defmethod word-equal ((a string) (b token))
   (word-equal b a))
@@ -1047,7 +1096,7 @@ delimiter for the channel mask.  Channel names are case insensitive.
 ;; - server enable/disable
 ;; - user banishment
 
-(defun rhs-bnf (rhs &optional (around 'seq))
+(defun rhs-bnf (rhs)
   (cond
     ((null rhs)    "")
     ((symbolp rhs) (format nil "<~A>" rhs))
@@ -1076,9 +1125,7 @@ delimiter for the channel mask.  Channel names are case insensitive.
              (--> command
                   (alt query
                        connect
-                       start-log
-                       stop-log
-                       delimited-log
+                       log-request
                        cancel-log
                        list
                        set
@@ -1115,13 +1162,15 @@ delimiter for the channel mask.  Channel names are case insensitive.
              (--> term
                   (alt (seq "not" term :action `(not ,$2))
                        (seq selection :action selection)))
+
+             (--> user (alt "nick" "nickname" "user" "mr" "mrs" "miss" "dr" "pr"))
              
              (--> selection
                   (alt
                    (seq "(" disjunction ")" :action disjunction)
                    (seq (rep string) :action `(keywords ,@$1))
                    (seq (opt "channel") channel :action channel)
-                   (seq (alt "nick" "user" "mr" "mrs" "miss" "dr" "pr") nick :action nick)))
+                   (seq user nick :action nick)))
              
              (--> query
                   "query" criteria
@@ -1129,11 +1178,12 @@ delimiter for the channel mask.  Channel names are case insensitive.
 
              (--> connect
                   "connect" (opt "to") (opt "server") server
-                  :action `(connect ,server))
+                  (opt (opt "as") user nick :action nick)
+                  (opt (opt "with") "password" password :action password)
+                  :action `(connect ,server ,$5 ,$6))
 
              (--> server-commands
-                  (alt (seq "reconnect" (opt "to") :action 'reconnect)
-                       (seq "enable"    :action 'enable)
+                  (alt (seq "enable"    :action 'enable)
                        (seq "disable"   :action 'disable))
                   (opt "server") server
                   :action `(,$1 ,server))
@@ -1145,12 +1195,12 @@ delimiter for the channel mask.  Channel names are case insensitive.
                   "identify" password
                   :action `(identify ,password))
              (--> reset
-                  "reset" (opt nick :action nick)
+                  "reset" (opt (opt user) nick :action nick)
                   :action `(reset ,$2))
              (--> set
                   "set"
                   (alt
-                   (seq "password" nick key password
+                   (seq "password" (opt user) nick (opt "key") key (opt "password") password
                         :action `(set-password ,nick ,key ,password)))
                   :action $2)
              
@@ -1159,7 +1209,8 @@ delimiter for the channel mask.  Channel names are case insensitive.
                   (alt (seq (alt (seq (alt "channel" "channels") (opt (alt "log" "logs")))
                                  (alt "log" "logs"))
                             (opt "on" (opt "server") server :action server)
-                            :action `(list-channels ,$2))
+                            (opt "of" (opt user) nick :action nick)
+                            :action `(list-channels ,$2 ,$3))
                        (seq (alt "user" "users")
                             (opt "on" (opt "server") server :action server)
                             :action `(list-users ,$2))
@@ -1167,27 +1218,19 @@ delimiter for the channel mask.  Channel names are case insensitive.
                             :action `(list-servers)))
                   :action $2)
 
-             (--> start-log
-                  "start" (alt "log" "logging") (opt "channel") channel
-                  (opt "on" (opt "server") server :action server)
-                  :action `(start-log ,channel ,$5))
-
-             (--> stop-log
-                  "stop" (alt "log" "logging") (opt "channel") channel
-                  (opt "on" (opt "server") server :action server)
-                  :action `(stop-log ,channel ,$5))
-
-             (--> delimited-log
+             (--> log-request
                   "log" (opt "channel") channel
                   (opt "on" (opt "server") server :action server)
-                  (alt (seq "from" date (opt "to" date :action date)
-                            :action `(,date ,$3))
-                       (seq "to" date :action `(nil ,date)))
-                  :action `(delimited-log ,channel ,$4 ,@$5))
+                  (opt (alt (seq "from" date (opt "to" date :action date)
+                                 :action `(,date ,$3))
+                            (seq "to" date :action `(nil ,date)))
+                       :action $1)
+                  :action `(log-request ,channel $4 ,@$5))
              
              (--> cancel-log
                   "cancel" (alt
-                            (seq "all" (opt (alt "log" "logs")) (opt "on") (opt "channel") channel
+                            (seq "all" (opt (alt "log" "logs"))
+                                 (opt "on") (opt "channel") channel
                                  (opt "on" (opt "server") server :action server)
                                  :action `(cancel-log-channel ,channel ,$6))   
                             (seq "log" id
@@ -1208,20 +1251,17 @@ delimiter for the channel mask.  Channel names are case insensitive.
 
 (defparameter *help*
   '("query <criteria>"
-    "connect [to] [server] <server>"
-    "reconnect [to] [server] <server>"
+    "connect [to] [server] <server> [[as] nick <nick>] [[with] password <password>]"
     "enable [server] <server>"
     "disable [server] <server>"
     "register <email> <password>"
     "identify <password>"
     "reset [<nick>]"
-    "set password <nick> <key> <password>"
-    "list ((channel|channels) [log|logs])|log|logs [on [server] <server>]"
+    "set password [nick] <nick> [key] <key> [password] <password>"
+    "list ((channel|channels) [log|logs])|log|logs [on [server] <server>] [of [nick] <nick>]"
     "list (user|users) [on [server] <server>]"
     "list (server|servers)"
-    "start (log|logging) [channel] <channel> [on [server] <server>]"
-    "stop (log|logging) [channel] <channel> [on [server] <server>]"
-    "log [channel] <channel> [on [server] <server>] (from <date> [to <date>])|(to <date>)"
+    "log [channel] <channel> (from <date> [to <date>])|(to <date>)"
     "cancel all [log|logs] [on] [channel] <channel> [on [server] <server>]"
     "cancel log <id>"
     "help"
@@ -1269,7 +1309,7 @@ delimiter for the channel mask.  Channel names are case insensitive.
         (answer sender "Available commands: ~{~A~^ ~}"
                 (remove-duplicates (mapcar (function first) lines)
                                    :test (function string=))))))
-
+    
 ;; (help (find-user "irc.freenode.org" "pjb") "everything")
 
 (defun version (sender)
@@ -1287,126 +1327,142 @@ delimiter for the channel mask.  Channel names are case insensitive.
 
 
 ;;; -----------------------------------------------------------------------------
+(defmacro when-null ((var default) &body otherwise)
+  `(if (null ,var)
+       ,default
+       (progn ,@otherwise)))
+
+(defmacro when-unwrap ((var tag &optional filter-expression) &body body)
+  `(cond
+     ((and (consp ,var)
+           (consp (cdr ,var))
+           (null (cddr ,var))
+           (eq ',tag (car ,var)))
+      (let ((,var (cadr ,var)))
+        ,(if filter-expression
+             `(if ,filter-expression
+                  (progn ,@body)
+                  (error "Invalid ~(~A~) argument: ~S" ',tag ,var))
+             `(progn ,@body))))
+     (t (error "Invalid ~(~A~) argument: ~S" ',tag ,var))))
 
 (defun argument-server (sender server)
-  (cond
-    ((null server) (server sender))
-    ((and (consp server)
-          (consp (cdr server))
-          (null (cddr server))
-          (eq 'server (car server))
-          (stringp (cadr server)))
-     (or (find-server (cadr server))
-         (error "Unknown server: ~S" (cadr server))))
-    (t (error "Invalid server argument: ~S" server))))
+  (when-null (server (server sender))
+    (when-unwrap (server server (server-name-p server))
+      (or (find-server server)
+          (error "Unknown server: ~S" (cadr server))))))
 
 (defun argument-channel (sender channel)
-  (cond
-    ((and (consp channel)
-          (consp (cdr channel))
-          (null (cddr channel))
-          (eq 'channel (car channel))
-          (stringp (cadr channel)))
-     (or (ensure-channel (server sender) (cadr channel))
-         (error "Unknown channel: ~S" (cadr channel))))
-    (t (error "Invalid channel argument: ~S" channel))))
+  (when-unwrap (channel channel (channel-name-p channel))
+    (ensure-channel (server sender) channel)))
 
-(defun argument-user (sender nick)
-  (cond
-    ((null nick) sender)
-    ((and (consp nick)
-          (consp (cdr nick))
-          (null (cddr nick))
-          (eq 'nick (car nick))
-          (stringp (cadr nick)))
-     (or (ensure-user (server sender) (cadr nick))
-         (error "Unknown user: ~S" (cadr nick))))
-    (t (error "Invalid nick argument: ~S" nick))))
+(defun argument-nickname (nick)
+  "Just a string for a new nickname."
+  (when-null (nick nil)
+    (when-unwrap (nick nick (nicknamep nick))
+      nick)))
+
+(defun argument-new-user (sender nick server)
+  (when-null (nick sender)
+    (when-unwrap (nick nick (nicknamep nick))
+      (ensure-user server nick))))
+
+(defun argument-old-user (sender nick server)
+  (when-null (nick sender)
+    (when-unwrap (nick nick (nicknamep nick))
+      (or (find-user server nick)
+          (error "I have no user nicknamed ~A on ~A" nick (hostname server))))))
 
 (defun argument-key (key)
-  (cond
-    ((and (consp key)
-          (consp (cdr key))
-          (null (cddr key))
-          (eq 'key (car key))
-          (stringp (cadr key)))
-     (cadr key))
-    (t (error "Invalid key argument: ~S" key))))
+  (when-unwrap (key key (stringp key))
+    key))
 
 (defun argument-id (id)
-  (cond
-    ((and (consp id)
-          (consp (cdr id))
-          (null (cddr id))
-          (eq 'id (car id))
-          (stringp (cadr id)))
-     (parse-integer (cadr id)))
-    (t (error "Invalid id argument: ~S" id))))
+  (when-unwrap (id id (stringp id))
+    (parse-integer id)))
 
 (defun argument-email (email)
-  (cond
-    ((and (consp email)
-          (consp (cdr email))
-          (null (cddr email))
-          (eq 'email (car email))
-          (stringp (cadr email)))
-     (cadr email))
-    (t (error "Invalid email argument: ~S" email))))
+  (when-unwrap (email email (emailp email))
+    email))
 
 (defun argument-password (password)
-  (cond
-    ((and (consp password)
-          (consp (cdr password))
-          (null (cddr password))
-          (eq 'password (car password))
-          (stringp (cadr password)))
-     (cadr password))
-    (t (error "Invalid password argument: ~S" password))))
+  (when-unwrap (password password (stringp password))
+    password))
 
 (defun argument-date (date)
-  (cond
-    ((and (consp date)
-          (consp (cdr date))
-          (null (cddr date))
-          (eq 'date (car date))
-          (stringp (cadr date)))
-     (parse-date-time (cadr date)))
-    (t (error "Invalid date argument: ~S" date))))
+  (when-unwrap (date date (stringp date))
+    (parse-date-time date)))
+
+;;; -----------------------------------------------------------------------------
+;;; credentials
+;;;
+
+(defvar *administrators* '("pjb" "tbot"))
+
+(defun administratorp (user)
+  (member (name user) *administrators* :test (function string=)))
+
+(defun has-server-credential (sender server)
+  ;; TODO:
+  (declare (ignore server))
+  (administratorp sender))
+
+(defun has-user-credentials (sender user) 
+  ;; TODO:
+  (and (or (administratorp sender)
+           (eql sender user))
+       (or (identified sender)
+           (answer sender "You're not identified.")
+           nil)))
+  
+  
 
 ;;; -----------------------------------------------------------------------------
 ;;; server commands
-;;;;
+;;;
 
 (defmacro with-server ((sender server) &body body)
   `(let ((,server (argument-server ,sender ,server)))
+     (declare (ignorable ,server))
      ,@body))
 
-(defun connect   (sender server)
-  ;; (connect (server "irc.freenode.org"))
-  (with-server (sender server)
-    ;; TODO: perhaps not useful…
-    ))
+(defun connect   (sender server nickname password)
+  ;; (connect (server "irc.freenode.org") (nick "botnick") (password "botpassword"))
+  (if (has-server-credential sender nil)
+      (with-server (sender server)
+        (if (find-server server)
+            (answer sender "The server ~A is already configured." server)
+            (let ((nick (or (argument-nickname nickname) "botil"))
+                  (password (argument-password password)))
+              (create-server server nick password)
+              (answer sender "The server ~A has been created. enable it to connect."))))
+      (answer sender "You are not authorized to order me to connect to new servers.")))
 
-(defun reconnect (sender server)
-  ;; (reconnect (server "irc.freenode.org"))
-  (with-server (sender server)
-    ;; TODO: perhaps not useful…
-    ))
+;; (enable (find-user (first *servers*) "pjb") '(server "irc.freenode.org"))
+
 
 (defun enable    (sender server)
   ;; (enable (server "irc.freenode.org"))
   (with-server (sender server)
-    (setf (enabled server) t)
-    (answer sender "~A is enabled, will connect." (hostname server))))
+    (if (has-server-credential sender server)
+        (progn
+          (setf (enabled server) t)
+          (answer sender "~A is enabled, will connect." (hostname server)))
+        (answer sender "You are not authorized to enable the server ~A." (hostname server)))))
 
 (defun disable   (sender server)
   ;; (disable (server "irc.freenode.org"))
   (with-server (sender server)
-    (setf (enabled server) nil)
-    (if (eq server (server sender))
-        (answer sender "This server is disabled, will disconnect.")
-        (answer sender "~A is disabled, will disconnect." (hostname server)))
-    (disconnect sender server)))
+    (if (has-server-credential sender server)
+        (if (= 1 (count-if (function enabled) *servers*))
+            (answer sender "Cannot disable the last server.")
+            (progn
+              (setf (enabled server) nil)
+              (if (eq server (server sender))
+                  (answer sender "This server is disabled, will disconnect.")
+                  (answer sender "~A is disabled, will disconnect." (hostname server)))
+              (disconnect sender server)))
+        (answer sender "You are not authorized to disable the server ~A." (hostname server)))))
 
 ;;; -----------------------------------------------------------------------------
 ;;; list commands
@@ -1419,34 +1475,48 @@ delimiter for the channel mask.  Channel names are case insensitive.
             (enabled server) (connection server)
             (eq server (server sender)))))
 
-(defun list-channels (sender server)
-  ;; (list-channels (server "irc.freenode.org")) 
-  ;; (list-channels nil)
-  (with-server (sender server)
-    (dolist (request (requests sender))
-      (answer sender "~3D) ~15A ~A ~@[~A~]"
-              (id request)
-              (name (channel request))
-              (format-iso8601-time (start-date request))
-              (when (end-date request)
-                (format-iso8601-time (end-date request)))))))
+(defmacro with-user ((sender nick server) &body body)
+  `(let ((,nick (argument-old-user ,sender ,nick ,server)))
+     ,@body))
 
-(defun list-users    (sender server)
+(defun list-channels (sender server user)
+  ;; (list-channels (server "irc.freenode.org") (nick "pjb"))
+  ;; (list-channels nil nil)
+  (with-server (sender server)
+    (with-user (sender user server)
+      (if (has-user-credentials sender user)
+          (let ((requests (requests user)))
+            (if (endp requests)
+                (answer sender "~A has requested no logs." (name user))
+                (dolist (request (requests user))
+                  (answer sender "~3D) ~15A ~A ~@[~A~]"
+                          (id request)
+                          (name (channel request))
+                          (format-iso8601-time (start-date request))
+                          (when (end-date request)
+                            (format-iso8601-time (end-date request)))))))
+          (answer sender "You are not authorized list the channels logged by the user ~A." (name user))))))
+
+(defun list-users (sender server)
   ;; (list-users (server "irc.freenode.org")) 
   ;; (list-users nil)
   (with-server (sender server)
-    (answer sender "~{~A~^ ~}"  (mapcar (function pathname-name)
-                                        (directory (user-pathname :wild server))))))
+    (dolist (user 
+             (if  (has-server-credential sender server)
+                  (mapcar (function pathname-name)
+                          (directory (user-pathname :wild server)))
+                  (progn (answer sender "You are not authorized to list the users other than you.")
+                         (list (name sender)))))
+      (let ((user (find-user server user)))
+        (answer sender "~16A ~:[ ~;I~]~:[ ~;V~] ~@[~A~]"
+                (name user) (identified user) (verified user) (email user))))))
 
 ;;; -----------------------------------------------------------------------------
 ;;; User identification commands
 ;;;
 
-(defun send-email (from to subject body)
-  ;; signals an error if email cannot be sent.
-  ;; TODO
-  (format *trace-output* "~%From: ~A~%To: ~A~%Subject: ~A~2%~A~2%"
-          from to subject body))
+(defun sendmail (to subject message)
+  (send-email *smtp-server* *botil-email* to subject message :port *smtp-port*))
 
 (defun generate-key ()
   (substitute #\I #\1
@@ -1462,16 +1532,15 @@ delimiter for the channel mask.  Channel names are case insensitive.
         (setf (verified user) nil
               (key user) (generate-key))
         (save user)
-        (send-email *botil-email*
-                    (email user)
-                    "Verify your email with botil"
-                    (format nil "Please let botil verify your email ~%~
+        (sendmail (email user)
+                  "Verify your email with botil."
+                  (format nil "Please let botil verify your email ~%~
                                  by giving the following command ~%~
                                  to irc://~A@~A :~%~
                                  set password ~A ~A ~A~%"
-                            (botnick (server sender))
-                            (hostname (server sender))
-                            (name user) (key user) "{your-new-password}")))
+                          (botnick (server sender))
+                          (hostname (server sender))
+                          (name user) (key user) "{your-new-password}")))
       (answer sender "User has no email yet. Use the register command!")))
 
 (defun send-password-change-email (sender user)
@@ -1480,16 +1549,15 @@ delimiter for the channel mask.  Channel names are case insensitive.
         (setf (verified user) nil
               (key user) (generate-key))
         (save user)
-        (send-email *botil-email*
-                    (email user)
-                    "Password change with botil"
-                    (format nil "You may change your password ~%~
+        (sendmail (email user)
+                  "Password change with botil."
+                  (format nil "You may change your password ~%~
                                  by giving the following command ~%~
                                  to irc://~A@~A :~%~
                                  set password ~A ~A ~A~%"
-                            (botnick (server sender))
-                            (hostname (server sender))
-                            (name user) (key user) "{your-new-password}")))
+                          (botnick (server sender))
+                          (hostname (server sender))
+                          (name user) (key user) "{your-new-password}")))
       (answer sender "User has no email yet. Use the register command!")))
 
 (defun identify (sender password)
@@ -1520,36 +1588,52 @@ delimiter for the channel mask.  Channel names are case insensitive.
 (defun reset (sender nick)
   ;; (reset (nick "pjb")) 
   ;; (reset nil)
-  (send-password-change-email sender (argument-user sender nick)))
+  (let ((user (argument-old-user sender nick (server sender))))
+    (if (has-user-credentials sender user)
+        (progn (send-password-change-email sender user)
+               (answer sender "Password change email sent to ~A" (email user)))
+        (answer sender "You are not authorized to ask for a password reset for ~A." (name user)))))
 
 (defun set-password (sender nick key password)
   ;; (set-password (nick "pjb") (key "321545623f") (password "new-secret-password"))
-  (let ((user     (argument-user sender nick))
+  (let ((user     (argument-old-user sender nick (server sender)))
         (key      (argument-key key))
         (password (argument-password password)))
-    (cond
-      ((string/= key (key user)) (answer sender "Invalid key, use the reset command and try with the new key."))
-      (t (setf (password user)   password
-               (verified user)   t
-               (key user)        nil
-               (identified user) nil)
-         (save user)
-         (answer sender "Password set. Identify again!")))))
+    (if (has-user-credentials sender user)
+        (cond
+          ((string/= key (key user))
+           (answer sender "Invalid key, use the reset command and try with the new key."))
+          (t (setf (password user)   password
+                   (verified user)   t
+                   (key user)        nil
+                   (identified user) nil)
+             (save user)
+             (answer sender "Password set. Identify again!")))
+        (answer sender "You are not authorized to set the password of ~A." (name user)))))
 
 ;;; -----------------------------------------------------------------------------
 ;;; Log commands
 ;;;
 
-(defun start-log (sender channel server)
-  ;; (start-log (channel "#lisp") (server "irc.freenode.org")) 
-  ;; (start-log (channel "#lisp") nil)
+(defun log-request (sender channel server start-date end-date)
+  ;; (log-request (channel "#lisp") (server "irc.freenode.org") (date "2016-03-01") (date "2016-03-31")) 
+  ;; (log-request (channel "#lisp") (server "irc.freenode.org") (date "2016-06-01") nil) 
+  ;; (log-request (channel "#lisp") (server "irc.freenode.org") nil (date "2016-02-28")) 
+  ;; (log-request (channel "#lisp") nil (date "20160301T000000") (date "2016-03-31T00:00:00")) 
+  ;; (log-request (channel "#lisp") nil (date "20160601T000000") nil) 
+  ;; (log-request (channel "#lisp") nil nil (date "2016-02-28T00:00:00"))
+  ;; TODO: mixup user from one server asking logs on another server.
   (with-server (sender server)
-    (let ((channel (argument-channel sender channel)))
-      (answer sender "Added ~A" (create-request channel sender)))))
+    (let ((channel    (argument-channel sender channel))
+          (start-date (argument-date (or start-date (get-universal-time))))
+          (end-date   (argument-date end-date)))
+      (if (and end-date (<= end-date start-date))
+          (answer sender "End date must be after start date.")
+          (answer sender "Added ~A" (create-request channel sender start-date end-date))))))
 
-(defun stop-log (sender channel server)
-  ;; (stop-log (channel "#lisp") (server "irc.freenode.org")) 
-  ;; (stop-log (channel "#lisp") nil)
+(defun cancel-log-channel (sender channel server)
+  ;; (cancel-log-channel (channel "#lisp") (server "irc.freenode.org")) 
+  ;; (cancel-log-channel (channel "#lisp") nil)
   (with-server (sender server)
     (let* ((channel  (argument-channel sender channel))
            (requests (requests sender))
@@ -1562,11 +1646,6 @@ delimiter for the channel mask.  Channel names are case insensitive.
           (answer sender "Deleted ~A" (delete-request the-one))
           (answer sender "Found no undelimited request.")))))
 
-(defun cancel-log-channel (sender channel server)
-  ;; (cancel-log-channel (channel "#lisp") (server "irc.freenode.org")) 
-  ;; (cancel-log-channel (channel "#lisp") nil)
-  (stop-log sender channel server))
-
 (defun cancel-log-id (sender id)
   ;; (cancel-log-id (id "42"))
   (let ((id (argument-id id)))
@@ -1576,26 +1655,13 @@ delimiter for the channel mask.  Channel names are case insensitive.
           (answer sender "Deleted ~A" (delete-request the-one))
           (answer sender "Found no request ID ~A" id)))))
 
-(defun delimited-log (sender channel server start-date end-date)
-  ;; (delimited-log (channel "#lisp") (server "irc.freenode.org") (date "2016-03-01") (date "2016-03-31")) 
-  ;; (delimited-log (channel "#lisp") (server "irc.freenode.org") (date "2016-06-01") nil) 
-  ;; (delimited-log (channel "#lisp") (server "irc.freenode.org") nil (date "2016-02-28")) 
-  ;; (delimited-log (channel "#lisp") nil (date "20160301T000000") (date "2016-03-31T00:00:00")) 
-  ;; (delimited-log (channel "#lisp") nil (date "20160601T000000") nil) 
-  ;; (delimited-log (channel "#lisp") nil nil (date "2016-02-28T00:00:00")) 
-  (with-server (sender server)
-    (let ((channel    (argument-channel sender channel))
-          (start-date (argument-date (or start-date (get-universal-time))))
-          (end-date   (argument-date end-date)))
-      (if (and end-date (<= end-date start-date))
-          (answer sender "End date must be after start date.")
-          (answer sender "Added ~A" (create-request channel sender start-date end-date))))))
 
 ;;; -----------------------------------------------------------------------------
 ;;; log querying
 ;;;
 
 (defun query (sender criteria)
+  (declare (ignore criteria))
   ;; (query (criteria (and (channel "#lisp") (and (nick "pjb") (keywords "cl-all"))))) 
   ;; (query (criteria (and (keywords "\"cl\"") (and (or (keywords "all") (or (keywords "some") (keywords "any"))) (channel "#lisp"))))) 
   (answer sender "Queries are not implemented yet, sorry."))
@@ -1610,22 +1676,19 @@ delimiter for the channel mask.  Channel names are case insensitive.
     ((uptime)              (uptime-cmd         sender))
     ((sources)             (sources            sender))
     ((query)               (query              sender (second expression)))
-    ((connect)             (connect            sender (second expression)))
-    ((reconnect)           (reconnect          sender (second expression)))
+    ((connect)             (connect            sender (second expression) (third expression) (fourth expression)))
     ((disable)             (disable            sender (second expression)))
     ((enable)              (enable             sender (second expression)))
     ((list-servers)        (list-servers       sender))
-    ((list-channels)       (list-channels      sender (second expression)))
+    ((list-channels)       (list-channels      sender (second expression) (third expression)))
     ((list-users)          (list-users         sender (second expression)))
     ((identify)            (identify           sender (second expression)))
     ((register)            (register           sender (second expression) (third expression)))
     ((reset)               (reset              sender (second expression)))
     ((set-password)        (set-password       sender (second expression) (third expression) (fourth expression)))
-    ((start-log)           (start-log          sender (second expression) (third expression)))
-    ((stop-log)            (stop-log           sender (second expression) (third expression)))
     ((cancel-log-channel)  (cancel-log-channel sender (second expression) (third expression)))
     ((cancel-log-id)       (cancel-log-id      sender (second expression)))
-    ((delimited-log)       (delimited-log      sender (second expression) (third expression) (fourth expression) (fifth expression)))))
+    ((log-request)         (log-request        sender (second expression) (third expression) (fourth expression) (fifth expression)))))
 
 
 
@@ -1637,7 +1700,7 @@ delimiter for the channel mask.  Channel names are case insensitive.
           'command-processor server sender command)
   (let ((expression (handler-case
                         (parse-botil command)
-                      (error (err)
+                      (error ()
                         (let ((command (subseq command 0 (position #\space command))))
                           (answer sender "Syntax error.")
                           (help sender command)
@@ -1661,7 +1724,7 @@ delimiter for the channel mask.  Channel names are case insensitive.
 (defun botil-initialize ()
   (setf *sender*            (make-worker-thread botil-sender (server recipient message &rest arguments)
                               (let ((message (format nil "~?" message arguments)))
-                                (format *trace-output* "~&~A <- ~A~%" recipient message)
+                                (format *trace-output* "~&SENDER ~A <- ~A~%" recipient message)
                                 (if (listp message)
                                     (ecase (first message)
                                       ((disconnect) (irc:quit (connection server)
@@ -1670,13 +1733,13 @@ delimiter for the channel mask.  Channel names are case insensitive.
                                       (send-irc recipient message)))
                                 (sleep 0.5)))
         *query-processor*   (make-worker-thread botil-query-processor (server sender message)
-                              (format *trace-output* "~&~A -> ~A~%" sender message)
+                              (format *trace-output* "~&QUERY ~A -> ~A~%" sender message)
                               (query-processor server sender message))
         *logger*            (make-worker-thread botil-logger (server message)
-                              (format *trace-output* "~&~A -> ~A~%" (user message) message)
+                              (format *trace-output* "~&LOGGER ~A -> ~A~%" (user message) message)
                               (logger server message))
         *command-processor* (make-worker-thread botil-command-processor (server sender message)
-                              (format *trace-output* "~&~A -> ~A~%" sender message)
+                              (format *trace-output* "~&COMMAND ~A -> ~A~%" sender message)
                               (command-processor server sender message))
         *botil*             (make-worker-thread botil-main (server command)
                               (format *trace-output* "~&BOTIL <- ~A~%" command)
@@ -1704,40 +1767,51 @@ delimiter for the channel mask.  Channel names are case insensitive.
 ;; (:sender "test-botil" :recipient "#test-botil" :arguments ("#test-botil" "How do you do?"))
 
 
+(defun msg-hook (server message)
+  (with-accessors ((sender irc:source)
+                   (arguments irc:arguments)) message
+    (let ((recipient (first arguments)))
+      (format *trace-output* "~&msg-hook message = ~S~%"
+              (list :server server
+                    :sender sender
+                    :recipient recipient
+                    :arguments arguments))
+      (if (string= (botnick server) recipient)
+          (let ((sender (ensure-user server sender)))
+            (send-worker *command-processor* server sender (second arguments)))
+          (send-worker *logger* server message)))))
+
 (defun make-msg-hook (server)
   (lambda (message)
     "Answers to PRIVMSG."
-    (block msg-hook
-      (with-accessors ((sender irc:source)
-                       (arguments irc:arguments)) message
-        (let ((recipient (first arguments)))
-          (format *trace-output* "~&msg-hook message = ~S~%"
-                  (list :server server
-                        :sender sender
-                        :recipient recipient
-                        :arguments arguments))
-          (if (string= (botnick server) recipient)
-              (let ((sender (ensure-user server sender)))
-                (send-worker *command-processor* server sender (second arguments)))
-              (send-worker *logger* server message))))
-      t)))
+    (msg-hook server message)
+    t))
 
+;; Note: we can track nick and quit only of users on the same
+;; channels as we are on, so it's useless in general: we may
+;; have to require passwords for all critical commands.
+
+(defun svc-hook (server message)
+  (send-worker *logger* server message)
+  (format t "~&svc-hook message type = ~S~%" (type-of message))
+  (with-accessors ((sender irc:source)
+                   (arguments irc:arguments)) message
+    (let ((recipient (first arguments)))
+
+      ;; irc:irc-nick-message
+      ;; irc:irc-quit-message
+      (format t "~&svc-hook message = ~S~%"
+              (list :server server
+                    :sender sender
+                    :recipient recipient
+                    :command (irc:command message)
+                    :arguments arguments)))))
 
 (defun make-svc-hook (server)
   (lambda (message)
     "Answers to service messages."
-    (block svc-hook
-      (with-accessors ((sender irc:source)
-                       (arguments irc:arguments)) message
-        (let ((recipient (first arguments)))
-          (format *trace-output*  "~&svc-hook message = ~S~%"
-                  (list :server server
-                        :sender sender
-                        :recipient recipient
-                        :command (irc:command message)
-                        :arguments arguments))))
-      (send-worker *logger* server message)
-      t)))
+    (svc-hook server message)
+    t))
 
 
 (defmethod connect-to-server ((server server))
@@ -1750,12 +1824,16 @@ delimiter for the channel mask.  Channel names are case insensitive.
     (irc:add-hook (connection server) 'irc:irc-privmsg-message msg-hook)
     (mapc (lambda (class) (irc:add-hook (connection server) class svc-hook)) 
           '(irc:irc-notice-message 
-            irc:irc-topic-message irc:irc-error-message
+            irc:irc-topic-message
+            irc:irc-error-message
             irc:irc-mode-message
             ;; -
-            irc:irc-nick-message irc:irc-join-message
-            irc:irc-part-message irc:irc-quit-message
-            irc:irc-kill-message irc:irc-kick-message
+            irc:irc-nick-message
+            irc:irc-quit-message
+            irc:irc-join-message
+            irc:irc-part-message 
+            irc:irc-kill-message
+            irc:irc-kick-message
             irc:irc-invite-message))
     (send-worker *botil* 'reconnect server)))
 
@@ -1781,8 +1859,6 @@ and evaluating DELAY-EXPRESSIONS between each iteration."
 
 (defun exit ()
   "Breaks the main loop and exit."
-  (mapc (function kill-worker) *botil-workers*)
-  (setf *botil-workers* '())
   (throw :gazongues nil))
 
 (defun main ()
@@ -1795,15 +1871,18 @@ and answer to search queries in those logs."
     (botil-initialize)
     (with-simple-restart (quit "Quit")
       (catch :gazongues
-        (loop
-          (dolist (server *servers*)
-            (let ((connection (connection server)))
-              (if connection
-                  (with-simple-restart (reconnect "Reconnect")
-                    (catch :petites-gazongues
-                      (irc:read-message connection) #|  goes to msg-hook or svc-hook.|#))
-                  (when (enabled server)
-                    (connect-to-server server))))))))))
+        (unwind-protect
+             (loop
+               (dolist (server *servers*)
+                 (let ((connection (connection server)))
+                   (if connection
+                       (with-simple-restart (reconnect "Reconnect")
+                         (catch :petites-gazongues
+                           (irc:read-message connection) #|  goes to msg-hook or svc-hook.|#))
+                       (when (enabled server)
+                         (connect-to-server server))))))
+          (mapc (function kill-worker) *botil-workers*)
+          (setf *botil-workers* '()))))))
 
 #-(and)
 (progn
@@ -1848,7 +1927,7 @@ and answer to search queries in those logs."
                 "CHANNEL-NEXT-START-LOG-DATE"
                 "CHANNEL-NEXT-STOP-LOG-DATE"
                 "AND" "ANSWER" "ARGUMENT-EMAIL" "ARGUMENT-KEY"
-                "ARGUMENT-PASSWORD" "ARGUMENT-SERVER" "ARGUMENT-USER"
+                "ARGUMENT-PASSWORD" "ARGUMENT-SERVER" "ARGUMENT-OLD-USER" "ARGUMENT-NEW-USER"
                 "ARGUMENTS" "BOTIL" "BOTIL-INITIALIZE" "BOTNICK"
                 "BOTPASS" "CALL-WITH-RETRY" "CANCEL-LOG-CHANNEL"
                 "CANCEL-LOG-ID" "CHANNEL" "CHANNEL-PATHNAME"
@@ -1856,7 +1935,7 @@ and answer to search queries in those logs."
                 "COMPUTE-DEADLINE" "CONNECT" "CONNECT-TO-SERVER"
                 "CONNECTION" "COPY-WORKER" "CREATE-MESSAGE"
                 "CREATE-REQUEST" "CREATE-SERVER" 
-                "CRITERIA" "DATE" "DELIMITED-LOG" "DISABLE"
+                "CRITERIA" "DATE" "LOG-REQUEST" "DISABLE"
                 "DISCONNECT" "DISS" "EMAIL" "ENABLE" "ENABLED"
                 "END-DATE" "ENSURE-CHANNEL" "ENSURE-LOG-STREAM"
                 "ENSURE-USER" "EXIT" "FIND-CHANNEL" "FIND-SERVER"
@@ -1873,16 +1952,17 @@ and answer to search queries in those logs."
                 "PASSWORD" "QUERY" "QUERY-PROCESSOR"
                 "RAW-MESSAGE-STRING" "RECEIVED-TIME" "RECONNECT"
                 "REGISTER" "REQUESTS" "REQUESTS-PATHNAME" "RESET"
-                "SAVE" "SAVE-REQUESTS" "SEND-EMAIL" "SEND-IRC"
+                "SAVE" "SAVE-REQUESTS"  "SEND-IRC"
                 "SEND-PASSWORD-CHANGE-EMAIL" "SEND-VERIFICATION-EMAIL"
                 "SEND-WORKER" "SENDER" "SERVER" "SERVER-DATA"
                 "SERVER-DATAFILE-PATHNAME" "SERVER-PATHNAME"
                 "SET-PASSWORD" "SOURCE" "SOURCES" "START-DATE"
-                "START-LOG" "START-LOGGING-CHANNEL" "STOP-LOG"
+                "START-LOGGING-CHANNEL" 
                 "STOP-LOGGING-CHANNEL" "TODO" "UPTIME-CMD" "USER"
                 "USER-PATHNAME" "VERIFIED" "VERSION" "WITH-RETRY"
                 "WITH-SERVER" "WORKER-INPUT-QUEUE" "WORKER-P"
-                "WORKER-SEND" "WORKER-THREAD" "WRITE-MESSAGE")
+                "WORKER-SEND" "WORKER-THREAD" "WRITE-MESSAGE"
+                "SERVER-NAME-P" "CHANNEL-NAME-P" "NICKNAMEP")
   
   (:export "TEST/ALL")
   (:documentation "
@@ -1913,17 +1993,13 @@ Licensed under the AGPL3.
                          (and (or (keywords "all") (or (keywords "some") (keywords "any")))
                           (channel "#lisp"))))))
       ("connect irc.freenode.org"
-       (connect (server "irc.freenode.org")))
+       (connect (server "irc.freenode.org") nil nil))
       ("connect to irc.freenode.org"
-       (connect (server "irc.freenode.org")))
+       (connect (server "irc.freenode.org") nil nil))
       ("connect server irc.freenode.org"
-       (connect (server "irc.freenode.org")))
+       (connect (server "irc.freenode.org") nil nil))
       ("connect to server irc.freenode.org"
-       (connect (server "irc.freenode.org")))
-      ("reconnect irc.freenode.org"
-       (reconnect (server "irc.freenode.org")))
-      ("reconnect to irc.freenode.org"
-       (reconnect (server "irc.freenode.org")))
+       (connect (server "irc.freenode.org") nil nil))
       ("disable irc.freenode.org"
        (disable (server "irc.freenode.org")))
       ("enable irc.freenode.org"
@@ -1939,43 +2015,31 @@ Licensed under the AGPL3.
       ("set password pjb 321545623f new-secret-password"
        (set-password (nick "pjb") (key "321545623f") (password "new-secret-password")))
       ("list channel logs on server irc.freenode.org"
-       (list-channels (server "irc.freenode.org")))
+       (list-channels (server "irc.freenode.org") nil))
       ("list channels"
-       (list-channels nil))
+       (list-channels nil nil))
       ("list logs"
-       (list-channels nil))
+       (list-channels nil nil))
       ("list logs on irc.freenode.org"
-       (list-channels (server "irc.freenode.org")))
+       (list-channels (server "irc.freenode.org") nil))
       ("list users"
        (list-users nil))
       ("list users on irc.freenode.org"
        (list-users (server "irc.freenode.org")))
       ("list servers"
        (list-servers))
-      ("start logging channel #lisp"
-       (start-log (channel "#lisp") nil))
-      ("start logging channel #lisp on server irc.freenode.org"
-       (start-log (channel "#lisp") (server "irc.freenode.org")))
-      ("start log #lisp on irc.freenode.org"
-       (start-log (channel "#lisp") (server "irc.freenode.org")))
-      ("stop logging channel #lisp"
-       (stop-log (channel "#lisp") nil))
-      ("stop logging channel #lisp on server irc.freenode.org"
-       (stop-log (channel "#lisp") (server "irc.freenode.org")))
-      ("stop log #lisp on irc.freenode.org"
-       (stop-log (channel "#lisp") (server "irc.freenode.org")))
       ("log channel #lisp on server irc.freenode.org                 to 2016-02-28"
-       (delimited-log (channel "#lisp") (server "irc.freenode.org") nil (date "2016-02-28")))
+       (log-request (channel "#lisp") (server "irc.freenode.org") nil (date "2016-02-28")))
       ("log channel #lisp on server irc.freenode.org from 2016-03-01 to 2016-03-31"
-       (delimited-log (channel "#lisp") (server "irc.freenode.org") (date "2016-03-01") (date "2016-03-31")))
+       (log-request (channel "#lisp") (server "irc.freenode.org") (date "2016-03-01") (date "2016-03-31")))
       ("log channel #lisp on server irc.freenode.org from 2016-06-01"
-       (delimited-log (channel "#lisp") (server "irc.freenode.org") (date "2016-06-01") nil))
+       (log-request (channel "#lisp") (server "irc.freenode.org") (date "2016-06-01") nil))
       ("log #lisp                      to 2016-02-28T00:00:00"
-       (delimited-log (channel "#lisp") nil nil (date "2016-02-28T00:00:00")))
+       (log-request (channel "#lisp") nil nil (date "2016-02-28T00:00:00")))
       ("log #lisp from 20160301T000000 to 2016-03-31T00:00:00"
-       (delimited-log (channel "#lisp") nil (date "20160301T000000") (date "2016-03-31T00:00:00")))
+       (log-request (channel "#lisp") nil (date "20160301T000000") (date "2016-03-31T00:00:00")))
       ("log #lisp from 20160601T000000"
-       (delimited-log (channel "#lisp") nil (date "20160601T000000") nil))
+       (log-request (channel "#lisp") nil (date "20160601T000000") nil))
       ("cancel all log on channel #lisp on server irc.freenode.org"
        (cancel-log-channel (channel "#lisp") (server "irc.freenode.org")))
       ("cancel all log on channel #lisp"
@@ -2008,10 +2072,10 @@ Licensed under the AGPL3.
                (merge-pathnames #P"servers/*/" *database*))
 
         (check equal (server-datafile-pathname "irc.freenode.org")
-               (merge-pathnames #P"servers/irc.freenode.org/server.plist" *database*))
+               (merge-pathnames #P"servers/irc.freenode.org/server.sexp" *database*))
         
         (check equal (server-datafile-pathname (find-server "irc.freenode.org"))
-               (merge-pathnames #P"servers/irc.freenode.org/server.plist" *database*))
+               (merge-pathnames #P"servers/irc.freenode.org/server.sexp" *database*))
         
         (check equal (server-datafile-pathname "irc.freenode.org")
                (server-datafile-pathname (find-server "irc.freenode.org")))
@@ -2126,10 +2190,28 @@ Licensed under the AGPL3.
               :do (assert-true (active-channel-p channel time)
                                (time)))))))
 
-
+(define-test test/predicates ()
+  (dolist (nick '("pjb" "[pjb]" "pjb`"))
+    (assert-true (nicknamep nick)))
+  (dolist (nick '("hello world" "#lisp" "!foo" "&bar" "+baz"))
+    (assert-false (nicknamep nick)))
+  (dolist (channel '("#lisp" "##lisp" "&lisp" "+lisp"
+                  "#foo~" "##b^ar" "&!quux!" "+~-/*+" 
+                  "!ABCDE" "!01234" "!56789"
+                  "#lisp:foo" "##lisp:bar" "&lisp:baz" "+lisp:quux"
+                  "#foo~:1234" "##b^ar:/div" "&!quux!:hey" "+~-/*+:--" 
+                  "!ABCDE:;-)" "!01234:\\" "!56789:yep"))
+    (assert-true (channel-name-p channel)))
+  (dolist (channel '("!foo" "!1234567" "!ZORRO" "pjb"))
+    (assert-false (channel-name-p channel)))
+  (dolist (server '("irc.freenode.org" "01.irc.example.net" "localhost"))
+    (assert-true (server-name-p server)))
+  (dolist (server '("#lisp" "foo.%a6t%a7.com"))
+    (assert-false (server-name-p server))))
 
 (define-test test/all ()
   (test/botil-grammar)
+  (test/predicates)
   (test/users)
   (test/pathnames)
   (test/requests))
@@ -2188,7 +2270,8 @@ Licensed under the AGPL3.
 
 
 
-(test/all)
+;; (test/all)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; THE END ;;;;
 ;; (untrace ensure-user)
