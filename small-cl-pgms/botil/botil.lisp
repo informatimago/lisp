@@ -1203,21 +1203,57 @@ delimiter for the channel mask.  Channel names are case insensitive.
                    (seq "password" (opt user) nick (opt "key") key (opt "password") password
                         :action `(set-password ,nick ,key ,password)))
                   :action $2)
-             
+
+
+             (--> requests 
+                  (alt (seq (alt "log" "logs") (opt (alt "request" "requests")) )
+                       "request" "requests"))
+
+             (--> of-nick
+                  "of"  (opt user)      nick
+                  :action nick)
+             (--> for-channel
+                  "for" (opt "channel") channel
+                  :action channel)
+             (--> my-log-requests
+                  "my" requests (opt for-channel :action for-channel)
+                  :action `(nil ,$3 nil))
+             (--> request-selection
+                  (alt  my-log-requests
+                        (seq "all" (alt my-log-requests
+                                        (seq requests
+                                             (opt of-nick     :action $1)
+                                             (opt for-channel :action $1)
+                                             (opt "on" (opt "server") server :action server)
+                                             :action (list t $2 $3 $4)))
+                             :action $2)))
              (--> list
-                  "list"
-                  (alt (seq (alt (seq (alt "channel" "channels") (opt (alt "log" "logs")))
-                                 (alt "log" "logs"))
-                            (opt "on" (opt "server") server :action server)
-                            (opt "of" (opt user) nick :action nick)
-                            :action `(list-channels ,$2 ,$3))
-                       (seq (alt "user" "users")
-                            (opt "on" (opt "server") server :action server)
-                            :action `(list-users ,$2))
-                       (seq (alt "server" "servers")
-                            :action `(list-servers)))
+                  "list" (alt (seq request-selection
+                                   :action `(list-log-requests ,@request-selection))
+                              (seq (alt "user" "users")
+                                   (opt "on" (opt "server") server :action server)
+                                   :action `(list-users ,$2))
+                              (seq (alt "server" "servers")
+                                   :action `(list-servers)))
+                  :action $2)
+             
+             (--> cancel-log
+                  "cancel" (alt
+                            (seq request-selection
+                                 :action `(cancel-log-requests ,@request-selection))   
+                            (seq "log" id
+                                 :action `(cancel-log-id ,id)))
                   :action $2)
 
+             ;; list     my log requests                                (requests sender)
+             ;; list     my log requests for channel #lisp              (of-channel channel (requests sender))
+             ;; list all my log requests                                (requests sender)
+             
+             ;; list all    log requests of mr foo                      (requests user)
+             ;; list all    log requests of mr foo for channel #lisp    (of-channel channel (requests user))
+             ;; list all    log requests           for channel #lisp    (requests channel)
+             ;; list all    log requests                                (requests server)
+             
              (--> log-request
                   "log" (opt "channel") channel
                   (opt "on" (opt "server") server :action server)
@@ -1226,17 +1262,6 @@ delimiter for the channel mask.  Channel names are case insensitive.
                             (seq "to" date :action `(nil ,date)))
                        :action $1)
                   :action `(log-request ,channel $4 ,@$5))
-             
-             (--> cancel-log
-                  "cancel" (alt
-                            (seq "all" (opt (alt "log" "logs"))
-                                 (opt "on") (opt "channel") channel
-                                 (opt "on" (opt "server") server :action server)
-                                 :action `(cancel-log-channel ,channel ,$6))   
-                            (seq "log" id
-                                 :action `(cancel-log-id ,id)))
-                  :action $2)
-
 
              (--> help
                   "help" (opt (alt "query" "connect" "reconnect" "enable" "disable" "register" "identify"
@@ -1258,11 +1283,12 @@ delimiter for the channel mask.  Channel names are case insensitive.
     "identify <password>"
     "reset [<nick>]"
     "set password [nick] <nick> [key] <key> [password] <password>"
-    "list ((channel|channels) [log|logs])|log|logs [on [server] <server>] [of [nick] <nick>]"
-    "list (user|users) [on [server] <server>]"
     "list (server|servers)"
+    "list (user|users) [on [server] <server>]"
     "log [channel] <channel> (from <date> [to <date>])|(to <date>)"
-    "cancel all [log|logs] [on] [channel] <channel> [on [server] <server>]"
+    "list [all] my [log] requests [for [channel] <channel>]"
+    "list all [log] requests [of [nick] <nick>] [for [channel] <channel>] [on [server] <server>]"
+    "cancel all [log] requests [of [nick] <nick>] [for [channel] <channel>] [on [server] <server>]"
     "cancel log <id>"
     "help"
     "version"
@@ -1352,9 +1378,9 @@ delimiter for the channel mask.  Channel names are case insensitive.
       (or (find-server server)
           (error "Unknown server: ~S" (cadr server))))))
 
-(defun argument-channel (sender channel)
+(defun argument-channel (sender channel &optional server)
   (when-unwrap (channel channel (channel-name-p channel))
-    (ensure-channel (server sender) channel)))
+    (ensure-channel (or server (server sender)) channel)))
 
 (defun argument-nickname (nick)
   "Just a string for a new nickname."
@@ -1479,34 +1505,72 @@ delimiter for the channel mask.  Channel names are case insensitive.
   `(let ((,nick (argument-old-user ,sender ,nick ,server)))
      ,@body))
 
-(defun list-channels (sender server user)
-  ;; (list-channels (server "irc.freenode.org") (nick "pjb"))
-  ;; (list-channels nil nil)
+;; list     my log requests                                (requests sender)
+;; list     my log requests for channel #lisp              (of-channel channel (requests sender))
+;; list all my log requests                                (requests sender)
+;;
+;; list all    log requests of mr foo                      (requests user)
+;; list all    log requests of mr foo for channel #lisp    (of-channel channel (requests user))
+;; list all    log requests           for channel #lisp    (requests channel)
+;; list all    log requests                                (requests server)
+
+(defun of-channel (channel requests)
+  (remove channel requests :test-not (function eql) :key (function channel)))
+
+(defun select-log-requests (sender allp user channel server)
+  (let* ((channel  (when channel (argument-channel  sender channel)))
+         (user     (when user    (argument-old-user sender user    server))))
+    (if allp
+        (if user
+            (if (has-user-credentials sender user)
+                (values (if channel
+                            (of-channel channel (requests user))
+                            (requests user))
+                        user)
+                (progn
+                  (answer sender "You are not authorized to access the requests from the user ~A." (name user))
+                  nil))
+            (if channel
+                (if (has-server-credential sender server)
+                    (values (requests channel))
+                    (values (of-channel channel (requests sender)) sender))
+                (if (has-server-credential sender server)
+                    (values (requests (or server (server sender))))
+                    (values (requests sender) sender))))
+        (if channel
+            (values (of-channel channel (requests sender)) sender)
+            (values (requests sender))))))
+
+(defun list-log-requests (sender allp user channel &optional server)
+  ;; (list-log-requests (server "irc.freenode.org") (nick "pjb"))
+  ;; (list-log-requests nil nil)
   (with-server (sender server)
-    (with-user (sender user server)
-      (if (has-user-credentials sender user)
-          (let ((requests (requests user)))
-            (if (endp requests)
-                (answer sender "~A has requested no logs." (name user))
-                (dolist (request (requests user))
-                  (answer sender "~3D) ~15A ~A ~@[~A~]"
-                          (id request)
-                          (name (channel request))
-                          (format-iso8601-time (start-date request))
-                          (when (end-date request)
-                            (format-iso8601-time (end-date request)))))))
-          (answer sender "You are not authorized list the channels logged by the user ~A." (name user))))))
+    (multiple-value-bind (requests owner) (select-log-requests sender allp user channel server)
+      (if requests
+          (dolist (request requests
+                           (answer sender "~R request~:*~p." (length requests)))
+            (answer sender "~3D) ~9A requested ~15A from ~A~@[ to ~A~]"
+                    (id request)
+                    (name (owner request))
+                    (name (channel request))
+                    (format-iso8601-time (start-date request))
+                    (when (end-date request)
+                      (format-iso8601-time (end-date request)))))
+          (answer sender "~:[No log requests.~;~A has requested no logs.~]" owner (name owner))))))
+
+(defun user-names (server)
+  (mapcar (function pathname-name)
+          (directory (user-pathname :wild server))))
 
 (defun list-users (sender server)
   ;; (list-users (server "irc.freenode.org")) 
   ;; (list-users nil)
   (with-server (sender server)
     (dolist (user 
-             (if  (has-server-credential sender server)
-                  (mapcar (function pathname-name)
-                          (directory (user-pathname :wild server)))
-                  (progn (answer sender "You are not authorized to list the users other than you.")
-                         (list (name sender)))))
+             (if (has-server-credential sender server)
+                 (user-names server)
+                 (progn (answer sender "You are not authorized to list the users other than you.")
+                        (list (name sender)))))
       (let ((user (find-user server user)))
         (answer sender "~16A ~:[ ~;I~]~:[ ~;V~] ~@[~A~]"
                 (name user) (identified user) (verified user) (email user))))))
@@ -1631,20 +1695,16 @@ delimiter for the channel mask.  Channel names are case insensitive.
           (answer sender "End date must be after start date.")
           (answer sender "Added ~A" (create-request channel sender start-date end-date))))))
 
-(defun cancel-log-channel (sender channel server)
-  ;; (cancel-log-channel (channel "#lisp") (server "irc.freenode.org")) 
-  ;; (cancel-log-channel (channel "#lisp") nil)
+(defun cancel-log-requests (sender allp user channel &optional server)
+  ;; (cancel-log-requests (channel "#lisp") (server "irc.freenode.org")) 
+  ;; (cancel-log-requests (channel "#lisp") nil)
   (with-server (sender server)
-    (let* ((channel  (argument-channel sender channel))
-           (requests (requests sender))
-           (the-one  (find-if (lambda (request)
-                                (and (eql channel (channel request))
-                                     (<= (start-date request) (get-universal-time))
-                                     (null (end-date request))))
-                              requests)))
-      (if the-one
-          (answer sender "Deleted ~A" (delete-request the-one))
-          (answer sender "Found no undelimited request.")))))
+    (let ((to-be-canceled (select-log-requests sender allp user channel server)))
+      (if to-be-canceled
+          (dolist (request to-be-canceled
+                           (answer sender "~R request~:*~p deleted." (length to-be-canceled)))
+            (answer sender "Deleted ~A" (delete-request request)))
+          (answer sender "Found no request to be deleted.")))))
 
 (defun cancel-log-id (sender id)
   ;; (cancel-log-id (id "42"))
@@ -1671,24 +1731,24 @@ delimiter for the channel mask.  Channel names are case insensitive.
 
 (defun interpret (sender expression)
   (ecase (first expression)
-    ((help)                (help               sender (second expression)))
-    ((version)             (version            sender))
-    ((uptime)              (uptime-cmd         sender))
-    ((sources)             (sources            sender))
-    ((query)               (query              sender (second expression)))
-    ((connect)             (connect            sender (second expression) (third expression) (fourth expression)))
-    ((disable)             (disable            sender (second expression)))
-    ((enable)              (enable             sender (second expression)))
-    ((list-servers)        (list-servers       sender))
-    ((list-channels)       (list-channels      sender (second expression) (third expression)))
-    ((list-users)          (list-users         sender (second expression)))
-    ((identify)            (identify           sender (second expression)))
-    ((register)            (register           sender (second expression) (third expression)))
-    ((reset)               (reset              sender (second expression)))
-    ((set-password)        (set-password       sender (second expression) (third expression) (fourth expression)))
-    ((cancel-log-channel)  (cancel-log-channel sender (second expression) (third expression)))
-    ((cancel-log-id)       (cancel-log-id      sender (second expression)))
-    ((log-request)         (log-request        sender (second expression) (third expression) (fourth expression) (fifth expression)))))
+    ((help)                    (help                    sender (second expression)))
+    ((version)                 (version                 sender))
+    ((uptime)                  (uptime-cmd              sender))
+    ((sources)                 (sources                 sender))
+    ((query)                   (query                   sender (second expression)))
+    ((connect)                 (connect                 sender (second expression) (third expression) (fourth expression)))
+    ((disable)                 (disable                 sender (second expression)))
+    ((enable)                  (enable                  sender (second expression)))
+    ((list-servers)            (list-servers            sender))
+    ((list-users)              (list-users              sender (second expression)))
+    ((list-log-requests)       (apply (function list-log-requests)   sender (rest expression)))
+    ((cancel-log-requests)     (apply (function cancel-log-requests) sender (rest expression)))
+    ((log-request)             (apply (function log-request)         sender (rest expression)))
+    ((cancel-log-id)           (cancel-log-id           sender (second expression)))
+    ((identify)                (identify                sender (second expression)))
+    ((register)                (register                sender (second expression) (third expression)))
+    ((reset)                   (reset                   sender (second expression)))
+    ((set-password)            (set-password            sender (second expression) (third expression) (fourth expression)))))
 
 
 
@@ -1736,7 +1796,7 @@ delimiter for the channel mask.  Channel names are case insensitive.
                               (format *trace-output* "~&QUERY ~A -> ~A~%" sender message)
                               (query-processor server sender message))
         *logger*            (make-worker-thread botil-logger (server message)
-                              (format *trace-output* "~&LOGGER ~A -> ~A~%" (user message) message)
+                              (format *trace-output* "~&LOGGER ~A -> ~A~%" (irc:source message) message)
                               (logger server message))
         *command-processor* (make-worker-thread botil-command-processor (server sender message)
                               (format *trace-output* "~&COMMAND ~A -> ~A~%" sender message)
@@ -1929,7 +1989,7 @@ and answer to search queries in those logs."
                 "AND" "ANSWER" "ARGUMENT-EMAIL" "ARGUMENT-KEY"
                 "ARGUMENT-PASSWORD" "ARGUMENT-SERVER" "ARGUMENT-OLD-USER" "ARGUMENT-NEW-USER"
                 "ARGUMENTS" "BOTIL" "BOTIL-INITIALIZE" "BOTNICK"
-                "BOTPASS" "CALL-WITH-RETRY" "CANCEL-LOG-CHANNEL"
+                "BOTPASS" "CALL-WITH-RETRY" "CANCEL-LOG-REQUESTS"
                 "CANCEL-LOG-ID" "CHANNEL" "CHANNEL-PATHNAME"
                 "CHANNELS" "COMMAND" "COMMAND-PROCESSOR"
                 "COMPUTE-DEADLINE" "CONNECT" "CONNECT-TO-SERVER"
@@ -1942,7 +2002,7 @@ and answer to search queries in those logs."
                 "FIND-USER" "GENERATE-KEY" "HELP" "HOST" "HOSTNAME"
                 "ID" "IDENTIFIED" "IDENTIFY" "INITIALIZE-DATABASE"
                 "INTERPRET" "JOIN-CHANNEL" "JOINED-CHANNELS" "KEY"
-                "KEYWORDS" "KILL-WORKER" "LIST-CHANNELS"
+                "KEYWORDS" "KILL-WORKER" "LIST-LOG-REQUESTS"
                 "LIST-SERVERS" "LIST-USERS" 
                 "LOAD-REQUESTS" "LOAD-SERVER-DATABASE" 
                 "LOG-FILE-PATHNAME" "LOG-MONTH" "LOG-STREAM"
@@ -2014,20 +2074,96 @@ Licensed under the AGPL3.
        (reset (nick "pjb")))
       ("set password pjb 321545623f new-secret-password"
        (set-password (nick "pjb") (key "321545623f") (password "new-secret-password")))
-      ("list channel logs on server irc.freenode.org"
-       (list-channels (server "irc.freenode.org") nil))
-      ("list channels"
-       (list-channels nil nil))
-      ("list logs"
-       (list-channels nil nil))
-      ("list logs on irc.freenode.org"
-       (list-channels (server "irc.freenode.org") nil))
+      
       ("list users"
        (list-users nil))
       ("list users on irc.freenode.org"
        (list-users (server "irc.freenode.org")))
       ("list servers"
        (list-servers))
+
+      ;;
+      ("list     my log requests"
+       (list-log-requests nil nil nil nil))                                
+      ("list     my log requests for channel #lisp"
+       (list-log-requests nil nil (channel "#lisp") nil))              
+      ("list all my log requests"
+       (list-log-requests nil nil nil nil))                                
+
+      ("list all    log requests of mr foo"
+       (list-log-requests t (nick "foo") (channel "#lisp") nil))                      
+      ("list all    log requests of mr foo for channel #lisp"
+       (list-log-requests t (nick "foo") (channel "#lisp") nil))    
+      ("list all    log requests           for channel #lisp"
+       (list-log-requests t nil (channel "#lisp") nil))    
+      ("list all    log requests"
+       (list-log-requests t nil (channel "#lisp") nil))                                
+
+      ("list all    log requests of mr foo  on server irc.freenode.org"
+       (list-log-requests t (nick "foo") (channel "#lisp") (server "irc.freenode.org")))                      
+      ("list all    log requests of mr foo for channel #lisp  on server irc.freenode.org"
+       (list-log-requests t (nick "foo") (channel "#lisp") (server "irc.freenode.org")))    
+      ("list all    log requests           for channel #lisp  on server irc.freenode.org"
+       (list-log-requests t nil (channel "#lisp") (server "irc.freenode.org")))    
+      ("list all    log requests on server irc.freenode.org"
+       (list-log-requests t nil (channel "#lisp") (server "irc.freenode.org")))                                
+      
+      ("list all channel logs on server irc.freenode.org"
+       (list-log-requests t nil nil (server "irc.freenode.org")))
+      ("list all channels"
+       (list-log-requests t nil nil nil))
+      ("list all logs on irc.freenode.org"
+       (list-log-requests t nil nil (server "irc.freenode.org")))
+      ("list all logs"
+       (list-log-requests t nil nil nil))
+      
+      ;;
+      ("cancel     my log requests"
+       (cancel-log-requests nil nil nil nil))                                
+      ("cancel     my log requests for channel #lisp"
+       (cancel-log-requests nil nil (channel "#lisp") nil))              
+      ("cancel all my log requests"
+       (cancel-log-requests nil nil nil nil))                                
+
+      ("cancel all    log requests of mr foo"
+       (cancel-log-requests t (nick "foo") (channel "#lisp") nil))                      
+      ("cancel all    log requests of mr foo for channel #lisp"
+       (cancel-log-requests t (nick "foo") (channel "#lisp") nil))    
+      ("cancel all    log requests           for channel #lisp"
+       (cancel-log-requests t nil (channel "#lisp") nil))    
+      ("cancel all    log requests"
+       (cancel-log-requests t nil (channel "#lisp") nil))                                
+
+      ("cancel all    log requests of mr foo  on server irc.freenode.org"
+       (cancel-log-requests t (nick "foo") (channel "#lisp") (server "irc.freenode.org")))                      
+      ("cancel all    log requests of mr foo for channel #lisp  on server irc.freenode.org"
+       (cancel-log-requests t (nick "foo") (channel "#lisp") (server "irc.freenode.org")))    
+      ("cancel all    log requests           for channel #lisp  on server irc.freenode.org"
+       (cancel-log-requests t nil (channel "#lisp") (server "irc.freenode.org")))    
+      ("cancel all    log requests on server irc.freenode.org"
+       (cancel-log-requests t nil (channel "#lisp") (server "irc.freenode.org")))                                
+      
+      ("cancel all channel logs on server irc.freenode.org"
+       (cancel-log-requests t nil nil (server "irc.freenode.org")))
+      ("cancel all channels"
+       (cancel-log-requests t nil nil nil))
+      ("cancel all logs on irc.freenode.org"
+       (cancel-log-requests t nil nil (server "irc.freenode.org")))
+      ("cancel all logs"
+       (cancel-log-requests t nil nil nil))
+      ;;
+      ("cancel all log request on channel #lisp on server irc.freenode.org"
+       (cancel-log-requests t nil (channel "#lisp") (server "irc.freenode.org")))
+      ("cancel all log request on channel #lisp"
+       (cancel-log-requests t nil (channel "#lisp") nil))
+      ("cancel all #lisp on irc.freenode.org"
+       (cancel-log-requests t nil (channel "#lisp") (server "irc.freenode.org")))
+      ("cancel all #lisp"
+       (cancel-log-requests t nil (channel "#lisp") nil))
+      ;;
+      ("cancel log 42"
+       (cancel-log-id (id "42")))
+      ;;
       ("log channel #lisp on server irc.freenode.org                 to 2016-02-28"
        (log-request (channel "#lisp") (server "irc.freenode.org") nil (date "2016-02-28")))
       ("log channel #lisp on server irc.freenode.org from 2016-03-01 to 2016-03-31"
@@ -2040,16 +2176,7 @@ Licensed under the AGPL3.
        (log-request (channel "#lisp") nil (date "20160301T000000") (date "2016-03-31T00:00:00")))
       ("log #lisp from 20160601T000000"
        (log-request (channel "#lisp") nil (date "20160601T000000") nil))
-      ("cancel all log on channel #lisp on server irc.freenode.org"
-       (cancel-log-channel (channel "#lisp") (server "irc.freenode.org")))
-      ("cancel all log on channel #lisp"
-       (cancel-log-channel (channel "#lisp") nil))
-      ("cancel all #lisp on irc.freenode.org"
-       (cancel-log-channel (channel "#lisp") (server "irc.freenode.org")))
-      ("cancel all #lisp"
-       (cancel-log-channel (channel "#lisp") nil))
-      ("cancel log 42"
-       (cancel-log-id (id "42"))))))
+      )))
 
 
 (define-test test/pathnames ()
