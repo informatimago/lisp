@@ -726,7 +726,7 @@ cf. command: cancel log $ID")
     (sorted-serie (gethash (name owner) (owner-index (request-index (server owner))) (list t)))))
 
 
-(defun active-channel-p (channel &optional (date (get-universal-time)))
+(defun channel-active-p (channel &optional (date (get-universal-time)))
   (check-type channel channel)
   (loop :for r :in (requests channel)
         :while (and (end-date r) (< (end-date r) date))
