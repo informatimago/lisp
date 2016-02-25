@@ -36,11 +36,11 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setf *readtable* (copy-readtable nil)))
 (declaim (declaration also-use-packages))
-(declaim (also-use-packages "CL-IRC" "UIOP"))
+(declaim (also-use-packages "UIOP" "CL-IRC" "MONTEZUMA"))
 (defpackage "COM.INFORMATIMAGO.SMALL-CL-PGMS.BOTIL"
   (:use "COMMON-LISP"
         "CL-JSON" "DRAKMA"  "SPLIT-SEQUENCE" "BORDEAUX-THREADS"
-        "CL-DATE-TIME-PARSER" "CL-PPCRE" "CL-SMTP"
+        "CL-DATE-TIME-PARSER" "CL-PPCRE" "CL-SMTP" 
         "COM.INFORMATIMAGO.RDP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE"
@@ -91,20 +91,26 @@ Licensed under the AGPL3.
 (defvar *default-password* "1234"
   "The nickname of the botil user.")
 
-(defvar *database*
+(defun find-database ()
   (find-if (lambda (dir)
              (probe-file (merge-pathnames #P"botil.database" dir nil)))
            #(#P"/data/databases/irc/"
              #P"/mnt/data/databases/irc/"
-             #P"/Users/pjb/Documents/irc/"))
+             #P"/Users/pjb/Documents/irc/")))
+
+(defvar *database* (find-database)
   "The pathname to the botil database.")
+
+(defvar *index* nil
+  "The montezuma index.")
 
 (defvar *sources-url*
   "https://gitlab.com/com-informatimago/com-informatimago/tree/master/small-cl-pgms/botil/"
   "The URL where the sources of this ircbot can be found.")
 
-
-
+(defun index-pathname ()
+  (make-pathname :name "index" :type "montezuma" :version nil
+                 :defaults *database*))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -581,20 +587,39 @@ cf. command: cancel log $ID")
               (log-stream-write-time channel) (get-universal-time)))))
   (log-stream channel))
 
+(defun message-index-add (channel message log-file filepos)
+  (let ((doc  (make-instance 'montezuma:document))
+        (date (format-iso8601-time (irc:received-time message))))
+    (montezuma:add-field doc (montezuma:make-field "server"        (hostname       (server channel)) :stored T   :index :untokenized))
+    (montezuma:add-field doc (montezuma:make-field "channel"       (name                   channel)  :stored T   :index :untokenized))
+    (montezuma:add-field doc (montezuma:make-field "raw"           (irc:raw-message-string message)  :stored T   :index :tokenized))
+    (montezuma:add-field doc (montezuma:make-field "source"        (irc:source             message)  :stored T   :index :untokenized))
+    (montezuma:add-field doc (montezuma:make-field "user"          (irc:user               message)  :stored T   :index :untokenized))
+    (montezuma:add-field doc (montezuma:make-field "host"          (irc:host               message)  :stored T   :index :untokenized))
+    (montezuma:add-field doc (montezuma:make-field "command"       (irc:command            message)  :stored T   :index :untokenized))
+    (montezuma:add-field doc (montezuma:make-field "contents"      (second (irc:arguments  message)) :stored T   :index :tokenized))
+    (montezuma:add-field doc (montezuma:make-field "received-time" date                              :stored T   :index :untokenized))
+    (montezuma:add-field doc (montezuma:make-field "log-file"      log-file                          :stored T   :index nil))
+    (montezuma:add-field doc (montezuma:make-field "log-position"  (prin1-to-string filepos)         :stored T   :index nil))
+    (montezuma:add-document-to-index *index* doc)))
+
 (defmethod create-message ((channel channel) (ircmsg irc:irc-message))
   (ensure-log-stream channel (irc:received-time ircmsg))
-  (let ((stream (log-stream channel)))
-    (prin1 (print (list :source (irc:source ircmsg)
-                        :user (irc:user ircmsg)
-                        :host (irc:host ircmsg)
-                        :command (irc:command ircmsg)
-                        :arguments (irc:arguments ircmsg)
-                        :received-time (irc:received-time ircmsg)
-                        :raw-message-string (irc:raw-message-string ircmsg)))
+  (let ((stream  (log-stream channel)))
+    (prin1 (list :source (irc:source ircmsg)
+                 :user (irc:user ircmsg)
+                 :host (irc:host ircmsg)
+                 :command (irc:command ircmsg)
+                 :arguments (irc:arguments ircmsg)
+                 :received-time (irc:received-time ircmsg)
+                 :raw-message-string (irc:raw-message-string ircmsg))
            stream)
     (terpri stream)
-    (finish-output stream))
-  (setf (log-stream-write-time channel) (get-universal-time)))
+    (force-output stream)
+    (setf (log-stream-write-time channel) (get-universal-time))
+    (message-index-add channel ircmsg
+                       (enough-namestring (pathname stream) *database*)
+                       (file-position stream))))
 
 
 ;; (setf (log-month  (first (channels (first *servers*)))) 201601)
@@ -836,9 +861,12 @@ cf. command: cancel log $ID")
        (make-worker
         :input-queue ,vinput-queue
         :send (lambda (,vmessage)
-                (destructuring-bind ,message-lambda-list ,vmessage
-                  (declare (ignorable ,@pl))
-                  (enqueue ,vinput-queue ,vmessage)))
+                (enqueue ,vinput-queue
+                         (if (eql ,vmessage 'die)
+                             ,vmessage
+                             (destructuring-bind ,message-lambda-list ,vmessage
+                               (declare (ignorable ,@pl))
+                               ,vmessage))))
         :thread (make-thread
                  (lambda ()
                    (loop
@@ -943,16 +971,34 @@ cf. command: cancel log $ID")
 ;;; Query processor
 ;;;-----------------------------------------------------------------------------
 
+(defvar *max-query-results* 10)
+
 (defun query-processor (server sender query)
   (check-type server server)
   (check-type sender user)
   (check-type query string)
-  (todo 'query-processor))
+  (let ((result-no 0))
+    (block :results
+      (montezuma:search-each
+       *index* query
+       (lambda (num score)
+         (incf result-no)
+         (let ((doc (montezuma:get-document *index* num)))
+           (answer sender "~3D) ~4,2F ~A > ~A : ~A"
+                   result-no score
+                   (montezuma:document-value doc "channel")
+                   (montezuma:document-value doc "source")
+                   (montezuma:document-value doc "contents")))
+         (when (<= *max-query-results* result-no)
+           (return-from :results)))))
+    (when (zerop result-no)
+      (answer sender "No match."))))
 
 
 ;;;-----------------------------------------------------------------------------
 ;;; Logger
 ;;;-----------------------------------------------------------------------------
+
 (defun logger (server message)
   (check-type server server)
   (check-type message irc:irc-message)
@@ -1039,14 +1085,16 @@ cf. command: cancel log $ID")
           (rhs-bnf `(seq ,@rhs)))))))
 
 (defgrammar botil
-  :terminals ((word     "[^ ]+")
-              (string   "\"[^\"]+\"|'[^']+'"))
+  :terminals ((word      "[^ ]+")
+              (string    "\"[^\"]+\"|'[^']+'")
+              ;; (montezuma ".+")
+              )
   :skip-spaces t
   :start command
   :eof-symbol eol
   :rules #1=(
              (--> command
-                  (alt query
+                  (alt ;; query
                        connect
                        log-request
                        cancel-log
@@ -1066,38 +1114,39 @@ cf. command: cancel log $ID")
              (--> key      word :action `(key      ,(second word)))
              (--> date     word :action `(date     ,(second word)))
              
-             (--> criteria
-                  disjunction
-                  :action `(criteria ,disjunction))
+             ;; (--> criteria
+             ;;      disjunction
+             ;;      :action `(criteria ,disjunction))
+             ;; 
+             ;; (--> disjunction
+             ;;      conjunction (opt "or" disjunction :action disjunction)
+             ;;      :action (if $2
+             ;;                  `(or ,conjunction ,$2)
+             ;;                  conjunction))
+             ;; 
+             ;; (--> conjunction
+             ;;      term (opt "and" conjunction :action conjunction)
+             ;;      :action (if $2
+             ;;                  `(and ,term ,$2)
+             ;;                  term))
+             ;; 
+             ;; (--> term
+             ;;      (alt (seq "not" term :action `(not ,$2))
+             ;;           (seq selection :action selection)))
+
              
-             (--> disjunction
-                  conjunction (opt "or" disjunction :action disjunction)
-                  :action (if $2
-                              `(or ,conjunction ,$2)
-                              conjunction))
+             ;; (--> selection
+             ;;      (alt
+             ;;       (seq "(" disjunction ")" :action disjunction)
+             ;;       (seq (rep string) :action `(keywords ,@$1))
+             ;;       (seq (opt "channel") channel :action channel)
+             ;;       (seq user nick :action nick)))
              
-             (--> conjunction
-                  term (opt "and" conjunction :action conjunction)
-                  :action (if $2
-                              `(and ,term ,$2)
-                              term))
-             
-             (--> term
-                  (alt (seq "not" term :action `(not ,$2))
-                       (seq selection :action selection)))
+             ;; (--> query
+             ;;      "query" montezuma
+             ;;      :action `(query ,montezuma))
 
              (--> user (alt "nick" "nickname" "user" "mr" "mrs" "miss" "dr" "pr"))
-             
-             (--> selection
-                  (alt
-                   (seq "(" disjunction ")" :action disjunction)
-                   (seq (rep string) :action `(keywords ,@$1))
-                   (seq (opt "channel") channel :action channel)
-                   (seq user nick :action nick)))
-             
-             (--> query
-                  "query" criteria
-                  :action `(query ,criteria))
 
              (--> connect
                   "connect" (opt "to") (opt "server") server
@@ -1198,7 +1247,7 @@ cf. command: cancel log $ID")
 
 
 (defparameter *help*
-  '("query <criteria>"
+  '("query|q|search|s <montezuma-criteria>"
     "connect [to] [server] <server> [[as] nick <nick>] [[with] password <password>]"
     "enable [server] <server>"
     "disable [server] <server>"
@@ -1664,7 +1713,7 @@ cf. command: cancel log $ID")
     ((version)                 (version                 sender))
     ((uptime)                  (uptime-cmd              sender))
     ((sources)                 (sources                 sender))
-    ((query)                   (query                   sender (second expression)))
+    ;; ((query)                   (query                   sender (second expression)))
     ((connect)                 (connect                 sender (second expression) (third expression) (fourth expression)))
     ((disable)                 (disable                 sender (second expression)))
     ((enable)                  (enable                  sender (second expression)))
@@ -1680,24 +1729,32 @@ cf. command: cancel log $ID")
     ((set-password)            (set-password            sender (second expression) (third expression) (fourth expression)))))
 
 
-
+  
 (defun command-processor (server sender command)
   (check-type server server)
   (check-type sender user)
   (check-type command string)
   (format *trace-output* "~&~S~%  ~S~%  ~S~%  ~S~%"
           'command-processor server sender command)
-  (let ((expression (handler-case
-                        (parse-botil command)
-                      (error ()
-                        (let ((command (subseq command 0 (position #\space command))))
-                          (answer sender "Syntax error.")
-                          (help sender command)
-                          (return-from command-processor))))))
-    (handler-case 
-        (interpret sender expression)
-      (error (err)
-        (answer sender "~A" (substitute #\space #\newline (princ-to-string err)))))))
+  (let* ((tcmd (string-trim " " command))
+         (cpos (position #\space tcmd))
+         (vcmd (subseq tcmd 0 cpos)))
+    (if (or (string= vcmd "query")
+            (string= vcmd "search")
+            (string= vcmd "s")
+            (string= vcmd "q"))
+        (send-worker *query-processor* server sender (subseq tcmd (1+ cpos)))
+        (let ((expression (handler-case
+                              (parse-botil command)
+                            (error ()
+                              (let ((command (subseq command 0 (position #\space command))))
+                                (answer sender "Syntax error.")
+                                (help sender command)
+                                (return-from command-processor))))))
+          (handler-case 
+              (interpret sender expression)
+            (error (err)
+              (answer sender "~A" (substitute #\space #\newline (princ-to-string err)))))))))
 
 
 (defun botil (server command)
@@ -1709,8 +1766,13 @@ cf. command: cancel log $ID")
      (exit))))
 
 
+(defun initialize-index ()
+  (setf *index* (make-instance 'montezuma:index :path (index-pathname))))
+
+
 (defvar *botil-workers* '())
-(defun botil-initialize ()
+
+(defun initialize-workers ()
   (setf *sender*            (make-worker-thread botil-sender (server recipient message &rest arguments)
                               (apply (function send) server recipient message arguments))
         *query-processor*   (make-worker-thread botil-query-processor (server sender message)
@@ -1729,7 +1791,18 @@ cf. command: cancel log $ID")
   (push *query-processor*   *botil-workers*)
   (push *logger*            *botil-workers*)
   (push *command-processor* *botil-workers*)
-  (push *botil*             *botil-workers*)
+  (push *botil*             *botil-workers*))
+
+
+(defun kill-all-workers ()
+  (mapc (function kill-worker) *botil-workers*)
+  (setf *botil-workers* '()))
+
+
+(defun botil-initialize ()
+  (setf *database* (find-database))
+  (initialize-index)
+  (initialize-workers)
   (load-server-database))
 
 
@@ -1863,8 +1936,7 @@ cf. command: cancel log $ID")
                            (update-channels server)))
                        (when (enabled server)
                          (connect-to-server server))))))
-          (mapc (function kill-worker) *botil-workers*)
-          (setf *botil-workers* '()))))))
+          (kill-all-workers))))))
 
 #-(and)
 (progn
@@ -1924,7 +1996,7 @@ cf. command: cancel log $ID")
                 "FIND-USER" "GENERATE-KEY" "HELP" "HOST" "HOSTNAME"
                 "ID" "IDENTIFIED" "IDENTIFY" "INITIALIZE-DATABASE"
                 "INTERPRET"  "KEY"
-                "KEYWORDS" "KILL-WORKER" "LIST-LOG-REQUESTS"
+                "KILL-WORKER" "LIST-LOG-REQUESTS"
                 "LIST-SERVERS" "LIST-USERS" 
                 "LOAD-REQUESTS" "LOAD-SERVER-DATABASE" 
                 "LOG-FILE-PATHNAME" "LOG-MONTH" "LOG-STREAM"
