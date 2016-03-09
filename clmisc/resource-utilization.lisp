@@ -257,21 +257,27 @@ RETURN: The number of disk I/O collected by (DISK-STATISTICS).
   ;; TODO: Use a CL implementation of gzip/zlib.
  #-(and clisp #.(cl:if (cl:find-package "LINUX") '(and) '(or))) 1/250
  #+(and clisp #.(cl:if (cl:find-package "LINUX") '(and) '(or)))
-  (or (ignore-errors
-        (with-open-stream (config (ext:run-program "gzip" :arguments '("-d")
-                                                   :input  "/proc/config.gz"
-                                                   :output :stream))
-          (and config
-               (loop
-                  :with target = "CONFIG_HZ="
-                  :for line = (read-line config nil nil)
-                  :while (and line
-                              (or (< (length line) (length target))
-                                  (not (string-equal line target
-                                                     :end1 (length target)))))
-                  :finally (return (when line
-                                     (/ (parse-integer line :start (length target)
-                                                       :junk-allowed t))))))))
+ (or (ignore-errors
+      (with-open-stream (config
+                         (cond
+                           ((probe-file "/proc/config")
+                            (open "/proc/config"))
+                           ((probe-file "/proc/config.gz")
+                            (ext:run-program "gzip" :arguments '("-d")
+                                                    :input  "/proc/config.gz"
+                                                    :output :stream))
+                           (t (error "No such file."))))
+        (and config
+             (loop
+               :with target = "CONFIG_HZ="
+               :for line = (read-line config nil nil)
+               :while (and line
+                           (or (< (length line) (length target))
+                               (not (string-equal line target
+                                                  :end1 (length target)))))
+               :finally (return (when line
+                                  (/ (parse-integer line :start (length target)
+                                                         :junk-allowed t))))))))
       1/250)
   "The JIFFY value of the Linux kernel (1/CONFIG_HZ)")
 
