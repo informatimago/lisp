@@ -41,5 +41,11 @@
   (let ((result (gensym "structure-result-")))
     `(slet ((,result ,expression)) ,result)))
 
+(defmacro send (&whole w o msg &rest args &environment env)
+  (ccl::make-optimized-send o msg args env))
+
+(defmacro send/stret (&whole w s o msg &rest args &environment env)
+  (ccl::make-optimized-send o msg args env s))
+
 
 ;;;; THE END ;;;;

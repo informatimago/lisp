@@ -84,10 +84,10 @@ See source file for details.
                           "OBJC-OBJECT"
                           "REMOVE-LISP-SLOTS" 
                           "RETURNING-FOREIGN-STRUCT"
-                          "SEND"
                           "SEND-SUPER" 
                           "SEND-SUPER/STRET"
-                          "SEND/STRET"
+                          ;; "SEND"
+                          ;; "SEND/STRET"
                           "WITH-AUTORELEASE-POOL"
                           "WITH-AUTORELEASED-NSSTRINGS")
 

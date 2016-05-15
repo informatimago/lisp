@@ -32,8 +32,12 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
+#+(and ccl darwin)
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (setf *readtable* (copy-readtable nil)))
+  (setf *readtable* (copy-readtable ccl::%initial-readtable%)))
+#-(and ccl darwin)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (error "We need a readtable for CCL specific dispatching reader macro #$"))
 (in-package "COM.INFORMATIMAGO.OBJECTIVE-CL")
 
 (define-condition read-error (stream-error)
