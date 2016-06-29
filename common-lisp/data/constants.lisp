@@ -155,7 +155,7 @@
   (pushnew name *constantes*)
   `(progn
      (pushnew ',name *constantes*)
-     (defparameter ,name ,value ,doc-string)
+     (defparameter ,name ,value ,@(when doc-string (list doc-string)))
      (setf (get ',name 'physical-constant) t
            (get ',name 'unit)  ',unit)
      ',name))
