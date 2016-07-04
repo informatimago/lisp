@@ -160,7 +160,8 @@ NOTE:           Empty subdirectories are not copied.
                             (remove-if (lambda (path) (not (or (pathname-name path) (pathname-type path))))
                                        (remove-duplicates
                                         (append (directory (merge-pathnames (if recursively "**/*.*" "*.*") src))
-                                                (directory (merge-pathnames (if recursively "**/*"   "*")   src)))))))
+                                                (directory (merge-pathnames (if recursively "**/*"   "*")   src)))
+                                        :test (function equalp)))))
          (copied-files '())
          (error-files  '()))
     (dolist (src-file src-files (values copied-files error-files))
