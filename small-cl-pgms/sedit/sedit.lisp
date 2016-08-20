@@ -400,7 +400,7 @@ structure is the element of the root cell).
       (if function
           (funcall function buffer)
           (format *query-io* "~%Please use one of these commands:~%~
-                                    ~{~<~%~1,40:;~*~A (~2:*~A~*)~>~^, ~}.~2%"
+                              ~:{~<~%~1,40:;~A (~A)~>~^, ~}.~2%"
                   *command-map*)))))
 
 (defun sedit (&optional sexp)
