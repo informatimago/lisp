@@ -39,6 +39,8 @@ all::help
 
 # html target is one of the main target: it prepares the files needed
 # for the web site.
+generate::html
+.PHONY:: generate
 
 help::
 	@printf $(HELPFORMAT) html "Generates html files from .html.in documents."
