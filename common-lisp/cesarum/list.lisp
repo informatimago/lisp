@@ -666,7 +666,7 @@ RETURN: The equivalence classes of SET, via KEY, modulo TEST.
   "
 RETURN:   The value of the entry INDICATOR of the a-list PLACE, or DEFAULT.
 "
-  (let ((a (assoc indicator place)))
+  (let ((a (assoc indicator place)))=
     (if a (cdr a) default)))
 
 
@@ -685,7 +685,6 @@ RETURN:   The value of the entry INDICATOR of the a-list PLACE, or DEFAULT.
 
 
 (define-setf-expander aget (place indicator &optional default &environment env)
-  (declare (ignore default))
   (multiple-value-bind (vars vals store-vars writer-form reader-form)
       (get-setf-expansion place env)
     (let* ((vindicator (gensym "INDICATOR"))
@@ -701,7 +700,10 @@ RETURN:   The value of the entry INDICATOR of the a-list PLACE, or DEFAULT.
                      (let ((,vstore (acons ,vindicator ,vvalue ,reader-form)))
                        ,writer-form))
                  ,vvalue)
-              `(assoc ,vindicator ,reader-form)))))
+              `(let ((,acs  (assoc ,vindicator ,reader-form)))
+                 (if ,acs
+                     (cdr ,acs)
+                     ,default))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
