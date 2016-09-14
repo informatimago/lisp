@@ -5,10 +5,10 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Implements a DFA, Deterministic Finite Automaton
 ;;;;    (or Deterministic Finite State Machine).
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -16,19 +16,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -39,7 +39,7 @@
   (:export
    "DFA" "DFA-STATE" "DEFINE-STATE-MACHINE" "ON-ENTRY" "ON-EXIT"
    "GO-TO-STATE")
-  
+
   (:documentation "
 
 This package implements a DFA, Deterministic Finite Automaton (or
@@ -47,7 +47,7 @@ Deterministic Finite State Machine).
 
 A DFA has a state.
 
-Our DFAs also have a set of slots. 
+Our DFAs also have a set of slots.
 
 Each DFA is implemented as a class.
 
@@ -84,7 +84,7 @@ Example:
 
     (got-b *d* 'b)
     prints:
-    (exiting zero) 
+    (exiting zero)
     (entering one b)
     --> (entering one b)
 
@@ -98,19 +98,19 @@ Example:
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2012 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -186,15 +186,15 @@ The REST arguments are those passed to the event.
   ;; Note we need these definitions at compilation-time for they're
   ;; used in the DEFINE-STATE-MACHINE macro.
 
-  
+
   (defstruct dfa-event
     "Events are implemeted as a method on the DFA objects.
 
 Each method dispatches on the state of the DFA."
     name lambda-list state-body-map)
-  
 
-  
+
+
   (defstruct dfa-entrex
     "
 Entrexes are on-Entry and on-Exit actions.
@@ -204,7 +204,7 @@ They're implemented as normal functions specific to each DFA state.
     name state lambda-list body)
 
 
-  
+
   (defun collect-events (states)
     "
 STATES:  an A-list of state-name and events.
@@ -249,7 +249,7 @@ from the STATES.
   (defun state-names (states)
     "The list of names of states."
     (mapcar (function first) states))
-  
+
   (defun slot-names (slots)
     "The list of names of slots."
     (mapcar (lambda (slot)
@@ -258,7 +258,7 @@ from the STATES.
                   (first slot)))
             slots))
 
-  
+
   (defmacro with-go-to-state ((dfa-var state-names) &body body)
     "Execute the BODY in a context where GO-TO-STATE is defined as a
 macro to transition to a new state."
@@ -272,8 +272,8 @@ macro to transition to a new state."
                      (assert (member state ',state-names))
                      (list* ',vgts ',dfa-var (list 'quote state) arguments)))
              ,@body))))
-  
-  
+
+
   (defun generate-entrex-method (dfa-class slot-names state-names entrex)
     "
 Generate the entrex method.
@@ -306,7 +306,7 @@ and dispatches on the DFA class and the state name.
          (declare (ignorable ,vdfa ,vstate)) ; needed with some implementations.
          ,body)))
 
-  
+
   (defun generate-event-method (dfa-class slot-names state-names event)
     "
 Generate the event method.
@@ -329,7 +329,7 @@ DFA-CLASS: name of the DFA.
          "A state transition event."
          ,body)))
 
-  
+
 
   );eval-when
 
@@ -376,7 +376,7 @@ generic functions on the DFA class.
            ,@(when documentation `((:documentation ,documentation))))
 
          ;; TODO: add a INITIALIZE-INSTANCE method to let the user initialize the DFA with MAKE-INSTANCE.
-         
+
          (defun ,(intern (with-standard-io-syntax (format nil "MAKE-~A" name)) (or (symbol-package name) *package*))
              ,(append
                ;; make-dfa takes as mandatory parameters all the slots that have a :initarg
@@ -392,7 +392,7 @@ generic functions on the DFA class.
                                 init-slots))))
              (on-entry ,vdfa ',initial ,@(when initial-ex (dfa-entrex-lambda-list initial-ex)))
              ,vdfa))
-         
+
          ,@(mapcar (lambda (ex) (generate-entrex-method name slot-names state-names ex))
                    entrexes)
 
@@ -402,39 +402,68 @@ generic functions on the DFA class.
          ',name))))
 
 
-
+#|
 ;; Example:
-;; 
-;; (define-state-machine session-dfa
-;;     :slots   ((session :initarg :session)
-;;               (timer   :accessor session-dfa-timer))
-;;     :initial closed
-;;     :states  ((closed
-;;                (session-open        () (go-to-state connecting))
-;;                (session-disconnect  () (logger :client :warn "SESSION-DFA got a SESSION-DISCONNECT while in CLOSED state.")))
-;;               (connecting
-;;                (:entry              ()
-;;                                     (if (perform-open-session session)
-;;                                         (go-to-state connected)
-;;                                         (cannot-open-session (session-lo-dfa session))))
-;;                (cannot-open-session ()
-;;                                     (let ((delay  (random 20)))
-;;                                       (logger :client :warn "Cannot connect right now, will try in ~A second~:*~P." delay)
-;;                                       (go-to-state waiting delay)))
-;;                (session-open        () (logger :client :warn "SESSION-DFA got a SESSION-OPEN while in CONNECTING state."))
-;;                (session-close       () (perform-close-session session) (go-to-state closed))
-;;                (session-disconnect  () (perform-close-session session) (go-to-state waiting (random 20))))
-;;               (waiting
-;;                (:entry              (delay)
-;;                                     (setf timer (add-timer *event-base* (lambda () (session-timeout dfa)) delay :one-shot t)))
-;;                (:exit               () (remove-timer *event-base* (session-dfa-timer dfa)))
-;;                (session-timeout     () (go-to-state connecting))
-;;                (session-close       () (go-to-state closed))
-;;                (session-disconnect  () (logger :client :warn "SESSION-DFA got a SESSION-DISCONNECT while in WAITING state.")))
-;;               (connected
-;;                (:entry              () ;; TODO: activate the protocol FSM
-;;                                     (receive-bytes session))
-;;                (session-close       () (perform-close-session session) (go-to-state closed))
-;;                (session-disconnect  () (perform-close-session session) (go-to-state connecting)))))
+
+(define-state-machine session-dfa
+    :slots   ((session :initarg :session)
+              (timer   :accessor session-dfa-timer))
+    :initial closed
+    :states  ((closed
+               (session-open        () (go-to-state connecting))
+               (session-disconnect  () (logger :client :warn "SESSION-DFA got a SESSION-DISCONNECT while in CLOSED state.")))
+              (connecting
+               (:entry              ()
+                                    (if (perform-open-session session)
+                                        (go-to-state connected)
+                                        (cannot-open-session (session-lo-dfa session))))
+               (cannot-open-session ()
+                                    (let ((delay  (random 20)))
+                                      (logger :client :warn "Cannot connect right now, will try in ~A second~:*~P." delay)
+                                      (go-to-state waiting delay)))
+               (session-open        () (logger :client :warn "SESSION-DFA got a SESSION-OPEN while in CONNECTING state."))
+               (session-close       () (perform-close-session session) (go-to-state closed))
+               (session-disconnect  () (perform-close-session session) (go-to-state waiting (random 20))))
+              (waiting
+               (:entry              (delay)
+                                    (setf timer (add-timer *event-base* (lambda () (session-timeout dfa)) delay :one-shot t)))
+               (:exit               () (remove-timer *event-base* (session-dfa-timer dfa)))
+               (session-timeout     () (go-to-state connecting))
+               (session-close       () (go-to-state closed))
+               (session-disconnect  () (logger :client :warn "SESSION-DFA got a SESSION-DISCONNECT while in WAITING state.")))
+              (connected
+               (:entry              () ;; TODO: activate the protocol FSM
+                                    (receive-bytes session))
+               (session-close       () (perform-close-session session) (go-to-state closed))
+               (session-disconnect  () (perform-close-session session) (go-to-state connecting)))))
+
+
+
+(in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DFA")
+
+(define-state-machine left
+  :initial on
+  :states ((on
+            (push-left (right) (print '(left stays on)) (push-right right dfa))
+            (pull-left (right) (print '(left goes off)) (go-to-state off)))
+           (off
+            (push-left (right) (print '(left goes on))   (go-to-state on))
+            (pull-left (right) (print '(left stays off)) (pull-right right dfa)))))
+
+(define-state-machine right
+  :initial on
+  :states ((on
+            (push-right (left) (print '(right stays on)) (push-left left dfa))
+            (pull-right (left) (print '(right goes off)) (go-to-state off)))
+           (off
+            (push-right (left) (print '(right goes on))   (go-to-state on))
+            (pull-right (left) (print '(right stays off)) (pull-left left dfa)))))
+
+
+(let ((left  (make-left))
+      (right (make-right)))
+  (push-left left right))
+
+|#
 
 ;;;; THE END ;;;;
