@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Check the licenses of the dependencies, write a manifest.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -16,19 +16,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
@@ -51,7 +51,7 @@
            "LISP-IMPLEMENTATION-TYPE-KEYWORD"
            "VERSION"
            "MACHINE-TYPE-KEYWORD"
-           "DISTRIBUTION" 
+           "DISTRIBUTION"
            "EXECUTABLE-NAME"
            "EXECUTABLE-FILENAME"
            "PRINT-MANIFEST"
@@ -100,7 +100,7 @@
 
 (defun system-depends-on/recursive (system)
   (delete-duplicates
-   (transitive-closure 
+   (transitive-closure
     (function system-depends-on)
     (list (string-downcase system)))
    :test 'string=))
@@ -189,7 +189,7 @@ System and distrib are keywords, release is a string."
 
            ;; Checked with Linux RedHat 6.1, 6.2, 7.0
            ;; Checked with Linux Immunix 6.2.
-           ;; There seems to be no way to differenciate 
+           ;; There seems to be no way to differenciate
            ;; a RedHat 6.2 from an Immunix 6.2.
            ((with-open-file (inp "/etc/redhat-release"
                                  :if-does-not-exist nil)
