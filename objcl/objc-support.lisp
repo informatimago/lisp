@@ -31,17 +31,31 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
-#+(and ccl darwin)
+
+;; We'll try to catch in this variable the objective-c reader macros
+;; installed by ccl require cocoa.
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (setf *readtable* (copy-readtable ccl::%initial-readtable%)))
+  (defvar com.informatimago.objcl.readtable:*ccl-readtable* nil))
 
 #+(and ccl darwin); for now, not on non-darwin
 (eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable*
+        #-(and ccl darwin)
+        (copy-readtable nil)
+        #+(and ccl darwin) ; #+ccl (require :cocoa) needs the botched readtable.
+        (copy-readtable ccl::%initial-readtable%))
+
   ;; When we (require :objc-support) before (require :cocoa), ccl
   ;; can't find the main bundle.  So we must require :cocoa for the
   ;; applications that need it.
   #-darwin (require :objc-support)
-  #+darwin (require :cocoa) 
+  #+darwin (require :cocoa)
+
+  (unless com.informatimago.objcl.readtable:*ccl-readtable*
+    (setf com.informatimago.objcl.readtable:*ccl-readtable* (copy-readtable *readtable*)))
   (pushnew :objc-support *features*))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 
 ;;;; THE END ;;;;

@@ -58,8 +58,8 @@ cover generic FFI to both Apple and GNUstep objc2 runtimes.
                ((#:albert #:docbook #:textcolor) . "black"))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ("com.informatimago.common-lisp.cesarum")
-  :components ((:file "objc-support"       :depends-on ())
-               (:file "packages"           :depends-on ("objc-support"))
+  :components ((:file "objc-support"       :depends-on ("packages"))
+               (:file "packages"           :depends-on ())
                (:file "mac-roman"          :depends-on ("packages"))
                . #+(and ccl darwin)
                ((:file "oclo-ccl"           :depends-on ("packages"))

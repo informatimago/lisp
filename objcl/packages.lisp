@@ -43,7 +43,13 @@
 ;;          (#/initWithPath: mainBundle (namestring (truename ccl::*cocoa-ide-path*)))))))
 ;; #+(and ccl darwin)
 
-(defpackage "COM.INFORMATIMAGO.OBJCL.MAC-ROMAN"
+(defpackage "COM.INFORMATIMAGO.OBJECTIVE-CL.READTABLE"
+  (:nicknames "COM.INFORMATIMAGO.OBJCL.READTABLE")
+  (:use "COMMON-LISP")
+  (:export "*CCL-READTABLE*"))
+
+(defpackage "COM.INFORMATIMAGO.OBJECTIVE-CL.MAC-ROMAN"
+  (:nicknames  "COM.INFORMATIMAGO.OBJCL.MAC-ROMAN")
   (:use "COMMON-LISP")
   (:export "MAC-ROMAN-CHAR-P" "MAC-ROMAN-STRING-P")
   (:documentation "
@@ -56,108 +62,122 @@ This package is licensed under the GPL.
 See source file for details.
 "))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defvar *oclo-ccl-symbol-names*)
+  (defparameter *oclo-objc-symbol-names*
+    '("*OBJC-DESCRIPTION-MAX-LENGTH*"
+      "@CLASS"
+      "@SELECTOR" 
+      "DEFINE-OBJC-CLASS-METHOD"
+      "DEFINE-OBJC-METHOD"
+      "DEFMETHOD" 
+      "LISP-STRING-FROM-NSSTRING"
+      "LOAD-FRAMEWORK"
+      "MAKE-NSSTRING" 
+      "MAKE-OBJC-INSTANCE"
+      "OBJC-CLASS"
+      "OBJC-CLASS-OBJECT" 
+      "OBJC-MESSAGE-SEND"
+      "OBJC-MESSAGE-SEND-STRET" 
+      "OBJC-MESSAGE-SEND-SUPER"
+      "OBJC-MESSAGE-SEND-SUPER-STRET" 
+      "OBJC-METACLASS"
+      "OBJC-OBJECT"
+      "REMOVE-LISP-SLOTS" 
+      "RETURNING-FOREIGN-STRUCT"
+      "SEND-SUPER" 
+      "SEND-SUPER/STRET"
+      "SEND"
+      "SEND/STRET"
+      "WITH-AUTORELEASE-POOL"
+      "WITH-AUTORELEASED-NSSTRINGS"
 
-(defpackage "COM.INFORMATIMAGO.OBJECTIVE-C.LOWER"
-  (:nicknames "COM.INFORMATIMAGO.OCLO"
-              "OCLO")
-  (:use "CL")
+      #-ccl-1.9 "*COCOA-APPLICATION-FRAMEWORKS*" 
+      "@"
+      "DEFINE-CLASSNAME-TRANSLATION"
+      "LISP-TO-OBJC-CLASSNAME"
+      "LISP-TO-OBJC-MESSAGE"
+      "OBJC-TO-LISP-CLASSNAME"
+      "OBJC-TO-LISP-MESSAGE"
+      "SLET"
+      "UPDATE-OBJC-METHOD-INFO")))
 
-  #+(and ccl objc-support)
-  (:shadowing-import-from "OBJC"
-                          "*OBJC-DESCRIPTION-MAX-LENGTH*"
-                          "@CLASS"
-                          "@SELECTOR" 
-                          "DEFINE-OBJC-CLASS-METHOD"
-                          "DEFINE-OBJC-METHOD"
-                          "DEFMETHOD" 
-                          "LISP-STRING-FROM-NSSTRING"
-                          "LOAD-FRAMEWORK"
-                          "MAKE-NSSTRING" 
-                          "MAKE-OBJC-INSTANCE"
-                          "OBJC-CLASS"
-                          "OBJC-CLASS-OBJECT" 
-                          "OBJC-MESSAGE-SEND"
-                          "OBJC-MESSAGE-SEND-STRET" 
-                          "OBJC-MESSAGE-SEND-SUPER"
-                          "OBJC-MESSAGE-SEND-SUPER-STRET" 
-                          "OBJC-METACLASS"
-                          "OBJC-OBJECT"
-                          "REMOVE-LISP-SLOTS" 
-                          "RETURNING-FOREIGN-STRUCT"
-                          "SEND-SUPER" 
-                          "SEND-SUPER/STRET"
-                          ;; "SEND"
-                          ;; "SEND/STRET"
-                          "WITH-AUTORELEASE-POOL"
-                          "WITH-AUTORELEASED-NSSTRINGS")
 
-  #+(and ccl objc-support)
-  (:shadowing-import-from "CCL"
-                          #-ccl-1.9 "*COCOA-APPLICATION-FRAMEWORKS*" 
-                          "@"
-                          "DEFINE-CLASSNAME-TRANSLATION"
-                          "LISP-TO-OBJC-CLASSNAME"
-                          "LISP-TO-OBJC-MESSAGE"
-                          "OBJC-TO-LISP-CLASSNAME"
-                          "OBJC-TO-LISP-MESSAGE"
-                          "SLET"
-                          "UPDATE-OBJC-METHOD-INFO")
+(print
+ '(defpackage "COM.INFORMATIMAGO.OBJECTIVE-C.LOWER"
+   (:nicknames "COM.INFORMATIMAGO.OCLO"
+               "OCLO")
+   (:use "CL")
 
-  (:export
-   "SELF" "SUPER"
+   #+(and ccl objc-support)
+   (:shadowing-import-from "OBJC" . #.(let ((o '())
+                                            (c '()))
+                                        (dolist (s *oclo-objc-symbol-names*)
+                                          (cond
+                                            ((find-symbol s "OBJC") (push s o))
+                                            ((find-symbol s "CCL")  (push s c))
+                                            (t (error "~A is not found in OBJC or CCL" s))))
+                                        (setf *oclo-ccl-symbol-names* c)
+                                        o))
+
+   #+(and ccl objc-support)
+   (:shadowing-import-from "CCL" . #.*oclo-ccl-symbol-names*)
+
+   (:export
+    "SELF" "SUPER"
    
-   ;; from objc.
-   "*OBJC-DESCRIPTION-MAX-LENGTH*"
-   "@CLASS"
-   "@SELECTOR" 
-   "DEFINE-OBJC-CLASS-METHOD"
-   "DEFINE-OBJC-METHOD"
-   "DEFMETHOD" 
-   "LISP-STRING-FROM-NSSTRING"
-   "LOAD-FRAMEWORK"
-   "MAKE-NSSTRING" 
-   "MAKE-OBJC-INSTANCE"
-   "OBJC-CLASS"
-   "OBJC-CLASS-OBJECT" 
-   "OBJC-MESSAGE-SEND"
-   "OBJC-MESSAGE-SEND-STRET" 
-   "OBJC-MESSAGE-SEND-SUPER"
-   "OBJC-MESSAGE-SEND-SUPER-STRET" 
-   "OBJC-METACLASS"
-   "OBJC-OBJECT"
-   "REMOVE-LISP-SLOTS" 
-   "RETURNING-FOREIGN-STRUCT"
-   "SEND"
-   "SEND-SUPER" 
-   "SEND-SUPER/STRET"
-   "SEND/STRET"
-   "SLET"
-   "WITH-AUTORELEASE-POOL"
-   "WITH-AUTORELEASED-NSSTRINGS"
+    ;; from objc.
+    "*OBJC-DESCRIPTION-MAX-LENGTH*"
+    "@CLASS"
+    "@SELECTOR" 
+    "DEFINE-OBJC-CLASS-METHOD"
+    "DEFINE-OBJC-METHOD"
+    "DEFMETHOD" 
+    "LISP-STRING-FROM-NSSTRING"
+    "LOAD-FRAMEWORK"
+    "MAKE-NSSTRING" 
+    "MAKE-OBJC-INSTANCE"
+    "OBJC-CLASS"
+    "OBJC-CLASS-OBJECT" 
+    "OBJC-MESSAGE-SEND"
+    "OBJC-MESSAGE-SEND-STRET" 
+    "OBJC-MESSAGE-SEND-SUPER"
+    "OBJC-MESSAGE-SEND-SUPER-STRET" 
+    "OBJC-METACLASS"
+    "OBJC-OBJECT"
+    "REMOVE-LISP-SLOTS" 
+    "RETURNING-FOREIGN-STRUCT"
+    "SEND"
+    "SEND-SUPER" 
+    "SEND-SUPER/STRET"
+    "SEND/STRET"
+    "SLET"
+    "WITH-AUTORELEASE-POOL"
+    "WITH-AUTORELEASED-NSSTRINGS"
 
-   ;; from ccl.
-   #-ccl-1.9 "*COCOA-APPLICATION-FRAMEWORKS*" 
-   "@"
-   "DEFINE-CLASSNAME-TRANSLATION"
-   "LISP-TO-OBJC-CLASSNAME"
-   "LISP-TO-OBJC-MESSAGE"
-   "OBJC-TO-LISP-CLASSNAME"
-   "OBJC-TO-LISP-MESSAGE"
-   "UPDATE-OBJC-METHOD-INFO"
+    ;; from ccl.
+    #-ccl-1.9 "*COCOA-APPLICATION-FRAMEWORKS*" 
+    "@"
+    "DEFINE-CLASSNAME-TRANSLATION"
+    "LISP-TO-OBJC-CLASSNAME"
+    "LISP-TO-OBJC-MESSAGE"
+    "OBJC-TO-LISP-CLASSNAME"
+    "OBJC-TO-LISP-MESSAGE"
+    "UPDATE-OBJC-METHOD-INFO"
 
-   ;; implemented in oclo.lisp
-   "STRET"
-   ;; implemented in oclo-<implementation>.lisp
-   "LISP-TO-OBJC-CLASSNAME-P"
-   "OBJC-TO-LISP-CLASSNAME-P"
-   "*NULL*" "NULLP" 
-   "SELECTOR")
+    ;; implemented in oclo.lisp
+    "STRET"
+    ;; implemented in oclo-<implementation>.lisp
+    "LISP-TO-OBJC-CLASSNAME-P"
+    "OBJC-TO-LISP-CLASSNAME-P"
+    "*NULL*" "NULLP" 
+    "SELECTOR")
   
-  (:documentation "
+   (:documentation "
 This package exports low level Objective-C stuff,
 basically the ccl Objective-C bridge, in a nifty
 single package exporting all these symbols.
-"))
+")))
 
 
 

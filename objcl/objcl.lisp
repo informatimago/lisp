@@ -32,12 +32,13 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
-#+(and ccl darwin)
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (setf *readtable* (copy-readtable ccl::%initial-readtable%)))
-#-(and ccl darwin)
-(eval-when (:compile-toplevel :load-toplevel :execute)
+  #+(and ccl darwin)
+  (setf *readtable* (copy-readtable com.informatimago.objcl.readtable:*ccl-readtable*))
+  #-(and ccl darwin)
   (error "We need a readtable for CCL specific dispatching reader macro #$"))
+
 (in-package "COM.INFORMATIMAGO.OBJECTIVE-CL")
 
 (define-condition read-error (stream-error)
@@ -117,44 +118,46 @@ Basically the same as *lisp-readtable*, but with readtable-case set to :preserve
                (peek-char nil stream nil nil t)))))
 
 
-(defun split-string (string &optional (separators " "))
-  "
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  
+  (defun split-string (string &optional (separators " "))
+   "
 NOTE:   current implementation only accepts as separators
         a string containing literal characters.
 "
-  (let ((chunks  '())
-        (position 0)
-        (nextpos  0)
-        (strlen   (length string)))
-    (loop :while (< position strlen) :do
+   (let ((chunks  '())
+         (position 0)
+         (nextpos  0)
+         (strlen   (length string)))
+     (loop :while (< position strlen) :do
        (loop
-          :while (and (< nextpos strlen)
-                      (not (find (aref string nextpos) separators)))
-          :do (incf nextpos))
+         :while (and (< nextpos strlen)
+                     (not (find (aref string nextpos) separators)))
+         :do (incf nextpos))
        (push (subseq string position nextpos) chunks)
        (setf position (incf nextpos)))
-    (nreverse chunks)))
+     (nreverse chunks)))
 
 
-(defun objc-to-lisp-classname (identifier &optional (*package* *package*))
-  (let ((classname (oclo:objc-to-lisp-classname identifier *package*)))
-    (etypecase classname
-      (string (intern classname *package*))
-      (symbol classname))))
+ (defun objc-to-lisp-classname (identifier &optional (*package* *package*))
+   (let ((classname (oclo:objc-to-lisp-classname identifier *package*)))
+     (etypecase classname
+       (string (intern classname *package*))
+       (symbol classname))))
 
-(defun objc-to-lisp-identifier (identifier)
-  (or (oclo:objc-to-lisp-classname-p identifier)
-      (let ((*readtable* *lisp-readtable*))
-        (read-from-string identifier))))
+ (defun objc-to-lisp-identifier (identifier)
+   (or (oclo:objc-to-lisp-classname-p identifier)
+       (let ((*readtable* *lisp-readtable*))
+         (read-from-string identifier))))
 
-(defun objc-to-lisp-message (selector)
-  (mapcar (lambda (name)
-            (if (zerop (length name))
-                :||
-                (first (oclo:objc-to-lisp-message (concatenate 'string name ":")))))
-          (split-string selector ":")))
+ (defun objc-to-lisp-message (selector)
+   (mapcar (lambda (name)
+             (if (zerop (length name))
+                 :||
+                 (first (oclo:objc-to-lisp-message (concatenate 'string name ":")))))
+           (split-string selector ":")))
 
-
+ );;eval-when
 
 (defun read-type-specifier (stream)
   (assert (eql #\( (skip-spaces stream)))
