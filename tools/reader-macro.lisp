@@ -38,6 +38,7 @@
 (defpackage "COM.INFORMATIMAGO.TOOLS.READER-MACRO"
   (:use "COMMON-LISP")
   (:export "LIST-ALL-MACRO-CHARACTERS"
+           "LIST-MACRO-CHARACTERS"
            "REMOVE-ALL-MACRO-CHARACTERS"))
 (in-package "COM.INFORMATIMAGO.TOOLS.READER-MACRO")
 
@@ -51,6 +52,30 @@ RETURN: READTABLE."
       :do (set-macro-character  ch nil t readtable)
           (set-syntax-from-char ch #\a   readtable))
   readtable)
+
+(defparameter *standard-macro-characters*
+  "()';\"`,")
+
+(defparameter *standard-sharp-subchars*
+  (concatenate 'string
+               #(#\Backspace #\Tab #\Newline #\Linefeed #\Page #\Return #\Space)
+               "#'()*:<=\\\\|+-.AaBbCcOoPpRrSsXx"))
+
+(defun list-macro-characters (&key ((:readtable *readtable*) *readtable*)
+                                (standard t) (non-standard t))
+  (remove-if-not (lambda (item)
+                   (ecase (first item)
+                     (:macro-character
+                      (if (find (third item) *standard-macro-characters*)
+                          standard
+                          non-standard))
+                     (:dispatch-macro-character
+                      (if (char= #\# (third item))
+                          (if (find (fourth item) *standard-sharp-subchars*)
+                              standard
+                              non-standard)
+                          non-standard))))
+                 (list-all-macro-characters *readtable*)))
 
 (defun list-all-macro-characters (&optional (*readtable* *readtable*))
   "
