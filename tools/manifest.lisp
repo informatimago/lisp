@@ -377,24 +377,26 @@ into the keyword package."
 (defun write-manifest (program-name system)
   "
 DO:     write a {program-name}-{distribution}.manifest file for the given SYSTEM.
+RETURN: the pathname of the manifest file written.
 "
-  (let ((base   (executable-name     program-name))
-        (exec   (executable-filename program-name)))
+  (let* ((base   (executable-name     program-name))
+         (exec   (executable-filename program-name))
+         (manifest-pathname (merge-pathnames (format nil "~A.manifest" base)
+                                             *default-pathname-defaults*)))
     (with-open-file (*standard-output*
                      ;; Bug in ccl:
                      ;; "Version 1.9-r15757  (LinuxX8664)"
                      ;; "Version 1.9-r15759  (DarwinX8664)"
                      ;; doesn't use *default-pathname-defaults* :-(
-                     (merge-pathnames (format nil "~A.manifest" base)
-                                      *default-pathname-defaults*)
+                     manifest-pathname
                      :direction :output
                      :if-does-not-exist :create
                      :if-exists :supersede)
       (format t "Manifest for ~A~%~V,,,'-<~>~2%" exec
               (+ (length "Manifest for ") (length exec)))
       (print-manifest system)
-      (terpri)))
-  (values))
+      (terpri))
+    manifest-pathname))
 
 
 
