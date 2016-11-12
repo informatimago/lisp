@@ -28,19 +28,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2002 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -56,7 +56,7 @@
    "FLATTEN" "LIST-TRIM" "TRANSPOSE" "AGET" "MEMQ"
    "MAP-CARTESIAN-PRODUCT"
    "PLIST-KEYS" "PLIST-REMOVE" "PLIST-GET"
-   "PLIST-PUT" "PLIST-CLEANUP" "HASHED-INTERSECTION" 
+   "PLIST-PUT" "PLIST-CLEANUP" "HASHED-INTERSECTION"
    ;; "HASHED-REMOVE-DUPLICATES" moved to COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE
    "ENSURE-LIST" "PROPER-LIST-P" "LIST-LENGTHS" "LIST-ELEMENTS"
    "ENSURE-CIRCULAR" "MAKE-CIRCULAR-LIST" "CIRCULAR-LENGTH"
@@ -65,24 +65,24 @@
   (:documentation
    "
 This package exports list processing functions.
-    
+
 
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2003 - 2014
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -454,7 +454,7 @@ RETURN:     The depth of the tree.
 "
   (if (atom tree)
       0
-      (1+ (apply (function max) 
+      (1+ (apply (function max)
                  0
                  (do ((tree tree (cdr tree))
                       (results '()))
@@ -499,7 +499,7 @@ DO:             SPLIT THE LIST IN TWO AT THE GIVEN POSITION.
                 (NSPLIT-LIST (LIST 'A 'B 'C) 1) --> (A) ; (B C)
                 (NSPLIT-LIST (LIST 'A 'B 'C) 2) --> (A B) ; (C)
                 (NSPLIT-LIST (LIST 'A 'B 'C) 3) --> (A B C) ; NIL
-POSITION:       POSITION OF THE SPLIT; 
+POSITION:       POSITION OF THE SPLIT;
                 WHEN FROM-START AND 0<=POSITION<=(LENGTH LIST),
                 THAT'S THE LENGTH OF THE FIRST RESULT
 FROM-START:     THE DEFAULT, SPLIT COUNTING FROM THE START.
@@ -566,9 +566,9 @@ EXAMPLE: (list-insert-separator '(a b (d e f)  c) 'x)
 
 (defun iota (count &optional (start 0) (step 1))
   "
-RETURN:   A list containing the elements 
+RETURN:   A list containing the elements
           (start start+step ... start+(count-1)*step)
-          The start and step parameters default to 0 and 1, respectively. 
+          The start and step parameters default to 0 and 1, respectively.
           This procedure takes its name from the APL primitive.
 EXAMPLE:  (iota 5) => (0 1 2 3 4)
           (iota 5 0 -0.1) => (0 -0.1 -0.2 -0.3 -0.4)
@@ -596,7 +596,7 @@ MODULO:  The argument to RANDOM.
 RETURN:  (elt args 0) x (elt args 1) x ... x (elt args (1- (length args)))
          = the set of tuples built taking one item in order from each list
            in args.
-EXAMPLE: (COMBINE '(WWW FTP) '(EXA) '(COM ORG))) 
+EXAMPLE: (COMBINE '(WWW FTP) '(EXA) '(COM ORG)))
            --> ((WWW EXA COM) (WWW EXA ORG) (FTP EXA COM) (FTP EXA ORG))
 "
   (cond
@@ -636,8 +636,8 @@ RETURN: The set of all subsets of the strict SET.
     :collect (loop
                :for index :from 0 :below card
                :for item :in set
-               :nconc (if (logbitp index indicator) (list item) nil) 
-               :into result 
+               :nconc (if (logbitp index indicator) (list item) nil)
+               :into result
                :finally (return result)) :into result
     :finally (return result)))
 
