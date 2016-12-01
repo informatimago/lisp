@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    This packages draws ASCII art cons cell diagrams.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -17,19 +17,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -49,19 +49,19 @@ This packages draws ASCII art cons cell diagrams.
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2004 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -122,7 +122,7 @@ License:
 
 (defclass cons-decoration (decoration)
   ((cell :accessor cell-value :initarg :cell :initform +none+ :type cons)
-   (car  :accessor car-deco  :initarg :car  :initform nil    
+   (car  :accessor car-deco  :initarg :car  :initform nil
          :type (or null decoration))
    (cdr  :accessor cdr-deco  :initarg :cdr  :initform nil
          :type (or null decoration)))) ;;CONS-DECORATION
@@ -155,7 +155,7 @@ License:
     (setf (w self) w (h self) h))
   self) ;;INITIALIZE-INSTANCE
 
-  
+
 (defun decorate (cell)
   "
 DOES:    Converts the list CELL to a decorated list.
@@ -171,9 +171,9 @@ RETURN:  The decorated list.
                   :car (decorate (car cell))
                   :cdr (decorate (cdr cell)))))
        ;; Coordinates:
-       ;;   #---+---+     
+       ;;   #---+---+
        ;;   $NIL| * |-->      # = (0,0) ;  $ = (0,-1)
-       ;;   +---+---+     
+       ;;   +---+---+
        (when (cdr cell)
          ;; let's compute relative coordinates of (cdr cell)
          (setf (x (cdr-deco dec)) 12
@@ -231,7 +231,7 @@ RETURN:  The decorated list.
   ;; +---+       +----+        |         +---+---+   +------+
   ;; | A |       | 42 |        |         |NIL| * |-->| :FIN |
   ;; +---+       +----+        |         +---+---+   +------+
-  ;;                           V           
+  ;;                           V
   ;;                         +--------------------+
   ;;                         | "Es una cabronada" |
   ;;                         +--------------------+
@@ -248,7 +248,7 @@ RETURN:  The decorated list.
     (draw-arrow pict (+ x 2) (- y 3) 0 (+ (y (car-deco dec)) 4))
     (draw-decorated-cell pict
                          (+ x (x (car-deco dec)))
-                         (+ y (y (car-deco dec))) 
+                         (+ y (y (car-deco dec)))
                          (car-deco dec)))
   ) ;;DRAW-DECORATED-CELL
 
@@ -259,7 +259,7 @@ DO:         Draws the LIST structure.
 TITLE:      An alternative title.
 RETURN:     A string containing the drawing.
 EXAMPLE:    (draw-list '(if (< a b) (decf b a) (decf a b)))
-            returns: 
+            returns:
            \"+-----------------------------------------------------------------------+
             | (if (< a b) (decf b a) (decf a b))                                    |
             |                                                                       |
@@ -302,7 +302,7 @@ EXAMPLE:    (draw-list '(if (< a b) (decf b a) (decf a b)))
          (pic))
     (multiple-value-setq (tw th) (size-string +picture-instance+ title))
     (setf th (abs th))
-    (setf pic (make-instance 'picture 
+    (setf pic (make-instance 'picture
                 :width  (+ 4 (max tw (w dec)))
                 :height (+ 4 th (h dec))))
     (frame-rect pic 0 0 (width pic) (height pic))
@@ -384,7 +384,7 @@ EXAMPLE:    (print-conses '(a b c d))
   (cond
     ((null tree) (princ "()"))
     ((atom tree)  (princ tree stream) (princ " " stream))
-    (t (princ "(" stream) 
+    (t (princ "(" stream)
        (print-conses (car tree) stream)
        (princ " . " stream)
        (print-conses (cdr tree) stream)
@@ -439,7 +439,7 @@ EXAMPLE: (print-identified-conses '((a . b) #1=(c . d) (e . #1#)))
                            (if (atom node)
                                (princ node stream)
                                (progn
-                                 (princ "(" stream) 
+                                 (princ "(" stream)
                                  (print-node (car node))
                                  (princ " . " stream)
                                  (print-node (cdr node))
@@ -452,7 +452,7 @@ EXAMPLE: (print-identified-conses '((a . b) #1=(c . d) (e . #1#)))
 (setf *print-circles* t)
 (print-identified-conses tree)
 #3=(#2=(#1=A . ()) . ((B . (C . (#1#  . (#2#  . (#3#  . ()))))) . #3# ))
-#1=(#2=(A) (B C A #2# #1#) . #1#)                                      
+#1=(#2=(A) (B C A #2# #1#) . #1#)
 ||#
 
 ;;;; THE END ;;;;

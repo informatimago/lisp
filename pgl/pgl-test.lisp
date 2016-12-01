@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Tests interactively the PGL.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,31 +15,31 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setf *readtable* (copy-readtable nil)))
 (in-package "PGL")
-       
+
 
 (defun test/string-escape ()
   (assert (string= (string-escape (coerce #(#\bel #\bs #\page #\newline #\return #\tab #\vt #\" #\\) 'string))
                    "\"\\a\\b\\f\\n\\r\\t\\v\\042\\\\\""))
-  (assert (string= (string-unescape "\"\\a\\b\\f\\n\\r\\t\\v\\042\\\\\"")        
+  (assert (string= (string-unescape "\"\\a\\b\\f\\n\\r\\t\\v\\042\\\\\"")
                    (coerce #(#\bel #\bs #\page #\newline #\return #\tab #\vt #\" #\\) 'string)))
   (assert (string= (string-escape "Hello\\ World\"!")
                    "\"Hello\\\\ World\\042!\""))
@@ -70,24 +70,24 @@
                :do (format *console-io* "~&~20,3F Got event ~A for window ~A~%"
                            (event-time e) (event-type-keyword e) (event-window e))
                    (case (event-type-keyword e)
-                     (:window-closed      (loop-finish))  
-                     (:window-resized) 
-                     (:last-window-closed (loop-finish)) 
+                     (:window-closed      (loop-finish))
+                     (:window-resized)
+                     (:last-window-closed (loop-finish))
                      (:action-performed
                       (scase (event-action-command e)
                              (("OK")   (format *console-io* "~&Yay!~%"))
                              (("TEXT") (format *console-io* "~&Got text: ~S~%"
                                                (text *t*)))
                              (otherwise (format *console-io* "~&Got action ~S~%"
-                                                (event-action-command e))))) 
-                     (:mouse-clicked) 
-                     (:mouse-pressed) 
-                     (:mouse-released) 
-                     (:mouse-moved) 
-                     (:mouse-dragged) 
-                     (:key-pressed) 
-                     (:key-released) 
-                     (:key-typed) 
+                                                (event-action-command e)))))
+                     (:mouse-clicked)
+                     (:mouse-pressed)
+                     (:mouse-released)
+                     (:mouse-moved)
+                     (:mouse-dragged)
+                     (:key-pressed)
+                     (:key-released)
+                     (:key-typed)
                      (:timer-ticked)))
     (format *console-io* "~2%Test Event Loop Done.~2%")))
 
@@ -130,7 +130,7 @@
   (progn
     (compound-add *w* (make-instance 'label :text "Text:"
                                             :x 10 :y 40 :width 100 :height 20))
-    
+
     (let ((tf (make-instance 'text-field :nchars 20  :action-command "TEXT"
                                          :x 60 :y 60 :width 100 :height 20)))
       (compound-add *w* tf)
@@ -160,7 +160,7 @@
            (set-object-location *w* 30 30))
     (progn (set-object-location *l1* 10 40) (set-object-location *t1* 50 20))
     (set-object-location *l2* 10 70) (set-object-location *t2* 50 50)
-    (set-object-location (aref (components *w*) 2) 60 60)    
+    (set-object-location (aref (components *w*) 2) 60 60)
     (components *w*)
     (text *t1*)"Doctor Who and the Daleks")
   (object.contains *w* 11.0d0 61.0d0)

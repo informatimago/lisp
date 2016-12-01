@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Reader macros to read ruby sexps as lisp sexps.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2013 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -111,7 +111,7 @@
 ;;         :collect sexp))))
 ;;
 ;; (collect-keywords (mapcar (function third) *ruby-asts*))
-;; 
+;;
 ;; (:! :!= :!~ :% :& :&& :* :** :+ :+@ :- :-@ :|.| :/ :|::| :< :<< :<=
 ;; :<=> :== :=== :=~ :> :>= :>> :@backref :@char :@const :@cvar :@float
 ;; :@gvar :@ident :@int :@ivar :@kw :@label :@op :@period :@regexp_end
@@ -201,30 +201,30 @@
   (labels ((lispify (rexp)
              (if (atom rexp)
                (case rexp
-                 ((:!)      'not)              
-                 ((:!=)     '/=)               
-                 ((:!~)     'regexp-match-not) 
-                 ((:%)      'mod)              
-                 ((:&)      'bit-and)          
-                 ((:&&)     'and)              
-                 ((:*)      '*)                
-                 ((:**)     'expt)             
-                 ((:+)      '+)                
-                 ((:+@)     '+) ; unary                       
-                 ((:-)      '-)                
-                 ((:-@)     '-) ; unary                       
-                 ((:|.|)    'dot)              
-                 ((:/)      '/)                
-                 ((:|::|)   'scope)            
-                 ((:<)      '<)                
-                 ((:<<)     'shift-left)       
-                 ((:<=)     '<=)               
-                 ((:<=>))                      
-                 ((:==)     '=)                
-                 ((:===)    'typep)            
-                 ((:=~)     'regexp-match)     
-                 ((:>)      '>)                
-                 ((:>=)     '>=)               
+                 ((:!)      'not)
+                 ((:!=)     '/=)
+                 ((:!~)     'regexp-match-not)
+                 ((:%)      'mod)
+                 ((:&)      'bit-and)
+                 ((:&&)     'and)
+                 ((:*)      '*)
+                 ((:**)     'expt)
+                 ((:+)      '+)
+                 ((:+@)     '+) ; unary
+                 ((:-)      '-)
+                 ((:-@)     '-) ; unary
+                 ((:|.|)    'dot)
+                 ((:/)      '/)
+                 ((:|::|)   'scope)
+                 ((:<)      '<)
+                 ((:<<)     'shift-left)
+                 ((:<=)     '<=)
+                 ((:<=>))
+                 ((:==)     '=)
+                 ((:===)    'typep)
+                 ((:=~)     'regexp-match)
+                 ((:>)      '>)
+                 ((:>=)     '>=)
                  ((:>>)     'shift-right)
                  ((:^)      'bit-xor)
                  ((:\|)     'bit-ior)
@@ -321,9 +321,9 @@
                  ((:ensure)         `(progn ,@(mapcar (function lispify) (rest rexp))))
                  (otherwise         (mapcar (function lispify) rexp))
                  ((:@backref
-                   :@cvar 
+                   :@cvar
                    :@gvar :@ivar :@kw :@label :@op :@period :@regexp_end
-                   :@tstring_content :alias :and :aref :aref_field 
+                   :@tstring_content :alias :and :aref :aref_field
                    :args_add_star  :assign
                    :assoclist_from_args :assoc_new :bare_assoc_hash :begin :binary
                    :blockarg :block_var  :brace_block :break  :case :class
@@ -332,13 +332,13 @@
                    :end :field :for :hash :if :ifop :if_mod :lambda
                    :massign  :mlhs_add :mlhs_add_star
                    :mlhs_new :mlhs_paren :module :mrhs_add :mrhs_add_star :mrhs_new
-                   :mrhs_new_from_args :next :not :opassign :or 
+                   :mrhs_new_from_args :next :not :opassign :or
                    :qwords_add :qwords_new :redo :regexp_add :regexp_literal :regexp_new
                    :rescue_mod :rest_param :retry  :sclass
                    :string_add :string_concat :string_content
-                   :string_dvar :string_embexpr :string_literal :super 
+                   :string_dvar :string_embexpr :string_literal :super
                    :top_const_ref :unary :undef :unless :unless_mod
-                   :until :until_mod :var_alias 
+                   :until :until_mod :var_alias
                    :when :while :while_mod :xstring_add :xstring_literal :xstring_new
                    :yield :yield0 :zsuper)
                   rexp)))))

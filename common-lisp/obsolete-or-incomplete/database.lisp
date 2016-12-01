@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    A Lisp Database access layer.
 ;;;;
 ;;;;    This package defines a generic API to access databases.
@@ -18,19 +18,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -47,7 +47,7 @@
            "ATTRIBUTE" "MESSAGE" "VALUE" "PLACE" "DATA-ERROR")
   (:documentation
    "This package defines a generic API to access databases.
-    
+
     Copyright Pascal J. Bourguignon 2003 - 2003
     This package is provided under the GNU General Public License.
     See the source file for details."))
@@ -67,7 +67,7 @@
 ;;;
 ;;; ENTITIES -- meta information about database entities
 ;;;
-;;; This meta information describes the entities and their attributes, 
+;;; This meta information describes the entities and their attributes,
 ;;; with human readable names, input and output functions, etc.
 ;;;
 
@@ -137,7 +137,7 @@
    )
   (:documentation "Description of a entity attribute.")
   ) ;;ATTRIBUTE
-   
+
 
 (defclass entity ()
   (
@@ -244,7 +244,7 @@ DO:    Generate an instruction to make an instance of a ENTITY description.
   `(defparameter
        ,instvar
      (apply
-      (function make-instance) 'entity 
+      (function make-instance) 'entity
       (gather-attributes
        (cons :ref '(',instvar ,@args))
        `((:ref         . ,(make-type-check 'symbol "entity reference"))

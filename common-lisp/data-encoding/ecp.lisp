@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;nDESCRIPTION
-;;;;    
+;;;;
 ;;;;    Minitel-1b Error Correction Procedure.
 ;;;;    Reference: page 55 and on in http://543210.free.fr/TV/stum1b.pdf
 ;;;;
@@ -16,19 +16,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -56,19 +56,19 @@ Reference: page 55 and on in <http://543210.free.fr/TV/stum1b.pdf>
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2012 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -216,14 +216,14 @@ RETURN:		the new byte count.
 (defvar *ecp-rank*
   (make-array 128 :element-type '(unsigned-byte 8)
               :initial-contents '(
-                                  0 0 1 31 2 62 32 103 3 7 63 15 33 84 104 93 
-                                  4 124 8 121 64 79 16 115 34 11 85 38 105 46 
-                                  94 51 5 82 125 60 9 44 122 77 65 67 80 42 17 
-                                  69 116 23 35 118 12 28 86 25 39 57 106 19 47 
-                                  89 95 71 52 110 6 14 83 92 126 30 61 102 10 
-                                  37 45 50 123 120 78 114 66 41 68 22 81 59 43 
-                                  76 18 88 70 109 117 27 24 56 36 49 119 113 
-                                  13 91 29 101 87 108 26 55 40 21 58 75 107 54 
+                                  0 0 1 31 2 62 32 103 3 7 63 15 33 84 104 93
+                                  4 124 8 121 64 79 16 115 34 11 85 38 105 46
+                                  94 51 5 82 125 60 9 44 122 77 65 67 80 42 17
+                                  69 116 23 35 118 12 28 86 25 39 57 106 19 47
+                                  89 95 71 52 110 6 14 83 92 126 30 61 102 10
+                                  37 45 50 123 120 78 114 66 41 68 22 81 59 43
+                                  76 18 88 70 109 117 27 24 56 36 49 119 113
+                                  13 91 29 101 87 108 26 55 40 21 58 75 107 54
                                   20 74 48 112 90 100 96 97 72 98 53 73 111 99
                                   )))
 
@@ -232,11 +232,11 @@ RETURN:		the new byte count.
 ;; A ECP block contains 17 octets: 15 bytes of payload, one octet of
 ;; check and one nul octet.  Each octet contains 7 bit of data and one
 ;; bit of even parity in the most significant position.
-;; 
+;;
 ;; +------------------------+-----------------+--------------+
 ;; |   payload (15 octets)  | check (1 octet) | 00 (1 octet) |
 ;; +------------------------+-----------------+--------------+
-;; 
+;;
 ;; The value of check is such that the remainder of the polynom
 ;; divided by x^7+x^3+x^0 is 0.
 
@@ -326,7 +326,7 @@ RETURN:     NIL;         next; NIL;          STATS -- in case of incomplete or e
                            ;; 	rank |----> (index,bit)
                            ;; 	              = (16,rank) if rank < 7
                            ;; 				  = (16-((rank+1)/8),(rank+1)%8) if rank >= 7
-                           ;; 	but we don't care and don't correct the CRC byte when rank<7 because 
+                           ;; 	but we don't care and don't correct the CRC byte when rank<7 because
                            ;; 	the CRC byte is not used thereafter.
                            (if (= index (ecp-parity-index ecp))
                                (progn   ; corrected block
@@ -387,7 +387,7 @@ RETURN:     NIL;         next; NIL;          STATS -- in case of incomplete or e
                            (when send-nak (funcall send-nak)))))
                    (progn
                      (if (= (aref buffer b) (even-parity byte))
-                         (if (= byte #x16) 
+                         (if (= byte #x16)
                              (incf (ecp-count ecp)) ; one more SYN
                              (progn                 ; Not SYN
                                (incf (statistics-invalid-syn-count stats) (ecp-count ecp))
@@ -498,11 +498,11 @@ programme\" de Wang, systeme \"P\".
                               :do (multiple-value-bind (data-chunk next block-number) (process-input-buffer ecp stream :start start :statistics stats)
                                     (declare (ignorable block-number))
                                     (setf start next)
-                                    ;; (print (list start block-number data-chunk  (map 'string (function code-char) data-chunk))) (finish-output)                 
+                                    ;; (print (list start block-number data-chunk  (map 'string (function code-char) data-chunk))) (finish-output)
                                     (princ (map 'string (function code-char) data-chunk) out))
                               :finally (print stats) (terpri) (finish-output)
                               )))
                        text))
       :success)))
- 
+
 ;;;; THE END ;;;;

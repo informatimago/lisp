@@ -7,9 +7,9 @@
 
   <H1>A Quick and Dirty Recursive Descent Parser Generator</H1>
 
-  <P>Here is a recursive descent parser generator, written in 
+  <P>Here is a recursive descent parser generator, written in
     <a href="http://www.cliki.net/">Common Lisp</a>.</p>
-  
+
   <P>It generates the scanner and parser in lisp, or in a pseudo-basic.
     It is possible to add generation of the parser in other programming
     languages.
@@ -35,7 +35,7 @@
   <pre class="commands">
     git clone https://git.gitorious.org/com-informatimago/com-informatimago.git
   </pre>
-  
+
   <p>or you can just get it with <a href="http://quicklisp.org/">quicklisp</a>:</p>
   <pre class="commands">
     (ql:quicklisp :com.informatimago.rdp)

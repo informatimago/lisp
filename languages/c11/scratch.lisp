@@ -18,7 +18,7 @@
                              :includes '("/Users/pjb/src/macosx/emacs-24.5/src/")
                              :include-bracket-directories '("/Users/pjb/src/macosx/emacs-24.5/src/"
                                                             "/Users/pjb/src/macosx/emacs-24.5/lib/"
-                                                            "/Users/pjb/src/macosx/gcc-4.9.2/gcc/ginclude/" 
+                                                            "/Users/pjb/src/macosx/gcc-4.9.2/gcc/ginclude/"
                                                             "/usr/include/")
                              :write-processed-lines nil))))
           :initial-value '()))
@@ -61,7 +61,7 @@
                                                      :includes '("/Users/pjb/src/macosx/emacs-24.5/src/")
                                                      :include-bracket-directories '("/Users/pjb/src/macosx/emacs-24.5/src/"
                                                                                     "/Users/pjb/src/macosx/emacs-24.5/lib/"
-                                                                                    "/Users/pjb/src/macosx/gcc-4.9.2/gcc/ginclude/" 
+                                                                                    "/Users/pjb/src/macosx/gcc-4.9.2/gcc/ginclude/"
                                                                                     "/usr/include/")
                                                      :write-processed-lines nil)))))
                             :initial-value '()))))
@@ -70,7 +70,7 @@
     (setf *context* (make-instance 'context))
     (loop
       :until (scanner-end-of-source-p *scanner*)
-      :collect (handler-bind ((parser-end-of-source-not-reached 
+      :collect (handler-bind ((parser-end-of-source-not-reached
                                 ;; #'continue
                                 #'invoke-debugger))
                  (parse-c11 *scanner*)))))
@@ -83,7 +83,7 @@
     (princ (token-text token))
     (if (find (token-text token) '("{" "}" ";") :test (function string=))
         (terpri)
-        (princ " ")))) 
+        (princ " "))))
 
 (defun print-typedefs (&optional (context *context*))
   (com.informatimago.common-lisp.cesarum.utility:print-hashtable (context-typedefs context)))
@@ -111,13 +111,13 @@
                    scan-next-token)
 
 
-          
+
           (progn
             (print-typedefs)       (terpri)
             (print-enum-constants) (terpri)
             (print-func-names)     (terpri))
 
-          
+
           (print-tokens *tokens* :start (- (length (pre-scanned-tokens *scanner*)) 40) :end (length (pre-scanned-tokens *scanner*)))
 
           void unblock_tty_out_signal ( void )             ;
@@ -125,14 +125,14 @@
           extern void reset_sys_modes ( struct tty_display_info * ) ;
           extern void init_all_sys_modes ( void )                   ;
           extern void reset_all_sys_modes ( void )                  ;
-          extern void 
+          extern void
 
           )
 
 
 #-(and) (progn
           (defparameter *c* (quote
-                             
+
                              ))
 
           #.*c*
@@ -147,7 +147,7 @@
 
 
 #-(and) (progn
-          
+
           (map nil 'print (subseq *tc* 0 30))
 
           (let ((*context* (make-instance 'context)))
@@ -155,7 +155,7 @@
                     *context*))
 
 
-          
+
           )
 
 
@@ -221,7 +221,7 @@
                                               :includes '("/Users/pjb/src/macosx/emacs-24.5/src/")
                                               :include-bracket-directories '("/Users/pjb/src/macosx/emacs-24.5/src/"
                                                                              "/Users/pjb/src/macosx/emacs-24.5/lib/"
-                                                                             "/Users/pjb/src/macosx/gcc-4.9.2/gcc/ginclude/" 
+                                                                             "/Users/pjb/src/macosx/gcc-4.9.2/gcc/ginclude/"
                                                                              "/usr/include/")
                                               :write-processed-lines nil))))
                            :initial-value '())))

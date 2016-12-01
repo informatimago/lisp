@@ -31,7 +31,7 @@ The first and second points help declare package dependencies without
 using the deprecated REQUIRE, PROVIDE and *MODULES*.  This is done
 by implementing a systematic way to load packages (from a PACKAGE:
 logical host with logical pathname translations).
-This allows MAKE-DEPENDS to build automatically the dependency graph, 
+This allows MAKE-DEPENDS to build automatically the dependency graph,
 and LOAD-PACKAGE to load automatically the dependencies without
 the need to write an ASDF or DEFSYSTEM file.
 The last point, along with the (:FROM package :IMPORT symbol...) form
@@ -291,9 +291,9 @@ Sexp Pattern Matcher.
 <a href="picture.lisp">COM.INFORMATIMAGO.COMMON-LISP.PICTURE</a></b></tt>
 <pre>ASCII-ART primitives.
 A  picture is an array of characters.
-There are primitives to draw points, lines, rectangles, 
+There are primitives to draw points, lines, rectangles,
 circles and ellipses, and strings.
-The coordinate system is the direct one: 
+The coordinate system is the direct one:
 - x increases toward the right,
 - y increases toward the top. Bottom left is (0,0).
 </pre></li>
@@ -302,7 +302,7 @@ The coordinate system is the direct one:
 <b>
 <a href="memory.lisp">COM.INFORMATIMAGO.COMMON-LISP.MEMORY</a></b></tt>
 <pre>
-This packages exports a memory abstract class 
+This packages exports a memory abstract class
 and a concrete subclass implemented as a lisp array of unsigned bytes.
 
 </pre></li>
@@ -349,7 +349,7 @@ of signed-byte 32 in order to do binary I/O.
 <b>
 <a href="data-encoding.lisp">COM.INFORMATIMAGO.COMMON-LISP.DATA-ENCODING</a></b></tt>
 <pre>
-This package exports functions to encode and decode data 
+This package exports functions to encode and decode data
 in a byte vector buffer.
 
 </pre></li>
@@ -418,7 +418,7 @@ BASE32-DECODE     (READ-CHAR WRITE-BYTE &amp;KEY (IGNORE-INVALID-INPUT NIL))
 BASE16-ENCODE     (READ-BYTE WRITE-CHAR)
 BASE16-DECODE     (READ-CHAR WRITE-BYTE &amp;KEY (IGNORE-INVALID-INPUT NIL))
 
-READ-BYTE:  A FUNCTION TAKING NO ARGUMENT AND RETURNING A 
+READ-BYTE:  A FUNCTION TAKING NO ARGUMENT AND RETURNING A
 BYTE (INTEGER 0 255) OR NIL FOR EOF.  IT MAY BE
 CALLED SEVERAL TIMES AFTER EOF AND SHOULD KEEP
 RETURNING NIL.
@@ -428,8 +428,8 @@ USED TO COLLECT DECODED BYTES.
 
 READ-CHAR:  A FUNCTION TAKING NO ARGUMENT AND RETURNING A
 CHARACTER OR NIL FOR EOF.  IT MAY BE CALLED
-SEVERAL TIMES AFTER EOF AND SHOULD KEEP RETURNING 
-NIL.  ONLY CHARACTERS WHOSE CODE IS BETWEEN 0 AND 
+SEVERAL TIMES AFTER EOF AND SHOULD KEEP RETURNING
+NIL.  ONLY CHARACTERS WHOSE CODE IS BETWEEN 0 AND
 255 SHOULD BE RETURNED.
 
 WRITE-CHAR: A FUNCTION TAKING ONE CHARACTER ARGUMENT, USED TO
@@ -453,25 +453,25 @@ BASE16-DECODE-BYTES     (ENCODED &amp;KEY IGNORE-CRLF IGNORE-INVALID-INPUT)
 BYTES:      A VECTOR OF (UNSIGNED-BYTE 8).
 ENCODED:    A STRING.
 LINE-WIDTH: NIL OR AN INTEGER INDICATING THE LINE WIDTH.
-THE STRING NEW-LINE WILL BE INSERTED AFTER THAT 
+THE STRING NEW-LINE WILL BE INSERTED AFTER THAT
 MANY CHARACTERS HAVE BEEN WRITTEN ON A GIVEN LINE.
 NEW-LINE:   A STRING CONTAIING THE NEW-LINE CHARACTER OR CHARACTERS.
 THE DEFAULT +NEW-LINE+ IS (FORMAT NIL &quot;~%&quot;).
 IGNORE-CRLF:
-When true, ASCII characters LF and CR are not passed to 
+When true, ASCII characters LF and CR are not passed to
 the decoding function. When NIL, they're passed, and
 if invalid input is not ignored, an error would be raised.
 IGNORE-INVALID-INPUT:
 Passed to the decoding function. See above.
 
-The encoding functions take a vector of bytes 
+The encoding functions take a vector of bytes
 and return an encoded string.
 
-The decoding functions take an encoded string 
+The decoding functions take an encoded string
 and return a vector of bytes.
 
-To encode a string, characters must be converted to bytes, and 
-to decode a string, bytes must be converted to characters. 
+To encode a string, characters must be converted to bytes, and
+to decode a string, bytes must be converted to characters.
 This must be done accordingly to the characeter set encoding.
 
 </pre></li>
@@ -631,7 +631,7 @@ Implements the Raiden block cipher.
 <tt>
 <b>
 <a href="make-depends.lisp">COM.INFORMATIMAGO.COMMON-LISP.MAKE-DEPENDS</a></b></tt>
-<pre>This script generates dependencies for lisp sources, based on 
+<pre>This script generates dependencies for lisp sources, based on
 (require) sexps, a load-path, a set of logical pathname translations
 and ad-hoc processing.
 
@@ -664,7 +664,7 @@ This package reads and writes CSV files.
 <b>
 <a href="iban.lisp">COM.INFORMATIMAGO.COMMON-LISP.IBAN</a></b></tt>
 <pre>
-This class is an Internationnal Bank Account Number, 
+This class is an Internationnal Bank Account Number,
 according to European standard.
 <a href=http://www.ecbs.org/iban/iban.htm>IBAN Format</a>
 </pre></li>
@@ -715,7 +715,7 @@ For the rest, the aim is to be 100% user-interface compatible with ed(1).
 Can you imagine that some Common-Lisp implementations DON'T provide
 any editor (in conformity with the Common-Lisp specifications)?
 Not complete (waiting for a REGEXP package). But otherwise
-functional enough. 
+functional enough.
 </pre></li>
 <li>
 <tt>

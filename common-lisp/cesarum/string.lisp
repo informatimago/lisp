@@ -7,7 +7,7 @@
 ;;;;DESCRIPTION
 ;;;;    This package exports some string and string-designator utility functions.
 ;;;;USAGE
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -30,19 +30,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2002 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;*****************************************************************************
@@ -76,19 +76,19 @@ This package exports some string processing functions.
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2002 - 2015
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -98,13 +98,13 @@ License:
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  
+
   (defun symbol-of-name-of-length=n (n)
     "RETURN: A symbol naming a predicate for a symbol of name of length = N."
     #-(and) (flet ((predicate (object)
                      (and (symbolp object)
                           (= n (length (symbol-name object))))))
-              (let ((name (gensym "symbol-of-name-of-length=n-predicate")))        
+              (let ((name (gensym "symbol-of-name-of-length=n-predicate")))
                 (setf (symbol-function name) (function predicate))
                 name))
     #-(and) (eval `(defun ,(gensym "symbol-of-name-of-length=n-predicate") (object)
@@ -151,7 +151,7 @@ CHARACTER-DESIGNATOR is the type of character or designators of
 "
   ;; note: (subtypep 'character '(string-designator 1)), but it's
   ;; expected to be more efficient this way:
-  
+
   '(or character (string-designator 1)))
 
 
@@ -295,7 +295,7 @@ OBJECT:         Can be a string, a symbol (its symbol-name is exploded),
     (explode-string (implode-string object) result-type))
   (:method ((object t) &optional (result-type 'list))
     (explode-string (prin1-to-string object) result-type)))
- 
+
 
 (defun implode (char-seq &optional (result-type 'symbol) (package *package*))
   "
@@ -327,7 +327,7 @@ DO:                 Split the STRING-DESIGNATOR on the SEPARATOR
                     character.  It may be escaped with the ESCAPE
                     character, in which case it's not split.
 RETURN:             A list of substrings of the string denoted by
-                    STRING-DESIGNATOR.  
+                    STRING-DESIGNATOR.
 "
   (let ((string    (string string-designator))
         (escape    (character escape))
@@ -416,7 +416,7 @@ SIZE-INCREMENT: Add it to the size needed for the result.
 
 (defun string-replace (string pattern replace &key (test (function char=)))
   "
-RETURN:   A string build from STRING where all occurences of PATTERN 
+RETURN:   A string build from STRING where all occurences of PATTERN
           are replaced by the REPLACE string.
 TEST:     The function used to compare the elements of the PATTERN
           with the elements of the STRING.
@@ -426,10 +426,10 @@ TEST:     The function used to compare the elements of the PATTERN
       :with pattern-length = (length pattern)
       :for start = 0 :then (+ pos pattern-length)
       :for pos = (search pattern string :start2 start :test test)
-      :if pos :collect (list string start pos) 
+      :if pos :collect (list string start pos)
       :and    :collect replace
       :else   :collect (list string start)
-      :while pos))) 
+      :while pos)))
 
 
 
@@ -439,7 +439,7 @@ RETURN:  a cons with two substrings of string such as:
          (string= (concat (car res) \"=\" (cdr res)) string)
          and (length (car res)) is minimum.
 "
-  
+
   (let ((string (if (simple-string-p string)
                     string
                     (copy-seq string)))
@@ -513,7 +513,7 @@ RETURN:         A padded string.
     (if (<= length slen)
         string
         (let ((result
-               (make-string length :initial-element 
+               (make-string length :initial-element
                             (etypecase padchar
                               (character padchar)
                               (string (aref padchar 0))
@@ -524,7 +524,7 @@ RETURN:         A padded string.
             ((:center) (replace result string
                                 :start1 (truncate (- length slen) 2)))
             (otherwise (error "Invalid justification parameter: ~S (should be ~
-                              :LEFT, :CENTER, or :RIGHT)" 
+                              :LEFT, :CENTER, or :RIGHT)"
                               justification)))))))
 
 ;; Found on cll or #lisp?
@@ -631,7 +631,7 @@ SEE ALSO:       LOCALIZE
 
 (defun localize (table language text)
   "
-RETURN:     A version of the TEXT in the given LANGUAGE, 
+RETURN:     A version of the TEXT in the given LANGUAGE,
             or in english if LANGUAGE is not found,
             or TEXT itself if none found.
 SEE ALSO:   DEFTRANSLATION

@@ -30,7 +30,7 @@
                  (</span><span class="cl-macro"><span class="slime-repl-input">multiple-value-bind</span></span><span class="slime-repl-input"> (solutions tries) (sudoku-solver sudoku)
                    (</span><span class="cl-function"><span class="slime-repl-input">terpri</span></span><span class="slime-repl-input">)
                    (sudoku-print sudoku)
-                   (</span><span class="cl-function"><span class="slime-repl-input">format</span></span><span class="slime-repl-input"> </span><span class="cl-system-class"><span class="slime-repl-input">t</span></span><span class="slime-repl-input"> </span><span class="string"><span class="slime-repl-input">"  has ~D solution~:*~P,~%  found in ~D tries.~2%"</span></span><span class="slime-repl-input"> 
+                   (</span><span class="cl-function"><span class="slime-repl-input">format</span></span><span class="slime-repl-input"> </span><span class="cl-system-class"><span class="slime-repl-input">t</span></span><span class="slime-repl-input"> </span><span class="string"><span class="slime-repl-input">"  has ~D solution~:*~P,~%  found in ~D tries.~2%"</span></span><span class="slime-repl-input">
                            (</span><span class="cl-function"><span class="slime-repl-input">length</span></span><span class="slime-repl-input"> solutions) tries)
                    (</span><span class="cl-function"><span class="slime-repl-input">map</span></span><span class="slime-repl-input"> </span><span class="cl-type"><span class="slime-repl-input">nil</span></span><span class="slime-repl-input"> 'sudoku-print solutions)))
 </span>

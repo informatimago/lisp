@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Handle times and dates.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -20,19 +20,19 @@
 ;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2007 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -44,7 +44,7 @@
 ;; http://en.wikipedia.org/wiki/Julian_day#Calculation
 ;; - find inverse of (julian-day-number/gregorian d m y) --> j
 ;; - check the origin of julian-day
-;;     (com.informatimago.common-lisp.cesarum.gregorian-calendar:date-from-day-number (- 733314 2454374)) 
+;;     (com.informatimago.common-lisp.cesarum.gregorian-calendar:date-from-day-number (- 733314 2454374))
 ;;     24 ;
 ;;     11 ;
 ;;     -4713
@@ -59,14 +59,14 @@
 ;; Date: Thu, 17 Jan 2008 03:50:07 -0800 (PST)
 ;; Organization: http://groups.google.com
 ;; Message-ID: <c2e4c6de-5eb1-4fdc-8644-665e6b68bc8d@v29g2000hsf.googlegroups.com>
-;; 
+;;
 ;; > More likely the other way round (year month day).  The code can't
 ;; > possibly be correct though, since Julian days start at noon UT.
 ;; > Replacing (ceiling j) by (round j) should cure that.  At least, then
 ;; > the example given in the wikipedia entry comes out right.
 ;; Yes, that's right. The function was incorrect in case of a fractional
 ;; part  < 0.5.
-;; 
+;;
 ;; (defun julian-to-gregorian-calendar (j)
 ;;   (let ((i 0)(l 0)(n 0)(x 0)(d 0))
 ;;     (setf l (+ (round j) 68569))
@@ -127,19 +127,19 @@ See also: COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2007 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -162,19 +162,19 @@ See also: COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2007 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -212,19 +212,19 @@ See also: COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2007 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -278,19 +278,19 @@ See also: COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2007 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -452,7 +452,7 @@ URL:    <http://en.wikipedia.org/wiki/Julian_day#Calculation>
 
 
 ;;; ---------------------------------------- ;;;
-;;; ABSTRACT CALENDAR 
+;;; ABSTRACT CALENDAR
 ;;; ---------------------------------------- ;;;
 
 (defgeneric as-list-of-numbers (date)
@@ -667,7 +667,7 @@ NOTE:   This is not the duration expressed in ~:*~A, just the ~:*~A
 DO:     Collapse weeks as 7 days.
 RETURN: secondes; minutes; hours; days; months; years
 NOTE:   If you add keywords to *DURATION-KEYWORDS* you may have to
-        override this method. 
+        override this method.
 "))
 
 (defmethod collapse-julian-duration ((self duration))
@@ -675,7 +675,7 @@ NOTE:   If you add keywords to *DURATION-KEYWORDS* you may have to
 DO:     Collapse weeks as 7 days.
 RETURN: secondes; minutes; hours; days; months; years
 NOTE:   If you add keywords to *DURATION-KEYWORDS* you may have to
-        override this method. 
+        override this method.
 "
   (values (seconde self) (minute self) (hour self)
           (+ (day self) (* 7 (week self))) (month self) (year self)))
@@ -723,7 +723,7 @@ In the Julian calendar, the four-year cycle repeats indefinitely.")
 RETURN: Whether YEAR is a julian leap year.
 NOTE:   We don't implement here the actual leap years (they started with
         a leap year every three years, since they used to count both the
-        start and end items...). 
+        start and end items...).
 "
   (zerop (mod year 4)))
 
@@ -827,7 +827,7 @@ RETURN: the gregorian-date of the given DAY-NUMBER.
                 (values 1 1 year)
                 (loop
                    :with c = (days-in-year year)
-                   :for month :from 0 
+                   :for month :from 0
                    :while (<= (aref c month) rest)
                    :finally (return (values
                                      (- rest (aref c (1- month)) -1)
@@ -870,7 +870,7 @@ RETURN: the day number of the gregorian-date given by DAY, MONTH and YEAR.
            (assert (= i (date-to-day-number d m y))
                    (i y m d)
                    "~%~6D ~4,'0D-~2,'0D-~2,'0D ~6D" i y m d
-                   (date-to-day-number d m y))))) 
+                   (date-to-day-number d m y)))))
 
 
 
@@ -893,8 +893,8 @@ RETURN: the day number of the gregorian-date given by DAY, MONTH and YEAR.
    (timezone :initarg :timezone :accessor timezone
              :initform nil
              :documentation "Number of seconds from Greenwich; East positive.")
-   ;; Note: It would be more historically correct to define the Gregorian 
-   ;;       timezone relative to Rome, but it will be less confusing if all 
+   ;; Note: It would be more historically correct to define the Gregorian
+   ;;       timezone relative to Rome, but it will be less confusing if all
    ;;       the calendars of a same planet are relative to the same longitud.
    (weekday  :initform nil
              :documentation "Weekday cache."))
@@ -983,7 +983,7 @@ NOTE:           UNIVERSAL-TIME when present gives a base date with
 
 ;; (gregorian :year 2007 :month 6 :day 13 :hour 12 :timezone 0)
 ;; 2454264.
-;;  June 13, 2007 (UTC) the JDN is  
+;;  June 13, 2007 (UTC) the JDN is
 
 
 (defgeneric to-timezone (date timezone)
@@ -1033,7 +1033,7 @@ NOTE:           UNIVERSAL-TIME when present gives a base date with
 
 (defgeneric decrement-day (date &optional increment)
   (:documentation "DO: Changes the DATE to INCREMENT days before DATE."))
- 
+
 
 
 (defmethod next-day      ((self gregorian-calendar-date) &optional (increment 1))
@@ -1128,15 +1128,15 @@ NOTE:           UNIVERSAL-TIME when present gives a base date with
 ;; "
 ;;   (error "Not implemented yet.")
 ;;   (get-universal-time))
-;; 
-;; 
+;;
+;;
 ;; (defun today ()
 ;;   "
 ;; RETURN: The DATE of today, that is, the time 00:00:00 in the same day as now.
 ;; "
 ;;   (make-instance 'date :date (now) :hour 0 :minute 0 :seconde 0))
-;; 
-;; 
+;;
+;;
 ;; (defmethod monday-before ((date date))
 ;;   "
 ;; RETURN:  The DATE of the Monday before date.
@@ -1178,7 +1178,7 @@ NOTE:           UNIVERSAL-TIME when present gives a base date with
         |  proper time | coordinate time | cl:universal-time  |
         +-----------------------------------------------------+
               TT              TCG
-         Terrestrial       Geocentric 
+         Terrestrial       Geocentric
              Time          Coordinate
                               Time
 
@@ -1192,7 +1192,7 @@ NOTE:           UNIVERSAL-TIME when present gives a base date with
     some place and some political entity.  Calendars may be "classes"
     of naming schemes, for example when dealing with time zones.  Note
     that time zones are recent invention (since trains), and before
-    them there was a continuum of times all around the planet.  
+    them there was a continuum of times all around the planet.
 
 
     NASA defines for Mars a sol (= martian day) as 24 martian hours of
@@ -1259,7 +1259,7 @@ NOTE:           UNIVERSAL-TIME when present gives a base date with
                       (gregorian :year 1582 :month +october+ :day 15))
 
         (adoted-calendar
-         ("Spain" 
+         ("Spain"
           "Spain Territories"
           "Portugal"
           "Polish-Lithuanian Commonwealth"
@@ -1290,7 +1290,7 @@ NOTE:           UNIVERSAL-TIME when present gives a base date with
     (defconstant +mars-mass+  6.419e+23)
 
     (defconstant +earth-semimajor-axis+  149600000.0)
-    (defconstant +mars-semimajor-axis+   227900000.0) 
+    (defconstant +mars-semimajor-axis+   227900000.0)
     (defconstant +earth-radius-mean+       6371000.0)
     (defconstant +earth-equatorial-radius+ 6378100.0)
     (defconstant +mars-equatorial-radius+  3397000.0)
@@ -1307,24 +1307,24 @@ NOTE:           UNIVERSAL-TIME when present gives a base date with
     (defun time-in-gravitational-field (time mass distance)
       ;; http://en.wikipedia.org/wiki/Gravitational_time_dilation#Important_things_to_stress
       ;; (= t0 (* tf (sqrt (- 1 (/ (* 2 G M) (* r (square c)))))))
-      ;; 
+      ;;
       ;; * t0 is the proper time between events A and B for a slow-ticking
       ;;   observer within the gravitational field,
-      ;; 
+      ;;
       ;; * tf is the proper time between events A and B for a fast-ticking
       ;;   observer distant from the massive object (and therefore outside of
       ;;   the gravitational field),
-      ;; 
+      ;;
       ;; * G is the gravitational constant,
-      ;; 
+      ;;
       ;; * M is the mass of the object creating the gravitational field,
-      ;; 
+      ;;
       ;; * r is the radial coordinate of the observer (which is analogous to
       ;;   the classical distance from the center of the object, but is
       ;;   actually a Schwarzschild coordinate),
-      ;; 
+      ;;
       ;; * c is the speed of light, and
-      ;; 
+      ;;
       ;; * r0 = 2GM / c² is the called the Schwarzschild Radius of M. If a mass
       ;;   collapses so that its surface lies at less than this radial
       ;;   coordinate (or in other words covers an area of less than 16πG²M²/c⁴),
@@ -1338,7 +1338,7 @@ NOTE:           UNIVERSAL-TIME when present gives a base date with
       ;;
       ;; * r is the distance from the center of the disk (which is the
       ;;   location of the base observer), and
-      ;; 
+      ;;
       ;; * ω is the angular velocity of the disk.
       (* time (sqrt (- 1d0 (square (/ (*  distance angular-velocity) +c+))))))
 
@@ -1374,7 +1374,7 @@ NOTE:           UNIVERSAL-TIME when present gives a base date with
          repeat 100
          for year from 0
          for i = 0 then (+ i  0.5921)
-         do (format t "~&~4D ~8,6F " year i) 
+         do (format t "~&~4D ~8,6F " year i)
          do (when (<= 1 i)  (decf i) (princ "bisextile" )))
 
 
@@ -1388,7 +1388,7 @@ NOTE:           UNIVERSAL-TIME when present gives a base date with
 ;; ;;; Authored by Daniel Lowe <dlowe@sanctuary.org>
 ;; ;;;
 ;; ;;; Copyright (c) 2005-2006 Daniel Lowe
-;; ;;; 
+;; ;;;
 ;; ;;; Permission is hereby granted, free of charge, to any person obtaining
 ;; ;;; a copy of this software and associated documentation files (the
 ;; ;;; "Software"), to deal in the Software without restriction, including
@@ -1396,10 +1396,10 @@ NOTE:           UNIVERSAL-TIME when present gives a base date with
 ;; ;;; distribute, sublicense, and/or sell copies of the Software, and to
 ;; ;;; permit persons to whom the Software is furnished to do so, subject to
 ;; ;;; the following conditions:
-;; ;;; 
+;; ;;;
 ;; ;;; The above copyright notice and this permission notice shall be
 ;; ;;; included in all copies or substantial portions of the Software.
-;; ;;; 
+;; ;;;
 ;; ;;; THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 ;; ;;; EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 ;; ;;; MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -1408,8 +1408,8 @@ NOTE:           UNIVERSAL-TIME when present gives a base date with
 ;; ;;; OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 ;; ;;; WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; 
-;; 
+;;
+;;
 ;; (defstruct timezone
 ;;   (transitions  nil :type list)
 ;;   (subzones     nil :type list)
@@ -1417,8 +1417,8 @@ NOTE:           UNIVERSAL-TIME when present gives a base date with
 ;;   (path         nil)
 ;;   (name         "anonymous" :type string)
 ;;   (loaded       nil :type boolean))
-;; 
-;; 
+;;
+;;
 ;; (defun read-binary-integer (stream byte-count &optional (signed nil))
 ;;   "Read BYTE-COUNT bytes from the binary stream STREAM, and
 ;; return an integer which is its representation in network byte order (MSB).
@@ -1429,8 +1429,8 @@ NOTE:           UNIVERSAL-TIME when present gives a base date with
 ;;      finally (if (and signed (< #x80000000 result))
 ;;                  (return (- result #x100000000))
 ;;                  (return result))))
-;; 
-;; 
+;;
+;;
 ;; (defun string-from-unsigned-vector (vector offset)
 ;;   "Returns a string created from the vector of unsigned bytes VECTOR
 ;; starting at OFFSET which is terminated by a 0."
@@ -1438,8 +1438,8 @@ NOTE:           UNIVERSAL-TIME when present gives a base date with
 ;;     (with-output-to-string (str)
 ;;       (loop for idx from offset upto (1- null-pos)
 ;;          do (princ (code-char (aref vector idx)) str)))))
-;; 
-;; 
+;;
+;;
 ;; (defun realize-timezone (zone &optional reload)
 ;;   "If timezone has not already been loaded or RELOAD is non-NIL,
 ;; loads the timezone information from its associated unix file."
@@ -1513,14 +1513,14 @@ NOTE:           UNIVERSAL-TIME when present gives a base date with
 ;;                   leap-second-info)))))
 ;;     (setf (timezone-loaded zone) t))
 ;;   zone)
-;; 
-;; 
+;;
+;;
 ;; (defparameter +utc-zone+ (make-timezone :subzones '((0 nil "UTC" nil nil))
 ;;                                         :name "UTC"
 ;;                                         :loaded t)
 ;;   "The zone for Coordinated Universal Time.")
-;; 
-;; 
+;;
+;;
 ;; (defmacro define-timezone (zone-name zone-file &key (load nil))
 ;;   "Define zone-name (a symbol or a string) as a new timezone,
 ;; lazy-loaded from zone-file (a pathname designator relative to the
@@ -1535,20 +1535,20 @@ NOTE:           UNIVERSAL-TIME when present gives a base date with
 ;;                                      zone-name)))
 ;;        ,@(when load
 ;;                `((realize-timezone ,zone-sym))))))
-;; 
-;; 
+;;
+;;
 ;; (defvar *default-timezone*)
 ;; (eval-when (:load-toplevel :execute)
 ;;   (let ((default-timezone-file #p"/etc/localtime"))
 ;;     (if (probe-file default-timezone-file)
 ;;         (define-timezone *default-timezone* default-timezone-file :load t)
 ;;         (defparameter *default-timezone* +utc-zone+))))
-;; 
-;; 
+;;
+;;
 ;; (defparameter *timezone-repository* nil
 ;;   "A list of (list \"Europe/Budapest\" timezone) entries")
 ;; (defparameter *timezone-offset->timezone* (make-hash-table))
-;; 
+;;
 ;; (eval-when (:load-toplevel :execute)
 ;;   (defun reread-timezone-repository ()
 ;;     (let* ((root-directory "/usr/share/zoneinfo/"
@@ -1579,8 +1579,8 @@ NOTE:           UNIVERSAL-TIME when present gives a base date with
 ;;                       :directories nil)
 ;;       (setf *timezone-repository*
 ;;             (sort *timezone-repository* #'string< :key #'first)))))
-;; 
-;; 
+;;
+;;
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -1591,28 +1591,28 @@ NOTE:           UNIVERSAL-TIME when present gives a base date with
 
 ;; (defclass julian-calendar-day (calendar-day)
 ;;   ())
-;; 
+;;
 ;; (defclass coptic-calendar-day (calendar-day)
 ;;   ())
-;; 
+;;
 ;; (defclass ethiopian-calendar-day (calendar-day)
 ;;   ())
-;; 
+;;
 ;; (defclass revised-julian-calendar-day (calendar-day)
 ;;   ())
-;; 
+;;
 ;; (defclass chinese-calendar-day (calendar-day)
 ;;   ())
-;; 
+;;
 ;; (defclass hebrew-calendar-day (calendar-day)
 ;;   ())
-;; 
+;;
 ;; (defclass islamic-calendar-day (calendar-day)
 ;;   ())
-;; 
+;;
 ;; (defclass hindu-calendar-day (calendar-day)
 ;;   ())
-;; 
+;;
 ;; (defclass iranian-calendar-day (calendar-day)
 ;;   ())
 
@@ -1651,18 +1651,18 @@ NOTE:           UNIVERSAL-TIME when present gives a base date with
 #||
 
 (loop
-   :with day = (gregorian :year 2007 :month 1 :day 1 :hour 12) 
+   :with day = (gregorian :year 2007 :month 1 :day 1 :hour 12)
    :repeat 365
    :do (princ day) (terpri) (increment-day day))
 
-(com.informatimago.common-lisp.cesarum.date.utility:as-list-of-numbers 
+(com.informatimago.common-lisp.cesarum.date.utility:as-list-of-numbers
  (gregorian :year 2007 :month 9 :day 30))
 
 
 (list
  (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE.UTILITY:JULIAN-DAY-NUMBER/julian
   30 9 2007)
- 
+
   (COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE.UTILITY:JULIAN-DAY-NUMBER/GREGORIAN
   30 9 2007)
 

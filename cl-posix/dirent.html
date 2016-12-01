@@ -11,12 +11,12 @@
     <meta name="author"
          content="Pascal J. Bourguignon">
 
-    <meta http-equiv="Reply-to" 
+    <meta http-equiv="Reply-to"
           name="Reply-to"
           content="pjb@informatimago.com">
 
-    <meta http-equiv="Description"  
-          name="description" 
+    <meta http-equiv="Description"
+          name="description"
           content="Common-Lisp-POSIX API - dirent">
 
 	<meta name="keywords"
@@ -59,7 +59,7 @@
    ));;SYSCALL-ERROR
 </pre>
 
-  
+
 <h2>SUSv3 Definitions</h2>
 
 <h3>
@@ -534,7 +534,7 @@ dirent.h</a></h3>
 <h4>Type SUSV3:DIRENT</h4>
 
 <pre>
-   (DEFSTRUCT SUSV3:DIRENT 
+   (DEFSTRUCT SUSV3:DIRENT
      (INO  0  :TYPE SUSV3:INO-T) ;; [XSI] File serial number
      (NAME "" :TYPE (SUSV3:BOUND-STRING 0 SUSV3:+NAME-MAX+)) ;; Name of entry
     );;SUSV3:DIRENT

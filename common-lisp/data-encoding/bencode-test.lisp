@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Test bencode.lisp.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -71,7 +71,7 @@
 
 ;; (defun dictp (dict)
 ;;    (and (listp dict) (eql 'dict (first dict))))
-;; 
+;;
 ;; (defun dict-get (dict key &optional (default nil))
 ;;   (assert (dictp dict))
 ;;   (let ((entry (if (keywordp key)
@@ -80,12 +80,12 @@
 ;;     (if entry
 ;;         (values (cdr entry) t)
 ;;         (values default nil))))
-;; 
+;;
 ;; (defun dict-get* (dict &rest keys)
 ;;   (if (null keys)
 ;;       dict
 ;;       (apply (function dict-get*) (dict-get dict (first keys)) (rest keys))))
-;; 
+;;
 ;; (defun (setf dict-get) (new-value dict key &optional (default nil))
 ;;   (declare (ignore default))
 ;;   (assert (dictp dict))
@@ -96,11 +96,11 @@
 ;;         (setf (cdr entry) new-value)
 ;;         (push (rest dict) (cons key new-value)))
 ;;     new-value))
-;; 
+;;
 ;; (defun dict-count (dict)
 ;;   (assert (dictp dict))
 ;;   (length (rest dict)))
-;; 
+;;
 ;; (defun dict-keys (dict)
 ;;   (assert (dictp dict))
 ;;   (mapcpar (function car) (rest dict)))

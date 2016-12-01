@@ -33,7 +33,7 @@
                       ((cl:lower-case-p c)
                        (helper (cl:cdr lst) 'lower (cl:cons (cl:char-upcase c) rest)))
                       ((cl:digit-char-p c)
-                       (helper (cl:cdr lst) 'digit 
+                       (helper (cl:cdr lst) 'digit
                                (cl:case last
                                  ((upper lower) (cl:list* c #\- rest))
                                  (cl:t (cl:cons c rest)))))
@@ -93,7 +93,7 @@
 (cffi:defcfun ("objc_sync_exit" objc_sync_exit) :int
   (object :pointer))
 
-(defanonenum 
+(defanonenum
 	(OBJC_SYNC_SUCCESS #.0)
 	(OBJC_SYNC_NOT_OWNING_THREAD_ERROR #.-1)
 	(OBJC_SYNC_TIMED_OUT #.-2)

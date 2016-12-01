@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Test sparse-vector.lisp
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -58,7 +58,7 @@
 ;;                                 (vector-length v)))
 ;;                       (float (/ (vector-count v)
 ;;                                 (vector-storage-size v)))))))
-;; 
+;;
 ;; n=   2  len= 1000000   cnt=   78498  spc=  157033  l/s=0.157  c/l=0.078  c/s=0.500
 ;; n=   5  len= 1000000   cnt=   78498  spc=   98171  l/s=0.098  c/l=0.078  c/s=0.800
 ;; n=   7  len= 1000000   cnt=   78498  spc=   91621  l/s=0.092  c/l=0.078  c/s=0.857
@@ -73,8 +73,8 @@
 ;; n=1000  len= 1000000   cnt=   78498  spc=   80921  l/s=0.081  c/l=0.078  c/s=0.970
 ;; n=1024  len= 1000000   cnt=   78498  spc=   80819  l/s=0.081  c/l=0.078  c/s=0.971
 ;; n=2048  len= 1000000   cnt=   78498  spc=   83929  l/s=0.084  c/l=0.078  c/s=0.935
-;; 
-;; 
+;;
+;;
 ;; (let ((size   1000000))
 ;;   (loop :for node :in '(2 5 7 8 13 16 29 32 64 128 256 1000 1024 2048)
 ;;         :do (let ((v (make-vector-tree node size :element-type 'fixnum :initial-element -1)))
@@ -93,7 +93,7 @@
 ;;                                 (vector-length v)))
 ;;                       (float (/ (vector-count v)
 ;;                                 (vector-storage-size v)))))))
-;; 
+;;
 ;; n=   2  len= 1000000   cnt=    2000  spc=   11326  l/s=0.011  c/l=0.002  c/s=0.177
 ;; n=   5  len= 1000000   cnt=    2000  spc=    8491  l/s=0.008  c/l=0.002  c/s=0.236
 ;; n=   7  len= 1000000   cnt=    2000  spc=    9485  l/s=0.009  c/l=0.002  c/s=0.211

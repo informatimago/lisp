@@ -4,9 +4,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Implements the LISP described in AIM-8 in Common-Lisp.
-;;;;    Usage:  (load "aim-8.lisp") 
+;;;;    Usage:  (load "aim-8.lisp")
 ;;;;            (aim-8:repl)
 ;;;;    Then at the aim-8 prompt, you have LISP, plus:
 ;;;;       (DEFINE name sexp)     corresponding to =
@@ -25,19 +25,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -66,11 +66,11 @@ ftp://publications.ai.mit.edu/ai-publications/pdf/AIM-008.pdf"))
 (define and     (lambda (a b) (cond (a (cond (b t) (t nil))) (t nil))))
 (define or      (lambda (a b) (cond (a t) (b t) (t nil))))
 (define not     (lambda (a)   (cond (a nil) (t t))))
-(define maplist 
+(define maplist
         (lambda (x f)
           (cond ((null x) nil)
                 (t (combine (f x) (maplist (rest x) f))))))
-(define subst 
+(define subst
         (lambda (x y a)
           (cond ((null a) nil)
                 ((atom a) (cond ((eq y a) x) (t a)))
@@ -146,7 +146,7 @@ ftp://publications.ai.mit.edu/ai-publications/pdf/AIM-008.pdf"))
 
 
 (defun help ()
-  (format t "~&You've got:  
+  (format t "~&You've got:
     LAMBDA LABEL
     COND AND OR NOT  COMBINE FIRST REST
     NULL ATOM EQ NIL T QUOTE
@@ -157,15 +157,15 @@ Extensions:
 
 (defmacro handling-errors (&body body)
   `(handler-case (progn ,@body)
-     (simple-condition 
-      (err) 
+     (simple-condition
+      (err)
       (format *error-output* "~&~A: ~%" (class-name (class-of err)))
       (apply (function format) *error-output*
              (simple-condition-format-control   err)
              (simple-condition-format-arguments err))
       (format *error-output* "~&"))
-     (condition 
-      (err) 
+     (condition
+      (err)
       (format *error-output* "~&~A: ~%  ~S~%" (class-name (class-of err)) err))))
 
 
@@ -183,14 +183,14 @@ Extensions:
             ((equal sexp '(reload))
              (load "aim-8") (repl) (return-from repl))
             ((equal sexp '(dump-environment))
-             (format t "~:{~16@A = ~A~%~}" 
+             (format t "~:{~16@A = ~A~%~}"
                      (let ((res '()))
-                       (maphash (lambda (k v) (push (list k v) res)) 
+                       (maphash (lambda (k v) (push (list k v) res))
                                 *environment*) res)))
             ((and (listp sexp) (eq (first sexp) 'define))
              (fdefine (second sexp) (third sexp))
              (format t "~A" (second sexp)))
-            (t 
+            (t
              (format t "~S" (%eval sexp))))))))
   (terpri)
   (values))

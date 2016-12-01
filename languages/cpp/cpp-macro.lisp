@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Defines the cpp macros.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -211,9 +211,9 @@ This is crazy.
   But "toplevel" function-like macro calls can span several lines,
   including pre-processor directives (#ifs, #defines, #includes, etc).
   So parsing function-like macros calls must take into account several
-  lines, and may have to perform recursive directive processing 
+  lines, and may have to perform recursive directive processing
 
-  
+
         #undef LEFT
         #undef RIGHT
         #undef FOO
@@ -227,14 +227,14 @@ This is crazy.
                baz
         #undef F
         #define F(a,b,c) c##c
-               ); 
+               );
         4: FOO(
-        #undef F 
+        #undef F
         #define F(a,b,c) a##a
                FOO(baz)
         #undef F
         #define F(a,b,c) c##c
-               ); 
+               );
     -->
         1: F(l,foo,r);
 
@@ -304,7 +304,7 @@ concatenation
     -->
         a bc d /* 3 tokens */
 
-    If the argument is empty, that ‘##’ has no effect. 
+    If the argument is empty, that ‘##’ has no effect.
 
 |#
 
@@ -367,7 +367,7 @@ concatenation
                                           (context-file *context*))))
                          :accept-unicode-escapes (option *context* :accept-unicode-escapes)
                          :dollar-is-punctuation  (option *context* :dollar-is-punctuation))))
-    
+
     (when (rest concatenated)
       (cpp-error (first tokens)
                  "Pasting ~{~A~^ ~} does not give a valid preprocessing token" (mapcar (function token-text) tokens)))
@@ -392,7 +392,7 @@ concatenation
                        :do (pop line)
                            (unless line
                              (cpp-error (pseudo-token file lino) "'##' cannot appear at either end of a macro expansion"))
-                           (unless (sharpsharpp (first line)) 
+                           (unless (sharpsharpp (first line))
                              (push (pop line) concat))
                        :finally (setf result (nreconc (concatenate-tokens (nreverse concat)) result))))
                    (push curr result)))
@@ -455,7 +455,7 @@ concatenation
           (setf (cddr binding) (mapcar (function marg) (cddr binding)))
           (setf (cdr  binding) (marg (cdr  binding)))))))
 
-(defun substitute-parameters (definition bindings) 
+(defun substitute-parameters (definition bindings)
   (flet ((get-entry (ident)
            (assoc (token-text ident) bindings
                   :test (function string=)
@@ -570,33 +570,33 @@ concatenation
   `(member :warn-date-time
            ;; Warns when using built-in __DATE__ __TIME__ and __TIMESTAMP__
            ;; as them may produce artificially different executables.
-           
+
            :directives-only
-           
+
            :substitute-trigraphs
            ;; allow trigraph substitutions.
-           
+
            :warn-on-trigraph
            ;; when trigraphs are substituted, warn about it.
-           
+
            :warn-spaces-in-continued-lines
 
            :single-line-comments
            ;; allow // comments.
-           
+
            :accept-unicode-escapes
            ;;
-           
+
            :dollar-is-punctuation
            ;; when true, $ is considered punctuation.
            ;; when NIL, $ is considered a letter for identifiers.
-           
+
            :warn-on-undefined-identifier
            ;; in #if expressions warns about undefined identifiers
 
            :generate-sharp-line
            ;; #line generates '# NN "file"' token lines.
-           
+
            :include-disable-current-directory
            ;; When true, files are not searched in the current directory.
            ;; NOTE: current directory is defined as:
@@ -623,10 +623,10 @@ concatenation
   '((:warn-date-time . t)
     (:directives-only . nil)
     (:substitute-trigraphs . t)
-    (:warn-on-trigraph . t) 
-    (:warn-spaces-in-continued-lines . t) 
+    (:warn-on-trigraph . t)
+    (:warn-spaces-in-continued-lines . t)
     (:single-line-comments . t)
-    (:accept-unicode-escapes . t) 
+    (:accept-unicode-escapes . t)
     (:dollar-is-punctuation . nil)
     (:warn-on-undefined-identifier . nil)
     (:trace-includes . nil)
@@ -641,27 +641,27 @@ concatenation
 (defvar *default-pragma-interpreters* (make-hash-table :test 'equal))
 
 (defclass context ()
-  ((base-file             :initarg :base-file             
-                          :initform "-"                                     
+  ((base-file             :initarg :base-file
+                          :initform "-"
                           :accessor context-base-file)
    (directory             :initarg :directory
                           :initform nil
                           :accessor context-directory
                           :documentation "Include directory of the currently included/imported file, for #include_next.")
-   (file                  :initarg :file                  
-                          :initform "-"                                     
+   (file                  :initarg :file
+                          :initform "-"
                           :accessor context-file)
-   (line                  :initarg :line                  
-                          :initform 1                                       
+   (line                  :initarg :line
+                          :initform 1
                           :accessor context-line)
-   (column                :initarg :column                
-                          :initform 1                                       
+   (column                :initarg :column
+                          :initform 1
                           :accessor context-column)
-   (token                 :initarg :token                 
-                          :initform nil                                     
+   (token                 :initarg :token
+                          :initform nil
                           :accessor context-token)
-   (if-level              :initarg :if-level              
-                          :initform 0                                       
+   (if-level              :initarg :if-level
+                          :initform 0
                           :accessor context-if-level)
    (file-stack            :initarg :file-stack
                           :initform '()
@@ -677,30 +677,30 @@ concatenation
                           :initform '()
                           :accessor context-output-lines)
 
-   (counter               :initarg :counter               
-                          :initform 0                                       
+   (counter               :initarg :counter
+                          :initform 0
                           :accessor context-counter)
-   (macros-being-expanded :initarg :macros-being-expanded 
-                          :initform '()                                     
+   (macros-being-expanded :initarg :macros-being-expanded
+                          :initform '()
                           :accessor context-macros-being-expanded)
-   (options               :initarg :options               
-                          :initform (copy-tree       *default-options*)     
+   (options               :initarg :options
+                          :initform (copy-tree       *default-options*)
                           :accessor context-options)
-   (environment           :initarg :environment           
-                          :initform (copy-hash-table *default-environment*) 
+   (environment           :initarg :environment
+                          :initform (copy-hash-table *default-environment*)
                           :accessor context-environment)
-   (pragma-interpreters   :initarg :pragma-interpreters   
-                          :initform (copy-hash-table *default-pragma-interpreters*)                                     
+   (pragma-interpreters   :initarg :pragma-interpreters
+                          :initform (copy-hash-table *default-pragma-interpreters*)
                           :accessor context-pragma-interpreters
                           :documentation "An a-list mapping module name string to a function taking two arguments: the context and a list of tokens.")
-   (pragmas               :initarg :pragmas               
-                          :initform (make-hash-table :test 'equal)          
+   (pragmas               :initarg :pragmas
+                          :initform (make-hash-table :test 'equal)
                           :accessor context-pragmas
                           :documentation "An equal hash-table for pragmas defined by the program. Keys may be symbols or lists of symbols.")))
 
 (defun option (context option)
   (cdr (assoc option (context-options context))))
-   
+
 (defgeneric context-include-level (context))
 (defmethod context-include-level ((context context))
   (length (context-file-stack context)))

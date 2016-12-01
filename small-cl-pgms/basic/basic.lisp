@@ -20,7 +20,7 @@
 ;;;;
 ;;;;    Commands are not distinguished from statements and may occur in a
 ;;;;    program. In particular, LOAD could be used to load a subprogram
-;;;;    overlay, and takes a line number where to jump to. 
+;;;;    overlay, and takes a line number where to jump to.
 ;;;;
 ;;;;    Programs are loaded and saved in source form.
 ;;;;

@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    See :documentation of package below.
 ;;;;
 ;;;;AUTHORS
@@ -21,19 +21,19 @@
 ;;;;    See also MOP functions.
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2006 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -44,10 +44,10 @@
   (:nicknames  "COM.INFORMATIMAGO.COMMON-LISP.LISP.IBCL"
                "IMAGE-BASED-COMMON-LISP"
                "IBCL")
-  
+
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.LISP.SOURCE")
-  
+
   (:shadowing-import-from "COM.INFORMATIMAGO.COMMON-LISP.LISP.CL-SAVING-DEFINES"
                           ;; Not defpackage we provide our own wrapping.
                           "DEFINE-COMPILER-MACRO"          "DEFINE-MODIFY-MACRO"
@@ -64,14 +64,14 @@
            "WITH-PACKAGE-ITERATOR" "UNEXPORT" "IN-PACKAGE"
            "UNUSE-PACKAGE" "USE-PACKAGE" "DEFPACKAGE" "DO-SYMBOLS"
            "DO-EXTERNAL-SYMBOLS" "FIND-SYMBOL")
-  
+
   (:export . #.(let ((symbols '()))
                  (do-external-symbols (sym "COMMON-LISP")
                    (push (string sym) symbols))
                  (do-external-symbols (sym "COM.INFORMATIMAGO.COMMON-LISP.LISP.SOURCE")
                    (push (string sym) symbols))
                  symbols))
-  
+
   (:documentation "
 
 The package IBCL exports the same symbols as COMMON-LISP, but for
@@ -254,13 +254,13 @@ RETURN:         The package name.
 
 
 (cl:defmacro do-symbols ((var &optional (package *package*) result-form) &body body)
-  `(cl:do-symbols (,var 
+  `(cl:do-symbols (,var
                     (substitute-one-package *package-map* ,package)
                     ,result-form)
      ,@body))
 
 (defmacro do-external-symbols ((var &optional (package *package*) result-form) &body body)
-  `(cl:do-external-symbols (,var 
+  `(cl:do-external-symbols (,var
                              (substitute-one-package *package-map* ,package)
                              ,result-form)
      ,@body))

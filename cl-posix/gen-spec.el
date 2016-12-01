@@ -17,17 +17,17 @@
         (lisp-name)
         (pack-ext))
     (setq lisp-name (c-name->lisp-name c-name :type))
-    (setq pack-ext 
-          (cond 
+    (setq pack-ext
+          (cond
            ((null options) "")
            ((= 1 (length options))
             (format "-%s" (car options)))
            ((eq 'AND (car options))
-            (format "-%s" (unsplit-string 
+            (format "-%s" (unsplit-string
                            (mapcar (function string) (cdr options) )
                            "-")))
            ((eq 'OR (car options))
-            (format "-{%s}"  (unsplit-string 
+            (format "-{%s}"  (unsplit-string
                               (mapcar (function string) (cdr options))
                               ",")))))
     (insert (format "<h4>Type SUSV3%s:%s</h4>\n\n" pack-ext lisp-name))
@@ -53,7 +53,7 @@
 
 
 (dolist
-    (desc 
+    (desc
      '(
        (blkcnt_t
         ()
@@ -65,7 +65,7 @@
         "Used for block sizes."
         INTEGER)
 
-       (clock_t 
+       (clock_t
         (XSI)
         "Used for system times in clock ticks or CLOCKS_PER_SEC; see <time.h> ."
         (OR INTEGER FLOAT))
@@ -84,7 +84,7 @@
         (INTEGER 0))
 
 
-       (fsfilcnt_t 
+       (fsfilcnt_t
         (XSI)
         "Used for file system file counts."
         (INTEGER 0))
@@ -94,7 +94,7 @@
         "Used for group IDs."
         INTEGER)
 
-       (id_t 
+       (id_t
         (XSI)
         "Used as a general identifier; can be used to contain at least a pid_t, uid_t, or gid_t."
         INTEGER
@@ -107,7 +107,7 @@
         "Used for file serial numbers."
         (INTEGER 0))
 
-       (key_t 
+       (key_t
         (XSI)
         "Used for XSI interprocess communication.")
 
@@ -194,7 +194,7 @@
         INTEGER
         ("(SUBTYPEP (INTEGER -1 SUSV3:SSIZE-MAX) SUSV3:SSIZE-T)"))
 
-       (suseconds_t 
+       (suseconds_t
         (XSI)
         "Used for time in microseconds.")
 
@@ -215,7 +215,7 @@
         (TRC)
         "Used to identify a trace event type.")
 
-       (trace_event_set_t 
+       (trace_event_set_t
         (AND  TRC TEF)
         "Used to identify a trace event type set.")
 
@@ -228,7 +228,7 @@
         "Used for user IDs."
         INTEGER)
 
-       (useconds_t 
+       (useconds_t
         (XSI)
         "Used for time in microseconds.")
        ))

@@ -1,14 +1,14 @@
-  10 A$ = "Pascal" : GOSUB 100 
-  20 A$ = "Bernard" : GOSUB 100 
-  30 A$ = "Alain" : GOSUB 100 
-  40 A$ = "Toto" : GOSUB 100 
-  50 STOP 
- 100 RESTORE 200 
- 110 READ NOM$ , J , M , A 
- 120 IF J = 0 THEN PRINT "Pas trouvé" : RETURN 
- 130 IF NOM$ = A$ THEN PRINT J ; "/" ; M ; "/" ; A : RETURN 
- 140 GOTO 110 
- 200 DATA "Pascal" , 15 , 3 , 1964 
- 201 DATA "Bernard" , 14 , 1 , 1966 
- 202 DATA "Alain" , 3 , 7 , 1968 
- 203 DATA "Fin" , 0 , 0 , 0 
+  10 A$ = "Pascal" : GOSUB 100
+  20 A$ = "Bernard" : GOSUB 100
+  30 A$ = "Alain" : GOSUB 100
+  40 A$ = "Toto" : GOSUB 100
+  50 STOP
+ 100 RESTORE 200
+ 110 READ NOM$ , J , M , A
+ 120 IF J = 0 THEN PRINT "Pas trouvé" : RETURN
+ 130 IF NOM$ = A$ THEN PRINT J ; "/" ; M ; "/" ; A : RETURN
+ 140 GOTO 110
+ 200 DATA "Pascal" , 15 , 3 , 1964
+ 201 DATA "Bernard" , 14 , 1 , 1966
+ 202 DATA "Alain" , 3 , 7 , 1968
+ 203 DATA "Fin" , 0 , 0 , 0

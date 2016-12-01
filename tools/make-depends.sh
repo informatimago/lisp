@@ -69,7 +69,7 @@ while [ $# -gt 0 ] ; do
     -t|--trace)
         VERBOSE=" :VERBOSE T "
         ;;
-    -c|--closure) 
+    -c|--closure)
         closure=1
         ;;
     -I*)

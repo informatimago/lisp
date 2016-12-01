@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Encapsulates clisp socket-status.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -17,19 +17,19 @@
 ;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2005 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -89,7 +89,7 @@
   "List of IOTASK instances that are scheduled in the pool loop.")
 (defvar *iotask-wait*    '()
   "Sublist of *iotask* which can be handled by socket:socket-wait.")
-(defvar *iotask-no-wait* '() 
+(defvar *iotask-no-wait* '()
   "Sublist of *iotask* which cannot be handled by socket:socket-wait.")
 
 ;; INVARIANT:
@@ -126,7 +126,7 @@
 
 (defun iotask-poll (&optional (timeout 0.0))
   ;; TODO: implement the :alarm event.
-  (map nil 
+  (map nil
        (lambda (task status)
          (when status
            (let ((*standard-input*  (iotask-stdin  task))
@@ -180,12 +180,12 @@
       (when (eq :input event)
         (let* ((ich (read-char (iotask-stream task)))
                (ch  (system::input-character-char ich)))
-          (cond 
+          (cond
             ((null ch))
             ((= (char-code ch) com.informatimago.common-lisp.cesarum.ecma048:cr)
              (terpri)
              (finish-output)
-             (funcall process-input 
+             (funcall process-input
                       task (subseq buffer 0 (fill-pointer buffer)))
              (setf (fill-pointer buffer) 0))
             ((or (= (char-code ch) com.informatimago.common-lisp.cesarum.ecma048:bs)

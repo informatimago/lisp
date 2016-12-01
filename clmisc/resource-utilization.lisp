@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    See defpackage documentation string.
 ;;;;
 ;;;;AUTHORS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2006 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -128,9 +128,9 @@ RETURN: A short description of the CPU.
                                   (recursive-p nil))
   "
 DO:     Skip spaces, and read a string in parentheses (like in Postscript).
-RETURN: The string read (without the external parentheses), or the EOF-VALUE 
-        if EOF occured and EOF-ERROR-P is NIL. 
-        NIL is returned if the next non whitespace character is not a left 
+RETURN: The string read (without the external parentheses), or the EOF-VALUE
+        if EOF occured and EOF-ERROR-P is NIL.
+        NIL is returned if the next non whitespace character is not a left
         parenthesis.
 NOTE:   Parentheses inside the string must be escaped by \ unless balanced.
 "
@@ -172,7 +172,7 @@ NOTE:   Parentheses inside the string must be escaped by \ unless balanced.
 
 (defun process-status (&optional (pid "self"))
   "
-PID:  Normally it's a small integer, pid_t number. 
+PID:  Normally it's a small integer, pid_t number.
       But for /proc/, we can also use ''self'', as in '/proc/self/stat'.
 RETURN: The status of the specified process.
 "

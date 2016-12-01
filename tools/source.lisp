@@ -8,13 +8,13 @@
 ;;;;
 ;;;;    This package exports functions to read source files and parse
 ;;;;    their headers.
-;;;;    
+;;;;
 ;;;;    Source files can be either elisp (.el) or Common Lisp (.lisp,
 ;;;;    .lsp, .cl), and elisp sources may (require) common-lisp files
 ;;;;    (.lisp, .lsp, .cl extensions for sources).
 ;;;;
 ;;;;USAGE
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -30,19 +30,19 @@
 ;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2002 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -78,14 +78,14 @@
 
    "HEADER-SLOT" "HEADER-LICENCE" "HEADER-DESCRIPTION"
    "HEADER-AUTHORS"
-   
+
    "PARSE-EMACS-VARIABLES" "FILE-EMACS-VARIABLES"
    "WRITE-EMACS-HEAD-VARIABLES" "WRITE-EMACS-TAIL-VARIABLES"
 
    "READ-SOURCE-HEADER"
    "WRITE-SOURCE-HEADER" "*LINE-LENGTH*" "*EMACS-HEAD-VARIABLES*"
    "*FILE-HEADERS*"
-   
+
    "READ-SOURCE-CODE"
    "ENSURE-SOURCE-FILE-PATHNAME"
    "SCAN-SOURCE-FILE"
@@ -125,19 +125,19 @@ USAGE:
 LICENSE:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2002 - 2015
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 "))
@@ -170,7 +170,7 @@ LICENSE:
 
 (defun object-extensions (sext-oext-list)
   (delete-duplicates (mapcar (function cdr) sext-oext-list)))
-  
+
 
 (defun source-extensions (sext-oext-list)
   (delete-duplicates (mapcar (function car) sext-oext-list)))
@@ -187,31 +187,31 @@ LICENSE:
 
 
 (defclass source-package ()
-  ((name                  :initarg :name                  
+  ((name                  :initarg :name
                           :type string
                           :accessor source-package-name)
-   (nicknames             :initarg :nicknames             
+   (nicknames             :initarg :nicknames
                           :type list
                           :accessor source-package-nicknames)
-   (documentation         :initarg :documentation         
+   (documentation         :initarg :documentation
                           :type (or null string)
                           :accessor source-package-documentation)
-   (use                   :initarg :use                   
+   (use                   :initarg :use
                           :type list
                           :accessor source-package-use)
-   (shadow                :initarg :shadow                
+   (shadow                :initarg :shadow
                           :type list
                           :accessor source-package-shadow)
-   (shadowing-import-from :initarg :shadowing-import-from 
+   (shadowing-import-from :initarg :shadowing-import-from
                           :type list
                           :accessor source-package-shadowing-import-from)
    (import-from           :initarg :import-from
                           :type list
                           :accessor source-package-import-from)
-   (export                :initarg :export                
+   (export                :initarg :export
                           :type list
                           :accessor source-package-export)
-   (intern                :initarg :intern                
+   (intern                :initarg :intern
                           :type list
                           :accessor source-package-intern))
   (:documentation "The description of a defpackage in a source file."))
@@ -250,7 +250,7 @@ LICENSE:
    (packages-defined :initarg :packages-defined
                      :type list
                      :accessor source-file-packages-defined
-                     :documentation "A list of SOURCE-PACKAGE instances, one 
+                     :documentation "A list of SOURCE-PACKAGE instances, one
 for each of the DEFPACKAGE forms found in the source file.")
    (packages-used    :initarg :packages-used
                      :type list
@@ -571,7 +571,7 @@ COMMENT-START:     NIL or a string containing the start of comment lines.
 COMMENT-END:       NIL or a string containing the end of comment lines.
 LINE-CHAR:         A filler character used to draw a line in a comment.
 *LINE-LENGTH*      The length of the line comment lines generated.
- 
+
 The values may be strings or list of strings (lines).
 Possible keys are:
 - :file            name of the file.
@@ -676,7 +676,7 @@ COMMENT-START:     NIL or a string containing the start of comment lines.
 COMMENT-END:       NIL or a string containing the end of comment lines.
 LINE-CHAR:         A filler character used to draw a line in a comment.
 *LINE-LENGTH*      The length of the line comment lines generated.
- 
+
 The values may be strings or list of strings (lines).
 Possible keys are:
 - :file            name of the file.
@@ -701,7 +701,7 @@ RETURN: A p-list containing the header found in the stream
         at the current position;
         the last line read.
 NOTE:   Reading stops as soon as a non-comment line is read.
-        If the stream can be positionned, the FILE-POSITION is set at the 
+        If the stream can be positionned, the FILE-POSITION is set at the
         beginning of this first non-comment line.
 "
   (show stream (stream-external-format stream)
@@ -732,7 +732,7 @@ NOTE:   Reading stops as soon as a non-comment line is read.
                 :for line = (read-line stream nil nil)
                 :for meat
                 = (and
-                   line 
+                   line
                    #+clisp
                    (let ((matches (multiple-value-list
                                    (safe-regexp-exec re line))))
@@ -769,7 +769,7 @@ NOTE:   Reading stops as soon as a non-comment line is read.
                                      custom:*foreign-encoding*)))
                          (setf asso (nconc (nreverse ev ) asso))))
                       ((alpha-char-p (aref meat 0)) ; a keyword
-                       (when cont 
+                       (when cont
                          (push (clean cont) asso)
                          (setf cont nil))
                        (let ((pcolon (position (character ":") meat)))
@@ -892,18 +892,18 @@ BUGS:   This should be rewritten using COM.INFORMATIMAGO.COMMON-LISP.SOURCE
 (defun scan-source-file (source-filepath &key (external-format nil)
                          (load nil) (verbose nil) (keep-spaces nil))
   "
-DO:               Makes a SOURCE-FILE instance and fills it with data got from 
+DO:               Makes a SOURCE-FILE instance and fills it with data got from
                   the source file at SOURCE-FILEPATH.
 EXTERNAL-FORMAT:  NIL => try to guess the encoding (use emacs local variables).
 LOAD:             Whether the file should be loaded before scanning it.
                   (needed until COM.INFORMATIMAGO.COMMON-LISP.SOURCE is used).
 COMMENT-START:    A regexp matching the line comment start for the header lines.
 COMMENT-END:      A regexp matching the line comment end for the header lines.
-KEEP-SPACES:      
+KEEP-SPACES:
 NOTE:             COMMENT-START and COMMENT-END are regexp only on clisp until
                   COM.INFORMATIMAGO.COMMON-LISP.REGEXP can be used.
 
-RETURN:           A SOURCE-FILE instance filled with the data from the source 
+RETURN:           A SOURCE-FILE instance filled with the data from the source
                   file.
 "
   (let* ((emacs-variables (file-emacs-variables source-filepath))
@@ -1000,7 +1000,7 @@ PRE:    sexp is of the form: (REQUIRE module-name &OPTIONAL pathname-list)
         module-name can be 'toto or (quote toto).
         Each path name can be either a namestring, a physical path name or
         a logical path name.
-RETURN: A new list containing the pathname-list if present, or a list 
+RETURN: A new list containing the pathname-list if present, or a list
                               containing the symbol-name  of the module-name.
 "
   (let ((symb  (nth 1 sexp))
@@ -1055,7 +1055,7 @@ EXTERNAL-FORMAT:  used to read the source file.  If NIL, it's
 ;; In  both cases, it  may have  as source,  either a  common-lisp source
 ;; (.lisp, .lsp  or .cl), or a elisp  source (.el). (If a  .fas, we seach
 ;; first for a .lisp, and if a .elc, we search first for a .el).
-;; 
+;;
 ;;
 ;; For  required files,  we search  whatever source  file (first  of same
 ;; class as  the source found for  object-file), and return  in anycase a
@@ -1107,9 +1107,9 @@ RETURN:  NIL or the path of FNAME found in one of DIR-PATHS.
   (do* ((paths dir-paths   (cdr paths))
         (dpath (car paths) (car paths))
         (fpath ) )
-       ( (or (null dpath) 
-             (probe-file 
-              (setq fpath (if (string= dpath ".") 
+       ( (or (null dpath)
+             (probe-file
+              (setq fpath (if (string= dpath ".")
                               fname
                               (sconc dpath "/" fname)))))
         (if dpath  fpath nil) )))
@@ -1160,7 +1160,7 @@ RETURN:  NIL or the path of FNAME found in one of DIR-PATHS.
                           (< (length pack) (length packname))
                           (char= (character ".") (aref packname (length pack)))))
                    packlist)))))
-                      
+
 
 (defun get-dependencies (object-file packages load-paths &key (verbose nil))
   "
@@ -1172,7 +1172,7 @@ OBJECT-FILE:    The file of which the dependencies are computed.
 PACKAGES:       A list of preloaded package names.
 LOAD-PATHS:     A list of directory path names where to find the files when
                 not found thru the logical pathname translations.
-                The presence in LOAD-PATHS of a logical pathname warrants 
+                The presence in LOAD-PATHS of a logical pathname warrants
                 the presence in HOST-LPT of an entry mapping it to a physical
                 path.
 VERBOSE:        Prints information on *TRACE-OUTPUT*.
@@ -1186,7 +1186,7 @@ VERBOSE:        Prints information on *TRACE-OUTPUT*.
     (when source-filepath
       (cons
        source-filepath
-       (mapcan 
+       (mapcan
         (lambda (pack-name)
           (pdebug "~&;;    processing ~S~%" pack-name)
           (when verbose
@@ -1238,10 +1238,10 @@ VERBOSE:        Prints information on *TRACE-OUTPUT*.
 PRE:     OBJECT-FILE is foo.fas or foo.elc, etc.
 RETURN:  A list of object files recursively required by OBJECT-FILE.
 "
-  (multiple-value-bind 
+  (multiple-value-bind
         (source-file extension extensions) (source-file-for-object object-file)
     (when source-file
-      (cons object-file 
+      (cons object-file
             (mapcan ;; for each required file
              (lambda (item)
                (mapcar ;; find the object file path corresponding to an
@@ -1250,7 +1250,7 @@ RETURN:  A list of object files recursively required by OBJECT-FILE.
                   (let* ((sname (sconc item (car sext-oext)))
                          (spath (find-file-path sname load-paths)))
                     (if spath
-                        (get-closed-dependencies 
+                        (get-closed-dependencies
                          (if (string= "." (directory-namestring spath))
                              (sconc item extension)
                              (sconc (directory-namestring spath)

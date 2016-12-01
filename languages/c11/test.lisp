@@ -13,7 +13,7 @@
               (integer    "[0-9]+"))
   :start expression
   :rules  ((--> expression
-                (alt 
+                (alt
                  (seq "+" integer)
                  (seq "-" integer)
                  (seq "*" integer)
@@ -53,7 +53,7 @@
           (--> seq-no-action-with-action
                (seq "seq-no-action-with-action" identifier integer
                     :action `(seq-no-action-with-action ,identifier ,integer)))
-          
+
           (--> seq-with-action
                (seq "seq-with-action" identifier integer)
                :action $1)
@@ -63,7 +63,7 @@
                     :action `(seq-with-action-with-action ,identifier ,integer))
                :action $1)
 
-          
+
           (--> rep-no-action
                "rep-no-action" (rep identifier integer))
 
@@ -71,14 +71,14 @@
                "rep-with-action" (rep identifier integer) ;  :action `(,identifier ,integer)
                :action `(rep-with-action ,@(reduce 'append $2)))
 
-          
+
           (--> opt-no-action
                "opt-no-action" (opt identifier integer))
           (--> opt-with-action
                "opt-with-action" (opt identifier integer) ;  :action `(,identifier ,integer)
                :action `(opt-with-action ,@$2))
 
-          
+
           (--> alt-no-action
                "alt-no-action" (alt "with" "without") identifier)
 
@@ -124,7 +124,7 @@
 
           (parse-ex "opt-no-action")
           (expression (opt-no-action (|opt-no-action| "opt-no-action" 14) nil))
-          
+
           (parse-ex "opt-no-action whatisit 42")
           (expression (opt-no-action (|opt-no-action| "opt-no-action" 14) (((identifier "whatisit" 23) (integer "42" 26)))))
 

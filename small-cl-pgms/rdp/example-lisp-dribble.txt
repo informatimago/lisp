@@ -14,7 +14,7 @@ NIL
 T
 
 
-;;; Next, we load the grammar definition.  
+;;; Next, we load the grammar definition.
 ;;; This will generate the scanner and parser for that language.
 
 [3]> (load"example-lisp.lisp")
@@ -27,17 +27,17 @@ T
 [4]> (parse-example
   "
     const abc = 123,
-          pi=3.141592e+0; 
-    var a,b,c; 
-    procedure gcd; 
-    begin 
-        while a # b do 
+          pi=3.141592e+0;
+    var a,b,c;
+    procedure gcd;
+    begin
+        while a # b do
         begin
-             if a<b then b:=b-a ; 
-             if a>b then a:=a-b 
-        end 
+             if a<b then b:=b-a ;
+             if a>b then a:=a-b
+        end
     end;
-begin 
+begin
     a:=42;
     b:=30.0;
     call gcd
@@ -415,4 +415,4 @@ end.")
     (UNLESS (SCANNER-END-OF-SOURCE SCANNER)
      (ERROR "End of source NOT reached."))))))
 
-[6]> 
+[6]>

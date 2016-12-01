@@ -5,26 +5,26 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    This script implements a CL server and client.
 ;;;;
 ;;;;    The server (with the --server option)  waits for connections
-;;;;    on port +PORT+ and then read one form, evaluates it, and sends 
-;;;;    back the data printed and the multiple value resulting from 
+;;;;    on port +PORT+ and then read one form, evaluates it, and sends
+;;;;    back the data printed and the multiple value resulting from
 ;;;;    the form, or the error if raised.
 ;;;;
-;;;;    The client either sends to the server the forms given on 
+;;;;    The client either sends to the server the forms given on
 ;;;;    the command line, or enter a REPL mode (with the --repl option),
 ;;;;    from which it reads forms, and sends them to the server.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2006-04-09 <PJB> 
+;;;;    2006-04-09 <PJB>
 ;;;;BUGS
 ;;;;
 ;;;;    - The current protocol disconnect between each form evaluated.
-;;;;    - We should use the SWANK protocol 
+;;;;    - We should use the SWANK protocol
 ;;;;      (fetch swank client from McClimDesktop).
 ;;;;    - The restricted cl package is not free of security leaks yet.
 ;;;;    - It's planed to implement a virtual file system from which
@@ -36,19 +36,19 @@
 ;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2006 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -1060,7 +1060,7 @@
 ;;; (with-input-from-string (in "a 1 \"s\" pac:sym | hi | \\abc #|com|# ;com
 ;;;  (1 2 3) #2A((a b) (c d)) #x123 #'fun")
 ;;;   (loop :for s = (parse-sexp in nil nil) :while s  :collect s))
-;;; --> 
+;;; -->
 ;;; ("a " "1 " "\"s\"" " pac:sym " "| hi |" " \\abc " "#|com|# ;com
 ;;;  (1 2 3)" " #2A((a b) (c d)) " "#x123 #'fun")
 
@@ -1076,19 +1076,19 @@
   (:single-escape               . "\\")
   (:terminating-macro-char      . "\"'(),;`"))
 
-(defconstant +white-spaces+  
+(defconstant +white-spaces+
   '(#\Space #\Newline #\Tab #\Return #\Linefeed #\Page))
-(defconstant +digits+ 
+(defconstant +digits+
   '#.(loop :for i :from 0 :to 9 :collect (digit-char i)))
 
 (defun parse-sexp (&optional (stream *standard-input*)
                    (eof-error-p t) (eof-value nil))
   "Read character on STREAM and collect them in a string,
-parsing up to one sexp. 
-If an EOF occurs during the parsing of an object, 
+parsing up to one sexp.
+If an EOF occurs during the parsing of an object,
 a SEXP-END-OF-FILE condition is raised.
-If an EOF occurs before a sexp is read, 
-then either a SEXP-END-OF-FILE condition is raised 
+If an EOF occurs before a sexp is read,
+then either a SEXP-END-OF-FILE condition is raised
 or the EOF-VALUE is returned according to EOF-ERROR-P.
 Spaces, and comments are read and collected in the output string.
 The syntax for strings, comment and lists is the default CL reader one.
@@ -1107,12 +1107,12 @@ No reader macro is processed.  #2A(a b c) is parsed as two tokens:
        :with state = :init
        :with stack = '()
        :for ch = (peek-char nil stream nil nil)
-       :do (labels 
+       :do (labels
                ((accept (ch) (princ (read-char stream) text))
                 (rerror (eof-error-p ctrlstr &rest args)
                   (if eof-error-p
                       (error (make-instance 'sexp-end-of-file
-                               :format-control (concatenate 'string "~A: " 
+                               :format-control (concatenate 'string "~A: "
                                                             ctrlstr)
                                :format-arguments (cons 'parse-sexp args)
                                :stream stream))
@@ -1121,7 +1121,7 @@ No reader macro is processed.  #2A(a b c) is parsed as two tokens:
                   (rerror t "input stream ~S ends within ~A" stream where))
                 (end (token)
                   (case token
-                    ((:eof) 
+                    ((:eof)
                      (rerror eof-error-p
                              "input stream ~S has reached its end"
                              stream))
@@ -1130,11 +1130,11 @@ No reader macro is processed.  #2A(a b c) is parsed as two tokens:
                     ((:eof-sharp)    (eof-error
                                       "a read macro beginning with #\\#"))
                     ((:eof-comment)  (eof-error "a comment #| ... |#"))
-                    ((:eof-single)   (eof-error 
+                    ((:eof-single)   (eof-error
                                       "a token after single escape character"))
-                    ((:eof-multiple) (eof-error 
+                    ((:eof-multiple) (eof-error
                                       "a token after multiple escape character"))
-                    ((:close) 
+                    ((:close)
                      (rerror t "READ from ~S: an object cannot start with #\\)"
                              stream))
                     (otherwise #-mocl (loop-finish) #+mocl (return))))
@@ -1145,7 +1145,7 @@ No reader macro is processed.  #2A(a b c) is parsed as two tokens:
                                                         `(shift ,return)
                                                         return)) stack)
                                   (shift ,new-state))))
-               (ecase state 
+               (ecase state
                  ((:init)
                   (case ch
                     (#.+white-spaces+ (accept ch))
@@ -1180,7 +1180,7 @@ No reader macro is processed.  #2A(a b c) is parsed as two tokens:
                     ((#\")       (accept ch) (spop))
                     ((nil)       (end :eof-string))
                     (otherwise   (accept ch))))
-                 ((:string-escape) 
+                 ((:string-escape)
                   (case ch
                     ((nil)       (end :eof-string))
                     (otherwise   (accept ch) (shift :string))))
@@ -1330,16 +1330,16 @@ tralala |#
            (use-value      (value) :report "Value used"
                                    :interactive read-new-value))))))
 
-(defun check-form/packages (form &key (in-packs '(:rcl-user :keyword)) 
+(defun check-form/packages (form &key (in-packs '(:rcl-user :keyword))
                                  (out-packs '(:rcl :regexp)))
   (cond ((symbolp form)
          (dolist (pack in-packs)
-           (multiple-value-bind (sym status)  
+           (multiple-value-bind (sym status)
                (find-symbol (symbol-name form) pack)
              (when status
                (return-from check-form/packages nil))))
          (dolist (pack out-packs)
-           (multiple-value-bind (sym status)  
+           (multiple-value-bind (sym status)
                (find-symbol (symbol-name form) pack)
              (when (eql status :external)
                (return-from check-form/packages nil))))
@@ -1402,11 +1402,11 @@ tralala |#
                            (print (cons :error (format nil "~A" err)) socket)
                            (terpri socket) (finish-output socket)))))
                  #+clisp
-                 (system::interrupt-condition (err) 
+                 (system::interrupt-condition (err)
                    (format log-output "~&Got error: ~A~%" err)
                    (format log-output "Exiting.~%")
                    (ext:quit))
-                 (t (err) 
+                 (t (err)
                    (format log-output "~&Got error: ~A~%" err))))
          (socket:socket-server-close server))))
     ((string= "--repl" (or (first ext:*args*) ""))

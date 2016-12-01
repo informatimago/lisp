@@ -1,6 +1,6 @@
 Mon Jul  2 19:28:51 CEST 2012
 
-This project is published as-is.  
+This project is published as-is.
 It is far from finished.
 
 
@@ -118,7 +118,7 @@ Let's start with a bottom up approach.
 First we define a s-expr syntax for C, with a direct generation to C.
 
 Then we remove progressively more and more C from it, implementing at
-the same time the translator: 
+the same time the translator:
 - type inference to remove the need for most declarations.
 - mapping of packages to source files, or definition of a module construct.
 - FFI with Verrazano http://common-lisp.net/project/fetter/

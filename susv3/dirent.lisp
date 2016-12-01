@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    SUSv3 dirent functions.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2005 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -46,7 +46,7 @@
      "COM.INFORMATIMAGO.CLISP.SUSV3-XSI" "SUSV3-XSI"))
 
 (defpackage "COM.INFORMATIMAGO.SUSV3.DIRENT"
-  (:documentation 
+  (:documentation
    "An API over SUSV3 and SUSV3-XSI dirent API.")
   (:use "COMMON-LISP"
         ;; "COM.INFORMATIMAGO.CLISP.RAW-MEMORY"
@@ -55,18 +55,18 @@
   (:import-from "COM.INFORMATIMAGO.CLISP.SUSV3"
                 "CHECK-ERRNO"  "CHECK-POINTER")
   (:export "DIR" "DIRENT" "DIRENT-INO" "DIRENT-NAME"
-           "OPENDIR" "CLOSEDIR" "READDIR" "REWINDDIR" 
+           "OPENDIR" "CLOSEDIR" "READDIR" "REWINDDIR"
            ;; XSI:
            "SEEKDIR" "TELLDIR" ))
 (in-package "COM.INFORMATIMAGO.SUSV3.DIRENT")
 
 
-(deftype dir () 
+(deftype dir ()
   "A type representing a directory stream."
   `t)
 
 
-(defstruct dirent 
+(defstruct dirent
   (ino  0  :type integer) ;; File serial number
   (name "" :type string)) ;; Name of entry [NAME-MAX]
 
@@ -125,8 +125,8 @@
                :function  'susv3:seekdir
                :arguments (list dir-stream position)
                :caller    'seekdir))
-                                           
- 
+
+
 (defun telldir (dir-stream)
   (check-errno (susv3:telldir dir-stream)
                :function  'susv3:telldir

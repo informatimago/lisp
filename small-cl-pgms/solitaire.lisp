@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Plays solitaire... alone.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -17,19 +17,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -560,7 +560,7 @@ DO:     Parses the following grammar:
     :reader game
     :type solitaire
     :documentation "The solitaire state.")
-   (valid-moves 
+   (valid-moves
     :initform ()
     :initarg :valid-moves
     :accessor valid-moves
@@ -746,7 +746,7 @@ DO:     Parses the following grammar:
   (let ((n 0) (se 0) (sa 0) (w 0)
         (*random-state* (make-random-state t))
         (*print-circle* nil)
-        (*print-readably* nil)) 
+        (*print-readably* nil))
     (loop
       (setf *player* (make-instance 'solitaire-player))
       (multiple-value-bind (won steps) (play-game *player* :verbose verbose

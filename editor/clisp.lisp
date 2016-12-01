@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    clisp specific functions.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -54,7 +54,7 @@
     (ext:shell (format nil "rm -f ~S; mknod ~S p; xterm ~
                             ~:[~;~:*-geometry ~S~] ~:[~;~:*-display ~S~] ~
                             -fg green -bg black ~:[~;~:*-fn '~A'~] -n ~S -T ~S ~
-                            -e 'tty >> ~S ; cat ~S' &" 
+                            -e 'tty >> ~S ; cat ~S' &"
                        pipe pipe geometry display font title title pipe pipe))
     (let* ((tty-name (with-open-file (s pipe) (read-line s)))
            (xio (make-two-way-stream
@@ -145,7 +145,7 @@
          (old-term          (getenv "TERM")))
     (setf (getenv "TERM") "xterm")
     (unwind-protect
-         (progn (format *query-io* "~&Hello!~%") 
+         (progn (format *query-io* "~&Hello!~%")
                 (format *query-io* "~&X = ")
                 (finish-output *query-io*)
                 (let ((x (read *query-io*)))

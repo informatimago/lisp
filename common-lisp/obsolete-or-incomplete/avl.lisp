@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;   An implementation of AVL trees (Adelson-Velskii & Landis Balanced Trees).
 ;;;;
 ;;;;EXAMPLE
@@ -19,7 +19,7 @@
 ;;;;    (avl-walk tree :prefix (lambda (v) (print "("))
 ;;;;                   :infix  (lambda (v) (print v))
 ;;;;                   :suffix (lambda (v) (print ")")) ))
-;;;;                   
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -31,24 +31,24 @@
 ;;;;    - Removing nodes is not implemented.
 ;;;;
 ;;;;    - The data type is not encapsulated. At least we should keep
-;;;;      the compare function along with it. And some green functions 
+;;;;      the compare function along with it. And some green functions
 ;;;;      (avl-count) would be nice too.
-;;;;      
+;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -95,8 +95,8 @@ POST:       a=<q,<p,U,V>,W>
          (avl-right avl) (avl-left avl)
          (avl-left avl)  avl)
   avl) ;;AVL-RL
-    
-    
+
+
 (defun avl-rr (avl)
   "
 DO:         Rotate right.
@@ -124,8 +124,8 @@ POST:       a=<q,<p<T,U>,<r,V,W>>
   (setf (avl-left avl) (avl-rl (avl-left avl)))
   (setf avl (avl-rr avl))
   avl) ;;AVL-RLR
-    
-    
+
+
 (defun avl-rrl (avl)
   "
 DO:         Rotate right-left.
@@ -145,7 +145,7 @@ POST:       a=<q,<r,T,U>,<p,V,W>>
 RETURN: A new empty AVL tree.
 "
   nil) ;;AVL-EMPTY
-    
+
 
 (defun avl-search (avl value compare)
   "
@@ -159,7 +159,7 @@ RETURN:   The avl node such as (funcall compare value (avl-value avl)) == 0
       ((0)  (return-from avl-search avl))
       ((1)  (setf avl (avl-right avl)))))
   nil) ;;AVL-SEARCH
-    
+
 
 (defun avl-insert (avl value compare)
   "
@@ -175,7 +175,7 @@ RETURN:   The modified avl tree where a new node has been added for value.
           pp nil)
     ;; aa est le pere de a; pp est le pere de p
     (while p
-      ;; Descente a la recherche de la feuille, en memorisant le 
+      ;; Descente a la recherche de la feuille, en memorisant le
       ;; dernier noeud pointe par a dont le desequilibrage est +/-1.
       (unless (zerop (avl-unbalance p))
         (setf a p  aa pp))
@@ -187,7 +187,7 @@ RETURN:   The modified avl tree where a new node has been added for value.
     (if (<= (funcall compare value (avl-value pp)) 0)
         (setf (avl-left pp) y)
         (setf (avl-right pp) y))
-    ;; modification du desequilibre sur le chemin de a a y 
+    ;; modification du desequilibre sur le chemin de a a y
     (setf p a)
     (until (eq p y)
       (if (<= (funcall compare value (avl-value p)) 0)
@@ -237,8 +237,8 @@ RETURN:   The modified avl tree where a new node has been added for value.
        (setf (avl-left aa) a))
       (t (setf (avl-right aa) a)))
     avl)) ;;AVL-INSERT
-    
-    
+
+
 (defun avl-walk (avl &key (prefix (function identity))
                  (infix (function identity))
                  (suffix (function identity)))

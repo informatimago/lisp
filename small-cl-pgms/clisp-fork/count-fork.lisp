@@ -4,9 +4,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Testing fork and signals in clisp.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -14,19 +14,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2006 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -50,7 +50,7 @@
   (linux:|set-signal-handler| signum oldhan)
   (linux:|sigprocmask-set-n-save| linux:|SIG_UNBLOCK| sigset))
 
-  
+
 (defmacro with-signal-handler (signum handler &body body)
   (let ((voldhan (gensym))
         (vsignum (gensym))
@@ -58,7 +58,7 @@
     `(let* ((,vsignum ,signum)
             (,voldhan (linux:|set-signal-handler| ,vsignum ,handler))
             (,vsigset (second (multiple-value-list
-                               (linux:|sigaddset| 
+                               (linux:|sigaddset|
                                       (second (multiple-value-list
                                                (linux:|sigemptyset|)))
                                       ,vsignum)))))
@@ -86,12 +86,12 @@
  (:return-type ffi:int)
  (:language :stdc)
  (:library "/lib/libc.so.6"))
-                   
-       
+
+
 (defun main ()
   (setf *run* t)
   (sleep 1.0)
-  (with-signal-handler linux:|SIGVTALRM| 
+  (with-signal-handler linux:|SIGVTALRM|
     (lambda (signum) (declare (ignore signum)) (setf *run* nil))
     (ffi:with-c-var (i 'itimerval (make-itimerval :interval-sec 0
                                                   :interval-mic 0

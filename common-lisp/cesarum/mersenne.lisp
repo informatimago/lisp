@@ -5,10 +5,10 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Implements CL RANDOM API with a Mersenne's twister
 ;;;;    Pseudo Random Number Generator.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -16,19 +16,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2016 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -53,21 +53,21 @@ Copyright Pascal J. Bourguignon 2016 - 2016
 
 
 ;; The coefficients for MT19937 are:
-;; 
+;;
 ;;     (w, n, m, r) = (32, 624, 397, 31)
 ;;     a = 9908B0DF16
 ;;     (u, d) = (11, FFFFFFFF16)
 ;;     (s, b) = (7, 9D2C568016)
 ;;     (t, c) = (15, EFC6000016)
 ;;     l = 18
-;; 
+;;
 ;; Note that 32-bit implementations of the Mersenne Twister generally
 ;; have d = FFFFFFFF16. As a result, the d is occasionally omitted
 ;; from the algorithm description, since the bitwise and with d in
 ;; that case has no effect.
-;; 
+;;
 ;; The coefficients for MT19937-64 are:[43]
-;; 
+;;
 ;;     (w, n, m, r) = (64, 312, 156, 31)
 ;;     a = B5026F5AA96619E916
 ;;     (u, d) = (29, 555555555555555516)

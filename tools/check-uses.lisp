@@ -1,11 +1,11 @@
 ;;;;
 ;;;; Analyses the output of the objecteering macro dumpUses.jmf
-;;;; 
+;;;;
 ;;;; (C) 2008 Anevia
-;;;; 
+;;;;
 ;;;; Authors: Pascal J. Bourguignon
-;;;; 
-;;;; 
+;;;;
+;;;;
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setf *readtable* (copy-readtable nil)))
@@ -70,9 +70,9 @@
 
 (DEFUN TOPOLOGICAL-SORT (NODES LESSP)
   "
-RETURN: A list of NODES sorted topologically according to 
+RETURN: A list of NODES sorted topologically according to
         the partial order function LESSP.
-        If there are cycles (discounting reflexivity), 
+        If there are cycles (discounting reflexivity),
         then the list returned won't contain all the NODES.
 "
   (LOOP
@@ -88,7 +88,7 @@ RETURN: A list of NODES sorted topologically according to
                   :FOR NODE :IN NODES
                   :FOR INCO :ACROSS INCOMING
                   :WHEN (ZEROP INCO)
-                  :COLLECT NODE) 
+                  :COLLECT NODE)
      :WHILE Q
      :DO (LET ((N (POP Q)))
            (PUSH N SORTED)
@@ -287,7 +287,7 @@ RETURN: The shortest path of length>0 from FROM to TO if it exists, or NIL.
 
 
 #- (and) (progn
-  
+
   (let ((filter (lambda (x)
                   (and (string= (classof x) "Package")
                        (COM.INFORMATIMAGO.COMMON-LISP.STRING:PREFIXP
@@ -296,13 +296,13 @@ RETURN: The shortest path of length>0 from FROM to TO if it exists, or NIL.
     (generate-uses-graph (remove-if-not filter *objects*) (make-pathname :name name :type "dot"))
     (ext:shell
      (format nil "(twopi -Tps  -Gcharset=latin1 -o~A.ps ~:*~A.dot;gsview ~:*~A.ps )&" name)))
-  
+
   (let ((filter (lambda (x)
                   (and (string= (classof x) "Class")
                        (COM.INFORMATIMAGO.COMMON-LISP.STRING:PREFIXP
                         "manager:Streamers:" (string (path x))))))
          (name "uses-classes"))
-  
+
     (generate-uses-graph (remove-if-not filter *objects*) (make-pathname :name name :type "dot"))
     (ext:shell
      (format nil "(twopi -Tps  -Gcharset=latin1 -o~A.ps ~:*~A.dot;gsview ~:*~A.ps )&" name)))

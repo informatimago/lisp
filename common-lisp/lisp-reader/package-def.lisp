@@ -10,7 +10,7 @@
 ;;;;
 ;;;;
 ;;;;    Implements the Common Lisp package system.
-;;;;    
+;;;;
 ;;;;    <Xach> The basic idea of that file is that the semantics of the CL
 ;;;;    package system can be implemented by an object with three special
 ;;;;    kinds of tables (present-table, shadowing-table, external-table)

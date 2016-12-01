@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Defines a simple test tool.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -21,19 +21,19 @@
 ;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2010 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -69,7 +69,7 @@
            "TESTING" "SLOW-TEST"
            "PROGRESS-START"
            "PROGRESS-SUCCESS" "PROGRESS-FAILURE-MESSAGE" "PROGRESS-FAILURE"
-           "PROGRESS-TALLY" 
+           "PROGRESS-TALLY"
            ;; deprecated:
            "TEST")
   (:documentation "
@@ -99,19 +99,19 @@ debug the test or the failure.
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2010 - 2015
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -310,7 +310,7 @@ FAILURE-COUNT."
                        ~4D success~:*~[es~;~:;es~]~
                        ~:[,~2:*~[~;  ~;~]~*~4D failure~:*~P~;~].~%"
                        name-max-length name (< name-max-length (length name))
-                       (+ success-count failure-count) 
+                       (+ success-count failure-count)
                        success-count
                        (zerop failure-count)
                        failure-count)))
@@ -319,7 +319,7 @@ FAILURE-COUNT."
         ;; (let* ((test-name (current-test-identification name-max-length))
         ;;        (data (genline ""))
         ;;        (nlen (length test-name)))
-        ;;   (format *test-output* "~&~A~%" 
+        ;;   (format *test-output* "~&~A~%"
         ;;           (if (and (< nlen (+ name-max-length 4)) (char= #\space (aref data nlen)))
         ;;               (progn
         ;;                 (replace data test-name)
@@ -378,7 +378,7 @@ EXAMPLE:        (expect-condition 'division-by-zero (/ 1 0))
                                    (return-from expect))
                                  (invoke-debugger condition)))))
                  (,body)))
-             (handler-case 
+             (handler-case
                  (,body)
                (error (condition)
                  (if (typep condition ,vcondition-class)

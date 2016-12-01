@@ -54,19 +54,19 @@ C.  special "FFI". forms; name is any Lisp SYMBOL; c-name is a STRING.
         specified, it is derived from the print name of the Lisp
         name.
 
-    
+
     (:TYPE c-type)
 
         specifies the variable's foreign type.
 
-    
+
     (:READ-ONLY BOOLEAN)
 
         If this option is specified and non-NIL, it will be
         impossible to change the variable's value from within Lisp
         (using SETQ or similar).
 
-    
+
     (:ALLOC ALLOCATION)
 
         This option can be either :NONE or :MALLOC-FREE and defaults
@@ -82,7 +82,7 @@ C.  special "FFI". forms; name is any Lisp SYMBOL; c-name is a STRING.
         one or storing some data in a NULL pointer...) and
         deprecated.
 
-    
+
     (:LIBRARY STRING)
 
         Specifies the (optional) dynamic library which contains the
@@ -433,15 +433,15 @@ C.  special "FFI". forms; name is any Lisp SYMBOL; c-name is a STRING.
 
     A stupid example (a quite costly interface to mblen):
 
-     (with-foreign-string (fv elems bytes string                           
+     (with-foreign-string (fv elems bytes string
 
-                      :encoding charset:jis... :null-terminated-p nil 
+                      :encoding charset:jis... :null-terminated-p nil
 
-                      :end 5)                                         
-      (declare (ignore fv elems))                                          
-      (format t "This string would take ~D bytes." bytes))                 
+                      :end 5)
+      (declare (ignore fv elems))
+      (format t "This string would take ~D bytes." bytes))
 
-                                                                  
+
 
 (FFI:PARSE-C-TYPE c-type)
 (FFI:DEPARSE-C-TYPE c-type-internal)
@@ -513,8 +513,8 @@ C.  special "FFI". forms; name is any Lisp SYMBOL; c-name is a STRING.
     Such a place can be used to access memory referenced by a
     foreign-entity object:
 
-     (setq foo (allocate-deep '(c-array uint8 3) rgb)) 
-     (with-c-place (place foo) (element place 0))      
+     (setq foo (allocate-deep '(c-array uint8 3) rgb))
+     (with-c-place (place foo) (element place 0))
 
 
 
@@ -540,9 +540,9 @@ Foreign C types are used in the "FFI".. They are not regular Common
 Lisp types or CLOS classes.
 
 A c-type is either a predefined C type or the name of a type defined
-by FFI:DEF-C-TYPE. 
+by FFI:DEF-C-TYPE.
 
-the predefined C types (c-type) 
+the predefined C types (c-type)
    simple-c-type
       the simple C types
 
@@ -551,7 +551,7 @@ the predefined C types (c-type)
 ============ ================== ============== =============== ================
 Lisp name    Lisp equivalent    C equivalent   ILU equivalent  Comment
 ============ ================== ============== =============== ================
-NIL          NIL                void                           as a result 
+NIL          NIL                void                           as a result
                                                                type only
 BOOLEAN      BOOLEAN            int            BOOLEAN
 CHARACTER    CHARACTER          char           SHORT CHARACTER
@@ -569,7 +569,7 @@ uint16       (UNSIGNED-BYTE 16) uint16         SHORT CARDINAL
 sint16       (SIGNED-BYTE 16)   int16          SHORT INTEGER
 uint32       (UNSIGNED-BYTE 32) uint32         CARDINAL
 sint32       (SIGNED-BYTE 32)   sint32         INTEGER
-uint64       (UNSIGNED-BYTE 64) uint64         LONG CARDINAL   does not work 
+uint64       (UNSIGNED-BYTE 64) uint64         LONG CARDINAL   does not work
                                                                on all platforms
 sint64       (SIGNED-BYTE 64)   sint64         LONG INTEGER    does not work
                                                                on all platforms

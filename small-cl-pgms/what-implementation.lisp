@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Helps a newbie choose a CL implementations by selecting criteria.
 ;;;;
 ;;;;    Please contribute to the selection criteria and other
@@ -25,19 +25,19 @@
 ;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -150,7 +150,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
      :homepage "http://www.gnu.org/software/gcl/"
      :documentation "http://www.gnu.org/software/gcl/"
      :platforms ("Linux"
-                  "Mac OS X" 
+                  "Mac OS X"
                   "Solaris"
                   "FreeBSD" "OpenBSD"
                   "IRIS" "HPUX" "cygwin")
@@ -181,14 +181,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
                 "callbacks"
                 "precise GC")
      :mostly-written-in ("Common Lisp"))
-    
+
     (:name "Steel Bank Common Lisp"
      :nickname "SBCL"
      :license "public domain + BSD"
      :homepage "http://www.sbcl.org/"
      :documentation "http://www.sbcl.org/manual/index.html"
      :platforms ("Linux"
-                  "Mac OS X" 
+                  "Mac OS X"
                   "MS-Windows"
                   "FreeBSD" "OpenBSD")
      :compiler ("native")
@@ -198,7 +198,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
                 "callbacks")
      :mostly-written-in ("Common Lisp"))
 
-    
+
     (:name "CLforJava"
      :nickname "CLforJava"
      :license "Apache 2.0"
@@ -386,7 +386,7 @@ Jean-Claude Beaudoin
                 "minimalist")
      :mostly-written-in ("C++"))
     ;; xcl is experimental. Lacking a lot of features. Rather slow, at least at startup.
-    
+
     (:name "Embeddable Common Lisp for Linux"
      :nickname "WCL"
      :license "Proprietary"
@@ -479,7 +479,7 @@ Jean-Claude Beaudoin
      :nickname "CormanCL"
      :license "Proprietary"
      :homepage "http://www.cormanlisp.com/index.html"
-     :documentation "http://www.cormanlisp.com/index.html"     
+     :documentation "http://www.cormanlisp.com/index.html"
      :platforms ("MS-Windows")
      :compiler ("native")
      :threads ("native")
@@ -770,8 +770,8 @@ body servant or a tireless field hand—the custom tailored genetically
 engineered humanoid replicant designed especially for your needs.  So
 come on America, let's put our team up there…
 "
-                                   
-                    
+
+
                     "
 ALL THESE WORLDS
 ARE YOURS EXCEPT
@@ -839,7 +839,7 @@ CPU WOPR XX0345-453        SYSCOMP STATUS: ALL PORTS ACTIVE
 GREETINGS PROFESSOR FALKEN
 "
                     "
-XNPUTXXXXXXXXXXXXDEF/12492.2               SHIP 
+XNPUTXXXXXXXXXXXXDEF/12492.2               SHIP
                                            KEYLAN TITAN2
 XTUAL TIME:   3 JUN                        NOSTROMO 182246
 XIGHT TIME:   5 NOV
@@ -859,7 +859,7 @@ XIGHT TIME:   5 NOV
                     "
 hello moles
 
-ever used a computer 
+ever used a computer
 before?
 "
                     "
@@ -943,7 +943,7 @@ CLASSIFIED
       (progn
         (setf *random-state* (make-random-state t))
         (set-terminal-encoding :iso-8859-1)
-        (selection-loop)        
+        (selection-loop)
         (quit))
     (error (err)
       (format *query-io* "~%It seems an error occurred: ~A~%I'm disconnecting.~%" err)
@@ -965,7 +965,7 @@ CLASSIFIED
                                 (documentation "Undocumented program.")
                                 (start-package "COMMON-LISP-USER"))
   (declare (ignorable name toplevel documentation start-package))
-  
+
   #+ccl
   (ccl:save-application
    name

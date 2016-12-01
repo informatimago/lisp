@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     None
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Graph class.
 ;;;;
 ;;;;    This is a CLOS based implementation of graphs.
@@ -24,19 +24,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -44,7 +44,7 @@
   (setf *readtable* (copy-readtable nil)))
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.GRAPH"
   (:use "COMMON-LISP"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" 
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SET")
   (:shadowing-import-from "COMMON-LISP"
@@ -88,19 +88,19 @@ See also:
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2003 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -141,7 +141,7 @@ License:
 ;; METHOD DESCRIPTION ((SELF EDGE-CLASS))
 ;; GENERIC COPY ((SELF EDGE-CLASS))
 ;; GENERIC NODES ((SELF EDGE-CLASS))
-;; GENERIC IS-BETWEEN-NODES ((SELF EDGE-CLASS) 
+;; GENERIC IS-BETWEEN-NODES ((SELF EDGE-CLASS)
 ;; GENERIC SUCCESSOR-OF ((SELF EDGE-CLASS) (NODE ELEMENT-CLASS))
 
 ;; CLASS WEIGHT-MIXIN-CLASS ()
@@ -151,16 +151,16 @@ License:
 ;; CLASS UNDIRECTED-EDGE-CLASS (EDGE-CLASS)
 ;; METHOD COPY ((SELF UNDIRECTED-EDGE-CLASS))
 ;; FUN IDENTICAL-NODES (NODES-CONS-A NODES-CONS-B)
-;; METHOD IS-BETWEEN-NODES ((SELF EDGE-CLASS) 
+;; METHOD IS-BETWEEN-NODES ((SELF EDGE-CLASS)
 ;; METHOD SUCCESSOR-OF ((SELF UNDIRECTED-EDGE-CLASS) (NODE ELEMENT-CLASS))
-;; METHOD SET-NODES ((SELF UNDIRECTED-EDGE-CLASS) 
+;; METHOD SET-NODES ((SELF UNDIRECTED-EDGE-CLASS)
 
 ;; CLASS WEIGHTED-UNDIRECTED-EDGE-CLASS
 ;; METHOD DESCRIPTION ((SELF WEIGHTED-UNDIRECTED-EDGE-CLASS))
 ;; CLASS DIRECTED-EDGE-CLASS (EDGE-CLASS)
 ;; METHOD COPY ((SELF DIRECTED-EDGE-CLASS))
 ;; METHOD NODES ((SELF DIRECTED-EDGE-CLASS))
-;; METHOD IS-BETWEEN-NODES ((SELF EDGE-CLASS) 
+;; METHOD IS-BETWEEN-NODES ((SELF EDGE-CLASS)
 ;; METHOD SUCCESSOR-OF ((SELF DIRECTED-EDGE-CLASS) (NODE ELEMENT-CLASS))
 ;; METHOD SET-NODES ((SELF DIRECTED-EDGE-CLASS)
 ;; CLASS WEIGHTED-DIRECTED-EDGE-CLASS (DIRECTED-EDGE-CLASS WEIGHT-MIXIN-CLASS)
@@ -175,16 +175,16 @@ License:
 ;; METHOD REMOVE-NODE ((SELF GRAPH-CLASS) (OLDNODE ELEMENT-CLASS))
 ;; METHOD REMOVE-NODES ((SELF GRAPH-CLASS) OLDNODELIST)
 ;; METHOD ADD-EDGE ((SELF GRAPH-CLASS) (NEWEDGE EDGE-CLASS))
-;; METHOD ADD-EDGE-BETWEEN-NODES ((SELF GRAPH-CLASS) 
+;; METHOD ADD-EDGE-BETWEEN-NODES ((SELF GRAPH-CLASS)
 ;; METHOD REMOVE-EDGE ((SELF GRAPH-CLASS) (OLDEDGE EDGE-CLASS))
 ;; METHOD REMOVE-EDGES ((SELF GRAPH-CLASS) EDGE-LIST)
 ;; METHOD REMOVE-EDGES-BETWEEN-NODES ((SELF GRAPH-CLASS)
 ;; METHOD EDGES-BETWEEN-NODES ((SELF GRAPH-CLASS)
-;; METHOD DIRECTED-EDGES-BETWEEN-NODES ((SELF GRAPH-CLASS) 
+;; METHOD DIRECTED-EDGES-BETWEEN-NODES ((SELF GRAPH-CLASS)
 ;; METHOD DIRECTED-EDGES-FROM-NODE ((SELF GRAPH-CLASS)
 ;; METHOD SUCCESSOR-NODES ((SELF GRAPH-CLASS) (NODE ELEMENT-CLASS))
 ;; METHOD ADJACENT-NODES ((SELF GRAPH-CLASS) (NODE ELEMENT-CLASS))
-;; METHOD FLOW-DISTANCE-FROM-NODE ((SELF GRAPH-CLASS) 
+;; METHOD FLOW-DISTANCE-FROM-NODE ((SELF GRAPH-CLASS)
 ;; METHOD WALK-FROM-NODE ((SELF GRAPH-CLASS) (STARTNODE ELEMENT-CLASS)
 ;; METHOD WALK-EDGES-FROM-NODE ((SELF GRAPH-CLASS)
 ;; METHOD COPY ((SELF GRAPH-CLASS) &REST KEYS)
@@ -306,7 +306,7 @@ DO:     Add a list of new NODES to the set of NODES of this graph.
 
 (defgeneric remove-node (self oldnode)
   (:documentation   "
-DO:      Remove the oldNode from the graph. 
+DO:      Remove the oldNode from the graph.
          This implies removing all the edges adjacent to the node too.
 "))
 
@@ -329,7 +329,7 @@ DO:     Add a new edge to this graph.
   (:documentation   "
 DO:     Create a new edge (of class edge-class) between `nodeA' and `nodeB'.
         and add it to this graph.
-        If the edge is directed, 
+        If the edge is directed,
         then `nodeA' is the `from' node and `nodeB' the `to' node.
 "))
 
@@ -393,21 +393,21 @@ NOTE:   For directed graphs, an adjacent node is either a predecessor
   (:documentation   "
 DO:     Compute for each node in this graph the distance from the startNode,
         and store it as a property named prop-name.
-NOTE:   If the graph is not connex, then some distances will be nil, 
+NOTE:   If the graph is not connex, then some distances will be nil,
         meaning infinity.
 "))
 
 
 (defgeneric walk-from-node (self startnode lambda-body)
   (:documentation   "
-DO:     Walk the graph starting form startNode, calling lambda-body 
-        with each node as argument. 
+DO:     Walk the graph starting form startNode, calling lambda-body
+        with each node as argument.
 "))
 
 
 (defgeneric walk-edges-from-node (self startnode lambda-body)
   (:documentation   "
-DO:     Walk the graph starting form startNode, calling lambda-body 
+DO:     Walk the graph starting form startNode, calling lambda-body
         with each edges as argument. Since it's the edges that are passed
         to lambda-body, one node can be \"walked\" several times either as
         `from' or `to' node or different edges.
@@ -437,7 +437,7 @@ It can be used to store markers while walking sets or graphs containing them."))
     :reader   ident
     :type     symbol
     :documentation "A unique symbol identifying this element.")
-   (properties 
+   (properties
     :initform nil
     :initarg  :properties
     :accessor properties
@@ -455,7 +455,7 @@ It can be used to store markers while walking sets or graphs containing them."))
 DO:     Initalize the instance id.
 "
   (declare (ignore initargs))
-  (setf (slot-value self 'ident) 
+  (setf (slot-value self 'ident)
         (gensym (format nil "~A-"
                         (string-upcase (class-name (class-of self))))))
   self)
@@ -528,7 +528,7 @@ DO:     Remove the property named `prop-name' from the property list of
   "
 RETURN: A string describing this element.
 "
-  (format nil "<An instance of ~A with ~D elements>" 
+  (format nil "<An instance of ~A with ~D elements>"
           (class-name (class-of self)) (cardinal self)))
 
 
@@ -644,7 +644,7 @@ RETURN: A list of elements that have as property PROPERTY the value VALUE.
     :documentation "A hashtable used to index the elements in this set."))
   (:documentation "This is a specialized kind of set that maintains a hashtable
 index of its elements to be able to retrieve them rapidly."))
-               
+
 
 (defmethod contains-element ((self hashed-set-class) (anelement element-class))
   "
@@ -679,9 +679,9 @@ POST:   already_in       ==> (CARDINAL self) == old_CARDINAL
 RETURN: A string describing this element.
 "
   (let ((nodes (nodes self)))
-    (format nil "<A ~A between { ~A and ~A }>" 
-            (class-name (class-of self)) 
-            (description (car  nodes)) 
+    (format nil "<A ~A between { ~A and ~A }>"
+            (class-name (class-of self))
+            (description (car  nodes))
             (description (cdr nodes)))))
 
 
@@ -706,7 +706,7 @@ RETURN: Whether this edge is between `nodeA' and `nodeB'.
 (defgeneric successor-of (self node)
   (:documentation "
 RETURN: If node is a node of the edge, then return its successor or nil.
-        That is, for an undirected edge e, 
+        That is, for an undirected edge e,
              (and (eq (SUCCESSOR-OF e (car (NODES e))) (cdr (NODES e)))
                   (eq (SUCCESSOR-OF e (cdr (NODES e))) (car (NODES e))) )
         while for a directed edge d:
@@ -789,7 +789,7 @@ RETURN: Whether NODES-cons-a and NODES-cons-b contain the same NODES.
 ;;        (IDENTICAL-NODES (NODES self) (NODES other)))
 ;;   )
 
-(defmethod is-between-nodes ((self edge-class) 
+(defmethod is-between-nodes ((self edge-class)
                              (nodea element-class)  (nodeb element-class))
   "
 RETURN: Whether this edge is between `nodeA' and `nodeB'.
@@ -809,7 +809,7 @@ RETURN: If node is a node of this edge, then the other node, else nil.
       (t nil))))
 
 
-(defmethod set-nodes ((self undirected-edge-class) 
+(defmethod set-nodes ((self undirected-edge-class)
                       (nodea element-class) (nodeb element-class))
   "
 DO:     set the NODES of this edge.
@@ -818,7 +818,7 @@ DO:     set the NODES of this edge.
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defclass weighted-undirected-edge-class 
+(defclass weighted-undirected-edge-class
     (undirected-edge-class weight-mixin-class)
   ()
   (:documentation
@@ -830,8 +830,8 @@ DO:     set the NODES of this edge.
 RETURN: A string describing this element.
 "
   (let ((nodes (nodes self)))
-    (format nil "<A ~A between { ~A and ~A } weighting ~A>" 
-            (class-name (class-of self)) 
+    (format nil "<A ~A between { ~A and ~A } weighting ~A>"
+            (class-name (class-of self))
             (description (car  nodes))
             (description (cdr nodes))
             (weight self))))
@@ -887,7 +887,7 @@ NOTE:   Use the accessor methods `from' and `to' to get the wanted node.
 ;;   )
 
 
-(defmethod is-between-nodes ((self directed-edge-class) 
+(defmethod is-between-nodes ((self directed-edge-class)
                              (nodea element-class)  (nodeb element-class))
   "
 RETURN: Whether this edge is between `nodeA' and `nodeB'.
@@ -925,7 +925,7 @@ DO:     set the NODES of this edge.
 RETURN: A string describing this element.
 "
   (let ((nodes (nodes self)))
-    (format nil "<A ~A between { ~A and ~A } weighting ~A>" 
+    (format nil "<A ~A between { ~A and ~A } weighting ~A>"
             (class-name (class-of self))
             (description (car  nodes))
             (description (cdr nodes))
@@ -973,9 +973,9 @@ RETURN: Whether `item' is a subclass of EDGE-CLASS (not EDGE-CLASS itself).
     :accessor edge-class
     ;;:type     (satisfies SUBCLASS-OF-EDGE-P)
     :documentation
-    "The class used to make new edges in this graph. 
+    "The class used to make new edges in this graph.
 Default is UNDIRECTED-EDGE-CLASS."))
-  (:documentation 
+  (:documentation
    "A graph of elements. By default, it's a undirected graph."))
 
 
@@ -1000,8 +1000,8 @@ DO:     Initalize the instance nodes and edges.
   "
 RETURN: A string describing this element.
 "
-  (format nil "<A ~A with ~D NODES and ~D edges>" 
-          (class-name (class-of self)) 
+  (format nil "<A ~A with ~D NODES and ~D edges>"
+          (class-name (class-of self))
           (cardinal (nodes self))
           (cardinal (edges self))))
 
@@ -1023,7 +1023,7 @@ DO:     Add a list of new NODES to the set of NODES of this graph.
 
 (defmethod remove-node ((self graph-class) (oldnode element-class))
   "
-DO:      Remove the oldNode from the graph. 
+DO:      Remove the oldNode from the graph.
          This implies removing all the edges adjacent to the node too.
 "
   (when (contains-element (nodes self) oldnode)
@@ -1051,12 +1051,12 @@ DO:     Add a new edge to this graph.
     (add-element (edges self) newedge)))
 
 
-(defmethod add-edge-between-nodes ((self graph-class) 
+(defmethod add-edge-between-nodes ((self graph-class)
                                    (nodea element-class) (nodeb element-class))
   "
 DO:     Create a new edge (of class edge-class) between `nodeA' and `nodeB'.
         and add it to this graph.
-        If the edge is directed, 
+        If the edge is directed,
         then `nodeA' is the `from' node and `nodeB' the `to' node.
 "
   (let ((edge (make-instance (edge-class self))))
@@ -1101,7 +1101,7 @@ RETURN: A list of edges existing between the `nodeA' and `nodeB'.
                      (is-between-nodes edge nodea nodeb))))
 
 
-(defmethod directed-edges-between-nodes ((self graph-class) 
+(defmethod directed-edges-between-nodes ((self graph-class)
                                          (fromnode element-class)
                                          (tonode element-class))
   "
@@ -1152,24 +1152,24 @@ NOTE:   For directed graphs, an adjacent node is either a predecessor
      (edges self)
      (lambda (edge)
        (let ((ns (nodes edge)))
-         (cond 
-           ((eq node (car ns)) 
+         (cond
+           ((eq node (car ns))
             (unless (member (cdr ns) result) (push (cdr ns) result)))
-           ((eq node (cdr ns)) 
+           ((eq node (cdr ns))
             (unless (member (car ns) result) (push (car ns) result)))))))
     result))
 
 
-(defmethod flow-distance-from-node ((self graph-class) 
+(defmethod flow-distance-from-node ((self graph-class)
                                     (startnode element-class)
                                     (prop-name symbol))
   "
 DO:     Compute for each node in this graph the distance from the startNode,
         and store it as a property named prop-name.
-NOTE:   If the graph is not connex, then some distances will be nil, 
+NOTE:   If the graph is not connex, then some distances will be nil,
         meaning infinity.
 "
-  (perform-with-elements (nodes self) (lambda (node) 
+  (perform-with-elements (nodes self) (lambda (node)
                                         (set-property node prop-name nil)))
   (when (contains-element (nodes self) startnode)
     (set-property startnode prop-name 0)
@@ -1192,12 +1192,12 @@ NOTE:   If the graph is not connex, then some distances will be nil,
 (defmethod walk-from-node ((self graph-class) (startnode element-class)
                            lambda-body)
   "
-DO:     Walk the graph starting form startNode, calling lambda-body 
-        with each node as argument. 
+DO:     Walk the graph starting form startNode, calling lambda-body
+        with each node as argument.
 "
   (let ((stamp (gensym "walked-")))
     (when (contains-element (nodes self) startnode)
-      (perform-with-elements (nodes self) 
+      (perform-with-elements (nodes self)
                              (lambda (node) (set-property node stamp nil)))
       (let ( (cur-nodes (list startnode))
             cur-node  suc-nodes  )
@@ -1212,23 +1212,23 @@ DO:     Walk the graph starting form startNode, calling lambda-body
           (dolist (suc-node suc-nodes)
             (unless (get-property suc-node stamp)
               (push suc-node cur-nodes)) )))
-      (perform-with-elements (nodes self) 
+      (perform-with-elements (nodes self)
                              (lambda (node) (delete-property node stamp))))))
 
 
 (defmethod walk-edges-from-node ((self graph-class)
                                  (startnode element-class) lambda-body)
   "
-DO:     Walk the graph starting form startNode, calling lambda-body 
+DO:     Walk the graph starting form startNode, calling lambda-body
         with each edges as argument. Since it's the edges that are passed
         to lambda-body, one node can be \"walked\" several times either as
         `from' or `to' node or different edges.
 "
   (let ((stamp (gensym "walked-")))
     (when (contains-element (nodes self) startnode)
-      (perform-with-elements (edges self) 
+      (perform-with-elements (edges self)
                              (lambda (item) (set-property item stamp nil)))
-      (perform-with-elements (nodes self) 
+      (perform-with-elements (nodes self)
                              (lambda (item) (set-property item stamp nil)))
       (set-property startnode stamp t)
       (let ((cur-nodes (list startnode))
@@ -1243,9 +1243,9 @@ DO:     Walk the graph starting form startNode, calling lambda-body
               (unless (get-property (to edge) stamp)
                 (set-property (to edge) stamp t)
                 (push (to edge) cur-nodes))))))
-      (perform-with-elements (edges self) 
+      (perform-with-elements (edges self)
                              (lambda (item) (delete-property item stamp)))
-      (perform-with-elements (nodes self) 
+      (perform-with-elements (nodes self)
                              (lambda (item) (delete-property item stamp))))))
 
 
@@ -1260,12 +1260,12 @@ NOTE:   By default, the NODES are the same, but the edges are duplicated.
             :COPY-EDGES       default: T;   NIL ==> (NOT COPY-NODE)
         The following combination are valid:
         COPY-NODES      COPY-EDGE        You get a deep COPY of the graph,
-                                         where you can change anything 
+                                         where you can change anything
                                          independtly from the orginal.
         (NOT COPY-NODES) COPY-EDGE       You get a new graph with new edges,
                                          but the same NODES.
         (NOT COPY-NODES) (NOT COPY-EDGE) You get a new graph with the same
-                                         edges and the same NODES. But you 
+                                         edges and the same NODES. But you
                                          still can add or remove NODES or
                                          edges to make it different from the
                                          original graph.
@@ -1279,11 +1279,11 @@ NOTE:   By default, the NODES are the same, but the edges are duplicated.
     (unless (not copy-edges) (setf copy-edges t))
     (when   (not copy-edges) (setf copy-nodes nil))
     (when   copy-nodes       (setf copy-edges t))
-    (if copy-nodes 
-        (setf node-hash (make-hash-table :test 'eq 
+    (if copy-nodes
+        (setf node-hash (make-hash-table :test 'eq
                                          :size (cardinal (nodes self)))
-            
-              new-nodes (make-instance 'set-class 
+
+              new-nodes (make-instance 'set-class
                                        :elements (map-elements
                                                   'list
                                                   (nodes self)
@@ -1293,8 +1293,8 @@ NOTE:   By default, the NODES are the same, but the edges are duplicated.
                                                       new-node)))))
         (setf new-nodes  (nodes self)))
     (if copy-edges
-        (setf new-edges 
-              (make-instance 'set-class 
+        (setf new-edges
+              (make-instance 'set-class
                              :elements (map-elements 'list
                                                      (edges self)
                                                      (lambda (edge)
@@ -1302,12 +1302,12 @@ NOTE:   By default, the NODES are the same, but the edges are duplicated.
                                                              nodes)
                                                          (when copy-nodes
                                                            (setq nodes (nodes new-edge))
-                                                           (set-nodes new-edge 
+                                                           (set-nodes new-edge
                                                                       (gethash (car nodes) node-hash)
                                                                       (gethash (cdr nodes) node-hash)))
                                                          new-edge)))))
         (setf new-edges (edges self)))
-    (make-instance (class-of self) 
+    (make-instance (class-of self)
                    :nodes new-nodes
                    :edges new-edges
                    :edge-class (edge-class self))))
@@ -1326,7 +1326,7 @@ RETURN: A list of NODES that have as property PROPERTY the value VALUE.
 DO: Prints a description of the graph on the *STANDARD-OUTPUT*.
 "
   (format t "~A {~%" (description self))
-  (perform-with-elements 
+  (perform-with-elements
    (nodes self)
    (lambda (node) (format t "   node ~A~%"  (description node))))
   (perform-with-elements

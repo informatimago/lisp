@@ -24,7 +24,7 @@
                  (:file "virtual-fs"           :depends-on ("filenames"))
                  (:file "files"                :depends-on ("streams" "filenames" "virtual-fs"))
                  (:file "vfs-file-stream"      :depends-on ("streams" "filenames" "virtual-fs"))
-                 
+
                  (:file "string-input"         :depends-on ("streams" "filenames"))
                  (:file "string-output"        :depends-on ("streams" "filenames"))
                  (:file "concatenated-stream"  :depends-on ("streams" "filenames"))

@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Compute ISBN check digit.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;***************************************************************************
@@ -41,7 +41,7 @@
     Compute ISBN check digit.
 
     Copyright Pascal J. Bourguignon 2004 - 2004
-   
+
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
     as published by the Free Software Foundation; either version
@@ -58,11 +58,11 @@
     (error "An ISBN must be a string of 9 digits."))
   (aref "0123456789X"
         (- 11 (mod (reduce (function +)
-                           (mapcar (function *) 
-                                   (map 'list 
+                           (mapcar (function *)
+                                   (map 'list
                                         (lambda (ch) (parse-integer (string ch)))
                                         isbn)
-                                   '(10 9 8 7 6 5 4 3 2))) 
+                                   '(10 9 8 7 6 5 4 3 2)))
                    11))));;COMPUTE-ISBN-CHECK
 
 

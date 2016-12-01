@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    See package docstring.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2013 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -71,19 +71,19 @@ present semi-standard character names and other ASCII features.
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2013 - 2013
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -101,7 +101,7 @@ License:
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  
+
   (defparameter *standard-characters*
     #.(concatenate 'string
                    " !\"#$%&'()*+,-./0123456789:;<=>?"
@@ -170,7 +170,7 @@ DO:         If the implementation has the semi standard character
 
 ;; Must be a separate form:
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  
+
   (defun standard-character-is-ascii-coded-p ()
     "Whether the char-code of the standard-characters are their ASCII codes."
     (load-time-value
@@ -196,15 +196,15 @@ DO:         If the implementation has the semi standard character
            #+has-return    (=  13 (char-code #\return))
            #+has-escape    (=  27 (char-code #\escape))
            #+has-rubout    (= 127 (char-code #\rubout)))))
-  
+
   #-mocl
   (progn
     (when (has-ascii-code-p)
       (pushnew :has-ascii-code *features*))
-    
+
     #+has-return   (when (char= #\newline #\return)
                      (pushnew :newline-is-return *features*))
-    
+
     #+has-linefeed (when (char= #\newline #\linefeed)
                      (pushnew :newline-is-linefeed *features*)))
 

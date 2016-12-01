@@ -16,26 +16,26 @@
 ;; X-Trace: edtnps84 1116689716 142.59.106.101 (Sat, 21 May 2005 09:35:16 MDT)
 ;; NNTP-Posting-Date: Sat, 21 May 2005 09:35:16 MDT
 ;; Xref: news.easynet.es comp.lang.lisp:87328
-;; 
+;;
 ;; Stefan Ram wrote:
-;; 
+;;
 ;; >   draft-rivest-sexp-00.txt introduces Base64-atom-literals, like
 ;; >   |YWJj|, which are not part of most Lisp-implementations,
 ;; >   AFAIK, and on the other hand, does not seem to include dotted
 ;; >   pairs.
-;; > 
-;; 
+;; >
+;;
 ;; Speaking of which, here is a possible parser for Rivest's Canonical/Transport
 ;; sexprs (For LispWorks),
-;; 
+;;
 ;; CL-USER 8 > (parse-rivest-sexp "(4:icon[12:image/bitmap]9:xxxxxxxxx)")
 ;; ("icon" (:DISPLAY-ENCODED "image/bitmap" #(120 120 120 120 120 120 120 120 120)))
 ;; NIL
-;; 
+;;
 ;; CL-USER 9 > (parse-rivest-sexp "(7:subject(3:ref5:alice6:mother))")
 ;; ("subject" ("ref" "alice" "mother"))
 ;; NIL
-;; 
+;;
 ;; Wade
 
 (eval-when (:compile-toplevel :load-toplevel :execute)

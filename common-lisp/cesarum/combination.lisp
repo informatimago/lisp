@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    See defpackage documentation string.
 ;;;;
 ;;;;AUTHORS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2005 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -53,19 +53,19 @@ See also: <http://fr.wikipedia.org/wiki/Combinatoire>
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2003 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -97,20 +97,20 @@ NOTE:       It must be overriden by subclasses to compute the
 
 (defgeneric initialize (self)
   (:documentation "
-NOTE:       It must be overriden by subclasses to initialize the 
-            enumeration. It must compute the _cardinal, and set 
+NOTE:       It must be overriden by subclasses to initialize the
+            enumeration. It must compute the _cardinal, and set
             the_index either to 0 or to _cardinal. If
-            _index != _cardinal then the choice array must be 
+            _index != _cardinal then the choice array must be
             set to the first enumerated element.
 "))
 
 
 (defgeneric next (self)
   (:documentation "
-NOTE:       It must be overriden by subclasses to step to the next 
-            element of the enumeration. If _index<_cardinal, then 
-            it must increment _index ; if _index¹_cardinal then the 
-            choice array must be set to the first enumerated 
+NOTE:       It must be overriden by subclasses to step to the next
+            element of the enumeration. If _index<_cardinal, then
+            it must increment _index ; if _index¹_cardinal then the
+            choice array must be set to the first enumerated
             element.
 "))
 
@@ -125,14 +125,14 @@ RETURN:     the number of elements enumerated by this object.
 (defgeneric index (self)
   (:documentation "
 PRE:        !atBegining()..
-RETURN:     the index of the current element enumerated by 
+RETURN:     the index of the current element enumerated by
             this object.
 "))
 
 
 (defgeneric element-size (self)
   (:documentation "
-RETURN:     the size of each element returned by getCurrentElement 
+RETURN:     the size of each element returned by getCurrentElement
             and getNextElement in the choice arrays.
 "))
 
@@ -146,9 +146,9 @@ DO:         resets the enumeration.
 
 (defgeneric at-beginning-p (self)
   (:documentation  "
-RETURN:     whether the reset() method has been called and 
-            getNextElement() (or getCurrentElement()) has not 
-            already been called. 
+RETURN:     whether the reset() method has been called and
+            getNextElement() (or getCurrentElement()) has not
+            already been called.
 "))
 
 
@@ -157,28 +157,28 @@ RETURN:     whether the reset() method has been called and
 PRE:        cardinal()>0.
 POST:       !atBegining(),
 RETURN:     A vector of cardinal: choice.
-DO:         Sets the choice array to the current enumerated 
-            element. (ie. the last element retrived with the 
-            getNextElement method). The choice array must contain 
+DO:         Sets the choice array to the current enumerated
+            element. (ie. the last element retrived with the
+            getNextElement method). The choice array must contain
             at least elementSize() integers.
 "))
 
 (defgeneric get-next-element (self)
   (:documentation  "
-PRE:        cardinal()>0, !done-p(), atBegining()=b, 
+PRE:        cardinal()>0, !done-p(), atBegining()=b,
             (!b => index()=a).
 POST:       !atBegining(), (!b => index()=a+1),
 RETURN:     A vector of cardinal: choice; done-p.
 DO:         Computes the next element to be enumerated and sets the
-            choice array to it. It returns TRUE when the last 
-            element is retrived, ie. all elements have been 
-            enumerated. The choice array must contain at least 
+            choice array to it. It returns TRUE when the last
+            element is retrived, ie. all elements have been
+            enumerated. The choice array must contain at least
             elementSize() integers.
 "))
 
 (defgeneric done-p (self)
   (:documentation  "
-RETURN:     !atBegining() 
+RETURN:     !atBegining()
             && ((cardinal()=0) || (index()=cardinal())).
 "))
 
@@ -214,7 +214,7 @@ RETURN:     !atBegining()
   "
 PRE:        c=card.
 POST:       baseCardinal()=c.
-DO:         informs SELF about the number of elements in the set of 
+DO:         informs SELF about the number of elements in the set of
             which this is function.
 "
   (when (/= (base-cardinal self) card)
@@ -226,7 +226,7 @@ DO:         informs SELF about the number of elements in the set of
 (defmethod set-element-size ((self set-functor) size)
   "
 PRE:        s=size.
-POST:       elementSize()=s. 
+POST:       elementSize()=s.
 DO:         Sets the elementSize() parameter.
 "
   (when (/= (element-size self) size)
@@ -261,14 +261,14 @@ DO:         Sets the elementSize() parameter.
             (next self))
         (values (get-current-element self) (done-p self)))
       (values nil nil)))
-    
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Arrangement Sans Repeat
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-    
+
 (defclass arrangement-sans-repeat (set-functor)
   ((done  :type boolean)
    (taken :type (vector boolean)))
@@ -277,7 +277,7 @@ DO:         Sets the elementSize() parameter.
 
 (defmethod done-p ((self arrangement-sans-repeat))
   (= (aref (slot-value self 'choice) 0) (base-cardinal self)))
-    
+
 
 (defun arrangement (k n)
   "
@@ -427,7 +427,7 @@ RETURN: The number of arrangement of k elements (without repeat) taken amongst n
      for i from 0 below (element-size self)
      do (setf (aref choice i) i))
   self)
-    
+
 
 (defun next-step (choice limit i)
   (incf (aref choice i))

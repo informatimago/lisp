@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Tool to extract multics archives.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -125,14 +125,14 @@
 
 #-(and) (progn
 
-          
+
          (let ((archive-dir  #P"~/Downloads/")
                (out-dir-root #P"/tmp/multics/"))
-           (dolist (archive '("bound_emacs_ctls_.s.archive" 
-                              "bound_emacs_full_.s.archive" 
-                              "bound_emacs_macros_.s.archive" 
-                              "bound_emacs_packages_.s.archive" 
-                              "bound_emacs_rmail_.s.archive" 
+           (dolist (archive '("bound_emacs_ctls_.s.archive"
+                              "bound_emacs_full_.s.archive"
+                              "bound_emacs_macros_.s.archive"
+                              "bound_emacs_packages_.s.archive"
+                              "bound_emacs_rmail_.s.archive"
                               "bound_multics_emacs_.s.archive"))
              (let* ((name (subseq archive (length "bound_") (1- (position #\. archive))))
                     (outdir (merge-pathnames (make-pathname :directory (list :relative name))
@@ -142,11 +142,11 @@
                #-(and) (map nil 'print (directory (merge-pathnames "*.*" outdir))))))
 
 
-         
+
          (extract #P"~/Downloads/bound_multics_emacs_.s.archive"
                   :output-directory #P"/tmp/me/" :verbose t)
          (directory #P"/tmp/me/*.*")
-         
+
          )
 
 

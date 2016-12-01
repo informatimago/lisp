@@ -21,19 +21,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -136,7 +136,7 @@ EXAMPLES:
           (write-html (doctype* :loose))
           (write-html
            (html* '()
-                  (list 
+                  (list
                    (head* '()
                           (list (title* '() (list (pcdata* \"title\")))))
                    (body* (list :color \"#123456\" \"background-color\" \"red\")
@@ -158,19 +158,19 @@ EXAMPLES:
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2003 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -249,7 +249,7 @@ RETURN: ELEMENT.
     (queue-enqueue *html-output-elements* element)
     element)
 
-  
+
   (defun collect-elements (elements)
     "
 DO:     Collect the ELEMENTS into the current *HTML-OUTPUT-ELEMENTS*.
@@ -402,7 +402,7 @@ RETURN:  An element storing the result of formating the CONTROL string
     "
 RETURN:  An element storing the result of formating the CONTROL string
          with the ARGUMENTS as a HTML comment.
-"   
+"
     (apply (function comment*) control arguments))
 
 
@@ -440,7 +440,7 @@ RETURN:  An element storing the result of formating the CONTROL string
 
   (defgeneric pcdata-data (element)
     (:documentation "The PCDATA text."))
-  
+
   (defclass pcdata (element)
     ((data :initarg :data :reader pcdata-data :type string))
     (:documentation "Represents PCDATA text."))
@@ -471,7 +471,7 @@ RETURN:  An element storing the result of formating the CONTROL string
     '(p h1 h2 h3 h4 h5 h6 ul ol pre dl div noscript blockquote hr form table fieldset address
       br dt dd li textarea thead tbody tfoot tr td
       html head title meta link style script noscript body))
-  
+
   (defclass element-with-tag (element)
     ((tag        :initarg :tag
                  :reader element-tag
@@ -821,7 +821,7 @@ RETURN:      The generated HTML.
           '('done)))
 
 ;; (eval-when (:compile-toplevel :load-toplevel)
-;;   
+;;
 ;;   #+(or allegro ccl ecl) (LOAD #P"PACKAGES:com;informatimago;common-lisp;html401.lisp")
 ;;   #-(or allegro ccl ecl) (LOAD (merge-pathnames
 ;;                                 (make-pathname :case :common
@@ -833,7 +833,7 @@ RETURN:      The generated HTML.
 ;;                                 (print (or *compile-file-pathname*
 ;;                                            *load-pathname*))
 ;;                                 nil))
-;;   
+;;
 ;;   (generate))
 
 
@@ -847,9 +847,9 @@ RETURN:      The generated HTML.
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    HTML 4.01 DTD
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -857,19 +857,19 @@ RETURN:      The generated HTML.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    GPL
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software; you can redistribute it and/or
 ;;;;    modify it under the terms of the GNU General Public License
 ;;;;    as published by the Free Software Foundation; either version
 ;;;;    2 of the License, or (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be
 ;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
 ;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 ;;;;    PURPOSE.  See the GNU General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU General Public
 ;;;;    License along with this program; if not, write to the Free
 ;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
@@ -985,7 +985,7 @@ RETURN:      The generated HTML.
 
 
 
- (defattribute abbr 
+ (defattribute abbr
      (td th)
    (%text)  :implied
    ()  "abbreviation for header cell")
@@ -995,7 +995,7 @@ RETURN:      The generated HTML.
    (%charsets)  :implied
    ()  "list of supported charsets")
 
- (defattribute accept 
+ (defattribute accept
      (form input)
    (%contenttypes)  :implied
    ()  "list of MIME types for file upload")
@@ -1005,7 +1005,7 @@ RETURN:      The generated HTML.
    (%character)  :implied
    ()  "accessibility key character")
 
- (defattribute action 
+ (defattribute action
      (form)
    (%uri)  :required
    ()  "server-side form handler")
@@ -1019,7 +1019,7 @@ RETURN:      The generated HTML.
    (%calign)  :implied
    (:deprecated  :loose-dtd)  "relative to table")
 
- (defattribute align 
+ (defattribute align
      (applet iframe img input object)
    (%ialign)  :implied
    (:deprecated  :loose-dtd)  "vertical or horizontal alignment")
@@ -1039,32 +1039,32 @@ RETURN:      The generated HTML.
    (or  "LEFT" "CENTER" "RIGHT")  :implied
    (:deprecated  :loose-dtd)  "")
 
- (defattribute align 
+ (defattribute align
      (div h1 h2 h3 h4 h5 h6 p)
    (or  "LEFT" "CENTER" "RIGHT" "JUSTIFY")  :implied
    (:deprecated  :loose-dtd)  "align, text alignment")
 
- (defattribute align 
+ (defattribute align
      (col colgroup tbody td tfoot th thead tr)
    (or  "LEFT" "CENTER" "RIGHT" "JUSTIFY" "CHAR")  :implied
    ()  "")
 
- (defattribute alink 
+ (defattribute alink
      (body)
    (%color)  :implied
    (:deprecated  :loose-dtd)  "color of selected links")
 
- (defattribute alt 
+ (defattribute alt
      (applet)
    (%text)  :implied
    (:deprecated  :loose-dtd)  "short description")
 
- (defattribute alt 
+ (defattribute alt
      (area img)
    (%text)  :required
    ()  "short description")
 
- (defattribute alt 
+ (defattribute alt
      (input)
    (cdata)  :implied
    ()  "short description")
@@ -1079,7 +1079,7 @@ RETURN:      The generated HTML.
    (cdata)  :implied
    ()  "space-separated list of URIs")
 
- (defattribute axis 
+ (defattribute axis
      (td th)
    (cdata)  :implied
    ()  "comma-separated list of related headers")
@@ -1129,52 +1129,52 @@ RETURN:      The generated HTML.
    (%length)  :implied
    ()  "spacing between cells")
 
- (defattribute char 
+ (defattribute char
      (col colgroup tbody td tfoot th thead tr)
    (%character)  :implied
    ()  "alignment char, e.g. char=':'")
 
- (defattribute charoff 
+ (defattribute charoff
      (col colgroup tbody td tfoot th thead tr)
    (%length)  :implied
    ()  "offset for alignment char")
 
- (defattribute charset 
+ (defattribute charset
      (a link script)
    (%charset)  :implied
    ()  "char encoding of linked resource")
 
- (defattribute checked 
+ (defattribute checked
      (input)
    (checked)  :implied
    ()  "for radio buttons and check boxes")
 
- (defattribute cite 
+ (defattribute cite
      (blockquote q)
    (%uri)  :implied
    ()  "URI for source document or msg")
 
- (defattribute cite 
+ (defattribute cite
      (del ins)
    (%uri)  :implied
    ()  "info on reason for change")
 
- (defattribute class 
+ (defattribute class
      (:all-elements-but base basefont head html meta param script style title)
    (cdata)  :implied
    ()  "space-separated list of classes")
 
- (defattribute classid 
+ (defattribute classid
      (object)
    (%uri)  :implied
    ()  "identifies an implementation")
 
- (defattribute clear 
+ (defattribute clear
      (br)
    (or  "LEFT" "ALL" "RIGHT" "NONE")  "NONE"
    (:deprecated  :loose-dtd)  "control of text flow")
 
- (defattribute code 
+ (defattribute code
      (applet)
    (cdata)  :implied
    (:deprecated  :loose-dtd)  "applet class file")
@@ -1209,57 +1209,57 @@ RETURN:      The generated HTML.
    (number)  :required
    ()  "")
 
- (defattribute colspan 
+ (defattribute colspan
      (td th)
    (number) "1"
    ()  "number of cols spanned by cell")
 
- (defattribute compact 
+ (defattribute compact
      (dir dl menu ol ul)
    (compact)  :implied
    (:deprecated  :loose-dtd)  "reduced interitem spacing")
 
- (defattribute content 
+ (defattribute content
      (meta)
    (cdata)  :required
    ()  "associated information")
 
- (defattribute coords 
+ (defattribute coords
      (area)
    (%coords)  :implied
    ()  "comma-separated list of lengths")
 
- (defattribute coords 
+ (defattribute coords
      (a)
    (%coords)  :implied
    ()  "for use with client-side image maps")
 
- (defattribute data 
+ (defattribute data
      (object)
    (%uri)  :implied
    ()  "reference to object's data")
 
- (defattribute datetime 
+ (defattribute datetime
      (del ins)
    (%datetime)  :implied
    ()  "date and time of change")
 
- (defattribute declare 
+ (defattribute declare
      (object)
    (declare)  :implied
    ()  "declare but don't instantiate flag")
 
- (defattribute defer 
+ (defattribute defer
      (script)
    (defer)  :implied
    ()  "UA may defer execution of script")
 
- (defattribute dir 
+ (defattribute dir
      (:all-elements-but applet base basefont bdo br frame frameset iframe param script)
    (or  "LTR" "RTL")  :implied
    ()  "direction for weak/neutral text")
 
- (defattribute dir 
+ (defattribute dir
      (bdo)
    (or  "LTR" "RTL")  :required
    ()  "directionality")
@@ -1269,7 +1269,7 @@ RETURN:      The generated HTML.
    (disabled)  :implied
    ()  "unavailable in this context")
 
- (defattribute enctype 
+ (defattribute enctype
      (form)
    (%contenttype)
    "application/x-www-form-urlencoded"
@@ -1280,12 +1280,12 @@ RETURN:      The generated HTML.
    (cdata)  :implied
    (:deprecated  :loose-dtd)  "comma-separated list of font names")
 
- (defattribute for 
+ (defattribute for
      (label)
    (idref)  :implied
    ()  "matches field ID value")
 
- (defattribute frame 
+ (defattribute frame
      (table)
    (%tframe)  :implied
    ()  "which parts of frame to render")
@@ -1297,7 +1297,7 @@ RETURN:      The generated HTML.
    :frameset-dtd
    "request frame borders?")
 
- (defattribute headers 
+ (defattribute headers
      (td th)
    (idrefs)  :implied
    ()  "list of id's for header cells")
@@ -1307,7 +1307,7 @@ RETURN:      The generated HTML.
    (%length)  :implied
    (:loose-dtd)  "frame height")
 
- (defattribute height 
+ (defattribute height
      (td th)
    (%length)  :implied
    (:deprecated  :loose-dtd)  "height for cell")
@@ -1322,22 +1322,22 @@ RETURN:      The generated HTML.
    (%length)  :required
    (:deprecated  :loose-dtd)  "initial height")
 
- (defattribute href 
+ (defattribute href
      (a area link)
    (%uri)  :implied
    ()  "URI for linked resource")
 
- (defattribute href 
+ (defattribute href
      (base)
    (%uri)  :implied
    ()  "URI that acts as base URI")
 
- (defattribute hreflang 
+ (defattribute hreflang
      (a link)
    (%languagecode)  :implied
    ()  "language code")
 
- (defattribute hspace 
+ (defattribute hspace
      (applet img object)
    (%pixels)  :implied
    (:deprecated  :loose-dtd)  "horizontal gutter")
@@ -1347,12 +1347,12 @@ RETURN:      The generated HTML.
    (name)  :implied
    ()  "HTTP response header name")
 
- (defattribute id 
+ (defattribute id
      (:all-elements-but base head html meta script style title)
    (id)  :implied
    ()  "document-wide unique id")
 
- (defattribute ismap 
+ (defattribute ismap
      (img input)
    (ismap)  :implied
    ()  "use server-side image map")
@@ -1367,7 +1367,7 @@ RETURN:      The generated HTML.
    (%text)  :required
    ()  "for use in hierarchical menus")
 
- (defattribute lang 
+ (defattribute lang
      (:all-elements-but applet base basefont br frame frameset iframe param script)
    (%languagecode)  :implied
    ()  "language code")
@@ -1377,7 +1377,7 @@ RETURN:      The generated HTML.
    (cdata)  :implied
    (:deprecated  :loose-dtd)  "predefined script language name")
 
- (defattribute link 
+ (defattribute link
      (body)
    (%color)  :implied
    (:deprecated  :loose-dtd)  "color of links")
@@ -1407,17 +1407,17 @@ RETURN:      The generated HTML.
    (number)  :implied
    ()  "max chars for text fields")
 
- (defattribute media 
+ (defattribute media
      (style)
    (%mediadesc)  :implied
    ()  "designed for use with these media")
 
- (defattribute media 
+ (defattribute media
      (link)
    (%mediadesc)  :implied
    ()  "for rendering on these media")
 
- (defattribute method 
+ (defattribute method
      (form)
    (or  "GET" "POST")  "GET"
    ()  "HTTP method used to submit the form")
@@ -1442,47 +1442,47 @@ RETURN:      The generated HTML.
    (cdata)  :implied
    ()  "field name")
 
- (defattribute name 
+ (defattribute name
      (form)
    (cdata)  :implied
    ()  "name of form for scripting")
 
- (defattribute name 
+ (defattribute name
      (frame iframe)
    (cdata)  :implied
    (:frameset-dtd)  "name of frame for targetting")
 
- (defattribute name 
+ (defattribute name
      (img)
    (cdata)  :implied
    ()  "name of image for scripting")
 
- (defattribute name 
+ (defattribute name
      (a)
    (cdata)  :implied
    ()  "named link end")
 
- (defattribute name 
+ (defattribute name
      (input object)
    (cdata)  :implied
    ()  "submit as part of form")
 
- (defattribute name 
+ (defattribute name
      (map)
    (cdata)  :required
    ()  "for reference by usemap")
 
- (defattribute name 
+ (defattribute name
      (param)
    (cdata)  :required
    ()  "property name")
 
- (defattribute name 
+ (defattribute name
      (meta)
    (name)  :implied
    ()  "metainformation name")
 
- (defattribute nohref 
+ (defattribute nohref
      (area)
    (nohref)  :implied
    ()  "this region has no action")
@@ -1497,17 +1497,17 @@ RETURN:      The generated HTML.
    (noshade)  :implied
    (:deprecated  :loose-dtd)  "")
 
- (defattribute nowrap 
+ (defattribute nowrap
      (td th)
    (nowrap)  :implied
    (:deprecated  :loose-dtd)  "suppress word wrap")
 
- (defattribute object 
+ (defattribute object
      (applet)
    (cdata)  :implied
    (:deprecated  :loose-dtd)  "serialized applet file")
 
- (defattribute onblur 
+ (defattribute onblur
      (a area button input label select textarea)
    (%script)  :implied
    ()  "the element lost the focus")
@@ -1547,12 +1547,12 @@ RETURN:      The generated HTML.
    (%script)  :implied
    ()  "a key was released")
 
- (defattribute onload 
+ (defattribute onload
      (frameset)
    (%script)  :implied
    (:frameset-dtd)  "all the frames have been loaded")
 
- (defattribute onload 
+ (defattribute onload
      (body)
    (%script)  :implied
    ()  "the document has been loaded")
@@ -1607,12 +1607,12 @@ RETURN:      The generated HTML.
    (%script)  :implied
    ()  "the document has been removed")
 
- (defattribute profile 
+ (defattribute profile
      (head)
    (%uri)  :implied
    ()  "named dictionary of meta info")
 
- (defattribute prompt 
+ (defattribute prompt
      (isindex)
    (%text)  :implied
    (:deprecated  :loose-dtd)  "prompt message")
@@ -1627,12 +1627,12 @@ RETURN:      The generated HTML.
    (readonly)  :implied
    ()  "for text and passwd")
 
- (defattribute rel 
+ (defattribute rel
      (a link)
    (%linktypes)  :implied
    ()  "forward link types")
 
- (defattribute rev 
+ (defattribute rev
      (a link)
    (%linktypes)  :implied
    ()  "reverse link types")
@@ -1647,22 +1647,22 @@ RETURN:      The generated HTML.
    (number)  :required
    ()  "")
 
- (defattribute rowspan 
+ (defattribute rowspan
      (td th)
    (number) "1"
    ()  "number of rows spanned by cell")
 
- (defattribute rules 
+ (defattribute rules
      (table)
    (%trules)  :implied
    ()  "rulings between rows and cols")
 
- (defattribute scheme 
+ (defattribute scheme
      (meta)
    (cdata)  :implied
    ()  "select form of content")
 
- (defattribute scope 
+ (defattribute scope
      (td th)
    (%scope)  :implied
    ()  "scope covered by header cells")
@@ -1677,18 +1677,18 @@ RETURN:      The generated HTML.
    (selected)  :implied
    ()  "")
 
- (defattribute shape 
+ (defattribute shape
      (area)
    (%shape)
    "rect"
    ()  "controls interpretation of coords")
 
- (defattribute shape 
+ (defattribute shape
      (a)
    (%shape) "RECT"
    ()  "for use with client-side image maps")
 
- (defattribute size 
+ (defattribute size
      (hr)
    (%pixels)  :implied
    (:deprecated  :loose-dtd)  "")
@@ -1698,7 +1698,7 @@ RETURN:      The generated HTML.
    (cdata)  :implied
    (:deprecated  :loose-dtd)  "[+ -]nn e.g. size=\"+1\", size=\"4\"")
 
- (defattribute size 
+ (defattribute size
      (input)
    (cdata)  :implied
    ()  "specific to each type of field")
@@ -1713,7 +1713,7 @@ RETURN:      The generated HTML.
    (number)  :implied
    ()  "rows visible")
 
- (defattribute span 
+ (defattribute span
      (col)
    (number) "1"
    ()  "COL attributes affect N columns")
@@ -1728,37 +1728,37 @@ RETURN:      The generated HTML.
    (%uri)  :implied
    ()  "URI for an external script")
 
- (defattribute src 
+ (defattribute src
      (input)
    (%uri)  :implied
    ()  "for fields with images")
 
- (defattribute src 
+ (defattribute src
      (frame iframe)
    (%uri)  :implied
    (:frameset-dtd)  "source of frame content")
 
- (defattribute src 
+ (defattribute src
      (img)
    (%uri)  :required
    ()  "URI of image to embed")
 
- (defattribute standby 
+ (defattribute standby
      (object)
    (%text)  :implied
    ()  "message to show while loading")
 
- (defattribute start 
+ (defattribute start
      (ol)
    (number)  :implied
    (:deprecated  :loose-dtd)  "starting sequence number")
 
- (defattribute style 
+ (defattribute style
      (:all-elements-but base basefont head html meta param script style title)
    (%stylesheet)  :implied
    ()  "associated style info")
 
- (defattribute summary 
+ (defattribute summary
      (table)
    (%text)  :implied
    ()  "purpose/structure for speech output")
@@ -1768,22 +1768,22 @@ RETURN:      The generated HTML.
    (number)  :implied
    ()  "position in tabbing order")
 
- (defattribute target 
+ (defattribute target
      (a area base form link)
    (%frametarget)  :implied
    (:loose-dtd)  "render in this frame")
 
- (defattribute text 
+ (defattribute text
      (body)
    (%color)  :implied
    (:deprecated  :loose-dtd)  "document text color")
 
- (defattribute title 
+ (defattribute title
      (:all-elements-but base basefont head html meta param script title)
    (%text)  :implied
    ()  "advisory title")
 
- (defattribute type 
+ (defattribute type
      (a link)
    (%contenttype)  :implied
    ()  "advisory content type")
@@ -1793,7 +1793,7 @@ RETURN:      The generated HTML.
    (%contenttype)  :implied
    ()  "content type for data")
 
- (defattribute type 
+ (defattribute type
      (param)
    (%contenttype)  :implied
    ()  "content type for value when valuetype=ref")
@@ -1803,27 +1803,27 @@ RETURN:      The generated HTML.
    (%contenttype)  :required
    ()  "content type of script language")
 
- (defattribute type 
+ (defattribute type
      (style)
    (%contenttype)  :required
    ()  "content type of style language")
 
- (defattribute type 
+ (defattribute type
      (input)
    (%inputtype) "TEXT"
    ()  "what kind of widget is needed")
 
- (defattribute type 
+ (defattribute type
      (li)
    (%listyle)  :implied
    (:deprecated  :loose-dtd)  "list item style")
 
- (defattribute type 
+ (defattribute type
      (ol)
    (%olstyle)  :implied
    (:deprecated  :loose-dtd)  "numbering style")
 
- (defattribute type 
+ (defattribute type
      (ul)
    (%ulstyle)  :implied
    (:deprecated  :loose-dtd)  "bullet style")
@@ -1833,12 +1833,12 @@ RETURN:      The generated HTML.
    (or  "BUTTON" "SUBMIT" "RESET")  "SUBMIT"
    ()  "for use as form button")
 
- (defattribute usemap 
+ (defattribute usemap
      (img input object)
    (%uri)  :implied
    ()  "use client-side image map")
 
- (defattribute valign 
+ (defattribute valign
      (col colgroup tbody td tfoot th thead tr)
    (or  "TOP" "MIDDLE" "BOTTOM" "BASELINE")  :implied
    ()  "vertical alignment in cells")
@@ -1863,7 +1863,7 @@ RETURN:      The generated HTML.
    (cdata)  :implied
    ()  "sent to server when submitted")
 
- (defattribute value 
+ (defattribute value
      (li)
    (number)  :implied
    (:deprecated  :loose-dtd)  "reset sequence number")
@@ -1873,17 +1873,17 @@ RETURN:      The generated HTML.
    (or  "DATA" "REF" "OBJECT")  "DATA"
    ()  "How to interpret value")
 
- (defattribute version 
+ (defattribute version
      (html)
    (cdata) :%html.version
    (:deprecated  :loose-dtd)  "Constant")
 
- (defattribute vlink 
+ (defattribute vlink
      (body)
    (%color)  :implied
    (:deprecated  :loose-dtd)  "color of visited links")
 
- (defattribute vspace 
+ (defattribute vspace
      (applet img object)
    (%pixels)  :implied
    (:deprecated  :loose-dtd)  "vertical gutter")
@@ -1898,7 +1898,7 @@ RETURN:      The generated HTML.
    (%length)  :implied
    (:loose-dtd)  "frame width")
 
- (defattribute width 
+ (defattribute width
      (img object)
    (%length)  :implied
    ()  "override width")
@@ -1908,7 +1908,7 @@ RETURN:      The generated HTML.
    (%length)  :implied
    ()  "table width")
 
- (defattribute width 
+ (defattribute width
      (td th)
    (%length)  :implied
    (:deprecated  :loose-dtd)  "width for cell")
@@ -1918,7 +1918,7 @@ RETURN:      The generated HTML.
    (%length)  :required
    (:deprecated  :loose-dtd)  "initial width")
 
- (defattribute width 
+ (defattribute width
      (col)
    (%multilength)  :implied
    ()  "column width specification")
@@ -1928,7 +1928,7 @@ RETURN:      The generated HTML.
    (%multilength)  :implied
    ()  "default width for enclosed COLs")
 
- (defattribute width 
+ (defattribute width
      (pre)
    (number)  :implied
    (:deprecated  :loose-dtd)  "")

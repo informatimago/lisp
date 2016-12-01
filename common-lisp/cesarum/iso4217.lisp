@@ -5,10 +5,10 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    This package exports functions and data to process
 ;;;;    iso4217 currency codes.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -16,19 +16,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -43,24 +43,24 @@
    "
 
 This package exports functions and data to process iso4217 currency codes.
-    
+
 
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2004 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -76,23 +76,23 @@ License:
 
 (defparameter +country-currency-notes+
   #("Notes"
-    "Effective date is 7th October 2002. The conversion rate is 1AFN 
+    "Effective date is 7th October 2002. The conversion rate is 1AFN
      to 1000 AFA. The two codes will run concurent until 2nd January 2003."
-    "CFA Franc BCEAO ; Responsible authority: Banque Centrale des États de 
+    "CFA Franc BCEAO ; Responsible authority: Banque Centrale des États de
      l'Afrique de l'Ouest."
     "Customarily known as Bermuda Dollar."
     "Funds code."
-    "CFA Franc BEAC ; Responsible authority; Banque des États de l'Afrique 
+    "CFA Franc BEAC ; Responsible authority; Banque des États de l'Afrique
      Centrale."
     "There is no current withdrawal date for TPE."
-    "Effective on 1st January 2001. There is no current withdrawal date 
+    "Effective on 1st January 2001. There is no current withdrawal date
      for SVC."
     "Currency name was effective 4th September 1985."
     "Effective on 1stJanuary 2004."
     "Will be suppressed on 1st January 2004."
-    "Dinar is used in Serbia, Euro is used in Montenegro. Effective 
+    "Dinar is used in Serbia, Euro is used in Montenegro. Effective
      from February 2003."
-    "The minor unit was changed from 0 to 2, for this edition, since 
+    "The minor unit was changed from 0 to 2, for this edition, since
      the English Version of ISO 4217 had the wrong information.")
   "Notes for country-currency relations.")
 
@@ -567,7 +567,7 @@ License:
   (dolist (cur +currencies+)
     (setf (gethash (currency-alphabetic-code cur) *currency-map*) cur
           (gethash (with-standard-io-syntax
-                     (intern (currency-alphabetic-code cur) 
+                     (intern (currency-alphabetic-code cur)
                              "KEYWORD"))          *currency-map*) cur
           (gethash (currency-numeric-code    cur) *currency-map*) cur
           (gethash cur                            *currency-map*) cur))
@@ -576,9 +576,9 @@ License:
 
 (defun find-currency (designator)
   "
-DESIGNATOR:  An integer between 0 and 999, or a string or a symbol, 
-             or a list whose first element is an integer between 0 and 999, 
-                                              or a string or a symbol, 
+DESIGNATOR:  An integer between 0 and 999, or a string or a symbol,
+             or a list whose first element is an integer between 0 and 999,
+                                              or a string or a symbol,
 RETURN:      A currency structure (list) if the designator matches one,
              or nil if none found.
 RAISE:       An error when the type of DESIGNATOR is not as described above.
@@ -589,17 +589,17 @@ RAISE:       An error when the type of DESIGNATOR is not as described above.
         (setf designator (if (listp designator) (first designator) designator))
         (if (or (stringp designator) (symbolp designator))
             (car (member-if
-                  (lambda (c) 
+                  (lambda (c)
                     (or (string-equal designator (currency-alphabetic-code c))
                         (string-equal designator (currency-name c))))
                   +currencies+))
-            (error "Invalid currency designator: ~S" 
+            (error "Invalid currency designator: ~S"
                    designator))))) ;;FIND-CURRENCY
 
 
 (defun get-currencies (&key only-existing order (language :en))
   "
-     ONLY-EXISTING:  NOT IMPLEMENTED YET. Select only currencly in current use. 
+     ONLY-EXISTING:  NOT IMPLEMENTED YET. Select only currencly in current use.
      LANGUAGE:       NOT IMPLEMENTED YET.
      ORDER:          :NAME or :ALPHABETIC-CODE or :NUMERIC-CODE.
      if not specified, no ordering is done.
@@ -612,7 +612,7 @@ RAISE:       An error when the type of DESIGNATOR is not as described above.
       (setq result
             (sort result
                   (case order
-                    ((:name) 
+                    ((:name)
                      (lambda (a b) (string-lessp (currency-name a)
                                                  (currency-name b))))
                     ((:alphabetic-code)
@@ -1169,8 +1169,8 @@ RAISE:       An error when the type of DESIGNATOR is not as described above.
     ("ZMK"  "Zambia"  "Kwacha")
     ("ZWD"  "Zimbabwe"  "Zimbabwe Dollars")
     )) ;;+xe-countries+
-                           
-             
+
+
 (defparameter +xe-currencies+
   '(
     ("AED"   "United Arab Emirates"           "Dirhams")
@@ -1363,7 +1363,7 @@ RAISE:       An error when the type of DESIGNATOR is not as described above.
                                            (format nil "~A" (car z))))))))
       (let* ((widths (map 'list (function identity)
                           (subseq maxes 0
-                                  (1+ (position-if-not 
+                                  (1+ (position-if-not
                                        (function zerop) maxes :from-end t)))))
              (tot-width (apply (function +) widths)))
         ;; (format t "~&;; ~5D : ~{~4D ~}~%"  tot-width widths)
@@ -1376,8 +1376,8 @@ RAISE:       An error when the type of DESIGNATOR is not as described above.
             ;;(print (list :tot-width tot-width :sma-wid sma-wid :big-wid big-wid))
             (setf big-rat (/ (- (+ (length widths) tot-width) sma-wid)
                              (- 64 sma-wid)))
-            (map-into widths 
-                      (lambda (w) 
+            (map-into widths
+                      (lambda (w)
                         (if (< 20 w)
                             (+ 2 (truncate w big-rat))
                             (+ 2 w))) widths)))
@@ -1395,13 +1395,13 @@ RAISE:       An error when the type of DESIGNATOR is not as described above.
 
 
 (DOLIST (CUR +COCUCOD+)
-  (LET ((COU (CAR (MEMBER (SECOND CUR) +COUNTRIES+ 
+  (LET ((COU (CAR (MEMBER (SECOND CUR) +COUNTRIES+
                           :TEST (FUNCTION STRING-EQUAL)
                           :KEY (FUNCTION FIRST)))))
     (IF (NOT COU)
         (FORMAT T "NOT FOUND: ~S~%" CUR)
         (IF (NOT (STRING-EQUAL (SECOND COU) (FIRST CUR)))
-            (FORMAT T "COUNTRY NAME DOESN'T MATCH ~S ~%    ~S~%    ~S~%" 
+            (FORMAT T "COUNTRY NAME DOESN'T MATCH ~S ~%    ~S~%    ~S~%"
                     (second cur) (first CUR) (second COU))))))
 
 (progn
@@ -1414,7 +1414,7 @@ RAISE:       An error when the type of DESIGNATOR is not as described above.
   (setf +country-currency+  (sort (delete-duplicates +country-currency+
                                                      :test (function equalp))
                                   (function string<) :key (function first))
-        +currencies+        (sort (delete-duplicates +currencies+ 
+        +currencies+        (sort (delete-duplicates +currencies+
                                                      :test (function equalp))
                                   (function string<) :key (function first))))
 ||#

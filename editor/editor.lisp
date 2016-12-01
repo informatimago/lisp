@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    A screen editor.   clispmacs
 ;;;;
 ;;;;    About emacs in CL:
@@ -32,19 +32,19 @@
 ;;;;      and some restart may exit from the editor.
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2006 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -203,12 +203,12 @@ copying the vector."
                                                      (string-upcase name))))
                             (compose (function find-symbol)
                                      (function string-upcase))))
-           
+
            ((#\b)                       ; read an existing buffer
             (read-something prompt nil
                             (function get-buffer)
                             (function identity)))
-           
+
            ((#\B)                       ; read a buffer name
             (read-from-minibuffer prompt))
            ((#\c)                 ; read a character - no input method
@@ -360,7 +360,7 @@ copying the vector."
 
 
 (defun keymap-copy (keymap &key shallow)
-  "Returns a copy of the KEYMAP. 
+  "Returns a copy of the KEYMAP.
 If SHALLOW is true, then subkeymaps are not copied too."
   (let ((copy (make-keymap)))
     (keymap-map (lambda (key binding)
@@ -374,7 +374,7 @@ If SHALLOW is true, then subkeymaps are not copied too."
 
 (defun keymap-bind-key (keymap key binding)
   "Binds a KEY to a BINDING in the KEYMAP.
-KEY:        must be either a character, one of the *SPECIAL-KEYS*, 
+KEY:        must be either a character, one of the *SPECIAL-KEYS*,
             or a list ([:control] [:meta] KEY)
 BINDING:    must be either a symbol (naming a command),
             a command function,
@@ -421,7 +421,7 @@ BINDING:    must be either a symbol (naming a command),
     (keymap-bind-key def-map '(:meta    #\:) 'eval-expression)
     (keymap-bind-key def-map '(:control #\@) 'set-mark)
     (keymap-bind-key def-map '(:control #\-) 'negative-argument)
-    (keymap-bind-key def-map '(:control #\u) 'universal-argument)    
+    (keymap-bind-key def-map '(:control #\u) 'universal-argument)
     (keymap-bind-key def-map '(:control #\l) 'redisplay)
     (keymap-bind-key def-map '(:control #\a) 'beginning-of-line)
     (keymap-bind-key def-map '(:control #\e) 'end-of-line)
@@ -437,7 +437,7 @@ BINDING:    must be either a symbol (naming a command),
     (keymap-bind-key def-map '(:control :meta #\k) 'kill-sexp)
     (keymap-bind-key def-map '(:control #\v) 'scroll-up)
     (keymap-bind-key def-map '(:meta    #\v) 'scroll-down)
-    
+
     (keymap-bind-key def-map '(:control #\h) c-h-map)
     (keymap-bind-key c-h-map '#\h            'view-hello-file)
     (keymap-bind-key c-h-map '(:control #\h) 'help-for-help)
@@ -446,7 +446,7 @@ BINDING:    must be either a symbol (naming a command),
     (keymap-bind-key c-h-map '#\k            'describe-key)
     (keymap-bind-key c-h-map '#\w            'where-is)
 
-    (keymap-bind-key def-map '(:control #\x) c-x-map)    
+    (keymap-bind-key def-map '(:control #\x) c-x-map)
     (keymap-bind-key c-x-map '#\b            'switch-to-buffer)
     (keymap-bind-key c-x-map '#\f            'find-file)
     (keymap-bind-key c-x-map '#\k            'kill-buffer)
@@ -457,7 +457,7 @@ BINDING:    must be either a symbol (naming a command),
     (keymap-bind-key c-x-map  #\D            'cl-debugger)
     (keymap-bind-key c-x-map '(:control #\e) 'eval-last-sexp)
     (keymap-bind-key c-x-map '(:control #\f) 'find-file)
-    
+
     (keymap-bind-key def-map '(:control :meta #\[) fn-map) ; temporary kludge
     (keymap-bind-key def-map '(:meta #\[)          fn-map)
     (keymap-bind-key fn-map  '#\A            'previous-line)
@@ -619,7 +619,7 @@ C-w         Information on absence of warranty for GNU Emacs.
         (let* ((busize (or (ignore-errors (file-length in)) 4096))
                (eltype (stream-element-type in))
                (initel (if (subtypep eltype 'integer) 0 #\Space))
-               (buffer (make-array busize 
+               (buffer (make-array busize
                                    :element-type eltype
                                    :initial-element initel
                                    :adjustable t :fill-pointer t))
@@ -1014,7 +1014,7 @@ mini-buffer is a plain window without a status bar."))
                :do  (setf new-node (dll-insert (buffer-lines self)
                                                new-node new-line))))
             ((null (cdr lines))           ; one line
-             (let ((item (first lines)))   
+             (let ((item (first lines)))
                (setf (dll-node-item current-line)
                      (concatenate 'string
                        (nsubseq (dll-node-item current-line) 0 column)
@@ -1272,7 +1272,7 @@ so the buffer is truly empty after this."
 
 
 (defun message (ctrl-string &rest args)
-  "Inserts a formated string in the *Messages* buffer, 
+  "Inserts a formated string in the *Messages* buffer,
 and displays it in the mini-window."
   (let ((text (apply (function format) nil ctrl-string args)))
     (with-buffer (get-buffer-create "*Messages*")
@@ -1606,7 +1606,7 @@ then this command creates a buffer with that name."
     :with screen = (frame-screen (window-frame self))
     :with width  = (window-width self)
     :with buffer = (context-buffer (window-context self))
-    :for row :from (window-top-row self) 
+    :for row :from (window-top-row self)
     :for line = (dll-node-nth (window-top-row self) (buffer-lines buffer))
       :then (dll-node-next line)
     :repeat (print (min (window-visible-line-count self)
@@ -1720,8 +1720,8 @@ then this command creates a buffer with that name."
   (setf *current-screen*     nil
         *buffer-list*       '()
         *current-frame*     nil
-        *frame-list*        '() 
-        *current-window*    nil 
+        *frame-list*        '()
+        *current-window*    nil
         *counter*           0
         *last-command-char* nil
         *keymap*            (keymap-copy *default-keymap*))
@@ -1780,7 +1780,7 @@ then this command creates a buffer with that name."
 (defun kill-sexp (n)
   (declare (interactive "p"))
   (kill-region (point) (progn (forward-sexp n) (point))))
-  
+
 (defun kill-line (repeat-count)
   "Kill the rest of the current line; if no nonblanks there, kill thru newline.
 With prefix argument, kill that many lines from point.
@@ -1838,7 +1838,7 @@ even beep.)"
 \\[universal-argument] following digits or minus sign ends the argument."
   (declare (interactive "P"))
   (let ((digit (digit-char-p (command-character *last-command-char*))))
-    (setf *prefix-arg* 
+    (setf *prefix-arg*
           (cond ((integerp prefix)
                  (+ (* prefix 10) (if (minusp prefix) (- digit)  digit)))
                 ((eql '- prefix)(if (zerop digit) '- (- digit)))

@@ -50,15 +50,15 @@ GNU and other more recent Eds have a lot of commands that aren't covered
 here, but if you go through the tutorial you will have no problem under-
 standing the Man/Info pages.
 
-Some pointers on using ed in scripts, or feeding ed commands from scripts 
+Some pointers on using ed in scripts, or feeding ed commands from scripts
 and the commandline, are found between the the first and second tutorials.
 
 Otherwise, these documents are very close to the original.
 
-The numbers in front of the headings in the Table of Contents 
+The numbers in front of the headings in the Table of Contents
 are the line numbers where the section begins.
 
-Enter the number and you are there. 
+Enter the number and you are there.
 Then enter ".,+35p" and that line and the next 35 will be displayed.
 
 [Enter the number followed by a "z" and it and the page below it will be
@@ -156,11 +156,11 @@ ABSTRACT
 Almost all text input on the UNIX operating
 system is done with the text­editor ed.
 
-This memorandum is a tutorial guide to 
+This memorandum is a tutorial guide to
 help beginners get started with text editing.
-Although it does not cover everything, 
+Although it does not cover everything,
 it does discuss enough for most users' day­
-to­day needs. This includes printing, 
+to­day needs. This includes printing,
 appending, changing, deleting, moving and
 inserting entire lines of text; reading
 and writing files; context searching and line

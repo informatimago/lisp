@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    See defpackage documentation string.
 ;;;;
 ;;;;AUTHORS
@@ -20,19 +20,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2005 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -46,15 +46,15 @@
    "CHARACTER-SET" "CS-MIB-ENUM" "CS-NAME" "CS-ALIASES" "CS-SOURCE"
    "CS-COMMENTS" "CS-REFERENCES" "CS-RANGES" "CS-LISP-ENCODING"
    "CS-EMACS-ENCODING" "CS-MIME-ENCODING"
-   
+
    "REGISTER-CHARACTER-SET" "FIND-CHARACTER-SET"
    "CHARACTER-SET-ERROR" "CHARACTER-SET-ERROR-CHARACTER-SET"
-   
+
    "CHARACTER-SET-TO-MIME-ENCODING" "CHARACTER-IN-CHARACTER-SET-P"
 
    "READ-CHARACTER-SETS-FILE"
    "*CHARACTER-SETS*")
-  
+
   (:documentation
    "
 This package exports functions to manage character-sets, character
@@ -76,19 +76,19 @@ See also: COM.INFORMATIMGO.CLEXT.CHARACTER-SET
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2005 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -113,7 +113,7 @@ License:
 
    ;; We associate each IANA character set with the lisp encoding and
    ;; the emacs encoding.
-   
+
    ;; We keep only the current Common Lisp implementation encoding, to
    ;; promote standardization of implementation encoding names around
    ;; this IANA character set registry. (We don't want to manage cross
@@ -173,7 +173,7 @@ License:
   "
 RETURN: The character-set in *CHARACTER-SETS* that has NAME as name or alias,
         or some variation of NAME (removing non alphanumeric characters
-        and prefixing 'cs'. 
+        and prefixing 'cs'.
 "
   (flet ((memb (item list)
            (member item list :test (function string-equal))))

@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Loads verrazano and tools.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2007 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -45,8 +45,8 @@
 (load "c-syntax.lisp")
 
 #-(and)
-(progn 
-   
+(progn
+
   (defparameter *base-dir*
     (or *load-pathname*
         "/home/pjb/src/pjb/linc/"))
@@ -66,7 +66,7 @@
   (setf ASDF:*CENTRAL-REGISTRY*
         (nconc
          (sort
-          (DELETE-DUPLICATES 
+          (DELETE-DUPLICATES
            (mapcar
             (lambda (d) (MAKE-PATHNAME :NAME NIL :TYPE NIL :VERSION NIL :DEFAULTS d))
             (directory "**/*.asd"))
@@ -101,7 +101,7 @@
   (let ((cfg *conf*)(dbg? t))
     (let ((ir (verrazano::parse-gccxml-output cfg "string.xml" "string.mac")))
       (verrazano::simplify-ir ir cfg)
-      (when dbg? 
+      (when dbg?
         (verrazano::print-ir ir)
         (verrazano::print-class-bases ir)
         (verrazano::print-class-vtables ir))
@@ -125,7 +125,7 @@
 
   (verrazano:create-binding
    *conf* filename outname backend &optional dbg?)
-            
+
   ;;   (let ((cfg (parse-configuration-file filename outname))
   ;;         (temp-c (merge-pathnames "vzntemp.cpp" (working-directory bconf)))
   ;;         (temp-xml (merge-pathnames "vzntemp.xml" (working-directory bconf)))
@@ -135,7 +135,7 @@
   ;;     (run-gccxml cfg (gccxml-path bconf) temp-c temp-xml temp-mac)
   ;;     (let ((ir (parse-gccxml-output cfg temp-xml temp-mac)))
   ;;       (simplify-ir ir cfg)
-  ;;       (when dbg? 
+  ;;       (when dbg?
   ;; 	(print-ir ir)
   ;; 	(print-class-bases ir)
   ;; 	(print-class-vtables ir))

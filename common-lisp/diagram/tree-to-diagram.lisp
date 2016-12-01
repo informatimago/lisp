@@ -1,8 +1,8 @@
 ;;;; -*- coding:utf-8 -*-
 ;;;;****************************************************************************
 ;;;;FILE:               tree-to-Diagram.lisp
-;;;;LANGUAGE:           Common-Lisp 
-;;;;SYSTEM:             Common-Lisp 
+;;;;LANGUAGE:           Common-Lisp
+;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;
@@ -17,19 +17,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -50,19 +50,19 @@ whose cdr is the list of children.
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 1994 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -83,7 +83,7 @@ RETURN:  a list (n' l' x' y') for the following brother node.
 "
   (format t "symbol ~s~%" n)
   (format t "	layer ~s~%" l)
-  (format t "	shape ~aRectangle~a~%" 
+  (format t "	shape ~aRectangle~a~%"
           (code-char 34) (code-char 34))
   (format t "	location ~s.00 ~s.00~%" x y)
   (format t "	size 126.00 18.00~%")
@@ -143,7 +143,7 @@ RETURN:  a list (n' l' x' y') for the next brother subtree.
       (let ((inc (apply (function tree-diagram-generate-inherit)
                         (tree-diagram-generate-node n l x y (car tree)))))
         (do ((subtrees (cdr tree) (cdr subtrees)))	((null subtrees))
-          (setq inc (apply (function tree-diagram-generate-tree) 
+          (setq inc (apply (function tree-diagram-generate-tree)
                            (append inc (list (car subtrees))))))
         (tree-diagram-generate-adjust-x inc))))
 

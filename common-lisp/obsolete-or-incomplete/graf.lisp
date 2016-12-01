@@ -24,19 +24,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 1996 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -79,7 +79,7 @@
     This is an old implementation adapted from a scheme version.
     The GRAF class merely encapsulates list-based data structures
     and functions manipulating graphs.
-    
+
     Copyright Pascal J. Bourguignon 1996 - 2003
     This package is provided under the GNU General Public License.
     See the source file for details."))
@@ -114,9 +114,9 @@
 ;; GAMMAS-INV ((SELF GRAF))
 ;; GRAF ()
 ;; GRAF-ADD-EDGE (G E)
-;; GRAF-ADD-EDGES (G LE) 
+;; GRAF-ADD-EDGES (G LE)
 ;; GRAF-ADD-NODE (G N)
-;; GRAF-ADD-NODES (G LN) 
+;; GRAF-ADD-NODES (G LN)
 ;; GRAF-BUILD-ORDERED-NODE-LIST (G)
 ;; GRAF-BUILD-ORDERED-NODE-LIST (G)
 ;; GRAF-BUILD-ORDERED-NODE-LIST-STEP (G L)
@@ -197,7 +197,7 @@
 ;; REMOVE-NODE ((SELF GRAF) N)
 ;; REMOVE-NODES ((SELF GRAF) N)
 ;; REVERSE-EDGES ((SELF GRAF))
-;; SET-CONTAINS? (S E) 
+;; SET-CONTAINS? (S E)
 ;; SET-DIFF (S1 S2)
 ;; SET-EQUAL? (S1 S2)
 ;; SET-INTERSECTION (S1 S2)
@@ -215,9 +215,9 @@
 
 ;;----------------------------------------------------------------------
 
-(defun set-contains? (s e) 
+(defun set-contains? (s e)
   (cond
-    ((null s) nil) 
+    ((null s) nil)
     ((equalp (car s) e) t)
     (t (set-contains? (cdr s) e)))
   ) ;;SET-CONTAINS?
@@ -243,14 +243,14 @@
 (defun set-union (s1 s2)
   (if (null s2)
       s1
-      (if (set-contains? s1 (car s2)) 
+      (if (set-contains? s1 (car s2))
           (set-union s1 (cdr s2))
           (set-union (cons (car s2) s1) (cdr s2))))
   ) ;;SET-UNION
 
 ;; ls = list of set '((a b c) (c d e) (f i)) --> '(a b c d e f i)
 (defun set-union-l (ls)
-  (cond 
+  (cond
     ((null ls) ls)
     ((null (cdr ls)) (car ls))
     (t (set-union-l (cons (set-union (car ls) (cadr ls)) (cddr ls)))))
@@ -287,9 +287,9 @@
           (set-unique-l (cdr ls))
           (cons (car ls) (set-unique-l (cdr ls)))))
   ) ;;SET-UNIQUE-L
-            
-    
-    
+
+
+
 (defun graf-empty ()
   '(())
   ) ;;GRAF-EMPTY
@@ -312,7 +312,7 @@
       (cons (cons n (graf-nodes g)) (graf-edges g)))
   ) ;;GRAF-ADD-NODE
 
-(defun graf-add-nodes (g ln) 
+(defun graf-add-nodes (g ln)
   (if (null ln) g (graf-add-nodes (graf-add-node g (car ln)) (cdr ln)))
   ) ;;GRAF-ADD-NODES
 
@@ -353,7 +353,7 @@
       g)
   ) ;;GRAF-ADD-EDGE
 
-(defun graf-add-edges (g le) 
+(defun graf-add-edges (g le)
   (if (null le) g (graf-add-edges (graf-add-edge g (car le)) (cdr le)))
   ) ;;GRAF-ADD-EDGES
 
@@ -391,9 +391,9 @@
 (defun graf-intersection (g1 g2)
   (let ((nodes (set-intersection (graf-nodes g1) (graf-nodes g2))))
     (cons nodes
-          (edges-remove-nodes 
+          (edges-remove-nodes
            (set-intersection (graf-edges g1) (graf-edges g2))
-           (set-diff 
+           (set-diff
             (set-union (graf-nodes g1) (graf-nodes g2)) nodes))))
   ) ;;GRAF-INTERSECTION
 
@@ -438,7 +438,7 @@
       nil
       (set-union (graf-follow g (car ln)) (graf-follow-l g (cdr ln))))
   ) ;;GRAF-FOLLOW-L
-                
+
 
 (defun graf-precede-l (g ln)
   (if (null ln)
@@ -450,7 +450,7 @@
   (let* ( (prev-closure '())
          (new-closure (list n))
           (next (graf-follow-l g new-closure)))
-    (loop while (not (set-equal? prev-closure new-closure)) do 
+    (loop while (not (set-equal? prev-closure new-closure)) do
          (setq prev-closure new-closure)
          (setq new-closure (set-union new-closure next))
          (setq next (graf-follow-l g new-closure))
@@ -463,7 +463,7 @@
   (let* ( (prev-closure '())
          (new-closure (list n))
           (next (graf-precede-l g new-closure)))
-    (loop while (not (set-equal? prev-closure new-closure)) do 
+    (loop while (not (set-equal? prev-closure new-closure)) do
          (setq prev-closure new-closure)
          (setq new-closure (set-union new-closure next))
          (setq next (graf-precede-l g new-closure))
@@ -473,36 +473,36 @@
 
 
 (defun graf-connected-classes (g)
-  (set-unique-l 
-   (mapcar (lambda (x) 
-             (set-intersection 
-              (graf-gamma-inv-closure g x) 
-              (graf-gamma-closure g x))) 
+  (set-unique-l
+   (mapcar (lambda (x)
+             (set-intersection
+              (graf-gamma-inv-closure g x)
+              (graf-gamma-closure g x)))
            (graf-nodes g)))
   ) ;;GRAF-CONNECTED-CLASSES
-            
-            
+
+
 (defun graf-gammas (g)
-  (mapcar 'graf-gamma 
-          (make-list (length (graf-nodes g)) :initial-element g) 
+  (mapcar 'graf-gamma
+          (make-list (length (graf-nodes g)) :initial-element g)
           (graf-nodes g))
   ) ;;GRAF-GAMMAS
 
 (defun graf-gammas-inv (g)
   (mapcar 'graf-gamma-inv
-          (make-list (length (graf-nodes g)) :initial-element g) 
+          (make-list (length (graf-nodes g)) :initial-element g)
           (graf-nodes g))
   ) ;;GRAF-GAMMAS-INV
 
 (defun graf-display-gammas (g)
-  (mapcar (lambda (n) 
+  (mapcar (lambda (n)
             (format t "~a -> ~a ~%" n (mapcar 'cadr (graf-gamma g n))))
           (graf-nodes g))
   ) ;;GRAF-DISPLAY-GAMMAS
 
 (defun graf-display-gammas-inv (g)
-  (mapcar (lambda (n) 
-            (format t "~a <- ~a ~%" n (mapcar 'car (graf-gamma-inv g n)))) 
+  (mapcar (lambda (n)
+            (format t "~a <- ~a ~%" n (mapcar 'car (graf-gamma-inv g n))))
           (graf-nodes g))
   ) ;;GRAF-DISPLAY-GAMMAS-INV
 
@@ -517,7 +517,7 @@
 (defun graf-reverse-edges (g)
   (cons (graf-nodes g) (edges-reverse (graf-edges g)))
   ) ;;GRAF-REVERSE-EDGES
-        
+
 (defun graf-symetric (g)
   (graf-reverse-edges g)
   ) ;;GRAF-SYMETRIC
@@ -529,10 +529,10 @@
 (defun graf-make-symetric (g)
   (graf-union g (graf-reverse-edges g))
   ) ;;GRAF-MAKE-SYMETRIC
-    
+
 (defun lprint (l)
   (progn (print (length l))
-         (cond 
+         (cond
            ((null l)           (print "---"))
            ((not (consp l))    (print l))
            (t                  (progn (print (car l)) (lprint (cdr l))))))
@@ -541,7 +541,7 @@
 
 (defun graf-minimize-crosses-count-crosses (g nv) ; private
   (declare (type (simple-array cons *) nv))
-  (let (  
+  (let (
         (nc (array-dimension nv 0))
         (cc (make-array (array-dimension nv 0) :initial-element 0))
         )
@@ -549,21 +549,21 @@
       (do ((j (1+ i) (1+ j))) ((>= j nc))
         (do ((k (1+ j) (1+ k))) ((>= k nc))
           (do ((l (1+ k) (1+ l))) ((>= l nc))
-            ;;  (format t 
-            ;;  "~s ~s ~s ~s ([~s]~s,[~s]~s)=~s ([~s]~s,[~s]~s)=~s  ~s ~s~%" 
+            ;;  (format t
+            ;;  "~s ~s ~s ~s ([~s]~s,[~s]~s)=~s ([~s]~s,[~s]~s)=~s  ~s ~s~%"
             ;;      i j k l
             ;;      i (aref nv i)
             ;;      k (aref nv k)
-            ;;      (graf-contains-edge? g 
+            ;;      (graf-contains-edge? g
             ;;              (list (aref nv i) (aref nv k)))
             ;;      j (aref nv j)
             ;;      l (aref nv l)
-            ;;      (graf-contains-edge? g 
+            ;;      (graf-contains-edge? g
             ;;              (list (aref nv j) (aref nv l)))
             ;;      (and
-            ;;          (graf-contains-edge? g 
+            ;;          (graf-contains-edge? g
             ;;                  (list (aref nv i) (aref nv k)))
-            ;;          (graf-contains-edge? g 
+            ;;          (graf-contains-edge? g
             ;;                  (list (aref nv j) (aref nv l)))
             ;;      )
             ;;      cc)
@@ -659,15 +659,15 @@
         nv
         ))
   ) ;;GRAF-MINIMIZE-CROSSES
-        
-        
-        
+
+
+
 (defun graf-replace-node (g on nn)
   (graf-add-edges
    (graf-add-nodes (graf-empty)
                    (mapcar (lambda (n) (if (eq n on) nn n)) (graf-nodes g)))
-   (mapcar (lambda (e) 
-             (mapcar (lambda (n) (if (eq n on) nn n)) e)) 
+   (mapcar (lambda (e)
+             (mapcar (lambda (n) (if (eq n on) nn n)) e))
            (graf-edges g)))
   ) ;;GRAF-REPLACE-NODE
 
@@ -675,34 +675,34 @@
 ;;TODO:(defun graf-collapse-links (g)
 ;;TODO:  (if (not (graf-symetric? g))
 ;;TODO:      (graf-collapse-links (graf-make-symetrical g))
-;;TODO:      (graf-collapse-links-remove-link-nodes 
+;;TODO:      (graf-collapse-links-remove-link-nodes
 ;;TODO:          (graf-collapse-link-collapse-paths g))))
 ;;TODO:
 ;;TODO:
 ;;TODO:(defun graf-collapse-link-get-path-from (path links)
 ;;TODO:  (if (null links)
-;;TODO:      (cons links 
+;;TODO:      (cons links
 ;;TODO:(defun graf-collapse-link-get-a-path (links)
 ;;TODO:  (if (null links)
 ;;TODO:      links
 ;;TODO:      (graf-collapse-link-get-path-from (car links) (cdr links))))
-;;TODO:      
+;;TODO:
 ;;TODO:(defun graf-collapse-link-collapse-paths (g)
 ;;TODO:  (let (
-;;TODO:          (links (flatten (mapcar (lambda (gam) 
-;;TODO:                      (if (= (length gam) 2) gam '())) 
+;;TODO:          (links (flatten (mapcar (lambda (gam)
+;;TODO:                      (if (= (length gam) 2) gam '()))
 ;;TODO:                      (graf-gammas g))))
 ;;TODO:          (paths '())
 ;;TODO:          (res)
 ;;TODO:      )
-;;TODO:      
+;;TODO:
 ;;TODO:      (setq res (graf-collapse-link-get-a-path links))
 ;;TODO:      (loop while (not (null res)) do
 ;;TODO:          (setq links (car res))
 ;;TODO:          (append! paths (cdr res))
 ;;TODO:          (setq res (graf-collapse-link-get-a-path links))
 ;;TODO:      )
-;;TODO:      
+;;TODO:
 ;;TODO:      (do ((curps paths (cdr curps))) ((null curps))
 ;;TODO:          (mapcar (lambda (oldnode)
 ;;TODO:              (setq g (graf-replace-node g oldnode (cdar curps))))
@@ -715,27 +715,27 @@
 ;;TODO:      (let ((links '()))
 ;;TODO:          ; find the links ie. nodes with two adjacent nodes.
 ;;TODO:          (do ((nodes (graf-nodes g) (cdr nodes))) ((null nodes))
-;;TODO:              (let ((gamma (set-remove 
-;;TODO:                              (graf-gamma g (car nodes)) 
+;;TODO:              (let ((gamma (set-remove
+;;TODO:                              (graf-gamma g (car nodes))
 ;;TODO:                              (list (car nodes) (car nodes)))))
 ;;TODO:                  (if (= 2 (length gamma))
-;;TODO:                      (setq links (cons (cons (list (car nodes)) gamma) 
+;;TODO:                      (setq links (cons (cons (list (car nodes)) gamma)
 ;;TODO:                                      links)))))
 ;;TODO:(format t "links=~s~%" links)
 ;;TODO:          (let ((linkheads (mapcar 'car links)))
-;;TODO:          ; foreach linkhead 
+;;TODO:          ; foreach linkhead
 ;;TODO:          ;   foreach edge from linkhead
 ;;TODO:          ;      if adjacent node from linkhead is in linkheads then
 ;;TODO:          ;         collapse them
-;;TODO:              (mapcar (lambda (link) 
+;;TODO:              (mapcar (lambda (link)
 ;;TODO:                  (mapcar (lambda (edges)
 ;;TODO:                      (if (set-contains? linkheads (cdr edges))
-;;TODO:                          (graf-replace-node g (car link) 
+;;TODO:                          (graf-replace-node g (car link)
 ;;TODO:                              (list (car link) (cdr edges)))))
 ;;TODO:                      (cdr link)))
 ;;TODO:                  links)
 ;;TODO:              (do ((nodes links (cdr nodes))) ((null nodes))
-;;TODO:                  (let (  
+;;TODO:                  (let (
 ;;TODO:                          (node (caar nodes))
 ;;TODO:                          (next (set-remove (mapcar 'cadr (cdar nodes)) (caar nodes)))
 ;;TODO:                          )
@@ -743,7 +743,7 @@
 ;;TODO:                      (do ((tails next (cdr tails))) ((null tails))
 ;;TODO:                          (if (set-contains? linkheads (car tails))
 ;;TODO:                              (progn
-;;TODO:                                  
+;;TODO:
 ;;TODO:                              ))
 ;;TODO:                      )
 ;;TODO:                  )
@@ -758,14 +758,14 @@
 
 
 
-        
+
 
 (defun graf-initial-nodes (g)
   (let ((tn '()) (nn (graf-nodes g)))
-    (loop while (not (set-equal? tn nn)) do 
+    (loop while (not (set-equal? tn nn)) do
          (setq tn nn)
-         (setq nn (set-union-l 
-                   (mapcar (lambda (x) 
+         (setq nn (set-union-l
+                   (mapcar (lambda (x)
                              (let ((f (graf-precede g x)))
                                (if (null f)
                                    (list x)
@@ -775,10 +775,10 @@
 
 (defun graf-terminal-nodes (g)
   (let ((tn '()) (nn (graf-nodes g)))
-    (loop while (not (set-equal? tn nn)) do 
+    (loop while (not (set-equal? tn nn)) do
          (setq tn nn)
-         (setq nn (set-union-l 
-                   (mapcar (lambda (x) 
+         (setq nn (set-union-l
+                   (mapcar (lambda (x)
                              (let ((f (graf-follow g x)))
                                (if (null f)
                                    (list x)
@@ -787,15 +787,15 @@
   ) ;;GRAF-TERMINAL-NODES
 
 (defun graf-initial-tokens (g)
-  (delete nil (mapcar 
+  (delete nil (mapcar
                (lambda (x) (if (graf-precede g x) nil x)) (graf-nodes g)))
   ) ;;GRAF-INITIAL-TOKENS
-        
+
 (defun graf-terminal-tokens (g)
-  (delete nil (mapcar 
+  (delete nil (mapcar
                (lambda (x) (if (graf-follow g x) nil x)) (graf-nodes g)))
   ) ;;GRAF-TERMINAL-TOKENS
-        
+
 
 (defun and-l (l)
   (cond
@@ -803,34 +803,34 @@
     ((car l)    (and-l (cdr l)))
     (t          nil))
   ) ;;AND-L
-        
+
 (defun graf-reflexive? (g)
   (and-l
    (mapcar (lambda (n) (graf-contains-edge? g (list n n))) (graf-nodes g)))
   ) ;;GRAF-REFLEXIVE?
-    
+
 (defun graf-make-reflexive (g)
   (graf-add-edges g (mapcar (lambda (x) (list x x)) (graf-nodes g)))
   ) ;;GRAF-MAKE-REFLEXIVE
 
 
 (defun graf-make-tree (g root)
-  (cons root 
-        (mapcar 
-         (lambda (x) (graf-make-tree (graf-remove-node g root) x)) 
+  (cons root
+        (mapcar
+         (lambda (x) (graf-make-tree (graf-remove-node g root) x))
          (graf-follow g root)))
   ) ;;GRAF-MAKE-TREE
 
 
 
 ;; let s[0] be the set of terminal tokens of g
-;; let s[i+1] be the set of precedent nodes of s[i] less the nodes already in 
+;; let s[i+1] be the set of precedent nodes of s[i] less the nodes already in
 ;;   union(s[j],j in [0..i]).
 ;; k=MU i, s[k] equals the set of initial tokens of g
 ;; result=(s[k],...,s[0])
 
 (defun graf-build-ordered-node-list-step (g l)
-  (if (null (car l))  
+  (if (null (car l))
       (cdr l)
       (graf-build-ordered-node-list-step
        g (cons (set-diff (graf-precede-l g (car l)) (set-union-l l)) l)))
@@ -844,24 +844,24 @@
   (reverse (graf-build-ordered-node-list-step
             g (list (graf-initial-tokens g))))
   ) ;;GRAF-BUILD-ORDERED-NODE-LIST
-        
+
 ;;; (let* ((first-layer (graf-initial-tokens g))
 ;;;         (previous-layers first-layer)
 ;;;         (next-layer (graf-follow-l g first-layer)))
 ;;;     ;; si un noed dans next-layer a un precedant non dans previous-layers
 ;;;     ;; alors on le laisse pour plus tard.
-        
+
 ;;; (graf-build-ordered-node-list-step g (list (graf-terminal-tokens g))))
-    
+
 ;;; layers_suite[0]=((graf-inital-tokens g))
 ;;; previous_layers[0]=union(i,layers_suite[0][i])
-;;;    
-;;; new_layer[i]=(graf-follow-l g layers_suite[i][0]) 
+;;;
+;;; new_layer[i]=(graf-follow-l g layers_suite[i][0])
 ;;;                 minus nodes who has a previous not in previous_layers[i].
-    
-    
-    
-    
+
+
+
+
 (defun graf-onl-add-indices-ij (ll i j n)
   (cond
     ((null ll)
@@ -870,8 +870,8 @@
      (if (null (cdr ll))
          (list nil)
          (cons nil (graf-onl-add-indices-ij (cdr ll) (1+ i) 0 n))))
-    (t 
-     (let ((r (graf-onl-add-indices-ij 
+    (t
+     (let ((r (graf-onl-add-indices-ij
                (cons (cdar ll) (cdr ll)) i (1+ j) (1+ n))))
        (cons (cons (list (caar ll) i j n) (car r)) (cdr r)))))
   ) ;;GRAF-ONL-ADD-INDICES-IJ
@@ -932,7 +932,7 @@
   (format out "   location ~d.00 ~d.00~%" x y)
   (format out "end~%~%")
   ) ;;GRAF-DIAGRAM-GENERATE-VERTEX
-    
+
 (defun graf-diagram-generate-line (out n l from to vertices)
   (format out "line ~s~%" n)
   (format out "   from ~s~%" from)
@@ -976,14 +976,14 @@
 ;;  v[3]=(to.pos.x-20,              to.pos.y-4)
 ;;  v[4]=(to.pos.x-4,               to.pos.y+to.size.y/2)
 ;;  v[5]=(to.pos.x,                 to.pos.y+to.size.y/2)
-    
+
 (defun graf-diagram-generate-edges (out leij n)
   (if (null leij)
       nil
       (let ((nn n) (allv nil) (alli nil))
         (do ((cur-eij leij (cdr cur-eij)) )
             ((null cur-eij) nil)
-          (let* ((eij      (car cur-eij))  
+          (let* ((eij      (car cur-eij))
                  (from    (first eij))
                  (to      (second eij))
                  (linenum (third eij))
@@ -991,7 +991,7 @@
             (setq lv (append lv
                              (list
                               (cons nn
-                                    (list 
+                                    (list
                                      (+ (node-pos-x from)
                                         (node-size-x from))
                                      (+ (node-pos-y from)
@@ -1007,7 +1007,7 @@
               (setq lv
                     (append lv
                             (list
-                             (cons nn (list 
+                             (cons nn (list
                                        (+ (node-pos-x from)
                                           (node-size-x from) 24)
                                        (+ (node-pos-y to)
@@ -1026,7 +1026,7 @@
             (setq lv (append lv
                              (list
                               (cons nn
-                                    (list 
+                                    (list
                                      (- (node-pos-x to) 16)
                                      (+ (node-pos-y to)
                                         (/ (node-size-y to) 2))))
@@ -1037,7 +1037,7 @@
                                         (/ (node-size-y to) 2)))))))
             (setq nn (+ nn 2))
             (setq allv (append lv allv))
-            (setq alli (cons (list out linenum linenum 
+            (setq alli (cons (list out linenum linenum
                                    (fourth from) (fourth to) lv) alli))
             ) ;;LET*
           )   ;;DO
@@ -1045,11 +1045,11 @@
                              out (first x) (first x) (second x) (third x)))
                 allv)
         (mapcar (lambda (x) (apply 'graf-diagram-generate-line x))
-                alli)                   
+                alli)
         ))
   ) ;;GRAF-DIAGRAM-GENERATE-EDGES
 
-                    
+
 (defun graf-diagram (g out node-name)
   (declare (type function node-name))
   (format out "#!DG_TEXT-Version-2~%")
@@ -1067,12 +1067,12 @@
   (format out "printInfoFile \"printinfo\"~%")
   (format out "colorFile \"colors.clr\"~%")
   (format out "~%")
-  (let* ((lnij (flatten (graf-onl-add-indices-ij 
+  (let* ((lnij (flatten (graf-onl-add-indices-ij
                          (graf-build-ordered-node-list g) 0 0 1000)))
          (leij (graf-onlif-build-edges
                 g lnij (1+ (apply 'max (mapcar #'fourth lnij))))))
     (mapcar (lambda (x) (graf-diagram-generate-node
-                         out (fourth x) (fourth x) 
+                         out (fourth x) (fourth x)
                          (node-pos-x x) (node-pos-y x)
                          (node-size-x x) (node-size-y x)
                          (funcall node-name (car x))))
@@ -1081,13 +1081,13 @@
      out leij (1+ (apply 'max (mapcar #'third leij))))
     )
   ) ;;GRAF-DIAGRAM
-    
+
 ;;----------------------------------------------------------------------
-;;;     (graf-onlif-build-edges fam 
-;;;         (flatten (graf-onl-add-indices-ij 
+;;;     (graf-onlif-build-edges fam
+;;;         (flatten (graf-onl-add-indices-ij
 ;;;                     (graf-build-ordered-node-list fam) 0 0 1000)) 2000)
-;;;     (graf-Diagram fam 
-;;;         (open "/users/pascal/src/common/lisp/graf.diagram2/DiagramText") 
+;;;     (graf-Diagram fam
+;;;         (open "/users/pascal/src/common/lisp/graf.diagram2/DiagramText")
 ;;;         #'string)
 
 
@@ -1185,7 +1185,7 @@
 
 
 (defclass graf ()
-  ((graf 
+  ((graf
     :accessor graf
     :initform (graf-empty))))
 
@@ -1193,7 +1193,7 @@
 (defmethod empty ((self graf))
   (setf (graf self) (graf-empty))
   ) ;;EMPTY
-    
+
 
 
 (defmethod nodes ((self graf))
@@ -1207,7 +1207,7 @@
 (defmethod add-nodes ((self graf) ln)
   (setf (graf self) (graf-add-nodes (graf self) ln))
   ) ;;ADD-NODES
-    
+
 (defmethod contains-node? ((self graf) n)
   (graf-contains-node?  (graf self) n)
   ) ;;CONTAINS-NODE?
@@ -1215,11 +1215,11 @@
 (defmethod remove-node ((self graf) n)
   (setf (graf self) (graf-remove-node (graf self) n))
   ) ;;REMOVE-NODE
-    
+
 (defmethod remove-nodes ((self graf) ln)
   (setf (graf self) (graf-remove-nodes (graf self) ln))
   ) ;;REMOVE-NODES
-    
+
 
 (defmethod edges ((self graf))
   (graf-edges (graf self))
@@ -1232,7 +1232,7 @@
 (defmethod add-edges ((self graf) le)
   (setf (graf self) (graf-add-edges (graf self) le))
   ) ;;ADD-EDGES
-    
+
 (defmethod contains-edge? ((self graf) e)
   (graf-contains-edge?  (graf self) e)
   ) ;;CONTAINS-EDGE?
@@ -1240,11 +1240,11 @@
 (defmethod remove-edge ((self graf) e)
   (setf (graf self) (graf-remove-edge (graf self) e))
   ) ;;REMOVE-EDGE
-    
+
 (defmethod remove-edges ((self graf) le)
   (setf (graf self) (graf-remove-edges (graf self) le))
   ) ;;REMOVE-EDGES
-    
+
 (defmethod reverse-edges ((self graf))
   (setf (graf self) (graf-reverse-edges (graf self)))
   ) ;;REVERSE-EDGES
@@ -1268,7 +1268,7 @@
 (defmethod is-reflexive? ((self graf))
   (graf-reflexive? (graf self))
   ) ;;IS-REFLEXIVE?
-    
+
 (defmethod make-reflexive ((self graf))
   (graf-make-reflexive (graf self))
   ) ;;MAKE-REFLEXIVE
@@ -1291,7 +1291,7 @@
 (defmethod minimize-crosses ((self graf))
   (setf (graf self) (graf-minimize-crosses (graf self)))
   ) ;;MINIMIZE-CROSSES
-    
+
 
 
 (defmethod gamma-of-node ((self graf) n)
@@ -1313,24 +1313,24 @@
 (defmethod display-gammas ((self graf))
   (graf-display-gammas (graf self))
   ) ;;DISPLAY-GAMMAS
-        
+
 (defmethod display-gammas-inv ((self graf))
   (graf-display-gammas-inv (graf self))
   ) ;;DISPLAY-GAMMAS-INV
-    
+
 
 (defmethod precede ((self graf) n)
   (graf-precede (graf self) n)
   ) ;;PRECEDE
-    
+
 (defmethod follow ((self graf) n)
   (graf-follow (graf self) n)
   ) ;;FOLLOW
-    
+
 (defmethod initial-nodes ((self graf))
   (graf-initial-nodes (graf self))
   ) ;;INITIAL-NODES
-    
+
 (defmethod terminal-nodes ((self graf))
   (graf-terminal-nodes (graf self))
   ) ;;TERMINAL-NODES
@@ -1342,9 +1342,9 @@
 (defmethod terminal-tokens ((self graf))
   (graf-terminal-tokens (graf self))
   ) ;;TERMINAL-TOKENS
-    
-    
-    
+
+
+
 (defmethod make-intersection ((self graf) other-graf)
   (let ((g (make-instance 'graf)))
     (setf (graf g) (graf-intersection (graf self) (graf other-graf)))

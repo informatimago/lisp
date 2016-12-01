@@ -1,9 +1,9 @@
- 
+
 
 a>b       rock     paper   scisors  lizard     spock
 rock      =                crushes  crushes
 paper     covers   =                           disproves
 scisors            cut     =        decapitate
 lizard             eats             =          poisons
-spock     vaporises        smashes             =                     
+spock     vaporises        smashes             =
 

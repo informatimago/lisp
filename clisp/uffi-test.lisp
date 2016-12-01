@@ -4,7 +4,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(ffi:def-call-out string-in 
+(ffi:def-call-out string-in
     (:name "uffi_test_string_in")
   (:arguments (value ffi:c-string))
   (:return-type nil)
@@ -52,18 +52,18 @@ URL:        <http://clisp.sourceforge.net/impnotes.html#encoding>
     (dotimes (i (length byte-vector))
       (setf (aref byte-vector i)
             (ffi:element (ffi:foreign-value foreign-string) i)))
-    (ext:convert-string-from-bytes byte-vector custom:*foreign-encoding*)  
+    (ext:convert-string-from-bytes byte-vector custom:*foreign-encoding*)
     )) ;;CONVERT-FROM-FOREIGN-STRING
 
 
 (defun h-string-out (max-length)
-  (ffi:with-foreign-object 
+  (ffi:with-foreign-object
       (result `(ffi:c-array ffi:uchar ,(1+ max-length)))
-    (string-out result max-length) 
+    (string-out result max-length)
     (convert-from-foreign-string result))) ;;h-string-out
 
 
-(ffi:def-call-out string-result 
+(ffi:def-call-out string-result
     (:name "uffi_test_string_result")
   (:return-type ffi:c-string)
   (:language :stdc)
@@ -71,7 +71,7 @@ URL:        <http://clisp.sourceforge.net/impnotes.html#encoding>
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(ffi:def-call-out sint32-in 
+(ffi:def-call-out sint32-in
     (:name "uffi_test_sint32_in")
   (:arguments (value ffi:sint32))
   (:return-type nil)
@@ -87,7 +87,7 @@ URL:        <http://clisp.sourceforge.net/impnotes.html#encoding>
   (:library "/home/pascal/src/common/clisp/uffi-test.so"))
 
 
-(ffi:def-call-out sint32-result 
+(ffi:def-call-out sint32-result
     (:name "uffi_test_sint32_result")
   (:return-type ffi:sint32)
   (:language :stdc)
@@ -97,12 +97,12 @@ URL:        <http://clisp.sourceforge.net/impnotes.html#encoding>
 uffi                 ffi-arg                      ffi-ret
 ==================== ============================ ============================
 :sint32              ffi:sint32                   ffi:sint32
-(* :sint32)          (ffi:c-ptr ffi:sint32)       (ffi:c-ptr ffi:sint32)       
+(* :sint32)          (ffi:c-ptr ffi:sint32)       (ffi:c-ptr ffi:sint32)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(ffi:def-c-struct record-t 
+(ffi:def-c-struct record-t
   (character     ffi:character)
   (number        ffi:int)
   (single-float  ffi:single-float)
@@ -111,7 +111,7 @@ uffi                 ffi-arg                      ffi-ret
 
 ;;(ffi:c-array-ptr ffi:character) --> (simple-vector size)
 
-(ffi:def-call-out record-in 
+(ffi:def-call-out record-in
     (:name "uffi_test_record_in")
   (:arguments (value (ffi:c-ptr record-t)))
   (:return-type nil)
@@ -129,7 +129,7 @@ uffi                 ffi-arg                      ffi-ret
 
 (defun h-record-out ()
   (ffi:with-foreign-object (result 'record-t)
-    (record-out (ffi:foreign-address result)) 
+    (record-out (ffi:foreign-address result))
     (make-record-t
      :character (ffi:slot (ffi:foreign-value result) 'character)
      :number (ffi:slot (ffi:foreign-value result) 'number)
@@ -138,7 +138,7 @@ uffi                 ffi-arg                      ffi-ret
      :big-string (ffi:slot (ffi:foreign-value result) 'big-string)))) ;;h-record-out
 
 
-(ffi:def-call-out record-result 
+(ffi:def-call-out record-result
     (:name "uffi_test_record_result")
   (:return-type (ffi:c-ptr record-t))
   (:language :stdc)

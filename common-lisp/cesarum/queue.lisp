@@ -15,25 +15,25 @@
 ;;;;    2012-04-28 <PJB> Added QUEUE-ELEMENTS.
 ;;;;    2005-08-31 <PJB> Added QUEUE-DELETE.
 ;;;;    2004-02-26 <PJB> Formated for publication.
-;;;;    2001-12-31 <PJB> Added pjb-queue-requeue. 
+;;;;    2001-12-31 <PJB> Added pjb-queue-requeue.
 ;;;;                     Corrected the return value of some methods.
 ;;;;    2001-11-12 <PJB> Creation.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2001 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -51,7 +51,7 @@
 
 This module exports a queue type. This is a structure optimized for
 FIFO operations, keeping a pointer to the head and the tail of a list.
-    
+
 
 The structure of a queue is as follow:
 
@@ -76,19 +76,19 @@ The structure of a queue is as follow:
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2001 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -265,7 +265,7 @@ DO:     Test the queue data type. Insert test log at the point.
                  (progn
                    (format t "   Length=~2D~%" (queue-length q))
                    (when (< 0 (queue-length q))
-                     (format t "      Head=~S~%      Tail=~S~%" 
+                     (format t "      Head=~S~%      Tail=~S~%"
                              (queue-first-element q)
                              (queue-last-element q))
                      "")

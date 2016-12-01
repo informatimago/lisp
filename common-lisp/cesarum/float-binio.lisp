@@ -5,10 +5,10 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    This package encodes and decodes arrays of float into arrays
 ;;;;    of signed-byte 32 in order to do binary I/O.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -19,19 +19,19 @@
 ;;;;    encode into an array of (signed-byte 8).
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -50,19 +50,19 @@ BUGS: Handling of SHORT-FLOAT and LONG-FLOAT is not complete.
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2003 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -276,7 +276,7 @@ RETURN: AN ARRAY OF FLOAT (DEPENDING ON BIOFA-FLOAT-SIZE AND +FLOAT-TYPE+)
   (let* ((radix (biofa-radix biofa-array))
          (fs    (biofa-float-size biofa-array))
          (type  (or (cdr (assoc fs +float-types+)) 'long-float))
-         (base  +header-size+)                      
+         (base  +header-size+)
          (float-array (make-array (list (biofa-count biofa-array))
                                   :element-type type)))
     (dotimes (i (length float-array))

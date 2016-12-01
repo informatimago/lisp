@@ -5,10 +5,10 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Example of a processor with illegal instruction traps allowing
 ;;;;    one to implement missing instructions in software.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -17,19 +17,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2011 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -54,9 +54,9 @@
 (defconstant +bytes-per-word+ 8)
 (deftype word () '(unsigned-byte 64))
 
-(defparameter *memory-size* 65536 "Number of words in the memory") 
+(defparameter *memory-size* 65536 "Number of words in the memory")
 
-(defstruct machine 
+(defstruct machine
   (pc          0 :type word)
   (accumulator 0 :type word)
   (memory (make-array *memory-size* :element-type 'word :initial-element 0)))
@@ -195,7 +195,7 @@ When step is true, executes only one step."
                                  (trap machine +invalid-address-trap+))
                                 (t
                                  ,@body)))))
-                
+
                 (case opcode
                   ;; Notice not all instructions are implemented:
                   ;; 0000 move src,dst
@@ -471,7 +471,7 @@ and a bit-vector indicating instructions (vs. dcl) in the code vector.
 (defvar *machine* nil
   "for debugging purpose, we bind the last machine used here.")
 
-(defparameter *program* 
+(defparameter *program*
   '(
     ;; Address 0 contains a jump to start, the machine boots with pc=0
     (jump start)
@@ -494,7 +494,7 @@ and a bit-vector indicating instructions (vs. dcl) in the code vector.
 
     ;; Let's start with the illegal instruction handler:
     process-illegal-instruction
-    
+
     (store acc save-acc)                ; save accumulator.
     ;; We really would need a stack and indirect addressing...
     ;; but this is to show that it's possible to start with a very
@@ -505,12 +505,12 @@ and a bit-vector indicating instructions (vs. dcl) in the code vector.
     (add one acc)                       ; add one for return address
     (add jump-template acc)  ; store it into the return instruction.
     (store acc return-instruction)
-    
+
     (load return-pc acc)          ; get the instruction address
     (lshift src-offset acc)       ; store it into the load instruction
     (add load-template acc)
     (store acc load-instruction)
-    
+
     load-instruction (load 0 acc)       ; get the instruction
     (store acc instruction)
     (and opcode-mask acc)            ; extract the opcode
@@ -574,8 +574,8 @@ and a bit-vector indicating instructions (vs. dcl) in the code vector.
     pop-template (pop 0)
     halt-template (halt)
 
-    
-    
+
+
     ;; instruction op-codes
     #+(and (or) emacs) (loop for entry in *instructions*
                              do (insert (format "%s-op (dcl #b%s)\n"
@@ -607,7 +607,7 @@ and a bit-vector indicating instructions (vs. dcl) in the code vector.
     popa-op (dcl #b11110110)
     pop-op (dcl #b11110111)
     halt-op (dcl #b11111111)
-    
+
 
     -op           (dcl 0)
     opcode-mask   (dcl #xff00000000000000)
@@ -618,7 +618,7 @@ and a bit-vector indicating instructions (vs. dcl) in the code vector.
     really-illegal-instruction (halt)
     process-invalid-address    (halt)
     ;; eg. process-invalid-address could go to a VM manager.
-    
+
     move                                ; move src dst
     (load instruction acc)              ; load the src data:
     (and src-mask acc)                  ; maskout the source address
@@ -633,7 +633,7 @@ and a bit-vector indicating instructions (vs. dcl) in the code vector.
     (load data acc)
     store-data-instruction (store acc 0)
     (jump return)
-    
+
     sub
     (load instruction acc)              ; load the src data
     (and src-mask acc)                  ; maskout the source address
@@ -647,13 +647,13 @@ and a bit-vector indicating instructions (vs. dcl) in the code vector.
 
     mul (jump really-illegal-instruction)
     div (jump really-illegal-instruction)
-    
+
     neg
     (load save-acc acc)
     (not acc)
     (add one acc)
     (jump return-instruction)
-    
+
     or                ; implemented as (not (and (not mem) (not acc)))
     (load instruction acc)              ; load the src data
     (and src-mask acc)                  ; maskout the source address
@@ -667,7 +667,7 @@ and a bit-vector indicating instructions (vs. dcl) in the code vector.
     (and data acc)
     (not acc)
     (jump return-instruction)
-    
+
     call
     (load stack acc) (add -one acc) (store acc stack)
     (add store-template acc)
@@ -680,7 +680,7 @@ and a bit-vector indicating instructions (vs. dcl) in the code vector.
     (add jump-template acc)
     (store acc return-instruction)
     (jump return)
-    
+
     ret
     (load stack acc)
     (lshift src-offset acc)
@@ -693,19 +693,19 @@ and a bit-vector indicating instructions (vs. dcl) in the code vector.
     (add one acc)
     (store acc stack)
     (jump return)
-    
+
     pusha (jump really-illegal-instruction)
     push  (jump really-illegal-instruction)
     popa  (jump really-illegal-instruction)
     pop   (jump really-illegal-instruction)
 
 
-    
-    return   
+
+    return
     (load save-acc acc)                 ; restore the accumulator:
     return-instruction (jump 0)         ; and continue
 
-    
+
     src-offset  (dcl 28)
     src-mask*   (dcl #xff0000000fffffff)
     src-mask    (dcl #x00fffffff0000000)
@@ -719,7 +719,7 @@ and a bit-vector indicating instructions (vs. dcl) in the code vector.
     ;; ---------------------------------------------- ;;
     start ; let's test the new opcodes:
 
-    
+
     (move src dst)
     (move (+ src 1) (+ dst 1))
     (move (+ src 2) (+ dst 2))
@@ -741,7 +741,7 @@ and a bit-vector indicating instructions (vs. dcl) in the code vector.
     (call write-string)
 
     (halt)
-    
+
     message (ascii "Hello world!" 10 0)
     message-address (dcl message)
     ;; ---------------------------------------------- ;;
@@ -755,7 +755,7 @@ and a bit-vector indicating instructions (vs. dcl) in the code vector.
     (store acc load-indirect/load-instruction)
     load-indirect/load-instruction (load 0 acc)
     (ret)
-    
+
     write-string
     ;; acc = address of string.
     (store acc write-string/string)
@@ -781,7 +781,7 @@ and a bit-vector indicating instructions (vs. dcl) in the code vector.
     ;; write it out
     (jzero write-string/end)
     (output acc stdout)
-    ;; shift mask 
+    ;; shift mask
     (load write-string/byte acc)
     (rshift write-string/chunk-size acc)
     (store acc write-string/byte)
@@ -792,10 +792,10 @@ and a bit-vector indicating instructions (vs. dcl) in the code vector.
     (store acc write-string/offset)
 
     (jump write-string/char-loop)
-    
+
     write-string/end
     (ret)
-    
+
     write-string/string           (dcl 0) ; pointer to the next string chunk
     write-string/chunk            (dcl 0) ; current string chunk being processed
     write-string/byte             (dcl 0) ; current byte mask
@@ -815,7 +815,7 @@ and a bit-vector indicating instructions (vs. dcl) in the code vector.
 
     ;; We will dump the memory from src to end when the machine
     ;; halts:
-    
+
     src     (dcl #x1122334455667788 #xff #xdeadbeef #xfeedbabe)
     dst     (dcl 0 0 0 0)
     +pi     (dcl 3141592653589)
@@ -838,7 +838,7 @@ including call/ret with a stack, and a couple of library routines.")
 
 (defun example/run (&key verbose)
   (multiple-value-bind (code symtable) (assemble 0 *program*)
-    (let ((start (cdr (assoc 'src symtable))) 
+    (let ((start (cdr (assoc 'src symtable)))
           (end   (cdr (assoc 'end symtable)))
           (machine (make-machine)))
       (setf *machine* machine)
@@ -1721,6 +1721,6 @@ Hello world!
 00F3: FFFFFFFFFFFF0000  18446744073709486080
 
 ; No value
-example-soft-opcodes> 
+example-soft-opcodes>
 
 |#

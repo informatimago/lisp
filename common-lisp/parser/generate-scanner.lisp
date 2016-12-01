@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Generates a scanner class with its SCAN-NEXT-TOKEN method.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -128,7 +128,7 @@
 (defmethod accept ((scanner buffered-scanner) token)
   (if (word-equal token (scanner-current-token scanner))
       (prog1 (list (token-kind (scanner-current-token scanner))
-                   (scanner-current-text scanner)                   
+                   (scanner-current-text scanner)
                    (scanner-column scanner))
         (scan-next-token scanner))
       (error 'unexpected-token-error
@@ -144,7 +144,7 @@
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  
+
   (defun generate-scanner (name superclass terminals skip-spaces alphanumerics spaces)
     ;;
     ;; an-terminals  = literal terminals (given as string in rules), ending with an alphanumeric.
@@ -156,7 +156,7 @@
     ;;
     ;; nl-terminals are processed in the order they're given in the :terminals clauses.
     ;;
-    
+
     (let* (
            ;; Literal Alpha Numeric Terminals
            (an-terminals  (sort (remove-if-not
@@ -195,9 +195,9 @@
                               :token-symbol-package (load-time-value (find-package ,symbol-pname))))
 
          (defmethod scan-next-token ((scanner ,name) &optional parser-data)
-           "RETURN: (scanner-current-token scanner)" 
+           "RETURN: (scanner-current-token scanner)"
            (declare (ignore parser-data))
-           (let (match) 
+           (let (match)
              ,@(when skip-spaces
                  `((setf match (string-match (format nil "^([~A]+)" (coerce (scanner-spaces scanner) 'string))
                                              (scanner-buffer scanner)
@@ -228,7 +228,7 @@
                         (let ((text (match-string 1 (scanner-buffer scanner) match)))
                           (setf (scanner-column scanner)        (1+ (match-end 1 match))
                                 (scanner-current-text scanner)  text
-                                (scanner-current-token scanner) text))))) 
+                                (scanner-current-token scanner) text)))))
                  ;; Non Literal Terminals: we have a regexp for each terminal.
                  ,@(mapcar
                     (lambda (terminal)

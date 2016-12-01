@@ -5,11 +5,11 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Implements the Playtomo Stonedge Game, and its solver.
 ;;;;    See http://www.playtomo.com/ (not much here when I went);
 ;;;;    Download the playtomo games on BlackBerry.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -17,19 +17,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2010 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -43,7 +43,7 @@
 (shadow 'copy) ; from :com.informatimago.common-lisp.graph
 
 ;;;-----------------------------------------------------------------------------
-;;; 
+;;;
 ;;; STONE
 ;;;
 
@@ -74,7 +74,7 @@ To move, it rotates 1/4 turn on one of its edges that is in contact with the cel
 (defconstant +back+  3)
 
 
-;;              
+;;
 ;;              ^
 ;;             y|front
 ;;              |
@@ -88,13 +88,13 @@ To move, it rotates 1/4 turn on one of its edges that is in contact with the cel
 ;;
 
 (defparameter *rotations*
-  ;;                   x               x                  x                  x   
-  ;;                   y               y                  y                  y   
-  ;;          right    z      left     z         front    z         back     z   
-  ;;        -------   ---   --------  ---      --------  ---      -------   ---  
-  ;;          0 0 1    z      0 0 -1  -z        1  0  0   x        1  0  0   x   
-  ;;          0 1 0    y      0 1 0    y        0  0  1   z        0  0 -1  -z   
-  ;;         -1 0 0   -x      1 0 0    x        0 -1  0  -y        0  1  0   y   
+  ;;                   x               x                  x                  x
+  ;;                   y               y                  y                  y
+  ;;          right    z      left     z         front    z         back     z
+  ;;        -------   ---   --------  ---      --------  ---      -------   ---
+  ;;          0 0 1    z      0 0 -1  -z        1  0  0   x        1  0  0   x
+  ;;          0 1 0    y      0 1 0    y        0  0  1   z        0  0 -1  -z
+  ;;         -1 0 0   -x      1 0 0    x        0 -1  0  -y        0  1  0   y
   #(
     ;; +right+
     #2a((0 0 1)
@@ -249,7 +249,7 @@ DIRECTION: (member :left :right :front :back)
      +---+
     /   /|
    +---+ |
-   |   | |   
+   |   | |
    |   | +
    |   |/
    +---+  ~A,~A
@@ -757,7 +757,7 @@ See PARSE-GAME for the description of LEVEL.
 (defgeneric copy (object &key &allow-other-keys)
 
   (:documentation "Copy the game objects.  Stateless cells are returned uncopied.")
-  
+
   (:method ((stone stone) &key &allow-other-keys)
     (make-instance 'stone
         :x (stone-x stone)
@@ -889,7 +889,7 @@ See PARSE-GAME for the description of LEVEL.
       (setf (node-visitedp node) t)
       (unless (first state)
         (setf (node-neighbors node)
-              (coerce 
+              (coerce
                (loop
                   :for move    :in '(:right :left :front :back)
                   :for reverse :in '(:left :right :back :front)
@@ -1029,15 +1029,15 @@ printing the number of states and the win states."
 ;; (stonedge *level-39*)
 ;; (solve-problem *problem*) (solve-problem *simple*)
 ;; (time (progn (reset) (explore (parse-game ) '()) (find-win)))
-;; 
+;;
 ;; (solve-problem *level-37*)
 ;; (solve-problem *level-38*)
 ;; (solve-problem *level-39*)
 
 ;; (solve-problem *level-52*)
-;; 
+;;
 ;; (let ((name "g"))
-;;   (with-open-file (dot (format nil "~A.dot" name)  
+;;   (with-open-file (dot (format nil "~A.dot" name)
 ;;                        :direction :output
 ;;                        :if-does-not-exist :create
 ;;                        :if-exists :supersede)

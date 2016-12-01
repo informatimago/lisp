@@ -11,12 +11,12 @@
     <meta name="author"
          content="Pascal J. Bourguignon">
 
-    <meta http-equiv="Reply-to" 
+    <meta http-equiv="Reply-to"
           name="Reply-to"
           content="pjb@informatimago.com">
 
-    <meta http-equiv="Description"  
-          name="description" 
+    <meta http-equiv="Description"
+          name="description"
           content="Generalities about the Common-Lisp-POSIX API">
 
 	<meta name="keywords"
@@ -34,7 +34,7 @@
 
 <h2>Principles</h2>
 
-<p>We're not merging Common-Lisp and POSIX! 
+<p>We're not merging Common-Lisp and POSIX!
 
 <p>We  want  to  have  access  to POSIX  primitives  from  Common-Lisp
 applications as easily  as from a C application.   The POSIX API being
@@ -71,7 +71,7 @@ re-nickname it to the reserved package name <code>SUSV3</code>.
 <p>Note: The package name <code>POSIX</code> is already taken in various
 implementations. Moreover, it's not descriptive enough.
 
-<p>Alternative: 
+<p>Alternative:
 <ul>
 <li>Perhaps it should be named: <code>SUS3</code>.
 </ul>
@@ -141,13 +141,13 @@ implementations. Moreover, it's not descriptive enough.
 
 <p>Alternatives:
 <ul>
-<li> Use the *FEATURES* system. 
-    <p>I don't like this option, leading to the use of #+ and #-. 
+<li> Use the *FEATURES* system.
+    <p>I don't like this option, leading to the use of #+ and #-.
 </ul>
 
 <p>Note: When  defining lisp structures,  we put all the  fields, even
 the optional ones that will be  used only when the optional feature is
-available.  
+available.
 <!--
 The reason  is because  a given  lisp application  may be
 compiled or run on different SUSv3 systems with different sets of options.
@@ -162,9 +162,9 @@ compiled or run on different SUSv3 systems with different sets of options.
 
 <p>A symbol name is derived from the C binding's name, by:
 <ol>
-<li> uppercasing, then 
+<li> uppercasing, then
 <li> replacing underscore (#\_) characters with the hyphen (#\-)
-<li> where the fields of a C structure all have a common prefix 
+<li> where the fields of a C structure all have a common prefix
     (for example, "st_"), we omit it.
 <li> constant names get prefix and suffix '+'s.
 </ol>
@@ -230,7 +230,7 @@ the operating system.
     <li>Constants may be replaced by keywords (for example: error codes).
 
     <li>What to do with variable-length functions
-        like execvp()? Do they take a list, or vector or either? 
+        like execvp()? Do they take a list, or vector or either?
         Don't forget that execlp etc. IMHO have no place in a foreign language
         binding. These are just C wrappers to execv(), execve() and execv().
 
@@ -308,7 +308,7 @@ the operating system.
 
 <li>
 <a href="http://www.franz.com/support/documentation/6.2/doc/os-interface.htm">
-Franz Lisp -- OS Interface</a> 
+Franz Lisp -- OS Interface</a>
 <br>(Would be a nice base to implement a SUSV3 package on Franz Lisp!).
 
 

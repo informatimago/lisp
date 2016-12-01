@@ -5,15 +5,15 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    A lisp driver similar to gcc.
-;;;;    
+;;;;
 ;;;;    Right, that's silly.  But some non-lispers may be lured into
 ;;;;    lisp by it.
 ;;;;
 ;;;;USAGE:
-;;;;    
-;;;;    
+;;;;
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -21,19 +21,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2013 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -131,7 +131,7 @@ no -Os    ==> (space 0)
    -Os    ==> (space 3) (speed 2)
    -O#    ==> (speed #)
 no -Ofast ==> (safety 3)
-   -Ofast ==> (safety 0) 
+   -Ofast ==> (safety 0)
    -g     ==> (debug 3)
 no -g     ==> (debug 0)
 
@@ -140,7 +140,7 @@ no -fsingle-precision-constant ==> (setf *read-default-float-format* 'double-flo
 
 -Dname             ==> (push :name *features*)
 -Dname=definition  ==> (define-symbol-macro cl-user::name definition) (-D-register 'cl-user::name 'definition)
--Uname             ==> (setf *features* (remove :name *features*)) (-D-unregister 'cl-user::name) (unintern 'cl-user::name) 
+-Uname             ==> (setf *features* (remove :name *features*)) (-D-unregister 'cl-user::name) (unintern 'cl-user::name)
 
 -Idir, -I dir
 
@@ -235,19 +235,19 @@ no -fsingle-precision-constant ==> (setf *read-default-float-format* 'double-flo
            "*DEFAULT-PROGRAM-NAME*" "*PROGRAM-NAME*" "*PROGRAM-PATH*" "*ARGUMENTS*"
 
            "WITHOUT-OUTPUT" "WITH-PAGER"
-           "REDIRECTING-STDOUT-TO-STDERR" 
+           "REDIRECTING-STDOUT-TO-STDERR"
            "RELAUCH-WITH-KFULL-LINKSET-IF-NEEDED"
 
            ;; I/O
            "PERROR" "PMESSAGE" "PQUERY"
-           
+
            ;; Options
            "DEFINE-OPTION" "CALL-OPTION-FUNCTION"
            "PARSE-OPTIONS" "MAIN"
            "SET-DOCUMENTATION-TEXT"
            "*BASH-COMPLETION-HOOK*"
-          
-           
+
+
            ;; Utilities:
            "FIND-DIRECTORIES"
            "CONCAT" "MAPCONCAT"
@@ -261,7 +261,7 @@ no -fsingle-precision-constant ==> (setf *read-default-float-format* 'double-flo
            "EX-NOPERM" "EX-NOUSER" "EX-OK" "EX-OSERR" "EX-OSFILE"
            "EX-PROTOCOL" "EX-SOFTWARE" "EX-TEMPFAIL" "EX-UNAVAILABLE"
            "EX-USAGE"
-           
+
            "EXIT"))
 (in-package "COM.INFORMATIMAGO.DRIVER.SCRIPT")
 
@@ -774,7 +774,7 @@ NOTE:   current implementation only accepts as separators
 BUG: when the optionals or keys have a present indicator,
      we just ignore it and build a list that will pass
      the default value anyways...
-" 
+"
   (assert (every (function symbolp) mandatories))
   (append mandatories
           (mapcar (lambda (opt)
@@ -953,7 +953,7 @@ use directly.
 bash function used to do auto-completion of command arguments.
 Use it with:
 
-       eval $($COMMAND  --bash-completion-function) 
+       eval $($COMMAND  --bash-completion-function)
 
 and then typing TAB on the command line after the command name will
 autocomplete argument prefixes.
@@ -1105,13 +1105,13 @@ that are accessible by the user."
 ;; ;;;
 ;; ;;; The main program, definition of the options
 ;; ;;;
-;; 
-;; 
+;;
+;;
 ;; (in-package "COMMON-LISP-USER")
 ;; (load (make-pathname :name "SCRIPT" :type "LISP" :version NIL :case :common
 ;;                      :defaults *load-pathname*))
 ;; (use-package "SCRIPT")
-;; 
+;;
 ;; ;; (redirecting-stdout-to-stderr (load #p"/etc/gentoo-init.lisp"))
 ;; (redirecting-stdout-to-stderr
 ;;  (let ((*load-verbose* nil)
@@ -1122,7 +1122,7 @@ that are accessible by the user."
 ;;    ))
 ;; (redirecting-stdout-to-stderr (asdf:oos 'asdf:load-op :split-sequence)
 ;;                               (asdf:oos 'asdf:load-op :cl-ppcre))
-;; 
+;;
 ;; ;; #-testing-script
 ;; (exit (main ext:*args*))
 

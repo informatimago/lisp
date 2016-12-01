@@ -5,10 +5,10 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    This file defines the file stream operators
 ;;;;    for the Virtual File System backend.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -16,19 +16,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    GPL
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software; you can redistribute it and/or
 ;;;;    modify it under the terms of the GNU General Public License
 ;;;;    as published by the Free Software Foundation; either version
 ;;;;    2 of the License, or (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be
 ;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
 ;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 ;;;;    PURPOSE.  See the GNU General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU General Public
 ;;;;    License along with this program; if not, write to the Free
 ;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
@@ -40,7 +40,7 @@
 
 
 (defclass file-stream (stream)
-  ((pathname   :accessor pathname 
+  ((pathname   :accessor pathname
                :initarg :pathname)
    (file       :accessor %file-stream-file
                :initarg :file)
@@ -104,13 +104,13 @@
                         (if-exists nil)
                         (if-does-not-exist nil)
                         (external-format :default))
-  
+
   (check-type direction (member :input :output :io :probe))
   (check-type if-exists (member :error :new-version :rename :rename-and-delete
                                 :overwrite :append :supersede nil))
   (check-type if-does-not-exist (member :error :create nil))
   (check-type external-format (member :default))
-  
+
 
   (let ((path (resolve-pathspec filespec)))
     (labels ((make-stream (file openp inputp outputp overridep position)
@@ -163,15 +163,15 @@
                  (if (file-entry old)
                      (rename-old file index)
                      (rename-file file old)))))
-      
+
       (let ((contents (file-entry path)))
-        
+
         ;; filespec  ¬N.T     ¬N.T.3<NEWEST ¬N.T.3>NEWEST  N.T.3=NEWEST  N.T.3<NEWEST
         ;;   N.T     no exist     newest        newest       newest         newest
         ;;   N.T.3   no exist     no exist      no exist     newest      old version
         ;;                     create newest  create newest
         (ecase direction
-          
+
           ((:input :probe)
            (if contents
                (progn
@@ -376,13 +376,13 @@
                     (position %file-stream-position)) stream
      (if position-spec
          (if (< -1 position-spec *maximum-file-size*)
-             (setf position position-spec)    
+             (setf position position-spec)
              (error 'simple-stream-error
                     :stream stream
                     :format-control "~A: invalid position ~A on stream ~S"
                     :format-arguments (list 'file-position position-spec stream))))
      position))
-  
+
   (write-byte     (!write-element stream        (vector byte)      0 1)
                   byte)
   (write-char     (!write-element output-stream (string character) 0 1)

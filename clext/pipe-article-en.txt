@@ -48,7 +48,7 @@ have been updated to read from ``*STANDARD-INPUT*`` when no file is
 given, thus working as filters.
 
 ::
-   
+
     user1> (pprint (macroexpand-1 '(filter (in #P"~/tmp/misc/wang")
                                            (grep "LISP" :line-number t)
                                            (out "/tmp/wl.txt"))))
@@ -69,13 +69,13 @@ given, thus working as filters.
     ; No value
     user1>
 
-    
+
 Example
 --------------------------------------------------------------------------------
 
 ::
-   
-    cl-user> (mkupack :use '("COMMON-LISP" 
+
+    cl-user> (mkupack :use '("COMMON-LISP"
                              "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.BROWSER"
                              "COM.INFORMATIMAGO.CLEXT.FILTER"))
     #<Package "USER1">
@@ -183,4 +183,4 @@ distributed in `quicklisp`.
 `Informatimago Public Common Lisp Libraries <http://www.informatimago.com/develop/lisp/index.html>`_
 
 .. comment: THE END
-   
+

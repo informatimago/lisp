@@ -32,19 +32,19 @@
 ;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -66,20 +66,20 @@ LEGAL:  Copyright Pascal J. Bourguignon 2003 - 2004
       Redistribution and use in source and binary forms, with or
       without modification, are permitted provided that the following
       conditions are met:
-      
+
          1. Redistributions of source code must retain the above
             copyright notice, this list of conditions and the
             following disclaimer.
-      
+
          2. Redistributions in binary form must reproduce the above
             copyright notice, this list of conditions and the
             following disclaimer in the documentation and/or other
             materials provided with the distribution.
-      
+
          3. The name of the author may not be used to endorse or
             promote products derived from this software without
             specific prior written permission.
-      
+
       THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY
       EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
       THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
@@ -236,7 +236,7 @@ LEGAL:  Copyright Pascal J. Bourguignon 2003 - 2004
 ;;    ;; aggregate types
 ;;    "DEF-ENUM"             --> C    typedef enum {...} name;
 ;;                           --> DEF-C-ENUM DEFTYPE
-;;                             
+;;
 ;;    "DEF-STRUCT"           --> C    typedef struct name {...} name;
 ;;                           --> DEF-C-STRUCT
 ;;
@@ -345,7 +345,7 @@ LEGAL:  Copyright Pascal J. Bourguignon 2003 - 2004
   ) ;;+TYPE-CONVERSION-LIST+
 
 
-(defvar +type-conversion-hash+ 
+(defvar +type-conversion-hash+
   (let ((table (make-hash-table :size 23)))
     (dolist (record +type-conversion-list+)
       (setf (gethash (uffi-type record) table) record))
@@ -395,7 +395,7 @@ DO:                 REPLACE :POINTER-SELF BY (* (:STRUCT CURRENT-STRUCT),)
                             (:STRUCT-POINTER NAME) BY (* (:STRUCT NAME)),
                     AND CHECK THAT A STRUCTURE EXISTS FOR (:STRUCT NAME).
                     REPLACE (* :UNSIGNED-CHAR) and (* :CHAR) BY :CSTRING,
-                    SINCE IT SEEMS UFFI CLIENT CODE ERRONEOUSLY 
+                    SINCE IT SEEMS UFFI CLIENT CODE ERRONEOUSLY
                     USE (* :UNSIGNED-CHAR) INSTEAD OF :CSTRING...
 RETURN:             A CLEANED UFFI-TYPE.
 TODO:               CHECK OF (STRUCT X (FIELD (STRUCT X))).
@@ -468,7 +468,7 @@ TODO:               CHECK OF (STRUCT X (FIELD (STRUCT X))).
          (error "INVALID TYPE: ~S." uffi-type))))
   ) ;;CLEAN-UFFI-TYPE
 
-      
+
 (defun convert-from-uffi-type (uffi-type context)
   "
 PRIVATE
@@ -636,7 +636,7 @@ PRIVATE
 DO:                 Builds an enum constant name.
 "
   (intern (with-standard-io-syntax
-            (format nil "~A~A~A" enum-name separator-string constant-id)))) 
+            (format nil "~A~A~A" enum-name separator-string constant-id))))
 
 
 
@@ -700,7 +700,7 @@ DO:                 Declares a structure.
 NAME:               A symbol that names the structure.
 FIELDS:             A variable number of field definitions.
                     Each definition is a list consisting of a symbol naming
-                    the field followed by its foreign type.  
+                    the field followed by its foreign type.
 IMPLEMENTATION:     Generates a DEF-C-STRUCT which defines both a foreign
                     C type and a Common-Lisp STRUCTURE-CLASS.
 URL:                <http://uffi.b9.com/manual/def-struct.html>
@@ -826,8 +826,8 @@ SIZE:               An optional size parameter that is evaluated.
                     This parameter is evaluated.
 RETURN:             A pointer to the foreign object.
 URL:                <http://uffi.b9.com/manual/allocate-foreign-object.html>
-URL:                
-IMPLEMENTATION:     
+URL:
+IMPLEMENTATION:
 "
   ;; TODO: CHECK IF TYPE IS CONTANT AND THE.N CHECK AND CONVERT
   ;;       IT AT COMPILE TIME.
@@ -843,7 +843,7 @@ DO:                 Frees the memory used by the allocation of a foreign
 PTR:                A pointer to the allocated foreign object to free.
 URL:                <http://uffi.b9.com/manual/free-foreign-object.html>
 URL:
-IMPLEMENTATION:     
+IMPLEMENTATION:
 "
   `(ffi:foreign-free ,ptr)
   ) ;;FREE-FOREIGN-OBJECT
@@ -1074,7 +1074,7 @@ URL:        <http://clisp.sourceforge.net/impnotes.html#encoding>
     (dotimes (i (length byte-vector))
       (setf (aref byte-vector i)
             (ffi:element (ffi:foreign-value foreign-string) i)))
-    (ext:convert-string-from-bytes byte-vector custom:*foreign-encoding*)  
+    (ext:convert-string-from-bytes byte-vector custom:*foreign-encoding*)
     )) ;;CONVERT-FROM-FOREIGN-STRING
 
 
@@ -1089,7 +1089,7 @@ URL:        <http://uffi.b9.com/manual/convert-to-foreign-string.html>
   (let* ((byte-vector
           (ext:convert-string-to-bytes string custom:*foreign-encoding*))
          (result (allocate-foreign-string (1+ (length byte-vector))))
-         (foreign-type `(ffi:c-array 
+         (foreign-type `(ffi:c-array
                          ffi:uchar ,(list (1+ (length byte-vector))))))
     (declare (ignore foreign-type))     ; TODO!
     (dotimes (i (length byte-vector))
@@ -1158,7 +1158,7 @@ NOTE:               All Common-Lisp implementations are 'case-insensitive'.
                `((:arguments
                   ,@(mapcar (lambda (arg)
                               `(,(first arg)
-                                 ,(convert-from-uffi-type 
+                                 ,(convert-from-uffi-type
                                    (clean-uffi-type (second arg)) :ffi)
                                  :in))
                             args))))
@@ -1249,7 +1249,7 @@ IMPLEMENTATION:     You'd better leave it up to the system to find the library!
                     This implementation can't locate libc because on linux,
                     there's no link named libc.so and this API doesn't allow
                     for a version number (anyway, library versions such as in
-                    libc.so.6.0.1 have nothing to do with COMMON-LISP version 
+                    libc.so.6.0.1 have nothing to do with COMMON-LISP version
                     that are actually file versions and mere integers).
                     Some people believe the can pass with impunity strings
                     containing dots as types. But that's not so.
@@ -1264,7 +1264,7 @@ IMPLEMENTATION:     You'd better leave it up to the system to find the library!
                                   (string/= "lib" name :end2 3))
                               (list name (concatenate 'string "lib" name))
                               (list name))) names))
-    (setf types (or (delete-if (lambda (item) 
+    (setf types (or (delete-if (lambda (item)
                                  (not (every (function alphanumericp) item)))
                                types) '("so")))
     (setf drive-letters (or drive-letters '(nil)))

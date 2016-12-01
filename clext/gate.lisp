@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Implements multi-threading gates, such as:
 ;;;;
 ;;;;    - when a thread waits on a gate, it blocks unconditionally.
@@ -28,19 +28,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -107,7 +107,7 @@ releases the lock and puts A to sleep on CV
 4. Wait to be notified; CONDITION-WAIT will acquire the lock again
 before returning
 
-5. Loop back to step 2, for as long as threading should continue 
+5. Loop back to step 2, for as long as threading should continue
 
 When B generates an event E, it:
 
@@ -117,7 +117,7 @@ When B generates an event E, it:
 
 3. calls CONDITION-NOTIFY on CV to wake any sleeping thread
 
-4. releases the lock 
+4. releases the lock
 
 To avoid the "lost wakeup" problem, the implementation must guarantee
 that CONDITION-WAIT in thread A atomically releases the lock and

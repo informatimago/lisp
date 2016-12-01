@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    This file defines classes to generate C++ syntax.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2007 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -45,7 +45,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; EMITTING C CODE
-;;; 
+;;;
 
 (defvar *c-out* t "A stream designator.")
 (defvar *same-line* nil)
@@ -235,7 +235,7 @@ BUG: What about the character encoding of C strings?
           (princ "\"" out))))
 
 
-(defmethod generate ((self real)) 
+(defmethod generate ((self real))
  "
 BUG: Correct C number syntax!
 "
@@ -301,7 +301,7 @@ BUG: Correct C number syntax!
               :reader arity
               :allocation :class)))
 (defmethod arguments append ((self 0-*-arguments))
-  (when (slot-boundp self 'arguments) (slot-value self 'arguments))) 
+  (when (slot-boundp self 'arguments) (slot-value self 'arguments)))
 
 (defclass 1-*-arguments ()
   ((arguments :initarg :arguments
@@ -311,7 +311,7 @@ BUG: Correct C number syntax!
               :reader arity
               :allocation :class)))
 (defmethod arguments append ((self 1-*-arguments))
-  (when (slot-boundp self 'arguments) (slot-value self 'arguments))) 
+  (when (slot-boundp self 'arguments) (slot-value self 'arguments)))
 
 (defmethod initialize-instance :after ((self 1-*-arguments)
                                        &key &allow-other-keys)
@@ -328,7 +328,7 @@ BUG: Correct C number syntax!
               :reader arity
               :allocation :class)))
 (defmethod arguments append ((self 2-*-arguments))
-  (when (slot-boundp self 'arguments) (slot-value self 'arguments))) 
+  (when (slot-boundp self 'arguments) (slot-value self 'arguments)))
 
 (defmethod initialize-instance :after ((self 2-*-arguments)
                                        &key &allow-other-keys)
@@ -444,7 +444,7 @@ exclusive, but one must be given when :arguments is not given.")
 
 
 ;; (type-pointer  1 ,(lambda (level type)
-;;                    ;; (cast var (pointer char)) --> (char*)var; 
+;;                    ;; (cast var (pointer char)) --> (char*)var;
 ;;                    (generate-expression type :level level :naked nil)
 ;;                    (emit "*")))
 
@@ -478,7 +478,7 @@ exclusive, but one must be given when :arguments is not given.")
               (associativity :initform ,associativity
                              :reader associativity
                              :allocation :class)
-              (c-name        :initform ,c-name 
+              (c-name        :initform ,c-name
                              :reader c-name
                              :allocation :class)))
           `(defun ,cl-name ,(ecase arity
@@ -535,7 +535,7 @@ exclusive, but one must be given when :arguments is not given.")
 (defun make-operators ()
   (loop
     :for priority :from 0
-    :for (associativity . operators) :in 
+    :for (associativity . operators) :in
     '((:left
        (expr-seq             1-* ","))
       (:left
@@ -784,7 +784,7 @@ exclusive, but one must be given when :arguments is not given.")
   ;; `(,(intern (c-keyword self) "COM.INFORMATIMAGO.LANGUAGES.LINC.C") ,(c-sexp (identifier self))
   ;;    ,@(when (sub-statement self) (list (c-sexp (sub-statement self)))))
   ;;                                       ; generate
-  :generate (progn                                 
+  :generate (progn
               (unless *same-line* (emit :fresh-line))
               (generate (identifier self)) (emit ":" " ")
               (generate (ensure-statement (sub-statement self)))))
@@ -798,7 +798,7 @@ exclusive, but one must be given when :arguments is not given.")
   ;; `(,(intern (c-keyword self) "COM.INFORMATIMAGO.LANGUAGES.LINC.C") ,(c-sexp (case-value self))
   ;;    ,@(when (sub-statement self) (list (c-sexp (sub-statement self)))))
   ;;                                       ; generate
-  :generate (progn                                 
+  :generate (progn
               (unless *same-line* (emit :fresh-line))
               (emit "case")
               (generate (case-value self))
@@ -808,13 +808,13 @@ exclusive, but one must be given when :arguments is not given.")
 
 (define-statement stmt-default (optional-statement) () "default"
   ;;                                       ; print-object
-  ;; `(,(class-name (class-of self)) 
+  ;; `(,(class-name (class-of self))
   ;;    ,@(when (sub-statement self) (list (sub-statement self))))
   ;;                                       ; c-sexp
   ;; `(,(intern (c-keyword self) "COM.INFORMATIMAGO.LANGUAGES.LINC.C")
   ;;    ,@(when (sub-statement self) (list (c-sexp (sub-statement self)))))
   ;;                                       ; generate
-  :generate (progn                                 
+  :generate (progn
               (unless *same-line* (emit :fresh-line))
               (emit "default")
               (emit ":" " ")
@@ -1017,14 +1017,14 @@ exclusive, but one must be given when :arguments is not given.")
 
 (defmacro define-declaration (name fields &key generate)
   `(progn
-     
+
      (defclass ,name (declaration)
        (,@(mapcar (lambda (field)
                       `(,field
                         :initarg ,(keywordize field)
                         :accessor ,field))
                   fields)))
-     
+
      (defmethod arguments append ((self ,name))
        (with-slots ,fields self
          (append
@@ -1089,13 +1089,13 @@ exclusive, but one must be given when :arguments is not given.")
               (emit "=")
               (generate namespace-qualified-specifier)
               (emit ";" :newline)))
-     
+
 (define-declaration USING-TYPENAME (using-name)
   :generate (progn
               (emit :fresh-line "using" " " "typename" " ")
               (generate using-name)
               (emit ";" :newline)))
-     
+
 (define-declaration USING-NAMESPACE (using-name)
   :generate (progn
              (emit :fresh-line "using" " " "namespace" " ")
@@ -1107,7 +1107,7 @@ exclusive, but one must be given when :arguments is not given.")
               (emit :fresh-line  "using" " ")
               (generate (absolute-scope using-name))
               (emit ";" :newline)))
-     
+
 (define-declaration TEMPLATE (template-parameter-list sub-declaration)
   :generate (progn
               (emit :fresh-line "template" "<")
@@ -1151,7 +1151,7 @@ exclusive, but one must be given when :arguments is not given.")
 
 (defmacro with-extern (extern-name &body sub-declarations)
   `(extern ,extern-name (list ,@sub-declarations)))
-    
+
 
 
 
@@ -1190,14 +1190,14 @@ exclusive, but one must be given when :arguments is not given.")
          (let ((ll (parse-lambda-list lambda-list)))
            (mapcar (function parameter-name) (parameters ll)))))
     `(progn
-     
+
        (defclass ,name (declarator)
          (,@(mapcar (lambda (field)
                         `(,field
                           :initarg ,(keywordize field)
                           :accessor ,field))
                     fields)))
-     
+
        (defmethod arguments append ((self ,name))
          (with-slots ,fields self
            (append
@@ -1228,7 +1228,7 @@ exclusive, but one must be given when :arguments is not given.")
          (make-instance ',name
            ,@(loop :for field :in fields
                 :nconc (list (keywordize field) field))))
-    
+
        ',name)))
 
 

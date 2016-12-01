@@ -9,7 +9,7 @@
 ;;;;    This package export shell primitives (fork, pipe, redirections, exec).
 ;;;;
 ;;;;USAGE
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -17,19 +17,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2002 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -48,7 +48,7 @@
    "*TEMPORARY-PATHNAME*" ;; pathname of the temporary directory.
    ;; macro API:
    "EXECL"  "PIPE-AND-EXEC"  "PIPE"
-   "FORK"  "WAIT"  
+   "FORK"  "WAIT"
    ;; low-level:
    "PIPE-AND-EXEC-FUN"))
 (in-package  "COM.INFORMATIMAGO.CLISP.SHELL")
@@ -221,7 +221,7 @@ RETURN:     An evaluated process-fdes.
         "Invalid file descriptor specification ~S (must have ~D elements)."
         process-fdes (if triplet 3 2))))))
 
-    
+
 (defun check-edge-list (process-list edge-list)
   "PRIVATE.
 DO:         Checks the syntax of the edge-list and evalutes file names
@@ -314,7 +314,7 @@ EDGE-LIST:  specifies the pipe and input or output as:
               (append (member :append (cadr edge) :test (function eq))) )
           (setq fname (if (stringp fname) fname
                           (format nil "~A" (eval fname))))
-          (list :output 
+          (list :output
                 (check-process-fdes process-list (car edge))
                 (if append
                     (list :file  fname :append)
@@ -546,7 +546,7 @@ EDGE-LIST:      specifies the pipe and input or output as:
   ;; 0. input-data must be evaluated and written to temporary files.
   ;; 1. create all the pipes
   (setq edge-list (create-datafiles-and-pipes edge-list))
-  
+
   ;; 2. fork the processes.
   (setq process-list
         (mapcar
@@ -588,7 +588,7 @@ EDGE-LIST:      specifies the pipe and input or output as:
                       :process process)) ) ;;COND
              ))                            ;;LAMBDA
          process-list))
-  ;; 5. in parent, close the pipes 
+  ;; 5. in parent, close the pipes
   (mapc (lambda (edge)
           (cond
             ((eq :data (car edge))
@@ -621,7 +621,7 @@ EDGE-LIST:      specifies the pipe and input or output as:
               (setf (car process-place) process)
               (setq child-count (1- child-count))))))))
   process-list)
- 
+
 
 
 (defun pipe (process-list &key wait)
@@ -740,30 +740,30 @@ RETURN:  pid;status
 
 ;; epf ::= ( pf redir1 ... redirn )
 ;;
-;; pf ::= 
+;; pf ::=
 ;;       (begin . scheme-code)          ; Run scheme-code in a fork.
 ;;       (| pf1 ... pfn)                ; Simple pipeline
-;;       (|+ connect-list pf1 ... pfn)  ; Complex pipeline   
-;;       (epf . epf)                    ; An extended process form.    
+;;       (|+ connect-list pf1 ... pfn)  ; Complex pipeline
+;;       (epf . epf)                    ; An extended process form.
 ;;       (pgm arg1 ... argn)            ; Default: exec the program.
 ;;
-;; pf ::= 
+;; pf ::=
 ;;       (begin . common-lisp-code)        ; Run common-lisp-code in a fork.
 ;;       (pipe  pf1 ... pfn)               ; Simple pipeline
-;;       (pipe+ connect-list pf1 ... pfn)  ; Complex pipeline   
-;;       (epf . epf)                       ; An extended process form.    
+;;       (pipe+ connect-list pf1 ... pfn)  ; Complex pipeline
+;;       (epf . epf)                       ; An extended process form.
 ;;       (pgm arg1 ... argn)               ; Default: exec the program.
 ;;
 ;; connect-list ::= ((from1 from2 ... to) ...)
 ;;
 ;; redir ::=
-;;       (< [fdes] file-name)  Open file for read. 
-;;       (> [fdes] file-name)  Open file create/truncate. 
-;;       (<< [fdes] object)    Use object's printed rep. 
-;;       (>> [fdes] file-name) Open file for append. 
-;;       (= fdes fdes/port)    Dup2 
-;;       (- fdes/port)         Close fdes/port. 
-;;       stdports              0,1,2 dup'd from standard ports. 
+;;       (< [fdes] file-name)  Open file for read.
+;;       (> [fdes] file-name)  Open file create/truncate.
+;;       (<< [fdes] object)    Use object's printed rep.
+;;       (>> [fdes] file-name) Open file for append.
+;;       (= fdes fdes/port)    Dup2
+;;       (- fdes/port)         Close fdes/port.
+;;       stdports              0,1,2 dup'd from standard ports.
 
 
 ;; For redirection we can implement two cases:
@@ -782,7 +782,7 @@ RETURN:  pid;status
 (defmacro exec-path (&rest command)
   (when (/= 1 (length command))
     (signal 'wrong-number-of-arguments 'exec-path (length command)))
-  (setq command 
+  (setq command
         (mapcar (lambda (item)
                   (cond
                     ((symbolp item)

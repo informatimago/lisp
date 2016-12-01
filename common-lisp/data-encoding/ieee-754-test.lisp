@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Test ieee-754.lisp.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -43,7 +43,7 @@
 
 
 (defun test-ieee-read-double ()
-  (with-open-file (in "value.ieee-754-double" 
+  (with-open-file (in "value.ieee-754-double"
                       :direction :input :element-type '(unsigned-byte 8))
     (loop :while (< (file-position in) (file-length in))
           :do (loop  :for i = 1 :then (* i 256)
@@ -55,7 +55,7 @@
                               (terpri)))))
 
 (defun test-ieee-read-single ()
-  (with-open-file (in "value.ieee-754-single" 
+  (with-open-file (in "value.ieee-754-single"
                       :direction :input :element-type '(unsigned-byte 8))
     (loop :while (< (file-position in) (file-length in))
           :do (loop :for i = 1 :then (* i 256)
@@ -69,12 +69,12 @@
 
 (defun test-single-to-ieee (&rest args)
   (dolist (arg args)
-    (format t "(#x~16,8,'0R ~A)~%" 
+    (format t "(#x~16,8,'0R ~A)~%"
             (float-32-to-ieee-754 (coerce arg 'single-float)) arg)))
 
 (defun test-double-to-ieee (&rest args)
   (dolist (arg args)
-    (format t "(#x~16,16,'0R ~A)~%" 
+    (format t "(#x~16,16,'0R ~A)~%"
             (float-64-to-ieee-754 (coerce arg 'double-float)) arg)))
 
 

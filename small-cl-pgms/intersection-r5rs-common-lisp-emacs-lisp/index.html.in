@@ -26,10 +26,10 @@
 ;;
 
 ;; Common Lisp
-clisp <span class="comment">-ansi</span> <span class="comment">-norc</span> <span class="comment">-q</span> intersection-cl-el-r5rs.lisp 
+clisp <span class="comment">-ansi</span> <span class="comment">-norc</span> <span class="comment">-q</span> intersection-cl-el-r5rs.lisp
 
-(booted a lisp over common-lisp) 
-((fact 10) = 3628800) 
+(booted a lisp over common-lisp)
+((fact 10) = 3628800)
 
 ;; Emacs Lisp
 emacs <span class="comment">-Q</span> <span class="comment">--batch</span> <span class="comment">-l</span> intersection-cl-el-r5rs.lisp <span class="comment">-q</span>

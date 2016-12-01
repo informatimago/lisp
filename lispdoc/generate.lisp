@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Defines the generator API and the main generation routine.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,24 +15,24 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    LLGPL
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
-;;;;    
+;;;;
 ;;;;    This library is licenced under the Lisp Lesser General Public
 ;;;;    License.
-;;;;    
+;;;;
 ;;;;    This library is free software; you can redistribute it and/or
 ;;;;    modify it under the terms of the GNU Lesser General Public
 ;;;;    License as published by the Free Software Foundation; either
 ;;;;    version 2 of the License, or (at your option) any later
 ;;;;    version.
-;;;;    
+;;;;
 ;;;;    This library is distributed in the hope that it will be
 ;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
 ;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 ;;;;    PURPOSE.  See the GNU Lesser General Public License for more
 ;;;;    details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Lesser General
 ;;;;    Public License along with this library; if not, write to the
 ;;;;    Free Software Foundation, Inc., 59 Temple Place, Suite 330,
@@ -48,7 +48,7 @@
 Some targets (like RST-DOCUMENTATION) will generate all the documentation in a single file,
 with few navigation features (it may still include Table of Contents,
 and cross section links), while some other targets (like HTML-DOCUMENTATION) will generate the
-documentation by spreading it over several files.  
+documentation by spreading it over several files.
 
 |#
 
@@ -155,7 +155,7 @@ DO:         Optionally generate a flat list of packages linking to
 
 TARGET:     the generation document instance.
 
-PAGES:      the flat list of packages pages 
+PAGES:      the flat list of packages pages
 
 FILENAME:   the name of the generated file.
 
@@ -362,8 +362,8 @@ TARGET-CLASS:
 "
   (let* ((*default-pathname-defaults* (pathname directory))
          (packdocs     (lispdoc (sort (mapcar (lambda (package)
-                                                (if (packagep package) 
-                                                    package 
+                                                (if (packagep package)
+                                                    package
                                                     (find-package package)))
                                               packages)
                                       (function string<) :key (function package-name))))
@@ -377,7 +377,7 @@ TARGET-CLASS:
            (generate-hierarchical-package-index target (index-tree target) "hierarchical-package-index")
            (generate-flat-package-index         target (pages      target) "flat-package-index")
            (generate-symbol-index
-            target 
+            target
             (generate-flat-symbol-index         target all-symbols  "alphabetic-symbol-index")
             (generate-permuted-symbol-index     target all-symbols  "permuted-symbol-index")
             (length all-symbols)

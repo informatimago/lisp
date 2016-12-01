@@ -5,29 +5,29 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Defines cpp tokens.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2015-06-28 <PJB> 
+;;;;    2015-06-28 <PJB>
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -136,7 +136,7 @@
     (sharpp          "« # »")
     (sharpsharpp     "« ## »")
     (spacep          "a space")
-    (openp           "« ( »") 
+    (openp           "« ( »")
     (closep          "« ) »")
     (open-bracket-p  "« < »")
     (close-bracket-p "« > »")
@@ -162,7 +162,7 @@
 (define-punctuation-predicate sharpp           "#")
 (define-punctuation-predicate sharpsharpp      "##")
 (define-punctuation-predicate openp            "(")
-(define-punctuation-predicate closep           ")") 
+(define-punctuation-predicate closep           ")")
 (define-punctuation-predicate open-bracket-p   "<")
 (define-punctuation-predicate close-bracket-p  ">")
 (define-punctuation-predicate commap           ",")

@@ -354,7 +354,7 @@ Multiple Values
 
 The results of evaluating this expression are the values of the
 expressions given as arguments.  It is legal to pass no values as in
-(VALUES) to indicate no values. 
+(VALUES) to indicate no values.
 
 (VALUES-LIST list)
 
@@ -472,7 +472,7 @@ Delayed Evaluation
 
 Create a cons stream whose head is expr1 (which is evaluated
 immediately) and whose tail is expr2 (whose evaluation is delayed
-until TAIL is called). 
+until TAIL is called).
 
 (HEAD expr)
 
@@ -545,7 +545,7 @@ Where object is the object receiving the message, selector is a symbol
 used to select the appropriate method for handling the message and the
 expressions are arguments to pass to the method.  A method may return
 zero or more values.  Within a method, the object's instance variables
-and class variables are bound as if they were lexical variables. 
+and class variables are bound as if they were lexical variables.
 
 
 (DEFINE-CLASS name decl...)
@@ -1304,7 +1304,7 @@ Returns the greatest common divisor of the specified numbers.
 (LCM n1 n2...)
 
 Returns the least common multiple of the specified numbers.
- 
+
 (RANDOM n)
 
 Returns a random number between zero and n-1 (n must be an integer).
@@ -1738,7 +1738,7 @@ order is native to the host machine.  Returns the 16 bit value or an
 object that satisfies the eof-object? predicate if it reaches the end
 of file on the port.  The -HIGH-FIRST and -LOW-FIRST forms read the
 high and low byte first respectively.
- 
+
 (READ-LONG &optional port)
 (READ-LONG-HIGH-FIRST &optional port)
 (READ-LONG-LOW-FIRST &optional port)
@@ -2127,7 +2127,7 @@ char, uchar, short, ushort, int, uint, long, ulong, str
 (SET-CRECORD-STRING! ptr offset length str)
 
 (GET-CRECORD-TYPE-SIZE type)
- 
+
 
 
 

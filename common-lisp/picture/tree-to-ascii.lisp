@@ -17,19 +17,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2002 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -49,19 +49,19 @@ whose cdr is the list of children.
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2002 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -252,7 +252,7 @@ DO:      Draw the decorated TREE into the PICT.
     ;; draw the node:
     (if boxed
         (progn
-          (draw-string pict (1+ left) (+ bottom (tree-to-ascii-box-base box)) 
+          (draw-string pict (1+ left) (+ bottom (tree-to-ascii-box-base box))
                        str)
           (frame-rect pict left (+ bottom (tree-to-ascii-box-base box) -1)
                       (+ 2 (length str)) 3)
@@ -324,16 +324,16 @@ RETURNS:     The string containing the ASCII-ART tree.
 
 EXAMPLE:     (tree-to-ascii '(if (= a b) (decf b a) (decf a b)))
              -->
-            \"          +--a   
-                 +--=--+      
-                 |     +--b   
-                 |            
+            \"          +--a
+                 +--=--+
+                 |     +--b
+                 |
                  |        +--b
-             if--+--decf--+   
+             if--+--decf--+
                  |        +--a
-                 |            
+                 |
                  |        +--a
-                 +--decf--+   
+                 +--decf--+
                           +--b
              \"
 "
@@ -348,7 +348,7 @@ EXAMPLE:     (tree-to-ascii '(if (= a b) (decf b a) (decf a b)))
                                            :from-length from-length
                                            :base base))
          (pict (make-instance 'picture
-                 :width (tree-to-ascii-box-width box) 
+                 :width (tree-to-ascii-box-width box)
                  :height (tree-to-ascii-box-height box)
                  :background background)))
     (tree-to-ascii-draw-to-pict

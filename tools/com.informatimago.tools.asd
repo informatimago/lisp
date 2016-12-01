@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    ASD file to load the com.informatimago.tools libraries.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2014 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
@@ -72,7 +72,7 @@
 
 ;; (com.informatimago.tools.check-asdf:check-asdf-system-file
 ;;  #P"/some/system.asd"  :report output-stream)
-;; 
+;;
 ;; (com.informatimago.common-lisp.tools.make-depends:generate-asd
 ;;  system-name sources source-type
 ;;  &key description (version "0.0.0")
@@ -82,25 +82,25 @@
 ;;  (depends-on '())
 ;;  (load-paths (list (make-pathname :directory '(:relative))))
 ;;  (vanillap nil))
-;; 
+;;
 ;; (com.informatimago.common-lisp.tools.make-depends:generate-summary
 ;;  sources &key (summary-path #p"SUMMARY.HTML")
 ;;  (character-set "US-ASCII")
 ;;  (source-type "LISP")
 ;;  (verbose nil) (repository-url nil))
-;; 
+;;
 ;; (com.informatimago.common-lisp.tools.make-depends:make-depends
 ;;  object-files packages translations load-paths
 ;;  &key (idf nil) (verbose nil))
-;; 
+;;
 ;; (com.informatimago.tools.manifest:distribution)
 ;; (com.informatimago.tools.manifest:print-manifest system)
 ;; (com.informatimago.tools.manifest:write-manifest-file program-name system)
-;; 
+;;
 ;; (com.informatimago.tools.pathname:make-pathname …)
 ;; (com.informatimago.tools.pathname:user-homedir-pathname)
 ;; (com.informatimago.tools.pathname:translate-logical-pathname pathname)
-;; 
+;;
 ;; (com.informatimago.tools.quicklisp:quick-*)
 
 #-(and)

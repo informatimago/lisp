@@ -12,7 +12,7 @@ Single UNIX Specification Frequently Asked Questions
 Last Updated : Nov 5 2003: freq.ques,v 1.3
 
 This is the Frequently Asked Questions file for the Single UNIX
-Specification. Its maintainer is Andrew Josey (ajosey at The Open Group). 
+Specification. Its maintainer is Andrew Josey (ajosey at The Open Group).
 Suggestions and contributions are always welcome.
 
 This document can be found on the world wide web at
@@ -1030,7 +1030,7 @@ XSI Legacy Interfaces
 
     bcmp(), bcopy(), bzero(), ecvt(), fcvt(), ftime(),
     gcvt(), getwd(), index(), mktemp(), rindex(), utimes(),
-    wcswcs() 
+    wcswcs()
 
 *Q20. What is the history of the development of the Single UNIX
 Specification?*

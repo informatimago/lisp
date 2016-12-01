@@ -53,7 +53,7 @@ ont été mises à jours pour être capable de lire ``*STANDARD-INPUT*``
 quand aucun fichier n'est donné, et fonctionnant ainsi comme filtres.
 
 ::
-   
+
     user1> (pprint (macroexpand-1 '(filter (in #P"~/tmp/misc/wang")
                                            (grep "LISP" :line-number t)
                                            (out "/tmp/wl.txt"))))
@@ -74,13 +74,13 @@ quand aucun fichier n'est donné, et fonctionnant ainsi comme filtres.
     ; No value
     user1>
 
-    
+
 Exemple
 --------------------------------------------------------------------------------
 
 ::
-   
-    cl-user> (mkupack :use '("COMMON-LISP" 
+
+    cl-user> (mkupack :use '("COMMON-LISP"
                              "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.BROWSER"
                              "COM.INFORMATIMAGO.CLEXT.FILTER"))
     #<Package "USER1">
@@ -180,7 +180,7 @@ Sources
 --------------------------------------------------------------------------------
 
 Ces nouveaux paquetages sont disponibles sur gitlab ou github; et seront
-distribué dans une prochaine mise à jour de `quicklisp`. 
+distribué dans une prochaine mise à jour de `quicklisp`.
 
 ::
 

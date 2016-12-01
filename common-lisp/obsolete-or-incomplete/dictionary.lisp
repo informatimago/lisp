@@ -20,19 +20,19 @@
 ;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 1995 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -97,11 +97,11 @@
     ((eq (caar associations) key)
      (car associations))
     (t	
-     (dictionary-private-association-at-key 
+     (dictionary-private-association-at-key
       (cdr associations) key))))
 
 (defmethod value-at-key           ((self dictionary) key)
-  (let ((assoc 
+  (let ((assoc
          (dictionary-private-association-at-key (associations self) key)))
     (if (null assoc)
         assoc
@@ -111,11 +111,11 @@
   (dictionary-private-association-at-key (associations self) key))
 
 (defmethod put-at-key             ((self dictionary) key value)
-  (let ((assoc 
+  (let ((assoc
          (dictionary-private-association-at-key (associations self) key)))
     (cond
       ((null assoc)
-       (setf (associations self) 
+       (setf (associations self)
              (cons (cons key value) (associations self))))
       (t
        (rplacd assoc value)))))

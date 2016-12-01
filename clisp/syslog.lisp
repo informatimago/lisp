@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    FFI to syslog.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -18,19 +18,19 @@
 ;;;;    in the mean time.
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -43,16 +43,16 @@ Since FFI is not always available with clisp, we rather use logger(1).")
   (:export
    "OPENLOG" "SYSLOG" "CLOSELOG"
 
-   "+LOG-PID+" "+LOG-CONS+" "+LOG-ODELAY+" "+LOG-NDELAY+" 
+   "+LOG-PID+" "+LOG-CONS+" "+LOG-ODELAY+" "+LOG-NDELAY+"
    "+LOG-NOWAIT+" "+LOG-PERROR+"
 
-   "+LOG-EMERG+" "+LOG-ALERT+" "+LOG-CRIT+" "+LOG-ERR+" 
+   "+LOG-EMERG+" "+LOG-ALERT+" "+LOG-CRIT+" "+LOG-ERR+"
    "+LOG-WARNING+" "+LOG-NOTICE+"
    "+LOG-INFO+" "+LOG-DEBUG+"
 
-   "+LOG-KERN+" "+LOG-USER+" "+LOG-MAIL+" "+LOG-DAEMON+" 
+   "+LOG-KERN+" "+LOG-USER+" "+LOG-MAIL+" "+LOG-DAEMON+"
    "+LOG-AUTH+" "+LOG-SYSLOG+"
-   "+LOG-LPR+" "+LOG-NEWS+" "+LOG-UUCP+" "+LOG-CRON+" 
+   "+LOG-LPR+" "+LOG-NEWS+" "+LOG-UUCP+" "+LOG-CRON+"
    "+LOG-AUTHPRIV+" "+LOG-FTP+"
    "+LOG-LOCAL0+" "+LOG-LOCAL1+" "+LOG-LOCAL2+" "+LOG-LOCAL3+" "+LOG-LOCAL4+"
    "+LOG-LOCAL5+" "+LOG-LOCAL6+" "+LOG-LOCAL7+"))
@@ -146,20 +146,20 @@ RETURN: A logger for the (facility priority) couple.
 ;;;   (:LANGUAGE :STDC)
 ;;;   (:ARGUMENTS (IDENT C-STRING) (OPTION INT) (FACILITY INT))
 ;;;   (:RETURN-TYPE NIL));;OPENLOG
-;;; 
-;;; 
+;;;
+;;;
 ;;; (DEF-CALL-OUT SYSLOG1
 ;;;   (:NAME "syslog")
 ;;;   (:LANGUAGE :STDC)
 ;;;   (:ARGUMENTS (PRIORITY INT) (FORMAT C-STRING) (VALUE C-STRING))
 ;;;   (:RETURN-TYPE NIL));;SYSLOG1
-;;; 
-;;; 
+;;;
+;;;
 ;;; (DEFMACRO SYSLOG (PRIORITY FCTRL &REST ARGUMENTS)
 ;;;   (SYSLOG1 PRIORITY "%s" (APPLY (FUNCTION FORMAT) NIL FCTRL ARGUMENTS))
 ;;;   );;SYSLOG
-;;; 
-;;; 
+;;;
+;;;
 ;;; (DEF-CALL-OUT CLOSELOG
 ;;;   (:NAME "closelog")
 ;;;   (:LANGUAGE :STDC)

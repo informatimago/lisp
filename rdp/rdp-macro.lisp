@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    The defgrammar macro.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -39,17 +39,17 @@
 (defmacro defgrammar (name &key
                              terminals
                              start
-                             rules 
+                             rules
                              (scanner t)
                              (skip-spaces t)
                              (eof-symbol *eof-symbol*)
                              (target-language :lisp)
                              (trace nil))
   "
-DO:     This macro generates a simple scanner and recursive decent parser 
+DO:     This macro generates a simple scanner and recursive decent parser
         for the language described by this grammar.
         For each <non-terminal> in the grammar, a function named
-        <name>/PARSE-<non-terminal> is generated, in addition to 
+        <name>/PARSE-<non-terminal> is generated, in addition to
         functions SCAN-<name> and PARSE-<name>.
         The grammar structure is also generated for run-time
         in the global special variable <name>.
@@ -58,8 +58,8 @@ DO:     This macro generates a simple scanner and recursive decent parser
 TERMINALS:
 
         A list describing the terminal, of form either:
-             (terminal-name match-regexp) 
-             (terminal-name match-regexp / exclude-regexp) 
+             (terminal-name match-regexp)
+             (terminal-name match-regexp / exclude-regexp)
 
         In the first form, if the match-regexp matches, left-anchored
         to the current position, then the corresponding terminal is
@@ -138,7 +138,7 @@ SYNTAX:
 SEMANTICS:
 
         The terminals are either named terminals listed in the :TERMINALS
-        clause, or literal terminals written directly in the productions as 
+        clause, or literal terminals written directly in the productions as
         lisp strings.  They are matched as-is.
 
         An extended regular expression regex(7) may be given that
@@ -193,7 +193,7 @@ SEMANTICS:
         The action for OPT is to return either NIL, or the result of
         its single subform unchanged.
 
-        The action for an ALT is to return the result of the selected 
+        The action for an ALT is to return the result of the selected
         alternative unchanged.
 
         The default action for an internal SEQ is to return the list of the

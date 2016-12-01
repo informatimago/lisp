@@ -9,7 +9,7 @@
 ;;;;
 ;;;;    This is mostly rendered obsolete by libcl and quicklisp.
 ;;;;
-;;;;    
+;;;;
 ;;;;    This file extends the ASDF-SYSTEM with a cache for tarball locations.
 ;;;;
 ;;;;    We fetch from cliki.net the url of all the asdf installable tarballs,
@@ -40,7 +40,7 @@
 ;;;;        ; when it's not 200),
 ;;;;        ; and whether the asdf system is installed and/or loaded.
 ;;;;
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -56,19 +56,19 @@
 ;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2006 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;***************************************************************************
@@ -113,10 +113,10 @@ RETURN:  a list containing the version numbers;
        :with n = '()
        :with e =  (length name)
        :for p :from (1- e) :downto 0
-       :for s = p 
+       :for s = p
        :for ch = (aref name p)
        :while (or (digit-char-p ch) (char= #\. ch))
-       :do (when (char= #\. ch) (collect)) 
+       :do (when (char= #\. ch) (collect))
        :finally (return (if (or (char= #\_ ch) (char= #\- ch))
                             (progn (collect)
                                    (values n (subseq name 0 s) (subseq name s)))
@@ -237,9 +237,9 @@ RETURN:  A version for the system designated by SYSTEM-DESIGNATOR.
      s (car (sb-bsd-sockets:host-ent-addresses
              (sb-bsd-sockets:get-host-by-name (url-host url))))
      (url-port url))
-    (sb-bsd-sockets:socket-make-stream 
+    (sb-bsd-sockets:socket-make-stream
      s
-     :input t 
+     :input t
      :output t
      :buffering :full
      :external-format :iso-8859-1))
@@ -378,7 +378,7 @@ RETURN:  A version for the system designated by SYSTEM-DESIGNATOR.
 (defun download-files-for-package (package-name-or-url file-name)
   (let ((url (copy-resource-at-url package-name-or-url file-name :verbose t)))
     (terpri)
-    (restart-case 
+    (restart-case
         (verify-gpg-signature/url url file-name)
       (skip-gpg-check (&rest rest)
         :report "Don't check GPG signature for this package"
@@ -398,7 +398,7 @@ RETURN:  A version for the system designated by SYSTEM-DESIGNATOR.
                    byte~:*~P from ~A to ~A ..." length url file-name)
         (force-output))
       #+:clisp (setf (stream-element-type stream) '(unsigned-byte 8))
-      (with-open-file 
+      (with-open-file
           #-(and allegro-version>= (not (version>= 8 0)))
           (o file-name :direction :output
              #+(or :clisp :digitool (and :lispworks :win32))
@@ -429,8 +429,8 @@ RETURN:  A version for the system designated by SYSTEM-DESIGNATOR.
 
 (defun map-tags (fun html)
   (cond ((atom html))
-        ((keywordp (car html)) 
-         (funcall fun html) 
+        ((keywordp (car html))
+         (funcall fun html)
          (map-tags fun (cddr html)))
         (t (map nil  (lambda (item) (map-tags fun item)) html))))
 
@@ -444,7 +444,7 @@ RETURN:    The nodes found by walking HTML following TAG-PATH.
   (flet ((filter-out
           (tag html)
           (remove-if (if (atom tag)
-                       (lambda (node) 
+                       (lambda (node)
                          (or (atom node)
                              (not (eq tag (html-tag node)))))
                        (lambda (node)
@@ -496,7 +496,7 @@ RETURN:  The list of subnodes* of HTML whose tag is TAG and that has an
 
 (defun fetch-url (url &key (verbose nil))
   "
-RETURN: A byte vector containing the contents of the resource 
+RETURN: A byte vector containing the contents of the resource
         at the given HTTP URL.
 "
   (destructuring-bind (response headers stream)
@@ -510,7 +510,7 @@ RETURN: A byte vector containing the contents of the resource
                                ;;; HEADERS = ~{~S~%~^;;;           ~}~%"
                    url response headers)
                  (force-output)))
-             (unless (member response '(301 302))	       
+             (unless (member response '(301 302))	
                (return-from got (list response headers stream)))
              (close stream)
              (setf url (cdr (assoc :location headers))))))
@@ -523,7 +523,7 @@ RETURN: A byte vector containing the contents of the resource
                 (or length "some unknown number of") url)
         (force-output))
       #+:clisp (setf (stream-element-type stream) '(unsigned-byte 8))
-      (let ((buffer 
+      (let ((buffer
              (with-open-stream (stream stream)
                (if length
                    (let ((buffer (make-array
@@ -568,7 +568,7 @@ RETURN: A list of system names found on cliki.
   (mapcar (lambda (a-tag) (html-attribute a-tag :href))
           (collect-nodes-tav
            (collect-nodes-tav
-            (html-attributes 
+            (html-attributes
              (parse-html-string
               (let ((data (fetch-url *asdf-system-list-url* :verbose verbose)))
                 (if (stringp data)
@@ -600,7 +600,7 @@ RETURN:   url ; headers ; stream
                  url response headers)
                (force-output)))
            (when stream (close stream))
-           (unless (member response '(301 302))	       
+           (unless (member response '(301 302))	
              (return-from got (values url response headers)))
            (setf url (cdr (assoc :location headers))))))
 
@@ -720,11 +720,11 @@ DO:     Updates the cache with the asdf-systems known by www.cliki.net.
 
 (defun find-system-tarball-location (package-name-or-url)
   "
-RETURN: If PACKAGE-NAME-OR-URL is an url string, 
+RETURN: If PACKAGE-NAME-OR-URL is an url string,
         then PACKAGE-NAME-OR-URL
-        else the url to the asdf-system tarball, 
+        else the url to the asdf-system tarball,
              or if not known, of the cliki.net download link.
-PACKAGE-NAME-OR-URL:  Either a http:// url, 
+PACKAGE-NAME-OR-URL:  Either a http:// url,
                           or a file:// url,
                           or a asdf system name.
 "
@@ -748,7 +748,7 @@ PACKAGE-NAME-OR-URL:  Either a http:// url,
         (block got
           (loop
              (destructuring-bind (response headers stream) (url-connection url)
-               (unless (member response '(301 302))	       
+               (unless (member response '(301 302))	
                  (return-from got (values response headers stream url)))
                (close stream)
                (setf url (cdr (assoc :location headers)))))))))

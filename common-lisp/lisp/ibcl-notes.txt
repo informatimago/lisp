@@ -29,7 +29,7 @@ Maintaining an in-image source database serves several purposes:
 
 - having the source accessible allows for sophisticated development
   tools.
-   
+
 Notably, it allows automatic and dynamic rewriting and processing of
 the source code by development tools.
 
@@ -55,7 +55,7 @@ Text Sources
 The inconvenients are:
 
 - the text form is bigger than the Sexp form (there are already 360 MB
-  of ``.lisp``/``.asd`` sources in ``~/quicklisp``). 
+  of ``.lisp``/``.asd`` sources in ``~/quicklisp``).
 
 - each processing the text form requires re-reading it (which requires
   to keep track of the read-time ``*package*`` and the ``*readtable*``
@@ -140,15 +140,15 @@ Project structure
 File based structure
 --------------------
 
-Quicklisp: 
+Quicklisp:
 
     A DAG of interdependent asdf systems.
 
-ASDF: 
+ASDF:
 
     A DAG of interdependent lisp files.
 
-Lisp: 
+Lisp:
 
     A set of packages.  There may be circularities in package
     dependencies, but not in the source files: defpackage forms cannot
@@ -157,7 +157,7 @@ Lisp:
     can establish later circular dependencies.  So while the set of
     packages may form a graph in general, the text source of
     defpackage forms is a DAG.  The evaluation of each toplevel form
-    builds one or more objects.  
+    builds one or more objects.
 
 The toplevel forms are read each in a specific package, and in a
 specific order.  However, this order can be infered.
@@ -210,7 +210,7 @@ Read-Eval
 Once the text is read, a lisp object "source form" and an editing unit
 (text and/or file & positions) are produced by the lisp reader.
 Notice: only a single object reference is returned by the lisp reader.
-    
+
 
 When reading "(a . (b . nil))", we have five lisp objects: two conses
 and three symbols.  The two conses can be associated with that editing
@@ -277,44 +277,44 @@ defines CL macros to record source sexp.
 ::
 
    ----     --------------------------    ----------- -----------  ------
-                                          time        source-type  name  
+                                          time        source-type  name
    ----     --------------------------    ----------- -----------  ------
    done     DEFPACKAGE                                :package     string
             actually we could generate the defpackage form
-            from the package object. 
-                                                                         
+            from the package object.
+
    done     DEFVAR                                    :variable    symbol
    done     DEFPARAMETER                              :variable    symbol
    done     DEFCONSTANT                               :variable    symbol
    done     DEFINE-SYMBOL-MACRO                       :variable    symbol
-                                                                         
+
    done     DEFSTRUCT                                 :type        symbol
             constructors, predicates and accessors:
             we won't trace into them.
-  
+
    done     DEFCLASS                                  :type        symbol
             accessors: we won't trace into them.
-   
+
    done     DEFTYPE                                   :type        symbol
-            
+
    done     DEFINE-CONDITION              runtime     :type        symbol
             accessors and report functions:
             we won't trace into them.
-  
+
 
    done     DEFINE-COMPILER-MACRO         compilation              symbol
              can be :compiler-macro or :setf-compiler-macro
-  
+
    done     DEFINE-MODIFY-MACRO           compilation :function    symbol
    done     DEFINE-SETF-EXPANDER          compilation :setf-mac    symbol
    done     DEFSETF                       compilation :setf-mac    symbol
    done     DEFMACRO                      compilation :function    symbol
-                                                                         
+
    done     DEFINE-METHOD-COMBINATION     runtime     :meth-comb   symbol
-  
+
    done     DEFUN                         runtime     :function    symbol or (setf symbol)
    done     DEFGENERIC                    runtime     :function    symbol or (setf symbol)
-  
+
             DEFMETHOD                     runtime     :method      symbol or (setf symbol)
             methods need method-qualifiers and specializer in addition to the symbol.
    ----     --------------------------    ----------- -----------  ------
@@ -334,7 +334,7 @@ source form.  ⚠ this works only for toplevel forms, not for clozure:
 
     --> (source 'f 'function :package *package*) --> (defun f () x)
 
-    
+
     (source '(m () (t t))                   :method) --> (defmethod m (x y) …)
     (source '(m () (t t))              :setf-method) --> (defmethod (setf m) (new-value x) …)
     (source '((setf m) () (t t))            :method) --> (defmethod (setf m) (new-value x) …)
@@ -389,4 +389,4 @@ We can dream, can't we?
 .. comment:  -----------------------------------------------
                             -------------
                                   -
-                                  .    
+                                  .

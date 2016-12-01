@@ -3,7 +3,7 @@
     (cl:function name))
 
 
-(define-special-operator (quote literal) 
+(define-special-operator (quote literal)
     (cl:quote literal))
 
 
@@ -11,32 +11,32 @@
     (cl:if (expression test) (expression then) (expression else)))
 
 
-(define-special-operator (block name &body body) 
+(define-special-operator (block name &body body)
   (cl:block name (unsplice-progn-body body)))
 
 
-(define-special-operator (return-from name &optional result) 
+(define-special-operator (return-from name &optional result)
   (cl:return-from name (expression result)))
 
 
-(define-special-operator (catch object &body body) 
+(define-special-operator (catch object &body body)
   (cl:catch (expression object) (unspliace-progn-body body)))
 
 
-(define-special-operator (throw object result) 
+(define-special-operator (throw object result)
   (cl:throw (expression object) (expression result)))
 p
 
-(define-special-operator (unwind-protect protected &body cleanup) 
+(define-special-operator (unwind-protect protected &body cleanup)
     (cl:unwind-protect (expression protected)
       (unsplice-progn-body cleanup)))
 
 
-(define-special-operator (tagbody &body body) 
+(define-special-operator (tagbody &body body)
     (cl:tagbody (unsplice-tagbody body)))
 
 
-(define-special-operator (go tag) 
+(define-special-operator (go tag)
   (cl:go tag))
 
 
@@ -61,7 +61,7 @@ p
 
 
 
-(define-special-operator (let (&rest bindings) &body body) 
+(define-special-operator (let (&rest bindings) &body body)
     (cl:let
         (map bindings (or (var val)
                           (var)
@@ -69,7 +69,7 @@ p
              (var (expression (or val nil))))
       (unsplice-locally-body body)))
 
-(define-special-operator (let* (&rest bindings) &body body) 
+(define-special-operator (let* (&rest bindings) &body body)
     (cl:let*
         (map bindings (or (var val)
                           (var)

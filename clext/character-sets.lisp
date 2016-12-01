@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Portability layer over character sets and external-formats.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -16,19 +16,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -132,7 +132,7 @@ RETURN:     A new list of name and aliases, with the ALIASES added, if
   ;; #+ccl-1.9
   ;; ccl:list-character-encodings.  Use it
   ;; in ccl:describe-character-encodings
-  
+
   #+(and ccl (not ccl-1.6))
   (mapcar (lambda (x) (mapcar (function string-upcase) x))
           '((:iso-8859-1 :iso_8859-1 :latin1 :l1 :ibm819 :cp819 :csisolatin1)
@@ -206,7 +206,7 @@ RETURN:     A new list of name and aliases, with the ALIASES added, if
     (let ((r '()))
       (maphash (lambda (k v) (declare (ignore k)) (push  v r)) h)
       r))
-  
+
   #+cmu   '(("ISO-8859-1"))          ; :iso-latin-1-unix ;  what else?
 
   #+ecl   '(("ISO-8859-1")
@@ -245,7 +245,7 @@ RETURN:     A new list of name and aliases, with the ALIASES added, if
                    (system:available-encodings)))
    :test (function equal))
 
-  
+
   #-(or abcl ccl clisp cmu ecl sbcl)
   (progn
     (warn "What are the available external formats in ~A ?"
@@ -278,7 +278,7 @@ DO:         Set the cs-lisp-encoding of the character-sets present in
 
 (defgeneric make-external-format (character-encoding &optional line-termination)
   (:documentation "Makes an implementation specific external-format.")
-  
+
   (:method ((cs character-set) &optional line-termination)
     (if (cs-lisp-encoding cs)
         (let ((encoding         (first (cs-lisp-encoding cs)))
@@ -293,7 +293,7 @@ DO:         Set the cs-lisp-encoding of the character-sets present in
                                     :line-termination (case line-termination
                                                         ((:unix :dos) line-termination)
                                                         ((:mac) :macos)))
-          
+
           #+clisp
           (ext:make-encoding :charset (symbol-value (intern encoding "CHARSET"))
                              :line-terminator line-termination
@@ -323,7 +323,7 @@ DO:         Set the cs-lisp-encoding of the character-sets present in
                      :format-control "The character-set ~S has no lisp-encoding in ~A"
                      :format-arguments (list (cs-name cs) (lisp-implementation-type)))
              :default))
-          
+
           #+sbcl
           (intern encoding "KEYWORD")
 
@@ -349,7 +349,7 @@ DO:         Set the cs-lisp-encoding of the character-sets present in
                  :character-set (string character-set-name)
                  :format-control "There is no character-set named ~S"
                  :format-arguments (list (string character-set-name))))))
-  
+
   (:method ((character-set symbol) &optional line-termination)
     (make-external-format (string character-set) line-termination)))
 

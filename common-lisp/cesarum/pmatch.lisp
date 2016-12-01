@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Sexp Pattern Matcher.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -21,19 +21,19 @@
 ;;;;      eg: (match '(a (?*  (?n n b))) '(a b b b))
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -55,19 +55,19 @@ Sexp Pattern Matcher
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2003 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -98,7 +98,7 @@ RETURN: Whether the match failed.
 
 
 (defun match-state-retry    (ms)
-  "PRIVATE" 
+  "PRIVATE"
   (if (match-state-failed-p ms)
       (make-match-state :dict (cdr (match-state-dict ms)))
       ms))
@@ -116,7 +116,7 @@ RETURN: The list of results of the FUNCTION.
 
 
 (defun match-dict-add-binding (ms pat exp)
-  "PRIVATE" 
+  "PRIVATE"
   (let* ((var (second (car pat)))
          (val (car exp))
          (ass (assoc var (match-state-dict ms))))
@@ -136,7 +136,7 @@ RETURN: The list of results of the FUNCTION.
          (and (listp pat) (symbolp (car pat))
               (string= ',pattern (car pat))))
       `(defun ,name (pat) ;; ((?n ...)...)
-         "PRIVATE" 
+         "PRIVATE"
          (and (listp pat) (listp (car pat)) (symbolp (caar pat))
               (string= ',(car pattern) (caar pat))))))
 
@@ -338,7 +338,7 @@ SEE ALSO:  match-state-failed-p to check if the matching failed.
   "PRIVATE"
   (and (or (symbolp name) (stringp name))
        (assoc name dict :test (function string=))))
-  
+
 
 (defun subst-bindings (expr dict)
   "PRIVATE"
@@ -377,7 +377,7 @@ PAT:       A symbolic expression with the following syntax:
              (?+ l)  expects anything (one or more items).
              (?* l)  expects anything (zero or more items).
              other   expects exactly other (can be a sublist).
-RETURN:    A list of the symbol used in the various (?. sym) items, 
+RETURN:    A list of the symbol used in the various (?. sym) items,
            in no particular order, but with duplicates deleted.
 "
   (delete-duplicates
@@ -401,11 +401,11 @@ DO:      Call the function of the clause whose pattern matches the SEXP,
          or whose pattern is a symbol string-equal to OTHERWISE.
 RETURN:  The result of the called function, and the pattern that matched.
 EXAMPLE: (match-case* expr
-            `(((add       (?x a) to   (?x b)) 
+            `(((add       (?x a) to   (?x b))
                 ,(lambda (bindings) `(+ ,(aget bindings 'a) ,(aget bindings 'b)))
                ((multiply  (?x a) with (?x b))
                 ,(lambda (bindings) `(* ,(aget bindings 'a) ,(aget bindings 'b))))
-               ((substract (?x a) from (?x a)) 
+               ((substract (?x a) from (?x a))
                 ,(constantly 0))
                (otherwise
                 ,(lambda () (error \"No matching pattern\"))))))
@@ -423,7 +423,7 @@ EXAMPLE: (match-case* expr
   "
 SEXP:    A symbolic expression, evaluated.
 CLAUSES: A list of (pattern &body body)
-         The pattern must be litteral. 
+         The pattern must be litteral.
          Lexical variable names are extracted from it, and body is executed
          in a lexical environment where these names are bound to the matched
          subexpression of SEXP.
@@ -447,7 +447,7 @@ EXAMPLE: (match-case expr
                              (not (match-state-failed-p ,ms)))
                       (setf ,dc (match-state-dict ,ms))
                       (let ( ,@(mapcar
-                                (lambda (name) `(,name (cdr (assoc ',name ,dc)))) 
+                                (lambda (name) `(,name (cdr (assoc ',name ,dc))))
                                 (collect-variables pat)) )
                         ,@body))))) clauses)))))
 

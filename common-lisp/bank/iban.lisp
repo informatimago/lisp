@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    See defpackage documentation string.
 ;;;;
 ;;;;AUTHORS
@@ -20,19 +20,19 @@
 ;;;;    (GP --> FR for example).  So an incorrect use of GP is not detected.
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 1994 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -45,10 +45,10 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ISO3166")
   (:export "GET-AND-CHECK-ALPHANUM" "COMPUTE-IBAN-KEY" "CHECK-IBAN-KEY"
-           "GET-IBAN" "GET-KEY" "GET-COUNTRY-CODE" "SET-IBAN" 
+           "GET-IBAN" "GET-KEY" "GET-COUNTRY-CODE" "SET-IBAN"
            "CHECK-COUNTRY" "BASIC-FORM" "IBAN" "IBAN-ERROR")
   (:documentation "
-This class is an Internationnal Bank Account Number, 
+This class is an Internationnal Bank Account Number,
 according to the European standard:
 IBAN Format: <http://www.ecbs.org/iban/iban.htm>
 
@@ -69,19 +69,19 @@ To get the IBAN as a string with groups separated by spaces:
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 1994 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 "))
@@ -100,9 +100,9 @@ License:
 
 (defgeneric check-country (self)
   (:documentation "
-DO:     Checks the country code in the basic-form, 
+DO:     Checks the country code in the basic-form,
         and raises an error if not valid.
-RAISE:  IBAN-ERROR 
+RAISE:  IBAN-ERROR
 RETURN: SELF
 "))
 
@@ -151,7 +151,7 @@ SIGNAL: An IBAN-ERROR when with-key and the key in the IBAN is incorrect.
 (defmethod initialize-instance ((self iban) &rest args)
   (declare (ignore args))
   (call-next-method)
-  (when (basic-form  self) 
+  (when (basic-form  self)
     (set-iban self (basic-form  self)))
   self)
 
@@ -178,7 +178,7 @@ RETURN: The computed key of the IBAN.
 
 (defmethod get-iban ((self iban) &key (with-spaces nil))
   "
-RETURN: The IBAN, with spaces inserted when WITH-SPACES is true, 
+RETURN: The IBAN, with spaces inserted when WITH-SPACES is true,
         else in basic form.
 "
   (if with-spaces
@@ -196,7 +196,7 @@ RETURN: The IBAN, with spaces inserted when WITH-SPACES is true,
 
 ;;     We test and convert to upper case letters, because
 ;;     the RIB and IBAN may contain only the following characters:
-;;         0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ 
+;;         0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ
 
 
 (defparameter +alphabet-from+
@@ -206,11 +206,11 @@ RETURN: The IBAN, with spaces inserted when WITH-SPACES is true,
 (defmethod get-and-check-alphanum ((self iban) string &optional length)
   (when (and length (/= length (length string)))
     (error 'iban-error
-           :format-control "For IBAN ~S:~%   Bad length,  expected ~D, got ~D: ~S" 
+           :format-control "For IBAN ~S:~%   Bad length,  expected ~D, got ~D: ~S"
            :format-arguments (list self length (length string) string)))
-  (map 'string (lambda (ch) 
+  (map 'string (lambda (ch)
                  (let ((index (position ch +alphabet-from+)))
-                   (unless index 
+                   (unless index
                      (error 'iban-error
                             :format-control "For IBAN ~S:~%    Bad character '~C' in ~S, ~
                               should be alphanumeric."
@@ -230,9 +230,9 @@ RETURN: The IBAN, with spaces inserted when WITH-SPACES is true,
 
 (defmethod check-country ((self iban))
   "
-DO:     Checks the country code in the basic-form, 
+DO:     Checks the country code in the basic-form,
         and raises an error if not valid.
-RAISE:  IBAN-ERROR 
+RAISE:  IBAN-ERROR
 RETURN: SELF
 "
   (let ((cc (get-country-code self)))
@@ -273,14 +273,14 @@ DO:         Compute the IBAN key for the given ACCOUNT.
             4- return the complete IBAN.
 RETURN: The new complete IBANA.
 "
-  (format nil "~2A~2,'0D~A" 
+  (format nil "~2A~2,'0D~A"
           country
           (- 98 (mod (loop
                         for ch across (concatenate 'string  account country "00")
                         with n = 0
                         do (setf n (+ (* (if (alpha-char-p ch) 100 10) n)
                                       (parse-integer (string ch)
-                                                     :radix 36 
+                                                     :radix 36
                                                      :junk-allowed nil)))
                         finally (return n)) 97))
           account))
@@ -294,9 +294,9 @@ DO:     Change the IBAN. If WITH-KEY is true then the IBAN key is checked
 RETURN: SELF
 RAISE:  An IBAN-ERROR when with-key and the key in the IBAN is incorrect.
 "
-  (setf iban (get-and-check-alphanum 
+  (setf iban (get-and-check-alphanum
               self (remove-if (complement (function alphanumericp)) iban)))
-  (setf (slot-value self 'basic-form) 
+  (setf (slot-value self 'basic-form)
         (if with-key
             (if (check-iban-key iban)
                 iban

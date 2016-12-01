@@ -23,7 +23,7 @@ git clone http://git.informatimago.com/public/lisp15</p>
 <li><a href="http://groups.google.com/group/comp.lang.lisp/browse_frm/thread/67b1cabdf271870c?pli=1">Original announce</a></li>
 <li><a href="http://www.softwarepreservation.org/projects/LISP/index.html#LISP_I_and_LISP_1.5_for_IBM_704,_709,_7090_">Software preservation</a></li></ul>
 <h3>A Parser for M-expressions</h3>
-<p>Implements a parser and a REPL for the M-expressions defined 
+<p>Implements a parser and a REPL for the M-expressions defined
 in AIM-8 (4 MARCH 1959 by John McCarthy).</p>
 <ul>
 <li><a href="m-expression/">A Parser for M-expressions</a></li></ul>

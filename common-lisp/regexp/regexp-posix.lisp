@@ -19,19 +19,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2002 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -76,19 +76,19 @@ regexp features in all programs including this module).
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2002 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -132,19 +132,19 @@ This package gathers and exports regexp keywords.
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2002 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -1030,36 +1030,36 @@ extended_reg_exp   :                      ERE_branch
 ;; -------------------
 
 
-;; 
+;;
 ;; Bracket  expressions can  be implemented  with  a list  of ranges  and
 ;; elements, or  with a bitset.   Since some char-code-limit may  be huge
 ;; (21 bits  for Unicode UCS4,  or even more  for other codes),  we don't
 ;; want to allocate bit sets so big (128 KB or more).
-;; 
+;;
 ;; On the other  hand, most bracket expresions will  come from user input
 ;; (regular expressions), and  will be less than 80  bytes of source.  So
 ;; it seems that a nice limit for  the bitset size would be about 80 byte
 ;; worth. Hence the maximum bit set size used here: 1024.
-;; 
-;; 
+;;
+;;
 ;; In Common-Lisp, string< definition is directly based on char<.
 ;; (char< a b) is defined as (< (char-code a) (char-code b)).  There is no
 ;; provision for collating symbols, or equivalence classes, nor for
 ;; locales. (We should implement them, and add locale based comparisons).
 ;; There is however, support for character classes in the form of predicates.
-;; 
+;;
 ;; collating symbols:
 ;; [.ch.] [.ll.]
-;; 
+;;
 ;; equivalence classes:
 ;; [=é=] == [=e=]
-;; 
+;;
 ;; character classes:
 ;; [:alnum:]   [:cntrl:]   [:lower:]   [:space:]
 ;; [:alpha:]   [:digit:]   [:print:]   [:upper:]
 ;; [:blank:]   [:graph:]   [:punct:]   [:xdigit:]
-;; 
-;; 
+;;
+;;
 ;; [:alnum:]  (alphanumericp ch)
 ;; [:alpha:]  (alpha-char-p ch)
 ;; [:blank:]  (or (char= #\SPACE ch) (char= #\TAB ch))
@@ -1072,8 +1072,8 @@ extended_reg_exp   :                      ERE_branch
 ;; [:space:] <space> <form-feed> <newline> <carriage-return> <tab> <vertical-tab>
 ;; [:upper:]  (upper-case-p ch)
 ;; [:xdigit:] (digit-char-p ch 16)
-;; 
-;; 
+;;
+;;
 ;; upper or lower ==> alpha
 ;; alpha ==> not ( cntrl or digit or punct or space )
 ;; alnum <=> ( alpha or digit )
@@ -1199,7 +1199,7 @@ DO:     complements the set.
        (ch 0 (1+ ch)))
       ((>= ch char-code-limit))
     (setf (aref bits ch) (1- (aref bits ch)))))
- 
+
 
 
 (defmethod contains-char-p ((self charset-bitmap) (ch character))
@@ -1454,7 +1454,7 @@ DO:     complements the set.
   ;; code:
   (matchf   nil)
   (token    nil)
-  (children nil :type (or null (array #+lispworks t 
+  (children nil :type (or null (array #+lispworks t
                                       #-lispworks rnode
                                       (*)))))
 
@@ -1547,7 +1547,7 @@ SYNTAX:  (try (initially [sexp|(immediately-then)]...)
                         (setf try t)
                         (return-from ,label-try (progn ,@initial))))
                     ,label-then
-                    (return-from ,label-try (progn ,@then))))) 
+                    (return-from ,label-try (progn ,@then)))))
             ;; initial alone:
             `(unless try ,@initial))
         (if then
@@ -1754,7 +1754,7 @@ End of line anchor.
 
 
 ;; shy
-;; 
+;;
 ;; /
 ;; 0
 ;; 1
@@ -1951,7 +1951,7 @@ DO:    match min to max repeatition, greatest first.
                  (try-once ;; max=0 or no child -- empty sequence -- match once.
                   (setf end position)
                   t))))
-         
+
 
 (defun rmatch-alternative (node state env)
   (with-rens env node state
@@ -2279,7 +2279,7 @@ can hold the largest value that can be stored in either a type off_t
 or type ssize_t. "
   'integer) ;;REGOFF-T
 
-  
+
 (defstruct (regex-t
              (:conc-name "RE-"))
   "
@@ -2388,5 +2388,5 @@ WARNING: Entry #0 of the result vector is always the start and end of the
                 nil))))
 
 
-                                     
+
 ;;;; THE END ;;;;

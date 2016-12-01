@@ -33,7 +33,7 @@ clean:
 CC=/opt/llvm/bin/objc -isysroot /
 CFLAGS=
 #CFLAGS=-v
-#CFLAGS=-fblocks 
+#CFLAGS=-fblocks
 # -I/opt/llvm/lib/objc/3.3/include
 LDFLAGS=-L/opt/llvm/lib -lobjc
 ast:ast.c Makefile

@@ -5,10 +5,10 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     Common-Lisp
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    This program compute an "author signature" from a text.
 ;;;;    See: http://unix.dsu.edu/~johnsone/comp.html
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon
 ;;;;MODIFICATIONS
@@ -16,19 +16,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -38,7 +38,7 @@
   (:documentation
    "This program compute an \"author signature\" from a text.
     See: <http://unix.dsu.edu/~johnsone/comp.html>
-    
+
     Copyright Pascal J. Bourguignon 2003 - 2003
     This package is provided under the GNU General Public License.
     See the source file for details.")
@@ -48,7 +48,7 @@
            tally-percent  split-words )
   );;COM.INFORMATIMAGO.COMMON-LISP.AUTHOR-SIGNATURE
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.AUTHOR-SIGNATURE")
- 
+
 
 (defun stream-as-string (stream)
   "
@@ -194,7 +194,7 @@ RETURN:  The module and the vector of percentages of differences
        (with-open-file (input path  :direction :input)
          (push (cons (namestring path)
                      (multiple-value-bind (tally c)
-                         (funcall tally-function 
+                         (funcall tally-function
                           (split-words (stream-as-string input)))
                        (tally-percent tally c))) tallies)))
      path-list)
@@ -202,7 +202,7 @@ RETURN:  The module and the vector of percentages of differences
           (n-tally-1 (car t1) (car t1))
           (tally-1 (cdr n-tally-1) (cdr n-tally-1)) )
         ((null t1))
-  
+
       (do* ((t2 (cdr t1) (cdr t2))
             (n-tally-2 (car t2) (car t2))
             (tally-2 (cdr n-tally-2) (cdr n-tally-2)) )

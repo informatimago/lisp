@@ -5,10 +5,10 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    This package exports clisp specific binary stream functions, including:
 ;;;;    - reading and writing encoded text from/to binary streams.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -16,19 +16,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2005 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -339,7 +339,7 @@ NEWLINE:  nil   <=> accepts any CR, LF, or CRLF as a new-line.
 
 (defun pprint (object &optional (output-stream *standard-output*))
   )
-       
+
 
 (defun format (dest ctrl &rest args)
   (when (eq t dest)
@@ -381,15 +381,15 @@ NEWLINE:  nil   <=> accepts any CR, LF, or CRLF as a new-line.
 
 (defparameter +ascii+
   #(
-    nul soh stx etx eot enq ack bel bs tab lf vt ff cr so si 
-    dle dc1 dc2 dc3 dc4 nak syn etb can em sub esc fs gs rs us 
-    sp nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil 
-    nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil 
-    nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil 
-    nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil 
-    nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil 
-    nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil del 
-    pad hop bph nbh ind nel ssa esa hts htj vts pld plu ri ss2 ss3 
+    nul soh stx etx eot enq ack bel bs tab lf vt ff cr so si
+    dle dc1 dc2 dc3 dc4 nak syn etb can em sub esc fs gs rs us
+    sp nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil
+    nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil
+    nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil
+    nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil
+    nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil
+    nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil del
+    pad hop bph nbh ind nel ssa esa hts htj vts pld plu ri ss2 ss3
     dcs pu1 pu2 sts cch mw spa epa sos sgci sci csi st osc pm apc))
 
 (defun show-all (string &optional (out t))
@@ -417,7 +417,7 @@ NEWLINE:  nil   <=> accepts any CR, LF, or CRLF as a new-line.
                          :element-type '(unsigned-byte 8)
                          :if-does-not-exist :create :if-exists :supersede)
       (apply (function byteio:format) out "line1:field1~{~C~}field2~{~C~}field3~{~C~}line1:field1~{~C~}field2~{~C~}field3~{~C~}"  (append test test)))
-    (with-open-file (in "test.txt" :direction :input 
+    (with-open-file (in "test.txt" :direction :input
                         :element-type '(unsigned-byte 8))
       (loop for byte = (read-byte in nil nil)
          while byte do (show-char (code-char byte))
@@ -466,174 +466,174 @@ NEWLINE:  nil   <=> accepts any CR, LF, or CRLF as a new-line.
 #||
 (load"clisp-bin-read.lisp")
 ;; Loading file clisp-bin-read.lisp ...
-#(40 49 41 32 61 32 13 32 120) 
-#(40 49 41 32 61 32 10 32 120) 
-#(40 50 41 32 61 32 13 10 32 120) 
+#(40 49 41 32 61 32 13 32 120)
+#(40 49 41 32 61 32 10 32 120)
+#(40 50 41 32 61 32 13 10 32 120)
 #(108 105 110 101 49 58 102 105 101 108 100 49 13 102 105 101 108 100 50 10 102
   105 101 108 100 51 13 10 108 105 110 101 49 58 102 105 101 108 100 49 13 102
-  105 101 108 100 50 10 102 105 101 108 100 51 13 10) 
+  105 101 108 100 50 10 102 105 101 108 100 51 13 10)
 #(108 105 110 101 49 58 102 105 101 108 100 49 13 102 105 101 108 100 50 13 10
   102 105 101 108 100 51 10 108 105 110 101 49 58 102 105 101 108 100 49 13 102
-  105 101 108 100 50 13 10 102 105 101 108 100 51 10) 
+  105 101 108 100 50 13 10 102 105 101 108 100 51 10)
 #(108 105 110 101 49 58 102 105 101 108 100 49 10 102 105 101 108 100 50 13 10
   102 105 101 108 100 51 13 108 105 110 101 49 58 102 105 101 108 100 49 10 102
-  105 101 108 100 50 13 10 102 105 101 108 100 51 13) 
+  105 101 108 100 50 13 10 102 105 101 108 100 51 13)
 
 line1:field1<CR>field2<LF>field3<CR><LF>line1:field1<CR>field2<LF>field3<CR><LF>
-reading with NIL    as newline: 
+reading with NIL    as newline:
 line # 1 :   12 bytes: line1:field1
 line # 2 :    6 bytes: field2
 line # 3 :    6 bytes: field3
-line # 4 :    0 byte : 
+line # 4 :    0 byte :
 line # 5 :   12 bytes: line1:field1
 line # 6 :    6 bytes: field2
 line # 7 :    6 bytes: field3
-line # 8 :    0 byte : 
-reading with CR     as newline: 
+line # 8 :    0 byte :
+reading with CR     as newline:
 line # 1 :   12 bytes: line1:field1
 line # 2 :   13 bytes: field2<LF>field3
 line # 3 :   13 bytes: <LF>line1:field1
 line # 4 :   13 bytes: field2<LF>field3
 line # 5 :    1 byte : <LF>
-reading with LF     as newline: 
+reading with LF     as newline:
 line # 1 :   19 bytes: line1:field1<CR>field2
 line # 2 :    7 bytes: field3<CR>
 line # 3 :   19 bytes: line1:field1<CR>field2
 line # 4 :    7 bytes: field3<CR>
-reading with CRLF   as newline: 
+reading with CRLF   as newline:
 line # 1 :   26 bytes: line1:field1<CR>field2<LF>field3
 line # 2 :   26 bytes: line1:field1<CR>field2<LF>field3
 
 
 line1:field1<LF>field2<CR>field3<CR><LF>line1:field1<LF>field2<CR>field3<CR><LF>
-reading with NIL    as newline: 
+reading with NIL    as newline:
 line # 1 :   12 bytes: line1:field1
 line # 2 :    6 bytes: field2
 line # 3 :    6 bytes: field3
-line # 4 :    0 byte : 
+line # 4 :    0 byte :
 line # 5 :   12 bytes: line1:field1
 line # 6 :    6 bytes: field2
 line # 7 :    6 bytes: field3
-line # 8 :    0 byte : 
-reading with CR     as newline: 
+line # 8 :    0 byte :
+reading with CR     as newline:
 line # 1 :   19 bytes: line1:field1<LF>field2
 line # 2 :    6 bytes: field3
 line # 3 :   20 bytes: <LF>line1:field1<LF>field2
 line # 4 :    6 bytes: field3
 line # 5 :    1 byte : <LF>
-reading with LF     as newline: 
+reading with LF     as newline:
 line # 1 :   12 bytes: line1:field1
 line # 2 :   14 bytes: field2<CR>field3<CR>
 line # 3 :   12 bytes: line1:field1
 line # 4 :   14 bytes: field2<CR>field3<CR>
-reading with CRLF   as newline: 
+reading with CRLF   as newline:
 line # 1 :   26 bytes: line1:field1<LF>field2<CR>field3
 line # 2 :   26 bytes: line1:field1<LF>field2<CR>field3
 
 
 line1:field1<CR>field2<CR><LF>field3<LF>line1:field1<CR>field2<CR><LF>field3<LF>
-reading with NIL    as newline: 
+reading with NIL    as newline:
 line # 1 :   12 bytes: line1:field1
 line # 2 :    6 bytes: field2
-line # 3 :    0 byte : 
+line # 3 :    0 byte :
 line # 4 :    6 bytes: field3
 line # 5 :   12 bytes: line1:field1
 line # 6 :    6 bytes: field2
-line # 7 :    0 byte : 
+line # 7 :    0 byte :
 line # 8 :    6 bytes: field3
-reading with CR     as newline: 
+reading with CR     as newline:
 line # 1 :   12 bytes: line1:field1
 line # 2 :    6 bytes: field2
 line # 3 :   20 bytes: <LF>field3<LF>line1:field1
 line # 4 :    6 bytes: field2
 line # 5 :    8 bytes: <LF>field3<LF>
-reading with LF     as newline: 
+reading with LF     as newline:
 line # 1 :   20 bytes: line1:field1<CR>field2<CR>
 line # 2 :    6 bytes: field3
 line # 3 :   20 bytes: line1:field1<CR>field2<CR>
 line # 4 :    6 bytes: field3
-reading with CRLF   as newline: 
+reading with CRLF   as newline:
 line # 1 :   19 bytes: line1:field1<CR>field2
 line # 2 :   26 bytes: field3<LF>line1:field1<CR>field2
 line # 3 :    7 bytes: field3<LF>
 
 
 line1:field1<LF>field2<CR><LF>field3<CR>line1:field1<LF>field2<CR><LF>field3<CR>
-reading with NIL    as newline: 
+reading with NIL    as newline:
 line # 1 :   12 bytes: line1:field1
 line # 2 :    6 bytes: field2
-line # 3 :    0 byte : 
+line # 3 :    0 byte :
 line # 4 :    6 bytes: field3
 line # 5 :   12 bytes: line1:field1
 line # 6 :    6 bytes: field2
-line # 7 :    0 byte : 
+line # 7 :    0 byte :
 line # 8 :    6 bytes: field3
-reading with CR     as newline: 
+reading with CR     as newline:
 line # 1 :   19 bytes: line1:field1<LF>field2
 line # 2 :    7 bytes: <LF>field3
 line # 3 :   19 bytes: line1:field1<LF>field2
 line # 4 :    7 bytes: <LF>field3
-reading with LF     as newline: 
+reading with LF     as newline:
 line # 1 :   12 bytes: line1:field1
 line # 2 :    7 bytes: field2<CR>
 line # 3 :   19 bytes: field3<CR>line1:field1
 line # 4 :    7 bytes: field2<CR>
 line # 5 :    7 bytes: field3<CR>
-reading with CRLF   as newline: 
+reading with CRLF   as newline:
 line # 1 :   19 bytes: line1:field1<LF>field2
 line # 2 :   26 bytes: field3<CR>line1:field1<LF>field2
 line # 3 :    6 bytes: field3
 
 
 line1:field1<CR><LF>field2<CR>field3<LF>line1:field1<CR><LF>field2<CR>field3<LF>
-reading with NIL    as newline: 
+reading with NIL    as newline:
 line # 1 :   12 bytes: line1:field1
-line # 2 :    0 byte : 
+line # 2 :    0 byte :
 line # 3 :    6 bytes: field2
 line # 4 :    6 bytes: field3
 line # 5 :   12 bytes: line1:field1
-line # 6 :    0 byte : 
+line # 6 :    0 byte :
 line # 7 :    6 bytes: field2
 line # 8 :    6 bytes: field3
-reading with CR     as newline: 
+reading with CR     as newline:
 line # 1 :   12 bytes: line1:field1
 line # 2 :    7 bytes: <LF>field2
 line # 3 :   19 bytes: field3<LF>line1:field1
 line # 4 :    7 bytes: <LF>field2
 line # 5 :    7 bytes: field3<LF>
-reading with LF     as newline: 
+reading with LF     as newline:
 line # 1 :   13 bytes: line1:field1<CR>
 line # 2 :   13 bytes: field2<CR>field3
 line # 3 :   13 bytes: line1:field1<CR>
 line # 4 :   13 bytes: field2<CR>field3
-reading with CRLF   as newline: 
+reading with CRLF   as newline:
 line # 1 :   12 bytes: line1:field1
 line # 2 :   26 bytes: field2<CR>field3<LF>line1:field1
 line # 3 :   14 bytes: field2<CR>field3<LF>
 
 
 line1:field1<CR><LF>field2<LF>field3<CR>line1:field1<CR><LF>field2<LF>field3<CR>
-reading with NIL    as newline: 
+reading with NIL    as newline:
 line # 1 :   12 bytes: line1:field1
-line # 2 :    0 byte : 
+line # 2 :    0 byte :
 line # 3 :    6 bytes: field2
 line # 4 :    6 bytes: field3
 line # 5 :   12 bytes: line1:field1
-line # 6 :    0 byte : 
+line # 6 :    0 byte :
 line # 7 :    6 bytes: field2
 line # 8 :    6 bytes: field3
-reading with CR     as newline: 
+reading with CR     as newline:
 line # 1 :   12 bytes: line1:field1
 line # 2 :   14 bytes: <LF>field2<LF>field3
 line # 3 :   12 bytes: line1:field1
 line # 4 :   14 bytes: <LF>field2<LF>field3
-reading with LF     as newline: 
+reading with LF     as newline:
 line # 1 :   13 bytes: line1:field1<CR>
 line # 2 :    6 bytes: field2
 line # 3 :   20 bytes: field3<CR>line1:field1<CR>
 line # 4 :    6 bytes: field2
 line # 5 :    7 bytes: field3<CR>
-reading with CRLF   as newline: 
+reading with CRLF   as newline:
 line # 1 :   12 bytes: line1:field1
 line # 2 :   26 bytes: field2<LF>field3<CR>line1:field1
 line # 3 :   13 bytes: field2<LF>field3

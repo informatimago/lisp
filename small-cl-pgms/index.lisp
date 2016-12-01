@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Generate the index.html for small-cl-pgms.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -16,19 +16,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -60,9 +60,9 @@
      ("A Parser for M-expressions"
       ;;-------------------------
       (("m-expression/" "A Parser for M-expressions"))
-      "Implements a parser and a REPL for the M-expressions defined 
+      "Implements a parser and a REPL for the M-expressions defined
        in  AIM-8 (4 MARCH 1959 by John McCarthy).")
-     
+
      ("Old LISP programs still run in Common Lisp"
       ;;-----------------------------------------
       (("wang.html"
@@ -70,8 +70,8 @@
       "The Wang's algorithm, implemented in LISP 1 on IBM 704
        in March 1960 still runs well on Common Lisp in 2006."))
 
-    
-    
+
+
     ("Lisp Cookbook"
      ;;============
      ""
@@ -81,7 +81,7 @@
       (("ibcl/"
         "A package that saves the definitions typed at the REPL"))
       "")
-     
+
      ("Small Simple Structural Editor"
       ;;----------------------
       (("sedit/"
@@ -112,12 +112,12 @@
       "A unique program that can be run on Common Lisp,
        Emacs Lisp or R5RS Scheme."))
 
-    
+
     ("Lisp Tidbits"
      ;;============
      ""
 
-     ("Author Signature" 
+     ("Author Signature"
       ;;---------------
       ("author-signature.lisp")
 
@@ -136,7 +136,7 @@
       ;;-----------------
       ("quine.lisp")
       "Three Common-Lisp quines (autogenerating programs).")
-     
+
      ("BASIC"
       ;;----
       (("basic/"  "A Quick, Dirty and Ugly Basic interpreter."))
@@ -148,7 +148,7 @@
         "A brainfuck virtual machine, and brainfuck compiler."))
       ""))
 
-    
+
     ("Little Games"
      ;;============
      ""
@@ -164,7 +164,7 @@
       ("life.lisp")
       "A small life game program.")
 
-     ("Cube Puzzle" 
+     ("Cube Puzzle"
       ;;----------
       ("cube.lisp")
 
@@ -172,7 +172,7 @@
        composed of 27 smaller cubes linked with a thread  must be
        recomposed.")
 
-     ("Sudoku Solver" 
+     ("Sudoku Solver"
       ;;----------
       (("sudoku-solver/" "This program solves sudoku boards."))
       "")

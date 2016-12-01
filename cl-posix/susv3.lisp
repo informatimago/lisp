@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             CLISP
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    This packages exports SUSV3 functions.
 ;;;;    This is the CLISP specific implementation of the SUSV3 API.
 ;;;;
@@ -29,19 +29,19 @@
 ;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -53,33 +53,33 @@
   (:use "COMMON-LISP"
         "EXT" "LINUX")
   (:export
-   
+
    ;; NOT IN SUSV3 API (Lisp/C support stuff):
    "BOUND-STRING" ;; type (BOUND-STRING min max)
    "SUSV3-ERROR" ;; (SIGNAL 'SUSV3-ERROR errno)
 
-   ;; 
+   ;;
    "GETENV"
 
    ;; sys/types.h
    "INO-T"
-   
+
 
    ;; sys/stat.h
 
-   
+
    ;; limits.h
    "+NAME-MAX+"
 
    ;; dirent.h
    "DIR" "DIRENT"
    "OPENDIR" "READDIR" "REWINDDIR" "CLOSEDIR"
-   ;; readdir_r ;; TSF ;; not implemented, do we need it? 
+   ;; readdir_r ;; TSF ;; not implemented, do we need it?
    "SEEKDIR" "TELLDIR" ;; XSI
 
 
 
-   
+
    ;; NOT IN SUSV3 API (TEST FUNCTIONS):
    "DIRENT-TEST"))
 (in-package  "COM.INFORMATIMAGO.CLISP.SUSV3")
@@ -105,7 +105,7 @@
           :type (signed-byte 32))
    ));;SUSV3-ERROR
 
-  
+
 (defmacro check-errno (&body body)
   `(progn
      (setq linux:|errno| 0)
@@ -115,7 +115,7 @@
          result)))
   );;CHECK-ERRNO
 
-     
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ???
@@ -196,27 +196,27 @@ RETURN:     NIL or the value of the environment variable named NAME.
   );;BLKCNT-T
 
 
-  
+
 (defstruct stat
-  (dev     0 :type dev-t) ;; Device ID of device containing file. 
-  (ino     0 :type ino-t) ;; File serial number. 
+  (dev     0 :type dev-t) ;; Device ID of device containing file.
+  (ino     0 :type ino-t) ;; File serial number.
   (mode    0 :type mode-t) ;; Mode of file (see below).
   (nlink   0 :type nlink-t) ;; Number of hard links to the file.
   (uid     0 :type uid-t) ;; User ID of file.
   (gid     0 :type gid-t) ;; Group ID of file.
   (rdev    0 :type dev-t) ;; XSI: Device ID (if file is char or block special).
-  (size    0 :type off-t) ;; For regular files, the file size in bytes. 
-  ;;                      For symbolic links, the length in bytes of the 
-  ;;                      pathname contained in the symbolic link. 
+  (size    0 :type off-t) ;; For regular files, the file size in bytes.
+  ;;                      For symbolic links, the length in bytes of the
+  ;;                      pathname contained in the symbolic link.
   ;;                      SHM: For a shared memory object, the length in bytes.
-  ;;                      TYM: For a typed memory object, the length in bytes. 
-  ;;                      For other file types, the use of this field is 
+  ;;                      TYM: For a typed memory object, the length in bytes.
+  ;;                      For other file types, the use of this field is
   ;;                      unspecified.
   (atime   0 :type time-t) ;; Time of last access.
   (mtime   0 :type time-t) ;; Time of last data modification.
   (ctime   0 :type time-t) ;; Time of last status change.
-  (blksize 0 :type blksize-t) ;; XSI: A file system-specific preferred I/O 
-  ;;                      block size for this object. In some file system 
+  (blksize 0 :type blksize-t) ;; XSI: A file system-specific preferred I/O
+  ;;                      block size for this object. In some file system
   ;;                      types, this may vary from file to file.
   (blocks  0 :type blkcnt-t) ;; XSI: Num. of blocks allocated for this object.
   );;STAT
@@ -232,7 +232,7 @@ RETURN:     NIL or the value of the environment variable named NAME.
 ;; st_dev, st_uid, st_gid, st_atime, st_ctime, and st_mtime shall have
 ;; meaningful values for all file types defined in IEEE Std
 ;; 1003.1-2001.
- 
+
 ;; For symbolic links, the st_mode member shall contain meaningful
 ;; information, which can be used with the file type macros described
 ;; below, that take a mode argument. The st_size member shall contain
@@ -241,16 +241,16 @@ RETURN:     NIL or the value of the environment variable named NAME.
 ;; the stat structure are unspecified. The value returned in the
 ;; st_size field shall be the length of the contents of the symbolic
 ;; link, and shall not count a trailing null if one is present.
- 
+
 
 ;; The following symbolic names for the values of type mode_t shall
 ;; also be defined.
- 
+
 ;; File type:
-;; 
+;;
 ;; S_IFMT
 ;;     [XSI] [Option Start] Type of file.
-;; 
+;;
 ;;     S_IFBLK
 ;;     Block special.S_IFCHR
 ;;     Character special.S_IFIFO
@@ -271,24 +271,24 @@ RETURN:     NIL or the value of the environment variable named NAME.
 
 
 ;; File mode bits:
-;; 
+;;
 ;; S_IRWXU
 ;;     Read, write, execute/search by owner.
-;; 
+;;
 ;;     S_IRUSR
 ;;     Read permission, owner.S_IWUSR
 ;;     Write permission, owner.S_IXUSR
 ;;     Execute/search permission, owner.
 ;; S_IRWXG
 ;;     Read, write, execute/search by group.
-;; 
+;;
 ;;     S_IRGRP
 ;;     Read permission, group.S_IWGRP
 ;;     Write permission, group.S_IXGRP
 ;;     Execute/search permission, group.
 ;; S_IRWXO
 ;;     Read, write, execute/search by others.
-;; 
+;;
 ;;     S_IROTH
 ;;     Read permission, others.S_IWOTH
 ;;     Write permission, others.S_IXOTH
@@ -297,17 +297,17 @@ RETURN:     NIL or the value of the environment variable named NAME.
 ;; Set-user-ID on execution.S_ISGID
 ;; Set-group-ID on execution.S_ISVTX
 ;; [XSI] [Option Start] On directories, restricted deletion flag. [Option End]
- 
+
 ;; The bits defined by S_IRUSR, S_IWUSR, S_IXUSR, S_IRGRP, S_IWGRP,
 ;; S_IXGRP, S_IROTH, S_IWOTH, S_IXOTH, S_ISUID, S_ISGID, [XSI] [Option
 ;; Start]  and S_ISVTX [Option End]  shall be unique.
- 
+
 ;; S_IRWXU is the bitwise-inclusive OR of S_IRUSR, S_IWUSR, and S_IXUSR.
-;; 
+;;
 ;; S_IRWXG is the bitwise-inclusive OR of S_IRGRP, S_IWGRP, and S_IXGRP.
-;; 
+;;
 ;; S_IRWXO is the bitwise-inclusive OR of S_IROTH, S_IWOTH, and S_IXOTH.
- 
+
 ;; Implementations may OR other implementation-defined bits into
 ;; S_IRWXU, S_IRWXG, and S_IRWXO, but they shall not overlap any of
 ;; the other bits defined in this volume of IEEE Std 1003.1-2001. The
@@ -341,9 +341,9 @@ RETURN:     NIL or the value of the environment variable named NAME.
 ;; the specified type. The value m supplied to the macros is the value
 ;; of st_mode from a stat structure. The macro shall evaluate to a
 ;; non-zero value if the test is true; 0 if the test is false.
- 
+
 ;; S_ISBLK(m)
-;; 
+;;
 ;; Test for a block special file.S_ISCHR(m)
 ;; Test for a character special file.S_ISDIR(m)
 ;; Test for a directory.S_ISFIFO(m)
@@ -369,12 +369,12 @@ RETURN:     NIL or the value of the environment variable named NAME.
 ;; value if the specified object is implemented as a distinct file
 ;; type and the specified file type is contained in the stat structure
 ;; referenced by buf. Otherwise, the macro shall evaluate to zero.
- 
+
 ;; S_TYPEISMQ(buf)
 ;; Test for a message queue.S_TYPEISSEM(buf)
 ;; Test for a semaphore.S_TYPEISSHM(buf)
 ;; Test for a shared memory object.
- 
+
 ;; [TYM] [Option Start] The implementation may implement typed memory
 ;; objects as distinct file types, and the following macro shall test
 ;; whether a file is of the specified type. The value of the buf
@@ -383,14 +383,14 @@ RETURN:     NIL or the value of the environment variable named NAME.
 ;; specified object is implemented as a distinct file type and the
 ;; specified file type is contained in the stat structure referenced
 ;; by buf. Otherwise, the macro shall evaluate to zero.
- 
+
 ;; S_TYPEISTMO(buf)
 ;; Test macro for a typed memory object.
 ;; [Option End]
- 
+
 ;; The following shall be declared as functions and may also be
 ;; defined as macros. Function prototypes shall be provided.
- 
+
 ;; int    chmod(const char *, mode_t);
 ;; int    fchmod(int, mode_t);
 ;; int    fstat(int, struct stat *);
@@ -436,7 +436,7 @@ RETURN:     NIL or the value of the environment variable named NAME.
   "
 PRIVATE
 "
-  `(make-stat 
+  `(make-stat
     :dev (linux:|stat-st_dev| ,sb)
     :ino (linux:|stat-st_ino| ,sb)
     :mode (linux:|stat-st_mode| ,sb)
@@ -499,13 +499,13 @@ PRIVATE
 (defconstant +name-max+ 255)
 
 
-(deftype dir () 
+(deftype dir ()
   "A type representing a directory stream."
   `t
   );;DIR
 
 
-(defstruct dirent 
+(defstruct dirent
   (ino  0  :type ino-t) ;; File serial number
   (name "" :type (bound-string 0 +name-max+)) ;; Name of entry
   );;DIRENT

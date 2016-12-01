@@ -7,7 +7,7 @@
 
 ;; (defmethod shared-initialize :before
 ;;     ((self b) slot-names &rest initargs &key &allow-other-keys)
-;;   
+;;
 ;;   (print `(= (slot-boundp ,self 'b) , (slot-boundp self 'b)))
 ;;   (print `(shared-initialize :before ((,self b) ,slot-names &rest ,initargs &key &allow-other-keys)))
 ;;   (print `(=  (next-method-p) ,(next-method-p)))

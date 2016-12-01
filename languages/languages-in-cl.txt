@@ -1,8 +1,8 @@
 There are a lot of languages that are implemented in Common Lisp.
 
-Now, unfortunately, it's often only the early implementation of a language that is written in Lisp.  
+Now, unfortunately, it's often only the early implementation of a language that is written in Lisp.
 
-cl-python 
+cl-python
 http://common-lisp.net/project/clpython/
 
 There's a r4rs scheme implementation named Pseudo.

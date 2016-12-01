@@ -7,7 +7,7 @@
 ;;;;    This programs plays geek-day
 ;;;;    http://ars.userfriendly.org/cartoons/?id=20021215
 ;;;;USAGE
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon
 ;;;;MODIFICATIONS
@@ -136,7 +136,7 @@
                please choose backward or forward? "
             (name self))))
 
-  
+
 (defvar random-state (make-random-state t))
 
 (defun randomizer ()
@@ -321,7 +321,7 @@
                   :players (mapcar (lambda (name)
                                      (make-instance 'player :name name))
                                    player-names))) )
-    (declare (type geek-day game)) 
+    (declare (type geek-day game))
     (initialize game)
     (play game)))
 

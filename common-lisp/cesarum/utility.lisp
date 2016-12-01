@@ -36,19 +36,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -108,7 +108,7 @@
    "DISTINCT-FLOAT-TYPES" "FLOAT-TYPECASE" "FLOAT-CTYPECASE" "FLOAT-ETYPECASE"
    "+EPSILON" "-EPSILON"
    ;; 14 - CONSES
-   "MAXIMIZE" "TOPOLOGICAL-SORT" "TRANSITIVE-CLOSURE" 
+   "MAXIMIZE" "TOPOLOGICAL-SORT" "TRANSITIVE-CLOSURE"
    "COMPUTE-CLOSURE" ; deprecated, renamed to transitive-closure
    "FIND-CYCLES" "FIND-SHORTEST-PATH"
    ;; 15 - ARRAYS
@@ -142,19 +142,19 @@ This package exports some utility & syntactic sugar functions and macros.
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2003 - 2016
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -279,7 +279,7 @@ DO:         Call the functional composition of the functions, on the
             argument.
 EXAMPLE:    (compose-and-call abs sin cos 0.234) --> 0.8264353
 "
-  `(funcall ,((lambda (functions) (list 'lambda '(x) (compose-sexp functions 'x))) 
+  `(funcall ,((lambda (functions) (list 'lambda '(x) (compose-sexp functions 'x)))
               (butlast functions-and-arg))
             ,(car (last functions-and-arg))))
 
@@ -355,7 +355,7 @@ Return the results of the last form.
                 collect (list (first current)
                               (subst (first ***) '***
                                      (subst (first **) '**
-                                            (subst (first *) '* 
+                                            (subst (first *) '*
                                                    (second current))))))
        ,(first (first (last bindings))))))
 
@@ -435,9 +435,9 @@ Date: 29 Jul 2004 03:59:50 GMT
 Message-ID: <ce9snm$4bp8o$1@midnight.cs.hut.fi>
 "
   (if (fboundp symbol)
-      (cond ((macro-function symbol env) 
+      (cond ((macro-function symbol env)
              'macro)
-            ((special-operator-p symbol) 
+            ((special-operator-p symbol)
              'special-operator)
             ((compiled-function-p (symbol-function symbol))
              'compiled-function)
@@ -479,7 +479,7 @@ NOTE:  No prefix argument are allowed for REDUCE!
 
 (defmacro for ((var first last &optional (step nil stepp)) &body body)
   "For loop.
-DO:    Repeat BODY with VAR bound to successive integer values from 
+DO:    Repeat BODY with VAR bound to successive integer values from
        FIRST to LAST inclusive.
        If the optional STEP argument is abstent, then it is taken as 1 or -1
        depending on the order of FIRST and LAST.
@@ -495,7 +495,7 @@ DO:    Repeat BODY with VAR bound to successive integer values from
      (check-type step real)
      (let ((firstvar (gensym "FIRST"))
            (lastvar  (gensym "LAST"))
-           (cmp      (if (minusp step) '< '>)))        
+           (cmp      (if (minusp step) '< '>)))
        `(let ((,firstvar ,first)
               (,lastvar ,last))
           (do ((,var ,firstvar (incf ,var ,step)))
@@ -554,8 +554,8 @@ ARGS  is a list of s-expr, whose car is either :ATT (to declare an attribute)
            "
 This function outputs an attribute s-exp as used in defclass.
 ARGS  may be of length 1 or 2.
-      If (LENGTH ARGS) = 1 
-      then if the argument is a string, 
+      If (LENGTH ARGS) = 1
+      then if the argument is a string,
            then it's taken as the documentation and the initial value is NIL
            else it's taken as the initial value and the documentation is NIL.
       else the first is the initial value and the second is the documentation.
@@ -579,8 +579,8 @@ The initarg an accessor are the same keyword built from the name.
                (setf type (list 'or 'null type)))
              (when (null doc)
                (setf doc (symbol-name name)))
-             `(,name 
-               :initform ,init 
+             `(,name
+               :initform ,init
                :initarg  ,iarg
                :accessor ,name
                :type     ,type
@@ -595,7 +595,7 @@ The initarg an accessor are the same keyword built from the name.
         (setf args (cdr args)))
       (setf fields (nreverse fields))
       (setf options (nreverse options))
-      `(defclass ,name ,super ,fields ,@options)))) 
+      `(defclass ,name ,super ,fields ,@options))))
 
 
 
@@ -851,7 +851,7 @@ SEE:            PRINT-PARSEABLE-OBJECT
                             (list (class-name (class-of object))))
                           (funcall thunk object)
                           (when identity
-                            (list :id (object-identity object))))) 
+                            (list :id (object-identity object)))))
           object))))
 
 (defun gen-extract-slots (ovar slots)
@@ -952,7 +952,7 @@ EXAMPLE:        (print-parseable-object (object stream :type t :identity t)
 ;;                     (LAMBDA (SLOT)
 ;;                       (LIST SLOT
 ;;                             (LIST
-;;                              (INTERN (WITH-STANDARD-IO-SYNTAX 
+;;                              (INTERN (WITH-STANDARD-IO-SYNTAX
 ;;                                        (CONCATENATE 'STRING
 ;;                                          (STRING ',CONC-NAME) (STRING SLOT))))
 ;;                              OBJECT))) ',SLOTS)
@@ -967,7 +967,7 @@ EXAMPLE:        (print-parseable-object (object stream :type t :identity t)
 ;;                                  (INTERN (WITH-STANDARD-IO-SYNTAX
 ;;                                            (CONCATENATE 'STRING
 ;;                                              (STRING ',CONC-NAME) (STRING SLOT))))
-;;                                         
+;;
 ;;                                  OBJV))) ',SLOTS)
 ;;                     ,@BODY)))))))) ;;DEFINE-WITH-STRUCTURE
 
@@ -989,7 +989,7 @@ DO:       Define a macro: (WITH-{NAME} object &body body)
                           (if conc-opt
                               (second conc-opt)
                               (concatenate 'string (string name) "-")))))
-         (slot-names (mapcar (lambda (slot) (if (listp slot) (car slot) slot)) 
+         (slot-names (mapcar (lambda (slot) (if (listp slot) (car slot) slot))
                              slots)))
     `(progn
        (defstruct ,name-and-options ,@slots)
@@ -1027,13 +1027,13 @@ DO:       Execute the BODY with a handler for CONDITION and
           SIMPLE-CONDITION reporting the conditions.
 "
   `(handler-case (progn ,@body)
-     (simple-condition  (err) 
+     (simple-condition  (err)
        (format *error-output* "~&~A:~%~?~&"
                (class-name (class-of err))
                (simple-condition-format-control   err)
                (simple-condition-format-arguments err))
        (finish-output *error-output*))
-     (condition (err) 
+     (condition (err)
        (format *error-output* "~&~A:~%~A~%" (class-name (class-of err)) err)
        (finish-output *error-output*))))
 
@@ -1120,7 +1120,7 @@ there are fewer distinct representations, the following rules apply:
 
   • Two internal representations can be arranged in either of the
     following ways:
-   
+
       □ Two types are provided: single-float and short-float. An
         object is simultaneously of types single-float,  double-float,
         and long-float.
@@ -1128,10 +1128,10 @@ there are fewer distinct representations, the following rules apply:
       □ Two types are provided: single-float and double-float. An
         object is simultaneously of types single-float and
         short-float, or double-float and long-float.
-       
+
   • Three internal representations can be arranged in either of the
     following ways:
-   
+
       □ Three types are provided: short-float, single-float, and
         double-float. An object can simultaneously be of  type
         double-float and long-float.
@@ -1151,26 +1151,26 @@ there are fewer distinct representations, the following rules apply:
     ;;                                   (==> (and s=i s=l) i=l)
     ;;                                   (==> (and s=i i=d) s=d)
     ;;                                   (==> (and s=i i=l) s=l)
-    ;;                                   
+    ;;
     ;;                                   (==> (and s=d s=l) d=l)
     ;;                                   (==> (and s=d i=d) s=i)
     ;;                                   (==> (and s=d i=l) s=l)
     ;;                                   (==> (and s=d d=l) s=l)
-    ;;                                   
+    ;;
     ;;                                   (==> (and s=l i=l) s=i)
     ;;                                   (==> (and s=l d=l) s=d)
-    ;;                                   
+    ;;
     ;;                                   (==> (and i=d i=l) d=l)
     ;;                                   (==> (and i=d d=l) i=l)
-    ;; 
+    ;;
     ;;                                   (==> (and s=i s=l) s=d)
     ;;                                   (==> (and s=l s=d) s=i)
-    ;;                                   
+    ;;
     ;;                                   (==> (not s=i) (not (or s=d s=l)))
     ;;                                   (==> (not s=d) (not s=l))
     ;;                                   (==> (not i=d) (not i=l))
     ;;                                   (==> (not d=l) (not i=l))
-    ;; 
+    ;;
     ;;                                   ))))))
     ;;
     ;; 1  short-float=single-float=double-float=long-float
@@ -1397,9 +1397,9 @@ NOTE:    This version avoids calling FUN twice with the same argument.
 
 (defun topological-sort (nodes lessp)
   "
-RETURN: A list of NODES sorted topologically according to 
+RETURN: A list of NODES sorted topologically according to
         the partial order function LESSP.
-        If there are cycles (discounting reflexivity), 
+        If there are cycles (discounting reflexivity),
         then the list returned won't contain all the NODES.
 "
   (loop
@@ -1415,7 +1415,7 @@ RETURN: A list of NODES sorted topologically according to
                 :for node :in nodes
                 :for inco :across incoming
                 :when (zerop inco)
-                  :collect node) 
+                  :collect node)
     :while q
     :do (let ((n (pop q)))
           (push n sorted)
@@ -1581,7 +1581,7 @@ POST:	(<= start index end)
                              (minusp (funcall compare value
                                               (funcall key (aref vector (1+  index)))))))
                     (zerop (funcall compare value (funcall key (aref vector index)))))
-                
+
                 (index)
                 "The compare function is invalid: value<a[~D] or a[~:*~D]<value<a[~D] or a[~D]<value or a[~0@*~D]=value"
                 index (1+ index) end)
@@ -1602,7 +1602,7 @@ POST:	(<= start index end)
   "Concatenate anything into a string."
   (apply (function concatenate) 'string
          (mapcar (lambda (item)
-                   (if (typep item 'sequence) 
+                   (if (typep item 'sequence)
                        item
                        (format nil "~A" item))) args)))
 
@@ -1694,8 +1694,8 @@ the path of KEYS, returning the ultimate value"
 (defun copy-hash-table (table)
   "
 TABLE:  (OR NULL HASH-TABLE)
-RETURN: If TABLE is NIL, then NIL, 
-        else a new HASH-TABLE with the same TEST, SIZE, REHASH-THRESHOLD 
+RETURN: If TABLE is NIL, then NIL,
+        else a new HASH-TABLE with the same TEST, SIZE, REHASH-THRESHOLD
         REHASH-SIZE and KEY->VALUE associations than TABLE.
         (Neither the keys nor the values are copied).
 "
@@ -1824,7 +1824,7 @@ The other key parameter are passed to MAKE-HASH-TABLE.
 (defmacro tracing (&body body)
   "
 TRACE works only on non-CL functions.
-This macro will work somewhat on any form in body. 
+This macro will work somewhat on any form in body.
 "
   `(progn
      ,@(mapcan
@@ -1842,7 +1842,7 @@ This macro will work somewhat on any form in body.
 ;; (let ((a (1+ b))
 ;;       (b (1+ a)))
 ;;   (print (list a b)))
-;; 
+;;
 ;; (let ((#:a1 (let ((r (1+ b)))
 ;;               (format t "~S = ~S = ~S~%" '#:a1 '(1+ b) r)
 ;;               r))
@@ -1898,7 +1898,7 @@ Like LET*, but prints on the *trace-output* the value of the bindings.
 
 
 (defmacro tracing-labels (defs &body body)
-  "This macro is a replacement for LABELS that traces the calls of 
+  "This macro is a replacement for LABELS that traces the calls of
 the local functions."
   `(cl:labels
        ,(mapcar
@@ -1947,10 +1947,10 @@ the local functions."
                             (itt items (1+ pivot) end)))))))
       (let ((vect (coerce sequence 'vector)))
         (itt vect 0 (length vect)))))
-  
+
   (defun map-tree-postfix (fun tree)
     (if (null tree)
-        nil 
+        nil
         (funcall fun
                  (first tree)
                  (map-tree-postfix fun (second tree))
@@ -1960,12 +1960,12 @@ the local functions."
 
 (defmacro decision-tree (expression &rest clauses)
   "
-CLAUSES:  Each clause is of the forms: 
+CLAUSES:  Each clause is of the forms:
           (less|:less . <body>)
           (<real> . <body>)
 DO:       Evaluate the expression, which must be a real,
           and generate a binary decision tree to select the <body>
-          of the clause whose limit is <= the expression and 
+          of the clause whose limit is <= the expression and
           the next clause limit is > the expression.
 "
   (let ((vexpr (gensym))

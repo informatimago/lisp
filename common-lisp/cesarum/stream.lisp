@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    This package exports some stream utility functions.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -22,19 +22,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -60,19 +60,19 @@ See also: COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2003 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -133,7 +133,7 @@ RETURN:     A vector containing the elements read from the STREAM.
                                            min-size)))
                    (eltype (stream-element-type stream))
                    (initel (if (subtypep eltype 'integer) 0 #\space))
-                   (buffer (make-array busize 
+                   (buffer (make-array busize
                                        :element-type eltype
                                        :initial-element initel
                                        :adjustable t :fill-pointer 0)))
@@ -146,7 +146,7 @@ RETURN:     A vector containing the elements read from the STREAM.
         (let* ((busize (or length (ignore-errors (file-length stream)) min-size))
                (eltype (stream-element-type stream))
                (initel (if (subtypep eltype 'integer) 0 #\space))
-               (buffer (make-array busize 
+               (buffer (make-array busize
                                    :element-type eltype
                                    :initial-element initel
                                    :adjustable t :fill-pointer t))
@@ -243,8 +243,8 @@ NOTE:       The file is not truncated.
 ;;      (if (input-stream-p stream)
 ;;          stream
 ;;          (error "Stream ~S is not an input-stream." stream)))))
-;; 
-;; 
+;;
+;;
 ;; (defun stream-output-stream (stream)
 ;;   "
 ;; RETURN: An output-stream.
@@ -333,12 +333,12 @@ RETURN: A stream or a list of streams that are not compound streams
 
 
 (defmethod bvstream-write-byte ((self bvstream-out) (byte integer))
-  (vector-push-extend (ldb (byte 8 0) byte) 
+  (vector-push-extend (ldb (byte 8 0) byte)
                       (byte-vector self)
                       (array-dimension (byte-vector self) 0)))
 
 
-(defmacro with-output-to-byte-vector ((var &optional byte-vector-form 
+(defmacro with-output-to-byte-vector ((var &optional byte-vector-form
                                         &key element-type) &body body)
   "
 
@@ -368,7 +368,7 @@ RETURN:         The byte vector written.
           :accessor byte-vector
           :initarg :bytes)
    (position :reader get-position
-             :accessor bis-position 
+             :accessor bis-position
              :initarg :position :initform 0)
    (end :initarg :end :initform nil))
   (:documentation "An input byte vector stream."))

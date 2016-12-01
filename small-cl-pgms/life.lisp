@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Conway's Life Game.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2005 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -44,7 +44,7 @@
   current
   next)
 
-  
+
 (defun make-world (width height)
   (flet ((make-plane (width height)
            (make-array (list width height)
@@ -66,7 +66,7 @@
        (aref plane (mod (+ i 1) width)  (mod (- j 1) height))
        (aref plane (mod (+ i 1) width)  j)
        (aref plane (mod (+ i 1) width)  (mod (+ j 1) height)))))
-       
+
 
 (defun simple-sum-neighbors (plane i j)
   (+ (aref plane (- i 1)  (- j 1))
@@ -104,7 +104,7 @@
              (if (zerop (aref old i j))
                  (if (= 3  (sum-neighbors old i j)) 1 0)
                  (if (<= 2 (sum-neighbors old i j) 3) 1 0)))))
-  (loop      
+  (loop
      with old = (world-current world)
      with new = (world-next    world)
      for j from 1 below (1- (array-dimension old 1))
@@ -121,7 +121,7 @@
                  (if (<= 2 (sum-neighbors old i j) 3) 1 0)))))
   (rotatef (world-current world) (world-next world))
   world)
-                  
+
 
 (defun set-random (world)
   (loop

@@ -1,30 +1,30 @@
-   1 INPUT "What's your name? " NAME$ 
-   2 PRINT "Welcome " + NAME$ + "!" 
-  10 PRINT "hello" , "world" 
-  20 I = 1 : II = I + 1 : III = II + I 
-  30 FOR K = 1 TO 3 * III STEP II 
-  40 PRINT "k=" ; K 
-  50 NEXT K 
-  60 IF I < 10 THEN A = 10 : B = 1 : ELSE J = 1 
-  80 REM ESPACE , ; : < > <= = = = = = >= = = = = = = <> > > > > > + - * / ^ 
- 100 N = 0 
- 110 PRINT "---> n=" ; N 
- 120 IF N < 5 THEN N = N + 1 : GOTO 110 
- 130 PRINT "out" 
- 200 N = 0 
- 210 PRINT ">>>> n=" ; N 
- 220 IF N > 5 THEN PRINT "out" : ELSE N = N + 1 : GOTO 210 
- 250 RESTORE : I = 1 
- 255 READ NOM$ , J , M , A 
- 260 IF J = 0 THEN GOTO 280 
- 265 PRINT I , ":" , NOM$ , J ; "/" ; M ; "/" ; A 
- 266 I = I + 1 
- 270 GOTO 255 
- 300 DATA "Pascal" , 15 , 3 , 1964 
- 301 DATA "Bernard" , 14 , 1 , 1966 
- 302 DATA "Alain" , 3 , 7 , 1968 
- 303 DATA "Fin" , 0 , 0 , 0 
- 400 INPUT "Please enter a number:" N 
- 405 IF N < 1 THEN STOP 
- 410 RESTORE 299 + N 
- 420 I = 1 : GOTO 255 
+   1 INPUT "What's your name? " NAME$
+   2 PRINT "Welcome " + NAME$ + "!"
+  10 PRINT "hello" , "world"
+  20 I = 1 : II = I + 1 : III = II + I
+  30 FOR K = 1 TO 3 * III STEP II
+  40 PRINT "k=" ; K
+  50 NEXT K
+  60 IF I < 10 THEN A = 10 : B = 1 : ELSE J = 1
+  80 REM ESPACE , ; : < > <= = = = = = >= = = = = = = <> > > > > > + - * / ^
+ 100 N = 0
+ 110 PRINT "---> n=" ; N
+ 120 IF N < 5 THEN N = N + 1 : GOTO 110
+ 130 PRINT "out"
+ 200 N = 0
+ 210 PRINT ">>>> n=" ; N
+ 220 IF N > 5 THEN PRINT "out" : ELSE N = N + 1 : GOTO 210
+ 250 RESTORE : I = 1
+ 255 READ NOM$ , J , M , A
+ 260 IF J = 0 THEN GOTO 280
+ 265 PRINT I , ":" , NOM$ , J ; "/" ; M ; "/" ; A
+ 266 I = I + 1
+ 270 GOTO 255
+ 300 DATA "Pascal" , 15 , 3 , 1964
+ 301 DATA "Bernard" , 14 , 1 , 1966
+ 302 DATA "Alain" , 3 , 7 , 1968
+ 303 DATA "Fin" , 0 , 0 , 0
+ 400 INPUT "Please enter a number:" N
+ 405 IF N < 1 THEN STOP
+ 410 RESTORE 299 + N
+ 420 I = 1 : GOTO 255

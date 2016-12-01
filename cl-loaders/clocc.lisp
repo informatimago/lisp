@@ -54,7 +54,7 @@
   #+vms     ".fas"
   #+lucid   ".sbin")
 (defvar *f2cl_dir* "CLOCC:CLOCC;SRC;F2CL;SRC;")
-(defun load-f2cl-module (x) 
+(defun load-f2cl-module (x)
   (load (concatenate 'string *f2cl_dir* x *ext*) :print nil :verbose nil)) ;;LOAD-F2CL-MODULE
 (defun load-f2cl ()
   (load-f2cl-module "f2cl0" )

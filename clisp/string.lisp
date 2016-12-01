@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;*****************************************************************************
@@ -110,9 +110,9 @@ Used by: REPLACE-REGEXP-IN-STRING.
 ;;;
 ;;;   ((NIL UP) UP) --> (NIL UP) NOT NO-2C-WORD
 ;;;   ((NIL UP) LO) --> (NIL LO) NOT NO-2C-WORD NOT ALL-UPCASE
-;;;   ((NIL UP) NO) --> (NIL NO) NOT NO-2C-WORD 
+;;;   ((NIL UP) NO) --> (NIL NO) NOT NO-2C-WORD
 ;;;   ((NIL UP) SP) --> (NIL SP)
-;;;   ((NIL LO) UP) --> (NIL UP) NOT NO-2C-WORD NOT ALL-LOCASE NOT ALL-CAPITA 
+;;;   ((NIL LO) UP) --> (NIL UP) NOT NO-2C-WORD NOT ALL-LOCASE NOT ALL-CAPITA
 ;;;   ((NIL LO) LO) --> (NIL LO) NOT NO-2C-WORD
 ;;;   ((NIL LO) NO) --> (NIL NO) NOT NO-2C-WORD
 ;;;   ((NIL LO) SP) --> (NIL SP)
@@ -120,20 +120,20 @@ Used by: REPLACE-REGEXP-IN-STRING.
 ;;;   ((NIL NO) LO) --> (NIL LO) NOT NO-2C-WORD
 ;;;   ((NIL NO) NO) --> (NIL NO) NOT NO-2C-WORD
 ;;;   ((NIL NO) SP) --> (NIL SP)
-;;;   ((NIL SP) UP) --> ( T  UP) NOT ALL-LOCASE  
+;;;   ((NIL SP) UP) --> ( T  UP) NOT ALL-LOCASE
 ;;;   ((NIL SP) LO) --> ( T  LO) NOT ALL-UPCASE  NOT ALL-CAPITA
 ;;;   ((NIL SP) NO) --> ( T  NO)
 ;;;   ((NIL SP) SP) --> (NIL SP)
 ;;;   (( T  UP) UP) --> (NIL UP) NOT NO-2C-WORD NOT ALL-LOCASE NOT ALL-CAPITA
-;;;   (( T  UP) LO) --> (NIL LO) NOT NO-2C-WORD NOT ALL-UPCASE  
+;;;   (( T  UP) LO) --> (NIL LO) NOT NO-2C-WORD NOT ALL-UPCASE
 ;;;   (( T  UP) NO) --> (NIL NO) NOT NO-2C-WORD
 ;;;   (( T  UP) SP) --> (NIL SP)
 ;;;   (( T  LO) UP) --> (NIL UP) NOT NO-2C-WORD NOT ALL-LOCASE
-;;;   (( T  LO) LO) --> (NIL LO) NOT NO-2C-WORD NOT ALL-UPCASE  
+;;;   (( T  LO) LO) --> (NIL LO) NOT NO-2C-WORD NOT ALL-UPCASE
 ;;;   (( T  LO) NO) --> (NIL NO) NOT NO-2C-WORD
 ;;;   (( T  LO) SP) --> (NIL SP)
-;;;   (( T  NO) UP) --> (NIL UP) NOT NO-2C-WORD NOT ALL-LOCASE NOT ALL-CAPITA 
-;;;   (( T  NO) LO) --> (NIL LO) NOT NO-2C-WORD NOT ALL-UPCASE  
+;;;   (( T  NO) UP) --> (NIL UP) NOT NO-2C-WORD NOT ALL-LOCASE NOT ALL-CAPITA
+;;;   (( T  NO) LO) --> (NIL LO) NOT NO-2C-WORD NOT ALL-UPCASE
 ;;;   (( T  NO) NO) --> (NIL NO) NOT NO-2C-WORD
 ;;;   (( T  NO) SP) --> (NIL SP)
 ;;;    ( T  SP) is impossible.
@@ -189,7 +189,7 @@ RETURN:  :LOWER :UPPER :CAPITALIZED or :WHATEVER
     (map nil (lambda (ch)
                (let ((new-state (aref +capitalization-transitions+
                                       (car state) (cdr state)
-                                      (cond 
+                                      (cond
                                         ((not (alpha-char-p ch)) 3)
                                         ((upper-case-p ch)       0)
                                         ((lower-case-p ch)       1)

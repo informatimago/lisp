@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    This packages exports SUSV3 XSI functions.
 ;;;;    This is the CLISP specific implementation of the SUSV3 XSI API.
 ;;;;
@@ -31,24 +31,24 @@
 ;;;;    on the current system. At run-time.
 ;;;;
 ;;;;    The type of arguments and results of FFI function should be pure
-;;;;    Common-Lisp objects. We shouldn't need to do any FFI stuff outside 
+;;;;    Common-Lisp objects. We shouldn't need to do any FFI stuff outside
 ;;;;    of here.
 ;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -63,7 +63,7 @@
     This is the CLISP specific implementation of the SUSV3 XSI API.")
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.CLISP.SUSV3")
-  (:export 
+  (:export
    ;; FTW
    "+FTW-F+" "+FTW-D+" "+FTW-DNR+" "+FTW-DP+" "+FTW-NS+" "+FTW-SL+"
    "+FTW-SLN+" "+FTW-PHYS+" "+FTW-MOUNT+" "+FTW-DEPTH+" "+FTW-CHDIR+"
@@ -71,21 +71,21 @@
    "+FTW-DP+" "+FTW-NS+" "+FTW-SL+" "+FTW-SLN+"
    ;; IPC:
    "IPC_CREAT" "IPC_EXCL" "IPC_NOWAIT" "IPC_RMID" "IPC_SET" "IPC_STAT"
-   "IPC_INFO" "IPC_PRIVATE" "IPC_PERM" "FTOK" 
+   "IPC_INFO" "IPC_PRIVATE" "IPC_PERM" "FTOK"
    "MSG_NOERROR" "MSG_EXCEPT" "MSGQNUM_T" "MSGLEN_T" "MSQID_DS"
    "MSG_STAT" "MSG_INFO" "MSGINFO"
    "MSGGET" "MSGCTL" "MSGSND" "MSGRCV"
-   "+MAX-MTEXT-SIZE+" "MSGBUF" "MAKE-MSGBUF" 
+   "+MAX-MTEXT-SIZE+" "MSGBUF" "MAKE-MSGBUF"
    "SHM_R" "SHM_W" "SHM_RDONLY" "SHM_RND" "SHM_REMAP" "SHM_LOCK"
-   "SHM_UNLOCK" "GETPAGESIZE" "SHMLBA" "SHM_STAT" "SHM_INFO" "SHM_DEST" 
+   "SHM_UNLOCK" "GETPAGESIZE" "SHMLBA" "SHM_STAT" "SHM_INFO" "SHM_DEST"
    "SHM_LOCKED" "SHM_HUGETLB" "SHMID_DS" "SHMGET" "SHMCTL" "SHMAT" "SHMDT"
    "SEM_UNDO" "GETPID" "GETVAL" "GETALL" "GETNCNT" "GETZCNT" "SETVAL"
    "SETALL" "SEMMNI" "SEMMSL" "SEMMNS" "SEMOPM" "SEMVMX" "SEMAEM"
-   "SEMID_DS" "SEM_STAT" "SEM_INFO" "SEMINFO" "SEMBUF" 
+   "SEMID_DS" "SEM_STAT" "SEM_INFO" "SEMINFO" "SEMBUF"
    "SEMGET" "SEMCTL" "SEMOP"
-   ;; // WARNING // WARNING // WARNING // WARNING // WARNING // WARNING // 
+   ;; // WARNING // WARNING // WARNING // WARNING // WARNING // WARNING //
    ;; The following are readers, not accessors!!!
-   ;; // WARNING // WARNING // WARNING // WARNING // WARNING // WARNING // 
+   ;; // WARNING // WARNING // WARNING // WARNING // WARNING // WARNING //
    "MSGBUF-MTYPE" "MSGBUF-MTEXT" "IPC_PERMKEY" "IPC_PERMUID"
    "IPC_PERMGID" "IPC_PERMCUID" "IPC_PERMCGID" "IPC_PERMMODE"
    "IPC_PERMSEQ" "MSGQID_DS-MSG_PERM" "MSGQID_DS-MSG_STIME"
@@ -98,7 +98,7 @@
    "SHMID_DS-SHM_ATIME" "SHMID_DS-SHM_DTIME" "SHMID_DS-SHM_CTIME"
    "SHMID_DS-SHM_CPID" "SHMID_DS-SHM_LPID" "SHMID_DS-SHM_NATTCH"
    "SEMID_DS-SEM_PERM" "SEMID_DS-SEM_OTIME" "SEMID_DS-SEM_CTIME"
-   "SEMID_DS-SEM_NSEMS" 
+   "SEMID_DS-SEM_NSEMS"
    "SEMINFO-SEMMAP" "SEMINFO-SEMMNI" "SEMINFO-SEMMNS"
    "SEMINFO-SEMMNU" "SEMINFO-SEMMSL" "SEMINFO-SEMOPM" "SEMINFO-SEMUME"
    "SEMINFO-SEMUSZ" "SEMINFO-SEMVMX" "SEMINFO-SEMAEM"
@@ -251,7 +251,7 @@ URL:        <http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html>
 (defconstant ipc_excl    #o02000 "Fail if key exists.")
 (defconstant ipc_nowait  #o04000 "Return error on wait.")
 
-;; Control commands for `msgctl', `semctl', and `shmctl'. 
+;; Control commands for `msgctl', `semctl', and `shmctl'.
 (defconstant ipc_rmid    0       "Remove identifier.")
 (defconstant ipc_set     1       "Set `ipc_perm' options.")
 (defconstant ipc_stat    2       "Get `ipc_perm' options.")
@@ -262,7 +262,7 @@ URL:        <http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html>
 
 (ffi:def-c-struct ipc_perm
     (key     linux:|key_t|)               ; Key.
-  (uid     linux:|uid_t|)               ; Owner's user ID. 
+  (uid     linux:|uid_t|)               ; Owner's user ID.
   (gid     linux:|gid_t|)               ; Owner's group ID.
   (cuid    linux:|uid_t|)               ; Creator's user ID.
   (cgid    linux:|gid_t|)               ; Creator's group ID.
@@ -287,7 +287,7 @@ URL:        <http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html>
 (defconstant msg_noerror  #o010000 "no error if message is too big")
 (defconstant msg_except   #o020000 "recv any msg except of specified type")
 
-;; Types used in the structure definition.  
+;; Types used in the structure definition.
 (ffi:def-c-type msgqnum_t ffi:ulong)
 (ffi:def-c-type msglen_t  ffi:ulong)
 
@@ -296,9 +296,9 @@ URL:        <http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html>
 ;; The type `struct msg' is opaque.
 (ffi:def-c-struct msqid_ds
     (msg_perm    ipc_perm)   ; structure describing operation permission
-  (msg_stime   linux:|time_t|)          ; time of last msgsnd command 
+  (msg_stime   linux:|time_t|)          ; time of last msgsnd command
   (__unused1   ffi:ulong)
-  (msg_rtime   linux:|time_t|)          ; time of last msgrcv command 
+  (msg_rtime   linux:|time_t|)          ; time of last msgrcv command
   (__unused2   ffi:ulong)
   (msg_ctime   linux:|time_t|)          ; time of last change
   (__unused3   ffi:ulong)
@@ -315,7 +315,7 @@ URL:        <http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html>
 (defconstant msg_info 12)
 
 
-;; buffer for msgctl calls IPC_INFO, MSG_INFO 
+;; buffer for msgctl calls IPC_INFO, MSG_INFO
 (ffi:def-c-struct msginfo
     (msgpool ffi:int)
   (msgmap  ffi:int)
@@ -365,16 +365,16 @@ URL:        <http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html>
 ;;----------------------------------------------------------------------
 
 
-;; Permission flag for shmget. 
+;; Permission flag for shmget.
 (defconstant shm_r #o0400 "or S_IRUGO from <linux/stat.h> *")
 (defconstant shm_w #o0200 "or S_IWUGO from <linux/stat.h> *")
 
-;; Flags for `shmat'. 
+;; Flags for `shmat'.
 (defconstant shm_rdonly #o010000 "attach read-only else read-write *")
 (defconstant shm_rnd    #o020000 "round attach address to SHMLBA *")
 (defconstant shm_remap  #o040000 "take-over region on attach *")
 
-;; Commands for `shmctl'.  
+;; Commands for `shmctl'.
 (defconstant shm_lock   11 "lock segment (root only) *")
 (defconstant shm_unlock 12 "unlock segment (root only) *")
 
@@ -385,30 +385,30 @@ URL:        <http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html>
   (:language :stdc))
 
 
-(defun shmlba () 
+(defun shmlba ()
   "Segment low boundary address multiple. "
   (getpagesize))
 
 
 (ffi:def-c-type shmatt_t ffi:ulong)
-;; Type to count number of attaches. 
+;; Type to count number of attaches.
 
 
 
 (ffi:def-c-struct shmid_ds
     ;; Data structure describing a set of semaphores.
     (shm_perm    ipc_perm)   ; structure describing operation permission
-  (shm_segsz   ffi:size_t)          ;  size of segment in bytes 
-  (shm_atime   linux:|time_t|)          ;  time of last shmat() 
-  (__unused1   ffi:ulong)               ; 
-  (shm_dtime   linux:|time_t|)          ;  time of last shmdt() 
-  (__unused2   ffi:ulong)               ; 
-  (shm_ctime   linux:|time_t|)       ;time of last change by shmctl() 
-  (__unused3   ffi:ulong)               ; 
-  (shm_cpid    linux:|pid_t|)           ;  pid of creator 
-  (shm_lpid    linux:|pid_t|)           ;  pid of last shmop 
-  (shm_nattch  shmatt_t)                ; number of current attaches 
-  (__unused4   ffi:ulong)               ; 
+  (shm_segsz   ffi:size_t)          ;  size of segment in bytes
+  (shm_atime   linux:|time_t|)          ;  time of last shmat()
+  (__unused1   ffi:ulong)               ;
+  (shm_dtime   linux:|time_t|)          ;  time of last shmdt()
+  (__unused2   ffi:ulong)               ;
+  (shm_ctime   linux:|time_t|)       ;time of last change by shmctl()
+  (__unused3   ffi:ulong)               ;
+  (shm_cpid    linux:|pid_t|)           ;  pid of creator
+  (shm_lpid    linux:|pid_t|)           ;  pid of last shmop
+  (shm_nattch  shmatt_t)                ; number of current attaches
+  (__unused4   ffi:ulong)               ;
   (__unused5   ffi:ulong))
 
 (ffi:def-c-struct shminfo
@@ -424,11 +424,11 @@ URL:        <http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html>
 
 
 (ffi:def-c-struct shm_info
-    (used_ids ffi:int)                    ; 
+    (used_ids ffi:int)                    ;
   (shm_tot ffi:ulong)                   ; total allocated shm
   (shm_rss ffi:ulong)                   ; total resident shm*
   (shm_swp ffi:ulong)                   ; total swapped shm
-  (swap_attempts ffi:ulong)             ; 
+  (swap_attempts ffi:ulong)             ;
   (swap_successes ffi:ulong))
 
 
@@ -441,14 +441,14 @@ URL:        <http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html>
 
 
 (ffi:def-call-out shmctl (:name "shmctl")
-  ;; Shared memory control operation. 
+  ;; Shared memory control operation.
   (:arguments (shmid ffi:int) (cmd ffi:int) (buf pointer))
   (:return-type ffi:int)
   (:language :stdc))
 
 
 (ffi:def-call-out shmat (:name "shmat")
-  ;; Attach shared memory segment. 
+  ;; Attach shared memory segment.
   (:arguments (shmid ffi:int) (shmaddr pointer) (shmflg ffi:int))
   (:return-type ffi:int)
   (:language :stdc))
@@ -466,10 +466,10 @@ URL:        <http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html>
 ;;----------------------------------------------------------------------
 
 
-;; Flags for `semop'.  
+;; Flags for `semop'.
 (defconstant sem_undo   #x1000 "undo the operation on exit")
 
-;; Commands for `semctl'.  
+;; Commands for `semctl'.
 (defconstant  getpid          11 "get sempid")
 (defconstant  getval          12 "get semval")
 (defconstant  getall          13 "get all semval's")
@@ -488,20 +488,20 @@ URL:        <http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html>
 
 
 (ffi:def-c-struct semid_ds
-    ;; Data structure describing a set of semaphores.  
-    (sem_perm ipc_perm)                   ; operation permission struct 
-  (sem_otime linux:|time_t|)            ; last semop() time 
+    ;; Data structure describing a set of semaphores.
+    (sem_perm ipc_perm)                   ; operation permission struct
+  (sem_otime linux:|time_t|)            ; last semop() time
   (__unused1 ffi:ulong)
-  (sem_ctime linux:|time_t|)          ; last time changed by semctl() 
+  (sem_ctime linux:|time_t|)          ; last time changed by semctl()
   (__unused2 ffi:ulong)
-  (sem_nsems ffi:ulong)                 ; number of semaphores in set 
+  (sem_nsems ffi:ulong)                 ; number of semaphores in set
   (__unused3 ffi:ulong)
   (__unused4 ffi:ulong))
 
 
 ;;    The user should define a union like the following to use it for arguments
 ;;    for `semctl'.
-;; 
+;;
 ;;    union semun
 ;;    {
 ;;      int val;                           <= value for SETVAL
@@ -509,12 +509,12 @@ URL:        <http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html>
 ;;      unsigned short int *array;         <= array for GETALL & SETALL
 ;;      struct seminfo *__buf;             <= buffer for IPC_INFO
 ;;    };
-;; 
+;;
 ;;    Previous versions of this file used to define this union but this is
 ;;    incorrect.  One can test the macro _SEM_SEMUN_UNDEFINED to see whether
-;;    one must define the union or not.  
+;;    one must define the union or not.
 
-;; ipcs ctl cmds 
+;; ipcs ctl cmds
 (defconstant sem_stat 18)
 (defconstant sem_info 19)
 
@@ -533,15 +533,15 @@ URL:        <http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html>
 
 
 (ffi:def-c-struct sembuf
-    ;; Structure used for argument to `semop' to describe operations. 
-    (sem_num ffi:ushort)                  ; semaphore number 
-  (sem_op ffi:short)                    ; semaphore operation 
+    ;; Structure used for argument to `semop' to describe operations.
+    (sem_num ffi:ushort)                  ; semaphore number
+  (sem_op ffi:short)                    ; semaphore operation
   (sem_flg ffi:short)                   ; operation flag
   )
 
 
 (ffi:def-call-out semget (:name "semget")
-  ;; Get semaphore. 
+  ;; Get semaphore.
   (:arguments (key linux:|key_t|) (nsems ffi:int) (semflg ffi:int))
   (:return-type ffi:int)
   (:language :stdc))
@@ -555,7 +555,7 @@ URL:        <http://www.opengroup.org/onlinepubs/007904975/functions/ftw.html>
 
 
 (ffi:def-call-out semop (:name "semop")
-  ;; Operate on semaphore. 
+  ;; Operate on semaphore.
   (:arguments (semid ffi:int) (sops pointer) (nsops ffi:size_t))
   (:return-type ffi:int)
   (:language :stdc))

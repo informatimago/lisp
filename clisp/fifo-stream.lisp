@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    A fifo stream: all input is buffered and restituted as output.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -39,7 +39,7 @@
   (:documentation
    "
     A fifo stream: all input is buffered and restituted as output.
-    
+
     Copyright Pascal J. Bourguignon 2003 - 2003
 "))
 (in-package "COM.INFORMATIMAGO.CLISP.FIFO-STREAM")
@@ -75,12 +75,12 @@
 
 
 ;;; (string start end closed)
-;;; 
+;;;
 ;;; (and (<= 0 output)
 ;;;      (<= output input)
 ;;;      (<= 0 input)
 ;;;      (<= input (length string)))
-;;; 
+;;;
 ;;; closed <=> don't add input, see next buffer
 ;;;
 ;;; We could use the fill-pointer for the input.
@@ -89,9 +89,9 @@
   (list (make-string +chunk-size+) 0 0 nil))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;  
+;;;
 ;;; general generic functions defined on streams
-;;; 
+;;;
 
 (defmethod close ((stream fifo-stream) &key ((:abort abort-flag) nil))
   ;; clisp-2.49|asdf|quicklisp seem to have a constant declaration on abort.

@@ -49,7 +49,7 @@ modify the state of an object representing the document.
 Returning an object representing the tag will allow us to write:
 
       (<:tag* '() (f (<:tag-1*) (<:tag-2*)))
-  
+
 and have f select either TAG-1 or TAG-2 to use in the list returned
 for TAG.  This is more expressive so our functions will return tag
 objects and be thus more functional.
@@ -59,7 +59,7 @@ objects and be thus more functional.
 
     (<:tag*
        (list :attrib value ...)
-       (list (<:tag* ...) "pcdata" ...))    
+       (list (<:tag* ...) "pcdata" ...))
 
     The attribute value strings are processed and any character
     invalid for the corresponding attribute is escaped (in general
@@ -71,7 +71,7 @@ objects and be thus more functional.
 
 In general, attributes names are string designators.  When given a
 symbol or keyword, the symbol-name is used.  Qualified XML attributes
-may be written as string designator containing a colon: 
+may be written as string designator containing a colon:
 
   (<:html* (list "xmlns" "http://www.w3.org/1999/xhtml"
                  :xml\:lang "en"
@@ -102,16 +102,16 @@ XHTML rules
   - Hex entities must be written in low case: &x99;
   - name attributes -> id attributes ???
   - use both lang and xml:lang attributes.
-  
+
 
 
 HTML-STRING (string)                                            Function
 
-  Returns a tag-object that would generate the contents 
+  Returns a tag-object that would generate the contents
   of the STRING as HTML.
 
   Example:
-  
+
     (HTML-STRING "<P>Some paragraph</P>") --> #<element>
 
 
@@ -122,7 +122,7 @@ WRITE-HTML (tag-object &optional (stream *html-output*)         Function
 
 
 
-(write-html 
+(write-html
    (<:html* '()
        (list
          (<:head* '()
@@ -132,7 +132,7 @@ WRITE-HTML (tag-object &optional (stream *html-output*)         Function
                    (<:p  '() '("Some paragraph text" "and some more")))))))
 
 
-         
+
 ------------
 MARKUP LAYER
 ------------
@@ -140,15 +140,15 @@ MARKUP LAYER
 Another layer will consist of macros which will accept a more lax
 syntax for attributes, and build the list of body-html from a body of
 lisp code.
- 
+
 (<:tag plist-of-attributes &body body)
 
 plist-of-attributes ::= () | - | (:attrib value-expr ...) | lisp-expression .
 
-  If all keys are keywords, 
+  If all keys are keywords,
       then (list ,@plist-of-attributes)
       else plist-of-attributes
-  
+
   (:att (some 'value) (if test :a1 :a2) "value")           ; invalid
   (list :att (some 'value) (if test :a1 :a2) "value")      ; valid
 
@@ -165,7 +165,7 @@ plist-of-attributes ::= () | - | (:attrib value-expr ...) | lisp-expression .
                    (setf results (multiple-value-list (progn ,@body)))
                    (nreverse *html-tags*))) *html-tags*)
       (apply (function values) results)))
-  
+
 
 (table (attributes-for-table)
        (loop for r in rows
@@ -186,7 +186,7 @@ Expands to:
             (loop for r in rows
                   do (push (<:tr '()
                               (let ((*html-tags* '()))
-                                (loop for c in r 
+                                (loop for c in r
                                       do (push (<:td '()
                                                  (let ((*html-tags* '()))
                                                    (push (pcdata c))
@@ -219,7 +219,7 @@ Expands to:
 
 
 WITH-HTML-OUTPUT ((&optional stream &key kind encoding) &body body)        Macro
- 
+
    Execute body (collecting *HTML-TAGS*), and finally writes to the STREAM
    the HTML collected.
 
@@ -244,8 +244,8 @@ lists of ELEMENT objects, and don't concatenate any string internally,
 until the tree is written to the output stream with WRITE-HTML.  This
 means that structure sharing of parts of a document doesn't use any
 memory (but a few references).
-      
- 
+
+
 ========================================================================
 EXAMPLES:
 
@@ -277,12 +277,12 @@ prints:
 
 With functions the lists of attributes and body elements can be built
 dynamically.  The strings are automatically converted to pcdata:
- 
+
     (progn
       (write-html (doctype* :loose))
       (write-html
        (html* '()
-              (list 
+              (list
                (head* '()
                       (list (title* '() (list (pcdata* "title")))))
                (body* (list :color "#123456" "background-color" "red")
@@ -314,7 +314,7 @@ YACLML:
 
   HTML tags are macros (Leaf tags (without bodies) can be functions:
   deftag vs. deftag-macro.)
-  
+
   (<:tag :attrib value :atrib value ...
       body ...)
 
@@ -333,7 +333,7 @@ NET.HTML.GENERATOR: (HTMLGEN, ALLEGROSERVE).
   :newline -> inserts a new line in the generated html.
   :princ :princ-safely etc -> to have a run-time value inserted in the html.
 
-  Output to *html-stream*; html-stream 
+  Output to *html-stream*; html-stream
 
   Attribute names are not evaluated, attribute values are evaluated.
 
@@ -383,9 +383,9 @@ LML:
   HTML tags are keywords.
   There is a reader macro to insert the PCDATA.
 
-    (p [,(a :href "http://lml.b9.com" "LML") is a Common Lisp package 
-       for generating HTML and XHTML documents. LML is authored by 
-       ,(a :href "mailto:kevin@rosenberg.net" "Kevin Rosenberg"). 
+    (p [,(a :href "http://lml.b9.com" "LML") is a Common Lisp package
+       for generating HTML and XHTML documents. LML is authored by
+       ,(a :href "mailto:kevin@rosenberg.net" "Kevin Rosenberg").
        The home page for LML is
        ,(a :href "http://lml.b9.com/" "http://lml.b9.com/").])
 
@@ -428,7 +428,7 @@ XML-EMITER:
                   "mixedCaseTag" "Check out the mixed case!"
                   "notShown" nil)))
 
-   
+
 
 Le Sursis:
 
@@ -445,4 +445,4 @@ Le Sursis:
   Tags are functions that return a string containing the generated HTML.
   (O(n²) in space).
 
-    
+

@@ -5,20 +5,20 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    LINC Is Not C, but almost.
 ;;;;
 ;;;;    The purpose is to be able to use Common Lisp
 ;;;;    at the meta-programming level to generate C sources.
 ;;;;    Linc programs can also be executed and debugged in the
 ;;;;    Common Lisp environment.
-;;;;   
+;;;;
 ;;;;    A linc file contains normal Common Lisp expressions,
 ;;;;    and linc expressions.  When compiling the linc file,
-;;;;    the Common Lisp expressions are executed, which will  
+;;;;    the Common Lisp expressions are executed, which will
 ;;;;    generate a corresponding C source.
 ;;;;
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -27,25 +27,25 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2005 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;****************************************************************************
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setf *readtable* (copy-readtable nil)))
-(in-package "COM.INFORMATIMAGO.LANGUAGES.LINC")  
+(in-package "COM.INFORMATIMAGO.LANGUAGES.LINC")
 
 
 ;; file:///home/pjb/library/informatique/protocols_and_standards/ISO-IEC-14882/www.kuzbass.ru:8086/docs/isocpp/index.html
@@ -78,8 +78,8 @@
 ;;                    :do (setf (gethash op opmap) (list* (car level) priority
 ;;                                                        (cdr  ops)))))
 ;;      :finally (return opmap)))
-;; 
-;; 
+;;
+;;
 ;; (defun operator (op)
 ;;   (or (gethash op *operator-map*)
 ;;       ;; TODO: what about linc macros?
@@ -95,20 +95,20 @@
 ;; (defun operator-precedence    (op)  (priority      (find-operator op)))
 ;; (defun operator-arity         (op)  (arity         (find-operator op)))
 ;; (defun operator-generate      (op)  (generator (find-operator op)))
-;; 
+;;
 ;; (defun expression-operator   (expr)
 ;;   (cond
 ;;     ((symbolp expr)                      'c::identifier)
 ;;     ((atom expr)                         'c::literal)
 ;;     ((find-raw-operator (car expr))      (car expr))
 ;;     (t                                   'c::call)))
-;; 
+;;
 ;; (defun expression-arguments  (expr)
 ;;   (cond
 ;;     ((atom expr)                         (list expr))
 ;;     ((find-raw-operator (car expr))      (cdr expr))
 ;;     (t                                   expr)))
-;; 
+;;
 ;; (defun expression-precedence (expr)
 ;;   (operator-precedence (expression-operator expr)))
 
@@ -117,7 +117,7 @@
 ;; (maphash (lambda (k v) (print (list k (operator-generate k)))) *operator-map*)
 ;; (operator-precedence (car '((c::scope c1 c2 m1) (a b c))))
 ;; (operator-precedence (car '(c::scope c1 c2 m1)))
-    
+
 ;; (generate-statement '(progn
 ;;                                (= a (+ (+ (+ (+ a b) c) d) e))
 ;;                                (= a (+ a (+ b (+ c (+ d e)))))
@@ -127,7 +127,7 @@
 ;; a=(a+(b+(c+(d+e))));
 ;; a=(a+b+c+d+e);
 ;; }
-;; 
+;;
 ;; (generate-statement '(progn
 ;;                                (= (= (= (= a b) c) d) 0); invalid!
 ;;                                (= a (= b (= c (= d 0))))
@@ -146,17 +146,17 @@
 ;; (defun generate-expression (expr &key (level 99 levelp) (naked t))
 ;;   ;;   (+ a (* b c))    (10 16 (11 16 16))
 ;;   ;;   a + b*c
-;;   ;; 
+;;   ;;
 ;;   ;;   (* (+ a b) c)    (11 (10 16 16) 16)
 ;;   ;;   (a+b) * c
-;;   ;; 
+;;   ;;
 ;;   ;;   (+ a (+ b c))    (10 16 (10 16 16))
 ;;   ;;   a + (b+c)
-;;   ;; 
+;;   ;;
 ;;   ;;   (+ (+ a b) c)    (10 (10 16 16) 16)
 ;;   ;;   a+b+c
-;;   ;; 
-;;   ;; 
+;;   ;;
+;;   ;;
 ;;   ;;   (= a (= b c))    (1 16 (1 16 16))
 ;;   ;;   a = b=c
 ;;   (when (and naked (not levelp)) (setf level -1))
@@ -368,14 +368,14 @@
 ;; (pointer const volatile typename _) ; typename* const volatile   name;
 ;; (pointer const volatile          _) ; * const volatile name;
 ;; (reference _)
-;; 
+;;
 ;; (declare ((pointer type) name))         ; type* name;
 ;; (declare ((pointer type) name 0)        ; type* name=0;
 ;;          ((function (int (pointer const char)) void const (throw (:: std exception)))
 ;;           fname) ; void fname(int,char const*) throw(std::exception);
 ;;          ((vector (vector (vector int 4) 5) 6) a) ; int a[6][5][4];
 ;;          )
-;;  
+;;
 ;;  )
 
 ;; (generate-statement
@@ -483,7 +483,7 @@
                             :external-format external-format)
       (with-open-file (header (make-pathname
                                :type "H" :case :common
-                               :defaults (or output-file input-file)) 
+                               :defaults (or output-file input-file))
                               :direction :output
                               :if-exists :supersede
                               :if-does-not-exist :create
@@ -540,22 +540,22 @@
 
 ;; quit
 ;; (repl)
-         
+
 ;; (load (compile-file "example.linc"))
-;; 
+;;
 ;; CL compiles and CL loads and executes the example.linc program.
 ;; To execute a LINC program we provide a C semantics layer.
-;; 
-;; 
-;; 
+;;
+;;
+;;
 ;; (define-module example
 ;;   (:c-name "example")
 ;;   (:export simple_addition))
 ;; (in-module example)
 ;; (use-module "<string.h>")
-;; 
+;;
 ;; (define-type string_t (pointer unsigned-char))
-;; 
+;;
 ;; (define-function string_add ((a string_t) (b string_t)) string_t
 ;;   (let ((av int)
 ;;         (bv int)
@@ -564,18 +564,18 @@
 ;;     (sscanf b "%d" (address bv))
 ;;     (sprintf res "%d" (+ a b))
 ;;     (return res)))
-;; 
+;;
 ;; (define-function simple_addition
 ;;     ((a int) (b signed-short) (c unsigned-char) (d float))
 ;;     int
 ;;   (return (+ a b c d)))
-;; 
-;; 
+;;
+;;
 ;; int simple_addition (int a,signed short b,unsigned char c,float d){
 ;;    return(a+b+c+d);
 ;; }
-;; 
-;; 
+;;
+;;
 ;; (defun string_add (a b)
 ;;   (assert (c:subtypep (c:type-of a) '(c:pointer c:unsigned-char)))
 ;;   (assert (c:subtypep (c:type-of b) '(c:pointer c:unsigned-char)))
@@ -586,18 +586,18 @@
 ;;   (assert (c:subtypep (c:type-of c) 'c:unsigned-char))
 ;;   (assert (c:subtypep (c:type-of d) 'c:float))
 ;;   (c:int (+ (c:value-of a) (c:value-of b) (c:value-of c) (c:value-of d))))
-;; 
-;; 
+;;
+;;
 ;; (defun c:+ (arg &rest args)
 ;;   ())
-;; 
-;; 
+;;
+;;
 ;; (com.informatimago.languages.linc:compile-file "example.linc")
-;; 
+;;
 ;; LINC "compiles" the example.linc program, that is, generate C header
 ;; and source files.
-;; 
-;; 
+;;
+;;
 ;; (com.informatimago.languages.linc:compile-file "example.linc"
 ;;                    :external-format charset:utf-8
 ;;                    :verbose t
@@ -605,50 +605,50 @@
 ;;                    :output-file "example.c"
 ;;                    :ouput-file-type "m"
 ;;                    :c-compilation-command "make example")
-;; 
-;; 
-;; 
+;;
+;;
+;;
 ;;     signed-char
 ;;     unsigned-char
 ;;     char
-;; 
+;;
 ;;     short-int
 ;;     int
 ;;     long-int
 ;;     unsigned-short-int
 ;;     unsigned-int
 ;;     unsigned-long-int
-;; 
+;;
 ;;     float
 ;;     double-float
 ;;     long-float
-;; 
+;;
 ;;     void
-;; 
-;; 
+;;
+;;
 ;;     (define-module bcmem
 ;;         (:c-name "BcMem")
 ;;       (:export allocate deallocate copy))
-;; 
+;;
 ;;     (define-module bcstring
 ;;         (:c-name "BcString")
 ;;       (:export id s p set-capacity-copy))
 ;;     (in-module bcstring)
 ;;     (use-module "<string.h>")
 ;;     (use-module bcmem)
-;; 
+;;
 ;;     (define-variable  ID
 ;;         (array (*) (const char))
 ;;       "$Id: BcString.c,v 1.3 2004/01/21 06:26:09 pjbpjb Exp $")
-;; 
+;;
 ;;     (define-type S
 ;;         (structure
 ;;          (data       (pointer char))
 ;;          (dlength    INT32)
 ;;          (allocation INT32)))
-;; 
+;;
 ;;      (define-type P (pointer S))
-;; 
+;;
 ;;     (comment "
 ;;         INVARIANTS:
 ;;             data#NIL
@@ -657,10 +657,10 @@
 ;;             data[dlength]=(char)0
 ;;             for all i in [0..dlength-1], data[i]#(char)0
 ;;     ")
-;; 
+;;
 ;;     (define-constant Alloc-Increment 128)
 ;;     (define-macro Minimum (a b) (if (< a b) a b))
-;; 
+;;
 ;;     (define-function Set-Capacity-Copy
 ;;         ((t t) (nAllocation INT32) (copy BOOLEAN)) T
 ;;         (let ((this P (cast t P))
@@ -684,9 +684,9 @@
 ;;                 (-> this dlength)    nLength
 ;;                 (-> this allocation) nAllocation)
 ;;           (return this)))
-;; 
-;; 
-;; 
+;;
+;;
+;;
 ;;     (--> (define-variable ?identifier ?type (&optional ?initform))
 ;;          (if (exported-p ?identifier)
 ;;              (progn
@@ -695,38 +695,38 @@
 ;;                                              "=" ?initform) ";"))
 ;;              (in-body "static" ?type ?identifier (when ?initform
 ;;                                                    "=" ?initform) ";")))
-;; 
+;;
 ;;     (--> (define-type ?identifier ?type)
 ;;          (if (exported-p ?identifier)
 ;;              (in-header "typedef" ?type ?identifier)
 ;;              (in-body   "typedef" ?type ?identifier)))
-;; 
-;; 
+;;
+;;
 ;;     (--> (scope (&optional ?class) ?identifier)
 ;;          (when ?class ?class) "::" ?identifier)
-;; 
+;;
 ;;     (--> (comment ?comment) "/*" ?comment "*/")
-;; 
+;;
 ;;     (--> (define-constant ?constant-identifier ?expression)
 ;;          "#define" ?constant-identifier ?expression)
-;; 
+;;
 ;;     (--> (define-macro ?identifier ?arguments ?expression)
 ;;          "#define" ?identifier ?arguments ?expression)
-;; 
+;;
 ;;     (--> (return ?expression)
 ;;          "return" "(" ?expression ")" ";")
-;; 
-;; 
-;; 
+;;
+;;
+;;
 ;;     (defparameter *special-operators* (make-hash-table))
-;; 
+;;
 ;;     (defun define-special-operator (name generator)
 ;;       (setf (gethash name *special-operators*) generator))
-;; 
+;;
 ;;     (defun spec-gen (name)
 ;;       (gethash name *special-operators*))
-;; 
-;; 
+;;
+;;
 ;;     (defmacro defspec (name arguments &body body)
 ;;       (define-special-operator ',name `(lambda ,arguments ,@body)))
 
@@ -736,7 +736,7 @@
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  
+
  (defun pcond-variable-p (pattern)
    (and (symbolp pattern)
         (<= 1 (length (string pattern)))
@@ -797,7 +797,7 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
 
 ;; ;;
 ;; ;; variable
-;; ;; 
+;; ;;
 ;; ;;      int x;
 ;; (declare x int)
 ;; ;;      int y=42;
@@ -806,7 +806,7 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
 ;; (declare (a b c) (pointer char) 0)
 ;; ;;      int (*f)(int x);
 ;; (declare f (pointer (function ((x int)) int)))
-;; ;; 
+;; ;;
 ;; ;;      int f(int x);
 ;; (declare f (function ((x int)) int))
 ;; ;;
@@ -825,7 +825,7 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
 (defun generate-type (expression &key name)
 
   (ecase (first expression)
-    
+
     ((com.informatimago.languages.linc.c::class com.informatimago.languages.linc.c::struct com.informatimago.languages.linc.c::union)
      (emit (format nil "~(~A~)" (first expression)))
      (cond
@@ -833,11 +833,11 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
         (when name
           (emit " ")
           (generate name))
-        
+
         ;; (class (superclass...) :public|:protected|:private member...)
         ;; superclass ::= (classname [:virtual] [:public|:protected|:private])
         ;; superclass ::= classname
-     
+
         (when (second expression)
           (emit ":")
           (generate-list ","
@@ -905,12 +905,12 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
      (emit "=")
      (generate-expression ?qualified-namespace-specifier)
      (emit ";" :newline))
-     
+
     ((USING (TYPENAME ?name))
      (emit "using" " " "typename" " ")
      (generate-expression ?name)
      (emit ";" :newline))
-     
+
     ((USING (NAMESPACE ?name))
      (emit "using" " " "namespace" " ")
      (generate-expression ?name)
@@ -920,7 +920,7 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
      (emit "using" " ")
      (generate-expression `(com.informatimago.languages.linc.c::scope ,?name))
      (emit ";" :newline))
-     
+
     ((TEMPLATE (&rest ?template-parameter-list) ?declaration)
      (emit "template" "<")
      (generate-list ","
@@ -954,7 +954,7 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
        (dolist (?declaration ?declarations)
          (generate-declaration ?declaration)))
      (emit :newline))
-    
+
     ((&whole ?everything &rest ?anything)
      (error "Not a declaration: ~S" ?everything))))
 
@@ -963,7 +963,7 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
   (generate-expression expression))
 
 (defmethod generate ((expression cons))
-  
+
     (let ((key (first expression)))
       (ecase key
 
@@ -1051,7 +1051,7 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
 ;;                 (scope b (scope c d))          b::c::d
 ;;        (scope a (scope b (scope c d)))      a::b::c::d
 ;; (scope (scope a (scope b (scope c d))))   ::a::b::c::d
-;; 
+;;
 ;; (scope a b c d)           a::b::c::d
 ;; (scope (scope a b c d)) ::a::b::c::d
 ;; (scope printf)          ::printf
@@ -1092,7 +1092,7 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
              (emit :fresh-line "#else" :newline)
              (gen-progn ?else))
            (emit :fresh-line "#endif" :newline)))
-      
+
         ((\#define)
          (destructuring-bind (?operator ?name &rest ?arguments) expression
            (declare (ignore ?operator))
@@ -1115,10 +1115,10 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
            (dolist (arg ?arguments)
              (emit  " ") (generate-expression arg))
            (emit :newline)))
-      
+
         (otherwise
          (error "Not a pre-processor expression: ~S" expression))))))
-  
+
 
   ;; (#cond
   ;;   (expr
@@ -1135,7 +1135,7 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
   ;;           dasd)
   ;;   (#progn dasd
   ;;           dasd))
-  ;; 
+  ;;
   ;; (#ifdef  expr
   ;;          (#progn dasd
   ;;                  dasd)
@@ -1146,7 +1146,7 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
   ;;                  dasd)
   ;;          (#progn dasd
   ;;                  dasd))
-  ;; 
+  ;;
   ;; (#include dada...)
   ;; (#define ident ...)
   ;; (#define (ident ...) ...)
@@ -1157,9 +1157,9 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
   ;; (#)
 
 
-  
+
 #- (and)
-  (declaration 
+  (declaration
  ::=
  ;; simple-definition
  (  decl-specifier-seq[opt] init-declarator-list[opt] ";"  )
@@ -1168,7 +1168,7 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
  (  decl-specifier-seq[opt] declarator function-try-block  )
  (  "asm" "(" string-literal ")" ";"  )
  ;; namespace-alias-definition
- (  "namespace" identifier "=" qualified-namespace-specifier ";"  ) 
+ (  "namespace" identifier "=" qualified-namespace-specifier ";"  )
  ;; using-declaration
  (  "using" "typename"[opt] "::"[opt] nested-name-specifier unqualified-id ";"  )
  (  "using" "::"  unqualified-id ";"  )
@@ -1178,7 +1178,7 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
 
  ;; (  template-declaration  )
  (  "export"[opt] "template" "<" template-parameter-list ">" declaration  )
- 
+
  ;; (  explicit-instantiation  )
  (  "template" declaration  )
 

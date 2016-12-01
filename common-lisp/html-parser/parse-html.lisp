@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    A Simple HTML parser.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -18,19 +18,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -96,19 +96,19 @@ Sexp html format:
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2003 - 2015
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -181,7 +181,7 @@ License:
 
 
 ;; <input type="hidden" name="dire" value="Pol. Industrial, 2 "E"">
-;; :: if in tag and close-" 
+;; :: if in tag and close-"
 ;; :: then look ahead while closed and not '>' and not '=' and not '/' for xml '/>'.
 
 (defun heuristic-quote-in-string (string start end-of-string)
@@ -198,7 +198,7 @@ License:
 
 
 (defun get-token (scanner)
-  (let ((value (make-array '(16) :fill-pointer 0 :adjustable t 
+  (let ((value (make-array '(16) :fill-pointer 0 :adjustable t
                                  :element-type 'character)))
     (labels
         ((get-char-and-keep ()
@@ -265,7 +265,7 @@ License:
                     (loop named :comment
                           with state = :comment
                           for ch = (get-char-and-keep)
-                          while ch 
+                          while ch
                           do (case state
                                ((:comment) (when (char= ch (character "-"))
                                              (setf state :dash)))
@@ -288,7 +288,7 @@ License:
                  (values :close-tag value))
                 ;; < open open tag
                 (t
-                 (unget-char ch) 
+                 (unget-char ch)
                  (setf (html-scanner-state scanner) :tag-ident)
                  (values :open-tag value))))
              ;; outside of a tag: pcdata
@@ -367,20 +367,20 @@ License:
                    ;; 2- Double-quotes are used inside the attribute to quote:
                    ;;    <tag attrib="Jojo "The Beef" Steack">
                    ;; Notice that the end of the tag could be ">" or " />"
-                   
+
                    ;; (cond
                    ;;   ((char= (next-char) end-of-string)
                    ;;    ;; let's handle a syntax error: <tag attrib="xyz"">
                    ;;    (let ((ch (eat-char)))
                    ;;      (when (find (next-char) "/>")
                    ;;        (unget-char ch))))
-                   ;; 
+                   ;;
                    ;;   ((and (has-char) (char= (last-char) #\space)
                    ;;         (not (find (next-char) " />")))
-                   ;;    ;; let's handle a syntax error: 
+                   ;;    ;; let's handle a syntax error:
                    ;;    ;; <tag attrib="Jojo "The Beef" Steack">
                    ;;    (let ((start (length value)))
-                   ;;      (vector-push-extend end-of-string value) 
+                   ;;      (vector-push-extend end-of-string value)
                    ;;      (loop ; collect all chars till the next #\>
                    ;;         :for ch = (get-char-and-keep)
                    ;;         :while (and ch (not (find ch ">"))))
@@ -403,7 +403,7 @@ License:
              ((char= ch (character "="))
               (values :equal value))
              (t (error "Invalid character '~C' in tag." ch)))))
-        (otherwise (error "Invalid state ~S" 
+        (otherwise (error "Invalid state ~S"
                           (html-scanner-state scanner)))))))
 
 
@@ -425,7 +425,7 @@ License:
 (defun normalize-tag (tag)
   (intern (string-upcase tag) *tag-package*))
 
-(defstruct html-parser  
+(defstruct html-parser
   scanner
   token value
   next-token next-value)
@@ -433,7 +433,7 @@ License:
 (defun advance (parser)
   (multiple-value-bind (tok val) (get-token (html-parser-scanner parser))
     (setf (html-parser-token parser)      (html-parser-next-token parser)
-          (html-parser-value parser)      (html-parser-next-value parser) 
+          (html-parser-value parser)      (html-parser-next-value parser)
           (html-parser-next-token parser) tok
           (html-parser-next-value parser) val)))
 
@@ -454,15 +454,15 @@ License:
   (loop
     :for synthetic = (case (html-parser-token parser)
                        ((:eof)       nil)
-                       ((:pcdata)    (prog1 (html-parser-value parser) 
+                       ((:pcdata)    (prog1 (html-parser-value parser)
                                        (advance parser)))
-                       ((:cdata)     (prog1 (html-parser-value parser) 
+                       ((:cdata)     (prog1 (html-parser-value parser)
                                        (advance parser)))
                        ((:open-def)  (parse-definition parser))
                        ((:foreign)   (prog1 (make-foreign
                                              :data (html-parser-value parser))
                                        (advance parser)))
-                       ((:comment)   (prog1 (make-comment 
+                       ((:comment)   (prog1 (make-comment
                                              :data (let ((text (html-parser-value parser)))
                                                      (subseq text 4 (- (length text) 3))))
                                        (advance parser)))
@@ -501,7 +501,7 @@ License:
   (advance parser)
   (unless (eq :identifier (html-parser-token parser))
     (report-error parser "Expected a tag identifier"))
-  (let ((tag (prog1 (make-open-tag 
+  (let ((tag (prog1 (make-open-tag
                      :name (prog1 (normalize-tag (html-parser-value parser))
                              (advance parser))
                      :attributes (parse-attributes parser)
@@ -516,8 +516,8 @@ License:
   ;; Same as open-tag, but for the make-close-tag.
   (advance parser)
   (unless (eq :identifier (html-parser-token parser))
-    (report-error parser "Expected a tag identifier")) 
-  (prog1 (make-close-tag 
+    (report-error parser "Expected a tag identifier"))
+  (prog1 (make-close-tag
           :name (prog1 (normalize-tag (html-parser-value parser))
                   (advance parser))
           :attributes (parse-attributes parser))
@@ -528,7 +528,7 @@ License:
 (defun parse-attributes (parser)
   ;; attributes -->   attribute
   ;;                  { html-seq: [(first attribute) (rest nil) ] }
-  ;;                | attribute attributes 
+  ;;                | attribute attributes
   ;;                  { html-seq: [(first attribute) (rest attributes)] };
   (loop
     :while (member (html-parser-token parser) '(:identifier :string))
@@ -537,11 +537,11 @@ License:
 (defun parse-attribute (parser)
   ;; attribute -->   ident
   ;;                  { attribute: [(name ident) (value nil)  ] }
-  ;;               | ident "=" value 
+  ;;               | ident "=" value
   ;;                  { attribute: [(name ident) (value value)] } ;
   (unless (member (html-parser-token parser) '(:identifier :string))
     (report-error parser "Expected an attribute identifier or a string."))
-  (make-pattribute 
+  (make-pattribute
    :name (prog1 (normalize-tag (html-parser-value parser))
            (advance parser))
    :value (clean-attribute (if (eq :equal (html-parser-token parser))
@@ -666,7 +666,7 @@ EXTERNAL-FORMAT:    The external-format to use to open the HTML file.
 RETURN:             A list of html elements.
 SEE ALSO:           ELEMENT-TAG, ELEMENT-ATTRIBUTES, ATTRIBUTE-NAMED, ELEMENT-CHILDREN.
 "
-  (with-open-file (src pathname :direction :input 
+  (with-open-file (src pathname :direction :input
                                 :if-does-not-exist :error
                                 :external-format external-format)
     (parse-html-stream src :verbose verbose)))
@@ -678,7 +678,7 @@ DO:                 Parse the HTML in the STRING (between START and END)
 VERBOSE:            When true, writes some information in the *TRACE-OUTPUT*.
 RETURN:             A list of html elements.
 SEE ALSO:           ELEMENT-TAG, ELEMENT-ATTRIBUTES, ATTRIBUTE-NAMED, ELEMENT-CHILDREN.
-" 
+"
   (when verbose
     (format *trace-output* "~&starting string parsing from ~D~%" start))
   (with-input-from-string (src string :start start :end end)
@@ -857,7 +857,7 @@ to a list of two elements:
   (terpri) (terpri))
 (define-element-writer q                ()                 :children)
 (define-element-writer s                ()                 :children)
-(define-element-writer samp             ()                 :children) 
+(define-element-writer samp             ()                 :children)
 (define-element-writer script           (:bo :ao :bc :ac)  :skip)
 (define-element-writer select           (:bo :ao :bc :ac)  :children)
 (define-element-writer small            ()                 :children)
@@ -1046,7 +1046,7 @@ Simple tables are rendered, but colspan and rowspan are ignored.
            (format stream "~&<!~{~A~^ ~}>~%" (cddr html)))
           (t
            (let ((nl (first (gethash (element-key html) *nl*))))
-             (format stream "~:[~;~&~]<~A~{ ~A=~S~}>~:[~;~&~]" 
+             (format stream "~:[~;~&~]<~A~{ ~A=~S~}>~:[~;~&~]"
                      (member :bo nl)
                      (tag-case (element-tag html))
                      (loop :for (attr val) :on (element-attributes html) :by (function cddr)

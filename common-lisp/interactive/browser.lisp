@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    See defpackage documentation string.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -17,25 +17,25 @@
 ;;;;    2004-08-07 <PJB> Added cat, more, and less.
 ;;;;    2004-06-19 <PJB> Created.
 ;;;;BUGS
-;;;;    The syntax of paths given by users is not specified. 
+;;;;    The syntax of paths given by users is not specified.
 ;;;;    Both logical pathnames and physical pathnames are possible and wackily
 ;;;;    processed...
 ;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -82,19 +82,19 @@ LS, CAT, MORE, CP, MV, MAKE, GREP.
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2002 - 2015
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -178,7 +178,7 @@ Client code can rebind it to another universal date or set it to (now).")
 (defun runcommand (name args)
   (if *shell*
       (funcall *shell*
-               (funcall 
+               (funcall
                 (if *verbose*
                     (lambda (x) (format *trace-output* "~&~A~%" x) x)
                     (function identity))
@@ -222,7 +222,7 @@ same directory, so that the *default-pathname-defaults*, the
 three synchronized.
 ")
 
-(defvar *working-directory* #+mocl (user-homedir-pathname) #-mocl (truename (user-homedir-pathname)) 
+(defvar *working-directory* #+mocl (user-homedir-pathname) #-mocl (truename (user-homedir-pathname))
   "The current working directory")
 
 (defun working-directory ()
@@ -236,11 +236,11 @@ three synchronized.
            (find-if-not
             (lambda (dir)
               #+ccl (declare (ignore dir))
-              
+
               ;; We cannot use directory to check whether a directory
               ;; exists.  So we try a file pattern, and if not found
               ;; but no error is signaled, assume the directory exists.
-              
+
               ;; Of course, this doesn't work on some implementations
               ;; such as ccl.
 
@@ -388,7 +388,7 @@ DO:         Displays the contents of the working directory and
           ((= 0 answer)
            (change-working-directory (parent-directory (working-directory))))
           ((<= answer (length subdirs))
-           (change-working-directory 
+           (change-working-directory
             (child-directory (working-directory) (elt subdirs (1- answer)))))
           (t (load (cdr (elt files (- answer (length subdirs) 1)))
               :verbose t)))))))
@@ -451,7 +451,7 @@ RETURN: A list of options; a list of arguments
   (let ((dp (pathname-directory path))
         (dd (pathname-directory default)))
     (if (and (>= (length dp) (length dd)) (equal (subseq dp 0 (length dd)) dd))
-        (make-pathname :directory (cons :relative (subseq dp (length dd))) 
+        (make-pathname :directory (cons :relative (subseq dp (length dd)))
                        :defaults path)
         path)))
 
@@ -610,7 +610,7 @@ ARGUMENTS:  If the first argument is :PAGE,
             If no path is given, only *STANDARD-INPUT* is processed.
 "
   (let (page paths)
-    (if (eq :page (first args)) 
+    (if (eq :page (first args))
         (setf page (second args)      paths (cddr args))
         (setf page  *terminal-height* paths args))
     (if paths

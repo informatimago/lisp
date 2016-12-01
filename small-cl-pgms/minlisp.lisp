@@ -4,9 +4,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Implements a minimum LISP inspired from AIM-8 LISP, in Common-Lisp.
-;;;;    Usage:  (load "minlisp.lisp") 
+;;;;    Usage:  (load "minlisp.lisp")
 ;;;;            (minlisp:repl)
 ;;;;    Then at the minlisp prompt, you have LISP, plus:
 ;;;;       (DEFINE name sexp)     corresponding to =
@@ -26,19 +26,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -125,11 +125,11 @@
 (define and     (lambda (a b) (cond (a (cond (b t) (t nil))) (t nil))))
 (define or      (lambda (a b) (cond (a t) (b t) (t nil))))
 (define not     (lambda (a)   (cond (a nil) (t t))))
-(define maplist 
+(define maplist
         (lambda (x f)
           (cond ((null x) nil)
                 (t (combine (f x) (maplist (rest x) f))))))
-(define subst 
+(define subst
         (lambda (x y a)
           (cond ((null a) nil)
                 ((atom a) (cond ((eq y a) x) (t a)))
@@ -150,7 +150,7 @@
 
 
 (defun help ()
-  (format t "~&You've got:  
+  (format t "~&You've got:
     LAMBDA LABEL
     COND AND OR NOT  COMBINE FIRST REST
     NULL ATOM EQ NIL T QUOTE
@@ -161,15 +161,15 @@ Extensions:
 
 (defmacro handling-errors (&body body)
   `(handler-case (progn ,@body)
-     (simple-condition 
-      (err) 
+     (simple-condition
+      (err)
       (format *error-output* "~&~A: ~%" (class-name (class-of err)))
       (apply (function format) *error-output*
              (simple-condition-format-control   err)
              (simple-condition-format-arguments err))
       (format *error-output* "~&"))
-     (condition 
-      (err) 
+     (condition
+      (err)
       (format *error-output* "~&~A: ~%  ~S~%" (class-name (class-of err)) err))))
 
 
@@ -187,14 +187,14 @@ Extensions:
             ((equal sexp '(reload))
              (load "minlisp") (repl) (return-from repl))
             ((equal sexp '(dump-environment))
-             (format t "~:{~16@A = ~A~%~}" 
+             (format t "~:{~16@A = ~A~%~}"
                      (let ((res '()))
-                       (maphash (lambda (k v) (push (list k v) res)) 
+                       (maphash (lambda (k v) (push (list k v) res))
                                 *environment*) res)))
             ((and (listp sexp) (eq (first sexp) 'define))
              (fdefine (second sexp) (third sexp))
              (format t "~A" (second sexp)))
-            (t 
+            (t
              (format t "~S" (%eval sexp))))))))
   (terpri)
   (values))

@@ -31,36 +31,36 @@
 ;;;;        (amongst others) that map packages names (styled as:
 ;;;;        COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PACKAGE to logical pathnames in
 ;;;;        the "PACKAGES" virtual host:
-;;;;    
+;;;;
 ;;;;          "PACKAGES:COM;INFORMATIMAGO;COMMON-LISP;PACKAGE.LISP"
-;;;;    
+;;;;
 ;;;;        The object files are mapped to:
-;;;;    
+;;;;
 ;;;;          "PACKAGES:COM;INFORMATIMAGO;COMMON-LISP;~
 ;;;;           OBJ-${IMPL_TYPE}-${IMPL_VERS}-${MACH_TYPE} ;PACKAGE.${OBJECT-TYPE}"
-;;;;        
+;;;;
 ;;;;        Improvements over DEFPACKAGE include:
-;;;;     
+;;;;
 ;;;;            - allow to specify packages refered to (used) while not
 ;;;;              importing ("inheriting") any of it symbols; (:USE package)
-;;;;    
+;;;;
 ;;;;            - allow to do it while renaming (nicknaming) the package;
 ;;;;              (:USE package :AS nickname)
-;;;;    
+;;;;
 ;;;;            - allow to specify that all symbols exported by a given package
 ;;;;              are to be imported. (:FROM package :IMPORT :ALL)
-;;;;    
+;;;;
 ;;;;        The first and second points help declare package dependencies without
 ;;;;        using the deprecated REQUIRE, PROVIDE and *MODULES*.  This is done
 ;;;;        by implementing a systematic way to load packages (from a PACKAGE:
 ;;;;        logical host with logical pathname translations).
-;;;;        This allows MAKE-DEPENDS to build automatically the dependency graph, 
+;;;;        This allows MAKE-DEPENDS to build automatically the dependency graph,
 ;;;;        and LOAD-PACKAGE to load automatically the dependencies without
 ;;;;        the need to write an ASDF or DEFSYSTEM file.
-;;;;    
+;;;;
 ;;;;        The last point, along with the (:FROM package :IMPORT symbol...) form
 ;;;;        correct the naming of the :USE clause of DEFPACKAGE.
-;;;;    
+;;;;
 ;;;;        Other more obscure clauses of DEFPACKAGE (:SHADOW,
 ;;;;        :SHADOWING-IMPORT-FROM, :INTERN) have no equivalent
 ;;;;        to provide a more controled package management.
@@ -87,19 +87,19 @@
 ;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -116,19 +116,19 @@ Some package utilities.
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2003 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -217,7 +217,7 @@ RETURN:    A list of the selected symbols.
         (when exported
           (do-external-symbols (s pack)
             (push s sl)))
-        (do-symbols (s pack) 
+        (do-symbols (s pack)
           (when (or all
                     (and homely    (eq pack (symbol-package s)))
                     (and shadowing (member s (package-shadowing-symbols pack))))
@@ -290,7 +290,7 @@ RETURN:   A new list of exported symbols from PACKAGE.
   (let ((result nil))
     (do-external-symbols (sym package result)
       (push sym result))))
-  
+
 
 
 (defun package-pathname (package)
@@ -355,7 +355,7 @@ to the package path: PACKAGE:COM;INFORMATIMAGO;COMMON-LISP;SYSTEM.ASD
                               (when pack
                                 (cons (package-name pack)
                                       (copy-list (package-nicknames pack))))))
-                          '("COMMON-LISP" "COMMON-LISP-USER" "KEYWORD"))))  
+                          '("COMMON-LISP" "COMMON-LISP-USER" "KEYWORD"))))
   (member (etypecase package
             (string package)
             (package (package-name package)))
@@ -380,7 +380,7 @@ RETURN:     Closure of the translation of the package pathname of PACKAGE.
         (next (translate-logical-pathname path)
               (translate-logical-pathname path))
         (count 0 (1+ count)))
-       ((string= (namestring path) (namestring next))   
+       ((string= (namestring path) (namestring next))
         path)
     (when (< 100 count)
       (error "Cannot close the logical path for package ~S in less ~
@@ -412,7 +412,7 @@ DO:         Force registering the PACKAGE into the loaded *PACKAGES*.
 
 
 (defun implementation-id ()
-  (flet ((first-word 
+  (flet ((first-word
              (text) (let ((pos (position (character " ") text)))
                       (remove (character ".") (if pos (subseq text 0 pos) text)))))
     (format nil "~A-~A-~A"
@@ -429,7 +429,7 @@ DO:         Force registering the PACKAGE into the loaded *PACKAGES*.
 (handler-case
     (let ((source (merge-pathnames "TEST.LSP" (user-homedir-pathname))))
       (unwind-protect
-           (progn 
+           (progn
              (with-open-file (out source :direction :output
                                   :if-does-not-exist :create
                                   :if-exists :error)
@@ -465,7 +465,7 @@ RETURN:     The package named PACKAGE-NAME if found, or NIL.
       (let ((path (close-path (string package-name))))
         (verbose "~&# LOADING PACKAGE NAME ~S FROM ~S~%~:[~
                   ~&#   NEW PACKAGE.~%
-                  ~&#   PACKAGE ALREADY KNOWN.~%~;~]" 
+                  ~&#   PACKAGE ALREADY KNOWN.~%~;~]"
                  package-name path (registeredp package-name))
         (unless (registeredp package-name)
           (prog1
@@ -485,7 +485,7 @@ RETURN:     The package named PACKAGE-NAME if found, or NIL.
             (register package-name)
             (verbose "~&# LOAD-PACKAGE ~S DONE~%~
                       ~&# *PACKAGES*= ~S~%" package-name  *packages*))))))
-  
+
 
 (defun add-translations (&rest translations)
   "
@@ -751,7 +751,7 @@ DO:         Declares a package.
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (register ,name)
        ,@(unless (null dependencies)
-                `((dolist (pack   ',dependencies) 
+                `((dolist (pack   ',dependencies)
                     (unless (built-in-p pack) (load-package pack)))))
        ,@(unless (null renames)
                 `((dolist (rename ',renames)
@@ -817,7 +817,7 @@ PREPARE-TOKEN: A function taking a kind (member :package :symbol) and
              (sname (x) (funcall prepare-token :symbol  x)))
        `(defpackage ,(pname (package-name package))
           ,@(when (package-nicknames package)
-              `((:nicknames ,@(mapcar (function pname) (package-nicknames package))))) 
+              `((:nicknames ,@(mapcar (function pname) (package-nicknames package)))))
           (:use ,@(mapcar (lambda (p) (pname (package-name p))) used-packages))
           ,@(when shadows
               `((:shadow ,@(mapcar (function sname) shadows))))
@@ -826,7 +826,7 @@ PREPARE-TOKEN: A function taking a kind (member :package :symbol) and
           ,@(when (plusp (hash-table-count shadowing-imports))
               (let ((forms '()))
                 (maphash (lambda (pack syms)
-                           (push `(:shadowing-import-from 
+                           (push `(:shadowing-import-from
                                    ,(pname (package-name pack))
                                    ,@(mapcar (function sname) syms))
                                  forms))
@@ -835,7 +835,7 @@ PREPARE-TOKEN: A function taking a kind (member :package :symbol) and
           ,@(when (plusp (hash-table-count imports))
               (let ((forms '()))
                 (maphash (lambda (pack syms)
-                           (push `(:import-from 
+                           (push `(:import-from
                                    ,(pname (package-name pack))
                                    ,@(mapcar (function sname) syms))
                                  forms))

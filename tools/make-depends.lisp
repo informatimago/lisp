@@ -6,10 +6,10 @@
 ;;;;USER-INTERFACE:    UNIX
 ;;;;DESCRIPTION
 ;;;;
-;;;;    This script generates dependencies for lisp sources, based on 
+;;;;    This script generates dependencies for lisp sources, based on
 ;;;;    (require) sexps, a load-path, a set of logical pathname translations
 ;;;;    and ad-hoc processing.
-;;;;    
+;;;;
 ;;;;    Object files can be either elisp compiled (.elc) or clisp compiled
 ;;;;    (.fas), cmucl compiled (.x86f), or sbcl compiled (.fasl).
 ;;;;    and source files can be either elisp (.el) or clisp or cmucl (.lisp,
@@ -17,7 +17,7 @@
 ;;;;    (.lisp, .lsp, .cl extensions for sources, but .elc compiled form).
 ;;;;
 ;;;;USAGE
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -29,19 +29,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2002 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -62,26 +62,26 @@
   (:documentation
    "
 
-This script generates dependencies for lisp sources, based on 
+This script generates dependencies for lisp sources, based on
 (require) sexps, a load-path, a set of logical pathname translations
 and ad-hoc processing.
 
 LICENSE:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2002 - 2015
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 
@@ -106,7 +106,7 @@ NOTE:           We set the logical pathname translations only in here to avoid
                 problems loading this program.
 LOAD-PATHS:     A list of directory path names where to find the files when
                 not found thru the logical pathname translations.
-                The presence in LOAD-PATHS of a logical pathname warrants 
+                The presence in LOAD-PATHS of a logical pathname warrants
                 the presence in HOST-LPT of an entry mapping it to a physical
                 path.
 IDF:            If NIL, write the dependencies on the standard output,

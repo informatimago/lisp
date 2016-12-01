@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Tests cache.lisp.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -54,7 +54,7 @@
                     (directory "/tmp/cache/**/*.*")))
    (setf *test-counter* 0)
    (let ((delay 7))
-     (flet ((producer (key) (values (format nil "~(~A-~A~)" key 
+     (flet ((producer (key) (values (format nil "~(~A-~A~)" key
                                             (incf *test-counter* ))
                                     (+ delay (get-universal-time))))
             (print-files ()
@@ -115,7 +115,7 @@
         (let* ((sender (first mesg))
                (uri    (second mesg))
                (page   (get-resource-at-uri uri)))
-          (if page 
+          (if page
            ;; TODO: actually copy page to shared memory and send only a reference.
               (message-send-sexp queue sender (list :html-page uri page))
               (progn

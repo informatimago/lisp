@@ -30,7 +30,7 @@ Initial Processing
 
         Trigraph:       ??(  ??)  ??<  ??>  ??=  ??/  ??'  ??!  ??-
         Replacement:      [    ]    {    }    #    \    ^    |    ~
-    
+
 3. continued lines are merged. (no space inserted!)
    warnings on "\\ +$".
 
@@ -39,7 +39,7 @@ Initial Processing
    // comments are not C standard, but an extension.
 
    Notice: 3. + 4. => you can split comments:
-   
+
           /\
           *
           */ # /*
@@ -47,9 +47,9 @@ Initial Processing
           ne FO\
           O 10\
           20
-          int x=FOO; 
-          
-   
+          int x=FOO;
+
+
 
 Tokenization
 ------------
@@ -67,24 +67,24 @@ Tokens:
    $ is a gcc extension.
    \u and \U accepted here
    (the 1999 C standard would allow extended characters too).
-   
+
 - preprocessing number,    /.[0-9]\([a0zA0Z0-9_.]\|[EepP][-+]\)+/
   all normal integer and floating point constants.
   0xE+12 is a preprocessing number, not 0xE + 12.
-   
+
 - string literals, and character literals "…" '…' with \ escapes.
   + "…" and <…> for header file names, where \ is a normal character.
   NUL is preserved.
-  
+
 - punctuators,
    all ascii punctuation but `@’, ‘$’, and ‘`’.
    and 2 and 3 character opeartors, including digraphs:
-   
+
      Digraph:        <%  %>  <:  :>  %:  %:%:
      Punctuator:      {   }   [   ]   #    ##
 
 - others: `@’, ‘$’, and ‘`’.
-  control characters but NUL, 127<code, 
+  control characters but NUL, 127<code,
 
 Outside of strings, NUL is considered a whitespace.
 
@@ -169,7 +169,7 @@ Variadic Macros
 gcc extensions:
 
    #define eprintf(args...) fprintf(stderr,args)
-   
+
    #define oprintf(format,args...) fprintf(stderr /* space needed*/ ,format,args)
    oprintf("format") // is valid
 
@@ -234,7 +234,7 @@ Cannot be defined as macro, available in #if
     or                            ||
     or_eq                         |=
     xor                           ^
-    xor_eq                        ^= 
+    xor_eq                        ^=
 
 Undefining and Redefining Macros
 --------------------------------
@@ -301,7 +301,7 @@ Diagnostics
 #error tokens+
 #warning tokens+
 no macroexpansion of arguments.
- 
+
 
 
 Line Control

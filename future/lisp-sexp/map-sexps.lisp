@@ -5,32 +5,32 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    MAP-SEXPS can be used to filter lisp sources.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
 ;;;;    2010-11-06 <PJB> Translated from emacs lisp.
-;;;;    2003-01-20 <PJB> Added walk-sexps, map-sexps, replace-sexps; 
+;;;;    2003-01-20 <PJB> Added walk-sexps, map-sexps, replace-sexps;
 ;;;;                     reimplemented get-sexps with walk-sexps.
 ;;;;    199?-??-?? <PJB> pjb-sources.el creation.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2010 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -57,7 +57,7 @@
 ;; map-sexps
 ;; ------------------------------------------------------------------------
 ;; Applies a function on all s-exps from a lisp source file.
-;; 
+;;
 
 (defun skip-comments ()
   "
@@ -68,7 +68,7 @@ RETURN: (not eof)
   (interactive)
   (let* ((data (header-comment-description-for-mode major-mode))
          (comment-regexp (hcd-comment-regexp data))
-         (space-or-comment (format "\\(%s\\)\\|\\(%s\\)" 
+         (space-or-comment (format "\\(%s\\)\\|\\(%s\\)"
                              "[ \t\n\v\f\r]+"
                              comment-regexp)) )
     (unless data
@@ -103,18 +103,18 @@ RETURN: (not eof)
 
 (defun walk-sexps (fun)
   "
-DO:     Recursively scan sexps from (point) in current buffer up to 
-        the end-of-file or until scan-sexps raises a scan-error. 
+DO:     Recursively scan sexps from (point) in current buffer up to
+        the end-of-file or until scan-sexps raises a scan-error.
         Call fun on each sexps and each of their children etc.
-fun:    A function (sexp start end) 
+fun:    A function (sexp start end)
         sexp:    The sexp parsed from a source file.
         start:   The point starting the sexp.
         end:     The point ending the sexp.
-NOTE:   All positions are kept in markers, so modifying the buffer between 
+NOTE:   All positions are kept in markers, so modifying the buffer between
         start and end should be OK.
-        However  ' or ` are passed as (quote ...) or (backquote ...) 
-        to the function fun without reparsing the sexp inside them. 
-        Ie. if you modify such a source, (which can be detected looking at 
+        However  ' or ` are passed as (quote ...) or (backquote ...)
+        to the function fun without reparsing the sexp inside them.
+        Ie. if you modify such a source, (which can be detected looking at
         the character at start position),  you still get the original sexp.
 "
   (let ((quote-stack '())
@@ -143,13 +143,13 @@ NOTE:   All positions are kept in markers, so modifying the buffer between
       (setq sexp (cl-sexp-at-point))
       ;; push the quotes on the sexp:
       (setq quote-depth (length quote-stack))
-      (while quote-stack 
+      (while quote-stack
         (setq sexp (cons (pop quote-stack) (list sexp))))
       ;; process the quotes:
       (setq start-stack (nreverse start-stack))
       (dotimes (i quote-depth)
         (message "sexp = %S\nstart = %S\nend = %S\n" sexp (marker-position (car start-stack)) *walk-sexps-end-marker*)
-        (funcall fun sexp 
+        (funcall fun sexp
                  (marker-position (car start-stack)) *walk-sexps-end-marker*)
         (set-marker (pop start-stack) nil)
         (setq sexp (cadr sexp)))
@@ -182,14 +182,14 @@ NOTE:   All positions are kept in markers, so modifying the buffer between
 
 (defun new-map-sexps (source-file fun &rest cl-keys)
    "
-DO:     Scan all sexps in the source file. 
+DO:     Scan all sexps in the source file.
         (skipping spaces and comment between top-level sexps).
-        If the deeply flag is set, 
+        If the deeply flag is set,
         then subsexps are also passed to the function fun, after the sexp,
-        else only the top-level sexps are 
+        else only the top-level sexps are
         If the atoms flags is set
         then atoms are also considered (and passed to the selector).
-fun:    A function (sexp start end) 
+fun:    A function (sexp start end)
         sexp:    The sexp parsed from a source file.
         start:   The point starting the sexp.
         end:     The point ending the sexp.
@@ -200,20 +200,20 @@ RETURN: The list of results from fun.
 "
   (cl-parsing-keywords ((:deeply   t)
                         (:atoms    nil)) nil
-    
-    
+
+
     ))
 
 (defun new-map-sexps (source-file fun &rest cl-keys)
    "
-DO:     Scan all sexps in the source file. 
+DO:     Scan all sexps in the source file.
         (skipping spaces and comment between top-level sexps).
-        If the deeply flag is set, 
+        If the deeply flag is set,
         then subsexps are also passed to the function fun, after the sexp,
-        else only the top-level sexps are 
+        else only the top-level sexps are
         If the atoms flags is set
         then atoms are also considered (and passed to the selector).
-fun:    A function (sexp start end) 
+fun:    A function (sexp start end)
         sexp:    The sexp parsed from a source file.
         start:   The point starting the sexp.
         end:     The point ending the sexp.
@@ -224,23 +224,23 @@ RETURN: The list of results from fun.
 "
   (cl-parsing-keywords ((:deeply   t)
                         (:atoms    nil)) nil
-    
+
     `(source-text:map-source-file ,fun ,source-file
                                  :deeply ,cl-deeply
                                  :atoms ,cl-atoms)
-    
+
     ))
 
 (defun map-sexps (source-file fun &rest cl-keys)
   "
-DO:     Scan all sexps in the source file. 
+DO:     Scan all sexps in the source file.
         (skipping spaces and comment between top-level sexps).
-        If the deeply flag is set, 
+        If the deeply flag is set,
         then subsexps are also passed to the function fun, after the sexp,
-        else only the top-level sexps are 
+        else only the top-level sexps are
         If the atoms flags is set
         then atoms are also considered (and passed to the selector).
-fun:    A function (sexp start end) 
+fun:    A function (sexp start end)
         sexp:    The sexp parsed from a source file.
         start:   The point starting the sexp.
         end:     The point ending the sexp.
@@ -276,13 +276,13 @@ RETURN: The list of results from fun.
 
 (defun old-old-map-sexps (source-file fun)
   "
-DO:     Scan all top-level sexps in the source file. 
+DO:     Scan all top-level sexps in the source file.
         (skipping spaces and comment between top-level sexps).
-fun:    A function (sexp start end) 
+fun:    A function (sexp start end)
         sexp:    The sexp parsed from a source file.
         start:   The point starting the sexp.
         end:     The point ending the sexp.
-:deeply         
+:deeply
 NOTE:   Scanning stops as soon as an error is detected by forward-sexp.
 RETURN: The list of results from fun.
 "
@@ -307,7 +307,7 @@ RETURN: The list of results from fun.
                for sexp  = (condition-case nil (sexp-at-point) (error eof))
                until (eq eof sexp)
                collect (funcall fun sexp start end) into map-sexps-result
-               do (condition-case nil 
+               do (condition-case nil
                       (forward-sexp 1)
                     (error               (goto-char (point-max)))
                     (wrong-type-argument (goto-char (point-max))))
@@ -342,22 +342,22 @@ RETURN: The list of results from fun.
 KEYS:    :selector (function: sexp --> boolean, default: (lambda (s) t))
          :deeply   (boolean,  default nil)
          :atoms    (boolean,  default nil)
-DO:      Scan all sexp in the source-file.  
-         A selector function may indicate which sexp must be collected. 
-         If the deeply flag is set, 
-         then if a sexp is not selected then sub-sexp are scanned and tested.  
+DO:      Scan all sexp in the source-file.
+         A selector function may indicate which sexp must be collected.
+         If the deeply flag is set,
+         then if a sexp is not selected then sub-sexp are scanned and tested.
          If the atoms flags is set
          then atoms are also considered (and passed to the selector).
 NOTE:    Scanning stops as soon as an error is detected by forward-sexp.
 RETURN:  A list of selected sexp.
 "
   (save-excursion
-    (cl-parsing-keywords ((:selector (function (lambda (s) t))) 
+    (cl-parsing-keywords ((:selector (function (lambda (s) t)))
                           (:deeply   nil)
                           (:atoms    nil)) nil
       (let ((get-sexps-result '()))
-        (map-sexps 
-         source-file 
+        (map-sexps
+         source-file
          (lambda (sexp start end)
            (when (funcall cl-selector sexp)
              (push sexp get-sexps-result)))
@@ -378,7 +378,7 @@ RETURN:  A list of selected sexp.
 ;;;       result))
 ;;;   (lambda (a b) (< (car a) (car b))))
 ;;;  )
-;;; 
+;;;
 ;;; ==> ((1 . 325) (2 . 329) (3 . 231) (4 . 163) (5 . 138) (6 . 158) (7 .
 ;;; 102) (8 . 94) (9 . 63) (10 . 40) (11 . 16) (12 . 20) (13 . 9) (14 . 4)
 ;;; (15 . 5) (16 . 4) (17 . 2) (19 . 2) (23 . 1))
@@ -390,15 +390,15 @@ RETURN:  A list of selected sexp.
 ;; KEYS:    :selector (a function, default: true)
 ;;          :deeply   (a boolean,  default nil)
 ;;          :atoms    (a boolean,  default nil)
-;; DO:      Scan all sexp in the source-file.  
-;;          A selector function (sexp->bool) may indicate which sexp must 
+;; DO:      Scan all sexp in the source-file.
+;;          A selector function (sexp->bool) may indicate which sexp must
 ;;          be collected.  If the deeply flag is set, then if a sexp is not
-;;          selected then sub-sexp are scanned and tested.  If the atoms flags 
+;;          selected then sub-sexp are scanned and tested.  If the atoms flags
 ;;          is set then atoms are also considered (and passed to the selector).
 ;; NOTE:    Scanning stops as soon as an error is detected by forward-sexp.
 ;; RETURN:  A list of selected sexp.
 ;; "
-;;   (cl-parsing-keywords ((:selector (function identity)) 
+;;   (cl-parsing-keywords ((:selector (function identity))
 ;;                         (:deeply   nil)
 ;;                         (:atoms    nil)) nil
 ;;     (save-excursion
@@ -412,21 +412,21 @@ RETURN:  A list of selected sexp.
 ;;           (loop with result = nil
 ;;              while (/= (point) (point-max))
 ;;              for sexp = (condition-case nil (sexp-at-point) (error nil))
-;;              do (flet ((deeply-select 
+;;              do (flet ((deeply-select
 ;;                            (sexp)
 ;;                          (if (atom sexp)
 ;;                              (if (and cl-atoms (funcall cl-selector sexp))
 ;;                                  (push sexp result))
 ;;                              (let (subsexp)
 ;;                                (while sexp
-;;                                  (if (consp sexp) 
+;;                                  (if (consp sexp)
 ;;                                      (setq subsexp (car sexp)
 ;;                                            sexp    (cdr sexp))
 ;;                                      (setq subsexp sexp
 ;;                                            sexp    nil))
 ;;                                  (cond
 ;;                                    ((atom subsexp)
-;;                                     (if (and cl-atoms 
+;;                                     (if (and cl-atoms
 ;;                                              (funcall cl-selector subsexp))
 ;;                                         (push subsexp result)))
 ;;                                    ((funcall cl-selector subsexp)
@@ -441,8 +441,8 @@ RETURN:  A list of selected sexp.
 ;;                          (push sexp result))
 ;;                         (cl-deeply
 ;;                          (deeply-select sexp)))))
-;;              (condition-case nil 
-;;                  (forward-sexp 1) 
+;;              (condition-case nil
+;;                  (forward-sexp 1)
 ;;                (error (goto-char (point-max)))
 ;;                (wrong-type-argument (goto-char (point-max))))
 ;;              finally (unless existing-buffer (kill-buffer source-file))
@@ -461,32 +461,32 @@ RETURN:  A list of selected sexp.
 
 ;;; TODO: Use CLISP to pretty print, or find an elisp pretty printer.
 ;;; "(LET ((*PRINT-READABLY* T))
-;;;    (SETF (READTABLE-CASE *READTABLE*) :PRESERVE) 
+;;;    (SETF (READTABLE-CASE *READTABLE*) :PRESERVE)
 ;;;    (WRITE (QUOTE ~S )))"
 
 
 (defun replace-sexps (source-file transformer &rest cl-keys)
   "
 DO:             Scan all sexp in the source-file.
-                Each sexps is given to the transformer function whose result 
+                Each sexps is given to the transformer function whose result
                 replaces the original sexps in the source-file.
-                If the deeply flag is set, then the transformer is applied 
+                If the deeply flag is set, then the transformer is applied
                 recursively to the sub-sexps.
-                If the atoms flags is set then atoms are also considered 
+                If the atoms flags is set then atoms are also considered
                 (and passed to the transformer).
 KEYS:           :deeply    (a boolean,  default nil)
                 :atoms     (a boolean,  default nil)
 transformer:    A function sexp --> sexp.
                 If returing its argument (eq),
                 then no replacement takes place (the comments and formating
-                is then preserved.  Otherwise the source of the sexp is 
-                replaced by the returned sexp.  
+                is then preserved.  Otherwise the source of the sexp is
+                replaced by the returned sexp.
 NOTE:           For now, no pretty-printing is done.
 "
   (cl-parsing-keywords ((:deeply   nil)
                         (:atoms    nil)) nil
-    (map-sexps 
-     source-file 
+    (map-sexps
+     source-file
      (lambda (sexp start end)
        (let ((replacement (funcall transformer sexp)))
          (unless (eq replacement sexp)
@@ -525,7 +525,7 @@ NOTE:           For now, no pretty-printing is done.
 
 
 (defun unescape-sharp ()
-  (interactive) 
+  (interactive)
   (save-excursion
     (goto-char (point-min))
     (while (re-search-forward
@@ -545,7 +545,7 @@ NOTE:           For now, no pretty-printing is done.
           (let ((backquoted (eql '\` (car sexp)))
                 (original-sexp sexp))
             (when backquoted (setq sexp (second sexp)))
-            (if (and (consp sexp) (symbolp (car sexp)) 
+            (if (and (consp sexp) (symbolp (car sexp))
                      (string-equal 'if* (car sexp)))
                 (do* ((subs (cons 'elseif (cdr sexp)))
                       (clauses '())
@@ -558,11 +558,11 @@ NOTE:           For now, no pretty-printing is done.
                                (setq clauses (nreverse clauses))
                                (cond
                                  ((and (= 1 (length clauses))
-                                       (every 
+                                       (every
                                         (lambda (clause) (not (null (cdr clause))))
                                         ;; clause = (cons condition statements)
                                         clauses)) ;; a when
-                                  `(when ,(car (first clauses)) 
+                                  `(when ,(car (first clauses))
                                      ,@(cdr (first clauses))))
                                  ((or (= 1 (length clauses))
                                       (< 2 (length clauses))
@@ -596,7 +596,7 @@ NOTE:           For now, no pretty-printing is done.
                     (t
                      (error "unexpected token %S in %S" token sexp)))
                   ;; read the statements:
-                  (do () ((or (null subs)  
+                  (do () ((or (null subs)
                               (and (consp subs) (symbolp (car subs))
                                    (member* (car subs) '(elseif else)
                                              :test (function string-equal)))))

@@ -5,32 +5,32 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
 ;;;;    2007-01-14 <PJB> Added alias db functions.
 ;;;;    2005-09-01 <PJB> Made use of iso6429.
-;;;;    2005-05-19 <PJB> Corrected handling of :include: in parse-address 
+;;;;    2005-05-19 <PJB> Corrected handling of :include: in parse-address
 ;;;;                     adding a follow set attribute.
 ;;;;    2003-10-22 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -50,24 +50,24 @@
    "
 
 This package exports a function to read sendmail aliases files.
-   
+
 
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2003 - 2015
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -78,7 +78,7 @@ License:
    ;; (setf db (load-aliases [file]))
    ;; (save-aliases db [file])
    ;; (db-records db) --> list-of-records
-   ;; 
+   ;;
    ;; (make-alias name address-list) --> record
    ;; (make-comment text) --> record
    ;; (find-record-if db predicate) --> record
@@ -86,7 +86,7 @@ License:
    ;; (comment-record-containing db substring) --> record
    ;; (insert-record  db record [:before record] [:after record])
    ;; (delete-record  db record)
-   ;; 
+   ;;
    ;; (list-all-aliases db) --> (\"name1\" \"name2\" ...)
    ;; (alias-addresses db name) --> list
    ;; (setf (alias-addresses db name) list)
@@ -176,7 +176,7 @@ include ::= ':include:' '/' path.
     (let ((address-list (list address)))
       (setq pos (skip-spaces line npos))
       (loop :while (< pos (length line)) :do
-         
+
          (multiple-value-bind (address npos)
              (parse-address line (+ (if (parse-token line pos ",")
                                         1 0) pos) ", #")
@@ -207,7 +207,7 @@ include ::= ':include:' '/' path.
     (t
      (cons :address (string-downcase addr)))))
 
-     
+
 (defun parse-dot-forward-alias (line)
   (multiple-value-bind (address-list pos) (parse-address-list line 0)
     ;; TODO: Check that we reach EOLN!!!
@@ -294,7 +294,7 @@ RETURN:  A list of ( alias address...).
                                  :direction :input
                                  :if-does-not-exist :error)
                (stream-to-string-list in)))))))
-  
+
 
 (defun read-dot-forward (forward-file-path)
   "
@@ -365,7 +365,7 @@ RETURN:  A list of ( address...).
       ((:command) (normal-or-quote-string (format nil "|~A" value)))
       ((:include)
        (if (normal-string-p value)
-           (format nil ":include:~A" value)    
+           (format nil ":include:~A" value)
            (normal-or-quote-string (format nil ":include:~A" value)))))))
 
 
@@ -444,7 +444,7 @@ RETURN:  A list of ( address...).
                              :external-format external-format)
           (write-aliases out))
         (write-aliases stream)))
-  (values)) 
+  (values))
 
 
 (defun find-record-if (db predicate)
@@ -540,7 +540,7 @@ RETURN:  A list of ( address...).
                      :if-exists :supersede))))
 
 
-;;; (ext:shell "diff -twb afaa.alias afaa-new.alias") 
+;;; (ext:shell "diff -twb afaa.alias afaa-new.alias")
 ;;;  postalias -f -q file2 hash:test.alias
 
 ;;;; THE END ;;;;

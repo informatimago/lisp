@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    See package docstring.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -18,19 +18,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -64,18 +64,18 @@ base32-decode     (read-char write-byte &key (ignore-invalid-input nil))
 base16-encode     (read-byte write-char)
 base16-decode     (read-char write-byte &key (ignore-invalid-input nil))
 
-READ-BYTE:  A function taking no argument and returning a 
+READ-BYTE:  A function taking no argument and returning a
             byte (integer 0 255) or nil for eof.  It may be
             called several times after eof and should keep
             returning nil.
 
 WRITE-BYTE: A function taking one byte (integer 0 255) argument
             used to collect decoded bytes.
- 
+
 READ-CHAR:  A function taking no argument and returning a
             character or nil for eof.  It may be called
-            several times after eof and should keep returning 
-            nil.  Only characters whose code is between 0 and 
+            several times after eof and should keep returning
+            nil.  Only characters whose code is between 0 and
             255 should be returned.
 
 WRITE-CHAR: A function taking one character argument, used to
@@ -99,26 +99,26 @@ base16-decode-bytes     (encoded &key ignore-crlf ignore-invalid-input)
 BYTES:      A vector of (unsigned-byte 8).
 ENCODED:    A string.
 LINE-WIDTH: NIL or an integer indicating the line width.
-            the string new-line will be inserted after that 
+            the string new-line will be inserted after that
             many characters have been written on a given line.
 NEW-LINE:   A string contaiing the new-line character or characters.
             the default +new-line+ is (format nil \"~%\").
 IGNORE-CRLF:
-            When true, ASCII characters LF and CR are not passed to 
+            When true, ASCII characters LF and CR are not passed to
             the decoding function. When NIL, they're passed, and
             if invalid input is not ignored, an error would be raised.
 IGNORE-INVALID-INPUT:
             Passed to the decoding function. See above.
 
 
-The encoding functions take a vector of bytes 
+The encoding functions take a vector of bytes
 and return an encoded string.
 
-The decoding functions take an encoded string 
+The decoding functions take an encoded string
 and return a vector of bytes.
 
-To encode a string, characters must be converted to bytes, and 
-to decode a string, bytes must be converted to characters. 
+To encode a string, characters must be converted to bytes, and
+to decode a string, bytes must be converted to characters.
 This must be done accordingly to the characeter set encoding.
 
 
@@ -126,19 +126,19 @@ This must be done accordingly to the characeter set encoding.
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2004 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -156,7 +156,7 @@ RETURN:      An array A:[0..255] --> [-1..(expt 2 n)]
              character-code --> encoding-value
 "
   (do* ((table (make-array '(256)
-                           :element-type 
+                           :element-type
                            ;; There's a bug in ccl-1.5 :-(
                            #+(and ccl (not ccl-1.6)) t
                            #-(and ccl (not ccl-1.6)) `(integer -1 ,(1- (length code)))
@@ -177,7 +177,7 @@ RETURN:      An array A:[0..255] --> [-1..(expt 2 n)]
 
 
 (defparameter +base64-decode+ (make-decode-table +base64-encode+)
-  "An array A:[0..255] |--> [-1..63] 
+  "An array A:[0..255] |--> [-1..63]
         character-code ---> encoding-value")
 
 
@@ -188,7 +188,7 @@ RETURN:      An array A:[0..255] --> [-1..(expt 2 n)]
 
 
 (defparameter +filebase64-decode+ (make-decode-table +filebase64-encode+)
-  "An array A:[0..255] |--> [-1..63] 
+  "An array A:[0..255] |--> [-1..63]
         character-code ---> encoding-value")
 
 
@@ -199,11 +199,11 @@ RETURN:      An array A:[0..255] --> [-1..(expt 2 n)]
 
 
 (defparameter +base32-decode+ (make-decode-table +base32-encode+ :case-sensitive nil)
-  "An array A:[0..255] |--> [-1..31] 
+  "An array A:[0..255] |--> [-1..31]
         character-code ---> encoding-value")
 
 
-(defun padding-code (code) 
+(defun padding-code (code)
   "The position of the padding character in code (the last one)."
   (1- (length code)))
 
@@ -308,7 +308,7 @@ RETURN:      An array A:[0..255] --> [-1..(expt 2 n)]
 ;;     base16:   1*8 <-- 2*4
 
 
-(defmacro with-io ((in out) (decode padchar padcode read-char write-byte 
+(defmacro with-io ((in out) (decode padchar padcode read-char write-byte
                                     ignore-invalid-input)
                    &body body)
   `(let ((state 0))
@@ -340,14 +340,14 @@ RETURN:      An array A:[0..255] --> [-1..(expt 2 n)]
 
 (defun decode64 (decode padchar padcode read-char write-byte
                  ignore-invalid-input)
-  (with-io (in out) 
+  (with-io (in out)
     (decode padchar padcode read-char write-byte ignore-invalid-input)
     (do ((i1 (in) (in))
          (i2 (in) (in))
          (i3 (in) (in))
          (i4 (in) (in)))
-        ((= i4 padcode) 
-         (cond 
+        ((= i4 padcode)
+         (cond
            ((= i1 padcode))
            ((= i2 padcode) ;; should not occur
             (unless ignore-invalid-input
@@ -378,36 +378,36 @@ RETURN:      An array A:[0..255] --> [-1..(expt 2 n)]
          (i6 (in) (in))
          (i7 (in) (in))
          (i8 (in) (in)))
-        ((= i8 padcode) 
-         (cond 
+        ((= i8 padcode)
+         (cond
            ((= i1 padcode))
            ((= i3 padcode)
             (out (dpb (ldb (byte 5 0) i1) (byte 5 3) (ldb (byte 3 2) i2))))
            ((= i5 padcode)
             (out (dpb (ldb (byte 5 0) i1) (byte 5 3) (ldb (byte 3 2) i2)))
-            (out (dpb (ldb (byte 2 0) i2) (byte 2 6) 
+            (out (dpb (ldb (byte 2 0) i2) (byte 2 6)
                       (dpb (ldb (byte 5 0) i3) (byte 5 1) (ldb (byte 1 4) i4)))))
            ((= i6 padcode)
             (out (dpb (ldb (byte 5 0) i1) (byte 5 3) (ldb (byte 3 2) i2)))
-            (out (dpb (ldb (byte 2 0) i2) (byte 2 6) 
+            (out (dpb (ldb (byte 2 0) i2) (byte 2 6)
                       (dpb (ldb (byte 5 0) i3) (byte 5 1) (ldb (byte 1 4) i4))))
             (out (dpb (ldb (byte 4 0) i4) (byte 4 4) (ldb (byte 4 1) i5))))
            (t
             (out (dpb (ldb (byte 5 0) i1) (byte 5 3) (ldb (byte 3 2) i2)))
-            (out (dpb (ldb (byte 2 0) i2) (byte 2 6) 
+            (out (dpb (ldb (byte 2 0) i2) (byte 2 6)
                       (dpb (ldb (byte 5 0) i3) (byte 5 1) (ldb (byte 1 4) i4))))
             (out (dpb (ldb (byte 4 0) i4) (byte 4 4) (ldb (byte 4 1) i5)))
-            (out (dpb (ldb (byte 1 0) i5) (byte 1 7) 
-                      (dpb (ldb (byte 5 0) i6) (byte 5 2) 
+            (out (dpb (ldb (byte 1 0) i5) (byte 1 7)
+                      (dpb (ldb (byte 5 0) i6) (byte 5 2)
                            (ldb (byte 2 3) i7))))))
          (values))
       ;; aaaaa aaabb bbbbb bcccc ccccd ddddd ddeee eeeee
       ;; aaaaaaaa  bbbbbbbb  cccccccc dddddddd  eeeeeeee
       (out (dpb (ldb (byte 5 0) i1) (byte 5 3) (ldb (byte 3 2) i2)))
-      (out (dpb (ldb (byte 2 0) i2) (byte 2 6) 
+      (out (dpb (ldb (byte 2 0) i2) (byte 2 6)
                 (dpb (ldb (byte 5 0) i3) (byte 5 1) (ldb (byte 1 4) i4))))
       (out (dpb (ldb (byte 4 0) i4) (byte 4 4) (ldb (byte 4 1) i5)))
-      (out (dpb (ldb (byte 1 0) i5) (byte 1 7) 
+      (out (dpb (ldb (byte 1 0) i5) (byte 1 7)
                 (dpb (ldb (byte 5 0) i6) (byte 5 2) (ldb (byte 2 3) i7))))
       (out (dpb (ldb (byte 3 0) i7) (byte 3 5) (ldb (byte 5 0) i8))))))
 
@@ -419,7 +419,7 @@ RETURN:      An array A:[0..255] --> [-1..(expt 2 n)]
 DO:         Encode the stream read with the READ-BYTE closure
             in BASE64 text written with WRITE-CHAR closure.
 
-READ-BYTE:  A function taking no argument and returning a 
+READ-BYTE:  A function taking no argument and returning a
             byte (integer 0 255) or nil for eof.  It may be
             called several times after eof and should keep
             returning nil.
@@ -440,19 +440,19 @@ DO:         Decode the BASE64 text stream read with the READ-CHAR
 
 READ-CHAR:  A function taking no argument and returning a
             character or nil for eof.  It may be called
-            several times after eof and should keep returning 
-            nil.  Only characters whose code is between 0 and 
+            several times after eof and should keep returning
+            nil.  Only characters whose code is between 0 and
             255 should be returned.
 
 WRITE-BYTE: A function taking one byte (integer 0 255) argument
             used to collect decoded bytes.
- 
+
 IGNORE-INVALID-INPUT:
             When true, any invalid character or padding is ignored
             and processing continues as if it did not occur.
             When nil, such an occurence would raise an error.
 "
-  (decode64 +base64-decode+ 
+  (decode64 +base64-decode+
             (aref +base64-encode+ (padding-code +base64-encode+))
             (padding-code +base64-encode+)
             read-char write-byte ignore-invalid-input))
@@ -467,7 +467,7 @@ NOTE:       It's the same encoding as BASE64, but the 62nd and 63rd
             characters are - and _ instead of + and /, thus making it
             usable for file names and URLs.
 
-READ-BYTE:  A function taking no argument and returning a 
+READ-BYTE:  A function taking no argument and returning a
             byte (integer 0 255) or nil for eof.  It may be
             called several times after eof and should keep
             returning nil.
@@ -490,11 +490,11 @@ DO:         Decode the FILEBASE64 text stream read with the READ-CHAR
 NOTE:       It's the same encoding as BASE64, but the 62nd and 63rd
             characters are - and _ instead of + and /, thus making it
             usable for file names and URLs.
- 
+
 READ-CHAR:  A function taking no argument and returning a
             character or nil for eof.  It may be called
-            several times after eof and should keep returning 
-            nil.  Only characters whose code is between 0 and 
+            several times after eof and should keep returning
+            nil.  Only characters whose code is between 0 and
             255 should be returned.
 
 WRITE-BYTE: A function taking one byte (integer 0 255) argument
@@ -505,7 +505,7 @@ IGNORE-INVALID-INPUT:
             and processing continues as if it did not occur.
             When nil, such an occurence would raise an error.
 "
-  (decode64 +filebase64-decode+ 
+  (decode64 +filebase64-decode+
             (aref +filebase64-encode+ (padding-code +filebase64-encode+))
             (padding-code +filebase64-encode+)
             read-char write-byte ignore-invalid-input))
@@ -516,7 +516,7 @@ IGNORE-INVALID-INPUT:
 DO:         Encode the stream read with the READ-BYTE closure
             in BASE32 text written with WRITE-CHAR closure.
 
-READ-BYTE:  A function taking no argument and returning a 
+READ-BYTE:  A function taking no argument and returning a
             byte (integer 0 255) or nil for eof.  It may be
             called several times after eof and should keep
             returning nil.
@@ -535,20 +535,20 @@ DO:         Decode the BASE32 text stream read with the READ-CHAR
 
 READ-CHAR:  A function taking no argument and returning a
             character or nil for eof.  It may be called
-            several times after eof and should keep returning 
-            nil.  Only characters whose code is between 0 and 
+            several times after eof and should keep returning
+            nil.  Only characters whose code is between 0 and
             255 should be returned.
 
 WRITE-BYTE: A function taking one byte (integer 0 255) argument
             used to collect decoded bytes.
- 
+
 IGNORE-INVALID-INPUT:
             When true, any invalid character or padding is ignored
             and processing continues as if it did not occur.
             When nil, such an occurence would raise an error.
 
 "
-  (decode32 +base32-decode+ 
+  (decode32 +base32-decode+
             (aref +base32-encode+ (padding-code +base32-encode+))
             (padding-code +base32-encode+)
             read-char write-byte ignore-invalid-input))
@@ -559,7 +559,7 @@ IGNORE-INVALID-INPUT:
 DO:         Encode the stream read with the READ-BYTE closure
             in BASE16 text written with WRITE-CHAR closure.
 
-READ-BYTE:  A function taking no argument and returning a 
+READ-BYTE:  A function taking no argument and returning a
             byte (integer 0 255) or nil for eof.  It may be
             called several times after eof and should keep
             returning nil.
@@ -572,7 +572,7 @@ WRITE-CHAR: A function taking one character argument, used to
     :for byte = (funcall read-byte)
     :while byte
     :do (progn
-          (funcall write-char 
+          (funcall write-char
                    (aref "0123456789ABCDEF" (ldb (byte 4 4) byte)))
           (funcall write-char
                    (aref "0123456789ABCDEF" (ldb (byte 4 0) byte))))))
@@ -586,8 +586,8 @@ DO:         Decode the BASE16 text stream read with the READ-CHAR
 
 READ-CHAR:  A function taking no argument and returning a
             character or nil for eof.  It may be called
-            several times after eof and should keep returning 
-            nil.  Only characters whose code is between 0 and 
+            several times after eof and should keep returning
+            nil.  Only characters whose code is between 0 and
             255 should be returned.
 
 WRITE-BYTE: A function taking one byte (integer 0 255) argument
@@ -598,10 +598,10 @@ IGNORE-INVALID-INPUT:
             and processing continues as if it did not occur.
             When nil, such an occurence would raise an error.
 "
-  (loop 
+  (loop
     :with high = nil
     :for  ch   = (funcall read-char)
-    :while ch 
+    :while ch
     :do (let ((low (position ch "0123456789ABCDEF"
                              :test (function char-equal))))
           (if low
@@ -609,7 +609,7 @@ IGNORE-INVALID-INPUT:
                   (progn (funcall write-byte (dpb high (byte 4 4) low))
                          (setf high nil))
                   (setf high low))
-              (unless ignore-invalid-input 
+              (unless ignore-invalid-input
                 (error "BASE16-DECODE got an invalid input character: ~C" ch))))
     :finally (when (and high (not ignore-invalid-input))
                (error "BASE16-DECODE got an odd byte number."))))
@@ -618,14 +618,14 @@ IGNORE-INVALID-INPUT:
 (defmacro encode-bytes (encode bytes line-width new-line)
   `(with-output-to-string (out)
      (with-input-from-byte-vector (in ,bytes)
-       (let ((column 0)) 
+       (let ((column 0))
          (,encode
           ;; read-byte:
           (lambda () (let ((byte (bvstream-read-byte in)))
                        (if (eq :eof byte) nil byte)))
           ;; write-char
           (if ,line-width
-              (lambda (ch) 
+              (lambda (ch)
                 (write-char ch out)
                 (incf column)
                 (when (<= ,line-width column)
@@ -644,7 +644,7 @@ IGNORE-INVALID-INPUT:
         ;; read-char
         (if ,ignore-crlf
             (lambda () (do ((ch (read-char in nil nil)(read-char in nil nil)))
-                           ((or (null ch) (not (member (char-code ch) '(10 13)))) 
+                           ((or (null ch) (not (member (char-code ch) '(10 13))))
                             ch)))
             (lambda () (read-char in nil nil)))
         ;; write-byte
@@ -664,12 +664,12 @@ RETURN:     An encoded string.
 BYTES:      A vector of (unsigned-byte 8).
 
 LINE-WIDTH: NIL or an integer indicating the line width.
-            the string new-line will be inserted after that 
+            the string new-line will be inserted after that
             many characters have been written on a given line.
 
 NEW-LINE:   A string contaiing the new-line character or characters.
             the default +new-line+ is (format nil \"~%\").
-"  
+"
   (encode-bytes base64-encode bytes line-width new-line))
 
 
@@ -682,7 +682,7 @@ RETURN:     A decoded vector of (unsigned-byte 8).
 ENCODED:    A string.
 
 IGNORE-CRLF:
-            When true, ASCII characters LF and CR are not passed to 
+            When true, ASCII characters LF and CR are not passed to
             the decoding function. When NIL, they're passed, and
             if invalid input is not ignored, an error would be raised.
 
@@ -700,7 +700,7 @@ RETURN:     An encoded string.
 BYTES:      A vector of (unsigned-byte 8).
 
 LINE-WIDTH: NIL or an integer indicating the line width.
-            the string new-line will be inserted after that 
+            the string new-line will be inserted after that
             many characters have been written on a given line.
 
 NEW-LINE:   A string contaiing the new-line character or characters.
@@ -718,7 +718,7 @@ RETURN:     A decoded vector of (unsigned-byte 8).
 ENCODED:    A string.
 
 IGNORE-CRLF:
-            When true, ASCII characters LF and CR are not passed to 
+            When true, ASCII characters LF and CR are not passed to
             the decoding function. When NIL, they're passed, and
             if invalid input is not ignored, an error would be raised.
 
@@ -737,7 +737,7 @@ RETURN:     An encoded string.
 BYTES:      A vector of (unsigned-byte 8).
 
 LINE-WIDTH: NIL or an integer indicating the line width.
-            the string new-line will be inserted after that 
+            the string new-line will be inserted after that
             many characters have been written on a given line.
 
 NEW-LINE:   A string contaiing the new-line character or characters.
@@ -755,7 +755,7 @@ RETURN:     A decoded vector of (unsigned-byte 8).
 ENCODED:    A string.
 
 IGNORE-CRLF:
-            When true, ASCII characters LF and CR are not passed to 
+            When true, ASCII characters LF and CR are not passed to
             the decoding function. When NIL, they're passed, and
             if invalid input is not ignored, an error would be raised.
 
@@ -774,7 +774,7 @@ RETURN:     An encoded string.
 BYTES:      A vector of (unsigned-byte 8).
 
 LINE-WIDTH: NIL or an integer indicating the line width.
-            the string new-line will be inserted after that 
+            the string new-line will be inserted after that
             many characters have been written on a given line.
 
 NEW-LINE:   A string contaiing the new-line character or characters.
@@ -792,7 +792,7 @@ RETURN:     A decoded vector of (unsigned-byte 8).
 ENCODED:    A string.
 
 IGNORE-CRLF:
-            When true, ASCII characters LF and CR are not passed to 
+            When true, ASCII characters LF and CR are not passed to
             the decoding function. When NIL, they're passed, and
             if invalid input is not ignored, an error would be raised.
 

@@ -126,7 +126,7 @@ Examples: ::
 
     [array performSelector:(@selector "drawRect:") withObject:rect]
 
-    (let ((o [[NSObject alloc] init])) 
+    (let ((o [[NSObject alloc] init]))
        [NSArray arrayWithObjects:o (id)o (id)o (id)nil])
 
 
@@ -151,7 +151,7 @@ The syntax is : ::
     lisp-slot          := slot-specifier . -- see clhs defclass.
 
 
-    -- objcl-slot         := ...           -- not defined yet. 
+    -- objcl-slot         := ...           -- not defined yet.
     -- We'd want some simplified definition, and using Obj-C names.
 
 
@@ -234,7 +234,7 @@ Examples: ::
 
 
 
-.. comment: 
+.. comment:
               ------------------------------------------
                             --------------
                                   .

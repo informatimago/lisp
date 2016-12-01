@@ -5,11 +5,11 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Implementation of Left Leaning Red Black Trees.
 ;;;;    Robert Sedgewick's algorithms.
 ;;;;    http://www.cs.princeton.edu/~rs
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -17,19 +17,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2009 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -54,19 +54,19 @@ http://www.cs.princeton.edu/~rs
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2009 - 2015
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -155,7 +155,7 @@ License:
             "There must be TREE-COUNT = ~A nodes in the tree.  ~
              Found ~A nodes by walking."
             (tree-count tree) count))
-  
+
   (let ((nodes '()))
     ;; check the nodes are ordered.
     (and (tree-root tree)
@@ -174,7 +174,7 @@ License:
        :do (assert (member (node-color node) '(:black :red))
                    (node) "Node color must be :black or :red ; found ~A"
                    (node-color node)))
-     
+
     (loop                 ; LLRBT have different constraints than RBT.
        :named llrbt-constraints
        :for node :in nodes
@@ -184,7 +184,7 @@ License:
                         (or (null (node-left (node-left node)))
                             (not (node-red-p (node-left (node-left (node-left node))))))))
             (node))))
-  
+
   (let ((h (make-hash-table)))
     ;; check that all paths to leaves have the same number of black links
     (setf (gethash nil h) 1)
@@ -326,7 +326,7 @@ An invocation (NAME) returns three values as follows:
 1. A generalized boolean that is true if an entry is returned.
 2. The key from the tree entry.
 3. The value from the tree entry.
-   
+
 After all entries have been returned by successive invocations
 of (NAME), then only one value is returned, namely nil.
 
@@ -484,7 +484,7 @@ NOTE:   SETF may be used with TREE-GET to modify the value associated
         (incf (tree-count tree))
         (make-node :key key :value value :color :red))
       (progn
-        
+
         (when (and (node-red-p (node-left h))
                    (node-red-p (node-left (node-left h))))
           (setf h (split-four-node h)))
@@ -496,7 +496,7 @@ NOTE:   SETF may be used with TREE-GET to modify the value associated
            (setf (node-right h) (insert-node (node-right h) key value tree lessp)))
           (t
            (setf (node-value h) value)))
-        
+
         (when (node-red-p (node-right h))
           (setf h (lean-left h)))
         h)))
@@ -530,10 +530,10 @@ RETURN: NEW-VALUE.
     (when (and (not (node-red-p (node-left h)))
                (not (node-red-p (node-left (node-left h)))))
       (setf h (move-red-left h)))
-    (setf (node-left h) (delete-min (node-left h))) 
+    (setf (node-left h) (delete-min (node-left h)))
     (when (node-red-p (node-right h))
       (setf h (lean-right h)))
-    h)) 
+    h))
 
 
 (defun tree-delete-min (tree)
@@ -565,7 +565,7 @@ RETURN:  Whether an entry has been deleted.
       (progn
         (when (node-left h)
           (setf (node-color (node-left h)) :black))
-        (node-left h)))) 
+        (node-left h))))
 
 
 (defun tree-delete-max (tree)
@@ -591,17 +591,17 @@ RETURN:  Whether an entry has been deleted.
           (setf (node-left  h) (delete-node (node-left  h) key tree lessp))
           (when (node-red-p (node-right h))
             (setf h (lean-left h)))
-          h) 
+          h)
         (progn
           (when (node-red-p (node-left h))
             (setf h  (lean-right h)))
           (if (and (not (funcall lessp key (node-key h)))
                    (not (funcall lessp (node-key h) key))
-                   (null (node-right h))) 
+                   (null (node-right h)))
               (progn                     ; EQUAL (at bottom)
                 (decf (tree-count tree)) ; delete node
                 nil)
-              (progn 
+              (progn
                 (when (and (not (node-red-p (node-right h)))
                            (not (node-red-p (node-left (node-right h)))))
                   (setf h (move-red-right h)))
@@ -617,7 +617,7 @@ RETURN:  Whether an entry has been deleted.
                     (setf (node-right h) (delete-node (node-right h) key tree lessp)))
                 (when (node-red-p (node-right h))
                   (setf h (lean-left h)))
-                h)))))) 
+                h))))))
 
 
 (defun tree-delete (key tree)
@@ -716,7 +716,7 @@ RETURN: true if there was such an entry, or false otherwise.
   (dump (node-left  self) (concat indentation bar "    ") "|")
   (format t "~A~A    |~%" indentation bar)
   (format t "~A~A~A+---- ~A: ~A~A~%" indentation bar
-          (if (node-red-p self) *red* *black*) 
+          (if (node-red-p self) *red* *black*)
           (node-key self) (node-value self)
           *normal*)
   (format t "~A~A    |~%" indentation bar)

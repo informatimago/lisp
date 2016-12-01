@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             POSIX
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    This file demonstrates how one can write a lisp program that can run
 ;;;;    on both scheme, emacs lisp and Common Lisp.
 ;;;;
@@ -32,19 +32,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    GPL
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2011 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software; you can redistribute it and/or
 ;;;;    modify it under the terms of the GNU General Public License
 ;;;;    as published by the Free Software Foundation; either version
 ;;;;    2 of the License, or (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be
 ;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
 ;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 ;;;;    PURPOSE.  See the GNU General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU General Public
 ;;;;    License along with this program; if not, write to the Free
 ;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
@@ -89,7 +89,7 @@
 
    ;; Perhaps it would be better to write two different schemify for
    ;; emacs-lisp and Common-Lisp...
-   
+
    (eval (list 'progn
 
                (if (boundp 'emacs-version)
@@ -102,7 +102,7 @@
                        'nil)
                      (defmacro eval-in-scheme (&rest expressions)
                        'nil))
-                   
+
                    '(progn
                      (defmacro eval-in-emacs-lisp (&body expressions)
                        'nil)
@@ -218,7 +218,7 @@
                 (read-line stream))
                ((char= (character ".") ch)
                 (let ((nextch (peek-char nil stream t nil t)))
-                  (cond 
+                  (cond
                     ((char= (character ".") nextch)
                      ;; We got two dots, let's assume it'll only be dots,
                      ;; and collect a symbol.
@@ -248,14 +248,14 @@
                  (t
                    (unread-char ch stream)
                    (collect (list (read stream t nil t))))))))))
-   
+
    (set-macro-character (character "(")
                         (lambda (stream ch)
                           ;; This stub is so that when we redefine
                           ;; the reader while debugging, the new
                           ;; version be taken into account immediately.
                           (reader-macro-scheme-list stream ch)))
-   
+
    ;; (set-syntax-from-char (character ".") (character "A"))
    ;; (defvar *normal-readtable* (copy-readtable))
    ;; (set-macro-character
@@ -277,7 +277,7 @@
    ;;          ;; and let the normal reader handle it.
    ;;          (with-input-from-string (dot ".")
    ;;            (read (make-concatenated-stream dot stream) t nil t))))))
-   
+
    ))
 
 
@@ -289,7 +289,7 @@
 
 
 ;; Notice that the form in eval-in-* must still be read in all three
-;; languages.  
+;; languages.
 
 (define-syntax eval-in-scheme
     (syntax-rules ()
@@ -355,7 +355,7 @@
 
  (defconstant t 't)
  (defun .boolean (generalized-boolean)
-   "Transforms the GENERALIZED-BOOLEAN into a native boolean value. 
+   "Transforms the GENERALIZED-BOOLEAN into a native boolean value.
 false is the symbol nil, the empty list, and not true (#f)."
    (not (or (not (eql 'nil generalized-boolean))
             (not (eql '()  generalized-boolean))
@@ -398,13 +398,13 @@ false is the symbol nil, the empty list, and not true (#f)."
           ((null list) list)
           ((= 0 index) (car list))
           (else        (loop (- index 1) (cdr list))))))
-  
+
  (defun elt (seq index)
    (cond
      ((vector? seq) (vector-ref seq index))
      ((string? seq) (string-ref seq index))
      ((list?   seq) (nth index seq))))
- 
+
 
 
  (define terpri
@@ -417,7 +417,7 @@ false is the symbol nil, the empty list, and not true (#f)."
            (newline)
            (newline (cadr parameters)))
        (apply write parameters)))
- 
+
  )
 
 
@@ -450,7 +450,7 @@ false is the symbol nil, the empty list, and not true (#f)."
 ;; defined as a Common Lisp package.
 
 (eval-in-common-lisp
- 
+
  (defpackage "INTERSECTION-CL-EL-R5RS"
    (:use "COMMON-LISP")
    (:export quote lambda if cond case
@@ -481,7 +481,7 @@ false is the symbol nil, the empty list, and not true (#f)."
 
    ;; we added (with restrictions!):
    (:export funcall function identity
-            defun defconstant 
+            defun defconstant
             eql equal
             nil null t
             aref elt nth
@@ -543,7 +543,7 @@ A few additionnal primitives are defined in scheme, and exported from
 this package:
 
     FUNCALL FUNCTION IDENTITY
-    DEFUN DEFCONSTANT 
+    DEFUN DEFCONSTANT
     EQL EQUAL
     NIL NULL T
     AREF ELT NTH
@@ -587,15 +587,15 @@ The rest of Common Lisp can be implemented from here.
 
 
 ;; [pjb@kuiper :0 lisp]$ mzscheme -f happy.lisp ; emacs -Q --batch -l happy.lisp -q  ; clisp -q -norc -ansi happy.lisp
-;; 
+;;
 ;; (booted a lisp over scheme)
 ;; ((fact 10) = 3628800)
-;; 
+;;
 ;; (booted a lisp over emacs-lisp)
 ;; ((fact 10) = 3628800)
-;; 
-;; (booted a lisp over common-lisp) 
-;; ((fact 10) = 3628800) 
-;; [pjb@kuiper :0 lisp]$ 
+;;
+;; (booted a lisp over common-lisp)
+;; ((fact 10) = 3628800)
+;; [pjb@kuiper :0 lisp]$
 
 ;;;; THE END ;;;;
