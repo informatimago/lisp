@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             CLISP
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    An implementation of SUSv3 for clisp.
 ;;;;
 ;;;;    The Open Group Base Specifications Issue 6
@@ -13,15 +13,15 @@
 ;;;;
 ;;;;    http://www.opengroup.org/onlinepubs/007904975/index.html
 ;;;;
-;;;;    Rules: 
+;;;;    Rules:
 ;;;;       - The various scalar types are all mapped to INTEGER.
-;;;;         [There is a multitude of scalar type declaration in 
+;;;;         [There is a multitude of scalar type declaration in
 ;;;;         the C POSIX API (pid_t, gid_t, mode_t, etc) because
-;;;;         C has modulo integers. Lisp have true integers, so 
+;;;;         C has modulo integers. Lisp have true integers, so
 ;;;;         they're not useful.]
 ;;;;         http://www.opengroup.org/onlinepubs/009695399/xrat/xsh_chap02.html#tag_03_02_12
 ;;;;       - symbol are upcased, underlines replaced with dash,
-;;;;         structure field prefixes are removed. 
+;;;;         structure field prefixes are removed.
 ;;;;         Constant names are NOT decorated by any '+'.
 ;;;;       - pointers: addresses are returned as integers.
 ;;;;         [It's easiest to keep addresses as integers instead of
@@ -45,24 +45,24 @@
 ;;;;    on the current system. At run-time.
 ;;;;
 ;;;;    The type of arguments and results of FFI function should be pure
-;;;;    Common-Lisp objects. We shouldn't need to do any FFI stuff outside 
+;;;;    Common-Lisp objects. We shouldn't need to do any FFI stuff outside
 ;;;;    of here.
 ;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -89,9 +89,9 @@
    "UNIX-ERROR" "UNIX-ERROR-NUMBER" "UNIX-ERROR-MESSAGE"
    "UNIX-ERROR-FUNCTION" "UNIX-ERROR-ARGUMENTS" "UNIX-ERROR-CALLER"
    "CHECK-POINTER" "CHECK-ERRNO" "REPORT-ERROR"
-   ;; 
+   ;;
    "GETENV"
-   
+
    ;; limits.h
    "NAME-MAX"
 
@@ -99,24 +99,24 @@
    "STAT-GID" "STAT-RDEV" "STAT-SIZE" "STAT-ATIME" "STAT-MTIME"
    "STAT-CTIME" "STAT-BLKSIZE" "STAT-BLOCKS"
 
-   "CHMOD" "FCHMOD" "STAT" "LSTAT" "FSTAT" "MKDIR" "MKFIFO" 
+   "CHMOD" "FCHMOD" "STAT" "LSTAT" "FSTAT" "MKDIR" "MKFIFO"
    "UMASK" "MKNOD"
 
    "S-ISUID" "S-ISGID" "S-ISVTX" "S-IREAD" "S-IWRITE" "S-IEXEC"
    "S-IRUSR" "S-IWUSR" "S-IXUSR" "S-IRWXU" "S-IRGRP" "S-IWGRP" "S-IXGRP"
    "S-IRWXG" "S-IROTH" "S-IWOTH" "S-IXOTH" "S-IRWXO"
    "S-IFMT"
-   "S-IFDIR" "S-IFCHR" "S-IFBLK" "S-IFREG" "S-IFIFO"  "S-IFLNK" "S-IFSOCK" 
+   "S-IFDIR" "S-IFCHR" "S-IFBLK" "S-IFREG" "S-IFIFO"  "S-IFLNK" "S-IFSOCK"
    "S-ISDIR" "S-ISCHR" "S-ISBLK" "S-ISREG" "S-ISFIFO" "S-ISLNK" "S-ISSOCK"
 
    ;; dirent.h
    "DIR" "DIRENT" "DIRENT-INO" "DIRENT-NAME"
    "OPENDIR" "READDIR" "REWINDDIR" "CLOSEDIR"
-   ;; readdir_r ;; TSF ;; not implemented, do we need it? 
+   ;; readdir_r ;; TSF ;; not implemented, do we need it?
    "SEEKDIR" "TELLDIR" ;; XSI
 
 
-   "GETPID" "FORK" 
+   "GETPID" "FORK"
 
    "ERRNO" "STRERROR"
 
@@ -141,7 +141,7 @@
    "EISNAM" "EREMOTEIO" "EDQUOT" "ENOMEDIUM" "EMEDIUMTYPE"
 
    "POINTER"
-   
+
    ;; NOT IN SUSV3 API (TEST FUNCTIONS):
    "DIRENT-TEST"))
 (in-package  "COM.INFORMATIMAGO.CLISP.SUSV3")
@@ -169,10 +169,10 @@
               :initarg  :number
               :accessor unix-error-number)
    (message   :type     string
-              :initarg  :message  
+              :initarg  :message
               :accessor unix-error-message)
    (function  :type     (or string symbol)
-              :initarg  :function 
+              :initarg  :function
               :accessor unix-error-function)
    (arguments :type     list
               :initarg  :arguments
@@ -192,7 +192,7 @@
           (getpid)
           (unix-error-number condition)
           (if (unix-error-function condition)
-              (format nil " from (~S~{ ~S~})" 
+              (format nil " from (~S~{ ~S~})"
                       (unix-error-function  condition)
                       (unix-error-arguments condition))
               "")
@@ -219,7 +219,7 @@ be signaled (but check-pointer returns (values nil :errno errno) instead).
         (if (or (zerop errno) (member errno no-error))
             (values 0 :errno errno)
             (error (make-condition
-                    'unix-error 
+                    'unix-error
                     :number errno
                     :message (strerror errno)
                     :function function
@@ -237,10 +237,10 @@ be signaled (but that check-errno returns instead of nil).
   (if (/= -1 result)
       (values result :result)
       (let ((errno errno))
-        (if (or (zerop  errno) (member errno no-error)) 
+        (if (or (zerop  errno) (member errno no-error))
             (values errno :errno)
             (error (make-condition
-                    'unix-error 
+                    'unix-error
                     :number errno
                     :message (strerror errno)
                     :function function
@@ -460,25 +460,25 @@ RETURN:     NIL or the value of the environment variable named NAME.
 
 
 (defstruct stat
-  (dev     0 :type dev-t) ;; Device ID of device containing file. 
-  (ino     0 :type ino-t) ;; File serial number. 
+  (dev     0 :type dev-t) ;; Device ID of device containing file.
+  (ino     0 :type ino-t) ;; File serial number.
   (mode    0 :type mode-t)  ;; Mode of file (see below).
   (nlink   0 :type nlink-t) ;; Number of hard links to the file.
   (uid     0 :type uid-t)   ;; User ID of file.
   (gid     0 :type gid-t)   ;; Group ID of file.
   (rdev    0 :type dev-t) ;; XSI: Device ID (if file is char or block special).
-  (size    0 :type off-t) ;; For regular files, the file size in bytes. 
-  ;;                      For symbolic links, the length in bytes of the 
-  ;;                      pathname contained in the symbolic link. 
+  (size    0 :type off-t) ;; For regular files, the file size in bytes.
+  ;;                      For symbolic links, the length in bytes of the
+  ;;                      pathname contained in the symbolic link.
   ;;                      SHM: For a shared memory object, the length in bytes.
-  ;;                      TYM: For a typed memory object, the length in bytes. 
-  ;;                      For other file types, the use of this field is 
+  ;;                      TYM: For a typed memory object, the length in bytes.
+  ;;                      For other file types, the use of this field is
   ;;                      unspecified.
   (atime   0 :type time-t) ;; Time of last access.
   (mtime   0 :type time-t) ;; Time of last data modification.
   (ctime   0 :type time-t) ;; Time of last status change.
-  (blksize 0 :type blksize-t) ;; XSI: A file system-specific preferred I/O 
-  ;;                      block size for this object. In some file system 
+  (blksize 0 :type blksize-t) ;; XSI: A file system-specific preferred I/O
+  ;;                      block size for this object. In some file system
   ;;                      types, this may vary from file to file.
   (blocks  0 :type blkcnt-t)) ;; XSI: Num. of blocks allocated for this object.)
 
@@ -508,10 +508,10 @@ RETURN:     NIL or the value of the environment variable named NAME.
 ;; also be defined.
 
 ;; File type:
-;; 
+;;
 ;; S_IFMT
 ;;     [XSI] [Option Start] Type of file.
-;; 
+;;
 ;;     S_IFBLK
 ;;     Block special.S_IFCHR
 ;;     Character special.S_IFIFO
@@ -532,24 +532,24 @@ RETURN:     NIL or the value of the environment variable named NAME.
 
 
 ;; File mode bits:
-;; 
+;;
 ;; S_IRWXU
 ;;     Read, write, execute/search by owner.
-;; 
+;;
 ;;     S_IRUSR
 ;;     Read permission, owner.S_IWUSR
 ;;     Write permission, owner.S_IXUSR
 ;;     Execute/search permission, owner.
 ;; S_IRWXG
 ;;     Read, write, execute/search by group.
-;; 
+;;
 ;;     S_IRGRP
 ;;     Read permission, group.S_IWGRP
 ;;     Write permission, group.S_IXGRP
 ;;     Execute/search permission, group.
 ;; S_IRWXO
 ;;     Read, write, execute/search by others.
-;; 
+;;
 ;;     S_IROTH
 ;;     Read permission, others.S_IWOTH
 ;;     Write permission, others.S_IXOTH
@@ -564,9 +564,9 @@ RETURN:     NIL or the value of the environment variable named NAME.
 ;; Start]  and S_ISVTX [Option End]  shall be unique.
 
 ;; S_IRWXU is the bitwise-inclusive OR of S_IRUSR, S_IWUSR, and S_IXUSR.
-;; 
+;;
 ;; S_IRWXG is the bitwise-inclusive OR of S_IRGRP, S_IWGRP, and S_IXGRP.
-;; 
+;;
 ;; S_IRWXO is the bitwise-inclusive OR of S_IROTH, S_IWOTH, and S_IXOTH.
 
 ;; Implementations may OR other implementation-defined bits into
@@ -604,7 +604,7 @@ RETURN:     NIL or the value of the environment variable named NAME.
 ;; non-zero value if the test is true; 0 if the test is false.
 
 ;; S_ISBLK(m)
-;; 
+;;
 ;; Test for a block special file.S_ISCHR(m)
 ;; Test for a character special file.S_ISDIR(m)
 ;; Test for a directory.S_ISFIFO(m)
@@ -692,7 +692,7 @@ RETURN:     NIL or the value of the environment variable named NAME.
   "
 PRIVATE
 "
-  `(make-stat 
+  `(make-stat
     :dev (linux::|stat-st_dev| ,sb)
     :ino (linux::|stat-st_ino| ,sb)
     :mode (linux::|stat-st_mode| ,sb)

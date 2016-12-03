@@ -5,10 +5,10 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    This package defines various interactive commands.
 ;;;;    It also re-exports some functions from BROWSER and PACKAGE.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -18,19 +18,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2006 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -38,9 +38,9 @@
   (setf *readtable* (copy-readtable nil)))
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.INTERACTIVE"
   (:use "COMMON-LISP"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING" 
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PACKAGE"
-        "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.BROWSER")  
+        "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.BROWSER")
   (:export "UPTIME" "DATE" "*EDITOR*" "EDIT" "MOZILLA-STRING" "LSCHAR" "LSPACK"
            "DIFF-PACKAGE" "PSWITCH" "SHOW" "MKUPACK" "RESET-CLUSER" "POPP" "PUSHP"
            "COMPARE-PATHNAMES" "PRINT-PATHNAME" "LSSYMBOLS"
@@ -67,19 +67,19 @@ PACKAGE.
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2006 - 2015
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -140,7 +140,7 @@ NOTE:       Keeps a history of the expressions evaluated in
                !!   previous expression (same as + or !-1).
                !n   expressions number n.
                !-n  previous nth expression.
-              
+
 RESET-HISTORY:
 
             Whether the history is reset. If NIL, then the history is
@@ -230,7 +230,7 @@ DO:         Compare the pathnames P1 and P2 component by component,
 
 (defvar *package-stack* '())
 (defun pushp (&optional package)
-  "Push *PACKAGE* on a package stack, 
+  "Push *PACKAGE* on a package stack,
 and makes the package designated by PACKAGE be the new *PACKAGE*.
 If PACKAGE is NIL, the rotate *PACKAGE* and the top of the package stack."
   (if package
@@ -319,9 +319,9 @@ DO:         Prints each expression and their values.
                        :initial-value 0)))
     `(progn
        ,@(mapcar
-          (lambda (expr) 
+          (lambda (expr)
             `(let ((vals  (multiple-value-list ,expr)))
-               (format *trace-output* 
+               (format *trace-output*
                  ,(format nil "~~~DS = ~~{~~S~~^ ; ~~%~:*~VA   ~~}~~%" width "")
                  (quote ,expr) vals)
                (values-list vals)))
@@ -436,7 +436,7 @@ The keywords are tested with STRING-EQUAL."
                      (flow-list "Uses:"      (package-use-list package))
                      (when show-used-by
                        (flow-list "Used by:"   (package-used-by-list package)))
-                     (when show-exports 
+                     (when show-exports
                        (flow-list "Exported:" (list-external-symbols package)))))
                (values)))
            (eat-options (arguments)
@@ -620,6 +620,6 @@ DO:         Create FILE if it doesn't exist, and
                            ~:[~D second~:*~P.~;~*~]~%"
               (zerop ye) ye (zerop mo) mo (zerop da) da
               (zerop ho) ho nil mi nil se))
-    uptime)) 
+    uptime))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

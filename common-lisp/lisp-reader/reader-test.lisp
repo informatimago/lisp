@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    XXX
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -51,7 +51,7 @@
                           "*READ-SUPPRESS*" "*READTABLE*"
                           ;; Extensions:
                           "READTABLE-SYNTAX-TABLE" "READTABLE-PARSE-TOKEN"
-                          "SET-INDIRECT-DISPATCH-MACRO-CHARACTER" 
+                          "SET-INDIRECT-DISPATCH-MACRO-CHARACTER"
                           "SET-INDIRECT-MACRO-CHARACTER"
                           "LIST-ALL-MACRO-CHARACTERS"
                           "SIMPLE-READER-ERROR" "SIMPLE-END-OF-FILE"
@@ -85,19 +85,19 @@ This package tests the COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.READER package.
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2006 - 2015
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program. If not, see <http://www.gnu.org/licenses/>
 
@@ -148,7 +148,7 @@ License:
         (*package* (find-package "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.READER.TEST")))
     (dolist (test
              '(
-               ;; integer  ::= [sign] digit+      
+               ;; integer  ::= [sign] digit+
                (nil "0"  0.)
                (nil "1"  1.)
                (nil "2"  2.)
@@ -194,7 +194,7 @@ License:
                (((*read-base* 3.)) "+10" +3.)
                (((*read-base* 3.)) "+11" +4.)
                (((*read-base* 3.)) "+13" |+13|)
-               ;; integer  ::= [sign] decimal-digit+ decimal-point 
+               ;; integer  ::= [sign] decimal-digit+ decimal-point
                (nil "0."  0.)
                (nil "1."  1.)
                (nil "2."  2.)
@@ -296,13 +296,13 @@ License:
                (nil "-100/200" -1/2)
                (nil "-12345/54321" -12345/54321)
 ;;; float    ::= [sign] {decimal-digit}* decimal-point {decimal-digit}+ exponent
-;;; float    ::= [sign] {decimal-digit}* decimal-point {decimal-digit}+ 
+;;; float    ::= [sign] {decimal-digit}* decimal-point {decimal-digit}+
 ;;; float    ::= [sign] {decimal-digit}+ exponent
 ;;; float    ::= [sign] {decimal-digit}+ decimal-point {decimal-digit}* exponent
 ;;; exponent ::=  exponent-marker [sign] {digit}+
-;;; 
+;;;
 ;;; consing-dot   ::= dot
-;;; 
+;;;
 ;;; symbol        ::= symbol-name
 ;;;                 | package-marker symbol-name
 ;;;                 | package-marker package-marker symbol-name
@@ -428,8 +428,8 @@ License:
 
 
 #-(and)
-(tests 
- ((let ((*features* (quote (:a :b)))) 
+(tests
+ ((let ((*features* (quote (:a :b))))
     (read-from-string "#+#1=(or a b) #1#"))
   ((:or :a :b) 44)
   nil))
@@ -480,7 +480,7 @@ License:
          (("!A") (def))
          nil)
 
-        ((with-input-from-string (src "#( \"!A\" 
+        ((with-input-from-string (src "#( \"!A\"
 ) (def)
 ")
            (values (read src)
@@ -503,7 +503,7 @@ License:
                    (read-delimited-list #\) src)))
          (("!A") (def))
          nil)
-       
+
         ((with-input-from-string (src "#( \"!A\"  ; comment
 ) (def)
 ")
@@ -537,7 +537,7 @@ License:
              ()) (a b . c;comment
                       ))")
          ((nil (a) (a b) (a b c) (a) (a . b) (a b) (a b . c) nil (a) (a b) (a b c) (a)
-               (a) (a . b) (a . b) (a . b) (a b) (a b . c)) 
+               (a) (a . b) (a . b) (a . b) (a b) (a b . c))
           469)
          nil)))
 
@@ -545,7 +545,7 @@ License:
  (tests "vector with too much data"
         ((with-input-from-string (input "#2(a b c) d e")
            (values (read input) (read-line input)))
-         (#(a b)                         
+         (#(a b)
            " d e")
          nil)))
 
@@ -614,7 +614,7 @@ License:
                         "3^4/5"
                         "6//7"
                         "3.1.2.6"
-                        "^-43^"     
+                        "^-43^"
                         "3.141_592_653_589_793_238_4"
                         "-3.7+2.6i-6.17j+19.6k"
                         "+.e2")))
@@ -623,7 +623,7 @@ License:
                          "/5"
                          "+"
                          "1+"
-                         "1-"   
+                         "1-"
                          "foo+"
                          "ab.cd"
                          "_"

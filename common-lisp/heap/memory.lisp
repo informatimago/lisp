@@ -5,10 +5,10 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
-;;;;    This packages exports a memory abstract class 
+;;;;
+;;;;    This packages exports a memory abstract class
 ;;;;    and a concrete subclass implemented as a lisp array of unsigned bytes.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -17,19 +17,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -51,19 +51,19 @@ implemented as a lisp array of unsigned bytes.
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2004 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -175,7 +175,7 @@ set signal handler, or to acquire locks, and then release them.
   (<= (base self) address (+ (base self) (size self) -1)))
 
 
-(defmethod dump ((self memory) address length 
+(defmethod dump ((self memory) address length
                  &key (byte-size 1) (stream *standard-output*) (margin ""))
   (let ((peek (case byte-size
                 ((1) (function peek-uint8))
@@ -213,7 +213,7 @@ set signal handler, or to acquire locks, and then release them.
                                  :element-type '(unsigned-byte 64)
                                  :initial-element 0))
   self)
-                                 
+
 
 (defmethod peek-uint8  ((self memory-vector-64) address)
   (decf address (base self))
@@ -265,7 +265,7 @@ set signal handler, or to acquire locks, and then release them.
   (let ((high (truncate address 8))
         (low  (mod address 8)))
     (setf (aref (bytes self) high)
-          (dpb value (byte 16 (* low 4)) 
+          (dpb value (byte 16 (* low 4))
                (aref (bytes self) high)))))
 
 
@@ -277,7 +277,7 @@ set signal handler, or to acquire locks, and then release them.
   (let ((high (truncate address 8))
         (low  (mod address 8)))
     (setf (aref (bytes self) high)
-          (dpb value (byte 32 (* low 2)) 
+          (dpb value (byte 32 (* low 2))
                (aref (bytes self) high)))))
 
 

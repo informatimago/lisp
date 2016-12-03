@@ -7,7 +7,7 @@ hw1:hw.lisp hello.lisp word.lisp
 
 
 hw2:hw.lisp hello.ol word.ol
-	ll -o hw2 hw.lisp -l hello.ol -l  word.ol 
+	ll -o hw2 hw.lisp -l hello.ol -l  word.ol
 
 hw3:hello.lisp libhw.ol
 	ll -o hw3 hello.lisp libhw.ol

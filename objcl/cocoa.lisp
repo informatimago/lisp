@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Some fun with Objective-C and Cocoa.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2010 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -67,7 +67,7 @@
 ;;                 (unwind-protect
 ;;                      (progn
 ;;                        [context saveGraphicsState]
-;;                        
+;;
 ;;                        )
 ;;                   [context restoreGraphicsState]))]
 
@@ -101,7 +101,7 @@
         (let ((acc (aref (icals-stack self) 0)))
           [acc setintvalue:(+ [sender intvalue] (* 10 [acc intvalue]))])]
 
-  
+
 
 @[icals method: (reporterror:(:id #|<NSS>tring|#)text)
         resulttype:(:id)
@@ -153,7 +153,7 @@
   (let ((size (make-rect)))
     (flet ((make-button (title action)
              (let ((button (make-push-button :title title :action action :target ical)))
-               [button sizetofit] 
+               [button sizetofit]
                (oclo:slet ((frame  [button frame]))
                            (setf size  (rect-union size frame))
                            (cons button frame))))
@@ -177,7 +177,7 @@
         (loop
            :for (object . frame) :in (list* enter pop (append ops digits))
            :do (setf (rect-size frame) (rect-size size)))
-        
+
         (setf (rect-origin (cdr pop)) (make-point :x 20 :y 20))
         (stack-up (mapcar (function cdr) (list pop (elt digits 1) (elt digits 4) (elt digits 7)))
                   :align :center :spacing 6)
@@ -333,7 +333,7 @@
 
 
 ;; [*window* setFrame:(NS:MAKE-NS-RECT 0 80 400 200) display:t animate:t]
-;; 
+;;
 ;; (defun update ()
 ;;   [[*window* contentView] setNeedsDisplay:YES]
 ;;   [*window* setViewsNeedDisplay:YES]

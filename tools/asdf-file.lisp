@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Reads ASDF files.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -17,19 +17,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -46,7 +46,7 @@
   (:shadow "DEPENDENCIES")
   (:export
    ;; Generating simple ASD files:
-   "MAKE-COMPONENTS" 
+   "MAKE-COMPONENTS"
    "GENERATE-ASD"
    ;; Reading and writing asd files:
    "FIND-ASD-FILES"
@@ -89,19 +89,19 @@ Generate simple .asd files:
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2012 - 2014
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 "))
@@ -130,7 +130,7 @@ License:
    (get-depends paths predefined-packages load-paths)))
 
 
-(defun gen-defsystem-form (name paths &key  description (version "0.0.0") 
+(defun gen-defsystem-form (name paths &key  description (version "0.0.0")
                                         author maintainer licence license
                                         (component-class :file)
                                         (predefined-packages '("COMMON-LISP"))
@@ -157,7 +157,7 @@ LOAD:-PATHS     A list of directory paths where the sources are searched in.
                                                     (read-source-header stream))))
                             paths))
            (authors (or author
-                        (enumerate (delete-duplicates 
+                        (enumerate (delete-duplicates
                                     (apply (function append)
                                            (mapcar (function header-authors)
                                                    headers))
@@ -167,7 +167,7 @@ LOAD:-PATHS     A list of directory paths where the sources are searched in.
                                     (mapcar (function header-licence) headers)
                                     :test (function string-equal)))))
            (description
-             (unsplit-string 
+             (unsplit-string
               (or (ensure-list description)
                   (mapcan
                    (lambda (header)
@@ -243,7 +243,7 @@ VANILLAP:  if true, then generate a simple, vanilla system.
                                                        text)))))
                                   (format
                                    nil "~A-~A-~A"
-                                   (cond 
+                                   (cond
                                      ((string-equal
                                        "International Allegro CL Enterprise Edition"
                                        (lisp-implementation-type))
@@ -270,7 +270,7 @@ VANILLAP:  if true, then generate a simple, vanilla system.
                 (defmethod asdf::output-files ((operation asdf::load-op)
                                                (c pjb-cl-source-file))
                   (output-files c))))))
-        
+
         `(,(gen-defsystem-form
             system-name
             (mapcar
@@ -596,7 +596,7 @@ asdf file at ASDF-SYSTEM-PATHNAME, unless such a file already exists.
 
           (map nil (function generate-test-system-for-system-at-path)
             (directory #P "~/src/public/lisp/**/*.asd"))
-          
+
           ) ;;progn
 
 ;;;; THE END ;;;;

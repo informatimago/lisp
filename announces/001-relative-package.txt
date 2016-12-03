@@ -43,7 +43,7 @@ package bar leaving them parentless?
 
 A parent-children relationship would be a run-time entity, while
 refering to another package using a relative *name* would be a
-read-time operation.  Do we need the former?  
+read-time operation.  Do we need the former?
 
 
 
@@ -101,7 +101,7 @@ Note: funny thing, `ccl` ignores ``*print-case*`` and escapes the
 dots in package names when there's a reader macro on ``#\.``.
 
 ::
-   
+
     cl-user> (ql:quickload :com.informatimago.common-lisp.lisp.relative-package)
     To load "com.informatimago.common-lisp.lisp.relative-package":
       Load 1 ASDF system:
@@ -131,7 +131,7 @@ dots in package names when there's a reader macro on ``#\.``.
     31
     relative-package> (in-package :cl-user)
     #<Package "COMMON-LISP-USER">
-    cl-user> 
+    cl-user>
 
 
 .. comment: THE END

@@ -22,7 +22,7 @@
       YE MO DA HO MI SE))
 
 .. |GENERATION-DATE| replace:: 2010-07-26 13:39:04
-      
+
 
 
 ..  (SETF (EXT:GETENV "MDI_ALTERNATIVE") "Middleware Device Interface")
@@ -224,10 +224,10 @@
 .. |TITLE|  replace:: |MDI_TITLE|
 .. |HEADER| replace:: |MDI_HEADER|
 
-.. comment 
+.. comment
     reStructuredText: http://docutils.sourceforge.net/docs/ref/rst/
     rst2pdf:          http://rst2pdf.googlecode.com/svn/trunk/doc/manual.txt
-    I use rst2pdf because it's simplier and more reliable that sphinx. 
+    I use rst2pdf because it's simplier and more reliable that sphinx.
 
 
 .. comment
@@ -235,19 +235,19 @@
     #########
     DOC TITLE
     #########
-    
+
     CHAPTER
     #######
-    
+
     Section
     =======
-    
+
     Subsection
     ----------
-    
+
     Subsubsection
     ^^^^^^^^^^^^^
-    
+
     Subsubsubsection
     ................
 
@@ -660,7 +660,7 @@ For the ``MDI-B``
        data stream of a specific ``MDI-C`` in the grid.
 
      - report an out-of-service medical device.
- 
+
   These actions, on the ``MDI-B`` operator interface are propagated to
   the relevant ``MDI-C``.
 
@@ -701,7 +701,7 @@ follow:
 For the ``MDI-C``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- Operating room environment. 
+- Operating room environment.
 - Intensive care room environment.
 - Any bed in a hospital, maternity, etc.
 - In telemedecine, near the patient.
@@ -731,7 +731,7 @@ The users will interact with the |MDI| system either at the hardware
 level (an operator pluging in a device), or indirectly, thru
 client/server applications such as HTML browsers or specific
 monitoring applications, or even indirectly thru applications using
-the PDMS. 
+the PDMS.
 
 Therefore the user environment is indeterminate, and may cover the
 whole range of available environments implementing a standard HTML
@@ -829,16 +829,16 @@ will be generated as various modules including:
 
 1. a web application module that may be configured in a ``MDI-C`` (in
    a grid configuration), or in a ``MDI-B`` (in a centralized
-   configuration). 
+   configuration).
 
 2. various components (.Net, Java, etc) that may be integrated in
    external applications.
 
 
 This will be a 'pull' module, that will get the data from the MDI-DB
-Database module, and display it.  
+Database module, and display it.
 
-.. note:: this means that in the grid configuration, 
+.. note:: this means that in the grid configuration,
           a `MDI-DB Module`_ must be configured in the
           ``MDI-C``, for the local data streams.
 
@@ -851,15 +851,15 @@ The hardware interfaces will depend on the deployment platforms.
 
 For the ``MDI-C`` units we will have:
 
-- several serial ports, 
+- several serial ports,
 
-- one or two ethernet interfaces, 
+- one or two ethernet interfaces,
 
-- USB ports, 
+- USB ports,
 
-- possibly analogical to digital conversion interfaces.  
+- possibly analogical to digital conversion interfaces.
 
-- possibly a VGA display for user interface (eg. for administrative 
+- possibly a VGA display for user interface (eg. for administrative
   tasks such as configuration and maintenance).
 
 - possibly a bluetooth interface.
@@ -867,9 +867,9 @@ For the ``MDI-C`` units we will have:
 
 The ``MDI-B`` units will have:
 
-- an ethernet interface, 
+- an ethernet interface,
 
-- possibly a VGA display for user interface (eg. for administrative 
+- possibly a VGA display for user interface (eg. for administrative
   tasks such as configuration and maintenance).
 
 Hardware interfaces will be used by specific modules upon specific
@@ -903,7 +903,7 @@ The software interfaces will depend on the modules configured.
 Internal Interfaces
 ------------------------------------------------------------
 
-Internally, the modules will communicate thru IPC.  
+Internally, the modules will communicate thru IPC.
 
 We could use local IPC (eg. memory sharing, message queues), but
 unless the performance constraints requires it, it will be preferable
@@ -922,7 +922,7 @@ interfaces will be given in the specification of each concerned module.
 
 .. comment
 
-    Externaly, the software interfaces will include API 
+    Externaly, the software interfaces will include API
     standard protocols such as HTTP (HTML, XML, etc), or specific library
     interfaces such as databases access protocols.
 
@@ -958,7 +958,7 @@ SNMP monitoring `REQ-2009`_ will be activated on two parts:
 - the Linux OS, to monitor its configuration (eg. network addresses),
   and its resource usage (disk space, memory space, processes).
   `REQ-2024`_
- 
+
 - the |MDI| system, to monitor its configuration (configured modules),
   and the state of the running modules (with statistics about message
   frequencies, database usage).
@@ -975,7 +975,7 @@ either from the network, or from their internal hard disk.  When a new
 version of the software (OS software, or |MDI| software) is available
 (from a centralized |MDI| software upgrade server), it may be
 downloaded and installed, either automatically or upon operator
-intervention. 
+intervention.
 
 We may consider FTP, TFTP, BOOTP, but SCP or SFTP (based on SSH) is
 preferable.
@@ -1013,7 +1013,7 @@ The protocol for the dataflow from ``MDI-C`` to ``MDI-B``
 ------------------------------------------------------------
 
 |FIXME| TBW
- 
+
 The ``MDI-C`` to ``MDI-B`` communication protocol is to be specified.
 
 This will be a specific client/server protocol.
@@ -1056,7 +1056,7 @@ and therefore it is possible that different IP addresses be assigned.
 We may consider using the MAC addresses to identify the ``MDI-C``
 boxes.
 
-.. comment 
+.. comment
 
     Notice also that in the case of using virtual machines, we may use
     several IP addresses per MDI box.  (Or we can also use iptables to
@@ -1112,7 +1112,7 @@ The configuration elements include:
 - the hardware ports that must be monitored for automatic probing and
   launch of the input modules,
 
-- the connections between the modules: 
+- the connections between the modules:
 
     - to what other module should a given module sends its processed
       data (it may be an internal module, or an external host/port
@@ -1163,10 +1163,10 @@ Input modules must tag the data they receive with context data including:
 - the time stamp (with a subsecond resolution).
 
 - for each data element which as a unit, the unit should be attached
-  to the raw value.  
+  to the raw value.
 
 In addition user specified context tags may be configured to be
-attached to data coming from this port or external device, such as 
+attached to data coming from this port or external device, such as
 Patient-ID, location, (GPS for mobile devices), entity (hospital,
 house) in the case of medical applications.
 
@@ -1260,7 +1260,7 @@ Some notes:
 - there should be a rollback feature, to fall back to some previous
   version if the upgrade doesn't work well.  The administrator may
   also choose to mask some version (which doesn't work for them) or
-  version range.  
+  version range.
 
 - the available modules and  versions may depend on the license option.
 
@@ -1286,7 +1286,7 @@ Web Monitoring Module
 ------------------------------------------------------------
 
 This module will allow monitoring  the internal workings of the |MDI|
-system thru a web API or interface.  
+system thru a web API or interface.
 
 The `Web Monitoring Module` will allow monitoring either the local |MDI|
 system, or the whole `grid` of |MDI| systems (showing then a global
@@ -1326,7 +1326,7 @@ device specific format to the common internal format.
 The common internal format may also wrap the original data into a
 BLOB, in particular in the cases where the external device provides
 the data message in a standard format (eg XML, HL7, EDI), and this
-data needs to be forwarded as-is to the downstream services. 
+data needs to be forwarded as-is to the downstream services.
 
 .. note:: there are various modes of data:
 
@@ -1347,10 +1347,10 @@ will then be able to check the unit and ensure unit consistency when
 converting or scaling the data.
 
 
-See also: 
-    - `MDI-C Input Module`_, 
-    - `Serial Port Input Module`_, 
-    - `USB Input Module`_, 
+See also:
+    - `MDI-C Input Module`_,
+    - `Serial Port Input Module`_,
+    - `USB Input Module`_,
     - `Ethernet Port Input Module`_,
     - `Analogical-Digital Input Module`_.
 
@@ -1373,7 +1373,7 @@ Ethernet Port Input Module
 |FIXME| TBW
 
 .. note:: There are external devices that don't use TCP/IP over
-          Ethernet, but proprietary protocols. 
+          Ethernet, but proprietary protocols.
 
 .. comment
     X10
@@ -1405,10 +1405,10 @@ procedures specific to each protocol and protocol version.
 If the external device is identified then the corresponding Input
 Module is activated, as well as the context rules (configuring the
 normalization in the `Normalization Module`, and the context tagging
-in the `Input Module`).  
+in the `Input Module`).
 
 Otherwise, new protocols may be searched from the central catalog
-(``MDI-B``) and installed.  
+(``MDI-B``) and installed.
 
 If there is no way to identify the external device, a message should
 be logged, and sent to some management module or console.
@@ -1458,7 +1458,7 @@ dynamically pluggable in external Input Modules.  The external Input
 Modules are specialized to drive a given interface.  The protocol plug
 ins may be specific to a given interface, or may be able to work over
 various interfaces, in which case they may be used by the
-corresponding Input Modules: 
+corresponding Input Modules:
 
 - `Serial Port Input Module`_
 - `USB Input Module`_
@@ -1473,7 +1473,7 @@ Catalog Management Module
 
 The protocol definition files are managed by a catalog manager.  These
 files are used to generate input modules dynamically.  The input
-modules are kept in a cache by the catalog manager.  
+modules are kept in a cache by the catalog manager.
 
 New protocol definitions (and new versions of the software) are
 searched and installed at boot-time.
@@ -1568,7 +1568,7 @@ Real Time Alarm Management Module
 
 The `Real Time Alarm Management Module` will receive the data flows
 from the `Normalization Module`_, and will check that the data is
-within configured ranges.  
+within configured ranges.
 
 When an alarm occurs, the `Real Time Alarm Management Module` will
 send messages to the configured destinations, which may include:
@@ -1580,7 +1580,7 @@ send messages to the configured destinations, which may include:
 - execution of a configured program.
 
 
-An alarm may be active for a certain time.  
+An alarm may be active for a certain time.
 
 A configuration parameter will indicate whether a message must be sent
 periodically during the alarm, and whether a message must be sent when
@@ -1607,7 +1607,7 @@ Data Stream Management Module
 
 The Data Stream Management Module will receive the data from the
 `Normalization Module`_, and will dispatch it to the `Buffer Database
-Module`_ and to the 'push' `Output Modules`_.  
+Module`_ and to the 'push' `Output Modules`_.
 
 Moreover, it case of network or other failure, the Data Stream
 Management Module will resend the data that have been kept in the
@@ -1638,7 +1638,7 @@ the resending specifying the time range to resend.
     must resend.
 
 OR:
- 
+
     The `Data Stream Management Module` gets acknowledges of reception
     from the output modules and knows what output modules needs
     historical data, so that when it gets NAK, it can retry sending
@@ -1669,7 +1669,7 @@ database so that any database may be configured.
 
 Modules requiring processed data from the `Buffer Database` must go thru
 the `Buffer Database Module`_ to access the data, so that the data is
-sent thru the same channels as when sent normally. 
+sent thru the same channels as when sent normally.
 .. comment    Should we specify it or is it a design decision?
 
 
@@ -1687,7 +1687,7 @@ MDI-DB Module
 _`MDI-DB Database`
 
 A database will be used to store the archived data messages, so that
-they can be further processed and retreived. 
+they can be further processed and retreived.
 
 The `MDI-DB Module`_ will store the archived data in a persitent
 database.  It may be a local database, or a remote database on a
@@ -1729,7 +1729,7 @@ Web Data Output Module
 ------------------------------------------------------------
 
 This module is a 'pull' modules that displays the selected data streams
-on a web page. 
+on a web page.
 
 This module may work from the `Buffer Database Module`_ or from the
 `MDI-DB Module`_.
@@ -1788,7 +1788,7 @@ Processing Modules
 ------------------------------------------------------------
 
 These modules implement specific algorithms to process the data in the
-database (implementing moving averages, integrations, sums, etc).  
+database (implementing moving averages, integrations, sums, etc).
 
 Processing Modules may be configured to process the new data that is
 stored into the `MDI-DB Module`.
@@ -1919,7 +1919,7 @@ Requirement 0000 -- Standard and open platform
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -1960,7 +1960,7 @@ Requirement 1001 -- SYSTEM - Drivers for the MDI-C hardware
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -2003,7 +2003,7 @@ Requirement 1002 -- SYSTEM - Minimal Memory Use
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -2043,7 +2043,7 @@ Requirement 1003 -- SYSTEM - Multithreading Scheduler
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -2084,7 +2084,7 @@ Requirement 1004 -- SYSTEM - Remote configuration
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -2126,7 +2126,7 @@ Requirement 1005 -- SYSTEM - Monitoring of the system
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -2175,7 +2175,7 @@ Requirement 1006 -- SYSTEM - PCMCIA support
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -2227,7 +2227,7 @@ Requirement 1007 -- SYSTEM - 3G Communication Network Support
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -2271,7 +2271,7 @@ Requirement 1008 -- SYSTEM - Serial Line Support
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -2312,7 +2312,7 @@ Requirement 1009 -- SYSTEM - Analogical/Digital Conversion
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -2353,7 +2353,7 @@ Requirement 1010 -- SYSTEM - USB Device Support
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -2402,7 +2402,7 @@ Requirement 1011 -- SYSTEM - Video Capture Support
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -2442,7 +2442,7 @@ Requirement 1012 -- SYSTEM - Management of required libraries
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -2483,7 +2483,7 @@ Requirement 1037 -- Handling of failures
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -2526,7 +2526,7 @@ Requirement 2001 -- Automatic Identification of Devices
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -2567,14 +2567,14 @@ Requirement 2002 -- Collect Data from Various Devices
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
 
 Collecting data from various devices, using the device specific
 protocols and medium (serial lines RS-232, RS-422; ethernet RJ-45;
-analogical inputs). 
+analogical inputs).
 
 
 
@@ -2609,12 +2609,12 @@ Requirement 2003 -- Store Raw Data in a Message Log
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
 
-Storage of the raw data in a message log, for audit. 
+Storage of the raw data in a message log, for audit.
 
 
 
@@ -2649,7 +2649,7 @@ Requirement 2004 -- Tag of the data with context information
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -2691,7 +2691,7 @@ Requirement 2005 -- Normalization of the data
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -2731,7 +2731,7 @@ Requirement 2006 -- Protect the captured data against network failures
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -2772,7 +2772,7 @@ Requirement 2007 -- Store of the data in a centralized database for exploitation
 | Use case   |                                                              |
 +------------+--------------------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -2812,7 +2812,7 @@ Requirement 2008 -- Forward of the data to external systems
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -2854,7 +2854,7 @@ Requirement 2009 -- Monitor of the system via standard protocol
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -2894,7 +2894,7 @@ Requirement 2010 -- Configure the system
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -2935,7 +2935,7 @@ Requirement 2011 -- Configure the application
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -2976,7 +2976,7 @@ Requirement 2012 -- Manage software upgrades
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -3016,7 +3016,7 @@ Requirement 2013 -- Real-time Alarms on Data Conditions
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -3057,7 +3057,7 @@ Requirement 2014 -- Collect Device Usage and Failure Statistics
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -3098,7 +3098,7 @@ Requirement 2015 -- Configuration Command Language and Shell
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -3142,7 +3142,7 @@ Requirement 2016 -- Configuration Web Service
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -3150,7 +3150,7 @@ Requirement 2016 -- Configuration Web Service
 The configuration and monitoring command language will be exported as
 a web service, to be used by remote configuration application (This is
 a API that can be used to develop remote configuration user
-interfaces, like in the ReCOM).  
+interfaces, like in the ReCOM).
 
 
 
@@ -3185,7 +3185,7 @@ Requirement 2017 -- Configuration Web Application
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -3229,7 +3229,7 @@ Requirement 2018 -- Configuration Thru SNMP
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -3271,7 +3271,7 @@ Requirement 2019 -- DashBoard
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -3280,9 +3280,9 @@ The dash board component will provide  user interfaces to exploit the
 data streams.
 
 This will be a 'pull' module, that will get the data from the MDI-DB
-Database module, and display it.  
+Database module, and display it.
 
-.. note:: this means that in the grid configuration, 
+.. note:: this means that in the grid configuration,
           a `MDI-DB Module`_ must be configured in the
           ``MDI-C``, for the local data streams.
 
@@ -3319,7 +3319,7 @@ Requirement 2020 -- DashBoard Implementation Environment
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -3329,7 +3329,7 @@ and will be generated as various modules including:
 
 1. a web application module that may be configured in a ``MDI-C`` (in
    a grid configuration), or in a ``MDI-B`` (in a centralized
-   configuration). 
+   configuration).
 
 2. various components (.Net, Java, etc) that may be integrated in
    external applications.
@@ -3367,27 +3367,27 @@ Requirement 2021 -- Context Information provided by the MDI-P barcode reader
 | Use case   |                                                          |
 +------------+----------------------------------------------------------+
 
-        
+
 *Description:*
 
 
 
 The `Input Modules`_  will have to read the context information
 provided by the ``MDI-P`` barcode reader and attach it to the data
-flow they process. 
+flow they process.
 
 .. warning::
 
     There will be a single ``MDI-P`` box with a single barcode reader
     connected to a ``MDI-C``, and therefore it must be identified to
-    which device the barcode read is meant for.  
+    which device the barcode read is meant for.
 
 The proposed heuristic is that the barcodes read "just" after having
 plugged in a new device correspond to it.  (Ie. expect barcodes for a
 few minutes after a device is plugged-in).
 
 Another solution would be to have a display (LEDs, or LED screen) on
-the ``MDI-P``, along with a selector button, so that the `Input Modules`_ 
+the ``MDI-P``, along with a selector button, so that the `Input Modules`_
 may send the list of devices connected, to the ``MDI-P`` and
 the selector button can be used to select the device about which the
 barcode is read.
@@ -3425,7 +3425,7 @@ Requirement 2022 -- Inter Module Communication Protocol
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -3471,12 +3471,12 @@ Requirement 2023 -- OS Configured with NTP for Time Synchronization
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
 
-The OS must be configured to use NTP to synchronize its clock. 
+The OS must be configured to use NTP to synchronize its clock.
 
 The |MDI| will get sub-second real time (wall clock) from the kernel,
 to synchronize the real-time data streams.
@@ -3514,7 +3514,7 @@ Requirement 2024 -- OS Monitoring with SNMP
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -3556,7 +3556,7 @@ Requirement 2025 -- |MDI| System Monitoring with SNMP
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -3598,7 +3598,7 @@ Requirement 2026 -- OS File Transfer Server
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -3612,7 +3612,7 @@ either from the network, or from their internal hard disk.  When a new
 version of the software (OS software, or |MDI| software) is available
 (from a centralized |MDI| software upgrade server), it may be
 downloaded and installed, either automatically or upon operator
-intervention. 
+intervention.
 
 We may consider FTP, TFTP, BOOTP, but SCP or SFTP (based on SSH) is
 preferable.
@@ -3650,7 +3650,7 @@ Requirement 2027 -- MDI-C to MDI-B Inter Module Communication Protocol
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -3702,7 +3702,7 @@ Requirement 2028 -- Configuration Management
 | Use case   |                                                    |
 +------------+----------------------------------------------------+
 
-        
+
 *Description:*
 
 
@@ -3808,7 +3808,7 @@ rebooting.
 
 The |MDI| system must have a command shell.  (There is the Linux
 command shell, but for configuration and monitoring, the |MDI|
-software may provide its own commands or command shell. 
+software may provide its own commands or command shell.
 
 The |MDI| system should provide hooks to allow adding "plug-ins" or
 additionnal modules.  This means that it should define internal
@@ -3863,7 +3863,7 @@ output network bandwidth.
 
 In any case, it must be able to handle:
 
-- at least 1024 input modules (``MDI-C`` and ethernet medical devices), 
+- at least 1024 input modules (``MDI-C`` and ethernet medical devices),
 - at least 1024 output modules of the web service or http server kind,
 - at least   16 output modules of the database kind.
 
@@ -3876,7 +3876,7 @@ The minimum hardware configuration, ie. ``MDI-C`` will be:
 
 - Processor: Intel Core 2 Duo, 1.6 GHz
 - RAM:         1 GB
-- Hard disk: 100 GB 
+- Hard disk: 100 GB
 
 
 The configurations for the ``MDI-B`` will be server-level, and adapted

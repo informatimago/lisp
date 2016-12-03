@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
-;;;;    
-;;;;    
+;;;;
+;;;;
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -59,7 +59,7 @@
                           "*READ-SUPPRESS*" "*READTABLE*")
   (:shadowing-import-from "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.PACKAGE"
                           "SYMBOL"
-                          "SYMBOLP" "MAKE-SYMBOL" "SYMBOL-NAME" "SYMBOL-PACKAGE" 
+                          "SYMBOLP" "MAKE-SYMBOL" "SYMBOL-NAME" "SYMBOL-PACKAGE"
                           "SYMBOL-VALUE" "SYMBOL-FUNCTION" "SYMBOL-PLIST"
                           "BOUNDP" "FBOUNDP"
                           "KEYWORD" "KEYWORDP"
@@ -73,7 +73,7 @@
                           "*PACKAGE*"
                           "WITH-PACKAGE-ITERATOR"
                           "DO-SYMBOLS" "DO-EXTERNAL-SYMBOLS" "DO-ALL-SYMBOLS"
-                          "DEFPACKAGE" "IN-PACKAGE" 
+                          "DEFPACKAGE" "IN-PACKAGE"
                           "PACKAGE-ERROR" "PACKAGE-ERROR-PACKAGE"))
 (in-package  "RP-USER")
 
@@ -81,7 +81,7 @@
 
 (defparameter *sources*
   (sort (remove-if-not (function alpha-char-p)
-                       (directory "/home/pjb/works/patchwork/pw-src/**/*.lisp") 
+                       (directory "/home/pjb/works/patchwork/pw-src/**/*.lisp")
                        :key (lambda (path) (aref (pathname-name path) 0)))
         (function string<) :key (function namestring)))
 (com.informatimago.xref.reader-setup:setup)
@@ -216,30 +216,30 @@
 
 
 (defparameter *read-packages*
-  '("C-GET-NOTE-SLOTS" 
-    "C-GET-SELECTIONS" 
-    "C-PATCH-ACCUM" 
-    "C-PATCH-BUFFER" 
-    "C-PATCH-CHORD-LINE" 
-    "C-PATCH-FILE-BUFFER" 
-    "C-PATCH-LIST-EDITOR" 
-    "C-PW-MIDI-IN" 
-    "C-PW-SEND-MIDI-NOTE" 
-    "C-PW-TEXT-BOX" 
-    "C-PW-TEXT-INPUT" 
-    "CCL" 
-    "CLENI" 
-    "CLPF-Util" 
-    "COMBINATORIAL-INTERV" 
-    "COMMON-LISP" 
-    "COMMON-LISP-USER" 
-    "EPW" 
-    "FFI" 
-    "KEYWORD" 
-    "MIDI" 
-    "MIDISHARE" 
-    "PATCH-WORK" 
-    "PW" 
+  '("C-GET-NOTE-SLOTS"
+    "C-GET-SELECTIONS"
+    "C-PATCH-ACCUM"
+    "C-PATCH-BUFFER"
+    "C-PATCH-CHORD-LINE"
+    "C-PATCH-FILE-BUFFER"
+    "C-PATCH-LIST-EDITOR"
+    "C-PW-MIDI-IN"
+    "C-PW-SEND-MIDI-NOTE"
+    "C-PW-TEXT-BOX"
+    "C-PW-TEXT-INPUT"
+    "CCL"
+    "CLENI"
+    "CLPF-Util"
+    "COMBINATORIAL-INTERV"
+    "COMMON-LISP"
+    "COMMON-LISP-USER"
+    "EPW"
+    "FFI"
+    "KEYWORD"
+    "MIDI"
+    "MIDISHARE"
+    "PATCH-WORK"
+    "PW"
     "SCHEDULER"))
 
 
@@ -250,13 +250,13 @@
     "C-PW-MIDI-IN"
     "C-GET-NOTE-SLOTS"
     "C-GET-SELECTIONS"
-    "CLENI" 
+    "CLENI"
     "COMBINATORIAL-INTERV"
-    "MIDISHARE" 
+    "MIDISHARE"
     "USER-ABSTRACTION"
     "USER-COMP-ABSTR"
     "C-LIST-ITEM-H"
-    "C-LIST-ITEM" 
+    "C-LIST-ITEM"
     "C-TABLE-WINDOW-H"
     "C-TABLE-WINDOW"
     "C-PATCH-LIST-EDITOR"
@@ -268,7 +268,7 @@
     "USER-SUPPLIED-IN-OUTS"
     "LeLisp-macros"
     "PW-STYPE"
-    "EPW" 
+    "EPW"
     "CLPF-Util"
     "popUp-menu"
     "MIDI"

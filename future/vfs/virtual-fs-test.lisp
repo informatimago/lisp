@@ -612,7 +612,7 @@
 (in-package "VFS-USER")
 (INSTALL-PATHNAME-READER-MACRO)
 
-(progn 
+(progn
   (vfs::create-file-at-path #P"HOME:TEST.TEXT")
   (vfs::create-file-at-path #P"HOME:EXAMPLE.TEXT")
   (vfs::create-new-version (vfs::file (vfs::file-entry #P"HOME:EXAMPLE.TEXT")))
@@ -688,7 +688,7 @@
                           :if-exists :new-version
                           :if-does-not-exist :create))
   (write-line ";;;; -*- mode:lisp -*-" *s*)
-  (write-string (prin1-to-string '(defun test (arg) 
+  (write-string (prin1-to-string '(defun test (arg)
                                    (princ "Hello Test!") (terpri)
                                    (princ arg) (terpri)
                                    (princ "Done here." (terpri)

@@ -1,15 +1,15 @@
-all:  
+all:
 	@echo "# choose:"
 	@echo "make linux"
 
 linux:objc.lisp
 
 INCLUDES= -I. -I/usr/lib/gcc/x86_64-linux-gnu/4.7/include/
-OPTS=-fPIC -g -c  
+OPTS=-fPIC -g -c
 
 
 objc.lisp:objc.i Makefile
-	swig $(INCLUDES) -Dobjc_EXPORT=extern -cffi -generate-typedef -swig-lisp objc.i 
+	swig $(INCLUDES) -Dobjc_EXPORT=extern -cffi -generate-typedef -swig-lisp objc.i
 	( sed \
 	 	-e 1i\\ -e '(in-package "COM.INFORMATIMAGO.OBJC.GNU")' \
 		-e 's/&body/cl:&/g' \

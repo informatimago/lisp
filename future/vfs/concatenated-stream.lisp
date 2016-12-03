@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    This file defines the concatenated stream operators.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    GPL
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software; you can redistribute it and/or
 ;;;;    modify it under the terms of the GNU General Public License
 ;;;;    as published by the Free Software Foundation; either version
 ;;;;    2 of the License, or (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be
 ;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
 ;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 ;;;;    PURPOSE.  See the GNU General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU General Public
 ;;;;    License along with this program; if not, write to the Free
 ;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
@@ -48,7 +48,7 @@
   (dolist (stream streams)
     (unless (input-stream-p stream)
       (error (make-condition
-              'simple-type-error 
+              'simple-type-error
               :datum stream
               :expected-type 'stream
               :format-control "Stream is not an input stream"))))
@@ -60,22 +60,22 @@
            (check-stream-type concatenated-stream)))
 
 
-(defun !concatenated-read-element (read-element 
+(defun !concatenated-read-element (read-element
                                    stream eof-error-p eof-value recursive-p)
   (let ((current (first (%concatenated-stream-streams stream))))
     (if (null current)
         (eof-error stream eof-error-p eof-value)
-        (let ((element (multiple-value-list 
+        (let ((element (multiple-value-list
                         (funcall read-element current nil stream recursive-p))))
           (cond
             ((eq (car element) stream)
              (pop (%concatenated-stream-streams stream))
-             (!concatenated-read-element 
+             (!concatenated-read-element
               read-element stream eof-error-p eof-value recursive-p))
             ((second element)
              (pop (%concatenated-stream-streams stream))
              (multiple-value-bind (line missing-newline-p)
-                 (!concatenated-read-element 
+                 (!concatenated-read-element
                   read-element stream eof-error-p eof-value recursive-p)
                (values (concatenate 'string (first element) line)
                        missing-newline-p)))
@@ -84,10 +84,10 @@
 
 
 (define-stream-methods concatenated-stream
-    (read-byte         (!concatenated-read-element 
+    (read-byte         (!concatenated-read-element
                         (lambda (s e v r) (declare (ignore r)) (read-byte s e v))
                         stream eof-error-p eof-value nil))
-  (read-char         (!concatenated-read-element 
+  (read-char         (!concatenated-read-element
                       (function read-char)
                       stream eof-error-p eof-value recursive-p))
   (read-char-no-hang (!concatenated-read-element
@@ -102,7 +102,7 @@
          (push (make-string-input-stream (string character))
                (%concatenated-stream-streams stream))
          (unread-char character current))))
-  (read-line         (!concatenated-read-element 
+  (read-line         (!concatenated-read-element
                       (lambda (s e v r) (declare (ignore r)) (read-line s e v))
                       stream eof-error-p eof-value recursive-p))
   (read-sequence

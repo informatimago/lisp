@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    The tests for index-set.lisp
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -60,7 +60,7 @@
                             (make-range :first 10 :last 20)))
   (assert-true (equal-range (make-range :start 0 :end -1)
                             (make-range :first 0 :last -1)))
-  
+
   (check = (range-start (make-range :start 1 :count 3)) 1)
   (check = (range-last  (make-range :start 1 :count 3)) 3)
   (check = (range-end   (make-range :start 1 :count 3)) 4)
@@ -108,7 +108,7 @@
 
 
 (define-test test/range/complement ()
-  
+
   (check equal-ranges
         (complement-ranges (vector) 0 100)
         (vector (make-range :start 0 :end 100)))
@@ -120,7 +120,7 @@
   (check equal-ranges
         (complement-ranges (vector (make-range :start 0 :end 90)) 0 100)
         (vector (make-range :start 90 :end 100)))
-  
+
   (check equal-ranges
         (complement-ranges (vector (make-range :start 10 :end 100)) 0 100)
         (vector (make-range :start 0 :end 10)))

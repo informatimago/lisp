@@ -5,10 +5,10 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Implements a codecs for AppleSingle and AppleDouble file formats.
 ;;;;    http://kaiser-edv.de/documents/AppleSingle_AppleDouble.pdf
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -16,19 +16,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2013 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -67,7 +67,7 @@
    "APPLE-FILE-AFP-MULTI-USER"
    "APPLE-FILE-AFP-INVISIBLE"
    "APPLE-FILE-AFP-DIRECTORY-ID"))
-  
+
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.APPLE-FILE.APPLE-FILE")
 
 
@@ -102,14 +102,14 @@
   directory-id)
 
 (defparameter *symbolic-entry-ids* #(nil
-                                     :data-fork-id 
+                                     :data-fork-id
                                      :resource-fork-id
                                      :real-name
                                      :comment
                                      :icon-b&w
                                      :icon-color
                                      nil
-                                     :file-dates-info 
+                                     :file-dates-info
                                      :finder-info
                                      :macintosh-file-info
                                      :prodos-file-info
@@ -169,13 +169,13 @@
 (defstruct finder-info
   type
   creator
-  flags 
+  flags
   location.y
   location.x
-  folder 
-  icon-id 
-  script 
-  xflags 
+  folder
+  icon-id
+  script
+  xflags
   comment-id
   put-away-folder)
 
@@ -580,7 +580,7 @@
 ;;                                                     (header-entries (with-open-file (stream (first (directory  #P"/home/pjb/works/patchwork/examples/B/._*.*"))
 ;;                                                                                             :element-type 'octet)
 ;;                                                                       (read-header stream :apple-double)))
-;; 
+;;
 ;;                                                     :key (function entry-kind)))))))
 ;;   (mapcar (lambda (resources)
 ;;               (mapcar (lambda (resource)
@@ -593,7 +593,7 @@
 ;; ((#S(resource :type 1179796804 :id 2 :name nil :attributes nil :data #(0 1 0 4 9 0 1 0 0 0))
 ;;     #S(resource :type 1179796804 :id 3 :name nil :attributes nil :data #(0 0 6 77 111 110 97 99 111)))
 ;;  (#S(resource :type 1297109842 :id 1005 :name nil :attributes nil :data #(0 9 77 111 110 97 99 111 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 6 0 8 0 44 0 6 1 240 2 168 0 44 0 6 1 240 2 168 0 0 0 0 0 0 0 188 0 0 0 188 0 0 0 0 1 0))))
-;; 
+;;
 ;;  (map 'string 'code-char #(0 0 6 77 111 110 97 99 111))
 
 
@@ -745,20 +745,20 @@ FORK:   (member :info :data :resource)
 (defun and-format-signature (creator) (values creator (format-signature creator)))
 (defun location-x-y (finfo) (cons (finder-info-location.x finfo) (finder-info-location.y finfo)))
 
-(define-attribute apple-file-real-name              :real-name           "RETURN: NIL or the real name string in the APPLE-FILE.")                                                                  
-(define-attribute apple-file-comment                :comment             "RETURN: NIL or the comment string in the APPLE-FILE.")                                                                   
-(define-attribute apple-file-icon-b&w               :icon-b&w            "RETURN: NIL or the black & white icon data (byte vector) in the APPLE-FILE.")                                            
-(define-attribute apple-file-icon-color             :icon-color          "RETURN: NIL or the color icon data (byte vector) in the APPLE-FILE.")                                                    
-(define-attribute apple-file-creation-date          :file-dates-info     "RETURN: NIL or the creation date (lisp universal-time) in the APPLE-FILE."     file-creation-date)                       
-(define-attribute apple-file-modification-date      :file-dates-info     "RETURN: NIL or the modification date (lisp universal-time) in the APPLE-FILE." file-modification-date)                   
-(define-attribute apple-file-backup-date            :file-dates-info     "RETURN: NIL or the backup date (lisp universal-time) in the APPLE-FILE."       file-backup-date)                         
-(define-attribute apple-file-access-date            :file-dates-info     "RETURN: NIL or the access date (lisp universal-time) in the APPLE-FILE."       file-access-date)                         
-(define-attribute apple-file-finder-creator         :finder-info         "RETURN: NIL or the creator (as integer and as string) of the APPLE-FILE."      finder-info-creator and-format-signature) 
-(define-attribute apple-file-finder-type            :finder-info         "RETURN: NIL or the type (as integer and as string) of the APPLE-FILE."         finder-info-type    and-format-signature) 
-(define-attribute apple-file-finder-location        :finder-info         "RETURN: NIL or the X, Y coordinates of the icon of the APPLE-FILE."            location-x-y)                         
-(define-attribute apple-file-finder-icon-id         :finder-info         "RETURN: NIL or the icon ID of the APPLE-FILE."                                 finder-info-icon-id)                      
-(define-attribute apple-file-finder-folder          :finder-info         "RETURN: NIL or the folder ID of the APPLE-FILE."                               finder-info-folder)                       
-(define-attribute apple-file-finder-put-away-folder :finder-info         "RETURN: NIL or the put away folder ID of the APPLE-FILE."                      finder-info-put-away-folder)              
+(define-attribute apple-file-real-name              :real-name           "RETURN: NIL or the real name string in the APPLE-FILE.")
+(define-attribute apple-file-comment                :comment             "RETURN: NIL or the comment string in the APPLE-FILE.")
+(define-attribute apple-file-icon-b&w               :icon-b&w            "RETURN: NIL or the black & white icon data (byte vector) in the APPLE-FILE.")
+(define-attribute apple-file-icon-color             :icon-color          "RETURN: NIL or the color icon data (byte vector) in the APPLE-FILE.")
+(define-attribute apple-file-creation-date          :file-dates-info     "RETURN: NIL or the creation date (lisp universal-time) in the APPLE-FILE."     file-creation-date)
+(define-attribute apple-file-modification-date      :file-dates-info     "RETURN: NIL or the modification date (lisp universal-time) in the APPLE-FILE." file-modification-date)
+(define-attribute apple-file-backup-date            :file-dates-info     "RETURN: NIL or the backup date (lisp universal-time) in the APPLE-FILE."       file-backup-date)
+(define-attribute apple-file-access-date            :file-dates-info     "RETURN: NIL or the access date (lisp universal-time) in the APPLE-FILE."       file-access-date)
+(define-attribute apple-file-finder-creator         :finder-info         "RETURN: NIL or the creator (as integer and as string) of the APPLE-FILE."      finder-info-creator and-format-signature)
+(define-attribute apple-file-finder-type            :finder-info         "RETURN: NIL or the type (as integer and as string) of the APPLE-FILE."         finder-info-type    and-format-signature)
+(define-attribute apple-file-finder-location        :finder-info         "RETURN: NIL or the X, Y coordinates of the icon of the APPLE-FILE."            location-x-y)
+(define-attribute apple-file-finder-icon-id         :finder-info         "RETURN: NIL or the icon ID of the APPLE-FILE."                                 finder-info-icon-id)
+(define-attribute apple-file-finder-folder          :finder-info         "RETURN: NIL or the folder ID of the APPLE-FILE."                               finder-info-folder)
+(define-attribute apple-file-finder-put-away-folder :finder-info         "RETURN: NIL or the put away folder ID of the APPLE-FILE."                      finder-info-put-away-folder)
 (define-attribute apple-file-macintosh-protected    :macintosh-file-info "RETURN: NIL or the protected flag of the APPLE-FILE."                          file-protected)
 (define-attribute apple-file-macintosh-locked       :macintosh-file-info "RETURN: NIL or the locked flag of the APPLE-FILE."                             file-locked)
 (define-attribute apple-file-prodos-access          :prodos-file-info    "RETURN: NIL or the PRODOS access code of the APPLE-FILE."                      file-access)
@@ -782,30 +782,30 @@ FORK:   (member :info :data :resource)
   (format t "~A attributes:~%" path)
   (with-open-file (stream path :element-type 'octet)
     (let ((header (read-header stream :apple-double)))
-      (dolist (attribute '(apple-file-real-name              
-                           apple-file-comment                
-                           apple-file-icon-b&w               
-                           apple-file-icon-color             
-                           apple-file-creation-date          
-                           apple-file-modification-date      
-                           apple-file-backup-date            
-                           apple-file-access-date            
-                           apple-file-finder-creator         
-                           apple-file-finder-type            
-                           apple-file-finder-location        
-                           apple-file-finder-icon-id         
-                           apple-file-finder-folder          
-                           apple-file-finder-put-away-folder 
-                           apple-file-macintosh-protected    
-                           apple-file-macintosh-locked       
-                           apple-file-prodos-access          
-                           apple-file-prodos-type            
-                           apple-file-prodos-auxiliary-type  
-                           apple-file-msdos-attributes       
-                           apple-file-afp-backup-needed      
-                           apple-file-afp-system             
-                           apple-file-afp-multi-user         
-                           apple-file-afp-invisible          
+      (dolist (attribute '(apple-file-real-name
+                           apple-file-comment
+                           apple-file-icon-b&w
+                           apple-file-icon-color
+                           apple-file-creation-date
+                           apple-file-modification-date
+                           apple-file-backup-date
+                           apple-file-access-date
+                           apple-file-finder-creator
+                           apple-file-finder-type
+                           apple-file-finder-location
+                           apple-file-finder-icon-id
+                           apple-file-finder-folder
+                           apple-file-finder-put-away-folder
+                           apple-file-macintosh-protected
+                           apple-file-macintosh-locked
+                           apple-file-prodos-access
+                           apple-file-prodos-type
+                           apple-file-prodos-auxiliary-type
+                           apple-file-msdos-attributes
+                           apple-file-afp-backup-needed
+                           apple-file-afp-system
+                           apple-file-afp-multi-user
+                           apple-file-afp-invisible
                            apple-file-afp-directory-id))
         (let ((name   (subseq (string-downcase attribute) #.(length "apple-file-")))
               (values (multiple-value-list (funcall attribute header))))
@@ -815,10 +815,10 @@ FORK:   (member :info :data :resource)
         (dolist (resources resources)
           (format t "Resource type: ~A" (format-signature (resource-type (first resources))))
           (if (string= "STR " (format-signature (resource-type (first resources))))
-  
+
             (dolist (resource resources)
               (format t "~&    ~A[~A]~@[(~A)~]: ~S~%" (resource-id resource) (length (resource-data resource)) (resource-name resource)
-                      (map 'string 'code-char (subseq (resource-data resource) 1))))          
+                      (map 'string 'code-char (subseq (resource-data resource) 1))))
             (dolist (resource resources)
               (format t " ~A[~A]~@[(~A)~]" (resource-id resource) (length (resource-data resource)) (resource-name resource))))
           (terpri)))))
@@ -845,21 +845,21 @@ FORK:   (member :info :data :resource)
 ;;     (dolist (entry (header-entries header))
 ;;       (print (entry-kind entry))
 ;;       (print (read-entry-data stream entry)))))
-;; 
+;;
 ;; (with-open-file (stream #P"/home/pjb/works/patchwork/examples/B/._%deÌsordre"
 ;;                         :element-type 'octet)
 ;;    (read-header stream :apple-double))
-;; 
+;;
 ;; ;; (format-signature 1413830740)
 ;; ;; "TEXT"
 ;; ;; (format-signature 1128483890)
 ;; ;; "CCL2"
-;; 
-;; 
+;;
+;;
 ;; #S(header :kind :apple-double :magic 333319 :version 131072
 ;;           :entries (#S(entry :kind :finder-info :id 9 :offset 50 :length 3760
 ;;                              :decoded #S(finder-info :type 1413830740 :creator 1128483890 :flags (:has-been-inited t :label nil) :location.y -1 :location.x -1 :folder 0 :icon-id 0 :script 0 :xflags 0 :comment-id 0 :put-away-folder 23779))
-;;                       
+;;
 ;;                       #S(entry :kind :resource-fork-id :id 2 :offset 3810 :length 286
 ;;                                :decoded #(0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 30 84 104 105 115 32 114 101 115 111 117 114 99 101 32 102 111 114 107 32 105 110 116 101 110 116 105 111 110 97 108 108 121 32 108 101 102 116 32 98 108 97 110 107 32 32 32 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 30 0 0 0 0 0 0 0 0 0 28 0 30 255 255))))
 

@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    See :documentation of package below.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2006 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -116,7 +116,7 @@ See the source file for details.
 ;;       direct-access-sequence
 ;;       sequential-access-sequence
 
-   
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -222,12 +222,12 @@ See the source file for details.
 (define-forward replace
     (sequence-1 sequence-2 &key (start1 0) (end1 nil) (start2 0) (end2 nil)))
 
-(defmethod-and-forward substitute    nsubstitute 
+(defmethod-and-forward substitute    nsubstitute
   (newitem olditem (self  sequential-access-sequence)
            &key (from-end nil) (test (function eql)) test-not
            (start 0) (end nil) (count nil) (key nil)))
- 
-(defmethod-and-forward substitute-if nsubstitute-if 
+
+(defmethod-and-forward substitute-if nsubstitute-if
   (newitem olditem (self  sequential-access-sequence)
            &key (from-end nil) (test (function eql)) test-not
            (start 0) (end nil) (count nil) (key nil)))
@@ -331,10 +331,10 @@ See the source file for details.
   (:documentation "A cursor on a sequential access sequence."))
 (defgeneric sas-cursor-copy (self)
   (:documentation
-   "RETURN: a copy of the cursor. 
+   "RETURN: a copy of the cursor.
         Calling (sas-cursor-next self) won't change the copy."))
 (defgeneric sas-cursor-next (self)
-  (:documentation "RETURN:  the next cursor. 
+  (:documentation "RETURN:  the next cursor.
          May modify self, or may return a new object."))
 (defgeneric sas-cursor-end-p  (self)
   (:documentation
@@ -468,13 +468,13 @@ POST:   (not (sas-cursor-end-p self))"))
 (define-forward replace
     (sequence-1 sequence-2 &key (start1 0) (end1 nil)(start2 0) (end2 nil)))
 
-(defmethod-and-forward substitute    nsubstitute 
+(defmethod-and-forward substitute    nsubstitute
   (newitem olditem (self  sequential-access-sequence)
            &key (from-end nil) (test (function eql)) test-not
            (start 0) (end nil) (count nil) (key nil))
   )
- 
-(defmethod-and-forward substitute-if nsubstitute-if 
+
+(defmethod-and-forward substitute-if nsubstitute-if
   (newitem olditem (self  sequential-access-sequence)
            &key (from-end nil) (test (function eql)) test-not
            (start 0) (end nil) (count nil) (key nil))

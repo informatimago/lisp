@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    This is a C preprocessor.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -299,7 +299,7 @@ RETURN: the token text; the end position."
   ;; all normal integer and floating point constants.
   ;; 0xE+12 is a preprocessing number, not 0xE + 12.
   ;; We've already checked for /.[0-9]/ or /[0-9]/
-  (loop 
+  (loop
     :with text := (line-text line)
     :with end := (if (and (char= #\. (aref text start))
                           (< (1+ start) (length text))
@@ -471,36 +471,36 @@ RETURN: the token text; the end position."
 
 ;; The preprocessor is greedy: a+++++b --> a ++ ++ + b
 ;; even when a ++ + ++ b could be legal c but not a ++ ++ + b.
-;; 
-;; 
+;;
+;;
 ;; The compiler doesn't retokenize: the pre-processor provides a token
 ;; stream to the compiler.
-;; 
+;;
 ;; Tokens:
-;; 
+;;
 ;; - identifiers,          /[_$a-zA-Z][_$a-zA-Z0-9]*/
 ;;    $ is a gcc extension.
 ;;    \u and \U accepted here \uxxxx or \Uxxxxxxxx
 ;;    (the 1999 C standard would allow extended characters too).
-;;    
+;;
 ;; - preprocessing number,    /.?[0-9]\([a0zA0Z0-9_.]\|[EepP][-+]\)+/
 ;;   all normal integer and floating point constants.
 ;;   0xE+12 is a preprocessing number, not 0xE + 12.
-;;    
+;;
 ;; - string literals, and character literals "…" '…' with \ escapes.
 ;;   + "…" and <…> for header file names, where \ is a normal character.
 ;;   NUL is preserved.
-;;   
+;;
 ;; - punctuators,
 ;;    all ascii punctuation but `@’, ‘$’, and ‘`’.
 ;;    and 2 and 3 character operators, including digraphs:
-;;    
+;;
 ;;      Digraph:        <%  %>  <:  :>  %:  %:%:
 ;;      Punctuator:      {   }   [   ]   #    ##
-;; 
+;;
 ;; - others: `@’, ‘$’, and ‘`’.
-;;   control characters but NUL, 127<code, 
-;; 
+;;   control characters but NUL, 127<code,
+;;
 ;; Outside of strings, NUL is considered a whitespace.
 
 
@@ -802,7 +802,7 @@ RETURN: the token text; the end position."
               (perform-include context path kind directive))
             (when line
               (cpp-error (first line) "Didn't expect anything after the path after #~(~A~), not ~S"
-                         directive (token-text (first line))))))        
+                         directive (token-text (first line))))))
         (cpp-error context "Missing path after #~(~A~)" directive)))
   context)
 
@@ -924,7 +924,7 @@ RETURN: the token text; the end position."
       :do (skip-branch context))))
 
 #-(and) (
-         
+
          (let ((*context*  (make-instance 'context
                                           :current-line (list (make-punctuation "#") (make-identifier "ifdef") (make-identifier "YES"))
                                           :input-lines  (list (list (make-number "1"))
@@ -935,7 +935,7 @@ RETURN: the token text; the end position."
            (process-branch-and-skip *context*)
            (write-processed-lines (reverse (context-output-lines *context*))))
 
-                  
+
          (let ((*context*  (make-instance 'context
                                           :input-lines  (list (list (make-punctuation "#") (make-identifier "define") (make-identifier "YES")  (make-number "1"))
                                                               (list (make-punctuation "#") (make-identifier "ifdef") (make-identifier "YES"))
@@ -967,11 +967,11 @@ RETURN: the token text; the end position."
                                                               (list (make-punctuation "#") (make-identifier "endif"))))))
            (process-file *context*)
            (write-processed-lines (reverse (context-output-lines *context*))))
-         
 
 
-         
-         
+
+
+
          )
 
 
@@ -1148,7 +1148,7 @@ RETURN: the token text; the end position."
             (("pragma")         (pragma           context))
             (("error")          (cpp-error-line   context))
             (("warning")        (cpp-warning-line context))
-            (("ident" "sccs")) 
+            (("ident" "sccs"))
             (otherwise          (cpp-error line "invalid directive ~A" (token-text (second line))))))
     ((number-token-p (second line)) ;; skip # 1 "file"
      (push line (context-output-lines context)))
@@ -1219,11 +1219,11 @@ RETURN: the token text; the end position."
              (format t "~{~A~^ ~}~%" (mapcar (function token-text) line))))))
 
 (defmacro with-cpp-error-logging (&body body)
-  `(handler-bind ((cpp-error (lambda (condition) 
+  `(handler-bind ((cpp-error (lambda (condition)
                               (princ condition *error-output*) (terpri *error-output*)
                               (let ((restart (find-restart 'continue condition)))
                                 (when restart (invoke-restart restart)))))
-                 (cpp-warning (lambda (condition) 
+                 (cpp-warning (lambda (condition)
                                 (princ condition *error-output*) (terpri *error-output*)
                                 (let ((restart (find-restart 'muffle-warning condition)))
                                   (when restart (invoke-restart restart))))))
@@ -1260,7 +1260,7 @@ Other keys shall be context option keys.
                                                   (acons :include-quote-directories includes
                                                          *default-options*))
                                  :environment environment)
-        (when write-processed-lines 
+        (when write-processed-lines
           (terpri)
           (write-processed-lines lines :write-sharp-line write-sharp-line))
         ;; (print-hashtable (context-environment context))
@@ -1271,7 +1271,7 @@ Other keys shall be context option keys.
 #-(and) (progn
           (cpp-e "tests/test.c"          :includes '("tests/") :write-sharp-line t
                                          :define '("FOO" "1" "BAR" "FOO"))
-          
+
 
 
           (cpp-e "tests/test.c"          :includes '("tests/") :write-sharp-line t)
@@ -1289,9 +1289,9 @@ Other keys shall be context option keys.
           (cpp-e "tests/if.c"            :includes '("tests/") :write-sharp-line t)
           (cpp-e "tests/ifdef.c"         :includes '("tests/") :write-sharp-line t)
           (cpp-e "tests/recursive.c"     :includes '("tests/") :write-sharp-line t)
-          (cpp-e "tests/if-embedded.c"   :includes '("tests/") :write-sharp-line t) 
-          
-          
+          (cpp-e "tests/if-embedded.c"   :includes '("tests/") :write-sharp-line t)
+
+
           (let ((file "tests/define.h"))
             (with-open-file (in file)
               (let ((environment (make-environment)))
@@ -1301,7 +1301,7 @@ Other keys shall be context option keys.
                                                :warn-on-trigraph nil)
                               environment)
                 (print-hashtable environment))))
-          
+
           (let ((file "tests/trigraphs.c"))
             (with-open-file (in file)
               (read-cpp-tokens in

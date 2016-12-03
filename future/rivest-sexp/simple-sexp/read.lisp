@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Reads and writes simple S-Expressions.
 ;;;;    This implements a simple parser, subset of the
 ;;;;    standard Common Lisp parser.
@@ -26,26 +26,26 @@
 ;;;;    #nA for arrays, #S for structures and hash-tables.
 ;;;;    Symbols may be qualified, but it's up to the user supplied %make-symbol
 ;;;;    routine to handle the packages.
-;;;; 
+;;;;
 ;;;;    string ::= "\"([^\\\"]|\\\\|\\\)\""
 ;;;;    number ::= "[-+]?[0-9]+(\.[0-9]*)([eE][-+]?[0-9]+)?"
 ;;;;    cardinal ::= [0-9]+
 ;;;;    symbol ::= [[ident]':']ident
 ;;;;    ident  ::= constituent+
 ;;;;    char   ::= #\\. | #\\space | #\\newline
-;;;;    
+;;;;
 ;;;;    vector ::= '#(' sexp* ')'
 ;;;;    array ::= '#'cardinal'A(' sexp* ')'
 ;;;;    list ::= '(' [ sexp+ [ '.' sexp ] ] ')'
 ;;;;    hash ::= '#S(' 'HASH-TABLE' pair* ')'
 ;;;;    pair ::= '(' sexp '.' sexp ')'
-;;;;    
+;;;;
 ;;;;    sexp ::= string | number | symbol | list | array | hash
 ;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2007-10-25 <PJB> 
+;;;;    2007-10-25 <PJB>
 ;;;;    Complete %stuff (arrays, conses).
 ;;;;    Implement SIMPLE-PRIN1-TO-STRING
 ;;;;    2007-10-25 <PJB> Created.
@@ -61,19 +61,19 @@
 ;;;;
 ;;;;LEGAL
 ;;;;    GPL
-;;;;    
+;;;;
 ;;;;    Copyright Pascal Bourguignon 2007 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software; you can redistribute it and/or
 ;;;;    modify it under the terms of the GNU General Public License
 ;;;;    as published by the Free Software Foundation; either version
 ;;;;    2 of the License, or (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be
 ;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
 ;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 ;;;;    PURPOSE.  See the GNU General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU General Public
 ;;;;    License along with this program; if not, write to the Free
 ;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
@@ -133,7 +133,7 @@ and the value returned is an error message.
 A strong error is a lexical error that is not ambiguous.  A weak error is
 when the token could still be of another lexical category.
 In the body of the parser, there are macrolet defined to REJECT or ACCEPT
-the token, and to describe the parsed syntax with ALT, ZERO-OR-MORE, 
+the token, and to describe the parsed syntax with ALT, ZERO-OR-MORE,
 ONE-OR-MORE and OPT-SIGN."
   `(defun ,name ,arguments
      ,@(when (stringp (first body)) (list (pop body)))
@@ -203,12 +203,12 @@ exponent ::=  exponent-marker [sign] {digit}+"
                  mexp (1- mexp)
                  i    (1+ i)))))
     (when (and (< i (length token))
-               ;; Marker  Meaning                                  
-               ;; D or d  double-float                             
-               ;; E or e  float (see *read-default-float-format*)  
-               ;; F or f  single-float                             
-               ;; L or l  long-float                               
-               ;; S or s  short-float                              
+               ;; Marker  Meaning
+               ;; D or d  double-float
+               ;; E or e  float (see *read-default-float-format*)
+               ;; F or f  single-float
+               ;; L or l  long-float
+               ;; S or s  short-float
                (setf type (cdr (assoc (aref token i)
                                       '((#\d . double-float)
                                         (#\e . float)
@@ -229,7 +229,7 @@ exponent ::=  exponent-marker [sign] {digit}+"
             (accept type
                     (* (coerce (* sign mant) type)
                        (expt 10.0 (+ mexp (* esgn expo)))))
-            (reject t "Junk after floating point number ~S" token))    
+            (reject t "Junk after floating point number ~S" token))
         (reject nil))))
 
 
@@ -254,7 +254,7 @@ exponent ::=  exponent-marker [sign] {digit}+"
                   ("123.0"  123.0)
                   ("+123.0" 123.0)
                   ("-123.0" -123.0)
-                  
+
 
                   ("123e0"  123e0)
                   ("+123e0" 123e0)
@@ -276,7 +276,7 @@ exponent ::=  exponent-marker [sign] {digit}+"
                   ("0.123e3"  123e0)
                   ("+0.123e3" 123e0)
                   ("-0.123e3" -123e0)
-                  
+
                   (".123e+3"  123e0)
                   ("+.123e+3" 123e0)
                   ("-.123e+3" -123e0)
@@ -290,7 +290,7 @@ exponent ::=  exponent-marker [sign] {digit}+"
                   ("0.123e+3"  123e0)
                   ("+0.123e+3" 123e0)
                   ("-0.123e+3" -123e0)
-                                    
+
                   ("1230e-1"  123e0)
                   ("+1230e-1" 123e0)
                   ("-1230e-1" -123e0)
@@ -320,7 +320,7 @@ exponent ::=  exponent-marker [sign] {digit}+"
                   ("0.123s3"  123s0)
                   ("+0.123s3" 123s0)
                   ("-0.123s3" -123s0)
-                  
+
                   (".123s+3"  123s0)
                   ("+.123s+3" 123s0)
                   ("-.123s+3" -123s0)
@@ -334,7 +334,7 @@ exponent ::=  exponent-marker [sign] {digit}+"
                   ("0.123s+3"  123s0)
                   ("+0.123s+3" 123s0)
                   ("-0.123s+3" -123s0)
-                                    
+
                   ("1230s-1"  123s0)
                   ("+1230s-1" 123s0)
                   ("-1230s-1" -123s0)
@@ -364,7 +364,7 @@ exponent ::=  exponent-marker [sign] {digit}+"
                   ("0.123f3"  123f0)
                   ("+0.123f3" 123f0)
                   ("-0.123f3" -123f0)
-                  
+
                   (".123f+3"  123f0)
                   ("+.123f+3" 123f0)
                   ("-.123f+3" -123f0)
@@ -378,7 +378,7 @@ exponent ::=  exponent-marker [sign] {digit}+"
                   ("0.123f+3"  123f0)
                   ("+0.123f+3" 123f0)
                   ("-0.123f+3" -123f0)
-                                    
+
                   ("1230f-1"  123f0)
                   ("+1230f-1" 123f0)
                   ("-1230f-1" -123f0)
@@ -407,7 +407,7 @@ exponent ::=  exponent-marker [sign] {digit}+"
                   ("0.123d3"  123d0)
                   ("+0.123d3" 123d0)
                   ("-0.123d3" -123d0)
-                  
+
                   (".123d+3"  123d0)
                   ("+.123d+3" 123d0)
                   ("-.123d+3" -123d0)
@@ -421,16 +421,16 @@ exponent ::=  exponent-marker [sign] {digit}+"
                   ("0.123d+3"  123d0)
                   ("+0.123d+3" 123d0)
                   ("-0.123d+3" -123d0)
-                                    
+
                   ("1230d-1"  123d0)
                   ("+1230d-1" 123d0)
                   ("-1230d-1" -123d0)
                   ("1230.0d-1"  123d0)
                   ("+1230.0d-1" 123d0)
                   ("-1230.0d-1" -123d0)
-                  
 
-                  
+
+
                   ("123l0"  123l0)
                   ("+123l0" 123l0)
                   ("-123l0" -123l0)
@@ -451,7 +451,7 @@ exponent ::=  exponent-marker [sign] {digit}+"
                   ("0.123l3"  123l0)
                   ("+0.123l3" 123l0)
                   ("-0.123l3" -123l0)
-                  
+
                   (".123l+3"  123l0)
                   ("+.123l+3" 123l0)
                   ("-.123l+3" -123l0)
@@ -465,14 +465,14 @@ exponent ::=  exponent-marker [sign] {digit}+"
                   ("0.123l+3"  123l0)
                   ("+0.123l+3" 123l0)
                   ("-0.123l+3" -123l0)
-                                    
+
                   ("1230l-1"  123l0)
                   ("+1230l-1" 123l0)
                   ("-1230l-1" -123l0)
                   ("1230.0l-1"  123l0)
                   ("+1230.0l-1" 123l0)
                   ("-1230.0l-1" -123l0)
-                  
+
                   ))
     (assert (string= (format nil "~7,3F" (%make-float (first test)))
                      (format nil "~7,3F" (second test)))
@@ -549,7 +549,7 @@ exponent ::=  exponent-marker [sign] {digit}+"
   (advance s)                           ; skip over #\(
   (let ((list (%nil)))
     (loop
-       (skip-spaces s)  
+       (skip-spaces s)
        (when (char= (reject-eos (currchar s)) #\))
          (advance s)
          (return-from parse-list (%nreverse list)))
@@ -648,7 +648,7 @@ exponent ::=  exponent-marker [sign] {digit}+"
 ;;         (gethash "Two" h) 2
 ;;         (gethash "Three" h) 3)
 ;;   h)
-;; 
+;;
 
 
 (defun parse-array (dimensions s)
@@ -924,11 +924,11 @@ OBJECT: is one of the objects made by the various %MAKE- functions.
                  (type-of object) object)))))))
 
 ;; #- (and)
-;; (untrace make-scanner advance currchar nextchar reject-eos reject-dots 
+;; (untrace make-scanner advance currchar nextchar reject-eos reject-dots
 ;;        whitespacep terminating-macro-char-p skip-spaces unescape
 ;;        test-unescape parse-list parse-vector parse-struct-or-hash parse-array
 ;;        collect-token parse-object simple-read-from-string)
-;; 
+;;
 ;; (print (simple-read-from-string "(\"a\" (a b c) b c-c . d)"))
 ;; (print (simple-read-from-string "(\"a\" #S(dots :contents \"...\") #(a b c) b c-c . (d 123 123.0 123l0))"))
 ;; (print (simple-read-from-string "(#1A(1 2 3) #0Afoo \"a\"  #S(dots :contents \"...\") #S(HASH-TABLE :TEST EXT:FASTHASH-EQUAL (\"Three\" . 3) (\"Two\" . 2) (\"One\" . 1)) #(a b c) b c-c . (d 123 123.0 123l0))"))

@@ -5,12 +5,12 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Brainfuck emulator
 ;;;;    -1- A Brainfuck Virtual Machine                 COMPLETE
 ;;;;    -2- A Brainfuck to Lisp *optimizing* compiler   COMPLETE
 ;;;;    -3- Implementing a lisp in Brainfuck            sketches
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -18,19 +18,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2005 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -92,7 +92,7 @@
        (incf pc inc)
      finally (return pc)))
 
-    
+
 (defun bfload (file)
   "Return a string containing the file"
   (with-open-file (in file)
@@ -304,29 +304,29 @@
 ;; (defmacro %forward (offset)
 ;;   `(progn (incf mc ,offset)
 ;;           (print `(forward ,,offset --> mc = ,mc))))
-;; 
+;;
 ;; (defmacro %backward (offset)
 ;;   `(progn (decf mc ,offset)
 ;;           (print `(backward ,,offset --> mc = ,mc))))
-;; 
+;;
 ;; (defmacro %inc    (value offset)
 ;;   `(progn (setf (aref mem (+ mc ,offset))
 ;;                 (mod (+ (aref mem (+ mc ,offset)) ,value) 256))
 ;;           (print `(inc ,,value ,,offset --> (aref mem ,(+ mc ,offset)) = ,(aref mem (+ mc ,offset))))))
-;; 
+;;
 ;; (defmacro %dec    (value offset)
 ;;   `(progn (setf (aref mem (+ mc ,offset))
 ;;                 (mod (- (aref mem (+ mc ,offset)) ,value) 256))
 ;;           (print `(dec ,,value ,,offset --> (aref mem ,(+ mc ,offset)) = ,(aref mem (+ mc ,offset))))))
-;; 
+;;
 ;; (defmacro %readc  (offset)
 ;;   `(progn (setf (aref mem (+ mc ,offset)) (mod (char-code (read-char)) 256))
 ;;           (print `(readc ,,offset --> (aref mem ,(+ mc ,offset)) = ,(aref mem (+ mc ,offset))))))
-;; 
+;;
 ;; (defmacro %princ  (offset)
 ;;   `(progn (princ (code-char (aref mem (+ mc ,offset))))
 ;;           (print `(princ ,,offset --> (aref mem ,(+ mc ,offset)) = ,(aref mem (+ mc ,offset))))))
-;; 
+;;
 ;; (defmacro %while-nz (&body body)
 ;;   (let ((lbeg (gensym "LOOP"))
 ;;         (lend (gensym "ENDL")))
@@ -338,15 +338,15 @@
 ;;         (print `(while-nz ,',lbeg loop  (aref mem ,mc) = ,(aref mem mc)))
 ;;         (unless (zerop (aref mem mc)) (go ,lbeg))
 ;;         ,lend)))
-;; 
+;;
 ;; (defmacro %zero    (offset)
 ;;   `(progn (setf (aref mem (+ mc ,offset)) 0)
 ;;           (print `(zero ,offset --> (aref mem ,(+ mc offset)) = ,(aref mem (+ mc offset))))))
-;; 
+;;
 ;; (defmacro %set    (value offset)
 ;;   `(progn (setf (aref mem (+ mc ,offset)) (mod ,value 256))
 ;;           (print `(set ,,value ,,offset -->  (aref mem ,(+ mc ,offset)) = ,(aref mem (+ mc ,offset))))))
-;; 
+;;
 ;; (defmacro %offset (offset)
 ;;   `(progn (incf mc ,offset)
 ;;           (print `(offset ,,offset --> mc = ,mc))))
@@ -445,7 +445,7 @@ RETURN: a lisp function taking a virtual machine
 (defun simplify (bf)
   ;; delete all occurences of "><" "<>" "+-" "-+"
   ;;(print `(simplify ,bf))
-  (if *simplify* 
+  (if *simplify*
       (loop
          with changed = t
          while changed
@@ -536,7 +536,7 @@ with defbf, or strings containing brainfuck instructions.
 (defbf clear-cons     ()
   ">" (clear-byte) ">" (clear-byte) ">" (clear-byte) ">" (clear-byte) "<<<<")
 
-  
+
 (defbf format-memory ()
   (rewind) (clear-byte)
   (repeat  +max-addr+ (next) "+")
@@ -580,7 +580,7 @@ with defbf, or strings containing brainfuck instructions.
   (goto +sc+)             (clear-cons)
   (move-from-to +sc+ dst) (clear-cons)
   (move-from-to dst src)
-  ">" (copy-reg-byte src dst) 
+  ">" (copy-reg-byte src dst)
   ">" (copy-reg-byte src dst)
   ">" (copy-reg-byte src dst)
   ">" (copy-reg-byte src dst)
@@ -613,7 +613,7 @@ with defbf, or strings containing brainfuck instructions.
   ">>+"                                 ; increment lsb of car
   (while-nz                             ; if lsb is nz
    "<<" (clear-byte)                    ; clear mark
-   (previous) (goto 1) ">>" (clear-byte)) 
+   (previous) (goto 1) ">>" (clear-byte))
   "<<"                                     ; goto mark
   (previous)                            ; move away from cleared mark
   (goto reg)                            ; come back
@@ -622,7 +622,7 @@ with defbf, or strings containing brainfuck instructions.
    ">+"                                 ; increment msb of car
    "<" (clear-byte))                    ; clear mark
   "+")                                  ; set mark
-  
+
 
 (defbf decrement-car (reg)
   (goto reg)
@@ -630,7 +630,7 @@ with defbf, or strings containing brainfuck instructions.
   (while-nz                             ; if lsb is nz
    "-"                                  ; decrement it
    "<<" (clear-byte)                    ; clear mark
-   (previous) (goto +sc+) ">>" (clear-byte)) 
+   (previous) (goto +sc+) ">>" (clear-byte))
   "<<"                                    ; goto mark
   (previous)                            ; move away from cleared mark
   (goto reg)                            ; come back
@@ -801,7 +801,7 @@ with defbf, or strings containing brainfuck instructions.
 ;; (decrement-car +cn+)
 ;; (not-null-car +cn+)                     ; at +ts+
 ;; ">>"
-;; 
+;;
 ;; "<<" (move-from-to +ts+ +min-addr+)
 ;; (forward-1)
 ;; "-"
@@ -810,12 +810,12 @@ with defbf, or strings containing brainfuck instructions.
 ;; (not-null-car +cn+)                     ; at +ts+
 ;; ">>"
 ;; )
-;; 
+;;
 ;; "<<" (move-from-to +ts+ +min-addr+)
 ;; (forward-1-set))
-;; 
-;;   
-;; 
+;;
+;;
+;;
 ;; (goto-indirect reg) (clear-cons) "-"    ; clear mark
 ;; ))
 ;; (previous)
@@ -861,18 +861,18 @@ with defbf, or strings containing brainfuck instructions.
 ;;      (apply (function bfapply) (mapcar (function bfeval) (cdr sexp))))
 ;;     ((eq (car sexp) 'define)
 ;;      (
-;; (eval '(apply (lambda () 
+;; (eval '(apply (lambda ()
 ;;                 (define sym definition)
 ;;                 (define sym definition)
 ;;                 (define sym definition)
 ;;                 (sym))) ())
-;; 
-;; 
+;;
+;;
 ;; (defmacro my-defun (name arg-list &body body)
 ;;   `(progn (setf (symbol-function ',name) (lambda  ,arg-list (progn  ,@body)))
 ;;           ',name))
-;; 
-;; 
+;;
+;;
 ;; (defun my-apply (fun &rest effective-arg-list)
 ;;   (let* ((lambda-exp      (function-lambda-expression fun))
 ;;          (formal-arg-list (cadr lambda-exp))
@@ -882,14 +882,14 @@ with defbf, or strings containing brainfuck instructions.
 ;;         (my-eval sexp)
 ;;         ;; a primive function
 ;;         (funcall (function apply) fun effective-arg-list))));;my-apply
-;; 
-;; 
+;;
+;;
 ;; (defun symbol-value (symbol env)
 ;;   (cond ((null env) :unbound)
 ;;         ((eq symbol (car (car env))) (cdr (car env)))
 ;;         (t (symbol-value symbol (cdr env)))))
-;; 
-;;   
+;;
+;;
 ;; (defun my-eval (sexp env)
 ;;   (cond
 ;;    ((symbolp sexp)          (symbol-value sexp env))
@@ -906,8 +906,8 @@ with defbf, or strings containing brainfuck instructions.
 ;;         (otherwise
 ;;          (my-apply (symbol-function (car sexp))
 ;;                 (mapcar (function my-eval) (cdr sexp))))))));;my-eval
-;; 
-;; 
+;;
+;;
 ;; (my-defun a-fun () (setq x '(1 2 3)) (print x) (rplaca x 0) (print x))
 
 ;;  (bfcompile(bfload "99botles.bf") :name '99b)  (|99B| (make-bfvm))

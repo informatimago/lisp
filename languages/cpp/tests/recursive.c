@@ -54,15 +54,15 @@ int i[]={ FOO,
        baz
 #undef F
 #define F(a,b,c) c##c
-       ); 
+       );
 4: FOO(
-#undef F 
+#undef F
 #define F(a,b,c) a##a
        FOO(baz)
 #undef F
 #define F(a,b,c) c##c
-       ); 
- 
+       );
+
 #undef F
 #define F(a,b,c) int z[]={a,b,c}
 5:F(

@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    This package implements a Portable Graphics Library using the
 ;;;;    JavaBackEnd from the Stanford Portable Library.
 ;;;;    http://cs.stanford.edu/~eroberts/papers/ITiCSE-2013/PortableGraphicsLibrary.pdf
@@ -23,7 +23,7 @@
 ;;;;         make
 ;;;;         make install
 ;;;;
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -34,19 +34,19 @@
 ;;;;    Currently only implemented on CCL using CCL:RUN-PROGRAM.
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -99,7 +99,7 @@ Licensed under the AGPL3.
 (defpackage "COM.INFORMATIMAGO.PORTABLE-GRAPHICS-LIBRARY"
 
   (:nicknames "PGL")
-  
+
   (:documentation "
 
 This package implements a Portable Graphics Library using the
@@ -141,7 +141,7 @@ Licensed under the AGPL3.
    "DIMENSION-WIDTH" "DIMENSION-HEIGHT"
 
    "POINT" "MAKE-POINT" "COPY-POINT" "POINT-P" "X" "Y"
-   
+
    "RECTANGLE" "MAKE-RECTANGLE" "COPY-RECTANGLE" "RECTANGLE-P"
    "X" "Y" "WIDTH" "HEIGHT"
    "RECTANGLE-EMPTYP" "RECTANGLE-CONTAINS-POINT-P")
@@ -168,7 +168,7 @@ Licensed under the AGPL3.
    "*LINE-TOLERANCE*"
    "SQUARE" "DEGREE-TO-RADIAN" "RADIAN-TO-DEGREE" "COS-DEGREE" "SIN-DEGREE"
    "SCREEN-WIDTH" "SCREEN-HEIGHT" "PAUSE")
-  
+
   (:export
    ;; Portable Graphic Library classes and methods:
    "TIMER" "DURATION-MS" "START-TIMER" "STOP-TIMER"
@@ -193,7 +193,7 @@ Licensed under the AGPL3.
    "SET-VISIBLE" "SET-RESIZABLE" "SET-TITLE" "DRAW-LINE"
    "DRAW-POLAR-LINE" "DRAW-OVAL" "FILL-OVAL" "DRAW-RECT" "FILL-RECT"
    "DRAW" "DRAW-AT" "COMPOUND-ADD-AT" "COMPOUND-ADD-TO-REGION" "FREE")
-  
+
   (:export
    ;; The *console-io* stream:
    "*CONSOLE-IO*" "CONSOLE-STREAM" "CONSOLE-SET-SIZE"
@@ -311,10 +311,10 @@ Licensed under the AGPL3.
                                       :action-command (event-action-command self))))
       ((#.+key-event+)
        (format stream "~{ ~S~}" (list :key-char (event-key-char self)
-                                      :key-code (event-key-code self))))           
+                                      :key-code (event-key-code self))))
       ((#.+timer-event+)
-       (format stream "~{ ~S~}" (list :timer (event-timer self))))         
-      ((#.+window-event+))        
+       (format stream "~{ ~S~}" (list :timer (event-timer self))))
+      ((#.+window-event+))
       ((#.+mouse-event+ #.+click-event+)
        (format stream "~{ ~S~}" (list :x (event-x self)
                                       :y (event-y self))))))
@@ -328,24 +328,24 @@ RETURN: the event type as a lisp keyword, one of:
         :WINDOW-CLOSED :WINDOW-RESIZED :LAST-WINDOW-CLOSED
         :ACTION-PERFORMED :MOUSE-CLICKED :MOUSE-PRESSED
         :MOUSE-RELEASED :MOUSE-MOVED :MOUSE-DRAGGED :KEY-PRESSED
-        :KEY-RELEASED :KEY-TYPED :TIMER-TICKED 
+        :KEY-RELEASED :KEY-TYPED :TIMER-TICKED
 ")
   (:method ((event null))
     nil)
   (:method ((event event))
     (ecase (event-type event)
-      ((#.+window-closed+)      :window-closed)             
-      ((#.+window-resized+)     :window-resized)            
-      ((#.+last-window-closed+) :last-window-closed) 
-      ((#.+action-performed+)   :action-performed)          
-      ((#.+mouse-clicked+)      :mouse-clicked)             
-      ((#.+mouse-pressed+)      :mouse-pressed)             
-      ((#.+mouse-released+)     :mouse-released)            
-      ((#.+mouse-moved+)        :mouse-moved)               
-      ((#.+mouse-dragged+)      :mouse-dragged)             
-      ((#.+key-pressed+)        :key-pressed)               
-      ((#.+key-released+)       :key-released)              
-      ((#.+key-typed+)          :key-typed)                 
+      ((#.+window-closed+)      :window-closed)
+      ((#.+window-resized+)     :window-resized)
+      ((#.+last-window-closed+) :last-window-closed)
+      ((#.+action-performed+)   :action-performed)
+      ((#.+mouse-clicked+)      :mouse-clicked)
+      ((#.+mouse-pressed+)      :mouse-pressed)
+      ((#.+mouse-released+)     :mouse-released)
+      ((#.+mouse-moved+)        :mouse-moved)
+      ((#.+mouse-dragged+)      :mouse-dragged)
+      ((#.+key-pressed+)        :key-pressed)
+      ((#.+key-released+)       :key-released)
+      ((#.+key-typed+)          :key-typed)
       ((#.+timer-ticked+)       :timer-ticked))))
 
 
@@ -482,8 +482,8 @@ If the backend is not open, nothing is done.
 (defun interactors ()  (hash-table-values *source-registry*))
 (defun timers      ()  (hash-table-values *timer-registry*))
 
-(defgeneric register (self)) 
-(defgeneric unregister (self)) 
+(defgeneric register (self))
+(defgeneric unregister (self))
 
 
 
@@ -492,9 +492,9 @@ If the backend is not open, nothing is done.
   (with-output-to-string (*standard-output*)
     (with-input-from-string (*standard-input* string)
       (let ((ch (read-char *standard-input* nil)))
-        (unless (char= ch #\") 
+        (unless (char= ch #\")
           (error 'jbe-syntax-error
-                 :format-control "Unexpected character ~S found in string literal ~S"   
+                 :format-control "Unexpected character ~S found in string literal ~S"
                  :format-arguments (list ch string))))
       (loop
         :with escaped := nil
@@ -517,7 +517,7 @@ If the backend is not open, nothing is done.
                       (unless (and (digit-char-p (aref buffer 1) 8)
                                    (digit-char-p (aref buffer 2) 8))
                         (error 'jbe-syntax-error
-                               :format-control "Unexpected character ~S found in escape sequence in string literal ~S"   
+                               :format-control "Unexpected character ~S found in escape sequence in string literal ~S"
                                :format-arguments (list ch string)))
                       (princ (code-char (parse-integer buffer :radix 8)))))
                    (otherwise (princ ch)))
@@ -717,7 +717,7 @@ If the backend is not open, nothing is done.
                ((string-equal token "false") '(boolean . nil))
                (t                             (cons 'symbol token))))))
         (otherwise (error 'jbe-syntax-error
-                          :format-control "Unexpected character ~S found in reponse ~S"   
+                          :format-control "Unexpected character ~S found in reponse ~S"
                        :format-arguments (list ch src)))))))
 
 (defun expect (scanner expected)
@@ -1004,19 +1004,19 @@ If the backend is not open, nothing is done.
     "GREEN" "CYAN" "BLUE" "MAGENTA" "ORANGE" "PINK")
   "The list of possible colors.")
 
-(defparameter *black*      "BLACK")      
-(defparameter *dark-gray*  "DARK_GRAY")  
-(defparameter *gray*       "GRAY")       
-(defparameter *light-gray* "LIGHT_GRAY") 
-(defparameter *white*      "WHITE")      
-(defparameter *red*        "RED")        
-(defparameter *yellow*     "YELLOW")     
-(defparameter *green*      "GREEN")      
-(defparameter *cyan*       "CYAN")       
-(defparameter *blue*       "BLUE")       
-(defparameter *magenta*    "MAGENTA")    
-(defparameter *orange*     "ORANGE")     
-(defparameter *pink*       "PINK")       
+(defparameter *black*      "BLACK")
+(defparameter *dark-gray*  "DARK_GRAY")
+(defparameter *gray*       "GRAY")
+(defparameter *light-gray* "LIGHT_GRAY")
+(defparameter *white*      "WHITE")
+(defparameter *red*        "RED")
+(defparameter *yellow*     "YELLOW")
+(defparameter *green*      "GREEN")
+(defparameter *cyan*       "CYAN")
+(defparameter *blue*       "BLUE")
+(defparameter *magenta*    "MAGENTA")
+(defparameter *orange*     "ORANGE")
+(defparameter *pink*       "PINK")
 
 (defun screen-width ()
   "The width of the screen in pixels."
@@ -1092,7 +1092,7 @@ If the backend is not open, nothing is done.
   (object.set-color      object (color      object))
   (object.set-line-width object (line-width object))
   (object.set-visible    object (visible    object)))
-  
+
 (defmethod slots-for-print append ((self object))
   (extract-slots '(id x y width height color fill-color filled visible)))
 
@@ -1275,7 +1275,7 @@ If the backend is not open, nothing is done.
 
 ;;;----------------------------------------------------------------------------------------
 
-(defclass 3drect (object) 
+(defclass 3drect (object)
   ((raised :initarg :raised :type boolean   :reader raised)))
 
 (defmethod slots-for-print append ((self 3drect))
@@ -1549,7 +1549,7 @@ If the backend is not open, nothing is done.
   (let* ((vertices (vertices self))
          (n (length vertices)))
     (if (zerop n)
-        (make-rectangle)        
+        (make-rectangle)
         (let ((xmin (x (aref vertices 0)))
               (ymin (y (aref vertices 0)))
               (xmax (x (aref vertices 0)))
@@ -1570,7 +1570,7 @@ If the backend is not open, nothing is done.
          (n (length vertices))
          (crossings 0))
     (if (< n 2)
-        nil        
+        nil
         (let* ((p0 (aref vertices 0))
                (x0 (x p0))
                (y0 (y p0))

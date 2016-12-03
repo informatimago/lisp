@@ -5,14 +5,14 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    An API over SUSV3-XSI IPC.
-;;;;    
-;;;;    Note: The number of queues in a system is limited. 
+;;;;
+;;;;    Note: The number of queues in a system is limited.
 ;;;;          An application could use the message type as a recipient address.
 ;;;;
-;;;; cliini:  There's always another way to achieve the same thing. 
-;;;;          But it's the lisp way to offer nice and intuitive interfaces 
+;;;; cliini:  There's always another way to achieve the same thing.
+;;;;          But it's the lisp way to offer nice and intuitive interfaces
 ;;;;          to achieve the stuff, otherwise we might all be using assembler.
 ;;;;                                                      [2005-01-02 20:30:53]
 ;;;;
@@ -28,19 +28,19 @@
 ;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -57,17 +57,17 @@
      "COM.INFORMATIMAGO.CLISP.SUSV3-XSI" "SUSV3-XSI"))
 
 (defpackage "COM.INFORMATIMAGO.SUSV3.IPC"
-  (:documentation 
+  (:documentation
    "An API over SUSV3-XSI IPC (msgget/msgctl/msgsnd/msgrcv).")
   (:use   "COMMON-LISP" "FFI"
           "COM.INFORMATIMAGO.SUSV3.TOOLS"
           "COM.INFORMATIMAGO.CLISP.SUSV3")
-  (:export 
+  (:export
    ;; ipc:
    "IPC-PERMISSIONS" "IPC-PERMISSIONS-KEY" "IPC-PERMISSIONS-UID"
    "IPC-PERMISSIONS-GID" "IPC-PERMISSIONS-CUID" "IPC-PERMISSIONS-CGID"
    "IPC-PERMISSIONS-MODE" "IPC-PERMISSIONS-SEQ"
-   "MAKE-KEY" 
+   "MAKE-KEY"
    ;; msg:
    "MSGDESC" "MSGDESC-PERMISSIONS" "MSGDESC-SEND-TIME"
    "MSGDESC-RECEIVE-TIME" "MSGDESC-CHANGE-TIME"
@@ -81,7 +81,7 @@
    "SHMDESC" "SHMDESC-PERMISSIONS" "SHMDESC-SEGMENT-SIZE"
    "SHMDESC-ATTACH-TIME" "SHMDESC-DETACH-TIME" "SHMDESC-CHANGE-TIME"
    "SHMDESC-CREATOR-PID" "SHMDESC-LAST-OPERATION-PID"
-   "SHMDESC-ATTACH-COUNT" 
+   "SHMDESC-ATTACH-COUNT"
    "MEMORY-GET" "MEMORY-STATISTICS"
    "MEMORY-MODIFY" "MEMORY-REMOVE" "MEMORY-LOCK" "MEMORY-UNLOCK"
    "MEMORY-PAGE-SIZE" "MEMORY-ATTACH" "MEMORY-DETACH"
@@ -134,22 +134,22 @@
 
 (defun message-get (key &key (create nil) (private nil) (exclusive nil)
                     (access-rights #o600))
-  "Returns the message queue identifier associated with the value 
+  "Returns the message queue identifier associated with the value
    of the key argument."
   (let ((flags (+ (if create    susv3-xsi:ipc_creat   0)
                   (if private   susv3-xsi:ipc_private 0)
                   (if exclusive susv3-xsi:ipc_excl    0)
                   (ldb (byte 9 0) access-rights))))
     (check-errno (susv3-xsi:msgget key flags)
-                 :function 'susv3-xsi:msgget 
+                 :function 'susv3-xsi:msgget
                  :arguments (list key flags)
                  :caller 'message-get)))
 
 
 (defstruct msgdesc
   (permissions (make-ipc-permissions) :type ipc-permissions)
-  (send-time        0 :type integer)    ; time of last msgsnd command 
-  (receive-time     0 :type integer)    ; time of last msgrcv command 
+  (send-time        0 :type integer)    ; time of last msgsnd command
+  (receive-time     0 :type integer)    ; time of last msgrcv command
   (change-time      0 :type integer)    ; time of last change
   (current-bytes    0 :type integer) ; current number of bytes on queue
   (message-count    0 :type integer) ; number of messages currently on queue
@@ -160,13 +160,13 @@
 
 (define-ffi-copiers msgdesc susv3-xsi:msqid_ds
   ((msgdesc-permissions ipc-permissions) (susv3-xsi::msg_perm ipc_perm))
-  (msgdesc-send-time             susv3-xsi::msg_stime) 
-  (msgdesc-receive-time          susv3-xsi::msg_rtime) 
-  (msgdesc-change-time           susv3-xsi::msg_ctime) 
-  (msgdesc-current-bytes         susv3-xsi::msg_cbytes)  
-  (msgdesc-message-count         susv3-xsi::msg_qnum)    
-  (msgdesc-maximum-bytes         susv3-xsi::msg_qbytes)  
-  (msgdesc-last-send-pid         susv3-xsi::msg_lspid)   
+  (msgdesc-send-time             susv3-xsi::msg_stime)
+  (msgdesc-receive-time          susv3-xsi::msg_rtime)
+  (msgdesc-change-time           susv3-xsi::msg_ctime)
+  (msgdesc-current-bytes         susv3-xsi::msg_cbytes)
+  (msgdesc-message-count         susv3-xsi::msg_qnum)
+  (msgdesc-maximum-bytes         susv3-xsi::msg_qbytes)
+  (msgdesc-last-send-pid         susv3-xsi::msg_lspid)
   (msgdesc-last-receive-pid      susv3-xsi::msg_lrpid))
 
 
@@ -175,16 +175,16 @@
 from the message queue data structure associated with the msqid QUEUE.
 The caller must have read permission on the message queue."
   (ffi:with-c-var (d 'susv3-xsi:msqid_ds)
-    (check-errno (susv3-xsi:msgctl queue susv3-xsi:ipc_stat 
+    (check-errno (susv3-xsi:msgctl queue susv3-xsi:ipc_stat
                                    (ffi:foreign-address-unsigned
                                     (ffi:c-var-address d)))
-                 :function 'susv3-xsi:msgctl 
+                 :function 'susv3-xsi:msgctl
                  :arguments (list queue 'susv3-xsi:ipc_stat 'susv3-xsi:msqid_ds)
                  :caller 'message-statistics)
     (let ((result  (make-msgdesc)))
       (msqid_ds->msgdesc d result)
       result)))
- 
+
 
 (defun message-modify (queue msgdesc)
   "
@@ -198,7 +198,7 @@ msg_perm.uid, msg_perm.gid, msg_perm.mode (only lowest 9-bits), msg_qbytes.
     (check-errno (susv3-xsi:msgctl queue susv3-xsi:ipc_set
                                    (ffi:foreign-address-unsigned
                                     (ffi:c-var-address d)))
-                 :function 'susv3-xsi:msgctl 
+                 :function 'susv3-xsi:msgctl
                  :arguments (list queue 'susv3-xsi:ipc_set msgdesc)
                  :caller 'message-modify))) ;;message-modify
 
@@ -213,7 +213,7 @@ privileges or its effective user-ID must be either that of
 the creator or owner of the message queue.
 "
   (check-errno (susv3-xsi:msgctl queue susv3-xsi:ipc_rmid 0)
-               :function 'susv3-xsi:msgctl 
+               :function 'susv3-xsi:msgctl
                :arguments (list queue 'susv3-xsi:ipc_rmid 0)
                :caller 'message-remove)) ;;message-remove
 
@@ -223,17 +223,17 @@ the creator or owner of the message queue.
   (ffi:with-c-var (msg `(ffi:c-struct susv3-xsi:msgbuf
                                       (susv3-xsi::mtype ffi:long)
                                       (susv3-xsi::mtext
-                                       (ffi:c-array ffi:uint8 
+                                       (ffi:c-array ffi:uint8
                                                     ,(length message-text))))
                        (susv3-xsi:make-msgbuf :mtype message-type
                                               :mtext message-text))
-    (check-errno (susv3-xsi:msgsnd queue 
+    (check-errno (susv3-xsi:msgsnd queue
                                    (ffi:foreign-address-unsigned
-                                    (ffi:c-var-address msg)) 
+                                    (ffi:c-var-address msg))
                                    (length message-text)
                                    (if no-wait susv3-xsi:ipc_nowait 0))
                  :function 'susv3-xsi:msgsnd
-                 :arguments (list queue 'msg 
+                 :arguments (list queue 'msg
                                   (length message-text)
                                   (if no-wait susv3-xsi:ipc_nowait 0))
                  :caller 'message-send))) ;;message-send
@@ -255,7 +255,7 @@ the creator or owner of the message queue.
                                       (if no-error susv3-xsi:msg_noerror 0)
                                       (if except   susv3-xsi:msg_except  0)))
                  :function 'susv3-xsi:msgsnd
-                 :arguments (list queue 'msg 
+                 :arguments (list queue 'msg
                                   message-size
                                   message-type
                                   (+ (if no-wait  susv3-xsi:ipc_nowait  0)
@@ -292,12 +292,12 @@ the creator or owner of the message queue.
 
 
 (defun message-receive-sexp (queue message-type &key (no-wait nil) (except nil))
-  (multiple-value-bind (mtext mtype) 
+  (multiple-value-bind (mtext mtype)
       (block :receive
         (tagbody
          :again
-           (handler-case 
-               (return-from :receive 
+           (handler-case
+               (return-from :receive
                  (message-receive queue message-type +message-size-limit+
                                   :no-wait no-wait :except except))
              (unix-error (err) (if (= susv3:eintr (unix-error-number err))
@@ -327,7 +327,7 @@ the creator or owner of the message queue.
                   (if exclusive  susv3-xsi:ipc_excl  0)
                   (ldb (byte 9 0) access-rights))))
     (check-errno (susv3-xsi:shmget key size flags)
-                 :function 'susv3-xsi:shmget 
+                 :function 'susv3-xsi:shmget
                  :arguments (list key size flags)
                  :caller 'memory-get))) ;;memory-get
 
@@ -335,13 +335,13 @@ the creator or owner of the message queue.
 (defstruct shmdesc
   ;; Data structure describing a shared memory segment.
   (permissions (make-ipc-permissions) :type ipc-permissions)
-  (segment-size 0 :type integer)        ; size of segment in bytes 
-  (attach-time  0 :type integer)        ; time of last shmat() 
-  (detach-time  0 :type integer)        ; time of last shmdt() 
-  (change-time  0 :type integer)    ; time of last change by shmctl() 
-  (creator-pid  0 :type integer)        ; pid of creator 
-  (last-operation-pid  0 :type integer) ; pid of last shmop 
-  (attach-count  0 :type integer))      ; number of current attaches 
+  (segment-size 0 :type integer)        ; size of segment in bytes
+  (attach-time  0 :type integer)        ; time of last shmat()
+  (detach-time  0 :type integer)        ; time of last shmdt()
+  (change-time  0 :type integer)    ; time of last change by shmctl()
+  (creator-pid  0 :type integer)        ; pid of creator
+  (last-operation-pid  0 :type integer) ; pid of last shmop
+  (attach-count  0 :type integer))      ; number of current attaches
 
 
 (define-ffi-copiers shmdesc susv3-xsi:shmid_ds
@@ -360,17 +360,17 @@ the creator or owner of the message queue.
    segment  into the buffer buf. The user must have
    read access to the shared memory segment."
   (ffi:with-c-var (d 'susv3-xsi:shmid_ds)
-    (check-errno (susv3-xsi:shmctl memory susv3-xsi:ipc_stat 
+    (check-errno (susv3-xsi:shmctl memory susv3-xsi:ipc_stat
                                    (ffi:foreign-address-unsigned
                                     (ffi:c-var-address d)))
                  :function 'susv3-xsi:shmctl
-                 :arguments (list memory 'susv3-xsi:ipc_stat 
+                 :arguments (list memory 'susv3-xsi:ipc_stat
                                   'susv3-xsi:shmid_ds)
                  :caller 'memory-statistics)
     (let ((result  (make-shmdesc)))
       (shmid_ds->shmdesc d result)
       result))) ;;memory-statistics
- 
+
 
 (defun memory-modify (memory shmdesc)
   "apply the changes the user has made to the
@@ -383,7 +383,7 @@ the creator or owner of the message queue.
     (check-errno (susv3-xsi:shmctl memory susv3-xsi:ipc_set
                                    (ffi:foreign-address-unsigned
                                     (ffi:c-var-address d)))
-                 :function 'susv3-xsi:shmctl 
+                 :function 'susv3-xsi:shmctl
                  :arguments (list memory 'susv3-xsi:ipc_set shmdesc)
                  :caller 'memory-modify))) ;;memory-modify
 
@@ -395,7 +395,7 @@ the creator or owner of the message queue.
    ture  shmid_ds is zero.)  The user must be the owner,
    creator, or the super-user."
   (check-errno (susv3-xsi:shmctl memory susv3-xsi:ipc_rmid 0)
-               :function 'susv3-xsi:shmctl 
+               :function 'susv3-xsi:shmctl
                :arguments (list memory 'susv3-xsi:ipc_rmid 0)
                :caller 'memory-remove)) ;;memory-remove
 
@@ -405,7 +405,7 @@ the creator or owner of the message queue.
    user must fault in any pages that are required to  be
    present after locking is enabled."
   (check-errno (susv3-xsi:shmctl memory susv3-xsi:shm_lock 0)
-               :function 'susv3-xsi:shmctl 
+               :function 'susv3-xsi:shmctl
                :arguments (list memory 'susv3-xsi:shm_lock 0)
                :caller 'memory-remove)) ;;memory-lock
 
@@ -413,19 +413,19 @@ the creator or owner of the message queue.
 (defun memory-unlock (memory)
   "allows the shared memory segment to be swapped out."
   (check-errno (susv3-xsi:shmctl memory susv3-xsi:shm_lock 0)
-               :function 'susv3-xsi:shmctl 
+               :function 'susv3-xsi:shmctl
                :arguments (list memory 'susv3-xsi:shm_lock 0)
                :caller 'memory-remove)) ;;memory-unlock
 
 
-(defun memory-page-size () 
-  "Return the page size, to which the shared memory page addresses 
+(defun memory-page-size ()
+  "Return the page size, to which the shared memory page addresses
    must be rounded."
   (susv3-xsi:shmlba))
 
 
 (defun memory-attach (memory address &key (round nil) (read-only nil)
-                      (remap nil)) 
+                      (remap nil))
   ;; remap is linux specific
   "allows the shared memory segment to be swapped out."
   (check-errno (susv3-xsi:shmat memory address
@@ -433,7 +433,7 @@ the creator or owner of the message queue.
                                    (if read-only susv3-xsi:shm_rdonly 0)
                                    (if remap     susv3-xsi:shm_remap  0)))
                :function 'susv3-xsi:shmat
-               :arguments (list memory address 
+               :arguments (list memory address
                                 (+ (if round     susv3-xsi:shm_rnd    0)
                                    (if read-only susv3-xsi:shm_rdonly 0)
                                    (if remap     susv3-xsi:shm_remap  0)))
@@ -499,13 +499,13 @@ the creator or owner of the message queue.
                                    (ffi:foreign-address-unsigned
                                     (ffi:c-var-address d)))
                  :function 'susv3-xsi:semctl
-                 :arguments (list semaphore 0 'susv3-xsi:ipc_stat 
+                 :arguments (list semaphore 0 'susv3-xsi:ipc_stat
                                   'susv3-xsi:semid_ds)
                  :caller 'semaphore-statistics)
     (let ((result  (make-semdesc)))
       (semid_ds->semdesc d result)
       result))) ;;semaphore-statistics
- 
+
 
 (defun semaphore-modify (semaphore semdesc)
   "Apply the changes the user has made to the
@@ -518,7 +518,7 @@ the creator or owner of the message queue.
     (check-errno (susv3-xsi:semctl semaphore 0 susv3-xsi:ipc_set
                                    (ffi:foreign-address-unsigned
                                     (ffi:c-var-address d)))
-                 :function 'susv3-xsi:semctl 
+                 :function 'susv3-xsi:semctl
                  :arguments (list semaphore 0 'susv3-xsi:ipc_set semdesc)
                  :caller 'semaphore-modify))) ;;semaphore-modify
 
@@ -530,7 +530,7 @@ the creator or owner of the message queue.
    ture  semid_ds is zero.)  The user must be the owner,
    creator, or the super-user."
   (check-errno (susv3-xsi:semctl semaphore 0 susv3-xsi:ipc_rmid 0)
-               :function 'susv3-xsi:semctl 
+               :function 'susv3-xsi:semctl
                :arguments (list semaphore 0 'susv3-xsi:ipc_rmid 0)
                :caller 'semaphore-remove)) ;;semaphore-remove
 
@@ -543,7 +543,7 @@ the creator or owner of the message queue.
    must  have  read  access  privileges on the semaphore
    set."
   (check-errno (susv3-xsi:semctl semaphore 0 susv3-xsi:getpid 0)
-               :function 'susv3-xsi:semctl 
+               :function 'susv3-xsi:semctl
                :arguments (list semaphore 0 'susv3-xsi:getpid 0)
                :caller 'semaphore-get-pid)) ;;semaphore-get-pid
 
@@ -554,7 +554,7 @@ the creator or owner of the message queue.
    must have read access  privileges  on  the  semaphore
    set."
   (check-errno (susv3-xsi:semctl semaphore index susv3-xsi:getval 0)
-               :function 'susv3-xsi:semctl 
+               :function 'susv3-xsi:semctl
                :arguments (list semaphore index 'susv3-xsi:getval 0)
                :caller 'semaphore-get-value)) ;;semaphore-get-value
 
@@ -573,7 +573,7 @@ the creator or owner of the message queue.
                    :function 'susv3-xsi:semctl
                    :arguments (list semaphore 0 'susv3-xsi:getall 'values)
                    :caller 'semaphore-get-all-values)
-      (let ((result  (make-array (list semnum) 
+      (let ((result  (make-array (list semnum)
                                  :element-type '(unsigned-byte 16)
                                  :initial-element 0)))
         (dotimes (i semnum)
@@ -589,7 +589,7 @@ the creator or owner of the message queue.
    must have read access  privileges  on  the  semaphore
    set."
   (check-errno (susv3-xsi:semctl semaphore index susv3-xsi:getncnt 0)
-               :function 'susv3-xsi:semctl 
+               :function 'susv3-xsi:semctl
                :arguments (list semaphore index 'susv3-xsi:getncnt 0)
                :caller 'semaphore-number-waiting-for-increase))
 
@@ -603,7 +603,7 @@ the creator or owner of the message queue.
    cess   must   have  read  access  privileges  on  the
    semaphore set."
   (check-errno (susv3-xsi:semctl semaphore index susv3-xsi:getzcnt 0)
-               :function 'susv3-xsi:semctl 
+               :function 'susv3-xsi:semctl
                :arguments (list semaphore index 'susv3-xsi:getzcnt 0)
                :caller 'semaphore-number-waiting-for-zero))
 
@@ -618,7 +618,7 @@ the creator or owner of the message queue.
    The calling process must have alter access privileges
    on the semaphore set."
   (check-errno (susv3-xsi:semctl semaphore index susv3-xsi:setval value)
-               :function 'susv3-xsi:semctl 
+               :function 'susv3-xsi:semctl
                :arguments (list semaphore index 'susv3-xsi:setval value)
                :caller 'semaphore-set-value)) ;;semaphore-set-value
 
@@ -657,7 +657,7 @@ OPERATION: a list of (sem_num sem_op [:no-wait] [:undo])
             (ffi:slot (ffi:element d i) 'susv3-xsi::sem_flg)
             (+ (if (member :no-wait (cddr (car ops))) susv3-xsi:ipc_nowait 0)
                (if (member :undo    (cddr (car ops))) susv3-xsi:sem_undo   0))))
-    (check-errno (susv3-xsi:semop semaphore 
+    (check-errno (susv3-xsi:semop semaphore
                                   (ffi:foreign-address-unsigned
                                    (ffi:c-var-address d))
                                   (length operations))

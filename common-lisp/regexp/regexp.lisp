@@ -5,15 +5,15 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Regexp Portability Layer.
 ;;;;
 ;;;;    This package provides a common API over cl-ppcre or #+clisp regexp.
 ;;;;
 ;;;;    On clisp, the user can choose to use the REGEXP package instead of
 ;;;;    CL-PPCRE, by adjoining :use-regexp instead of :use-ppcre to
-;;;;    *features* (see the beginning of this file). 
-;;;;    
+;;;;    *features* (see the beginning of this file).
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -22,19 +22,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -68,19 +68,19 @@ to choose between the two currently available regexp engines.
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2015 - 2015
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -98,7 +98,7 @@ dynamically bind this variable temporarily to switch the engine.")
 (defun engines ()
   "RETURN: A list of designators for the available regexp engines."
   (append '(:ppcre)
-          #+use-regexp '(:regexp) 
+          #+use-regexp '(:regexp)
           '(#|:posix :emacs|#)))
 
 (defun select (engine)

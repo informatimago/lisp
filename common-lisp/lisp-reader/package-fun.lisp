@@ -106,7 +106,7 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_mk_sym.htm>
 
 (defgeneric symbol-name (sym)
   (:documentation "
-RETURN: the name of the symbol.     
+RETURN: the name of the symbol.
 URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_symb_2.htm>
 "))
 
@@ -190,7 +190,7 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_use_pk.htm>
 
 (defgeneric unuse-package (pack &optional using-pack)
   (:documentation "
-DO:     Make the USING-PACK unuse the package PACK 
+DO:     Make the USING-PACK unuse the package PACK
 URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_unuse_.htm>
 "))
 
@@ -234,7 +234,7 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_rn_pkg.htm>
 
 ;;; Variables
 
-(defparameter *keyword-package*           nil) 
+(defparameter *keyword-package*           nil)
 (defparameter *common-lisp-package*       nil)
 (defparameter *common-lisp-user-package*  nil)
 (defvar *package* nil
@@ -287,7 +287,7 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_pkg_er.htm>
   (:report (lambda (condition stream)
              (format stream "Package error with ~A" (package-error-package condition))))
 (:documentation "
-The type package-error consists of error conditions related to operations on packages. 
+The type package-error consists of error conditions related to operations on packages.
 URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/e_pkg_er.htm>
 "))
 
@@ -456,7 +456,7 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/t_kwd.htm>
   (:method ((object t))       nil)
   (:method ((object keyword)) t)
   (:documentation "
-RETURN: Whether the object is a keyword.     
+RETURN: Whether the object is a keyword.
 URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_kwdp.htm>
 "))
 
@@ -482,10 +482,10 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_kwdp.htm>
 
 (defun parses-as-a-number-p (string &key (start 0) (end nil) (base *read-base*))
   ;; integer  ::= [sign] digit+
-  ;; integer  ::= [sign] decimal-digit+ decimal-point 
+  ;; integer  ::= [sign] decimal-digit+ decimal-point
   ;; ratio    ::= [sign] {decimal-digit}+ '/' {decimal-digit}+
   ;; float    ::= [sign] {decimal-digit}* decimal-point {decimal-digit}+ exponent
-  ;; float    ::= [sign] {decimal-digit}* decimal-point {decimal-digit}+ 
+  ;; float    ::= [sign] {decimal-digit}* decimal-point {decimal-digit}+
   ;; float    ::= [sign] {decimal-digit}+ exponent
   ;; float    ::= [sign] {decimal-digit}+ decimal-point {decimal-digit}* exponent
   ;; exponent ::=  exponent-marker [sign] {digit}+
@@ -608,7 +608,7 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_kwdp.htm>
          :do (if (char= #\| ch) (princ "\\|") (princ ch))
          :finally (princ "|"))))
     (t
-     (let ((transform 
+     (let ((transform
             (if *print-escape*
                 (ecase (readtable-case *readtable*)
                   (:upcase     (lambda (ch)
@@ -623,7 +623,7 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_kwdp.htm>
                                          (format nil "\\~C" ch)
                                          ch))))
                   (:preserve   (function identity))
-                  (:invert     (function identity)))   
+                  (:invert     (function identity)))
                 (ecase (readtable-case *readtable*)
                   (:upcase     (let ((start-word t))
                                  (lambda (ch)
@@ -831,7 +831,7 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/t_pkg.htm>
   (:method ((object t)) nil)
   (:method ((package package)) t)
   (:documentation "
-RETURN: Whether the object is a package.     
+RETURN: Whether the object is a package.
 URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_pkgp.htm>
 "))
 
@@ -896,14 +896,14 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_pkgp.htm>
             :test (lambda (condition)
                     (declare (ignore condition))
                     (member if-not-a-string-designator '(:ignore :ignore-or-replace)))
-            :report "Ignore it."           
+            :report "Ignore it."
             nil)
           (read-a-new-string-designator (new-string)
             :test (lambda (condition)
                     (declare (ignore condition))
                     (member if-not-a-string-designator '(:replace :ignore-or-replace)))
             :interactive query-string
-            :report "Enter a string"           
+            :report "Enter a string"
             (normalize-string-designator
              new-string
              :if-not-a-string-designator if-not-a-string-designator))))))))
@@ -1035,14 +1035,14 @@ IF-PACKAGE-EXISTS           The default is :PACKAGE
                :test (lambda (condition)
                        (declare (ignore condition))
                        (member restarts '(:ignore :ignore-or-replace)))
-               :report "Ignore it."           
+               :report "Ignore it."
                nil)
              (read-a-new-package-designator (new-package)
                :test (lambda (condition)
                        (declare (ignore condition))
                        (member restarts '(:replace :ignore-or-replace)))
                :interactive query-package-name
-               :report "Enter a package name"           
+               :report "Enter a package name"
                (normalize-package-designator
                 new-package
                 :if-not-a-package-designator if-not-a-package-designator
@@ -1055,20 +1055,20 @@ IF-PACKAGE-EXISTS           The default is :PACKAGE
                :test (lambda (condition)
                        (declare (ignore condition))
                        (member restarts '(:ignore :ignore-or-replace)))
-               :report "Ignore it."           
+               :report "Ignore it."
                nil)
              (read-a-new-package-designator (new-package)
                :test (lambda (condition)
                        (declare (ignore condition))
                        (member restarts '(:replace :ignore-or-replace)))
                :interactive query-package-name
-               :report "Enter a package name"           
+               :report "Enter a package name"
                (normalize-package-designator
                 new-package
                 :if-not-a-package-designator if-not-a-package-designator
                 :if-package-does-not-exist if-package-does-not-exist
                 :if-package-exists if-package-exists)))))
-    
+
     (typecase object
 
       (string-designator
@@ -1090,7 +1090,7 @@ IF-PACKAGE-EXISTS           The default is :PACKAGE
                                           :package normalized
                                           :format-control "There is no package named ~S"
                                           :format-arguments (list normalized)))))))
-      
+
       (package
        (case if-package-exists
          ((:package) object)
@@ -1106,7 +1106,7 @@ IF-PACKAGE-EXISTS           The default is :PACKAGE
                                     :package object
                                     :format-control "There is already a package named ~S"
                                     :format-arguments (list (package-name object))))))
-      
+
       (otherwise
        (case if-not-a-package-designator
          ((nil)     nil)
@@ -1187,7 +1187,7 @@ IF-PACKAGE-EXISTS           The default is :PACKAGE
                              :imported-symbol sym)
           (enter-new-name (new-symbol)
             :interactive query-symbol
-            :report "Enter a new symbol, instead" 
+            :report "Enter a new symbol, instead"
             (check-import-conflict new-symbol pack))
           (ignore-symbol ()
             :report (lambda (stream) (format stream "Ignore the symbol ~S" sym))
@@ -1267,11 +1267,11 @@ IF-PACKAGE-EXISTS           The default is :PACKAGE
                 (enter-new-name (new-name)
                   :test (lambda (condition) (declare (ignore condition)) (eq name pack-name))
                   :interactive query-package-name
-                  :report "Enter a new package name, instead"           
+                  :report "Enter a new package name, instead"
                   (setf name new-name))
                 (enter-new-name (new-name)
                   :test  (lambda (condition) (declare (ignore condition)) (not (eq name pack-name)))
-                  :report "Enter a new package nickname, instead"           
+                  :report "Enter a new package nickname, instead"
                   :interactive query-package-nickname
                   (setf name new-name))
                 (ignore-nickname ()

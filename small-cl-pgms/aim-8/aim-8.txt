@@ -3,13 +3,13 @@
                                     March 23, 1959
 
 Artificial intelligence Project---RLE and MIT Computation Center
-                       
+
                          Memo 8
 
 RECURSIVE FUNCTIONS OF SYMBOLIC EXPRESSIONS AND THEIR COMPUTATION
 
                        BY MACHINE
- 
+
                      by J. McCarthy
 
                    An Error in Memo 8
@@ -32,13 +32,13 @@ defined by
                                     March 4, 1959
 
 Artificial intelligence Project---RLE and MIT Computation Center
-                       
+
                          Memo 8
 
 RECURSIVE FUNCTIONS OF SYMBOLIC EXPRESSIONS AND THEIR COMPUTATION
 
                        BY MACHINE
- 
+
                      by J. McCarthy
 
      The attached paper is a description of the LISP system
@@ -55,7 +55,7 @@ computer subroutines will be added.
 
                           -1-
 
-RECURSIVE FUNCTIONS OF SYMBOLIC EXPRESSIONS AND THEIR 
+RECURSIVE FUNCTIONS OF SYMBOLIC EXPRESSIONS AND THEIR
               COMPUTATION BY MACHINE
        by J. McCarthy, MIT Computation Center
 
@@ -80,7 +80,7 @@ or any other electronic computer and it now seems expedient
 to expound the system starting with the class of expressions
 called S-expressions and the functions called S-functions.
      In this paper, we first describe the class of S-expressions
-and S-functions.  Then we describe the representation of 
+and S-functions.  Then we describe the representation of
 S-functions by S-expressions which enables us to prove that
 all computable partial functions have been obtained, to obtain
 a universal S-function, and to exhibit a set of questions
@@ -101,8 +101,8 @@ recursive function theory in terms of S-functions and their
 representation by S-expressions beyond the simplest theorems,
 it seems that formulation of this theory in terms of S-func-
 tions has important advantages.  Devices such as Gödel number-
-ing are unnecessary and so is the construction of particular 
-Turing machines.  (These constructions are all artificial in 
+ing are unnecessary and so is the construction of particular
+Turing machines.  (These constructions are all artificial in
 terms of what is intended to be accomplished by them).  The
 advantage stems from the fact that functions of symbolic
 expressoins are easily and briefly described as S-expressions
@@ -118,9 +118,9 @@ there are other kinds of processes whose description by S-func-
 tions is inconvenient and for which the S-functions once found
 do not naturally compile into efficient programs.  For this
 reason, the LISP system includes the possibility of combining
-S-functions into Fortran or IAL-like programs.  Even this 
+S-functions into Fortran or IAL-like programs.  Even this
 will not provide the flexibility of description of processes
-hoped for from the Advice Taker system which is beyond the 
+hoped for from the Advice Taker system which is beyond the
 scope of this paper.
 
 2.   Recursive Functions of Symbolic Expressions
@@ -158,7 +158,7 @@ elementary ones according to certain recursive rules.
      1.   null[e]
           null[e] is true if and only if S-expression e is the
 null expression ⋀.  (We shall use square brackets and semi-colons
-for writing functions of S-expressions since parentheses and 
+for writing functions of S-expressions since parentheses and
 commas have been pre-empted.  When writing about functions in
 general we may continue to use parentheses and commas.)
      2.   atom[e]
@@ -200,7 +200,7 @@ wehre e₁ is an S-expression we have rest[e]=⋀.
           Some examples are:
           combine[A;⋀]=(A)
           combine[(A,B);(B,C)]=((A,B),B,C)
-     The functions first, rest and combine are related by the 
+     The functions first, rest and combine are related by the
 relations
           first[combine[e₁;e₂]]=e₁
           rest[combine[e₁;e₂]]=e₂
@@ -257,7 +257,7 @@ defined and false, then the value of [p₁⟶e₁,...,pk⟶ek] is that
 of [p₂⟶e₂,...pk⟶ek].  Finally if pk is false the value of
 [pk⟶ek] is undefined.
      An example of a conditional expression is [null[x]⟶⋀;
-atom[x]⟶⋀;1⟶first[x]].  The "1" occuring in the above 
+atom[x]⟶⋀;1⟶first[x]].  The "1" occuring in the above
 expression is the propositional constant "truth".  We also use
 
                           -6-
@@ -270,7 +270,7 @@ S-expressions.  We could define a corresponding function by
 first_a=λ[[x]; [null[x]⟶⋀;atom[x]⟶⋀;1⟶first[x]]].
      It is very important to note that for a conditional
 expressoin to be defined it is not necessary for all of its
-sub-expressions to be defined.  If p₁ is defined and true and 
+sub-expressions to be defined.  If p₁ is defined and true and
 e₁ is defined, the conditional expression [p₁⟶e₁,...,pk⟶ek]
 is defined even if none of the other p's or e's is defined.
 If p₁ is defined and false, p₂ is defined and true and e₂ is
@@ -280,9 +280,9 @@ p's and e's are undefined.
 in terms of conditional expressions.  We have p₁∧p₂=[p₁⟶[p₂
 ⟶1,1⟶0],1⟶0] and p₁∨p₂=[p₁⟶1,p₂⟶1,1⟶0] and ∼p=[p⟶0,1⟶1]
 There is a slight difference between the connecetives defined
-this way and the ordinary connectives.  Suppose that p₁ is 
+this way and the ordinary connectives.  Suppose that p₁ is
 defined and true but p₂ is undefined.  Then p₁∨p₂ is defined
-and true but p₂∨p₁ is undefined.  
+and true but p₂∨p₁ is undefined.
      2.5  Recursive Function Definitions
      The functions which can be obtained from the elementary
 functions and predicates by composition and conditional expres-
@@ -304,7 +304,7 @@ evaluate the corresponding e.  No attempt is made
                           -7-
 
 to evaluate later p's or any e except the one corresponding
-to the first e.  It may happen that in evaluating for given 
+to the first e.  It may happen that in evaluating for given
 values of the variables it is unnecessary to evaluate any
 expression involving the defined function f.  In this case,
 the evaluation may be completed and the function defined for
@@ -353,7 +353,7 @@ conditional is applicable.  We have
      =combine[combine[(A,B);combine[A;⋀]];(C)]
      =(((A,B),A),C)
      2.6  Functions with Functions as arguments
-     If we allow variables representing functions to occur in 
+     If we allow variables representing functions to occur in
 expressions and create functions by incorporating these variables
 as arguments of λ's we can define certain functions more concisely
 than without this facility.  However, as we shall show later no
@@ -362,7 +362,7 @@ additional S-function become definable.
      where x is an S-expression and f is a function from S-expres-
 sions to S-expressions.  We have
 maplist=λ[[x,f];[null[x]⟶⋀;1⟶combine[f[x];maplist[rest[x];f]]]]
-     The usefulness of maplist is illustrated byb formulas for 
+     The usefulness of maplist is illustrated byb formulas for
 the partial derivative with respect to x of expressions involving
 sums and products of x and other variables.  The S-expressions
 we shall differentiate are formed as follow:
@@ -445,9 +445,9 @@ of symbols (it doesn't matter whether these sets overlap) and
 the two directions by the symbols "L" and "R".  A quintuple is
 then represented by an S-expression (st,sy,nsy,dir,nst).
 The Turing machine is represented by an S-expression. (ist,
-blank,quin1,...quink) were ist represents the canonical 
+blank,quin1,...quink) were ist represents the canonical
 initial state, blank is the symbol used for a blank square
-(squares beyond the region explicitly represented in the 
+(squares beyond the region explicitly represented in the
 S-expression for a tape are assumed to be blank and are read
 that way when reached).  As an example, we give the representa-
 tion of a Turing machine which moves to the right on a tape
@@ -567,7 +567,7 @@ is represented by the S-expression.
 
      This notation is rather formidable for a human to read,
 and when we come to the computer form of the system we will
-see how it can be made easier by adding some features to the 
+see how it can be made easier by adding some features to the
 read and print routines without changing the internal compu-
 tation processes.
      3.2.  A Function of S-expressions which is not an S-function.
@@ -575,7 +575,7 @@ tation processes.
 defined for values of its arguments for which the process of
 evaluation does not terminate.  It is easy to give examples
 of S-functions which are defined for all arguments, or examples
-which are defined for no arguments, or examples which are 
+which are defined for no arguments, or examples which are
 defined for some arguments.  It would be nicie to be able to
 determine whether a given S-function is defined for given
 arguments.  Consider, then, the function def[f;s] whose value
@@ -595,7 +595,7 @@ For any S-function  u  with S-expression  u' g[u'] is 1 if u[u']
 undefined and is undefined otherwise.
 Consider now g[g'] where g' is an S-expression for g.  Assume
 first that g[g'] were defined.  This is precisely the condi-
-tion that g' be the kind of S-expression for which  g  is 
+tion that g' be the kind of S-expression for which  g  is
 undefined.  Contrawise, were g[g'] undefined  g'  would be the
 kind of S-expression for which  g  is defined.
      Thus our assumption that def[f;s] is an S-function leads
@@ -674,7 +674,7 @@ character  x  to the string  y.
      3.   x=y,      defined for  x  and  y characters.
      The advantage of linear Lisp is that no cahracters are
 given special roles as are parentheses and comma in Lisp.
-This permits computations with any notation which can be 
+This permits computations with any notation which can be
 written linearly.  The disadvantage of linear Lisp is that
 the extraction of sub-expressions is a fairly involed rather
 than an elementary operation.  It is not hard to write in
@@ -695,8 +695,8 @@ then we can define
      rest[(e₁,e₂)]=e₂
      combine[e₁;e₂]=(e₁,e₂)
      We need only two predicates, equality for symbols and
-atom.  The null list can be dispensed with.  This system is 
-easier until we try to represent functions by expressions which 
+atom.  The null list can be dispensed with.  This system is
+easier until we try to represent functions by expressions which
 is, after all, the principal application; moreover, in order
 to apply the system to itself we need to be abel to write
 functions.

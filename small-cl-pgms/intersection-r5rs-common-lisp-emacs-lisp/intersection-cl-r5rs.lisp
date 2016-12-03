@@ -5,14 +5,14 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    An intersection of R5RS and Common Lisp.
 ;;;;
 ;;;;    This is a Common-Lisp program that let one load scheme
 ;;;;    programs using only operators in the intersection with Common
 ;;;;    Lisp.
 ;;;;
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -20,19 +20,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    GPL
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2009 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software; you can redistribute it and/or
 ;;;;    modify it under the terms of the GNU General Public License
 ;;;;    as published by the Free Software Foundation; either version
 ;;;;    2 of the License, or (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be
 ;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
 ;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 ;;;;    PURPOSE.  See the GNU General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU General Public
 ;;;;    License along with this program; if not, write to the Free
 ;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
@@ -165,16 +165,16 @@ Note: are direly missing DEFINE, LETREC, NULL? and other predicates,
            "MEMQ" "MEMV" "MEMBER" "ASSQ" "ASSV" "ASSOC"
 
            "SYMBOL?" "SYMBOL->STRING" "STRING->SYMBOL"
-           
+
            "CHAR?"
-           "CHAR=?" "CHAR<?" "CHAR>?" "CHAR<=?" "CHAR>=?" 
+           "CHAR=?" "CHAR<?" "CHAR>?" "CHAR<=?" "CHAR>=?"
            "CHAR-CI=?" "CHAR-CI<?" "CHAR-CI>?" "CHAR-CI<=?" "CHAR-CI>=?"
            "CHAR-ALPHABETIC?" "CHAR-NUMERIC?" "CHAR-WHITESPACE?"
            "CHAR-UPPER-CASE?" "CHAR-LOWER-CASE?" "CHAR->INTEGER" "INTEGER->CHAR"
            "CHAR-UPCASE" "CHAR-DOWNCASE"
 
            "STRING?" "STRING" "STRING-LENGTH" "STRING-REF" "STRING-SET!"
-           "STRING=?" "STRING<?" "STRING>?" "STRING<=?" "STRING>=?" 
+           "STRING=?" "STRING<?" "STRING>?" "STRING<=?" "STRING>=?"
            "STRING-CI=?" "STRING-CI<?" "STRING-CI>?" "STRING-CI<=?" "STRING-CI>=?"
            "SUBSTRING" "STRING-APPEND" "STRING->LIST" "LIST->STRING" "STRING-COPY"
            "STRING-FILL!"
@@ -193,7 +193,7 @@ Note: are direly missing DEFINE, LETREC, NULL? and other predicates,
            "EOF-OBJECT?" "CHAR-READY?"
            "DISPLAY" "NEWLINE"
            "TRANSCRIPT-ON" "TRANSCRIPT-OFF"
-           
+
            ))
 
 (defpackage "INTERSECTION-CL-R5RS.LIBRARY.USER"
@@ -376,7 +376,7 @@ Note: are direly missing DEFINE, LETREC, NULL? and other predicates,
 
 (defun number->string (obj &optional (base 10.))
   (check-type obj number)
-  (write-to-string obj 
+  (write-to-string obj
                    :array nil :base base :case :downcase :circle t
                    :escape t :gensym t :length nil :level nil :lines nil
                    :miser-width nil  :pretty nil
@@ -507,7 +507,7 @@ Note: are direly missing DEFINE, LETREC, NULL? and other predicates,
                                   (let ((*standard-output* stream))
                                     (funcall thunk)))))
 (defun open-input-file  (filename) (open filename))
-(defun open-output-file (filename) (open filename 
+(defun open-output-file (filename) (open filename
                                          :direction :output
                                          :if-exists :supersede
                                          :if-does-not-exist :create))

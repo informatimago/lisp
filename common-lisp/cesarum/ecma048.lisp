@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    This package loads the ECMA-048 standard text and from
 ;;;;    this specifications can generate functions returning
 ;;;;    the control sequences defined in the standard.
@@ -34,19 +34,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -69,7 +69,7 @@
 
 
     Copyright Pascal J. Bourguignon 2004 - 2015
-    
+
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
     as published by the Free Software Foundation; either version
@@ -79,16 +79,16 @@
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "DEFENUM")
   (:shadow "ED")
   (:export
-   "CODE" 
+   "CODE"
    "CODE-REFERENCE" "CODE-NAME" "CODE-TITLE" "CODE-NOTATION"
    "CODE-REPRESENTATION" "CODE-DESCRIPTION" "CODE-DEFAULT"
    ;; The ECMA048 codes:
    "*CODES*"
    ;; Not yet: "LOAD-CODE-SPECIFICATIONS"
    "GENERATE-CODE-FUNCTION"   ; generates the function of one code.
-   "GENERATE-ALL-FUNCTIONS"   ; generates the functions of all *CODES*. 
+   "GENERATE-ALL-FUNCTIONS"   ; generates the functions of all *CODES*.
    "DEFINE-CODE-FUNCTION"     ; defines the function of one code.
-   "DEFINE-ALL-FUNCTIONS"     ; defines the functions of all *CODES*. 
+   "DEFINE-ALL-FUNCTIONS"     ; defines the functions of all *CODES*.
    "GENERATE-SHELL-FUNCTION"  ; generates one shell funcntion of one code.
    "PRINT-SHELL-FUNCTIONS"    ; generates and prints all shell functions.
    "PRINT-DOCUMENTATION"      ; prints the documentation of all *CODES*
@@ -137,7 +137,7 @@
 ;; Jean Delvare provided the following table of different common terminal
 ;; emulators and their support for the various attributes and others have
 ;; helped me flesh it out:
-;; 
+;;
 ;;               clear    bold     dark    under    blink   reverse  conceal
 ;;  ------------------------------------------------------------------------
 ;;  xterm         yes      yes      no      yes     bold      yes      yes
@@ -156,47 +156,47 @@
 ;; Newsgroups: comp.lang.lisp
 ;; Date: Thu, 05 Jan 2006 11:30:06 -0000
 ;; Organization: RadixNet Internet Services
-;; 
+;;
 ;; John Thingstad <john.thingstad@chello.no> wrote:
-;; > exerpt from  
+;; > exerpt from
 ;; > http://kjell.haxx.se/man/man.cgi?page=Term::ANSIColor&section=3perl
-;; 
+;;
 ;; ...
-;; 
+;;
 ;; >  Jean Delvare provided the following table of different common  terminal
 ;; >  emulators and their support for the various attributes and others  have
 ;; >  helped me flesh it out:
-;; 
+;;
 ;; >                clear    bold     dark    under    blink   reverse   conceal
 ;; >   ------------------------------------------------------------------------
 ;; >   xterm         yes      yes      no      yes     bold      yes       yes
-;; 
+;;
 ;; xterm implements blink (has done so for a few years).
-;; 
+;;
 ;; >   linux         yes      yes      yes    bold      yes      yes       no
 ;; >   rxvt          yes      yes      no      yes  bold/black   yes       no
 ;; >   dtterm        yes      yes      yes     yes    reverse    yes       yes
 ;; >   teraterm      yes    reverse    no      yes    rev/red    yes       no
-;; 
+;;
 ;; hmm - "dark" isn't mentioned in the lisp code.  Perhaps you mean "dim".
-;; 
+;;
 ;; >   aixterm      kinda   normal     no      yes      no       yes       yes
 ;; >   PuTTY         yes     color     no      yes      no       yes       no
 ;; >   Windows       yes      no       no      no       no       yes       no
 ;; >   Cygwin SSH    yes      yes      no     color    color    color      yes
 ;; >   Mac Terminal  yes      yes      no      yes      yes      yes       yes
-;; 
+;;
 ;; Cygwin SSH is not a terminal emulator.  There's a console window terminal
 ;; emulator within which one can run telnet or ssh.
-;; 
+;;
 ;; PuTTY does bold.
-;; 
+;;
 ;; Tera Term uses color (blue) for bold.
-;; 
+;;
 ;; The comments about "clear" don't fit dtterm (it doesn't implement the same
 ;; color model as xterm, etc).
-;; 
-;; -- 
+;;
+;; --
 ;; Thomas E. Dickey
 ;; http://invisible-island.net
 ;; ftp://invisible-island.net
@@ -211,10 +211,10 @@
   (defconstant us   #x1f "IS1 -- unit separator")
   (defconstant del  #x7f " -- delete")
   ;; Where are these defined?
-  (defconstant pad  #x80 " -- PADDING CHARACTER") 
-  (defconstant hop  #x81 " -- HIGH OCTET PRESET") 
-  (defconstant ind  #x84 " -- INDEX") 
-  (defconstant sgci #x99 " -- SINGLE GRAPHIC CHARACTER INTRODUCER") 
+  (defconstant pad  #x80 " -- PADDING CHARACTER")
+  (defconstant hop  #x81 " -- HIGH OCTET PRESET")
+  (defconstant ind  #x84 " -- INDEX")
+  (defconstant sgci #x99 " -- SINGLE GRAPHIC CHARACTER INTRODUCER")
   );;eval-when
 
 
@@ -290,7 +290,7 @@
                       ("Pn = 0"                . ((pn . 0)))
                       ("Ps = 0"                . ((ps . 0)))
                       ("NONE for Pn1"          . ((pn1 . :none)))
-                      ("NONE"                  . ((* . :none))) 
+                      ("NONE"                  . ((* . :none)))
                       ("Pn = 1"                . ((pn . 1))) )
                     :test (function string=))))))
     (let ((nota (code-notation c)))
@@ -298,13 +298,13 @@
         (setf (code-notation c)
               (cdr (assoc
                     nota
-                    '(("(Fs)"      . (fs)) 
-                      ("(Ps...)"   . (ps...)) 
-                      ("(Ps1;Ps2)" . (ps1 ps2)) 
-                      ("(Ps)"      . (ps)) 
-                      ("(Pn1;Pn2)" . (pn1 pn2)) 
-                      ("(Pn)"      . (pn)) 
-                      ("(C0)"      . (c0)) 
+                    '(("(Fs)"      . (fs))
+                      ("(Ps...)"   . (ps...))
+                      ("(Ps1;Ps2)" . (ps1 ps2))
+                      ("(Ps)"      . (ps))
+                      ("(Pn1;Pn2)" . (pn1 pn2))
+                      ("(Pn)"      . (pn))
+                      ("(C0)"      . (c0))
                       ("(C1)"      . (c1)) )
                     :test (function string=))))))
     (let ((repr (code-representation c)))
@@ -345,7 +345,7 @@
         "The default value for the parameters of the ECMA-048 code."))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
- (defparameter *codes* 
+ (defparameter *codes*
    (mapcar
     (lambda (data) (apply (function make-code) data))
     '((:reference "8.3.1" :name "ACK" :title "ACKNOWLEDGE" :notation (c0)
@@ -1009,7 +1009,7 @@
     item called a unit, see"
        :default nil)
       (:reference "8.3.70" :name "IS2"
-       :title "INFORMATION SEPARATOR TWO (RS - RECORD SEPARATOR)" 
+       :title "INFORMATION SEPARATOR TWO (RS - RECORD SEPARATOR)"
        :notation (c0)
        :representation (("01/14"))
        :description
@@ -2051,7 +2051,7 @@ and return (VALUES high low) or NIL."
      (values (parse-integer string :start 0 :end 2)
              (parse-integer string :start 3 :end 5)))))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)  
+(eval-when (:compile-toplevel :load-toplevel :execute)
  (defun generate-code-function (code &key
                                  (export nil)
                                  (8-bit nil)
@@ -2076,7 +2076,7 @@ EXPORT:         Whether the generated function symbol must be exported.
                 must return 8-bit escape sequences or 7-bit escape sequences.
 
 PRINT:          If NIL, then return the escape sequence
-                else the function takes an optional last argument of type 
+                else the function takes an optional last argument of type
                 stream or T (which is the default) and writes the escape
                 sequence to this stream, or *STANDARD-OUTPUT* for T.
 
@@ -2089,7 +2089,7 @@ BUGS:           Perhaps we should generate functions that take 8-BIT and
 
 "
    (labels ((compile-args (fmt args)
-              (list `(map 'list (function char-code) 
+              (list `(map 'list (function char-code)
                        (format nil ,fmt ,@args))))
             (compile-rep (r)
               (let (high low)
@@ -2102,7 +2102,7 @@ BUGS:           Perhaps we should generate functions that take 8-BIT and
                   ((string-equal "Pn"      r) (compile-args "~D" '(pn)))
                   ((string-equal "Ps"      r) (compile-args "~D" '(ps)))
                   ((string-equal "Ps..."   r)
-                   (compile-args "~{~D~^;~}" 
+                   (compile-args "~{~D~^;~}"
                                  (if print
                                      '((let ((last (car (last ps...))))
                                          (if (or (eq 't last) (streamp last))
@@ -2153,7 +2153,7 @@ BUGS:           Perhaps we should generate functions that take 8-BIT and
                           (map result-type (if (eq 'string result-type)
                                                (function code-char)
                                                (function identity))
-                            result))))     
+                            result))))
        (when print
          (setf arguments (append arguments
                                  (if (eq '&rest (car arguments))
@@ -2180,7 +2180,7 @@ BUGS:           Perhaps we should generate functions that take 8-BIT and
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
- (defun generate-all-functions (&key 
+ (defun generate-all-functions (&key
                                   (export nil)
                                   (8-bit nil)
                                   (print nil)
@@ -2206,7 +2206,7 @@ EXPORT:         Whether the generated function symbol must be exported.
                 must return 8-bit escape sequences or 7-bit escape sequences.
 
 PRINT:          If NIL, then return the escape sequence
-                else the function takes an optional last argument of type 
+                else the function takes an optional last argument of type
                 stream or T (which is the default) and writes the escape
                 sequence to this stream, or *STANDARD-OUTPUT* for T.
 
@@ -2228,7 +2228,7 @@ BUGS:           Perhaps we should generate functions that take 8-BIT and
                 *codes*))))
 
 
-(defmacro define-code-function (code &key 
+(defmacro define-code-function (code &key
                                  (export nil)
                                  (8-bit nil)
                                  (print nil)
@@ -2240,7 +2240,7 @@ BUGS:           Perhaps we should generate functions that take 8-BIT and
                           :result-type result-type))
 
 
-(defmacro define-all-functions (&key 
+(defmacro define-all-functions (&key
                                   (export nil)
                                   (8-bit nil)
                                   (print nil)
@@ -2267,8 +2267,8 @@ BUGS:           Perhaps we should generate functions that take 8-BIT and
 ;;                           :8-bit   t
 ;;                           :print   nil
 ;;                           :result-type '(vector (unsigned-byte 8))))
-;; 
-;; 
+;;
+;;
 ;; ;; When loading the source (but not when loading the compiled file),
 ;; ;; let's generate the functions, not compiling them, and export them.
 ;; ;;
@@ -2313,7 +2313,7 @@ Prints the documentation of the escape sequence functions generated.
   (dolist (item (mapcar
                  (lambda (f) (list f
                                    (second (function-lambda-expression f))
-                                   (documentation f 'function)))  
+                                   (documentation f 'function)))
                  (mapcar (function intern)
                          (mapcar (function code-name)
                                  (sort *codes*
@@ -2321,7 +2321,7 @@ Prints the documentation of the escape sequence functions generated.
                                        :key (if (eq sort-by :name)
                                                 (function code-name)
                                                 (function code-title)))))))
-    (format stream ";; ~6A ~14A ~A~%" 
+    (format stream ";; ~6A ~14A ~A~%"
             (first item) (or (second item) "()") (third item))
     (when description
       (format stream ";; ~%~{;; ~A~%~};; ~%;; ~%"
@@ -2570,14 +2570,14 @@ Prints sh/bash functions to print the escape sequences.
 
 ;; ------------------------------------------------------------------------
 ;; (PS1 PS2)
-;; 
+;;
 ;;     SPD   : (CSI Ps1;Ps2 02/00 05/03)
 ;;     SEF   : (CSI Ps1;Ps2 02/00 05/09)
 ;;     SCP   : (CSI Ps1;Ps2 02/00 06/11)
 ;;     FNT   : (CSI Ps1;Ps2 02/00 04/04)
-;; 
+;;
 ;; (PS)
-;; 
+;;
 ;;     TBC   : (CSI Ps 06/07)
 ;;     SVS   : (CSI Ps 02/00 04/12)
 ;;     STAB  : (CSI Ps 02/00 05/14)
@@ -2602,9 +2602,9 @@ Prints sh/bash functions to print the escape sequences.
 ;;     EA    : (CSI Ps 04/15)
 ;;     DSR   : (CSI Ps 06/14)
 ;;     DA    : (CSI Ps 06/03)
-;; 
+;;
 ;; (PS...)
-;; 
+;;
 ;;     SM    : (CSI Ps... 06/08)
 ;;     SGR   : (CSI Ps... 06/13)
 ;;     SAPV  : (CSI Ps... 02/00 05/13)
@@ -2613,9 +2613,9 @@ Prints sh/bash functions to print the escape sequences.
 ;;     JFY   : (CSI Ps... 02/00 04/06)
 ;;     DAQ   : (CSI Ps... 06/15)
 ;;     CTC   : (CSI Ps... 05/07)
-;; 
+;;
 ;; (PN1 PN2)
-;; 
+;;
 ;;     TCC   : (CSI Pn1;Pn2 02/00 06/03)
 ;;     SPI   : (CSI Pn1;Pn2 02/00 04/07)
 ;;     HVP   : (CSI Pn1;Pn2 06/06)
@@ -2623,9 +2623,9 @@ Prints sh/bash functions to print the escape sequences.
 ;;     DTA   : (CSI Pn1;Pn2 02/00 05/04)
 ;;     CUP   : (CSI Pn1;Pn2 04/08)
 ;;     CPR   : (CSI Pn1;Pn2 05/02)
-;; 
+;;
 ;; (FS)
-;; 
+;;
 ;;     RIS   : (ESC 06/03)
 ;;     LS3   : (ESC 06/15)
 ;;     LS2   : (ESC 06/14)
@@ -2633,9 +2633,9 @@ Prints sh/bash functions to print the escape sequences.
 ;;     EMI   : (ESC 06/02)
 ;;     DMI   : (ESC 06/00)
 ;;     CMD   : (ESC 06/04)
-;; 
+;;
 ;; (PN)
-;; 
+;;
 ;;     VPR   : (CSI Pn 06/05)
 ;;     VPB   : (CSI Pn 06/11)
 ;;     VPA   : (CSI Pn 06/04)
@@ -2683,9 +2683,9 @@ Prints sh/bash functions to print the escape sequences.
 ;;     CHT   : (CSI Pn 04/09)
 ;;     CHA   : (CSI Pn 04/07)
 ;;     CBT   : (CSI Pn 05/10)
-;; 
+;;
 ;; (C1)
-;; 
+;;
 ;;     VTS   : (08/10) (ESC 04/10)
 ;;     STS   : (09/03) (ESC 05/03)
 ;;     ST    : (09/12) (ESC 05/12)
@@ -2714,9 +2714,9 @@ Prints sh/bash functions to print the escape sequences.
 ;;     CCH   : (09/04) (ESC 05/04)
 ;;     BPH   : (08/02) (ESC 04/02)
 ;;     APC   : (09/15) (ESC 05/15)
-;; 
+;;
 ;; (C0)
-;; 
+;;
 ;;     VT    : (00/11)
 ;;     SYN   : (01/06)
 ;;     SUB   : (01/10)

@@ -15,7 +15,7 @@
   :feature :abcl
   :executable "abcl"
   :default-options ()
-  :load-option ("--load" <arg>) 
+  :load-option ("--load" <arg>)
   :eval-option ("--eval" <arg>)
   :quit-option ("--eval" "(quit)")
   :quit-expression "(extensions:quit)")
@@ -24,7 +24,7 @@
   :feature :allegro
   :executable "alisp"
   :default-options ("-batch" "-q")
-  :load-option ("-L" <arg>) 
+  :load-option ("-L" <arg>)
   :eval-option ()
   :quit-option "-kill"
   :quit-expression "(excl:exit)") ; dumps an "; Exiting" message...
@@ -61,11 +61,11 @@ sbcl          := sbcl
 cmucl         := cmucl
 openmcl       := openmcl
 
-abcl_flags    := 
-allegro_flags := 
-ccl_flags     := 
+abcl_flags    :=
+allegro_flags :=
+ccl_flags     :=
 clisp_flags   := -ansi -q -norc -kfull -e iso-8859-1 -efile utf-8 -eterminal utf-8  -on-error debug
-cmucl_flags   := -noinit -nositeinit 
-ecl_flags     := -norc 
-openmcl_flags := 
-sbcl_flags    := --noinform --sysinit /dev/null --userinit /dev/null 
+cmucl_flags   := -noinit -nositeinit
+ecl_flags     := -norc
+openmcl_flags :=
+sbcl_flags    := --noinform --sysinit /dev/null --userinit /dev/null

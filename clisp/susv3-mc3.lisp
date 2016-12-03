@@ -5,12 +5,12 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    An implementation of SUSV3-MC3 for clisp.
 ;;;;
 ;;;;    Implemented:
 ;;;;        mmap/munmap
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -18,19 +18,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -43,19 +43,19 @@
 (defpackage "COM.INFORMATIMAGO.CLISP.SUSV3-MC3"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.CLISP.SUSV3")
-  (:export 
-   "PROT-NONE" "PROT-READ" "PROT-WRITE" "PROT-EXEC" 
+  (:export
+   "PROT-NONE" "PROT-READ" "PROT-WRITE" "PROT-EXEC"
    "MAP-SHARED" "MAP-PRIVATE" "MAP-FIXED" "MAP-FILE"
-   "MAP-ANONYMOUS" "MAP-GROWSDOWN" "MAP-DENYWRITE" 
-   "MAP-EXECUTABLE" "MAP-LOCKED" "MAP-NORESERVE" 
-   "MAP-FAILED" 
+   "MAP-ANONYMOUS" "MAP-GROWSDOWN" "MAP-DENYWRITE"
+   "MAP-EXECUTABLE" "MAP-LOCKED" "MAP-NORESERVE"
+   "MAP-FAILED"
    "MMAP" "MUNMAP")
   (:documentation "
     An implementation of SUSV3-MC3 for clisp.
 
     Implemented:
         mmap/munmap
-    
+
     Copyright Pascal J. Bourguignon 2004 - 2004
 
     This program is free software; you can redistribute it and/or
@@ -65,7 +65,7 @@
 "))
 (in-package "COM.INFORMATIMAGO.CLISP.SUSV3-MC3")
 
-    
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   ;; TODO: Actually, we should include the features only if it's proven to exist on the current system. At run-time.
   (pushnew :susv3 *features*)

@@ -11,12 +11,12 @@
     <meta name="author"
          content="Pascal J. Bourguignon">
 
-    <meta http-equiv="Reply-to" 
+    <meta http-equiv="Reply-to"
           name="Reply-to"
           content="pjb@informatimago.com">
 
-    <meta http-equiv="Description"  
-          name="description" 
+    <meta http-equiv="Description"
+          name="description"
           content="Common-Lisp-Posix API specification">
 
 
@@ -31,7 +31,7 @@
 <li>The main purpose is to define a Common-Lisp SUSv3/POSIX API.
 
 <li>The secondary purpose is to write a couple of reference
-implementations for <a href="http://sbcl.sourceforge.net/">sbcl</a> 
+implementations for <a href="http://sbcl.sourceforge.net/">sbcl</a>
 and <a href="http://clisp.sourceforge.net/">clisp</a>.
 
 </ul>
@@ -49,13 +49,13 @@ and <a href="http://clisp.sourceforge.net/">clisp</a>.
 </ol>
 
 <hr>
-<a href="http://www.unix.org/version3/overview.html"> 
+<a href="http://www.unix.org/version3/overview.html">
 The Single UNIX Specification Version 3
 </a>
 consists of:
 <ul>
 <li> <a href="http://www.opengroup.org/onlinepubs/007904975/index.html">
- The Open Group Base Specifications, Issue 6. 
+ The Open Group Base Specifications, Issue 6.
  </a>, which contains the following Technical Standards:
 <ul>
 <li>Base Definitions, Issue 6 (XBD)
@@ -81,9 +81,9 @@ consists of:
     consistent, and unambiguous standard for the interface
     specification of a portable operating system based on the UNIX
     system documentation. This standard codifies the common, existing
-    definition of the UNIX system. 
+    definition of the UNIX system.
      </blockquote>
-     
+
      <p>We keep this principle verbatim for this Common-Lisp API.
 
 <li><em>Interface, Not Implementation</em>
@@ -94,7 +94,7 @@ consists of:
     the implementation of any function are given (although historical
     practice is sometimes indicated in the RATIONALE
     section). Symbolic names are given for constants (such as signals
-    and error numbers) rather than numbers. 
+    and error numbers) rather than numbers.
     </blockquote>
 
      <p>We keep this principle verbatim for this Common-Lisp API.
@@ -107,7 +107,7 @@ consists of:
     implementation. This standard does not guarantee that executable
     (object or binary) code will execute under a different conforming
     implementation than that for which it was translated, even if the
-    underlying hardware is identical. 
+    underlying hardware is identical.
     </blockquote>
 
      <p>We keep this principle verbatim for this Common-Lisp API.
@@ -125,7 +125,7 @@ consists of:
 <li><em>The Common-Lisp Language</em>
 
      <p>The system interfaces and header definitions are written
-    in terms of the standard Common-Lisp language as specified in the 
+    in terms of the standard Common-Lisp language as specified in the
     <a href="http://www.lisp.org/HyperSpec/FrontMatter/index.html">
     ANSI Common Lisp standard.</a>
      </blockquote>
@@ -139,7 +139,7 @@ consists of:
     superuser have not been included. Still, an implementation of the
     standard interface may also implement features not in this
     standard. This standard is also not concerned with hardware
-    constraints or system maintenance. 
+    constraints or system maintenance.
      </blockquote>
 
      <p>We keep this principle verbatim for this Common-Lisp API.
@@ -149,7 +149,7 @@ consists of:
       <blockquote>In keeping with the historical design principles of the
     UNIX system, the mandatory core facilities of this standard have
     been kept as minimal as possible. Additional capabilities have
-    been added as optional extensions. 
+    been added as optional extensions.
     </blockquote>
 
      <p>We keep this principle verbatim for this Common-Lisp API.
@@ -180,7 +180,7 @@ consists of:
 
       No direct references to this goal appear in this standard, but
     some results of it are mentioned in the Rationale (Informative)
-    volume. 
+    volume.
        </blockquote>
 
      <p>We keep this principle verbatim for this Common-Lisp API.
@@ -188,14 +188,14 @@ consists of:
 
 <li> Minimal Changes to Historical Implementations
 
-   <p>There is no known POSIX API for Common-Lisp, 
+   <p>There is no known POSIX API for Common-Lisp,
       no Historical Implementations.
 
    <p>However, beyond lispifying the C POSIX API, we endeavour to specify
      minimal change with respect to the C POSIX API: given some simple rules,
-     a programmer knowing the C POSIX API should be able to program easily 
+     a programmer knowing the C POSIX API should be able to program easily
      with the Common-Lisp POSIX API.
-    
+
 <li>  Minimal Changes to Existing Application Code
 
    <p>There  is no known  Common-Lisp application  using a  POSIX API,
@@ -204,7 +204,7 @@ consists of:
 
 </ul>
 
-   
+
 
 
 
@@ -215,7 +215,7 @@ consists of:
     Common-Lisp POSIX on SourceForge</a> (not yet).
 
 
-<li><a href="http://www.cliki.net/Common-Lisp-POSIX"> 
+<li><a href="http://www.cliki.net/Common-Lisp-POSIX">
     Common-Lisp POSIX on Cliki</a>
 
 <li><a href="http://www.unix.org/version3/">

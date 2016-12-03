@@ -7,7 +7,7 @@
 
   <H1>Image Based Development</H1>
 
-  <p>The package <tt>IBCL</tt> exports the same symbols as <tt>COMMON-LISP</tt>, but for 
+  <p>The package <tt>IBCL</tt> exports the same symbols as <tt>COMMON-LISP</tt>, but for
     some of the functions of macros modified to track of the source
     of the definitions and to be able to edit them from the image,
     and to save them in files.</p>
@@ -16,12 +16,12 @@
 
   <p>One can work at the REPL, define variables with
     <tt>DEFCONSTANT</tt>, <tt>DEFVAR</tt>, <tt>DEFPARAMETER</tt>, macros with <tt>DEFMACRO</tt>,
-    and functions with <tt>DEFUN</tt>, edit macro and function definitions 
+    and functions with <tt>DEFUN</tt>, edit macro and function definitions
     with <tt>ED</tt>, and save the image with <tt>SAVE-IMAGE</tt>.</p>
 
   <p>The function <tt>LIST-PACKAGES-WITH-SOURCES</tt> returns a list of packages
     where some of these variables or functions are defined.
-    The function <tt>SOURCE</tt> returns the source form of the given 
+    The function <tt>SOURCE</tt> returns the source form of the given
     variable or function.
     The function <tt>SAVE-SOURCES</tt> saves the definitions in a package,
     or all the definitions to a file or stream.</p>
@@ -33,7 +33,7 @@
        href="https://gitorious.org/com-informatimago/com-informatimago/trees/master/common-lisp/lisp">
       com.informatimago.common-lisp.lisp</a>.
 
-  <p>You can load it in a Common Lisp implementation with 
+  <p>You can load it in a Common Lisp implementation with
     <a href="http://www.quicklisp.org/">quicklisp</a>:</p>
 
   <pre class="dribble">
@@ -70,16 +70,16 @@ image-based-common-lisp-user&gt; (in-package :cl-user)
 #&lt;Package "COM.INFORMATIMAGO.COMMON-LISP.LISP.IMAGE-BASED-COMMON-LISP-USER"&gt;
 image-based-common-lisp-user&gt; (cl:in-package :cl-user)
 #&lt;Package "COMMON-LISP-USER"&gt;
-cl-user&gt; 
+cl-user&gt;
   </pre>
 
   <p>Old proof-of-concept source:
     <UL>
       <LI><A HREF="ibcl.lisp">ibcl.lisp</A></LI>
       <LI><A HREF="ibcl-bootstrap.lisp">ibcl-bootstrap.lisp</A>
-        A script to generate an executable image using 
-        IMAGE-BASED-COMMON-LISP instead of COMMON-LISP. 
-        For <a href="http://clisp.cons.org/">clisp</a> 
+        A script to generate an executable image using
+        IMAGE-BASED-COMMON-LISP instead of COMMON-LISP.
+        For <a href="http://clisp.cons.org/">clisp</a>
         or  <a href="http://sbcl.sourceforge.net/">sbcl</a>.</LI>
     </UL>
   </p>

@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    See defpackage documentation string.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -17,19 +17,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 1994 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -55,17 +55,17 @@ See also:
 License:
 
     Copyright Pascal J. Bourguignon 1994 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 "))
@@ -160,7 +160,7 @@ RETURN: RIB
 
 
 (defclass rib (iban)
-  ((bank-code  
+  ((bank-code
     :reader bank-code   :initform "00000"       :initarg :bank-code   :type (string 5))
    (branch-code
     :reader branch-code :initform "00000"       :initarg :branch-code :type (string 5))
@@ -185,9 +185,9 @@ INVARIANT:  (length banque)=5,
 (defparameter +alphabet-from+  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 (defun compute-check-digits (bank-code branch-code account-number)
-  (let ((k (mod (parse-integer 
+  (let ((k (mod (parse-integer
                  (map 'string
-                      (lambda (ch) (aref +alphabet-value+ 
+                      (lambda (ch) (aref +alphabet-value+
                                          (position (char-upcase ch)
                                                    +alphabet-from+)))
                       (concatenate 'string bank-code branch-code account-number "00"))

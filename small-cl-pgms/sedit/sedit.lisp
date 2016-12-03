@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    A simple sexp editor.
 ;;;;
 ;;;;    It is invoked as (sedit sexp), and returns the modified sexp.
@@ -20,7 +20,7 @@
 ;;;;    Notice: it uses the unicode characters LEFT_BLACK_LENTICULAR_BRACKET
 ;;;;    and RIGHT_BLACK_LENTICULAR_BRACKET to show the selected sub-sexp.
 ;;;;    This could be changed easily modifying SEDIT-PRINT-SELECTION.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -35,19 +35,19 @@
 ;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2010 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -171,13 +171,13 @@ structure is the element of the root cell).
 (defmacro reporting-errors (&body body)
   `(handler-case
        (progn ,@body)
-     (simple-condition  (err) 
+     (simple-condition  (err)
        (format *error-output* "~&~A:~%~?~&"
                (class-name (class-of err))
                (simple-condition-format-control   err)
                (simple-condition-format-arguments err))
        (finish-output *error-output*))
-     (condition (err) 
+     (condition (err)
        (format *error-output* "~&~A:~%~A~%"
                (class-name (class-of err))
                err)
@@ -195,7 +195,7 @@ structure is the element of the root cell).
       (finish-output))))
 
 (defun sedit-down (buffer)
-  (with-buffer (buffer root selection)  
+  (with-buffer (buffer root selection)
     (if (atom (selection-sexp selection))
         (progn (princ "Cannot enter an atom.") (terpri))
         (progn
@@ -203,7 +203,7 @@ structure is the element of the root cell).
           (select selection (selection-sexp selection) 0)))))
 
 (defun sedit-up (buffer)
-  (with-buffer (buffer root selection)  
+  (with-buffer (buffer root selection)
     (let ((gparent (sedit-find-object root (selection-parent-list selection))))
       (when gparent
         (unselect selection)
@@ -309,7 +309,7 @@ structure is the element of the root cell).
 
 
 (defun sedit-save (buffer)
-  (with-buffer (buffer root selection) 
+  (with-buffer (buffer root selection)
     (princ "Save buffer to file: " *query-io*)
     (finish-output *query-io*)
     (let ((path (read-line *query-io*)))
@@ -320,7 +320,7 @@ structure is the element of the root cell).
         (terpri out)))))
 
 (defun sedit-load (buffer)
-  (with-buffer (buffer root selection) 
+  (with-buffer (buffer root selection)
     (princ "Load file: " *query-io*)
     (finish-output *query-io*)
     (let* ((path (read-line *query-io*))

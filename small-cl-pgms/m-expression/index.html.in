@@ -6,7 +6,7 @@
      language="en">
 
   <h1>A Parser for M-Expressions</h1>
-  <p>Here is a parser for Lisp M-Expressions as documented in the 
+  <p>Here is a parser for Lisp M-Expressions as documented in the
     <a href="../aim-8/index.html">Memo 8, AIM-8</a></p>
 
   <p>
@@ -24,7 +24,7 @@
     Note that S-expressions can still be entered, as literal objects,
     but using comma instead of space to separate the items in lists.
   </p>
-  <p>The file <A HREF="m-expression.lisp">m-expression.lisp</A> 
+  <p>The file <A HREF="m-expression.lisp">m-expression.lisp</A>
     contains the M-expression parser and a REPL, in Common-Lisp.</p>
 
   <h2>Exemple</h2>
@@ -38,7 +38,7 @@
 T
 [2]&gt; <b>(m-repl)</b>
 
-;; We are going to define a function that is exported by COMMON-LISP, 
+;; We are going to define a function that is exported by COMMON-LISP,
 ;; so let's shadow it first:
 
 COMMON-LISP-USER[1]M-REPL&gt; <b>shadow[SUBST];</b>
@@ -52,23 +52,23 @@ COMMON-LISP-USER[2]M-REPL&gt; <b>label[subst;λ[[x;y;s];[null[s]-&gt;nil;atom[s]
 ;; S-expressions embedded in M-expressions must use comma as separator:
 COMMON-LISP-USER[3]M-REPL&gt; <b>subst[WATER;WINE;(MIX WATER AND WINE
                                   INTO (MIXED WATER AND WINE))];</b>
-SIMPLE-ERROR: 
+SIMPLE-ERROR:
 Unexpected S-CLOSE, not (:S-SYMBOL WATER)
  at " AND WINE"
 
-COMMON-LISP-USER[4]M-REPL&gt; SIMPLE-ERROR: 
+COMMON-LISP-USER[4]M-REPL&gt; SIMPLE-ERROR:
 Please terminate your m-expressions with a semi-colon, not (:S-OPEN)
 
-COMMON-LISP-USER[5]M-REPL&gt; 
-SIMPLE-ERROR: 
+COMMON-LISP-USER[5]M-REPL&gt;
+SIMPLE-ERROR:
 Please terminate your m-expressions with a semi-colon, not (:S-SYMBOL WATER)
 
-COMMON-LISP-USER[6]M-REPL&gt; 
-SIMPLE-ERROR: 
+COMMON-LISP-USER[6]M-REPL&gt;
+SIMPLE-ERROR:
 Please terminate your m-expressions with a semi-colon, not (:S-SYMBOL WINE)
 
-COMMON-LISP-USER[7]M-REPL&gt; 
-SIMPLE-ERROR: 
+COMMON-LISP-USER[7]M-REPL&gt;
+SIMPLE-ERROR:
 Unexpected token in m-term: (:S-CLOSE)
  at &quot;)];&quot;
 
@@ -89,7 +89,7 @@ COMMON-LISP-USER[11]M-REPL&gt; <b>combine[A;⋀];</b>
 
 COMMON-LISP-USER[12]M-REPL&gt; <b>quit[];</b>
 NIL
-[3]&gt; 
+[3]&gt;
 
   </pre>
 

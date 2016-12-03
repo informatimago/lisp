@@ -5,11 +5,11 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     none
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Parsing C++ sources.
 ;;;;    This is a restricted parser, used just to analyze
 ;;;;    the call graph of C++ functions and methods.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -18,19 +18,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 1996 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -50,19 +50,19 @@ the call graph of C++ functions and methods.
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 1996 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -76,9 +76,9 @@ License:
 ;;  (defclass Char-Filter             ()
 ;;      (defclass File-Filter             (Char-Filter)
 ;;      (defclass Look-ahead-Char-Filter      (Char-Filter)
-;;  
+;;
 ;;  (defclass Token-Filter            ()
-;;      (defclass C++Token-Filter         (Token-Filter) 
+;;      (defclass C++Token-Filter         (Token-Filter)
 ;;          (defclass C++NoNLToken-Filter     (C++Token-Filter)
 ;;      (defclass Look-ahead-Token-Filter (Token-Filter)
 ;;      (defclass C++Comment-Filter       (Token-Filter)
@@ -88,7 +88,7 @@ License:
 ;;----------------------------------------------------------------------
 ;; method-header ::= [ type ] class-name '::' method-name '(' arguments ')' .
 ;; body          ::= '{' { statement | body } '}' .
-;; statement     ::= { token } 
+;; statement     ::= { token }
 
 
 (defgeneric set-file (self f))
@@ -215,15 +215,15 @@ FILE-NAME-LIST:     A list of file pathnames, C++ sources and headers."))
     (cond
       ((equal kind 'letter)
        (if (token-member
-            tok 
+            tok
             '("sizeof" "delete" "this" "friend" "typedef"
-              "auto" "register" "static" "extern" "inline" 
-              "virtual" "const" "volatile" "char" "short" "int" 
-              "long" "signed" "unsigned" "float" "double" "void" 
-              "enum" "class" "struct" "union" "asm" "private" 
+              "auto" "register" "static" "extern" "inline"
+              "virtual" "const" "volatile" "char" "short" "int"
+              "long" "signed" "unsigned" "float" "double" "void"
+              "enum" "class" "struct" "union" "asm" "private"
               "protected" "public" "operator" "new" "case"
               "default"
-              "if" "else" "switch" "while" "do" "for" "break" 
+              "if" "else" "switch" "while" "do" "for" "break"
               "continue" "return" "goto" "template" "try" "catch"
               "throw"))
            'keyword
@@ -266,7 +266,7 @@ FILE-NAME-LIST:     A list of file pathnames, C++ sources and headers."))
                      ((equal kind 'letter)
                       (setq c (next-char (c++source self)))
                       (setq kind (char-kind c))
-                      (loop while (or (equal kind 'letter) 
+                      (loop while (or (equal kind 'letter)
                                       (equal kind 'digit)) do
                            (setq c (read-a-char (c++source self)))
                            (setq s (cons c s))
@@ -276,7 +276,7 @@ FILE-NAME-LIST:     A list of file pathnames, C++ sources and headers."))
                       (setq c (next-char (c++source self)))
                       (setq kind (char-kind c))
                       (loop while (or (equal kind 'digit)
-                                      (equal c (character ".")) 
+                                      (equal c (character "."))
                                       (and (char<= (character "a") c)
                                            (char<= c (character "g")))
                                       (and (char<= (character "A") c)
@@ -297,7 +297,7 @@ FILE-NAME-LIST:     A list of file pathnames, C++ sources and headers."))
                              (setq s (cons c s))
                              (if (char= (character "\\") c)
                                  (progn
-                                   (setq c (read-a-char 
+                                   (setq c (read-a-char
                                             (c++source self)))
                                    (setq s (cons c s))))
                              (setq c (read-a-char (c++source self))))
@@ -427,7 +427,7 @@ FILE-NAME-LIST:     A list of file pathnames, C++ sources and headers."))
 
 (defmethod parse ((self c++header) (filter token-filter))
   (let ((l nil) (tok (read-a-token filter)) (i 0))
-    (loop while (not (or 
+    (loop while (not (or
                       (equal tok 'eof)
                       (equal tok ")")
                       (equal tok ";;"))) do
@@ -455,7 +455,7 @@ FILE-NAME-LIST:     A list of file pathnames, C++ sources and headers."))
           (setf (header-kind self) 'method)
           (setf (c++class-name self) (car (range l (1- i) (1- i))))
           (setf (res-type self)      (range l 0 (- i 2)))
-          (if (equal (nth (1+ i) l) "~") 
+          (if (equal (nth (1+ i) l) "~")
               (progn
                 (setf (c++method-name self) (car (range l (1+ i) (+ i 2))))
                 (setf (arguments self)  (range l (+ i 3) nil)))
@@ -466,7 +466,7 @@ FILE-NAME-LIST:     A list of file pathnames, C++ sources and headers."))
 
 ;;----------------------------------------------------------------------
 ;; body          ::= '{' { statement | body } '}' .
-;; statement     ::= { token } 
+;; statement     ::= { token }
 
 (defclass c++body ()
   ((initializer :accessor initializer :initform nil)
@@ -499,7 +499,7 @@ FILE-NAME-LIST:     A list of file pathnames, C++ sources and headers."))
 (defun search-method-calls (statements)
   (cond
     ((or (null statements) (null (cdr statements))) nil)
-    ((listp (car statements)) 
+    ((listp (car statements))
      (append (search-method-calls (car statements))
              (search-method-calls (cdr statements))))
     ((equal "(" (cadr statements))
@@ -597,7 +597,7 @@ FILE-NAME-LIST:     A list of file pathnames, C++ sources and headers."))
                       (when (dotrace self)
                         (format t "~%--------------------------~%"))
                       (format t "Could not parse a method. ")
-                      (format t "Bad tokens:~a~%" 
+                      (format t "Bad tokens:~a~%"
                               (bad-token-list (header method)))
                       (when (dotrace self)
                         (format t "~%--------------------------~%")))))))

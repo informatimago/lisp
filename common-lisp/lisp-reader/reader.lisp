@@ -26,19 +26,19 @@
 ;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2006 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -73,7 +73,7 @@
            "*READ-SUPPRESS*" "*READTABLE*"
            ;; Extensions:
            "READTABLE-SYNTAX-TABLE" "READTABLE-PARSE-TOKEN"
-           "SET-INDIRECT-DISPATCH-MACRO-CHARACTER" 
+           "SET-INDIRECT-DISPATCH-MACRO-CHARACTER"
            "SET-INDIRECT-MACRO-CHARACTER"
            "LIST-ALL-MACRO-CHARACTERS"
            "SIMPLE-READER-ERROR" "SIMPLE-END-OF-FILE"
@@ -81,7 +81,7 @@
            "MISSING-SYMBOL-ERROR" "SYMBOL-MISSING-IN-PACKAGE-ERROR"
            "UNEXPORTED-SYMBOL-ERROR"
            "INTERN-HERE" "RETURN-UNINTERNED"
-           
+
            "INVALID-SYMBOL-COMPONENT-LIST"
            "INTERNAL-SYMBOL"
            "MISSING-SYMBOL"
@@ -89,7 +89,7 @@
            "SYMBOL-FROM-SPLIT-TOKEN"
            "MAKE-SYMBOL-PARSER-FUNCTION"
            "MAKE-TOKEN-PARSER"
-           
+
            ;; Utilities:
            "POTENTIAL-NUMBER-P")
   (:documentation
@@ -112,19 +112,19 @@ CHARACTER-DESCRIPTION...
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2006 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program. If not, see <http://www.gnu.org/licenses/>
 
@@ -224,7 +224,7 @@ License:
              :documentation "A HASH-TABLE character -> dmc function."))
   (:documentation
    "
-Description of one character. 
+Description of one character.
 
 In the syntax tables, a single character description instance can be
 shared by several characters, but with copy-on-write.
@@ -578,7 +578,7 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_cp_rdt.htm>
   (:method ((mode (eql :downcase))) (declare (ignorable mode)) (function char-downcase))
   (:method ((mode (eql :upcase)))   (declare (ignorable mode)) (function char-upcase))
   (:method ((mode (eql :invert)))
-    (declare (ignorable mode)) 
+    (declare (ignorable mode))
     (lambda (ch)
       (cond ((upper-case-p ch) (char-downcase ch))
             ((lower-case-p ch) (char-upcase   ch))
@@ -738,26 +738,26 @@ BUG:            The handling of readtable-case :invert is wrong.
 
 
 
-;; numeric-token ::= integer | ratio | float       
-;; integer  ::= [sign] decimal-digit+ decimal-point 
-;; integer  ::= [sign] digit+      
-;; ratio    ::= [sign] {digit}+ slash {digit}+    
+;; numeric-token ::= integer | ratio | float
+;; integer  ::= [sign] decimal-digit+ decimal-point
+;; integer  ::= [sign] digit+
+;; ratio    ::= [sign] {digit}+ slash {digit}+
 ;; float    ::= [sign] {decimal-digit}* decimal-point {decimal-digit}+ exponent
-;; float    ::= [sign] {decimal-digit}* decimal-point {decimal-digit}+ 
+;; float    ::= [sign] {decimal-digit}* decimal-point {decimal-digit}+
 ;; float    ::= [sign] {decimal-digit}+ exponent
 ;; float    ::= [sign] {decimal-digit}+ decimal-point {decimal-digit}* exponent
 ;; exponent ::=  exponent-marker [sign] {digit}+
-;; 
+;;
 ;; consing-dot   ::= dot
-;; 
+;;
 ;; symbol        ::= symbol-name
 ;;                 | package-marker symbol-name
 ;;                 | package-marker package-marker symbol-name
 ;;                 | package-name package-marker symbol-name
 ;;                 | package-name package-marker package-marker symbol-name
-;; 
-;; symbol-name   ::= {alphabetic}+ 
-;; package-name  ::= {alphabetic}+ 
+;;
+;; symbol-name   ::= {alphabetic}+
+;; package-name  ::= {alphabetic}+
 
 
 
@@ -769,7 +769,7 @@ and the value returned is an error message.
 A strong error is a lexical error that is not ambiguous.  A weak error is
 when the token could still be of another lexical category.
 In the body of the parser, there are macrolet defined to REJECT or ACCEPT
-the token, and to describe the parsed syntax with ALT, ZERO-OR-MORE, 
+the token, and to describe the parsed syntax with ALT, ZERO-OR-MORE,
 ONE-OR-MORE and OPT-SIGN."
   (multiple-value-bind (docu decl body) (parse-body :lambda body)
     `(defun ,name ,arguments
@@ -1269,7 +1269,7 @@ RETURN:         tokenp == t    ; an unparsed (alldots) token.  Or
            (serror 'simple-reader-error input-stream
                    "a token consisting only of dots cannot be ~
                    meaningfully read in")))
-        (values tokenp token)))) 
+        (values tokenp token))))
 
 
 
@@ -1451,7 +1451,7 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_set_ma.htm>
 (defun set-macro-character (char new-function &optional (non-terminating-p nil)
                                                 (readtable *readtable*))
   "
-DO:     Set then macro character function. 
+DO:     Set then macro character function.
 URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_set_ma.htm>
 "
   (let* ((rst  (readtable-syntax-table readtable)))
@@ -1468,7 +1468,7 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_set_ma.htm>
 
 (defun set-indirect-dispatch-macro-character (disp-char sub-char function-name
                                               &optional (readtable *readtable*))
-  "Like set-dispatch-macro-character, but with an indirect function, 
+  "Like set-dispatch-macro-character, but with an indirect function,
 to enable TRACE and redefinitions of the dispatch macro character function."
   (set-dispatch-macro-character
    disp-char sub-char
@@ -1480,7 +1480,7 @@ to enable TRACE and redefinitions of the dispatch macro character function."
 
 (defun set-indirect-macro-character (char function-name
                                      &optional (readtable *readtable*))
-  "Like set-macro-character, but with an indirect function, 
+  "Like set-macro-character, but with an indirect function,
 to enable TRACE and redefinitions of the macro character function."
   (set-macro-character
    char
@@ -1496,8 +1496,8 @@ to enable TRACE and redefinitions of the macro character function."
 (defun copy-hash-table (table)
   "
 TABLE:  (OR NULL HASH-TABLE)
-RETURN: If TABLE is NIL, then NIL, 
-        else a new HASH-TABLE with the same TEST, SIZE, REHASH-THRESHOLD 
+RETURN: If TABLE is NIL, then NIL,
+        else a new HASH-TABLE with the same TEST, SIZE, REHASH-THRESHOLD
         REHASH-SIZE and KEY->VALUE associations than TABLE.
         (Neither the keys nor the values are copied).
 "
@@ -1527,7 +1527,7 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_set_sy.htm>
           (make-instance 'character-description
                          :syntax   (character-syntax fcd)
                          ;; constituent traits are not copied.
-                         :traits   (character-constituent-traits tcd) 
+                         :traits   (character-constituent-traits tcd)
                          ;; macros are copied only if from is a macro character.
                          :macro    (or (character-macro fcd) (character-macro tcd))
                          :dispatch (if (character-dispatch fcd)
@@ -1821,7 +1821,7 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_set_sy.htm>
                    ;; vector is shorter.
                    ((plusp i)
                     ;; If we have at least one element in,
-                    ;; we replicate it till the end. 
+                    ;; we replicate it till the end.
                     (loop
                       :with last-item = (aref vector (1- i))
                       :for j :from i :below arg
@@ -1864,19 +1864,19 @@ URL: <http://www.lispworks.com/documentation/HyperSpec/Body/02_dhd.htm>
 "
   (declare (ignore sub-char))
   ;; Syntax: #*<<bits>>
-  ;; 
+  ;;
   ;; A simple bit vector is constructed containing the indicated bits (0's
   ;; and 1's), where the leftmost bit has index zero and the subsequent
   ;; bits have increasing indices.
-  ;; 
+  ;;
   ;; Syntax: #<<n>>*<<bits>>
-  ;; 
+  ;;
   ;; With an argument n, the vector to be created is of length n. If the
   ;; number of bits is less than n but greater than zero, the last bit is
   ;; used to fill all remaining bits of the bit vector.
-  ;; 
+  ;;
   ;; The notations #* and #0* each denote an empty bit vector.
-  ;; 
+  ;;
   ;; Regardless of whether the optional numeric argument n is provided, the
   ;; token that follows the asterisk is delimited by a normal token
   ;; delimiter. However, (unless the  value of *read-suppress* is true) an
@@ -1964,7 +1964,7 @@ RETURN:  The rational read.
 (defun reader-dispatch-macro-radix             (stream arg sub-char)
   "Standard #R dispatch macro reader."
   (unless arg
-    (serror stream "the number base must be given between # and ~A" sub-char)) 
+    (serror stream "the number base must be given between # and ~A" sub-char))
   (read-rational-in-base stream nil sub-char arg))
 
 
@@ -2190,14 +2190,14 @@ RETURN:        Whether the TOKEN is a potential number.
   ;; decimal-points       "."
   ;; extension-characters "^_"
   ;; number-markers                letters alone
-  
+
   (and (plusp (length token))
 
        ;; Letters may be considered to be digits, depending on the
        ;; current input base, but only in tokens containing no decimal
        ;; points.
        (let ((*read-base* (if (find #\. token) 10. *read-base*)))
-         
+
          (and
 
           ;; 4. The token does not end with a sign
@@ -2211,7 +2211,7 @@ RETURN:        Whether the TOKEN is a potential number.
 
           ;; 2. The token contains at least one digit.
           (find-if (lambda (ch) (digit-char-p ch *read-base*)) token)
-          
+
           ;; 1. The token consists entirely of digits, signs, ratio
           ;;    markers, decimal points, extension characters, and
           ;;    number markers.

@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Tests the relative-package.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -46,7 +46,7 @@
                                 "PACKAGE-USE-LIST" "PACKAGE-USED-BY-LIST" "PACKAGE-SHADOWING-SYMBOLS"
                                 "RENAME-PACKAGE"
                                 "WITH-PACKAGE-ITERATOR"
-                                "DO-SYMBOLS" "DO-EXTERNAL-SYMBOLS" 
+                                "DO-SYMBOLS" "DO-EXTERNAL-SYMBOLS"
                                 "DEFPACKAGE" "IN-PACKAGE"))
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.LISP.RELATIVE-PACKAGE"
                 "SYMBOL-FROM-SPLIT-TOKEN")
@@ -198,33 +198,33 @@
 
 (define-test test/find-package ()
   (let ((*disable-useless-parent-package-check* nil))
-   (dolist (item '((:com.informatimago.common-lisp.lisp.relative-package.test.none.test.a        
+   (dolist (item '((:com.informatimago.common-lisp.lisp.relative-package.test.none.test.a
                     :com.informatimago.common-lisp.lisp.relative-package.test.none.test.a ".")
-                   (:com.informatimago.common-lisp.lisp.relative-package.test.none.test          
+                   (:com.informatimago.common-lisp.lisp.relative-package.test.none.test
                     :com.informatimago.common-lisp.lisp.relative-package.test.none.test.a "..")
-                   (:com.informatimago.common-lisp.lisp.relative-package.test.none.test.b        
+                   (:com.informatimago.common-lisp.lisp.relative-package.test.none.test.b
                     :com.informatimago.common-lisp.lisp.relative-package.test.none.test.a "..B")
-                   (:com.informatimago.common-lisp.lisp.relative-package.test.none.test.c        
+                   (:com.informatimago.common-lisp.lisp.relative-package.test.none.test.c
                     :com.informatimago.common-lisp.lisp.relative-package.test.none.test.a "..C")
-                   (:com.informatimago.common-lisp.lisp.relative-package.test.none.test.d        
+                   (:com.informatimago.common-lisp.lisp.relative-package.test.none.test.d
                     :com.informatimago.common-lisp.lisp.relative-package.test.none.test.a "..D")
-                   (:com.informatimago.common-lisp.lisp.relative-package.test.none.test.a.b      
+                   (:com.informatimago.common-lisp.lisp.relative-package.test.none.test.a.b
                     :com.informatimago.common-lisp.lisp.relative-package.test.none.test.b "..A.B")
-                   (:com.informatimago.common-lisp.lisp.relative-package.test.none.test          
+                   (:com.informatimago.common-lisp.lisp.relative-package.test.none.test
                     :com.informatimago.common-lisp.lisp.relative-package.test.none.test.a.b "...")
-                   (:com.informatimago.common-lisp.lisp.relative-package.test.none.test.b        
+                   (:com.informatimago.common-lisp.lisp.relative-package.test.none.test.b
                     :com.informatimago.common-lisp.lisp.relative-package.test.none.test.a.b "...B")
                    (:com.informatimago.common-lisp.lisp.relative-package.test.none.test.a.b.c.d.f
                     :com.informatimago.common-lisp.lisp.relative-package.test.none.test.a.b.c.d "...C.D.F")
-                   (:com.informatimago.common-lisp.lisp.relative-package.test.none.test          
+                   (:com.informatimago.common-lisp.lisp.relative-package.test.none.test
                     :com.informatimago.common-lisp.lisp.relative-package.test.none.test.a.b.c.d ".....")
-                   (:com.informatimago.common-lisp.lisp.relative-package.test.none.test.b        
+                   (:com.informatimago.common-lisp.lisp.relative-package.test.none.test.b
                     :com.informatimago.common-lisp.lisp.relative-package.test.none.test.a.b.c.d ".....B")
-                   (:com.informatimago.common-lisp.lisp.relative-package.test.none.test.a.b.c.d  
+                   (:com.informatimago.common-lisp.lisp.relative-package.test.none.test.a.b.c.d
                     :com.informatimago.common-lisp.lisp.relative-package.test.none.test.a.b.c.d ".")
-                   (:com.informatimago.common-lisp.lisp.relative-package.test.none.test.a.b.c    
+                   (:com.informatimago.common-lisp.lisp.relative-package.test.none.test.a.b.c
                     :com.informatimago.common-lisp.lisp.relative-package.test.none.test.a.b.c ".")
-                   (:com.informatimago.common-lisp.lisp.relative-package.test.none.test.a.b      
+                   (:com.informatimago.common-lisp.lisp.relative-package.test.none.test.a.b
                     :com.informatimago.common-lisp.lisp.relative-package.test.none.test.a.b ".")))
      (check string=
             (let ((*package* (find-package (second item))) )

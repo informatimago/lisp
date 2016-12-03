@@ -71,7 +71,7 @@ Repository
 
 These libraries can be obtained from the `git` repository at
 https://gitlab.com/com-informatimago/com-informatimago/ ::
- 
+
     git clone https://gitlab.com/com-informatimago/com-informatimago.git informatimago
 
 They're also available thru `quicklisp <http://quicklisp.org/>`_: ::
@@ -86,7 +86,7 @@ They're also available thru `quicklisp <http://quicklisp.org/>`_: ::
 
     (ql:quickload :com.informatimago)
 
-    
+
 Documentation
 ============================================================
 
@@ -110,7 +110,7 @@ All this code is authored by Pascal J. Bourguignon, apart from:
 
 - the system `com.informatimago.lisp-reader.package` which is authored
   by Zach Beane and modified by Pascal J. Bourguignon.
-  
+
 - the system `com.informatimago.lispdoc` which is authored by Sven Van
   Caekenberghe and modified by Pascal J. Bourguignon.
 

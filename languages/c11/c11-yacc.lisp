@@ -5,7 +5,7 @@
   (:TERMINALS (
                |identifier| |typedef_name| |func_name| |string_literal|
                |i_constant| |f_constant| |enum_name|
-                 
+
                |alignas| |alignof| |atomic| |generic| |noreturn| |static_assert|
                |thread_local| |case| |default| |if| |else| |switch| |while| |do|
                |for| |goto| |continue| |break| |return| |struct| |union| |enum|
@@ -16,94 +16,94 @@
 
                ^= \|= -= <<= >>= &= && |\|\|| *= /= %= += -> ++ -- << >>
                <= >= == !=))
-  
+
 
   ;; renaming terminals:
-  
-  (IDENTIFIER |identifier|) 
+
+  (IDENTIFIER |identifier|)
   (TYPEDEF_NAME |typedef_name|)
-  (FUNC_NAME |func_name|) 
-  
-  (STRING_LITERAL |string_literal|) 
-  (I_CONSTANT     |i_constant|) 
-  (F_CONSTANT     |f_constant|) 
-  
+  (FUNC_NAME |func_name|)
+
+  (STRING_LITERAL |string_literal|)
+  (I_CONSTANT     |i_constant|)
+  (F_CONSTANT     |f_constant|)
+
   (|constant| I_CONSTANT F_CONSTANT ) ;ENUMERATION_CONSTANT
   (|string| STRING_LITERAL FUNC_NAME)
 
 
-  
-  (ALIGNAS |alignas|) 
-  (ALIGNOF |alignof|) 
-  (ATOMIC |atomic|) 
-  (GENERIC |generic|) 
-  (NORETURN |noreturn|) 
-  (STATIC_ASSERT |static_assert|) 
-  (THREAD_LOCAL |thread_local|) 
-  (CASE |case|) 
-  (DEFAULT |default|) 
-  (IF |if|) 
-  (ELSE |else|) 
-  (SWITCH |switch|) 
-  (WHILE |while|) 
-  (DO |do|) 
-  (FOR |for|) 
-  (GOTO |goto|) 
-  (CONTINUE |continue|) 
-  (BREAK |break|) 
-  (RETURN |return|) 
-  (STRUCT |struct|) 
-  (UNION |union|) 
-  (ENUM |enum|) 
-  (ELLIPSIS |...|) 
-  (COMPLEX |complex|) 
-  (IMAGINARY |imaginary|) 
-  (BOOL |bool|) 
-  (CHAR |char|) 
-  (SHORT |short|) 
-  (INT |int|) 
-  (LONG |long|) 
-  (SIGNED |signed|) 
-  (UNSIGNED |unsigned|) 
-  (FLOAT |float|) 
-  (DOUBLE |double|) 
-  (VOID |void|) 
-  (CONST |const|) 
-  (RESTRICT |restrict|) 
-  (VOLATILE |volatile|) 
-  (TYPEDEF |typedef|) 
-  (EXTERN |extern|) 
-  (STATIC |static|) 
-  (AUTO |auto|) 
-  (REGISTER |register|) 
-  (INLINE |inline|) 
-  (SIZEOF |sizeof|) 
 
-  
-  (XOR_ASSIGN  |^=|) 
-  (OR_ASSIGN   \|=) 
-  (SUB_ASSIGN  |-=|) 
-  (LEFT_ASSIGN |<<=|) 
-  (RIGHT_ASSIGN |>>=|) 
-  (AND_ASSIGN |&=|) 
-  (AND_OP |&&|) 
-  (OR_OP \|\|) 
-  (MUL_ASSIGN |*=|) 
-  (DIV_ASSIGN |/=|) 
-  (MOD_ASSIGN |%=|) 
-  (ADD_ASSIGN |+=|) 
-  (PTR_OP |->|) 
-  (INC_OP |++|) 
-  (DEC_OP |--|) 
-  (LEFT_OP |<<|) 
-  (RIGHT_OP |>>|) 
-  (LE_OP |<=|) 
-  (GE_OP |>=|) 
-  (EQ_OP |==|) 
-  (NE_OP |!=|) 
-  
+  (ALIGNAS |alignas|)
+  (ALIGNOF |alignof|)
+  (ATOMIC |atomic|)
+  (GENERIC |generic|)
+  (NORETURN |noreturn|)
+  (STATIC_ASSERT |static_assert|)
+  (THREAD_LOCAL |thread_local|)
+  (CASE |case|)
+  (DEFAULT |default|)
+  (IF |if|)
+  (ELSE |else|)
+  (SWITCH |switch|)
+  (WHILE |while|)
+  (DO |do|)
+  (FOR |for|)
+  (GOTO |goto|)
+  (CONTINUE |continue|)
+  (BREAK |break|)
+  (RETURN |return|)
+  (STRUCT |struct|)
+  (UNION |union|)
+  (ENUM |enum|)
+  (ELLIPSIS |...|)
+  (COMPLEX |complex|)
+  (IMAGINARY |imaginary|)
+  (BOOL |bool|)
+  (CHAR |char|)
+  (SHORT |short|)
+  (INT |int|)
+  (LONG |long|)
+  (SIGNED |signed|)
+  (UNSIGNED |unsigned|)
+  (FLOAT |float|)
+  (DOUBLE |double|)
+  (VOID |void|)
+  (CONST |const|)
+  (RESTRICT |restrict|)
+  (VOLATILE |volatile|)
+  (TYPEDEF |typedef|)
+  (EXTERN |extern|)
+  (STATIC |static|)
+  (AUTO |auto|)
+  (REGISTER |register|)
+  (INLINE |inline|)
+  (SIZEOF |sizeof|)
+
+
+  (XOR_ASSIGN  |^=|)
+  (OR_ASSIGN   \|=)
+  (SUB_ASSIGN  |-=|)
+  (LEFT_ASSIGN |<<=|)
+  (RIGHT_ASSIGN |>>=|)
+  (AND_ASSIGN |&=|)
+  (AND_OP |&&|)
+  (OR_OP \|\|)
+  (MUL_ASSIGN |*=|)
+  (DIV_ASSIGN |/=|)
+  (MOD_ASSIGN |%=|)
+  (ADD_ASSIGN |+=|)
+  (PTR_OP |->|)
+  (INC_OP |++|)
+  (DEC_OP |--|)
+  (LEFT_OP |<<|)
+  (RIGHT_OP |>>|)
+  (LE_OP |<=|)
+  (GE_OP |>=|)
+  (EQ_OP |==|)
+  (NE_OP |!=|)
+
   ;; productions:
-  
+
   (|primary_expression|
    IDENTIFIER
    |constant|
@@ -506,7 +506,7 @@
    |declaration|
    (|declaration_list| |declaration|))
 
-  
+
   )
 
 

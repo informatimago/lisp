@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    This file exports streams.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    GPL
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software; you can redistribute it and/or
 ;;;;    modify it under the terms of the GNU General Public License
 ;;;;    as published by the Free Software Foundation; either version
 ;;;;    2 of the License, or (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be
 ;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
 ;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 ;;;;    PURPOSE.  See the GNU General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU General Public
 ;;;;    License along with this program; if not, write to the Free
 ;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
@@ -108,9 +108,9 @@
 ;;          (stream-designator  (ostream :output))
 ;;          (check-stream-type file-stream)
 ;;          (cl-forward t))
-;; 
+;;
 ;; (declare (stream-arguments stream))
-;; 
+;;
 ;; (declare (check-stream-type file-stream))
 ;;
 ;; method-description ::= (:method class [[declaration* | documentation]] form*)
@@ -118,7 +118,7 @@
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (defun make-method-lambda-list (lambda-list self-name self-type)
     (let* ((got-it nil)
-           (mand (mapcar (lambda (par) 
+           (mand (mapcar (lambda (par)
                            (let ((name (parameter-name par)))
                              (if (eq name self-name)
                                  (progn (setf got-it t)
@@ -128,7 +128,7 @@
            (opti (let ((optionals  (lambda-list-optional-parameters lambda-list)))
                    (cond
                      ((null optionals) nil)
-                     (got-it (cons '&optional 
+                     (got-it (cons '&optional
                                    (mapcar (function parameter-specifier)
                                            optionals)))
                      (t (let ((pos  (position self-name optionals
@@ -141,10 +141,10 @@
                                 (list (parameter-name (nth pos optionals))
                                       self-type))
                                (when (< (1+ pos) (length optionals))
-                                 (cons '&optional 
+                                 (cons '&optional
                                        (mapcar (function parameter-specifier)
                                                (subseq optionals (1+ pos))))))
-                              (cons '&optional 
+                              (cons '&optional
                                     (mapcar (function parameter-specifier)
                                             optionals))))))))
            (keys (mapcar (function parameter-specifier)
@@ -159,7 +159,7 @@
 
 (defun stream-designator (stream direction)
   "DIRECTION is either *standard-input* or *standard-output*"
-  (case stream 
+  (case stream
     ((t)       *terminal-io*)
     ((nil)     direction)
     (otherwise stream)))
@@ -201,7 +201,7 @@ DO:     Specifies the name and parameter list of methods.
             Specify the stream parameter.  In the case of
             stream-designator, the stream can be *standard-input* or
             *standard-output* by default, as indicated by the keyword.
-        
+
         (check-stream-type stream-parameter)
 
             When given, the stream type is checked in the default method.
@@ -223,14 +223,14 @@ DO:     Specifies the name and parameter list of methods.
 
              For each of these clause, method is defined for the given
              stream class.
-       
+
 "
   (let* ((documentation     (extract-documentation body))
          (declarations      (declarations-hash-table (extract-declarations  body)))
          (body              (extract-body          body))
          (stream-argument   (caar  (gethash 'stream-argument   declarations)))
          (stream-designator (caar  (gethash 'stream-designator declarations)))
-         (stream-name       (or stream-argument  
+         (stream-name       (or stream-argument
                                 (if (consp stream-designator)
                                     (first stream-designator)
                                     stream-designator)))
@@ -242,13 +242,13 @@ DO:     Specifies the name and parameter list of methods.
          (cl-name           (intern (string name) "COMMON-LISP")))
     `(progn
        (eval-when (:compile-toplevel :load-toplevel :execute)
-         (setf (gethash ',name *stream-methods*) 
+         (setf (gethash ',name *stream-methods*)
                (list ',m-name (parse-lambda-list ',arguments :ordinary)
                      ',stream-name ',check-open-p)))
        (defun ,name ,arguments
          ,@(when documentation (list documentation))
          ,@(when stream-designator
-             `((setf ,stream-name (stream-designator 
+             `((setf ,stream-name (stream-designator
                                    ,stream-name
                                    ,(if (listp stream-designator)
                                         (ecase (second stream-designator)
@@ -277,7 +277,7 @@ DO:     Specifies the name and parameter list of methods.
                         `(apply (function ,cl-name) ,@arguments)
                         `(,cl-name ,@(butlast arguments)))))
                ;; We don't want to allow access to CL:STREAM from a sandbox.
-               ;; (defmethod ,m-name 
+               ;; (defmethod ,m-name
                ;;     ,(make-method-lambda-list lambda-list stream-name 'cl:stream)
                ;;   ,(let ((arguments (make-argument-list lambda-list)))
                ;;         (if (lambda-list-rest-p lambda-list)
@@ -313,7 +313,7 @@ DO:     Expands to a bunch of defmethod forms, with the parameter
                             (first method)))
                    (destructuring-bind (name lambda-list stream-name check-open-p)
                        minfo
-                     `(defmethod ,name 
+                     `(defmethod ,name
                           ,(make-method-lambda-list lambda-list stream-name class-name)
                         ,@(when check-open-p `((check-open ',name ,stream-name)))
                         ,@(rest method)))))
@@ -321,28 +321,28 @@ DO:     Expands to a bunch of defmethod forms, with the parameter
 
 
 
-(define-forward input-stream-p       (stream) 
+(define-forward input-stream-p       (stream)
   (declare (stream-argument stream)
            (check-stream-type stream)
            (cl-forward t)))
 
-(define-forward output-stream-p      (stream) 
+(define-forward output-stream-p      (stream)
   (declare (stream-argument stream)
            (check-stream-type stream)
            (cl-forward t)))
 
-(define-forward interactive-stream-p (stream) 
+(define-forward interactive-stream-p (stream)
   (declare (stream-argument stream)
            (check-stream-type stream)
            (cl-forward t))
   (:method stream nil))
 
-(define-forward open-stream-p        (stream) 
+(define-forward open-stream-p        (stream)
   (declare (stream-argument stream)
            (check-stream-type stream)
            (cl-forward t)))
 
-(define-forward stream-element-type  (stream) 
+(define-forward stream-element-type  (stream)
   (declare (stream-argument stream)
            (check-stream-type stream)
            (cl-forward t)))
@@ -357,13 +357,13 @@ DO:     Expands to a bunch of defmethod forms, with the parameter
 
 (define-forward read-byte (stream &optional (eof-error-p t) (eof-value nil))
   (declare (stream-argument stream)
-           (check-stream-type stream) 
+           (check-stream-type stream)
            (cl-forward t)
            (check-open-p t)))
 
 (define-forward write-byte (byte stream)
   (declare (stream-argument stream)
-           (check-stream-type stream) 
+           (check-stream-type stream)
            (cl-forward t)
            (check-open-p t)))
 
@@ -375,7 +375,7 @@ DO:     Expands to a bunch of defmethod forms, with the parameter
            (check-open-p t)))
 
 
-(define-forward read-char (&optional (input-stream *standard-input*) 
+(define-forward read-char (&optional (input-stream *standard-input*)
                                      (eof-error-p t) (eof-value nil)
                                      (recursive-p nil))
   (declare (stream-designator (input-stream :input))
@@ -383,7 +383,7 @@ DO:     Expands to a bunch of defmethod forms, with the parameter
            (check-open-p t)))
 
 
-(define-forward read-char-no-hang (&optional (input-stream *standard-input*) 
+(define-forward read-char-no-hang (&optional (input-stream *standard-input*)
                                              (eof-error-p t) (eof-value nil)
                                              (recursive-p nil))
   (declare (stream-designator (input-stream :input))
@@ -454,7 +454,7 @@ DO:     Expands to a bunch of defmethod forms, with the parameter
 
 (define-forward file-length (stream)
   (declare (stream-argument stream)
-           (check-stream-type file-stream) 
+           (check-stream-type file-stream)
            (cl-forward t)))
 
 
@@ -466,20 +466,20 @@ DO:     Expands to a bunch of defmethod forms, with the parameter
 
 (define-forward file-string-length (stream object)
   (declare (stream-argument stream)
-           (check-stream-type file-stream) 
+           (check-stream-type file-stream)
            (cl-forward t)
            (check-open-p t)))
 
 
 (define-forward stream-external-format (stream)
   (declare (stream-argument stream)
-           (check-stream-type stream) 
+           (check-stream-type stream)
            (cl-forward t)))
 
 
 (define-forward close (stream &key (abort nil))
   (declare (stream-argument stream)
-           (check-stream-type stream) 
+           (check-stream-type stream)
            (cl-forward t)))
 
 

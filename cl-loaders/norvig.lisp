@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             -
 ;;;;USER-INTERFACE:     -
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Loader for Norvig's code.
 ;;;;
 ;;;;
@@ -25,7 +25,7 @@
 ;;;;            ("NORVIG:**;*.*.*" "/home/…/norvig/**/*.*")))
 ;;;;    (load #P"../norvig-paip-pjb.lisp")
 ;;;;
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon
 ;;;;MODIFICATIONS
@@ -34,19 +34,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -124,7 +124,7 @@
  (gps-search
   (load "norvig:gps1.lisp") ;; Simple version of General Problem Solver
   (load "norvig:gps.lisp") ;; Final version of General Problem Solver
-  (load "norvig:gps-srch.lisp") ;; Version of GPS using the search utility 
+  (load "norvig:gps-srch.lisp") ;; Version of GPS using the search utility
   ;;     "norvig:gps-srch.dat"  ;; Test data (examples) for above
   ))
 
@@ -176,7 +176,7 @@
   (load "norvig:prologc2.lisp") ;; Second version of Prolog compiler
   ;;     "norvig:prologc2.dat"  ;; Test data (examples) for above
   )
- (prolog-c 
+ (prolog-c
   (load "norvig:prologc.lisp") ;; Final version of Prolog compiler
   ;;     "norvig:prologc.dat"   ;; Test data (examples) for above
   )
@@ -197,7 +197,7 @@
 
 (exclusive
  (krep-1
-  (load "norvig:krep1.lisp") ;; Knowledge Representation code: first version 
+  (load "norvig:krep1.lisp") ;; Knowledge Representation code: first version
   ;;     "norvig:krep1.dat"   ;; Test data (examples) for above
   )
  (krep-2
@@ -282,7 +282,7 @@
 6  eliza-pm.lisp        Version of Eliza using utilities
 6  search.lisp          Search Utility
 6  search.dat           Test data (examples) for above
-6  gps-srch.lisp        Version of GPS using the search utility 
+6  gps-srch.lisp        Version of GPS using the search utility
 6  gps-srch.dat         Test data (examples) for above
 
 7  student.lisp         The Student Program
@@ -311,7 +311,7 @@
 13 clos.lisp            Some object-oriented and CLOS code
 13 clos.dat             Test data (examples) for above
 
-14 krep1.lisp           Knowledge Representation code: first version 
+14 krep1.lisp           Knowledge Representation code: first version
 14 krep1.dat            Test data (examples) for above
 14 krep2.lisp           Knowledge Representation code with conjunctions
 14 krep.lisp            Final KR code: worlds and attached functions

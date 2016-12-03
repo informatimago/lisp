@@ -10,7 +10,7 @@
 ;;;;
 ;;;;
 ;;;;    Implements the Common Lisp package system.
-;;;;    
+;;;;
 ;;;;    <Xach> The basic idea of that file is that the semantics of the CL
 ;;;;    package system can be implemented by an object with three special
 ;;;;    kinds of tables (present-table, shadowing-table, external-table)
@@ -95,7 +95,7 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/m_w_pkg_.htm>
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  
+
   (defun declarations (body)
     (loop
       :for item :in body
@@ -161,14 +161,14 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/m_do_sym.htm>
 DO:     Define a new package.
 URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/m_defpkg.htm>
 "
-  ;; option::= (:nicknames nickname*)* |  
-  ;;           (:documentation string) |  
-  ;;           (:use package-name*)* |  
-  ;;           (:shadow {symbol-name}*)* |  
-  ;;           (:shadowing-import-from package-name {symbol-name}*)* |  
-  ;;           (:import-from package-name {symbol-name}*)* |  
-  ;;           (:export {symbol-name}*)* |  
-  ;;           (:intern {symbol-name}*)* |  
+  ;; option::= (:nicknames nickname*)* |
+  ;;           (:documentation string) |
+  ;;           (:use package-name*)* |
+  ;;           (:shadow {symbol-name}*)* |
+  ;;           (:shadowing-import-from package-name {symbol-name}*)* |
+  ;;           (:import-from package-name {symbol-name}*)* |
+  ;;           (:export {symbol-name}*)* |
+  ;;           (:intern {symbol-name}*)* |
   ;;           (:size integer)
   (dolist (option options)
     (unless (typep option 'list)
@@ -211,7 +211,7 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/m_defpkg.htm>
                               (mapcar (function rest)
                                       (remove key options
                                               :key (function first)
-                                              :test-not (function eql)))))))           
+                                              :test-not (function eql)))))))
            (extract-from (key)
              (let ((table (make-hash-table))
                    (result '()))

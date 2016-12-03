@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Tests string.lisp.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -116,9 +116,9 @@
   (assert-true (eq      (implode "ABC" 'symbol :keyword) ':ABC))
   (assert-true (string= (implode "" 'string) ""))
   (assert-true (string= (implode "ABC" 'string) "ABC"))
-  (assert-true (equal   (implode "(1 2 3)" 'list) '(1 2 3))) 
+  (assert-true (equal   (implode "(1 2 3)" 'list) '(1 2 3)))
   (assert-true (equal   (implode "NIL" 'list) '()))
-  (assert-true (equalp  (implode "#(1 2 3)" 'vector) #(1 2 3))) 
+  (assert-true (equalp  (implode "#(1 2 3)" 'vector) #(1 2 3)))
   ;; implode a vector
   (assert-true (eq      (implode #() 'symbol "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
                         'com.informatimago.common-lisp.cesarum.string::||))
@@ -127,9 +127,9 @@
   (assert-true (eq      (implode #(#\A #\B #\C) 'symbol :keyword) ':ABC))
   (assert-true (string= (implode #() 'string) ""))
   (assert-true (string= (implode #(#\A #\B #\C) 'string) "ABC"))
-  (assert-true (equal   (implode #(#\( #\1 #\space #\2  #\space #\3 #\)) 'list) '(1 2 3))) 
+  (assert-true (equal   (implode #(#\( #\1 #\space #\2  #\space #\3 #\)) 'list) '(1 2 3)))
   (assert-true (equal   (implode #(#\N #\I #\L) 'list) '()))
-  (assert-true (equalp  (implode #(#\# #\( #\1 #\space #\2  #\space #\3 #\)) 'vector) #(1 2 3))) 
+  (assert-true (equalp  (implode #(#\# #\( #\1 #\space #\2  #\space #\3 #\)) 'vector) #(1 2 3)))
   ;; implode a list
   (assert-true (eq      (implode '() 'symbol "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
                         'com.informatimago.common-lisp.cesarum.string::||))
@@ -138,7 +138,7 @@
   (assert-true (eq      (implode '(#\A #\B #\C) 'symbol :keyword) ':ABC))
   (assert-true (string= (implode '() 'string) ""))
   (assert-true (string= (implode '(#\A #\B #\C) 'string) "ABC"))
-  (assert-true (equal   (implode '(#\( #\1 #\space #\2  #\space #\3 #\)) 'list) '(1 2 3))) 
+  (assert-true (equal   (implode '(#\( #\1 #\space #\2  #\space #\3 #\)) 'list) '(1 2 3)))
   (assert-true (equal   (implode '(#\N #\I #\L) 'list) '()))
   (assert-true (equalp  (implode '(#\# #\( #\1 #\space #\2  #\space #\3 #\)) 'vector) #(1 2 3)))
   ;; explode

@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    This package implements a relation abstract data type
 ;;;;    based on an array of bset.
 ;;;;    It can represent only relations between two positive
@@ -28,19 +28,19 @@
 ;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -53,7 +53,7 @@
                           "COMPLEMENT" "INTERSECTION" "UNION" "SUBSETP")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
                 "VECTOR-INIT" "FOR" "UNTIL")
-  (:export "PROJECT-2" "PROJECT-1" "WRITE-BRELATION" "READ-BRELATION" 
+  (:export "PROJECT-2" "PROJECT-1" "WRITE-BRELATION" "READ-BRELATION"
            "FOR-ALL-DO" "EXISTS-1" "EXISTS" "FOR-ALL" "EXTRACT" "SELECT" "CARDINAL"
            "EMPTYP" "IS-NOT-EQUAL" "IS-EQUAL" "IS-STRICT-SUBSET" "IS-SUBSET"
            "COMPLEMENT" "SYM-DIFF" "INTERSECTION" "DIFFERENCE" "UNION" "ASSIGN"
@@ -75,19 +75,19 @@ See also: COM.INFORMATIMAGO.COMMON-LISP.CESARUM.BSET
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2004 - 2015
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -343,7 +343,7 @@ RETURN: REL
           (union (adjref rel i)
                  (adjref rel j))))))
   rel)
-           
+
 (defmethod union ((rel1 brelation) (rel2 brelation))
      "
 POST:   REL1 is the union of old REL1 and REL2.
@@ -437,7 +437,7 @@ RETURN: The number of couples in the relation REL.
     (for (i 0 (brelation-size-1 rel))
          (incf n (cardinal (adjref rel i))))
     n))
-    
+
 (defmethod select ((rel brelation))
     "
 RETURN: (values i j) such as REL(i,j), or NIL if REL is empty.
@@ -453,7 +453,7 @@ DO:     Selects a couple in the relation REL, exclude it from REL, and return it
 PRE:    (not (emptyp rel))
 POST:   ¬REL(i,j)
 RETURN: (values i j) such as old REL(i,j), or NIL if REL is empty.
-" 
+"
   (multiple-value-bind (e1 e2) (select rel)
     (when e2
       (exclude rel (arc e1 e2))
@@ -481,7 +481,7 @@ RETURN: Whether PROC returned true for at least one couple.
        (when (exists (adjref rel i) (lambda (e) (funcall proc i e)))
          (return-from exists t)))
   nil)
-  
+
 
 (defmethod exists-1 ((rel brelation) proc)
   "

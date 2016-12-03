@@ -5,10 +5,10 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    This files implements CL filenames: pathnames, logical-pathnames,
 ;;;;    translations.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -16,19 +16,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    GPL
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software; you can redistribute it and/or
 ;;;;    modify it under the terms of the GNU General Public License
 ;;;;    as published by the Free Software Foundation; either version
 ;;;;    2 of the License, or (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be
 ;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
 ;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 ;;;;    PURPOSE.  See the GNU General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU General Public
 ;;;;    License along with this program; if not, write to the Free
 ;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
@@ -67,17 +67,17 @@
   (flet ((wild (item part wild-inferiors-p)
            (cond ((string= "*"  item) :wild)
                  ((and wild-inferiors-p (string= "**" item)) :wild-inferiors)
-                 ((search  "**" item) 
+                 ((search  "**" item)
                   (error "Invalid ~A part: ~S; ~
                                 \"**\" inside a wildcard-world is forbidden."
                          part item))
                  ((position #\* item) (list :wild-word item))
                  (t item))))
     (destructuring-bind (all
-                         dummy0 host 
+                         dummy0 host
                          relative directories dummy1
                          name
-                         dummy2 type dummy3 version) 
+                         dummy2 type dummy3 version)
         (re-exec *logical-pathname-regexp* string :start start :end end)
       (declare (ignore dummy0 dummy1 dummy2 dummy3))
       (if all
@@ -91,12 +91,12 @@
                 (and name
                      (let ((item (re-match-string string name)))
                        (wild item "name" nil)))
-                (and type        
+                (and type
                      (let ((item (re-match-string string type)))
                        (wild item "type" nil)))
                 (and version
                      (let ((version (re-match-string string version)))
-                       (cond 
+                       (cond
                          ((string= "*" version) :wild)
                          ((string-equal "NEWEST" version) :newest)
                          (t (parse-integer version :junk-allowed nil))))))
@@ -117,19 +117,19 @@
                     ((eq type 'list)
                      (make-list totlen))
                     (t (error "Invalid sequence type: ~S" type)))))
-    (loop 
+    (loop
       :for item :in list
       :and start = 0 :then (+ start (length item))
       :do (replace result item :start1 start)
       :finally (return result))))
 
 (defun match-wild-word-p (item wild)
-  (re-match 
+  (re-match
    (concat* 'string
             (cons "^"
                   (nconc
-                   (loop 
-                     :for chunks :on (split-sequence #\* wild) 
+                   (loop
+                     :for chunks :on (split-sequence #\* wild)
                      :collect (car chunks) :when (cdr chunks) :collect ".*")
                    (list "$"))))
    item))
@@ -366,7 +366,7 @@ file). Implementations can define other special version symbols.")
 
 
 
-(defparameter *logical-pathname-translations* 
+(defparameter *logical-pathname-translations*
   (make-hash-table :test (function equal)))
 
 
@@ -467,7 +467,7 @@ RETURN: The logical pathname translations for the HOST.
     (flet ((wild-p (item)
              (or (eq item :wild)
                  (eq item :wild-inferiors)
-                 (and (consp item) 
+                 (and (consp item)
                       (eq (first item) :wild-word)))))
       (if (null field-key)
           (or (wild-pathname-p pathname :host)
@@ -499,8 +499,8 @@ RETURN: The logical pathname translations for the HOST.
 
 (defun match-directory-items-p (item wild)
   (or (null item)
-      (null wild) 
-      (if (eq (first wild) :wild-inferiors) 
+      (null wild)
+      (if (eq (first wild) :wild-inferiors)
           (loop
             :for rest :on item
               :thereis (match-directory-items-p rest (rest wild)))
@@ -600,7 +600,7 @@ RETURN: The logical pathname translations for the HOST.
   (loop
     :with changed := t
     :while changed
-    :do (loop 
+    :do (loop
           :for cur := dir :then (cdr cur)
             :initially (setf changed nil)
           :do (when (and (or (stringp (cadr cur)) (eq :wild (cadr cur)))
@@ -610,11 +610,11 @@ RETURN: The logical pathname translations for the HOST.
   dir)
 
 
-(defun merge-pathnames (pathname 
+(defun merge-pathnames (pathname
                         &optional (default-pathname *default-pathname-defaults*)
                           (default-version :newest))
   (let ((pathname (pathname pathname)))
-    (make-pathname 
+    (make-pathname
      :host    (or (pathname-host pathname) (pathname-host default-pathname))
      :device  (if (and (stringp (pathname-host pathname))
                        (stringp (pathname-host default-pathname))
@@ -636,7 +636,7 @@ RETURN: The logical pathname translations for the HOST.
                     ((null default-version)
                      (pathname-version pathname))
                     (t
-                     (or (pathname-version pathname) 
+                     (or (pathname-version pathname)
                          (pathname-version default-pathname)))))))
 
 

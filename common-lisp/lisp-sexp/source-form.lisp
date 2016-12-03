@@ -33,19 +33,19 @@
 ;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2006 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -597,34 +597,34 @@ some constraints may be different from one lambda-list to the other."))
 
 (defgeneric lambda-list-allowed-keywords (lambda-list)
   (:method ((self ordinary-lambda-list))
-    (declare (ignorable self)) 
+    (declare (ignorable self))
     '(&optional &rest &allow-other-keys &key &aux))
   (:method ((self boa-lambda-list))
-    (declare (ignorable self)) 
+    (declare (ignorable self))
     '(&optional &rest &allow-other-keys &key &aux))
   (:method ((self specialized-lambda-list))
-    (declare (ignorable self)) 
+    (declare (ignorable self))
     '(&optional &rest &allow-other-keys &key &aux))
-  (:method ((self modify-macro-lambda-list)) 
+  (:method ((self modify-macro-lambda-list))
     (declare (ignorable self))
     '(&optional &rest))
   (:method ((self generic-lambda-list))
-    (declare (ignorable self)) 
+    (declare (ignorable self))
     '(&optional &rest &allow-other-keys &key))
   (:method ((self macro-lambda-list))
-    (declare (ignorable self)) 
+    (declare (ignorable self))
     '(&optional &rest &allow-other-keys &key &aux &whole &body &environment))
   (:method ((self type-lambda-list))
-    (declare (ignorable self)) 
+    (declare (ignorable self))
     '(&optional &rest &allow-other-keys &key &aux &whole &body &environment))
   (:method ((self destructuring-lambda-list))
-    (declare (ignorable self)) 
+    (declare (ignorable self))
     '(&optional &rest &allow-other-keys &key &aux &whole &body))
   (:method ((self setf-lambda-list))
-    (declare (ignorable self)) 
+    (declare (ignorable self))
     '(&optional &rest &allow-other-keys &key &environment))
   (:method ((self method-combination-lambda-list))
-    (declare (ignorable self)) 
+    (declare (ignorable self))
     '(&optional &rest &allow-other-keys &key &aux &whole)))
 
 
@@ -815,34 +815,34 @@ RETURN: (values parameter following)
 
 (defgeneric lambda-list-syntax (self)
   (:method ((self ordinary-lambda-list))
-    (declare (ignorable self)) 
+    (declare (ignorable self))
     '(reqvars  optvars  restvar keyvars auxvars))
   (:method ((self boa-lambda-list))
-    (declare (ignorable self)) 
+    (declare (ignorable self))
     '(reqvars  optvars  restvar keyvars auxvars))
   (:method ((self specialized-lambda-list))
-    (declare (ignorable self)) 
+    (declare (ignorable self))
     '(sreqvars optvars  restvar keyvars auxvars))
   (:method ((self generic-lambda-list))
-    (declare (ignorable self)) 
+    (declare (ignorable self))
     '(reqvars  goptvars restvar gkeyvars))
   (:method ((self setf-lambda-list))
-    (declare (ignorable self)) 
+    (declare (ignorable self))
     '(reqvars  optvars restvar keyvars envvar))
   (:method ((self modify-macro-lambda-list))
-    (declare (ignorable self)) 
+    (declare (ignorable self))
     '(reqvars  optvars restvar))
   (:method ((self method-combination-lambda-list))
     (declare (ignorable self))
     '(wholevar reqvars optvars restvar keyvars auxvars))
   (:method ((self macro-lambda-list))
-    (declare (ignorable self)) 
+    (declare (ignorable self))
     '(wholevar envvar preqvars envvar optvars envvar macro-rest))
   (:method ((self type-lambda-list))
-    (declare (ignorable self)) 
+    (declare (ignorable self))
     '(wholevar envvar preqvars envvar optvars envvar macro-rest))
   (:method ((self destructuring-lambda-list))
-    (declare (ignorable self)) 
+    (declare (ignorable self))
     '(wholevar preqvars optvars destructuring-rest)))
 
 
@@ -1027,7 +1027,7 @@ BUG:    We don't handle MACRO-LAMBDA-LISTs nor DESTRUCTURING-LAMBDA-LISTs, etc.
               :for par = (pop pars)
               :while (and par (parameter-indicator-p par))
               :do (push `(when ,(parameter-indicator par)
-                           (list ,(parameter-name par))) result) 
+                           (list ,(parameter-name par))) result)
               :finally (return
                          `(,@(when (or par pars)
                                    `((list ,@(nreverse
@@ -1074,7 +1074,7 @@ BUG:    We don't handle MACRO-LAMBDA-LISTs nor DESTRUCTURING-LAMBDA-LISTs, etc.
                                          (t (car subforms)))))))))
                ,@(if rest
                      ;; When we have a rest (or body) parameter, we don't need
-                     ;; to generate the keyword parameters, since they're 
+                     ;; to generate the keyword parameters, since they're
                      ;; covered by the rest. We just append the rest to the
                      ;;  list of arguments.
                      `(,(parameter-name rest))
@@ -1203,10 +1203,10 @@ RETURN:     A newly rebuilt lambda-list s-expr.
 
   (defun declarationp (form)
     (and (consp form) (eq 'declare (first form))))
-  
+
   (define-condition simple-program-error (program-error simple-error)
     ())
-  
+
   (defun parse-body (where body)
     "
 WHERE:          (member :lambda :locally :progn) specifies where the
@@ -1327,7 +1327,7 @@ NOTE:   This parses the body as a lambda body.
 "
     (nth-value 1 (parse-body (if allow-docstring :lambda :locally) body)))
 
-  
+
   (defun extract-body (body)
     "
 RETURN: The list of body forms.
@@ -1380,11 +1380,11 @@ NOTE:   This parses the body as a lambda body.
 
 ;; (eval-when (:compile-toplevel :load-toplevel :execute)
 ;;   (shadow '(DEFUN DEFGENERIC DEFMETHOD)))
-;; 
-;; 
+;;
+;;
 ;; (defparameter *call-stack* '())
-;; 
-;; 
+;;
+;;
 ;; (cl:defmacro defun (name args &body body)
 ;;   (let ((lambda-list (parse-lambda-list args :ordinary))
 ;;         (docu (extract-documentation body))
@@ -1396,8 +1396,8 @@ NOTE:   This parses the body as a lambda body.
 ;;        (push (list ',name ,@(make-argument-list lambda-list)) *call-stack*)
 ;;        (multiple-value-prog1 (progn ,@body)
 ;;          (pop *call-stack*)))))
-;; 
-;; 
+;;
+;;
 ;; (cl:defmacro defmethod (name &rest stuff)
 ;;   (let* ((qualifiers (extract-method-qualifiers stuff))
 ;;          (args       (extract-method-lambda-list     stuff))
@@ -1412,7 +1412,7 @@ NOTE:   This parses the body as a lambda body.
 ;;          (push (list ',name ,@(make-argument-list lambda-list)) *call-stack*)
 ;;          (multiple-value-prog1 (progn ,@body)
 ;;            (pop *call-stack*)))))
-;; 
+;;
 ;; (cl:defmacro defgeneric (name args &rest options-and-methods)
 ;;   `(cl:defgeneric ,name ,args
 ;;      ,@(mapcar

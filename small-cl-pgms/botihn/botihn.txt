@@ -8,7 +8,7 @@
    :description: Un robot IRC simple pour suivre Hacker News
    :keywords: common lisp,lisp,irc,bot,hacker news,drakma,cl-json,cl-irc,cesarum
    :author: Pascal Bourguignon
-              
+
 ❡
 
 Écriture d'un robot IRC simple
@@ -35,7 +35,7 @@ utilisant quelques bibliothèques:
 
 - je vais aussi utiliser une fonctions de ma bibliothèque
   *com.informatimago.common-lisp.cesarum*.
-  
+
 Ces bibliothèques sont obtenues, installées et compilées avec
 *quicklisp* et *asdf*.  Nous allons donc commencer par écrire un
 système ASDF indiquant les dépendences de notre programme `botihn` sur
@@ -49,7 +49,7 @@ ces bibliothèques `com.informatimago.small-cl-pgms.botihn.asd` : ::
       :depends-on ("com.informatimago.common-lisp.cesarum"
                    "cl-irc" "cl-json" "drakma")
       :components ((:file "botihn")))
-                     
+
 
 Paquetage
 ------------------------------------------------------------
@@ -57,19 +57,19 @@ Paquetage
 Nous pouvons alors commencer à programmer notre robot.  Définissons
 d'abord le paquetage lisp.  Comme ce sera un petit programme, nous
 mettrons tout le code dans un seul fichier, `botihn.lisp` : ::
-  
+
     (defpackage "COM.INFORMATIMAGO.SMALL-CL-PGMS.BOTIHN"
-      (:use "COMMON-LISP" "CL-IRC" "CL-JSON" "DRAKMA" 
+      (:use "COMMON-LISP" "CL-IRC" "CL-JSON" "DRAKMA"
             "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
       (:export "MAIN"))
     (in-package "COM.INFORMATIMAGO.SMALL-CL-PGMS.BOTIHN")
 
 
-Obtenir les informations d'*Hacker News* 
+Obtenir les informations d'*Hacker News*
 ------------------------------------------------------------
 
 La première chose à faire, est d'obtenir les données.  Pour celà, nous
-consultons l'`API` indiqué en bas de la page d'Hacker News, 
+consultons l'`API` indiqué en bas de la page d'Hacker News,
 `<https://github.com/HackerNews/API>`_.
 
 Nous allons utiliser l'`URL`:
@@ -81,14 +81,14 @@ informations sur une nouvelle identifiée par son ID.
 Afin que les données envoyées par le serveur soient considérées comme
 du texte par drakma, nous devrons lui indiquer que c'est le cas pour
 un `Content-Type` `application/json` : ::
-  
+
    (push '("application" . "json") *text-content-types*)
 
 
 `DRAKMA:HTTP-REQUEST` retourne plusieurs valeurs; la première est la
 resource obtenue; la deuxième est le code status.  Nous ignorerons les
 autres valeurs. ::
-  
+
     (http-request "https://hacker-news.firebaseio.com/v0/newstories.json")
     --> "[9446519,9446509,9446505,…,9443212]"
         200
@@ -103,7 +103,7 @@ autres valeurs. ::
 
 Utilisons `CL-JSON:DECODE-JSON-FROM-STRING` pour décoder le vecteur
 `JSON` : ::
-  
+
     (defun new-stories ()
       (multiple-value-bind (value status)
            (http-request "https://hacker-news.firebaseio.com/v0/newstories.json")
@@ -113,17 +113,17 @@ Utilisons `CL-JSON:DECODE-JSON-FROM-STRING` pour décoder le vecteur
     (subseq (new-stories) 0 8)
     --> (9446577 9446573 9446563 9446561 9446559 9446558 9446541 9446519)
 
-    
+
 De façon similaire, nous obtiendrons les informations sur une nouvelle
 identifiée : ::
-  
+
     (defun story (id)
       (multiple-value-bind (value status)
           (http-request (format nil "https://hacker-news.firebaseio.com/v0/item/~A.json" id))
         (when (= 200 status)
           (decode-json-from-string value))))
 
-          
+
     (story 9446577)
     --> ((:by . "antjanus")
          (:descendants . 0)
@@ -164,7 +164,7 @@ cette page avec la fonction suivante : ::
       (format nil "https://news.ycombinator.com/item?id=~A" story))
 
 Et formattons le message pour une nouvelle ainsi : ::
-  
+
     (defun format-story (story)
       (let ((title  (aget story :title))
             (url    (aget story :url))
@@ -185,7 +185,7 @@ obtenir les dernières nouvelles, à les formatter et à les envoyer : ::
           (setf *last-story* story))))
 
 Nous rassemblons l'initialisations dans une fonction : ::
-    
+
     (defun monitor-initialize ()
       (unless (find '("application" . "json") *text-content-types*
                     :test (function equalp))
@@ -205,13 +205,13 @@ trés simple : ::
     (defvar *nickname* "botihn")
     (defvar *channel*  "#hn")
     (defvar *period* 10 #|seconds|#)
-    
+
     (setf *connection* (connect :nickname *nickname* :server *server*))
     (join *connection* *channel*)
 
 Nous pouvons alors transmettre les nouvelles *Hacker news*
 periodiquement : ::
-    
+
     (monitor-initialize)
     (loop
        (monitor-hacker-news (lambda (message) (privmsg *connection* *channel* message)))
@@ -242,7 +242,7 @@ du robot `botihn` : ::
     (add-hook *connection* 'irc::irc-privmsg-message 'msg-hook)
 
 Avec : ::
-  
+
     (defvar *sources-url* "https://gitlab.com/com-informatimago/com-informatimago/tree/master/small-cl-pgms/botihn/")
 
     (defun msg-hook (message)
@@ -266,7 +266,7 @@ adressés, avec `/msg` : ::
     <botihn> I'm an IRC bot forwarding HackerNews news to #hn; under AGPL3 license, my sources
     are available at
     <https://gitlab.com/com-informatimago/com-informatimago/tree/master/small-cl-pgms/botihn/>.
-   
+
 
 
 Jusqu'à présent, nous ne nous sommes pas occupé des cas d'erreur.
@@ -310,7 +310,7 @@ essayons de nous reconnecter après un délai aléatoire. ::
             (when *connection*
               (quit *connection*)
               (setf *connection* nil))))))
-              
+
 
 Génération d'un exécutable indépendant
 ------------------------------------------------------------
@@ -321,7 +321,7 @@ environnement vierge.  Ce script charge `quicklisp`, charge botihn, et
 enregistre une image exécutable, en indiquant la fonction `main` comme
 point d'entrée du programme (`toplevel-function`) :  ::
 
-    (in-package "COMMON-LISP-USER")  
+    (in-package "COMMON-LISP-USER")
     (progn (format t "~%;;; Loading quicklisp.~%") (finish-output) (values))
     (load #P"~/quicklisp/setup.lisp")
 
@@ -363,5 +363,5 @@ Vous pouvez obtenir les sources complets de ce petit exemple à:
   make
 
 .. comment: THE END
-  
+
 

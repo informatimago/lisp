@@ -5,14 +5,14 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Implements Allegro CL-like relative packages.
 ;;;;    http://franz.com/support/documentation/8.1/doc/packages.htm#relative-2
-;;;; 
+;;;;
 ;;;;    Note: |..foo| won't be read as a relative package name.
 ;;;;          .|.foo| will be read as the relative package name ..|foo|.
 ;;;;
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -24,19 +24,19 @@
 ;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -46,7 +46,7 @@
 
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
-  
+
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.READER"
                 "READTABLE-PARSE-TOKEN"
                 "SYMBOL-IN-MISSING-PACKAGE-ERROR"
@@ -58,7 +58,7 @@
                 "INVALID-SYMBOL-COMPONENT-LIST" "INTERNAL-SYMBOL"
                 "MISSING-SYMBOL" "MISSING-PACKAGE"
                 "MAKE-SYMBOL-PARSER-FUNCTION" "MAKE-TOKEN-PARSER")
-  
+
   (:shadow . #1=("FIND-PACKAGE"
                  "MAKE-PACKAGE" "DELETE-PACKAGE"
                  "FIND-SYMBOL" "IMPORT" "INTERN" "SHADOW" "SHADOWING-IMPORT"
@@ -67,9 +67,9 @@
                  "PACKAGE-USE-LIST" "PACKAGE-USED-BY-LIST" "PACKAGE-SHADOWING-SYMBOLS"
                  "RENAME-PACKAGE"
                  "WITH-PACKAGE-ITERATOR"
-                 "DO-SYMBOLS" "DO-EXTERNAL-SYMBOLS" 
+                 "DO-SYMBOLS" "DO-EXTERNAL-SYMBOLS"
                  "DEFPACKAGE" "IN-PACKAGE"))
-  
+
   (:export "ENABLE-RELATIVE-PACKAGE-NAMES"
            "DISABLE-RELATIVE-PACKAGE-NAMES"
            "PACKAGE-DESIGNATOR" "PACKAGE-PARENT" "PACKAGE-CHILDREN"
@@ -90,7 +90,7 @@
                                 "PACKAGE-USE-LIST" "PACKAGE-USED-BY-LIST" "PACKAGE-SHADOWING-SYMBOLS"
                                 "RENAME-PACKAGE"
                                 "WITH-PACKAGE-ITERATOR"
-                                "DO-SYMBOLS" "DO-EXTERNAL-SYMBOLS" 
+                                "DO-SYMBOLS" "DO-EXTERNAL-SYMBOLS"
                                 "DEFPACKAGE" "IN-PACKAGE"))
   (:export . #.(let ((names '())) (do-external-symbols (s "COMMON-LISP" names)
                                     (push (symbol-name s) names))))
@@ -136,7 +136,7 @@ package bar leaving them parentless?
 
 A parent-children relationship would be a run-time entity, while
 refering to another package using a relative NAME would be a read-time
-operation.  Do we need the former?  
+operation.  Do we need the former?
 
 
 
@@ -450,8 +450,8 @@ NOTE:   The current implementation uses a prefix filter on the name of
 DO:     Like CL:DEFPACKAGE, but pre-processes the package names in
         those clauses:
 
-            (:use package-name*)* |  
-            (:shadowing-import-from package-name {symbol-name}*)* |  
+            (:use package-name*)* |
+            (:shadowing-import-from package-name {symbol-name}*)* |
             (:import-from package-name {symbol-name}*)* |
 
 NOTE:   Since relative package names in those closes are resolved at
@@ -593,7 +593,7 @@ not a CL:READTABLE.
     ;;       anymore, once we have a reader macro on #\. We deal with
     ;;       it in LIST-READER-MACRO, but this could be avoided if we
     ;;       didn't have to write a reader macro for #\.
-    
+
     (vector-push-extend dot buffer)
     (loop
       :for ch := (read-char stream nil nil)
@@ -607,7 +607,7 @@ not a CL:READTABLE.
 
 #-(and)
 (progn
-  
+
   (let ((token "...string:prefixp"))
     (check eql (with-input-from-string (in token)
                  (dot-reader-macro in (read-char in)))
@@ -659,7 +659,7 @@ not a CL:READTABLE.
                  (unread-char ch stream)
                  (setf (cdr tail) (cons (read stream t nil t) nil)
                        tail (cdr tail)))))
-          
+
           (otherwise
            (let ((mac (get-macro-character ch)))
              (if mac

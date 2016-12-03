@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Here is a M-expression parser.
 ;;;;
 ;;;;    A lot of lisp newbies ask for more conventionnal syntax for lisp.
@@ -42,19 +42,19 @@
 ;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2006 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -403,7 +403,7 @@
             (sname  (cond
                       ((or (token-p :m-false parser)
                            (token-p :m-nil parser)) 'nil)
-                      ((token-p :m-true parser)       't) 
+                      ((token-p :m-true parser)       't)
                       (t             (m-to-s-symbol name)))))
        (advance parser)
        (if (token-p :m-open parser)
@@ -466,16 +466,16 @@
 
 (defmacro handling-errors (&body body)
   `(handler-case (progn ,@body)
-     (simple-condition 
-         (err) 
+     (simple-condition
+         (err)
        (format *error-output* "~&~A: ~%" (class-name (class-of err)))
        (apply (function format) *error-output*
               (simple-condition-format-control   err)
               (simple-condition-format-arguments err))
        (format *error-output* "~&")
        (finish-output))
-     (condition 
-         (err) 
+     (condition
+         (err)
        (format *error-output* "~&~A: ~%  ~S~%"
                (class-name (class-of err)) err)
        (finish-output))))

@@ -28,23 +28,23 @@
 ;;;;    time-base mechanisms.
 ;;;;
 ;;;;    No provision for compatibility with non-threading server options
-;;;;    such as UCW's that can work with clisp's socket-status. 
+;;;;    such as UCW's that can work with clisp's socket-status.
 ;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -76,19 +76,19 @@ chunks, timewise.
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2003 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -138,14 +138,14 @@ License:
 ;; at different times:
 ;;
 ;; |.....|.....|.....|     |.....|.....|.....|     |.....|.....|.....|
-;; xyz   xyz   xyz   xyz   xyz   xyz   xyz   xyz   x--   x--   x--   x--   
+;; xyz   xyz   xyz   xyz   xyz   xyz   xyz   xyz   x--   x--   x--   x--
 ;;
 ;; |.....|.....|.....|     |.....|.....|.....|     |.....|.....|.....|
-;; x     x     x     x     x     x     x     x     x     x     x     x     
+;; x     x     x     x     x     x     x     x     x     x     x     x
 ;; .|.....|.....|.....     .|.....|.....|.....     .|.....|.....|.....
-;;  y     y     y           y     y     y           y     y     y     
+;;  y     y     y           y     y     y           y     y     y
 ;; ..|.....|.....|....     ..|.....|.....|....     ..|.....|.....|....
-;;   z     z     z           z     z     z           z     z     z    
+;;   z     z     z           z     z     z           z     z     z
 ;;
 
 (defun schedule (current-time scheduled-time period dropablep exactp idlep precision)

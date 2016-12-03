@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Tests the run-program function.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -110,7 +110,7 @@ Journal
 (define-test test/run-program (&key ((:verbose *verbose*) *verbose*))
 
   (create-test-input-file)
-  
+
   (assert-true (zerop (process-status (run-program "true" '() :wait t))))
   (assert-true (zerop (process-status (prog1 (run-program "true" '() :wait nil)
                                         (sleep 1)))))
@@ -135,13 +135,13 @@ Journal
                (text-stream-contents (process-error process))
             (close (process-error process)))))
 
-  
+
   (ignore-errors (delete-file "TESTERR.TXT"))
   (run-program "sh" '("-c" "echo error 1>&2")
                :wait t :input nil :output nil :error "TESTERR.TXT")
   (check equal '("error") (text-file-contents "TESTERR.TXT"))
 
-  
+
   (with-open-file (err "TESTERR.TXT"
                        :direction :output :if-does-not-exist :create :if-exists :supersede
                        #+ccl :sharing #+ccl :lock

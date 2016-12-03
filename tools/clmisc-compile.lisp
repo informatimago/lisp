@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Replaces the Makefile.
-;;;;    
+;;;;
 ;;;;    Usage:   (load "compile.lisp")
 ;;;;
 ;;;;    will compile all outdated files.
@@ -20,19 +20,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -95,7 +95,7 @@ RETURN:  The version as a string \"major.minor.compilation\"
               :collect (list (intern (string-upcase (subseq line 0 =pos)) "KEYWORD")
                              (read-from-string (subseq line (1+ =pos)))))))
     (let* ((default-path       (or *load-pathname* *default-pathname-defaults*))
-           (version.path       (or path 
+           (version.path       (or path
                                    (make-pathname :name "VERSION" :type "DAT"
                                                   :version :newest
                                                   :defaults default-path)))
@@ -165,7 +165,7 @@ RETURN:  The version as a string \"major.minor.compilation\"
 
 (defun package-use*-package-p (p q)
   "
-RETURN: Whether the package P uses the package Q, or a package 
+RETURN: Whether the package P uses the package Q, or a package
         that uses the package Q.
 NOTE:   By definition, (PACKAGE-USE*-PACKAGE-P X X)
 "
@@ -189,9 +189,9 @@ NOTE:   By definition, (PACKAGE-USE*-PACKAGE-P X X)
 
 (defun topological-sort (nodes lessp)
   "
-RETURN: A list of NODES sorted topologically according to 
+RETURN: A list of NODES sorted topologically according to
         the partial order function LESSP.
-        If there are cycles (discounting reflexivity), 
+        If there are cycles (discounting reflexivity),
         then the list returned won't contain all the NODES.
 "
   (loop
@@ -207,7 +207,7 @@ RETURN: A list of NODES sorted topologically according to
                   :for node :in nodes
                   :for inco :across incoming
                   :when (zerop inco)
-                  :collect node) 
+                  :collect node)
      :while q
      :do (let ((n (pop q)))
            (push n sorted)

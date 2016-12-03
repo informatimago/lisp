@@ -65,9 +65,9 @@ replacement sexp: *package*
 (LET ((*PACKAGE* #&lt;PACKAGE IMAGE-BASED-COMMON-LISP-USER&gt;)) (PRINT 'HELLO))
 C/IBCL-USER[5]&gt; (eval *)
 
-HELLO 
 HELLO
-C/IBCL-USER[6]&gt; 
+HELLO
+C/IBCL-USER[6]&gt;
 
   </pre>
 </div>

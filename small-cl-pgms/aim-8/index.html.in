@@ -17,7 +17,7 @@
     RECURSIVE FUNCTIONS OF SYMBOLIC EXPRESSIONS AND THEIR COMPUTATION
 
                          BY MACHINE
- 
+
                        by J. McCarthy
    </PRE></QUOTE>
 <ul>
@@ -32,15 +32,15 @@
     History of Lisp</a> by John McCarthy</li>
 </ul></P>
 
-  <p>The only symbols predefined are: DEFINE, LAMBDA, LABEL, COND, COMBINE, 
+  <p>The only symbols predefined are: DEFINE, LAMBDA, LABEL, COND, COMBINE,
 FIRST, REST, NULL, ATOM, EQ, NIL, T, and QUOTE. </p>
 
-  <p>The file <A HREF="aim-8.lisp">aim-8.lisp</A> 
+  <p>The file <A HREF="aim-8.lisp">aim-8.lisp</A>
      contains an implementation in Common-Lisp.</p>
-  <p>The file <A HREF="aim-8.aim-8">aim-8.aim-8</A> 
+  <p>The file <A HREF="aim-8.aim-8">aim-8.aim-8</A>
      contains an implementation in AIM-8 LISP.</p>
-  <p>The file <A HREF="examples.aim-8">examples.aim-8</A> 
-     contains the other examples given in AIM-8: differential 
+  <p>The file <A HREF="examples.aim-8">examples.aim-8</A>
+     contains the other examples given in AIM-8: differential
      and turing machine.</p>
 
   <p>(It should be  noted that "compiler" occurs 4  times in this Memo,
@@ -77,7 +77,7 @@ Copyright (c) Sam Steingold, Bruno Haible 2001-2006
 ;; Loaded file /local/users/pjb/src/public/small-cl-pgms/aim-8/aim-8.fas
 T
 [2]&gt; <b>(aim-8:repl)</b>
-You've got:  
+You've got:
     LAMBDA LABEL
     COND AND OR NOT  COMBINE FIRST REST
     NULL ATOM EQ NIL T QUOTE
@@ -89,10 +89,10 @@ AIM-8&gt; <b>(define maplist
              (cond ((null x) nil)
                    (t        (combine (f x) (maplist (rest x) f))))))</b>
 MAPLIST
-AIM-8&gt; <b>(define diff 
+AIM-8&gt; <b>(define diff
            (lambda (y x)
-             (cond 
-               ((atom y) 
+             (cond
+               ((atom y)
                 (cond ((eq y x) (quote one))
                       (t (quote zero))))
                ((eq (first y) (quote plus))
@@ -100,13 +100,13 @@ AIM-8&gt; <b>(define diff
                          (maplist (rest y) (lambda (a) (diff (first a) x)))))
                ((eq (first y) (quote times))
                 (combine (quote plus)
-                         (maplist 
-                          (rest y) 
+                         (maplist
+                          (rest y)
                           (lambda (a) (combine
                                   (quote times)
                                   (maplist
                                    (rest y)
-                                   (lambda (w) (cond 
+                                   (lambda (w) (cond
                                             ((not (eq a w)) (first w))
                                             (t (diff (first w) x))
                                             )))))))))))</b>
@@ -117,7 +117,7 @@ AIM-8&gt; <b>(diff (quote (plus (times a x x) (times b x) c)) (quote x))</b>
 (PLUS (PLUS (TIMES ZERO X X) (TIMES A ONE X) (TIMES A X ONE))
  (PLUS (TIMES ZERO X) (TIMES B ONE)) ZERO)
 
-;; Beware, AIM-8 is defined with substitution evaluation. 
+;; Beware, AIM-8 is defined with substitution evaluation.
 ;; Therefore, for each occurence of a variable, the whole expression
 ;; bound to this variable is evaluated again.  This gives surprizing
 ;; results for procedures with side-effects like PRINT and READ.
@@ -125,7 +125,7 @@ AIM-8&gt; <b>(diff (quote (plus (times a x x) (times b x) c)) (quote x))</b>
 
 AIM-8&gt; <b>((lambda (x) (combine x (combine x nil))) (print (quote a)))</b>
 
-A 
+A
 A (A A)
 AIM-8&gt; <b>(quit)</b>
 GOOD BYE

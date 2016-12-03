@@ -1,5 +1,5 @@
 
-Standard ECMA-48 Fifth Edition - June 1991 Reprinted June 1998 Standardizing Information and Communication Systems Control Functions for Coded Character Sets Phone: +41 22 849.60.00 - Fax: +41 22 849.60.01 - URL: ht tp: / /www.ecma.ch - Internet: helpdesk@ecma.ch . Standard ECMA-48 June 1991 Standardizing Information and Communication Systems Control Functions for Coded Character Sets Phone: +41 22 849.60.00 - Fax: +41 22 849.60.01 - URL: ht tp: / /www.ecma.ch - Internet: helpdesk@ecma.ch IW ECMA-048.doc 21-01-03 16,29 . Brief History As part of the work on coded character set standards, TC1, the coding committee of ECMA, worked on the definition and the coding of control functions to be used with the various standards for coded graphic character sets produced by ECMA, viz. ECMA-6, ECMA-94, ECMA-113, ECMA-114, ECMA-118, ECMA-121, ECMA-128, and ECMA-144. The first edition of this Standard ECMA-48 was published in 1976. Further editions followed. The fourth edition, published in 1986 was adopted by ISO/IEC under the fast-track procedure as second edition of ISO 6429. It constitutes a repertoire of a large number of control functions the definitions and coded representations of which are thus standardized. For each application the required selection of control functions can be made from this repertoire. This fifth edition of Standard ECMA-48 contains the control functions already standardized in the fourth edition and, in addition, new control functions needed for handling bi-directional texts, i.e. texts comprising parts written with a left-to-right script and parts written with a right-to-left script. ECMA Technical Report TR/53 gives further information and examples of handling such texts. The inclusion of these specialized control functions has required a corresponding adjustment of the definitions of some of the other control functions. Moreover, the concept of "device" had to be revised. This fifth edition has been contributed to ISO/IEC for adoption under the fast-track procedure as third edition of ISO/IEC 6429. Adopted by the General Assembly of ECMA on 13th June 1991.  - i - . Table of contents 1 Scope 1 2 Conformance 1 2.1 Types of conformance 1 2.2 Conformance of information interchange 1 2.3 Conformance of devices 1 2.3.1 Device description 1 2.3.2 Originating devices 2 2.3.3 Receiving devices 2 3 References 2 4 Notation and definitions 3 4.1 Notation 3 4.2 Definitions 3 4.2.1 Active area 3 4.2.2 Active field 3 4.2.3 Active line 3 4.2.4 Active page 3 4.2.5 Active data position 3 4.2.6 Active presentation position 3 4.2.7 Area 3 4.2.8 Auxiliary device 3 4.2.9 Bi-directional data 3 4.2.10 Bit combination 3 4.2.11 Byte 4 4.2.12 To cancel 4 4.2.13 Character 4 4.2.14 Character-imaging device 4 4.2.15 Character path 4 4.2.16 Character position 4 4.2.17 Character progression 4 4.2.18 To clear 4 4.2.19 Coded character set; code 4 4.2.20 Coded-character-data-element (CC-data-element) 4 4.2.21 Code extension 4 4.2.22 Code table 4 4.2.23 Control character 4 4.2.24 Control function 4 4.2.25 Control sequence 5 4.2.26 Control string 5 4.2.27 Cursor 5 4.2.28 Data component 5 4.2.29 Decimal mark 5 4.2.30 Default 5 4.2.31 To delete 5 4.2.32 To designate 5 4.2.33 Device 5 4.2.34 Display 5 4.2.35 Editor function 5 4.2.36 Eligible 5 4.2.37 Environment 5 - ii - 4.2.38 To erase 5 4.2.39 Escape sequence 5 4.2.40 Field 5 4.2.41 Final Byte 6 4.2.42 Formator function 6 4.2.43 Graphic character 6 4.2.44 Graphic rendition 6 4.2.45 Graphic symbol 6 4.2.46 Guarded area 6 4.2.47 Initial state 6 4.2.48 Intermediate Byte 6 4.2.49 To invoke 6 4.2.50 Line 6 4.2.51 Line home position 6 4.2.52 Line limit position 6 4.2.53 Line orientation 6 4.2.54 Line progression 6 4.2.55 Operating system 7 4.2.56 Page 7 4.2.57 Page home position 7 4.2.58 Page limit position 7 4.2.59 Parameter Byte 7 4.2.60 Presentation component 7 4.2.61 Private (or experimental) use 7 4.2.62 Protected area 7 4.2.63 Qualified area 7 4.2.64 Repertoire 7 4.2.65 Scroll 7 4.2.66 Selected area 7 4.2.67 Tabulation 7 4.2.68 Tabulation stop 7 4.2.69 User 7 5 Coded representation 8 5.1 General 8 5.2 Elements of the C0 set 8 5.3 Elements of the C1 set 8 5.4 Control sequences 10 5.4.1 Parameter representation 11 5.4.2 Parameter string format 12 5.4.3 Types of parameters 12 5.5 Independent control functions 12 5.6 Control strings 13 6 Device concepts 13 6.1 Components 14 6.1.1 Presentation component 14 6.1.2 The active presentation position 15 6.1.3 Data component 15 6.1.4 The active data position 15 6.1.5 Relationship between active data position and active presentation position 15 6.1.6 Implicit movement 16 6.1.7 Explicit movement 17 6.1.8 Indirect movement 17 6.2 The data stream 17 - iii - 6.2.1 Data organization 17 6.3 The graphic image output 18 6.4 Formator functions and editor functions 18 6.4.1 Formator functions 18 6.4.2 Composite graphic characters 18 6.4.3 Editor functions 18 6.5 Selected and qualified areas 18 6.5.1 Selected areas 19 6.5.2 Qualified areas 19 6.6 Auxiliary input/output devices 20 6.7 Tabulation and fields 20 7 Modes 20 7.1 The concept of modes 20 7.2 Definition of modes 20 7.2.1 BDSM - BI-DIRECTIONAL SUPPORT MODE 21 7.2.2 CRM - CONTROL REPRESENTATION MODE 22 7.2.3 DCSM - DEVICE COMPONENT SELECT MODE 22 7.2.4 ERM - ERASURE MODE 22 7.2.5 FEAM - FORMAT EFFECTOR ACTION MODE 22 7.2.6 FETM - FORMAT EFFECTOR TRANSFER MODE 22 7.2.7 GATM - GUARDED AREA TRANSFER MODE 23 7.2.8 GRCM - GRAPHIC RENDITION COMBINATION MODE 23 7.2.9 HEM - CHARACTER EDITING MODE 23 7.2.10 IRM - INSERTION REPLACEMENT MODE 24 7.2.11 KAM - KEYBOARD ACTION MODE 24 7.2.12 MATM - MULTIPLE AREA TRANSFER MODE 24 7.2.13 PUM - POSITIONING UNIT MODE 24 7.2.14 SATM - SELECTED AREA TRANSFER MODE 24 7.2.15 SRM - SEND/RECEIVE MODE 24 7.2.16 SRTM - STATUS REPORT TRANSFER MODE 24 7.2.17 TSM - TABULATION STOP MODE 25 7.2.18 TTM - TRANSFER TERMINATION MODE 25 7.2.19 VEM - LINE EDITING MODE 25 7.2.20 ZDM - ZERO DEFAULT MODE 25 7.3 Interaction between modes 26 7.3.1 GUARDED AREA TRANSFER MODE (GATM), MULTIPLE AREA TRANSFER MODE (MATM), SELECTED AREA TRANSFER MODE (SATM), and TRANSFER TERMINATION MODE (TTM) 26 7.3.2 CONTROL REPRESENTATION MODE (CRM) and FORMAT EFFECTOR ACTION MODE (FEAM) 26 7.3.3 CHARACTER EDITING MODE (HEM) and INSERTION REPLACEMENT MODE (IRM) 26 7.3.4 BI-DIRECTIONAL SUPPORT MODE (BDSM) and DEVICE COMPONENT SELECT MODE (DCSM) 27 7.4 Private modes 27 
+Standard ECMA-48 Fifth Edition - June 1991 Reprinted June 1998 Standardizing Information and Communication Systems Control Functions for Coded Character Sets Phone: +41 22 849.60.00 - Fax: +41 22 849.60.01 - URL: ht tp: / /www.ecma.ch - Internet: helpdesk@ecma.ch . Standard ECMA-48 June 1991 Standardizing Information and Communication Systems Control Functions for Coded Character Sets Phone: +41 22 849.60.00 - Fax: +41 22 849.60.01 - URL: ht tp: / /www.ecma.ch - Internet: helpdesk@ecma.ch IW ECMA-048.doc 21-01-03 16,29 . Brief History As part of the work on coded character set standards, TC1, the coding committee of ECMA, worked on the definition and the coding of control functions to be used with the various standards for coded graphic character sets produced by ECMA, viz. ECMA-6, ECMA-94, ECMA-113, ECMA-114, ECMA-118, ECMA-121, ECMA-128, and ECMA-144. The first edition of this Standard ECMA-48 was published in 1976. Further editions followed. The fourth edition, published in 1986 was adopted by ISO/IEC under the fast-track procedure as second edition of ISO 6429. It constitutes a repertoire of a large number of control functions the definitions and coded representations of which are thus standardized. For each application the required selection of control functions can be made from this repertoire. This fifth edition of Standard ECMA-48 contains the control functions already standardized in the fourth edition and, in addition, new control functions needed for handling bi-directional texts, i.e. texts comprising parts written with a left-to-right script and parts written with a right-to-left script. ECMA Technical Report TR/53 gives further information and examples of handling such texts. The inclusion of these specialized control functions has required a corresponding adjustment of the definitions of some of the other control functions. Moreover, the concept of "device" had to be revised. This fifth edition has been contributed to ISO/IEC for adoption under the fast-track procedure as third edition of ISO/IEC 6429. Adopted by the General Assembly of ECMA on 13th June 1991.  - i - . Table of contents 1 Scope 1 2 Conformance 1 2.1 Types of conformance 1 2.2 Conformance of information interchange 1 2.3 Conformance of devices 1 2.3.1 Device description 1 2.3.2 Originating devices 2 2.3.3 Receiving devices 2 3 References 2 4 Notation and definitions 3 4.1 Notation 3 4.2 Definitions 3 4.2.1 Active area 3 4.2.2 Active field 3 4.2.3 Active line 3 4.2.4 Active page 3 4.2.5 Active data position 3 4.2.6 Active presentation position 3 4.2.7 Area 3 4.2.8 Auxiliary device 3 4.2.9 Bi-directional data 3 4.2.10 Bit combination 3 4.2.11 Byte 4 4.2.12 To cancel 4 4.2.13 Character 4 4.2.14 Character-imaging device 4 4.2.15 Character path 4 4.2.16 Character position 4 4.2.17 Character progression 4 4.2.18 To clear 4 4.2.19 Coded character set; code 4 4.2.20 Coded-character-data-element (CC-data-element) 4 4.2.21 Code extension 4 4.2.22 Code table 4 4.2.23 Control character 4 4.2.24 Control function 4 4.2.25 Control sequence 5 4.2.26 Control string 5 4.2.27 Cursor 5 4.2.28 Data component 5 4.2.29 Decimal mark 5 4.2.30 Default 5 4.2.31 To delete 5 4.2.32 To designate 5 4.2.33 Device 5 4.2.34 Display 5 4.2.35 Editor function 5 4.2.36 Eligible 5 4.2.37 Environment 5 - ii - 4.2.38 To erase 5 4.2.39 Escape sequence 5 4.2.40 Field 5 4.2.41 Final Byte 6 4.2.42 Formator function 6 4.2.43 Graphic character 6 4.2.44 Graphic rendition 6 4.2.45 Graphic symbol 6 4.2.46 Guarded area 6 4.2.47 Initial state 6 4.2.48 Intermediate Byte 6 4.2.49 To invoke 6 4.2.50 Line 6 4.2.51 Line home position 6 4.2.52 Line limit position 6 4.2.53 Line orientation 6 4.2.54 Line progression 6 4.2.55 Operating system 7 4.2.56 Page 7 4.2.57 Page home position 7 4.2.58 Page limit position 7 4.2.59 Parameter Byte 7 4.2.60 Presentation component 7 4.2.61 Private (or experimental) use 7 4.2.62 Protected area 7 4.2.63 Qualified area 7 4.2.64 Repertoire 7 4.2.65 Scroll 7 4.2.66 Selected area 7 4.2.67 Tabulation 7 4.2.68 Tabulation stop 7 4.2.69 User 7 5 Coded representation 8 5.1 General 8 5.2 Elements of the C0 set 8 5.3 Elements of the C1 set 8 5.4 Control sequences 10 5.4.1 Parameter representation 11 5.4.2 Parameter string format 12 5.4.3 Types of parameters 12 5.5 Independent control functions 12 5.6 Control strings 13 6 Device concepts 13 6.1 Components 14 6.1.1 Presentation component 14 6.1.2 The active presentation position 15 6.1.3 Data component 15 6.1.4 The active data position 15 6.1.5 Relationship between active data position and active presentation position 15 6.1.6 Implicit movement 16 6.1.7 Explicit movement 17 6.1.8 Indirect movement 17 6.2 The data stream 17 - iii - 6.2.1 Data organization 17 6.3 The graphic image output 18 6.4 Formator functions and editor functions 18 6.4.1 Formator functions 18 6.4.2 Composite graphic characters 18 6.4.3 Editor functions 18 6.5 Selected and qualified areas 18 6.5.1 Selected areas 19 6.5.2 Qualified areas 19 6.6 Auxiliary input/output devices 20 6.7 Tabulation and fields 20 7 Modes 20 7.1 The concept of modes 20 7.2 Definition of modes 20 7.2.1 BDSM - BI-DIRECTIONAL SUPPORT MODE 21 7.2.2 CRM - CONTROL REPRESENTATION MODE 22 7.2.3 DCSM - DEVICE COMPONENT SELECT MODE 22 7.2.4 ERM - ERASURE MODE 22 7.2.5 FEAM - FORMAT EFFECTOR ACTION MODE 22 7.2.6 FETM - FORMAT EFFECTOR TRANSFER MODE 22 7.2.7 GATM - GUARDED AREA TRANSFER MODE 23 7.2.8 GRCM - GRAPHIC RENDITION COMBINATION MODE 23 7.2.9 HEM - CHARACTER EDITING MODE 23 7.2.10 IRM - INSERTION REPLACEMENT MODE 24 7.2.11 KAM - KEYBOARD ACTION MODE 24 7.2.12 MATM - MULTIPLE AREA TRANSFER MODE 24 7.2.13 PUM - POSITIONING UNIT MODE 24 7.2.14 SATM - SELECTED AREA TRANSFER MODE 24 7.2.15 SRM - SEND/RECEIVE MODE 24 7.2.16 SRTM - STATUS REPORT TRANSFER MODE 24 7.2.17 TSM - TABULATION STOP MODE 25 7.2.18 TTM - TRANSFER TERMINATION MODE 25 7.2.19 VEM - LINE EDITING MODE 25 7.2.20 ZDM - ZERO DEFAULT MODE 25 7.3 Interaction between modes 26 7.3.1 GUARDED AREA TRANSFER MODE (GATM), MULTIPLE AREA TRANSFER MODE (MATM), SELECTED AREA TRANSFER MODE (SATM), and TRANSFER TERMINATION MODE (TTM) 26 7.3.2 CONTROL REPRESENTATION MODE (CRM) and FORMAT EFFECTOR ACTION MODE (FEAM) 26 7.3.3 CHARACTER EDITING MODE (HEM) and INSERTION REPLACEMENT MODE (IRM) 26 7.3.4 BI-DIRECTIONAL SUPPORT MODE (BDSM) and DEVICE COMPONENT SELECT MODE (DCSM) 27 7.4 Private modes 27
 
 
 
@@ -361,7 +361,7 @@ Standard ECMA-48 Fifth Edition - June 1991 Reprinted June 1998 Standardizing Inf
 
 8.3.161 VT - LINE TABULATION 74
 
-8.3.162 VTS - LINE TABULATION SET 74 
+8.3.162 VTS - LINE TABULATION SET 74
 
 9 Transformation between 7-bit and 8-bit coded representations 74 Annex A - Formator functions and editor functions 77 Annex B - Coding examples 79 Annex C - Text composition considerations 81 Annex D - Implementation-dependent features 83 Annex E - Text area formats 85 Annex F - Differences between the fifth and the fourth edition of ECMA-48 87 - viii - . 1 Scope This ECMA Standard defines control functions and their coded representations for use in a 7-bit code, an extended 7-bit code, an 8-bit code or an extended 8-bit code, if such a code is structured in accordance with Standard ECMA-35. The control functions defined in this Standard are intended to be used embedded in character-coded data for interchange, in particular with character-imaging devices. In general, the control functions are defined by their effects on a character-imaging input/output device. It is, therefore, necessary to make certain assumptions about the architecture of such a device. These assumptions are as unrestrictive as possible; they are specified in clause 6. In addition to being performed the control functions may need to be represented by a graphic symbol. The structure of this Standard is open-ended, so that more control functions can be included in future editions. Other standards specifying control functions may define more restricted definitions of them than those in this Standard. The devices to which this Standard applies can vary greatly from each other depending on the application for which a device has been specifically designed. It is technically and economically impractical for one device to implement all the facilities specified in this Standard. The intention is that in any type of device only a limited selection of the facilities appropriate to the application will be implemented. 2 Conformance 2.1 Types of conformance Full conformance to a standard means that all of its requirements are met. Conformance will only have a unique meaning if the standard contains no options. If there are options within the standard they must be clearly identified, and any claim of conformance must include a statement that identifies those options that have been adopted. This Standard is of a different nature since it specifies a large number of facilities from which different selections may be made to suit individual applications. These selections are not identified in this Standard, but must be identified at the time that a claim of conformance is made. Conformance to such an identified selection is known as limited conformance. 2.2 Conformance of information interchange A CC-data-element within coded information for interchange is in conformance with this Standard if the coded representations of control functions within that CC-data-element satisfy the following conditions:
 
@@ -371,7 +371,7 @@ b) a control function that is specified in this Standard shall always be represe
 
 c) any coded representation that is reserved for future standardization by this Standard shall not appear. Coded representations of control functions and modes not specified in this Standard may appear in interchanged information subject to the above conditions (see 5.4, 5.4.1 and 7.4). 2.3 Conformance of devices A device is in conformance with this Standard if it conforms to the requirements of 2.3.1, and either or both 2.3.2 and 2.3.3. Any claim of conformance shall identify the document which contains the description specified in 2.3.1. 2.3.1 Device description A device that conforms to this Standard shall be the subject of a description that: i. identifies, by reference to the clauses of, or to the control functions specified in this Standard, the selection of control functions, the coded representations of which the device can originate or can receive and interpret; ii. identifies the means by which the user may supply the corresponding control functions, or may recognize them, as specified respectively in 2.3.2 and 2.3.3 below. 2.3.2 Originating devices An originating device shall be capable of transmitting within a CC-data-element the coded representations of an identified selection of control functions, and of their parameter values (including mode selection parameters), conforming to this Standard. Such a device shall allow the user to supply any control function that he chooses from among the identified selection for the purpose of transmitting its coded representation over the coding interface. 2.3.3 Receiving devices A receiving device shall be capable of receiving within a CC-data-element and interpreting the coded representations of an identified selection of control functions, and of their parameter values (including mode selection parameters), conforming to this Standard. If the identified selection contains a control sequence for which a default value for a parameter is specified in this Standard, the identified selection shall include the default value both in explicit and in implicit representations. Such a device shall make available to the user any control function that is within the identified selection, and the coded representation of which is received over the coding interface, in such a form that the user can recognize it from among the control functions within the identified selection. 3 References ECMA-6 7-Bit Coded Character Set (1991) ECMA-17 Graphic Representation of the Control Characters of the ECMA 7-Bit Coded Character Set for Information Interchange (1968) ECMA-35 Code Extension Techniques (1985) ECMA-43 8-Bit Code - Structure and Rules (1991) ECMA-94 8-Bit Single-Byte Coded Graphic Character Set - Latin Alphabet No. 1 to No. 4 (1986) ECMA-113 8-Bit Single-Byte Coded Graphic Character Sets - Latin/Cyrillic Alphabet (1988) ECMA-114 8-Bit Single-Byte Coded Graphic Character Sets - Latin/Arabic Alphabet (1986) ECMA-118 8-Bit Single-Byte Coded Character Sets - Latin/Greek Alphabet (1986) ECMA-121 8-Bit Single-Byte Coded Character Sets - Latin/Hebrew Alphabet (1987) ECMA-128 8-Bit Single-Byte Coded Character Sets - Latin Alphabet No. 5 (1988) ECMA-144 8-Bit Single-Byte Coded Character Sets - Latin Alphabet No. 6 (1990) ECMA TR/53 Handling of Bi-directional Texts (1992) ISO 1745:1975 Information processing - Basic mode control procedures for data communication systems ISO 2375:1985 Data processing - Procedure for registration of escape sequences ISO/IEC 7350:1991 Information Technology - Registration of repertoires of graphic characters from ISO/IEC 10367 ISO 8613-6:1989 Information processing - Text and office systems - Office Document Architecture (ODA) and interchange format - Part 6: Character content architectures ISO/IEC 10367:1991 Information Technology - Repertoire of standardized coded graphic character sets for use in 8-bit codes ISO/IEC 10538:1990 Information Technology - Control functions for text communication ISO International Register of Coded Character Sets to be Used with Escape Sequences. 4 Notation and definitions 4.1 Notation In this Standard a convention has been adopted to assist the reader. Capital letters are used to refer to a specific control function, mode, mode setting, or graphic character in order to avoid confusion, for example, between the concept "space" and the character SPACE. It is intended that this convention and the acronyms of the modes and the control functions be retained in all translations of the text. This Standard uses the notation of the form xx/yy, where xx represents the column number 00 to 07 in a 7- bit code table or 00 to 15 in an 8-bit code table, and yy represents the row number 00 to 15. 4.2 Definitions For the purpose of this Standard, the following definitions apply. 4.2.1 Active area The area in the data component which contains the active data position. The area in the presentation component which contains the active presentation position. 4.2.2 Active field The field in the data component which contains the active data position. The field in the presentation component which contains the active presentation position. 4.2.3 Active line The line in the data component which contains the active data position. The line in the presentation component which contains the active presentation position. 4.2.4 Active page The page in the data component which contains the active data position. The page in the presentation component which contains the active presentation position. 4.2.5 Active data position The character position in the data component which is to receive the next graphic character or the next control function from the data stream and relative to which certain control functions are to be executed. 4.2.6 Active presentation position The character position in the presentation component which is to receive the next graphic character for graphic image output and relative to which certain control functions are to be executed.
 
-NOTE 
+NOTE
 
 In general, the active presentation position is indicated in a display by a cursor. 4.2.7 Area A series of successive character positions that are not necessarily on the same line. 4.2.8 Auxiliary device A device connected to a character-imaging device for the purpose of inputting, storing, retrieving, or imaging data. 4.2.9 Bi-directional data Data containing text strings which are to be presented in different writing directions, like left-to-right and right-to-left. Refer to ECMA Technical Report 53 for further explanations. 4.2.10 Bit combination An ordered set of bits used for the representation of characters. 4.2.11 Byte A bit string that is operated upon as a unit. 4.2.12 To cancel To mark data in such a way that it can be ignored in subsequent processing. 4.2.13 Character A member of a set of elements used for the organization, control or representation of data. 4.2.14 Character-imaging device A device that gives a visual representation of data in the form of graphic symbols using any technology, for example cathode ray tube or printer. 4.2.15 Character path The sequential order of the character positions along a line of the presentation component. 4.2.16 Character position A position in the data component available for receiving graphic characters for further presentation processing. A position in the presentation component available for receiving graphic characters for the rendering of the graphic image output. 4.2.17 Character progression The sequential order of the character positions along a line of the data component. 4.2.18 To clear To remove the display of data or the information used for the display of data, for example tabulation stops marking the boundaries between fields. 4.2.19 Coded character set; code A set of unambiguous rules that establishes a character set and the one-to-one relationship between the characters of the set and their bit combinations. 4.2.20 Coded-character-data-element (CC-data-element) An element of interchanged information that is specified to consist of a sequence of coded representations of characters, in accordance with one or more identified standards for coded character sets.
 
@@ -383,7 +383,7 @@ NOTE 2
 
 When information interchange is accomplished by means of interchangeable media, a CC-data-element will form all or part of the information that corresponds to the user data, and not that recorded during formatting and initialization. 4.2.21 Code extension The techniques for the encoding of characters that are not included in the character set of a given code. 4.2.22 Code table A table showing the character allocated to each bit combination in a code. 4.2.23 Control character A control function the coded representation of which consists of a single bit combination. 4.2.24 Control function An element of a character set that effects the recording, processing, transmission, or interpretation of data, and that has a coded representation consisting of one or more bit combinations. 4.2.25 Control sequence A string of bit combinations starting with the control function CONTROL SEQUENCE INTRODUCER (CSI), and used for the coded representation of control functions with or without parameters. 4.2.26 Control string A string of bit combinations which may occur in the data stream as a logical entity for control purposes. 4.2.27 Cursor A special indicator used in a display to mark the active presentation position. 4.2.28 Data component The device component which is used for storing the received data for further presentation processing. 4.2.29 Decimal mark A graphic symbol, usually a FULL STOP or a COMMA, used to separate the fractional part of a decimal number from the integer part of that number. 4.2.30 Default A value or a state that is to be assumed when no value or state is explicitly specified. 4.2.31 To delete To remove the contents from character positions and closing the resulting gap by moving adjacent graphic characters into the empty positions. 4.2.32 To designate To identify a set of characters that are to be represented, in some cases immediately and in others on the occurrence of a further control function, in a prescribed manner. 4.2.33 Device A component of information processing equipment which can transmit, and/or receive, coded information within CC-data-elements.
 
-NOTE 
+NOTE
 
 It may be an input/output device in the conventional sense, or a process such as an application program or gateway function. 4.2.34 Display The region for visual presentation of data on any type of character-imaging device, including printer, cathode ray tube and similar devices. 4.2.35 Editor function A control function used for editing, altering or transposing the visual arrangement of data. 4.2.36 Eligible The term used to denote an area considered for transmission or transfer. 4.2.37 Environment The characteristic that identifies the number of bits used for representing a character in a data processing or data communication system or in a part of such a system. 4.2.38 To erase To remove the contents from character positions and leaving the resulting gap open. 4.2.39 Escape sequence A string of bit combinations that is used for control purposes in code extension procedures. The first of these bit combinations represents the control function ESCAPE. 4.2.40 Field An area consisting of the character position at a character tabulation stop (beginning of the field) and the character positions up to, but not including, the character position at the following character tabulation stop (end of the field). 4.2.41 Final Byte The bit combination that terminates an escape sequence or a control sequence. 4.2.42 Formator function A control function (format effector or presentation control function) describing how the originator of the data stream wishes the information to be formatted or presented. 4.2.43 Graphic character A character, other than a control function, that has a visual representation normally hand-written, printed or displayed, and that has a coded representation consisting of one or more bit combinations. 4.2.44 Graphic rendition The visual style of displaying a set of graphic symbols. 4.2.45 Graphic symbol A visual representation of a graphic character or of a control function. 4.2.46 Guarded area A special case of a qualified area, the contents of which may be excluded from transmission as a data stream and from transfer to an auxiliary input/output device. 4.2.47 Initial state The state a device has after it is made operational. It is the recommended "reset" state of the modes. 4.2.48 Intermediate Byte
 
@@ -421,7 +421,7 @@ a) in a 7-bit code by 2-character escape sequences of the form ESC Fe, where ESC
 
 b) in an 8-bit code by bit combinations from 08/00 to 09/15; however, when the announcer sequence ESC 02/00 04/06 according to Standard ECMA-35 is used, the control functions of the C1 set are represented by ESC Fe sequences as in a 7-bit code. The definitions and the coded representations of the control functions are specified in 8.3 (see also table 2a and table 2b). The unallocated bit combinations are reserved for future standardization and shall not be used. For the bit combinations 04/04 (see table 2a) and 08/04 (see table 2b) see F.8.2 in annex F. The 3-character escape sequences designating and invoking this C1 set are ESC 02/06 04/00 and ESC 02/02 F.
 
-NOTE 
+NOTE
 
 The use of these escape sequences implies that all control characters of this C1 set must be implemented. Table 2a - Bit combinations representing Fe for the control functions of the C1 set in the 7-bit code Row number Column number 04 05 00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 -- -- BPH NBH -- NEL SSA ESA HTS HTJ VTS PLD PLU RI SS2 SS3 DCS PU1 PU2 STS CCH MW SPA EPA SOS -- SCI CSI ST OSC PM APC Table 2b - Bit combinations representing the control functions of the C1 set in an 8-bit code Row number Column number 08 09 00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 -- -- BPH NBH -- NEL SSA ESA HTS HTJ VTS PLD PLU RI SS2 SS3 DCS PU1 PU2 STS CCH MW SPA EPA SOS -- SCI CSI ST OSC PM APC 5.4 Control sequences A control sequence is a string of bit combinations starting with the control function CONTROL SEQUENCE INTRODUCER (CSI) followed by one or more bit combinations representing parameters, if any, and by one or more bit combinations identifying the control function. The control function CSI itself is an element of the C1 set. The format of a control sequence is CSI P ... P I ... I F where
 
@@ -431,7 +431,7 @@ b) P ... P are Parameter Bytes, which, if present, consist of bit combinations f
 
 c) I ... I are Intermediate Bytes, which, if present, consist of bit combinations from 02/00 to 02/15. Together with the Final Byte F, they identify the control function;
 
-NOTE 
+NOTE
 
 The number of Intermediate Bytes is not limited by this Standard; in practice, one Intermediate Byte will be sufficient since with sixteen different bit combinations available for the Intermediate Byte over one thousand control functions may be identified.
 
@@ -457,7 +457,7 @@ g) If the parameter string starts with the bit combination 03/11, an empty param
 
 h) If the control function has more than one parameter, and some parameter sub-strings are empty, the separators (bit combination 03/11) must still be present. However, if the last parameter sub-string(s) is empty, the separator preceding it may be omitted, see B.2 in annex B. 5.4.3 Types of parameters In a control sequence with parameters, each parameter sub-string corresponds to one parameter and represents the value of that parameter. The number of parameters is either fixed or variable, depending on the control function. If the number of parameters is variable, neither the maximum number of values nor the order in which the corresponding actions are performed are defined by this Standard. A parameter may be purely numeric or it may be selective, i.e. denoting one of a numbered list of actions the control function can perform. In the case of selected parameters a particular parameter value may have the same meaning as a combination of two or more separate values. Unassigned selective parameter values are reserved for future standardization. 5.5 Independent control functions These control functions are represented in 7-bit and 8-bit codes by 2-character escape sequences of the form ESC Fs, where ESC is represented by bit combination 01/11 and Fs is represented by a bit combination from 06/00 to 07/14. The definitions and the coded representations of the control functions are specified in 8.3 (see also table 5). Table 5 - Independent control functions Row number Column number 06 07 00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 DMI INT EMI RIS CMD -- -- -- -- -- -- -- -- -- LS2 LS3 -- -- -- -- -- -- -- -- -- -- -- -- LS3R LS2R LS1R -- The unallocated bit combinations are reserved for future standardization and shall not be used.
 
-NOTE 
+NOTE
 
 ESC Fs sequences are registered in the ISO International Register of Coded Character Sets to be Used with Escape Sequences, which is maintained by the Registration Authority for ISO 2375. Any candidates for ESC Fs sequences have to be approved by ISO/IEC JTC1/SC2 for registration. The coding for the Final Byte, Fs, will then be assigned by the Registration Authority. 5.6 Control strings A control string is a string of bit combinations which may occur in the data stream as a logical entity for control purposes. A control string consists of an opening delimiter, a command string or a character string, and a terminating delimiter, the STRING TERMINATOR (ST). A command string is a sequence of bit combinations in the range 00/08 to 00/13 and 02/00 to 07/14. A character string is a sequence of any bit combination, except those representing START OF STRING (SOS) or STRING TERMINATOR (ST). The interpretation of the command string or the character string is not defined by this Standard, but instead requires prior agreement between the sender and the recipient of the data. The opening delimiters defined in this Standard are
 
@@ -471,11 +471,11 @@ d) PRIVACY MESSAGE (PM)
 
 e) START OF STRING (SOS) 6 Device concepts The definitions of the control functions in this Standard are based on general assumptions about the architecture of a character-imaging device. Examples of devices conforming to these concepts are: an alphanumeric display device, a printer or a microfilm output device. A character-imaging device is a device which is capable of receiving a data stream that consists of coded control functions and graphic characters, and is capable of producing a graphic image output. This output must be readable by a human being according to the various traditional writing conventions such as left-to- right, right-to-left, top-to-bottom and bottom-to-top. The graphic image output is, in general, produced in the form of one or more rectangular arrays of character positions and lines which are called pages. If the device is an input/output device rather than merely an output device, it is also capable of transmitting a data stream that consists of coded control functions and graphic characters; the transmitted data stream is, in general, composed of a combination of data which have been sent to the device and data which have been entered locally into the device, for example by an associated keyboard. A number of facilities for the organization of the graphic image output and for establishing the direction of presented text are provided by this Standard. A device may support all of these facilities or only a subset of them appropriate to the application. The definitions in this Standard assume a bi-directional device which has both a presentation component (see 6.1.1) and a data component (see 6.1.3). In the case of a uni-directional device or a bi-directional device without a data component, all references to active data position, data component, character progression, etc., are to be read as referring to active presentation position, presentation component, character path, etc., resp. 6.1 Components A device consists either of an input component, a presentation component and a data component, or of an input component and a presentation component only. The input component is capable of receiving the information to be imaged from a manual input device such as a keyboard or from a data stream. This Standard does not deal with the input component. The presentation component which is present in uni-directional as well as in bi-directional devices is used for producing the graphic image output. The output may, for example, be rendered on a display or a printer. The data component which is generally provided in bi-directional devices only is used to store the received information for further presentation processing. 6.1.1 Presentation component The presentation component is capable of presenting the information in successive lines; each line consisting of successive character positions. The lines, as well as the character positions, are identified by the consecutive numbers 1, 2, 3 ... The line orientation in the presentation component is either horizontal or vertical. This defines the way in which a line will appear in the produced graphic image output. For horizontal line orientation, the direction of the line progression can be: top-to-bottom, or             bottom-to-top. For vertical line orientation, the direction of the line progression can be: left-to-right, or right-to-left. The sequential order of the character positions along a line of the presentation component is called the character path. The character path along a line can be: left-to-right or right-to-left (in the case of horizontal line orientation), or top-to-bottom or bottom-to-top (in the case of vertical line orientation). The lines are numbered according to the established line progression. The character positions are numbered according to the established character path. Each character position either is in the erased state or images a graphic symbol. A graphic symbol represents SPACE, a graphic character, or a control function for which a graphical representation is required. The initial state of all character positions is "erased". Depending on the implementation, there may or may not be a distinction between a character position in the erased state and a character position imaging SPACE. 6.1.2 The active presentation position At any time, there is a unique character position in the presentation component which is called the active presentation position. The active presentation position is the character position which is to receive the next graphic character of the data stream for graphic image output or a control function for which a graphical representation is required. The active presentation position in the presentation component is also the character position relative to which certain control functions are to be executed (see 6.4). The active presentation position can be moved explicitly (see 6.1.7) or indirectly (see 6.1.8). In the case where a device has no data component, the active presentation position can also be moved implicitly (see 6.1.6).
 
-NOTE 
+NOTE
 
 In a display it is common practice to mark the active presentation position by means of a special visible indicator which is called the cursor. The line containing the active presentation position is called the active line; the field containing the active presentation position is called the active field; the area containing the active presentation position is called the active area; the page containing the active presentation position is called the active page. 6.1.3 Data component In the data component the received data stream is structured into successive lines; each line consisting of successive character positions. The lines, as well as the character positions, are identified by the consecutive numbers 1, 2, 3 ... The sequential order of the character positions along a line of the data component is called the character progression. In this Standard, the line orientation in the data component is considered to be horizontal, the line progression is considered to be top-to-bottom, the character progression is considered to be left-to-right. The lines are numbered according to the line progression. The character positions are numbered according to the character progression. Each character position either is in the erased state or contains a graphic character, or a control function. The initial state of all character positions is "erased". Depending on the implementation, there may or may not be a distinction between a character position in the erased state and a character position containing SPACE. 6.1.4 The active data position At any time, there is a unique character position in the data component which is called the active data position. The active data position is the character position which is available for the next graphic character or the next control function of the received data stream. The active data position is also the character position relative to which certain control functions are to be executed (see 6.4). The active data position can be moved implicitly (see 6.1.6) or explicitly (see 6.1.7) or indirectly (see 6.1.8). The line containing the active data position is called the active line; the field containing the active data position is called the active field; the area containing the active data position is called the active area; the page containing the active data position is called the active page. 6.1.5 Relationship between active data position and active presentation position In a uni-directional device, whether it has a presentation component only or a presentation component and a data component, there is no difference between the active data position and the active presentation position. In a bi-directional device, if it has a presentation component and a data component, the active presentation position is the character position in the presentation component that corresponds to the active data position in the data component. Because of the possible differences between character progression and character path, as in some bi-directional environments, the coordinates of the active data position in the data component and of the active presentation position in the presentation component may differ. Some control functions act on, and affect, the active data position whereas other control functions act on, and affect, the active presentation position. When one of these positions is so modified, the other is updated accordingly. This is referred to as indirect movement (see 6.1.8). In the situation where a data component is not present in a device then the characteristics of the data component, active data position, active data position movement, character progression, etc., are treated as if they are identical with the respective characteristics of the presentation component, active presentation position, active presentation position movement, character path, etc., resp.. 6.1.6 Implicit movement An implicit movement is a movement of the active data position which is performed after a graphic character is received, or a control function, for which a graphical representation is required. In unidirectional devices the direction of the implicit movement of the active data position in the data component is the same as the direction of the character progression; in devices without a data component the implicit movement applies to the active presentation position in the presentation component and is then the same as the direction of the character path. In bi-directional devices the direction of the implicit movement may be different from the direction of the character progression. The direction is the same as the direction of the character progression until it is modified by an appropriate control function. If the direction of the implicit movement is the same as that of the character progression and the active data position is not the last character position of the active line, the active data position is moved to the following character position of that line. If the direction of the implicit movement is opposite to that of the character progression and the active data position is not the first character position of the active line, the active data position is moved to the preceding character position of that line. When the active data position has been modified by an implicit movement, the active presentation position in the presentation component is updated accordingly; this is referred to as indirect movement (see 6.1.8).
 
-NOTE 
+NOTE
 
 In the following situation, the effect of an attempt to move the active data position is not defined by this Standard: an attempt to perform an implicit movement when the active data position is the last character position of a line and the direction of the implicit movement is the same as that of the character progression, or when the active data position is the first character position of a line and the direction of the implicit movement is opposite to that of the character progression;   Depending on the implementation, an attempt to perform such movements may
 
@@ -493,7 +493,7 @@ f) cause scrolling to occur;
 
 g) cause other implementation-dependent action. 6.1.7 Explicit movement In the data component an explicit movement is a movement of the active data position that is performed when a control function is executed which causes the active data position to be moved to a specified character position in the data component. When the active data position has been modified by an explicit movement, the active presentation position in the presentation component is updated accordingly; this is referred to as indirect movement (see 6.1.8). In the presentation component an explicit movement is a movement of the active presentation position that is performed when a control function is executed which causes the active presentation position to be moved to a specified character position in the presentation component. When the active presentation position has been modified by an explicit movement, the active data position in the data component is updated accordingly; this is referred to as indirect movement (see 6.1.8).
 
-NOTE 
+NOTE
 
 In the following situation, the effect of an attempt to move the active data position or the active presentation position is not defined by this Standard: an attempt to perform an explicit movement to a non-existing character position, for example beyond the last character position of a line, or beyond the last line of a page.   Depending on the implementation, an attempt to perform such movements may
 
@@ -521,75 +521,75 @@ d) a tabulation stop is associated with the first character position;
 
 e) the contents are to be excluded, i.e. guarded (see 6.5.2.2) from transmission as a data stream, or from transfer to an auxiliary input/output device (see 6.6). The beginning of a qualified area is established by DEFINE AREA QUALIFICATION (DAQ). The character position in the presentation component which is the active presentation position after receipt of DAQ is the first character position of the qualified area. The type of area qualification is specified by the parameter value of DAQ. The end of a qualified area is established by the beginning of the following qualified area. The order of the character positions in a line of a qualified area can be the same as, or opposite to, the character path of this line. 6.5.2.1 Protected areas A protected area is a special case of a qualified area. It is a string of character positions, the contents of which are protected against manual alteration and may also be protected against erasure depending on the setting of the ERASURE MODE (ERM). A protected area may, in general, be either guarded or unguarded. 6.5.2.2 Guarded areas A guarded area is a special case of a qualified area. It is a protected area the contents of which are excluded from transmission as a data stream and from transfer to an auxiliary input/output device, depending on the setting of the GUARDED AREA TRANSFER MODE (GATM). Alternatively to using DEFINE AREA QUALIFICATION (DAQ), START OF GUARDED AREA (SPA) combined with END OF GUARDED AREA (EPA) can be used. The start of a guarded area is then established by START OF GUARDED AREA (SPA). The end of the guarded area is then established by END OF GUARDED AREA (EPA). The character position which is the active presentation position after receipt of SPA is the first character position of the guarded area. The character position which is the active presentation position before the receipt of EPA is the last character position of the guarded area.
 
-NOTE 
+NOTE
 
 Interaction between guarded areas established by SPA and EPA, and those established by DAQ is not defined by this Standard. 6.6 Auxiliary input/output devices This clause is applicable primarily to buffered input/output devices. It may also be applicable to unbuffered input/output devices when the SEND/RECEIVE MODE (SRM) is set to SIMULTANEOUS. Data transfer from, or to, an auxiliary input/output device is initiated either by the operation of an appropriate key on a keyboard or by the control function MEDIA COPY (MC) appearing in the received data stream. If there is more than one auxiliary input/output device, the relevant device is specified by the parameter value of MC. An input data stream which is received from an auxiliary device is processed in the same way as any other received data stream. The method of terminating the input from the auxiliary device depends on the implementation. 6.7 Tabulation and fields Tabulation is the technique of identifying character positions or lines, as related to the presentation component, for the purpose of arranging information systematically. A character position or a line which is identified for tabulation is indicated by a tabulation stop. Tabulation stops in the presentation component introduce fields and act as boundaries between fields. The field is defined as a string of character positions starting at the position of the character tabulation stop (beginning of the field) up to, but not including, the position of the following character tabulation stop (end of the field). The order of character positions within the field as well as the order of tabulation stops within a line in the presentation component is determined by the character path of this line. A character tabulation stop is assigned to a character position by the control functions CURSOR TABULATION CONTROL (CTC), CHARACTER TABULATION SET (HTS), TABULATION ALIGNED CENTRED (TAC), TABULATION ALIGNED LEADING EDGE (TALE), TABULATION ALIGNED TRAILING EDGE (TATE), TABULATION CENTRED ON CHARACTER (TCC). A line tabulation stop is assigned to a line by the control function LINE TABULATION SET (VTS). 7 Modes 7.1 The concept of modes This Standard is intended to be applicable to a very large range of devices, in which there are variations. Some of these variations have been formalized in the form of modes. They deal with the way in which a device transmits, receives, processes, or images data. Each mode has two states. The reset state is shown first in the definitions in 7.2. The states of the modes may be established explicitly in the data stream by the control functions SET MODE (SM) and RESET MODE (RM) or may be established by agreement between sender and recipient. In an implementation, some or all of the modes may have one state only. To ensure data compatibility and ease of interchange with a variety of equipment the use of modes is deprecated. If modes have to be implemented for backward compatibility it is recommended that the reset state of the modes be the initial state. Otherwise, explicit agreements will have to be negotiated between sender and recipient, to the detriment of "blind" interchange. 7.2 Definition of modes The modes are set and reset by the control functions SET MODE (SM) and RESET MODE (RM). The parameters of SM or RM specify the modes which are affected. In each of the mode definitions below, the first state is caused by RM, the second one by SM. The modes are listed in the alphabetical order of their acronyms. It is intended that the acronyms be retained in all translations of the text. See also table 6. Table 6 - Mode summary Acronym Reset-state set-state Name Defined in BDSM EXPLICIT IMPLICIT BI-DIRECTIONAL SUPPORT MODE 7.2.1 CRM CONTROL GRAPHIC CONTROL REPRESENTATION MODE 7.2.2 DCSM PRESENTATION DATA DEVICE COMPONENT SELECT MODE 7.2.3 ERM PROTECT ALL ERASURE MODE 7.2.4 FEAM EXECUTE STORE FORMAT EFFECTOR ACTION MODE 7.2.5 FETM INSERT EXCLUDE FORMAT EFFECTOR TRANSFER MODE 7.2.6 GATM GUARD ALL GUARDED AREA TRANSFER MODE 7.2.7 GRCM REPLACING CUMULATIVE GRAPHIC RENDITION COMBINATION MODE 7.2.8 HEM FOLLOWING PRECEDING CHARACTER EDITING MODE 7.2.9 IRM REPLACE INSERT INSERTION REPLACEMENT MODE 7.2.10 KAM ENABLED DISABLED KEYBOARD ACTION MODE 7.2.11 MATM SINGLE MULTIPLE MULTIPLE AREA TRANSFER MODE 7.2.12 PUM CHARACTER SIZE POSITIONING UNIT MODE F.4.1 of annex F SATM SELECT ALL SELECTED AREA TRANSFER MODE 7.2.14 SRM MONITOR SIMULTANEOUS SEND/RECEIVE MODE 7.2.15 SRTM NORMAL DIAGNOSTIC STATUS REPORT TRANSFER MODE 7.2.16 TSM MULTIPLE SINGLE TABULATION STOP MODE 7.2.17 TIM CURSOR ALL TRANSFER TERMINATION MODE 7.2.18 VEM FOLLOWING PRECEDING LINE EDITING MODE 7.2.19 ZDM ZERO DEFAULT ZERO DEFAULT MODE F.4.2 of annex F The definitions of the modes cover bi-directional devices which have both a presentation component (see 6.1.1) and a data component (see 6.1.3). In the case of a uni-directional device or a bi-directional device without a data component, all references to active data position, data component, character progression, etc., are to be read as referring to active presentation position, presentation component, character path, etc., resp. 7.2.1 BDSM - BI-DIRECTIONAL SUPPORT MODE EXPLICIT: Control functions are performed in the data component or in the presentation component, depending on the setting of the DEVICE COMPONENT SELECT MODE (DCSM). IMPLICIT: Control functions are performed in the data component. All bi-directional aspects of data are handled by the device itself. 7.2.2 CRM - CONTROL REPRESENTATION MODE CONTROL: All control functions are performed as defined; the way formator functions are processed depends on the setting of the FORMAT EFFECTOR ACTION MODE (FEAM). A device may choose to image the graphical representations of control functions in addition to performing them. GRAPHIC: All control functions, except RESET MODE (RM), are treated as graphic characters. A device may choose to perform some control functions in addition to storing them and imaging their graphical representations.
 
-NOTE 
+NOTE
 
 All control functions, except RM, are affected. 7.2.3 DCSM - DEVICE COMPONENT SELECT MODE PRESENTATION: Certain control functions are performed in the presentation component. The active presentation position (or the active line, where applicable) in the presentation component is the reference position against which the relevant control functions are performed. DATA: Certain control functions are performed in the data component. The active data position (or the active line, where applicable) in the data component is the reference position against which the relevant control functions are performed.
 
-NOTE 
+NOTE
 
 Control functions affected are: CPR, CR, DCH, DL, EA, ECH, ED, EF, EL, ICH, IL, LF, NEL, RI, SLH, SLL, SPH, SPL. 7.2.4 ERM - ERASURE MODE PROTECT: Only the contents of unprotected areas are affected by an erasure control function. ALL: The contents of protected as well as of unprotected areas are affected by an erasure control function.
 
-NOTE 
+NOTE
 
 Control functions affected are: EA, ECH, ED, EF, EL. 7.2.5 FEAM - FORMAT EFFECTOR ACTION MODE EXECUTE: Formator functions are performed immediately and may be stored in addition to being performed. STORE: Formator functions are stored but not performed. In this case, the specified action is intended to be performed by another device when the associated data are transmitted or transferred.
 
-NOTE 
+NOTE
 
 Control functions affected are: BPH, BS, CR, DTA, FF, FNT, GCC, GSM, GSS, HPA, HPB, HPR, HT, HTJ, HTS, HVP, JFY, NEL, PEC, PFS, PLD, PLU, PPA, PPB, PPR, PTX, QUAD, RI, SACS, SAPV, SCO, SCS, SGR, SHS, SLH, SLL, SLS, SPD, SPI, SPQR, SRCS, SRS, SSU, SSW, STAB, SVS, TAC, TALE, TATE, TBC, TCC, TSS, VPA, VPB, VPR, VTS. 7.2.6 FETM - FORMAT EFFECTOR TRANSFER MODE INSERT: Formator functions may be inserted in a data stream to be transmitted or in data to be transferred to an auxiliary input/output device. EXCLUDE: No formator functions other than those received while the FORMAT EFFECTOR ACTION MODE (FEAM) is set to STORE are included in a transmitted data stream or in data transferred to an auxiliary input/output device.
 
-NOTE 
+NOTE
 
 No control functions are affected. 7.2.7 GATM - GUARDED AREA TRANSFER MODE GUARD: Only the contents of unguarded areas in an eligible area are transmitted or transferred. ALL: The contents of guarded as well as of unguarded areas in an eligible area are transmitted or transferred.
 
-NOTE 
+NOTE
 
 No control functions are affected. 7.2.8 GRCM - GRAPHIC RENDITION COMBINATION MODE REPLACING: Each occurrence of the control function SELECT GRAPHIC RENDITION (SGR) cancels the effect of any preceding occurrence. Any graphic rendition aspects that are to remain unchanged after an occurrence of SGR have to be re-specified by that SGR. CUMULATIVE: Each occurrence of the control function SELECT GRAPHIC RENDITION (SGR) causes only those graphic rendition aspects to be changed that are specified by that SGR. All other graphic rendition aspects remain unchanged.
 
-NOTE 
+NOTE
 
 Control function affected is SGR. 7.2.9 HEM - CHARACTER EDITING MODE FOLLOWING: If the DEVICE COMPONENT SELECT MODE (DCSM) is set to PRESENTATION, a character insertion causes the contents of the active presentation position and of the following character positions in the presentation component to be shifted in the direction of the character path; a character deletion causes the contents of the character positions following the active presentation position to be shifted in the direction opposite to that of the character path. If the DEVICE COMPONENT SELECT MODE (DCSM) is set to DATA, a character insertion causes the contents of the active data position and of the following character positions in the data component to be shifted in the direction of the character progression; a character deletion causes the contents of the character positions following the active data position to be shifted in the direction opposite to that of the character progression. PRECEDING: If the DEVICE COMPONENT SELECT MODE (DCSM) is set to PRESENTATION, a character insertion causes the contents of the active presentation position and of the following character positions in the presentation component to be shifted in the direction opposite to that of the character path; a character deletion causes the contents of the character positions following the active presentation position to be shifted in the direction of the character path. If the DEVICE COMPONENT SELECT MODE (DCSM) is set to DATA, a character insertion causes the contents of the active data position and of preceding character positions in the data component to be shifted in the direction opposite to that of the character progression; a character deletion causes the contents of the character positions preceding the active data position to be shifted in the direction of the character progression.
 
-NOTE 
+NOTE
 
 Control functions affected are: DCH, ICH. 7.2.10 IRM - INSERTION REPLACEMENT MODE REPLACE: The graphic symbol of a graphic character or of a control function, for which a graphical representation is required, replaces (or, depending upon the implementation, is combined with) the graphic symbol imaged at the active presentation position. INSERT: The graphic symbol of a graphic character or of a control function, for which a graphical representation is required, is inserted at the active presentation position.
 
-NOTE 
+NOTE
 
 Only control functions for which a graphical representation is required are affected. 7.2.11 KAM - KEYBOARD ACTION MODE ENABLED: All or part of the manual input facilities are enabled to be used. DISABLED: All or part of the manual input facilities are disabled.
 
-NOTE 
+NOTE
 
 No control functions are affected. 7.2.12 MATM - MULTIPLE AREA TRANSFER MODE SINGLE: Only the contents of the selected area which contains the active presentation position are eligible to be transmitted or transferred. MULTIPLE: The contents of all selected areas are eligible to be transmitted or transferred.
 
-NOTE 
+NOTE
 
 No control functions are affected. 7.2.13 PUM - POSITIONING UNIT MODE See F.4.1 in annex F. 7.2.14 SATM - SELECTED AREA TRANSFER MODE SELECT: Only the contents of selected areas are eligible to be transmitted or transferred. ALL: The contents of all character positions, irrespective of any explicitly defined selected areas, are eligible to be transmitted or transferred.
 
-NOTE 
+NOTE
 
 No control functions are affected. 7.2.15 SRM - SEND/RECEIVE MODE MONITOR: Data which are locally entered are immediately imaged. SIMULTANEOUS: Local input facilities are logically disconnected from the output mechanism; only data which are sent to the device are imaged.
 
-NOTE 
+NOTE
 
 No control functions are affected. 7.2.16 SRTM - STATUS REPORT TRANSFER MODE NORMAL: Status reports in the form of DEVICE CONTROL STRINGs (DCS) are not generated automatically. DIAGNOSTIC: Status reports in the form of DEVICE CONTROL STRINGs (DCS) are included in every data stream transmitted or transferred.
 
-NOTE 
+NOTE
 
 No control functions are affected. 7.2.17 TSM - TABULATION STOP MODE MULTIPLE: Character tabulation stops in the presentation component are set or cleared in the active line (the line that contains the active presentation position) and in the corresponding character positions of the preceding lines and of the following lines. SINGLE: Character tabulation stops in the presentation component are set or cleared in the active line only.
 
-NOTE 
+NOTE
 
 Control functions affected are: CTC, DL, HTS, IL, TBC. 7.2.18 TTM - TRANSFER TERMINATION MODE CURSOR: Only the contents of the character positions preceding the active presentation position in the presentation component are eligible to be transmitted or transferred. ALL: The contents of character positions preceding, following, and at the active presentation position are eligible to be transmitted or transferred.
 
-NOTE 
+NOTE
 
 No control functions are affected. 7.2.19 VEM - LINE EDITING MODE FOLLOWING: If the DEVICE COMPONENT SELECT MODE (DCSM) is set to PRESENTATION, a line insertion causes the contents of the active line (the line that contains the active presentation position) and of the following lines in the presentation component to be shifted in the direction of the line progression; a line deletion causes the contents of the lines following the active line to be shifted in the direction opposite to that of the line progression. If the DEVICE COMPONENT SELECT MODE (DCSM) is set to DATA, a line insertion causes the contents of the active line (the line that contains the active data position) and of the following lines in the data component to be shifted in the direction of the line progression; a line deletion causes the contents of the lines following the active line to be shifted in the direction opposite to that of the line progression. PRECEDING: If the DEVICE COMPONENT SELECT MODE (DCSM) is set to PRESENTATION, a line insertion causes the contents of the active line (the line that contains the active presentation position) and of the preceding lines to be shifted in the direction opposite to that of the line progression; a line deletion causes the contents of the lines preceding the active line to be shifted in the direction of the line progression. If the DEVICE COMPONENT SELECT MODE (DCSM) is set to DATA, a line insertion causes the contents of the active line (the line that contains the active data position) and of the preceding lines to be shifted in the direction opposite to that of the line progression; a line deletion causes the contents of the lines preceding the active line to be shifted in the direction of the line progression.
 
-NOTE 
+NOTE
 
 Control functions affected are: DL, IL. 7.2.20 ZDM - ZERO DEFAULT MODE See F.4.2 in annex F. 7.3 Interaction between modes Four groups of modes are specified below. Each group contains two or more modes which interact with one another.
 
@@ -631,18 +631,18 @@ a) If the BDSM is set to EXPLICIT and the DCSM is set to DATA, certain control f
 
 b) If the BDSM is set to EXPLICIT and the DCSM is set to PRESENTATION, certain control functions are performed in the presentation component.
 
-NOTE 
+NOTE
 
 Control functions affected are: CPR, CR, DCH, DL, EA, ECH, ED, EF, EL, ICH, IL , LF, NEL, RI, SLH, SLL, SPH, SPL.
 
-c) If the BDSM is set to IMPLICIT, all relevant control functions are performed in the data component; all bi-directional aspects of the data are handled by the device itself. The setting of the DCSM has no effect; it is considered to be set to DATA (the reset state). 7.4 Private modes A device may implement modes other than those specified in 7.2. Such modes are called Private Modes. See SET MODE (SM) and RESET MODE (RM). The reset state of a private mode shall permit the selection of coded representations of control functions (including parameters for control of modes) that are identified in accordance with 2.3.1 to have the meanings specified in this Standard. 
+c) If the BDSM is set to IMPLICIT, all relevant control functions are performed in the data component; all bi-directional aspects of the data are handled by the device itself. The setting of the DCSM has no effect; it is considered to be set to DATA (the reset state). 7.4 Private modes A device may implement modes other than those specified in 7.2. Such modes are called Private Modes. See SET MODE (SM) and RESET MODE (RM). The reset state of a private mode shall permit the selection of coded representations of control functions (including parameters for control of modes) that are identified in accordance with 2.3.1 to have the meanings specified in this Standard.
 
 
 
 
 8 Control functions
 
-8.1 Types of control functions 
+8.1 Types of control functions
 
 This Standard provides for four types of control functions:
 
@@ -653,7 +653,7 @@ b) Control functions that are elements of the C1 set
 c) Control sequences
 
 d) Independent control functions, represented either - by ESC Fs
-sequences, or - by ESC 02/03 F sequences. 
+sequences, or - by ESC 02/03 F sequences.
 
 There are also several different forms of control sequences, viz. with
 parameters or with no parameter. The notations used for the different
@@ -668,7 +668,7 @@ a) (C0): Element of the C0 set
 
 b) (C1): Element of the C1 set
 
-c) (NP): Control sequence with no parameter (see F.9 in annex F) 
+c) (NP): Control sequence with no parameter (see F.9 in annex F)
 
 d) (Pn): Control sequence with a single numeric parameter
 
@@ -685,7 +685,7 @@ i) (Ps...): Control sequence with any number of selective parameters
 j) (Fs): Independent control function, represented by an ESC Fs sequence
 
 
-8.2 Categories of control functions 
+8.2 Categories of control functions
 
 The following list groups the control functions defined in this
 Standard. This grouping is intended to aid in understanding the
@@ -954,7 +954,7 @@ indicated categories.
 
     8.3.72
 
-NOTE 
+NOTE
 
 Each information separator is given two names. The names, INFORMATION
 SEPARATOR FOUR (IS4), INFORMATION SEPARATOR THREE (IS3), INFORMATION
@@ -1062,7 +1062,7 @@ presentation attributes to the default state.
 
 
 
-8.3 Definition of control functions 
+8.3 Definition of control functions
 
 The control functions are listed in the alphabetical order of their
 acronyms. It is intended that the acronyms be retained in all
@@ -1243,21 +1243,21 @@ Representation: CSI Ps... 05/07
 
 Parameter default value: Ps = 0
 
-Description: CTC causes one or more tabulation stops to be set or cleared in the presentation component, depending on the parameter values: 
+Description: CTC causes one or more tabulation stops to be set or cleared in the presentation component, depending on the parameter values:
 
-0 a character tabulation stop is set at the active presentation position 
+0 a character tabulation stop is set at the active presentation position
 
-1 a line tabulation stop is set at the active line (the line that contains the active presentation position) 
+1 a line tabulation stop is set at the active line (the line that contains the active presentation position)
 
-2 the character tabulation stop at the active presentation position is cleared 
+2 the character tabulation stop at the active presentation position is cleared
 
-3 the line tabulation stop at the active line is cleared 
+3 the line tabulation stop at the active line is cleared
 
-4 all character tabulation stops in the active line are cleared 
+4 all character tabulation stops in the active line are cleared
 
-5 all character tabulation stops are cleared 
+5 all character tabulation stops are cleared
 
-6 all line tabulation stops are cleared 
+6 all line tabulation stops are cleared
 
 In the case of parameter values 0, 2 or 4 the number of lines affected depends on the setting of the TABULATION STOP MODE (TSM).
 
@@ -1349,31 +1349,31 @@ Representation: CSI Ps... 06/15
 
 Parameter default value: Ps = 0
 
-Description: DAQ is used to indicate that the active presentation position in the presentation component is the first character position of a qualified area. The last character position of the qualified area is the character position in the presentation component immediately preceding the first character position of the following qualified area. The parameter value designates the type of qualified area: 
+Description: DAQ is used to indicate that the active presentation position in the presentation component is the first character position of a qualified area. The last character position of the qualified area is the character position in the presentation component immediately preceding the first character position of the following qualified area. The parameter value designates the type of qualified area:
 
-0 unprotected and unguarded 
+0 unprotected and unguarded
 
-1 protected and guarded 
+1 protected and guarded
 
-2 graphic character input 
+2 graphic character input
 
-3 numeric input 
+3 numeric input
 
-4 alphabetic input 
+4 alphabetic input
 
-5 input aligned on the last character position of the qualified area 
+5 input aligned on the last character position of the qualified area
 
-6 fill with ZEROs 
+6 fill with ZEROs
 
-7 set a character tabulation stop at the active presentation position (the first character position of the qualified area) to indicate the beginning of a field 
+7 set a character tabulation stop at the active presentation position (the first character position of the qualified area) to indicate the beginning of a field
 
-8 protected and unguarded 
+8 protected and unguarded
 
-9 fill with SPACEs 
+9 fill with SPACEs
 
-10 input aligned on the first character position of the qualified area 
+10 input aligned on the first character position of the qualified area
 
-11 the order of the character positions in the input field is reversed, i.e. the last position in each line becomes the first and vice versa; input begins at the new first position. 
+11 the order of the character positions in the input field is reversed, i.e. the last position in each line becomes the first and vice versa; input begins at the new first position.
 
 This control function operates independently of the setting of the TABULATION STOP MODE (TSM). The character tabulation stop set by parameter value 7 applies to the active line only.
 
@@ -1479,21 +1479,21 @@ Representation: CSI Ps 06/14
 
 Parameter default value: Ps = 0
 
-Description: DSR is used either to report the status of the sending device or to request a status report from the receiving device, depending on the parameter values: 
+Description: DSR is used either to report the status of the sending device or to request a status report from the receiving device, depending on the parameter values:
 
-0 ready, no malfunction detected 
+0 ready, no malfunction detected
 
-1 busy, another DSR must be requested later 
+1 busy, another DSR must be requested later
 
-2 busy, another DSR will be sent later 
+2 busy, another DSR will be sent later
 
-3 some malfunction detected, another DSR must be requested later 
+3 some malfunction detected, another DSR must be requested later
 
-4 some malfunction detected, another DSR will be sent later 
+4 some malfunction detected, another DSR will be sent later
 
-5 a DSR is requested 
+5 a DSR is requested
 
-6 a report of the active presentation position or of the active data position in the form of ACTIVE POSITION REPORT (CPR) is requested 
+6 a report of the active presentation position or of the active data position in the form of ACTIVE POSITION REPORT (CPR) is requested
 
 DSR with parameter value 0, 1, 2, 3 or 4 may be sent either unsolicited or as a response to a request such as a DSR with a parameter value 5 or MESSAGE WAITING (MW).
 
@@ -1521,21 +1521,21 @@ Representation: CSI Ps 04/15
 
 Parameter default value: Ps = 0
 
-Description: If the DEVICE COMPONENT SELECT MODE (DCSM) is set to PRESENTATION, EA causes some or all character positions in the active qualified area (the qualified area in the presentation component which contains the active presentation position) to be put into the erased state, depending on the parameter values: 
+Description: If the DEVICE COMPONENT SELECT MODE (DCSM) is set to PRESENTATION, EA causes some or all character positions in the active qualified area (the qualified area in the presentation component which contains the active presentation position) to be put into the erased state, depending on the parameter values:
 
-0 the active presentation position and the character positions up to the end of the qualified area are put into the erased state 
+0 the active presentation position and the character positions up to the end of the qualified area are put into the erased state
 
-1 the character positions from the beginning of the qualified area up to and including the active presentation position are put into the erased state 
+1 the character positions from the beginning of the qualified area up to and including the active presentation position are put into the erased state
 
-2 all character positions of the qualified area are put into the erased state 
+2 all character positions of the qualified area are put into the erased state
 
-If the DEVICE COMPONENT SELECT MODE (DCSM) is set to DATA, EA causes some or all character positions in the active qualified area (the qualified area in the data component which contains the active data position) to be put into the erased state, depending on the parameter values: 
+If the DEVICE COMPONENT SELECT MODE (DCSM) is set to DATA, EA causes some or all character positions in the active qualified area (the qualified area in the data component which contains the active data position) to be put into the erased state, depending on the parameter values:
 
-0 the active data position and the character positions up to the end of the qualified area are put into the erased state 
+0 the active data position and the character positions up to the end of the qualified area are put into the erased state
 
-1 the character positions from the beginning of the qualified area up to and including the active data position are put into the erased state 
+1 the character positions from the beginning of the qualified area up to and including the active data position are put into the erased state
 
-2 all character positions of the qualified area are put into the erased state 
+2 all character positions of the qualified area are put into the erased state
 
 Whether the character positions of protected areas are put into the erased state, or the character positions of unprotected areas only, depends on the setting of the ERASURE MODE (ERM).
 
@@ -1561,19 +1561,19 @@ Representation: CSI Ps 04/10
 
 Parameter default value: Ps = 0
 
-Description: If the DEVICE COMPONENT SELECT MODE (DCSM) is set to PRESENTATION, ED causes some or all character positions of the active page (the page which contains the active presentation position in the presentation component) to be put into the erased state, depending on the parameter values: 
+Description: If the DEVICE COMPONENT SELECT MODE (DCSM) is set to PRESENTATION, ED causes some or all character positions of the active page (the page which contains the active presentation position in the presentation component) to be put into the erased state, depending on the parameter values:
 
-0 the active presentation position and the character positions up to the end of the page are put into the erased state 
+0 the active presentation position and the character positions up to the end of the page are put into the erased state
 
-1 the character positions from the beginning of the page up to and including the active presentation position are put into the erased state 
+1 the character positions from the beginning of the page up to and including the active presentation position are put into the erased state
 
-2 all character positions of the page are put into the erased state 
+2 all character positions of the page are put into the erased state
 
-If the DEVICE COMPONENT SELECT MODE (DCSM) is set to DATA, ED causes some or all character positions of the active page (the page which contains the active data position in the data component) to be put into the erased state, depending on the parameter values: 
+If the DEVICE COMPONENT SELECT MODE (DCSM) is set to DATA, ED causes some or all character positions of the active page (the page which contains the active data position in the data component) to be put into the erased state, depending on the parameter values:
 
-0 the active data position and the character positions up to the end of the page are put into the erased state 
+0 the active data position and the character positions up to the end of the page are put into the erased state
 
-1 the character positions from the beginning of the page up to and including the active data position are put into the erased state 
+1 the character positions from the beginning of the page up to and including the active data position are put into the erased state
 
 2 all character positions of the page are put into the erased state Whether the character positions of protected areas are put into the erased state, or the character positions of unprotected areas only, depends on the setting of the ERASURE MODE (ERM).
 
@@ -1588,19 +1588,19 @@ Representation: CSI Ps 04/14
 
 Parameter default value: Ps = 0
 
-Description: If the DEVICE COMPONENT SELECT MODE (DCSM) is set to PRESENTATION, EF causes some or all character positions of the active field (the field which contains the active presentation position in the presentation component) to be put into the erased state, depending on the parameter values: 
+Description: If the DEVICE COMPONENT SELECT MODE (DCSM) is set to PRESENTATION, EF causes some or all character positions of the active field (the field which contains the active presentation position in the presentation component) to be put into the erased state, depending on the parameter values:
 
-0 the active presentation position and the character positions up to the end of the field are put into the erased state 
+0 the active presentation position and the character positions up to the end of the field are put into the erased state
 
-1 the character positions from the beginning of the field up to and including the active presentation position are put into the erased state 
+1 the character positions from the beginning of the field up to and including the active presentation position are put into the erased state
 
-2 all character positions of the field are put into the erased state 
+2 all character positions of the field are put into the erased state
 
-If the DEVICE COMPONENT SELECT MODE (DCSM) is set to DATA, EF causes some or all character positions of the active field (the field which contains the active data position in the data component) to be put into the erased state, depending on the parameter values: 
+If the DEVICE COMPONENT SELECT MODE (DCSM) is set to DATA, EF causes some or all character positions of the active field (the field which contains the active data position in the data component) to be put into the erased state, depending on the parameter values:
 
-0 the active data position and the character positions up to the end of the field are put into the erased state 
+0 the active data position and the character positions up to the end of the field are put into the erased state
 
-1 the character positions from the beginning of the field up to and including the active data position are put into the erased state 
+1 the character positions from the beginning of the field up to and including the active data position are put into the erased state
 
 2 all character positions of the field are put into the erased state Whether the character positions of protected areas are put into the erased state, or the character positions of unprotected areas only, depends on the setting of the ERASURE MODE (ERM).
 
@@ -1615,19 +1615,19 @@ Representation: CSI Ps 04/11
 
 Parameter default value: Ps = 0
 
-Description: If the DEVICE COMPONENT SELECT MODE (DCSM) is set to PRESENTATION, EL causes some or all character positions of the active line (the line which contains the active presentation position in the presentation component) to be put into the erased state, depending on the parameter values: 
+Description: If the DEVICE COMPONENT SELECT MODE (DCSM) is set to PRESENTATION, EL causes some or all character positions of the active line (the line which contains the active presentation position in the presentation component) to be put into the erased state, depending on the parameter values:
 
-0 the active presentation position and the character positions up to the end of the line are put into the erased state 
+0 the active presentation position and the character positions up to the end of the line are put into the erased state
 
-1 the character positions from the beginning of the line up to and including the active presentation position are put into the erased state 
+1 the character positions from the beginning of the line up to and including the active presentation position are put into the erased state
 
-2 all character positions of the line are put into the erased state 
+2 all character positions of the line are put into the erased state
 
-If the DEVICE COMPONENT SELECT MODE (DCSM) is set to DATA, EL causes some or all character positions of the active line (the line which contains the active data position in the data component) to be put into the erased state, depending on the parameter values: 
+If the DEVICE COMPONENT SELECT MODE (DCSM) is set to DATA, EL causes some or all character positions of the active line (the line which contains the active data position in the data component) to be put into the erased state, depending on the parameter values:
 
-0 the active data position and the character positions up to the end of the line are put into the erased state 
+0 the active data position and the character positions up to the end of the line are put into the erased state
 
-1 the character positions from the beginning of the line up to and including the active data position are put into the erased state 
+1 the character positions from the beginning of the line up to and including the active data position are put into the erased state
 
 2 all character positions of the line are put into the erased state Whether the character positions of protected areas are put into the erased state, or the character positions of unprotected areas only, depends on the setting of the ERASURE MODE (ERM).
 
@@ -1751,25 +1751,25 @@ Parameter default value: Ps1 = 0; Ps2 =0
 
 Description: FNT is used to identify the character font to be selected as primary or alternative font by subsequent occurrences of SELECT GRAPHIC RENDITION (SGR) in the data stream. Ps
 
-1 specifies the primary or alternative font concerned: 
+1 specifies the primary or alternative font concerned:
 
-0 primary font 
+0 primary font
 
-1 first alternative font 
+1 first alternative font
 
-2 second alternative font 
+2 second alternative font
 
-3 third alternative font 
+3 third alternative font
 
-4 fourth alternative font 
+4 fourth alternative font
 
-5 fifth alternative font 
+5 fifth alternative font
 
-6 sixth alternative font 
+6 sixth alternative font
 
-7 seventh alternative font 
+7 seventh alternative font
 
-8 eighth alternative font 
+8 eighth alternative font
 
 9 ninth alternative font Ps
 
@@ -1784,11 +1784,11 @@ Representation: CSI Ps 02/00 05/15
 
 Parameter default value: Ps = 0
 
-Description: GCC is used to indicate that two or more graphic characters are to be imaged as one single graphic symbol. GCC with a parameter value of 
+Description: GCC is used to indicate that two or more graphic characters are to be imaged as one single graphic symbol. GCC with a parameter value of
 
-0 indicates that the following two graphic characters are to be imaged as one single graphic symbol; GCC with a parameter value of 
+0 indicates that the following two graphic characters are to be imaged as one single graphic symbol; GCC with a parameter value of
 
-1 and GCC with a parameter value of 
+1 and GCC with a parameter value of
 
 2 indicate respectively the beginning and the end of a string of graphic characters which are to be imaged as one single graphic symbol.
 
@@ -1921,9 +1921,9 @@ Representation: CSI Ps 02/00 04/15
 
 Parameter default value: NONE
 
-Description: IDCS is used to specify the purpose and format of the command string of subsequent DEVICE CONTROL STRINGs (DCS). The specified purpose and format remain in effect until the next occurrence of IDCS in the data stream. The parameter values are 
+Description: IDCS is used to specify the purpose and format of the command string of subsequent DEVICE CONTROL STRINGs (DCS). The specified purpose and format remain in effect until the next occurrence of IDCS in the data stream. The parameter values are
 
-1 reserved for use with the DIAGNOSTIC state of the STATUS REPORT TRANSFER MODE (SRTM) 
+1 reserved for use with the DIAGNOSTIC state of the STATUS REPORT TRANSFER MODE (SRTM)
 
 2 reserved for Dynamically Redefinable Character Sets (DRCS) according to Standard ECMA-35. The format and interpretation of the command string corresponding to these parameter values are to be defined in appropriate standards. If this control function is used to identify a private command string, a private parameter value shall be used.
 
@@ -2015,25 +2015,25 @@ Representation: CSI Ps... 02/00 04/06
 
 Parameter default value: Ps = 0
 
-Description: JFY is used to indicate the beginning of a string of graphic characters in the presentation component that are to be justified according to the layout specified by the parameter values, see annex C: 
+Description: JFY is used to indicate the beginning of a string of graphic characters in the presentation component that are to be justified according to the layout specified by the parameter values, see annex C:
 
-0 no justification, end of justification of preceding text 
+0 no justification, end of justification of preceding text
 
-1 word fill 
+1 word fill
 
-2 word space 
+2 word space
 
-3 letter space 
+3 letter space
 
-4 hyphenation 
+4 hyphenation
 
-5 flush to line home position margin 
+5 flush to line home position margin
 
-6 centre between line home position and line limit position margins 
+6 centre between line home position and line limit position margins
 
-7 flush to line limit position margin 
+7 flush to line limit position margin
 
-8 Italian hyphenation 
+8 Italian hyphenation
 
 The end of the string to be justified is indicated by the next occurrence of JFY in the data stream. The line home position is established by the parameter value of SET LINE HOME (SLH). The line limit position is established by the parameter value of SET LINE LIMIT (SLL).
 
@@ -2076,7 +2076,7 @@ Note: LS1 is used in 8-bit environments only; in 7-bit environments SHIFT-OUT (S
 
 Notation: (Fs)
 
-Representation: ESC 07/14 
+Representation: ESC 07/14
 
 Decrisption: LS1R is used for code extension purposes. It causes the meanings of the bit combinations following it in the data stream to be changed. The use of LS1R is defined in Standard ECMA-35.
 
@@ -2125,28 +2125,28 @@ Representation: CSI Ps 06/09
 
 Parameter default value: Ps = 0
 
-Description: MC is used either to initiate a transfer of data from or to an auxiliary input/output device or to enable or disable the relay of the received data stream to an auxiliary input/output device, depending on the parameter value: 
+Description: MC is used either to initiate a transfer of data from or to an auxiliary input/output device or to enable or disable the relay of the received data stream to an auxiliary input/output device, depending on the parameter value:
 
-0 initiate transfer to a primary auxiliary device 
+0 initiate transfer to a primary auxiliary device
 
-1 initiate transfer from a primary auxiliary device 
+1 initiate transfer from a primary auxiliary device
 
-2 initiate transfer to a secondary auxiliary device 
+2 initiate transfer to a secondary auxiliary device
 
-3 initiate transfer from a secondary auxiliary device 
+3 initiate transfer from a secondary auxiliary device
 
-4 stop relay to a primary auxiliary device 
+4 stop relay to a primary auxiliary device
 
-5 start relay to a primary auxiliary device 
+5 start relay to a primary auxiliary device
 
-6 stop relay to a secondary auxiliary device 
+6 stop relay to a secondary auxiliary device
 
-7 start relay to a secondary auxiliary device 
+7 start relay to a secondary auxiliary device
 
 This control function may not be used to switch on or off an auxiliary device.
 
 
-Selectors: (initiate-transfer-to-primary initiate-transfer-from-primary initiate-transfer-to-secondary initiate-transfer-from-secondary 
+Selectors: (initiate-transfer-to-primary initiate-transfer-from-primary initiate-transfer-to-secondary initiate-transfer-from-secondary
 stop-relay-to-primary start-relay-from-primary stop-relay-to-secondary start-relay-from-secondary)
 
 
@@ -2223,11 +2223,11 @@ Representation: CSI Ps 02/00 05/10
 
 Parameter default value: Ps = 0
 
-Description: PEC is used to establish the spacing and the extent of the graphic characters for subsequent text. The spacing is specified in the line as multiples of the spacing established by the most recent occurrence of SET CHARACTER SPACING (SCS) or of SELECT CHARACTER SPACING (SHS) or of SPACING INCREMENT (SPI) in the data stream. The extent of the characters is implicitly established by these control functions. The established spacing and the extent remain in effect until the next occurrence of PEC, of SCS, of SHS or of SPI in the data stream. The parameter values are 
+Description: PEC is used to establish the spacing and the extent of the graphic characters for subsequent text. The spacing is specified in the line as multiples of the spacing established by the most recent occurrence of SET CHARACTER SPACING (SCS) or of SELECT CHARACTER SPACING (SHS) or of SPACING INCREMENT (SPI) in the data stream. The extent of the characters is implicitly established by these control functions. The established spacing and the extent remain in effect until the next occurrence of PEC, of SCS, of SHS or of SPI in the data stream. The parameter values are
 
-0 normal (as specified by SCS, SHS or SPI) 
+0 normal (as specified by SCS, SHS or SPI)
 
-1 expanded (multiplied by a factor not greater than 2) 
+1 expanded (multiplied by a factor not greater than 2)
 
 2 condensed (multiplied by a factor not less than 0,5)
 
@@ -2274,7 +2274,7 @@ Description: PFS is used to establish the available area for the imaging of page
 
 14 B4 short lines format
 
-15 B4 long lines format 
+15 B4 long lines format
 
 The page home position is established by the parameter value of SET PAGE HOME (SPH), the page limit position is established by the parameter value of SET PAGE LIMIT (SPL).
 
@@ -2372,7 +2372,7 @@ Description: PTX is used to delimit strings of graphic characters that are commu
 
 4 beginning of a string of supplementary Chinese phonetic annotation
 
-5 end of a string of supplementary phonetic annotations 
+5 end of a string of supplementary phonetic annotations
 
 PTX with a parameter value of 1 indicates the beginning of the string of principal text intended to be presented in parallel with one or more strings of supplementary text. PTX with a parameter value of 2, 3 or 4 indicates the beginning of a string of supplementary text that is intended to be presented in parallel with either a string of principal text or the immediately preceding string of supplementary text, if any; at the same time it indicates the end of the preceding string of principal text or of the immediately preceding string of supplementary text, if any. The end of a string of supplementary text is indicated by a subsequent occurrence of PTX with a parameter value other than 1. PTX with a parameter value of 0 indicates the end of the strings of text intended to be presented in parallel with one another.
 
@@ -2569,7 +2569,7 @@ Description: SAPV is used to specify one or more variants for the presentation o
 
 14 contextual shape determination of Arabic scripts, excluding all Arabic ligatures
 
-15 cancels the effect of parameter values 3 and 4 
+15 cancels the effect of parameter values 3 and 4
 
 16 vowels are not presented
 
@@ -3216,12 +3216,12 @@ Notation: (C1)
 
 Representation: 08/10 or ESC 04/10
 
-Description: VTS causes a line tabulation stop to be set at the active line (the line that contains the active presentation position). 
+Description: VTS causes a line tabulation stop to be set at the active line (the line that contains the active presentation position).
 
 FINE
 
 
-9 Transformation between 7-bit and 8-bit coded representations 
+9 Transformation between 7-bit and 8-bit coded representations
 
 The control functions defined in this Standard can be coded in a 7-bit
 code as well as in an 8-bit code; both forms of coded representation
@@ -3245,7 +3245,7 @@ d) With the FORMAT EFFECTOR ACTION MODE (FEAM) set to STORE and the INSERTION RE
 
 d) can be deleted using DELETE CHARACTER (DCH), resulting in the initial situation being restored. A.2 Composite graphic characters Because the formator functions can be stored in a receiving device, as opposed to the editor functions which are immediately performed, formator functions may be used but editor functions shall not be used for the construction of composite graphic characters. For example, if the symbol = is to be composed using = (EQUALS SIGN) and / (SOLIDUS), the sequence: = CUB / does not produce the desired effect if received by a device which has no overstrike capability. Such a device may, however, process the sequence: = BS / in such a way that it is preserved and can be forwarded to a device which can indeed produce the intended composite symbol. This example serves only the purpose of illustrating the difference between the effects of editor and formator functions. Where two or more graphic characters are to be imaged by a single graphic symbol, this should be done by using the control function GRAPHIC CHARACTER COMBINATION (GCC). Annex B (informative) Coding examples B.1 Examples of complete control sequences The general format of a control sequence is: CSI P ... P I ... I F In an 8-bit environment the control function CURSOR RIGHT (CUF) by one position can be represented by 09/11 03/01 04/03 or 01/11 05/11 03/01 04/03. Other examples are 09/11 03/00 03/01 04/03 09/11 04/03 The first example shows that leading ZEROs (03/00) are not significant. The second example uses the fact that a default value for CUF is defined and is equal to 1. In a 7-bit environment the representation is 01/11 05/11 03/01 04/03 The representation of the two examples above is then 01/11 05/11 03/00 03/01 04/03 01/11 05/11 04/03 In an 8-bit environment the control function SCROLL RIGHT (SR) by 28 positions can be represented for instance by 09/11 03/02 03/08 02/00 04/01 or 01/11 05/11 03/02 03/08 02/00 04/01 In a 7-bit environment the corresponding representation is 01/11 05/11 03/02 03/08 02/00 04/01 In an 8-bit environment the control function DEFINE AREA QUALIFICATION (DAQ) permitting numeric and alphabetic data to be entered into an input area can be represented by 09/11 03/03 03/11 03/04 06/15 or 01/11 05/11 03/03 03/11 03/04 06/15 In a 7-bit environment the corresponding representation is 01/11 05/11 03/03 03/11 03/04 06/15 B.2 Examples of parameter strings Character Bit combination Explanation 7 03/07 A parameter having the value 7. 98 03/09 03/08 A parameter having the value 98. 4;2 03/04 03/11 03/08 Two parameters having the values 4 and 2, respectively. =3 03/13 03/03 A private parameter string. 6; 03/06 03/11 Two parameters, the first having the value 6 and the second taking the default value.
 
-NOTE 
+NOTE
 
 - The bit combination 03/11 may be omitted (see 5.4.2 h). ;5 03/11 03/05 Two parameters, the first taking the default value and the second having the value 5. 1;;4 03/01 03/11 03/11 03/04 Three parameters, the first having the value 1, the second taking the default value, and the third having the value 4. 0007 03/00 03/00 03/00 03/07 A parameter having the value 7. Annex C (informative) Text composition considerations Display devices and systems involving text composition may use the control functions JUSTIFY (JFY) and QUAD (QUAD). When working in the field of text composition several words are used with quite specialized meaning. Those words have been used in this Standard with the meaning from the technology of the printing and publishing industry. Explanation is provided in this annex in terms compatible with coded information interchange and the concepts of character-imaging devices. Both QUAD and JFY deal with the positioning of text (graphic characters and free spaces) between "margins". Margins are areas protected against display at the boundaries of which lines of text may start and terminate. In the general case of a display device with a multiple-page buffer (capable of the QUAD or JFY functions) the margin(s) would be set at arbitrary absolute character positions. The QUAD function deals with single lines of text from the data stream, while the JFY function may deal with more than one line. In both cases it is possible to "flush" text. When text is flush, it starts or ends, as applicable, against a marginal boundary. Flush to line home position margin means start text at the appropriate margin (or first margin line home position in columnar texts). Similarly, flush to line limit position margin means to end text at that appropriate margin. In the process of making text flush, open spaces may be generated. The action to "fill" open spaces involves a concept particular to the JFY and QUAD functions. The open spaces may be filled with a "leader" in the QUAD function. A leader is a pattern (most often a repeated string of graphic characters) which is inserted into the open area. In the use of the JFY function the fill operation is more complicated and will be described below. Having considered margins and flush text it is necessary to consider text which is not intended to be flush to the margins. Text which meets this criterion falls into two classes. They are "centred" text and "ragged" text. This Standard deals explicitly with ragged text. Centred text is arranged between margins such that the open space to the line home position margin and to the line limit position margin are as equal as possible. Ragged is the term applied when text is neither centred nor flush to a margin. The process using the JFY function involves the arrangement of text between margins either being flush (explicitly) or ragged (implicitly). In order to accomplish flush to line home position margin and to line limit position margin, "fill" may be required. The fill may consist of spaces of different width, words, or parts of words. For the purpose of this description a word is considered as including the graphic characters of the word itself and the punctuation mark or SPACE terminating the word. The rules regarding a specific justification process depend on the combination of the parameter values used. A line which is to be justified to line home position margin and line limit position margin with word fill will first be adjusted in length by the addition or removal of text in the form of words until the remaining words fit between the established margins. Words added to a line by such a process will be obtained from the data stream from its following line(s). Words removed from the line will be returned to the data stream in its following lines. Subsequent to having sufficient words to fit between margins the open spaces (between words or graphic characters) may be adjusted to accomplish the combined flush-to-line home position margin and flush-to-line limit position margin action. This spacing is adjusted by intervals, or variable-size spaces according to the implementation. When the word space parameter value has been used the spacing adjustment occurs between words. When the letter space parameter value has been used the spacing adjustment occurs between adjacent graphic characters. When both word space and letter space parameter values have been used the strategy for selecting which spacings are to be adjusted is implementation-dependent. Special cases of the above involve the use of partial words in the fill process. In these cases a hyphenation process is used. If the hyphenation parameter value is used, words may be subdivided according to an implementation strategy at language intervals, often corresponding to syllables. If the Italian hyphenation parameter value is used the first word which will not fit between the margins is truncated, the last character of the line is underlined and the remainder of the word is inserted in the data stream for use in the next line. Annex D (informative) Implementation-dependent features The following introduces, but does not exhaustively list those matters left to the implementors. 1) The control functions which will be selected for implementation. 2) The number of bits, number of characters, and form of the bit combination or bit combinations generated by a single or multiple key depression. 3) Whether characters entered become immediately visible or are processed (partially or fully) prior to becoming visible. 4) If there is a buffer, whether it has a capacity larger than, identical with, or smaller than, the display area. 5) Whether a control function occupies buffer space, display space or both. 6) At what point(s) in the processing of the data stream control functions are to be executed. 7) What the representation of an erased state may be. 8) Whether certain control sequences remain in their encoded state or are transformed into data in special registers and tables. 9) Whether or not there are implementation-defined values for parametric functions when the Standard does not specify a standardized default value. 10) What action will be taken in error recovery. 11) The initial state of a device upon power-up, including the settings of the modes. 12) Whether the width of a displayed character position is fixed or variable (depending on the character occupying the position). 13) The action to be taken by a device if a control function or a graphic character is received which the device cannot implement, because of design limitation or temporary functional disablement. 14) Whether a change of the setting of the CONTROL REPRESENTATION MODE (CRM) affects the appearance of control functions already entered into, or received by, the device or whether only those control functions are affected that are entered or received subsequently. 15) Whether or not the characters in that part of a guarded area which is contained in an eligible area are transmitted or transferred. Annex E (informative) Text area formats E.1 General The purpose of this annex is to provide supplementary information for the control function PAGE FORMAT SELECTION (PFS) defined in 8.3.91. E.2 Dimension of the text area Table E.1 shows the dimensions of the text area corresponding to various values of the parameter of PFS.
 
@@ -3261,11 +3261,11 @@ NOTE 3
 
 This annex does not specify the number of characters per line for spacings of 10 or 15 characters per 25,4 mm used in conjunction with page formats specified by PFS with parameter values 10 to 15, or for spacings of 3 characters per 25,4 mm used in conjunction with the page formats specified by PFS with parameter values 0 to 9. E.3 Line home position For the page formats specified by PFS with parameter values 0 to 9, the line home position is, depending on the character spacing, 6 characters per 25,4 mm: the 4th character position of each line; 10 characters per 25,4 mm: the 6th character position of each line; 12 characters per 25,4 mm: the 7th character position of each line; 15 characters per 25,4 mm: the 8th character position of each line.
 
-NOTE 
+NOTE
 
 For the page formats specified by PFS with parameter values 0 to 9, the line home position is specified so as to provide a margin of approximately 20 mm between the line home position and the edge of the paper. For the page formats specified by PFS with parameter values 10 to 15, the line home position is, depending on the character spacing, 3 characters per 25,4 mm: the 3rd character position of each line; 6 characters per 25,4 mm: the 5th character position of each line; 12 characters per 25,4 mm: the 9th character position of each line.
 
-NOTE 
+NOTE
 
 For the page formats specified by PFS with parameter values 10 to 15, the line home position is specified so as to provide a margin of approximately 25 mm between the line home position and the edge of the paper. Table E.1 - Dimensions of the text area Number of lines per page for spacings of Number of characters per line for spacings of PFS parameter value Meaning 8 6 4 3 6 per 3 6 10 12 15 per 25,4 mm 30 mm per 25,4 mm 0 Tall basic text communication 73 55 37 28 46 46 77 92 115 1 Wide basic text communication 50 38 25 19 32 62 105 125 156 2 Tall basic A4 78 59 39 30 49 46 77 92 115 3 Wide basic A4 50 38 25 19 32 66 110 132 165 4 Tall North American letter 74 56 37 28 48 80 96 120 5 Wide North American letter 53 40 27 20 62 105 125 156 6 Tall extended A4 88 66 44 33 55 46 77 92 115 7 Wide extended A4 58 44 29 22 36 66 110 132 165 8 Tall North American legal 98 74 49 37 48 80 96 120 9 Wide North American legal 53 40 27 20 80 135 161 201 10 A4 short lines 59 39 30 22 45 89 11 A4 long lines 38 25 19 32 66 131 12 B5 short lines 49 33 24 18 38 75 13 B5 long lines 32 21 16 27 56 111 14 B4 short lines 57 50 38 27 56 111 15 B4 long lines 49 33 25 39 79 157 Annex F (informative) Differences between the fifth and the fourth edition of ECMA-48 F.1 General In this fifth Edition of Standard ECMA-48 a number of technical additions and improvements have been introduced; they are listed hereafter. Also editorial improvements have been made like the cancellation of unnecessary repeated references. The elimination of the Latin script bias was already done in the fourth Edition, where some of the terms like "horizontal" and "vertical" or "up" and "down" have been replaced by terms like "character" and "line" or "backward" and "forward". As the acronyms could not be changed because they were already widely implemented and referenced in other standards, some of them are not really acronyms any more, like VPR for LINE POSITION FORWARD (used to be VERTICAL POSITION RELATIVE) or PLU for PARTIAL LINE BACKWARD (used to be PARTIAL LINE UP). The main technical additions concern modes and control functions for handling bi-directional texts and text communication. The main cancellations concern the modes and control functions listed in annex E of the fourth Edition the use of which was already then deprecated. As almost all parts of the text of this version were modified in one way or the other compared to the former version of this Standard, the Editor has refrained from putting change bars in the margins. F.2 Device concepts Clause 6 on device concepts has been entirely revised in order to cope with the specific requirements for bidirectional texts. F.3 New modes Two new modes, the BI-DIRECTIONAL SUPPORT MODE (BDSM) and the DEVICE COMPONENT SELECT MODE (DCSM) have been introduced. F.4 Deprecated modes The use of the POSITIONING UNIT MODE (PUM) and the ZERO DEFAULT MODE (ZDM) is deprecated. Their specifications have been moved from the main text to this annex. F.4.1 PUM - Positioning unit mode CHARACTER: The unit for numeric parameters of the positioning format effectors is one character position. SIZE: The unit for numeric parameters of the positioning format effectors is that established by the parameter value of SELECT SIZE UNIT (SSU).
 

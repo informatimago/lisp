@@ -5,10 +5,10 @@
 ;;SYSTEM:             Common-Lisp
 ;;USER-INTERFACE:     NONE
 ;;DESCRIPTION
-;;    
-;;    This package implements a cache for web pages, 
+;;
+;;    This package implements a cache for web pages,
 ;;    mapping urls to HTML text and parsed tree.
-;;    
+;;
 ;;AUTHORS
 ;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;MODIFICATIONS
@@ -17,19 +17,19 @@
 ;;    On clisp rename-file is not atomic.
 ;;LEGAL
 ;;    GPL
-;;    
+;;
 ;;    Copyright Pascal J. Bourguignon 2004 - 2004
-;;    
+;;
 ;;    This program is free software; you can redistribute it and/or
 ;;    modify it under the terms of the GNU General Public License
 ;;    as published by the Free Software Foundation; either version
 ;;    2 of the License, or (at your option) any later version.
-;;    
+;;
 ;;    This program is distributed in the hope that it will be
 ;;    useful, but WITHOUT ANY WARRANTY; without even the implied
 ;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 ;;    PURPOSE.  See the GNU General Public License for more details.
-;;    
+;;
 ;;    You should have received a copy of the GNU General Public
 ;;    License along with this program; if not, write to the Free
 ;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
@@ -70,10 +70,10 @@
            "GET-PARSED-HTML-AT-URI" "GET-RESOURCE-AT-URI")
   (:documentation
    "
-    This package implements a cache for web pages, 
+    This package implements a cache for web pages,
     mapping urls to HTML text and parsed tree.
     Copyright Pascal J. Bourguignon 2004 - 2004
-    
+
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
     as published by the Free Software Foundation; either version
@@ -89,8 +89,8 @@
     :initarg :directory-path
     :type     pathname
     :initform (make-pathname
-               :directory (append (pathname-directory 
-                                   (user-homedir-pathname)) 
+               :directory (append (pathname-directory
+                                   (user-homedir-pathname))
                                   '("WEB-CACHE"))
                :defaults (user-homedir-pathname))
     :documentation "Path to the directory where the cache data is stored.")
@@ -110,12 +110,12 @@
     :initform (cons 0 0)
     :documentation "The date (universal time) and increment of
                     last modification of the index map.")
-   (resource-file-type 
+   (resource-file-type
     :accessor cache-resource-file-type
     :initarg :resource-file-type
     :type     string
     :initform "DAT")
-   (parsed-html-file-type 
+   (parsed-html-file-type
     :accessor cache-parsed-html-file-type
     :initarg :parsed-html-file-type
     :type     string
@@ -128,7 +128,7 @@
   (assert (typep new-path 'pathname))
   (setf (slot-value self 'directory-path) new-path
         (slot-value self 'index-file-path)
-        (make-pathname :name "CACHE" :type "IDX" 
+        (make-pathname :name "CACHE" :type "IDX"
                        :defaults new-path)))
 
 (defsetf 'directory-path 'set-directory-path)
@@ -152,12 +152,12 @@ Time stamps (cache date) are (unversal-time . increment).
   (if (and (cache-date self) (= (car (cache-date self)) (get-universal-time)))
       (incf (cdr (cache-date self)))
       (setf (cache-date sefl) (cons (get-universal-time) 0))))
-          
 
-(defstruct cache-entry 
-  "A cache index entry, mapping an url with the date the resource 
+
+(defstruct cache-entry
+  "A cache index entry, mapping an url with the date the resource
 was fetched and the file-name of the files where the resource and
-the parsed html are stored, and references to these data when they 
+the parsed html are stored, and references to these data when they
 are loaded in core."
   (url              ""  :type string)
   (date-fetched     0   :type (integer 0)) ; the universal time.
@@ -209,7 +209,7 @@ RETURN: Whether RECORD is a cache index file record.
 
 (defmethod cache-index-read-date ((self web-cache))
   "
-RETURN: If the file (cache-index-file-path self) exists 
+RETURN: If the file (cache-index-file-path self) exists
         and is a cache index file,
         then the cache-date of the cache index file,
         else NIL.
@@ -242,7 +242,7 @@ DO:     Load the cache index from the file (cache-index-file-path self).
                   while (cache-record-p record)
                   do (cache-enter
                       cache (make-cache-entry
-                             :url          (getf record :url) 
+                             :url          (getf record :url)
                              :date-fetched (getf record :date-fetched)
                              :file-name    (getf record :file-name)
                              :header       (getf record :header)))
@@ -280,7 +280,7 @@ DO:     Save the cache index to the file (cache-index-file-path self).
                             (file-error-pathname err))
                      (probe-file (cache-index-file-path self)))
           (signal err))
-        (let ((old (make-pathname :type "OLD" 
+        (let ((old (make-pathname :type "OLD"
                                   :defaults (cache-index-file-path self))))
           (when (probe-file old) (delete-file old))
           (rename-file (cache-index-file-path self) old)
@@ -303,13 +303,13 @@ DO:     Ensure the cache index in core and on disk are synchronized.
 
 
 (defun make-new-name (type directory)
-  (loop for name = (format nil "~36,4,'0R~36,4,'0R" 
-                           (random (expt 36 4)) 
+  (loop for name = (format nil "~36,4,'0R~36,4,'0R"
+                           (random (expt 36 4))
                            (mod (get-universal-time) (expt 36 4)))
         for count from 0
         if (<= 512 count) then (error "Cannot come with a unique file name.")
         until (ignore-errors
-                (not (probe-file (make-pathname 
+                (not (probe-file (make-pathname
                                   :name name :type type
                                   :directory directory))))
         finally (return name)))
@@ -344,11 +344,11 @@ DO:     Forget the resource at URI; delete the cached files.
   (let ((entry (gethash uri (cache-index self))))
     (when entry
       (ignore-errors
-        (delete-file (cache-file-path (cache-entry-file-name entry) 
+        (delete-file (cache-file-path (cache-entry-file-name entry)
                                       (cache-resource-file-type self)
                                       (cache-directory-path self))))
       (ignore-errors
-        (delete-file (cache-file-path (cache-entry-file-name entry) 
+        (delete-file (cache-file-path (cache-entry-file-name entry)
                                       (cache-parsed-html-file-type self)
                                       (cache-directory-path self))))
       (remhash  uri (cache-index self))
@@ -360,17 +360,17 @@ DO:     Forget the resource at URI; delete the cached files.
 DO:     Forget all the URI, deleting all the cached files.
 "
   (maphash (lambda (uri entry)
-             (declare (ignore entry)) 
+             (declare (ignore entry))
               (forget-uri self uri))
            (cache-index self))
   (synchronize-cache self))
 
 
 
-;; (defstruct cache-entry 
-;;   "A cache index entry, mapping an url with the date the resource 
+;; (defstruct cache-entry
+;;   "A cache index entry, mapping an url with the date the resource
 ;; was fetched and the file-name of the files where the resource and
-;; the parsed html are stored, and references to these data when they 
+;; the parsed html are stored, and references to these data when they
 ;; are loaded in core."
 ;;   (url              ""  :type string)
 ;;   (date-fetched     0   :type (integer 0)) ; the universal time.
@@ -382,7 +382,7 @@ DO:     Forget all the URI, deleting all the cached files.
 ;;   (parsed-html      nil :type list))
 ;; (cache-enter
 ;;                       cache (make-cache-entry
-;;                              :url          (getf record :url) 
+;;                              :url          (getf record :url)
 ;;                              :date-fetched (getf record :date-fetched)
 ;;                              :file-name    (getf record :file-name)
 ;;                              :header       (getf record :header)))
@@ -418,7 +418,7 @@ DO:     Forget all the URI, deleting all the cached files.
     (let* ((sender (first mesg))
            (uri    (second mesg))
            (page   (get-resource-at-uri uri)))
-      (if page 
+      (if page
            ;; TODO: actually copy page to shared memory and send only a reference.
           (message-send-sexp queue sender (list :html-page uri page))
           (progn
@@ -437,7 +437,7 @@ DO:     Forget all the URI, deleting all the cached files.
 
 
 (defun get-parsed-html-at-uri (uri)
-  
+
   )
 
 

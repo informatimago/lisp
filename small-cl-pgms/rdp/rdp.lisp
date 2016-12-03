@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Implements a simple recursive descent parser.
-;;;;    
+;;;;
 ;;;;    http://en.wikipedia.org/wiki/Formal_grammar
 ;;;;    http://en.wikipedia.org/wiki/Recursive_descent_parser
 ;;;;    http://en.wikipedia.org/wiki/Parsing_expression_grammar
@@ -29,19 +29,19 @@
 ;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2006 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -53,11 +53,11 @@
   (:use "COMMON-LISP")
   (:export "DEFGRAMMAR" "SEQ" "REP" "OPT" "ALT" "GRAMMAR-NAMED"
            "GENERATE-GRAMMAR"
-           
+
            "GRAMMAR" "MAKE-GRAMMAR" "COPY-GRAMMAR"
            "GRAMMAR-NAME" "GRAMMAR-TERMINALS" "GRAMMAR-START" "GRAMMAR-RULES"
            "GRAMMAR-ALL-TERMINALS" "GRAMMAR-ALL-NON-TERMINALS"
-           
+
            "FIND-RULE" "TERMINALP" "NON-TERMINAL-P" "FIRST-RHS" "FIRST-SET"
 
            "SCANNER" "MAKE-SCANNER" "COPY-SCANNER"
@@ -133,10 +133,10 @@ language boilerplate."))
 
 (defmacro defgrammar (name &key terminals start rules (target-language :lisp))
   "
-DO:     This macros generates a simple scanner and recursive decent parser 
+DO:     This macros generates a simple scanner and recursive decent parser
         for the language described by this grammar.
         For each <non-terminal> in the grammar, a function named
-        <name>/PARSE-<non-terminal> is generated, in addition to 
+        <name>/PARSE-<non-terminal> is generated, in addition to
         functions SCAN-<name> and PARSE-<name>.
         The grammar structure is also generated for run-time
         in the global special variable <name>.
@@ -173,7 +173,7 @@ SYNTAX:
 SEMANTICS:
 
         The terminals are either named terminals listed in the :TERMINALS
-        clause, or literal terminals written directly in the productions as 
+        clause, or literal terminals written directly in the productions as
         lisp strings.  They are matched as-is.
 
         An extended regular expression regex(7) may be given that
@@ -183,7 +183,7 @@ SEMANTICS:
         letter or digit (so that they don't match when part of a
         longer identifier).
         Then the regular expressions are matched in the order given.
-         
+
         :START specifies the start non-terminal symbol.
 
         The non-terminal symbols are infered implicitely from the grammar rules.
@@ -201,9 +201,9 @@ SEMANTICS:
           (ALT a b (ALT c d) e f) --> (ALT a b c d e f)
 
         Actions are executed in a lexical environment where the symbols $1, $2,
-        etc are bound to the results of the subforms. $0 is bound to the 
+        etc are bound to the results of the subforms. $0 is bound to the
         list of the results of the subforms.
-        
+
         The action for REP (normalized) is to return a possibly
         empty list of the results of its single subform repeated.
         (REP is 0 or more).
@@ -211,7 +211,7 @@ SEMANTICS:
         The action for OPT (normalized) is to return either NIL,
         or the result of its single subform unchanged.
 
-        The action for an ALT is to return the result of the selected 
+        The action for an ALT is to return the result of the selected
         alternative unchanged.
 
         The default action for an internal SEQ is to return the list of the
@@ -242,7 +242,7 @@ TODO:   We could also flatten sequences without action, or even sequences with
                (compute-all-terminals     ,g)
                (compute-all-non-terminals ,g)
                ,g))
-       
+
        ,(generate-boilerplate target-language grammar)
        ,(generate-scanner target-language grammar)
        ,@(mapcar (lambda (non-terminal)
@@ -398,7 +398,7 @@ NOTE:       The grammar is not added to the *grammars* map.
 ;; in the grammar."
 ;;   (mapcar (lambda (rule)
 ;;             (destructuring-bind (nt expr) rule
-;; 
+;;
 ;;               ))
 ;;           (grammar-rules grammar)))
 
@@ -461,7 +461,7 @@ in the grammar."
 ;;;
 ;;; On clisp, the user can choose to use the REGEXP package instead of
 ;;; CL-PPCRE, by adjoining :use-regexp instead of :use-ppcre to
-;;; *features* (see the beginning of this file). 
+;;; *features* (see the beginning of this file).
 
 
 
@@ -607,7 +607,7 @@ RETURN:  When the SEQUENCE is a vector, the SEQUENCE itself, or a dispaced
 (defmethod generate-boilerplate ((target (eql :lisp)) (grammar grammar))
   (declare (ignore grammar))
   `(progn
-     
+
     (defstruct scanner
       source
       function

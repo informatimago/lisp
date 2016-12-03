@@ -499,4 +499,4 @@
   (external-declaration ((type-specifier int))
                         ((function-declarator (function nil |main|) nil (tagbody (return 0)))))))
 
-                                     
+

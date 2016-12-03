@@ -252,7 +252,7 @@ End Function
 
 Private Sub Validar_NIF()
   Dim strN As String
-  
+
   blnErr = False
   strN = Dejar_Numeros(mstrNIF)
   If strN = "" Then

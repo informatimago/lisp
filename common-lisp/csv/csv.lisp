@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    This package reads and writes CSV files.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -18,19 +18,19 @@
 ;;;;    See also: http://www.faqs.org/rfcs/rfc4180.html#hsublogo
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -53,19 +53,19 @@ This package reads and writes CSV files.
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2003 - 2015
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -78,65 +78,65 @@ License:
 
 
 ;; The CSV File Format
-;; 
+;;
 ;;     * Each record is one line   ...but A record separator may consist
 ;;       of a line feed (ASCII/LF=0x0A), or a carriage return and line
 ;;       feed pair (ASCII/CRLF=0x0D 0x0A).  ...but: fields may contain
 ;;       embedded line-breaks (see below) so a record may span more than
 ;;       one line.
-;; 
+;;
 ;;     * Fields are separated with commas.  Example John,Doe,120 any
 ;;       st.,"Anytown, WW",08123
-;; 
+;;
 ;;     * Leading and trailing space-characters adjacent to comma field
 ;;       separators are ignored.  So   John  ,   Doe  ,... resolves to
 ;;       "John" and "Doe", etc. Space characters can be spaces, or tabs.
-;; 
+;;
 ;;     * Fields with embedded commas must be delimited with double-quote
 ;;       characters.  In the above example. "Anytown, WW" had to be
 ;;       delimited in double quotes because it had an embedded comma.
-;; 
+;;
 ;;     * Fields that contain double quote characters must be surounded by
 ;;       double-quotes, and the embedded double-quotes must each be
 ;;       represented by a pair of consecutive double quotes.  So, John
 ;;       "Da Man" Doe would convert to "John ""Da Man""",Doe, 120 any
 ;;       st.,...
-;; 
+;;
 ;;     * A field that contains embedded line-breaks must be surounded by
 ;;       double-quotes
 ;;       So:
-;;         Field 1: Conference room 1  
+;;         Field 1: Conference room 1
 ;;         Field 2:
 ;;           John,
-;;           Please bring the M. Mathers file for review  
+;;           Please bring the M. Mathers file for review
 ;;           -J.L.
 ;;         Field 3: 10/18/2002
 ;;         ...
-;; 
+;;
 ;;       would convert to:
-;;         Conference room 1, "John,  
-;;         Please bring the M. Mathers file for review  
+;;         Conference room 1, "John,
+;;         Please bring the M. Mathers file for review
 ;;         -J.L.
 ;;         ",10/18/2002,...
-;; 
+;;
 ;;       Note that this is a single CSV record, even though it takes up
 ;;       more than one line in the CSV file. This works because the line
 ;;       breaks are embedded inside the double quotes of the field.
-;; 
+;;
 ;;     * Fields with leading or trailing spaces must be delimited with
 ;;       double-quote characters.  So to preserve the leading and
 ;;       trailing spaces around the last name above: John ,"   Doe   ",...
-;; 
+;;
 ;;           o Usage note: Some applications will insist on helping you
 ;;             by removing leading and trailing spaces from all fields
 ;;             regardless of whether the CSV used quotes to preserve
 ;;             them. They may also insist on removing leading zeros from
 ;;             all fields regardless of whether you need them. One such
 ;;             application is Excel. :-(
-;; 
+;;
 ;;     * Fields may always be delimited with double quotes.
 ;;       The delimiters will always be discarded.
-;; 
+;;
 ;;           o Implementation note: When importing CSV, do not reach down
 ;;             a layer and try to use the quotes to impart type
 ;;             information to fields. Also, when exporting CSV, you may
@@ -147,7 +147,7 @@ License:
 ;;             glean type information from CSV files (like assuming
 ;;             quoted fields are strings even if they are numeric),
 ;;             please let me know about it.
-;; 
+;;
 ;;     * The first record in a CSV file may be a header record containing
 ;;       column (field) names There is no mechanism for automatically
 ;;       discerning if the first record is a header row, so in the
@@ -159,11 +159,11 @@ License:
 
 
 ;; field-names
-;; 
+;;
 ;; " --> ""
 ;; " --> \"
 ;; " --> empty
-;; 
+;;
 ;; ~% --> NL
 ;; ~% --> \n
 ;; ~% --> empty
@@ -203,7 +203,7 @@ DO:        write the record FIELDS to the stream OUT (default
 "
   (let ((*print-pretty* nil))
     (format out "~{\"~A\"~^,~}~%" (mapcar (function escape-field) fields))))
-  
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Scanner
@@ -251,7 +251,7 @@ inconsistent, a default newline = LF is used. This imports for \ escapes."))
 
 
 (defun make-scanner (&key
-                     (source *standard-input*) 
+                     (source *standard-input*)
                      (field-separator #\,)
                      (decimal-point #\.))
   (make-instance 'scanner
@@ -357,8 +357,8 @@ RETURN:  The newline string determined by the heuristic:
      t)
     (t
      nil)))
- 
-       
+
+
 (defmethod get-token ((scanner scanner))
   "
 NOTE:  Multiline values are returned as a list of lines.
@@ -392,13 +392,13 @@ BUG:   Line termination should be determined once for the whole file.
          ;; quoted-text ::= { any-char-but-coma-new-line-and-dblquote
          ;;                   | "\"\"" | "," | CR | LF } .
          (let ((lines '())
-               (value (make-array '(16) :fill-pointer 0 :adjustable t 
+               (value (make-array '(16) :fill-pointer 0 :adjustable t
                                   :element-type 'character)))
            (do* ((ch (getch)    (or eos (getch)))
                  (eos (null ch) (or eos (null ch))))
                 (eos
                  (if lines
-                     (progn (push value lines)                        
+                     (progn (push value lines)
                             (values :quoted-text (nreverse lines)))
                      (values :quoted-text value)))
              (cond
@@ -411,14 +411,14 @@ BUG:   Line termination should be determined once for the whole file.
                 (eat-escape ch value))
                ((scan-newline scanner ch)
                 (push value lines)
-                (setf value (make-array '(16) :fill-pointer 0 :adjustable t 
+                (setf value (make-array '(16) :fill-pointer 0 :adjustable t
                                         :element-type 'character)))
                (t (vector-push-extend ch value))))))
         ((scan-newline scanner ch)
          (values :newline (newline scanner)))
         (t
          ;; text   ::= { any-char-but-coma-new-line-and-dblquote } .
-         (let ((value (make-array '(16) :fill-pointer 0 :adjustable t 
+         (let ((value (make-array '(16) :fill-pointer 0 :adjustable t
                                   :element-type 'character)))
            (until (or (null ch) (position ch (text-term scanner)))
              (if (char= ch (character "\\"))
@@ -449,11 +449,11 @@ BUG:   Line termination should be determined once for the whole file.
           (parser-next-token self) (parser-next-value self))
   self)
 
-          
+
 (defmethod advance ((parser parser))
   (multiple-value-bind (tok val) (get-token (parser-scanner parser))
     (setf (parser-token parser)      (parser-next-token parser)
-          (parser-value parser)      (parser-next-value parser) 
+          (parser-value parser)      (parser-next-value parser)
           (parser-next-token parser) tok
           (parser-next-value parser) val))
   parser)

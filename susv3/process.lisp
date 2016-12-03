@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             clisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Multiprocessing for clisp.
 ;;;;
 ;;;;    This package doesn't implement threads like in other Common-Lisp
@@ -24,19 +24,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -48,7 +48,7 @@
                             "COM.INFORMATIMAGO.CLISP.RAW-MEMORY"))
 (defpackage "COM.INFORMATIMAGO.SUSV3.PROCESS"
   (:documentation "Implement a multiprocessing API for clisp.")
-  (:use "COMMON-LISP" 
+  (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
         "COM.INFORMATIMAGO.COMMON-LISP.HEAP.HEAP"
         "COM.INFORMATIMAGO.COMMON-LISP.HEAP.MEMORY"
@@ -56,26 +56,26 @@
   (:export ))
 (in-package "COM.INFORMATIMAGO.SUSV3.PROCESS")
 
-(defclass scheduler-object ()    
+(defclass scheduler-object ()
   ())
 
 
 (defclass process (scheduler-object)
   (
-   (name  
-    :accessor process-name 
+   (name
+    :accessor process-name
     :initarg :name
-    :type string  
+    :type string
     :initform nil)
-   (reset-action  
-    :accessor process-reset-action 
+   (reset-action
+    :accessor process-reset-action
     :initarg :reset-action
-    :type string  
+    :type string
     :initform nil)
-   (run-reasons  
-    :accessor process-run-reasons 
+   (run-reasons
+    :accessor process-run-reasons
     :initarg :run-reasons
-    :type string  
+    :type string
     :initform nil
     :documentation "This function returns the list of run-reasons for
                     process. The list can be changed with setf or
@@ -84,10 +84,10 @@
                     the list. A process will not run unless it has at
                     least one run reason and no arrest reasons (see
                     process-arrest-reasons).")
-   (arrest-reasons  
-    :accessor process-arrest-reasons 
+   (arrest-reasons
+    :accessor process-arrest-reasons
     :initarg :arrest-reasons
-    :type string  
+    :type string
     :initform nil
     :documentation "This function returns the list of arrest-reasons
                     for process. The list can be changed with setf or
@@ -96,10 +96,10 @@
                     on the list. A process will not run unless it has
                     at least one run reason (see process-run-reasons)
                     and no arrest reasons.")
-   (priority  
-    :accessor process-priority 
+   (priority
+    :accessor process-priority
     :initarg :priority
-    :type string  
+    :type string
     :initform nil
     :documentation   "
     This function returns the priority of process. It defaults to 0
@@ -108,16 +108,16 @@
     PROCESS. Priority may be any real number. It defaults to 0. It
     may be reset with setf and this function.
     "
-    ;; 
+    ;;
     ;; IMPLEMENTATION:
     ;; So, real or fixnum?
     ;; We could use it to set the nice level.
     ;;
     )
-   (quantum  
-    :accessor process-quantum 
+   (quantum
+    :accessor process-quantum
     :initarg :quantum
-    :type string  
+    :type string
     :initform nil
     :documentation   "
     This function returns the quantum for process.
@@ -125,31 +125,31 @@
     defaults to the value of *default-process-quantum* and may be set
     to any real value between 0.1 and 20 with setf.
     ")
-   (initial-bindings  
-    :accessor process-initial-bindings 
+   (initial-bindings
+    :accessor process-initial-bindings
     :initarg :initial-bindings
-    :type string  
+    :type string
     :initform nil
-    :documentation "This slot of a process stores an alist of initial 
+    :documentation "This slot of a process stores an alist of initial
                     special bindings which are established in a process
                     when it is started. The value may be set with setf.")
-   (message-interrupt-function  
-    :accessor process-message-interrupt-function 
+   (message-interrupt-function
+    :accessor process-message-interrupt-function
     :initarg :message-interrupt-function
-    :type string  
+    :type string
     :initform nil)
-   (stack-allocation  
-    :accessor process-stack-allocation 
+   (stack-allocation
+    :accessor process-stack-allocation
     :initarg :stack-allocation
-    :type string  
+    :type string
     :initform nil)
-   (run-immediately  
-    :accessor process-run-immediately 
+   (run-immediately
+    :accessor process-run-immediately
     :initarg :run-immediately
-    :type string  
+    :type string
     :initform nil)
    ;; ----------------------------------------
-   (property-list 
+   (property-list
     :accessor process-property-list
   	:initarg :property-list
   	:type list
@@ -157,14 +157,14 @@
     :documentation "The property-list slot of a process implements
                     a generalized property list as a convenient place
                    to store additional information about a process.")
-   (resume-hook 
+   (resume-hook
     :accessor process-resume-hook
     :initarg :resume-hook
     :type (or null function)
     :initform nil
-    :documentation "It is normal for execution of a process to be 
-                    interrupted many times. This is transparent to 
-                    the process and usually it is not necessary for 
+    :documentation "It is normal for execution of a process to be
+                    interrupted many times. This is transparent to
+                    the process and usually it is not necessary for
                     the process to know when its execution is
                     suspended  and resumed. However, if these slots
                     are non-nil,  they should be functions of no
@@ -172,7 +172,7 @@
                     stack-group or thread each time the execution is
                     suspended or resumed (but not when the process is
                     first started or when it is killed).")
-   (suspend-hook 
+   (suspend-hook
     :accessor process-suspend-hook
     :initarg :suspend-hook
     :type (or null function)
@@ -225,7 +225,7 @@
     "
   ;;
   ;; IMPLEMENTATION:
-  ;; The scheduler can send periodically 
+  ;; The scheduler can send periodically
   ;; a (progn (room t) (get-runt-time))-req to the profiled process.
   ;; (and perhaps backtrace too!)
   ;; We need the API to start the profiler and to collect statistics.
@@ -240,8 +240,8 @@
     been created and have never completed or been killed.
     The scheduler does not use this list; it is for debugging.
     ") ;;*all-processes*
-;; IMPLEMENTATION: 
-;; The scheduler keeps an authoritative list of all processes. 
+;; IMPLEMENTATION:
+;; The scheduler keeps an authoritative list of all processes.
 ;; *all-processes* is a symbol-macro that check the length of the list
 ;; and delete or create new process proxy objects as needed.
 ;;
@@ -251,20 +251,20 @@
 ;; 2- The *all-processes* symbol-macro sends a request to the scheduler
 ;;    and gets back process data to update the proxies.
 ;;
-;; 1 is better, but implies a shared memory mechanisms (with FFI 
+;; 1 is better, but implies a shared memory mechanisms (with FFI
 ;; or print/readabbly).
 ;;
 
 (defparameter *default-process-quantum* 100
   "
     Default quantum given to each process.
-    This is not significant in the current implemetantion 
+    This is not significant in the current implemetantion
     where the underlying OS does the actual scheduling.
     ") ;;*default-process-quantum*
 ;; IMPLEMENTATION: Not significant.
 
 
-(defun start-scheduler () 
+(defun start-scheduler ()
   "
     Start the scheduler process and initialize multiprocessing.
     Multiprocessing is not automatically started in the default
@@ -272,13 +272,13 @@
     This function starts multiprocessing, which is also started
     automatically the first time a process is started by
     process-reset, directly or indirectly (as by
-    process-run-function). 
+    process-run-function).
     "
   (error "not implemented yet")) ;;start-scheduler
 ;; IMPLEMENTATION:
-;; The initial process forks a child process that continues 
+;; The initial process forks a child process that continues
 ;; and becomes the scheduler.
-;; The child processes should ignore SIGINTR SIGTERM, etc, and let the 
+;; The child processes should ignore SIGINTR SIGTERM, etc, and let the
 ;; scheduler receive them and forward them to the children.
 
 
@@ -287,7 +287,7 @@
                      (reset-action nil) (run-reasons '()) (arrest-reasons '())
                      (resume-hook nil) (suspend-hook nil) (initial-bindings nil)
                      ;; not useful:
-                     (priority 0) (quantum 2) run-immediately 
+                     (priority 0) (quantum 2) run-immediately
                      message-interrupt-function stack-allocation)
   "
     This function returns a new process object, but does nothing about
@@ -298,14 +298,14 @@
   ;;    |-------(newproc-req)----->|                             |
   ;;    |                          |-----------(fork)----------->|
   ;;    |<------(newproc-rep)------|                             |
-  ;; 
+  ;;
   (declare (ignore name class reset-action run-reasons arrest-reasons resume-hook suspend-hook initial-bindings priority quantum run-immediately message-interrupt-function stack-allocation))
   (error "not implemented yet")
   #-(and)
   (let ((pid (linux:|fork|)))
     (cond
       ((= 0 pid) ;; child
-       (setf *current-process* (make-process :pid (linux:|getpid|) 
+       (setf *current-process* (make-process :pid (linux:|getpid|)
                                              :name name))
        (push *current-process* *process-list*)
        (funcall function)
@@ -319,9 +319,9 @@
 
 (defparameter *current-process* #-(and)(make-process :pid (linux:|getpid|))
               "
-    The value of this variable is the process which is currently running. 
-    After the process module is loaded (either automatically, or because 
-    (require :process) is evaluated), the value will be non-nil. 
+    The value of this variable is the process which is currently running.
+    After the process module is loaded (either automatically, or because
+    (require :process) is evaluated), the value will be non-nil.
     This should be treated as a read-only variable.
     ") ;;*current-process*
 
@@ -338,7 +338,7 @@
   (declare (ignore name-or-keywords function args))
   (error "not implemented yet")) ;;process-run-function
 
- 
+
 (defun process-run-restartable-function (name-or-keywords function &rest args)
   "
     This function is just like process-run-function (just above), but
@@ -351,7 +351,7 @@
 
 (defun process-enable (process)
   "
-    Makes process active by removing all its run and arrest reasons, 
+    Makes process active by removing all its run and arrest reasons,
     then giving it a single run reason of :enable.
     "
   (declare (ignore process))
@@ -360,7 +360,7 @@
 
 (defun process-disable (process)
   "
-    This function makes process inactive by revoking all its run and 
+    This function makes process inactive by revoking all its run and
     arrest reasons. The effect is immediate if a process disables itself.
     "
   (declare (ignore process))
@@ -583,7 +583,7 @@
     returning a single value.
     "
   ;; IMPLEMENTATION;
-  ;; We cannot know when the process will block for another reason 
+  ;; We cannot know when the process will block for another reason
   ;; (like waitting for input). Otherwise, we can block the other processes.
   (declare (ignore body))
   (error "without-scheduling not implemented yet")) ;;without-scheduling
@@ -634,7 +634,7 @@
     process-sleep suspends the current process for at least the number
     of seconds specified. That number may be any non-negative,
     non-complex number. While the process sleeps, other processes are
-    allowed to run.)  
+    allowed to run.)
     The whostate (default ''Sleep'') is a string which temporarily
     replaces the process' whostate during the sleep.
     When multiprocessing is initialized, Common Lisp function sleep is
@@ -661,13 +661,13 @@
     WAIT-FOR-INPUT-AVAILABLE.
     "
   ;; IMPLEMENTATION:
-  ;; The waiting process will wait (select, socket-status) or will read 
+  ;; The waiting process will wait (select, socket-status) or will read
   ;; the scheduler message queue.
   ;; gate-open-p     --> scheduler sends message when gate opens.
   ;; read-no-hang-p  --> socket:socket-status (if possible)
   ;; write-no-hang-p --> socket:socket-status (if possible)
   ;; stream-listen   --> socket:socket-status (if possible)
-  ;; other           --> scheduler sends periodic messages to 
+  ;; other           --> scheduler sends periodic messages to
   ;;                     the waiting process.
   ;; TO CHECK: whether socket-status works on message queue?
   (declare (ignore whostate function arguments))
@@ -736,10 +736,10 @@
 
 (defclass gate (scheduler-object)
   ()
-  (:documentation "A two-state object that can be 
+  (:documentation "A two-state object that can be
                    process-waitted efficiently."))
 ;; IMPLEMENTATION:
-;; The simpliest will be to make it only a proxy for a gate 
+;; The simpliest will be to make it only a proxy for a gate
 ;; in the scheduler.
 
 
@@ -754,7 +754,7 @@
 
 (defun open-gate (gate)
   "
-    The gate argument must have been allocated with make-gate. 
+    The gate argument must have been allocated with make-gate.
     Makes the state of gate open.
     "
   (declare (ignore gate))
@@ -763,7 +763,7 @@
 
 (defun close-gate (gate)
   "
-    The gate argument must have been allocated with make-gate. 
+    The gate argument must have been allocated with make-gate.
     Makes the state of gate closed.
     "
   (declare (ignore gate))
@@ -796,7 +796,7 @@
     "
   (declare (ignore self object))
   (error "enqueue not implemented yet")) ;;gate-open-p
-  
+
 
 (defmethod dequeue ((self queue) object)
   "
@@ -806,14 +806,14 @@
     "
   (declare (ignore self object))
   (error "dequeue not implemented yet")) ;;dequeue
-  
+
 
 ;;----------------------------------------------------------------------
 
 
 (defclass process-lock (scheduler-object)
   ()
-  (:documentation 
+  (:documentation
    "
     A process-lock is a defstruct which provides a mechanism for
     interlocking process execution. Lock objects are created with
@@ -827,7 +827,7 @@
     such recursion.
     ")) ;;process-lock
 ;; IMPLEMENTATION:
-;; The simpliest will be to make it only a proxy for a process lock 
+;; The simpliest will be to make it only a proxy for a process lock
 ;; in the scheduler.
 
 
@@ -903,16 +903,16 @@
 
 ;; (defparameter forks (make-circular
 ;;                       (loop for i from 0 below 5 collect (make-lock))))
-;; 
-;; (defparameter philosophers 
-;;   (loop 
+;;
+;; (defparameter philosophers
+;;   (loop
 ;;    for i from 0 below 5
 ;;    for prev = (car forks) then next
 ;;    for next in (cdr forks)
 ;;    collect
 ;;    (make-process
 ;;     (let ((left prev) (rigth next))
-;;       (lambda () 
+;;       (lambda ()
 ;;         (loop
 ;;          (when (with-lock-held (left 5)
 ;;                  (format t "philosopher ~D took left fork.~%" i)
@@ -939,62 +939,62 @@
 ;;;;; (defgeneric destroy-process (process))
 ;;;;; (defgeneric suspend-process (process))
 ;;;;; (defgeneric resume-process (process))
-;;;;; 
-;;;;; 
-;;;;; 
+;;;;;
+;;;;;
+;;;;;
 ;;;;; (defvar *ALL-PROCESSES* '()
 ;;;;;   "A list of all alive processes.")
-;;;;; 
+;;;;;
 ;;;;; (defvar *CURRENT-PROCESS*  nil
 ;;;;;   "The current process")
-;;;;; 
-;;;;; *CURRENT-STACK-GROUP* 
-;;;;; *INITIAL-STACK-GROUP* 
-;;;;; *MULTI-PROCESSING* 
-;;;;; 
+;;;;;
+;;;;; *CURRENT-STACK-GROUP*
+;;;;; *INITIAL-STACK-GROUP*
+;;;;; *MULTI-PROCESSING*
+;;;;;
 ;;;;; (defun ALL-PROCESSES ()
 ;;;;;   "Return a list of all the live processes.")
-;;;;; 
+;;;;;
 ;;;;; (defmacro ATOMIC-DECF (place &option increment)
 ;;;;;   "Decrements the reference by delta in a single atomic operation")
-;;;;; 
+;;;;;
 ;;;;; (defmacro ATOMIC-INCF (place &option increment)
 ;;;;; "Increaments the reference by delta in a single atomic operation")
-;;;;; 
+;;;;;
 ;;;;; (defmacro ATOMIC-POP (place)
 ;;;;; "Atomically pop place.")
-;;;;; 
+;;;;;
 ;;;;; (defmacro ATOMIC-PUSH (element place)
 ;;;;; "Atomically push object onto place.")
-;;;;; 
+;;;;;
 ;;;;; (defun CURRENT-PROCESS ()
 ;;;;; "Returns the current process.")
-;;;;; 
+;;;;;
 ;;;;; (defun DESTROY-PROCESS (process)
 ;;;;; "Destroy a process. The process is sent a interrupt which throws to
 ;;;;;   the end of the process allowing it to unwind gracefully.")
-;;;;; 
+;;;;;
 ;;;;; (defun DISABLE-PROCESS (process)
 ;;;;;   "Disable process from being runnable until enabled.")
-;;;;; 
+;;;;;
 ;;;;; (defun ENABLE-PROCESS (process)
 ;;;;; "Allow process to become runnable again after it has been disabled.")
-;;;;; 
+;;;;;
 ;;;;; INIT-STACK-GROUPS
-;;;;; 
+;;;;;
 ;;;;; (defclass LOCK () ())
-;;;;; 
+;;;;;
 ;;;;; (defun MAKE-LOCK (...))
-;;;;; 
+;;;;;
 ;;;;; MAKE-PROCESS
 ;;;;; "Make a process which will run FUNCTION when it starts up.  By
 ;;;;;   default the process is created in a runnable (active) state.
 ;;;;;   If FUNCTION is NIL, the process is started in a killed state; it may
 ;;;;;   be restarted later with process-preset.
-;;;;; 
+;;;;;
 ;;;;;   :NAME
 ;;;;; 	A name for the process displayed in process listings.
-;;;;; 
+;;;;;
 ;;;;;   :RUN-REASONS
 ;;;;; 	Initial value for process-run-reasons; defaults to (:ENABLE).  A
 ;;;;; 	process needs a at least one run reason to be runnable.  Together with
@@ -1003,11 +1003,11 @@
 ;;;;; 	behavior of MAKE-PROCESS in Allegro Common Lisp, which is to create a
 ;;;;; 	process which is active but not runnable, initialize RUN-REASONS to
 ;;;;; 	NIL.
-;;;;; 
+;;;;;
 ;;;;;   :ARREST-REASONS
 ;;;;; 	Initial value for process-arrest-reasons; defaults to NIL.  A
 ;;;;; 	process must have no arrest reasons in order to be runnable.
-;;;;; 
+;;;;;
 ;;;;;   :INITIAL-BINDINGS
 ;;;;; 	An alist of initial special bindings for the process.  At
 ;;;;; 	startup the new process has a fresh set of special bindings
@@ -1148,7 +1148,7 @@ Communication between (unix) processes can be done with:
 
     * shared memory (only a part of the address space) (mmap and SVID shm)
         + connection can be established after forking.
-        + no copying need (if the data could be allocated into 
+        + no copying need (if the data could be allocated into
                            the shared memory).
         - no embeded synchronization.
 
@@ -1177,13 +1177,13 @@ Communication between (unix) processes can be done with:
 Synchronization between processes can be done with:
     * semaphores (SVID sem)
     * signals (asynchronously).
-    
+
 "
 
 "
 start-scheduler
 
-    The first process becomes the scheduler (and forks immediately 
+    The first process becomes the scheduler (and forks immediately
     a main process).
 
 
@@ -1197,7 +1197,7 @@ start-scheduler
     a shared variable, and only if their types were defined before
     forking the processes.  The value is therefore copied deeply. No
     object. No structure defined after a fork (clisp structures are
-    printable readably).  
+    printable readably).
 
     It seems we cannot have a symbol-macro at the same time as a
     special variable... So we'll need a special API.  
@@ -1233,14 +1233,14 @@ start-scheduler
 ;; (with-open-file (out "/tmp/test" :direction :output :if-does-not-exist :create :if-exists :supersede) (format out "abcdefghijk") (force-output out) (let ((pid (linux:|fork|))) (if (zerop pid) (format out "ABCDEFGHIJK") (format out "0123456789")) (force-output out) (when (zerop pid) (sleep 4) (format t "child quits~%") (force-output) (ext:quit))))
 
 "
-make-process 
+make-process
 
 process:fork
 process:
 
 
 - queued messages
-- 
+-
 
 make-process function &key name
 process-interrupt process function
@@ -1301,15 +1301,15 @@ with-lock-held (place &optional state) &body body
 ;;   (:return-type linux:|ssize_t|)
 ;;   (:library "/lib/libc.so.6")
 ;;   (:language :stdc))
-;; 
-;; 
+;;
+;;
 ;; (ffi:def-call-out unix-write  (:name "write")
 ;;   (:arguments (fd ffi:int) (buf ffi:c-pointer) (nbytes linux:|size_t|))
 ;;   (:return-type linux:|ssize_t|)
 ;;   (:library "/lib/libc.so.6")
 ;;   (:language :stdc))
-;; 
-;; 
+;;
+;;
 ;; (defun test-unix-pipe-io ()
 ;;   (multiple-value-bind (res fds) (linux:|pipe|)
 ;;     (ffi:with-foreign-string (fstr flen fsiz "Hello")
@@ -1320,15 +1320,15 @@ with-lock-held (place &optional state) &body body
 ;;           (dotimes (i rlen)
 ;;             (princ (code-char (ffi:element (ffi:foreign-value buf)
 ;;                                            i)))))))));;test-unix-pipe-io
-;; 
+;;
 ;; (TEST-UNIX-PIPE-IO)
-;; 
+;;
 ;; (print `(read ,rlen))
 ;; (dotimes (i rlen)
 ;;   (princ (code-char (ffi:element (ffi:foreign-value buf)
 ;;                                  i))))
-;; 
-;; 
+;;
+;;
 ;; (defun copy-from-c-buffer (buffer buflen sequence start)
 ;;   (typecase sequence
 ;;     (cons (let ((current (nthcdr start sequence)))
@@ -1493,7 +1493,7 @@ with-lock-held (place &optional state) &body body
 
 
 (loop :repeat 2 :do
-     (linux:set-signal-handler 
+     (linux:set-signal-handler
       linux:SIGUSR1
       (lambda (signal)  (princ " Got signal ") (throw :hot-potatoe signal)))
      (catch :hot-potatoe
@@ -1812,7 +1812,7 @@ RETURN:  Whether ADDRESS as the aaa.bbb.ccc.ddd IPv4 address format.
 ;; (DEFCONSTANT MAX-NUMBER
 ;; (DEFCONSTANT ENABLE
 ;; (DEFCONSTANT SAVE
-  
+
 (defconstant +cr+   13)
 (defconstant +bs+    8)
 (defconstant +del+ 127)

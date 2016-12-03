@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Defines the Common Lisp Stepper packages.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -43,7 +43,7 @@
 ;; definitions.
 
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.LISP.STEPPER.INTERNAL"
-  
+
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
@@ -66,13 +66,13 @@
                                  "TRANSLATE-LOGICAL-PATHNAME")
   (:export
    "*STEP-PACKAGE*"
-   "*STEP-PRINT-READABLY*" 
-   "*STEP-PRINT-LENGTH*"   
-   "*STEP-PRINT-LEVEL*"     
-   "*STEP-PRINT-CASE*"    
+   "*STEP-PRINT-READABLY*"
+   "*STEP-PRINT-LENGTH*"
+   "*STEP-PRINT-LEVEL*"
+   "*STEP-PRINT-CASE*"
    "*STEP-TRACE-OUTPUT*"
    "*STEP-MAX-TRACE-DEPTH*"
-   
+
    "STEP-TRACE-FUNCTION" "STEP-UNTRACE-FUNCTION"
    "STEP-BREAK-ENTRY" "STEP-UNBREAK-ENTRY"
    "STEP-BREAK-EXIT" "STEP-UNBREAK-EXIT"
@@ -80,7 +80,7 @@
    "*STEP-MODE*" "*STEP-LEVEL*"
 
    "WILL-STEP" "DID-BIND" "PRINT-STEP-RESULTS" "DID-STEP" "DID-TAG"
-   
+
    "STEP-CONDITION" "STEP-MESSAGE" "STEP-CHOICE"
 
    "STEPPER" "DISABLE" "STEPPER-DECLARATION-P"
@@ -94,7 +94,7 @@
    "STEP-FUNCTION"
    "STEP-LAMBDA"
    "STEP-BINDINGS")
-  
+
   (:documentation "
 This is an internal package of the Common Lisp stepper.
 This package exports the  stepper generator functions,
@@ -118,11 +118,11 @@ See the source file for details.
   (:nicknames "COMMON-LISP-STEPPER"
               "CL-STEPPER"
               "STEPPER")
-  
+
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM"
         "COM.INFORMATIMAGO.COMMON-LISP.LISP.STEPPER.INTERNAL")
-  
+
   #+mocl (:shadowing-import-from "COM.INFORMATIMAGO.MOCL.KLUDGES.MISSING"
                                  "*TRACE-OUTPUT*"
                                  "ARRAY-DISPLACEMENT"
@@ -144,13 +144,13 @@ See the source file for details.
    "DEFUN" "DEFGENERIC" "DEFMETHOD" "LAMBDA"
    "DEFINE-CONDITION"
    "STEP")
-  
+
   (:shadow ;; special operators
    "BLOCK" "CATCH" "EVAL-WHEN" "FLET" "FUNCTION" "GO" "IF" "LABELS" "LET" "LET*"
    "LOAD-TIME-VALUE" "LOCALLY" "MACROLET" "MULTIPLE-VALUE-CALL"
    "MULTIPLE-VALUE-PROG1" "PROGN" "PROGV" "QUOTE" "RETURN-FROM" "SETQ"
    "SYMBOL-MACROLET" "TAGBODY" "THE" "THROW" "UNWIND-PROTECT")
-  
+
   (:export ;; everything from COMMON-LISP
    . #.(cl:let ((e '()))
          (cl:do-external-symbols (s "COMMON-LISP" e)
@@ -158,23 +158,23 @@ See the source file for details.
 
   (:export
    "*STEP-MODE*"
-   "*STEP-PRINT-LENGTH*"   
-   "*STEP-PRINT-LEVEL*"     
-   "*STEP-PRINT-CASE*"    
+   "*STEP-PRINT-LENGTH*"
+   "*STEP-PRINT-LEVEL*"
+   "*STEP-PRINT-CASE*"
    "*STEP-PACKAGE*"
    "*STEP-TRACE-OUTPUT*"
    "*STEP-MAX-TRACE-DEPTH*"
-   
+
    "STEP-TRACE-FUNCTION" "STEP-UNTRACE-FUNCTION"
    "STEP-BREAK-ENTRY"    "STEP-UNBREAK-ENTRY"
    "STEP-BREAK-EXIT"     "STEP-UNBREAK-EXIT"
 
-   
+
    "STEPPER" "DISABLE" #| "TRACE" already exported as CL symbol |#
    ;; (declare (stepper disable)) ; to prevent instrumentation of the
    ;; enclosing sexp and sub expressions.
    )
-  
+
   (:documentation "
 Implements a Portable Common Lisp Stepper.
 
@@ -221,7 +221,7 @@ Step Into:
 
 Step Over:
 
-    Evaluate the current form in one step. 
+    Evaluate the current form in one step.
 
 Trace:
 

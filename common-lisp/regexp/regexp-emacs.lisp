@@ -8,7 +8,7 @@
 ;;;;DESCRIPTION
 ;;;;
 ;;;;USAGE
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -16,19 +16,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2002 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -69,19 +69,19 @@ regexp features in all programs including this module).
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2002 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -104,7 +104,7 @@ License:
 ;;;                           WHILE MATCH
 ;;;                           SUM 1 INTO COUNT
 ;;;                           FINALLY (RETURN COUNT)))) )
-;;;     (VALUES-LIST 
+;;;     (VALUES-LIST
 ;;;      (LOOP FOR I FROM 0 BELOW COUNT
 ;;;            FOR DATA = MD  THEN (CDDR DATA)
 ;;;            FOR S = (CAR DATA)
@@ -223,7 +223,7 @@ POST:    (and (<=  p (sc-position sc))
           :do (setq p (1+ p)))
     (prog1 (subseq s (aref sc 1) p)
       (setf (aref sc 1) p))))
-          
+
 
 
 
@@ -354,9 +354,9 @@ simple ::= '['     character-set ']' .
 ;;;                         (setq min nil))
 ;;;                     (push (character '\-) set))
 ;;;                 (setq min curr-char)
-       
 
-       
+
+
 ;;;                 ))))
        )
 
@@ -499,7 +499,7 @@ element ::= simple '\{' number ',' [ number ] '\}' .
            (progn
              (sc-advance sc)
              (setq tree (list :non-greedy-zero-or-more  simple)))
-           (setq tree (list :zero-or-more simple)))) 
+           (setq tree (list :zero-or-more simple))))
 
       ((eq (character '\+) curr-char)
        (sc-advance sc)
@@ -692,7 +692,7 @@ regexp ::= sequence .               sequence
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; matching a regexp tree to a string
 ;; ----------------------------------
-;; 
+;;
 
 
 
@@ -726,7 +726,7 @@ regexp ::= sequence .               sequence
      (setf (pjb-re-slot-try node) nil)
      (setf (pjb-re-slot-end node) nil)
      (values)))
-  
+
 
 (defmacro pjb-re-match (node)
   `(let ((node ,node))
@@ -917,7 +917,7 @@ RETURNS: nil when no match,
   (let ((p         (pjb-re-slot-begin node))
         (n         (pjb-re-slot-try   node))
         (children  (pjb-re-slot-children node)) )
-    (declare (ignore p n children))    
+    (declare (ignore p n children))
     (error "Not Implemented Yet: ~S~%" (pjb-re-slot-node node))))
 
 
@@ -1318,7 +1318,7 @@ RETURNS: nil when no match,
 
 (defun pjb-re-make-pjb-re-symbol (key ext)
   "
-RETURN:     A symbol corresponding to one of the pjb-re-*-{init,match} 
+RETURN:     A symbol corresponding to one of the pjb-re-*-{init,match}
             functions defined here.
 ext:        A string, either \"init\" or \"match\".
 key:        A keyword, one of those used in the regexp syntactic trees.
@@ -1420,7 +1420,7 @@ or (coerce (match-string ...) 'simple-string)."
 (defun regexp-quote (string)
   (declare (ignore string))
   (error "Not Implemented Yet: REGEXP-QUOTE~%" ))
- 
+
 
 (defun match (regexp string &optional start end)
   "Common-Lisp: This function returns as first value a match structure
@@ -1447,7 +1447,7 @@ RETURN:  index of start of first match for REGEXP in STRING, nor nil.
          (dec-tree (pjb-re-decorate-tree syn-tree string))
          (groups  (pjb-re-collect-groups dec-tree)) )
     (pjb-re-init dec-tree start)
-    (pjb-re-match dec-tree) 
+    (pjb-re-match dec-tree)
     ;; there's nowhere to backtrack at the top level...
     (values-list (mapcar (lambda (g)
                            (let ((s (pjb-re-slot-begin g))

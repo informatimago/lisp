@@ -192,7 +192,7 @@ int f(int argument,char ch,long lg)
     ivar=2+3;
     ivar=3+x;
     ivar=x+2;
-    
+
     ivar=a-x;
     ivar=2-3;
     ivar=3-x;
@@ -247,7 +247,7 @@ int f(int argument,char ch,long lg)
     ivar=a&&b;
     ivar=a||b;
     ivar=a?b:c;
-    
+
     int assignment_expressions;
     ivar=argument;
     ivar+=argument;
@@ -263,7 +263,7 @@ int f(int argument,char ch,long lg)
 
     int sequence_expressions;
     ivar=a,b,c;
-    
+
     ivar=((a++),
           f(b,'c',42L),
           a*x*x+b*x+c),
@@ -276,4 +276,4 @@ int f(int argument,char ch,long lg)
 int main(){
     return 0;
 }
-    
+

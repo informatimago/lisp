@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    This package exports a stand alone RUN-PROGRAM function that
 ;;;;    runs on various implementations.
 ;;;;
@@ -17,19 +17,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -40,8 +40,8 @@
   #+allegro        (:use "EXCL" "EXCL.OSI" )
   #+clisp          (:use "EXT"  "POSIX")
   #+ecl            (:use "EXT")
-  #+(or abcl cmu)  (:use "EXTENSIONS")  
-  #+clozure        (:use "CCL") 
+  #+(or abcl cmu)  (:use "EXTENSIONS")
+  #+clozure        (:use "CCL")
   #+sbcl           (:use "SB-EXT")
   (:shadow "MAKE-PROCESS"
            . #1=("RUN-PROGRAM"
@@ -130,35 +130,35 @@
 
 #+(or abcl cmu clozure sbcl)
 (defun process-alive-p (process)
-  #+(or abcl cmu sbcl)   (process-alive-p           (process-process process)) 
+  #+(or abcl cmu sbcl)   (process-alive-p           (process-process process))
   #+clozure         (eql (external-process-status   (process-process process))  :running))
 
 #+(or abcl cmu clozure sbcl)
 (defun process-input (process)
-  #+(or abcl cmu sbcl)   (process-input                    (process-process process)) 
+  #+(or abcl cmu sbcl)   (process-input                    (process-process process))
   #+clozure              (external-process-input-stream    (process-process process)) )
 
-#+(or abcl cmu clozure sbcl)                                                         
-(defun process-output (process)                                                      
-  #+(or abcl cmu sbcl)   (process-output                   (process-process process)) 
+#+(or abcl cmu clozure sbcl)
+(defun process-output (process)
+  #+(or abcl cmu sbcl)   (process-output                   (process-process process))
   #+clozure              (external-process-output-stream   (process-process process)))
 
-#+(or abcl cmu clozure sbcl)                                                         
-(defun process-error (process)                                                       
-  #+(or abcl cmu sbcl)   (process-error                    (process-process process)) 
+#+(or abcl cmu clozure sbcl)
+(defun process-error (process)
+  #+(or abcl cmu sbcl)   (process-error                    (process-process process))
   #+clozure              (external-process-error-stream    (process-process process)) )
 
-#+(or abcl cmu clozure sbcl)                                                         
+#+(or abcl cmu clozure sbcl)
 (defun process-pid (process)
   #+abcl            (declare (ignore process))
   #+abcl            -1 ; no process-pid in abcl
-  #+(or cmu sbcl)   (process-pid                (process-process process)) 
+  #+(or cmu sbcl)   (process-pid                (process-process process))
   #+clozure         (ccl::external-process-pid  (process-process process)))
 
-#+(or abcl cmu clozure sbcl)                                                         
-(defun process-status (process)                                                      
-  #+abcl                 (process-exit-code         (process-process process)) 
-  #+(or cmu sbcl)        (process-status            (process-process process)) 
+#+(or abcl cmu clozure sbcl)
+(defun process-status (process)
+  #+abcl                 (process-exit-code         (process-process process))
+  #+(or cmu sbcl)        (process-status            (process-process process))
   #+clozure (nth-value 1 (external-process-status   (process-process process))))
 
 
@@ -204,7 +204,7 @@ process.
                   (concatenate 'vector (list program program) arguments)
                   :wait t
                   :input input        :if-input-does-not-exist :error
-                  :output output      :if-output-exists :supersede 
+                  :output output      :if-output-exists :supersede
                   :error-output error :if-error-output-exists :supersede
                   :separate-streams t
                   (when environmentp (list :environment environment))))
@@ -218,7 +218,7 @@ process.
                  :separate-streams t
                  :wait nil
                  :input input        :if-input-does-not-exist :error
-                 :output output      :if-output-exists :supersede 
+                 :output output      :if-output-exists :supersede
                  :error-output error :if-error-output-exists :supersede
                  (when environmentp (list :environment environment)))
         (make-process :input inp :output out :error err :pid pid
@@ -230,7 +230,7 @@ process.
   ;; clisp make-{input,output,io}-pipe an run-program don't work with
   ;; stderr.  The only function that allows to redirect stderr is
   ;; ext::launch. It takes streams  (with underlying file
-  ;; descriptor/handle), nil, :pipe or :terminal.  
+  ;; descriptor/handle), nil, :pipe or :terminal.
   #+clisp
   (labels ((run (input-stream output-stream error-stream)
              (multiple-value-bind (pid-or-status inp out err)
@@ -336,7 +336,7 @@ process.
     process)
 
 
-  
+
   #+clozure
   (flet ((wrap-stream (direction stream)
            ;; Since stream may not be shared, we make a new stream for
@@ -350,7 +350,7 @@ process.
                                                               :stream-device (ccl::stream-device stream direction)
                                                               :direction direction
                                                               :element-type output-element-type
-                                                              :encoding output-external-format 
+                                                              :encoding output-external-format
                                                               :line-termination #+windows :windows #-windows :unix
                                                               :sharing :lock
                                                               :auto-close t))
@@ -362,7 +362,7 @@ process.
                      :input  (wrap-stream :input  input)  :if-input-does-not-exist :error
                      :output (wrap-stream :output output) :if-output-exists :supersede
                      :error  (wrap-stream :error  error)  :if-error-exists  :supersede
-                     :element-type output-element-type 
+                     :element-type output-element-type
                      :external-format (list :domain nil
                                             :character-encoding output-external-format
                                             :line-termination #+windows :windows #-windows :unix)
@@ -385,7 +385,7 @@ process.
                 :program program
                 :arguments arguments
                 :environment (if environmentp environment :inherit))
-  
+
   #+sbcl
   (make-process :process (sb-ext:run-program
                           program arguments
@@ -408,7 +408,7 @@ process.
                 :program program
                 :arguments arguments
                 :environment (if environmentp environment :inherit))
-  
+
   #-(or allegro clisp abcl clozure cmu ecl sbcl scl)
   (error "~S not implemented for ~A" 'run-program
          (lisp-implementation-version)))
@@ -418,10 +418,10 @@ process.
 ;; Not necessary: ext::launch takes :pipe arguments.
 ;;--------------------------------------------------
 ;;
-;; 
-;; 
-;; 
-;; 
+;;
+;;
+;;
+;;
 ;; #+(and clisp unix) (ffi:def-call-out pipe (:name "pipe")
 ;;                      (:arguments (pipefd (FFI:C-PTR (FFI:C-ARRAY FFI:INT 2)) :out :alloca))
 ;;                      (:return-type ffi:int)
@@ -438,18 +438,18 @@ process.
 ;;                      (:return-type ffi:int)
 ;;                      (:language :stdc)
 ;;                      (:library *libc*))
-;; 
+;;
 ;; #+(and clisp win32) (ffi:def-c-type handle ffi:c-pointer)
 ;; #+(and clisp win32) (ffi:def-c-type dword  ffi:uint32)
 ;; #+(and clisp win32) (ffi:def-c-type word   ffi:uint16)
 ;; #+(and clisp win32) (ffi:def-c-type bool   ffi:uint8)
-;; 
+;;
 ;; #+(and clisp win32) (ffi:def-c-type SECURITY-ATTRIBUTES
 ;;                         (ffi:c-struct vector
 ;;                                       (nlength              dword)
 ;;                                       (lpsecuritydescriptor ffi:c-pointer)
 ;;                                       (binherithandle       bool)))
-;; 
+;;
 ;; #+(and clisp win32) (ffi:def-call-out create-pipe (:name "CreatePipe")
 ;;                       (:arguments (hreadpipe   (ffi:c-ptr handle) :out)
 ;;                                   (hwritepipe  (ffi:c-ptr handle) :out)
@@ -458,7 +458,7 @@ process.
 ;;                       (:return-type bool)
 ;;                       (:language :stdc-stdcall)
 ;;                       (:library "kernel32.dll"))
-;; 
+;;
 ;; #+clisp
 ;; (defun make-pipe ()
 ;;   "Returns two streams, an output stream writing to the pipe and an
@@ -489,29 +489,29 @@ process.
 
 
 ;; Note: While it may seem reasonable to write:
-;; 
+;;
 ;;   (with-open-file (err "TESTERR.TXT"
 ;;                        :direction :output :if-does-not-exist :create
 ;;                        :if-exists :supersede)
 ;;     (write-line "The error output of the command is:" err)
-;;     (finish-output err) 
+;;     (finish-output err)
 ;;     (run-program "sh" '("-c" "echo error 1>&2")
 ;;                  :wait t :input nil :output nil :error err)
 ;;     (write-line "That was the error output of the command." err))
-;; 
+;;
 ;; and even:
-;; 
+;;
 ;;   (with-open-file (inp "TESTINP.TXT")
 ;;     (read-line inp) ; eat the first line
 ;;     (run-program "bash" '("-c" "read line ; exit 0")
 ;;                  :wait t :input inp :output nil :error nil)
-;;     (read-line inp)) 
+;;     (read-line inp))
 ;;
 ;; In both cases, since we have dup'ed the file descriptor in the
 ;; parent and child processes,  we have two file positions, and
 ;; therefore the I/O done by the parent after the child is run will
 ;; overwrite or read the data written or read by the child.
 
-;; Some implementations copy the input filee to a temporary file, and 
+;; Some implementations copy the input filee to a temporary file, and
 ;;
 ;;;; THE END ;;;;

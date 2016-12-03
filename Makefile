@@ -12,10 +12,10 @@
 #       $(PREFIX)       where the non-lisp stuff will be installed
 #                       such as in $(PREFIX)/bin/, $(PREFIX)/lib/.
 #
-#   
+#
 #                       It will be created a subdirectory in this
 #                       $(PREFIX) named after the library:
-#                       
+#
 #
 #AUTHORS
 #	<PJB> Pascal J. Bourguignon
@@ -23,19 +23,19 @@
 #   2001-06-19 <PJB> Reorganized and simplified.
 #LEGAL
 #    AGPL3
-#    
+#
 #    Copyright Pascal J. Bourguignon 2012 - 2016
-#    
+#
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as published by
 #    the Free Software Foundation, either version 3 of the License, or
 #    (at your option) any later version.
-#    
+#
 #    This program is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU Affero General Public License for more details.
-#    
+#
 #    You should have received a copy of the GNU Affero General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>
 #******************************************************************************
@@ -49,7 +49,7 @@ help::
 	@printf $(HELP_FMT) 'all' 'Compile with all the available compilers.'
 # Let's compile with all the available compilers ( $(GCL) not yet ).
 # all:: $(ABCL) $(ALLEGRO) $(CCL) $(CLISP) $(ECL) $(SBCL) $(CMUCL) $(OPENMCL)
-all::  compile-with-$(CLISP) compile-with-$(ECL) compile-with-$(SBCL) compile-with-$(OPENMCL) 
+all::  compile-with-$(CLISP) compile-with-$(ECL) compile-with-$(SBCL) compile-with-$(OPENMCL)
 # compile-with-$(CMUCL)     breaks on decode-raw-cardinal in bencode...
 # compile-with-$(ALLEGRO)  fails on posix-regexp out of memory...
 # compile-with-$(ABCL)     chokes on unicode!
@@ -120,7 +120,7 @@ help::
 systems system system.asd summaries summary summary.html:
 	@echo not implemented yet
 	@false
-.PHONY::systems system summaries summary 
+.PHONY::systems system summaries summary
 
 
 help::
@@ -160,7 +160,7 @@ html:: README.html
 .PHONY::doc documentation readme doc-upload lispdoc html
 
 $(WEBDOCDIR)/develop/lisp/doc:
-	$(MAKE) $(MFLAGS) -C lispdoc 
+	$(MAKE) $(MFLAGS) -C lispdoc
 
 upload:
 	$(MAKE) $(MFLAGS) -C $(WEBDOCDIR) update upload
@@ -186,14 +186,14 @@ help::
 	@printf $(HELP_FMT)  'quicklisp-tag'    'Update the quicklisp tag on the remote repositories.'
 
 # quicklisp-tag: quicklisp-tag-remove quicklisp-tag-add
-# 
+#
 # quicklisp-tag-remove:
 # 	git tag -d quicklisp
 # 	git push origin    :refs/tags/quicklisp
 # 	git push github    :refs/tags/quicklisp
 # 	git push gitlab    :refs/tags/quicklisp
 # 	git push framasoft :refs/tags/quicklisp
-# 
+#
 # quicklisp-tag-add:
 # 	git tag -f -s quicklisp -m 'current version for quicklisp'
 # 	git push --tags framasoft

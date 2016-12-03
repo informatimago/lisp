@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    XXX
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -233,7 +233,7 @@
      :bold           ("**" markup-line "**")
      :italic         ("//" markup-line "//")
      :monospace      ("``" multi-line "``")
-     :underlined     ("__" markup-line "__")    
+     :underlined     ("__" markup-line "__")
      :strike-through ("--" markup-line "--")
      :header1    (or ("=" markup-line "=") ("+" markup-line "+"))
      :header2    (or ("==" markup-line "==") ("++" markup-line "++"))
@@ -243,7 +243,7 @@
      :header6    (or ("======" markup-line "======") ("++++++" markup-line "++++++"))
      :link       ("[" markup-line url "]"))))
 
-  
+
 
 (docutils:read-rst (com.informatimago.common-lisp.cesarum.file:text-file-contents
                     #p"/home/pjb/d/specifications.rst"))

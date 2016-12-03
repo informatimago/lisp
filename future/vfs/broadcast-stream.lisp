@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    This file defines the broadcast stream operators.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    GPL
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software; you can redistribute it and/or
 ;;;;    modify it under the terms of the GNU General Public License
 ;;;;    as published by the Free Software Foundation; either version
 ;;;;    2 of the License, or (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be
 ;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
 ;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 ;;;;    PURPOSE.  See the GNU General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU General Public
 ;;;;    License along with this program; if not, write to the Free
 ;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
@@ -48,7 +48,7 @@
   (dolist (stream streams)
     (unless (output-stream-p stream)
       (error (make-condition
-              'simple-type-error 
+              'simple-type-error
               :datum stream
               :expected-type 'stream
               :format-control "Stream is not an output stream"))))
@@ -71,35 +71,35 @@
 
 (define-stream-methods broadcast-stream
     (broadcast-stream-streams (%broadcast-stream-streams broadcast-stream))
-  
+
   (write-byte              (do-broadcast (ostream stream)
                              (write-char byte ostream))
                            byte)
   (write-char              (do-broadcast (ostream stream)
                              (write-char character ostream))
                            character)
-  (terpri                  (do-broadcast (ostream stream) 
+  (terpri                  (do-broadcast (ostream stream)
                              (terpri ostream))
                            nil)
-  (fresh-line              (do-broadcast (ostream stream) 
+  (fresh-line              (do-broadcast (ostream stream)
                              (fresh-line ostream)))
-  (write-string            (do-broadcast (ostream stream) 
+  (write-string            (do-broadcast (ostream stream)
                              (write-string string ostream :start start :end end))
                            string)
-  (write-line              (do-broadcast (ostream stream) 
+  (write-line              (do-broadcast (ostream stream)
                              (write-line string ostream :start start :end end))
                            string)
-  (write-sequence          (do-broadcast (ostream stream) 
+  (write-sequence          (do-broadcast (ostream stream)
                              (write-sequence sequence ostream :start start :end end))
                            sequence)
-  (clear-output            (do-broadcast (ostream stream) 
+  (clear-output            (do-broadcast (ostream stream)
                              (clear-output ostream)))
-  (force-output            (do-broadcast (ostream stream) 
+  (force-output            (do-broadcast (ostream stream)
                              (force-output ostream)))
-  (finish-output           (do-broadcast (ostream stream) 
+  (finish-output           (do-broadcast (ostream stream)
                              (finish-output ostream)))
   (file-length             (if (%broadcast-stream-streams stream)
-                               (file-length 
+                               (file-length
                                 (first (last (%broadcast-stream-streams stream))))
                                0))
   (file-position           (if (%broadcast-stream-streams stream)

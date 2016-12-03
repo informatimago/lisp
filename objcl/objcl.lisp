@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Objective-CL: Objective-C­like syntax
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -16,19 +16,19 @@
 ;;;;    Cannot read comments inside [] quite well.
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2010 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -119,7 +119,7 @@ Basically the same as *lisp-readtable*, but with readtable-case set to :preserve
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  
+
   (defun split-string (string &optional (separators " "))
    "
 NOTE:   current implementation only accepts as separators
@@ -211,7 +211,7 @@ RETURN: a list containing the selector, a list of parameters, and the rest param
                (t
                 (error "Expecpted a type specifier in parentheses instead of '~C'"
                        next-char))))
-           ;; objcl-identifier ':' 
+           ;; objcl-identifier ':'
            (setf next-char (skip-spaces stream))
            (cond
              ((or (null next-char) (char= #\) next-char))
@@ -260,7 +260,7 @@ RETURN: a list containing the selector, a list of parameters, and the rest param
                (error "Missing argument after selector part ~A:" (car (last selector 2))))
              (push (let ((*readtable* *lisp-readtable*)) (read stream t nil t))
                    arguments))
-           ;; objcl-identifier ':' 
+           ;; objcl-identifier ':'
            (setf next-char (skip-spaces stream))
            (cond
              ((or (null next-char) (char= #\] next-char))
@@ -491,12 +491,12 @@ and generate a message sending form.
 
 ;; (defun class-definition (stream)
 ;;   (apply (function generate-class-definition) (read-class-definition stream)))
-;; 
-;; 
+;;
+;;
 ;; (defun class-method-definition (stream)
 ;;   (apply (function generate-method-definition) :+ (read-method-definition stream)))
-;; 
-;; 
+;;
+;;
 ;; (defun instance-method-definition (stream)
 ;;   (apply (function generate-method-definition) :- (read-method-definition stream)))
 
@@ -608,7 +608,7 @@ Assumes the '[' has been read already.
       #+testing
       (print (loop
                 for str = cstring
-                for i from 0 
+                for i from 0
                 for ch = (ccl:%get-unsigned-byte str i)
                 while (plusp ch)
                 collect ch))
@@ -625,7 +625,7 @@ Assumes the '[' has been read already.
       #+testing
       (print (loop
                 for str = cstring
-                for i from 0 
+                for i from 0
                 for ch = (ccl:%get-unsigned-byte str i)
                 while (plusp ch)
                 collect ch))
@@ -669,7 +669,7 @@ argument lisp string."
 (eval-when (:execute :compile-toplevel :load-toplevel)
 
   (defstruct objc-constant-string
-    string 
+    string
     nsstringptr)
 
   #-(and)

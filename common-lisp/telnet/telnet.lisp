@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Implements the TELNET protocol.
 ;;;;
 ;;;;    Features:
@@ -28,12 +28,12 @@
 ;;;;
 ;;;;    - Implements the END-OF-RECORD option.
 ;;;;
-;;;;    
+;;;;
 ;;;;
 ;;;;
 ;;;;
 ;;;;    The following RFCs are implemented (checked 'v'):
-;;;;    
+;;;;
 ;;;;  v RFC 854
 ;;;;  v RFC 855
 ;;;;  v RFC 856
@@ -44,46 +44,46 @@
 ;;;;    RFC 861 EXTENDED-OPTION-LIST
 ;;;;
 ;;;;    RFC 854, RFC 855, RFC 856, RFC 857, RFC 858. RFC 859, RFC 860, RFC 861
-;;;;    
+;;;;
 ;;;;        The base telnet protocol specification. These describe the basic
 ;;;;        protocol, and the first set of supported sub-options.
-;;;;    
+;;;;
 ;;;;  v RFC 885
-;;;;    
+;;;;
 ;;;;        The End of Record option. I'm not sure what this is used for, but
 ;;;;        I suspect that the IBM 3270 telnet spec may use it. It also adds a
 ;;;;        new IAC escape sequence (EOR) to the set defined in RFC 854.
-;;;;    
+;;;;
 ;;;;    RFC 927
-;;;;    
+;;;;
 ;;;;        A way to send a user ID in order to avoid having to have a login
 ;;;;        prompt.
-;;;;    
+;;;;
 ;;;;    RFC 933
-;;;;    
+;;;;
 ;;;;        A way to send a piece of text flagged as a 'banner' that is
 ;;;;        constantly displayed on the screen. This is a DoD request so they
 ;;;;        can avoid constantly resending banners that label things as 'top
 ;;;;        secret'.
-;;;;    
+;;;;
 ;;;;    RFC 1041
-;;;;    
+;;;;
 ;;;;        This describes a method to handle 3270 terminals via telnet.
-;;;;    
+;;;;
 ;;;;    RFC 1073
-;;;;    
+;;;;
 ;;;;        This describes a way for telnet sessions to say something when the
 ;;;;        size of their display window changes.
-;;;;    
+;;;;
 ;;;;    RFC 1079
-;;;;    
+;;;;
 ;;;;        How to send information about what baud rate your connection is on
 ;;;;        so programs can make decisions based on this. emacs, for example,
 ;;;;        chooses and uglier, but much more efficient redraw method for
 ;;;;        lower baud rates.
-;;;;    
+;;;;
 ;;;;    RFC 1091
-;;;;    
+;;;;
 ;;;;        This describes a way for a server to query a client about terminal
 ;;;;        types supported by the client's display. One might believe that
 ;;;;        RFC 1408 obsoletes this, but this also describes a way for the
@@ -91,93 +91,93 @@
 ;;;;        type, which can't really be done using the protocol described in
 ;;;;        RFC 1408. For exchanging terminal type information, this protocol
 ;;;;        is preferred over RFC 1408.
-;;;;    
+;;;;
 ;;;;    RFC 1096
-;;;;    
+;;;;
 ;;;;        Describes a method by which a server can query a client about what
 ;;;;        X11 display it is on. This is definitely obsoleted by RFC
 ;;;;        1408. Future implementations need to udnerstand this mechanism of
 ;;;;        transferring X display information, but the protocol specififed in
 ;;;;        RFC 1408 is the preferred method.
-;;;;    
+;;;;
 ;;;;    RFC 1097
-;;;;    
+;;;;
 ;;;;        This describes a protocol that can be used to flag messages as
 ;;;;        being subliminal messages.
-;;;;    
+;;;;
 ;;;; v  RFC 1143
-;;;;    
+;;;;
 ;;;;        This describes, in detail, option negotion loop problems in the
 ;;;;        telnet protocol, and how to avoid them when writing a telnet
 ;;;;        implementation.
-;;;;    
+;;;;
 ;;;;    RFC 1116, RFC 1184
-;;;;    
+;;;;
 ;;;;        These two describe how to handle line-at-a-time mode. RFC 1184
 ;;;;        obsoletes RFC 1116, but linemode is complex, and having both RFCs
 ;;;;        would probably clarify things. Also, linemode adds several IAC
 ;;;;        escapes (EOF, SUSP, and ABORT) to the base set defined in RFC 854.
-;;;;    
+;;;;
 ;;;;    RFC 1205
-;;;;    
+;;;;
 ;;;;        So, you want to pretend to be an IBM 5250 terminal....
-;;;;    
+;;;;
 ;;;;    RFC 1372
-;;;;    
+;;;;
 ;;;;        Describes a protocol for handling flow control. This is mainly
 ;;;;        concerned with user-level flow control, like hitting Control-S to
 ;;;;        pause output.
-;;;;    
+;;;;
 ;;;;    RFC 1408, RFC 1571
-;;;;    
+;;;;
 ;;;;        Describes a protocol for sending environment variables from client
 ;;;;        to server in the telnet protocol. This protocol could be used
 ;;;;        instead of the terminal type (RFC 1091) and X11 display (RFC 1096)
 ;;;;        protocols.
-;;;;    
-;;;;    
-;;;;    
+;;;;
+;;;;
+;;;;
 ;;;;        Both of these RFCs are mentioned because the reference
 ;;;;        implementation of RFC 1408 disagreed with the actual
 ;;;;        implementation. RFC 1571 describes a method for resolving the
 ;;;;        ambiguity. Because of this, the nearly identical protocol
 ;;;;        described in RFC 1572 is the preferred method of sending
 ;;;;        environment variables.
-;;;;    
+;;;;
 ;;;;    RFC 1416
-;;;;    
+;;;;
 ;;;;        Describes a protocol for sending authentication information back
 ;;;;        and forth between client and server. This protocol uses magic
 ;;;;        numbers defined in RFC 1700 to indicate which authentication
 ;;;;        method will be used, or is supported.
-;;;;    
+;;;;
 ;;;;    RFC 1411
-;;;;    
+;;;;
 ;;;;        Describes how to use the protocol described in RFC 1416 to do
 ;;;;        KERBEROS_V4 authentication.
-;;;;    
+;;;;
 ;;;;    RFC 1572
-;;;;    
+;;;;
 ;;;;        Describes an alternate environment variable passing protocol that
 ;;;;        fixes the ambiguities between the reference implementation, and
 ;;;;        the text of the spec in RFC 1408 and RFC 1571. This is the
 ;;;;        preferred environment variable passing protocol.
-;;;;    
+;;;;
 ;;;;    RFC 2066
-;;;;    
+;;;;
 ;;;;        Describes a protocol that can be used to negotiate a character set
 ;;;;        and input translations primarily for multi-lingual telnet.
-;;;;    
+;;;;
 ;;;;    RFC 2217
-;;;;    
+;;;;
 ;;;;        Describes a protocol that can be used to exchange RS232 parameters
 ;;;;        and modem control line state change information via telnet. This
 ;;;;        is so telnet can be used as an interface to a modem pool or
 ;;;;        terminal server.
-;;;;    
-;;;;    
-;;;;    
-;;;;    
+;;;;
+;;;;
+;;;;
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -185,19 +185,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -231,7 +231,7 @@ send and receive option negotiation messages.
        options --------------->| NETWORK-VIRTUAL-TERMINAL |
                                +--------------------------+
                                   |       ^     |
-                                  v       |     v             
+                                  v       |     v
                        +------------+     |   +-----------------+
                        | OPTION-MGR |*    |   | NVT-DOWN-SENDER |
                        +------------+     |   +-----------------+
@@ -240,8 +240,8 @@ send and receive option negotiation messages.
                                       +--------------+
                                       | down:GSTREAM |
                                       +--------------+
-                
-                
+
+
 Arrows represent method calls.
 
 Typically, GSTREAM may be gray-streams, but that could be any kind of
@@ -352,7 +352,7 @@ BYTE: a VECTOR of (UNSIGNED-BYTE 8)."))
 (defgeneric send-text    (nvt text)
   (:documentation "Send the ASCII text.
 NVT:  a NETWORK-VIRTUAL-TERMINAL instance.
-TEXT: a string containing only printable ASCII characters and #\newline.")) 
+TEXT: a string containing only printable ASCII characters and #\newline."))
 
 (defgeneric send-control (nvt control)
   (:documentation "Send a function control code.
@@ -436,7 +436,7 @@ OPTION-NAME: a keyword or fixnum  denoting the option.
 WHO:         (member nil :us :him)."))
 
 
-(defun (setf option-enabled-p) (flag nvt option-name &optional who) 
+(defun (setf option-enabled-p) (flag nvt option-name &optional who)
   "Enable or disable the option according to the boolean FLAG.
 OPTION-NAME: a keyword or fixnum denoting an option."
   (if flag
@@ -475,7 +475,7 @@ starting with IAC SB and ending with IAC SE."))
 ;;; Telnet protocol codes.
 ;;;
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  
+
   (defconstant IAC  255
     "Interpret As Command.")
 
@@ -617,7 +617,7 @@ accompanied by a TCP Urgent notification.")
 
   (defconstant MODE-MASK             #x1f)
 
-  ;; Not part of protocol, but needed to simplify things... 
+  ;; Not part of protocol, but needed to simplify things...
   (defconstant MODE-FLOW            #x0100)
   (defconstant MODE-ECHO            #x0200)
   (defconstant MODE-INBIN           #x0400)
@@ -719,30 +719,30 @@ accompanied by a TCP Urgent notification.")
 
 ;; (defconstant CR     13
 ;;   "")
-;; 
+;;
 ;; (defconstant FF     12
 ;;   "Moves the printer to the top of the next page, keeping the same
 ;; horizontal position.")
-;; 
+;;
 ;; (defconstant VT     11
 ;;   "Moves the printer to the next vertical tab stop.  It remains
 ;; unspecified how either party determines or establishes where such
 ;; tab stops are located.")
-;; 
+;;
 ;; (defconstant LF     10
 ;;   "")
-;; 
+;;
 ;; (defconstant HT     9
 ;;   "Moves the printer to the next horizontal tab stop. It remains
 ;; unspecified how either party determines or establishes where such
 ;; tab stops are located.")
-;; 
+;;
 ;; (defconstant BS     8
 ;;   "Moves the print head one character position towards the left margin.")
-;; 
+;;
 ;; (defconstant BEL    7
 ;;   "Produces an audible or visible signal (which does NOT move the print head).")
-;; 
+;;
 ;; (defconstant NUL    0
 ;;   "")
 
@@ -825,7 +825,7 @@ accompanied by a TCP Urgent notification.")
 ;;; RFC1143: The Q Method of Implementing TELNET Option Negotiation
 ;;;
 
-(deftype telnet-action     () '(member :do :dont :will :wont))  
+(deftype telnet-action     () '(member :do :dont :will :wont))
 (deftype side-option-state () '(member :no :want-no :want-yes :yes))
 (deftype side-option-queue () '(member :empty :opposite))
 (deftype ubyte () '(unsigned-byte 8))
@@ -1122,7 +1122,7 @@ WHO:         (member nil :us :him).")
 ;;; This implementation moves eaten bytes down the vector, assuming
 ;;; there won't be a lot of remaining bytes to move.  If this
 ;;; assumption reveals itself false, then another implementation,
-;;; could be written.  
+;;; could be written.
 
 (declaim (inline make-buffer buffer-length buffer-ref buffer-subseq
                  buffer-search buffer-clear))
@@ -1292,7 +1292,7 @@ NOTE: To send other characters than printable ASCII characters, use SEND-BINARY.
 NVT:  a NETWORK-VIRTUAL-TERMINAL instance.
 TEXT: a string containing only printable ASCII characters and #\newline."
   (let ((processed-bytes (process-text text)))
-    (send-binary nvt processed-bytes))) 
+    (send-binary nvt processed-bytes)))
 
 
 (defmethod send-control ((nvt network-virtual-terminal) control)
@@ -1417,7 +1417,7 @@ LEN:  number of bytes from START that belong to the message."
              (or (= command WILL) (= command WONT)
                  (= command DO)   (= command DONT)))
            (return-from parse-message (values :iac 3)))
-          (t 
+          (t
            (return-from parse-message (values :iac 2)))))))
 
 
@@ -1426,7 +1426,7 @@ LEN:  number of bytes from START that belong to the message."
   "
 PRE:  (/= IAC (aref buffer (- end 1)))
       Actually: buffer contains no other occurence of IAC than IAC IAC pairs.
-RETURN: the new lengnth. 
+RETURN: the new lengnth.
 "
   (loop
     :with j = start
@@ -1446,7 +1446,7 @@ RETURN: the new lengnth.
 Split the text into printable chunks and control chunks.
 Control chunks contain only a single control code.
 Printable chunks may contain CR-LF sequences.
-BYTES:  contains telnet text from START to END. 
+BYTES:  contains telnet text from START to END.
 RETURN: (values :incomplete next) if the bytes are incomplete (CR alone).
         (values :text next) if the bytes contain only ASCII printable codes and CR-LF.
         (values :control next code) if the bytes contain a control code.
@@ -1469,7 +1469,7 @@ NEXT:   the index of the first unprocessed byte. (<= START NEXT END)
              (return-from get-next-chunk (values :incomplete i))
              (if (= lf (aref bytes (1+ i)))
                  ;; cr-lf goes to the string.
-                 (incf i 2) 
+                 (incf i 2)
                  ;; cr-nul, or cr alone is a CR control code.
                  (if (< start i)
                      (return-from get-next-chunk (values :text i))
@@ -1509,7 +1509,7 @@ RETURN: the length of bytes processed.
   ;; interesting signals: IP AO AYT (not EC EL), other IAC.
   ;; if (option-enabled-p nvt :echo) the echo back the
   ;; text to the remote.
-  
+
   (multiple-value-bind (kind len iac-iac) (parse-message bytes start end)
     (case kind
       ((nil)
@@ -1560,7 +1560,7 @@ RETURN: the length of bytes processed.
                      (receive-control (up-sender nvt) :go-ahead)))
          (#.DM     (if (urgent-mode-p nvt)
                        (setf (urgent-mode-p nvt) nil)
-                       #|ignored in non-urgent mode|#))          
+                       #|ignored in non-urgent mode|#))
          (#.EL     (unless (urgent-mode-p nvt) (receive-control (up-sender nvt) :erase-line)))
          (#.EC     (unless (urgent-mode-p nvt) (receive-control (up-sender nvt) :erase-character)))
          (#.BRK    (unless (urgent-mode-p nvt) (receive-control (up-sender nvt) :break)))
@@ -1577,7 +1577,7 @@ RETURN: the length of bytes processed.
                      (when (option-enabled-p nvt :echo :us)
                        (send (down-sender nvt) bytes start (+ start len)))
                      (receive-binary (up-sender nvt) iac)))
-         (#.NOP)         
+         (#.NOP)
          (otherwise (cerror "Ignore the command."
                             'telnet-unknown-command-error
                             :nvt nvt
@@ -1667,7 +1667,7 @@ with SE;  Any data byte equal to SE or IAC should be duplicated.
 
     SB OPTION-CODE … SE
 
-BUFFER: An adjustable vector with a fill-pointer.  
+BUFFER: An adjustable vector with a fill-pointer.
 
 \(Used by SEND-STATUS of class STATUS to encode the SB statuses.)
 ")
@@ -1762,7 +1762,7 @@ OPTION: an OPTION instance"
 (defmethod enable-option    ((nvt network-virtual-terminal) option-name &optional who)
   "Initiate the negotiation to enable the option.
 OPTION-NAME: a keyword or fixnum denoting the option.
-RETURN: The OPTION instance." 
+RETURN: The OPTION instance."
   (let ((opt (init-option-name nvt option-name)))
     (ecase who
       ((nil)  (want-do opt nvt) (want-will opt nvt))

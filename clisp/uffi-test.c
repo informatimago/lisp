@@ -152,5 +152,5 @@
         fflush(stdout);
         return(&stored_record);
     }
-    
+
 /*** uffi-test.c                      --                     --          ***/

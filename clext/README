@@ -18,7 +18,7 @@ com.informatimago.clext.character-sets
 com.informatimago.clext.closer-weak
     This system defines a package providing a portability layer for
     weak pointers and related structures on ccl, clisp, sbcl and cmu.
-    
+
 com.informatimago.clext.pipe
     This system defines a package exporting a pipe abstraction
     connecting an output stream to an input stream thru a queue or a

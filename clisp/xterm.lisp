@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    This package exports functions to open xterm streams.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2005 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -50,7 +50,7 @@
   (:shadowing-import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY" "WITH-GENSYMS")
   (:shadowing-import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST" "PROPER-LIST-P")
   (:export
-   "*XTERM-FONT*" "MAKE-XTERM-IO-STREAM" "SERVER-REPL" 
+   "*XTERM-FONT*" "MAKE-XTERM-IO-STREAM" "SERVER-REPL"
    "XTERM-LISTENER" "FORK-XTERM-LISTENER"))
 (in-package "COM.INFORMATIMAGO.CLISP.XTERM")
 
@@ -78,11 +78,11 @@
                                      :external-format external-format))
                  (read-line s)))
          tty-name xio)
-    (with-open-stream 
+    (with-open-stream
         (status (ext:run-program "bash"
-                  :arguments 
+                  :arguments
                   (list "-c"
-                        (format nil 
+                        (format nil
                           "rm -f ~S;~
                            mknod ~S p;~
                            (xterm ~:[~;~:*-display ~S~] ~
@@ -90,7 +90,7 @@
                              -fn '~A' -n ~S -T ~S ~
                              -e 'stty intr undef quit undef susp undef;~
                                  tty>>~S;cat ~S'||echo :FAILURE)~
-                           &sleep 1;echo :SUCCESS" 
+                           &sleep 1;echo :SUCCESS"
                           pipe pipe display
                           foreground background font
                           title title pipe pipe))
@@ -107,27 +107,27 @@
         (delete-file pipe)
         (close (two-way-stream-input-stream xio))
         (close (two-way-stream-output-stream xio))
-        (remove-method (function close) 
+        (remove-method (function close)
                        (find-method (function close)
                                     '(:after) `((eql ,xio)))))
       xio)))
 
 
 ;; (with-open-file (out "/tmp/err" :direction :output
-;;                  :if-does-not-exist :create :if-exists :append) 
+;;                  :if-does-not-exist :create :if-exists :append)
 ;;   (format out "~&simple-condition: ")
 ;;   (apply (function format) out
 ;;          (simple-condition-format-control   err)
 ;;          (simple-condition-format-arguments err))
-;;   (format out "~&streams = ~%~{    ~S~%~}~%" 
-;;           (list *STANDARD-INPUT* *STANDARD-OUTPUT* 
+;;   (format out "~&streams = ~%~{    ~S~%~}~%"
+;;           (list *STANDARD-INPUT* *STANDARD-OUTPUT*
 ;;                 *ERROR-OUTPUT* *QUERY-IO* *TRACE-OUTPUT* *DEBUG-IO*))
 ;;   (format out "~&DONE~%~%"))
 ;; (apply (function format) *standard-output*
 ;;        (simple-condition-format-control   err)
 ;;        (simple-condition-format-arguments err))
-;; (with-open-file (out "/tmp/err" :direction :output 
-;;                 :if-does-not-exist :create :if-exists :append) 
+;; (with-open-file (out "/tmp/err" :direction :output
+;;                 :if-does-not-exist :create :if-exists :append)
 ;;   (format out "~&done on standard output~&"))
 
 
@@ -148,7 +148,7 @@
        (format t "~& --> ~{~S~^ ;~%     ~}~%" /)))))
 
 
-(defun xterm-listener (&key (display ":0.0") (title "CLISP LISTENER") 
+(defun xterm-listener (&key (display ":0.0") (title "CLISP LISTENER")
                        (foreground "green") (background "black")
                        (font  *xterm-font*)
                        (element-type 'character)
@@ -161,7 +161,7 @@
                                      :element-type element-type
                                      :external-format external-format)))
     (when xterm
-      (unwind-protect 
+      (unwind-protect
            (let ((*query-io*        xterm)
                  (*standard-input*  xterm)
                  (*standard-output* xterm)

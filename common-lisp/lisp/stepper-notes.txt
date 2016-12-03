@@ -15,7 +15,7 @@ TODO
 - implement a cl-stepper:break to integrate with the stepper.
 
 - improve interactivity when entering the stepper upon a break (on
-  entry or exit).  
+  entry or exit).
 
      + We want to be able to continue to next break.
 
@@ -165,5 +165,5 @@ This would prevent their instrumenting by IBCL-like macros.
 .. comment:  -----------------------------------------------
                             -------------
                                   -
-                                  .    
+                                  .
 

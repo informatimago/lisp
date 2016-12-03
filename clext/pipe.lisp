@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Implements a pipe using Gray streams and bordeaux-threads.
 ;;;;
 ;;;;    The data written to the pipe-output-stream is queued (if a maximum
@@ -26,19 +26,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -148,10 +148,10 @@ from an input stream and an output stream."))
   ;; Otherwise buffer is a vector of element-type, and head
   ;; and tail are indices in that vector.  In that case, not-full
   ;; is a gate.
-  
+
   ;; New elements are enqueued on tail; old elements are dequeued
   ;; from head.
-  
+
   (:documentation "A pipe with a fixed-size circular buffer."))
 
 
@@ -181,10 +181,10 @@ from an input stream and an output stream."))
   ;; When buffer is NIL then head is a list of cells, with
   ;; tail refering the last cons in that list.  In this case,
   ;; not-full is NIL.
-  
+
   ;; New elements are enqueued on tail; old elements are dequeued
   ;; from head.
-  
+
   (:documentation "A pipe with a variable length queue of blocks."))
 
 (defmethod print-object ((pipe queued-pipe) stream)
@@ -322,7 +322,7 @@ else blocks until there's enough space.
 (defgeneric pipe-dequeue-sequence (pipe sequence start end)
   (:documentation "
 If (- end start) is more than the buffer-size then signal an error
-else if there's more than (- end start) elements  in the buffer, 
+else if there's more than (- end start) elements  in the buffer,
 then dequeues them into the subseq of SEQUENCE between START and END,
 else blocks until there's enough data available.
 
@@ -558,7 +558,7 @@ when it's the case, end-of-file is detected upon reading on an empty pipe.")
                result)))
       (with-lock-held ((lock pipe))
         (loop
-          (when (%wait-not-empty-or-closed pipe)            
+          (when (%wait-not-empty-or-closed pipe)
             (return (values (concatenate-chunks) t #|=eof|#)))
           ;; read what we can:
           (let ((blk (car (head pipe))))
@@ -811,7 +811,7 @@ when it's the case, end-of-file is detected upon reading on an empty pipe.")
     (unless (sunk-pipe-p pipe)
       (pipe-enqueue-sequence pipe sequence start end))
     sequence))
- 
+
 (defmethod stream-read-sequence ((stream pipe-character-input-stream) sequence start end &key &allow-other-keys)
   (check-stream-open stream 'stream-read-sequence)
   (%stream-read-sequence stream sequence start end))
@@ -852,7 +852,7 @@ when it's the case, end-of-file is detected upon reading on an empty pipe.")
 ;;   (with-lock-held ((lock pipe))
 ;;     (loop :until (%pipe-emptyp pipe)
 ;;           :do (condition-wait (empty pipe) (lock pipe)))))
-;; 
+;;
 ;; (defmethod stream-finish-output ((stream pipe-character-output-stream))
 ;;   (pipe-finish-output (pipe-stream-pipe stream)))
 ;; (defmethod stream-finish-output ((stream pipe-binary-output-stream))

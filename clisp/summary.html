@@ -67,15 +67,15 @@ An implementation of SUSv3 for clisp.
 The Open Group Base Specifications Issue 6
 IEEE Std 1003.1, 2003 Edition
 http://www.opengroup.org/onlinepubs/007904975/index.html
-Rules: 
+Rules:
 - The various scalar types are all mapped to INTEGER.
-[There is a multitude of scalar type declaration in 
+[There is a multitude of scalar type declaration in
 the C POSIX API (pid_t, gid_t, mode_t, etc) because
-C has modulo integers. Lisp have true integers, so 
+C has modulo integers. Lisp have true integers, so
 they're not useful.]
 http://www.opengroup.org/onlinepubs/009695399/xrat/xsh_chap02.html#tag_03_02_12
 - symbol are upcased, underlines replaced with dash,
-structure field prefixes are removed. 
+structure field prefixes are removed.
 Constant names are NOT decorated by any '+'.
 - pointers: addresses are returned as integers.
 [It's easiest to keep addresses as integers instead of

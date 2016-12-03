@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    See defpackage documentation string.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -20,19 +20,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2005 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -67,30 +67,30 @@
    "VECTOR-EMPTYP" "VECTOR-FIRST" "VECTOR-LAST" "VECTOR-REST"
    "VECTOR-BUTLAST" "VECTOR-DELETE"
    "NUDGE-DISPLACED-VECTOR" "DISPLACED-VECTOR"
-   
+
    "ARRAY-TO-LIST" "COPY-ARRAY"
    "ARRAY-EQUAL-P")
   (:documentation
    "
 This package exports a few array utility functions.
-    
+
 
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2005 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -122,7 +122,7 @@ EXAMPLE:    (positions 'a #(a door a window a big hole and a bucket) :start 1)
                           :start start :end cur-end
                           args)
           :while (and p (or (null count) (<= 0 (decf count))))
-          :do (push p result) 
+          :do (push p result)
           :finally (return result))
         (loop
           :for cur-start = start :then (1+ p)
@@ -259,12 +259,12 @@ COPY-DISPLACEMENT:  Indicate whether the copy must be an array
                       :element-type (array-element-type array)
                       :displaced-to disto
                       :displaced-index-offset disoff
-                      :adjustable (when copy-adjustable 
+                      :adjustable (when copy-adjustable
                                     (adjustable-array-p array))
                       :fill-pointer (when copy-fill-pointer
                                       (fill-pointer array)))))))
   (let ((copy (make-array (array-dimensions array)
-                          :adjustable (when copy-adjustable 
+                          :adjustable (when copy-adjustable
                                         (adjustable-array-p array))
                           :fill-pointer (when copy-fill-pointer
                                           (fill-pointer array))
@@ -293,7 +293,7 @@ EXAMPLE:    (array-to-list #3A(((1 2 3) (4 5 6)) ((a b c) (d e f))))
         :collect (progn
                    (adjust-array subarray (array-dimensions subarray)
                                  :displaced-to array
-                                 :displaced-index-offset 
+                                 :displaced-index-offset
                                  (apply (function *) i
                                         (rest (array-dimensions array))))
                    (array-to-list subarray)))))
@@ -314,16 +314,16 @@ SEE ALSO:   COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY:NSUBSEQ
       (progn
         (setf end (or end  (length array)))
         (assert (<= 0 start (length array)) (start)
-                "START should be an integer between 0 and ~D, not ~D" 
+                "START should be an integer between 0 and ~D, not ~D"
                 (length array) start)
         (assert (<= start end (length array)) (end)
                 "END should be an integer between ~D and ~D, not ~D"
                 start (length array) end)
-        (make-array  (list (- end start)) 
+        (make-array  (list (- end start))
                      :element-type (array-element-type array)
                      :adjustable t
                      :fill-pointer fill-pointer
-                     :displaced-to array 
+                     :displaced-to array
                      :displaced-index-offset start))
       (make-array (array-total-size array)
                   :element-type (array-element-type array)

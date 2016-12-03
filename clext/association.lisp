@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Macros definitions for the objecteering metamodel.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@anevia.com>
 ;;;;MODIFICATIONS
@@ -17,18 +17,18 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
-;;;;    
+;;;;
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;*************************************************************************
@@ -192,7 +192,7 @@ RETURN:        MIN; MAX"
               (min max) "Invalid multiplicity ~A" multiplicity)
       (values min max)))
 
-   
+
 
   (defun xor   (a b) (if a (not b) b))
   (defun imply (p q) (or (not p) q))
@@ -225,18 +225,18 @@ RETURN:        MIN; MAX"
   ;; 0..n
   ;; 1..1
   ;; n..m
-  ;; 0..* 
+  ;; 0..*
   ;; 1..*
   ;; n..*
-  ;; 
+  ;;
   ;;                                        n-1     n-m,1<m
-  ;; set             o           (k o)       
+  ;; set             o           (k o)
   ;; add             o           (k o)
   ;; remove          o              o
   ;; contains        o              o
   ;; get             x             x
   ;; size            x             x
-  ;; clear           x             x 
+  ;; clear           x             x
   ;; remove-key                   k
   ;; contains-key                 k
   ;;
@@ -245,8 +245,8 @@ RETURN:        MIN; MAX"
   ;; (a . role . remove b)         (asso-unlink a b)         (b . role . remove a)
   ;; (a . role . contains b)       (asso-contains-p a b)     (b . role . contains a)
   ;; (a . role . get) -> b                =/=                (b . role . get) -> a
-  ;; (a . role . size) -> n1   =/= (asso-size)           =/= (b . role . size) -> n2  
-  ;; (a . role . clear)        =/= (asso-clear)          =/= (b . role . clear)       
+  ;; (a . role . size) -> n1   =/= (asso-size)           =/= (b . role . size) -> n2
+  ;; (a . role . clear)        =/= (asso-clear)          =/= (b . role . clear)
   ;; (a . role . remove-key k1)           =/=                (b . role . remove-key k2)
   ;; (a . role . contains-key k1)         =/=                (b . role . contains-key k2)
   ;; (a . role . add  k1 b)    =/= (asso-link k2 a k1 b) =/= (b . role . add k2 b)
@@ -356,7 +356,7 @@ RETURN:        MIN; MAX"
                     `(progn (assert (not (find ,value ,(slot) :test ,this-test :key ,this-key)))
                            (setf ,(slot) (add-new-element ,(slot) ,(value)
                                                           ,@(if this-lessp-givenp
-                                                              `(:lessp ,this-lessp) 
+                                                              `(:lessp ,this-lessp)
                                                               `(:test ,this-test))
                                                           :key ,this-key)))
                    `(progn (assert (not (find ,value ,(slot) :test ,this-test :key ,this-key)))
@@ -369,14 +369,14 @@ RETURN:        MIN; MAX"
                          ,(if this-ordered
                             `(setf ,(slot) (add-new-element ,(slot) ,(value)
                                                             ,@(if this-lessp-givenp
-                                                                `(:lessp ,this-lessp) 
+                                                                `(:lessp ,this-lessp)
                                                                 `(:test ,this-test))
                                                             :key ,this-key))
                             `(push ,(value) ,(slot)))
                            (cerror "Endpoint ~A of association ~A is full, maximum multiplicity is ~A is reached."
                                    ',this-role ',association-name ',this-max)))))))))))))
 
-  
+
   (defun generate-remove (association-name value object this)
     (destructuring-bind (this-role &key
                                    ((:slot this-slot))
@@ -415,7 +415,7 @@ RETURN:        MIN; MAX"
                                    (eq 'identity this-copy))
                                value
                                `(,this-copy  ,value))))
-            ;; 1-1   unlink        reference   (error)    
+            ;; 1-1   unlink        reference   (error)
             ;; 0-1   unlink        reference   (setf as nil)
             ;;
             ;; 1-*   unlink        list        (if (< 1 (length as)) (setf as (delete o as :test test)) (error))
@@ -447,7 +447,7 @@ RETURN:        MIN; MAX"
                                         ',this-role ',association-name
                                         ',this-min)))))))))))))
 
-  
+
   (defun generate-contains-p (association-name value object this)
     (declare (ignore association-name))
     (destructuring-bind (this-role &key
@@ -548,13 +548,13 @@ RETURN:        MIN; MAX"
 ;; QUALIFIER
 ;; "
 ;;   )
-;; 
+;;
 ;; (defclass employer ()
 ;;   ())
-;; 
+;;
 ;; (defclass employee ()
 ;;   ())
-;; 
+;;
 ;; (define-association employs
 ;;   (employers :type employer
 ;;              :multiplicity 0-*
@@ -563,10 +563,10 @@ RETURN:        MIN; MAX"
 ;;              :qualifier emp-number
 ;;              :multiplicity 1
 ;;              :implementation hash-table))
-;; 
+;;
 ;; (defclass employer ()
 ;;   ((employees :initform (make-hash-table))))
-;; 
+;;
 ;; (defclass employee ()
 ;;   ((employers :initform '())))
 
@@ -605,7 +605,7 @@ ACCESSOR and SLOT are optional, and mutually exclusive.
     absent    absent    Role name   Role Name       Yes      Yes     slot
                         When both :accessor and :slot are absent, the role
                         name is used to create a slot with an accessor in
-                        the associated class. 
+                        the associated class.
                         Note: In this case, :type must be given a class.
    --------  ---------  ----------  -------------  -------  ------  --------
     absent    present   Given slot     N/A           No       No     slot
@@ -736,7 +736,7 @@ BUGS:    If there is an error in handling one association end, after
                (when (first (second troles))
                  (list `(ensure-class-slot ',(first (first troles)) ',(second (second troles)))))
                (when (first (first troles))
-                 (list `(ensure-class-slot ',(first (second troles)) ',(second (first troles))))))) 
+                 (list `(ensure-class-slot ',(first (second troles)) ',(second (first troles)))))))
        (defun ,link (&key ,@link-parameters)
          ,(generate-addset name
                            (first link-parameters) (second link-parameters)

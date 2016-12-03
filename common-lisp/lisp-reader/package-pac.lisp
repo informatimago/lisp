@@ -61,7 +61,7 @@
   (:shadow "SIMPLE-TYPE-ERROR"
            "PRINT-NOT-READABLE" "PRINT-NOT-READABLE-OBJECT")
   (:shadow . #1=("SYMBOL"
-                 "SYMBOLP" "MAKE-SYMBOL" "SYMBOL-NAME" "SYMBOL-PACKAGE" 
+                 "SYMBOLP" "MAKE-SYMBOL" "SYMBOL-NAME" "SYMBOL-PACKAGE"
                  "SYMBOL-VALUE" "SYMBOL-FUNCTION" "SYMBOL-PLIST"
                  "BOUNDP" "FBOUNDP"
                  "KEYWORD" "KEYWORDP"
@@ -75,7 +75,7 @@
                  "*PACKAGE*"
                  "WITH-PACKAGE-ITERATOR"
                  "DO-SYMBOLS" "DO-EXTERNAL-SYMBOLS" "DO-ALL-SYMBOLS"
-                 "DEFPACKAGE" "IN-PACKAGE" 
+                 "DEFPACKAGE" "IN-PACKAGE"
                  "PACKAGE-ERROR" "PACKAGE-ERROR-PACKAGE"))
   (:export . #1#)
   ;; Additionnal conditions:

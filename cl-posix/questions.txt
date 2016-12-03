@@ -22,7 +22,7 @@ BASE SUSv3 conformant system.
 
     Con: There are quite a number of header dependencies anyway.
 
- 
+
   We already have a kind of splicing, with the various packages corresponding
   to the options.
 
@@ -32,7 +32,7 @@ BASE SUSv3 conformant system.
 - environment from lisp (extern char** environ;).
 
 - How to convert names of macro constants beginning with '_'?
-  They're "reserved" (in the C context).  
+  They're "reserved" (in the C context).
   Can we find another prefix?
   Would there be any name clash if we ignored the leading '_'?
   The only symbols starting with POSIX_ on linux are:
@@ -58,17 +58,17 @@ BASE SUSv3 conformant system.
         POSIX_TERMIOS
 
    There are 100 symbols starting with _POSIX_
-        
-        
-        
+
+
+
 ------------------- ---- ----------------- -------- --------------------------
   Header            Opt  Action            Ct+Ty+Fn Remarks
 ------------------- ---- ----------------- -------- --------------------------
 * aio.h             AIO  ToBeSpecified     8+1+8
-                          
+
                          I/O: C buffer (malloc'ed) or Common-Lisp buffer?
                               (passed as void*).
-                         Note: The structure could perhaps just be lisp 
+                         Note: The structure could perhaps just be lisp
                                arguments?
 ------------------- ---- ----------------- -------- --------------------------
 * arpa/inet.h       -    ToBeSpecified     0+0+8    A few converting functions.
@@ -97,14 +97,14 @@ BASE SUSv3 conformant system.
 * fcntl.h                ToBeSpecified     37+1+5
 ------------------- ---- ----------------- -------- --------------------------
 * fenv.h            CX   ?                 11+2+11
-                                           
+
                          Floating point environment control.
                          Is this needed in Common-Lisp?
                          (Implementation may overide or go around
                          this low-level stuff).
 ------------------- ---- ----------------- -------- --------------------------
 * float.h           CX
-                         Floating point parameters. 
+                         Floating point parameters.
                          Most probably, we won't need this,
                          but let's check that we have all the
                          parameters in Common-Lisp.
@@ -113,12 +113,12 @@ BASE SUSv3 conformant system.
 ------------------- ---- ----------------- -------- --------------------------
 * fnmatch.h              ToBeSpecified     5+0+1
 
-                         The functionality of MATCH-PATHNAME-P 
+                         The functionality of MATCH-PATHNAME-P
                          but for unix paths!
 ------------------- ---- ----------------- -------- --------------------------
 * ftw.h             XSI  ToBeSpecified     11+1+2   Directory Tree Walking
 ------------------- ---- ----------------- -------- --------------------------
-* glob.h                 ToBeSpecified     11+1+2   
+* glob.h                 ToBeSpecified     11+1+2
 ------------------- ---- ----------------- -------- --------------------------
 * grp.h                  ToBeSpecified     0+1+7
 ------------------- ---- ----------------- -------- --------------------------
@@ -188,7 +188,7 @@ BASE SUSv3 conformant system.
 ------------------- ---- ----------------- -------- --------------------------
 * spawn.h           SPN  ToBeSpecified     6+2+21
 ------------------- ---- ----------------- -------- --------------------------
-* stdarg.h               Ignored.    
+* stdarg.h               Ignored.
 ------------------- ---- ----------------- -------- --------------------------
 * stdbool.h              Ignored.                   COMMON-LISP:T/NIL
 ------------------- ---- ----------------- -------- --------------------------
@@ -220,55 +220,55 @@ BASE SUSv3 conformant system.
 ------------------- ---- ----------------- -------- --------------------------
 * sys/shm.h         XSI  ToBeSpecified     3+2+4
 ------------------- ---- ----------------- -------- --------------------------
-* sys/socket.h      
+* sys/socket.h
 ------------------- ---- ----------------- -------- --------------------------
-* sys/stat.h  
+* sys/stat.h
 ------------------- ---- ----------------- -------- --------------------------
-* sys/statvfs.h  
+* sys/statvfs.h
 ------------------- ---- ----------------- -------- --------------------------
-* sys/time.h  
+* sys/time.h
 ------------------- ---- ----------------- -------- --------------------------
-* sys/timeb.h  
+* sys/timeb.h
 ------------------- ---- ----------------- -------- --------------------------
-* sys/times.h  
+* sys/times.h
 ------------------- ---- ----------------- -------- --------------------------
-* sys/types.h  
+* sys/types.h
 ------------------- ---- ----------------- -------- --------------------------
-* sys/uio.h  
+* sys/uio.h
 ------------------- ---- ----------------- -------- --------------------------
-* sys/un.h  
+* sys/un.h
 ------------------- ---- ----------------- -------- --------------------------
-* sys/utsname.h  
+* sys/utsname.h
 ------------------- ---- ----------------- -------- --------------------------
-* sys/wait.h  
+* sys/wait.h
 ------------------- ---- ----------------- -------- --------------------------
-* syslog.h  
+* syslog.h
 ------------------- ---- ----------------- -------- --------------------------
-* tar.h  
+* tar.h
 ------------------- ---- ----------------- -------- --------------------------
-* termios.h  
+* termios.h
 ------------------- ---- ----------------- -------- --------------------------
-* tgmath.h  
+* tgmath.h
 ------------------- ---- ----------------- -------- --------------------------
-* time.h  
+* time.h
 ------------------- ---- ----------------- -------- --------------------------
-* trace.h  
+* trace.h
 ------------------- ---- ----------------- -------- --------------------------
-* ucontext.h  
+* ucontext.h
 ------------------- ---- ----------------- -------- --------------------------
-* ulimit.h  
+* ulimit.h
 ------------------- ---- ----------------- -------- --------------------------
-* unistd.h  
+* unistd.h
 ------------------- ---- ----------------- -------- --------------------------
-* utime.h  
+* utime.h
 ------------------- ---- ----------------- -------- --------------------------
-* utmpx.h  
+* utmpx.h
 ------------------- ---- ----------------- -------- --------------------------
-* wchar.h  
+* wchar.h
 ------------------- ---- ----------------- -------- --------------------------
-* wctype.h  
+* wctype.h
 ------------------- ---- ----------------- -------- --------------------------
-* wordexp.h  
+* wordexp.h
 ------------------- ---- ----------------- -------- --------------------------
 
 
@@ -281,5 +281,5 @@ Dependencies:
 
     Macro assert: Macro NDEBUG
     fcntl.h: unistd.h sys/stat.h
-    
+
     printf scanf: inttypes

@@ -22,7 +22,7 @@
   <p>Example:</p>
   <pre class="dribble">
 CL-USER&gt; (RPSLS:main RPSLS::*rock-paper-scissors-gun-dynamite-nuke-lightning-devil-dragon-alien-water-bowl-air-moon-sponge-wolf-cockroach-tree-man-woman-monkey-snake-axe-fire-sun*)
-Please choose an item amongst: 
+Please choose an item amongst:
   quit air alien axe bowl cockroach devil dragon dynamite fire gun lightning man monkey moon nuke paper rock scissors snake sponge sun tree water wolf woman
 &gt; air
 You chose AIR.
@@ -30,7 +30,7 @@ Computer chose MAN.
 Man breathes air.
 Therefore you lose.
 
-Please choose an item amongst: 
+Please choose an item amongst:
   quit air alien axe bowl cockroach devil dragon dynamite fire gun lightning man monkey moon nuke paper rock scissors snake sponge sun tree water wolf woman
 &gt; man
 You chose MAN.
@@ -38,7 +38,7 @@ Computer chose MOON.
 Man travels to moon.
 Therefore you win.
 
-Please choose an item amongst: 
+Please choose an item amongst:
   quit air alien axe bowl cockroach devil dragon dynamite fire gun lightning man monkey moon nuke paper rock scissors snake sponge sun tree water wolf woman
 &gt; moon
 You chose MOON.
@@ -46,7 +46,7 @@ Computer chose WATER.
 Moon has no water.
 Therefore you win.
 
-Please choose an item amongst: 
+Please choose an item amongst:
   quit air alien axe bowl cockroach devil dragon dynamite fire gun lightning man monkey moon nuke paper rock scissors snake sponge sun tree water wolf woman
 &gt; water
 You chose WATER.
@@ -54,7 +54,7 @@ Computer chose WOLF.
 Wolf drinks water.
 Therefore you lose.
 
-Please choose an item amongst: 
+Please choose an item amongst:
   quit air alien axe bowl cockroach devil dragon dynamite fire gun lightning man monkey moon nuke paper rock scissors snake sponge sun tree water wolf woman
 &gt; wolf
 You chose WOLF.
@@ -62,7 +62,7 @@ Computer chose FIRE.
 Fire burns wolf.
 Therefore you lose.
 
-Please choose an item amongst: 
+Please choose an item amongst:
   quit air alien axe bowl cockroach devil dragon dynamite fire gun lightning man monkey moon nuke paper rock scissors snake sponge sun tree water wolf woman
 &gt; quit
 You      won 2 of 6 games.
@@ -71,6 +71,6 @@ Computer won 3 of 6 games.
 3
 1
 6
-CL-USER&gt; 
+CL-USER&gt;
   </pre>
 </div>

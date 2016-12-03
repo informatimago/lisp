@@ -2,7 +2,7 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setf *readtable* (copy-readtable nil)))
 
-;; LOADER:PSEUDO.LISP 
+;; LOADER:PSEUDO.LISP
 ;; ----------------------------------------------------------------------
 ;; -- PSEUDO -- Pseudo-Scheme --
 ;; -----------------------------

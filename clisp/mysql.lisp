@@ -5,10 +5,10 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    MySQL FFI.
 ;;;;    This package exports mysql functions.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -16,19 +16,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2006 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -47,7 +47,7 @@
 (in-package "COM.INFORMATIMAGO.CLISP.MYSQL")
 
 
-(defconstant +library+ 
+(defconstant +library+
   #+unix "/usr/lib/libmysqlclient.so"
   #-unix (error "Where is the mysqlclient library?"))
 
@@ -80,7 +80,7 @@
 (defconstant +unsigned-flag+               32 "Field is unsigned")
 (defconstant +zerofill-flag+               64 "Field is zerofill")
 (defconstant +binary-flag+                128 "")
-;; The following are only sent to new clients 
+;; The following are only sent to new clients
 (defconstant +enum-flag+                  256 "field is an enum")
 (defconstant +auto-increment-flag+        512 "field is a autoincrement field")
 (defconstant +timestamp-flag+            1024 "Field is a timestamp")
@@ -96,12 +96,12 @@
 (defconstant +refresh-hosts+                8 "Flush host cache")
 (defconstant +refresh-status+              16 "Flush status variables")
 (defconstant +refresh-threads+             32 "Flush thread cache")
-(defconstant +refresh-slave+               64 
+(defconstant +refresh-slave+               64
   "Reset master info and restart slave thread")
-(defconstant +refresh-master+             128 
+(defconstant +refresh-master+             128
   "Remove all bin logs in the index and truncate the index")
 
-;; The following can't be set with mysql-refresh() 
+;; The following can't be set with mysql-refresh()
 (defconstant +refresh-read-lock+        16384 "Lock tables for read")
 (defconstant +refresh-fast+             32768 "Intern flag")
 
@@ -134,7 +134,7 @@
 
 (ffi:def-c-type net
   (vio                ffi:c-pointer)
-  (fd                 my-socket)        ; For Perl DBI/dbd 
+  (fd                 my-socket)        ; For Perl DBI/dbd
   (fcntl              ffi:int)
   (buff               ffi:c-pointer)
   (buff-end           ffi:c-pointer)
@@ -161,7 +161,7 @@
 
 (defconstant +packet-error+ #xffffffff)
 
-(defenum enum-field-types 
+(defenum enum-field-types
   +field-type-decimal+
   +field-type-tiny+
   +field-type-short+
@@ -189,7 +189,7 @@
 (defconstant +field-type-char+        +field-type-tiny+ "For compability")
 (defconstant +field-type-interval+    +field-type-enum+ "For compability")
 
-(ffi:def-c-var max-allowed-packet 
+(ffi:def-c-var max-allowed-packet
     (:name "max_allowed_packet")
   (:type ffi:ulong)
   (:library #.+library+))
@@ -262,7 +262,7 @@
   (max-value     ffi:ulong)
   (max-value-dbl ffi:double))
 
-;; The following is for user defined functions 
+;; The following is for user defined functions
 
 (defenum item-result
   +string-result+
@@ -270,7 +270,7 @@
   +int-result+)
 
 (ffi:def-c-type udf-args
-  (arg-count   ffi:uint)                     ; Number of arguments 
+  (arg-count   ffi:uint)                     ; Number of arguments
   (arg-type   (ffi:c-array-ptr item-result)) ; Pointer to item-results
   (args       (ffi:c-array-ptr ffi:c-string)) ; Pointer to argument
   (lengths    (ffi:c-array-ptr ffi:ulong)) ; Length of string arguments
@@ -282,10 +282,10 @@
   (maybe-null  my-bool)               ; 1 iff function can return NULL
   (decimals    ffi:uint)                ; for real functions
   (max-length  ffi:uint)                ; For string functions
-  (ptr         ffi:c-pointer)        ; free pointer for function data 
-  (const-item  my-bool))   ;  0 if result is independent of arguments 
+  (ptr         ffi:c-pointer)        ; free pointer for function data
+  (const-item  my-bool))   ;  0 if result is independent of arguments
 
-;; Constants when using compression 
+;; Constants when using compression
 (defconstant +net-header-size+              4 "standard header size")
 (defconstant +comp-header-size+             3 "compression header extra size")
 
@@ -338,7 +338,7 @@ void my-thread-end(void)                          ;
 
 (defconstant +NULL-LENGTH+ #xffffffff "For net-store-length")
 
-;; Version numbers for protocol & mysqld 
+;; Version numbers for protocol & mysqld
 
 (defconstant +PROTOCOL_VERSION+            10)
 (defconstant +MYSQL_SERVER_VERSION+ "3.23.55")
@@ -349,7 +349,7 @@ void my-thread-end(void)                          ;
 (defconstant +MYSQL_UNIX_ADDR+       "/var/lib/mysql/mysql.sock")
 (defconstant +MYSQL_CONFIG_NAME+         "my")
 
-;; mysqld compile time options 
+;; mysqld compile time options
 (defconstant +MYSQL_CHARSET+          "latin1")
 
 
@@ -494,7 +494,7 @@ int		STDCALL mysql-ssl-clear(MYSQL *mysql)           ;
 #endif /* HAVE-OPENSSL */
 MYSQL *		STDCALL mysql-connect(MYSQL *mysql, const char *host,
                                         const char *user, const char *passwd) ;
-my-bool		STDCALL mysql-change-user(MYSQL *mysql, const char *user, 
+my-bool		STDCALL mysql-change-user(MYSQL *mysql, const char *user,
                                             const char *passwd, const char *db) ;
 #if MYSQL-VERSION-ID >= 32200
 MYSQL *		STDCALL mysql-real-connect(MYSQL *mysql, const char *host,
@@ -570,7 +570,7 @@ char *		STDCALL mysql-odbc-escape-string(MYSQL *mysql,
 void 		STDCALL myodbc-remove-escape(MYSQL *mysql,char *name) ;
 unsigned int	STDCALL mysql-thread-safe(void)                   ;
 
-  
+
 #define mysql-reload(mysql) mysql-refresh((mysql),REFRESH-GRANT)
 
 

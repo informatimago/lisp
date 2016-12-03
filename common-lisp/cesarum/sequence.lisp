@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    This module exports sequence functions.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -16,19 +16,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -50,24 +50,24 @@
    "
 
 This package exports sequence processing functions.
-    
+
 
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2004 - 2015
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -138,7 +138,7 @@ KEY:      A key function. Default: IDENTITY.
     (warn ":TEST-NOT is deprecated.")
     (setf test (complement test-not)))
   (let ((table (make-hash-table :test test :size (- end start))))
-    (map nil (if from-end 
+    (map nil (if from-end
                  (lambda (item)
                    (let ((item-key (funcall key item)))
                      (multiple-value-bind (val pre) (gethash item-key table)
@@ -149,7 +149,7 @@ KEY:      A key function. Default: IDENTITY.
              (subseq sequence start end) sequence))
     (if (eq (type-of sequence) 'cons)
         (let ((result '()))
-          (maphash (lambda (key value) (declare (ignore key)) (push value result)) 
+          (maphash (lambda (key value) (declare (ignore key)) (push value result))
                    table)
           (if (or (/= start 0) (/= end (length sequence)))
               (nconc (subseq sequence 0 start) result (subseq sequence end))
@@ -160,14 +160,14 @@ KEY:      A key function. Default: IDENTITY.
                                             (- (length sequence) end))))
                   (i start))
               (replace result sequence :end2 start)
-              (maphash (lambda (key value) (declare (ignore key)) 
+              (maphash (lambda (key value) (declare (ignore key))
                                (setf (aref result i) value) (incf i)) table)
               (replace result sequence :start2 end :start1 i)
               result)
-            (let ((result (make-sequence (type-of sequence) 
+            (let ((result (make-sequence (type-of sequence)
                                          (hash-table-count table)))
                   (i 0))
-              (maphash (lambda (key value) (declare (ignore key)) 
+              (maphash (lambda (key value) (declare (ignore key))
                                (setf (aref result i) value) (incf i)) table)
               result)))))
 
@@ -178,7 +178,7 @@ KEY:      A key function. Default: IDENTITY.
                                  (key (function identity))
                                  (from-end nil))
   "Like DELETE-DUPLICATES but implemented using a HASH-TABLE."
-  (hashed-remove-duplicates 
+  (hashed-remove-duplicates
    sequence :test test :test-not test-not :start start :end end
    :key key :from-end from-end))
 
@@ -190,9 +190,9 @@ KEY:      A key function. Default: IDENTITY.
   ;;       when reduced, but this would make a different behavior than
   ;;       when increasing the size.  Would still be nice for some
   ;;       applications.  Perhaps also a truncatep parameter?
-  
+
   ;; BUG:  we should use the fill-pointer before trying to adjust.
-  
+
   (:documentation "
 
 DO:             Destructively (if possible) replace the (subseq
@@ -207,7 +207,7 @@ SEQUENCE:       A sequence.   If it is a list or an adjustable vector,
                 will be destructively modified and returned.
                 Otherwise a fresh adjustable vector will be returned.
 
-START:          Bounding index designator of SEQUENCE. 
+START:          Bounding index designator of SEQUENCE.
 
 END:            Bounding index designator of SEQUENCE. The default for
                 end is NIL, which means (LENGTH SEQUENCE).
@@ -248,7 +248,7 @@ RETURN:         Either the modified SEQUENCE, or a fresh sequence of
            (loop :repeat (- incise excise) :do (push nil (cdr previous)))
            (replace (cdr previous) insert)
            (cdr guarded))))))
-  
+
   (:method (insert (sequence vector) start &optional end)
     (let* ((length (length sequence))
            (end    (or end length))
@@ -329,7 +329,7 @@ RETURN:  the base type (list or vector), the element-type and the length (or nil
                    size))))
     ((eq (first type) 'array)
      ;; array [{element-type | *} [dimension-spec]]
-     ;; dimension-spec::= rank | * | ({dimension | *}*) 
+     ;; dimension-spec::= rank | * | ({dimension | *}*)
      (destructuring-bind (array &optional element-type dimension-spec) type
        (declare (ignore array))
        (when (member dimension-spec '(nil * (*)) :test (function equal))

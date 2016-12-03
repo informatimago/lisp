@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Some test cases of COM.INFORMATIMAGO.COMMON-LISP.DATA-ENCODING.DATA-ENCODING.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    GPL
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software; you can redistribute it and/or
 ;;;;    modify it under the terms of the GNU General Public License
 ;;;;    as published by the Free Software Foundation; either version
 ;;;;    2 of the License, or (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be
 ;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
 ;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 ;;;;    PURPOSE.  See the GNU General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU General Public
 ;;;;    License along with this program; if not, write to the Free
 ;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
@@ -93,7 +93,7 @@
   (cstr3    (c-string 16))
   (m2str1   (m2-string 16))
   (m2str2   (m2-string 16))
-  (m2str3   (m2-string 16)) 
+  (m2str3   (m2-string 16))
   (cbstr1   (cobol-string 16))
   (cbstr2   (cobol-string 16))
   (cbstr3   (cobol-string 16))
@@ -153,16 +153,16 @@
       :cstr1   (format nil "~10,'0D" i)
       :cstr2   (format nil "~15,'0D" i)
       :cstr3   ""
-      :m2str1  (format nil "~10,'0D" i) 
-      :m2str2  (format nil "~15,'0D" i) 
+      :m2str1  (format nil "~10,'0D" i)
+      :m2str2  (format nil "~15,'0D" i)
       :m2str3  (format nil "~16,'0D" i)
       :cbstr1  (format nil "~10,'0D" i)
-      :cbstr2  (format nil "~15,'0D" i) 
+      :cbstr2  (format nil "~15,'0D" i)
       :cbstr3  (format nil "~16,'0D" i)
-      :pstr1   (format nil "~10,'0D" i) 
+      :pstr1   (format nil "~10,'0D" i)
       :pstr2   (format nil "~15,'0D" i)
-      :pstr3   "" 
-      :bstr1   (format nil "~10,'0D" i) 
+      :pstr3   ""
+      :bstr1   (format nil "~10,'0D" i)
       :bstr2   (format nil "~14,'0D" i)
       :bstr3   "")
      (function write-test-rec)
@@ -170,7 +170,7 @@
 
 
 (define-test test/write-read-2 ()
-  (test-write-read 
+  (test-write-read
    (make-test-rec
     :buint8  #x12
     :buint24 #x123456
@@ -203,7 +203,7 @@
     :cbstr3  ""
     :pstr1   "pstr1"
     :pstr2   "La Manga"
-    :pstr3   "" 
+    :pstr3   ""
     :bstr1   "bstr1"
     :bstr2   "del Mar Menor"
     :bstr3   "")

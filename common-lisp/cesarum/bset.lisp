@@ -13,7 +13,7 @@
 ;;;;MODIFICATIONS
 ;;;;    2004-02-18 <PJB> Created.
 ;;;;BUGS
-;;;;    
+;;;;
 ;;;;    This is not as lispy as could be (we may want to have sets
 ;;;;    of random lisp objects, notably symbols), but it's optimized
 ;;;;    for small integers.
@@ -23,19 +23,19 @@
 ;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -64,19 +64,19 @@ This package implements sets of (integer 0 *) as arrays of bitsets.
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2004 - 2015
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -207,7 +207,7 @@ RETURN:  bset
     bset))
 
 
-(defgeneric union (s1 s2))       
+(defgeneric union (s1 s2))
 (defmethod union ((set1 bset) (set2 bset))
   "
 DO:      set1 := set1 U ( set2 inter (complement (make-bset (size set1))) )
@@ -228,7 +228,7 @@ RETURN:  SET1
         (bset-last-element set1)  (max (bset-last-element set1)
                                        (bset-last-element set2)))
   set1)
-         
+
 (defgeneric difference (s1 s2))
 (defmethod difference ((set1 bset) (set2 bset))
   "
@@ -249,7 +249,7 @@ RETURN:  SET1
            (setf (bsref bits1 i) (logandc2 (bsref bits1 i) (bsref bits2 i))))) )
   (setf (bset-cardinal set1) nil)
   set1)
-         
+
 (defgeneric intersection (s1 s2))
 (defmethod intersection ((set1 bset) (set2 bset))
   "
@@ -272,7 +272,7 @@ RETURN:  SET1
         (bset-last-element set1)  (min (bset-last-element set1)
                                        (bset-last-element set2)))
   set1)
-         
+
 (defgeneric sym-diff (s1 s2))
 (defmethod sym-diff ((set1 bset) (set2 bset))
   "
@@ -524,7 +524,7 @@ RETURN:  Whether element is in BSET.
   (check-type element element)
   (let ((bits (bset-bitsets bset)))
     (and (< element (bitset-to-elem (last-bitset bits)))
-         (/= 0 (logand (bsref bits (elem-to-bitset element)) 
+         (/= 0 (logand (bsref bits (elem-to-bitset element))
                        (ash 1 (elem-to-bit element)))))))
 
 (defgeneric is-empty (set)
@@ -647,7 +647,7 @@ RETURN:  BSET.
       (funcall proc i)))
   bset)
 
- 
+
 (defgeneric bset-to-list (bset))
 (defmethod bset-to-list ((bset bset))
   "

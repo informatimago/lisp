@@ -5,16 +5,16 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Generate HTML documentation of a set of CL packages.
 ;;;;
 ;;;;    Originally:
-;;;;    Id: lispdoc.lisp,v 1.8 2004/01/13 14:03:41 sven Exp 
+;;;;    Id: lispdoc.lisp,v 1.8 2004/01/13 14:03:41 sven Exp
 ;;;;AUTHORS
 ;;;;    Sven Van Caekenberghe.
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2012-04-29 <PJB> 
+;;;;    2012-04-29 <PJB>
 ;;;;BUGS/TODO
 ;;;;
 ;;;;    - improve class documentation (slots, accessors).
@@ -37,25 +37,25 @@
 ;;;;
 ;;;;LEGAL
 ;;;;    LLGPL
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
 ;;;;    Copyright (C) 2003 Sven Van Caekenberghe.
-;;;;    
+;;;;
 ;;;;    This library is licenced under the Lisp Lesser General Public
 ;;;;    License.
-;;;;    
+;;;;
 ;;;;    This library is free software; you can redistribute it and/or
 ;;;;    modify it under the terms of the GNU Lesser General Public
 ;;;;    License as published by the Free Software Foundation; either
 ;;;;    version 2 of the License, or (at your option) any later
 ;;;;    version.
-;;;;    
+;;;;
 ;;;;    This library is distributed in the hope that it will be
 ;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
 ;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 ;;;;    PURPOSE.  See the GNU Lesser General Public License for more
 ;;;;    details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Lesser General
 ;;;;    Public License along with this library; if not, write to the
 ;;;;    Free Software Foundation, Inc., 59 Temple Place, Suite 330,
@@ -125,7 +125,7 @@ RETURN:     The initargs of the class slots.
 RETURN: A list of doc structures for the SYMBOL.
 "
   (let ((doc '()))
-    
+
     (when (documentation symbol 'variable)
       (push (make-vardoc :kind          (if (constantp symbol)
                                             :constant
@@ -136,7 +136,7 @@ RETURN: A list of doc structures for the SYMBOL.
                                             (symbol-value symbol)
                                             :unbound))
             doc))
-    
+
     (let ((spec `(setf ,symbol)))
       (when (and (documentation spec 'function)
                  (fboundp spec))
@@ -149,7 +149,7 @@ RETURN: A list of doc structures for the SYMBOL.
                            :string      (documentation spec 'function)
                            :lambda-list (function-lambda-list spec))
               doc)))
-    
+
     (when (and (documentation symbol 'function)
                (fboundp symbol))
       (push (make-fundoc :kind        (cond
@@ -163,7 +163,7 @@ RETURN: A list of doc structures for the SYMBOL.
                          :string      (documentation symbol 'function)
                          :lambda-list (function-lambda-list symbol))
             doc))
-    
+
     (when (documentation symbol 'type)
       (cond
         ((not (ignore-errors (find-class symbol)))
@@ -189,14 +189,14 @@ RETURN: A list of doc structures for the SYMBOL.
                                 :precedence-list (mapcar (function class-name) (class-precedence-list symbol))
                                 :initargs        (class-slot-initargs symbol))
                  doc)))))
-    
+
     (unless  doc
       (push (make-doc :kind (if (has-meaning symbol)
                                 :undocumented
                                 :skip)
                       :symbol symbol)
             doc))
-    
+
     doc))
 
 

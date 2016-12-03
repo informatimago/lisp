@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    See :documentation of package below.
 ;;;;
 ;;;;AUTHORS
@@ -17,19 +17,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2006 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -38,7 +38,7 @@
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.LISP.SOURCE"
   (:use "COMMON-LISP")
   (:export "SOURCE" ; accessor
-           
+
            "LIST-PACKAGES-WITH-SOURCES"
            "SYMBOLS-WITH-SOURCES"
            "LIST-SOURCES"
@@ -84,12 +84,12 @@ See the source file for details.
 
 (defvar *source-types*
   '(:type               ; deftype defstruct defclass define-condition
-    :variable           ; defvar defparameter defconstant define-symbol-macro 
+    :variable           ; defvar defparameter defconstant define-symbol-macro
     :function           ; defun f        defgeneric f   defmacro define-modify-macro
     :setf-function      ; defun (setf f) defgeneric (setf f)
     :setf-macro         ; defsetf define-setf-expander
     :method             ; defmethod m
-    :setf-method        ; defmethod (setf m) 
+    :setf-method        ; defmethod (setf m)
     :method-combination ; define-method-combination
     :compiler-macro     ; define-compiler-macro
     :package            ; defpackage
@@ -156,7 +156,7 @@ NOTE:           The returned source type can be changed to
 
         ((:package)
          (values (find-package object) source-type))
-        
+
         ((:method :setf-method)
          (if (and (listp object)
                   (= 3 (length object))
@@ -173,7 +173,7 @@ NOTE:           The returned source type can be changed to
              (t
               (err)))
            (err)))
-        
+
         ((:function :compiler-macro)
          (cond
            ((symbolp object)
@@ -419,7 +419,7 @@ PACKAGE:        A package designator indicating the package whose
 "
   (labels ((do-it (out sources)
              (format out ";;;; -*- mode:lisp -*-")
-             (format out "~%;;;; Generated from sources saved by ~A~V%" 
+             (format out "~%;;;; Generated from sources saved by ~A~V%"
                      (package-name '#.*package*) line-spacing)
              (let ((*print-readably* nil)
                    (*print-case*     :downcase))

@@ -183,7 +183,7 @@
                    (void           "void")
                    (volatile       "volatile")
                    (while          "while")
-                   
+
                    (ellipsis "...")
                    (^=       "^=")
                    (\|=      "|=")
@@ -230,7 +230,7 @@
                    (\^       "^")
                    (\|       "|")
                    (\?       "?")
-                   
+
                    (STAR     "*") ;; (seq [ (opt type_qualifier_list) * ])
                    )
 
@@ -259,13 +259,13 @@
                (--> GE-OP                >=       :action $1)
                (--> EQ-OP                ==       :action $1)
                (--> NE-OP                !=       :action $1)
-               
+
 
                (--> constant
                     (alt (seq I-CONSTANT :action (token-value (third i-constant)))
                          (seq F-CONSTANT :action (read-from-string (second f-constant))))
                     :action $1)
-               
+
                (--> string
                     (alt (seq STRING-LITERAL :action (token-value (third string-literal)))
                          FUNC-NAME)
@@ -276,7 +276,7 @@
                     :action
                     ;; (intern (second identifier) (load-time-value (find-package "COM.INFORMATIMAGO.LANGUAGES.C11.C")) )
                     (third identifier))
-               
+
                (--> simple-primary-expression
                     (alt ident
                          constant
@@ -320,7 +320,7 @@
                                       (seq \) :action nil #|TODO: WHAT IS THIS?|#))
                               :action $2))
                     :action $1)
-               
+
                (--> postfix-expression-item
                     (alt (seq [ expression ]                       :action `(aref ,expression))
                          (seq \( (opt argument-expression-list) \) :action `(call ,(first $2)))
@@ -368,7 +368,7 @@
                     (alt postfix-expression
                          simple-unary-expression)
                     :action `(unary ,$1))
-               
+
                (--> cast-expression
                     (alt (seq simple-unary-expression
                               :action `(unary ,$1))
@@ -686,7 +686,7 @@
                     :action $1)
 
                ;; ---
-               
+
                (--> parameter-type-list
                     parameter-list (opt \, ELLIPSIS)
                     :action (if $2
@@ -805,7 +805,7 @@
                (--> initializer-list
                     initializer-item (rep \, initializer-item  :action initializer-item)
                     :action (cons initializer-item $2))
-               
+
                (--> initializer-item
                     (alt (seq designation initializer
                               :action `(designation ,designation ,initializer))
@@ -833,7 +833,7 @@
                     :action `(static-assert ,constant-expression ,string-literal))
 
                ;; ---
-               
+
                (--> statement
                     (alt simple-labeled-statement
                          expression-statement-or-label
@@ -939,7 +939,7 @@
                (--> declaration
                     (alt  (seq static-assert-declaration
                                :action `(external-declaration ,$1))
-                          
+
                           (seq (seq declaration-specifiers
                                     :action (push-declaration-specifiers declaration-specifiers))
                                (opt init-declarator-list)
@@ -948,7 +948,7 @@
                                              (init-declarator-list   (first $2)))
                                          `(declaration ,declaration-specifiers ,@init-declarator-list))))
                     :action $1)))
-  
+
   (defparameter *c* '#1#))
 
 
@@ -1056,7 +1056,7 @@ NOTE:   if the top-of-stack is :typedef then pop it as well as the specifiers.
     :do (setf declarator `(pointer ,type-attribute ,declarator))
     :finally (return declarator)))
 
-(defun wrap-declarator (declarator items) 
+(defun wrap-declarator (declarator items)
   ;; (print `(wrap-declarator ,declarator ,items))
   (loop
     :for item :in items
@@ -1082,7 +1082,7 @@ NOTE:   if the top-of-stack is :typedef then pop it as well as the specifiers.
      tree)
     ((eql 'unary (first tree))
      (remove-unary (second tree)))
-    (t 
+    (t
      (mapcar (function remove-unary) tree))))
 
 

@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    This package exports some file utility functions.
-;;;;    
+;;;;
 ;;;;    binary-file-contents, sexp-file-contents, text-file-contents, and
 ;;;;    string-list-text-file-contents are accessors.
 ;;;;    They can be used with setf to store data into the file.
@@ -27,19 +27,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2005 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -95,19 +95,19 @@ See also: COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2005 - 2014
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -450,12 +450,12 @@ RETURN: The contents of the file as a list of base-string lines.
 
 (defun remove-first-lines (file-name line-count &key (element-type 'character))
   "
-DO:         Modifies the file at path FILE-NAME, 
+DO:         Modifies the file at path FILE-NAME,
             removing the LINE-COUNT first lines.
 WARNING:    There's no backup: if the COPY-OVER fails, the file will be left
             in an unspecified state.
 "
-  (with-open-file (file file-name :direction :io 
+  (with-open-file (file file-name :direction :io
                         :element-type element-type
                         :if-exists :overwrite
                         :if-does-not-exist :error)

@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     CLI
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    This file defines utilities for lisp scripts.
 ;;;;
 ;;;;AUTHORS
@@ -17,19 +17,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2009 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -40,7 +40,7 @@
   (:use "COMMON-LISP")
   (:export "PROGRAM-NAME" "*PROGRAM-NAME*" "*VERBOSE*"
            "REDIRECTING-STDOUT-TO-STDERR"
-           "DEFINE-OPTION" "CALL-OPTION-FUNCTION"  "MAIN" 
+           "DEFINE-OPTION" "CALL-OPTION-FUNCTION"  "MAIN"
            ;; Utilities:
            "FIND-DIRECTORIES"
            "CONCAT" "MAPCONCAT"
@@ -215,7 +215,7 @@ NOTE:   current implementation only accepts as separators
 BUG: when the optionals or keys have a present indicator,
      we just ignore it and build a list that will pass
      the default value anyways...
-" 
+"
   (assert (every (function symbolp) mandatories))
   (append mandatories
           (mapcar (lambda (opt)
@@ -507,7 +507,7 @@ RETURN:     A vector containing the elements read from the STREAM.
   (let* ((busize (or length (ignore-errors (file-length stream)) min-size))
          (eltype (stream-element-type stream))
          (initel (if (subtypep eltype 'integer) 0 #\Space))
-         (buffer (make-array busize 
+         (buffer (make-array busize
                              :element-type eltype
                              :initial-element initel
                              :adjustable t :fill-pointer t))
@@ -553,7 +553,7 @@ RETURN: The contents of the file at PATH as a LIST of STRING lines.
     (setf out (with-output-to-string (stdout)
                 (setf err (with-output-to-string (stderr)
                             (with-open-stream (cmd (ext:run-shell-command command :output :stream))
-                              (with-standard-io-syntax 
+                              (with-standard-io-syntax
                                 (loop
                                    :for line = (read-line cmd nil nil)
                                    :while line
@@ -719,7 +719,7 @@ that are accessible by the user."
   "Concatenate anything into a string."
   (apply (function concatenate) 'string
          (mapcar (lambda (item)
-                   (if (typep item 'sequence) 
+                   (if (typep item 'sequence)
                        item
                        (format nil "~A" item))) args)))
 
@@ -764,13 +764,13 @@ that are accessible by the user."
 ;; ;;;
 ;; ;;; The main program, definition of the options
 ;; ;;;
-;; 
-;; 
+;;
+;;
 ;; (in-package "COMMON-LISP-USER")
 ;; (load (make-pathname :name "SCRIPT" :type "LISP" :version NIL :case :common
 ;;                      :defaults *load-pathname*))
 ;; (use-package "SCRIPT")
-;; 
+;;
 ;; ;; (redirecting-stdout-to-stderr (load #p"/etc/gentoo-init.lisp"))
 ;; (redirecting-stdout-to-stderr
 ;;  (let ((*load-verbose* nil)
@@ -781,7 +781,7 @@ that are accessible by the user."
 ;;    ))
 ;; (redirecting-stdout-to-stderr (asdf:oos 'asdf:load-op :split-sequence)
 ;;                               (asdf:oos 'asdf:load-op :cl-ppcre))
-;; 
+;;
 ;; ;; #-testing-script
 ;; (ext:exit (main ext:*args*))
 

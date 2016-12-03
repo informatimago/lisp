@@ -5,10 +5,10 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
-;;;;    This package exports functions to encode and decode data 
+;;;;
+;;;;    This package exports functions to encode and decode data
 ;;;;    in a byte vector buffer.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -16,19 +16,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -42,7 +42,7 @@
   (:documentation
    "
 
-This package exports functions to encode and decode data 
+This package exports functions to encode and decode data
 in a byte vector buffer.
 
 
@@ -50,19 +50,19 @@ in a byte vector buffer.
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2002 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -399,7 +399,7 @@ License:
 
 
 ;; USAGE DISPLAY
-;; 
+;;
 ;;     this indicates that the field is stored in an uncompressed,
 ;;     displayable format. This is actually the default USAGE type and
 ;;     will be assumed if the field is omitted entirely. A value of 15000
@@ -418,113 +418,113 @@ License:
 ;; one byte for: A X 9 Z * - + B / , . $ and two for each occurrence of G CR DB.
 ;;
 ;; A
-;; 
+;;
 ;;     corresponds to a single alphabetic character. The content of this
 ;;     position within the data field is allowed to be any uppercase of
 ;;     lowercase alphabetic character or a blank. Numerics and other
 ;;     symbols are not allowed
-;; 
+;;
 ;; X
-;; 
+;;
 ;;     corresponds to a single alphanumeric character. Any character from
 ;;     within the entire ebcdic character set can be contained in this
 ;;     field.
-;; 
+;;
 ;; G
-;; 
+;;
 ;;     corresponds to two bytes in the field which are being used to hold
 ;;     a double byte character. For example in Japan this definition
 ;;     would be used for fields that hold Kanji characters.
-;; 
+;;
 ;; 9
-;; 
+;;
 ;;     corresponds to a numeric character. Only the numeric values of
 ;;     zero through nine can be contained in this character.
-;; 
+;;
 ;; E
-;; 
+;;
 ;;     indicates that the following digits are the exponential for a
 ;;     floating point number. For example PIC '9v99999e99'.
-;; 
+;;
 ;; S
-;; 
+;;
 ;;     used to indicate that a numeric field is signed. The sign is
 ;;     always contained within the upper half byte of the last character
 ;;     of a display field or the lower half byte of a packed decimal
 ;;     field. A value of 'C' (12) representing positive and 'D' (13)
 ;;     negative. Binary fields represent negative numbers using the twos
 ;;     complement method.
-;; 
+;;
 ;; T
-;; 
+;;
 ;;     used to indicate that a display numeric field should only insert
 ;;     the sign into the upper half of the last byte if the value is
 ;;     negative.
-;; 
+;;
 ;; R
-;; 
+;;
 ;;     used to indicate that a display numeric field should only insert
 ;;     the sign into the upper half of the last byte if the value is
 ;;     positive.
-;; 
+;;
 ;; P
-;; 
+;;
 ;;     represents a virtual digit in a number that has no storage
 ;;     allocated to it. For example PIC '99ppp' can contain the value
 ;;     15000 as x'f1f5' with the number being assumed to represent
 ;;     thousands.
-;; 
+;;
 ;; V
-;; 
+;;
 ;;     used to indicate the position of a virtual decimal point. For
 ;;     example PIC '99999v99' can contain the value 15000 as
 ;;     x'f1f5f0f0f0f0f0' with the last two digits being assumed to
 ;;     represent hundredths.
-;; 
+;;
 ;; Z
-;; 
+;;
 ;;     corresponds to a leading numeric digit that if zero will be
 ;;     replaced by blank. Usually used to suppress leading zeros on
 ;;     numbers being printed.
-;; 
+;;
 ;; *
-;; 
+;;
 ;;     corresponds to a leading numeric digit that if zero will be
 ;;     replaced by *. Usually used to suppress leading zeros on numbers
 ;;     being printed on cheques.
-;; 
+;;
 ;; -
-;; 
+;;
 ;;     formatting character used with numeric fields. This will display
 ;;     as a blank if the number is zero or positive and will display as
 ;;     shown if the number is negative.
-;; 
+;;
 ;; +
-;; 
+;;
 ;;     formatting character used with numeric fields. This will display
 ;;     as shown if the number is zero or positive and will display as a -
 ;;     if the number is negative.
-;; 
+;;
 ;; CR
-;; 
+;;
 ;;     formatting character used with numeric fields. This will display
 ;;     as a blank if the number is zero or positive and will display as
 ;;     shown if the number is negative.
-;; 
+;;
 ;; DB
-;; 
+;;
 ;;     formatting character used with numeric fields. This will display
 ;;     as shown if the number is zero or positive and will display as CR
 ;;     if the number is negative.
-;; 
+;;
 ;; B
-;; 
+;;
 ;;     corresponds to a character that is always blank. Usually used to
 ;;     insert a blank into the middle of a field that is about to be
 ;;     output.
-;; 
+;;
 ;; / or , or . or $
-;; 
+;;
 ;;     formatting characters used in display fields being output. These
 ;;     values will display exactly as shown. For example the field PIC
 ;;     '99,999' containing the value x'f1f5f0f0f0' will print as '15,000'.
@@ -652,7 +652,7 @@ DO:      This function encodes a string containing only COMMON-LISP
 (defclass green-length-string-enctype (string-enctype)
   ((green-length
     :accessor green-length :type number-enctype
-    :initarg :green-length 
+    :initarg :green-length
     :documentation "The enctype used to store the green length.
     The PAD-CODE is used to ease processing by external programs."))
   (:documentation "")) ;;green-length-string-enctype
@@ -662,7 +662,7 @@ DO:      This function encodes a string containing only COMMON-LISP
   (print-unreadable-object (self out :type t)
     (format out "~D WITH GREEN-LENGTH ~S, ENCODED IN ~A"
             (allocated-size self)  (green-length self) (encoding self)))
-  self) 
+  self)
 
 
 (defmethod maximum-length ((self green-length-string-enctype))
@@ -767,7 +767,7 @@ NOTE:    This is the same implementation as for PADDED-STRING-ENCTYPE.
     :documentation "The PAD-CODE must be removed in the lisp string."))
   (:documentation "")) ;;padded-string-enctype
 
-                                                              
+
 (defmethod print-object ((self padded-string-enctype) out)
   (print-unreadable-object (self out :type t)
     (format out "~D PADDED WITH ~S~:[~;, STRIPPED~], ENCODED IN ~A"
@@ -838,7 +838,7 @@ NOTE:    This is the same implementation as for TERMINATED-STRING-ENCTYPE.
   `(array ,(to-lisp-type (element-type self)) ,(dimensions self)))
 
 
-(defmethod default-value ((self array-enctype))  
+(defmethod default-value ((self array-enctype))
   `(make-array ',(dimensions self)
                :initial-element (default-value (element-type self))))
 
@@ -915,7 +915,7 @@ set and retrieve the values of the fields.")
   (lisp-type self))
 
 
-(defmethod default-value ((self record-enctype))  
+(defmethod default-value ((self record-enctype))
   `(make-instance (lisp-type self)))
 
 
@@ -945,7 +945,7 @@ set and retrieve the values of the fields.")
 
 
 ;; ------------------------------------------------------------------------
-;; 
+;;
 ;; Here, we map enctype descriptors (sexps) to clos instances of
 ;; the enctype classes defined above.
 ;;
@@ -988,7 +988,7 @@ set and retrieve the values of the fields.")
 (defun make-enctype-instance (enctype)
   "
 ENCTYPE: A sexp denoting the enctype.
-         enctype ::= 
+         enctype ::=
             (record lisp-type [:size size] (offset name enc-type)...)
             (array  element-enc-type dimensions)
             (string size ...)
@@ -1109,7 +1109,7 @@ RETURN:  An instance of a subclass of enctype representing the enctype.
                       'binary-coded-decimal-integer-enctype)
                      ;; ((ieee-float-single comp-1) 'ieee-float-single-enctype)
                      ;; ((ieee-float-double comp-2) 'ieee-float-double-enctype)
-                     (otherwise (error "Unknown number encoding ~S." 
+                     (otherwise (error "Unknown number encoding ~S."
                                        encoding))))
        (assert (integerp size))
        (setf endian (cdr (assoc (or endian 'big-endian)
@@ -1125,7 +1125,7 @@ RETURN:  An instance of a subclass of enctype representing the enctype.
 (defun enctype-instance (enctype)
   "
 ENCTYPE: A sexp denoting the enctype.
-         enctype ::= 
+         enctype ::=
             (record lisp-type [:size size] (offset name enc-type)...)
             (array  element-enc-type dimensions)
             (string size ...)
@@ -1203,7 +1203,7 @@ DO:     Defines an enctype template.
 "
   ;; TODO: make it more deftype - like.
   ;; TODO: we cannot create an instance because a def-enctype is actually a template.  But not when there's no argument! So we could create the reader and writer sometimes.
-  `(make-enctype ',name ',args ',definition)) 
+  `(make-enctype ',name ',args ',definition))
 
 
 (defun even-list-p (list)
@@ -1220,10 +1220,10 @@ DO:     Defines an enctype template for a record type,
         a lisp structure with the same name,
         a reader and a writer functions.
 "
-  (let ((name (if (symbolp name-and-options) 
+  (let ((name (if (symbolp name-and-options)
                   name-and-options
                   (car name-and-options)))
-        (options (if (symbolp name-and-options) 
+        (options (if (symbolp name-and-options)
                      nil
                      (cdr name-and-options)))
         (documentation (when (stringp (car doc-and-fields))
@@ -1234,8 +1234,8 @@ DO:     Defines an enctype template for a record type,
     (unless (even-list-p options)
       (error "Odd options ~S." options))
     `(progn
-       (def-enctype ,name () 
-         (record :name ,name ,@options ,@(unless (getf options :lisp-type) 
+       (def-enctype ,name ()
+         (record :name ,name ,@options ,@(unless (getf options :lisp-type)
                                                  (list :lisp-type name))
                  ,@(when documentation
                          (list :documentation documentation))
@@ -1255,7 +1255,7 @@ DO:     Defines an enctype template for a record type,
            (enctype-write ',name enctype stream value))
          ',name))))
 
-    
+
 
 
 ;; ----------------------------------------------------------------------
@@ -1277,7 +1277,7 @@ DO:     Defines an enctype template for a record type,
 ;; ------
 ;;
 ;; DISPLAY
-;; 
+;;
 ;;     this indicates that the field is stored in an uncompressed,
 ;;     displayable format. This is actually the default USAGE type and
 ;;     will be assumed if the field is omitted entirely. A value of 15000
@@ -1285,44 +1285,44 @@ DO:     Defines an enctype template for a record type,
 ;;     the ebcdic equivalent to 15000. To calculate the length of a
 ;;     display field count one for each occurrence of A X 9 Z * - + B / ,
 ;;     . $ and two for each occurrence of G CR DB.
-;; 
+;;
 ;; INDEX
-;; 
+;;
 ;;     A four byte binary field is used to store an index. The value of
 ;;     an index field should not be directly accessed. An index is
 ;;     incremented and decremented in multiples of the size of the field
 ;;     that the index is on.
-;; 
+;;
 ;; POINTER
-;; 
+;;
 ;;     A four byte binary field is also used to store a pointer.
-;; 
+;;
 ;; BINARY or COMP or COMP-4
-;; 
+;;
 ;;     These are all equivalent and define a field as being stored in a
 ;;     binary compressed format. A binary field to hold 1-4 digits will
 ;;     take up two bytes, one to hold 5-9 digits will take four bytes,
 ;;     and one to hold 10-18 digits will take eight bytes. A value of
 ;;     15000 will be stored in a field of this type as x'00003a98' which
 ;;     is the hexadecimal equivalent of 15000.
-;; 
+;;
 ;; PACKED-DECIMAL or COMP-3
-;; 
+;;
 ;;     These are equivalent and define the field as having two digits
 ;;     compressed into each byte (with the last half byte reserved for
 ;;     the sign). A value of 15000 will be stored in a field of this type
 ;;     as x'15000C'. To calculate the length of a packed decimal field
 ;;     add 1 to the number of digits (9s in the pic'999' field) divide by
 ;;     two and round halves up to the next byte.
-;; 
+;;
 ;; COMP-1
-;; 
+;;
 ;;     Identifies the field as a single precision floating point number.
-;; 
+;;
 ;; COMP-2
-;; 
+;;
 ;;     Identifies the field as a double precision floating point number.
-;; 
+;;
 ;;
 ;; picture:
 ;; --------
@@ -1330,113 +1330,113 @@ DO:     Defines an enctype template for a record type,
 ;; one byte for: A X 9 Z * - + B / , . $ and two for each occurrence of G CR DB.
 ;;
 ;; A
-;; 
+;;
 ;;     corresponds to a single alphabetic character. The content of this
 ;;     position within the data field is allowed to be any uppercase of
 ;;     lowercase alphabetic character or a blank. Numerics and other
 ;;     symbols are not allowed
-;; 
+;;
 ;; X
-;; 
+;;
 ;;     corresponds to a single alphanumeric character. Any character from
 ;;     within the entire ebcdic character set can be contained in this
 ;;     field.
-;; 
+;;
 ;; G
-;; 
+;;
 ;;     corresponds to two bytes in the field which are being used to hold
 ;;     a double byte character. For example in Japan this definition
 ;;     would be used for fields that hold Kanji characters.
-;; 
+;;
 ;; 9
-;; 
+;;
 ;;     corresponds to a numeric character. Only the numeric values of
 ;;     zero through nine can be contained in this character.
-;; 
+;;
 ;; E
-;; 
+;;
 ;;     indicates that the following digits are the exponential for a
 ;;     floating point number. For example PIC '9v99999e99'.
-;; 
+;;
 ;; S
-;; 
+;;
 ;;     used to indicate that a numeric field is signed. The sign is
 ;;     always contained within the upper half byte of the last character
 ;;     of a display field or the lower half byte of a packed decimal
 ;;     field. A value of 'C' (12) representing positive and 'D' (13)
 ;;     negative. Binary fields represent negative numbers using the twos
 ;;     complement method.
-;; 
+;;
 ;; T
-;; 
+;;
 ;;     used to indicate that a display numeric field should only insert
 ;;     the sign into the upper half of the last byte if the value is
 ;;     negative.
-;; 
+;;
 ;; R
-;; 
+;;
 ;;     used to indicate that a display numeric field should only insert
 ;;     the sign into the upper half of the last byte if the value is
 ;;     positive.
-;; 
+;;
 ;; P
-;; 
+;;
 ;;     represents a virtual digit in a number that has no storage
 ;;     allocated to it. For example PIC '99ppp' can contain the value
 ;;     15000 as x'f1f5' with the number being assumed to represent
 ;;     thousands.
-;; 
+;;
 ;; V
-;; 
+;;
 ;;     used to indicate the position of a virtual decimal point. For
 ;;     example PIC '99999v99' can contain the value 15000 as
 ;;     x'f1f5f0f0f0f0f0' with the last two digits being assumed to
 ;;     represent hundredths.
-;; 
+;;
 ;; Z
-;; 
+;;
 ;;     corresponds to a leading numeric digit that if zero will be
 ;;     replaced by blank. Usually used to suppress leading zeros on
 ;;     numbers being printed.
-;; 
+;;
 ;; *
-;; 
+;;
 ;;     corresponds to a leading numeric digit that if zero will be
 ;;     replaced by *. Usually used to suppress leading zeros on numbers
 ;;     being printed on cheques.
-;; 
+;;
 ;; -
-;; 
+;;
 ;;     formatting character used with numeric fields. This will display
 ;;     as a blank if the number is zero or positive and will display as
 ;;     shown if the number is negative.
-;; 
+;;
 ;; +
-;; 
+;;
 ;;     formatting character used with numeric fields. This will display
 ;;     as shown if the number is zero or positive and will display as a -
 ;;     if the number is negative.
-;; 
+;;
 ;; CR
-;; 
+;;
 ;;     formatting character used with numeric fields. This will display
 ;;     as a blank if the number is zero or positive and will display as
 ;;     shown if the number is negative.
-;; 
+;;
 ;; DB
-;; 
+;;
 ;;     formatting character used with numeric fields. This will display
 ;;     as shown if the number is zero or positive and will display as CR
 ;;     if the number is negative.
-;; 
+;;
 ;; B
-;; 
+;;
 ;;     corresponds to a character that is always blank. Usually used to
 ;;     insert a blank into the middle of a field that is about to be
 ;;     output.
-;; 
+;;
 ;; / or , or . or $
-;; 
+;;
 ;;     formatting characters used in display fields being output. These
 ;;     values will display exactly as shown. For example the field PIC
 ;;     '99,999' containing the value x'f1f5f0f0f0' will print as '15,000'.

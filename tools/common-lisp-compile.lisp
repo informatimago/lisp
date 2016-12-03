@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Replaces the Makefile.
-;;;;    
+;;;;
 ;;;;    Usage:   (load "compile.lisp")
 ;;;;
 ;;;;    will compile all outdated files.
@@ -20,19 +20,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -82,7 +82,7 @@
 
 (defparameter *sources*
   '(
-	package 
+	package
 
 	source-form                     ; used by READER and UTILITY, etc.
     reader                          ; used by SOURCE-TEXT
@@ -90,7 +90,7 @@
 
     version
     script
-    
+
 	utility
     ascii                               ; = iso646-006 (US)
     ecma048                             ; = iso6429
@@ -98,85 +98,85 @@
     dll
 	queue
     array
-	string 
+	string
 	stream
-    
+
     file ;; file uses stream
 	peek-stream
 
     scanner
-    parser 
+    parser
 
     ;; avl
     ;; bbtree
     llrbtree
-	dictionary 
-    bset     
-	brelation 
-	graf 
-	graph 
+	dictionary
+    bset
+	brelation
+	graf
+	graph
 	
-	graph-dot    
-	graph-diagram 
+	graph-dot
+	graph-diagram
 
 	combination
-    
-	pmatch 
-	picture  
+
+	pmatch
+	picture
 
     memory
     heap
-	activity  
+	activity
     message-queue
 
-	float-binio  
-	data-encoding 
+	float-binio
+	data-encoding
     cons-to-ascii
-	tree-to-ascii  
-	tree-to-diagram 
+	tree-to-ascii
+	tree-to-diagram
 	regexp-posix
 	regexp-emacs
 
 	rfc2822
     rfc3548
-	iso639a 
+	iso639a
 	iso3166
     iso4217
-    
+
     character-sets ; (previously IATA-CHARACTER-SETS) with implementation specific stuff..
 
     html-entities
     html
     hquery
 	htrans
-	database 
+	database
 	
     parse-html
     cache                               ; a generic disk-based cache.
 
-	aliases 
-	passwd 
+	aliases
+	passwd
     group
-	primes 
+	primes
     tea
     raiden
-	make-depends 
+	make-depends
     cxx                   ; Simple C++ Parser for call graph analysis.
 
 	csv                             ; Coma-Separated-Values files.
     iban                            ; Internation Bank Account Number.
     rib                             ; Relevés d'Identité Bancaires.
-    
+
     invoice            ; my personal accounting and invoicing package.
-    
+
 	browser  ; a file browser (and cd/pwd/pushd/popd/ls/cat/more cmds.
 
-	ed                        ; a simple editor, for 
+	ed                        ; a simple editor, for
                                         ; common-lisp implementations
                                         ; lacking a COMMON-LISP:EDIT function...
 
     interactive
-    )) 
+    ))
 
 (defparameter *source-type* "lisp")
 
@@ -197,7 +197,7 @@ RETURN:  The version as a string \"major.minor.compilation\"
               :collect (list (intern (string-upcase (subseq line 0 =pos)) "KEYWORD")
                              (read-from-string (subseq line (1+ =pos)))))))
     (let* ((default-path       (or *load-pathname* *default-pathname-defaults*))
-           (version.path       (or path 
+           (version.path       (or path
                                    (make-pathname :name "VERSION" :type "DAT"
                                                   :version :newest
                                                   :defaults default-path)))
@@ -220,7 +220,7 @@ RETURN:  The version as a string \"major.minor.compilation\"
                       version.major version.minor version.compilation)
               version.major version.minor version.compilation))))
 
- 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Generate the asdf system file, loading the sources.
 
@@ -265,7 +265,7 @@ RETURN:  The version as a string \"major.minor.compilation\"
 
 (defun package-use*-package-p (p q)
   "
-RETURN: Whether the package P uses the package Q, or a package 
+RETURN: Whether the package P uses the package Q, or a package
         that uses the package Q.
 NOTE:   By definition, (PACKAGE-USE*-PACKAGE-P X X)
 "
@@ -289,9 +289,9 @@ NOTE:   By definition, (PACKAGE-USE*-PACKAGE-P X X)
 
 (defun topological-sort (nodes lessp)
   "
-RETURN: A list of NODES sorted topologically according to 
+RETURN: A list of NODES sorted topologically according to
         the partial order function LESSP.
-        If there are cycles (discounting reflexivity), 
+        If there are cycles (discounting reflexivity),
         then the list returned won't contain all the NODES.
 "
   (loop
@@ -307,7 +307,7 @@ RETURN: A list of NODES sorted topologically according to
                   :for node :in nodes
                   :for inco :across incoming
                   :when (zerop inco)
-                  :collect node) 
+                  :collect node)
      :while q
      :do (let ((n (pop q)))
            (push n sorted)

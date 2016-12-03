@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Initialization for susv3 packages.
 ;;;;
 ;;;;    This files remove some specificities from the lisp environment
@@ -20,19 +20,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -42,10 +42,10 @@
 
 ;; clean the imported packages:
 (mapc (lambda (used) (unuse-package used "COMMON-LISP-USER"))
-      (remove (find-package "COMMON-LISP") 
+      (remove (find-package "COMMON-LISP")
               (copy-seq (package-use-list "COMMON-LISP-USER"))))
 
-(progn 
+(progn
   (defvar *directories*  '())
   (defun get-directory (key &optional (subpath ""))
     (unless *directories*
@@ -83,7 +83,7 @@
                      :external-format external-format)))))))
 
 
-;; COM.INFORMATIMAGO.CLISP packages depend on themselves, from 
+;; COM.INFORMATIMAGO.CLISP packages depend on themselves, from
 ;; the current directory, and on COM.INFORMATIMAGO.COMMON-LISP
 ;; packages from the repository.
 

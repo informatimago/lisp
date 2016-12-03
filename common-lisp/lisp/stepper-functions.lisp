@@ -5,11 +5,11 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    An internal package of the Common Lisp stepper.
 ;;;;    This package exports the stepper generator functions
 ;;;;    and defines the stepper interactive functions.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -18,19 +18,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -514,10 +514,10 @@ DO:        Implements a minimalist CL Read-Eval-Print body.
                       (multiple-value-list (funcall thunk)))))
        (if (= 1 (length results))
            (unless (trivial-atom-p atom)
-             (with-parens *step-trace-output* 
+             (with-parens *step-trace-output*
                (with-step-printing
                    (format *step-trace-output* "~S ==> ~S" atom (first results)))))
-           (with-parens *step-trace-output* 
+           (with-parens *step-trace-output*
              (with-step-printing
                  (did-step atom results))))
        (values-list results)))
@@ -527,7 +527,7 @@ DO:        Implements a minimalist CL Read-Eval-Print body.
                                (multiple-value-list (funcall thunk)))))
                 (with-step-printing
                     (if (= 1 (length results))
-                        (if (trivial-atom-p atom) 
+                        (if (trivial-atom-p atom)
                             (format *step-trace-output* "~&~V<~> (--> ~S)" *step-level* atom)
                             (format *step-trace-output* "~&~V<~> (~S ==> ~S)"
                                     *step-level* atom (first results)))
@@ -814,10 +814,10 @@ RETURN:         A stepping lambda-form from the LAMBDA-FORM.
     ((symbolp form)  `(symbol-reference ,form))
     ;; The other atoms are unchanged:
     ((atom form)     `(self-evaluating ,form))
-    ;; Now we have a list.  
+    ;; Now we have a list.
     (t
      (case (first form)
-       
+
        ;; First we check the real CL special operators:
        ;; We just step them wholesale. (If there are macros inside
        ;; they'll be expanded and we may step them.

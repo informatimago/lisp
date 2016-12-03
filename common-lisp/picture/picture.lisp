@@ -9,7 +9,7 @@
 ;;;;    See defpackage documentation string.
 ;;;;
 ;;;;USAGE
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -21,19 +21,19 @@
 ;;;;    - In sprites there should be one spot per frame.
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2002 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -55,29 +55,29 @@ This package exports functions to draw ASCII-ART pictures.
 ASCII-ART primitives.
 
 A picture is a matrix of characters.
-There are primitives to draw points, lines, rectangles, 
+There are primitives to draw points, lines, rectangles,
 circles and ellipses, and strings.
 
-The coordinate system is the direct one: 
+The coordinate system is the direct one:
 - x increases toward the right,
 - y increases toward the top. Bottom left is (0,0).
 
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2002 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -136,7 +136,7 @@ RETURN:  PICT
 
 (defgeneric draw-line (pict x y w h &key foreground)
   (:documentation   "
-DO:      Draw a line between (x,y) and (x+w-1,y+h-1) 
+DO:      Draw a line between (x,y) and (x+w-1,y+h-1)
          with the foreground character.
 RETURN:  PICT
 "))
@@ -243,7 +243,7 @@ DO:      Draws the frame FRAME of the SPRITE on the picture PICT,
         (t (error "~S IS AN INVALID CHARACTER!" stuff))))
 
 
-(defmethod initialize-instance ((self picture) 
+(defmethod initialize-instance ((self picture)
                                 &key (width 72) (height 24) (background " "))
   "
 RETURN:  SELF
@@ -329,25 +329,25 @@ RETURN: SELF
 
 
 (defstruct (deplacement (:type list))  name dx dy line-dx line-dy)
-(defvar +deplacements+ '((:e      1  0  0 -1) 
-                         (:right  1  0  0 -1) 
-                         (:w     -1  0  0  1) 
-                         (:left  -1  0  0  1) 
-                         (:n      0  1  1  0) 
-                         (:up     0  1  1  0) 
-                         (:s      0 -1 -1  0) 
-                         (:down   0 -1 -1  0) 
-                         (:ne     1  1  1 -1) 
-                         (:nw    -1  1  1  1) 
-                         (:se     1 -1 -1 -1) 
-                         (:sw    -1 -1 -1  1) 
-                         (:nne    1  2  2 -1) 
-                         (:nnw   -1  2  2  1) 
-                         (:sse    1 -2 -2 -1) 
-                         (:ssw   -1 -2 -1  2) 
-                         (:ene    2  1  1 -2) 
-                         (:ese    2 -1 -1 -2) 
-                         (:wnw   -2  1  1  2) 
+(defvar +deplacements+ '((:e      1  0  0 -1)
+                         (:right  1  0  0 -1)
+                         (:w     -1  0  0  1)
+                         (:left  -1  0  0  1)
+                         (:n      0  1  1  0)
+                         (:up     0  1  1  0)
+                         (:s      0 -1 -1  0)
+                         (:down   0 -1 -1  0)
+                         (:ne     1  1  1 -1)
+                         (:nw    -1  1  1  1)
+                         (:se     1 -1 -1 -1)
+                         (:sw    -1 -1 -1  1)
+                         (:nne    1  2  2 -1)
+                         (:nnw   -1  2  2  1)
+                         (:sse    1 -2 -2 -1)
+                         (:ssw   -1 -2 -1  2)
+                         (:ene    2  1  1 -2)
+                         (:ese    2 -1 -1 -2)
+                         (:wnw   -2  1  1  2)
                          (:wsw   -2 -1 -1  2)))
 
 
@@ -358,7 +358,7 @@ RETURN: SELF
   "PRIVATE"
   (unless (and (eq string    (first  *string-cache*))
                (eq separator (second *string-cache*)))
-    (setf *string-cache* (list string separator 
+    (setf *string-cache* (list string separator
                                (split-string string separator))))
   (third *string-cache*))
 
@@ -374,7 +374,7 @@ RETURN:  left bottom width height of the rectangle in which the
            (off  (amp dep) (* (1- amp) dep)))
     (let* ((depl   (assoc direction +deplacements+))
            (lines  (string-cache-split string *new-line*))
-           (width  (reduce (function max) lines :key (function length) 
+           (width  (reduce (function max) lines :key (function length)
                                                 :initial-value 0))
            (height (length lines))
            (lb-x   0)
@@ -430,7 +430,7 @@ NOTE:    A future implementation won't use DRAW-POINT for performance.
                       (x number) (y number) (w number) (h number)
                       &key (foreground "*"))
   "
-DO:      Draw a line between (x,y) and (x+w-1,y+h-1) 
+DO:      Draw a line between (x,y) and (x+w-1,y+h-1)
          with the foreground character.
 RETURN:  SELF
 NOTE:    A future implementation won't use DRAW-POINT for performance.
@@ -470,7 +470,7 @@ NOTE:    A future implementation won't use DRAW-POINT for performance.
   self)
 
 
-(defmethod draw-arrow ((pict picture) 
+(defmethod draw-arrow ((pict picture)
                        (x number) (y number) (w number) (h number)
                        &key tail)
   (draw-line pict x y w h :foreground (if (= 0 w) "|" "-"))
@@ -483,7 +483,7 @@ NOTE:    A future implementation won't use DRAW-POINT for performance.
 
 
 (defmethod fill-rect  ((self picture)
-                       (x number) (y number) (w number) (h number) 
+                       (x number) (y number) (w number) (h number)
                        &key (foreground "*"))
   "
 DO:      Fills the specified rectangle with FOREGROUND.
@@ -491,7 +491,7 @@ RETURN:  SELF
 "
   (setf x (truncate x)
         y (truncate y)
-        w (truncate w) 
+        w (truncate w)
         h (truncate h)
         foreground (to-char foreground))
   (dotimes (i (1- h))
@@ -511,7 +511,7 @@ RETURN:  SELF
 
 (defmethod frame-rect ((self picture)
                        (x number) (y number) (w number) (h number)
-                       &key (top-left "+") (top-right "+") 
+                       &key (top-left "+") (top-right "+")
                          (bottom-left "+")  (bottom-right "+")
                          (top "-") (bottom "-")  (left "|") (right "|"))
   "
@@ -521,7 +521,7 @@ RETURN:  SELF
 NOTE:    A future implementation won't use DRAW-POINT for performance.
 "
   (setf x            (truncate x)
-        y            (truncate y) 
+        y            (truncate y)
         w            (1- (truncate w))
         h            (1- (truncate h))
         top-left     (to-char top-left)

@@ -13,11 +13,11 @@
   (let ((graph (make-instance 'graph-class :edge-class 'directed-edge-class))
         (elements (make-hash-table)))
     (destructuring-bind ((terminal (&rest terminals)) &rest non-terminals)
-    
+
         (cdddr (find 'define-parser
                      (sexp-list-file-contents "parser.lisp")
                      :key (function first)))
-  
+
       (declare (ignore terminal))
 
       (dolist (item (remove-duplicates
@@ -65,7 +65,7 @@
 
 ;; ;; dot -Kfdp -Tps c11.dot> c11.ps && open c11.ps
 ;; (uiop:run-program "bash -c 'dot -Kfdp -Tps c11.dot> c11.ps && open c11.ps'")
-;; 
+;;
 ;; (cardinal (nodes *graph*))
 ;; (cardinal (edges *graph*))
 ;; 419

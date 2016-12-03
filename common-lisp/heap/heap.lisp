@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    This package implements a heap for "common" data
 ;;;;    in shared memory segments.
 ;;;;    There is a garbage collector, and lisp data types.
@@ -24,15 +24,15 @@
 ;;;;    2004-12-02 <PJB> Created.
 ;;;;BUGS
 ;;;;    Copying of some important types is not implemented yet:
-;;;;    double-float, vectors, arrays, structures (unfortunately, 
-;;;;    structures will need either a define-common-structure, or 
+;;;;    double-float, vectors, arrays, structures (unfortunately,
+;;;;    structures will need either a define-common-structure, or
 ;;;;    MOP or implementation specific API to get the list of slots).
 ;;;;
-;;;;    with-common-lock mutex is too wide.  With smarter treatment of 
+;;;;    with-common-lock mutex is too wide.  With smarter treatment of
 ;;;;    new-generation, and possibly ad hoc mutexes, it should be
 ;;;;    possible to mutex only gc-allocate.
 ;;;;
-;;;;    The number of different cell types should be reduced, 
+;;;;    The number of different cell types should be reduced,
 ;;;;    and the set of cell types should be distinct from the
 ;;;;    set of types of array elements.
 ;;;;
@@ -41,10 +41,10 @@
 ;;;;
 ;;;;
 ;;;;    ;; We need a WITH-COMMON macro such as:
-;;;;    
+;;;;
 ;;;;    (defcommon head nil)
 ;;;;    (defcommon tail nil)
-;;;;    
+;;;;
 ;;;;    (defun insert (item)
 ;;;;      (with-common
 ;;;;       (with-common-lock
@@ -53,9 +53,9 @@
 ;;;;                tail head)
 ;;;;          (setf (cdr tail) (list item)
 ;;;;                tail (cdr tail))))))
-;;;;    
+;;;;
 ;;;;    ;; would be generated as:
-;;;;    
+;;;;
 ;;;;    (defun insert (item)
 ;;;;      (with-common-lock
 ;;;;       (let ((phead  (cfi-copy-to-common 'head))
@@ -70,19 +70,19 @@
 ;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -129,19 +129,19 @@ See also: COM.INFORMATIMAGO.COMMON-LISP.HEAP.MEMORY
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2004 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -207,7 +207,7 @@ License:
 ;; heap:
 ;; ---- ----- --- -----------------
 ;; addr ofset siz description
-;; ---- ----- --- -----------------          
+;; ---- ----- --- -----------------
 ;;    0    0:   8 magic-cookie               | signature header
 ;;    1    8:   8 key | semaphore-number     |
 ;; -------------- heap-header                \
@@ -218,7 +218,7 @@ License:
 ;;    6   48:   8 free-blocks                |  [ct-address 10]
 ;;    7   56:   8 root                       |  [ct-nil] initially.
 ;;    8   64:   8 new-generation             |  (cons nil nil) initially.
-;;    9   72:   8 reserved                   /  [ct-nil]                 
+;;    9   72:   8 reserved                   /  [ct-nil]
 ;; -------------- free-blocks                \
 ;;   10   80:   8 ct-vector   34             |
 ;;   11   88:   8 ct-t        32             |
@@ -242,15 +242,15 @@ License:
 ;;
 ;; Addresses in shared segment are offset from the beginning of the segment.
 ;; We don't keep the segment key with the offset because we won't be using
-;; normally intersegment addresses.  However, only the ct-address 
-;; and ct-readable cell types would have to be changed if we used 
-;; segmented addresses to allow growing the common-space in 
+;; normally intersegment addresses.  However, only the ct-address
+;; and ct-readable cell types would have to be changed if we used
+;; segmented addresses to allow growing the common-space in
 ;; multi-segment fashion.
 
 
 
 ;; common::gc global variables:
-;; (These variables could go into an object as slots 
+;; (These variables could go into an object as slots
 ;;  if multiple common heaps were needed).
 (defvar *gc-memory*                nil) ; MEMORY instance.
 (defvar *gc-heap-base*             0)   ; (base *gc-memory*)
@@ -287,7 +287,7 @@ License:
 (declaim (inline gc-store gc-load))
 
 
-(defun gc-signature ()     
+(defun gc-signature ()
   (peek-uint64 *gc-memory* *gc-heap-base*))
 (defun gc-sign (signature)
   (poke-uint64 *gc-memory* *gc-heap-base* signature))
@@ -305,7 +305,7 @@ License:
     ((16) (values (lambda (address) (peek-uint16 *gc-memory* address)) 2))
     ((32) (values (lambda (address) (peek-uint32 *gc-memory* address)) 4))
     ((64) (values (lambda (address) (peek-uint64 *gc-memory* address)) 8))
-    (otherwise (error "No peek function defined for bit field of width ~D" 
+    (otherwise (error "No peek function defined for bit field of width ~D"
                       bit-size))))
 (defun gc-poke-function (bit-size)
   (case bit-size
@@ -313,7 +313,7 @@ License:
     ((16) (values (lambda (address object) (poke-uint16 *gc-memory* address object)) 2))
     ((32) (values (lambda (address object) (poke-uint32 *gc-memory* address object)) 4))
     ((64) (values (lambda (address object) (poke-uint64 *gc-memory* address object)) 8))
-    (otherwise (error "No poke function defined for bit field of width ~D" 
+    (otherwise (error "No poke function defined for bit field of width ~D"
                       bit-size))))
 (defun gc-dump-block (gc-address size stream &key (margin ""))
   (let ((address (* 8 gc-address)))
@@ -321,13 +321,13 @@ License:
           :stream stream :margin margin :byte-size 8)))
 
 
-                
+
 ;;----------------------------------------
 ;; cell-type: tags
 ;;----------------------------------------
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defenum cell-type 
+  (defenum cell-type
     "Some types are used for memory cells (ie. boxed values),
 but some types are used only for array cells (ie. unboxed values)."
     ct-nil
@@ -361,7 +361,7 @@ but some types are used only for array cells (ie. unboxed values)."
     ct-float-40
     ct-float-48
     ct-float-56
-    ct-float-64                         ; double-float 
+    ct-float-64                         ; double-float
     ct-structure
     ct-vector
     ct-vector-fp
@@ -388,7 +388,7 @@ but some types are used only for array cells (ie. unboxed values)."
              (= ,(cond
                   ((eq 'symbol  name) '*gc-symbol*)
                   ((eq 'package name) '*gc-package*)
-                  (t `(cvm-find-symbol ,(car type) 
+                  (t `(cvm-find-symbol ,(car type)
                                        (cvm-find-package ,(cdr type)))))
                 (cvm-structure-ref self 0))))
       ,@(loop
@@ -423,7 +423,7 @@ but some types are used only for array cells (ie. unboxed values)."
 ;;--------------------------
 
 (cvm-define-structure hh
-                      ;; the only instance of this structure is stored in the common heap. 
+                      ;; the only instance of this structure is stored in the common heap.
                       ("HEAP-HEADER" . "SYSTEM")
                       size       ; ct-fixnum
                       free-blocks     ; ct-vector of ct-free-block
@@ -481,7 +481,7 @@ but some types are used only for array cells (ie. unboxed values)."
 
 
 ;; Simple values are cells of 8 bytes:
-;; 
+;;
 ;;     [free-block    s6 s5 s4 | s3 s2 s1 s0]
 ;;     [NIL            0  0  0 |  0  0  0  0]
 ;;     [T              0  0  0 |  0  0  0  1]
@@ -491,27 +491,27 @@ but some types are used only for array cells (ie. unboxed values)."
 ;;     [character-24   0  0  0 |  0 c2 c1 c0]
 ;;     [character-32   0  0  0 | c3 c2 c1 c0]
 ;;     [{signed-byte,unsigned-byte,float}x[0,6]  v6 v5 v4 | v3 v2 v1 v0]
-;; 
+;;
 ;; Reference values are addresses of the real value:
-;;     
+;;
 ;;   [address  o6 o5 o4 | o3 o2 o1 o0] --> vector|vector-fp|array|structure|cons
 ;;   [readable o6 o5 o4 | o3 o2 o1 o0] --> string=(vector|vector-fp character)
-;; 
+;;
 ;; readable is a special kind of value used to transmit other random
-;; lisp values that are printable readably. 
-;;     
-;;   
-;; Cons cells are 16-bytes double-cells. The type of the cons cell is 
+;; lisp values that are printable readably.
+;;
+;;
+;; Cons cells are 16-bytes double-cells. The type of the cons cell is
 ;; that of the cdr+128:
-;; 
+;;
 ;;     [cons+ cdr-2 | car-2 ]
-;; 
+;;
 ;; Bigger values are greater multiples of 8-byte cells:
-;; 
+;;
 ;; [[vector-data|structure-data] size
 ;; | [ element-type (T, unboxed-type) dimensions-1 ]
 ;; | data ]
-;; 
+;;
 ;; first slot of structure is structure class (type of structure)
 ;; for symbols, the element-type is T and the structure class is NIL.
 ;;
@@ -519,19 +519,19 @@ but some types are used only for array cells (ie. unboxed values)."
 ;; | [ element-type (T, unboxed-type) dimensions-1 ]
 ;; | fill-pointer
 ;; | data ]
-;; 
+;;
 ;; [array-data  size
 ;; | [ element-type (T, unboxed-type) ndimensions ]
 ;; | dimension_1 | ... | dimension_n
 ;; | data ]
-;; 
+;;
 ;; symbol:
 ;; [structure-data 15 | [T,6] |NIL| package | name | value |NIL| plist ]
-;; 
+;;
 ;; CL:SYMBOL:
 ;; [structure-data 15 | [T,6] |NIL| @'COMMON-LISP' | @'SYMBOL' |NIL|NIL|NIL]
-;; 
-;; 
+;;
+;;
 ;; cons+free-block
 ;; cons+nil
 ;; cons+t
@@ -572,11 +572,11 @@ but some types are used only for array cells (ie. unboxed values)."
       #.ct-signed-byte-8 #.ct-signed-byte-16 #.ct-signed-byte-24
       #.ct-signed-byte-32 #.ct-signed-byte-40 #.ct-signed-byte-48
       #.ct-signed-byte-56 #.ct-signed-byte-64 #.ct-unsigned-byte-8
-      #.ct-unsigned-byte-16 #.ct-unsigned-byte-24 
-      #.ct-unsigned-byte-32 #.ct-unsigned-byte-40 
+      #.ct-unsigned-byte-16 #.ct-unsigned-byte-24
+      #.ct-unsigned-byte-32 #.ct-unsigned-byte-40
       #.ct-unsigned-byte-48 #.ct-unsigned-byte-56
       #.ct-unsigned-byte-64 #.ct-float-8 #.ct-float-16
-      #.ct-float-24 #.ct-float-32 #.ct-float-40 #.ct-float-48 
+      #.ct-float-24 #.ct-float-32 #.ct-float-40 #.ct-float-48
       #.ct-float-56 #.ct-float-64))
   )
 
@@ -652,7 +652,7 @@ but some types are used only for array cells (ie. unboxed values)."
               for fp from (1- (cvm-fill-pointer generation)) downto ,sp
               do
               (when-debug (:ng)
-                (format t "ng:pop   [~2D] ~16,'0X~%" 
+                (format t "ng:pop   [~2D] ~16,'0X~%"
                         fp  (cvm-svref generation fp)))
               (cvm-svset generation fp +cvm-nil+)
               finally (cvm-set-fill-pointer generation ,sp)))))))
@@ -662,7 +662,7 @@ but some types are used only for array cells (ie. unboxed values)."
     (gen-with-generation bindings body)))
 
 
-(defun gc-push-root (sym) 
+(defun gc-push-root (sym)
   (with-generation  ((sym sym))
     (cvm-hh-set-root +gc-heap-header+
                      (cvm-make-cons sym (cvm-hh-root +gc-heap-header+)))))
@@ -705,17 +705,17 @@ but some types are used only for array cells (ie. unboxed values)."
 (defun cvm-free-block-size (object)     (ldb +fb-size+ object))
 (defun cvm-free-block-next (object)     (ldb +fb-next+ object))
 
-(defun cvm-form-free-block (size next)  
+(defun cvm-form-free-block (size next)
   (dpb ct-free-block +type-code+ (dpb next +fb-next+ (ldb +fb-size+ size))))
 
 (defun cvm-free-block-set-next (address new-next)
   (setf address (cvm-deref address))
-  (gc-store address (cvm-form-free-block 
+  (gc-store address (cvm-form-free-block
                      (cvm-free-block-size (gc-load address)) new-next)))
 
 (defun cvm-free-block-set-size (address new-size)
   (setf address (cvm-deref address))
-  (gc-store address (cvm-form-free-block 
+  (gc-store address (cvm-form-free-block
                      new-size (cvm-free-block-next (gc-load address)))))
 
 
@@ -825,7 +825,7 @@ but some types are used only for array cells (ie. unboxed values)."
 ;;     cons                                  --> <typed-value:address>
 ;;     car cdr setcar setcdr
 
-(defun cvm-cons-p (cons) 
+(defun cvm-cons-p (cons)
   ;; a ct-address to a ct-cons
   (and (cvm-address-p cons)
        (plusp (ldb +in-cons+ (gc-load (cvm-deref cons))))))
@@ -878,7 +878,7 @@ but some types are used only for array cells (ie. unboxed values)."
     ((cvm-cons-p cons)
      (gc-store (cvm-deref cons) (dpb 1 +in-cons+ value)))
     (t (error "CVM-SETCDR of non-list object: ~A"
-              (with-output-to-string (out) 
+              (with-output-to-string (out)
                 (gc-dump-object cons :stream out))))))
 
 
@@ -918,7 +918,7 @@ but some types are used only for array cells (ie. unboxed values)."
         for curr = list then (cvm-cdr curr)
         until (or (cvm-null curr) (eql (cvm-car curr) item))
         finally (return (cond
-                         ((cvm-null curr) #| no item |# 
+                         ((cvm-null curr) #| no item |#
                           list #| unchanged |#)
                          ((null prev) #| deleting the first item |#
                           (cvm-cdr list))
@@ -960,7 +960,7 @@ but some types are used only for array cells (ie. unboxed values)."
          ((,vlist ,list)
           (,vitem ,item))
        (setf ,list (cvm-make-cons ,vitem ,vlist)))))
- 
+
 
 (defmacro cvm-pop (list)
   `(prog1 (cvm-car ,list) (setf ,list  (cvm-cdr ,list))))
@@ -979,7 +979,7 @@ but some types are used only for array cells (ie. unboxed values)."
 
 (defun bits-to-words (bits)  "64 bit/word"  (truncate (+ 63 bits) 64))
 
-(defun cvm-bit-size-of-unboxed-type (typecode)  
+(defun cvm-bit-size-of-unboxed-type (typecode)
   (let ((size (if (<= ct-nil typecode ct-readable)
                   (aref #(
                           0             ; ct-nil
@@ -1020,14 +1020,14 @@ but some types are used only for array cells (ie. unboxed values)."
                           -1            ; ct-array
                           64            ; ct-address
                           64            ; ct-readable
-                          ) typecode) 
+                          ) typecode)
                   -1)))
     (when (minusp size)
       (error "CVM-BIT-SIZE-OF-UNBOXED-TYPE: invalid typecode ~D (~A)"
              typecode (cell-type-label typecode)))
     size))
 
-  
+
 ;; [ct-vector size
 ;; | [ element-type (T, unboxed-type) dimensions-1 ]
 ;; | data ]
@@ -1036,20 +1036,20 @@ but some types are used only for array cells (ie. unboxed values)."
 ;; | ct-t dimensions-1 = nfields+1
 ;; | class             = field 0
 ;; | data ]            = field 1 .. nfields
-;; 
+;;
 ;; [ct-vector-fp size
 ;; | element-type (T, unboxed-type) dimensions-1
 ;; | fill-pointer
 ;; | data ]
-;; 
+;;
 ;; [ct-array  size
 ;; | element-type (T, unboxed-type) ndimensions
 ;; | dimension_1 | ... | dimension_n
 ;; | data ]
-;; 
+;;
 ;; symbol:
 ;; [structure-data 15 | [T,6] |NIL| package | name | value |NIL| plist ]
-;; 
+;;
 ;; CL:SYMBOL:
 ;; [structure-data 15 | [T,6] |NIL| @'COMMON-LISP' | @'SYMBOL' |NIL|NIL|NIL]
 
@@ -1058,7 +1058,7 @@ but some types are used only for array cells (ie. unboxed values)."
                                       &key fill-pointer class)
   (let* ((address (cvm-deref address))
          (ptr address))
-    (gc-store ptr (cvm-form-head cell-type 
+    (gc-store ptr (cvm-form-head cell-type
                                  (cvm-free-block-size (gc-load address))))
     (gc-store (incf ptr) (cvm-form-head element-type dimension))
     (when fill-pointer
@@ -1068,7 +1068,7 @@ but some types are used only for array cells (ie. unboxed values)."
     (dotimes (i (- (cvm-size-of (gc-load address)) (- ptr address) 1))
       (gc-store (incf ptr) +cvm-nil+)))
   address)
-      
+
 
 
 (defun cvm-vector-p       (address)
@@ -1095,20 +1095,20 @@ but some types are used only for array cells (ie. unboxed values)."
 (defun cvm-rows (address)
   (let ((address (cvm-deref address)))
     (case (cvm-type-of (gc-load address))
-      ((#.ct-vector #.ct-structure)  
-       (values  (cvm-fixnum-value (gc-load (incf address))) 
+      ((#.ct-vector #.ct-structure)
+       (values  (cvm-fixnum-value (gc-load (incf address)))
                 (incf address)))
       ((#.ct-vector-fp)
-       (values  (cvm-fixnum-value (gc-load (incf address))) 
+       (values  (cvm-fixnum-value (gc-load (incf address)))
                 (incf address 2)))
       ((#.ct-array)
-       (values (loop :for row-dimension = 1 
-                       :then (* row-dimension 
+       (values (loop :for row-dimension = 1
+                       :then (* row-dimension
                                 (cvm-fixnum-value (gc-load (incf address))))
                      :repeat (cvm-fixnum-value (gc-load (incf address)))
                      :finally (return row-dimension))
                (incf address)))
-      (otherwise (error "CVM-ROWS: bad argument type ~A (~D)" 
+      (otherwise (error "CVM-ROWS: bad argument type ~A (~D)"
                         (cell-type-label (cvm-type-code (gc-load address)))
                         (cvm-type-code (gc-load address)))))))
 
@@ -1131,7 +1131,7 @@ but some types are used only for array cells (ie. unboxed values)."
 (defun cvm-make-vector (element-type dimension)
   (let ((address (gc-allocate
                   (+ 2 (bits-to-words
-                        (* (cvm-bit-size-of-unboxed-type element-type) 
+                        (* (cvm-bit-size-of-unboxed-type element-type)
                            dimension))))))
     (cvm-initialize-vector address ct-vector element-type dimension)
     (when-debug (:objects) (format t "~&object: ~16,'0X VECTOR~%" address))
@@ -1168,7 +1168,7 @@ but some types are used only for array cells (ie. unboxed values)."
 
 (defun cvm-make-structure (class nbfields)
   (let ((address (gc-allocate (+ 3 nbfields))))
-    (cvm-initialize-vector address ct-structure ct-t 
+    (cvm-initialize-vector address ct-structure ct-t
                            (1+ nbfields) :class class)
     (when-debug (:objects) (format t "~&object: ~16,'0X STRUCTURE~%" address))
     address))
@@ -1177,7 +1177,7 @@ but some types are used only for array cells (ie. unboxed values)."
 
 ;; symbol:
 ;; [structure-data 15 | [T,6] |NIL| package | name | value |NIL| plist ]
-;; 
+;;
 ;; CL:SYMBOL:
 ;; [structure-data 15 | [T,6] |NIL| @'COMMON-LISP' | @'SYMBOL' |NIL|NIL|NIL]
 
@@ -1195,14 +1195,14 @@ INDEX:          An index into te slots of the array or structure.  The
                 field.
 
 OPERATION:      (member :peek :poke) indicates the operation to
-                execute.  
+                execute.
 
 VALUE:          When OPERATION is :poke then the value to be stored.
 
 
 RETURN:         When OPERATION is :peek, the value of the slot.
 "
-  (let ((element-size (cvm-bit-size-of-unboxed-type 
+  (let ((element-size (cvm-bit-size-of-unboxed-type
                        (cvm-element-type gc-address))))
     (multiple-value-bind (dimension gc-address) (cvm-rows gc-address)
       (unless (<= 0 index (1- dimension))
@@ -1212,7 +1212,7 @@ RETURN:         When OPERATION is :peek, the value of the slot.
           (let* ((opaddr (+ *gc-heap-base* (* 8 (+ gc-address (/ index 64)))))
                  (opofst (mod index 64))
                  (word (funcall (gc-peek-function 64) opaddr)))
-            (if (eq operation :peek) 
+            (if (eq operation :peek)
                 (ldb (byte 1 opofst) word)
                 (funcall (gc-poke-function 64) opaddr
                          (dpb value (byte 1 opofst) word))))
@@ -1221,7 +1221,7 @@ RETURN:         When OPERATION is :peek, the value of the slot.
                           ((16) (+ *gc-heap-base* (* 8 gc-address ) (* 2 index)))
                           ((32) (+ *gc-heap-base* (* 8 gc-address ) (* 4 index)))
                           ((64) (+ *gc-heap-base* (* 8 (+ gc-address index))))
-                          (otherwise "CVM-SVOPERATE: bad element-size ~D" 
+                          (otherwise "CVM-SVOPERATE: bad element-size ~D"
                                      element-size))))
             (if (eq operation :peek)
                 (funcall (gc-peek-function element-size) opaddr)
@@ -1233,7 +1233,7 @@ RETURN:         When OPERATION is :peek, the value of the slot.
 
 (defun cvm-svref (address index)
   (cvm-svoperate address index :peek))
-(defun cvm-svset (address index value) 
+(defun cvm-svset (address index value)
   (cvm-svoperate address index :poke value))
 (defun cvm-structure-ref   (address index)
   (cvm-svoperate address index :peek))
@@ -1255,7 +1255,7 @@ RETURN:         When OPERATION is :peek, the value of the slot.
                             :for ch :across contents
                             :maximize (char-code ch) :into max
                             :finally (return
-                                      (cond 
+                                      (cond
                                         ((< max 256)      ct-character-8)
                                         ((< max 65536)    ct-character-16)
                                         ((< max 16777216) ct-character-24)
@@ -1266,7 +1266,7 @@ RETURN:         When OPERATION is :peek, the value of the slot.
     (when fill-pointer
       (cvm-set-fill-pointer string fill-pointer))
     (when contents
-      (loop for i from 0 below length 
+      (loop for i from 0 below length
          do (cvm-svset string i (char-code (aref contents i)))))
     (when-debug (:objects) (format t "~&object: ~16,'0X STRING ~S~%"
                                    string (cvm-string-value string)))
@@ -1328,7 +1328,7 @@ RETURN:         When OPERATION is :peek, the value of the slot.
 (defun cvm-symbol-bound-p  (sym)
   (not (cvm-unbound-p (cvm-symbol-value sym))))
 
-(defun cvm-symbol-fbound-p (sym) 
+(defun cvm-symbol-fbound-p (sym)
   (not (cvm-unbound-p (cvm-symbol-function sym))))
 
 (defun cvm-symbol-makunbound (sym)
@@ -1384,7 +1384,7 @@ RETURN:         When OPERATION is :peek, the value of the slot.
 
 
 (defmacro %and (&rest conjonctions)
-  `(and ,@(mapcar (lambda (conj) 
+  `(and ,@(mapcar (lambda (conj)
                     (let ((vconj (gensym)))
                       `(let ((,vconj ,conj))
                          (format t "~S ==> ~A~%" ',conj ,vconj)
@@ -1395,7 +1395,7 @@ RETURN:         When OPERATION is :peek, the value of the slot.
   (:method ((name/package string))
     (cvm-find-package (cvm-make-string :contents name/package)))
   (:method ((name integer))
-    (flet ((%package-p 
+    (flet ((%package-p
                (self)
              (and (cvm-structure-p self)
                   (= 6 (cvm-length self))
@@ -1406,10 +1406,10 @@ RETURN:         When OPERATION is :peek, the value of the slot.
                          (= ct-t (cvm-element-type stype))
                          (if (cvm-null *gc-package*)
                              (and
-                              (string= "PACKAGE" 
+                              (string= "PACKAGE"
                                        (cvm-string-value (cvm-symbol-name stype)))
-                              (string= "COMMON-LISP" 
-                                       (cvm-string-value 
+                              (string= "COMMON-LISP"
+                                       (cvm-string-value
                                         (cvm-package-name
                                          (cvm-symbol-package stype)))))
                              (= *gc-package* stype)))))))
@@ -1419,7 +1419,7 @@ RETURN:         When OPERATION is :peek, the value of the slot.
         (when (and (%package-p item)
                    (cvm-string= name (cvm-package-name item)))
           (return-from cvm-find-package item))))))
-        
+
 
 (defgeneric cvm-delete-package (package)
   (:method ((name/package string))
@@ -1450,12 +1450,12 @@ RETURN:         When OPERATION is :peek, the value of the slot.
                               (address nil))
   (declare (ignore comment))
   (setf address (and address (cvm-deref address)))
-  (format stream 
+  (format stream
     "~A~16,'0X  M/~1D C/~1D T/~2D V/~17,'0D ~A~A~%"
     (if address (format nil "~8,'0X: " address) "") object
     (ldb +in-mark+ object)   (ldb +in-cons+ object)
     (ldb +type-code+ object) (ldb +byte-56+ object)
-    (cell-type-label (ldb +type-code+ object)) 
+    (cell-type-label (ldb +type-code+ object))
     "" #| comment |#))
 
 
@@ -1469,13 +1469,13 @@ RETURN:         When OPERATION is :peek, the value of the slot.
          (dump-free
              (address object &optional (comment ""))
            (declare (ignore comment))
-           (format stream 
+           (format stream
              "~8,'0X: ~16,'0X  M/~1D C/~1D T/~2D S/~7,'0D N/~7,'0D ~A~A~%"
              address object
              (ldb +in-mark+ object)   (ldb +in-cons+ object)
-             (ldb +type-code+ object) 
+             (ldb +type-code+ object)
              (ldb +fb-size+ object) (ldb +fb-next+ object)
-             (cell-type-label (ldb +type-code+ object)) 
+             (cell-type-label (ldb +type-code+ object))
              "" #| comment |#)))
     (if (zerop address)
         (format stream "~8,'0X = NIL~%"  0)
@@ -1483,13 +1483,13 @@ RETURN:         When OPERATION is :peek, the value of the slot.
           (case  (cvm-type-of object)
             ((#.ct-cons)
              (dump      address  (gc-load     address ) "[CDR]")
-             (format stream "~A" margin)           
+             (format stream "~A" margin)
              (dump  (1+ address) (gc-load (1+ address)) "[CAR]"))
             ((#.ct-free-block)
              (dump-free address  (gc-load     address ) "[tc|sz]"))
             ((#.ct-structure #.ct-vector #.ct-vector-fp #.ct-array)
              (dump      address  (gc-load     address ) "[tc|sz]")
-             (format stream "~A" margin)           
+             (format stream "~A" margin)
              (dump  (1+ address) (gc-load (1+ address)) "[el|dm]")
              (if (= ct-t (cvm-type-of (gc-load (1+  address))))
                  (when contents
@@ -1503,8 +1503,8 @@ RETURN:         When OPERATION is :peek, the value of the slot.
              (dump      address  (gc-load     address ))))))))
 
 
-(defun gc-dump-root (&key (stream *standard-output*)) 
-  (cvm-dolist (e (cvm-hh-root +gc-heap-header+)) 
+(defun gc-dump-root (&key (stream *standard-output*))
+  (cvm-dolist (e (cvm-hh-root +gc-heap-header+))
     (gc-dump-cell e)
     (princ (cvm-string-value (cvm-package-name e)) stream)
     (terpri stream) (terpri stream)
@@ -1533,7 +1533,7 @@ RETURN:         When OPERATION is :peek, the value of the slot.
 ;;--------------------
 
 
-(defun gc-make-bitmap () 
+(defun gc-make-bitmap ()
   (make-array (list *gc-heap-size*)
               :element-type '(unsigned-byte 2) :initial-element 0))
 
@@ -1541,7 +1541,7 @@ RETURN:         When OPERATION is :peek, the value of the slot.
 (defun print-bitmap (bitmap &key (stream *standard-output*)
                      (start 0) (end (length bitmap)))
   (loop for i from start below end
-     for c = (aref bitmap i) 
+     for c = (aref bitmap i)
      initially (unless (zerop (mod i 64)) (format stream "~&~8,'0X: " i))
      do
      (when (zerop (mod i 64))  (format stream "~&~8,'0X: " i))
@@ -1595,7 +1595,7 @@ RAISE:  simple-error conditions when an invariant is invalidated.
     (format stream "  [~2,'0X] " fbln)
     (gc-dump-cell (cvm-deref fbl)))
   (if (cvm-address-p fbl)
-      (loop 
+      (loop
          for count from 0
          for size = 0
          for fbp = (cvm-deref fbl) then (cvm-free-block-next fb)
@@ -1631,7 +1631,7 @@ RAISE:  simple-error conditions when an invariant is invalidated.
                       (allow-free-blocks nil) (bitmap nil)
                       (dump-allocated nil) (dump-data nil))
   ;; root-address is a gc-address
-  (loop 
+  (loop
      with  referenced = (if allow-free-blocks
                             (cons ct-free-block +referenced-cell-types+)
                             +referenced-cell-types+)
@@ -1674,10 +1674,10 @@ RAISE:  simple-error conditions when an invariant is invalidated.
            ;; -------------------- free block
            ((#.ct-free-block)           ; Bad!
             (unless allow-free-blocks
-              (assert nil () 
-                      "Found a free-block in allocated data at #x~8,'0X" 
+              (assert nil ()
+                      "Found a free-block in allocated data at #x~8,'0X"
                       address)))
-           ;; -------------------- address & readable 
+           ;; -------------------- address & readable
            ((#.ct-address #.ct-readable)
             (when (or dump-allocated dump-data)
               (gc-dump-cell address :stream stream))
@@ -1729,30 +1729,30 @@ RAISE:  simple-error conditions when an invariant is invalidated.
           dump-allocated t
           dump-data      t))
   (assert (plusp *gc-heap-base*))
-  (when dump-header 
+  (when dump-header
     (format stream "~&Heap header:~%")
     (format stream "  base address    = #x~8,'0X~%" *gc-heap-base*)
     (format stream "  magic cookie    = #x~16,'0X~%" (gc-signature))
-    (format stream "  cell 1          = #x~16,'0X~%" 
+    (format stream "  cell 1          = #x~16,'0X~%"
             (peek-uint64 *gc-memory* *gc-heap-base*)))
   ;; check the header structure:
   (assert (= (gc-load +gc-heap-header+) (cvm-form-head ct-structure 8)))
   (assert (= (gc-load (1+ +gc-heap-header+)) (cvm-form-head ct-t 6)))
   ;; check the header slots:
-  (assert 
+  (assert
    (and (cvm-fixnum-p (cvm-hh-size +gc-heap-header+))
         (= *gc-heap-size* (cvm-fixnum-value (cvm-hh-size +gc-heap-header+)))))
   (assert (cvm-vector-p (cvm-hh-free-blocks +gc-heap-header+)))
   (assert (or (cvm-null (cvm-hh-root +gc-heap-header+))
               (cvm-cons-p (cvm-hh-root +gc-heap-header+))))
-  (assert (or (cvm-null (cvm-hh-new-generation +gc-heap-header+)) 
+  (assert (or (cvm-null (cvm-hh-new-generation +gc-heap-header+))
               (cvm-vector-fp-p (cvm-hh-new-generation +gc-heap-header+))))
-  (when dump-header 
+  (when dump-header
     (format stream "  heap size       = #x~8,'0X (~D) 64-bit cells~%"
             *gc-heap-size*  *gc-heap-size*)
-    (format stream "  free-blocks    at #x~8,'0X~%" 
+    (format stream "  free-blocks    at #x~8,'0X~%"
             (cvm-deref (cvm-hh-free-blocks +gc-heap-header+)))
-    (format stream "  variables      at #x~8,'0X~%" 
+    (format stream "  variables      at #x~8,'0X~%"
             (cvm-deref (cvm-hh-root +gc-heap-header+)))
     (format stream "  new-generation at #x~8,'0X~%"
             (cvm-deref (cvm-hh-new-generation +gc-heap-header+))))
@@ -1763,13 +1763,13 @@ RAISE:  simple-error conditions when an invariant is invalidated.
     (assert (= (gc-load fb)      (cvm-form-head ct-vector 34)))
     (assert (= (gc-load (1+ fb)) (cvm-form-head ct-t 32)))
     (let ((bitmap (gc-make-bitmap)))
-      (gc-bitmap-set-allocated-range bitmap +gc-heap-header+ 
+      (gc-bitmap-set-allocated-range bitmap +gc-heap-header+
                                      (cvm-size-of (gc-load +gc-heap-header+)))
       (gc-bitmap-set-allocated-range bitmap fb (cvm-size-of (gc-load fb)))
       (gc-bitmap-set-visited-range   bitmap fb (cvm-size-of (gc-load fb)))
       ;; check the free block lists:
       (when dump-header (format stream "Free lists:~%"))
-      (loop for i from 0 upto +fb-big+ 
+      (loop for i from 0 upto +fb-big+
          do ;; (format t "checking free block list ~D~%" i)
          (gc-check-free-block-list i (cvm-svref fb i)
                                    :stream stream  :bitmap bitmap
@@ -1782,10 +1782,10 @@ RAISE:  simple-error conditions when an invariant is invalidated.
       ;; check the bitmap: no clear bit above +gc-start+
       (when dump-bitmap
         (print-bitmap bitmap :stream stream))
-      (loop with i = +gc-start+ 
+      (loop with i = +gc-start+
          while (< i *gc-heap-size*)
          do (if (gc-bitmap-clear-p bitmap i)
-                (let ((end (loop for j from i 
+                (let ((end (loop for j from i
                               while (and (< j *gc-heap-size*)
                                          (gc-bitmap-clear-p bitmap j))
                               finally (return j))))
@@ -1810,9 +1810,9 @@ RAISE:  simple-error conditions when an invariant is invalidated.
           dump-data      t))
   ;; assume *gc-semaphore-set* and *gc-semaphore-number* are valid.
   (with-gc-lock
-    (gc-check-internal :stream stream   
+    (gc-check-internal :stream stream
                        :allow-free-blocks allow-free-blocks
-                       :dump-header dump-header    
+                       :dump-header dump-header
                        :dump-bitmap dump-bitmap
                        :dump-free dump-free
                        :dump-allocated dump-allocated
@@ -1831,7 +1831,7 @@ RAISE:  simple-error conditions when an invariant is invalidated.
 ;;  2- search a block of double size
 ;;  3- search a best fit block (size+2+)
 ;;  4- search a bigger block (size+1+)
-;;  5- if not already gc in this allocate, 
+;;  5- if not already gc in this allocate,
 ;;     then garbage collect and try once more from the start.
 ;;  6- fail
 ;; case small block:
@@ -1839,12 +1839,12 @@ RAISE:  simple-error conditions when an invariant is invalidated.
 ;;  2- search a block in bucket 2*idx if < 31, or in big blocks.
 ;;  3- search a best fit block (size+2+), from idx+2, idx+3, ..., in big blocks.
 ;;  4- search a bigger block (size+1+), seach idx+1.
-;;  5- if not already gc in this allocate, 
+;;  5- if not already gc in this allocate,
 ;;     then garbage collect and try once more from the start.
 ;;  6- fail
 ;; ---------------------------------------------------------------------
 ;; garbage collect:
-;;  - no copying collector, to avoid having to update the references 
+;;  - no copying collector, to avoid having to update the references
 ;;    in other spaces.
 ;;  - mark:  recursively work from root and mark all accessible.
 ;;  - sweep: start from first cell, and in sequence, check whether it's marked,
@@ -1856,13 +1856,13 @@ RAISE:  simple-error conditions when an invariant is invalidated.
 (defun fb-extract (free-blocks previous old-block size)
   (when-debug (:allocate)
     (format t "fb-extract F/#x~16,'0X P/~A ~@
-             ~&           O/#x~16,'0X S/#x~8,'0X~%" 
+             ~&           O/#x~16,'0X S/#x~8,'0X~%"
             free-blocks (if previous (format nil "#x~16,'0X" previous) "")
             old-block size)
     (gc-dump-cell old-block))
   (if previous
       (cvm-free-block-set-next previous old-block)
-      (cvm-svset free-blocks size 
+      (cvm-svset free-blocks size
                  (cvm-form-address
                   (cvm-free-block-next old-block)))))
 
@@ -1874,11 +1874,11 @@ RAISE:  simple-error conditions when an invariant is invalidated.
   (let ((size (cvm-free-block-size (gc-load new-block))))
     (if (< size +fb-big+)
         (progn
-          (cvm-free-block-set-next new-block 
+          (cvm-free-block-set-next new-block
                                    (cvm-deref (cvm-svref free-blocks size)))
           (cvm-svset free-blocks size (cvm-form-address new-block)))
         (loop for prev = nil then curr
-           for curr = (cvm-deref (cvm-svref free-blocks +fb-big+)) 
+           for curr = (cvm-deref (cvm-svref free-blocks +fb-big+))
            then (cvm-free-block-next curr)
            while (and (plusp curr)
                       (< size (cvm-free-block-size (gc-load curr))))
@@ -1891,8 +1891,8 @@ RAISE:  simple-error conditions when an invariant is invalidated.
   (when-debug (:allocate) (gc-dump-cell new-block)))
 
 
-(defun fb-search-big-block (free-list size)              
-  (loop 
+(defun fb-search-big-block (free-list size)
+  (loop
      with previous = nil
      with fit      = nil                ; size
      with double   = nil                ; size*2
@@ -1902,35 +1902,35 @@ RAISE:  simple-error conditions when an invariant is invalidated.
      for curr = free-list then (cvm-free-block-next curr)
      for obje = (if (plusp curr) (gc-load curr) 0)
      while (and (plusp curr) (null best))
-     do 
+     do
      ;; (gc-dump-cell curr)
      ;; (format t "~X ~D ~D~%" obje(cvm-free-block-size obje) size)
      (cond
-       ((and (not fit)    (=  size      (cvm-free-block-size obje)))  
+       ((and (not fit)    (=  size      (cvm-free-block-size obje)))
         (when-debug (:allocate)
           (format t "fb-search-big-block #x~16,'0X #x~8,'0X ~@
-                      found fit #x~16,'0X ~:[P/NIL~;~:*P/#x~16,'0X~]~%" 
+                      found fit #x~16,'0X ~:[P/NIL~;~:*P/#x~16,'0X~]~%"
                   free-list size curr (or previous prev)))
         (setf fit      curr
               previous (or previous prev)))
        ((and (not double) (=  (* size 2) (cvm-free-block-size obje)))
         (when-debug (:allocate)
           (format t "fb-search-big-block #x~16,'0X #x~8,'0X ~@
-                      found double #x~16,'0X ~:[P/NIL~;~:*P/#x~16,'0X~]~%" 
+                      found double #x~16,'0X ~:[P/NIL~;~:*P/#x~16,'0X~]~%"
                   free-list size curr (or previous prev)))
         (setf double   curr
               previous (or previous prev)))
        ((and (not best)   (<= (+ size 2) (cvm-free-block-size obje)))
         (when-debug (:allocate)
           (format t "fb-search-big-block #x~16,'0X #x~8,'0X ~@
-                      found best #x~16,'0X ~:[P/NIL~;~:*P/#x~16,'0X~]~%" 
+                      found best #x~16,'0X ~:[P/NIL~;~:*P/#x~16,'0X~]~%"
                   free-list size curr (or previous prev)))
         (setf best     curr
               previous (or previous prev)))
        ((and (not bigger) (<  size       (cvm-free-block-size obje)))
         (when-debug (:allocate)
           (format t "fb-search-big-block #x~16,'0X #x~8,'0X ~@
-                      found bigger #x~16,'0X ~:[P/NIL~;~:*P/#x~16,'0X~]~%" 
+                      found bigger #x~16,'0X ~:[P/NIL~;~:*P/#x~16,'0X~]~%"
                   free-list size curr (or previous prev)))
         (setf bigger   curr
               previous (or previous prev))))
@@ -1945,10 +1945,10 @@ RAISE:  simple-error conditions when an invariant is invalidated.
          (idx         (min size +fb-big+))
          (free-list   (cvm-deref (cvm-svref free-blocks idx)))
          prev fit double best bigger (big-searched nil))
-    (macrolet ((return-fit 
+    (macrolet ((return-fit
                    (found size)
                  ;; nothing more, return fit
-                 `(progn 
+                 `(progn
                     (when-debug (:allocate)
                       (format t "gc-allocate #x~8,'0X ~@
                                   found a fit #x~16,'0X~%" ,size ,found))
@@ -1963,7 +1963,7 @@ RAISE:  simple-error conditions when an invariant is invalidated.
                     (cvm-free-block-set-size ,found half)
                     (when-debug (:allocate)
                       (format t "gc-allocate #x~8,'0X ~@
-                                  found a double #x~16,'0X F/#x~16,'0X~%" 
+                                  found a double #x~16,'0X F/#x~16,'0X~%"
                               ,size ,found free))
                     (return-from gc-allocate-internal ,found)))
                (return-best
@@ -1971,33 +1971,33 @@ RAISE:  simple-error conditions when an invariant is invalidated.
                  ;; split in two, fb-insert the rest, return the one
                  `(let ((free (+ ,found ,size)))
                     (gc-store free
-                              (cvm-form-free-block 
-                               (- (cvm-free-block-size (gc-load ,found)) 
+                              (cvm-form-free-block
+                               (- (cvm-free-block-size (gc-load ,found))
                                   ,size) 0))
                     (fb-insert free-blocks free)
                     (cvm-free-block-set-size ,found ,size)
                     (when-debug (:allocate)
                       (format t "gc-allocate #x~8,'0X ~@
-                                  found a best #x~16,'0X F/#x~16,'0X~%" 
+                                  found a best #x~16,'0X F/#x~16,'0X~%"
                               ,size ,found free))
                     (return-from gc-allocate-internal ,found)))
                (return-bigger
                    (found size)
                  ;; split in two, forget the smaller, return the one
-                 ;; lose the 8-byte trailer. 
+                 ;; lose the 8-byte trailer.
                  ;; (split to put a free-block header in it though!)
                  `(let ((free (+ ,found ,size)))
                     (gc-store free
-                              (cvm-form-free-block 
+                              (cvm-form-free-block
                                (- (cvm-free-block-size (gc-load ,found))
                                   ,size) 0))
                     (cvm-free-block-set-size ,found ,size)
                     (when-debug (:allocate)
                       (format t "gc-allocate #x~8,'0X ~@
-                                  found a bigger #x~16,'0X L/#x~16,'0X~%" 
+                                  found a bigger #x~16,'0X L/#x~16,'0X~%"
                               ,size ,found free))
                     (return-from gc-allocate-internal ,found))))
-      (tagbody 
+      (tagbody
          (when-debug (:allocate) (go :first-time))
        :again
          (when-debug (:allocate)
@@ -2006,9 +2006,9 @@ RAISE:  simple-error conditions when an invariant is invalidated.
          (when (= idx +fb-big+)
            ;; big block
            (when-debug (:allocate)
-             (format t "gc-allocate #x~16,'0X searching a big block~%"  
+             (format t "gc-allocate #x~16,'0X searching a big block~%"
                      size))
-           (multiple-value-bind (prev fit double best bigger) 
+           (multiple-value-bind (prev fit double best bigger)
                (fb-search-big-block free-list size)
              (let ((found (or fit double best bigger)))
                (when found
@@ -2021,7 +2021,7 @@ RAISE:  simple-error conditions when an invariant is invalidated.
                (go :collect))))
          ;; small block
          (when-debug (:allocate)
-           (format t "gc-allocate #x~16,'0X searching a small block~%"  
+           (format t "gc-allocate #x~16,'0X searching a small block~%"
                    size))
          ;; 1- search a block in the same bucket.
          (when (plusp free-list)
@@ -2031,13 +2031,13 @@ RAISE:  simple-error conditions when an invariant is invalidated.
          (when-debug (:allocate)
            (format t "gc-allocate #x~16,'0X searching a double~%"  size))
          (if (< (* 2 size) +fb-big+)
-             (let ((free-list (cvm-deref (cvm-svref free-blocks 
+             (let ((free-list (cvm-deref (cvm-svref free-blocks
                                                     (* 2 size)))))
                (when (plusp free-list)
                  (fb-extract free-blocks nil free-list (* 2 size))
                  (return-double free-list size)))
              (let ((free-list  (cvm-deref (cvm-svref free-blocks +fb-big+))))
-               (multiple-value-setq (prev fit double best bigger) 
+               (multiple-value-setq (prev fit double best bigger)
                  (fb-search-big-block free-list size))
                (setf big-searched t)
                (when double
@@ -2059,7 +2059,7 @@ RAISE:  simple-error conditions when an invariant is invalidated.
                               big-searched))
                     (unless big-searched
                       (multiple-value-setq
-                          (prev fit double best bigger) 
+                          (prev fit double best bigger)
                         (fb-search-big-block free-list size))
                       (setf big-searched t))
                     (when-debug (:allocate)
@@ -2096,7 +2096,7 @@ RAISE:  simple-error conditions when an invariant is invalidated.
                (fb-extract free-blocks nil free-list idx)
                (return-best free-list size))))
        :collect
-         ;;  5- if not already gc in this allocate, 
+         ;;  5- if not already gc in this allocate,
          ;;     then garbage collect and try once more from the start.
          (unless garbage-collected
            (when-debug (:allocate)
@@ -2113,7 +2113,7 @@ RAISE:  simple-error conditions when an invariant is invalidated.
   ;; size = number of 8-byte cells to allocate, from 2 up.
   (with-gc-lock
     (when-debug (:check)
-      (format *standard-output* "~&gc-allocate ~A~%Check before allocate~%" 
+      (format *standard-output* "~&gc-allocate ~A~%Check before allocate~%"
               size)
       (apply (function gc-check-internal)
              :stream *standard-output* *check-args*))
@@ -2121,7 +2121,7 @@ RAISE:  simple-error conditions when an invariant is invalidated.
                  (generation (cvm-hh-new-generation +gc-heap-header+)))
              (unless (cvm-null generation)
                (when-debug (:ng)
-                 (format t "ng:push  [~2D] ~16,'0X~%" 
+                 (format t "ng:push  [~2D] ~16,'0X~%"
                          (cvm-fill-pointer generation) allocated))
                (cvm-vector-push allocated generation))
              allocated)
@@ -2138,7 +2138,7 @@ RAISE:  simple-error conditions when an invariant is invalidated.
        (warn "gc-mark got a complex object instead of a ct-address.~%")))
     ((#.ct-free-block)
      (when-debug (:gc)
-       (warn "gc-mark got a free-block ~A.~%" 
+       (warn "gc-mark got a free-block ~A.~%"
              (with-output-to-string (out)
                (gc-dump-cell address :stream out :contents nil)))))
     ((#.ct-address #.ct-readable)
@@ -2198,7 +2198,7 @@ RAISE:  simple-error conditions when an invariant is invalidated.
 
 
 (defun gc-sweep ()
-  ;;  - sweep: start from first cell, and in sequence, check whether 
+  ;;  - sweep: start from first cell, and in sequence, check whether
   ;;    it's marked, and gather free ranges.
   (let ((free-blocks (cvm-deref (cvm-hh-free-blocks +gc-heap-header+))))
     (multiple-value-bind (dimension address) (cvm-rows free-blocks)
@@ -2208,27 +2208,27 @@ RAISE:  simple-error conditions when an invariant is invalidated.
        for curadr = +gc-start+ then (+ curadr (cvm-size-of curobj))
        for curobj = (when (< curadr *gc-heap-size*) (gc-load curadr))
        while (< curadr *gc-heap-size*)
-       do 
+       do
        (if (gc-marked curobj)
            (progn
-             (when-debug (:gc) 
-               (format *trace-output* "~&V ") 
+             (when-debug (:gc)
+               (format *trace-output* "~&V ")
                (gc-dump-cell curadr :stream *trace-output* :margin "  "))
              (gc-store curadr (gc-clear-mark curobj))
              (when free-start
                (gc-store free-start (cvm-form-free-block
                                      (- curadr free-start) 0))
                (fb-insert free-blocks free-start)
-               (when-debug (:gc) 
-                 (format *trace-output* "~&C ") 
+               (when-debug (:gc)
+                 (format *trace-output* "~&C ")
                  (gc-dump-cell free-start :stream *trace-output* :margin "  "))
                (setf free-start nil)))
            (setf free-start (or free-start curadr)))
        finally (when free-start
-                 (gc-store free-start (cvm-form-free-block 
+                 (gc-store free-start (cvm-form-free-block
                                        (- curadr free-start) 0))
                  (fb-insert free-blocks free-start)
-                 (when-debug (:gc) 
+                 (when-debug (:gc)
                    (format *trace-output* "~&C ")
                    (gc-dump-cell free-start
                                  :stream *trace-output* :margin "  "))
@@ -2240,7 +2240,7 @@ RAISE:  simple-error conditions when an invariant is invalidated.
   ;; garbage collect:
   ;;  - no copying collector, to avoid updating the references in other spaces.
   ;;  - mark:  recursively work from root and mark all accessible.
-  ;;  - sweep: start from first cell, and in sequence, check whether 
+  ;;  - sweep: start from first cell, and in sequence, check whether
   ;;    it's marked, and gather free ranges.
   (when-debug (:gc :check)
     (format *trace-output* "~&Check before garbage collection~%")
@@ -2256,7 +2256,7 @@ RAISE:  simple-error conditions when an invariant is invalidated.
     (format *trace-output* "~&Check after garbage collection~%")
     (apply (function gc-check-internal)
            :stream *trace-output* *check-args*))) ;;gc-collect-internal
- 
+
 
 (defun gc-collect-garbage ()
   (with-gc-lock
@@ -2279,7 +2279,7 @@ DO:     Initialize the heap in *gc-memory*.
         (gc-store +gc-heap-header+ (cvm-form-head ct-structure 8))
       (cvm-initialize-vector +gc-heap-header+ ct-structure ct-t 6)
       (cvm-hh-set-size +gc-heap-header+ (cvm-form-fixnum *gc-heap-size*))
-      (let ((fbv (+ +gc-heap-header+ 
+      (let ((fbv (+ +gc-heap-header+
                     (cvm-size-of (gc-load +gc-heap-header+)))))
         (cvm-hh-set-free-blocks +gc-heap-header+ (cvm-form-address fbv))
         ;; (cvm-initialize-vector stores NIL/0 in the slots)
@@ -2294,8 +2294,8 @@ DO:     Initialize the heap in *gc-memory*.
           (setf ptr 128)
           (gc-store ptr (cvm-form-free-block (- *gc-heap-size* ptr) 0))
           (fb-insert fbv ptr)))
-      (cvm-hh-set-new-generation 
-       +gc-heap-header+ 
+      (cvm-hh-set-new-generation
+       +gc-heap-header+
        (cvm-make-vector-fp ct-t +ng-size+ :fill-pointer (cvm-form-fixnum 0)))
       (let* ((name/common-lisp  (cvm-make-string :contents "COMMON-LISP"))
              (name/symbol       (cvm-make-string :contents "SYMBOL"))
@@ -2332,17 +2332,17 @@ DO:     Initialize the heap in *gc-memory*.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; COMMON FUNCTION INTEFACE (CFI)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   - functions to convert to and from shared memory values 
+;;   - functions to convert to and from shared memory values
 ;;     and host lisp values.
 ;;   : used to pass data to and from shared and host.
 
 
 (defvar *ld-values* nil)
 
-(defun ld-get (value) 
+(defun ld-get (value)
   (when-debug (:ld)
     (let ((*print-circle* t))
-      (format t "~&ld-get ~S [~D] --> ~S~%" 
+      (format t "~&ld-get ~S [~D] --> ~S~%"
               value (sxhash value) (gethash value *ld-values*))))
   (gethash value *ld-values*))
 
@@ -2370,7 +2370,7 @@ DO:     Initialize the heap in *gc-memory*.
   (:method ((value (eql t)))       (declare (ignorable value)) +cvm-t+)
   (:method ((value character))     (cvm-form-character value))
   (:method ((value integer))       (cvm-form-fixnum    value)) ; no bignum yet
-  (:method ((value float)) 
+  (:method ((value float))
     (cond
       ((typep value 'short-float)  (cvm-form-single-float     value))
       ((typep value 'single-float) (cvm-form-single-float     value))
@@ -2411,7 +2411,7 @@ DO:     Initialize the heap in *gc-memory*.
     (or (ld-get value)
         (ld-put value (cvm-make-string :contents value))))
   (:method ((value vector))
-    (declare (ignorable value)) 
+    (declare (ignorable value))
     ;; TODO: since we make a copy, the fill-pointers are not synchronized!
     ;; TODO: avoid circles
     #||
@@ -2419,7 +2419,7 @@ DO:     Initialize the heap in *gc-memory*.
     (ld-put value (cvm-make-vector <<<value>>> (length value))))
     ||#(error "not implemented yet"))
   (:method ((value array))
-    (declare (ignorable value)) 
+    (declare (ignorable value))
     ;; TODO: avoid circles
     #||
     (or (ld-get value)
@@ -2458,7 +2458,7 @@ DO:     Initialize the heap in *gc-memory*.
 
 (defun cfi-copy-tree (ltree)
   (let ((stack '()))
-    (flet ((copy-cdr 
+    (flet ((copy-cdr
                (ltree ctree)
              (when-debug (:ct) (format t "~&PROCESSING CDR; LTREE: ~S~%" ltree))
              (loop
@@ -2487,7 +2487,7 @@ DO:     Initialize the heap in *gc-memory*.
            (copy-cdr ltree ctree))      ; we process (cdr ltree) now.
           (t (ld-put ltree (cfi-copy-to-common ltree)))))
       ;; processing the CARs:
-      (loop while stack do 
+      (loop while stack do
            (let* ((lpare (pop stack))
                   (cpare (ld-get lpare))
                   (ltree (car lpare))
@@ -2495,12 +2495,12 @@ DO:     Initialize the heap in *gc-memory*.
              (when-debug (:ct) (format t "~&PROCESSING CAR; LTREE: ~S~%" ltree))
              (assert (not (null cpare)))
              (cond
-               ((atom ltree)                       
+               ((atom ltree)
                 (with-generation ()
                   (cvm-setcar cpare (cfi-copy-to-common ltree))))
                (t
                 (with-generation ()
-                  (setf ctree 
+                  (setf ctree
                         (ld-put ltree (cvm-make-cons +cvm-nil+ +cvm-nil+)))
                   (cvm-setcar cpare ctree))
                 (push ltree stack)
@@ -2522,7 +2522,7 @@ RETURN:  An interned lisp symbol whose plist, value and function are updated
 (defun cfi-symbol-copy-from-common (lisp-symbol cvm-symbol)
   (setf (symbol-plist lisp-symbol)
         (cfi-copy-from-common (cvm-symbol-plist cvm-symbol)))
-  (unless (or (eq (symbol-package lisp-symbol) 
+  (unless (or (eq (symbol-package lisp-symbol)
                   (cvm-find-package (ld-lcache "COMMON-LISP")))
               (eq (symbol-package lisp-symbol)
                   (cvm-find-package (ld-lcache "KEYWORD"))))
@@ -2533,7 +2533,7 @@ RETURN:  An interned lisp symbol whose plist, value and function are updated
       (unless (eql +cvm-unbound+ val)
         (setf (symbol-function lisp-symbol) (cfi-copy-from-common val)))))
   lisp-symbol)
-  
+
 
 (defun cfi-copy-from-common (cvm-value &key typecode)
   (case (or typecode (cvm-type-of cvm-value))
@@ -2583,18 +2583,18 @@ RETURN:  An interned lisp symbol whose plist, value and function are updated
                 (setf (car cons) (cfi-copy-from-common (cvm-car cvm-value))
                       (cdr cons) (cfi-copy-from-common (cvm-cdr cvm-value)))
                 cons)))
-         ((#.ct-structure) 
-          (cond 
-            ((cvm-symbol-p cvm-value) 
+         ((#.ct-structure)
+          (cond
+            ((cvm-symbol-p cvm-value)
              (or (ld-get cvm-value)
                  (let  ((lsym (ld-put cvm-value (cfi-make-symbol cvm-value))))
                    ;; PERHAPS we don't want to copy the value of a random symbol
                    #|| (cfi-symbol-copy-from-common lsym cvm-value) ||#
                    lsym)))
-            ((cvm-package-p cvm-value) 
+            ((cvm-package-p cvm-value)
              (or (ld-get cvm-value)
                  (ld-put cvm-value
-                         (let* ((packname (cfi-copy-from-common 
+                         (let* ((packname (cfi-copy-from-common
                                            (cvm-package-name cvm-value)))
                                 (pack (find-package packname)))
                            (or pack (make-package packname #|TODO:nickname|#))))))
@@ -2609,7 +2609,7 @@ RETURN:  An interned lisp symbol whose plist, value and function are updated
          (otherwise (cfi-copy-from-common (ldb +ex-cons+ ref-value))))))
     ((#.ct-free-block) (error "Trying to convert a free block at ~8,'0X"
                               (cvm-deref cvm-value)))
-    (otherwise         (error "Invalid type code (~D)" 
+    (otherwise         (error "Invalid type code (~D)"
                               (or typecode (cvm-type-of cvm-value))))))
 
 
@@ -2647,7 +2647,7 @@ NOTE:           MEMORY objects are byte-addressed, however the various
 "
   ;; this was the old API:
   #-(and) "
-KEY:            An IPC key, built with IPC:MAKE-KEY, used to get 
+KEY:            An IPC key, built with IPC:MAKE-KEY, used to get
                 the shared memory block ('common' memory) and the
                 semaphore set from which a semaphore is needed.
 COMMON-SEMAPHORE-INDEX:

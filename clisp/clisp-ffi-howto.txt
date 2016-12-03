@@ -546,9 +546,9 @@ I appreciate comments,
 	Jörg Höhle.
 
 -------------------------------------------------------
-This SF.net email is sponsored by: Etnus, makers of TotalView, The debugger 
-for complex code. Debugging C/C++ programs can leave you feeling lost and 
-disoriented. TotalView can help you find your way. Available on major UNIX 
+This SF.net email is sponsored by: Etnus, makers of TotalView, The debugger
+for complex code. Debugging C/C++ programs can leave you feeling lost and
+disoriented. TotalView can help you find your way. Available on major UNIX
 and Linux platforms. Try it free. www.etnus.com
 
 

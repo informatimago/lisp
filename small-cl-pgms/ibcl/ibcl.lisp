@@ -5,8 +5,8 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
-;;;;    The package IBCL exports the same symbols as COMMON-LISP, but for 
+;;;;
+;;;;    The package IBCL exports the same symbols as COMMON-LISP, but for
 ;;;;    some of the functions of macros modified to track of the source
 ;;;;    of the definitions and to be able to edit them from the image,
 ;;;;    and to save them in files.
@@ -15,16 +15,16 @@
 ;;;;
 ;;;;    One can work at the REPL, define variables with
 ;;;;    DEFCONSTANT, DEFVAR, DEFPARAMETER, macros with DEFMACRO,
-;;;;    and functions with DEFUN, edit macro and function definitions 
+;;;;    and functions with DEFUN, edit macro and function definitions
 ;;;;    with ED, and save the image with SAVE-IMAGE.
 ;;;;
 ;;;;    The function LIST-PACKAGES-WITH-SOURCES returns a list of packages
 ;;;;    where some of these variables or functions are defined.
-;;;;    The function GET-SOURCE returns the source form of the given 
+;;;;    The function GET-SOURCE returns the source form of the given
 ;;;;    variable or function.
 ;;;;    The function SAVE-SOURCES saves the definitions in a package,
 ;;;;    or all the definitions to a file or stream.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -37,19 +37,19 @@
 ;;;;    See also MOP functions.
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2006 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -62,7 +62,7 @@
   ;; We some symbols from the package #+clisp "EXT" too.
   (:shadow "DEFPACKAGE"
            "DEFCONSTANT" "DEFVAR" "DEFPARAMETER"
-           "DEFSTRUCT" "DEFCLASS" 
+           "DEFSTRUCT" "DEFCLASS"
            "DEFUN" "DEFMACRO" "LAMBDA" "DEFMETHOD"
            "ED"  "DELETE-PACKAGE"
            #| TODO: Add define-symbol-macro, defclass, define-condition, etc...
@@ -72,7 +72,7 @@
 (in-package "IMAGE-BASED-COMMON-LISP")
 
 
-(cl:defparameter *map* (make-hash-table) 
+(cl:defparameter *map* (make-hash-table)
   "Maps packages to (cons definitions order)")
 
 (cl:defun delete-package (package-designator)
@@ -123,7 +123,7 @@
           (setf (cdr record) value)))))
 ||#
 
-(cl:defmacro push-on-top (value place &key (test (function eql)) 
+(cl:defmacro push-on-top (value place &key (test (function eql))
                                 &environment env)
   (multiple-value-bind (vars vals store-vars writer-form reader-form)
       (get-setf-expansion place env)
@@ -160,7 +160,7 @@
 ;; done     DEFVAR                                     macro
 
 
-(cl:defmacro defconstant (name value 
+(cl:defmacro defconstant (name value
                                &optional (documentation nil documentation-p))
   (let ((key (gensym))
         (def (gensym)))
@@ -174,7 +174,7 @@
          ,@(when documentation-p `(,documentation))))))
 
 
-(cl:defmacro defvar (name &optional (value nil value-p) 
+(cl:defmacro defvar (name &optional (value nil value-p)
                           (documentation nil documentation-p))
   (let ((key (gensym))
         (def (gensym)))
@@ -182,15 +182,15 @@
            (,def (definitions ,(symbol-package name))))
        (setf (gethash ,key ,def)
              (list 'defvar ',name
-                   ,@ (when value-p 
+                   ,@ (when value-p
                         `(',value ,@(when documentation-p `(',documentation))))))
        (pushnew ,key (order ,(symbol-package name)) :test (function equal))
        (cl:defvar ,name
-         ,@ (when value-p 
+         ,@ (when value-p
               `(,value ,@(when documentation-p `(,documentation))))))))
 
 
-(cl:defmacro defparameter (name value 
+(cl:defmacro defparameter (name value
                                 &optional (documentation nil documentation-p))
   (let ((key (gensym))
         (def (gensym)))
@@ -208,7 +208,7 @@
 (cl:defmacro defstruct (name-and-options &rest fields)
   (let ((key (gensym))
         (def (gensym))
-        (name (if (consp name-and-options) 
+        (name (if (consp name-and-options)
                   (first name-and-options)
                   name-and-options)))
     `(let ((,key (cons 'type ',name))
@@ -225,14 +225,14 @@
     `(let ((,key (cons 'type ',name))
            (,def (definitions ,(symbol-package name))))
        (cl:defclass ,name ,superclasses ,attributes ,@options)
-       (setf (gethash ,key ,def) 
+       (setf (gethash ,key ,def)
              '(defclass ,name ,superclasses ,attributes ,@options))
        (pushnew ,key (order ,(symbol-package name)) :test (function equal))
        ',name)))
 
 
 ;; Note: we compile the functions immediately, which may not be the
-;;       normal behavior when an interpreter is available, to 
+;;       normal behavior when an interpreter is available, to
 
 (cl:defmacro defmacro (name args &body body)
   (let ((key (gensym))
@@ -245,7 +245,7 @@
        (unless (compiled-function-p (macro-function ',name))
          )
        (setf (gethash ,key ,def) '(defmacro ,name ,args ,@body)
-             (gethash (cons 'function (fdefinition ',name)) ,def)  
+             (gethash (cons 'function (fdefinition ',name)) ,def)
              (gethash ,key ,def))
        (pushnew ,key (order ,(symbol-package name)) :test (function equal))
        ',name)))
@@ -260,9 +260,9 @@
        (eval-when (:execute)
          (compile ',name))
        (unless (compiled-function-p (function ,name))
-         ) 
+         )
        (setf (gethash ,key ,def) '(defun ,name ,args ,@body)
-             (gethash (cons 'function (fdefinition ',name)) ,def)  
+             (gethash (cons 'function (fdefinition ',name)) ,def)
              (gethash ,key ,def))
        (pushnew ,key (order ,(symbol-package name)) :test (function equal))
        ',name)))
@@ -278,9 +278,9 @@
        (eval-when (:execute)
          (compile ',name))
        (unless (compiled-function-p (function ,name))
-         ) 
+         )
        (setf (gethash ,key ,def) '(defmethod ,name ,@stuff-and-body)
-             (gethash (cons 'method (fdefinition ',name) #|add arg types here?|#) ,def)  
+             (gethash (cons 'method (fdefinition ',name) #|add arg types here?|#) ,def)
              (gethash ,key ,def))
        (pushnew ,key (order ,(symbol-package name)) :test (function equal))
        ',name)))
@@ -310,7 +310,7 @@
         (lambda (option)
           (if (listp option)
               (case (first option)
-                ((:use) 
+                ((:use)
                  (substitute "IBCL" "COMMON-LISP"
                              (substitute "IBCL" "CL" option)))
                 ((:shadowing-import-from :import-from)
@@ -333,7 +333,7 @@
   ;; TODO: with symbol-package we cannot find fdefinitions...
   (if (null kind)
       (loop
-         :for kind :in '(type variable function) 
+         :for kind :in '(type variable function)
          :collect (get-source name kind))
       (gethash (cons kind name) (definitions (symbol-package name)))))
 
@@ -347,7 +347,7 @@
                   :for item :in (reverse (order package))
                   :initially (pprint `(in-package ,(package-name package)) out)
                   :unless (gethash item processed)
-                  :do (progn 
+                  :do (progn
                         (setf (gethash item processed) t)
                         (pprint (gethash item def) out)))))
            (save-packages (out package)
@@ -374,13 +374,13 @@
         (setf (getf keys :start-package) (find-package "IBCL-USER")))
       (unless (key-present-p :norc keys)
         (setf (getf keys :norc) t))
-      (apply (function ext:saveinitmem) 
+      (apply (function ext:saveinitmem)
              (first args)
              keys)))
-  #+sbcl 
+  #+sbcl
   (when (zerop (sb-posix:fork))
       (apply (function sb-ext:save-lisp-and-die) args))
-  #-(or clisp sbcl) (error "I don't know how to save an image in ~A" 
+  #-(or clisp sbcl) (error "I don't know how to save an image in ~A"
                            (lisp-implementation-type))
   (values))
 
@@ -398,15 +398,15 @@
 
 (cl:defmacro handling-errors (&body body)
   `(handler-case (progn ,@body)
-     (simple-condition 
-         (err) 
+     (simple-condition
+         (err)
        (format *error-output* "~&~A: ~%" (class-name (class-of err)))
        (apply (function format) *error-output*
               (simple-condition-format-control   err)
               (simple-condition-format-arguments err))
        (format *error-output* "~&"))
-     (condition 
-         (err) 
+     (condition
+         (err)
        (format *error-output* "~&~A: ~%  ~S~%"
                (class-name (class-of err)) err))))
 
@@ -415,7 +415,7 @@
   (typecase x
     (null                 (cl:ed))      ; edit whatever.
     ((or pathname string) (cl:ed x))    ; edit an external file.
-    (otherwise 
+    (otherwise
      (let ((def (get-source x 'function)))
        (if def
            (let ((path (make-temporary-pathname))

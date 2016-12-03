@@ -246,8 +246,8 @@
   );;new
 
 
-(defparameter +countries+ 
-  '( 
+(defparameter +countries+
+  '(
     ( cd nil
         "La République Démocratique Du Congo"
         "The Democratic Republic Of The Congo")

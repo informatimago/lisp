@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    XXX
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -16,19 +16,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -72,19 +72,19 @@ The function REPORT-PROBLEMS prints a report of the found cycles.
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2012 - 2013
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 "))
@@ -203,7 +203,7 @@ DO:     Find cycles in the graph defined by the nodes in the OBJECTS
     (when cycles
       (format report "~&There are ~A cycles in the dependency relationship!~%"
               (length cycles))
-      (dolist (path (sort cycles 
+      (dolist (path (sort cycles
                           (function string<)
                           :key (function prin1-to-string)))
         (print-cycle path)))))
@@ -263,19 +263,19 @@ DO:     Generates a GraphViz dot file to draw the dependency-graph defined
 ;;        :when includep
 ;;        :collect (or (gethash included-file files)
 ;;                     (make-instance 'header-file :path included-file)))))
-;; 
-;; 
+;;
+;;
 ;; (defparameter *root-path*       #p"/home/pjb/src/manager2/trunk/")
 ;; (defparameter *files*           (make-hash-table :test (function equal)))
 ;; (defparameter *headers*         (make-hash-table :test (function equal)))
 ;; (defparameter *sorted-headers*  '())
-;; 
-;; 
+;;
+;;
 ;; (defun process-sources (root-path)
 ;;   (let ((header-paths (directory (merge-pathnames "**/*.hxx" root-path nil)))
 ;;         (source-paths (directory (merge-pathnames "**/*.cxx" root-path nil))))
 ;;     (format t "~A headers; ~A sources~%" (length header-paths) (length source-paths))
-;; 
+;;
 ;;     (dolist (path source-paths)
 ;;       (setf (gethash path *files*) (make-instance 'source-file :path (namestring path))))
 ;;     (dolist (path header-paths)

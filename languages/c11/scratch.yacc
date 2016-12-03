@@ -82,7 +82,7 @@ cast_expression_tail
 ;;;     : function_definition
 ;;;     | declaration
 ;;;     ;
-;;; 
+;;;
 ;;; function_definition
 ;;;     : declaration_specifiers declarator declaration_list compound_statement
 ;;;     | declaration_specifiers declarator                  compound_statement
@@ -93,13 +93,13 @@ cast_expression_tail
 ;;;     | declaration_specifiers init_declarator_list ';'
 ;;;     | static_assert_declaration
 ;;;     ;
-                         
+
 
 ;;; init_declarator_list
 ;;;     : init_declarator
 ;;;     | init_declarator_list ',' init_declarator
 ;;;     ;
-;;; 
+;;;
 ;;; init_declarator
 ;;;     : declarator '=' initializer
 ;;;     | declarator
@@ -116,4 +116,4 @@ cast_expression_tail
 ;;;     | declaration_specifiers declarator '=' initializer init_declarator_list ';'
 ;;;     | declaration_specifiers declarator                  compound_statement
 ;;;     | declaration_specifiers declarator declaration_list compound_statement
-;;;     ;               
+;;;     ;

@@ -97,14 +97,14 @@
 ;; |(load "/etc/sbclrc")
 ;; |
 ;; |(format t "Hello Peter!~%")
-;; |  
+;; |
 ;; |(common-lisp-controller:add-project-directory
 ;; | #p"/home/pvaneynd/common-lisp/src/"
 ;; | #p"/home/pvaneynd/common-lisp/fasl-sbcl/"
 ;; | '("CLX")
 ;; | "/home/pvaneynd/common-lisp/systems/")
 
-;; then you can do: 
+;; then you can do:
 
 ;; * (require :db-sockets)
 ;; * (pushnew :db-sockets *features*)

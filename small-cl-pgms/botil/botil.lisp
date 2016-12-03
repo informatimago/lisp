@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     IRC
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Botil: an IRC bot monitoring Hacker News.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -16,19 +16,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2015 - 2015
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -40,7 +40,7 @@
 (defpackage "COM.INFORMATIMAGO.SMALL-CL-PGMS.BOTIL"
   (:use "COMMON-LISP"
         "CL-JSON" "DRAKMA"  "SPLIT-SEQUENCE" "BORDEAUX-THREADS"
-        "CL-DATE-TIME-PARSER" "CL-PPCRE" "CL-SMTP" 
+        "CL-DATE-TIME-PARSER" "CL-PPCRE" "CL-SMTP"
         "COM.INFORMATIMAGO.RDP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE"
@@ -148,12 +148,12 @@ Licensed under the AGPL3.
                   :reader   hostname
                   :type     string)
    (botnick       :initarg  :botnick
-                  :initform *default-nickname* 
+                  :initform *default-nickname*
                   :accessor botnick
                   :type     string
                   :documentation "The nick of the bot on this server.")
    (botpass       :initarg  :botpass
-                  :initform *default-password* 
+                  :initform *default-password*
                   :accessor botpass
                   :type     (or null string)
                   :documentation "The password of the bot on this server.")
@@ -174,7 +174,7 @@ Licensed under the AGPL3.
                   :initform '()
                   :accessor users
                   :type     list)
-   
+
    (request-index :initform (make-request-index)
                   :reader request-index)
    (last-update   :initform (get-universal-time)
@@ -220,7 +220,7 @@ Licensed under the AGPL3.
            :test (function string-equal))) ; channel names are case insensitive.
 
 (defmethod print-object ((channel channel) stream)
-  (print-unreadable-object (channel stream :identity nil :type t) 
+  (print-unreadable-object (channel stream :identity nil :type t)
     (format stream "~A" (name channel)))
   channel)
 
@@ -676,7 +676,7 @@ cf. command: cancel log $ID")
     (assert (and (plusp (length name)) (char/= #\# (aref name 0))))
     (or (find-user server name)
         (let ((user  (apply (function make-instance) 'user
-                            :server server :name name 
+                            :server server :name name
                             (sexp-file-contents (user-pathname name server)
                                                 :if-does-not-exist nil
                                                 :external-format *external-format*))))
@@ -715,7 +715,7 @@ cf. command: cancel log $ID")
   (let ((index (request-index (server (channel request)))))
     (deletef (all-requests index) request)
     (deletef (cdr (gethash (name (channel request)) (channel-index index) (list nil))) request)
-    (deletef (cdr (gethash (name (owner   request)) (owner-index   index) (list nil))) request) 
+    (deletef (cdr (gethash (name (owner   request)) (owner-index   index) (list nil))) request)
     request))
 
 (defmethod create-request ((channel channel) (owner user) &optional start-date end-date)
@@ -826,7 +826,7 @@ cf. command: cancel log $ID")
       (error "A botil database already exists at ~S" dbdir-pathname))
     (setf *database* dbdir-pathname)
     (with-open-file (out dbfile
-                         :if-does-not-exist :create                         
+                         :if-does-not-exist :create
                          :external-format *external-format*)
       (write-line ";; -*- mode:lisp -*-" out)
       (write-line ";; This directory holds the local botil database." out))
@@ -1021,7 +1021,7 @@ cf. command: cancel log $ID")
 ;; digit      =  %x30-39                 ; 0-9
 ;; hexdigit   =  digit / "A" / "B" / "C" / "D" / "E" / "F"
 ;; special    =  %x5B-60 / %x7B-7D ; "[", "]", "\", "`", "_", "^", "{", "|", "}" ;
-;; 
+;;
 ;; channel    =  ( "#" / "+" / ( "!" channelid ) / "&" ) chanstring [ ":" chanstring ]
 ;; chanstring =  %x01-07 / %x08-09 / %x0B-0C / %x0E-1F / %x21-2B
 ;; chanstring =/ %x2D-39 / %x3B-FF ; any octet except NUL, BELL, CR, LF, " ", "," and ":" ;
@@ -1104,7 +1104,7 @@ cf. command: cancel log $ID")
                        register identify reset
                        help version uptime sources)
                   :action $1)
-             
+
              (--> server   word :action `(server   ,(second word)))
              (--> email    word :action `(email    ,(second word)))
              (--> channel  word :action `(channel  ,(second word)))
@@ -1113,35 +1113,35 @@ cf. command: cancel log $ID")
              (--> id       word :action `(id       ,(second word)))
              (--> key      word :action `(key      ,(second word)))
              (--> date     word :action `(date     ,(second word)))
-             
+
              ;; (--> criteria
              ;;      disjunction
              ;;      :action `(criteria ,disjunction))
-             ;; 
+             ;;
              ;; (--> disjunction
              ;;      conjunction (opt "or" disjunction :action disjunction)
              ;;      :action (if $2
              ;;                  `(or ,conjunction ,$2)
              ;;                  conjunction))
-             ;; 
+             ;;
              ;; (--> conjunction
              ;;      term (opt "and" conjunction :action conjunction)
              ;;      :action (if $2
              ;;                  `(and ,term ,$2)
              ;;                  term))
-             ;; 
+             ;;
              ;; (--> term
              ;;      (alt (seq "not" term :action `(not ,$2))
              ;;           (seq selection :action selection)))
 
-             
+
              ;; (--> selection
              ;;      (alt
              ;;       (seq "(" disjunction ")" :action disjunction)
              ;;       (seq (rep string) :action `(keywords ,@$1))
              ;;       (seq (opt "channel") channel :action channel)
              ;;       (seq user nick :action nick)))
-             
+
              ;; (--> query
              ;;      "query" montezuma
              ;;      :action `(query ,montezuma))
@@ -1177,7 +1177,7 @@ cf. command: cancel log $ID")
                   :action $2)
 
 
-             (--> requests 
+             (--> requests
                   (alt (seq (alt "log" "logs") (opt (alt "request" "requests")) )
                        "request" "requests"))
 
@@ -1208,11 +1208,11 @@ cf. command: cancel log $ID")
                               (seq (alt "server" "servers")
                                    :action `(list-servers)))
                   :action $2)
-             
+
              (--> cancel-log
                   "cancel" (alt
                             (seq request-selection
-                                 :action `(cancel-log-requests ,@request-selection))   
+                                 :action `(cancel-log-requests ,@request-selection))
                             (seq "log" id
                                  :action `(cancel-log-id ,id)))
                   :action $2)
@@ -1220,12 +1220,12 @@ cf. command: cancel log $ID")
              ;; list     my log requests                                (requests sender)
              ;; list     my log requests for channel #lisp              (of-channel channel (requests sender))
              ;; list all my log requests                                (requests sender)
-             
+
              ;; list all    log requests of mr foo                      (requests user)
              ;; list all    log requests of mr foo for channel #lisp    (of-channel channel (requests user))
              ;; list all    log requests           for channel #lisp    (requests channel)
              ;; list all    log requests                                (requests server)
-             
+
              (--> log-request
                   "log" (opt "channel") channel
                   (opt "on" (opt "server") server :action server)
@@ -1405,7 +1405,7 @@ cf. command: cancel log $ID")
   (declare (ignore server))
   (administratorp sender))
 
-(defun has-user-credentials (sender user) 
+(defun has-user-credentials (sender user)
   ;; TODO:
   (and (or (administratorp sender)
            (eql sender user))
@@ -1535,10 +1535,10 @@ cf. command: cancel log $ID")
           (directory (user-pathname :wild server))))
 
 (defun list-users (sender server)
-  ;; (list-users (server "irc.freenode.org")) 
+  ;; (list-users (server "irc.freenode.org"))
   ;; (list-users nil)
   (with-server (sender server)
-    (dolist (user 
+    (dolist (user
              (if (has-server-credential sender server)
                  (user-names server)
                  (progn (answer sender "You are not authorized to list the users other than you.")
@@ -1622,7 +1622,7 @@ cf. command: cancel log $ID")
         (answer sender "You are already registered.  Use reset and set password to change your password."))))
 
 (defun reset (sender nick)
-  ;; (reset (nick "pjb")) 
+  ;; (reset (nick "pjb"))
   ;; (reset nil)
   (let ((user (argument-old-user sender nick (server sender))))
     (if (has-user-credentials sender user)
@@ -1653,11 +1653,11 @@ cf. command: cancel log $ID")
 
 (defun log-request (sender channel server
                     &optional (start-date (get-universal-time)) end-date)
-  ;; (log-request (channel "#lisp") (server "irc.freenode.org") (date "2016-03-01") (date "2016-03-31")) 
-  ;; (log-request (channel "#lisp") (server "irc.freenode.org") (date "2016-06-01") nil) 
-  ;; (log-request (channel "#lisp") (server "irc.freenode.org") nil (date "2016-02-28")) 
-  ;; (log-request (channel "#lisp") nil (date "20160301T000000") (date "2016-03-31T00:00:00")) 
-  ;; (log-request (channel "#lisp") nil (date "20160601T000000") nil) 
+  ;; (log-request (channel "#lisp") (server "irc.freenode.org") (date "2016-03-01") (date "2016-03-31"))
+  ;; (log-request (channel "#lisp") (server "irc.freenode.org") (date "2016-06-01") nil)
+  ;; (log-request (channel "#lisp") (server "irc.freenode.org") nil (date "2016-02-28"))
+  ;; (log-request (channel "#lisp") nil (date "20160301T000000") (date "2016-03-31T00:00:00"))
+  ;; (log-request (channel "#lisp") nil (date "20160601T000000") nil)
   ;; (log-request (channel "#lisp") nil nil (date "2016-02-28T00:00:00"))
   ;; TODO: mixup user from one server asking logs on another server.
   (with-server (sender server)
@@ -1674,7 +1674,7 @@ cf. command: cancel log $ID")
           (answer sender "Added ~A" (create-request channel sender start-date end-date))))))
 
 (defun cancel-log-requests (sender allp user channel &optional server)
-  ;; (cancel-log-requests (channel "#lisp") (server "irc.freenode.org")) 
+  ;; (cancel-log-requests (channel "#lisp") (server "irc.freenode.org"))
   ;; (cancel-log-requests (channel "#lisp") nil)
   (with-server (sender server)
     (let ((to-be-canceled (select-log-requests sender allp user channel server)))
@@ -1700,8 +1700,8 @@ cf. command: cancel log $ID")
 
 (defun query (sender criteria)
   (declare (ignore criteria))
-  ;; (query (criteria (and (channel "#lisp") (and (nick "pjb") (keywords "cl-all"))))) 
-  ;; (query (criteria (and (keywords "\"cl\"") (and (or (keywords "all") (or (keywords "some") (keywords "any"))) (channel "#lisp"))))) 
+  ;; (query (criteria (and (channel "#lisp") (and (nick "pjb") (keywords "cl-all")))))
+  ;; (query (criteria (and (keywords "\"cl\"") (and (or (keywords "all") (or (keywords "some") (keywords "any"))) (channel "#lisp")))))
   (answer sender "Queries are not implemented yet, sorry."))
 
 ;;; -----------------------------------------------------------------------------
@@ -1729,7 +1729,7 @@ cf. command: cancel log $ID")
     ((set-password)            (set-password            sender (second expression) (third expression) (fourth expression)))))
 
 
-  
+
 (defun command-processor (server sender command)
   (check-type server server)
   (check-type sender user)
@@ -1751,7 +1751,7 @@ cf. command: cancel log $ID")
                                 (answer sender "Syntax error.")
                                 (help sender command)
                                 (return-from command-processor))))))
-          (handler-case 
+          (handler-case
               (interpret sender expression)
             (error (err)
               (answer sender "~A" (substitute #\space #\newline (princ-to-string err)))))))))
@@ -1817,7 +1817,7 @@ cf. command: cancel log $ID")
 
 ;; #test-botil <test-botil> /msg botil hello how do you do?
 ;; (:sender "test-botil" :recipient "botil"       :arguments ("botil" "hello how do you do?"))
-;; #test-botil <test-botil> How do you do? 
+;; #test-botil <test-botil> How do you do?
 ;; (:sender "test-botil" :recipient "#test-botil" :arguments ("#test-botil" "How do you do?"))
 
 
@@ -1876,8 +1876,8 @@ cf. command: cancel log $ID")
   (let ((msg-hook (make-msg-hook server))
         (svc-hook (make-svc-hook server)))
     (irc:add-hook (connection server) 'irc:irc-privmsg-message msg-hook)
-    (mapc (lambda (class) (irc:add-hook (connection server) class svc-hook)) 
-          '(irc:irc-notice-message 
+    (mapc (lambda (class) (irc:add-hook (connection server) class svc-hook))
+          '(irc:irc-notice-message
             irc:irc-topic-message
             irc:irc-error-message
             irc:irc-mode-message
@@ -1885,7 +1885,7 @@ cf. command: cancel log $ID")
             irc:irc-nick-message
             irc:irc-quit-message
             irc:irc-join-message
-            irc:irc-part-message 
+            irc:irc-part-message
             irc:irc-kill-message
             irc:irc-kick-message
             irc:irc-invite-message))
@@ -1940,7 +1940,7 @@ cf. command: cancel log $ID")
 
 #-(and)
 (progn
-  
+
   (send-worker *command-processor* (find-server "irc.freenode.org")
                (ensure-user "irc.freenode.org" "pjb")
                "list servers")
@@ -1972,7 +1972,7 @@ cf. command: cancel log $ID")
 
                 "*BOTIL-EMAIL*" "*BOTIL-WORKERS*" "*DATABASE*"
                 "*DEFAULT-NICKNAME*" "*DEFAULT-PASSWORD*" "*DISSES*"
-                "*EXTERNAL-FORMAT*" "*INITIAL-SERVER*" 
+                "*EXTERNAL-FORMAT*" "*INITIAL-SERVER*"
                 "*SERVERS*" "*SOURCES-URL*" "*VERSION*")
 
   (:import-from "COM.INFORMATIMAGO.SMALL-CL-PGMS.BOTIL"
@@ -1988,7 +1988,7 @@ cf. command: cancel log $ID")
                 "CHANNELS" "COMMAND" "COMMAND-PROCESSOR"
                 "COMPUTE-DEADLINE" "CONNECT" "CONNECT-TO-SERVER"
                 "CONNECTION" "COPY-WORKER" "CREATE-MESSAGE"
-                "CREATE-REQUEST" "CREATE-SERVER" 
+                "CREATE-REQUEST" "CREATE-SERVER"
                 "CRITERIA" "DATE" "LOG-REQUEST" "DISABLE"
                 "DISCONNECT" "DISS" "EMAIL" "ENABLE" "ENABLED"
                 "END-DATE" "ENSURE-CHANNEL" "ENSURE-LOG-STREAM"
@@ -1997,8 +1997,8 @@ cf. command: cancel log $ID")
                 "ID" "IDENTIFIED" "IDENTIFY" "INITIALIZE-DATABASE"
                 "INTERPRET"  "KEY"
                 "KILL-WORKER" "LIST-LOG-REQUESTS"
-                "LIST-SERVERS" "LIST-USERS" 
-                "LOAD-REQUESTS" "LOAD-SERVER-DATABASE" 
+                "LIST-SERVERS" "LIST-USERS"
+                "LOAD-REQUESTS" "LOAD-SERVER-DATABASE"
                 "LOG-FILE-PATHNAME" "LOG-MONTH" "LOG-STREAM"
                 "LOGGER" "MAIN" "MAKE-MSG-HOOK"
                 "MAKE-SVC-HOOK" "MAKE-WORKER" "MAKE-WORKER-THREAD"
@@ -2014,9 +2014,9 @@ cf. command: cancel log $ID")
                 "TODO" "UPTIME-CMD" "USER"
                 "USER-PATHNAME" "VERIFIED" "VERSION" "WITH-RETRY"
                 "WITH-SERVER" "WORKER-INPUT-QUEUE" "WORKER-P"
-                "WORKER-SEND" "WORKER-THREAD" 
+                "WORKER-SEND" "WORKER-THREAD"
                 "SERVER-NAME-P" "CHANNEL-NAME-P" "NICKNAMEP")
-  
+
   (:export "TEST/ALL")
   (:documentation "
 Tests the botil program.
@@ -2067,7 +2067,7 @@ Licensed under the AGPL3.
        (reset (nick "pjb")))
       ("set password pjb 321545623f new-secret-password"
        (set-password (nick "pjb") (key "321545623f") (password "new-secret-password")))
-      
+
       ("list users"
        (list-users nil))
       ("list users on irc.freenode.org"
@@ -2077,30 +2077,30 @@ Licensed under the AGPL3.
 
       ;;
       ("list     my log requests"
-       (list-log-requests nil nil nil nil))                                
+       (list-log-requests nil nil nil nil))
       ("list     my log requests for channel #lisp"
-       (list-log-requests nil nil (channel "#lisp") nil))              
+       (list-log-requests nil nil (channel "#lisp") nil))
       ("list all my log requests"
-       (list-log-requests nil nil nil nil))                                
+       (list-log-requests nil nil nil nil))
 
       ("list all    log requests of mr foo"
-       (list-log-requests t (nick "foo") (channel "#lisp") nil))                      
+       (list-log-requests t (nick "foo") (channel "#lisp") nil))
       ("list all    log requests of mr foo for channel #lisp"
-       (list-log-requests t (nick "foo") (channel "#lisp") nil))    
+       (list-log-requests t (nick "foo") (channel "#lisp") nil))
       ("list all    log requests           for channel #lisp"
-       (list-log-requests t nil (channel "#lisp") nil))    
+       (list-log-requests t nil (channel "#lisp") nil))
       ("list all    log requests"
-       (list-log-requests t nil (channel "#lisp") nil))                                
+       (list-log-requests t nil (channel "#lisp") nil))
 
       ("list all    log requests of mr foo  on server irc.freenode.org"
-       (list-log-requests t (nick "foo") (channel "#lisp") (server "irc.freenode.org")))                      
+       (list-log-requests t (nick "foo") (channel "#lisp") (server "irc.freenode.org")))
       ("list all    log requests of mr foo for channel #lisp  on server irc.freenode.org"
-       (list-log-requests t (nick "foo") (channel "#lisp") (server "irc.freenode.org")))    
+       (list-log-requests t (nick "foo") (channel "#lisp") (server "irc.freenode.org")))
       ("list all    log requests           for channel #lisp  on server irc.freenode.org"
-       (list-log-requests t nil (channel "#lisp") (server "irc.freenode.org")))    
+       (list-log-requests t nil (channel "#lisp") (server "irc.freenode.org")))
       ("list all    log requests on server irc.freenode.org"
-       (list-log-requests t nil (channel "#lisp") (server "irc.freenode.org")))                                
-      
+       (list-log-requests t nil (channel "#lisp") (server "irc.freenode.org")))
+
       ("list all channel logs on server irc.freenode.org"
        (list-log-requests t nil nil (server "irc.freenode.org")))
       ("list all channels"
@@ -2109,33 +2109,33 @@ Licensed under the AGPL3.
        (list-log-requests t nil nil (server "irc.freenode.org")))
       ("list all logs"
        (list-log-requests t nil nil nil))
-      
+
       ;;
       ("cancel     my log requests"
-       (cancel-log-requests nil nil nil nil))                                
+       (cancel-log-requests nil nil nil nil))
       ("cancel     my log requests for channel #lisp"
-       (cancel-log-requests nil nil (channel "#lisp") nil))              
+       (cancel-log-requests nil nil (channel "#lisp") nil))
       ("cancel all my log requests"
-       (cancel-log-requests nil nil nil nil))                                
+       (cancel-log-requests nil nil nil nil))
 
       ("cancel all    log requests of mr foo"
-       (cancel-log-requests t (nick "foo") (channel "#lisp") nil))                      
+       (cancel-log-requests t (nick "foo") (channel "#lisp") nil))
       ("cancel all    log requests of mr foo for channel #lisp"
-       (cancel-log-requests t (nick "foo") (channel "#lisp") nil))    
+       (cancel-log-requests t (nick "foo") (channel "#lisp") nil))
       ("cancel all    log requests           for channel #lisp"
-       (cancel-log-requests t nil (channel "#lisp") nil))    
+       (cancel-log-requests t nil (channel "#lisp") nil))
       ("cancel all    log requests"
-       (cancel-log-requests t nil (channel "#lisp") nil))                                
+       (cancel-log-requests t nil (channel "#lisp") nil))
 
       ("cancel all    log requests of mr foo  on server irc.freenode.org"
-       (cancel-log-requests t (nick "foo") (channel "#lisp") (server "irc.freenode.org")))                      
+       (cancel-log-requests t (nick "foo") (channel "#lisp") (server "irc.freenode.org")))
       ("cancel all    log requests of mr foo for channel #lisp  on server irc.freenode.org"
-       (cancel-log-requests t (nick "foo") (channel "#lisp") (server "irc.freenode.org")))    
+       (cancel-log-requests t (nick "foo") (channel "#lisp") (server "irc.freenode.org")))
       ("cancel all    log requests           for channel #lisp  on server irc.freenode.org"
-       (cancel-log-requests t nil (channel "#lisp") (server "irc.freenode.org")))    
+       (cancel-log-requests t nil (channel "#lisp") (server "irc.freenode.org")))
       ("cancel all    log requests on server irc.freenode.org"
-       (cancel-log-requests t nil (channel "#lisp") (server "irc.freenode.org")))                                
-      
+       (cancel-log-requests t nil (channel "#lisp") (server "irc.freenode.org")))
+
       ("cancel all channel logs on server irc.freenode.org"
        (cancel-log-requests t nil nil (server "irc.freenode.org")))
       ("cancel all channels"
@@ -2178,7 +2178,7 @@ Licensed under the AGPL3.
            (user       (ensure-user    server "pjb"))
            (channel    (ensure-channel server "#lisp")))
       (declare (ignorable server user channel))
-      
+
       (check equal (server-pathname "irc.freenode.org")
              (merge-pathnames #P"servers/irc.freenode.org/" *database*))
 
@@ -2193,10 +2193,10 @@ Licensed under the AGPL3.
 
       (check equal (server-datafile-pathname "irc.freenode.org")
              (merge-pathnames #P"servers/irc.freenode.org/server.sexp" *database*))
-      
+
       (check equal (server-datafile-pathname (find-server "irc.freenode.org"))
              (merge-pathnames #P"servers/irc.freenode.org/server.sexp" *database*))
-      
+
       (check equal (server-datafile-pathname "irc.freenode.org")
              (server-datafile-pathname (find-server "irc.freenode.org")))
 
@@ -2229,9 +2229,9 @@ Licensed under the AGPL3.
              (merge-pathnames #P"servers/irc.freenode.org/channels/#lisp/logs/201602.log" *database*))
 
       (check equal (requests-pathname "irc.freenode.org")
-             (merge-pathnames #P"servers/irc.freenode.org/requests.sexp" *database*)) 
+             (merge-pathnames #P"servers/irc.freenode.org/requests.sexp" *database*))
       (check equal (requests-pathname server)
-             (merge-pathnames #P"servers/irc.freenode.org/requests.sexp" *database*)) 
+             (merge-pathnames #P"servers/irc.freenode.org/requests.sexp" *database*))
 
       )))
 
@@ -2244,7 +2244,7 @@ Licensed under the AGPL3.
       (declare (ignorable server user channel))
 
       (check eq (find-user server "pjb") (ensure-user server "pjb"))
-      
+
       )))
 
 (define-test test/requests ()
@@ -2268,7 +2268,7 @@ Licensed under the AGPL3.
         (assert-true (subsetp clnoobs all))
         (assert-true (subsetp foo     all))
         (assert-true (subsetp pjb     all)))
-      
+
       (create-request (ensure-channel server "#time") (ensure-user server "foo") 12000 15500)
       (create-request (ensure-channel server "#time") (ensure-user server "pjb") 10000 12500)
       (create-request (ensure-channel server "#time") (ensure-user server "pjb") 11000 13500)
@@ -2289,14 +2289,14 @@ Licensed under the AGPL3.
         (assert-true  (channel-active-p channel 15600))
         (assert-false (channel-active-p channel 16600))
         (loop :for time :from 8600 :to 17600 :by 1000
-              :for results :in '((10000 nil) 
-                                 (10000 nil) 
-                                 (11000 12500) 
-                                 (12000 12500) 
-                                 (13000 13500) 
-                                 (nil 15500) 
-                                 (nil 15500) 
-                                 (nil nil) 
+              :for results :in '((10000 nil)
+                                 (10000 nil)
+                                 (11000 12500)
+                                 (12000 12500)
+                                 (13000 13500)
+                                 (nil 15500)
+                                 (nil 15500)
+                                 (nil nil)
                                  (nil nil))
               :do (check eql (channel-next-start-log-date channel time) (first results))
                   (check eql (channel-next-stop-log-date channel time) (second results)))
@@ -2316,10 +2316,10 @@ Licensed under the AGPL3.
   (dolist (nick '("hello world" "#lisp" "!foo" "&bar" "+baz"))
     (assert-false (nicknamep nick)))
   (dolist (channel '("#lisp" "##lisp" "&lisp" "+lisp"
-                     "#foo~" "##b^ar" "&!quux!" "+~-/*+" 
+                     "#foo~" "##b^ar" "&!quux!" "+~-/*+"
                      "!ABCDE" "!01234" "!56789"
                      "#lisp:foo" "##lisp:bar" "&lisp:baz" "+lisp:quux"
-                     "#foo~:1234" "##b^ar:/div" "&!quux!:hey" "+~-/*+:--" 
+                     "#foo~:1234" "##b^ar:/div" "&!quux!:hey" "+~-/*+:--"
                      "!ABCDE:;-)" "!01234:\\" "!56789:yep"))
     (assert-true (channel-name-p channel)))
   (dolist (channel '("!foo" "!1234567" "!ZORRO" "pjb"))
@@ -2341,7 +2341,7 @@ Licensed under the AGPL3.
 
 #-(and)
 (progn
-  
+
   (let (s)
     (com.informatimago.common-lisp.cesarum.list:maptree
      (lambda (node) (if (symbolp node) (push node s)))

@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Some tools to process xmls generated sexps.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2011 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -38,7 +38,7 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
         #+ccl "CCL" #-ccl "CLOS")
   (:export "DEFCLASS*" "*PRINT-OBJECT-READABLY*"
-           
+
            "DEFINE-CLASS-STRUCTURE"
            "DEFINE-LIST-STRUCTURE"
 
@@ -224,7 +224,7 @@ DO:     Define a class implementing the structure API.
                    (if (symbolp slot)
                        `(,slot :initarg   ,(keywordize slot)
                                :accessor  ,(push1 accessor)
-                               ,@ (unless unbound 
+                               ,@ (unless unbound
                                     `(:initform  nil)))
                        (let* ((name        (first slot))
                               (initarg     (keywordize name))
@@ -293,7 +293,7 @@ DO:     Define a class implementing the structure API.
              (defmethod print-object ((self ,name) stream)
                ,(cond
                  (print-function  `(,print-function self stream 0))
-                 (print-object    `(,print-object self stream))  
+                 (print-object    `(,print-object self stream))
                  (t `(print-unreadable-object (self stream :identity t :type t)
                        ,@(mapcar (lambda (name)
                                    `(when (slot-boundp self ',name)

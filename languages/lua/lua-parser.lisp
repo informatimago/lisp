@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Defines the LUA 5.2 Parser.
 ;;;;    http://www.lua.org/manual/5.2/manual.html#9
 ;;;;
@@ -19,19 +19,19 @@
 ;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -58,7 +58,7 @@
             (--> stat
                  (alt ";"
                       (seq varlist "=" explist)
-                      (seq functioncall) 
+                      (seq functioncall)
                       (seq label)
                       (seq "break")
                       (seq "goto" Name)
@@ -69,12 +69,12 @@
 
                       (seq "for" Name (alt for-name-=
                                            for-namelist))
-                      
+
                       (seq "function" funcname funcbody)
                       (seq "local"
                            (alt (seq "function" Name funcbody)
                                 (seq namelist (opt "=" explist))))))
-            
+
             (--> for-name-=
                  (seq "=" exp "," exp (opt "," exp) "do" block "end"))
             (--> for-namelist
@@ -85,7 +85,7 @@
 
             (--> label
                  (seq "::" Name "::"))
-            
+
             (--> funcname
                  (seq Name (rep (seq "." Name)) (opt (seq ":" Name))))
 
@@ -103,16 +103,16 @@
 
             #-(and)
             (--> exp
-                 (alt "nil" 
-                      "false" 
-                      "true" 
-                      Number 
-                      String 
-                      "..." 
+                 (alt "nil"
+                      "false"
+                      "true"
+                      Number
+                      String
+                      "..."
                       functiondef
-                      prefixexp 
-                      tableconstructor 
-                      (seq exp binop exp) 
+                      prefixexp
+                      tableconstructor
+                      (seq exp binop exp)
                       (seq unop exp)))
 
             (--> exp disjonction)
@@ -184,11 +184,11 @@
             ;; TODO:
             (--> var
                  Name)
-            
+
             ;; TODO:
             (--> functioncall
                  (seq "funcall" Name "(" exp ")"))
-            
+
 
 
 
@@ -197,7 +197,7 @@
 
             (--> args
                  (alt (seq "(" (opt explist) ")" )
-                      tableconstructor 
+                      tableconstructor
                       String) )
 
             (--> functiondef
@@ -207,7 +207,7 @@
                  (seq "(" (opt parlist) ")" block "end"))
 
             (--> parlist
-                 (alt (seq namelist (opt "," "...")) 
+                 (alt (seq namelist (opt "," "..."))
                       "..."))
 
             (--> tableconstructor
@@ -222,39 +222,39 @@
                       exp))
 
             (--> fieldsep
-                 (alt "," 
+                 (alt ","
                       ";"))
-            
+
             #-(and)
             (--> binop
-                 (alt "+" 
-                      "-" 
-                      "*" 
-                      "/" 
-                      "^" 
-                      "%" 
-                      ".." 
-                      
-                      "<" 
-                      "<=" 
-                      ">" 
-                      ">=" 
-                      "==" 
-                      "~=" 
-                      
-                      "and" 
+                 (alt "+"
+                      "-"
+                      "*"
+                      "/"
+                      "^"
+                      "%"
+                      ".."
+
+                      "<"
+                      "<="
+                      ">"
+                      ">="
+                      "=="
+                      "~="
+
+                      "and"
                       "or"))
 
             #-(and)
             (--> unop
-                 (alt "-" 
-                      "not" 
+                 (alt "-"
+                      "not"
                       "#"))))
 
 
 
 ;; Operator precedence in Lua follows the table below, from lower to
-;; higher priority: 
+;; higher priority:
 ;;
 ;;      or
 ;;      and
@@ -264,10 +264,10 @@
 ;;      *     /     %
 ;;      not   #     - (unary)
 ;;      ^
-;; 
+;;
 ;; As usual, you can use parentheses to change the precedences of an
 ;; expression. The concatenation ('..') and exponentiation ('^')
 ;; operators are right associative. All other binary operators are left
-;; associative. 
+;; associative.
 
 ;;;; THE END ;;;;

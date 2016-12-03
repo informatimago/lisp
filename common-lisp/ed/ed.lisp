@@ -21,22 +21,22 @@
 ;;;;    In: 1,20!(do-something-with *input*)
 ;;;;    *input* is not bound to the 20 lines, and the output is not
 ;;;;    *inserted in the buffer.
-;;;; 
+;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2003 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -94,26 +94,26 @@ Ed, man! !man ed: <http://www.gnu.org/fun/jokes/ed.msg.html>
 Can you imagine that some Common-Lisp implementations DON'T provide
 any editor (in conformity with the Common-Lisp specifications)?
 Not complete (waiting for a REGEXP package). But otherwise
-functional enough. 
+functional enough.
 
 
 
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2003 - 2015
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -128,7 +128,7 @@ License:
 
 
 (defmacro dbg (&body body)
-  (when +debug+ 
+  (when +debug+
     `(when *show-debug* (let ((*standard-output* *trace-output*)) ,@body))))
 
 ;;(WHEN +DEBUG+
@@ -430,7 +430,7 @@ RETURN: The list of cut lines.
             (let* ((*package* (find-package "COM.INFORMATIMAGO.COMMON-LISP.ED.ED"))
                    (results   (eval `((lambda (*input*)
                                         (declare (ignorable *input*))
-                                        ,(read-from-string 
+                                        ,(read-from-string
                                           (format nil "(progn  ~A)"
                                                   (buffer-command buffer))))
                                       (list ,@input)))))
@@ -498,7 +498,7 @@ RETURN: The list of cut lines.
     (buffer-save-undo buffer)
     (setf (buffer-cut-lines buffer) (do-cut buffer curr last))))
 
-                  
+
 (defun cmd-copy (buffer from to arg)
   (declare (ignore arg))
   (dbg (format t "CMD-COPY: ~%"))
@@ -515,7 +515,7 @@ RETURN: The list of cut lines.
     (setf (buffer-cut-lines buffer)
           (subseq (buffer-lines buffer) curr (1+ last)))))
 
- 
+
 (defun cmd-paste (buffer from to arg)
   (declare (ignore from arg))
   (dbg (format t "CMD-PASTE: ~%"))
@@ -651,7 +651,7 @@ RETURN: The list of cut lines.
                     (lambda (linum line)
                       (format *terminal-io* "~6D  ~A~%" linum line)))))
 
-   
+
 (defun cmd-print-lines-unambiguously (buffer from to arg)
   (declare (ignore arg))
   (dbg (format t "CMD-PRINT-LINES-UNAMBIGUOUSLY: ~%"))
@@ -721,8 +721,8 @@ RETURN: The list of cut lines.
   ;;         the last substitution The current address is set  to  the
   ;;         last line affected.
   (format *terminal-io* "NOT IMPLEMENTED YET.~%"))
-    
-        
+
+
 (defun cmd-edit-matching (buffer from to arg)
   (declare (ignore buffer from to arg)) ;; TODO: implement this function.
   (dbg (format t "CMD-EDIT-MATCHING: ~%"))
@@ -782,7 +782,7 @@ RETURN: The list of cut lines.
 
 (defun file-or-command-arg (arg)
   "
-  -->  :empty 
+  -->  :empty
   -->  :path           ; path    ; exists (t/nil)
   -->  :command        ; command
   -->  :command-append ; command
@@ -936,7 +936,7 @@ LINUM:  NIL ==> Edit, NUMBERP ==> Read
     (setf (buffer-modified buffer) nil)
     (format *terminal-io* "~D~%" (buffer-current-linum buffer))))
 
-  
+
 (defun cmd-edit-file (buffer from to arg)
   (declare (ignore from to))
   (dbg (format t "CMD-EDIT-FILE: ~%"))
@@ -1128,7 +1128,7 @@ RETURN: The index of the next non white space character in command,
 ;;              |'[.'col-elm'.]'|'[='col-elm'=]'.
 ;;col-elm --> .
 
-  
+
 (defun parse-address (command position)
   ;;address -->   '.' | '$' | number
   ;;            | '-' | '^' | '-' number | '^' number
@@ -1170,7 +1170,7 @@ RETURN: The index of the next non white space character in command,
            ;; TODO: regexp
            ;; eat regexp:
            (setq address
-                 (cons :regexp 
+                 (cons :regexp
                        (do ((terminator ch)
                             (end position (1+ end)))
                            ((or (>= end (length command))
@@ -1379,7 +1379,7 @@ Two little girls, climbed up a
 Tree near the sky.
 Four birds landed on that tree.
 Five eggs were layed each on one child head.
-") 
+")
 
 ;; (progn (ext:cd "/home/pascal/src/lisp/encours/") (load "ed.lisp"))
 

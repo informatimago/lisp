@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Export functions to encode/decode IEEE-754 floating point numbers.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -54,7 +54,7 @@
        "Convert FLOAT to a IEEE-753 representation stored in an integer."
        (if (zerop float)
            0
-           (multiple-value-bind (mantissa exponent sign) 
+           (multiple-value-bind (mantissa exponent sign)
                (integer-decode-float float)
              (dpb (if (minusp sign) 1 0)
                   (byte 1 ,(1- (+ exponent-bits mantissa-bits)))
@@ -73,7 +73,7 @@
                               (ldb (byte ,(1- mantissa-bits) 0) ieee))
                          ',type)
                         (- (ldb (byte ,exponent-bits ,(1- mantissa-bits))
-                                ieee) 
+                                ieee)
                            ,(1- (expt 2 (1- exponent-bits)))
                            ,(1- mantissa-bits)))))
              (if (zerop (ldb (byte 1 ,(1- (+ exponent-bits mantissa-bits))) ieee))

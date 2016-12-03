@@ -5,7 +5,7 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Initialization for common-lisp packages.
 ;;;;
 ;;;;    This files remove some specificities from the lisp environment
@@ -24,19 +24,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;***************************************************************************
@@ -48,10 +48,10 @@
 
 ;; clean the imported packages:
 (mapc (lambda (used) (unuse-package used "COMMON-LISP-USER"))
-      (remove (find-package "COMMON-LISP") 
+      (remove (find-package "COMMON-LISP")
               (copy-seq (package-use-list "COMMON-LISP-USER"))))
 
-(progn 
+(progn
   (defvar *directories*  '())
   (defun get-directory (key &optional (subpath ""))
     (unless *directories*
@@ -89,7 +89,7 @@
                      :print print :if-does-not-exist if-does-not-exist
                      :external-format external-format)))))))
 
-;; (DEFUN SCONC (&REST ARGS) 
+;; (DEFUN SCONC (&REST ARGS)
 ;;   (apply (function CONCATENATE)
 ;;          'string
 ;;          (mapcar (lambda (item) (typecase item
@@ -97,7 +97,7 @@
 ;;                              (otherwise  (string item)))) ARGS)));;SCONC
 
 
-;; COM.INFORMATIMAGO.COMMON-LISP packages depends only on themselves, 
+;; COM.INFORMATIMAGO.COMMON-LISP packages depends only on themselves,
 ;; from the current directory.
 
 ;; Load COM.INFORMATIMAGO.COMMON-LISP.PACKAGE:
@@ -107,12 +107,12 @@
 ;; Import DEFINE-PACKAGE, and add translations:
 (import 'package:define-package)
 (setf (logical-pathname-translations "PACKAGES")
-      (handler-case (logical-pathname-translations "PACKAGES") 
+      (handler-case (logical-pathname-translations "PACKAGES")
         (error nil)))
 (package:add-translations
  (list (make-pathname
         :host "PACKAGES"
-        :directory '(:absolute 
+        :directory '(:absolute
                      "COM" "INFORMATIMAGO" #-cmu"COMMON-LISP"
                      :wild-inferiors)
         :name :wild :type :wild :version :wild)

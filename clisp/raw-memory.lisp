@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Peek and Poke.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -56,7 +56,7 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
  (defvar *library* "/usr/local/lib/libraw-memory.so"
-   "The namestring of the pathname to the raw-memory library file.")) 
+   "The namestring of the pathname to the raw-memory library file."))
 
 (defun install-signal-handler (signum handler)
   (let ((oldhan (linux:|set-signal-handler| signum handler))
@@ -72,7 +72,7 @@
   (linux:|set-signal-handler| signum oldhan)
   (linux:|sigprocmask-set-n-save| linux:|SIG_UNBLOCK| sigset))
 
-  
+
 
 (defmacro with-signal-handler (signum handler &body body)
   (let ((voldhan (gensym))
@@ -81,7 +81,7 @@
     `(let* ((,vsignum ,signum)
             (,voldhan (linux:|set-signal-handler| ,vsignum ,handler))
             (,vsigset (second (multiple-value-list
-                               (linux:|sigaddset| 
+                               (linux:|sigaddset|
                                       (second (multiple-value-list
                                                (linux:|sigemptyset|)))
                                       ,vsignum)))))
@@ -92,8 +92,8 @@
 
 
 (defmacro with-sigseg-handler (&body body)
-  `(with-signal-handler linux:|SIGSEGV| 
-     (lambda (signum) 
+  `(with-signal-handler linux:|SIGSEGV|
+     (lambda (signum)
        (declare (ignore signum))
        (error "Got Segment Violation Signal while accessing raw memory"))
      ,@body))
@@ -106,7 +106,7 @@
      for size in '(8 16 32) ;; peek and poke of 64-bit don't work.
      for c-peek-name = (format nil "peek~D" size)
      for c-poke-name = (format nil "poke~D" size) do
-     (loop for type in '(uint sint) 
+     (loop for type in '(uint sint)
         for l-peek-name = (intern (with-standard-io-syntax
                                     (format nil"PEEK-~A~D" type size))
                                   "COM.INFORMATIMAGO.CLISP.RAW-MEMORY")
@@ -116,7 +116,7 @@
         for l-type      = (intern (with-standard-io-syntax
                                     (format nil"~A~D" type size))
                                   "FFI")
-        do 
+        do
         (push `(ffi:def-call-out ,l-peek-name
                    (:name ,c-peek-name)
                  (:arguments (address ffi:ulong))
@@ -194,7 +194,7 @@
           (otherwise (error "Can't poke this type ~S" type))))
        (otherwise (error "Can't poke this type ~S" type))))
     (otherwise
-     (error "PEEK-OR-POKE must be either :PEEK or :POKE, not ~S" 
+     (error "PEEK-OR-POKE must be either :PEEK or :POKE, not ~S"
             peek-or-poke))))
 
 
@@ -216,8 +216,8 @@
 
 
 (defun peek (address type)
-  (with-signal-handler linux:|SIGSEGV| 
-    (lambda (signum) 
+  (with-signal-handler linux:|SIGSEGV|
+    (lambda (signum)
       (declare (ignore signum))
       (error "Got Segment Violation Signal while peeking ~8,'0X" address))
     (if (and (listp type)
@@ -234,8 +234,8 @@
 
 
 (defun poke (address type value)
-  (with-signal-handler linux:|SIGSEGV| 
-    (lambda (signum) 
+  (with-signal-handler linux:|SIGSEGV|
+    (lambda (signum)
       (declare (ignore signum))
       (error "Got Segment Violation Signal while poking ~8,'0X" address))
     (if (and (listp type)
@@ -249,8 +249,8 @@
 
 
 (defun dump (address type &optional (stream t) (margin ""))
-  (with-signal-handler linux:|SIGSEGV| 
-    (lambda (signum) 
+  (with-signal-handler linux:|SIGSEGV|
+    (lambda (signum)
       (declare (ignore signum))
       (error "Got Segment Violation Signal while peeking ~8,'0X" address))
     (if (and (listp type)
@@ -261,7 +261,7 @@
               ((>= i (third type)) (format stream "~&") (values))
             (when (zerop (mod i (/ 16 incr)))
               (format stream "~&~A~8,'0X: " margin (+ address i)))
-            (format stream "~V,'0X " (* 2 incr) 
+            (format stream "~V,'0X " (* 2 incr)
                     (funcall peek address))))
         (multiple-value-bind (peek incr) (get-function type :peek)
           (format stream "~&~A~8,'0X: ~V,'0X ~&"
@@ -289,7 +289,7 @@
 ;;       (null-op |sigprocmask-set-n-save|)
 ;;       (defparameter |SIG_UNBLOCK| 0)
 ;;       (defparameter |SIGSEGV|     0))))
-;; 
+;;
 ;; (in-package "COMMON-LISP-USER")
 
 ;;;; THE END ;;;;

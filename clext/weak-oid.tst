@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Added these tests I'm specifically interested in for closer-weak.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -16,19 +16,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal Bourguignon 2006 - 2006
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -71,7 +71,7 @@ nil
   (setf ht (make-hash-table :test (function eql) :weak :value))
   (flet ((check (table keep)
            ;; (c2weak::dump-wht table)
-           (maphash (lambda (k v) 
+           (maphash (lambda (k v)
                       (assert (= k (oid v)))
                       #+clisp (assert (member v keep))
                       ;; others don't break the weak pointers early...
@@ -79,7 +79,7 @@ nil
            (mapcar (lambda (v) (assert (and (gethash (oid v) table)
                                        (eq v  (gethash (oid v) table))))) keep)
            (assert
-            (#+clisp = 
+            (#+clisp =
              #-clisp <= ;; others don't break the weak pointers early...
              (length keep) (hash-table-count ht)))))
     (let ((keep (weak-oid-fill-initially ht))

@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Some tests.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -48,7 +48,7 @@
 ;;    (stmt-expr (expr-call 'printf "Hello world %s\\n" 'a))
 ;;    (stmt-for (assign 'a 1) (expr-le 'a 10) (expr-postincr 'a)
 ;;              (stmt-expr (expr-call 'printf 'a))))))
-;; 
+;;
 ;; (generate
 ;;  (stmt-block
 ;;   (list
@@ -61,7 +61,7 @@
 ;;    (expr-call 'printf "Hello world %s\\n" 'a)
 ;;    (stmt-for (assign 'a 1) (expr-le 'a 10) (expr-postincr 'a)
 ;;              (expr-call 'printf 'a)))))
-;; 
+;;
 
 (generate (stmt-block
            (list
@@ -72,7 +72,7 @@
              (pointer
               (member-pointer
                'Some-Class
-               (reference (c-vector 
+               (reference (c-vector
                            (c-function 'printf (list 'fmt 'data) :throw '()) 10))
                :volatile t)
               :const t :volatile nil))

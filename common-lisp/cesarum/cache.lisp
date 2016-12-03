@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    A generic disk-based cache.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2005 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -80,19 +80,19 @@ Example:
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2005 - 2015
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -108,9 +108,9 @@ License:
 ;; (cache-expiration cache key) --> expiration (or null universal-time)
 ;; (cache-expire     cache key &key keep-file)
 ;; (cache-expire-all cache     &key keep-files)
-;; 
+;;
 ;; key [expiration] value
-;; 
+;;
 ;; The cache index is loaded in RAM
 
 (defgeneric cache-directory-path (cache)
@@ -131,7 +131,7 @@ DO: Update the date of the cache in core.
 
 (defgeneric cache-index-read-date (cache)
   (:documentation   "
-RETURN: If the file (cache-index-file-path self) exists 
+RETURN: If the file (cache-index-file-path self) exists
         and is a cache index file,
         then the cache-date of the cache index file,
         else NIL.
@@ -237,8 +237,8 @@ RETURN: The type used for value files in the cache directory.
     :reader   cache-index-file-path
     :type     pathname
     :documentation "Path to the cache index file.")
-   (cache-value-file-type 
-    :reader   cache-value-file-type 
+   (cache-value-file-type
+    :reader   cache-value-file-type
     :initarg :value-file-type
     :type     string
     :initform "DAT"
@@ -248,7 +248,7 @@ RETURN: The type used for value files in the cache directory.
     :initarg :producer
     :type     (function (t) (values t (integer 0)))
     ;; (producer key) --> value ; expiration
-    :documentation "The function used to get fresh data. 
+    :documentation "The function used to get fresh data.
      Returns two values: the data and the expiration universal time.")
    (index
     :type     hash-table
@@ -279,8 +279,8 @@ NOTE:   This updates both the CACHE-DIRECTORY-PATH and the
         CACHE-INDEX-FILE-PATH of the cache.
 "  (assert (typep new-path 'pathname))
   (setf (slot-value self 'cache-directory-path)  new-path
-        (slot-value self 'cache-index-file-path) (make-pathname 
-                                                  :name "CACHE" :type "IDX" 
+        (slot-value self 'cache-index-file-path) (make-pathname
+                                                  :name "CACHE" :type "IDX"
                                                   :defaults new-path)))
 
 
@@ -310,12 +310,12 @@ DO: Update the date of the cache in core.
     (if (and date (= (car date) (get-universal-time)))
         (incf (cdr date))
         (setf date (cons (get-universal-time) 0)))))
-          
 
-(defstruct entry 
-  "A cache index entry, mapping a key with the date the resource 
+
+(defstruct entry
+  "A cache index entry, mapping a key with the date the resource
 was fetched and the file-name of the files where the resource and
-the parsed html are stored, and references to these data when they 
+the parsed html are stored, and references to these data when they
 are loaded in core."
   (key         nil)
   (value       nil)
@@ -340,13 +340,13 @@ RETURN: The value of the entry.")
 (defun index-map-entries (result-type fun index)
   (ecase result-type
     ((nil)
-     (maphash (lambda (k v) 
+     (maphash (lambda (k v)
                 (declare (ignore k))
                 (funcall fun v)) index)
      nil)
     ((list)
      (let ((result '()))
-       (maphash (lambda (k v) 
+       (maphash (lambda (k v)
                   (declare (ignore k))
                   (push (funcall fun v) result)) index)
        (nreverse result)))
@@ -355,7 +355,7 @@ RETURN: The value of the entry.")
                        (make-array (list (hash-table-count index)))
                        (make-string (hash-table-count index))))
            (i      -1))
-       (maphash (lambda (k v) 
+       (maphash (lambda (k v)
                   (declare (ignore k))
                   (setf (aref result (incf i)) (funcall fun v))) index)
        result))))
@@ -388,7 +388,7 @@ RETURN: Whether RECORD is a cache index file record.
 
 (defmethod cache-index-read-date ((self cache))
   "
-RETURN: If the file (cache-index-file-path self) exists 
+RETURN: If the file (cache-index-file-path self) exists
         and is a cache index file,
         then the cache-date of the cache index file,
         else NIL.
@@ -422,13 +422,13 @@ DO:     Load the cache index from the file (cache-index-file-path self).
              while (cache-record-p record)
              do (index-put index
                            (make-entry
-                            :key          (getf record :key) 
+                            :key          (getf record :key)
                             :file-name    (getf record :file-name)
                             :fetch-date   (getf record :fetch-date)
                             :expire-date  (getf record :expire-date)))
              finally (when record
                        (error "Invalid cache index record: ~S" record)))
-          (setf (slot-value self 'cache-value-file-type) 
+          (setf (slot-value self 'cache-value-file-type)
                 (getf header :value-file-type)
                 (slot-value self 'index) index
                 (slot-value self 'date)  cache-date))))))
@@ -464,7 +464,7 @@ DO:     Save the cache index to the file (cache-index-file-path self).
                           :direction         :output
                           :if-does-not-exist :create
                           :if-exists         :supersede)
-      (prin1 `(:type :cache-index 
+      (prin1 `(:type :cache-index
                      :date ,(slot-value self 'date)
                      :value-file-type ,(cache-value-file-type self)) file)
       (terpri file)
@@ -497,7 +497,7 @@ DO:     Ensure the cache index in core and on disk are synchronized.
 
 
 (defmethod old-value-file-path ((self cache) name)
-  (value-file-path (cache-directory-path self) 
+  (value-file-path (cache-directory-path self)
                    name
                    (cache-value-file-type self)))
 
@@ -506,12 +506,12 @@ DO:     Ensure the cache index in core and on disk are synchronized.
   (loop with dire = (cache-directory-path self)
      with type = (cache-value-file-type self)
      for count from 0
-     for name = (format nil "~36,4,'0R~36,4,'0R" 
-                        (random (expt 36 4)) 
+     for name = (format nil "~36,4,'0R~36,4,'0R"
+                        (random (expt 36 4))
                         (mod (get-universal-time) (expt 36 4)))
      for path = (value-file-path dire name type)
      until (ignore-errors (not (probe-file path)))
-     do (when (<= 512 count) 
+     do (when (<= 512 count)
           (error "Cannot come with a unique file name."))
      finally (return path)))
 
@@ -551,7 +551,7 @@ RETURN:  the value stored in the CACHE for the KEY;
                                               :format-control "~&~S not in ~S~%"
                                               :format-arguments (list key (slot-value self 'index) self)))
        (multiple-value-bind (value expire) (funcall (cache-producer self) key)
-         (let* ((path (if entry 
+         (let* ((path (if entry
                           (old-value-file-path self (entry-file-name entry))
                           (new-value-file-path self)))
                 (entry (make-entry :key key
@@ -561,7 +561,7 @@ RETURN:  the value stored in the CACHE for the KEY;
                                    :fetch-date (get-universal-time)
                                    :expire-date expire)))
            (ensure-directories-exist path)
-           (with-open-file (out path :direction :output 
+           (with-open-file (out path :direction :output
                                 :if-exists :supersede
                                 :if-does-not-exist :create)
              (with-standard-io-syntax (print value out)))
@@ -575,9 +575,9 @@ RETURN:  the value stored in the CACHE for the KEY;
        (values (entry-value entry) :in-core))
       (t                                ; ==> read from disk
        (with-open-file (in (old-value-file-path self (entry-file-name entry))
-                           :direction :input 
+                           :direction :input
                            :if-does-not-exist :error)
-         (let ((value (with-standard-io-syntax 
+         (let ((value (with-standard-io-syntax
                         (let ((*read-eval* nil)) (read in)))))
            (setf (entry-value entry) value
                  (entry-value-p entry) t)
@@ -590,7 +590,7 @@ RETURN:  the value stored in the CACHE for the KEY;
   ;; --> expiration (or null universal-time)
   (synchronize-cache self)
   (let ((entry (index-get (slot-value self 'index) key)))
-    (when entry (entry-expire-date entry)))) 
+    (when entry (entry-expire-date entry))))
 
 
 (defmethod cache-expire     ((self cache) key &key (keep-file nil))
@@ -608,9 +608,9 @@ RETURN:  the value stored in the CACHE for the KEY;
 (defmethod cache-expire-all ((self cache) &key (keep-files nil))
   (synchronize-cache self)
   (unless keep-files
-    (cache-map-entries self nil (lambda (entry) 
-                                  (delete-file 
-                                   (old-value-file-path 
+    (cache-map-entries self nil (lambda (entry)
+                                  (delete-file
+                                   (old-value-file-path
                                     self (entry-file-name entry))))))
   (setf (slot-value self 'index) (make-index))
   (touch-cache-date self)

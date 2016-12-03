@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    A simple latex parser.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2013 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -138,9 +138,9 @@
 
         (list-stack               nil)
         (current-list             nil)
-        
+
         (states '(:math :macro :picture))
-        
+
         (A-Z                      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
         (CONTROL-M                #\return)
         (CONTROL-L                #\page)
@@ -279,7 +279,7 @@
                      t))))
         (unwind-protect
             (progn
-              
+
               (rule (seq "\\end " (rep* H-SPACE))
                     (error "space after \\end can cause problems"))
 
@@ -329,56 +329,56 @@
               (rule (alt "Sun." "Mon." "Tue." "Wed." "Thu." "Fri." "Sat.")
                     (add-as-string token-text))
 
-              ;; tex commands that are stripped  
-              (rule (alt "\\hspace*" 
-                         "\\bigskip" 
-                         "\\noalign" 
-                         "\\bigl" 
-                         "\\bigr" 
-                         "\\biggl" 
-                         "\\biggr" 
-                         "\\bigggl" 
-                         "\\bigggr" 
+              ;; tex commands that are stripped
+              (rule (alt "\\hspace*"
+                         "\\bigskip"
+                         "\\noalign"
+                         "\\bigl"
+                         "\\bigr"
+                         "\\biggl"
+                         "\\biggr"
+                         "\\bigggl"
+                         "\\bigggr"
                          (seq "\\thispagestyle{" (rep* (set-not #\})) "}"  )
-                         "\\medskip" 
-                         "\\advance" 
-                         "\\leftskip" 
-                         "\\rightskip" 
-                         (seq "by" (rep+ digit) "pc")  
-                         (seq "by" (rep+ digit) "pt") 
+                         "\\medskip"
+                         "\\advance"
+                         "\\leftskip"
+                         "\\rightskip"
+                         (seq "by" (rep+ digit) "pc")
+                         (seq "by" (rep+ digit) "pt")
                          (seq "by" (rep+ digit) "in")
-                         "\\protect" 
-                         "\\smallskip" 
-                         "\\displaystyle" 
-                         "\\left" 
-                         "\\right" 
-                         "\\boldmath" 
-                         "\\unboldmath" 
-                         "\\raggedright" 
-                         "\\vfil" 
-                         "\\vfill" 
-                         "\\hfil" 
-                         "\\hfill" 
-                         "\\scriptstyle" 
+                         "\\protect"
+                         "\\smallskip"
+                         "\\displaystyle"
+                         "\\left"
+                         "\\right"
+                         "\\boldmath"
+                         "\\unboldmath"
+                         "\\raggedright"
+                         "\\vfil"
+                         "\\vfill"
+                         "\\hfil"
+                         "\\hfill"
+                         "\\scriptstyle"
                          (seq "\\vskip" (rep* H-space) (opt (seq (rep+ digit) "pt")))
                          (seq "\\hspace*" (rep* H-space) (opt (seq (rep+ digit) "in")))
                          (seq "\\vspace*" (rep* H-space) (opt (seq (rep+ digit) "pt")))
                          (seq "\\vspace*" (rep* H-space) (opt (seq (rep+ digit) "in")))
                          (seq "\\kern*"  (rep* H-space) (opt (seq (rep+ digit) "pt")))
-                         "\\eject" 
-                         "\\maketitle" 
-                         "\\noindent" 
-                         "\\goodbreak" 
-                         "\\," 
-                         "\\!" 
-                         "\\:" 
-                         "\\"   
-                         "\\hline" 
-                         "\\ " 
-                         "\\/" 
-                         "\\mathstrut" 
-                         "\\pagebreak" 
-                         "\\linebreak" 
+                         "\\eject"
+                         "\\maketitle"
+                         "\\noindent"
+                         "\\goodbreak"
+                         "\\,"
+                         "\\!"
+                         "\\:"
+                         "\\"
+                         "\\hline"
+                         "\\ "
+                         "\\/"
+                         "\\mathstrut"
+                         "\\pagebreak"
+                         "\\linebreak"
                          )
                     #|nothing|#)
 
@@ -386,7 +386,7 @@
                     (add-sexp '(cs "@")))
               (rule "\\ul"
                     (add-sexp '(cs "em")))
-              
+
               ;; Some special verb commands
               (rule "\\verb|[|"
                     (add-as-string "["))
@@ -417,7 +417,7 @@
                         (open-list))
                       ;; output field separator so that we can handle tex matrix command
                       (add-sexp '(field-separator))))
-              
+
               (when-state :math
                 (rule "^" (add-as-string "^"))
                 (rule "_" (add-as-string "_")))
@@ -432,7 +432,7 @@
               (when-state :picture
                 (rule (rep* (any))
                       #|ignore|#))
-              
+
               ;; kluges for handling macro definitions
               (rule (seq backslash "def" (rep* whitespace) backslash (rep* letter))
                     ;; handle macro definitions
@@ -481,7 +481,7 @@
                         (otherwise
                          (error "Unknown saved-math-state ~S" saved-math-state)))))
 
-              ;; hbox and mbox change state 
+              ;; hbox and mbox change state
               (rule (alt (seq backslash "fbox" (rep* h_space) "{")
                          (seq backslash "hbox" (rep* h_space) "{")
                          (seq backslash "mbox" (rep* h_space) "{"))
@@ -490,7 +490,7 @@
                     ;;  matching close brace and can close the hbox.
                     ;;  Both hbox and mbox marked as mbox and will be
                     ;;  processed as if they were user defined macros
-                    ;;  ie: using define-text-object  
+                    ;;  ie: using define-text-object
                     (clean-up-quotes)
                     ;; first set up state
                     (cond
@@ -501,7 +501,7 @@
                        (goto nil))
                       (inline-math-flag
                        (setf display-math-flag nil ; kludge
-                             inline-math-flag nil 
+                             inline-math-flag nil
                              saved-math-state :inline-math)
                        (goto nil)))
                     (add-sexp `(cs "mbox"))
@@ -514,7 +514,7 @@
 
               (rule "[" ; optional args in a block
                     (open-list 'block))
-              
+
               (rule "]"
                     (close-list))
 
@@ -547,7 +547,7 @@
                     (setf display-math-flag nil)
                     (close-list)
                     (goto nil))
-              
+
               (rule "$$"
                     (when inline-math-flag
                       (error "Display math started inside inline math? Probably an inline math was closed and immediately opened. Check the latex file."))
@@ -659,10 +659,10 @@
                     (open-list)) ; start the first table element
 
               ;; begin cases
-              
+
               ;; Cases handled like table environment.  Allow for text
               ;; inside math mode by saving state. If this works, use
-              ;; similar approach for mbox hbox etc. 
+              ;; similar approach for mbox hbox etc.
 
               (rule (seq begin-env-open "cases" "}" (opt POS-TAB-ARG) (rep* WHITESPACE))
                     (clean-up-quotes)
@@ -692,7 +692,7 @@
                     (open-list 'display-math)
                     (goto :math))
 
-              ;; unrecognized environment               
+              ;; unrecognized environment
               (rule (alt (seq begin-env-open alphabet-string "}" (opt pos-tab-arg) (opt pos-tab-arg))
                          (seq begin-env-open (rep* (set-not "}")) "}")) ; environment names can have more that alphabets
                     (clean-up-quotes)
@@ -730,7 +730,7 @@
                     (setf subsubsection-flag (open-group subsubsection-flag 'subsubsection
                                                          (lambda ()))))
 
-              
+
               ;; absolute sectioning constructs
               (rule (seq (rep* whitespace) backslash "achapter")
                     (setf chapter-flag (open-group chapter-flag 'achapter
@@ -738,7 +738,7 @@
                                                     (subsection-closer
                                                      (subsubsection-closer
                                                       (aparagraph-closer
-                                                       (lambda ()))))))))              
+                                                       (lambda ()))))))))
               (rule (seq (rep* whitespace) backslash  "asection")
                     (setf section-flag (open-group section-flag 'asection
                                                    (subsection-closer
@@ -799,7 +799,7 @@
                     (close-list))
 
               ;;  Cases handled like tabular
-              
+
               (rule (seq (rep* whitespace) backslash "end{tabular}" (rep* h-space))
                     (decf table-count)
                     (close-list)
@@ -860,10 +860,10 @@
                           (decf list-environment-count)
                           (close-list)
                           (close-list))
-                        (close-list))))              
+                        (close-list))))
 
               ;; tex control sequences eg macro names
-              
+
               (rule (seq backslash (set-not a-z))
                     ;; handle single characters with a backslash in front eg \. etc.
                     (add-as-string (escape-quotes (subseq token-text 1))))
@@ -891,7 +891,7 @@
               (rule text-number
                     (open-list 'text-number token-text)
                     (close-list))
-              
+
               ;; words handled according to mode
               (when-state :math
                 (rule (seq "''" (rep* h-space))
@@ -933,10 +933,10 @@
                         (setf inline-quote-flag nil))
                       (progn ; This does not match a quotation, so just put it in the text:
                         (add-as-string (escape-quotes token-text)))))
-              
+
               (rule PUNCT
                     (add-as-string (escape-quotes token-text)))
-              
+
               (rule (rep* h-space)
                     (add-as-string token-text))
 
@@ -946,7 +946,7 @@
 
               (rule "#"
                     (add-as-string "#"))
-              
+
               (rule (any)
                     (error "This escaped ~S" token-text)))
           (terminate-includes))))))

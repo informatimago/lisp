@@ -5,10 +5,10 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Implement a sparse vector abstraction, allowing for big
 ;;;;    vectors, optimizing storage from empty to full vector.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -16,19 +16,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -41,7 +41,7 @@
    "OUT-OF-BOUNDS" "OUT-OF-BOUNDS-VECTOR" "OUT-OF-BOUNDS-INDEX"
    ;; Generic interface:
    "VECTOR-LENGTH" "VECTOR-ELEMENT-TYPE" "VECTOR-REF" "VECTOR-ELEMENTS"
-   "VECTOR-COUNT" "VECTOR-STORAGE-SIZE" 
+   "VECTOR-COUNT" "VECTOR-STORAGE-SIZE"
    ;; Vector-tree:
    "MAKE-VECTOR-TREE" "VECTOR-TREE" "VECTOR-TREE-P"
    ;; Sparse-vector:
@@ -133,7 +133,7 @@ RETURN: NEW-VALUE
 SIGNAL: OUT-OF-BOUNDS error if INDEX is negative or not less than the
         vector length.
 
-        TYPE-ERROR if NEW-VALUE is not of the vector element-type.        
+        TYPE-ERROR if NEW-VALUE is not of the vector element-type.
 ")
   (:method :before (new-value v index)
     (when (or (minusp index) (<=  (vector-length v) index))
@@ -348,7 +348,7 @@ RETURN: a new sparse vector, able to contain up to SIZE elements,
 
 While count is less than 5-35 we use an alist.
 
-node size overhead     collection size overhead    
+node size overhead     collection size overhead
 vector:           1/1                        3
 llrbtree:         4/5                        3
 a-list:           1/2                        0
@@ -367,7 +367,7 @@ n-tree:           1/n                        n
 
 
 (defparameter *structures*
-  ;;                node size        collection size    
+  ;;                node size        collection size
   ;;                overhead                overhead
   ;;                       access time fn
   ;;                       number of collections fn
@@ -435,7 +435,7 @@ n-tree:           1/n                        n
 (defun get-cell (sparse-vector index)
   (unless (<= 0 index (1- (sparse-vector-length sparse-vector)))
     (error 'out-of-bounds :vector sparse-vector :index index))
-  
+
   (cond
 
     ()

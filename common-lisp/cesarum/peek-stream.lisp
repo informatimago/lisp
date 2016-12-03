@@ -5,15 +5,15 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    This package exports a class named PEEK-STREAM that encapsulates
 ;;;;    a stream and a buffer in such a way that reading, peeking or
 ;;;;    unreading characters can be done in any number and in any order.
-;;;;    
+;;;;
 ;;;;    We don't use gray stream to keep it pure Common-Lisp.
 ;;;;    The I/O methods are GETCHAR, UNGETCHAR and NEXTCHAR to avoid
 ;;;;    name clashes with un-generic READ-CHAR, UNREAD-CHAR and PEEK-CHAR.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -25,19 +25,19 @@
 ;;;;    Does not implement other I/O than these three character input methods.
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -64,19 +64,19 @@ un-generic READ-CHAR, UNREAD-CHAR and PEEK-CHAR.
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2004 - 2015
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -232,7 +232,7 @@ SEE ALSO:       NEXTCHAR.
     (replace (buffer self) (buffer self)
              :start1 old-length :start2 0 :end2 (tail self))
     (mod-incf (length (buffer self)) (tail self) old-length)))
-  
+
 
 (defmethod getchar ((self peek-stream))
   "

@@ -77,17 +77,17 @@ GCL		      := gcl
 OPENMCL       := openmcl
 SBCL          := sbcl
 
-COMPILERS      = $(ABCL) $(ALISP) $(CCL) $(CLISP) $(CMUCL) $(ECL) $(OPENMCL) $(SBCL) 
+COMPILERS      = $(ABCL) $(ALISP) $(CCL) $(CLISP) $(CMUCL) $(ECL) $(OPENMCL) $(SBCL)
 
 ABCL_FLAGS    :=      --batch --noinform --noinit
 ALLEGRO_FLAGS :=       -q
 CCL_FLAGS     :=      --quiet --no-init
 CLISP_FLAGS   := -ansi -q      -norc -Kfull -E iso-8859-1 -Efile UTF-8 -Eterminal UTF-8 -on-error debug
-CMUCL_FLAGS   :=               -noinit -nositeinit -eval '(setf extensions:*gc-verbose* nil)' 
-ECL_FLAGS     :=               -norc 
+CMUCL_FLAGS   :=               -noinit -nositeinit -eval '(setf extensions:*gc-verbose* nil)'
+ECL_FLAGS     :=               -norc
 GCL_FLAGS     :=               -norc
-OPENMCL_FLAGS := 
-SBCL_FLAGS    := --noinform --sysinit /dev/null --userinit /dev/null --eval '(declaim (optimize (sb-ext::inhibit-warnings 3)))' 
+OPENMCL_FLAGS :=
+SBCL_FLAGS    := --noinform --sysinit /dev/null --userinit /dev/null --eval '(declaim (optimize (sb-ext::inhibit-warnings 3)))'
 
 ABCL_EVAL     :=   --eval
 ALLEGRO_EVAL  :=       -e
@@ -99,7 +99,7 @@ CCL_EVAL      :=   --eval
 OPENMCL_EVAL  :=   --eval
 SBCL_EVAL     :=   --eval
 
-ABCL_EXIT     :=   --eval '(extensions:quit)'   
+ABCL_EXIT     :=   --eval '(extensions:quit)'
 ALLEGRO_EXIT  :=       -e '(excl::exit-lisp 0)'
 CLISP_EXIT    :=       -x '(ext:quit 0)'
 CMUCL_EXIT    :=    -eval '(extensions:quit)'
@@ -109,15 +109,15 @@ CCL_EXIT      :=   --eval '(ccl:quit)'
 OPENMCL_EXIT  :=   --eval '(ccl:quit)'
 SBCL_EXIT     :=   --eval '(sb-ext:quit)'
 
-ABCL_COMMAND    = LC_CTYPE=$(LC_CTYPE) $(ABCL)    $(ABCL_FLAGS)    --eval $(DECLAIMS) --eval $(COMPILES) $(ABCL_EXIT)   
+ABCL_COMMAND    = LC_CTYPE=$(LC_CTYPE) $(ABCL)    $(ABCL_FLAGS)    --eval $(DECLAIMS) --eval $(COMPILES) $(ABCL_EXIT)
 ALLEGRO_COMMAND = LC_CTYPE=$(LC_CTYPE) $(ALLEGRO) $(ALLEGRO_FLAGS)     -e $(DECLAIMS)     -e $(COMPILES) $(ALLEGRO_EXIT)
-CLISP_COMMAND   = LC_CTYPE=$(LC_CTYPE) $(CLISP)   $(CLISP_FLAGS)       -x $(DECLAIMS)     -x $(COMPILES) $(CLISP_EXIT)  
-CMUCL_COMMAND   = LC_CTYPE=$(LC_CTYPE) $(CMUCL)   $(CMUCL_FLAGS)    -eval $(DECLAIMS)  -eval $(COMPILES) $(CMUCL_EXIT)  
-ECL_COMMAND     = LC_CTYPE=$(LC_CTYPE) $(ECL)     $(ECL_FLAGS)      -eval $(DECLAIMS)  -eval $(COMPILES) $(ECL_EXIT)    
-GCL_COMMAND     = LC_CTYPE=$(LC_CTYPE) $(GCL)     $(GCL_FLAGS)      -eval $(DECLAIMS)  -eval $(COMPILES) $(GCL_EXIT)    
-CCL_COMMAND     = LC_CTYPE=$(LC_CTYPE) $(CCL)     $(CCL_FLAGS)     --eval $(DECLAIMS) --eval $(COMPILES) $(CCL_EXIT)    
+CLISP_COMMAND   = LC_CTYPE=$(LC_CTYPE) $(CLISP)   $(CLISP_FLAGS)       -x $(DECLAIMS)     -x $(COMPILES) $(CLISP_EXIT)
+CMUCL_COMMAND   = LC_CTYPE=$(LC_CTYPE) $(CMUCL)   $(CMUCL_FLAGS)    -eval $(DECLAIMS)  -eval $(COMPILES) $(CMUCL_EXIT)
+ECL_COMMAND     = LC_CTYPE=$(LC_CTYPE) $(ECL)     $(ECL_FLAGS)      -eval $(DECLAIMS)  -eval $(COMPILES) $(ECL_EXIT)
+GCL_COMMAND     = LC_CTYPE=$(LC_CTYPE) $(GCL)     $(GCL_FLAGS)      -eval $(DECLAIMS)  -eval $(COMPILES) $(GCL_EXIT)
+CCL_COMMAND     = LC_CTYPE=$(LC_CTYPE) $(CCL)     $(CCL_FLAGS)     --eval $(DECLAIMS) --eval $(COMPILES) $(CCL_EXIT)
 OPENMCL_COMMAND = LC_CTYPE=$(LC_CTYPE) $(OPENMCL) $(OPENMCL_FLAGS) --eval $(DECLAIMS) --eval $(COMPILES) $(OPENMCL_EXIT)
-SBCL_COMMAND    = LC_CTYPE=$(LC_CTYPE) $(SBCL)    $(SBCL_FLAGS)    --eval $(DECLAIMS) --eval $(COMPILES) $(SBCL_EXIT)   
+SBCL_COMMAND    = LC_CTYPE=$(LC_CTYPE) $(SBCL)    $(SBCL_FLAGS)    --eval $(DECLAIMS) --eval $(COMPILES) $(SBCL_EXIT)
 
 
 all:: show-compilers
@@ -154,21 +154,21 @@ show-compilers-verbose:
 		fi ;\
 	 done
 	@printf '\n;;;; Would compile with these compiler versions:  \n'
-	@for compiler in $(COMPILERS) ; do $(MAKE) -s $${compiler}-version ; done 
+	@for compiler in $(COMPILERS) ; do $(MAKE) -s $${compiler}-version ; done
 	@printf '\n;;;; Would compile with these commands:  \n'
-	@for compiler in $(COMPILERS) ; do $(MAKE) -s $${compiler}-command ; done 
+	@for compiler in $(COMPILERS) ; do $(MAKE) -s $${compiler}-command ; done
 	@printf '\n'
 
 LISP_VERSION='(progn (format t "~A ~A~%" (lisp-implementation-type) (lisp-implementation-version)) (finish-output))'
-$(ABCL)-version:    ; -@type -p $(ABCL)     >/dev/null 2>&1 && $(ABCL)    $(ABCL_FLAGS)    --eval $(LISP_VERSION) $(ABCL_EXIT)   
+$(ABCL)-version:    ; -@type -p $(ABCL)     >/dev/null 2>&1 && $(ABCL)    $(ABCL_FLAGS)    --eval $(LISP_VERSION) $(ABCL_EXIT)
 $(ALLEGRO)-version: ; -@type -p $(ALLEGRO)  >/dev/null 2>&1 && $(ALLEGRO) $(ALLEGRO_FLAGS)     -e $(LISP_VERSION) $(ALLEGRO_EXIT)
-$(CLISP)-version:   ; -@type -p $(CLISP)    >/dev/null 2>&1 && $(CLISP)   $(CLISP_FLAGS)       -x $(LISP_VERSION) $(CLISP_EXIT)  
-$(CMUCL)-version:   ; -@type -p $(CMUCL)    >/dev/null 2>&1 && $(CMUCL)   $(CMUCL_FLAGS)    -eval $(LISP_VERSION) $(CMUCL_EXIT)  
-$(ECL)-version:     ; -@type -p $(ECL)      >/dev/null 2>&1 && $(ECL)     $(ECL_FLAGS)      -eval $(LISP_VERSION) $(ECL_EXIT)    
-$(GCL)-version:     ; -@type -p $(GCL)      >/dev/null 2>&1 && $(GCL)     $(GCL_FLAGS)      -eval $(LISP_VERSION) $(GCL_EXIT)    
-$(CCL)-version:     ; -@type -p $(CCL)      >/dev/null 2>&1 && $(CCL)     $(CCL_FLAGS)     --eval $(LISP_VERSION) $(CCL_EXIT)    
+$(CLISP)-version:   ; -@type -p $(CLISP)    >/dev/null 2>&1 && $(CLISP)   $(CLISP_FLAGS)       -x $(LISP_VERSION) $(CLISP_EXIT)
+$(CMUCL)-version:   ; -@type -p $(CMUCL)    >/dev/null 2>&1 && $(CMUCL)   $(CMUCL_FLAGS)    -eval $(LISP_VERSION) $(CMUCL_EXIT)
+$(ECL)-version:     ; -@type -p $(ECL)      >/dev/null 2>&1 && $(ECL)     $(ECL_FLAGS)      -eval $(LISP_VERSION) $(ECL_EXIT)
+$(GCL)-version:     ; -@type -p $(GCL)      >/dev/null 2>&1 && $(GCL)     $(GCL_FLAGS)      -eval $(LISP_VERSION) $(GCL_EXIT)
+$(CCL)-version:     ; -@type -p $(CCL)      >/dev/null 2>&1 && $(CCL)     $(CCL_FLAGS)     --eval $(LISP_VERSION) $(CCL_EXIT)
 $(OPENMCL)-version: ; -@type -p $(OPENMCL)  >/dev/null 2>&1 && $(OPENMCL) $(OPENMCL_FLAGS) --eval $(LISP_VERSION) $(OPENMCL_EXIT)
-$(SBCL)-version:    ; -@type -p $(SBCL)     >/dev/null 2>&1 && $(SBCL)    $(SBCL_FLAGS)    --eval $(LISP_VERSION) $(SBCL_EXIT)   
+$(SBCL)-version:    ; -@type -p $(SBCL)     >/dev/null 2>&1 && $(SBCL)    $(SBCL_FLAGS)    --eval $(LISP_VERSION) $(SBCL_EXIT)
 
 help::
 	@for compiler in $(COMPILERS) ; do printf $(HELP_FMT) "$${compiler}-command" "Shows the command used to compile with $${compiler}." ; done

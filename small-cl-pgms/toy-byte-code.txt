@@ -1,6 +1,6 @@
 Somebody asked:
 
-I have this language.  
+I have this language.
 
     pgm          ::= stmt* .
     stmt         ::= block-stmt | if-stmt | while-stmt | assign-expr .
@@ -137,7 +137,7 @@ This allows us to write programs in your language:
 
     (defun hash-table-to-alist (ht)
       (let ((result '()))
-        (maphash (lambda (key value) 
+        (maphash (lambda (key value)
                    (setq result (acons key value result)))
                  ht)
         result))
@@ -260,7 +260,7 @@ The result pushed on the stack is a number, if the arguments are numbers.
 In case of error (type or arithmetic (division by zero)), the program stops.
 Note:  (load&push i) (load&push j) (sub) (pop&store k) ==  (assign k (- j i))
 
-   10 LOAD&PUSH address   (push (aref data address) stack) 
+   10 LOAD&PUSH address   (push (aref data address) stack)
    11 POP&STORE address   (setf (aref data address) (pop stack))
 
 
@@ -279,7 +279,7 @@ End:
 
 
 The compiler will have to collect all the variables and literal
-numbers and assign them a cell in the data memory.  
+numbers and assign them a cell in the data memory.
 
 
 
@@ -287,7 +287,7 @@ numbers and assign them a cell in the data memory.
 
       (defparameter *instructions* #(and or lt gt eq ne add sub mul div
                                      load&push pop&store bfof bba stop)
-         "Defines a mapping of symbolic instructions to byte code 
+         "Defines a mapping of symbolic instructions to byte code
           (as their index in the vector).")
 
       (defun codop (instruction) (position instruction *instructions*)))
@@ -371,7 +371,7 @@ Now let's write a little assember to test our machine:
     body is a list of instructions or labels.
     instructions are: (and) (or) (lt) (gt) (eq) (ne) (add) (sub) (mul) (div) (stop)
                       (load&push address) (pop&store address)
-                      (loadi&push value) 
+                      (loadi&push value)
                       (bfof label) (bba label)
     address is a symbol.
     value is a literal value.

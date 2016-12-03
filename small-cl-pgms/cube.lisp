@@ -1,7 +1,7 @@
 ;;;; -*- mode:lisp; coding:utf-8 -*-
 ;;;;****************************************************************************
 ;;;;FILE:               cube.lisp
-;;;;LANGUAGE:           Common-Lisp 
+;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             clisp
 ;;;;USER-INTERFACE:     clisp
 ;;;;DESCRIPTION
@@ -11,7 +11,7 @@
 ;;;;    recomposed.
 ;;;;
 ;;;;AUTHORS
-;;;;    <PJB> Pascal J. Bourguignon 
+;;;;    <PJB> Pascal J. Bourguignon
 ;;;;MODIFICATIONS
 ;;;;    2004-01-25 <PJB> Removed import from CLOS (everything is in COMMON-LISP).
 ;;;;    1995-??-?? <PJB> Creation.
@@ -19,19 +19,19 @@
 ;;;;    Does not solve it yet.
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 1995 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
@@ -42,7 +42,7 @@
    "This program tries to resolve the Cube Puzzle, where a cube
     composed of 27 smaller cubes linked with a thread  must be
     recomposed.
-    
+
     Copyright Pascal J. Bourguignon 1995 - 2004
     This package is provided under the GNU General Public License.
     See the source file for details.")
@@ -56,7 +56,7 @@
 ;;(IN-PACKAGE "COM.INFORMATIMAGO.COMMON-LISP.CUBE")
 
 
-;; 3 2 3 2 3 2 3 3 2 3 3 3 3 
+;; 3 2 3 2 3 2 3 3 2 3 3 3 3
 ;;#
 ;;#
 ;;##
@@ -139,7 +139,7 @@
         (decf y (aref arg 1))
         (decf z (aref arg 2)))
       (v x y z))));;v-
-      
+
 
 (defun o- (arg1 &rest args)
   (if (null args)
@@ -226,13 +226,13 @@
   (check-operator z-axis-quarter-turn y-axis (v- x-axis))
   (check-operator z-axis-quarter-turn z-axis z-axis)
   );;CHECK
- 
 
 
 
 
-;; A box is list with (car box) containing the left-bottom-far most 
-;; place and (cdr box) containing the right-top-near most place of the 
+
+;; A box is list with (car box) containing the left-bottom-far most
+;; place and (cdr box) containing the right-top-near most place of the
 ;; box. Each is a list of three coordinate (x y z).
 ;; Sides of the box are parallel to the base planes.
 
@@ -327,7 +327,7 @@
   (setf (coordinate self) newcoordinate)
   (if (null (output-cube self))
     newcoordinate
-    (set-coordinate (output-cube self) 
+    (set-coordinate (output-cube self)
                     (add-vector newcoordinate (output-vector self)))));;SET-COORDINATE
 				
 
@@ -340,19 +340,19 @@
 (defmethod output-vector        ((self cube))
   (cond
    ((= 0 (output-side self)) '(0 0 0))
-   ((= 1 (output-side self)) 
+   ((= 1 (output-side self))
     (opposite-vector (first (orientation self))))
-   ((= 2 (output-side self)) 
+   ((= 2 (output-side self))
     (opposite-vector (second (orientation self))))
-   ((= 3 (output-side self)) 
+   ((= 3 (output-side self))
     (opposite-vector (third (orientation self))))
-   ((= 4 (output-side self)) 
+   ((= 4 (output-side self))
     (third (orientation self)))
-   ((= 5 (output-side self)) 
+   ((= 5 (output-side self))
     (second (orientation self)))
-   ((= 6 (output-side self)) 
+   ((= 6 (output-side self))
     (first (orientation self)))
-   (t (error "Invalid output-side (~a) for ~a~%" 
+   (t (error "Invalid output-side (~a) for ~a~%"
              (output-side self) self)
       '(0 0 0))));;OUTPUT-VECTOR
 
@@ -367,9 +367,9 @@
 
 
 (defmethod roll     ((self cube))
-  (setf (orientation self) 
+  (setf (orientation self)
 		(mapcar
-         (lambda (v) 
+         (lambda (v)
            (apply-operator (quarter-turn (output-vector (input-cube self))) v))
          (orientation self)))
   (set-coordinate self (coordinate self))
@@ -381,8 +381,8 @@
   (cond
    ((null self)    t)
    ((> try 3)      (block t (roll self) nil))
-   ((and (input-cube self) (or 
-                            (> (apply 'max (box-size (bounds self))) 3) 
+   ((and (input-cube self) (or
+                            (> (apply 'max (box-size (bounds self))) 3)
                             (collide (input-cube self) (coordinate self))))
     (roll self)
     (solve self (1+ try)))
@@ -443,7 +443,7 @@
 
 
 
-;;(setq cubeList (reverse 
+;;(setq cubeList (reverse
 ;;	(make-cube-list '(0 6 6 2 2 6 6 2 2 6 2 6 2 6 6 2 2 6 2 2 6 2 2 6 2 6 6))))
 ;;; (SETQ CUBELIST (REVERSE (MAKE-CUBE-LIST (REVERSE '(6 6 2 2 6 6 2 2 6 2 6 2 6 6 2 2 6 2 2 6 2 2 6 2 6 6 0)))))
 ;;; (SET-INDEX (CAR CUBELIST) 1)

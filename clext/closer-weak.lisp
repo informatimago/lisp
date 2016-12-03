@@ -24,19 +24,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2006 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -55,7 +55,7 @@ without implementation support.
 Currently works on:
 
              WP   WL   WAR WOR WM  WHT
-  allegro   
+  allegro
   ccl         x    x    x       x   n   -- WHT native.
   clisp       n    n    n   n   n   n   -- full support - native
   cmucl       n    x    x       x   x   -- partial support (missing WEAK-OR-RELATION)
@@ -229,7 +229,7 @@ WEAK-POINTERs would be."
 (defun weak-list-list (weak-list)
   "Returns a LIST of those objects from the weak-list that are still alive."
   (let ((alive (delete-if (lambda (item)
-                            (multiple-value-bind (object livep) 
+                            (multiple-value-bind (object livep)
                                 (weak-pointer-value item)
                               (declare (ignore object))
                               (not livep))) (weak-list-head weak-list))))
@@ -280,7 +280,7 @@ collection of objects becomes empty."
 
 #-(and clisp (not debug-weak))
 (defun weak-and-relation-list (weak-and-relation)
-  "Returns the list of objects stored in the weak-and-relation. 
+  "Returns the list of objects stored in the weak-and-relation.
 The returned list must not be destructively modified."
   (loop
      :named :loop
@@ -331,16 +331,16 @@ unreferenced, the collection of objects becomes empty."
 
 #-(and clisp (not debug-weak))
 (defun weak-or-relation-list (weak-or-relation)
-  "Returns the list of objects stored in the WEAK-OR-RELATION. 
+  "Returns the list of objects stored in the WEAK-OR-RELATION.
 The returned list must not be destructively modified."
   (if (= 1 (length (%weak-or-relation-objects weak-or-relation)))
-      (multiple-value-bind (object alivep) 
-          (weak-pointer-value (aref (%weak-or-relation-objects 
+      (multiple-value-bind (object alivep)
+          (weak-pointer-value (aref (%weak-or-relation-objects
                                      weak-or-relation) 0))
         (if alivep
             (list object)
             '()))
-      (map 'list (function identity) 
+      (map 'list (function identity)
            (%weak-or-relation-objects weak-or-relation))))
 
 
@@ -368,7 +368,7 @@ The returned list must not be destructively modified."
        (defmethod alivep ((self ,(c `(weak- ,op -relation))))
          "Returns whether the object is alive."
          ,(if (eq op 'or)
-              ;; our pseudo weak-or-relations are just 
+              ;; our pseudo weak-or-relations are just
               ;; vectors of normal object references.
               ;; Unless there is only one element in it.
               `(if (= 1 (length (%weak-or-relation-objects self)))
@@ -380,7 +380,7 @@ The returned list must not be destructively modified."
        (defmethod pair-key ((self ,(c `(weak- ,op -relation))))
          "Returns the key in the pair object."
          ,(if (eq op 'or)
-              ;; our pseudo weak-or-relations are just 
+              ;; our pseudo weak-or-relations are just
               ;; vectors of normal object references.
               ;; Unless there is only one element in it. (There's 2 in pairs).
               `(aref (,(c `(%weak- ,op -relation-objects)) self) 0)
@@ -389,7 +389,7 @@ The returned list must not be destructively modified."
        (defmethod pair-value ((self ,(c `(weak- ,op -relation))))
          "Returns the value in the pair object."
          ,(if (eq op 'or)
-              ;; our pseudo weak-or-relations are just 
+              ;; our pseudo weak-or-relations are just
               ;; vectors of normal object references.
               ;; Unless there is only one element in it. (There's 2 in pairs).
               `(aref (,(c `(%weak- ,op -relation-objects)) self) 1)
@@ -397,11 +397,11 @@ The returned list must not be destructively modified."
                 (aref (,(c `(%weak- ,op -relation-objects)) self) 1))))
        (defmethod (setf pair-value) (value (self ,(c `(weak- ,op -relation))))
          "Changes the value in the pair object."
-         (setf (aref (,(c `(%weak- ,op -relation-objects)) self) 1) 
+         (setf (aref (,(c `(%weak- ,op -relation-objects)) self) 1)
                ,(if (eq op 'or)
-                    ;; our pseudo weak-or-relations are just 
-                    ;; vectors of normal object references. 
-                    ;; Unless there is only one element in it. 
+                    ;; our pseudo weak-or-relations are just
+                    ;; vectors of normal object references.
+                    ;; Unless there is only one element in it.
                     ;; (There's 2 in pairs).
                     `value
                     `(make-weak-pointer value)))))))
@@ -428,13 +428,13 @@ garbage-collected."
 
 #-(and clisp (not debug-weak))
 (defun make-weak-mapping (key value)
-  "Creates a WEAK-MAPPING." 
+  "Creates a WEAK-MAPPING."
   (%make-weak-mapping :key (make-weak-pointer key) :value value))
 
 #-(and clisp (not debug-weak))
 (defmethod initialize-instance ((self weak-mapping) &key key value)
   "Initialize a WEAK-MAPPING object."
-  (setf (%weak-mapping-key   self) (make-weak-pointer key) 
+  (setf (%weak-mapping-key   self) (make-weak-pointer key)
         (%weak-mapping-value self) value))
 
 #-(and clisp (not debug-weak))
@@ -459,7 +459,7 @@ garbage-collected."
 
 #-(and clisp (not debug-weak))
 (defun weak-mapping-value (weak-mapping)
-  "Returns three values: the original key, the original value, and T, 
+  "Returns three values: the original key, the original value, and T,
 if the key has not yet been garbage-collected, else NIL, NIL, NIL."
   (if (nth-value 1 (weak-pointer-value (%weak-mapping-key weak-mapping)))
       (%weak-mapping-value weak-mapping)
@@ -470,10 +470,10 @@ if the key has not yet been garbage-collected, else NIL, NIL, NIL."
 
 #-(and clisp (not debug-weak))
 (defun (setf weak-mapping-value) (value weak-mapping)
-  "Replaces the value stored in the weak-mapping. 
+  "Replaces the value stored in the weak-mapping.
 It has no effect when the key has already been garbage-collected."
   (if (nth-value 1 (weak-pointer-value (%weak-mapping-key weak-mapping)))
-      (setf (%weak-mapping-value weak-mapping) value) 
+      (setf (%weak-mapping-value weak-mapping) value)
       (progn (setf (%weak-mapping-value weak-mapping) nil)
              #+weak-test (ext:gc)
              value)))
@@ -497,7 +497,7 @@ It has no effect when the key has already been garbage-collected."
   "Changes the value in the pair object."
   (if (alivep self)
       (setf (%weak-mapping-value self) value)
-      (progn 
+      (progn
         ;; TODO: check this...
         (setf (%weak-mapping-value self) nil)
         #+weak-test (gc)
@@ -532,7 +532,7 @@ mapping goes away.")
                       op))
        (defun ,(c `(make-weak- ,op -mapping)) (keys value)
          ,(format nil "Creates a WEAK-~A-MAPPING between the keys  objects in
- the given list and the given value. The keys list must be non-empty." op) 
+ the given list and the given value. The keys list must be non-empty." op)
          (assert (etypecase keys
                    (list   (not (null keys)))
                    (vector (plusp (length keys))))
@@ -549,7 +549,7 @@ NIL. The returned keys list must not be destructively modified."
 T, if none of the keys have been garbage-collected, else NIL, NIL,
 NIL. The returned keys list must not be destructively modified.")
          (let ((keys (,(c `(%weak- ,op -mapping-keys)) mapping)))
-           (if (alivep keys) 
+           (if (alivep keys)
                (values (,(c `(weak- ,op -relation-list)) keys)
                        (,(c `(%weak- ,op -mapping-value)) mapping)
                        t)
@@ -561,7 +561,7 @@ NIL. The returned keys list must not be destructively modified.")
          ,(if (eq op 'or)
               "Returns the value, if the keys have not yet been
 garbage-collected, else NIL."
-              "Returns the value, if none of the keys have been 
+              "Returns the value, if none of the keys have been
 garbage-collected, else NIL.")
          (if (alivep (,(c `(%weak- ,op -mapping-keys)) mapping))
              (,(c `(%weak- ,op -mapping-value)) mapping)
@@ -571,12 +571,12 @@ garbage-collected, else NIL.")
                nil)))
        (defun (setf ,(c `( weak- ,op -mapping-value))) (value mapping)
          ,(if (eq op 'or)
-              "Replaces the value stored in the WEAK-OR-MAPPING. 
+              "Replaces the value stored in the WEAK-OR-MAPPING.
 It has no effect when the keys have already been garbage-collected."
-              "Replaces the value stored in the WEAK-AND-MAPPING. 
+              "Replaces the value stored in the WEAK-AND-MAPPING.
 It has no effect when some key has already been garbage-collected.")
          (if (alivep (,(c `(%weak- ,op -mapping-keys)) mapping))
-             (setf (,(c `(%weak- ,op -mapping-value)) mapping) value) 
+             (setf (,(c `(%weak- ,op -mapping-value)) mapping) value)
              (progn (setf (,(c `(%weak- ,op -mapping-value)) mapping) nil)
                     #+weak-test (gc)
                     value))))))
@@ -617,7 +617,7 @@ It has no effect when some key has already been garbage-collected.")
 #-(and clisp (not debug-weak)) (defclass wal-key-and-value (weak-alist) ())
 #-(and clisp (not debug-weak)) (defclass wal-key-or-value  (weak-alist) ())
 
-#-(and clisp (not debug-weak)) 
+#-(and clisp (not debug-weak))
 (defgeneric wal-pair-class (wal)
   (:method ((wal weak-alist))        nil)
   (:method ((wal wal-key))           'weak-mapping)
@@ -635,7 +635,7 @@ It has no effect when some key has already been garbage-collected.")
   (:method ((wal wal-key-or-value))  t))
 
 
-#-(and clisp (not debug-weak)) 
+#-(and clisp (not debug-weak))
 (defgeneric weak-alist-type (wal)
   (:method ((wal weak-alist))        nil)
   (:method ((wal wal-key))           :key)
@@ -654,12 +654,12 @@ It has no effect when some key has already been garbage-collected.")
     (setf (weak-alist-contents wal) initial-contents)
     wal))
 
-#-(and clisp (not debug-weak)) 
+#-(and clisp (not debug-weak))
 (defgeneric weak-alist-contents (wal)
   (:method ((wal weak-alist))
     (let ((alive
            #+weak-test
-            (loop 
+            (loop
                :for count = (length (wal-contents wal))
                :then        (length alive)
                :for alive = (delete-if-not (function alivep) (wal-contents wal))
@@ -673,7 +673,7 @@ It has no effect when some key has already been garbage-collected.")
       (mapcar (lambda (pair) (cons (pair-key pair) (pair-value pair))) alive))))
 
 
-#-(and clisp (not debug-weak)) 
+#-(and clisp (not debug-weak))
 (defgeneric (setf weak-alist-contents) (value wal)
   (:method ((value t) (wal weak-alist))
     (let ((pair-class (wal-pair-class wal)))
@@ -750,7 +750,7 @@ It has no effect when some key has already been garbage-collected.")
 (defmethod (setf weak-alist-value) (value item (self weak-alist)
                                     &key (test (function eql)) (test-not nil))
   (if test-not
-      (setf (weak-alist-value item self :test (complement test-not)) value) 
+      (setf (weak-alist-value item self :test (complement test-not)) value)
       (loop
          :named :assoc
          :for pair :in (wal-contents self)
@@ -764,22 +764,22 @@ It has no effect when some key has already been garbage-collected.")
 ;;;---------------------------------------------------------------------
 ;;; Weak Hash Tables
 
-  
-#-(and (or ccl clisp) (not debug-weak)) 
+
+#-(and (or ccl clisp) (not debug-weak))
 (defgeneric %gethash (key self &optional default)
   (:method (key (self t) &optional default)
     (common-lisp:gethash key self default)))
-#-(and (or ccl clisp) (not debug-weak)) 
+#-(and (or ccl clisp) (not debug-weak))
 (defgeneric (setf %gethash) (value key self &optional default)
   (:method (value key (self t) &optional default)
     (setf (common-lisp:gethash key self default) value)))
-#-(and (or ccl clisp) (not debug-weak)) 
+#-(and (or ccl clisp) (not debug-weak))
 (defgeneric %remhash (key self)
   (:method (key (self t)) (common-lisp:remhash key self)))
-#-(and (or ccl clisp) (not debug-weak)) 
+#-(and (or ccl clisp) (not debug-weak))
 (defgeneric %maphash (function self)
   (:method (function (self t)) (common-lisp:maphash function self)))
-#-(and (or ccl clisp) (not debug-weak)) 
+#-(and (or ccl clisp) (not debug-weak))
 (defgeneric %clrhash (self)
   (:method ((self t)) (common-lisp:clrhash self)))
 
@@ -824,10 +824,10 @@ It has no effect when some key has already been garbage-collected.")
 #-(and (or ccl clisp) (not debug-weak))
 (defmethod dump-wht ((self weak-hash-table) &optional (out *standard-output*))
   (format out "~A~%" (class-name (class-of self)))
-  ((lambda (items) 
+  ((lambda (items)
      (format out (format nil "~~:{  ~~~DA = ~~A~~%~~}"
                          (reduce
-                          (function max) items 
+                          (function max) items
                           :key (lambda (item) (length (string (first item))))))
              items))
    (list (list 'count            (%hash-table-count self))
@@ -844,8 +844,8 @@ It has no effect when some key has already been garbage-collected.")
                                                        (pair-value bucket)
                                                        '()))
                          (t                     nil))))
-      (when pairs 
-        (format out "  ~4D : (~S . ~S)~%" 
+      (when pairs
+        (format out "  ~4D : (~S . ~S)~%"
                 i (car (first pairs)) (cdr (first pairs)))
         (dolist (pair (rest pairs))
           (format out "         (~S . ~S)~%" (car pair) (cdr pair))))))
@@ -972,7 +972,7 @@ It has no effect when some key has already been garbage-collected.")
   (let* ((h (mod (%sxhash key) (length (wht-buckets self))))
          (bucket (aref (wht-buckets self) h)))
     (cond
-      ((null bucket)  (values nil nil)) 
+      ((null bucket)  (values nil nil))
       ((weak-alist-p bucket)
        (let ((pair (weak-alist-assoc key bucket
                                      :test (%hash-table-test self))))
@@ -987,7 +987,7 @@ It has no effect when some key has already been garbage-collected.")
                #+weak-test (gc)
                (check-reduce-size self (list nil nil))))))))
 
-      
+
 ;;; We probably need to use defsetf or define-setf-expander
 ;;; to process correctly the default value:
 
@@ -1001,7 +1001,7 @@ It has no effect when some key has already been garbage-collected.")
     (cond
       ((null bucket)
        (setf (aref (wht-buckets self) h)
-             (make-instance 
+             (make-instance
                  (ecase (wht-pair-type self)
                    (:key           'weak-mapping)
                    (:value         'inverse-weak-mapping)
@@ -1021,7 +1021,7 @@ It has no effect when some key has already been garbage-collected.")
              ;; because the key itself could be broken.
              (if (funcall (%hash-table-test self) key (pair-key bucket))
                  ;; change the value.
-                 (setf (pair-value bucket) value) 
+                 (setf (pair-value bucket) value)
                  ;; add a new value to the bucket, making it an walist.
                  (progn
                    (setf (aref (wht-buckets self) h)
@@ -1034,7 +1034,7 @@ It has no effect when some key has already been garbage-collected.")
                    (check-increase-size self (list value))))
              ;; replace the dead single bucket.
              (setf (aref (wht-buckets self) h)
-                   (make-instance 
+                   (make-instance
                        (ecase (wht-pair-type self)
                          (:key           'weak-mapping)
                          (:value         'inverse-weak-mapping)
@@ -1054,14 +1054,14 @@ It has no effect when some key has already been garbage-collected.")
       ((weak-alist-p bucket)
        (and (weak-alist-remove-assoc key self :test (%hash-table-test self))
             (check-reduce-size self '(t))))
-      
+
       (t
        (when (funcall (%hash-table-test self) key (pair-key bucket))
          (setf (aref (wht-buckets self) h) nil)
          #+weak-test (gc)
          (check-reduce-size self '(t)))))))
 
-#-(and (or ccl clisp) (not debug-weak)) 
+#-(and (or ccl clisp) (not debug-weak))
 (defmacro with-hash-table-iterator ((name hash-table) &body body)
   (let ((vh (gensym)) (iterator (gensym)))
     `(let ((,vh ,hash-table))
@@ -1096,24 +1096,24 @@ It has no effect when some key has already been garbage-collected.")
   (or (common-lisp:hash-table-p object) (typep object 'weak-hash-table)))
 
 
-#-(and (or ccl clisp) (not debug-weak)) 
+#-(and (or ccl clisp) (not debug-weak))
 (defun gethash (key hash-table &optional default)
   (%gethash key hash-table default))
 
 
-#-(and (or ccl clisp) (not debug-weak)) 
+#-(and (or ccl clisp) (not debug-weak))
 (defun (setf gethash) (value key hash-table &optional default)
   (setf  (%gethash key hash-table default) value))
 
 
-#-(and (or ccl clisp) (not debug-weak)) 
+#-(and (or ccl clisp) (not debug-weak))
 (defun remhash (key hash-table) (%remhash key hash-table))
 
-#-(and (or ccl clisp) (not debug-weak)) 
+#-(and (or ccl clisp) (not debug-weak))
 (defun maphash (function hash-table) (%maphash function hash-table))
 
 
-#-(and (or ccl clisp) (not debug-weak)) 
+#-(and (or ccl clisp) (not debug-weak))
 (defun clrhash (hash-table) (%clrhash hash-table))
 
 
@@ -1123,7 +1123,7 @@ It has no effect when some key has already been garbage-collected.")
                         (size nil sizep)
                         (rehash-size nil rehash-size-p)
                         (rehash-threshold nil rehash-threshold-p)
-                        (weak nil #|:KEY :VALUE :KEY-AND-VALUE :KEY-OR-VALUE|#) 
+                        (weak nil #|:KEY :VALUE :KEY-AND-VALUE :KEY-OR-VALUE|#)
                         ;; implementation dependant:
                         &allow-other-keys)
   (apply (if weak

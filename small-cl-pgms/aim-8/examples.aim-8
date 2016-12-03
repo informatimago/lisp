@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Transcription in AIM-8 LISP of the programs presented in AIM-8.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -26,18 +26,18 @@
             (t        (combine (f x) (maplist (rest x) f))))))
 
 
-(define diff 
+(define diff
     (lambda (y x)
-      (cond 
-        ((atom y) 
+      (cond
+        ((atom y)
          (cond ((eq y x) (quote one))
                (t (quote zero))))
         ((eq (first y) (quote plus))
          (combine (quote plus) (maplist (rest y) (lambda (a) (diff (first a) x)))))
         ((eq (first y) (quote times))
          (combine (quote plus)
-                  (maplist 
-                   (rest y) 
+                  (maplist
+                   (rest y)
                    (lambda (a) (combine (quote times)
                                    (maplist
                                     (rest y)
@@ -58,7 +58,7 @@
 
 (define find
     (lambda (st sy qs)
-      (cond 
+      (cond
         ((null qs)                                 nil)
         ((and (eq (first       (first qs))  st)
               (eq (first (rest (first qs))) sy))   (rest (rest (first qs))))
@@ -74,7 +74,7 @@
             ((null (first (rest tape)))               (first (rest m)))
             (t                       (first (first (rest tape)))))
           (combine
-           (cond ((null (first (rest tape)))          nil) 
+           (cond ((null (first (rest tape)))          nil)
                  (t                  (rest (first (rest tape)))) )
            (combine
             (combine nsy (first (rest (rest tape))))
@@ -84,7 +84,7 @@
           (cond ((null(first (rest (rest tape))))     (first (rest m)))
                 (t                   (first (first (rest (rest tape))))))
           (combine
-           (combine nsy (first(rest tape))) 
+           (combine nsy (first(rest tape)))
            (combine
             (cond ((null (first (rest (rest tape))))  nil)
                   (t                 (rest (first (rest (rest tape))))))
@@ -143,10 +143,10 @@
                  (cond ((null x) nil)
                        (t        (combine (f x) (maplist (rest x) f))))))
 
-           (define diff 
+           (define diff
                (lambda (y x)
-                 (cond 
-                   ((atom y) 
+                 (cond
+                   ((atom y)
                     (cond ((eq y x) (quote one))
                           (t (quote zero))))
                    ((eq (first y) (quote plus))
@@ -154,13 +154,13 @@
                              (maplist (rest y) (lambda (a) (diff (first a) x)))))
                    ((eq (first y) (quote times))
                     (combine (quote plus)
-                             (maplist 
-                              (rest y) 
+                             (maplist
+                              (rest y)
                               (lambda (a) (combine
                                       (quote times)
                                       (maplist
                                        (rest y)
-                                       (lambda (w) (cond 
+                                       (lambda (w) (cond
                                                 ((not (eq a w)) (first w))
                                                 (t (diff (first w) x))
                                                 )))))))))))

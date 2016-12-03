@@ -100,7 +100,7 @@ lisp-sexp/
 
 
 lisp-reader/
-    
+
     com.informatimago.common-lisp.lisp-reader.reader
 
     A Common Lisp reader, with some extensions (hooks to parse tokens).
@@ -126,7 +126,7 @@ lisp/
     COMMON-LISP, but whose functions are replaced by equivalent
     generic functions.
 
-    
+
 cesarum/
 
     com.informatimago.common-lisp.cesarum.utility et al.
@@ -148,7 +148,7 @@ file/
 arithmetic/
 
     com.informatimago.common-lisp.aritmethic.primes
-    
+
     Various arithmetic utilities.  For now, we have a package to
     compute primes (Eratostene sieve) and factorize integers.
 
@@ -178,7 +178,7 @@ csv/
 bank/
 
     com.informatimago.common-lisp.bank.iban
-    
+
     A package to deal with IBAN (Internationnal Bank Account Numbers)
     and another to deal with RIB (Relevé d'Identité Bancaire) which
     are the French account numbers.
@@ -188,16 +188,16 @@ picture/
 
     A ASCII-art picture package, with packages to draw lisp lists and trees.
 
-    
+
 rfc2822/
-    
+
     Utilities to deal with RFC-2822 message formats.
 
 
 rfc3548/
 
     This packages exports functions to encode an decode text blocks
-    according to the encoding described in: 
+    according to the encoding described in:
 
        RFC3548: The Base16, Base32, and Base64 Data Encodings
 
@@ -208,7 +208,7 @@ unix/
 
 
 html-base/
-    
+
     Some common HTML packages.
 
 
@@ -251,7 +251,7 @@ invoice/
 
 
 regexp/
-    
+
     An implementation of POSIX regexps and of EMACS regexps (both incomplete).
 
 

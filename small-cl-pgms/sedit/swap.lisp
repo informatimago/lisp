@@ -13,7 +13,7 @@ is an emacs. ;-)
          (loop :for current :on list
                :until (eq (cdr current) cell)
                :finally (return current)))
-      
+
          (defun sedit-swap (buffer)
            "swaps the expression before the selection with the selection."
            (with-buffer (buffer root selection)

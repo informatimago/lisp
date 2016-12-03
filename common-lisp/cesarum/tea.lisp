@@ -6,12 +6,12 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Implementation of the TEA
 ;;;;    Tiny Encryption Algorithm:
 ;;;;    http://web.archive.org/web/20070929150931/http://www.simonshepherd.supanet.com/tea.htm
-;;;;    
-;;;;    
+;;;;
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -21,19 +21,19 @@
 ;;;;    Implement the new variant.
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2006 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -56,19 +56,19 @@ See also:  COM.INFORMATIMAGO.COMMON-LISP.CESARUM.RAIDEN
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2006 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -153,7 +153,7 @@ void decipher(unsigned long *const v,unsigned long *const w,
 
 
 
-#| {%c-mode%} 
+#| {%c-mode%}
 /* ANSI C (New Variant) */
 
 void encipher(const unsigned long *const v,unsigned long *const w,
@@ -193,12 +193,12 @@ void decipher(const unsigned long *const v,unsigned long *const w,
 
 
 
-(defun word (a b c d) 
+(defun word (a b c d)
   (dpb a (byte 8 24) (dpb b (byte 8 16) (dpb c (byte 8 8) d))))
 
 (defun read-words (bits what)
   (loop
-     :for bytes = (progn (format t "Please enter ~D bits of ~A: " 
+     :for bytes = (progn (format t "Please enter ~D bits of ~A: "
                                  bits what)
                          (let ((buffer (read-line *standard-input* nil nil)))
                            (map 'vector (function char-code) buffer)))
@@ -214,7 +214,7 @@ void decipher(const unsigned long *const v,unsigned long *const w,
                         :finally (return (coerce words 'vector)))))))
 
 (defun interactive-test ()
-  (loop 
+  (loop
      with code = (vector 0 0)
      with decr = (vector 0 0)
      for clear = (prog1 (read-words  64 "clear text") (terpri))
@@ -222,12 +222,12 @@ void decipher(const unsigned long *const v,unsigned long *const w,
      while (and clear key)
      do (progn (tea-encipher clear code key)
                (format t "(encipher ~S ~S)~% -->      ~S~%" clear key code)
-               (tea-decipher code decr key)      
+               (tea-decipher code decr key)
                (format t "(decipher ~S ~S)~% -->      ~S~%" code key decr)
                (unless (equalp clear decr) (format t "!!! ERROR !!!~%")))))
 
 (defun test ()
-  (with-input-from-string (*standard-input* 
+  (with-input-from-string (*standard-input*
                            "Hello World!
 John McCarthy invented LISP.
 Big Unknown Secret.

@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    This file implements a RAM based virtual file system.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    GPL
-;;;;    
+;;;;
 ;;;;    Copyright Pascal Bourguignon 2006 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software; you can redistribute it and/or
 ;;;;    modify it under the terms of the GNU General Public License
 ;;;;    as published by the Free Software Foundation; either version
 ;;;;    2 of the License, or (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be
 ;;;;    useful, but WITHOUT ANY WARRANTY; without even the implied
 ;;;;    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 ;;;;    PURPOSE.  See the GNU General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU General Public
 ;;;;    License along with this program; if not, write to the Free
 ;;;;    Software Foundation, Inc., 59 Temple Place, Suite 330,
@@ -37,7 +37,7 @@
   (setf *readtable* (copy-readtable nil)))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.VIRTUAL-FILE-SYSTEM")
 
-;; (do-external-symbols (symbol "COMMON-LISP") 
+;; (do-external-symbols (symbol "COMMON-LISP")
 ;;   (export (intern (string symbol) *package*)))
 
 
@@ -65,7 +65,7 @@
 
 (defclass fs-item ()
   ((parent :accessor parent
-           :initarg :parent 
+           :initarg :parent
            :type (or null fs-directory)))
   (:documentation "Either a file, a directory or a whole file system."))
 
@@ -111,13 +111,13 @@
 (defmethod select-entries ((self fs-directory) predicate)
   (declare (ignorable predicate))
   (let ((result '()))
-    (maphash (lambda (k v) 
+    (maphash (lambda (k v)
                (declare (ignore k))
                (when (funcall predicate v) (push v result))) (entries self))
     result))
 
 (defgeneric entry-name (self))
-(defmethod entry-name ((self fs-directory)) 
+(defmethod entry-name ((self fs-directory))
   (name self))
 
 (defgeneric entry-named (self name))
@@ -199,7 +199,7 @@
 (defun pathname-entry-name (path)
   (format nil "~A.~A" (pathname-name path) (pathname-type path)))
 
-(defmethod entry-name ((self fs-file)) 
+(defmethod entry-name ((self fs-file))
   (format nil "~A.~A" (name self) (type self)))
 
 (defgeneric author (self))
@@ -213,7 +213,7 @@
 (defgeneric select-versions (self predicate))
 (defmethod select-versions ((self fs-file) predicate)
   (let ((result '()))
-    (maphash (lambda (k v) 
+    (maphash (lambda (k v)
                (declare (ignore k))
                (when (funcall predicate v) (push v result))) (versions self))
     result))
@@ -314,7 +314,7 @@ RETURN: The FS-FILE.
 
 
 ;;;---------------------------------------------------------------------
-;;; FILE SYSTEM 
+;;; FILE SYSTEM
 ;;;---------------------------------------------------------------------
 ;;;
 ;;; We initialize three file systems ROOT:, SYS: and HOME:.
@@ -338,13 +338,13 @@ RETURN: The FS-FILE.
   (gethash name *file-systems*))
 
 
-(defparameter *default-file-system* 
+(defparameter *default-file-system*
   (file-system-register (make-instance 'file-system :name "ROOT")))
 
 (file-system-register (make-instance 'file-system :name "SYS"))
 (file-system-register (make-instance 'file-system :name "HOME"))
 
-(defparameter *default-pathname-defaults* 
+(defparameter *default-pathname-defaults*
   (make-pathname :host (name *default-file-system*)
                  :directory '(:absolute)
                  :defaults nil))
@@ -408,7 +408,7 @@ NOTE:   If a FS-FILE existed at the given PATHSPEC, then it is returned,
                       :name (pathname-name file) :type (pathname-type file)))
       (add-entry dir entry))
     (typecase entry
-      (fs-file (if create-version-p 
+      (fs-file (if create-version-p
                    (create-new-version entry :element-type element-type)
                    entry))
       (t (error "~A already exist and is not a file" (pathname entry))))))

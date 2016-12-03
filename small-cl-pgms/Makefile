@@ -5,9 +5,9 @@
 ####SYSTEM:             POSIX
 ####USER-INTERFACE:     NONE
 ####DESCRIPTION
-####    
+####
 ####    Makefile for the small-cl-pgms.
-####    
+####
 ####AUTHORS
 ####    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ####MODIFICATIONS
@@ -15,19 +15,19 @@
 ####BUGS
 ####LEGAL
 ####    AGPL3
-####    
+####
 ####    Copyright Pascal J. Bourguignon 2013 - 2013
-####    
+####
 ####    This program is free software: you can redistribute it and/or modify
 ####    it under the terms of the GNU Affero General Public License as published by
 ####    the Free Software Foundation, either version 3 of the License, or
 ####    (at your option) any later version.
-####    
+####
 ####    This program is distributed in the hope that it will be useful,
 ####    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ####    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ####    GNU Affero General Public License for more details.
-####    
+####
 ####    You should have received a copy of the GNU Affero General Public License
 ####    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ####****************************************************************************
@@ -77,7 +77,7 @@ clean:
 help::
 	@printf $(HELPFORMAT) cleanall "make clean and erase targets."
 cleanall:clean
-	-rm -rf $(TARGETS) 
+	-rm -rf $(TARGETS)
 .PHONY:: cleanall
 
 help::
@@ -89,7 +89,7 @@ help::
 	@printf $(HELPFORMAT) what-implementation "Builds the what-implementation executable."
 wi what-implementation:what-implementation.lisp
 	( echo '(load (compile-file "what-implementation.lisp"))';\
-	  echo '(com.informatimago.small-cl-pgms.what-implementation:generate-server-executable  "what-implementation")' ) | ccl -n 
+	  echo '(com.informatimago.small-cl-pgms.what-implementation:generate-server-executable  "what-implementation")' ) | ccl -n
 .PHONY:: wi
 
 help::

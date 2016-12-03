@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Implements a Common Lisp stepper.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -178,7 +178,7 @@ variables, and avoid redefining them.
 
 
 ;; variable symbol-macro constant
-;; function macro special-operator compiler-macro 
+;; function macro special-operator compiler-macro
 ;; declare
 ;; block
 ;; tag
@@ -476,7 +476,7 @@ nil
 
 
 (defgeneric uncompile-global (object)
-  
+
   (:method ((self variable-binding))
     (if (variable-special-p self)
       (if (slot-boundp self 'value)
@@ -485,10 +485,10 @@ nil
       `(deflexical ,(binding-name self)
            ,@(if (slot-boundp self 'value)
                  (list (list 'quote (variable-value self)))))))
-  
+
   (:method ((self constant-binding))
     `(defconstant ,(binding-name self) ,(list 'quote (selfiable-value self))))
-  
+
   (:method ((self symbol-macro-binding))
     `(define-symbol-macro ,(binding-name self) ,(symbol-macro-expansion self)))
 
@@ -570,7 +570,7 @@ nil
 (defvar *eval-step-mode* :trace
   "May be :run, :trace or :step.
 
-:run     don't print anything, just evaluate the forms.  
+:run     don't print anything, just evaluate the forms.
 
 :trace   just prints the forms and their results as they are evaluted.
 
@@ -999,7 +999,7 @@ RETURN:         A stepping lambda-form from the LAMBDA-FORM.
 
 
 (define-special-operator (symbol-macrolet (&rest bindings) &body body) (env))
- 
+
 (define-special-operator (macrolet (&rest bindings) &body body) (env))
 
 (define-special-operator (load-time-value expression &optional read-only-p) (env))
@@ -1015,7 +1015,7 @@ RETURN:         A stepping lambda-form from the LAMBDA-FORM.
        (eval-atom symbol))
       (symbol-macro-binding
        (eval-atom symbol) ; for now.
-       ;; TODO: 
+       ;; TODO:
        ;; (eval-expression env expansion)
        ))))
 
@@ -1068,7 +1068,7 @@ RETURN:         A stepping lambda-form from the LAMBDA-FORM.
     ;; The other atoms are unchanged:
     ((atom form)
      (call-special-operator 'self-evaluating env `(self-evaluating ,form)))
-    ;; Now we have a list.  
+    ;; Now we have a list.
     (t
      (case (first form)
        ;; First we check the special operators:
@@ -1099,13 +1099,13 @@ RETURN:         A stepping lambda-form from the LAMBDA-FORM.
 ;; (eval-step-lambda nil '(lambda (a b &optional o &rest r &key k1 k2 ((kk3 k3) nil k3p) &aux a1 a2)))
 ;; (lambda (a b &optional o &rest r &key k1 k2 ((kk3 k3) nil k3p) &aux a1 a2)
 ;;     (call-eval-step-function 'nil '#1=(a b o r k1 k2 k3 a1 a2) (list . #1#) (lambda nil)))
-;; 
+;;
 ;; (pprint (eval-step-lambda
 ;;          nil
 ;;          '(lambda (a b &optional o &rest r &key k1 k2 ((kk3 k3) nil k3p) &aux a1 a2)
 ;;            (let ((c 1) (b 2)) (if (< a b) (+ (* b 3) (truncate 10 3)) (print 'hello))))))
-;; 
-;; 
+;;
+;;
 ;; (lambda (a b &optional o &rest r &key k1 k2 ((kk3 k3) nil k3p) &aux a1 a2)
 ;;     (call-eval-step-function
 ;;      'nil

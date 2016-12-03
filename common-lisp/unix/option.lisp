@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    See defpackage documentation string.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -18,19 +18,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -53,7 +53,7 @@
            "EX-OSERR" "EX-OSFILE" "EX-CANTCREAT" "EX-IOERR"
            "EX-TEMPFAIL" "EX-PROTOCOL" "EX-NOPERM" "EX-CONFIG"
            "EX--MAX"
-           ;; 
+           ;;
            "OPTION-KEYS" "OPTION-ARGUMENTS" "OPTION-DOCUMENTATION" "OPTION-FUNCTION"
            "OPTION-LIST")
   (:documentation "
@@ -78,19 +78,19 @@ Example:
 License:
 
     AGPL3
-    
+
     Copyright Pascal J. Bourguignon 2012 - 2012
-    
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
-    
+
     You should have received a copy of the GNU Affero General Public License
     along with this program.
     If not, see <http://www.gnu.org/licenses/>
@@ -330,7 +330,7 @@ the main script  (setf script:*program-name* (script:pname))
 BUG: when the optionals or keys have a present indicator,
      we just ignore it and build a list that will pass
      the default value anyways...
-" 
+"
     (assert (every (function symbolp) mandatories))
     (append mandatories
             (mapcar (lambda (opt)
@@ -434,7 +434,7 @@ BUG: when the optionals or keys have a present indicator,
                    *case-insensitive-options-map*)))
     (gethash key
              (or table
-                 (fill-option-map 
+                 (fill-option-map
                   (if case-sensitive
                       (setf *case-sensitive-options-map*   (make-hash-table :test (function equal)))
                       (setf *case-insensitive-options-map* (make-hash-table :test (function equalp)))))))))
@@ -490,7 +490,7 @@ RETURN:     The lisp-name of the option (this is a symbol
                           (rest body)
                           body)))
     `(progn
-       (register-option ,(generate-wrap-option-function 
+       (register-option ,(generate-wrap-option-function
                           (cons main-name other-names)
                           parameters
                           docstring
@@ -579,7 +579,7 @@ use directly.
 bash function used to do auto-completion of command arguments.
 Use it with:
 
-       eval $($COMMAND  --bash-completion-function) 
+       eval $($COMMAND  --bash-completion-function)
 
 and then typing TAB on the command line after the command name will
 autocomplete argument prefixes.

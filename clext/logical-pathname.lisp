@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Parses and validates a logical pathname namestring.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -86,17 +86,17 @@ RETURN: a list containing the pathname components: (host directory name type ver
   (flet ((wild (item part wild-inferiors-p)
            (cond ((string= "*"  item) :wild)
                  ((and wild-inferiors-p (string= "**" item)) :wild-inferiors)
-                 ((search  "**" item) 
+                 ((search  "**" item)
                   (error "Invalid ~A part: ~S; ~
                                 \"**\" inside a wildcard-world is forbidden."
                          part item))
                  ((position #\* item) (list :wild-word item))
                  (t item))))
     (multiple-value-bind (all
-                          dummy0 host 
+                          dummy0 host
                           relative directories dummy1
                           name
-                          dummy2 type dummy3 version) 
+                          dummy2 type dummy3 version)
         (re-exec *logical-pathname-regexp* string :start start :end end)
       (declare (ignore dummy0 dummy1 dummy2 dummy3))
       (if all
@@ -110,12 +110,12 @@ RETURN: a list containing the pathname components: (host directory name type ver
                 (and name
                      (let ((item (re-match-string string name)))
                        (wild item "name" nil)))
-                (and type        
+                (and type
                      (let ((item (re-match-string string type)))
                        (wild item "type" nil)))
                 (and version
                      (let ((version (re-match-string string version)))
-                       (cond 
+                       (cond
                          ((string= "*" version) :wild)
                          ((string-equal "NEWEST" version) :newest)
                          (t (parse-integer version :junk-allowed nil))))))

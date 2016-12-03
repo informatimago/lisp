@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Implements a simple recursive descent parser.
-;;;;    
+;;;;
 ;;;;    http://en.wikipedia.org/wiki/Formal_grammar
 ;;;;    http://en.wikipedia.org/wiki/Recursive_descent_parser
 ;;;;    http://en.wikipedia.org/wiki/Parsing_expression_grammar
@@ -31,19 +31,19 @@
 ;;;;
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2006 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
@@ -58,7 +58,7 @@
                (print-unreadable-object (object stream :type t :identity t)
                  (format stream "~A" (grammar-name object))))))
   name
-  terminals          ; 
+  terminals          ;
   start              ; non-terminal
   rules              ; list of (--> non-terminal [ rhs [:action . body])
   all-terminals      ; union of the terminals found in the rules and declared in terminals
@@ -274,7 +274,7 @@ RETURN:     A form that defines the grammar object and its parser functions.
          (*linenum* 0))
     (setf (grammar-name grammar) name)
     (register-grammar grammar)
-    
+
     `(let ((*eof-symbol* ',*eof-symbol*))
 
        (register-grammar
@@ -285,14 +285,14 @@ RETURN:     A form that defines the grammar object and its parser functions.
          :rules ',clean-rules
          :scanner ',scanner
          :skip-spaces ',skip-spaces))
-       
-       ,(generate-boilerplate          target-language grammar :trace trace)         
+
+       ,(generate-boilerplate          target-language grammar :trace trace)
        ,(generate-scanner-for-grammar  target-language grammar :trace trace)
 
        ,@(mapcar (lambda (non-terminal)
                    (generate-non-terminal-parser-function target-language grammar non-terminal :trace trace))
                  (grammar-all-non-terminals grammar))
-       
+
        ,(generate-parser target-language grammar :trace trace)
        ',name)))
 
@@ -343,7 +343,7 @@ NOTE: we may have different empty RHS with actions."
 ;;;
 ;;; When stored inside the grammar structure, rules must be of this
 ;;; cleaned form:
-;;; 
+;;;
 ;;; rule    := (<lhs> <rhs>) .
 ;;; lhs     := <non-terminal> .
 ;;; rhs     := (seq <items> <actions>)
@@ -545,7 +545,7 @@ PRE:    (non-terminal-p non-terminal)
 
 
 (defmethod compute-firsts-sets ((grammar normalized-grammar))
-  "  
+  "
 DO:     Signals an error if there are duplicates in the first set of a non-terminal.
 RETURN: A hash-table containing the firsts-set for each symbol of the
         grammar.  (terminals and non terminals).
@@ -607,7 +607,7 @@ RETURN: Whether ε can be derived from rhs according to the GRAMMAR.
   (cond
     ((null  rhs)
      t)
-    ((listp rhs)    
+    ((listp rhs)
      (every (lambda (word) (nullablep grammar word)) rhs))
     ((terminalp grammar rhs)
      nil)
@@ -666,7 +666,7 @@ RETURN: A hash-table containing the follow-set for each non-terminal
               (setf (gethash non-terminal follow-sets)
                     (union (gethash non-terminal follow-sets)
                            (remove nil elements)))))
-      
+
       ;; resolve the recursive constraints:
       (solve-constraints recursive-constraints
                          (lambda (subset superset)
@@ -786,7 +786,7 @@ RETURN: the new production set; the new non-terminal set
 "
   (simplify-normalized-grammar-rules
    (loop
-     :while rules 
+     :while rules
      :collect (let ((rule (pop rules)))
                 (destructuring-bind (nt rhs) rule
                   (labels ((new-rule (nt rhs)
@@ -893,7 +893,7 @@ RETURN: the new production set; the new non-terminal set
   (:documentation "Return a new normalized grammar parsing the same language as GRAMMAR.")
   (:method ((grammar grammar))
     (let ((normalized-grammar (make-normalized-grammar
-                               :name        (scat 'normalized- (grammar-name grammar)) 
+                               :name        (scat 'normalized- (grammar-name grammar))
                                :terminals   (grammar-terminals grammar)
                                :start       (grammar-start grammar)
                                :rules       (grammar-rules grammar)
@@ -1072,7 +1072,7 @@ RETURN: the new production set; the new non-terminal set
                                  :scanner scanner
                                  :non-terminal-stack (copy-list *non-terminal-stack*)
                                  :expected-tokens expected-tokens
-                                 :format-control "Unexpected token ~A (~S)~:[~@[~%Expected ~{~A~}~]~;~%Expected one of ~{~A~^, ~}~]~%~S~@[~%~S~]" 
+                                 :format-control "Unexpected token ~A (~S)~:[~@[~%Expected ~{~A~}~]~;~%Expected one of ~{~A~^, ~}~]~%~S~@[~%~S~]"
                                  :format-arguments (list
                                                     (scanner-current-token scanner)
                                                     (scanner-current-text scanner)
@@ -1294,7 +1294,7 @@ should be bound for actions.
                                                    ',(mapcan (lambda (item)
                                                                (copy-list (es-firsts-set item)))
                                                              (rhs-body rhs))
-                                                   nil 
+                                                   nil
                                                    ;; ',(assoc rhs (grammar-rules grammar))
                                                    )))))))))))
 
@@ -1321,7 +1321,7 @@ should be bound for actions.
     ;; #|DEBUG|#(format t "(--> ~A ~{~%     ~A~})~%" non-terminal rhses)
     (labels ((firsts-set (rhs)
                (rhs-firsts-set grammar non-terminal (rhs-body rhs)))
-             
+
              (generic ()
                (let* ((empty  (find-if   (function empty-rhs-p) rhses))
                       (rhses  (remove-if (function empty-rhs-p) rhses))
@@ -1363,7 +1363,7 @@ should be bound for actions.
                    (error "More than ~R rule reduces to empty: ~%~{   ~A --> ~S~%~}"
                           (if empty 0 1)
                           (mapcar (lambda (rhs) (list non-terminal rhs)) empty-base-cases)))))
-             
+
              (gen-cond-clause (firsts rhs finish)
                `(,(gen-in-firsts target (remove nil firsts))
                  (push ,(generate-parsing-expression target grammar non-terminal
@@ -1375,7 +1375,7 @@ should be bound for actions.
                        $items)
                  ,@(when finish
                      `((loop-finish)))))
-             
+
              (generate-parse-loop (empty base-cases recursives)
                (assert recursives)
                (unless (or empty base-cases)
@@ -1383,11 +1383,11 @@ should be bound for actions.
                         (mapcar (lambda (rhs) (list non-terminal rhs)) rhses)))
                (let ((base-firsts (mapcar (function firsts-set) base-cases))
                      (recu-firsts (mapcar (function firsts-set) recursives)))
-                 (check-empties empty base-firsts base-cases)               
+                 (check-empties empty base-firsts base-cases)
                  (check-disjoint (mapcar (function cons)
                                          (append base-firsts recu-firsts)
                                          (append base-cases  recursives)))
-                 
+
                  `(loop
                     :with $items := '()
                     :do (cond
@@ -1405,7 +1405,7 @@ should be bound for actions.
                     :finally (return (reduce (function append)
                                              (nreverse $items)
                                              :initial-value nil))))))
-      
+
       (if rhses
           (loop
             :for rhs :in rhses
