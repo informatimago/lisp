@@ -40,11 +40,55 @@
   (:shadow "APROPOS" "APROPOS-LIST")
   (:export "CHECK-DUPLICATE-SYMBOLS"
            "DUPLICATE-SYMBOLS"
-           "APROPOS" "APROPOS-LIST")
+           "APROPOS" "APROPOS-LIST"
+           "REPORT-PACKAGES" "REPORT-SYMBOL")
   (:documentation "
 A tool to check duplicate/un-exported/imported symbols.
 "))
 (in-package "COM.INFORMATIMAGO.TOOLS.SYMBOL")
+
+
+(defun report-packages (packages)
+  (let ((packages (mapcar (function find-package) packages)))
+    (dolist (user packages)
+      (format t "~%Package ~A ~@[(~{~A~^ ~})~]~%"
+              (package-name user)
+              (package-nicknames user))
+      (dolist (used (package-use-list user))
+        (when (member used packages) ; don't display the others
+          (format t "    ~:[uses~;USES~] ~A~%"
+                  (member used packages)
+                  (package-name used)))))))
+
+
+(defgeneric report-symbol (symbol-designator)
+  (:method ((name string))
+    (mapc (function report-symbol)
+          (let (l)
+            (dolist (p (list-all-packages) (remove-duplicates l))
+              (multiple-value-bind (sym stat) (find-symbol name p)
+                (when stat
+                  (push sym l)))))))
+  (:method ((symbol symbol))
+    (let* ((name         (symbol-name symbol))
+           (home-package (symbol-package symbol))
+           (all-packages (let (l)
+                           (dolist (p (list-all-packages)
+                                     (sort l (function string<)
+                                           :key (lambda (x) (package-name (cdr x)))))
+                             (multiple-value-bind (sym stat) (find-symbol name p)
+                               (when (eq symbol sym)
+                                 (push (cons stat p) l)))))))
+      (format t "~%~72@{-~}" '())
+      (format t "~%Symbol ~A~%" name)
+      (dolist (p all-packages (values))
+        (format t "   ~10A ~:[      ~;(home)~] ~A ~@[(~{~A~^ ~})~]~%"
+                (car p)
+                (eq (cdr p) home-package)
+                (package-name (cdr p))
+                (package-nicknames (cdr p))))
+      (report-packages (mapcar (function cdr) all-packages)))
+    (values)))
 
 
 (defun report-duplicates (duplicates &optional (*standard-output* *standard-output*))
@@ -57,6 +101,7 @@ A tool to check duplicate/un-exported/imported symbols.
               (symbol-name (first symbols))
               (sort (mapcar (lambda (sym) (package-name (symbol-package sym))) symbols)
                     (function string<))))))
+
 
 (defun duplicate-symbols (&key (packages (list-all-packages)) (exported nil))
   "Return: a list of list of symbols that have the same name."
@@ -79,6 +124,7 @@ A tool to check duplicate/un-exported/imported symbols.
                                symbols))
                        duplicates)
         duplicates)))
+
 
 (defun check-duplicate-symbols (&key (packages (list-all-packages)) (exported nil))
   (report-duplicates (duplicate-symbols :packages packages :exported exported)))
