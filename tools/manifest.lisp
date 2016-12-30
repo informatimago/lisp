@@ -239,18 +239,8 @@ System and distrib are keywords, release is a string."
         (:darwin
          (when (probe-file "/System/Library/Frameworks/AppKit.framework/AppKit")
            (setf distrib :apple))
-         (let ((hostinfo (shell-command-to-string "hostinfo")))
-           (when hostinfo
-             (setf release (with-input-from-string (inp hostinfo)
-                             (loop
-                               :for line = (read-line inp nil nil)
-                               :while line
-                               :when (search "Darwin Kernel Version" line)
-                                 :return (let ((release (fourth (words line))))
-                                           (subseq release 0 (position #\: release)))
-                               :finally (return :unknown))))
-             (setf release :unknown))))
-        #-(or linux darwin windowd)
+         (setf release (string-trim #(#\newline) (shell-command-to-string "sw_vers -productVersion"))))
+        #-(or linux darwin window)
         (:unknown
          (let ((host (trim (shell-command-to-string "hostinfo"))))
            (cond
@@ -259,10 +249,6 @@ System and distrib are keywords, release is a string."
                 (setf distrib (fourth words)
                       release (sixth words))))))))
       (list system distrib release))))
-
-
-
-
 
 
 (defun lisp-implementation-type-keyword ()
