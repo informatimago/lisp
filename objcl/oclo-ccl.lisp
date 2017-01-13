@@ -70,4 +70,22 @@ RETURN: The Objective-C selector named NAME.
   (ccl::%get-selector (ccl::ensure-objc-selector name)))
 
 
+(in-package "CCL")
+
+;; patch:
+
+(defmacro send (o msg &rest args &environment env)
+  (make-optimized-send o msg args env))
+
+(defmacro send/stret (s o msg &rest args &environment env)
+  (make-optimized-send o msg args env s))
+
+
+(defmacro send-super (o msg &rest args &environment env)
+  (make-optimized-send o msg args env nil t))
+
+(defmacro send-super/stret (s o msg &rest args &environment env)
+  (make-optimized-send o msg args env s t))
+
+
 ;;;; THE END ;;;;

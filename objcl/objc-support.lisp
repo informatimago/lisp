@@ -31,11 +31,13 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
+(in-package "COMMON-LISP-USER")
 
 ;; We'll try to catch in this variable the objective-c reader macros
 ;; installed by ccl require cocoa.
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defvar com.informatimago.objcl.readtable:*ccl-readtable* nil))
+  (defvar *ccl-readtable* nil))
+
 
 #+(and ccl darwin); for now, not on non-darwin
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -51,11 +53,12 @@
   #-darwin (require :objc-support)
   #+darwin (require :cocoa)
 
-  (unless com.informatimago.objcl.readtable:*ccl-readtable*
-    (setf com.informatimago.objcl.readtable:*ccl-readtable* (copy-readtable *readtable*)))
+  (unless *ccl-readtable*
+    (setf *ccl-readtable* (copy-readtable *readtable*)))
   (pushnew :objc-support *features*))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setf *readtable* (copy-readtable nil)))
+
 
 ;;;; THE END ;;;;

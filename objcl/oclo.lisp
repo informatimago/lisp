@@ -42,6 +42,7 @@
     `(slet ((,result ,(macroexpand expression env))) ,result)))
 
 
+#-(and)
 (defun needs-stret (o msg args env &optional sclassname)
   (multiple-value-bind (msg args vargs) (ccl::parse-message (cons msg args))
     (let ((message-info (ccl::get-objc-message-info msg)))
@@ -78,6 +79,7 @@
                (ccl::objc-method-info-result-type method-info))
               (error "Cannot find method result type for message -~A sent to ~S.  Try declaring the class of the recipient."
                      (ccl::objc-message-info-message-name message-info) o)))))))
+
 
 #-(and)
 (defmacro send (&whole w o msg &rest args &environment env)

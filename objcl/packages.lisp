@@ -33,6 +33,7 @@
 ;;;;**************************************************************************
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setf *readtable* (copy-readtable nil)))
+(in-package "COMMON-LISP-USER")
 
 ;; #+(and ccl ccl-1.9)
 ;; (let ((initialized nil))
@@ -63,8 +64,8 @@ See source file for details.
 "))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defvar *oclo-ccl-symbol-names*)
-  (defparameter *oclo-objc-symbol-names*
+
+  (defparameter *oclo-symbol-names*
     '("*OBJC-DESCRIPTION-MAX-LENGTH*"
       "@CLASS"
       "@SELECTOR"
@@ -100,7 +101,33 @@ See source file for details.
       "OBJC-TO-LISP-CLASSNAME"
       "OBJC-TO-LISP-MESSAGE"
       "SLET"
-      "UPDATE-OBJC-METHOD-INFO")))
+      "UPDATE-OBJC-METHOD-INFO"))
+
+  (defparameter *oclo-ccl-symbol-names*
+    '("UPDATE-OBJC-METHOD-INFO" "SLET" "OBJC-TO-LISP-MESSAGE"
+      "OBJC-TO-LISP-CLASSNAME" "LISP-TO-OBJC-MESSAGE"
+      "LISP-TO-OBJC-CLASSNAME" "DEFINE-CLASSNAME-TRANSLATION" "@"
+      "WITH-AUTORELEASED-NSSTRINGS" "WITH-AUTORELEASE-POOL"
+      "SEND/STRET" "SEND" "SEND-SUPER/STRET" "SEND-SUPER"
+      "OBJC-MESSAGE-SEND-SUPER-STRET" "OBJC-MESSAGE-SEND-SUPER"
+      "OBJC-MESSAGE-SEND-STRET" "OBJC-MESSAGE-SEND"
+      "MAKE-OBJC-INSTANCE" "LISP-STRING-FROM-NSSTRING" "DEFMETHOD"
+      "DEFINE-OBJC-METHOD" "DEFINE-OBJC-CLASS-METHOD" "@SELECTOR"
+      "@CLASS" "*OBJC-DESCRIPTION-MAX-LENGTH*"))
+
+  (defparameter *oclo-objc-symbol-names*
+    '("RETURNING-FOREIGN-STRUCT" "REMOVE-LISP-SLOTS" "OBJC-OBJECT"
+      "OBJC-METACLASS" "OBJC-CLASS-OBJECT" "OBJC-CLASS" "MAKE-NSSTRING"
+      "LOAD-FRAMEWORK"))
+
+  #-(and)
+  (dolist (s *oclo-symbol-names*)
+    (cond
+      ((find-symbol s "CCL")  (push s *oclo-ccl-symbol-names*))
+      ((find-symbol s "OBJC") (push s *oclo-objc-symbol-names*))
+      (t (error "~A is not found in OBJC or CCL" s))))
+
+  ) ;;eval-when
 
 (defpackage "COM.INFORMATIMAGO.OBJECTIVE-C.LOWER"
    (:nicknames "COM.INFORMATIMAGO.OCLO"
@@ -108,64 +135,18 @@ See source file for details.
    (:use "CL")
 
    #+(and ccl objc-support)
-   (:shadowing-import-from "OBJC" . #.(let ((o '())
-                                            (c '()))
-                                        (dolist (s *oclo-objc-symbol-names*)
-                                          (cond
-                                            ((find-symbol s "OBJC") (push s o))
-                                            ((find-symbol s "CCL")  (push s c))
-                                            (t (error "~A is not found in OBJC or CCL" s))))
-                                        (setf *oclo-ccl-symbol-names* c)
-                                        o))
+   (:shadowing-import-from "OBJC" . #.*oclo-objc-symbol-names*)
 
    #+(and ccl objc-support)
-   (:shadowing-import-from "CCL" . #.*oclo-ccl-symbol-names*)
+   (:shadowing-import-from "CCL"  . #.*oclo-ccl-symbol-names*)
+
+   (:export . #.*oclo-symbol-names*)
 
    (:export
     "SELF" "SUPER"
-
-    ;; from objc.
-    "*OBJC-DESCRIPTION-MAX-LENGTH*"
-    "@CLASS"
-    "@SELECTOR"
-    "DEFINE-OBJC-CLASS-METHOD"
-    "DEFINE-OBJC-METHOD"
-    "DEFMETHOD"
-    "LISP-STRING-FROM-NSSTRING"
-    "LOAD-FRAMEWORK"
-    "MAKE-NSSTRING"
-    "MAKE-OBJC-INSTANCE"
-    "OBJC-CLASS"
-    "OBJC-CLASS-OBJECT"
-    "OBJC-MESSAGE-SEND"
-    "OBJC-MESSAGE-SEND-STRET"
-    "OBJC-MESSAGE-SEND-SUPER"
-    "OBJC-MESSAGE-SEND-SUPER-STRET"
-    "OBJC-METACLASS"
-    "OBJC-OBJECT"
-    "REMOVE-LISP-SLOTS"
-    "RETURNING-FOREIGN-STRUCT"
-    "SEND"
-    "SEND-SUPER"
-    "SEND-SUPER/STRET"
-    "SEND/STRET"
-    "SLET"
-    "WITH-AUTORELEASE-POOL"
-    "WITH-AUTORELEASED-NSSTRINGS"
-
-    ;; from ccl.
-    #-ccl-1.9 "*COCOA-APPLICATION-FRAMEWORKS*"
-    "@"
-    "DEFINE-CLASSNAME-TRANSLATION"
-    "LISP-TO-OBJC-CLASSNAME"
-    "LISP-TO-OBJC-MESSAGE"
-    "OBJC-TO-LISP-CLASSNAME"
-    "OBJC-TO-LISP-MESSAGE"
-    "UPDATE-OBJC-METHOD-INFO"
-
-    ;; implemented in oclo.lisp
+    ;; implemented in oclo.lisp:
     "STRET"
-    ;; implemented in oclo-<implementation>.lisp
+    ;; implemented in oclo-<implementation>.lisp:
     "LISP-TO-OBJC-CLASSNAME-P"
     "OBJC-TO-LISP-CLASSNAME-P"
     "*NULL*" "NULLP"
@@ -176,7 +157,6 @@ This package exports low level Objective-C stuff,
 basically the ccl Objective-C bridge, in a nifty
 single package exporting all these symbols.
 "))
-
 
 (defpackage "COM.INFORMATIMAGO.OBJECTIVE-CL"
   (:nicknames "COM.INFORMATIMAGO.OBJCL"
@@ -191,9 +171,9 @@ single package exporting all these symbols.
    "ENABLE-OBJCL-READER-MACROS"
    "SET-OBJECTIVE-CL-SYNTAX" ; deprecated; use (enable-objc-reader-macros).
    "READ-ERROR" "READ-ERROR-CONTROL-STRING" "READ-ERROR-ARGUMENTS"
-   "OBJC-DEFINITION-READER-MACRO" ; #\@
-   "OBJC-EXPRESSION-READER-MACRO" ; \#[
-   "@" ; macro to make NSString literals with unicode.
+   "OBJC-DEFINITION-READER-MACRO"       ; #\@
+   "OBJC-EXPRESSION-READER-MACRO"       ; #\[
+   "@"                 ; macro to make NSString literals with unicode.
    "OBJC-STRING" "LISP-STRING" #|deprecated:|# "OBJCL-STRING"
    "YES" "NO")
   (:documentation "
@@ -201,5 +181,8 @@ This package exports a readtable with a couple of reader macros to
 read Objective-C bracketed expressions, and @\"\" strings.
 "))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defvar cl-user::*ccl-readtable* nil)
+  (defvar com.informatimago.objcl.readtable:*ccl-readtable* cl-user::*ccl-readtable*))
 
 ;;;; THE END ;;;;
