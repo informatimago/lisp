@@ -272,7 +272,6 @@ RETURN:     A form that defines the grammar object and its parser functions.
                        :scanner scanner
                        :skip-spaces skip-spaces))
          (*linenum* 0))
-    (setf (grammar-name grammar) name)
     (register-grammar grammar)
 
     `(let ((*eof-symbol* ',*eof-symbol*))
@@ -708,9 +707,12 @@ RETURN: A hash-table containing the follow-set for each non-terminal
   (:method ((grammar grammar) non-terminal)
     (follow-set (grammar-normalized-grammar grammar) non-terminal))
   (:method ((grammar normalized-grammar) non-terminal)
-    (or (gethash non-terminal (grammar-follow-sets grammar))
-        (error "~S is not a non-terminal of the grammar ~A"
-               non-terminal (grammar-name grammar)))))
+    (multiple-value-bind (follow-set presentp)
+        (gethash non-terminal (grammar-follow-sets grammar))
+      (if presentp
+          follow-set
+          (error "~S is not a non-terminal of the grammar ~A"
+                 non-terminal (grammar-name grammar))))))
 
 
 (defgeneric rhs-firsts-set (grammar non-terminal rhs)
@@ -789,6 +791,7 @@ RETURN: the new production set; the new non-terminal set
      :while rules
      :collect (let ((rule (pop rules)))
                 (destructuring-bind (nt rhs) rule
+                  (assert rhs (rule) "Invalid rule, missing right-hand-side: ~S" rule)
                   (labels ((new-rule (nt rhs)
                              (push nt non-terminals)
                              (push (list nt rhs) rules))
@@ -851,7 +854,8 @@ RETURN: the new production set; the new non-terminal set
                              (list nt (if (singleton-sequence-rhs-p (first new-items))
                                           `(seq (,(first (second (first new-items))))
                                                 ((progn ,@(third (first new-items)))))
-                                          `(seq (,(first new-items)) (,(dollar 1))))))))))))))
+                                          `(seq (,(first new-items)) (,(dollar 1))))))))
+                        (otherwise (error "Invalid operator ~S in rule ~S" op rule))))))))
    non-terminals))
 
 
@@ -884,10 +888,8 @@ RETURN: the new production set; the new non-terminal set
       (setf (normalized-grammar-%synthesized-non-terminals new-grammar)
             (set-difference (grammar-all-non-terminals new-grammar)
                             original-non-terminals)))
-    (compute-firsts-sets       new-grammar)
-    (compute-follow-sets       new-grammar)
+    (compute-first-follow  new-grammar)
     new-grammar))
-
 
 (defgeneric normalize-grammar (grammar)
   (:documentation "Return a new normalized grammar parsing the same language as GRAMMAR.")
@@ -1434,4 +1436,3 @@ should be bound for actions.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; THE END ;;;;
-
