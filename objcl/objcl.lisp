@@ -108,10 +108,10 @@ Basically the same as *lisp-readtable*, but with readtable-case set to :preserve
 
 (defun read-identifier (stream)
   (let ((buffer (loop
-                   :for ch = (peek-char nil stream nil nil t)
-                   :while (and ch (or (alphanumericp ch)
-                                      (find ch "-_<>")))
-                   :collect (read-char stream nil nil t))))
+                  :for ch = (peek-char nil stream nil nil t)
+                  :while (and ch (or (alphanumericp ch)
+                                     (find ch "-_<>")))
+                  :collect (read-char stream nil nil t))))
     (if buffer
         (coerce buffer 'string)
         (error "Expected an identifier, instead got character '~C'"
@@ -121,43 +121,43 @@ Basically the same as *lisp-readtable*, but with readtable-case set to :preserve
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
   (defun split-string (string &optional (separators " "))
-   "
+    "
 NOTE:   current implementation only accepts as separators
         a string containing literal characters.
 "
-   (let ((chunks  '())
-         (position 0)
-         (nextpos  0)
-         (strlen   (length string)))
-     (loop :while (< position strlen) :do
-       (loop
-         :while (and (< nextpos strlen)
-                     (not (find (aref string nextpos) separators)))
-         :do (incf nextpos))
-       (push (subseq string position nextpos) chunks)
-       (setf position (incf nextpos)))
-     (nreverse chunks)))
+    (let ((chunks  '())
+          (position 0)
+          (nextpos  0)
+          (strlen   (length string)))
+      (loop :while (< position strlen) :do
+        (loop
+          :while (and (< nextpos strlen)
+                      (not (find (aref string nextpos) separators)))
+          :do (incf nextpos))
+        (push (subseq string position nextpos) chunks)
+        (setf position (incf nextpos)))
+      (nreverse chunks)))
 
 
- (defun objc-to-lisp-classname (identifier &optional (*package* *package*))
-   (let ((classname (oclo:objc-to-lisp-classname identifier *package*)))
-     (etypecase classname
-       (string (intern classname *package*))
-       (symbol classname))))
+  (defun objc-to-lisp-classname (identifier &optional (*package* *package*))
+    (let ((classname (oclo:objc-to-lisp-classname identifier *package*)))
+      (etypecase classname
+        (string (intern classname *package*))
+        (symbol classname))))
 
- (defun objc-to-lisp-identifier (identifier)
-   (or (oclo:objc-to-lisp-classname-p identifier)
-       (let ((*readtable* *lisp-readtable*))
-         (read-from-string identifier))))
+  (defun objc-to-lisp-identifier (identifier)
+    (or (oclo:objc-to-lisp-classname-p identifier)
+        (let ((*readtable* *lisp-readtable*))
+          (read-from-string identifier))))
 
- (defun objc-to-lisp-message (selector)
-   (mapcar (lambda (name)
-             (if (zerop (length name))
-                 :||
-                 (first (oclo:objc-to-lisp-message (concatenate 'string name ":")))))
-           (split-string selector ":")))
+  (defun objc-to-lisp-message (selector)
+    (mapcar (lambda (name)
+              (if (zerop (length name))
+                  :||
+                  (first (oclo:objc-to-lisp-message (concatenate 'string name ":")))))
+            (split-string selector ":")))
 
- );;eval-when
+  );;eval-when
 
 (defun read-type-specifier (stream)
   (assert (eql #\( (skip-spaces stream)))
@@ -172,10 +172,10 @@ NOTE:   current implementation only accepts as separators
 
 (defun read-final-signature (stream)
   (let ((*readtable* *lisp-readtable*))
-   (let ((rest      (read stream t nil t))
-         (parameter (read stream t nil t)))
-     (assert (eql '&rest rest))
-     parameter)))
+    (let ((rest      (read stream t nil t))
+          (parameter (read stream t nil t)))
+      (assert (eql '&rest rest))
+      parameter)))
 
 
 (defun read-method-signature (stream)
@@ -189,101 +189,102 @@ RETURN: a list containing the selector, a list of parameters, and the rest param
         (parameters      '()))
     (if (eql #\: next-char)
         (loop
-           :named compound-selector
-           :initially (push simple-selector selector)
-           :while (eql #\: next-char)
-           :do
-           (read-char stream t nil t)
-           ;; (type-identifier) objcl-identifier
-           (let ((next-char (skip-spaces stream)))
+          :named compound-selector
+            :initially (push simple-selector selector)
+          :while (eql #\: next-char)
+          :do
+             (read-char stream t nil t)
+             ;; (type-identifier) objcl-identifier
+             (let ((next-char (skip-spaces stream)))
+               (cond
+                 ((or (null next-char) (eql #\) next-char))
+                  (error "Missing argument after selector part ~A:"
+                         (car (last selector 2))))
+                 ((eql #\( next-char)
+                  (let ((type-identifier (read-type-specifier stream))
+                        (parameter       (let ((*readtable*  *lisp-readtable*))
+                                           (read stream t nil t))))
+                    (assert (symbolp parameter)
+                            (parameter)
+                            "The parameter name should be a symbol.")
+                    (push (list type-identifier parameter) parameters)))
+                 (t
+                  (error "Expected a type specifier in parentheses instead of '~C'"
+                         next-char))))
+             ;; objcl-identifier ':'
+             (setf next-char (skip-spaces stream))
              (cond
-               ((or (null next-char) (eql #\) next-char))
-                (error "Missing argument after selector part ~A:"
-                       (car (last selector 2))))
-               ((eql #\( next-char)
-                (let ((type-identifier (read-type-specifier stream))
-                      (parameter       (let ((*readtable*  *lisp-readtable*))
-                                         (read stream t nil t))))
-                  (assert (symbolp parameter)
-                          (parameter)
-                          "The parameter name should be a symbol.")
-                  (push (list type-identifier parameter) parameters)))
+               ((or (null next-char) (char= #\) next-char))
+                (return-from compound-selector
+                  (list (format nil "~{~A:~}" (nreverse  selector))
+                        (nreverse parameters)
+                        nil)))
+               ((char= #\& next-char)
+                (return-from compound-selector
+                  (list (format nil "~{~A:~}" (nreverse  selector))
+                        (nreverse parameters)
+                        (read-final-signature stream))))
+               ((char= #\: next-char) ; empty selector-part
+                (push "" selector))
                (t
-                (error "Expecpted a type specifier in parentheses instead of '~C'"
-                       next-char))))
-           ;; objcl-identifier ':'
-           (setf next-char (skip-spaces stream))
-           (cond
-             ((or (null next-char) (char= #\) next-char))
-              (return-from compound-selector
-                (list (format nil "~{~A:~}" (nreverse  selector))
-                      (nreverse parameters)
-                      nil)))
-             ((char= #\& next-char)
-              (return-from compound-selector
-                (list (format nil "~{~A:~}" (nreverse  selector))
-                      (nreverse parameters)
-                      (read-final-signature stream))))
-             ((char= #\: next-char) ; empty selector-part
-              (push "" selector))
-             (t
-              (push (and (skip-spaces stream)
-                         (read-identifier stream)) selector)
-              (setf next-char (peek-char nil stream nil nil t))))
-           :finally (error "~@[Invalid character '~C'. ~]Expected a colon after identifier '~A' in selector '~{~A:~}'."
-                           next-char (first selector) (reverse selector)))
+                (push (and (skip-spaces stream)
+                           (read-identifier stream)) selector)
+                (setf next-char (peek-char nil stream nil nil t))))
+          :finally (error "~@[Invalid character '~C'. ~]Expected a colon after identifier '~A' in selector '~{~A:~}'."
+                          next-char (first selector) (reverse selector)))
         (list simple-selector nil nil))))
 
 
 (defun read-final-arguments (stream)
   (loop
-     :while (eql #\( (skip-spaces stream))
-     :collect (list (read-type-specifier stream)
-                    (let ((*readtable* *lisp-readtable*)) (read stream t nil t)))))
+    :while (eql #\( (skip-spaces stream))
+    :collect (list (read-type-specifier stream)
+                   (let ((*readtable* *lisp-readtable*)) (read stream t nil t)))))
 
 (defun read-message (stream)
   (let ((selector-part (and (skip-spaces stream)
-                              (read-identifier stream)))
+                            (read-identifier stream)))
         (next-char       (peek-char nil stream nil nil t))
         (selector        '())
         (arguments       '()))
     (if (eql #\: next-char)
         (loop
-           :named compound-selector
-           :initially (push selector-part selector)
-           :while (eql #\: next-char)
-           :do
-           (read-char stream t nil t)
-           ;; objcl-expression
-           (let ((next-char (skip-spaces stream)))
-             (when (or (null next-char) (eql #\] next-char))
-               (error "Missing argument after selector part ~A:" (car (last selector 2))))
-             (push (let ((*readtable* *lisp-readtable*)) (read stream t nil t))
-                   arguments))
-           ;; objcl-identifier ':'
-           (setf next-char (skip-spaces stream))
-           (cond
-             ((or (null next-char) (char= #\] next-char))
-              (return-from compound-selector
-                (list (format nil "~{~A:~}" (nreverse  selector))
-                      (nreverse arguments)
-                      '())))
-             ((char= #\( next-char)
-              (return-from compound-selector
-                (list (format nil "~{~A:~}" (nreverse  selector))
-                      (nreverse arguments)
-                      (read-final-arguments stream))))
-             ((char= #\: next-char) ; empty selector-part
-              (push "" selector))
-             ;; ((char= #\; next-char) ; comment
-             ;;  (read-line stream)
-             ;;  (setf next-char (peek-char nil stream nil nil t)))
-             (t
-              (push (and (skip-spaces stream)
-                         (read-identifier stream)) selector)
-              (setf next-char (peek-char nil stream nil nil t))))
-           :finally (error "~@[Invalid character '~C'. ~]Expected a colon after identifier '~A' in selector '~{~A:~}'."
-                           next-char (first selector) (reverse selector)))
+          (cond
+            :named compound-selector
+            :initially (push selector-part selector)
+            :while (eql #\: next-char)
+            :do
+            (read-char stream t nil t)
+            ;; objcl-expression
+            (let ((next-char (skip-spaces stream)))
+              (when (or (null next-char) (eql #\] next-char))
+                (error "Missing argument after selector part ~A:" (car (last selector 2))))
+              (push (let ((*readtable* *lisp-readtable*)) (read stream t nil t))
+                    arguments))
+            ;; objcl-identifier ':'
+            (setf next-char (skip-spaces stream))
+            (cond
+              ((or (null next-char) (char= #\] next-char))
+               (return-from compound-selector
+                 (list (format nil "~{~A:~}" (nreverse  selector))
+                       (nreverse arguments)
+                       '())))
+              ((char= #\( next-char)
+               (return-from compound-selector
+                 (list (format nil "~{~A:~}" (nreverse  selector))
+                       (nreverse arguments)
+                       (read-final-arguments stream))))
+              ((char= #\: next-char) ; empty selector-part
+               (push "" selector))
+              ;; ((char= #\; next-char) ; comment
+              ;;  (read-line stream)
+              ;;  (setf next-char (peek-char nil stream nil nil t)))
+              (t
+               (push (and (skip-spaces stream)
+                          (read-identifier stream)) selector)
+               (setf next-char (peek-char nil stream nil nil t))))
+            :finally (error "~@[Invalid character '~C'. ~]Expected a colon after identifier '~A' in selector '~{~A:~}'."
+                            next-char (first selector) (reverse selector))))
         (list selector-part arguments '()))))
 
 
@@ -321,56 +322,56 @@ Return a list containing:
         (body            '()))
     (if (eql #\: next-char)
         (loop
-           :named compound-selector
-           :initially (push selector-part selector)
-           :while (eql #\: next-char)
-           :do
-           (read-char stream t nil t) ; read the colon
-           ;; read argument
-           (let ((next-char (skip-spaces stream)))
-             (when (or (null next-char) (eql #\] next-char))
-               (error "Missing argument after selector part ~A:" (car (last selector 2))))
-             (case (cdr (assoc selector-part *pseudo-selector-parts* :test (function string=)))
-               ((objcl-identifier)
-                (push (read-identifier stream) arguments))
-               ((type-specifier)
-                (push (read-type-specifier stream) arguments))
-               ((signature)
-                (push (progn
-                        (assert (eql #\( (skip-spaces           stream)))
-                        (read-char stream t nil t)
-                        (prog1
-                            (read-method-signature stream)
-                          (assert (eql #\) (skip-spaces           stream)))
-                          (read-char stream t nil t))) arguments))
-               ((body)
-                (loop
-                   :do (push (let ((*readtable* *lisp-readtable*))
-                               (read stream t nil t)) body)
-                   :until (or (null (setf next-char (skip-spaces stream))) (eql #\] next-char))))
-               (otherwise ; same as list
-                (push (let ((*readtable* *lisp-readtable*))
-                        (read stream t nil t))
-                      arguments))))
-           ;; read selector-part
-           (setf next-char (skip-spaces stream))
-           (cond
-             ((or (null next-char) (char= #\] next-char))
-              (return-from compound-selector
-                (list (format nil "~{~A:~}" (nreverse  selector))
-                      (nreverse arguments)
-                      (nreverse body))))
-             ((char= #\( next-char)
-              (error "Syntax error in pseudo-message send, expected a selector part, but got an opening parenthesis after reading ~{~A:~}."
-                     (reverse selector)))
-             ((char= #\: next-char) ; empty selector-part
-              (push "" selector))
-             (t
-              (push (setf selector-part (and (skip-spaces stream)
-                                             (read-identifier stream))) selector)
-              (setf next-char (peek-char nil stream nil nil t))))
-           :finally (error "~@[Invalid character '~C'. ~]Expected a colon after identifier '~A' in selector '~{~A:~}'."
-                           next-char (first selector) (reverse selector)))
+          :named compound-selector
+            :initially (push selector-part selector)
+          :while (eql #\: next-char)
+          :do
+             (read-char stream t nil t) ; read the colon
+             ;; read argument
+             (let ((next-char (skip-spaces stream)))
+               (when (or (null next-char) (eql #\] next-char))
+                 (error "Missing argument after selector part ~A:" (car (last selector 2))))
+               (case (cdr (assoc selector-part *pseudo-selector-parts* :test (function string=)))
+                 ((objcl-identifier)
+                  (push (read-identifier stream) arguments))
+                 ((type-specifier)
+                  (push (read-type-specifier stream) arguments))
+                 ((signature)
+                  (push (progn
+                          (assert (eql #\( (skip-spaces           stream)))
+                          (read-char stream t nil t)
+                          (prog1
+                              (read-method-signature stream)
+                            (assert (eql #\) (skip-spaces           stream)))
+                            (read-char stream t nil t))) arguments))
+                 ((body)
+                  (loop
+                    :do (push (let ((*readtable* *lisp-readtable*))
+                                (read stream t nil t)) body)
+                    :until (or (null (setf next-char (skip-spaces stream))) (eql #\] next-char))))
+                 (otherwise ; same as list
+                  (push (let ((*readtable* *lisp-readtable*))
+                          (read stream t nil t))
+                        arguments))))
+             ;; read selector-part
+             (setf next-char (skip-spaces stream))
+             (cond
+               ((or (null next-char) (char= #\] next-char))
+                (return-from compound-selector
+                  (list (format nil "~{~A:~}" (nreverse  selector))
+                        (nreverse arguments)
+                        (nreverse body))))
+               ((char= #\( next-char)
+                (error "Syntax error in pseudo-message send, expected a selector part, but got an opening parenthesis after reading ~{~A:~}."
+                       (reverse selector)))
+               ((char= #\: next-char) ; empty selector-part
+                (push "" selector))
+               (t
+                (push (setf selector-part (and (skip-spaces stream)
+                                               (read-identifier stream))) selector)
+                (setf next-char (peek-char nil stream nil nil t))))
+          :finally (error "~@[Invalid character '~C'. ~]Expected a colon after identifier '~A' in selector '~{~A:~}'."
+                          next-char (first selector) (reverse selector)))
         (list selector-part arguments (nreverse body)))))
 
 
@@ -399,12 +400,12 @@ Return a list containing:
   (let ((class-name       (progn (skip-spaces     stream)
                                  (read-identifier stream)))
         (super-class-name (progn (skip-spaces     stream)
-                                  (read-identifier stream)))
+                                 (read-identifier stream)))
         (slots            (let ((*readtable* *lisp-readtable*))
                             (loop
-                               :until (char= #\] (skip-spaces stream))
-                               :collect (read stream t nil t)
-                               :finally (read-char stream t nil t)))))
+                              :until (char= #\] (skip-spaces stream))
+                              :collect (read stream t nil t)
+                              :finally (read-char stream t nil t)))))
     (list (oclo:objc-to-lisp-classname class-name)
           (oclo:objc-to-lisp-classname super-class-name)
           slots)))
@@ -424,12 +425,11 @@ Return a list containing:
                               (read-char stream))))
         (body             (let ((*readtable* *lisp-readtable*))
                             (loop
-                               :until (char= #\] (skip-spaces stream))
-                               :collect (read stream t nil t)
-                               :finally (read-char stream t nil t)))))
+                              :until (char= #\] (skip-spaces stream))
+                              :collect (read stream t nil t)
+                              :finally (read-char stream t nil t)))))
     (list (oclo:objc-to-lisp-classname class-name)
           type-specifier signature body)))
-
 
 
 (defun generate-message-send (recipient selector arguments final-arguments)
@@ -439,25 +439,32 @@ Return a list containing:
   `(,@(if (and (symbolp recipient) (string-equal "super" recipient))
           `(oclo:send-super)
           `(oclo:send       ,recipient))
-      ,@(if arguments
-            (mapcan (function list)
-                    (objc-to-lisp-message selector)
-                    arguments)
-            (list `',(intern (symbol-name (first (objc-to-lisp-message selector))))))
-      ,@(when final-arguments
-              (list (mapcan (function copy-list) final-arguments)))))
+    ,@(if arguments
+          (mapcan (function list)
+                  (objc-to-lisp-message selector)
+                  arguments)
+          (list `',(intern (symbol-name (first (objc-to-lisp-message selector))))))
+    ,@(when final-arguments
+        (list (mapcan (function copy-list) final-arguments)))))
 
 
 (defun generate-class-definition (class-name super-class-name slots)
   `(defclass ,class-name (,super-class-name)
-      ,slots
-      (:metaclass ns:+ns-object))
+     ,slots
+     (:metaclass ns:+ns-object))
   ;; (progn
   ;;    (eval-when (:execute :compile-toplevel :load-toplevel)
   ;;      (oclo:define-classname-translation ,() ,class-name))
   ;;    )
   )
 
+(defmacro define-objc-method ((selector-arg class-arg)
+                              &body body &environment env)
+  (ccl::objc-method-definition-form nil selector-arg class-arg body env))
+
+(defmacro define-objc-class-method ((selector-arg class-arg)
+                                    &body body &environment env)
+  (ccl::objc-method-definition-form t   selector-arg class-arg body env))
 
 (defun generate-method-definition (level class-name result-type signature body)
   "
@@ -466,18 +473,18 @@ LEVEL is :+ or :-  for class methods or instance methods.
   ;; (:ID "multipleArg:complexSelector:" ((:INT A) (:INT B)) NIL)
   (destructuring-bind (selector fixed-parameters rest-parameter) signature
     `(,(ecase level
-              ((:-) 'oclo:define-objc-method)
-              ((:+) 'oclo:define-objc-class-method))
-       ((,result-type
-         ,@(if fixed-parameters
-               (mapcan (function list)
-                       (objc-to-lisp-message selector)
-                       fixed-parameters)
-               ;;(list `',(intern (symbol-name (first (objc-to-lisp-message selector)))))
-               (list `,(intern (symbol-name (first (objc-to-lisp-message selector))))))
-         ,@(when rest-parameter (list rest-parameter)))
-        ,class-name)
-       ,@body)))
+         ((:-) 'define-objc-method)
+         ((:+) 'define-objc-class-method))
+      ((,result-type
+        ,@(if fixed-parameters
+              (mapcan (function list)
+                      (objc-to-lisp-message selector)
+                      fixed-parameters)
+              ;;(list `',(intern (symbol-name (first (objc-to-lisp-message selector)))))
+              (list `,(intern (symbol-name (first (objc-to-lisp-message selector))))))
+        ,@(when rest-parameter (list rest-parameter)))
+       ,class-name)
+      ,@body)))
 
 
 
@@ -572,9 +579,9 @@ Returns NIL.
 Assumes the '[' has been read already.
 "
   (loop
-     :until (eql #\] (skip-spaces stream))
-     :do (read stream t nil t)
-     :finally (read-char stream))
+    :until (eql #\] (skip-spaces stream))
+    :do (read stream t nil t)
+    :finally (read-char stream))
   nil)
 
 
@@ -597,8 +604,8 @@ Assumes the '[' has been read already.
 
 (defun make-utf8-cstring (lstring)
   (let* ((lstring (if (typep lstring 'simple-base-string)
-                    lstring
-                    (copy-seq lstring)))
+                      lstring
+                      (copy-seq lstring)))
          (llen  (length lstring))
          (clen  (ccl::utf-8-octets-in-string lstring 0 llen)))
     (declare (fixnum llen clen))
@@ -607,11 +614,11 @@ Assumes the '[' has been read already.
       (setf (ccl::%get-byte cstring clen) 0)
       #+testing
       (print (loop
-                for str = cstring
-                for i from 0
-                for ch = (ccl:%get-unsigned-byte str i)
-                while (plusp ch)
-                collect ch))
+               for str = cstring
+               for i from 0
+               for ch = (ccl:%get-unsigned-byte str i)
+               while (plusp ch)
+               collect ch))
       (values cstring clen))))
 
 (defun make-macroman-cstring (lstring)
@@ -624,11 +631,11 @@ Assumes the '[' has been read already.
       (setf (ccl::%get-byte cstring llen) 0)
       #+testing
       (print (loop
-                for str = cstring
-                for i from 0
-                for ch = (ccl:%get-unsigned-byte str i)
-                while (plusp ch)
-                collect ch))
+               for str = cstring
+               for i from 0
+               for ch = (ccl:%get-unsigned-byte str i)
+               while (plusp ch)
+               collect ch))
       (values cstring llen))))
 
 
@@ -643,7 +650,7 @@ argument lisp string."
                         :num<b>ytes (length string))
       (multiple-value-bind (bytes bytelen) (make-utf8-cstring string)
         (declare (ignore bytelen))
-        (objc:send ns:ns-string
+        (oclo:send ns:ns-string
                    :string-with-c-string bytes
                    :encoding #$|NSUTF8StringEncoding|)))
 
@@ -674,12 +681,12 @@ argument lisp string."
 
   #-(and)
   (defclass objc-constant-string ()
-   ((string      :initarg :string
-                 :accessor objc-constant-string-string
-                 :initform nil)
-    (nsstringptr :initarg :nsstringptr
-                 :accessor objc-constant-string-nsstringptr
-                 :initform nil)))
+    ((string      :initarg :string
+                  :accessor objc-constant-string-string
+                  :initform nil)
+     (nsstringptr :initarg :nsstringptr
+                  :accessor objc-constant-string-nsstringptr
+                  :initform nil)))
 
   );;eval-when
 
@@ -692,7 +699,7 @@ argument lisp string."
 (defun ns-mutable-string (string)
   (multiple-value-bind (bytes bytelen) (make-utf8-cstring string)
     (declare (ignore bytelen))
-    (objc:send ns:ns-string
+    (oclo:send ns:ns-string
                :string-with-c-string bytes
                :encoding #$|NSUTF8StringEncoding|)))
 
@@ -726,29 +733,29 @@ RETURN:         A Lisp STRING containing the characters of AN-OBJC-STRING.
       (ccl::objc-constant-string (ccl::objc-constant-string-string an-objc-string))
       (objc-constant-string      (objc-constant-string-string an-objc-string))
       (t                         (ccl::%get-utf-8-cstring
-                                  (objc:send an-objc-string 'utf8-string))))))
+                                  (oclo:send an-objc-string 'utf8-string))))))
 
 #+testing
 (print (loop
-          for str = (objc:send a-nsstring 'utf8-string)
-          for i from 0
-          for ch = (ccl:%get-unsigned-byte str i)
-          while (plusp ch)
-          collect ch))
+         for str = (oclo:send a-nsstring 'utf8-string)
+         for i from 0
+         for ch = (ccl:%get-unsigned-byte str i)
+         while (plusp ch)
+         collect ch))
 
 (eval-when (:execute :compile-toplevel :load-toplevel)
 
- (defmethod make-load-form ((s ns:ns-constant-string) &optional env)
-   (declare (ignore env))
-   `(ns-constant-string ,(lisp-string s)))
+  (defmethod make-load-form ((s ns:ns-constant-string) &optional env)
+    (declare (ignore env))
+    `(ns-constant-string ,(lisp-string s)))
 
- (defmethod make-load-form ((s ns:ns-mutable-string) &optional env)
-   (declare (ignore env))
-   `(ns-mutable-string ,(lisp-string s)))
+  (defmethod make-load-form ((s ns:ns-mutable-string) &optional env)
+    (declare (ignore env))
+    `(ns-mutable-string ,(lisp-string s)))
 
- (defmethod make-load-form ((s objc-constant-string) &optional env)
-   (declare (ignore env))
-   `(ns-constant-string ,(objc-constant-string-string s))))
+  (defmethod make-load-form ((s objc-constant-string) &optional env)
+    (declare (ignore env))
+    `(ns-constant-string ,(objc-constant-string-string s))))
 
 
 (defmacro \@ (string)
@@ -765,8 +772,8 @@ RETURN:         A Lisp STRING containing the characters of AN-OBJC-STRING.
           ((#\[) (read-char stream t nil t) (read-objcl-definition stream))
           ((#\") (objc-constant-string-nsstringptr (ns-constant-string (read stream t nil t))))
           (otherwise (unread-char ch stream)
-                     (let ((*readtable* *default-readtable*))
-                       (read stream t nil t)))))))
+           (let ((*readtable* *default-readtable*))
+             (read stream t nil t)))))))
 
 
 (defparameter *objective-cl-readtable* *lisp-readtable*)

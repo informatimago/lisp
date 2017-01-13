@@ -666,7 +666,7 @@ RETURN: The equivalence classes of SET, via KEY, modulo TEST.
   "
 RETURN:   The value of the entry INDICATOR of the a-list PLACE, or DEFAULT.
 "
-  (let ((a (assoc indicator place)))=
+  (let ((a (assoc indicator place)))
     (if a (cdr a) default)))
 
 
