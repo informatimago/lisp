@@ -13,6 +13,7 @@
 ;;;;MODIFICATIONS
 ;;;;    2015-07-02 <PJB> Extracted from rdp.lisp.
 ;;;;BUGS
+;;;;    - We should cache the compilation of regexps for string-match.
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
@@ -113,8 +114,8 @@
      (scan-next-token scanner))
     (t
      ;; Just got EOF
-     (setf (scanner-current-text  scanner) "<END OF FILE>"
-           (scanner-current-token scanner) '|<END OF FILE>|))))
+     (setf (scanner-current-text scanner)  "<END OF SOURCE>"
+           (scanner-current-token scanner) (token-end-of-source-kind)))))
 
 
 (defgeneric word-equal (a b)
@@ -122,8 +123,10 @@
   (:method ((a string) (b string)) (string= a b))
   (:method ((a symbol) (b string)) (string= a b))
   (:method ((a string) (b symbol)) (string= a b))
-  (:method ((token token) (kind symbol)) (eql (token-kind token) kind))
-  (:method ((kind symbol) (token token)) (eql (token-kind token) kind)))
+  (:method ((token token) (kind symbol)) (eql   (token-kind token) kind))
+  (:method ((token token) (text string)) (equal (token-text token) text))
+  (:method ((kind symbol) (token token)) (eql   (token-kind token) kind))
+  (:method ((text string) (token token)) (equal (token-text token) text)))
 
 (defmethod accept ((scanner buffered-scanner) token)
   (if (word-equal token (scanner-current-token scanner))
@@ -209,8 +212,8 @@
                  ;; end of source
                  ((scanner-end-of-source-p scanner)
                   (setf (scanner-column scanner)   (1+ (length (scanner-buffer scanner)))
-                        (scanner-current-text scanner)   "<END OF SOURCE>"
-                        (scanner-current-token scanner) '|<END OF SOURCE>|))
+                        (scanner-current-text scanner)  "<END OF SOURCE>"
+                        (scanner-current-token scanner) (token-end-of-source-kind)))
                  ;; end of line
                  ((scanner-end-of-line-p scanner)
                   (advance-line scanner))

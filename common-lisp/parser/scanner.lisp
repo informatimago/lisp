@@ -89,6 +89,14 @@
   (extract-slots self '(kind text column line)))
 
 
+(defvar *end-of-source-kind* (make-symbol "end-of-source"))
+
+(defun token-end-of-source-kind ()
+   *end-of-source-kind*)
+
+(defgeneric token-end-of-source-p (token)
+  (:method ((token token))
+    (eq (token-kind token) *end-of-source-kind*)))
 
 ;;----------------------------------------------------------------------
 ;; SCANNER
@@ -349,13 +357,16 @@ RETURN:       (scanner-current-token scanner).
   (:documentation "Makes an instance of the TOKEN class or a subclass
 thereof, filled with the current information in the scanner object.")
   (:method ((scanner scanner))
-    (make-instance 'token
-                   :line  (scanner-line scanner)
-                   :column (scanner-column scanner)
-                   :text (scanner-current-text scanner)
-                   :kind (etypecase (scanner-current-token scanner)
-                           (string (intern (scanner-current-token scanner)
-                                           (scanner-token-kind-package scanner)))
-                           (symbol (scanner-current-token scanner))))))
+    (let ((current (scanner-current-token scanner)))
+      (if (typep current 'token)
+          current
+          (make-instance 'token
+                         :line  (scanner-line scanner)
+                         :column (scanner-column scanner)
+                         :text (scanner-current-text scanner)
+                         :kind (etypecase current
+                                 (string (intern current
+                                                 (scanner-token-kind-package scanner)))
+                                 (symbol current)))))))
 
 ;;;; THE END ;;;;
