@@ -1710,6 +1710,8 @@ from OBJECT and COMPOUND-MIXIN.
   (extract-slots '(filename)))
 
 (defmethod initialize-instance :after ((self image) &key &allow-other-keys)
+  (unless (probe-file (filename self))
+    (error 'file-error :pathname (filename self)))
   (let ((size (image.create self (filename self))))
     (setf (slot-value self 'width)  (dimension-width size)
           (slot-value self 'height) (dimension-height size))

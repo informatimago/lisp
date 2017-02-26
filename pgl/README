@@ -1,0 +1,63 @@
+Portable Graphics Library
+========================================
+
+This package implements a Portable Graphics Library using the
+JavaBackEnd from the Stanford Portable Library.
+
+
+References
+----------------------------------------
+
+http://cs.stanford.edu/~eroberts/papers/ITiCSE-2013/PortableGraphicsLibrary.pdf
+https://github.com/cs50/spl
+https://cs.stanford.edu/people/eroberts/jtf/tutorial/UsingTheGraphicsPackage.html
+
+
+Installation
+----------------------------------------
+
+The spl must be installed:
+
+     # Required system packages:
+     # bash binutils coreutils findutils gcc java-1.?.0-openjdk-devel
+
+     cd /usr/local/src
+     git clone git@github.com:cs50/spl.git
+     cd spl
+     make
+     make install
+
+
+This installs:
+
+     /usr/local/include/spl/*.h
+     /usr/local/lib/libcs.a
+     /usr/local/lib/spl.jar
+
+
+
+You may install spl.jar somewhere else, by binding its pathname to the variable PGL:*SPL-PATH*.
+
+
+Running Examples
+----------------------------------------
+
+    (load #P"examples/yarn-pattern.lisp")
+    (com.informatimago.portable-graphics-library.example.yarn-pattern:run)
+
+    (load #P"examples/yin-yang.lisp")
+    (com.informatimago.portable-graphics-library.example.yin-yang:run)
+
+    (load #P"examples/ball.lisp")
+    (bt:make-thread (lambda () (com.informatimago.portable-graphics-library.example.ball:run)))
+    ;; to let it run in a background thread while we go on.
+
+    (load #P"examples/checkerboard.lisp")
+    (com.informatimago.portable-graphics-library.example.checkerboard:run)
+
+    (load #P"examples/felt-board.lisp")
+    (com.informatimago.portable-graphics-library.example.felt-board:run)
+
+    (load #P"examples/image.lisp")
+    (com.informatimago.portable-graphics-library.example.image:run #P"examples/tierra-desde-luna.jpg")
+
