@@ -224,7 +224,7 @@ RETURN: a list containing the selector, a list of parameters, and the rest param
                   (list (format nil "~{~A:~}" (nreverse  selector))
                         (nreverse parameters)
                         (read-final-signature stream))))
-               ((char= #\: next-char) ; empty selector-part
+               ((char= #\: next-char)   ; empty selector-part
                 (push "" selector))
                (t
                 (push (and (skip-spaces stream)
@@ -249,42 +249,41 @@ RETURN: a list containing the selector, a list of parameters, and the rest param
         (arguments       '()))
     (if (eql #\: next-char)
         (loop
-          (cond
-            :named compound-selector
+          :named compound-selector
             :initially (push selector-part selector)
-            :while (eql #\: next-char)
-            :do
-            (read-char stream t nil t)
-            ;; objcl-expression
-            (let ((next-char (skip-spaces stream)))
-              (when (or (null next-char) (eql #\] next-char))
-                (error "Missing argument after selector part ~A:" (car (last selector 2))))
-              (push (let ((*readtable* *lisp-readtable*)) (read stream t nil t))
-                    arguments))
-            ;; objcl-identifier ':'
-            (setf next-char (skip-spaces stream))
-            (cond
-              ((or (null next-char) (char= #\] next-char))
-               (return-from compound-selector
-                 (list (format nil "~{~A:~}" (nreverse  selector))
-                       (nreverse arguments)
-                       '())))
-              ((char= #\( next-char)
-               (return-from compound-selector
-                 (list (format nil "~{~A:~}" (nreverse  selector))
-                       (nreverse arguments)
-                       (read-final-arguments stream))))
-              ((char= #\: next-char) ; empty selector-part
-               (push "" selector))
-              ;; ((char= #\; next-char) ; comment
-              ;;  (read-line stream)
-              ;;  (setf next-char (peek-char nil stream nil nil t)))
-              (t
-               (push (and (skip-spaces stream)
-                          (read-identifier stream)) selector)
-               (setf next-char (peek-char nil stream nil nil t))))
-            :finally (error "~@[Invalid character '~C'. ~]Expected a colon after identifier '~A' in selector '~{~A:~}'."
-                            next-char (first selector) (reverse selector))))
+          :while (eql #\: next-char)
+          :do
+             (read-char stream t nil t)
+             ;; objcl-expression
+             (let ((next-char (skip-spaces stream)))
+               (when (or (null next-char) (eql #\] next-char))
+                 (error "Missing argument after selector part ~A:" (car (last selector 2))))
+               (push (let ((*readtable* *lisp-readtable*)) (read stream t nil t))
+                     arguments))
+             ;; objcl-identifier ':'
+             (setf next-char (skip-spaces stream))
+             (cond
+               ((or (null next-char) (char= #\] next-char))
+                (return-from compound-selector
+                  (list (format nil "~{~A:~}" (nreverse  selector))
+                        (nreverse arguments)
+                        '())))
+               ((char= #\( next-char)
+                (return-from compound-selector
+                  (list (format nil "~{~A:~}" (nreverse  selector))
+                        (nreverse arguments)
+                        (read-final-arguments stream))))
+               ((char= #\: next-char)   ; empty selector-part
+                (push "" selector))
+               ;; ((char= #\; next-char) ; comment
+               ;;  (read-line stream)
+               ;;  (setf next-char (peek-char nil stream nil nil t)))
+               (t
+                (push (and (skip-spaces stream)
+                           (read-identifier stream)) selector)
+                (setf next-char (peek-char nil stream nil nil t))))
+          :finally (error "~@[Invalid character '~C'. ~]Expected a colon after identifier '~A' in selector '~{~A:~}'."
+                          next-char (first selector) (reverse selector)))
         (list selector-part arguments '()))))
 
 
@@ -794,9 +793,10 @@ RETURN:         A Lisp STRING containing the characters of AN-OBJC-STRING.
 
 (defmacro set-objective-cl-syntax ()
   "Sets the *READTABLE* to *OBJECTIVE-CL-READTABLE*.
-Must be a macro to be taken into account when compiling and loading."
+Must be a macro to be taken into account when compiling and loading.
+DEPRECATED: use (enable-objc-reader-macros)"
   '(eval-when (:compile-toplevel :load-toplevel :execute)
-    (setf *readtable* *objective-cl-readtable*)))
+    (setf *readtable*  *objective-cl-readtable*)))
 
 (defparameter yes #$YES)
 (defparameter no  #$NO)
