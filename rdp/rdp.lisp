@@ -1074,9 +1074,11 @@ RETURN: the new production set; the new non-terminal set
                                  :scanner scanner
                                  :non-terminal-stack (copy-list *non-terminal-stack*)
                                  :expected-tokens expected-tokens
-                                 :format-control "Unexpected token ~A (~S)~:[~@[~%Expected ~{~A~}~]~;~%Expected one of ~{~A~^, ~}~]~%~S~@[~%~S~]"
+                                 ;; TODO: optionally remove debugging data:
+                                 :format-control "Unexpected token ~A [~S] (~S)~:[~@[~%Expected ~{~A~}~]~;~%Expected one of ~{~A~^, ~}~]~%~S~@[~%~S~]"
                                  :format-arguments (list
                                                     (scanner-current-token scanner)
+                                                    (class-of (scanner-current-token scanner))
                                                     (scanner-current-text scanner)
                                                     (cdr expected-tokens)
                                                     expected-tokens
