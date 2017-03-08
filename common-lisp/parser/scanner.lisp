@@ -95,6 +95,8 @@
    *end-of-source-kind*)
 
 (defgeneric token-end-of-source-p (token)
+  (:method ((token t))
+    nil)
   (:method ((token token))
     (eq (token-kind token) *end-of-source-kind*)))
 
