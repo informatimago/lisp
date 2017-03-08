@@ -39,7 +39,8 @@
   (:use "COMMON-LISP")
   (:export "LIST-ALL-MACRO-CHARACTERS"
            "LIST-MACRO-CHARACTERS"
-           "REMOVE-ALL-MACRO-CHARACTERS"))
+           "REMOVE-ALL-MACRO-CHARACTERS"
+           "PRINT-READTABLE-COMPARISON"))
 (in-package "COM.INFORMATIMAGO.TOOLS.READER-MACRO")
 
 (defun remove-all-macro-characters (readtable)
@@ -105,6 +106,47 @@ NOTE:   We have the same function in the com.informatimago.common-lisp.lisp-read
                               #-(and) (string ch))
                         result))))
     :finally (return (nreverse result))))
+
+(defun print-readtable-comparison (n1 rt1 n2 rt2)
+  (flet ((preprocess (entry rt)
+           (ecase (first entry)
+             (:macro-character
+              (destructuring-bind (terminating ch) (rest entry)
+                (list (string ch) (first entry) terminating
+                      (get-macro-character ch rt))))
+             (:dispatch-macro-character
+              (destructuring-bind (terminating ch sub) (rest entry)
+                (list (format nil "~C~C" ch sub) (first entry) terminating
+                      (get-dispatch-macro-character ch sub rt))))))
+         (report-difference (e1-e2 n1 e1 n2)
+           (when e1-e2
+             (format t "Reader macro~P in ~S but not in ~S:~%" (cdr e1-e2) n1 n2)
+             (dolist (e e1-e2)
+               (let ((ee1 (assoc (first e) e1 :test (function string=))))
+                 (destructuring-bind (s1 o1 t1 f1) ee1
+                   (declare (ignore t1 f1))
+                   (format t "~A ~S is in ~S but not in ~S.~%" o1 s1 n1 n2)))))))
+    (let* ((e1     (mapcar (lambda (entry) (preprocess entry rt1)) (list-all-macro-characters rt1)))
+           (e2     (mapcar (lambda (entry) (preprocess entry rt2)) (list-all-macro-characters rt2)))
+           (common (intersection   e1 e2 :key (function first) :test (function string=)))
+           (e1-e2  (set-difference e1 e2 :key (function first) :test (function string=)))
+           (e2-e1  (set-difference e2 e1 :key (function first) :test (function string=))))
+      (when common
+        (format t "Reader macro~P in common between ~S and ~S:~%" (cdr common) n1 n2)
+        (dolist (e common)
+          (let ((ee1 (assoc (first e) e1 :test (function string=)))
+                (ee2 (assoc (first e) e2 :test (function string=))))
+            (destructuring-bind (s1 o1 t1 f1) ee1
+              (destructuring-bind (s2 o2 t2 f2) ee2
+                (declare (ignore s2 o2))
+                (unless (eql t1 t2)
+                  (format t "~A ~S is ~:[not-~;~]terminating in ~S but ~:[not-~;~]terminating in ~S.~%"
+                          o1 s1 t1 n1 t2 n2))
+                (unless (eql f1 f2)
+                  (format t "~A ~A are not bound to the same function.~%" o1 s1)))))))
+      (report-difference e1-e2 n1 e1 n2)
+      (report-difference e2-e1 n2 e2 n1)))
+  (values))
 
 
 #-(and) (
