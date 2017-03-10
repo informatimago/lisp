@@ -30,13 +30,29 @@ The spl must be installed:
 
 This installs:
 
-     /usr/local/include/spl/*.h
-     /usr/local/lib/libcs.a
+     /usr/local/include/spl/*.h      -- For use by programs written
+     /usr/local/lib/libcs.a          -- in C or C++.
      /usr/local/lib/spl.jar
 
 
 
-You may install spl.jar somewhere else, by binding its pathname to the variable PGL:*SPL-PATH*.
+Configuration
+----------------------------------------
+
+PGL:*PROGRAM-NAME*   (string)   You can set it to the name of your
+                                program; it's used in the menu bar and
+                                dock icon as application name.
+
+PGL:*JAVA-PROGRAM*   (string)   The name or the path to the java program.
+
+PGL:*SPL-PATH*       (string)   The path to the spl.jar library.
+
+
+For now the defaults work for unix system; for MS-Windows system you
+will have to set those variables to the windows paths (remember that
+in strings, a backslash must be escaped with a backslash).
+
+(Please contribute an example of configuration for MS-Window).
 
 
 Running Examples
@@ -74,3 +90,9 @@ or you can load and run them separately:
     (load #P"examples/image.lisp")
     (com.informatimago.portable-graphics-library.example.image:run
         #P"examples/tierra-desde-luna.jpg")
+
+
+--
+__Pascal Bourguignon__
+mailto:pjb@informatimago.com
+Fri Mar 10 23:17:09 CET 2017

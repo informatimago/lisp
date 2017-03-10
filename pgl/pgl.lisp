@@ -208,8 +208,8 @@ Licensed under the AGPL3.
 
   (:export
    ;; Backend.
-   "OPEN-BACKEND" "CLOSE-BACKEND" "*PROGRAM-NAME*"
-   "*SPL-PATH*" "JBE-ERROR" "JBE-SYNTAX-ERROR")
+   "OPEN-BACKEND" "CLOSE-BACKEND" "*PROGRAM-NAME*" "*JAVA-PROGRAM*"
+   "*SPL-PATH*"  "JBE-ERROR" "JBE-SYNTAX-ERROR")
 
   (:export
    ;; Extensions
