@@ -27,6 +27,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2017-03-10 <PJB> Added support for clisp.
 ;;;;    2016-01-30 <PJB> Moved SLOTED-OBJECT to UTLITY; renamed SLOTS to
 ;;;;                     SLOTS-FOR-PRINT, use EXTRACT-SLOTS.
 ;;;;    2015-11-12 <PJB> Created.
@@ -35,7 +36,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2015 - 2017
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -98,7 +99,7 @@ Licensed under the AGPL3.
 
 (defpackage "COM.INFORMATIMAGO.PORTABLE-GRAPHICS-LIBRARY"
 
-  (:nicknames "PGL")
+  (:nicknames "PGL" "COM.INFORMATIMAGO.PGL")
 
   (:documentation "
 
@@ -117,12 +118,13 @@ defined in this library are not thread-safe, so care should be taken
 when mutating the same object from several threads.  It is assumed
 that distinct threads will work with different objects.
 
-Copyright Pascal J. Bourguignon 2015 - 2015
+Copyright Pascal J. Bourguignon 2015 - 2017
 Licensed under the AGPL3.
 
 ")
 
-  (:use "COMMON-LISP"
+  (:use ;; "COMMON-LISP"
+        "CL-STEPPER"
         "TRIVIAL-GRAY-STREAMS"
         "BORDEAUX-THREADS"
         "ORG.MAPCAR.PARSE-NUMBER"
@@ -216,6 +218,8 @@ Licensed under the AGPL3.
 (in-package "COM.INFORMATIMAGO.PORTABLE-GRAPHICS-LIBRARY")
 
 
+(declaim (declaration stepper))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Basic types and geometric structures
@@ -300,6 +304,7 @@ Licensed under the AGPL3.
    (timer          :initarg :timer          :initform nil   :type (or null timer)     :reader event-timer)))
 
 (defmethod print-object ((self event) stream)
+  (declare (stepper disable))
   (print-unreadable-object (self stream :identity t :type t)
     (format stream "~{~S~^ ~}" (list :type (event-type-keyword self)
                                      :modifiers (event-modifiers self)
@@ -364,6 +369,63 @@ RETURN: the event type as a lisp keyword, one of:
   process
   lock)
 
+
+;; TODO: deal with encodings explicitely in ccl.
+
+#+clisp (defparameter *command-encoding*
+          ;; Note: on MS-Windows you may need to use another charset.
+          (ext:make-encoding :charset charset:utf-8
+                             :line-terminator :unix
+                             :input-error-action :ignore
+                             :output-error-action #\uFFFD)
+          "This is the encoding for the java command (we pass the *program-name*
+on the command line so it may be outside of ASCII.")
+
+#+clisp (defparameter *jbe-encoding*
+          (ext:make-encoding :charset charset:utf-8
+                             :line-terminator :dos
+                             :input-error-action #\uFFFD
+                             :output-error-action #\uFFFD)
+          "This is the encoding for the data exchanged with the java backend.
+It shall be UTF-8.")
+
+(defun shell-quote-argument (argument)
+  "Quote ARGUMENT for passing as argument to an inferior shell."
+  #+(or MSWINDOWS WIN32)
+  ;; Quote using double quotes, but escape any existing quotes in
+  ;; the argument with backslashes.
+  (let ((result "")
+        (start 0)
+        (end)
+        (match-beginning)
+        (match-end))
+    (when (or (null (setf match-end (position #\" argument)))
+              (< match-end (length argument)))
+      (loop
+        :while (setf match-beginning (position #\" argument :start start))
+        :do (setf end (1+ match-beginning)
+                  result (concatenate 'string result (subseq argument start end)
+                                      "\\" (subseq argument end (1+ end)))
+                  start (1+ end))))
+    (concatenate 'string "\"" result (subseq argument start) "\""))
+  #-(or MSWINDOWS WIN32)
+  (if (equal argument "")
+      "''"
+      ;; Quote everything except POSIX filename characters.
+      ;; This should be safe enough even for really weird shells.
+      (let ((result "")
+            (start 0)
+            (end)
+            (match-beginning)
+            (match-end))
+        (loop
+          :while (setf match-end (position-if-not (lambda (ch) (or (alphanumericp ch) (position ch "-_./")))  argument :start start))
+          :do (setf end match-end
+                    result (concatenate 'string result (subseq argument start end)
+                                        "\\" (subseq argument end (1+ end)))
+                    start (1+ end)))
+        (concatenate 'string result (subseq argument start)))))
+
 (defun make-backend-pipe (command arguments)
   (let ((process (progn
                    #+ccl (ccl:run-program command arguments
@@ -372,24 +434,56 @@ RETURN: the event type as a lisp keyword, one of:
                                           :output :stream
                                           :error *error-output*
                                           :sharing :lock)
-                   #-ccl (warn "~S not implemented yet." 'make-backend-pipe)
-                   #-ccl t)))
+                   #-(and) (multiple-value-list
+                             (ext:letf ((custom:*misc-encoding*         *command-encoding*)
+                                        (custom:*default-file-encoding* *jbe-encoding*))
+                               (ext:run-program command
+                                                :arguments arguments
+                                                :wait nil
+                                                :input :stream
+                                                :output :stream)))
+                   #+clisp (multiple-value-list
+                            (ext:letf ((custom:*misc-encoding*         *command-encoding*)
+                                       (custom:*default-file-encoding* *jbe-encoding*))
+                              (ext:make-pipe-io-stream (format nil "~A ~{~A~^ ~}"
+                                                               command
+                                                               (mapcar (function shell-quote-argument)
+                                                                       arguments))
+                                                       :element-type 'character
+                                                       :external-format custom:*default-file-encoding*
+                                                       :buffered nil)))
+                   #-(or ccl clisp) (progn
+                                      (warn "~S not implemented yet." 'make-backend-pipe)
+                                      t))))
+    #+clisp (close (first process))
     (make-backend
-     :process process
-     :output (progn #+ccl (ccl::external-process-input process)
-                    #-ccl (warn "~S not implemented yet." 'backend-output)
-                    #-ccl *standard-output*)
-     :input (progn
-              #+ccl (ccl::external-process-output process)
-              #-ccl (warn "~S not implemented yet." 'backend-input)
-              #-ccl *standard-output*)
-     :lock (bt:make-lock "JBEBackend"))))
+     :process (progn
+                #+ccl process
+                #+clisp nil
+                #-(or ccl clisp) (progn
+                                   (warn "~S not implemented yet." 'backend-process)
+                                   process))
+     :output  (progn
+                #+ccl (ccl::external-process-input process)
+                #+clisp (third process)
+                #-(or ccl clisp) (progn
+                                   (warn "~S not implemented yet." 'backend-output)
+                                   *standard-output*))
+     :input   (progn
+                #+ccl (ccl::external-process-output process)
+                #+clisp (second process)
+                #-(or ccl clisp) (progn
+                                   (warn "~S not implemented yet." 'backend-input)
+                                   *standard-output*))
+     :lock    (bt:make-lock "JBEBackend"))))
 
 (defmacro with-backend-locked (backend &body body)
   `(bt:with-lock-held ((backend-lock ,backend))
      ,@body))
 
 
+(defvar *java-program* "java"
+  "The path to the java program.")
 
 (defvar *spl-path*     "/usr/local/lib/spl.jar"
   "The path to the spl.jar; used unless OPEN-BACKEND :CLASSPATH
@@ -416,11 +510,12 @@ PROGRAM-NAME: (defaults to *PROGRAM-NAME*) gives the name of
     (unless *backend*
       (setf *program-name* program-name)
       (let ((classpath (or classpath (getenv "CLASSPATH") *spl-path*)))
-        (setf *backend* (make-backend-pipe "java" (list (format nil "-Xdock:name=~A" program-name)
-                                                        "-classpath"
-                                                        classpath
-                                                        "stanford/spl/JavaBackEnd"
-                                                        program-name)))))))
+        (setf *backend* (make-backend-pipe *java-program*
+                                           (list (format nil "-Xdock:name=~A" program-name)
+                                                 "-classpath"
+                                                 classpath
+                                                 "stanford/spl/JavaBackEnd"
+                                                 program-name)))))))
 
 (defvar *closing* nil)
 (defun close-backend ()
@@ -433,22 +528,31 @@ If the backend is not open, nothing is done.
       (bt:with-lock-held (*backend-lock*)
         (when *backend*
           (unwind-protect
-               (ignore-errors
-                (window.exit-graphics)
-                ;; #+ccl (ignore-errors (ccl:signal-external-process (backend-process *backend*) 9 :error-if-exited nil))
-                )
+               (progn
+                 (ignore-errors (window.exit-graphics))
+                 ;; #+ccl (ignore-errors (ccl:signal-external-process (backend-process *backend*) 9 :error-if-exited nil))
+                 (close (backend-output *backend*))
+                 (close (backend-input  *backend*)))
             (clear-registers)
             (setf *backend* nil)))))))
 
+
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+ (defun decode-boolean (value)
+   (and (not (null value))
+        (plusp (length value))
+        (char-equal #\t (aref value 0)))))
+
+(defvar *jbetrace* (decode-boolean (getenv "JBETRACE")))
 
 (defun send (command &rest arguments)
   "Sends a Java Back End command to the Java Back End."
   (let ((stream (if *backend*
                     (backend-output *backend*)
                     *standard-output*))
-        (cmd (format nil "~A(~{~A~^,~})" command arguments))
-        (jbetrace (decode-boolean (getenv "JBETRACE"))))
-    (when jbetrace (format *trace-output* "~&-> ~A~%" cmd))
+        (cmd (format nil "~A(~{~A~^,~})" command arguments)))
+    (when *jbetrace* (format *trace-output* "~&-> ~A~%" cmd))
     (clear-input (backend-input *backend*))
     (write-line cmd stream)
     (force-output stream)))
@@ -562,18 +666,13 @@ If the backend is not open, nothing is done.
   (substitute #\e #\D (format nil "~:@(~,,,,,,'dE~)" value)
               :test (function char-equal)))
 
-(defun decode-boolean (value)
-  (and (not (null value))
-       (plusp (length value))
-       (char-equal #\t (aref value 0))))
 
 (defun get-result ()
-  (let ((stream   (backend-input *backend*))
-        (jbetrace (decode-boolean (getenv "JBETRACE"))))
+  (let ((stream   (backend-input *backend*)))
     (handler-case
         (loop
           (let ((line (read-line stream)))
-            (when jbetrace (format *trace-output* "~&<- ~A~%" line))
+            (when *jbetrace* (format *trace-output* "~&<- ~A~%" line))
             (cond ((prefixp "result:" line)
                    (return-from get-result (subseq line 7)))
                   ((prefixp "event:" line)
@@ -843,8 +942,10 @@ If the backend is not open, nothing is done.
 ;;; The JavaBackEnd Protocol.
 ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+(defvar *c*)
 (defun handle-pipe-error (err)
+  (setf *c* err)
+  (princ err) (terpri)
   (if (and *backend*
            (or (eql (stream-error-stream err) (backend-output *backend*))
                (eql (stream-error-stream err) (backend-input *backend*)))
@@ -854,14 +955,13 @@ If the backend is not open, nothing is done.
 
 (defmacro with-jbe-pipe-error-handler (&body forms)
   (let ((continue (gensym)))
-    `(block ,continue
-       (handler-bind
-           (#+ccl (ccl::simple-stream-error (function handle-pipe-error)))
-         (loop
-           (with-simple-restart (retry "Retry after closing and re-opening the backend")
-             (return-from ,continue (progn ,@forms)))
-           (close-backend)
-           (open-backend))))))
+    `(loop :named ,continue
+           :do (handler-bind
+                   ((stream-error (function handle-pipe-error)))
+                 (with-simple-restart (retry "Retry after closing and re-opening the backend")
+                   (return-from ,continue (progn ,@forms))))
+               (ignore-errors (close-backend))
+               (open-backend))))
 
 (defmacro generate-JBE-functions (&rest definitions)
   `(progn
@@ -873,6 +973,7 @@ If the backend is not open, nothing is done.
                          (result-type (first (remove :error (remove :nolock options))))
                          (parameters  (mapcar (function first) lambda-list)))
                      `(defun ,name ,parameters
+                        (declare (stepper disable))
                         (let ,(mapcar (lambda (parameter)
                                         (destructuring-bind (name type) parameter
                                           `(,name ,(ecase type
@@ -1045,12 +1146,14 @@ If the backend is not open, nothing is done.
                 :reader duration-ms)))
 
 (defmethod slots-for-print append ((self timer))
-  (extract-slots '(duration-ms)))
+  (extract-slots self '(duration-ms)))
 
 (defmethod initialize-instance :before ((self timer) &key &allow-other-keys)
+  (declare (stepper disable))
   (open-backend))
 
 (defmethod initialize-instance :after ((self timer) &key &allow-other-keys)
+  (declare (stepper disable))
   (timer.create self (duration-ms self))
   (register self))
 
@@ -1094,17 +1197,20 @@ If the backend is not open, nothing is done.
   (object.set-visible    object (visible    object)))
 
 (defmethod slots-for-print append ((self object))
-  (extract-slots '(id x y width height color fill-color filled visible)))
+  (extract-slots self '(id x y width height color fill-color filled visible)))
 
 (defmethod print-object ((self object) stream)
+  (declare (stepper disable))
   (print-unreadable-object (self stream :identity t :type t)
-    (format stream "~{~S~^ ~}" (slots self)))
+    (format stream "~{~S~^ ~}" (slots-for-print self)))
   self)
 
 (defmethod initialize-instance :before ((self object) &key &allow-other-keys)
+  (declare (stepper disable))
   (open-backend))
 
 (defmethod initialize-instance ((self object) &rest keys &key x y width height &allow-other-keys)
+  (declare (stepper disable))
   (apply (function call-next-method) self
          (append (when x (list :x (double x)))
                  (when y (list :y (double y)))
@@ -1267,6 +1373,7 @@ If the backend is not open, nothing is done.
   ())
 
 (defmethod initialize-instance :after ((self rect) &key &allow-other-keys)
+  (declare (stepper disable))
   (rect.create self (width self) (height self))
   (%set-fillable-attributes self))
 
@@ -1279,9 +1386,10 @@ If the backend is not open, nothing is done.
   ((raised :initarg :raised :type boolean   :reader raised)))
 
 (defmethod slots-for-print append ((self 3drect))
-  (extract-slots '(raised)))
+  (extract-slots self '(raised)))
 
 (defmethod initialize-instance :after ((self 3drect) &key &allow-other-keys)
+  (declare (stepper disable))
   (3drect.create self (width self) (height self) (raised self))
   (%set-fillable-attributes self))
 
@@ -1295,9 +1403,10 @@ If the backend is not open, nothing is done.
   ((corner :initarg :corner :initform *default-corner* :type double :reader corner)))
 
 (defmethod slots-for-print append ((self round-rect))
-  (extract-slots '(corner)))
+  (extract-slots self '(corner)))
 
 (defmethod initialize-instance :after ((self round-rect) &key &allow-other-keys)
+  (declare (stepper disable))
   (round-rect.create self (width self) (height self) (corner self))
   (%set-fillable-attributes self))
 
@@ -1307,6 +1416,7 @@ If the backend is not open, nothing is done.
   ())
 
 (defmethod initialize-instance :after ((self oval) &key &allow-other-keys)
+  (declare (stepper disable))
   (oval.create self (width self) (height self))
   (%set-fillable-attributes self))
 
@@ -1327,6 +1437,7 @@ If the backend is not open, nothing is done.
   ())
 
 (defmethod initialize-instance :after ((self line) &key (x0 0 x0p) (y0 0 y0p) (x1 0 x1p) (y1 0 y1p) &allow-other-keys)
+  (declare (stepper disable))
   (let* ((x0 (double (if x0p x0 (x self))))
          (y0 (double (if y0p y0 (y self))))
          (x1 (double (if x1p x1 (+ x0 (width  self)))))
@@ -1406,14 +1517,16 @@ If the backend is not open, nothing is done.
    (sweep :initarg :sweep :type double :reader sweep)))
 
 (defmethod slots-for-print append ((self arc))
-  (extract-slots '(start sweep)))
+  (extract-slots self '(start sweep)))
 
 (defmethod initialize-instance :after ((self arc) &key &allow-other-keys)
+  (declare (stepper disable))
   (arc.create self (width self) (height self)
               (start self) (sweep self))
   (%set-fillable-attributes self))
 
 (defmethod initialize-instance ((self arc) &rest keys &key start sweep &allow-other-keys)
+  (declare (stepper disable))
   (apply (function call-next-method) self
          (append (when start (list :start (double start)))
                  (when sweep (list :sweep (double sweep)))
@@ -1493,9 +1606,10 @@ If the backend is not open, nothing is done.
    (cy       :initform 0.0d0               :type double :reader cy)))
 
 (defmethod slots-for-print append ((self polygon))
-  (extract-slots '(cx cy vertices)))
+  (extract-slots self '(cx cy vertices)))
 
 (defmethod initialize-instance :after ((self polygon) &key vertices &allow-other-keys)
+  (declare (stepper disable))
   (polygon.create self)
   (when vertices (%set-vertices self vertices))
   (%set-fillable-attributes self))
@@ -1607,7 +1721,7 @@ from OBJECT and COMPOUND-MIXIN.
 "))
 
 (defmethod slots-for-print append ((self compound-mixin))
-  (extract-slots '(components)))
+  (extract-slots self '(components)))
 
 (defgeneric compound-add (self other)
   (:method   ((self compound-mixin) other)
@@ -1637,6 +1751,7 @@ from OBJECT and COMPOUND-MIXIN.
   ())
 
 (defmethod initialize-instance :after ((self compound) &key components &allow-other-keys)
+  (declare (stepper disable))
   (compound.create self)
   (%set-object-attributes self)
   (when components (%set-components self components)))
@@ -1647,11 +1762,13 @@ from OBJECT and COMPOUND-MIXIN.
   ())
 
 (defmethod print-object ((self top-compound) stream)
+  (declare (stepper disable))
   (print-unreadable-object (self stream :identity t :type t)
     (format stream "~{~S~^ ~}" (list :components (length (components self)))))
   self)
 
 (defmethod initialize-instance :after ((self top-compound) &key components &allow-other-keys)
+  (declare (stepper disable))
   (top-compound.create self)
   (%set-object-attributes self)
   (when components (%set-components self components)))
@@ -1665,9 +1782,10 @@ from OBJECT and COMPOUND-MIXIN.
    (descent :initarg :descent :type double :reader descent)))
 
 (defmethod slots-for-print append ((self label))
-  (extract-slots '(font ascent descent text)))
+  (extract-slots self '(font ascent descent text)))
 
 (defmethod initialize-instance :after ((self label) &key &allow-other-keys)
+  (declare (stepper disable))
   (label.create self (text self))
   (%set-fillable-attributes self)
   (set-font self (font self))
@@ -1707,7 +1825,7 @@ from OBJECT and COMPOUND-MIXIN.
   ((filename :initarg :filename :type string :reader filename)))
 
 (defmethod slots-for-print append ((self image))
-  (extract-slots '(filename)))
+  (extract-slots self '(filename)))
 
 (defmethod initialize-instance :after ((self image) &key &allow-other-keys)
   (unless (probe-file (filename self))
@@ -1724,10 +1842,11 @@ from OBJECT and COMPOUND-MIXIN.
    (label          :initarg :label          :initform "" :type string :reader label)))
 
 (defmethod initialize-instance :after ((self interactor) &key &allow-other-keys)
+  (declare (stepper disable))
   (register self))
 
 (defmethod slots-for-print append ((self interactor))
-  (extract-slots '(action-command label)))
+  (extract-slots self '(action-command label)))
 
 (defgeneric set-action-command (self command)
   (:method   ((self interactor) command)
@@ -1748,6 +1867,7 @@ from OBJECT and COMPOUND-MIXIN.
   ())
 
 (defmethod initialize-instance :after ((self button) &key &allow-other-keys)
+  (declare (stepper disable))
   (button.create self (label self))
   (setf (action-command self) (action-command self))
   (%set-fillable-attributes self))
@@ -1758,6 +1878,7 @@ from OBJECT and COMPOUND-MIXIN.
   ())
 
 (defmethod initialize-instance :after ((self check-box) &key &allow-other-keys)
+  (declare (stepper disable))
   (check-box.create self (label self))
   (setf (action-command self) (action-command self))
   (%set-fillable-attributes self))
@@ -1777,9 +1898,10 @@ from OBJECT and COMPOUND-MIXIN.
    (value   :initarg :value :type int)))
 
 (defmethod slots-for-print append ((self slider))
-  (extract-slots '(minimum value maximum)))
+  (extract-slots self '(minimum value maximum)))
 
 (defmethod initialize-instance :after ((self slider) &key &allow-other-keys)
+  (declare (stepper disable))
   (slider.create self (minimum self) (maximum self) (slot-value self 'value))
   ;; Side effect: sends action-command to the backend slider.
   (setf (action-command self) (action-command self))
@@ -1799,9 +1921,10 @@ from OBJECT and COMPOUND-MIXIN.
   ((nchars :initarg :nchars :type int :reader nchars)))
 
 (defmethod slots-for-print append ((self text-field))
-  (extract-slots '(nchars)))
+  (extract-slots self '(nchars)))
 
 (defmethod initialize-instance :after ((self text-field) &key &allow-other-keys)
+  (declare (stepper disable))
   (text-field.create self (nchars self))
   ;; Side effect: sends action-command to the backend slider.
   (setf (action-command self) (action-command self))
@@ -1827,9 +1950,10 @@ from OBJECT and COMPOUND-MIXIN.
                   :reader selected-item)))
 
 (defmethod slots-for-print append ((self chooser))
-  (extract-slots '(items selected-item)))
+  (extract-slots self '(items selected-item)))
 
 (defmethod initialize-instance :after ((self chooser) &key items &allow-other-keys)
+  (declare (stepper disable))
   (chooser.create self)
   (setf (action-command self) (action-command self))
   (when items
@@ -1860,9 +1984,10 @@ from OBJECT and COMPOUND-MIXIN.
    (top-compound :reader  top-compound)))
 
 (defmethod slots-for-print append ((self window))
-  (extract-slots '(title top-compound)))
+  (extract-slots self '(title top-compound)))
 
 (defmethod initialize-instance :after ((self window) &key components resizable &allow-other-keys)
+  (declare (stepper disable))
   (setf (slot-value self 'top-compound)
         (apply (function make-instance) 'top-compound
                (when components (list :components components))))

@@ -42,6 +42,13 @@ You may install spl.jar somewhere else, by binding its pathname to the variable 
 Running Examples
 ----------------------------------------
 
+To run all the examples together:
+
+    (ql:quickload :com.informatimago.pgl.examples)
+    (com.informatimago.pgl.examples:run-all)
+
+or you can load and run them separately:
+
     (load #P"examples/yarn-pattern.lisp")
     (com.informatimago.portable-graphics-library.example.yarn-pattern:run)
 
@@ -52,6 +59,12 @@ Running Examples
     (bt:make-thread (lambda () (com.informatimago.portable-graphics-library.example.ball:run)))
     ;; to let it run in a background thread while we go on.
 
+    ;; Note: if threads are not available (happens in some implementation,
+    ;; depending on compilation options), you can run it directly, but you
+    ;; will have to close the window to continue with the REPL:
+    (com.informatimago.portable-graphics-library.example.ball:run)
+
+
     (load #P"examples/checkerboard.lisp")
     (com.informatimago.portable-graphics-library.example.checkerboard:run)
 
@@ -59,5 +72,5 @@ Running Examples
     (com.informatimago.portable-graphics-library.example.felt-board:run)
 
     (load #P"examples/image.lisp")
-    (com.informatimago.portable-graphics-library.example.image:run #P"examples/tierra-desde-luna.jpg")
-
+    (com.informatimago.portable-graphics-library.example.image:run
+        #P"examples/tierra-desde-luna.jpg")
