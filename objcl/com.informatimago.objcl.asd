@@ -62,9 +62,9 @@ cover generic FFI to both Apple and GNUstep objc2 runtimes.
                (:file "objc-support"       :depends-on ())
                (:file "mac-roman"          :depends-on ("packages"))
                . #+(and ccl darwin)
-               ((:file "oclo-ccl"           :depends-on ("packages"))
-                (:file "oclo"               :depends-on ("packages" "oclo-ccl"))
-                (:file "objcl"              :depends-on ("packages" "oclo" "mac-roman")))
+               ((:file "oclo-ccl"           :depends-on ("packages" "objc-support"))
+                (:file "oclo"               :depends-on ("packages" "objc-support" "oclo-ccl"))
+                (:file "objcl"              :depends-on ("packages" "objc-support" "oclo" "mac-roman")))
                #-(and ccl darwin)
                ())
   #+adsf3 :in-order-to #+adsf3 ((asdf:test-op

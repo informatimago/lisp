@@ -31,12 +31,18 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
-(in-package "COMMON-LISP-USER")
+(defpackage "COM.INFORMATIMAGO.OBJECTIVE-CL.READTABLE"
+  (:nicknames "COM.INFORMATIMAGO.OBJCL.READTABLE")
+  (:use "COMMON-LISP")
+  (:export "*CCL-READTABLE*" "*COCOA-READTABLE*"))
+(in-package "COM.INFORMATIMAGO.OBJECTIVE-CL.READTABLE")
+
+(defparameter *ccl-readtable* (copy-readtable ccl::%initial-readtable%))
 
 ;; We'll try to catch in this variable the objective-c reader macros
 ;; installed by ccl require cocoa.
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defvar *ccl-readtable* nil))
+  (defvar *cocoa-readtable* nil))
 
 
 #+(and ccl darwin); for now, not on non-darwin
@@ -53,12 +59,34 @@
   #-darwin (require :objc-support)
   #+darwin (require :cocoa)
 
-  (unless *ccl-readtable*
-    (setf *ccl-readtable* (copy-readtable *readtable*)))
+  (defun nsfun-reader-macro (stream subchar numarg)
+    (declare (ignorable subchar numarg))
+    (let* ((token (make-array 16 :element-type 'character :fill-pointer 0 :adjustable t)))
+      (loop
+        (let* ((char (read-char stream nil nil)))
+          (if (or (eql char #\:)
+                  (eql char #\_)
+                  (and char (digit-char-p char 36)))
+              (vector-push-extend char token)
+              (progn
+                (when char
+                  (unread-char char stream))
+                (return)))))
+      (unless *read-suppress*
+        (unless (> (length token) 0)
+          (signal-reader-error stream "Invalid token after #/."))
+        #+ccl (ccl::check-objc-message-name token)
+        (intern token "NSFUN"))))
+
+  (unless *cocoa-readtable*
+    (setf *cocoa-readtable* (copy-readtable *readtable*))
+    (set-dispatch-macro-character #\# #\/ (function nsfun-reader-macro) *cocoa-readtable*))
   (pushnew :objc-support *features*))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (setf *readtable* (copy-readtable nil)))
 
-
+;;
+;;                                      ccl::%initial-readtable%     CCL readtable
+;; com.informatimago.objective-cl.readtable::*ccl-readtable*         CCL readtable.
+;; com.informatimago.objective-cl.readtable::*cocoa-readtable*       cocoa readtable.
+;;
 ;;;; THE END ;;;;

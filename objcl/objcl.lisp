@@ -35,7 +35,7 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   #+(and ccl darwin)
-  (setf *readtable* (copy-readtable com.informatimago.objcl.readtable:*ccl-readtable*))
+  (setf *readtable* (copy-readtable com.informatimago.objcl.readtable:*cocoa-readtable*))
   #-(and ccl darwin)
   (error "We need a readtable for CCL specific dispatching reader macro #$"))
 

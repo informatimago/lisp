@@ -16,7 +16,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2010 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2010 - 2017
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -44,11 +44,6 @@
 ;;          (#/initWithPath: mainBundle (namestring (truename ccl::*cocoa-ide-path*)))))))
 ;; #+(and ccl darwin)
 
-(defpackage "COM.INFORMATIMAGO.OBJECTIVE-CL.READTABLE"
-  (:nicknames "COM.INFORMATIMAGO.OBJCL.READTABLE")
-  (:use "COMMON-LISP")
-  (:export "*CCL-READTABLE*"))
-
 (defpackage "COM.INFORMATIMAGO.OBJECTIVE-CL.MAC-ROMAN"
   (:nicknames  "COM.INFORMATIMAGO.OBJCL.MAC-ROMAN")
   (:use "COMMON-LISP")
@@ -57,7 +52,7 @@
 This package exports a function to check if a character is in the
 Mac-Roman repertoire.
 
-Copyright Pascal J. Bourguignon 2011 - 2011
+Copyright Pascal J. Bourguignon 2011 - 2017
 
 This package is licensed under the GPL.
 See source file for details.
@@ -94,6 +89,7 @@ See source file for details.
       "WITH-AUTORELEASED-NSSTRINGS"
 
       #-ccl-1.9 "*COCOA-APPLICATION-FRAMEWORKS*"
+
       "@"
       "DEFINE-CLASSNAME-TRANSLATION"
       "LISP-TO-OBJC-CLASSNAME"
@@ -180,9 +176,5 @@ single package exporting all these symbols.
 This package exports a readtable with a couple of reader macros to
 read Objective-C bracketed expressions, and @\"\" strings.
 "))
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defvar cl-user::*ccl-readtable* nil)
-  (defvar com.informatimago.objcl.readtable:*ccl-readtable* cl-user::*ccl-readtable*))
 
 ;;;; THE END ;;;;
