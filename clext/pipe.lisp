@@ -24,6 +24,9 @@
 ;;;;MODIFICATIONS
 ;;;;    2015-09-12 <PJB> Created.
 ;;;;BUGS
+;;;;TODO
+;;;;    - Check LISTEN; add a similar function to check whether writing an element will block
+;;;;    - Implement a POLL function.
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
