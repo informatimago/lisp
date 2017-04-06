@@ -825,7 +825,7 @@ NOTE:    This is the same implementation as for TERMINATED-STRING-ENCTYPE.
    (element-type
     :accessor element-type :type enctype :initarg :element-type
     :documentation "The enctype instance of the type of the elements"))
-  (:documentation "An array type.")) ;;array-enctype
+  (:documentation "An array type."))
 
 
 (defmethod print-object ((self array-enctype) out)
@@ -1147,29 +1147,38 @@ RETURN:  An instance of a subclass of enctype representing the enctype.
 
 
 
-(defun enctype-read (encname enctype stream)
-  "
-DO:      Read from the STREAM a value of type ENCTYPE.
+(defgeneric enctype-read (encname enctype output)
+  (:documentation "
+DO:      Read from the OUTPUT a value of type ENCTYPE.
 RETURN:  The decoded list value.
-"
-  (let ((buffer (make-array (list (size-of-enctype enctype))
-                            :element-type '(unsigned-byte 8)
-                            :initial-element 0)))
-    (if (= (length buffer) (read-sequence buffer stream))
-        (get-value enctype buffer 0)
-        (error "Could not read a ~A (~D bytes)." encname (length buffer)))))
+")
+  (:method   (encname enctype (buffer vector))
+    (get-value enctype buffer 0))
+  (:method   (encname enctype (stream stream))
+    (let* ((buffer (make-array (list (size-of-enctype enctype))
+                               :element-type '(unsigned-byte 8)
+                               :initial-element 0))
+           (read-bytes (read-sequence buffer stream)))
+      (if (= (length buffer) read-bytes)
+          (get-value enctype buffer 0)
+          (error "Could not read a ~A (expected ~D bytes, read ~D bytes)."
+                 encname (length buffer) read-bytes)))))
 
 
-(defun enctype-write (encname enctype stream value)
-  "
-DO:      Write to the STREAM a value of type ENCTYPE.
-"
-  (declare (ignore encname))
-  (let ((buffer (make-array (list (size-of-enctype enctype))
-                            :element-type '(unsigned-byte 8)
-                            :initial-element 0)))
-    (set-value enctype buffer 0 value)
-    (write-sequence buffer stream)))
+(defgeneric enctype-write (encname enctype output value)
+  (:documentation "
+DO:      Write to the OUTPUT a value of type ENCTYPE.
+")
+  (:method   (encname enctype (buffer vector) value)
+    (declare (ignore encname))
+    (set-value enctype buffer 0 value))
+  (:method   (encname enctype (stream stream) value)
+    (declare (ignore encname))
+    (let ((buffer (make-array (list (size-of-enctype enctype))
+                              :element-type '(unsigned-byte 8)
+                              :initial-element 0)))
+      (set-value enctype buffer 0 value)
+      (write-sequence buffer stream))))
 
 
 
