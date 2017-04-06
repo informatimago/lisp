@@ -64,7 +64,7 @@
                        (ldb (byte ,(1- mantissa-bits) 0) mantissa))))))
      (defun ,(intern (with-standard-io-syntax (format nil "IEEE-754-TO-~A" name))
                      (symbol-package name))  (ieee)
-       "Convert the IEEE representatin (stored as an integer) into a floating point number."
+       "Convert the IEEE representation (stored as an integer) into a floating point number."
        (if (zerop ieee)
            ,(coerce 0 type)
            (let ((aval (scale-float
@@ -83,5 +83,6 @@
 
 (gen-ieee-encoding float-32 single-float  8 24)
 (gen-ieee-encoding float-64 double-float 11 53)
+
 
 ;;;; THE END ;;;;
