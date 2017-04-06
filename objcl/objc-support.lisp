@@ -74,8 +74,8 @@
                 (return)))))
       (unless *read-suppress*
         (unless (> (length token) 0)
-          (signal-reader-error stream "Invalid token after #/."))
-        #+ccl (ccl::check-objc-message-name token)
+          (error reader-error :stream stream)) ; "Invalid token after #/."
+        #+ccl(ccl::check-objc-message-name token)
         (intern token "NSFUN"))))
 
   (unless *cocoa-readtable*
