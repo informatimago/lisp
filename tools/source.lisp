@@ -114,7 +114,7 @@ Source files can be either elisp (.el) or Common Lisp (.lisp,
 USAGE:
 
     (file-emacs-variables \"source.lisp\")
-     --> (:|mode| "lisp" :|coding| "utf-8")
+     --> (:|mode| \"lisp\" :|coding| \"utf-8\")
 
     (scan-source-file \"source.lisp\" :external-format :utf-8)
     --> #<source-file …>
