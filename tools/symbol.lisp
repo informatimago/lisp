@@ -45,6 +45,9 @@
   (:documentation "
 A tool to check duplicate/un-exported/imported symbols.
 "))
+(defpackage "COM.INFORMATIMAGO.TOOLS.SYMBOL.EMPTY"
+  (:use)
+  (:documentation "An empty package, used when printing symbols."))
 (in-package "COM.INFORMATIMAGO.TOOLS.SYMBOL")
 
 
@@ -158,39 +161,52 @@ and a list of packages as optional second argument.
 Ok, the good thing is that it's a regexp,
 the bad thing is that it's a PPCRE regexp. :-(
 "
-  (let* ((syms (sort (apropos-list regexp packages)
-                     (lambda (a b)
-                       (let ((pa (package-name (symbol-package a)))
-                             (pb (package-name (symbol-package b))))
-                         (or (string< pa pb)
-                             (and (string= pa pb)
-                                  (string< a b)))))))
-         (names (mapcar (function prin1-to-string) syms))
-         (width (reduce (function max) names :key (function length)
-                                             :initial-value 0))
-         (*print-right-margin* (or *print-right-margin* 72)))
-    (loop :for sym :in syms
-          :for nam :in names
-          :do (format t "~VA~A ~:[ ~;V~]~[ ~;F~;M~;S~] ~A~%"
-                      (- width (length nam)) ""
-                      nam
-                      (boundp sym)
-                      (if (fboundp sym)
-                          (if (special-operator-p sym)
-                              3
-                              (if (macro-function sym)
-                                  2
-                                  1))
-                          0)
-                      (if (boundp sym)
-                          (let ((*print-length* 8)
-                                (*print-level*  3))
-                            (let ((val (prin1-to-string (symbol-value sym))))
-                              (if (< (- *print-right-margin* 5 width)
-                                     (length val))
-                                  (subseq val 0 (- *print-right-margin* 5 width))
-                                  val)))
-                          ""))))
+  (flet ((accessiblep (sym)
+           (multiple-value-bind (existing-sym presentp)
+               (find-symbol (symbol-name sym) *package*)
+             (and presentp (eq existing-sym sym)))))
+    (let* ((syms (sort (apropos-list regexp packages)
+                       (lambda (a b)
+                         (let ((pa (package-name (symbol-package a)))
+                               (pb (package-name (symbol-package b))))
+                           (or (string< pa pb)
+                               (and (string= pa pb)
+                                    (string< a b)))))))
+           (names (let ((*package* (load-time-value (find-package "COM.INFORMATIMAGO.TOOLS.SYMBOL.EMPTY"))))
+                    (mapcar (function prin1-to-string) syms)))
+           (width (reduce (function max) names :key (function length)
+                                               :initial-value 0))
+           (colon (reduce (function max) names :key (lambda (nam)
+                                                      (or (position #\: nam) 0))
+                                               :initial-value 0))
+           (after (reduce (function max) names :key (lambda (nam)
+                                                      (- (length nam)
+                                                         (or (position #\: nam) 0)))
+                                               :initial-value 0))
+           (*print-right-margin* (or *print-right-margin* 72)))
+      (loop :for sym :in syms
+            :for nam :in names
+            :for col :=  (or (position #\: nam) 0)
+            :for pre :=  (- colon col)
+            :do (format t "~V,,,' <~>~A~V,,,' <~> ~:[ ~;P~]~:[ ~;V~]~A ~A~%"
+                        pre
+                        nam
+                        (- after (- (length nam) col))
+                        (accessiblep sym)
+                        (boundp sym)
+                        (cond ((not (fboundp sym))      " ")
+                              ((special-operator-p sym) "S")
+                              ((macro-function sym)     "M")
+                              (t                        "F"))
+                        (if (boundp sym)
+                            (let ((*print-length* 8)
+                                  (*print-level*  3))
+                              (let ((val (prin1-to-string (symbol-value sym))))
+                                (if (< (- *print-right-margin* 5 width)
+                                       (length val))
+                                    (subseq val 0 (- *print-right-margin* 5 width))
+                                    val)))
+                            "")))))
   (values))
 
 
