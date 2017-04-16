@@ -11,12 +11,13 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2017-04-16 <PJB> Aded queue-empty-p.
 ;;;;    2015-08-29 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2015 - 2017
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -40,6 +41,7 @@
            "MAKE-QUEUE"
            "QUEUE-NAME"
            "QUEUE-COUNT"
+           "QUEUE-EMPTYP"
            "ENQUEUE"
            "DEQUEUE")
   (:documentation "Implements a thread-safe message queue."))
@@ -113,7 +115,23 @@ RETURN:     the dequeued MESSAGE.
         (pop (queue-head queue)))))
 
 (defun queue-count (queue)
+  "
+RETURN:     The number of entries in the QUEUE.
+
+NOTE:       The result may be falsified immediately, if another thread
+            enqueues or dequeues.
+"
   (with-lock-held ((queue-lock queue))
     (length (queue-head queue))))
+
+(defun queue-emptyp (queue)
+  "
+RETURN:     Whether the queue is empty.
+
+NOTE:       The result may be falsified immediately, becoming false if
+            another thread enqueues, or becoming true if another
+            thread dequeues.
+"
+  (not (queue-head queue)))
 
 ;;;; THE END ;;;;
