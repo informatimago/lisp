@@ -5,30 +5,34 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Filter streams are stream wrappers with a function to process
 ;;;;    the data being input or output.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2017-04-16 <PJB> Close is also defered to the filter function.
+;;;;                     Now all operations can be performed by the filter
+;;;;                     function and the filter-stream stream can be any
+;;;;                     object, not necessarily a stream.
 ;;;;    2016-12-22 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2016 - 2016
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -72,7 +76,7 @@
                    :function filter-function
                    :stream stream)))
 
-(defun make-outpout-filter-stream (stream filter-function &key element-type)
+(defun make-output-filter-stream (stream filter-function &key element-type)
   (let ((element-type (or element-type (stream-element-type stream))))
     (make-instance (if (subtypep element-type 'character)
                        'filter-character-output-stream
@@ -189,20 +193,28 @@
 
 
 (defmethod close ((stream filter-character-output-stream) &key abort)
-  (declare (ignore abort))
-  (close (filter-stream-stream stream)))
+  (funcall (filter-stream-function stream)
+           'close
+           (filter-stream-stream stream)
+           abort))
 
 (defmethod close ((stream filter-binary-output-stream) &key abort)
-  (declare (ignore abort))
-  (close (filter-stream-stream stream)))
+  (funcall (filter-stream-function stream)
+           'close
+           (filter-stream-stream stream)
+           abort))
 
 (defmethod close ((stream filter-character-input-stream) &key abort)
-  (declare (ignore abort))
-  (close (filter-stream-stream stream)))
+  (funcall (filter-stream-function stream)
+           'close
+           (filter-stream-stream stream)
+           abort))
 
 (defmethod close ((stream filter-binary-input-stream) &key abort)
-  (declare (ignore abort))
-  (close (filter-stream-stream stream)))
+  (funcall (filter-stream-function stream)
+           'close
+           (filter-stream-stream stream)
+           abort))
 
 
 ;; binary input
@@ -296,6 +308,7 @@
     (write-byte           (write-byte        (first arguments) stream))
     ;; both:
     (read-sequence        (read-sequence     (first arguments) stream :start (second arguments) :end (third arguments)))
-    (write-sequence       (write-sequence    (first arguments) stream :start (second arguments) :end (third arguments)))))
+    (write-sequence       (write-sequence    (first arguments) stream :start (second arguments) :end (third arguments)))
+    (close                (close stream :abort (first arguments)))))
 
 ;;;; THE END ;;;;
