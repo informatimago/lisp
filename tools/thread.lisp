@@ -61,12 +61,12 @@
                  :initially (lambda () ,initially)
                  :finally (lambda () ,finally)))
 
-(defun list-threads (&optional (threads (bt:all-threads)) (*standard-output* *standard-output*))
+(defun list-threads (&key (threads (bt:all-threads)) (stream *standard-output*))
   (loop
     :named menu
     :for i :from 1
     :for thread :in threads
-    :do (format *standard-output* "~&~2D) ~A~%" i thread))
+    :do (format stream "~&~2D) ~A~%" i thread))
   (values))
 
 (defun kill-threads (&optional (*query-io* *query-io*))

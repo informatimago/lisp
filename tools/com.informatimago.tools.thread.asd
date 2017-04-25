@@ -16,7 +16,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2010 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2010 - 2017
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -44,9 +44,9 @@ Interactive commands to manipulate threads.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.2.0"
+  :version "1.3.0"
   :properties ((#:author-email                   . "pjb@informatimago.com")
-               (#:date                           . "Winter 2015")
+               (#:date                           . "Spring 2017")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.thread/")
                ((#:albert #:formats)             . ("docbook"))
                ((#:albert #:docbook #:template)  . "book")
