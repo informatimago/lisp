@@ -11,6 +11,8 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2017-05-27 <PJB> All commands are functions, not macros anymore.
+;;;;                     Renamed DEFCOMMAND -> DEFINE-EXTERNAL-COMMAND.
 ;;;;    2015-10-10 <PJB> CAT/MORE/LESS can process *STANDARD-INPUT*.
 ;;;;    2004-11-23 <PJB> Generalized ls formating.
 ;;;;    2004-09-24 <PJB> Added ls.
@@ -24,7 +26,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2004 - 2017
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -65,7 +67,7 @@
                                  "TRANSLATE-LOGICAL-PATHNAME"
                                  "PRINT-NOT-READABLE"
                                  "PRINT-NOT-READABLE-OBJECT")
-  (:export "MAKE" "MV" "CP" "DEFCOMMAND" "*SHELL*" "LESS" "MORE" "CAT" "LS"
+  (:export "MAKE" "MV" "CP" "DEFINE-EXTERNAL-COMMAND" "*SHELL*" "LESS" "MORE" "CAT" "LS"
            "MKDIR" "POPD" "PUSHD" "PWD" "CD" "BROWSE" "*TERMINAL-HEIGHT*"
            "CHANGE-WORKING-DIRECTORY" "WORKING-DIRECTORY" "*CHANGE-DIRECTORY-HOOK*"
            "*KEEP-DOT-FILES*")
@@ -83,7 +85,7 @@ License:
 
     AGPL3
 
-    Copyright Pascal J. Bourguignon 2002 - 2015
+    Copyright Pascal J. Bourguignon 2002 - 2017
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -189,17 +191,17 @@ Client code can rebind it to another universal date or set it to (now).")
                                     (otherwise item))) (cons name args)))))
       (error "Please assign a shell function to ~S" '*shell*)))
 
-(defmacro defcommand (name &optional docstring)
+(defmacro define-external-command (name &optional docstring)
   "Define a macro named NAME taking any number of arguments, and
 calling the external program of same name thru the shell."
-  `(defmacro ,name (&rest args)
+  `(defun ,name (&rest args)
      ,(or docstring (format nil "COMMAND~%Runs the ~A command." name))
-     (list 'runcommand '',name (list 'quote args))))
+     (runcommand ',name args)))
 
-(defcommand cp)
-(defcommand mv)
-(defcommand make)
-(defcommand grep)
+(define-external-command cp)
+(define-external-command mv)
+(define-external-command make)
+(define-external-command grep)
 
 
 (defvar *keep-dot-files* nil
