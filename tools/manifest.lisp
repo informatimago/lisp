@@ -83,19 +83,14 @@
 #-mocl
 (defun system-depends-on (system)
   (delete (string-downcase system)
-          (let ((system (asdf:find-system system)))
-           (delete-duplicates
-            (mapcar (lambda (system)
-                      (etypecase system
-                        (asdf:system (asdf:component-name system))
-                        (string  system)
-                        (symbol  (string-downcase system))))
-                    (mapcan (lambda (x)
-                              (delete-if-not (lambda (component)
-                                               (typep component 'asdf:system))
-                                             (copy-seq (rest x))))
-                            (asdf:component-depends-on 'asdf:load-op system)))
-            :test 'string=))
+          (delete-duplicates
+           (mapcar (lambda (system)
+                     (etypecase system
+                       (asdf:system (asdf:component-name system))
+                       (string      system)
+                       (symbol      (string-downcase system))))
+                   (asdf:system-depends-on (asdf:find-system system)))
+           :test 'string=)
           :test 'string=))
 
 (defun system-depends-on/recursive (system)
@@ -104,7 +99,6 @@
     (function system-depends-on)
     (list (string-downcase system)))
    :test 'string=))
-
 
 
 ;; kuiper                Linux kuiper 2.6.38-gentoo-r6-pjb-c9 #2 SMP Wed Jul 13 00:23:08 CEST 2011 x86_64 Intel(R) Core(TM) i7 CPU 950 @ 3.07GHz GenuineIntel GNU/Linux
