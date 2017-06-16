@@ -36,7 +36,8 @@
 (defpackage "COM.INFORMATIMAGO.TOOLS.SYMBOL"
   (:use "COMMON-LISP"
         "CL-PPCRE"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PACKAGE")
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PACKAGE"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
   (:shadow "APROPOS" "APROPOS-LIST")
   (:export "CHECK-DUPLICATE-SYMBOLS"
            "DUPLICATE-SYMBOLS"
@@ -142,7 +143,7 @@ Ok, the good thing is that it's a regexp,
 the bad thing is that it's a PPCRE regexp. :-(
 "
   (let ((packages (if packages
-                      (mapcar (function find-package) packages)
+                      (mapcar (function find-package) (ensure-list packages))
                       (list-all-packages)))
         (symbols  '())
         (compre   (create-scanner regexp :case-insensitive-mode t)))
@@ -165,7 +166,7 @@ the bad thing is that it's a PPCRE regexp. :-(
            (multiple-value-bind (existing-sym presentp)
                (find-symbol (symbol-name sym) *package*)
              (and presentp (eq existing-sym sym)))))
-    (let* ((syms (sort (apropos-list regexp packages)
+    (let* ((syms (sort (apropos-list regexp (when packages (ensure-list packages)))
                        (lambda (a b)
                          (let ((pa (package-name (symbol-package a)))
                                (pb (package-name (symbol-package b))))
