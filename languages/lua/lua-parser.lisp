@@ -41,215 +41,217 @@
 
 
 (defgrammar lua
-    :trace nil
-    :scanner lua-scanner
-    :terminals ((number "[0-9]+")
-                (string "\"[^\"]*\"")
-                (name  "[_A-Za-z][_A-Za-z0-9]*"))
-    :start chunk
-    :rules (
+  :trace nil
+  :scanner lua-scanner
+  :terminals ((number "[0-9]+")
+              (string "\"[^\"]*\"")
+              (name  "[_A-Za-z][_A-Za-z0-9]*"))
+  :start chunk
+  :rules (
 
-            (--> chunk
-                 block)
+          ;; (--> chunk
+          ;;      block)
+          (--> chunk
+               exp)
 
-            (--> block
-                 (seq (rep stat) (opt retstat)))
+          (--> block
+               (seq (rep stat) (opt retstat)))
 
-            (--> stat
-                 (alt ";"
-                      (seq varlist "=" explist)
-                      (seq functioncall)
-                      (seq label)
-                      (seq "break")
-                      (seq "goto" Name)
-                      (seq "do" block "end")
-                      (seq "while" exp "do" block "end")
-                      (seq "repeat" block "until" exp)
-                      (seq "if" exp "then" block (rep "elseif" exp "then" block) (opt "else" block) "end")
+          (--> stat
+               (alt ";"
+                    (seq varlist "=" explist)
+                    (seq functioncall)
+                    (seq label)
+                    (seq "break")
+                    (seq "goto" Name)
+                    (seq "do" block "end")
+                    (seq "while" exp "do" block "end")
+                    (seq "repeat" block "until" exp)
+                    (seq "if" exp "then" block (rep "elseif" exp "then" block) (opt "else" block) "end")
 
-                      (seq "for" Name (alt for-name-=
-                                           for-namelist))
+                    (seq "for" Name (alt for-name-=
+                                         for-namelist))
 
-                      (seq "function" funcname funcbody)
-                      (seq "local"
-                           (alt (seq "function" Name funcbody)
-                                (seq namelist (opt "=" explist))))))
+                    (seq "function" funcname funcbody)
+                    (seq "local"
+                         (alt (seq "function" Name funcbody)
+                              (seq namelist (opt "=" explist))))))
 
-            (--> for-name-=
-                 (seq "=" exp "," exp (opt "," exp) "do" block "end"))
-            (--> for-namelist
-                 (seq namelist-cont "in" explist "do" block "end"))
+          (--> for-name-=
+               (seq "=" exp "," exp (opt "," exp) "do" block "end"))
+          (--> for-namelist
+               (seq namelist-cont "in" explist "do" block "end"))
 
-            (--> retstat
-                 (seq "return" (opt explist) (opt ";")))
+          (--> retstat
+               (seq "return" (opt explist) (opt ";")))
 
-            (--> label
-                 (seq "::" Name "::"))
+          (--> label
+               (seq "::" Name "::"))
 
-            (--> funcname
-                 (seq Name (rep (seq "." Name)) (opt (seq ":" Name))))
+          (--> funcname
+               (seq Name (rep (seq "." Name)) (opt (seq ":" Name))))
 
-            (--> varlist
-                 (seq var (rep (seq "," var))))
+          (--> varlist
+               (seq var (rep (seq "," var))))
 
-            (--> namelist
-                 (seq Name namelist-cont))
+          (--> namelist
+               (seq Name namelist-cont))
 
-            (--> namelist-cont
-                 (rep (seq "," Name)))
+          (--> namelist-cont
+               (rep (seq "," Name)))
 
-            (--> explist
-                 (seq exp (rep (seq "," exp))))
+          (--> explist
+               (seq exp (rep (seq "," exp))))
 
-            #-(and)
-            (--> exp
-                 (alt "nil"
-                      "false"
-                      "true"
-                      Number
-                      String
-                      "..."
-                      functiondef
-                      prefixexp
-                      tableconstructor
-                      (seq exp binop exp)
-                      (seq unop exp)))
+          #-(and)
+          (--> exp
+               (alt "nil"
+                    "false"
+                    "true"
+                    Number
+                    String
+                    "..."
+                    functiondef
+                    prefixexp
+                    tableconstructor
+                    (seq exp binop exp)
+                    (seq unop exp)))
 
-            (--> exp disjonction)
-            (--> disjonction
-                 (seq conjonction (rep "or" conjonction)))
-            (--> conjonction
-                 (seq comparaison (rep "and" comparaison)))
-            (--> comparaison
-                 (seq concatenation (rep (alt "<" ">" "<=" ">=" "~=" "==") concatenation)))
-            (--> concatenation
-                 (seq summation (rep ".." summation)))
-            (--> summation
-                 (seq term (rep (alt "+" "-") term)))
-            (--> term
-                 (seq factor (rep (alt "*" "/" "%") factor)))
-            (--> factor
-                 (seq (opt (alt "not" "#" "-")) exponentiation))
-            (--> exponentiation
-                 (seq simple (rep "^" simple)))
-            (--> simple
-                 (alt
-                  "nil"
-                  "false"
-                  "true"
-                  Number
-                  String
-                  "…"
-                  functiondef
-                  prefixexp
-                  tableconstructor))
-
-
-
-            #-(and)
-            (--> prefixexp
-                 (alt var
-                      functioncall
-                      "(" exp ")"))
-            #-(and)
-            (--> var
-                 (alt Name
-                      (seq prefixexp "[" exp "]")
-                      (seq prefixexp "." Name)) )
-
-            #-(and)
-            (--> functioncall
-                 (alt (seq prefixexp args)
-                      (seq prefixexp ":" Name args)))
-
-            #-(and)
-            (--> callpart
-                 (seq (opt (seq ":" name)) args))
-
-            (--> indexpart
-                 (alt (seq "[" exp "]")
-                      (seq "." Name)))
-
-            #-(and)
-            (--> prefixexp
-                 (alt
-                  (seq (alt Name
-                            (seq "(" exp ")"))
-                       (rep (alt callpart
-                                 indexpart)))))
-            ;; TODO:
-            (--> prefixexp
-                 "prefix")
-
-            ;; TODO:
-            (--> var
-                 Name)
-
-            ;; TODO:
-            (--> functioncall
-                 (seq "funcall" Name "(" exp ")"))
+          (--> exp disjonction)
+          (--> disjonction
+               (seq conjonction (rep "or" conjonction)))
+          (--> conjonction
+               (seq comparaison (rep "and" comparaison)))
+          (--> comparaison
+               (seq concatenation (rep (alt "<" ">" "<=" ">=" "~=" "==") concatenation)))
+          (--> concatenation
+               (seq summation (rep ".." summation)))
+          (--> summation
+               (seq term (rep (alt "+" "-") term)))
+          (--> term
+               (seq factor (rep (alt "*" "/" "%") factor)))
+          (--> factor
+               (seq (opt (alt "not" "#" "-")) exponentiation))
+          (--> exponentiation
+               (seq simple (rep "^" simple)))
+          (--> simple
+               (alt
+                "nil"
+                "false"
+                "true"
+                Number
+                String
+                "…"
+                functiondef
+                prefixexp
+                tableconstructor))
 
 
 
+          #-(and)
+          (--> prefixexp
+               (alt var
+                    functioncall
+                    "(" exp ")"))
+          #-(and)
+          (--> var
+               (alt Name
+                    (seq prefixexp "[" exp "]")
+                    (seq prefixexp "." Name)) )
+
+          #-(and)
+          (--> functioncall
+               (alt (seq prefixexp args)
+                    (seq prefixexp ":" Name args)))
+
+          #-(and)
+          (--> callpart
+               (seq (opt (seq ":" name)) args))
+
+          (--> indexpart
+               (alt (seq "[" exp "]")
+                    (seq "." Name)))
+
+          #-(and)
+          (--> prefixexp
+               (alt
+                (seq (alt Name
+                          (seq "(" exp ")"))
+                     (rep (alt callpart
+                               indexpart)))))
+          ;; TODO:
+          (--> prefixexp
+               "prefix")
+
+          ;; TODO:
+          (--> var
+               Name)
+
+          ;; TODO:
+          (--> functioncall
+               (seq "funcall" Name "(" exp ")"))
 
 
 
 
-            (--> args
-                 (alt (seq "(" (opt explist) ")" )
-                      tableconstructor
-                      String) )
 
-            (--> functiondef
-                 "function" funcbody)
 
-            (--> funcbody
-                 (seq "(" (opt parlist) ")" block "end"))
 
-            (--> parlist
-                 (alt (seq namelist (opt "," "..."))
-                      "..."))
+          (--> args
+               (alt (seq "(" (opt explist) ")" )
+                    tableconstructor
+                    String) )
 
-            (--> tableconstructor
-                 (seq "{" (opt fieldlist) "}"))
+          (--> functiondef
+               "function" funcbody)
 
-            (--> fieldlist
-                 (seq field (rep fieldsep field) (opt fieldsep)))
+          (--> funcbody
+               (seq "(" (opt parlist) ")" block "end"))
 
-            (--> field
-                 (alt (seq "[" exp "]" "=" exp )
-                      (seq Name "=" exp)
-                      exp))
+          (--> parlist
+               (alt (seq namelist (opt "," "..."))
+                    "..."))
 
-            (--> fieldsep
-                 (alt ","
-                      ";"))
+          (--> tableconstructor
+               (seq "{" (opt fieldlist) "}"))
 
-            #-(and)
-            (--> binop
-                 (alt "+"
-                      "-"
-                      "*"
-                      "/"
-                      "^"
-                      "%"
-                      ".."
+          (--> fieldlist
+               (seq field (rep fieldsep field) (opt fieldsep)))
 
-                      "<"
-                      "<="
-                      ">"
-                      ">="
-                      "=="
-                      "~="
+          (--> field
+               (alt (seq "[" exp "]" "=" exp )
+                    (seq Name "=" exp)
+                    exp))
 
-                      "and"
-                      "or"))
+          (--> fieldsep
+               (alt ","
+                    ";"))
 
-            #-(and)
-            (--> unop
-                 (alt "-"
-                      "not"
-                      "#"))))
+          #-(and)
+          (--> binop
+               (alt "+"
+                    "-"
+                    "*"
+                    "/"
+                    "^"
+                    "%"
+                    ".."
+
+                    "<"
+                    "<="
+                    ">"
+                    ">="
+                    "=="
+                    "~="
+
+                    "and"
+                    "or"))
+
+          #-(and)
+          (--> unop
+               (alt "-"
+                    "not"
+                    "#"))))
 
 
 
