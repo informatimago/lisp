@@ -268,9 +268,17 @@ The *PACKAGE* is kept bound to the current package.
 (defmacro compose (&rest functions)
   "
 RETURN:     The functional composition of the FUNCTIONS.
-EXAMPLE:    (compose abs sin cos) = (lambda (x) (abs (sin (cos x))))
+EXAMPLE:    (compose abs sin cos) = (lambda (&rest args) (abs (sin (apply (function cos) args))))
+NOTE:       (compose) = (function identity)
+            (compose foo) = (function foo)
 "
-  `(lambda (x) ,(compose-sexp functions 'x)))
+  (cond
+    ((null functions)        `(function identity))
+    ((null (cdr functions))  `(function ,(car functions)))
+    (t `(lambda (&rest args)
+          ,(compose-sexp (butlast functions)
+                         `(apply (function ,(first (last functions)))
+                                 args))))))
 
 
 (defmacro compose-and-call (&rest functions-and-arg)
