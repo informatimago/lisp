@@ -34,6 +34,8 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setf *readtable* (copy-readtable nil)))
 
+(load #P"~/quicklisp/setup.lisp")
+
 (let ((path (merge-pathnames
              (make-pathname :directory '(:relative "TOOLS")
                             :name "INIT-ASDF" :type "LISP" :case :common)
@@ -56,6 +58,7 @@
                :test (function equalp))
               asdf:*central-registry*))
 
+(asdf-load  :cl-ppcre)
 
 #-abcl
 (asdf-load  :com.informatimago.common-lisp)

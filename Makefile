@@ -48,9 +48,17 @@ help::
 	@for c in $(COMPILERS) ; do printf $(HELP_FMT) "compile-with-$$c" "Compile with $$c." ; done
 	@printf $(HELP_FMT) 'all' 'Compile with all the available compilers.'
 # Let's compile with all the available compilers ( $(GCL) not yet ).
-# all:: $(ABCL) $(ALLEGRO) $(CCL) $(CLISP) $(ECL) $(SBCL) $(CMUCL) $(OPENMCL)
-all::  compile-with-$(CLISP) compile-with-$(ECL) compile-with-$(SBCL) compile-with-$(OPENMCL)
-# compile-with-$(CMUCL)     breaks on decode-raw-cardinal in bencode...
+all::  \
+	compile-with-$(CLISP)     \
+	compile-with-$(ECL)       \
+	compile-with-$(SBCL)      \
+	compile-with-$(OPENMCL)   \
+	compile-with-$(CMUCL)     \
+	compile-with-$(ALLEGRO)   \
+	compile-with-$(ABCL)      \
+	compile-with-$(CCL)
+
+# compile-with-$(CMUCL)    breaks on decode-raw-cardinal in bencode...
 # compile-with-$(ALLEGRO)  fails on posix-regexp out of memory...
 # compile-with-$(ABCL)     chokes on unicode!
 # compile-with-$(CCL)      doesn't run from Makefile (it runs well from the shell!).
@@ -185,6 +193,11 @@ showpdf show-pdfs:README.pdf
 help::
 	@printf $(HELP_FMT)  'quicklisp-tag'    'Update the quicklisp tag on the remote repositories.'
 
+help::
+	@printf $(HELP_FMT)  'try'    'Try to compile all systems with sbcl and write report.'
+try:
+	$(call eval_with_sbcl,'(progn (load #P"~/quicklisp/setup.lisp") (funcall (find-symbol "QUICKLOAD" "QL") :com.informatimago.tools.try-systems) (funcall (find-symbol "TRY-SYSTEMS" "COM.INFORMATIMAGO.TOOLS.TRY-SYSTEMS")))')
+
 # quicklisp-tag: quicklisp-tag-remove quicklisp-tag-add
 #
 # quicklisp-tag-remove:
@@ -203,3 +216,4 @@ help::
 # .PHONY::quicklisp-tag quicklisp-tag-remove quicklisp-tag-add
 
 #### THE END ####
+

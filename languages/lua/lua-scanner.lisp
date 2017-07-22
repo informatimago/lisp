@@ -117,7 +117,7 @@
 ;;; LUA Scanner
 ;;;
 
-(defclass lua-scanner (scanner)
+(defclass lua-scanner (buffered-scanner)
   ((keep-comments :accessor lua-scanner-keep-comments
                   :initform nil
                   :initarg :keep-comments
@@ -593,4 +593,3 @@ when NIL, comments are skipped as spaces."))
                  (invalid-char ch))))))))
 
 ;;;; THE END ;;;;
-

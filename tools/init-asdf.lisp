@@ -6,7 +6,7 @@
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;
-;;;;    Compile the com.informatimago.common-lisp libraries with ASDF.
+;;;;    Register the com.informatimago.common-lisp systems with ASDF.
 ;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
@@ -36,10 +36,11 @@
 (in-package "COMMON-LISP-USER")
 
 (defvar *asdf-source*
-  #p"/data/lisp/packages/net/common-lisp/projects/asdf/asdf/asdf.lisp")
+  (truename (merge-pathnames (make-pathname :name "ASDF" :type "LISP" :case :common)
+                             *load-pathname*)))
 
-(defvar *asdf-binary-locations-directory*
-  #p"/data/lisp/packages/net/common-lisp/projects/asdf-binary-locations/asdf-binary-locations/")
+;; (defvar *asdf-binary-locations-directory*
+;;   #p"/data/lisp/packages/net/common-lisp/projects/asdf-binary-locations/asdf-binary-locations/")
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -83,7 +84,7 @@
 
 #+has-asdf-enable-asdf-binary-locations-compatibility
 (progn
-  (format *trace-output* "enable-asdf-binary-locations-compatibility ~%")
+  (format *trace-output* "~&enable-asdf-binary-locations-compatibility ~%")
   (asdf:enable-asdf-binary-locations-compatibility
    :centralize-lisp-binaries     t
    :default-toplevel-directory   (merge-pathnames (format nil ".cache/common-lisp/~A/" (hostname))
@@ -95,14 +96,14 @@
 ;; We need (truename (user-homedir-pathname)) because in cmucl (user-homedir-pathname)
 ;; is a search path, and that cannot be merged...
 
-#-has-asdf-enable-asdf-binary-locations-compatibility
-(progn
- (push-asdf-repository *asdf-binary-locations-directory*)
- (asdf-load :asdf-binary-locations))
+;; #-has-asdf-enable-asdf-binary-locations-compatibility
+;; (progn
+;;  (push-asdf-repository *asdf-binary-locations-directory*)
+;;  (asdf-load :asdf-binary-locations))
 
 #-has-asdf-enable-asdf-binary-locations-compatibility
 (progn
-  (format *trace-output* "enable-asdf-binary-locations-compatibility ~%")
+  (format *trace-output* "~&enable-asdf-binary-locations-compatibility ~%")
   (setf asdf:*centralize-lisp-binaries*     t
         asdf:*include-per-user-information* nil
         asdf:*default-toplevel-directory*
@@ -112,7 +113,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Compiling com.informatimago.common-lisp
+;;; Registering com.informatimago.common-lisp systems.
 ;;;
 
 
@@ -161,7 +162,6 @@
                :test (function equalp))
               asdf:*central-registry*))
 
-(asdf-load  :com.informatimago.common-lisp)
 
 ;;;; THE END ;;;;
 

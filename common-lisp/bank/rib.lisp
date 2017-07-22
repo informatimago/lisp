@@ -243,7 +243,7 @@ INVARIANT:  (length banque)=5,
   (let* ((b  (subseq rib  0  5))
          (g  (subseq rib  5  5))
          (c  (subseq rib 10 11))
-         (k  (when with-check-digits (subseq rib 21 2)))
+         (k  (when with-check-digits (subseq rib 21 23)))
          (ck (compute-check-digits b g c)))
     (when (and with-check-digits (string/= k ck))
       (signal 'rib-error "Invalid key, given=~S, computed=~S." k ck))

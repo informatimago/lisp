@@ -109,15 +109,25 @@ CCL_EXIT      :=   --eval '(ccl:quit)'
 OPENMCL_EXIT  :=   --eval '(ccl:quit)'
 SBCL_EXIT     :=   --eval '(sb-ext:quit)'
 
-ABCL_COMMAND    = LC_CTYPE=$(LC_CTYPE) $(ABCL)    $(ABCL_FLAGS)    --eval $(DECLAIMS) --eval $(COMPILES) $(ABCL_EXIT)
-ALLEGRO_COMMAND = LC_CTYPE=$(LC_CTYPE) $(ALLEGRO) $(ALLEGRO_FLAGS)     -e $(DECLAIMS)     -e $(COMPILES) $(ALLEGRO_EXIT)
-CLISP_COMMAND   = LC_CTYPE=$(LC_CTYPE) $(CLISP)   $(CLISP_FLAGS)       -x $(DECLAIMS)     -x $(COMPILES) $(CLISP_EXIT)
-CMUCL_COMMAND   = LC_CTYPE=$(LC_CTYPE) $(CMUCL)   $(CMUCL_FLAGS)    -eval $(DECLAIMS)  -eval $(COMPILES) $(CMUCL_EXIT)
-ECL_COMMAND     = LC_CTYPE=$(LC_CTYPE) $(ECL)     $(ECL_FLAGS)      -eval $(DECLAIMS)  -eval $(COMPILES) $(ECL_EXIT)
-GCL_COMMAND     = LC_CTYPE=$(LC_CTYPE) $(GCL)     $(GCL_FLAGS)      -eval $(DECLAIMS)  -eval $(COMPILES) $(GCL_EXIT)
-CCL_COMMAND     = LC_CTYPE=$(LC_CTYPE) $(CCL)     $(CCL_FLAGS)     --eval $(DECLAIMS) --eval $(COMPILES) $(CCL_EXIT)
-OPENMCL_COMMAND = LC_CTYPE=$(LC_CTYPE) $(OPENMCL) $(OPENMCL_FLAGS) --eval $(DECLAIMS) --eval $(COMPILES) $(OPENMCL_EXIT)
-SBCL_COMMAND    = LC_CTYPE=$(LC_CTYPE) $(SBCL)    $(SBCL_FLAGS)    --eval $(DECLAIMS) --eval $(COMPILES) $(SBCL_EXIT)
+eval_with_abcl     = LC_CTYPE=$(LC_CTYPE) $(ABCL)    $(ABCL_FLAGS)    --eval $(DECLAIMS) --eval $(1) $(ABCL_EXIT)
+eval_with_allegro  = LC_CTYPE=$(LC_CTYPE) $(ALLEGRO) $(ALLEGRO_FLAGS)     -e $(DECLAIMS)     -e $(1) $(ALLEGRO_EXIT)
+eval_with_clisp    = LC_CTYPE=$(LC_CTYPE) $(CLISP)   $(CLISP_FLAGS)       -x $(DECLAIMS)     -x $(1) $(CLISP_EXIT)
+eval_with_cmucl    = LC_CTYPE=$(LC_CTYPE) $(CMUCL)   $(CMUCL_FLAGS)    -eval $(DECLAIMS)  -eval $(1) $(CMUCL_EXIT)
+eval_with_ecl      = LC_CTYPE=$(LC_CTYPE) $(ECL)     $(ECL_FLAGS)      -eval $(DECLAIMS)  -eval $(1) $(ECL_EXIT)
+eval_with_gcl      = LC_CTYPE=$(LC_CTYPE) $(GCL)     $(GCL_FLAGS)      -eval $(DECLAIMS)  -eval $(1) $(GCL_EXIT)
+eval_with_ccl      = LC_CTYPE=$(LC_CTYPE) $(CCL)     $(CCL_FLAGS)     --eval $(DECLAIMS) --eval $(1) $(CCL_EXIT)
+eval_with_openmcl  = LC_CTYPE=$(LC_CTYPE) $(OPENMCL) $(OPENMCL_FLAGS) --eval $(DECLAIMS) --eval $(1) $(OPENMCL_EXIT)
+eval_with_sbcl     = LC_CTYPE=$(LC_CTYPE) $(SBCL)    $(SBCL_FLAGS)    --eval $(DECLAIMS) --eval $(1) $(SBCL_EXIT)
+
+ABCL_COMMAND       = $(call	eval_with_abcl,$(COMPILES))
+ALLEGRO_COMMAND    = $(call	eval_with_allegro,$(COMPILES))
+CLISP_COMMAND      = $(call	eval_with_clisp,$(COMPILES))
+CMUCL_COMMAND      = $(call	eval_with_cmucl,$(COMPILES))
+ECL_COMMAND        = $(call	eval_with_ecl,$(COMPILES))
+GCL_COMMAND        = $(call	eval_with_gcl,$(COMPILES))
+CCL_COMMAND        = $(call	eval_with_ccl,$(COMPILES))
+OPENMCL_COMMAND    = $(call	eval_with_openmcl,$(COMPILES))
+SBCL_COMMAND       = $(call	eval_with_sbcl,$(COMPILES))
 
 
 all:: show-compilers
@@ -233,7 +243,7 @@ compile-with-$(CCL):
 	@printf '\n\n\n\n'$(LINE)
 	@if type -p $(CCL)  >/dev/null 2>&1 ; then \
 		echo ';;;; Compiling with Clozure Common Lisp' ;\
-		"$(CCL_COMMAND)" ;\
+		$(CCL_COMMAND) ;\
 	fi
 
 compile-with-$(OPENMCL):
