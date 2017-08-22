@@ -80,7 +80,7 @@
       (loop
         :named select
         :do (let ((threads (bt:all-threads)))
-              (list-threads threads *query-io*)
+              (list-threads :threads threads :stream *query-io*)
               (format *query-io* "~&Number of thread to kill (or 0 to abort): ")
               (let ((choice (let ((*read-eval* nil)) (read *query-io*))))
                 (cond
