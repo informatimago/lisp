@@ -1654,6 +1654,7 @@ RETURN:  When the SEQUENCE is a vector, the SEQUENCE itself, or a dispaced
                       :displaced-index-offset start))
       (let ((result (nthcdr start sequence)))
         (when end
+          ;; TODO: when end is bigger than (length sequence), this (setf cdr) fails:
           (setf (cdr (nthcdr (- end start -1) sequence)) nil))
         result)))
 
