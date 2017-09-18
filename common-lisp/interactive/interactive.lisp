@@ -44,7 +44,7 @@
   (:export "UPTIME" "DATE" "*EDITOR*" "EDIT" "MOZILLA-STRING" "LSCHAR" "LSPACK"
            "DIFF-PACKAGE" "PSWITCH" "SHOW" "MKUPACK" "RESET-CLUSER" "POPP" "PUSHP"
            "COMPARE-PATHNAMES" "PRINT-PATHNAME" "LSSYMBOLS"
-           "REPL" "REPL-EXIT"
+           "REPL" "REPL-EXIT" "REP"
            "REPL-HISTORY-RESET"
            "REPL-HISTORY-SIZE"
            "REPL-HISTORY-ADD"
@@ -126,6 +126,57 @@ License:
 (defun repl-exit (&optional result)
   (throw 'repl result))
 
+(defun %rep (+eof+ hist)
+  (handling-errors
+    (setf - (read *standard-input* nil +eof+))
+    (when (eq - +eof+)
+      (return-from %rep))
+    (repl-history-add -)
+    (let ((results (multiple-value-list (eval -))))
+      (setf +++ ++   ++ +   + -
+            /// //   // /   / results
+            *** **   ** *   * (first /)))
+    (format t "~& --> ~{~S~^ ;~%     ~}~%" /)
+    (finish-output)
+    (incf hist)))
+
+(defvar *rep-readtable* nil)
+
+(defun rep (&key (reset-history nil) (line nil))
+  "
+
+DO:         Reads a single expression from LINE if given, concatenated with *STANDARD-INPUT*,
+            and evaluates and prints its results.
+
+NOTE:       The caller must catch REPL to let the user call
+            (com.informatimago.common-lisp.interactive.interactive:repl-exit)
+            to exit the REPL.
+
+"
+  (check-type line (or null string stream))
+  (let ((+eof+   (gensym))
+        (hist    (if reset-history
+                     (progn
+                       (repl-history-reset)
+                       1)
+                     (repl-history-size)))
+        (*readtable* (or (and (not reset-history) *rep-readtable*)
+                         (progn
+                           (setf *rep-readtable* (copy-readtable))
+                           (set-macro-character #\! (function repl-history-reader-macro) t *rep-readtable*)
+                           *rep-readtable*))))
+    (typecase line
+      (string
+       (with-input-from-string (line-stream line)
+         (let ((*standard-input* (make-concatenated-stream line-stream *standard-input*)))
+           (%rep +eof+ hist))))
+      (stream
+       (let ((*standard-input* (make-concatenated-stream line *standard-input*)))
+         (%rep +eof+ hist)))
+      (t
+       (%rep +eof+ hist)))))
+
+
 (defun repl (&key (reset-history t))
   "
 
@@ -155,26 +206,12 @@ RESET-HISTORY:
                          (repl-history-reset)
                          1)
                        (repl-history-size)))
-          (saved-! (multiple-value-list (get-macro-character #\!))))
-      (unwind-protect
-           (progn
-             (set-macro-character #\! (function repl-history-reader-macro) t)
-             (loop
-               (format t "~%~A[~D]> " (package-name *package*) hist)
-               (finish-output)
-               (handling-errors
-                 (setf - (read *standard-input* nil +eof+))
-                 (when (eq - +eof+)
-                   (return-from repl))
-                 (repl-history-add -)
-                 (let ((results (multiple-value-list (eval -))))
-                   (setf +++ ++   ++ +   + -
-                         /// //   // /   / results
-                         *** **   ** *   * (first /)))
-                 (format t "~& --> ~{~S~^ ;~%     ~}~%" /)
-                 (finish-output)
-                 (incf hist))))
-        (apply (function set-macro-character) #\! saved-!)))))
+          (*readtable* (copy-readtable)))
+      (set-macro-character #\! (function repl-history-reader-macro) t)
+      (loop
+        (format t "~%~A[~D]> " (package-name *package*) hist)
+        (finish-output)
+        (%rep +eof+ hist)))))
 
 
 (defun lssymbols (&optional (package *package*))
