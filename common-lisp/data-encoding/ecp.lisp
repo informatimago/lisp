@@ -257,11 +257,12 @@ RETURN:     NIL;         next; NIL;          STATS -- in case of incomplete or e
             data-vector; next; block-number; STATS -- when a valid block is received.
             next is the index of the next start in buffer.
 "
-  (check-type ecp      ecp-data)
-  (check-type stats    (or null statistics))
-  (check-type start    (integer 0))
-  (check-type end      (or null (integer 0)))
-  (check-type send-nak (or null function))
+  (check-type ecp        ecp-data)
+  (check-type stats      (or null statistics))
+  (check-type start      (integer 0))
+  (check-type end        (or null (integer 0)))
+  (check-type send-nak   (or null symbol function))
+  (check-type cancel-nak (or null symbol function))
   (let* ((stats (or stats (make-statistics)))
          (end   (or end (length buffer)))
          (b     start)
