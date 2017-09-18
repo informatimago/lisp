@@ -37,7 +37,8 @@
   :author "Pascal J. Bourguignon"
   :version "1.2.0"
   :license "GPL3"
-  :depends-on ("com.informatimago.common-lisp.cesarum")
+  :depends-on ("cl-ppcre"
+               "com.informatimago.common-lisp.cesarum")
   :components ((:file "symbol"))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8)
 
