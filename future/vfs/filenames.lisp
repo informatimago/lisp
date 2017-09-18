@@ -511,15 +511,15 @@ RETURN: The logical pathname translations for the HOST.
 (defun pathname-match-p (pathname wildcard)
   (assert-type pathname '(or pathname string file-stream))
   (assert-type wildcard '(or pathname string file-stream))
-  (let* ((pathname (pathname pathname))
-         (wildcard (merge-pathnames (pathname wildcard)
-                                    (load-time-value (make-pathname
-                                                      :host :wild
-                                                      :device :wild
-                                                      :directory :wild
-                                                      :name :wild
-                                                      :type :wild
-                                                      :version :wild)))))
+  (let* ((item (pathname pathname))
+         (wild (merge-pathnames (pathname wildcard)
+                                (load-time-value (make-pathname
+                                                  :host :wild
+                                                  :device :wild
+                                                  :directory :wild
+                                                  :name :wild
+                                                  :type :wild
+                                                  :version :wild)))))
     (and (match-item-p (pathname-host    item) (pathname-host    wild) t)
          (match-item-p (pathname-device  item) (pathname-device  wild) t)
          (match-item-p (pathname-name    item) (pathname-name    wild) t)
