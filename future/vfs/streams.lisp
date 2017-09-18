@@ -239,7 +239,14 @@ DO:     Specifies the name and parameter list of methods.
          (check-open-p      (caar  (gethash 'check-open-p      declarations)))
          (lambda-list       (parse-lambda-list arguments :ordinary))
          (m-name            (intern (format nil "%~A" (string name))))
-         (cl-name           (intern (string name) "COMMON-LISP")))
+         (cl-name           (intern (string name) "COMMON-LISP"))
+         (method-lambda-list (make-method-lambda-list lambda-list stream-name 'cl-stream))
+         (m-arguments (mapcar
+                       (lambda (arg)
+                         (if (eq arg stream-name)
+                             `(cl-stream-stream ,stream-name)
+                             arg))
+                       (make-argument-list lambda-list))))
     `(progn
        (eval-when (:compile-toplevel :load-toplevel :execute)
          (setf (gethash ',name *stream-methods*)
@@ -260,32 +267,28 @@ DO:     Specifies the name and parameter list of methods.
               `(,m-name         ,@(butlast (make-argument-list lambda-list)))))
        ,@(when cl-forward
            ;; TODO: review the generation of generic function lambda list:
-           (let ((method-lambda-list (make-method-lambda-list lambda-list stream-name 'cl-stream)))
-             `((defgeneric ,m-name ,(mapcar (lambda (parameter)
-                                              (if (listp parameter)
-                                                  (first parameter)
-                                                  parameter))
-                                     method-lambda-list))
-               (defmethod ,m-name ,method-lambda-list
-                 ,(let ((arguments (mapcar
-                                    (lambda (arg)
-                                      (if (eq arg stream-name)
-                                          `(cl-stream-stream ,stream-name)
-                                          arg))
-                                    (make-argument-list lambda-list))))
-                    (if (lambda-list-rest-p lambda-list)
-                        `(apply (function ,cl-name) ,@arguments)
-                        `(,cl-name ,@(butlast arguments)))))
-               ;; We don't want to allow access to CL:STREAM from a sandbox.
-               ;; (defmethod ,m-name
-               ;;     ,(make-method-lambda-list lambda-list stream-name 'cl:stream)
-               ;;   ,(let ((arguments (make-argument-list lambda-list)))
-               ;;         (if (lambda-list-rest-p lambda-list)
-               ;;             `(apply (function ,cl-name) ,@arguments)
-               ;;             `(,cl-name ,@(butlast arguments)))))
-               )))
+           `((defgeneric ,m-name ,(mapcar (lambda (parameter)
+                                            (if (listp parameter)
+                                                (first parameter)
+                                                parameter))
+                                   method-lambda-list))
+             (defmethod ,m-name ,method-lambda-list
+               ,(if (lambda-list-rest-p lambda-list)
+                    `(apply (function ,cl-name) ,@m-arguments)
+                    `(,cl-name ,@(butlast m-arguments))))
+             ;; We don't want to allow access to CL:STREAM from a sandbox.
+             ;; (defmethod ,m-name
+             ;;     ,(make-method-lambda-list lambda-list stream-name 'cl:stream)
+             ;;   ,(let ((m-arguments (make-argument-list lambda-list)))
+             ;;         (if (lambda-list-rest-p lambda-list)
+             ;;             `(apply (function ,cl-name) ,@m-arguments)
+             ;;             `(,cl-name ,@(butlast m-arguments)))))
+             ))
        ,@(when check-stream-type
            `((defmethod ,m-name ,(make-method-lambda-list lambda-list stream-name 't)
+               (declare (ignore ,@(remove 'stream (if (lambda-list-rest-p lambda-list)
+                                                      (make-argument-list lambda-list)
+                                                      (butlast (make-argument-list lambda-list))))))
                (signal-type-error ,stream-name ',check-stream-type))))
        ,@(mapcar
           (lambda (method)
