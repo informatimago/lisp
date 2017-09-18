@@ -48,10 +48,20 @@
 ;;; TESTS
 ;;;-----------------------------------------------------------------------
 
+(defgeneric make-set (test-class elements))
+(defmethod make-set ((test-class (eql 'list)) elements)
+  (coerce elements 'list))
+(defmethod make-set ((test-class (eql 'vector)) elements)
+  (coerce elements 'vector))
+(defmethod make-set (test-class elements)
+  (assign (make-instance 'test-class) elements))
+
 (defun test-sets (test-class)
   (list '() '(1) '(1 2 3)
         '#() '#(1) '#(1 2 3)
-        (copy test-class '()) (copy test-class '(1)) (copy test-class '(1 2 3))))
+        (make-set test-class  '())
+        (make-set test-class  '(1))
+        (make-set test-class  '(1 2 3))))
 
 (define-test test/all/nil ()
   (loop
@@ -82,16 +92,16 @@
               (list '(1 2 3 4) 'vector    '(1 2 3 4))
               (list '(1 2 3 4) test-class '(1 2 3 4)))
     :do
-    (check set-equal               (copy type original)  expected (type original))
-    (check set-equal (copy 'list   (copy type original)) expected (type original))
-    (check set-equal (copy 'vector (copy type original)) expected (type original))))
+    (check set-equal               (make-set type original)  expected (type original))
+    (check set-equal (make-set 'list   (make-set type original)) expected (type original))
+    (check set-equal (make-set 'vector (make-set type original)) expected (type original))))
 
 
 (define-test test/is-subseq (test-class1 test-class2)
   (flet ((test-set1 (&rest elements)
-           (copy test-class1 elements))
+           (make-set test-class1 elements))
          (test-set2 (&rest elements)
-           (copy test-class2 elements)))
+           (make-set test-class2 elements)))
     (assert-true (is-subset (test-set1)
                             (test-set2)))
     (assert-true (is-subset (test-set1 1)
@@ -114,7 +124,7 @@
 
 (define-test test/set-equal (test-class)
   (flet ((test-set (&rest elements)
-           (copy test-class elements)))
+           (make-set test-class elements)))
     (assert-true (set-equal (test-set)
                             (test-set)))
     (assert-true (set-equal (test-set 1)
@@ -138,7 +148,7 @@
 
 (define-test test/union (operator test-class)
   (flet ((test-set (&rest elements)
-           (copy test-class elements)))
+           (make-set test-class elements)))
     (check set-equal (funcall operator
                              (test-set 1 2 3 7 8 10 11 12)
                              (test-set 1 2 3 7 8 10 11 12))
@@ -195,7 +205,7 @@
 
 (define-test test/intersection (operator test-class)
   (flet ((test-set (&rest elements)
-           (copy test-class elements)))
+           (make-set test-class elements)))
     (check set-equal (funcall operator
                              (test-set 1 2 3 7 8 10 11 12)
                              (test-set 1 2 3 7 8 10 11 12))
