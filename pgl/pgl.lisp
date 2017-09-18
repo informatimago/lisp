@@ -123,8 +123,7 @@ Licensed under the AGPL3.
 
 ")
 
-  (:use ;; "COMMON-LISP"
-        "CL-STEPPER"
+  (:use "COMMON-LISP"
         "TRIVIAL-GRAY-STREAMS"
         "BORDEAUX-THREADS"
         "ORG.MAPCAR.PARSE-NUMBER"
