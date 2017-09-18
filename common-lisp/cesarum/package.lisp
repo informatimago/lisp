@@ -672,7 +672,7 @@ STEAL:      If another package has already this nickname, then steal it.
 FORCE:      If another package has this nickname as package name, then steal it.
 RETURN:     The package designated by PACKAGE.
 "
-  (verbose "~&# ADDING TO PACKAGE ~S~%
+  (verbose "~&# ADDING TO PACKAGE ~S~%~
             ~&#      THE NICKNAME ~S~%" package nickname)
   (let* ((pack     (find-package package))
          (packname (if pack
