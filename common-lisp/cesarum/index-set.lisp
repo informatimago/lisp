@@ -592,9 +592,9 @@ License:
   destination-set)
 
 
-;; (copy 'index-set '(1 2 3 4))
-;; (map-elements 'list 'identity  (copy 'index-set '(1 2 3 4)))
-;; (map-elements 'vector 'identity  (copy 'index-set '(1 2 3 4)))
-;; (copy 'vectorx (copy 'index-set '(1 2 3 4)))
+;; (index-set  '(1 2 3 4))
+;; (map-elements 'list   'identity (index-set '(1 2 3 4)))
+;; (map-elements 'vector 'identity (index-set '(1 2 3 4)))
+;; (map-elements 'vector 'identity (index-set '(1 2 3 4)))
 
 ;;;; THE END ;;;;
