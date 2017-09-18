@@ -37,6 +37,7 @@
   (:export "*CCL-READTABLE*" "*COCOA-READTABLE*"))
 (in-package "COM.INFORMATIMAGO.OBJECTIVE-CL.READTABLE")
 
+#+ccl
 (defparameter *ccl-readtable* (copy-readtable ccl::%initial-readtable%))
 
 ;; We'll try to catch in this variable the objective-c reader macros
