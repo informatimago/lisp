@@ -760,12 +760,11 @@ RETURN: Whether `item' is a list of two objects kind of ELEMENT-CLASS.
   (:documentation "An undirected edge."))
 
 
-(defmethod copy ((self undirected-edge-class) &key &allow-other-keys)
+(defmethod copy ((self undirected-edge-class)  &key &allow-other-keys)
   "
 RETURN: A COPY of this edge (only with same NODES).
 "
-  (make-instance (class-of self)
-    :nodes  (nodes self)))
+  (make-instance 'undirected-edge-class  :nodes  (nodes self)))
 
 
 (defun identical-nodes (nodes-cons-a nodes-cons-b)
