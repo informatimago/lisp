@@ -839,8 +839,10 @@ NOTE:    This is the same implementation as for TERMINATED-STRING-ENCTYPE.
 
 
 (defmethod default-value ((self array-enctype))
-  `(make-array ',(dimensions self)
-               :initial-element (default-value (element-type self))))
+  `(loop :with array := (make-array ',(dimensions self))
+         :for i :below (array-total-size array)
+         :do (setf (row-major-aref array i) ,(default-value (element-type self)))
+         :finally (return array)))
 
 
 (defmethod size-of-enctype ((self array-enctype))
@@ -916,7 +918,7 @@ set and retrieve the values of the fields.")
 
 
 (defmethod default-value ((self record-enctype))
-  `(make-instance (lisp-type self)))
+  `(make-instance ',(lisp-type self)))
 
 
 (defmethod size-of-enctype ((self record-enctype))
