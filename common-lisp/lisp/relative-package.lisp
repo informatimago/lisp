@@ -324,6 +324,7 @@ NOTE:   The current implementation uses a prefix filter on the name of
 (defmacro define-normalize-and-forward-package-methods (name &key (type-error nil))
   (let ((cl-name (cl:intern (string name) (load-time-value (cl:find-package "COMMON-LISP")))))
     `(progn
+       (defgeneric ,name (name))
        ,@ (if type-error
               `((defmethod ,name ((name t))  (error 'simple-type-error
                                                     :datum name
