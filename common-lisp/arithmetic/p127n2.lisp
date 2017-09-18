@@ -160,49 +160,27 @@ RETURN:  A string containing a human readable representation of the polynom POLY
 
 
 
-(defvar *even-parity*
-  (make-array 128 :element-type '(unsigned-byte 8)
-              :initial-contents '(
-                                  #x00 #x81 #x82 #x03 #x84 #x05 #x06 #x87
-                                  #x88 #x09 #x0a #x8b #x0c #x8d #x8e #x0f
-                                  #x90 #x11 #x12 #x93 #x14 #x95 #x96 #x17
-                                  #x18 #x99 #x9a #x1b #x9c #x1d #x1e #x9f
-                                  #xa0 #x21 #x22 #xa3 #x24 #xa5 #xa6 #x27
-                                  #x28 #xa9 #xaa #x2b #xac #x2d #x2e #xaf
-                                  #x30 #xb1 #xb2 #x33 #xb4 #x35 #x36 #xb7
-                                  #xb8 #x39 #x3a #xbb #x3c #xbd #xbe #x3f
-                                  #xc0 #x41 #x42 #xc3 #x44 #xc5 #xc6 #x47
-                                  #x48 #xc9 #xca #x4b #xcc #x4d #x4e #xcf
-                                  #x50 #xd1 #xd2 #x53 #xd4 #x55 #x56 #xd7
-                                  #xd8 #x59 #x5a #xdb #x5c #xdd #xde #x5f
-                                  #x60 #xe1 #xe2 #x63 #xe4 #x65 #x66 #xe7
-                                  #xe8 #x69 #x6a #xeb #x6c #xed #xee #x6f
-                                  #xf0 #x71 #x72 #xf3 #x74 #xf5 #xf6 #x77
-                                  #x78 #xf9 #xfa #x7b #xfc #x7d #x7e #xff
-                                  ))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun parity (byte predicate)
+    (let* ((byte (logand #x7f byte))
+           (sum  (loop
+                   :for i :below 7
+                   :sum (ldb (byte 1 i) byte))))
+      (+ byte (if (funcall predicate sum)
+                  #x00
+                  #x80))))
+  (defun parity-vector (predicate)
+    (loop
+      :with bytes := (make-array 128 :element-type '(unsigned-byte 8))
+      :for b :below 128
+      :for p := (parity b predicate)
+      :do (setf (aref bytes b) p)
+      :finally (return bytes))))
+
+(defparameter *even-parity* (parity-vector (function evenp))
   "A vector with all legal even-parity bytes, in 7-bit order.")
 
-
-(defvar *odd-parity*
-  (make-array 128 :element-type '(unsigned-byte 8)
-              :initial-contents '(
-                                  #x80 #x01 #x02 #x83 #x04 #x85 #x86 #x07
-                                  #x08 #x89 #x8a #x0b #x8c #x0d #x0e #x8f
-                                  #x10 #x91 #x92 #x13 #x94 #x15 #x16 #x97
-                                  #x98 #x19 #x1a #x9b #x1c #x9d #x9e #x1f
-                                  #x20 #xa1 #xa2 #x23 #xa4 #x25 #x26 #xa7
-                                  #xa8 #x29 #x2a #xab #x2c #xad #xae #x2f
-                                  #xb0 #x31 #x32 #xb3 #x34 #xb5 #xb6 #x37
-                                  #x38 #xb9 #xba #x3b #xbc #x3d #x3e #xbf
-                                  #x40 #xc1 #xc2 #x43 #xc4 #x45 #x46 #xc7
-                                  #xc8 #x49 #x4a #xcb #x4c #xcd #xce #x4f
-                                  #xd0 #x51 #x52 #xd3 #x54 #xd5 #xd6 #x57
-                                  #x58 #xd9 #xda #x5b #xdc #x5d #x5e #xdf
-                                  #xe0 #x61 #x62 #xe3 #x64 #xe5 #xe6 #x67
-                                  #x68 #xe9 #xea #x6b #xec #x6d #x6e #xef
-                                  #x70 #xf1 #xf2 #x73 #xf4 #x75 #x76 #xf7
-                                  #xf8 #x79 #x7a #xfb #x7c #xfd #xfe #x7f
-                                  ))
+(defparameter *odd-parity*  (parity-vector (function oddp))
   "A vector with all legal odd-parity bytes, in 7-bit order.")
 
 (declaim (inline even-parity odd-parity))
@@ -213,15 +191,11 @@ RETURN: The BYTE with the parity bit set to even parity.
 "
   (aref *even-parity* (logand byte #x7f)))
 
-
 (defun odd-parity  (byte)
     "
 RETURN: The BYTE with the parity bit set to odd parity.
-
 "
-    (aref *odd-parity*  (logand byte #x7f)))
-
-
+    (aref *odd-parity* (logand byte #x7f)))
 
 
 (defun remove-bit7 (poly)
