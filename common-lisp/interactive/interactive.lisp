@@ -168,8 +168,9 @@ NOTE:       The caller must catch REPL to let the user call
     (typecase line
       (string
        (with-input-from-string (line-stream line)
-         (let ((*standard-input* (make-concatenated-stream line-stream *standard-input*)))
-           (%rep +eof+ hist))))
+         (with-input-from-string (newline (format nil "~%"))
+           (let ((*standard-input* (make-concatenated-stream line-stream newline *standard-input*)))
+             (%rep +eof+ hist)))))
       (stream
        (let ((*standard-input* (make-concatenated-stream line *standard-input*)))
          (%rep +eof+ hist)))
