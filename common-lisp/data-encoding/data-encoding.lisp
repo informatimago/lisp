@@ -1214,7 +1214,8 @@ DO:     Defines an enctype template.
 "
   ;; TODO: make it more deftype - like.
   ;; TODO: we cannot create an instance because a def-enctype is actually a template.  But not when there's no argument! So we could create the reader and writer sometimes.
-  `(make-enctype ',name ',args ',definition))
+  `(eval-when (:compile-toplevel :load-toplevel :execute)
+     (make-enctype ',name ',args ',definition)))
 
 
 (defun even-list-p (list)
@@ -1225,7 +1226,7 @@ DO:     Defines an enctype template.
 
 
 
-(defmacro def-encrecord (name-and-options &rest doc-and-fields)
+(defmacro def-encrecord (name-and-options &body doc-and-fields)
   "
 DO:     Defines an enctype template for a record type,
         a lisp structure with the same name,
@@ -1247,24 +1248,22 @@ DO:     Defines an enctype template for a record type,
     `(progn
        (def-enctype ,name ()
          (record :name ,name ,@options ,@(unless (getf options :lisp-type)
-                                                 (list :lisp-type name))
+                                           (list :lisp-type name))
                  ,@(when documentation
-                         (list :documentation documentation))
+                     (list :documentation documentation))
                  :fields ,fields))
        (defstruct ,name  ,@(when documentation
-                                 (list :documentation documentation))
+                             (list :documentation documentation))
                   ,@(mapcar (lambda (oof)
                               (let ((enctype (enctype-instance (second oof))))
                                 `(,(first oof) ,(default-value enctype)
-                                   :type ,(to-lisp-type enctype))))
-                            fields))
-       (let ((enctype (enctype-instance ',name)))
-         (setf (name enctype) ',name)
-         (defun ,(conc-symbol "READ-" name)  (stream)
-           (enctype-read  ',name enctype stream))
-         (defun ,(conc-symbol "WRITE-" name) (value stream)
-           (enctype-write ',name enctype stream value))
-         ',name))))
+                                  :type ,(to-lisp-type enctype))))
+                     fields))
+       (defun ,(conc-symbol "READ-" name)  (stream)
+         (enctype-read  ',name (enctype-instance ',name) stream))
+       (defun ,(conc-symbol "WRITE-" name) (value stream)
+         (enctype-write ',name (enctype-instance ',name) stream value))
+       ',name)))
 
 
 
