@@ -534,6 +534,7 @@ some constraints may be different from one lambda-list to the other."))
                      :initarg :whole-parameter
                      :type     whole-parameter)
    (body             :accessor lambda-list-body-parameter
+                     :accessor lambda-list-rest-parameter
                      :initarg :body-parameter
                      :type     body-parameter)))
 
