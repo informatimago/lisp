@@ -1649,27 +1649,29 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_set_sy.htm>
 (defun reader-dispatch-macro-label-reference   (stream arg sub-char)
   "Standard ## dispatch macro reader."
   (declare (ignore sub-char))
-  (when (null arg)
-    (serror 'simple-reader-error stream
-            "a number must be given between # and #"))
-  (multiple-value-bind (object presentp) (gethash arg *references*)
-    (if presentp
-        object
-        (serror 'simple-reader-error stream "undefined label #~D#" arg))))
+  (unless *read-suppress*
+    (when (null arg)
+      (serror 'simple-reader-error stream
+              "a number must be given between # and #"))
+    (multiple-value-bind (object presentp) (gethash arg *references*)
+      (if presentp
+          object
+          (serror 'simple-reader-error stream "undefined label #~D#" arg)))))
 
 
 (defun reader-dispatch-macro-label-definition  (stream arg sub-char)
   "Standard #= dispatch macro reader."
   (declare (ignore sub-char))
-  (when (null arg)
-    (serror 'simple-reader-error stream
-            "a number must be given between # and ="))
-  (multiple-value-bind (object presentp) (gethash arg *references*)
-    (if presentp
-        (serror 'simple-reader-error stream
-                "label #~D=~S already defined as ~S"
-                (read stream t nil t) arg object)
-        (setf (gethash arg *references*) (read stream t nil t)))))
+  (unless *read-suppress*
+    (when (null arg)
+      (serror 'simple-reader-error stream
+              "a number must be given between # and ="))
+    (multiple-value-bind (object presentp) (gethash arg *references*)
+      (if presentp
+          (serror 'simple-reader-error stream
+                  "label #~D=~S already defined as ~S"
+                  (read stream t nil t) arg object)
+          (setf (gethash arg *references*) (read stream t nil t))))))
 
 
 (defun eval-feature (expression stream)
@@ -1999,7 +2001,10 @@ NOTE:   terminates with any kind of list, dotted, circular, etc.
 (defun reader-dispatch-macro-pathname          (stream arg sub-char)
   "Standard #P dispatch macro reader."
   (declare (ignore sub-char arg))
-  (pathname (read stream t nil t)))
+  (let ((namestring (read stream t nil t)))
+    (if *read-suppress*
+        nil
+        (parse-namestring namestring))))
 
 
 (defun reader-dispatch-macro-structure         (stream arg sub-char)

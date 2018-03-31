@@ -52,6 +52,7 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setf *readtable* (copy-readtable nil)))
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
@@ -80,6 +81,9 @@
                                  "PRINT-NOT-READABLE"
                                  "PRINT-NOT-READABLE-OBJECT")
   (:export
+   "SIMPLE-PROGRAM-ERROR"
+   "SIMPLE-PROGRAM-ERROR-FORMAT-CONTROL"
+   "SIMPLE-PROGRAM-ERROR-FORMAT-ARGUMENTS"
    ;; 3 - EVALUATION AND COMPILATION
    "WITH-FUNCTIONS" "WITH-GENSYMS" "WSIOSBP" "PROGN-CONCAT"
    "CURRY" "COMPOSE" "COMPOSE-AND-CALL"
@@ -109,7 +113,7 @@
    "+EPSILON" "-EPSILON"
    ;; 14 - CONSES
    "MAXIMIZE" "TOPOLOGICAL-SORT" "TRANSITIVE-CLOSURE"
-   "COMPUTE-CLOSURE" ; deprecated, renamed to transitive-closure
+   "COMPUTE-CLOSURE"       ; deprecated, renamed to transitive-closure
    "FIND-CYCLES" "FIND-SHORTEST-PATH"
    ;; 15 - ARRAYS
    "VECTOR-INIT" "UNDISPLACE-ARRAY" "DICHOTOMY-SEARCH"
@@ -634,6 +638,96 @@ The initarg an accessor are the same keyword built from the name.
       (car option)
       nil))
 
+(define-condition simple-program-error (program-error)
+  ((format-control   :initarg :format-control   :reader simple-program-error-format-control)
+   (format-arguments :initarg :format-arguments :reader simple-program-error-format-arguments))
+  (:report (lambda (condition stream)
+             (format stream "~?"
+                     (simple-program-error-format-control condition)
+                     (simple-program-error-format-arguments condition)))))
+
+
+(defun generate-list-structure (name options documentation slots slot-names accessors
+                                 conc-name constructors copier
+                                 include initial-offset predicate
+                                 print-function print-object
+                                structure-type-p structure-type)
+  )
+
+(defun generate-vector-structure (name options documentation slots slot-names accessors
+                                  conc-name constructors copier
+                                  include initial-offset predicate
+                                  print-function print-object
+                                  structure-type-p structure-type)
+  )
+
+(defun generate-class-structure (name options documentation slots slot-names accessors
+                                 conc-name constructors copier
+                                 include initial-offset predicate
+                                 print-function print-object
+                                 structure-type-p structure-type)
+  `(progn
+     (defclass ,name ,include
+       ,(mapcar
+         (lambda (slot accessor)
+           (if (symbolp slot)
+               `(,slot :accessor  ,accessor)
+               (let* ((name        (first slot))
+                      (initform-p  (cdr slot))
+                      (initform    (car initform-p))
+                      (type-p      (member :type (cddr slot)))
+                      (type        (cadr type-p))
+                      (read-only-p (member :read-only (cddr slot)))
+                      (read-only   (cadr read-only-p)))
+                 `(,name
+                   ,(if (and read-only-p read-only) :reader :accessor)
+                   ,accessor
+                   ,@(when initform-p  (list :initform initform))
+                   ,@(when type-p      (list :type     type))))))
+         slots accessors)
+       ,@(when documentation (list `(:documentation ,documentation))))
+     ,@(mapcar
+        (lambda (constructor)
+          ;; generate a constructor.
+          (if (symbolp constructor)
+              (let ((preds (mapcar (lambda (x) (declare (ignore x)) (gensym))
+                                   slot-names)))
+                `(defun ,constructor
+                     (&key ,@(mapcar (lambda (s p) (list s nil p)) slot-names preds))
+                   (let ((args nil))
+                     ,@(mapcar
+                        (lambda (s p)
+                          `(when ,p
+                             (push ,s args)
+                             (push ,(keywordize s) args)))
+                        slot-names preds)
+                     (apply (function make-instance) ',name args))))
+              (let ((cname  (first  constructor))
+                    (pospar (second constructor)))
+                (declare (ignore pospar))
+                (warn "~S does not implement this case yet."
+                      'define-structure-class)
+                `(defun ,cname (&rest args)
+                   (declare (ignore args))
+                   (error 'simple-program-error "~S does not implement this yet."
+                          'define-structure-class)))))
+        constructors)
+     ,@(when copier
+         (list `(defmethod ,copier ((self ,name))
+                  (make-instance ',name
+                                 ,@(mapcan
+                                    (lambda (slot accessor)
+                                      (list (keywordize slot) (list accessor 'self)))
+                                    slot-names accessors)))))
+     ,@(when predicate
+         (list `(defmethod ,predicate (object)
+                  (eq (type-of object) ',name))))
+     ,@(when print-function
+         (list `(defmethod print-object ((self ,name) stream)
+                  (,print-function self stream 0))))
+     ,@(when print-object
+         (list `(defmethod print-object ((self ,name) stream)
+                  (,print-object self stream))))))
 
 (defmacro define-structure-class (name-and-options &rest doc-and-slots)
   "
@@ -646,8 +740,8 @@ DO:     Define a class implementing the structure API.
   (let (name options documentation slots slot-names accessors
         conc-name constructors copier
         include initial-offset predicate
-        print-function print-object)
-    (declare (ignorable initial-offset))
+        print-function print-object
+        structure-type-p structure-type)
     (if (symbolp name-and-options)
         (setf name    name-and-options
               options nil)
@@ -658,101 +752,64 @@ DO:     Define a class implementing the structure API.
               slots         (cdr doc-and-slots))
         (setf documentation nil
               slots         doc-and-slots))
-    (setf conc-name      (get-option :conc-name      options)
-          constructors   (get-option :constructor    options :list)
-          copier         (get-option :copier         options)
-          predicate      (get-option :predicate      options)
-          include        (get-option :include        options)
-          initial-offset (get-option :initial-offset options)
-          print-function (get-option :print-function options)
-          print-object   (get-option :print-object   options))
+    (setf conc-name        (get-option :conc-name      options)
+          constructors     (get-option :constructor    options :list)
+          copier           (get-option :copier         options)
+          predicate        (get-option :predicate      options)
+          include          (get-option :include        options)
+          initial-offset   (get-option :initial-offset options)
+          print-function   (get-option :print-function options)
+          print-object     (get-option :print-object   options)
+          structure-type-p (get-option :type           options)
+          structure-type   (get-option :type           options))
     (when (and print-object print-function)
-      (error "Cannot have :print-object and :print-function options."))
+      (error 'simple-program-error
+             :format-control "Cannot have :print-object and :print-function options."))
+    (when structure-type-p
+      (unless (or (eql structure-type 'list)
+                  (eql structure-type 'vector)
+                  (and (listp structure-type)
+                       (eql (first structure-type) 'vector)
+                       (cdr structure-type)
+                       (typep (second structure-type) '(integer 0))
+                       (null (cddr structure-type))))
+        (error 'simple-program-error
+               :format-control "Invalid structure :type option: ~S"
+               :format-arguments (list structure-type))))
     (when (cdr include)
       (setf slots   (append (cddr include) slots)
             include (list (car include))))
-    (setf conc-name (make-name conc-name ""      name "-")
-          copier    (make-name copier    "COPY-" name "")
-          predicate (make-name predicate ""      name "-P")
+    (setf conc-name      (make-name conc-name ""      name "-")
+          copier         (make-name copier    "COPY-" name "")
+          predicate      (make-name predicate ""      name "-P")
           print-function (get-name print-function)
           print-object   (get-name print-object))
-    (setf slot-names (mapcar (lambda (s) (if (symbolp s) s (car s))) slots))
-    (setf accessors  (mapcar
-                      (lambda (s) (make-name nil (or conc-name "")
-                                             (if (symbolp s) s (car s)) "")) slots))
-    (if (null constructors)
-        (setf constructors (list (make-name nil "MAKE-" name "")))
-        (setf constructors
-              (mapcan (lambda (x)
-                        (cond
-                          ((or (symbolp x) (= 1 (length x)))
-                           (list (make-name nil "MAKE-" name "")))
-                          ((null (second x))
-                           nil)
-                          ((= 2 (length x))
-                           (list (second x)))
-                          (t
-                           (list (list (second x) (third x)))))) constructors)))
-    `(progn
-       (defclass ,name ,include
-         ,(mapcar
-           (lambda (slot accessor)
-             (if (symbolp slot)
-                 `(,slot :accessor  ,accessor)
-                 (let* ((name        (first slot))
-                        (initform-p  (cdr slot))
-                        (initform    (car initform-p))
-                        (type-p      (member :type (cddr slot)))
-                        (type        (cadr type-p))
-                        (read-only-p (member :read-only (cddr slot)))
-                        (read-only   (cadr read-only-p)))
-                   `(,name
-                     ,(if (and read-only-p read-only) :reader :accessor)
-                     ,accessor
-                     ,@(when initform-p  (list :initform initform))
-                     ,@(when type-p      (list :type     type))))))
-           slots accessors)
-         ,@(when documentation (list `(:documentation ,documentation))))
-       ,@(mapcar
-          (lambda (constructor)
-            ;; generate a constructor.
-            (if (symbolp constructor)
-                (let ((preds (mapcar (lambda (x) (declare (ignore x)) (gensym))
-                                     slot-names)))
-                  `(defun ,constructor
-                       (&key ,@(mapcar (lambda (s p) (list s nil p)) slot-names preds))
-                     (let ((args nil))
-                       ,@(mapcar
-                          (lambda (s p)
-                            `(when ,p
-                               (push ,s args)
-                               (push ,(keywordize s) args)))
-                          slot-names preds)
-                       (apply (function make-instance) ',name args))))
-                (let ((cname  (first  constructor))
-                      (pospar (second constructor)))
-                  (declare (ignore pospar))
-                  (warn "pjb-defclass does not implement this case yet.")
-                  `(defun ,cname (&rest args)
-                     (declare (ignore args))
-                     (error "pjb-defclass does not implement this yet.")))))
-          constructors)
-       ,@(when copier
-           (list `(defmethod ,copier ((self ,name))
-                    (make-instance ',name
-                                   ,@(mapcan
-                                      (lambda (slot accessor)
-                                        (list (keywordize slot) (list accessor 'self)))
-                                      slot-names accessors)))))
-       ,@(when predicate
-           (list `(defmethod ,predicate (object)
-                    (eq (type-of object) ',name))))
-       ,@(when print-function
-           (list `(defmethod print-object ((self ,name) stream)
-                    (,print-function self stream 0))))
-       ,@(when print-object
-           (list `(defmethod print-object ((self ,name) stream)
-                    (,print-object self stream)))))))
+    (setf slot-names     (mapcar (lambda (s) (if (symbolp s) s (car s))) slots))
+    (setf accessors      (mapcar (lambda (s) (make-name nil (or conc-name "")
+                                                        (if (symbolp s) s (car s)) ""))
+                                 slots))
+    (setf constructors   (if (null constructors)
+                             (list (make-name nil "MAKE-" name ""))
+                             (mapcan (lambda (x)
+                                       (cond
+                                         ((or (symbolp x) (= 1 (length x)))
+                                          (list (make-name nil "MAKE-" name "")))
+                                         ((null (second x))
+                                          nil)
+                                         ((= 2 (length x))
+                                          (list (second x)))
+                                         (t
+                                          (list (list (second x) (third x))))))
+                                     constructors)))
+    (funcall (cond ((not structure-type-p)     (function generate-class-structure))
+                   ((eql structure-type 'list) (function generate-list-structure))
+                   (t                          (function generate-vector-structure)))
+             name options documentation
+             slots slot-names accessors
+             conc-name constructors copier
+             include initial-offset predicate
+             print-function print-object
+             structure-type-p structure-type)))
 
 
 
