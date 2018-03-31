@@ -84,11 +84,13 @@
 (defun system-depends-on (system)
   (delete (string-downcase system)
           (delete-duplicates
-           (mapcar (lambda (system)
-                     (etypecase system
-                       (asdf:system (asdf:component-name system))
-                       (string      system)
-                       (symbol      (string-downcase system))))
+           (mapcar (lambda (dependency)
+                     (etypecase dependency
+                       (asdf:system (asdf:component-name dependency))
+                       (string      dependency)
+                       (symbol      (string-downcase dependency))
+                       (cons        ; (:version "asdf" "3.1.2")
+                        (second dependency))))
                    (asdf:system-depends-on (asdf:find-system system)))
            :test 'string=)
           :test 'string=))
