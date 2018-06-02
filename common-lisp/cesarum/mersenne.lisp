@@ -176,7 +176,7 @@ Copyright Pascal J. Bourguignon 2016 - 2016
   (setf *random-state*  (%make-random-state))
   (Makoto-Matsumoto (mod seed 4294967291)))
 
-(defun rand (seed)
+(defun rand ()
   (random 4294967296))
 
 
