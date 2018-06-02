@@ -172,6 +172,14 @@ Copyright Pascal J. Bourguignon 2016 - 2016
         (scale-float (/ (float m limit) s) e))))
 
 
+(defun srand (seed)
+  (setf *random-state*  (%make-random-state))
+  (Makoto-Matsumoto (mod seed 4294967291)))
+
+(defun rand (seed)
+  (random 4294967296))
+
+
 #-(and)
 (progn
   (loop
