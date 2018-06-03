@@ -94,7 +94,7 @@ the next time (make-random-state t) is called, the random state obtained with JU
 (defparameter *random-state* (make-random-state t))
 
 
-                 
+
 (defun random (limit &optional (*random-state* *random-state*))
   (etypecase limit
     ((integer 1)
