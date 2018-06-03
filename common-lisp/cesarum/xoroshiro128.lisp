@@ -134,14 +134,16 @@ the next time (make-random-state t) is called, the random state obtained with JU
   (etypecase limit
     ((integer 1)
      (loop
-       :with m := (* limit (truncate +max-uint64+ limit))
-       :for r := (if (<= limit +max-uint64+)
-                     (next)
+       :with drop := -4
+       :with max := (ash +max-uint64+ drop)
+       :with m := (* limit (truncate max limit))
+       :for r := (if (<= limit max)
+                     (ash (next) drop)
                      (loop
                        :named bignum
-                       :for p :below (ceiling (log limit (1+ +max-uint64+)))
-                       :for r := (next)
-                         :then (dpb (next) (byte 64 (* 64 p)) r)
+                       :for p :below (ceiling (log limit (1+ max)))
+                       :for r := (ash (next) drop)
+                         :then (dpb (ash (next) drop) (byte (+ 64 drop) (* (+ 64 drop) p)) r)
                        :finally (return r)))
        :while (and (plusp m) (< m r))
        :finally (return (mod r limit))))
@@ -154,21 +156,21 @@ the next time (make-random-state t) is called, the random state obtained with JU
 
 (defmacro with-specific-random-state (&body body)
   `(let ((*random-state* (make-random-state 321047098306122495840621590880868556385)))
-      ,@body))
+     ,@body))
 
+(defun test ()
+  (assert
+   (equalp
+    (with-specific-random-state
+      (list (loop repeat 10 collect (random 100))
+            (loop repeat 10 collect (random 100.0s0))
+            (loop repeat 10 collect (random 100.0d0))))
+    '((93 63 20 52 61 21 92 28 20 90)
+      (41.85024 2.6022136 5.2173853 95.012344 44.178146 92.49861 97.987236 78.110275 53.780884 30.602669)
+      (61.45277314022255D0 26.579989800929106D0 28.86112251909987D0 91.21929348679451D0 76.0525998133693D0 26.43927281798557D0 0.22559720367546499D0 94.67635880985642D0 75.968619819787D0 62.1822518499491D0))))
+  :success)
 
-(assert
- (equalp
-  (with-specific-random-state
-    (list (loop repeat 10 collect (random 100))
-          (loop repeat 10 collect (random 100.0s0))
-          (loop repeat 10 collect (random 100.0d0))))
-  '((89 18 35 33 85 40 84 59 21 49)
-    (69.60391 41.635468 83.47823 20.19757 6.850362
-     79.97781 67.79578 49.764473 60.49419 89.642746)
-    (83.24437024356094D0 25.27983681486573D0 61.777960305597965D0 59.50869578871241D0
-     16.841597013908803D0 23.02836508776924D0 3.609555258807451D0 14.821740957703033D0
-     28.79294131232856D0 15.497917116592108D0))))
+(test)
 
 
 
