@@ -119,6 +119,8 @@ all written in 100% conforming Common Lisp.
                (:file "circular"        :depends-on ())
                (:file "histogram"       :depends-on ())
                (:file "a-star"          :depends-on ())
+               (:file "mersenne"        :depends-on ())
+               (:file "xoroshiro128"    :depends-on ())
 
                ;; Specific stuff:
                (:file "time"            :depends-on ())
