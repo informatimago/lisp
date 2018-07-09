@@ -78,11 +78,11 @@ Copyright Pascal J. Bourguignon 2018 - 2018
   "This is the jump function for the generator. It is equivalent
 to 2^64 calls to next(); it can be used to generate 2^64
 non-overlapping subsequences for parallel computations."
-  (let ((j  #xDF900294D8F554A5170865DF4B3201FC)
+  (let ((j  #*00111111100000000100110011010010111110111010011000010000111010001010010100101010101011110001101100101001010000000000100111111011)
         (s0 0)
         (s1 0))
     (loop :for b :below 128
-          :do (when (logbitp b j)
+          :do (when (aref j b)
                 (setf s0 (logxor s0 (%rs-s0 *random-state*))
                       s1 (logxor s1 (%rs-s1 *random-state*))))
               (next))
@@ -170,7 +170,7 @@ the next time (make-random-state t) is called, the random state obtained with JU
       (61.45277314022255D0 26.579989800929106D0 28.86112251909987D0 91.21929348679451D0 76.0525998133693D0 26.43927281798557D0 0.22559720367546499D0 94.67635880985642D0 75.968619819787D0 62.1822518499491D0))))
   :success)
 
-(test)
+#-clisp(test)
 
 
 
