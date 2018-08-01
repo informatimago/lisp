@@ -63,7 +63,7 @@
                                  "PRINT-NOT-READABLE-OBJECT")
   (:export
    "POSITIONS" ; should go to a sequence package...
-
+   "POSITIONS-OF-SUBSEQUENCE"
    "VECTOR-EMPTYP" "VECTOR-FIRST" "VECTOR-LAST" "VECTOR-REST"
    "VECTOR-BUTLAST" "VECTOR-DELETE"
    "NUDGE-DISPLACED-VECTOR" "DISPLACED-VECTOR"
@@ -79,7 +79,7 @@ License:
 
     AGPL3
 
-    Copyright Pascal J. Bourguignon 2005 - 2012
+    Copyright Pascal J. Bourguignon 2005 - 2018
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -97,8 +97,6 @@ License:
 
 "))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ARRAY")
-
-
 
 (defun positions (item vector &key (from-end nil) (test 'eql) (test-not nil) (start 0) (end nil) (count nil) (key 'identity))
   "
@@ -132,7 +130,56 @@ EXAMPLE:    (positions 'a #(a door a window a big hole and a bucket) :start 1)
           :while (and p (or (null count) (<= 0 (decf count))))
           :collect p))))
 
+(defun positions-of-subsequence (subsequence vector &key (from-end nil) (test 'eql) (test-not nil) (start1 0) (end1 nil) (start2 0) (end2 nil) (count nil) (key 'identity))
+  "
 
+RETURN:     A list of cons cells containing the start and end of the
+            occurences of (subseq SUBSEQUENCE START1 END1) in the
+            VECTOR between START2 and END2.
+
+            The occurences are defined by the SUBSEQUENCE, START1,
+            START2, TEST, TEST-NOT, KEY, START2, END2, as in SEARCH,
+            and the FROM-END and COUNT parameters as in DELETE.
+
+"
+  (let* ((end1 (or end1 (length subsequence)))
+         (len1 (- end1 start1))
+         (args (list :key key
+                     (if test-not :test-not :test)
+                     (if test-not  test-not  test))))
+    (if (zerop len1)
+        (if count
+            (if from-end
+                (loop :repeat count
+                      :with result := '()
+                      :for i :from end2 :downto start2
+                      :do (push (cons i i) result)
+                      :finally (return result))
+                (loop :repeat count
+                      :for i :from start2 :to end2
+                      :collect (cons i i)))
+            (loop :for i :from start2 :to end2
+                  :collect (cons i i)))
+        (if from-end
+            (loop
+              :with result = '()
+              :for cur-end = end2 :then p
+              :for p = (apply (function search) subsequence vector
+                              :start1 start1 :end1 end1
+                              :start2 start2 :end2 cur-end
+                              :from-end t
+                              args)
+              :while (and p (or (null count) (<= 0 (decf count))))
+              :do (push (cons p (+ p len1)) result)
+              :finally (return result))
+            (loop
+              :for cur-start = start2 :then (+ p len1)
+              :for p = (apply (function search) subsequence vector
+                              :start1 start1    :end1 end1
+                              :start2 cur-start :end2 end2
+                              args)
+              :while (and p (or (null count) (<= 0 (decf count))))
+              :collect (cons p (+ p len1)))))))
 
 (defun vector-emptyp (vector)
   "

@@ -57,6 +57,7 @@
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on ("com.informatimago.common-lisp.cesarum")
   :components ((:file "a-star-test"         :depends-on ())
+               (:file "array-test"          :depends-on ())
                (:file "cache-test"          :depends-on ())
                (:file "date-test"           :depends-on ())
                (:file "dictionary-test"     :depends-on ())
@@ -73,6 +74,7 @@
   #+asdf3 :perform #+asdf3 (asdf:test-op
                             (operation system)
                             (dolist (p '("COM.INFORMATIMAGO.COMMON-LISP.CESARUM.A-STAR.TEST"
+                                         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ARRAY.TEST"
                                          "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CACHE.TEST"
                                          "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DATE.TEST"
                                          "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DICTIONARY.TEST"
