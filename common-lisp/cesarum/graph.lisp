@@ -25,7 +25,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2003 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2003 - 2018
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -49,8 +49,6 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SET")
   (:shadowing-import-from "COMMON-LISP"
                           "UNION" "INTERSECTION" "MERGE")
-  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
-                "WHILE")
   (:export "EDGE-CLASS" "EDGES" "NODES" "TO" "FROM" "WEIGHT" "INDEX"
            "ELEMENTS" "PROPERTIES" "IDENT" "SHOW-GRAPH" "FIND-NODES-WITH-PROPERTY"
            "COPY" "WALK-EDGES-FROM-NODE" "WALK-FROM-NODE" "FLOW-DISTANCE-FROM-NODE"
@@ -89,7 +87,7 @@ License:
 
     AGPL3
 
-    Copyright Pascal J. Bourguignon 2003 - 2012
+    Copyright Pascal J. Bourguignon 2003 - 2018
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -545,7 +543,7 @@ RETURN: Whether this set contains anElement.
 "
   ;;   (let ((elem-list (elements self))
   ;;         (result nil))
-  ;;     (while elem-list
+  ;;     (loop :while elem-list :do
   ;;       (when (eq anElement (car elem-list))
   ;;         (setq result t)
   ;;         (setq elem-list nil))
@@ -1174,7 +1172,7 @@ NOTE:   If the graph is not connex, then some distances will be nil,
     (set-property startnode prop-name 0)
     (let ( (cur-nodes (list startnode))
           cur-node distance suc-nodes suc-dist )
-      (while cur-nodes
+      (loop :while cur-nodes :do
         (setf cur-node (car cur-nodes)
               cur-nodes (cdr cur-nodes)
               distance (1+ (get-property cur-node prop-name))
@@ -1200,7 +1198,7 @@ DO:     Walk the graph starting form startNode, calling lambda-body
                              (lambda (node) (set-property node stamp nil)))
       (let ( (cur-nodes (list startnode))
             cur-node  suc-nodes  )
-        (while cur-nodes
+        (loop :while cur-nodes :do
           (setq cur-node  (car cur-nodes)
                 cur-nodes (cdr cur-nodes))
 
@@ -1232,7 +1230,7 @@ DO:     Walk the graph starting form startNode, calling lambda-body
       (set-property startnode stamp t)
       (let ((cur-nodes (list startnode))
             cur-node)
-        (while cur-nodes
+        (loop :while cur-nodes :do
           (setq cur-node  (car cur-nodes)
                 cur-nodes (cdr cur-nodes))
           (dolist (edge (directed-edges-from-node self cur-node))
