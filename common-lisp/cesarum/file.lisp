@@ -184,8 +184,6 @@ NOTE:           Empty subdirectories are not copied.
             (push dst-file copied-files)))))))
 
 
-
-
 (defun call-with-input-file (path element-type if-does-not-exist external-format thunk)
   (let ((if-does-not-exist-action (if (member if-does-not-exist '(:error :create nil))
                                       if-does-not-exist
@@ -206,6 +204,30 @@ NOTE:           Empty subdirectories are not copied.
   `(call-with-input-file ,path ,element-type ,if-does-not-exist ,external-format (lambda (,streamvar) ,@body)))
 
 
+(defmacro with-io-syntax (&body body)
+  `(let ((*package* (load-time-value (or (find-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE.IO")
+                                         (make-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE.IO"
+                                                       :use '()))))
+         (*print-array* t)
+         (*print-base* 10.)
+         (*print-case* :upcase)
+         (*print-circle* t) ;*
+         (*print-escape* t)
+         (*print-gensym* t)
+         (*print-length* nil)
+         (*print-level* nil)
+         (*print-lines* nil)
+         (*print-miser-width* nil)
+         (*print-pretty* nil)
+         (*print-radix* t)
+         (*print-readably* t)
+         (*print-right-margin* nil)
+         (*read-base* 10.)
+         (*read-default-float-format* 'double-float) ;*
+         (*read-eval* nil) ;*
+         (*read-suppress* nil))
+     ,@body))
+
 (defun sexp-file-contents (path &key (if-does-not-exist :error)
                                   (external-format :default))
   "
@@ -216,16 +238,20 @@ IF-DOES-NOT-EXIST:  Can be :error, :create, nil, or another value that
 RETURN:             The first SEXP of the file at PATH, or the value
                     of IF-DOES-NOT-EXIST when not :ERROR or :CREATE
                     and the file doesn't exist.
+                    The second value is t, unless the file is empty.
 "
   (with-input-file (in path 'character if-does-not-exist external-format)
-    (let ((*read-base* 10.))
-      (read in nil in))))
+    (with-io-syntax
+      (let ((contents (read in nil in)))
+        (if (eq contents in)
+            (values nil nil)
+            (values contents t))))))
 
 
 (defun (setf sexp-file-contents) (new-contents path
                                   &key (if-does-not-exist :create)
-                                  (if-exists :supersede)
-                                  (external-format :default))
+                                    (if-exists :supersede)
+                                    (external-format :default))
   "
 DO:     Writes the NEW-CONTENTS SEXP readably into the file at PATH.  By default,
         that file is created or superseded; this can be changed with
@@ -233,15 +259,12 @@ DO:     Writes the NEW-CONTENTS SEXP readably into the file at PATH.  By default
 RETURN: The NEW-CONTENTS, or if-exists or if-does-not-exist in case of error.
 "
   (with-open-file (out path :direction :output
-                       :if-does-not-exist if-does-not-exist
-                       :if-exists if-exists
-                       :external-format external-format)
+                            :if-does-not-exist if-does-not-exist
+                            :if-exists if-exists
+                            :external-format external-format)
     (if (and (streamp out) (not (or (eq out if-exists)  (eq out if-does-not-exist))))
-        (write new-contents :stream out
-               :array t :base 10. :case :upcase :circle t
-               :escape t :gensym t :length nil :level nil :lines nil
-               :miser-width nil  :pretty nil
-               :radix t :readably t :right-margin nil)
+        (with-io-syntax
+            (write new-contents :stream out))
         out)))
 
 
@@ -257,7 +280,7 @@ RETURN:             All the SEXPs of the file at PATH gathered in a
                     :ERROR or :CREATE and the file doesn't exist.
 "
   (with-input-file (in path 'character if-does-not-exist external-format)
-    (let ((*read-base* 10.))
+    (with-io-syntax
       (loop
         :for form = (read in nil in)
         :until (eq form in)
@@ -283,7 +306,7 @@ RETURN:         The NEW-CONTENTS, or if-exists or if-does-not-exist in
                        :if-exists if-exists
                        :external-format external-format)
     (if (and (streamp out) (not (or (eq out if-exists)  (eq out if-does-not-exist))))
-        (let ((*read-base* 10.))
+        (with-io-syntax
           (loop
             :for form :in new-contents
             :do (write form :stream out
