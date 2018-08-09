@@ -981,7 +981,7 @@ EXAMPLE:        (print-parseable-object (object stream :type t :identity t)
                (call-print-parseable-object ,ovar ,stream ,type ,identity
                                             (lambda (,ovar)
                                               (declare (ignorable ,ovar) (stepper disable))
-                                              ,(gen-extract-slots object slots))))))))
+                                              ,(gen-extract-slots ovar slots))))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1494,36 +1494,6 @@ RETURN: A list of NODES sorted topologically according to
     :finally (return (nreverse sorted))))
 
 
-
-(defun find-shortest-path (from to successors)
-  "
-RETURN: The shortest path of length>0 from FROM to TO if it exists, or NIL.
-"
-  ;; breadth first search
-  (loop
-     :with processed = '()
-     :for paths = (list (list from)) :then new-paths
-     :for new-paths = (remove-if (lambda (head) (member head processed))
-                                 (mapcan (lambda (path)
-                                           (mapcar (lambda (new-node) (cons new-node path))
-                                                   (funcall successors (first path))))
-                                         paths)
-                                 :key (function first))
-     :for shortest-path = (find to new-paths :key (function first))
-     :do (setf paths     (nconc paths new-paths)
-               processed (nconc (delete-duplicates (mapcar (function first) new-paths)) processed))
-     :until (or shortest-path (endp new-paths))
-     :finally (return (reverse shortest-path))))
-
-
-(defun find-cycles (objects successors)
-  (remove nil (mapcar (lambda (cycle) (find-shortest-path cycle cycle successors)) objects)))
-
-(defun print-cycle (path)
-  (format t "~%There is a cycle going ~%from ~A"  (first path))
-  (dolist (node (rest path))
-    (format t "~%  to ~A" node))
-  (format t " !!!~%"))
 
 ;; (mapc (function print-cycle) (find-cycles (list-all-packages)
 ;;                                           (function package-use-list)))
