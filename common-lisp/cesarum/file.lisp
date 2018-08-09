@@ -205,27 +205,28 @@ NOTE:           Empty subdirectories are not copied.
 
 
 (defmacro with-io-syntax (&body body)
-  `(let ((*package* (load-time-value (or (find-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE.IO")
-                                         (make-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE.IO"
-                                                       :use '()))))
-         (*print-array* t)
-         (*print-base* 10.)
-         (*print-case* :upcase)
-         (*print-circle* t) ;*
-         (*print-escape* t)
-         (*print-gensym* t)
-         (*print-length* nil)
-         (*print-level* nil)
-         (*print-lines* nil)
-         (*print-miser-width* nil)
-         (*print-pretty* nil)
-         (*print-radix* t)
-         (*print-readably* t)
-         (*print-right-margin* nil)
-         (*read-base* 10.)
+  ;; Leave the current package as-is.
+  `(let (;; (*package* (load-time-value (or (find-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE.IO")
+         ;;                                 (make-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE.IO"
+         ;;                                               :use '()))))
+         (*print-array*               t)
+         (*print-circle*              t)             ;*
+         (*print-base*                10.)
+         (*print-case*                :upcase)
+         (*print-escape*              t)
+         (*print-gensym*              t)
+         (*print-length*              nil)
+         (*print-level*               nil)
+         (*print-lines*               nil)
+         (*print-miser-width*         nil)
+         (*print-pretty*              nil)
+         (*print-radix*               t)
+         (*print-readably*            t)
+         (*print-right-margin*        nil)
+         (*read-base*                 10.)
          (*read-default-float-format* 'double-float) ;*
-         (*read-eval* nil) ;*
-         (*read-suppress* nil))
+         (*read-eval*                 nil)           ;*
+         (*read-suppress*             nil))
      ,@body))
 
 (defun sexp-file-contents (path &key (if-does-not-exist :error)
@@ -429,9 +430,6 @@ NEW-CONTENT:  A sequence of ELEMENT-TYPE.
     (if (and (streamp out) (not (or (eq out if-exists)  (eq out if-does-not-exist))))
         (write-sequence new-contents out)
         out)))
-
-
-
 
 
 (defun safe-text-file-to-string-list (path &key (if-does-not-exist :error))
