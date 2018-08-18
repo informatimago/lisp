@@ -188,16 +188,21 @@ RETURN: The shortest path of length>0 from FROM to TO if it exists, or NIL.
     (format t "~%  to ~A" node))
   (format t " !!!~%"))
 
+(defun set-equal (a b)
+  (and (subsetp a b) (subsetp b a)))
 
 (defun find-cycles (objects)
-  (map 'list (lambda (cycle) (find-shortest-path cycle cycle (function adjacency-list)))
-       (remove-if-not (lambda (x) (member x (reachable-list x))) objects)))
-
+  (remove-duplicates
+   (remove nil
+           (map 'list
+                (lambda (cycle) (find-shortest-path cycle cycle (function adjacency-list)))
+                (remove-if-not (lambda (x) (member x (reachable-list x))) objects)))
+   :test (function set-equal)))
 
 (defun report-problems (objects &key (report *error-output*))
   "
 DO:     Find cycles in the graph defined by the nodes in the OBJECTS
-        sequence and the ADJACENCY-LIST an REACHABLE-LIST methods.
+        sequence and the ADJACENCY-LIST and REACHABLE-LIST methods.
 "
   (let ((cycles (find-cycles objects)))
     (when cycles
