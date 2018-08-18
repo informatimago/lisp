@@ -11,13 +11,14 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2018-08-18 <PJB> Corrected find-cycles, corrected export list.
 ;;;;    2013-09-06 <PJB> Updated for publication.
 ;;;;    2012-04-06 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2012 - 2018
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -73,7 +74,7 @@ License:
 
     AGPL3
 
-    Copyright Pascal J. Bourguignon 2012 - 2013
+    Copyright Pascal J. Bourguignon 2012 - 2018
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
