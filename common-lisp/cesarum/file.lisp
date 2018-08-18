@@ -17,6 +17,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2018-08-18 <PJB> Added create-file.
 ;;;;    2014-10-22 <PJB> Factorized out file reader functions, handle if-does-not-exist non-nil values.
 ;;;;    2009-07-27 <PJB> Renamed TEXT-FILE-TO-STRING-LIST to STRING-LIST-TEXT-FILE-CONTENTS,
 ;;;;                     Added missing setf functions.
@@ -28,7 +29,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2005 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2005 - 2018
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -43,6 +44,7 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setf *readtable* (copy-readtable nil)))
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE"
@@ -73,7 +75,7 @@
            "SAFE-TEXT-FILE-TO-STRING-LIST"
            "STRING-LIST-TEXT-FILE-CONTENTS" "TEXT-FILE-CONTENTS"
            "SEXP-FILE-CONTENTS" "SEXP-LIST-FILE-CONTENTS"
-           "COPY-FILE" "COPY-DIRECTORY")
+           "CREATE-FILE" "COPY-FILE" "COPY-DIRECTORY")
   (:documentation
    "
 
@@ -113,6 +115,14 @@ License:
     If not, see <http://www.gnu.org/licenses/>
 "))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE")
+
+
+(defun create-file (pathname &key (if-exists :error) (external-format :default) (element-type '(unsigned-byte 8)))
+  (close (open pathname :direction :output
+                        :if-exists if-exists
+                        :if-does-not-exist :create
+                        :external-format external-format
+                        :element-type element-type)))
 
 
 (defun copy-file (src dst &key (if-exists :error) (external-format :default) (element-type '(unsigned-byte 8)))
