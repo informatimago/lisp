@@ -56,7 +56,6 @@
                                  "MACHINE-INSTANCE"
                                  "MACHINE-VERSION"
                                  "NSET-DIFFERENCE"
-                                 "RENAME-FILE"
                                  "SUBSTITUTE-IF"
                                  "TRANSLATE-LOGICAL-PATHNAME"
                                  "PRINT-NOT-READABLE"
