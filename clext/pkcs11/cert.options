@@ -1,0 +1,55 @@
+[req]
+distinguished_name = subject
+x509_extensions = v3_logon_cert
+prompt = no
+
+[req_distinguished_name]
+C = US
+ST = OR
+L = Portland
+O = MyCompany
+OU = MyDivision
+CN = www.mycompany.com
+
+[v3_req]
+keyUsage = critical, digitalSignature, keyAgreement
+extendedKeyUsage = serverAuth
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1 = www.mycompany.com
+DNS.2 = mycompany.com
+DNS.3 = mycompany.net
+
+[v3_logon_cert]
+keyUsage = critical, nonRepudiation, digitalSignature, keyEncipherment
+extendedKeyUsage = critical, clientAuth, emailProtection, msSmartcardLogin
+basicConstraints = critical, CA:FALSE
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid,issuer
+#authorityInfoAccess = @customerca_aia
+subjectAltName = otherName:msUPN;UTF8:testjean.testmartin.9999999@mintest.fr, email:testjean.testmartin@test.gouv.fr
+certificatePolicies=ia5org
+#certificatePolicies=ia5org,@rootca_polsect
+
+[rootca_polsect]
+
+[customerca_aia]
+
+[subject]
+
+C = FR
+O = MINISTERE DES TESTS
+OU = 0002 110014016
+OU = PERSONNES
+UID = 9999999
+GN = TESTJEAN
+SN = TESTMARTIN
+CN = TESTJEAN TESTMARTIN 9999999
+
+[issuer]
+
+C = FR
+O = MINISTERE DES TESTS
+OU = 0002 110014016
+CN = ADMINISTRATION CENTRALE DES TESTS

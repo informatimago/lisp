@@ -1,0 +1,319 @@
+https://stackoverflow.com/questions/22966461/reading-an-othername-value-from-a-subjectaltname-certificate-extension?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
+
+--------------------------------------------------------------------------------
+
+Create a self signed certificate (notice the addition of -x509 option):
+
+openssl req -config example-com.conf -new -x509 -sha256 -newkey rsa:2048 -nodes \
+    -keyout example-com.key.pem -days 365 -out example-com.cert.pem
+
+Create a signing request (notice the lack of -x509 option):
+
+openssl req -config example-com.conf -new -sha256 -newkey rsa:2048 -nodes \
+    -keyout example-com.key.pem -days 365 -out example-com.req.pem
+
+Print a self signed certificate:
+
+openssl x509 -in example-com.cert.pem -text -noout
+
+Print a signing request:
+
+openssl req -in example-com.req.pem -text -noout
+
+Configuration file (passed via -config option)
+
+[ req ]
+default_bits        = 2048
+default_keyfile     = server-key.pem
+distinguished_name  = subject
+req_extensions      = req_ext
+x509_extensions     = x509_ext
+string_mask         = utf8only
+
+# The Subject DN can be formed using X501 or RFC 4514 (see RFC 4519 for a description).
+#   Its sort of a mashup. For example, RFC 4514 does not provide emailAddress.
+[ subject ]
+countryName         = Country Name (2 letter code)
+countryName_default     = US
+
+stateOrProvinceName     = State or Province Name (full name)
+stateOrProvinceName_default = NY
+
+localityName            = Locality Name (eg, city)
+localityName_default        = New York
+
+organizationName         = Organization Name (eg, company)
+organizationName_default    = Example, LLC
+
+# Use a friendly name here because its presented to the user. The server's DNS
+#   names are placed in Subject Alternate Names. Plus, DNS names here is deprecated
+#   by both IETF and CA/Browser Forums. If you place a DNS name here, then you
+#   must include the DNS name in the SAN too (otherwise, Chrome and others that
+#   strictly follow the CA/Browser Baseline Requirements will fail).
+commonName          = Common Name (e.g. server FQDN or YOUR name)
+commonName_default      = Example Company
+
+emailAddress            = Email Address
+emailAddress_default        = test@example.com
+
+# Section x509_ext is used when generating a self-signed certificate. I.e., openssl req -x509 ...
+[ x509_ext ]
+
+subjectKeyIdentifier        = hash
+authorityKeyIdentifier  = keyid,issuer
+
+# You only need digitalSignature below. *If* you don't allow
+#   RSA Key transport (i.e., you use ephemeral cipher suites), then
+#   omit keyEncipherment because that's key transport.
+basicConstraints        = CA:FALSE
+keyUsage            = digitalSignature, keyEncipherment
+subjectAltName          = @alternate_names
+nsComment           = "OpenSSL Generated Certificate"
+
+# RFC 5280, Section 4.2.1.12 makes EKU optional
+#   CA/Browser Baseline Requirements, Appendix (B)(3)(G) makes me confused
+#   In either case, you probably only need serverAuth.
+# extendedKeyUsage  = serverAuth, clientAuth
+
+# Section req_ext is used when generating a certificate signing request. I.e., openssl req ...
+[ req_ext ]
+
+subjectKeyIdentifier        = hash
+
+basicConstraints        = CA:FALSE
+keyUsage            = digitalSignature, keyEncipherment
+subjectAltName          = @alternate_names
+nsComment           = "OpenSSL Generated Certificate"
+
+# RFC 5280, Section 4.2.1.12 makes EKU optional
+#   CA/Browser Baseline Requirements, Appendix (B)(3)(G) makes me confused
+#   In either case, you probably only need serverAuth.
+# extendedKeyUsage  = serverAuth, clientAuth
+
+[ alternate_names ]
+
+DNS.1       = example.com
+DNS.2       = www.example.com
+DNS.3       = mail.example.com
+DNS.4       = ftp.example.com
+
+# Add these if you need them. But usually you don't want them or
+#   need them in production. You may need them for development.
+# DNS.5       = localhost
+# DNS.6       = localhost.localdomain
+# DNS.7       = 127.0.0.1
+
+# IPv6 localhost
+# DNS.8     = ::1
+
+
+
+--------------------------------------------------------------------------------
+
+This is Google's cache of http://unmitigatedrisk.com/?p=247
+It is a snapshot of the page as it appeared on 22 Apr 2018 16:27:52 GMT. The current page could have changed in the meantime. Learn more.
+Full versionText-only versionView source
+
+Tip: To quickly find your search term on this page, press Ctrl+F or ⌘-F (Mac) and use the find bar.
+UNMITIGATED RISK
+un.mit.i.gat.ed: Adj. Not diminished or moderated in intensity or severity; unrelieved. risk: N. The possibiity of suffering harm or loss; danger.
+Skip to content
+
+    Home
+    About
+
+Making a Windows smartcard login certificate with OpenSSL.
+4 Replies
+
+I use OpenSSL for testing certificate related stuff all the time, while using its test clients as a administrative tool can require contortions sometimes it’s very useful thing to have in my toolbox.
+
+Today I needed to throw together a certificate for Windows smartcard login, a valid Windows Smart Card Login certificate has the following attributes:
+
+    Is issued by an CA that is trusted as an Enterprise CA
+    Is issued by a CA that has the “Smartcard Logon” EKU (1.3.6.1.4.1.311.20.2.2)
+    Has the “Smartcard Logon” EKU
+    Has the “Digital Signature” “Key Usage”
+    Has the principal name of the subscriber in the SubjectAltName extension as a UPN (1.3.6.1.4.1.311.20.2.3)
+
+With that background how does one do this in OpenSSL? Well lets focus on the last 3 (3,4,5) as they are about the subscriber certificate.
+
+To create this certificate you would create an OpenSSL section that looks something like this:
+
+[ v3_logon_cert ]
+
+# Typical end-user certificate profile
+
+
+
+keyUsage = critical, nonRepudiation, digitalSignature, keyEncipherment
+
+extendedKeyUsage = critical, clientAuth, emailProtection, msSmartcardLogin
+
+basicConstraints = critical, CA:FALSE
+
+
+
+subjectKeyIdentifier = hash
+
+authorityKeyIdentifier = keyid,issuer
+
+
+
+authorityInfoAccess = @customerca_aia
+
+
+
+subjectAltName = otherName:msUPN;UTF8:[email protected], email:[email protected]
+
+
+
+certificatePolicies=ia5org,@rootca_polsect
+
+There are a few other “reference” sections you can find the INF file I used these additions with in my script for testing Qualified Subordination.
+
+Hope this helps you too,
+
+Ryan
+This entry was posted in Security and tagged OpenSSL, Smartcard Logon, Smartcards on November 20, 2012 by rmhrisk.
+Post navigation
+← Using CAPICOM on Windows x64 How Facebook can avoid losing $100M in revenue when they switch to always-on SSL →
+4 thoughts on “Making a Windows smartcard login certificate with OpenSSL.”
+
+    rmhrisk Post authorNovember 21, 2012 at 12:01 pm
+
+    From Erwann :
+
+    For more clarity, I’d replace the “1.3.6.1.4.1.311.20.2.2” by “msSmartcardLogin” in the extendedKeyUsage list, and the “1.3.6.1.4.1.311.20.2.3” by “msUPN” in the subjectAltName declaration.
+
+    I also usually write the subjectAltName like this:
+    subjectAltName = otherName:msUPN;UTF8:$ENV::UPN, email:$ENV::UPN
+
+    Before calling the certificate creation script, just add an environment variable named UPN.
+    The main drawback I found is that when the config file is loaded, even if the section containing the extension isn’t used (v3_logon_cert here), the $ENV::UPN is evaluated and must not fail, therefore the UPN environment variable MUST exist (just set a dummy value).
+    Reply ↓
+    rmhrisk Post authorNovember 21, 2012 at 12:04 pm
+
+    Based on Erwann’s comment Iused the two variables vs using the explicit OIDs I did not know OpenSSL had these configured. I did not include the $ENV approach as my script isnt doing this uniformly at this time.
+    Reply ↓
+    Gabi February 16, 2016 at 5:15 am
+
+    Hello,
+
+    I want to create a self signed certificate with openssl and contain the principal name(1.3.6.1.4.1.311.20.2.3).
+
+    Using the steps from here it fails to accept the certificate on my apache server. It fail with
+    Certificate Verification: Error (18): self signed certificate
+    SL Library Error: error:14089086:SSL routines:ssl3_get_client_certificate:certificate verify failed
+
+    Any suggestions?
+    Gabi
+    Reply ↓
+        rmhrisk Post authorFebruary 16, 2016 at 9:12 am
+
+        Gabi, you will have to configure apache to trust your self-signed certificate like it was a CA. See : http://www.cafesoft.com/products/cams/ps/docs32/admin/ConfiguringApache2ForSSLTLSMutualAuthentication.html
+        Reply ↓
+
+Leave a Reply
+
+Your email address will not be published. Required fields are marked *
+
+Comment
+
+Name *
+
+Email *
+
+Website
+
+Recent Posts
+
+    Risk variance and managing risk
+    The Evolution of Security Thinking
+    Positive Trust Indicators and SSL
+    Let’s talk about revocation checking, let’s talk about you and me.
+    My response, to his response, to my response? or short-lived certificates part 3
+
+Recent Comments
+
+    rmhrisk on Understanding Windows Automatic Root Update
+    Ken on Understanding Windows Automatic Root Update
+    Ken on Understanding Windows Automatic Root Update
+    Melih on Positive Trust Indicators and SSL
+    rmhrisk on Positive Trust Indicators and SSL
+
+Archives
+
+    March 2018
+    July 2017
+    May 2017
+    April 2017
+    March 2017
+    May 2016
+    January 2016
+    December 2015
+    November 2015
+    October 2015
+    September 2015
+    August 2015
+    July 2015
+    June 2015
+    May 2015
+    October 2014
+    September 2014
+    August 2014
+    July 2014
+    June 2014
+    May 2014
+    April 2014
+    October 2013
+    September 2013
+    August 2013
+    July 2013
+    June 2013
+    May 2013
+    April 2013
+    March 2013
+    February 2013
+    December 2012
+    November 2012
+    October 2012
+    September 2012
+    August 2012
+    July 2012
+    June 2012
+    May 2012
+    April 2012
+    March 2012
+    February 2012
+    January 2012
+    August 2011
+    May 2010
+    April 2010
+    November 2008
+    August 2007
+    April 2007
+    December 2006
+
+Tags
+Best Practices Biometrics bitcoin CA CAB Forum Certificates Chrome CRL CryptoAPI Cryptography Digital Signatures ecc Fingerprints IIS Internet Explorer Javascript Jobs key management Microsoft Mozilla My story Name Constraints Nginx OCSP OCSP Stapling OpenSSL Opera Performance PKI pki.js pkijs Programming Qualified Subordination REVOCATION Revocation Checking Safari Security short-lived certificates Smart Cards Smartcards SSL Standards TLS UX X509
+Blogroll
+
+    Bruce Schneier
+    Dan Kaminsky
+    ImperialViolet
+    Ivan Ristic
+    Netsekure
+    Random Oracle
+    Secure By Default
+    WSJ Law Blog
+
+Resources
+
+    OpenSSL
+    OpenSSL for Win32
+    Privacy Score
+    SSL Labs
+    SSL Pulse
+    SSLYze
+
+Proudly powered by WordPress
