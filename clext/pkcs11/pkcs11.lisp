@@ -78,6 +78,7 @@
            "DESTROY-OBJECT" "GET-OBJECT-SIZE" "GET-ATTRIBUTE-VALUE"
            "SET-ATTRIBUTE-VALUE" "FIND-OBJECTS-INIT" "FIND-OBJECTS"
            "FIND-OBJECTS-FINAL" "FIND-ALL-OBJECTS" "OBJECT-GET-ALL-ATTRIBUTES"
+           "OBJECT-GET-ATTRIBUTES"
            "SEED-RANDOM" "GENERATE-RANDOM" "LOAD-LIBRARY"
            "CALL-LOGGED-IN" "DO-LOGGED-IN")
 
@@ -109,10 +110,12 @@ License:
 
 (deftype octet           () '(unsigned-byte 8))
 
-(deftype session-handle  () `(unsigned-byte 32))
-(deftype slot-id         () `(unsigned-byte 32))
-(deftype mechanismi-type () `(unsigned-byte 32))
-(deftype object-handle   () `(unsigned-byte 32))
+(defconstant +ulong-bits+ (* 8 (foreign-type-size :ulong)))
+
+(deftype session-handle  () `(unsigned-byte ,+ulong-bits+))
+(deftype slot-id         () `(unsigned-byte ,+ulong-bits+))
+(deftype mechanismi-type () `(unsigned-byte ,+ulong-bits+))
+(deftype object-handle   () `(unsigned-byte ,+ulong-bits+))
 
 
 
@@ -950,7 +953,7 @@ License:
   (clear-entries-with-slot-id slot-id)
   (values))
 
-(defmacro with-open-session ((session-var slot-id &key flags application-reference notify-function
+ (defmacro with-open-session ((session-var slot-id &key flags application-reference notify-function
                                                     (if-open-session-fails :error)) &body body)
   (let ((vflags (gensym))
         (vsession (gensym)))
@@ -1602,15 +1605,20 @@ RETURN: TEMPLATE"
                     (base-ltype (base-ltype-p ltype))
                     (len (attr-> attribute %ck:value-len))
                     (val (attr-> attribute %ck:value)))
-               (if (or (unavailable-information-p type) (invalid-pointer-p val))
+               (if (or (unavailable-information-p type)
+                       (invalid-pointer-p val)
+                       (unavailable-information-p len))
                    :unavailable-information
                    (case base-ltype
                      ((:ulong)
                       (assert (= (foreign-type-size :ulong) len))
                       (mem-ref val :ulong))
                      ((:bool)
-                      (assert (= (foreign-type-size :uchar) len))
-                      (mem-ref val :uchar))
+                      (if (zerop len)
+                          0 ; libiaspkcs11 returns 0-length values…
+                          (progn
+                            (assert (= (foreign-type-size :uchar) len))
+                            (mem-ref val :uchar))))
                      ((:bytes :bytes-noint :big-integer)
                       (foreign-vector-copy-to val :uchar len (make-array len :element-type 'octet)))
                      ((:string)
@@ -1852,26 +1860,38 @@ RETURN: TEMPLATE
          :append objects)
     (find-objects-final session)))
 
+(defun template-from-attribute-type-map (attribute-type-map)
+  (mapcar (lambda (entry)
+            ;; This CONS here matches attribute-decode CONS.
+            (cons (first entry)
+                  (let ((type (second entry)))
+                    (if (atom type)
+                        (ecase type
+                          ((:ulong)       0)
+                          ((:bool)        nil)
+                          ((:string)      nil)
+                          ((:bytes :bytes-noint :big-integer)  nil)
+                          ((:date)        "0000000000000000"))
+                        (ecase (first type)
+                          ((:ulong)       0)
+                          ((:big-integer) nil)
+                          ((:array)       nil))))))
+          attribute-type-map))
+
 (defun object-get-all-attributes (session object)
   (check-type session    session-handle)
   (check-type object     object-handle)
   (get-attribute-value session object
-                       (mapcar (lambda (entry)
-                                 ;; This CONS here matches attribute-decode CONS.
-                                 (cons (first entry)
-                                       (let ((type (second entry)))
-                                         (if (atom type)
-                                             (ecase type
-                                               ((:ulong)       0)
-                                               ((:bool)        nil)
-                                               ((:string)      nil)
-                                               ((:bytes :bytes-noint :big-integer)  nil)
-                                               ((:date)        "0000000000000000"))
-                                             (ecase (first type)
-                                               ((:ulong)       0)
-                                               ((:big-integer) nil)
-                                               ((:array)       nil))))))
-                               *attribute-type-map*)))
+                       (template-from-attribute-type-map *attribute-type-map*)))
+
+(defun object-get-attributes (session object attributes)
+  (check-type session    session-handle)
+  (check-type object     object-handle)
+    (get-attribute-value session object
+                         (template-from-attribute-type-map
+                          (remove-if-not (lambda (entry)
+                                           (member (first entry) attributes))
+                                         *attribute-type-map*))))
 
 ;;; Encryption
 
@@ -1914,8 +1934,8 @@ RETURN: TEMPLATE
   ;; mechanism is either a mechanism-type integer or keyword, or a list (mechanism-type parameter parameter-length)
   (check-type mechanism mechanism)
   (setf (foreign-slot-value fmechanism '(:struct %ck:mechanism) '%ck:mechanism)     (mechanism-type :encode (if (listp mechanism) (first mechanism) mechanism))
-        (foreign-slot-value fmechanism '(:struct %ck:mechanism) '%ck:parameter)     (or (when (listp mechanism) (second parameter))  (null-pointer))
-        (foreign-slot-value fmechanism '(:struct %ck:mechanism) '%ck:parameter-len) (or (when (listp mechanism) (third  parameter))  0)))
+        (foreign-slot-value fmechanism '(:struct %ck:mechanism) '%ck:parameter)     (or (when (listp mechanism) (second mechanism))  (null-pointer))
+        (foreign-slot-value fmechanism '(:struct %ck:mechanism) '%ck:parameter-len) (or (when (listp mechanism) (third  mechanism))  0)))
 
 (defmacro define-pkcs11-initializing-function (name low-name c-name &key (keyp t))
   `(defun ,name (session mechanism ,@(when keyp `(key)))
