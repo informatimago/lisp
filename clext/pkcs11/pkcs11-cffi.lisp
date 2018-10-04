@@ -230,21 +230,24 @@
 
 (in-package "COM.INFORMATIMAGO.CLEXT.PKCS11.LOW")
 
+(defvar *loaded-library-pathname* nil)
+
 (defun load-library (&optional library-pathname)
   "Load the Cryptoki pkcs11 library found at LIBRARY-PATHNAME, or some default path if not given."
   (if library-pathname
-      (load-foreign-library library-pathname)
-      (progn
-
-        #+darwin (progn
-                   (load-foreign-library "/opt/local/lib/opensc-pkcs11.bundle/Contents/MacOS/opensc-pkcs11")
-                   #-(and) (load-foreign-library "/opt/local/lib/libopensc.dylib")
-                   #-(and) (load-foreign-library "/opt/local/lib/libpkcs11-helper.dylib"))
-        #+linux (progn
-                  (load-foreign-library "/usr/local/lib/opensc-pkcs11.so")
-                  #-(and) (load-foreign-library "/usr/lib/x86_64-linux-gnu/opensc-pkcs11.so") ; an old version without C_Initialize et a.
-                  #-(and) (load-foreign-library "/usr/local/lib/libiaspkcs11.so"))
-        #-(or darwin linux) (error "What Cryptoki pkcs11 library shall I load?"))))
+      (progn (load-foreign-library library-pathname)
+             (setf *loaded-library-pathname* library-pathname))
+      (or (find-if (lambda (pathname)
+                     (ignore-errors (load-foreign-library pathname))
+                     (setf *loaded-library-pathname* pathname))
+                   #+darwin '("/opt/local/lib/opensc-pkcs11.bundle/Contents/MacOS/opensc-pkcs11"
+                              "/opt/local/lib/libopensc.dylib"
+                              "/opt/local/lib/libpkcs11-helper.dylib")
+                   #+linux  '("/usr/local/lib/opensc-pkcs11.so"
+                              "/usr/local/lib/libiaspkcs11.so"
+                              "/usr/lib/x86_64-linux-gnu/opensc-pkcs11.so" #|an old version without C_Initialize et al.|#)
+                   #-(or darwin linux) (error "What Cryptoki pkcs11 library shall I load?"))
+          (error "Cannot find a Cryptoki pkcs11 library."))))
 
 (defconstant +true+  1)
 (defconstant +false+ 0)
