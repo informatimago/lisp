@@ -89,6 +89,7 @@ Returns the destination LISP-VECTOR."
     :finally (return i)))
 
 (defun foreign-null-terminated-vector (pointer ctype ltype size &key (convert (function identity)))
+  (declare (ignore size)) ; TODO: or use it as max???
   (let ((len (foreign-null-terminated-vector-length pointer ctype)))
     (foreign-vector-copy-to pointer ctype len (make-array len :element-type ltype) :convert convert)))
 
