@@ -108,11 +108,12 @@ DO:                 Read the group file.
 GROUP-FILE-PATH:    The pathname to the group file; default: \"/etc/group\"
 RETURN:             A list of group GROUP structures.
 "
-  (mapcar (function parse-group)
-          (with-open-file (in group-file-path
-                              :direction :input
-                              :if-does-not-exist :error)
-            (stream-to-string-list in))))
+  (delete nil
+          (mapcar (function parse-group)
+                  (with-open-file (in group-file-path
+                                      :direction :input
+                                      :if-does-not-exist :error)
+                    (stream-to-string-list in)))))
 
 
 ;;;; THE END ;;;
