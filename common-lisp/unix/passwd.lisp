@@ -121,11 +121,12 @@ DO:                 Read a passwd file.
 PASSWD-FILE-PATH:   The pathname of the passwd file. Default: \"/etc/passwd\".
 RETURN:             A list of passwd USER structures.
 "
-  (mapcar (function parse-passwd)
-          (with-open-file (in passwd-file-path
-                              :direction :input
-                              :if-does-not-exist :error)
-            (stream-to-string-list in))))
+  (delete nil
+          (mapcar (function parse-passwd)
+                  (with-open-file (in passwd-file-path
+                                      :direction :input
+                                      :if-does-not-exist :error)
+                    (stream-to-string-list in)))))
 
 
 ;;;; THE END ;;;;
