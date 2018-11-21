@@ -17,7 +17,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2004 - 2018
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -40,6 +40,7 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM")
   (:export "USER-SHELL" "USER-HOME" "USER-GECOS" "USER-GID"
            "USER-UID" "USER-PASSWD" "USER-LOGIN" "USER" "READ-PASSWD")
+  (:export "MAKE-USER")
   (:documentation
    "
 This package exports a function to read unix passwd files.
@@ -68,9 +69,7 @@ License:
 "))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.UNIX.PASSWD")
 
-
 ;; pwent ::= login ':' passwd ':' uid ':' gid ':' gecos ':' home ':' shell
-
 
 (defstruct user
   "A unix /etc/passwd USER."
@@ -121,11 +120,12 @@ DO:                 Read a passwd file.
 PASSWD-FILE-PATH:   The pathname of the passwd file. Default: \"/etc/passwd\".
 RETURN:             A list of passwd USER structures.
 "
-  (mapcar (function parse-passwd)
-          (with-open-file (in passwd-file-path
-                              :direction :input
-                              :if-does-not-exist :error)
-            (stream-to-string-list in))))
+  (delete nil
+          (mapcar (function parse-passwd)
+                  (with-open-file (in passwd-file-path
+                                      :direction :input
+                                      :if-does-not-exist :error)
+                    (stream-to-string-list in)))))
 
 
 ;;;; THE END ;;;;

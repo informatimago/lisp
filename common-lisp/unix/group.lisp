@@ -17,7 +17,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2004 - 2018
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -38,10 +38,9 @@
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STREAM")
-
-  (:export "GROUP" "GROUP-GID" "GROUP-PASSWD"
+  (:export "GROUP" "GROUP-NAME" "GROUP-GID" "GROUP-PASSWD"
            "GROUP-USERS" "READ-GROUP")
-
+  (:export "MAKE-GROUP")
   (:documentation
    "
 
@@ -108,11 +107,12 @@ DO:                 Read the group file.
 GROUP-FILE-PATH:    The pathname to the group file; default: \"/etc/group\"
 RETURN:             A list of group GROUP structures.
 "
-  (mapcar (function parse-group)
-          (with-open-file (in group-file-path
-                              :direction :input
-                              :if-does-not-exist :error)
-            (stream-to-string-list in))))
+  (delete nil
+          (mapcar (function parse-group)
+                  (with-open-file (in group-file-path
+                                      :direction :input
+                                      :if-does-not-exist :error)
+                    (stream-to-string-list in)))))
 
 
 ;;;; THE END ;;;
