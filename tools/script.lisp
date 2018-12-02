@@ -715,13 +715,13 @@ that are accessible by the user."
                                              :name nil :type nil :version nil)
                               rootpath nil)))
 
-(defun concat (&rest args)
-  "Concatenate anything into a string."
-  (apply (function concatenate) 'string
-         (mapcar (lambda (item)
-                   (if (typep item 'sequence)
-                       item
-                       (format nil "~A" item))) args)))
+(defun concat (&rest items)
+  (with-output-to-string (*standard-output*)
+    (dolist (item items)
+      (typecase item
+        (string   (write-string item))
+        (sequence (write-sequence item))
+        (t        (with-standard-io-syntax (format t "~A" item)))))))
 
 (defun mapconcat (function sequence separator)
   ;; 1- mon_key on irc://irc.freenode.org/#lisp signaled that nil are

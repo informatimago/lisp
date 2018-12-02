@@ -1630,17 +1630,15 @@ POST:	(<= start index end)
 
 (defmacro sconc (&rest args)
   "Concatenate strings."
-  `(concatenate 'string ,@args))
+  `(concat ,@args))
 
-
-(defun concat (&rest args)
-  "Concatenate anything into a string."
-  (apply (function concatenate) 'string
-         (mapcar (lambda (item)
-                   (if (typep item 'sequence)
-                       item
-                       (format nil "~A" item))) args)))
-
+(defun concat (&rest items)
+  (with-output-to-string (*standard-output*)
+    (dolist (item items)
+      (typecase item
+        (string   (write-string item))
+        (sequence (write-sequence item))
+        (t        (with-standard-io-syntax (format t "~A" item)))))))
 
 (defmacro scase (keyform &rest clauses)
   "

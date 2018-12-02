@@ -1052,7 +1052,10 @@ that are accessible by the user."
 (defun concat (&rest items)
   (with-output-to-string (*standard-output*)
     (dolist (item items)
-      (write-string item))))
+      (typecase item
+        (string   (write-string item))
+        (sequence (write-sequence item))
+        (t        (with-standard-io-syntax (format t "~A" item)))))))
 
 (defun mapconcat (function sequence separator)
   (etypecase sequence
