@@ -1053,9 +1053,9 @@ that are accessible by the user."
   (with-output-to-string (*standard-output*)
     (dolist (item items)
       (typecase item
-        (string   (write-string item))
-        (sequence (write-sequence item))
-        (t        (with-standard-io-syntax (format t "~A" item)))))))
+        (string   (write-string   item *standard-output*))
+        (sequence (write-sequence item *standard-output*))
+        (t        (with-standard-io-syntax (format *standard-output* "~A" item)))))))
 
 (defun mapconcat (function sequence separator)
   (etypecase sequence

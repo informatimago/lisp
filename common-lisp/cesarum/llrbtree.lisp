@@ -691,9 +691,9 @@ RETURN: true if there was such an entry, or false otherwise.
   (with-output-to-string (*standard-output*)
     (dolist (item items)
       (typecase item
-        (string   (write-string item))
-        (sequence (write-sequence item))
-        (t        (with-standard-io-syntax (format t "~A" item)))))))
+        (string   (write-string   item *standard-output*))
+        (sequence (write-sequence item *standard-output*))
+        (t        (with-standard-io-syntax (format *standard-output* "~A" item)))))))
 
 (defun string-butlast (str)
   (if (plusp (length str))
