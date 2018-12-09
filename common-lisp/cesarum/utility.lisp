@@ -1432,29 +1432,68 @@ RETURN: The maximum value and the item in list for which predicate
         'compute-closure 'transitive-closure)
   (transitive-closure fun set))
 
-(defun transitive-closure (fun set)
+(defun transitive-closure (fun set &key (test 'eql) (use 'list))
   "
 FUN:     set --> P(set)
           x |--> { y }
-RETURN:  The closure of fun on the set.
-NOTE:    Not a lisp closure!
-EXAMPLE: (compute-closure (lambda (x) (list (mod (* x 2) 5))) '(1)) --> (2 4 3 1)
+SET:     A sequence.
+TEST:    EQL, EQUAL or EQUALP
+USE:     Either HASH-TABLE or LIST; specifies the data structure used for the intermediary sets.
+RETURN:  A list containing closure of fun on the set.
+EXAMPLE: (transitive-closure (lambda (x) (list (mod (* x 2) 5))) '(1)) --> (3 4 2 1)
 NOTE:    This version avoids calling FUN twice with the same argument.
 "
-  (flet ((join (lists)
-           (loop
-             :with result = '()
-             :for list :in lists
-             :do (loop :for item :in list :do (push item result))
-             :finally (return result))))
-    (loop
-      :for follows = (delete-duplicates (join (mapcar fun set)))
-        :then (delete-duplicates (join (cons follows (mapcar fun newbies))))
-      :for newbies = (set-difference follows set)
-      :while newbies
-      ;; :do (print (list 'newbies newbies))
-      :do (setf set (append newbies set))
-      :finally (return set))))
+  ;; current -> fun -> follows
+  ;; closure + current -> closure
+  ;; follows - closures -> current
+  (ecase use
+    (list
+     (let ((closure '())
+           (current '())
+           (follows '()))
+       (macrolet ((enter     (item  list) `(pushnew ,item ,list :test test))
+                  (enter-all (items list) `(setf ,list (delete-duplicates (append ,items ,list) :test test))))
+         (declare (inline enter enter-all))
+         (setf current (coerce set 'list))
+         (loop
+           :do (loop ;; current -> fun -> follows
+                     :for item :in current
+                       :initially (setf follows '())
+                     :do (enter-all (funcall fun item) follows)
+                         ;; closure + current -> closure
+                         (enter item closure))
+               (loop ;; follows - closures -> current
+                     :for item  :in follows
+                       :initially (setf current '())
+                     :unless (member item closure :test test)
+                       :do (enter item current))
+           :while current
+           :finally (return-from transitive-closure closure)))))
+    (hash-table
+     (let ((closure (make-hash-table :test test))
+           (current (make-hash-table :test test))
+           (follows (make-hash-table :test test)))
+       (flet ((enter     (item  hash) (setf (gethash item hash) t))
+              (enter-all (items hash) (map nil (lambda (item) (setf (gethash item hash) t)) items)))
+         (declare (inline enter enter-all))
+         (enter-all set current)
+         (loop
+           :do (loop ;; current -> fun -> follows
+                     :for item :being :each :hash-key :in current
+                       :initially (clrhash follows)
+                     :do (enter-all (funcall fun item) follows)
+                         ;; closure + current -> closure
+                         (enter item closure))
+               (loop ;; follows - closures -> current
+                     :for item :being :each :hash-key :in follows
+                       :initially (clrhash current)
+                     :unless (gethash item closure)
+                       :do (enter item current))
+           :while (plusp (hash-table-count current))
+           :finally (return-from transitive-closure
+                      (loop
+                        :for item :being :each :hash-key :in closure
+                        :collect item))))))))
 
 
 ;; (array->list array) --> (coerce array 'list)
@@ -1636,9 +1675,9 @@ POST:	(<= start index end)
   (with-output-to-string (*standard-output*)
     (dolist (item items)
       (typecase item
-        (string   (write-string item))
-        (sequence (write-sequence item))
-        (t        (with-standard-io-syntax (format t "~A" item)))))))
+        (string   (write-string   item *standard-output*))
+        (sequence (write-sequence item *standard-output*))
+        (t        (with-standard-io-syntax (format *standard-output* "~A" item)))))))
 
 (defmacro scase (keyform &rest clauses)
   "
