@@ -1453,7 +1453,6 @@ NOTE:    This version avoids calling FUN twice with the same argument.
            (follows '()))
        (macrolet ((enter     (item  list) `(pushnew ,item ,list :test test))
                   (enter-all (items list) `(setf ,list (delete-duplicates (append ,items ,list) :test test))))
-         (declare (inline enter enter-all))
          (setf current (coerce set 'list))
          (loop
            :do (loop ;; current -> fun -> follows
