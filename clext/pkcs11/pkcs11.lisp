@@ -732,13 +732,19 @@ License:
 (defun get-slot-list (token-present)
   "RETURN: a list of SLOT-IDs."
   (with-foreign-object (count :ulong)
-    (check-rv (%ck:get-slot-list (ckbool token-present) (null-pointer) count) "C_GetSlotList")
-    (let ((slot-count  (mem-ref count :ulong)))
-      (when (plusp slot-count)
-        (with-foreign-object (slot-ids '%ck:slot-id slot-count)
-          (check-rv (%ck:get-slot-list (ckbool token-present) slot-ids count))
-          (loop :for i :below slot-count
-                :collect (mem-aref slot-ids '%ck:slot-id i)))))))
+    (handler-case
+        (progn
+          (check-rv (%ck:get-slot-list (ckbool token-present) (null-pointer) count) "C_GetSlotList")
+
+          (let ((slot-count  (mem-ref count :ulong)))
+            (when (plusp slot-count)
+              (with-foreign-object (slot-ids '%ck:slot-id slot-count)
+                (check-rv (%ck:get-slot-list (ckbool token-present) slot-ids count))
+                (loop :for i :below slot-count
+                      :collect (mem-aref slot-ids '%ck:slot-id i))))))
+      (error (err)
+        (format *error-output* "ERROR: ~A~%" err)
+        '()))))
 
 (defstruct slot-info
   slot-description
@@ -1786,12 +1792,10 @@ RETURN: TEMPLATE
                        (check-rv (%ck:get-attribute-value session object (cdr template) (car template)) "C_GetAttributeValue")
                        #+debug (ignore-errors (write-line "After 1st C_GetAttributeValue") (template-dump template))
                        (values))
-                   (:no-error ()  #-(and)(pause () "Ok") :ok)
+                   (:no-error () :ok)
                    (pkcs11-error (err)
                      (case (pkcs11-error-label err)
                        ((:attribute-sensitive :attribute-type-invalid :buffer-too-small)
-                        #-(and)(pause (list (list '*template* template)
-                                            (list '*error*    err)) "pkcs11-error ~A" err)
                         (setf template (template-allocate-buffers (template-pack template)))
                         ;; try again:
                         (handler-case
@@ -1800,20 +1804,14 @@ RETURN: TEMPLATE
                               (check-rv (%ck:get-attribute-value session object (cdr template) (car template)) "C_GetAttributeValue")
                               #+debug (ignore-errors (write-line "After 2nd C_GetAttributeValue") (template-dump template))
                               (values))
-                          (:no-error ()  #-(and)(pause () "Ok") :ok)
+                          (:no-error () :ok)
                           (pkcs11-error (err)
                             (case (pkcs11-error-label err)
                               ((:attribute-sensitive :attribute-type-invalid  :buffer-too-small)
-                               #-(and)(pause (list (list '*template* template)
-                                                   (list '*error* err)) "pkcs11-error ~A" err)
                                (pkcs11-error-label err))
                               (otherwise (error err))))))
                        (otherwise (error err)))))))
-           #-(and) (pause (list (list '*template* template)
-                                (list '*template* template)) "cleanup")
-           #-(and) (template-dump template)
            (values (template-decode template) status))
-      #-(and)(pause (list (list '*template* template)) "cleanup")
       (template-free template))))
 
 (defun set-attribute-value (session object template)

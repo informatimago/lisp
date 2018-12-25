@@ -156,7 +156,7 @@ are listed."
 
 (defun quick-where (system &rest systems)
   "Says where the given systems are."
-  (apply (function quick-where-is) (cons system systems)))
+  (apply (function quick-where-is) system systems))
 
 
 (defun quick-delete (system &rest systems)

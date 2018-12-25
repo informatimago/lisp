@@ -1049,7 +1049,13 @@ that are accessible by the user."
                                              :name nil :type nil :version nil)
                               rootpath nil)))
 
-(defun concat (&rest items) (apply (function concatenate) 'string items))
+(defun concat (&rest items)
+  (with-output-to-string (*standard-output*)
+    (dolist (item items)
+      (typecase item
+        (string   (write-string   item *standard-output*))
+        (sequence (write-sequence item *standard-output*))
+        (t        (with-standard-io-syntax (format *standard-output* "~A" item)))))))
 
 (defun mapconcat (function sequence separator)
   (etypecase sequence

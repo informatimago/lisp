@@ -118,7 +118,7 @@ LEGAL
                (format stream "Object to printable readably ~S"
                        (print-not-readable-object condition))))))
 
-(defun ARRAY-DISPLACEMENT (array)
+(defun array-displacement (array)
   ;; if not provided, then displaced array don't exist!
   (declare (ignore array))
   (values nil 0))
@@ -126,27 +126,27 @@ LEGAL
 
 ;; COMPILE           ;; required to implement minimal compilation.
 
-(defun LOAD (filespec &key verbose print if-does-not-exist external-format)
+(defun load (filespec &key verbose print if-does-not-exist external-format)
   )
 
 
-(defun ENSURE-DIRECTORIES-EXIST (pathspec &key verbose)
-  (error "~S not implemented yet" 'ENSURE-DIRECTORIES-EXIST)
+(defun ensure-directories-exist (pathspec &key verbose)
+  (error "~S not implemented yet" 'ensure-directories-exist)
   (let ((created nil))
    (values pathspec created)))
 
-(defun RENAME-FILE (filespec new-name)
-  (error "~S not implemented yet" 'RENAME-FILE)
+(defun rename-file (filespec new-name)
+  (error "~S not implemented yet" 'rename-file)
   (let (defaulted-new-name old-truename new-truename)
    (values defaulted-new-name old-truename new-truename)))
 
-(defun FILE-WRITE-DATE (pathspec)
+(defun file-write-date (pathspec)
   (declare (ignore pathspec))
   nil)
 
 (defvar *debugger-hook* nil)
 
-(defun INVOKE-DEBUGGER (condition)
+(defun invoke-debugger (condition)
   (when *debugger-hook*
     (let ((saved-hook *debugger-hook*)
           (*debugger-hook* nil))
@@ -156,10 +156,10 @@ LEGAL
 
 (defvar *hosts* '())
 
-(defun LOGICAL-PATHNAME-TRANSLATIONS (host)
+(defun logical-pathname-translations (host)
   (cdr (assoc host *hosts* :test (function equalp))))
 
-(defun (setf LOGICAL-PATHNAME-TRANSLATIONS) (new-translations host)
+(defun (setf logical-pathname-translations) (new-translations host)
   (let ((entry (assoc host *hosts* :test (function equalp))))
     (if entry
         (setf (cdr entry) (copy-tree new-translations))
@@ -167,16 +167,16 @@ LEGAL
                     (copy-tree new-translations))
               *hosts*))))
 
-(defun TRANSLATE-LOGICAL-PATHNAME (pathname &key &allow-other-keys)
-  (error "~S not implemented yet" 'TRANSLATE-LOGICAL-PATHNAME)
+(defun translate-logical-pathname (pathname &key &allow-other-keys)
+  (error "~S not implemented yet" 'translate-logical-pathname)
   pathname)
 
-(defun MACHINE-INSTANCE ()
+(defun machine-instance ()
   ;; TODO: find the hostname of the machine, or some other machine identification.
   #+android "Android"
   #+ios     "iOS")
 
-(defun MACHINE-VERSION ()
+(defun machine-version ()
   ;; TODO: find the hardware version, or some other machine version.
   #+android "0.0"
   #+ios     "0.0")
@@ -187,7 +187,7 @@ LEGAL
 ;; SBCL                           --> ("larissa.local" "Intel(R) Core(TM) i7-4650U CPU @ 1.70GHz")
 
 
-(defun NSET-DIFFERENCE (list-1 list-2 &rest rest &key key test test-not)
+(defun nset-difference (list-1 list-2 &rest rest &key key test test-not)
   (declare (ignore key test test-not))
   (apply (function set-difference) list-1 list-2 rest))
 
@@ -248,13 +248,13 @@ LEGAL
                               (setf (aref sequence i) new-item)))))))
     sequence))
 
-(defun SUBSTITUTE-IF (new-item predicate sequence &rest rest &key from-end start end count key)
+(defun substitute-if (new-item predicate sequence &rest rest &key from-end start end count key)
   (apply (function nsubstitute-if) new-item predicate (copy-seq sequence) rest))
 
-(defun NSUBSTITUTE-IF-NOT (new-item predicate sequence &rest rest &key from-end start end count key)
+(defun nsubstitute-if-not (new-item predicate sequence &rest rest &key from-end start end count key)
   (apply (function nsubstitute-if) new-item (complement predicate) sequence rest))
 
-(defun SUBSTITUTE-IF-NOT (new-item predicate sequence &rest rest &key from-end start end count key)
+(defun substitute-if-not (new-item predicate sequence &rest rest &key from-end start end count key)
   (apply (function nsubstitute-if) new-item (complement predicate) (copy-seq sequence) rest))
 
 

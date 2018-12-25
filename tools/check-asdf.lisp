@@ -19,7 +19,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2013 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2013 - 2018
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -51,13 +51,18 @@
    "ASDF-FILE" "ASDF-FILE-P" "MAKE-ASDF-FILE" "COPY-ASDF-FILE"
    "ASDF-FILE-PATH" "ASDF-FILE-DEPENDS-ON" "ASDF-FILE-REACHABLE"
 
+   "SYSTEM-DIRECT-DEPENDENCIES"
+   "SYSTEM-DEPENDS-ON"
+   "SYSTEM-ALL-DEPENDENCIES"
+
    ;; Generate dot file from a asdf-file graphs
    "GENERATE-DOT" "DOT"
    "ADJACENCY-LIST" "REACHABLE-LIST"
    "DEPENDENCIES"
 
    ;; Check asdf files
-   "CHECK-ASDF-SYSTEM-FILE")
+   "CHECK-ASDF-SYSTEM-FILE"
+   "CHECK-ASDF-SYSTEM-DEPENDENCIES")
   (:documentation "
 
 Check an asdf file for circular dependencies.
@@ -71,7 +76,7 @@ License:
 
     AGPL3
 
-    Copyright Pascal J. Bourguignon 2013 - 2013
+    Copyright Pascal J. Bourguignon 2013 - 2018
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -240,5 +245,36 @@ RETURN: A string containing the dot file data for this graph.
         (format report "~&The :depends-on relationship between files contains cycles! ~
 ~%It should be a tree.~%"))
     (report-problems (hash-table-values asdf-files) :report report)))
+
+
+
+
+;; Note: we need to cache those dependencies to go faster:
+
+(defun system-direct-dependencies (system)
+  (let ((system (asdf:find-system system)))
+    (delete-duplicates (mapcan (lambda (depend)
+                                 (copy-list (funcall depend system)))
+                               '(asdf:system-defsystem-depends-on
+                                 asdf:system-depends-on
+                                 asdf:system-weakly-depends-on))
+                       :test (function equal))))
+
+(defun system-depends-on (a b)
+  (member b (system-direct-dependencies a)))
+
+(defun system-all-dependencies (system)
+  (com.informatimago.common-lisp.cesarum.utility:transitive-closure
+   (function system-direct-dependencies)
+   (list system)))
+
+(defun check-asdf-system-dependencies (system &key (report *standard-output*))
+  (let* ((all-systems    (system-all-dependencies :smart-integrated-sensors.main))
+         (sorted-systems (topological-sort all-systems (function system-depends-on))))
+    (if (= (length sorted-systems) (length all-systems))
+        (format report "~&No cycle among system dependencies.~%")
+        (format report "~&The system dependencies graph of ~S contains cycles! ~
+~%It should be a tree.~%" system))
+    (report-problems all-systems :report report)))
 
 ;;;; THE END ;;;;
