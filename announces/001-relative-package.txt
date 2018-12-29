@@ -20,7 +20,7 @@ Package structure vs. name structure
 The hierarchial packages as implemented by `Allegro CL`, introduce an
 inconsistency in the children-parent relationship between *packages*.
 
-On one one hand, ``RELATIVE-PACKAGE-NAME-TO-PACKAGE`` and
+On the one hand, ``RELATIVE-PACKAGE-NAME-TO-PACKAGE`` and
 ``PACKAGE-PARENT`` enforce that the parent of a package be an existing
 package, and therefore when we have two packages: ``"R.A1.A2.A3.X"``
 and ``"R.B1.B2.B3.Y"``, then cannot refer one to the other using the

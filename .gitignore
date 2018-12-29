@@ -3,3 +3,4 @@
 *.fasl
 *.sse2f
 *.o
+*.bak

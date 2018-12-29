@@ -3,6 +3,8 @@ all::
 doc::
 install::
 
+include ../implementations.mk
+
 CSS="/default.css"
 RSTHTMLOPT=\
 	--leave-comments \
@@ -12,6 +14,9 @@ doc::documentation
 documentation::html pipe-article-fr.asc pipe-article-en.asc
 html::pipe-article-fr.html pipe-article-en.html
 html.in::pipe-article-fr.html.in pipe-article-en.html.in
+
+clean::
+	-@rm -f pipe-article-fr.asc pipe-article-en.asc pipe-article-fr.html.in pipe-article-en.html.in pipe-article-fr.html pipe-article-en.html
 
 pipe-article-fr.asc:pipe-article-fr.txt
 	pandoc -f rst -t asciidoc < pipe-article-fr.txt >pipe-article-fr.asc

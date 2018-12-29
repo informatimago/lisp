@@ -1,4 +1,8 @@
-all:001-relative-package.pdf
+all: \
+	001-relative-package.pdf
+
+clean:
+	-@rm -f 001-relative-package.pdf
 
 001-relative-package.pdf:001-relative-package.txt
 	rst2pdf 001-relative-package.txt 001-relative-package.pdf

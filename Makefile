@@ -70,7 +70,7 @@ PREFIX=$(HOME)/quicklisp/local-projects
 PACKAGES=$(PREFIX)
 
 PACKAGE_PATH=com/informatimago
-MODULES= common-lisp clext clmisc  clisp  susv3  rdp small-cl-pgms/botihn
+MODULES= announces common-lisp clext clmisc  clisp  susv3  rdp small-cl-pgms/botihn
 
 
 
@@ -96,7 +96,7 @@ clean::
 		if [ -r "$$module/Makefile" ] ; then \
 		  printf $(LINE) ;\
 		  printf ";;;;;; CLEANING $$module\n" ;\
-		  $(MM) MODULE_PATH=$(PACKAGES)/$(PACKAGE_PATH)/$$module -C $$module $(CLEAN) ;\
+		  $(MM) MODULE_PATH=$(PACKAGES)/$(PACKAGE_PATH)/$$module -C $$module clean ;\
 		fi ;\
 	 done
 	@find . \( -name \*.abcl-tmp \) -exec rm {} \;
