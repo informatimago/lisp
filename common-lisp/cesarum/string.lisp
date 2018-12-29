@@ -59,6 +59,7 @@
         "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM")
   (:export
    "STRING-DESIGNATOR" "CHARACTER-DESIGNATOR"
+   "STRING-DESIGNATOR-P" "CHARACTER-DESIGNATOR-P"
    "NO-LOWER-CASE-P" "NO-UPPER-CASE-P" "MIXED-CASE-P"
    "LOCALIZE" "DEFTRANSLATION" "STRING-JUSTIFY-LEFT" "STRING-PAD"
    "PREFIXP" "SUFFIXP"
@@ -142,8 +143,6 @@ NOTE:    characters are all designators of strings of length 1,
     ((1)       `(or character (string 1) (satisfies ,(symbol-of-name-of-length=n 1))))
     (otherwise `(or (string ,length) (satisfies ,(symbol-of-name-of-length=n length))))))
 
-
-
 (deftype character-designator ()
   "
 CHARACTER-DESIGNATOR is the type of character or designators of
@@ -154,6 +153,8 @@ CHARACTER-DESIGNATOR is the type of character or designators of
 
   '(or character (string-designator 1)))
 
+(defun string-designator-p    (object)  (typep object 'string-designator))
+(defun character-designator-p (object)  (typep object 'character-designator))
 
 
 (defun mapconcat (function sequence separator)
