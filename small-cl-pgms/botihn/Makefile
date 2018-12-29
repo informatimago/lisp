@@ -19,10 +19,10 @@ install::botihn
 	install -m 755 botihn /usr/local/sbin/botihn
 
 doc::html
-	pandoc -f rst -t asciidoc < botihn.txt >botihn-fr.asc
+	pandoc -f rst -t asciidoc < botihn.txt > botihn-fr.asc
 
 clean::
-	- rm -f botihn-fr.html botihn-fr.html.in
+	- rm -f botihn-fr.html botihn-fr.html.in botihn-fr.asc
 
 html::botihn-fr.html
 

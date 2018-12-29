@@ -36,6 +36,7 @@
   (setf *readtable* (copy-readtable nil)))
 
 (in-package "COMMON-LISP-USER")
+(require 'asdf)
 
 (setf asdf:*central-registry*
       (append (remove-duplicates
@@ -46,13 +47,14 @@
               asdf:*central-registry*))
 
 
-(asdf-load :com.informatimago.common-lisp.graphviz)
+(asdf:oos 'asdf:load-op :com.informatimago.common-lisp.graphviz)
 
 
 
 (defpackage "COM.INFORMATIMAGO.TOOLS.GEN-LIB-GRAPH"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.GRAPH"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE"
         "COM.INFORMATIMAGO.COMMON-LISP.GRAPHVIZ.GRAPH-DOT"))
 (in-package "COM.INFORMATIMAGO.TOOLS.GEN-LIB-GRAPH")
 
@@ -61,34 +63,70 @@
 
 
 (defun read-asd-file (path)
-  (with-open-file (asd path)
-    (read asd nil nil)))
+  (let ((*package* *package*)
+        (result '()))
+    (labels ((collect (sexp)
+               (push sexp result))
+             (process (sexp)
+               (cond
+                 ((atom sexp))
+                 ((eql 'eval-when (first sexp))
+                  (when (intersection '(:load-toplevel :execute load eval)
+                                      (second sexp))
+                    (dolist (sexp (cddr sexp))
+                      (process sexp))))
+                 ((eql 'progn (first sexp))
+                  (dolist (sexp (cdr sexp))
+                    (process sexp)))
+                 ((eql 'in-package (first sexp))
+                  (eval sexp))
+                 ((eql 'asdf:defsystem (first sexp))
+                  (collect sexp)))))
+      (with-open-file (asd path)
+        (loop
+          :for sexp := (ignore-errors (read asd nil asd))
+          :until (eql sexp asd)
+          :do (process sexp))))
+    (nreverse result)))
 
-(defun asd-name (asd) (second asd))
-(defun asd-depends-on (asd) (getf (cddr asd) :depends-on))
+(defun asd-name (asd)
+  (string-downcase (second asd)))
 
+(defun asd-depends-on (asd)
+  (mapcar (function string-downcase)
+          (getf (cddr asd) :depends-on)))
 
-(defun make-system-graph (asd-files graph-path)
-  (let* ((asds  (mapcar (function read-asd-file) asd-files))
+(defmethod dot-label ((element element-class))
+  (getf (properties element) :dot-label))
+
+(defun make-system-graph (asd-files graph-path &key test)
+  (let* ((asds  (let ((asds  (mapcan (function read-asd-file) asd-files)))
+                  (if test
+                      (remove-if-not test asds)
+                      asds)))
          (nodes (mapcar (lambda (asd)
+                          (format *trace-output* ";; read ~A~%" (asd-name asd))
+                          (force-output *trace-output*)
                           (make-instance 'element-class
-                              :ident (asd-name asd)
-                              :properties (list :asd asd
-                                                :dot-label (subseq (string (asd-name asd))
-                                                                   (length "com.informatimago.common-lisp.")))))
+                                         :ident (asd-name asd)
+                                         :properties (list :asd asd
+                                                           :dot-label (subseq (string (asd-name asd))
+                                                                              (length "com.informatimago.common-lisp.")))))
                         asds))
          (g     (make-instance 'graph-class :edge-class 'directed-edge-class)))
     (add-nodes g nodes)
     (loop
-       :for node :in nodes
-       :for dependencies = (mapcar (lambda (asd-name)
-                                     (find asd-name nodes
-                                           :test (function member)
-                                           :key (lambda (node) (get-property node :asd))))
-                                   (asd-depends-on (get-property node :asd)))
-       :do (loop
-              :for dependency :in dependencies
-              :do (add-edge-between-nodes g node dependency)))
+      :for node :in nodes
+      :for dependencies = (mapcar (lambda (asd-name)
+                                    (find asd-name nodes
+                                          :test (function equal)
+                                          :key (lambda (node) (asd-name (get-property node :asd)))))
+                                  (asd-depends-on (get-property node :asd)))
+      :do (loop
+            :for dependency :in dependencies
+            :when dependency
+              :do (format *trace-output* "~A -> ~A~%" (dot-label node) (dot-label dependency))
+                  (add-edge-between-nodes g node dependency)))
     (set-property g :dot-rankdir "LR")
     (set-property g :dot-concentrate t)
     (with-open-file (out graph-path
@@ -98,7 +136,8 @@
       (princ (generate-dot g) out))))
 
 
-(make-system-graph *asd-files* "system-graph.dot")
+(make-system-graph *asd-files* "system-graph.dot"
+                   :test (lambda (asd) (not (suffixp ".test" (asd-name asd)))))
 
 
 ;;;; THE END ;;;;

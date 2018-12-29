@@ -43,7 +43,8 @@ all::
 
 include implementations.mk
 
-
+help::
+	@printf 'NOTE: Most of this makefile is obsolete.\n      Please use ASDF or QUICKLISP to compile and load these systems.\n'
 help::
 	@for c in $(COMPILERS) ; do printf $(HELP_FMT) "compile-with-$$c" "Compile with $$c." ; done
 	@printf $(HELP_FMT) 'all' 'Compile with all the available compilers.'
@@ -69,7 +70,7 @@ PREFIX=$(HOME)/quicklisp/local-projects
 PACKAGES=$(PREFIX)
 
 PACKAGE_PATH=com/informatimago
-MODULES= common-lisp clext clmisc  clisp  susv3  rdp
+MODULES= common-lisp clext clmisc  clisp  susv3  rdp small-cl-pgms/botihn
 
 
 
@@ -197,6 +198,14 @@ help::
 	@printf $(HELP_FMT)  'try'    'Try to compile all systems with sbcl and write report.'
 try:
 	$(call eval_with_sbcl,'(progn (load #P"~/quicklisp/setup.lisp") (funcall (find-symbol "QUICKLOAD" "QL") :com.informatimago.tools.try-systems) (funcall (find-symbol "TRY-SYSTEMS" "COM.INFORMATIMAGO.TOOLS.TRY-SYSTEMS")))')
+
+
+help::
+	@printf $(HELP_FMT)  'system-index.txt'    'Builds a list of all asd files.'
+clean::
+	-rm -f system-index.txt
+system-index.txt:
+	@find * -name \*.asd | while read line ; do echo "$${#line}:$${line}" ; done | sort -t: -k 1n | awk -F: '{print $$2;}' > system-index.txt
 
 # quicklisp-tag: quicklisp-tag-remove quicklisp-tag-add
 #

@@ -195,9 +195,9 @@ NOTE:   dot graphs are directed.
          "splines=true;~%"
          "// common attributes of NODES:~%"
          "node [height=0.2 width=0.5 shape=box fontsize=8 fontname=Futura] ;~%"))
-     (map-elements (nodes self) (lambda (node) (generate-dot node)))
+     (map-elements 'list (nodes self) (lambda (node) (generate-dot node)))
      (format nil "// common attributes of edges:~%edge [style=solid];~%")
-     (map-elements (edges self) (lambda (edge) (generate-dot edge)))
+     (map-elements 'list (edges self) (lambda (edge) (generate-dot edge)))
      (format nil "}~%")))))
 
 
