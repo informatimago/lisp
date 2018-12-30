@@ -59,6 +59,7 @@
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST")
+  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SYMBOL" "SCAT")
   #+mocl (:shadowing-import-from "COM.INFORMATIMAGO.MOCL.KLUDGES.MISSING"
                                  "*TRACE-OUTPUT*"
                                  "*LOAD-VERBOSE*"
@@ -165,8 +166,6 @@ License:
 
 "))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
-
-
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -462,7 +461,6 @@ Message-ID: <ce9snm$4bp8o$1@midnight.cs.hut.fi>
 ;; 5 - DATA AND CONTROL FLOW
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
 (defun safe-apply (fun &rest args)
   "
 DO:    Call APPLY or REDUCE depending on the length of ARGS.
@@ -476,18 +474,13 @@ NOTE:  No prefix argument are allowed for REDUCE!
         (apply  fun (nconc (butlast args) arg-list))
         (reduce fun (nconc (butlast args) arg-list)))))
 
-
 (defmacro while (condition &body body)
   "While loop."
   `(do () ((not ,condition))  ,@body))
 
-
-
 (defmacro until (condition &body body)
   "Until loop."
   `(do () (,condition)        ,@body))
-
-
 
 (defmacro for ((var first last &optional (step nil stepp)) &body body)
   "For loop.
@@ -544,11 +537,9 @@ DO:    Repeat BODY with VAR bound to successive integer values from
               ((funcall ,cmp ,var ,lastvar))
             ,@body))))))
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 7 - OBJECTS
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 (defmacro pjb-defclass (name super &rest args)
   "
@@ -611,61 +602,203 @@ The initarg an accessor are the same keyword built from the name.
 
 
 
+#||
+
+For :constructor, several options are allowed.
+
+
+|-----------------+--------------+----------------------+--------------------+-------------------------+--------------------------|
+|                 |              |                      |                    |                         |                          |
+|-----------------+--------------+----------------------+--------------------+-------------------------+--------------------------|
+| default name    | slot name    | slot name            | slot name          | specified prefix        |                          |
+|-----------------+--------------+----------------------+--------------------+-------------------------+--------------------------|
+|                 |              |                      |                    |                         |                          |
+|                 | :conc-name   | (:conc-name)         | (:conc-name nil)   | (:conc-name name)       |                          |
+| struct-slot     | slot         | slot                 | slot               | nameslot                |                          |
+|                 |              |                      |                    |                         |                          |
+|-----------------+--------------+----------------------+--------------------+-------------------------+--------------------------|
+|                 |              |                      |                    |                         |                          |
+|-----------------+--------------+----------------------+--------------------+-------------------------+--------------------------|
+| default name    | default name | default name         | no function        | specified name          | specified name           |
+|-----------------+--------------+----------------------+--------------------+-------------------------+--------------------------|
+|                 |              |                      |                    |                         |                          |
+|                 | :constructor | (:constructor)       | (:constructor nil) | (:constructor name)     | (:constructor name args) |
+| make-struct     | make-struct  | make-struct          | no constructor     | name :slot              | name arglist             |
+|                 |              |                      |                    |                         |                          |
+|                 | :copier      | (:copier)            | (:copier nil)      | (:copier name)          |                          |
+| copy-struct     | copy-struct  | copy-struct          | no copier          | name                    |                          |
+|                 |              |                      |                    |                         |                          |
+|                 | :predicate   | (:predicate)         | (:predicate nil)   | (:predicate name)       |                          |
+| struct-p        | struct-p     | struct-p             | no predicate       | name                    |                          |
+|                 |              |                      |                    |                         |                          |
+|-----------------+--------------+----------------------+--------------------+-------------------------+--------------------------|
+|                 |              |                      |                    |                         |                          |
+|                 |              | (:print-object)      |                    | (:print-object name)    |                          |
+| implemntation-  |              | default print-object |                    | print-object calls name |                          |
+| specific print  |              | method               |                    |                         |                          |
+|                 |              |                      |                    |                         |                          |
+|                 |              | (:print-function)    |                    | (:print-function name)  |                          |
+| implementation- |              | default print-object |                    | print-object calls name |                          |
+| specific print  |              | method               |                    |                         |                          |
+|                 |              |                      |                    |                         |                          |
+|-----------------+--------------+----------------------+--------------------+-------------------------+--------------------------|
+|                 | :named       |                      |                    |                         |                          |
+| not named       | named        |                      |                    |                         |                          |
+|                 |              |                      |                    |                         | (:include name slots*)   |
+|-----------------+--------------+----------------------+--------------------+-------------------------+--------------------------|
+|                 |              |                      |                    | (:initial-offset value) |                          |
+|                 |              |                      |                    | (:type type)            |                          |
+|-----------------+--------------+----------------------+--------------------+-------------------------+--------------------------|
+
+Using these results from GET-OPTION allows to distinguish all the cases:
+|--------------+--------------+--------------+-------------+------------------+------------------|
+|              | :foo         | (:foo)       | (:foo nil)  | (:foo name)      | (:foo name args) |
+|--------------+--------------+--------------+-------------+------------------+------------------|
+| nil          | :symbol      | :singleton   | (nil)       | (name)           | (name slots*)    |
+|--------------+--------------+--------------+-------------+------------------+------------------|
+| default name | slot name    | slot name    | slot name   | specified prefix |                  |
+|--------------+--------------+--------------+-------------+------------------+------------------|
+| default name | default name | default name | no function | specified name   | specified name   |
+|--------------+--------------+--------------+-------------+------------------+------------------|
+
+For conc-name:
+default-name = (null option)
+slot-name    = (or (atom option) (null (first option)))
+name         = (and (consp option) (first option))
+
+For others:
+default-name = (atom option)
+no-function  = (and (consp option) (null (first option)))
+name         = (and (consp option) (first option))
+
+||#
+
+
+(defun option-key-p (key option)
+  (eq key (if (symbolp option) option (car option))))
 
 (defun get-option (key options &optional list)
-  (let ((opt (remove-if (lambda (x) (not (eq key (if (symbolp x) x (car x)))))
-                        options)))
+  (let ((opts (remove key options :test-not (function option-key-p))))
     (cond
-      (list opt)
-      ((null opt) nil)
-      ((null (cdr opt))
-       (if (symbolp (car opt)) t (cdar opt)))
-      (t (error "Expected only one ~A option."
-                (if (symbolp (car opt)) (car opt) (caar opt))))))) ;;GET-OPTION
+      (list               opts)
+      ((null opts)        nil)
+      ((null (rest opts)) ; a single option
+       (let ((opt (first opts)))
+         (cond
+           ((symbolp opt)     :symbol)
+           ((null (rest opt)) :singleton)
+           (t                 (rest opt)))))
+      (t
+       (error "Expected only one ~S option, not ~{~S~^ ~}." key opts)))))
 
-
-(defun make-name (option prefix name suffix)
+(defun make-conc-name (option prefix name suffix)
   (cond
-    ((or (null option) (and option (not (listp option))))
-     (intern (with-standard-io-syntax (format nil "~A~A~A" prefix name suffix))))
+    ((null option)
+     (scat prefix name suffix))
+    ((member option '(:symbol :singleton (nil)) :test (function equal))
+     '||)
     ((and option (listp option) (car option))
      (car option))
     (t nil)))
 
+(defun make-name (option prefix name suffix)
+  (cond
+    ((or (null option) (and option (not (listp option))))
+     (scat prefix name suffix))
+    ((and option (listp option) (car option))
+     (car option))
+    (t nil)))
 
 (defun get-name (option)
   (if (and option (listp option))
       (car option)
       nil))
 
-(define-condition simple-program-error (program-error)
-  ((format-control   :initarg :format-control   :reader simple-program-error-format-control)
-   (format-arguments :initarg :format-arguments :reader simple-program-error-format-arguments))
-  (:report (lambda (condition stream)
-             (format stream "~?"
-                     (simple-program-error-format-control condition)
-                     (simple-program-error-format-arguments condition)))))
+(defun parse-structure-name-and-options (name-and-options)
+  (let ((name    (if (symbolp name-and-options)
+                     name-and-options
+                     (car name-and-options)))
+        (options (if (symbolp name-and-options)
+                     nil
+                     (cdr name-and-options))))
+    (let ((conc-name        (get-option :conc-name      options))
+          (constructors     (get-option :constructor    options :list))
+          (copier           (get-option :copier         options))
+          (predicate        (get-option :predicate      options))
+          (print-function   (get-option :print-function options))
+          (print-object     (get-option :print-object   options))
+          (include          (get-option :include        options))
+          (initial-offset   (get-option :initial-offset options))
+          (structure-type-p (get-option :type           options))
+          (structure-type   (get-option :type           options)))
+      (when (and print-object print-function)
+        (error 'simple-program-error
+               :format-control "Cannot have :print-object and :print-function options."))
+      (when structure-type-p
+        (unless (or (eql structure-type 'list)
+                    (eql structure-type 'vector)
+                    (and (listp structure-type)
+                         (eql (first structure-type) 'vector)
+                         (cdr structure-type)
+                         (typep (second structure-type) '(integer 0))
+                         (null (cddr structure-type))))
+          (error 'simple-program-error
+                 :format-control "Invalid structure :type option: ~S"
+                 :format-arguments (list structure-type))))
+      (let ((conc-name      (make-conc-name conc-name ""      name "-"))
+            (copier         (make-name      copier    "COPY-" name ""))
+            (predicate      (make-name      predicate ""      name "-P"))
+            (print-function (get-name print-function))
+            (print-object   (get-name print-object))
+            (constructors   (if (null constructors)
+                                (list (make-name nil "MAKE-" name ""))
+                                (mapcan (lambda (x)
+                                          (cond
+                                            ((or (symbolp x) (= 1 (length x)))
+                                             (list (make-name nil "MAKE-" name "")))
+                                            ((null (second x))
+                                             nil)
+                                            ((= 2 (length x))
+                                             (list (second x)))
+                                            (t
+                                             (list (list (second x) (third x))))))
+                                        constructors))))
+        (values name conc-name constructors copier
+                include initial-offset predicate
+                print-function print-object
+                structure-type-p structure-type)))))
 
+(defun parse-structure-definition (name-and-options doc-and-slots)
+  (multiple-value-bind (name conc-name constructors copier
+                        include initial-offset predicate
+                        print-function print-object
+                        structure-type-p structure-type)
+      (parse-structure-name-and-options name-and-options)
+    (let ((documentation (if (stringp (car doc-and-slots))
+                             (car doc-and-slots)
+                             nil))
+          (slots        (if (stringp (car doc-and-slots))
+                            (cdr doc-and-slots)
+                            doc-and-slots)))
+      (when (cdr include)
+        (setf slots   (append (cddr include) slots)
+              include (list (car include))))
+      (let ((slot-names     (mapcar (lambda (s) (if (symbolp s) s (car s))) slots))
+            (accessors      (mapcar (lambda (s) (make-name nil (or conc-name "")
+                                                           (if (symbolp s) s (car s)) ""))
+                                    slots)))
+        (values name conc-name constructors copier
+                include initial-offset predicate
+                print-function print-object
+                structure-type-p structure-type
+                ;; --
+                documentation slots slot-names accessors)))))
 
-(defun generate-list-structure (name options documentation slots slot-names accessors
-                                 conc-name constructors copier
+(defun generate-class-structure (name conc-name constructors copier
                                  include initial-offset predicate
                                  print-function print-object
-                                structure-type-p structure-type)
-  )
-
-(defun generate-vector-structure (name options documentation slots slot-names accessors
-                                  conc-name constructors copier
-                                  include initial-offset predicate
-                                  print-function print-object
-                                  structure-type-p structure-type)
-  )
-
-(defun generate-class-structure (name options documentation slots slot-names accessors
-                                 conc-name constructors copier
-                                 include initial-offset predicate
-                                 print-function print-object
-                                 structure-type-p structure-type)
+                                 structure-type-p structure-type
+                                 documentation slots slot-names accessors)
   `(progn
      (defclass ,name ,include
        ,(mapcar
@@ -735,83 +868,30 @@ DO:     Define a class implementing the structure API.
         This macro presents the same API as DEFSTRUCT, but instead of
         defining a structure, it defines a class, and the same functions
         as would be defined by DEFSTRUCT.
-        The DEFSTRUCT options: :TYPE and :INITIAL-OFFSET are not supported.
+
+        The option :TYPE accepts LIST, VECTOR or STRUCTURE.
+        When given, it falls back to CL:DEFSTRUCT.
+        The DEFSTRUCT option :INITIAL-OFFSET is only supported
+        when :TYPE is given.
 "
-  (let (name options documentation slots slot-names accessors
-        conc-name constructors copier
-        include initial-offset predicate
-        print-function print-object
-        structure-type-p structure-type)
-    (if (symbolp name-and-options)
-        (setf name    name-and-options
-              options nil)
-        (setf name    (car name-and-options)
-              options (cdr name-and-options)))
-    (if (stringp (car doc-and-slots))
-        (setf documentation (car doc-and-slots)
-              slots         (cdr doc-and-slots))
-        (setf documentation nil
-              slots         doc-and-slots))
-    (setf conc-name        (get-option :conc-name      options)
-          constructors     (get-option :constructor    options :list)
-          copier           (get-option :copier         options)
-          predicate        (get-option :predicate      options)
-          include          (get-option :include        options)
-          initial-offset   (get-option :initial-offset options)
-          print-function   (get-option :print-function options)
-          print-object     (get-option :print-object   options)
-          structure-type-p (get-option :type           options)
-          structure-type   (get-option :type           options))
-    (when (and print-object print-function)
-      (error 'simple-program-error
-             :format-control "Cannot have :print-object and :print-function options."))
-    (when structure-type-p
-      (unless (or (eql structure-type 'list)
-                  (eql structure-type 'vector)
-                  (and (listp structure-type)
-                       (eql (first structure-type) 'vector)
-                       (cdr structure-type)
-                       (typep (second structure-type) '(integer 0))
-                       (null (cddr structure-type))))
-        (error 'simple-program-error
-               :format-control "Invalid structure :type option: ~S"
-               :format-arguments (list structure-type))))
-    (when (cdr include)
-      (setf slots   (append (cddr include) slots)
-            include (list (car include))))
-    (setf conc-name      (make-name conc-name ""      name "-")
-          copier         (make-name copier    "COPY-" name "")
-          predicate      (make-name predicate ""      name "-P")
-          print-function (get-name print-function)
-          print-object   (get-name print-object))
-    (setf slot-names     (mapcar (lambda (s) (if (symbolp s) s (car s))) slots))
-    (setf accessors      (mapcar (lambda (s) (make-name nil (or conc-name "")
-                                                        (if (symbolp s) s (car s)) ""))
-                                 slots))
-    (setf constructors   (if (null constructors)
-                             (list (make-name nil "MAKE-" name ""))
-                             (mapcan (lambda (x)
-                                       (cond
-                                         ((or (symbolp x) (= 1 (length x)))
-                                          (list (make-name nil "MAKE-" name "")))
-                                         ((null (second x))
-                                          nil)
-                                         ((= 2 (length x))
-                                          (list (second x)))
-                                         (t
-                                          (list (list (second x) (third x))))))
-                                     constructors)))
-    (funcall (cond ((not structure-type-p)     (function generate-class-structure))
-                   ((eql structure-type 'list) (function generate-list-structure))
-                   (t                          (function generate-vector-structure)))
-             name options documentation
-             slots slot-names accessors
-             conc-name constructors copier
-             include initial-offset predicate
-             print-function print-object
-             structure-type-p structure-type)))
-
-
+  (multiple-value-bind (name conc-name constructors copier
+                        include initial-offset predicate
+                        print-function print-object
+                        structure-type-p structure-type
+                        documentation slots slot-names accessors)
+      (parse-structure-definition name-and-options doc-and-slots)
+    (if structure-type-p
+        ;; For now, fall back to cl:defstruct.
+        (if (eql structure-type 'structure)
+            `(defstruct ,(remove :type name-and-options :key (lambda (x) (when (listp x) (first x))))
+               ,@doc-and-slots)
+            `(defstruct ,name-and-options
+               ,@doc-and-slots))
+        (generate-class-structure  name conc-name constructors copier
+                                   include initial-offset predicate
+                                   print-function print-object
+                                   structure-type-p structure-type
+                                   documentation slots slot-names accessors))))
 
 (defmacro define-with-object (class-name slots)
   "
@@ -1085,6 +1165,13 @@ DO:       Define a macro: (WITH-{NAME} object &body body)
 ;; 9 - CONDITIONS
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(define-condition simple-program-error (program-error)
+  ((format-control   :initarg :format-control   :reader simple-program-error-format-control)
+   (format-arguments :initarg :format-arguments :reader simple-program-error-format-arguments))
+  (:report (lambda (condition stream)
+             (format stream "~?"
+                     (simple-program-error-format-control condition)
+                     (simple-program-error-format-arguments condition)))))
 
 (defmacro handling-errors (&body body)
   "
@@ -2085,3 +2172,4 @@ DO:       Evaluate the expression, which must be a real,
 
 
 ;;;; THE END ;;;;
+
