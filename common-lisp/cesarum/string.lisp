@@ -277,9 +277,6 @@ NOTE:    Unfortunately some implementations don't take into account
                          ((>= i max) result)
                        (setf (char result i) (character (aref ,seq i)))))) )))
 
-
-
-
 (defgeneric explode (object &optional result-type)
   (:documentation "
 RETURN:         A sequence of character of type RESULT-TYPE containing
@@ -296,7 +293,6 @@ OBJECT:         Can be a string, a symbol (its symbol-name is exploded),
     (explode-string (implode-string object) result-type))
   (:method ((object t) &optional (result-type 'list))
     (explode-string (prin1-to-string object) result-type)))
-
 
 (defun implode (char-seq &optional (result-type 'symbol) (package *package*))
   "
@@ -317,7 +313,6 @@ PACKAGE:        When RESULT-TYPE is SYMBOL, then the package where the
                           "~S is of type ~S which is not the expected type ~S"
                           object (type-of object) result-type)
                   object))))
-
 
 (defun split-escaped-string (string-designator escape separator)
   "

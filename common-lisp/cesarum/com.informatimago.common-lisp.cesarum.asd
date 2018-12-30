@@ -11,6 +11,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2018-12-30 <PJB> Added symbol.lisp
 ;;;;    2010-10-31 <PJB> Created this .asd file.
 ;;;;BUGS
 ;;;;LEGAL
@@ -63,7 +64,7 @@ all written in 100% conforming Common Lisp.
   :licence "AGPL3"
   ;; component attributes:
 
-  :version "1.8.0"
+  :version "1.8.1"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Autumn 2015")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.common-lisp.cesarum/")
@@ -82,7 +83,8 @@ all written in 100% conforming Common Lisp.
                (:file "array"           :depends-on ())
                (:file "sequence"        :depends-on ())
                (:file "list"            :depends-on ())
-               (:file "utility"         :depends-on ("list"))
+               (:file "symbol"          :depends-on ())
+               (:file "utility"         :depends-on ("list" "symbol"))
                (:file "string"          :depends-on ("utility" "list" "sequence" "ecma048"))
                (:file "package"         :depends-on ("utility"))
 

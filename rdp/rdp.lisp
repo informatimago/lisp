@@ -302,10 +302,7 @@ RETURN:     A form that defines the grammar object and its parser functions.
 ;;; Utilities
 ;;;
 
-(defun scat (&rest string-designators)
-  "Interns the concatenation of the STRING-DESIGNATORS."
-  (intern (apply (function concatenate) 'string
-                 (mapcar (function string) string-designators))))
+
 (defun dollar (n)
   "Interns a $-symbol number N."
   (scat "$" (prin1-to-string n)))

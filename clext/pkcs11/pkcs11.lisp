@@ -35,6 +35,7 @@
 (defpackage "COM.INFORMATIMAGO.CLEXT.PKCS11"
   (:use "COMMON-LISP" "CFFI" "BABEL")
   (:use "COM.INFORMATIMAGO.CLEXT.PKCS11.CFFI-UTILS")
+  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SYMBOL" "SCAT")
   (:import-from "COM.INFORMATIMAGO.CLEXT.PKCS11.LOW" "LOAD-LIBRARY")
   (:shadowing-import-from "COM.INFORMATIMAGO.CLEXT.PKCS11.CFFI-DEBUG"
                           "FOREIGN-ALLOC" "FOREIGN-FREE")
@@ -1943,10 +1944,6 @@ RETURN: TEMPLATE
      (with-foreign-object (fmechanism '(:struct %ck:mechanism))
        (set-mechanism fmechanism mechanism)
        (check-rv (,low-name session fmechanism ,@(when keyp `(key))) ,c-name))))
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defun scat (&rest args)
-    (intern (reduce (lambda (a b) (concatenate 'string a b)) args :key (function string)))))
 
 (defmacro define-pkcs11-processing-function (name low-name c-name &key (input '()) (outputp t))
   "Defines a function to process buffers.
