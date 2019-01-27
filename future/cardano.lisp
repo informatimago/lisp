@@ -11,3 +11,10 @@
          (x2  (+ (/ (+ s u) -2) (/ b -3 a) (* #C(0 1) (/ (sqrt 3)  2) (- s u))))
          (x3  (+ (/ (+ s u) -2) (/ b -3 a) (* #C(0 1) (/ (sqrt 3) -2) (- s u)))))
     (list x1 x2 x3)))
+
+
+(defun equa2 (a b c)
+  (let ((delta (- (* b b) (* 4 a c))))
+    (list (/ (+ (- b) (sqrt delta)) 2 a )
+          (/ (- (- b) (sqrt delta)) 2 a ))))
+
