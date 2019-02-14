@@ -224,7 +224,7 @@ same directory, so that the *default-pathname-defaults*, the
 three synchronized.
 ")
 
-(defvar *working-directory* #+mocl (user-homedir-pathname) #-mocl (truename (user-homedir-pathname))
+(defvar *working-directory* (user-homedir-pathname)
   "The current working directory")
 
 (defun working-directory ()
@@ -251,12 +251,12 @@ three synchronized.
               ;; probe-file to test directories in ccl…
 
 
-              (ignore-errors
-               (or
-                #-ccl (directory (make-pathname :directory dir :name "RARE" :type "RARE" :defaults path))
-                #+ccl (probe-file path)
-                t))
-              )
+              (let ((probe-dirpath (make-pathname :name :unspecific :type :unspecific :version :unspecific
+                                                  :directory dir
+                                                  :defaults path)))
+                #+ccl (probe-file probe-dirpath)
+                #-ccl (ignore-errors (or (directory (merge-pathnames "PROBE.FILE" probe-dirpath nil))
+                                         t))))
             (nreverse
              (loop
                :for dir :on (reverse (pathname-directory path))
