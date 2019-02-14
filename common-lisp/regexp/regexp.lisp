@@ -87,9 +87,11 @@ License:
 "))
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.REGEXP.REGEXP")
 
-#+clisp (eval-when (:compile-toplevel :load-toplevel :execute)
-          (when (find-package "REGEXP")
-            (pushnew :use-regexp *features*)))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  #+clisp (when (find-package "REGEXP")
+            (pushnew :use-regexp *features*))
+  #-clisp (setf *features* (delete :use-regexp *features*)))
+
 
 (defvar *engine* :ppcre
   "Current possible values are :ppcre or :regexp.  It is possible to
