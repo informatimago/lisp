@@ -45,7 +45,8 @@
            "PARSE-SEQUENCE-TYPE"
            "CONCATENATE-SEQUENCES"
            "PREFIXP"
-           "SUFFIXP")
+           "SUFFIXP"
+           "MAPCONCAT")
   (:documentation
    "
 
@@ -431,6 +432,53 @@ RETURN:  Whether SUFFIX is a suffix of the (subseq SEQUENCE START END).
                                          :from-end t)
              0)) )
 
+
+(defun mapconcat (function sequence separator)
+  (etypecase sequence
+    (list
+     (if sequence
+         (let* ((items (mapcar (lambda (item)
+                                 (let ((sitem (funcall function item)))
+                                   (if (stringp sitem)
+                                       sitem
+                                       (princ-to-string sitem))))
+                               sequence))
+                (ssepa (if (stringp separator)
+                           separator
+                           (princ-to-string separator)))
+                (size (+ (reduce (function +) items :key (function length))
+                         (* (length ssepa) (1- (length items)))))
+                (result (make-array size :element-type 'character))
+                (start  0))
+           (replace result  (first items) :start1 start)
+           (incf start (length (first items)))
+           (dolist (item (rest items))
+             (replace result ssepa :start1 start) (incf start (length ssepa))
+             (replace result item  :start1 start) (incf start (length item)))
+           result)
+         ""))
+    (vector
+     (if (plusp (length sequence))
+         (let* ((items (map 'vector (lambda (item)
+                                      (let ((sitem (funcall function item)))
+                                        (if (stringp sitem)
+                                            sitem
+                                            (princ-to-string sitem))))
+                            sequence))
+                (ssepa (if (stringp separator)
+                           separator
+                           (princ-to-string separator)))
+                (size (+ (reduce (function +) items :key (function length))
+                         (* (length ssepa) (1- (length items)))))
+                (result (make-array size :element-type 'character))
+                (start  0))
+           (replace result (aref items 0) :start1 start) (incf start (length (aref items 0)))
+           (loop
+              :for i :from 1 :below (length items)
+              :do (replace result ssepa :start1 start) (incf start (length ssepa))
+              (replace result (aref items i) :start1 start) (incf start (length (aref items i))))
+           result)
+         ""))))
 
 
 ;;;; THE END ;;;;
