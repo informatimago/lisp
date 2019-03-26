@@ -32,7 +32,7 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;*****************************************************************************
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (setf *readtable* (copy-readtable nil)))
+   (setf *readtable* (copy-readtable nil)))
 (in-package "COMMON-LISP-USER")
 (declaim (declaration also-use-packages))
 (declaim (also-use-packages "SYS" "EXT"))

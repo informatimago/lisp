@@ -8,6 +8,9 @@
 ;;;;
 ;;;;    Lispy interface over Cryptoki pkcs11 version 2.02
 ;;;;
+;;;;    Depends on git@github.com:fjames86/asinine.git
+;;;;            or git@github.com:informatimago/asinine.git
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS

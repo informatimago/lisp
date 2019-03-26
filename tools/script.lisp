@@ -36,7 +36,6 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setf *readtable* (copy-readtable nil)))
 (defpackage "COM.INFORMATIMAGO.TOOLS.SCRIPT"
-  (:nicknames "SCRIPT")
   (:use "COMMON-LISP")
   (:export "PROGRAM-NAME" "*PROGRAM-NAME*" "*VERBOSE*"
            "REDIRECTING-STDOUT-TO-STDERR"
