@@ -55,6 +55,11 @@
    "PROJECT-ID" "PROJECT-DESCRIPTION" "PROJECT-NAME" "PROJECT-PATH"
    "PROJECT-OWNER" "PROJECT-PATH-WITH-NAMESPACE" "MAKE-PROJECT"
 
+   "MILESTONE-ID" "MILESTONE-IID" "MILESTONE-PROJECT-ID"
+   "MILESTONE-TITLE" "MILESTONE-DESCRIPTION" "MILESTONE-STATE"
+   "MILESTONE-CREATED-AT" "MILESTONE-UPDATED-AT" "MILESTONE-DUE-DATE"
+   "MILESTONE-START-DATE" "MAKE-MILESTONE" "MILESTONES" "MILESTONE-NAMED"
+
    "ISSUE-ID" "ISSUE-IID" "ISSUE-PROJECT-ID" "ISSUE-TITLE"
    "ISSUE-DESCRIPTION" "ISSUE-STATE" "ISSUE-CREATED-AT"
    "ISSUE-UPDATED-AT" "ISSUE-CLOSED-AT" "ISSUE-DUE-DATE" "ISSUE-LABELS"
@@ -65,7 +70,8 @@
 
    "ISSUES" "CREATE-ISSUE" "DELETE-ISSUE" "UPDATE-ISSUE"
 
-   "LIST-PROJECTS"))
+   "LIST-PROJECTS"
+   "LIST-ISSUES"))
 (in-package  "COM.INFORMATIMAGO.CLEXT.GITLAB")
 
 (defparameter *server* "149.202.216.117")
@@ -170,6 +176,7 @@
                           :method operation
                           :additional-headers (list (cons "PRIVATE-TOKEN" *private-token*))))))
 
+(defun obtain-json-object (query parameters) (operate-json-object query parameters :get))
 (defun create-json-object (query parameters) (operate-json-object query parameters :post))
 (defun update-json-object (query parameters) (operate-json-object query parameters :put))
 (defun delete-json-object (query)            (operate-json-object query nil        :delete))
@@ -266,6 +273,47 @@
                  (string= name (project-path-with-namespace project))))
            (projects)))
 
+(defun ensure-project-id (project)
+  (if (integerp project)
+      project
+      (project-id project)))
+(macroexpand-1 '
+ (define-json-struct milestone
+   id iid
+   (project-id :project--id)
+   title
+   description
+   state
+   (created-at :created--at)
+   (updated-at :updated--at)
+   (due-date :due-date)
+   (start-date :start-date)))
+
+(defun milestones (project &key id
+                             (iids nil iidsp)
+                             (state nil statep)
+                             (search nil searchp))
+  (check-type iids              (or null (vector integer)))
+  (check-type state             (or null (member :active :closed)))
+  (let ((query  (with-output-to-string (*standard-output*)
+                  (format t "https://~A/api/v4/projects/~A" *server*
+                          (ensure-project-id project))
+                  (let ((attributes
+                          (append
+                           (when iidsp (map 'list (lambda (iid)
+                                                    (format nil "iids%5B%5D=~A" iid))
+                                            iids))
+                           (when statep  (list (format nil "state=~(~A~)" state)))
+                           (when searchp (list (format nil "search=~A" (url-encode search :utf-8)))))))
+                    (format t "/~A~:[~;/~:*~A~]~:[~;?~:*~{~A~^&~}~]" "milestones" id attributes)))))
+    (fetch-json-objects query)))
+
+(defun milestone-named (project name)
+  (find-if (lambda (milestone)
+              (string= name (milestone-title milestone)))
+           (milestones project)))
+
+
 (define-json-struct issue
   id iid
   (project-id :project--id)
@@ -339,7 +387,7 @@
                                                                                (:any  "Any")
                                                                                (otherwise (url-encode milestone :utf-8))))))
                           (when iidsp (map 'list (lambda (iid)
-                                                   (format nil "iids[]=~A" iid))
+                                                   (format nil "iids%5B%5D=~A" iid))
                                            iids))
                           (when author-id   (list (format nil "author_id=~A" author-id)))
                           (when assignee-id (list (format nil "assignee_id=~A" (ecase assignee-id
@@ -372,7 +420,7 @@
                           (when created-before (list (format nil "created_before=~A" (encode-datetime created-before))))
                           (when updated-after  (list (format nil "updated_after=~A"  (encode-datetime updated-after))))
                           (when updated-before (list (format nil "updated_before=~A" (encode-datetime updated-before)))))))
-                   (format t "/issues~:[~;/~:*~A~]~:[~;?~:*~{~A~^&~}~]" id attributes)))))
+                   (format t "/~A~:[~;/~:*~A~]~:[~;?~:*~{~A~^&~}~]" "issues" id attributes)))))
     (fetch-json-objects query)))
 
 (defun create-issue (project-id title
@@ -399,7 +447,7 @@
                                 (append
                                  (when iid           (list (format nil "iid=~A"          iid)))
                                  (mapcar (lambda (assignee-id)
-                                           (format nil "assignee_ids[]=~A" assignee-id))
+                                           (format nil "assignee_ids%5B%5D=~A" assignee-id))
                                          assignee-ids)
                                  (when milestone-id  (list (format nil "milestone_id=~A"  milestone-id)))
                                  (when weight        (list (format nil "weight=~A"        weight)))
@@ -449,7 +497,10 @@
                                   (append
                                    (when confidential  (list (format nil "confidential=~A"  (encode-boolean confidential))))
                                    (mapcar (lambda (assignee-id)
-                                             (format nil "assignee_ids[]=~A" assignee-id))
+                                             (format nil "assignee_ids%5B%5D=~A"
+                                                     (if (integerp  assignee-id)
+                                                         assignee-id
+                                                         (user-id assignee-id))))
                                            assignees)
                                    (when milestone     (list (format nil "milestone_id=~A"  milestone)))
                                    (when updated-at    (list (format nil "updated_at=~A"    (encode-datetime updated-at))))
@@ -464,17 +515,66 @@
 (defun list-projects ()
   (map nil
        (lambda (project)
-         (format t "~40A~:[ \"\"~;~:*~S~]~%   ~S~2%"
+         (format t "~40A ~12A ~A~%"
                  (project-name project)
-                 (user-name (project-owner project))
+                 (format nil "~:[~;~:*~A~]" (user-username (project-owner project)))
                  (project-description project)))
-       (projects)))
+       (projects))
+  (values))
+
+(defun list-issues (&rest keys &key group-id project-id id scope
+                                 state labels milestone iids
+                                 author-id assignee-id search in
+                                 my-reaction-emoji confidential
+                                 weight order-by sort created-after
+                                 updated-after created-before
+                                 updated-before)
+  (declare (ignorable group-id project-id id scope state labels
+                      milestone iids author-id assignee-id search in
+                      my-reaction-emoji confidential weight order-by
+                      sort created-after updated-after created-before
+                      updated-before))
+  (dolist (issue (apply (function issues) keys))
+    (format t "~48A [~8A] ~12A ~12A ~{~A~^ ~}~%"
+            (issue-title issue)
+            (issue-state issue)
+            (format nil "(~{~A~^,~})" (sort (issue-labels issue) (function string-lessp)))
+            (format nil "{~@[~A~]}" (issue-milestone issue))
+            (sort (mapcar (function user-username) (issue-assignees issue))
+                  (function string-lessp))))
+  (values))
 
 
 
 
 
 #|
+
+(milestone-named 34 "Demo iOS")
+(milestones 34 :search "Demo")
+(milestones 34)
+(milestones 34 :id 1)
+(projects :id 34)
+
+(let* ((project (project-id (project-named "sbde/laboite")))
+       (milestone (milestone-named project "Demo iOS")))
+  (dolist (issue (issues  :project-id project  :labels "iOS"))
+    (setf (issue-milestone issue) (milestone-id milestone))
+    (update-issue issue)))
+
+(let ((project (project-id (project-named "sbde/laboite"))))
+  (mapcar 'ISSUE-MILESTONE (issues  :project-id project  :labels "iOS")))
+
+(list-projects)
+(list-issues  :project-id (project-id (project-named "sbde/laboite")) :labels "iOS")
+
+
+(dolist (issue (issues  :project-id (project-id (project-named "sbde/laboite")) :labels "iOS"))
+  (when (com.informatimago.common-lisp.cesarum.sequence:prefixp "demo-demo-demo-"  (issue-title issue))
+    (setf (issue-title issue) (subseq  (issue-title issue) 10))
+    (update-issue issue)))
+
+
 (dolist (issue (remove-if (lambda (issue)
                             (string/= (issue-title issue) "test"))
                           (issues :project-id (project-id (project-named "sbde/laboite"))
