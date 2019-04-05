@@ -36,7 +36,7 @@
   (setf *readtable* (copy-readtable nil)))
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.DATA-ENCODING.DATA-ENCODING"
   (:use "COMMON-LISP"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SYMBOL")
   (:export "SIZE-OF-ENCTYPE" "ENCTYPE-INSTANCE" "ENCTYPE-WRITE" "ENCTYPE-READ"
            "MAKE-ENCTYPE" "DEF-ENCRECORD" "DEF-ENCTYPE")
   (:documentation
@@ -929,12 +929,11 @@ set and retrieve the values of the fields.")
   (values
    (apply (function make-instance) (lisp-type self)
           (mapcan (lambda (field)
-                    (list (conc-symbol (field-name field) :package "KEYWORD")
+                    (list (keywordize (field-name field))
                           (get-value (field-type field)
                                      buffer (+ offset (field-offset field)))))
                   (fields self)))
-   (+ offset (size-of-enctype self)))) ;;get-value
-
+   (+ offset (size-of-enctype self))))
 
 (defmethod set-value ((self record-enctype) buffer offset record)
   (map nil (lambda (field)
@@ -942,8 +941,7 @@ set and retrieve the values of the fields.")
                         buffer (+ offset (field-offset field))
                         (slot-value record (field-name field))))
        (fields self))
-  (+ offset (size-of-enctype self))) ;;set-value
-
+  (+ offset (size-of-enctype self)))
 
 
 ;; ------------------------------------------------------------------------
@@ -1259,9 +1257,9 @@ DO:     Defines an enctype template for a record type,
                                 `(,(first oof) ,(default-value enctype)
                                   :type ,(to-lisp-type enctype))))
                      fields))
-       (defun ,(conc-symbol "READ-" name)  (stream)
+       (defun ,(scat "READ-" name)  (stream)
          (enctype-read  ',name (enctype-instance ',name) stream))
-       (defun ,(conc-symbol "WRITE-" name) (value stream)
+       (defun ,(scat "WRITE-" name) (value stream)
          (enctype-write ',name (enctype-instance ',name) stream value))
        ',name)))
 

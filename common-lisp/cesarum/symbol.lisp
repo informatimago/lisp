@@ -39,6 +39,7 @@
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SYMBOL"
   (:use "COMMON-LISP")
   (:export
+   "KEYWORDIZE"
    "SCAT")
   (:documentation
    "
@@ -74,5 +75,16 @@ License:
   "Interns the concatenation of the STRING-DESIGNATORS."
   (intern (apply (function concatenate) 'string
                  (mapcar (function string) string-designators))))
+
+
+(defun keywordize (string-designator)
+  "
+RETURN: A new keyword with STRING-DESIGNATOR as name.
+"
+  (intern (string string-designator)
+          (load-time-value (find-package "KEYWORD"))))
+
+
+
 
 ;;;; THE END ;;;;

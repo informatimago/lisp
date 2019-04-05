@@ -106,8 +106,6 @@
    "DEFINE-WITH-STRUCTURE"
    ;; 9 - CONDITIONS
    "HANDLING-ERRORS"
-   ;; 10 - SYMBOLS
-   "KEYWORDIZE" "CONC-SYMBOL"
    ;; 12 - NUMBERS
    "SIGN"
    "DISTINCT-FLOAT-TYPES" "FLOAT-TYPECASE" "FLOAT-CTYPECASE" "FLOAT-ETYPECASE"
@@ -1188,35 +1186,6 @@ DO:       Execute the BODY with a handler for CONDITION and
      (condition (err)
        (format *error-output* "~&~A:~%~A~%" (class-name (class-of err)) err)
        (finish-output *error-output*))))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; 10 - SYMBOLS
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defun keywordize (string-designator)
-  "
-RETURN: A new keyword with SYM as name.
-"
-  (intern (string string-designator)
-          (load-time-value (find-package "KEYWORD"))))
-
-
-(defun conc-symbol (&rest args)
-  "
-DO:      Concatenate the arguments and INTERN the resulting string.
-NOTE:    The last two arguments maybe :PACKAGE <a-package>
-         in which case the symbol is interned into the given package
-         instead of *PACKAGE*.
-"
-  (let ((package *package*))
-    (when (and (<= 2 (length args))
-               (eq :package (car (last args 2))))
-      (setf package (car (last args))
-            args (butlast args 2)))
-    (intern (apply (function concatenate) 'string (mapcar (function string) args))
-            package)))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 12 - NUMBERS
