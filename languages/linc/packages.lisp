@@ -33,17 +33,21 @@
 ;;;;**************************************************************************
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setf *readtable* (copy-readtable nil)))
+
+(defpackage "COM.INFORMATIMAGO.LANGUAGES.LINC.C"
+  (:nicknames "COM.INFORMATIMAGO.LANGUAGES.LINC.C++")
+  (:use))
+
 (defpackage "COM.INFORMATIMAGO.LANGUAGES.LINC"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SYMBOL"
         "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM")
   (:shadow "DECLARATION" "THROW")
   (:export
    "COMPILE-LINC-FILE"))
-(defpackage "COM.INFORMATIMAGO.LANGUAGES.LINC.C"
-  (:nicknames "COM.INFORMATIMAGO.LANGUAGES.LINC.C++")
-  (:use))
+
 
 ;;;; THE END ;;;;

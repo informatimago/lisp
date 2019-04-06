@@ -33,7 +33,7 @@
 ;;;;**************************************************************************
 
 
-(cl:in-package :com.informatimago.linc.c)
+(cl:in-package :com.informatimago.languages.linc.c)
 
 (cl:defpackage :bc-mem
   (:use)
@@ -43,6 +43,7 @@
                     n-data
                     copy
                     n-length))
+
 (declare-function '(bc-mem:allocate
                     bc-mem:deallocate
                     bc-mem:copy))

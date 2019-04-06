@@ -6,7 +6,7 @@
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;
-;;;;    This file defines classes to generate C++ syntax.
+;;;;    This file defines classes to generate C syntax.
 ;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
@@ -53,24 +53,23 @@
 (defvar *indent* 0)
 (defvar *naked* t)
 
-
-(let ((bol t))
-  (defun emit (&rest args)
-    (loop
-       :for arg :in args
-       :do (cond
-             ((eq :newline arg)
-              (terpri *c-out*)
-              (setf bol t))
-             ((eq :fresh-line arg)
-              (unless bol
-                (terpri *c-out*)
-                (setf bol t)))
-             (t
-              (if bol
-                (format *c-out* "~VA~A" (* *indent* 4) "" arg)
-                (princ arg *c-out*))
-              (setf bol nil))))))
+(defvar *bol* t)
+(defun emit (&rest args)
+  (loop
+    :for arg :in args
+    :do (cond
+          ((eq :newline arg)
+           (terpri *c-out*)
+           (setf *bol* t))
+          ((eq :fresh-line arg)
+           (unless *bol*
+             (terpri *c-out*)
+             (setf *bol* t)))
+          (t
+           (if *bol*
+               (format *c-out* "~VA~A" (* *indent* 4) "" arg)
+               (princ arg *c-out*))
+           (setf *bol* nil)))))
 
 
 (defmacro with-indent (&body body)
@@ -603,26 +602,16 @@ exclusive, but one must be given when :arguments is not given.")
        (expr-predecr         1   "--")
        (expr-lognot          1   "!")
        (expr-bitnot          1   "~")
-       (expr-deref           1   "*")
-       (expr-address         1   "&")
-       (expr-pos             1   "+")
-       (expr-neg             1   "-")
-       (expr-sizeof    1
-        (lambda (argument)
-          (emit "sizeof") (with-parens "()" (generate argument))))
-       (expr-new       1
-        (lambda (argument)
-          (emit "new" " ") (generate argument)))
-       (expr-new[]     1
-        (lambda (argument)
-          (emit "new" "[]" " ") (generate argument)))
-       (expr-delete    1
-        (lambda (argument)
-          (emit "delete" " ") (generate argument)))
-       (expr-delete[]  1
-        (lambda (argument)
-          (emit "delete" "[]" " ") (generate argument)))
-       (cpp-stringify        1 "#"))
+       (expr-deref           1   (lambda (argument) (with-parens "()" (emit "*") (with-parens "()" (generate argument)))))
+       (expr-address         1   (lambda (argument) (with-parens "()" (emit "&") (with-parens "()" (generate argument)))))
+       (expr-pos             1   (lambda (argument) (with-parens "()" (emit "+") (with-parens "()" (generate argument)))))
+       (expr-neg             1   (lambda (argument) (with-parens "()" (emit "-") (with-parens "()" (generate argument)))))
+       (expr-sizeof          1   (lambda (argument) (emit "sizeof") (with-parens "()" (generate argument))))
+       (expr-new             1   (lambda (argument) (emit "new" " ") (generate argument)))
+       (expr-new[]           1   (lambda (argument) (emit "new" "[]" " ") (generate argument)))
+       (expr-delete          1   (lambda (argument) (emit "delete" " ") (generate argument)))
+       (expr-delete[]        1   (lambda (argument) (emit "delete" "[]" " ") (generate argument)))
+       (cpp-stringify        1   "#"))
       (:post
        (expr-postincr         1
         (lambda (expr)
@@ -650,7 +639,7 @@ exclusive, but one must be given when :arguments is not given.")
                   (when (rest expressions)
                     (generate
                      (make-instance 'expr-callargs
-                         :arguments (rest expressions))))))))))
+                                    :arguments (rest expressions))))))))))
       (:left
        (absolute-scope    1
         (lambda (name) (emit "::") (generate name))))
@@ -758,7 +747,7 @@ exclusive, but one must be given when :arguments is not given.")
 
      (defun ,cl-name (&rest args)
        (apply (function make-instance) ',cl-name
-              (loop
+               (loop
                  :for key :in (initargs-in-order ',cl-name)
                  :for val :in args
                  :nconc (list key val))))))
