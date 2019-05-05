@@ -52,7 +52,6 @@
 (defparameter *name-map* (make-hash-table :test (function equal)))
 
 
-;; (defgeneric generate (thing)) ; defined in c-syntax.lisp
 (defgeneric generate-expression (expression))
 (defgeneric generate-statement (expression &key same-line))
 (defgeneric generate-identifier (expression))
@@ -345,6 +344,7 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
          (error "Not a pre-processor expression: ~S" expression))))))
 
 (defmethod generate-expression (expression)
+  #-(and)
   (com.informatimago.languages.linc.c::progn
    com.informatimago.languages.linc.c::callargs
    com.informatimago.languages.linc.c::?
@@ -401,11 +401,10 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
    com.informatimago.languages.linc.c::scope
    com.informatimago.languages.linc.c::literal
    com.informatimago.languages.linc.c::identifier))
-(defmethod generate ((expression t))
-  (generate-expression expression))
 
-(defmethod generate ((expression cons))
 
+
+(defmethod generate-c-sexp (expression)
   (let ((key (first expression)))
     (ecase key
 
@@ -498,9 +497,9 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
 
 (defmacro com.informatimago.languages.linc.c::setf (place expression &rest others)
   (if others
-      `(com.informatimago.languages.linc.c::block
-         (com.informatimago.languages.linc.c::= ,place ,expression)
-         (com.informatimago.languages.linc.c::setf ,@others))
+      `(expr-seq
+        ,@(loop :for (p e) :on (list* place expression others) :by (function cddr)
+                :collect `(com.informatimago.languages.linc.c::= ,p ,e)))
       `(com.informatimago.languages.linc.c::= ,place ,expression)))
 
 (defmacro com.informatimago.languages.linc.c::let* (bindings &body body)
@@ -525,7 +524,8 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
 
 (defmacro com.informatimago.languages.linc.c::c (&rest declarations)
   `(cl:block
-     ,@(mapcar (function com.informatimago.languages.linc::generate-declaration) declarations)))
+       ,@(mapcar (function com.informatimago.languages.linc::generate-declaration)
+                 declarations)))
 
 
 (defun compile-linc-file (input-file &key verbose print
@@ -603,4 +603,3 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
 
 
 ;;;; THE END ;;;;
-

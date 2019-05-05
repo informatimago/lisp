@@ -46,5 +46,4 @@
 
 (gen-operators)
 
-
 ;;;; THE END ;;;;

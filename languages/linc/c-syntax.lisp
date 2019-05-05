@@ -47,7 +47,8 @@
 ;;; EMITTING C CODE
 ;;;
 
-(defvar *c-out* t "A stream designator.")
+
+(defparameter *c-out* (make-synonym-stream '*standard-output*) "A stream.")
 (defvar *same-line* nil)
 (defvar *level* 99)
 (defvar *indent* 0)
@@ -69,13 +70,12 @@
            (if *bol*
                (format *c-out* "~VA~A" (* *indent* 4) "" arg)
                (princ arg *c-out*))
-           (setf *bol* nil)))))
-
+           (setf *bol* nil))))
+  (values))
 
 (defmacro with-indent (&body body)
   `(let ((*indent* (1+ *indent*)))
      ,@body))
-
 
 (defmacro with-parens (parens &body body)
   `(let ((*level* 99))
@@ -91,9 +91,8 @@
                         (emit :fresh-line)))))
 
 
-
-
-
+;;; --------------------------------------------------------------------
+;;;
 
 (defclass c-item () ())
 
@@ -111,11 +110,9 @@
   (:method-combination append)
   (:method append ((self c-item)) '()))
 
-
 (defgeneric c-sexp (item)
   (:method ((self t)) `(quote ,self))
   (:method ((self c-item)) self))
-
 
 (defgeneric generate-with-indent (item)
   (:method ((self t))
@@ -123,17 +120,13 @@
       (generate (ensure-statement self))))
   (:method ((self null))))
 
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-
 
 (defun externalp (symbol)
   (eq (nth-value 1 (find-symbol (symbol-name symbol)
                                 (symbol-package symbol)))
       :external))
-
 
 ;;;---------------------------------------------------------------------
 ;;; C has various namespaces: variables, classes, structs, unions,
@@ -181,11 +174,10 @@ Defines two functions for each KIND:
     (format nil "~{~A~}"
             (cons (funcall (if capitalize-initial
                              (function string-capitalize)
-                             (function string-downcase)) (first chunks))
-                  (mapcar (function string-capitalize) (rest chunks))))))
-
-
-(defgeneric generate (node))
+                             (function string-downcase))
+                           (first chunks))
+                  (mapcar (function string-capitalize)
+                          (rest chunks))))))
 
 (defmethod generate ((self symbol))
   (let* ((packname (package-name (symbol-package self)))
@@ -205,7 +197,6 @@ Defines two functions for each KIND:
         (substitute #\_ #\- (string-upcase symbname)))
        (t
         (camel-case symbname :capitalize-initial nil))))))
-
 
 (defmethod generate ((self string))
   "
@@ -233,18 +224,54 @@ BUG: What about the character encoding of C strings?
                              ch))) out))
           (princ "\"" out))))
 
+(defmethod generate ((self character))
+  (let ((code (char-code self)))
+    (emit (if (< code 32)
+              (format nil "'\\~O'" code)
+              (format nil "'~C'"   self)))))
 
 (defmethod generate ((self real))
- "
-BUG: Correct C number syntax!
-"
-  (emit (format nil "~A" self)))
+  (error 'type-error :datum self
+                     :expected-type '(or integer short-float single-float double-float long-float)))
+
+(defvar *integer-limits*
+  '((int           ""    #.(- (expt 2 31))  #.(1- (expt 2 31)))
+    (long-int      "L"   #.(- (expt 2 64))  #.(1- (expt 2 65)))
+    (long-long-int "LL"  #.(- (expt 2 128)) #.(1- (expt 2 128)))))
+
+(defmethod generate ((self integer))
+  (let ((limits (find-if (lambda (limits)
+                           (and (<= (third limits) self)
+                                (<= self (fourth limits))))
+                         *integer-limits*)))
+    (if limits
+        (let ((*print-radix* nil)
+              (*print-base*  10.))
+          (emit (prin1-to-string self) (second limits)))
+        (error "Integer too big for C: ~A" self))))
+
+(defvar *float-limits*
+  '((float       "F")
+    (double      "")
+    (long-double "L")))
+
+;; An unsuffixed floating constant has type double. If suffixed by the
+;; letter f or F, it has type float. If suffixed by the letter l or L,
+;; it has type long double.
+
+(defmethod generate ((self float))
+  (emit (substitute-if #\E (lambda (letter) (position letter "SEDL" :test (function char-equal)))
+                       (format nil "~E" self))
+        (cond ((typep self '(or short-float single-float)) "F")
+              ((typep self 'double-float)                  "")
+              ((typep self 'long-float)                    "L")
+              (t (error 'type-error :datum self
+                                    :expected-type '(or short-float single-float double-float long-float))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;;
-
 
 (defun at-least-one-p  (list)            list)
 (defun at-least-two-p  (list)       (cdr list))
@@ -252,13 +279,10 @@ BUG: Correct C number syntax!
 (defun exactly-two-p   (list) (and (cdr  list) (not (cddr  list))))
 (defun exactly-three-p (list) (and (cddr list) (not (cdddr list))))
 
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; EXPRESSIONS
 ;;;
-
 
 (defclass expression (c-item)
   ())
@@ -439,9 +463,6 @@ exclusive, but one must be given when :arguments is not given.")
 
 
 
-
-
-
 ;; (type-pointer  1 ,(lambda (level type)
 ;;                    ;; (cast var (pointer char)) --> (char*)var;
 ;;                    (generate-expression type :level level :naked nil)
@@ -506,7 +527,8 @@ exclusive, but one must be given when :arguments is not given.")
                       `(generate-list ,c-name-or-generator
                                       (function generate)
                                       (arguments self)))
-                  `(apply ,c-name-or-generator (arguments self)))))))
+                  `(apply ,c-name-or-generator (arguments self)))
+             (values)))))
 
 
 (defmethod generate :around ((self expression))
@@ -520,7 +542,8 @@ exclusive, but one must be given when :arguments is not given.")
             ;; need parentheses:
             (with-parens "()" (call-next-method))
             ;; no need for parentheses:
-            (call-next-method)))))
+            (call-next-method))))
+  (values))
 
 
 (defun generate-list (separator generator list)
@@ -528,7 +551,6 @@ exclusive, but one must be given when :arguments is not given.")
     (flet ((gen (item) (emit separator) (funcall generator item)))
       (funcall generator (car list))
       (map nil (function gen) (cdr list)))))
-
 
 
 (defun make-operators ()
@@ -710,9 +732,11 @@ exclusive, but one must be given when :arguments is not given.")
                                             :from-end t))))))
 
 
+
 (defmacro define-statement (cl-name optional-superclasses fields c-keyword
                                     &key print-object c-sexp generate)
   `(progn
+
      (defclass ,cl-name (,@optional-superclasses statement)
        (,@(mapcar (lambda (field)
                       `(,field :initarg ,(keywordize field) :accessor ,field))
@@ -743,7 +767,8 @@ exclusive, but one must be given when :arguments is not given.")
                    (mapcar (function c-sexp) (arguments self)))))
 
      (defmethod generate ((self ,cl-name))
-       ,generate)
+       ,generate
+       (values))
 
      (defun ,cl-name (&rest args)
        (apply (function make-instance) ',cl-name
@@ -775,7 +800,7 @@ exclusive, but one must be given when :arguments is not given.")
   ;;                                       ; generate
   :generate (progn
               (unless *same-line* (emit :fresh-line))
-              (generate (identifier self)) (emit ":" " ")
+              (generate (identifier self)) (emit ":")
               (generate (ensure-statement (sub-statement self)))))
 
 
@@ -789,9 +814,9 @@ exclusive, but one must be given when :arguments is not given.")
   ;;                                       ; generate
   :generate (progn
               (unless *same-line* (emit :fresh-line))
-              (emit "case")
+              (emit "case" " ")
               (generate (case-value self))
-              (emit ":" " ")
+              (emit ":")
               (generate (ensure-statement (sub-statement self)))))
 
 
@@ -806,7 +831,7 @@ exclusive, but one must be given when :arguments is not given.")
   :generate (progn
               (unless *same-line* (emit :fresh-line))
               (emit "default")
-              (emit ":" " ")
+              (emit ":")
               (generate (ensure-statement (sub-statement self)))))
 
 
@@ -931,8 +956,6 @@ exclusive, but one must be given when :arguments is not given.")
               (generate (condition-expression self))
               (emit ")")))
 
-
-
 (define-statement stmt-for (optional-statement)
     (for-init-statement go-on-condition step-expression) "for"
   ;;                                       ; print-object
@@ -1009,43 +1032,46 @@ exclusive, but one must be given when :arguments is not given.")
 
      (defclass ,name (declaration)
        (,@(mapcar (lambda (field)
-                      `(,field
-                        :initarg ,(keywordize field)
-                        :accessor ,field))
+                    `(,field
+                      :initarg ,(keywordize field)
+                      :accessor ,field))
                   fields)))
 
      (defmethod arguments append ((self ,name))
        (with-slots ,fields self
          (append
           ,@(mapcar (lambda (field)
-                        `(when (slot-boundp self ',field)
-                           (list (slot-value self ',field))))
+                      `(when (slot-boundp self ',field)
+                         (list (slot-value self ',field))))
                     fields))))
 
      (defmethod print-object ((self ,name) stream)
        (print (cons ',name
                     (mapcar (lambda (arg)
-                                (if (typep arg 'c-item)
+                              (if (typep arg 'c-item)
                                   arg
                                   `(quote ,arg)))
-                            (arguments self))) stream)
+                            (arguments self)))
+              stream)
        self)
 
      (defmethod c-sexp ((self ,name))
        (cons
-         ',(intern (substitute #\_ #\- (string-downcase name)) "COM.INFORMATIMAGO.LANGUAGES.LINC.C")
-         (mapcar (function c-sexp) (arguments self))))
+        ',(intern (substitute #\_ #\- (string-downcase name))
+                  "COM.INFORMATIMAGO.LANGUAGES.LINC.C")
+        (mapcar (function c-sexp) (arguments self))))
 
      (defmethod generate ((self ,name))
        (with-slots ,fields self
-         ,generate))
+         ,generate)
+       (values))
 
      (defun ,name (&rest args)
        (apply (function make-instance) ',name
               (loop
-                 :for key :in (initargs-in-order ',name)
-                 :for val :in args
-                 :nconc (list key val))))))
+                :for key :in (initargs-in-order ',name)
+                :for val :in args
+                :nconc (list key val))))))
 
 
 (define-declaration ASM (asm-string)
@@ -1141,13 +1167,9 @@ exclusive, but one must be given when :arguments is not given.")
 (defmacro with-extern (extern-name &body sub-declarations)
   `(extern ,extern-name (list ,@sub-declarations)))
 
-
-
-
 ;;;
 ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 
 
@@ -1170,85 +1192,163 @@ exclusive, but one must be given when :arguments is not given.")
   (defmethod parameters ((self ordinary-lambda-list))
     (append (lambda-list-mandatory-parameters self)
             (lambda-list-optional-parameters self)
-            (and (lambda-list-rest-parameter-p self)
-                 (lambda-list-rest-parameter self))
-            (lambda-list-keyword-parameters self))))
+            (when (lambda-list-rest-parameter-p self)
+              (list (lambda-list-rest-parameter self)))
+            (lambda-list-keyword-parameters self)))
+  (defun arg-form (arg)
+    `(if (typep ,arg 'c-item)
+         ,arg
+         (list 'quote ,arg)))
+  (defun generate-print-object (name ll fields)
+    `(defmethod print-object ((self ,name) stream)
+       (with-slots (,@fields) self
+         (print (list* ',name
+                       ,@(mapcar (lambda (parameter)
+                                   (arg-form (parameter-name parameter)))
+                                 (lambda-list-mandatory-parameters ll))
+                       ,@(mapcar (lambda (parameter)
+                                   (let ((arg (parameter-name parameter)))
+                                     `(when (slot-boundp self ',arg)
+                                        ,(arg-form arg))))
+                                 (lambda-list-optional-parameters ll))
+                       (append
+                        ,@(mapcar (lambda (parameter)
+                                    (let ((arg (parameter-name parameter)))
+                                      `(when (slot-boundp self ',arg)
+                                         (list
+                                          ,(keywordize arg)
+                                          ,(arg-form arg)))))
+                                  (lambda-list-keyword-parameters ll))))
+                stream))
+       self)))
 
 (defmacro define-declarator (name lambda-list &key generate)
-  (let ((fields
-         (let ((ll (parse-lambda-list lambda-list)))
-           (mapcar (function parameter-name) (parameters ll)))))
+  (let* ((ll     (parse-lambda-list lambda-list))
+         (fields (mapcar (function parameter-name) (parameters ll))))
     `(progn
 
        (defclass ,name (declarator)
          (,@(mapcar (lambda (field)
-                        `(,field
-                          :initarg ,(keywordize field)
-                          :accessor ,field))
+                      `(,field
+                        :initarg ,(keywordize field)
+                        :accessor ,field))
                     fields)))
 
        (defmethod arguments append ((self ,name))
          (with-slots ,fields self
            (append
             ,@(mapcar (lambda (field)
-                          `(when (slot-boundp self ',field)
-                             (list (slot-value self ',field))))
+                        `(when (slot-boundp self ',field)
+                           (list (slot-value self ',field))))
                       fields))))
 
-       (defmethod print-object ((self ,name) stream)
-         (print (cons ',name
-                      (mapcar (lambda (arg)
-                                  (if (typep arg 'c-item)
-                                    arg
-                                    `(quote ,arg)))
-                              (arguments self))) stream)
-         self)
+       ,(generate-print-object name ll fields)
+
+       (defun ,name  ,lambda-list
+         (make-instance ',name ,@(make-argument-list ll)))
 
        (defmethod c-sexp ((self ,name))
          (cons
-          ',(intern (substitute #\_ #\- (string-downcase name)) "COM.INFORMATIMAGO.LANGUAGES.LINC.C")
+          ',(intern (substitute #\_ #\- (string-downcase name))
+                    "COM.INFORMATIMAGO.LANGUAGES.LINC.C")
           (mapcar (function c-sexp) (arguments self))))
 
        (defmethod generate ((self ,name))
          (with-slots ,fields self
-           ,generate))
+           ,generate)
+         (values))
 
        (defun ,name  ,lambda-list
          (make-instance ',name
-           ,@(loop :for field :in fields
-                :nconc (list (keywordize field) field))))
+                        ,@(loop :for field :in fields
+                                :nconc (list (keywordize field) field))))
 
        ',name)))
 
+;; (declarator -->
+;;             ((opt pointer) direct-declarator))
 
+;; (pointer -->
+;;          (* {const restrict volatile _Atomic})
+;;          (* {const restrict volatile _Atomic} pointer))
+
+
+(define-declarator pointer (sub-declarator
+                            &key (const nil) (restrict nil) (volatile nil) (atomic nil))
+  :generate (progn (emit "*")
+                   (when const    (emit " " "const"))
+                   (when restrict (emit " " "restrict"))
+                   (when volatile (emit " " "volatile"))
+                   (when atomic   (emit " " "_Atomic"))
+                   (emit " ")
+                   (generate sub-declarator)))
+
+;; C++
 (define-declarator reference (sub-declarator)
   :generate (progn (emit "&") (generate sub-declarator)))
 
-(define-declarator pointer (sub-declarator &key (const nil) (volatile nil))
-  :generate (progn (emit "*")
-                   (when const    (emit " " "const"))
-                   (when volatile (emit " " "volatile"))
-                   (emit " ")
-                   (generate sub-declarator)))
-
+;; C++
 (define-declarator member-pointer (nested-name-specifier
                                    sub-declarator
-                                   &key (const nil) (volatile nil))
+                                   &key (const nil) (restrict nil) (volatile nil) (atomic nil))
   :generate (progn (generate nested-name-specifier)
                    (emit "*")
                    (when const    (emit " " "const"))
+                   (when restrict (emit " " "restrict"))
                    (when volatile (emit " " "volatile"))
+                   (when atomic   (emit " " "_Atomic"))
                    (emit " ")
                    (generate sub-declarator)))
 
-
-;;-------------------------------
-;; direct-declarator
+;; (direct-declarator -->
+;;                    identifier
+;;                    (\( declarator \))
 ;;
+;;                    (direct-declarator \[ (opt type-qualifier-list) (opt assignment-expression) \])
+;;                    (direct-declarator \[ static (opt type-qualifier-list) assignment-expression \])
+;;                    (direct-declarator \[ type-qualifier-list static assignment-expression \])
+;;                    (direct-declarator \[ (opt type-qualifier-list) \* \])
+;;
+;;                    (direct-declarator \( parameter-type-list \))
+;;                    (direct-declarator \( (opt identifier-list) \)))
+
+
+
+(define-declarator c-vector (sub-declarator
+                             &optional dimension ; nil, *, or an assignment-expression.
+                             &key (const nil) (restrict nil) (volatile nil) (atomic nil) (static nil))
+  :generate (progn
+              (typecase sub-declarator
+                ;; or use some *level* and priority
+                ((or c-function c-vector        ; direct-declarator
+                     expr-scope absolute-scope) ; declarator-id
+                 (generate sub-declarator))
+                (declarator
+                 (with-parens "()"
+                   (generate sub-declarator)))
+                (c-item
+                 (error "A random C-ITEM ~S as C-VECTOR sub-declarator, really?"
+                        sub-declarator))
+                (t ;; raw declarator-id
+                 (generate sub-declarator)))
+              (with-parens "[]"
+                (let ((genspace nil))
+                  (when const     (when genspace (emit " ")) (emit "const")    (setf genspace t))
+                  (when restrict  (when genspace (emit " ")) (emit "restrict") (setf genspace t))
+                  (when volatile  (when genspace (emit " ")) (emit "volatile") (setf genspace t))
+                  (when atomic    (when genspace (emit " ")) (emit "_Atomic")  (setf genspace t))
+                  (when dimension (when genspace (emit " ")) (generate dimension))))))
+
+;; (generate (c-vector 'arr (assign 'a 42) :const t :restrict t :volatile t :atomic t :static t))
+;; arr[const restrict volatile _Atomic a=42]
+;; (generate (c-vector 'arr '* :const t))
+;; arr[const CommonLisp_*]
+;; (generate (c-vector 'arr nil :const t))
+;; arr[const]
 
 (define-declarator c-function (sub-declarator
                                parameters
-                               &key (const nil) (volatile nil) throw)
+                               &key (const nil) (volatile nil) (throw-list nil))
   :generate (progn
               (typecase sub-declarator
                 ;; or use some *level* and priority
@@ -1269,36 +1369,13 @@ exclusive, but one must be given when :arguments is not given.")
                                parameters))
               (when const    (emit " " "const"))
               (when volatile (emit " " "volatile"))
-              (when (slot-boundp self 'throw)
+              (when (slot-boundp self 'throw-list)
                 (emit " " "throw")
                 (with-parens "()"
                   (generate-list ","
                                  (function generate)
-                                 throw)))
+                                 throw-list)))
               (emit " ")))
 
 
-(define-declarator c-vector (sub-declarator &optional dimension)
-  :generate (progn
-              (typecase sub-declarator
-                ;; or use some *level* and priority
-                ((or c-function c-vector        ; direct-declarator
-                     expr-scope absolute-scope) ; declarator-id
-                 (generate sub-declarator))
-                (declarator
-                 (with-parens "()"
-                   (generate sub-declarator)))
-                (c-item
-                 (error "A random C-ITEM ~S as C-VECTOR sub-declarator, really?"
-                        sub-declarator))
-                (t ;; raw declarator-id
-                 (generate sub-declarator)))
-              (with-parens "[]"
-                (generate dimension))))
-
-
-
-
 ;;;; THE END ;;;;
-
-
