@@ -87,7 +87,7 @@
    "SIMPLE-PROGRAM-ERROR-FORMAT-ARGUMENTS"
    ;; 3 - EVALUATION AND COMPILATION
    "WITH-FUNCTIONS" "WITH-GENSYMS" "WSIOSBP" "PROGN-CONCAT"
-   "CURRY" "COMPOSE" "COMPOSE-AND-CALL"
+   "CURRY" "RCURRY" "COMPOSE" "COMPOSE-AND-CALL"
    "/NTH-ARG" "/APPLY"
    "DEFINE-IF-UNDEFINED"  "INCLUDE-FILE" "FUNCTIONAL-PIPE"
    "FIRST-ARG" "SECOND-ARG" "THIRD-ARG" "FOURTH-ARG" "FIFTH-ARG"
@@ -250,6 +250,10 @@ The *PACKAGE* is kept bound to the current package.
 
 (defun curry (function &rest left-arguments)
   (lambda (&rest right-arguments)
+    (apply function (append left-arguments right-arguments))))
+
+(defun rcurry (function &rest right-arguments)
+  (lambda (&rest left-arguments)
     (apply function (append left-arguments right-arguments))))
 
 ;; (defmacro curry (function &rest left-arguments)
