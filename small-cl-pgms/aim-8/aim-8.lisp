@@ -166,7 +166,7 @@ Extensions:
       (format *error-output* "~&"))
      (condition
       (err)
-      (format *error-output* "~&~A: ~%  ~S~%" (class-name (class-of err)) err))))
+      (format *error-output* "~&~A: ~%  ~A~%" (class-name (class-of err)) err))))
 
 
 (defun repl ()
