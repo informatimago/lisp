@@ -324,11 +324,14 @@ USE:        A package use list to use.  When given, STEPPER is ignored.
         (pjb         "COM.INFORMATIMAGO.PJB")
         (cl-stepper  "COM.INFORMATIMAGO.COMMON-LISP.LISP.STEPPER")
         (interactive "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.INTERACTIVE")
-        (name        (if name
-                         (string name)
-                         (loop
-                           :for i :from 1 :for p = (format nil "USER~A" i)
-                           :while (find-package p) :finally (return p)))))
+        (name        (loop
+                       :for i :from 0
+                       :for p = (if name
+                                    (string name)
+                                    (format nil "~A~A" name i))
+                         :then (format nil "~A~A" name i)
+                       :while (find-package p)
+                       :finally (return p))))
     (unless (find-package pjb)
       ;; Create a COM.INFORMATIMAGO.PJB package that reexports INTERACTIVE:
       (let ((pjb  (make-package pjb :use (list cl interactive)))
