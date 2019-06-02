@@ -1,0 +1,174 @@
+;; -*- mode:lisp -*-
+(include <stdbool.h> <stdint.h>)
+
+(declare-type foo-c-t  char)
+(declare-type foo-ui-t const unsigned int)
+(declare-type foo-n-t  foo-c-t)
+
+(declare-type type-101-t char)
+(declare-type type-102-t signed char)
+(declare-type type-103-t unsigned char)
+(declare-type type-104-t short)
+(declare-type type-105-t signed short)
+(declare-type type-106-t short int)
+(declare-type type-107-t signed short int)
+(declare-type type-108-t unsigned short)
+(declare-type type-109-t unsigned short int)
+(declare-type type-110-t int)
+(declare-type type-111-t signed)
+(declare-type type-112-t signed int)
+(declare-type type-113-t unsigned)
+(declare-type type-114-t unsigned int)
+(declare-type type-115-t long)
+(declare-type type-116-t signed long)
+(declare-type type-117-t long int)
+(declare-type type-118-t signed long int)
+(declare-type type-119-t unsigned long)
+(declare-type type-120-t unsigned long int)
+(declare-type type-121-t long long)
+(declare-type type-122-t signed long long)
+(declare-type type-123-t long long int)
+(declare-type type-124-t signed long long int)
+(declare-type type-125-t unsigned long long)
+(declare-type type-126-t unsigned long long int)
+(declare-type type-127-t float)
+(declare-type type-128-t double)
+(declare-type type-129-t long double)
+(declare-type type-130-t bool)
+(declare-type type-131-t float complex)
+(declare-type type-132-t double complex)
+(declare-type type-133-t long double complex)
+
+
+(declare-type type-201-t char)
+(declare-type type-202-t char signed)
+(declare-type type-203-t char unsigned)
+(declare-type type-204-t short)
+(declare-type type-205-t short signed)
+(declare-type type-206-t int short)
+(declare-type type-207-t int short signed)
+(declare-type type-208-t short unsigned)
+(declare-type type-209-t int short unsigned)
+(declare-type type-210-t int)
+(declare-type type-211-t signed)
+(declare-type type-212-t int signed)
+(declare-type type-213-t unsigned)
+(declare-type type-214-t int unsigned)
+(declare-type type-215-t long)
+(declare-type type-216-t long signed)
+(declare-type type-217-t int long)
+(declare-type type-218-t int long signed)
+(declare-type type-219-t long unsigned)
+(declare-type type-220-t int long unsigned)
+(declare-type type-221-t long long)
+(declare-type type-222-t long long signed)
+(declare-type type-223-t int long long)
+(declare-type type-224-t int long long signed)
+(declare-type type-225-t long long unsigned)
+(declare-type type-226-t int long long unsigned)
+(declare-type type-227-t float)
+(declare-type type-228-t double)
+(declare-type type-229-t double long)
+(declare-type type-230-t bool)
+(declare-type type-231-t complex float)
+(declare-type type-232-t complex double)
+(declare-type type-233-t complex double long)
+
+
+
+(declare-structure point
+                   (x int)
+                   (y int))
+
+(declare-union object
+                (c char)
+                (s short)
+                (i int)
+                (l long)
+                (f float)
+                (d double))
+
+(declare-type point-t (struct
+                       (x int)
+                       (y int)))
+
+(declare-type object-t (union
+                        (c char)
+                        (s short)
+                        (i int)
+                        (l long)
+                        (f float)
+                        (d double)))
+
+(declare-type qobject-t (struct
+                        (c const volatile atomic char)
+                        (s const volatile short)
+                        (i const atomic int)
+                        (l const volatile atomic long)
+                        (f  volatile atomic float)
+                        (d1 const double)
+                        (d2 const atomic double)
+                        (d3 volatile atomic double)
+                        (d4 const double)
+                        (d5 atomic double)
+                        (d6 double)
+                        (d7 const double)))
+
+(declare-type pflags-t (struct pflags
+                               (n int (bit 1))
+                               (c int (bit 1))
+                               (z int (bit 1))
+                               (mode int (bit 3))
+                               (supervisor int (bit 1))))
+
+(declare-enumeration color
+                     color-black
+                     color-red
+                     (color-green 2)
+                     (color-blue  4))
+
+(declare-type color-t
+              (enum (black 0)
+                    red
+                    (green 2)
+                    (blue  4)))
+
+(declare-type colored-point-t (struct
+                               (x double)
+                               (y double)
+                               (color color-t)))
+
+
+(declare-type atomic-int-t (atomic int))
+(declare-type atomic-unsigned-short-int-t (atomic unsigned short int))
+;; (declare-type atomic-volatile-unsigned-short-int-t (atomic volatile unsigned short int))
+(declare-type atomic-foo-c-t (atomic foo-c-t))
+
+(declare-type pointer-int-t                                     (pointer int))
+(declare-type pointer-unsigned-short-int-t                      (pointer unsigned short int))
+;; (declare-type pointer-const-volatile-const-unsigned-short-int-t (pointer const volatile const unsigned short int))
+;; (declare-type pointer-const-const-volatile-unsigned-short-int-t (pointer const const volatile unsigned short int))
+(declare-type pointer-foo-c-t                                   (pointer foo-c-t))
+(declare-type pointer-colored-point-t                           (pointer colored-point-t))
+
+(define-constant bufsize  (unsigned int) 1000)
+
+(declare-type array-int-t              (array int))
+(declare-type array-int-star-t         (array int *))
+(declare-type array-int-42-t           (array int 42))
+(declare-type array-uint-42-t          (array (unsigned int) static  (= a 42)))
+(declare-type array-uint-4bufsize-t    (array (unsigned int) static  (= a (* bufsize 4))))
+
+(declare-type function-int-int-t           (function (int)  int))
+(declare-type function-int-void-noreturn-t (function (int)  void))
+(declare-type function-int-int-inline-t    (function (int)  int))
+(declare-type function-int-x-int-int-t     (function ((x int)        (y int))         int))
+(declare-type function-uint-x-uint-int-t   (function ((unsigned int) (unsigned int))  int))
+
+(declare-type flist-t (struct
+                       (count unsigned)
+                       (funs  (array ((function ((pointer object-t) (pointer char) (unsigned int)) int))))))
+
+(declare-function cons ((car (pointer object-t)) (cdr (pointer object-t))) (pointer object-t))
+(declare-function car ((cons (pointer object-t))) (pointer object-t))
+(declare-function cdr ((cons (pointer object-t))) (pointer object-t))

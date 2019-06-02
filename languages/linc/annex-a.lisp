@@ -1,4 +1,8 @@
-(defparameter *ansi-c-grammar* 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
+(in-package "COM.INFORMATIMAGO.LANGUAGES.LINC")
+
+(defparameter *ansi-c-grammar*
   '(("(6.4)" token -->
      keyword
      identifier
@@ -636,7 +640,7 @@
     ("(6.10)" group -->
      group-part
      (group group-part))
-    
+
     ("(6.10)" group-part -->
      if-section
      (control-line text-line)
@@ -677,19 +681,23 @@
 
     ("(6.10)" text-line -->
      ((opt pp-tokens) new-line))
-    
+
     ("(6.10)" non-directive -->
      (pp-tokens new-line))
-    
+
     ("(6.10)" lparen -->
      |a ( character not immediately preceded by white-space|)
-    
+
     ("(6.10)" replacement-list -->
      (opt pp-tokens))
-    
+
     ("(6.10)" pp-tokens -->
      preprocessing-token
      (pp-tokens preprocessing-token))
 
     ("(6.10)" new-line -->
      |the new-line character|)))
+
+
+
+

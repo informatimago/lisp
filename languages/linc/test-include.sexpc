@@ -1,0 +1,11 @@
+
+(include "foo.h")
+(include <foo.h>)
+(include "foo.h" "bar.h" <baz.h>)
+
+(include)
+(include "foo\".h")
+(include <foo>bar.h>)
+(include "good1.h" "foo\".h" "good2.h")
+(include <good1.h> <foo>bar.h> <good2.h>)
+

@@ -55,7 +55,7 @@ generate a corresponding C source.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.2.0"
+  :version "1.3.0"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "2007")
                ((#:albert #:output-dir)          . "../documentation/com.informatimago.linc/")
@@ -63,14 +63,21 @@ generate a corresponding C source.
                ((#:albert #:docbook #:template)  . "book")
                ((#:albert #:docbook #:bgcolor)   . "white")
                ((#:albert #:docbook #:textcolor) . "black"))
-  :depends-on ("split-sequence"
+  :depends-on ("babel"
                "closer-mop"
+               "split-sequence"
                "com.informatimago.common-lisp.cesarum")
   :components ((:file "packages")
+               (:file "c-string-reader"    :depends-on ("packages"))
+               (:file "readtable"          :depends-on ("packages" "c-string-reader"))
                (:file "c-syntax"           :depends-on ("packages"))
                (:file "c-operators"        :depends-on ("packages" "c-syntax"))
                ;; Not yet (:file "c++-syntax"         :depends-on ("packages"))
-               (:file "linc"               :depends-on ("packages" "c-syntax" "c-operators")))
+               ;; (:file "linc"               :depends-on ("packages" "c-syntax" "c-operators"))
+               (:file "c-runtime"          :depends-on ("packages"))
+               (:file "c-sexp-loader"      :depends-on ("packages" "readtable" "c-runtime"))
+               (:file "c-sexp-compiler"    :depends-on ("packages" "readtable" "c-runtime"))
+               (:file "c-sexp-translator"  :depends-on ("packages" "readtable")))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.linc.test"))))
 

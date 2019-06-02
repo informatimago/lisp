@@ -35,14 +35,14 @@
   (setf *readtable* (copy-readtable nil)))
 (in-package "COM.INFORMATIMAGO.LANGUAGES.LINC")
 
-(make-declare com.informatimago.languages.linc.c::variable  "A variable.")
-(make-declare com.informatimago.languages.linc.c::class     "A class.")
-(make-declare com.informatimago.languages.linc.c::struct    "A struct.")
-(make-declare com.informatimago.languages.linc.c::union     "A union.")
-(make-declare com.informatimago.languages.linc.c::type      "A type.")
-(make-declare com.informatimago.languages.linc.c::enum      "An enum.")
-(make-declare com.informatimago.languages.linc.c::function  "A function.")
-(make-declare com.informatimago.languages.linc.c::macro     "A preprocessor macro.")
+(make-declare variable  "A variable.")
+(make-declare class     "A class.")
+(make-declare struct    "A struct.")
+(make-declare union     "A union.")
+(make-declare type      "A type.")
+(make-declare enum      "An enum.")
+(make-declare function  "A function.")
+(make-declare macro     "A preprocessor macro.")
 
 (gen-operators)
 

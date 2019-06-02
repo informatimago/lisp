@@ -1,16 +1,20 @@
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *readtable* (copy-readtable nil)))
 (in-package "COM.INFORMATIMAGO.LANGUAGES.LINC")
 
-(defvar *c-readtable*
+(define-condition simple-stream-error (stream-error simple-condition)
+  ()
+  (:report (lambda (condition stream)
+             (format stream "~?"
+                     (simple-condition-format-control condition)
+                     (simple-condition-format-arguments condition)))))
+
+(defparameter *c-readtable-without-reader-macros*
   (let ((rt (copy-readtable nil)))
     (setf (readtable-case rt) :preserve)
-    rt)
-  "Readtable to read S-expified C code.")
+    rt))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defvar *c-package-name*  "COM.INFORMATIMAGO.LANGUAGES.LINC.C")
-  (defvar *c-opening-brace* 'COM.INFORMATIMAGO.LANGUAGES.LINC.C::\{ )
-  (defvar *c-closing-brace* 'COM.INFORMATIMAGO.LANGUAGES.LINC.C::\} )
-  (defvar *c-progn*         'COM.INFORMATIMAGO.LANGUAGES.LINC.C::|progn| ))
+(defvar *c-readtable*)
 
 (defun read-c-sexp-list (stream)
   (let ((*package*   (load-time-value (find-package *c-package-name*)))
@@ -46,33 +50,58 @@
   (declare (ignore ch sub))
   (cons *c-progn* (read-c-sexp-list stream)))
 
-(defmacro enable-c-sexp-reader-macros ()
+(defparameter *c-spaces* #(#\space #\tab #\newline #\page))
+
+(defun read-dot-and-ellipsis (stream)
+  (let ((buffer (make-array 80 :element-type 'character
+                               :fill-pointer 0
+                               :adjustable t)))
+    (vector-push #\. buffer)
+    (loop
+      :for ch := (peek-char nil stream)
+      :while (char= #\. ch)
+      :do (vector-push-extend (read-char stream) buffer)
+      :finally (return
+                 (multiple-value-bind (fun non-terminating-p) (get-macro-character ch)
+                   (if (if fun non-terminating-p (not (find ch *c-spaces*)))
+                       (with-input-from-string (buffer-stream buffer)
+                         (let ((input (make-concatenated-stream buffer-stream stream))
+                               (*readtable* *c-readtable-without-reader-macros*))
+                           (read input)))
+                       (case (length buffer)
+                         ((1 3) (intern buffer))
+                         (otherwise (error 'simple-stream-error
+                                           :stream stream
+                                           :format-control "Invalid token ~S"
+                                           :format-arguments (list buffer))))))))))
+
+(defun reader-macro-dot-and-ellipsis (stream ch)
+  (declare (ignore ch))
+  (read-dot-and-ellipsis stream))
+
+(defmacro enable-c-sexp-reader-macros (&optional (readtable '*readtable*))
   `(eval-when (:compile-toplevel :load-toplevel :execute)
-     (set-macro-character #.(character *c-opening-brace*)
+     (set-macro-character #\"
+                          (function read-c-string)
+                          nil
+                          ,readtable)
+     (set-macro-character #\.
+                          (function reader-macro-dot-and-ellipsis)
+                          t
+                          ,readtable)
+     (set-macro-character *c-opening-brace*
                           (function reader-macro-c-sexp-list)
                           nil
-                          *readtable*)
-     (set-dispatch-macro-character #\# #.(character *c-opening-brace*)
+                          ,readtable)
+     (set-dispatch-macro-character #\# *c-opening-brace*
                                    (function reader-dispatching-macro-c-sexp-list)
-                                   *readtable*)))
+                                   ,readtable)))
 
-(defun test/reader-c-sexp-list ()
-  (assert (equal
-           (with-input-from-string (input "
-        (sscanf b \"%d\" (address bv))
-        (sprintf res \"%d\" (+ a b))
-        (return res)
-   })")
-             (read-c-sexp-list input))
-           '((com.informatimago.languages.linc.c::|sscanf| com.informatimago.languages.linc.c::\b "%d"
-              (com.informatimago.languages.linc.c::|address| com.informatimago.languages.linc.c::|bv|))
-             (com.informatimago.languages.linc.c::|sprintf| com.informatimago.languages.linc.c::|res| "%d"
-              (com.informatimago.languages.linc.c::+ com.informatimago.languages.linc.c::\a
-               com.informatimago.languages.linc.c::\b))
-             (com.informatimago.languages.linc.c::|return| com.informatimago.languages.linc.c::|res|))))
-  :success)
-
-
+(defparameter *c-readtable*
+  (let ((rt (copy-readtable *c-readtable-without-reader-macros*)))
+    (enable-c-sexp-reader-macros rt)
+    rt)
+  "Readtable to read S-expified C code.")
 
 (defun print-c-sexp-form (form &optional (*standard-output* *standard-output*))
   (let ((*package* (load-time-value (find-package *c-package-name*)))
@@ -84,26 +113,4 @@
     (write-line "}")
     (values)))
 
-;;; ----------------------------------------
-
-(test/reader-c-sexp-list)
-
-(enable-c-sexp-reader-macros)
-
-(defparameter *c-source* '#{
-
-                            (define-function string_add ((a (char *)) (b (char *))) (char *)
-                              (let ((av int)
-                                    (bv int)
-                                    (res (char *) (malloc (+ 2 (max (strlen a) (strlen b))))))
-                                (sscanf a "%d" (address av))
-                                (sscanf b "%d" (address bv))
-                                (sprintf res "%d" (+ a b))
-                                (return res)))
-
-                            })
-
-;; (print-c-sexp-form *c-source*)
-
-
-
+;;;; THE END ;;;;

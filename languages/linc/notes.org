@@ -1,6 +1,125 @@
 * Specifications
-
 ** linc syntax
+*** preprocessing-tokens
+**** #include
+
+#+BEGIN_EXAMPLE
+(include <foo.h>|"foo.h" …)
+#+END_EXAMPLE
+
+**** rest
+In (#… ) expressions pp-tokens are sequences of symbol, integers
+floating-point numbers or strings.  Depending on the # operator, the
+strings are taken literally, or assumed to contain the text to be used
+in the generation of the operator.
+
+This may lead to the need of escaping strings in strings in some cases.
+
+#+BEGIN_EXAMPLE
+(#define foo "bar baz")
+-->
+#define foo bar baz
+
+(#define foo "bar \"baz\"")
+-->
+#define foo bar "baz"
+
+(#include "foo.h")
+-->
+#includle "foo.h"
+
+(#include <foo.h>)
+-->
+#include <foo.h>
+#+END_EXAMPLE
+
+
+#+BEGIN_EXAMPLE
+    (#define foo         "bar baz")
+    (#define foo (x)     "bar x baz")
+    (#define foo (x ...) "bar VA_ARGS baz")
+    (#undef foo)
+    (#line "file.c" 33
+    (#line 42
+    (#error "Not implemented yet")
+    (#pragma foo 42 "bar baz")
+    (#)
+
+    ;; #if/#ifdef/#ifndef
+    (#if condition
+      (c-code)
+     #elif condition
+      (c-code)
+     #else
+      (c-code))
+
+    ;; #cond
+    (#cond
+      (condition (c-code))
+      (condition (c-code))
+      (t         (c-code)))
+
+    ;; condition can be (defined foo)
+#+END_EXAMPLE
+
+*** other
+
+#+BEGIN_EXAMPLE
+We don't allow:
+
+INVALID:
+                (function (x y z) -> int)
+
+for function types,
+and we don't allow:
+
+INVALID:
+                (declare-function name (x y z) -> int
+                      (declare-variable x int)
+                      (declare-variable y int)
+                      (declare-variable z int)
+                   (block (return (+ x y z))))
+for declarations.
+
+But (function (int float) -> int)
+is valid as is (function ((x int) (y float)) -> int)
+But for multi-word types, they must have to be in parenthesis:
+   (function ((long int) (short int)) -> int)
+#+END_EXAMPLE
+*** statements
+  (break)
+  (continue)
+  (label foo)
+  (goto foo)
+  (asm "string")
+  (return [expression])
+
+  (switch expression
+    (case val1
+      stmts)
+    (case val2
+      stmts)
+    (default
+     stmts))
+  (block
+      stmts…)
+  (if expression
+      stmts
+      [stmts])
+  (while expression
+    stmts…)
+  (do
+   stmts…
+   while expression)
+  (for (init test incr)
+    stmts…)
+
+  (let (bindings…)
+    stmts)
+  (let* (bindings…)
+    stmts)
+  (cond
+    (()))
 
 ** Usage
 
@@ -11,7 +130,6 @@ or read from =.linc= files.
 Linc forms can be either translated to C source ie. "compiled",
 or "interpreted" directly in lisp, for development and debugging purpose,
 with some limitations on use of external C objects (CFFI can be used).
-
 
 #+BEGIN_EXAMPLE
 (defparameter *c-source* '#{
@@ -41,14 +159,20 @@ linc-compile-file (input-file &key verbose print
 #+END_EXAMPLE
 
 
+Each syntactic element is represented by:
+- a lisp class,
+- with a PRINT-OBJECT method to output the constructor form,
+- with a constructor to make an instance.
+- with a C-SEXP method to output the C sexp,
+- with a GENERATE method to emit the C code,
+- the C sexp operator is interned in COM.INFORMATIMAGO.LANGUAGES.LINC.C, and is aliased to the contructor.
+
 * README
 
 Mon Jul  2 19:28:51 CEST 2012
 
 This project is published as-is.
 It is far from finished.
-
-
 
 Tue Oct  4 16:14:25 CEST 2005
 
@@ -905,3 +1029,174 @@ Each syntactic element is represented by:
 - with a GENERATE method to emit the C code,
 - the C sexp operator is interned in COM.INFORMATIMAGO.LANGUAGES.LINC.C, and is aliased to the contructor.
 
+
+#+BEGIN_EXAMPLE
+
+
+    ("(6.7.1)" storage-class-specifier -->
+     |typedef|
+     |extern|
+     |static|
+     |_Thread_local|
+     |auto|
+     |register|)
+
+    ("(6.7.2)" type-specifier -->
+     |void|
+     |char|
+     |short|
+     |int|
+     |long|
+     |float|
+     |double|
+     |signed|
+     |unsigned|
+     |_Bool|
+     |_Complex|
+     atomic-type-specifier
+     struct-or-union-specifier
+     enum-specifier
+     typedef-name)
+
+    ("(6.7.3)" type-qualifier -->
+     |const|
+     |restrict|
+     |volatile|
+     |_Atomic|)
+
+
+    ("(6.7.4)" function-specifier -->
+     |inline|
+     |_Noreturn|)
+
+    ("(6.7.5)" alignment-specifier -->
+     (|_Alignas| \( type-name \))
+     (|_Alignas| \( constant-expression \)))
+
+    ("(6.7.6)" declarator -->
+     ((opt pointer) direct-declarator))
+
+
+declarations:
+
+     (storage-class-specifier (opt declaration-specifiers) (opt init-declararator) \;)
+     (type-specifier          (opt declaration-specifiers) (opt init-declararator) \;)
+     (type-qualifier          (opt declaration-specifiers) (opt init-declararator) \;)
+     (function-specifier      (opt declaration-specifiers) (opt init-declararator) \;)
+     (alignment-specifier     (opt declaration-specifiers) (opt init-declararator) \;)
+     static_assert-declaration
+
+declarator:
+     ((opt pointer) direct-declarator))
+
+direct-declarator:
+     identifier
+     (\( declarator \))
+     (direct-declarator \[ (opt type-qualifier-list) (opt assignment-expression) \])
+     (direct-declarator \[ static (opt type-qualifier-list) assignment-expression \])
+     (direct-declarator \[ type-qualifier-list static assignment-expression \])
+     (direct-declarator \[ (opt type-qualifier-list) \* \])
+     (direct-declarator \( parameter-type-list \))
+     (direct-declarator \( (opt identifier-list) \)))
+
+
+
+#+END_EXAMPLE
+
+
+
+toplevel forms:
+
+#+BEGIN_EXAMPLE
+
+(include <file>)
+(include "file")
+
+(declare-structure   name slots)
+(declare-union       name alternatives)
+(declare-type        name type)
+(declare-enumeration name values)
+
+(declare-constant    name type)
+(define-constant     name type value)
+
+(declare-variable    name type)
+(define-variable     name type value)
+
+(declare-function    name lambda-list type [inline] [noreturn])
+(define-function     name lambda-list type [inline] [noreturn] &body body)
+
+(define-macro        name [lambda-list] expansion-string)
+
+
+// future?
+
+(declare-constant    name [extern] [static] [thread-local] [const] [restrict] [volatile] [atomic] type)
+(define-constant     name [extern] [static] [thread-local] [const] [restrict] [volatile] [atomic] type value)
+
+(declare-variable    name [extern] [static] [thread-local] [const] [restrict] [volatile] [atomic] type)
+(define-variable     name [extern] [static] [thread-local] [const] [restrict] [volatile] [atomic] type value)
+
+(declare-function    name [extern] [static] [thread-local] [inline] [noreturn] lambda-list type)
+(define-function     name [extern] [static] [thread-local] [inline] [noreturn] lambda-list type &body body)
+
+(define-macro        name [lambda-list] expansion)
+
+#+END_EXAMPLE
+
+
+|---------------+---------|
+| typedef       | typ     |
+|---------------+---------|
+| extern        | var fun |
+| static        | var fun |
+|---------------+---------|
+| _Thread_local | var     |
+| auto          | var     |
+| register      | var     |
+
+
+|----------+-----|
+| const    | typ |
+| restrict | typ |
+| volatile | typ |
+| _Atomic  | typ |
+
+
+| c        | lisp     |
+|----------+----------|
+| void     | void     |
+| char     | char     |
+| short    | short    |
+| int      | int      |
+| long     | long     |
+| float    | float    |
+| double   | double   |
+| signed   | signed   |
+| unsigned | unsigned |
+| _Bool    | bool     |
+| _Complex | complex  |
+
+|--------------------+---|
+| void               | 0 |
+|--------------------+---|
+| bool               |   |
+| float              |   |
+| double             |   |
+| complex            |   |
+|--------------------+---|
+| char               | 1 |
+| signed char        | 1 |
+| unsigned char      | 1 |
+| short              | 2 |
+| signed short       | 2 |
+| unsigned short     | 2 |
+| int                | 4 |
+| signed int         | 4 |
+| unsigned int       | 4 |
+| long               | 8 |
+| signed long        | 8 |
+| unsigned long      | 8 |
+| long long          | 8 |
+| signed long long   | 8 |
+| unsigned long long | 8 |

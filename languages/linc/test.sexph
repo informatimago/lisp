@@ -1,0 +1,73 @@
+;;;; -*- mode:lisp -*-
+
+(.ifndef test-sexph
+
+  (include <stdint.h>)
+  (include <stdbool.h>)
+
+  (declare-function checked-malloc ((size size-t)) -> (pointer void))
+
+  (declare-structure point
+    (x float)
+    (y float)
+    (color uint32-t (bit 3)))
+
+  (declare-enumeration object-type
+    t-cons
+    t-fixnum
+    t-character
+    t-string
+    t-symbol)
+
+  (declare-structure cons
+    (car (struct object))
+    (cdr (struct object)))
+
+  (declare-union values
+    (kons cons)
+    (fixv sint64-t)
+    (flov double)
+    (stri string)
+    (symb symbol))
+
+  (declare-type object
+    (struct
+     (tag   object-type)
+     (value values)))
+
+  (declare-constant max-objects uint32-t)
+  (declare-variable next-object uint32-t)
+  (declare-function cons ((car (pointer object))
+                          (cdr (pointer object)))         -> cons)
+  (declare-function car ((kons (pointer object const)))   -> (pointer object))
+  (declare-function cdr ((kons (pointer object const)))   -> (pointer object))
+  (declare-function consp ((kons (pointer object const))) -> bool)
+
+  )
+
+
+(define-constant max-objects uint32-t 1024)
+(define-variable next-object uint32-t 0)
+
+(define-function cons ((car (pointer object))
+                       (cdr (pointer object))) -> cons
+  (let ((kons (checked-malloc (sizeof (* kons)))))
+    (when (== kons NULL)
+      (return NULL))
+    (= (-> kons tag) t-cons)
+    (= (. (-> kons value) kons car) car)
+    (= (. (-> kons value) kons cdr) cdr)
+    (return kons)))
+
+(define-function car ((kons (pointer object const))) -> (pointer object)
+  (check-type kons t-cons)
+  (return (. (-> kons value) kons car)))
+
+(define-function cdr ((kons (pointer object const))) -> (pointer object)
+  (check-type kons t-cons)
+  (return (. (-> kons value) kons cdr)))
+
+(define-function consp ((object (pointer object const))) -> bool
+  (check-type kons t-cons)
+  (return (. (-> kons value) kons cdr)))
+

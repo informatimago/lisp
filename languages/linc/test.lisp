@@ -33,10 +33,8 @@
 ;;;;**************************************************************************
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setf *readtable* (copy-readtable nil)))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package "COM.INFORMATIMAGO.LANGUAGES.LINC")
+
 (setf *c-out* (open "test.c" :direction :output
                     :if-exists :supersede
                     :if-does-not-exist :create))

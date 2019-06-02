@@ -457,8 +457,7 @@ RETURN:  A destructuring-lambda-list; a literal a-list ; a variable a-list.
          com.informatimago.languages.linc.c::>>
          com.informatimago.languages.linc.c::+
          com.informatimago.languages.linc.c::-
-         com.informatimago.languages.linc.c::*
-         com.informatimago.languages.linc.c::/
+         com.informatimago.languages.linc.c::*\\         com.informatimago.languages.linc.c::/
          com.informatimago.languages.linc.c::%
          com.informatimago.languages.linc.c::.*
          com.informatimago.languages.linc.c::->*
