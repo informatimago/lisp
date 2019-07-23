@@ -251,7 +251,7 @@ three synchronized.
               ;; probe-file to test directories in ccl…
 
 
-              (let ((probe-dirpath (make-pathname :name :unspecific :type :unspecific :version :unspecific
+              (let ((probe-dirpath (make-pathname :name nil :type nil :version nil
                                                   :directory dir
                                                   :defaults path)))
                 #+ccl (probe-file probe-dirpath)
