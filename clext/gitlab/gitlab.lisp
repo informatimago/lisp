@@ -74,8 +74,8 @@
    "LIST-ISSUES"))
 (in-package  "COM.INFORMATIMAGO.CLEXT.GITLAB")
 
-(defparameter *server* "149.202.216.117")
-(defparameter *private-token* "Yh981vkXptkUJTzoZw4x")
+(defvar *server*)
+(defvar *private-token*)
 
 
 (define-condition request-error (error)
