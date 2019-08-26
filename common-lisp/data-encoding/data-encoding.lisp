@@ -36,7 +36,8 @@
   (setf *readtable* (copy-readtable nil)))
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.DATA-ENCODING.DATA-ENCODING"
   (:use "COMMON-LISP"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SYMBOL")
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SYMBOL"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
   (:export "SIZE-OF-ENCTYPE" "ENCTYPE-INSTANCE" "ENCTYPE-WRITE" "ENCTYPE-READ"
            "MAKE-ENCTYPE" "DEF-ENCRECORD" "DEF-ENCTYPE")
   (:documentation
@@ -1153,6 +1154,7 @@ DO:      Read from the OUTPUT a value of type ENCTYPE.
 RETURN:  The decoded list value.
 ")
   (:method   (encname enctype (buffer vector))
+    (declare (ignorable encname))
     (get-value enctype buffer 0))
   (:method   (encname enctype (stream stream))
     (let* ((buffer (make-array (list (size-of-enctype enctype))
@@ -1170,7 +1172,7 @@ RETURN:  The decoded list value.
 DO:      Write to the OUTPUT a value of type ENCTYPE.
 ")
   (:method   (encname enctype (buffer vector) value)
-    (declare (ignore encname))
+    (declare (ignorable encname))
     (set-value enctype buffer 0 value))
   (:method   (encname enctype (stream stream) value)
     (declare (ignore encname))
