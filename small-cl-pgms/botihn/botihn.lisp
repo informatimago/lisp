@@ -244,11 +244,11 @@ extracted from the give STORY a-list."
 Updates the *LAST-STORY* ID."
   (dolist (id (get-new-stories))
     (let ((story (story id)))
-     (unless (blacklistedp story)
-       (let ((message (format-story story)))
-         (when message
-           (funcall send message))
-         (setf *last-story* story))))))
+      (unless (blacklistedp story)
+        (let ((message (format-story story)))
+          (when message
+            (funcall send message)))))
+    (setf *last-story* id)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
