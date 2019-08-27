@@ -1,11 +1,11 @@
-;; -*- mode:list; package:com.informatimago.languages.linc.c -*-
+;; -*- mode:lisp; package:com.informatimago.languages.linc.c -*-
 
 (include <stdio.h> <stdlib.h>)
 
 (define-function main ((argc int) (argv (pointer (pointer char)))) int
 
     (let ((i int 0))
-      
+
       (while (< i 10)
         (goto start1)
         (+= i 2)
@@ -45,6 +45,5 @@
         (if (== 0 (% i 3))
             (+= i 2)
             (+= i 3)))
-      
-      (return 0)))
 
+      (return 0)))

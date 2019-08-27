@@ -74,9 +74,9 @@
    "LIST-ISSUES"))
 (in-package  "COM.INFORMATIMAGO.CLEXT.GITLAB")
 
+(defvar *verbose* nil)
 (defvar *server*)
 (defvar *private-token*)
-
 
 (define-condition request-error (error)
   ((status-code :initarg :status-code :reader request-error-status-code)
@@ -92,9 +92,6 @@
                      (request-error-uri condition)
                      (mapcar (lambda (cell) (list (car cell) (cdr cell)))
                              (request-error-headers condition))))))
-
-(defvar *verbose* nil)
-
 
 (defun aget (alist key) (cdr (assoc key alist)))
 (defun (setf aget) (new-value alist key)

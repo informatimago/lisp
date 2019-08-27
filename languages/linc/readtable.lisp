@@ -11,6 +11,7 @@
 
 (defparameter *c-readtable-without-reader-macros*
   (let ((rt (copy-readtable nil)))
+    (set-syntax-from-char #\# #\a rt)
     (setf (readtable-case rt) :preserve)
     rt))
 
@@ -50,6 +51,12 @@
   (declare (ignore ch sub))
   (cons *c-progn* (read-c-sexp-list stream)))
 
+(defun reader-dispatching-macro-c-preprocessor-token (stream ch sub)
+  (declare (ignore ch))
+  (let ((*readtable* *c-readtable-without-reader-macros*))
+    (with-input-from-string (prefix (format nil "#~C" sub))
+      (read (make-concatenated-stream prefix stream)))))
+
 (defparameter *c-spaces* #(#\space #\tab #\newline #\page))
 
 (defun read-dot-and-ellipsis (stream)
@@ -79,23 +86,18 @@
   (declare (ignore ch))
   (read-dot-and-ellipsis stream))
 
+(defun set-c-sexp-reader-macros (readtable)
+  (set-macro-character #\"                            (function read-c-string)                             nil readtable)
+  (set-macro-character #\.                            (function reader-macro-dot-and-ellipsis)             t   readtable)
+  (set-macro-character *c-opening-brace*              (function reader-macro-c-sexp-list)                  nil readtable)
+  ;; (set-dispatch-macro-character #\# #\i               (function reader-dispatching-macro-c-preprocessor-token) readtable)
+  ;; (set-dispatch-macro-character #\# #\e               (function reader-dispatching-macro-c-preprocessor-token) readtable)
+  ;; (set-dispatch-macro-character #\# *c-opening-brace* (function reader-dispatching-macro-c-sexp-list)          readtable)
+  readtable)
+
 (defmacro enable-c-sexp-reader-macros (&optional (readtable '*readtable*))
   `(eval-when (:compile-toplevel :load-toplevel :execute)
-     (set-macro-character #\"
-                          (function read-c-string)
-                          nil
-                          ,readtable)
-     (set-macro-character #\.
-                          (function reader-macro-dot-and-ellipsis)
-                          t
-                          ,readtable)
-     (set-macro-character *c-opening-brace*
-                          (function reader-macro-c-sexp-list)
-                          nil
-                          ,readtable)
-     (set-dispatch-macro-character #\# *c-opening-brace*
-                                   (function reader-dispatching-macro-c-sexp-list)
-                                   ,readtable)))
+     (set-c-sexp-reader-macros ,readtable)))
 
 (defparameter *c-readtable*
   (let ((rt (copy-readtable *c-readtable-without-reader-macros*)))

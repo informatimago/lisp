@@ -123,16 +123,101 @@
                                                                      :format-arguments (list file)))))
                                      files))))
 
-(defun parse-ifdef (form)
-  (not-implemented-yet 'parse-ifdef form))
-
-(defun parse-ifndef (form)
-  (not-implemented-yet 'parse-ifndef form))
-
-(defun parse-if (form)
-  (not-implemented-yet 'parse-if form))
 
 
+;;;---------------------------------------------------------------------
+(defclass preprocessor-conditional (c-item)
+  ((operator :initarg :operator
+             :reader preprocessor-conditional-operator
+             :type (member |#if| |#ifdef| |#ifndef| |#elif| |#else| |#endif|))
+   (expression :initarg :expression
+               :initform nil
+               :reader preprocessor-conditional-expression)))
+
+(defun preprocessor-conditional (operator &optional expression)
+  (make-instance 'preprocessor-conditional
+                 :operator operator
+                 :expression expression))
+
+(defmethod generate ((item preprocessor-conditional))
+  (let ((*indent* 0))
+    (emit :fresh-line (format nil "~(~A~)" (preprocessor-conditional-operator item)))
+    (when (preprocessor-conditional-expression item)
+      (emit " ")
+      (generate (preprocessor-conditional-expression item)))
+    (emit :newline)))
+
+
+#|
+
+(#ifdef test
+        expression
+        …
+#elif test
+        expression
+        …
+#else
+        expression
+        …
+#endif)
+
+
+(#ifdef test)
+expression
+…
+(#elif test)
+expression
+…
+(#else)
+expression
+…
+(#endif)
+
+|#
+
+(defun split-preprocessor (forms)
+  (nsplit-list-on-indicator (copy-list forms)
+                            (lambda (previous current)
+                              (declare (ignore previous))
+                              (member current '(|#ifdef| |#ifndef| |#if| |#elif| |#else| |#endif|)))))
+
+(defun parse-preprocessor (forms)
+  (labels ((expect-argument (section)
+             (when (null (rest section))
+               (error 'linc-program-error :source-form *source-form* :source-file *translate-linc-truename*
+                                          :format-control "Missing argument after ~A"
+                                          :format-arguments (list (first section)))))
+           (expect-symbol-argument (section)
+             (expect-argument section)
+             (unless (symbolp (second section))
+               (error 'linc-program-error :source-form *source-form* :source-file *translate-linc-truename*
+                                          :format-control "Expected a symbol argument after ~A, not the expression ~S"
+                                          :format-arguments (list (first section) (second section)))))
+           (expect-nothing (section)
+             (when (rest section)
+               (error 'linc-program-error :source-form *source-form* :source-file *translate-linc-truename*
+                                          :format-control "Expected nothing after ~A, instead got: ~A"
+                                          :format-arguments (list (first section) (rest section))))))
+    (make-instance 'c-sequence
+                   :elements
+                   (mapcan (lambda (section)
+                             (let ((*source-form* section))
+                               (ecase (first section)
+                                 ((|#ifdef| |#ifndef|)
+                                  (expect-symbol-argument section)
+                                  (cons (preprocessor-conditional (first section) (second section))
+                                        (mapcar (function parse-linc-form) (rest (rest section)))))
+                                 ((|#if| |#elif|)
+                                  (expect-argument section)
+                                  (cons (preprocessor-conditional (first section) (parse-expression (second section)))
+                                        (mapcar (function parse-linc-form) (rest (rest section)))))
+                                 ((|#else|)
+                                  (cons (preprocessor-conditional (first section) nil)
+                                        (mapcar (function parse-linc-form) (rest section))))
+                                 ((|#endif|)
+                                  (expect-nothing section)
+                                  (list (preprocessor-conditional (first section) nil))))))
+                           (split-preprocessor forms)))))
 
 
 ;;;---------------------------------------------------------------------
@@ -168,8 +253,9 @@
 (defun compound-type-form-p (form)
   (and (listp form) (find (first form) *compound-types*)))
 
- (defun function-specifier-p (item)
-   (find item '(|inline| |noreturn|)))
+(defun function-specifier-p (item)
+  (find item '(|inline| |noreturn|
+               |static|)))
 
 (defparameter *scalar-types* '(((|void|))
                                ((|char|))
@@ -336,7 +422,7 @@
 ;;----------------------------------------
 (defclass c-struct-union (c-named-type)
   ((operator :initarg :operator :reader c-struct-union-operator)
-   (slots :initarg :slots :initform '()  :reader c-struct-union-slots)))
+   (slots :initarg :slots :reader c-struct-union-slots)))
 
 (defun c-struct-union (name storage-classes qualifiers
                        operator slots)
@@ -351,7 +437,7 @@
   (when (c-type-name item)
     (emit " ")
     (generate (c-type-name item)))
-  (when (c-struct-union-slots item)
+  (when (slot-boundp item 'slots)
     (emit " ")
     (with-parens "{}"
       (dolist (slot (c-struct-union-slots item))
@@ -466,6 +552,7 @@ slot ::=
     (when name (check-identifier name))
     (c-struct-union name nil nil operator (mapcar (function parse-slot) type))))
 
+;; TODO: cannot distinguish:  struct foo;  from:  struct foo { };
 
 ;;----------------------------------------
 (defclass c-enum (c-named-type)
@@ -559,7 +646,7 @@ slot ::=
 
 (defmethod generate ((item c-pointer))
   (generate (c-pointer-type item))
-  (emit " " "*")
+  (emit "*")
   (dolist (qualifier  (c-type-qualifiers item))
     (emit " " (map-token qualifier *type-qualifiers-map*))))
 
@@ -684,7 +771,7 @@ slot ::=
         (setf sep ", ")))))
 
 (defun parse-function-signature (form)
-  ;; ((([identifer] type) |...|) type [inline|noreturn]… body…)
+  ;; ((([identifer] type) |...|) type [inline|noreturn|static]… body…)
   (check-type form list)
   (let ((current form))
     (unless (listp (first current))
@@ -764,6 +851,23 @@ slot ::=
       (type-specifiers (c-simple-type       type-specifiers        storage-classes type-qualifiers))
       (identifiers     (c-simple-type       (first identifiers)    storage-classes type-qualifiers))
       (compound-types  (parse-compound-type (first compound-types) storage-classes type-qualifiers)))))
+
+
+
+;;;---------------------------------------------------------------------
+(defclass c-declarator (c-item)
+  ((type       :initarg :type       :accessor c-declarator-type)
+   (declarator :initarg :declarator :accessor c-declarator-declarator)))
+
+(defmethod generate ((item c-declarator))
+  (generate (c-declarator-type item))
+  (emit " ")
+  (generate (c-declarator-declarator item)))
+
+
+;;(defgeneric (type declarator))
+;;(defmethod)
+
 
 ;;;---------------------------------------------------------------------
 (defclass c-declaration (c-item)
@@ -1028,7 +1132,7 @@ slot ::=
         (c-declaration (c-function name parameters return-type specifiers nil))))))
 
 (defun parse-define-function    (form)
-  ;; (define-function     name lambda-list type [inline] [noreturn] &body body)
+  ;; (define-function     name lambda-list type [inline] [noreturn] [static] &body body)
   (let ((current form))
     (pop current)
     (let ((name (pop current)))
@@ -1251,7 +1355,7 @@ slot ::=
                                   (parse-expression (second while)))))
         ((|case|)     (stmt-case  (parse-expression (second form))
                                   (ensure-block (rest (rest form)))))
-        ((|default|)  (stmt-default (ensure-block (rest (rest form)))))
+        ((|default|)  (stmt-default (ensure-block (rest form))))
         ;; syntax
         ((|if|)       (destructuring-bind (if test then &optional else) form
                         (stmt-if (parse-statement then)
@@ -1291,10 +1395,13 @@ slot ::=
                                                   :format-arguments (list form)))
     (t (let ((op (first form)))
          (case op
-           ((|include|)             (parse-include form))
-           ((|#ifdef|)              (parse-ifdef   form))
-           ((|#ifndef|)             (parse-ifndef  form))
-           ((|#if|)                 (parse-if      form))
+           ((|include|)             (parse-include             form))
+           ((|#ifdef|
+             |#ifndef|
+             |#if|
+             |#elif|
+             |#else|
+             |#endif|)              (parse-preprocessor        form))
            ((|declare-structure|)   (parse-declare-structure   form))
            ((|declare-union|)       (parse-declare-union       form))
            ((|declare-type|)        (parse-declare-type        form))

@@ -80,7 +80,7 @@
      ,@body))
 
 (defmacro with-parens (parens &body body)
-  `(let ((*priority* 999))
+  `(let ((*priority* -1))
      (emit ,(elt parens 0))
      (unwind-protect (with-indent ,@body)
        (emit ,(elt parens 1)))))
@@ -361,7 +361,8 @@ BUG: What about the character encoding of C strings?
 (defclass c-expression (c-item)
   ())
 
-(defmethod priority ((item c-expression)) 999)
+(defmethod priority ((item c-expression))
+  999)
 
 (defgeneric c-name (c-expression)
   (:method ((self c-expression))
@@ -375,16 +376,13 @@ BUG: What about the character encoding of C strings?
 
 (defmethod print-object ((self c-expression) stream)
   (if *print-readably*
-    (prin1 `(,(class-name (class-of self))
-              ,@(mapcar (lambda (arg) (if (cl:typep arg 'c-item) arg `(quote ,arg)))
-                        (arguments self)))
-           stream)
-    (print-unreadable-object (self stream :identity t :type t)
-      (with-slots (c-name priority associativity) self
-        (let ((arguments (arguments self)))
-          (format stream ":c-name ~S :priority ~A :associativity ~A ~
-                               :arguments ~A"
-                  c-name priority associativity arguments)))))
+      (prin1 `(,(class-name (class-of self))
+               ,@(mapcar (lambda (arg) (if (cl:typep arg 'c-item) arg `(quote ,arg)))
+                         (arguments self)))
+             stream)
+      (print-unreadable-object (self stream :identity t :type t)
+        (format stream ":priority ~A :arguments ~A"
+                (priority self)  (arguments self))))
   self)
 
 (defmethod c-sexp ((self c-expression))
@@ -722,7 +720,12 @@ exclusive, but one must be given when :arguments is not given.")
 ;;          (values)))))
 
 
+(defvar *debug-indent* 0)
 (defmethod generate :around ((self c-expression))
+  ;; (format t "~VA~D ~:[< ~;>=~] ~D  ~S ~%" *debug-indent* "" (priority self) (not (< (priority self) *priority*)) *priority* self)
+  ;; (let ((*debug-indent* (+ 3 *debug-indent*)))
+  ;;   )
+
   (if (< (priority self) *priority*)
       ;; need parentheses:
       (with-parens "()"
@@ -812,7 +815,6 @@ exclusive, but one must be given when :arguments is not given.")
     (:unary
      (expr-preincr         1   "++")
      (expr-predecr         1   "--"))
-
     (:unary
      (expr-lognot          1   "!")
      (expr-bitnot          1   "~")
@@ -1521,7 +1523,6 @@ exclusive, but one must be given when :arguments is not given.")
 ;;
 ;;                    (direct-declarator \( parameter-type-list \))
 ;;                    (direct-declarator \( (opt identifier-list) \)))
-
 
 
 ;; (define-declarator c-vector (sub-declarator

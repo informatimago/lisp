@@ -2,7 +2,19 @@
   (setf *readtable* (copy-readtable nil)))
 (in-package "COM.INFORMATIMAGO.LANGUAGES.LINC")
 
-(translate-linc-file "test-include.sexpc" :print t :verbose t)
+(cl-user::import-commands)
+(cd #P"~/src/public/lisp/languages/linc/")
 
-(cc (translate-linc-file "test-types.sexpc" :print t :verbose t)
-    :output "test-types.o" :to :object :options '("-Werror" "-Wall"))
+(dolist (test-sexpc '("test-include.sexpc"
+                      "test-macros.sexpc"
+                      "test-types.sexpc"
+                      "test-expressions.sexpc"
+                      "test-statements.sexpc"))
+  (cc (translate-linc-file test-sexpc :print t :verbose t)
+      :output (make-pathname :type "o" :defaults test-sexpc :case :local)
+      :to :object
+      :options '("-Werror" "-Wall")))
+
+;; (ql:quickload :com.informatimago.languages.linc)
+(cc (translate-linc-file "test-expressions.sexpc" :print t :verbose t)
+    :output "test-expressions.o" :to :object :options '("-Werror" "-Wall"))

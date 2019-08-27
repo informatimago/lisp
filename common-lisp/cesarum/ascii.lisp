@@ -485,7 +485,6 @@ EXAMPLES:
                                    ((2)     :cr)))))
 
 
-
 (defun read-ascii-line (stream &optional (eof-error t) (eof-value nil)
                         (newline *newline*))
   "

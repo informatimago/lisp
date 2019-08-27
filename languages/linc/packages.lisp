@@ -57,6 +57,7 @@
    "#if"
    "#elif"
    "#else"
+   "#endif"
 
    ;; toplevel forms
    "declare-structure"
