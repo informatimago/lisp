@@ -16,7 +16,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2015 - 2019
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -35,11 +35,11 @@
 (asdf:defsystem "com.informatimago.small-cl-pgms.botihn"
   :description "An IRC bot monitoring Hacker News."
   :author "Pascal J. Bourguignon"
-  :version "1.3.0"
+  :version "1.4.0"
   :license "AGPL3"
   :depends-on ("com.informatimago.common-lisp.cesarum"
                "com.informatimago.common-lisp.interactive" ; date uptime
-               "cl-irc" "cl-json" "drakma" "split-sequence")
+               "cl-irc" "cl-json" "drakma" "split-sequence" "cl-ppcre")
   :components ((:file "botihn")))
 
 ;;;; THE END ;;;;

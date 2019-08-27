@@ -11,13 +11,14 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2019-08-27 <PJB> Added blacklist.
 ;;;;    2015-07-17 <PJB> Added commands: help uptime version sources; added restarts.
 ;;;;    2015-04-27 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2015 - 2019
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -35,9 +36,11 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setf *readtable* (copy-readtable nil)))
 (defpackage "COM.INFORMATIMAGO.SMALL-CL-PGMS.BOTIHN"
-  (:use "COMMON-LISP" "CL-IRC" "CL-JSON" "DRAKMA"  "SPLIT-SEQUENCE"
+  (:use "COMMON-LISP"
+        "CL-IRC" "CL-JSON" "DRAKMA"  "SPLIT-SEQUENCE" "CL-PPCRE"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.INTERACTIVE"
                 "DATE" "UPTIME")
   (:export "MAIN")
@@ -49,12 +52,12 @@ It is run with:
 
    (com.informatimago.small-cl-pgms.botihn:main)
 
-Copyright Pascal J. Bourguignon 2015 - 2015
+Copyright Pascal J. Bourguignon 2015 - 2019
 Licensed under the AGPL3.
 "))
 (in-package "COM.INFORMATIMAGO.SMALL-CL-PGMS.BOTIHN")
 
-(defparameter *version* "1.1.1")
+(defparameter *version* "1.2.0")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Configuration:
@@ -72,6 +75,96 @@ Licensed under the AGPL3.
 (defvar *connection* nil
   "The current IRC server connection.")
 (defvar *botpass*  "1234")
+
+(defvar *blacklist* '()
+  "A list of lists (label :url \"regex\") or (label :title \"regexp\") used to match either the url or the title of the HN news.
+Matchedp news are not transmitted on irc.
+The LABEL is a unique symbol used to identifythe blacklist entry.")
+
+(defvar *blacklist-file* #P"/usr/local/var/botihn/blacklist.sexp"
+        "Path of the file where the *blacklist* is saved.")
+(defvar *blacklist-log-file* #P"/usr/local/var/botihn/blacklist.log"
+        "Path of thef ile where the changes to the blacklist are logged.")
+
+(defvar *requester-nick* nil
+  "Nickname of the user who send the current command.")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun load-blacklist ()
+  (setf *blacklist* (sexp-file-contents *blacklist-file* :if-does-not-exist '())))
+
+(defun save-blacklist ()
+  (setf (sexp-file-contents *blacklist-file*)  *blacklist*))
+
+(defun find-blacklist-entry (label)
+  (find label *blacklist* :key (function first) :test (function string=)))
+
+(defun delete-blacklist-entry (label)
+  (setf *blacklist* (delete label *blacklist* :key (function first) :test (function string=)))
+  (save-blacklist))
+
+(defun add-blacklist-entry (label kind regexp)
+  (let ((entry (find-blacklist-entry label)))
+    (if entry
+        (setf (second entry) kind
+              (third entry)  regexp)
+        (push (list label kind regexp) *blacklist*))
+    (save-blacklist)))
+
+(defun blacklistedp (story)
+  (loop
+    :for (label kind regexp) :in *blacklist*
+      :thereis (scan regex
+                     (ecase kind
+                       (:title (story-title story))
+                       (:url   (story-url   story))))))
+
+(defun log-blacklist-change (nick operation entry)
+  (with-open-file (log *blacklist-log-file*
+                       :if-does-not-exist :create
+                       :if-exists :append
+                       :direction :output)
+    (format log "~A ~S ~S ~S~%" (get-universal-time) nick operation entry)))
+
+(defun process-blacklist-command (words)
+  ;; blacklist help
+  ;; blacklist add label url|title regexp
+  ;; blacklist list
+  ;; blacklist delete label
+  (scase (second words)
+         (("help")
+          (answer "blacklist list")
+          (answer "blacklist add <label> url|title <regexp>")
+          (answer "blacklist delete <label>"))
+         (("add")
+          (let* ((label        (third words))
+                 (kind-string  (fourth words))
+                 (regexp       (fifth words))
+                 (kind         (scase kind-string
+                                      (("url") :url)
+                                      (("title") :title))))
+            (unless (and (stringp label)
+                         (member kind '(:url :title))
+                         (stringp regexp))
+              (answer "Invalid command."))
+            (log-blacklist-change *requester-nick* :add (list label kind regexp))
+            (add-blacklist-entry label kind regexp)))
+         (("delete")
+          (let ((label        (third words)))
+            (unless (stringp label)
+              (answer "Invalid command."))
+            (let ((entry (find-blacklist-entry label)))
+              (if entry
+                  (progn
+                    (log-blacklist-change *requester-nick* :delete entry)
+                    (delete-blacklist-entry label))
+                  (answer "No such entry ~S" label)))))
+         (("list")
+          (loop :for (label kind regexp) :in *blacklist*
+                :do (answer "~12A ~8A ~A~%" label kind regexp)))
+         (otherwise
+          (answer "Invalid command."))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -128,25 +221,33 @@ the IRC server yet, in chronological order."
   "Return the URL to the HackerNews story page for the given STORY-ID."
   (format nil "https://news.ycombinator.com/item?id=~A" story-id))
 
+(defun story-id    (story) (aget story :id))
+(defun story-title (story) (aget story :title))
+(defun story-url   (story)
+  (let ((url (aget story :url)))
+    (when url
+      (if (zerop (length url))
+          (hn-url id)
+          url))))
+
 (defun format-story (story)
   "Returns a single line message containing the story title and the story URL,
 extracted from the give STORY a-list."
-  (let ((title  (aget story :title))
-        (url    (aget story :url))
-        (id     (aget story :id)))
+  (let ((title  (story-title story))
+        (url    (story-url   story))
+        (id     (story-id    story)))
     (when (and title url)
-      (format nil "~A <~A>" title (if (zerop (length url))
-                                      (hn-url id)
-                                      url)))))
+      (format nil "~A <~A>" title url))))
 
 (defun monitor-hacker-news (send)
   "Sends the new news message lines by calling the SEND function.
 Updates the *LAST-STORY* ID."
   (dolist (story (get-new-stories))
-    (let ((message (format-story (story story))))
-      (when message
-        (funcall send message))
-      (setf *last-story* story))))
+    (unless (blacklistedp story)
+      (let ((message (format-story (story story))))
+        (when message
+          (funcall send message))
+        (setf *last-story* story)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -158,39 +259,52 @@ Updates the *LAST-STORY* ID."
         *channel*  (or (uiop:getenv "BOTIHN_CHANNEL")   *channel*)
         *botpass*  (or (uiop:getenv "BOTIHN_BOTPASS")   *botpass*)))
 
+(defun say (&rest args)
+  (format t "~&~{~A~^ ~}~%" args)
+  (force-output))
+
+(defun answer (format-control &rest format-arguments)
+  (let ((text (apply (function format) nil format-control format-arguments)))
+    (say text)
+    (privmsg *connection* *requester-nick* text)))
+
+(defun eliza (words)
+  (dolist (line (split-sequence #\newline (uiop:run-program "fortune" :output :string)
+                                :remove-empty-subseqs t))
+    (answer line)))
+
 (defun msg-hook (message)
   "Answers to PRIVMSG sent directly to this bot."
-  (labels ((say (&rest args)
-             (format t "~&~{~A~^ ~}~%" args)
-             (force-output))
-           (answer (format-control &rest format-arguments)
-             (let ((text (apply (function format) nil format-control format-arguments)))
-               (say text)
-               (privmsg *connection* (source message) text))))
-    (let ((arguments  (arguments message)))
-      (say arguments)
-      (when (string= *nickname* (first arguments))
-        (let ((words (split-sequence #\space (second arguments) :remove-empty-subseqs t)))
-          (scase (first words)
-                 (("help")
-                  (answer "Available commands: help version uptime sources"))
-                 (("version")
-                  (answer "Version: ~A" *version*))
-                 (("uptime")
-                  (answer "~A" (substitute #\space #\newline
-                                           (with-output-to-string (*standard-output*)
-                                             (date) (uptime)))))
-                 (("reconnect")
-                  (if (string= (second words) *botpass*)
-                      (progn (answer "Reconnecting…")
-                             (reconnect))
-                      (answer "I'm not in the mood.")))
-                 (otherwise ; ("sources")
-                  (answer "I'm an IRC bot forwarding HackerNews news to ~A; ~
+  (let ((arguments        (arguments message))
+        (*requester-nick* (source message)))
+    (say arguments)
+    (when (string= *nickname* (first arguments))
+      (let ((words (split-sequence #\space (second arguments) :remove-empty-subseqs t)))
+        (scase (first words)
+               (("help")
+                (answer "Available commands: help version uptime sources blacklist")
+                (answer "Type:  blacklist help   for help on blacklist command."))
+               (("version")
+                (answer "Version: ~A" *version*))
+               (("uptime")
+                (answer "~A" (substitute #\space #\newline
+                                         (with-output-to-string (*standard-output*)
+                                           (date) (uptime)))))
+               (("reconnect")
+                (if (string= (second words) *botpass*)
+                    (progn (answer "Reconnecting…")
+                           (reconnect))
+                    (answer "I'm not in the mood.")))
+
+               (("blacklist")
+                (process-blacklist-command words))
+               (("sources")
+                (answer "I'm an IRC bot forwarding HackerNews news to ~A; ~
                           under AGPL3 license, my sources are available at <~A>."
-                          *channel*
-                          *sources-url*)
-                  ))))))
+                        *channel*
+                        *sources-url*))
+               (otherwise
+                (eliza words))))))
   t)
 
 
@@ -216,6 +330,13 @@ and evaluating DELAY-EXPRESSIONS between each iteration."
   "Disconnect and reconnect to the IRC server."
   (throw :petites-gazongues nil))
 
+(defparameter *allow-print-backtrace* t)
+(defun print-backtrace (&optional (output *error-output*))
+  #+ccl (when *allow-print-backtrace*
+          (let ((*allow-print-backtrace* nil))
+            (format output "~&~80,,,'-<~>~&~{~A~%~}~80,,,'-<~>~&"
+                    (ccl::backtrace-as-list)))))
+
 (defun main ()
   "The main program of the botihn IRC bot.
 We connect and reconnect to the *SERVER* under the *NICKNAME*,
@@ -238,7 +359,11 @@ and join to the *CHANNEL* where HackerNews are published."
                        :for time = (get-universal-time)
                        :do (if (<= next-time time)
                                (progn
-                                 (monitor-hacker-news (lambda (message) (privmsg *connection* *channel* message)))
+                                 (handler-case
+                                     (monitor-hacker-news (lambda (message) (privmsg *connection* *channel* message)))
+                                   (error (err)
+                                     (print-backtrace)
+                                     (format *error-output* "~%~A~%" err)))
                                  (incf next-time *period*))
                                (read-message *connection*) #|there's a 10 s timeout in here.|#)))
                 (when *connection*
