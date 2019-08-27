@@ -36,6 +36,7 @@
 (in-package "COMMON-LISP-USER")
 (progn (format t "~%;;; Loading quicklisp.~%") (finish-output) (values))
 (load #P"~/quicklisp/setup.lisp")
+(ql:register-local-projects)
 
 (progn (format t "~%;;; Loading botihn.~%") (finish-output) (values))
 (push (make-pathname :name nil :type nil :version nil
