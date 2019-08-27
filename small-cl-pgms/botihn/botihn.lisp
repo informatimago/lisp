@@ -115,7 +115,7 @@ The LABEL is a unique symbol used to identifythe blacklist entry.")
 (defun blacklistedp (story)
   (loop
     :for (label kind regexp) :in *blacklist*
-      :thereis (scan regex
+      :thereis (scan regexp
                      (ecase kind
                        (:title (story-title story))
                        (:url   (story-url   story))))))
@@ -242,12 +242,13 @@ extracted from the give STORY a-list."
 (defun monitor-hacker-news (send)
   "Sends the new news message lines by calling the SEND function.
 Updates the *LAST-STORY* ID."
-  (dolist (story (get-new-stories))
-    (unless (blacklistedp story)
-      (let ((message (format-story (story story))))
-        (when message
-          (funcall send message))
-        (setf *last-story* story)))))
+  (dolist (id (get-new-stories))
+    (let ((story (story id)))
+     (unless (blacklistedp story)
+       (let ((message (format-story story)))
+         (when message
+           (funcall send message))
+         (setf *last-story* story))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -343,6 +344,7 @@ We connect and reconnect to the *SERVER* under the *NICKNAME*,
 and join to the *CHANNEL* where HackerNews are published."
   (let ((*package* (load-time-value (find-package "COM.INFORMATIMAGO.SMALL-CL-PGMS.BOTIHN"))))
     (configure)
+    (load-blacklist)
     (with-simple-restart (quit "Quit")
       (catch :gazongues
         (with-retry (sleep (+ 10 (random 30)))
@@ -359,11 +361,11 @@ and join to the *CHANNEL* where HackerNews are published."
                        :for time = (get-universal-time)
                        :do (if (<= next-time time)
                                (progn
-                                 (handler-case
-                                     (monitor-hacker-news (lambda (message) (privmsg *connection* *channel* message)))
-                                   (error (err)
-                                     (print-backtrace)
-                                     (format *error-output* "~%~A~%" err)))
+                                 (handler-bind
+                                     ((error (lambda (err)
+                                               (print-backtrace)
+                                               (format *error-output* "~%~A~%" err))))
+                                   (monitor-hacker-news (lambda (message) (privmsg *connection* *channel* message))))
                                  (incf next-time *period*))
                                (read-message *connection*) #|there's a 10 s timeout in here.|#)))
                 (when *connection*
