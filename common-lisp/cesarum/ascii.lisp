@@ -505,11 +505,11 @@ newline:  (member :crlf :cr :lf) ; the defaultl is :CRLF since that's what's
                       (decf (fill-pointer buffer) 2)
                       (return-from read-ascii-line buffer)))
            ((:cr)   (when (and (< 1 (length buffer))
-                               (= cr (aref buffer (- (length buffer) 2))))
+                               (= cr (aref buffer (- (length buffer) 1))))
                       (decf (fill-pointer buffer))
                       (return-from read-ascii-line buffer)))
            ((:lf)   (when (and (< 1 (length buffer))
-                               (= lf (aref buffer (- (length buffer) 2))))
+                               (= lf (aref buffer (- (length buffer) 1))))
                       (decf (fill-pointer buffer))
                       (return-from read-ascii-line buffer))))
      :finally (cond
