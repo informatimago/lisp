@@ -154,21 +154,44 @@
 (define-constant bufsize  (unsigned int) 1000)
 
 (declare-type array-int-t              (array int))
-(declare-type array-int-star-t         (array int *))
 (declare-type array-int-42-t           (array int 42))
-(declare-type array-uint-42-t          (array (unsigned int) static  (= a 42)))
-(declare-type array-uint-4bufsize-t    (array (unsigned int) static  (= a (* bufsize 4))))
+
+(define-function foo () int
+  (define-variable a int 0)
+  (declare-type array-uint-42-t          (array (unsigned int) static (= a 42)))
+  (declare-type array-uint-4bufsize-t    (array (unsigned int) static (= a (* bufsize 4))))
+  (declare-variable a1 array-uint-42-t)
+  (declare-variable a2 array-uint-4bufsize-t)
+  (= (aref a1 0) (aref a2 0))
+  (return a))
 
 (declare-type function-int-int-t           (function (int)  int))
 (declare-type function-int-void-noreturn-t (function (int)  void))
 (declare-type function-int-int-inline-t    (function (int)  int))
 (declare-type function-int-x-int-int-t     (function ((x int)        (y int))         int))
-(declare-type function-uint-x-uint-int-t   (function ((unsigned int) (unsigned int))  int))
+(declare-type function-uint-x-uint-int-t   (function ((unsigned int)
+                                                      (unsigned int)
+                                                      (varpt-star (pointer (array int *))))
+                                                     int))
 
 (declare-type flist-t (struct
                        (count unsigned)
-                       (funs  (array ((function ((pointer object-t) (pointer char) (unsigned int)) int))))))
+                       (funs  (array ((function ((p1 (pointer object-t)) (p2 (pointer char)) (i3 unsigned int)) int))))))
 
 (declare-function cons ((car (pointer object-t)) (cdr (pointer object-t))) (pointer object-t))
 (declare-function car ((cons (pointer object-t))) (pointer object-t))
 (declare-function cdr ((cons (pointer object-t))) (pointer object-t))
+
+(declare-type struct-of-array (struct
+                               (string     (pointer char))
+                               (pt         (array int 3))
+                               (varpt      (pointer (array int)))))
+(declare-variable my-string        (pointer char))
+(declare-variable my-pt            (array int 3))
+(declare-variable my-vec-of-pt     (array (array int 3) 10))
+(declare-variable my-varpt         (pointer (array int)))
+
+(declare-function fun-with-varpt-star ((arg  (array int *))) int)
+
+(define-function main () int
+  (return (foo)))

@@ -1,0 +1,21 @@
+;; -*- mode:list; package:com.informatimago.languages.linc.c -*-
+
+(include <stdio.h>)
+
+(define-macro BUFFER_SIZE "(1024)")
+(define-macro TRUNCATE (dividend divisor) "cons(integer((dividend)/(divisor)), integer((dividend)%(divisor)))")
+
+(declare-type object-t (struct (tag int)
+                              (data int)))
+(declare-type object (pointer object-t))
+(declare-function integer ((value int)) object)
+(declare-function cons ((car object) (cdr object)) object)
+(declare-function car ((cons object)) object)
+(declare-function cdr ((cons object)) object)
+
+(define-function main () int
+    (let* ((result object                   (TRUNCATE 10 3))
+           (buffer (array char BUFFER_SIZE) ()))
+      (printf "%p; %p; %p\n" (car result) (cdr result) buffer)
+      (return 0)))
+

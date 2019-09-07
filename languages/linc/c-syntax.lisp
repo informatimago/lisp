@@ -177,13 +177,15 @@ Rules:    - With no alphanumeric, we don't touch it (assumed name of a C operato
   (make-instance 'c-comment :text text))
 
 (defun split-string-on-substring (substring text)
-  (let ((result (split-sequence::split-from-start
-          (lambda (sequence start) (search substring sequence :start2 start))
-          text 0 (length text) nil nil)))
-    (when result
-      (cons (car result)
-            (mapcar (lambda (substrings) (subseq substrings (1- (length substring))))
-                    (cdr result))))))
+  (loop
+    :for start := 0 :then (+ position (length substring))
+    :for position := (search substring text :start2 start)
+    :while position
+    :collect (subseq text start position) :into result
+    :finally (return (append result
+                             (if (< start (length text))
+                                 (list (subseq text start))
+                                 (list ""))))))
 
 (defun split-comment (text)
   (split-string-on-substring "*/" text))
@@ -409,10 +411,18 @@ BUG: What about the character encoding of C strings?
 ;; --------------------
 (defclass c-literal (c-expression)
   ;; TODO: structure etc. literals?  (point){1,2}
-  ((value :initarg :value :reader c-literal-value :type (or string character integer float))))
+  ((value :initarg :value :reader c-literal-value :type (or string character integer float list))))
 
 (defmethod generate ((item c-literal))
-  (generate (c-literal-value item)))
+  (typecase (c-literal-value item)
+    (list (with-parens "{}"
+            (let ((sep ""))
+              (dolist (value (c-literal-value item))
+                (emit sep)
+                (setf sep ", ")
+                (generate value)))))
+    (t
+     (generate (c-literal-value item)))))
 
 (defun c-literal (value)
   (make-instance 'c-literal :value value))
@@ -678,14 +688,28 @@ exclusive, but one must be given when :arguments is not given.")
                                           ((2)   '(list one two))
                                           ((3)   '(list one two three)))))
           `(defmethod generate ((self ,cl-name))
-             ,(cond
-                (generator      `(apply ,generator (arguments self)))
-                ((eql 1 arity)  `(progn
-                                   (emit ,c-name)
-                                   (generate (argument self))))
-                (t              `(generate-list ,c-operator
-                                                (function generate)
-                                                (arguments self))))
+             ,(flet ((gengen ()
+                       (cond
+                         ((eql 1 arity)  `(progn
+                                            (emit ,c-name)
+                                            (generate (argument self))))
+                         (t              `(generate-list ,c-operator
+                                                         (function generate)
+                                                         (arguments self))))))
+                (if generator
+                    (cond
+                      ((equal generator '(:force-inner-parentheses))
+                       `(generate-list ,c-operator
+                                       (lambda (item)
+                                         (with-parens "()"
+                                           (generate item)))
+                                       (arguments self)))
+                      ((equal generator '(:force-outer-parentheses))
+                       `(with-parens "()"
+                          ,(gengen)))
+                      (t
+                       `(apply ,generator (arguments self))))
+                    (gengen)))
              (values))
           (when c-sym
             `(setf (symbol-function ',c-sym)
@@ -777,15 +801,15 @@ exclusive, but one must be given when :arguments is not given.")
                                            (generate else))))
 
     (:left
-     (expr-logor           2-* "||"))
+     (expr-logor           2-* "||" (:force-outer-parentheses)))
     (:left
-     (expr-logand          2-* "&&"))
+     (expr-logand          2-* "&&" (:force-outer-parentheses)))
     (:left
-     (expr-bitor           2-* "|"))
+     (expr-bitor           2-* "|" (:force-outer-parentheses)))
     (:left
-     (expr-bitxor          2-* "^"))
+     (expr-bitxor          2-* "^" (:force-outer-parentheses)))
     (:left
-     (expr-bitand          2-* "&"))
+     (expr-bitand          2-* "&" (:force-outer-parentheses)))
     (:left
      (expr-eq              2   "==")
      (expr-ne              2   "!="))
@@ -795,8 +819,8 @@ exclusive, but one must be given when :arguments is not given.")
      (expr-le              2   "<=")
      (expr-ge              2   ">="))
     (:left
-     (expr-left-shift      2   "<<")
-     (expr-right-shift     2   ">>"))
+     (expr-left-shift      2   "<<" (:force-inner-parentheses))
+     (expr-right-shift     2   ">>" (:force-inner-parentheses)))
     (:left
      (expr-plus            2-* "+")
      (expr-minus           2-* "-"))
@@ -816,8 +840,8 @@ exclusive, but one must be given when :arguments is not given.")
      (expr-preincr         1   "++")
      (expr-predecr         1   "--"))
     (:unary
-     (expr-lognot          1   "!")
-     (expr-bitnot          1   "~")
+     (expr-lognot          1   "!" (:force-inner-parentheses))
+     (expr-bitnot          1   "~" (:force-inner-parentheses))
      (expr-deref           1   nil        (lambda (argument) (emit "*") (generate argument)))
      (expr-address         1   nil        (lambda (argument) (emit "&") (generate argument)))
      (expr-pos             1   nil        (lambda (argument) (emit "+") (generate argument)))

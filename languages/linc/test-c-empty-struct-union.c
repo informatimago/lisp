@@ -10,5 +10,5 @@ typedef union {
 int main(){
     empty_union  u;
     empty_struct s;
+    printf("u=%p s=%p\n",&u,&s);
     return 0;}
-    

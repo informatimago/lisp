@@ -1,0 +1,10 @@
+/* ------------------------- DO NOT EDIT! --------------------------------- */
+/* WARNING: This file is generated automatically by LINC from the source    */
+/* file test-include.sexpc                                                  */
+/* ------------------------- DO NOT EDIT! --------------------------------- */
+
+#include "foo.h"
+#include <foo.h>
+#include "foo.h"
+#include "bar.h"
+#include <baz.h>

@@ -1,37 +1,43 @@
 ;; -*- mode:lisp; package:com.informatimago.languages.linc.c -*-
 
 (include <math.h>)
+(include <stdlib.h>)
 
 (define-function test-priorities () void
-    (let* ((i int 42)
-           (j int 33)
-           (k int 21)
-           (a unsigned 101)
-           (b unsigned 202)
-           (c unsigned 303)
-           (d unsigned 404)
-           (e unsigned 505))
+  (let* ((i int 42)
+         (j int 33)
+         (k int 21)
+         (a unsigned 101)
+         (b unsigned 202)
+         (c unsigned 303)
+         (d unsigned 404))
 
-      (= i (*= j 4))
-      (*= (*= i j) 4)
+    (= i (*= j 4))
+    (*= (*= i j) 4)
 
-      (+= i (*= j (? (== k 0) 1 0)))
-      (+= (*= i j) (? (== k 0) 1 0))
+    (+= i (*= j (? (== k 0) 1 0)))
+    (+= (*= i j) (? (== k 0) 1 0))
 
-      (*= i (\|\| (&& a b) (&& a c)))
-      (*= i (&& (\|\| a b) (\|\| a c)))
+    (*= i (\|\| (&& a b) (&& a c)))
+    (*= i (&& (\|\| a b) (\|\| a c)))
 
-      (+= i (\| (& a b) (& (~ a) c)))
-      (+= i (& (\| a b) (~ (\| a c))))
-      (+= i (~ (\| (& a b) (& (~ a) c))))
-      (+= i (& (~ (\| a (~ b))) (~ (\| a c))))
+    (+= i (\| (& a b) (& (~ a) c)))
+    (+= i (& (\| a b) (~ (\| a c))))
+    (+= i (~ (\| (& a b) (& (~ a) c))))
+    (+= i (& (~ (\| a (~ b))) (~ (\| a c))))
 
-      (+= j (\| a (^ b (& c (~ d)))))
-      (+= j (~ (& a (^ b (\| c d)))))
+    (+= j (\| a (^ b (& c (~ d)))))
+    (+= j (~ (& a (^ b (\| c d)))))
 
-      (+= k (+ (<< a (+ i j))
-               (<< b (+ j k))
-               (>> c (+ k i))))))
+    (+= k (+ (<< a (+ i j))
+             (<< b (+ j k))
+             (<< c (+ k i))))
+    (+= k (+ (>> (+ a i) j)
+             (>> (+ b j) k)
+             (>> (+ c k) i)))
+    (+= k (+ (- (<< a i) j)
+             (- (<< b j) k)
+             (- (<< c k) i)))))
 
 ;; Unary:
 (define-function main () (int)
@@ -104,19 +110,20 @@
                                         (link (pointer (struct link)))
                                         (also (struct
                                                (link (pointer (struct link)))))))))
-    (define-variable ll1 (pointer link-t) (-> ll1 next next next))
-    (define-variable ll2 (pointer link-t) (-> (-> (-> ll2 next) next) next))
-    (define-variable ll3 (pointer link-t) (-> ll3 (-> next (-> next next))))
+    (define-variable ll0 (pointer link-t) NULL)
+    (= ll0  (-> ll0 next next next))
+    (= ll0  (-> (-> (-> ll0 next) next) next))
+    (= ll0  (-> ll0 (-> next (-> next next))))
 
-    (define-variable ll41 (pointer link-t) (-> ll41 (. (-> next item) link)))
-    (define-variable ll51 (pointer link-t) (-> ll51 (. (-> next (. item also)) link)))
-    (define-variable ll53 (pointer link-t) (-> ll53 (-> next (. item also link))))
-    (define-variable ll61 (pointer link-t) (-> ll61 (-> next (. item link))))
-    (define-variable ll71 (pointer link-t) (-> ll71 (. (-> next item) link)))
+    (= ll0  (-> ll0 (. (-> next item) link)))
+    (= ll0  (-> ll0 (. (-> next (. item also)) link)))
+    (= ll0  (-> ll0 (-> next (. item also link))))
+    (= ll0  (-> ll0 (-> next (. item link))))
+    (= ll0  (-> ll0 (. (-> next item) link)))
 
-    (define-variable ll52 (pointer link-t) (-> ll52 (-> next (. item (-> link next)))))
-    (define-variable ll62 (pointer link-t) (-> ll62 (-> next (-> (. item link) next))))
-    (define-variable ll72 (pointer link-t) (-> ll72 (. (-> next item) link) next))
+    (= ll0  (-> ll0 (-> next (. item (-> link next)))))
+    (= ll0  (-> ll0 (-> next (-> (. item link) next))))
+    (= ll0  (-> ll0 (. (-> next item) link) next))
 
 
     (define-variable sin-pi-2 double (sin (/ M-PI 2)))

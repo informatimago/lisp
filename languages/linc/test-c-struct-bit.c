@@ -11,6 +11,6 @@ typedef struct {
 } s2;
 
 int main(){
-    printf("sizeof(s1)=%d\n",sizeof(s1));
-    printf("sizeof(s2)=%d\n",sizeof(s2));
+    printf("sizeof(s1)=%lu\n",sizeof(s1));
+    printf("sizeof(s2)=%lu\n",sizeof(s2));
     return 0;}

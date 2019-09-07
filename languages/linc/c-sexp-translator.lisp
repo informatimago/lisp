@@ -74,7 +74,6 @@
                              |thread-local|))
 
 (defun c-keyword-p (name)
-  (declare (ignore name))
   (find name *c-keywords*))
 
 (defun c-identifier-p (name)
@@ -437,7 +436,8 @@ expression
   (when (c-type-name item)
     (emit " ")
     (generate (c-type-name item)))
-  (when (slot-boundp item 'slots)
+  (when (and (slot-boundp item 'slots)
+             (not (eq :none (slot-value item 'slots))))
     (emit " ")
     (with-parens "{}"
       (dolist (slot (c-struct-union-slots item))
@@ -454,9 +454,7 @@ expression
 
 (defmethod generate ((item c-slot))
   (emit :fresh-line)
-  (generate (c-slot-type item))
-  (emit " ")
-  (generate (c-slot-name item))
+  (generate (wrap-declarator (c-slot-name item) (c-slot-type item)))
   (let ((bits (c-slot-bits item)))
     (when bits
       (emit ":")
@@ -517,12 +515,18 @@ type ::=
 identfier
 
 (atomic type)
-(struct name)
-(struct name slots…)
-(struct slots…)
+
+(struct name)                     -> struct name;
+(struct name ())                  -> struct name { }; /* no slots */
+(struct name slots…)              -> struct name { slots… };
+(struct slots…)                   -> struct { slots… };
+
 (union name)
+(union name ())
 (union name slots…)
 (union slots…)
+
+
 (enum name)
 (enum name values…)
 (enum values…)
@@ -545,14 +549,21 @@ slot ::=
 
 
 (defun parse-struct-or-union-type (type)
-  ;; (struct|union [name] (slot)…)
+  ;; (struct|union [name] [NIL]|(slot)…)
   (let ((operator (pop type))
-        (name (when (atom (first type))
-                (pop type))))
+        (name (when (and (symbolp (first type)) (not (null (first type))))
+                (pop type)))
+        (slotsp type)
+        (slots  (if type
+                    (if (null (first type))
+                        '()
+                        type))))
     (when name (check-identifier name))
-    (c-struct-union name nil nil operator (mapcar (function parse-slot) type))))
+    (c-struct-union name nil nil operator
+                    (if slotsp
+                        (mapcar (function parse-slot) slots)
+                        :none))))
 
-;; TODO: cannot distinguish:  struct foo;  from:  struct foo { };
 
 ;;----------------------------------------
 (defclass c-enum (c-named-type)
@@ -853,22 +864,6 @@ slot ::=
       (compound-types  (parse-compound-type (first compound-types) storage-classes type-qualifiers)))))
 
 
-
-;;;---------------------------------------------------------------------
-(defclass c-declarator (c-item)
-  ((type       :initarg :type       :accessor c-declarator-type)
-   (declarator :initarg :declarator :accessor c-declarator-declarator)))
-
-(defmethod generate ((item c-declarator))
-  (generate (c-declarator-type item))
-  (emit " ")
-  (generate (c-declarator-declarator item)))
-
-
-;;(defgeneric (type declarator))
-;;(defmethod)
-
-
 ;;;---------------------------------------------------------------------
 (defclass c-declaration (c-item)
   ((declared :initarg :declared :reader c-declaration-declared)))
@@ -914,9 +909,7 @@ slot ::=
 
 (defmethod generate ((item c-typedef))
   (emit "typedef" " ")
-  (generate (c-typedef-type item))
-  (emit " ")
-  (generate (c-typedef-name item)))
+  (generate (wrap-declarator (c-typedef-name item) (c-typedef-type item))))
 
 (defun parse-declare-struct-or-union (operator form)
   ;; (declare-structure name slots)
@@ -994,12 +987,12 @@ slot ::=
           (error 'linc-program-error
                  :source-form *source-form* :source-file *translate-linc-truename*
                  :format-control "Superfluous tokens define-constant form: ~S"
-                 :format-arguments (list form))))
-      (c-declaration (c-constant name
-                                 (parse-type (if (listp type)
-                                                 type
-                                                 (list type)))
-                                 nil)))))
+                 :format-arguments (list form)))
+        (c-declaration (c-constant name
+                                   (parse-type (if (listp type)
+                                                   type
+                                                   (list type)))
+                                   nil))))))
 
 (defun parse-define-constant    (form)
   ;; (define-constant      name type value)
@@ -1018,8 +1011,12 @@ slot ::=
                  :source-form *source-form* :source-file *translate-linc-truename*
                  :format-control "Missing value in define-constant form: ~S"
                  :format-arguments (list form)))
-        (let ((value (pop current)))
-          (c-definition (c-constant name (parse-type type) (parse-expression value))))))))
+        (let ((valuep current)
+              (value (pop current)))
+          (c-definition (c-constant name (parse-type type)
+                                    (if (and valuep (null value))
+                                        (c-literal value)
+                                        (parse-expression value)))))))))
 
 ;;;---------------------------------------------------------------------
 (defclass c-variable (c-expression)
@@ -1034,9 +1031,7 @@ slot ::=
   (make-instance 'c-variable :name name :type type :value value))
 
 (defmethod generate ((item c-variable))
-  (generate (c-variable-type item))
-  (emit " ")
-  (generate (c-variable-name item))
+  (generate (wrap-declarator (c-variable-name item) (c-variable-type item)))
   (when (c-variable-value item)
     (emit " " "=" " ")
     (generate (c-variable-value item))))
@@ -1071,8 +1066,12 @@ slot ::=
                  :source-form *source-form* :source-file *translate-linc-truename*
                  :format-control "Missing value in define-variable form: ~S"
                  :format-arguments (list form)))
-        (let ((value (pop current)))
-          (c-definition (c-variable name (parse-type (ensure-type-list type)) (parse-expression value))))))))
+        (let ((valuep current)
+              (value (pop current)))
+          (c-definition (c-variable name (parse-type (ensure-type-list type))
+                                    (if (and valuep (null value))
+                                        (c-literal value)
+                                        (parse-expression value)))))))))
 
 
 ;;;---------------------------------------------------------------------
@@ -1111,7 +1110,8 @@ slot ::=
     (let ((sep ""))
       (dolist (parameter (c-function-parameters item))
         (emit sep)
-        (generate parameter)
+        (generate (wrap-declarator (c-parameter-name parameter)
+                                   (c-parameter-type parameter)))
         (setf sep ", "))))
   (when (c-function-body item)
     (emit :newline)
@@ -1144,6 +1144,143 @@ slot ::=
                                      :format-arguments (list form)))
         (c-definition (c-function name parameters return-type specifiers body)
                       :needs-semicolon nil)))))
+
+
+
+;;;---------------------------------------------------------------------
+(defclass c-declarator (c-item)
+  ((type       :initarg :type       :accessor c-declarator-type)
+   (declarator :initarg :declarator :accessor c-declarator-declarator)))
+
+(defmethod generate ((item c-declarator))
+  (when (slot-boundp item 'type)
+    (generate (c-declarator-type item))
+    (emit " "))
+  (generate (c-declarator-declarator item)))
+
+
+(defclass c-pointer-declarator (c-declarator)
+  ((qualifiers :initarg :qualifiers :accessor c-pointer-declarator-qualifiers)))
+
+(defmethod generate ((item c-pointer-declarator))
+  (when (slot-boundp item 'type)
+    (generate (c-declarator-type item))
+    (emit " "))
+  (with-parens "()"
+    (emit "*")
+    (dolist (qualifier (c-pointer-declarator-qualifiers item))
+      (emit " ")
+      (generate qualifier))
+    (emit " ")
+    (generate (c-declarator-declarator item)))
+
+  ;; (typecase (c-declarator-declarator item)
+  ;;   ((or c-identifier
+  ;;        c-pointer-declarator
+  ;;        c-function-declarator
+  ;;        symbol)
+  ;;    (generate (c-declarator-declarator item)))
+  ;;   (t
+  ;;    (with-parens "()"
+  ;;      )))
+  )
+
+
+(defclass c-array-declarator (c-declarator)
+  ((qualifiers      :initarg :qualifiers       :accessor c-array-declarator-qualifiers)
+   (size-expression :initarg :size-expression  :accessor c-array-declarator-size-expression)))
+
+(defmethod generate ((item c-array-declarator))
+  (when (slot-boundp item 'type)
+    (generate (c-declarator-type item))
+    (emit " "))
+  (generate (c-declarator-declarator item))
+  (with-parens "[]"
+    (let ((sep ""))
+      (dolist (qualifier (c-array-declarator-qualifiers item))
+        (emit sep)
+        (setf sep " ")
+        (generate qualifier))
+      (emit sep)
+      (generate (c-array-declarator-size-expression item)))))
+
+
+(defclass c-function-declarator (c-declarator)
+  ((parameters :initarg :parameters  :accessor c-function-declarator-parameters)))
+
+(defmethod generate ((item c-function-declarator))
+  (when (slot-boundp item 'type)
+    (generate (c-declarator-type item)))
+  (with-parens "()"
+    (emit "*")
+    (generate (c-declarator-declarator item)))
+  (with-parens "()"
+    (let ((sep ""))
+      (dolist (parameter (c-function-declarator-parameters item))
+        (emit sep)
+        (setf sep ",")
+        (generate (wrap-declarator (c-parameter-name parameter)
+                                   (c-parameter-type parameter)))))))
+
+;;;-------------------------------------------------------------------------------
+
+(defgeneric wrap-declarator (declarator type)
+  (:method (declarator (type c-named-type))
+    (make-instance 'c-declarator
+                   :declarator declarator
+                   :type type))
+  (:method (declarator (type c-atomic))
+    (make-instance 'c-declarator
+                   :declarator declarator
+                   :type type))
+  (:method (declarator (type c-pointer))
+    (make-instance 'c-pointer-declarator
+                   :declarator declarator
+                   :type (c-pointer-type type)
+                   :qualifiers (c-type-qualifiers type)))
+  (:method (declarator (type c-array))
+    (make-instance 'c-array-declarator
+                   :declarator declarator
+                   :type (c-array-element-type type)
+                   :size-expression (c-array-element-count type)
+                   :qualifiers (c-type-qualifiers type)))
+  (:method (declarator (type c-ftype))
+    (make-instance 'c-function-declarator
+                   :declarator declarator
+                   :type (c-ftype-result-type type)
+                   :parameters (c-ftype-parameters type))))
+
+
+
+
+(defgeneric wrap-declarator (declarator type)
+  (:method (declarator (type c-named-type))
+    (make-instance 'c-declarator
+                   :declarator declarator
+                   :type type))
+  (:method (declarator (type c-atomic))
+    (make-instance 'c-declarator
+                   :declarator declarator
+                   :type type))
+  (:method (declarator (type c-pointer))
+    (wrap-declarator (make-instance 'c-pointer-declarator
+                                    :declarator declarator
+                                    :qualifiers (c-type-qualifiers type))
+                     (c-pointer-type type)))
+  (:method (declarator (type c-array))
+    ;; int [3] [42]    foo
+    ;; int [3]         foo [42]
+    ;; int             foo [42] [3]
+    (wrap-declarator (make-instance 'c-array-declarator
+                                    :declarator declarator
+                                    :size-expression (c-array-element-count type)
+                                    :qualifiers (c-type-qualifiers type))
+                     (c-array-element-type type)))
+  (:method (declarator (type c-ftype))
+    (wrap-declarator (make-instance 'c-function-declarator
+                                    :declarator declarator
+                                    :parameters (c-ftype-parameters type))
+                     (c-ftype-result-type type))))
 
 ;;;---------------------------------------------------------------------
 (defclass c-macro (c-item)
@@ -1358,15 +1495,18 @@ slot ::=
         ((|default|)  (stmt-default (ensure-block (rest form))))
         ;; syntax
         ((|if|)       (destructuring-bind (if test then &optional else) form
+                        (declare (ignore if))
                         (stmt-if (parse-statement then)
                                  (when else (parse-statement else))
                                  (parse-expression test))))
         ((|for|)      (destructuring-bind (for (init test step) &body body) form
+                        (declare (ignore for))
                         (stmt-for (parse-expression init) ; TODO declarator!!!
                                   (parse-expression test)
                                   (parse-expression step)
                                   (ensure-block body))))
         ((|switch|)   (destructuring-bind (switch expression &body body) form
+                        (declare (ignore switch))
                         (stmt-switch (ensure-block body) (parse-expression expression))))
         ;; local declarations or definitions (all but function definitions):
         ((|declare-structure|)   (parse-declare-structure   form))
