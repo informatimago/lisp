@@ -15,6 +15,7 @@
 ;;;;    2015-07-17 <PJB> Added commands: help uptime version sources; added restarts.
 ;;;;    2015-04-27 <PJB> Created.
 ;;;;BUGS
+;;;;    We should better validate syntax of blacklist add inputs.
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
@@ -57,7 +58,7 @@ Licensed under the AGPL3.
 "))
 (in-package "COM.INFORMATIMAGO.SMALL-CL-PGMS.BOTIHN")
 
-(defparameter *version* "1.2.0")
+(defparameter *version* "1.2.1")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Configuration:
@@ -115,10 +116,11 @@ The LABEL is a unique symbol used to identifythe blacklist entry.")
 (defun blacklistedp (story)
   (loop
     :for (label kind regexp) :in *blacklist*
-      :thereis (scan regexp
-                     (ecase kind
-                       (:title (story-title story))
-                       (:url   (story-url   story))))))
+    ;; If there is an error, perhaps we should remove the enrty in the *blacklist*…
+      :thereis (ignore-errors (scan regexp
+                                    (ecase kind
+                                      (:title (story-title story))
+                                      (:url   (story-url   story)))))))
 
 (defun log-blacklist-change (nick operation entry)
   (with-open-file (log *blacklist-log-file*
