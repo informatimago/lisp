@@ -305,7 +305,7 @@ If PACKAGE is NIL, the rotate *PACKAGE* and the top of the package stack."
     cluser))
 
 
-(defun mkupack (&key name stepper (use nil usep) (shadow nil shadowp))
+(defun mkupack (&key (name "USER") stepper (use nil usep) (shadow nil shadowp))
   "
 DO:         Makes a new, temporary, user package like
             COMMON-LISP-USER, and sets *PACKAGE* to it.
@@ -345,7 +345,7 @@ USE:        A package use list to use.  When given, STEPPER is ignored.
         (use-package use *package*)
         (progn
           (use-package (list (if stepper cl-stepper cl)) *package*)
-          (shadow "ED" *package*)
+          (shadow '("ED" "APROPOS" "APROPOS-LIST") *package*)
           (use-package pjb *package*)))
     *package*))
 
