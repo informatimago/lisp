@@ -34,8 +34,6 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setf *readtable* (copy-readtable nil)))
 (in-package "COMMON-LISP-USER")
-(declaim (declaration also-use-packages))
-(declaim (also-use-packages "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SYMBOL"))
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SYMBOL"
   (:use "COMMON-LISP")
   (:export
