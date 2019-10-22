@@ -80,7 +80,8 @@ CLOS associations.  It uses CLOSER-MOP.
                ((#:albert #:docbook #:bgcolor)   . "white")
                ((#:albert #:docbook #:textcolor) . "black"))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
-  :depends-on ("closer-mop")
+  :depends-on ("closer-mop"
+               "com.informatimago.common-lisp.cesarum")
   :components ((:file "association"))
   #+adsf3 :in-order-to #+adsf3 ((test-op (test-op "com.informatimago.clext.association.test"))))
 
