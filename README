@@ -74,7 +74,8 @@ https://gitlab.com/com-informatimago/com-informatimago/ ::
 
     git clone https://gitlab.com/com-informatimago/com-informatimago.git informatimago
 
-They're also available thru `quicklisp <http://quicklisp.org/>`_: ::
+They're also available thru `ultralisp  <https://ultralisp.org/>`_: 
+After following the ultralisp install instructions, execute: ::
 
     (ql:quickload :com.informatimago.common-lisp)
     (ql:quickload :com.informatimago.clext)
