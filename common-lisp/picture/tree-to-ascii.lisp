@@ -310,7 +310,7 @@ DO:      Draw the decorated TREE into the PICT.
 
 
 (defun tree-to-ascii (tlee &key boxed format-fun background
-                      to-length from-length base)
+                      to-length from-length (base :centered))
   "
 tlee:        is a list-based tree, whose car is a \"node\",
              and whose cdr is the list of children.
