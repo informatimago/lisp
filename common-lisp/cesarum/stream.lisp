@@ -11,6 +11,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2020-03-01 <PJB> Optimized CONTENTS-FROM-STREAM (avoid adjust-array when reading a whole file).
 ;;;;    2007-07-07 <PJB> Added CONTENTS-FROM-STREAM.
 ;;;;    2005-03-17 <PJB> Added COPY-OVER.
 ;;;;    2004-09-12 <PJB> Removed use of GRAY streams,
@@ -23,7 +24,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2004 - 2020
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -143,7 +144,7 @@ RETURN:     A vector containing the elements read from the STREAM.
                 :do (vector-push-extend byte buffer))
               (return-from contents-from-stream buffer)))
         ;; normal case:
-        (let* ((busize (or length (ignore-errors (file-length stream)) min-size))
+        (let* ((busize (or length (setf length (ignore-errors (file-length stream))) min-size))
                (eltype (stream-element-type stream))
                (initel (if (subtypep eltype 'integer) 0 #\space))
                (buffer (make-array busize
@@ -152,19 +153,18 @@ RETURN:     A vector containing the elements read from the STREAM.
                                    :adjustable t :fill-pointer t))
                (start 0))
           (loop
-            (let ((end (read-sequence buffer stream :start start)))
-              (when (or (< end busize) (and length (= length end)))
-                ;; we got eof, or have read enough
-                (setf (fill-pointer buffer) end)
-                (return-from contents-from-stream buffer))
-              ;; no eof; extend the buffer
-              (setf busize
-                    (if (or (null max-extend) (<= (* 2 busize) max-extend))
-                        (* 2 busize)
-                        (+ busize max-extend))
-                    start end))
-            (adjust-array buffer busize :initial-element initel :fill-pointer t))))))
-
+             (let ((end (read-sequence buffer stream :start start)))
+               (when (or (< end busize) (and length (= length end)))
+                 ;; we got eof, or have read enough
+                 (setf (fill-pointer buffer) end)
+                 (return-from contents-from-stream buffer))
+               ;; no eof; extend the buffer
+               (setf busize
+                     (if (or (null max-extend) (<= (* 2 busize) max-extend))
+                         (* 2 busize)
+                         (+ busize max-extend))
+                     start end))
+             (adjust-array buffer busize :initial-element initel :fill-pointer t))))))
 
 
 (defun copy-over (stream from-pos to-pos &key (element-type 'character))
