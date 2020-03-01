@@ -375,7 +375,9 @@ and restart the scheduling then.")
 
 #+debug-com.informatimago.common-lisp.cesarum.activity
 (defvar *in-terminal-p*
-  (and (string/= "dumb" (ext:getenv "TERM"))
+  (and (string/= "dumb" #+clisp (ext:getenv "TERM")
+                        #+ccl (ccl:getenv "TERM")
+                        #-(or clisp ccl) "xterm")
        (intersection
         (ensure-list
          (com.informatimago.common-lisp.cesarum.stream:bare-stream
