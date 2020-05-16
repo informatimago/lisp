@@ -80,11 +80,13 @@
 (defun set     (chars)          `(set     ,chars))
 (defun set-not (chars)          `(set-not ,chars))
 (defun alt     (&rest options)  `(alt     ,@options))
-(defun opt     (re)             `(opt     ,re))
+(defun opt     (&rest options)  `(opt     ,@options))
 (defun rep+    (re)             `(rep+    ,re))
 (defun rep*    (re)             `(rep*    ,re))
 (defun seq     (&rest res)      `(seq     ,@res))
+(defun any     ()               `(any))
 
+(defun reject () (error "Failure reading the file."))
 
 (defmacro scan-rules ((token-variable stream-variable)
                       &body rules)
@@ -107,14 +109,16 @@
               (scan-reset-current-buffer ()
                 (setf ,vscan-buffer (make-array 8 :element-type 'character :adjustable t :fill-pointer 0))))
          (macrolet ((when-state (state &body body)
-                                `(when (eq ,',vstate state)
-                                   ,@body))
+                      `(when (eq ,',vstate ,state)
+                         ,@body))
                     (rule (regexp &body body)
-                          `(when (setf ,',token-variable (scan-match-regexp ,',stream-variable ,regexp))
-                             ,@body)))
-             ,@rules)))))
+                      `(when (setf ,',token-variable (scan-match-regexp ,',stream-variable ,regexp))
+                         ,@body)))
+           ,@rules)))))
 
-
+(defun scan-match-regexp (stream regex)
+  (declare (ignore stream regex))
+  (cerror "Return NIL." "Not implemented yet"))
 
 (defun scan (stream &key (read-tex-dir #P".")
                       (external-format :default)
@@ -178,7 +182,9 @@
          )
     (scan-rules (token-text stream)
 
-      (labels ((get-tex-filename-without-braces (text)
+      (labels ((terminate ()
+                 (cerror "Return NIL." "Not implemented yet"))
+               (get-tex-filename-without-braces (text)
                  "Return the tex file path designated by the token-text \"filename\".
                Use variable READ-TEX-DIR."
                  (let ((dirname read-tex-dir)
@@ -410,7 +416,7 @@
                      (add-sexp '(newline)))
                (rule (seq backslash latex-special-char)
                      ;; print it after stripping off the backslash
-                     (add-as-string (escape-quote (subseq token-text 1))))
+                     (add-as-string (escape-quotes (subseq token-text 1))))
                (rule "&"
                      (if (or (plusp table-count) (plusp array-count))
                          (progn
@@ -483,9 +489,9 @@
                           (error "Unknown saved-math-state ~S" saved-math-state)))))
 
                ;; hbox and mbox change state
-               (rule (alt (seq backslash "fbox" (rep* h_space) "{")
-                          (seq backslash "hbox" (rep* h_space) "{")
-                          (seq backslash "mbox" (rep* h_space) "{"))
+               (rule (alt (seq backslash "fbox" (rep* h-space) "{")
+                          (seq backslash "hbox" (rep* h-space) "{")
+                          (seq backslash "mbox" (rep* h-space) "{"))
                      (setf brace-count 1) ; reset brace count
                      ;;  When brace_count reaches 0 we have seen the
                      ;;  matching close brace and can close the hbox.
@@ -649,7 +655,7 @@
                      (open-list))   ; start the first eqnarray element
 
                (rule (seq begin-env-open (opt "tabular" "array") "}"
-                          (opt POS-TAB-ARG) (opt OPT_TAB_ARG) (rep* WHITESPACE))
+                          (opt POS-TAB-ARG) (opt OPT-TAB-ARG) (rep* WHITESPACE))
                      (clean-up-quotes)
                      (let ((op (intern (string-trim "*" (latex-env-name token-text)))))
                        (if (eq op 'tabular)
@@ -689,7 +695,7 @@
 
                (rule (seq begin-env-open "displaymath" begin-env-close)
                      (clean-up-quotes)
-                     (setd display-math-flag t)
+                     (setf display-math-flag t)
                      (open-list 'display-math)
                      (goto :math))
 
