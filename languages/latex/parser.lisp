@@ -11,6 +11,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2020-05-16 <PJB> Corrected a few syntax (thanks phoe) and macro errors.
 ;;;;    2013-02-09 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
@@ -106,10 +107,10 @@
               (scan-reset-current-buffer ()
                 (setf ,vscan-buffer (make-array 8 :element-type 'character :adjustable t :fill-pointer 0))))
          (macrolet ((when-state (state &body body)
-                                `(when (eq ,vstate state)
+                                `(when (eq ,',vstate state)
                                    ,@body))
                     (rule (regexp &body body)
-                          `(when (setf ,token-variable (scan-match-regexp ,stream-variable ,regexp))
+                          `(when (setf ,',token-variable (scan-match-regexp ,',stream-variable ,regexp))
                              ,@body)))
              ,@rules)))))
 
@@ -213,23 +214,23 @@
                                 "chapterex") :test (function string=)))
                (push-include (filename)
                  (if (<= (length include-stack) *max-include-depth* )
-                   (error "Includes nested too deeply.")
-                   (let ((infile (open filename
-                                       :external-format external-format
-                                       :if-does-not-exist (if (eq if-include-fails :error)
-                                                            :error
-                                                            nil))))
-                     (if infile
-                       (case if-include-fails
-                         (:continue (goto nil))
-                         (:error    (error "Could not open include file ~S" filename))
-                         (otherwise (return-from scan if-include-fails)))
-                       (progn
-                         (push (cons (scan-current-stream) (scan-current-buffer)) include-stack)
-                         (setf (scan-current-stream) infile)
-                         (scan-reset-current-buffer)
-                         (format *trace-output* "Reading input from include file ~S~%" filename)
-                         (goto :initial)))}))
+                     (error "Includes nested too deeply.")
+                     (let ((infile (open filename
+                                         :external-format external-format
+                                         :if-does-not-exist (if (eq if-include-fails :error)
+                                                                :error
+                                                                nil))))
+                       (if infile
+                           (case if-include-fails
+                             (:continue (goto nil))
+                             (:error    (error "Could not open include file ~S" filename))
+                             (otherwise (return-from scan if-include-fails)))
+                           (progn
+                             (push (cons (scan-current-stream) (scan-current-buffer)) include-stack)
+                             (setf (scan-current-stream) infile)
+                             (scan-reset-current-buffer)
+                             (format *trace-output* "Reading input from include file ~S~%" filename)
+                             (goto :initial))))))
                (pop-include ()
                  (when include-stack
                    (close (scan-current-stream))
@@ -965,16 +966,19 @@
          :finally (unread-char ch stream) (return text))))))
 
 
-(with-open-file (latex #P"~/library/informatique/standards-and-protocol/cplusplus-draft/source/grammar.tex")
+#+testing
+(with-open-file (latex #-(and) #P"~/library/informatique/standards-and-protocol/cplusplus-draft/source/grammar.tex"
+                       #P"/Volumes/USER/srv/books/informatics/standards/cplusplus-draft/source/grammar.tex")
   (loop
     :for token = (read-token latex)
     :while token
     :do (print token)))
 
-
+#+testing
 (defun getenv (var)
   #+clisp (ext:getenv var)
   #+ccl   (ccl:getenv var)
   #-(or clisp ccl) (error "Please implement getenv in ~A" (lisp-implementation-type)))
 
+#+testing
 (scan stream (getenv "READ_TEX_DIR"))
