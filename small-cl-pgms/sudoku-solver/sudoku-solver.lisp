@@ -36,17 +36,59 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setf *readtable* (copy-readtable nil)))
 
-(ql:quickload :com.informatimago.common-lisp.cesarum)
-
 (defpackage "COM.INFORMATIMAGO.SUDOKU-SOLVER"
-  (:use "COMMON-LISP"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ARRAY")
+  (:use "COMMON-LISP")
   (:export "SUDOKU-SOLVER" "SUDOKU-PRINT"))
 
 (in-package "COM.INFORMATIMAGO.SUDOKU-SOLVER")
 
+(defun iota (count &optional (start 0) (step 1))
+  "
+RETURN:   A list containing the elements
+          (start start+step ... start+(count-1)*step)
+          The start and step parameters default to 0 and 1, respectively.
+          This procedure takes its name from the APL primitive.
+EXAMPLE:  (iota 5) => (0 1 2 3 4)
+          (iota 5 0 -0.1) => (0 -0.1 -0.2 -0.3 -0.4)
+"
+  (loop
+    :for item = start :then (+ item step)
+    :repeat count
+    :collect item))
 
+(defun copy-array (array &key copy-fill-pointer copy-adjustable
+                   copy-displacement)
+  "
+RETURN:             A copy of the ARRAY.
+ARRAY:              An array.
+COPY-FILL-POINTER:  Indicate whether the copy must have the same
+                    FILL-POINTER as the ARRAY.
+COPY-ADJUSTABLE:    Indicate whether the copy must be an adjustable
+                    array when the ARRAY is adjustable.
+COPY-DISPLACEMENT:  Indicate whether the copy must be an array
+                    displaced to the same array as the ARRAY.
+"
+  (when copy-displacement
+    (multiple-value-bind (disto disoff) (array-displacement array)
+      (when disto
+        (return-from copy-array
+          (make-array (array-dimensions array)
+                      :element-type (array-element-type array)
+                      :displaced-to disto
+                      :displaced-index-offset disoff
+                      :adjustable (when copy-adjustable
+                                    (adjustable-array-p array))
+                      :fill-pointer (when copy-fill-pointer
+                                      (fill-pointer array)))))))
+  (let ((copy (make-array (array-dimensions array)
+                          :adjustable (when copy-adjustable
+                                        (adjustable-array-p array))
+                          :fill-pointer (when copy-fill-pointer
+                                          (fill-pointer array))
+                          :element-type (array-element-type array))))
+    (dotimes (i (array-total-size copy))
+      (setf (row-major-aref copy i) (row-major-aref array i)))
+    copy))
 
 (defun make-sudoku ()
   (make-array '(9 9) :initial-element 'x))
@@ -469,7 +511,7 @@ RETURN  SUDOKU.
 
 
 
-(defun solve-sudokus ()
+(defun solve-sudokus (&key (print t))
   (dolist (sudoku '(
                     *20-minutes/1499/facile*
                     *20-minutes/1501/difficile*
@@ -483,14 +525,15 @@ RETURN  SUDOKU.
                     *andre*
                     ))
     (multiple-value-bind (solutions tries) (sudoku-solver (symbol-value sudoku))
-      (terpri) (print sudoku) (terpri)
-
-      (sudoku-print (symbol-value sudoku))
+      (terpri)
+      (when print
+        (print sudoku) (terpri)
+        (sudoku-print (symbol-value sudoku)))
       (format t "  ~A (with ~D empty slots)~%  has ~D solution~:*~P,~%  found in ~D tries.~2%"
               sudoku (sudoku-count-empty-slots (symbol-value sudoku))
               (length solutions) tries)
-      (map nil 'sudoku-print solutions))))
-
+      (when print
+        (map nil 'sudoku-print solutions)))))
 
 
 ;;----------------------------------------------------------------------
@@ -548,5 +591,6 @@ RETURN  SUDOKU.
     (terpri) (print file) (terpri)
     (print (time (solve-grids/no-print file)))))
 
-
+;; (solve-sudokus :print t)
+;; (solve-sudokus :print nil)
 ;;;; THE END ;;;;
