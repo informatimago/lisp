@@ -404,40 +404,52 @@ CONSTANTS:  The first element of CONSTANTS may be an optional docstring.
   (let ((name (if (consp name-and-options)
                   (first name-and-options)
                   name-and-options)))
-    (when (stringp (first constants)) ; docstring
+    (when (stringp (first constants))   ; docstring
       (pop constants))
-    `(eval-when (:compile-toplevel :load-toplevel :execute)
-       ;; define a ({NAME}-LABEL value) function.
-       (defun ,(intern (wsiosbp (format nil "~A-LABEL" name))) (value)
-         ,(format nil "Produce the name of the constant having the given VALUE.")
-         (case value
-           ,@(loop
-               :with val = -1
-               :for cname :in constants
-               :do (if (consp cname)
-                       (setf val (second cname))
-                       (incf val))
-               :collect `((,val) ',(if (consp cname)
-                                       (first cname)
-                                       cname)))
-           (otherwise (format nil "#<~A:~D>" ',name value))))
-       ;; define the constants.
-       ,@(loop
-           :with val = -1
-           :for cname :in constants
-           :do (when (consp cname)
-                 (setf val (1- (second cname)) cname (first cname)))
-           :collect `(defconstant ,cname ,(incf val)
-                       ,(format nil "~A enumeration value." name)))
-       ;; define the type.
-       (deftype ,name ()
-         "An enumeration type." ;; TODO: get a docstring from the parameters.
-         '(member ,@(loop
-                      :with val = -1
-                      :for cname :in constants
-                      :collect (if (consp cname)
-                                   (setf val (second cname))
-                                   (incf val))))))))
+    (let* ((min nil)
+           (max nil)
+           (defconstants (loop
+                           :with val = -1
+                           :for cname :in constants
+                           :do (when (consp cname)
+                                 (setf val (1- (second cname))
+                                       cname (first cname)))
+                               (if min (setf min (min min val)) (setf min val))
+                               (if max (setf max (max max val)) (setf max val))
+                           :collect `(defconstant ,cname ,(incf val)
+                                       ,(format nil "~A enumeration value." name)))))
+      (push `(defconstant ,(scat name '-min) ,min
+               ,(format nil "The minimum ~A enumeration value." name))
+            defconstants)
+      (push `(defconstant ,(scat name '-max) ,max
+               ,(format nil "The maximum ~A enumeration value." name))
+            defconstants)
+      `(eval-when (:compile-toplevel :load-toplevel :execute)
+         ;; define a ({NAME}-LABEL value) function.
+         (defun ,(intern (wsiosbp (format nil "~A-LABEL" name))) (value)
+           ,(format nil "Produce the name of the constant having the given VALUE.")
+           (case value
+             ,@(loop
+                 :with val = -1
+                 :for cname :in constants
+                 :do (if (consp cname)
+                         (setf val (second cname))
+                         (incf val))
+                 :collect `((,val) ',(if (consp cname)
+                                         (first cname)
+                                         cname)))
+             (otherwise (format nil "#<~A:~D>" ',name value))))
+         ;; define the constants.
+         ,@defconstants
+         ;; define the type.
+         (deftype ,name ()
+           "An enumeration type." ;; TODO: get a docstring from the parameters.
+           '(member ,@(loop
+                        :with val = -1
+                        :for cname :in constants
+                        :collect (if (consp cname)
+                                     (setf val (second cname))
+                                     (incf val)))))))))
 
 
 (defun op-type-of (symbol &optional env)
