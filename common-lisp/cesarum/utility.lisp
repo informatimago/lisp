@@ -414,10 +414,10 @@ CONSTANTS:  The first element of CONSTANTS may be an optional docstring.
                            :do (when (consp cname)
                                  (setf val (1- (second cname))
                                        cname (first cname)))
-                               (if min (setf min (min min val)) (setf min val))
-                               (if max (setf max (max max val)) (setf max val))
                            :collect `(defconstant ,cname ,(incf val)
-                                       ,(format nil "~A enumeration value." name)))))
+                                       ,(format nil "~A enumeration value." name))
+                           :do (if min (setf min (min min val)) (setf min val))
+                               (if max (setf max (max max val)) (setf max val)))))
       (push `(defconstant ,(scat name '-min) ,min
                ,(format nil "The minimum ~A enumeration value." name))
             defconstants)
