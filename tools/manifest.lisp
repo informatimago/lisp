@@ -118,8 +118,14 @@
 (defun shell-command-to-string (command &rest arguments)
   "Execute the COMMAND with asdf:run-shell-command and returns its
 stdout in a string (going thru a file)."
-  (let ((*default-pathname-defaults* #P"")
-        (path (format nil "~:@(out-~36,8,'0R.txt~)" (random (expt 2 32)))))
+  (let* ((*default-pathname-defaults* #P"")
+         (name (format nil "~:@(OUT-~36,8,'0R~)" (random (expt 2 32))))
+         (path (namestring (translate-logical-pathname
+                            (if (ignore-errors (logical-pathname-translations "TMP"))
+                                (make-pathname :host "TMP" :directory '(:absolute)
+                                               :name name :type "TXT")
+                                (merge-pathnames (user-homedir-pathname)
+                                                 (make-pathname :name name :type "TXT")))))))
     (unwind-protect
          (when (zerop (asdf:run-shell-command (format nil "~? > ~S" command arguments path)))
            (with-output-to-string (out)
@@ -128,7 +134,6 @@ stdout in a string (going thru a file)."
                  :for line = (read-line file nil nil)
                  :while line :do (write-line line out)))))
       (ignore-errors (delete-file path)))))
-
 
 
 (defun prepare-options (options)
