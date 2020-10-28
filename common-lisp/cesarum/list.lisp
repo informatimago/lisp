@@ -600,8 +600,14 @@ EXAMPLE: (COMBINE '(WWW FTP) '(EXA) '(COM ORG)))
            --> ((WWW EXA COM) (WWW EXA ORG) (FTP EXA COM) (FTP EXA ORG))
 "
   (cond
-    ((null args)        '(nil))
-    ((null  (car args)) (apply (function combine) (cdr args)))
+    ((null args)        '(()))
+
+    ;; Don't consider empty set for one of the arguments since the combination
+    ;; should produce the empty set:
+    ;; {} x {1,2} = {}
+    ;; Instead, let it fall to the default case, considering it as the symbol NIL.
+    ;; ((null  (car args)) (apply (function combine) (cdr args)))
+
     ((consp (car args)) (mapcan (lambda (item)
                                   (apply (function combine) item (cdr args)))
                                 (car args)))
