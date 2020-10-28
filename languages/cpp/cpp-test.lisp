@@ -193,6 +193,10 @@
   (check equal (skip-spaces-but-one "    xyz ()" 7) 7)
   :success)
 
+;; (define-test test/comment-in-directive ()
+;;   "The only white-space characters that shall appear between preprocessing tokens within a preprocessing directive -- are space and horizontal-tab -- including spaces that have replaced comments -- in translation phase 3 --"
+;;   "# /* comment valid here */ include <stdio.h>")
+
 (define-test test/extract-path ()
   (check equal (multiple-value-list (extract-path "#include"
                                                    (list (make-instance 'string-literal-token
