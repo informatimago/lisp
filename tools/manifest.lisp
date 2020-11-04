@@ -39,11 +39,12 @@
 (declaim (also-use-packages "ASDF"))
 (defpackage "COM.INFORMATIMAGO.TOOLS.MANIFEST"
   (:use "COMMON-LISP"
+        "SPLIT-SEQUENCE"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.VERSION"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE"
-        "SPLIT-SEQUENCE")
+        "COM.INFORMATIMAGO.CLEXT.SHELL")
   (:export "ASDF-SYSTEM-NAME"
            "ASDF-SYSTEM-LICENSE"
            "SYSTEM-DEPENDS-ON"
@@ -112,28 +113,6 @@
 ;; galatea  10.7.5       Darwin galatea.lan.informatimago.com 11.4.2 Darwin Kernel Version 11.4.2: Thu Aug 23 16:26:45 PDT 2012; root:xnu-1699.32.7~1/RELEASE_I386 i386
 ;; despina  10.8         Darwin despina.home 12.5.0 Darwin Kernel Version 12.5.0: Sun Sep 29 13:33:47 PDT 2013; root:xnu-2050.48.12~1/RELEASE_X86_64 x86_64
 ;; larissa  10.9.2       Darwin larissa.home 13.1.0 Darwin Kernel Version 13.1.0: Thu Jan 16 19:40:37 PST 2014; root:xnu-2422.90.20~2/RELEASE_X86_64 x86_64 i386 MacBookAir6,2 Darwin
-
-
-
-(defun shell-command-to-string (command &rest arguments)
-  "Execute the COMMAND with asdf:run-shell-command and returns its
-stdout in a string (going thru a file)."
-  (let* ((*default-pathname-defaults* #P"")
-         (name (format nil "~:@(OUT-~36,8,'0R~)" (random (expt 2 32))))
-         (path (namestring (translate-logical-pathname
-                            (if (ignore-errors (logical-pathname-translations "TMP"))
-                                (make-pathname :host "TMP" :directory '(:absolute)
-                                               :name name :type "TXT")
-                                (merge-pathnames (user-homedir-pathname)
-                                                 (make-pathname :name name :type "TXT")))))))
-    (unwind-protect
-         (when (zerop (asdf:run-shell-command (format nil "~? > ~S" command arguments path)))
-           (with-output-to-string (out)
-             (with-open-file (file path)
-               (loop
-                 :for line = (read-line file nil nil)
-                 :while line :do (write-line line out)))))
-      (ignore-errors (delete-file path)))))
 
 
 (defun prepare-options (options)

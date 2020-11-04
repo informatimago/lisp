@@ -60,7 +60,8 @@ specifications, like GRAY or other portability libraries.
                #+(or ccl clisp sbcl cmu) "com.informatimago.clext.pipe"
                "com.informatimago.clext.queue"
                "com.informatimago.clext.filter-stream"
-               "com.informatimago.clext.redirecting-stream")
+               "com.informatimago.clext.redirecting-stream"
+               "com.informatimago.clext.shell")
   :components ()
   #+adsf3 :in-order-to
   #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.clext.test")

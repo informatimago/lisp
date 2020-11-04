@@ -37,8 +37,9 @@
   :author "Pascal J. Bourguignon"
   :version "1.2.0"
   :license "AGPL3"
-  :depends-on ("com.informatimago.common-lisp.cesarum"
-               "split-sequence")
+  :depends-on ("split-sequence"
+               "com.informatimago.common-lisp.cesarum"
+               "com.informatimago.clext.shell")
   :components ((:file "manifest"))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8)
 

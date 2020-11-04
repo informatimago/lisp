@@ -34,7 +34,11 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setf *readtable* (copy-readtable nil)))
 (defpackage "COM.INFORMATIMAGO.CLMISC.RESOURCE-UTILIZATION"
-  (:use "COMMON-LISP")
+  (:use "COMMON-LISP"
+        "SPLIT-SEQUENCE"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SYMBOL"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE"
+        "COM.INFORMATIMAGO.CLEXT.SHELL")
   (:export "REPORTING-SRU"
            "SUMMARY-RESOURCE-UTILIZATION" )
   (:documentation
@@ -90,37 +94,68 @@ License:
 "))
 (in-package "COM.INFORMATIMAGO.CLMISC.RESOURCE-UTILIZATION")
 
+(defun split-attribute-line (line)
+  (let* ((colon (position #\: line))
+         (var   (and colon (string-trim " 	" (subseq line 0 colon))))
+         (val   (and colon (string-trim " 	" (subseq line (1+ colon))))))
+    (when (and var val)
+      (cons (keywordize
+             (string-upcase
+              (substitute-if #\- (lambda (ch) (position ch "_ ")) var)))
+            (multiple-value-bind (n p) (parse-integer val :junk-allowed t)
+              (if (= p (length val))
+                  n
+                  val))))))
+
+(defun sysctl-info ()
+  "
+RETURN: An A-list containing the data from sysctl -a.
+"
+  (let ((text (shell-command-to-string "sysctl -a")))
+    (when text
+      (delete nil
+              (mapcar (function split-attribute-line)
+                      (split-sequence #\newline text))))))
 
 (defun cpu-info ()
   "
 RETURN: An A-list containing the data from /proc/cpuinfo.
 "
-  (cond
-   ((with-open-file (info "/proc/cpuinfo" :if-does-not-exist nil)
-      (and info
-           (loop
-              :for line = (read-line info nil nil)
-              :for colon = (and line (position #\: line))
-              :for var = (and colon (string-trim " 	" (subseq line 0 colon)))
-              :for val = (and colon (string-trim " 	" (subseq line (1+ colon))))
-              :while line
-              :when var
-              :collect (cons (intern
-                              (string-upcase
-                               (substitute-if #\- (lambda (ch) (position ch "_ ")) var))
-                              "KEYWORD") val)))))))
-
+  (let ((text (text-file-contents "/proc/cpuinfo"
+                                  :if-does-not-exist nil)))
+    (when text
+      (when text
+        (delete nil
+                (mapcar (function split-attribute-line)
+                        (split-sequence #\newline text)))))))
 
 (defun cpu-short-description ()
   "
 RETURN: A short description of the CPU.
 "
-  (let ((info (cpu-info)))
-    (flet ((gac (x) (or (cdr (assoc x info)) "")))
-      (format nil "~A ~A.~A.~A ~A MHz (~A bogomips)" (gac :model-name)
-              (gac :cpu-family) (gac :model) (gac :stepping)
-              (gac :cpu-mhz) (gac :bogomips)))))
-
+  (let ((info (append (cpu-info) (sysctl-info))))
+    (flet ((gac (x) (cdr (assoc x info))))
+      (format nil "~A ~A.~A.~A ~A MHz (~A bogomips)"
+              (or (gac :model-name)
+                  (gac :machdep.cpu.brand-string)
+                  "")
+              (or (gac :cpu-family)
+                  (gac :machdep.cpu.family)
+                  "")
+              (or (gac :model)
+                  (gac :machdep.cpu.model)
+                  "")
+              (or (gac :stepping)
+                  (gac :machdep.cpu.stepping)
+                  "")
+              (or (gac :cpu-mhz)
+                  (truncate (gac :hw.cpufrequency) 1e6)
+                  "")
+              (or (gac :bogomips)
+                  (let ((freq (gac :hw.cpufrequency)))
+                    (if freq
+                        (* 2.5e-6 freq )
+                        0)))))))
 
 
 (defun read-parenthesized-string (&optional (stream t)
