@@ -37,6 +37,7 @@
 (defpackage "COM.INFORMATIMAGO.CLEXT.CHARACTER-SETS"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CHARACTER-SETS")
   (:export
    "MAKE-EXTERNAL-FORMAT"
@@ -213,17 +214,24 @@ RETURN:     A new list of name and aliases, with the ALIASES added, if
             #+unicode ("UTF-8"))
 
   #+sbcl
-  (etypecase sb-impl::*external-formats*
-    (hash-table (let ((result '()))
-                  (maphash (lambda (name encoding) (declare (ignore name)) (pushnew encoding result))
-                           sb-impl::*external-formats*)
-                  (mapcar (lambda (encoding)
-                            (mapcar (function string-upcase)
-                                    (slot-value encoding 'sb-impl::names)))
-                          result)))
-    (list (mapcar (lambda (x) (mapcar (function string-upcase) (first x)))
-                  sb-impl::*external-formats*)))
-
+  (mapcar (lambda (x)
+            (mapcar (function string-upcase)
+                    (sb-impl::ef-names x)))
+          (etypecase sb-impl::*external-formats*
+            (hash-table (let ((result '()))
+                          (maphash (lambda (name encoding)
+                                     (declare (ignore name))
+                                     (pushnew encoding result))
+                                   sb-impl::*external-formats*)
+                          result))
+            (vector (remove 'SB-IMPL::EXTERNAL-FORMAT
+                            (flatten (coerce sb-impl::*external-formats* 'list))
+                            :key (function type-of)
+                            :test-not (function eql)))
+            (list   (remove 'SB-IMPL::EXTERNAL-FORMAT
+                            (flatten sb-impl::*external-formats*)
+                            :key (function type-of)
+                            :test-not (function eql)))))
 
   ;; From Java7:
   ;; Every implementation of the Java platform is required to support
