@@ -67,7 +67,7 @@
                                  "TRANSLATE-LOGICAL-PATHNAME"
                                  "PRINT-NOT-READABLE"
                                  "PRINT-NOT-READABLE-OBJECT")
-  (:export "MAKE" "MV" "CP" "DEFINE-EXTERNAL-COMMAND" "*SHELL*" "LESS" "MORE" "CAT" "LS"
+  (:export "MAKE" "MV" "CP" "RM" "DEFINE-EXTERNAL-COMMAND" "*SHELL*" "LESS" "MORE" "CAT" "LS"
            "MKDIR" "POPD" "PUSHD" "PWD" "CD" "BROWSE" "*TERMINAL-HEIGHT*"
            "CHANGE-WORKING-DIRECTORY" "WORKING-DIRECTORY" "*CHANGE-DIRECTORY-HOOK*"
            "*KEEP-DOT-FILES*")
@@ -198,6 +198,7 @@ calling the external program of same name thru the shell."
      ,(or docstring (format nil "COMMAND~%Runs the ~A command." name))
      (runcommand ',name args)))
 
+(define-external-command rm)
 (define-external-command cp)
 (define-external-command mv)
 (define-external-command make)
