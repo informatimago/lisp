@@ -11,7 +11,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2017-04-16 <PJB> Aded queue-empty-p.
+;;;;    2017-04-16 <PJB> Added queue-empty-p.
 ;;;;    2015-08-29 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
