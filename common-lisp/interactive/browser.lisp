@@ -68,7 +68,7 @@
                                  "PRINT-NOT-READABLE"
                                  "PRINT-NOT-READABLE-OBJECT")
   (:export "MAKE" "MV" "CP" "RM" "DEFINE-EXTERNAL-COMMAND" "*SHELL*" "LESS" "MORE" "CAT" "LS"
-           "MKDIR" "POPD" "PUSHD" "PWD" "CD" "BROWSE" "*TERMINAL-HEIGHT*"
+           "GREP" "MKDIR" "POPD" "PUSHD" "PWD" "CD" "BROWSE" "*TERMINAL-HEIGHT*"
            "CHANGE-WORKING-DIRECTORY" "WORKING-DIRECTORY" "*CHANGE-DIRECTORY-HOOK*"
            "*KEEP-DOT-FILES*")
   (:documentation
