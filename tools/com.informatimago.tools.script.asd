@@ -37,7 +37,7 @@
   :author "Pascal J. Bourguignon"
   :version "1.2.0"
   :license "AGPL3"
-  :depends-on ()
+  :depends-on ("com.informatimago.common-lisp.cesarum")
   :components ((:file "script" :depends-on ()))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.tools.script.test"))))
