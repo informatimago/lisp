@@ -75,6 +75,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon
 ;;;;MODIFICATIONS
+;;;;    2021-02-02 <PJB> Corrected small errors.
 ;;;;    2005-09-26 <PJB> Added missing :NICKNAMES.
 ;;;;    2003-05-19 <PJB> Created (in 2 days).
 ;;;;BUGS
@@ -101,7 +102,7 @@
 ;;;;LEGAL
 ;;;;    GPL
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2003 - 2003
+;;;;    Copyright Pascal J. Bourguignon 2003 - 2021
 ;;;;    mailto:pjb@informatimago.com
 ;;;;
 ;;;;    This program is free software; you can redistribute it and/or
@@ -979,8 +980,8 @@ DO:         Read a line and either execute it or store it in the program.
 "
   (setf (fill-pointer *stack*) 0)
   (setq *data-ptr* (cons 0 nil))
-  (format t "*** QUICK-DIRTY-AND-UGLY BASIC, VERSION 0.1 ***~%~
-             COPYRIGHT PASCAL J. BOURGUIGNON 2003~%~
+  (format t "*** QUICK-DIRTY-AND-UGLY BASIC, VERSION 0.1.1 ***~%~
+             COPYRIGHT PASCAL J. BOURGUIGNON 2003 - 2021~%~
              QUICK-DIRTY-AND-UGLY BASIC COMES WITH *ABSOLUTELY NO WARRANTY*.~%~
              THIS IS FREE SOFTWARE, AND YOU ARE WELCOME TO REDISTRIBUTE IT~%~
              UNDER THE CONDITIONS LISTED IN THE GNU PUBLIC LICENSE.~4%")
