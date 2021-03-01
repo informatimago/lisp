@@ -1,0 +1,29 @@
+This system fetches irc logs from the web, and displays updates at the
+next prompt.
+
+Default configuration:
+
+#+BEGIN_QUOTE
+com.informatimago.small-cl-pgms.irclog:*irclog-base-url*
+--> "https://ccl.clozure.com/irc-logs/"
+com.informatimago.small-cl-pgms.irclog:*channels*
+--> ("lisp")
+com.informatimago.small-cl-pgms.irclog:*ignore-commands*
+--> ("joined" "left" "quit")
+#+END_QUOTE
+
+We may put in the rc file:
+
+#+BEGIN_CODE
+    (defun start-irclog ()
+      (ql:quickload "com.informatimago.small-cl-pgms.irclog")
+      (uiop:symbol-call "COM.INFORMATIMAGO.SMALL-CL-PGMS.IRCLOG.MAIN" "START")
+      (uiop:symbol-call "COM.INFORMATIMAGO.SMALL-CL-PGMS.PROMPTER" "ADD-PROMPT-FUNCTION" 'date)
+      (values))
+#+END_CODE
+
+and then once slime/swank is started, activate it with:
+
+#+BEGIN_CODE
+    (start-irclog)
+#+END_CODE
