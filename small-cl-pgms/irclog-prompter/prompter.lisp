@@ -110,5 +110,12 @@ STREAM is flushed."
   (setf *prompt-functions-installed* nil
         #+sbcl sb-int:*repl-prompt-fun* #+sbcl (function com.informatimago.pjb::prompt))
   (install-prompt-functions))
+#-(and)
+(progn
+  (pop (LIST-PROMPT-FUNCTIONS))
+  (REMOVE-PROMPT-FUNCTION 'com.informatimago.small-cl-pgms.irclog.main::display-new-irc-messages)
+  (REMOVE-PROMPT-FUNCTION 'common-lisp-user::date)
+  (add-PROMPT-FUNCTION 'com.informatimago.small-cl-pgms.irclog.main::display-new-irc-messages)
+  (add-PROMPT-FUNCTION 'common-lisp-user::date))
 
 ;;;; THE END ;;;;
