@@ -1,10 +1,11 @@
 (defpackage "COM.INFORMATIMAGO.SMALL-CL-PGMS.IRCLOG"
   (:use "COMMON-LISP")
   (:documentation "This package fetches new lines from irclogs.")
-  (:export "GET-NEW-MESSAGES"))
-
+  (:export "GET-NEW-MESSAGES"
+           "*IRCLOG-BASE-URL*"
+           "*CHANNELS*"
+           "*IGNORE-COMMANDS*"))
 (in-package "COM.INFORMATIMAGO.SMALL-CL-PGMS.IRCLOG")
-
 
 (defvar *irclog-base-url* "https://ccl.clozure.com/irc-logs/")
 (defvar *channels* '("lisp") #|'("lisp" "scheme")|#
