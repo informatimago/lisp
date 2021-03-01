@@ -279,10 +279,11 @@ If PACKAGE is NIL, the rotate *PACKAGE* and the top of the package stack."
       (psetf (first *package-stack*) (package-name *package*)
              *package* (find-package (first *package-stack*))))
   (cons (package-name *package*) *package-stack*))
+
 (defun popp ()
   "Pops the top of the package stack and assign it to *PACKAGE*."
   (if (null *package-stack*)
-      (format t "Cannot pop an empty package stack.")
+      (format t "~&Cannot pop an empty package stack.~%")
       (setf *package* (find-package (pop *package-stack*))))
   (cons (package-name *package*) *package-stack*))
 
@@ -383,11 +384,11 @@ DO:         Prints each expression and their values.
 #-mocl
 (defmethod documentation ((package t) (doc-type (eql 'exports)))
   (declare (ignore doc-type))
-  (format t "~:{----------------------------------------~%~A~2%~A~2%~}"
+  (format t "~&~:{----------------------------------------~%~A~2%~A~2%~}"
           (mapcar (lambda (sym) (list sym (documentation sym 'function)))
                   (delete-if (lambda (sym) (null (documentation sym 'function)))
                              (list-external-symbols package))))
-  (format t "Undocumented: ~{~A~^ ~}~%"
+  (format t "~&Undocumented: ~{~A~^ ~}~%"
           (delete-if (lambda (sym)  (documentation sym 'function))
                      (list-external-symbols package))))
 
@@ -421,8 +422,8 @@ DO:         Prints each expression and their values.
                        (function string<))))
     (let ((out (format nil "~{~A ~}" plist)))
       (if (< (length out) 60)
-          (format t "   ~14A ~A~%" title out)
-          (format t "   ~14A~{ ~<~%                  ~1:;~A~>~^~}~%"
+          (format t "~&   ~14A ~A~%" title out)
+          (format t "~&   ~14A~{ ~<~%                  ~1:;~A~>~^~}~%"
                   title plist)))))
 
 (defun lspack (&rest arguments)
@@ -517,7 +518,7 @@ RETURN: a list of options present at the beginning of the arguments list;
          :for code :from start :below end
          :when (and (code-char code) ; ccl returns nil on some codes...
                     (string-match-p name (char-name (code-char code))))
-         :collect #1=(progn (format t "#x~5,'0X  ~:*~6D  ~C  ~S~%"
+         :collect #1=(progn (format t "~&#x~5,'0X  ~:*~6D  ~C  ~S~%"
                                     code (code-char code)
                                     (char-name (code-char code)))
                             (code-char code)))
@@ -635,7 +636,7 @@ DO:         Create FILE if it doesn't exist, and
 
 (defun date (&optional (date (get-universal-time)))
   "Prints the date."
-  (format t "~{~5*~4,'0D-~2:*~2,'0D-~2:*~2,'0D ~2:*~2,'0D:~2:*~2,'0D:~2:*~2,'0D~8*~}~%"
+  (format t "~&~{~5*~4,'0D-~2:*~2,'0D-~2:*~2,'0D ~2:*~2,'0D:~2:*~2,'0D:~2:*~2,'0D~8*~}~%"
           (multiple-value-list (decode-universal-time date)))
   date)
 
