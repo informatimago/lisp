@@ -42,8 +42,9 @@
                ;; "cl-irc" "cl-json"
                "drakma" "split-sequence" "cl-ppcre")
   :components ((:file "irclog")
-               (:file "prompter")
+               (:file "swank-slime")
+               (:file "prompter"      :depends-on ("swank-slime"))
                (:file "prompter-test" :depends-on ("prompter"))
-               (:file "main" :depends-on ("prompter" "irclog"))))
+               (:file "main" :depends-on ("prompter" "irclog" "swank-slime"))))
 
 ;;;; THE END ;;;;

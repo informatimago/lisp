@@ -1,5 +1,6 @@
 (defpackage "COM.INFORMATIMAGO.SMALL-CL-PGMS.PROMPTER"
   (:use "COMMON-LISP")
+  (:use "COM.INFORMATIMAGO.SMALL-CL-PGMS.SLIME")
   (:documentation "This package installs functions to be called before the REPL prompt is displayed.")
   (:export "ADD-PROMPT-FUNCTION"
            "REMOVE-PROMPT-FUNCTION"
@@ -58,7 +59,12 @@ STREAM is flushed."
     ;; and the prompt is displayed by emacs.
     ;; Therefore this feature must be implemented in emacs.
     #+swank (progn
-              )
+              (eval-in-emacs '(defadvice slime-repl-insert-prompt
+                               (before slime-repl-insert-prompt/run-prompt-functions last () activate)
+                               (slime-eval (car (read-from-string "(com.informatimago.small-cl-pgms.prompter::run-prompt-functions cl:*standard-output*)"))))))
+
+    ;; We still hook in the prompt for *inferior-lisp*,
+    ;; and for the normal case (terminal):
     
     ;; For ccl, we cannot use the *read-loop-function* since once we're
     ;; inside the loop, this hook is not used anymore (it's used when
@@ -86,7 +92,15 @@ STREAM is flushed."
                            (funcall old-prompt-fun stream)
                            (finish-output stream))))))
     
-    #-(or ccl sbcl) (error "Not implemented yet for ~A" (lisp-implementation-type))
+    #-(or ccl sbcl)
+    (error "~S is not implemented yet for ~A"
+           'install-prompt-functions (lisp-implementation-type))
     (setf *prompt-functions-installed* t)))
+
+#-(and)
+(progn
+  (setf *prompt-functions-installed* nil
+        #+sbcl sb-int:*repl-prompt-fun* #+sbcl (function com.informatimago.pjb::prompt))
+  (install-prompt-functions))
 
 ;;;; THE END ;;;;

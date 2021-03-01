@@ -4,8 +4,7 @@
         "COM.INFORMATIMAGO.SMALL-CL-PGMS.PROMPTER")
   (:documentation "This package fetches new lines from irclogs,
 and displays them before the next prompt.")
-  (:export "MAIN"))
-
+  (:export "START"))
 (in-package "COM.INFORMATIMAGO.SMALL-CL-PGMS.IRCLOG.MAIN")
 
 (defun display-new-irc-messages ()
@@ -17,9 +16,9 @@ and displays them before the next prompt.")
                       :do (format t "#~A: ~A~%" channel message)))
       (force-output))))
 
-(defun main ()
+(defun start ()
   (install-prompt-functions)
   (add-prompt-function 'display-new-irc-messages)
   (values))
 
-(main)
+;;;; THE END ;;;;
