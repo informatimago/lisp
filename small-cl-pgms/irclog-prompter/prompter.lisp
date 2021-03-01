@@ -59,9 +59,17 @@ STREAM is flushed."
     ;; and the prompt is displayed by emacs.
     ;; Therefore this feature must be implemented in emacs.
     #+swank (progn
-              (eval-in-emacs '(defadvice slime-repl-insert-prompt
-                               (before slime-repl-insert-prompt/run-prompt-functions last () activate)
-                               (slime-eval (car (read-from-string "(com.informatimago.small-cl-pgms.prompter::run-prompt-functions cl:*standard-output*)"))))))
+              (eval-in-emacs
+               (quote
+                (defadvice slime-repl-insert-prompt
+                    (before slime-repl-insert-prompt/run-prompt-functions last () activate)
+                  (let ((form (ignore-errors
+                               (car (read-from-string
+                                     "(cl:let ((rpf (cl:ignore-errors (cl:find-symbol \"RUN-PROMPT-FUNCTIONS\" \"COM.INFORMATIMAGO.SMALL-CL-PGMS.PROMPTER\")))) (cl:when rpf (cl:funcall rpf cl:*standard-output*)))"
+                                     )))))
+                    (when form
+                      (slime-eval form))))
+                )))
 
     ;; We still hook in the prompt for *inferior-lisp*,
     ;; and for the normal case (terminal):
