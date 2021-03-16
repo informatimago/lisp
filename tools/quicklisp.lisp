@@ -52,7 +52,8 @@
            "QUICK-DELETE"
            "QUICK-RELOAD"
            "QUICK-LOCAL-PROJECTS"
-           "QUICK-RESET")
+           "QUICK-RESET"
+           "QUICKLOAD/NEW-PACKAGES")
   (:documentation "Quicklisp quick commands."))
 (in-package "COM.INFORMATIMAGO.TOOLS.QUICKLISP")
 
@@ -181,5 +182,13 @@ are listed."
   "Rebuilds the local projects system index."
   (quick-local-projects))
 
+(defun quickload/new-packages (systems &rest args &key &allow-other-keys)
+  "Performs quickload, and return the list of the new packages."
+  (let ((old-ps (mapcar (function package-name) (list-all-packages))))
+    (apply (function ql:quickload) systems args)
+    (let ((new-ps (mapcar (function package-name) (list-all-packages))))
+      (sort (set-difference new-ps old-ps :test (function string=))
+            (function string<)))))
 
 ;;;; THE END ;;;;
+
