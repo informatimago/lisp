@@ -1,4 +1,4 @@
-;;;; -*- mode:scheme; coding:us-ascii -*-
+;;;; -*- mode:scheme:mode:paredit; coding:us-ascii -*-
 ;;;;**************************************************************************
 ;;;;FILE:               happy.lisp
 ;;;;LANGUAGES:          scheme, emacs lisp, Common Lisp
@@ -33,7 +33,7 @@
 ;;;;LEGAL
 ;;;;    GPL
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2011 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2011 - 2021
 ;;;;
 ;;;;    This program is free software; you can redistribute it and/or
 ;;;;    modify it under the terms of the GNU General Public License
@@ -73,11 +73,21 @@
           )
    (if '()
        (funcall scheme)
-       (let ((language emacs-lisp))
-         (funcall (let ((language common-lisp)) (lambda () (funcall language schemify)))))))
- (lambda (f) ; funcall
+
+       ;; This may fail with lexical-binding t in newer emacs-lisp:
+       ;; (let ((language emacs-lisp))
+       ;;   (funcall (let ((language common-lisp)) (lambda () (funcall language schemify)))))
+
+       ;; Then instead we may use:
+       (funcall (let ((a (cons 1 1))
+                      (b (cons 2 2)))
+                  (if (eq a (rplaca a b))
+                      common-lisp
+                      emacs-lisp))
+                schemify)))
+ (lambda (f)                            ; funcall for scheme
    (f))
- (lambda () ; schemify
+ (lambda ()     ; schemify
    ;; In Common Lisp or Emacs Lisp, we define some scheme
    ;; primitives, to be able to bootstrap as on scheme.
 
@@ -90,69 +100,74 @@
    ;; Perhaps it would be better to write two different schemify for
    ;; emacs-lisp and Common-Lisp...
 
-   (eval (list 'progn
+   (eval
 
-               (if (boundp 'emacs-version)
-                   '(progn
-                     (defmacro define-symbol-macro (name expansion)
-                       (list 'defvar name expansion))
-                     (defmacro eval-in-emacs-lisp (&rest expressions)
-                       (list* 'progn expressions))
-                     (defmacro eval-in-common-lisp (&rest expressions)
-                       'nil)
-                     (defmacro eval-in-scheme (&rest expressions)
-                       'nil))
+    ;; Testing (boundp 'emacs-version) is dubbious too
+    ;; (such a variable could be defined in Common-Lisp).
+    ;; instead, let's test rplaca:
+    (let ((clp (let ((a (cons 1 1))
+                     (b (cons 2 2)))
+                 (eq a (rplaca a b)))))
+      (list 'progn
 
-                   '(progn
-                     (defmacro eval-in-emacs-lisp (&body expressions)
-                       'nil)
-                     (defmacro eval-in-common-lisp (&body expressions)
-                       (list* 'progn expressions))
-                     (defmacro eval-in-scheme (&body expressions)
-                       'nil)))
+            (if clp
 
-               (list 'defmacro (intern (if (boundp 'emacs-version)
-                                           "begin"
-                                           "BEGIN"))
-                     '(&body body) '(list* 'progn body))
+                ;; common-lisp:
+                '(progn
+                  (defmacro eval-in-emacs-lisp (&body expressions)
+                    'nil)
+                  (defmacro eval-in-common-lisp (&body expressions)
+                    (list* 'progn expressions))
+                  (defmacro eval-in-scheme (&body expressions)
+                    'nil))
 
-               (if (boundp 'emacs-version)
-                   '(defmacro define-lexical-global (variable expression)
-                     (list 'defvar variable expression))
-                   '(defmacro define-lexical-global (variable expression)
-                     (let ((global (gensym (symbol-name variable))))
-                       (list 'progn
-                             (list 'define-symbol-macro variable
-                                   (list 'symbol-value (list 'quote global)))
-                             (list 'setf variable expression)
-                             (list 'quote variable)))))
+                ;; emacs-lisp:
+                '(progn
+                  (defmacro define-symbol-macro (name expansion)
+                    (list 'defvar name expansion))
+                  (defmacro eval-in-emacs-lisp (&rest expressions)
+                    (list* 'progn expressions))
+                  (defmacro eval-in-common-lisp (&rest expressions)
+                    'nil)
+                  (defmacro eval-in-scheme (&rest expressions)
+                    'nil)))
 
-               (list 'defmacro  (intern (if (boundp 'emacs-version)
-                                            "define"
-                                            "DEFINE"))
-                     '(variable expression)
-                     '(list 'progn
-                       (list  'define-lexical-global variable expression)
-                       (list 'defun variable '(&rest arguments)
-                        (list 'apply  variable 'arguments))))
+            (list 'defmacro (intern (if clp "BEGIN" "begin"))
+                  '(&body body) '(list* 'progn body))
 
-               (list  (if (boundp 'emacs-version)
-                          'defmacro*
-                          'defmacro)
-                      (intern (if (boundp 'emacs-version)
-                                  "define-syntax"
-                                  "DEFINE-SYNTAX"))
-                      '(name (syntax-rules vars &rest rules))
-                      ;; '(declare (ignore syntax-rule vars rules))
-                      ;; We don't do anything, this is only used in
-                      ;; scheme to make CL like macros.
-                      '(list 'quote name)))))
- (lambda () ; scheme thunk
+            (if (boundp 'emacs-version)
+                '(defmacro define-lexical-global (variable expression)
+                  (list 'defvar variable expression))
+                '(defmacro define-lexical-global (variable expression)
+                  (let ((global (gensym (symbol-name variable))))
+                    (list 'progn
+                          (list 'define-symbol-macro variable
+                                (list 'symbol-value (list 'quote global)))
+                          (list 'setf variable expression)
+                          (list 'quote variable)))))
+
+            (list 'defmacro  (intern (if clp "DEFINE" "define"))
+                  '(variable expression)
+                  '(list 'progn
+                    (list  'define-lexical-global variable expression)
+                    (list 'defun variable '(&rest arguments)
+                     (list 'apply  variable 'arguments))))
+
+            (list  (if (boundp 'emacs-version)
+                       'defmacro*
+                       'defmacro)
+                   (intern (if clp "DEFINE-SYNTAX" "define-syntax"))
+                   '(name (syntax-rules vars &rest rules))
+                   ;; '(declare (ignore syntax-rule vars rules))
+                   ;; We don't do anything, this is only used in
+                   ;; scheme to make CL like macros.
+                   '(list 'quote name))))))
+ (lambda ()                             ; scheme thunk
    'scheme)
- (lambda (schemify) ; common-lisp thunk
+ (lambda (schemify)                     ; common-lisp thunk
    (funcall schemify)
    'common-lisp)
- (lambda (schemify) ; emacs-lisp thunk
+ (lambda (schemify)                     ; emacs-lisp thunk
    (eval '(require 'cl))
    (funcall schemify)
    'emacs-lisp))
@@ -163,8 +178,11 @@
 (define language ((lambda ()
                     (if '()
                         'scheme
-                        (let ((language 'emacs-lisp))
-                          (funcall (let ((language 'common-lisp)) (lambda () language))))))))
+                        (if (let ((a (cons 1 1))
+                                  (b (cons 2 2)))
+                              (eq a (rplaca a b)))
+                            'common-lisp
+                            'emacs-lisp)))))
 
 
 (case language
