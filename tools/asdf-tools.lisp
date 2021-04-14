@@ -49,6 +49,7 @@
   (:documentation "ASDF tools -- somewhat deprecated by quicklisp."))
 (in-package "COM.INFORMATIMAGO.TOOLS.ASDF")
 
+;; (asdf:output-files 'asdf:program-op "my-system")
 
 (defun asdf-load (&rest systems)
   "Load the ASDF systems.  See also (QL:QUICKLOAD system) to install them."
