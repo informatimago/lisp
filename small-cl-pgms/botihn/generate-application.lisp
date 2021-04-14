@@ -47,7 +47,7 @@
 #+ccl (pushnew 'com.informatimago.common-lisp.interactive.interactive:initialize
                ccl:*restore-lisp-functions*)
 
-(progn (format t "~%;;; Saving hotihn.~%") (finish-output) (values))
+(progn (format t "~%;;; Saving botihn.~%") (finish-output) (values))
 ;; This doesn't return.
 #+ccl (ccl::save-application
        "botihn"
