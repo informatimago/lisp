@@ -82,6 +82,9 @@ Licensed under the AGPL3.
 (defvar *ballot-file* #P"/usr/local/var/botvot/ballot.sexp"
         "Path of the file where the *ballot* is saved.")
 
+;; All the data is serialized to the *ballot-file* after each mutation,
+;; and when zombie ballots are garbage collected.
+
 (defvar *ballot-zombie-life* (days 15)
   "Delete closed or cancelled ballots older than that.")
 
@@ -440,19 +443,14 @@ user.
   (format stream "(ballot ~S ~S ~S ~S ~S ~S ~S ~S ~S "
           (ballot-id ballot)
           (title ballot)
-          (ballot-deadline ballot)
-          (ballot-remind-period ballot)
+          `(quote ,(ballot-deadline ballot))
+          `(quote ,(ballot-remind-period ballot))
           (ballot-owner ballot)
           (ballot-password-hash ballot)
           (ballot-secret-seed ballot)
           (ballot-state ballot)
           (ballot-last-publication ballot))
-  (terpri stream)
-  (format stream "(list")
-  (dolist (channel (ballot-channels ballot))
-    (terpri stream)
-    (serialize channel stream))
-  (format stream ")")
+  (format stream "(list ~{~S~^ ~})" (ballot-channels ballot))
   (terpri stream)
   (format stream "(list")
   (dolist (choice (ballot-choices ballot))
@@ -471,7 +469,7 @@ user.
 ;;; Commands
 ;;;
 
-;; | new ballot $title $password                      | $ballot-id             | Creates a new ballot and issues a ballot ID for reference.                                |
+;; | new ballot $title $password                      | $ballot-id             | Creates a new ballot and issues a ballot ID for reference.
 (defun new-ballot (owner password title &key
                                           (deadline '(:relative #.(days 1)))
                                           (remind-period #.(hours 1)))
@@ -501,7 +499,8 @@ user.
       (setf *ballots* (sort (cons ballot *ballots*)
                             (function string<)
                             :key (function ballot-id)))
-      (format t "New ballot ID: ~S~%" (ballot-id ballot)))))
+      (format t "New ballot ID: ~S~%" (ballot-id ballot))))
+  (save-ballots))
 
 (defmethod user-is-owner ((ballot ballot) (user-id string))
   (string= user-id (ballot-owner ballot)))
@@ -509,10 +508,13 @@ user.
 (defun check-channel (channel)
   (unless (and (stringp channel)
                (< 1 (length channel))
-               (if *connection*
-                   (find-channel *connection* channel)
-                   (char= #\# (aref channel 0))))
-    (error 'bad-channel :channel channel)))
+               (char= #\# (aref channel 0))
+               ;; find-channel finds only joined channels (channels in *connection*).
+               ;; (if *connection*
+               ;;     (find-channel *connection* channel)
+               ;;     (char= #\# (aref channel 0)))
+               )
+    (error 'bad-channel-error :channel channel)))
 
 (defmethod check-ballot-owner ((ballot ballot) (user-id string))
   (unless (user-is-owner ballot user-id)
@@ -540,7 +542,6 @@ user.
            :expected-state state
            :operation operation)))
 
-    
 (defun find-ballot-id (ballot-id)
   (let ((ballot (find ballot-id *ballots*
                       :key (function ballot-id)
@@ -555,29 +556,32 @@ user.
           :key (function user-id-hash)
           :test (function string-equal))))
 
-;; | set [ballot] title         $ballot-id $title     |                        | Sets the title of a ballot.    Only in :editing state.                                    |
+;; | set [ballot] title         $ballot-id $title     |                        | Sets the title of a ballot.    Only in :editing state.
 (defun set-ballot-title (user-id ballot-id title)
   (let ((ballot (find-ballot-id ballot-id)))
     (check-ballot-owner ballot user-id)
     (check-ballot-state ballot :editing 'set-ballot-title)
     ;; TODO: Add some validation of title?
-    (setf (slot-value ballot 'title) title)))
+    (setf (slot-value ballot 'title) title))
+  (save-ballots))
 
-;; | set [ballot] dead[-]line   $ballot-id $dead-line |                        | Sets the deadline of a ballot. Only in :editing state.                                    |
+;; | set [ballot] dead[-]line   $ballot-id $dead-line |                        | Sets the deadline of a ballot. Only in :editing state.
 (defun set-ballot-deadline (user-id ballot-id deadline)
   (let ((ballot (find-ballot-id ballot-id)))
     (check-ballot-owner ballot user-id)
     (check-ballot-state ballot :editing 'set-ballot-deadline)
     ;; TODO: Add some validation of deadline
-    (setf (slot-value ballot 'deadline) deadline)))
+    (setf (slot-value ballot 'deadline) deadline))
+  (save-ballots))
 
-;; | set [ballot] remind-period $ballot-id $period    |                        | Sets the remind period of a ballot.                                                       |
+;; | set [ballot] remind-period $ballot-id $period    |                        | Sets the remind period of a ballot.
 (defun set-ballot-remind-period (user-id ballot-id remind-period)
   (let ((ballot (find-ballot-id ballot-id)))
     (check-ballot-owner ballot user-id)
     (check-ballot-state ballot :editing 'set-ballot-remind-period)
     ;; TODO: Add some validation of remind-period
-    (setf (slot-value ballot 'remind-period) remind-period)))
+    (setf (slot-value ballot 'remind-period) remind-period))
+  (save-ballots))
 
 (defun cl-user::fmt-datetime (stream date colon at &rest parameters)
   (declare (ignore colon at parameters))
@@ -619,20 +623,20 @@ user.
             (:closed    (format-ballot-tally ballot))
             (:cancelled ""))))
 
-;; | list [ballot[s]]                                 | list of ballots        | Lists all known ballots with their state and deadline or results.                        |
+;; | list [ballot[s]]                                 | list of ballots        | Lists all known ballots with their state and deadline or results.
 (defun list-ballots ()
   (if *ballots*
    (dolist (ballot *ballots*)
      (list-ballot ballot))
    (format t "No ballots yet.  Use the new ballot command.~%")))
 
-;; | show [ballot] $ballot-id                         | display info of ballot | Displays all the public information about the ballot.                                     |
+;; | show [ballot] $ballot-id                         | display info of ballot | Displays all the public information about the ballot.
 (defun show-ballot (ballot-id)
   (let ((ballot (find-ballot-id ballot-id)))
     (list-ballot ballot)))
 
 
-;; | add choice $ballot-id $choice-id $choice-title   |                        | Adds a new choice to the ballot.  Only in :editing state.                                 |
+;; | add choice $ballot-id $choice-id $choice-title   |                        | Adds a new choice to the ballot.  Only in :editing state.
 (defun add-choice (user-id ballot-id choice-id choice-title)
   (let ((ballot (find-ballot-id ballot-id)))
     (check-ballot-owner ballot user-id)
@@ -647,23 +651,25 @@ user.
                 :key (function choice-id)))
     (format t "There are ~D choice~:*~P in ballot ~A.~%"
             (length (ballot-choices ballot))
-            (ballot-id ballot))))
+            (ballot-id ballot)))
+  (save-ballots))
 
-;; | delete choice $ballot-id $choice-id              |                        | Remove a choice from a ballot.    Only in :editing state.                                 |
+;; | delete choice $ballot-id $choice-id              |                        | Remove a choice from a ballot.    Only in :editing state.
 (defun delete-choice (user-id ballot-id choice-id)
   (let ((ballot (find-ballot-id ballot-id)))
     (check-ballot-owner ballot user-id)
     (check-ballot-state ballot :editing 'delete-choice)
-    (setf (slot-value ballot 'choice)
-          (delete choice-id (slot-value ballot 'choice)
+    (setf (slot-value ballot 'choices)
+          (delete choice-id (slot-value ballot 'choices)
                   :key (function choice-id)
                   :test (function string-equal)))
     (format t "There remain ~D choice~:*~P in ballot ~A.~%"
             (length (ballot-choices ballot))
-            (ballot-id ballot))))
+            (ballot-id ballot)))
+  (save-ballots))
 
-;; | list choice[s] $ballot-id                        | list of choices        | Lists all the choices of a ballot.                                                        |
-;; | ballot [choice[s]] $ballot-id                    | list of choices        | Lists all the choices of a ballot. If the user has already voted, this will be indicated. |
+;; | list choice[s] $ballot-id                        | list of choices        | Lists all the choices of a ballot.
+;; | ballot [choice[s]] $ballot-id                    | list of choices        | Lists all the choices of a ballot. If the user has already voted, this will be indicated.
 (defun list-choices (user-id ballot-id)
   (let ((ballot (find-ballot-id ballot-id)))
     (dolist (choice (ballot-choices ballot))
@@ -678,7 +684,31 @@ user.
                 user-has-voted-for-choice)))))
 
 
-;; | add channel[s] $ballot-id #channel…              |                        | Add a channel to the ballot.      Only in :editing state.                                 |
+(defun open-ballots ()
+  (remove :open *ballots* :test-not (function eql) :key (function ballot-state)))
+
+(defun open-channels ()
+  (remove-duplicates (loop
+                       :for ballot :in (open-ballots)
+                       :append (ballot-channels ballot))
+                     :test (function string-equal)))
+
+(defun update-channels ()
+  (when *connection*
+    (let* ((myself           (find-user *connection* *nickname*))
+           (open-channels    (open-channels))
+           (current-channels (mapcar (function name) (channels myself)))
+           (new-channels     (set-difference current-channels open-channels
+                                             :test (function string-equal)))
+           (old-channels     (set-difference open-channels current-channels
+                                             :test (function string-equal))))
+      (dolist (channel old-channels)
+        (part *connection* channel))
+      (dolist (channel new-channels)
+        (join *connection* channel)))))
+
+
+;; | add channel[s] $ballot-id #channel…              |                        | Add a channel to the ballot.      Only in :editing state.
 (defun add-channels (user-id ballot-id channels)
   (let ((ballot (find-ballot-id ballot-id)))
     (check-ballot-owner ballot user-id)
@@ -690,9 +720,11 @@ user.
                  (append channels (slot-value ballot 'channels))
                  :test (function string=))
                 (function string<)))
-    (list-ballot-channels ballot-id)))
+    (update-channels)
+    (list-ballot-channels ballot-id)
+    (save-ballots)))
 
-;; | remove channel[s] $ballot-id #channel               |                        | Remove channels from the ballot. Only in :editing state.                                 |
+;; | remove channel[s] $ballot-id #channel               |                        | Remove channels from the ballot. Only in :editing state.
 (defun remove-channels (user-id ballot-id channels)
   (let ((ballot (find-ballot-id ballot-id)))
     (check-ballot-owner ballot user-id)
@@ -703,9 +735,11 @@ user.
           (set-difference (slot-value ballot 'channels)
                           channels
                           :test (function string=)))
-    (list-ballot-channels ballot-id)))
+    (update-channels)
+    (list-ballot-channels ballot-id)
+    (save-ballots)))
 
-;; | list [ballot] channel[s] $ballot-id              | list of channels       | List the channels of the ballot.                                                          |
+;; | list [ballot] channel[s] $ballot-id              | list of channels       | List the channels of the ballot.
 (defun list-ballot-channels (ballot-id)
   (let ((ballot (find-ballot-id ballot-id)))
     (format t "Ballot ~A ~:[will be~;has been~] published in ~D channel~:*~P: ~{~A~^ ~}.~%"
@@ -747,7 +781,7 @@ user.
           (privmsg *connection* channel message))))))
 
 
-;; | open ballot $ballot-id $password                 |                        | Opens the ballot. From the :editing state.                                                |
+;; | open ballot $ballot-id $password                 |                        | Opens the ballot. From the :editing state.
 (defun open-ballot (user-id password ballot-id)
   (let ((ballot (find-ballot-id ballot-id)))
     (check-ballot-owner ballot user-id)
@@ -755,29 +789,32 @@ user.
     (check-ballot-password ballot password)
     (setf (slot-value ballot 'state)    :open
           (slot-value ballot 'deadline) (absolute-deadline (ballot-deadline ballot)))
-    (publish-ballot ballot)))
+    (publish-ballot ballot)
+    (save-ballots)))
 
-;; | cancel ballot $ballot-id $password               |                        | Cancel a ballot.  We can cancel a ballot from the :editing or the :open state. |
+;; | cancel ballot $ballot-id $password               |                        | Cancel a ballot.  We can cancel a ballot from the :editing or the :open state.
 (defun cancel-ballot (user-id password ballot-id)
   (let ((ballot (find-ballot-id ballot-id)))
     (check-ballot-owner ballot user-id)
     (check-ballot-state ballot '(:editing :open) 'cancel-ballot)
     (check-ballot-password ballot password)
     (setf (slot-value ballot 'state) :cancelled)
-    (publish-ballot ballot)))
+    (publish-ballot ballot)
+    (save-ballots)))
 
-;; | close ballot $ballot-id $password                 |                        | Close the ballot before the deadline. From the :opoen state.                                                |
+;; | close ballot $ballot-id $password                 |                        | Close the ballot before the deadline. From the :opoen state.
 (defun close-ballot (user-id password ballot-id)
   (let ((ballot (find-ballot-id ballot-id)))
     (check-ballot-owner ballot user-id)
     (check-ballot-state ballot :open 'close-ballot)
     (check-ballot-password ballot password)
     (setf (slot-value ballot 'state) :closed)
-    (publish-ballot ballot)))
+    (publish-ballot ballot)
+    (save-ballots)))
 
 
-;; | vote $ballot-id [choice] $choice-id              |                        | Cast or change a vote.  Only in :open state.                                              |
-;; |                                                  |                        | If the same user votes several times, only the last vote is taken into account.           |
+;; | vote $ballot-id [choice] $choice-id              |                        | Cast or change a vote.  Only in :open state.
+;; |                                                  |                        | If the same user votes several times, only the last vote is taken into account.
 (defun vote-choice (user-id ballot-id choice-id)
   (let* ((ballot (find-ballot-id ballot-id))
          (vote   (find-vote ballot user-id)))
@@ -785,15 +822,17 @@ user.
     (if vote
         (error 'already-voted :user-id user-id :ballot-id ballot-id)
         ;; cast a new vote
-        (push (make-instance 'vote
-                             :ballot-id ballot-id
-                             :user-id user-id
-                             :choice-id choice-id)
-              (slot-value ballot 'votes)))))
+        (progn
+          (push (make-instance 'vote
+                              :ballot-id ballot-id
+                              :user-id user-id
+                              :choice-id choice-id)
+                (slot-value ballot 'votes))
+          (save-ballots)))))
 
-;; | [ballot] results [of] [ballot] $ballot-id        | list of vote results   | in :editing state, we only display the ballot info (same as show ballot $ballot-id);      |
-;; |                                                  |                        | in :open state, we only display the number of casted votes;                               |
-;; |                                                  |                        | in :closed state, we display the vote results.                                            |
+;; | [ballot] results [of] [ballot] $ballot-id        | list of vote results   | in :editing state, we only display the ballot info (same as show ballot $ballot-id);
+;; |                                                  |                        | in :open state, we only display the number of casted votes;
+;; |                                                  |                        | in :closed state, we display the vote results.
 (defun show-ballot-results (user-id ballot-id)
   (let ((ballot (find-ballot-id ballot-id)))
     (ecase (ballot-state ballot)
@@ -815,6 +854,7 @@ user.
 
 (defun load-ballots ()
   (setf *ballots* (eval (sexp-file-contents *ballot-file* :if-does-not-exist '())))
+  (update-channels)
   (values))
 
 (defun save-ballots ()
@@ -859,6 +899,59 @@ user.
                           (- (ballot-deadline ballot) (* n (ballot-remind-period ballot))))
                         now)))
         (publish-ballot ballot)))))
+
+
+;;;
+;;; Syntax of Commands
+;;;
+
+#|
+
+The *commands* list specifies the syntax of all botvot commands.
+
+Each sublist in *commands* is of the form: (syntax docstring --> call)
+
+SYNTAX is a list specifying the syntax of the command.
+Each element in the list can be:
+
+- a string specifying a terminal;
+
+- a symbol specifying a parameter word or string; the word in the
+  command is then bound to that symbol, which can be refered to in the
+  CALL sexp.
+
+- a list starting with the symbol OPT specifying a sequence of
+  optional tokens.
+
+TODO: parsing OPT sequence is not implemented yet, only a single token is allowed in the OPT element.
+
+- a list starting with the symbol ALT specifying alternate tokens.
+
+- a list starting with the symbol OPT-ALT specifying optional
+  alternate tokens.
+
+The list can be a dotted-list, in which case the last element must be
+a symbol that will be bound to the remaining words in the command.
+
+The DOCSTRING is displayed in the help for the command.
+
+The symbol --> is required and ignored.  It's for esthetics.
+
+The CALL sexp is a list containing the name of a function, followed by
+arguments.  The arguments may be:
+
+- the symbol USER-ID which is then substituted by the value of the
+  *REQUESTER-NICK*;
+
+- the symbol NIL which is then passed to the function;
+
+- a list which is processed recursively as the CALL sexp, the result
+  of the function call used as argument;
+
+- any other symbol is substituted by the word bound to it from parsing
+  the command.
+
+|#
 
 (defparameter *commands*
   '((("new" "ballot" title password)
@@ -932,6 +1025,10 @@ user.
      "Instructs the bot to close the connection to the IRC server and reconnect."
      --> (reconnect-command botpass))))
 
+
+;;;
+;;; Parsing and processing commands:
+;;;
 
 (defun parse-hms (word)
   (* 3600 (dms-d word)))
@@ -1022,7 +1119,7 @@ user.
         (error 'deadline-syntax-error :words words))))
 
 (defun parse-period (words)
-  )
+  (error "Not implemented yet."))
 
 (defun format-command-syntax (command-syntax)
   (with-output-to-string (*standard-output*)
@@ -1138,16 +1235,16 @@ user.
                         (otherwise
                          (error 'syntax-error :command command-syntax :token syntax-element))))))))))
 
-;; | ("set" (opt "ballot") "title" ballot-id title)                   | exact | ¬exact |
+;; | ("set" (opt "ballot") "title" ballot-id title)                   | exact | ¬exact
 ;; |------------------------------------------------------------------+-------+--------+
-;; | ("set")                                                          | nil   | t      |
-;; | ("ballot")                                                       | nil   | t      |
-;; | ("title")                                                        | nil   | t      |
-;; | ("ballot" "title")                                               | nil   | t      |
-;; | ("set" "ballot" "title" "pg1" "Presentation Garbage Collection") | t     | t      |
-;; | ("set" "ballot" "title" "pg1")                                   | t     | t      |
-;; | ("set" "title" "pg1" "Presentation Garbage Collection")          | t     | t      |
-;; | ("set" "title" "pg1")                                            | t     | t      |
+;; | ("set")                                                          | nil   | t
+;; | ("ballot")                                                       | nil   | t
+;; | ("title")                                                        | nil   | t
+;; | ("ballot" "title")                                               | nil   | t
+;; | ("set" "ballot" "title" "pg1" "Presentation Garbage Collection") | t     | t
+;; | ("set" "ballot" "title" "pg1")                                   | t     | t
+;; | ("set" "title" "pg1" "Presentation Garbage Collection")          | t     | t
+;; | ("set" "title" "pg1")                                            | t     | t
 
 (defun match-command (words commands &key (exact t))
   (if exact
@@ -1168,9 +1265,14 @@ user.
     (answer "~A -- ~A" (format-command-syntax syntax) docstring)))
 
 (defun list-commands (commands)
-  (loop :for command :in commands
+  (loop :for i :from 0
+        :for command :in commands
           :initially (answer "List of commands:")
-        :do (answer "~A" (format-command-syntax (first command)))))
+        :do (answer "~A" (format-command-syntax (first command)))
+            (if (zerop (mod i 10))
+                (sleep 2)
+                (sleep 0.5))
+        :finally (answer "Done")))
 
 (defun help (command)
   (if command
@@ -1241,7 +1343,6 @@ but with double-quotes escaping them."
                        :command command
                        :token (coerce (nreverse word) 'string))))))
 
-
 (defun call-command (command call bindings)
   (let ((fun  (first call))
         (args (mapcar (lambda (arg)
@@ -1263,13 +1364,23 @@ but with double-quotes escaping them."
     (apply fun args)))
 
 (defun process-command (words)
-  (multiple-value-bind (matches docstring bindings call)
-      (match-command words *commands* :exact t)
-    (declare (ignore docstring))
-    (if matches
-        (call-command matches call bindings)
-        (answer "Invalid command: ~{~S~^ ~}" words)))
-  (garbage-collect-ballots))
+  (handler-bind ((error (lambda (err)
+                          (print-backtrace)
+                          (format *error-output* "~%~A~%" err)
+                          (return-from process-command))))
+    (unwind-protect
+         (multiple-value-bind (matches docstring bindings call)
+             (match-command words *commands* :exact t)
+           (declare (ignore docstring))
+           (if matches
+               (call-command matches call bindings)
+               (answer "Invalid command: ~{~S~^ ~}" words)))
+      (garbage-collect-ballots))))
+
+;;;
+;;; A little ballot REPL to try out the command processing from the
+;;; lisp REPL instead of thru a IRC connection: 
+;;;
 
 (defun ballot-repl ()
   (unwind-protect
@@ -1286,7 +1397,9 @@ but with double-quotes escaping them."
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+;;;
+;;; The IRC agent:
+;;;
 
 (defun configure ()
   (setf *server*   (or (uiop:getenv "BOTVOT_SERVER")    *server*)
@@ -1303,21 +1416,35 @@ but with double-quotes escaping them."
     (when (and *connection* *requester-nick*)
       (privmsg *connection* *requester-nick* text))))
 
-(defun eliza (words)
-  (declare (ignore words))
-  (dolist (line (split-sequence #\newline (uiop:run-program "fortune" :output :string)
-                                :remove-empty-subseqs t))
-    (answer line)))
-
 (defun msg-hook (message)
   "Answers to PRIVMSG sent directly to this bot."
+  #-(and)
+  (with-slots (source user host command arguments connection received-time raw-message-string)
+      message
+    (format t "~20A = ~S~%" 'source source) 
+    (format t "~20A = ~S~%" 'user user) 
+    (format t "~20A = ~S~%" 'host host) 
+    (format t "~20A = ~S~%" 'command command) 
+    (format t "~20A = ~S~%" 'arguments arguments) 
+    (format t "~20A = ~S~%" 'connection connection) 
+    (format t "~20A = ~S~%" 'received-time received-time) 
+    (format t "~20A = ~S~%" 'raw-message-string
+            (map 'string (lambda (ch)
+                           (let ((code (char-code ch)))
+                             (if (< code 32)
+                                 (code-char (+ code 9216))
+                                 ;; (aref "␀␁␂␃␄␅␆␇␈␉␊␋␌␍␎␏␐␑␒␓␔␕␖␗␘␙␚␛␜␝␞␟␠␡" code)
+                                 ch)))
+                 raw-message-string))
+    (finish-output))
   (let ((arguments        (arguments message))
         (*requester-nick* (source message)))
-    (say arguments)
     (when (string= *nickname* (first arguments))
-      (dolist (line (split-sequence #\newline (with-output-to-string (*standard-output*)
-                                                (process-command (parse-words (second arguments))))
-                                    :remove-empty-subseqs t))
+      (dolist (line (split-sequence
+                     #\newline
+                     (with-output-to-string (*standard-output*)
+                       (process-command (parse-words (second arguments))))
+                     :remove-empty-subseqs t))
         (answer "~A" line))))
   t)
 
@@ -1357,11 +1484,11 @@ and join to the *CHANNEL* where HackerNews are published."
   (let ((*package* (load-time-value (find-package "COM.INFORMATIMAGO.SMALL-CL-PGMS.BOTVOT"))))
     (configure)
     (load-ballots)
-    (with-simple-restart (quit "Quit")
-      (catch :gazongues
+    (catch :gazongues
+      (with-simple-restart (quit "Quit")
         (with-retry (sleep (+ 10 (random 30)))
-          (with-simple-restart (reconnect "Reconnect")
-            (catch :petites-gazongues
+          (catch :petites-gazongues
+            (with-simple-restart (reconnect "Reconnect")
               (unwind-protect
                    (progn
                      (setf *connection* (connect :nickname *nickname* :server *server*))
@@ -1389,12 +1516,26 @@ and join to the *CHANNEL* where HackerNews are published."
 ;; (monitor-initialize)
 ;; (monitor-hacker-news (lambda (message) (privmsg *connection* *channel* message)))
 
+
+
+
 #-(and) (progn
           
           (setf *nickname* "botvot-test"
                 *ballot-file* #P"/tmp/ballot.sexp"
                 *ballot-zombie-life* (minutes 10))
+
+          (bt:make-thread (function main) :name "botvol ircbot")
+
+          (*requester-user* (format nil "~A!~A@~A"
+                                    (nickname user)
+                                    (username user)
+                                    (hostname user)))
+
+          (find-user *connection* *requester-nick*)
           
+          (channels (find-user *connection* *nickname*))
+
           )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
