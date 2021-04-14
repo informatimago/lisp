@@ -135,6 +135,7 @@
    "XOR" "EQUIV" "IMPLY"
    ;; "SET-EQUAL"
    )
+  (:export "DMS-D" "D-DMS")
   (:documentation
    "
 
@@ -813,6 +814,10 @@ name         = (and (consp option) (first option))
                                  print-function print-object
                                  structure-type-p structure-type
                                  documentation slots slot-names accessors)
+  (declare (ignore structure-type-p structure-type initial-offset conc-name))
+  ;; TODO: use conc-name
+  ;; TODO: signal error on bad structure-type or structure-type-p
+  ;; TODO: signal error on non-zero initial-offset
   `(progn
      (defclass ,name ,include
        ,(mapcar
@@ -2154,6 +2159,50 @@ DO:       Evaluate the expression, which must be a real,
 ;; (defun set-equal (a b)
 ;;   "Return A ⊂ B ∧ A ⊃ B"
 ;;   (and (subsetp a b) (subsetp b a)))
+
+
+
+(defun d-dms (d)
+  "Convert a decimal value into an integer and 60th and 3600th
+encoded as a \"HH:MM:SS.sss\" string."
+  (let* ((epsilon 0.000001d0)
+         (hou (floor d))
+         (min* (* 60.0d0 (- d hou)))
+         (min  (floor min*))
+         (sec* (* 60.0d0 (- min* min)))
+         (sec))
+    (if (< (- 60.0d0 epsilon) sec*)
+        (progn
+          (setf min (+ min 1.0))
+          (if (<= 60.0d0 min)
+              (setf min 0.0d0
+                    hou (+ 1.0d0 hou)))
+          (setf sec* (- (+ epsilon sec*) (floor (+ epsilon sec*))))))
+    (setf sec sec*)
+    (if (< (- sec (floor sec)) 0.000001d0)
+        (format nil "~D:~2,'0D:~2,'0D" hou min  sec)
+        (if (< (- 1.0d0 0.000001d0) (- sec (floor sec)))
+            (format nil "~D:~2,'0D:~2,'0D" hou min  (+ 0.000001d0 sec))
+            (format nil "~D:~2,'0D:~9,6,,,'0F" hou min sec)))))
+
+(defun dms-d (arg &rest rest)
+  "Convert value given as an integer and 60th and 3600th,
+encoded as a  \"HH:MM:SS.sss\" string, into a decimal value."
+  (if (stringp arg)
+      (let* ((one (position #\: arg))
+             (hou (parse-integer (subseq arg 0 one)))
+             (two (if (null one) nil (position #\: arg :start (+ one 1))))
+             (min (if (null one) 0d0 (parse-integer (subseq arg (+ one 1) two))))
+             (sec (if (null two) 0d0 (let ((value (read-from-string (subseq arg (+ two 1)))))
+                                       (assert (typep value 'real))
+                                       value))))
+        (if (null rest)
+            (+ hou (/ min 60.0d0) (/ sec 3600.0d0))
+            (error "DMS-D expects either one string or one to three numbers.")))
+      (let ((hou arg)
+            (min (if (null (first rest))  0d0 (first rest)))
+            (sec (if (null (second rest)) 0d0 (second rest))))
+        (+ hou (/ min 60.0d0) (/ sec 3600.0d0)))))
 
 
 ;;;; THE END ;;;;
