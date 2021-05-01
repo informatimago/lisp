@@ -388,17 +388,20 @@ DO:         Set the cs-lisp-encoding of the character-sets present in
          'external-format-line-termination
          (lisp-implementation-type)))
 
-
-
 (defun character-set-to-lisp-encoding (cs &key (line-termination :unix))
   "
+CS:     A character set designator (ie.  a character-set, or a string or
+        symbol naming a character-set).
 RETURN: An implementation specific object representing the  encoding for
         the given character-set and line-termination.
 SIGNAL: An error if line-termination is not (member :unix :mac :dos nil) or
         if cs has no emacs encoding.
 "
   (assert (member line-termination '(:unix :mac :dos nil)))
-  (make-external-format cs line-termination))
+  (make-external-format (etypecase cs
+                          (character-set cs)
+                          ((or string symbol) (find-character-set cs)))
+                        line-termination))
 
 
 (defun character-set-for-lisp-encoding (encoding)
@@ -570,18 +573,19 @@ DO:         Set the cs-emacs-encoding of the character-sets present in
       (when cs
         (setf (cs-emacs-encoding cs) ecsl)))))
 
-
-
-
 (defun character-set-to-emacs-encoding (cs &key (line-termination :unix))
   "
+CS:     A character set designator (ie.  a character-set, or a string or
+        symbol naming a character-set).
 RETURN: A string naming the emacs encoding for the given character-set
         and line-termination.
 SIGNAL: An error if line-termination is not (member :unix :mac :dos nil) or
         if cs has no emacs encoding.
 "
   (assert (member line-termination '(:unix :mac :dos nil)))
-  (unless  (cs-emacs-encoding cs)
+  (unless  (cs-emacs-encoding (etypecase cs
+                                (character-set cs)
+                                ((or string symbol) (find-character-set cs))))
     (error "The character-set ~A has no corresponding emacs encoding"
            (cs-name cs)))
   (format nil "~(~A~:[~;~:*-~A~]~)" (first (cs-emacs-encoding cs))
