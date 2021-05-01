@@ -304,7 +304,9 @@ whose concatenation is equal to SEQUENCE.")
     (check-type n (integer 1))
     (loop
       :for sub  := sequence :then rest
-      :for rest := (nthcdr n sub)
+      :for  rest := (nthcdr #+sbcl #| is idiotic! |#  (min (length sub) n)
+                            #-sbcl n
+                            sub)
       :while sub
       :collect (ldiff sub rest))))
 
