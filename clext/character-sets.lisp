@@ -403,7 +403,6 @@ SIGNAL: An error if line-termination is not (member :unix :mac :dos nil) or
                           ((or string symbol) (find-character-set cs)))
                         line-termination))
 
-
 (defun character-set-for-lisp-encoding (encoding)
   "
 ENCODING:  An implementation specific object representing an encoding.
@@ -413,10 +412,6 @@ RETURN:    The character-set that correspond to this emacs-encoding ;
 "
   (values (external-format-character-encoding encoding)
           (external-format-line-termination   encoding)))
-
-
-
-
 
 
 
