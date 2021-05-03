@@ -607,9 +607,9 @@ RETURN: The character-set that correspond to this emacs-encoding ;
        (setf ecs (subseq ecs 0 (- (length ecs) 4))
              line-termination :mac)))
     (values
-     (find (lambda (cs) (member ecs (cs-emacs-encoding cs)
-                           :test (function string-equal)))
-           *character-sets*)
+     (find-if (lambda (cs) (member ecs (cs-emacs-encoding cs)
+                                   :test (function string-equal)))
+              *character-sets*)
      line-termination)))
 
 
