@@ -270,7 +270,7 @@ RETURN:             The first SEXP of the file at PATH, or the value
                                     (if-exists :supersede)
                                     (external-format :default))
   "
-oIF-DOES-NOT-EXIST:  Can be :error, :create, nil,
+IF-DOES-NOT-EXIST:  Can be :error, :create, nil,
                     or another value, equivalent to :CREATE for setf.
 
 DO:     Writes the NEW-CONTENTS SEXP readably into the file at PATH.  By default,
