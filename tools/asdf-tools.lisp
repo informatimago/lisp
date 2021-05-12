@@ -11,12 +11,14 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2021-05-12 <PJB> Moved asdf-system-name and
+;;;;                     asdf-system-license in here from manifest.
 ;;;;    2013-12-06 <PJB> Extracted from rc/common.lisp
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2013 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2013 - 2021
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
