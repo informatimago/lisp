@@ -43,6 +43,8 @@
   (:export "ASDF-LOAD"
            "ASDF-LOAD-SOURCE"
            "ASDF-INSTALL"
+           "ASDF-SYSTEM-NAME"
+           "ASDF-SYSTEM-LICENSE"
            "ASDF-DELETE-SYSTEM"
            "FIND-ASDF-SUBDIRECTORIES"
            "UPDATE-ASDF-REGISTRY")
@@ -50,6 +52,25 @@
 (in-package "COM.INFORMATIMAGO.TOOLS.ASDF")
 
 ;; (asdf:output-files 'asdf:program-op "my-system")
+
+(defun asdf-system-name (system)
+  "Return the name of the ASDF system."
+  (slot-value system 'asdf::name))
+
+(defparameter *system-licenses*
+  '(("cl-ppcre"       . "bsd-2")
+    ("split-sequence" . :unknown)
+    ("terminfo"       . "mit")
+    ("closer-mop"     . "MIT")))
+
+(defun asdf-system-license (system-name)
+  "Return the license of the ASDF system."
+  (let ((system  (asdf:find-system system-name)))
+    (or (cdr (assoc system-name *system-licenses* :test 'string-equal))
+        (and (slot-boundp system 'asdf::licence)
+             (slot-value system 'asdf::licence))
+        :unknown)))
+
 
 (defun asdf-load (&rest systems)
   "Load the ASDF systems.  See also (QL:QUICKLOAD system) to install them."
