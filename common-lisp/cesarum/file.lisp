@@ -17,6 +17,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2021-05-12 <PJB> Corrected handling of :if-does-not-exist <value> for SETF functions.
 ;;;;    2018-08-18 <PJB> Added create-file.
 ;;;;    2014-10-22 <PJB> Factorized out file reader functions, handle if-does-not-exist non-nil values.
 ;;;;    2009-07-27 <PJB> Renamed TEXT-FILE-TO-STRING-LIST to STRING-LIST-TEXT-FILE-CONTENTS,
@@ -213,6 +214,11 @@ NOTE:           Empty subdirectories are not copied.
 (defmacro with-input-file ((streamvar path element-type if-does-not-exist external-format) &body body)
   `(call-with-input-file ,path ,element-type ,if-does-not-exist ,external-format (lambda (,streamvar) ,@body)))
 
+(defun output-file-if-does-not-exist (if-does-not-exist)
+  (case if-does-not-exist
+    ((:error :create nil) if-does-not-exist)
+    (otherwise :create)))
+(declaim (inline output-file-if-does-not-exist))
 
 (defmacro with-io-syntax (&body body)
   ;; Leave the current package as-is.
@@ -264,18 +270,22 @@ RETURN:             The first SEXP of the file at PATH, or the value
                                     (if-exists :supersede)
                                     (external-format :default))
   "
+oIF-DOES-NOT-EXIST:  Can be :error, :create, nil,
+                    or another value, equivalent to :CREATE for setf.
+
 DO:     Writes the NEW-CONTENTS SEXP readably into the file at PATH.  By default,
         that file is created or superseded; this can be changed with
         the keyword IF-DOES-NOT-EXIST or IF-EXISTS.
+
 RETURN: The NEW-CONTENTS, or if-exists or if-does-not-exist in case of error.
 "
   (with-open-file (out path :direction :output
-                            :if-does-not-exist if-does-not-exist
+                            :if-does-not-exist (output-file-if-does-not-exist if-does-not-exist)
                             :if-exists if-exists
                             :external-format external-format)
     (if (and (streamp out) (not (or (eq out if-exists)  (eq out if-does-not-exist))))
         (with-io-syntax
-            (write new-contents :stream out))
+          (write new-contents :stream out))
         out)))
 
 
@@ -303,6 +313,9 @@ RETURN:             All the SEXPs of the file at PATH gathered in a
                                          (external-format :default))
   "
 NEW-CONTENTS:   A list of sexps.
+
+IF-DOES-NOT-EXIST:  Can be :error, :create, nil,
+                    or another value, equivalent to :CREATE for setf.
 
 DO:             Writes the NEW-CONTENTS SEXPs readably into the file
                 at PATH.  By default, that file is created or
@@ -353,13 +366,18 @@ RETURN:             The list of lines collected from the file, or the
 DO:             Store the NEW-CONTENTS, into the file at PATH, each string on a line.
                 By default, that file is created or superseded; this can be changed with
                 the keyword IF-DOES-NOT-EXIST or IF-EXISTS.
+
 NEW-CONTENT:    A sequence of strings, none of them should contain #\newline,
                 otherwise the mapping between strings and file lines won't be
                 conserved.
+
+IF-DOES-NOT-EXIST:  Can be :error, :create, nil,
+                    or another value, equivalent to :CREATE for setf.
+
 RETURN:         The NEW-CONTENTS or if-exists or if-does-not-exist in case of error.
 "
   (with-open-file (out path :direction :output
-                       :if-does-not-exist if-does-not-exist
+                       :if-does-not-exist (output-file-if-does-not-exist if-does-not-exist)
                        :if-exists if-exists
                        :external-format external-format)
     (if (and (streamp out) (not (or (eq out if-exists)  (eq out if-does-not-exist))))
@@ -390,12 +408,16 @@ RETURN:             The contents of the file at PATH as a LIST of
                                   (external-format :default))
   "
 RETURN: The NEW-CONTENTS, or if-exists or if-does-not-exist in case of error.
+
+IF-DOES-NOT-EXIST:  Can be :error, :create, nil,
+                    or another value, equivalent to :CREATE for setf.
+
 DO:     Store the NEW-CONTENTS into the file at PATH.  By default,
         that file is created or superseded; this can be changed with
         the keyword IF-DOES-NOT-EXIST or IF-EXISTS.
 "
   (with-open-file (out path :direction :output
-                       :if-does-not-exist if-does-not-exist
+                       :if-does-not-exist (output-file-if-does-not-exist if-does-not-exist)
                        :if-exists if-exists
                        :external-format external-format)
     (if (and (streamp out) (not (or (eq out if-exists)  (eq out if-does-not-exist))))
@@ -427,13 +449,18 @@ RETURN:             The contents of the file at PATH as a VECTOR of
                                     (external-format :default))
   "
 RETURN: The NEW-CONTENTS, or if-exists or if-does-not-exist in case of error.
+
 DO:     Store the NEW-CONTENTS into the file at PATH.  By default,
         that file is created or superseded; this can be changed with
         the keyword IF-DOES-NOT-EXIST or IF-EXISTS.
+
 NEW-CONTENT:  A sequence of ELEMENT-TYPE.
+
+IF-DOES-NOT-EXIST:  Can be :error, :create, nil,
+                    or another value, equivalent to :CREATE for setf.
 "
   (with-open-file (out path :direction :output
-                       :if-does-not-exist if-does-not-exist
+                       :if-does-not-exist (output-file-if-does-not-exist if-does-not-exist)
                        :if-exists if-exists
                        :element-type element-type
                        :external-format external-format)
