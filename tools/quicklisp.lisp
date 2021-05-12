@@ -11,12 +11,13 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2021-05-13 <PJB> Added QUICK-WHERE-FROM and associated functions.
 ;;;;    2013-12-06 <PJB> Extracted from rc/common.lisp
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2013 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2013 - 2021
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -36,7 +37,10 @@
 (defpackage "COM.INFORMATIMAGO.TOOLS.QUICKLISP"
   (:use "COMMON-LISP"
         "QUICKLISP"
-        "ASDF")
+        "ASDF"
+        "COM.INFORMATIMAGO.TOOLS.ASDF"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
   (:export "PRINT-SYSTEMS"
            "QUICK-INSTALLED-SYSTEMS"
            "QUICK-LIST-SYSTEMS"
@@ -47,8 +51,9 @@
            "QUICK-INSTALL-ALL"
            "QUICK-LOAD-ALL"
            "QUICK-UNINSTALL"
-           "QUICK-WHERE-IS"
            "QUICK-WHERE"
+           "QUICK-WHERE-IS"   "SYSTEM-WHERE-IS"
+           "QUICK-WHERE-FROM" "SYSTEM-WHERE-FROM" "PROJECT-WHERE-FROM"
            "QUICK-DELETE"
            "QUICK-RELOAD"
            "QUICK-LOCAL-PROJECTS"
@@ -108,7 +113,8 @@ are listed."
 (defun quick-update ()
   "Updates the quicklisp client, and all the system distributions."
   (ql:update-client)
-  (ql:update-all-dists))
+  (ql:update-all-dists)
+  (update-project-dir :force t))
 
 (defun quick-clean ()
   "Clean the quicklisp system distributions."
@@ -189,6 +195,102 @@ are listed."
     (let ((new-ps (mapcar (function package-name) (list-all-packages))))
       (sort (set-difference new-ps old-ps :test (function string=))
             (function string<)))))
+
+
+(defconstant +one-month+ (* 30 24 60 60 ))
+(defvar *projects-dir* nil)
+
+(defun update-project-dir (&key force)
+  (symbol-macrolet ((timestamp (sexp-file-contents (merge-pathnames "timestamp" *projects-dir*)
+                                                   :if-does-not-exist 0)))
+    (macrolet ((run-command-reporting-error (label command)
+                 (let ((vout (gensym)) (verr (gensym)) (vstat (gensym)))
+                   `(multiple-value-bind (,vout ,verr ,vstat)
+                        (uiop:run-program ,command
+                                          :ignore-error-status t :force-shell t
+                                          :output 'string :error-output 'string)
+                      (unless (zerop ,vstat)
+                        (error "~A exited with status ~D:~%~A~%~A~%"
+                               ,label ,vstat ,vout ,verr))))))
+      (let* ((cache-dir   (merge-pathnames ".cache/" (user-homedir-pathname) nil))
+             (project-dir (merge-pathnames "quicklisp-projects/" cache-dir nil))
+             (probe       (merge-pathnames "README.md" *projects-dir* nil)))
+        (setf *projects-dir* project-dir)
+        (unless (probe-file probe)
+          (ensure-directories-exist probe)
+          (run-command-reporting-error
+           "git cloning quicklisp-project"
+           (format nil "cd ~S && git clone git@github.com:quicklisp/quicklisp-projects.git" (namestring cache-dir)))
+          (setf timestamp (get-universal-time))))
+      (when (or force (< timestamp (- (get-universal-time) +one-month+)))
+        (run-command-reporting-error
+         "git pulling quicklisp-project"
+         (format nil "cd ~S && git pull" (namestring *projects-dir*)))
+        (setf timestamp (get-universal-time))))))
+
+(defun project-where-from (pname)
+  "Return the contents of the source.txt file of the project PNAME in quicklisp-projects."
+  (update-project-dir)
+  (split-string (string-trim #(#\newline)
+                             (text-file-contents (merge-pathnames
+                                                  (make-pathname :directory (list :relative "projects" pname)
+                                                                 :name "source" :type "txt" :version nil)
+                                                  *projects-dir*)
+                                                 :if-does-not-exist nil))
+                " " t))
+
+(defun system-where-is (system)
+  "Return the path where the SYSTEM is stored (where the asd file is found)."
+  #+#.(cl:if (cl:find-symbol "WHERE-IS-SYSTEM" "QUICKLISP-CLIENT") '(:and) '(:or))
+  (ql:where-is-system system)
+  #-#.(cl:if (cl:find-symbol "WHERE-IS-SYSTEM" "QUICKLISP-CLIENT") '(:and) '(:or))
+  nil)
+
+(defun system-where-from (system)
+  "Return a list indicating where the project in the release that provided the SYSTEM originated from.
+This is the contents of the source.txt file of the project in quicklisp-projects."
+  (let* ((system       (ql-dist:find-system system))
+         (release      (ql-dist:release system))
+         (distribution (ql-dist:dist    system))
+         (dname        (and distribution
+                            (ql-dist:name distribution)))
+         (pname        (and release
+                            (ql-dist:project-name release))))
+    (cond
+      ((null pname)
+       '())
+      ((equal dname "quicklisp")
+       (project-where-from pname))
+      (t
+       '()))))
+
+(defun quick-where-from (system &rest systems)
+  "Says where the systems are from."
+  (let ((local-systems (ql:list-local-systems)))
+    (dolist (sys (cons system systems))
+      (let ((sname (asdf-system-name (asdf:find-system sys))))
+        (if (member sname local-systems :test (function string=))
+            (print (list :system sname
+                         :distribution :local
+                         :directory (system-where-is sname)
+                         :from nil #|TODO: we could look in the directory if there's a .git and show-remotes |#))
+            (let* ((system       (ql-dist:find-system sname))
+                   (release      (ql-dist:release system))
+                   (distribution (ql-dist:dist    system))
+                   (dname        (ql-dist:name distribution))
+                   (pname        (and release
+                                      (ql-dist:project-name release)))
+                   (wfrom        (cond
+                                   ((null pname)
+                                    '())
+                                   ((string= dname "quicklisp")
+                                    (project-where-from pname))
+                                   (t
+                                    '()))))
+              (print (list :system sname
+                           :distribution dname
+                           :directory (system-where-is sname)
+                           :where-from wfrom))))))))
 
 ;;;; THE END ;;;;
 

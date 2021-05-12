@@ -35,14 +35,16 @@
 (asdf:defsystem "com.informatimago.tools.quicklisp"
   :description "Quicklisp tools."
   :author "Pascal J. Bourguignon"
-  :version "1.2.0"
+  :version "1.3.0"
   :license "GPL3"
   :depends-on ( ;; assumed ;; "quicklisp"
-               "com.informatimago.tools.pathname")
+               "com.informatimago.tools.pathname"
+               "com.informatimago.common-lisp.cesarum")
   :components ((:file "dummy-quicklisp" :depends-on ())
                (:file "dummy-asdf"      :depends-on ())
-               (:file "quicklisp"       :depends-on ("dummy-quicklisp"))
-               (:file "asdf-tools"      :depends-on ("quicklisp" "dummy-asdf")))
+               (:file "asdf-tools"      :depends-on ("dummy-asdf"))
+               (:file "quicklisp"       :depends-on ("dummy-quicklisp"
+                                                     "asdf-tools")))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8)
 
 ;;;; THE END ;;;;
