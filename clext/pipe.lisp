@@ -58,7 +58,8 @@
            "PIPE-CHARACTER-INPUT-STREAM"
            "PIPE-CHARACTER-OUTPUT-STREAM"
            "PIPE-BINARY-INPUT-STREAM"
-           "PIPE-BINARY-OUTPUT-STREAM")
+           "PIPE-BINARY-OUTPUT-STREAM"
+           "SIMPLE-STREAM-ERROR")
   (:documentation "
 
 This package exports a pipe abstraction, that is, a pair of streams.
@@ -631,10 +632,15 @@ when it's the case, end-of-file is detected upon reading on an empty pipe.")
 ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(define-condition simple-stream-error (stream-error simple-error)
+  ())
+
 (defun check-stream-open (stream where)
   (unless (open-stream-p stream)
-    (error "~S cannot deal with closed stream ~S"
-           where stream)))
+    (error 'simple-stream-error
+           :stream stream
+           :format-control "~S cannot deal with closed stream ~S"
+           :format-arguments (list where stream))))
 
 ;;; character input
 
