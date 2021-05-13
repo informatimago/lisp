@@ -279,7 +279,7 @@ specific options subnegotiations.
                      (telnet-warning-format-arguments condition)))))
 
 
-(define-condition telnet-option-warning (warning)
+(define-condition telnet-option-warning (telnet-warning)
   ((option  :initarg :option  :reader telnet-option-warning-option :type option))
   (:report (lambda (condition stream)
              (format stream "Telnet Warning with NVT ~S, option ~A: ~?"
