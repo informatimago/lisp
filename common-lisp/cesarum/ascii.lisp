@@ -430,24 +430,25 @@ NEWLINE:  (member :crlf :cr :lf :any) ; the default is *NEWLINE*.
 START:    index of the first byte to be converted.
 END:      index beyond the last byte to be converted.
 "
-  (replace-ascii-characters (make-array len :element-type 'character
-                                            :adjustable t :fill-pointer 0)
+  (replace-ascii-characters (make-array (- end start)
+                                        :element-type 'character
+                                        :adjustable t :fill-pointer 0)
                             bytes :newline newline :start2 start :end2 end))
 
 
-(defun replace-ascii-bytes (destination string &key (newline *newline*) (start1 0) end1 (start2 0) (end2 (length string)))
+(defun replace-ascii-bytes (bytes string &key (newline *newline*) (start1 0) end1 (start2 0) (end2 (length string)))
   "
-RETURN:       DESTINATION
-DESTINATION:  A byte vector containing the ASCII codes of the characters in
-              the string.
-              Only printable character and #\newline are accepted in the string.
-              #\newline is translated to either CR+LF, CR, or LF according to the
-              NEWLINE parameter.
-NEWLINE:      (member :crlf :cr :lf) ; the default is *NEWLINE*.
+RETURN:   BYTES
+BYTES:    A byte vector containing the ASCII codes of the characters in
+          the string.
+          Only printable character and #\newline are accepted in the string.
+          #\newline is translated to either CR+LF, CR, or LF according to the
+          NEWLINE parameter.
+NEWLINE:  (member :crlf :cr :lf) ; the default is *NEWLINE*.
 "
   (loop
     :with newline = (output-newline newline)
-    :with endd := (or end1 (length destination))
+    :with endd := (or end1 (length bytes))
     :with i := (- start1 1)
     :for j :from start2 :below end2
     :for ch := (aref string j)
@@ -459,7 +460,7 @@ NEWLINE:      (member :crlf :cr :lf) ; the default is *NEWLINE*.
               ((:cr)   (setf (aref bytes (incf i)) cr))
               ((:lf)   (setf (aref bytes (incf i)) lf)))
             (setf (aref bytes (incf i)) (ascii-code ch)))
-    :finally (return destination)))
+    :finally (return bytes)))
 
 
 (defun ascii-bytes (string &key (newline *newline*) (start 0) (end (length string)))
