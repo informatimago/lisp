@@ -8,6 +8,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2021-05-14 <PJB> Added REPLACE-ASCII-BYTES and REPLACE-ASCII-CHARACTERS.
 ;;;;    2012-04-20 <PJB> Added conditions;
 ;;;;                     Added :start and :stop to ASCII-STRING and ASCII-BYTES.
 ;;;;                     Added ASCII-CONTROL-CODE-P and ASCII-PRINTABLE-CODE-P.
@@ -18,7 +19,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2006 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2006 - 2021
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -52,7 +53,8 @@
    "ASCII-CONTROL-CODE-P"    "ASCII-PRINTABLE-CODE-P"
    "ASCII-STRING" "ASCII-BYTES"  "ASCII-DISPATCH-MACRO"
    "READ-ASCII-LINE" "ASCII-FORMAT"
-   "BYTES=" "BYTES/=" "BYTES<" "BYTES<=" "BYTES>=" "BYTES>")
+   "BYTES=" "BYTES/=" "BYTES<" "BYTES<=" "BYTES>=" "BYTES>"
+   "REPLACE-ASCII-BYTES" "REPLACE-ASCII-CHARACTERS")
   (:documentation "
 
 Some ASCII code utilities, to process sequences of ASCII code bytes as
@@ -386,6 +388,37 @@ RETURN:  The decimal digit value of the character encoded by the ASCII CODE,
        (- code #.(ascii-code #\0))))
 
 
+(defun replace-ascii-characters (string bytes &key (newline *newline*) (start1 0) end1 (start2 0) (end2 (length bytes)))
+  (loop
+    :with newline := (input-newline newline)
+    :with endd := (or end1 (length string))
+    :with len := (- end2 start2)
+    :with j := start2
+    :for code := (aref bytes j)
+    :for i :from start1 :below endd
+    :while (< j end2)
+    :do (if (<= sp code 126)
+            (setf (aref string i) (aref *ascii-characters* (- code sp)))
+            (case code
+              ((#.cr)
+               (ecase newline
+                 ((:crlf) (if (and (< (1+ j) len) (= lf (aref bytes (1+ j))))
+                              (progn (incf j)
+                                     (setf (aref string i) #\newline))
+                              (ascii-error code)))
+                 ((:any)  (if (and (< (1+ j) len) (= lf (aref bytes (1+ j))))
+                              (progn (incf j)
+                                     (setf (aref string i) #\newline))
+                              (setf (aref string i) #\newline)))
+                 ((:cr)   (setf (aref string i) #\newline))
+                 ((:lf)   (ascii-error code))))
+              ((#.lf)
+               (ecase newline
+                 ((:any  :lf) (setf (aref string i) #\newline))
+                 ((:crlf :cr) (ascii-error code))))
+              (otherwise (ascii-error code))))
+    :finally (return string)))
+
 
 (defun ascii-string (bytes &key (newline *newline*) (start 0) (end (length bytes)))
   "
@@ -397,35 +430,36 @@ NEWLINE:  (member :crlf :cr :lf :any) ; the default is *NEWLINE*.
 START:    index of the first byte to be converted.
 END:      index beyond the last byte to be converted.
 "
-  (setf newline (input-newline newline))
+  (replace-ascii-characters (make-array len :element-type 'character
+                                            :adjustable t :fill-pointer 0)
+                            bytes :newline newline :start2 start :end2 end))
+
+
+(defun replace-ascii-bytes (destination string &key (newline *newline*) (start1 0) end1 (start2 0) (end2 (length string)))
+  "
+RETURN:       DESTINATION
+DESTINATION:  A byte vector containing the ASCII codes of the characters in
+              the string.
+              Only printable character and #\newline are accepted in the string.
+              #\newline is translated to either CR+LF, CR, or LF according to the
+              NEWLINE parameter.
+NEWLINE:      (member :crlf :cr :lf) ; the default is *NEWLINE*.
+"
   (loop
-     :with len = (- end start)
-     :with result = (make-array len :element-type 'character
-                                :adjustable t :fill-pointer 0)
-     :with i = start
-     :while (< i end)
-     :do (let ((code (aref bytes i)))
-           (if (<= sp code 126)
-               (vector-push (aref *ascii-characters* (- code sp)) result)
-               (case code
-                 ((#.cr)
-                  (ecase newline
-                    ((:crlf) (if (and (< (1+ i) len) (= lf (aref bytes (1+ i))))
-                                 (progn (incf i)
-                                        (vector-push #\newline result))
-                                 (ascii-error code)))
-                    ((:any)  (if (and (< (1+ i) len) (= lf (aref bytes (1+ i))))
-                                 (incf i)
-                                 (vector-push #\newline result)))
-                    ((:cr)   (vector-push #\newline result))
-                    ((:lf)   (ascii-error code))))
-                 ((#.lf)
-                  (ecase newline
-                    ((:any  :lf) (vector-push #\newline result))
-                    ((:crlf :cr) (ascii-error code))))
-                 (otherwise (ascii-error code))))
-           (incf i))
-     :finally (return result)))
+    :with newline = (output-newline newline)
+    :with endd := (or end1 (length destination))
+    :with i := (- start1 1)
+    :for j :from start2 :below end2
+    :for ch := (aref string j)
+    :while (< i endd)
+    :do (if (char= ch #\newline)
+            (ecase newline
+              ((:crlf) (setf (aref bytes (incf i)) cr
+                             (aref bytes (incf i)) lf))
+              ((:cr)   (setf (aref bytes (incf i)) cr))
+              ((:lf)   (setf (aref bytes (incf i)) lf)))
+            (setf (aref bytes (incf i)) (ascii-code ch)))
+    :finally (return destination)))
 
 
 (defun ascii-bytes (string &key (newline *newline*) (start 0) (end (length string)))
@@ -437,25 +471,13 @@ RETURN:   A byte vector containing the ASCII codes of the characters in
           NEWLINE parameter.
 NEWLINE:  (member :crlf :cr :lf) ; the default is *NEWLINE*.
 "
-  (loop
-    :with newline = (output-newline newline)
-    :with bytes = (make-array
-                   (+ (- end start)
-                      (if (eq newline :crlf)
-                          (count #\newline string :start start :end end)
-                          0))
-                   :element-type '(unsigned-byte 8))
-    :with b = -1
-    :for i :from start :below end
-    :for ch = (aref string i)
-    :do (if (char= ch #\newline)
-            (ecase newline
-              ((:crlf) (setf (aref bytes (incf b)) cr
-                             (aref bytes (incf b)) lf))
-              ((:cr)   (setf (aref bytes (incf b)) cr))
-              ((:lf)   (setf (aref bytes (incf b)) lf)))
-            (setf (aref bytes (incf b)) (ascii-code ch)))
-    :finally (return bytes)))
+  (replace-ascii-bytes (make-array
+                        (+ (- end start)
+                           (if (eq newline :crlf)
+                               (count #\newline string :start start :end end)
+                               0))
+                        :element-type '(unsigned-byte 8))
+                       string :newline newline :start2 start :end2 end))
 
 
 (defun ascii-dispatch-macro (stream sub-char argument)
