@@ -1565,10 +1565,18 @@ RETURN: the length of bytes processed.
          (#.EC     (unless (urgent-mode-p nvt) (receive-control (up-sender nvt) :erase-character)))
          (#.BRK    (unless (urgent-mode-p nvt) (receive-control (up-sender nvt) :break)))
          (#.EOR    (unless (urgent-mode-p nvt)
+                     ;; EOR must be negotiated!
+                     ;; EOR are intended to signal a unit for display (page).
+                     ;; they can be sent after a prompt that doesn't end in a newline.
+                     ;; Note receiving them from a terminal is not very meaningful.
+                     ;; A server may sent them to the terminal to initiate rendering.
+                     ;; https://public.support.unisys.com/aseries/docs/ClearPath-MCP-18.0/88076385-021/section-000020933.html
                      ;; TODO: Do we need to echo EOR?
+                     ;;       -> Probably not.
                      ;; TODO: Can we echo EOR without having negotiated it?
-                     (when (option-enabled-p nvt :echo :us)
-                       (send (down-sender nvt) bytes start (+ start len)))
+                     ;;       -> Probably not.
+                     ;; (when (option-enabled-p nvt :echo :us)
+                     ;;   (send (down-sender nvt) bytes start (+ start len)))
                      (when (option-enabled-p nvt :end-of-record :him)
                        (receive-control (up-sender nvt) :end-of-record))))
          (#.IAC    (unless (urgent-mode-p nvt)
