@@ -438,7 +438,7 @@ END:      index beyond the last byte to be converted.
 
 (defun replace-ascii-bytes (bytes string &key (newline *newline*) (start1 0) end1 (start2 0) (end2 (length string)))
   "
-RETURN:   BYTES
+RETURN:   BYTES, and the position beyond the last byte stored.
 BYTES:    A byte vector containing the ASCII codes of the characters in
           the string.
           Only printable character and #\newline are accepted in the string.
@@ -460,7 +460,7 @@ NEWLINE:  (member :crlf :cr :lf) ; the default is *NEWLINE*.
               ((:cr)   (setf (aref bytes (incf i)) cr))
               ((:lf)   (setf (aref bytes (incf i)) lf)))
             (setf (aref bytes (incf i)) (ascii-code ch)))
-    :finally (return bytes)))
+    :finally (return (values bytes j))))
 
 
 (defun ascii-bytes (string &key (newline *newline*) (start 0) (end (length string)))
