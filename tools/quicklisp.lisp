@@ -214,7 +214,7 @@ are listed."
                                ,label ,vstat ,vout ,verr))))))
       (let* ((cache-dir   (merge-pathnames ".cache/" (user-homedir-pathname) nil))
              (project-dir (merge-pathnames "quicklisp-projects/" cache-dir nil))
-             (probe       (merge-pathnames "README.md" *projects-dir* nil)))
+             (probe       (merge-pathnames "README.md" project-dir nil)))
         (setf *projects-dir* project-dir)
         (unless (probe-file probe)
           (ensure-directories-exist probe)
