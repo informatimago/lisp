@@ -11,13 +11,15 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2021-05-15 <PJB> Corrected character-set-to-emacs-encoding.
+;;;;                     Added examples to package docstring.
 ;;;;    2012-04-06 <PJB> Extracted from
 ;;;;                     com.informatimago.common-lisp.cesarum.character-sets.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2012 - 2021
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -53,7 +55,50 @@ This package exports functions to manage character-sets,
 character encodings, coding systems and external format.
 It's all the same, but everyone likes to have his own terms...
 
-Copyright Pascal J. Bourguignon 2005 - 2012
+CHARACTER-SET are structures containing all the information about the
+character set, (name, characters), the encodings, the lisp
+external-format values, the emacs coding-system strings.
+
+CHARACTER-SET can be designated by string-designators containing their
+name or aliases.
+
+LISP-ENCODING are CL implementation specific objects usable as
+external-format arguments.  They wrap a character-set, and a
+line-termination mode, and possibly other parameters
+(encoding/decoding error handling, etc).
+
+EMACS-ENCODING are emacs coding systems (structured strings).
+
+EXTERNAL-FORMATS are usually a combination of character set and
+line-termination (and possibly additionnal information, such as
+encoding/decoding error handling).  Often, keywords naming the
+character set can be used as designators for external formats.
+
+(open file :external-format (make-external-format
+                                 (character-set-to-lisp-encoding \"utf-8\")
+                                 :dos))
+
+(let ((cs (com.informatimago.common-lisp.cesarum.character-sets:find-character-set \"utf-8\")))
+   (when cs
+      (format t \";; -*- mode:lisp;coding:~A -*- ~%\" (character-set-to-emacs-encoding cs))))
+
+(cs-name (character-set-from-emacs-encoding \"mule-utf-8-unix\"))
+--> \"UTF-8\"
+
+(character-set-to-emacs-encoding :utf-8)
+--> \"mule-utf-8-unix\"
+
+(character-set-to-lisp-encoding \"utf-8\")
+--> #<external-format :utf-8/:unix #x3020003B7F5D>
+
+(make-external-format
+ (character-set-for-lisp-encoding
+  (character-set-to-lisp-encoding \"utf-8\"))
+ :dos)
+--> #<external-format :utf-8/:dos #x30200AF3E17D>
+
+
+Copyright Pascal J. Bourguignon 2005 - 2021
 This package is provided under the GNU General Public Licence.
 See the source file for details.
 "))
@@ -407,7 +452,7 @@ SIGNAL: An error if line-termination is not (member :unix :mac :dos nil) or
   "
 ENCODING:  An implementation specific object representing an encoding.
            possibly with line-termination.
-RETURN:    The character-set that correspond to this emacs-encoding ;
+RETURN:    The character-set that correspond to this lisp-encoding ;
            the line-termination.
 "
   (values (external-format-character-encoding encoding)
@@ -578,14 +623,14 @@ SIGNAL: An error if line-termination is not (member :unix :mac :dos nil) or
         if cs has no emacs encoding.
 "
   (assert (member line-termination '(:unix :mac :dos nil)))
-  (unless  (cs-emacs-encoding (etypecase cs
-                                (character-set cs)
-                                ((or string symbol) (find-character-set cs))))
-    (error "The character-set ~A has no corresponding emacs encoding"
-           (cs-name cs)))
-  (format nil "~(~A~:[~;~:*-~A~]~)" (first (cs-emacs-encoding cs))
-          line-termination))
-
+  (let* ((cs  (etypecase cs
+                (character-set cs)
+                ((or string symbol) (find-character-set cs))))
+         (ee  (cs-emacs-encoding cs)))
+    (unless ee
+      (error "The character-set ~A has no corresponding emacs encoding"
+             (cs-name cs)))
+    (format nil "~(~A~:[~;~:*-~A~]~)" (first ee) line-termination)))
 
 (defun character-set-from-emacs-encoding (ecs)
   "
