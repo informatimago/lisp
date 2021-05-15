@@ -39,9 +39,15 @@
 (ql:register-local-projects)
 
 (progn (format t "~%;;; Loading botvot.~%") (finish-output) (values))
-(push (make-pathname :name nil :type nil :version nil
-                     :defaults *load-truename*)
-      asdf:*central-registry*)
+(setf asdf:*central-registry*
+      (append (mapcar (lambda (path)
+                        (make-pathname :name nil :type nil :version nil
+                                       :defaults path))
+                      (directory (merge-pathnames
+                                  #P"../../**/*.asd"
+                                  *load-truename*)))
+              asdf:*central-registry*))
+;; (format t "~&;;; asdf:*central-registry* = ~S~%" asdf:*central-registry*)
 
 (ql:quickload :com.informatimago.small-cl-pgms.botvot)
 

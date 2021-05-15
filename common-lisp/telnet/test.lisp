@@ -165,3 +165,27 @@
 (send-status (get-option (layer-nvt *ulc*) :status) (layer-nvt *ulc*))
 
 (get-option (layer-nvt *ulc*) :status)
+
+
+
+(define-condition interrupt-signal-condition (condition)
+  ()
+  (:report "interrupt signal"))
+
+(defun test/interrupt ()
+  (let* ((iota (bt:make-thread (lambda ()
+                                 (unwind-protect
+                                      (loop
+                                        :for i :from 1
+                                        :do (sleep 1)
+                                            (princ i) (princ " ")
+                                            (finish-output))
+                                   (princ "Done") (terpri)
+                                   (finish-output)))
+                               :name "iota runner")))
+    (sleep 10)
+    (bt:interrupt-thread iota
+                         (function invoke-debugger)
+                         (make-condition 'interrupt-signal-condition))
+    (princ "Complete.") (terpri) (finish-output)))
+

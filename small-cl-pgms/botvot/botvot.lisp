@@ -129,7 +129,7 @@ Licensed under the AGPL3.
    (password-hash    :reader   ballot-password-hash    :type string                   :initarg %password-hash)
    (secret-seed      :reader   ballot-secret-seed      :type (vector octet)           :initarg %secret-seed)
    (state            :reader   ballot-state            :type ballot-state             :initarg %state            :initform :editing)
-   (last-publication :reader   ballot-last-publication :type universal-time           :initarg %last-publication :initform 0) 
+   (last-publication :reader   ballot-last-publication :type universal-time           :initarg %last-publication :initform 0)
    (channels         :reader   ballot-channels         :type list                     :initarg %channels         :initform '())
    (choices          :reader   ballot-choices          :type list                     :initarg %choices          :initform '())
    (votes            :reader   ballot-votes            :type list                     :initarg %votes            :initform '())))
@@ -303,7 +303,7 @@ user.
 ;;;
 
 (defun sha256-hash (text)
-  (ironclad:byte-array-to-hex-string 
+  (ironclad:byte-array-to-hex-string
    (ironclad:digest-sequence :sha256 (babel:string-to-octets text :encoding :utf-8))))
 
 (defun sha256-hash-bytes (text)
@@ -1077,11 +1077,11 @@ arguments.  The arguments may be:
 (defun next-sunday    (time) (next-dow 6 time))
 
 (defun parse-deadline (words)
-  ;; in $x days|minutes|seconds                    
-  ;; on mon|tue|wed|thi|fri|sat|sun at $h [hours|o'clock]         
-  ;; on mon|tue|wed|thi|fri|sat|sun at $HH:MM         
-  ;; at $h [hours|o'clock]                         
-  ;; at $HH:MM                                     
+  ;; in $x days|minutes|seconds
+  ;; on mon|tue|wed|thi|fri|sat|sun at $h [hours|o'clock]
+  ;; on mon|tue|wed|thi|fri|sat|sun at $HH:MM
+  ;; at $h [hours|o'clock]
+  ;; at $HH:MM
   (let ((deadline
          (cond ((string= "in" (first words))
                 (let ((n (ignore-errors (parse-integer (second words)))))
@@ -1109,7 +1109,7 @@ arguments.  The arguments may be:
                                                 (member w u :test (function string-equal)))))))
                   (when dow
                     (let ((time (parse-time (subseq words 3))))
-                      (when time 
+                      (when time
                         (funcall dow time))))))
                ((string= "at" (first words))
                 (let ((time (parse-time (subseq words 1))))
@@ -1379,7 +1379,7 @@ but with double-quotes escaping them."
 
 ;;;
 ;;; A little ballot REPL to try out the command processing from the
-;;; lisp REPL instead of thru a IRC connection: 
+;;; lisp REPL instead of thru a IRC connection:
 ;;;
 
 (defun ballot-repl ()
@@ -1421,13 +1421,13 @@ but with double-quotes escaping them."
   #-(and)
   (with-slots (source user host command arguments connection received-time raw-message-string)
       message
-    (format t "~20A = ~S~%" 'source source) 
-    (format t "~20A = ~S~%" 'user user) 
-    (format t "~20A = ~S~%" 'host host) 
-    (format t "~20A = ~S~%" 'command command) 
-    (format t "~20A = ~S~%" 'arguments arguments) 
-    (format t "~20A = ~S~%" 'connection connection) 
-    (format t "~20A = ~S~%" 'received-time received-time) 
+    (format t "~20A = ~S~%" 'source source)
+    (format t "~20A = ~S~%" 'user user)
+    (format t "~20A = ~S~%" 'host host)
+    (format t "~20A = ~S~%" 'command command)
+    (format t "~20A = ~S~%" 'arguments arguments)
+    (format t "~20A = ~S~%" 'connection connection)
+    (format t "~20A = ~S~%" 'received-time received-time)
     (format t "~20A = ~S~%" 'raw-message-string
             (map 'string (lambda (ch)
                            (let ((code (char-code ch)))
@@ -1437,15 +1437,20 @@ but with double-quotes escaping them."
                                  ch)))
                  raw-message-string))
     (finish-output))
-  (let ((arguments        (arguments message))
-        (*requester-nick* (source message)))
-    (when (string= *nickname* (first arguments))
-      (dolist (line (split-sequence
-                     #\newline
-                     (with-output-to-string (*standard-output*)
-                       (process-command (parse-words (second arguments))))
-                     :remove-empty-subseqs t))
-        (answer "~A" line))))
+  (handler-bind
+      ((error (lambda (err)
+                (print-backtrace)
+                (format *error-output* "~%~A~%" err)
+                (return-from msg-hook t))))
+    (let ((arguments        (arguments message))
+          (*requester-nick* (source message)))
+      (when (string= *nickname* (first arguments))
+        (dolist (line (split-sequence
+                       #\newline
+                       (with-output-to-string (*standard-output*)
+                         (process-command (parse-words (second arguments))))
+                       :remove-empty-subseqs t))
+          (answer "~A" line)))))
   t)
 
 (defun call-with-retry (delay thunk)
@@ -1520,7 +1525,7 @@ and join to the *CHANNEL* where HackerNews are published."
 
 
 #-(and) (progn
-          
+
           (setf *nickname* "botvot-test"
                 *ballot-file* #P"/tmp/ballot.sexp"
                 *ballot-zombie-life* (minutes 10))
@@ -1533,7 +1538,7 @@ and join to the *CHANNEL* where HackerNews are published."
                                     (hostname user)))
 
           (find-user *connection* *requester-nick*)
-          
+
           (channels (find-user *connection* *nickname*))
 
           )

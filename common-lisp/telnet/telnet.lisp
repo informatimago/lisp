@@ -96,7 +96,7 @@
 ;;;;
 ;;;;        Describes a method by which a server can query a client about what
 ;;;;        X11 display it is on. This is definitely obsoleted by RFC
-;;;;        1408. Future implementations need to udnerstand this mechanism of
+;;;;        1408. Future implementations need to understand this mechanism of
 ;;;;        transferring X display information, but the protocol specififed in
 ;;;;        RFC 1408 is the preferred method.
 ;;;;
@@ -107,9 +107,9 @@
 ;;;;
 ;;;; v  RFC 1143
 ;;;;
-;;;;        This describes, in detail, option negotion loop problems in the
-;;;;        telnet protocol, and how to avoid them when writing a telnet
-;;;;        implementation.
+;;;;        This describes, in detail, option negotiation loop
+;;;;        problems in the telnet protocol, and how to avoid them
+;;;;        when writing a telnet implementation.
 ;;;;
 ;;;;    RFC 1116, RFC 1184
 ;;;;
@@ -134,8 +134,6 @@
 ;;;;        to server in the telnet protocol. This protocol could be used
 ;;;;        instead of the terminal type (RFC 1091) and X11 display (RFC 1096)
 ;;;;        protocols.
-;;;;
-;;;;
 ;;;;
 ;;;;        Both of these RFCs are mentioned because the reference
 ;;;;        implementation of RFC 1408 disagreed with the actual
@@ -402,6 +400,7 @@ CONTROL: (member :are-you-there :abort-output :interrupt-process :go-ahead
   (:documentation "Send the bytes to the remote NVT.
 BYTE: a VECTOR of (UNSIGNED-BYTE 8)."))
 
+(defgeneric send-urgent-notification  (down-sender))
 
 ;; Down interface (from down):
 
@@ -1263,7 +1262,6 @@ and are discarding text bytes till the next IAC DM."))
 ;;       record (CRLF, EOR, FORW1 FORW2, etc) is sent.  On the other
 ;;       hand, this may be done by the terminal layer itself?
 (defgeneric send-raw-bytes  (nvt  bytes))
-(defgeneric send-urgent-notification  (nvt))
 
 (defmethod send-raw-bytes  ((nvt network-virtual-terminal) bytes)
   "Send the binary bytes.
