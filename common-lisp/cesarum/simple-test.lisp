@@ -306,9 +306,9 @@ FAILURE-COUNT."
     (let ((name-max-length 40))
       (flet ((write-tally (name)
                (format *test-output* "~&~VA~@[~%~0@*~V<~>~3@*~]~
-                       ~5D test~:*~P,~:*~[~; ~;~]~
-                       ~4D success~:*~[es~;~:;es~]~
-                       ~:[,~2:*~[~;  ~;~]~*~4D failure~:*~P~;~].~%"
+                       ~9D test~:*~P,~:*~[~; ~;~]~
+                       ~8D success~:*~[es~;~:;es~]~
+                       ~:[,~2:*~[~;  ~;~]~*~8D failure~:*~P~;~].~%"
                        name-max-length name (< name-max-length (length name))
                        (+ success-count failure-count)
                        success-count
