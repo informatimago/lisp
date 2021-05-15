@@ -11,13 +11,14 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2021-05-15 <PJB> Added test/split-sequence-if
 ;;;;    2012-06-24 <PJB> Added REPLACE-SUBSEQ.
 ;;;;    2012-02-19 <PJB> Extracted from list.lisp and some other code.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2012 - 2021
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -46,7 +47,8 @@
            "CONCATENATE-SEQUENCES"
            "PREFIXP"
            "SUFFIXP"
-           "MAPCONCAT")
+           "MAPCONCAT"
+           "SPLIT-SEQUENCE-IF")
   (:documentation
    "
 
@@ -57,7 +59,7 @@ License:
 
     AGPL3
 
-    Copyright Pascal J. Bourguignon 2004 - 2015
+    Copyright Pascal J. Bourguignon 2004 - 2021
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -481,6 +483,64 @@ RETURN:  Whether SUFFIX is a suffix of the (subseq SEQUENCE START END).
               (replace result (aref items i) :start1 start) (incf start (length (aref items i))))
            result)
          ""))))
+
+
+(defun split-sequence-if (predicate sequence &key remove-empty-subseqs)
+  "
+PREDICATE:      A predicate on elements of the SEQUENCE sequence.  When
+                returning true, the sequence is split before and after
+                the element, which are removed from the resulting
+                subsequences.
+
+SEQUENCE:       A sequence.
+
+REMOVE-EMPTY-SUBSEQS:
+                A boolean.  If true, empty subsequences are removed from the result.
+
+RETURN:         A list of subsequences of SEQUENCE, split upon any
+                element for which the PREDICATE is true.
+
+EXAMPLES:       (split-sequence-if (function zerop) '(1 2 0 3 4 5 0 6 7 8 0 9))
+                --> ((1 2) (3 4 5) (6 7 8) (9))
+                (split-sequence-if (function zerop) #(1 2 0 3 4 5 0 6 7 8 0 9))
+                --> (#(1 2) #(3 4 5) #(6 7 8) #(9))
+                (split-sequence-if (lambda (x) (find x #(#\\space #\\0))) \"1 2 0 3 4 5 0 6 7 8\" )
+                --> (\"1\" \"2\" \"\" \"\" \"3\" \"4\" \"5\" \"\" \"\" \"6\" \"7\" \"8\")
+"
+  (let ((chunks  '()))
+    (etypecase sequence
+      (vector (loop
+                :with position := 0
+                :with nextpos  := 0
+                :with length   := (length sequence)
+                :while (< position length)
+                :do (loop :while (and (< nextpos length)
+                                      (not (funcall predicate (aref sequence nextpos))))
+                          :do (incf nextpos))
+                    (push (subseq sequence position nextpos) chunks)
+                    (setf position (1+ nextpos)
+                          nextpos  position)
+                    (when (= position length)
+                      (push (subseq sequence 0 0) chunks))))
+      (list   (loop
+                :with start := sequence
+                :while start
+                :do (let ((end (loop
+                                 :with current := start
+                                 :while (and current
+                                             (not (funcall predicate (car current))))
+                                 :do (pop current)
+                                 :finally (return current))))
+                      (push (ldiff start end) chunks)
+                      (setf start (cdr end))))))
+    (if remove-empty-subseqs
+        (delete-if (lambda (seq)
+                     (typecase seq
+                       (vector  (zerop (length seq)))
+                       (null    t)
+                       (t       nil)))
+                   (nreverse chunks))
+        (nreverse chunks))))
 
 
 ;;;; THE END ;;;;

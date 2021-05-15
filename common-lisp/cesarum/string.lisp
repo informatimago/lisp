@@ -11,6 +11,8 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2021-05-15 <PJB> Added SPLIT-STRING-IF and implemented it
+;;;;                     with SPLIT-STRING using SPLIT-SEQUENCE-IF.
 ;;;;    2016-01-16 <PJB> Added an ignorable declaration to prefixp and suffixp
 ;;;;                     to avoid a warning.
 ;;;;    2015-09-15 <PJB> prefixp and suffixp moved to sequence,
@@ -31,7 +33,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2002 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2002 - 2021
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -63,7 +65,8 @@
    "NO-LOWER-CASE-P" "NO-UPPER-CASE-P" "MIXED-CASE-P"
    "LOCALIZE" "DEFTRANSLATION" "STRING-JUSTIFY-LEFT" "STRING-PAD"
    "PREFIXP" "SUFFIXP"
-   "SPLIT-NAME-VALUE" "STRING-REPLACE" "UNSPLIT-STRING" "SPLIT-STRING"
+   "SPLIT-NAME-VALUE" "STRING-REPLACE"
+   "UNSPLIT-STRING" "SPLIT-STRING-IF" "SPLIT-STRING"
    "SPLIT-ESCAPED-STRING" "IMPLODE-STRING" "EXPLODE-STRING"
    "IMPLODE" "EXPLODE"
    "CONCATENATE-STRINGS")
@@ -77,7 +80,7 @@ License:
 
     AGPL3
 
-    Copyright Pascal J. Bourguignon 2002 - 2015
+    Copyright Pascal J. Bourguignon 2002 - 2021
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -310,33 +313,24 @@ RETURN:             A list of substrings of the string denoted by
             (t (incf curr)))))))
 
 
-(defun split-string (string &optional (separators " ") (remove-empty nil))
+(defun split-string-if (predicate sequence &key remove-empty-subseqs)
+  (split-sequence-if predicate sequence :remove-empty-subseqs remove-empty-subseqs))
+
+(defun split-string (string &optional (separators " ") (omit-nulls nil))
   "
 STRING:         A sequence.
 
 SEPARATOR:      A sequence.
 
+OMIT-NULLS:     A boolean.  If true, empty subsequences are removed from the result.
+
 RETURN:         A list of subsequence of STRING, split upon any element of SEPARATORS.
                 Separators are compared to elements of the STRING with EQL.
 
-NOTE:           It's actually a simple split-sequence now.
-
-EXAMPLES:       (split-string '(1 2 0 3 4 5 0 6 7 8 0 9) '(0))
-                --> ((1 2) (3 4 5) (6 7 8) (9))
-                (split-string #(1 2 0 3 4 5 0 6 7 8 0 9) #(0))
-                --> (#(1 2) #(3 4 5) #(6 7 8) #(9))
-                (split-string \"1 2 0 3 4 5 0 6 7 8\" '(#\space #\0))
+EXAMPLES:       (split-string \"1 2 0 3 4 5 0 6 7 8\" '(#\space #\0))
                 --> (\"1\" \"2\" \"\" \"\" \"3\" \"4\" \"5\" \"\" \"\" \"6\" \"7\" \"8\")
 "
-  (loop
-    :with strlen = (length string)
-    :for position = 0 :then (1+ nextpos)
-    :for nextpos = (position-if (lambda (e) (find e separators)) string :start position)
-    :unless (and remove-empty
-                 (or (and (= position strlen) (null nextpos))
-                     (eql position nextpos)))
-    :collect (subseq string position nextpos)
-    :while nextpos))
+  (split-sequence-if (lambda (ch) (find ch separators)) string :remove-empty-subseqs omit-nulls))
 
 
 (defun unsplit-string (string-list separator &key (adjustable nil) (fill-pointer nil) (size-increment 0))

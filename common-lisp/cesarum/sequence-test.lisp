@@ -11,12 +11,13 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2021-05-15 <PJB> Added test/split-sequence-if
 ;;;;    2015-02-25 <PJB> Extracted from sequence.lisp.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2015 - 2021
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -167,7 +168,23 @@
                                          ("HELLO" "SAY WORLD"))
                         :do (assert-false (suffixp (funcall pf p) (funcall sf s)))))))
 
-
+(define-test test/split-sequence-if ()
+  (assert (equal (split-sequence-if (function digit-char-p) (coerce "aaaa0bbb23ccc456dddd" 'list))
+                 '((#\a #\a #\a #\a) (#\b #\b #\b) nil (#\c #\c #\c) nil nil (#\d #\d #\d #\d))))
+  (assert (equal (split-sequence-if (function digit-char-p) (coerce "aaaa0bbb23ccc456dddd" 'list) :remove-empty-subseqs t)
+                 '((#\a #\a #\a #\a) (#\b #\b #\b) (#\c #\c #\c) (#\d #\d #\d #\d))))
+  (assert (equal (split-sequence-if (function digit-char-p)  "aaaa0bbb23ccc456dddd")
+                 '("aaaa" "bbb" "" "ccc" "" "" "dddd")))
+  (assert (equal (split-sequence-if (function digit-char-p) "aaaa0bbb23ccc456dddd" :remove-empty-subseqs t)
+                 '("aaaa" "bbb" "ccc" "dddd")))
+  (assert (equal (split-sequence-if (function digit-char-p) "12aa45bb" :remove-empty-subseqs nil)
+                 '("" "" "aa" "" "bb")))
+  (assert (equal (split-sequence-if (function digit-char-p) "12aa45bb" :remove-empty-subseqs t)
+                 '("aa" "bb")))
+  (assert (equal (split-sequence-if (function digit-char-p) "12aa45" :remove-empty-subseqs nil)
+                 '("" "" "aa" "" "")))
+  (assert (equal (split-sequence-if (function digit-char-p) "12aa45" :remove-empty-subseqs t)
+                 '("aa"))))
 
 (define-test test/all ()
   (test/replace-subseq)
@@ -175,7 +192,8 @@
   (test/parse-sequence-type)
   (test/concatenate-sequences)
   (test/prefixp)
-  (test/suffixp))
+  (test/suffixp)
+  (test/split-sequence-if))
 
 
 ;;;; THE END ;;;;
