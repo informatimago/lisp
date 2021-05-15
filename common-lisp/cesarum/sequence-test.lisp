@@ -132,10 +132,10 @@
 
 
 (defun as-vector (sequence)
-  (make-array (length sequence) :initial-contents sequence))
+  (coerce sequence 'vector))
 
 (defun as-list (sequence)
-  (replace (make-list (length sequence)) sequence))
+  (coerce sequence 'list))
 
 
 (define-test test/prefixp ()
@@ -146,12 +146,21 @@
                                          ("" "HELLO")
                                          ("HELLO" "HELLO")
                                          ("HELLO" "HELLO WORLD"))
-                        :do (assert-true (prefixp (funcall pf p) (funcall sf s))))
+                        :do (assert-true (prefixp (funcall pf p) (funcall sf s))
+                                         (pf p sf s)
+                                         "applicable methods = ~S"
+                                         (compute-applicable-methods (function prefixp)
+                                                                     (list (funcall pf p) (funcall sf s)))))
+
                       (loop
                         :for (p s) :in '(("HELLO" "HELL")
                                          ("HELLO" "SAY HELLO WORLD")
                                          ("HELLO" "SAY HELLO"))
-                        :do (assert-false (prefixp (funcall pf p) (funcall sf s)))))))
+                        :do (assert-false (prefixp (funcall pf p) (funcall sf s))
+                                          (pf p sf s)
+                                          "applicable methods = ~S"
+                                         (compute-applicable-methods (function prefixp)
+                                                                     (list (funcall pf p) (funcall sf s))))))))
 
 (define-test test/suffixp ()
   (loop :for pf :in '(identity as-vector as-list)
@@ -161,30 +170,57 @@
                                          ("" "HELLO")
                                          ("HELLO" "HELLO")
                                          ("WORLD" "HELLO WORLD"))
-                        :do (assert-true (suffixp (funcall pf p) (funcall sf s))))
+                        :do (assert-true (suffixp (funcall pf p) (funcall sf s))
+                                         (pf p sf s)
+                                         "applicable methods = ~S"
+                                         (compute-applicable-methods (function suffixp)
+                                                                     (list (funcall pf p) (funcall sf s)))))
                       (loop
                         :for (p s) :in '(("HELLO" "ELLO")
                                          ("HELLO" "SAY HELLO WORLD")
                                          ("HELLO" "SAY WORLD"))
-                        :do (assert-false (suffixp (funcall pf p) (funcall sf s)))))))
+                        :do (assert-false (suffixp (funcall pf p) (funcall sf s))
+                                          (pf p sf s)
+                                          "applicable methods = ~S"
+                                         (compute-applicable-methods (function suffixp)
+                                                                     (list (funcall pf p) (funcall sf s))))))))
 
 (define-test test/split-sequence-if ()
-  (assert (equal (split-sequence-if (function digit-char-p) (coerce "aaaa0bbb23ccc456dddd" 'list))
-                 '((#\a #\a #\a #\a) (#\b #\b #\b) nil (#\c #\c #\c) nil nil (#\d #\d #\d #\d))))
-  (assert (equal (split-sequence-if (function digit-char-p) (coerce "aaaa0bbb23ccc456dddd" 'list) :remove-empty-subseqs t)
-                 '((#\a #\a #\a #\a) (#\b #\b #\b) (#\c #\c #\c) (#\d #\d #\d #\d))))
-  (assert (equal (split-sequence-if (function digit-char-p)  "aaaa0bbb23ccc456dddd")
-                 '("aaaa" "bbb" "" "ccc" "" "" "dddd")))
-  (assert (equal (split-sequence-if (function digit-char-p) "aaaa0bbb23ccc456dddd" :remove-empty-subseqs t)
-                 '("aaaa" "bbb" "ccc" "dddd")))
-  (assert (equal (split-sequence-if (function digit-char-p) "12aa45bb" :remove-empty-subseqs nil)
-                 '("" "" "aa" "" "bb")))
-  (assert (equal (split-sequence-if (function digit-char-p) "12aa45bb" :remove-empty-subseqs t)
-                 '("aa" "bb")))
-  (assert (equal (split-sequence-if (function digit-char-p) "12aa45" :remove-empty-subseqs nil)
-                 '("" "" "aa" "" "")))
-  (assert (equal (split-sequence-if (function digit-char-p) "12aa45" :remove-empty-subseqs t)
-                 '("aa"))))
+  (check equal (split-sequence-if (function digit-char-p) (coerce "aaaa0bbb23ccc456dddd" 'list))
+         '((#\a #\a #\a #\a) (#\b #\b #\b) nil (#\c #\c #\c) nil nil (#\d #\d #\d #\d)))
+  (check equal (split-sequence-if (function digit-char-p) (coerce "aaaa0bbb23ccc456dddd" 'list) :remove-empty-subseqs t)
+         '((#\a #\a #\a #\a) (#\b #\b #\b) (#\c #\c #\c) (#\d #\d #\d #\d)))
+  (check equal (split-sequence-if (function digit-char-p)  "aaaa0bbb23ccc456dddd")
+         '("aaaa" "bbb" "" "ccc" "" "" "dddd"))
+  (check equal (split-sequence-if (function digit-char-p) "aaaa0bbb23ccc456dddd" :remove-empty-subseqs t)
+         '("aaaa" "bbb" "ccc" "dddd"))
+  (check equal (split-sequence-if (function digit-char-p) "12aa45bb" :remove-empty-subseqs nil)
+         '("" "" "aa" "" "bb"))
+  (check equal (split-sequence-if (function digit-char-p) "12aa45bb" :remove-empty-subseqs t)
+         '("aa" "bb"))
+  (check equal (split-sequence-if (function digit-char-p) "12aa45" :remove-empty-subseqs nil)
+         '("" "" "aa" "" ""))
+  (check equal (split-sequence-if (function digit-char-p) "12aa45" :remove-empty-subseqs t)
+         '("aa")))
+
+
+(define-test test/split-sequence-on-indicator ()
+  (check equal (split-sequence-on-indicator "AAAbbbCCCddd"
+                                            (lambda (a b)
+                                              (or (and (upper-case-p a) (lower-case-p b))
+                                                  (and (upper-case-p b) (lower-case-p a)))))
+         '("AAA" "bbb" "CCC" "ddd"))
+  (check equal (split-sequence-on-indicator "AAAbbbCCCddd"
+                                            (lambda (a b)
+                                              (and (upper-case-p b) (lower-case-p a))))
+         '("AAAbbb" "CCCddd"))
+  (check equal (split-sequence-on-indicator "Hello World" (constantly t))
+         '("H" "e" "l" "l" "o" " " "W" "o" "r" "l" "d"))
+  (check equal (split-sequence-on-indicator "A" (constantly t))
+         '("A"))
+  (check equal (split-sequence-on-indicator "" (constantly t))
+         '()))
+
 
 (define-test test/all ()
   (test/replace-subseq)
@@ -193,7 +229,8 @@
   (test/concatenate-sequences)
   (test/prefixp)
   (test/suffixp)
-  (test/split-sequence-if))
+  (test/split-sequence-if)
+  (test/split-sequence-on-indicator))
 
 
 ;;;; THE END ;;;;

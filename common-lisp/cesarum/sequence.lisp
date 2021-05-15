@@ -48,7 +48,8 @@
            "PREFIXP"
            "SUFFIXP"
            "MAPCONCAT"
-           "SPLIT-SEQUENCE-IF")
+           "SPLIT-SEQUENCE-IF"
+           "SPLIT-SEQUENCE-ON-INDICATOR")
   (:documentation
    "
 
@@ -430,11 +431,20 @@ RETURN:  Whether SUFFIX is a suffix of the (subseq SEQUENCE START END).
   (let ((mis (mismatch  prefix sequence :start2 start :end2 end :test test)))
     (or (null mis) (<= (length prefix) mis))))
 
-
 (defmethod suffixp ((suffix sequence) (sequence sequence) &key (start 0) (end nil) (test (function eql)))
-  (zerop (or (mismatch  suffix  sequence :start2 start :end2 end :test test
-                                         :from-end t)
-             0)) )
+  (zerop (or (mismatch suffix sequence :start2 start :end2 end :test test
+                                       :from-end t)
+             0)))
+
+;; We need to define methods for nil,  because cesarum.string defines
+;; methods for string-designators, so (null string) would be handled
+;; differently.
+
+(defmethod prefixp ((prefix null) (sequence sequence) &key (start 0) (end nil) (test (function eql)))
+  t)
+
+(defmethod suffixp ((suffix null) (sequence sequence) &key (start 0) (end nil) (test (function eql)))
+  t)
 
 
 (defun mapconcat (function sequence separator)
@@ -485,6 +495,18 @@ RETURN:  Whether SUFFIX is a suffix of the (subseq SEQUENCE START END).
          ""))))
 
 
+
+(defun remove-empty-subseqs (subsequences remove-empty-subseqs)
+  (if remove-empty-subseqs
+      (delete-if (lambda (seq)
+                   (typecase seq
+                     (vector  (zerop (length seq)))
+                     (null    t)
+                     (t       nil)))
+                 subsequences)
+      subsequences))
+
+
 (defun split-sequence-if (predicate sequence &key remove-empty-subseqs)
   "
 PREDICATE:      A predicate on elements of the SEQUENCE sequence.  When
@@ -522,7 +544,7 @@ EXAMPLES:       (split-sequence-if (function zerop) '(1 2 0 3 4 5 0 6 7 8 0 9))
                           nextpos  position)
                     (when (= position length)
                       (push (subseq sequence 0 0) chunks))))
-      (list   (loop
+      (cons   (loop
                 :with start := sequence
                 :while start
                 :do (let ((end (loop
@@ -532,15 +554,48 @@ EXAMPLES:       (split-sequence-if (function zerop) '(1 2 0 3 4 5 0 6 7 8 0 9))
                                  :do (pop current)
                                  :finally (return current))))
                       (push (ldiff start end) chunks)
-                      (setf start (cdr end))))))
-    (if remove-empty-subseqs
-        (delete-if (lambda (seq)
-                     (typecase seq
-                       (vector  (zerop (length seq)))
-                       (null    t)
-                       (t       nil)))
-                   (nreverse chunks))
-        (nreverse chunks))))
+                      (setf start (cdr end)))))
+      (null))
+    (remove-empty-subseqs (nreverse chunks) remove-empty-subseqs)))
+
+(defun split-sequence-on-indicator (sequence indicator)
+  "
+RETURN: a list of subsequence of SEQUENCE,  the SEQUENCE is
+        splited between consecutive items A and B for which
+        (funcall INDICATOR A B) returns true.
+"
+  (declare (type (function (t t) t) indicator))
+  (let ((chunks '()))
+    (etypecase sequence
+      (vector (loop :with start := 0
+                    :with length := (length sequence)
+                    :for i :from 1 :below length
+                    :for a := (aref sequence 0) :then b
+                    :for b := (aref sequence i)
+                    :if (funcall indicator a b)
+                      :do
+                         (push (subseq sequence start i) chunks)
+                         (setf start i)
+                    :finally (when (< start length)
+                               (push (subseq sequence start length) chunks))))
+      (cons   (loop :with sublist := sequence
+                    :with current := sequence
+                    :with next    := (cdr current)
+                    :while next
+                    :if (funcall indicator (car current) (car next))
+                      :do ;; split
+                          (setf (cdr current) nil)
+                          (push sublist chunks)
+                          (setq current next)
+                          (setq next (cdr current))
+                          (setq sublist current)
+                    :else :do ;; keep
+                              (setq current next)
+                              (setq next (cdr current))
+                    :finally (push sublist chunks)))
+      (null))
+    ;; There cannot be empty subseqs, since they contain at list the indicator items.
+    (nreverse chunks)))
 
 
 ;;;; THE END ;;;;
