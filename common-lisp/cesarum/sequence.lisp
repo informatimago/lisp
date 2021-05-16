@@ -11,6 +11,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2021-05-16 <PJB> Made mapconcat work on sequences of sequences.
 ;;;;    2021-05-15 <PJB> Added test/split-sequence-if
 ;;;;    2012-06-24 <PJB> Added REPLACE-SUBSEQ.
 ;;;;    2012-02-19 <PJB> Extracted from list.lisp and some other code.
@@ -441,59 +442,53 @@ RETURN:  Whether SUFFIX is a suffix of the (subseq SEQUENCE START END).
 ;; differently.
 
 (defmethod prefixp ((prefix null) (sequence sequence) &key (start 0) (end nil) (test (function eql)))
+  (declare (ignore start end test))
   t)
 
 (defmethod suffixp ((suffix null) (sequence sequence) &key (start 0) (end nil) (test (function eql)))
+  (declare (ignore start end test))
   t)
 
 
-(defun mapconcat (function sequence separator)
-  (etypecase sequence
-    (list
-     (if sequence
-         (let* ((items (mapcar (lambda (item)
-                                 (let ((sitem (funcall function item)))
-                                   (if (stringp sitem)
-                                       sitem
-                                       (princ-to-string sitem))))
-                               sequence))
-                (ssepa (if (stringp separator)
-                           separator
-                           (princ-to-string separator)))
-                (size (+ (reduce (function +) items :key (function length))
-                         (* (length ssepa) (1- (length items)))))
-                (result (make-array size :element-type 'character))
-                (start  0))
-           (replace result  (first items) :start1 start)
-           (incf start (length (first items)))
-           (dolist (item (rest items))
-             (replace result ssepa :start1 start) (incf start (length ssepa))
-             (replace result item  :start1 start) (incf start (length item)))
-           result)
-         ""))
-    (vector
-     (if (plusp (length sequence))
-         (let* ((items (map 'vector (lambda (item)
-                                      (let ((sitem (funcall function item)))
-                                        (if (stringp sitem)
-                                            sitem
-                                            (princ-to-string sitem))))
-                            sequence))
-                (ssepa (if (stringp separator)
-                           separator
-                           (princ-to-string separator)))
-                (size (+ (reduce (function +) items :key (function length))
-                         (* (length ssepa) (1- (length items)))))
-                (result (make-array size :element-type 'character))
-                (start  0))
-           (replace result (aref items 0) :start1 start) (incf start (length (aref items 0)))
-           (loop
-              :for i :from 1 :below (length items)
-              :do (replace result ssepa :start1 start) (incf start (length ssepa))
-              (replace result (aref items i) :start1 start) (incf start (length (aref items i))))
-           result)
-         ""))))
 
+
+(defun type-union (a b)
+  (cond
+    ((subtypep a b) b)
+    ((subtypep b a) a)
+    (t `(or ,a ,b))))
+
+(defun type-of-elements (sos)
+  (reduce (lambda (type seq)
+            (type-union
+             ;; Note: we cannot use array-element-type because #(#\f #\o #\o) is a vector of T.
+             (reduce (lambda (type element)
+                       (type-union (type-of element) type))
+                     seq
+                     :initial-value 'nil)
+             type))
+          sos
+          :initial-value 'nil))
+
+(defun mapconcat (function sequences separator)
+  "Concatenate the sequences in SEQUENCES, mapped by FUNCTION, separated with the elements from the SEPARATOR sequence, into a vector.
+The element-type of the resulting vector is the union of all the element types."
+  (if (or (consp sequences)
+          (plusp (length sequences)))
+      (let* ((items (map 'vector function sequences))
+             (element-type (type-union (type-of-elements items) (type-of-elements (list separator))))
+             (ssepa separator)
+             (size (+ (reduce (function +) items :key (function length))
+                      (* (length ssepa) (1- (length items)))))
+             (result (make-array size :element-type element-type))
+             (start  0))
+        (replace result  (aref items 0) :start1 start) (incf start (length (aref items 0)))
+        (loop :for i :from 1 :below (length items)
+              :for item := (aref items i)
+              :do (replace result ssepa :start1 start) (incf start (length ssepa))
+                  (replace result item  :start1 start) (incf start (length item)))
+        result)
+      (make-array 0 :element-type (type-of-elements (list separator)))))
 
 
 (defun remove-empty-subseqs (subsequences remove-empty-subseqs)

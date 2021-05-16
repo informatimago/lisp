@@ -222,6 +222,44 @@
          '()))
 
 
+
+(define-test test/mapconcat ()
+  (check equal (mapconcat (function identity) (list "hello" "world" #(#\f #\o #\o #\b #\a #\r)) " ")
+         "hello world foobar")
+
+  (check equal (mapconcat (lambda (seq) (map 'vector (function char-upcase) seq))
+                          (vector "hello" "world" #(#\f #\o #\o #\b #\a #\r)) "+/-")
+         "HELLO+/-WORLD+/-FOOBAR")
+
+  (check equalp (mapconcat (lambda (seq) (map 'list (lambda (x) (* 2 x)) seq))
+                           (vector #(11 12 13 14)
+                                   '(15 16 17 18)
+                                   '(21 22 23 24)
+                                   #(25 26 27 28))
+                           #(0 0))
+         #(22 24 26 28 0 0 30 32 34 36 0 0 42 44 46 48 0 0 50 52 54 56))
+
+  (check equalp (mapconcat (lambda (seq) (map 'list (lambda (x) (* 2 x)) seq))
+                           #() #(0 0))
+         #*)
+
+  (check equalp (mapconcat (lambda (seq) (map 'list (lambda (x) (* 2 x)) seq))
+                           #() #(0 -1 0))
+         #())
+
+  (check equalp (mapconcat (lambda (seq) (map 'list (lambda (x) (* 2 x)) seq))
+                           #() "")
+
+         #())
+
+  (check equalp (mapconcat (lambda (seq) (map 'vector (function code-char) seq))
+                           #((65 66 67 68)
+                             (71 72 73 74)
+                             (75 76 77 79))
+                           "--")
+         "ABCD--GHIJ--KLMO"))
+
+
 (define-test test/all ()
   (test/replace-subseq)
   (test/group-by)
@@ -230,7 +268,8 @@
   (test/prefixp)
   (test/suffixp)
   (test/split-sequence-if)
-  (test/split-sequence-on-indicator))
+  (test/split-sequence-on-indicator)
+  (test/mapconcat))
 
 
 ;;;; THE END ;;;;
