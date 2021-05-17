@@ -179,12 +179,14 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2021-05-17 <PJB> Added ASCII-DECODER-ENABLE-P to pass
+;;;;                     binary text buffer.
 ;;;;    2012-04-18 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2012 - 2021
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -340,6 +342,16 @@ specific options subnegotiations.
                      (telnet-error-nvt condition)))))
 
 
+;; Up interface:
+
+;; By default the telnet module decodes received ASCII texts.
+;; However, clients may find it less than optimal.  So we have the
+;; option to disable this decoding.  In that case, receive-text is
+;; passed a byte vector instead of a string.
+;;
+;; The client may choose to pass strings or byte vectors to SEND-TEXT,
+;; and the telnet module will encode automatically strings.
+
 ;; Up interface (from up):
 
 (defgeneric send-binary  (nvt bytes)
@@ -350,7 +362,13 @@ BYTE: a VECTOR of (UNSIGNED-BYTE 8)."))
 (defgeneric send-text    (nvt text)
   (:documentation "Send the ASCII text.
 NVT:  a NETWORK-VIRTUAL-TERMINAL instance.
-TEXT: a string containing only printable ASCII characters and #\newline."))
+TEXT: a string containing only printable ASCII characters and #\newline,
+      or a vector of (unsigned-byte 7) containing only codes
+      between 32 and 126, or (char-code #\newline).
+When the TEXT is a string, it's encoded into an ASCII code sequence.
+When the TEXT is a vector of bytes, it's transmitted as is
+(its content is still checked, to be conservative).
+"))
 
 (defgeneric send-control (nvt control)
   (:documentation "Send a function control code.
@@ -359,6 +377,14 @@ CONTROL: (member :synch :are-you-there :abort-output :interrupt-process :go-ahea
                  :erase-line :erase-character
                  :break :cr :ff :vt :lf :ht :bs :bel :nul
                  :end-of-record)."))
+
+(defgeneric ascii-decoder-enabled-p (nvt)
+  (:documentation "Returns whether text messages are decoded from ASCII.
+The default is T."))
+
+(defgeneric (setf ascii-decoder-enabled-p) (flag nvt)
+  (:documentation "Sets whether text messages are decoded from ASCII."))
+
 
 ;; Up interface (to up):
 
@@ -382,8 +408,12 @@ START, END: bounding index designators of sequence.
             The defaults are for START 0 and for END nil."))
 
 (defgeneric receive-text    (up-sender text)
-  (:documentation "Receive some ASCII text
-TEXT: a string containing only printable ASCII characters and #\newline."))
+  (:documentation "Receive some ASCII text.
+TEXT: If (ASCII-DECODER-ENABLED-P nvt)
+      then a string containing only printable ASCII characters and #\newline,
+      else a vector of (unsigned-byte 7) containing only codes
+      between 32 and 126, or (char-code #\newline).
+"))
 
 (defgeneric receive-control (up-sender control)
   (:documentation "Receive a function code.
@@ -1212,7 +1242,10 @@ Bytes received from down, waiting to be parsed by the local NVT.")
                    :accessor urgent-mode-p
                    :reader nvt-urgent-mode-p
                    :documentation "Urgent mode: we've received an urgent notification
-and are discarding text bytes till the next IAC DM."))
+and are discarding text bytes till the next IAC DM.")
+   (ascii-decoder-enabled-p :initform t
+                            :accessor ascii-decoder-enabled-p
+                            :documentation "Whether received text messages are decoded from ASCII."))
   (:documentation "Represents a telnet end-point (both 'client' and 'server')."))
 
 (defgeneric init-option-name (nvt option-name))
@@ -1284,13 +1317,47 @@ BYTE: a VECTOR of (UNSIGNED-BYTE 8)."
     (send-raw-bytes nvt processed-bytes)))
 
 
-(defmethod send-text    ((nvt network-virtual-terminal) text)
+(defmethod send-text    ((nvt network-virtual-terminal) (text string))
   "Send the ASCII text.
 NOTE: To send other characters than printable ASCII characters, use SEND-BINARY.
 NVT:  a NETWORK-VIRTUAL-TERMINAL instance.
 TEXT: a string containing only printable ASCII characters and #\newline."
   (let ((processed-bytes (process-text text)))
     (send-binary nvt processed-bytes)))
+
+
+(defun validate-ascii-bytes (bytes)
+  (loop
+    :with i := 0
+    :while (< i (length bytes))
+    :do (let ((code (aref bytes i)))
+          (unless (or (and (<= SP code) (< code DEL))
+                      (and (= CR code)
+                           (< (incf i) (length bytes))
+                           (= LF (aref bytes i))))
+            (error 'decoding-error
+                   :code code
+                   :coding-system :us-ascii
+                   :message (cond
+                              ((= CR code)
+                               (format nil "Invalid line separator ~S at position ~D; expected a CR-LF (13 10) subsequence."
+                                       (vector code (aref bytes i)) i))
+                              ((or (< code sp) (= code del))
+                               (format nil "ASCII control code ~D (#x~:*~2,'0X), at position ~D, cannot be converted to characters."
+                                       code i))
+                              (t
+                               (format nil "Non-ASCII code ~D (#x~:*~2,'0X) (greater than 127), at position ~D"
+                                       code i)))))
+          (incf i))))
+
+
+(defmethod send-text    ((nvt network-virtual-terminal) (bytes vector))
+  "Send the ASCII bytes.
+NOTE: To send other characters than printable ASCII characters, use SEND-BINARY.
+NVT:  a NETWORK-VIRTUAL-TERMINAL instance.
+TEXT: a byte vector containing only printable ASCII characters codes and CR-LF (13 10) subsequences."
+  (validate-ascii-bytes bytes)
+  (send-raw-bytes nvt bytes))
 
 
 (defmethod send-control ((nvt network-virtual-terminal) control)
@@ -1539,7 +1606,10 @@ RETURN: the length of bytes processed.
                                        :end2 end))
                             (return (- (+ processed (- end newend)) start)))
                            ((:text)
-                            (receive-text    (up-sender nvt) (ascii-string bytes :newline :crlf :start processed :end newend)))
+                            (receive-text (up-sender nvt)
+                                          (if (ascii-decoder-enabled-p nvt)
+                                              (ascii-string bytes :newline :crlf :start processed :end newend)
+                                              (nsubseq bytes processed newend))))
                            ((:control)
                             (let ((control (convert-control code)))
                               (when control
