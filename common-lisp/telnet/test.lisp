@@ -124,11 +124,11 @@
 (defparameter *dlc*    (make-instance 'down-layer :name "Client DOWN"))
 (defparameter *dls*    (make-instance 'down-layer :name "Server DOWN"))
 (defparameter *client* (make-instance 'network-virtual-terminal
-                           :name "CLIENT NVT" :client t
-                           :up-sender *ulc* :down-sender  *dlc*))
+                                      :name "CLIENT NVT" :client t
+                                      :up-sender *ulc* :down-sender  *dlc*))
 (defparameter *server* (make-instance 'network-virtual-terminal
-                           :name "SERVER NVT" :client nil
-                           :up-sender *uls* :down-sender  *dls*))
+                                      :name "SERVER NVT" :client nil
+                                      :up-sender *uls* :down-sender  *dls*))
 
 (setf (layer-nvt *ulc*) *client*
       (layer-nvt *dlc*) *client*

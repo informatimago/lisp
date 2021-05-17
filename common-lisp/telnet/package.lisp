@@ -57,6 +57,7 @@
    "OPTION" "OPTION-CODE" "OPTION-NAME"
    ;; Up interface (from up):
    "SEND-BINARY" "SEND-TEXT" "SEND-CONTROL"
+   "ASCII-DECODER-ENABLED-P"
    ;; Up interface (to up):
    "WANT-OPTION-P" "RECEIVE-BINARY" "RECEIVE-TEXT" "RECEIVE-CONTROL"
    ;; Down interface (to down):

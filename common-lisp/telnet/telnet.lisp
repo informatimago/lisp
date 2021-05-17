@@ -407,7 +407,7 @@ BYTE:       a VECTOR of (UNSIGNED-BYTE 8).
 START, END: bounding index designators of sequence.
             The defaults are for START 0 and for END nil."))
 
-(defgeneric receive-text    (up-sender text)
+(defgeneric receive-text    (up-sender text &key start end)
   (:documentation "Receive some ASCII text.
 TEXT: If (ASCII-DECODER-ENABLED-P nvt)
       then a string containing only printable ASCII characters and #\newline,
@@ -1606,10 +1606,9 @@ RETURN: the length of bytes processed.
                                        :end2 end))
                             (return (- (+ processed (- end newend)) start)))
                            ((:text)
-                            (receive-text (up-sender nvt)
-                                          (if (ascii-decoder-enabled-p nvt)
-                                              (ascii-string bytes :newline :crlf :start processed :end newend)
-                                              (nsubseq bytes processed newend))))
+                            (if (ascii-decoder-enabled-p nvt)
+                                (receive-text (up-sender nvt) (ascii-string bytes :newline :crlf :start processed :end newend))
+                                (receive-text (up-sender nvt) bytes :start processed :end  newend)))
                            ((:control)
                             (let ((control (convert-control code)))
                               (when control
