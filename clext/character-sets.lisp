@@ -91,6 +91,11 @@ character set can be used as designators for external formats.
 (character-set-to-lisp-encoding \"utf-8\")
 --> #<external-format :utf-8/:unix #x3020003B7F5D>
 
+(character-set-for-lisp-encoding
+ (make-external-format \"utf-8\" :dos))
+--> :utf-8
+    :dos
+
 (make-external-format
  (character-set-for-lisp-encoding
   (character-set-to-lisp-encoding \"utf-8\"))
@@ -103,6 +108,7 @@ This package is provided under the GNU General Public Licence.
 See the source file for details.
 "))
 (in-package "COM.INFORMATIMAGO.CLEXT.CHARACTER-SETS")
+
 
 
 (defparameter *aliases*
