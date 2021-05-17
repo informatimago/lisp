@@ -45,6 +45,7 @@
 ;; TODO: Securize the *readtable* and the *package* (cf. something like ibcl)
 
 (defun make-repl-readtable (cn)
+  (declare (ignore cn))
   (copy-readtable))
 
 (defun make-repl-package   (cn)
@@ -52,24 +53,28 @@
            :use '("COMMON-LISP")))
 
 (defun telnet-repl (stream cn must-stop-it)
-  (let ((*terminal-io*     stream)
-        (*debug-io*        (make-synonym-stream '*terminal-io*))
-        (*query-io*        (make-synonym-stream '*terminal-io*))
-        (*standard-input*  (stream-input-stream  stream))
-        (*standard-output* (stream-output-stream stream))
-        (*trace-output*    (stream-output-stream stream))
-        (*error-output*    (stream-output-stream stream))
-        (package           (make-repl-package   cn))
-        (*readtable*       (make-repl-readtable cn))
-        (*package*         package)
-        (com.informatimago.common-lisp.interactive.interactive::*repl-history*
-          (make-array 128 :adjustable t :fill-pointer 0)))
+  (let* ((*terminal-io*     stream)
+         (*debug-io*        (make-synonym-stream '*terminal-io*))
+         (*query-io*        (make-synonym-stream '*terminal-io*))
+         (*standard-input*  (stream-input-stream  stream))
+         (*standard-output* (stream-output-stream stream))
+         (*trace-output*    (stream-output-stream stream))
+         (*error-output*    (stream-output-stream stream))
+         (package           (make-repl-package   cn))
+         (*readtable*       (make-repl-readtable cn))
+         (*package*         package)
+         (com.informatimago.common-lisp.interactive.interactive::*repl-history*
+           (make-array 128 :adjustable t :fill-pointer 0)))
     (catch 'repl
       (unwind-protect
            (let ((+eof+   (gensym))
                  (hist    1))
              (set-macro-character #\! (function repl-history-reader-macro) t)
              (loop
+                (when (funcall must-stop-it)
+                  (format *terminal-io* "~&Server is shutting down.~%")
+                  (finish-output *terminal-io*)
+                  (throw 'repl nil))
                 (handler-case
                     (progn
                       (format *terminal-io* "~%~A[~D]> " (package-name *package*) hist)
@@ -78,7 +83,7 @@
                   (error (err)
                     (format stream "~%Fatal Error: ~A~%" err)
                     (finish-output stream)
-                    (throw 'repl)))))
+                    (throw 'repl nil)))))
         (delete-package package)))))
 
 
@@ -87,16 +92,16 @@
 ;;;
 
 (defclass repl-client ()
-  ((name              :initarg  :name            :reader name)
-   (thread            :initarg  :thread          :reader repl-client-thread
+  ((name              :initarg :name              :reader name)
+   (thread            :initarg :thread            :reader repl-client-thread
                       :initform nil)
-   (number            :initarg  :number          :reader repl-client-number)
-   (socket            :initarg  :socket          :reader repl-client-socket)
-   (banner-function   :initarg  :banner-function :reader banner-function)
-   (login-function    :initarg  :login-function  :reader login-function)
-   (repl-function     :initarg  :repl-function   :reader repl-function)
-   (stop-closure      :initform nil              :reader stop-closure)
-   (terminate-closure :initform nil              :reader terminate-closure)))
+   (number            :initarg :number            :reader repl-client-number)
+   (socket            :initarg :socket            :reader repl-client-socket)
+   (banner-function   :initarg :banner-function   :reader banner-function)
+   (login-function    :initarg :login-function    :reader login-function)
+   (repl-function     :initarg :repl-function     :reader repl-function)
+   (stop-closure      :initarg :stop-closure      :reader stop-closure)
+   (terminate-closure :initarg :terminate-closure :reader terminate-closure)))
 
 (defun run-client-loop (client)
   (with-telnet-on-stream (stream (socket-stream (repl-client-socket client)))
@@ -106,15 +111,15 @@
     (when (and (not (stop-closure client))
                (or (null    (login-function client))
                    (funcall (login-function client) stream)))
-      (funcall (repl-function client) stream (repl-client-number client) (stop-closure client)))))
+      (funcall (repl-function client) stream (repl-client-number client)
+               (stop-closure client)))))
 
 (defmethod initialize-instance :after ((client repl-client) &key &allow-other-keys)
-  (let ((stop nil))
-    (setf (slot-value server 'thread)
-          (make-thread (lambda ()
-                         (unwind-protect (run-client-loop client)
-                           (funcall (terminate-closure client))))
-                       :name (name client)))))
+  (setf (slot-value client 'thread)
+        (make-thread (lambda ()
+                       (unwind-protect (run-client-loop client)
+                         (funcall (terminate-closure client) client)))
+                     :name (name client))))
 
 
 ;;;
@@ -132,8 +137,8 @@
    (thread          :initarg  :thread          :reader repl-server-thread
                     :initform nil)
    (lock            :initform nil              :reader repl-server-lock)
-   (more-clients    :initform nil              :reader repl-server-more-clients)
-   (stop-closure    :initform nil)
+   (more-clients    :initform nil              :reader for-more-clients)
+   (stop-closure    :initform nil              :reader must-stop-p)
    (banner-function :initarg  :banner-function :reader banner-function)
    (login-function  :initarg  :login-function  :reader login-function)
    (repl-function   :initarg  :repl-function   :reader repl-function)
@@ -154,26 +159,27 @@
     (socket-close (repl-client-socket old-client))
     (setf (slot-value server 'clients)
           (delete old-client (slot-value server 'clients)))
-    (condition-notify (repl-server-more-client server))))
+    (condition-notify (for-more-clients server))))
 
 (defmethod wait-for-free-client-slot ((server repl-server))
   (with-lock-held ((repl-server-lock server))
     (loop :while (and (< (repl-server-max-clients server)
                          (length (slot-value server 'clients)))
-                      (not (funcall must-stop-p)))
-          :do 
-          :do (condition-wait (repl-server-mode-clients server)
+                      (not (funcall (must-stop-p server))))
+          :do (condition-wait (for-more-clients server)
                               (repl-server-lock server)
-                              1 #| check for stop |#))))
+                              :timeout 1 #| check for stop |#))))
+
+(deftype octet () '(unsigned-byte 8))
 
 (defun run-server-loop (server)
   (with-socket-listener (server-socket (repl-server-interface server)
                                        (repl-server-port server)
-                                       :element-type '(unsigned-byte 8)
-                                       :timeout 1)
+                                       :element-type 'octet)
     (loop
       :for cn :from 1
-      :for client-socket := (socket-accept server-socket)
+      :for client-socket := (socket-accept server-socket
+                                           :element-type 'octet)
       :when client-socket 
         :do (with-lock-held ((repl-server-lock server))
               (let ((client (make-instance
@@ -185,13 +191,11 @@
                              :banner-function (banner-function server)
                              :login-function (login-function server)
                              :repl-function  (repl-function server)
-                             :stop-closure   (lambda ()
-                                               (funcall (slot-value server 'stop-closure)))
-                             :terminate-closure (lambda (client)
-                                                  (remove-client server client)))))
+                             :stop-closure   (lambda () (funcall (must-stop-p server)))
+                             :terminate-closure (lambda (client) (remove-client server client)))))
                 (%add-client server client)))
       :do (wait-for-free-client-slot server)
-      :until (funcall must-stop-p)
+      :until (funcall (must-stop-p server))
       :finally (loop
                  :while (slot-value server 'clients)
                  :do (wait-for-free-client-slot server))
@@ -204,6 +208,12 @@
             (when stop-it
               (setf stop t))
             stop)
+          
+          (slot-value server 'lock)
+          (make-lock (format nil "~A Server Lock" (name server)))
+
+          (slot-value server 'more-clients)
+          (make-condition-variable :name (format nil "~A Server More Clients" (name server)))
           
           (slot-value server 'thread)
           (make-thread (lambda () (run-server-loop server))
@@ -247,8 +257,9 @@ ports (with possibly different functions).
 the REPL clients, but the REPL server should not accept new
 connections right away."
   (when (repl-server-thread server)
-    (funcall (repl-server-stop-closure server) t)
+    (funcall (must-stop-p server) t)
     (join-thread (repl-server-thread server))
-    (%clean-up server)))
+    (%clean-up server))
+  nil)
 
 ;;;; THE END ;;;;

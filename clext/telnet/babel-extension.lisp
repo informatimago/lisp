@@ -263,4 +263,68 @@ For example, in the case NIL T len, if len <= (- end start), then it means the g
            (values nil nil 1) #|???|#))))))
 
 
+
+(defun replace-octets-by-string (octets string &key (encoding *default-character-encoding*)
+                                                 (use-bom :default)
+                                                 (start1 0) end1 ; for octets
+                                                 (start2 0) end2 ; for string
+                                                 (errorp (not babel::*suppress-character-coding-errors*))
+                                                 (error-on-out-of-space-p t))
+  (declare (optimize (speed 3) (safety 2)))
+  (let ((babel::*suppress-character-coding-errors* (not errorp))
+        (end1 (or end1 (length octets))))
+    (etypecase string
+      ;; On some lisps (e.g. clisp and ccl) all strings are BASE-STRING and all
+      ;; characters are BASE-CHAR. So, only enable this optimization for
+      ;; selected targets.
+      #+sbcl
+      (simple-base-string
+       (unless end2
+         (setf end2 (length string)))
+       (babel::check-vector-bounds string start2 end2)
+       (let* ((mapping (babel::lookup-mapping babel::*simple-base-string-vector-mappings*
+                                              encoding))
+              (bom (babel::bom-vector encoding use-bom))
+              (bom-length (length bom))
+              ;; OPTIMIZE: we could use the (length string) information here
+              ;; because it's a simple-base-string where each character <= 127
+              (octet-count (funcall (the function (babel::octet-counter mapping))
+                                    string start2 end2 -1)))
+         (if (< (- end1 start1) (+ bom-length octet-count))
+             (if error-on-out-of-space-p
+                 (error "Not enough space in destination octets vector; needed ~D bytes, available ~D bytes."
+                        (+ bom-length octet-count)
+                        (- end1 start1))
+                 (values nil (+ start1 bom-length octet-count)))
+             (progn
+               (replace octets bom :start1 start1)
+               (funcall (the function (babel::encoder mapping))
+                        string start2 end2 octets (+ start1 bom-length))
+               (values octets (+ start1 bom-length octet-count))))))
+      (string
+       ;; FIXME: we shouldn't really need that coercion to UNICODE-STRING
+       ;; but we kind of because it's declared all over.  To avoid that,
+       ;; we'd need different types for input and output strings.  Or maybe
+       ;; this is not a problem; figure that out.
+       (babel::with-checked-simple-vector ((string (coerce string 'unicode-string))
+                                           (start2 start2) (end2 end2))
+         (declare (type babel::simple-unicode-string string))
+         (let* ((mapping (babel::lookup-mapping babel::*string-vector-mappings* encoding))
+                (bom (babel::bom-vector encoding use-bom))
+                (bom-length (length bom))
+                (octet-count (funcall (the function (babel::octet-counter mapping))
+                                      string start2 end2 -1)))
+           (if (< (- end1 start1) (+ bom-length octet-count))
+               (if error-on-out-of-space-p
+                   (error "Not enough space in destination octets vector; needed ~D bytes, available ~D bytes."
+                          (+ bom-length octet-count)
+                          (- end1 start1))
+                   (values nil (+ start1 bom-length octet-count)))
+               (progn
+                 (replace octets bom :start1 start1)
+                 (funcall (the function (babel::encoder mapping))
+                          string start2 end2 octets (+ start1 bom-length))
+                 (values octets (+ start1 bom-length octet-count))))))))))
+
+
 ;;;; THE END ;;;;

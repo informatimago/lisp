@@ -36,3 +36,15 @@
                          (make-condition 'interrupt-signal-condition))
     (princ "Complete.") (terpri) (finish-output)))
 
+
+
+
+;; #-(and)
+;; (map nil 'print
+;; (sort (map 'list
+;;            (lambda (name) 
+;;              (let ((ce (babel::get-character-encoding name)))
+;;                (list (babel::enc-name ce) 
+;;                      (babel::enc-max-units-per-char ce))))
+;;            (babel::list-character-encodings))  (function <) :key (function second)))
+
