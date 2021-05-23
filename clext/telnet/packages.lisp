@@ -40,6 +40,7 @@
 
 
 ;; (push :debug-condition-variables *features*)
+;; (member :debug-condition-variables *features*)
 
 #+(and ccl debug-condition-variables)
 (defpackage "COM.INFORMATIMAGO.BORDEAUX-THREAD.PATCH"
@@ -47,6 +48,7 @@
   (:shadow "MAKE-CONDITION-VARIABLE" "WITH-LOCK-HELD")
   (:export "MAKE-CONDITION-VARIABLE" "WITH-LOCK-HELD")
   (:documentation "Implements bt:make-condition-variable on ccl to print the name."))
+
 
 
 (defpackage "COM.INFORMATIMAGO.CLEXT.TELNET.STREAM"

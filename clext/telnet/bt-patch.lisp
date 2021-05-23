@@ -38,26 +38,27 @@
 
 #-(and)
 (ignore
-  
+
  bt:make-condition-variable
  (com.informatimago.common-lisp.cesarum.utility:hash-table-entries *names*)
 
  (map nil 'print (com.informatimago.common-lisp.cesarum.utility:hash-table-entries *status*))
-
- (#<recursive-lock "down-layer" [ptr @ #x605080] #x3020028D45FD>) 
- (#<recursive-lock "Telnet REPL Server Lock" [ptr @ #x10D880] #x30200279729D>) 
- (#<recursive-lock "telnet-stream" :status ((:locking 
-                                             (funcall "#<STANDARD-METHOD COM.INFORMATIMAGO.CLEXT.TELNET.STREAM::INPUT-BUFFER-FETCH-OCTET (COM.INFORMATIMAGO.CLEXT.TELNET.STREAM:TELNET-STREAM T)>" "#<TELNET-STREAM  #x3020028D75CD>" "NIL")
-                                             #<process Telnet REPL Client #1(21) [semaphore wait] #x3020028D192D>)
-                                            (:locking
-                                             (com.informatimago.clext.telnet.stream::%stream-read-char "#<TELNET-STREAM #x3020028D75CD>" "NIL")
-                                             #<process Telnet REPL Client #1(21) [semaphore wait] #x3020028D192D>)) #x3020028D74BD> 
-                   (:locking
-                    (funcall "#<STANDARD-METHOD COM.INFORMATIMAGO.CLEXT.TELNET.STREAM::INPUT-BUFFER-FETCH-OCTET (COM.INFORMATIMAGO.CLEXT.TELNET.STREAM:TELNET-STREAM T)>" "#<TELNET-STREAM #x3020028D75CD>" "NIL")
-                    #<process Telnet REPL Client #1(21) [semaphore wait] #x3020028D192D>)
-                   (:locking 
-                    (com.informatimago.clext.telnet.stream::%stream-read-char "#<TELNET-STREAM #x3020028D75CD>" "NIL")
-                    #<process Telnet REPL Client #1(21) [semaphore wait] #x3020028D192D>)) nil
+ #|
+ (#<recursive-lock "down-layer" [ptr @ #x605080] #x3020028D45FD>)
+ (#<recursive-lock "Telnet REPL Server Lock" [ptr @ #x10D880] #x30200279729D>)
+ (#<recursive-lock "telnet-stream" :status ((:locking
+ (funcall "#<STANDARD-METHOD COM.INFORMATIMAGO.CLEXT.TELNET.STREAM::INPUT-BUFFER-FETCH-OCTET (COM.INFORMATIMAGO.CLEXT.TELNET.STREAM:TELNET-STREAM T)>" "#<TELNET-STREAM  #x3020028D75CD>" "NIL")
+ #<process Telnet REPL Client #1(21) [semaphore wait] #x3020028D192D>)
+ (:locking
+ (com.informatimago.clext.telnet.stream::%stream-read-char "#<TELNET-STREAM #x3020028D75CD>" "NIL")
+ #<process Telnet REPL Client #1(21) [semaphore wait] #x3020028D192D>)) #x3020028D74BD>
+ (:locking
+ (funcall "#<STANDARD-METHOD COM.INFORMATIMAGO.CLEXT.TELNET.STREAM::INPUT-BUFFER-FETCH-OCTET (COM.INFORMATIMAGO.CLEXT.TELNET.STREAM:TELNET-STREAM T)>" "#<TELNET-STREAM #x3020028D75CD>" "NIL")
+ #<process Telnet REPL Client #1(21) [semaphore wait] #x3020028D192D>)
+ (:locking
+ (com.informatimago.clext.telnet.stream::%stream-read-char "#<TELNET-STREAM #x3020028D75CD>" "NIL")
+ #<process Telnet REPL Client #1(21) [semaphore wait] #x3020028D192D>)) nil
+ |#
  )
 
 #|
@@ -150,18 +151,18 @@ and WITH-LOCK-HELD to record the locking thread."))
 #+BEGIN_EXAMPLE
  (map nil 'print (com.informatimago.common-lisp.cesarum.utility:hash-table-entries *status*))
 
- (#<recursive-lock "down-layer" [ptr @ #x605080] #x3020028D45FD>) 
- (#<recursive-lock "Telnet REPL Server Lock" [ptr @ #x10D880] #x30200279729D>) 
- (#<recursive-lock "telnet-stream" :status ((:locking 
+ (#<recursive-lock "down-layer" [ptr @ #x605080] #x3020028D45FD>)
+ (#<recursive-lock "Telnet REPL Server Lock" [ptr @ #x10D880] #x30200279729D>)
+ (#<recursive-lock "telnet-stream" :status ((:locking
                                              (funcall "#<STANDARD-METHOD COM.INFORMATIMAGO.CLEXT.TELNET.STREAM::INPUT-BUFFER-FETCH-OCTET (COM.INFORMATIMAGO.CLEXT.TELNET.STREAM:TELNET-STREAM T)>" "#<TELNET-STREAM  #x3020028D75CD>" "NIL")
                                              #<process Telnet REPL Client #1(21) [semaphore wait] #x3020028D192D>)
                                             (:locking
                                              (com.informatimago.clext.telnet.stream::%stream-read-char "#<TELNET-STREAM #x3020028D75CD>" "NIL")
-                                             #<process Telnet REPL Client #1(21) [semaphore wait] #x3020028D192D>)) #x3020028D74BD> 
+                                             #<process Telnet REPL Client #1(21) [semaphore wait] #x3020028D192D>)) #x3020028D74BD>
                    (:locking
                     (funcall "#<STANDARD-METHOD COM.INFORMATIMAGO.CLEXT.TELNET.STREAM::INPUT-BUFFER-FETCH-OCTET (COM.INFORMATIMAGO.CLEXT.TELNET.STREAM:TELNET-STREAM T)>" "#<TELNET-STREAM #x3020028D75CD>" "NIL")
                     #<process Telnet REPL Client #1(21) [semaphore wait] #x3020028D192D>)
-                   (:locking 
+                   (:locking
                     (com.informatimago.clext.telnet.stream::%stream-read-char "#<TELNET-STREAM #x3020028D75CD>" "NIL")
                     #<process Telnet REPL Client #1(21) [semaphore wait] #x3020028D192D>)) nil
 #+END_EXAMPLE
@@ -172,7 +173,7 @@ and WITH-LOCK-HELD to record the locking thread."))
 ccl condition-variables are not named;
 bordeaux-threads ignores the name parameter.
 So we shadow make-condition-variable and record the name
-of the condition variables in a 
+of the condition variables in a
 
 #+BEGIN_CODE lisp
 (in-package "COM.INFORMATIMAGO.BORDEAUX-THREAD.PATCH")
@@ -192,3 +193,4 @@ of the condition variables in a
 #+END_CODE
 
 |#
+

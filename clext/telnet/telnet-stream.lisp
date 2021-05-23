@@ -386,7 +386,10 @@ conected to the NVt."
     :with buffer := (make-binary-buffer +down-layer-buffer-size+)
     :until (funcall (stop-closure (client self)))
       :initially (setf (fill-pointer buffer) 1)
-    :do (setf (aref buffer 0) (read-byte stream))
+    :do (handler-case (setf (aref buffer 0) (read-byte stream))
+          (end-of-file ()
+            (receive (nvt self) :end-of-file)
+            (return-from input-loop)))
         (format-log "~&down-layer received from remote: ~S~%"
                 buffer)
         (force-output *log-output*)
@@ -697,12 +700,13 @@ we may decode them from the input-buffer.
 (declaim (inline %input-buffer-length))
 
 (defun %input-buffer-ranges (buffer len)
+  "Return the ranges of free bytes in the buffer s1 e1 s2 e2 and the new tail position if len bytes are added."
   (let* ((size (length (input-buffer-data buffer)))
          (tail (input-buffer-tail buffer))
          (max1 (- size tail)))
     (if (<= len max1)
-        (values tail len  nil nil          (mod (+ tail len) size))
-        (values tail max1 0   (- len max1) (mod (+ tail len) size)))))
+        (values tail (+ tail len)  nil nil          (+ tail len))
+        (values tail (+ tail max1) 0   (- len max1) (mod (+ tail len) size)))))
 (declaim (inline %input-buffer-ranges))
 
 (defun %wait-for-input-free-space (stream required)
@@ -771,7 +775,8 @@ we may decode them from the input-buffer.
       (condition-notify (for-input-data-present stream)))))
 
 (defmethod input-buffer-append-octets ((stream telnet-stream) octets start end)
-  (let ((len (- (or end (length octets)) start)))
+  (let* ((end (or end (length octets)))
+         (len (- end start)))
     (when (plusp len)
       (with-lock-held ((stream-lock stream))
         (%wait-for-input-free-space stream len)
@@ -779,7 +784,7 @@ we may decode them from the input-buffer.
         (let* ((buffer (input-buffer stream))
                (data   (input-buffer-data buffer)))
           (multiple-value-bind (s1 e1 s2 e2 nt) (%input-buffer-ranges buffer len)
-            (replace data octets :start1 s1 :end1 e1 :start2 start :end2 (- e1 s1))
+            (replace data octets :start1 s1 :end1 e1 :start2 start :end2 (+ start (- e1 s1)))
             (when s2
               (replace data octets :start1 s2 :end1 e2 :start2 (+ start (- e1 s1)) :end2 end))
             (setf (input-buffer-tail buffer) nt))))
@@ -830,7 +835,7 @@ we may decode them from the input-buffer.
            (head   (input-buffer-head buffer))
            (size   (length data)))
       (prog1 (aref data head)
-        (setf (input-buffer-data buffer) (mod (+ data 1) size))))))
+        (setf (input-buffer-head buffer) (mod (1+ head) size))))))
 
 ;; (defmethod input-buffer-read-octets ((stream telnet-stream) octets &key (start 0) end)
 ;;   (with-lock-held ((stream-lock stream))
