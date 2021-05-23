@@ -68,7 +68,8 @@
   (:export "WITH-TELNET-ON-STREAM"
            "TELNET-STREAM"
            "NAME" "CLIENT" "STOP-CLOSURE"
-           "*LOG-OUTPUT*"))
+           "*LOG-OUTPUT*"
+           "STREAM-ECHO-MODE"))
 
 (defpackage "COM.INFORMATIMAGO.CLEXT.TELNET.REPL"
   (:use "COMMON-LISP"

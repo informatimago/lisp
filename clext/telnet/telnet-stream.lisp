@@ -1296,7 +1296,7 @@ we may decode them from the input-buffer.
 (defmethod stream-write-byte ((stream telnet-stream) byte)
   (check-stream-open stream 'stream-write-byte)
   (with-lock-held ((stream-lock stream))
-    ;; TODO
+    ;; TODO implement stream-write-byte
     (vector-push byte (output-buffer stream)))
   byte)
 
@@ -1305,9 +1305,8 @@ we may decode them from the input-buffer.
 (defmethod stream-write-sequence ((stream telnet-stream) sequence start end &key &allow-other-keys)
   (check-stream-open stream 'stream-write-sequence)
   (check-sequence-arguments :write stream sequence start end)
-  ;; TODO
   (with-lock-held ((stream-lock stream))
-    ;; TODO
+    ;; TODO implement stream-write-sequence
     )
   sequence)
 

@@ -231,12 +231,42 @@
           (make-thread (lambda () (run-server-loop server))
                        :name (format nil "~A Server" (name server))))))
 
+
+(defvar *password* (format nil "~(~36r~)" (random (expt 36 8))))
+
+(defun valid-password-p (user password)
+  (and (string= user     "guest")
+       (string= password *password*)))
+
+(defun simple-login (stream)
+  (format stream "~&User: ")
+  (finish-output stream)
+  (clear-input stream)
+  (let ((user (read-line stream)))
+    (unwind-protect
+         (progn
+           (setf (stream-echo-mode stream) nil)
+           (format stream "~&Password: ")
+           (finish-output stream)
+           (clear-input stream)
+           (let ((password (read-line stream)))
+             (if (valid-password-p user password)
+                 (progn
+                   (format stream "~&Welcome~%")
+                   (force-output stream)
+                   t)
+                 (progn
+                   (format stream "~&Invalid account~%")
+                   (force-output stream)
+                   nil))))
+      (setf (stream-echo-mode stream) t))))
+
 (defun start-repl-server (&key (name "Telnet REPL")
                             (port 10023) (interface "0.0.0.0")
                             (max-clients 10)
                             (banner-function nil)
-                            (login-function nil)
-                            (repl-function (function telnet-repl)))
+                            (login-function (function simple-login))
+                            (repl-function  (function telnet-repl)))
   "Starts a Telnet REPL server thread, listening for incoming
 connections on the specified PORT, and on the specified INTERFACE.
 At most MAX-CLIENTS at a time are allowed connected.

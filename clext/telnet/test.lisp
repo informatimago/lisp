@@ -42,9 +42,8 @@
 ;; #-(and)
 ;; (map nil 'print
 ;; (sort (map 'list
-;;            (lambda (name) 
+;;            (lambda (name)
 ;;              (let ((ce (babel::get-character-encoding name)))
-;;                (list (babel::enc-name ce) 
+;;                (list (babel::enc-name ce)
 ;;                      (babel::enc-max-units-per-char ce))))
 ;;            (babel::list-character-encodings))  (function <) :key (function second)))
-
