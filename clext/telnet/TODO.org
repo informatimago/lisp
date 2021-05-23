@@ -1,0 +1,21 @@
+* TODOS
+** TODO [#A] implement receive-control -> AYT, INTERUPT, BREAK, etc.
+** TODO [#A] check the situations (disconnect from client, disconnect from server, reconnect, etc)
+** TODO [#A] hook the debugger. invoke-debugger calls sldb, instead of the REPL debugger on telnet terminal.
+** TODO [#A] babel-extension.lisp: ;; TODO: Is it always the same for all encodings?
+** TODO [#A] telnet-repl.lisp: ;; TODO: Securize the *readtable* and the *package* (cf. something like ibcl)
+** TODO [#A] telnet-stream.lisp:*** TODO We need to check thread safety of the NVT and the TELNET-STREAM.
+** TODO [#A] telnet-stream.lisp:(defgeneric stop-closure (client)) ;; TODO must be imported from telnet.repl
+** TODO [#A] telnet-stream.lisp: ;; TODO: check if the new buffer size is enough for the buffer content, and keep the old buffered input.
+** TODO [#A] telnet-stream.lisp: ;; TODO: negociate with remote for a new encoding.
+** TODO [#A] telnet-stream.lisp: ;; TODO: check element-type first:
+** TODO [#A] telnet-stream.lisp: ;; TODO: negociate with remote for a text or binary.
+** TODO [#A] telnet-stream.lisp:               (return-from stream-read-line (values line nil #|TODO: EOF is always NIL?|#)))
+** TODO [#A] telnet-stream.lisp: ;; TODO: check whether sending CR LF is equivalent to send-control :cr :lf
+** TODO [#A] telnet-stream.lisp: ;; TODO: can we buffer the :cr :lf control with the line? Is it done in the NVT?
+** TODO [#A] telnet-stream.lisp: ;; TODO: check whether sending CR LF is equivalent to send-control :cr :lf
+** TODO [#A] telnet-stream.lisp: ;; TODO: close a telnet-stream
+** TODO [#A] telnet-stream.lisp: ;; TODO: how to wait for write-sequence completed?
+** TODO [#A] telnet-stream.lisp: ;; TODO implement stream-write-byte
+** TODO [#A] telnet-stream.lisp: ;; TODO implement stream-write-sequence
+** TODO [#A] refactor as telnet-application and make telnet-repl an instance of telnet-application.
