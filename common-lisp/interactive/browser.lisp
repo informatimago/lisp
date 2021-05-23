@@ -399,9 +399,9 @@ DO:         Displays the contents of the working directory and
 
 (defun resolve (path &key (directory nil))
   (setf path (typecase path
-               (string    path)
+               (string    (namestring (pathname path)))
                (pathname  (namestring path))
-               (symbol    (string-downcase path))
+               (symbol    (namestring (pathname (string-downcase path))))
                (character (string path))
                (number    (format nil "~A" path))
                (list      (cond ((eq :absolute (car path))
