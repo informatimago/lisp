@@ -47,13 +47,13 @@
   (:export "MAIN")
   (:documentation "
 Botihn is a simple IRC bot monitoring Hacker News, and writing to
-irc://irc.freenode.org/#hn the title and url of each new news.
+irc://irc.libera.chat/#hn the title and url of each new news.
 
 It is run with:
 
    (com.informatimago.small-cl-pgms.botihn:main)
 
-Copyright Pascal J. Bourguignon 2015 - 2019
+Copyright Pascal J. Bourguignon 2015 - 2021
 Licensed under the AGPL3.
 "))
 (in-package "COM.INFORMATIMAGO.SMALL-CL-PGMS.BOTIHN")
@@ -64,7 +64,7 @@ Licensed under the AGPL3.
 ;;; Configuration:
 ;;;
 
-(defvar *server*   "irc.freenode.org"
+(defvar *server*   "irc.libera.chat"
   "The fqdn of the IRC server.")
 (defvar *nickname* "botihn"
   "The nickname of the botihn user.")
@@ -76,6 +76,7 @@ Licensed under the AGPL3.
 (defvar *connection* nil
   "The current IRC server connection.")
 (defvar *botpass*  "1234")
+
 
 (defvar *blacklist* '()
   "A list of lists (label :url \"regex\") or (label :title \"regexp\") used to match either the url or the title of the HN news.
@@ -116,7 +117,7 @@ The LABEL is a unique symbol used to identifythe blacklist entry.")
 (defun blacklistedp (story)
   (loop
     :for (label kind regexp) :in *blacklist*
-    ;; If there is an error, perhaps we should remove the enrty in the *blacklist*…
+    ;; If there is an error, perhaps we should remove the enrty in the *blacklist*
       :thereis (ignore-errors (scan regexp
                                     (ecase kind
                                       (:title (story-title story))
