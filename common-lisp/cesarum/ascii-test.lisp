@@ -71,7 +71,18 @@ RETURN: :success
   #| TODO: Added more testing of bytes comparisons.|#)
 
 
+(define-test test/replace-ascii-characters ()
+  (multiple-value-bind (string end)
+      (replace-ascii-characters (make-string 10 :initial-element #\*)
+                                #(13 10)
+                                :newline :crlf)
+    (assert-true (char= #\newline (aref string 0)))
+    (assert-true (char= #\*       (aref string 1)))
+    (assert-true (= 10 (length string)))
+    (assert-true (= 1  end))))
+
 (define-test test/all ()
-  (test/ascii))
+  (test/ascii)
+  (test/replace-ascii-characters))
 
 ;;;; THE END ;;;;
