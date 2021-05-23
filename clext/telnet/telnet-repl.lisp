@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Implements a Telnet REPL server.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2021 - 2021
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -101,18 +101,29 @@
    (login-function    :initarg :login-function    :reader login-function)
    (repl-function     :initarg :repl-function     :reader repl-function)
    (stop-closure      :initarg :stop-closure      :reader stop-closure)
-   (terminate-closure :initarg :terminate-closure :reader terminate-closure)))
+   (terminate-closure :initarg :terminate-closure :reader terminate-closure)
+   (stream            :initarg :stream            :reader repl-client-stream)))
 
+(defvar *stream* nil)
 (defun run-client-loop (client)
-  (with-telnet-on-stream (stream (socket-stream (repl-client-socket client)))
-    (when (and (not (stop-closure client))
+  (with-telnet-on-stream (stream (socket-stream (repl-client-socket client))
+                                 client)
+    (setf  *stream* stream)
+    (setf (slot-value client 'stream) stream)
+    (format *log-output* "~&client ~D telnet on stream ~S~%" (repl-client-number client) stream)
+    (print (list :not-stop (not (stop-closure client))
+                 :banner (banner-function client)
+                 :login (login-function client))
+           *log-output*)
+    (terpri *log-output*)
+    (when (and (not (funcall (stop-closure client)))
                (banner-function client))
       (funcall (banner-function client) stream (repl-client-number client) (name client)))
-    (when (and (not (stop-closure client))
+    (when (and (not (funcall (stop-closure client)))
                (or (null    (login-function client))
                    (funcall (login-function client) stream)))
-      (funcall (repl-function client) stream (repl-client-number client)
-               (stop-closure client)))))
+      (funcall (repl-function client) stream (repl-client-number client) (stop-closure client))
+      (format *log-output* "~&client ~D repl-function returned~%" (repl-client-number client)))))
 
 (defmethod initialize-instance :after ((client repl-client) &key &allow-other-keys)
   (setf (slot-value client 'thread)
@@ -180,7 +191,8 @@
       :for cn :from 1
       :for client-socket := (socket-accept server-socket
                                            :element-type 'octet)
-      :when client-socket 
+      :when client-socket
+        :do (format *log-output* "~&connection from ~S~%" client-socket)
         :do (with-lock-held ((repl-server-lock server))
               (let ((client (make-instance
                              'repl-client
@@ -208,13 +220,13 @@
             (when stop-it
               (setf stop t))
             stop)
-          
+
           (slot-value server 'lock)
           (make-lock (format nil "~A Server Lock" (name server)))
 
           (slot-value server 'more-clients)
           (make-condition-variable :name (format nil "~A Server More Clients" (name server)))
-          
+
           (slot-value server 'thread)
           (make-thread (lambda () (run-server-loop server))
                        :name (format nil "~A Server" (name server))))))
@@ -258,7 +270,6 @@ the REPL clients, but the REPL server should not accept new
 connections right away."
   (when (repl-server-thread server)
     (funcall (must-stop-p server) t)
-    (join-thread (repl-server-thread server))
     (%clean-up server))
   nil)
 

@@ -36,6 +36,13 @@
 (in-package "COM.INFORMATIMAGO.CLEXT.TELNET.STREAM")
 (declaim (declaration stepper))
 
+(defvar *log-output* *trace-output*)
+;; We cannot use *trace-output* while debugging the telnet-repl, since
+;; it's dynamically bound to the telnet-stream for the user.
+(defun format-log (control-string &rest arguments)
+  (format *log-output* "~?" control-string arguments)
+  (finish-output *log-output*))
+
 #|
 
 # -*- mode:org -*-
@@ -156,6 +163,15 @@ himself, so we don't need to negociate it (but we could once RFC 2066
 is implemented, at least for the initial external-format).
 
 ** Buffering
+
+Note: both for the input buffer and the output buffer, we will use
+octet vectors both for binary and text modes.  The encoding/decoding
+of the text is therefore always performed by the telnet-stream itself.
+The Telnet NVT has been modified to allow either the transmission of
+vector of ascii code octets  or strings for the text mode API.  We use
+only the vector of ascii codes.   The let us avoid copying buffers as
+much as possible.
+
 
 Note: we may ask for the EOR option, and send an EOR when flushing
 (automatic or explicit).
@@ -289,28 +305,30 @@ client input loop thread                  |   .    |
 ;;; Telnet Streams
 ;;;
 
+(defgeneric start-down-thread (layer))
 
-(defun call-with-telnet-on-stream (low-stream function)
+(defun call-with-telnet-on-stream (low-stream client function)
   (let* ((stream (make-instance 'telnet-stream
                                 :element-type 'character))
          (down   (make-instance 'down-layer
                                 :stream low-stream
-                                :client nil))
-         (nvt (make-instance 'network-virtual-terminal
-                             :name "TELNET SERVER"
-                             :client nil
-                             :up-sender stream
-                             :down-sender down)))
+                                :client client))
+         (nvt    (make-instance 'network-virtual-terminal
+                                :name "TELNET SERVER"
+                                :client nil ; we're server.
+                                :up-sender stream
+                                :down-sender down)))
     (setf (slot-value stream 'nvt) nvt
           (slot-value down   'nvt) nvt)
+    (start-down-thread down)
     (funcall function stream)))
 
-(defmacro with-telnet-on-stream ((stream-var stream-expr) &body body)
+(defmacro with-telnet-on-stream ((stream-var stream-expr client) &body body)
   "Connects a telnet network-virtual-terminal to the remote stream
 resulting from the STREAM-EXPR, and evaluates the BODY in a lexical
 context where the STREAM-VAR is bound to a  local bidirectional stream
 conected to the NVt."
-  `(call-with-telnet-on-stream ,stream-expr (lambda (,stream-var) ,@body)))
+  `(call-with-telnet-on-stream ,stream-expr ,client (lambda (,stream-var) ,@body)))
 
 (deftype octet () `(unsigned-byte 8))
 
@@ -346,24 +364,39 @@ conected to the NVt."
    (stream      :reader   down-stream :initarg  :stream)
    (client      :reader   client      :initarg  :client)
    (lock        :reader   down-lock)
-   (writingp    :accessor %writingp   :initarg  nil)
-   (down-buffer :reader   down-buffer :initform (make-binary-buffer +down-layer-buffer-size+))))
+   (writingp    :accessor %writingp   :initform nil)
+   (down-buffer :reader   down-buffer :initform (make-binary-buffer +down-layer-buffer-size+))
+   (thread      :reader   down-thread :initform nil)))
 
 (defgeneric input-loop (down-layer))
 (defgeneric stop-closure (client)) ;; TODO must be imported from telnet.repl
 
+(defmethod initialize-instance :after ((layer down-layer) &key &allow-other-keys)
+  (setf (slot-value layer 'lock) (make-lock "down-layer")))
+
+(defmethod start-down-thread ((layer down-layer))
+  (setf (slot-value layer 'thread)
+        (make-thread (lambda () (input-loop layer))
+                     :name (format nil "~A DOWN LAYER" (name (client layer))))))
+
 (defmethod input-loop ((self down-layer))
   ;; The input-loop runs in the client input loop thread
   (loop
+    :with stream := (down-stream self)
     :with buffer := (make-binary-buffer +down-layer-buffer-size+)
-    :until (stop-closure (client self))
-    :do (setf (fill-pointer buffer) (array-dimension buffer 0))
-        (let ((last-pos (read-sequence buffer (down-stream self))))
-          (setf (fill-pointer buffer) last-pos))
-        (receive (nvt (client self)) buffer)))
+    :until (funcall (stop-closure (client self)))
+      :initially (setf (fill-pointer buffer) 1)
+    :do (setf (aref buffer 0) (read-byte stream))
+        (format-log "~&down-layer received from remote: ~S~%"
+                buffer)
+        (force-output *log-output*)
+        (receive (nvt self) buffer)
+        (format-log "~&down-layer: nvt received:       ~S~%"
+                buffer)
+        (force-output *log-output*)))
 
 
-(defmethod send ((self down-layer) bytes &key start end)
+(defmethod send ((self down-layer) bytes &key (start 0) end)
   ;; The send method is called in the client repl thread
   ;; Down interface (to down):
   ;; Send the bytes to the remote NVT.
@@ -373,10 +406,15 @@ conected to the NVt."
     (with-lock-held ((down-lock self))
       (if (%writingp self)
           (progn
+            (format-log "~&down-layer buffers to remote:    ~S~%"
+                        (subseq bytes start end))
             (buffer-append buffer bytes start end)
             (return-from send))
           (setf (%writingp self) t)))
+    (format-log "~&down-layer sends to remote:      ~S~%"
+                (subseq bytes start end))
     (write-sequence bytes stream :start start :end end)
+    (force-output stream)
     ;; Either we write sequence with lock held, or we need a
     ;; double-buffering to be able to write a buffer while we append
     ;; to the other.  The double-buffer would be better in case of
@@ -385,6 +423,8 @@ conected to the NVt."
     ;; So this should do better:
     (with-lock-held ((down-lock self))
       (when (plusp (length buffer))
+        (format-log "~&down-layer sends buffer:    ~S~%"
+                    buffer)
         (write-sequence buffer stream)
         (setf (fill-pointer buffer) 0))
       (setf (%writingp self) nil))))
@@ -478,7 +518,7 @@ we may decode them from the input-buffer.
             :input-buffering (stream-input-buffering stream)
             :output-buffering (stream-output-buffering stream)
             :echo-mode (stream-echo-mode stream)
-            :length-input-buffer (length (input-buffer stream))
+            :length-input-buffer (%input-buffer-length (input-buffer stream))
             :length-output-buffer (length (output-buffer stream))))
   stream)
 
@@ -618,6 +658,22 @@ we may decode them from the input-buffer.
   (head 0)
   (tail 0))
 
+(defmethod print-object ((buffer input-buffer) stream)
+  (print-unreadable-object (buffer stream :identity t :type t)
+    (format stream ":LENGTH ~A :CONTENTS ~S"
+            (%input-buffer-length buffer)
+            (if (<= (input-buffer-head buffer)
+                    (input-buffer-tail buffer))
+                (subseq (input-buffer-data buffer)
+                        (input-buffer-head buffer)
+                        (input-buffer-tail buffer))
+                (concatenate '(vector octet)
+                             (subseq (input-buffer-data buffer)
+                                     (input-buffer-tail buffer))
+                             (subseq (input-buffer-data buffer)
+                                     0
+                                     (input-buffer-head buffer)))))))
+
 (defun make-input-buffer (buffering)
   (let* ((size (if (integerp buffering)
                    buffering
@@ -626,17 +682,15 @@ we may decode them from the input-buffer.
     (setf (fill-pointer buffer) size)
     (%make-input-buffer :data buffer)))
 
-(defun %input-buffer-free-space (stream)
-  (let* ((buffer (input-buffer stream))
-         (size   (length (input-buffer-data buffer))))
+(defun %input-buffer-free-space (buffer)
+  (let ((size   (length (input-buffer-data buffer))))
     (- size 1 (mod (- (input-buffer-tail buffer)
                       (input-buffer-head buffer))
                    size))))
 (declaim (inline %input-buffer-free-space))
 
-(defun %input-buffer-length (stream)
-  (let* ((buffer (input-buffer stream))
-         (size   (length (input-buffer-data buffer))))
+(defun %input-buffer-length (buffer)
+  (let ((size   (length (input-buffer-data buffer))))
     (mod (- (input-buffer-tail buffer)
             (input-buffer-head buffer))
          size)))
@@ -653,30 +707,41 @@ we may decode them from the input-buffer.
 
 (defun %wait-for-input-free-space (stream required)
   (loop
-      :while (< (%input-buffer-free-space stream) required)
+      :while (< (%input-buffer-free-space (input-buffer stream)) required)
       :do (condition-wait (for-input-free-space stream) (stream-lock stream))))
 (declaim (inline %wait-for-input-free-space))
 
 (defun %wait-for-input-data-present (stream required)
   (loop
-    :while (< (%input-buffer-length stream) required)
+    :while (< (%input-buffer-length (input-buffer stream)) required)
     :do (condition-wait (for-input-data-present stream) (stream-lock stream))))
 (declaim (inline %wait-for-input-data-present))
+
+(defun %%input-buffer-fetch-octet (stream)
+  (%wait-for-input-data-present stream 1)
+  (let* ((buffer (input-buffer stream))
+         (data   (input-buffer-data buffer))
+         (head   (input-buffer-head buffer))
+         (octet  (aref data head)))
+    (setf (input-buffer-head buffer) (mod (+ head 1) (length data)))
+    (condition-notify (for-input-free-space stream))
+    octet))
+
+(defmethod %input-buffer-fetch-octet ((stream telnet-stream) nohang)
+  ;; Assume (stream-lock stream) is already held.
+  ;;    then read the octet and convert it to character
+  ;;    else (%wait-for-input-data-present)
+  (if (and nohang (zerop (%input-buffer-length (input-buffer stream))))
+      nil
+      (%%input-buffer-fetch-octet stream)))
 
 (defmethod input-buffer-fetch-octet ((stream telnet-stream) nohang)
   ;;    then read the octet and convert it to character
   ;;    else (%wait-for-input-data-present)
-  (if (and nohang (zerop (%input-buffer-length stream)))
+  (if (and nohang (zerop (%input-buffer-length (input-buffer stream))))
       nil
       (with-lock-held ((stream-lock stream))
-        (%wait-for-input-data-present stream 1)
-        (let* ((buffer (input-buffer stream))
-               (data   (input-buffer-data buffer))
-               (head   (input-buffer-head buffer))
-               (octet  (aref data head)))
-          (setf (input-buffer-head buffer) (mod (+ head 1) (length data)))
-          (condition-notify (for-input-free-space stream))
-          octet))))
+        (%%input-buffer-fetch-octet stream))))
 
 (defmethod input-buffer-append-octet ((stream telnet-stream) octet)
   (with-lock-held ((stream-lock stream))
@@ -702,8 +767,8 @@ we may decode them from the input-buffer.
             (let ((start2 (nth-value 1 (replace-ascii-bytes data text :newline :crlf :start1 s1 :end1 e1 :start2 0 :end2 end))))
               (when s2
                 (replace-ascii-bytes data text :newline :crlf :start1 s2 :end1 e2 :start2 start2 :end2 end)))
-            (setf (input-buffer-tail buffer) nt)))
-        (condition-notify (for-input-data-present stream))))))
+            (setf (input-buffer-tail buffer) nt))))
+      (condition-notify (for-input-data-present stream)))))
 
 (defmethod input-buffer-append-octets ((stream telnet-stream) octets start end)
   (let ((len (- (or end (length octets)) start)))
@@ -717,15 +782,15 @@ we may decode them from the input-buffer.
             (replace data octets :start1 s1 :end1 e1 :start2 start :end2 (- e1 s1))
             (when s2
               (replace data octets :start1 s2 :end1 e2 :start2 (+ start (- e1 s1)) :end2 end))
-            (setf (input-buffer-tail buffer) nt)))
-        (condition-notify (for-input-data-present stream))))))
+            (setf (input-buffer-tail buffer) nt))))
+      (condition-notify (for-input-data-present stream)))))
 
 (defmethod input-buffer-erase-character ((stream telnet-stream))
   (with-lock-held ((stream-lock stream))
     (let* ((buffer (input-buffer stream))
            (data   (input-buffer-data buffer))
            (tail   (input-buffer-tail buffer)))
-      (when (plusp (%input-buffer-length stream))
+      (when (plusp (%input-buffer-length buffer))
         (let ((last (mod (- tail 1) (length data))))
           (unless (or (= (aref data last) lf)
                       (= (aref data last) cr))
@@ -739,7 +804,7 @@ we may decode them from the input-buffer.
            (head   (input-buffer-head buffer))
            (tail   (input-buffer-tail buffer))
            (size   (length data)))
-      (when (plusp (%input-buffer-length stream))
+      (when (plusp (%input-buffer-length buffer))
         (loop
           :with last := (mod (- tail 1) size)
           :while (and (/= (aref data last) lf)
@@ -754,7 +819,7 @@ we may decode them from the input-buffer.
     (let* ((buffer (input-buffer stream))
            (data   (input-buffer-data buffer))
            (head   (input-buffer-head buffer)))
-      (when (plusp (%input-buffer-length stream))
+      (when (plusp (%input-buffer-length buffer))
         (aref data head)))))
 
 (defmethod input-buffer-read-octet ((stream telnet-stream))
@@ -800,6 +865,7 @@ we may decode them from the input-buffer.
   ;; BYTE:       a VECTOR of (UNSIGNED-BYTE 8).
   ;; START, END: bounding index designators of sequence.
   ;;             The defaults are for START 0 and for END nil.
+  (format-log "~&up-layer receive binary: ~S~%" (subseq bytes start end))
   (input-buffer-append-octets up-sender bytes start (or end (length bytes))))
 
 (defmethod receive-text    ((up-sender telnet-stream) (text string) &key (start 0) end)
@@ -807,11 +873,13 @@ we may decode them from the input-buffer.
   ;; TEXT: a string containing only printable ASCII characters and #\newline.
   (assert (zerop start))
   (assert (null end))
+  (format-log "~&up-layer receive text: ~S~%" (subseq text start end))
   (input-buffer-append-text up-sender text))
 
 (defmethod receive-text    ((up-sender telnet-stream) (text vector) &key (start 0) end)
   ;; Receive some ASCII text
   ;; TEXT: a string containing only printable ASCII characters and #\newline.
+  (format-log "~&up-layer receive text: ~S~%" (subseq text start end))
   (input-buffer-append-octets up-sender text start end))
 
 (defmethod receive-control ((up-sender telnet-stream) control)
@@ -820,6 +888,7 @@ we may decode them from the input-buffer.
   ;;                  :erase-line :erase-character
   ;;                  :break :cr :ff :vt :lf :ht :bs :bel :nul
   ;;                  :end-of-record).
+  (format-log "~&up-layer receive control: ~S~%" control)
   (case control
     ;; | Controls          | I/O        | Description                                      |
     ;; |-------------------+------------+--------------------------------------------------|
@@ -915,7 +984,7 @@ we may decode them from the input-buffer.
                        (babel::get-character-encoding
                         encoding)))
                  ;; 1-octet encoding:
-                 (let ((code (input-buffer-fetch-octet stream no-hang)))
+                 (let ((code (%input-buffer-fetch-octet stream no-hang)))
                    (when code
                      (let* ((octets (make-array 1 :element-type '(unsigned-byte 8) :initial-element code))
                             (char   (decode-character octets :encoding encoding)))
@@ -926,7 +995,7 @@ we may decode them from the input-buffer.
                  (loop
                    :named read
                    :with partial := (partial-character-octets stream)
-                   :for code := (input-buffer-fetch-octet stream no-hang)
+                   :for code := (%input-buffer-fetch-octet stream no-hang)
                    :while code
                    :do (vector-push-extend code partial (length partial))
                        (multiple-value-bind (char validp size)
@@ -1031,6 +1100,16 @@ we may decode them from the input-buffer.
 ;;                  :break :cr :ff :vt :lf :ht :bs :bel :nul
 ;;                  :end-of-record)."))
 
+(defmethod send-binary :before (nvt bytes)
+  (declare (ignorable nvt))
+  (format-log "~&up-layer sends binary:           ~S~%" bytes))
+(defmethod send-text :before (nvt bytes)
+  (declare (ignorable nvt))
+  (format-log "~&up-layer sends text:             ~S~%" bytes))
+(defmethod send-control :before (nvt bytes)
+  (declare (ignorable nvt))
+  (format-log "~&up-layer sends control:          ~S~%" bytes))
+
 ;;; character output
 
 (defun flush-output-buffer (stream)
@@ -1043,45 +1122,44 @@ we may decode them from the input-buffer.
 
 (defmethod stream-write-char ((stream telnet-stream) char)
   (check-stream-open stream 'stream-write-char)
-  (with-lock-held ((stream-lock stream))
+  (unless (char= #\newline char)
+    (let ((code (char-code char)))
+      (when (or (<= 0 code 31) (<= 127 code))
+        (stream-write-string stream (format nil "^~C" (code-char (mod (+ code 64) 128))))
+        (return-from stream-write-char))))
+  (with-lock-held ((stream-lock stream)) ;; <<<<<<<<< WE'RE SAFE !
     (let ((encoding  (stream-external-format stream))
           (buffering (stream-output-buffering stream)))
       (case buffering
 
         (:character                     ; no buffering
-
-         ;; If we have something in the buffer flush it now.
-         (flush-output-buffer stream)
-
          (cond
            ((char= #\newline char)
-            (send-control (nvt stream) :cr)
-            (send-control (nvt stream) :lf))
-           ((eq encoding :us-ascii)
-            (send-text (nvt stream) (string char)))
-           (t
-            (send-binary (nvt stream)
-                         (string-to-octets (string char)
-                                           :encoding encoding)))))
-
-        (:line                          ; line buffering
-         (cond
-           ((char= #\newline char) ; if newline, flush the buffer now.
             (flush-output-buffer stream)
             (send-control (nvt stream) :cr)
             (send-control (nvt stream) :lf))
            ((eq encoding :us-ascii)
-            (let ((buffer (output-buffer stream)))
-              (vector-push-extend char buffer (length buffer)))
-            (send-text (nvt stream) (string char)))
+            (vector-push (ascii-code char) (output-buffer stream))
+            (flush-output-buffer stream))
            (t
-            (let* ((buffer (output-buffer stream))
-                   (start (fill-pointer buffer)))
-              (setf (fill-pointer buffer) (array-dimension buffer 0))
-              (setf (fill-pointer buffer)
-                    (nth-value 1 (replace-octets-by-string buffer (string char)
-                                                           :start1 start
-                                                           :encoding encoding)))))))
+            (encode-string-to-output-buffer stream (string char))
+            (flush-output-buffer stream))))
+
+        (:line                          ; line buffering
+         (cond
+           ((char= #\newline char) ; if newline, flush the buffer now.
+            ;; flush only on newline
+            (flush-output-buffer stream)
+            ;; TODO: check whether sending CR LF is equivalent to send-control :cr :lf
+            ;; TODO: can we buffer the :cr :lf control with the line? Is it done in the NVT?
+            (send-control (nvt stream) :cr)
+            (send-control (nvt stream) :lf))
+           ((eq encoding :us-ascii)
+            (let ((buffer (output-buffer stream)))
+              (vector-push-extend (ascii-code char) buffer (length buffer))))
+           (t
+            (encode-string-to-output-buffer stream (string char)))))
+
         (otherwise
          (assert (integerp buffering))
          (cond
@@ -1089,23 +1167,15 @@ we may decode them from the input-buffer.
             (let ((buffer (output-buffer stream)))
               (if (char= #\newline char)
                   (progn
-                    (vector-push-extend #\return   buffer (length buffer))
-                    (vector-push-extend #\linefeed buffer (length buffer)))
-                  (vector-push-extend char buffer (length buffer)))
-              (when (<= buffering (length buffer))
-                (send-text (nvt stream) buffer)
-                (setf (fill-pointer buffer) 0))))
+                    ;; TODO: check whether sending CR LF is equivalent to send-control :cr :lf
+                    (vector-push-extend CR buffer (length buffer))
+                    (vector-push-extend LF buffer (length buffer)))
+                  (vector-push-extend (ascii-code char) buffer (length buffer)))))
            (t
-            (let* ((buffer (output-buffer stream))
-                   (start (fill-pointer buffer)))
-              (setf (fill-pointer buffer) (array-dimension buffer 0))
-              (setf (fill-pointer buffer)
-                    (nth-value 1 (replace-octets-by-string buffer (string char)
-                                                           :start1 start
-                                                           :encoding encoding)))
-              (when (<= buffering (length buffer))
-                (send-binary (nvt stream) buffer)
-                (setf (fill-pointer buffer) 0)))))))
+            (encode-string-to-output-buffer stream (string char))))
+         (when (<= buffering (length (output-buffer stream)))
+           ;; flush only on buffer full
+           (flush-output-buffer stream))))
 
       (if (char= #\newline char)
           (setf (column stream) 0)
@@ -1118,9 +1188,8 @@ we may decode them from the input-buffer.
   nil)
 
 
-(defgeneric encode-string-to-output-buffer (stream string &key start end))
+(defgeneric encode-string-to-output-buffer (stream string &key start  end))
 (defmethod encode-string-to-output-buffer ((stream telnet-stream) string &key (start 0) end)
-  ;; STRING doesn't contain #\newline
   (let* ((encoding (stream-external-format stream))
          (buffer   (output-buffer stream))
          (start1   (fill-pointer buffer)))
@@ -1150,23 +1219,28 @@ we may decode them from the input-buffer.
         (vnewlines    (gensym))
         (process-line (gensym))
         (vstart       (gensym))
-        (vend         (gensym)))
+        (vend         (gensym))
+        (vsstart      (gensym))
+        (vsend        (gensym)))
     `(let* ((,vstring    ,string-expression)
-            (,vnewlines  (positions #\newline ,vstring :start ,start-expr :end ,end-expr)))
+            (,vsstart    ,start-expr)
+            (,vsend      ,end-expr)
+            (,vnewlines  (positions #\newline ,vstring :start ,vsstart :end ,vsend)))
        (flet ((,process-line (start end)
                 (let ((,line-var ,vstring)
                       (,start-var start)
                       (,end-var end))
                   ,line-expression)))
          (loop
-           :for ,vstart := 0 :then (1+ ,vend)
+           :for ,vstart := ,vsstart :then (1+ ,vend)
            :for ,vend :in ,vnewlines
            :do (progn
                  (when (< ,vstart ,vend)
                    (,process-line ,vstart ,vend))
                  ,@newline-body)
            :finally (when (< ,vstart (length ,vstring))
-                      (,process-line ,vstart (length ,vstring))))))))
+                      (,process-line ,vstart ,vsend)))))))
+
 
 (defmethod stream-write-string ((stream telnet-stream) string &optional (start 0) end)
   (check-stream-open stream 'stream-write-string)
@@ -1175,7 +1249,7 @@ we may decode them from the input-buffer.
       ;; If we have something in the buffer flush it now.
       (flush-output-buffer stream)
       (for-each-line ((line lstart lend) (string start end))
-                     (encode-string-to-output-buffer stream line lstart lend)
+                     (encode-string-to-output-buffer stream line :start lstart :end lend)
         (flush-output-buffer stream)
         (send-control (nvt stream) :cr)
         (send-control (nvt stream) :lf))
