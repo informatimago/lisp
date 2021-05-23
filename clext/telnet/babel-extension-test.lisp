@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    Tests decode-character.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,23 +15,28 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2021 - 2021
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
+(defpackage "COM.INFORMATIMAGO.CLEXT.BABEL-EXTENSION.TEST"
+  (:use "COMMON-LISP"
+        "COM.INFORMATIMAGO.CLEXT.BABEL-EXTENSION"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SIMPLE-TEST")
+  (:export "TEST/ALL"))
 (in-package "COM.INFORMATIMAGO.CLEXT.BABEL-EXTENSION.TEST")
 
 
@@ -203,7 +208,7 @@
     (check equal (multiple-value-list (decode-character (replace octets #(#b11000000 #b11100001)) :encoding encoding))
            '(nil nil 2)
            (encoding octets))
-    
+
     (check equal (multiple-value-list (decode-character (replace octets #(#b11100000 #b10110011 #b00100001)) :encoding encoding))
            '(nil nil 3)
            (encoding octets))
@@ -240,7 +245,7 @@
       :for (character validp size) := (multiple-value-list (decode-character octets :start start :encoding encoding))
       :do (assert-true character (character) "decode-character should have decoded a ~S character from ~A" encoding start)
           (assert-true validp (validp) "decode-character should have decoded a valid ~S code sequence from ~A" encoding start)
-          (check char= character expected (encoding start octets character expected)) 
+          (check char= character expected (encoding start octets character expected))
       :finally (incf start size)
                (check = start (length octets) (encoding start octets)))))
 
@@ -254,6 +259,3 @@
 
 ;; (test/all)
 ;;;; THE END ;;;;
-
-
-
