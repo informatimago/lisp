@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    The package definitions of the telnet REPL server.
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2021 - 2021
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -38,11 +38,16 @@
   (:export "DECODE-CHARACTER"
            "REPLACE-OCTETS-BY-STRING"))
 
-(defpackage "COM.INFORMATIMAGO.CLEXT.BABEL-EXTENSION.TEST"
-  (:use "COMMON-LISP"
-        "COM.INFORMATIMAGO.CLEXT.BABEL-EXTENSION"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SIMPLE-TEST")
-  (:export "TEST/ALL"))
+
+;; (push :debug-condition-variables *features*)
+
+#+(and ccl debug-condition-variables)
+(defpackage "COM.INFORMATIMAGO.BORDEAUX-THREAD.PATCH"
+  (:use "COMMON-LISP" "BORDEAUX-THREADS")
+  (:shadow "MAKE-CONDITION-VARIABLE" "WITH-LOCK-HELD")
+  (:export "MAKE-CONDITION-VARIABLE" "WITH-LOCK-HELD")
+  (:documentation "Implements bt:make-condition-variable on ccl to print the name."))
+
 
 (defpackage "COM.INFORMATIMAGO.CLEXT.TELNET.STREAM"
   (:use "COMMON-LISP"
@@ -55,8 +60,13 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING"
         "COM.INFORMATIMAGO.CLEXT.CHARACTER-SETS"
         "COM.INFORMATIMAGO.CLEXT.BABEL-EXTENSION")
+  #+(and ccl debug-condition-variables)
+  (:shadowing-import-from "COM.INFORMATIMAGO.BORDEAUX-THREAD.PATCH"
+                          "MAKE-CONDITION-VARIABLE" "WITH-LOCK-HELD")
   (:export "WITH-TELNET-ON-STREAM"
-           "TELNET-STREAM"))
+           "TELNET-STREAM"
+           "NAME" "CLIENT" "STOP-CLOSURE"
+           "*LOG-OUTPUT*"))
 
 (defpackage "COM.INFORMATIMAGO.CLEXT.TELNET.REPL"
   (:use "COMMON-LISP"
@@ -68,6 +78,9 @@
         ;; "com.informatimago.common-lisp.cesarum"
         "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.INTERACTIVE"
         "COM.INFORMATIMAGO.CLEXT.TELNET.STREAM")
+  #+(and ccl debug-condition-variables)
+  (:shadowing-import-from "COM.INFORMATIMAGO.BORDEAUX-THREAD.PATCH"
+                          "MAKE-CONDITION-VARIABLE" "WITH-LOCK-HELD")
   (:export "REPL-SERVER"
            "REPL-SERVER-THREAD"
            "REPL-SERVER-PORT"
@@ -75,5 +88,8 @@
            "REPL-SERVER-MAX-CLIENTS"
            "REPL-SERVER-CLIENT-THREADS"
            "START-REPL-SERVER" "STOP-REPL-SERVER"))
+
+
+
 
 ;;;; THE END ;;;;

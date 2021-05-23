@@ -32,52 +32,48 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-(asdf:defsystem "com.informatimago.clext.telnet.repl"
+(asdf:defsystem "com.informatimago.clext.telnet.repl.test"
   ;; system attributes:
-  :description "A Telnet REPL Server."
+  :description "Tests the Telnet REPL Server."
   :long-description "
 
-This system implements a Telnet REPL Server.
+This system tests the Telnet REPL Server.
 
 "
   :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.0.1"
+  :version "1.0.0"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Spring 2021")
-               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.clext.telnet.repl/")
+               ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.clext.telnet.repl.test/")
                ((#:albert #:formats)             . ("docbook"))
                ((#:albert #:docbook #:template)  . "book")
                ((#:albert #:docbook #:bgcolor)   . "white")
                ((#:albert #:docbook #:textcolor) . "black"))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
-  :depends-on ("com.informatimago.common-lisp.cesarum"
-               "com.informatimago.common-lisp.interactive"
-               "com.informatimago.common-lisp.telnet"
-               "babel"
+  :depends-on ("babel"
                "usocket"
                "bordeaux-threads"
-               "trivial-gray-streams")
-  :components ((:file "packages"
-                :depends-on ())
-               #+(and ccl debug-condition-variables)
-               (:file "bt-patch"
-                :depends-on ("packages"))
-               (:file "telnet-stream"
-                :depends-on ("packages"
-                             #+(and ccl debug-condition-variables) "bt-patch"))
-               (:file "babel-extension"
-                :depends-on ("packages"))
-               (:file "telnet-repl"
-                :depends-on ("packages"
-                             "babel-extension"
-                             "telnet-stream"
-                             #+(and ccl debug-condition-variables) "bt-patch")))
-  ;; #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.clext.telnet.repl.test")))
-  )
+               "trivial-gray-streams"
+               "com.informatimago.common-lisp.cesarum"
+               "com.informatimago.common-lisp.interactive"
+               "com.informatimago.common-lisp.telnet"
+               "com.informatimago.clext.telnet.repl")
+  :components ((:file "packages"        :depends-on ())
 
+               (:file "telnet-stream"   :depends-on ("packages"))
+               (:file "babel-extension" :depends-on ("packages"))
+               (:file "telnet-repl"     :depends-on ("packages"
+                                                     "telnet-stream"
+                                                     "babel-extension"))
+
+               (:file "babel-extension-test" :depends-on ("packages" "babel-extension"))
+               (:file "test-stub-nvt"        :depends-on ("packages"))
+               (:file "telnet-stream-test"   :depends-on ("packages"
+                                                          "telnet-stream"
+                                                          "test-stub-nvt"))))
 
 
 ;;;; THE END ;;;;
