@@ -463,6 +463,10 @@ conected to the NVt."
 
    (nvt                      :reader   nvt
                              :initarg :nvt)
+   (thread                   :accessor telnet-stream-thread
+                             :initarg :thread
+                             :initform nil
+                             :documentation "The target thread for SIGNAL-INTERRUPT (INTERRUPT-PROCESS and BREAK telnet controls).")
    (open                     :reader   open-stream-p            :initform t)
    (lock                     :reader   stream-lock)
    (input-data-present       :reader   for-input-data-present
@@ -926,16 +930,24 @@ we may decode them from the input-buffer.
      ;; if output-buffer contains something,
      ;; then flush it
      ;; else send a nul or a message?
-     )
+     (finish-output up-sender)
+     (format up-sender "~&I am here.~%")
+     (force-output up-sender))
     (:abort-output
      ;; clear-output-buffer
      )
     (:interrupt-process
      ;; signal keyboard-interrupt in the repl thread
-     )
+     (when (telnet-stream-thread up-sender)
+       (signal-interrupt (telnet-stream-thread up-sender)
+                         :action :resume
+                         :source "keyword interrupt-process")))
     (:break
      ;; signal keyboard-interrupt in the repl thread
-     )
+     (when (telnet-stream-thread up-sender)
+       (signal-interrupt (telnet-stream-thread up-sender)
+                         :action :debug
+                         :source "keyword break")))
     (:go-ahead
      ;; we don't do half-duplex.
      ;; flush-output
@@ -947,19 +959,19 @@ we may decode them from the input-buffer.
      ;; find last (non-newline) character in input-buffer and erase it
      (input-buffer-erase-character up-sender))
     (:end-of-record
-     ;; mark an end-fo-file?
+     ;; mark an end-of-file?
      )
 
     ((:cr :ff :vt :lf :ht :bs :bel :nul)
      (input-buffer-append-octet up-sender (case control
-                                         (:cr CR)
-                                         (:ff FF)
-                                         (:vt VT)
-                                         (:lf LF)
-                                         (:ht HT)
-                                         (:bs BS)
-                                         (:bel BEL)
-                                         (:nul NUL))))
+                                            (:cr CR)
+                                            (:ff FF)
+                                            (:vt VT)
+                                            (:lf LF)
+                                            (:ht HT)
+                                            (:bs BS)
+                                            (:bel BEL)
+                                            (:nul NUL))))
     (otherwise
      ;; log an unknown control
      )))

@@ -44,7 +44,7 @@ This system implements a Telnet REPL Server.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.0.1"
+  :version "1.0.2"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Spring 2021")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.clext.telnet.repl/")
@@ -60,23 +60,25 @@ This system implements a Telnet REPL Server.
                "usocket"
                "bordeaux-threads"
                "trivial-gray-streams")
-  :components ((:file "packages"
-                :depends-on ())
-               #+(and ccl debug-condition-variables)
-               (:file "bt-patch"
-                :depends-on ("packages"))
-               (:file "telnet-stream"
-                :depends-on ("packages"
-                             #+(and ccl debug-condition-variables) "bt-patch"))
-               (:file "babel-extension"
-                :depends-on ("packages"))
-               (:file "telnet-repl"
-                :depends-on ("packages"
-                             "babel-extension"
-                             "telnet-stream"
-                             #+(and ccl debug-condition-variables) "bt-patch")))
   ;; #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.clext.telnet.repl.test")))
-  )
+  :components
+  ((:file "interrupt" :depends-on ())
+   (:file "packages"  :depends-on ("interrupt"))
+
+   #+(and ccl debug-condition-variables)
+   (:file "bt-patch"
+    :depends-on ("packages"))
+   (:file "telnet-stream"
+    :depends-on ("packages"
+                 "interrupt"
+                 #+(and ccl debug-condition-variables) "bt-patch"))
+   (:file "babel-extension"
+    :depends-on ("packages"))
+   (:file "telnet-repl"
+    :depends-on ("packages"
+                 "babel-extension"
+                 "telnet-stream"
+                 #+(and ccl debug-condition-variables) "bt-patch"))))
 
 
 

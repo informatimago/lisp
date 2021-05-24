@@ -63,27 +63,31 @@
          (package           (make-repl-package   cn))
          (*readtable*       (make-repl-readtable cn))
          (*package*         package)
+         (*debugger-hook*   nil) ; disable swank-debugger-hook.
          (com.informatimago.common-lisp.interactive.interactive::*repl-history*
            (make-array 128 :adjustable t :fill-pointer 0)))
     (catch 'repl
       (unwind-protect
-           (let ((+eof+   (gensym))
-                 (hist    1))
-             (set-macro-character #\! (function repl-history-reader-macro) t)
-             (loop
-                (when (funcall must-stop-it)
-                  (format *terminal-io* "~&Server is shutting down.~%")
-                  (finish-output *terminal-io*)
-                  (throw 'repl nil))
-                (handler-case
-                    (progn
-                      (format *terminal-io* "~%~A[~D]> " (package-name *package*) hist)
+           (with-interrupt-handler
+             (let ((+eof+   (gensym))
+                   (hist    1))
+               (set-macro-character #\! (function repl-history-reader-macro) t)
+               (loop
+                  (with-resume-restart ("Resume REPL")
+                    (when (funcall must-stop-it)
+                      (format *terminal-io* "~&Server is shutting down.~%")
                       (finish-output *terminal-io*)
-                      (com.informatimago.common-lisp.interactive.interactive::%rep +eof+ hist))
-                  (error (err)
-                    (format stream "~%Fatal Error: ~A~%" err)
-                    (finish-output stream)
-                    (throw 'repl nil)))))
+                      (throw 'repl nil))
+                    (handler-case
+                        (progn
+                          (format *terminal-io* "~%~A[~D]> " (package-name *package*) hist)
+                          (finish-output *terminal-io*)
+                          (com.informatimago.common-lisp.interactive.interactive::%rep +eof+ hist))
+                      (error (err)
+                        (format stream "~%Fatal Error: ~A~%" err)
+                        (finish-output stream)
+                        (throw 'repl nil)))))))
+        (close *terminal-io*)
         (delete-package package)))))
 
 
@@ -110,6 +114,7 @@
                                  client)
     (setf  *stream* stream)
     (setf (slot-value client 'stream) stream)
+    (setf (telnet-stream-thread stream) (bt:current-thread))
     (format *log-output* "~&client ~D telnet on stream ~S~%" (repl-client-number client) stream)
     (print (list :not-stop (not (stop-closure client))
                  :banner (banner-function client)

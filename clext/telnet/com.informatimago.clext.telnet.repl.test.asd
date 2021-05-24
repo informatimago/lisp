@@ -44,7 +44,7 @@ This system tests the Telnet REPL Server.
   :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
   :licence "AGPL3"
   ;; component attributes:
-  :version "1.0.0"
+  :version "1.0.2"
   :properties ((#:author-email                   . "pjb@informatimago.com")
                (#:date                           . "Spring 2021")
                ((#:albert #:output-dir)          . "/tmp/documentation/com.informatimago.clext.telnet.repl.test/")
@@ -61,19 +61,24 @@ This system tests the Telnet REPL Server.
                "com.informatimago.common-lisp.interactive"
                "com.informatimago.common-lisp.telnet"
                "com.informatimago.clext.telnet.repl")
-  :components ((:file "packages"        :depends-on ())
+  :components
 
-               (:file "telnet-stream"   :depends-on ("packages"))
-               (:file "babel-extension" :depends-on ("packages"))
-               (:file "telnet-repl"     :depends-on ("packages"
-                                                     "telnet-stream"
-                                                     "babel-extension"))
+  ((:file  "interrupt"            :depends-on ())
+   (:file  "interrupt-test"       :depends-on ("interrupt"))
 
-               (:file "babel-extension-test" :depends-on ("packages" "babel-extension"))
-               (:file "test-stub-nvt"        :depends-on ("packages"))
-               (:file "telnet-stream-test"   :depends-on ("packages"
-                                                          "telnet-stream"
-                                                          "test-stub-nvt"))))
+   (:file "packages"              :depends-on ("interrupt"))
+
+   (:file  "telnet-stream"        :depends-on ("packages"))
+   (:file  "babel-extension"      :depends-on ("packages"))
+   (:file  "telnet-repl"          :depends-on ("packages"
+                                               "telnet-stream"
+                                               "babel-extension"))
+
+   (:file  "babel-extension-test" :depends-on ("packages" "babel-extension"))
+   (:file  "test-stub-nvt"        :depends-on ("packages"))
+   (:file  "telnet-stream-test"   :depends-on ("packages"
+                                               "telnet-stream"
+                                               "test-stub-nvt"))))
 
 
 ;;;; THE END ;;;;
