@@ -206,8 +206,8 @@ NOTE:   current implementation only accepts as separators
 
 
 (defun keywordize (string-designator)
-  (intern (string string-designator) (load-time-value (find-package "KEYWORD"))))
-
+  (intern (string string-designator)
+          (load-time-value (find-package "KEYWORD"))))
 
 (defun q&d-arguments (mandatories optionals rest keys)
   "
@@ -230,7 +230,6 @@ BUG: when the optionals or keys have a present indicator,
                                (cons   (list (second (first key)) (first (first key))))))
                       (symbol (list (keywordize key) key))))
                   keys)))
-
 
 (defun wrap-option-function (keys option-arguments docstring option-function)
   (let ((vargs (gensym)))
