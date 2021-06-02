@@ -480,4 +480,127 @@ failures will invoke the debugger instead of failing the test immediately."
 (defmacro slow-test (expected-time &body body)
   `(slow-test* ,expected-time (lambda () ,@body)))
 
+
+
+
+
+#|
+
+<!-- -*- mode:xml; coding:utf-8 -*- -->
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- a description of the JUnit XML format and how Jenkins parses it. See also junit.xsd -->
+
+<!-- if only a single testsuite element is present, the testsuites
+     element can be omitted. All attributes are optional.
+     Not supported by maven surefire.
+ -->
+<testsuites disabled="" <!-- total number of disabled tests from all testsuites. -->
+            errors=""   <!-- total number of tests with error result from all testsuites. -->
+            failures="" <!-- total number of failed tests from all testsuites. -->
+            name=""
+            tests=""    <!-- total number of tests from all testsuites. Some software may expect to only see the number of successful tests from all testsuites though. -->
+            time=""     <!-- time in seconds to execute all test suites. -->
+	    >
+
+  <!-- testsuite can appear multiple times, if contained in a testsuites element.
+       It can also be the root element. -->
+  <testsuite name=""      <!-- Full (class) name of the test for non-aggregated testsuite documents.
+                               Class name without the package for aggregated testsuites documents. Required -->
+	     tests=""     <!-- The total number of tests in the suite, required. -->
+	     disabled=""  <!-- the total number of disabled tests in the suite. optional. not supported by maven surefire. -->
+             errors=""    <!-- The total number of tests in the suite that errored. An errored test is one that had an unanticipated problem,
+                               for example an unchecked throwable; or a problem with the implementation of the test. optional -->
+             failures=""  <!-- The total number of tests in the suite that failed. A failure is a test which the code has explicitly failed
+                               by using the mechanisms for that purpose. e.g., via an assertEquals. optional -->
+             hostname=""  <!-- Host on which the tests were executed. 'localhost' should be used if the hostname cannot be determined. optional. not supported by maven surefire. -->
+	     id=""        <!-- Starts at 0 for the first testsuite and is incremented by 1 for each following testsuite. optional. not supported by maven surefire. -->
+	     package=""   <!-- Derived from testsuite/@name in the non-aggregated documents. optional. not supported by maven surefire. -->
+	     skipped=""   <!-- The total number of skipped tests. optional -->
+	     time=""      <!-- Time taken (in seconds) to execute the tests in the suite. optional -->
+	     timestamp="" <!-- when the test was executed in ISO 8601 format (2014-01-21T16:17:18). Timezone may not be specified. optional. not supported by maven surefire. -->
+	     >
+
+    <!-- Properties (e.g., environment settings) set during test execution.
+         The properties element can appear 0 or once. -->
+    <properties>
+      <!-- property can appear multiple times. The name and value attributres are required. -->
+      <property name="" value=""/>
+    </properties>
+
+    <!-- testcase can appear multiple times, see /testsuites/testsuite@tests -->
+    <testcase name=""       <!-- Name of the test method, required. -->
+	      assertions="" <!-- number of assertions in the test case. optional. not supported by maven surefire. -->
+	      classname=""  <!-- Full class name for the class the test method is in. required -->
+	      status=""     <!-- optional. not supported by maven surefire. -->
+	      time=""       <!-- Time taken (in seconds) to execute the test. optional -->
+	      >
+
+      <!-- If the test was not executed or failed, you can specify one of the skipped, error or failure elements. -->
+
+      <!-- skipped can appear 0 or once. optional -->
+      <skipped message=""   <!-- message/description string why the test case was skipped. optional -->
+	  />
+
+      <!-- error indicates that the test errored.
+           An errored test had an unanticipated problem.
+           For example an unchecked throwable (exception), crash or a problem with the implementation of the test.
+           Contains as a text node relevant data for the error, for example a stack trace. optional -->
+      <error message="" <!-- The error message. e.g., if a java exception is thrown, the return value of getMessage() -->
+	     type=""    <!-- The type of error that occured. e.g., if a java execption is thrown the full class name of the exception. -->
+	     >error description</error>
+
+      <!-- failure indicates that the test failed.
+           A failure is a condition which the code has explicitly failed by using the mechanisms for that purpose.
+           For example via an assertEquals.
+           Contains as a text node relevant data for the failure, e.g., a stack trace. optional -->
+      <failure message="" <!-- The message specified in the assert. -->
+	       type=""    <!-- The type of the assert. -->
+	       >failure description</failure>
+
+      <!-- Data that was written to standard out while the test was executed. optional -->
+      <system-out>STDOUT text</system-out>
+
+      <!-- Data that was written to standard error while the test was executed. optional -->
+      <system-err>STDERR text</system-err>
+    </testcase>
+
+    <!-- Data that was written to standard out while the test suite was executed. optional -->
+    <system-out>STDOUT text</system-out>
+    <!-- Data that was written to standard error while the test suite was executed. optional -->
+    <system-err>STDERR text</system-err>
+  </testsuite>
+</testsuites>
+
+
+
+<testsuites id="id.of.scan" name="label of scan" tests="total-number-of-tests" failures="total-number-of-failures" time="duration">
+<testsuite id="id.of.provider" name="name of provider" tests="number-of-tests" failures="number-of-failures" time="duration">
+<testcase id="id.of.test" name="name of test" time="duration">
+<failure message="title" type="severity"> severity = INFO WARNING ERROR
+- text of the rule and severity
+- analysis provider and the analysis category
+- source code File:line number
+</failure>
+</testcase>
+</testsuite>
+</testsuites>
+
+
+
+<?xml version="1.0" encoding="UTF-8" ?>
+   <testsuites id="20140612_170519" name="New_configuration (14/06/12 17:05:19)" tests="225" failures="1262" time="0.001">
+      <testsuite id="codereview.cobol.analysisProvider" name="COBOL Code Review" tests="45" failures="17" time="0.001">
+         <testcase id="codereview.cobol.rules.ProgramIdRule" name="Use a program name that matches the source file name" time="0.001">
+            <failure message="PROGRAM.cbl:2 Use a program name that matches the source file name" type="WARNING">
+WARNING: Use a program name that matches the source file name
+Category: COBOL Code Review – Naming Conventions
+File: /project/PROGRAM.cbl
+Line: 2
+      </failure>
+    </testcase>
+  </testsuite>
+</testsuites>
+|#
+
 ;;;; THE END ;;;;
