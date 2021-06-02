@@ -19,7 +19,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2006 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2006 - 2021
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -56,8 +56,6 @@
            "INITIALIZE")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.PACKAGE"
                 "LIST-EXTERNAL-SYMBOLS" "LIST-ALL-SYMBOLS" "DEFINE-PACKAGE")
-  (:import-from "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
-                "HANDLING-ERRORS")
   (:documentation "
 
 This package defines various interactive commands intended to be used
@@ -68,7 +66,7 @@ License:
 
     AGPL3
 
-    Copyright Pascal J. Bourguignon 2006 - 2015
+    Copyright Pascal J. Bourguignon 2006 - 2021
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -87,7 +85,15 @@ License:
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.INTERACTIVE")
 
 
-(defvar *repl-history* (make-array 1000 :adjustable t :fill-pointer 0))
+(defvar *repl-history*         (make-array 1000 :adjustable t :fill-pointer 0)
+  "The history of REPL form is saved there.")
+
+(defvar *repl-enable-debugger* nil
+  "BOOLEAN, true to allow INVOKE-DEBUGGER in the error handler.")
+
+(defvar *repl-readtable*       nil
+  "Bound to the REPL *readtable*; reinitiaized when history is reset.")
+
 
 (defun repl-history-reset ()
   (fill *repl-history* nil)
@@ -125,13 +131,83 @@ License:
 
 (defun repl-exit (&optional result)
   (throw 'repl result))
+(defun repl-toplevel (&optional result)
+  (throw 'repl-toplevel result))
+(defun repl-retry (&optional result)
+  (throw 'repl-retry result))
 
-(defun %rep (+eof+ hist)
-  (handling-errors
+(defun call-handling-repl-errors (where thunk)
+  (flet ((report-simple-condition (err)
+           (format *error-output* "~&~A:~%~?~&"
+                   (class-name (class-of err))
+                   (simple-condition-format-control   err)
+                   (simple-condition-format-arguments err))
+           (finish-output *error-output*)
+           nil)
+         (report-condition (err)
+           (format *error-output* "~&~A:~%~A~%" (class-name (class-of err)) err)
+           (finish-output *error-output*)
+           nil))
+    (handler-bind
+        ((simple-error     (lambda (err)
+                             (report-simple-condition err)
+                             (invoke-debugger err)))
+         (error            (lambda (err)
+                             (report-condition err)
+                             (invoke-debugger err)))
+         (simple-condition (lambda (err) (report-simple-condition err)))
+         (condition        (lambda (err) (report-condition err))))
+      (loop
+        :with form := -
+        :do (catch 'repl-retry
+              (restart-case
+                  (return-from call-handling-repl-errors (funcall thunk))
+                (retry ()
+                  :report (lambda (stream)
+                            (handler-bind ((error #'invoke-debugger))
+                              (ecase where
+                                ((read) (format stream "Retry reading a form"))
+                                ((eval) (format stream "Retry evaluating ~S" form)))))
+                  (repl-retry))
+                (continue ()
+                  :report "Return to REPL toplevel"
+                  (repl-toplevel))
+                (abort ()
+                  :report "Exit from the REPL"
+                  (repl-exit)))
+              (format t "Retry~%") (finish-output))))))
+
+(defmacro handling-repl-errors ((where) &body body)
+  "
+DO:       Execute the BODY with a handler for CONDITION and
+          SIMPLE-CONDITION reporting the conditions.
+
+          If *REPL-ENABLE-DEBUGGER* is true,  then the debugger is
+          invoked for ERROR conditions.
+"
+  (assert (member where '(read eval)))
+  `(call-handling-repl-errors ',where (lambda () ,@body)))
+
+(defmacro with-standard-streams (&body body)
+  `(let ((*standard-input* *standard-input*)
+         (*standard-output* *standard-output*)
+         (*trace-output* *trace-output*)
+         (*error-output* *error-output*)
+         (*terminal-io* *terminal-io*)
+         (*debug-io* *debug-io*))
+     ,@body))
+
+(defun %rep (+eof+ hist print-prompt)
+  (handling-repl-errors (read)
+    (when print-prompt
+      (format t "~%~A[~D]> " (package-name *package*) hist)
+      (finish-output)
+      (setf print-prompt t))
     (setf - (read *standard-input* nil +eof+))
     (when (eq - +eof+)
       (return-from %rep))
-    (repl-history-add -)
+    (repl-history-add -))
+  (handling-repl-errors (eval)
     (let ((results (multiple-value-list (eval -))))
       (setf +++ ++   ++ +   + -
             /// //   // /   / results
@@ -140,9 +216,7 @@ License:
     (finish-output)
     (incf hist)))
 
-(defvar *rep-readtable* nil)
-
-(defun rep (&key (reset-history nil) (line nil))
+(defun rep (&key (reset-history nil) (enable-debugger nil) (line nil))
   "
 
 DO:         Reads a single expression from LINE if given, concatenated with *STANDARD-INPUT*,
@@ -152,6 +226,22 @@ NOTE:       The caller must catch REPL to let the user call
             (com.informatimago.common-lisp.interactive.interactive:repl-exit)
             to exit the REPL.
 
+RESET-HISTORY:
+
+            Whether the history is reset. If NIL, then the history is
+            not reset and the user may refer to previous history
+            expressions.
+
+ENABLE-DEBUGGER:
+
+            When true, the debugger is invoked on error, otherwise the
+            error is merely reported and the REPL continues.
+
+LINE:       The source of the next sexp; it can be:
+            - a STRING (which is read),
+            - a STREAM (which is read), or
+            - NIL, in which case *STANDARD-INPUT* is read.
+            The prompt is printed only when LINE is NIL.
 "
   (check-type line (or null string stream))
   (let ((+eof+   (gensym))
@@ -160,25 +250,27 @@ NOTE:       The caller must catch REPL to let the user call
                        (repl-history-reset)
                        1)
                      (repl-history-size)))
-        (*readtable* (or (and (not reset-history) *rep-readtable*)
+        (*readtable* (or (and (not reset-history) *repl-readtable*)
                          (progn
-                           (setf *rep-readtable* (copy-readtable))
-                           (set-macro-character #\! (function repl-history-reader-macro) t *rep-readtable*)
-                           *rep-readtable*))))
-    (typecase line
-      (string
-       (with-input-from-string (line-stream line)
-         (with-input-from-string (newline (format nil "~%"))
-           (let ((*standard-input* (make-concatenated-stream line-stream newline *standard-input*)))
-             (%rep +eof+ hist)))))
-      (stream
-       (let ((*standard-input* (make-concatenated-stream line *standard-input*)))
-         (%rep +eof+ hist)))
-      (t
-       (%rep +eof+ hist)))))
+                           (setf *repl-readtable* (copy-readtable))
+                           (set-macro-character #\! (function repl-history-reader-macro) t *repl-readtable*)
+                           *repl-readtable*)))
+        (*repl-enable-debugger* enable-debugger))
+    (with-standard-streams
+        (typecase line
+          (string
+           (with-input-from-string (line-stream line)
+             (with-input-from-string (newline (format nil "~%"))
+               (let ((*standard-input* (make-concatenated-stream line-stream newline *standard-input*)))
+                 (%rep +eof+ hist nil)))))
+          (stream
+           (let ((*standard-input* (make-concatenated-stream line *standard-input*)))
+             (%rep +eof+ hist nil)))
+          (t
+           (%rep +eof+ hist t))))))
 
 
-(defun repl (&key (reset-history t))
+(defun repl (&key (reset-history t) (enable-debugger nil))
   "
 
 DO:         Implements a CL REPL.  The user may exit the REPL by
@@ -199,20 +291,26 @@ RESET-HISTORY:
             not reset and the user may refer to previous history
             expressions.
 
+ENABLE-DEBUGGER:
+
+            When true, the debugger is invoked on error, otherwise the
+            error is merely reported and the REPL continues.
+
 "
   (catch 'repl
-    (let ((+eof+   (gensym))
-          (hist    (if reset-history
-                       (progn
-                         (repl-history-reset)
-                         1)
-                       (repl-history-size)))
-          (*readtable* (copy-readtable)))
-      (set-macro-character #\! (function repl-history-reader-macro) t)
-      (loop
-        (format t "~%~A[~D]> " (package-name *package*) hist)
-        (finish-output)
-        (%rep +eof+ hist)))))
+    (with-standard-streams
+      (let ((+eof+   (gensym))
+            (hist    (if reset-history
+                         (progn
+                           (repl-history-reset)
+                           1)
+                         (repl-history-size)))
+            (*readtable* (copy-readtable))
+            (*repl-enable-debugger* enable-debugger))
+        (set-macro-character #\! (function repl-history-reader-macro) t)
+        (loop
+           (catch 'repl-toplevel
+             (%rep +eof+ hist t)))))))
 
 
 (defun lssymbols (&optional (package *package*))
