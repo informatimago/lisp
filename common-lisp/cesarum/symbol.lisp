@@ -75,11 +75,12 @@ License:
                  (mapcar (function string) string-designators))))
 
 
-(defun keywordize (string-designator)
+(defun keywordize (&rst string-designator)
   "
 RETURN: A new keyword with STRING-DESIGNATOR as name.
 "
-  (intern (string string-designator)
+  (intern (apply (function concatenate) 'string
+                 (mapcar (function string) string-designators))
           (load-time-value (find-package "KEYWORD"))))
 
 
