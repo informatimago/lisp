@@ -12,7 +12,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2021-06-09 <PJB> Added remove-whole and remove-environment.
+;;;;    2021-06-09 <PJB> Added remove-whole-parameter and remove-environment-parameter.
 ;;;;    2016-01-16 <PJB> Added parameter-parameter-list and make-parameter-list.
 ;;;;    2014-11-05 <PJB> make-parameter-list now returns also
 ;;;;                     parameters from
@@ -566,12 +566,12 @@ some constraints may be different from one lambda-list to the other."))
   (:method ((self orake-ll))    (slot-boundp self 'environment))
   (:method ((self t))           (declare (ignorable self)) nil))
 
-(defgeneric remove-environment (ll)
+(defgeneric remove-environment-parameter (ll)
   (:method ((ll orake-ll))    (slot-makunbound ll 'environment))
   (:method ((ll orakawbe-ll)) (slot-makunbound ll 'environment))
   (:method ((ll t))))
 
-(defgeneric remove-whole (ll)
+(defgeneric remove-whole-parameter (ll)
   (:method ((ll orakawb-ll))  (slot-makunbound ll 'whole))
   (:method ((ll t))))
 
