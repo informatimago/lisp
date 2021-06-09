@@ -108,7 +108,7 @@
    ;; "DEFUN""DEFGENERIC""DEFMETHOD"
    ;; *CALL-STACK*" ;; not yet
    "LIST-SOURCE-FORM")
-  (:export "REMOVE-WHOLE" "REMOVE-ENVIRONMENT")
+  (:export "REMOVE-WHOLE-PARAMETER" "REMOVE-ENVIRONMENT-PARAMETER")
   (:documentation "
 This package exports functions to parse and manipulate
 Common Lisp sources as lisp forms (such as in macros).
