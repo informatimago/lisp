@@ -12,6 +12,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2021-06-09 <PJB> Added remove-whole and remove-environment.
 ;;;;    2016-01-16 <PJB> Added parameter-parameter-list and make-parameter-list.
 ;;;;    2014-11-05 <PJB> make-parameter-list now returns also
 ;;;;                     parameters from
@@ -34,7 +35,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2006 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2006 - 2021
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -50,8 +51,10 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;**************************************************************************
 
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setf *readtable* (copy-readtable nil)))
+
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM"
   (:use "COMMON-LISP")
   (:export
@@ -105,11 +108,12 @@
    ;; "DEFUN""DEFGENERIC""DEFMETHOD"
    ;; *CALL-STACK*" ;; not yet
    "LIST-SOURCE-FORM")
+  (:export "REMOVE-WHOLE" "REMOVE-ENVIRONMENT")
   (:documentation "
 This package exports functions to parse and manipulate
 Common Lisp sources as lisp forms (such as in macros).
 
-Copyright Pascal J. Bourguignon 2003 - 2016
+Copyright Pascal J. Bourguignon 2003 - 2021
 This package is provided under the GNU Affero General Public License.
 See the source file for details.
 "))
@@ -539,6 +543,7 @@ some constraints may be different from one lambda-list to the other."))
                      :initarg :body-parameter
                      :type     body-parameter)))
 
+
 (defclass orakawbe-ll (orakawb-ll)
   ((environment      :accessor lambda-list-environment-parameter
                      :initarg :environment-parameter
@@ -560,6 +565,15 @@ some constraints may be different from one lambda-list to the other."))
   (:method ((self orakawbe-ll)) (slot-boundp self 'environment))
   (:method ((self orake-ll))    (slot-boundp self 'environment))
   (:method ((self t))           (declare (ignorable self)) nil))
+
+(defgeneric remove-environment (ll)
+  (:method ((ll orake-ll))    (slot-makunbound ll 'environment))
+  (:method ((ll orakawbe-ll)) (slot-makunbound ll 'environment))
+  (:method ((ll t))))
+
+(defgeneric remove-whole (ll)
+  (:method ((ll orakawb-ll))  (slot-makunbound ll 'whole))
+  (:method ((ll t))))
 
 
 
