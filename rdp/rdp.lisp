@@ -1085,8 +1085,8 @@ RETURN: the new production set; the new non-terminal set
     (skip-token-and-continue ()
       :report (lambda (stream)
                 (format stream "Skip token ~:[~A ~A~;~*<~A>~], and continue"
-                        (string= (scanner-current-token scanner)
-                                 (scanner-current-text scanner))
+                        (word-equal (scanner-current-token scanner)
+                                    (scanner-current-text scanner))
                         (scanner-current-token scanner)
                         (scanner-current-text scanner)))
       (scan-next-token scanner)
