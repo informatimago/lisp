@@ -11,12 +11,13 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2021-06-11 <PJB> Corrected typo in keywordize lambda-list.
 ;;;;    2018-12-30 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2018 - 2018
+;;;;    Copyright Pascal J. Bourguignon 2018 - 2021
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -49,7 +50,7 @@ License:
 
     AGPL3
 
-    Copyright Pascal J. Bourguignon 2018 - 2018
+    Copyright Pascal J. Bourguignon 2018 - 2021
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -75,15 +76,13 @@ License:
                  (mapcar (function string) string-designators))))
 
 
-(defun keywordize (&rest string-designator)
+(defun keywordize (&rest string-designators)
   "
 RETURN: A new keyword with STRING-DESIGNATOR as name.
 "
   (intern (apply (function concatenate) 'string
                  (mapcar (function string) string-designators))
           (load-time-value (find-package "KEYWORD"))))
-
-
 
 
 ;;;; THE END ;;;;
