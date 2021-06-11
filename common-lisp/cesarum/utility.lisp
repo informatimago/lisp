@@ -135,6 +135,7 @@
    "XOR" "EQUIV" "IMPLY"
    ;; "SET-EQUAL"
    )
+  (:export "PARSE-STRUCTURE-DEFINITION")
   (:export "DMS-D" "D-DMS")
   (:documentation
    "
@@ -1430,7 +1431,6 @@ DO:        Expands to a CTYPECASE where only the clauses with unique
            float types are present.
 "
   (generate-distinct-float-types-typecase 'ctypecase expression clauses))
-
 
 
 (defun +epsilon (float)
