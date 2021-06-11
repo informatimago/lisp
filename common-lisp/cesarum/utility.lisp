@@ -751,16 +751,18 @@ name         = (and (consp option) (first option))
         (error 'simple-program-error
                :format-control "Cannot have :print-object and :print-function options."))
       (when structure-type-p
-        (unless (or (eql structure-type 'list)
-                    (eql structure-type 'vector)
-                    (and (listp structure-type)
-                         (eql (first structure-type) 'vector)
-                         (cdr structure-type)
-                         (typep (second structure-type) '(integer 0))
-                         (null (cddr structure-type))))
+        (unless (and (null (cdr structure-type))
+                     (let ((structure-type (car structure-type)))
+                       (or (eql structure-type 'list)
+                           (eql structure-type 'vector)
+                           (and (listp structure-type)
+                                (eql (first structure-type) 'vector)
+                                (cdr structure-type)
+                                (typep (second structure-type) '(integer 0))
+                                (null (cddr structure-type))))))
           (error 'simple-program-error
                  :format-control "Invalid structure :type option: ~S"
-                 :format-arguments (list structure-type))))
+                 :format-arguments (list (car structure-type)))))
       (let ((conc-name      (make-conc-name conc-name ""      name "-"))
             (copier         (make-name      copier    "COPY-" name ""))
             (predicate      (make-name      predicate ""      name "-P"))
@@ -782,7 +784,7 @@ name         = (and (consp option) (first option))
         (values name conc-name constructors copier
                 include initial-offset predicate
                 print-function print-object
-                structure-type-p structure-type)))))
+                (not (not structure-type-p)) (car structure-type))))))
 
 (defun parse-structure-definition (name-and-options doc-and-slots)
   (multiple-value-bind (name conc-name constructors copier
