@@ -75,7 +75,7 @@ License:
                  (mapcar (function string) string-designators))))
 
 
-(defun keywordize (&rst string-designator)
+(defun keywordize (&rest string-designator)
   "
 RETURN: A new keyword with STRING-DESIGNATOR as name.
 "
