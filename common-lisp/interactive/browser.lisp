@@ -11,6 +11,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2021-06-14 <PJB> Added SELECT-WORKING-DIRECTORY.
 ;;;;    2017-05-27 <PJB> All commands are functions, not macros anymore.
 ;;;;                     Renamed DEFCOMMAND -> DEFINE-EXTERNAL-COMMAND.
 ;;;;    2015-10-10 <PJB> CAT/MORE/LESS can process *STANDARD-INPUT*.
@@ -26,7 +27,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2004 - 2017
+;;;;    Copyright Pascal J. Bourguignon 2004 - 2021
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -41,6 +42,7 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>
 ;;;;****************************************************************************
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setf *readtable* (copy-readtable nil)))
 (defpackage "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.BROWSER"
@@ -69,7 +71,8 @@
                                  "PRINT-NOT-READABLE-OBJECT")
   (:export "MAKE" "MV" "CP" "RM" "DEFINE-EXTERNAL-COMMAND" "*SHELL*" "LESS" "MORE" "CAT" "LS"
            "GREP" "MKDIR" "POPD" "PUSHD" "PWD" "CD" "BROWSE" "*TERMINAL-HEIGHT*"
-           "CHANGE-WORKING-DIRECTORY" "WORKING-DIRECTORY" "*CHANGE-DIRECTORY-HOOK*"
+           "*DIRECTORY-HISTORY*"
+           "CHANGE-WORKING-DIRECTORY" "SELECT-WORKING-DIRECTORY" "WORKING-DIRECTORY" "*CHANGE-DIRECTORY-HOOK*"
            "*KEEP-DOT-FILES*")
   (:documentation
    "
@@ -85,7 +88,7 @@ License:
 
     AGPL3
 
-    Copyright Pascal J. Bourguignon 2002 - 2017
+    Copyright Pascal J. Bourguignon 2002 - 2021
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -225,6 +228,8 @@ same directory, so that the *default-pathname-defaults*, the
 three synchronized.
 ")
 
+(defvar *directory-stack* nil)
+(defvar *directory-history* nil)
 (defvar *working-directory* (user-homedir-pathname)
   "The current working directory")
 
@@ -238,7 +243,6 @@ three synchronized.
   (let* ((non-existent
            (find-if-not
             (lambda (dir)
-              #+ccl (declare (ignore dir))
 
               ;; We cannot use directory to check whether a directory
               ;; exists.  So we try a file pattern, and if not found
@@ -280,11 +284,28 @@ RETURN: *WORKING-DIRECTORY*
           (setf *working-directory* (truename dirpath))
           (dolist (hook *change-directory-hook*)
             (let ((*working-directory* *working-directory*))
-              (funcall hook *working-directory*))))
+              (funcall hook *working-directory*)))
+          (pushnew *working-directory* *directory-history* :test (function equal)))
         (error "nonexistent directory: ~S" dirpath)))
   *working-directory*)
 
-
+(defun select-working-directory ()
+  (when *directory-history*
+    (setf *directory-history* (sort *directory-history* (function string<) :key (function namestring)))
+    (loop
+       (loop :for index :from 1
+             :for dir :in *directory-history*
+             :do (format *query-io* "~4D) ~A~%" index dir)
+             :finally (format *query-io* "~4D) ~A~%" 0 "Cancel."))
+       (finish-output *query-io*)
+       (let ((selection (read *query-io*)))
+         (when (and (integerp selection))
+           (cond
+             ((zerop selection) (return-from select-working-directory))
+             ((plusp selection) (let ((dir (nth (1- selection) *directory-history* )))
+                                  (when dir
+                                    (change-working-directory dir)
+                                    (return-from select-working-directory))))))))))
 
 (defun parent-directory (dirpath)
   (make-pathname :directory (let ((dir (pathname-directory dirpath)))
@@ -642,9 +663,6 @@ SEE:        MORE
 DO:         Same as more, but force no pagination.
 "
   (apply (function more) :page nil paths))
-
-
-(defvar *directory-stack* nil)
 
 
 (defun cd (&optional path)
