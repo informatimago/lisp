@@ -402,7 +402,7 @@ BUG: What about the character encoding of C strings?
 
 (defmethod print-object ((self c-varref) stream)
   (if *print-readably*
-      (prin1 (c-varref-variable item) stream)
+      (prin1 (c-varref-variable self) stream)
       (print-unreadable-object (self stream :identity t :type t)
         (with-slots (variable) self
           (format stream ":variable ~S" variable))))
@@ -429,7 +429,7 @@ BUG: What about the character encoding of C strings?
 
 (defmethod print-object ((self c-literal) stream)
   (if *print-readably*
-      (prin1 (c-literal-value item) stream)
+      (prin1 (c-literal-value self) stream)
       (print-unreadable-object (self stream :identity t :type t)
         (with-slots (value) self
           (format stream ":value ~S" value))))
@@ -612,7 +612,7 @@ exclusive, but one must be given when :arguments is not given.")
          (get symbol 'operator)
          symbol))
   (:method ((operator c-operator))
-    (c-operator-text c-operator)))
+    (c-operator-text operator)))
 
 
 (defun generate-list (separator generator list)
@@ -1354,6 +1354,8 @@ exclusive, but one must be given when :arguments is not given.")
              (emit :fresh-line "using" " " "namespace" " ")
              (generate using-name)
              (emit ";" :newline)))
+
+(declaim (ftype (function (t) t) absolute-scope))
 
 (define-declaration USING-SCOPE (using-name)
   :generate (progn
