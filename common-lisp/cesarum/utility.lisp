@@ -693,10 +693,16 @@ name         = (and (consp option) (first option))
 (defun option-key-p (key option)
   (eq key (if (symbolp option) option (car option))))
 
-(defun get-option (key options &optional list)
+(defun get-option (key options &key list boolean)
   (let ((opts (remove key options :test-not (function option-key-p))))
     (cond
       (list               opts)
+      (boolean
+       (cond
+         ((null opts)          nil)
+         ((cddr opts)          (error "Expected only one ~S option, not ~{~S~^ ~}." key opts))
+         ((symbolp (car opts)) t)
+         (t                    (error "Expected a flag ~S option, not ~{~S~^ ~}." key opts))))
       ((null opts)        nil)
       ((null (rest opts)) ; a single option
        (let ((opt (first opts)))
@@ -738,7 +744,7 @@ name         = (and (consp option) (first option))
                      nil
                      (cdr name-and-options))))
     (let ((conc-name        (get-option :conc-name      options))
-          (constructors     (get-option :constructor    options :list))
+          (constructors     (get-option :constructor    options :list t))
           (copier           (get-option :copier         options))
           (predicate        (get-option :predicate      options))
           (print-function   (get-option :print-function options))
@@ -746,7 +752,8 @@ name         = (and (consp option) (first option))
           (include          (get-option :include        options))
           (initial-offset   (get-option :initial-offset options))
           (structure-type-p (get-option :type           options))
-          (structure-type   (get-option :type           options)))
+          (structure-type   (get-option :type           options))
+          (namedp           (get-option :named          options :boolean t)))
       (when (and print-object print-function)
         (error 'simple-program-error
                :format-control "Cannot have :print-object and :print-function options."))
@@ -784,13 +791,14 @@ name         = (and (consp option) (first option))
         (values name conc-name constructors copier
                 include initial-offset predicate
                 print-function print-object
-                (not (not structure-type-p)) (car structure-type))))))
+                (not (not structure-type-p)) (car structure-type)
+                namedp)))))
 
 (defun parse-structure-definition (name-and-options doc-and-slots)
   (multiple-value-bind (name conc-name constructors copier
                         include initial-offset predicate
                         print-function print-object
-                        structure-type-p structure-type)
+                        structure-type-p structure-type namedp)
       (parse-structure-name-and-options name-and-options)
     (let ((documentation (if (stringp (car doc-and-slots))
                              (car doc-and-slots)
@@ -810,7 +818,7 @@ name         = (and (consp option) (first option))
                 print-function print-object
                 structure-type-p structure-type
                 ;; --
-                documentation slots slot-names accessors)))))
+                documentation slots slot-names accessors namedp)))))
 
 (defun generate-class-structure (name conc-name constructors copier
                                  include initial-offset predicate
