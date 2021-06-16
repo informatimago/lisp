@@ -1,3 +1,8 @@
+# -*- mode:org -*-
+* Lambda-List Syntax
+
+#+BEGIN_EXAMPLE
+
 boa-lambda-list
 ordinary-lambda-list::= (var*
                 [&optional {var | (var [init-form [supplied-p-parameter]])}*]
@@ -68,3 +73,40 @@ method-combination-lambda-list::= (wholevar var*
                 wholevar
                 [&aux {var | (var [init-form])}*]
                 wholevar)
+#+END_EXAMPLE
+
+* Parameter Methods
+
+#+BEGIN_SRC lisp
+      lambda-list-mandatory-parameters
+      parameter-name
+
+      lambda-list-optional-parameters
+      parameter-name
+      parameter-initform-p
+      parameter-initform
+      parameter-indicator-p
+      parameter-indicator
+
+      lambda-list-rest-parameter
+      parameter-name
+
+      lambda-list-allow-other-keys-p
+      lambda-list-key-p
+      lambda-list-keyword-parameters
+      parameter-name
+      parameter-initform-p
+      parameter-initform
+      parameter-indicator-p
+      parameter-indicator
+
+      lambda-list-auxiliary-parameters
+      parameter-name
+      parameter-keyword-p
+      parameter-keyword
+      ensure-parameter-keyword
+      parameter-initform-p
+      parameter-initform
+      parameter-indicator-p
+      parameter-indicator
+#+END_SRC
