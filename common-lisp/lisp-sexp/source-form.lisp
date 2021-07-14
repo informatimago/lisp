@@ -225,7 +225,7 @@ one for the parameter and one for the indicator."))
   ()
   (:documentation "A &REST parameter."))
 
-(defclass body-parameter (parameter)
+(defclass body-parameter (rest-parameter)
   ()
   (:documentation "A &BODY parameter."))
 
@@ -540,7 +540,7 @@ some constraints may be different from one lambda-list to the other."))
    (body             :accessor lambda-list-body-parameter
                      :accessor lambda-list-rest-parameter
                      :initarg :body-parameter
-                     :type     body-parameter)))
+                     :type     rest-parameter)))
 
 
 (defclass orakawbe-ll (orakawb-ll)
