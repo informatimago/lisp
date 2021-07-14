@@ -944,7 +944,7 @@ DO:       Define a macro: (WITH-{CLASS-NAME} object &body body)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (declaim (declaration stepper))
-(declaim (ftype (function ((or string symbol character)) symbol) keywordize))
+(declaim (ftype (function ((or string symbol character) &rest others) symbol) keywordize))
 
 ;;;
 ;;; We have two way to print easily objects:
