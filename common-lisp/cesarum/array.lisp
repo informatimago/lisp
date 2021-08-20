@@ -482,4 +482,26 @@ numbers, or equal otherwise."
                :always (same i))))))
 
 
+
+(defun array-to-lists (array)
+  (labels ((atl (array dimensions)
+             (if (null (rest dimensions))
+                 (loop
+                   :with max := (pop dimensions)
+                   :for i :below max
+                   :collect (funcall array i))
+                 (loop
+                   :with max := (pop dimensions)
+                   :for i :below max
+                   :collect (atl (lambda (&rest indices)
+                                   (apply array i indices))
+                                 dimensions)))))
+    (let ((dimensions (array-dimensions array)))
+      (case (length dimensions)
+        ((0) (aref array))
+        ((1) (coerce array 'list))
+        (otherwise (atl (lambda (&rest indices) (apply (function aref) array indices))
+                        dimensions))))))
+
+
 ;;;; THE END ;;;;
