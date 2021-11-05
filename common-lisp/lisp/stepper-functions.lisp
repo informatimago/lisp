@@ -13,13 +13,14 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2021-11-05 <PJB> Added stepping macroexpansions.
 ;;;;    2014-10-08 <PJB> Corrected step-{break,unbreak}-{entry,exit}.
 ;;;;    2012-08-09 <PJB> Extracted from stepper.lisp
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2012 - 2021
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -819,16 +820,38 @@ RETURN:         A stepping lambda-form from the LAMBDA-FORM.
      (case (first form)
 
        ;; First we check the real CL special operators:
-       ;; We just step them wholesale. (If there are macros inside
-       ;; they'll be expanded and we may step them.
+       ;; We map them to cl-stepper operators and step the mapped version.
        ((function quote)
         (step-simple-form form))
-       ((block catch eval-when flet go if labels let let*
-               load-time-value locally macrolet multiple-value-call
-               multiple-value-prog1 progn progv return-from setq
-               symbol-macrolet tagbody the throw unwind-protect)
+       ((eval-when locally progn)
         (simple-step form))
-
+       ((block catch flet go if labels let let*
+               load-time-value macrolet multiple-value-call
+               multiple-value-prog1 progv return-from setq
+               symbol-macrolet tagbody the throw unwind-protect)
+        (step-expression (cons (case (first form)
+                                 ((block) 'com.informatimago.common-lisp.lisp.stepper:block)
+                                 ((catch) 'com.informatimago.common-lisp.lisp.stepper:catch)
+                                 ((flet) 'com.informatimago.common-lisp.lisp.stepper:flet)
+                                 ((go) 'com.informatimago.common-lisp.lisp.stepper:go)
+                                 ((if) 'com.informatimago.common-lisp.lisp.stepper:if)
+                                 ((labels) 'com.informatimago.common-lisp.lisp.stepper:labels)
+                                 ((let) 'com.informatimago.common-lisp.lisp.stepper:let)
+                                 ((let*) 'com.informatimago.common-lisp.lisp.stepper:let*)
+                                 ((load-time-value) 'com.informatimago.common-lisp.lisp.stepper:load-time-value)
+                                 ((macrolet) 'com.informatimago.common-lisp.lisp.stepper:macrolet)
+                                 ((multiple-value-call) 'com.informatimago.common-lisp.lisp.stepper:multiple-value-call)
+                                 ((multiple-value-prog1) 'com.informatimago.common-lisp.lisp.stepper:multiple-value-prog1)
+                                 ((progv) 'com.informatimago.common-lisp.lisp.stepper:progv)
+                                 ((return-from) 'com.informatimago.common-lisp.lisp.stepper:return-from)
+                                 ((setq) 'com.informatimago.common-lisp.lisp.stepper:setq)
+                                 ((symbol-macrolet) 'com.informatimago.common-lisp.lisp.stepper:symbol-macrolet)
+                                 ((tagbody) 'com.informatimago.common-lisp.lisp.stepper:tagbody)
+                                 ((the) 'com.informatimago.common-lisp.lisp.stepper:the)
+                                 ((throw) 'com.informatimago.common-lisp.lisp.stepper:throw)
+                                 ((unwind-protect) 'com.informatimago.common-lisp.lisp.stepper:unwind-protect))
+                               (rest form))
+                         env))
        ;; Next we check for the stepper macros.  Since they already
        ;; expand to simple-step, we just use them as is, unless
        ;; they're toplevelness protected forms:
@@ -861,11 +884,11 @@ RETURN:         A stepping lambda-form from the LAMBDA-FORM.
         form)
        (otherwise
         (if (macro-function (first form) env)
-            ;; For a macro, we let the host CL expand it:
-            (simple-step form)
+            ;; For a macro, we expand it, and step the expansion;
+            ;; most probably the expansion will contain CL operator,
+            ;; they're mapped above.
+            (step-expression (macroexpand form env) env)
             ;; For a function, we step the arguments:
             (step-function-call form env)))))))
-
-
 
 ;;;; THE END ;;;;
