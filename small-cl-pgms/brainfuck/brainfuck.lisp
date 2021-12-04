@@ -61,7 +61,8 @@
                                  "PRINT-NOT-READABLE-OBJECT")
   (:export "BFVM" "MAKE-BFVM" "BFVM-MEM" "BFVM-MC" "BFVM-PGM" "BFVM-PC")
   (:export "BFLOAD" "BFVM-RUN")
-  (:export "BFCOMPILE-FILE" "BFCOMPILE" "*BFCOMPILE*"))
+  (:export "BFCOMPILE-FILE" "BFCOMPILE" "*BFCOMPILE*")
+  (:export "BFEVAL"))
 (in-package  "COM.INFORMATIMAGO.SMALL-CL-PGMS.BRAINFUCK")
 
 ;;;----------------------------------------------------------------------
@@ -918,6 +919,10 @@ with defbf, or strings containing brainfuck instructions.
 (test-lisp/bf-vm)
 ||#
 
+(defun bfeval (bfcode)
+  (check-type bfcode string)
+  (funcall (com.informatimago.small-cl-pgms.brainfuck:bfcompile bfcode)
+           (com.informatimago.small-cl-pgms.brainfuck:make-bfvm)))
 
 
 ;; Local Variables:

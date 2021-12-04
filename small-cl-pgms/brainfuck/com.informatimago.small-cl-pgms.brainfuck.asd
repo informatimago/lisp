@@ -38,7 +38,7 @@
   :version "1.2.0"
   :license "GPL3"
   :depends-on ()
-  :components ((:file "bf"))
+  :components ((:file "brainfuck"))
   #+adsf3 :in-order-to #+adsf3 ((asdf:test-op (asdf:test-op "com.informatimago.small-cl-pgms.bf.test"))))
 
 ;;;; THE END ;;;;

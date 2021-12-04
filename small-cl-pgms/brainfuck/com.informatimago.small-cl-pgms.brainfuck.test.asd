@@ -57,7 +57,7 @@
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on     ("com.informatimago.common-lisp.cesarum"
                    "com.informatimago.small-cl-pgms.brainfuck")
-  :components     ((:file "bf-test" :depends-on ()))
+  :components     ((:file "brainfuck-test" :depends-on ()))
   #+asdf3 :perform #+asdf3 (asdf:test-op
                             (operation system)
                             (declare (ignore operation system))
