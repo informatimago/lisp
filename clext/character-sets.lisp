@@ -217,6 +217,27 @@ RETURN:     A new list of name and aliases, with the ALIASES added, if
             (:windows-31j  :cp932 :cswindows31j)
             (:euc-jp :eucjp)))
 
+  #+lispworks '((:latin-1
+                 :iso-8859-1 :iso_8859-1 :latin1 :l1 :ibm819 :cp819 :csisolatin1)
+                (:latin-1-terminal)
+                (:latin-1-safe)
+                (:macos-roman
+                 :macintosh :macosroman :mac-roman :macroman)
+                (:ascii
+                 :us-ascii :csascii :cp637 :ibm637 :us :iso646-us  :iso-ir-6)
+                (:unicode)
+                (:utf-16 :utf-16be)
+                (:utf-8)
+                (:utf-32 :utf-32-be :ucs-4be)
+                (:bmp)
+                (:jis)
+                (:euc-jp
+                  :eucjp)
+                (:sjis)
+                (:windows-cp936 :gbk)
+                (:koi8-r
+                 :koi8 :cp878))
+
   #+(and ccl ccl-1.6)
   (mapcar (lambda (x) (mapcar (function string-upcase) x))
           '((:iso-8859-1 :iso_8859-1  :latin1  :l1  :ibm819  :cp819  :csisolatin1)
@@ -305,7 +326,7 @@ RETURN:     A new list of name and aliases, with the ALIASES added, if
    :test (function equal))
 
 
-  #-(or abcl ccl clisp cmu ecl sbcl)
+  #-(or abcl ccl clisp cmu ecl sbcl lispworks)
   (progn
     (warn "What are the available external formats in ~A ?"
           (lisp-implementation-type))
