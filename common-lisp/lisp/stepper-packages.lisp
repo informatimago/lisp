@@ -117,7 +117,7 @@ See the source file for details.
 
   (:nicknames "COMMON-LISP-STEPPER"
               "CL-STEPPER"
-              "STEPPER")
+              #-lispworks "STEPPER")
 
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM"
