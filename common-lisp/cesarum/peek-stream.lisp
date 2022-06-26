@@ -321,7 +321,7 @@ RETURN:  A whole line read from the peek-stream, or NIL in case of end of stream
      :while ch
      :do (if  (char= ch #\Newline)
               (return line)
-              (vector-push-extend ch line (length line)))
+              (vector-push-extend ch line (array-dimension line 0)))
      :finally (return line))))
 
 ;;;; THE END ;;;;
