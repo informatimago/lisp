@@ -20,7 +20,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2012 - 2021
+;;;;    Copyright Pascal J. Bourguignon 2012 - 2022
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -563,7 +563,7 @@ DO:        Implements a minimalist CL Read-Eval-Print body.
              (did-step display-form results)
              (values-list results))))
     (case *step-mode*
-      ((:run :function)  (funcall thunk))
+      ((:run :function) (funcall thunk))
       (:trace  (with-parens *step-trace-output* (do-step)))
       (:step   (with-parens *step-trace-output*
                  (doagain
@@ -793,20 +793,27 @@ RETURN:         A stepping lambda-form from the LAMBDA-FORM.
         (if (member (first function-name)
                     '(com.informatimago.common-lisp.lisp.stepper:lambda lambda))
             `(progn
-               ;; (print '(2) *step-trace-output*)
-               (simple-step `(,(step-lambda function-name :environment env)
+               ,(simple-step `(,(step-lambda function-name :environment env)
                                ,@(mapcar (lambda (argument) (step-expression argument env))
                                          arguments))
-                            form))
+                             `,form))
             (error "Invalid object used as function name ~S in function call ~S"
                    function-name form))
         `(progn
-           ;; (print '(3) *step-trace-output*)
            ,(simple-step `(,function-name
                            ,@(mapcar (lambda (argument) (step-expression argument env))
                                      arguments))
                          form)))))
 
+(defvar *implementation-specific-special-operators* '()
+  "An a-list mapping symbols to macro-functions expanding an implementation specific special-operator.")
+
+#+ccl (push (cons 'ccl:compiler-let (lambda (whole environment)
+                                      (declare (ignore environment))
+                                      (destructuring-bind (clet (&rest bindings) &body body) whole
+                                        (declare (ignore clet bindings))
+                                        `(progn ,@body))))
+            *implementation-specific-special-operators*)
 
 (defun step-expression (form env)
   ;; Operators in CL-STEPPER are macros, so they're taken care of
@@ -816,9 +823,20 @@ RETURN:         A stepping lambda-form from the LAMBDA-FORM.
     ;; The other atoms are unchanged:
     ((atom form)     `(self-evaluating ,form))
     ;; Now we have a list.
+    ((and (listp (first form))
+          (eq 'cl:lambda (first (first form))))
+     ;; ((cl:lambda …) …)
+     (step-function-call form env))
+    ((and (listp (first form))
+          (eq 'lambda (first (first form))))
+     ;; ((lambda …) …)
+     (step-function-call form env))
+    ((let ((somf (assoc (first form) *implementation-specific-special-operators*)))
+       (and somf
+            (progn (step-expression (funcall (cdr somf) form env) env)
+                   t))))
     (t
      (case (first form)
-
        ;; First we check the real CL special operators:
        ;; We map them to cl-stepper operators and step the mapped version.
        ((function quote)
