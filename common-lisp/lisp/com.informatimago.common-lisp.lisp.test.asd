@@ -57,12 +57,16 @@
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
   :depends-on     ("com.informatimago.common-lisp.cesarum"
                    "com.informatimago.common-lisp.lisp")
-  :components     ()
+  :components     ((:file "source-test")
+                   (:file "stepper-test"))
   #+asdf3 :perform #+asdf3 (asdf:test-op
                             (operation system)
                             (declare (ignore operation system))
                             (let ((*package* (find-package "COM.INFORMATIMAGO.COMMON-LISP.LISP.SOURCE.TEST")))
                               (uiop:symbol-call "COM.INFORMATIMAGO.COMMON-LISP.LISP.SOURCE.TEST"
-                                                        "TEST/ALL"))))
+                                                "TEST/ALL"))
+                            (let ((*package* (find-package "COM.INFORMATIMAGO.COMMON-LISP.LISP.STEPPER.TEST")))
+                              (uiop:symbol-call "COM.INFORMATIMAGO.COMMON-LISP.LISP.STEPPER.TEST"
+                                                "TEST/ALL"))))
 
 ;;;; THE END ;;;;
