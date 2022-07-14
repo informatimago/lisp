@@ -11,12 +11,13 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2022-07-14 <PJB> Corrected bug with ABORT-STEPPING.
 ;;;;    2012-08-09 <PJB> Extracted from stepper.lisp
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2012 - 2022
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -82,6 +83,7 @@
    "WILL-STEP" "DID-BIND" "PRINT-STEP-RESULTS" "DID-STEP" "DID-TAG"
 
    "STEP-CONDITION" "STEP-MESSAGE" "STEP-CHOICE"
+   "ABORT-STEPPING"
 
    "STEPPER" "DISABLE" "STEPPER-DECLARATION-P"
 
@@ -106,7 +108,7 @@ COM.INFORMATIMAGO.COMMON-LISP.LISP.STEPPER.
 BUGS: we should probably design it with hooks so that clients may
       define the stepping/tracing user interface.
 
-Copyright Pascal J. Bourguignon 2012 - 2015
+Copyright Pascal J. Bourguignon 2012 - 2022
 This package is provided under the Afero General Public License 3.
 See the source file for details.
 
@@ -265,7 +267,7 @@ use the (declare (stepper trace)) declaration.
 
 
 
-Copyright Pascal J. Bourguignon 2012 - 2015
+Copyright Pascal J. Bourguignon 2012 - 2022
 This package is provided under the Afero General Public License 3.
 See the source file for details.
 
