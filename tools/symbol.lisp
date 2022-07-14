@@ -203,10 +203,13 @@ the bad thing is that it's a PPCRE regexp. :-(
                             (let ((*print-length* 8)
                                   (*print-level*  3))
                               (let ((val (prin1-to-string (symbol-value sym))))
-                                (if (< (- *print-right-margin* 5 width)
-                                       (length val))
-                                    (subseq val 0 (- *print-right-margin* 5 width))
-                                    val)))
+                                (cond ((minusp (- *print-right-margin* 5 width))
+                                       "")
+                                      ((< (- *print-right-margin* 5 width)
+                                          (length val))
+                                       (subseq val 0 (- *print-right-margin* 5 width)))
+                                   (t
+                                     val))))
                             "")))))
   (values))
 
