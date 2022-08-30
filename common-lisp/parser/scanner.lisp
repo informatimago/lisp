@@ -19,7 +19,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2004 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2004 - 2022
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -106,7 +106,7 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun char-name-supported-p (name)
-     (ignore-errors (read-from-string (format nil "#\\~A" name)))))
+    (ignore-errors (read-from-string (format nil "#\\~A" name)))))
 
 
 ;; Note: the features are defined in .cesarum.characters
@@ -249,13 +249,13 @@ RETURN:         SCANNER
             ))
     scanner))
 
-
 (defgeneric skip-spaces (scanner)
   (:documentation   "
 DO: Skips over the spaces in the input stream. Updates line and column slots.
 RETURN: line; column
 ")
   (:method ((scanner scanner))
+    (break "skip-spaces ((scanner scanner))")
     (loop
       :for ch = (getchar scanner)
       :while (and ch (find ch (scanner-spaces scanner)))
@@ -264,8 +264,146 @@ RETURN: line; column
                (return (values (scanner-line   scanner)
                                (scanner-column scanner))))))
 
+#|
+SKIP-SPACES can also skip comments.
+
+There are several kinds of comment syntaxes:
+
+- single-line
+
+    + introduced by a single specific character in any position (even
+      inside of a token), till the end-of-line;
+      => THIS IS NOT SUPPORTED BY SKIP-SPACES
+
+    + introduced by a single specific character in any position
+      (outside of a token), till the end-of-line;
+      => SINGLE-LINE-START-TOKEN
+
+    + introduced by a single character (specific or not) in a specific
+      position, till the end-of-line; => SINGLE-LINE-START-COLUMN
+
+    + introduced by a multi-character token in any position, till the
+      end-of-line; => SINGLE-LINE-START-TOKEN
+
+- multi-line
+
+    + introduced by a single or multi-character token in any position
+      (outside of a token), till another single or multi-character token.
+      => MULTI-LINE-COMMENT (START-TOKEN, STOP-TOKEN, RECURSIVEP = NIL)
+
+- recursive-multi-line
+
+    + introduced by a single or multi-character token in any position
+      (outside of a token), till another single or multi-character
+      token, with recursive parsing for embedded comments (possibly of
+      the same or another syntax).
+      => MULTI-LINE-COMMENT (START-TOKEN, STOP-TOKEN, RECURSIVEP = T)
+
+|#
 
 
+
+(defclass comment-scanner-mixin ()
+  ((comment-syntaxes :initarg :comment-syntaxes :initform '()  :type 'list :reader comment-syntaxes)))
+
+(defgeneric comment-starting-p (scanner syntax ch))
+(defgeneric scan-comment (scanner syntax))
+
+(defmethod skip-spaces ((scanner comment-scanner-mixin))
+  ;; (break "skip-spaces ((scanner comment-scanner-mixin))")
+  (loop
+    :for ch = (getchar scanner)
+    :do (format t "getchar                  -> ~S~%" ch)
+        (format t "spacep                   -> ~S~%" (find ch (scanner-spaces scanner)))
+        (when ch
+          (format t "syntax starting comment  -> ~S~%"
+                  (some (lambda (syntax)
+                          (comment-starting-p scanner syntax ch))
+                        (comment-syntaxes scanner))))
+    :while (and ch
+                (or (find ch (scanner-spaces scanner))
+                    (some (lambda (syntax)
+                            (when (comment-starting-p scanner syntax ch)
+                              (ungetchar scanner ch)
+                              (scan-comment scanner syntax)
+                              t))
+                          (comment-syntaxes scanner))))
+    :finally (when ch
+               (format t "ungetchar                -> ~S~%" ch)
+               (ungetchar scanner ch))
+             (format t "skipped ~A ~A~2%" (scanner-line   scanner) (scanner-column scanner))
+             (return (values (scanner-line   scanner)
+                             (scanner-column scanner)))))
+
+(defclass single-line-comment ()
+  ((start-token  :initarg :start-token :reader comment-start-token)))
+
+(defmethod comment-starting-p (scanner (syntax single-line-comment) ch)
+  ;; For now, we'll only support 1- or 2- character tokens.
+  (let ((start (comment-start-token syntax)))
+    (check-type start (or (string 1) (string 2))
+                "Supported comment start tokens must be strings of 1 or 2 characters.")
+    (if (char= (char start 0) ch)
+        (if (< 1 (length start))
+            (char= (char start 1) (nextchar scanner))
+            t)
+        nil)))
+
+(defmethod scan-comment (scanner (syntax single-line-comment))
+  (loop
+    :for ch := (getchar scanner)
+    :until (char= ch #\Newline)))
+
+(defclass from-column-comment (single-line-scan)
+  ((start-column :initarg :start-column :reader comment-start-column)))
+
+(defmethod comment-starting-p (scanner (syntax from-column-comment) ch)
+  ;; For now, we'll only support 1-character tokens in the specific column.
+  (let ((start  (comment-start-token syntax))
+        (column (comment-start-column syntax)))
+    (check-type start (or (string 1) null)
+                "Supported comment start tokens must be strings of 1 character, or NIL.")
+    (and (= (scanner-column scanner) column)
+         (if (null start)
+             (not (find ch (scanner-spaces scanner)))
+             (char= (char start 0) ch)))))
+
+(defclass multi-line-comment (single-line-comment)
+  ((stop-token  :initarg :stop-token  :reader comment-stop-token)))
+
+(defmethod comment-stop-p (scanner (syntax multi-line-comment) ch)
+  ;; For now, we'll only support 1- or 2- character tokens.
+  (let ((stop (comment-stop-token syntax)))
+    (check-type stop (or (string 1) (string 2))
+                "Supported comment stop tokens must be strings of 1 or 2 characters.")
+    (if (char= (char stop 0) ch)
+        (if (< 1 (length stop))
+            (char= (char stop 1) (nextchar scanner))
+            t)
+        nil)))
+
+(defmethod scan-comment (scanner (syntax multi-line-comment))
+  (loop
+    :for ch := (getchar scanner)
+    :until (comment-stop-p scanner syntax ch)
+    :finally (when (< 1 (length (comment-stop-token syntax)))
+               (getchar scanner))))
+
+(defclass recursive-line-comment (multi-line-comment)
+  ((stop-token  :initarg :stop-token  :reader comment-stop-token)))
+
+(defmethod scan-comment (scanner (syntax recursive-line-comment))
+  (loop
+    :for ch := (getchar scanner)
+    :until (comment-stop-p scanner syntax ch)
+    :do (let ((subcomment (find-if (lambda (syntax)
+                                     (comment-starting-p scanner syntax ch))
+                                   (comment-syntaxes scanner))))
+          (when subcomment
+            (ungetchar scanner ch)
+            (scan-comment scanner subcomment)))
+    :finally (when (< 1 (length (comment-stop-token syntax)))
+               (getchar scanner))))
 
 (defgeneric scan-next-token (scanner &optional parser-data)
   (:documentation "

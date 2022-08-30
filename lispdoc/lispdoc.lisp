@@ -95,12 +95,9 @@ RETURN:  The function lambda list.
 CLASS-NAME: A class name.
 RETURN:     The class precedence list.
 "
-  #+sbcl                                ; as always sbcl is lamentable
-  (if (slot-boundp (find-class class-name) 'sb-pcl::%class-precedence-list)
-      (closer-mop:class-precedence-list (find-class class-name))
-      '())
-  #-sbcl
-  (closer-mop:class-precedence-list (find-class class-name)))
+  (let ((class (find-class class-name)))
+    (closer-mop:ensure-finalized class)
+    (closer-mop:class-precedence-list class)))
 
 
 (defun class-slot-initargs (class-name)
@@ -109,6 +106,7 @@ CLASS-NAME: A class name.
 RETURN:     The initargs of the class slots.
 "
   (let ((class (find-class class-name)))
+    (closer-mop:ensure-finalized class)
     (mapcan (lambda (slot) (copy-seq (closer-mop:slot-definition-initargs slot)))
             (closer-mop:class-slots class))))
 
