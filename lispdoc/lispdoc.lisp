@@ -84,6 +84,7 @@ RETURN:  The function lambda list.
     (if le
         (second le)
         (or
+         #+swank     (swank/backend:arglist funame)
          #+openmcl   (ccl:arglist funame)
          #+lispworks (lw:function-lambda-list funame)
          '()))))
@@ -94,6 +95,11 @@ RETURN:  The function lambda list.
 CLASS-NAME: A class name.
 RETURN:     The class precedence list.
 "
+  #+sbcl                                ; as always sbcl is lamentable
+  (if (slot-boundp (find-class class-name) 'sb-pcl::%class-precedence-list)
+      (closer-mop:class-precedence-list (find-class class-name))
+      '())
+  #-sbcl
   (closer-mop:class-precedence-list (find-class class-name)))
 
 
