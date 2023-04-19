@@ -44,7 +44,7 @@
   (:export "UPTIME" "DATE" "*EDITOR*" "EDIT" "MOZILLA-STRING" "LSCHAR" "LSPACK"
            "DIFF-PACKAGE" "PSWITCH" "SHOW" "MKUPACK" "RESET-CLUSER" "POPP" "PUSHP"
            "COMPARE-PATHNAMES" "PRINT-PATHNAME" "LSSYMBOLS"
-           "REPL" "REPL-EXIT" "REP"
+           "REPL" "REPL-EXIT" "REP" "*REPL-PROMPT*"
            "REPL-HISTORY-RESET"
            "REPL-HISTORY-SIZE"
            "REPL-HISTORY-ADD"
@@ -197,10 +197,20 @@ DO:       Execute the BODY with a handler for CONDITION and
          (*debug-io* *debug-io*))
      ,@body))
 
+(defvar *repl-prompt* nil
+  "NIL -> prints the default prompt: package[history]>
+A string -> prints it as prompt
+A function -> calls it to print the prompt. The parameter is the history index, and an optional level.")
+
 (defun %rep (+eof+ hist print-prompt)
+  (check-type *repl-prompt* (or null string function)
+              "The *repl-prompt* should be either NIL, a string or a function of 1 or 2 arguments.")
   (handling-repl-errors (read)
     (when print-prompt
-      (format t "~%~A[~D]> " (package-name *package*) hist)
+      (typecase *repl-prompt*
+        (null (format t "~%~A[~D]> " (package-name *package*) hist) )
+        (string (format t "~%~A" *repl-prompt*))
+        (function (funcall *repl-prompt* hist)))
       (finish-output)
       (setf print-prompt t))
     (setf - (read *standard-input* nil +eof+))
