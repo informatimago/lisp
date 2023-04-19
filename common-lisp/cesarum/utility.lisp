@@ -341,20 +341,38 @@ WHO'S THE AUTHOR?"
 ||#
 
 
-(defun include-file (path)
-  "
+;; (defun include-file (path)
+;;   "
+;; NOTE:    Untasty, but sometimes useful.
+;; DO:      Read from the file at PATH all the sexps and returns a list of them
+;;          prefixed with 'progn.
+;; USAGE:   #.(include-file \"source.lisp\")
+;; "
+;;   (cons 'progn
+;;         (with-open-file (file path :direction :input :if-does-not-exist :error)
+;;           (do ((result '())
+;;                (eof (gensym)))
+;;               ((eq eof (car result)) (nreverse (cdr result)))
+;;             (push (read file nil eof) result)))))
+
+
+(defgeneric include-file (path-or-stream)
+  (:documentation  "
 NOTE:    Untasty, but sometimes useful.
 DO:      Read from the file at PATH all the sexps and returns a list of them
          prefixed with 'progn.
 USAGE:   #.(include-file \"source.lisp\")
-"
-  (cons 'progn
-        (with-open-file (file path :direction :input :if-does-not-exist :error)
-          (do ((result '())
-               (eof (gensym)))
-              ((eq eof (car result)) (nreverse (cdr result)))
-            (push (read file nil eof) result)))))
-
+")
+  (:method ((path string))
+    (include-file (pathname string)))
+  (:method ((path pathname))
+    (with-open-file (stream path :direction :input :if-does-not-exist :error)
+      (include-file stream)))
+  (:method ((stream stream))
+    (loop
+      :for form := (read stream nil stream)
+      :until (eql form stream)
+      :do (eval form))))
 
 
 (defmacro functional-pipe (&body forms)
