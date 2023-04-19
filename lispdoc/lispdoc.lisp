@@ -84,6 +84,7 @@ RETURN:  The function lambda list.
     (if le
         (second le)
         (or
+         #+swank     (swank/backend:arglist funame)
          #+openmcl   (ccl:arglist funame)
          #+lispworks (lw:function-lambda-list funame)
          '()))))
@@ -94,7 +95,9 @@ RETURN:  The function lambda list.
 CLASS-NAME: A class name.
 RETURN:     The class precedence list.
 "
-  (closer-mop:class-precedence-list (find-class class-name)))
+  (let ((class (find-class class-name)))
+    (closer-mop:ensure-finalized class)
+    (closer-mop:class-precedence-list class)))
 
 
 (defun class-slot-initargs (class-name)
@@ -103,6 +106,7 @@ CLASS-NAME: A class name.
 RETURN:     The initargs of the class slots.
 "
   (let ((class (find-class class-name)))
+    (closer-mop:ensure-finalized class)
     (mapcan (lambda (slot) (copy-seq (closer-mop:slot-definition-initargs slot)))
             (closer-mop:class-slots class))))
 
