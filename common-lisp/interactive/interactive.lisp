@@ -103,7 +103,7 @@ License:
   (length *repl-history*))
 
 (defun repl-history-add (item)
-  (vector-push-extend item *repl-history* (length *repl-history*)))
+  (vector-push-extend item *repl-history* (max 1 (length *repl-history*))))
 
 (defun repl-history-ref (n)
   (unless (zerop n)
