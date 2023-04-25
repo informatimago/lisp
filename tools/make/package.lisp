@@ -1,0 +1,3 @@
+(defpackage "COM.INFORMATIMGO.TOOLS.MAKE.PARSER"
+  (:use "COMMON-LISP")
+  (:export "PARSE-MAKEFILE"))
