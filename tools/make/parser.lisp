@@ -165,9 +165,8 @@
   (string-left-trim *whitespaces* string))
 
 
-
 (defparameter *stopchar-map*
-  (let ((map (make-array 128 :element-type 'fixnum))
+  (let ((map (make-array 128 :element-type 'fixnum :initial-element 0))
         (maxcode 127))
     (flet ((enter (ch flag)
              (assert (<= (char-code ch) maxcode))
@@ -201,10 +200,47 @@
                      (setf (aref map i) (logior (aref map i) +map-userfunc+)))))
     map))
 
+(declaim (inline any-set stop-set isblank isspace isdirsep has-drivespec
+                 end-of-token  map-stopchar))
+
+(defun map-stopchar (ch)
+  (let ((code (char-code ch)))
+    (if (<= (length *stopchar-map*) code)
+        0
+        (aref *stopchar-map* code))))
+
+(defun any-set       (a b)      (not (zerop (logand a b))))
+(defun stop-set      (ch mask)  (any-set (map-stopchar ch) mask))
+(defun isblank       (ch)       (stop-set ch +map-blank+))
+(defun isspace       (ch)       (stop-set ch +map-space+))
+(defun isdirsep      (ch)       (stop-set ch +map-dirsep+))
+(defun has-drivespec (ch)       (stop-set ch +map-dirsep+))
+(defun end-of-token  (ch)       (stop-set ch (logior +map-space+ +map-nul+)))
+
+
+(defun split-tokens (source)
+
+  ;; char* find_next_token(const char** ptr,size_t* lengthpr);
+  ;; find-if = NEXT_TOKEN()
+  
+  (loop
+    :with end := 0
+    :with eos := (length source)
+    :for start := (or (position-if (lambda (ch) (not (isspace ch))) source)
+                      eos)
+    :then (or (position-if (lambda (ch) (not (isspace ch))) source :start end)
+              eos)
+    :while  (< start eos)
+    :do (setf end (or (position-if (function end-of-token) source :start start)
+                      eos))
+    :collect (subseq source start end)))
+
+
 
 ;; (defconstant +PARSEFS-NONE+    #x0000)
 ;; (defconstant +PARSEFS-NOSTRIP+ #x0001)
 ;; (defconstant +PARSEFS-NOAR+    #x0002)
+
 ;; (defconstant +PARSEFS-NOGLOB+  #x0004)
 ;; (defconstant +PARSEFS-EXISTS+  #x0008)
 ;; (defconstant +PARSEFS-NOCACHE+ #x0010)
@@ -214,13 +250,91 @@
 (deftype flag ()
   '(member :nostrip :noar :noglob :exists :nocache :oneword :wait))
 
-(defun any-set (a b) (not (zerop (logand a b))))
+(defun find-map-unquote (source start stopmap)
+  ;; Search STRING for an unquoted STOPMAP.
+  ;; Backslashes quote elements from STOPMAP and backslash.
+  ;; Quoting backslashes are removed from STRING by compacting it into itself.
+  ;; Returns a pointer to the first unquoted STOPCHAR if there is one, or nil if
+  ;; there are none.
+  ;; 
+  ;; If MAP_VARIABLE is set, then the complete contents of variable references
+  ;; are skipped, even if they contain STOPMAP characters.
 
-(defun end-of-token (ch)
-  (any-set (map-stopchar ch) (logior +map-space+ +map-nul+)))
+  ;; Returns: the token text and the end position in source.
+  (setf stopmap (logior stopmap +map-nul+))
+  (let ((end 0))
+    (loop
+      :with eos := (length source)
+      :do (setf end (or (position-if (lambda (ch) (stop-set ch stopmap))
+                                     source :start start)
+                        eos))
+      :while (< end eos)
+      :do
+      ;;  If we stopped due to a variable reference, skip over its contents.
+      (cond
+        ((char= #\$ (aref source end))
+         (incf end)
+         (when (< end eos)
+           (let ((openparen (aref source end)))
+             (case openparen
+               ((#\( #\{)
+                (let ((closeparen (if (char= #\( openparen)
+                                      #\)
+                                      #\}))
+                      (pcount 1))
+                  (loop
+                    :while (and (< end eos) (plusp pcount))
+                    :do (cond
+                          ((char= (aref source end) openparen)
+                           (incf pcount))
+                          ((char= (aref source end) closeparen)
+                           (decf pcount)))
+                        (incf end))))))
+           ;; Skipped the variable reference: look for STOPCHARS again.
+           ))
+
+        ((and (plusp end) (char= (aref source (1- end)) #\\))
+         ;; Search for more backslashes.
+         (let ((i (- end 2)))
+           (loop :while (and (<= start i)
+                             (char= (aref source i) #\\))
+                 :do (decf i))
+           (incf i)
+           (replace source source
+                    :start1 start :end1 (1+ (truncate (+ i end) 2))
+                    :end2 end)
+           (incf start (truncate (-  end i) 2))
+           (when (zerop (mod (-  end i) 2))
+             ;; All the backslashes quoted each other; the STOPCHAR was
+             ;; unquoted.
+             (return-from find-map-unquote
+               (values (subseq source start end) end)))
+           ;; The STOPCHAR was quoted by a backslash.  Look for another.
+           ))
+        (t
+         (return-from find-map-unquote
+           (values (subseq source start end) end)))))
+    (values nil end)))
+
+(defun test/find-map-unquote ()
+  (assert (equal (multiple-value-list (find-map-unquote "foo bar baz" 4 +MAP-BLANK+))
+                 '("bar" 7)))
+
+  (assert (equal (multiple-value-list
+                  (find-map-unquote "foo bar$(baz and,quux) bozo"
+                                    4 +MAP-BLANK+))
+                 ("bar$(baz" 12)))
+  (assert (equal (multiple-value-list
+                  (find-map-unquote "foo bar$(baz and,quux) bozo"
+                                    4 (logior +MAP-BLANK+ +map-variable+)))
+
+                ("bar$(baz" 12)))
+  :success)
 
 
-(defun parse-file-seq (string stopmap prefix flags)
+
+
+(defun parse-file-seq (source stopmap prefix flags)
   "
 PREFIX: added to each parsed file.
 STOPMAP: an integer mask of +MAP-…+
@@ -235,10 +349,27 @@ RETURN: a list of namestrings.
     (setf stopmap (logior stopmap +map-nul+)) ; Always stop on NUL.
     (unless (member :noglob flags)
       (dir-setup-glob gl))
-    (loop
-          ;; Skip whitespace; at the end of the string or STOPCHAR we're done.
 
-          )
+    ;; Skip whitespace; at the end of the string or STOPCHAR we're done.
+    (loop
+      :with end := 0
+      :with eos := (length source)
+      :for start := (or (position-if (lambda (ch) (not (isspace ch))) source)
+                        eos)
+      :then (or (position-if (lambda (ch) (not (isspace ch))) source :start end)
+                eos)
+      :while (or (< start eos) (stop-set (aref source start) stopmap))
+      :do
+
+      (setf end (find-map-unquote source start findmap))
+      (setf end (or (position-if (function end-of-token) source :start start)
+                    eos))
+      :collect (subseq source start end))
+
+    (loop
+      :for 
+    
+      )
     ))
 
 (defvar *command-prefix* nil

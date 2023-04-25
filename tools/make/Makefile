@@ -7,3 +7,9 @@ all:make-print-vars
 make-print-vars:make-print-vars.lisp
 	ccl < generate-exe.lisp >make-print-vars.log 2>make-print-vars.err || ( cat make-print-vars.err ; exit 200 )
 
+
+
+clean:
+	-rm -f *.lx64fsl
+	-rm -f *.out *.err
+	-rm -f system-index.txt
