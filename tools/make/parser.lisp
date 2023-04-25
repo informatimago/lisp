@@ -118,10 +118,38 @@
     ;;      line of a file with no final newline; return 1.
     ;;      If we read nothing, we're at EOF; return -1.  */
     (return (cond
-              ((plusp nlines) nlines)
-              ((ebuffer-buffer ebuf) 1)
-              (t -1)))))
+              ((plusp nlines) (values nlines line))
+              ((ebuffer-buffer ebuf) (values 1 line))
+              (t (values -1 nil))))))
 
+
+(defun test/readline ()
+  (assert (equal (multiple-value-list
+           (with-input-from-string (makefile "
+NAME = make-print-vars
+TEST_MAKEFILE ?= /build/pbourguignon/work/build.devel/.makedump
+
+all:$(NAME)
+	   $(NAME) --help \
+	&& $(NAME) --mangle $(TEST_MAKEFILE) > m.sed \
+	&& $(NAME)          $(TEST_MAKEFILE) > $(TEST_MAKEFILE)-vars
+
+$(NAME):$(NAME).lisp
+	ccl < generate-exe.lisp >$(NAME).log 2>$(NAME).err || ( cat $(NAME).err ; exit 200 )
+
+clean:
+	-rm -f *.lx64fsl
+	-rm -f *.out *.err
+	-rm -f system-index.txt
+")
+             (let ((ebuf (make-ebuffer
+                          :stream makefile
+                          :floc (make-floc :filename "/mem/string/makefile"
+                                           :lineno 1
+                                           :offset 0))))
+               (values (readline ebuf) (ebuffer-buffer ebuf)))))
+                 '(1 "NAME = make-print-vars")))
+  :success)
 
 ;; Note: we don't want to hardwire with #+ those values,
 ;; to be able to read foreign files (cross tools)
@@ -606,3 +634,9 @@ RETURN: a list of namestrings.
     (parse-makefile ebuf)))
 
 ;;;---------------------------------------------------------------------
+
+(defun test/all ()
+  (test/readline)
+  (test/find-map-unquote))
+
+(test/all)
