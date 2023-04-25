@@ -5,9 +5,9 @@
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
-;;;;    
+;;;;
 ;;;;    A parser for GNU makefiles
-;;;;    
+;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
@@ -15,19 +15,19 @@
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
-;;;;    
+;;;;
 ;;;;    Copyright Pascal J. Bourguignon 2023 - 2023
-;;;;    
+;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
 ;;;;    the Free Software Foundation, either version 3 of the License, or
 ;;;;    (at your option) any later version.
-;;;;    
+;;;;
 ;;;;    This program is distributed in the hope that it will be useful,
 ;;;;    but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;;;    GNU Affero General Public License for more details.
-;;;;    
+;;;;
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
@@ -82,7 +82,7 @@
 (defun readline (ebuf)
   ;; Note: readstring is implemented with with-input-from-string in (parse-makefile (string))
   (loop
-    :with nlines := 0 
+    :with nlines := 0
     :for line := (read-line (ebuffer-stream ebuf) nil nil)
     :while line
     :do
@@ -112,7 +112,7 @@
                     (concatenate 'string (ebuffer-buffer ebuf) line)
                     line)
                 line)))
-    :finally 
+    :finally
     ;;   /* If we found some lines, return how many.
     ;;      If we didn't, but we did find _something_, that indicates we read the last
     ;;      line of a file with no final newline; return 1.
@@ -154,7 +154,7 @@
 
 ;; (defconstant +PATH-SEPARATOR-CHAR+ #\;)
 ;; (defconstant +MAP-PATHSEP+         +MAP-SEMI+)
-;; 
+;;
 ;; (defconstant +PATH-SEPARATOR-CHAR+ #\,)
 ;; (defconstant +MAP-PATHSEP+         +MAP-COMMA+)
 
@@ -179,9 +179,9 @@
       (enter #\|      +map-pipe+)
       (enter #\.      (logior +map-dot+ +map-userfunc+))
       (enter #\(      +map-varsep+)
-      (enter #\{      +map-varsep+)      
-      (enter #\}      +map-varsep+)      
-      (enter #\)      +map-varsep+)      
+      (enter #\{      +map-varsep+)
+      (enter #\}      +map-varsep+)
+      (enter #\)      +map-varsep+)
       (enter #\$      +map-variable+)
       (enter #\_      +map-userfunc+)
       (enter #\-      +map-userfunc+)
@@ -222,7 +222,7 @@
 
   ;; char* find_next_token(const char** ptr,size_t* lengthpr);
   ;; find-if = NEXT_TOKEN()
-  
+
   (loop
     :with end := 0
     :with eos := (length source)
@@ -256,7 +256,7 @@
   ;; Quoting backslashes are removed from STRING by compacting it into itself.
   ;; Returns a pointer to the first unquoted STOPCHAR if there is one, or nil if
   ;; there are none.
-  ;; 
+  ;;
   ;; If MAP_VARIABLE is set, then the complete contents of variable references
   ;; are skipped, even if they contain STOPMAP characters.
 
@@ -338,7 +338,7 @@
   "
 PREFIX: added to each parsed file.
 STOPMAP: an integer mask of +MAP-…+
-FLAGS: a list of 
+FLAGS: a list of
 RETURN: a list of namestrings.
 "
   (let ((findmap (logior stopmap +map-vmscomma+ +map-nul+))
@@ -367,8 +367,8 @@ RETURN: a list of namestrings.
       :collect (subseq source start end))
 
     (loop
-      :for 
-    
+      :for
+
       )
     ))
 
@@ -379,7 +379,7 @@ RETURN: a list of namestrings.
   (let (collapsed
         commands
         commands-started
-        (commands-index 0) 
+        (commands-index 0)
         targets-started
         ignoring
         in-ignored-define
@@ -419,7 +419,7 @@ RETURN: a list of namestrings.
       ;; The strategy is to accumulate target names in FILENAMES, dependencies
       ;; in DEPS and commands in COMMANDS.  These are used to define a rule
       ;; when the start of the next rule (or eof) is encountered.
-      ;; 
+      ;;
       ;; When you see a "continue" in the loop below, that means we are moving on
       ;; to the next line.  If you see record_waiting_files(), then the statement
       ;; we are parsing also finishes the previous rule.
@@ -442,10 +442,10 @@ RETURN: a list of namestrings.
                     (return-from parse))
 
                   (setf line (ebuffer-buffer ebuf))
-                
+
 			      ;; Note: in CL we don't need to check the UTF-8 BOM, since
 			      ;; it's done by the stream external-format coding.
-                
+
 	              ;; If this line is empty, skip it.
                   (when (zerop (length line))
                     (next))
@@ -583,7 +583,7 @@ RETURN: a list of namestrings.
                       (setf files (parse-file-seq p))
                       )
                     (next))
-                  
+
 
                   )))))))
 
