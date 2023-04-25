@@ -1,13 +1,13 @@
-all:make-print-vars
-	   make-print-vars --help \
-	&& make-print-vars --mangle /build/pbourguignon/work/build.devel/.makedump > m.sed \
-	&& make-print-vars          /build/pbourguignon/work/build.devel/.makedump > /build/pbourguignon/work/build.devel/.makedump-vars
+NAME = make-print-vars
+TEST_MAKEFILE ?= /build/pbourguignon/work/build.devel/.makedump
 
+all:$(NAME)
+	   $(NAME) --help \
+	&& $(NAME) --mangle $(TEST_MAKEFILE) > m.sed \
+	&& $(NAME)          $(TEST_MAKEFILE) > $(TEST_MAKEFILE)-vars
 
-make-print-vars:make-print-vars.lisp
-	ccl < generate-exe.lisp >make-print-vars.log 2>make-print-vars.err || ( cat make-print-vars.err ; exit 200 )
-
-
+$(NAME):$(NAME).lisp
+	ccl < generate-exe.lisp >$(NAME).log 2>$(NAME).err || ( cat $(NAME).err ; exit 200 )
 
 clean:
 	-rm -f *.lx64fsl
