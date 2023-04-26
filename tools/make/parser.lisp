@@ -290,73 +290,111 @@ clean:
 
   ;; Returns: the token text and the end position in source.
   (setf stopmap (logior stopmap +map-nul+))
-  (let ((end 0))
+  (let* ((eos (length source))
+         (end start))
+
+    ;; NOTE: current implementation in make (4.+) read.c says that $()
+    ;;       has higher priority than \x :
+    ;; - the code tests for $ before testing for a previous \
+    ;; - the result is that:
+    ;;     c=n
+    ;;     s=\$(c)
+    ;;   reads as s=\n (after $(c) expansion)
+    
     (loop
-      :with eos := (length source)
       :do (setf end (or (position-if (lambda (ch) (stop-set ch stopmap))
-                                     source :start start)
+                                     source :start end)
                         eos))
       :while (< end eos)
-      :do
       ;;  If we stopped due to a variable reference, skip over its contents.
-      (cond
-        ((char= #\$ (aref source end))
-         (incf end)
-         (when (< end eos)
-           (let ((openparen (aref source end)))
-             (case openparen
-               ((#\( #\{)
-                (let ((closeparen (if (char= #\( openparen)
-                                      #\)
-                                      #\}))
-                      (pcount 1))
-                  (loop
-                    :while (and (< end eos) (plusp pcount))
-                    :do (cond
-                          ((char= (aref source end) openparen)
-                           (incf pcount))
-                          ((char= (aref source end) closeparen)
-                           (decf pcount)))
-                        (incf end))))))
-           ;; Skipped the variable reference: look for STOPCHARS again.
-           ))
-
-        ((and (plusp end) (char= (aref source (1- end)) #\\))
-         ;; Search for more backslashes.
-         (let ((i (- end 2)))
-           (loop :while (and (<= start i)
-                             (char= (aref source i) #\\))
-                 :do (decf i))
-           (incf i)
-           (replace source source
-                    :start1 start :end1 (1+ (truncate (+ i end) 2))
-                    :end2 end)
-           (incf start (truncate (-  end i) 2))
-           (when (zerop (mod (-  end i) 2))
-             ;; All the backslashes quoted each other; the STOPCHAR was
-             ;; unquoted.
+      :do (cond
+            ((char= #\$ (aref source end))
+             (incf end)
+             (when (< end eos)
+               (let ((openparen (aref source end)))
+                 (case openparen
+                   ((#\( #\{)
+                    (let ((closeparen (if (char= #\( openparen)
+                                          #\)
+                                          #\}))
+                          (pcount 1))
+                      (incf end)
+                      (loop
+                        :while (and (< end eos) (plusp pcount))
+                        :do (cond
+                              ((char= (aref source end) openparen)
+                               (incf pcount))
+                              ((char= (aref source end) closeparen)
+                               (decf pcount)))
+                            (incf end))))))
+               ;; Skipped the variable reference: look for STOPCHARS again.
+               ))
+        
+            ((and (< start end) (char= (aref source (1- end)) #\\))
+             ;; Search for more backslashes.
+             (let ((i (- end 2)))
+               (loop :while (and (<= start i)
+                                 (char= (aref source i) #\\))
+                     :do (decf i))
+               (incf i)
+               (multiple-value-bind (backslash-count escape-count)
+                   (truncate (- end i) 2)
+                 (replace source source
+                          :start2 start :end2 (- end backslash-count)
+                          :start1 (+ start backslash-count))
+                 (incf start backslash-count)
+                 (when (zerop escape-count)
+                   ;; All the backslashes quoted each other; the STOPCHAR was
+                   ;; unquoted.
+                   (return-from find-map-unquote
+                     (values end (subseq source start end)))))
+               ;; The STOPCHAR was quoted by a backslash.  Look for another.
+               (incf end)))
+            (t
              (return-from find-map-unquote
-               (values (subseq source start end) end)))
-           ;; The STOPCHAR was quoted by a backslash.  Look for another.
-           ))
-        (t
-         (return-from find-map-unquote
-           (values (subseq source start end) end)))))
-    (values nil end)))
+               (values end (subseq source start end))))))
+    (values end nil)))
 
 (defun test/find-map-unquote ()
   (assert (equal (multiple-value-list (find-map-unquote "foo bar baz" 4 +MAP-BLANK+))
-                 '("bar" 7)))
+                 '(7 "bar")))
+  (assert (equal (multiple-value-list (find-map-unquote "foo bar" 4 +MAP-BLANK+))
+                 '(7 nil)))
 
+  ;; reads $(…):
   (assert (equal (multiple-value-list
                   (find-map-unquote "foo bar$(baz and,quux) bozo"
                                     4 +MAP-BLANK+))
-                 ("bar$(baz" 12)))
+                 '(12 "bar$(baz")))
   (assert (equal (multiple-value-list
                   (find-map-unquote "foo bar$(baz and,quux) bozo"
                                     4 (logior +MAP-BLANK+ +map-variable+)))
-
-                ("bar$(baz" 12)))
+                 '(22 "bar$(baz and,quux)")))
+  (assert (equal (multiple-value-list
+                  (find-map-unquote "foo bar\\\\$(baz and,quux) bozo"
+                                    4 (logior +MAP-BLANK+ +map-variable+)))
+                 '(24  "bar\\\\$(baz and,quux)")))
+  (assert (equal (multiple-value-list
+                  (find-map-unquote "foo bar\\$(baz and,quux) bozo"
+                                    4 (logior +MAP-BLANK+ +map-variable+)))
+                 '(23 "bar\\$(baz and,quux)")))
+  ;; reads \\x:
+  (assert (equal (multiple-value-list
+                  (find-map-unquote "foo bar\\quux bozo"
+                                    4 (logior +MAP-BLANK+ +map-variable+)))
+                 '(12 "bar\\quux")))
+  (assert (equal (multiple-value-list
+                  (find-map-unquote "foo bar\\\\quux bozo"
+                                    4 (logior +MAP-BLANK+ +map-variable+)))
+                 '(13 "bar\\\\quux")))
+  (assert (equal (multiple-value-list
+                  (find-map-unquote "foo bar\\ quux bozo"
+                                    4 (logior +MAP-BLANK+ +map-variable+)))
+                 '(13 "bar\\ quux")))
+  (assert (equal (multiple-value-list
+                  (find-map-unquote "foo bar\\\\ quux bozo"
+                                    4 (logior +MAP-BLANK+ +map-variable+)))
+                 '(9 "bar\\")))
   :success)
 
 
@@ -390,7 +428,7 @@ RETURN: a list of namestrings.
       :do
 
       (setf end (find-map-unquote source start findmap))
-      (setf end (or (position-if (function end-of-token) source :start start)
+      (setf end (or (position-if (function end-of-token) source :start end)
                     eos))
       :collect (subseq source start end))
 
@@ -636,7 +674,7 @@ RETURN: a list of namestrings.
 ;;;---------------------------------------------------------------------
 
 (defun test/all ()
-  (test/readline)
-  (test/find-map-unquote))
+  (test/find-map-unquote)
+  (test/readline))
 
 (test/all)
