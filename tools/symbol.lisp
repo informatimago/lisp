@@ -168,8 +168,10 @@ the bad thing is that it's a PPCRE regexp. :-(
              (and presentp (eq existing-sym sym)))))
     (let* ((syms (sort (apropos-list regexp (when packages (ensure-list packages)))
                        (lambda (a b)
-                         (let ((pa (package-name (symbol-package a)))
-                               (pb (package-name (symbol-package b))))
+                         ;; uninterned exported symbols may still be present in using packages,
+                         ;; so we may find them, but they have no home package.
+                         (let ((pa (package-name (or (symbol-package a) *package*)))
+                               (pb (package-name (or (symbol-package b) *package*))))
                            (or (string< pa pb)
                                (and (string= pa pb)
                                     (string< a b)))))))
