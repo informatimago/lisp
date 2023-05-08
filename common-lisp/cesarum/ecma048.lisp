@@ -2229,11 +2229,13 @@ BUGS:           Perhaps we should generate functions that take 8-BIT and
 
 
 (defmacro define-code-function (code &key
-                                 (export nil)
-                                 (8-bit nil)
-                                 (print nil)
-                                 (result-type '(vector (unsigned-byte 8))))
-  (generate-code-function code
+                                     (export nil)
+                                     (8-bit nil)
+                                     (print nil)
+                                     (result-type '(vector (unsigned-byte 8))))
+  (generate-code-function (find code *codes*
+                                :key (function code-name)
+                                :test (function string=))
                           :export  export
                           :8-bit   8-bit
                           :print   print
