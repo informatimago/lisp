@@ -300,7 +300,7 @@ clean:
     ;;     c=n
     ;;     s=\$(c)
     ;;   reads as s=\n (after $(c) expansion)
-    
+
     (loop
       :do (setf end (or (position-if (lambda (ch) (stop-set ch stopmap))
                                      source :start end)
@@ -329,7 +329,8 @@ clean:
                             (incf end))))))
                ;; Skipped the variable reference: look for STOPCHARS again.
                ))
-        
+
+
             ((and (< start end) (char= (aref source (1- end)) #\\))
              ;; Search for more backslashes.
              (let ((i (- end 2)))
