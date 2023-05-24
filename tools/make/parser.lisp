@@ -651,7 +651,20 @@ RETURN: a list of namestrings.
                       )
                     (next))
 
-
+                  ;; Handle the special syntax for define.
+                  (when (string= "define" token)
+                    (let (cp
+                          (name nil)
+                          (value nil))
+                      ;; define ends the previous rule.
+                      (record-waiting-files)
+                      (setf cp (allocated-variable-expand p2))
+                      (setf cp (trim-starting-spaces cp))
+                      (setf name (pop (split-tokens cp)))
+                      (setf value (trim-starting-spaces cp))
+                      (define-variable-global name value :file 0 fstart))
+                    (next))
+                  
                   )))))))
 
 ;;;---------------------------------------------------------------------
