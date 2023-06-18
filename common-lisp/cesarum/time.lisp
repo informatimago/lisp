@@ -39,6 +39,7 @@
    "INITIALIZE-REAL-TIME-OFFSET"
    "GET-REAL-TIME"
    "GET-RUN-TIME"
+   "CHRONO-TIME"
    "CHRONO-REAL-TIME"
    "CHRONO-RUN-TIME"
    "FORMAT-TIME"
@@ -91,34 +92,42 @@ RETURN: The run-time (in seconds).
 
 
 
-(defun chrono-real-time* (thunk)
+(defun chrono-time* (thunk)
   "
-Call the THUNK and return the run-time spent on it.
-The results of THUNK are ignored.
+Call the THUNK.
+RETURN: the real-time, the run-time, followed by the results of THUNK.
 "
-  (let ((start (get-real-time)))
-    (funcall thunk)
-    (- (get-real-time) start)))
+  (let* ((start-real   (get-real-time))
+         (start-run    (get-run-time))
+         (results      (multiple-value-list (funcall thunk)))
+         (run-time     (- (get-run-time)  start-run))
+         (real-time    (- (get-real-time) start-real)))
+    (values-list  (list* real-time run-time results))))
+
+(defmacro chrono-time (&body body)
+  "RETURN: the real-time, the run-time, followed by the results of BODY."
+  `(chrono-time* (lambda () ,@body)))
 
 (defmacro chrono-real-time (&body body)
-  `(chrono-real-time* (lambda () ,@body)))
-
-
-(defun chrono-run-time* (thunk)
-  "
-Call the THUNK and return the run-time spent on it.
-The results of THUNK are ignored.
-"
-  (let ((start (get-run-time)))
-    (funcall thunk)
-    (- (get-run-time) start)))
+  "RETURN: the real-time, followed by the results of BODY."
+  `(let ((values (multiple-value-list (chrono-time* (lambda () ,@body)))))
+     (values-list (cons (first values) (rest (rest values))))))
 
 (defmacro chrono-run-time (&body body)
-  `(chrono-run-time* (lambda () ,@body)))
+  "RETURN: the run-time, followed by the results of BODY."
+  `(let ((values (multiple-value-list (chrono-time* (lambda () ,@body)))))
+     (values-list (rest values))))
 
 
 (defun format-time (time)
   (multiple-value-bind (se mi ho) (decode-universal-time time 0)
     (format nil "~2,'0D:~2,'0D:~2,'0D" ho mi (truncate se))))
+
+
+(defun test/all ()
+  (list
+   (multiple-value-list (chrono-time (progn (sleep 1) (values 1 2 3))))
+   (multiple-value-list (chrono-real-time (progn (sleep 1) (values 1 2 3))))
+   (multiple-value-list (chrono-run-time (progn (sleep 1) (values 1 2 3))))))
 
 ;;;; THE END ;;;;
