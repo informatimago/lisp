@@ -117,7 +117,7 @@
    ;; 15 - ARRAYS
    "VECTOR-INIT" "UNDISPLACE-ARRAY" "DICHOTOMY-SEARCH"
    ;; 16 - STRINGS
-   "CONCAT" "SCONC" "SCASE"
+   "CONCAT" "SCONC" "SCASE" "ISCASE"
    ;; 17 - SEQUENCES
    "NSUBSEQ"
    ;; 18 - HASH-TABLES
@@ -148,7 +148,7 @@ License:
 
     AGPL3
 
-    Copyright Pascal J. Bourguignon 2003 - 2016
+    Copyright Pascal J. Bourguignon 2003 - 2023
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -364,7 +364,7 @@ DO:      Read from the file at PATH all the sexps and returns a list of them
 USAGE:   #.(include-file \"source.lisp\")
 ")
   (:method ((path string))
-    (include-file (pathname string)))
+    (include-file (pathname path)))
   (:method ((path pathname))
     (with-open-file (stream path :direction :input :if-does-not-exist :error)
       (include-file stream)))
@@ -962,7 +962,7 @@ DO:       Define a macro: (WITH-{CLASS-NAME} object &body body)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (declaim (declaration stepper))
-(declaim (ftype (function ((or string symbol character) &rest others) symbol) keywordize))
+(declaim (ftype (function ((or string symbol character) &rest) symbol) keywordize))
 
 ;;;
 ;;; We have two way to print easily objects:
@@ -1783,21 +1783,32 @@ POST:	(<= start index end)
         (sequence (write-sequence item *standard-output*))
         (t        (with-standard-io-syntax (format *standard-output* "~A" item)))))))
 
-(defmacro scase (keyform &rest clauses)
-  "
-DO:         A CASE, but for string keys. That is, it uses STRING= as test
-            instead of the ''being the same'' test.
-"
-  (let ((key (gensym "KEY")))
-    `(let ((,key ,keyform))
-       (cond
-         ,@(mapcar (lambda (clause)
-                     (if (or (eq (car clause) 'otherwise) (eq (car clause) 't))
-                         `(t ,@(cdr clause))
-                         `((member ,key ',(car clause) :test (function string=))
-                           ,@(cdr clause))))
-                   clauses)))))
+(defmacro define-case-macro (name test)
+  `(defmacro ,name (keyform &body clauses)
+     ,(format nil "
+DO:         A CASE, but using ~A as test instead of the EQL test.
+" test)
+     (let ((key (gensym "KEY")))
+       `(let ((,key ,keyform))
+          (cond
+            ,@(mapcar
+               (lambda (clause)
+                 (if (or (eq (car clause) 'otherwise) (eq (car clause) 't))
+                     `(t ,@(cdr clause))
+                     `(,(typecase (car clause)
+                          ((or string symbol character)
+                           `(,',test ,key ',(car clause)))
+                          (list
+                           `(member       ,key ',(car clause)
+                                          :test (function ,',test)))
+                          (t
+                           (error "Bad ICASE clause: ~S~% expected type STRING-DESIGNATOR or LIST of STRING-DESIGNATOR" clause)))
+                       ,@(cdr clause))))
+               clauses))))))
 
+
+(define-case-macro scase  string=)
+(define-case-macro iscase string-equal)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 17 - SEQUENCES
