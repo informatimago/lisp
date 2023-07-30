@@ -382,7 +382,8 @@ RETURN: the pathname of the manifest file written.
                  "MACHINE-VERSION"             (machine-version)
                  "distribution"                (distribution)
                  "uname -a"                    (ignore-errors (uname :a))
-                 "*FEATURES*"                  *features*)))
+                 "*FEATURES*"                  *features*
+                 "OPTIMIZATIONS"               (uiop/lisp-build:get-optimization-settings))))
   (let ((cpuinfo (text-file-contents "/proc/cpuinfo" :if-does-not-exist nil)))
     (when cpuinfo
       (format t "~2%/proc/cpuinfo~%-------------~2%")
