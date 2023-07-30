@@ -80,9 +80,9 @@
                  aval
                  (- aval)))))))
 
-
-(gen-ieee-encoding float-32 single-float  8 24)
-(gen-ieee-encoding float-64 double-float 11 53)
+;; Yet another sbcl bug:
+#-sbcl (gen-ieee-encoding float-32 single-float  8 24)
+#-sbcl (gen-ieee-encoding float-64 double-float 11 53)
 
 
 ;;;; THE END ;;;;
