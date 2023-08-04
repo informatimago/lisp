@@ -38,7 +38,9 @@
 (defpackage "COM.INFORMATIMAGO.CLEXT.GITLAB"
   (:use "COMMON-LISP" "CL-JSON" "DRAKMA" "BABEL" "SPLIT-SEQUENCE")
   (:use "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SYMBOL")
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SYMBOL"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE")
   (:export
    "*VERBOSE*"
    "*SERVER*"
@@ -92,6 +94,11 @@
                      (request-error-uri condition)
                      (mapcar (lambda (cell) (list (car cell) (cdr cell)))
                              (request-error-headers condition))))))
+
+(defun only (list)
+  (when (rest list)
+    (warn "Expected only one element in list ~S" list))
+  (first list))
 
 (defun aget (alist key) (cdr (assoc key alist)))
 (defun (setf aget) (new-value alist key)
@@ -258,10 +265,18 @@
   id description name path owner
   (path-with-namespace :path--with--namespace))
 
+(defun user-by-username (username)
+  (only (fetch-json-objects (format nil "https://~A/api/v4/users?username=~A"
+                                    *server* username))))
+
+(defun user-projects (id)
+ (fetch-json-objects (format nil "https://~A/api/v4/users/~A/projects"
+                             *server* id)))
+
+
 (defun projects (&key id)
-  (fetch-json-objects (with-output-to-string (*standard-output*)
-                        (format t "https://~A/api/v4/projects" *server*)
-                        (when id (format t "/~A" id)))))
+  (fetch-json-objects (format nil "https://~A/api/v4/projects~@[/~A~]"
+                              *server* id)))
 
 (defun project-named (name)
   (find-if (lambda (project)
@@ -759,6 +774,58 @@ nil
 (setf *verbose* t)
 
 
+(setf *server* "http://gitlab.com/")
 |#
 
-;;;; THE END ;;;;
+
+
+(defvar *auth-source-file* #P"~/.authinfo")
+
+(defstruct auth
+  host port login password)
+
+(defun auth-source-read ()
+  (mapcar (lambda (line)
+            (let ((data (split-sequence:split-sequence #\space line :remove-empty-subseqs t))
+                  (auth (make-auth)))
+              (loop :for (key value) :on data :by (function cddr)
+                    :do (iscase key
+                          (("host" "machine") (setf (auth-host auth) value))
+                          (("port")           (setf (auth-port auth) (or (ignore-errors (parse-integer value))
+                                                                         value)))
+                          (("login")          (setf (auth-login auth) value))
+                          (("password")       (setf (auth-password auth) value))
+                          (t (warn "Unknown key in auth source: ~S" key))))
+              auth))
+          (string-list-text-file-contents *auth-source-file*)))
+
+(defun auth-source-search (&key (host t hostp) (machine t machinep) (login t) (port t))
+  (let ((host (cond (hostp host)
+                    (machinep machine)
+                    (t host))))
+    (if (and (eq 't host) (eq 't login) (eq 't port))
+        (auth-source-read)
+        (remove-if-not (lambda (auth)
+                         (and (or (eq 't host)  (equalp host  (auth-host auth)))
+                              (or (eq 't login) (equalp login (auth-host auth)))
+                              (or (eq 't port)  (equalp port  (auth-host auth)))))
+                       (auth-source-read)))))
+
+(defun auth-source-pick-first-password (&rest spec &key &allow-other-keys)
+  "Pick the first secret found from applying SPEC to `auth-source-search'."
+  (auth-password (first (apply #'auth-source-search spec))))
+
+
+#|
+
+(setf *server* "gitlab.com"
+      *private-token* (auth-source-pick-first-password :host *server*)
+      *verbose* t)
+
+(let ((username "informatimago"))
+ (mapcar (lambda (project)
+           (aget project :path--with--namespace))
+         (user-projects
+          (aget (user-by-username username) :id))))
+
+|#
