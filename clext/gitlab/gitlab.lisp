@@ -19,7 +19,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2019 - 2019
+;;;;    Copyright Pascal J. Bourguignon 2019 - 2023
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -76,6 +76,58 @@
    "LIST-ISSUES"))
 (in-package  "COM.INFORMATIMAGO.CLEXT.GITLAB")
 
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; AUTHINFO
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defvar *auth-source-file* #P"~/.authinfo")
+
+(defstruct auth
+  host port login password)
+
+(defmethod print-object ((auth auth) stream)
+  (print-unreadable-object (auth stream :type t :identity t)
+    (format stream ":host ~S :port ~S :login ~S"
+            (auth-host auth) (auth-port auth) (auth-login auth)))
+  auth)
+
+
+(defun auth-source-read ()
+  (mapcar (lambda (line)
+            (let ((data (split-sequence:split-sequence #\space line :remove-empty-subseqs t))
+                  (auth (make-auth)))
+              (loop :for (key value) :on data :by (function cddr)
+                    :do (iscase key
+                          (("host" "machine") (setf (auth-host auth) value))
+                          (("port")           (setf (auth-port auth) (or (ignore-errors (parse-integer value))
+                                                                         value)))
+                          (("login")          (setf (auth-login auth) value))
+                          (("password")       (setf (auth-password auth) value))
+                          (t (warn "Unknown key in auth source: ~S" key))))
+              auth))
+          (string-list-text-file-contents *auth-source-file*)))
+
+(defun auth-source-search (&key (host t hostp) (machine t machinep) (login t) (port t))
+  (let ((host (cond (hostp host)
+                    (machinep machine)
+                    (t host))))
+    (if (and (eq 't host) (eq 't login) (eq 't port))
+        (auth-source-read)
+        (remove-if-not (lambda (auth)
+                         (and (or (eq 't host)  (equalp host  (auth-host auth)))
+                              (or (eq 't login) (equalp login (auth-host auth)))
+                              (or (eq 't port)  (equalp port  (auth-host auth)))))
+                       (auth-source-read)))))
+
+(defun auth-source-pick-first-password (&rest spec &key &allow-other-keys)
+  "Pick the first secret found from applying SPEC to `auth-source-search'."
+  (auth-password (first (apply #'auth-source-search spec))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defvar *verbose* nil)
 (defvar *server*)
 (defvar *private-token*)
@@ -96,6 +148,8 @@
                              (request-error-headers condition))))))
 
 (defun only (list)
+  (when (endp list)
+    (error "~S got an empty list." 'only))
   (when (rest list)
     (warn "Expected only one element in list ~S" list))
   (first list))
@@ -186,6 +240,9 @@
 (defun delete-json-object (query)            (operate-json-object query nil        :delete))
 
 
+(defun double-dashes (symbol)
+  (intern (format nil "~{~A~^--~}" (split-sequence #\- (string symbol))) "KEYWORD"))
+
 (defmacro define-json-struct (name &rest field-clauses)
   (let* ((fields    (mapcar (lambda (field-clause)
                               (if (symbolp field-clause)
@@ -194,7 +251,7 @@
                             field-clauses))
          (json-keys (mapcar (lambda (field-clause)
                               (if (symbolp field-clause)
-                                  (intern (symbol-name field-clause) "KEYWORD")
+                                  (double-dashes field-clause)
                                   (second field-clause)))
                             field-clauses))
          (keys      (mapcar (lambda (field)
@@ -254,16 +311,48 @@
       (format nil "~{~A~^,~}" labels)))
 
 
+(defun format-parameters (parameters)
+  (if (endp parameters)
+      ""
+      (format nil "?~{~A=~A~^&~}"
+              (loop :for (key value) :on parameters :by (function cddr)
+                    :collect (substitute #\- #\_ (string-downcase key))
+                    :collect value))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; user
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (define-json-struct user
   id name
   username
   state
-  (avatar-url :avatar--url)
-  (web-url :web--url))
+  avatar-url
+  web-url)
 
 (define-json-struct project
   id description name path owner
-  (path-with-namespace :path--with--namespace))
+  path-with-namespace)
+
+(define-json-struct group
+  id description name path
+  visibility share-with-group-lock
+  require-two-factor-authentication
+  two-factor-grace-period
+  project-creation-level
+  auto-devops-enabled
+  subgroup-creation-level emails-disabled
+  mentions-disabled lfs-enabled
+  default-branch-protection avatar-url
+  request-access-enabled
+  request-access-enabled repository-storage
+  full-name full-path
+  full-template-name full-template-path
+  file-template-project-id parent-id
+  created-at
+  statistics
+  wiki-access-level)
+
 
 (defun user-by-username (username)
   (only (fetch-json-objects (format nil "https://~A/api/v4/users?username=~A"
@@ -274,9 +363,21 @@
                              *server* id)))
 
 
-(defun projects (&key id)
-  (fetch-json-objects (format nil "https://~A/api/v4/projects~@[/~A~]"
-                              *server* id)))
+
+(defun user-groups (&rest parameters &key (owned 'false) (min-access-level 0)
+                    (top-level-only 'false) &allow-other-keys)
+  (fetch-json-objects (format nil "https://~A/api/v4/groups~A"
+                              *server* (format-parameters parameters))))
+
+
+(defun group-subgroups (group-id &rest parameters &key &allow-other-keys)
+  (fetch-json-objects (format nil "https://~A/api/v4/groups/~A/subgroups~A"
+                              *server* group-id (format-parameters parameters))))
+
+
+(defun projects (&rest parameters &key id &allow-other-keys)
+  (fetch-json-objects (format nil "https://~A/api/v4/projects~@[/~A~]~A"
+                              *server* id (format-parameters parameters))))
 
 (defun project-named (name)
   (find-if (lambda (project)
@@ -289,17 +390,24 @@
   (if (integerp project)
       project
       (project-id project)))
-(macroexpand-1 '
- (define-json-struct milestone
-   id iid
-   (project-id :project--id)
-   title
-   description
-   state
-   (created-at :created--at)
-   (updated-at :updated--at)
-   (due-date :due-date)
-   (start-date :start-date)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; milestone
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;; (macroexpand-1 '
+;;  (define-json-struct milestone
+;;    id iid
+;;    (project-id :project--id)
+;;    title
+;;    description
+;;    state
+;;    (created-at :created--at)
+;;    (updated-at :updated--at)
+;;    (due-date :due-date)
+;;    (start-date :start-date)))
 
 (defun milestones (project &key id
                              (iids nil iidsp)
@@ -328,21 +436,21 @@
 
 (define-json-struct issue
   id iid
-  (project-id :project--id)
+  project-id
   title description state
-  (created-at :created--at)
-  (updated-at :updated--at)
-  (closed-at  :closed--at)
-  (due-date   :due--date)
+  created-at
+  updated-at
+  closed-at
+  due-date
   labels
   milestone assignees assignee author
   confidential
   weight
-  (user-notes-count :user--notes--count)
+  user-notes-count
   upvotes downvotes
-  (discussion-locked :discussion--locked)
-  (web-url :web--url)
-  (time-stats :time--stats))
+  discussion-locked
+  web-url
+  time-stats)
 
 (defun issues (&key
                  group-id
@@ -778,54 +886,27 @@ nil
 |#
 
 
-
-(defvar *auth-source-file* #P"~/.authinfo")
-
-(defstruct auth
-  host port login password)
-
-(defun auth-source-read ()
-  (mapcar (lambda (line)
-            (let ((data (split-sequence:split-sequence #\space line :remove-empty-subseqs t))
-                  (auth (make-auth)))
-              (loop :for (key value) :on data :by (function cddr)
-                    :do (iscase key
-                          (("host" "machine") (setf (auth-host auth) value))
-                          (("port")           (setf (auth-port auth) (or (ignore-errors (parse-integer value))
-                                                                         value)))
-                          (("login")          (setf (auth-login auth) value))
-                          (("password")       (setf (auth-password auth) value))
-                          (t (warn "Unknown key in auth source: ~S" key))))
-              auth))
-          (string-list-text-file-contents *auth-source-file*)))
-
-(defun auth-source-search (&key (host t hostp) (machine t machinep) (login t) (port t))
-  (let ((host (cond (hostp host)
-                    (machinep machine)
-                    (t host))))
-    (if (and (eq 't host) (eq 't login) (eq 't port))
-        (auth-source-read)
-        (remove-if-not (lambda (auth)
-                         (and (or (eq 't host)  (equalp host  (auth-host auth)))
-                              (or (eq 't login) (equalp login (auth-host auth)))
-                              (or (eq 't port)  (equalp port  (auth-host auth)))))
-                       (auth-source-read)))))
-
-(defun auth-source-pick-first-password (&rest spec &key &allow-other-keys)
-  "Pick the first secret found from applying SPEC to `auth-source-search'."
-  (auth-password (first (apply #'auth-source-search spec))))
-
-
-#|
-
+#-(and)
 (setf *server* "gitlab.com"
       *private-token* (auth-source-pick-first-password :host *server*)
       *verbose* t)
 
+#-(and)
 (let ((username "informatimago"))
- (mapcar (lambda (project)
-           (aget project :path--with--namespace))
-         (user-projects
-          (aget (user-by-username username) :id))))
+  (mapcar (lambda (project)
+            (aget project :path--with--namespace))
+          (user-projects
+           (user-id (user-by-username username)))))
 
-|#
+#-(and)
+(map nil 'print (user-groups(user-id (user-by-username "informatimago"))))
+
+#-(and)
+(progn
+  (mapcar (function group-full-path) (user-groups :owned 'true :min-access-level 0))
+  (map nil 'print (mapcar (function group-full-path) (user-groups :min-access-level 0)))
+  (group-subgroups (url-rewrite:url-encode "acquire-si/si-dev-team/esg-product") :search "data")
+  (group-id (group-subgroups "acquire-si"))
+  )
+
+
