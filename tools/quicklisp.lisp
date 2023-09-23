@@ -249,48 +249,42 @@ are listed."
 (defun system-where-from (system)
   "Return a list indicating where the project in the release that provided the SYSTEM originated from.
 This is the contents of the source.txt file of the project in quicklisp-projects."
-  (let* ((system       (ql-dist:find-system system))
-         (release      (ql-dist:release system))
-         (distribution (ql-dist:dist    system))
-         (dname        (and distribution
-                            (ql-dist:name distribution)))
-         (pname        (and release
-                            (ql-dist:project-name release))))
-    (cond
-      ((null pname)
-       '())
-      ((equal dname "quicklisp")
-       (project-where-from pname))
-      (t
-       '()))))
+  (let ((local-systems (ql:list-local-systems))
+        (sname (asdf-system-name (asdf:find-system system))))
+    (if (member sname local-systems :test (function string=))
+        (list :system sname
+              :distribution :local
+              :directory (system-where-is sname)
+              :where-from nil #|TODO: we could look in the directory if there's a .git and show-remotes |#)
+        (let* ((system       (ql-dist:find-system sname))
+               (release      (ql-dist:release system)))
+          (if release
+              (let* ((distribution (ql-dist:dist    system))
+                     (dname        (ql-dist:name distribution))
+                     (pname        (and release
+                                        (ql-dist:project-name release)))
+                     (wfrom        (cond
+                                     ((null pname)
+                                      '())
+                                     ((string= dname "quicklisp")
+                                      (project-where-from pname))
+                                     (t
+                                      '()))))
+                (list :system sname
+                      :distribution dname
+                      :directory (system-where-is sname)
+                      :where-from wfrom))
+              (list :system sname
+                    :distribution nil
+                    :directory (system-where-is sname)
+                    :where-from '()))))))
 
 (defun quick-where-from (system &rest systems)
   "Says where the systems are from."
-  (let ((local-systems (ql:list-local-systems)))
-    (dolist (sys (cons system systems))
-      (let ((sname (asdf-system-name (asdf:find-system sys))))
-        (if (member sname local-systems :test (function string=))
-            (print (list :system sname
-                         :distribution :local
-                         :directory (system-where-is sname)
-                         :from nil #|TODO: we could look in the directory if there's a .git and show-remotes |#))
-            (let* ((system       (ql-dist:find-system sname))
-                   (release      (ql-dist:release system))
-                   (distribution (ql-dist:dist    system))
-                   (dname        (ql-dist:name distribution))
-                   (pname        (and release
-                                      (ql-dist:project-name release)))
-                   (wfrom        (cond
-                                   ((null pname)
-                                    '())
-                                   ((string= dname "quicklisp")
-                                    (project-where-from pname))
-                                   (t
-                                    '()))))
-              (print (list :system sname
-                           :distribution dname
-                           :directory (system-where-is sname)
-                           :where-from wfrom))))))))
+  (dolist (sys (cons system systems))
+    (print (system-where-from sys)))
+  (terpri)
+  (values))
 
 ;;;; THE END ;;;;
 
