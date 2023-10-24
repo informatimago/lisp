@@ -40,8 +40,16 @@
   :depends-on ("com.informatimago.common-lisp.cesarum"
                "com.informatimago.clext"
                "com.informatimago.tools.source"
+
+               "quicklisp"
+               "asdf"
+               "split-sequence"
+               ;; "com.informatimago.tools.asdf"
+               "com.informatimago.tools.quicklisp"
+
                #-abcl "com.informatimago.tools.script")
-  :components (#-abcl (:file "dependency-cycles" :depends-on ()))
+  :components (#-abcl (:file "dependency-cycles" :depends-on ())
+                (:file "dependencies" :depends-on ()))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8)
 
 ;;;; THE END ;;;;

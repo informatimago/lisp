@@ -11,6 +11,7 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.SEQUENCE"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.STRING")
+  (:shadowing-import-from "SPLIT-SEQUENCE" "SPLIT-SEQUENCE-IF")
   (:export )
   (:documentation "Manage dependencies of a system"))
 (in-package "COM.INFORMATIMAGO.TOOLS.DEPENDENCIES")
@@ -69,6 +70,15 @@
 
 (defun git-workspace-p (directory-pathname)
   (probe-file (merge-pathnames #P".git/index" directory-pathname)))
+
+(defun git-workspace (directory-pathname)
+  "Return the workspace toplevel directory or NIL."
+  (multiple-value-bind (path error status)
+      (shell-command-to-string "cd ~S ; git rev-parse --show-toplevel"
+                               (namestring (truename directory-pathname)))
+    (declare (ignore error))
+    (when (zerop status)
+      (concatenate 'string path "/"))))
 
 (defun git-current-commit (directory-pathname)
   (let ((*current-directory-namestring* (namestring directory-pathname)))
@@ -132,6 +142,14 @@ and (fetch) over (push).
                             t))))))
     (first remotes)))
 
+(defun get-system-git-info (sname directory)
+  (let ((workspace (git-workspace directory)))
+    (when (and workspace (git-workspace-p workspace))
+      ;; query the git workspace at `directory' for the remote url, and the current commit
+      (let ((remote (choose-best-git-remote workspace))
+            (commit (git-current-commit workspace)))
+        (list :system sname :directory workspace :url remote :commit commit)))))
+
 (defun systems-info (system-names)
   (let ((dirs (make-hash-table :test (function equal)))) ; pathname keys
     (dolist (sname system-names)
@@ -140,20 +158,14 @@ and (fetch) over (push).
                      ((getf from :where-from)
                       from)
                      ((or (null from) (eql (getf from :distribution) :local))
-                      (let ((directory (com.informatimago.tools.quicklisp:system-where-is sname)))
-                        (print directory)
-                        (if (and directory (git-workspace-p directory))
-                            ;; query the git workspace at `directory' for the remote url, and the current commit
-                            (let ((remote (choose-best-git-remote directory))
-                                  (commit (git-current-commit directory)))
-                              (list :system sname :directory directory :url remote :commit commit))
-
-                            (progn
-                              (warn "No source for ~S" sname)
-                              (list :system sname)))))
+                      (or (get-system-git-info sname (com.informatimago.tools.quicklisp:system-where-is sname))
+                          (get-system-git-info sname (asdf/system:system-relative-pathname (asdf:find-system sname) ""))
+                          (progn (warn "No source for ~S" sname)
+                                 (list :system sname))))
                      (t
-                      (warn "No source for ~S" sname)
-                      (list :system sname))))
+                      (or (get-system-git-info sname (asdf/system:system-relative-pathname (asdf:find-system sname) ""))
+                          (progn (warn "No source for ~S" sname)
+                                 (list :system sname))))))
              (dir (getf info :directory))
              (entry (when dir (gethash dir dirs))))
         (when (or (null entry)
@@ -196,32 +208,40 @@ and (fetch) over (push).
 
 (defun get-dependency (info base-directory-pathname)
   "Clones the dependency specified by INFO in a subdirectory of BASE-DIRECTORY-PATHNAME."
-  (cond
-    ((let ((w (getf info :where-from)))
-       (scase (first w)
-         (("LATEST-GITHUB-RELEASE"
-           "latest-github-release"
-           "latest-gitlab-release"))
-         (("LATEST-GITHUB-TAG"
-           "latest-github-tag"))
-         (("tagged-git"))
-         (("branched-git"))
-         (("git"))
-         (("darcs"))
-         (("ediware-http"))
-         (("http"))
-         (("https"))
-         (("kmr-git"))
-         (("mercurial"))
-         (("single-file"))
-         (("svn"))
-         )))))
+  (declare (ignore info base-directory-pathname))
+  (error "Not implemented yet")
+  #-(and)
+  (let ((w (getf info :where-from)))
+    (scase (first w)
+      (("LATEST-GITHUB-RELEASE"
+        "latest-github-release"
+        "latest-gitlab-release"))
+      (("LATEST-GITHUB-TAG"
+        "latest-github-tag"))
+      (("tagged-git"))
+      (("branched-git"))
+      (("git"))
+      (("darcs"))
+      (("ediware-http"))
+      (("http"))
+      (("https"))
+      (("kmr-git"))
+      (("mercurial"))
+      (("single-file"))
+      (("svn"))
+      )))
 
 
-;; (defparameter *uu-spa-deps* (system-dependencies :uu-spa))
-;; (systems-info *uu-spa-deps*)
+
+(defvar *hunchentoot-deps*)
+
+(defun process-hunchentoot ()
+  (setf *hunchentoot-deps* (system-dependencies :hunchentoot))
+  (pprint (systems-info *hunchentoot-deps*)))
 
 
-(defparameter *hunchentoot-deps* (system-dependencies :hunchentoot))
-(pprint (systems-info *hunchentoot-deps*))
+(defvar *uu-spa-deps*)
 
+(defun process-uu-spa ()
+  (setf *uu-spa-deps* (system-dependencies :uu-spa))
+  (pprint (systems-info *uu-spa-deps*)))
