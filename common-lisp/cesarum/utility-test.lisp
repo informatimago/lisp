@@ -1,5 +1,66 @@
 (in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
 
+(defun test/hash-table-projection ()
+  (let ((table (make-hash-table :test 'eql
+                                :rehash-size      1.640315
+                                :rehash-threshold 0.640315)))
+    (loop :for (key value) :in '((a 1)
+                                 (b 2)
+                                 (c 3)
+                                 (d 4)
+                                 (e 5))
+          :do (setf (gethash key table) value))
+
+    (let ((projection (hash-table-projection '() table)))
+      (assert (eql 'eql (hash-table-test projection)))
+      (assert (zerop (hash-table-count projection)))
+      (assert (= 1.640315 (hash-table-rehash-size projection)))
+      (assert (= 0.640315 (hash-table-rehash-threshold projection))))
+
+    (let ((projection (hash-table-projection '(a c e) table)))
+      (assert (eql 'eql (hash-table-test projection)))
+      (assert (= 3 (hash-table-count projection)))
+      (assert (= 1.640315 (hash-table-rehash-size projection)))
+      (assert (= 0.640315 (hash-table-rehash-threshold projection)))
+      (assert (= 1 (gethash 'a projection)))
+      (assert (= 3 (gethash 'c projection)))
+      (assert (= 5 (gethash 'e projection))))
+
+    (let ((projection (hash-table-projection '(a d c b e) table)))
+      (assert (eql 'eql (hash-table-test projection)))
+      (assert (= 5 (hash-table-count projection)))
+      (assert (= 1.640315 (hash-table-rehash-size projection)))
+      (assert (= 0.640315 (hash-table-rehash-threshold projection)))
+      (assert (= 1 (gethash 'a projection)))
+      (assert (= 2 (gethash 'b projection)))
+      (assert (= 3 (gethash 'c projection)))
+      (assert (= 4 (gethash 'd projection)))
+      (assert (= 5 (gethash 'e projection))))
+
+    (let ((projection (hash-table-projection (lambda (key value)
+                                               (declare (ignore key))
+                                               (oddp value))
+                                             table)))
+      (assert (eql 'eql (hash-table-test projection)))
+      (assert (= 3 (hash-table-count projection)))
+      (assert (= 1.640315 (hash-table-rehash-size projection)))
+      (assert (= 0.640315 (hash-table-rehash-threshold projection)))
+      (assert (= 1 (gethash 'a projection)))
+      (assert (= 3 (gethash 'c projection)))
+      (assert (= 5 (gethash 'e projection))))
+
+    (let ((projection (hash-table-projection (constantly t) table)))
+      (assert (eql 'eql (hash-table-test projection)))
+      (assert (= 5 (hash-table-count projection)))
+      (assert (= 1.640315 (hash-table-rehash-size projection)))
+      (assert (= 0.640315 (hash-table-rehash-threshold projection)))
+      (assert (= 1 (gethash 'a projection)))
+      (assert (= 2 (gethash 'b projection)))
+      (assert (= 3 (gethash 'c projection)))
+      (assert (= 4 (gethash 'd projection)))
+      (assert (= 5 (gethash 'e projection)))))
+  :success)
+
 (defun test/get-option ()
   (mapc (lambda (expected-arguments)
           (destructuring-bind (expected arguments) expected-arguments
@@ -26,7 +87,8 @@
   :success)
 
 (defun test/all ()
-  (test/get-option))
+  (test/get-option)
+  (test/hash-table-projection))
 
 
 (mapcar
