@@ -18,7 +18,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2012 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2012 - 2023
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -508,7 +508,15 @@ RETURN  SUDOKU.
                            (x 7 x x x x x x x)
                            (x x 8 9 x 4 5 7 x)))
 
-
+(defparameter *240* #2A((7 8 x 2 6 x x x x)
+                        (3 2 4 x x 9 5 x x)
+                        (1 6 x x 3 5 4 x 2)
+                        (x 1 x 4 2 8 x x 9)
+                        (4 x 3 5 x 7 x x x)
+                        (2 x x 6 x 3 7 x 4)
+                        (9 x x x x 1 8 x 5)
+                        (x x 1 9 8 x 6 3 7)
+                        (8 7 x x 5 6 9 x 1)))
 
 
 (defun solve-sudokus (&key (print t))
@@ -523,6 +531,7 @@ RETURN  SUDOKU.
                     *metrofrance/700/moyen*
                     *royco-minut-soup*
                     *andre*
+                    *240*
                     ))
     (multiple-value-bind (solutions tries) (sudoku-solver (symbol-value sudoku))
       (terpri)
