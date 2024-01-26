@@ -34,7 +34,6 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setf *readtable* (copy-readtable nil)))
 (defpackage "COM.INFORMATIMAGO.EDITOR"
-  (:nicknames "EDITOR" "EMACS" "E")
   (:use "COMMON-LISP"
         "SPLIT-SEQUENCE"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.DLL"

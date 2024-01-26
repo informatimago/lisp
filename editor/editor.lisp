@@ -400,22 +400,27 @@ BINDING:    must be either a symbol (naming a command),
         (c-h-map (make-keymap))
         (fn-map  (make-keymap)))
     (loop
-       :for key :across #.(concatenate 'string
-                            " !\"#$%&'()*+,-./0123456789:;<=>?"
-                            "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
-                            "`abcdefghijklmnopqrstuvwxyz{|}~"
-                            " ¡¢£€¥Š§š©ª«¬­®¯°±²³Žµ¶·ž¹º»ŒœŸ¿"
-                            "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞß"
-                            "àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ")
-       :do (keymap-bind-key def-map key 'self-insert-command))
+
+      ;; Note: all printable iso-8859-1 characters, which is a subset
+      ;; of unicode between 32 and 255, excluding control codes.
+      ;; This may ensure only base-char are used.
+
+      :for key :across #.(concatenate 'string
+                                      " !\"#$%&'()*+,-./0123456789:;<=>?"
+                                      "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
+                                      "`abcdefghijklmnopqrstuvwxyz{|}~"
+                                      " ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿"
+                                      "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞß"
+                                      "àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ")
+      :do (keymap-bind-key def-map key 'self-insert-command))
     (keymap-bind-key def-map #\return        'new-line)
     (keymap-bind-key def-map #\newline       'new-line)
     (keymap-bind-key def-map #\tab           'self-insert-command)
     (keymap-bind-key def-map #\Rubout        'delete-backward-char)
     (keymap-bind-key def-map '(:control #\d) 'delete-char)
     (loop
-       :for key :across "0123456789"
-       :do (keymap-bind-key def-map (list :meta key) 'digit-argument))
+      :for key :across "0123456789"
+      :do (keymap-bind-key def-map (list :meta key) 'digit-argument))
     (keymap-bind-key def-map '(:meta    #\-) 'negative-argument)
     (keymap-bind-key def-map '(:meta    #\x) 'execute-extended-command)
     (keymap-bind-key def-map '(:meta    #\:) 'eval-expression)
@@ -2120,9 +2125,9 @@ These commands include C-@ and M-x start-kbd-macro."
 
 #-mocl
 (progn
- (print '(e::reload))
- (print '(e:screen-editor))
- (print '(e:ed)))
+ (print '(COM.INFORMATIMAGO.EDITOR::reload))
+ (print '(COM.INFORMATIMAGO.EDITOR:screen-editor))
+ (print '(COM.INFORMATIMAGO.EDITOR:ed)))
 
 ;;;; THE END ;;;;
 

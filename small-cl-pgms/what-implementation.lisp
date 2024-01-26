@@ -657,6 +657,7 @@ implementation~P ~:[is~;are~]: ~%"
   #+(and cmu (not unix)) (extensions:quit #|recklesslyp|# nil)
   #+ecl                  (ext:quit status)
   #+sbcl                 (sb-ext:exit :code status)
+  #+lispworks            (lispworks:quit :status status)
   #-(or ccl clisp cmu ecl sbcl) (throw 'quit status))
 
 
@@ -1005,7 +1006,7 @@ CLASSIFIED
   #+lispworks
   (hcl:save-image name
                   :restart-function  (lambda ()
-                                       (hcl:quit :status (handler-case
+                                       (lispworks:quit :status (handler-case
                                                              (progn
                                                                (funcall toplevel)
                                                                0)
