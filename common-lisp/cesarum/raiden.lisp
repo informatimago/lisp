@@ -12,11 +12,12 @@
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
 ;;;;    2006-10-20 <PJB> Created.
+;;;;    2024-01-38 <PJB> Tuned type declarations for sbcl.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2006 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2006 - 2024
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -46,7 +47,7 @@ License:
 
     AGPL3
 
-    Copyright Pascal J. Bourguignon 2006 - 2012
+    Copyright Pascal J. Bourguignon 2006 - 2024
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -189,9 +190,8 @@ K:    (vector (unsigned-byte 32) 4), the key
                                 bits what)
                         (let ((buffer (read-line *standard-input* nil nil)))
                           (when buffer
-                            (coerce (loop
-                                      :for ch :in buffer
-                                      :collect (char-code ch)) 'vector))))
+                            (map '(vector (unsigned-byte 32))
+                                 (function char-code) buffer))))
     :while (and bytes (< (* 8 (length bytes)) bits))
     :finally (return
                (and bytes
@@ -199,8 +199,9 @@ K:    (vector (unsigned-byte 32) 4), the key
                        collect (word (aref bytes (+ i 0))
                                      (aref bytes (+ i 1))
                                      (aref bytes (+ i 2))
-                                     (aref bytes (+ i 3))) into words
-                       finally (return (coerce words 'vector)))))))
+                                     (aref bytes (+ i 3)))
+                          into words
+                       finally (return (coerce words '(vector (unsigned-byte 32)))))))))
 
 (defun test ()
   (loop
@@ -211,11 +212,11 @@ K:    (vector (unsigned-byte 32) 4), the key
      for clear = (prog1 (read-words  64 "clear text") (terpri))
      for key   = (prog1 (read-words 128 "key") (terpri))
      while (and clear key)
-     do (progn (raiden-encipher clear code key)
-               (format t "(encipher ~S ~S)~% -->      ~S~%" clear key code)
-               (raiden-decipher code decr key)
-               (format t "(decipher ~S ~S)~% -->      ~S~%" code key decr)
-               (assert (equalp clear decr)))))
+     do (raiden-encipher clear code key)
+        (format t "(encipher ~S ~S)~% -->      ~S~%" clear key code)
+        (raiden-decipher code decr key)
+        (format t "(decipher ~S ~S)~% -->      ~S~%" code key decr)
+        (assert (equalp clear decr))))
 
 
 (defun auto-test ()
