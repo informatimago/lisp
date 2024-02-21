@@ -1,12 +1,12 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setf *readtable* (copy-readtable nil)))
-(defpackage "COM.INFORMATIMAGO.LANGUAGE.C11.GRAPH"
+(defpackage "COM.INFORMATIMAGO.LANGUAGES.C11.GRAPH"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.FILE"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.LIST"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.GRAPH"
         "COM.INFORMATIMAGO.COMMON-LISP.GRAPHVIZ.GRAPH-DOT"))
-(in-package "COM.INFORMATIMAGO.LANGUAGE.C11.GRAPH")
+(in-package "COM.INFORMATIMAGO.LANGUAGES.C11.GRAPH")
 
 
 (defparameter *graph*

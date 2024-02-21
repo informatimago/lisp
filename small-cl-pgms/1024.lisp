@@ -33,11 +33,11 @@
 ;;;;**************************************************************************
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (setf *readtable* (copy-readtable nil)))
-(defpackage "COM.INFORMATIMAGO.GAME.1024"
+(defpackage "COM.INFORMATIMAGO.GAMES.1024"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.ARRAY")
   (:export "MAIN"))
-(in-package "COM.INFORMATIMAGO.GAME.1024")
+(in-package "COM.INFORMATIMAGO.GAMES.1024")
 
 
 (defstruct (game (:constructor %make-game))
