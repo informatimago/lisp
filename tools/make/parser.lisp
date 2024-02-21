@@ -31,7 +31,7 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
-(in-package "COM.INFORMATIMGO.TOOLS.MAKE.PARSER")
+(in-package "COM.INFORMATIMAGO.TOOLS.MAKE.PARSER")
 
 ;;;---------------------------------------------------------------------
 
@@ -664,7 +664,7 @@ RETURN: a list of namestrings.
                       (setf value (trim-starting-spaces cp))
                       (define-variable-global name value :file 0 fstart))
                     (next))
-                  
+
                   )))))))
 
 ;;;---------------------------------------------------------------------
