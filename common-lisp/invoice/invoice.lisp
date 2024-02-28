@@ -853,7 +853,7 @@ RETURN:       A number of seconds since 1900-01-01 00:00:00 GMT.
     :initform 0/100
     :initarg  :vat-rate
     :accessor vat-rate
-    :type     ratio
+    :type     rational
     :documentation
     "The rate of VAT for this line (0.00 <= vat-rate <= 0.50).")
    (amount-vat
@@ -1647,7 +1647,7 @@ RETURN:  The path to the file generated.
     :initform 0/100
     :initarg  :amount-vat
     :accessor amount-vat
-    :type     ratio
+    :type     rational
     :documentation
     "(number) The VAT of the movement.")
    (description
