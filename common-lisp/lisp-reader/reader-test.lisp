@@ -6,7 +6,7 @@
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;
-;;;;    XXX
+;;;;    Test COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.READER.
 ;;;;
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
@@ -16,7 +16,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2015 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2015 - 2024
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -77,7 +77,8 @@
            "TEST/NON-EMPTY-VECTOR-WITH-TOO-LITTLE-DATA"
            "TEST/VECTORS"
            "TEST/CHECK-SYMBOLS"
-           "TEST/POTENTIAL-NUMBER-P")
+           "TEST/POTENTIAL-NUMBER-P"
+           "TEST/MULTIPLE-ESCAPE")
   (:documentation
    "
 This package tests the COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.READER package.
@@ -86,7 +87,7 @@ License:
 
     AGPL3
 
-    Copyright Pascal J. Bourguignon 2006 - 2015
+    Copyright Pascal J. Bourguignon 2006 - 2024
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -639,6 +640,26 @@ License:
     (let ((*read-base* 10.))
       (assert-true (notany (function potential-number-p) pns)))))
 
+(define-test test/multiple-escape ()
+  (assert-true (numberp (read-from-string "5")))
+  (assert-true (symbolp (read-from-string "||5")))
+  (assert-true (symbolp (read-from-string "5||")))
+
+  (assert-true (numberp (read-from-string "5.")))
+  (assert-true (symbolp (read-from-string "||5.")))
+  (assert-true (symbolp (read-from-string "5.||")))
+  (assert-true (symbolp (read-from-string "5||.")))
+
+  (assert-true (numberp (read-from-string "5/2")))
+  (assert-true (symbolp (read-from-string "||5/2")))
+  (assert-true (symbolp (read-from-string "5/2||")))
+  (assert-true (symbolp (read-from-string "5||/2")))
+
+  (assert-true (numberp (read-from-string "5.2")))
+  (assert-true (symbolp (read-from-string "||5.2")))
+  (assert-true (symbolp (read-from-string "5.2||")))
+  (assert-true (symbolp (read-from-string "5||.2"))))
+
 
 (define-test test/all ()
   (let ((*package* (find-package "COM.INFORMATIMAGO.COMMON-LISP.LISP-READER.READER.TEST")))
@@ -656,7 +677,8 @@ License:
     (test/vector-with-too-little-data)
     (test/vectors)
     (test/check-symbols)
-    (test/potential-number-p)))
+    (test/potential-number-p)
+    (test/multiple-escape)))
 
 ;;;; THE END ;;;;
 

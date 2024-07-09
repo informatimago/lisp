@@ -10,6 +10,7 @@
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
+;;;;    2024-07-09 <PJB> Corrected || bug. Now 5|| is read as a symbol.
 ;;;;    2015-07-21 <PJB> Synchronized list-all-macro-characters with the one in com.informatimago.tools.
 ;;;;    2012-05-14 <PJB> Corrected set-syntax-from-char.
 ;;;;    2011-04-29 <PJB> Added potential-number-p.
@@ -27,7 +28,7 @@
 ;;;;LEGAL
 ;;;;    AGPL3
 ;;;;
-;;;;    Copyright Pascal J. Bourguignon 2006 - 2016
+;;;;    Copyright Pascal J. Bourguignon 2006 - 2024
 ;;;;
 ;;;;    This program is free software: you can redistribute it and/or modify
 ;;;;    it under the terms of the GNU Affero General Public License as published by
@@ -113,7 +114,7 @@ License:
 
     AGPL3
 
-    Copyright Pascal J. Bourguignon 2006 - 2012
+    Copyright Pascal J. Bourguignon 2006 - 2024
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -591,19 +592,27 @@ URL:    <http://www.lispworks.com/documentation/HyperSpec/Body/f_cp_rdt.htm>
 (declaim (inline make-token  token-text token-traits
                  token-length token-char token-char-traits
                  token-collect-character))
-(defun make-token ()
-  (flet ((arr (type)
-           (make-array 8 :adjustable t :fill-pointer 0 :element-type type)))
-    (declare (inline arr))
-    (cons (arr 'character) (arr 'constituent-trait))))
-(defun token-text        (token)       (car token))
-(defun token-traits      (token)       (cdr token))
-(defun token-length      (token)       (length (car token)))
-(defun token-char        (token index) (aref (car token) index))
-(defun token-char-traits (token index) (aref (cdr token) index))
+
+
+(defstruct token
+  (characters
+   (make-array 8 :adjustable t :fill-pointer 0 :element-type 'character))
+  (constituent-traits
+   (make-array 8 :adjustable t :fill-pointer 0 :element-type 'constituent-trait))
+  ;; We also need to keep track of the use of || in case of empty escaped substring:
+  (has-multiple-escape-p
+   nil))
+
+(defun token-text        (token)       (token-characters token))
+(defun token-traits      (token)       (token-constituent-traits token))
+(defun token-length      (token)       (length (token-characters token)))
+(defun token-char        (token index) (aref (token-characters         token) index))
+(defun token-char-traits (token index) (aref (token-constituent-traits token) index))
 (defun token-collect-character (token character traits)
-  (vector-push-extend  character (car token))
-  (vector-push-extend  traits    (cdr token)))
+  (vector-push-extend  character (token-characters         token))
+  (vector-push-extend  traits    (token-constituent-traits token)))
+(defun token-collect-multiple-escape (token)
+  (setf (token-has-multiple-escape-p token) t))
 
 (defun token-delimiter-p (character)
   (let ((cs (character-syntax
@@ -712,6 +721,7 @@ BUG:            The handling of readtable-case :invert is wrong.
                   (go :parse-token))))
              (go :parse-token))
        :collect-multiple-escape-token
+         (token-collect-multiple-escape token)
          (setf y (read-char input-stream nil nil t))
          (unless-eof y
                      (let ((cd (character-description syntax-table y)))
@@ -804,6 +814,8 @@ ONE-OR-MORE and OPT-SIGN."
   (let ((sign 1)
         (mant 0)
         (i 0))
+    (when (token-has-multiple-escape-p token)
+      (reject nil))
     (unless (< i (token-length token)) (reject nil))
     (unless (traitp +ct-decimal-point+
                     (token-char-traits token (1- (token-length token))))
@@ -829,6 +841,8 @@ ONE-OR-MORE and OPT-SIGN."
   (let ((sign 1)
         (mant 0)
         (i 0))
+    (when (token-has-multiple-escape-p token)
+      (reject nil))
     (unless (< i (token-length token)) (reject nil))
     (opt-sign sign token i)
     (one-or-more (and (< i (token-length token))
@@ -865,6 +879,8 @@ ONE-OR-MORE and OPT-SIGN."
         (nume 0)
         (denu 0)
         (i 0))
+    (when (token-has-multiple-escape-p token)
+      (reject nil))
     (unless (< i (token-length token)) (reject nil))
     (opt-sign sign token i)
     (one-or-more (and (< i (token-length token))
@@ -900,6 +916,8 @@ exponent ::=  exponent-marker [sign] {digit}+"
         (esgn 1)
         (expo 0)
         (i 0))
+    (when (token-has-multiple-escape-p token)
+      (reject nil))
     (opt-sign sign token i)
     (zero-or-more (and (< i (token-length token))
                        (traitp +ct-digit+ (token-char-traits token i))
@@ -951,6 +969,8 @@ exponent ::=  exponent-marker [sign] {digit}+"
         (esgn 1)
         (expo 0)
         (i 0))
+    (when (token-has-multiple-escape-p token)
+      (reject nil))
     (opt-sign sign token i)
     (one-or-more (and (< i (token-length token))
                       (traitp +ct-digit+ (token-char-traits token i))
@@ -1218,7 +1238,8 @@ NOTE:        This function implements the standard semantics,
   "
 RETURN: Whether the token is all dots, (excluding escaped dots).
 "
-  (and (plusp (length (token-text token)))
+  (and (not (token-has-multiple-escape-p token))
+       (plusp (length (token-text token)))
        (every (lambda (traits) (traitp +ct-dot+ traits)) (token-traits token))))
 
 
