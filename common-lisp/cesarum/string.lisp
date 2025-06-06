@@ -487,7 +487,17 @@ RETURN:         A padded string.
 ;;            (mapcan #'list cw (split-sequence long-string #\Space)))))
 
 
-(defun string-justify-left (string &optional (width 72) (left-margin 0) (separators #(#\Space #\Newline)))
+(defun string-justify-left (string
+                            &optional
+                            (width 72)
+                            (left-margin 0)
+                            (separators #(#\Space #\Newline))
+                            ;; optional shall become deprecated, use keys.
+                            &key
+                            (width (or width 72))
+                            (left-margin (or left-margin 0))
+                            (separators (or separators #(#\Space #\Newline)))
+                            (line-prefix "") (line-suffix ""))
   "
 RETURN:         A left-justified string built from string.
 
@@ -497,30 +507,69 @@ LEFT-MARGIN:    The left margin, filled with spaces.  Default is 0 characters.
 
 SEPARATORS:     A sequence containing the characters on which to split the words.
                 Default: #\(#\space #\newline).
+
+LINE-PREFIX:    A string or a function prepended to each line.
+LINE-SUFFIX:    A string or a function appended to each line.
 "
   (check-type string string)
   (check-type width integer)
   (check-type left-margin integer)
+  (check-type line-prefix (or string function))
+  (check-type line-suffix (or string function))
   (let* ((margin    (make-string left-margin :initial-element (character " ")))
          (splited   (split-string string separators t))
          (col       left-margin)
          (justified (list (subseq margin 0 col)))
          (separator ""))
-    (dolist (word splited)
-      (if (<= width (+ col (length word)))
-          (progn (push #(#\newline) justified)
-                 (push margin justified)
-                 (push word justified)
-                 (setf col (+ left-margin (length word))))
-          (progn (push separator justified)
-                 (push word justified)
-                 (incf col (+ 1 (length word)))))
-      (setf separator " "))
+
     ;; ;; Pad with spaces up to width.
     ;; (when (< col width)
     ;;   (push (make-string (- width col) :initial-element (character " "))
     ;;         justified))
-    (apply (function concatenate) 'string (nreverse justified))))
+    (if (or (functionp line-prefix)
+            (functionp line-suffix))
+        (progn
+          (dolist (word splited)
+            (if (<= width (+ col (length word)))
+                (progn (push #(#\newline) justified)
+                       (push margin justified)
+                       (push word justified)
+                       (setf col (+ left-margin (length word))))
+                (progn (push separator justified)
+                       (push word justified)
+                       (incf col (+ 1 (length word)))))
+            (setf separator " "))
+          (apply (function concatenate) 'string
+                 (mapcar (lambda (sline)
+                           (concatenate 'string
+                                        (if (functionp line-prefix)
+                                            (funcall line-prefix sline)
+                                            line-prefix)
+                                        sline
+                                        (if (functionp line-suffix)
+                                            (funcall line-suffix sline)
+                                            line-suffix)
+                                        #(#\newline)))
+                         (split-sequence-if (lambda (ch) (eql ch #\newline))
+                                            (apply (function concatenate) 'string
+                                                   (nreverse justified))
+                                            :remove-empty-subseqs nil))))
+        (progn
+          (setf justified (append justified (list line-prefix)))
+          (dolist (word splited)
+            (if (<= width (+ col (length word)))
+                (progn (push line-suffix justified)
+                       (push #(#\newline) justified)
+                       (push line-prefix justified)
+                       (push margin justified)
+                       (push word justified)
+                       (setf col (+ left-margin (length word))))
+                (progn (push separator justified)
+                       (push word justified)
+                       (incf col (+ 1 (length word)))))
+            (setf separator " "))
+          (push line-suffix justified)
+          (apply (function concatenate) 'string (nreverse justified))))))
 
 
 (defun no-lower-case-p (string-designator)
