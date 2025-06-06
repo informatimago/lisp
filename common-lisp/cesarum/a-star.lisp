@@ -45,7 +45,7 @@
 (defconstant +infinity+ most-positive-long-float)
 
 (defun find-path (successors previous set-previous cost set-cost estimate-distance goalp
-                  start-node goal-node)
+                  start-node goal-node &key (node-equal 'equal))
   "
 DO:                 Implement the A* algorithm.
 
@@ -74,10 +74,12 @@ START-NODE:         the start node of the searched path.
 
 GOAL-NODE:          the end node of the searched path.
 
+NODE-EQUAL:         Compare two nodes.
+
 RETURN:             a path, ie. a list of nodes from START-NODE to
                     GOAL-NODE.
 "
-  (with-functions (successors previous set-previous cost set-cost estimate-distance goalp)
+  (with-functions (successors previous set-previous cost set-cost estimate-distance goalp node-equal)
     (flet ((build-path (node)
              (loop
                :with path = '()
@@ -109,7 +111,7 @@ RETURN:             a path, ie. a list of nodes from START-NODE to
                 (return-from find-path (build-path node)))
               (setf reachable (delete node reachable))
               (push node explored)
-              (let ((new-reachable (set-difference (successors node) explored)))
+              (let ((new-reachable (set-difference (successors node) explored :test (function node-equal))))
                 (dolist (adjacent new-reachable)
                   (unless (member adjacent reachable)
                     (push adjacent reachable))
