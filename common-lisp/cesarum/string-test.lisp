@@ -239,7 +239,91 @@
   (check equalp (split-string "hello*world*x" "*")
          '("hello" "world" "x")))
 
+(define-test test/string-justify-left ()
 
+  (check string=
+         (string-justify-left "The maximum width of the generated lines.  Default is 72 characters.")
+         "The maximum width of the generated lines. Default is 72 characters.")
+
+  (check string=
+         (string-justify-left "The maximum width of the generated lines.  Default is 72 characters."
+                              #|width|# 30)
+         "The maximum width of the
+generated lines. Default is 72
+characters.")
+
+  (check string=
+         (string-justify-left "The maximum width of the generated lines.  Default is 72 characters."
+                              nil nil nil :width 30)
+         "The maximum width of the
+generated lines. Default is 72
+characters.")
+
+  (check string=
+         (string-justify-left "The maximum width of the generated lines.  Default is 72 characters."
+                              30 10)
+         "          The maximum width
+          of the generated
+          lines. Default is 72
+          characters.")
+
+  (check string=
+         (string-justify-left "The maximum width of the generated lines.  Default is 72 characters."
+                              nil nil nil
+                              :width 30
+                              :left-margin 10)
+         "          The maximum width
+          of the generated
+          lines. Default is 72
+          characters.")
+
+  (check string=
+         (string-justify-left "The maximum width of the generated lines.  Default is 72 characters."
+                              nil nil nil
+                              :width 30
+                              :left-margin 10)
+         "          The maximum width
+          of the generated
+          lines. Default is 72
+          characters.")
+
+  (check string=
+         (string-justify-left "The maximum width of the generated lines.  Default is 72 characters."
+                              nil nil nil
+                              :width 30
+                              :left-margin 4
+                              :line-prefix ";;"
+                              :line-suffix " --")
+         ";;    The maximum width of the --
+;;    generated lines. Default --
+;;    is 72 characters. --
+")
+
+  (check string=
+         (string-justify-left "The maximum width of the generated lines.  Default is 72 characters."
+                              nil nil nil
+                              :width 30
+                              :left-margin 4
+                              :line-prefix (let ((first-line t))
+                                             (lambda (line)
+                                               (declare (ignore line))
+                                               (if first-line
+                                                   (progn (setf first-line nil) "")
+                                                   ";;")))
+                              :line-suffix (let ((c 0)
+                                                 (first-line t))
+                                             (lambda (line)
+                                               (prog1
+                                                   (format nil "~VA~8,'0D"
+                                                           (- (if first-line 72 70)
+                                                              (length line))
+                                                           ""
+                                                           (incf c))
+                                                 (setf first-line nil)))))
+         "    The maximum width of the                                            00000001
+;;    generated lines. Default                                          00000002
+;;    is 72 characters.                                                 00000003
+"))
 
 
 (define-test test/all ()
@@ -249,6 +333,7 @@
   (test/implode-explode)
   (test/prefixp)
   (test/suffixp)
-  (test/split-string))
+  (test/split-string)
+  (test/string-justify-left))
 
 ;;;; THE END ;;;;
