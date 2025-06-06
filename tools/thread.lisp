@@ -35,7 +35,7 @@
   (setf *readtable* (copy-readtable nil)))
 (defpackage "COM.INFORMATIMAGO.TOOLS.THREAD"
   (:use "COMMON-LISP"
-        "BORDEAUX-THREADS")
+        #-clisp "BORDEAUX-THREADS")
   (:export "LIST-THREADS" "KILL-THREAD" "KILL-THREADS"
             "PERIODICALLY" "DO-PERIODICALLY" "DONE"))
 (in-package "COM.INFORMATIMAGO.TOOLS.THREAD")

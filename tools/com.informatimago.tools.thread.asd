@@ -52,8 +52,9 @@ Interactive commands to manipulate threads.
                ((#:albert #:docbook #:template)  . "book")
                ((#:albert #:docbook #:bgcolor)   . "white")
                ((#:albert #:docbook #:textcolor) . "black"))
-  :depends-on ("bordeaux-threads")
-  :components ((:file "thread" :depends-on ()))
+  :depends-on (#-clisp "bordeaux-threads")
+  :components (#-clisp (:file "thread" :depends-on ()))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8)
 
+#+clisp (warn "com.informatimago.tools.thread cannot be used on clisp, until bordeaux-threads is again running on clisp.")
 ;;;; THE END ;;;;

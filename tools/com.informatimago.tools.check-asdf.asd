@@ -38,7 +38,7 @@
   :version "1.3.0"
   :license "AGPL3"
   :depends-on ("com.informatimago.common-lisp.cesarum"
-               "com.informatimago.clext"
+               "com.informatimago.clext.character-sets"
                "com.informatimago.tools.source"
                #-abcl "com.informatimago.tools.script")
   :components (#-abcl (:file "check-asdf" :depends-on ()))

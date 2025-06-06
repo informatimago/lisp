@@ -57,10 +57,10 @@ specifications, like GRAY or other portability libraries.
   :depends-on ("com.informatimago.clext.association"
                "com.informatimago.clext.character-sets"
                #+(or ccl clisp sbcl cmu) "com.informatimago.clext.closer-weak"
-               #+(or ccl clisp sbcl cmu) "com.informatimago.clext.pipe"
-               "com.informatimago.clext.queue"
-               "com.informatimago.clext.filter-stream"
-               "com.informatimago.clext.redirecting-stream"
+               #+(or ccl       sbcl cmu) "com.informatimago.clext.pipe"
+               #-clisp "com.informatimago.clext.queue"
+               #-clisp "com.informatimago.clext.filter-stream"
+               #-clisp "com.informatimago.clext.redirecting-stream"
                "com.informatimago.clext.shell")
   :components ()
   #+adsf3 :in-order-to

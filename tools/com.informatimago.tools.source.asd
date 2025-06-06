@@ -61,7 +61,7 @@ This system would use closer-mop which is not available on MOCL.
   :depends-on ("com.informatimago.common-lisp.cesarum"
                "com.informatimago.common-lisp.picture"
                "com.informatimago.common-lisp.graphviz" ; used by dependency-cycles
-               "com.informatimago.clext"
+               "com.informatimago.clext.character-sets"
                "closer-mop"
                "split-sequence")
   :components ((:file "source")

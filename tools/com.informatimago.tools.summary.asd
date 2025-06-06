@@ -81,7 +81,7 @@ This program generates an HTML summary page for packages.
                ((#:albert #:docbook #:textcolor) . "black"))
   :depends-on ("com.informatimago.common-lisp.cesarum"
                "com.informatimago.common-lisp.html-generator"
-               "com.informatimago.clext"
+               "com.informatimago.clext.character-sets"
                "com.informatimago.tools.source")
   :components ((:file "summary" :depends-on ()))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8)
