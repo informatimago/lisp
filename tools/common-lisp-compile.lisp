@@ -115,7 +115,7 @@
 	brelation
 	graf
 	graph
-	
+
 	graph-dot
 	graph-diagram
 
@@ -150,7 +150,7 @@
     hquery
 	htrans
 	database
-	
+
     parse-html
     cache                               ; a generic disk-based cache.
 
