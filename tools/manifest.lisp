@@ -83,18 +83,40 @@
 
 #-mocl
 (defun system-depends-on (system)
-  (delete (string-downcase system)
-          (delete-duplicates
-           (mapcar (lambda (dependency)
-                     (etypecase dependency
-                       (asdf:system (asdf:component-name dependency))
-                       (string      dependency)
-                       (symbol      (string-downcase dependency))
-                       (cons        ; (:version "asdf" "3.1.2")
-                        (second dependency))))
-                   (asdf:system-depends-on (asdf:find-system system)))
-           :test 'string=)
-          :test 'string=))
+  (labels ((normalize-system-name (name)
+             (etypecase name
+               (string (string-downcase name))
+               (symbol (unless (keywordp name)
+                         (string-downcase name)))))
+           (dependency-systems (dependency)
+             (typecase dependency
+               (asdf:system
+                (let ((name (asdf:component-name dependency)))
+                  (and name (list (normalize-system-name name)))))
+               (string
+                (list (normalize-system-name dependency)))
+               (symbol
+                (let ((name (normalize-system-name dependency)))
+                  (and name (list name))))
+               (cons
+                (case (first dependency)
+                  ((:feature)
+                   ;; (:feature <feature-expression> <dependency>...)
+                   (mapcan #'dependency-systems (cddr dependency)))
+                  ((:version)
+                   ;; (:version <dependency> <version>)
+                   (when (second dependency)
+                     (dependency-systems (second dependency))))
+                  (otherwise
+                   (when (second dependency)
+                     (dependency-systems (second dependency)))))))))
+    (delete (string-downcase system)
+            (delete-duplicates
+             (remove nil
+                     (mapcan #'dependency-systems
+                             (asdf:system-depends-on (asdf:find-system system))))
+             :test 'string=)
+            :test 'string=)))
 
 (defun system-depends-on/recursive (system)
   (delete-duplicates
