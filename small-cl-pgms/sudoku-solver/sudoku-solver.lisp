@@ -519,19 +519,30 @@ RETURN  SUDOKU.
                         (8 7 x x 5 6 9 x 1)))
 
 
+(defparameter *trig-1* #2A((1 7 9 8 5 2 4 6 3)
+                           (x 2 5 9 3 4 7 1 8)
+                           (x x 3 1 7 6 9 5 2)
+                           (x x x 6 8 5 3 7 1)
+                           (x x x x 1 3 2 9 4)
+                           (x x x x x 9 5 8 6)
+                           (x x x x x x 1 3 9)
+                           (x x x x x x x 4 5)
+                           (x x x x x x x x 7)))
+
 (defun solve-sudokus (&key (print t))
   (dolist (sudoku '(
-                    *20-minutes/1499/facile*
-                    *20-minutes/1501/difficile*
-                    *20-minutes/1502/expert*
-                    *20-minutes/1505/moyen*
-                    *20-minutes/1506/facile*
-                    *metrofrance/694/moyen*
-                    *metrofrance/696/facile*
-                    *metrofrance/700/moyen*
-                    *royco-minut-soup*
-                    *andre*
-                    *240*
+                    ;; *20-minutes/1499/facile*
+                    ;; *20-minutes/1501/difficile*
+                    ;; *20-minutes/1502/expert*
+                    ;; *20-minutes/1505/moyen*
+                    ;; *20-minutes/1506/facile*
+                    ;; *metrofrance/694/moyen*
+                    ;; *metrofrance/696/facile*
+                    ;; *metrofrance/700/moyen*
+                    ;; *royco-minut-soup*
+                    ;; *andre*
+                    ;; *240*
+                    *trig-1*
                     ))
     (multiple-value-bind (solutions tries) (sudoku-solver (symbol-value sudoku))
       (terpri)
