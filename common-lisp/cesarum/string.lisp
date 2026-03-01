@@ -488,11 +488,6 @@ RETURN:         A padded string.
 
 
 (defun string-justify-left (string
-                            &optional
-                            (width 72)
-                            (left-margin 0)
-                            (separators #(#\Space #\Newline))
-                            ;; optional shall become deprecated, use keys.
                             &key
                             (width (or width 72))
                             (left-margin (or left-margin 0))
