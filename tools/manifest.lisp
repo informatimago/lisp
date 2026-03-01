@@ -107,6 +107,10 @@
                    ;; (:version <dependency> <version>)
                    (when (second dependency)
                      (dependency-systems (second dependency))))
+                  ((:require)
+                   ;; (:require "module") is implementation/module loading,
+                   ;; not an ASDF system dependency.
+                   nil)
                   (otherwise
                    (when (second dependency)
                      (dependency-systems (second dependency)))))))))
