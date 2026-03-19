@@ -635,7 +635,7 @@ RETURN: A list of elements that have as property PROPERTY the value VALUE.
 
 (defclass hashed-set-class (set-class)
   ((index
-    :initform (lambda () (make-hash-table :test 'eq))
+    :initform (make-hash-table :test 'eq)
     :initarg :index
     :accessor index
     :type     hash-table

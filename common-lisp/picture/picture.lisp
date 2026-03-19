@@ -230,7 +230,7 @@ DO:      Draws the frame FRAME of the SPRITE on the picture PICT,
 (defgeneric picture-data (picture))
 
 (pjb-defclass picture nil
-              (:att picture-data        (array character 2)       "Picture data.")
+              (:att picture-data        (or null (array character 2)) nil "Picture data.")
               (:att picture-background  character (character " ") "The background character.")
               (:doc "A picture is a bi-dimentional (y,x) array of characters."))
 
@@ -559,11 +559,11 @@ NOTE:    A future implementation won't use DRAW-POINT for performance.
   (:documentation "The transparent character of the sprite."))
 
 (pjb-defclass sprite nil
-              (:att sprite-name                  string    "sprite"   "Name of this sprite.")
-              (:att sprite-data                  (array character 3)  "Sprite data.")
-              (:att sprite-spot-x                fixnum    0          "X coordinate of spot.")
-              (:att sprite-spot-y                fixnum    0          "Y coordinate of spot.")
-              (:att sprite-transparent-character character (character " ") "The transparent character.")
+              (:att sprite-name                  string              "sprite"        "Name of this sprite.")
+              (:att sprite-data        (or null (array character 3)) nil             "Sprite data.")
+              (:att sprite-spot-x                fixnum              0               "X coordinate of spot.")
+              (:att sprite-spot-y                fixnum              0               "Y coordinate of spot.")
+              (:att sprite-transparent-character character           (character " ") "The transparent character.")
               (:doc "A sprite is a tri-dimentional (time,y,x) array of characters."))
 
 

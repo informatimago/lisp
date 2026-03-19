@@ -88,7 +88,8 @@ DO:      Converts the list based tree to a decorated tree.
          function.
 RETURN:  The decorated tree.
 "
-  (declare (type (function (list list) list) make-decoration))
+  ;; (declare (type (function (list list) list) make-decoration))
+  ;; actually it can take larger types.
   (if (consp tree)
       (funcall make-decoration (car tree)
                (loop for sub-tree in (cdr tree)
