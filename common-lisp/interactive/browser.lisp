@@ -435,14 +435,14 @@ DO:         Displays the contents of the working directory and
   (merge-pathnames
    (if directory
        (make-pathname
-        :directory (cons
-                    (first (pathname-directory path)) ; :absolute or :relative
-                    (substitute :up ".."
-                                (delete-if (lambda (item)
-                                             (member item '("" ".")
-                                                     :test (function string=)))
-                                           (split-string path "/"))
-                                :test (function string=))))
+        :directory (let ((components (pathname-directory path)))
+                     (cons
+                      (first components) ; :absolute or :relative
+                      (delete-if (lambda (item)
+                                   (member item '("" ".")
+                                           :test (function string=)))
+                                 (substitute :up ".." (rest components)
+                                             :test (function string=))))))
        path)
    (working-directory)))
 
