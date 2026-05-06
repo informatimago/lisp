@@ -436,8 +436,7 @@ DO:         Displays the contents of the working directory and
    (if directory
        (make-pathname
         :directory (cons
-                    (if (char= (character "/") (char path 0))
-                        :absolute :relative)
+                    (first (pathname-directory path)) ; :absolute or :relative
                     (substitute :up ".."
                                 (delete-if (lambda (item)
                                              (member item '("" ".")
