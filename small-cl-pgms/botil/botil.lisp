@@ -830,6 +830,7 @@ cf. command: cancel log $ID")
       (error "A botil database already exists at ~S" dbdir-pathname))
     (setf *database* dbdir-pathname)
     (with-open-file (out dbfile
+                         :direction :output
                          :if-does-not-exist :create
                          :external-format *external-format*)
       (write-line ";; -*- mode:lisp -*-" out)
