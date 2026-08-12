@@ -68,7 +68,9 @@
         ;; the connection just hangs in SYN_SENT.  Be explicit.
         :port                6697
         :connection-security :ssl
-        :nickname            "ergobot"
+        ;; Not "ergobot": that nick belongs to another, unrelated ergo
+        ;; project, and is registered with NickServ on Libera.
+        :nickname            "botergo"
         :realname            "ergo bot -- ask me about ergo"
         ;; NickServ password; NIL or "" means: do not identify.
         :nickserv-password   nil
@@ -481,7 +483,7 @@ normalised to unit length) of the list of strings TEXTS."
 ;;;
 
 (defparameter *system-prompt*
-  "You are ergobot, the assistant of the #clergo IRC channel.  ergo is a ~
+  "You are botergo, the assistant of the #clergo IRC channel.  ergo is a ~
 git-based package manager and project builder for Common Lisp, written by ~
 Pascal J. Bourguignon.
 
@@ -635,7 +637,7 @@ or introduced by a bang command, returns the question, else NIL."
       (t nil))))
 
 (defparameter *help*
-  "Ask me about ergo: \"ergobot: how do I declare a dependency?\", or \"!ergo <question>\". ~
+  "Ask me about ergo: \"botergo: how do I declare a dependency?\", or \"!ergo <question>\". ~
 Commands: help, version, sources, reindex (admins).")
 
 (defun handle-command (target nick question)
