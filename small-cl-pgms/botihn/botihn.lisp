@@ -66,6 +66,13 @@ Licensed under the AGPL3.
 
 (defvar *server*   "irc.libera.chat"
   "The fqdn of the IRC server.")
+(defvar *connection-security* :ssl
+  "Either :SSL (port 6697) or :NONE (port 6667).
+
+Note: cl-irc 0.9.2 hands the raw octet socket stream to the connection
+when :NONE is used, and writing a character to it then fails with
+\"#\\: doesn't match array element type\"; only the :SSL path wraps the
+stream.  Libera.Chat wants TLS anyway.")
 (defvar *nickname* "botihn"
   "The nickname of the botihn user.")
 (defvar *channel*  "#hn"
@@ -261,7 +268,11 @@ Updates the *LAST-STORY* ID."
   (setf *server*   (or (uiop:getenv "BOTIHN_SERVER")    *server*)
         *nickname* (or (uiop:getenv "BOTIHN_NICKNAME")  *nickname*)
         *channel*  (or (uiop:getenv "BOTIHN_CHANNEL")   *channel*)
-        *botpass*  (or (uiop:getenv "BOTIHN_BOTPASS")   *botpass*)))
+        *botpass*  (or (uiop:getenv "BOTIHN_BOTPASS")   *botpass*)
+        *connection-security* (let ((security (uiop:getenv "BOTIHN_SECURITY")))
+                                (cond ((null security) *connection-security*)
+                                      ((string-equal security "none") :none)
+                                      (t :ssl)))))
 
 (defun say (&rest args)
   (format t "~&~{~A~^ ~}~%" args)
@@ -355,7 +366,8 @@ and join to the *CHANNEL* where HackerNews are published."
             (catch :petites-gazongues
               (unwind-protect
                    (progn
-                     (setf *connection* (connect :nickname *nickname* :server *server*))
+                     (setf *connection* (connect :nickname *nickname* :server *server*
+                                                 :connection-security *connection-security*))
                      (add-hook *connection* 'irc::irc-privmsg-message 'msg-hook)
                      (join *connection* *channel*)
                      (monitor-initialize)

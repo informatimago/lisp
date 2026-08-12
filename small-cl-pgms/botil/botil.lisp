@@ -86,8 +86,16 @@ Licensed under the AGPL3.
 (defvar *external-format* :utf-8
   "External format used for all files (database files, log files).")
 
-(defvar *initial-server* "irc.freenode.org"
+(defvar *initial-server* "irc.libera.chat"
   "Only used when creating the database the first time.")
+
+(defvar *connection-security* :ssl
+  "Either :SSL (port 6697) or :NONE (port 6667).
+
+Note: cl-irc 0.9.2 hands the raw octet socket stream to the connection
+when :NONE is used, and writing a character to it then fails with
+\"#\\: doesn't match array element type\"; only the :SSL path wraps the
+stream.  Libera.Chat wants TLS anyway.")
 
 (defvar *default-nickname* "botil"
   "The nickname of the botil user.")
@@ -1877,7 +1885,8 @@ cf. command: cancel log $ID")
   (setf (connection server) (irc:connect :server   (hostname server)
                                          :nickname (botnick server)
                                          :username (botnick server)
-                                         :password (botpass server)))
+                                         :password (botpass server)
+                                         :connection-security *connection-security*))
   (let ((msg-hook (make-msg-hook server))
         (svc-hook (make-svc-hook server)))
     (irc:add-hook (connection server) 'irc:irc-privmsg-message msg-hook)

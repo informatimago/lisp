@@ -39,7 +39,9 @@
   :license "AGPL3"
   :depends-on ("com.informatimago.common-lisp.cesarum"
                "com.informatimago.common-lisp.interactive" ; date uptime
-               "cl-irc" "cl-json" "drakma" "split-sequence" "cl-ppcre")
+               "cl-irc"
+               "cl+ssl"  ; irc:connect :connection-security :ssl
+               "cl-json" "drakma" "split-sequence" "cl-ppcre")
   :components ((:file "botihn")))
 
 ;;;; THE END ;;;;
