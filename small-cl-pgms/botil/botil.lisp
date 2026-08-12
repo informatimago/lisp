@@ -1753,6 +1753,75 @@ cf. command: cancel log $ID")
 
 
 
+(defvar *nickserv-requester* nil
+  "(USER . TIME) of the last self-registry, so that NickServ's verdict
+reaches whoever asked instead of only the trace.")
+
+(defparameter *nickserv-relay-seconds* 120)
+
+(defun relay-nickserv-notice (source text)
+  "Forwards a NickServ notice to whoever just asked for a self-registry."
+  (let ((requester *nickserv-requester*))
+    (when (and requester
+               (string-equal source nickserv:*nickserv*)
+               (< (- (get-universal-time) (cdr requester)) *nickserv-relay-seconds*)
+               (plusp (length (string-trim " " text))))
+      (answer (car requester) "<~A> ~A" source text))))
+
+(defun nickserv-password-pathname (server)
+  "Where the NickServ password botil generated for itself on SERVER is kept."
+  (merge-pathnames #P"nickserv-password.txt" (server-pathname server) nil))
+
+(defun tell-nickserv (server text)
+  (irc:privmsg (connection server) nickserv:*nickserv* text))
+
+(defun identify-with-nickserv (server)
+  "Identifies with NickServ, when botil registered itself on SERVER earlier."
+  (let ((password (nickserv:load-password (nickserv-password-pathname server))))
+    (when password
+      (format *trace-output* "~&Identifying with NickServ on ~A~%" (hostname server))
+      (tell-nickserv server (nickserv:identify-message (botnick server) password)))))
+
+(defun self-registry (server sender arguments)
+  "Registers botil's own nick with NickServ, on an administrator's order.
+See the NICKSERV system for the exchange this is a step of."
+  (let ((file (nickserv-password-pathname server)))
+    (if (not (administratorp sender))
+        (answer sender "Only my administrators may do that.")
+        (multiple-value-bind (action argument) (nickserv:parse-self-registry arguments)
+          (case action
+            ((:status)
+             (answer sender (if (nickserv:password-present-p file)
+                                "I have a NickServ password on ~A, in ~A."
+                                "I have no NickServ password yet on ~A (~A).")
+                     (hostname server) file))
+            ((:forget)
+             (answer sender (if (nickserv:forget-password file)
+                                "Forgotten; you can register me again."
+                                "I had no password to forget.")))
+            ((:verify)
+             (setf *nickserv-requester* (cons sender (get-universal-time)))
+             (tell-nickserv server (nickserv:verify-message (botnick server) argument))
+             (answer sender "Sent VERIFY to NickServ; watch its notices."))
+            ((:register)
+             (if (nickserv:password-present-p file)
+                 ;; One shot: registering again would only fail, and would
+                 ;; overwrite the password we need to identify with.
+                 (answer sender "I am already registered on ~A (password in ~A).  ~
+                                 Remove that file first if you really mean to redo it."
+                         (hostname server) file)
+                 (let ((password (nickserv:generate-password)))
+                   ;; Store before sending: a password we sent but lost would
+                   ;; leave the nick registered and us unable to identify.
+                   (nickserv:save-password file password)
+                   (setf *nickserv-requester* (cons sender (get-universal-time)))
+                   (tell-nickserv server (nickserv:register-message password argument))
+                   (answer sender "Sent REGISTER to NickServ for ~A.  My password is in ~A.  ~
+                                   Send me: self-registry verify <key>  with the key from the mail."
+                           argument file))))
+            (otherwise
+             (answer sender "~A" (nickserv:self-registry-usage))))))))
+
 (defun command-processor (server sender command)
   (check-type server server)
   (check-type sender user)
@@ -1762,6 +1831,12 @@ cf. command: cancel log $ID")
   (let* ((tcmd (string-trim " " command))
          (cpos (position #\space tcmd))
          (vcmd (subseq tcmd 0 cpos)))
+    ;; self-registry is handled here, before the grammar: it is an
+    ;; administrative one-shot, not part of botil's logging language.
+    (when (string-equal vcmd "self-registry")
+      (self-registry server sender
+                     (if cpos (string-trim " " (subseq tcmd (1+ cpos))) ""))
+      (return-from command-processor))
     (if (or (string= vcmd "query")
             (string= vcmd "search")
             (string= vcmd "s")
@@ -1822,7 +1897,14 @@ cf. command: cancel log $ID")
   (setf *botil-workers* '()))
 
 
+(defun configure ()
+  "Lets the deployment override a few settings without a rebuild."
+  (let ((admins (uiop:getenv "BOTIL_ADMINISTRATORS")))
+    (when admins
+      (setf *administrators* (split-sequence #\, admins :remove-empty-subseqs t)))))
+
 (defun botil-initialize ()
+  (configure)
   (setf *database* (find-database))
   (initialize-index)
   (initialize-workers)
@@ -1875,6 +1957,9 @@ cf. command: cancel log $ID")
                    (arguments irc:arguments)) message
     (let ((recipient (first arguments)))
 
+      (when (string= "NOTICE" (irc:command message))
+        (relay-nickserv-notice sender (or (second arguments) "")))
+
       ;; irc:irc-nick-message
       ;; irc:irc-quit-message
       (format t "~&svc-hook message = ~S~%"
@@ -1914,6 +1999,7 @@ cf. command: cancel log $ID")
             irc:irc-kill-message
             irc:irc-kick-message
             irc:irc-invite-message))
+    (identify-with-nickserv server)
     (send-worker *botil* server 'reconnect)))
 
 

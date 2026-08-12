@@ -90,6 +90,13 @@ connection then hangs in SYN_SENT.")
   "The current IRC server connection.")
 (defvar *botpass*  "1234")
 
+(defvar *administrators* '("pjb")
+  "The nicks allowed to use the self-registry command.")
+
+(defvar *nickserv-password-file* #P"/usr/local/var/botihn/nickserv-password.txt"
+  "Where the NickServ password the bot generated for itself is kept.
+See the self-registry command, and the NICKSERV system.")
+
 
 (defvar *blacklist* '()
   "A list of lists (label :url \"regex\") or (label :title \"regexp\") used to match either the url or the title of the HN news.
@@ -282,7 +289,15 @@ Updates the *LAST-STORY* ID."
         *port*     (let ((port (uiop:getenv "BOTIHN_PORT")))
                      (if port
                          (parse-integer port :junk-allowed t)
-                         (if (eq *connection-security* :ssl) 6697 6667)))))
+                         (if (eq *connection-security* :ssl) 6697 6667)))
+        *administrators* (let ((admins (uiop:getenv "BOTIHN_ADMINISTRATORS")))
+                           (if admins
+                               (split-sequence #\, admins :remove-empty-subseqs t)
+                               *administrators*))
+        *nickserv-password-file* (let ((file (uiop:getenv "BOTIHN_NICKSERV_PASSWORD_FILE")))
+                                   (if file
+                                       (pathname file)
+                                       *nickserv-password-file*))))
 
 (defun say (&rest args)
   (format t "~&~{~A~^ ~}~%" args)
@@ -298,6 +313,88 @@ Updates the *LAST-STORY* ID."
                                 :remove-empty-subseqs t))
     (answer line)))
 
+
+;;; NickServ ;;;
+
+(defun administrator-p (nick)
+  (member nick *administrators* :test (function string-equal)))
+
+(defvar *nickserv-requester* nil
+  "(NICK . TIME) of the last self-registry, so that NickServ's verdict
+reaches whoever asked instead of only the log.")
+
+(defparameter *nickserv-relay-seconds* 120)
+
+(defun notice-hook (message)
+  "Forwards the notices of the services to whoever just asked for a
+self-registry -- that is where NickServ says whether it worked."
+  (let ((source (source message))
+        (text   (or (second (arguments message)) ""))
+        (requester *nickserv-requester*))
+    (when (and (string-equal source nickserv:*nickserv*)
+               requester
+               (< (- (get-universal-time) (cdr requester)) *nickserv-relay-seconds*)
+               (plusp (length (string-trim " " text))))
+      (let ((*requester-nick* (car requester)))
+        (answer "<~A> ~A" source text))))
+  t)
+
+(defun tell-nickserv (text)
+  (privmsg *connection* nickserv:*nickserv* text))
+
+(defun nickserv-password ()
+  (nickserv:load-password *nickserv-password-file*))
+
+(defun identify-with-nickserv ()
+  "Identifies with NickServ, when the bot registered itself earlier."
+  (let ((password (nickserv-password)))
+    (when password
+      (say "Identifying with NickServ.")
+      (tell-nickserv (nickserv:identify-message *nickname* password))
+      ;; Let the service answer before we join: +r channels need it.
+      (sleep 5))))
+
+(defun self-registry (arguments)
+  "Registers the bot's own nick with NickServ, on an administrator's order.
+See the NICKSERV system for the exchange this is a step of."
+  (if (not (administrator-p *requester-nick*))
+      (answer "Only my administrators may do that.")
+      (multiple-value-bind (action argument) (nickserv:parse-self-registry arguments)
+        (case action
+          ((:status)
+           (answer (if (nickserv:password-present-p *nickserv-password-file*)
+                       "I have a NickServ password, in ~A."
+                       "I have no NickServ password yet (~A)")
+                   *nickserv-password-file*))
+          ((:forget)
+           (answer (if (nickserv:forget-password *nickserv-password-file*)
+                       "Forgotten; you can register me again."
+                       "I had no password to forget.")))
+          ((:verify)
+           (setf *nickserv-requester* (cons *requester-nick* (get-universal-time)))
+           (tell-nickserv (nickserv:verify-message *nickname* argument))
+           (answer "Sent VERIFY to NickServ; watch its notices."))
+          ((:register)
+           (if (nickserv:password-present-p *nickserv-password-file*)
+               ;; One shot: registering again would only fail, and would
+               ;; overwrite the password we need to identify with.
+               (answer "I am already registered (password in ~A). ~
+                        Remove that file first if you really mean to redo it."
+                       *nickserv-password-file*)
+               (let ((password (nickserv:generate-password)))
+                 ;; Store before sending: a password we sent but lost would
+                 ;; leave the nick registered and us unable to identify.  If
+                 ;; the service refuses the REGISTER, "self-registry forget"
+                 ;; drops the password again.
+                 (nickserv:save-password *nickserv-password-file* password)
+                 (setf *nickserv-requester* (cons *requester-nick* (get-universal-time)))
+                 (tell-nickserv (nickserv:register-message password argument))
+                 (answer "Sent REGISTER to NickServ for ~A.  My password is in ~A.  ~
+                          Send me: self-registry verify <key>  with the key from the mail."
+                         argument *nickserv-password-file*))))
+          (otherwise
+           (answer "~A" (nickserv:self-registry-usage)))))))
+
 (defun msg-hook (message)
   "Answers to PRIVMSG sent directly to this bot."
   (let ((arguments        (arguments message))
@@ -307,8 +404,10 @@ Updates the *LAST-STORY* ID."
       (let ((words (split-sequence #\space (second arguments) :remove-empty-subseqs t)))
         (scase (first words)
                (("help")
-                (answer "Available commands: help version uptime sources blacklist")
+                (answer "Available commands: help version uptime sources blacklist self-registry")
                 (answer "Type:  blacklist help   for help on blacklist command."))
+               (("self-registry")
+                (self-registry (rest words)))
                (("version")
                 (answer "Version: ~A" *version*))
                (("uptime")
@@ -380,6 +479,8 @@ and join to the *CHANNEL* where HackerNews are published."
                                                  :port *port*
                                                  :connection-security *connection-security*))
                      (add-hook *connection* 'irc::irc-privmsg-message 'msg-hook)
+                     (add-hook *connection* 'irc::irc-notice-message 'notice-hook)
+                     (identify-with-nickserv)
                      (join *connection* *channel*)
                      (monitor-initialize)
                      (loop

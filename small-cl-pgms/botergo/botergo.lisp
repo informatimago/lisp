@@ -72,8 +72,12 @@
         ;; project, and is registered with NickServ on Libera.
         :nickname            "botergo"
         :realname            "ergo bot -- ask me about ergo"
-        ;; NickServ password; NIL or "" means: do not identify.
+        ;; NickServ password; NIL or "" means: do not identify.  Leave it
+        ;; NIL and let the bot register itself -- see the self-registry
+        ;; command -- which stores the password it generated in
+        ;; :nickserv-password-file, and identifies with it from then on.
         :nickserv-password   nil
+        :nickserv-password-file "/home/ircbot/var/botergo/nickserv-password.txt"
         :channel             "#clergo"
         ;; Nicks allowed to use the administrative commands.
         :administrators      (list "pjb")
@@ -611,6 +615,13 @@ dangling clause on the channel."
 (defvar *questions* (make-queue) "(TARGET NICK TEXT) triples waiting for an answer.")
 (defvar *answers*   (make-queue) "(TARGET . TEXT) pairs waiting to be sent.")
 (defvar *worker*    nil)
+(defvar *sender*    nil)
+(defvar *write-lock* (bordeaux-threads:make-lock "botergo-irc-write")
+  "Held around every write to the connection.
+
+Three threads write to it: the sender, the reader (cl-irc answers PINGs
+from there) and, at connection time, the main one.  Two writes crossing
+would interleave their octets in the middle of a line.")
 (defvar *last-answered* (make-hash-table :test (function equal))
   "NICK -> universal time of the last answer, for the cooldown.")
 
@@ -642,7 +653,7 @@ or introduced by a bang command, returns the question, else NIL."
 
 (defparameter *help*
   "Ask me about ergo: \"botergo: how do I declare a dependency?\", or \"!ergo <question>\". ~
-Commands: help, version, sources, reindex (admins).")
+Commands: help, version, sources, reindex and self-registry (admins, in private).")
 
 (defun handle-command (target nick question)
   "Handles the built-in commands; returns T when QUESTION was one of them."
@@ -669,7 +680,20 @@ Commands: help, version, sources, reindex (admins).")
                     (error (err) (reply target (format nil "Failed: ~A" err)))))
            (reply target (format nil "~A: only my administrators may do that." nick)))
        t)
+      ((string= word "self-registry")
+       (cond
+         ((not (administrator-p nick))
+          (reply target (format nil "~A: only my administrators may do that." nick)))
+         ;; The reply carries the file the password sits in, and the whole
+         ;; exchange is nobody else's business.
+         ((channel-target-p target)
+          (reply target (format nil "~A: ask me that in private." nick)))
+         (t (self-registry target nick (rest (split-string question #\Space)))))
+       t)
       (t nil))))
+
+(defun channel-target-p (target)
+  (and (plusp (length target)) (find (char target 0) "#&+!")))
 
 (defun update-documentation ()
   "git pull in the ergo checkout, so that reindex picks up the current text."
@@ -714,20 +738,122 @@ Commands: help, version, sources, reindex (admins).")
                (say "ignored (cooldown) question from ~A" source)))))))
   t)
 
+(defun send-privmsg (target text)
+  (bordeaux-threads:with-lock-held (*write-lock*)
+    (irc:privmsg *connection* target text)))
+
+(defun sender-loop ()
+  "Sends the queued answers as soon as they are queued.
+
+They cannot be sent from the reading loop: IRC:READ-MESSAGE blocks until
+the server says something, so on a quiet channel an answer would sit in
+the queue until somebody else happened to talk."
+  (loop
+    (destructuring-bind (target . line) (dequeue *answers*)
+      (handler-case
+          (progn (say "-> ~A: ~A" target line)
+                 (send-privmsg target line))
+        (error (err) (say "cannot send to ~A: ~A" target err))))))
+
+(defun ping-hook (message)
+  "Answers PINGs, like cl-irc's default hook, but under the write lock."
+  (bordeaux-threads:with-lock-held (*write-lock*)
+    (apply (function irc:pong) (irc:connection message) (irc:arguments message)))
+  t)
+
+(defvar *nickserv-requester* nil
+  "(TARGET . TIME) of the last self-registry, so that NickServ's verdict
+reaches whoever asked instead of only the log.")
+
+(defparameter *nickserv-relay-seconds* 120)
+
+(defun notice-hook (message)
+  "Logs the notices of the services, and forwards them to whoever just
+asked for a self-registry -- that is where NickServ says whether it
+worked."
+  (let ((source (irc:source message))
+        (text   (or (second (irc:arguments message)) "")))
+    (when (member source (list nickserv:*nickserv* "NickServ" "MemoServ")
+                  :test (function string-equal))
+      (say "<~A> ~A" source text)
+      (let ((requester *nickserv-requester*))
+        (when (and requester
+                   (< (- (get-universal-time) (cdr requester))
+                      *nickserv-relay-seconds*)
+                   (plusp (length (string-trim " " text))))
+          (reply (car requester) (format nil "<~A> ~A" source text))))))
+  t)
+
+(defun nickserv-password ()
+  "The NickServ password: the one configured, or failing that the one the
+bot generated for itself when it registered."
+  (let ((configured (config :nickserv-password)))
+    (if (and configured (stringp configured) (plusp (length configured)))
+        configured
+        (nickserv:load-password (config :nickserv-password-file)))))
+
+(defun tell-nickserv (text)
+  (send-privmsg nickserv:*nickserv* text))
+
 (defun identify-with-nickserv ()
-  (let ((password (config :nickserv-password)))
-    (when (and password (stringp password) (plusp (length password)))
+  (let ((password (nickserv-password)))
+    (when password
       (say "identifying with NickServ")
-      (irc:privmsg *connection* "NickServ"
-                   (format nil "IDENTIFY ~A ~A" (config :nickname) password))
+      (tell-nickserv (nickserv:identify-message (config :nickname) password))
       ;; Give the service a moment before joining, so that +r channels let us in.
       (sleep 5))))
+
+(defun self-registry (target nick arguments)
+  "Registers the bot's own nick with NickServ, on an administrator's order.
+See the NICKSERV system for the exchange this is a step of."
+  (let ((file (config :nickserv-password-file)))
+    (multiple-value-bind (action argument) (nickserv:parse-self-registry arguments)
+      (case action
+        ((:status)
+         (reply target (if (nickserv:password-present-p file)
+                           (format nil "~A: I have a NickServ password, in ~A." nick file)
+                           (format nil "~A: I have no NickServ password yet." nick))))
+        ((:forget)
+         (reply target (if (nickserv:forget-password file)
+                           (format nil "~A: forgotten; you can register me again." nick)
+                           (format nil "~A: I had no password to forget." nick))))
+        ((:verify)
+         (say "self-registry: verifying with the key from ~A" nick)
+         (setf *nickserv-requester* (cons target (get-universal-time)))
+         (tell-nickserv (nickserv:verify-message (config :nickname) argument))
+         (reply target (format nil "~A: sent VERIFY to NickServ; watch its notices." nick)))
+        ((:register)
+         (if (nickserv:password-present-p file)
+             ;; One shot: registering again would only fail, and would
+             ;; overwrite the password we need to identify with.
+             (reply target (format nil "~A: I am already registered (password in ~A). ~
+                                        Remove that file first if you really mean to redo it."
+                                   nick file))
+             (let ((password (nickserv:generate-password)))
+               ;; Store before sending: a password we sent but lost would
+               ;; leave the nick registered and us unable to identify.  If
+               ;; the service refuses the REGISTER, "self-registry forget"
+               ;; drops the password again.
+               (nickserv:save-password file password)
+               (say "self-registry: registering with ~A" argument)
+               (setf *nickserv-requester* (cons target (get-universal-time)))
+               (tell-nickserv (nickserv:register-message password argument))
+               (reply target (format nil "~A: sent REGISTER to NickServ for ~A. ~
+                                          My password is in ~A. ~
+                                          Send me: self-registry verify <key> ~
+                                          with the key from the mail."
+                                     nick argument file)))))
+        (otherwise
+         (reply target (format nil "~A: ~A" nick (nickserv:self-registry-usage))))))))
 
 (defun run-bot ()
   "Connects, joins the channel, and serves questions until killed."
   (unless *worker*
     (setf *worker* (bordeaux-threads:make-thread (function worker-loop)
                                                  :name "botergo-worker")))
+  (unless *sender*
+    (setf *sender* (bordeaux-threads:make-thread (function sender-loop)
+                                                 :name "botergo-sender")))
   (loop
     (handler-case
         (unwind-protect
@@ -743,16 +869,18 @@ Commands: help, version, sources, reindex (admins).")
                                   :realname (config :realname)
                                   :connection-security (config :connection-security)))
                (irc:add-hook *connection* 'irc:irc-privmsg-message (function msg-hook))
+               (irc:add-hook *connection* 'irc:irc-notice-message (function notice-hook))
+               ;; Answer PINGs ourselves, so that every write to the
+               ;; connection goes through *WRITE-LOCK*.
+               (irc:remove-hooks *connection* 'irc:irc-ping-message)
+               (irc:add-hook *connection* 'irc:irc-ping-message (function ping-hook))
                (identify-with-nickserv)
                (say "joining ~A" (config :channel))
-               (irc:join *connection* (config :channel))
-               (loop
-                 ;; READ-MESSAGE has its own timeout, so the answers queued by
-                 ;; the worker are flushed regularly.
-                 (irc:read-message *connection*)
-                 (loop :for (target . line) :in (dequeue-all *answers*)
-                       :do (say "-> ~A: ~A" target line)
-                           (irc:privmsg *connection* target line))))
+               (bordeaux-threads:with-lock-held (*write-lock*)
+                 (irc:join *connection* (config :channel)))
+               ;; Nothing else to do here: the answers go out through the
+               ;; sender thread, which does not wait for the server.
+               (loop (irc:read-message *connection*)))
           (when *connection*
             (ignore-errors (irc:quit *connection* "brb"))
             (setf *connection* nil)))

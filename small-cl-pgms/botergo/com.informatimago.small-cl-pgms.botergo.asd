@@ -38,7 +38,8 @@
   :author "Pascal J. Bourguignon"
   :version "1.0.0"
   :license "AGPL3"
-  :depends-on ("cl-irc"
+  :depends-on ("com.informatimago.small-cl-pgms.nickserv"
+               "cl-irc"
                "cl+ssl"           ; irc:connect :connection-security :ssl
                "cl-json"
                "drakma"
