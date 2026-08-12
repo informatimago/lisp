@@ -494,7 +494,8 @@ text.  No markdown, no bullet lists, no code blocks, no line breaks.
 
 IMPORTANT: the documentation excerpts are in English, but you MUST write ~
 your answer in the SAME LANGUAGE AS THE QUESTION.  If the question is in ~
-French, answer in French; if it is in English, answer in English.")
+French, write the WHOLE answer in French; if it is in English, write it ~
+all in English.  Never switch language in the middle of an answer.")
 
 (defun build-user-prompt (question chunks)
   (with-output-to-string (out)
@@ -510,6 +511,19 @@ French, answer in French; if it is in English, answer in English.")
     (say "retrieved: ~{~S~^, ~}" (mapcar (function chunk-heading) chunks))
     (clean-answer (chat *system-prompt* (build-user-prompt question chunks)))))
 
+(defun truncate-at-last-sentence (text)
+  "When TEXT does not end a sentence -- the model ran into its token
+budget -- cuts it back to the last complete one, rather than leaving a
+dangling clause on the channel."
+  (let ((end (position-if (lambda (ch) (find ch ".!?")) text :from-end t)))
+    (cond
+      ((zerop (length text)) text)
+      ((find (char text (1- (length text))) ".!?)\"") text)
+      ;; Keep the truncated tail rather than return almost nothing.
+      ((and end (< (* 2 end) (length text))) text)
+      (end (subseq text 0 (1+ end)))
+      (t text))))
+
 (defun clean-answer (text)
   "Flattens the model's answer into one line of plain IRC text."
   (let ((text (substitute #\Space #\Newline (substitute #\Space #\Return text))))
@@ -517,7 +531,7 @@ French, answer in French; if it is in English, answer in English.")
     (setf text (cl-ppcre:regex-replace-all "`+" text ""))
     (setf text (cl-ppcre:regex-replace-all "\\*+" text ""))
     (setf text (cl-ppcre:regex-replace-all " +" text " "))
-    (string-trim " " text)))
+    (truncate-at-last-sentence (string-trim " " text))))
 
 (defparameter *irc-line-characters* 400
   "Upper bound on the payload of one PRIVMSG, in characters.")
