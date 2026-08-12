@@ -1551,7 +1551,10 @@ cf. command: cancel log $ID")
                     (format-iso8601-time (start-date request))
                     (when (end-date request)
                       (format-iso8601-time (end-date request)))))
-          (answer sender "~:[No log requests.~;~A has requested no logs.~]" owner (name owner))))))
+          ;; NAME must not be called on the NIL owner: the arguments of
+          ;; ANSWER are all evaluated, whichever branch ~:[~] then picks.
+          (answer sender "~:[No log requests.~;~:*~A has requested no logs.~]"
+                  (and owner (name owner)))))))
 
 (defun user-names (server)
   (mapcar (function pathname-name)
@@ -1767,6 +1770,34 @@ reaches whoever asked instead of only the trace.")
                (< (- (get-universal-time) (cdr requester)) *nickserv-relay-seconds*)
                (plusp (length (string-trim " " text))))
       (answer (car requester) "<~A> ~A" source text))))
+
+(defun nickname-in-use (server)
+  "Recovers the bot nick when the server says it is taken.
+
+It is almost always our own session from a previous run: the process is
+killed without a chance to say QUIT, and the server keeps the old client
+-- and its nick -- until its ping timeout.  Without this, botil sat on
+the network under no nick at all, answering nobody, until the server
+timed it out too.
+
+Take a free nick, then have NickServ hand the wanted one back; that needs
+the nick to be registered, which is what self-registry is for."
+  (let* ((wanted   (botnick server))
+         (fallback (concatenate 'string wanted "_"))
+         (password (nickserv:load-password (nickserv-password-pathname server))))
+    (format *trace-output* "~&~A is taken; taking ~A and asking NickServ for it back~%"
+            wanted fallback)
+    (irc:nick (connection server) fallback)
+    (if password
+        ;; REGAIN takes the password, so it does not race with IDENTIFY.
+        (tell-nickserv server (format nil "REGAIN ~A ~A" wanted password))
+        (format *trace-output* "~&~A is not registered: staying ~A~%" wanted fallback))))
+
+(defun make-nickname-in-use-hook (server)
+  (lambda (message)
+    (declare (ignore message))
+    (nickname-in-use server)
+    t))
 
 (defun nickserv-password-pathname (server)
   "Where the NickServ password botil generated for itself on SERVER is kept."
@@ -1986,6 +2017,8 @@ See the NICKSERV system for the exchange this is a step of."
   (let ((msg-hook (make-msg-hook server))
         (svc-hook (make-svc-hook server)))
     (irc:add-hook (connection server) 'irc:irc-privmsg-message msg-hook)
+    (irc:add-hook (connection server) 'irc:irc-err_nicknameinuse-message
+                  (make-nickname-in-use-hook server))
     (mapc (lambda (class) (irc:add-hook (connection server) class svc-hook))
           '(irc:irc-notice-message
             irc:irc-topic-message
