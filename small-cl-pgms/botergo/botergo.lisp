@@ -494,6 +494,10 @@ asking a human -- never invent options, commands or file formats.
 You are writing on IRC: answer in at most three short sentences, as plain ~
 text.  No markdown, no bullet lists, no code blocks, no line breaks.
 
+The reader cannot see the excerpts, so never refer to them: no \"excerpt ~
+[2]\", no \"the documentation says\", no bracketed numbers.  Just state ~
+the answer.
+
 IMPORTANT: the documentation excerpts are in English, but you MUST write ~
 your answer in the SAME LANGUAGE AS THE QUESTION.  If the question is in ~
 French, write the WHOLE answer in French; if it is in English, write it ~
