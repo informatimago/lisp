@@ -534,12 +534,32 @@ dangling clause on the channel."
       (end (subseq text 0 (1+ end)))
       (t text))))
 
+(defun strip-org-markers (text)
+  "Removes the org-mode verbatim markers the models copy out of the
+documentation: =ergo= and ~ergo~ become ergo.
+
+The pairs go first; what is left is a marker the model emitted without
+its mate, and it is dropped only where it hugs a word -- so that \"x = 1\"
+and a lone ~ in a pathname survive."
+  (dolist (marker '("=" "~") text)
+    ;; =word=  ->  word
+    (setf text (cl-ppcre:regex-replace-all
+                (format nil "~A([^~A\\s][^~A]*)~A" marker marker marker marker)
+                text "\\1"))
+    ;; word=  ->  word
+    (setf text (cl-ppcre:regex-replace-all
+                (format nil "([A-Za-z0-9])~A([\\s.,;:!?)]|$)" marker) text "\\1\\2"))
+    ;; =word  ->  word
+    (setf text (cl-ppcre:regex-replace-all
+                (format nil "(^|[\\s(])~A([A-Za-z0-9])" marker) text "\\1\\2"))))
+
 (defun clean-answer (text)
   "Flattens the model's answer into one line of plain IRC text."
   (let ((text (substitute #\Space #\Newline (substitute #\Space #\Return text))))
     ;; Drop the markdown emphasis and code fences the models sprinkle around.
     (setf text (cl-ppcre:regex-replace-all "`+" text ""))
     (setf text (cl-ppcre:regex-replace-all "\\*+" text ""))
+    (setf text (strip-org-markers text))
     (setf text (cl-ppcre:regex-replace-all " +" text " "))
     (truncate-at-last-sentence (string-trim " " text))))
 
