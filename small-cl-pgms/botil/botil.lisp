@@ -541,7 +541,10 @@ cf. command: cancel log $ID")
                       (make-instance 'server
                                      :hostname   hostname
                                      :botnick    (getf data :botnick)
-                                     :botpass    (getf data :botpass)
+                                     ;; SAVE writes :botpassword; :botpass is
+                                     ;; accepted too, for hand-written files.
+                                     :botpass    (getf data :botpassword
+                                                       (getf data :botpass))
                                      :enabled    (getf data :enabled)
                                      :request-id (getf data :request-id))))))
     (load-channels server)
