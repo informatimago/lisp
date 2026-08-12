@@ -486,8 +486,11 @@ normalised to unit length) of the list of strings TEXTS."
 ;;; Answering questions.
 ;;;
 
+;; FORMAT NIL, not a bare string: the ~<newline> below are format directives,
+;; and in a plain string they would stay in the text as a tilde and a newline.
 (defparameter *system-prompt*
-  "You are botergo, the assistant of the #clergo IRC channel.  ergo is a ~
+  (format nil
+          "You are botergo, the assistant of the #clergo IRC channel.  ergo is a ~
 git-based package manager and project builder for Common Lisp, written by ~
 Pascal J. Bourguignon.
 
@@ -505,7 +508,7 @@ the answer.
 IMPORTANT: the documentation excerpts are in English, but you MUST write ~
 your answer in the SAME LANGUAGE AS THE QUESTION.  If the question is in ~
 French, write the WHOLE answer in French; if it is in English, write it ~
-all in English.  Never switch language in the middle of an answer.")
+all in English.  Never switch language in the middle of an answer."))
 
 (defun build-user-prompt (question chunks)
   (with-output-to-string (out)
@@ -649,8 +652,11 @@ would interleave their octets in the middle of a line.")
   (member nick (config :administrators) :test (function string-equal)))
 
 (defun reply (target text)
-  (dolist (line (split-text-for-irc text))
-    (enqueue *answers* (cons target line))))
+  ;; A newline ends an IRC message: anything after it would be dropped, or
+  ;; worse, read as a command.  No caller may leak one through.
+  (let ((text (substitute #\Space #\Newline (substitute #\Space #\Return text))))
+    (dolist (line (split-text-for-irc text))
+      (enqueue *answers* (cons target line)))))
 
 (defun cooled-down-p (nick)
   (let ((last (gethash nick *last-answered*))
@@ -671,9 +677,12 @@ or introduced by a bang command, returns the question, else NIL."
        (string-trim " :,>" (subseq text (length nickname))))
       (t nil))))
 
+;; FORMAT NIL, not a bare string: without it the ~<newline> stays in the text,
+;; and IRC cuts the message at the newline -- help answered its first line only.
 (defparameter *help*
-  "Ask me about ergo: \"botergo: how do I declare a dependency?\", or \"!ergo <question>\". ~
-Commands: help, version, sources, reindex and self-registry (admins, in private).")
+  (format nil
+          "Ask me about ergo: \"botergo: how do I declare a dependency?\", or \"!ergo <question>\". ~
+Commands: help, version, sources, reindex and self-registry (admins, in private)."))
 
 (defun handle-command (target nick question)
   "Handles the built-in commands; returns T when QUESTION was one of them."
