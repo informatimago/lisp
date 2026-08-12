@@ -48,6 +48,10 @@
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
         "COM.INFORMATIMAGO.COMMON-LISP.LISP-SEXP.SOURCE-FORM"
         "COM.INFORMATIMAGO.CLEXT.QUEUE")
+  ;; SPLIT-SEQUENCE-IF is exported both by SPLIT-SEQUENCE and by
+  ;; CESARUM.SEQUENCE; botil uses neither, so take the one from the
+  ;; dedicated library to break the name conflict.
+  (:shadowing-import-from "SPLIT-SEQUENCE" "SPLIT-SEQUENCE-IF")
   (:shadow "LOG")
   (:import-from "COM.INFORMATIMAGO.COMMON-LISP.INTERACTIVE.INTERACTIVE"
                 "DATE" "UPTIME")
