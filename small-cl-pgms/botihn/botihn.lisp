@@ -326,11 +326,16 @@ reaches whoever asked instead of only the log.")
 (defparameter *nickserv-relay-seconds* 120)
 
 (defun notice-hook (message)
-  "Forwards the notices of the services to whoever just asked for a
-self-registry -- that is where NickServ says whether it worked."
+  "Logs the notices of NickServ, and forwards them to whoever just asked
+for a self-registry -- that is where NickServ says whether it worked.
+
+Note that hooking this class at all stops cl-irc from reporting notices
+as unhandled events, so without the SAY below they would go unrecorded."
   (let ((source (source message))
         (text   (or (second (arguments message)) ""))
         (requester *nickserv-requester*))
+    (when (string-equal source nickserv:*nickserv*)
+      (say (format nil "<~A> ~A" source text)))
     (when (and (string-equal source nickserv:*nickserv*)
                requester
                (< (- (get-universal-time) (cdr requester)) *nickserv-relay-seconds*)
@@ -432,6 +437,26 @@ See the NICKSERV system for the exchange this is a step of."
   t)
 
 
+(defvar *ignored-messages* 0
+  "Consecutive messages READ-MESSAGE-IGNORING-JUNK could not parse.")
+
+(defun read-message-ignoring-junk ()
+  "READ-MESSAGE, but one unusable message is not a dead connection.
+
+cl-irc 0.9.2 signals a plain error for every numeric reply it does not
+know -- Libera's 900 RPL_LOGGEDIN, sent right after IDENTIFY, is one, as
+parse-message.lisp passes 'no-such-reply as a format argument instead of
+signalling it -- and letting that reach the retry loop makes the bot
+reconnect every few seconds."
+  (handler-case (progn (read-message *connection*)
+                       (setf *ignored-messages* 0))
+    ((or stream-error end-of-file) (err) (error err))
+    (error (err)
+      (say (format nil "ignoring: ~A" err))
+      ;; Unless it never stops: then the connection really is bad.
+      (when (< 20 (incf *ignored-messages*))
+        (error err)))))
+
 (defun call-with-retry (delay thunk)
   "Calls THUNK repeatitively, reporting any error signaled,
 and calling the DELAY-ing thunk between each."
@@ -494,7 +519,7 @@ and join to the *CHANNEL* where HackerNews are published."
                                                (format *error-output* "~%~A~%" err))))
                                    (monitor-hacker-news (lambda (message) (privmsg *connection* *channel* message))))
                                  (incf next-time *period*))
-                               (read-message *connection*) #|there's a 10 s timeout in here.|#)))
+                               (read-message-ignoring-junk))))
                 (when *connection*
                   (quit *connection*)
                   (setf *connection* nil))))))))))

@@ -880,7 +880,24 @@ See the NICKSERV system for the exchange this is a step of."
                  (irc:join *connection* (config :channel)))
                ;; Nothing else to do here: the answers go out through the
                ;; sender thread, which does not wait for the server.
-               (loop (irc:read-message *connection*)))
+               (loop :with ignored = 0
+                     :do (handler-case (progn (irc:read-message *connection*)
+                                              (setf ignored 0))
+                           ;; A lost connection: let the outer handler
+                           ;; reconnect.
+                           ((or stream-error end-of-file) (err) (error err))
+                           ;; Anything else is one unusable message, not a
+                           ;; dead connection.  cl-irc 0.9.2 signals a plain
+                           ;; error for every numeric reply it does not know
+                           ;; -- Libera's 900 RPL_LOGGEDIN, right after
+                           ;; IDENTIFY, is one -- and taking that for a
+                           ;; disconnection makes the bot reconnect in a loop.
+                           (error (err)
+                             (say "ignoring: ~A" err)
+                             ;; Unless it never stops: then something is
+                             ;; wrong with the connection after all.
+                             (when (< 20 (incf ignored))
+                               (error err))))))
           (when *connection*
             (ignore-errors (irc:quit *connection* "brb"))
             (setf *connection* nil)))

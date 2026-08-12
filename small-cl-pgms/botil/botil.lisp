@@ -2008,6 +2008,26 @@ See the NICKSERV system for the exchange this is a step of."
 ;;; The main loop.
 ;;;
 
+(defvar *ignored-messages* 0
+  "Consecutive messages READ-MESSAGE-IGNORING-JUNK could not parse.")
+
+(defun read-message-ignoring-junk (connection)
+  "IRC:READ-MESSAGE, but one unusable message is not a dead connection.
+
+cl-irc 0.9.2 signals a plain error for every numeric reply it does not
+know -- Libera's 900 RPL_LOGGEDIN, sent right after IDENTIFY, is one, as
+parse-message.lisp passes 'no-such-reply as a format argument instead of
+signalling it.  Letting that out of the main loop kills botil, workers
+and all, a few seconds after every connection."
+  (handler-case (progn (irc:read-message connection)
+                       (setf *ignored-messages* 0))
+    ((or stream-error end-of-file) (err) (error err))
+    (error (err)
+      (format *error-output* "~&ignoring: ~A~%" err)
+      ;; Unless it never stops: then the connection really is bad.
+      (when (< 20 (incf *ignored-messages*))
+        (error err)))))
+
 (defun call-with-retry (delay thunk)
   "Calls THUNK repeatitively, reporting any error signaled,
                 and calling the DELAY-ing thunk between each."
@@ -2043,10 +2063,20 @@ See the NICKSERV system for the exchange this is a step of."
                    (if connection
                        (with-simple-restart (reconnect "Reconnect")
                          (catch :petites-gazongues
-                           (irc:read-message connection) #|  goes to msg-hook or svc-hook.|#
+                           (read-message-ignoring-junk connection) #|  goes to msg-hook or svc-hook.|#
                            (update-channels server)))
                        (when (enabled server)
                          (connect-to-server server))))))
+          ;; Say goodbye, so that the server drops the session at once.
+          ;; Without it, the old session keeps the nick until the server's
+          ;; ping timeout, and a botil restarted before that gets
+          ;; ERR_NICKNAMEINUSE and ends up on the network under no nick at
+          ;; all.
+          (dolist (server *servers*)
+            (let ((connection (connection server)))
+              (when connection
+                (ignore-errors (irc:quit connection "brb"))
+                (setf (connection server) nil))))
           (kill-all-workers))))))
 
 #-(and)
