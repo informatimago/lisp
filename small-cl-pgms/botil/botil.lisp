@@ -97,6 +97,13 @@ when :NONE is used, and writing a character to it then fails with
 \"#\\: doesn't match array element type\"; only the :SSL path wraps the
 stream.  Libera.Chat wants TLS anyway.")
 
+(defvar *port* 6697
+  "The port of the IRC servers.
+
+Note: do not leave this to cl-irc's :DEFAULT.  cl-irc 0.9.2 has
+:SSL 6679 in *DEFAULT-IRC-SERVER-PORT* -- a typo for 6697 -- and the
+connection then hangs in SYN_SENT.")
+
 (defvar *default-nickname* "botil"
   "The nickname of the botil user.")
 
@@ -1886,6 +1893,7 @@ cf. command: cancel log $ID")
                                          :nickname (botnick server)
                                          :username (botnick server)
                                          :password (botpass server)
+                                         :port     *port*
                                          :connection-security *connection-security*))
   (let ((msg-hook (make-msg-hook server))
         (svc-hook (make-svc-hook server)))

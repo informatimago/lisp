@@ -73,6 +73,12 @@ Note: cl-irc 0.9.2 hands the raw octet socket stream to the connection
 when :NONE is used, and writing a character to it then fails with
 \"#\\: doesn't match array element type\"; only the :SSL path wraps the
 stream.  Libera.Chat wants TLS anyway.")
+(defvar *port* 6697
+  "The port of the IRC server.
+
+Note: do not leave this to cl-irc's :DEFAULT.  cl-irc 0.9.2 has
+:SSL 6679 in *DEFAULT-IRC-SERVER-PORT* -- a typo for 6697 -- and the
+connection then hangs in SYN_SENT.")
 (defvar *nickname* "botihn"
   "The nickname of the botihn user.")
 (defvar *channel*  "#hn"
@@ -272,7 +278,11 @@ Updates the *LAST-STORY* ID."
         *connection-security* (let ((security (uiop:getenv "BOTIHN_SECURITY")))
                                 (cond ((null security) *connection-security*)
                                       ((string-equal security "none") :none)
-                                      (t :ssl)))))
+                                      (t :ssl)))
+        *port*     (let ((port (uiop:getenv "BOTIHN_PORT")))
+                     (if port
+                         (parse-integer port :junk-allowed t)
+                         (if (eq *connection-security* :ssl) 6697 6667)))))
 
 (defun say (&rest args)
   (format t "~&~{~A~^ ~}~%" args)
@@ -367,6 +377,7 @@ and join to the *CHANNEL* where HackerNews are published."
               (unwind-protect
                    (progn
                      (setf *connection* (connect :nickname *nickname* :server *server*
+                                                 :port *port*
                                                  :connection-security *connection-security*))
                      (add-hook *connection* 'irc::irc-privmsg-message 'msg-hook)
                      (join *connection* *channel*)
